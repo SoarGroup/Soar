@@ -2432,8 +2432,14 @@ int ReteNetCmd (ClientData clientData,
     return TCL_ERROR;
   }
   
-  if ( (rete_net_op)( fullname ) == SOAR_ERROR ) { 
-    return TCL_ERROR;
+  switch ((rete_net_op)( fullname )) {
+  case SOAR_OK:
+	  return TCL_OK;
+  case SOAR_ERROR:
+	  return TCL_ERROR;
+  default:
+	  Tcl_SetObjResult( interp, Tcl_NewStringObj( "Unrecognized return value from internal RETE function.", -1 ) );
+	  return TCL_ERROR;
   }
   return TCL_OK;
 
