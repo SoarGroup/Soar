@@ -77,10 +77,15 @@ New bug submissions and enhancement requests are welcome!
 Soar-8.5.2
 ==========
 
+
+Enhancements
+------------
+358  change soar8 command error message
+
 Bug Fixes
 ---------
 353  stats command keeps recording between runs
-389 missing error handling for set_watch_prod_group_setting
+389  missing error handling for set_watch_prod_group_setting
 
 Known Issues
 ------------
