@@ -676,7 +676,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 
     /* REW: end   11.25.96 */
 
-#endif
+#endif  // DETAILED_TIMING_STATS
 
     print(a, "================================================================|===========\n");
     print(a, "Input fn: %8.3f                                              | %10.3f\n",
@@ -703,19 +703,10 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
           preference_phase_total_time,
           wm_phase_total_time, output_phase_total_time, decision_phase_total_time, derived_total_cpu_time);
 
-    if (!current_agent(stop_soar)) {
-        /* Soar is still running, so this must have been invoked
-         * from the RHS, therefore these timers need to be updated. */
-        stop_timer(&current_agent(start_total_tv), &current_agent(total_cpu_time));
-        stop_timer(&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
-        start_timer(&current_agent(start_total_tv));
-        start_timer(&current_agent(start_kernel_tv));
-    }
-
     print(a, "Values from single timers:\n");
-#endif
-#endif
-#ifndef NO_TIMING_STUFF
+#endif  // KERNEL_TIME_ONLY
+// #endif  // NO_TIMING_STUFF
+// #ifndef NO_TIMING_STUFF
 
 #ifdef WARN_IF_TIMERS_REPORT_ZERO
     /* If a warning has occured since the last init-soar, the warn flag will
@@ -732,9 +723,9 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 #ifdef COUNT_KERNEL_TIMER_STOPS
     print(a, " Kernel CPU Timer Stops: %d\n", current_agent(kernelTimerStops));
     print(a, " Non-Kernel Timer Stops: %d\n", current_agent(nonKernelTimerStops));
+#endif
 
-#endif
-#endif
+#endif  // #ifndef NO_TIMING_STUFF
 
 #if !defined(NO_TIMING_STUFF)
     print(a, "%lu decision cycles (%.3f msec/dc)\n",
