@@ -136,6 +136,13 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, int portToLi
 		return false ;
 	}
 
+#else // _WIN32
+// BUGBUG: We'll need to do a dynamic Linux equivalent here.
+	m_pProcessMessageFunction = &sml_ProcessMessage;
+	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
+	
+#endif // _WIN32
+
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).
 	int connectionType = this->IsAsynchronous() ? SML_ASYNCH_CONNECTION : SML_SYNCH_CONNECTION ;
@@ -150,16 +157,6 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, int portToLi
 	// When we reach here we have a connection object (m_hConnection) back from KernelSML and
 	// we have the function (m_pProcessMessageFunction) that we'll use to communicate with that library.
 	return true ;
-#else
-// BUGBUG: We'll need to do a Linux equivalent here.  Not sure what the equivalents are.
-
-	return false;
-	
-// the following does not link and I can't figure out why
-//	m_pProcessMessageFunction = &sml_ProcessMessage;
-//	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
-//	return true;
-#endif
 }
 
 // Link two embedded connections together.
