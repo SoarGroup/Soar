@@ -49,7 +49,7 @@ struct strCompareCommand
 };
 
 // Define the CommandFunction which we'll call to process commands
-typedef bool (CommandLineInterface::*CommandFunction)(int argc, char**& argv);
+typedef bool (CommandLineInterface::*CommandFunction)(int argc, char** argv);
 
 // Used to store a map from command name to function handler for that command
 typedef std::map<char const*, CommandFunction, strCompareCommand>	CommandMap;
@@ -84,7 +84,7 @@ public:
 	/*************************************************************
 	* @brief add-wme command, see command line spec document for details
 	*************************************************************/
-	bool ParseAddWME(int argc, char**& argv);
+	bool ParseAddWME(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -93,7 +93,7 @@ public:
 	/*************************************************************
 	* @brief cd command, see command line spec document for details
 	*************************************************************/
-	bool ParseCD(int argc, char**& argv);
+	bool ParseCD(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -102,25 +102,25 @@ public:
 	/*************************************************************
 	* @brief echo command, see command line spec document for details
 	*************************************************************/
-	bool ParseEcho(int argc, char**& argv);
+	bool ParseEcho(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoEcho(int argc, char**& argv);
+	bool DoEcho(int argc, char** argv);
 
 	/*************************************************************
 	* @brief excise command, see command line spec document for details
 	*************************************************************/
-	bool ParseExcise(int argc, char**& argv);
+	bool ParseExcise(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoExcise(const unsigned short options, int productionCount, char**& productions);
+	bool DoExcise(const unsigned short options, int productionCount, char** productions);
 
 	/*************************************************************
 	* @brief init-soar command, see command line spec document for details
 	*************************************************************/
-	bool ParseInitSoar(int argc, char**& argv);
+	bool ParseInitSoar(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -129,7 +129,7 @@ public:
 	/*************************************************************
 	* @brief learn command, see command line spec document for details
 	*************************************************************/
-	bool ParseLearn(int argc, char**& argv);
+	bool ParseLearn(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -138,7 +138,7 @@ public:
 	/*************************************************************
 	* @brief ls/dir command, see command line spec document for details
 	*************************************************************/
-	bool ParseLS(int argc, char**& argv);
+	bool ParseLS(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -147,7 +147,7 @@ public:
 	/*************************************************************
 	* @brief new-agent command, see command line spec document for details
 	*************************************************************/
-	bool ParseNewAgent(int argc, char**& argv);
+	bool ParseNewAgent(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -156,7 +156,7 @@ public:
 	/*************************************************************
 	* @brief print command, see command line spec document for details
 	*************************************************************/
-	bool ParsePrint(int argc, char**& argv);
+	bool ParsePrint(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -165,7 +165,7 @@ public:
 	/*************************************************************
 	* @brief pwd command, see command line spec document for details
 	*************************************************************/
-	bool ParsePWD(int argc, char**& argv);
+	bool ParsePWD(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -174,7 +174,7 @@ public:
 	/*************************************************************
 	* @brief exit/quit command, see command line spec document for details
 	*************************************************************/
-	bool ParseQuit(int argc, char**& argv);
+	bool ParseQuit(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -183,7 +183,7 @@ public:
 	/*************************************************************
 	* @brief run command, see command line spec document for details
 	*************************************************************/
-	bool ParseRun(int argc, char**& argv);
+	bool ParseRun(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -192,7 +192,7 @@ public:
 	/*************************************************************
 	* @brief source command, see command line spec document for details
 	*************************************************************/
-	bool ParseSource(int argc, char**& argv);
+	bool ParseSource(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -201,7 +201,7 @@ public:
 	/*************************************************************
 	* @brief sp command, see command line spec document for details
 	*************************************************************/
-	bool ParseSP(int argc, char**& argv);
+	bool ParseSP(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -210,7 +210,7 @@ public:
 	/*************************************************************
 	* @brief stop-soar command, see command line spec document for details
 	*************************************************************/
-	bool ParseStopSoar(int argc, char**& argv);
+	bool ParseStopSoar(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -219,7 +219,7 @@ public:
 	/*************************************************************
 	* @brief watch command, see command line spec document for details
 	*************************************************************/
-	bool ParseWatch(int argc, char**& argv);
+	bool ParseWatch(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -228,7 +228,7 @@ public:
 	/*************************************************************
 	* @brief watch-wmes command, see command line spec document for details
 	*************************************************************/
-	bool ParseWatchWMEs(int argc, char**& argv);
+	bool ParseWatchWMEs(int argc, char** argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -240,6 +240,8 @@ protected:
 	class CLIConstants
 	{
 	public:
+		static char const* kCLISyntaxError;
+
 		static char const* kCLIAddWME;
 		static char const* kCLICD;
 		static char const* kCLIDir;
@@ -333,7 +335,7 @@ protected:
 	* @brief Standard parsing of -h and --help flags.  Returns
 	*		 true if the flag is present.
 	*************************************************************/
-	bool CheckForHelp(int argc, char**& argv);
+	bool CheckForHelp(int argc, char** argv);
 
 	GetOpt			m_GetOpt;			// Pointer to GetOpt utility class
 	CommandMap		m_CommandMap;		// Mapping of command names to function pointers

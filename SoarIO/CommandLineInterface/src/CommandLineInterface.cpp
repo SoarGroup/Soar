@@ -44,6 +44,8 @@ using namespace cli;
 //| |___| |___ | | |__| (_) | | | \__ \ || (_| | | | | |_\__ \
 // \____|_____|___\____\___/|_| |_|___/\__\__,_|_| |_|\__|___/
 //
+char const* CommandLineInterface::CLIConstants::kCLISyntaxError = "Syntax error.\n";
+
 char const* CommandLineInterface::CLIConstants::kCLIAddWME		= "add-wme";
 char const* CommandLineInterface::CLIConstants::kCLICD			= "cd";			// alias for ls
 char const* CommandLineInterface::CLIConstants::kCLIDir			= "ls";
@@ -113,6 +115,36 @@ CommandLineInterface::CommandLineInterface() {
 	m_QuitCalled = false;
 	m_pKernel = 0;
 	m_pAgent = 0;
+}
+
+// ____        _ _     _  ____                                          _ __  __
+//| __ ) _   _(_) | __| |/ ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |  \/  | __ _ _ __
+//|  _ \| | | | | |/ _` | |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` | |\/| |/ _` | '_ \
+//| |_) | |_| | | | (_| | |__| (_) | | | | | | | | | | | (_| | | | | (_| | |  | | (_| | |_) |
+//|____/ \__,_|_|_|\__,_|\____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_|  |_|\__,_| .__/
+//                                                                                    |_|
+void CommandLineInterface::BuildCommandMap() {
+
+	// Set the command map up mapping strings to function pointers
+	m_CommandMap[CLIConstants::kCLIAddWME]		= CommandLineInterface::ParseAddWME;
+	m_CommandMap[CLIConstants::kCLICD]			= CommandLineInterface::ParseCD;
+	m_CommandMap[CLIConstants::kCLIDir]			= CommandLineInterface::ParseLS;		// dir->ls
+	m_CommandMap[CLIConstants::kCLIEcho]		= CommandLineInterface::ParseEcho;
+	m_CommandMap[CLIConstants::kCLIExcise]		= CommandLineInterface::ParseExcise;
+	m_CommandMap[CLIConstants::kCLIExit]		= CommandLineInterface::ParseQuit;		// exit->quit
+	m_CommandMap[CLIConstants::kCLIInitSoar]	= CommandLineInterface::ParseInitSoar;
+	m_CommandMap[CLIConstants::kCLILearn]		= CommandLineInterface::ParseLearn;
+	m_CommandMap[CLIConstants::kCLILS]			= CommandLineInterface::ParseLS;
+	m_CommandMap[CLIConstants::kCLINewAgent]	= CommandLineInterface::ParseNewAgent;
+	m_CommandMap[CLIConstants::kCLIPrint]		= CommandLineInterface::ParsePrint;
+	m_CommandMap[CLIConstants::kCLIPWD]			= CommandLineInterface::ParsePWD;
+	m_CommandMap[CLIConstants::kCLIQuit]		= CommandLineInterface::ParseQuit;
+	m_CommandMap[CLIConstants::kCLIRun]			= CommandLineInterface::ParseRun;
+	m_CommandMap[CLIConstants::kCLISource]		= CommandLineInterface::ParseSource;
+	m_CommandMap[CLIConstants::kCLISP]			= CommandLineInterface::ParseSP;
+	m_CommandMap[CLIConstants::kCLIStopSoar]	= CommandLineInterface::ParseStopSoar;
+	m_CommandMap[CLIConstants::kCLIWatch]		= CommandLineInterface::ParseWatch;
+	m_CommandMap[CLIConstants::kCLIWatchWMEs]	= CommandLineInterface::ParseWatchWMEs;
 }
 
 // ____         ____                                          _
@@ -274,14 +306,14 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 				arg += (*iter);
 			}
 
-			// move on
+			// Delete the character and move on on
 			cmdline.erase(iter);
 			iter = cmdline.begin();
 
-			// are we at the end of the string?
+			// Are we at the end of the string?
 			if (iter == cmdline.end()) {
 
-				// did they close their quotes or brackets?
+				// Did they close their quotes or brackets?
 				if (quotes || brackets) {
 					m_Result += "No closing quotes/brackets found.";
 					return -1;
@@ -290,13 +322,16 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 			}
 		}
 
-		// store the arg
+		// Store the arg
 		argumentVector.push_back(arg);
 	}
+
+	// Return the number of args found
 	return argc;
 }
 
-//bool CommandLineInterface::Parse(int argc, char**& argv) {
+// Templates for new additions
+//bool CommandLineInterface::Parse(int argc, char** argv) {
 //	if (CheckForHelp(argc, argv)) {
 //		m_Result += CLIConstants::kCLIUsage;
 //		return true;
@@ -315,7 +350,7 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 //|  __/ (_| | |  \__ \  __// ___ \ (_| | (_| | \ V  V / | |  | | |___
 //|_|   \__,_|_|  |___/\___/_/   \_\__,_|\__,_|  \_/\_/  |_|  |_|_____|
 //
-bool CommandLineInterface::ParseAddWME(int argc, char**& argv) {
+bool CommandLineInterface::ParseAddWME(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIAddWMEUsage;
 		return true;
@@ -341,14 +376,15 @@ bool CommandLineInterface::DoAddWME() {
 //|  __/ (_| | |  \__ \  __/ |___| |_| |
 //|_|   \__,_|_|  |___/\___|\____|____/
 //
-bool CommandLineInterface::ParseCD(int argc, char**& argv) {
+bool CommandLineInterface::ParseCD(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLICDUsage;
 		return true;
 	}
 
-	if (argc > 2) {
-		m_Result += "Too many arguments.\n";
+	// Only takes one optional argument, the directory to change into
+	if (argc != 1) {
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLICDUsage;
 		return false;
 	}
@@ -362,18 +398,23 @@ bool CommandLineInterface::ParseCD(int argc, char**& argv) {
 //|____/ \___/ \____|____/
 //
 bool CommandLineInterface::DoCD(const char* directory) {
+
+	// If cd is typed by itself, return to original (home) directory
 	if (!directory) {
-		// return to home/original directory
+
+		// Home dir set in constructor
 		if (chdir(m_HomeDirectory.c_str())) {
 			m_Result += "Could not change to home directory: ";
 			m_Result += m_HomeDirectory;
 			return false;
 		}
+
 		// Lets print the current working directory on success
 		DoPWD();
 		return true;
 	}
 
+	// Change to passed directory
 	if (chdir(directory)) {
 		m_Result += "Could not change to directory: ";
 		m_Result += directory;
@@ -391,11 +432,13 @@ bool CommandLineInterface::DoCD(const char* directory) {
 //|  __/ (_| | |  \__ \  __/ |__| (__| | | | (_) |
 //|_|   \__,_|_|  |___/\___|_____\___|_| |_|\___/
 //
-bool CommandLineInterface::ParseEcho(int argc, char**& argv) {
+bool CommandLineInterface::ParseEcho(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIEchoUsage;
 		return true;
 	}
+
+	// Very simple command, any number of arguments
 	return DoEcho(argc, argv);
 }
 
@@ -405,13 +448,16 @@ bool CommandLineInterface::ParseEcho(int argc, char**& argv) {
 //| |_| | (_) | |__| (__| | | | (_) |
 //|____/ \___/|_____\___|_| |_|\___/
 //
-bool CommandLineInterface::DoEcho(int argc, char**& argv) {
+bool CommandLineInterface::DoEcho(int argc, char** argv) {
 
+	// Concatenate arguments (spaces between arguments are lost unless enclosed in quotes)
 	for (int i = 1; i < argc; ++i) {
 		m_Result += argv[i];
 		m_Result += ' ';
 	}
-	// TODO: chop off that last space
+
+	// Chop off that last space we just added in the loop
+	m_Result = m_Result.substr(0, m_Result.length() - 1);
 	return true;
 }
 
@@ -421,7 +467,7 @@ bool CommandLineInterface::DoEcho(int argc, char**& argv) {
 //|  __/ (_| | |  \__ \  __/ |___ >  < (__| \__ \  __/
 //|_|   \__,_|_|  |___/\___|_____/_/\_\___|_|___/\___|
 //
-bool CommandLineInterface::ParseExcise(int argc, char**& argv) {
+bool CommandLineInterface::ParseExcise(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIExciseUsage;
 		return true;
@@ -476,27 +522,13 @@ bool CommandLineInterface::ParseExcise(int argc, char**& argv) {
 		}
 	}
 
-	int productionCount = 0;
-	char** productions = 0;
-	if (GetOpt::optind < argc) {
-		productions = new char*[argc - GetOpt::optind + 1];
-		while (GetOpt::optind < argc) {
-			productions[productionCount] = new char[strlen(argv[GetOpt::optind]) + 1];
-			strcpy(productions[productionCount], argv[GetOpt::optind]);
-			productions[productionCount][strlen(argv[GetOpt::optind])] = 0;
-			++GetOpt::optind;
-			++productionCount;
-		}
-		productions[productionCount] = 0;
-	}
+	// Pass the productions to the DoExcise function
+	int productionCount = argc - GetOpt::optind;	// Number of Productions = total productions - processed productions
+	char** productions = argv + GetOpt::optind;		// Advance pointer to first productions (GetOpt puts all non-options at the end)
+	// productions == 0 if optind == argc because argv[argc] == 0
 
-	bool ret = DoExcise(options, productionCount, productions);
-
-	for (int i = 0; i < productionCount; ++i) {
-		delete [] (productions[i]);
-	}
-	delete [] (productions);
-	return ret;
+	// Make the call
+	return DoExcise(options, productionCount, productions);
 }
 
 // ____        _____          _
@@ -505,7 +537,7 @@ bool CommandLineInterface::ParseExcise(int argc, char**& argv) {
 //| |_| | (_) | |___ >  < (__| \__ \  __/
 //|____/ \___/|_____/_/\_\___|_|___/\___|
 //
-bool CommandLineInterface::DoExcise(unsigned short options, int productionCount, char**& productions) {
+bool CommandLineInterface::DoExcise(unsigned short options, int productionCount, char** productions) {
 	m_Result += "TODO: do excise";
 	return true;
 }
@@ -516,14 +548,15 @@ bool CommandLineInterface::DoExcise(unsigned short options, int productionCount,
 //|  __/ (_| | |  \__ \  __/| || | | | | |_ ___) | (_) | (_| | |
 //|_|   \__,_|_|  |___/\___|___|_| |_|_|\__|____/ \___/ \__,_|_|
 //
-bool CommandLineInterface::ParseInitSoar(int argc, char**& argv) {
+bool CommandLineInterface::ParseInitSoar(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIInitSoarUsage;
 		return true;
 	}
 
-	if (argc > 1) {
-		m_Result += "Too many arguments.\n";
+	// No arguments
+	if (argc != 1) {
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLIInitSoarUsage;
 		return false;
 	}
@@ -537,6 +570,7 @@ bool CommandLineInterface::ParseInitSoar(int argc, char**& argv) {
 //|____/ \___/___|_| |_|_|\__|____/ \___/ \__,_|_|
 //
 bool CommandLineInterface::DoInitSoar() {
+	// Simply call reinitialize
 	m_pAgent->Reinitialize();
 	m_Result += "Agent reinitialized.";
 	return true;
@@ -548,7 +582,7 @@ bool CommandLineInterface::DoInitSoar() {
 //|  __/ (_| | |  \__ \  __/ |__|  __/ (_| | |  | | | |
 //|_|   \__,_|_|  |___/\___|_____\___|\__,_|_|  |_| |_|
 //
-bool CommandLineInterface::ParseLearn(int argc, char**& argv) {
+bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLILearnUsage;
 		return true;
@@ -613,8 +647,9 @@ bool CommandLineInterface::ParseLearn(int argc, char**& argv) {
 		}
 	}
 
-	if (GetOpt::optind < argc) {
-		m_Result += "Too many arguments.\n";
+	// No non-option arguments
+	if (GetOpt::optind != argc) {
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLILearnUsage;
 		return false;
 	}
@@ -639,13 +674,15 @@ bool CommandLineInterface::DoLearn(const unsigned short options) {
 //|  __/ (_| | |  \__ \  __/ |___ ___) |
 //|_|   \__,_|_|  |___/\___|_____|____/
 //
-bool CommandLineInterface::ParseLS(int argc, char**& argv) {
+bool CommandLineInterface::ParseLS(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLILSUsage;
 		return true;
 	}
-	if (argc > 1) {
-		m_Result += "Too many arguments.\n";
+
+	// No arguments
+	if (argc != 1) {
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLILSUsage;
 		return false;
 	}
@@ -659,21 +696,39 @@ bool CommandLineInterface::ParseLS(int argc, char**& argv) {
 //|____/ \___/|_____|____/
 //
 bool CommandLineInterface::DoLS() {
+
+#ifdef WIN32
+
+	// Windows-specific directory listing
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
 
+	// Open a file find using the universal dos wildcard *.*
 	hFind = FindFirstFile("*.*", &FindFileData);
 	if (hFind == INVALID_HANDLE_VALUE) {
+		
+		// Not a single file, or file system error, we'll just assume no files
 		m_Result += "File not found.";
-		return true;
+
+		// TODO: Although file not found isn't an error, this could be an error 
+		// like permission denied, we should check for this
+		return true;	
 	}
 
+	// At least one file found, concatinate additional ones with newlines
 	do {
+		// TODO: Columns and stats
 		m_Result += FindFileData.cFileName;
 		m_Result += '\n';
 	} while (FindNextFile(hFind, &FindFileData));
 
+	// Close the file find
 	FindClose(hFind);
+
+#else // WIN32
+	m_Result += "TODO: ls on non-windows platforms";
+#endif // WIN32
+
 	return true;
 }
 
@@ -683,14 +738,15 @@ bool CommandLineInterface::DoLS() {
 //|  __/ (_| | |  \__ \  __/ |\  |  __/\ V  V / ___ \ (_| |  __/ | | | |_
 //|_|   \__,_|_|  |___/\___|_| \_|\___| \_/\_/_/   \_\__, |\___|_| |_|\__|
 //                                                   |___/
-bool CommandLineInterface::ParseNewAgent(int argc, char**& argv) {
+bool CommandLineInterface::ParseNewAgent(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLINewAgentUsage;
 		return true;
 	}
 
-	if (argc > 2) {
-		m_Result += "Too many arguments.\n";
+	// One argument (agent name)
+	if (argc != 2) {
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLINewAgentUsage;
 		return false;
 	}
@@ -716,7 +772,7 @@ bool CommandLineInterface::DoNewAgent(char const* agentName) {
 //|  __/ (_| | |  \__ \  __/  __/| |  | | | | | |_
 //|_|   \__,_|_|  |___/\___|_|   |_|  |_|_| |_|\__|
 //
-bool CommandLineInterface::ParsePrint(int argc, char**& argv) {
+bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIPrintUsage;
 		return true;
@@ -803,6 +859,7 @@ bool CommandLineInterface::ParsePrint(int argc, char**& argv) {
 		}
 	}
 
+	// TODO: arguments
 	return DoPrint(options);
 }
 
@@ -814,21 +871,25 @@ bool CommandLineInterface::ParsePrint(int argc, char**& argv) {
 //
 bool CommandLineInterface::DoPrint(const unsigned short options) {
 
+	// Need kernel pointer for back door
 	if (!m_pKernel) {
 		m_Result += "No kernel pointer.";
 		return false;
 	}
 
+	// Need agent pointer for function calls
 	if (!m_pAgent) {
 		m_Result += "No agent pointer.";
 		return false;
 	}
 
+	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
+	// Handle stack printing
 	if (options & OPTION_PRINT_STACK) {
-		pKernelHack->PrintStackTrace(m_pAgent, options & OPTION_PRINT_STATES ? true : false, options & OPTION_PRINT_OPERATORS ? true : false);
-
+		// TODO: Return values?
+		pKernelHack->PrintStackTrace(m_pAgent, (options & OPTION_PRINT_STATES) ? true : false, (options & OPTION_PRINT_OPERATORS) ? true : false);
 	}
 
 	return true;
@@ -840,13 +901,15 @@ bool CommandLineInterface::DoPrint(const unsigned short options) {
 //|  __/ (_| | |  \__ \  __/  __/ \ V  V / | |_| |
 //|_|   \__,_|_|  |___/\___|_|     \_/\_/  |____/
 //
-bool CommandLineInterface::ParsePWD(int argc, char**& argv) {
+bool CommandLineInterface::ParsePWD(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIPWDUsage;
 		return true;
 	}
-	if (argc > 1) {
-		m_Result += "Too many arguments.\n";
+
+	// No arguments to print working directory
+	if (argc != 1) {
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLIPWDUsage;
 		return false;
 	}
@@ -860,12 +923,18 @@ bool CommandLineInterface::ParsePWD(int argc, char**& argv) {
 //|____/ \___/|_|     \_/\_/  |____/
 //
 bool CommandLineInterface::DoPWD() {
+
+	// Pull an arbitrary buffer size of 512 out of a hat and use it
 	char buf[512];
-	getcwd(buf, 512);
-	if (!buf) {
+	char* ret = getcwd(buf, 512); // since we have to specify something here
+
+	// If getcwd returns 0, that is bad
+	if (!ret) {
 		m_Result += "Couldn't get working directory.";
 		return false;
 	}
+
+	// Add current working directory to result
 	m_Result += buf;
 	return true;
 }
@@ -876,7 +945,8 @@ bool CommandLineInterface::DoPWD() {
 //|  __/ (_| | |  \__ \  __/ |_| | |_| | | |_
 //|_|   \__,_|_|  |___/\___|\__\_\\__,_|_|\__|
 //
-bool CommandLineInterface::ParseQuit(int argc, char**& argv) {
+bool CommandLineInterface::ParseQuit(int argc, char** argv) {
+	// Quit needs no help
 	return DoQuit();
 }
 
@@ -887,7 +957,10 @@ bool CommandLineInterface::ParseQuit(int argc, char**& argv) {
 //|____/ \___/ \__\_\\__,_|_|\__|
 //
 bool CommandLineInterface::DoQuit() {
+	// Simply flip the quit flag
 	m_QuitCalled = true; 
+
+	// Toodles!
 	m_Result += "Goodbye.";
 	return true;
 }
@@ -898,7 +971,7 @@ bool CommandLineInterface::DoQuit() {
 //|  __/ (_| | |  \__ \  __/  _ <| |_| | | | |
 //|_|   \__,_|_|  |___/\___|_| \_\\__,_|_| |_|
 //
-bool CommandLineInterface::ParseRun(int argc, char**& argv) {
+bool CommandLineInterface::ParseRun(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIRunUsage;
 		return true;
@@ -965,11 +1038,17 @@ bool CommandLineInterface::ParseRun(int argc, char**& argv) {
 		}
 	}
 
+	// Count defaults to 1 (which are ignored if the options default, since they default to forever)
 	int count = 1;
+
+	// Only one non-option argument allowed, count
 	if (GetOpt::optind == argc - 1) {
+
+		// TODO: Probably should check and make sure this is an integer before calling atoi
 		count = atoi(argv[GetOpt::optind]);
+
 	} else if (GetOpt::optind < argc) {
-		m_Result += "Too many arguments.\n";
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLIRunUsage;
 		return false;
 	}
@@ -985,19 +1064,25 @@ bool CommandLineInterface::ParseRun(int argc, char**& argv) {
 //
 bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 
+	// TODO: Rather tricky options
 	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_OUTPUT) || (options & OPTION_RUN_STATE)) {
 		m_Result += "Options { o, O, S } not implemented yet.";
 		return false;
 	}
 
-	// Determine run unit, mutually exclusive so give smaller steps precedence, default to decision
-	egSKIRunType runType = gSKI_RUN_DECISION_CYCLE;
+	// Determine run unit, mutually exclusive so give smaller steps precedence, default to forever
+	egSKIRunType runType = gSKI_RUN_FOREVER;
 	if (options & OPTION_RUN_ELABORATION) {
 		runType = gSKI_RUN_SMALLEST_STEP;
+
 	} else if (options & OPTION_RUN_DECISION) {
 		runType = gSKI_RUN_DECISION_CYCLE;
+
 	} else if (options & OPTION_RUN_FOREVER) {
-		runType = gSKI_RUN_FOREVER;	
+		// TODO: Forever is going to hang unless a lucky halt is achieved until we implement 
+		// a way to interrupt it, so lets just avoid it with an error
+		//runType = gSKI_RUN_FOREVER;	
+		m_Result += "Forever option is not implemented yet.";
 	}
 
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
@@ -1023,21 +1108,21 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {
 		m_Result += "Run failed.";
-		return false;
+		return false;	// Hopefully details are in gSKI error message
 	}
 
 	m_Result += "\nRun successful: ";
 	switch (runResult) {
 		case gSKI_RUN_EXECUTING:
-			m_Result += "(gSKI_RUN_EXECUTING)";
+			m_Result += "(gSKI_RUN_EXECUTING)";						// the run is still executing
 			break;
 		case gSKI_RUN_INTERRUPTED:
-			m_Result += "(gSKI_RUN_INTERRUPTED)";
+			m_Result += "(gSKI_RUN_INTERRUPTED)";					// the run was interrupted
 			break;
 		case gSKI_RUN_COMPLETED:
-			m_Result += "(gSKI_RUN_COMPLETED)";
+			m_Result += "(gSKI_RUN_COMPLETED)";						// the run completed normally
 			break;
-		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:
+		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
 			m_Result += "(gSKI_RUN_COMPLETED_AND_INTERRUPTED)";
 			break;
 		default:
@@ -1053,22 +1138,25 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 //|  __/ (_| | |  \__ \  __/___) | (_) | |_| | | | (_|  __/
 //|_|   \__,_|_|  |___/\___|____/ \___/ \__,_|_|  \___\___|
 //
-bool CommandLineInterface::ParseSource(int argc, char**& argv) {
+bool CommandLineInterface::ParseSource(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLISourceUsage;
 		return true;
 	}
 
-	if (argc < 2) {
-		m_Result += "Too few arguments.\n";
+	if (argc != 2) {
+		// Source requires a filename
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLISourceUsage;
 		return false;
 
 	} else if (argc > 2) {
+		// but only one filename
 		m_Result += "Too many arguments.\n";
 		m_Result += CLIConstants::kCLISourceUsage;
 		return false;
 	}
+
 	return DoSource(argv[1]);
 }
 
@@ -1089,8 +1177,14 @@ bool CommandLineInterface::DoSource(const char* filename) {
 		return false;
 	}
 
+	// TODO: This needs to be reimplemented, since there are commands in with the soar
+	// productions and I'm not sure what the gSKI LoadSoarFile does with those commands
+	// (such as 'learn -on' 'pushd' etc.
+
+	// Acquire the production manager
 	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
 
+	// Load the file
 	pProductionManager->LoadSoarFile(filename, m_pError);
 
 	if(m_pError->Id != gSKI::gSKIERR_NONE) {
@@ -1099,7 +1193,7 @@ bool CommandLineInterface::DoSource(const char* filename) {
 		return false;
 	}
 
-	// TODO: Print one * per loaded production
+	// TODO: Print one * per loaded production, this will be easy if we parse it here.
 	m_Result += "File sourced successfully.";
 	return true;
 }
@@ -1110,18 +1204,20 @@ bool CommandLineInterface::DoSource(const char* filename) {
 //|  __/ (_| | |  \__ \  __/___) |  __/
 //|_|   \__,_|_|  |___/\___|____/|_|
 //
-bool CommandLineInterface::ParseSP(int argc, char**& argv) {
+bool CommandLineInterface::ParseSP(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLISPUsage;
 		return true;
 	}
 
+	// One argument (in brackets)
 	if (argc != 2) {
-		m_Result += "Incorrect format.\n";
+		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLISPUsage;
 		return false;
 	}
 
+	// Concatinate args
 	string production = argv[0];
 	production += ' ';
 	production += argv[1];
@@ -1136,18 +1232,22 @@ bool CommandLineInterface::ParseSP(int argc, char**& argv) {
 //|____/ \___/____/|_|
 //
 bool CommandLineInterface::DoSP(const char* production) {
+	// Must have production
 	if (!production) {
 		m_Result += "Production body is empty.";
 		return false;
 	}
 
+	// Must have agent to give production to
 	if (!m_pAgent) {
 		m_Result += "No agent pointer.";
 		return false;
 	}
 
+	// Acquire production manager
 	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
 
+	// Load the production
 	pProductionManager->AddProduction(const_cast<char*>(production), m_pError);
 
 	if(m_pError->Id != gSKI::gSKIERR_NONE) {
@@ -1167,7 +1267,7 @@ bool CommandLineInterface::DoSP(const char* production) {
 //|  __/ (_| | |  \__ \  __/___) | || (_) | |_) |__) | (_) | (_| | |
 //|_|   \__,_|_|  |___/\___|____/ \__\___/| .__/____/ \___/ \__,_|_|
 //                                        |_|
-bool CommandLineInterface::ParseStopSoar(int argc, char**& argv) {
+bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIStopSoarUsage;
 		return true;
@@ -1206,6 +1306,7 @@ bool CommandLineInterface::ParseStopSoar(int argc, char**& argv) {
 		}
 	}
 
+	// Concatinate remaining args for 'reason'
 	string reasonForStopping;
 	if (GetOpt::optind < argc) {
 		while (GetOpt::optind < argc) {
@@ -1233,7 +1334,7 @@ bool CommandLineInterface::DoStopSoar(bool self, char const* reasonForStopping) 
 //|  __/ (_| | |  \__ \  __/\ V  V / (_| | || (__| | | |
 //|_|   \__,_|_|  |___/\___| \_/\_/ \__,_|\__\___|_| |_|
 //
-bool CommandLineInterface::ParseWatch(int argc, char**& argv) {
+bool CommandLineInterface::ParseWatch(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIWatchUsage;
 		return true;
@@ -1273,6 +1374,7 @@ bool CommandLineInterface::ParseWatch(int argc, char**& argv) {
 			break;
 		}
 
+		// TODO: 
 		// convert the argument
 		//      switch (option) {
 
@@ -1339,6 +1441,7 @@ bool CommandLineInterface::ParseWatch(int argc, char**& argv) {
 		}
 	}
 
+	// TODO: arguments, if any
 	return DoWatch();
 }
 
@@ -1359,7 +1462,7 @@ bool CommandLineInterface::DoWatch() {
 //|  __/ (_| | |  \__ \  __/\ V  V / (_| | || (__| | | \ V  V / | |  | | |___\__ \
 //|_|   \__,_|_|  |___/\___| \_/\_/ \__,_|\__\___|_| |_|\_/\_/  |_|  |_|_____|___/
 //
-bool CommandLineInterface::ParseWatchWMEs(int argc, char**& argv) {
+bool CommandLineInterface::ParseWatchWMEs(int argc, char** argv) {
 	if (CheckForHelp(argc, argv)) {
 		m_Result += CLIConstants::kCLIWatchWMEsUsage;
 		return true;
@@ -1378,43 +1481,19 @@ bool CommandLineInterface::DoWatchWMEs() {
 	return true;
 }
 
-// ____        _ _     _  ____                                          _ __  __
-//| __ ) _   _(_) | __| |/ ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |  \/  | __ _ _ __
-//|  _ \| | | | | |/ _` | |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` | |\/| |/ _` | '_ \
-//| |_) | |_| | | | (_| | |__| (_) | | | | | | | | | | | (_| | | | | (_| | |  | | (_| | |_) |
-//|____/ \__,_|_|_|\__,_|\____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_|  |_|\__,_| .__/
-//                                                                                    |_|
-void CommandLineInterface::BuildCommandMap() {
-	m_CommandMap[CLIConstants::kCLIAddWME]		= CommandLineInterface::ParseAddWME;
-	m_CommandMap[CLIConstants::kCLICD]			= CommandLineInterface::ParseCD;
-	m_CommandMap[CLIConstants::kCLIDir]			= CommandLineInterface::ParseLS;
-	m_CommandMap[CLIConstants::kCLIEcho]		= CommandLineInterface::ParseEcho;
-	m_CommandMap[CLIConstants::kCLIExcise]		= CommandLineInterface::ParseExcise;
-	m_CommandMap[CLIConstants::kCLIExit]		= CommandLineInterface::ParseQuit;
-	m_CommandMap[CLIConstants::kCLIInitSoar]	= CommandLineInterface::ParseInitSoar;
-	m_CommandMap[CLIConstants::kCLILearn]		= CommandLineInterface::ParseLearn;
-	m_CommandMap[CLIConstants::kCLILS]			= CommandLineInterface::ParseLS;
-	m_CommandMap[CLIConstants::kCLINewAgent]	= CommandLineInterface::ParseNewAgent;
-	m_CommandMap[CLIConstants::kCLIPrint]		= CommandLineInterface::ParsePrint;
-	m_CommandMap[CLIConstants::kCLIPWD]			= CommandLineInterface::ParsePWD;
-	m_CommandMap[CLIConstants::kCLIQuit]		= CommandLineInterface::ParseQuit;
-	m_CommandMap[CLIConstants::kCLIRun]			= CommandLineInterface::ParseRun;
-	m_CommandMap[CLIConstants::kCLISource]		= CommandLineInterface::ParseSource;
-	m_CommandMap[CLIConstants::kCLISP]			= CommandLineInterface::ParseSP;
-	m_CommandMap[CLIConstants::kCLIStopSoar]	= CommandLineInterface::ParseStopSoar;
-	m_CommandMap[CLIConstants::kCLIWatch]		= CommandLineInterface::ParseWatch;
-	m_CommandMap[CLIConstants::kCLIWatchWMEs]	= CommandLineInterface::ParseWatchWMEs;
-}
-
 //  ____ _               _    _____          _   _      _
 // / ___| |__   ___  ___| | _|  ___|__  _ __| | | | ___| |_ __
 //| |   | '_ \ / _ \/ __| |/ / |_ / _ \| '__| |_| |/ _ \ | '_ \
 //| |___| | | |  __/ (__|   <|  _| (_) | |  |  _  |  __/ | |_) |
 // \____|_| |_|\___|\___|_|\_\_|  \___/|_|  |_| |_|\___|_| .__/
 //                                                       |_|
-bool CommandLineInterface::CheckForHelp(int argc, char**& argv) {
+bool CommandLineInterface::CheckForHelp(int argc, char** argv) {
+
+	// Standard help check if there is more than one argument
 	if (argc > 1) {
 		string argv1 = argv[1];
+
+		// Is one of the two help strings present?
 		if (argv1 == "-h" || argv1 == "--help") {
 			return true;
 		}
@@ -1429,6 +1508,7 @@ bool CommandLineInterface::CheckForHelp(int argc, char**& argv) {
 ///_/   \_\ .__/| .__/ \___|_| |_|\__,_| |_|\___/|_| \_\___||___/\__,_|_|\__|
 //        |_|   |_|
 void CommandLineInterface::AppendToResult(const char* pMessage) {
+	// Simply add to result
 	m_Result += pMessage;
 }
 
