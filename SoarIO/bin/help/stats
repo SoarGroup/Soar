@@ -1,0 +1,219 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                     Stats
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+     Table of contents
+   1 Name
+   2 Synopsis
+
+   2.1 Structured Output
+   2.2 Raw Output
+
+   3 Options
+   4 Description
+   5 Examples
+   6 See Also
+   7 A Note on Timers
+   8 Structured Output
+   9 Error Values
+
+   9.1 During Parsing
+   9.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   stats - Print information on Soar's runtime statistics.
+
+   Priority: 1; Status: Incomplete
+   Memory pool and rete stats not implemented with structured
+   output.--Jonathan 16:04, 8 Mar 2005 (EST)
+   stats -r (raw output) looks like trash output.--Jonathan 16:01, 8 Mar 2005
+   (EST)
+
+   [edit]
+
+                                    Synopsis
+
+   [edit]
+
+Structured Output
+
+ stats
+
+   [edit]
+
+Raw Output
+
+ stats [-s|-m|-r]
+
+   [edit]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-m, --memory|report usage for Soar's memory pools                       |
+   |------------+-----------------------------------------------------------|
+   |-r, --rete  |report statistics about the rete structure                 |
+   |------------+-----------------------------------------------------------|
+   |-s, --system|report the system (agent) statistics. This is the default  |
+   |            |if no args are specified.                                  |
+   +------------------------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   This command prints Soar internal statistics. The module indicates the
+   component of interest. If specified, module must be one of --system,
+   --memory, or --rete. All statistics are listed for that module.
+
+   [edit]
+
+                                    Examples
+
+   This prints all statistics in the --system module:
+
+ stats --system
+
+   [edit]
+
+                                    See Also
+
+   timers
+
+   [edit]
+
+                                A Note on Timers
+
+   The current implementation of Soar uses a number of timers to provide
+   time-based statistics for use in the stats command calculations. These
+   timers are:
+   total CPU time total kernel time phase kernel time (per phase) phase
+   callbacks time (per phase) input function time output function time
+   Total CPU time is calculated from the time a decision cycle (or number of
+   decision cycles) is initiated until stopped. Kernel time is the time spent
+   in core Soar functions. In this case, kernel time is defined as the all
+   functions other than the execution of callbacks and the input and output
+   functions. The total kernel timer is only stopped for these functions. The
+   phase timers (for the kernel and callbacks) track the execution time for
+   individual phases of the decision cycle (i.e., input phase, preference
+   phase, working memory phase, output phase, and decision phase). Because
+   there is overhead associated with turning these timers on and off, the
+   actual kernel time will always be greater than the derived kernel time
+   (i.e., the sum of all the phase kernel timers). Similarly, the total CPU
+   time will always be greater than the derived total (the sum of the other
+   timers) because the overhead of turning these timers on and off is
+   included in the total CPU time. In general, the times reported by the
+   single timers should always be greater than than the corresponding derived
+   time. Additionally, as execution time increases, the difference between
+   these two values will also increase. For those concerned about the
+   performance cost of the timers, all the run time timing calculations can
+   be compiled out of the code by defining NO_TIMING_STUFF (in soarkernel.h)
+   before compilation.
+
+   [edit]
+
+                               Structured Output
+
+   The following arg parameters are returned:
+
+ kParamStatsProductionCountDefault, kTypeInt
+ kParamStatsProductionCountUser, kTypeInt
+ kParamStatsProductionCountChunk, kTypeInt
+ kParamStatsProductionCountJustification, kTypeInt
+ kParamStatsCycleCountDecision, kTypeInt
+ kParamStatsCycleCountElaboration, kTypeInt
+ kParamStatsProductionFiringCount, kTypeInt
+ kParamStatsWmeCountAddition, kTypeInt
+ kParamStatsWmeCountRemoval, kTypeInt
+ kParamStatsWmeCount, kTypeInt
+ kParamStatsWmeCountAverage, kTypeDouble
+ kParamStatsWmeCountMax, kTypeInt
+ kParamStatsKernelTimeTotal, kTypeDouble
+ kParamStatsMatchTimeInputPhase, kTypeDouble
+ kParamStatsMatchTimeDetermineLevelPhase, kTypeDouble
+ kParamStatsMatchTimePreferencePhase, kTypeDouble
+ kParamStatsMatchTimeWorkingMemoryPhase, kTypeDouble
+ kParamStatsMatchTimeOutputPhase, kTypeDouble
+ kParamStatsMatchTimeDecisionPhase, kTypeDouble
+ kParamStatsOwnershipTimeInputPhase, kTypeDouble
+ kParamStatsOwnershipTimeDetermineLevelPhase, kTypeDouble
+ kParamStatsOwnershipTimePreferencePhase, kTypeDouble
+ kParamStatsOwnershipTimeWorkingMemoryPhase, kTypeDouble
+ kParamStatsOwnershipTimeOutputPhase, kTypeDouble
+ kParamStatsOwnershipTimeDecisionPhase, kTypeDouble
+ kParamStatsChunkingTimeInputPhase, kTypeDouble
+ kParamStatsChunkingTimeDetermineLevelPhase, kTypeDouble
+ kParamStatsChunkingTimePreferencePhase, kTypeDouble
+ kParamStatsChunkingTimeWorkingMemoryPhase, kTypeDouble
+ kParamStatsChunkingTimeOutputPhase, kTypeDouble
+ kParamStatsChunkingTimeDecisionPhase, kTypeDouble
+ kParamStatsMemoryUsageMiscellaneous, kTypeInt
+ kParamStatsMemoryUsageHash, kTypeInt
+ kParamStatsMemoryUsageString, kTypeInt
+ kParamStatsMemoryUsagePool, kTypeInt
+ kParamStatsMemoryUsageStatsOverhead, kTypeInt
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kTooManyArgs, kUnrecognizedOption, kGetOptError
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kgSKIError
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Stats"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 21:16, 8 Mar 2005.
+     * This page has been accessed 34 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

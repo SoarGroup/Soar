@@ -1,0 +1,128 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                   Max-chunks
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Query
+   5.2 Otherwise
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   max-chunks - Limit the number of chunks created during a decision cycle.
+
+   Priority: 3 ; Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ max-chunks [n]
+
+   [edit]
+
+                                    Options
+
+   +-----------------------------------------------------------+
+   |n|Maximum number of chunks allowed during a decision cycle.|
+   +-----------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   The max-chunks command is used to limit the maximum number of chunks that
+   may be created during a decision cycle. The initial value of this variable
+   is 50; allowable settings are any integer greater than 0.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Query
+
+ <result>
+   <arg name="value" type="int">max_chunks</arg>
+ </result>
+
+   [edit]
+
+Otherwise
+
+ <result output="raw">true</result>
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kTooManyArgs, kIntegerMustBePositive
+
+   [edit]
+
+During Execution
+
+   kAgentRequired
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Max-chunks"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 16:02, 18 Feb 2005.
+     * This page has been accessed 17 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

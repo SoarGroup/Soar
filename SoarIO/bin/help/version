@@ -1,0 +1,121 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                    Version
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Success
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   version -- Returns the version number of the Soar kernel.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+  version
+
+   [edit]
+
+                                    Options
+
+   No options
+
+   [edit]
+
+                                  Description
+
+   This command gives version information about the current Soar kernel. It
+   returns the version number itself, which can then be stored by the agent
+   or the application.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+ <result>
+   <arg name="versionmajor" type="int">major</arg>
+   <arg name="versionminor" type="int">minor</arg>
+   <arg name="versionmicro" type="int">micro</arg>
+ </result>
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   No errors, arguments ignored.
+
+   [edit]
+
+During Execution
+
+   No errors.
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Version"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 21:17, 3 Mar 2005.
+     * This page has been accessed 24 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

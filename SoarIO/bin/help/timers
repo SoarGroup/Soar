@@ -1,0 +1,152 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                     Timers
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Examples
+   6 See Also
+   7 Structured Output
+
+   7.1 On Query
+   7.2 Otherwise
+
+   8 Error Values
+
+   8.1 During Parsing
+   8.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   timers - Toggle on or off the internal timers used to profile Soar.
+
+   Status: Complete, EvilBackDoor
+
+   [edit]
+
+                                    Synopsis
+
+ timers [-ed]
+
+   [edit]
+
+                                    Options
+
+   +-----------------------------------------------+
+   |-d, --disable, --off|Disable all timers.       |
+   |--------------------+--------------------------|
+   |-e, --enable, --on  |Enable timers as compiled.|
+   +-----------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   This command is used to control the timers that collect internal profiling
+   information while Soar is running. With no arguments, this command prints
+   out the current timer status. Timers are ENABLED by default. The default
+   compilation flags for soar enable the basic timers and disable the
+   detailed timers. The timers command can only enable or disable timers that
+   have already been enabled with compiler directives. See the stats command
+   for more info on the Soar timing system.
+
+   [edit]
+
+                                    Examples
+
+   To show how to use the command in context, do this:
+
+ command --option arg
+
+   and possibly explain the results.
+
+   [edit]
+
+                                    See Also
+
+ stats
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Query
+
+ <result>
+   <arg name="timers" type="boolean">setting</arg>
+ </result>
+
+   [edit]
+
+Otherwise
+
+ <result output="raw">true</result>
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kKernelRequired
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Timers"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 15:57, 23 Mar 2005.
+     * This page has been accessed 29 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

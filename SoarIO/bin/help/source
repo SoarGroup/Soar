@@ -1,0 +1,135 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                     Source
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 See Also
+   6 Structured Output
+
+   6.1 On Success
+   6.2 Notes
+
+   7 Error Values
+
+   7.1 During Parsing
+   7.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   source - Load and evaluate the contents of a file.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ source filename
+
+   [edit]
+
+                                    Options
+
+   +-----------------------------------------------------------+
+   |filename|The file of Soar productions and commands to load.|
+   +-----------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   Load and evaluate the contents of a file. The filename can be a relative
+   path or a fully qualified path. source will generate an implicit push to
+   the new directory, execute the command, and then pop back to the current
+   working directory from which the command was issued.
+
+   [edit]
+
+                                    See Also
+
+           cd dirs home ls pushd popd source topd
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+  <result output="raw">true</result>
+
+   [edit]
+
+Notes
+
+     * source executes the 'pwd' command if the pushd's and popd's don't
+       match up after parsing the file. Type 'helpex pwd' for details.
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kTooFewArgs, kSourceOnlyOneFile
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kOpenFileFail, kUnmatchedBrace, kExtraClosingBrace
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Source"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:11, 17 Feb 2005.
+     * This page has been accessed 25 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

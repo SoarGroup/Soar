@@ -1,0 +1,143 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                            Numeric-indifferent-mode
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Query
+   5.2 Otherwise
+   5.3 Notes
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   numeric-indifferent-mode - Select method for combining numeric
+   preferences.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ numeric-indifferent-mode [-as]
+
+   [edit]
+
+                                    Options
+
+   +------------------------------------------------------------------+
+   |-a, --avg, --average|Use average mode (see Soar manual) (default).|
+   |--------------------+---------------------------------------------|
+   |-s, --sum           |Use sum mode (see Soar manual).              |
+   +------------------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   The numeric-indifferent-mode command is used to select the method for
+   combining numeric preferences. This command is only meaningful in
+   indifferent-selection --random mode.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Query
+
+ <result>
+   <arg param="numericindifferentmode" type="int">2</arg>
+ </result>
+
+   [edit]
+
+Otherwise
+
+ <result output="raw">true</result>
+
+   [edit]
+
+Notes
+
+     * The integer denoting the current mode corresponds to the gSKI enum
+       values:
+
+ gSKI_NUMERIC_INDIFFERENT_MODE_AVG  = 1
+ gSKI_NUMERIC_INDIFFERENT_MODE_SUM  = 0
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kInvalidNumericIndifferentMode
+
+   Retrieved from
+   "http://winter.eecs.umich.edu/soarwiki/Numeric-indifferent-mode"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:11, 17 Feb 2005.
+     * This page has been accessed 16 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

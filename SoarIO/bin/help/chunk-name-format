@@ -1,0 +1,140 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                               Chunk-name-format
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Query
+   5.2 On Success
+   5.3 Notes
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   chunk-name-format - Specify format of the name to use for new chunks.
+
+   Priority: 4; Status: Complete, EvilBackDoor
+
+   [edit]
+
+                                    Synopsis
+
+ chunk-name-format [-sl] -p [<prefix>]
+ chunk-name-format [-sl] -c [<count>]
+
+   [edit]
+
+                                    Options
+
+   +-------------+
+   |-c, --count ||
+   |------------+|
+   |count       ||
+   |------------+|
+   |-l, --long  ||
+   |------------+|
+   |-p, --prefix||
+   |------------+|
+   |prefix      ||
+   |------------+|
+   |-s, --short ||
+   +-------------+
+
+   [edit]
+
+                                  Description
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Query
+
+     * kParamChunkLongFormat, kTypeBoolean, true if using long format, false
+       for short format.
+     * kParamChunkCount, kTypeInt, integer representing current chunk count.
+     * kParamChunkNamePrefix, kTypeString, the current chunk prefix.
+
+   [edit]
+
+On Success
+
+   [edit]
+
+Notes
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kIntegerExpected, kIntegerMustBeNonNegative, kMissingOptionArg,
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+   [edit]
+
+During Execution
+
+   kCountGreaterThanMaxChunks, kCountLessThanChunks, kInvalidPrefix
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Chunk-name-format"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 15:58, 1 Mar 2005.
+     * This page has been accessed 23 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

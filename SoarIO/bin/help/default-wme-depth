@@ -1,0 +1,123 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                               Default-wme-depth
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Success
+   5.2 Notes
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   default-wme-depth - Set the level of detail used to print WME's.
+
+   Priority: 3; Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ default-wme-depth [depth]
+
+   [edit]
+
+                                    Options
+
+   +-------------------------+
+   |depth|A positive integer.|
+   +-------------------------+
+
+   [edit]
+
+                                  Description
+
+   Affects print and trace output.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+   Returns the current default wme depth as a int value parameter on query.
+   Returns true if setting is successful.
+
+   [edit]
+
+Notes
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kTooManyArgs, kIntegerMustBePositive
+
+   [edit]
+
+During Execution
+
+   kAgentRequired
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Default-wme-depth"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 20:32, 23 Feb 2005.
+     * This page has been accessed 18 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

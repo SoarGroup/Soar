@@ -1,0 +1,121 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                      Time
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Success
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   time - Use a default system clock timer to record the wall time required
+   while executing a command.
+
+   Priority: 3 ; Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ time command [arguments]
+
+   [edit]
+
+                                    Options
+
+   +-------------------------------------+
+   |command  |The command to execute.    |
+   |---------+---------------------------|
+   |arguments|Optional command arguments.|
+   +-------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+ <result>
+   <arg name="seconds" type="float">proc_time_elapsed</arg>
+   <arg name="seconds" type="float">real_time_elapsed</arg>
+ </result>
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kTooFewArgs
+
+   [edit]
+
+During Execution
+
+   kgettimeofdayFail
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Time"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 16:01, 18 Feb 2005.
+     * This page has been accessed 14 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

@@ -1,0 +1,171 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                    Memories
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Examples
+   6 See Also
+   7 Structured Output
+
+   7.1 On Success
+   7.2 Notes
+
+   8 Error Values
+
+   8.1 During Parsing
+   8.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   memories - Print memory usage for partial matches.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ memories [-cdju] [n]
+ memories production_name
+
+   [edit]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-c, --chunks        |Print memory usage of chunks.                      |
+   |--------------------+---------------------------------------------------|
+   |-d, --default       |Print memory usage of default productions.         |
+   |--------------------+---------------------------------------------------|
+   |-j, --justifications|Print memory usage of justifications.              |
+   |--------------------+---------------------------------------------------|
+   |-u, --user          |Print memory usage of user-defined productions.    |
+   |--------------------+---------------------------------------------------|
+   |production_name     |Print memory usage for a specific production.      |
+   |--------------------+---------------------------------------------------|
+   |n                   |Number of productions to print, sorted by those    |
+   |                    |that use the most memory.                          |
+   +------------------------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   The memories command prints out the internal memory usage for full and
+   partial matches of production instantiations, with the productions using
+   the most memory printed first.
+
+   Memory usage is recorded according to the tokens that are allocated in the
+   rete network for the given production(s).
+
+   With no arguments, the memories command prints memory usage for all
+   productions. If a production_name is specified, memory usage will be
+   printed only for that production. If a positive integer n is given, only n
+   productions will be printed: the n productions that use the most memory.
+
+   Output may be restricted to print memory usage for particular types of
+   productions using the command options.
+
+   [edit]
+
+                                    Examples
+
+   To show how to use the command in context, do this:
+
+ command --option arg
+
+   and possibly explain the results.
+
+   [edit]
+
+                                    See Also
+
+           matches
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+ <result>
+   <arg param="name" type="string">production_name</arg>
+   <arg param="count" type="int">rete_tokens</arg>
+ </result>
+
+   [edit]
+
+Notes
+
+     * Each production listed will have a name/count arg pair.
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs, kIntegerMustBePositive,
+   kNoProdTypeWhenProdName
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kgSKIError, kInvalidProductionType, kProductionNotFound
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Memories"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:12, 17 Feb 2005.
+     * This page has been accessed 19 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

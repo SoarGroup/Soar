@@ -1,0 +1,126 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                Save-backtraces
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Query
+   5.2 Otherwise
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   save-backtraces - Save trace information to explain chunks and
+   justifications.
+
+   Priority: 3; Status: Complete, EvilBackDoor
+
+   [edit]
+
+                                    Synopsis
+
+ save-backtraces [-ed]
+
+   [edit]
+
+                                    Options
+
+   +-----------------------------------------------+
+   |-e, --enable, --on  |Turn explain sysparam on. |
+   |--------------------+--------------------------|
+   |-d, --disable, --off|Turn explain sysparam off.|
+   +-----------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Query
+
+   Value parameter is returned of type boolean, true if sysparam is on, false
+   if off.
+
+   [edit]
+
+Otherwise
+
+   True on success.
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+   [edit]
+
+During Execution
+
+   No errors.
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Save-backtraces"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 22:05, 25 Feb 2005.
+     * This page has been accessed 22 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

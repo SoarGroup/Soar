@@ -1,0 +1,113 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                    Waitsnc
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   waitsnc -- Generate a wait state rather than a state-no-change impasse.
+
+   Priority: 3 ; Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ wait -[e|d]
+
+   [edit]
+
+                                    Options
+
+   +---------------------------------------------------------------------+
+   |-e, --enable, --on  |Turns a state-no-change into a wait state.      |
+   |--------------------+------------------------------------------------|
+   |-d, --disable, --off|Default. A state-no-change generates an impasse.|
+   +---------------------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   waitsnc allows the user to switch to a mode where a state-no-change that
+   would normally generate an impasse (and subgoaling), instead generates a
+   wait state. When issued with no arguments, waitsnc returns its current
+   setting.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+   [edit]
+
+During Execution
+
+   kAgentRequired
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Waitsnc"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 16:01, 18 Feb 2005.
+     * This page has been accessed 19 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

@@ -1,0 +1,139 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                      Dirs
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 See Also
+   6 Structured Output
+
+   6.1 On Success
+   6.2 Notes
+
+   7 Error Values
+
+   7.1 During Parsing
+   7.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   dirs - List the directory stack
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ dirs
+
+   [edit]
+
+                                    Options
+
+   No options.
+
+   [edit]
+
+                                  Description
+
+   This command lists the directory stack. Agents can move through a
+   directory structure by pushing and popping directory names. The dirs
+   command returns the stack.
+
+   The command pushd places a new "agent current directory" on top of the
+   directory stack and cd's to it. The command popd removes the directory at
+   the top of the directory stack and cd's to the previous directory which
+   now appears at the top of the stack.
+
+   [edit]
+
+                                    See Also
+
+           cd dirs home ls pushd popd source topd
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+ <result>
+   <arg param="directory" type="string">directory_string</arg>
+ </result>
+
+   [edit]
+
+Notes
+
+     * Each directory on the stack will be returned as a separate arg.
+     * The current working directory will always be on the stack.
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   No errors during parsing; all arguments are ignored.
+
+   [edit]
+
+During Execution
+
+   No errors.
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Dirs"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:08, 17 Feb 2005.
+     * This page has been accessed 19 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers
