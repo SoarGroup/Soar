@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 
 		if (useSML) {
 			
-			output = pKernel->ProcessCommandLine(cmdline.c_str(), AGENT_NAME);
+			output = pKernel->ExecuteCommandLine(cmdline.c_str(), AGENT_NAME);
 			previousResult = pKernel->GetLastCommandLineResult() ;
 		    cout << output << endl;
 

@@ -120,7 +120,7 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 * @param pAgentName Agent name to apply the command line to.
 * @returns The string form of output from the command.
 *************************************************************/
-const char* Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName)
+const char* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAgentName)
 {
 	AnalyzeXML response;
 	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
@@ -147,7 +147,7 @@ const char* Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAg
 * @returns The XML form of output from the command.
 *          The caller must release this handle.
 *************************************************************/
-ElementXML_Handle Kernel::ProcessCommandLineXML(char const* pCommandLine, char const* pAgentName)
+ElementXML_Handle Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName)
 {
 	return NULL ;
 }
@@ -160,7 +160,7 @@ ElementXML_Handle Kernel::ProcessCommandLineXML(char const* pCommandLine, char c
 * @param pAgentName Agent name to apply the command line to.
 * @returns True if the command succeeds.
 *************************************************************/
-bool Kernel::ProcessCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse)
+bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse)
 {
 	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
 

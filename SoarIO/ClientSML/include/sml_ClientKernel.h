@@ -103,7 +103,7 @@ public:
 	* @param pAgentName Agent name to apply the command line to.
 	* @returns The string form of output from the command.
 	*************************************************************/
-	char const* ProcessCommandLine(char const* pCommandLine, char const* pAgentName) ;
+	char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName) ;
 
 	/*************************************************************
 	* @brief Execute a command line command and return the result
@@ -114,7 +114,7 @@ public:
 	* @returns The XML form of output from the command.
 	*          The caller must release this handle.
 	*************************************************************/
-	ElementXML_Handle ProcessCommandLineXML(char const* pCommandLine, char const* pAgentName) ;
+	ElementXML_Handle ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName) ;
 
 	/*************************************************************
 	* @brief Execute a command line command and return the result
@@ -126,7 +126,7 @@ public:
 	*                     The caller should allocate this and pass it in.
 	* @returns True if the command succeeds.
 	*************************************************************/
-	bool ProcessCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse) ;
+	bool ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse) ;
 
 	/*************************************************************
 	* @brief Get last command line result
