@@ -2,14 +2,16 @@
 ##
 ############################# -*- Mode: Soar -*- #############################
 ## 
-## File            : default/simple-selection.soar
+## File            : default/selection.soar
 ## Author          : John Laird
 ## Created on      : Mon Feb 27 16:15:34 1989  
-## Last Modified On: 28 Sep 1999, 13:43:44
+## Last Modified On: 26 October, 2003
 ## 
-## Contents:     Default productions for selection problem space for Soar 8.2
+## Contents:     Default productions for selection problem space for Soar 8.5
 ##
 ######################################################################
+### Change made for Soar 8.5
+###
 ### Significant Changes made to Convert to Soar 8.2
 ###    1. evaluate-object -> evaluate-operator
 ###    2. Removed other types of evaulate-
@@ -97,7 +99,7 @@ sp {selection*apply*state*evaluation*elaboration
    :default
    (state <s> ^name selection
               ^operator <o>
-						  ^evaluation <e>)
+		  ^evaluation <e>)
    (<o> ^name evaluate-operator
         ^superoperator <ob>)
    (<e> ^superoperator <ob>)
@@ -495,6 +497,7 @@ set warnings off
 sp {evaluate-operator*elaborate*add-attribute-to-duplicate 
    :default
    (state <s> ^duplicates* <d> 
+             -^problem-space.dont-copy <sub-att>
               ^default-state-copy yes)
    (<d> ^<id> <new-id>
       - ^<sub-val>)
@@ -601,7 +604,7 @@ sp {duplicate-desired*replace-old-value
               ^desired <o-copy>)
    (<o-copy> ^duplicate-of* <o>)
    (<o> ^ { <> duplicate-of* <att> } <id>)
-	(<p> - ^dont-copy <att>)
+   (<p> - ^dont-copy <att>)
    -->
    (<o-copy> ^<att> <copy-id>)}
 
