@@ -76,7 +76,7 @@ void cb_tclSoar_NewAgent( soar_callback_agent a,
   soar_agent = theAgent;
 }
   
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -122,7 +122,7 @@ Soar_SetSoarLibrary(Tcl_Interp *interp)
 
 
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -162,7 +162,7 @@ Soar_ReadInitScript(Tcl_Interp *interp)
 
 
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -204,7 +204,7 @@ Soar_MakeRegisterEntry (interp, agentPtr)
 
     return riPtr;
   }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -309,7 +309,7 @@ Soar_DestroyRegisterEntry (riPtrToRemove)
     riPtrPrev = riPtr;
   }
 }
-
+
 
 /*
  *----------------------------------------------------------------------
@@ -342,7 +342,7 @@ int SoarnewsCmd (ClientData clientData,
 
   return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -380,7 +380,7 @@ int VersionCmd (ClientData clientData,
 }
 
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -414,7 +414,7 @@ Soar_InterpDeleteProc(ClientData clientData, Tcl_Interp *interp)
 
 
 
-
+
 /*
  *--------------------------------------------------------------
  *

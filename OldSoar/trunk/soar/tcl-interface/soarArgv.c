@@ -58,7 +58,7 @@ static int ProcessList _ANSI_ARGS_((int * argc, int * argcPtr, char **argv,
 				    char * curArg, Soar_ArgvInfo * infoPtr, 
 				    int *srcIndex));
 static void PrintSoarUsage _ANSI_ARGS_((Soar_ArgvInfo *argTable));
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -268,7 +268,7 @@ Soar_ParseArgv(argcPtr, argv, argTable, flags, srcIndex, dstIndex,
     *options_done = 1;
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -319,7 +319,7 @@ ProcessList(argc, argcPtr, argv, curArg, infoPtr, srcIndex)
   *argcPtr = *argc;
   return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

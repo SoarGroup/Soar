@@ -794,7 +794,7 @@ int QuitCmd (ClientData clientData,
 	init_soarResult(res);
 	soar_cQuit( );
 
-	(void) Tcl_Eval(interp, cmd);
+	(void) Tcl_EvalEx(interp, cmd, -1, 0);
 	return TCL_OK; /* Unreachable, but here to placate the compiler */
 }
 
@@ -1197,7 +1197,7 @@ int WatchCmd (ClientData clientData,
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1255,7 +1255,7 @@ int EchoCmd (ClientData clientData,
 }
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1358,7 +1358,7 @@ int AskCmd (ClientData clientData,
 }
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1991,7 +1991,7 @@ int MonitorCmd (ClientData clientData,
 
 
 /* REW: end   09.15.96 */
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2337,7 +2337,7 @@ int ReplayInputCmd (ClientData clientData,
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2407,7 +2407,7 @@ int ReteNetCmd (ClientData clientData,
 
 
 
-
+
 void Soar_InstallCommands (agent * the_agent)
 {
   install_tcl_soar_cmd(the_agent, "add-wme",             AddWmeCmd);

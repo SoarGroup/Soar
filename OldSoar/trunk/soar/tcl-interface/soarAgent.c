@@ -65,7 +65,7 @@ extern int agent_counter;
 
 
 extern Tcl_Interp *tcl_soar_agent_interpreters[MAX_SIMULTANEOUS_AGENTS];
-
+
 /* --------------------------------------------------------------------
                                 Tcl 
 

@@ -52,7 +52,7 @@ char *Mode_0_1_2_3_Check(ClientData clientData, Tcl_Interp *interp,
 char *soar8Mode_Attr_Check(ClientData clientData, Tcl_Interp *interp,
 			   const char *name1, const char *name2, int flags);
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -179,7 +179,7 @@ Soar_LinkInterpVars2Agent(new_interp, new_agent)
 #endif
 
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -216,7 +216,7 @@ PositiveIntegerCheck(ClientData clientData, Tcl_Interp *interp,
     return NULL;
   }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -252,7 +252,7 @@ Mode_0_1_2_3_Check(ClientData clientData, Tcl_Interp *interp,
     return NULL;
   }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

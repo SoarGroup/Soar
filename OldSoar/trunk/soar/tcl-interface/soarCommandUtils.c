@@ -91,7 +91,7 @@ install_tcl_soar_cmd (agent * the_agent,
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -126,7 +126,7 @@ soar_callback_to_tcl (soar_callback_agent the_agent,
       control_c_handler(0);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -191,7 +191,7 @@ soar_input_callback_to_tcl (soar_callback_agent the_agent,
 
  Tcl_DStringFree(&command);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -354,7 +354,7 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
 
 
 
-
+
 Soar_TextWidgetPrintData *
 Soar_MakeTextWidgetPrintData (Tcl_Interp * interp, const char * widget_name)
 {
@@ -367,7 +367,7 @@ Soar_MakeTextWidgetPrintData (Tcl_Interp * interp, const char * widget_name)
 
   return data;
 }
-
+
 extern void Soar_FreeTextWidgetPrintData (Soar_TextWidgetPrintData * data)
 {
   free((void *) data->text_widget);
