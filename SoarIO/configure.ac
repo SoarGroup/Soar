@@ -9,6 +9,8 @@ AC_CONFIG_SRCDIR([ConnectionSML/src/sml_AnalyzeXML.cpp])
 AM_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr/local/soar)
 
+AC_LIBTOOL_DLOPEN
+
 # Checks for programs.
 AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL

@@ -26,12 +26,12 @@
 
 #ifdef _WIN32
 #include "Windows.h"	// Needed for load library
-
 #undef SendMessage		// Windows defines this as a macro.  Yikes!
-#else
+
+#elif defined(HAVE_DLFCN_H)
 #include <dlfcn.h>      // Needed for dlopen and dlsym
 #define GetProcAddress dlsym
-#define LINUX_DIRECT
+
 #endif // _WIN32
 
 using namespace sml ;
@@ -122,23 +122,24 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 
 #ifdef _WIN32
 	// The windows shared library
-	libraryName.append(".dll") ;
-
+	libraryName = libraryName + ".dll";
+	
 	// Now load the library itself.
 	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
-#else
-#ifdef LINUX_DIRECT
-    libraryName.insert(0, "lib");
-    libraryName.append(".so");
-    void* hLibrary = dlopen(libraryName.c_str(), RTLD_LAZY);
-    if(hLibrary == NULL) {
-        cerr << "Error loading library " << libraryName << endl;
-        cerr << "Details: " << dlerror();
-    }
-#endif
+
+#elif defined(HAVE_DLFCN_H)
+	std::string newLibraryName = "lib" + libraryName + ".so";
+	void* hLibrary = 0;
+	hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+	if (!hLibrary) {
+		// Try again with mac extention
+		newLibraryName = "lib" + libraryName + ".dylib";
+		hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+	}
+	// FIXME error details can be returned by a call to dlerror()
 #endif
 
-#if defined(LINUX_DIRECT) || defined(_WIN32)
+#if defined(HAVE_DLFCN_H) || defined(_WIN32)
 	if (!hLibrary)
 	{
 		SetError(Error::kLibraryNotFound) ;
