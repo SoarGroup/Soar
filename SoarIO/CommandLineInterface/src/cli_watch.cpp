@@ -39,9 +39,6 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	int options = 0;
 	int settings = 0;
 	int learnSetting = 0;

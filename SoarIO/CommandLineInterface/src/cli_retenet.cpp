@@ -21,9 +21,6 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	bool save = false;
 	bool load = false;
 	std::string filename;

@@ -19,9 +19,6 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	bool self = false;
 
 	for (;;) {

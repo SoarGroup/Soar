@@ -272,6 +272,8 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::st
 	vector<string> argv;
 	// Parse command:
 	if (Tokenize(commandLine, argv) == -1)  return false;	// Parsing failed
+
+	// Execute the command
 	return DoCommandInternal(pAgent, argv);
 }
 
@@ -300,6 +302,9 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	// Just in case...
 	if (!pFunction) return m_Error.SetError(CLIError::kNoCommandPointer); // Very odd, should be set in BuildCommandMap
 	
+	// Initialize GetOpt
+	m_pGetOpt->Initialize();
+
 	// Make the call
 	return (this->*pFunction)(pAgent, argv);
 }

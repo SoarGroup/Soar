@@ -27,9 +27,6 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	int wmeDetail = 0;
 	unsigned int matches = OPTION_MATCHES_ASSERTIONS_RETRACTIONS;
 

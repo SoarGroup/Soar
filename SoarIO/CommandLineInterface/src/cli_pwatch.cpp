@@ -25,12 +25,9 @@ bool CommandLineInterface::ParsePWatch(gSKI::IAgent* pAgent, std::vector<std::st
 		{"disable",	0, 0, 'd'},
 		{"enable",	0, 0, 'e'},
 		{"off",		0, 0, 'd'},
-		{"onn",		0, 0, 'e'},
+		{"on",		0, 0, 'e'},
 		{0, 0, 0, 0}
 	};
-
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
 
 	bool setting = true;
 	bool query = true;

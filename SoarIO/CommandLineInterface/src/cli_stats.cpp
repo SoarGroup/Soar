@@ -22,9 +22,6 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	unsigned int options = 0;
 
 	for (;;) {

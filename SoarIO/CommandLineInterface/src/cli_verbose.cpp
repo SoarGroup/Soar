@@ -25,9 +25,6 @@ bool CommandLineInterface::ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::s
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	bool setting = false;
 	bool query = true;
 

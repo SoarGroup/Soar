@@ -20,9 +20,6 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	bool query = true;
 	bool soar8 = true;
 

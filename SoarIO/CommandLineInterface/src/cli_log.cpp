@@ -29,9 +29,6 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	OPTION_LOG operation = OPTION_LOG_NEW;
 
 	for (;;) {

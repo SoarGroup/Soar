@@ -19,6 +19,11 @@ int		GetOpt::ordering;
 int		GetOpt::argc = 0;
 char**	GetOpt::argv = 0;
 
+void GetOpt::Initialize() {
+	optind = 0;
+	opterr = 0;
+}
+
 char* GetOpt::my_index (const char *str, int chr)
 {
 	while (*str)

@@ -25,6 +25,8 @@ public:
 
 	int GetOpt_Long(std::vector<std::string>& argvector, const char* shortopts, const struct option* longopts, int* longind);
 
+	void Initialize();
+
 	static char *optarg;
 	static int optind;
 	static int opterr;

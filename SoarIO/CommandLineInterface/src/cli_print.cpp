@@ -34,9 +34,6 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	int depth = pAgent->GetDefaultWMEDepth();
 	unsigned int options = 0;
 

@@ -25,9 +25,6 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 		{0, 0, 0, 0}
 	};
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
 	bool print = true;
 	bool setting = false;	// enable or disable timers, default of false ignored
 
