@@ -1,15 +1,62 @@
 AUTOMAKE_OPTIONS = gnu
-noinst_LTLIBRARIES = libConnectionSML.la
-libConnectionSML_la_SOURCES = sml_Connection.cpp          sml_StringOps.cpp   sml_TagWme.cpp           sock_OSspecific.h   thread_Lock.cpp \
-Makefile            sml_ElementXML.cpp          sml_TagArg.cpp      sock_Check.h             sock_Socket.cpp     thread_OSspecific.cpp \
-Makefile.am         sml_EmbeddedConnection.cpp  sml_TagCommand.cpp  sock_ClientSocket.cpp    sock_SocketLib.cpp  thread_Thread.cpp \
-Makefile.in         sml_MessageSML.cpp          sml_TagError.cpp    sock_Debug.cpp           sock_Utils.cpp \
-sml_AnalyzeXML.cpp  sml_Names.cpp               sml_TagName.cpp     sock_ListenerSocket.cpp  sock_Utils.h \
-sml_ArgMap.cpp      sml_RemoteConnection.cpp    sml_TagResult.cpp   sock_OSspecific.cpp      thread_Event.cpp \
-sml_ElementXML.h          sml_Names.h             sml_TagError.h       sock_Debug.h           thread_Event.h \
-EmbeddedSMLInterface.h  sml_EmbeddedConnection.h  sml_RemoteConnection.h  sml_TagName.h        sock_ListenerSocket.h  thread_Lock.h \
-sml_AnalyzeXML.h        sml_Errors.h              sml_StringOps.h         sml_TagResult.h      sock_Socket.h          thread_OSspecific.h \
-sml_ArgMap.h            sml_Handles.h             sml_TagArg.h            sml_TagWme.h         sock_SocketHeader.h    thread_Thread.h \
-sml_Connection.h        sml_MessageSML.h          sml_TagCommand.h        sock_ClientSocket.h  sock_SocketLib.h
+lib_LTLIBRARIES = libConnectionSML.la
+libConnectionSML_la_SOURCES = \
+EmbeddedSMLInterface.h\
+sml_AnalyzeXML.h\
+sml_ArgMap.h\
+sml_Connection.h\
+sml_ElementXML.h\
+sml_EmbeddedConnection.h\
+sml_Errors.h\
+sml_Handles.h\
+sml_MessageSML.h\
+sml_Names.h\
+sml_RemoteConnection.h\
+sml_StringOps.h\
+sml_TagArg.h\
+sml_TagCommand.h\
+sml_TagError.h\
+sml_TagName.h\
+sml_TagResult.h\
+sml_TagWme.h\
+sock_ClientSocket.h\
+sock_Debug.h\
+sock_ListenerSocket.h\
+sock_Socket.h\
+sock_SocketHeader.h\
+sock_SocketLib.h\
+thread_Event.h\
+thread_Lock.h\
+thread_OSspecific.h\
+thread_Thread.h\
+sml_AnalyzeXML.cpp\
+sml_ArgMap.cpp\
+sml_Connection.cpp\
+sml_ElementXML.cpp\
+sml_EmbeddedConnection.cpp\
+sml_MessageSML.cpp\
+sml_Names.cpp\
+sml_RemoteConnection.cpp\
+sml_StringOps.cpp\
+sml_TagArg.cpp\
+sml_TagCommand.cpp\
+sml_TagError.cpp\
+sml_TagName.cpp\
+sml_TagResult.cpp\
+sml_TagWme.cpp\
+sock_Check.h\
+sock_ClientSocket.cpp\
+sock_Debug.cpp\
+sock_ListenerSocket.cpp\
+sock_OSspecific.cpp\
+sock_OSspecific.h\
+sock_Socket.cpp\
+sock_SocketLib.cpp\
+sock_Utils.cpp\
+sock_Utils.h\
+thread_Event.cpp\
+thread_Lock.cpp\
+thread_OSspecific.cpp\
+thread_Thread.cpp
 INCLUDES = -I../.. -I../include -I../../ElementXML/include
-CXXFLAGS = -Wall -Werror
+CXXFLAGS = -Wall -g

@@ -1,2 +1,4 @@
 AUTOMAKE_OPTIONS = gnu
 SUBDIRS = src
+#CXXFLAGS = -Wall -Werror
+CXXFLAGS = -Wall
