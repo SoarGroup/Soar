@@ -124,7 +124,7 @@ Soar_PrintToTclProc (the_agent, data, call_data)
 
 	char buf[1024];
 	/*    printf("args:   %s<>%s\n", print_data->text_widget, (char*) call_data); */
-	sprintf(buf, "%s \"%s\" ", print_data->text_widget, (char*) call_data);
+	sprintf(buf, "%s {%s} ", print_data->text_widget, (char*) call_data);
 	/*    printf("here's the buf: >> %s\nendbuf\n",buf);  */
 
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], buf);
