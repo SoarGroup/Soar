@@ -161,8 +161,24 @@ void mark_slot_as_changed(slot * s)
             allocate_with_pool(&current_agent(dl_cons_pool), &dc);
             dc->item = s;
             s->changed = dc;
+			/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+            s->num_changes = 1;
+#endif
+/* end MRJ 5/23/01 */
             insert_at_head_of_dll(current_agent(changed_slots), dc, next, prev);
         }
+		/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+        else
+        {
+            if(s->num_changes < DECAY_HISTORY_SIZE)
+            {
+                s->num_changes++;
+            }
+        } 
+#endif
+/* end MRJ 5/23/01 */
     }
 }
 

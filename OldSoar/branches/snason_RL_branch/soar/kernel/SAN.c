@@ -140,7 +140,7 @@ void record_for_RL()
 
 	  record = current_agent(records);
    	  record->op = w->value;
-	  symbol_add_ref(record->op);       // SAN ??
+	  // symbol_add_ref(record->op);       // SAN ??
 	  record->previous_Q = record->next_Q;
 
 	  for (pref = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
@@ -151,7 +151,7 @@ void record_for_RL()
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  if ((prod->times_applied % 10 == 9) && (current_agent(d_cycle_count) < 0)){
+			  if ((prod->times_applied % 10 == 9) && (current_agent(d_cycle_count) >= 0)){
 				  // prod->times_applied = 0;
 				  prod = specify_production(ist);
 				  if (prod){

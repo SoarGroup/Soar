@@ -216,6 +216,180 @@ void print_current_learn_settings(void)
 
 }
 
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * print_current_decay_settings --
+ *
+ *	This procedure prints the current decay status.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Prints the current decay removal list
+ *
+ *----------------------------------------------------------------------
+ */
+
+void print_current_decay_settings(void)
+{
+    int first_spot, last_spot, i;
+    wme_decay_element *print_this;
+
+    print ("Current decay settings:\n");
+    print ("   %s\n", current_agent(sysparams)[WME_DECAY_SYSPARAM] ? "-on" : "-off");
+
+    print("   Decay exponent set to %f \n", (double) (- current_agent(sysparams)[WME_DECAY_EXPONENT_SYSPARAM] / DECAY_EXPONENT_DIVISOR));
+
+    switch(current_agent(sysparams)[WME_DECAY_WME_CRITERIA_SYSPARAM])
+    {
+        case DECAY_WME_CRITERIA_O_SUPPORT_ONLY:
+            print("   Only o-supported WMEs are being activated.\n");
+            break;
+        case DECAY_WME_CRITERIA_O_ARCH:
+            print("   O-supported and architectural WMEs are being activated.\n");
+            break;
+        case DECAY_WME_CRITERIA_ALL:
+            print("   All WMEs in working memory are being activated.\n");
+            break;
+    }
+    
+    if(current_agent(sysparams)[WME_DECAY_ALLOW_FORGETTING_SYSPARAM])
+    {
+        print("   Forgotten WMEs will be removed from working memory.\n");
+    }
+    else
+    {
+        print("   Forgotten WMEs will NOT be removed from working memory.\n");
+    }
+
+    switch(current_agent(sysparams)[WME_DECAY_I_SUPPORT_MODE_SYSPARAM])
+    {
+        case DECAY_I_SUPPORT_MODE_NONE:
+            print("   I-supported WMEs will not affect activation levels.\n");
+            break;
+        case DECAY_I_SUPPORT_MODE_NO_CREATE:
+            print("   I-supported WMEs will boost supporting WMEs except when first created.\n");
+            break;
+        case DECAY_I_SUPPORT_MODE_UNIFORM:
+            print("   I-supported WMEs will always boost supporting WMEs when referenced.\n");
+            break;
+    }
+    
+    if(current_agent(sysparams)[WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM])
+    {
+        print("   Instantiations will boost WMEs until retraction.\n");
+    }
+    else
+    {
+        print("   Instantiations will only boost WMEs on the cycle they are created.\n");
+    }
+    
+    switch(current_agent(sysparams)[WME_DECAY_PRECISION_SYSPARAM])
+    {
+        case DECAY_PRECISION_HIGH:
+            print("   WME activation levels will be calculated with high precision (slower).\n");
+            break;
+        case DECAY_PRECISION_LOW:
+            print("   WME activation levels will be calculated with low precision (faster).\n");
+            break;
+    }
+
+    if(current_agent(sysparams)[WME_DECAY_LOGGING_SYSPARAM])
+    {
+        print("   WME activation levels are being logged.\n");
+    }
+    else
+    {
+        print("   WME activation levels are not being logged.\n");
+    }
+    
+    
+    
+#ifndef NO_TIMING_STUFF
+    print ("\nTiming Information:\n");
+    
+    print("   Time spent on decay: %11.3f secs. \n", timer_value(&current_agent(total_decay_time)));
+    print("          for new wmes: %11.3f secs. \n", timer_value(&current_agent(total_decay_new_wme_time)));
+    print("     for move / remove: %11.3f secs. \n", timer_value(&current_agent(total_decay_move_remove_time)));
+    print("               for rhs: %11.3f secs. \n", timer_value(&current_agent(total_decay_rhs_time)));
+    print("               for lhs: %11.3f secs. \n", timer_value(&current_agent(total_decay_lhs_time)));
+    print("        for deallocate: %11.3f secs. \n", timer_value(&current_agent(total_decay_deallocate_time)));
+    print("          deallocate 2: %11.3f secs. \n", timer_value(&current_agent(total_decay_deallocate_time_2)));
+
+#endif
+
+
+#ifdef MEMORY_POOL_STATS
+    print ("\nUsing %i slots in the memory pool \n", current_agent(decay_element_pool).used_count);
+#endif
+       
+    if (current_agent(sysparams)[WME_DECAY_SYSPARAM])
+    {
+        first_spot = current_agent(current_decay_timelist_element)->position;
+        last_spot = (first_spot - 1 + DECAY_ARRAY_SIZE) % DECAY_ARRAY_SIZE;
+
+        print("\nCurrently activated WMEs (cycle %i): \n", current_agent(current_decay_timelist_element)->time);
+        print("   forget on   decay  kernel                         \n");
+        print("     cycle      refs   refs            WME           \n");
+        print("   ---------   -----  ------  -----------------------\n");
+        
+        i = first_spot;
+        while(i != last_spot)
+        {
+            print_this = current_agent(decay_timelist[i]).first_decay_element;
+
+            while(print_this != NIL)
+            {
+                int j;
+                int num_refs = print_this->num_references;
+                
+                //If the reference count has already been set to zero, we'll
+                //need to calculate how many times this WME was referenced this
+                //cycle using the boost_history.
+                if (num_refs == 0)
+                {
+                    for(j = 0; j < DECAY_HISTORY_SIZE; j++)
+                    {
+                        if (print_this->boost_history[j] == (unsigned long)current_agent(current_decay_timelist_element)->time)
+                        {
+                            num_refs++;
+                        }
+                    }
+                }
+                
+                print("   %8i   %5i  %6i ", current_agent(decay_timelist[i]).time, num_refs, print_this->this_wme->reference_count);
+                print_with_symbols("  (%y ^%y %y) ", print_this->this_wme->id, print_this->this_wme->attr, print_this->this_wme->value);
+                if (print_this->this_wme->preference == NIL)
+                {
+                    print(" architectural\n");
+                }
+                else if (print_this->this_wme->preference->o_supported)
+                {
+                    print(" o-supported\n");
+                }
+                else
+                {
+                    print(" i-supported\n");
+                }
+                    
+                print_this = print_this->next;
+            }//while
+            
+            i = (i + 1) % DECAY_ARRAY_SIZE;
+        }//while
+        print("\n\n");
+    }//if
+  
+}//print_current_decay_settings
+
+#endif //SOAR_DECAY
+/* end MRJ 5/23/01 */
+
 /*
  *----------------------------------------------------------------------
  *

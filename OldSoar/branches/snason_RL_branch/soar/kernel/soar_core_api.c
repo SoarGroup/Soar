@@ -920,6 +920,12 @@ long soar_cAddWme(const char *szId, const char *szAttr, const char *szValue,
     insert_at_head_of_dll(w->id->id.input_wmes, w, next, prev);
     add_wme_to_wm(w);
 
+	//:AMN: 12 Dec 02
+#ifdef SOAR_DECAY
+  decay_update_new_wme(w, 1);
+#endif
+//end :AMN: 12 Dec 02
+
 #ifdef USE_CAPTURE_REPLAY
     /* KJC 11/99 begin: */
     /* if input capturing is enabled, save any input wmes to capture file */
@@ -1530,6 +1536,108 @@ void soar_cSetLearning( enum soar_apiLearningSetting setting ) {
   }
 
 }
+
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * soar_cSetdecay
+ *
+ *       Adjust the decay settings
+ *       Note that the exp argument is only used in the case of 
+ *       DECAY_EXPONENT.  Also, a smaller exponent means a longer time
+ *       until wmes decay.
+ *
+ *----------------------------------------------------------------------
+ */
+void soar_cSetDecay( enum soar_apiDecaySetting setting, long exp )
+{
+  int first_spot, last_spot, i;
+  wme_decay_element *remove_this;
+
+  switch( setting )
+  {
+    
+      case DECAY_ON:
+          // okay, this is questionable, if we reinit decay, then all the data
+          // structures will be set up correctly, but I think that there may be
+          // a memory leak where the old memory pool was... think about
+          // it... only call init if decay off really no need to set the
+          // sysparam either... whatever
+          if (!(current_agent(sysparams)[WME_DECAY_SYSPARAM]))
+          {
+              decay_init();
+          }
+
+          set_sysparam (WME_DECAY_SYSPARAM, TRUE); 
+          break;
+          
+      case DECAY_OFF:
+          // if decay was on, then need to set the decay_elements for all of the
+          // wmes to NIL, otherwise there will be dangling pointers if decay is
+          // turned back on.
+          if (current_agent(sysparams)[WME_DECAY_SYSPARAM])
+          {
+              first_spot = current_agent(current_decay_timelist_element)->position;
+              last_spot = (first_spot - 1 + DECAY_ARRAY_SIZE) % DECAY_ARRAY_SIZE;
+
+              i = first_spot;
+              while(i != last_spot)
+              {
+                  remove_this = current_agent(decay_timelist[i]).first_decay_element;
+                  while(remove_this != NIL)
+                  {
+                      remove_this->this_wme->decay_element = NIL;
+                      remove_this->this_wme->has_decay_element = FALSE;
+                      //%%%maybe should free up the memory pool here?... -MRJ
+                      remove_this = remove_this->next;
+                  }
+                  i = (i + 1) % DECAY_ARRAY_SIZE;
+              }
+          }
+          set_sysparam (WME_DECAY_SYSPARAM, FALSE); 
+          break;
+      case DECAY_EXPONENT:
+          // okay, store the decay exponent as a sysparam, which is really
+          // 1000 * the true decay exponent (sysparams are long, not double)
+          set_sysparam(WME_DECAY_EXPONENT_SYSPARAM, exp);
+          // now, this param can only be set while decay off, so init_decay
+          // will recalc everything right when turned back on...
+          break;
+
+      case DECAY_CRITERIA:
+          set_sysparam(WME_DECAY_WME_CRITERIA_SYSPARAM, exp);
+          break;
+          
+      case DECAY_FORGETTING:
+          set_sysparam(WME_DECAY_ALLOW_FORGETTING_SYSPARAM, exp);
+          break;
+          
+      case DECAY_I_SUPPORT_MODE:
+          set_sysparam(WME_DECAY_I_SUPPORT_MODE_SYSPARAM, exp);
+          break;
+      case DECAY_PERSISTENT_ACTIVATION:
+          set_sysparam(WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM, exp);
+          break;
+      case DECAY_PRECISION:
+          set_sysparam(WME_DECAY_PRECISION_SYSPARAM, exp);
+          break;
+      case DECAY_LOGGING:
+          if (current_agent(sysparams)[WME_DECAY_LOGGING_SYSPARAM])
+          {
+              FILE *f = (FILE *)(current_agent(sysparams)[WME_DECAY_LOGGING_SYSPARAM]);
+              fclose(f);
+          }
+          set_sysparam(WME_DECAY_LOGGING_SYSPARAM, exp);
+          break;
+  }//switch
+
+}//soar_cSetDecay
+
+#endif //SOAR_DECAY
+/* end MRJ 5/23/01 */
 
 /*
  *----------------------------------------------------------------------

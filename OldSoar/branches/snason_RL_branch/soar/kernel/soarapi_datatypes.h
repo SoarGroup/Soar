@@ -131,6 +131,22 @@ enum soar_apiLearningSetting {
 };
 
 /*
+ * \brief The agent's decay setting
+ *
+ */
+enum soar_apiDecaySetting {
+	DECAY_ON,
+	DECAY_OFF,
+	DECAY_EXPONENT,
+	DECAY_CRITERIA,
+	DECAY_FORGETTING,
+	DECAY_I_SUPPORT_MODE,
+	DECAY_PERSISTENT_ACTIVATION,
+	DECAY_PRECISION,
+	DECAY_LOGGING
+};
+
+/*
  * \brief  The slot type
  *
  */
