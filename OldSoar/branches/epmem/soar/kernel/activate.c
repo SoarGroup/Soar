@@ -489,6 +489,127 @@ void decay_reference_wme(wme *w)
 
 
 /* ============================================================================
+   dcah_helper                       *RECURSIVE*
+
+   This function recursively discovers the activated WMEs that led to
+   the creation of a given WME.  When found, their boost histories are added
+   to the history in the given decay element.
+
+   This funciton returns the number of supporting WMEs found.
+
+   %%%BUG:  Does I need to use a transitive closure check here?
+   
+   Arguments:
+       w        - wme to examine
+       el       - decay element to fill in the boost history of
+
+   Created:  11 Mar 2004
+   ========================================================================= */
+int dcah_helper(wme *w, wme_decay_element *el)
+{
+    preference *pref = w->preference;
+    instantiation *inst;
+    condition *cond;
+    wme *cond_wme;
+    int num_cond_wmes = 0;
+    int i,j;
+
+    if (pref == NIL) return 0;
+    
+    inst = pref->inst;
+    cond = inst->top_of_instantiated_conditions;
+    while(cond != NIL)
+    {
+        if (cond->type == POSITIVE_CONDITION)
+        {
+             cond_wme = cond->bt.wme;
+             if (cond_wme->has_decay_element)
+             {
+                 if (!cond_wme->decay_element->just_created)
+                 {
+                     i = DECAY_HISTORY_SIZE - 1;
+                     for(j = cond_wme->decay_element->history_count - 1; j >= 0; j--)
+                     {
+                         el->boost_history[i]
+                             += cond_wme->decay_element->boost_history[j];
+                         
+                         i--;
+                     }
+                     num_cond_wmes++;
+                 }
+             }//if
+             else
+             {
+                 num_cond_wmes += dcah_helper(cond_wme, el);
+             }//else
+        }//if
+        
+        cond = cond->next;
+    }//while
+
+    return num_cond_wmes;
+    
+}//dcah_helper
+
+/* ============================================================================
+   decay_calculate_average_history()
+
+   This function examines the production instantiation that led to the
+   creation of a WME.  The decay history of each WME in that
+   instantiation is examined and averaged.  This new average boost
+   history is inserted into the given decay element.
+
+   If the WME is not o-supported or no conditions are found that meet
+   the criteria (positive conditions on wmes that have a decay
+   history) then an empty history is assigned.
+
+   Arguments:
+       w        - wme to examine
+       el       - decay element to fill in the boost history of
+
+   Created:  11 Mar 2004
+   ========================================================================= */
+void decay_calculate_average_history(wme *w, wme_decay_element *el)
+{
+    preference *pref = w->preference;
+    int i;
+    int num_cond_wmes = 0;      //Number of wmes in the preference
+    
+    el->history_count = 0;
+    if (pref == NIL) return;
+
+    for(i = 0; i < DECAY_HISTORY_SIZE; i++)
+    {
+        el->boost_history[i] = 0;
+    }
+
+    num_cond_wmes = dcah_helper(w, el);
+
+    if (num_cond_wmes > 0)
+    {
+        //Calculate the average
+        for(i = 0; i < DECAY_HISTORY_SIZE; i++)
+        {
+            el->boost_history[i] /= num_cond_wmes;
+        }
+
+        //Determine the actual length of the history
+        for(i = DECAY_HISTORY_SIZE - 1; i >= 0; i--)
+        {
+            if (el->boost_history[i] > 0) el->history_count++;
+        }
+
+        //Compress the array values into the left hand side of the array
+        for(i = 0; i < el->history_count; i++)
+        {
+            int gap = DECAY_HISTORY_SIZE - el->history_count;
+            el->boost_history[i] = el->boost_history[i + gap];
+        }
+    }//if
+
+}//decay_calculate_average_history()
+
+/* ============================================================================
    decay_update_new_wme()
 
    This function adds a decay element to an existing WME.  It is called whenever
@@ -581,6 +702,10 @@ void decay_update_new_wme(wme *w, int num_refs)
     temp_el->history_count = 0;
     temp_el->this_wme = w;
     temp_el->num_references = num_refs;
+
+    //Give the WME an initial history based upon the WMEs that were
+    //tested to create it.
+    decay_calculate_average_history(w, temp_el);
 
     //Initialize the activation log
     if (current_agent(sysparams)[WME_DECAY_LOGGING_SYSPARAM])
