@@ -253,9 +253,6 @@
 				<File
 					RelativePath=".\src\cli_watch.cpp">
 				</File>
-				<File
-					RelativePath=".\src\cli_wmes.cpp">
-				</File>
 			</Filter>
 		</Filter>
 		<Filter

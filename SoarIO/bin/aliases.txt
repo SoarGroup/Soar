@@ -28,3 +28,4 @@ run -e 1 e
 stop-soar stop
 stop-soar interrupt
 watch w
+watch -w 1 wmes

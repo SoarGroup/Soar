@@ -46,8 +46,7 @@ cli_time.cpp\
 cli_timers.cpp\
 cli_version.cpp\
 cli_warnings.cpp\
-cli_watch.cpp\
-cli_wmes.cpp
+cli_watch.cpp
 
 INCLUDES = -I../../../gSKI/include -I../../ElementXML/include -I../../ConnectionSML/include -I../include
 CXXFLAGS = $(SOAR_CXXFLAGS)
