@@ -12,6 +12,8 @@
 #ifndef SML_KERNEL_H
 #define SML_KERNEL_H
 
+#include <string>
+
 #include "sml_ObjectMap.h"
 
 namespace sml {
@@ -28,6 +30,7 @@ protected:
 
 	Connection*			m_Connection ;
 	ObjectMap<Agent*>	m_AgentMap ;
+	std::string			m_CommandLineResult;
 
 public:
 	Kernel(Connection* pConnection);
@@ -67,12 +70,15 @@ public:
 	*
 	* @param pCommandLine Command line string to process.
 	* @param pAgentName Agent name to apply the command line to.
-	* @param pResult Buffer to store the NULL-terminated result in.
-	*				 If NULL, ignored.  Result will be truncated if
-	*				 buffer is too small.
-	* @param resultSize Size of the result buffer
 	*************************************************************/
-	bool ProcessCommandLine(char const* pCommandLine, char const* pAgentName, char* pResult, size_t resultSize) ;
+	bool ProcessCommandLine(char const* pCommandLine, char const* pAgentName) ;
+
+	/*************************************************************
+	* @brief Get last command line result
+	*
+	* @returns A pointer to the string result.
+	*************************************************************/
+	const char* GetLastCommandLineResult();
 };
 
 }//closes namespace

@@ -59,7 +59,6 @@ int main(int argc, char** argv)
 
 	// Simple command line client that just uses CommandLineInterface directly
 	string cmdline;
-	string result;
 	char input;
 	bool previousResult = true;
 	bool process;
@@ -124,13 +123,12 @@ int main(int argc, char** argv)
 
 		if (useSML) {
 			
-			std::string result; 
-			previousResult = pKernel->ProcessCommandLine(cmdline.c_str(), AGENT_NAME, &result);
-			if (result.length()) {
-				cout << result << endl;
+			previousResult = pKernel->ProcessCommandLine(cmdline.c_str(), AGENT_NAME);
+			if (pKernel->GetLastCommandLineResult()) {
+				cout << pKernel->GetLastCommandLineResult() << endl;
 			}
 
-			if (result == "Goodbye.") {
+			if (string(pKernel->GetLastCommandLineResult()) == "Goodbye.") {
 				break;
 			}
 

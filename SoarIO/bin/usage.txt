@@ -1,0 +1,71 @@
+add-wme
+Usage:	add-wme
+***
+cd
+Usage:	cd [directory]
+***
+echo
+Usage:	echo [string]
+***
+excise
+Usage:	excise production_name
+	excise -[acdtu]
+***
+init-soar
+Usage:	init-soar
+***
+learn
+Usage:	learn [-l]
+	learn -[d|e|E|o][ab]
+***
+log
+Usage:	log [filename]
+	log -d
+***
+ls
+Usage:	ls
+***
+multi-attributes
+Usage:	multi-attributes [attribute [n]]
+***
+popd
+Usage:	popd
+***
+print
+Usage:	print [-fFin] production_name
+	print -[a|c|D|j|u][fFin]
+	print [-i] [-d <depth>] identifier|timetag|pattern
+	print -s[oS]
+***
+pushd
+Usage:	pushd directory
+***
+pwd
+Usage:	pwd
+***
+quit
+Usage:	quit
+***
+run
+Usage:	run [count]
+	run -[d|e|p][fs] [count]
+	run -[S|o|O][fs] [count]
+***
+source
+Usage:	source filename
+***
+sp
+Usage:	sp { production }
+***
+stop-soar
+Usage:	stop-soar [-s] [reason_string]
+***
+time
+Usage:	time command [arguments]
+***
+watch
+Usage:	watch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d 
+<switch>] [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>]
+[-p <switch>] [-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W 
+<detail>]
+***

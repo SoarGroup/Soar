@@ -1,6 +1,10 @@
 #include "cli_Constants.h"
 
+#include <iostream>
+#include <fstream>
+
 using namespace cli;
+using namespace std;
 
 char const* Constants::kCLISyntaxError		= "Command syntax error.\n";
 
@@ -27,29 +31,49 @@ char const* Constants::kCLISP				= "sp";
 char const* Constants::kCLIStopSoar			= "stop-soar";
 char const* Constants::kCLITime				= "time";
 char const* Constants::kCLIWatch			= "watch";
-char const* Constants::kCLIWatchWMEs		= "watch-wmes";
 
-char const* Constants::kCLIAddWMEUsage				= "Usage:\tadd-wme";
-char const* Constants::kCLICDUsage					= "Usage:\tcd [directory]";
-char const* Constants::kCLIEchoUsage				= "Usage:\techo [string]";
-char const* Constants::kCLIExciseUsage				= "Usage:\texcise production_name\n\texcise -[acdtu]";
-char const* Constants::kCLIInitSoarUsage			= "Usage:\tinit-soar";
-char const* Constants::kCLILearnUsage				= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
-char const* Constants::kCLILogUsage					= "Usage:\tlog [filename]\n\tlog -d";
-char const* Constants::kCLILSUsage					= "Usage:\tls";
-char const* Constants::kCLIMultiAttributesUsage		= "Usage:\tmulti-attributes";
-char const* Constants::kCLIPopDUsage				= "Usage:\tpopd";
-char const* Constants::kCLIPrintUsage				= "Usage:\tprint [-fFin] production_name\n\tprint -[a|c|D|j|u][fFin]\n\tprint [-i] \
-[-d <depth>] identifier|timetag|pattern\n\tprint -s[oS]";
-char const* Constants::kCLIPushDUsage				= "Usage:\tpushd directory";
-char const* Constants::kCLIPWDUsage					= "Usage:\tpwd";
-char const* Constants::kCLIQuitUsage				= "Usage:\tquit";
-char const* Constants::kCLIRunUsage					= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
-char const* Constants::kCLISourceUsage				= "Usage:\tsource filename";
-char const* Constants::kCLISPUsage					= "Usage:\tsp { production }";
-char const* Constants::kCLIStopSoarUsage			= "Usage:\tstop-soar [-s] [reason_string]";
-char const* Constants::kCLITimeUsage				= "Usage:\ttime command [arguments]";
-char const* Constants::kCLIWatchUsage				= "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
-[-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>] [-p <switch>] \
-[-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W <detail>]";
-char const* Constants::kCLIWatchWMEsUsage			= "Usage:\twatch-wmes –[a|r] –t <type> pattern\n\twatch-wmes –[l|R] [–t <type>]";
+Constants::Constants() {
+	ifstream usageFile ("usage.txt");
+
+	m_UsageFileAvailable = usageFile ? true : false;
+
+	if (m_UsageFileAvailable) {
+		LoadUsage(usageFile);
+	}
+	usageFile.close();
+}
+
+Constants::~Constants() {
+	// TODO: empty map?
+}
+std::string Constants::GetUsageFor(const std::string& command) {
+	if (m_UsageFileAvailable) {
+		return m_UsageMap[command];
+
+	}
+
+	return "Help not available (no usage.txt file found).";
+}
+
+void Constants::LoadUsage(ifstream& usageFile) {
+
+	string line;
+	while (getline(usageFile, line)) {
+		string debug = GetUsage(usageFile);
+		if (line.length()) {
+			m_UsageMap[line] = debug;
+		}
+	}
+}
+
+string Constants::GetUsage(ifstream& usageFile) {
+	string line, usage;
+	while (getline(usageFile, line)) {
+		if (line == "***") {
+			break;
+		}
+		usage += line;
+		usage += '\n';
+	}
+	return usage;
+}

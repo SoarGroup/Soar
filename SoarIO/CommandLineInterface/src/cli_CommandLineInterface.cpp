@@ -81,104 +81,26 @@ CommandLineInterface::CommandLineInterface() {
 //                                                                                    |_|
 void CommandLineInterface::BuildCommandMap() {
 
-	// Set the command map up mapping strings to command data
-	CommandFunctionAndUsage command;
-
-	// add-wme
-	command.first = ParseAddWME; command.second = Constants::kCLIAddWMEUsage;
-	m_CommandMap[Constants::kCLIAddWME] = command;
-
-	// cd
-	command.first = ParseCD; command.second = Constants::kCLICDUsage;
-	m_CommandMap[Constants::kCLICD] = command;
-
-	// dir -> ls
-	command.first = ParseLS; command.second = Constants::kCLILSUsage;
-	m_CommandMap[Constants::kCLIDir] = command;
-
-	// echo
-	command.first = ParseEcho; command.second = Constants::kCLIEchoUsage;
-	m_CommandMap[Constants::kCLIEcho] = command;
-
-	// excise
-	command.first = ParseExcise; command.second = Constants::kCLIExciseUsage;
-	m_CommandMap[Constants::kCLIExcise] = command;
-
-	// exit -> quit
-	command.first = ParseQuit; command.second = Constants::kCLIQuitUsage;
-	m_CommandMap[Constants::kCLIExit] = command;
-
-	// init -> init-soar
-	command.first = ParseInitSoar; command.second = Constants::kCLIInitSoarUsage;
-	m_CommandMap[Constants::kCLIInit] = command;
-
-	// init-soar
-	command.first = ParseInitSoar; command.second = Constants::kCLIInitSoarUsage;
-	m_CommandMap[Constants::kCLIInitSoar] = command;
-
-	// learn
-	command.first = ParseLearn; command.second = Constants::kCLILearnUsage;
-	m_CommandMap[Constants::kCLILearn] = command;
-
-	// log
-	command.first = ParseLog; command.second = Constants::kCLILogUsage;
-	m_CommandMap[Constants::kCLILog] = command;
-
-	// ls
-	command.first = ParseLS; command.second = Constants::kCLILSUsage;
-	m_CommandMap[Constants::kCLILS] = command;
-
-	// multi-attributes
-	command.first = ParseMultiAttributes; command.second = Constants::kCLIMultiAttributesUsage;
-	m_CommandMap[Constants::kCLIMultiAttributes] = command;
-
-	// popd
-	command.first = ParsePopD; command.second = Constants::kCLIPopDUsage;
-	m_CommandMap[Constants::kCLIPopD] = command;
-
-	// print
-	command.first = ParsePrint; command.second = Constants::kCLIPrintUsage;
-	m_CommandMap[Constants::kCLIPrint] = command;
-
-	// pushd
-	command.first = ParsePushD; command.second = Constants::kCLIPushDUsage;
-	m_CommandMap[Constants::kCLIPushD] = command;
-
-	// pwd
-	command.first = ParsePWD; command.second = Constants::kCLIPWDUsage;
-	m_CommandMap[Constants::kCLIPWD] = command;
-
-	// quit
-	command.first = ParseQuit; command.second = Constants::kCLIQuitUsage;
-	m_CommandMap[Constants::kCLIQuit] = command;
-
-	// run
-	command.first = ParseRun; command.second = Constants::kCLIRunUsage;
-	m_CommandMap[Constants::kCLIRun] = command;
-
-	// source
-	command.first = ParseSource; command.second = Constants::kCLISourceUsage;
-	m_CommandMap[Constants::kCLISource] = command;
-
-	// sp
-	command.first = ParseSP; command.second = Constants::kCLISPUsage;
-	m_CommandMap[Constants::kCLISP] = command;
-
-	// stop-soar
-	command.first = ParseStopSoar; command.second = Constants::kCLIStopSoarUsage;
-	m_CommandMap[Constants::kCLIStopSoar] = command;
-
-	// time
-	command.first = ParseTime; command.second = Constants::kCLITimeUsage;
-	m_CommandMap[Constants::kCLITime] = command;
-
-	// watch
-	command.first = ParseWatch; command.second = Constants::kCLIWatchUsage;
-	m_CommandMap[Constants::kCLIWatch] = command;
-
-	// watch-wmes
-	command.first = ParseWatchWMEs; command.second = Constants::kCLIWatchWMEsUsage;
-	m_CommandMap[Constants::kCLIWatchWMEs] = command;
+	m_CommandMap[Constants::kCLIAddWME]				= ParseAddWME;
+	m_CommandMap[Constants::kCLICD]					= ParseCD;
+	m_CommandMap[Constants::kCLIEcho]				= ParseEcho;
+	m_CommandMap[Constants::kCLIExcise]				= ParseExcise;
+	m_CommandMap[Constants::kCLIInitSoar]			= ParseInitSoar;
+	m_CommandMap[Constants::kCLILearn]				= ParseLearn;
+	m_CommandMap[Constants::kCLILog]				= ParseLog;
+	m_CommandMap[Constants::kCLILS]					= ParseLS;
+	m_CommandMap[Constants::kCLIMultiAttributes]	= ParseMultiAttributes;
+	m_CommandMap[Constants::kCLIPopD]				= ParsePopD;
+	m_CommandMap[Constants::kCLIPrint]				= ParsePrint;
+	m_CommandMap[Constants::kCLIPushD]				= ParsePushD;
+	m_CommandMap[Constants::kCLIPWD]				= ParsePWD;
+	m_CommandMap[Constants::kCLIQuit]				= ParseQuit;
+	m_CommandMap[Constants::kCLIRun]				= ParseRun;
+	m_CommandMap[Constants::kCLISource]				= ParseSource;
+	m_CommandMap[Constants::kCLISP]					= ParseSP;
+	m_CommandMap[Constants::kCLIStopSoar]			= ParseStopSoar;
+	m_CommandMap[Constants::kCLITime]				= ParseTime;
+	m_CommandMap[Constants::kCLIWatch]				= ParseWatch;
 }
 
 // ____         ____                                          _
@@ -261,12 +183,12 @@ bool CommandLineInterface::DoCommandInternal(const char* commandLine) {
 	// Check for help flags
 	if (CheckForHelp(argc, argv)) {
 		// Help flags found, add help to line, return true
-		m_Result += (m_CommandMap[argv[0]]).second;
+		m_Result += m_Constants.GetUsageFor(argv[0]);
 		return true;
 	}
 
 	// Process command
-	CommandFunction pFunction = (m_CommandMap[argv[0]]).first;
+	CommandFunction pFunction = m_CommandMap[argv[0]];
 
 	// Just in case...
 	if (!pFunction) {
@@ -422,7 +344,7 @@ bool CommandLineInterface::DoAddWME() {
 bool CommandLineInterface::ParseCD(int argc, char** argv) {
 	// Only takes one optional argument, the directory to change into
 	if (argc > 2) {
-		return HandleSyntaxError(Constants::kCLICDUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLICD));
 	}
 	return DoCD(argv[1]);
 }
@@ -537,7 +459,7 @@ bool CommandLineInterface::ParseExcise(int argc, char** argv) {
 				options |= OPTION_EXCISE_USER;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIExciseUsage, "Unrecognized option.\n");
+				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIExcise), "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -632,7 +554,7 @@ void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter)
 bool CommandLineInterface::ParseInitSoar(int argc, char** argv) {
 	// No arguments
 	if (argc != 1) {
-		return HandleSyntaxError(Constants::kCLIInitSoarUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIInitSoar));
 	}
 	return DoInitSoar();
 }
@@ -705,7 +627,7 @@ bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 				options |= OPTION_LEARN_ONLY;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLILearnUsage, "Unrecognized option.\n");
+				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLILearn), "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -713,7 +635,7 @@ bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 
 	// No non-option arguments
 	if (GetOpt::optind != argc) {
-		return HandleSyntaxError(Constants::kCLILearnUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLILearn));
 	}
 
 	return DoLearn(options);
@@ -787,7 +709,7 @@ bool CommandLineInterface::DoLog(bool close, const char* filename) {
 bool CommandLineInterface::ParseLS(int argc, char** argv) {
 	// No arguments
 	if (argc != 1) {
-		return HandleSyntaxError(Constants::kCLILSUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLILS));
 	}
 	return DoLS();
 }
@@ -850,7 +772,7 @@ bool CommandLineInterface::DoLS() {
 bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
 	// No more than three arguments
 	if (argc > 3) {
-		return HandleSyntaxError(Constants::kCLIMultiAttributesUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIMultiAttributes));
 	}
 
 	char* attribute = 0;
@@ -860,12 +782,12 @@ bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
 	if (argc > 2) {
 		if (!IsInteger(argv[2])) {
 			// Must be an integer
-			return HandleSyntaxError(Constants::kCLIMultiAttributesUsage, "Third argument must be an integer.\n");
+			return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIMultiAttributes), "Third argument must be an integer.\n");
 		}
 		n = atoi(argv[2]);
 		if (n <= 0) {
 			// Must be non-negative and greater than 0
-			return HandleSyntaxError(Constants::kCLIMultiAttributesUsage, "Third argument must be greater than 0.\n");
+			return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIMultiAttributes), "Third argument must be greater than 0.\n");
 		}
 	}
 
@@ -939,7 +861,7 @@ bool CommandLineInterface::DoMultiAttributes(const char* attribute, int n) {
 bool CommandLineInterface::ParsePopD(int argc, char** argv) {
 	// No arguments
 	if (argc != 1) {
-		return HandleSyntaxError(Constants::kCLIPopDUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPopD));
 	}
 	return DoPopD();
 }
@@ -1023,11 +945,11 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 			case 'd':
 				options |= OPTION_PRINT_DEPTH;
 				if (!IsInteger(GetOpt::optarg)) {
-					return HandleSyntaxError(Constants::kCLIPrintUsage, "Depth must be an integer.\n");
+					return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPrint), "Depth must be an integer.\n");
 				}
 				depth = atoi(GetOpt::optarg);
 				if (depth < 0) {
-					return HandleSyntaxError(Constants::kCLIPrintUsage, "Depth must be non-negative.\n");
+					return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPrint), "Depth must be non-negative.\n");
 				}
 				break;
 			case 'D':
@@ -1061,7 +983,7 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 				options |= OPTION_PRINT_USER;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIPrintUsage, "Unrecognized option.\n");
+				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPrint), "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1069,7 +991,7 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 
 	// One additional optional argument
 	if ((argc - GetOpt::optind) > 1) {
-		return HandleSyntaxError(Constants::kCLIPrintUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPrint));
 	}
 
 	char* pArg = argv[GetOpt::optind]; // argv == 0 if optind == argc because argv[argc] == 0
@@ -1158,7 +1080,7 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 bool CommandLineInterface::ParsePushD(int argc, char** argv) {
 	// Only takes one argument, the directory to change into
 	if (argc != 2) {
-		return HandleSyntaxError(Constants::kCLIPushDUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPushD));
 	}
 	return DoPushD(argv[1]);
 }
@@ -1205,7 +1127,7 @@ bool CommandLineInterface::DoPushD(const char* pDirectory) {
 bool CommandLineInterface::ParsePWD(int argc, char** argv) {
 	// No arguments to print working directory
 	if (argc != 1) {
-		return HandleSyntaxError(Constants::kCLIPWDUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPWD));
 	}
 	return DoPWD();
 }
@@ -1310,7 +1232,7 @@ bool CommandLineInterface::ParseRun(int argc, char** argv) {
 				options |= OPTION_RUN_STATE;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIRunUsage, "Unrecognized option.\n");
+				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIRun), "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1323,15 +1245,15 @@ bool CommandLineInterface::ParseRun(int argc, char** argv) {
 	if (GetOpt::optind == argc - 1) {
 
 		if (!IsInteger(argv[GetOpt::optind])) {
-			return HandleSyntaxError(Constants::kCLIRunUsage, "Count must be an integer.\n");
+			return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIRun), "Count must be an integer.\n");
 		}
 		count = atoi(argv[GetOpt::optind]);
 		if (count <= 0) {
-			return HandleSyntaxError(Constants::kCLIRunUsage, "Count must be greater than 0.\n");
+			return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIRun), "Count must be greater than 0.\n");
 		}
 
 	} else if (GetOpt::optind < argc) {
-		return HandleSyntaxError(Constants::kCLIRunUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIRun));
 	}
 
 	return DoRun(options, count);
@@ -1421,11 +1343,11 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 bool CommandLineInterface::ParseSource(int argc, char** argv) {
 	if (argc != 2) {
 		// Source requires a filename
-		return HandleSyntaxError(Constants::kCLISourceUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLISource));
 
 	} else if (argc > 2) {
 		// but only one filename
-		return HandleSyntaxError(Constants::kCLISourceUsage, "Source only one file at a time.\n");
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLISource), "Source only one file at a time.\n");
 	}
 
 	return DoSource(argv[1]);
@@ -1448,9 +1370,8 @@ bool CommandLineInterface::DoSource(const char* filename) {
 	}
 
 	// Open the file
-	ifstream soarFile;
-	soarFile.open(filename);
-	if (!soarFile.is_open()) {
+	ifstream soarFile(filename);
+	if (!soarFile) {
 		m_Result += "Failed to open file '";
 		m_Result += filename;
 		m_Result += "' for reading.";
@@ -1655,13 +1576,13 @@ void CommandLineInterface::HandleSourceError(int errorLine, const char* filename
 bool CommandLineInterface::ParseSP(int argc, char** argv) {
 	// One argument (in brackets)
 	if (argc != 2) {
-		return HandleSyntaxError(Constants::kCLISPUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLISP));
 	}
 
 	// Remove first and last characters (the braces)
 	string production = argv[1];
 	if (production.length() < 3) {
-		return HandleSyntaxError(Constants::kCLISPUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLISP));
 	}
 	production = production.substr(1, production.length() - 2);
 
@@ -1732,7 +1653,7 @@ bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
 				self = true;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIStopSoarUsage, "Unrecognized option.\n");
+				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIStopSoar), "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1769,7 +1690,7 @@ bool CommandLineInterface::DoStopSoar(bool self, char const* reasonForStopping) 
 bool CommandLineInterface::ParseTime(int argc, char** argv) {
 	// There must at least be a command
 	if (argc < 2) {
-		return HandleSyntaxError(Constants::kCLITimeUsage);
+		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLITime));
 	}
 
 	char** newArgv = argv + 1;
@@ -1914,7 +1835,7 @@ bool CommandLineInterface::ParseWatch(int argc, char** argv) {
 				options |= OPTION_WATCH_WME_DETAIL;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIWatchUsage, "Unrecognized option.\n");
+				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIWatch), "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1932,27 +1853,6 @@ bool CommandLineInterface::ParseWatch(int argc, char** argv) {
 //
 bool CommandLineInterface::DoWatch() {
 	m_Result += "TODO: DoWatch";
-	return true;
-}
-
-// ____                   __        __    _       _  __        ____  __ _____
-//|  _ \ __ _ _ __ ___  __\ \      / /_ _| |_ ___| |_\ \      / /  \/  | ____|___
-//| |_) / _` | '__/ __|/ _ \ \ /\ / / _` | __/ __| '_ \ \ /\ / /| |\/| |  _| / __|
-//|  __/ (_| | |  \__ \  __/\ V  V / (_| | || (__| | | \ V  V / | |  | | |___\__ \
-//|_|   \__,_|_|  |___/\___| \_/\_/ \__,_|\__\___|_| |_|\_/\_/  |_|  |_|_____|___/
-//
-bool CommandLineInterface::ParseWatchWMEs(int argc, char** argv) {
-	return DoWatchWMEs();
-}
-
-// ____     __        __    _       _  __        ____  __ _____
-//|  _ \  __\ \      / /_ _| |_ ___| |_\ \      / /  \/  | ____|___
-//| | | |/ _ \ \ /\ / / _` | __/ __| '_ \ \ /\ / /| |\/| |  _| / __|
-//| |_| | (_) \ V  V / (_| | || (__| | | \ V  V / | |  | | |___\__ \
-//|____/ \___/ \_/\_/ \__,_|\__\___|_| |_|\_/\_/  |_|  |_|_____|___/
-//
-bool CommandLineInterface::DoWatchWMEs() {
-	m_Result += "TODO: DoWatchWMEs";
 	return true;
 }
 
@@ -2043,7 +1943,7 @@ bool CommandLineInterface::IsInteger(const char* s) {
 //|  _  | (_| | | | | (_| | |  __/___) | |_| | | | | || (_| |>  <| |___| |  | | | (_) | |
 //|_| |_|\__,_|_| |_|\__,_|_|\___|____/ \__, |_| |_|\__\__,_/_/\_\_____|_|  |_|  \___/|_|
 //                                      |___/
-bool CommandLineInterface::HandleSyntaxError(const char* usage, const char* details) {
+bool CommandLineInterface::HandleSyntaxError(const string& usage, const char* details) {
 	m_Result += Constants::kCLISyntaxError;
 	if (details) {
 		m_Result += details;

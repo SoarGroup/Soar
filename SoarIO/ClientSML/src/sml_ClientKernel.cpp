@@ -66,28 +66,23 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 *
 * @param pCommandLine Command line string to process.
 * @param pAgentName Agent name to apply the command line to.
-* @param pResult BADBAD: I don't know how else to return a string to the client
-*                so I'm currently returning an STL string.
 *************************************************************/
-bool Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName, char* pResult, size_t resultSize) {
+bool Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName) {
 
 	AnalyzeXML response;
-	std::string result;
 	bool ret = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
 
-	if (pResult) {
-		result = response.GetResultString();
-	}
+	m_CommandLineResult = response.GetResultString();
 
 	if (!ret) {
-		if (pResult) {
-			result += "\nError Data:\n";
-			result += response.GetErrorTag()->GetCharacterData();
-		}
+		m_CommandLineResult += "\nError Data:\n";
+		m_CommandLineResult += response.GetErrorTag()->GetCharacterData();
 	}
-
-	pResult = strncpy(pResult, result.c_str(), resultSize);
-	*(pResult+resultSize-1) = NULL; //make sure string is NULL terminated; this doesn't happen automatically if the string is truncated
 
 	return ret;
 }
+
+const char* Kernel::GetLastCommandLineResult() {
+	return m_CommandLineResult.c_str();
+}
+

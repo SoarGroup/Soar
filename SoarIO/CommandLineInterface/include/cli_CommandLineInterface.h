@@ -20,6 +20,7 @@
 // Local includes
 #include "cli_CommandData.h"
 #include "cli_GetOpt.h"
+#include "cli_Constants.h"
 
 // gSKI includes
 #include "gSKI_Events.h"
@@ -41,24 +42,13 @@ namespace cli {
 // Forward declarations
 class CommandLineInterface;
 
-// We need a comparator to make the map we're about to define work with char*
-struct strCompareCommand
-{
-	bool operator()(const char* s1, const char* s2) const
-	{
-		return std::strcmp(s1, s2) < 0;
-	}
-};
-
 // Define the CommandFunction which we'll call to process commands
 typedef bool (CommandLineInterface::*CommandFunction)(int argc, char** argv);
 
-typedef std::pair<CommandFunction, const char*> CommandFunctionAndUsage;
-
 // Used to store a map from command name to function handler for that command
-typedef std::map<char const*, CommandFunctionAndUsage, strCompareCommand>	CommandMap;
-typedef CommandMap::iterator												CommandMapIter;
-typedef CommandMap::const_iterator											CommandMapConstIter;
+typedef std::map<std::string, CommandFunction>	CommandMap;
+typedef CommandMap::iterator					CommandMapIter;
+typedef CommandMap::const_iterator				CommandMapConstIter;
 
 // Define the stack for pushd/popd
 typedef std::stack<std::string> StringStack;
@@ -279,15 +269,6 @@ public:
 	*************************************************************/
 	bool DoWatch();
 
-	/*************************************************************
-	* @brief watch-wmes command, see command line spec document for details
-	*************************************************************/
-	bool ParseWatchWMEs(int argc, char** argv);
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool DoWatchWMEs();
-
 protected:
 
 	// Print handler for gSKI print callbacks
@@ -384,7 +365,7 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool HandleSyntaxError(const char* usage, const char* details = 0);
+	bool HandleSyntaxError(const std::string& usage, const char* details = 0);
 
 	/*************************************************************
 	* @brief 
@@ -396,6 +377,7 @@ protected:
 	*************************************************************/
 	bool HandleGetOptError(char option);
 
+	Constants		m_Constants;		// Pointer to constants management object
 	GetOpt			m_GetOpt;			// Pointer to GetOpt utility class
 	CommandMap		m_CommandMap;		// Mapping of command names to function pointers
 	gSKI::IKernel*	m_pKernel;			// Pointer to the current gSKI kernel

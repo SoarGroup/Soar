@@ -1,7 +1,12 @@
 #ifndef CLI_CONSTANTS_H
 #define CLI_CONSTANTS_H
 
+#include <string>
+#include <map>
+
 namespace cli {
+
+	typedef std::map<std::string, std::string> UsageMap;
 
 	// A class containing the constants used by CommandLineInterface
 	class Constants
@@ -9,6 +14,9 @@ namespace cli {
 	public:
 
 		Constants();
+		~Constants();
+
+		std::string GetUsageFor(const std::string& command);
 
 		static char const* kCLISyntaxError;
 
@@ -35,29 +43,13 @@ namespace cli {
 		static char const* kCLIStopSoar;
 		static char const* kCLITime;
 		static char const* kCLIWatch;
-		static char const* kCLIWatchWMEs;
 
-		static char const* kCLIAddWMEUsage;
-		static char const* kCLICDUsage;
-		static char const* kCLIEchoUsage;
-		static char const* kCLIExciseUsage;
-		static char const* kCLIInitSoarUsage;
-		static char const* kCLILearnUsage;
-		static char const* kCLILogUsage;
-		static char const* kCLILSUsage;
-		static char const* kCLIMultiAttributesUsage;
-		static char const* kCLIPopDUsage;
-		static char const* kCLIPrintUsage;
-		static char const* kCLIPushDUsage;
-		static char const* kCLIPWDUsage;
-		static char const* kCLIQuitUsage;
-		static char const* kCLIRunUsage;
-		static char const* kCLISourceUsage;
-		static char const* kCLISPUsage;
-		static char const* kCLIStopSoarUsage;
-		static char const* kCLITimeUsage;
-		static char const* kCLIWatchUsage;
-		static char const* kCLIWatchWMEsUsage;
+	private:
+		void LoadUsage(std::ifstream& usageFile);
+		std::string GetUsage(std::ifstream& usageFile);
+
+		bool m_UsageFileAvailable;
+		UsageMap m_UsageMap;
 	};
 
 } // namespace cli
