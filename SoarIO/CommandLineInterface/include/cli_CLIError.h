@@ -30,7 +30,7 @@ namespace cli {
 			kKernelRequired						= 22,
 			kAliasNotFound						= 23,
 			kAliasExists						= 24,
-			kNoUsageFile						= 27,
+			kNoHelpFile							= 27,
 			kIntegerExpected					= 28,
 			kIntegerMustBePositive				= 29,
 			kIntegerMustBeNonNegative			= 30,
@@ -76,6 +76,7 @@ namespace cli {
 			kSourceError						= 71,
 			kMustSaveOrLoad						= 72,
 			kPrintSubOptionsOfStack				= 73,
+			kHelpFileError						= 74,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -102,7 +103,7 @@ namespace cli {
 				case kKernelRequired:					return "A kernel is required for this command.";
 				case kAliasNotFound:					return "Alias not found.";
 				case kAliasExists:						return "Alias exists, remove to overwrite.";
-				case kNoUsageFile:						return "Usage file not available.";
+				case kNoHelpFile:						return "Help file not available.";
 				case kIntegerExpected:					return "Integer argument expected.";
 				case kIntegerMustBePositive:			return "Integer argument must be positive.";
 				case kIntegerMustBeNonNegative:			return "Integer argument must be non-negative.";
@@ -148,6 +149,7 @@ namespace cli {
 				case kSourceError:						return "Source command error.";
 				case kMustSaveOrLoad:					return "Must save or load, check command syntax.";
 				case kPrintSubOptionsOfStack:			return "Options --operators (-o) and --states (-S) are only valid when printing the stack.";
+				case kHelpFileError:					return "Error reading help file.";
 				default:								return "Unknown error code.";
 			}
 		}

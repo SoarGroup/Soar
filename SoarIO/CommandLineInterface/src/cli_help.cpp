@@ -6,6 +6,9 @@
 
 #include "cli_Constants.h"
 
+#include <iostream>
+#include <fstream>
+
 using namespace cli;
 using namespace sml;
 
@@ -23,48 +26,23 @@ bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::stri
 }
 
 bool CommandLineInterface::DoHelp(const std::string* pCommand) {
-	unused(pCommand);
-	m_Result << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";
-	return SetError(CLIError::kNoUsageFile);
-	//std::string output;
 
-	//if (!m_pConstants->IsUsageFileAvailable()) return SetError(CLIError::kNoUsageFile);
+	std::string helpFile;
+	if (!pCommand || !pCommand->size()) {
+		m_Result << "Help is available for the following commands:\n";
+		helpFile = m_HomeDirectory + "/command-names";
+	} else {
+		helpFile = m_HomeDirectory + "/help/" + *pCommand;
+	}
 
-	//if (pCommand) {
-	//	if (!m_pConstants->GetUsageFor(*pCommand, output)) return SetError(CLIError::kNoUsageInfo);
-	//	AppendToResult(output);
-	//	return true;
-	//}
+	std::ifstream helpFileStream(helpFile.c_str());
+	if (!helpFileStream) return SetError(CLIError::kNoHelpFile);
 
-	//AppendToResult("Help is available for the following commands:\n");
-	//std::list<std::string> commandList = m_pConstants->GetCommandList();
-	//std::list<std::string>::const_iterator iter = commandList.begin();
+	char ch;
+	while(helpFileStream.get(ch)) m_Result.put(ch);
 
-	//int i = 0;
-	//int tabs;
-	//while (iter != commandList.end()) {
-	//	AppendToResult(*iter);
-	//	if (m_CommandMap.find(*iter) == m_CommandMap.end()) {
-	//		AppendToResult('*');
-	//	} else {
-	//		AppendToResult(' ');
-	//	}
-	//	tabs = (40 - (*iter).length() - 2) / 8; 
-	//	if (i % 2) {
-	//		AppendToResult("\n");
-	//	} else {
-	//		do {
-	//			AppendToResult('\t');
-	//		} while (--tabs > 0);
-	//	}
-	//	++iter;
-	//	++i;
-	//}
-	//if (i % 2) {
-	//	AppendToResult('\n');
-	//}
-	//AppendToResult("Type 'help' followed by the command name for help on a specific command.\n");
-	//AppendToResult("A Star (*) indicates the command is not yet implemented.");
-	//return true;
+	if (!helpFileStream.eof() || !m_Result) return SetError(CLIError::kHelpFileError);
+
+	return true;
 }
 

@@ -280,8 +280,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 
 	// Check for help flags
 	if (CheckForHelp(argv)) {
-		m_Result << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";
-		return SetError(CLIError::kNoUsageFile);
+		return DoHelp(&argv[0]);
 	}
 
 	// Process command
