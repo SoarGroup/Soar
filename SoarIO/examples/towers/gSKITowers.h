@@ -1,13 +1,4 @@
-/////////////////////////////////////////////////////////////////
-// gSKITowers class file.
-//
-// Author: Devvan Stokes, University of Michigan
-// Date  : October 2004
-//
-// These classes define the disks, towers (or pegs), and the 
-// Towers of Hanoi game world that contains them
-//
-/////////////////////////////////////////////////////////////////
+
 #ifndef GSKI_TOWERS_HANOI_H
 #define GSKI_TOWERS_HANOI_H
 

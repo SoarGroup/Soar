@@ -613,7 +613,7 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	//commLine->DoCommand(agent, "pwd", pResponse, pError);
 	commLine->DoCommand(agent, "pushd ../examples/towers", pResponse, pError);
 
-	if(!commLine->DoCommand(agent, "source towers-of-hanoi-86.soar", pResponse, pError))
+	if(!commLine->DoCommand(agent, "source towers-of-hanoi-SGIO_source.soar", pResponse, pError))
 		cout << "Error in source ---------------------------------" << endl;
 	commLine->DoCommand(agent, "popd", pResponse, pError);
 
