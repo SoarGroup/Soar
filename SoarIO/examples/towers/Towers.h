@@ -96,9 +96,10 @@ public:
 	void Detach()
 	{
 		//Release everything this is touching that doesn't belong to us
-		m_pDiskBeneath->Release();
-		m_pPegId->Release();
-
+		if(m_pDiskBeneath)
+			m_pDiskBeneath->Release();
+		//m_pPegId->Release();
+		m_pPegId = 0;//poor substitute for releasing
 
 		//Remove wmes that do belong to this
 		m_pWMemory->RemoveWme(m_pDiskIdentifier);//parent wme
@@ -215,13 +216,12 @@ public:
 	{
 
 		IWorkingMemory* pWorkingMem = m_pILink->GetInputLinkMemory();
-		//pWorkingMem->RemoveObject(m_pPegIdentifier->GetValue()->GetObject());
 		pWorkingMem->RemoveWme(m_pPegIdentifier);
 		for(vector<Disk*>::iterator diskItr = m_disks.begin(); diskItr != m_disks.end(); ++diskItr)
 		{
 			(*diskItr)->Detach();
 		}
-		m_disks.clear();//TODO @TODO release these too?
+		m_disks.clear();
 		//can't release ILink ptr
 	}
 
@@ -405,7 +405,7 @@ public:
 			}
 			cout << endl;
 		}
-		cout<<"======================" << endl;
+		cout<<"======================" << endl << endl;
 	}
 
 	bool AtGoalState()

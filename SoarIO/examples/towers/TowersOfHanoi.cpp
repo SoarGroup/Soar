@@ -146,38 +146,38 @@ int main(int argc, char* argv[])
 
 	//create debugger
 	TgD::TgD* debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, argv[0]);
-	debugger->Init();
+	//debugger->Init();
 
 	//=============================================================================
 	//=============================================================================
 	IInputLink* iLink = agent->GetInputLink();
 
-	HanoiWorld hanoi(iLink, doPrinting, numTowers);
-
-	SoarAgent soarAgent(agent, &hanoi);
-
-	//register the SoarAgent as the output processor
-	IOutputLink* oLink = agent->GetOutputLink();
-	oLink->AddOutputProcessor("move-disk", &soarAgent); 
-
-	if(doPrinting)
-		hanoi.Print();
-
-	while(!hanoi.AtGoalState())
 	{
-		soarAgent.MakeMove();
-		TgD::TgD::Update(false, debugger);
+		HanoiWorld hanoi(iLink, doPrinting, numTowers);
 
-		if (doPrinting)
+		SoarAgent soarAgent(agent, &hanoi);
+
+		//register the SoarAgent as the output processor
+		IOutputLink* oLink = agent->GetOutputLink();
+		oLink->AddOutputProcessor("move-disk", &soarAgent); 
+
+		if(doPrinting)
 			hanoi.Print();
+
+		while(!hanoi.AtGoalState())
+		{
+			soarAgent.MakeMove();
+			TgD::TgD::Update(false, debugger);
+
+			if (doPrinting)
+				hanoi.Print();
+		}
+		soarAgent.MakeMove();//this allows the agent to catch up to the game world
+		//after the goal state
 	}
-	soarAgent.MakeMove();
 
-	if(doPrinting)
-		hanoi.Print();
-
-	while(TgD::TgD::Update(false, debugger))
-		TGD_SLEEP(50);
+//	while(TgD::TgD::Update(false, debugger))
+//		TGD_SLEEP(50);
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <non-whitespace char> then enter to exit\n") ;
