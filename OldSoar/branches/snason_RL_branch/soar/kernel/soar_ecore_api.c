@@ -1142,7 +1142,7 @@ int soar_ecPrintAllProductionsOfType(int type, bool internal, bool print_fname, 
             print_with_symbols("%y  ", prod->name);
 	        if (type == RL_PRODUCTION_TYPE){                  // SAN
 				print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
-				print("Decayed average %f ", prod->decay_abs_update);
+				print("Decayed average %f ", (prod->decay_abs_update / prod->decay_normalization));
 				print("Average %f ", prod->avg_update);
 				print("firings %d", prod->times_updated);
 			}

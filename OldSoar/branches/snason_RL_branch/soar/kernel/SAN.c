@@ -347,9 +347,11 @@ production *specify_production(instantiation *ist){
 void learn_RL_productions(int level){
 	RL_record *record;
 	production *prod;
+	instantiation *inst;
 	float update, temp;
 	cons *c;
 	float increment;
+	preference *pref;
 	
 	record = current_agent(records);
 
@@ -378,18 +380,25 @@ void learn_RL_productions(int level){
 				temp += increment;
 				
 				prod->action_list->referent = symbol_to_rhs_value(make_float_constant(temp));
+				for (inst = prod->instantiations ; inst ; inst = inst->next){
+					for (pref = inst->preferences_generated ; pref ; pref = pref->inst_next)
+						pref->referent = symbol_to_rhs_value(make_float_constant(temp));
+				}
+
+
 				// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 				// a->referent = symbol_to_rhs_value(make_float_constant(Q));
 				prod->times_updated++;
 				temp = prod->decay_abs_update;
-				// prod->decay_abs_update = fabs(update) + prod->decay_abs_update*current_agent(gamma);
+				prod->decay_abs_update = fabs(update) + prod->decay_abs_update*current_agent(gamma);
+				prod->decay_normalization = 1 + prod->decay_normalization*current_agent(gamma);
 				// prod->decay_abs_update = ((prod->times_updated - 1)*prod->decay_abs_update + fabs(update)) / prod->times_updated;
 				// prod->increasing = (prod->decay_abs_update > temp ? 1 : 0);
-				prod->decay_abs_update = fabs(update);
+				// prod->decay_abs_update = fabs(update);
 				prod->avg_update = ((prod->times_updated - 1)*prod->avg_update + update) / prod->times_updated;
 				print_with_symbols("\n%y  ", prod->name);
 	    		print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
-				print("Decayed average %f ", prod->decay_abs_update);
+				print("Decayed average %f ", (prod->decay_abs_update / prod->decay_normalization));
 				print("Average %f ", prod->avg_update);
 				print("firings %d\n", prod->times_updated);
 			

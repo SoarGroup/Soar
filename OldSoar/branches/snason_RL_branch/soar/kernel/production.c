@@ -1587,6 +1587,7 @@ production *make_production(byte type,
     p->firing_count = 0;
 	p->times_updated = 0;
 	p->decay_abs_update = 0;
+	p->decay_normalization = 0;
 	p->avg_update = 0;
 	p->increasing = 0;
     p->reference_count = 1;

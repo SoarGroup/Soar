@@ -1814,6 +1814,7 @@ typedef struct production_struct {
     int OPERAND_which_assert_list;      /* RCHONG: 10.11 */
 	int times_updated;                      /* SAN - only for RL_PRODUCTION_TYPE */
     double decay_abs_update;                      /* SAN - only for RL_PRODUCTION_TYPE */
+	double decay_normalization;             /* SAN - only for RL_PRODUCTION_TYPE */
 	double avg_update;						/* SAN - only for RL_PRODUCTION_TYPE */
 	bool increasing;                        /* SAN - only for RL_PRODUCTION_TYPE */
     byte interrupt;             /* SW: 7.31.03 */
