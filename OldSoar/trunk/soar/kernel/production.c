@@ -1523,6 +1523,7 @@ production *make_production (byte type,
   p->action_list = *rhs_top;
   p->rhs_unbound_variables = NIL; /* the Rete fills this in */
   p->instantiations = NIL;
+  p->interrupt = FALSE;
 
   return p;
 }
