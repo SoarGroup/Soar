@@ -6,16 +6,10 @@
 
 #There are now two separate default files:
 
-
-
-# simple.soar holds the basics rules that you probably want to use in
-
+# simple.soar holds the basic rules that you probably want to use in
 # every Soar system. 
 
-
-
 # selection.soar holds the rules to support lookahead search using the
-
 # selection problem space. 
 
 

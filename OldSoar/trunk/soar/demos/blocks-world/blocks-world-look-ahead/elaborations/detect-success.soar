@@ -22,4 +22,4 @@ sp {blocks-world*elaborate*state*success
    (<ontop3> ^top-block <blockC>
              ^bottom-block <table>)
 -->
-   (<s> ^success <d>)}
+   (<s> ^success <ds>)}

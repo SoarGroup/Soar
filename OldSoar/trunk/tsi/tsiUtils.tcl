@@ -1326,21 +1326,16 @@ proc tsiUpdateDemoMenu {w} {
 
     $w.menubar.demo.m delete 0 end
 
-    if {([version] >= 8.0) && [regexp {.*ON} [soar8]]} {
+	if {([version] >= 8.0) && [regexp {.*ON} [soar8]]} {
 	# create the demo menu for Soar8/Operand2
 	set soar_demos [file join [file dirname $soar_library] [tsiSetDemoDir]]
 	
-      $w.menubar.demo.m add command -label {GUI Demos} \
-	    -font $tsiConfig(boldFont)
-      ##$w.menubar.demo.m add command -label {Critter World} \
-	    ##		 -command {tsiLoadSoar8Demo critter_world critter_world.tcl}
-      $w.menubar.demo.m add command -label {Eight Puzzle} \
-         -command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.tcl}
-      ## Missionaries gui removed til works properly...
-      ##$w.menubar.demo.m add cascade -label {Missionaries} \
-	   -menu $w.menubar.demo.m.macgui
-      $w.menubar.demo.m add cascade -label {Waterjug} \
-	   -menu $w.menubar.demo.m.wjgui
+	$w.menubar.demo.m add command -label {GUI Demos} \
+		-font $tsiConfig(boldFont)
+	$w.menubar.demo.m add command -label {Eight Puzzle} \
+		-command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.tcl}
+	$w.menubar.demo.m add cascade -label {Waterjug} \
+		-menu $w.menubar.demo.m.wjgui
 
 	$w.menubar.demo.m add separator
 	
@@ -1352,7 +1347,7 @@ proc tsiUpdateDemoMenu {w} {
 		-menu $w.menubar.demo.m.bw
 	$w.menubar.demo.m add cascade -label {Eight Puzzle} \
 		-menu $w.menubar.demo.m.ep
-	$w.menubar.demo.m add cascade -label {Missionaries} \
+ 	$w.menubar.demo.m add cascade -label {Missionaries} \
 		-menu $w.menubar.demo.m.mac
 	$w.menubar.demo.m add cascade -label {Towers of Hanoi} \
 		-menu $w.menubar.demo.m.toh
@@ -1369,89 +1364,48 @@ proc tsiUpdateDemoMenu {w} {
 	$w.menubar.demo.m.def add command -label {Readme} \
 		-font $tsiConfig(boldFont) \
 		-command {ShowFile \
-		"[file join $soar_library .. demos default readme]" 0}
+		"[file join $soar_library .. demos default readme.txt]" 0}
 	$w.menubar.demo.m.def add command -label {Simple} \
 		-command {tsiLoadSoar8DefaultProds simple.soar}
 	$w.menubar.demo.m.def add command -label {Selection} \
 		-command {tsiLoadSoar8DefaultProds selection.soar}
-	$w.menubar.demo.m.def add command -label {Operator Subgoaling} \
-		-command {tsiLoadSoar8DefaultProds operator-subgoaling.soar}
+	#$w.menubar.demo.m.def add command -label {Operator Subgoaling} \
+	#	-command {tsiLoadSoar8DefaultProds operator-subgoaling.soar}
 
 
 	if [winfo exists $w.menubar.demo.m.bw] {destroy $w.menubar.demo.m.bw}
 	menu $w.menubar.demo.m.bw -tearoff 0
-	$w.menubar.demo.m.bw add command -label {Readme} \
-		-font $tsiConfig(boldFont) \
-		-command {ShowFile \
-		"[file join $soar_library .. demos blocks-world readme]" 0}
 	$w.menubar.demo.m.bw add command -label {load Blocks World} \
 		-command {tsiLoadSoar8Demo blocks-world blocks-world.soar}
-	$w.menubar.demo.m.bw add command -label {load Blocks Opsub} \
-		-command {tsiLoadSoar8Demo blocks-world blocks-opsub.soar}
+	$w.menubar.demo.m.bw add command -label {load Blocks World Operator Subgoaling} \
+		-command {tsiLoadSoar8Demo blocks-world blocks-world-operator-subgoaling.soar}
+	$w.menubar.demo.m.bw add command -label {load Blocks World Look Ahead} \
+		-command {tsiLoadSoar8Demo blocks-world blocks-world-look-ahead.soar}
 	
 	if [winfo exists $w.menubar.demo.m.ep] {destroy $w.menubar.demo.m.ep}
 	menu $w.menubar.demo.m.ep -tearoff 0
 	$w.menubar.demo.m.ep add command -label {Readme} \
 		-font $tsiConfig(boldFont) \
 		-command {ShowFile \
-		"[file join $soar_library .. demos eight-puzzle readme]" 0}
+		"[file join $soar_library .. demos eight-puzzle readme.txt]" 0}
 	$w.menubar.demo.m.ep add command -label {load eight-puzzle} \
 		-command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.soar}
+	$w.menubar.demo.m.ep add command -label {load fifteen-puzzle} \
+		-command {tsiLoadSoar8Demo eight-puzzle fifteen-puzzle.soar}
 	
 	if [winfo exists $w.menubar.demo.m.mac] {destroy $w.menubar.demo.m.mac}
 	menu $w.menubar.demo.m.mac -tearoff 0
-	$w.menubar.demo.m.mac add command -label {Readme} \
-		-font $tsiConfig(boldFont) \
-		-command {ShowFile \
-		"[file join $soar_library .. demos mac readme]" 0}
-	$w.menubar.demo.m.mac add command -label {load Mac1} \
-		-command {tsiLoadSoar8Demo mac mac1.soar}
-	$w.menubar.demo.m.mac add command -label {load Mac1-planning} \
-		-command {tsiLoadSoar8Demo mac mac1-planning.soar}
-	$w.menubar.demo.m.mac add command -label {load Mac1-plan-numeric} \
-		-command {tsiLoadSoar8Demo mac mac1-planning-numeric.soar}
-	$w.menubar.demo.m.mac add command -label {load Mac2} \
-		-command {tsiLoadSoar8Demo mac mac2.soar}
-	$w.menubar.demo.m.mac add command -label {load Mac3-planning} \
-		-command {tsiLoadSoar8Demo mac mac3-planning.soar}
-	
-	if [winfo exists $w.menubar.demo.m.macgui] {destroy $w.menubar.demo.m.macgui}
-	menu $w.menubar.demo.m.macgui -tearoff 0
-	$w.menubar.demo.m.macgui add command -label {Readme} \
-		-font $tsiConfig(boldFont) \
-		-command {ShowFile \
-		"[file join $soar_library .. demos mac readme]" 0}
-	$w.menubar.demo.m.macgui add command -label {load Mac1} \
-		-command {tsiLoadSoar8Demo mac mac1.tcl}
-	$w.menubar.demo.m.macgui add command -label {load Mac1-planning} \
-		-command {tsiLoadSoar8Demo mac mac1-planning.tcl}
-	$w.menubar.demo.m.macgui add command -label {load Mac1-plan-numeric} \
-		-command {tsiLoadSoar8Demo mac mac1-planning-numeric.tcl}
-	#$w.menubar.demo.m.macgui add command -label {load Mac2} \
-		-command {tsiLoadSoar8Demo mac mac2.tcl}
-	#$w.menubar.demo.m.macgui add command -label {load Mac3-planning} \
-		-command {tsiLoadSoar8Demo mac mac3-planning.tcl}
+	$w.menubar.demo.m.mac add command -label {load Mac} \
+		-command {tsiLoadSoar8Demo mac mac.soar}
+	$w.menubar.demo.m.mac add command -label {load Mac Planning} \
+		-command {tsiLoadSoar8Demo mac mac-planning.soar}
 	
 	if [winfo exists $w.menubar.demo.m.toh] {destroy $w.menubar.demo.m.toh}
 	menu $w.menubar.demo.m.toh -tearoff 0
-	$w.menubar.demo.m.toh add command -label {Readme} \
-		-font $tsiConfig(boldFont) \
-		-command {ShowFile \
-		"[file join $soar_library .. demos towers-of-hanoi readme]" 0}
-	$w.menubar.demo.m.toh add command -label {load TOH} \
+	$w.menubar.demo.m.toh add command -label {load Towers of Hanoi} \
 		-command {tsiLoadSoar8Demo towers-of-hanoi towers-of-hanoi.soar}
-	$w.menubar.demo.m.toh add command -label {load TOH-fast} \
-		-command {tsiLoadSoar8Demo \
-		towers-of-hanoi towers-of-hanoi-fast.soar}
-	$w.menubar.demo.m.toh add command -label {load TOH-faster} \
-		-command {tsiLoadSoar8Demo \
-		towers-of-hanoi towers-of-hanoi-faster.soar}
-	$w.menubar.demo.m.toh add command -label {load TOH-no-ops} \
-		-command {tsiLoadSoar8Demo \
-		towers-of-hanoi towers-of-hanoi-no-ops.soar}
-	$w.menubar.demo.m.toh add command -label {load TOH-recur} \
-		-command {tsiLoadSoar8Demo \
-		towers-of-hanoi towers-of-hanoi-recur.soar}
+	$w.menubar.demo.m.toh add command -label {load Towers of Hanoi Recursive} \
+		-command {tsiLoadSoar8Demo towers-of-hanoi towers-of-hanoi-recursive.soar}
 	
 	if [winfo exists $w.menubar.demo.m.wj] {destroy $w.menubar.demo.m.wj}
 	menu $w.menubar.demo.m.wj -tearoff 0
