@@ -64,6 +64,11 @@ public:
 	~CommandLineInterface();
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	void SetKernel(gSKI::IKernel* pKernel);
+
+	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
 	*************************************************************/
@@ -321,11 +326,6 @@ protected:
 
 	friend class PrintHandler;			// Allows calling of AppendToResult and log writing
 	friend class sml::KernelSML;		// Allows calling of SetKernel
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	void SetKernel(gSKI::IKernel* pKernel);
 
 	/*************************************************************
 	* @brief Currently used as an output hack, the print handler calls 
