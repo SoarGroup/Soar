@@ -196,6 +196,12 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, gS
 // Called when a "PrintEvent" occurs in the kernel (I think) (voigtjr)
 void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, const char* msg) {
 
+	// If the print callbacks have been disabled, then don't forward this message
+	// on to the clients.  This allows us to use the print callback within the kernel to
+	// retrieve information without it appearing in the trace.  (One day we won't need to do this enable/disable game).
+	if (eventID == gSKIEVENT_PRINT && !m_EnablePrintCallback)
+		return ;
+
 	ConnectionListIter connectionIter = GetBegin(eventID);
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.

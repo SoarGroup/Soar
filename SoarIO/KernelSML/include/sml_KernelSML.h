@@ -245,6 +245,15 @@ public:
 	*************************************************************/	
 	bool DeleteAgentSML(gSKI::IAgent* pAgent) ;
 
+	/*************************************************************
+	* @brief	Enable/disable the print callback for a given agent.
+	*			This allows us to use the print callback within the
+	*			kernel without forwarding that output to clients
+	*			(useful for capturing the output from some commands).
+	*************************************************************/
+	void DisablePrintCallback(gSKI::IAgent* pAgent) { GetAgentSML(pAgent)->DisablePrintCallback() ; }
+	void EnablePrintCallback(gSKI::IAgent* pAgent)  { GetAgentSML(pAgent)->EnablePrintCallback() ; }
+
 protected:
 	KernelSML(unsigned short portToListenOn);
 

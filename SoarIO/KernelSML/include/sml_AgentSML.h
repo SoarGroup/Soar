@@ -120,6 +120,16 @@ public:
 	void RemoveAllListeners(Connection* pConnection) ;
 
 	/*************************************************************
+	* @brief	Sometimes we wish to temporarily disable and then
+	*			re-enable the print callback because we use the Kernel's
+	*			print callback to report information that isn't really part of the trace.
+	*			(One day we should no longer need to do this).
+	*			Enabling/disabling affects all connections.
+	*************************************************************/
+	void DisablePrintCallback() { m_AgentListener.EnablePrintCallback(false) ; }
+	void EnablePrintCallback()  { m_AgentListener.EnablePrintCallback(true) ; }
+
+	/*************************************************************
 	* @brief	Converts an id from a client side value to a kernel side value.
 	*			We need to be able to do this because the client is adding a collection
 	*			of wmes at once, so it makes up the ids for those objects.

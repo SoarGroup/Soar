@@ -52,6 +52,7 @@ class AgentListener : public gSKI::IRunListener, public gSKI::IProductionListene
 protected:
 	KernelSML*		m_KernelSML ;
 	gSKI::IAgent*	m_Agent ;
+	bool			m_EnablePrintCallback ;
 
 	bool IsRunEvent(egSKIEventId id)
 	{
@@ -111,6 +112,7 @@ public:
 	{
 		m_KernelSML = pKernelSML ;
 		m_Agent		= pAgent ;
+		m_EnablePrintCallback = true ;
 	}
 
 	virtual ~AgentListener()
@@ -132,6 +134,10 @@ public:
 
 	// Called when a "PrintEvent" occurs in the kernel (I think) (voigtjr)
 	virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg);
+
+	// Allows us to temporarily stop forwarding print callback output from the kernel to the SML listeners
+	void EnablePrintCallback(bool enable) { m_EnablePrintCallback = enable ; }
+
 } ;
 
 }
