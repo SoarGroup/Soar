@@ -70,7 +70,7 @@ public class Application
 
 		public void xmlEventHandler(int eventID, Object data, Agent agent, ClientXML xml)
 		{
-			String xmlText = xml.GenerateXMLStringFast(true) ;
+			String xmlText = xml.GenerateXMLString(true) ;
 			System.out.println("Received xml trace event in Java: " + xmlText) ;
 
 			String allChildren = "" ;
@@ -80,7 +80,7 @@ public class Application
 				ClientXML child = new ClientXML() ;
 				xml.GetChild(child, 0) ;
 				
-				String childText = child.GenerateXMLStringFast(true) ;
+				String childText = child.GenerateXMLString(true) ;
 				allChildren += childText ;
 				
 				child.delete() ;
@@ -90,6 +90,8 @@ public class Application
 				m_Keep.delete() ;
 			
 			m_Keep = new ClientXML(xml) ;
+			
+			xml.delete() ;
 		}
 
 		public String testRhsHandler(int eventID, Object data, String agentName, String functionName, String argument)
@@ -228,7 +230,7 @@ public class Application
 			throw new IllegalStateException("The xmlEventHandler wasn't called (so m_Keep is null)") ;
 
 		// Try to access m_Keep to make sure the underlying XML object's not been deleted
-		String testXML = listener.m_Keep.GenerateXMLStringFast(true) ;
+		String testXML = listener.m_Keep.GenerateXMLString(true) ;
 		System.out.println("Last trace message: " + testXML) ;
 		listener.m_Keep.delete() ;
 		
