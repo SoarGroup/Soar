@@ -981,7 +981,7 @@ class Writer(DocBlock.DocBlockVisitor):
       # count lines and determine if we need a "more" link   
       lines = b.Source.split('\n')
       more = 0 
-      if cfg.MaxProdSourceLines > 0:
+      if cfg.GenerateSource and cfg.MaxProdSourceLines > 0:
          more = cfg.MaxProdSourceLines < len(lines)
          if more:
             lines = lines[0:cfg.MaxProdSourceLines]

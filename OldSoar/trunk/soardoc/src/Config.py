@@ -121,7 +121,8 @@ the directory should be ignored.
 #--------------------------------------------------------   
    ('MaxProdSourceLines', 50,
     'The maximum number of source lines to show when ShowProdSourceInline is\n' +
-    'enabled. Setting this value to 0 will always show the entire production.'),
+    'enabled. Setting this value to 0 will always show the entire production.\n' + 
+    'This value is ignored (assumed to be 0) if GenerateSource is 0.'),
 
 #--------------------------------------------------------   
    ('UseExistingComments', 0,
