@@ -1,10 +1,13 @@
 /* File : sml_ClientInterface.i */
 %module sml
 
+// uncomment the following line if you're using Java 1.5/5.0 (or later) and want
+//	proper Java enums to be generated for the SML enums
+//%include "enums.swg"
+
 %javaconst(1); // strongly recommended by SWIG manual section 19.3.5.1
 // the previous line causes problems for some enum values, so we have to set them manually here
-// the problem only affects those enums whose values are calculated (as opposed to being constant)
-// hopefully this problem will go away in the future if/when we switch to Java 1.5, which has proper enum support
+// the problem only affects those enums whose values are "calculated" based on other values
 %javaconstvalue("smlSystemEventId.smlEVENT_AFTER_RHS_FUNCTION_EXECUTED.swigValue() + 1") smlEVENT_BEFORE_SMALLEST_STEP;
 %javaconstvalue("smlProductionEventId.smlEVENT_BEFORE_PRODUCTION_RETRACTED.swigValue() + 1") smlEVENT_AFTER_AGENT_CREATED;
 %javaconstvalue("smlPrintEventId.smlEVENT_PRINT.swigValue() + 1") smlEVENT_RHS_USER_FUNCTION;
