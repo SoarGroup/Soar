@@ -9,15 +9,12 @@ namespace cli {
 	public:
 		enum {
 			kNoError							= 0,
-			//kCustomError						= 1,
 			kgSKIError							= 2,
 			kGetOptError						= 3,
 			kCommandNotFound					= 4,
 			kProductionNotFound					= 5,
 			kMultiAttributeNotFound				= 6,
-			//kNoCommandPointer					= 7,
 			kNotImplemented						= 8,
-			kOptionNotImplemented				= 9,
 			kExtraClosingParen					= 10,
 			kUnmatchedBracketOrQuote			= 11,
 			kExtraClosingBrace 					= 12,
@@ -33,15 +30,12 @@ namespace cli {
 			kKernelRequired						= 22,
 			kAliasNotFound						= 23,
 			kAliasExists						= 24,
-			//kAliasError						= 25,
-			//kNoUsageInfo						= 26,
 			kNoUsageFile						= 27,
 			kIntegerExpected					= 28,
 			kIntegerMustBePositive				= 29,
 			kIntegerMustBeNonNegative			= 30,
 			kIntegerOutOfRange					= 31,
 			kInvalidOperation					= 32,
-			kInvalidWMEDetail					= 33,
 			kInvalidNumericIndifferentMode		= 34,
 			kInvalidIndifferentSelectionMode	= 35,
 			kInvalidProductionType				= 36,
@@ -87,15 +81,12 @@ namespace cli {
 		static char const* GetErrorDescription(ErrorCode code) {
 			switch (code) {
 				case kNoError:							return "No Error.";
-				//case kCustomError:						return m_Description.c_str();
 				case kgSKIError:						return "gSKI error.";
 				case kGetOptError:						return "GetOpt returned with an error.";
 				case kCommandNotFound:					return "Command not found.";
 				case kProductionNotFound:				return "Production not found.";
 				case kMultiAttributeNotFound:			return "Multi-attribute not found.";
-				//case kNoCommandPointer:					return "Command found but function pointer is NULL.";
 				case kNotImplemented:					return "Not implemented.";
-				case kOptionNotImplemented:				return "Option not implemented.";
 				case kExtraClosingParen:				return "Closing bracket found without opening counterpart.";
 				case kUnmatchedBracketOrQuote:			return "No closing quotes/brackets found.";
 				case kExtraClosingBrace:				return "Closing brace found without opening counterpart.";
@@ -111,15 +102,12 @@ namespace cli {
 				case kKernelRequired:					return "A kernel is required for this command.";
 				case kAliasNotFound:					return "Alias not found.";
 				case kAliasExists:						return "Alias exists, remove to overwrite.";
-				//case kAliasError:						return "Error adding alias.";
-				//case kNoUsageInfo:						return "Usage information not found for the command.";
 				case kNoUsageFile:						return "Usage file not available.";
 				case kIntegerExpected:					return "Integer argument expected.";
 				case kIntegerMustBePositive:			return "Integer argument must be positive.";
 				case kIntegerMustBeNonNegative:			return "Integer argument must be non-negative.";
 				case kIntegerOutOfRange:				return "Integer argument out of range.";
 				case kInvalidOperation:					return "Invalid operation.";
-				case kInvalidWMEDetail:					return "Invalid WME detail level.";
 				case kInvalidNumericIndifferentMode:	return "Invalid numeric indifferent mode.";
 				case kInvalidIndifferentSelectionMode:	return "Invalid indifferent selection mode.";
 				case kInvalidProductionType:			return "Invalid production type.";
