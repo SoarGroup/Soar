@@ -1063,6 +1063,9 @@ int LogCmd (ClientData clientData,
    */
   create_argv_from_objv(objc, objv, &argv);
 
+  /* switch to the proper agent */
+  Soar_SelectGlobalInterpByInterp(interp);
+
   /*
     Before we pass these arguments to Soar, we need to determine
     whether Tilde substitution is necessary.
