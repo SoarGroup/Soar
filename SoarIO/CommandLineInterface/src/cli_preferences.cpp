@@ -9,6 +9,8 @@
 using namespace cli;
 
 bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+	unused(argv);
 
 	return DoPreferences();
 }

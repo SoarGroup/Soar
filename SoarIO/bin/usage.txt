@@ -303,7 +303,11 @@ named productions.
 ~~~
 ***
 max-chunks
-Usage:	max-chunks
+Usage:	max-chunks [n]
+
+The max-chunks command is used to limit the maximum number of chunks that may be 
+created during a decision cycle.  The initial value of this variable is 50; 
+allowable settings are any integer greater than 0.
 ~~~
 ***
 max-elaborations

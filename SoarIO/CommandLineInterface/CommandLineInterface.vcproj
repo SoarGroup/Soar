@@ -179,6 +179,9 @@
 					RelativePath=".\src\cli_matches.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_maxchunks.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_maxelaborations.cpp">
 				</File>
 				<File
