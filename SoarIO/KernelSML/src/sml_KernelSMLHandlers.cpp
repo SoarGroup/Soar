@@ -81,6 +81,8 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_CreateAgent]		= KernelSML::HandleCreateAgent ;
 	m_CommandMap[sml_Names::kCommand_LoadProductions]	= KernelSML::HandleLoadProductions ;
 	m_CommandMap[sml_Names::kCommand_GetInputLink]		= KernelSML::HandleGetInputLink ;
+
+	m_CommandMap[sml_Names::kCommand_CommandLine]		= KernelSML::HandleCommandLine ;
 }
 
 /*************************************************************
@@ -183,3 +185,29 @@ bool KernelSML::HandleGetInputLink(gSKI::IAgent* pAgent, char const* pCommandNam
 	// We succeeded if we got an id string
 	return (id != NULL) ;
 }
+
+bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pAgent) ; unused(pResponse) ;
+
+	// Get the parameters
+	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
+
+	if (!pLine)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Command line missing") ;
+	}
+
+	// Make the call.
+	// TODO: Command output should go straight to XML instead of using strings.
+	string result;	// command output
+
+	// TODO: This returns false if the command fails for any reason.  I don't think this is where we should handle this,
+	// since the error is detailed in result which is 'correct' output anyway.
+	m_CommandLineInterface.DoCommand(pLine, &result);
+
+	this->ReturnResult(pConnection, pResponse, result.c_str());
+
+	return true ;
+}
+

@@ -69,6 +69,7 @@ char const* sml_Names::kParamLength		= "length" ;
 char const* sml_Names::kParamCount		= "count" ;
 char const* sml_Names::kParamThread		= "thread" ;
 char const* sml_Names::kParamProcess	= "process" ;
+char const* sml_Names::kParamLine		= "line" ;
 char const* sml_Names::kParamLocation	= "location" ;
 char const* sml_Names::kParamLogLocation= "loglocation" ;
 char const* sml_Names::kParamLogLevel	= "loglevel" ;
@@ -89,6 +90,9 @@ char const* sml_Names::kCommand_GetInputLink	= "get_input_link" ;
 char const* sml_Names::kCommand_GetOutputLink	= "get_output_link" ;
 char const* sml_Names::kCommand_Run				= "run" ;
 char const* sml_Names::kCommand_Input			= "input" ;
+
+// command line interface
+char const* sml_Names::kCommand_CommandLine  = "cmdline" ;
 
 // gSKI commands
 char const* sml_Names::kgSKI_CreateKernelFactory			= "gski::createkernelfactory" ;

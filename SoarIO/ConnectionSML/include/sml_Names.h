@@ -74,6 +74,7 @@ public:
 	static char const* kParamLength ;
 	static char const* kParamThread	;
 	static char const* kParamProcess ;
+	static char const* kParamLine ;
 	static char const* kParamLocation ;
 	static char const* kParamLogLocation ;
 	static char const* kParamLogLevel ;
@@ -94,6 +95,9 @@ public:
 	static char const* kCommand_GetOutputLink ;
 	static char const* kCommand_Run ;
 	static char const* kCommand_Input ;
+
+	// Command line interface
+	static char const* kCommand_CommandLine ;
 
 	// gSKI style commands
 	static char const* kgSKI_CreateKernelFactory ;
