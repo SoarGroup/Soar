@@ -69,7 +69,8 @@ typedef union symbol_union Symbol;
 #ifdef WIN32
 typedef struct _iobuf FILE;
 #else
-typedef struct _IO_FILE FILE;
+/*typedef struct _IO_FILE FILE;*/
+#include <stdio.h>
 #endif
 
 extern void start_log_file (agent* thisAgent, char *filename, Bool append);

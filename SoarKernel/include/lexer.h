@@ -59,7 +59,8 @@ typedef struct _iobuf FILE;
 #endif
 
 #if defined(__hpux) || defined(UNIX)
-typedef struct _IO_FILE FILE;
+/*typedef struct _IO_FILE FILE;*/
+#include <stdio.h>
 #endif
 
 #define MAX_LEXER_LINE_LENGTH 1000

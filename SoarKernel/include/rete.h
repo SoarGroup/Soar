@@ -82,7 +82,8 @@ typedef struct _iobuf FILE;
 #endif
 
 #ifdef UNIX
-typedef struct _IO_FILE FILE;
+/*typedef struct _IO_FILE FILE;*/
+#include <stdio.h>
 #endif
 
 extern void init_rete (agent* thisAgent);
