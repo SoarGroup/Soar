@@ -203,14 +203,25 @@ public class Preferences
                 }
 
                 
-            } catch (IOException ioe)
+            }
+            catch (IOException ioe)
             {
                 //ioe.printStackTrace();
                 setDefaultPreferences();
                 return;
             }
+            catch (NullPointerException npe)
+            {
+                //One thing that can cause NPEs is if the token
+                //number constants have changed in the parser.  This
+                //usually occurs when you change the soarparser.jj file.
+                //                         -:AMN: 07 Nov 03
+                setDefaultPreferences();
+                return;
+            }
+            
                         
-        } // read in prefs
+        } // read in prefs from file
         
     } // constructor
 
