@@ -16,3 +16,6 @@ Java_sml_ClientInterface_wrap.cpp: Java_sml_ClientInterface.i
 	$(SWIG) $(SWIGOPT) -o $@ $<
 	$(JAVAC) *.java
 
+clean:
+	rm -f Java_sml_ClientInterface_wrap.cpp
+	rm -f *.java

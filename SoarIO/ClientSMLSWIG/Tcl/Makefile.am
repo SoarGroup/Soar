@@ -23,3 +23,5 @@ SWIGOPT    = -tcl -c++ -Wall
 Tcl_sml_ClientInterface_wrap.cpp: Tcl_sml_ClientInterface.i
 	$(SWIG) $(SWIGOPT) -o $@ $<
 
+clean:
+	rm -f Tcl_sml_ClientInterface_wrap.cpp

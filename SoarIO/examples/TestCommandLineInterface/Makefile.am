@@ -1,4 +1,4 @@
-BASEDIR_PREFIX = ../../../
+BASEDIR_PREFIX = ../../
 bin_PROGRAMS = testcli
 testcli_SOURCES = cli_Test.cpp
 LDADD = \
