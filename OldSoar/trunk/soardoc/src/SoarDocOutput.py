@@ -1006,6 +1006,11 @@ class Writer(DocBlock.DocBlockVisitor):
    def VisitProductionBlock(self, b): pass
 
    def writeDatamapGraphLegend(self, html):
+      # For now, if the nodes are not color coded, then the legend
+      # is pointless...
+      if not Config.Instance().EnableDatamapNodeColoring:
+         return
+
       code = """
       <table bgcolor="#f2f2ff" bordercolor="#f2f2ff" cellspacing=2 border=1>
          <tr>
@@ -1512,7 +1517,9 @@ class DatamapGraphBuilder(DmgenXmlToDot.PsOrOpToDot):
                'URL="javascript:%s(%d)"' % (self.nodeDetailsJsFunc,
                                             self.Nodes.index(n))]
       # Color code the node based on LHS vs. RHS.
-      if n.Side == 'L':
+      if not Config.Instance().EnableDatamapNodeColoring:
+         pass
+      elif n.Side == 'L':
          pass
       elif n.Side == 'R':
          attrs.extend(['style=filled', 'fillcolor=black', 'fontcolor=white'])

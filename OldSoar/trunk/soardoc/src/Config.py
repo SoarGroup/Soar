@@ -240,6 +240,12 @@ the directory should be ignored.
     'If non-zero, then a graphical datamap is generated for each\n' +
     'problem-space and operator page.\n' +
     'This capability requires that DotPath and DotExeName be set.'),
+
+#--------------------------------------------------------   
+   ('EnableDatamapNodeColoring', 1,
+    'If non-zero and ShowDatamaps is enabled, then the nodes of the\n' +
+    'datamap graphs are color coded by the LHS/RHS info provided by\n' +
+    'dmgen. If 0, then all nodes are white and no legend is generated.'),
    
 #--------------------------------------------------------   
    ('DatamapRankDir', 'LR',
