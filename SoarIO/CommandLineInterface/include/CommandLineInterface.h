@@ -182,7 +182,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoPrint(const unsigned short options);
+	bool DoPrint(const unsigned short options, int depth, const char* pArg);
 
 	/*************************************************************
 	* @brief 

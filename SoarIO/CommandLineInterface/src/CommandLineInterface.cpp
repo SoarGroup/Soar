@@ -45,7 +45,7 @@ using namespace cli;
 //| |___| |___ | | |__| (_) | | | \__ \ || (_| | | | | |_\__ \
 // \____|_____|___\____\___/|_| |_|___/\__\__,_|_| |_|\__|___/
 //
-char const* CommandLineInterface::CLIConstants::kCLISyntaxError		= "Syntax error.\n";
+char const* CommandLineInterface::CLIConstants::kCLISyntaxError		= "Command syntax error.\n";
 
 char const* CommandLineInterface::CLIConstants::kCLIAddWME			= "add-wme";
 char const* CommandLineInterface::CLIConstants::kCLICD				= "cd";			// alias for ls
@@ -499,7 +499,7 @@ bool CommandLineInterface::ParseExcise(int argc, char** argv) {
 	unsigned short options = 0;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long (argc, argv, "acdtu", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long(argc, argv, "acdtu", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -622,7 +622,7 @@ bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 	//unsigned short options = 0;
 
 	//for (;;) {
-	//	option = m_GetOpt.GetOpt_Long (argc, argv, "abdeElo", longOptions, 0);
+	//	option = m_GetOpt.GetOpt_Long(argc, argv, "abdeElo", longOptions, 0);
 	//	if (option == -1) {
 	//		break;
 	//	}
@@ -884,10 +884,12 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 	GetOpt::opterr = 0;
 
 	int option;
+	// TODO: in 8.5.2 this is current_agent(default_wme_depth)
+	int depth = 1;
 	unsigned short options = 0;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long (argc, argv, "acd:DfFijnosSu", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long(argc, argv, "acd:DfFijnosSu", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -901,6 +903,7 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 				break;
 			case 'd':
 				options |= OPTION_PRINT_DEPTH;
+				depth = atoi(GetOpt::optarg);
 				break;
 			case 'D':
 				options |= OPTION_PRINT_DEFAULTS;
@@ -944,8 +947,16 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 		}
 	}
 
-	// TODO: arguments
-	return DoPrint(options);
+	// One additional optional argument
+	if ((argc - GetOpt::optind) > 1) {
+		m_Result += CLIConstants::kCLISyntaxError;
+		m_Result += CLIConstants::kCLIPrintUsage;
+		return false;
+	}
+
+	char* pArg = argv[GetOpt::optind]; // argv == 0 if optind == argc because argv[argc] == 0
+
+	return DoPrint(options, depth, pArg);
 }
 
 // ____        ____       _       _
@@ -954,7 +965,7 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 //| |_| | (_) |  __/| |  | | | | | |_
 //|____/ \___/|_|   |_|  |_|_| |_|\__|
 //
-bool CommandLineInterface::DoPrint(const unsigned short options) {
+bool CommandLineInterface::DoPrint(const unsigned short options, int depth, const char* pArg) {
 
 	// Need kernel pointer for back door
 	if (!m_pKernel) {
@@ -971,12 +982,61 @@ bool CommandLineInterface::DoPrint(const unsigned short options) {
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	// Handle stack printing
+	// Check for stack print
 	if (options & OPTION_PRINT_STACK) {
-		// TODO: Return values?
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 		pKernelHack->PrintStackTrace(m_pAgent, (options & OPTION_PRINT_STATES) ? true : false, (options & OPTION_PRINT_OPERATORS) ? true : false);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		return true;
 	}
 
+	// Cache the flags since it makes function calls huge
+	bool internal = (options & OPTION_PRINT_INTERNAL) ? true : false;
+	bool filename = (options & OPTION_PRINT_FILENAME) ? true : false;
+	bool full = (options & OPTION_PRINT_FULL) ? true : false;
+	bool name = (options & OPTION_PRINT_NAME) ? true : false;
+
+	// Check for the five general print options (all, chunks, defaults, justifications, user)
+	if (options & OPTION_PRINT_ALL) {
+		// TODO: Find out what is pArg is for
+		// TODO: This would be much easier to read if we cached those flags
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, CHUNK_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		return true;
+	}
+	if (options & OPTION_PRINT_CHUNKS) {
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, CHUNK_PRODUCTION_TYPE);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		return true;
+	}
+	if (options & OPTION_PRINT_DEFAULTS) {
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		return true;
+	}
+	if (options & OPTION_PRINT_JUSTIFICATIONS) {
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		return true;
+	}
+	if (options & OPTION_PRINT_USER) {
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, USER_PRODUCTION_TYPE);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		return true;
+	}
+
+	// Default to symbol print
+	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+	pKernelHack->PrintSymbol(m_pAgent, const_cast<char*>(pArg), name, filename, internal, full, depth);
+	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 	return true;
 }
 
@@ -1123,7 +1183,7 @@ bool CommandLineInterface::ParseRun(int argc, char** argv) {
 	unsigned short options = 0;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long (argc, argv, "defoOpsS", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long(argc, argv, "defoOpsS", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -1448,10 +1508,14 @@ bool CommandLineInterface::ParseSP(int argc, char** argv) {
 		return false;
 	}
 
-	// Concatinate args
-	string production = argv[0];
-	production += ' ';
-	production += argv[1];
+	// Remove first and last characters (the braces)
+	string production = argv[1];
+	if (production.length() < 3) {
+		m_Result += CLIConstants::kCLISyntaxError;
+		m_Result += CLIConstants::kCLISPUsage;
+		return false;
+	}
+	production = production.substr(1, production.length() - 2);
 
 	return DoSP(production.c_str());
 }
@@ -1465,7 +1529,7 @@ bool CommandLineInterface::ParseSP(int argc, char** argv) {
 bool CommandLineInterface::DoSP(const char* production) {
 	// Must have production
 	if (!production) {
-		m_Result += "Production body is empty.";
+		m_Result += "sp command requires a production.";
 		return false;
 	}
 
@@ -1516,7 +1580,7 @@ bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
 	bool self = false;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long (argc, argv, "s", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long(argc, argv, "s", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -1600,16 +1664,12 @@ bool CommandLineInterface::ParseWatch(int argc, char** argv) {
 	unsigned short states = 0;    // new setting
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long (argc, argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long(argc, argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
 
-		// TODO: 
-		// convert the argument
-		//      switch (option) {
-
-		//      }
+		// TODO: Arguments and more
 
 		switch (option) {
 			case 'a':
