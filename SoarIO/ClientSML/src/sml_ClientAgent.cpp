@@ -710,22 +710,6 @@ bool Agent::Commit()
 *************************************************************/
 char const* Agent::InitSoar()
 {
-#ifdef SML_DIRECT
-	// For the direct connection we need to release all of the WMEs that are
-	// owned in this tree.  Otherwise gSKI will fail to re-init the kernel correctly
-	// when we send over the init-soar command.
-	// BUGBUG: Thinking about this more I guess we really have to register for
-	// the "before-reinit" event and do the clean up there.
-	// Otherwise, if the user issues "init-soar" without coming through this method
-	// the call would fail (e.g. from the command line).
-	if (GetConnection()->IsDirectConnection())
-	{
-		// Force a failure
-		char* pPtr = NULL ;
-		int x = *pPtr ;
-	}
-#endif
-
 	std::string cmd = "init-soar" ;
 
 	// Execute the command.

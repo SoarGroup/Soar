@@ -55,7 +55,8 @@ copy Java_sml_ClientInterface.jar ..\..\bin /Y
 				CommandLine="echo on
 del *.java
 del *.class
-"/>
+"
+				ExcludedFromBuild="TRUE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -164,6 +165,11 @@ del *.class
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
 			<File
 				RelativePath="..\sml_ClientInterface.i">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<File

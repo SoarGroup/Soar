@@ -12,7 +12,7 @@
 #ifndef SML_AGENT_SML_H
 #define SML_AGENT_SML_H
 
-#include "sml_AgentListener.h"
+#include "sml_AgentListener.h" 
 
 // Forward declarations
 namespace gSKI {
@@ -77,8 +77,16 @@ protected:
 	// Used to listen for kernel events that are agent specific
 	AgentListener	m_AgentListener ;
 
+	// We have to keep pointers to these objects so that we can release then during an init-soar.  Youch!
+	gSKI::IWMObject*	m_InputLinkRoot ;
+	gSKI::IWMObject*	m_OutputLinkRoot ;
+
 public:
-	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : m_AgentListener(pKernelSML, pAgent) { m_pKernelSML = pKernelSML ; m_pIAgent = pAgent ; m_pOutputListener = NULL ; m_pInputProducer = NULL ; }
+	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : m_AgentListener(pKernelSML, pAgent)
+	{
+		m_pKernelSML = pKernelSML ; m_pIAgent = pAgent ; m_pOutputListener = NULL ; m_pInputProducer = NULL ;
+		m_InputLinkRoot = NULL ; m_OutputLinkRoot = NULL ;
+	}
 
 	~AgentSML() ;
 
@@ -91,6 +99,12 @@ public:
 	void ReleaseAllWmes() ;
 
 	gSKI::IAgent* GetIAgent() { return m_pIAgent ; }
+
+	void SetInputLinkRoot(gSKI::IWMObject* pRoot)   { m_InputLinkRoot = pRoot ; }
+	gSKI::IWMObject* GetInputLinkRoot()				{ return m_InputLinkRoot ; }
+
+	void SetOutputLinkRoot(gSKI::IWMObject* pRoot)  { m_OutputLinkRoot = pRoot ; }
+	gSKI::IWMObject* GetOutputLinkRoot()			{ return m_OutputLinkRoot ; }
 
 	void SetOutputListener(OutputListener* pListener)			{ m_pOutputListener = pListener ; }
 	OutputListener* GetOutputListener()							{ return m_pOutputListener ; }
@@ -121,6 +135,9 @@ public:
 	gSKI::IWme* ConvertTimeTag(char const* pTimeTag) ;
 	void RecordTimeTag(char const* pTimeTag, gSKI::IWme* pWme) ;
 	void RemoveTimeTag(char const* pTimeTag) ;
+
+	void RecordLongTimeTag(long timeTag, gSKI::IWme* pWme) ;
+	void RemoveLongTimeTag(long timeTag) ;
 } ;
 
 

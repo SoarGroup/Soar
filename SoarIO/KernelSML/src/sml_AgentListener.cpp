@@ -136,16 +136,6 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, eg
 		// It would be faster to just send a message here without waiting for a response
 		// but that could produce incorrect behavior if the client expects to act *during*
 		// the event that we're notifying them about (e.g. notification that we're in the input phase).
-
-		// BUGBUG: The decision to wait for a response (which is necessary) causes another problem.
-		// If we create an agent through the embedded connection, register for an event and do
-		// the same from a remote connection and then run those agents from the remote connection.
-		// The problem is that the embedded connection may not be listening for incoming messages at all
-		// (the one that issues the run command is guaranteed to be waiting because it's inside its own "sendmessagegetresponse" call).
-		// So this send never gets a response because that connection is not listening for any incoming commands.
-		// For example, the cli-test program has this problem.  It's waiting for the user to type commands while in the background
-		// the remote connection runs Soar, causing events (possibly) to fire back to the embedded connection which is waiting
-		// in the keyboard handler and never sees the message so it never replies.
 		pConnection->SendMessageGetResponse(&response, pMsg) ;
 
 		connectionIter++ ;

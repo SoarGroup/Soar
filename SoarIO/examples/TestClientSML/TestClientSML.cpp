@@ -174,22 +174,26 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		Identifier* pInputLink = pAgent->GetInputLink() ;
 
+		//pAgent->InitSoar() ;
+
 		if (!pInputLink)
 			cout << "Error getting input link" << endl ;
 
+		bool ok = true ;
+
 		// Some simple tests
 		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
-
 		Identifier* pID = pAgent->CreateIdWME(pInputLink, "plane") ;
+
+		//ok = pAgent->Commit() ;
+		//pAgent->InitSoar() ;
+
 		StringElement* pWME1 = pAgent->CreateStringWME(pID, "type", "Boeing747") ;
 		IntElement* pWME2    = pAgent->CreateIntWME(pID, "speed", 200) ;
 		FloatElement* pWME3  = pAgent->CreateFloatWME(pID, "direction", 50.5) ;
 
-		bool ok = pAgent->Commit() ;
-
-		// Throw in a quick init-soar which will cause us to send over the input link again
-		// This is just to test init-soar works.
-		pAgent->InitSoar() ;
+		ok = pAgent->Commit() ;
+//		pAgent->InitSoar() ;
 
 		// Remove a wme
 		pAgent->DestroyWME(pWME3) ;
@@ -217,6 +221,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		ok = pAgent->Commit() ;
 
+//		pAgent->InitSoar() ;
+
 		std::string trace = pAgent->Run(2) ;
 
 		// Delete one of the shared WMEs to make sure that's ok
@@ -226,6 +232,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		// The fix I'm using here is to not create the shared WME (pID2) above here.
 		pAgent->DestroyWME(pID) ;
 		pAgent->Commit() ;
+
+//		pAgent->InitSoar() ;
 
 		// Test that we get a callback after the decision cycle runs
 		int userData = 25 ;
@@ -255,8 +263,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 		// Reset the agent and repeat the process to check whether init-soar works.
-		pAgent->InitSoar() ;
-		trace = pAgent->RunTilOutput(20) ;
+//		pAgent->InitSoar() ;
+//		trace = pAgent->RunTilOutput(20) ;
 
 		bool ioOK = false ;
 

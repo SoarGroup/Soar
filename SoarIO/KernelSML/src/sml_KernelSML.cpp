@@ -485,6 +485,30 @@ ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, ElementXML* p
 // time critical part of the interface.
 /////////////////////////////////////////////////////////////////
 
+// Unfortunately we need to keep track of all wmes as they are created and destroyed
+// so that we can release them properly if the user issues an "init-soar".
+// Under gSKI's current memory model this is the client's responsibility or the agent
+// won't release its existing WMEs.
+static inline void RecordWME_Map(IWorkingMemory* wm, IWme* wme)
+{
+	AgentSML* pAgentSML = KernelSML::GetKernelSML()->GetAgentSML(wm->GetAgent()) ;
+
+	// DJP: I'm disabling this for now as there are still bugs around which objects
+	// to release prior to init-soar.  Until I've figured out what to release and what not to
+	// it's safer to leave this out (which means init-soar will fail, but nothing will crash).
+//	pAgentSML->RecordLongTimeTag( wme->GetTimeTag(), wme ) ;
+}
+
+static inline void RemoveWME_Map(IWorkingMemory* wm, IWme* wme)
+{
+	AgentSML* pAgentSML = KernelSML::GetKernelSML()->GetAgentSML(wm->GetAgent()) ;
+
+	// DJP: I'm disabling this for now as there are still bugs around which objects
+	// to release prior to init-soar.  Until I've figured out what to release and what not to
+	// it's safer to leave this out (which means init-soar will fail, but nothing will crash).
+//	pAgentSML->RemoveLongTimeTag( wme->GetTimeTag() ) ;
+}
+
 /*************************************************************
 * @brief	Add a wme.
 * @param input		True if adding to input link.  False if adding to output link
@@ -495,18 +519,24 @@ ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, ElementXML* p
 EXPORT Direct_WME_Handle sml_DirectAddWME_String(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute, char const* value)
 {
 	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeString((IWMObject*)parent, pAttribute, value) ;
+	RecordWME_Map((IWorkingMemory*)wm, (IWme*)wme) ;
+
 	return wme ;
 }
 
 EXPORT Direct_WME_Handle sml_DirectAddWME_Int(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute, int value)
 {
 	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeInt((IWMObject*)parent, pAttribute, value) ;
+	RecordWME_Map((IWorkingMemory*)wm, (IWme*)wme) ;
+
 	return wme ;
 }
 
 EXPORT Direct_WME_Handle sml_DirectAddWME_Double(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute, double value)
 {
 	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeDouble((IWMObject*)parent, pAttribute, value) ;
+	RecordWME_Map((IWorkingMemory*)wm, (IWme*)wme) ;
+
 	return wme ;
 }
 
@@ -519,6 +549,7 @@ EXPORT Direct_WME_Handle sml_DirectAddWME_Double(Direct_WorkingMemory_Handle wm,
 EXPORT void sml_DirectRemoveWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)
 {
 	((IWorkingMemory*)wm)->RemoveWme((IWme*)wme) ;
+	RemoveWME_Map((IWorkingMemory*)wm, (IWme*)wme) ;
 
 	// Release the object so the client doesn't have to call back in and do that.
 	((IWme*)wme)->Release() ;
@@ -533,6 +564,8 @@ EXPORT void sml_DirectRemoveWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handl
 EXPORT Direct_WME_Handle sml_DirectAddID(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute)
 {
 	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeNewObject((IWMObject*)parent, pAttribute) ;
+	RecordWME_Map((IWorkingMemory*)wm, (IWme*)wme) ;
+
 	return wme ;
 }
 
@@ -547,6 +580,8 @@ EXPORT Direct_WME_Handle sml_DirectAddID(Direct_WorkingMemory_Handle wm, Direct_
 EXPORT Direct_WME_Handle sml_DirectLinkID(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute, Direct_WMObject_Handle orig)
 {
 	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeObjectLink((IWMObject*)parent, pAttribute, (IWMObject*)orig) ;
+	RecordWME_Map((IWorkingMemory*)wm, (IWme*)wme) ;
+
 	return wme ;
 }
 
@@ -585,9 +620,15 @@ EXPORT Direct_WMObject_Handle sml_DirectGetRoot(char const* pAgentName, bool inp
 
 	IWMObject* pRoot = NULL ;
 	if (input)
+	{
 		pAgent->GetInputLink()->GetRootObject(&pRoot) ;
+		KernelSML::GetKernelSML()->GetAgentSML(pAgent)->SetInputLinkRoot(pRoot) ;
+	}
 	else
+	{
 		pAgent->GetOutputLink()->GetRootObject(&pRoot) ;
+		KernelSML::GetKernelSML()->GetAgentSML(pAgent)->SetOutputLinkRoot(pRoot) ;
+	}
 
 	return (Direct_WMObject_Handle)pRoot ;
 }

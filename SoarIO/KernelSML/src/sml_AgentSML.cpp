@@ -15,10 +15,13 @@
 
 #include "sml_AgentSML.h"
 #include "sml_OutputListener.h"
+#include "sml_StringOps.h"
 
 #include "IgSKI_Wme.h"
 #include "IgSKI_Agent.h"
 #include "IgSKI_InputProducer.h"
+#include "IgSKI_WMObject.h"
+#include "IgSKI_Symbol.h"
 
 #include <assert.h>
 
@@ -54,9 +57,19 @@ void AgentSML::ReleaseAllWmes()
 	for (TimeTagMapIter mapIter = m_TimeTagMap.begin() ; mapIter != m_TimeTagMap.end() ; mapIter++)
 	{
 		gSKI::IWme* pWme = mapIter->second ;
+		std::string value = pWme->GetValue()->GetString() ;
+
 		pWme->Release() ;
 	}
 
+	if (m_InputLinkRoot)
+		m_InputLinkRoot->Release() ;
+	m_InputLinkRoot = NULL ;
+/*
+	if (m_OutputLinkRoot)
+		m_OutputLinkRoot->Release() ;
+	m_OutputLinkRoot = NULL ;
+*/
 	m_TimeTagMap.clear() ;
 	m_ToClientIdentifierMap.clear() ;
 	m_IdentifierMap.clear() ;
@@ -166,7 +179,23 @@ void AgentSML::RecordTimeTag(char const* pTimeTag, gSKI::IWme* pWME)
 	m_TimeTagMap[pTimeTag] = pWME ;
 }
 
+void AgentSML::RecordLongTimeTag(long timeTag, gSKI::IWme* pWME)
+{
+	char str[kMinBufferSize] ;
+	Int2String(timeTag, str, sizeof(str)) ;
+
+	m_TimeTagMap[str] = pWME ;
+}
+
 void AgentSML::RemoveTimeTag(char const* pTimeTag)
 {
 	m_TimeTagMap.erase(pTimeTag) ;
+}
+
+void AgentSML::RemoveLongTimeTag(long timeTag)
+{
+	char str[kMinBufferSize] ;
+	Int2String(timeTag, str, sizeof(str)) ;
+
+	m_TimeTagMap.erase(str) ;
 }
