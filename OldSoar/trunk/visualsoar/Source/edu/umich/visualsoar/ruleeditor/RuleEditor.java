@@ -928,9 +928,8 @@ public class RuleEditor extends CustomInternalFrame
         JMenu fileMenu = new JMenu("File");
         
         // Save Action
-        JMenuItem saveItem = new JMenuItem("Save");
+        JMenuItem saveItem = new JMenuItem("Save this File");
         saveItem.addActionListener(saveAction);
-        saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,Event.CTRL_MASK));
         fileMenu.add(saveItem);
 
         JMenuItem revertToSavedItem = new JMenuItem("Revert To Saved");
