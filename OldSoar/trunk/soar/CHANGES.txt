@@ -95,12 +95,12 @@ Bug Fixes
 365  rules that contain a capital letter break productions tab
 376  stop button doesn't work with Eaters, TankSoar
 396  error when closing group from task bar
+398  extra 0 gets printed when soar connected to environments
 
 Known Issues
 ------------
 336  negated conditions don't print properly in the console window
 397  grouping bar in production tab not always right
-398  extra 0 gets printed when soar connected to environments
 
 SGIO 1.1.2
 ==========
