@@ -471,38 +471,38 @@ proc setPrintDepth {} {
 
 proc quitSoar {} {
    global tsiConfig sio_socketList sio_envSocketList
-    
-   if { ![tk_dialog .tsiQuit {Quit Soar} {Really quit from Soar?} \
+   
+   if { [grab current] == "" } {   # fix for bugzilla bug 396
+     if { ![tk_dialog .tsiQuit {Quit Soar} {Really quit from Soar?} \
 	     question 0 {Ok} {Cancel}] } {
       
-      if ![string compare $tsiConfig(mode) off] { exit }
+       if ![string compare $tsiConfig(mode) off] { exit }
 
-      # Otherwise socketio is on, and we may need to disconnect some sockets
-      if [info exists sio_socketList] {
-	 puts "Disconnecting sio_socketList : $sio_socketList"
-	 foreach sock $sio_socketList {
-	    SIO_SendSocketCommand $sock "socket-shutdown"
-	 }
-      } else {
-	 puts "sio_socketList is not-defined."
-      }
-      if [info exists sio_envSocketList] { 
-	 puts "Disconnecting sio_envSocketList : $sio_envSocketList"
-	 foreach sock $sio_envSocketList {
-	    SIO_SendSocketCommand $sock "socket-shutdown"
-	 }
-      } else {
-	 puts "sio_envSocketList is not-defined."
-      }
+       # Otherwise socketio is on, and we may need to disconnect some sockets
+       if [info exists sio_socketList] {
+	  puts "Disconnecting sio_socketList : $sio_socketList"
+	  foreach sock $sio_socketList {
+	     SIO_SendSocketCommand $sock "socket-shutdown"
+	  }
+       } else {
+	  puts "sio_socketList is not-defined."
+       }
+       if [info exists sio_envSocketList] { 
+	  puts "Disconnecting sio_envSocketList : $sio_envSocketList"
+	  foreach sock $sio_envSocketList {
+	     SIO_SendSocketCommand $sock "socket-shutdown"
+	  }
+       } else {
+	  puts "sio_envSocketList is not-defined."
+       }
 	 
-      # Check to see if this is defined, and if so, call it.
-      if { [llength [info procs simulatorQuit]] > 0 } {
-	  simulatorQuit
-      }
-      exit
+       # Check to see if this is defined, and if so, call it.
+       if { [llength [info procs simulatorQuit]] > 0 } {
+ 	   simulatorQuit
+       }
+       exit
+    }
    }
-
-   
 }
 
 
