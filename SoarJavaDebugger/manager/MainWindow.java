@@ -89,28 +89,47 @@ public class MainWindow
   	{
   		Pane top = new Pane(m_Window) ;
   		final Sash divider1 = new Sash(m_Window, SWT.HORIZONTAL) ;
+  		Pane buttonPane = new Pane(m_Window) ;
   		Pane bottom = new Pane(m_Window) ;
-
+  		
 		// Now connect up a specific type of view with these panes
 		AbstractView trace = new TraceView() ;
 		trace.Init(m_MainFrame, m_Document, top.getWindow()) ;
 
+		// Create the button view
+		ButtonView buttons = new ButtonView() ;
+		buttons.addButton("Init-soar", "init-soar") ;
+		buttons.addButton("Excise chunks", "excise --chunks") ;
+		buttons.addButton("Run 5", "run 5") ;
+		buttons.addButton("Run", "run") ;
+		buttons.addButton("Stop", "stop-soar") ;
+		buttons.setLinkedView(trace) ;	// Use the trace window for output from the buttons
+		buttons.Init(m_MainFrame, m_Document, buttonPane.getWindow()) ;		
+		
   		// Layout the three windows with a sash between them
-    	FormData leftData = new FormData();
-    	FormData rightData = new FormData();
+    	FormData topData    = new FormData();
+    	FormData buttonData = new FormData() ;
+    	FormData bottomData = new FormData();
     	
-      	leftData.left      = new FormAttachment(0);
-    	leftData.right     = new FormAttachment(100);
-    	leftData.top       = new FormAttachment(0);
-      	leftData.bottom    = new FormAttachment(divider1);
-             
-      	rightData.left   = new FormAttachment(0);
-    	rightData.right  = new FormAttachment(100);
-    	rightData.top    = new FormAttachment(divider1);
-    	rightData.bottom = new FormAttachment(100);   
+      	topData.left      = new FormAttachment(0);
+    	topData.right     = new FormAttachment(100);
+    	topData.top       = new FormAttachment(0);
+      	topData.bottom    = new FormAttachment(buttonPane.getWindow());
+      	
+      	buttonData.left   = new FormAttachment(0) ;
+      	buttonData.right  = new FormAttachment(100) ;
+      	// If we bind the button's top to the window it makes the top window very small and the buttons very large
+      	// buttonData.top    = new FormAttachment(top.getWindow()) ;
+      	buttonData.bottom = new FormAttachment(divider1) ;
+      	
+      	bottomData.left   = new FormAttachment(0);
+    	bottomData.right  = new FormAttachment(100);
+    	bottomData.top    = new FormAttachment(divider1);
+    	bottomData.bottom = new FormAttachment(100);   
     	
-    	top.getWindow().setLayoutData(leftData) ;
-    	bottom.getWindow().setLayoutData(rightData) ;
+    	top.getWindow().setLayoutData(topData) ;
+    	buttonPane.getWindow().setLayoutData(buttonData) ;
+    	bottom.getWindow().setLayoutData(bottomData) ;
     	
 		Listener sashListener = new Listener() {
 			public void handleEvent(Event e) {

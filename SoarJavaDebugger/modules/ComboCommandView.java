@@ -193,12 +193,7 @@ public class ComboCommandView extends AbstractView
 			this.m_CommandCombo.setText("") ;
 
 		// Send the command to Soar
-		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
-
-		// Output from Soar doesn't include newlines and assumes that we insert
-		// a newline before the result of the command is displayed.
-		if (result != null && result.length() > 0)
-			appendText("\n" + result) ;
+		executeAgentCommand(command) ;
 	}
 	
 	public void setTextFont(Font f)
@@ -290,6 +285,28 @@ public class ComboCommandView extends AbstractView
 		*/
 	}
 
+	/************************************************************************
+	* 
+	* Execute a command (send it to Soar) and display the output in a manner
+	* appropriate to this view.
+	* 
+	* The result (if any) is also returned to the caller.
+	* 
+	*************************************************************************/
+	public String executeAgentCommand(String command)
+	{
+		System.out.println("Starting " + command) ;
+		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
+		System.out.println("Finished " + command) ;
+
+		// Output from Soar doesn't include newlines and assumes that we insert
+		// a newline before the result of the command is displayed.
+		if (result != null && result.length() > 0)
+			appendText("\n" + result) ;
+
+		return result ;
+	}
+	
 	private void appendText(final String text)
 	{
 		// If Soar is running in the UI thread we can make

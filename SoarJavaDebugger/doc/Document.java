@@ -398,12 +398,21 @@ public class Document
 	{
 		Agent agent = getAgent(agentName) ;
 
-		// If we're running Soar in the UI thread we need to pump messages (for the OS) to allow
-		// the UI to update at all and do things like handle mouse clicks intended to stop soar.
 		if (eventID == smlAgentEventId.smlEVENT_BEFORE_AGENTS_RUN_STEP.swigValue())
 		{
 			if (!kDocInOwnThread)
+			{
+				// If we're running Soar in the UI thread we need to pump messages (for the OS) to allow
+				// the UI to update at all and do things like handle mouse clicks intended to stop soar.
 				pumpMessagesOneStep() ;
+			}
+			else
+			{
+				// If we're running Soar in its own thread, we need to check for interruption messages (stop-soar)
+				// while Soar is running, otherwise the call to "run" blocks forever and we can't stop it.
+				m_DocumentThread.executePending() ;
+			}
+				
 			return ;
 		}
 		
@@ -460,7 +469,7 @@ public class Document
 	// More generic than agent added/removed.  Use the more specific form if you can.
 	protected synchronized void fireAgentListChanged()								{ m_SoarChangeGenerator.fireAgentListChanged(this, SoarAgentEvent.kListChanged, null) ; }
 
-	public String sendAgentCommand(Agent agent, String command)
+	public String sendAgentCommand(Agent agent, String commandLine)
 	{
 		if (agent == null)
 			return null ;
@@ -470,14 +479,25 @@ public class Document
 		// because they'll return very quickly.  By separating these out we don't really
 		// have to solve the question of how to capture the result from executing the command
 		// and pass it back to the caller...which is potentially a hard problem.
-		if (this.kDocInOwnThread && m_Kernel.IsRunCommand(command))
+		//if (this.kDocInOwnThread && m_Kernel.IsRunCommand(commandLine))
+		if (this.kDocInOwnThread)
 		{
-			m_DocumentThread.scheduleCommandToExecute(agent, command) ;
-			return null ;	// The immediate result is nothing -- output will come later
+			DocumentThread.Command command = m_DocumentThread.scheduleCommandToExecute(agent, commandLine) ;
+			
+			while (!m_DocumentThread.isExecutedCommand(command))
+			{
+				pumpMessagesOneStep() ;
+				
+				// BUGBUG: We really want to have a way to say "sleep-until-either UI-message or command-is-executed".
+				// Not sure how to do that.  Without it we will be wasting CPU cycles polling for these results while Soar is executing.
+			}
+
+			String result = m_DocumentThread.getExecutedCommandResult(command) ;
+			return result ;
 		}
 		else
 		{
-			String response = agent.ExecuteCommandLine(command) ;			
+			String response = agent.ExecuteCommandLine(commandLine) ;			
 			return response ;
 		}
 	}

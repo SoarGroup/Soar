@@ -32,11 +32,13 @@ import doc.Document;
 ********************************************************************************************/
 public class ButtonView extends AbstractView
 {
+	protected Composite	m_Container ;
+	protected AbstractView m_LinkedView ;	// Connect the button view to a window to display output from its commands.
+	
 	protected static class ButtonInfo
 	{
 		protected String	m_Name ;
 		protected String	m_Command ;
-		protected int		m_Channel ;
 	}
 	
 	/** A list of ButtonInfo objects */
@@ -71,12 +73,11 @@ public class ButtonView extends AbstractView
 	{
 	}
 	
-	public void addButton(String name, String command, int channel)
+	public void addButton(String name, String command)
 	{
 		ButtonInfo button = new ButtonInfo() ;
 		button.m_Name    = name ;
 		button.m_Command = command ;
-		button.m_Channel = channel ;
 		
 		m_ButtonList.add(button) ;
 	}
@@ -85,14 +86,22 @@ public class ButtonView extends AbstractView
 	{
 		m_MainFrame = frame ;
 		m_Document  = doc ;
-		createButtonPanel() ;
+		createButtonPanel(parent) ;
 	}
 
-	protected void createButtonPanel()
+	// This view is used to display output from the commands issued by the buttons.
+	// If it's null, we don't show the output anywhere.
+	public void setLinkedView(AbstractView linkedView)
 	{
-		// Remove any existing buttons
-		/* BUGBUG SWT
-		this.removeAll() ;
+		m_LinkedView = linkedView ;		
+	}
+
+	protected void createButtonPanel(Composite parent)
+	{
+		// The container lets us control the layout of the controls
+		// within this window
+		m_Container	   = new Composite(parent, SWT.NULL) ;
+		m_Container.setLayout(new RowLayout()) ;
 		
 		// Create and add buttons for each button info structure
 		for (int i = 0 ; i < m_ButtonList.size() ; i++)
@@ -100,23 +109,34 @@ public class ButtonView extends AbstractView
 			ButtonInfo info = (ButtonInfo)m_ButtonList.get(i) ;
 			
 			final int pos = i ;
-			JButton button = new JButton(info.m_Name) ;
-			button.addActionListener(new ActionListener() { public void actionPerformed(ActionEvent e) { buttonPressed(e, pos) ; } } ) ;
-			
-			this.add(button) ;
+			Button button = new Button(m_Container, SWT.PUSH) ;
+			button.setText(info.m_Name) ;
+			button.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { buttonPressed(e, pos) ; } ; }) ;
 		}
-		*/
 	}
 
-	/* BUGBUG SWT
-	protected void buttonPressed(ActionEvent e, int pos)
+	protected void buttonPressed(SelectionEvent e, int pos)
 	{
 		ButtonInfo button = (ButtonInfo)m_ButtonList.get(pos) ;
-		
-		getDocument().sendAgentCommand(getAgentFocus(), button.m_Command) ;
-	}
-	*/
+		String command = button.m_Command ;
 
+		// If we have a linked view, have it execute the command (so we can see the output).
+		// If not, we execute the command and eat the output.
+		if (m_LinkedView != null)
+			m_LinkedView.executeAgentCommand(command) ;
+		else
+			executeAgentCommand(command) ;
+	}
+
+	public String executeAgentCommand(String command)
+	{		
+		// Send the command to Soar but there's no where to display the output
+		// so we just eat it.
+		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
+		
+		return result ;
+	}
+	
 	/************************************************************************
 	* 
 	* Converts this object into an XML representation.
@@ -144,7 +164,6 @@ public class ButtonView extends AbstractView
 			ElementXML child = new ElementXML("Button") ;
 			child.addAttribute("Name", button.m_Name) ;
 			child.addAttribute("Command", button.m_Command) ;
-			child.addAttribute("Channel", Integer.toString(button.m_Channel)) ;
 			
 			element.addChildElement(child) ;
 		}
@@ -175,7 +194,6 @@ public class ButtonView extends AbstractView
 	{
 		m_MainFrame		   = frame ;		
 		m_Document		   = doc ;
-		//m_Channel 		   = element.getAttributeIntThrows("Channel") ;
 		
 		m_ButtonList.clear() ;
 		
@@ -188,13 +206,12 @@ public class ButtonView extends AbstractView
 			ButtonInfo button = new ButtonInfo() ;
 			button.m_Name    = child.getAttributeThrows("Name") ;
 			button.m_Command = child.getAttributeThrows("Command") ;
-			button.m_Channel = child.getAttributeIntThrows("Channel") ;
 			
 			m_ButtonList.add(button) ;
 		}
 		
 		// Reset the list of buttons to match the list we just loaded	
-		createButtonPanel() ;
+		//createButtonPanel() ;
 	}
 
 	/** So far the button panel doesn't care about events from the agent */

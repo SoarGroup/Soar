@@ -27,9 +27,6 @@ import sml.Agent;
 * 
 * The functionality that a debugger window needs to support.
 * 
-* We derive this from JPanel because we also want to be able to work with these
-* windows as swing components.  Not sure if JPanel or JComponent is the more useful base.
-* 
 ********************************************************************************************/
 public abstract class AbstractView implements AgentFocusListener
 {	
@@ -94,6 +91,16 @@ public abstract class AbstractView implements AgentFocusListener
 	* 
 	*************************************************************************/
 	public abstract general.ElementXML ConvertToXML(String title) ;
+
+	/************************************************************************
+	* 
+	* Execute a command (send it to Soar) and display the output in a manner
+	* appropriate to this view.
+	* 
+	* The result (if any) is also returned to the caller.
+	* 
+	*************************************************************************/
+	public abstract String executeAgentCommand(String command) ;
 	
 	/************************************************************************
 	* 

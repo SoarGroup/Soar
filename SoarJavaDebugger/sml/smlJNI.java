@@ -121,8 +121,12 @@ class smlJNI {
   public final static native String get_sml_Names_kParamRunResult();
   public final static native String get_sml_Names_kParamVersionMajor();
   public final static native String get_sml_Names_kParamVersionMinor();
+  public final static native String get_sml_Names_kParamVersionMicro();
   public final static native String get_sml_Names_kParamWaitSNC();
   public final static native String get_sml_Names_kParamFunction();
+  public final static native String get_sml_Names_kParamChunkNamePrefix();
+  public final static native String get_sml_Names_kParamChunkCount();
+  public final static native String get_sml_Names_kParamChunkLongFormat();
   public final static native String get_sml_Names_kTrue();
   public final static native String get_sml_Names_kFalse();
   public final static native String get_sml_Names_kCommand_CreateAgent();

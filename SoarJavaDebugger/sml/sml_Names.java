@@ -385,12 +385,28 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kParamVersionMinor();
   }
 
+  public static String getKParamVersionMicro() {
+    return smlJNI.get_sml_Names_kParamVersionMicro();
+  }
+
   public static String getKParamWaitSNC() {
     return smlJNI.get_sml_Names_kParamWaitSNC();
   }
 
   public static String getKParamFunction() {
     return smlJNI.get_sml_Names_kParamFunction();
+  }
+
+  public static String getKParamChunkNamePrefix() {
+    return smlJNI.get_sml_Names_kParamChunkNamePrefix();
+  }
+
+  public static String getKParamChunkCount() {
+    return smlJNI.get_sml_Names_kParamChunkCount();
+  }
+
+  public static String getKParamChunkLongFormat() {
+    return smlJNI.get_sml_Names_kParamChunkLongFormat();
   }
 
   public static String getKTrue() {

@@ -32,20 +32,23 @@ public class DocumentThread extends Thread
 	// BUGBUG: There's a chance that the agent object is invalid
 	// by the time we go to execute the command.  We need a way to detect that
 	// the C++ object is no good before we try to run the command.
-	private static class Command
+	public static class Command
 	{
 		private Agent m_Agent ;
 		private String m_Command ;
+		private String m_Result ;
+		private boolean m_Executed ;
 		
 		public Command(Agent agent, String command)
 		{
 			m_Agent = agent ;
 			m_Command = command ;
+			m_Executed = false ;
 		}
 	}
 	
 	/** The commands waiting to be executed */
-	private ArrayList m_CommandQueue = new ArrayList() ;
+	private ArrayList m_ToExecuteQueue = new ArrayList() ;
 	
 	/** A flag used when we wish to stop this thread (during system shutdown) */
 	private boolean   m_AskedToStop = false ;
@@ -65,32 +68,62 @@ public class DocumentThread extends Thread
 	}
 	
 	/** Schedule a command to execute later */
-	public synchronized void scheduleCommandToExecute(Agent agent, String command)
+	public synchronized Command scheduleCommandToExecute(Agent agent, String commandLine)
 	{
-		m_CommandQueue.add(new Command(agent, command)) ;
+		Command command = new Command(agent, commandLine) ;
+		m_ToExecuteQueue.add(command) ;
+		
+		return command ;
 	}
 	
 	/** Get the next command from the queue.  Returns null if there are no commands */
 	private synchronized Command popNextCommand()
 	{
-		if (m_CommandQueue.size() == 0)
+		if (m_ToExecuteQueue.size() == 0)
 			return null ;
 		
-		Command command = (Command)m_CommandQueue.get(0) ;
-		m_CommandQueue.remove(0) ;
+		Command command = (Command)m_ToExecuteQueue.get(0) ;
+		m_ToExecuteQueue.remove(0) ;
 
 		return command ;
+	}
+	
+	public synchronized boolean isExecutedCommand(Command command)
+	{
+		return command.m_Executed ;
+	}	
+
+	public synchronized String getExecutedCommandResult(Command command)
+	{
+		if (!command.m_Executed)
+			throw new IllegalStateException("Command has not been executed yet -- should check isExecutedCommand first") ;
+		
+		return command.m_Result ;
+	}
+	
+	private synchronized void recordCommandResult(Command command, String result)
+	{
+		command.m_Result = result ;
+		command.m_Executed = true ;
+	}
+
+	// This function pulls waiting commands off the queue and executes them in Soar.
+	// We expose this so that we can call it during the execution of a run to check for "stop-soar" commands.
+	public void executePending()
+	{
+		Command command ;
+		while ( (command = popNextCommand()) != null )
+		{
+			String result = command.m_Agent.ExecuteCommandLine(command.m_Command) ;
+			recordCommandResult(command, result) ;
+		}		
 	}
 	
 	public void run()
 	{
 		while (!m_AskedToStop)
 		{
-			Command command ;
-			while ( (command = popNextCommand()) != null )
-			{
-				String result = command.m_Agent.ExecuteCommandLine(command.m_Command) ;
-			}
+			executePending() ;
 		}
 	}
 }
