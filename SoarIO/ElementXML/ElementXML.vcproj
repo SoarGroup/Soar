@@ -14,7 +14,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="bin"
-			IntermediateDirectory="bin\Debug"
+			IntermediateDirectory="src\Debug"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -65,7 +65,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="bin"
-			IntermediateDirectory="bin\Release"
+			IntermediateDirectory="src\Release"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -93,7 +93,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy bin\ElementXML.dll ..\bin"/>
+				CommandLine="copy bin\ElementXML.dll $(SolutionDir)\bin"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

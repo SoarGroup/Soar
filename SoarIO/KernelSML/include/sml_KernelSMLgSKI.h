@@ -37,7 +37,7 @@ namespace TgD
 }
 #endif
 
-#include "CommandLineInterface.h"
+#include "cli_CommandLineInterface.h"
 
 namespace sml {
 

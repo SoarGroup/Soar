@@ -13,7 +13,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="lib"
-			IntermediateDirectory="lib\Debug"
+			IntermediateDirectory="src\Debug"
 			ConfigurationType="4"
 			CharacterSet="2">
 			<Tool
@@ -55,7 +55,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="lib"
-			IntermediateDirectory="lib\Release"
+			IntermediateDirectory="src\Release"
 			ConfigurationType="4"
 			CharacterSet="2">
 			<Tool

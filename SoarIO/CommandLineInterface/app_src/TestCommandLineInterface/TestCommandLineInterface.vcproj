@@ -13,15 +13,15 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../bin"
-			IntermediateDirectory="lib"
+			OutputDirectory="$(SolutionDir)\bin"
+			IntermediateDirectory="src\Debug"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\ClientSML\include;..\..\..\ElementXML\include;..\..\..\ConnectionSML\include;..\..\..\..\gSKI\include;..\..\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\ClientSML\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\CommandLineInterface\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -36,9 +36,9 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="FALSE"
 				AdditionalDependencies="soar-cli.lib ConnectionSML.lib ElementXML.lib ClientSML.lib"
-				OutputFile="bin\cli-test.exe"
+				OutputFile="cli-test.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\ClientSML\lib;..\..\..\ConnectionSML\lib;..\..\..\..\gSKI\lib;..\..\lib\;..\..\..\ElementXML\lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\ClientSML\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;;&quot;$(SolutionDir)\..\gSKI\lib&quot;;&quot;$(SolutionDir)\CommandLineInterface\lib\&quot;;&quot;$(SolutionDir)\ElementXML\lib&quot;"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="0"
 				SubSystem="1"
@@ -67,14 +67,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../bin"
-			IntermediateDirectory="lib"
+			OutputDirectory="$(SolutionDir)\bin"
+			IntermediateDirectory="src\Release"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\ClientSML\include;..\..\..\ElementXML\include;..\..\..\ConnectionSML\include;..\..\..\..\gSKI\include;..\..\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\ClientSML\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\CommandLineInterface\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -85,9 +85,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="soar-cli.lib ConnectionSML.lib ElementXML.lib ClientSML.lib"
-				OutputFile="bin\cli-test.exe"
+				OutputFile="cli-test.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\ClientSML\lib;..\..\..\ConnectionSML\lib;..\..\..\..\gSKI\lib;..\..\lib\;..\..\..\ElementXML\lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\ClientSML\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;;&quot;$(SolutionDir)\..\gSKI\lib&quot;;&quot;$(SolutionDir)\CommandLineInterface\lib\&quot;;&quot;$(SolutionDir)\ElementXML\lib&quot;"
 				GenerateDebugInformation="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>

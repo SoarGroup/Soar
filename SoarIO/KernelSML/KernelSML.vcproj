@@ -14,13 +14,13 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="bin"
-			IntermediateDirectory="bin\Debug"
+			IntermediateDirectory="src\Debug"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\CommandLineInterface\include;..\..\TgDI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\CommandLineInterface\include&quot;;&quot;$(SolutionDir)\..\TgDI\include&quot;;include;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\..\gSKI\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -37,7 +37,7 @@
 				AdditionalDependencies="ConnectionSML.lib soar-cli.lib"
 				OutputFile="bin\KernelSML.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\CommandLineInterface\lib;..\ConnectionSML\lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\CommandLineInterface\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/KernelSML.pdb"
 				SubSystem="2"
@@ -68,12 +68,12 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="bin"
-			IntermediateDirectory="bin\Release"
+			IntermediateDirectory="src\Release"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\CommandLineInterface\include;..\..\TgDI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\CommandLineInterface\include&quot;;&quot;$(SolutionDir)\..\TgDI\include&quot;;include;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\..\gSKI\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -88,7 +88,7 @@
 				AdditionalDependencies="ConnectionSML.lib soar-cli.lib"
 				OutputFile="bin\KernelSML.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\CommandLineInterface\lib;..\ConnectionSML\lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\CommandLineInterface\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"

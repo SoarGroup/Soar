@@ -14,14 +14,14 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="lib"
-			IntermediateDirectory="lib\Debug"
+			IntermediateDirectory="src\Debug"
 			ConfigurationType="4"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\..\gSKI\include&quot;;include"
 				PreprocessorDefinitions="WIN32;_DEBUG;__GW32C__"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -58,13 +58,13 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="lib"
-			IntermediateDirectory="lib\Debug"
+			IntermediateDirectory="src\Release"
 			ConfigurationType="4"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\..\gSKI\include&quot;;include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
