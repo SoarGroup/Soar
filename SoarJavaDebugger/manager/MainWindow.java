@@ -20,6 +20,8 @@ import org.eclipse.swt.events.*;
 
 import sml.Agent;
 
+import general.Debug;
+import general.ElementXML;
 import helpers.FormDataHelper;
 
 import java.util.*;
@@ -47,6 +49,8 @@ public class MainWindow
 	private Composite 	m_Window ;
 	private MainFrame	m_MainFrame ;
 	private Document	m_Document ;
+	public final static String kAttachKey = "Attach" ;
+	public final static String kAttachBottomValue = "Bottom" ;
 	
 	// The order of this list determines tab order
 	private ArrayList	m_PaneList = new ArrayList() ;
@@ -82,12 +86,6 @@ public class MainWindow
   		return size.y ;
   	}
   	
-  	public Point getLocationOnScreen()
-  	{
-  		// BUGBUG - SWT: This is relative to parent not screen.
-  		return m_Window.getLocation() ;
-  	}
-
   	public void setTextFont(Font f)
   	{
   		for (int i = 0 ; i < m_PaneList.size() ; i++)
@@ -140,77 +138,76 @@ public class MainWindow
   		return null ;
   	}
   	
-  	public int getTabPane(Pane focusPane)
+  	public int getPaneIndex(Pane pane)
   	{
   		for (int i = 0 ; i < m_PaneList.size() ; i++)
   		{
-  			if (m_PaneList.get(i) == focusPane)
+  			if (m_PaneList.get(i) == pane)
   				return i ;
   		}
   		
   		return -1 ;
   	}
   	
-  	// BUGBUG: Right now the SWT controls implement this already so we need to integrate with that instead
-  	// of rolling our own like this.
-  	public void tabFocus(boolean forward)
+  	/** Attaches the bottom pane to the top such that the bottom pane doesn't resize -- e.g. for button bars */
+  	protected void attachToBottom(Pane top, Pane bottom)
   	{
-  		if (m_PaneList.size() == 0)
+  		if (top.getWindow().getParent() != bottom.getWindow().getParent())
+  			throw new IllegalStateException("To attach these two together they need to have the same parent") ;
+  		
+  		// Set the layout to be form layout (top's parent == bottom's parent so could use either)
+  		Composite parent = top.getWindow().getParent() ;
+  		parent.setLayout(new FormLayout()) ;
+  		
+  		// Record how we are attaching these together (later we may offer other methods)
+  		parent.setData(kAttachKey, kAttachBottomValue) ;
+  		
+  		// Layout logic for just the top and buttonPane windows
+  		FormData topData    = new FormData() ;
+  		FormData bottomData = new FormData() ;
+  		
+      	topData.left      = new FormAttachment(0);
+    	topData.right     = new FormAttachment(100);
+    	topData.top       = new FormAttachment(0);
+      	topData.bottom    = new FormAttachment(bottom.getWindow());
+      	
+      	bottomData.left   = new FormAttachment(0) ;
+      	bottomData.right  = new FormAttachment(100) ;
+      	// If we bind the button's top to the window it makes the top window very small and the buttons very large
+      	// buttonData.top    = new FormAttachment(top.getWindow()) ;
+      	bottomData.bottom = new FormAttachment(100) ;
+      	
+      	top.getWindow().setLayoutData(topData) ;
+      	bottom.getWindow().setLayoutData(bottomData) ;
+   	}
+  	
+	/** Close any existing windows and start fresh **/
+  	protected void clearLayout()
+  	{
+  		if (m_Window == null)
   			return ;
   		
-  		// Get the current focus pane
-  		AbstractView focusView = getFocusView() ;
-  		
-  		int index = -1 ;
-  		
-  		if (focusView != null)
-  			index = getTabPane(focusView.getPane()) ;
-
-  		int tries = 0 ;
-  		boolean done = false ;
-
-  		// Move through the panes one at a time until one accepts the focus
-  		// or we loop back to the start.
-  		while (!done && tries < m_PaneList.size())
-  		{
-  			tries++ ;
-  			
-  			if (forward) { index++ ; if (index >= m_PaneList.size()) index = 0 ; }
-  			else { index-- ; if (index < 0) index = m_PaneList.size() - 1 ; }	
-
-  			Pane pane = (Pane)m_PaneList.get(index) ;
-  			done = pane.setFocus() ;
-  		}  		
+		Composite parent = m_Window.getParent() ;
+		
+		// We need to clear the focus before deleting all of the windows
+		// so they unregister any events for the current agent
+		// Then at the end we'll reset the focus, allowing them to re-register
+		// for events.
+		m_MainFrame.setAgentFocus(null) ;
+		
+		// Now delete everything
+		m_Window.dispose() ;
+		m_PaneList.clear() ;
+		
+		m_Window = new Composite(parent, 0) ;
+		m_Window.setLayout(new FormLayout()) ;
   	}
   	
-  	/********************************************************************************************
-  	 * 
-  	 * Create the default children that we use in the standard window layout.
-  	 * 
-  	********************************************************************************************/
-  	public void useDefaultLayout()
+  	/** Create the windows for the default layout */
+  	protected void createDefaultLayout()
   	{
-  		Agent currentAgentFocus = null ;
-  		
-  		// Close any existing windows and start fresh
-  		if (m_Window != null)
-  		{
-  			Composite parent = m_Window.getParent() ;
-  			
-  			// We need to clear the focus before deleting all of the windows
-  			// so they unregister any events for the current agent
-  			// Then at the end we'll reset the focus, allowing them to re-register
-  			// for events.
-  			currentAgentFocus = m_MainFrame.getAgentFocus() ;
-  			m_MainFrame.setAgentFocus(null) ;
-  			
-  			// Now delete everything
-  			m_Window.dispose() ;
-  			m_PaneList.clear() ;
-  			
-			m_Window = new Composite(parent, 0) ;
-			m_Window.setLayout(new FormLayout()) ;
-  		}
+  		if (m_Window.getChildren().length != 0)
+  			throw new IllegalStateException("Need to start with a blank base window") ;
   		
   		// Horiz sash has 3 windows has vertSashLeft and vertSashRight as its children
   		SashForm horizSash = new SashForm(m_Window, SWT.HORIZONTAL) ;
@@ -227,11 +224,9 @@ public class MainWindow
   		// The button bar is a fixed size window so it is linked to the window above
   		// and moves as one with it.  To make this happen we'll create this pair.
   		Composite pair	  = new Composite(vertSashLeft, 0) ;
-  		pair.setLayout(new FormLayout()) ;
   		
   		// Adding a 2nd button bar with more print commands
   		Composite pair2 = new Composite(vertSashRight, 0) ;
-  		pair2.setLayout(new FormLayout()) ;
 
   		// These panes contain a SWT Window and a module/view that provides specific debugging content
   		Pane top  		  	 = new Pane(pair) ;
@@ -241,33 +236,10 @@ public class MainWindow
   		Pane buttonsRightTop = new Pane(pair2) ;
   		Pane rightBottom  	 = new Pane(vertSashRight) ;
 
-  		// Layout logic for just the top and buttonPane windows
-  		FormData topData  = new FormData() ;
-  		FormData buttonData = new FormData() ;
-  		
-      	topData.left      = new FormAttachment(0);
-    	topData.right     = new FormAttachment(100);
-    	topData.top       = new FormAttachment(0);
-      	topData.bottom    = new FormAttachment(buttonPane.getWindow());
+  		// Attach the button panes to a window as a single, resizable unit
+  		attachToBottom(top, buttonPane) ;
+  		attachToBottom(rightTop, buttonsRightTop) ;
       	
-      	buttonData.left   = new FormAttachment(0) ;
-      	buttonData.right  = new FormAttachment(100) ;
-      	// If we bind the button's top to the window it makes the top window very small and the buttons very large
-      	// buttonData.top    = new FormAttachment(top.getWindow()) ;
-      	buttonData.bottom = new FormAttachment(100) ;
-      	
-      	// You're not allowed to re-use these objects so we'll make a copy since
-      	// they have the same relationships
-      	FormData topCopy    = FormDataHelper.copyFormData(topData) ;
-      	topCopy.bottom    = new FormAttachment(buttonsRightTop.getWindow());
-      	FormData buttonCopy = FormDataHelper.copyFormData(buttonData) ;
-      	
-      	top.getWindow().setLayoutData(topData) ;
-      	buttonPane.getWindow().setLayoutData(buttonData) ;
-      	
-      	rightTop.getWindow().setLayoutData(topCopy) ;
-      	buttonsRightTop.getWindow().setLayoutData(buttonCopy) ;
-
   		// Have to set the weights after we have added the panes, so that the size of the weights array
   		// matches the current list of controls
   		vertSashLeft.setWeights(new int[] { 80, 20 }) ;
@@ -285,6 +257,7 @@ public class MainWindow
 		// Now connect up a specific type of view with these panes
 		AbstractView trace = new TraceView() ;
 		trace.Init(m_MainFrame, m_Document, top) ;
+		top.addView(trace) ;
 
 		// Create the button view
 		ButtonView buttons = new ButtonView() ;
@@ -296,12 +269,15 @@ public class MainWindow
 		buttons.addButton("Stop", "stop-soar") ;		
 		buttons.addButton("Matches", "matches") ;
 		buttons.addButton("Print <s>", "print <s>") ;
-		buttons.addButton("Towers of Hanoi", null, new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_MainFrame.loadDemo(new java.io.File("towers-of-hanoi", "towers-of-hanoi.soar")) ; } }) ;
+		// This button uses an internally scripted command to drive the debugger itself to load a demo
+		buttons.addButton("Towers of Hanoi", null, "demo towers-of-hanoi towers-of-hanoi.soar") ;
 		buttons.Init(m_MainFrame, m_Document, buttonPane) ;
+		buttonPane.addView(buttons) ;
 
 		// Create another trace window at the bottom for now
 		AbstractView keep = new KeepCommandView() ;
 		keep.Init(m_MainFrame, m_Document, bottom) ;
+		bottom.addView(keep) ;
 		
 		// Start with the focus on the top trace window
 		trace.setFocus() ;
@@ -309,6 +285,7 @@ public class MainWindow
 		// Command view for top right
 		AbstractView update1 = new KeepCommandView() ;
 		update1.Init(m_MainFrame, m_Document, rightTop) ;
+		rightTop.addView(update1) ;
 
 		// Button bar for right top
 		buttons = new ButtonView() ;
@@ -318,14 +295,32 @@ public class MainWindow
 		buttons.addButton("Print stack", "print --stack") ;
 		buttons.Init(m_MainFrame, m_Document, buttonsRightTop) ;
 		buttons.setLinkedView(update1) ;
+		buttonsRightTop.addView(buttons) ;
 
 		// Command view for bottom right
 		AbstractView update2 = new UpdateCommandView() ;
 		update2.Init(m_MainFrame, m_Document, rightBottom) ;
+		rightBottom.addView(update2) ;
 
   		// Reset the default text font (once all windows have been created)
 		// as part of "the default layout".
-  		m_MainFrame.setTextFont(new FontData("Courier New", 8, SWT.NORMAL)) ;
+  		m_MainFrame.setTextFont(new FontData("Courier New", 8, SWT.NORMAL)) ;  		
+  	}
+  	
+  	/********************************************************************************************
+  	 * 
+  	 * Create the default children that we use in the standard window layout.
+  	 * 
+  	********************************************************************************************/
+  	public void useDefaultLayout()
+  	{
+  		Agent currentAgentFocus = m_MainFrame.getAgentFocus() ;
+  		
+  		// Dispose of all existing windows
+  		clearLayout() ;
+  		
+  		// Build the new windows
+  		createDefaultLayout() ;
   		
 		// Note: Must update the parent because we've changed its children here.
 		// Without this the new windows don't appear on screen at all.
@@ -335,61 +330,270 @@ public class MainWindow
        	// This allows the new windows to all register for events with this agent.
        	m_MainFrame.setAgentFocus(currentAgentFocus) ;
   	}
+
+	/************************************************************************
+	* 
+	* Loads the window layout from an XML file.
+	* 
+	*************************************************************************/
+  	public boolean loadLayoutFromFile(String filename, boolean showErrors)
+  	{
+		try
+		{
+			ElementXML root = ElementXML.ReadFromFile(filename);
+			
+			// Find the version of the layout file.
+			String version = root.getAttributeThrows(ElementXML.kVersionAttribute) ;
+
+			if (!version.equals("1.0"))
+				throw new Exception("Layout file is from an unsupported version " + version) ;
+			
+			// Pick up the current focus so we can restore it at the end
+	  		Agent currentAgentFocus = m_MainFrame.getAgentFocus() ;
+
+			// Get rid of any existing windows and create a new blank window
+			clearLayout() ;
+			
+			// Load all of the windows
+			loadChildrenFromXML(m_MainFrame, m_Document, m_Window, root) ;
+	  		
+			// Note: Must update the parent because we've changed its children here.
+			// Without this the new windows don't appear on screen at all.
+	       	m_Window.getParent().layout(true) ;
+	       	
+	       	// We reset the agent focus (if it existed before).
+	       	// This allows the new windows to all register for events with this agent.
+	       	m_MainFrame.setAgentFocus(currentAgentFocus) ;
+			
+			
+			return true ;
+		}
+		catch (Exception e)
+		{
+			String msg = e.getMessage();
+
+			// Report any errors to the user.
+			if (showErrors)
+				m_MainFrame.ShowMessageBox("Error loading file: " + filename, msg) ;	
+			else
+				System.out.println("Error loading file: " + filename + " " + msg) ;
+
+			return false ;
+		}  		
+  	}
   	
 	public boolean saveLayoutToFile(String filename)
 	{
-		return false ;
+		ElementXML root = convertToXML("Debugger") ;
+
+		try
+		{
+			// Write the tree out as a file.
+			root.WriteToFile(filename);
+			
+			return true ;
+		}
+		catch (java.io.IOException e)
+		{
+			String msg = e.getMessage();
+
+			// Report any errors to the user.
+			m_MainFrame.ShowMessageBox("Error saving file: " + filename, msg) ;			
+			return false ;
+		}
 	}
-  	
-	public void layoutControls(Sash divider, double position)
+  		
+	/** Convert a sash form (and its children) to XML */
+	protected ElementXML convertSashFormToXML(SashForm sash, String tagName)
 	{
-		if ((divider.getStyle() & SWT.HORIZONTAL) != 0)
+		ElementXML element = new ElementXML(tagName) ;
+		
+		// Record the class and style of this composite so we can rebuild it later
+		element.addAttribute(ElementXML.kClassAttribute, sash.getClass().toString()) ;
+		
+		// The sash form stores its orientation (the style we really need) separately
+		// from the control's style, so retreive it from orientation.
+		int style = sash.getOrientation() ;
+		element.addAttribute("style", Integer.toString(style)) ;
+
+		// Record the weights between the windows
+		int[] weights = sash.getWeights() ;
+		element.addAttribute("weights", Integer.toString(weights.length)) ;
+		for (int i = 0 ; i < weights.length ; i++)
 		{
-			FormData sashData = new FormData() ;
-	 					
-			sashData.left 	  = new FormAttachment(0) ;
-	       	sashData.right    = new FormAttachment(100) ;
-	       	sashData.top	  = new FormAttachment( (int)(position * 100)) ;	
-		
-	       	divider.setLayoutData(sashData) ;
-		}
-		else
-		{
-			FormData sashData = new FormData() ;
-	 					
-			sashData.top 	  = new FormAttachment(0) ;
-	       	sashData.bottom   = new FormAttachment(100) ;
-	       	sashData.left	  = new FormAttachment( (int)(position * 100)) ;	
-		
-	       	divider.setLayoutData(sashData) ;
-		}
-		
-       	// Make the control update.
-       	m_Window.layout() ;
-	}
-	
-	void onDragSash(SelectionEvent event)
-	{
-		Sash sash = (Sash)event.widget ;
-		Rectangle area = m_Window.getClientArea() ;
-		
-		double position = 0.5 ;
-		
-		// A vertical sash moves horizontally
-		if ((sash.getStyle() & SWT.VERTICAL) != 0)
-		{
-			position = ((double)event.x) / (double)(area.width) ;
-		}
-		else
-		{
-			position = ((double)event.y) / (double)(area.height) ;
+			element.addAttribute("weight" + i, Integer.toString(weights[i])) ;
 		}
 
-		// Make sure we're in range
-		if (position < 0.0) position = 0.0 ;
-		if (position > 1.0) position = 1.0 ;
+		// Add the children
+		addChildrenToXML(element, sash) ;
 		
-		layoutControls(sash, position) ;
+		return element ;
 	}
-  	
+	
+	/** Add all of the children of this composite as children of the XML element **/
+	protected void addChildrenToXML(ElementXML element, Composite composite)
+	{
+		Control[] controls = composite.getChildren() ;
+		
+		for (int i = 0 ; i < controls.length ; i++)
+		{
+			// When we reach a pane we're at a leaf in the layout logic and need
+			// to switch to storing the pane information.
+			Pane pane = (Pane)controls[i].getData(Pane.kPaneKey) ;
+
+			if (pane != null)
+			{
+				element.addChildElement(pane.convertToXML("pane")) ;				
+				continue ;
+			}
+			
+			// Children must be composite windows (either simple composites
+			// or sash forms).  Anything else we ignore (like an actual Sash control).
+			if (controls[i] instanceof Composite)
+			{
+				Composite comp = (Composite)controls[i] ;
+
+				if (comp instanceof SashForm)
+				{
+					element.addChildElement(convertSashFormToXML((SashForm)comp, "sash")) ;
+				}
+				else
+				{
+					element.addChildElement(convertCompositeToXML(comp, "composite")) ;					
+				}				
+			}
+		}
+	}
+	
+	/** Convert a simple composite to XML **/
+	protected ElementXML convertCompositeToXML(Composite composite, String tagName)
+	{
+		ElementXML element = new ElementXML(tagName) ;
+		
+		// Record the class and style of this composite so we can rebuild it later
+		element.addAttribute(ElementXML.kClassAttribute, composite.getClass().toString()) ;
+
+		int style = composite.getStyle() ;
+		style = 0 ;	// Override this for now until I figure out why I get back such a different value
+		element.addAttribute("style", Integer.toString(style)) ;
+		
+		// See how this composite's children are meant to be put together.
+		String attachType = (String)composite.getData(kAttachKey) ;
+
+		// All composites beneath the top currently have to have this key
+		// so we'll know how they were attached together and can rebuild it later
+		if (attachType == null)
+			throw new IllegalStateException("Composite window missing its required attach key.  When the layout was built did we connect up the windows without calling one of our attachX methods?") ;
+		element.addAttribute("attach", attachType) ;
+		
+		addChildrenToXML(element, composite) ;
+		
+		return element ;
+	}
+	
+	protected ElementXML convertToXML(String tagName)
+	{
+		ElementXML root = new ElementXML(tagName) ;
+
+		// Add a version to the layout file so we can have later debuggers handle earlier layout files
+		// in a special manner if we wish.
+		root.addAttribute(ElementXML.kVersionAttribute, "1.0") ;
+
+		// The display consists of a list of panes (the modules that provide functionality) together
+		// with a collection of SashForms and Composite windows that are used to lay them out.
+		// We navigate down through the windows until we reach the panes, recording information as we go.
+		// Once we reach the pane we switch to logic that's module specific about how to save that pane.
+		addChildrenToXML(root, m_Window) ;
+		
+		return root ;
+	}
+	
+	protected void loadChildrenFromXML(MainFrame frame, Document doc, Composite parent, ElementXML element) throws Exception
+	{
+		for (int i = 0 ; i < element.getNumberChildren() ; i++)
+		{
+			ElementXML child = element.getChild(i) ;
+
+			String tagName = child.getTagName() ;
+			
+			if (tagName.equalsIgnoreCase("sash") || tagName.equalsIgnoreCase("composite"))
+				loadSwtFromXML(frame, doc, parent, child) ;
+			else if (tagName.equalsIgnoreCase("pane"))
+				loadPaneFromXML(frame, doc, parent, child) ;
+			else
+				// Throw during development, but really we should just ignore this
+				// when reading XML (in case we add tags later and load this into an earlier version)
+				throw new Exception("Unknown tag " + tagName) ;
+		}		
+	}
+	
+	protected void loadPaneFromXML(MainFrame frame, Document doc, Composite parent, ElementXML element) throws Exception
+	{
+		Pane pane = new Pane(parent) ;
+  		m_PaneList.add(pane) ;
+  		
+  		pane.loadFromXML(frame, doc, parent, element) ;		
+	}
+	
+	protected void loadSwtFromXML(MainFrame frame, Document doc, Composite parent, ElementXML element) throws Exception
+	{
+		String tag = element.getTagName() ;
+		String className = element.getAttributeThrows(ElementXML.kClassAttribute) ;
+		int style = element.getAttributeIntThrows("style") ;
+
+		// We could rebuild a generic SWT object from the class using reflection, but it's actually simpler (so far) to just
+		// handle the few cases we support explicitly
+		if (tag.equalsIgnoreCase("sash"))
+		{
+			// Create the new form
+			SashForm sash = new SashForm(parent, style) ;
+	  		sash.setLayoutData(FormDataHelper.anchorFull(0)) ;
+			
+			// Have to create all of the children *before* we can set the weights
+			// (this is an oddity of SashForm)
+			loadChildrenFromXML(frame, doc, sash, element) ;
+			
+			int numberWeights = element.getAttributeIntThrows("weights") ;
+			int[] weights = new int[numberWeights] ;
+			
+			for (int i = 0 ; i < numberWeights ; i++)
+			{
+				weights[i] = element.getAttributeIntThrows("weight" + i) ;
+			}
+			
+			sash.setWeights(weights) ;
+		}
+		else if (tag.equalsIgnoreCase("composite"))
+		{
+			Composite composite = new Composite(parent, style) ;
+			
+			// See how this composite's children are meant to be put together.
+			String attachType = element.getAttributeThrows("attach") ;
+			
+			// Create the children so we have something to attach together below
+			loadChildrenFromXML(frame, doc, composite, element) ;
+			
+			if (attachType.equalsIgnoreCase(kAttachBottomValue))
+			{
+				Control[] children = composite.getChildren() ;
+				
+				if (children.length != 2)
+					throw new Exception("Trying to attach two windows together but found " + children.length + " instead") ;
+				
+				Pane top    = (Pane)children[0].getData(Pane.kPaneKey) ;
+				Pane bottom = (Pane)children[1].getData(Pane.kPaneKey) ;
+				
+				if (top == null || bottom == null)
+					throw new Exception("Expected child windows to be panes but they're not.") ;
+
+				// Finally now make the attachment
+				attachToBottom(top, bottom) ;
+			} else {
+				// Throw during development, but really we should just ignore this
+				// when reading XML (in case we add tags later and load this into an earlier version)
+				throw new Exception("Unknown attachment type: " + attachType) ;
+			}
+		}		
+	}
+	
 }

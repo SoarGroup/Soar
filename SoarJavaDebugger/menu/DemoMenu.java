@@ -89,14 +89,22 @@ public class DemoMenu
 		// All are always enabled for now
 	}
 	
+	protected void loadDemo(File filename)
+	{
+		// Default parameter -- echo the source command
+		loadDemo(filename, true) ;
+	}
+	
 	/** Load a specific demo.  We'll make this public so that buttons etc. can call here to load a demo */
-	public void loadDemo(File filename)
+	public void loadDemo(File filename, boolean echoCommand)
 	{
 		File filePath = new File(m_DemoPath, filename.getPath()) ;
 		String commandLine = m_Document.getSoarCommands().getSourceCommand(filePath.getPath()) ;
 
-		m_Frame.executeCommandPrimeView(commandLine, true) ;
-		m_Frame.displayTextInPrimeView("\nType 'run' to execute the demo.") ;
+		m_Frame.executeCommandPrimeView(commandLine, echoCommand) ;
+		
+		if (echoCommand)
+			m_Frame.displayTextInPrimeView("\nType 'run' to execute the demo.") ;
 	}
 
 	private void toh(ActionEvent e)

@@ -38,9 +38,9 @@ public class ButtonView extends AbstractView
 	
 	protected static class ButtonInfo
 	{
-		protected String			m_Name ;
-		protected String			m_Command ;
-		protected SelectionListener m_Listener ;
+		protected String	m_Name ;
+		protected String	m_Command ;
+		protected String	m_InternalCommand ;
 	}
 	
 	/** A list of ButtonInfo objects */
@@ -70,16 +70,17 @@ public class ButtonView extends AbstractView
 	* Create a new button with visible text of "name" that issues command "command" when the
 	* user presses the button.  (A null command is valid and does nothing).
 	* 
-	* The caller can also (optionally) register a listener which will be called when the button
-	* is pressed, to perform additional actions.
+	* The caller can also (optionally) register an internal command.  That is a command that
+	* does something inside the debugger based on a set of scripted commands that the debugger
+	* itself supports.
 	* 
 	********************************************************************************************/
-	public void addButton(String name, String command, SelectionListener listener)
+	public void addButton(String name, String command, String internalCommand)
 	{
 		ButtonInfo button = new ButtonInfo() ;
 		button.m_Name    = name ;
 		button.m_Command = command ;
-		button.m_Listener = listener ;
+		button.m_InternalCommand = internalCommand ;
 		
 		m_ButtonList.add(button) ;
 	}
@@ -142,7 +143,7 @@ public class ButtonView extends AbstractView
 			// When the user presses the button we call our default handler and
 			// optionally a handler registered with the button (to do a custom action)
 			button.addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent e) { buttonPressed(e, pos) ; if (info.m_Listener != null) info.m_Listener.widgetSelected(e); } ;
+				public void widgetSelected(SelectionEvent e) { buttonPressed(e, pos) ; } ;
 			}) ;
 		}
 	}
@@ -159,6 +160,11 @@ public class ButtonView extends AbstractView
 				m_LinkedView.executeAgentCommand(command, true) ;
 			else
 				m_MainFrame.executeCommandPrimeView(command, true) ;
+		}
+		
+		if (button.m_InternalCommand != null)
+		{
+			m_MainFrame.executeInternalCommand(button.m_InternalCommand, true) ;
 		}
 	}
 
@@ -197,7 +203,7 @@ public class ButtonView extends AbstractView
 	* Converts this object into an XML representation.
 	* 
 	*************************************************************************/
-	public general.ElementXML ConvertToXML(String title)
+	public general.ElementXML convertToXML(String title)
 	{
 		ElementXML element = new ElementXML(title) ;
 		
@@ -218,7 +224,12 @@ public class ButtonView extends AbstractView
 			
 			ElementXML child = new ElementXML("Button") ;
 			child.addAttribute("Name", button.m_Name) ;
-			child.addAttribute("Command", button.m_Command) ;
+			
+			if (button.m_Command != null)
+				child.addAttribute("Command", button.m_Command) ;
+			
+			if (button.m_InternalCommand != null)
+				child.addAttribute("InternalCommand", button.m_InternalCommand) ;
 			
 			element.addChildElement(child) ;
 		}
@@ -241,11 +252,13 @@ public class ButtonView extends AbstractView
 	* 
 	* Rebuild the object from an XML representation.
 	* 
+	* @param frame			The top level window that owns this window
 	* @param doc			The document we're rebuilding
+	* @param parent			The pane window that owns this view
 	* @param element		The XML representation of this command
 	* 
 	*************************************************************************/
-	public void LoadFromXML(MainFrame frame, doc.Document doc, general.ElementXML element) throws Exception
+	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception
 	{
 		m_MainFrame		   = frame ;		
 		m_Document		   = doc ;
@@ -260,13 +273,14 @@ public class ButtonView extends AbstractView
 			
 			ButtonInfo button = new ButtonInfo() ;
 			button.m_Name    = child.getAttributeThrows("Name") ;
-			button.m_Command = child.getAttributeThrows("Command") ;
+			button.m_Command = child.getAttribute("Command") ;
+			button.m_InternalCommand = child.getAttribute("InternalCommand") ;
 			
 			m_ButtonList.add(button) ;
 		}
 		
-		// Reset the list of buttons to match the list we just loaded	
-		//createButtonPanel() ;
+		// Actually create the window
+		Init(frame, doc, parent) ;
 	}
 
 	/** So far the button panel doesn't care about events from the agent */

@@ -25,4 +25,5 @@ public class AbstractViewList
 	public int size()					{ return m_List.size() ; }
 	public void add(AbstractView view)	{ m_List.add(view) ; }
 	public AbstractView get(int index)	{ return (AbstractView)m_List.get(index) ; }
+	public void clear()					{ m_List.clear() ; }
 }

@@ -80,7 +80,6 @@ public abstract class AbstractView implements AgentFocusListener
 			throw new IllegalStateException("Only do this once -- or you need to remove the old value from the list of views owned by pane") ;
 		
 		m_Pane = pane ;
-		pane.addView(this) ;
 	}
 	
 	/********************************************************************************************
@@ -110,7 +109,7 @@ public abstract class AbstractView implements AgentFocusListener
 	* Converts this object into an XML representation.
 	* 
 	*************************************************************************/
-	public abstract general.ElementXML ConvertToXML(String title) ;
+	public abstract general.ElementXML convertToXML(String tagName) ;
 
 	/************************************************************************
 	* 
@@ -153,26 +152,18 @@ public abstract class AbstractView implements AgentFocusListener
 	*************************************************************************/
 	public abstract boolean setFocus() ;
 	public abstract boolean hasFocus() ;
-	
-	/************************************************************************
-	* 
-	* Create an instance of the class.  It does not have to be fully initialized
-	* (it's the caller's responsibility to finish the initilization).
-	* 
-	*************************************************************************/
-	// You need to add this method, but it can't be in the interface because it's static.
-	// public static AbstractWindow createInstance() ;
-	
+
 	/************************************************************************
 	* 
 	* Rebuild the object from an XML representation.
 	* 
 	* @param frame			The top level window that owns this window
 	* @param doc			The document we're rebuilding
+	* @param parent			The pane window that owns this view
 	* @param element		The XML representation of this command
 	* 
 	*************************************************************************/
-	public abstract void LoadFromXML(MainFrame frame, doc.Document doc, general.ElementXML element) throws Exception ;
+	public abstract void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception ;
 	
 	protected abstract void registerForAgentEvents(Agent agent) ;
 	

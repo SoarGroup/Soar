@@ -224,8 +224,7 @@ public abstract class BaseCommandView extends AbstractView
 	 * This makes right clicking on a piece of text much easier as it's just one click rather than
 	 * having to left click to place the selection and then right click to bring up the menu.
 	 * 
-	*******************************************************************************************
-	 */
+	********************************************************************************************/
 	protected void rightButtonPressed(MouseEvent e)
 	{
 		// Unfortunately, SWT doesn't support getting a character location from a position
@@ -340,7 +339,7 @@ public abstract class BaseCommandView extends AbstractView
 	* Converts this object into an XML representation.
 	* 
 	*************************************************************************/
-	public general.ElementXML ConvertToXML(String title)
+	public general.ElementXML convertToXML(String title)
 	{
 		ElementXML element = new ElementXML(title) ;
 		
@@ -368,14 +367,14 @@ public abstract class BaseCommandView extends AbstractView
 	* 
 	* @param frame			The top level window that owns this window
 	* @param doc			The document we're rebuilding
+	* @param parent			The pane window that owns this view
 	* @param element		The XML representation of this command
 	* 
 	*************************************************************************/
-	public void LoadFromXML(MainFrame frame, doc.Document doc, general.ElementXML element) throws Exception
+	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception
 	{
 		m_MainFrame		   = frame ;
 		m_Document		   = doc ;
-		//m_Channel 		   = element.getAttributeIntThrows("Channel") ;
 		m_UpdateOnStop	   = element.getAttributeBooleanThrows("UpdateOnStop") ;
 		m_ClearEachCommand = element.getAttributeBooleanThrows("ClearEachCommand") ;
 		m_ClearComboEachCommand = element.getAttributeBooleanThrows("ClearComboEachCommand") ;
@@ -386,6 +385,9 @@ public abstract class BaseCommandView extends AbstractView
 		if (history != null)
 			this.m_CommandHistory.LoadFromXML(doc, history) ;
 		
+		// Actually create the window
+		Init(frame, doc, parent) ;
+
 		// Reset the combo box to match the history list we just loaded	
 		makeComboBoxMatchHistory() ;
 	}

@@ -476,26 +476,19 @@ public class ElementXML
 	
 	/************************************************************************
 	* 
-	* In the editor we like to use <name> to represent variables (following Soar syntax).
-	* Unfortunately, we can't use "<" in XML as part of strings, so we convert from < to [
-	* and from > to ].  Incidentally, this means "[]" cannot be used in strings or they'll
-	* be converted to <> as well.
+	* These are yet to be implemented -- but are intended to convert
+	* invalid XML chars to XML escape sequences and back again
+	* (e.g. "<" => "&lt;" and so on.
 	* 
-	* BUGBUG: We need a more general solution than this -- we can't have any strings that
-	* are incorrectly mapped as "[" and "]" are with this solution.
-	* We'll need to go to a proper escape character system instead.
-	* Also, we need to think about embedded quotes which will also break things.
-	* 
-	*************************************************************************/
-	protected static String replaceAngleBrackets(String src)
+	*************************************************************************/	
+	protected static String convertToEscapes(String src)
 	{
-		return src.replace('<', '[').replace('>', ']') ;
+		return src ;
 	}
 	
-	/** This function is the inverse of the one above (replaceAngleBrackets) */
-	protected static String replaceSquareBrackets(String src)
+	protected static String convertFromEscapes(String src)
 	{
-		return src.replace('[', '<').replace(']', '>') ;
+		return src ;
 	}
 	
 	/************************************************************************
@@ -955,7 +948,7 @@ public class ElementXML
 			
 			// Then must be followed by a string containing the value
 			String value = lex.MustBe(LexXML.kQuotedString) ;
-			value = replaceSquareBrackets(value) ;
+			value = convertFromEscapes(value) ;
 			
 			element.addAttribute(name, value) ;
 		}
@@ -971,7 +964,7 @@ public class ElementXML
 			{
 				// Quoted strings are used to contain content values
 				String contents = lex.getCurrentTokenValue() ;
-				contents = replaceSquareBrackets(contents) ;
+				contents = convertFromEscapes(contents) ;
 				
 				element.addContents(contents) ;
 				lex.GetNextToken() ;
@@ -998,7 +991,7 @@ public class ElementXML
 			// contents strings, but we'll assume anything else we find here
 			// is part of the contents.
 			String value = lex.getCurrentTokenValue() ;
-			value = replaceSquareBrackets(value) ;
+			value = convertFromEscapes(value) ;
 			
 			element.addContents(value) ;
 			lex.GetNextToken() ;
@@ -1097,7 +1090,7 @@ public class ElementXML
 			buffer.append(name) ;
 			buffer.append("=") ;
 			buffer.append("\"") ;
-			buffer.append(replaceAngleBrackets(value)) ;
+			buffer.append(convertToEscapes(value)) ;
 			buffer.append("\"") ;
 		}
 
@@ -1124,7 +1117,7 @@ public class ElementXML
 				
 			// Write out the contents, as a quoted string.
 			// We use quotes, so we can indent and in case the string has embedded newlines.
-			output.write("\"" + replaceAngleBrackets(this.m_Contents) + "\"") ;
+			output.write("\"" + convertToEscapes(this.m_Contents) + "\"") ;
 			
 			if (!oneLine)
 				output.newLine() ;
