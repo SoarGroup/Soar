@@ -86,12 +86,7 @@ protected:
 	AgentBeforeDestroyedListener*	m_pBeforeDestroyedListener ;
 
 public:
-	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : m_AgentListener(pKernelSML, pAgent)
-	{
-		m_pKernelSML = pKernelSML ; m_pIAgent = pAgent ; m_pOutputListener = NULL ; m_pInputProducer = NULL ;
-		m_InputLinkRoot = NULL ; m_OutputLinkRoot = NULL ;
-		m_pBeforeDestroyedListener = NULL ;
-	}
+	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) ;
 
 	~AgentSML() ;
 
@@ -113,7 +108,7 @@ public:
 	void SetOutputLinkRoot(gSKI::IWMObject* pRoot)  { m_OutputLinkRoot = pRoot ; }
 	gSKI::IWMObject* GetOutputLinkRoot()			{ return m_OutputLinkRoot ; }
 
-	void SetOutputListener(OutputListener* pListener)			{ m_pOutputListener = pListener ; }
+//	void SetOutputListener(OutputListener* pListener)			{ m_pOutputListener = pListener ; }
 	OutputListener* GetOutputListener()							{ return m_pOutputListener ; }
 
 	void SetInputProducer(gSKI::IInputProducer* pInputProducer)	{ m_pInputProducer = pInputProducer ; }

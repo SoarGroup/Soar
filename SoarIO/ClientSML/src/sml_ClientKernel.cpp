@@ -554,7 +554,15 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 *************************************************************/
 Agent* Kernel::MakeAgent(char const* pAgentName)
 {
-	Agent* agent = new Agent(this, pAgentName) ;
+	// If we already have an agent structure for this name just
+	// return it.
+	Agent* agent = GetAgent(pAgentName) ;
+
+	if (agent)
+		return agent ;
+
+	// Make a new client side agent object
+	agent = new Agent(this, pAgentName) ;
 
 	// Record this in our list of agents
 	m_AgentMap.add(agent->GetAgentName(), agent) ;

@@ -175,20 +175,9 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgentPtr, char const* pCommandN
 	// Register for output from this agent
 	if (pAgent)
 	{
-		// Create a listener for the callback
-		OutputListener* pListener = new OutputListener(this, pAgent) ;
-
 		// We store additional, agent specific information required for SML in the AgentSML object.
 		// NOTE: This call to GetAgentSML() will create the object if necessary...which it will be in this case.
 		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
-		pAgentSML->SetOutputListener(pListener) ;
-
-		// For KernelSML (us) to work correctly we need to listen for certain events, independently of what any client is interested in
-		// Currently:
-		// Listen for output callback events so we can send this output over to the clients
-		// Listen for "before" init-soar events (we need to know when these happen so we can release all WMEs on the input link, otherwise gSKI will fail to re-init the kernel correctly.)
-		// Listen for "after" init-soar events (we need to know when these happen so we can resend the output link over to the client)
-		pListener->RegisterForKernelSMLEvents() ;
 
 		// We also need to listen to input events so we can pump waiting sockets and get interrupt messages etc.
 		sml_InputProducer* pInputProducer = new sml_InputProducer(this) ;

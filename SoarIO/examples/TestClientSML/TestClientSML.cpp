@@ -151,6 +151,11 @@ void MyDeletionHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 	cout << "Received notification before agent was deleted" << endl ;
 }
 
+void MyCreationHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
+{
+	cout << "Received notification when agent was created" << endl ;
+}
+
 bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
@@ -182,6 +187,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		// that gSKI actually fires, so this handler won't get called.  Still, the code is there
 		// on the SML side should anyone ever hook up this type of event inside the kernel/gSKI...
 		pKernel->RegisterForSystemEvent(smlEVENT_AFTER_RESTART, MySystemEventHandler, NULL) ;
+
+		int callback5 = pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_CREATED, &MyCreationHandler, 0) ;
 
 		char const* name = "test-client-sml" ;
 
@@ -501,7 +508,7 @@ int main(int argc, char* argv[])
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 77 ;
+	//_crtBreakAlloc = 389 ;
 
 	SimpleTimer timer ;
 

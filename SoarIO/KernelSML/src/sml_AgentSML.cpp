@@ -31,6 +31,27 @@
 
 using namespace sml ;
 
+AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : m_AgentListener(pKernelSML, pAgent)
+{
+	m_pKernelSML = pKernelSML ;
+	m_pIAgent = pAgent ;
+	m_pInputProducer = NULL ;
+	m_InputLinkRoot = NULL ;
+	m_OutputLinkRoot = NULL ;
+
+	m_pBeforeDestroyedListener = NULL ;
+
+	// Create a listener for output events and other events we listen for
+	m_pOutputListener = new OutputListener(pKernelSML, pAgent) ;
+
+	// For KernelSML (us) to work correctly we need to listen for certain events, independently of what any client is interested in
+	// Currently:
+	// Listen for output callback events so we can send this output over to the clients
+	// Listen for "before" init-soar events (we need to know when these happen so we can release all WMEs on the input link, otherwise gSKI will fail to re-init the kernel correctly.)
+	// Listen for "after" init-soar events (we need to know when these happen so we can resend the output link over to the client)
+	m_pOutputListener->RegisterForKernelSMLEvents() ;
+}
+
 AgentSML::~AgentSML()
 {
 	// Release any objects we still own
