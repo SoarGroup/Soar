@@ -34,6 +34,8 @@ then
   else
     AC_MSG_ERROR([*** Swig error, check previous message.])
   fi
+  AC_CHECK_HEADER([tcl.h],,[AC_MSG_ERROR([*** Cannot find required header!  See previous line.])])
+  AC_PATH_PROG(TCLSH,tclsh,[AC_MSG_ERROR([*** Cannot find required program!  See previous line.])])
 fi
 
 AC_ARG_ENABLE(java,

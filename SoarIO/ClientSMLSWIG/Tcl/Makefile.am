@@ -27,3 +27,9 @@ Tcl_sml_ClientInterface_wrap.cpp: Tcl_sml_ClientInterface.i
 
 clean:
 	rm -f Tcl_sml_ClientInterface_wrap.cpp
+
+if SWIGTCL
+install-data-hook:
+	$(TCLSH) ../../bin/makeTclSMLPackage.tcl
+	mv .libs/pkgIndex.tcl @libdir@
+endif
