@@ -9,7 +9,18 @@
 // actually used to send data.
 // 
 /////////////////////////////////////////////////////////////////
+#ifdef HAVE_CONFIG_H
+#include "config.h"
 
+#ifndef HAVE_MEMSET
+#error "missing required memset function"
+#endif // HAVE_MEMSET
+
+#ifndef HAVE_SOCKET
+#error "missing required socket function"
+#endif // HAVE_SOCKET
+
+#endif // HAVE_CONFIG_H
 
 #include "sock_ListenerSocket.h"
 #include "sock_Debug.h"

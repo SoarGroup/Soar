@@ -8,6 +8,22 @@
 // IP address and port number.
 // 
 /////////////////////////////////////////////////////////////////
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+
+#ifndef HAVE_GETHOSTBYNAME
+#error "missing required function gethostbyname"
+#endif // HAVE_GETHOSTBYNAME
+
+#ifndef HAVE_MEMSET
+#error "missing required memset function"
+#endif // HAVE_MEMSET
+
+#ifndef HAVE_SOCKET
+#error "missing required socket function"
+#endif // HAVE_SOCKET
+
+#endif // HAVE_CONFIG_H
 
 #include "sock_Debug.h"
 #include "sock_ClientSocket.h"
