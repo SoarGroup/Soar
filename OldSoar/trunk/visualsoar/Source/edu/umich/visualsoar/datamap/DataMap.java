@@ -42,7 +42,7 @@ public class DataMap extends CustomInternalFrame
      */
 	public DataMap(SoarWorkingMemoryModel swmm, SoarIdentifierVertex siv,String title) 
     {
-		super(title,true,true,true,true);
+		super("Datamap " + title,true,true,true,true);
         setType(DATAMAP);
 		setBounds(0,0,250,100);
         id = siv.getValue();
