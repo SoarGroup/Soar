@@ -1,5 +1,5 @@
 proc PrintCallback {id userData agent message} {
-   puts -nonewline $message
+	puts -nonewline $message
 }
 
 proc ProductionExcisedCallback {id userData agent prodName instantiation} {
@@ -35,6 +35,10 @@ proc RhsFunctionTest {id userData agent functionName argument} {
 	return "success"
 }
 
+proc StructuredTraceCallback {id userData agent pXML} {
+	puts "structured data: [$pXML GenerateXMLString 1]"
+}
+
 #load the sml stuff
 lappend auto_path .
 package require tcl_sml_clientinterface
@@ -55,6 +59,7 @@ set printCallbackId [$agent RegisterForPrintEvent $smlEVENT_PRINT PrintCallback 
 #set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_BEFORE_PRODUCTION_REMOVED ProductionExcisedCallback ""]
 set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionFiredCallback ""]
 set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback ""]
+set structuredCallbackId [$agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT StructuredTraceCallback ""]
 
 #load the TOH productions
 set result [$agent LoadProductions demos/towers-of-hanoi/towers-of-hanoi.soar]
@@ -86,17 +91,17 @@ if { [string first "^rhstest success" [$kernel ExecuteCommandLine "print s1" Soa
 	puts "\nRHS test SUCCEEDED"
 }
 
-#set result [$kernel ExecuteCommandLine "init-soar" Soar1]
+set result [$kernel ExecuteCommandLine "init-soar" Soar1]
 
-#remove all the remaining callback functions (not required, just to test)
+$kernel DestroyAgent $agent
+
+#remove all the remaining kernel callback functions (not required, just to test)
 puts "removing callbacks"
 $kernel UnregisterForAgentEvent $agentCallbackId0
 $kernel UnregisterForAgentEvent $agentCallbackId1
 $kernel UnregisterForAgentEvent $agentCallbackId2
 $kernel UnregisterForSystemEvent $systemCallbackId
 $kernel RemoveRhsFunction $rhsCallbackId
-
-$kernel DestroyAgent $agent
 
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted
 set result [$kernel -acquire]

@@ -99,6 +99,20 @@
 		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	
+	void TclXMLEventCallback(sml::smlXMLEventId id, void* pUserData, sml::Agent* agent, sml::ClientXML* pXML)
+	{
+		// we can ignore these parameters because they're already in the script (from when we registered it)
+		unused(agent);
+		unused(id);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		// add a space to separate the args
+		Tcl_AppendStringsToObj(script, " ", NULL);
+		Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pXML, SWIGTYPE_p_sml__ClientXML,0));
+		Tcl_EvalObjEx(tud->interp, script, 0);
+	}
+	
 	void TclSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* kernel)
 	{
 		// we can ignore these parameters because they're already in the script (from when we registered it)
@@ -107,36 +121,6 @@
 		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
-	}
-	
-	TclUserData* CreateTclAgentUserData(sml::Agent* self, int id, char* proc, char* userData, Tcl_Interp* interp) {
-		TclUserData* tud = new TclUserData();
-	    
-	    tud->interp = interp;
-	    // put all of the arguments together so we can just execute this as a single script later
-	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
-	    tud->script = Tcl_NewObj();
-	    Tcl_AppendStringsToObj(tud->script, proc, " ", NULL);
-	    Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(id));
-	    Tcl_AppendStringsToObj(tud->script, " \"", userData, "\" ", NULL);
-	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
-	    
-	    return tud;
-	}
-	
-	TclUserData* CreateTclSystemUserData(sml::Kernel* self, int id, const char* proc, const char* userData, Tcl_Interp* interp) {
-		TclUserData* tud = new TclUserData();
-	    
-	    tud->interp = interp;
-	    // put all of the arguments together so we can just execute this as a single script later
-	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
-	    tud->script = Tcl_NewObj();
-	    Tcl_AppendStringsToObj(tud->script, proc, " ", NULL);
-	    Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(id));
-	    Tcl_AppendStringsToObj(tud->script, " \"", userData, "\" ", NULL);
-	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Kernel,0));
-	    
-	    return tud;
 	}
 	
 	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
@@ -149,6 +133,20 @@
 	    Tcl_AppendStringsToObj(tud->script, proc, " ", NULL);
 	    Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(id));
 	    Tcl_AppendStringsToObj(tud->script, " \"", userData, "\" ", NULL);
+	    
+	    return tud;
+	}
+	
+	TclUserData* CreateTclAgentUserData(sml::Agent* self, int id, char* proc, char* userData, Tcl_Interp* interp) {
+	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
+	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
+	    
+	    return tud;
+	}
+	
+	TclUserData* CreateTclSystemUserData(sml::Kernel* self, int id, const char* proc, const char* userData, Tcl_Interp* interp) {
+	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
+	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Kernel,0));
 	    
 	    return tud;
 	}
@@ -171,6 +169,11 @@
     int RegisterForPrintEvent(Tcl_Interp* interp, sml::smlPrintEventId id, char* proc, char* userData, bool addToBack = true) {	    
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    return self->RegisterForPrintEvent(id, TclPrintEventCallback, (void*)tud, addToBack);
+    }
+    
+    int RegisterForXMLEvent(Tcl_Interp* interp, sml::smlXMLEventId id, char* proc, char* userData, bool addToBack = true) {	    
+	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
+	    return self->RegisterForXMLEvent(id, TclXMLEventCallback, (void*)tud, addToBack);
     }
 }
 
