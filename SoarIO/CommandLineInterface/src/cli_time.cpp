@@ -6,14 +6,21 @@
 
 #ifdef WIN32
 #include <windows.h>
+#else // WIN32
+#include <sys/time.h>
 #endif // WIN32
+
+#include <time.h>
 
 #include "cli_Constants.h"
 
-#include "sml_StringOps.h"
 #include "sml_Names.h"
 
 #include "IgSKI_Agent.h"
+
+#ifdef _MSC_VER
+#define snprintf _snprintf 
+#endif // _MSC_VER
 
 using namespace cli;
 using namespace sml;
@@ -32,25 +39,37 @@ bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::stri
 
 bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
-#ifdef WIN32
 	// Look at clock
+#ifdef WIN32
 	DWORD start = GetTickCount();
+#else // WIN32
+	struct timeval start;
+	if (gettimeofday(&start, 0) != 0) {
+		return HandleError("failed to get time: " + std::string(strerror(errno)));
+	}
+#endif // WIN32
 
 	// Execute command
 	bool ret = DoCommandInternal(pAgent, argv);
 
-	// Look at clock again, subtracting first value
-	DWORD elapsed = GetTickCount() - start;
+	// Look at clock again, evaluate elapsed time in seconds
+#ifdef WIN32
+	DWORD elapsedx = GetTickCount() - start;
+	float elapsed = elapsedx / 1000.0f;
+#else // WIN32
+	struct timeval finish;
+	if (gettimeofday(&finish, 0) != 0) {
+		return HandleError("failed to get time: " + std::string(strerror(errno)));
+	}
+	double elapsed = (finish.tv_sec + (finish.tv_usec / 1000000.0)) - (start.tv_sec + (start.tv_usec / 1000000.0));
+#endif
 
-	// calculate elapsed in seconds
-	float seconds = elapsed / 1000.0f;
-
+	// Print elapsed time and return
 	char buf[32];
 	memset(buf, 0, 32);
-	Double2String(seconds, buf, 31);
+	snprintf(buf, 31, "%f", elapsed);
 
 	if (m_RawOutput) {
-		// Print time elapsed and return
 		AppendToResult("\n(");
 		AppendToResult(buf);
 		AppendToResult("s) real");
@@ -58,10 +77,5 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, buf);
 	}
 	return ret;
-
-#else
-	AppendToResult("TODO: time on non-windows platform");
-	return true;
-#endif
 }
 
