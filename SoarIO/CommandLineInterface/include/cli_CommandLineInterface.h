@@ -27,6 +27,7 @@
 
 // gSKI includes
 #include "gSKI_Events.h"
+#include "IgSKI_KernelFactory.h"
 
 #ifdef _WIN32
 #ifdef _USRDLL
@@ -95,7 +96,7 @@ public:
 	/*************************************************************
 	* @brief Set the kernel this command line module is interfacing with.
 	*************************************************************/
-	EXPORT void SetKernel(gSKI::IKernel* pKernel);
+	EXPORT void SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion);
 
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
@@ -727,6 +728,7 @@ protected:
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
+	gSKI::Version		m_KernelVersion;		// Kernel version number
 
 	bool				m_RawOutput;			// True if we want string output.
 	std::string			m_HomeDirectory;		// The initial working directory, server side

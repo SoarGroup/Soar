@@ -97,7 +97,7 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	m_pIKernel = m_pKernelFactory->Create();
 
 	// Give the command line interface a reference to the kernel interface
-	m_CommandLineInterface.SetKernel(m_pIKernel);
+	m_CommandLineInterface.SetKernel(m_pIKernel, m_pKernelFactory->GetKernelVersion());
 
 #ifdef USE_TCL_DEBUGGER
 	m_Debugger = NULL ;

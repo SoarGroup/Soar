@@ -8,9 +8,9 @@ using namespace cli;
 
 bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
+	unused(argv);
 
 	// Quit needs no help
-	argv.clear();
 	return DoQuit();
 }
 

@@ -6,6 +6,10 @@
 
 #include "cli_Constants.h"
 
+#ifdef _MSC_VER
+#define snprintf _snprintf 
+#endif // _MSC_VER
+
 using namespace cli;
 
 bool CommandLineInterface::ParseVersion(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
@@ -17,6 +21,9 @@ bool CommandLineInterface::ParseVersion(gSKI::IAgent* pAgent, std::vector<std::s
 
 bool CommandLineInterface::DoVersion() {
 
-	return false;
+	char buf[32];
+	snprintf(buf, 31, "%d.%d", m_KernelVersion.major, m_KernelVersion.minor);
+	AppendToResult(buf);
+	return true;
 }
 
