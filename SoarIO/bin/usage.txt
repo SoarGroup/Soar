@@ -314,18 +314,14 @@ Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>]
 				  * 1: On/medium detail
 				  * 2: On/highest detail
 				See option text for specific effect.
-  level				Integer from 0-5:
-  				  * 0: Watch nothing, equivalent to -n
-  				  * 1: Watch decisions inclusive
-  				  * 2: Watch phases and decisions
-  				  * 3: Watch productions, phases, and 
-  				       decisions
-  				  * 4: Watch wmes, productions, phases,
-  				       and decisions
-  				  * 5: Watch preferences, wmes, productions,
-  				       phases, and decisions
-  				Presence of level flag overrides all other
-  				options except -n.
+  level				Integer from 0-5, higher numbers include the
+  				lower numbers' effects:
+  				  * 0: Watch nothing (--none)
+  				  * 1: Watch decisions
+  				  * 2: Watch phases (incl. 1)
+  				  * 3: Watch productions (incl. 2, 1)
+  				  * 4: Watch wmes (incl. 3, 2, 1)
+  				  * 5: Watch preferences (incl. 4, 3, 2, 1)
   switch			Switch argument:
   				  * 0: Turn watches for this option off
   				  * 1: Turn watches for this option on

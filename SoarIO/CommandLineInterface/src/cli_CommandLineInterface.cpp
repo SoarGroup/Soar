@@ -128,12 +128,13 @@ bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandL
 
 	// Clear the result
 	m_Result.clear();
+	m_CriticalError = false;
 
 	// Save the pointers
 	m_pAgent = pAgent;
 	m_pError = pError;
 
-	// Process the command
+	// Process the command, ignoring its result (irrelevant at this level)
 	bool ret = DoCommandInternal(pCommandLine);
 
 	// Reset source error flag
@@ -143,7 +144,9 @@ bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandL
 	sml::TagResult* pTag = new sml::TagResult();
 	pTag->SetCharacterData(m_Result.c_str());
 	pResponse->AddChild(pTag);
-	return ret;
+
+	// Return true on success, false on error, so the opposite of m_CriticalError
+	return !m_CriticalError;
 }
 
 // ____         ____                                          _ ___       _                        _
@@ -175,6 +178,9 @@ bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
 		m_Result += "Command '";
 		m_Result += argv[0];
 		m_Result += "' not found or implemented.";
+
+		// Critical error
+		m_CriticalError = true;
 		return false;
 	}
 
@@ -197,6 +203,9 @@ bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
 	if (!pFunction) {
 		// Very odd, should be set in BuildCommandMap
 		m_Result += "Command found but function pointer is null.";
+
+		// This is definately a critical error
+		m_CriticalError = true;
 		return false;
 	}
 	
@@ -337,6 +346,9 @@ bool CommandLineInterface::DoCD(string& directory) {
 		if (chdir(m_HomeDirectory.c_str())) {
 			m_Result += "Could not change to home directory: ";
 			m_Result += m_HomeDirectory;
+
+			// Critical error
+			m_CriticalError = true;
 			return false;
 		}
 		return true;
@@ -351,6 +363,9 @@ bool CommandLineInterface::DoCD(string& directory) {
 	if (chdir(directory.c_str())) {
 		m_Result += "Could not change to directory: ";
 		m_Result += directory;
+
+		// Critical error
+		m_CriticalError = true;
 		return false;
 	}
 	return true;
@@ -782,6 +797,9 @@ bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
 		if (m_pLogFile) {
 			// Unless one is already opened
 			m_Result += "Close log file '" + m_LogFilename + "' first.";
+
+			// Critical error
+			m_CriticalError = true;
 			return false;
 		}
 
@@ -796,6 +814,9 @@ bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
 		if (!m_pLogFile) {
 			// Creation and opening was not successful
 			m_Result += "Failed to open file for logging.";
+
+			// Critical error
+			m_CriticalError = true;
 			return false;
 		}
 
@@ -1005,12 +1026,16 @@ bool CommandLineInterface::DoPopD() {
 	// There must be a directory on the stack to pop
 	if (m_DirectoryStack.empty()) {
 		m_Result += "Directory stack empty, no directory to change to.";
+		// Critical error
+		m_CriticalError = true;
 		return false;
 	}
 
 	// Change to the directory
 	if (!DoCD(m_DirectoryStack.top())) {
 		// cd failed, error message added in cd function
+		// Critical error (probably redundant)
+		m_CriticalError = true;
 		return false;
 	}
 
@@ -1232,6 +1257,8 @@ bool CommandLineInterface::DoPushD(string& directory) {
 
 	// Change to the new directory.
 	if (!DoCD(directory)) {
+		// Critical error
+		m_CriticalError = true;
 		return false;
 	}
 
@@ -1438,6 +1465,8 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {
 		m_Result += "Run failed.";
+		// Critical error
+		m_CriticalError = true;
 		return false;	// Hopefully details are in gSKI error message
 	}
 
@@ -1457,6 +1486,8 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 			break;
 		default:
 			m_Result += "Unknown egSKIRunResult code returned.";
+			// Critical error
+			m_CriticalError = true;
 			return false;
 	}
 	return true;
@@ -1498,6 +1529,8 @@ bool CommandLineInterface::DoSource(const string& filename) {
 		m_Result += "Failed to open file '";
 		m_Result += filename;
 		m_Result += "' for reading.";
+		// Critical error
+		m_CriticalError = true;
 		return false;
 	}
 
@@ -1683,6 +1716,9 @@ void CommandLineInterface::HandleSourceError(int errorLine, const string& filena
 
 		m_Result += filename + " (" + directory + ")";
 
+		// Critical error
+		m_CriticalError = true;
+
 	} else {
 		m_Result += "\n\t--> Sourced by: " + filename;
 	}
@@ -1732,8 +1768,14 @@ bool CommandLineInterface::DoSP(const string& production) {
 
 	if(m_pError->Id != gSKI::gSKIERR_NONE) {
 		m_Result += "Unable to add the production: " + production;
+		// Critical error
+		m_CriticalError = true;
 		return false;
 	}
+
+	// TODO: The kernel is supposed to print this but doesnt!
+	m_Result += '*';
+
 	return true;
 }
 
@@ -1882,7 +1924,6 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	bool self = false;
 	unsigned int options = 0;	// what flag changed
 	unsigned int values = 0;    // new setting
-	int watchLevel = -1;
 
 	for (;;) {
 		option = m_pGetOpt->GetOpt_Long(argv, ":b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
@@ -1960,7 +2001,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		}
 
 		// process argument
-		if (!WatchArg(values, constant)) {
+		if (!WatchArg(values, constant, GetOpt::optarg)) {
 			return false;
 		}
 	}
@@ -1971,30 +2012,77 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		if (!IsInteger(argv[GetOpt::optind])) {
 			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be an integer.\n");
 		}
-		watchLevel = atoi(argv[GetOpt::optind].c_str());
+		int watchLevel = atoi(argv[GetOpt::optind].c_str());
 		if ((watchLevel < 0) || (watchLevel > 5)) {
 			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be 0 to 5.\n");
+		}
+
+		if (watchLevel == 0) {
+			// Turn everything off
+			WatchArg(values, OPTION_WATCH_NONE, 0);
+		} else {
+		
+			// Reset some settings per old soar 8.5.2 behavior
+			// Don't reset wme detail or learning unless watch 0
+			WatchArg(values, OPTION_WATCH_DECISIONS, 0);			// set true in watch 1
+			WatchArg(values, OPTION_WATCH_PHASES, 0);				// set true in watch 2
+			WatchArg(values, OPTION_WATCH_DEFAULT_PRODUCTIONS, 0);	// set true in watch 3
+			WatchArg(values, OPTION_WATCH_USER_PRODUCTIONS, 0);		// set true in watch 3
+			WatchArg(values, OPTION_WATCH_CHUNKS, 0);				// set true in watch 3
+			WatchArg(values, OPTION_WATCH_JUSTIFICATIONS, 0);		// set true in watch 3
+			WatchArg(values, OPTION_WATCH_WMES, 0);					// set true in watch 4
+			WatchArg(values, OPTION_WATCH_PREFERENCES, 0);			// set true in watch 5
+
+			// TODO: This is off by default and nothing seems to turn it on
+			//pKernelHack->SetSysparam(m_pAgent, TRACE_OPERAND2_REMOVALS_SYSPARAM, false);
+
+			// Switch out the level
+			switch (watchLevel) {
+				case 5:
+					WatchArg(values, OPTION_WATCH_PREFERENCES, 1);
+					// 5 includes 4
+
+				case 4:
+					WatchArg(values, OPTION_WATCH_WMES, 1);
+					// 4 includes 3
+
+				case 3:
+					WatchArg(values, OPTION_WATCH_DEFAULT_PRODUCTIONS, 1);
+					WatchArg(values, OPTION_WATCH_USER_PRODUCTIONS, 1);
+					WatchArg(values, OPTION_WATCH_CHUNKS, 1);
+					WatchArg(values, OPTION_WATCH_JUSTIFICATIONS, 1);
+					// 3 includes 2
+
+				case 2:
+					WatchArg(values, OPTION_WATCH_PHASES, 1);
+					// 2 includes 1
+
+				case 1:
+				default:
+					WatchArg(values, OPTION_WATCH_DECISIONS, 1);
+					break;
+			}
 		}
 
 	} else if ((unsigned)GetOpt::optind < argv.size()) {
 		return HandleSyntaxError(Constants::kCLIWatch);
 	}
 
-	return DoWatch(watchLevel, options, values);
+	return DoWatch(options, values);
 }
 
-bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int option) {
+bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int option, const char* arg) {
+	if (!arg || !IsInteger(arg)) {
+		return HandleSyntaxError(Constants::kCLIWatch, "Arguments must be integers.\n");
+	}
+	return WatchArg(values, option, atoi(arg));
+}
+
+bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int option, int argInt) {
 	// If option is none, values will be ignored anyway
 	if (option == OPTION_WATCH_NONE) {
 		return true;
 	}
-
-	if (!IsInteger(GetOpt::optarg)) {
-		return HandleSyntaxError(Constants::kCLIWatch, "Arguments must be integers.\n");
-	}
-
-	// Get the arg
-	int argInt = atoi(GetOpt::optarg);
 
 	if (option <= OPTION_WATCH_WME_DETAIL) {
 		// Detail arguments 
@@ -2040,13 +2128,7 @@ bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int opt
 //| |_| | (_) \ V  V / (_| | || (__| | | |
 //|____/ \___/ \_/\_/ \__,_|\__\___|_| |_|
 //
-bool CommandLineInterface::DoWatch(int level, const unsigned int options, const unsigned int values) {
-	// Check for none, since that one is easy
-	if (options == OPTION_WATCH_NONE) {
-		// Disable all watches using the watch level
-		level = 0;
-	}
-
+bool CommandLineInterface::DoWatch(const unsigned int options, unsigned int values) {
 	// Need agent pointer for function calls
 	if (!RequireAgent()) {
 		return false;
@@ -2055,61 +2137,12 @@ bool CommandLineInterface::DoWatch(int level, const unsigned int options, const 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	// Next, do we have a watch level? (none flag will set this to zero)
-	if (level >= 0) {
-
-		// Yes, turn the settings off for a second
-		pKernelHack->SetSysparam(m_pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_PHASES_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_WM_CHANGES_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_OPERAND2_REMOVALS_SYSPARAM, false);
-
-		// Switch out the level
-		switch (level) {
-			case 0:
-			default:
-				// Turn even the default stuff off!
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNK_NAMES_SYSPARAM, false);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, false);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNKS_SYSPARAM, false);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_OPERAND2_REMOVALS_SYSPARAM, false);
-				break;
-
-			case 5:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, true);
-				// 5 includes 4
-
-			case 4:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_WM_CHANGES_SYSPARAM, true);
-				// 4 includes 3
-
-			case 3:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, true);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, true);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, true);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, true);
-				// 3 includes 2
-
-			case 2:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_PHASES_SYSPARAM, true);
-				// 2 includes 1
-
-			case 1:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, true);
-				break;
-		}
-
-		// If we did a watch level, ignore the other options
-		return true;
+	// If option is watch none, set values all off
+	if (options == OPTION_WATCH_NONE) {
+		values = 0;
 	}
 
+	// Next, do we have a watch level? (none flag will set this to zero)
 	// No watch level and no none flags, that means we have to do the rest
 	if (options & OPTION_WATCH_BACKTRACING) {
 		pKernelHack->SetSysparam(m_pAgent, TRACE_BACKTRACING_SYSPARAM, values & OPTION_WATCH_BACKTRACING);
@@ -2257,6 +2290,8 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 	// If getcwd returns 0, that is bad
 	if (!ret) {
 		m_Result += "Couldn't get working directory.";
+		// Critical error
+		m_CriticalError = true;
 		return false;
 	}
 
@@ -2321,6 +2356,8 @@ bool CommandLineInterface::HandleSyntaxError(const char* command, const char* de
 bool CommandLineInterface::RequireAgent() {
 	if (!m_pAgent) {
 		m_Result += "An agent pointer is required for this command.";
+		// Critical error
+		m_CriticalError = true;
 		return false;
 	}
 	return true;
@@ -2336,5 +2373,7 @@ bool CommandLineInterface::HandleGetOptError(char option) {
 	m_Result += "Internal error: m_pGetOpt->GetOpt_Long returned '";
 	m_Result += option;
 	m_Result += "'!";
+	// Critical error
+	m_CriticalError = true;
 	return false;
 }

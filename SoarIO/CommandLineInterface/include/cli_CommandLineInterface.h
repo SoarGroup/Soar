@@ -269,7 +269,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoWatch(int level, const unsigned int options, const unsigned int values);
+	bool DoWatch(const unsigned int options, unsigned int values);
 
 protected:
 
@@ -391,7 +391,8 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool WatchArg(unsigned int& values, const unsigned int option);
+	bool WatchArg(unsigned int& values, const unsigned int option, const char* arg);
+	bool WatchArg(unsigned int& values, const unsigned int option, int argInt);
 
 	Constants			m_Constants;			// Pointer to constants management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
@@ -410,6 +411,7 @@ protected:
 	int					m_SourceDirDepth;		// Depth of directory stack since source command.
 	std::string			m_LogFilename;			// Used for logging to a file.
 	std::ofstream*		m_pLogFile;				// The log file stream
+	bool				m_CriticalError;		// True if DoCommand should return false.
 };
 
 } // namespace cli
