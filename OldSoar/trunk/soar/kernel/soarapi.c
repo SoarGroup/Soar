@@ -3167,27 +3167,37 @@ int soar_Watch (int argc, const char *argv[], soarResult *res)
 		else if ((string_match("-all", argv[i+1])) ||
 			 (string_match("-a",argv[i+1]))) {
 		  i++;
-		  set_watch_prod_group_setting( 0,argv[i], argv[++i], res);
+                  t = i+1;
+		  set_watch_prod_group_setting( 0,argv[i], argv[t], res);
+                  i++;
 		}
 		else if ((string_match("-chunks", argv[i+1])) ||
 			 (string_match("-c",argv[i+1])))  {
 		  i++;
-		  set_watch_prod_group_setting( 1, argv[i], argv[++i], res);
+                  t = i+1;
+		  set_watch_prod_group_setting( 1, argv[i], argv[t], res);
+                  i++;
 		}
 		else if ((string_match("-defaults", argv[i+1])) ||
 			 (string_match("-d",argv[i+1])))  {
 		  i++;
-		  set_watch_prod_group_setting(2, argv[i], argv[++i], res);
+                  t = i+1;
+		  set_watch_prod_group_setting(2, argv[i], argv[t], res);
+                  i++;
 		}
 		else if ((string_match("-justifications", argv[i+1])) ||
 			 (string_match("-j",argv[i+1])))  {
 		  i++;
-		  set_watch_prod_group_setting( 3, argv[i], argv[++i], res);
+                  t = i+1;
+		  set_watch_prod_group_setting( 3, argv[i], argv[t], res);
+                  i++;
 		}
 		else if ((string_match("-user", argv[i+1])) ||
 			 (string_match("-u",argv[i+1])))  {
 		  i++;
-		  set_watch_prod_group_setting( 4, argv[i], argv[++i], res);
+                  t = i+1;
+		  set_watch_prod_group_setting( 4, argv[i], argv[t], res);
+                  i++;
 		}
 
 		else /* something else follows setting, so it's inclusive */
