@@ -178,22 +178,17 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgentPtr, char const* pCommandN
 		// Create a listener for the callback
 		OutputListener* pListener = new OutputListener(this, pAgent) ;
 
-		// The client now has to register for this explicitly for each connection.
-//		pListener->AddListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
-
 		// We store additional, agent specific information required for SML in the AgentSML object.
 		// NOTE: This call to GetAgentSML() will create the object if necessary...which it will be in this case.
 		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
 		pAgentSML->SetOutputListener(pListener) ;
 
-		// Listen for output callback events
-		pAgent->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
-
+		// For KernelSML (us) to work correctly we need to listen for certain events, independently of what any client is interested in
+		// Currently:
+		// Listen for output callback events so we can send this output over to the clients
 		// Listen for "before" init-soar events (we need to know when these happen so we can release all WMEs on the input link, otherwise gSKI will fail to re-init the kernel correctly.)
-		GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_BEFORE_AGENT_REINITIALIZED, pListener, false, pError) ;
-
 		// Listen for "after" init-soar events (we need to know when these happen so we can resend the output link over to the client)
-		GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_AFTER_AGENT_REINITIALIZED, pListener, false, pError) ;
+		pListener->RegisterForKernelSMLEvents() ;
 
 		// We also need to listen to input events so we can pump waiting sockets and get interrupt messages etc.
 		sml_InputProducer* pInputProducer = new sml_InputProducer(this) ;
@@ -345,9 +340,15 @@ bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandNam
 		return false ;
 
 	// Release any wmes or other objects we're keeping
-	GetAgentSML(pAgent)->Clear() ;
+	AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+	pAgentSML->Clear() ;
 
-	// Make the call.
+	// Remove the listeners that KernelSML uses for this agent.
+	// This is important.  Otherwise if we create a new agent using the same kernel object
+	// the listener will still exist inside gSKI and will crash when an agent event is next generated.
+	pAgentSML->GetOutputListener()->UnRegisterForKernelSMLEvents() ;
+
+	// Make the call to actually delete the agent
 	GetKernel()->GetAgentManager()->RemoveAgent(pAgent, pError) ;
 
 	// Then delete our matching agent sml information

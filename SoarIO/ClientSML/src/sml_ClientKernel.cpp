@@ -457,7 +457,8 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 	if (m_CommandLineSucceeded)
 	{
 		// Get the result as a string
-		m_CommandLineResult = response.GetResultString();
+		char const *pResult = response.GetResultString();
+		m_CommandLineResult = (pResult == NULL)? "<null>" : pResult ;
 	}
 	else
 	{
@@ -479,6 +480,9 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 *
 * @param pCommandLine Command line string to process.
 * @param pAgentName Agent name to apply the command line to.
+* @param pResponse The XML returned by the agent for this command.
+*        The caller should pass in an AnalyzeXML object which is then
+*		 filled out by the agent during the call.
 * @returns True if the command succeeds.
 *************************************************************/
 bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse)

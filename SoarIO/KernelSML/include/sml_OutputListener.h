@@ -52,7 +52,20 @@ public:
 
 	virtual ~OutputListener()
 	{
+		Clear() ;
 	}
+
+	// Register for the events that KernelSML itself needs to know about in order to work correctly.
+	void RegisterForKernelSMLEvents() ;
+
+	// UnRegister for the events that KernelSML itself needs to know about in order to work correctly.
+	void UnRegisterForKernelSMLEvents() ;
+
+	// Returns true if this is the first connection listening for this event
+	virtual bool AddListener(egSKIEventId eventID, Connection* pConnection) ;
+
+	// Returns true if at least one connection remains listening for this event
+	virtual bool RemoveListener(egSKIEventId eventID, Connection* pConnection) ;
 
 	// Working memory event listener (called when the agent generates output)
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist) ;

@@ -49,6 +49,7 @@ void AgentSML::Clear()
 	ReleaseAllWmes() ;
 
 	m_AgentListener.Clear() ;
+	m_pOutputListener->Clear() ;
 }
 
 void AgentSML::ReleaseAllWmes()

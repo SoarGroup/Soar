@@ -166,7 +166,7 @@ public:
 	* @param	inNunTowers	optional amount of towers for game
 	* @param	inNumDisks	optional amount of disks to play with
 	*************************************************************/
-	HanoiWorld(bool graphicsOn = true, int inNumTowers = 3,  int inNumDisks = 11);
+	HanoiWorld(bool remoteConnection = false, bool graphicsOn = true, int inNumTowers = 3,  int inNumDisks = 11);
 
 	/*************************************************************
 	* @brief	cleans up state, including contained Towers

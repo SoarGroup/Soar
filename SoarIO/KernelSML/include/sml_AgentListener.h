@@ -136,13 +136,14 @@ public:
 
 	virtual ~AgentListener()
 	{
+		Clear() ;
 	}
 
 	// Returns true if this is the first connection listening for this event
-	bool AddListener(egSKIEventId eventID, Connection* pConnection) ;
+	virtual bool AddListener(egSKIEventId eventID, Connection* pConnection) ;
 
 	// Returns true if at least one connection remains listening for this event
-	bool RemoveListener(egSKIEventId eventID, Connection* pConnection) ;
+	virtual bool RemoveListener(egSKIEventId eventID, Connection* pConnection) ;
 
 	// Called when a "RunEvent" occurs in the kernel
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase) ;

@@ -43,13 +43,21 @@ public:
 	virtual ~EventManager() ;
 
 	// Clear the map and release all listeners
-	void Clear() ;
+	virtual void Clear() ;
 
 	// Returns true if this is the first connection listening for this event
-	virtual bool AddListener(egSKIEventId eventID, Connection* pConnection) ;
+	virtual bool BaseAddListener(egSKIEventId eventID, Connection* pConnection) ;
+
+	// Returns true if this is the first connection listening for this event
+	// (Generally calls BaseAddListener and then registers with the kernel for this event)
+	virtual bool AddListener(egSKIEventId eventID, Connection* pConnection) = 0 ;
 
 	// Returns true if just removed the last listener
-	virtual bool RemoveListener(egSKIEventId eventID, Connection* pConnection) ;
+	virtual bool BaseRemoveListener(egSKIEventId eventID, Connection* pConnection) ;
+
+	// Returns true if just removed the last listener
+	// (Generally calls BaseRemoveListener and then unregisters with the kernel for this event)
+	virtual bool RemoveListener(egSKIEventId eventID, Connection* pConnection) = 0 ;
 
 	// Remove all listeners that this connection has
 	virtual void RemoveAllListeners(Connection* pConnection) ;

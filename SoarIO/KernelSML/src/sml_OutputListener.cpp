@@ -21,6 +21,9 @@
 #include "IgSKI_Wme.h"
 #include "IgSKI_Symbol.h"
 #include "IgSKI_WMObject.h"
+#include "IgSKI_OutputLink.h"
+#include "IgSKI_AgentManager.h"
+#include "IgSKI_WorkingMemory.h"
 
 #include <vector>
 
@@ -36,6 +39,54 @@ static char const* GetValueType(egSKISymbolType type)
 	case gSKI_OBJECT: return sml_Names::kTypeID ;
 	default: return NULL ;
 	}
+}
+
+// Register for the events that KernelSML itself needs to know about in order to work correctly.
+void OutputListener::RegisterForKernelSMLEvents()
+{
+	// Listen for output callback events so we can send this output over to the clients
+	m_Agent->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, this) ;
+
+	// Listen for "before" init-soar events (we need to know when these happen so we can release all WMEs on the input link, otherwise gSKI will fail to re-init the kernel correctly.)
+	m_KernelSML->GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_BEFORE_AGENT_REINITIALIZED, this, false) ;
+
+	// Listen for "after" init-soar events (we need to know when these happen so we can resend the output link over to the client)
+	m_KernelSML->GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_AFTER_AGENT_REINITIALIZED, this, false) ;
+}
+
+void OutputListener::UnRegisterForKernelSMLEvents()
+{
+	m_Agent->GetOutputLink()->GetOutputMemory()->RemoveWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, this) ;
+	m_KernelSML->GetKernel()->GetAgentManager()->RemoveAgentListener(gSKIEVENT_BEFORE_AGENT_REINITIALIZED, this, false) ;
+	m_KernelSML->GetKernel()->GetAgentManager()->RemoveAgentListener(gSKIEVENT_AFTER_AGENT_REINITIALIZED, this, false) ;
+}
+
+// Returns true if this is the first connection listening for this event
+bool OutputListener::AddListener(egSKIEventId eventID, Connection* pConnection)
+{
+	bool first = BaseAddListener(eventID, pConnection) ;
+
+	// For other listeners (AgentListener, KernelListener) we register with the kernel at this point if this is the first
+	// listener being added.
+	// However, for output we also use this listener to listen on the kernel side for events (to make KernelSML function correctly)
+	// so the kernel listener is always in place.  We don't need to add the kernel listener or remove it if all connections stop listening
+	// for it (because even if no clients are interested in this event, KernelSML remains interested).
+
+	return first ;
+}
+
+// Returns true if at least one connection remains listening for this event
+bool OutputListener::RemoveListener(egSKIEventId eventID, Connection* pConnection)
+{
+	bool last = BaseRemoveListener(eventID, pConnection) ;
+
+	// For other listeners (AgentListener, KernelListener) we register with the kernel at this point if this is the first
+	// listener being added.
+	// However, for output we also use this listener to listen on the kernel side for events (to make KernelSML function correctly)
+	// so the kernel listener is always in place.  We don't need to add the kernel listener or remove it if all connections stop listening
+	// for it (because even if no clients are interested in this event, KernelSML remains interested).
+
+	return last ;
 }
 
 void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist)

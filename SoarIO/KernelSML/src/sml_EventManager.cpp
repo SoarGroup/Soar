@@ -19,7 +19,10 @@ using namespace sml ;
 
 EventManager::~EventManager()
 {
-	Clear() ;
+	// This is interesting.  We can't call clear in the destructor for the event manager because it
+	// calls virtual methods, which is apparently illegal (I get a "pure virtual method" error from Visual Studio).
+	// So we'll need to either move this to the derived classes destructors or call it explicitly before we destroy the manager.
+	// Clear() ;
 }
 
 void EventManager::Clear()
@@ -46,7 +49,7 @@ void EventManager::Clear()
 }
 
 // Record that a particular connection wants to listen in on this event.
-bool EventManager::AddListener(egSKIEventId eventID, Connection* pConnection)
+bool EventManager::BaseAddListener(egSKIEventId eventID, Connection* pConnection)
 {
 	EventMapIter mapIter = m_EventMap.find(eventID) ;
 
@@ -82,7 +85,7 @@ ConnectionList*	EventManager::GetListeners(egSKIEventId eventID)
 }
 
 // Returns true if just removed the last listener
-bool EventManager::RemoveListener(egSKIEventId eventID, Connection* pConnection)
+bool EventManager::BaseRemoveListener(egSKIEventId eventID, Connection* pConnection)
 {
 	ConnectionList* pList = GetListeners(eventID) ;
 

@@ -90,15 +90,28 @@ void SimpleRemoteConnection()
 	delete pKernel ;
 }
 
-void SimpleEmbeddedConnection()
+// Create a process that listens for remote commands and lives
+// for "life" 10'ths of a second (e.g. 10 = live for 1 second)
+bool SimpleListener(int life)
 {
 	// Create the kernel instance
 	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false) ;
 
-	// Sleep for 40 seconds and then quit
-	SLEEP(40*1000) ;
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	for (int i = 0 ; i < life ; i++)
+	{
+		bool check = pKernel->CheckForIncomingCommands() ;
+		SLEEP(100) ;
+	}
 
 	delete pKernel ;
+
+	return true ;
 }
 
 void MyRunEventHandler(smlEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
@@ -445,6 +458,8 @@ int main(int argc, char* argv[])
 
 	bool stopAtEnd = true ;
 	bool remote    = false ;
+	bool listener  = false ;
+	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 
 	// For now, any argument on the command line makes us create a remote connection.
 	// Later we'll try passing in an ip address/port number.
@@ -452,7 +467,9 @@ int main(int argc, char* argv[])
 
 	// Read the command line options:
 	// -nostop : don't ask user to hit return at the end
-	// -remote : run the test over a remote connection -- needs a listening client (usually TestCommandLineInterface) to already be running.
+	// -remote : run the test over a remote connection -- needs a listening client to already be running.
+	// -listener : create a listening client (so we can run remote tests) which lives for 300 secs (5 mins)
+	// -shortlistener : create a listening client that lives for 15 secs
 	if (argc > 1)
 	{
 		for (int i = 1 ; i < argc ; i++)
@@ -461,18 +478,32 @@ int main(int argc, char* argv[])
 				stopAtEnd = false ;
 			if (!stricmp(argv[i], "-remote"))
 				remote = true ;
+			if (!stricmp(argv[i], "-listener"))
+				listener = true ;
+			if (!stricmp(argv[i], "-shortlistener"))
+			{
+				listener = true ;
+				life = 150 ; // Live for 15 secs only
+			}
 		}
 	}
 
-	if (remote)
-		success = RemoteTest() ;
+	// Running a listener isn't really a test.  It just provides the other side for a remote test
+	// (so run one instance as a listener and then a second as a -remote test).
+	if (listener)
+		SimpleListener(life) ;
 	else
-		success = FullEmbeddedTest() ;
+	{
+		if (remote)
+			success = RemoteTest() ;
+		else
+			success = FullEmbeddedTest() ;
 
-	ReportResult(remote ? "testclientsml-remote" : "testclientsml", success) ;
+		ReportResult(remote ? "testclientsml-remote" : "testclientsml", success) ;
 
-	double time = timer.Elapsed() ;
-	cout << "Total run time: " << time << endl ;
+		double time = timer.Elapsed() ;
+		cout << "Total run time: " << time << endl ;
+	}
 
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;

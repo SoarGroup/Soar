@@ -325,7 +325,12 @@ ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait
 	I think we need a better fix for the original problem.  We may just have to drop the simple embedded model where the
 	client is allowed to block without periodically calling to check from incoming messages.  Or we may need
 	to start a second thread in that case to do that checking.  Perhaps that thread should run on the client, not the kernel?
+
+	Do we need a thread on the client side to match the kernel's receiver thread when running in asynch mode?
+	Then to issue a command on the client we'd add it to the messages to be sent by that client thread and it would
+	be checking steadily for incoming messages from the kernel.
 */
+
 /*
 void EmbeddedConnectionAsynch::SendSynchMessage(ElementXML_Handle hSendMsg)
 {

@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
 {
 	bool doPrinting = false;
 	bool stopAtEnd = true ;
+	bool remoteConnection = false ;
 
 	int numTowers = defaultNumTowers;
 	//int numdisks = defaultNumdisks;
@@ -95,6 +96,8 @@ int main(int argc, char* argv[])
 		{
 			if (!stricmp(argv[i], "-nostop"))
 				stopAtEnd = false ;
+			if (!stricmp(argv[i], "-remote"))
+				remoteConnection = true ;
 			if (!stricmp(argv[1], "true"))
 				doPrinting = true;
 		}
@@ -125,7 +128,7 @@ int main(int argc, char* argv[])
 		if(doPrinting)
 			cout << "***Welcome to Towers of Hanoi***" << endl << endl;
 
-		HanoiWorld hanoi(doPrinting, numTowers);
+		HanoiWorld hanoi(remoteConnection, doPrinting, numTowers);
 
 		double time = timer.Elapsed() ;
 		cout << "Time to initialize: " << time << endl ;

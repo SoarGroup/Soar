@@ -35,7 +35,7 @@ using namespace sml ;
 // Returns true if this is the first connection listening for this event
 bool KernelListener::AddListener(egSKIEventId eventID, Connection* pConnection)
 {
-	bool first = EventManager::AddListener(eventID, pConnection) ;
+	bool first = BaseAddListener(eventID, pConnection) ;
 
 	if (first)
 	{
@@ -49,7 +49,7 @@ bool KernelListener::AddListener(egSKIEventId eventID, Connection* pConnection)
 // Returns true if at least one connection remains listening for this event
 bool KernelListener::RemoveListener(egSKIEventId eventID, Connection* pConnection)
 {
-	bool last = EventManager::RemoveListener(eventID, pConnection) ;
+	bool last = BaseRemoveListener(eventID, pConnection) ;
 
 	if (last)
 	{

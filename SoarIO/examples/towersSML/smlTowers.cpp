@@ -383,30 +383,31 @@ void Tower::PrintDiskAtRow(int row) const
 //======================================================
 //=========== Hanoi Function Definitions ===============
 
-HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers, int inNumDisks) : drawGraphics(graphicsOn)
+HanoiWorld::HanoiWorld(bool remoteConnection, bool graphicsOn, int inNumTowers, int inNumDisks) : drawGraphics(graphicsOn)
 {
 	//create Soar and agent
 	// SML uses Kernel instead of Soar
 //	Soar* soar = 0 ;
 	Kernel* kernel = 0;
 
-	// SML uses different terminology here
-	#ifdef SML_EMBEDDED_MODE
+	if (!remoteConnection)
+	{
 		// Fastest method, but need to call "GetIncomingCommands" from time to time.
 		kernel = Kernel::CreateEmbeddedConnection("KernelSML", true, true) ;
 
 		// Slightly slower, but polls for incoming remote commands automatically
-//		kernel = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
+		// kernel = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
 
 		// SGIO equivalent
-//		soar = new APISoar();
-
-	#else // SML_REMOTE_MODE
-		kernel = Kernel::CreateRemoteConnection(true, "127.0.0.1") ;
-
+		// soar = new APISoar();
+	}
+	else
+	{
+		kernel = Kernel::CreateRemoteConnection(true, NULL) ;
 		// SGIO equivalent
-//		soar = new SIOSoar("127.0.0.1", 6969, true);
-	#endif
+		// soar = new SIOSoar("127.0.0.1", 6969, true);
+	}
+
 	assert(kernel);
 
 	// SML uses a more explicit error model, so we can get details about what failed.

@@ -102,17 +102,19 @@ void ReceiverThread::Run()
 	// How long to wait before sleeping (currently 1 sec)
 	clock_t delay = CLOCKS_PER_SEC ;
 
-	clock_t report = 0 ;
+//	clock_t report = 0 ;
 
 	while (!m_QuitNow)
 	{
 #ifdef _DEBUG
+		/*
 		// Every so often report that we're alive
 		if (clock() - report > CLOCKS_PER_SEC * 3)
 		{
 			report = clock() ;
 			PrintDebugFormat("ReceiverThread::Run alive\n") ;
 		}
+		*/
 #endif
 		// Receive any incoming commands and execute them
 		bool receivedMessage = m_ConnectionManager->ReceiveAllMessages() ;
