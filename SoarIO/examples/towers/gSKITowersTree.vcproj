@@ -34,11 +34,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="gSKId.lib TgDId.lib"
-				OutputFile="$(OutDir)/Towers.exe"
+				OutputFile="$(OutDir)/Towers-tree.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\bin;..\..\..\gSKI\lib;..\..\..\TgDI\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/Towers.pdb"
+				ProgramDatabaseFile="$(OutDir)/Towers-tree.pdb"
 				SubSystem="1"
 				TargetMachine="1"/>
 			<Tool
@@ -82,7 +82,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="gSKId.lib TgDId.lib"
-				OutputFile="$(OutDir)/Towers.exe"
+				OutputFile="$(OutDir)/Towers-tree.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\bin;..\..\..\gSKI\lib;..\..\..\TgDI\lib"
 				GenerateDebugInformation="TRUE"

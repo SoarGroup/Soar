@@ -11,6 +11,7 @@
 
 using std::string;
 using std::cout;
+using std::cin;
 using std::endl;
 
 //gSKI directives
@@ -610,12 +611,19 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	char* pResponse = "\0";//we don't need to allocate space for this
 	gSKI::Error* pError = new Error();
 
-	//commLine->DoCommand(agent, "pwd", pResponse, pError);
 	commLine->DoCommand(agent, "pushd ../examples/towers", pResponse, pError);
 
 	if(!commLine->DoCommand(agent, "source towers-of-hanoi-SGIO_source.soar", pResponse, pError))
-		cout << "Error in source ---------------------------------" << endl;
-	commLine->DoCommand(agent, "popd", pResponse, pError);
+	{
+		cout << "current working directory is: ";
+		commLine->DoCommand(agent, "pwd", pResponse, pError);
+		cout << endl;
+		cout << "Error in sourcing productions, press non-whitespace char and 'enter' to exit --------" << endl;
+		cout << endl;
+		string garbage;
+		cin >> garbage;
+		exit(1);
+	}
 
 	IInputLink* pILink = agent->GetInputLink();
 	ioManager = new IOManager(pILink);
