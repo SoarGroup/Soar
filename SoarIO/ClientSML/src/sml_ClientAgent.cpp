@@ -99,6 +99,7 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 
 	case smlEVENT_PRINT:
 		ReceivedPrintEvent(id, pIncoming, pResponse) ;
+		break ;
 	}
 }
 
@@ -157,8 +158,7 @@ void Agent::ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML*
 	{
 		AgentEventHandlerPlusData handlerPlus = *iter ;
 		AgentEventHandler handler = handlerPlus.first ;
-		//void* pUserData = handlerPlus.second ;
-		void* pUserData = pIncoming ;
+		void* pUserData = handlerPlus.second ;
 
 		// Call the handler
 		handler(id, pUserData, this) ;
@@ -189,6 +189,8 @@ void Agent::ReceivedPrintEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML*
 	{
 		PrintEventHandlerPlusData handlerPlus = *iter ;
 		PrintEventHandler handler = handlerPlus.first ;
+
+		// BUGBUG: DJP -- This shouldn't be hard-coded to pIncoming, something is wrong here.
 		//void* pUserData = handlerPlus.second ;
 		void* pUserData = pIncoming ;
 
