@@ -44,6 +44,21 @@ char const* sml_Names::kErrorCode		= "code" ;
 // <result> tag identifiers
 char const* sml_Names::kTagResult		= "result" ;
 
+// input values (for update param)
+char const* sml_Names::kValueDelta		= "delta" ;
+char const* sml_Names::kValueFull		= "full" ;
+
+// <wme> tag identifiers
+char const* sml_Names::kTagWME			= "wme" ;
+char const* sml_Names::kWME_TimeTag		= "tag" ;
+char const* sml_Names::kWME_Id			= "id" ;
+char const* sml_Names::kWME_Attribute	= "att" ;
+char const* sml_Names::kWME_Value		= "value" ;
+char const* sml_Names::kWME_ValueType	= "type" ;
+char const* sml_Names::kWME_Action		= "action" ;
+char const* sml_Names::kValueAdd		= "add" ;
+char const* sml_Names::kValueRemove		= "remove" ;
+
 // Types
 char const* sml_Names::kTypeString	= "string" ;
 char const* sml_Names::kTypeInt		= "int" ;

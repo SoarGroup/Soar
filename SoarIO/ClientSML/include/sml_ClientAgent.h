@@ -56,10 +56,21 @@ public:
 	* @brief Returns the id object for the input link.
 	*		 The agent retains ownership of this object.
 	*************************************************************/
-	SoarId*		   GetInputLink() ;
+	Identifier* GetInputLink() ;
 
-//	StringElement* CreateStringWME(SoarId* parent, char const* pAttribute, char const* pValue);
+	/*************************************************************
+	* @brief Builds a new WME that has a string value.
+	*		 The agent retains ownership of this object.
+	*		 The returned object is valid until the caller
+	*		 deletes the parent identifier.
+	*************************************************************/
+	StringElement* CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
 
+	/*************************************************************
+	* @brief Send the most recent list of changes to working memory
+	*		 over to the kernel.
+	*************************************************************/
+	bool Commit() ;
 };
 
 }//closes namespace

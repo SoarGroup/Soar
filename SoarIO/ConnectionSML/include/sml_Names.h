@@ -49,6 +49,21 @@ public:
 	// <result> tag identifiers
 	static char const* kTagResult ;
 
+	// input values (for update param)
+	static char const* kValueDelta ;
+	static char const* kValueFull ;
+
+	// <wme> tag identifiers
+	static char const* kTagWME ;
+	static char const* kWME_TimeTag ;
+	static char const* kWME_Id ;
+	static char const* kWME_Attribute ;
+	static char const* kWME_Value ;
+	static char const* kWME_ValueType ;
+	static char const* kWME_Action ;
+	static char const* kValueAdd	;
+	static char const* kValueRemove ;
+
 	// Types
 	static char const* kTypeString ;
 	static char const* kTypeInt ;

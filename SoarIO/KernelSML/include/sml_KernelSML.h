@@ -67,11 +67,6 @@ typedef std::map<char const*, CommandFunction, strCompareKernel>	CommandMap ;
 typedef CommandMap::iterator										CommandMapIter ;
 typedef CommandMap::const_iterator									CommandMapConstIter ;
 
-// Map from id as a hex string to an object
-typedef std::map<char*, void*, strCompareKernel>	ObjectMap ;
-typedef ObjectMap::iterator							ObjectMapIter ;
-typedef ObjectMap::const_iterator					ObjectMapConstIter ;
-
 // List of input producers that we need to delete
 typedef std::list<gSKI::IInputProducer*>	InputProducerList_t ;
 typedef InputProducerList_t::iterator		InputProducerListIter_t ;
@@ -79,6 +74,16 @@ typedef InputProducerList_t::iterator		InputProducerListIter_t ;
 // List of output producers that we need to delete
 typedef std::list<gSKI::IOutputProcessor*>	OutputProcessorList_t ;
 typedef OutputProcessorList_t::iterator		OutputProcessorListIter_t ;
+
+// Map from a client side identifier to a kernel side one (e.g. "o3" => "O5")
+typedef std::map<std::string, std::string>	IdentifierMap ;
+typedef IdentifierMap::iterator				IdentifierMapIter ;
+typedef IdentifierMap::const_iterator		IdentifierMapConstIter ;
+
+// Map from a client side time tag (as a string) to a kernel side one (e.g. "-3" => "93")
+typedef std::map<std::string, int>		TimeTagMap ;
+typedef TimeTagMap::iterator			TimeTagMapIter ;
+typedef TimeTagMap::const_iterator		TimeTagMapConstIter ;
 
 class KernelSML
 {
@@ -88,6 +93,12 @@ public:
 protected:	
 	// Map from command name to function to handle it
 	CommandMap	m_CommandMap ;
+
+	// Map from client side identifiers to kernel side ones
+	IdentifierMap	m_IdentifierMap ;
+
+	// Map from client side time tags (as strings) to kernel side ones
+	TimeTagMap		m_TimeTagMap ;
 
 	// A list of InputProducer objects we have created.
 	InputProducerList_t		m_InputProducers ;
@@ -179,9 +190,29 @@ protected:
 	*************************************************************/
 	bool InvalidArg(Connection* pConnection, ElementXML* pResponse, char const* pCommandName, char const* pErrorDescription) ;
 
+	/*************************************************************
+	* @brief	Converts an id from a client side value to a kernel side value.
+	*			We need to be able to do this because the client is adding a collection
+	*			of wmes at once, so it makes up the ids for those objects.
+	*			But the kernel will assign them a different value when the
+	*			wme is actually added in the kernel.
+	*************************************************************/
+	bool ConvertID(char const* pClientID, std::string* pKernelID) ;
+	void RecordIDMapping(char const* pClientID, char const* pKernelID) ;
+
+	/*************************************************************
+	* @brief	Converts a time tag from a client side value to
+	*			a kernel side one.
+	*************************************************************/
+	long ConvertTimeTag(char const* pTimeTag) ;
+	void RecordTimeTag(char const* pTimeTag, long kernelTimeTag) ;
+
 	void BuildCommandMap() ;
 
 	bool ProcessCommand(char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+
+	// Add a value to working memory
+	bool AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, char const* pTimeTag, gSKI::Error* pError) ;
 
 	// Our command handlers
 
@@ -200,6 +231,7 @@ protected:
 	bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleLoadProductions(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleGetInputLink(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 
 	bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 

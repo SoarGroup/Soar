@@ -28,6 +28,7 @@
 #endif
 
 #include "sml_Errors.h"
+#include "ElementXMLInterface.h"
 
 namespace sml
 {
@@ -103,9 +104,10 @@ public:
 	* @param pValue		The value of this parameter (represented as a string).  Can be empty, can't be NULL.
 	* @param pValueType	The type of the value (e.g. "int" or "string".  Anything can go here as long as the recipient understands it) (usually will be NULL).
 	* 
-	* @returns 0 if successful, otherwise an error code to indicate what went wrong.
+	* @returns Pointer to the ElementXML_Handle for the <command> tag (not the full message, just the <command> part)
+	*		   This is rarely needed, but could be used to optimize the code.
 	*************************************************************/
-	virtual void AddParameterToSMLCommand(ElementXML* pCommand, char const* pName, char const* pValue, char const* pValueType = NULL) ;
+	virtual ElementXML_Handle AddParameterToSMLCommand(ElementXML* pCommand, char const* pName, char const* pValue, char const* pValueType = NULL) ;
 
 	/*************************************************************
 	* @brief Create a basic SML response message.  You should then add content to this response.

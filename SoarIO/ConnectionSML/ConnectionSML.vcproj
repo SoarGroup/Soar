@@ -142,6 +142,9 @@
 			<File
 				RelativePath=".\src\sml_TagResult.cpp">
 			</File>
+			<File
+				RelativePath=".\src\sml_TagWme.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -197,6 +200,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_TagResult.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_TagWme.h">
 			</File>
 		</Filter>
 		<Filter

@@ -40,7 +40,11 @@ int main(int argc, char* argv[])
 		sml::Agent* pAgent = pKernel->CreateAgent("test") ;
 		pAgent->LoadProductions("test.soar") ;
 
-		SoarId* pID = pAgent->GetInputLink() ;
+		Identifier* pInputLink = pAgent->GetInputLink() ;
+
+		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
+
+		bool ok = pAgent->Commit() ;
 
 		delete pKernel ;
 

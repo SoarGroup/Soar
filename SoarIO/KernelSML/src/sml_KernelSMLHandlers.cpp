@@ -27,6 +27,8 @@
 #include "IgSKI_KernelFactory.h"
 #include "gSKI_Stub.h"
 #include "IgSKI_Kernel.h"
+
+// BADBAD: I think we should be using an error class instead to work with error objects.
 #include "../../gSKI/src/gSKI_Error.h"
 #include "gSKI_ErrorIds.h"
 #include "gSKI_Enumerations.h"
@@ -81,6 +83,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_CreateAgent]		= KernelSML::HandleCreateAgent ;
 	m_CommandMap[sml_Names::kCommand_LoadProductions]	= KernelSML::HandleLoadProductions ;
 	m_CommandMap[sml_Names::kCommand_GetInputLink]		= KernelSML::HandleGetInputLink ;
+	m_CommandMap[sml_Names::kCommand_Input]				= KernelSML::HandleInput ;
 
 	m_CommandMap[sml_Names::kCommand_CommandLine]		= KernelSML::HandleCommandLine ;
 }
@@ -186,9 +189,108 @@ bool KernelSML::HandleGetInputLink(gSKI::IAgent* pAgent, char const* pCommandNam
 	return (id != NULL) ;
 }
 
+bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, char const* pTimeTag, gSKI::Error* pError)
+{
+	IWorkingMemory* pInputWM = pAgent->GetInputLink()->GetInputLinkMemory(pError) ;
+
+	// First get the object which will own this new wme
+	IWMObject* pParentObject = NULL ;
+	pInputWM->GetObjectById(pID, &pParentObject) ;
+
+	// Failed to find the parent.
+	if (!pParentObject)
+		return false ;
+
+	IWme* pWME = NULL ;
+
+	// Then add a wme of the appropriate type
+	if (IsStringEqual(sml_Names::kTypeString, pType))
+	{
+		pWME = pInputWM->AddWmeString(pParentObject, pAttribute, pValue, pError) ;
+	} else
+	{
+	}
+
+	if (!pWME)
+	{
+		pParentObject->Release() ;
+		return false ;
+	}
+
+	// We need to record the time tag so that we can refer to this object in the future
+	// by the client's time tag.
+	long tag = pWME->GetTimeTag(pError) ;
+	RecordTimeTag(pTimeTag, tag) ;
+
+	pWME->Release() ;
+	pParentObject->Release() ;
+
+	return true ;
+}
+
+// Add or remove a list of wmes we've been sent
+bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ;
+
+	if (!pAgent)
+		return false ;
+
+	// Get the command tag which contains the list of wmes
+	ElementXML const* pCommand = pIncoming->GetCommandTag() ;
+
+	int nChildren = pCommand->GetNumberChildren() ;
+
+	ElementXML wmeXML(NULL) ;
+	ElementXML* pWmeXML = &wmeXML ;
+
+	for (int i = 0 ; i < nChildren ; i++)
+	{
+		pCommand->GetChild(&wmeXML, i) ;
+
+		// Ignore tags that aren't wmes.
+		if (!pWmeXML->IsTag(sml_Names::kTagWME))
+			continue ;
+
+		// Find out if this is an add or a remove
+		char const* pAction = pWmeXML->GetAttribute(sml_Names::kWME_Action) ;
+
+		if (!pAction)
+			continue ;
+
+		bool add = IsStringEqual(pAction, sml_Names::kValueAdd) ;
+
+		if (add)
+		{
+			char const* pID			= pWmeXML->GetAttribute(sml_Names::kWME_Id) ;	// May be a client side id value (e.g. "o3" not "O3")
+			char const* pAttribute  = pWmeXML->GetAttribute(sml_Names::kWME_Attribute) ;
+			char const* pValue		= pWmeXML->GetAttribute(sml_Names::kWME_Value) ;
+			char const* pType		= pWmeXML->GetAttribute(sml_Names::kWME_ValueType) ;	// Can be NULL (=> string)
+			char const* pTimeTag	= pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// May be a client side time tag (e.g. -3 not +3)
+
+			// Set the default value
+			if (!pType)
+				pType = sml_Names::kTypeString ;
+
+			// Check we got everything we need
+			if (!pID || !pAttribute || !pValue || !pTimeTag)
+				continue ;
+
+			// Map the ID from client side to kernel side (if the id is already a kernel side id it's returned unchanged)
+			std::string id ;
+			ConvertID(pID, &id) ;
+
+			// Add the wme
+			AddInputWME(pAgent, pID, pAttribute, pValue, pType, pTimeTag, pError) ;
+		}
+	}
+
+	return true ;
+}
+
 bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
-	unused(pCommandName) ; unused(pAgent) ; unused(pResponse) ;
+	unused(pCommandName) ; unused(pError) ;
 
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;

@@ -293,3 +293,70 @@ ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, ElementXML* p
 	return pResponse ;
 }
 
+/*************************************************************
+* @brief	Converts an id from a client side value to a kernel side value.
+*			We need to be able to do this because the client is adding a collection
+*			of wmes at once, so it makes up the ids for those objects.
+*			But the kernel will assign them a different value when the
+*			wme is actually added in the kernel.
+*************************************************************/
+bool KernelSML::ConvertID(char const* pClientID, std::string* pKernelID)
+{
+	if (pClientID == NULL)
+		return false ;
+
+	IdentifierMapIter iter = m_IdentifierMap.find(pClientID) ;
+
+	if (iter == m_IdentifierMap.end())
+	{
+		// If the client id is not in the map, then we may have been
+		// passed a kernel id (this will happen at times).
+		// So return the value we were passed
+		*pKernelID = pClientID ;
+		return false ;
+	}
+	else
+	{
+		// If we found a mapping, return the mapped value
+		*pKernelID = iter->second ;
+		return true ;
+	}
+}
+
+void KernelSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
+{
+	m_IdentifierMap[pClientID] = pKernelID ;
+}
+
+/*************************************************************
+* @brief	Converts a time tag from a client side value to
+*			a kernel side one.
+*************************************************************/
+long KernelSML::ConvertTimeTag(char const* pTimeTag)
+{
+	if (pTimeTag == NULL)
+		return -1 ;
+
+	TimeTagMapIter iter = m_TimeTagMap.find(pTimeTag) ;
+
+	if (iter == m_TimeTagMap.end())
+	{
+		return -1 ;
+	}
+	else
+	{
+		// If we found a mapping, return the mapped value
+		long result = iter->second ;
+		return result ;
+	}
+}
+
+/*************************************************************
+* @brief	Converts a time tag from a client side value to
+*			a kernel side one.
+*************************************************************/
+void KernelSML::RecordTimeTag(char const* pTimeTag, long kernelTimeTag)
+{
+	m_TimeTagMap[pTimeTag] = kernelTimeTag ;
+}
+

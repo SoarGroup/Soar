@@ -17,7 +17,7 @@
 namespace sml {
 
 class Agent ;
-class SoarId ;
+class Identifier ;
 
 class WMElement
 {
@@ -25,23 +25,35 @@ protected:
 	// The agent which owns this WME.
 	Agent*	m_Agent ;
 	
+	// The time tag (a unique id for this WME)
+	// We used negative values so it's clear that this time tag is a client side tag.
+	long m_TimeTag ;
+
 	// The id for this wme (can be NULL if we're at the top of the tree)
-	SoarId*	m_ID ;
+	Identifier*	m_ID ;
 
 	// The attribute name for this wme (the value is owned by the derived class)
 	std::string m_AttributeName ;
 
 public:
-	WMElement(Agent* pAgent, SoarId* pID, char const* pAttributeName);
+	WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName);
 	virtual ~WMElement(void);
 
 	Agent*		GetAgent()	{ return m_Agent ; }
 
 	// Two accessors for the ID as people think about it in different ways
-	SoarId*		GetParent() { return m_ID ; }
-	SoarId*		GetID()		{ return m_ID ; }
+	Identifier*		GetParent()			{ return m_ID ; }
+	Identifier*		GetIdentifier()		{ return m_ID ; }
 
 	char const*	GetAttribute()	{ return m_AttributeName.c_str() ; }
+
+	// Returns the type of the value stored here (e.g. "string" or "int" etc.)
+	virtual char const* GetValueType()	= 0 ;
+
+	// Returns a string form of the value stored here.
+	virtual char const* GetValueAsString() = 0 ;
+
+	long		GetTimeTag()	{ return m_TimeTag ; }
 
 	// Remove from working memory
 	void Remove() { }

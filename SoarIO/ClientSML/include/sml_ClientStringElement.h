@@ -17,15 +17,22 @@
 
 namespace sml {
 
-class StringElement : WMElement
+class StringElement : public WMElement
 {
 protected:
 	// The value for this wme is a string
 	std::string		m_Value ;
 
 public:
-	StringElement(Agent* pAgent, SoarId* pID, char const* pAttributeName, char const* pValue) ;
+	StringElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pValue) ;
 	virtual ~StringElement(void);
+
+	// Returns the type of the value stored here (e.g. "string" or "int" etc.)
+	virtual char const* GetValueType()	;
+
+	// Returns a string form of the value stored here.
+	virtual char const* GetValueAsString() { return m_Value.c_str() ; }
+
 };
 
 }	// namespace

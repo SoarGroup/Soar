@@ -96,9 +96,10 @@ ElementXML* MessageGenerator::CreateSMLCommand(char const* pName, bool rawOutput
 * @param pValue		The value of this parameter (represented as a string).  Can be empty, can't be NULL.
 * @param pValueType	The type of the value (e.g. "int" or "string".  Anything can go here as long as the recipient understands it) (usually will be NULL).
 * 
-* @returns 0 if successful, otherwise an error code to indicate what went wrong.
+* @returns Pointer to the ElementXML_Handle for the <command> tag (not the full message, just the <command> part)
+*		   This is rarely needed, but could be used to optimize the code.
 *************************************************************/
-void MessageGenerator::AddParameterToSMLCommand(ElementXML* pMsg, char const* pName, char const* pValue, char const* pValueType)
+ElementXML_Handle MessageGenerator::AddParameterToSMLCommand(ElementXML* pMsg, char const* pName, char const* pValue, char const* pValueType)
 {
 	ClearError() ;
 
@@ -106,13 +107,13 @@ void MessageGenerator::AddParameterToSMLCommand(ElementXML* pMsg, char const* pN
 	if (!pName || !pValue)
 	{
 		SetError(Error::kNullArgument) ;
-		return ;
+		return NULL ;
 	}
 
 	if (!pMsg->IsTag(sml_Names::kTagSML))
 	{
 		SetError(Error::kArgumentIsNotSML) ;
-		return ;
+		return NULL ;
 	}
 #endif
 
@@ -125,7 +126,7 @@ void MessageGenerator::AddParameterToSMLCommand(ElementXML* pMsg, char const* pN
 	if (!found || !pCommand->IsTag(sml_Names::kTagCommand))
 	{
 		SetError(Error::kSMLHasNoCommand) ;
-		return ;
+		return NULL ;
 	}
 #endif
 
@@ -139,6 +140,8 @@ void MessageGenerator::AddParameterToSMLCommand(ElementXML* pMsg, char const* pN
 		pArg->SetType(pValueType) ;
 
 	pCommand->AddChild(pArg) ;
+
+	return pCommand->GetXMLHandle() ;
 }
 
 /*************************************************************

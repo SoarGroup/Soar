@@ -12,6 +12,7 @@
 #include "sml_ClientAgent.h"
 #include "sml_ClientKernel.h"
 #include "sml_Connection.h"
+#include "sml_ClientIdentifier.h"
 
 #include <cassert>
 #include <string>
@@ -53,10 +54,32 @@ bool Agent::LoadProductions(char const* pFilename)
 * @brief Returns the id object for the input link.
 *		 The agent retains ownership of this object.
 *************************************************************/
-SoarId* Agent::GetInputLink()
+Identifier* Agent::GetInputLink()
 {
 	return GetWM()->GetInputLink() ;
 }
 
+/*************************************************************
+* @brief Builds a new WME that has a string value.
+*		 The agent retains ownership of this object.
+*		 The returned object is valid until the caller
+*		 deletes the parent identifier.
+*************************************************************/
+StringElement* Agent::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
+{
+	if (!parent)
+		return NULL ;
+
+	return GetWM()->CreateStringWME(parent, pAttribute, pValue) ;
+}
+
+/*************************************************************
+* @brief Send the most recent list of changes to working memory
+*		 over to the kernel.
+*************************************************************/
+bool Agent::Commit()
+{
+	return GetWM()->Commit() ;
+}
 
 
