@@ -46,6 +46,33 @@ public class EnumerationVertex extends SoarVertex {
 		theStrings.add(s);
 	}
 
+    public void remove(String s)
+    {
+        Iterator iter = theStrings.iterator();
+        while(iter.hasNext())
+        {
+            String t = (String)iter.next();
+            if (t.equals(s))
+            {
+                iter.remove();
+            }
+        }
+    }
+
+    public boolean contains(String s)
+    {
+        Iterator iter = theStrings.iterator();
+        while(iter.hasNext())
+        {
+            String t = (String)iter.next();
+            if (t.equals(s))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	public boolean allowsEmanatingEdges() {
 		return false;
 	}

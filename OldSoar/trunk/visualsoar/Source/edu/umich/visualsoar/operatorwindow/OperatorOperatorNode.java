@@ -150,5 +150,71 @@ class OperatorOperatorNode extends SoarOperatorNode {
 		}
 	}
 
+    /**
+     * The user wants to rename this node
+     * @param model the model for which this node is contained within
+     * @param newName the new name that the user wants this node to be called
+     */
+    public void rename(OperatorWindow operatorWindow,
+                       String newName) throws IOException 
+    {
+        String oldName = name;
+        
+        //This will throw an IOException if it fails
+        super.rename(operatorWindow, newName);
+
+        /*=====================================================================
+         * Attempt to update the operator's name in the datamap
+         *---------------------------------------------------------------------
+         */
+        //Find the correct datamap
+        OperatorNode node = (OperatorNode)getParent();
+        while(!node.hasDataMap())
+        {
+            node = (OperatorNode)node.getParent();
+        }
+
+        //Find the datamap for this operator
+        SoarWorkingMemoryModel swmm = operatorWindow.getDatamap();
+
+        //Search for all operators in the datamap
+        Enumeration enumOper;
+        if (node instanceof SoarOperatorNode)
+        {
+            enumOper = swmm.emanatingEdges(((SoarOperatorNode)node).dataMapId);
+        }
+        else
+        {
+            enumOper = swmm.emanatingEdges(swmm.getTopstate());
+        }
+        while(enumOper.hasMoreElements())
+        {
+            NamedEdge ne = (NamedEdge)enumOper.nextElement();
+            if (ne.getName().equals("operator"))
+            {
+                //Search this operator for the old name
+                SoarVertex svOper = (SoarVertex)ne.V1();
+                Enumeration enumName = swmm.emanatingEdges(svOper);
+                while(enumName.hasMoreElements())
+                {
+                    ne = (NamedEdge)enumName.nextElement();
+                    if (ne.getName().equals("name"))
+                    {
+                        SoarVertex svName = (SoarVertex)ne.V1();
+                        if (svName instanceof EnumerationVertex)
+                        {
+                            EnumerationVertex evName = (EnumerationVertex)svName;
+                            if (evName.contains(oldName))
+                            {
+                                evName.add(newName);
+                                evName.remove(oldName);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }    
 
 } // end of OperatorOperatorNode

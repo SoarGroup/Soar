@@ -159,12 +159,12 @@ public class FileNode extends OperatorNode implements java.io.Serializable
 
         if (! okayToCreate(newFile)) 
         {
-            return;
+            throw new IOException("Bad file name");
         }
 
         if (!oldFile.renameTo(newFile)) 
         {
-            throw new IOException();
+            throw new IOException("Unable to rename operator file.");
         }
         else 
         {
