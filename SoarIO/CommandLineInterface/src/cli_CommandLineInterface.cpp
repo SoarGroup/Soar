@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 /////////////////////////////////////////////////////////////////
 // CommandLineInterface class
 //
@@ -5,9 +9,6 @@
 // Date  : Sept 2004
 //
 /////////////////////////////////////////////////////////////////
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
 
 #include "cli_CommandLineInterface.h"
 

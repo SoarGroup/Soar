@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 /////////////////////////////////////////////////////////////////
 // KernelSMLgSKI class file.
 //
@@ -8,10 +12,6 @@
 // primitive gSKI objects.  Currently these are all deprecated.
 //
 /////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
 
 #ifdef _WIN32
 #include <crtdbg.h>

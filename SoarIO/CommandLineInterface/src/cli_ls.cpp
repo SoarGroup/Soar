@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 #include "cli_CommandLineInterface.h"
 
 #ifdef WIN32
@@ -65,6 +69,9 @@ bool CommandLineInterface::DoLS() {
 	return true;
 
 #else // WIN32
+	//DIR* directoryPointer;
+	//struct dirent* entry;
+
 	return HandleError("TODO: ls on non-windows platforms");
 #endif // WIN32
 }

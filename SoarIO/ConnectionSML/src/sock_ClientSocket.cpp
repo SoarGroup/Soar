@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 /////////////////////////////////////////////////////////////////
 // ClientSocket class
 //
@@ -8,9 +12,6 @@
 // IP address and port number.
 // 
 /////////////////////////////////////////////////////////////////
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
 
 #include "sock_Debug.h"
 #include "sock_ClientSocket.h"

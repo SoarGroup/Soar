@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 /////////////////////////////////////////////////////////////////
 // Socket class
 //
@@ -19,9 +23,6 @@
 // on the listener socket.
 // 
 /////////////////////////////////////////////////////////////////
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
 
 #include <stdio.h>
 #include "sock_SocketHeader.h"
