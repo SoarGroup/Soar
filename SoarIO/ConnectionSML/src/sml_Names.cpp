@@ -101,6 +101,7 @@ char const* sml_Names::kFalse	= "false" ;
 
 // sgio style commands
 char const* sml_Names::kCommand_CreateAgent		= "create_agent" ;
+char const* sml_Names::kCommand_DestroyAgent	= "destroy_agent" ;
 char const* sml_Names::kCommand_LoadProductions = "load_productions" ;
 char const* sml_Names::kCommand_GetInputLink	= "get_input_link" ;
 char const* sml_Names::kCommand_GetOutputLink	= "get_output_link" ;
@@ -108,6 +109,7 @@ char const* sml_Names::kCommand_Run				= "run" ;
 char const* sml_Names::kCommand_Input			= "input" ;
 char const* sml_Names::kCommand_Output			= "output" ;
 char const* sml_Names::kCommand_CheckForIncomingCommands = "check_for_incoming_commands" ;
+char const* sml_Names::kCommand_StopOnOutput	= "stop_on_output" ;
 
 // command line interface
 char const* sml_Names::kCommand_CommandLine  = "cmdline" ;

@@ -163,10 +163,28 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 		agent = new Agent(this, pAgentName) ;
 
 		// Record this in our list of agents
-		m_AgentMap.add(agent->GetName(), agent) ;
+		m_AgentMap.add(agent->GetAgentName(), agent) ;
 	}
 
 	return agent ;
+}
+
+/*************************************************************
+* @brief Destroys an agent in the kernel (and locally).
+*************************************************************/
+bool Kernel::DestroyAgent(Agent* pAgent)
+{
+	AnalyzeXML response ;
+
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_DestroyAgent, pAgent->GetAgentName()))
+	{
+		// Remove the object from our map and delete it.
+		m_AgentMap.remove(pAgent->GetAgentName(), true) ;
+		return true ;
+	}
+
+	// BUGBUG? Should we delete the local object anyway even if destroy agent failed?
+	return false ;
 }
 
 /*************************************************************

@@ -106,6 +106,7 @@ public:
 
 	// sgio style commands
 	static char const* kCommand_CreateAgent ;
+	static char const* kCommand_DestroyAgent ;
 	static char const* kCommand_LoadProductions ;
 	static char const* kCommand_GetInputLink ;
 	static char const* kCommand_GetOutputLink ;
@@ -113,6 +114,7 @@ public:
 	static char const* kCommand_Input ;
 	static char const* kCommand_Output ;
 	static char const* kCommand_CheckForIncomingCommands ;
+	static char const* kCommand_StopOnOutput ;
 
 	// Command line interface
 	static char const* kCommand_CommandLine ;

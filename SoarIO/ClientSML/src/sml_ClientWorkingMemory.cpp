@@ -52,7 +52,7 @@ Connection* WorkingMemory::GetConnection() const
 
 char const* WorkingMemory::GetAgentName() const
 {
-	return GetAgent()->GetName() ;
+	return GetAgent()->GetAgentName() ;
 }
 
 // Searches for an identifier object that matches this id.

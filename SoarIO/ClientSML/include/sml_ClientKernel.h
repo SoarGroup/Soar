@@ -91,6 +91,11 @@ public:
 	Agent* CreateAgent(char const* pAgentName) ;
 
 	/*************************************************************
+	* @brief Destroys an agent in the kernel (and locally).
+	*************************************************************/
+	bool DestroyAgent(Agent* pAgent) ;
+
+	/*************************************************************
 	* @brief Looks up an agent by name (from our list of known agents).
 	*
 	* @returns A pointer to the new agent structure.  This object

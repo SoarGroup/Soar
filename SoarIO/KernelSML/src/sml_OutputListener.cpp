@@ -34,8 +34,20 @@ static char const* GetValueType(egSKISymbolType type)
 
 void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist)
 {
+	unused(change) ;
+
 	if (eventId != gSKIEVENT_OUTPUT_PHASE_CALLBACK)
 		return ;
+
+	if (m_StopOnOutput)
+	{
+		// If we've been asked to interrupt Soar when we receive output, then do so now.
+		// I'm not really clear on the correct parameters for stopping Soar here and what impact it will have.
+		agentPtr->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING) ;
+
+		// Clear the flag, so we don't keep trying to stop.  The caller can reset it before the next run if they wish.
+		m_StopOnOutput = false ;
+	}
 
 	// Build the SML message we're doing to send.
 	ElementXML* pMsg = m_Connection->CreateSMLCommand(sml_Names::kCommand_Output) ;
@@ -144,6 +156,7 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 	// Send the message
 	AnalyzeXML response ;
 	bool ok = m_Connection->SendMessageGetResponse(&response, pMsg) ;
+	unused(ok) ;
 
 	// Clean up
 	delete pMsg ;

@@ -331,11 +331,10 @@ bool KernelSMLgSKI::IAgentManager_AddAgent(void* pThis, char const* pCommandName
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	char const* pName				= pIncoming->GetArgValue(sml_Names::kParamName, arg++) ;
-	char const* pProdFileName		= pIncoming->GetArgValue(sml_Names::kParamFilename, arg++) ;
-	bool learningOn					= pIncoming->GetArgBool(sml_Names::kParamLearning, arg++, false) ;
-	egSKIOSupportMode oSupportMode	= (egSKIOSupportMode)pIncoming->GetArgInt(sml_Names::kParamOSupportMode, arg++, gSKI_O_SUPPORT_MODE_4) ;
+	char const* pName				= pIncoming->GetArgValue(sml_Names::kParamName) ;
+	char const* pProdFileName		= pIncoming->GetArgValue(sml_Names::kParamFilename) ;
+	bool learningOn					= pIncoming->GetArgBool(sml_Names::kParamLearning, false) ;
+	egSKIOSupportMode oSupportMode	= (egSKIOSupportMode)pIncoming->GetArgInt(sml_Names::kParamOSupportMode, gSKI_O_SUPPORT_MODE_4) ;
 
 	if (!pName)
 	{
@@ -389,9 +388,8 @@ bool KernelSMLgSKI::IOutputLink_AddOutputProcessor(void* pThis, char const* pCom
 	unused(pCommandName) ; unused(pIncoming) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	char const* pAttributePath	   = pIncoming->GetArgValue(sml_Names::kParamAttributePath, arg++) ;
-	char const* pOutputProcessorID = pIncoming->GetArgValue(sml_Names::kParamOutputProcessor, arg++) ;
+	char const* pAttributePath	   = pIncoming->GetArgValue(sml_Names::kParamAttributePath) ;
+	char const* pOutputProcessorID = pIncoming->GetArgValue(sml_Names::kParamOutputProcessor) ;
 
 	if (!pAttributePath || !pOutputProcessorID)
 	{
@@ -418,9 +416,8 @@ bool KernelSMLgSKI::IInputLink_AddInputProducer(void* pThis, char const* pComman
 	unused(pCommandName) ; unused(pIncoming) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWMObject* pWMobject		 = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++), kIWMObject) ;
-	char const* pInputProducerID = pIncoming->GetArgValue(sml_Names::kParamInputProducer, arg++) ;
+	IWMObject* pWMobject		 = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject), kIWMObject) ;
+	char const* pInputProducerID = pIncoming->GetArgValue(sml_Names::kParamInputProducer) ;
 
 	if (!pWMobject || !pInputProducerID)
 	{
@@ -460,9 +457,8 @@ bool KernelSMLgSKI::IWMObject_GetWMEs(void* pThis, char const* pCommandName, Con
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute, arg++) ;
-	egSKISymbolType valueType = (egSKISymbolType)pIncoming->GetArgInt(sml_Names::kParamValue, arg++, gSKI_ANY_SYMBOL) ;
+	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute) ;
+	egSKISymbolType valueType = (egSKISymbolType)pIncoming->GetArgInt(sml_Names::kParamValue, gSKI_ANY_SYMBOL) ;
 
 	// Make the call
 	tIWmeIterator* pResult = ((IWMObject*)pThis)->GetWMEs(pAttr, valueType, pError) ;
@@ -476,9 +472,8 @@ bool KernelSMLgSKI::IAgent_RunInClientThread(void* pThis, char const* pCommandNa
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	egSKIRunType runLength = (egSKIRunType)pIncoming->GetArgInt(sml_Names::kParamLength, arg++, gSKI_RUN_FOREVER) ;
-	int count = pIncoming->GetArgInt(sml_Names::kParamCount, arg++, 1) ;
+	egSKIRunType runLength = (egSKIRunType)pIncoming->GetArgInt(sml_Names::kParamLength, gSKI_RUN_FOREVER) ;
+	int count = pIncoming->GetArgInt(sml_Names::kParamCount, 1) ;
 
 	// Run Soar
 	egSKIRunResult result = ((IAgent*)pThis)->RunInClientThread(runLength, count, pError) ;
@@ -505,8 +500,7 @@ bool KernelSMLgSKI::IWorkingMemory_RemoveObject(void* pThis, char const* pComman
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++), kIWMObject) ;
+	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject), kIWMObject) ;
 
 	if (!pWMobject)
 	{
@@ -525,10 +519,9 @@ bool KernelSMLgSKI::IWorkingMemory_AddWmeInt(void* pThis, char const* pCommandNa
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++), kIWMObject) ;
-	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute, arg++) ;
-	char const* pVal  = pIncoming->GetArgValue(sml_Names::kParamValue, arg++) ;
+	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject), kIWMObject) ;
+	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute) ;
+	char const* pVal  = pIncoming->GetArgValue(sml_Names::kParamValue) ;
 
 	if (!pWMobject || !pAttr || !pVal)
 	{
@@ -549,10 +542,9 @@ bool KernelSMLgSKI::IWorkingMemory_AddWmeObjectLink(void* pThis, char const* pCo
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++), kIWMObject) ;
-	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute, arg++) ;
-	IWMObject* pVal = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamValue, arg++), kIWMObject) ;
+	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject), kIWMObject) ;
+	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute) ;
+	IWMObject* pVal = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamValue), kIWMObject) ;
 
 	if (!pWMobject || !pAttr || !pVal)
 	{
@@ -572,10 +564,9 @@ bool KernelSMLgSKI::IWorkingMemory_AddWmeDouble(void* pThis, char const* pComman
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++), kIWMObject) ;
-	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute, arg++) ;
-	char const* pVal  = pIncoming->GetArgValue(sml_Names::kParamValue, arg++) ;
+	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject), kIWMObject) ;
+	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute) ;
+	char const* pVal  = pIncoming->GetArgValue(sml_Names::kParamValue) ;
 
 	if (!pWMobject || !pAttr || !pVal)
 	{
@@ -596,10 +587,9 @@ bool KernelSMLgSKI::IWorkingMemory_AddWmeString(void* pThis, char const* pComman
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++), kIWMObject) ;
-	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute, arg++) ;
-	char const* pVal  = pIncoming->GetArgValue(sml_Names::kParamValue, arg++) ;
+	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject), kIWMObject) ;
+	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute) ;
+	char const* pVal  = pIncoming->GetArgValue(sml_Names::kParamValue) ;
 
 	if (!pWMobject || !pAttr || !pVal)
 	{
@@ -618,9 +608,8 @@ bool KernelSMLgSKI::IWorkingMemory_AddWmeNewObject(void* pThis, char const* pCom
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++), kIWMObject) ;
-	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute, arg++) ;
+	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject), kIWMObject) ;
+	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute) ;
 
 	if (!pWMobject || !pAttr)
 	{
@@ -639,9 +628,8 @@ bool KernelSMLgSKI::IWorkingMemory_ReplaceStringWme(void* pThis, char const* pCo
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWme* pOldWme = (IWme*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWme, arg++), kIWme) ;
-	char const* pString = pIncoming->GetArgValue(sml_Names::kParamValue, arg++) ;
+	IWme* pOldWme = (IWme*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWme), kIWme) ;
+	char const* pString = pIncoming->GetArgValue(sml_Names::kParamValue) ;
 
 	if (!pOldWme || !pString)
 	{
@@ -660,9 +648,8 @@ bool KernelSMLgSKI::IWorkingMemory_ReplaceIntWme(void* pThis, char const* pComma
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWme* pOldWme = (IWme*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWme, arg++), kIWme) ;
-	const char* pString = pIncoming->GetArgValue(sml_Names::kParamValue, arg++) ;
+	IWme* pOldWme = (IWme*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWme), kIWme) ;
+	const char* pString = pIncoming->GetArgValue(sml_Names::kParamValue) ;
 
 	if (!pOldWme || !pString)
 	{
@@ -681,9 +668,8 @@ bool KernelSMLgSKI::IWorkingMemory_ReplaceDoubleWme(void* pThis, char const* pCo
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	IWme* pOldWme = (IWme*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWme, arg++), kIWme) ;
-	char const* pString = pIncoming->GetArgValue(sml_Names::kParamValue, arg++) ;
+	IWme* pOldWme = (IWme*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWme), kIWme) ;
+	char const* pString = pIncoming->GetArgValue(sml_Names::kParamValue) ;
 
 	if (!pOldWme || !pString)
 	{
@@ -776,8 +762,7 @@ bool KernelSMLgSKI::IOutputLink_SetAutomaticUpdate(void* pThis, char const* pCom
 	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, arg, true) ;
+	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, true) ;
 
 	// Make the call
 	((IOutputLink*)pThis)->SetAutomaticUpdate(state, pError) ;
@@ -849,7 +834,7 @@ bool KernelSMLgSKI::IRelease_Release(void* pThis, char const* pCommandName, Conn
 	((IRelease*)pThis)->Release() ;
 
 	// So we need to also delete it from our table
-	char const* pThisID = pIncoming->GetArgValue(sml_Names::kParamThis, 0) ;
+	char const* pThisID = pIncoming->GetArgValue(sml_Names::kParamThis) ;
 	DeleteObject(pThisID) ;
 
 	return true ;
@@ -860,8 +845,7 @@ bool KernelSMLgSKI::IAgentManager_RemoveAgent(void* pThis, char const* pCommandN
 	unused(pCommandName) ;
 
 	// Get the params
-	int arg = 1 ;
-	char const* pAgentID = pIncoming->GetArgValue(sml_Names::kParamAgent, arg++) ;
+	char const* pAgentID = pIncoming->GetArgValue(sml_Names::kParamAgent) ;
 	IAgent* pAgent = (IAgent*)LookupObject(pAgentID, kIAgent) ;
 
 	if (!pAgent)
@@ -884,13 +868,12 @@ bool KernelSMLgSKI::IKernelFactory_Create(void* pThis, char const* pCommandName,
 	unused(pCommandName) ;
 
 	// Get the parameters
-	int arg = 1 ;
-	char const* pName			= pIncoming->GetArgValue(sml_Names::kParamName, arg++) ;
-	egSKIThreadingModel thread	= (egSKIThreadingModel)pIncoming->GetArgInt(sml_Names::kParamThread, arg++, gSKI_MULTI_THREAD) ;
-	egSKIProcessType   process	= (egSKIProcessType)pIncoming->GetArgInt(sml_Names::kParamProcess, arg++, gSKI_ANY_PROCESS) ;
-	char const* pLocation		= pIncoming->GetArgValue(sml_Names::kParamLocation, arg++) ;
-	char const* pLogLocation	= pIncoming->GetArgValue(sml_Names::kParamLogLocation, arg++) ;
-	egSKILogActivityLevel log	= (egSKILogActivityLevel)pIncoming->GetArgInt(sml_Names::kParamLogLevel, arg++, gSKI_LOG_ERRORS) ;
+	char const* pName			= pIncoming->GetArgValue(sml_Names::kParamName) ;
+	egSKIThreadingModel thread	= (egSKIThreadingModel)pIncoming->GetArgInt(sml_Names::kParamThread, gSKI_MULTI_THREAD) ;
+	egSKIProcessType   process	= (egSKIProcessType)pIncoming->GetArgInt(sml_Names::kParamProcess, gSKI_ANY_PROCESS) ;
+	char const* pLocation		= pIncoming->GetArgValue(sml_Names::kParamLocation) ;
+	char const* pLogLocation	= pIncoming->GetArgValue(sml_Names::kParamLogLocation) ;
+	egSKILogActivityLevel log	= (egSKILogActivityLevel)pIncoming->GetArgInt(sml_Names::kParamLogLevel, gSKI_LOG_ERRORS) ;
 	
 	// Make the call
 	IKernel* pKernel = ((IKernelFactory*)pThis)->Create(pName, thread, process, pLocation, pLogLocation, log, pError) ;
@@ -907,8 +890,7 @@ bool KernelSMLgSKI::IKernelFactory_DestroyKernel(void* pThis, char const* pComma
 	unused(pCommandName) ;
 
 	// Get the params
-	int arg = 1 ;
-	char const* pKernelID = pIncoming->GetArgValue(sml_Names::kParamKernel, arg++) ;
+	char const* pKernelID = pIncoming->GetArgValue(sml_Names::kParamKernel) ;
 	IKernel* pKernel = (IKernel*)LookupObject(pKernelID, kIKernel) ;
 
 	if (!pKernel)
@@ -1203,7 +1185,7 @@ bool KernelSMLgSKI::ProcessCommand(char const* pCommandName, Connection* pConnec
 	{
 		// Convert from the ID in the command to an actual object, which is
 		// the "this" pointer for this call.
-		char const* pThisID = pIncoming->GetArgValue(sml_Names::kParamThis, 0) ;
+		char const* pThisID = pIncoming->GetArgValue(sml_Names::kParamThis) ;
 
 		if (!pThisID)
 		{

@@ -15,6 +15,7 @@
 #endif
 
 #include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
 #include "sml_OutputListener.h"
@@ -71,6 +72,7 @@ using namespace gSKI ;
 #undef SendMessage
 #endif
 
+/*
 static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 {
 #ifdef _WIN32
@@ -82,14 +84,16 @@ static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 #endif
 #endif
 }
+*/
 
 void KernelSML::BuildCommandMap()
 {
 	m_CommandMap[sml_Names::kCommand_CreateAgent]		= KernelSML::HandleCreateAgent ;
+	m_CommandMap[sml_Names::kCommand_DestroyAgent]		= KernelSML::HandleDestroyAgent ;
 	m_CommandMap[sml_Names::kCommand_LoadProductions]	= KernelSML::HandleLoadProductions ;
 	m_CommandMap[sml_Names::kCommand_GetInputLink]		= KernelSML::HandleGetInputLink ;
 	m_CommandMap[sml_Names::kCommand_Input]				= KernelSML::HandleInput ;
-
+	m_CommandMap[sml_Names::kCommand_StopOnOutput]		= KernelSML::HandleStopOnOutput ;
 	m_CommandMap[sml_Names::kCommand_CommandLine]		= KernelSML::HandleCommandLine ;
 	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = KernelSML::HandleCheckForIncomingCommands ;
 }
@@ -149,6 +153,38 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName
 	// If not, pError should contain the error and returning false
 	// means we'll pass that back to the caller.
 	return (pResult != NULL) ;
+}
+
+bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ; unused(pIncoming) ;
+
+	if (!pAgent)
+		return false ;
+
+	// Make the call.
+	GetKernel()->GetAgentManager()->RemoveAgent(pAgent, pError) ;
+
+	// Then delete our matching agent sml information
+	DeleteAgentSML(pAgent) ;
+
+	return true ;
+}
+
+// Set a flag so Soar will break when it next generates output.  This allows us to
+// run for "n decisions" OR "until output" which we can't do with raw gSKI calls.
+bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ; unused(pError) ;
+
+	// Get the parameters
+
+	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, true) ;
+
+	// Make the call.
+	bool ok = GetAgentSML(pAgent)->SetStopOnOutput(state) ;
+
+	return ok ;
 }
 
 // Gives some cycles to the Tcl debugger

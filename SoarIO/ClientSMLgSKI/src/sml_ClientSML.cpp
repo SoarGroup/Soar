@@ -39,10 +39,9 @@ ClientSML::~ClientSML(void)
 void ClientSML::InputProducerUpdate(Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	// Get the id of the input producer this message is for
-	int arg = 0 ;
-	char const* pThisID		= pIncoming->GetArgValue(sml_Names::kParamThis, arg++) ;
-	char const* pWMID		= pIncoming->GetArgValue(sml_Names::kParamWorkingMemory, arg++) ;
-	char const* pWMObjectID = pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++) ;
+	char const* pThisID		= pIncoming->GetArgValue(sml_Names::kParamThis) ;
+	char const* pWMID		= pIncoming->GetArgValue(sml_Names::kParamWorkingMemory) ;
+	char const* pWMObjectID = pIncoming->GetArgValue(sml_Names::kParamWmeObject) ;
 
 	// Find the input producer object (on the client side)
 	IInputProducer* pInputProducer = (IInputProducer*)m_InputProducers.lookup(pThisID) ;
@@ -71,10 +70,9 @@ void ClientSML::InputProducerUpdate(Connection* pConnection, AnalyzeXML* pIncomi
 void ClientSML::OutputProcessorUpdate(Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	// Get the id of the input producer this message is for
-	int arg = 0 ;
-	char const* pThisID		= pIncoming->GetArgValue(sml_Names::kParamThis, arg++) ;
-	char const* pWMID		= pIncoming->GetArgValue(sml_Names::kParamWorkingMemory, arg++) ;
-	char const* pWMObjectID = pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++) ;
+	char const* pThisID		= pIncoming->GetArgValue(sml_Names::kParamThis) ;
+	char const* pWMID		= pIncoming->GetArgValue(sml_Names::kParamWorkingMemory) ;
+	char const* pWMObjectID = pIncoming->GetArgValue(sml_Names::kParamWmeObject) ;
 
 	// Find the output processor object (on the client side)
 	IOutputProcessor* pOutputProcessor = (IOutputProcessor*)m_OutputProcessors.lookup(pThisID) ;

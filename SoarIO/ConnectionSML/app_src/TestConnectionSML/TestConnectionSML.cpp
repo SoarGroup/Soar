@@ -549,7 +549,7 @@ public:
 		ok = ok && Check(pCommand != NULL, "Failed to find command tag in analysis") ;
 		ok = ok && Check(pCommand->IsTag("command"), "Tag is not the command tag") ;
 
-		char const* pWME           = analysis->GetArgValue("wme", 0) ;
+		char const* pWME           = analysis->GetArgValue("wme") ;
 		ok = ok && CheckStringEq(pWME, "s1", "Problem with analysis of XML") ;
 		delete analysis ;
 

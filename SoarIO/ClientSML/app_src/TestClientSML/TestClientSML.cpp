@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 		if (!pAgent)
 			cout << "Error creating agent" << endl ;
 
-		pAgent->LoadProductions("tictactoe.soar") ;
+		pAgent->LoadProductions("testsml.soar") ;
 
 		Identifier* pInputLink = pAgent->GetInputLink() ;
 
@@ -117,7 +117,8 @@ int main(int argc, char* argv[])
 		ok = pAgent->Commit() ;
 
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
-		pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
+//		pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
+		pAgent->RunTilOutput(20) ;	// Should just run a decision or two.
 
 		bool ioOK = false ;
 
@@ -204,6 +205,12 @@ int main(int argc, char* argv[])
 		{
 			SLEEP(10) ;
 		}
+
+		// Explicitly destroy our agent as a test, before we delete the kernel itself.
+		ok = pKernel->DestroyAgent(pAgent) ;
+
+		if (!ok)
+			cout << "*** ERROR: Failed to destroy agent properly ***" ;
 
 		delete pKernel ;
 

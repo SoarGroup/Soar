@@ -47,9 +47,9 @@ protected:
 	virtual ~Agent();
 
 	Connection* GetConnection() const ;
-	char const* GetName() const		{ return m_Name.c_str() ; }
-	WorkingMemory* GetWM() 			{ return &m_WorkingMemory ; } 
-	Kernel*		GetKernel() const	{ return m_Kernel ; }
+	char const* GetAgentName() const	{ return m_Name.c_str() ; }
+	WorkingMemory* GetWM() 				{ return &m_WorkingMemory ; } 
+	Kernel*		GetKernel() const		{ return m_Kernel ; }
 
 	/*************************************************************
 	* @brief This function is called when output is received
@@ -165,20 +165,17 @@ public:
 	=== Method 1: a) Call "RunTilOutput".
 	===			b) Call "Commands", "GetCommand" and "GetParamValue"
 	===			   to get top level WMEs that have been added since the last cycle.
-	===			c) Call "ClearOutputListChanges" before running again.
 	===
 	=== Method 2: a) Call "RunTilOutput".
 	===			b) Call "GetOutputLink" and "GetNumberChildren", "GetChild"
 	===			   to walk the tree and examine its current state.
 	===			c) You can use "IsJustAdded" and "AreChildrenModified"
-	===			   together with "ClearOutputListChanges" to
-	===			   see what WMEs just changed.
+	===			   to see what WMEs just changed.
 	===
 	=== Method 3: a) Call "RunTilOutput".
 	===			b) Call "GetNumberOutputLinkChanges" and "GetOutputLinkChange"
 	===			   and "IsOutputLinkChangeAdd" to get the list of
 	===			   all WMEs added and removed since the last cycle.
-	===			c) Call "ClearOutputListChanges" before running again.
 	===
 	=== Method 1 is the closest to the original SGIO and should be sufficient
 	=== in almost all cases.  However, Methods 2 & 3 provide complete
@@ -251,6 +248,31 @@ public:
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
 	char const* Run(unsigned long decisions) ;
+
+	/*************************************************************
+	* @brief   Controls whether Soar will break when it next generates
+	*		   output while running.
+	*
+	* @param state	If true, causes Soar to break on output.  If false, Soar will not break.
+	*************************************************************/
+	bool SetStopOnOutput(bool state) ;
+
+	/*************************************************************
+	* @brief   Run Soar until either output is generated or
+	*		   the maximum number of decisions is reached.
+	*
+	* This function also calls "ClearOutputLinkChanges" so methods
+	* like "IsJustAdded" will refer to the changes that occur as a result of
+	* this run.
+	*
+	* We don't generally want Soar to just run until it generates
+	* output without any limit as an error in the AI logic might cause
+	* it to never return control to the environment.
+	*
+	* @param maxDecisions	If Soar runs for this many decisions without generating output, stop.
+	*						15 was used in SGIO.
+	*************************************************************/
+	char const* RunTilOutput(unsigned long maxDecisions) ;
 
 };
 

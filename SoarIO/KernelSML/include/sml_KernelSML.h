@@ -52,23 +52,15 @@ class Connection ;
 class AnalyzeXML ;
 class KernelSML ;
 class OutputListener ;
-
-// We need a comparator to make the map we're about to define work with char*
-struct strCompareKernel
-{
-  bool operator()(const char* s1, const char* s2) const
-  {
-    return std::strcmp(s1, s2) < 0;
-  }
-};
+class AgentSML; 
 
 // Define the CommandFunction which we'll call to process commands
 typedef bool (KernelSML::*CommandFunction)(gSKI::IAgent*, char const*, Connection*, AnalyzeXML*, ElementXML*, gSKI::Error*);
 
 // Used to store a map from command name to function handler for that command
-typedef std::map<char const*, CommandFunction, strCompareKernel>	CommandMap ;
-typedef CommandMap::iterator										CommandMapIter ;
-typedef CommandMap::const_iterator									CommandMapConstIter ;
+typedef std::map<std::string, CommandFunction>	CommandMap ;
+typedef CommandMap::iterator					CommandMapIter ;
+typedef CommandMap::const_iterator				CommandMapConstIter ;
 
 // List of input producers that we need to delete
 typedef std::list<gSKI::IInputProducer*>	InputProducerList_t ;
@@ -79,62 +71,8 @@ typedef std::list<gSKI::IOutputProcessor*>	OutputProcessorList_t ;
 typedef OutputProcessorList_t::iterator		OutputProcessorListIter_t ;
 
 // List of output listeners that we need to delete
-typedef std::list<OutputListener*>			OutputListenerList_t ;
-typedef OutputListenerList_t::iterator		OutputListenerListIter_t ;
-
-// Map from a client side identifier to a kernel side one (e.g. "o3" => "O5")
-typedef std::map<std::string, std::string>	IdentifierMap ;
-typedef IdentifierMap::iterator				IdentifierMapIter ;
-typedef IdentifierMap::const_iterator		IdentifierMapConstIter ;
-
-// Map from a client side time tag (as a string) to a kernel side WME* object
-// (Had planned to just map the time tag to a kernel time tag...but it turns out
-//  there's no quick way to look up an object in the kernel from its time tag).
-typedef std::map<std::string, gSKI::IWme*>	TimeTagMap ;
-typedef TimeTagMap::iterator				TimeTagMapIter ;
-typedef TimeTagMap::const_iterator			TimeTagMapConstIter ;
-
-// This class is used to keep track of information needed by SML on an agent by agent basis.
-class AgentSML
-{
-protected:
-	// This is a callback we can register to listen for changes to the output-link
-	OutputListener*	m_pOutputListener ;
-
-	// A reference to the underlying gSKI agent object
-	gSKI::IAgent*	m_pIAgent ;
-
-	// Map from client side identifiers to kernel side ones
-	IdentifierMap	m_IdentifierMap ;
-
-	// Map from client side time tags (as strings) to kernel side WME* objects
-	TimeTagMap		m_TimeTagMap ;
-
-public:
-	AgentSML(gSKI::IAgent* pAgent) { m_pIAgent = pAgent ; m_pOutputListener = NULL ; }
-
-	~AgentSML() ;
-
-	void SetOutputListener(OutputListener* pListener)	{ m_pOutputListener = pListener ; }
-
-	/*************************************************************
-	* @brief	Converts an id from a client side value to a kernel side value.
-	*			We need to be able to do this because the client is adding a collection
-	*			of wmes at once, so it makes up the ids for those objects.
-	*			But the kernel will assign them a different value when the
-	*			wme is actually added in the kernel.
-	*************************************************************/
-	bool ConvertID(char const* pClientID, std::string* pKernelID) ;
-	void RecordIDMapping(char const* pClientID, char const* pKernelID) ;
-
-	/*************************************************************
-	* @brief	Converts a time tag from a client side value to
-	*			a kernel side one.
-	*************************************************************/
-	gSKI::IWme* ConvertTimeTag(char const* pTimeTag) ;
-	void RecordTimeTag(char const* pTimeTag, gSKI::IWme* pWme) ;
-	void RemoveTimeTag(char const* pTimeTag) ;
-} ;
+//typedef std::list<OutputListener*>			OutputListenerList_t ;
+//typedef OutputListenerList_t::iterator		OutputListenerListIter_t ;
 
 // Map from agent pointers to information we keep for SML about those agents.
 typedef std::map<gSKI::IAgent*, AgentSML*>	AgentMap ;
@@ -211,7 +149,12 @@ protected:
 	*			through SML to the kernel (e.g. when attaching a debugger).
 	*	
 	*************************************************************/
-	AgentSML*	GetAgentSML(gSKI::IAgent*) ;
+	AgentSML*	GetAgentSML(gSKI::IAgent* pAgent) ;
+
+	/*************************************************************
+	* @brief	Delete the agent sml object for this agent.
+	*************************************************************/	
+	bool DeleteAgentSML(gSKI::IAgent* pAgent) ;
 
 	/*************************************************************
 	* @brief	Look up an agent from its name.
@@ -276,10 +219,10 @@ protected:
 	bool KernelSML::HandleLoadProductions(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleGetInputLink(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-
 	bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-
+	bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 
 };
 

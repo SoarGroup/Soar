@@ -63,7 +63,7 @@ bool Agent::LoadProductions(char const* pFilename)
 {
 	AnalyzeXML response ;
 
-	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_LoadProductions, GetName(), sml_Names::kParamFilename, pFilename) ;
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_LoadProductions, GetAgentName(), sml_Names::kParamFilename, pFilename) ;
 	return ok ;
 }
 
@@ -337,6 +337,42 @@ char const* Agent::Run(unsigned long decisions)
 	std::string cmd = "run -d " + ostr.str() ;
 
 	// Execute the run command.
-	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetName()) ;
+	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetAgentName()) ;
 	return pResult ;
+}
+
+/*************************************************************
+* @brief   Controls whether Soar will break when it next generates
+*		   output while running.
+*
+* @param state	If true, causes Soar to break on output.  If false, Soar will not break.
+*************************************************************/
+bool Agent::SetStopOnOutput(bool state)
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_StopOnOutput, GetAgentName(), sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
+	return ok ;
+}
+
+/*************************************************************
+* @brief   Run Soar until either output is generated or
+*		   the maximum number of decisions is reached.
+*
+* This function also calls "ClearOutputLinkChanges" so methods
+* like "IsJustAdded" will refer to the changes that occur as a result of
+* this run.
+*
+* We don't generally want Soar to just run until it generates
+* output without any limit as an error in the AI logic might cause
+* it to never return control to the environment.
+*
+* @param maxDecisions	If Soar runs for this many decisions without generating output, stop.
+*						15 was used in SGIO.
+*************************************************************/
+char const* Agent::RunTilOutput(unsigned long maxDecisions)
+{
+	ClearOutputLinkChanges() ;
+	SetStopOnOutput(true) ;
+	return Run(maxDecisions) ;
 }

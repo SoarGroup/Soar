@@ -136,6 +136,9 @@
 				RelativePath=".\src\KernelSMLInterface.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_AgentSML.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_KernelSML.cpp">
 			</File>
 			<File
@@ -160,6 +163,9 @@
 			</File>
 			<File
 				RelativePath=".\include\KernelSMLdll.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_AgentSML.h">
 			</File>
 			<File
 				RelativePath="..\ConnectionSML\include\sml_Connection.h">

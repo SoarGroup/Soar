@@ -75,6 +75,24 @@ public:
 	}
 
 	/*************************************************************
+	* @brief As "GetArgValue" but parsed as a boolean.
+	*************************************************************/
+	bool GetArgBool(char const* pArgName, bool defaultValue) const
+	{
+		return GetArgBool(pArgName, -1, defaultValue) ;
+	}
+
+	/*************************************************************
+	* @brief As "GetArgValue" but parsed as an int.
+	*************************************************************/
+	int GetArgInt(char const* pArgName, int defaultValue) const
+	{
+		return GetArgInt(pArgName, -1, defaultValue) ;
+	}
+
+	// We no longer use these argument position methods.
+protected:
+	/*************************************************************
 	* @brief Arguments for commands are either named (e.g. print "-wme s2") or can be looked up based on order
 	* (e.g. print s2).  Either all arguments are named or none are (in a valid SML doc).
 	* This lookup supports both.  You pass in the name of the argument and its position
@@ -97,7 +115,6 @@ public:
 	*************************************************************/
 	int GetArgInt(char const* pArgName, int argPos, int defaultValue) const ;
 
-protected:
 	void AnalyzeArgs(ElementXML const* pCommand) ;
 };
 
