@@ -84,7 +84,9 @@ char* sml::Int2String(long value, char* buffer, int maxChars)
 *************************************************************/
 char* sml::Double2String(double value, char* buffer, int maxChars)
 {
-	return gcvt(value, maxChars - 1, buffer) ;
+	//return gcvt(value, maxChars - 1, buffer) ; // gcvt not portable
+	snprintf(buffer, maxChars, "%f", value);
+	buffer[maxChars - 1] = 0; // ensure null termination as win32 behavior is unspecified
 }
 
 /*************************************************************
