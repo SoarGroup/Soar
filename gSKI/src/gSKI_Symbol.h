@@ -206,9 +206,11 @@ namespace gSKI {
       gSymbol();
       gSymbol& operator=(const gSymbol& rhs);
 
+   protected:
       /**
          Destructor. Private to ensure that no one tries to explicitly
          call delete. They must use Release().
+		 2/23/05: changed to protected to eliminate gcc warning
        */
       virtual ~gSymbol();
    };

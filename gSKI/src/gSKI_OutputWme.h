@@ -220,9 +220,10 @@ namespace gSKI {
 
      unsigned long m_timetag;
 
-
+  protected:
      /**
         Private destructor to ensure that client only deletes objects with Release.
+		2/23/05: changed to protected to eliminate gcc warning
      */
      virtual ~OutputWme();
    };

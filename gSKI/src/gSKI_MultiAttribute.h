@@ -38,7 +38,9 @@ namespace gSKI
       std::string m_attribute;   /// Name of attribute
       int m_priority;            /// Matching priority
 
-      /** Private destructor so no one tries to use delete directly */
+   protected:
+      /** Private destructor so no one tries to use delete directly
+	      2/23/05: changed to protected to eliminate gcc warning */
       virtual ~MultiAttribute() {}
    }; // class MultiAttribute
 

@@ -312,6 +312,7 @@ namespace gSKI {
      typedef FwdContainerType< std::vector<IWme*> >  tWmeVec;
      typedef IteratorWithRelease<tWmeVec::V, tWmeVec::t>  tWmeIter;
 
+	protected: // 2/23/05: changed to protected to eliminate gcc warning
       /** 
       * @brief Destructor
       *

@@ -225,9 +225,11 @@ namespace gSKI {
 
      wme* m_rawwme;
      bool m_removeWme;
-     
+
+  protected:
      /**
         Private destructor to ensure that client only deletes objects with Release.
+		2/23/05: changed to protected to eliminate gcc warning
      */
      virtual ~InputWme();
     

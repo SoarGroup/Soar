@@ -241,15 +241,6 @@ namespace gSKI {
         //}
 
         /**
-         * @brief Destructor for Productions
-         *
-         * This function insures that the destructor in the most derived
-         * class is called when it is destroyed.  This will always be 
-         * neccesary because this is a purebase class.
-         */
-        ~Production();
-
-        /**
          * @brief: Takes the current production and loads up all of it's 
          * information from the soar kernel in to this object.
          */
@@ -287,6 +278,16 @@ namespace gSKI {
         tRhsFunctionVec   m_functions;
 
 //        DECL_TEST_INCLASS(test1);
+
+	protected:  // 2/23/05: changed to protected to eliminate gcc warning
+		/**
+         * @brief Destructor for Productions
+         *
+         * This function insures that the destructor in the most derived
+         * class is called when it is destroyed.  This will always be 
+         * neccesary because this is a purebase class.
+         */
+        ~Production();
    };
 }
 #endif
