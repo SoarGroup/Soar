@@ -11,6 +11,7 @@ typedef enum appraisal_variable_type {
 typedef struct appraisal_variable_info {
     appraisal_variable_type type;
     float value;
+    bool object; /* if object == TRUE, then type and value don't hold meaningful information */
     unsigned long timetag;
 } appraisal_variable_info;
 
@@ -20,6 +21,7 @@ bool emotion_get_appraisal_frame_timetag(slot * appraisal_frame_slot, unsigned l
 void emotion_get_appraisals();
 void emotion_aggregate_variables();
 void emotion_update_emotion();
+void emotion_update_test_aggregate(wme ** agg_wme, float value, char * label);
 
 void emotion_add_appraisal_to_list(appraisal_frame ** af_list, appraisal_frame * af);
 
@@ -126,12 +128,7 @@ void emotion_update_emotion() {
 
         add_input_wme (current_agent(emotions)->emotion_symbol,wme_emotion_name_attr,wme_emotion_name_value);
         add_input_wme (current_agent(emotions)->emotion_symbol,wme_emotion_intensity_attr,wme_emotion_intensity_value);
-
-		//add_input_wme (current_agent(io_header_input),wme_emotion_name_attr,wme_emotion_name_value);
-        //add_input_wme (current_agent(io_header_input),wme_emotion_intensity_attr,wme_emotion_intensity_value);
-
     }
-    
 }
 
 //TODO: check for correct substructure
@@ -256,6 +253,9 @@ bool emotion_get_appraisal_frame(struct slot_struct * appraisal_variable_slot, a
 
     struct wme_struct * appraisal_variable_wme;
     appraisal_variable_info * info;
+    bool valid_frame;
+
+    valid_frame = FALSE;
 
     /* we'll allocate this once and reuse it several times */
     info = allocate_memory_and_zerofill (sizeof(appraisal_variable_info), 0);
@@ -265,11 +265,15 @@ bool emotion_get_appraisal_frame(struct slot_struct * appraisal_variable_slot, a
         appraisal_variable_wme = appraisal_variable_slot->wmes;
 
         while(appraisal_variable_wme) {
-            bool valid;
+            bool valid_variable;
 
-            valid = emotion_get_appraisal_variable_info(appraisal_variable_wme, &info);
-            if(valid) {
-                (*af)->variables[info->type] = info->value;
+            valid_variable = emotion_get_appraisal_variable_info(appraisal_variable_wme, &info);
+            if(valid_variable) {
+                valid_frame = TRUE;
+                (*af)->object = info->object;
+                if(!(*af)->object) {
+                    (*af)->variables[info->type] = info->value;
+                }
 
                 /* update the latest timetag */
                 if(info->timetag > current_agent(emotions)->latest_timetag) {
@@ -285,8 +289,8 @@ bool emotion_get_appraisal_frame(struct slot_struct * appraisal_variable_slot, a
 
     free_memory(info,0);
 
-    // TODO: check for actual valid appraisal frame (i.e. both variables were set; need new array of bools to check? -- maybe it can be in the appraisal frame info type)
-    return TRUE;
+    // TODO: check for actual valid appraisal frame (i.e. all required variables were set; need new array of bools to check? -- maybe it can be in the appraisal frame info type)
+    return valid_frame;
 }
 
 bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal_variable_info ** info) {
@@ -297,8 +301,11 @@ bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal
     slot * appraisal_variable_wme_slot;
     unsigned long timetag;
     float value;
+    bool object;
     
+    object = FALSE;
     value = 0.0;
+    type = 0;
 
     appraisal_variable_wme_attr_var = appraisal_variable_wme->attr->var;
 
@@ -308,6 +315,8 @@ bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal
             type = DESIRABILITY;
         } else if (!strcmp(appraisal_variable_wme_attr_var.name,"likelihood")) {
             type = LIKELIHOOD;
+        } else if (!strcmp(appraisal_variable_wme_attr_var.name,"object")) {
+            object = TRUE;
         } else { return FALSE; }
     }
     else { return FALSE; }
@@ -321,13 +330,18 @@ bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal
     /* look for a WME with attribute = "value" and a numerical value */
     while(value_wme) {
         if(!strcmp(value_wme->attr->var.name,"value")) {
-            if(value_wme->value->var.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
-                value = value_wme->value->fc.value;
-                break;
-            } else if(value_wme->value->var.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
-                value = (float)value_wme->value->ic.value;
-                break;
-            } else { return FALSE; }
+
+            if(!object) { /* if it's not an object, then it must have a numberic value */
+                if(value_wme->value->var.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
+                    value = value_wme->value->fc.value;
+                    break;
+                } else if(value_wme->value->var.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
+                    value = (float)value_wme->value->ic.value;
+                    break;
+                } else { return FALSE; }
+            } else {
+                break; /* if it is an object, then the substructure can be arbitrary.  We only check for existence */
+            }
         }
 
         /* get the next wme, which will be in the next slot */
@@ -348,6 +362,7 @@ bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal
     (*info)->type = type;
     (*info)->value = value;
     (*info)->timetag = timetag;
+    (*info)->object = object;
 
     return TRUE;
 }   
@@ -453,6 +468,7 @@ void emotion_add_appraisal_to_list(appraisal_frame ** af_list, appraisal_frame *
     new_appraisal_frame = allocate_memory_and_zerofill (sizeof(appraisal_frame), 0);
     new_appraisal_frame->variables[0] = af->variables[0];
     new_appraisal_frame->variables[1] = af->variables[1];
+    new_appraisal_frame->object = af->object;
     
     /*if this is the first item in the list, initialize the list*/
     if(*af_list == NIL) {
@@ -466,12 +482,13 @@ void emotion_add_appraisal_to_list(appraisal_frame ** af_list, appraisal_frame *
 void emotion_aggregate_variables() {
 
     int type;
-
+    appraisal_frame * af;
+    float total;
+    int count;
+    int pos_obj_count, pos_no_obj_count, neg_obj_count, neg_no_obj_count, obj_count, no_obj_count;
+    float intensity;
+    
     for(type=0; type < emotion_NUM_TYPES; type++) {
-
-        appraisal_frame * af;
-        float total;
-        int count;
 
         total = 0.0;
         count = 0;
@@ -492,7 +509,195 @@ void emotion_aggregate_variables() {
         
         emotion_update_aggregate(type);
     }
+
+    soar_agent->emotions->max_negative_no_object_frame_intensity = -100.0;
+    soar_agent->emotions->max_negative_object_frame_intensity = -101.0;
+    soar_agent->emotions->max_no_object_frame_intensity = -101.0;
+    soar_agent->emotions->max_object_frame_intensity = -101.0;
+    soar_agent->emotions->max_positive_no_object_frame_intensity = -101.0;
+    soar_agent->emotions->max_positive_object_frame_intensity = -101.0;
+    
+    soar_agent->emotions->sum_negative_no_object_frame_intensity = 0.0;
+    soar_agent->emotions->sum_negative_object_frame_intensity = 0.0;
+    soar_agent->emotions->sum_no_object_frame_intensity = 0.0;
+    soar_agent->emotions->sum_object_frame_intensity = 0.0;
+    soar_agent->emotions->sum_positive_no_object_frame_intensity = 0.0;
+    soar_agent->emotions->sum_positive_object_frame_intensity = 0.0;
+
+    count = 0;
+    pos_obj_count = 0;
+    pos_no_obj_count = 0;
+    neg_obj_count = 0;
+    neg_no_obj_count = 0;
+    obj_count = 0;
+    no_obj_count = 0;
+
+    af = current_agent(emotions)->appraisal_frames;
+
+    if(af) {
+        while(af) {
+            
+            intensity = af->variables[DESIRABILITY]*af->variables[DESIRABILITY];
+
+            if(af->object) {
+                obj_count++;
+
+                soar_agent->emotions->sum_object_frame_intensity += intensity;
+
+                if(intensity > soar_agent->emotions->max_object_frame_intensity) {
+                    soar_agent->emotions->max_object_frame_intensity = intensity;
+                }
+
+                if(af->variables[DESIRABILITY] > 0) {
+                    pos_obj_count++;
+                
+                    soar_agent->emotions->sum_positive_object_frame_intensity += intensity;
+
+                    if(intensity > soar_agent->emotions->max_positive_object_frame_intensity) {
+                        soar_agent->emotions->max_positive_object_frame_intensity = intensity;
+                    }
+
+                } else {
+                    neg_obj_count++;
+                
+                    soar_agent->emotions->sum_negative_object_frame_intensity += intensity;
+
+                    if(intensity > soar_agent->emotions->max_negative_object_frame_intensity) {
+                        soar_agent->emotions->max_negative_object_frame_intensity = intensity;
+                    }
+                }
+            } else {
+                no_obj_count++;
+                
+                soar_agent->emotions->sum_no_object_frame_intensity += intensity;
+
+                if(intensity > soar_agent->emotions->max_no_object_frame_intensity) {
+                    soar_agent->emotions->max_no_object_frame_intensity = intensity;
+                }
+
+                if(af->variables[DESIRABILITY] > 0) {
+                    pos_no_obj_count++;
+                
+                    soar_agent->emotions->sum_positive_no_object_frame_intensity += intensity;
+
+                    if(intensity > soar_agent->emotions->max_positive_no_object_frame_intensity) {
+                        soar_agent->emotions->max_positive_no_object_frame_intensity = intensity;
+                    }
+
+                } else {
+                    neg_no_obj_count++;
+                
+                    soar_agent->emotions->sum_negative_no_object_frame_intensity += intensity;
+
+                    if(intensity > soar_agent->emotions->max_negative_no_object_frame_intensity) {
+                        soar_agent->emotions->max_negative_no_object_frame_intensity = intensity;
+                    }
+                }
+            }
+
+            count++;
+            af = af->next;
+        }
+
+        soar_agent->emotions->average_negative_no_object_frame_intensity = soar_agent->emotions->sum_negative_no_object_frame_intensity / (float)neg_no_obj_count;
+        soar_agent->emotions->average_negative_object_frame_intensity = soar_agent->emotions->sum_negative_object_frame_intensity / (float)neg_obj_count;
+        soar_agent->emotions->average_no_object_frame_intensity = soar_agent->emotions->sum_no_object_frame_intensity / (float)no_obj_count;
+        soar_agent->emotions->average_object_frame_intensity = soar_agent->emotions->sum_object_frame_intensity / (float)obj_count;
+        soar_agent->emotions->average_positive_no_object_frame_intensity = soar_agent->emotions->sum_positive_no_object_frame_intensity / (float)pos_no_obj_count;
+        soar_agent->emotions->average_positive_object_frame_intensity = soar_agent->emotions->sum_positive_object_frame_intensity / (float)pos_obj_count;
+        
+    } else {
+        soar_agent->emotions->average_negative_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->average_negative_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->average_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->average_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->average_positive_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->average_positive_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+
+        soar_agent->emotions->max_negative_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->max_negative_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->max_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->max_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->max_positive_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->max_positive_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+    
+        soar_agent->emotions->sum_negative_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->sum_negative_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->sum_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->sum_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->sum_positive_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+        soar_agent->emotions->sum_positive_object_frame_intensity = emotion_NO_VALUE_FLOAT;
+    }
+
+    /* update aggregates on e-link */
+    
+    emotion_update_test_aggregate(&soar_agent->emotions->average_negative_no_object_frame_intensity_wme, soar_agent->emotions->average_negative_no_object_frame_intensity, "average_negative_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->average_negative_object_frame_intensity_wme, soar_agent->emotions->average_negative_object_frame_intensity, "average_negative_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->average_no_object_frame_intensity_wme, soar_agent->emotions->average_no_object_frame_intensity, "average_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->average_object_frame_intensity_wme, soar_agent->emotions->average_object_frame_intensity, "average_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->average_positive_no_object_frame_intensity_wme, soar_agent->emotions->average_positive_no_object_frame_intensity, "average_positive_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->average_positive_object_frame_intensity_wme, soar_agent->emotions->average_positive_object_frame_intensity, "average_positive_object_frame_intensity");
+
+    emotion_update_test_aggregate(&soar_agent->emotions->max_negative_no_object_frame_intensity_wme, soar_agent->emotions->max_negative_no_object_frame_intensity, "max_negative_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->max_negative_object_frame_intensity_wme, soar_agent->emotions->max_negative_object_frame_intensity, "max_negative_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->max_no_object_frame_intensity_wme, soar_agent->emotions->max_no_object_frame_intensity, "max_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->max_object_frame_intensity_wme, soar_agent->emotions->max_object_frame_intensity, "max_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->max_positive_no_object_frame_intensity_wme, soar_agent->emotions->max_positive_no_object_frame_intensity, "max_positive_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->max_positive_object_frame_intensity_wme, soar_agent->emotions->max_positive_object_frame_intensity, "max_positive_object_frame_intensity");
+
+    emotion_update_test_aggregate(&soar_agent->emotions->sum_negative_no_object_frame_intensity_wme, soar_agent->emotions->sum_negative_no_object_frame_intensity, "sum_negative_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->sum_negative_object_frame_intensity_wme, soar_agent->emotions->sum_negative_object_frame_intensity, "sum_negative_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->sum_no_object_frame_intensity_wme, soar_agent->emotions->sum_no_object_frame_intensity, "sum_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->sum_object_frame_intensity_wme, soar_agent->emotions->sum_object_frame_intensity, "sum_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->sum_positive_no_object_frame_intensity_wme, soar_agent->emotions->sum_positive_no_object_frame_intensity, "sum_positive_no_object_frame_intensity");
+    emotion_update_test_aggregate(&soar_agent->emotions->sum_positive_object_frame_intensity_wme, soar_agent->emotions->sum_positive_object_frame_intensity, "sum_positive_object_frame_intensity");
+
 }
+
+void emotion_update_test_aggregate(wme ** agg_wme, float value, char * label) {
+    Symbol *wme_attr, *wme_value;
+
+    if((*agg_wme)) {        
+        bool success = remove_input_wme((*agg_wme));
+        if(!success) print("Emotion: tried to remove aggregate value");
+        assert(success);
+
+        (*agg_wme) = NIL;
+    }
+
+    if(value != emotion_NO_VALUE_FLOAT) {
+
+        wme_attr = get_io_sym_constant (label);
+        wme_value = get_io_float_constant (value);
+    
+        (*agg_wme) =
+            add_input_wme (current_agent(io_header_emotion),wme_attr,wme_value);
+    }
+}
+
+/*void emotion_update_aggregate(enum appraisal_variable_type type) {
+    Symbol *wme_attr, *wme_value;
+    float value;
+
+    value = current_agent(emotions)->aggs[type];
+
+    if(current_agent(emotions)->agg_wmes[type]) {        
+        bool success = remove_input_wme(current_agent(emotions)->agg_wmes[type]);
+        if(!success) print("Emotion: tried to remove aggregate value");
+        assert(success);
+
+        current_agent(emotions)->agg_wmes[type] = NIL;
+    }
+
+    if(value != emotion_NO_VALUE_FLOAT) {
+
+        wme_attr = get_io_sym_constant ((char*)emotion_LABELS[type]);
+        wme_value = get_io_float_constant (value);
+    
+        current_agent(emotions)->agg_wmes[type] =
+            add_input_wme (current_agent(io_header_emotion),wme_attr,wme_value);
+    }
+}*/
 
 void emotion_clear_appraisal_list(appraisal_frame ** af) {
     appraisal_frame * af_to_delete;
