@@ -130,18 +130,6 @@ del *.class
 		</Configuration>
 	</Configurations>
 	<References>
-		<AssemblyReference
-			RelativePath="mscorlib.dll"/>
-		<AssemblyReference
-			RelativePath="System.dll"/>
-		<AssemblyReference
-			RelativePath="System.Data.dll"/>
-		<AssemblyReference
-			RelativePath="System.Drawing.dll"/>
-		<AssemblyReference
-			RelativePath="System.Windows.Forms.dll"/>
-		<AssemblyReference
-			RelativePath="System.XML.dll"/>
 	</References>
 	<Files>
 		<Filter
