@@ -209,9 +209,6 @@ public class Application
 		String  msg = "" ;
 		try
 		{
-			// It looks like SWIG requires us to explicitly load the library
-			// before we call any methods, so we'll do that here.
-	        System.loadLibrary("Java_sml_ClientInterface");
 	
 	        // Initialize the kernel
 			m_Kernel = Kernel.CreateKernelInCurrentThread("KernelSML", false, 12345) ;

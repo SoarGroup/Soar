@@ -24,6 +24,15 @@
 %ignore sml::Kernel::UnregisterForSystemEvent(smlSystemEventId, int);
 
 %pragma(java) jniclasscode=%{
+  static {
+    try {
+        System.loadLibrary("Java_sml_ClientInterface");
+    } catch (UnsatisfiedLinkError e) {
+      System.err.println("Native code library failed to load. \n" + e);
+      System.exit(1);
+    }
+  }
+  
   public final static native int Agent_RegisterForRunEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForAgentEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForProductionEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
