@@ -87,7 +87,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 	// Process the general options
 	if (options & OPTION_EXCISE_ALL) {
 		ExciseInternal(pProductionManager->GetAllProductions(), exciseCount);
-		this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
+		if (exciseCount) this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
 	}
 	if (options & OPTION_EXCISE_CHUNKS) {
 		ExciseInternal(pProductionManager->GetChunks(), exciseCount);
@@ -100,7 +100,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 		ExciseInternal(pProductionManager->GetChunks(), exciseCount);
 		ExciseInternal(pProductionManager->GetJustifications(), exciseCount);
 		ExciseInternal(pProductionManager->GetUserProductions(), exciseCount);
-		this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
+		if (exciseCount) this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
 	}
 	if (options & OPTION_EXCISE_USER) {
 		ExciseInternal(pProductionManager->GetUserProductions(), exciseCount);
@@ -117,10 +117,14 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 		ExciseInternal(pProdIter, exciseCount);
 	}
 
-	if (!m_RawOutput) {
+	char buf[kMinBufferSize];
+	if (m_RawOutput) {
+		if (!exciseCount) return m_Error.SetError(CLIError::kProductionNotFound);
+		AppendToResult(Int2String(exciseCount, buf, kMinBufferSize));
+		AppendToResult(" productions excised.");
+	} else {
 		// Add the count tag to the front
-		char buffer[kMinBufferSize];
-		PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(exciseCount, buffer, sizeof(buffer)));
+		PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(exciseCount, buf, kMinBufferSize));
 	}
 
 	return true;

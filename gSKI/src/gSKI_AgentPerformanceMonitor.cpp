@@ -31,6 +31,12 @@ using namespace gSKI;
 #define sys_sleep( seconds )    sleep( seconds )
 #endif /* !WIN32 */
 
+#ifdef _WIN32
+#define safeSprintf _snprintf
+#else
+#define safeSprintf snprintf
+#endif
+
 namespace {
 
    bool string_match_up_to (const char * string1, 
@@ -42,8 +48,8 @@ namespace {
       /*  what we really want is to require a match over the length of
       the shorter of the two strings, with positions being a minimum */
 
-      num = strlen(string1);
-      if (num > strlen(string2)) num = strlen(string2);
+      num = (unsigned)strlen(string1);
+      if (num > strlen(string2)) num = (unsigned)strlen(string2);
       if (positions < num)  positions = num;
 
       for (i = 0; i < positions; i++)
@@ -85,7 +91,7 @@ double soar_cDetermineTimerResolution( double *min, double *max) {
     reset_timer( &end );
     start_timer( NULL, &start );
     for( j = 0; j < i*top; j++ ) {
-      q = j*i;
+      q = (float)j*i;
     }
     stop_timer( NULL, &start, &end );
     stop_timer( NULL, &start, &total );
@@ -456,7 +462,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     }
 #endif
 
-    current_time = time(NULL);
+    current_time = (long)time(NULL);
 
 /* REW: begin 28.07.96 */
 /* See note in soarkernel.h for a description of the timers */
@@ -600,16 +606,30 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 #endif
 /* REW: end 28.07.96 */
 
-    print(a, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime((const time_t *) &current_time));
+	char buf[128];
 
-    print(a, "%lu productions (%lu default, %lu user, %lu chunks)\n",
+    //print(a, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime((const time_t *) &current_time));
+	safeSprintf(buf, 127, "Soar %s on %s at %s\n", soar_version_string, hostname, ctime((const time_t *) &current_time));
+	m_result += buf;
+
+    //print(a, "%lu productions (%lu default, %lu user, %lu chunks)\n",
+    //      current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE] +
+    //      current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE] +
+    //      current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE],
+    //      current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE],
+    //      current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE],
+    //      current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
+	safeSprintf(buf, 127, "%lu productions (%lu default, %lu user, %lu chunks)\n",
           current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE] +
           current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE] +
           current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE],
           current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE],
           current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE],
           current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
-    print(a, "   + %lu justifications\n", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
+	m_result += buf;
+    //print(a, "   + %lu justifications\n", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
+	safeSprintf(buf, 127, "   + %lu justifications\n", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
+	m_result += buf;
 
     /* REW: begin 28.07.96 */
 #ifndef NO_TIMING_STUFF
@@ -620,55 +640,115 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
        2 hours. :) */
 
 #ifndef KERNEL_TIME_ONLY
-    print(a, "                                                                |    Derived\n");
-    print(a, "Phases:      Input      DLP     Pref      W/M   Output Decision |     Totals\n");
-    print(a, "================================================================|===========\n");
+    //print(a, "                                                                |    Derived\n");
+	safeSprintf(buf, 127, "                                                                |    Derived\n");
+ 	m_result += buf;
+   //print(a, "Phases:      Input      DLP     Pref      W/M   Output Decision |     Totals\n");
+	safeSprintf(buf, 127, "Phases:      Input      DLP     Pref      W/M   Output Decision |     Totals\n");
+ 	m_result += buf;
+   //print(a, "================================================================|===========\n");
+	safeSprintf(buf, 127, "================================================================|===========\n");
+	m_result += buf;
 
-    print(a, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //print(a, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //      timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE])),
+    //      timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE])),
+    //      timer_value(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE])),
+    //      timer_value(&current_agent(decision_cycle_phase_timers[WM_PHASE])),
+    //      timer_value(&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE])),
+    //      timer_value(&current_agent(decision_cycle_phase_timers[DECISION_PHASE])), derived_kernel_time);
+	safeSprintf(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[WM_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[DECISION_PHASE])), derived_kernel_time);
+	m_result += buf;
 
 #ifdef DETAILED_TIMING_STATS
 
-    print(a, "====================  Detailed Timing Statistics  ==============|===========\n");
+    //print(a, "====================  Detailed Timing Statistics  ==============|===========\n");
+	safeSprintf(buf, 127, "====================  Detailed Timing Statistics  ==============|===========\n");
+	m_result += buf;
 
-    print(a, "   Match: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //print(a, "   Match: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //      timer_value(&current_agent(match_cpu_time[INPUT_PHASE])),
+    //      timer_value(&current_agent(match_cpu_time[DETERMINE_LEVEL_PHASE])),
+    //      timer_value(&current_agent(match_cpu_time[PREFERENCE_PHASE])),
+    //      timer_value(&current_agent(match_cpu_time[WM_PHASE])),
+    //      timer_value(&current_agent(match_cpu_time[OUTPUT_PHASE])),
+    //      timer_value(&current_agent(match_cpu_time[DECISION_PHASE])), match_time);
+	safeSprintf(buf, 127, "   Match: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           timer_value(&current_agent(match_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(match_cpu_time[DETERMINE_LEVEL_PHASE])),
           timer_value(&current_agent(match_cpu_time[PREFERENCE_PHASE])),
           timer_value(&current_agent(match_cpu_time[WM_PHASE])),
           timer_value(&current_agent(match_cpu_time[OUTPUT_PHASE])),
           timer_value(&current_agent(match_cpu_time[DECISION_PHASE])), match_time);
+	m_result += buf;
 
-    print(a, "Own'ship: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //print(a, "Own'ship: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //      timer_value(&current_agent(ownership_cpu_time[INPUT_PHASE])),
+    //      timer_value(&current_agent(ownership_cpu_time[DETERMINE_LEVEL_PHASE])),
+    //      timer_value(&current_agent(ownership_cpu_time[PREFERENCE_PHASE])),
+    //      timer_value(&current_agent(ownership_cpu_time[WM_PHASE])),
+    //      timer_value(&current_agent(ownership_cpu_time[OUTPUT_PHASE])),
+    //      timer_value(&current_agent(ownership_cpu_time[DECISION_PHASE])), ownership_time);
+	safeSprintf(buf, 127, "Own'ship: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           timer_value(&current_agent(ownership_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(ownership_cpu_time[DETERMINE_LEVEL_PHASE])),
           timer_value(&current_agent(ownership_cpu_time[PREFERENCE_PHASE])),
           timer_value(&current_agent(ownership_cpu_time[WM_PHASE])),
           timer_value(&current_agent(ownership_cpu_time[OUTPUT_PHASE])),
           timer_value(&current_agent(ownership_cpu_time[DECISION_PHASE])), ownership_time);
+	m_result += buf;
 
-    print(a, "Chunking: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //print(a, "Chunking: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //      timer_value(&current_agent(chunking_cpu_time[INPUT_PHASE])),
+    //      timer_value(&current_agent(chunking_cpu_time[DETERMINE_LEVEL_PHASE])),
+    //      timer_value(&current_agent(chunking_cpu_time[PREFERENCE_PHASE])),
+    //      timer_value(&current_agent(chunking_cpu_time[WM_PHASE])),
+    //      timer_value(&current_agent(chunking_cpu_time[OUTPUT_PHASE])),
+    //      timer_value(&current_agent(chunking_cpu_time[DECISION_PHASE])), chunking_time);
+	safeSprintf(buf, 127, "Chunking: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           timer_value(&current_agent(chunking_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(chunking_cpu_time[DETERMINE_LEVEL_PHASE])),
           timer_value(&current_agent(chunking_cpu_time[PREFERENCE_PHASE])),
           timer_value(&current_agent(chunking_cpu_time[WM_PHASE])),
           timer_value(&current_agent(chunking_cpu_time[OUTPUT_PHASE])),
           timer_value(&current_agent(chunking_cpu_time[DECISION_PHASE])), chunking_time);
+	m_result += buf;
 
-    print(a, "   Other: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //print(a, "   Other: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //      other_phase_kernel_time[INPUT_PHASE],
+    //      other_phase_kernel_time[DETERMINE_LEVEL_PHASE],
+    //      other_phase_kernel_time[PREFERENCE_PHASE],
+    //      other_phase_kernel_time[WM_PHASE],
+    //      other_phase_kernel_time[OUTPUT_PHASE], other_phase_kernel_time[DECISION_PHASE], other_total_kernel_time);
+	safeSprintf(buf, 127, "   Other: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           other_phase_kernel_time[INPUT_PHASE],
           other_phase_kernel_time[DETERMINE_LEVEL_PHASE],
           other_phase_kernel_time[PREFERENCE_PHASE],
           other_phase_kernel_time[WM_PHASE],
           other_phase_kernel_time[OUTPUT_PHASE], other_phase_kernel_time[DECISION_PHASE], other_total_kernel_time);
+	m_result += buf;
 
     /* REW: begin 11.25.96 */
-    print(a, "Operand2: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //print(a, "Operand2: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //      timer_value(&current_agent(gds_cpu_time[INPUT_PHASE])),
+    //      timer_value(&current_agent(gds_cpu_time[DETERMINE_LEVEL_PHASE])),
+    //      timer_value(&current_agent(gds_cpu_time[PREFERENCE_PHASE])),
+    //      timer_value(&current_agent(gds_cpu_time[WM_PHASE])),
+    //      timer_value(&current_agent(gds_cpu_time[OUTPUT_PHASE])),
+    //      timer_value(&current_agent(gds_cpu_time[DECISION_PHASE])),
+    //      timer_value(&current_agent(gds_cpu_time[INPUT_PHASE])) +
+    //      timer_value(&current_agent(gds_cpu_time[DETERMINE_LEVEL_PHASE])) +
+    //      timer_value(&current_agent(gds_cpu_time[PREFERENCE_PHASE])) +
+    //      timer_value(&current_agent(gds_cpu_time[WM_PHASE])) +
+    //      timer_value(&current_agent(gds_cpu_time[OUTPUT_PHASE])) +
+    //      timer_value(&current_agent(gds_cpu_time[DECISION_PHASE])));
+	safeSprintf(buf, 127, "Operand2: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           timer_value(&current_agent(gds_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(gds_cpu_time[DETERMINE_LEVEL_PHASE])),
           timer_value(&current_agent(gds_cpu_time[PREFERENCE_PHASE])),
@@ -681,37 +761,72 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
           timer_value(&current_agent(gds_cpu_time[WM_PHASE])) +
           timer_value(&current_agent(gds_cpu_time[OUTPUT_PHASE])) +
           timer_value(&current_agent(gds_cpu_time[DECISION_PHASE])));
+	m_result += buf;
 
     /* REW: end   11.25.96 */
 
 #endif  // DETAILED_TIMING_STATS
 
-    print(a, "================================================================|===========\n");
-    print(a, "Input fn: %8.3f                                              | %10.3f\n",
+    //print(a, "================================================================|===========\n");
+	safeSprintf(buf, 127, "================================================================|===========\n");
+	m_result += buf;
+
+    //print(a, "Input fn: %8.3f                                              | %10.3f\n",
+    //      input_function_time, input_function_time);
+	safeSprintf(buf, 127, "Input fn: %8.3f                                              | %10.3f\n",
           input_function_time, input_function_time);
+	m_result += buf;
 
-    print(a, "================================================================|===========\n");
-    print(a, "Outpt fn:                                     %8.3f          | %10.3f\n",
+    //print(a, "================================================================|===========\n");
+	safeSprintf(buf, 127, "================================================================|===========\n");
+    //print(a, "Outpt fn:                                     %8.3f          | %10.3f\n",
+    //      output_function_time, output_function_time);
+	m_result += buf;
+	safeSprintf(buf, 127, "Outpt fn:                                     %8.3f          | %10.3f\n",
           output_function_time, output_function_time);
+	m_result += buf;
 
-    print(a, "================================================================|===========\n");
-    print(a, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+    //print(a, "================================================================|===========\n");
+	safeSprintf(buf, 127, "================================================================|===========\n");
+	m_result += buf;
+
+	//print(a, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+ //         timer_value(&current_agent(monitors_cpu_time[INPUT_PHASE])),
+ //         timer_value(&current_agent(monitors_cpu_time[DETERMINE_LEVEL_PHASE])),
+ //         timer_value(&current_agent(monitors_cpu_time[PREFERENCE_PHASE])),
+ //         timer_value(&current_agent(monitors_cpu_time[WM_PHASE])),
+ //         timer_value(&current_agent(monitors_cpu_time[OUTPUT_PHASE])),
+ //         timer_value(&current_agent(monitors_cpu_time[DECISION_PHASE])), monitors_sum);
+	safeSprintf(buf, 127, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           timer_value(&current_agent(monitors_cpu_time[INPUT_PHASE])),
           timer_value(&current_agent(monitors_cpu_time[DETERMINE_LEVEL_PHASE])),
           timer_value(&current_agent(monitors_cpu_time[PREFERENCE_PHASE])),
           timer_value(&current_agent(monitors_cpu_time[WM_PHASE])),
           timer_value(&current_agent(monitors_cpu_time[OUTPUT_PHASE])),
           timer_value(&current_agent(monitors_cpu_time[DECISION_PHASE])), monitors_sum);
+	m_result += buf;
 
-    print(a, "================================================================|===========\n");
-    print(a, "Derived---------------------------------------------------------+-----------\n");
-    print(a, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n\n",
+    //print(a, "================================================================|===========\n");
+	safeSprintf(buf, 127, "================================================================|===========\n");
+ 	m_result += buf;
+   //print(a, "Derived---------------------------------------------------------+-----------\n");
+	safeSprintf(buf, 127, "Derived---------------------------------------------------------+-----------\n");
+	m_result += buf;
+    //print(a, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n\n",
+    //      input_phase_total_time,
+    //      determine_level_phase_total_time,
+    //      preference_phase_total_time,
+    //      wm_phase_total_time, output_phase_total_time, decision_phase_total_time, derived_total_cpu_time);
+	safeSprintf(buf, 127, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n\n",
           input_phase_total_time,
           determine_level_phase_total_time,
           preference_phase_total_time,
           wm_phase_total_time, output_phase_total_time, decision_phase_total_time, derived_total_cpu_time);
+	m_result += buf;
 
-    print(a, "Values from single timers:\n");
+    //print(a, "Values from single timers:\n");
+	safeSprintf(buf, 127, "Values from single timers:\n");
+	m_result += buf;
 #endif  // KERNEL_TIME_ONLY
 // #endif  // NO_TIMING_STUFF
 // #ifndef NO_TIMING_STUFF
@@ -721,71 +836,139 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
      * have been set to FALSE, so such a warning is not spammed to the screen
      * But lets repeat it here.
      */
-    if (!current_agent(warn_on_zero_timers))
-        print(a, " Warning: one or more timers have reported zero during this run\n");
+	if (!current_agent(warn_on_zero_timers)) {
+        //print(a, " Warning: one or more timers have reported zero during this run\n");
+		safeSprintf(buf, 127, " Warning: one or more timers have reported zero during this run\n");
+		m_result += buf;
+	}
+
 #endif
 
-   print(a, " Kernel CPU Time: %11.3f sec. \n", total_kernel_time);
-   print(a, " Total  CPU Time: %11.3f sec.\n\n", timer_value(&current_agent(total_cpu_time)));
+   //print(a, " Kernel CPU Time: %11.3f sec. \n", total_kernel_time);
+   safeSprintf(buf, 127, " Kernel CPU Time: %11.3f sec. \n", total_kernel_time);
+	m_result += buf;
+
+   //print(a, " Total  CPU Time: %11.3f sec.\n\n", timer_value(&current_agent(total_cpu_time)));
+   safeSprintf(buf, 127, " Total  CPU Time: %11.3f sec.\n\n", timer_value(&current_agent(total_cpu_time)));
+	m_result += buf;
 
 #ifdef COUNT_KERNEL_TIMER_STOPS
-    print(a, " Kernel CPU Timer Stops: %d\n", current_agent(kernelTimerStops));
-    print(a, " Non-Kernel Timer Stops: %d\n", current_agent(nonKernelTimerStops));
+    //print(a, " Kernel CPU Timer Stops: %d\n", current_agent(kernelTimerStops));
+	safeSprintf(buf, 127, " Kernel CPU Timer Stops: %d\n", current_agent(kernelTimerStops));
+	m_result += buf;
+    //print(a, " Non-Kernel Timer Stops: %d\n", current_agent(nonKernelTimerStops));
+	safeSprintf(buf, 127, " Non-Kernel Timer Stops: %d\n", current_agent(nonKernelTimerStops));
+	m_result += buf;
 #endif
 
 #endif  // #ifndef NO_TIMING_STUFF
 
 #if !defined(NO_TIMING_STUFF)
-    print(a, "%lu decision cycles (%.3f msec/dc)\n",
+    //print(a, "%lu decision cycles (%.3f msec/dc)\n",
+    //      current_agent(d_cycle_count),
+    //      current_agent(d_cycle_count) ? total_kernel_msec / current_agent(d_cycle_count) : 0.0);
+	safeSprintf(buf, 127, "%lu decision cycles (%.3f msec/dc)\n",
           current_agent(d_cycle_count),
           current_agent(d_cycle_count) ? total_kernel_msec / current_agent(d_cycle_count) : 0.0);
-    print(a, "%lu elaboration cycles (%.3f ec's per dc, %.3f msec/ec)\n",
+	m_result += buf;
+    //print(a, "%lu elaboration cycles (%.3f ec's per dc, %.3f msec/ec)\n",
+    //      current_agent(e_cycle_count),
+    //      current_agent(d_cycle_count) ? (double) current_agent(e_cycle_count) / current_agent(d_cycle_count) : 0,
+    //      current_agent(e_cycle_count) ? total_kernel_msec / current_agent(e_cycle_count) : 0);
+	safeSprintf(buf, 127, "%lu elaboration cycles (%.3f ec's per dc, %.3f msec/ec)\n",
           current_agent(e_cycle_count),
           current_agent(d_cycle_count) ? (double) current_agent(e_cycle_count) / current_agent(d_cycle_count) : 0,
           current_agent(e_cycle_count) ? total_kernel_msec / current_agent(e_cycle_count) : 0);
+	m_result += buf;
     /* REW: begin 09.15.96 */
 
-#ifndef SOAR_8_ONLY
-    if (current_agent(operand2_mode))
-#endif
-        print(a, "%lu p-elaboration cycles (%.3f pe's per dc, %.3f msec/pe)\n",
-              current_agent(pe_cycle_count),
-              current_agent(d_cycle_count) ? (double) current_agent(pe_cycle_count) / current_agent(d_cycle_count) : 0,
-              current_agent(pe_cycle_count) ? total_kernel_msec / current_agent(pe_cycle_count) : 0);
+// voigtjr: removed because we don't use this
+//#ifndef SOAR_8_ONLY
+	if (current_agent(operand2_mode)) {
+//#endif
+
+		//print(a, "%lu p-elaboration cycles (%.3f pe's per dc, %.3f msec/pe)\n",
+		//      current_agent(pe_cycle_count),
+		//      current_agent(d_cycle_count) ? (double) current_agent(pe_cycle_count) / current_agent(d_cycle_count) : 0,
+		//      current_agent(pe_cycle_count) ? total_kernel_msec / current_agent(pe_cycle_count) : 0);
+		safeSprintf(buf, 127, "%lu p-elaboration cycles (%.3f pe's per dc, %.3f msec/pe)\n",
+				current_agent(pe_cycle_count),
+				current_agent(d_cycle_count) ? (double) current_agent(pe_cycle_count) / current_agent(d_cycle_count) : 0,
+				current_agent(pe_cycle_count) ? total_kernel_msec / current_agent(pe_cycle_count) : 0);
+		m_result += buf;
+	}
+
     /* REW: end 09.15.96 */
-    print(a, "%lu production firings (%.3f pf's per ec, %.3f msec/pf)\n",
+    //print(a, "%lu production firings (%.3f pf's per ec, %.3f msec/pf)\n",
+    //      current_agent(production_firing_count),
+    //      current_agent(e_cycle_count) ? (double) current_agent(production_firing_count) /
+    //      current_agent(e_cycle_count) : 0.0,
+    //      current_agent(production_firing_count) ? total_kernel_msec / current_agent(production_firing_count) : 0.0);
+	safeSprintf(buf, 127, "%lu production firings (%.3f pf's per ec, %.3f msec/pf)\n",
           current_agent(production_firing_count),
           current_agent(e_cycle_count) ? (double) current_agent(production_firing_count) /
           current_agent(e_cycle_count) : 0.0,
           current_agent(production_firing_count) ? total_kernel_msec / current_agent(production_firing_count) : 0.0);
+	m_result += buf;
 
 #else
-    print(a, "%lu decision cycles\n", current_agent(d_cycle_count));
-    print(a, "%lu elaboration cycles \n", current_agent(e_cycle_count));
-    print(a, "%lu production firings \n", current_agent(production_firing_count));
+    //print(a, "%lu decision cycles\n", current_agent(d_cycle_count));
+	safeSprintf(buf, 127, "%lu decision cycles\n", current_agent(d_cycle_count));
+	m_result += buf;
+    //print(a, "%lu elaboration cycles \n", current_agent(e_cycle_count));
+	safeSprintf(buf, 127, "%lu elaboration cycles \n", current_agent(e_cycle_count));
+	m_result += buf;
+    //print(a, "%lu production firings \n", current_agent(production_firing_count));
+	safeSprintf(buf, 127, "%lu production firings \n", current_agent(production_firing_count));
+	m_result += buf;
 #endif                          /* !NO_TIMING_STUFF */
 
     wme_changes = current_agent(wme_addition_count) + current_agent(wme_removal_count);
-    print(a, "%lu wme changes (%lu additions, %lu removals)\n",
+    //print(a, "%lu wme changes (%lu additions, %lu removals)\n",
+    //      wme_changes, current_agent(wme_addition_count), current_agent(wme_removal_count));
+	safeSprintf(buf, 127, "%lu wme changes (%lu additions, %lu removals)\n",
           wme_changes, current_agent(wme_addition_count), current_agent(wme_removal_count));
+	m_result += buf;
+
 #ifdef DETAILED_TIMING_STATS
-    print(a, "    match time: %.3f msec/wm change\n", wme_changes ? match_msec / wme_changes : 0.0);
+    //print(a, "    match time: %.3f msec/wm change\n", wme_changes ? match_msec / wme_changes : 0.0);
+	safeSprintf(buf, 127, "    match time: %.3f msec/wm change\n", wme_changes ? match_msec / wme_changes : 0.0);
+	m_result += buf;
 #endif
 
-    print(a, "WM size: %lu current, %.3f mean, %lu maximum\n",
+    //print(a, "WM size: %lu current, %.3f mean, %lu maximum\n",
+    //      current_agent(num_wmes_in_rete),
+    //      (current_agent(num_wm_sizes_accumulated) ?
+    //       (current_agent(cumulative_wm_size) / current_agent(num_wm_sizes_accumulated)) :
+    //       0.0), current_agent(max_wm_size));
+   safeSprintf(buf, 127, "WM size: %lu current, %.3f mean, %lu maximum\n",
           current_agent(num_wmes_in_rete),
           (current_agent(num_wm_sizes_accumulated) ?
            (current_agent(cumulative_wm_size) / current_agent(num_wm_sizes_accumulated)) :
            0.0), current_agent(max_wm_size));
+	m_result += buf;
 
 #ifndef NO_TIMING_STUFF
-    print(a, "\n");
-    print(a, "    *** Time/<x> statistics use the total kernel time from a ***\n");
-    print(a, "    *** single kernel timer.  Differences between this value ***\n");
-    print(a, "    *** and the derived total kernel time  are expected. See ***\n");
-    print(a, "    *** help  for the  stats command  for more  information. ***\n");
+    //print(a, "\n");
+	safeSprintf(buf, 127, "\n");
+	m_result += buf;
+    //print(a, "    *** Time/<x> statistics use the total kernel time from a ***\n");
+	safeSprintf(buf, 127, "    *** Time/<x> statistics use the total kernel time from a ***\n");
+	m_result += buf;
+    //print(a, "    *** single kernel timer.  Differences between this value ***\n");
+	safeSprintf(buf, 127, "    *** single kernel timer.  Differences between this value ***\n");
+	m_result += buf;
+    //print(a, "    *** and the derived total kernel time  are expected. See ***\n");
+	safeSprintf(buf, 127, "    *** and the derived total kernel time  are expected. See ***\n");
+	m_result += buf;
+    //print(a, "    *** help  for the  stats command  for more  information. ***\n");
+	safeSprintf(buf, 127, "    *** help  for the  stats command  for more  information. ***\n");
+	m_result += buf;
 #endif
     /* REW: end 28.07.96 */
+
+	// voigtjr: Uncomment to send to print callback
+	//print(a, m_result.c_str());
 }
 
 /*
@@ -899,7 +1082,7 @@ bool AgentPerformanceMonitor::parse_memory_stats(int argc, char *argv[])
 #endif
 
                 print_string(a, pool_found->name);
-                print_spaces(a, MAX_POOL_NAME_LENGTH - strlen(pool_found->name));
+                print_spaces(a, MAX_POOL_NAME_LENGTH - (int)strlen(pool_found->name));
 #ifdef MEMORY_POOL_STATS
                 print(a, "  %10lu", pool_found->used_count);
                 total_items = pool_found->num_blocks * pool_found->items_per_block;
@@ -1078,7 +1261,7 @@ void AgentPerformanceMonitor::soar_ecPrintMemoryPoolStatistics()
 
     for (p = current_agent(memory_pools_in_use); p != NIL; p = p->next) {
         print_string(a, p->name);
-        print_spaces(a, MAX_POOL_NAME_LENGTH - strlen(p->name));
+        print_spaces(a, MAX_POOL_NAME_LENGTH - (int)strlen(p->name));
 #ifdef MEMORY_POOL_STATS
         print(a, "  %10lu", p->used_count);
         total_items = p->num_blocks * p->items_per_block;

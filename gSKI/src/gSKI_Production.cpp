@@ -335,7 +335,7 @@ namespace gSKI
    */
    void Production::Excise(Error *pErr )
    {
-      excise_production(m_agent, m_soarProduction, true);
+      excise_production(m_agent, m_soarProduction, false);
    }
 
    unsigned long Production::CountReteTokens(Error * pErr /*= 0*/)

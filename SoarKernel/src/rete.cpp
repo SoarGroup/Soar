@@ -104,6 +104,8 @@
 #include "lexer.h"
 #include <ctype.h>
 
+#include <string>
+
 /* JC ADDED: for gSKI events */
 #include "gski_event_system_functions.h"
 
@@ -7709,6 +7711,9 @@ void print_partial_match_information (agent* thisAgent, rete_node *p_node,
   condition *top_cond, *bottom_cond;
   long n;
   token *tokens, *t;
+
+  std::string result;
+  result += "test";
 
   p_node_to_conditions_and_nots (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
                                  NIL, NIL);

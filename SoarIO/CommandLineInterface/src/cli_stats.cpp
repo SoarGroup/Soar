@@ -49,6 +49,12 @@ bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent) {
 	delete [] argv[1];
 
 	if (!ret) return m_Error.SetError(CLIError::kgSKIError);
+
+	if (m_RawOutput) {
+		AppendToResult(pResult);
+	} else {
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, pResult);
+	}
 	return true;
 }
 
