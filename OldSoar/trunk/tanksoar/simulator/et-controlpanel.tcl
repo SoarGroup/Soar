@@ -3,6 +3,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.9  2004/07/16 18:46:18  rmarinie
+### changed base map directory to the map directory
+###
 ### Revision 1.8  2004/07/14 14:45:27  toolshed
 ### undid change
 ###
@@ -387,7 +390,6 @@ proc registerRemoteAgent {name socket} {
 proc InstantiateETCPConfig {} {
     global ETCPConfig tsiSimulatorPath soarTimeUnit
 
-
     # since this control panel will be used with at least two simulators
     # these configuration parameter are defined (ETCPConfig) so that all
     # occurances of 'Agent' can be replaced with something more specific
@@ -405,7 +407,7 @@ proc InstantiateETCPConfig {} {
 	set ETCPConfig(AgentFolder) $tsiSimulatorPath
     }
     if { ![info exists ETCPConfig(MapFolder)] } {
-	set ETCPConfig(MapFolder) $tsiSimulatorPath
+	set ETCPConfig(MapFolder) "$tsiSimulatorPath/maps"
    }
     if { ![info exists ETCPConfig(afterDecision)] } {
 	   set ETCPConfig(runTilOutputGen) 1
@@ -511,7 +513,7 @@ proc tsiLoadAgentNames { menuName } {
 
 proc mapLoader {} {
     global ETCPConfig ETCP_MapFile ETCP_MapPath
-
+    
     if [winfo exists .wMapLoader] {
 	wm deiconify .wMapLoader
 	return
