@@ -32,7 +32,6 @@ SoarAgent::~SoarAgent(){}
 
 void SoarAgent::ProcessOutput(IWorkingMemory* wMemory, IWMObject* moveIdentifier)
 {
-cout << "Processing Output....." << endl;
 	string sourceTowerString;
 	string destinationTowerString;
 	int sourceTowerNum;
@@ -49,30 +48,20 @@ cout << "Processing Output....." << endl;
 		// Get the row value
 		wmeValue = sourceWMEIterator->GetVal();
 		sourceTowerString = wmeValue->GetValue()->GetString();
-cout << "\tSource tower is: " << sourceTowerString << endl;
 		// Get the col value
 		wmeValue = destinationWMEIterator->GetVal();
 		destinationTowerString = wmeValue->GetValue()->GetString();
-cout << "\tDestination tower is: " << destinationTowerString << endl;
 		if(destinationTowerString == "A")
-		{
 			destinationTowerNum = 0;
-		}
 		else if(destinationTowerString == "B")
-		{
 			destinationTowerNum = 1;
-		}
 		else
 			destinationTowerNum = 2;
 
 		if(sourceTowerString == "A")
-		{
 			sourceTowerNum = 0;
-		}
 		else if(sourceTowerString == "B")
-		{
 			sourceTowerNum = 1;
-		}
 		else
 			sourceTowerNum = 2;
 
@@ -80,23 +69,16 @@ cout << "\tDestination tower is: " << destinationTowerString << endl;
 		if(m_World->MoveDisk(sourceTowerNum, destinationTowerNum) == true)
 			wMemory->AddWmeString(moveIdentifier, "status", "complete");
 		else
-		{
 			wMemory->AddWmeString(moveIdentifier, "status", "error");
-cout << "SENT STATUS ERROR========================================" << endl;
-		}
 	}
 	else
 	{
 		wMemory->AddWmeString(moveIdentifier, "status", "error");
-cout << "SENT STATUS ERROR========================================" << endl;
 	}
-
-	m_World->Print();
 }
 
 void SoarAgent::MakeMove()
 {										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE //
 	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT, 1);
-	cout << "Run result is: " <<  runResult << endl;
 	assert(runResult != gSKI_RUN_ERROR);
 }

@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 	//========================= Setup the TgDI for the TSI ========================
 	// Determine tsi version to use via command line argument
 	TgD::TSI_VERSION tsiVersion;
-	const char * usage = "[ 25 | 40 ]";
+	/*const char * usage = "[ 25 | 40 ]";
 	if (argc > 2)
 	{
 		// "TgDITestd" should be argv[0] but windows puts the entire path in there
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 	}
-	else
+	else*/
 	{
 		std::cout << "No TSI version specified, defaulting to 4.0.0" << std::endl; 
 		tsiVersion = TgD::TSI40;
@@ -163,21 +163,21 @@ int main(int argc, char* argv[])
 	if(doPrinting)
 		hanoi.Print();
 
-int foo = 0;
-while(!hanoi.AtGoalState()/* && foo++ < 1*/)
+	while(!hanoi.AtGoalState())
 	{
 		soarAgent.MakeMove();
 		TgD::TgD::Update(false, debugger);
 
-//		while(TgD::TgD::Update(false, debugger))
-//			TGD_SLEEP(50);
+		if (doPrinting)
+			hanoi.Print();
 	}
+	soarAgent.MakeMove();
 
 	if(doPrinting)
 		hanoi.Print();
 
-//	while(TgD::TgD::Update(false, debugger))
-//		TGD_SLEEP(50);
+	while(TgD::TgD::Update(false, debugger))
+		TGD_SLEEP(50);
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <non-whitespace char> then enter to exit\n") ;

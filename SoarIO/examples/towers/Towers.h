@@ -409,7 +409,7 @@ public:
 
 	bool AtGoalState()
 	{
-		if(m_towers[1]->GetSize() == maxNumDisks)
+		if(m_towers[2]->GetSize() == maxNumDisks)
 			return true;
 		return false;
 	}
