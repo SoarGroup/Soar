@@ -73,6 +73,7 @@ extern bool funcalls_match(list *fc1, list *fc2);
 extern bool actions_are_equal_with_bindings (action *a1, action *a2, list **bindings);
 extern void read_rhs_pattern_and_get_matching_productions (list **current_pf_list, bool show_bindings,
                                                     bool just_chunks, bool no_chunks);
+extern void find_nonzero_RL (list **); // SAN
 extern bool wme_filter_component_match(Symbol *filterComponent, Symbol *wmeComponent);
 extern bool passes_wme_filtering(wme *w, bool isAdd);
 extern int parse_filter_type(char *s, bool *forAdds, bool *forRemoves);

@@ -864,6 +864,23 @@ void read_rhs_pattern_and_get_matching_productions (list **current_pf_list, bool
   if (bindings) free_binding_list(bindings); /* DJP 4/3/96 -- To catch the last production */
 }
 
+/* SAN - print out RL productions that have nonzero value
+fix later for RL production type */
+void find_nonzero_RL(list **prods){
+	production *prod;
+	action *a;
+
+	for (prod=current_agent(all_productions_of_type)[USER_PRODUCTION_TYPE]; prod!=NIL; prod=prod->next){
+		for (a = prod->action_list; a!=NIL; a=a->next){
+		    if ((a->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE) && 
+				(rhs_value_to_symbol(a->referent)->fc.value != 0)){
+				push(prod,(*prods));
+				print_with_symbols("%y\n", prod->name);
+			}
+		}
+	}
+}
+
 
 
 /*

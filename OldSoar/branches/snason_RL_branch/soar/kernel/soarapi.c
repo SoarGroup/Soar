@@ -1836,7 +1836,7 @@ int soar_Memories ( int argc, const char *argv[], soarResult *res)
  *
  *----------------------------------------------------------------------
  */
-
+// SAN - changed to also find RL-productions with nonzero values
 int soar_ProductionFind (int argc, const char *argv[], soarResult *res )
 {  
   int i;
@@ -1845,6 +1845,7 @@ int soar_ProductionFind (int argc, const char *argv[], soarResult *res )
 
   bool lhs = TRUE;
   bool rhs = FALSE;
+  bool nonzero = FALSE;
   bool show_bindings = FALSE;
   bool just_chunks = FALSE;
   bool no_chunks = FALSE;
@@ -1853,7 +1854,7 @@ int soar_ProductionFind (int argc, const char *argv[], soarResult *res )
   if (argc == 1)
     {
       setSoarResultResult( res, 
-          "No arguments given.\nUsage: production-find [-rhs|-lhs] [-chunks|-nochunks] [-show-bindings] {clauses}" );
+          "No arguments given.\nUsage: production-find [-rhs|-lhs|-nonzero] [-chunks|-nochunks] [-show-bindings] {clauses}" );
       return SOAR_ERROR;
     }
 
@@ -1871,6 +1872,13 @@ int soar_ProductionFind (int argc, const char *argv[], soarResult *res )
 	{
 	  rhs = TRUE;
 	  lhs = FALSE;
+	}
+		else if (string_match_up_to(argv[i], "-nonzero", 2))
+	{
+	  nonzero = TRUE;
+	  lhs = FALSE;
+	  clause_found = TRUE;
+	  break;
 	}
       else if (string_match_up_to(argv[i], "-show-bindings", 2))
 	{
@@ -1961,6 +1969,10 @@ int soar_ProductionFind (int argc, const char *argv[], soarResult *res )
 	  current_agent(current_char) = ' ';
 
 	}
+	  if (nonzero)
+	  {
+		  find_nonzero_RL(&current_pf_list);
+	  }
       if (current_pf_list == NIL) 
 	{
 	  print("No matches.\n");
