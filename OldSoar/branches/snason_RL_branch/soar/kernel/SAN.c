@@ -5,7 +5,7 @@ float compute_Q_value();
 Symbol *equality_test_for_symbol_in_test(test t);
 condition *make_simple_condition(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym);
 action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym);
-production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref, wme *w);
+production *build_RL_production(condition *top_cond, not *nots, preference *pref, wme *w);
 void learn_RL_productions(int level);
 void record_for_RL();
 void variablize_condition_list(condition * cond);
@@ -145,7 +145,7 @@ void record_for_RL()
 			  record->num_prod++;
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
-			  if (prod->times_applied > 1){
+			  if (prod->times_applied > 20){
 				  list *identifiers = 0;
 				  cons *c;
 				  prod->times_applied = 0;
@@ -166,8 +166,7 @@ void record_for_RL()
 					  for (t = sym->id.slots ; t ; t=t->next){
 						  if (prod) break;
 						  for (w = t->wmes ; w ; w=w->next){
-							  prod = build_RL_production(ist->top_of_instantiated_conditions, 
-								 ist->bottom_of_instantiated_conditions, ist->nots, ist->preferences_generated, w);
+							  prod = build_RL_production(ist->top_of_instantiated_conditions, ist->nots, ist->preferences_generated, w);
 							  if (prod) break;
 						  }
 					  }
@@ -270,31 +269,37 @@ Symbol *equality_test_for_symbol_in_test(test t)
     return 0;
 }
 
-production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref, wme *w)
+production *build_RL_production(condition *top_cond, not *nots, preference *pref, wme *w)
 {
 	condition *new_cond, *c;
+	condition *new_top, *new_bottom;
 	action *a;
 	Symbol *prod_name;
 	production *prod;
 	bool chunk_var;
 
+	
 	// Make condition list
 	new_cond = make_simple_condition(w->id, w->attr, w->value);
     for (c = top_cond ; c ; c = c->next){
-		if (conditions_are_equal(c, new_cond)) return NIL;
+		if (conditions_are_equal(c, new_cond)){
+			deallocate_condition_list(new_cond);
+			return NIL;
+		}
 	}
-	bottom_cond->next = new_cond;
-	new_cond->prev = bottom_cond;
-	SAN_add_goal_or_impasse_tests(top_cond);
+	copy_condition_list(top_cond, &new_top, &new_bottom);
+	new_bottom->next = new_cond;
+	new_cond->prev = new_bottom;
+	SAN_add_goal_or_impasse_tests(new_top);
  	
 
 	// Variablize
 	chunk_var = current_agent(variablize_this_chunk);
 	current_agent(variablize_this_chunk) = TRUE;
-	reset_variable_generator(top_cond, NIL);
+	reset_variable_generator(new_top, NIL);
 	current_agent(variablization_tc) = get_new_tc_number();
-	variablize_condition_list(top_cond);
-	variablize_nots_and_insert_into_conditions(nots, top_cond);
+	variablize_condition_list(new_top);
+	variablize_nots_and_insert_into_conditions(nots, new_top);
 
 	// Make action list
 	a = make_simple_action(pref->id, pref->attr, pref->value, make_float_constant(0));
@@ -303,12 +308,13 @@ production *build_RL_production(condition *top_cond, condition *bottom_cond, not
 
 	// Make production
 	prod_name = generate_new_sym_constant("RL-", &current_agent(RL_count));
-	prod = make_production(RL_PRODUCTION_TYPE, prod_name, &top_cond, &new_cond, &a, FALSE);
+	prod = make_production(RL_PRODUCTION_TYPE, prod_name, &new_top, &new_cond, &a, FALSE);
 	current_agent(variablize_this_chunk) = chunk_var;
-	if (add_production_to_rete(prod, top_cond, 0, FALSE) == DUPLICATE_PRODUCTION){
+	if (add_production_to_rete(prod, new_top, 0, FALSE) == DUPLICATE_PRODUCTION){
 		   excise_production(prod, FALSE);
 		   prod = NIL;
 	} 
+	deallocate_condition_list(new_top);
 	return prod;
 }
 
@@ -320,7 +326,7 @@ action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Sy
     Symbol *temp;
 
     allocate_with_pool (&current_agent(action_pool),  &rhs);
-    rhs->next = NULL;
+    rhs->next = NIL;
     rhs->type = MAKE_ACTION;
 
     // id
