@@ -58,7 +58,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 
 	// If not disabling and not listing, there must be at least two additional arguments
 	if ((argv.size() - GetOpt::optind) < 2) {
-		return HandleSyntaxError(Constants::kCLIAlias);		
+		return HandleSyntaxError(Constants::kCLIAlias, Constants::kCLITooFewArgs);		
 	}
 
 	std::vector<std::string> substitution;

@@ -230,20 +230,21 @@ Notes:
 	Many options not implemented yet.
 ***
 log
-Usage:	log [-a] [filename]
-	log -c
+Usage:	log [-Ae] filename
+	log -a string
+	log [-cdoq]
 Options and arguments:
-  -a, --append		Append log to the end of the specified file.
-  -c, --close, 		Stop logging and close the current log.
+  -A, -e, --append	Append to the end of the specified file.
+  -a, --add		Add the given string to the log.
+  -c, -d, -o, --close, 	Stop logging and close the current log.
       --disable, --off
+  -q, --query		Query the current logging status.
   filename              The name of the file to log to.
 
-The log command is used to log all Soar output to a file. The log command does 
-not yet support user input logging.
-
-Invoke log with no arguments to query the current logging status. Pass a 
-filename to start logging to that file (relative to the command line interface's 
-home directory (see the home command)). Use the close option to stop logging.
+Invoke log with no arguments (or with -q) to query the current logging status.
+Pass a filename to start logging to that file (relative to the command line
+interface's  home directory (see the home command)). Use the close option to 
+stop logging.
 ~~~
 On success:
 <result>

@@ -76,6 +76,16 @@ typedef std::stack<std::string> StringStack;
 typedef std::list<sml::ElementXML*> ElementXMLList;
 typedef ElementXMLList::iterator ElementXMLListIter;
 
+// Log command enum
+	enum OPTION_LOG { 
+		OPTION_LOG_NEW,
+		OPTION_LOG_NEWAPPEND,
+		OPTION_LOG_CLOSE,
+		OPTION_LOG_ADD,
+		OPTION_LOG_QUERY,
+	};
+
+
 class CommandLineInterface
 {
 public:
@@ -267,7 +277,7 @@ public:
 	*		 closed.  If the filename is null and the option false, 
 	*		 the current logging status is queried.
 	*************************************************************/
-	bool DoLog(gSKI::IAgent* pAgent, const char* pFilename = 0, bool option = false);
+	bool DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, const std::string& filename, const std::string& toAdd);
 
 	/*************************************************************
 	* @brief ls/dir command, see usage.txt for details.
@@ -579,7 +589,7 @@ protected:
 		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) {
 			if (!m_pCLI) return;
 			if (!m_pCLI->m_pLogFile) return;
-			m_pCLI->m_pLogFile->write(msg, (std::streamsize)strlen(msg));
+			(*(m_pCLI->m_pLogFile)) << msg;
 		}
 	};
 

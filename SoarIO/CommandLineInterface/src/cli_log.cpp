@@ -8,6 +8,7 @@
 
 #include "cli_GetOpt.h"
 #include "cli_Constants.h"
+#include "cli_CommandData.h"
 
 #include "sml_Names.h"
 
@@ -18,10 +19,13 @@ using namespace sml;
 
 bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
-		{"append",	0, 0, 'a'},
-		{"close",	0, 0, 'c'},
-		{"disable",	0, 0, 'c'},
-		{"off",		0, 0, 'c'},
+		{"add",			0, 0, 'a'},
+		{"append",		0, 0, 'A'},
+		{"close",		0, 0, 'c'},
+		{"disable",		0, 0, 'd'},
+		{"existing",	0, 0, 'e'},
+		{"off",			0, 0, 'd'},
+		{"query",		0, 0, 'q'},
 		{0, 0, 0, 0}
 	};
 
@@ -29,21 +33,29 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	GetOpt::opterr = 0;
 
 	int option;
-	bool append = false;
-	bool close = false;
+	OPTION_LOG operation = OPTION_LOG_NEW;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "ac", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, "aAcdeoq", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
 
 		switch (option) {
 			case 'a':
-				append = true;
+				operation = OPTION_LOG_ADD;
 				break;
 			case 'c':
-				close = true;
+			case 'd':
+			case 'o':
+				operation = OPTION_LOG_CLOSE;
+				break;
+			case 'e':
+			case 'A':
+				operation = OPTION_LOG_NEWAPPEND;
+				break;
+			case 'q':
+				operation = OPTION_LOG_QUERY;
 				break;
 			case '?':
 				return HandleSyntaxError(Constants::kCLILog, Constants::kCLIUnrecognizedOption);
@@ -51,71 +63,94 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 				return HandleGetOptError((char)option);
 		}
 	}
+	
+	std::string toAdd;
+	std::string filename;
+	std::vector<std::string>::iterator iter = argv.begin();
 
-	// Only one non-option arg allowed, filename
-	if ((unsigned)GetOpt::optind == argv.size() - 1) {
+	switch (operation) {
+		case OPTION_LOG_ADD:
+			// no less than one argument
+			if ((argv.size() - GetOpt::optind) < 1) return HandleSyntaxError(Constants::kCLILog, Constants::kCLITooFewArgs);
 
-		// But not with the close option
-		if (close) {
-			return HandleSyntaxError(Constants::kCLILog, Constants::kCLITooManyArgs);
-		}
+			// combine all args
+			for (int i = 0; i < GetOpt::optind; ++i) {
+				++iter;
+			}
+			while (iter != argv.end()) {
+				toAdd += *iter;
+				toAdd += ' ';
+				++iter;
+			}
+			break;
 
-		return DoLog(pAgent, argv[GetOpt::optind].c_str(), append);
+		case OPTION_LOG_NEW:
+			// no more than one argument
+			if ((argv.size() - GetOpt::optind) > 1) return HandleSyntaxError(Constants::kCLILog, Constants::kCLITooManyArgs);
+			if ((argv.size() - GetOpt::optind) == 1) filename = argv[1];
+			break;
 
-	} else if ((unsigned)GetOpt::optind < argv.size()) {
-		return HandleSyntaxError(Constants::kCLILog, Constants::kCLITooManyArgs);
+		case OPTION_LOG_NEWAPPEND:
+			// exactly one argument
+			if ((argv.size() - GetOpt::optind) != 1) return HandleSyntaxError(Constants::kCLILog);
+			filename = argv[2];
+			break;
+
+		case OPTION_LOG_CLOSE:
+		case OPTION_LOG_QUERY:
+			// no arguments
+			if (argv.size() - GetOpt::optind) return HandleSyntaxError(Constants::kCLILog, Constants::kCLITooManyArgs);
+			break;
+
+		default:
+			return HandleSyntaxError(Constants::kCLILog, "Invalid operation.");
 	}
 
-	// No appending without a filename, and if we got here, there is no filename
-	if (append) {
-		return HandleSyntaxError(Constants::kCLILog, "Append requires a filename.");
-	}
-
-	return DoLog(pAgent, 0, close);
+	return DoLog(pAgent, operation, filename, toAdd);
 }
 
-bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const char* pFilename, bool option) {
+bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, const std::string& filename, const std::string& toAdd) {
 	if (!RequireAgent(pAgent)) return false;
 
-	// Presence of a filename means open, absence means close or query
-	if (pFilename) {
-		// Open a file
-		if (m_pLogFile) {
-			// Unless one is already opened
-			return HandleError("Close log file '" + m_LogFilename + "' first.");
-		}
+	std::ios_base::openmode mode = std::ios_base::out;
 
-		// Create the stream
-		if (option) {
-			// Option flag means append in presence of filename
-			m_pLogFile = new std::ofstream(pFilename, std::ios_base::app);
-		} else {
-			m_pLogFile = new std::ofstream(pFilename);
-		}
+	switch (operation) {
+		case OPTION_LOG_NEWAPPEND:
+			mode |= std::ios_base::app;
+			// falls through
 
-		if (!m_pLogFile) {
-			// Creation and opening was not successful
-			return HandleError("Failed to open file for logging.");
-		}
+		case OPTION_LOG_NEW:
+			if (filename.size() == 0) break;
+			if (m_pLogFile) return HandleError("Close log file '" + m_LogFilename + "' first.");
+			m_pLogFile = new std::ofstream(filename.c_str(), mode);
+			if (!m_pLogFile) return HandleError("Failed to open file for logging.");
+			pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
+			m_LogFilename = filename;
+			break;
 
-		// Logging opened, add listener and save filename since we can't get it from ofstream
-		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
-		m_LogFilename = pFilename;
+		case OPTION_LOG_ADD:
+			if (!m_pLogFile) return HandleError("No log file is open.");
+			(*m_pLogFile) << toAdd << std::endl;
+			return true;
 
-	} else if (option) {		
-		// In absence of filename, option true means close
-		if (m_pLogFile) {
-			// Remove the listener and close the file
+		case OPTION_LOG_CLOSE:
+			if (!m_pLogFile) return HandleError("No log file is open.");
 			pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
+	
+			(*m_pLogFile) << "Log file closed." << std::endl;
+
 			delete m_pLogFile;
 			m_pLogFile = 0;
-
-			// Forget the filename
 			m_LogFilename.clear();
-		}
+			break;
+
+		case OPTION_LOG_QUERY:
+			break;
+		default:
+			return HandleError("Invalid operation.");
 	}
 
-	// Query at end of successful command, or by default
+	// Query at end of successful command, or by default (but not on _ADD)
 	if (m_RawOutput) {
 		AppendToResult(m_pLogFile ? "Log file '" + m_LogFilename + "' opened." : "Log file closed.");
 
@@ -123,9 +158,7 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const char* pFilename, bo
 		const char* setting = m_pLogFile ? sml_Names::kTrue : sml_Names::kFalse;
 		AppendArgTagFast(sml_Names::kParamLogSetting, sml_Names::kTypeBoolean, setting);
 
-		if (m_LogFilename.size()) {
-			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename.c_str());
-		}
+		if (m_LogFilename.size()) AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename.c_str());
 	}
 
 	return true;

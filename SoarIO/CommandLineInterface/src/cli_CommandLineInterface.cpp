@@ -22,6 +22,7 @@
 
 // BADBAD: I think we should be using an error class instead to work with error objects.
 #include "../../gSKI/src/gSKI_Error.h"
+#include "IgSKI_Agent.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -64,6 +65,7 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 		delete m_pGetOpt;
 	}
 	if (m_pLogFile) {
+		(*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
 		delete m_pLogFile;
 	}
 }
@@ -111,8 +113,17 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	// Save the raw output flag
 	m_RawOutput = rawOutput;
 
+	// Log input
+	if (m_pLogFile) {
+		if (pAgent) (*m_pLogFile) << pAgent->GetName() << "> ";
+		(*m_pLogFile) << pCommandLine << endl;
+	}
+
 	// Process the command, ignoring its result (irrelevant at this level)
 	bool ret = DoCommandInternal(pAgent, pCommandLine);
+
+	// Log output
+	if (m_pLogFile) (*m_pLogFile) << m_Result << endl;
 
 	// Reset source error flag
 	m_SourceError = false;
@@ -121,6 +132,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 		// The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
 			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.c_str());
+
 		} else {
 			// If there are tags in the response list, add them and return
 			if (m_ResponseTags.size()) {
