@@ -249,10 +249,12 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		return true;
 	} 
 
-	if ((commandLine == "quit") || (commandLine == "exit")) {
-		g_pInputThread->Stop(false);
+	if (g_pInputThread) {
+		if ((commandLine == "quit") || (commandLine == "exit")) {
+			g_pInputThread->Stop(false);
+		}
+		g_pWaitForInput->TriggerEvent();
 	}
-	g_pWaitForInput->TriggerEvent();
 
 	// Process command line differently depending on the type of output
 	bool previousResult;
@@ -345,10 +347,6 @@ int main(int argc, char** argv)
 	g_pInputQueueWriteEvent = new soar_thread::Event();
 	g_pWaitForInput = new soar_thread::Event();
 
-	// Create and start input thread
-	g_pInputThread = new InputThread();
-	g_pInputThread->Start();
-
 	cout << "Use the meta-commands 'raw' and 'structured' to switch output style" << endl;
 
 	// Register for necessary callbacks
@@ -356,16 +354,23 @@ int main(int argc, char** argv)
 	int callbackID2 = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 
 	// Do script if any
+	bool good = true;
 	if (scriptFile.size()) {
-		while (scriptIter != scriptFile.end()) {
-			g_pCommandProcessor->ProcessCharacter(*scriptIter);
+		while (good && (scriptIter != scriptFile.end())) {
+			good = g_pCommandProcessor->ProcessCharacter(*scriptIter);
 			++scriptIter;
 		}
 	}
 
-	// Main command loop
-	g_pCommandProcessor->DisplayPrompt(true);
-	while (g_pCommandProcessor->ProcessCharacter(getKey(true))) {}
+	if (good) {
+		// Create and start input thread
+		g_pInputThread = new InputThread();
+		g_pInputThread->Start();
+
+		// Main command loop
+		g_pCommandProcessor->DisplayPrompt(true);
+		while (g_pCommandProcessor->ProcessCharacter(getKey(true))) {}
+	}
 
 	pAgent->UnregisterForPrintEvent(sml::smlEVENT_PRINT, callbackID2);
 	pAgent->UnregisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, callbackID1);

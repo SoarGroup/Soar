@@ -10,6 +10,7 @@ ls
 multi-attributes
 pushd demos/towers-of-hanoi
 source towers-of-hanoi.soar
+excise towers-of-hanoi*monitor*operator-execution*move-disk
 popd
 watch 0
 run 2048
