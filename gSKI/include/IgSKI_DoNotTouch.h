@@ -132,6 +132,8 @@ namespace gSKI
 
 		virtual bool BeginTracingProduction(IAgent* pIAgent, const char* pProductionName) = 0;
 		virtual bool StopTracingProduction(IAgent* pIAgent, const char* pProductionName) = 0;
+
+		virtual unsigned long AddWme(IAgent* pIAgent, const char* pIdString, const char* pAttrString, const char* pValueString, bool acceptable) = 0;
 	  };
    }
 }
