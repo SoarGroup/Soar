@@ -128,7 +128,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 #else
 #ifdef LINUX_DIRECT
     libraryName.append(".so");
-    void* hLibrary = dlsym(libraryName.c_str(), RTLD_LAZY);
+    void* hLibrary = dlopen(libraryName.c_str(), RTLD_LAZY);
 #endif
 #endif
 
