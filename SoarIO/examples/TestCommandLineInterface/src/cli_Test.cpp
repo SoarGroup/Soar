@@ -17,15 +17,6 @@
 
 using namespace std;
 
-// Dummy code for linking test
-//#include "sml_Handles.h"
-//#include "ElementXMLHandle.h"
-//typedef ElementXML_Handle (*ProcessMessageFunction)(Connection_Receiver_Handle, ElementXML_Handle, int) ;
-//typedef Connection_Receiver_Handle (*CreateEmbeddedConnectionFunction)(Connection_Sender_Handle, ProcessMessageFunction, int) ;
-//Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pSenderProcessMessage, int connectionType) { return 0; }
-//ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiverConnection, ElementXML_Handle hIncomingMsg, int action) { return 0; }
-// End dummy code
-
 void backspace(string& cmdline) {
 	if (cmdline.size()) {
 		cout << "\b \b";
