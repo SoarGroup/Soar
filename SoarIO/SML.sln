@@ -20,10 +20,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ElementXML", "ElementXML\El
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "ClientSML\app_src\TestClientSML\TestClientSML.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommandLineInterface", "CommandLineInterface\CommandLineInterface.vcproj", "{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0F4205EE-35EA-4421-8F74-513603FF003F} = {0F4205EE-35EA-4421-8F74-513603FF003F}
@@ -60,6 +56,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "examples\tower
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "examples\TestClientSML\TestClientSML.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Ansi Release = Ansi Release
@@ -91,12 +91,6 @@ Global
 		{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}.Debug.Build.0 = Debug|Win32
 		{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}.Release.ActiveCfg = Release|Win32
 		{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}.Release.Build.0 = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Ansi Release.ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Ansi Release.Build.0 = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Ansi Release.ActiveCfg = Release|Win32
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Ansi Release.Build.0 = Release|Win32
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Debug.ActiveCfg = Debug|Win32
@@ -145,6 +139,12 @@ Global
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug.Build.0 = Debug|Win32
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release.ActiveCfg = Release|Win32
 		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release.Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Ansi Release.ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Ansi Release.Build.0 = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
+		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
