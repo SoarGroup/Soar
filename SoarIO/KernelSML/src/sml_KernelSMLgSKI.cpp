@@ -26,7 +26,7 @@
 #include "IgSKI_KernelFactory.h"
 #include "gSKI_Stub.h"
 #include "IgSKI_Kernel.h"
-#include "../lib_src/gSKIx/src/gSKI_Error.h"
+#include "../../gSKI/src/gSKI_Error.h"
 #include "gSKI_ErrorIds.h"
 #include "gSKI_Enumerations.h"
 #include "IgSKI_AgentManager.h"

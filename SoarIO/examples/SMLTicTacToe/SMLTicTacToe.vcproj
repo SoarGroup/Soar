@@ -12,14 +12,14 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\lib_src\TgDIx\bin"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\lib_src\TgDIx\include;.\include;.\lib_src\TgDIx\lib_src\gSKIx\include;..\SML\ClientSML\include;..\SML\ElementXML\include;..\SML\ConnectionSML\include"
+				AdditionalIncludeDirectories="..\..\..\TgDI\include;.\include;..\..\..\gSKI\include;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_WIN32"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -35,7 +35,7 @@
 				ShowProgress="0"
 				OutputFile="../SML/bin/SMLTicTacToe.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=".\lib_src\TgDIx\lib_src\gSKIx\lib;.\lib_src\TgDIx\lib;&quot;C:\Documents and Settings\Cory\Desktop\projects\gSKITicTacToe\bin&quot;"
+				AdditionalLibraryDirectories="..\..\..\gSKI\lib;..\..\..\TgDI\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/gSKITicTacToe.pdb"
 				SubSystem="1"

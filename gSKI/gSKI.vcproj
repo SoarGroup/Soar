@@ -22,7 +22,7 @@
 				AdditionalOptions="
 "
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)include&quot;;&quot;$(ProjectDir)lib_src\pcre-4.5&quot;;&quot;$(ProjectDir)lib_src\SKx\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)include&quot;;&quot;$(ProjectDir)lib_src\pcre-4.5&quot;;&quot;$(ProjectDir)..\SoarKernel\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;GSKI;NO_MEGA_UNIT_TESTS; _DLL;GSKI_DEBUG_RELEASE_IMPL"
 				GeneratePreprocessedFile="0"
 				KeepComments="FALSE"
@@ -41,8 +41,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="SoarKernelSource_md.lib"
 				OutputFile="$(SolutionDir)bin/$(ProjectName)d.dll"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="..\SoarKernel\lib"
 				GenerateDebugInformation="TRUE"
 				MapLines="TRUE"
 				ImportLibrary="lib/$(TargetName).lib"/>
