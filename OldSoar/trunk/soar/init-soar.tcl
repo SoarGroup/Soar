@@ -44,9 +44,11 @@ if { [llength $argv] > 0 } {
 }
 
 #tsi 0 -batchMode $batchMode
-tsi
+tsi 0
 
 if { [string match "on" $batchMode] } {
 	source $batchFile
 
 }
+
+createNewAgent "" [pwd] ""
