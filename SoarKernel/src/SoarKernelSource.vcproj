@@ -736,6 +736,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\utilities.cpp">
+			</File>
+			<File
 				RelativePath="wmem.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -863,6 +866,9 @@
 				RelativePath="standard.h">
 			</File>
 			<File
+				RelativePath="..\include\stl_support.h">
+			</File>
+			<File
 				RelativePath="..\include\symtab.h">
 			</File>
 			<File
@@ -873,6 +879,9 @@
 			</File>
 			<File
 				RelativePath="..\include\trace.h">
+			</File>
+			<File
+				RelativePath="..\include\utilities.h">
 			</File>
 			<File
 				RelativePath="..\include\wmem.h">
