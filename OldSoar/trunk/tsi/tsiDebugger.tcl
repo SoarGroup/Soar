@@ -112,11 +112,12 @@ proc Debugger::create { } {
 
    #Indicator Setup
    UpdateStats
-   $mainframe addindicator -textvariable Debugger::lastPhase -padx 10  -font $tsiConfig(smallFont)
-   $mainframe addindicator -textvariable Debugger::learnSettings -padx 10  -font $tsiConfig(smallFont)
-   $mainframe addindicator -textvariable Debugger::soarVersion -padx 6 -font $tsiConfig(smallFont)
-   $mainframe addindicator -text "tsi $tsiConfig(ControlPanelVersion)" -padx 6
-   $mainframe addindicator -text "Debugger v1.0b" -padx 6
+   $mainframe addindicator -textvariable Debugger::lastPhase -padx 10 
+   $mainframe addindicator -textvariable Debugger::learnSettings -padx 10
+   $mainframe addindicator -textvariable Debugger::soarVersion -padx 6 
+   $mainframe addindicator -text "tsi $tsiConfig(ControlPanelVersion)" -padx 6 
+   # laird said get rid of this
+   #$mainframe addindicator -text "Debugger v1.0b" -padx 6
 
    # Paned frame for Notebook on top and console on bottom
    set paneWin   [PanedWindow [$mainframe getframe].pw2 -side left]
@@ -322,7 +323,7 @@ proc Debugger::updateNotebooks {} {
    }
    
    PanedWindow::setPercentage $paneWin $sashPosition($currentPage)
-   #UpdateStats
+   UpdateStats
 }
 
 proc Debugger::updateRaisedNotebook {} {
@@ -342,7 +343,7 @@ proc Debugger::updateRaisedNotebook {} {
    }
 
    PanedWindow::setPercentage $paneWin $sashPosition($currentPage)
-   #UpdateStats
+   UpdateStats
 }
 
 proc Debugger::ChangeCycleIcon {updateNum} {
@@ -404,7 +405,7 @@ proc Debugger::UpdateStats {} {
    foreach s $ls2 {
       set learnSettings "$learnSettings [removeFirstChar [string trim $s]] "
    }
-
+   
    set soarVersion "Soar v[version]"
 
    output-strings-destination -pop
