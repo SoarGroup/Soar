@@ -12,17 +12,21 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
+#endif // HAVE_CONFIG_H
 
 #ifdef HAVE_STRINGS_H
 #include <strings.h>  // strcasecmp
-#endif
+#endif // HAVE_STRINGS_H
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "sml_StringOps.h"
+
+#ifdef _MSC_VER
+#define snprintf _snprintf 
+#endif // _MSC_VER
 
 /*************************************************************
 * @brief Returns true if strings are equal (case sensitive).
