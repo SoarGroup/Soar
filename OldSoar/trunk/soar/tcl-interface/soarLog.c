@@ -44,6 +44,9 @@
 
 extern Tcl_Interp *tcl_soar_agent_interpreters[MAX_SIMULTANEOUS_AGENTS];
 
+#define BUF_SIZE 4096
+char buf[BUF_SIZE];
+
 void
 Soar_Print (the_agent, str)
      agent * the_agent;
@@ -122,10 +125,13 @@ Soar_PrintToTclProc (the_agent, data, call_data)
 {
 	Soar_TextWidgetPrintData * print_data = (Soar_TextWidgetPrintData *) data;
 
-	char buf[1024];
-	/*    printf("args:   %s<>%s\n", print_data->text_widget, (char*) call_data); */
+#ifdef WIN32
+	_snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
+#else
+	snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
+#endif
+
 	sprintf(buf, "%s {%s} ", print_data->text_widget, (char*) call_data);
-	/*    printf("here's the buf: >> %s\nendbuf\n",buf);  */
 
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], buf);
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], "update");
