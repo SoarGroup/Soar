@@ -622,7 +622,7 @@ int PreferencesCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj
     free_argv(objc, argv);
 
     if (ret == SOAR_OK) {
-        Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
+        /*Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));*/
         return TCL_OK;
     } else {
         Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
