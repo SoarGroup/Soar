@@ -14,8 +14,6 @@
 
 
 %{
-#include "sml_Errors.h"
-#include "sml_Connection.h"
 #include "sml_ElementXML.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_ClientErrors.h"
@@ -29,8 +27,6 @@
 #include "sml_ClientAgent.h"
 %}
 
-%include "../ConnectionSML/include/sml_Errors.h"
-%include "../ConnectionSML/include/sml_Connection.h"
 %include "../ConnectionSML/include/sml_ElementXML.h"
 %include "../ConnectionSML/include/sml_AnalyzeXML.h"
 %include "../ClientSML/include/sml_ClientErrors.h"
