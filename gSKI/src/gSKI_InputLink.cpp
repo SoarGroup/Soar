@@ -215,7 +215,7 @@ namespace gSKI
                                       soar_call_data calldata )
   {
     InputLink* ilink = static_cast<InputLink*>(callbackdata);
-    int callbacktype = reinterpret_cast<int>(calldata);
+    int callbacktype = (int)reinterpret_cast<long long>(calldata);
 
     switch(callbacktype) {
     case TOP_STATE_JUST_CREATED:

@@ -212,6 +212,9 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, gS
 // Called when a "PrintEvent" occurs in the kernel
 void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, const char* msg) 
 {
+	unused(eventID);
+	unused(agentPtr);
+
 	// If we're getting anything but a print event here, that isn't right
 	assert(eventID == gSKIEVENT_PRINT);
 

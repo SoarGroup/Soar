@@ -73,7 +73,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="4"
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
@@ -82,6 +82,8 @@
 				Name="VCLinkerTool"
 				OutputFile="$(SolutionDir)\bin\ElementXML.dll"
 				LinkIncremental="1"
+				IgnoreAllDefaultLibraries="FALSE"
+				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"

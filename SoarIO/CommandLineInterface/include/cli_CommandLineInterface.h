@@ -15,10 +15,14 @@
 #include <vector>
 #include <string>
 #include <stack>
+#ifdef _MSC_VER
 #pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
+#endif
 #include <map>
 #include <list>
+#ifdef _MSC_VER
 #pragma warning (default : 4702)
+#endif
 #include <iostream>
 #include <fstream>
 

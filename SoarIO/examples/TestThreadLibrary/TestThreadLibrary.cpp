@@ -208,7 +208,7 @@ public:
 	}
 };
 
-int main(int argc, char* argv[])
+int main(/*int argc, char* argv[]*/)
 {
 	// Start off with some general tests of ElementXML
 	TestThread_1 test1;

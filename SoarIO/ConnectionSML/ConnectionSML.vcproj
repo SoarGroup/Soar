@@ -72,7 +72,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="lib\ConnectionSML.lib"/>
+				OutputFile="lib\ConnectionSML.lib"
+				IgnoreAllDefaultLibraries="TRUE"
+				IgnoreDefaultLibraryNames=""/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

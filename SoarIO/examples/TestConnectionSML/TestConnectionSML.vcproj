@@ -83,6 +83,8 @@
 				OutputFile="$(SolutionDir)\bin\TestConnectionSML.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="FALSE"
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
 				OptimizeReferences="2"

@@ -246,8 +246,8 @@ static void totimeval (struct timeval *dst, FILETIME *src, int sub, int flag)
   x *= (int) (1e6) / CLOCKS_PER_SEC; /* Turn x into usecs */
   x -= (long long) sub * (int) (1e6);
   
-  dst->tv_usec = x % (long long) (1e6); /* And split */
-  dst->tv_sec = x / (long long) (1e6);
+  dst->tv_usec = (long)(x % (long long) (1e6)); /* And split */
+  dst->tv_sec = (long)(x / (long long) (1e6));
 }
 
 int getrusage(int who, struct rusage* r)

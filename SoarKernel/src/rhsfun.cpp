@@ -303,7 +303,7 @@ Symbol *make_constant_symbol_rhs_function_code (agent* thisAgent, list *args, vo
 -------------------------------------------------------------------- */
 
 Symbol *timestamp_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
-  long now;
+  time_t now;
   struct tm *temp;
 #define TIMESTAMP_BUFFER_SIZE 100
   char buf[TIMESTAMP_BUFFER_SIZE];

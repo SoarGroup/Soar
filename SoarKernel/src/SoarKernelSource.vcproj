@@ -89,6 +89,7 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool

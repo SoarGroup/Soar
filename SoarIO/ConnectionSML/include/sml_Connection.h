@@ -28,10 +28,14 @@
 #endif
 
 #include <string>
+#ifdef _MSC_VER
 #pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
+#endif
 #include <list>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (default : 4702)
+#endif
 #include <queue>
 
 #ifndef unused

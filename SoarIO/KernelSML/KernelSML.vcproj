@@ -28,7 +28,7 @@
 				UsePrecompiledHeader="0"
 				ObjectFile="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="FALSE"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -86,6 +86,7 @@
 				OutputFile="$(SolutionDir)\bin\KernelSML.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="FALSE"
 				GenerateDebugInformation="TRUE"
 				SubSystem="2"
 				OptimizeReferences="2"

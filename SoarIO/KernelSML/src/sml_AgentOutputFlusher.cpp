@@ -36,6 +36,8 @@ void AgentOutputFlusher::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPt
 {
 	assert(eventId == gSKIEVENT_AFTER_DECISION_CYCLE || eventId == gSKIEVENT_AFTER_RUNNING);
 	assert(agentPtr == m_Agent);
+	unused(eventId);
+	unused(agentPtr);
 	unused(phase);
 
 	assert(m_AgentListener);

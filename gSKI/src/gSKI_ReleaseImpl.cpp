@@ -22,6 +22,10 @@
 #include <fstream>
 #include <typeinfo>
 
+#ifndef unused
+#define unused(x) (void)(x)
+#endif
+
 using namespace gSKI;
 
 namespace
@@ -39,7 +43,7 @@ namespace
          return;
       }
 
-      fs << objects.size() << " unreleased gSKI objects:\n";
+      fs << (int)objects.size() << " unreleased gSKI objects:\n";
       for(std::map<gSKI::IRelease*, unsigned int>::iterator it = objects.begin();
             it != objects.end();
             ++it)
@@ -82,6 +86,7 @@ namespace gSKI
       if(allocCount == 20)
       {
          int x = 0;
+		 unused(x);
       }
 
       objects.insert(std::make_pair(pRelease, allocCount++));

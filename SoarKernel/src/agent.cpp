@@ -126,8 +126,7 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
 
 ===============================
 */
-agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {
-  int i;                                          /* loop index */
+agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {                                          /* loop index */
   char cur_path[MAXPATHLEN];   /* AGR 536 */
 
   agent* newAgent = (agent *) malloc(sizeof(agent));
