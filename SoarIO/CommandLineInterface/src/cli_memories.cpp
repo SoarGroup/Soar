@@ -88,14 +88,7 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 	return DoMemories(pAgent, options, n);
 }
 
-/*************************************************************
-* @brief memories command
-* @param pAgent The pointer to the gSKI agent interface
-* @param options Options for the memories flag, see cli_CommandData.h
-* @param n number of productions to print sorted by most memory use, use 0 for all
-* @param pProduction specific production to print, ignored if any options are set, pass 0 (null) if not applicable
-*************************************************************/
-EXPORT bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, const MemoriesBitset options, int n, const std::string* pProduction) {
+bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, const MemoriesBitset options, int n, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
 	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();

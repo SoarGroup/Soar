@@ -74,14 +74,7 @@ bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vecto
 	return DoChunkNameFormat(pAgent, changeFormat ? &longFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
 }
 
-/*************************************************************
-* @brief chunk-name-format command
-* @param pAgent The pointer to the gSKI agent interface
-* @param pLongFormat Pointer to the new format type, true for long format, false for short format, 0 (null) for query or no change
-* @param pCount Pointer to the new counter, non negative integer, 0 (null) for query
-* @param pPrefix Pointer to the new prefix, must not contain '*' character, null for query
-*************************************************************/
-EXPORT bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, const bool* pLongFormat, const int* pCount, const std::string* pPrefix) {
+bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, const bool* pLongFormat, const int* pCount, const std::string* pPrefix) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

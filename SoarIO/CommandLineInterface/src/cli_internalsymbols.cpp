@@ -20,11 +20,7 @@ bool CommandLineInterface::ParseInternalSymbols(gSKI::IAgent* pAgent, std::vecto
 	return DoInternalSymbols(pAgent);
 }
 
-/*************************************************************
-* @brief internal-symbols command
-* @param pAgent The pointer to the gSKI agent interface
-*************************************************************/
-EXPORT bool CommandLineInterface::DoInternalSymbols(gSKI::IAgent* pAgent) {
+bool CommandLineInterface::DoInternalSymbols(gSKI::IAgent* pAgent) {
 
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;

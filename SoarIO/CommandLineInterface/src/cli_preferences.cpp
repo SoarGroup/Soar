@@ -69,14 +69,7 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 	return DoPreferences(pAgent, detail);
 }
 
-/*************************************************************
-* @brief preferences command
-* @param pAgent The pointer to the gSKI agent interface
-* @param detail The preferences detail level, see cli_CommandData.h
-* @param pId An existing soar identifier or 0 (null)
-* @param pAttribute An existing soar attribute of the specified identifier or 0 (null)
-*************************************************************/
-EXPORT bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, const ePreferencesDetail detail, const std::string* pId, const std::string* pAttribute) {
+bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, const ePreferencesDetail detail, const std::string* pId, const std::string* pAttribute) {
 
 	if (!RequireAgent(pAgent)) return false;
 

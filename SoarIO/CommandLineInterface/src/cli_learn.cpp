@@ -71,12 +71,7 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoLearn(pAgent, options);
 }
 
-/*************************************************************
-* @brief learn command
-* @param pAgent The pointer to the gSKI agent interface
-* @param options The various options set on the command line, see CommandData.h
-*************************************************************/
-EXPORT bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const LearnBitset& options) {
+bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const LearnBitset& options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

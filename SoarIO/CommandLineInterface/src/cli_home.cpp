@@ -22,11 +22,7 @@ bool CommandLineInterface::ParseHome(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoHome();
 }
 
-/*************************************************************
-* @brief home command
-* @param pDirectory The directory to change the cli's initial (home) directory to, pass 0 (null) for current directory
-*************************************************************/
-EXPORT bool CommandLineInterface::DoHome(const std::string* pDirectory) {
+bool CommandLineInterface::DoHome(const std::string* pDirectory) {
 
 	if (pDirectory) {
 		// Change to the passed directory if any to make sure it is valid

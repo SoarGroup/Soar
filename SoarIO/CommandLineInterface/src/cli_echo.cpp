@@ -16,11 +16,7 @@ bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoEcho(argv);
 }
 
-/*************************************************************
-* @brief echo command
-* @param argv The args to echo
-*************************************************************/
-EXPORT bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv) {
+bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv) {
 
 	std::string message;
 

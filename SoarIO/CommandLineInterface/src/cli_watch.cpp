@@ -300,15 +300,7 @@ bool CommandLineInterface::CheckOptargRemoveOrZero() {
 	return SetError(CLIError::kRemoveOrZeroExpected);
 }
 
-/*************************************************************
-* @brief watch command
-* @param pAgent The pointer to the gSKI agent interface
-* @param options Options for the watch command, see cli_CommandData.h
-* @param settings Settings for the watch command, if a flag (option) is set, its setting is set using this (true/on or false/off)
-* @param wmeSetting Setting for wme detail, not binary so it has its own arg
-* @param learnSetting Setting for learn level, not binary so it has its own arg
-*************************************************************/
-EXPORT bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) {
+bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

@@ -18,10 +18,7 @@ bool CommandLineInterface::ParseDirs(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoDirs();
 }
 
-/*************************************************************
-* @brief dirs command
-*************************************************************/
-EXPORT bool CommandLineInterface::DoDirs() {
+bool CommandLineInterface::DoDirs() {
 	
 	StringStack tempStack;
 

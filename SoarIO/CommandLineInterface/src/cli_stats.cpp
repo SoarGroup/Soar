@@ -51,12 +51,7 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoStats(pAgent, options);
 }
 
-/*************************************************************
-* @brief stats command
-* @param pAgent The pointer to the gSKI agent interface
-* @param options The options for the stats command
-*************************************************************/
-EXPORT bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const StatsBitset& options) {
+bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const StatsBitset& options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

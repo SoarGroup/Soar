@@ -28,12 +28,7 @@ bool CommandLineInterface::ParseSP(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoSP(pAgent, production);
 }
 
-/*************************************************************
-* @brief sp command
-* @param pAgent The pointer to the gSKI agent interface
-* @param production The production to add to working memory
-*************************************************************/
-EXPORT bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& production) {
+bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& production) {
 	// Must have agent to give production to
 	if (!RequireAgent(pAgent)) return false;
 

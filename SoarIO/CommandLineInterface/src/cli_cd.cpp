@@ -25,12 +25,7 @@ bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoCD();
 }
 
-/*************************************************************
-* @brief cd command
-* @param pDirectory Pointer to the directory to pass in to.  
-*        Pass null to return to the initial (home) directory. 
-*************************************************************/
-EXPORT bool CommandLineInterface::DoCD(const std::string* pDirectory) {
+bool CommandLineInterface::DoCD(const std::string* pDirectory) {
 
 	// if directory 0, return to original (home) directory
 	if (!pDirectory) {

@@ -65,12 +65,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoAlias(&command, &substitution);
 }
 
-/*************************************************************
-* @brief alias command
-* @param command The alias to enable or disable, pass 0 to list aliases
-* @param pSubstitution Pass a pointer to a vector strings to enable a new alias, pass 0 to disable a current alias 
-*************************************************************/
-EXPORT bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vector<std::string>* pSubstitution) {
+bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vector<std::string>* pSubstitution) {
 
 	if (!pCommand && !pSubstitution) {
 		// list aliases

@@ -70,13 +70,7 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoExcise(pAgent, options, &(argv[m_pGetOpt->GetOptind()]));
 }
 
-/*************************************************************
-* @brief excise command
-* @param pAgent The pointer to the gSKI agent interface
-* @param options The various options set on the command line, see cli_CommandData.h
-* @param pProduction A production to excise, optional
-*************************************************************/
-EXPORT bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction) {
+bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Acquire production manager

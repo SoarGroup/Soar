@@ -55,12 +55,7 @@ bool CommandLineInterface::ParseSaveBacktraces(gSKI::IAgent* pAgent, std::vector
 	return DoSaveBacktraces(pAgent, query ? 0 : &setting);
 }
 
-/*************************************************************
-* @brief save-backtraces command
-* @param pAgent The pointer to the gSKI agent interface
-* @param setting The new setting, pass 0 (null) for query
-*************************************************************/
-EXPORT bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool* pSetting) {
+bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool* pSetting) {
 
 	if (!RequireAgent(pAgent)) return false;
 

@@ -71,14 +71,7 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoMatches(pAgent, mode, detail);
 }
 
-/*************************************************************
-* @brief matches command
-* @param pAgent The pointer to the gSKI agent interface
-* @param mode The mode for the command, see cli_CommandData.h
-* @param detail The WME detail, see cli_CommandData.h
-* @param pProduction The production, pass 0 (null) if not applicable to mode
-*************************************************************/
-EXPORT bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mode, const eWMEDetail detail, const std::string* pProduction) {
+bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mode, const eWMEDetail detail, const std::string* pProduction) {
 
 	if (!RequireAgent(pAgent)) return false;
 

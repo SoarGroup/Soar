@@ -74,13 +74,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoRun(pAgent, options, count);
 }
 
-/*************************************************************
-* @brief run command
-* @param pAgent The pointer to the gSKI agent interface
-* @param options Options for the run command, see cli_CommandData.h
-* @param count The count, units or applicability depends on options
-*************************************************************/
-EXPORT bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count) {
+bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Default run type is forever

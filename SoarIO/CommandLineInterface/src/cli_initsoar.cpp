@@ -15,11 +15,7 @@ bool CommandLineInterface::ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::
 	return DoInitSoar(pAgent);
 }
 
-/*************************************************************
-* @brief init-soar command
-* @param pAgent The pointer to the gSKI agent interface
-*************************************************************/
-EXPORT bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
+bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

@@ -51,12 +51,7 @@ bool CommandLineInterface::ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoWaitSNC(pAgent, query ? 0 : &enable);
 }
 
-/*************************************************************
-* @brief waitsnc command
-* @param pAgent The pointer to the gSKI agent interface
-* @param pEnable The waitsnc setting, true to turn on, false to turn off, pass 0 (null) to query
-*************************************************************/
-EXPORT bool CommandLineInterface::DoWaitSNC(gSKI::IAgent* pAgent, bool* pSetting) {
+bool CommandLineInterface::DoWaitSNC(gSKI::IAgent* pAgent, bool* pSetting) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!pSetting) {

@@ -57,12 +57,7 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 	return DoIndifferentSelection(pAgent, mode);
 }
 
-/*************************************************************
-* @brief indifferent-selection command
-* @param pAgent The pointer to the gSKI agent interface
-* @param mode What mode to set indifferent selection to, or query.  See eIndifferentMode
-*************************************************************/
-EXPORT bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, eIndifferentMode mode) {
+bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, eIndifferentMode mode) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (mode == INDIFFERENT_QUERY) {

@@ -34,15 +34,7 @@ bool CommandLineInterface::ParseAddWME(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoAddWME(pAgent, argv[1], argv[attributeIndex], argv[attributeIndex + 1], acceptable);
 }
 
-/*************************************************************
-* @brief add-wme command
-* @param pAgent The pointer to the gSKI agent interface
-* @param id Id string for the new wme
-* @param attribute Attribute string for the new wme
-* @param value Value string for the new wme
-* @param acceptable True to give wme acceptable preference
-*************************************************************/
-EXPORT bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, const std::string& id, const std::string& attribute, const std::string& value, bool acceptable) {
+bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, const std::string& id, const std::string& attribute, const std::string& value, bool acceptable) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -52,15 +44,13 @@ EXPORT bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, const std::stri
 	unsigned long timetag = pKernelHack->AddWme(pAgent, id.c_str(), attribute.c_str(), value.c_str(), acceptable);
 	if (timetag < 0) {
 		switch (timetag) {
+			default:
 			case -1:
 				return SetError(CLIError::kInvalidID);
 			case -2:
 				return SetError(CLIError::kInvalidAttribute);
 			case -3:
 				return SetError(CLIError::kInvalidValue);
-			default:
-				// unspecified error
-				return false;
 		}
 	}
 

@@ -49,12 +49,7 @@ bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std
 	return DoNumericIndifferentMode(pAgent, mode);
 }
 
-/*************************************************************
-* @brief numeric-indifferent mode command
-* @param pAgent The pointer to the gSKI agent interface
-* @param mode The mode for this command, see cli_CommandData.h
-*************************************************************/
-EXPORT bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, const eNumericIndifferentMode mode) {
+bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, const eNumericIndifferentMode mode) {
 	if (!RequireAgent(pAgent)) return false;
 
 	switch (mode) {

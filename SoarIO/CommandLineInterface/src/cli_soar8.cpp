@@ -49,11 +49,7 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoSoar8(query ? &soar8 : 0);
 }
 
-/*************************************************************
-* @brief soar8 command
-* @param pSoar8 True to enable Soar 8, false for Soar 7
-*************************************************************/
-EXPORT bool CommandLineInterface::DoSoar8(bool* pSoar8) {
+bool CommandLineInterface::DoSoar8(bool* pSoar8) {
 	unused(pSoar8);
 	SetError(CLIError::kNotImplemented);
 	return false;

@@ -28,12 +28,7 @@ bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vecto
 	return DoDefaultWMEDepth(pAgent, n ? &n : 0);
 }
 
-/*************************************************************
-* @brief default-wme-depth command
-* @param pAgent The pointer to the gSKI agent interface
-* @param pDepth The pointer to the new wme depth, a positive integer.  Pass 0 (null) pointer for query.
-*************************************************************/
-EXPORT bool CommandLineInterface::DoDefaultWMEDepth(gSKI::IAgent* pAgent, const int* pDepth) {
+bool CommandLineInterface::DoDefaultWMEDepth(gSKI::IAgent* pAgent, const int* pDepth) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!pDepth) {

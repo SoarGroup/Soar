@@ -54,13 +54,7 @@ bool CommandLineInterface::ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<s
 	return DoFiringCounts(pAgent, numberToList, pProduction);
 }
 
-/*************************************************************
-* @brief firing-counts command
-* @param pAgent The pointer to the gSKI agent interface
-* @param numberToList The number of top-firing productions to list.  Use 0 to list those that haven't fired. -1 lists all
-* @param pProduction The specific production to list, pass 0 (null) to list multiple productions
-*************************************************************/
-EXPORT bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, const int numberToList, const std::string* pProduction) {
+bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, const int numberToList, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// get the production stuff

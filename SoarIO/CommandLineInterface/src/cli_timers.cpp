@@ -54,12 +54,7 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoTimers(pAgent, print ? &setting : 0);
 }
 
-/*************************************************************
-* @brief timers command
-* @param pAgent The pointer to the gSKI agent interface
-* @param pSetting The timers setting, true to turn on, false to turn off, pass 0 (null) to query
-*************************************************************/
-EXPORT bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool* pSetting) {
+bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool* pSetting) {
 	// Need agent pointer and kernel pointer for sysparam
 	if (!RequireAgent(pAgent)) return false;
 

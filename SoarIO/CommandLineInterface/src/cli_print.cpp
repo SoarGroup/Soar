@@ -104,14 +104,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoPrint(pAgent, options, depth);
 }
 
-/*************************************************************
-* @brief print command
-* @param pAgent The pointer to the gSKI agent interface
-* @param options The options to the print command, see cli_CommandData.h
-* @param depth WME depth
-* @param pArg The identifier/timetag/pattern/production name to print, or 0 (null) if not applicable
-*************************************************************/
-EXPORT bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const PrintBitset& options, int depth, const std::string* pArg) {
+bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const PrintBitset& options, int depth, const std::string* pArg) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

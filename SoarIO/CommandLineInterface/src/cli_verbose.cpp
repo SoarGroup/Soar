@@ -53,12 +53,7 @@ bool CommandLineInterface::ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoVerbose(pAgent, query ? 0 : &setting);
 }
 
-/*************************************************************
-* @brief verbose command
-* @param pAgent The pointer to the gSKI agent interface
-* @param pSetting The verbose setting, true to turn on, false to turn off, pass 0 (null) to query
-*************************************************************/
-EXPORT bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool* pSetting) {
+bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool* pSetting) {
 
 	if (!RequireAgent(pAgent)) return false;
 

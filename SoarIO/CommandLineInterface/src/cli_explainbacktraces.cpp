@@ -66,14 +66,7 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 	return DoExplainBacktraces(pAgent);
 }
 
-/*************************************************************
-* @brief explain-backtraces command
-* @param pAgent The pointer to the gSKI agent interface
-* @param pProduction Pointer to involved production. Pass 0 (null) for query
-* @param condition A number representing the condition number to explain, 0 for production name, -1 for full, 
-*        this argument ignored if pProduction is 0 (null)
-*************************************************************/
-EXPORT bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, const std::string* pProduction, const int condition) {
+bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, const std::string* pProduction, const int condition) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// quick sanity check

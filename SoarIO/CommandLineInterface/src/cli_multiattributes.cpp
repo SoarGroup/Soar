@@ -33,13 +33,7 @@ bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vecto
 	return DoMultiAttributes(pAgent);
 }
 
-/*************************************************************
-* @brief multi-attributes command
-* @param pAgent The pointer to the gSKI agent interface
-* @param pAttribute The attribute, pass 0 (null) for query
-* @param n The count, pass 0 (null) for query if pAttribute is also null, otherwise this will default to 10
-*************************************************************/
-EXPORT bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, const std::string* pAttribute, int n) {
+bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, const std::string* pAttribute, int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!pAttribute && !n) {

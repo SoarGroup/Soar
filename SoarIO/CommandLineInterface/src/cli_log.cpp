@@ -106,14 +106,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoLog(pAgent, mode);
 }
 
-/*************************************************************
-* @brief log command
-* @param pAgent The pointer to the gSKI agent interface
-* @param mode The mode for the log command, see cli_CommandData.h
-* @param pFilename The log filename, pass 0 (null) if not applicable to mode
-* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
-*************************************************************/
-EXPORT bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd) {
+bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd) {
 	if (!RequireAgent(pAgent)) return false;
 
 	std::ios_base::openmode openmode = std::ios_base::out;

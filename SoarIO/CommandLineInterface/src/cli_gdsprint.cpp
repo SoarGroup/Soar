@@ -18,11 +18,7 @@ bool CommandLineInterface::ParseGDSPrint(gSKI::IAgent* pAgent, std::vector<std::
 	return DoGDSPrint(pAgent);
 }
 
-/*************************************************************
-* @brief gds-print command
-* @param pAgent The pointer to the gSKI agent interface
-*************************************************************/
-EXPORT bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
+bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
 
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;

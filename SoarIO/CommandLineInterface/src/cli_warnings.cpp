@@ -53,12 +53,7 @@ bool CommandLineInterface::ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::
 	return DoWarnings(pAgent, query ? 0 : &setting);
 }
 
-/*************************************************************
-* @brief warnings command
-* @param pAgent The pointer to the gSKI agent interface
-* @param pSetting The warnings setting, true to turn on, false to turn off, pass 0 (null) to query
-*************************************************************/
-EXPORT bool CommandLineInterface::DoWarnings(gSKI::IAgent* pAgent, bool* pSetting) {
+bool CommandLineInterface::DoWarnings(gSKI::IAgent* pAgent, bool* pSetting) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it

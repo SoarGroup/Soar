@@ -30,10 +30,7 @@ bool CommandLineInterface::ParseLS(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoLS();
 }
 
-/*************************************************************
-* @brief ls command
-*************************************************************/
-EXPORT bool CommandLineInterface::DoLS() {
+bool CommandLineInterface::DoLS() {
 
 #ifdef WIN32
 

@@ -110,6 +110,9 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_SourceDirDepth = 0;
 	m_pLogFile = 0;
 	m_KernelVersion.major = m_KernelVersion.minor = 0;
+	m_LastError = CLIError::kNoError;
+	gSKI::ClearError(&m_gSKIError);
+	m_Initialized = true;
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
@@ -134,14 +137,10 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	if (m_QuitCalled) return false;
 
 	// No way to return data
-	if (!pConnection) return false;
+	if (!pConnection) return SetError(CLIError::kNoConnection);
 
-	// reset data
-	m_Result.str("");
-	m_ResponseTags.clear();
-	m_LastError = CLIError::kNoError;
-	m_LastErrorDetail.clear();
-	gSKI::ClearError(&m_gSKIError);
+	// No way to return data
+	if (!pResponse) return SetError(CLIError::kNoElementXML);
 
 	// Log input
 	if (m_pLogFile) {
@@ -149,11 +148,21 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 		(*m_pLogFile) << pCommandLine << endl;
 	}
 
-	// Process the command, ignoring its result (irrelevant at this level)
-	bool ret = DoCommandInternal(pAgent, pCommandLine);
+	// Process the command, ignoring its result (errors detected with m_LastError)
+	DoCommandInternal(pAgent, pCommandLine);
 
 	// Log output
 	if (m_pLogFile) (*m_pLogFile) << m_Result.str() << endl;
+
+	GetLastResultSML(pConnection, pResponse);
+
+	// Always returns true to indicate that we've generated any needed error message already
+	return true;
+}
+
+void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::ElementXML* pResponse) {
+	assert(pConnection);
+	assert(pResponse);
 
 	// Handle source error output
 	if (m_SourceError) {
@@ -162,7 +171,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 		m_SourceError = false;
 	}
 
-	if (ret) {
+	if (m_LastError == CLIError::kNoError) {
 		// The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
 			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
@@ -215,9 +224,14 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 		pConnection->AddErrorToSMLResponse(pResponse, errorDescription.c_str(), m_LastError);
 	}
 
-	// Always returns true to indicate that we've generated any needed error message already
-	return true ;
+	// reset state
+	m_Result.str("");
+	m_ResponseTags.clear();	
+	m_LastError = CLIError::kNoError;	
+	m_LastErrorDetail.clear();			
+	gSKI::ClearError(&m_gSKIError);
 }
+
 
 /*************************************************************
 * @brief Takes a command line and expands any aliases and returns

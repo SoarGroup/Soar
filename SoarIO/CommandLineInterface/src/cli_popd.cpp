@@ -18,10 +18,7 @@ bool CommandLineInterface::ParsePopD(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoPopD();
 }
 
-/*************************************************************
-* @brief popd command
-*************************************************************/
-EXPORT bool CommandLineInterface::DoPopD() {
+bool CommandLineInterface::DoPopD() {
 
 	// There must be a directory on the stack to pop
 	if (m_DirectoryStack.empty()) return SetError(CLIError::kDirectoryStackEmpty);

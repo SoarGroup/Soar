@@ -58,13 +58,7 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoReteNet(pAgent, save, filename);
 }
 
-/*************************************************************
-* @brief rete-net command
-* @param pAgent The pointer to the gSKI agent interface
-* @param save true to save, false to load
-* @param filename the rete-net file
-*************************************************************/
-EXPORT bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, const std::string& filename) {
+bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, const std::string& filename) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!filename.size()) return SetError(CLIError::kMissingFilenameArg);

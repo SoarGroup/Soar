@@ -20,10 +20,7 @@ bool CommandLineInterface::ParsePWD(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoPWD();
 }
 
-/*************************************************************
-* @brief pwd command
-*************************************************************/
-EXPORT bool CommandLineInterface::DoPWD() {
+bool CommandLineInterface::DoPWD() {
 
 	std::string directory;
 	bool ret = GetCurrentWorkingDirectory(directory);

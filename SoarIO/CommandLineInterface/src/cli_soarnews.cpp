@@ -17,10 +17,7 @@ bool CommandLineInterface::ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::
 	return DoSoarNews();
 }
 
-/*************************************************************
-* @brief soarnews command
-*************************************************************/
-EXPORT bool CommandLineInterface::DoSoarNews() {
+bool CommandLineInterface::DoSoarNews() {
 
 	// TODO: read a file and put it here
 

@@ -18,11 +18,7 @@ bool CommandLineInterface::ParsePushD(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoPushD(argv[1]);
 }
 
-/*************************************************************
-* @brief pushd command
-* @param directory The directory to change to
-*************************************************************/
-EXPORT bool CommandLineInterface::DoPushD(const std::string& directory) {
+bool CommandLineInterface::DoPushD(const std::string& directory) {
 	
 	// Target directory required, checked in DoCD call.
 

@@ -17,10 +17,7 @@ bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoQuit();
 }
 
-/*************************************************************
-* @brief quit command
-*************************************************************/
-EXPORT bool CommandLineInterface::DoQuit() {
+bool CommandLineInterface::DoQuit() {
 	// Flip the quit flag
 	m_QuitCalled = true; 
 

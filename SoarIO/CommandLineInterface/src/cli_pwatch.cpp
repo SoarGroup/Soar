@@ -56,14 +56,7 @@ bool CommandLineInterface::ParsePWatch(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoPWatch(pAgent, query, 0);
 }
 
-/*************************************************************
-* @brief pwatch command
-* @param pAgent The pointer to the gSKI agent interface
-* @param query Pass true to query, all other args ignored
-* @param pProduction The production to watch or stop watching, pass 0 (null) to disable watching of all productions (setting ignored)
-* @param setting True to watch the pProduction, false to stop watching it
-*************************************************************/
-EXPORT bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, const std::string* pProduction, bool setting) {
+bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, const std::string* pProduction, bool setting) {
 
 	if (!RequireAgent(pAgent)) return false;
 

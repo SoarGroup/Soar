@@ -68,13 +68,7 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 	return DoProductionFind(pAgent, options, pattern);
 }
 
-/*************************************************************
-* @brief production-find command
-* @param pAgent The pointer to the gSKI agent interface
-* @param options The options to the command, see cli_CommandData.h
-* @param pattern Any pattern that can appear in productions.
-*************************************************************/
-EXPORT bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, const ProductionFindBitset& options, const std::string& pattern) {
+bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, const ProductionFindBitset& options, const std::string& pattern) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
