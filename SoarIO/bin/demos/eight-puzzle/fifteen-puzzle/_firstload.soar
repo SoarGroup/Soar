@@ -1,7 +1,7 @@
 
-learn -on
+learn --on
 
-pushd "../../default"
+pushd ../../default
 source selection.soar
 popd
 

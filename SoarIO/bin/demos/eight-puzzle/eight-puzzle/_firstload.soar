@@ -1,5 +1,5 @@
 
-learn -on
+learn --on
 
 pushd "../../default"
 source selection.soar

@@ -1,2 +1,16 @@
-1 unreleased gSKI objects:
-00CA9BD0 [446]: class gSKI::IteratorWithRelease<class gSKI::IProduction *,class std::vector<class gSKI::IProduction *,class std::allocator<class gSKI::IProduction *> > >
+15 unreleased gSKI objects:
+00CFD1B0 [79]: class gSKI::gSymbol (count = 1)
+00CFD338 [80]: class gSKI::gSymbol (count = 1)
+00CFD500 [81]: class gSKI::gSymbol (count = 1)
+00CFD760 [82]: class gSKI::gSymbol (count = 1)
+00CFD928 [83]: class gSKI::gSymbol (count = 1)
+00CFDAF0 [84]: class gSKI::gSymbol (count = 1)
+00CFDD58 [85]: class gSKI::gSymbol (count = 1)
+00CFDEE0 [86]: class gSKI::gSymbol (count = 1)
+00CFE0A8 [87]: class gSKI::gSymbol (count = 1)
+00D1C888 [373]: class gSKI::gSymbol (count = 1)
+00D1CA50 [374]: class gSKI::gSymbol (count = 1)
+00D1CC18 [375]: class gSKI::gSymbol (count = 1)
+00D1CE78 [376]: class gSKI::gSymbol (count = 1)
+00D1D040 [377]: class gSKI::gSymbol (count = 1)
+00D1D208 [378]: class gSKI::gSymbol (count = 1)

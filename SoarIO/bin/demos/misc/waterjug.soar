@@ -62,7 +62,7 @@
 
 multi-attributes jug 3
 
-learn -on
+learn --on
 
 ##echo "learning is on"
 ##pushd ../default

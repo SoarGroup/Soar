@@ -60,7 +60,6 @@ char const* CommandLineInterface::CLIConstants::kCLIInitSoar		= "init-soar";
 char const* CommandLineInterface::CLIConstants::kCLILearn			= "learn";
 char const* CommandLineInterface::CLIConstants::kCLILS				= "ls";
 char const* CommandLineInterface::CLIConstants::kCLIMultiAttributes	= "multi-attributes";
-char const* CommandLineInterface::CLIConstants::kCLINewAgent		= "new-agent";
 char const* CommandLineInterface::CLIConstants::kCLIPopD			= "popd";
 char const* CommandLineInterface::CLIConstants::kCLIPrint			= "print";
 char const* CommandLineInterface::CLIConstants::kCLIPushD			= "pushd";
@@ -70,6 +69,7 @@ char const* CommandLineInterface::CLIConstants::kCLIRun				= "run";
 char const* CommandLineInterface::CLIConstants::kCLISource			= "source";
 char const* CommandLineInterface::CLIConstants::kCLISP				= "sp";
 char const* CommandLineInterface::CLIConstants::kCLIStopSoar		= "stop-soar";
+char const* CommandLineInterface::CLIConstants::kCLITime			= "time";
 char const* CommandLineInterface::CLIConstants::kCLIWatch			= "watch";
 char const* CommandLineInterface::CLIConstants::kCLIWatchWMEs		= "watch-wmes";
 
@@ -87,7 +87,6 @@ char const* CommandLineInterface::CLIConstants::kCLIInitSoarUsage			= "Usage:\ti
 char const* CommandLineInterface::CLIConstants::kCLILearnUsage				= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
 char const* CommandLineInterface::CLIConstants::kCLILSUsage					= "Usage:\tls";
 char const* CommandLineInterface::CLIConstants::kCLIMultiAttributesUsage	= "Usage:\tmulti-attributes";
-char const* CommandLineInterface::CLIConstants::kCLINewAgentUsage			= "Usage:\tnew-agent [agent_name]";
 char const* CommandLineInterface::CLIConstants::kCLIPopDUsage				= "Usage:\tpopd";
 char const* CommandLineInterface::CLIConstants::kCLIPrintUsage				= "Usage:\tprint [-fFin] production_name\n\tprint -[a|c|D|j|u][fFin]\n\tprint [-i] \
 [-d <depth>] identifier|timetag|pattern\n\tprint -s[oS]";
@@ -97,6 +96,7 @@ char const* CommandLineInterface::CLIConstants::kCLIRunUsage				= "Usage:\trun [
 char const* CommandLineInterface::CLIConstants::kCLISourceUsage				= "Usage:\tsource filename";
 char const* CommandLineInterface::CLIConstants::kCLISPUsage					= "Usage:\tsp { production }";
 char const* CommandLineInterface::CLIConstants::kCLIStopSoarUsage			= "Usage:\tstop-soar [-s] [reason_string]";
+char const* CommandLineInterface::CLIConstants::kCLITimeUsage				= "Usage:\ttime command [arguments]";
 char const* CommandLineInterface::CLIConstants::kCLIWatchUsage				= "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
 [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>] [-p <switch>] \
 [-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W <detail>]";
@@ -147,7 +147,6 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[CLIConstants::kCLILearn]			= CommandLineInterface::ParseLearn;
 	m_CommandMap[CLIConstants::kCLILS]				= CommandLineInterface::ParseLS;
 	m_CommandMap[CLIConstants::kCLIMultiAttributes]	= CommandLineInterface::ParseMultiAttributes;
-	m_CommandMap[CLIConstants::kCLINewAgent]		= CommandLineInterface::ParseNewAgent;
 	m_CommandMap[CLIConstants::kCLIPopD]			= CommandLineInterface::ParsePopD;
 	m_CommandMap[CLIConstants::kCLIPrint]			= CommandLineInterface::ParsePrint;
 	m_CommandMap[CLIConstants::kCLIPushD]			= CommandLineInterface::ParsePushD;
@@ -157,6 +156,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[CLIConstants::kCLISource]			= CommandLineInterface::ParseSource;
 	m_CommandMap[CLIConstants::kCLISP]				= CommandLineInterface::ParseSP;
 	m_CommandMap[CLIConstants::kCLIStopSoar]		= CommandLineInterface::ParseStopSoar;
+	m_CommandMap[CLIConstants::kCLITime]			= CommandLineInterface::ParseTime;
 	m_CommandMap[CLIConstants::kCLIWatch]			= CommandLineInterface::ParseWatch;
 	m_CommandMap[CLIConstants::kCLIWatchWMEs]		= CommandLineInterface::ParseWatchWMEs;
 }
@@ -581,6 +581,7 @@ bool CommandLineInterface::DoExcise(unsigned short options, int productionCount,
 	// Excise specific productions
 	gSKI::tIProductionIterator* pProdIter;
 	for (int i = 0; i < productionCount; ++i) {
+		// Iterate through productions
 		pProdIter = pProductionManager->GetProduction(productions[i]);
 		if (pProdIter->GetNumElements()) {
 			ExciseInternal(pProdIter);
@@ -600,6 +601,8 @@ bool CommandLineInterface::DoExcise(unsigned short options, int productionCount,
 //|_____/_/\_\___|_|___/\___|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
 //
 void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter) {
+	// Iterate through the productions using the production iterator and
+	// excise and release.  Print one # per excised production.
 	while(pProdIter->IsValid()) {
 		gSKI::IProduction* ip = pProdIter->GetVal();
 		ip->Excise();
@@ -840,6 +843,7 @@ bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
 		return true;
 	}
 
+	// No more than three arguments
 	if (argc > 3) {
 		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLIMultiAttributesUsage;
@@ -849,15 +853,19 @@ bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
 	char* attribute = 0;
 	int n = 0;
 
+	// If we have 3 arguments, third one is an integer
 	if (argc > 2) {
+		// TODO: verify int before atoi call
 		n = atoi(argv[2]);
 		if (n <= 0) {
+			// Must be non-negative and greater than 0
 			m_Result += CLIConstants::kCLISyntaxError;
 			m_Result += CLIConstants::kCLIMultiAttributesUsage;
 			return false;
 		}
 	}
 
+	// If we have two arguments, second arg is an attribute/identifer/whatever
 	if (argc > 1) {
 		attribute = argv[1];
 	}
@@ -877,9 +885,6 @@ bool CommandLineInterface::DoMultiAttributes(const char* attribute, int n) {
 		return false;
 	}
 
-	// Arbitrary buffer size
-	char buf[1024];
-
 	if (!attribute && !n) {
 		// No args, print current setting
 		gSKI::tIMultiAttributeIterator* pIt = m_pAgent->GetMultiAttributes();
@@ -890,9 +895,13 @@ bool CommandLineInterface::DoMultiAttributes(const char* attribute, int n) {
 			m_Result += "Value\tSymbol";
 			gSKI::IMultiAttribute* pMA;
 
+			// Arbitrary buffer size
+			char buf[1024];
+
 			for(; pIt->IsValid(); pIt->Next()) {
 				pMA = pIt->GetVal();
 				// TODO: make this platform independent
+				memset(buf, 0, sizeof(buf));
 				_snprintf(buf, sizeof(buf) - 1, "\n%d\t%s", pMA->GetMatchingPriority(), pMA->GetAttributeName());
 				m_Result += buf;
 				pMA->Release();
@@ -917,40 +926,6 @@ bool CommandLineInterface::DoMultiAttributes(const char* attribute, int n) {
 	m_pAgent->SetMultiAttribute(attribute, n);
 
  	return true;
-}
-
-// ____                     _   _                _                    _
-//|  _ \ __ _ _ __ ___  ___| \ | | _____      __/ \   __ _  ___ _ __ | |_
-//| |_) / _` | '__/ __|/ _ \  \| |/ _ \ \ /\ / / _ \ / _` |/ _ \ '_ \| __|
-//|  __/ (_| | |  \__ \  __/ |\  |  __/\ V  V / ___ \ (_| |  __/ | | | |_
-//|_|   \__,_|_|  |___/\___|_| \_|\___| \_/\_/_/   \_\__, |\___|_| |_|\__|
-//                                                   |___/
-bool CommandLineInterface::ParseNewAgent(int argc, char** argv) {
-	if (CheckForHelp(argc, argv)) {
-		m_Result += CLIConstants::kCLINewAgentUsage;
-		return true;
-	}
-
-	// One argument (agent name)
-	if (argc != 2) {
-		m_Result += CLIConstants::kCLISyntaxError;
-		m_Result += CLIConstants::kCLINewAgentUsage;
-		return false;
-	}
-	return DoNewAgent(argv[1]);
-}
-
-// ____        _   _                _                    _
-//|  _ \  ___ | \ | | _____      __/ \   __ _  ___ _ __ | |_
-//| | | |/ _ \|  \| |/ _ \ \ /\ / / _ \ / _` |/ _ \ '_ \| __|
-//| |_| | (_) | |\  |  __/\ V  V / ___ \ (_| |  __/ | | | |_
-//|____/ \___/|_| \_|\___| \_/\_/_/   \_\__, |\___|_| |_|\__|
-//                                      |___/
-bool CommandLineInterface::DoNewAgent(char const* agentName) {
-	m_Result += "TODO: create new-agent \"";
-	m_Result += agentName;
-	m_Result += "\"";
-	return true;
 }
 
 // ____                     ____             ____
@@ -1802,6 +1777,74 @@ bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
 bool CommandLineInterface::DoStopSoar(bool self, char const* reasonForStopping) {
 	m_Result += "TODO: do stop-soar";
 	return true;
+}
+
+// ____                    _____ _
+//|  _ \ __ _ _ __ ___  __|_   _(_)_ __ ___   ___
+//| |_) / _` | '__/ __|/ _ \| | | | '_ ` _ \ / _ \
+//|  __/ (_| | |  \__ \  __/| | | | | | | | |  __/
+//|_|   \__,_|_|  |___/\___||_| |_|_| |_| |_|\___|
+//
+bool CommandLineInterface::ParseTime(int argc, char** argv) {
+	if (CheckForHelp(argc, argv)) {
+		m_Result += CLIConstants::kCLITimeUsage;
+		return true;
+	}
+	
+	// There must at least be a command
+	if (argc < 2) {
+		m_Result += CLIConstants::kCLISyntaxError;
+		m_Result += CLIConstants::kCLITimeUsage;
+		return false;
+	}
+
+	char** newArgv = argv + 1;
+
+	return DoTime(argc - 1, newArgv);
+}
+
+// ____      _____ _
+//|  _ \  __|_   _(_)_ __ ___   ___
+//| | | |/ _ \| | | | '_ ` _ \ / _ \
+//| |_| | (_) | | | | | | | | |  __/
+//|____/ \___/|_| |_|_| |_| |_|\___|
+//
+bool CommandLineInterface::DoTime(int argc, char** argv) {
+
+#ifdef WIN32
+	// I know this is lame marshalling it back 
+	// up again only so it can get unmarshalled
+	string command;
+	for (int i = 0;i < argc; ++i) {
+		command += argv[i];
+		command += ' ';
+	}
+
+	// Look at clock
+	DWORD start = GetTickCount();
+
+	// Execute command
+	bool ret = DoCommandInternal(command.c_str());
+
+	// Look at clock again, subtracting first value
+	DWORD elapsed = GetTickCount() - start;
+
+	// calculate elapsed in seconds
+	float seconds = elapsed / 1000.0f;
+
+	// Print time elapsed and return
+	char buf[32];
+	memset(buf, 0, 32);
+	_snprintf(buf, 31, "%f", seconds);
+	m_Result += "\n(";
+	m_Result += buf;
+	m_Result += "s) real";
+	return ret;
+
+#else
+	m_Result += "TODO: time on non-windows platform";
+	return true;
+#endif
 }
 
 // ____                   __        __    _       _

@@ -100,7 +100,9 @@ public:
 	*************************************************************/
 	bool ParseCD(int argc, char** argv);
 	/*************************************************************
-	* @brief 
+	* @brief Change the current working directory.  If null is passed
+	*		 the current working directory is changed to the home directory.
+	*		 The home directory is defined as the initial working directory.
 	*************************************************************/
 	bool DoCD(const char* directory = 0);
 
@@ -109,7 +111,7 @@ public:
 	*************************************************************/
 	bool ParseEcho(int argc, char** argv);
 	/*************************************************************
-	* @brief 
+	* @brief Simply concatenate all arguments, adding them to the result.
 	*************************************************************/
 	bool DoEcho(int argc, char** argv);
 
@@ -118,16 +120,20 @@ public:
 	*************************************************************/
 	bool ParseExcise(int argc, char** argv);
 	/*************************************************************
-	* @brief 
+	* @brief See CommandData.h for the list of flags for the options
+	*		 parameter.  If there are specific productions to excise,
+	*		 they are passed as an array of character strings with their
+	*		 number indicated by production count.
 	*************************************************************/
-	bool DoExcise(const unsigned short options, int productionCount, char** productions);
+	bool DoExcise(const unsigned short options, int productionCount = 0, char** productions = 0);
 
 	/*************************************************************
 	* @brief init-soar command, see command line spec document for details
 	*************************************************************/
 	bool ParseInitSoar(int argc, char** argv);
 	/*************************************************************
-	* @brief 
+	* @brief Reinitializes the current agent.  No arguments necessary.
+	*		 The agent pointer member must be valid.
 	*************************************************************/
 	bool DoInitSoar();
 
@@ -136,7 +142,9 @@ public:
 	*************************************************************/
 	bool ParseLearn(int argc, char** argv);
 	/*************************************************************
-	* @brief 
+	* @brief See CommandData.h for the list of flags used in the options
+	*		 parameter.  Passing no options simply prints current learn
+	*		 settings.
 	*************************************************************/
 	bool DoLearn(const unsigned short options = 0);
 
@@ -145,34 +153,28 @@ public:
 	*************************************************************/
 	bool ParseLS(int argc, char** argv);
 	/*************************************************************
-	* @brief 
+	* @brief Lists current working directory, no arguments necessary.
 	*************************************************************/
 	bool DoLS();
 
 	/*************************************************************
-	* @brief 
+	* @brief multi-attributes command, see command line spec document
+	*		 for details.
 	*************************************************************/
 	bool ParseMultiAttributes(int argc, char** argv);
 	/*************************************************************
-	* @brief 
+	* @brief Two optional arguments, attribute and n.  If no arguments,
+	*		 prints current settings.
 	*************************************************************/
-	bool DoMultiAttributes(const char* attribute, int n);
+	bool DoMultiAttributes(const char* attribute = 0, int n = 0);
 
 	/*************************************************************
-	* @brief new-agent command, see command line spec document for details
-	*************************************************************/
-	bool ParseNewAgent(int argc, char** argv);
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool DoNewAgent(char const* agentName);
-
-	/*************************************************************
-	* @brief 
+	* @brief popd command, see command line spec document for details
 	*************************************************************/
 	bool ParsePopD(int argc, char** argv);
 	/*************************************************************
-	* @brief 
+	* @brief No arguments, pops a directory off the directory stack
+	*		 and changes to it.
 	*************************************************************/
 	bool DoPopD();
 
@@ -249,6 +251,15 @@ public:
 	bool DoStopSoar(bool self, char const* reasonForStopping);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseTime(int argc, char** argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoTime(int argc, char** argv);
+
+	/*************************************************************
 	* @brief watch command, see command line spec document for details
 	*************************************************************/
 	bool ParseWatch(int argc, char** argv);
@@ -284,7 +295,6 @@ protected:
 		static char const* kCLILearn;
 		static char const* kCLILS;
 		static char const* kCLIMultiAttributes;
-		static char const* kCLINewAgent;
 		static char const* kCLIPopD;
 		static char const* kCLIPrint;
 		static char const* kCLIPushD;
@@ -294,6 +304,7 @@ protected:
 		static char const* kCLISource;
 		static char const* kCLISP;
 		static char const* kCLIStopSoar;
+		static char const* kCLITime;
 		static char const* kCLIWatch;
 		static char const* kCLIWatchWMEs;
 
@@ -305,7 +316,6 @@ protected:
 		static char const* kCLILearnUsage;
 		static char const* kCLILSUsage;
 		static char const* kCLIMultiAttributesUsage;
-		static char const* kCLINewAgentUsage;
 		static char const* kCLIPopDUsage;
 		static char const* kCLIPrintUsage;
 		static char const* kCLIPushDUsage;
@@ -315,6 +325,7 @@ protected:
 		static char const* kCLISourceUsage;
 		static char const* kCLISPUsage;
 		static char const* kCLIStopSoarUsage;
+		static char const* kCLITimeUsage;
 		static char const* kCLIWatchUsage;
 		static char const* kCLIWatchWMEsUsage;
 
