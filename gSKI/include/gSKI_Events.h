@@ -27,7 +27,7 @@ namespace gSKI {
    class IConnectionLostListener;
 
 
-   // Deprecated
+   // No Longer Deprecated.  Used for Structured Output
    class IPrintListener;
 
 
@@ -42,8 +42,8 @@ namespace gSKI {
    /** 
    * @brief Print callback listener
    *
-   * The print callback is deprecated.  If you don't know what it is or how
-   *  to use it, don't use it.
+   *  The print callback is used for old Print callbacks and new
+   *      structured output callbacks.
    */
    class IPrintListener
    {

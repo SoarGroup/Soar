@@ -32,7 +32,9 @@ namespace gSKI
       static egSKIPhaseType ReMapPhaseType(unsigned short, bool);
       //static egSKIProductionEventId   RemapProductionEventType(unsigned long, unsigned char);
       static egSKIProdType  ReMapProductionType(unsigned short);
-      static egSKIProductionEventId Map_Kernel_to_gSKI_ProdEventId(unsigned long eventId, unsigned char occured);
+ 
+	  static egSKIProductionEventId Map_Kernel_to_gSKI_ProdEventId(unsigned long eventId, unsigned char occured);
+      static egSKIPrintEventId      Map_Kernel_to_gSKI_PrintEventId(unsigned long eventId);
 
 
 
@@ -46,8 +48,9 @@ namespace gSKI
       }
       
       ////////////////////////////////////////////////////////////////
-      // OPPOSITE DIRECTION MAPPINGS 
+      // OPPOSITE DIRECTION MAPPINGS:  gSKI to Kernel...
       static egSKIAgentEvents RemapProductionEventType(egSKIProductionEventId eventId);
+      static egSKIAgentEvents RemapPrintEventType(egSKIPrintEventId eventId);
 
       static void Init();
    private:
@@ -60,6 +63,7 @@ namespace gSKI
       static unsigned short PrefTypeEnumMapping[NUM_PREFERENCE_TYPES];
       static unsigned short PhaseTypeEnumMapping[NUM_PHASE_TYPES];
       static unsigned short EventEnumMapping[gSKI_K_MAX_AGENT_EVENTS][2];
+      static unsigned short PrintEventEnumMapping[gSKI_K_MAX_AGENT_EVENTS];
       static unsigned short ProductionTypeEnumMapping[NUM_PRODUCTION_TYPES];
       //}
 

@@ -28,6 +28,7 @@ namespace gSKI
    unsigned short EnumRemappings::PrefTypeEnumMapping[NUM_PREFERENCE_TYPES];
    unsigned short EnumRemappings::PhaseTypeEnumMapping[NUM_PHASE_TYPES];
    unsigned short EnumRemappings::EventEnumMapping[gSKI_K_MAX_AGENT_EVENTS][2];
+   unsigned short EnumRemappings::PrintEventEnumMapping[gSKI_K_MAX_AGENT_EVENTS];
    unsigned short EnumRemappings::ProductionTypeEnumMapping[NUM_PRODUCTION_TYPES];
    bool EnumRemappings::m_initialized = false;
 
@@ -89,6 +90,10 @@ namespace gSKI
       EventEnumMapping[gSKI_K_EVENT_PRODUCTION_REMOVED][0] = gSKIEVENT_BEFORE_PRODUCTION_REMOVED;
       EventEnumMapping[gSKI_K_EVENT_PRODUCTION_FIRED][1] = gSKIEVENT_AFTER_PRODUCTION_FIRED;
       EventEnumMapping[gSKI_K_EVENT_PRODUCTION_RETRACTED][0] = gSKIEVENT_BEFORE_PRODUCTION_RETRACTED;
+
+	  PrintEventEnumMapping[gSKI_K_EVENT_PRINT_CALLBACK] = gSKIEVENT_PRINT;
+	  PrintEventEnumMapping[gSKI_K_EVENT_STRUCTURED_OUTPUT] = gSKIEVENT_STRUCTURED_OUTPUT;
+
 
       ProductionTypeEnumMapping[JUSTIFICATION_PRODUCTION_TYPE] = gSKI_JUSTIFICATION;
       ProductionTypeEnumMapping[USER_PRODUCTION_TYPE] = gSKI_USER;
@@ -220,6 +225,45 @@ namespace gSKI
       case gSKI_K_EVENT_PRODUCTION_RETRACTED: return gSKIEVENT_BEFORE_PRODUCTION_RETRACTED;
       }
   **/
+   /*
+   ==================================
+   ==================================
+   */
+   egSKIAgentEvents EnumRemappings::RemapPrintEventType(egSKIPrintEventId eventId)
+   /** this goes from gSKI to Kernel Events **/
+   {
+      if(!m_initialized) 
+         Init();
+      switch (eventId)	 
+      {
+      case gSKIEVENT_PRINT:
+         return gSKI_K_EVENT_PRINT_CALLBACK;
+      case gSKIEVENT_STRUCTURED_OUTPUT:
+         return gSKI_K_EVENT_STRUCTURED_OUTPUT;
+      default:
+         // Error condition
+         MegaAssert(false, "Could not map a print event id");
+         return static_cast<egSKIAgentEvents>(0);
+      }
+   }
+
+  egSKIPrintEventId EnumRemappings::Map_Kernel_to_gSKI_PrintEventId(unsigned long eventId)
+  { 
+	unsigned long gSKIeventId;
+
+    if(!m_initialized) 
+       Init();
+
+	gSKIeventId = (PrintEventEnumMapping[eventId]);
+    
+	if (IsPrintEventID(gSKIeventId)) {
+		return static_cast<egSKIPrintEventId>(gSKIeventId);
+      } else {
+	// Error condition
+	MegaAssert(false, "Could not map a print event id");
+	return static_cast<egSKIPrintEventId>(0);
+      }
+  }
 
    /*
    ==================================
@@ -234,8 +278,7 @@ namespace gSKI
          Init();
       switch (eventId)
       {
-
-	  THESE ARE gSKI ENUM TESTS, so THIS CODE WON'T WORK
+	  MUST CONVERT THE eventID to a gSKI ENUM for these tests to work
 	  case IsSystemEventId(eventId):
 		  return static_cast<egSKISystemEventId>(EventEnumMapping[eventId][occured]);
 	  case IsRunEventId(eventId):

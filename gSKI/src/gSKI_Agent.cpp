@@ -1120,13 +1120,15 @@ namespace gSKI
       ClearError(err);
       m_printListeners.AddListener(eventId, listener);
 
+
       // If we have added our first listener, we tell the kernel
       //  we want to recieve these events.
       if(m_printListeners.GetNumListeners(eventId) == 1)
       {
          // This is a kernel call (not part of gSKI)
+		 // Must convert gSKI event to Kernel event
          gSKI_SetAgentCallback(GetSoarAgent(), 
-                               gSKI_K_EVENT_PRINT_CALLBACK,
+							   EnumRemappings::RemapPrintEventType(eventId),
                                static_cast<void*>(this),
                                HandleKernelPrintCallback);
       }
@@ -1160,10 +1162,11 @@ namespace gSKI
       if(m_printListeners.GetNumListeners(eventId) == 0)
       {
          // This is a kernel call (not part of gSKI)
+		 // Must convert gSKI event to Kernel event
          // Setting the callback to 0 causes the kernel
          //   not to fire the event
          gSKI_SetAgentCallback(GetSoarAgent(), 
-                                 gSKI_K_EVENT_PRINT_CALLBACK,
+			 				     EnumRemappings::RemapPrintEventType(eventId),
                                  0, 0);
       }
    }
@@ -1191,8 +1194,9 @@ namespace gSKI
       const char* str = static_cast<char*>(data);
 
       // We have to change the the event id from a kernel id to a gSKI id
+
       PrintNotifier pn(a, str);
-      a->m_printListeners.Notify(static_cast<egSKIPrintEventId>(gSKIEVENT_PRINT), pn);
+      a->m_printListeners.Notify(EnumRemappings::Map_Kernel_to_gSKI_PrintEventId(eventId), pn);
    }
 
    /* 

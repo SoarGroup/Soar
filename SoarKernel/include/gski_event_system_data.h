@@ -83,8 +83,9 @@ enum egSKIAgentEvents
    // gSKI_K_EVENT_AGENT_RUN_STARTED,        
    // gSKI_K_EVENT_AGENT_RUN_STOPPED,        
 
-   /* Deprecated.  This callback will be removed as soon as gski is up and running */
-   gSKI_K_EVENT_PRINT_CALLBACK,           /* Data: agent* & const char*     */             // DONE!
+   /* NOT Deprecated.  gSKI not close to removing this yet.  */
+   gSKI_K_EVENT_PRINT_CALLBACK,           /* Data: agent* & const char*     */   // DONE!
+   gSKI_K_EVENT_STRUCTURED_OUTPUT,        /* Data: agent* & const char*     */ 
 
    /* Must be the last value in this enumeration */
    gSKI_K_MAX_AGENT_EVENTS                

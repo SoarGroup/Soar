@@ -1100,6 +1100,23 @@ void print_wme (agent* thisAgent, wme *w) {
   if (w->acceptable) print_string (thisAgent, " +");
   print_string (thisAgent, ")");
   print (thisAgent, "\n");
+
+  // KJC: added Mar 05 for structured output support
+  // Might move later
+   char buf[PRINT_BUFSIZE];
+   // tag the items in the buffer
+   // <wme timetag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
+   /* <wme>
+		 <timetag>123</timetag>
+		 <id>s1</id>
+		 <attr type=string>foo</attr>
+		 <val type=string>123</val>
+      </wme>
+   */
+
+
+   // gSKI_MakeAgentCallback(gSKI_K_EVENT_STRUCTURED_OUTPUT, 0, thisAgent, static_cast<void*>(buf));
+
 }
 
 //#ifdef USE_TCL
