@@ -12,7 +12,7 @@ int CLIError::GetErrorCode() {
 
 char const* CLIError::GetErrorDescription() {
 	switch (m_Code) {
-		case kNoError:							return "No Error";
+		case kNoError:							return "No Error.";
 		case kCustomError:						return m_Description.c_str();
 		case kgSKIError:						return "gSKI error.";
 		case kGetOptError:						return "GetOpt returned with an error.";
@@ -43,7 +43,7 @@ char const* CLIError::GetErrorDescription() {
 
 		case kAliasNotFound:					return "Alias not found.";
 		case kAliasExists:						return "Alias exists, remove to overwrite.";
-		case kAliasError:						return "Error adding alias.";
+		//case kAliasError:						return "Error adding alias.";
 
 		case kNoUsageInfo:						return "Usage information not found for the command.";
 		case kNoUsageFile:						return "Usage file not available (error opening file).";

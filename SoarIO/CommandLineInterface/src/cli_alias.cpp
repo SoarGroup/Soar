@@ -96,9 +96,7 @@ bool CommandLineInterface::DoAlias(bool disable, const std::string& command, con
 			}
 		}
 
-		if (m_Aliases.IsAlias(command)) return m_Error.SetError(CLIError::kAliasExists);
-
-		if (!m_Aliases.NewAlias((*pSubstitution), command)) return m_Error.SetError(CLIError::kAliasError);
+		if (!m_Aliases.NewAlias((*pSubstitution), command)) return m_Error.SetError(CLIError::kAliasExists);
 	}
 	return true;
 }

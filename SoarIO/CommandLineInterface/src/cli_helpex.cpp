@@ -12,9 +12,8 @@ using namespace sml;
 bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
-	if (argv.size() != 2) {
-		return m_Error.SetError(Constants::kCLIHelpEx);
-	}
+	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (argv.size() < 2) return m_Error.SetError(CLIError::kTooFewArgs);
 
 	return DoHelpEx(argv[1]);
 }

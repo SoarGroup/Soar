@@ -80,7 +80,9 @@ bool Constants::GetUsageFor(const std::string& command, std::string& output) {
 		if (m_UsageMap.find(command) == m_UsageMap.end()) {
 			return false;
 		}
-		output = m_UsageMap[command];
+		//output = m_UsageMap[command];
+		// FIXME: update for release
+		output = "Usage file depricated until release, please see\n\t http://winter.eecs.umich.edu/soarwiki/Soar_Command_Line_Interface \nfor help on the command line.";
 		return true;
 	}
 	return false;
@@ -91,7 +93,9 @@ bool Constants::GetExtendedUsageFor(const std::string& command, std::string& out
 		if (m_ExtendedUsageMap.find(command) == m_ExtendedUsageMap.end()) {
 			return false;
 		}
-		output = m_ExtendedUsageMap[command];
+		//output = m_ExtendedUsageMap[command];
+		// FIXME: update for release
+		output = "Usage file depricated until release, please see\n\t http://winter.eecs.umich.edu/soarwiki/Soar_Command_Line_Interface \nfor help on the command line.";
 		return true;
 	}
 	return false;
