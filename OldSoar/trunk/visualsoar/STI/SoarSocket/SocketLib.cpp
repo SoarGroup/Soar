@@ -1,0 +1,20 @@
+// WindowsSocket.cpp: implementation of the CTSocketLib class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "SocketLib.h"
+#include "OSspecific.h"
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CTSocketLib::CTSocketLib()
+{
+	InitializeOperatingSystemSocketLibrary() ;
+}
+
+CTSocketLib::~CTSocketLib()
+{
+	TerminateOperatingSystemSocketLibrary() ;
+}
