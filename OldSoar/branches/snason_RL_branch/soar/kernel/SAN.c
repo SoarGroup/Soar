@@ -47,8 +47,8 @@ void pop_record(RL_record **r){
 	new_record = *r;
     free_list(new_record->pointer_list);
 	symbol_remove_ref(new_record->goal_level);
-	if (new_record->op)
-		symbol_remove_ref(new_record->op);
+//	if (new_record->op)
+//		symbol_remove_ref(new_record->op);
 	*r = new_record->next;
 	free(new_record);
 }
@@ -248,7 +248,7 @@ void learn_RL_productions(int level){
 		//	prod->times_applied++;
 		}
 
- 			symbol_remove_ref(record->op);
+// 			symbol_remove_ref(record->op);
 		 	record->op = NIL;
 			record->reward = 0.0;
 			record->step = 0;
@@ -359,26 +359,26 @@ action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Sy
 
     // id
 	temp = id_sym;
-	symbol_add_ref(temp);
+//	symbol_add_ref(temp);
 	variablize_symbol(&temp);
 	rhs->id = symbol_to_rhs_value(temp);
 
 
     // attribute
     temp = attr_sym;
-	symbol_add_ref(temp);
+//	symbol_add_ref(temp);
 	variablize_symbol(&temp);
 	rhs->attr = symbol_to_rhs_value(temp);
 
 	// value
 	temp = val_sym;
-	symbol_add_ref (temp);
+//	symbol_add_ref (temp);
 	variablize_symbol (&temp);
 	rhs->value = symbol_to_rhs_value (temp);
 
 	// referent
 	temp = ref_sym;
-	symbol_add_ref(temp);
+//	symbol_add_ref(temp);
 	variablize_symbol(&temp);
 	rhs->referent = symbol_to_rhs_value(temp);
 

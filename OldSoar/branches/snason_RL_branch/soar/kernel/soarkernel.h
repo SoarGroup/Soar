@@ -178,7 +178,7 @@ extern char *soar_news_string;
 
 //WME activation and decay functionality is activated by this #define
 // MRJ  05.16.2001
-#define SOAR_DECAY
+// #define SOAR_DECAY
 
 /* --------------------------------------------------------- */
 /* Line width of terminal (used for neatly formatted output) */
@@ -1057,9 +1057,13 @@ extern Symbol *make_float_constant(float value);
 extern Symbol *make_new_identifier(char name_letter, goal_stack_level level);
 
 /* --- macros used for changing the reference count --- */
-#define symbol_add_ref(x) {(x)->common.reference_count++;}
+#define symbol_add_ref(x) { \
+  (x)->common.reference_count++; \
+  print_with_symbols("ref add %y\n", x); \
+}
 #define symbol_remove_ref(x) { \
   (x)->common.reference_count--; \
+  print_with_symbols("ref remove %y\n", x); \
   if ((x)->common.reference_count == 0) \
   deallocate_symbol(x); \
   }
