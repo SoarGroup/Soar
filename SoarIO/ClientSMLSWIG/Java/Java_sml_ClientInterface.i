@@ -54,8 +54,9 @@
 // include stuff common to all languages (i.e. Java and Tcl)
 %include "../sml_ClientInterface.i"
 
-// include Doug's custom JNI code for callbacks
-%{
+// include Doug's custom JNI code for callbacks in the wrapper section
+//  so it's in the extern C block
+%wrapper %{
 #include "JavaCallbackByHand.h"
 %}
 
