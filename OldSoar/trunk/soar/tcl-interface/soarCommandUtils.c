@@ -86,12 +86,77 @@ install_tcl_soar_cmd (agent * the_agent,
   Tcl_CreateObjCommand( tcl_soar_agent_interpreters[the_agent->id], cmd_name, cmd_proc, the_agent, NULL);
 }
 
-/*
+
+/* 
  *----------------------------------------------------------------------
+ * voigtjr 2003-Oct-16:
+ *
+ * create_argv_from_objv --
+ *
+ * The new version of install_tcl_soar_cmd uses Tcl_ObjCmdProc.
+ * Tcl_ObjCmdProc uses "objc" and "objv" (of type Tcl_Obj) instead of
+ * "argc" and "argv" (of type char*).  The various commands used to pass
+ * the argv straight to the kernel.  They cannot pass the objv to the
+ * kernel, because that would violate the kernel/tcl separation.
+ *
+ * The quick fix is to use the following function to convert the objv to
+ * an argv that they can pass directly to the kernel.
+ *----------------------------------------------------------------------
+ */
+void
+create_argv_from_objv (int objc, Tcl_Obj* const * objv, char*** argv) {
+	int i;
+	char* str = NULL;
+	int len = 0;
+
+	if (objc <= 0) {
+		*argv = NULL;
+		return;
+	}
+	
+	*argv = (char **) malloc( objc * sizeof(char*) );
+
+	for ( i = 0; i < objc; i++ ) {
+		str = Tcl_GetStringFromObj( objv[i], &len );
+		(*argv)[i] = (char *) malloc( (len + 1) * sizeof(char) );
+		strncpy((*argv)[i], str, len);
+		(*argv)[i][len] = '\0';
+	}
+}
+
+void
+free_argv(int objc, char** argv) {
+	int i;
+	
+	if (argv == NULL) {
+		return;
+	}
+
+	for (i = 0; i < objc; i++) {
+		free(argv[i]);
+	}
+	free(argv);
+}
+
+
+/* 
+ *----------------------------------------------------------------------
+ * voigtjr 2003-Oct-15:
  * This is the old way of doing install_tcl_soar_cmd, here to provide
  * a way to do incremental updating of the functions to use 
  * Tcl_CreateObjCommand() instead of Tcl_CreateCommand()
- * (voigtjr)
+ *
+ * install_tcl_soar_cmd --
+ *
+ *	This procedure installs a new Soar command in the Tcl
+ *      interpreter.
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *	Command is installed in the Tcl interpreter.
+
  *----------------------------------------------------------------------
  */
 void
