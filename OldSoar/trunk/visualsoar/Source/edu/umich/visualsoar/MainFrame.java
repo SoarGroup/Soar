@@ -28,7 +28,7 @@ import java.util.*;
 // The global application class
 
 /** 
- * This is the main project window of Visual Soar
+ * This is the main project window of VisualSoar
  * @author Brad Jones
  */
 public class MainFrame extends JFrame 
@@ -123,7 +123,7 @@ public class MainFrame extends JFrame
 		super(s);
 		File	templateFolder = Preferences.getInstance().getTemplateFolder();
 
-        // Use Java toolkit to access user's screen size and set Visual Soar window to 90% of that size
+        // Use Java toolkit to access user's screen size and set VisualSoar window to 90% of that size
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension d = tk.getScreenSize();
 		setSize( ((int) (d.getWidth() * .9)), ((int) (d.getHeight() * .9)) );
@@ -264,12 +264,12 @@ public class MainFrame extends JFrame
 		exitAction.addPropertyChangeListener(
             new ActionButtonAssociation(exitAction,exitItem));
 		
-		JMenuItem checkAllProductionsItem = new JMenuItem("Check All Productions Against DataMap");
+		JMenuItem checkAllProductionsItem = new JMenuItem("Check All Productions Against the Datamap");
 		checkAllProductionsItem.addActionListener(checkAllProductionsAction);
 		checkAllProductionsAction.addPropertyChangeListener(
             new ActionButtonAssociation(checkAllProductionsAction,checkAllProductionsItem));
 
-		JMenuItem generateDataMapItem = new JMenuItem("Generate Datamap from Operator Hierarchy");
+		JMenuItem generateDataMapItem = new JMenuItem("Generate Datamap from the Operator Hierarchy");
         generateDataMapItem.addActionListener(generateDataMapAction);
         generateDataMapAction.addPropertyChangeListener(
             new ActionButtonAssociation(generateDataMapAction, generateDataMapItem));
@@ -347,12 +347,12 @@ public class MainFrame extends JFrame
 
 		JMenu searchMenu = new JMenu("Search");
 
-		JMenuItem findInProjectItem = new JMenuItem("Find In Project");
+		JMenuItem findInProjectItem = new JMenuItem("Find in Project");
 		findInProjectItem.addActionListener(findInProjectAction);
 		findInProjectAction.addPropertyChangeListener(
             new ActionButtonAssociation(findInProjectAction,findInProjectItem));
 
-        JMenuItem replaceInProjectItem = new JMenuItem("Replace In Project");
+        JMenuItem replaceInProjectItem = new JMenuItem("Replace in Project");
         replaceInProjectItem.addActionListener(replaceInProjectAction);
         replaceInProjectAction.addPropertyChangeListener(
             new ActionButtonAssociation(replaceInProjectAction, replaceInProjectItem));
@@ -374,37 +374,37 @@ public class MainFrame extends JFrame
 
 		JMenu datamapMenu = new JMenu("Datamap");
 
-		JMenuItem checkAllProductionsItem = new JMenuItem("Check All Productions Against DataMap");
+		JMenuItem checkAllProductionsItem = new JMenuItem("Check All Productions Against the Datamap");
 		checkAllProductionsItem.addActionListener(checkAllProductionsAction);
 		checkAllProductionsAction.addPropertyChangeListener(
             new ActionButtonAssociation(checkAllProductionsAction,checkAllProductionsItem));
 
-		JMenuItem searchDataMapTestItem = new JMenuItem("Search Datamap for untested WMEs");
+		JMenuItem searchDataMapTestItem = new JMenuItem("Search the Datamap for Untested WMEs");
 		searchDataMapTestItem.addActionListener(searchDataMapTestAction);
 		searchDataMapTestAction.addPropertyChangeListener(
             new ActionButtonAssociation(searchDataMapTestAction,searchDataMapTestItem));
 
-		JMenuItem searchDataMapCreateItem = new JMenuItem("Search Datamap for non Created WMEs");
+		JMenuItem searchDataMapCreateItem = new JMenuItem("Search the Datamap for WMEs that are Never Created");
 		searchDataMapCreateItem.addActionListener(searchDataMapCreateAction);
 		searchDataMapCreateAction.addPropertyChangeListener(
             new ActionButtonAssociation(searchDataMapCreateAction,searchDataMapCreateItem));
 
-		JMenuItem searchDataMapTestNoCreateItem = new JMenuItem("Search Datamap for WME's tested but never created");
+		JMenuItem searchDataMapTestNoCreateItem = new JMenuItem("Search the Datamap for WMEs that are Tested but Never Created");
 		searchDataMapTestNoCreateItem.addActionListener(searchDataMapTestNoCreateAction);
 		searchDataMapTestNoCreateAction.addPropertyChangeListener(
             new ActionButtonAssociation(searchDataMapTestNoCreateAction,searchDataMapTestNoCreateItem));
 
-		JMenuItem searchDataMapCreateNoTestItem = new JMenuItem("Search Datamap for WME's created but never tested");
+		JMenuItem searchDataMapCreateNoTestItem = new JMenuItem("Search the Datamap for WMEs that are Created but Never Tested");
 		searchDataMapCreateNoTestItem.addActionListener(searchDataMapCreateNoTestAction);
 		searchDataMapCreateNoTestAction.addPropertyChangeListener(
             new ActionButtonAssociation(searchDataMapCreateNoTestAction,searchDataMapCreateNoTestItem));
 
-        JMenuItem searchDataMapNoTestNoCreateItem = new JMenuItem("Search Datamap for WME's never tested and never created");
+        JMenuItem searchDataMapNoTestNoCreateItem = new JMenuItem("Search the Datamap for WMEs that are Never Tested and Never Created");
 		searchDataMapNoTestNoCreateItem.addActionListener(searchDataMapNoTestNoCreateAction);
 		searchDataMapNoTestNoCreateAction.addPropertyChangeListener(
             new ActionButtonAssociation(searchDataMapNoTestNoCreateAction,searchDataMapNoTestNoCreateItem));
 
-		JMenuItem generateDataMapItem = new JMenuItem("Generate Datamap from Operator Hierarchy");
+		JMenuItem generateDataMapItem = new JMenuItem("Generate the Datamap from the Current Operator Hierarchy");
         generateDataMapItem.addActionListener(generateDataMapAction);
         generateDataMapAction.addPropertyChangeListener(
             new ActionButtonAssociation(generateDataMapAction, generateDataMapItem));
@@ -442,7 +442,7 @@ public class MainFrame extends JFrame
             new ActionButtonAssociation(tileWindowsAction,tileWindowItem));
 		viewMenu.add(tileWindowItem);
 		
-		JMenuItem reTileWindowItem = new JMenuItem("Re-tile Windows");
+		JMenuItem reTileWindowItem = new JMenuItem("Re-Tile Windows");
 		reTileWindowItem.addActionListener(reTileWindowsAction);
 		reTileWindowItem.addPropertyChangeListener(
             new ActionButtonAssociation(reTileWindowsAction,reTileWindowItem));
@@ -1321,7 +1321,7 @@ public class MainFrame extends JFrame
 		public ContactUsAction() 
         {
 
-			super("About Visual Soar");
+			super("About VisualSoar");
 		}
 		
 		public void actionPerformed(ActionEvent e) 
@@ -3627,10 +3627,10 @@ public class MainFrame extends JFrame
 	class FindInProjectAction extends AbstractAction 
     {
 
-  		public FindInProjectAction() 
+  		public FindInProjectAction()
         {
 
-  			super("Find In Project");
+  			super("Find in Project");
 			setEnabled(false);
   		}
   	
@@ -3656,7 +3656,7 @@ public class MainFrame extends JFrame
         public ReplaceInProjectAction() 
         {
 
-            super("Replace In Project");
+            super("Replace in Project");
             setEnabled(false);
         }
 
@@ -3801,7 +3801,7 @@ public class MainFrame extends JFrame
         public ReTileWindowsAction() 
         {
 
-            super("Re-tile Windows");
+            super("Re-Tile Windows");
         }
 
         public void actionPerformed(ActionEvent e) 
