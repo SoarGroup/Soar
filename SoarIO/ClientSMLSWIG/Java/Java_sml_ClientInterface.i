@@ -34,7 +34,7 @@
         System.loadLibrary("Java_sml_ClientInterface");
     } catch (UnsatisfiedLinkError e) {
       System.err.println("Native code library failed to load. \n" + e);
-      System.exit(1);
+      throw e ;
     }
   }
   
