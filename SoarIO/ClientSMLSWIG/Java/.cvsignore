@@ -1,0 +1,8 @@
+.deps
+.libs
+*.class
+*.java
+*.lo
+Makefile.in
+Makefile
+Java_sml_ClientInterface_wrap.cpp

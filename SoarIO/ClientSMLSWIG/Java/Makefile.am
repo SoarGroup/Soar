@@ -1,0 +1,18 @@
+AUTOMAKE_OPTIONS = gnu
+EXTRA_DIST = Java_sml_ClientInterface.i
+lib_LTLIBRARIES = libJava_sml_ClientInterface.la
+libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp 
+
+JAVAINC= @JAVAINC@
+JAVAC= @JAVAC@
+INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include $(JAVAINC)
+CXXFLAGS = $(SOAR_CXXFLAGS)
+CLEANFILES = *.java *.class
+
+SWIG       = swig@swig_suffix@
+SWIGOPT    = -Wall -package sml
+
+Java_sml_ClientInterface_wrap.cpp: Java_sml_ClientInterface.i
+	$(SWIG) -java -c++ $(SWIGOPT) -o $@ $<
+	$(JAVAC) *.java
+
