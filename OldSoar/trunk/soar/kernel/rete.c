@@ -5649,12 +5649,16 @@ void p_node_left_removal (rete_node *node, token *tok, wme *w) {
    * the instantiation which may have already been removed,
    * and my die as a result.  There may be a better way to do this...
    */
-      print( "Warning: can't find an existing inst to retract\n" );
+      
 #ifdef BUG_139_WORKAROUND
 	  if(node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
+#ifdef BUG_139_WORKAROUND_WARNING
+		print( "\nWarning: can't find an existing inst to retract (BUG 139 WORKAROUND)\n" );
+#endif
 	    return;
 	  }
 #endif
+  print( "Warning: can't find an existing inst to retract\n" );
   {     
     char msg[MESSAGE_SIZE];
 	strncpy (msg,"Internal error: can't find existing instantiation to retract\n",MESSAGE_SIZE);

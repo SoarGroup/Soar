@@ -713,6 +713,14 @@
  *
  */
 #define BUG_139_WORKAROUND
+/**
+ * \def BUG_139_WORKAROUND_WARNING
+ *
+ *     Print a warning whenever we are ignoring a situation when
+ *     there's no instance to retract for a justification
+ *
+ */
+#define BUG_139_WORKAROUND_WARNING
 
 
 
