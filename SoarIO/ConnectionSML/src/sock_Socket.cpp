@@ -42,6 +42,11 @@
 #error "missing required socket function"
 #endif // HAVE_SOCKET
 
+// For some reason, Darwin (MacOSX) doesn't have this
+#ifndef IPPORT_ECHO
+#define IPPORT_ECHO 7
+#endif // IPPORT_ECHO
+
 #endif // HAVE_CONFIG_H
 
 #include <stdio.h>
