@@ -251,8 +251,8 @@ public:
 	*			kernel without forwarding that output to clients
 	*			(useful for capturing the output from some commands).
 	*************************************************************/
-	void DisablePrintCallback(gSKI::IAgent* pAgent) { GetAgentSML(pAgent)->DisablePrintCallback() ; }
-	void EnablePrintCallback(gSKI::IAgent* pAgent)  { GetAgentSML(pAgent)->EnablePrintCallback() ; }
+	void DisablePrintCallback(gSKI::IAgent* pAgent) ;
+	void EnablePrintCallback(gSKI::IAgent* pAgent)  ;
 
 protected:
 	KernelSML(unsigned short portToListenOn);
