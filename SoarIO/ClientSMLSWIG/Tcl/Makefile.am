@@ -16,7 +16,6 @@ INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../Connec
 
 CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 
-SWIG       = swig@swig_suffix@
 SWIGOPT    = -tcl -c++ -Wall -pkgversion 1.0 $(INCLUDES)
 
 Tcl_sml_ClientInterface_wrap.cpp: Tcl_sml_ClientInterface.i

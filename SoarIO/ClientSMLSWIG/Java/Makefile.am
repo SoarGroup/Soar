@@ -18,7 +18,6 @@ INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../Connec
 CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 CLEANFILES = *.java *.class Java_sml_ClientInterface_wrap.cpp
 
-SWIG       = swig@swig_suffix@
 SWIGOPT    = -java -c++ -Wall -package sml $(INCLUDES)
 
 Java_sml_ClientInterface_wrap.cpp: Java_sml_ClientInterface.i

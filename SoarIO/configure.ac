@@ -14,11 +14,15 @@ AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 AC_PROG_MAKE_SET
+AC_PROG_SWIG(1.3.24)
+SWIG_ENABLE_CXX
 
 # Checks for libraries.
 
 # Checks for header files.
 AC_HEADER_STDC
+AC_HEADER_DIRENT
+AC_HEADER_TIME
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h math.h netdb.h netinet/in.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h],,
 	[AC_MSG_ERROR([*** Cannot find required header!  See previous line.])])
 
@@ -31,11 +35,10 @@ AC_C_VOLATILE
 
 # Checks for library functions.
 AC_CHECK_LIB(pthread, pthread_create)
-#AC_CHECK_LIB(tcl, Tcl_DeleteInterp)
-#AC_CHECK_LIB(tk, Tk_Init)
 AC_FUNC_MALLOC
 AC_FUNC_SELECT_ARGTYPES
-AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset select socket strcasecmp strdup],,
+AC_FUNC_CLOSEDIR_VOID
+AC_CHECK_FUNCS([getcwd gethostbyname gethostname gettimeofday inet_ntoa memset select socket strcasecmp strchr strdup strstr],,
 	[AC_MSG_ERROR([*** Cannot find required function!  See previous line.])])
 
 SOAR_CXXFLAGS="-Wall -g"
@@ -43,12 +46,6 @@ AC_SUBST(SOAR_CXXFLAGS)
 
 ####################
 # SWIG STUFF
-
-AC_ARG_WITH(swig-suffix,
-  [  --with-swig-suffix=SUFFIX    Attach SUFFIX to the swig binary. ],
-  [swig_suffix="$withval"], [swig_suffix=""])
-AC_SUBST(swig_suffix)
-AC_DEFINE_UNQUOTED(RELEASE_SUFFIX, "swig_suffix", [Executable swig suffix for co-existence with older versions])
 
 # Set info about shared libraries.
 AC_SUBST(SO)
