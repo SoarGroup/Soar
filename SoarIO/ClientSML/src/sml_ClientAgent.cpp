@@ -775,6 +775,7 @@ char const* Agent::InitSoar()
 	// The init-soar causes an event to be sent back from the kernel and when
 	// we get that, we'll queue up the input link information to be sent over again
 	// and also erase our output link information.
+	// (See the InitSoarHandler in ClientKernel.cpp)
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
 	return pResult ;
 }

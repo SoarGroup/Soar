@@ -771,6 +771,7 @@ void WorkingMemory::Refresh()
 	{
 		AnalyzeXML response ;
 
+		// Start by getting the input link identifier
 		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInputLink, GetAgentName()))
 		{
 			// Technically we should reset the value of the input link identifier itself, but it should never
