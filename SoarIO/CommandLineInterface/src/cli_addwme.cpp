@@ -7,6 +7,7 @@
 #include "cli_Constants.h"
 
 #include "sml_Names.h"
+#include "sml_StringOps.h"
 
 #include "IgSKI_WorkingMemory.h"
 #include "IgSKI_Agent.h"
@@ -40,8 +41,17 @@ bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::s
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (pKernelHack->AddWme(pAgent, id.c_str(), attribute.c_str(), value.c_str(), acceptable) <= 0) {
-		return m_Error.SetError("Add Wme returned non-positive");
+	unsigned long timetag = pKernelHack->AddWme(pAgent, id.c_str(), attribute.c_str(), value.c_str(), acceptable);
+	if (timetag <= 0) {
+		return m_Error.SetError("Add Wme returned non-positive timetag.");
+	}
+
+	char buf[kMinBufferSize];
+	if (m_RawOutput) {
+		AppendToResult("Timetag: ");
+		AppendToResult(Int2String(timetag, buf, sizeof(buf)));
+	} else {
+		AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(timetag, buf, sizeof(buf)));
 	}
 	return true;
 }

@@ -89,6 +89,7 @@ namespace gSKI
 		 bool StopTracingProduction(IAgent* pIAgent, const char* pProductionName);
 
 		 unsigned long AddWme(IAgent* pIAgent, const char* pIdString, const char* pAttrString, const char* pValueString, bool acceptable);
+		 int RemoveWmeByTimetag(IAgent* pIAgent, int num);
       };
    }
 }

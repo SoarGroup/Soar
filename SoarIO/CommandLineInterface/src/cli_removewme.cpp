@@ -6,7 +6,16 @@
 
 #include "cli_Constants.h"
 
+#include "sml_Names.h"
+#include "sml_StringOps.h"
+
+#include "IgSKI_WorkingMemory.h"
+#include "IgSKI_Agent.h"
+#include "IgSKI_Kernel.h"
+#include "IgSKI_DoNotTouch.h"
+
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// Exactly one argument
@@ -20,9 +29,16 @@ bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std:
 }
 
 bool CommandLineInterface::DoRemoveWME(gSKI::IAgent* pAgent, int timetag) {
-	unused(pAgent);
-	unused(timetag);
+	// Need agent pointer for function calls
+	if (!RequireAgent(pAgent)) return false;
 
-	return false;
+	// Attain the evil back door of doom, even though we aren't the TgD
+	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+
+	if (pKernelHack->RemoveWmeByTimetag(pAgent, timetag)) {
+		// this is failure
+		return m_Error.SetError("Failed to remove WME.");
+	}
+	return true;
 }
 

@@ -1993,5 +1993,121 @@ namespace gSKI
 			//*new_wme = (psoar_wme) pWme; // new_wme declared in parameter list in soar_cAddWme 8.5.2
 			return pWme->timetag;
 		}
+
+		int RemoveWme(agent* pSoarAgent, wme* pWme)
+		{
+		//	wme *w, *w2;
+		//	Symbol *id;
+		//	slot *s;
+
+		//	w = (wme *) the_wme;
+	
+			Symbol* pId = pWme->id;
+
+			// remove w from whatever list of wmes it's on
+			wme* pWme2;
+			for (pWme2 = pId->id.input_wmes; pWme2 != NIL; pWme2 = pWme2->next)
+				if (pWme == pWme2)
+					break;
+
+			if (pWme2) remove_from_dll(pId->id.input_wmes, pWme, next, prev);
+
+			for (pWme2 = pId->id.impasse_wmes; pWme2 != NIL; pWme2 = pWme2->next)
+				if (pWme == pWme2)
+					break;
+
+			if (pWme2) remove_from_dll(pId->id.impasse_wmes, pWme, next, prev);
+
+			slot* s;
+			for (s = pId->id.slots; s != NIL; s = s->next) {
+
+				for (pWme2 = s->wmes; pWme2 != NIL; pWme2 = pWme2->next)
+					if (pWme == pWme2)
+						break;
+
+				if (pWme2)
+					remove_from_dll(s->wmes, pWme, next, prev);
+
+				for (pWme2 = s->acceptable_preference_wmes; pWme2 != NIL; pWme2 = pWme2->next)
+					if (pWme == pWme2)
+						break;
+
+				if (pWme2)
+					remove_from_dll(s->acceptable_preference_wmes, pWme, next, prev);
+			}
+
+#ifdef USE_CAPTURE_REPLAY
+			// TODO: ommitted
+#endif // USE_CAPTURE_REPLAY
+
+			/* REW: begin 09.15.96 */
+#ifndef SOAR_8_ONLY
+			if (pSoarAgent->operand2_mode) {
+#endif // SOAR_8_ONLY
+				if (pWme->gds) {
+					if (pWme->gds->goal != NIL) {
+
+						gds_invalid_so_remove_goal(pSoarAgent, pWme);
+
+						/* NOTE: the call to remove_wme_from_wm will take care of checking if
+						GDS should be removed */
+					}
+				}
+#ifndef SOAR_8_ONLY
+			}
+#endif // SOAR_8_ONLY
+			/* REW: end   09.15.96 */
+
+			// now remove w from working memory
+			remove_wme_from_wm(pSoarAgent, pWme);
+
+			/* REW: begin 28.07.96 */
+			/* See AddWme for description of what's going on here */
+
+			if (pSoarAgent->current_phase != INPUT_PHASE) {
+#ifndef NO_TIMING_STUFF
+				start_timer(pSoarAgent, &(pSoarAgent->start_kernel_tv));
+#ifndef KERNEL_TIME_ONLY
+				start_timer(pSoarAgent, &(pSoarAgent->start_phase_tv));
+#endif // KERNEL_TIME_ONLY
+#endif // NO_TIMING_STUFF
+
+				/* do_buffered_wm_and_ownership_changes(); */
+
+#ifndef NO_TIMING_STUFF
+#ifndef KERNEL_TIME_ONLY
+				stop_timer(pSoarAgent, &(pSoarAgent->start_phase_tv), &(pSoarAgent->decision_cycle_phase_timers[(pSoarAgent->current_phase)]));
+#endif // KERNEL_TIME_ONLY
+				stop_timer(pSoarAgent, &(pSoarAgent->start_kernel_tv), &(pSoarAgent->total_kernel_time));
+				start_timer(pSoarAgent, &(pSoarAgent->start_kernel_tv));
+#endif // NO_TIMING_STUFF
+			}
+
+			/* note: 
+			*  See note at the NO_TOP_LEVEL_REFS flag in soar_cAddWme
+			*/
+
+#ifndef NO_TOP_LEVEL_REFS
+			do_buffered_wm_and_ownership_changes(pSoarAgent);
+#endif // NO_TOP_LEVEL_REFS
+
+			return 0;
+		}
+
+		int TgDWorkArounds::RemoveWmeByTimetag(IAgent* pIAgent, int num)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			wme *pWme;
+
+			for (pWme = pSoarAgent->all_wmes_in_rete; pWme != NIL; pWme = pWme->rete_next)
+				if (pWme->timetag == (unsigned long) num)
+					break;
+
+			if (!pWme) return -1;
+			if (!RemoveWme(pSoarAgent, pWme)) return 0; // this is the correct case
+			return -2;                  /* Unspecified Failure */
+		}
 	}
 }
