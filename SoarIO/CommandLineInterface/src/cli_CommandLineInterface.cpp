@@ -164,11 +164,6 @@ bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAge
 		pConnection->AddErrorToSMLResponse(pResponse, msg.c_str(), -1) ;
 	}
 
-	// Marshall the result text and return
-//	sml::TagResult* pTag = new sml::TagResult();
-//	pTag->SetCharacterData(m_Result.c_str());
-//	pResponse->AddChild(pTag);
-
 	// Always returns true to indicate that we've generated any needed error message already
 	return true ;
 }
