@@ -33,4 +33,4 @@ INCLUDES = \
 -I../../../TgDI/include \
 -I../../CommandLineInterface/include
 
-AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)
+CXXFLAGS = $(SOAR_CXXFLAGS)

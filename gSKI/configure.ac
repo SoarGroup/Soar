@@ -8,7 +8,7 @@ AC_CONFIG_SRCDIR([src/gSKI.cpp])
 AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.
-AC_DISABLE_STATIC
+AC_DISABLE_SHARED
 AC_DEFINE([NO_MEGA_UNIT_TESTS], [1], [Defined when not using mega unit tests.])
 AC_DEFINE([VALIDATE], [assert], [BUGBUG: not sure where this symbol is defined.])
 AC_DEFINE([UNIX], [assert], [BUGBUG: Defined for now, needs to be removed.])
@@ -36,5 +36,8 @@ AC_FUNC_MALLOC
 AC_FUNC_MEMCMP
 AC_FUNC_STAT
 AC_CHECK_FUNCS([gethostname memmove memset mkdir regcomp rmdir setlocale strchr strerror])
+
+SOAR_CXXFLAGS="-Wall -g"
+AC_SUBST(SOAR_CXXFLAGS)
 
 AC_OUTPUT(Makefile src/Makefile)

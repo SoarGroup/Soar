@@ -8,6 +8,7 @@ AC_CONFIG_SRCDIR([src/soar.h])
 AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.
+AC_DISABLE_SHARED
 AC_DEFINE([_DEBUG], [1], [BUGBUG: Defined for now, needs to be removed.])
 AC_DEFINE([USE_TCL], [1], [BUGBUG: Defined for now, needs to be removed.])
 AC_DEFINE([UNIX], [1], [BUGBUG: Defined for now, needs to be removed.])
@@ -37,4 +38,6 @@ AC_FUNC_REALLOC
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS([endpwent getcwd gethostname gettimeofday memset modf sqrt])
 
+SOAR_CXXFLAGS="-Wall -g"
+AC_SUBST(SOAR_CXXFLAGS)
 AC_OUTPUT(Makefile src/Makefile)

@@ -34,6 +34,10 @@ AC_CHECK_LIB(tk, Tk_Init)
 AC_FUNC_MALLOC
 AC_FUNC_SELECT_ARGTYPES
 AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset pow select socket sqrt strcasecmp strdup])
+
+SOAR_CXXFLAGS="-Wall -g"
+AC_SUBST(SOAR_CXXFLAGS)
+
 AC_OUTPUT(Makefile
 		  ConnectionSML/Makefile 
 		  ConnectionSML/src/Makefile 

@@ -1,156 +1,60 @@
 AUTOMAKE_OPTIONS = gnu
+
 lib_LTLIBRARIES = libgSKI.la
+
 #next line doesn't seem to work
 libgSKI_la_LIBADD = ../../SoarKernel/src/libSoarKernel.la
+
 libgSKI_la_SOURCES = \
-ExportLibFiles.h \
-IgSKI_ActionElement.h \
-IgSKI_Agent.h \
-IgSKI_AgentManager.h \
-IgSKI_AgentPerformanceMonitor.h \
-IgSKI_AgentRunControl.h \
-IgSKI_AgentThreadGroup.h \
-IgSKI_Condition.h \
-IgSKI_ConditionSet.h \
-IgSKI_DoNotTouch.h \
-IgSKI_EventManager.h \
-IgSKI_InputLink.h \
-IgSKI_InputProducer.h \
-IgSKI_InstanceInfo.h \
-IgSKI_Iterator.h \
-IgSKI_Kernel.h \
-IgSKI_KernelFactory.h \
-IgSKI_Match.h \
-IgSKI_MatchSet.h \
-IgSKI_MultiAttribute.h \
-IgSKI_OutputLink.h \
-IgSKI_OutputProcessor.h \
-IgSKI_Parser.h \
-IgSKI_PerformanceManager.h \
-IgSKI_Production.h \
-IgSKI_ProductionManager.h \
-IgSKI_ProductionMatch.h \
-IgSKI_Release.h \
-IgSKI_RhsAction.h \
-IgSKI_RhsFunction.h \
-IgSKI_RhsFunctionAction.h \
-IgSKI_State.h \
-IgSKI_Symbol.h \
-IgSKI_SymbolFactory.h \
-IgSKI_Test.h \
-IgSKI_TestSet.h \
-IgSKI_WMObject.h \
-IgSKI_WMStaticView.h \
-IgSKI_Wme.h \
-IgSKI_WmeReplacementPolicy.h \
-IgSKI_WorkingMemory.h \
-IgSKI_WorkingMemoryView.h \
-IterUtils.h \
-IterWrappers.h \
-MegaAssert.h \
-Win32LinuxDefines.h \
-gSKI.h \
-gSKI_Enumerations.h \
-gSKI_ErrorIds.h \
-gSKI_Events.h \
-gSKI_Structures.h \
-gSKI_Stub.h \
-pcre.h \
-pcreposix.h \
 AgentRunManager.cpp \
-AgentRunManager.h \
-ConcatRhsFunction.h \
-EventManagementTemplates.h \
-ILog.h \
-InterruptRhsFunction.h \
-IteratorHelpers.h \
 Log.cpp \
-Log.h \
 TestEvents.cpp \
 gSKI.cpp \
 gSKI_ActionElement.cpp \
 gSKI_ActionElement.h \
 gSKI_Agent.cpp \
-gSKI_Agent.h \
 gSKI_AgentManager.cpp \
-gSKI_AgentManager.h \
 gSKI_AgentPerformanceMonitor.cpp \
 gSKI_AgentPerformanceMonitor.h \
 gSKI_Condition.cpp \
-gSKI_Condition.h \
 gSKI_ConditionSet.cpp \
 gSKI_ConditionSet.h \
 gSKI_DoNotTouch.cpp \
-gSKI_DoNotTouch.h \
 gSKI_EnumRemapping.cpp \
-gSKI_EnumRemapping.h \
-gSKI_Error.h \
 gSKI_InputLink.cpp \
-gSKI_InputLink.h \
 gSKI_InputWMObject.cpp \
-gSKI_InputWMObject.h \
 gSKI_InputWme.cpp \
-gSKI_InputWme.h \
 gSKI_InputWorkingMemory.cpp \
-gSKI_InputWorkingMemory.h \
 gSKI_InstanceInfo.cpp \
-gSKI_InstanceInfo.h \
 gSKI_Iterator.cpp \
-gSKI_Iterator.h \
 gSKI_Kernel.cpp \
-gSKI_Kernel.h \
 gSKI_KernelFactory.cpp \
-gSKI_KernelFactory.h \
 gSKI_MapIterator.cpp \
-gSKI_MapIterator.h \
 gSKI_Match.cpp \
-gSKI_Match.h \
 gSKI_MatchSet.cpp \
-gSKI_MatchSet.h \
 gSKI_MultiAttribute.cpp \
-gSKI_MultiAttribute.h \
 gSKI_ObjectToPtrIterator.cpp \
-gSKI_ObjectToPtrIterator.h \
 gSKI_OutputLink.cpp \
-gSKI_OutputLink.h \
 gSKI_OutputWMObject.cpp \
-gSKI_OutputWMObject.h \
 gSKI_OutputWme.cpp \
-gSKI_OutputWme.h \
 gSKI_OutputWorkingMemory.cpp \
-gSKI_OutputWorkingMemory.h \
 gSKI_Production.cpp \
-gSKI_Production.h \
 gSKI_ProductionManager.cpp \
-gSKI_ProductionManager.h \
 gSKI_ReleaseImpl.cpp \
-gSKI_ReleaseImpl.h \
 gSKI_RhsAction.cpp \
-gSKI_RhsAction.h \
 gSKI_RhsFunctionAction.cpp \
-gSKI_RhsFunctionAction.h \
-gSKI_SetActiveAgent.h \
 gSKI_Stub.cpp \
 gSKI_Symbol.cpp \
-gSKI_Symbol.h \
 gSKI_SymbolFactory.cpp \
-gSKI_SymbolFactory.h \
 gSKI_Test.cpp \
-gSKI_Test.h \
 gSKI_TestSet.cpp \
-gSKI_TestSet.h \
 gSKI_WMObject.cpp \
-gSKI_WMObject.h \
 gSKI_WMStaticView.cpp \
-gSKI_WMStaticView.h \
 gSKI_Wme.cpp \
-gSKI_Wme.h \
 gSKI_WorkingMemory.cpp \
-gSKI_WorkingMemory.h \
-gSKI_WorkingMemoryView.cpp \
-gSKI_WorkingMemoryView.h
+gSKI_WorkingMemoryView.cpp 
+
 INCLUDES = -I.. -I../include -I ../../SoarKernel/include
 
-#AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)
-CXXFLAGS = $(CUSTOM_CXXFLAGS) -g
+CXXFLAGS = $(SOAR_CXXFLAGS)
 

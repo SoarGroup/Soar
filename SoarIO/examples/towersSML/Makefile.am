@@ -17,4 +17,4 @@ $(BASEDIR_PREFIX)../gSKI/src/libgSKI.la\
 $(BASEDIR_PREFIX)../SoarKernel/src/libSoarKernel.la
 #$(BASEDIR_PREFIX)../gSKI/lib/libgSKI.so
 INCLUDES = -I$(BASEDIR_PREFIX)ClientSML/include 
-AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)
+CXXFLAGS = $(SOAR_CXXFLAGS)
