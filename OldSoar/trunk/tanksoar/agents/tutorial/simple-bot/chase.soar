@@ -1,0 +1,13 @@
+echo "\nLoading simple/chase.soar"
+
+################################
+### Propose chase operator
+################################
+sp {propose*chase
+   (state <s> ^name tanksoar
+              ^io.input-link <io>
+             -^missiles-energy low)
+   (<io> ^sound <> silent
+        -^radar.tank)
+   -->
+   (<s> ^operator.name chase)}
