@@ -529,8 +529,10 @@ public class MainFrame extends JFrame
         }
         catch(IOException IOE) 
         {
-            JOptionPane.showMessageDialog(MainFrame.this, "There was an error reading file: " +
-                                          file.getName(), "I/O Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(MainFrame.this,
+                                          IOE.getMessage(),
+                                          "I/O Error Reading " + file.getName(),
+                                          JOptionPane.ERROR_MESSAGE);
         }
         catch(java.beans.PropertyVetoException pve)
         {
@@ -957,11 +959,9 @@ public class MainFrame extends JFrame
 			}
 			catch(java.io.IOException ioe) 
             {
-                String fn = "Unknown File!";
-                if (re != null) fn = re.getFile();
 				JOptionPane.showMessageDialog(MainFrame.this,
-                                              "Error Writing File: " + fn,
-                                              "IO Error",
+                                              ioe.getMessage(),
+                                              "I/O Error",
                                               JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -1101,33 +1101,26 @@ public class MainFrame extends JFrame
 			}
 			catch(FileNotFoundException fnfe)
             {
-                String fn = "Unknown File";
-                if (file != null)
-                {
-                    fn = file.getName();
-                }
 				JOptionPane.showMessageDialog(MainFrame.this,
-                                              "File Not Found: " + fn,
+                                              fnfe.getMessage(),
                                               "File Not Found",
                                               JOptionPane.ERROR_MESSAGE);
 			}
 			catch(IOException ioe) 
             {
-                String fn = "Unknown File";
-                if (file != null)
-                {
-                    fn = file.getName();
-                }
 				JOptionPane.showMessageDialog(MainFrame.this,
-                                              "Error Reading File: " + fn,
-                                              "IOException",
+                                              ioe.getMessage(),
+                                              "I/O Exception",
                                               JOptionPane.ERROR_MESSAGE);
 				ioe.printStackTrace();
 			}
 			catch(NumberFormatException nfe) 
             {
                 nfe.printStackTrace();
-                JOptionPane.showMessageDialog(MainFrame.this, "Error Reading File, Data Incorrectly Formatted", "Bad File", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(MainFrame.this,
+                                              "Error Reading File, Data Incorrectly Formatted",
+                                              "Bad File",
+                                              JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
@@ -1160,7 +1153,10 @@ public class MainFrame extends JFrame
 			catch(NumberFormatException nfe) 
             {
                 nfe.printStackTrace();
-                JOptionPane.showMessageDialog(MainFrame.this, "Error Reading File, Data Incorrectly Formatted", "Bad File", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(MainFrame.this,
+                                              "Error Reading File, Data Incorrectly Formatted",
+                                              "Bad File",
+                                              JOptionPane.ERROR_MESSAGE);
 			}
 
         }
@@ -1267,7 +1263,10 @@ public class MainFrame extends JFrame
 			}
 			catch (IOException exception) 
             {
-				JOptionPane.showMessageDialog(MainFrame.this, "IO Error exporting agent.", "Agent Export Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(MainFrame.this,
+                                              exception.getMessage(),
+                                              "Agent Export Error",
+                                              JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 		}
@@ -1466,7 +1465,10 @@ public class MainFrame extends JFrame
             {
 				// Unable to connect!
 				soarToolJavaInterface=null;
-				JOptionPane.showMessageDialog(MainFrame.this, "Unable to connect to the Soar Tool Interface (STI)", "STI Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(MainFrame.this,
+                                              "Unable to connect to the Soar Tool Interface (STI)",
+                                              "STI Error",
+                                              JOptionPane.ERROR_MESSAGE);
 			}
 		}	
 	}
@@ -2341,7 +2343,10 @@ public class MainFrame extends JFrame
                     }
                     catch (IOException exception) 
                     {
-                        JOptionPane.showMessageDialog(MainFrame.this, "IO Error exporting agent.", "Agent Export Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(MainFrame.this,
+                                                      exception.getMessage(),
+                                                      "Agent Export Error",
+                                                      JOptionPane.ERROR_MESSAGE);
                         return;
                     }
 
@@ -2362,7 +2367,10 @@ public class MainFrame extends JFrame
 				}
 				else 
                 {
-					JOptionPane.showMessageDialog(MainFrame.this, "That is not a valid name for the project", "Invalid Name", JOptionPane.ERROR_MESSAGE);				
+					JOptionPane.showMessageDialog(MainFrame.this,
+                                                  "That is not a valid name for the project",
+                                                  "Invalid Name",
+                                                  JOptionPane.ERROR_MESSAGE);				
 				}
 			}
 		}
