@@ -3771,6 +3771,12 @@ typedef struct agent_struct {
     TIMER_VALUE epmem_installmem_start_time;
     TIMER_VALUE epmem_installmem_total_time;
 
+    TIMER_VALUE epmem_misc1_start_time;
+    TIMER_VALUE epmem_misc1_total_time;
+
+    TIMER_VALUE epmem_misc2_start_time;
+    TIMER_VALUE epmem_misc2_total_time;
+
 #endif //AMN_EP_MEM
 
     /* Dummy nodes and tokens */
