@@ -57,6 +57,7 @@ char const* Constants::kCLIStopSoar					= "stop-soar";
 char const* Constants::kCLITime						= "time";
 char const* Constants::kCLITimers					= "timers";
 char const* Constants::kCLIVersion					= "version";
+char const* Constants::kCLIWaitSNC					= "waitsnc";
 char const* Constants::kCLIWarnings					= "warnings";
 char const* Constants::kCLIWatch					= "watch";
 

@@ -543,6 +543,15 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
+	bool ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoWaitSNC(gSKI::IAgent* pAgent, bool query, bool enable);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
 	bool ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
@@ -558,15 +567,6 @@ public:
 	*		 flags and the values flag contains their new values.
 	*************************************************************/
 	bool DoWatch(gSKI::IAgent* pAgent, const unsigned int options, unsigned int values);
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool ParseWMEs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool DoWMEs();
 
 
 protected:

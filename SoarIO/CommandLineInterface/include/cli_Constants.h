@@ -70,6 +70,7 @@ namespace cli {
 		static char const* kCLITime;
 		static char const* kCLITimers;
 		static char const* kCLIVersion;
+		static char const* kCLIWaitSNC;
 		static char const* kCLIWarnings;
 		static char const* kCLIWatch;
 

@@ -663,7 +663,14 @@ On success:
 <result><arg name="timers">false</arg></result>
 ***
 waitsnc
-Usage:	waitsnc
+Usage:	waitsnc [-de]
+  -d, --disable, --off	State-no-change generates impasse (default)
+  -e, --enable, --on	Turns state-no-change impasse into 'wait' mode
+
+In some systems, especially those that model expert (fully chunked) knowledge, a 
+state-no-change may represent a wait state rather than an impasse.  The waitsnc 
+command allows users to anticipate this situation and cause Soar to generate a 
+wait state whenever a state-no-change impasse would otherwise occur.
 ~~~
 ***
 warnings

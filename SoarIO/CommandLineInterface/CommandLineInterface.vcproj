@@ -254,6 +254,9 @@
 					RelativePath=".\src\cli_version.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_waitsnc.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_warnings.cpp">
 				</File>
 				<File
