@@ -300,6 +300,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 	string arg;
 	bool quotes = false;
 	int brackets = 0;
+	int parens = 0;
 
 	for (;;) {
 
@@ -324,8 +325,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 		++argc;
 		arg.clear();
 		// Use space as a delimiter unless inside quotes or brackets (nestable)
-		while (!isspace(*iter) || quotes || brackets) {
-			// Eat quotes but leave brackets
+		while (!isspace(*iter) || quotes || brackets || parens) {
 			if (*iter == '"') {
 				// Flip the quotes flag
 				quotes = !quotes;
@@ -336,6 +336,15 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 				} else if (*iter == '}') {
 					--brackets;
 					if (brackets < 0) {
+						SetError(CLIError::kExtraClosingParen);
+						return -1;
+					}
+				}
+				if (*iter == '(') {
+					++parens;
+				} else if (*iter == ')') {
+					--parens;
+					if (parens < 0) {
 						SetError(CLIError::kExtraClosingParen);
 						return -1;
 					}
@@ -353,7 +362,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 			if (iter == cmdline.end()) {
 
 				// Did they close their quotes or brackets?
-				if (quotes || brackets) {
+				if (quotes || brackets || parens) {
 					SetError(CLIError::kUnmatchedBracketOrQuote);
 					return -1;
 				}

@@ -89,7 +89,7 @@ namespace cli {
 				case kMultiAttributeNotFound:			return "Multi-attribute not found.";
 				case kNotImplemented:					return "Not implemented.";
 				case kExtraClosingParen:				return "Closing bracket found without opening counterpart.";
-				case kUnmatchedBracketOrQuote:			return "No closing quotes/brackets found.";
+				case kUnmatchedBracketOrQuote:			return "No closing quotes/brackets/parens found.";
 				case kExtraClosingBrace:				return "Closing brace found without opening counterpart.";
 				case kUnmatchedBrace:					return "Unexpected end of file. Unmatched opening brace.";
 				case kTooManyArgs:						return "Too many arguments for the specified (or unspecified) options, check syntax.";
