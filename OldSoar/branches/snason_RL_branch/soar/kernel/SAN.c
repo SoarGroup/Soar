@@ -22,12 +22,13 @@ void push_record(RL_record **r, Symbol *level_sym){
 	    new_record->previous_Q = 0;
 		new_record->op = NIL;
 		new_record->goal_level = level_sym;
+		symbol_add_ref(new_record->goal_level);
 	    new_record->RL_bottom = NIL;
 		new_record->RL_top = NIL;
 		new_record->RL_nots = NIL;
 		new_record->step = 0;
 		new_record->level = level_sym->id.level;
-		new_record->next = *r;
+	 	new_record->next = *r;
 		*r = new_record;
 	}
 }
@@ -36,17 +37,20 @@ void pop_record(RL_record **r){
 	RL_record *new_record;
 
 	new_record = *r;
+	deallocate_condition_list(new_record->RL_top);
+	deallocate_list_of_nots(new_record->RL_nots);
+	symbol_remove_ref(new_record->goal_level);
+	if (new_record->op)
+		symbol_remove_ref(new_record->op);
 	*r = new_record->next;
 	free(new_record);
 }
 
 void reset_RL(){
 
-	while(current_agent(records)){
-	 	deallocate_condition_list(current_agent(records)->RL_top);
-		deallocate_list_of_nots(current_agent(records)->RL_nots);
-		pop_record(&current_agent(records));
-	}
+	while(current_agent(records))
+ 		pop_record(&current_agent(records));
+	
 }
 /*******/
 void add_goal_tests( condition *cond ){
@@ -97,8 +101,8 @@ void learn_RL_productions(int level){
 	
 	if (record->op){
      
-		symbol_add_ref(record->op);
-		symbol_add_ref(record->goal_level);
+		// symbol_add_ref(record->op);
+		// symbol_add_ref(record->goal_level);
 //		print_with_symbols("\nOp %y ", s->op);
 //		print("at start learn_RL_productions with reference count %d\n", s->op->common.reference_count);
 	{
@@ -123,7 +127,7 @@ void learn_RL_productions(int level){
 //	print_with_symbols("\nOp %y ", s->op);
 //	print("after make_simple_action with reference count %d\n", s->op->common.reference_count);
 	
-	print_condition_list(record->RL_top, 2, TRUE);
+	// print_condition_list(record->RL_top, 2, TRUE);
 	
 	current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
 	// probably there is a better place to put this
@@ -140,7 +144,7 @@ void learn_RL_productions(int level){
     a->preference_type = BINARY_INDIFFERENT_PREFERENCE_TYPE;
     a->referent = Q;
 	
-	print_action_list(a, 2, TRUE);
+	// print_action_list(a, 2, TRUE);
 	
 	prod = make_production (prod_type, prod_name, &(record->RL_top), &(record->RL_bottom), &a, FALSE);
 	// print("\n Printing action to go on prod.");
@@ -154,14 +158,14 @@ void learn_RL_productions(int level){
 	deallocate_condition_list(record->RL_top);
 	record->RL_top = NULL;
 	record->RL_bottom = NULL;
- 	deallocate_list_of_nots(record->RL_nots);
-	record->RL_nots = NULL;
-	symbol_remove_ref(record->op);
-	symbol_remove_ref(record->goal_level);
+ 	deallocate_list_of_nots(nots);
+ 	symbol_remove_ref(record->op);
+	// symbol_remove_ref(record->goal_level);
 	record->op = NIL;
 	// current_agent(RL_count)++;
 	record->reward = 0.0;
 	record->step = 0;
+	record->previous_Q = 0;
 	current_agent(making_binary) = FALSE;
 	}
 
@@ -310,31 +314,32 @@ void check_conds(tc_number RL_tc, RL_record *r){
 	}
 }
 
-/**************/
 not *check_nots(tc_number RL_tc, RL_record *r){
-  not *n1, *n2, *new_not, *collected_nots;
+	not *n1, *n2, *collected_nots;
+	bool add;
 
-  /* --- collect nots for which both id's are marked --- */
-  collected_nots = NIL;
-  for (n1=r->RL_nots; n1 != NIL; n1=n1->next) {
-      /* --- Are both id's marked? If no, goto next loop iteration --- */
-      if (n1->s1->id.tc_num != RL_tc) continue;
-      if (n1->s2->id.tc_num != RL_tc) continue;
-      /* --- If the pair already in collected_nots, goto next iteration --- */
-	  for (n2=collected_nots; n2!=NIL; n2=n2->next) {
-        if ((n2->s1 == n1->s1) && (n2->s2 == n1->s2)) break;
-        if ((n2->s1 == n1->s2) && (n2->s2 == n1->s1)) break;
-      }
-	  if (n2) continue;
-      /* --- Add the pair to collected_nots --- */
-      allocate_with_pool (&current_agent(not_pool), &new_not);
-      new_not->next = collected_nots;
-      collected_nots = new_not;
-      new_not->s1 = n1->s1;
-      symbol_add_ref (new_not->s1);
-      new_not->s2 = n1->s2;
-      symbol_add_ref (new_not->s2);
-  }
+	collected_nots = NIL;
+	while(r->RL_nots){
+		n1 = r->RL_nots;
+		r->RL_nots = n1->next;
+		add = TRUE;
+		if ((n1->s1->id.tc_num != RL_tc) || (n1->s2->id.tc_num != RL_tc))
+			add = FALSE;
+		else{
+			for (n2 = collected_nots; n2 != NIL ; n2 = n2->next){
+				if ((n2->s1 == n1->s1) && (n2->s2 == n1->s2)) add = FALSE;
+				if ((n2->s1 == n1->s2) && (n2->s2 == n1->s1)) add = FALSE;
+			}
+		}
+		if (add){
+			n1->next = collected_nots;
+			collected_nots = n1;
+		} else {
+			symbol_remove_ref (n1->s1);
+			symbol_remove_ref (n1->s2);
+			free_with_pool (&current_agent(not_pool), n1);
+		}
+	}
 	return collected_nots;
 }
 
@@ -560,6 +565,7 @@ void record_for_RL(){
 	// print("\n Printing operator conditions. ");
 	// print_condition_list(chosenOp->preference->inst->top_of_instantiated_conditions, 2, TRUE);
 	record->op = chosenOp->value;
+	symbol_add_ref(record->op);       // SAN ??
 //	print_with_symbols("\nOp %y ", record->op);
 //	print("with next_Q %f\n", record->previous_Q);
 //print("after setting in slot with reference count %d\n", s->op->common.reference_count);

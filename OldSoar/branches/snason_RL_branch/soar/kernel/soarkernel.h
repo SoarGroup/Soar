@@ -1443,8 +1443,6 @@ typedef struct slot_struct {
   -------------------------*/
 
 typedef struct RL_record_struct{
- /* These items exist only for context slots. SAN
-    Putting these on every slot seems inefficient. */
   struct not_struct *RL_nots;
   struct condition_struct *RL_top;
   struct condition_struct *RL_bottom;

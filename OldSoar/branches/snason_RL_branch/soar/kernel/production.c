@@ -1500,6 +1500,7 @@ production *make_production (byte type,
   }
 
   allocate_with_pool (&current_agent(production_pool),  &p);
+  
   p->name = name;
   if (name->sc.production) {
     print ("Internal error: make_production called with name %s\n",
@@ -1513,6 +1514,7 @@ production *make_production (byte type,
   p->reference_count = 1;
   insert_at_head_of_dll (current_agent(all_productions_of_type)[type], p, next, prev);
   current_agent(num_productions_of_type)[type]++;
+  // print_with_symbols("Production name is %y\n", p->name); 
   p->type = type;
   p->declared_support = UNDECLARED_SUPPORT;
 

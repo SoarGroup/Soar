@@ -103,7 +103,7 @@ bool reorder_action_list (action **action_list, tc_number lhs_tc) {
   first_action = NIL;
   last_action = NIL;
   
-  print_action_list(*action_list, 3, FALSE);
+  // print_action_list(*action_list, 3, FALSE); // SAN
 
   while (remaining_actions) {
     /* --- scan through remaining_actions, look for one that's legal --- */
