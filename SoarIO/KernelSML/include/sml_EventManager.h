@@ -36,7 +36,7 @@ template<typename EventType>
 class EventManager
 {
 protected:
-	ConnectionList*	GetListeners(typename EventType eventID)
+	ConnectionList*	GetListeners(EventType eventID)
 	{
 		EventMapIter mapIter = m_EventMap.find(eventID) ;
 
@@ -48,7 +48,7 @@ protected:
 
 public:
     // Mapping from the event to the list of connections listening to that event
-    typedef std::map< typename EventType, ConnectionList* >	EventMap ;
+    typedef std::map< EventType, ConnectionList* >	EventMap ;
     typedef typename EventMap::iterator						EventMapIter ;
 protected:
 	// Map from event id to list of connections listening to that event
@@ -87,7 +87,7 @@ public:
 	}
 
 	// Returns true if this is the first connection listening for this event
-	virtual bool BaseAddListener(typename EventType eventID, Connection* pConnection)
+	virtual bool BaseAddListener(EventType eventID, Connection* pConnection)
 	{
 		EventMapIter mapIter = m_EventMap.find(eventID) ;
 
@@ -112,10 +112,10 @@ public:
 
 	// Returns true if this is the first connection listening for this event
 	// (Generally calls BaseAddListener and then registers with the kernel for this event)
-	virtual bool AddListener(typename EventType eventID, Connection* pConnection) = 0 ;
+	virtual bool AddListener(EventType eventID, Connection* pConnection) = 0 ;
 
 	// Returns true if just removed the last listener
-	virtual bool BaseRemoveListener(typename EventType eventID, Connection* pConnection)
+	virtual bool BaseRemoveListener(EventType eventID, Connection* pConnection)
 	{
 		ConnectionList* pList = GetListeners(eventID) ;
 
@@ -133,7 +133,7 @@ public:
 
 	// Returns true if just removed the last listener
 	// (Generally calls BaseRemoveListener and then unregisters with the kernel for this event)
-	virtual bool RemoveListener(typename EventType eventID, Connection* pConnection) = 0 ;
+	virtual bool RemoveListener(EventType eventID, Connection* pConnection) = 0 ;
 
 	// Remove all listeners that this connection has
 	virtual void RemoveAllListeners(Connection* pConnection)
