@@ -36,6 +36,10 @@ extern wme ** get_augs_of_id( Symbol *id, tc_number tc, int *num_attr );
 extern int decay_activation_level(wme *w);
 extern void decay_print_most_activated_wmes(int n);
 
+//defined in symtab.c
+extern unsigned long compress(unsigned long h, short num_bits);
+extern unsigned long hash_string(const char *s);
+
 
 /* EpMem constants
    
@@ -44,7 +48,6 @@ extern void decay_print_most_activated_wmes(int n);
    num_wmes_changed - number of wmes in the current list that must be
                       different from the previous list to trigger
                       a new memory.
-   childlist_init_size - starting size for the children array in a wmetree node
    wmelist_init_size   - starting size for a wmelist array
    memories_init_size  - starting size for the g_memories array
    memory_match_wait   - How long to wait before memories can be recalled.  This
@@ -58,7 +61,6 @@ extern void decay_print_most_activated_wmes(int n);
 
 #define num_active_wmes 1
 #define num_wmes_changed 1
-#define childlist_init_size 8
 #define wmelist_init_size 128
 #define memories_init_size 512
 #define memory_match_wait 1     // %%%TODO: no longer needed?
@@ -82,9 +84,7 @@ extern void decay_print_most_activated_wmes(int n);
              attr - the string representing the WME value associated
                     with this tree node (*only* if this is a leaf node)
              is_leaf - TRUE means that this node has no children
-             children - children of the current node
-             cap_children - the size of the children array
-             num_children - number of filled cells in the array
+             children - children of the current node (hash table)
              parent - parent of the current node.
              next/prev - dll of all nodes in the tree to allow iterative
                          implementation of several algorithms
@@ -95,6 +95,7 @@ extern void decay_print_most_activated_wmes(int n);
 
 typedef struct wmetree_struct
 {
+    struct wmetree_struct *next; // used by the hash table
     char *attr;
     union
     {
@@ -103,10 +104,8 @@ typedef struct wmetree_struct
         float floatval;
     } val;
     int val_type;
-    
-    struct wmetree_struct **children;
-    int cap_children;
-    int num_children;
+
+    hash_table *children;
     struct wmetree_struct *parent; // %%%TODO: make this an array later?
     bool in_mem;
     struct wme_struct *assoc_wme;
@@ -208,6 +207,71 @@ int compare_ptr( const void *arg1, const void *arg2 )
 }
 
 /* ===================================================================
+   hash_wmetree
+
+   Creates a hash value for a wmetree node
+
+   Created: 22 Apr 2004
+   =================================================================== */
+unsigned long hash_wmetree(void *item, short num_bits)
+{
+    wmetree *node = (wmetree *)item;
+    unsigned long hash_value;
+
+    //Generate a hash value for the node's attr and value
+    hash_value = hash_string(node->attr);
+    switch(node->val_type)
+    {
+        case SYM_CONSTANT_SYMBOL_TYPE:
+            hash_value += hash_string(node->val.strval);
+            break;
+            
+        case INT_CONSTANT_SYMBOL_TYPE:
+            hash_value += node->val.intval;
+            break;
+
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+            hash_value += (unsigned long)node->val.floatval;
+            break;
+    }//switch
+
+    return compress(hash_value, num_bits);
+}//hash_wmetree
+
+/* ===================================================================
+   hash_wme
+
+   Creates a hash value for a WME.  This is used to find the
+   corresponding wmetree node in a hash table.
+
+   Created: 22 Apr 2004
+   =================================================================== */
+unsigned long hash_wme(wme *w, short num_bits)
+{
+    unsigned long hash_value;
+
+    //Generate a hash value for the WME's attr and value
+    hash_value = hash_string(w->attr->sc.name);
+    switch(w->value->common.symbol_type)
+    {
+        case SYM_CONSTANT_SYMBOL_TYPE:
+            hash_value += hash_string(w->value->sc.name);
+            break;
+            
+        case INT_CONSTANT_SYMBOL_TYPE:
+            hash_value += w->value->ic.value;
+            break;
+
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+            hash_value += (unsigned long)w->value->fc.value;
+            break;
+    }//switch
+
+    return compress(hash_value, num_bits);
+    
+}//hash_wme
+
+/* ===================================================================
    make_wmetree_node
 
    Creates a new wmetree node based upon a given wme.  If no WME is
@@ -221,12 +285,11 @@ wmetree *make_wmetree_node(wme *w)
     wmetree *node;
 
     node = allocate_memory(sizeof(wmetree), MISCELLANEOUS_MEM_USAGE);
+    node->next = NULL;
     node->attr = NULL;
     node->val.intval = 0;
     node->val_type = IDENTIFIER_SYMBOL_TYPE;
-    node->children = NULL;
-    node->cap_children = 0;
-    node->num_children = 0;
+    node->children = make_hash_table(0, hash_wmetree);
     node->parent = NULL;
     node->in_mem = FALSE;
     node->assoc_wme = NULL;
@@ -275,7 +338,8 @@ wmetree *make_wmetree_node(wme *w)
    =================================================================== */
 void dw_helper(wmetree *tree)
 {
-    int i;
+    unsigned long hash_value;
+    wmetree *child;
 
     if (tree->attr != NULL)
     {
@@ -287,19 +351,24 @@ void dw_helper(wmetree *tree)
         free_memory(tree->val.strval, MISCELLANEOUS_MEM_USAGE);
     }
     
-    if (tree->num_children == 0)
+    if (tree->children->count == 0)
     {
         return;
     }
-    
-    for(i = 0; i < tree->num_children; i++)
+
+
+    //Recursively destroy all the children before the parent
+    for (hash_value = 0; hash_value < tree->children->size; hash_value++)
     {
-        //recursive call
-        dw_helper(tree->children[i]);
-        free_memory(tree->children[i], MISCELLANEOUS_MEM_USAGE);
+        child = (wmetree *) (*(tree->children->buckets + hash_value));
+        for (; child != NIL; child = child->next)
+        {
+            dw_helper(child);
+            free_memory(child, MISCELLANEOUS_MEM_USAGE);
+        }
     }
 
-    free_memory(tree->children, MISCELLANEOUS_MEM_USAGE);
+    free_memory(tree->children, HASH_TABLE_MEM_USAGE);
 }//dw_helper
 
 void destroy_wmetree(wmetree *tree)
@@ -501,7 +570,8 @@ int wme_equals_node(wme *w, wmetree *node)
    =================================================================== */
 void print_wmetree(wmetree *node, int indent, int depth)
 {
-    int i;
+    unsigned long hash_value;
+    wmetree *child;
     
     if (node == NULL) return;
 
@@ -535,9 +605,13 @@ void print_wmetree(wmetree *node, int indent, int depth)
 
     if (depth > 0)
     {
-        for(i = 0; i < node->num_children; i++)
+        for (hash_value = 0; hash_value < node->children->size; hash_value++)
         {
-            print_wmetree(node->children[i], indent + 3, depth - 1);
+            child = (wmetree *) (*(node->children->buckets + hash_value));
+            for (; child != NIL; child = child->next)
+            {
+                print_wmetree(child, indent + 3, depth - 1);
+            }
         }
     }
 }//print_wmetree
@@ -584,6 +658,8 @@ wmetree *epmem_find_wmelist_member(wmelist *wl, wmetree *id, char *s)
 void print_wmelist(wmelist *wl, wmetree *node, int indent, int depth)
 {
     int i;
+    unsigned long hash_value;
+    wmetree *child;
 
     if (wl == NULL) return;
     if (node == NULL) return;
@@ -628,9 +704,13 @@ void print_wmelist(wmelist *wl, wmetree *node, int indent, int depth)
 
     if (depth > 0)
     {
-        for(i = 0; i < node->num_children; i++)
+        for (hash_value = 0; hash_value < node->children->size; hash_value++)
         {
-            print_wmelist(wl, node->children[i], indent + 3, depth - 1);
+            child = (wmetree *) (*(node->children->buckets + hash_value));
+            for (; child != NIL; child = child->next)
+            {
+                print_wmelist(wl, child, indent + 3, depth - 1);
+            }
         }
     }
     
@@ -718,67 +798,22 @@ void print_wmelist_graphically(wmelist *wl)
    =================================================================== */
 wmetree *find_child_node(wmetree *node, wme *w)
 {
-    int i;
-    
-    for(i = 0; i < node->num_children; i++)
+    unsigned long hash_value;
+    wmetree *child;
+
+    hash_value = hash_wme(w, node->children->log2size);
+    child = (wmetree *) (*(node->children->buckets + hash_value));
+    for (; child != NIL; child = child->next)
     {
-        if (wme_equals_node(w, node->children[i]))
+        if (wme_equals_node(w, child))
         {
-            return node->children[i];
+            return child;
         }
     }
-
-    return NULL;
-}//find_child_node
-
-/* ===================================================================
-   add_child_to_wmetree
-
-   This function adds a child node to the children list of another node.  
-   
-   Created: 12 Jan 2004
-   =================================================================== */
-void add_child_to_wmetree(wmetree *node, wmetree *childnode)
-{
-    if (node->num_children == node->cap_children)
-    {
-        int i;
-        wmetree **tmp;
-        int newsize;
-        
-        //Select the new array size
-        newsize = childlist_init_size;
-        if (node->cap_children > 0)
-        {
-            newsize = node->cap_children * 2;
-        }
-        
-        //Grow the array
-        tmp = (wmetree **)allocate_memory_and_zerofill(newsize * sizeof(wmetree *),
-                                                       MISCELLANEOUS_MEM_USAGE);
-        for(i = 0; i < node->num_children; i++)
-        {
-            tmp[i] = node->children[i];
-        }
-
-        if (node->children != NULL)
-        {
-            free_memory(node->children, MISCELLANEOUS_MEM_USAGE);
-        }
-        
-        node->children = tmp;
-        node->cap_children = newsize;
-    }//if
-
-
-    //Add the child to the array
-    node->children[node->num_children] = childnode;
-    node->num_children++;
     
-    //Set the parent pointer
-    childnode->parent = node;
-
-}//add_child_to_wmetree
+    return NULL;
+    
+}//find_child_node
 
 /* ===================================================================
    add_node_to_wmelist
@@ -868,7 +903,7 @@ Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
                 if (childnode == NULL)
                 {
                     childnode = make_wmetree_node(wmes[i]);
-                    add_child_to_wmetree(node, childnode);
+                    add_to_hash_table(node->children, childnode);
                 }
 
                 //Check for special case: "superstate" 
@@ -1316,7 +1351,8 @@ void consider_new_epmem_via_activation()
    =================================================================== */
 void epmem_clear_mem(wmetree *node)
 {
-    int i;
+    wmetree *child;
+    unsigned long hash_value;
 
     //Check for "no-retrieval" wme
     if (g_wmetree.assoc_wme != NULL)
@@ -1335,29 +1371,34 @@ void epmem_clear_mem(wmetree *node)
     }
 
     //Find all the wmes attached to the given node
-    for(i = 0; i < node->num_children; i++)
+    for (hash_value = 0; hash_value < node->children->size; hash_value++)
     {
-        if (! node->children[i]->in_mem) continue;
-        if (strcmp(node->children[i]->attr, "epmem") == 0) continue;
-        if (node->children[i]->assoc_wme == NULL)
+        child = (wmetree *) (*(node->children->buckets + hash_value));
+        for (; child != NIL; child = child->next)
         {
-            print("\nERROR: WME should be in memory for: ");
-            print_wmetree(node->children[i], 0, 0);
-            continue;
-        }
+            if (! child->in_mem) continue;
+            if (strcmp(child->attr, "epmem") == 0) continue;
+            if (child->assoc_wme == NULL)
+            {
+                print("\nERROR: WME should be in memory for: ");
+                print_wmetree(child, 0, 0);
+                continue;
+            }
 
-        //Recursive call.  Do this first so leaf WMEs are
-        //deallocated first.
-        epmem_clear_mem(node->children[i]);
+            //Recursive call.  Do this first so leaf WMEs are
+            //deallocated first.
+            epmem_clear_mem(child);
 
-        //Remove from WM
-        remove_input_wme(node->children[i]->assoc_wme);
-        wme_remove_ref(node->children[i]->assoc_wme);
+            //Remove from WM
+            remove_input_wme(child->assoc_wme);
+            wme_remove_ref(child->assoc_wme);
 
-        //Bookkeeping
-        node->children[i]->assoc_wme = NULL;
-        node->children[i]->in_mem = FALSE;
+            //Bookkeeping
+            child->assoc_wme = NULL;
+            child->in_mem = FALSE;
+        }//for
     }//for
+    
 }//epmem_clear_mem
 
 
@@ -1604,48 +1645,54 @@ int match_wmelist(wmelist *w)
    =================================================================== */
 void iwiw_helper(Symbol *id, wmetree *node)
 {
-    int i;
+    wmetree *child;
+    unsigned long hash_value;
     Symbol *attr;
     Symbol *val;
 
     //Create the wmes attached to sym
-    for(i = 0; i < node->num_children; i++)
+    for (hash_value = 0; hash_value < node->children->size; hash_value++)
     {
-        if (! node->children[i]->in_mem) continue;
-        //For now, avoid recursing into previous memories.
-        if (strcmp(node->children[i]->attr, "epmem") == 0) continue;
-        if (node->children[i]->assoc_wme != NULL)
+        child = (wmetree *) (*(node->children->buckets + hash_value));
+        for (; child != NIL; child = child->next)
         {
-            //%%%TODO: I think this is an error.  What do I do about it?
-        }
+            if (! child->in_mem) continue;
+            //For now, avoid recursing into previous memories.
+            if (strcmp(child->attr, "epmem") == 0) continue;
+            if (child->assoc_wme != NULL)
+            {
+                //%%%TODO: I think this is an error.  What do I do about it?
+            }
         
-        attr = make_sym_constant(node->children[i]->attr);
+            attr = make_sym_constant(child->attr);
 
-        switch(node->children[i]->val_type)
-        {
-            case SYM_CONSTANT_SYMBOL_TYPE:
-                val = make_sym_constant(node->children[i]->val.strval);
-                break;
-            case INT_CONSTANT_SYMBOL_TYPE:
-                val = make_int_constant(node->children[i]->val.intval);
-                break;
-            case FLOAT_CONSTANT_SYMBOL_TYPE:
-                val = make_float_constant(node->children[i]->val.floatval);
-                break;
+            switch(child->val_type)
+            {
+                case SYM_CONSTANT_SYMBOL_TYPE:
+                    val = make_sym_constant(child->val.strval);
+                    break;
+                case INT_CONSTANT_SYMBOL_TYPE:
+                    val = make_int_constant(child->val.intval);
+                    break;
+                case FLOAT_CONSTANT_SYMBOL_TYPE:
+                    val = make_float_constant(child->val.floatval);
+                    break;
 
-            default:
-                val = make_new_identifier(node->children[i]->attr[0],
-                                          id->id.level);
-                break;
-        }//switch
+                default:
+                    val = make_new_identifier(child->attr[0],
+                                              id->id.level);
+                    break;
+            }//switch
 
-        node->children[i]->assoc_wme = add_input_wme(id, attr, val);
-        wme_add_ref(node->children[i]->assoc_wme);
+            child->assoc_wme = add_input_wme(id, attr, val);
+            wme_add_ref(child->assoc_wme);
 
-        //Recursively create wmes for children's children
-        iwiw_helper(val, node->children[i]);
+            //Recursively create wmes for children's children
+            iwiw_helper(val, child);
 
+        }//for
     }//for
+    
 }//iwiw_helper
 
 /* ===================================================================
@@ -1988,12 +2035,11 @@ void init_epmem(void)
     g_previous_active_wmes = (wme **)calloc(num_active_wmes, sizeof(wme *));
 
     //Initialize the wmetree
+    g_wmetree.next = NULL;
     g_wmetree.attr = NULL;
     g_wmetree.val.intval = 0;
     g_wmetree.val_type = IDENTIFIER_SYMBOL_TYPE;
-    g_wmetree.children = NULL;
-    g_wmetree.cap_children = 0;
-    g_wmetree.num_children = 0;
+    g_wmetree.children = make_hash_table(0, hash_wmetree);;
     g_wmetree.parent = NULL;
     g_wmetree.assoc_wme = NULL;
 
