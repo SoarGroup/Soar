@@ -117,6 +117,11 @@ KernelSML::KernelSML()
 
 KernelSML::~KernelSML()
 {
+	// Shutdown the connection manager while all data is still valid.
+	// (This should have already been done before we get to the destructor,
+	//  but this is a safety valve).
+	Shutdown() ;
+
 	// Clean up any agent specific data we still own.
 	// We do this before deleting the kernel itself, so we get
 	// clean stats on whether we've released all memory in gSKI or not.
@@ -141,8 +146,7 @@ KernelSML::~KernelSML()
 *************************************************************/
 void KernelSML::Shutdown()
 {
-	if (m_pConnectionManager)
-		m_pConnectionManager->Shutdown() ;
+	m_pConnectionManager->Shutdown() ;
 }
 
 /*************************************************************
@@ -151,18 +155,30 @@ void KernelSML::Shutdown()
 *************************************************************/
 void KernelSML::AddConnection(Connection* pConnection)
 {
-	if (m_pConnectionManager)
-		m_pConnectionManager->AddConnection(pConnection) ;
+	m_pConnectionManager->AddConnection(pConnection) ;
 }
 
 /*************************************************************
 * @brief	Receive and process any messages from remote connections
 *			that are waiting on a socket.
+*			Returning false indicates we should stop checking
+*			for more messages (and presumably shutdown completely).
 *************************************************************/
-void KernelSML::ReceiveAllMessages()
+bool KernelSML::ReceiveAllMessages()
 {
-	if (m_pConnectionManager)
-		m_pConnectionManager->ReceiveAllMessages() ;
+	return m_pConnectionManager->ReceiveAllMessages() ;
+}
+
+/*************************************************************
+* @brief	Stop the thread that is used to receive messages
+*			from remote connections.  We do this when we're
+*			using a "synchronized" embedded connection, which
+*			means commands execute in the client's thread instead
+*			of the receiver thread.
+*************************************************************/
+void KernelSML::StopReceiverThread()
+{
+	m_pConnectionManager->StopReceiverThread() ;
 }
 
 /*************************************************************
