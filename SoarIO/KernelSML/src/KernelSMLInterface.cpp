@@ -61,7 +61,8 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	// sometimes in the receiver's thread (depending on where "run" came from) and that could easily introduce a lot of
 	// complicated bugs or where performance would be different depending on whether you pressed "run" in the environment or "run" in a
 	// remote debugger).
-	pKernelSML->StopReceiverThread() ;
+	if (!pConnection->IsAsynchronous())
+		pKernelSML->StopReceiverThread() ;
 
 	// Register for "calls" from the client.
 	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;

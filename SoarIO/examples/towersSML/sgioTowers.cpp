@@ -388,7 +388,7 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers, int inNumDisks) : drawG
 
 	// SML uses different terminology here
 	#ifdef SGIO_API_MODE
-		soar = Kernel::CreateEmbeddedConnection("KernelSML", true) ;
+		soar = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
 //		soar = new APISoar();
 
 	#else //SGIO_TSI_MODE

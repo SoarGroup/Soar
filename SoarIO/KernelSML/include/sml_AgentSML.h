@@ -86,6 +86,8 @@ public:
 	// prior to deleting AgentSML, but before the underlying gSKI agent has been deleted
 	void Clear() ;
 
+	gSKI::IAgent* GetIAgent() { return m_pIAgent ; }
+
 	void SetOutputListener(OutputListener* pListener)			{ m_pOutputListener = pListener ; }
 	void SetInputProducer(gSKI::IInputProducer* pInputProducer)	{ m_pInputProducer = pInputProducer ; }
 

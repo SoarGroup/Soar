@@ -154,6 +154,9 @@ protected:
 	// We can use this mutex to serialize acccess to the message queues
 	soar_thread::Mutex	m_Mutex ;
 
+	// True if we can make direct calls to gSKI to optimize I/O
+	bool m_bIsDirectConnection ;
+
 public:
 	Connection() ;
 	virtual ~Connection() ;
@@ -164,16 +167,19 @@ public:
 	*
 	* @param pLibraryName	The name of the library to load, without an extension (e.g. "ClientSML" or "KernelSML").  Case-sensitive (to support Linux).
 	*						This library will be dynamically loaded and connected to.
-	* @param SynchronousExecution	If true, Soar will run in the client's thread and the client must periodically call over to the
-	*								kernel to check for incoming messages on remote sockets.
-	*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
-	*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
+	* @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
+	*						kernel to check for incoming messages on remote sockets.
+	*						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
+	*						However, this kernel thread model requires a context switch whenever commands are sent to/from the kernel.
+	* @param Optimized		If this is a client thread connection, we can short-circuit parts of the messaging system for sending input and
+	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
+	*						you may wish to disable this option (so everything goes through the standard paths).  Has no affect if not running on client thread.
 	* @param port			The port number the server should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 	*
 	* @param pError			Pass in a pointer to an int and receive back an error code if there is a problem.
 	* @returns An EmbeddedConnection instance.
 	*************************************************************/
-	static Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, int portToListenOn = kDefaultSMLPort, ErrorCode* pError = NULL) ;
+	static Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn = kDefaultSMLPort, ErrorCode* pError = NULL) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -216,6 +222,21 @@ public:
 	*		 may in fact be on the same machine).
 	*************************************************************/
 	virtual bool IsRemoteConnection() = 0 ;
+
+	/*************************************************************
+	* @brief Returns true if messages are queued and executed on receiver's thread.
+	*		 (Always true for a remote connection.  May be true or false for
+	*		 an embedded connection, depending on how it was created).
+	*************************************************************/
+	virtual bool IsAsynchronous() = 0 ;
+
+	/*************************************************************
+	* @brief Returns true if direct access to gSKI is available.
+	*		 This allows us to optimize I/O calls by calling directly
+	*		 to gSKI (and hence the kernel) without using the messaging system at all.
+	*		 The direct connection is only true if this is a synchronous embedded connection.
+	*************************************************************/
+	virtual bool IsDirectConnection() { return m_bIsDirectConnection ; }
 
 	/*************************************************************
 	* @brief Send a message to the SML receiver (e.g. from the environment to the Soar kernel).

@@ -36,6 +36,29 @@ typedef struct Connection_Receiver_InterfaceStructTag
 	unsigned int n;	/* So that we compiles under 'C' */
 } Connection_Receiver_InterfaceStruct, *Connection_Receiver_Handle ;
 
+// Values used to opaquely wrap gSKI objects.
+// They're opaque as we just store them and return them to the kernel
+// without otherwise accessing them.
+typedef struct Direct_WME_StructTag
+{
+	unsigned int n;	/* So that we compiles under 'C' */
+} Direct_WME_Struct, *Direct_WME_Handle ;
+
+typedef struct Direct_WMObject_StructTag
+{
+	unsigned int n;	/* So that we compiles under 'C' */
+} Direct_WMObject_Struct, *Direct_WMObject_Handle ;
+
+typedef struct Direct_Agent_StructTag
+{
+	unsigned int n;	/* So that we compiles under 'C' */
+} Direct_Agent_Struct, *Direct_Agent_Handle ;
+
+typedef struct Direct_WorkingMemory_StructTag
+{
+	unsigned int n;	/* So that we compiles under 'C' */
+} Direct_WorkingMemory_Struct, *Direct_WorkingMemory_Handle ;
+
 #ifdef __cplusplus
 } // extern C
 #endif

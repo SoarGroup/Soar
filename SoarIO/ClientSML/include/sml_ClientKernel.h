@@ -71,16 +71,19 @@ public:
 	*
 	* @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
 	*						This library will be dynamically loaded and connected to.
-	* @param SynchronousExecution	If true, Soar will run in the client's thread and the client must periodically call over to the
-	*								kernel to check for incoming messages on remote sockets.
-	*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
-	*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
+	* @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
+	*						kernel to check for incoming messages on remote sockets.
+	*						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
+	*						However, this kernel thread model requires a context switch whenever commands are sent to/from the kernel.
+	* @param Optimized		If this is a client thread connection, we can short-circuit parts of the messaging system for sending input and
+	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
+	*						you may wish to disable this option (so everything goes through the standard paths).  Has no affect if not running on client thread.
 	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 	*
 	* @returns A new kernel object which is used to communicate with the kernel.
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized = true, int portToListenOn = kDefaultSMLPort) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different

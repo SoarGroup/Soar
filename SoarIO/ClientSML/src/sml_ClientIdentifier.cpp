@@ -15,7 +15,20 @@
 #include "sml_StringOps.h"
 #include <assert.h>
 
+#include "sml_ClientDirect.h"
+#include "sml_EmbeddedConnection.h"	// For direct methods
+
 using namespace sml ;
+
+IdentifierSymbol::IdentifierSymbol(Identifier* pIdentifier)
+{
+	m_UsedBy.push_back(pIdentifier) ;
+
+#ifdef SML_DIRECT
+	m_WM = 0 ;
+	m_WMObject = 0 ;
+#endif
+}
 
 IdentifierSymbol::~IdentifierSymbol()
 {
@@ -60,6 +73,11 @@ Identifier::Identifier(Agent* pAgent, Identifier* pID, char const* pAttributeNam
 {
 	m_pSymbol = new IdentifierSymbol(this) ;
 	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
+
+#ifdef SML_DIRECT
+	// Pass along with working memory object.  (Note: If you pass id's from input-link to output-link this just breaks gSKI all over the place, so please don't).
+	m_pSymbol->m_WM = pID->GetSymbol()->m_WM ;
+#endif
 }
 
 Identifier::~Identifier(void)
@@ -69,7 +87,21 @@ Identifier::~Identifier(void)
 
 	// Decide if we need to delete the identifier symbol (or is someone else still using it)
 	if (m_pSymbol->GetNumberUsing() == 0)
+	{
+
+#ifdef SML_DIRECT
+	// If we're using the direct connection methods, we need to release the gSKI object
+	// that we own.
+		/* BUGBUG: Not sure on who should release this and even if we need to.
+	if (GetAgent()->GetConnection()->IsDirectConnection() && m_pSymbol->m_WMObject)
+	{
+		((EmbeddedConnection*)GetAgent()->GetConnection())->DirectReleaseWMObject(m_pSymbol->m_WMObject) ;
+	}
+	*/
+#endif
+
 		delete m_pSymbol ;
+	}
 
 	m_pSymbol = NULL ;
 }

@@ -417,10 +417,25 @@ protected:
 	*		 this to add output to the result that gets sent back upon
 	*		 completion of a command.
 	*************************************************************/
-	void AppendToResult(const char* pMessage);
-	void AppendToResult(const std::string& message);
-	void AppendToResult(const bool message);
-	void AppendToResult(const char message);
+	inline void CommandLineInterface::AppendToResult(const char* pMessage) {
+		// Simply add to result
+		m_Result += pMessage;
+	}
+
+	inline void CommandLineInterface::AppendToResult(const std::string& message) {
+		// Simply add to result
+		m_Result += message;
+	}
+
+	inline void CommandLineInterface::AppendToResult(const bool boolean) {
+		// Simply add to result
+		m_Result += boolean;
+	}
+
+	inline void CommandLineInterface::AppendToResult(const char character) {
+		// Simply add to result
+		m_Result += character;
+	}
 
 	/*************************************************************
 	* @brief Does the bulk of command parsing and chooses what function

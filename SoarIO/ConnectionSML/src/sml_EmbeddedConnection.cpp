@@ -97,7 +97,7 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 
 // BUGBUG: We still need to pass the port to listen on over to the other side
 // I'm waiting until the Linux code has settled down before doing this.
-bool EmbeddedConnection::AttachConnection(char const* pLibraryName, int portToListenOn)
+bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimized, int portToListenOn)
 {
 	ClearError() ;
 
@@ -128,6 +128,36 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, int portToLi
 	// Get the functions that a DLL must export to support an embedded connection.
 	m_pProcessMessageFunction = (ProcessMessageFunction)GetProcAddress(hLibrary, "sml_ProcessMessage") ;
 	m_pCreateEmbeddedFunction = (CreateEmbeddedConnectionFunction)GetProcAddress(hLibrary, "sml_CreateEmbeddedConnection") ;
+
+#ifdef KERNEL_SML_DIRECT
+	m_pDirectAddWMEStringFunction =		(DirectAddWMEStringFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_String") ;
+	m_pDirectAddWMEIntFunction =		(DirectAddWMEIntFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_Int") ;
+	m_pDirectAddWMEDoubleFunction =		(DirectAddWMEDoubleFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_Double") ;
+	m_pDirectRemoveWMEFunction =		(DirectRemoveWMEFunction)GetProcAddress(hLibrary, "sml_DirectRemoveWME") ;
+
+	m_pDirectAddIDFunction =			(DirectAddIDFunction)GetProcAddress(hLibrary, "sml_DirectAddID") ;
+	m_pDirectLinkIDFunction =			(DirectLinkIDFunction)GetProcAddress(hLibrary, "sml_DirectLinkID") ;
+	m_pDirectGetThisWMObjectFunction =	(DirectGetThisWMObjectFunction)GetProcAddress(hLibrary, "sml_DirectGetThisWMObject") ;
+
+	m_pDirectGetRootFunction =			(DirectGetRootFunction)GetProcAddress(hLibrary, "sml_DirectGetRoot") ;
+	m_pDirectGetWorkingMemoryFunction = (DirectGetWorkingMemoryFunction)GetProcAddress(hLibrary, "sml_DirectGetWorkingMemory") ;
+	m_pDirectRunTilOutputFunction =		(DirectRunTilOutputFunction)GetProcAddress(hLibrary, "sml_DirectRunTilOutput") ;
+	
+	m_pDirectReleaseWMEFunction =		(DirectReleaseWMEFunction)GetProcAddress(hLibrary, "sml_DirectReleaseWME") ;
+	m_pDirectReleaseWMObjectFunction =	(DirectReleaseWMObjectFunction)GetProcAddress(hLibrary, "sml_DirectReleaseWMObject") ;
+
+	// Check that we got the list of functions and if so enable the direct connection
+	if (m_pDirectAddWMEStringFunction && m_pDirectAddWMEIntFunction && m_pDirectAddWMEDoubleFunction &&
+		m_pDirectRemoveWMEFunction    && m_pDirectAddIDFunction     && m_pDirectLinkIDFunction &&
+		m_pDirectGetThisWMObjectFunction && m_pDirectGetRootFunction && m_pDirectGetWorkingMemoryFunction &&
+		m_pDirectReleaseWMEFunction && m_pDirectReleaseWMObjectFunction && m_pDirectRunTilOutputFunction)
+	{
+		// We only enable direct connections if we found all of the methods, this is a synchronous connection (i.e. we execute
+		// on the client's thread) and the client says it's ok to use these optimizations.
+		if (optimized && !IsAsynchronous())
+			m_bIsDirectConnection = true ;
+	}
+#endif
 
 	// See if we got the functions
 	if (!m_pProcessMessageFunction || !m_pCreateEmbeddedFunction)
@@ -298,7 +328,7 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 // The trick is to include a "closed connection" message in the queue.
 // Then we can wait on an incoming message forever and still wake up if the connection dies.
 
-	int sleepTime = 5 ;			// How long we sleep in milliseconds each pass through
+	int sleepTime = 0 ;			// How long we sleep in milliseconds each pass through
 	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)
 
 	// If we don't already have this response cached,
@@ -322,14 +352,17 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 		if (wait)
 		{
 			soar_thread::Thread::SleepStatic(sleepTime) ;
-			maxRetries-- ;
+//			maxRetries-- ;
 
-			// Eventually time out
+			// Can't time out because could be running Soar and this return
+			// could be very slow.
+			/*
 			if (maxRetries == 0)
 			{
 				SetError(Error::kConnectionTimedOut) ;			
 				wait = false ;
 			}
+			*/
 		}
 
 	} while (wait) ;

@@ -175,6 +175,9 @@
 				RelativePath="..\ConnectionSML\include\EmbeddedSMLInterface.h">
 			</File>
 			<File
+				RelativePath="..\ConnectionSML\include\KernelSMLDirect.h">
+			</File>
+			<File
 				RelativePath=".\include\KernelSMLdll.h">
 			</File>
 			<File
@@ -221,5 +224,8 @@
 		</File>
 	</Files>
 	<Globals>
+		<Global
+			Name="DevPartner_IsInstrumented"
+			Value="1"/>
 	</Globals>
 </VisualStudioProject>

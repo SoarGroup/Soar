@@ -38,6 +38,7 @@ Connection::Connection()
 {
 	m_MessageID = 0 ;
 	m_pUserData = NULL ;
+	m_bIsDirectConnection = false ;
 }
 
 /*************************************************************
@@ -86,25 +87,29 @@ Connection::~Connection()
 *
 * @param pLibraryName	The name of the library to load, without an extension (e.g. "ClientSML" or "KernelSML").  Case-sensitive (to support Linux).
 *						This library will be dynamically loaded and connected to.
-* @param SynchronousExecution	If true, Soar will run in the client's thread and the client must periodically call over to the
-*								kernel to check for incoming messages on remote sockets.
-*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
-*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
+* @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
+*						kernel to check for incoming messages on remote sockets.
+*						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
+*						However, this kernel thread model requires a context switch whenever commands are sent to/from the kernel.
+* @param Optimized		If this is a client thread connection, we can short-circuit parts of the messaging system for sending input and
+*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
+*						you may wish to disable this option (so everything goes through the standard paths).  Has no affect if not running on client thread.
 * @param port			The port number the server should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 *
 * @param pError			Pass in a pointer to an int and receive back an error code if there is a problem.
 * @returns An EmbeddedConnection instance.
 *************************************************************/
-Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, int portToListenOn, ErrorCode* pError)
+Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn, ErrorCode* pError)
 {
 	// Set an initial error code and then replace it if something goes wrong.
 	if (pError) *pError = Error::kNoError ;
 
-	EmbeddedConnection* pConnection = synchronousExecution ?
+	// We also use the terms "synchronous" and "asynchronous" for client thread or kernel thread.
+	EmbeddedConnection* pConnection = clientThread ?
 									EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
 									EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch() ;
 
-	pConnection->AttachConnection(pLibraryName, portToListenOn) ;
+	pConnection->AttachConnection(pLibraryName, optimized, portToListenOn) ;
 
 	// Report any errors
 	if (pError) *pError = pConnection->GetLastError() ;
@@ -378,7 +383,6 @@ ElementXML* Connection::InvokeCallbacks(ElementXML *pIncomingMsg)
 	// Nobody was interested in this type of message, so we're done.
 	if (pList == NULL)
 	{
-		SetError(Error::kNoCallback) ;
 		return NULL ;
 	}
 

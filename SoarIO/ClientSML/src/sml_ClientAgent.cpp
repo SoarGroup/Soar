@@ -16,6 +16,9 @@
 #include "sml_OutputDeltaList.h"
 #include "sml_StringOps.h"
 
+#include "sml_ClientDirect.h"
+#include "sml_EmbeddedConnection.h"	// For access to direct methods
+
 #include <iostream>     
 #include <sstream>     
 #include <iomanip>
@@ -62,6 +65,8 @@ void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 *************************************************************/
 void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
+	unused(pResponse) ;
+
 	smlEventId id  = (smlEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
 	smlPhase phase = (smlPhase)pIncoming->GetArgInt(sml_Names::kParamPhase, -1) ;
 
@@ -460,6 +465,15 @@ bool Agent::SetStopOnOutput(bool state)
 char const* Agent::RunTilOutput(unsigned long maxDecisions)
 {
 	ClearOutputLinkChanges() ;
+
+#ifdef SML_DIRECT
+	if (GetConnection()->IsDirectConnection())
+	{
+		((EmbeddedConnection*)GetConnection())->DirectRunTilOutput(GetAgentName()) ;
+		return "DirectCall -- no output" ;
+	}
+#endif
+
 	SetStopOnOutput(true) ;
 	return Run(maxDecisions) ;
 }

@@ -37,6 +37,8 @@ void RemoteConnection::SendMessage(ElementXML* pMsg)
 	// Send it
 	m_Socket->SendString(pXMLString) ;
 
+	PrintDebug(pXMLString) ;
+
 	// Release the XML string
 	pMsg->DeleteString(pXMLString) ;
 }
@@ -62,6 +64,10 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		m_pLastResponse = NULL ;
 		return pResponse ;
 	}
+
+	// BUGBUG: I don't think we can timeout on this, because what if we run Soar
+	// for a long time.
+	// We may need a way to shutdown what we have.
 
 	int sleepTime = 5 ;			// How long we sleep in milliseconds each pass through
 	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)

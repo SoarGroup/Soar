@@ -14,6 +14,8 @@
 
 #include <string>
 
+#include "sml_ClientDirect.h"
+
 namespace sml {
 
 class Agent ;
@@ -48,6 +50,10 @@ protected:
 
 	// This is true if the wme was just added.  The client chooses when to clear these flags.
 	bool	m_JustAdded ;
+
+#ifdef SML_DIRECT
+	Direct_WME_Handle	m_WME ;
+#endif
 
 public:
 	// This is true if the wme was just added.  The client chooses when to clear these flags.
@@ -86,6 +92,11 @@ protected:
 	// That's because we're really doing a delete followed by an add
 	// and the add would create a new time tag.
 	void GenerateNewTimeTag() ;
+
+#ifdef SML_DIRECT
+	void SetWMEHandle(Direct_WME_Handle wme)	{ m_WME = wme ; }
+	Direct_WME_Handle GetWMEHandle()			{ return m_WME ; }
+#endif
 
 private:
 	// NOT IMPLEMENTED

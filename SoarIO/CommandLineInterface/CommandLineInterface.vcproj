@@ -252,17 +252,10 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
 		</Filter>
-		<Filter
-			Name="Data files"
-			Filter="">
-			<File
-				RelativePath="..\bin\aliases.txt">
-			</File>
-			<File
-				RelativePath="..\bin\usage.txt">
-			</File>
-		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="DevPartner_IsInstrumented"
+			Value="1"/>
 	</Globals>
 </VisualStudioProject>

@@ -56,6 +56,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCommandLineInterface", 
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "towersSML", "examples\towersSML\towersSML.vcproj", "{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Ansi Release = Ansi Release
@@ -135,6 +139,12 @@ Global
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.Build.0 = Debug|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Release.ActiveCfg = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Release.Build.0 = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Ansi Release.ActiveCfg = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Ansi Release.Build.0 = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug.ActiveCfg = Debug|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug.Build.0 = Debug|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release.ActiveCfg = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

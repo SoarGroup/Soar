@@ -320,24 +320,6 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 	return false;
 }
 
-inline void CommandLineInterface::AppendToResult(const char* pMessage) {
-	// Simply add to result
-	m_Result += pMessage;
-}
-inline void CommandLineInterface::AppendToResult(const std::string& message) {
-	// Simply add to result
-	m_Result += message;
-}
-// TODO: Inlines wont work on these two for some reason...
-void CommandLineInterface::AppendToResult(const bool boolean) {
-	// Simply add to result
-	m_Result += boolean;
-}
-void CommandLineInterface::AppendToResult(const char character) {
-	// Simply add to result
-	m_Result += character;
-}
-
 EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel) {
 	m_pKernel = pKernel;
 }

@@ -60,8 +60,8 @@ typedef xmlList::const_iterator		xmlListConstIter ;
 typedef char*			xmlString ;
 typedef char const*		xmlStringConst ; 
 
-// Used to store a list of char*
-typedef std::list<xmlString>			xmlStringList ;
+// Used to store a list of strings.  Switched to vector to improve performance (we only add one by one and then delete the lot)
+typedef std::vector<xmlString>			xmlStringList ;
 typedef xmlStringList::iterator			xmlStringListIter ;
 typedef xmlStringList::const_iterator	xmlStringListConstIter ;
 
@@ -396,21 +396,42 @@ public:
 	* @param length		The length is the number of characters in the string, so length+1 bytes will be allocated
 	*					(so that a trailing null is always included).  Thus passing length 0 is valid and will allocate a single byte.
 	*************************************************************/
-	static char* AllocateString(int length) ;
+	static inline char* AllocateString(int length)
+	{
+		// Switching to malloc and free (from new[] and delete[]), specifically so that we can use strdup() for CopyString
+		// which gets called a lot.  Using the library implementation (which should be in assembler) will
+		// be a lot faster than doing this manually.
+		xmlString str = (xmlString)malloc(length+1) ;
+		str[0] = 0 ;
+
+		return str ;
+	}
 
     /*************************************************************
     * @brief Utility function to release memory allocated by this element and returned to the caller.
 	*
 	* @param string		The string to release.  Passing NULL is valid and does nothing.
 	*************************************************************/
-	static void DeleteString(char* string) ;
+	static inline void DeleteString(char* string)
+	{
+		if (string == NULL)
+			return ;
+
+		free(string) ;
+	}
 
     /*************************************************************
     * @brief	Performs an allocation and then copies the contents of the passed in string to the newly allocated string.
 	*
 	* @param string		The string to copy.  Passing NULL is valid and returns NULL.
 	*************************************************************/
-	static char* CopyString(char const* original) ;
+	static inline char* CopyString(char const* original)
+	{
+		if (original == NULL)
+			return NULL ;
+
+		return strdup(original) ;
+	}
 
 	/*************************************************************
     * @brief	Performs an allocation and then copies the contents of the passed in buffer to the newly allocated buffer.

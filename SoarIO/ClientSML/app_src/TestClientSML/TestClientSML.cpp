@@ -1,5 +1,5 @@
 
-#include "sml_Connection.h"
+//#include "sml_Connection.h"
 #include "sml_Client.h"
 
 #include "..\..\Profiler\include\simple_timer.h"
@@ -102,7 +102,8 @@ void EmbeddedConnection()
 	{
 		SimpleTimer timer ;
 
-		sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", true) ;
+//		sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false) ;
+		sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
 		if (pKernel->HadError())
 		{
@@ -125,7 +126,7 @@ void EmbeddedConnection()
 		if (!pAgent)
 			cout << "Error creating agent" << endl ;
 
-		pAgent->LoadProductions("testsml.soar") ;
+		bool load = pAgent->LoadProductions("testsml.soar") ;
 
 		if (pAgent->HadError())
 		{
@@ -155,13 +156,17 @@ void EmbeddedConnection()
 		pAgent->Update(pWME2, 300) ;
 
 		// Create a new WME that shares the same id as plane
-		Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
+		//Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
 
 		ok = pAgent->Commit() ;
 
-		pAgent->Run(2) ;
+		std::string trace = pAgent->Run(2) ;
 
 		// Delete one of the shared WMEs to make sure that's ok
+		// BUGBUG: Turns out in the current gSKI implementation this can cause a crash, if we do proper cleanup
+		// If we release the children of pID here (as we should) then if there is a shared WME (like pID2)
+		// it is left with a reference to children that have been deleted.  I'm pretty sure it's a ref counting bug in gSKI's AddWmeObjectLink method.
+		// The fix I'm using here is to not create the shared WME (pID2) above here.
 		pAgent->DestroyWME(pID) ;
 		pAgent->Commit() ;
 
@@ -169,19 +174,24 @@ void EmbeddedConnection()
 		pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler) ;
 
 		// Nothing should match here
-		pAgent->Run(2) ;
+		trace = pAgent->Run(2) ;
 
 		// Then add some tic tac toe stuff which should trigger output
 		Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;
-		StringElement* pEmpty = pAgent->CreateStringWME(pSquare, "content", "EMPTY") ;
+		StringElement* pEmpty = pAgent->CreateStringWME(pSquare, "content", "RANDOM") ;
 		IntElement* pRow = pAgent->CreateIntWME(pSquare, "row", 1) ;
 		IntElement* pCol = pAgent->CreateIntWME(pSquare, "col", 2) ;
 
 		ok = pAgent->Commit() ;
 
+		// Update the square's value to be empty.  This ensures that the update
+		// call is doing something.  Otherwise, when we run we won't get a match.
+		pAgent->Update(pEmpty, "EMPTY") ;
+		ok = pAgent->Commit() ;
+
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 //		pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
-		pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+		trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 		bool ioOK = false ;
 
@@ -244,7 +254,7 @@ void EmbeddedConnection()
 
 		// The move command should be deleted in response to the
 		// the status complete getting added
-		pAgent->Run(2) ;
+		trace = pAgent->Run(2) ;
 
 		// Dump out the output link again.
 		if (pAgent->GetOutputLink())

@@ -21,6 +21,7 @@
 #include "sml_StringOps.h"
 #include "sml_OutputListener.h"
 #include "sml_ConnectionManager.h"
+#include "KernelSMLDirect.h"
 
 #include "thread_Lock.h"
 
@@ -129,6 +130,14 @@ KernelSML::~KernelSML()
 	for (AgentMapIter iter = m_AgentMap.begin() ; iter != m_AgentMap.end() ; iter++)
 	{
 		AgentSML* pAgentSML = iter->second ;
+
+		// Release any wmes or other objects we're keeping
+		pAgentSML->Clear() ;
+
+		// Make the call.
+		GetKernel()->GetAgentManager()->RemoveAgent(pAgentSML->GetIAgent()) ;
+
+		// Now delete the agent information we're keeping.
 		delete pAgentSML ;
 	}
 
@@ -446,3 +455,146 @@ ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, ElementXML* p
 	return pResponse ;
 }
 
+/////////////////////////////////////////////////////////////////
+// KernelSMLDirect methods.
+// 
+// These provide a higher speed access to a few methods that we
+// need for I/O with an embedded connection.
+// These just give us a way to optimize performance on the most
+// time critical part of the interface.
+/////////////////////////////////////////////////////////////////
+
+/*************************************************************
+* @brief	Add a wme.
+* @param input		True if adding to input link.  False if adding to output link
+* @param parent		NULL if adding to the root, otherwise the identifier (WMObject) we're adding to.
+* @param pAttribute The attribute name to use
+* @param value		The value to use
+*************************************************************/
+EXPORT Direct_WME_Handle sml_DirectAddWME_String(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute, char const* value)
+{
+	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeString((IWMObject*)parent, pAttribute, value) ;
+	return wme ;
+}
+
+EXPORT Direct_WME_Handle sml_DirectAddWME_Int(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute, int value)
+{
+	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeInt((IWMObject*)parent, pAttribute, value) ;
+	return wme ;
+}
+
+EXPORT Direct_WME_Handle sml_DirectAddWME_Double(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute, double value)
+{
+	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeDouble((IWMObject*)parent, pAttribute, value) ;
+	return wme ;
+}
+
+/*************************************************************
+* @brief	Remove a wme.  This function also releases the IWme*
+*			making it no longer valid.
+* @param wm			The working memory object (either input or output)
+* @param wme		The wme we're removing
+*************************************************************/
+EXPORT void sml_DirectRemoveWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)
+{
+	((IWorkingMemory*)wm)->RemoveWme((IWme*)wme) ;
+
+	// Release the object so the client doesn't have to call back in and do that.
+	((IWme*)wme)->Release() ;
+}
+
+/*************************************************************
+* @brief	Creates a new identifier (parent ^attribute <new-id>).
+* @param wm			The working memory object (either input or output)
+* @param parent		The identifier (WMObject) we're adding to.
+* @param pAttribute	The attribute to add
+*************************************************************/
+EXPORT Direct_WME_Handle sml_DirectAddID(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute)
+{
+	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeNewObject((IWMObject*)parent, pAttribute) ;
+	return wme ;
+}
+
+/*************************************************************
+* @brief	Creates a new wme with an existing id as its value
+*			(parent ^attribute <existing-id>)
+* @param wm			The working memory object (either input or output)
+* @param parent		The identifier (WMObject) we're adding to.
+* @param pAttribute	The attribute to add
+* @param orig		The original identifier (whose value we are copying)
+*************************************************************/
+EXPORT Direct_WME_Handle sml_DirectLinkID(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, char const* pAttribute, Direct_WMObject_Handle orig)
+{
+	Direct_WME_Handle wme = (Direct_WME_Handle)((IWorkingMemory*)wm)->AddWmeObjectLink((IWMObject*)parent, pAttribute, (IWMObject*)orig) ;
+	return wme ;
+}
+
+/*************************************************************
+* @brief	The AddID methods return a WME, but for gSKI you need
+*			a WMObject to work with them, so this gets the identifier
+*			(WMObject) from a wme.
+*			(parent ^attribute <id>) - returns <id> (not parent)
+*************************************************************/
+EXPORT Direct_WMObject_Handle sml_DirectGetThisWMObject(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)
+{
+	unused(wm) ;
+	Direct_WMObject_Handle wmobject = (Direct_WMObject_Handle)((IWme*)wme)->GetValue()->GetObject() ;
+	return wmobject ;
+}
+
+EXPORT Direct_WorkingMemory_Handle sml_DirectGetWorkingMemory(char const* pAgentName, bool input)
+{
+	IAgent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
+
+	if (!pAgent)
+		return 0 ;
+
+	if (input)
+		return (Direct_WorkingMemory_Handle)pAgent->GetInputLink()->GetInputLinkMemory() ;
+	else
+		return (Direct_WorkingMemory_Handle)pAgent->GetOutputLink()->GetOutputMemory() ;
+}
+
+EXPORT Direct_WMObject_Handle sml_DirectGetRoot(char const* pAgentName, bool input)
+{
+	IAgent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
+
+	if (!pAgent)
+		return 0 ;
+
+	IWMObject* pRoot = NULL ;
+	if (input)
+		pAgent->GetInputLink()->GetRootObject(&pRoot) ;
+	else
+		pAgent->GetOutputLink()->GetRootObject(&pRoot) ;
+
+	return (Direct_WMObject_Handle)pRoot ;
+}
+
+EXPORT void sml_DirectRunTilOutput(char const* pAgentName)
+{
+	IAgent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
+
+	if (!pAgent)
+		return ;
+
+	pAgent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT) ;
+}
+
+EXPORT void sml_DirectReleaseWME(Direct_WME_Handle wme)
+{
+	((IWme*)wme)->Release() ;
+}
+
+EXPORT void sml_DirectReleaseWMObject(Direct_WMObject_Handle parent)
+{
+	((IWMObject*)parent)->Release() ;
+}
+
+/*
+EXPORT Direct_Agent_Handle sml_DirectGetAgent(char const* pAgentName)
+{
+	IAgent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
+	return (Direct_Agent_Handle)pAgent ;
+}
+*/

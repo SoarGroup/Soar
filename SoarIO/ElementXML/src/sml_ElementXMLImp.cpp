@@ -23,6 +23,8 @@
 
 #include "sml_ElementXMLImpl.h"
 
+#include <algorithm>	// For "for_each"
+
 using namespace sml ;
 
 ////////////////////////////////////////////////////////////////
@@ -252,6 +254,16 @@ ElementXMLImpl::ElementXMLImpl(void)
 
 	// Creation of the object creates an initial reference.
 	m_RefCount = 1 ;
+
+	// Guessing at the approx number of strings we'll store makes adding
+	// attributes substantially faster.
+	m_StringsToDelete.reserve(20) ;
+}
+
+// Provide a static way to call release ref to get round an STL challenge.
+static inline void StaticReleaseRef(ElementXMLImpl* pXML)
+{
+	pXML->ReleaseRef() ;
 }
 
 /*************************************************************
@@ -266,6 +278,12 @@ ElementXMLImpl::~ElementXMLImpl(void)
 	// (We store these in a separate list because some elements in
 	//  the attribute map may be constants and some strings we need to delete
 	//  so we can't walk it and delete its contents).
+
+	// Replacing a simple walking of the list with a faster algorithmic method
+	// for doing the same thing.
+	std::for_each(m_StringsToDelete.begin(), m_StringsToDelete.end(), &ElementXMLImpl::DeleteString) ;
+
+	/*
 	xmlStringListIter iter = m_StringsToDelete.begin() ;
 
 	while (iter != m_StringsToDelete.end())
@@ -275,8 +293,15 @@ ElementXMLImpl::~ElementXMLImpl(void)
 
 		DeleteString(str) ;
 	}
+	*/
 
 	// Delete all children
+
+	// Again, replacing this walking of the list with a faster use of std::for_each.
+	// We'll use a static method and have it call the member function because it's beyond
+	// me how to use std::mem_fun_ref and friends to call directly to the member.
+	std::for_each(m_Children.begin(), m_Children.end(), &StaticReleaseRef) ;
+	/*
 	xmlListIter iterChildren = m_Children.begin() ;
 
 	while (iterChildren != m_Children.end())
@@ -286,6 +311,7 @@ ElementXMLImpl::~ElementXMLImpl(void)
 
 		pChild->ReleaseRef() ;
 	}
+	*/
 }
 
 /*************************************************************
@@ -967,52 +993,63 @@ char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includ
 * @param length		The length is the number of characters in the string, so length+1 bytes will be allocated
 *					(so that a trailing null is always included).  Thus passing length 0 is valid and will allocate a single byte.
 *************************************************************/
+/*
 char* ElementXMLImpl::AllocateString(int length)
 {
-	xmlString str = new char[length+1] ;
+	// Switching to malloc and free, specifically so that we can use strdup() for CopyString
+	// which gets called a lot.  Using the library implementation (which should be in assembler) will
+	// be a lot faster than doing this manually.
+	xmlString str = (xmlString)malloc(length+1) ;
+//	xmlString str = new char[length+1] ;
 	str[0] = 0 ;
 
 	return str ;
 }
-
+*/
 /*************************************************************
 * @brief Utility function to release memory allocated by this element and returned to the caller.
 *
 * @param string		The string to release.  Passing NULL is valid and does nothing.
 *************************************************************/
+/*
 void ElementXMLImpl::DeleteString(char* string)
 {
 	if (string == NULL)
 		return ;
 
-	delete[] string ;
+//	delete[] string ;
+	free(string) ;
 }
-
+*/
 /*************************************************************
 * @brief	Performs an allocation and then copies the contents of the passed in string to the newly allocated string.
 *
 * @param string		The string to copy.  Passing NULL is valid and returns NULL.
 *************************************************************/
+/*
 char* ElementXMLImpl::CopyString(char const* original)
 {
 	if (original == NULL)
 		return NULL ;
 
-	int len = (int)strlen(original) ;
-	xmlString str = AllocateString(len) ;
+	return strdup(original) ;
 
-	char* q = str ;
-	for (const char* p = original ; *p != NUL ; p++)
-	{
-		*q = *p ;
-		q++ ;
-	}
-	
-	// Make sure it's null terminated.
-	*q = NUL ;
+	//int len = (int)strlen(original) ;
+	//xmlString str = AllocateString(len) ;
 
-	return str ;
+	//char* q = str ;
+	//for (const char* p = original ; *p != NUL ; p++)
+	//{
+	//	*q = *p ;
+	//	q++ ;
+	//}
+	//
+	//// Make sure it's null terminated.
+	//*q = NUL ;
+
+	//return str ;
 }
+*/
 
 /*************************************************************
 * @brief	Performs an allocation and then copies the contents of the passed in buffer to the newly allocated buffer.

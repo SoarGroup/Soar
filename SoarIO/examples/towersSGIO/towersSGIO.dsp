@@ -50,7 +50,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib simside.lib sgio_shared.lib soarkernel.lib ws2_32.lib /nologo /subsystem:console /machine:I386 /nodefaultlib:"LIBCMTD" /libpath:"C:\Progra~1\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside\\" /libpath:"C:\Progra~1\Soar\Soar-Suite-8.5.2\sgio-1.1.2\shared\\" /libpath:"C:\Progra~1\Soar\Soar-Suite-8.5.2\soar-8.5.2\kernel\\"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib simside.lib sgio_shared.lib soarkernel.lib ws2_32.lib /nologo /subsystem:console /machine:I386 /nodefaultlib:"LIBCMTD" /libpath:"..\..\..\sgio-1.1.2\simside\\" /libpath:"..\..\..\sgio-1.1.2\shared\\" /libpath:"..\..\..\soar-8.5.2\kernel\\"
 
 !ELSEIF  "$(CFG)" == "towersSGIO - Win32 Debug"
 
@@ -74,7 +74,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib simside.lib sgio_shared.lib soarkernel.lib ws2_32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"C:\Progra~1\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside\\" /libpath:"C:\Progra~1\Soar\Soar-Suite-8.5.2\sgio-1.1.2\shared\\" /libpath:"C:\Progra~1\Soar\Soar-Suite-8.5.2\soar-8.5.2\kernel\\"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib simside.lib sgio_shared.lib soarkernel.lib ws2_32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"..\..\..\sgio-1.1.2\simside\\" /libpath:"..\..\..\sgio-1.1.2\shared\\" /libpath:"..\..\..\soar-8.5.2\kernel\\"
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 

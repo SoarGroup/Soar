@@ -103,8 +103,8 @@ protected:
 	cli::CommandLineInterface m_CommandLineInterface ;
 
 	// The gSKI kernel objects
-	gSKI::IKernelFactory* m_pKernelFactory ;   
-	gSKI::IKernel* m_pIKernel ;
+	gSKI::IKernelFactory*	m_pKernelFactory ;   
+	gSKI::IKernel*			m_pIKernel ;
 
 	// A listener socket and the list of connections to the kernel
 	ConnectionManager* m_pConnectionManager ;
@@ -184,6 +184,16 @@ public:
 	*************************************************************/
 	ElementXML* ProcessIncomingSML(Connection* pConnection, ElementXML* pIncoming) ;
 
+	/*************************************************************
+	* @brief	Look up an agent from its name.
+	*************************************************************/
+	gSKI::IAgent* GetAgent(char const* pAgentName) ;
+
+	/*************************************************************
+	* @brief	Get the kernel object.
+	*************************************************************/
+	gSKI::IKernel* GetKernel() { return m_pIKernel ; }
+
 protected:
 	KernelSML(void);
 
@@ -205,16 +215,6 @@ protected:
 	* @brief	Delete the agent sml object for this agent.
 	*************************************************************/	
 	bool DeleteAgentSML(gSKI::IAgent* pAgent) ;
-
-	/*************************************************************
-	* @brief	Look up an agent from its name.
-	*************************************************************/
-	gSKI::IAgent* GetAgent(char const* pAgentName) ;
-
-	/*************************************************************
-	* @brief	Get the kernel object.
-	*************************************************************/
-	gSKI::IKernel* GetKernel() { return m_pIKernel ; }
 
 	/*************************************************************
 	* @brief	Get the kernel factory object.

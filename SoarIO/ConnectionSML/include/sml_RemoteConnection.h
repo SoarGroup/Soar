@@ -56,7 +56,7 @@ public:
 	virtual void CloseConnection() ;
 	virtual bool IsClosed() ;
 	virtual bool IsRemoteConnection() { return true ; }
-
+	virtual bool IsAsynchronous() { return true ; }
 };
 
 } // End of namespace

@@ -30,6 +30,9 @@
 #include "sml_TagWme.h"
 #include "sml_StringOps.h"
 
+#include "sml_EmbeddedConnection.h"	// For access to direct methods
+#include "sml_ClientDirect.h"
+
 using namespace sml ;
 
 WorkingMemory::WorkingMemory()
@@ -58,6 +61,7 @@ char const* WorkingMemory::GetAgentName() const
 // Searches for an identifier object that matches this id.
 Identifier*	WorkingMemory::FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index)
 {
+	// BUGBUG: Why are we ignoring the "index" param?
 	// BADBAD: For better speed we could keep a map of identifiers in use and just look this up.
 	Identifier* pMatch = NULL ;
 
@@ -127,14 +131,9 @@ void WorkingMemory::ClearOutputLinkChanges()
 	// Clear the list, deleting any WMEs that it owns
 	m_OutputDeltaList.Clear(true) ;
 
-	if (m_InputLink)
-	{
-		// Reset the information about how the input link just changed.
-		// (Not sure we're updating this information anyway as the client controls it).
-		m_InputLink->ClearJustAdded() ;
-		m_InputLink->ClearChildrenModified() ;
-	}
-
+	// We only maintain this information for values on the output link
+	// as the client knows what's happening on the input link (presumably)
+	// as it is controlling the creation of those objects.
 	if (m_OutputLink)
 	{
 		// Reset the information about how the output link just changed.
@@ -153,6 +152,8 @@ void WorkingMemory::ClearOutputLinkChanges()
 *************************************************************/
 bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
+	unused(pResponse) ;	// No need to reply
+
 #ifdef _DEBUG
 	char * pMsg = pIncoming->GetCommandTag()->GenerateXMLString(true) ;
 	ElementXML::DeleteString(pMsg) ;
@@ -276,6 +277,16 @@ Identifier* WorkingMemory::GetInputLink()
 		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInputLink, GetAgentName()))
 		{
 			m_InputLink = new Identifier(GetAgent(), response.GetResultString(), GenerateTimeTag()) ;
+
+#ifdef SML_DIRECT
+			if (GetConnection()->IsDirectConnection())
+			{
+				Direct_WorkingMemory_Handle wm = ((EmbeddedConnection*)GetConnection())->DirectGetWorkingMemory(GetAgent()->GetAgentName(), true) ;
+				Direct_WMObject_Handle wmobject = ((EmbeddedConnection*)GetConnection())->DirectGetRoot(GetAgent()->GetAgentName(), true) ;
+				m_InputLink->SetWorkingMemoryHandle(wm) ;
+				m_InputLink->SetWMObjectHandle(wmobject) ;
+			}
+#endif
 		}
 	}
 
@@ -311,6 +322,19 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
 
+#ifdef SML_DIRECT
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+	if (GetConnection()->IsDirectConnection() && wm)
+	{
+		// Add the wme immediately and return the new object.
+		Direct_WME_Handle wme = ((EmbeddedConnection*)GetConnection())->DirectAddWME_String(wm, parent->GetWMObjectHandle(), pAttribute, pValue) ;
+		pWME->SetWMEHandle(wme) ;
+
+		// Return immediately, without adding it to the commit list.
+		return pWME ;
+	}
+#endif
+
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
@@ -328,6 +352,19 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
 
+#ifdef SML_DIRECT
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+	if (GetConnection()->IsDirectConnection() && wm)
+	{
+		// Add the wme immediately and return the new object.
+		Direct_WME_Handle wme = ((EmbeddedConnection*)GetConnection())->DirectAddWME_Int(wm, parent->GetWMObjectHandle(), pAttribute, value) ;
+		pWME->SetWMEHandle(wme) ;
+
+		// Return immediately, without adding it to the commit list.
+		return pWME ;
+	}
+#endif
+
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
@@ -344,6 +381,19 @@ FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAtt
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
+
+#ifdef SML_DIRECT
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+	if (GetConnection()->IsDirectConnection() && wm)
+	{
+		// Add the wme immediately and return the new object.
+		Direct_WME_Handle wme = ((EmbeddedConnection*)GetConnection())->DirectAddWME_Double(wm, parent->GetWMObjectHandle(), pAttribute, value) ;
+		pWME->SetWMEHandle(wme) ;
+
+		// Return immediately, without adding it to the commit list.
+		return pWME ;
+	}
+#endif
 
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
@@ -375,6 +425,24 @@ void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 	pWME->SetValue(pValue) ;
 	pWME->GenerateNewTimeTag() ;
 
+#ifdef SML_DIRECT
+	IdentifierSymbol* parent = pWME->GetIdentifier() ;
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+
+	if (GetConnection()->IsDirectConnection() && wm)
+	{
+		// Remove the existing wme.  This releases the gSKI WME as well, invalidating our WMEHandle which we will replace in a moment.
+		((EmbeddedConnection*)GetConnection())->DirectRemoveWME(wm, pWME->GetWMEHandle()) ;
+
+		// Add the new value immediately
+		Direct_WME_Handle wme = ((EmbeddedConnection*)GetConnection())->DirectAddWME_String(wm, parent->GetWMObjectHandle(), pWME->GetAttribute(), pValue) ;
+		pWME->SetWMEHandle(wme) ;
+
+		// Return immediately, without adding it to the commit list.
+		return ;
+	}
+#endif
+
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
 }
@@ -398,6 +466,24 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 	pWME->SetValue(value) ;
 	pWME->GenerateNewTimeTag() ;
 
+#ifdef SML_DIRECT
+	IdentifierSymbol* parent = pWME->GetIdentifier() ;
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+
+	if (GetConnection()->IsDirectConnection())
+	{
+		// Remove the existing wme.  This releases the gSKI WME as well, invalidating our WMEHandle which we will replace in a moment.
+		((EmbeddedConnection*)GetConnection())->DirectRemoveWME(wm, pWME->GetWMEHandle()) ;
+
+		// Add the new value immediately
+		Direct_WME_Handle wme = ((EmbeddedConnection*)GetConnection())->DirectAddWME_Int(wm, parent->GetWMObjectHandle(), pWME->GetAttribute(), value) ;
+		pWME->SetWMEHandle(wme) ;
+
+		// Return immediately, without adding it to the commit list.
+		return ;
+	}
+#endif
+
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
 }
@@ -420,6 +506,24 @@ void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 	// and then creating a new one).
 	pWME->SetValue(value) ;
 	pWME->GenerateNewTimeTag() ;
+
+#ifdef SML_DIRECT
+	IdentifierSymbol* parent = pWME->GetIdentifier() ;
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+
+	if (GetConnection()->IsDirectConnection() && wm)
+	{
+		// Remove the existing wme.  This releases the gSKI WME as well, invalidating our WMEHandle which we will replace in a moment.
+		((EmbeddedConnection*)GetConnection())->DirectRemoveWME(wm, pWME->GetWMEHandle()) ;
+
+		// Add the new value immediately
+		Direct_WME_Handle wme = ((EmbeddedConnection*)GetConnection())->DirectAddWME_Double(wm, parent->GetWMObjectHandle(), pWME->GetAttribute(), value) ;
+		pWME->SetWMEHandle(wme) ;
+
+		// Return immediately, without adding it to the commit list.
+		return ;
+	}
+#endif
 
 	// Add it to the list of changes that need to be sent to Soar.
 	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
@@ -477,6 +581,22 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
 
+#ifdef SML_DIRECT
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+
+	if (GetConnection()->IsDirectConnection() && wm)
+	{
+		// Add the wme immediately and return the new object.
+		Direct_WME_Handle wme = ((EmbeddedConnection*)GetConnection())->DirectAddID(wm, parent->GetWMObjectHandle(), pAttribute) ;
+		Direct_WMObject_Handle wmobject = ((EmbeddedConnection*)GetConnection())->DirectGetThisWMObject(wm, wme) ;
+		pWME->SetWMEHandle(wme) ;
+		pWME->SetWMObjectHandle(wmobject) ;
+
+		// Return immediately, without adding it to the commit list.
+		return pWME ;
+	}
+#endif
+
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
 
@@ -498,6 +618,21 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
+
+#ifdef SML_DIRECT
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+	if (GetConnection()->IsDirectConnection() && wm)
+	{
+		// Add the wme immediately and return the new object.
+		Direct_WME_Handle wme = ((EmbeddedConnection*)GetConnection())->DirectLinkID(wm, parent->GetWMObjectHandle(), pAttribute, pSharedValue->GetWMObjectHandle()) ;
+		Direct_WMObject_Handle wmobject = ((EmbeddedConnection*)GetConnection())->DirectGetThisWMObject(wm, wme) ;
+		pWME->SetWMEHandle(wme) ;
+		pWME->SetWMObjectHandle(wmobject) ;
+
+		// Return immediately, without adding it to the commit list.
+		return pWME ;
+	}
+#endif
 
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
@@ -525,6 +660,23 @@ bool WorkingMemory::DestroyWME(WMElement* pWME)
 
 	// The parent identifier no longer owns this WME
 	parent->RemoveChild(pWME) ;
+
+#ifdef SML_DIRECT
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+
+	if (GetConnection()->IsDirectConnection() && wm)
+	{
+		// Remove the wme immediately, which also invalidates the handle, so clear it immediately
+		// (or we'll crash in the destructor for pWME just below)
+		((EmbeddedConnection*)GetConnection())->DirectRemoveWME(wm, pWME->GetWMEHandle()) ;
+		pWME->SetWMEHandle(0) ;
+
+		// Return immediately, without adding it to the commit list
+		delete pWME ;
+
+		return true ;
+	}
+#endif
 
 	// Add it to the list of changes to send to Soar.
 	m_DeltaList.RemoveWME(pWME->GetTimeTag()) ;

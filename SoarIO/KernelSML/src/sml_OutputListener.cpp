@@ -173,10 +173,8 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 
 		// voigtjr: this is not legal in gcc (nor defined in the sgi stl standard)
 		//iter = m_TimeTags.erase(iter) ;
-		// TODO: inefficient, fix:
-		m_TimeTags.erase(iter);
-		iter = m_TimeTags.begin();
-
+		// So replacing with this:
+		m_TimeTags.erase(iter++);
 	}
 
 	// This is important.  We are working with a subpart of pMsg.

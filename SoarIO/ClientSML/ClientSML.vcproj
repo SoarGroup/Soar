@@ -147,6 +147,9 @@
 				RelativePath=".\include\sml_ClientAgent.h">
 			</File>
 			<File
+				RelativePath=".\include\sml_ClientDirect.h">
+			</File>
+			<File
 				RelativePath=".\include\sml_ClientEvents.h">
 			</File>
 			<File
@@ -194,5 +197,8 @@
 		</File>
 	</Files>
 	<Globals>
+		<Global
+			Name="DevPartner_IsInstrumented"
+			Value="1"/>
 	</Globals>
 </VisualStudioProject>

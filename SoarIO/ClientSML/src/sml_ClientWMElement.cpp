@@ -12,6 +12,9 @@
 #include "sml_ClientAgent.h"
 #include "sml_ClientIdentifier.h"
 
+#include "sml_EmbeddedConnection.h"	// For direct methods
+#include "sml_ClientDirect.h"
+
 using namespace sml ;
 
 WMElement::WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, long timeTag)
@@ -29,10 +32,22 @@ WMElement::WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName,
 
 	if (pID)
 		m_ID = pID->GetSymbol() ;
+
+#ifdef SML_DIRECT
+	m_WME = 0 ;
+#endif
 }
 
 WMElement::~WMElement(void)
 {
+#ifdef SML_DIRECT
+	// If we're using the direct connection methods, we need to release the gSKI object
+	// that we own.
+	if (m_WME && GetAgent()->GetConnection()->IsDirectConnection())
+	{
+		((EmbeddedConnection*)GetAgent()->GetConnection())->DirectReleaseWME(m_WME) ;
+	}
+#endif
 }
 
 void WMElement::GenerateNewTimeTag()

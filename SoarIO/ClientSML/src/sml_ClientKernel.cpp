@@ -27,12 +27,29 @@ Kernel::Kernel(Connection* pConnection)
 	m_IdCounter      = 0 ;
 	m_SocketLibrary  = NULL ;
 	m_LastError		 = Error::kNoError ;
-	sml_ProcessMessage(0,0,0); // for static link
+
+#ifdef LINUX_STATIC_LINK
+	// On Linux the linker only makes a single pass through the libraries
+	// so if we try to statically link all of the code together, it fails to
+	// see sml_ProcessMessage and the other methods that are exported from KernelSML because
+	// they are only referenced within EmbeddedConnection (inside ConnectionSML.lib)
+	// which has to come later on the linker's command line than KernelSML.
+	// A way to resolve this is to make an access from here in ClientSML (which appears
+	// before KernelSML on the command line for the linker) to the
+	// methods in KernelSML, which will force the linker to pull the code into the final executable.
+	//
+	// If we're in Windows this is not an issue (because the Windows linker supports these cyclical references)
+	// and if we're loading KernelSML dynamically (the normal fashion) this is also not a problem.
+	sml_ProcessMessage(0,0,0);
+#endif
 }
 
 Kernel::~Kernel(void)
 {
 	// When the agent map is deleted, it will delete its contents (the Agent objects)
+	// Do this before we delete the connection, in case we need to send things to the kernel
+	// during clean up.
+	m_AgentMap.clear() ;
 
 	// We also need to close the connection
 	if (m_Connection)
@@ -106,19 +123,22 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 *
 * @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
 *						This library will be dynamically loaded and connected to.
-* @param SynchronousExecution	If true, Soar will run in the client's thread and the client must periodically call over to the
-*								kernel to check for incoming messages on remote sockets.
-*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
-*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
+* @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
+*						kernel to check for incoming messages on remote sockets.
+*						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
+*						However, this kernel thread model requires a context switch whenever commands are sent to/from the kernel.
+* @param Optimized		If this is a client thread connection, we can short-circuit parts of the messaging system for sending input and
+*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
+*						you may wish to disable this option (so everything goes through the standard paths).  Has no affect if not running on client thread.
 * @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 *
 * @returns A new kernel object which is used to communicate with the kernel.
 *		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 *************************************************************/
-Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, int portToListenOn)
+Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn)
 {
 	ErrorCode errorCode = 0 ;
-	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, synchronousExecution, portToListenOn, &errorCode) ;
+	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, clientThread, optimized, portToListenOn, &errorCode) ;
 
 	if (!pConnection)
 		return NULL ;
@@ -156,7 +176,7 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	sock::SocketLib* pLib = new sock::SocketLib() ;
 
 	// Connect to the remote socket
-	Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, port, &errorCode) ;
+	Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, (unsigned short)port, &errorCode) ;
 
 	// BUGBUG: We need to return a decent error message here as this can easily fail.
 	if (!pConnection)

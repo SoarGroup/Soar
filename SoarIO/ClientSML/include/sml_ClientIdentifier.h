@@ -17,6 +17,7 @@
 #define SML_IDENTIFIER_H
 
 #include "sml_ClientWMElement.h"
+#include "sml_ClientDirect.h"
 
 #include <string>
 #include <list>
@@ -50,15 +51,26 @@ protected:
 	// This is true if the list of children of this identifier was changed.  The client chooses when to clear these flags.
 	bool m_AreChildrenModified ;
 
+// The gSKI objects for this wme.  This allows us to optimize the embedded connection.
+#ifdef SML_DIRECT
+protected:
+	Direct_WorkingMemory_Handle	m_WM ;
+	Direct_WMObject_Handle		m_WMObject ;
+
 public:
-	IdentifierSymbol(Identifier* pIdentifier) { m_UsedBy.push_back(pIdentifier) ; }
+	Direct_WorkingMemory_Handle GetWorkingMemoryHandle()		{ return m_WM ; }
+	Direct_WMObject_Handle		GetWMObjectHandle()				{ return m_WMObject ; }
+#endif
+
+public:
+	IdentifierSymbol(Identifier* pIdentifier) ;
 	~IdentifierSymbol() ;
 
 	char const* GetIdentifierSymbol()			{ return m_Symbol.c_str() ; }
 	void SetIdentifierSymbol(char const* pID)   { m_Symbol = pID ; }
 
 	bool AreChildrenModified()				{ return m_AreChildrenModified ; }
-	void SetAreChildrenModified(bool state) { m_AreChildrenModified = true ; }
+	void SetAreChildrenModified(bool state) { m_AreChildrenModified = state ; }
 
 	// Indicates that an identifier is no longer using this as its value
 	void NoLongerUsedBy(Identifier* pIdentifier)  { m_UsedBy.remove(pIdentifier) ; }
@@ -206,6 +218,15 @@ protected:
 	void AddChild(WMElement* pWME) { m_pSymbol->AddChild(pWME) ; }
 
 	void RemoveChild(WMElement* pWME) { m_pSymbol->RemoveChild(pWME) ; }
+
+#ifdef SML_DIRECT
+	void SetWorkingMemoryHandle(Direct_WorkingMemory_Handle wm) { m_pSymbol->m_WM = wm ; }
+	void SetWMObjectHandle(Direct_WMObject_Handle wmobject)		{ m_pSymbol->m_WMObject = wmobject ; }
+
+	Direct_WorkingMemory_Handle GetWorkingMemoryHandle()		{ return m_pSymbol->m_WM ; }
+	Direct_WMObject_Handle		GetWMObjectHandle()				{ return m_pSymbol->m_WMObject ; }
+#endif
+
 };
 
 }	// namespace

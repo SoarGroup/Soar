@@ -14,6 +14,8 @@
 #include "sml_KernelSML.h"
 #include "sock_Debug.h"
 
+#include <time.h>	// To get clock
+
 using namespace sml ;
 using namespace sock ;
 
@@ -62,28 +64,58 @@ void ListenerManager::Run()
 		// Sleep for a little before checking for a new connection
 		// New connections will come in very infrequently so this doesn't
 		// have to be very rapid.
-		Sleep(100) ;
+		Sleep(50) ;
 	}
 
 	// Shut down our listener socket
 	m_ListenerSocket.CloseSocket() ;
 }
 
-// BUGBUG: We need to shutdown this thread if we're using the synchronous model for embedded execution.
-// We also need to document in the createEmbeddedConnection exactly which function to call to check
-// for incoming messages over here.
 void ReceiverThread::Run()
 {
 	// While this thread is alive, keep checking for incoming messages
-	// and executing them.  Doesn't need to be especially responsive because once
-	// we actually start running Soar we're inside ReceiveAllMessages()->ReceiveMessage()
-	// and then while that's executing it will call back out to receive more messages during the
-	// input phase.  So we won't get to this sleep call while Soar is executing.
+	// and executing them.  These messages could be coming in from a remote socket
+	// or from an embedded connection.  If we're executing on the client thread
+	// for an embedded connection (the "sycnhronous" model) then this thread is shut down
+	// and it's the client's responsibility to check for incoming messages by calling
+	// "GetIncomingCommands" periodically.
+
+	// Record the time of the last message we received and keep polling
+	// for a little after at a high speed, before sleeping.
+	// The reason we track this is because calling "Sleep(0)" gives us maximum
+	// performance (on towers-of-hanoi calling Sleep(1) instead slows execution down
+	// by a factor of 80!), but calling "Sleep(0)" means we're stuck in a tight loop checking
+	// messages continually.  If we're using Soar through a command line interface (for instance)
+	// then the CPU would be 100% loaded all of the time, even if the user wasn't typing anything.
+	// This method of switching between Sleep(0) and a true sleep means we get maximum performance
+	// during a run (when messages are flying back and forth) but when the user stops doing anything
+	// the CPU quickly drops off to 0% usage as we sleep a lot.
+	clock_t last = 0 ;
+
+	// How long to wait before sleeping (currently 1 sec)
+	clock_t delay = CLOCKS_PER_SEC ;
+
 	while (!m_QuitNow)
 	{
-		m_ConnectionManager->ReceiveAllMessages() ;
+		// Receive any incoming commands and execute them
+		bool receivedMessage = m_ConnectionManager->ReceiveAllMessages() ;
 
-		Sleep(5) ;
+		if (receivedMessage)
+		{
+			// Record the time of the last incoming message
+			last = clock() ;
+		}
+
+		clock_t current = clock() ;
+
+		// If it's been a while since the last incoming message
+		// then start sleeping a reasonable amount.
+		// Sleep(0) just allows other threads to run before we continue
+		// to execute.
+		if (current - last > delay)
+			Sleep(5) ;
+		else
+			Sleep(0) ;
 	}
 }
 
@@ -211,11 +243,11 @@ void ConnectionManager::RemoveConnection(Connection* pConnection)
 // Go through all connections and read any incoming commands from the sockets.
 // The messages are sent to the callback registered with the connection when it was created (ReceivedCall currently).
 // Those calls could take a long time to execute (e.g. a call to Run Soar).
-// Returning false indicates we should stop checking
-// for more messages (and presumably shutdown completely).
+// Returns true if we received at least one message.
 bool ConnectionManager::ReceiveAllMessages()
 {
 	int index = 0 ;
+	bool receivedOneMessage = false ;
 
 	// We need to search this list of connections and call each in turn.
 	// But we also want to allow the listener thread to add new connections while we're doing this.
@@ -232,7 +264,7 @@ bool ConnectionManager::ReceiveAllMessages()
 		// (which includes if the other side has dropped its half of the socket)
 		if (!pConnection->IsClosed())
 		{
-			pConnection->ReceiveMessages(true) ;
+			receivedOneMessage = receivedOneMessage || pConnection->ReceiveMessages(true) ;
 		}
 		else
 		{
@@ -256,5 +288,5 @@ bool ConnectionManager::ReceiveAllMessages()
 
 	// So far we don't have some sort of shutdown message the remote connections
 	// can send, but if we decide to implement it this allows us to return it.
-	return true ;
+	return receivedOneMessage ;
 }

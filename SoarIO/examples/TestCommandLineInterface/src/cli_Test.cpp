@@ -33,8 +33,9 @@ int main(int argc, char** argv)
 	}
 
 	// Create an embedded connection to the kernel
-	sml::Kernel* pKernel;
-	pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", true) ;
+	// Passing false here so we don't execute Soar in our thread
+	// which means we can handle incoming remote connections automatically.
+	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false) ;
 	assert(pKernel);
 	cout << "Kernel created." << endl;
 

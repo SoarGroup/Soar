@@ -33,6 +33,7 @@ class Agent : public ClientErrors
 	friend class WorkingMemory ;
 	friend class ObjectMap<Agent*> ;	// So can delete agent
 	friend class WMElement ;
+	friend class Identifier ;
 
 	typedef std::map<smlEventId, RunEventHandler> RunEventMap ;
 

@@ -41,6 +41,11 @@ public:
 
 	virtual ~ObjectMap()
 	{
+		clear() ;
+	}
+
+	void clear()
+	{
 		// Delete the contents of the map
 		for(InternalMapIter mapIter = m_Map.begin(); mapIter != m_Map.end(); ++mapIter)
 		{
@@ -50,6 +55,7 @@ public:
 			// into the object structure, so it's deleted when the object is deleted.
 			delete pObject ;
 		}
+		m_Map.clear() ;
 	}
 
 	int size() const { return (int)m_Map.size() ; }

@@ -23,7 +23,7 @@
 #ifndef SIMPLE_TIMER_H
 #define SIMPLE_TIMER_H
 
-// This is a Win32 only solution.
+#ifdef _WIN32
 #include <Windows.h>
 
 class SimpleTimer
@@ -55,6 +55,41 @@ public:
 		return (double)(stopTime.QuadPart - startTime.QuadPart) / (double) freq.QuadPart;
     }
 } ;
+#else	// _WIN32
+
+// Linux version using clock()
+#include <time.h>
+
+class SimpleTimer
+{
+private:
+	clock_t startTime, stopTime;
+	const static clock_t freq = CLOCKS_PER_SEC ;
+
+    // Constructor
+public:
+	SimpleTimer()
+    {
+		startTime = clock() ;
+    }
+
+    // Start the timer
+	// Returns the current time
+    double Start()
+    {
+		startTime = clock() ;
+		return (double)startTime / (double)freq ;
+    }
+
+	// Returns the elapsed time since start
+    double Elapsed()
+    {
+		stopTime = clock() ;
+		return (double)(stopTime - startTime) / (double) freq;
+    }
+} ;
+
+#endif	// _WIN32
 
 #endif // SIMPLE_TIMER_H
 
