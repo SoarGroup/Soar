@@ -6,38 +6,55 @@
 package edu.rosehulman.soar.editor;
 
 import org.eclipse.jface.text.*;
+import java.util.regex.*;
 
 /**
  * Auto-indents soar code.
  * Heavily edited 2004.10.07 by Paul Oppenheim.
+ * Strategy:
+ * <code>
+ * #comment
+ * sp {production*name #comment
+ *     #comment
+ *     (state <s> ^<attribute> <value>)  #comment
+ * -->
+ *     (<s> ^operator <o> +=<)
+ * }
+ * </code>
  * 
  * @author Tim Jasko
  * @author Paul Oppenheim
  * 
  */
-public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndentStrategy {
-	
+public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 	public void customizeDocumentCommand(IDocument doc, DocumentCommand comm) {
 		try {
 			//TODO: tear this all up, find the bug:
-			//I believe that the current implementation misinterprets DocumentCommand.
-			String prevCodeLine = getPrevCodeLine(doc, comm.offset);
 			
+			System.out.println("*************************************");
+			System.out.println("comm.text:                '" + comm.text + "'");
+			System.out.println("comm.offset:              '" + comm.offset + "'");
+			System.out.println("comm.length:              '" + comm.length + "'");
+			System.out.println("comm.caretOffset:         '" + comm.caretOffset + "'");
+			System.out.println("doc.get(offset, length):  '" + doc.get(comm.offset, comm.length) + "'");
+			
+			//what is it doing vs. what should it be doing
+			//(maybe high time to check out VS?)
+			
+			String prevCodeLine = getPrevCodeLine(doc, comm.offset);
 			//this is the first line; we have nothing to do
 			if (prevCodeLine == "") {
 				return;
 			}
 			
-			String prevDocText = doc.get(0, comm.offset);
-			char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1);
-			
-			int currLineNumber = doc.getLineOfOffset(comm.offset);
-			int currLineOffset = doc.getLineOffset(currLineNumber);
-			
-			String currLine = getLine(doc, doc.getLineOfOffset(comm.offset));
-			
-			int insertion = comm.offset - currLineOffset;
-			String temp = currLine.substring(0, insertion) + comm.text;
+			//various checkpoints
+			String prevDocText = doc.get(0, comm.offset);						//the whole doc, beginning to offset
+			char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1);	//the last char of the last code line
+			int currLineNumber = doc.getLineOfOffset(comm.offset);				//comm's line#
+			int currLineOffset = doc.getLineOffset(currLineNumber);				//comm's line's offset (should <= comm)
+			String currLine = getLine(doc, doc.getLineOfOffset(comm.offset));	//comm's line's text
+			int insertion = comm.offset - currLineOffset;						//how many chars comm is into the line
+			String temp = currLine.substring(0, insertion) + comm.text;			//should == the whole line up to the edit
 			
 			if (insertion < currLine.length()) {
 				temp += currLine.substring(insertion);
@@ -50,14 +67,15 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndent
 			int numSpaces = 0;
 			String indentString = "";
 			
-			System.out.println("*************************************");
-			System.out.println("text: '" + comm.text + "'");
-			System.out.println("prevCodeLine: '" + prevCodeLine + "'");
-			System.out.println("prevLastChar: '" + prevLastChar + "'");
-			System.out.println("currLine: '" + currLine + "'");
+			System.out.println("-------------------------------------");
+			System.out.println("text:           '" + comm.text + "'");
+			System.out.println("prevCodeLine:   '" + prevCodeLine + "'");
+			System.out.println("prevLastChar:   '" + prevLastChar + "'");
+			System.out.println("currLine:       '" + currLine + "'");
 			System.out.println("currLineNumber: '" + currLineNumber + "'");
 			System.out.println("currLineOffset: '" + currLineOffset + "'");
-			System.out.println("newCurrLine: '" + newCurrLine + "'");
+			System.out.println("newCurrLine:    '" + newCurrLine + "'");
+			
 			
 			//If there's nothing here, there's nothing to do
 			if ((newCurrLine.length() == 0)) {
@@ -178,9 +196,9 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndent
 			}
 			
 			// no line up char found
-			/*if (numSpaces < 0) {
-			 numSpaces = 3;
-			 } */
+			if (numSpaces < 0) {
+				//numSpaces = 3;
+			}
 			
 			// variable indent to line up chars vertically
 			for (int i = 0; i < numSpaces; i++) {
@@ -220,28 +238,29 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndent
 				
 				comm.offset += comm.text.length();
 				comm.text = "";
+				
 			}
-			
-		} catch (BadLocationException e) {
+		}
+		catch (BadLocationException e) {
 			e.printStackTrace();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			System.out.println("mysterious exception");
 			e.printStackTrace();
 		}
-		
 	} // void customizeDocumentCommand( ... )
+
 	
 	public int startingSpaces(String line) {
 		int i;
-		
 		for (i = 0; i < line.length(); ++i) {
 			if (line.charAt(i) != ' ') {
 				return i;
 			}
 		}
-		
 		return i;
 	}
+	
 	
 	/*
 	//The preceeding function was an Eclipse translation of the following
@@ -466,16 +485,38 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndent
 		}
 		
 	} // autoJustify() 
-	*/
 	
+			
 	/**
 	 * Function removes any trailing comments from the end of a string.
 	 * Comments are defined as anything following a '#', ";#", "; #" or ";  #"
 	 * Note:  the use of semicolons denoting comments is no longer used in Soar, but
 	 * still supported.
+	 * NOTE: 2004.10.16:paul: i need to re-write this using regex, so i can understand what it is doing.
+	 * Because I am unfamiliar with the semicolon syntax, it is removed for now.
+	 * 
 	 * @param prevLine the string that is to be cropped.
 	 */
-	public String cropComments(String prevLine) {
+	public String cropComments(String codeLine) {
+		//re-writing this thing whole-hog
+		
+		//Simple, regex-free, ignores quoting possibility
+		int hashLoc = codeLine.indexOf("#");
+		if (hashLoc == -1) return codeLine; // hash not found...
+		String result = codeLine.substring(0, hashLoc-1);
+		return result;
+		
+		//TODO: find the index of the first hash-mark that is not between quotes
+		//regex ignoring quotes: "[^#]*#.*"
+		//Pattern commentMatchingPattern = Pattern.compile("[^#]*#.*");
+		//Matcher firstInstance = commentMatchingPattern.matcher(codeLine); 
+		//actually...
+		//Pattern commentMatchingPattern = Pattern.compile("[^#]*#");
+		//Matcher firstInstance = commentMatchingPattern.matcher(codeLine);
+		//String result = firstInstance.group();
+		
+		
+		/*
 		// omit comments from the end of the previous line for testing
 		if (!prevLine.startsWith("#")) {
 			if (prevLine.indexOf(";#") != -1) {
@@ -488,7 +529,9 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndent
 				prevLine = prevLine.substring(0, prevLine.indexOf('#') - 1);
 			}
 		}
+		//umm, shouldn't it return a blank line if the line begins with #?
 		return prevLine;
+		*/
 	} // String cropComments(String prevLine)
 	
 	/**
@@ -517,29 +560,28 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndent
 	 */
 	private String getPrevCodeLine(IDocument doc, int current) {
 		try {
+			//Ask the document what line the current offset is on;
+			//if the offset is invalid, it will throw.
 			int currLine = doc.getLineOfOffset(current);
-			
+			//ignoring comments and blank lines, find the previous line
 			for (int lineNum = currLine - 1; lineNum >= 0; lineNum--) {
-				
-				String line = getLine(doc, lineNum);
-				if (!(line.equals("") || line.trim().startsWith("#") || line
-						.trim().length() == 0)) {
-					
+				String line = getLine(doc, lineNum).trim();
+				if (!(line.equals("") || line.startsWith("#") || line.length() == 0)) {
 					return cropComments(line);
 				}
 			} // for lineNum--
-			
-			return "";
-			
-		} catch (BadLocationException e) {
 			return "";
 		}
-		
+		catch (BadLocationException e) {
+			return "";
+		}
 	} // String getPrevCodeLine( ... )
 	
 	/**
 	 * Returns the line number of the previous line of code. Ignores blank
 	 *  or comment lines.
+	 * NOTE: not the previous line of <em>text</em>, but the previous line
+	 * of <em>code</em>
 	 * 
 	 * @param doc The document containing the code.
 	 * @param current The current offset (<i>not</i> the current line of code). 
@@ -548,23 +590,18 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndent
 	private int getPrevCodeLineNumber(IDocument doc, int current) {
 		try {
 			int currLine = doc.getLineOfOffset(current);
-			
 			for (int lineNum = currLine - 1; lineNum >= 0; lineNum--) {
-				
 				String line = getLine(doc, lineNum);
 				if (!(line.equals("") || line.trim().startsWith("#") || line
 						.trim().length() == 0)) {
-					
 					return lineNum;
 				}
 			} // for lineNum--
-			
-			return -1;
-			
-		} catch (BadLocationException e) {
 			return -1;
 		}
-		
+		catch (BadLocationException e) {
+			return -1;
+		}
 	} // String getPrevCodeLineNumber( ... )
 	
 	/**
@@ -577,10 +614,9 @@ public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndent
 	private String getLine(IDocument doc, int lineNum) {
 		try {
 			IRegion reg = doc.getLineInformation(lineNum);
-			
 			return doc.get(reg.getOffset(), reg.getLength());
-			
-		} catch (BadLocationException e) {
+		}
+		catch (BadLocationException e) {
 			return "";
 		}
 	}
