@@ -156,6 +156,10 @@ protected:
 	// True if we want to dump debug info about messages sent and received.
 	bool m_bTraceCommunications ;
 
+	// True if this connection object is on the kernel side of the conversation
+	// This has no effect on the logic, but can be helpful for debugging
+	bool m_bIsKernelSide ;
+
 	// A client needs to get this mutex before sending and receiving messages.
 	// This allows us to use a separate thread in the client to keep connections
 	// alive even when the client itself goes to sleep.
@@ -248,6 +252,13 @@ public:
 	*************************************************************/
 	virtual void		SetTraceCommunications(bool state)	{ m_bTraceCommunications = state ; }
 	virtual bool		IsTracingCommunications()			{ return m_bTraceCommunications ; }
+
+	/*************************************************************
+	* @brief True if this connection is from the kernel to the client (false if other way, from client to kernel).
+	*        This has no impact on the logic but can help with debugging.
+	*************************************************************/
+	virtual void		SetIsKernelSide(bool state)	{ m_bIsKernelSide = state ; }
+	virtual bool		IsKernelSide()				{ return m_bIsKernelSide ; }
 
 	/*************************************************************
 	* @brief Send a message to the SML receiver (e.g. from the environment to the Soar kernel).

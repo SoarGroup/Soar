@@ -58,6 +58,9 @@ void ListenerManager::Run()
 			// that's how things are set up.
 			pConnection->SetUserData(KernelSML::GetKernelSML()) ;
 
+			// For debugging record that this is on the kernel side
+			pConnection->SetIsKernelSide(true) ;
+
 			// Register for "calls" from the client.
 			pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
 

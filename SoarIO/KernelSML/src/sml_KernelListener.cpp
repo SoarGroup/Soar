@@ -391,7 +391,10 @@ bool KernelListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* pAgent, boo
 			// trying any remote methods.  This ensures that if multiple folks register
 			// for the same function we execute the fastest one (w/o going over a socket for the result).
 			if (pConnection->IsRemoteConnection() && embeddedPhase)
+			{
+				connectionIter++ ;
 				continue ;
+			}
 
 			// It would be faster to just send a message here without waiting for a response
 			// but that could produce incorrect behavior if the client expects to act *during*

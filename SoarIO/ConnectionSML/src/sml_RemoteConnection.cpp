@@ -45,7 +45,12 @@ void RemoteConnection::SendMessage(ElementXML* pMsg)
 
 	// Dump the message if we're tracing
 	if (m_bTraceCommunications)
-		PrintDebug(pXMLString) ;
+	{
+		if (IsKernelSide())
+			PrintDebugFormat("Kernel remote send: %s\n", pXMLString) ;
+		else
+			PrintDebugFormat("Client remote send: %s\n", pXMLString) ;
+	}
 
 	// Release the XML string
 	pMsg->DeleteString(pXMLString) ;
@@ -142,7 +147,12 @@ bool RemoteConnection::ReceiveMessages(bool allMessages)
 
 		// Dump the message if we're tracing
 		if (m_bTraceCommunications)
-			PrintDebug(xmlString.c_str()) ;
+		{
+			if (IsKernelSide())
+				PrintDebugFormat("Kernel remote receive: %s\n", xmlString.c_str()) ;
+			else
+				PrintDebugFormat("Client remote receive: %s\n", xmlString.c_str()) ;
+		}
 
 		// Get an XML message from the incoming string
 		ElementXML* pIncomingMsg = ElementXML::ParseXMLFromString(xmlString.c_str()) ;

@@ -256,25 +256,84 @@ public class Application
 			System.out.println("Exception occurred when writing results to file") ;
 		}
 	}
+
+	private void TestListener() throws Exception
+	{
+		// Sleep for 20 seconds so others can connect to us if they wish to test that
+		// (for this part we'll use the default port)
+		System.out.println("############ Listener Test ############") ;
+
+		m_Kernel = Kernel.CreateKernelInCurrentThread("KernelSML", false, Kernel.GetDefaultPort()) ;
+		//m_Kernel.SetTraceCommunications(true) ;
+		
+		for (int i = 0 ; i < 200 ; i++)
+		{
+			//System.out.println("Checking " + i) ;
+			m_Kernel.CheckForIncomingCommands() ;
+			Thread.sleep(100) ;
+		}
+		
+		m_Kernel.delete() ;		
+	}
 	
-	public Application()
+	private void TestRemote() throws Exception
+	{
+		// Now repeat the tests but with a kernel that's running in a different process (needs a listener to exist for this)
+		System.out.println("############ Remote Test ############") ;
+
+		// Initialize the remote kernel
+		m_Kernel = Kernel.CreateRemoteConnection(true, null, Kernel.GetDefaultPort()) ;
+
+		if (m_Kernel.HadError())
+		{
+			System.out.println("Failed to connect to the listener...was one running?") ;
+			return ;
+		}
+		
+		Test() ;		
+	}
+	
+	public Application(String[] args)
 	{
 		boolean success = true ;
 		String  msg = "" ;
+		
+		boolean remote = false ;
+		boolean listener = false ;
+		for (int arg = 0 ; arg < args.length ; arg++)
+		{
+			if (args[arg].equals("-remote"))
+				remote = true ;
+			if (args[arg].equals("-listener"))
+				listener = true ;
+		}
+		
 		try
 		{
-	
-	        // Initialize the kernel
-			m_Kernel = Kernel.CreateKernelInCurrentThread("KernelSML", false, 12345) ;
-	
-			Test() ;
+			boolean localTests = !remote && !listener ;
 			
-			// Now repeat the tests but with a kernel that's running in a different thread
-			System.out.println("###################################") ;
-			
-			m_Kernel = Kernel.CreateKernelInNewThread("KernelSML", 13131) ;
+			if (localTests)
+			{
+				// Now repeat the tests but with a kernel that's running in a different thread
+				System.out.println("############ Current Thread ############") ;
 
-			Test() ;
+				// Initialize the kernel
+				m_Kernel = Kernel.CreateKernelInCurrentThread("KernelSML", false, 12345) ;
+		
+				Test() ;
+				
+				// Now repeat the tests but with a kernel that's running in a different thread
+				System.out.println("############ New Thread ############") ;
+				
+				m_Kernel = Kernel.CreateKernelInNewThread("KernelSML", 13131) ;
+
+				Test() ;
+			}
+			
+			if (remote)
+				TestRemote() ;
+			else if (listener)
+				TestListener() ;
 		}
 		catch (Throwable t)
 		{
@@ -289,6 +348,6 @@ public class Application
 	
 	public static void main(String[] args)
 	{
-		new Application();
+		new Application(args);
 	}
 }

@@ -123,7 +123,7 @@ bool SimpleListener(int life)
 	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &ListenerRhsFunctionHandler, 0) ; 
 
 	// Comment this in if you need to debug the messages going back and forth.
-	// pKernel->SetTraceCommunications(true) ;
+	//pKernel->SetTraceCommunications(true) ;
 
 	int pause = 100 ;
 
@@ -222,7 +222,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Set this to true to give us lots of extra debug information on remote clients
 		// (useful in a test app like this).
-//		pKernel->SetTraceCommunications(true) ;
+		// pKernel->SetTraceCommunications(true) ;
 
 		// Register a kernel event handler...unfortunately I can't seem to find an event
 		// that gSKI actually fires, so this handler won't get called.  Still, the code is there
@@ -285,12 +285,15 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			return false ;
 		}
 
+		cout << "Loaded productions" << endl ;
+
 		Identifier* pInputLink = pAgent->GetInputLink() ;
+		if (!pInputLink)
+			cout << "Error getting input link" << endl ;
 
 		pAgent->InitSoar() ;
 
-		if (!pInputLink)
-			cout << "Error getting input link" << endl ;
+		//cout << "Done our first init-soar" << endl ;
 
 		// Some simple tests
 		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
@@ -318,6 +321,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		ok = pAgent->Commit() ;
 
 		pAgent->InitSoar() ;
+
+		//cout << "About to do first run" << endl ;
 
 		std::string trace = pAgent->Run(2) ;
 
@@ -361,6 +366,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		int myCount = 0 ;
 		int callback_run_count = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &myCount) ;
 
+		//cout << "About to do first run-til-output" << endl ;
+
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 //		trace = pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
 		trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
@@ -376,12 +383,15 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			cout << "Error in callback handler for MyRunEventHandler -- failed to update count" << endl ;
 			return false ;
 		}
+		cout << "Agent ran for " << myCount << " decisions before we got output" << endl ;
 
 		// Reset the agent and repeat the process to check whether init-soar works.
 		pAgent->InitSoar() ;
 		trace = pAgent->RunTilOutput(20) ;
 
 		bool ioOK = false ;
+
+		//cout << "Time to dump output link" << endl ;
 
 		// If we have output, dump it out.
 		if (pAgent->GetOutputLink())

@@ -256,7 +256,7 @@ void EmbeddedConnectionSynch::SendMessage(ElementXML* pMsg)
 	if (IsTracingCommunications())
 	{
 		char* pStr = pMsg->GenerateXMLString(true) ;
-		PrintDebugFormat("Sending %s\n", pStr) ;
+		PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
 		pMsg->DeleteString(pStr) ;
 	}
 #endif
@@ -299,7 +299,7 @@ ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait
 	if (IsTracingCommunications())
 	{
 		char* pStr = pResult->GenerateXMLString(true) ;
-		PrintDebugFormat("Received %s\n", pStr) ;
+		PrintDebugFormat("%s Received %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
 		pResult->DeleteString(pStr) ;
 	}
 #endif
@@ -371,7 +371,7 @@ void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
 	if (IsTracingCommunications())
 	{
 		char* pStr = pMsg->GenerateXMLString(true) ;
-		PrintDebugFormat("Sending %s\n", pStr) ;
+		PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
 		pMsg->DeleteString(pStr) ;
 	}
 #endif
@@ -450,7 +450,7 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 				if (IsTracingCommunications())
 				{
 					char* pStr = pResponse->GenerateXMLString(true) ;
-					PrintDebugFormat("Received %s\n", pStr) ;
+					PrintDebugFormat("%s Received %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
 					pResponse->DeleteString(pStr) ;
 				}
 #endif

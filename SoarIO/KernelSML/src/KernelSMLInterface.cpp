@@ -52,6 +52,10 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 						EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
 						EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch(true) ;
 
+	// For debugging, record that this connection object is from kernel to client.
+	// The client will also have a Connection object which will not have this flag set.
+	pConnection->SetIsKernelSide(true) ;
+
 	// Record our kernel object with this connection.  I think we only want one kernel
 	// object even if there are many connections (because there's only one kernel) so for now
 	// that's how things are set up.

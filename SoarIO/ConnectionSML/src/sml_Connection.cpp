@@ -54,6 +54,7 @@ Connection::Connection()
 	m_pUserData = NULL ;
 	m_bIsDirectConnection = false ;
 	m_bTraceCommunications = false ;
+	m_bIsKernelSide = false ;
 }
 
 /*************************************************************
