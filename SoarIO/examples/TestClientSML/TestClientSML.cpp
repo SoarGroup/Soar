@@ -325,6 +325,9 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	pKernel->UnregisterForSystemEvent(systemStart) ;
 	pKernel->UnregisterForSystemEvent(systemStop) ;
 
+	// Throw in a pattern as a test
+	std::string pattern = pAgent->ExecuteCommandLine("print -i {(s1 ^* *)}") ;
+
 	std::string expand = pKernel->ExpandCommandLine("p s1") ;
 	bool isRunCommand = pKernel->IsRunCommand("d 3") ;
 	isRunCommand = isRunCommand && pKernel->IsRunCommand("e 5") ;
@@ -609,13 +612,12 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// This number determines how many agents are created.  We create <n>, test <n> and then delete <n>
 		int numberAgents = 2 ;
-		char buffer[100] ;
 
 		// PHASE ONE: Agent creation
 		for (int agentCounter = 0 ; agentCounter < numberAgents ; agentCounter++)
 		{
 			std::string name = "test-client-sml" ;
-			name.append(itoa(agentCounter, buffer, sizeof(buffer))) ;
+			name.push_back('1' + agentCounter) ;
 
 			// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 			sml::Agent* pAgent = pKernel->CreateAgent(name.c_str()) ;
@@ -672,7 +674,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		for (int agentTests = 0 ; agentTests < numberAgents ; agentTests++)
 		{
 			std::string name = "test-client-sml" ;
-			name.append(itoa(agentTests, buffer, sizeof(buffer))) ;
+			name.push_back('1' + agentTests) ;
 
 			Agent* pAgent = pKernel->GetAgent(name.c_str()) ;
 
@@ -690,7 +692,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		for (int agentDeletions = 0 ; agentDeletions < numberAgents ; agentDeletions++)
 		{
 			std::string name = "test-client-sml" ;
-			name.append(itoa(agentDeletions, buffer, sizeof(buffer))) ;
+			name.push_back('1' + agentDeletions) ;
 
 			Agent* pAgent = pKernel->GetAgent(name.c_str()) ;
 
