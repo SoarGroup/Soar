@@ -12,11 +12,13 @@
 #define COMMAND_LINE_INTERFACE_H
 
 // STL includes
-#include <map>
 #include <vector>
 #include <string>
 #include <stack>
+#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
+#include <map>
 #include <list>
+#pragma warning (default : 4702)
 #include <iostream>
 #include <fstream>
 

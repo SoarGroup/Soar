@@ -11,7 +11,9 @@
 #ifndef ARGMAP_H
 #define ARGMAP_H
 
+#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
 #include <map>
+#pragma warning (default : 4702)
 #include <vector>
 #include "ElementXMLHandle.h"
 

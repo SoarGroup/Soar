@@ -30,8 +30,11 @@ namespace gSKI {
 	struct Error ;
 }
 
+#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
 #include <map>
+#pragma warning (default : 4702)
 #include <list>
+
 
 #include "cli_CommandLineInterface.h"
 #include "sml_KernelListener.h"

@@ -14,8 +14,10 @@
 
 #include "gSKI_Enumerations.h"
 
+#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
 #include <list>
 #include <map>
+#pragma warning (default : 4702)
 
 namespace sml {
 
