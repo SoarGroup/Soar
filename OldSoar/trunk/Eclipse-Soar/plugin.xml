@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
 <plugin
    id="edu.rosehulman.soar"
    name="Soar Plug-in"
@@ -10,6 +11,12 @@
       <library name="soar.jar"/>
    </runtime>
    <requires>
+      <import plugin="org.eclipse.core.runtime.compatibility"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.ui"/>
    </requires>
@@ -40,7 +47,7 @@
    </extension>
    
 	<extension
-		point="org.eclipse.ui.projectNatureImages">
+		point="org.eclipse.ui.ide.projectNatureImages">
 		<image
 			id="edu.rosehulman.soar.natures.SoarProjectNatureImage"
 			natureId="edu.rosehulman.soar.natures.SoarProjectNature"
