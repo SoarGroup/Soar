@@ -25,7 +25,6 @@ public:
 	virtual bool isAdd()	= 0 ;
 	virtual bool isRemove() = 0 ;
 	virtual ~Delta() { } ;
-	virtual WMElement* GetWME() = 0 ;
 } ;
 
 class AddDelta : public Delta
@@ -44,25 +43,23 @@ public:
 public:
 	virtual bool isAdd()	{ return true ; }
 	virtual bool isRemove()	{ return false ; }
-	virtual WMElement* GetWME() { return m_Element ; }
+	WMElement* GetWME()		{ return m_Element ; }
 } ;
 
 class RemoveDelta : public Delta
 {
 protected:
-	// We DO own this object (because it's been removed from the working memory tree)
-	WMElement*	m_Element ;
+	long m_TimeTag ;
 
 public:
-	RemoveDelta(WMElement* pWME) { m_Element = pWME ; }
+	RemoveDelta(long timeTag) { m_TimeTag = timeTag ; }
 
-	// Delete the wm because we do own this one.
-	virtual ~RemoveDelta() ;
+	virtual ~RemoveDelta() { } ;
 
 public:
-	virtual bool isAdd()	{ return false ; }
-	virtual bool isRemove()	{ return true ; }
-	virtual WMElement* GetWME() { return m_Element ; }
+	virtual bool isAdd()		{ return false ; }
+	virtual bool isRemove()		{ return true ; }
+	long GetTimeTag()			{ return m_TimeTag ; }
 } ;
 
 class DeltaList
@@ -89,16 +86,22 @@ public:
 		m_DeltaList.clear() ;
 	}
 
-	void RemoveWME(WMElement* pWME)
+	void RemoveWME(long timeTag)
 	{
 // BADBAD: We should check if pWME is in the add list right now.  If so, we just delete it from the add list and don't add it to the remove.
-// In that case, we need to delete pWME (since we're taking ownership here).
 
-		m_DeltaList.push_back(new RemoveDelta(pWME)) ;
+		m_DeltaList.push_back(new RemoveDelta(timeTag)) ;
 	}
 
 	void AddWME(WMElement* pWME)
 	{
+		m_DeltaList.push_back(new AddDelta(pWME)) ;
+	}
+
+	void UpdateWME(long timeTagToRemove, WMElement* pWME)
+	{
+		// This is equivalent to a remove of the old value followed by an add of the new
+		m_DeltaList.push_back(new RemoveDelta(timeTagToRemove)) ;
 		m_DeltaList.push_back(new AddDelta(pWME)) ;
 	}
 

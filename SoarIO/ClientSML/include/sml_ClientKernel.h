@@ -26,6 +26,9 @@ class Connection ;
 class Kernel
 {
 protected:
+	long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
+	long		m_IdCounter ;		// Used to generate unique id names
+
 	Connection*			m_Connection ;
 	ObjectMap<Agent*>	m_AgentMap ;
 
@@ -33,6 +36,9 @@ public:
 	Kernel(Connection* pConnection);
 
 	virtual ~Kernel();
+
+	long	GenerateNextID()		{ return ++m_IdCounter ; }
+	long	GenerateNextTimeTag()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
 
 	/*************************************************************
 	* @brief Returns the connection information for this kernel

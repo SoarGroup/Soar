@@ -31,3 +31,9 @@ WMElement::WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName)
 WMElement::~WMElement(void)
 {
 }
+
+void WMElement::GenerateNewTimeTag()
+{
+	// Generate a new time tag for this wme
+	m_TimeTag = GetAgent()->GetWM()->GenerateTimeTag() ;
+}

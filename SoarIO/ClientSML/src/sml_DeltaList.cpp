@@ -14,6 +14,3 @@
 #include "sml_ClientWMElement.h"
 
 using namespace sml ;
-
-// Delete the wm because we do own this one.
-RemoveDelta::~RemoveDelta() { delete m_Element ; }

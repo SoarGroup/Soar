@@ -60,10 +60,14 @@ Identifier* Agent::GetInputLink()
 }
 
 /*************************************************************
-* @brief Builds a new WME that has a string value.
+* @brief Builds a new WME that has a string value and schedules
+*		 it for addition to Soar's input link.
+*
 *		 The agent retains ownership of this object.
 *		 The returned object is valid until the caller
 *		 deletes the parent identifier.
+*		 The WME is not added to Soar's input link until the
+*		 client calls "Commit".
 *************************************************************/
 StringElement* Agent::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
 {
@@ -71,6 +75,72 @@ StringElement* Agent::CreateStringWME(Identifier* parent, char const* pAttribute
 		return NULL ;
 
 	return GetWM()->CreateStringWME(parent, pAttribute, pValue) ;
+}
+
+/*************************************************************
+* @brief Same as CreateStringWME but for a new WME that has
+*		 an identifier as its value.
+*
+*		 The identifier value is generated here and will be
+*		 different from the value Soar assigns in the kernel.
+*		 The kernel will keep a map for translating back and forth.
+*************************************************************/
+Identifier* Agent::CreateIdWME(Identifier* parent, char const* pAttribute)
+{
+	if (!parent)
+		return NULL ;
+
+	return GetWM()->CreateIdWME(parent, pAttribute) ;
+}
+
+/*************************************************************
+* @brief Same as CreateStringWME but for a new WME that has
+*		 an int as its value.
+*************************************************************/
+IntElement* Agent::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
+{
+	if (!parent)
+		return NULL ;
+
+	return GetWM()->CreateIntWME(parent, pAttribute, value) ;
+}
+
+/*************************************************************
+* @brief Same as CreateStringWME but for a new WME that has
+*		 a floating point value.
+*************************************************************/
+FloatElement* Agent::CreateFloatWME(Identifier* parent, char const* pAttribute, double value)
+{
+	if (!parent)
+		return NULL ;
+
+	return GetWM()->CreateFloatWME(parent, pAttribute, value) ;
+}
+
+/*************************************************************
+* @brief Update the value of an existing WME.
+*		 The value is not actually sent to the kernel
+*		 until "Commit" is called.
+*************************************************************/
+void Agent::Update(StringElement* pWME, char const* pValue) { GetWM()->UpdateString(pWME, pValue) ; }
+void Agent::Update(IntElement* pWME, int value)				{ GetWM()->UpdateInt(pWME, value) ; }
+void Agent::Update(FloatElement* pWME, double value)		{ GetWM()->UpdateFloat(pWME, value) ; }
+
+/*************************************************************
+* @brief Schedules a WME from deletion from the input link and removes
+*		 it from the client's model of working memory.
+*
+*		 The caller should not access this WME after calling
+*		 DestroyWME().
+*		 The WME is not removed from the input link until
+*		 the client calls "Commit"
+*************************************************************/
+bool Agent::DestroyWME(WMElement* pWME)
+{
+	if (!pWME)
+		return false ;
+
+	return GetWM()->DestroyWME(pWME) ;
 }
 
 /*************************************************************

@@ -14,14 +14,19 @@
 #include "sml_ClientWMElement.h"
 
 #include <string>
-#include <vector>
+#include <list>
 
 namespace sml {
 
 class StringElement ;
+class WorkingMemory ;
 
-class Identifier : WMElement
+class Identifier : public WMElement
 {
+	// Make the members all protected, so users dont' access them by accident.
+	// Instead, only open them up to the working memory class to use.
+	friend WorkingMemory ;
+
 protected:
 	// The value for this id, which is a string identifier (e.g. I3)
 	// We'll use upper case for Soar IDs and lower case for client IDs
@@ -30,9 +35,10 @@ protected:
 
 	// The list of WMEs owned by this identifier.
 	// (When we delete this identifier we'll delete all these automatically)
-	std::vector<WMElement*>		m_Children ;
+	std::list<WMElement*>		m_Children ;
+	typedef std::list<WMElement*>::iterator ChildrenIter ;
 
-public:
+protected:
 	// This version is only needed at the top of the tree (e.g. the input link)
 	Identifier(Agent* pAgent, char const* pIdentifier);
 
@@ -41,8 +47,11 @@ public:
 
 	virtual ~Identifier(void);
 
-	// Create a new WME with this identifier as its parent
-	StringElement* CreateStringWME(char const* pAttribute, char const* pValue) ;
+	// Have this identifier take ownership of this WME.  So when the identifier is deleted
+	// it will delete the WME.
+	void AddChild(WMElement* pWME) ;
+
+	void RemoveChild(WMElement* pWME) ;
 
 	virtual char const* GetValueType() ;
 

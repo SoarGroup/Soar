@@ -18,9 +18,16 @@ namespace sml {
 
 class Agent ;
 class Identifier ;
+class WorkingMemory ;
+class RemoveDelta ;
 
 class WMElement
 {
+	// Making most methods protected, so users don't use them directly by accident.
+	// But allow working memory to work with them directly.
+	friend WorkingMemory ;
+	friend Identifier ;		// Allow it to destory WMEs
+
 protected:
 	// The agent which owns this WME.
 	Agent*	m_Agent ;
@@ -36,11 +43,6 @@ protected:
 	std::string m_AttributeName ;
 
 public:
-	WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName);
-	virtual ~WMElement(void);
-
-	Agent*		GetAgent()	{ return m_Agent ; }
-
 	// Two accessors for the ID as people think about it in different ways
 	Identifier*		GetParent()			{ return m_ID ; }
 	Identifier*		GetIdentifier()		{ return m_ID ; }
@@ -55,8 +57,19 @@ public:
 
 	long		GetTimeTag()	{ return m_TimeTag ; }
 
-	// Remove from working memory
-	void Remove() { }
+protected:
+	// Keep these protected, so user can only create and destroy WMEs through
+	// the methods exposed in the agent class.  This makes it clear that the
+	// agent owns all objects.
+	WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName);
+	virtual ~WMElement(void);
+
+	Agent*		GetAgent()	{ return m_Agent ; }
+
+	// If we update the value we need to assign a new time tag to this WME.
+	// That's because we're really doing a delete followed by an add
+	// and the add would create a new time tag.
+	void GenerateNewTimeTag() ;
 
 private:
 	// NOT IMPLEMENTED

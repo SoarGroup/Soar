@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 83 ;
+	//_crtBreakAlloc = 98 ;
 
 	cout << "TestClientSML app starting..." << endl << endl;
 
@@ -38,13 +38,33 @@ int main(int argc, char* argv[])
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent("test") ;
+
+		if (!pAgent)
+			cout << "Error creating agent" << endl ;
+
 		pAgent->LoadProductions("test.soar") ;
 
 		Identifier* pInputLink = pAgent->GetInputLink() ;
 
+		if (!pInputLink)
+			cout << "Error getting input link" << endl ;
+
 		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
 
+		Identifier* pID = pAgent->CreateIdWME(pInputLink, "plane") ;
+		StringElement* pWME1 = pAgent->CreateStringWME(pID, "type", "Boeing747") ;
+		IntElement* pWME2    = pAgent->CreateIntWME(pID, "speed", 200) ;
+		FloatElement* pWME3  = pAgent->CreateFloatWME(pID, "direction", 50.5) ;
+
 		bool ok = pAgent->Commit() ;
+
+		// Remove a wme
+		pAgent->DestroyWME(pWME3) ;
+
+		// Change the speed to 300
+		pAgent->Update(pWME2, 300) ;
+
+		ok = pAgent->Commit() ;
 
 		delete pKernel ;
 

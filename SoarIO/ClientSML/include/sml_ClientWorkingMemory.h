@@ -30,12 +30,13 @@ namespace sml {
 class Agent ;
 class Connection ;
 class StringElement ;
+class IntElement ;
+class FloatElement ;
 class Identifier ;
 
 class WorkingMemory
 {
 protected:
-	long		m_TimeTagCounter ;
 	Agent*		m_Agent ;
 	Identifier*	m_InputLink ;
 	DeltaList	m_DeltaList ;
@@ -50,9 +51,22 @@ public:
 	char const*		GetAgentName() const ;
 	Connection*		GetConnection()	const ;
 
+	// These functions are documented in the agent and handled here.
 	Identifier*		GetInputLink() ;
 	StringElement*	CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
+	IntElement*		CreateIntWME(Identifier* parent, char const* pAttribute, int value) ;
+	FloatElement*	CreateFloatWME(Identifier* parent, char const* pAttribute, double value) ;
+	Identifier*		CreateIdWME(Identifier* parent, char const* pAttribute) ;
+
+	void			UpdateString(StringElement* pWME, char const* pValue) ;
+	void			UpdateInt(IntElement* pWME, int value) ;
+	void			UpdateFloat(FloatElement* pWME, double value) ;
+
+	bool			DestroyWME(WMElement* pWME) ;
+
 	long			GenerateTimeTag() ;
+	void			GenerateNewID(char const* pAttribute, std::string* pID) ;
+
 	bool			Commit() ;
 };
 

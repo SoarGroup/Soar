@@ -22,9 +22,13 @@
 #include "sml_ClientWorkingMemory.h"
 #include "sml_ClientIdentifier.h"
 #include "sml_ClientAgent.h"
+#include "sml_ClientKernel.h"
 #include "sml_Connection.h"
 #include "sml_ClientStringElement.h"
+#include "sml_ClientIntElement.h"
+#include "sml_ClientFloatElement.h"
 #include "sml_TagWme.h"
+#include "sml_StringOps.h"
 
 using namespace sml ;
 
@@ -32,7 +36,6 @@ WorkingMemory::WorkingMemory()
 {
 	m_InputLink = NULL ;
 	m_Agent		= NULL ;
-	m_TimeTagCounter = 0 ;
 }
 
 WorkingMemory::~WorkingMemory()
@@ -70,14 +73,21 @@ Identifier* WorkingMemory::GetInputLink()
 }
 
 /*************************************************************
-* @brief Builds a new WME that has a string value.
+* @brief Builds a new WME that has a string value and schedules
+*		 it for addition to Soar's input link.
+*
 *		 The agent retains ownership of this object.
 *		 The returned object is valid until the caller
 *		 deletes the parent identifier.
+*		 The WME is not added to Soar's input link until the
+*		 client calls "Commit".
 *************************************************************/
 StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
 {
-	StringElement* pWME = parent->CreateStringWME(pAttribute, pValue) ;
+	StringElement* pWME = new StringElement(GetAgent(), parent, pAttribute, pValue) ;
+
+	// Record that the identifer owns this new WME
+	parent->AddChild(pWME) ;
 
 	// Add it to our list of changes that need to be sent to Soar.
 	m_DeltaList.AddWME(pWME) ;
@@ -85,6 +95,188 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 	return pWME ;
 }
 
+/*************************************************************
+* @brief Same as CreateStringWME but for a new WME that has
+*		 an int as its value.
+*************************************************************/
+IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
+{
+	IntElement* pWME = new IntElement(GetAgent(), parent, pAttribute, value) ;
+
+	// Record that the identifer owns this new WME
+	parent->AddChild(pWME) ;
+
+	// Add it to our list of changes that need to be sent to Soar.
+	m_DeltaList.AddWME(pWME) ;
+
+	return pWME ;
+}
+
+/*************************************************************
+* @brief Same as CreateStringWME but for a new WME that has
+*		 a floating point value.
+*************************************************************/
+FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAttribute, double value)
+{
+	FloatElement* pWME = new FloatElement(GetAgent(), parent, pAttribute, value) ;
+
+	// Record that the identifer owns this new WME
+	parent->AddChild(pWME) ;
+
+	// Add it to our list of changes that need to be sent to Soar.
+	m_DeltaList.AddWME(pWME) ;
+
+	return pWME ;
+}
+
+/*************************************************************
+* @brief Update the value of an existing WME.
+*		 The value is not actually sent to the kernel
+*		 until "Commit" is called.
+*************************************************************/
+void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
+{
+	if (!pWME)
+		return ;
+	// Changing the value logically is a remove and then an add
+
+	// Get the tag of the value to remove
+	long removeTimeTag = pWME->GetTimeTag() ;
+
+	// Change the value and the time tag (this is equivalent to us deleting the old object
+	// and then creating a new one).
+	pWME->SetValue(pValue) ;
+	pWME->GenerateNewTimeTag() ;
+
+	// Add it to the list of changes that need to be sent to Soar.
+	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+}
+
+void WorkingMemory::UpdateInt(IntElement* pWME, int value)
+{
+	if (!pWME)
+		return ;
+
+	// Changing the value logically is a remove and then an add
+
+	// Get the tag of the value to remove
+	long removeTimeTag = pWME->GetTimeTag() ;
+
+	// Change the value and the time tag (this is equivalent to us deleting the old object
+	// and then creating a new one).
+	pWME->SetValue(value) ;
+	pWME->GenerateNewTimeTag() ;
+
+	// Add it to the list of changes that need to be sent to Soar.
+	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+}
+
+void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
+{
+	if (!pWME)
+		return ;
+
+	// Changing the value logically is a remove and then an add
+
+	// Get the tag of the value to remove
+	long removeTimeTag = pWME->GetTimeTag() ;
+
+	// Change the value and the time tag (this is equivalent to us deleting the old object
+	// and then creating a new one).
+	pWME->SetValue(value) ;
+	pWME->GenerateNewTimeTag() ;
+
+	// Add it to the list of changes that need to be sent to Soar.
+	m_DeltaList.UpdateWME(removeTimeTag, pWME) ;
+}
+
+/*************************************************************
+* @brief Create a new ID for use by the client.
+*		 The kernel will assign its own ids when the WME
+*		 is really added, so it needs to know to map back and forth.
+*		 To make that mapping clear, we generate IDs that use
+*		 a lower case first letter, ensuring they aren't mistaken
+*		 for IDs the kernel creates (although this should just help
+*		 humans keep track of what's going on--shouldn't matter to
+*		 the system).
+*************************************************************/
+void WorkingMemory::GenerateNewID(char const* pAttribute, std::string* pID)
+{
+	int id = GetAgent()->GetKernel()->GenerateNextID() ;
+
+	char buffer[kMinBufferSize] ;
+	Int2String(id, buffer, sizeof(buffer)) ;
+
+	// we'll start our ids with lower case so we can distinguish them
+	// from soar id's.  We'll take the first letter of the attribute,
+	// much as soar does, but always add a unique number to the back,
+	// so the choice of initial letter really isn't important.
+	char letter = pAttribute[0] ;
+
+	// Convert to lowercase
+	if (letter >= 'A' || letter <= 'Z')
+		letter = letter - 'A' + 'a' ;
+
+	// Make sure we got a letter here (just in case)
+	if (letter < 'a' || letter > 'z')
+		letter = 'a' ;
+
+	// Return the result
+	*pID = letter ;
+	pID->append(buffer) ;
+}
+
+/*************************************************************
+* @brief Same as CreateStringWME but for a new WME that has
+*		 an identifier as its value.
+*************************************************************/
+Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribute)
+{
+	// Create a new, unique id (e.g. "i3").  This id will be mapped to a different id
+	// in the kernel.
+	std::string id ;
+	GenerateNewID(pAttribute, &id) ;
+
+	Identifier* pWME = new Identifier(GetAgent(), parent, pAttribute, id.c_str()) ;
+
+	// Record that the identifer owns this new WME
+	parent->AddChild(pWME) ;
+
+	// Add it to our list of changes that need to be sent to Soar.
+	m_DeltaList.AddWME(pWME) ;
+
+	return pWME ;
+}
+
+/*************************************************************
+* @brief Schedules a WME from deletion from the input link and removes
+*		 it from the client's model of working memory.
+*
+*		 The caller should not access this WME after calling
+*		 DestroyWME().
+*		 The WME is not removed from the input link until
+*		 the client calls "Commit"
+*************************************************************/
+bool WorkingMemory::DestroyWME(WMElement* pWME)
+{
+	Identifier* parent = pWME->GetIdentifier() ;
+
+	// We can't delete top level WMEs (e.g. the WME that represents the input-link's ID)
+	// Those are architecturally created.
+	if (parent == NULL)
+		return false ;
+
+	// The parent identifier no longer owns this WME
+	parent->RemoveChild(pWME) ;
+
+	// Add it to the list of changes to send to Soar.
+	m_DeltaList.RemoveWME(pWME->GetTimeTag()) ;
+
+	// Now we can delete it
+	delete pWME ;
+
+	return true ;
+}
 
 /*************************************************************
 * @brief Generate a unique integer id (a time tag)
@@ -92,10 +284,10 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 long WorkingMemory::GenerateTimeTag()
 {
 	// We use negative tags on the client, so we don't mistake them
-	// for ones from the kernel.
-	m_TimeTagCounter-- ;
+	// for ones from the real kernel.
+	int tag = GetAgent()->GetKernel()->GenerateNextTimeTag() ;
 
-	return m_TimeTagCounter ;
+	return tag ;
 }
 
 /*************************************************************
@@ -122,13 +314,14 @@ bool WorkingMemory::Commit()
 	{
 		// Get the next change
 		Delta* pDelta = m_DeltaList.GetDelta(i) ;
-		WMElement* pElement = pDelta->GetWME() ;
 
 		// Create the wme tag
 		TagWme* pWme = new TagWme() ;
 
 		if (pDelta->isAdd())
 		{
+			WMElement* pElement = ((AddDelta*)pDelta)->GetWME() ;
+
 			// For adds we send everything
 			pWme->SetIdentifier(pElement->GetIdentifier()->GetValueAsString()) ;
 			pWme->SetAttribute(pElement->GetAttribute()) ;
@@ -138,21 +331,37 @@ bool WorkingMemory::Commit()
 		}
 		else
 		{
+			long timeTag = ((RemoveDelta*)pDelta)->GetTimeTag() ;
+
 			// For removes, we just use the time tag
-			pWme->SetTimeTag(pElement->GetTimeTag()) ;
+			pWme->SetTimeTag(timeTag) ;
 			pWme->SetActionRemove() ;
 		}
 
 		command.AddChild(pWme) ;
 	}
 
+	// This is important.  We are working with a subpart of pMsg.
+	// If we retain ownership of the handle and delete the object
+	// it will release the handle...deleting part of our message.
+	command.Detach() ;
+
+	// Now that the message contains the list of WMEs to add/delete
+	// we can clear out the delta list.
+	m_DeltaList.Clear() ;
+
 #ifdef _DEBUG
-	std::string msg = pMsg->GenerateXMLString(true) ;
+	// Generate a text form of the XML so we can look at it in the debugger.
+	char* pStr = pMsg->GenerateXMLString(true) ;
+	pMsg->DeleteString(pStr) ;
 #endif
 
 	// Send the message
 	AnalyzeXML response ;
 	bool ok = GetConnection()->SendMessageGetResponse(&response, pMsg) ;
+
+	// Clean up
+	delete pMsg ;
 
 	return ok ;
 }

@@ -18,6 +18,8 @@ using namespace sml ;
 Kernel::Kernel(Connection* pConnection)
 {
 	m_Connection = pConnection ;
+	m_TimeTagCounter = 0 ;
+	m_IdCounter = 0 ;
 }
 
 Kernel::~Kernel(void)

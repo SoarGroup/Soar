@@ -29,21 +29,21 @@ Identifier::Identifier(Agent* pAgent, Identifier* pID, char const* pAttributeNam
 Identifier::~Identifier(void)
 {
 	// We own all of these children, so delete them when we are deleted.
-	for (int i = 0 ; i < (int)m_Children.size() ; i++)
+	for (ChildrenIter iter = m_Children.begin() ; iter != m_Children.end() ; iter++)
 	{
-		WMElement* pWME = m_Children[i] ;
+		WMElement* pWME = *iter ;
 		delete pWME ;
 	}
 }
 
-// Create a new WME with this identifier as its parent
-StringElement* Identifier::CreateStringWME(char const* pAttribute, char const* pValue)
+void Identifier::AddChild(WMElement* pWME)
 {
-	StringElement* pWME = new StringElement(GetAgent(), this, pAttribute, pValue) ;
-
 	m_Children.push_back(pWME) ;
+}
 
-	return pWME ;
+void Identifier::RemoveChild(WMElement* pWME)
+{
+	m_Children.remove(pWME) ;
 }
 
 // Returns the type of the value stored here (e.g. "string" or "int" etc.)
