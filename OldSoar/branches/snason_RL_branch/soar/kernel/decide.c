@@ -64,6 +64,7 @@
 #ifdef NUMERIC_INDIFFERENCE
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
 preference *probabilistically_select(slot *s, preference *candidates);
+preference *explore_exploit_select(slot *s, preference *candidates);
  
 // SAN
 extern void learn_RL_productions();
@@ -1193,7 +1194,8 @@ byte run_preference_semantics(slot * s, preference ** result_candidates)
 	 the new method for choosing candidates 
       */ 
 	   
-          cand = probabilistically_select(s, candidates);
+          // cand = probabilistically_select(s, candidates);
+		cand = explore_exploit_select(s, candidates);
 	      if (!cand){
 		     *result_candidates = candidates;
 		     return TIE_IMPASSE_TYPE;
@@ -3324,6 +3326,10 @@ void initialize_indifferent_candidates_for_probability_selection(preference * ca
 ===========================================
 */
 
+bool explore_exploit(preference * candidates){
+
+	return 0;
+}
 
 /*
 ===========================================
@@ -3348,6 +3354,70 @@ unsigned int count_candidates(preference * candidates)
         numCandidates++;
 
     return numCandidates;
+}
+
+preference *explore_exploit_select(slot *s, preference *candidates){
+
+	bool explore;
+	double default_ni = 0;
+	int numCandidates;
+	preference *pref;
+	preference *cand;
+
+	
+	assert(s != 0);
+	assert(candidates != 0);
+
+	/*if(!initialized_rand){
+		srand( (unsigned)time( NULL ) );
+		initialized_rand = 1;
+	}*/
+
+	initialize_indifferent_candidates_for_probability_selection(candidates);
+	numCandidates = count_candidates(candidates);
+
+	for (pref=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next){
+	   float value;
+	   if (pref->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
+           value = pref->referent->fc.value;
+	   } else if (pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
+		   value = (float) pref->referent->ic.value;
+	   } else
+		   continue;
+	   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+		if (cand->value == pref->value) {
+			cand->total_preferences_for_candidate += 1;
+	  // print_with_symbols("\nFound binary preference: \n Incrementing candidate %y ", cand->value);
+	    // print(" by %f", pref->referent->fc.value); 
+			cand->sum_of_probability += value;
+       }
+     }
+   }
+
+	for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+	   if (cand->total_preferences_for_candidate == 0) {
+		   cand->sum_of_probability = default_ni;
+		   cand->total_preferences_for_candidate = 1;
+	   }
+   }
+
+	explore = explore_exploit(candidates);
+
+	if (explore) { 
+		return NULL;
+	} else {
+		   double max_value = (double)candidates->sum_of_probability;
+		   preference *max_cand = candidates;
+		   // current_agent(max_Q) = (*candidates)->sum_of_probability; // SAN
+ 
+			for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+			  if (cand->sum_of_probability > max_value){
+				 max_value = cand->sum_of_probability;
+				 max_cand = cand;
+			  }
+		  }
+		  return max_cand;
+		  }
 }
 
 
