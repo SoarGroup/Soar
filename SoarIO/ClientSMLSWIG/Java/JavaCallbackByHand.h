@@ -50,13 +50,28 @@ int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlEventId.smlEVEN
 
 */
 
+// Notes on how to callback on a different thread
+// The JNI interface pointer (JNIEnv) is valid only in the current thread.
+// Should another thread need to access the Java VM, it must first call AttachCurrentThread() to attach itself to the VM and obtain a JNI interface pointer.
+// Once attached to the VM, a native thread works just like an ordinary Java thread running inside a native method.
+// The native thread remains attached to the VM until it calls DetachCurrentThread() to detach itself.
+//
+// jint GetJavaVM(JNIEnv *env, JavaVM **vm);
+// Returns the Java VM interface (used in the Invocation API) associated with the current thread. The result is placed at the location pointed to by the second argument, vm. 
+//
+// jint AttachCurrentThread(JavaVM *vm, JNIEnv **p_env, void *thr_args);
+// Attaches the current thread to a Java VM. Returns a JNI interface pointer in the JNIEnv argument.
+// Trying to attach a thread that is already attached is a no-op.
+// A native thread cannot be attached simultaneously to two Java VMs.
+// When a thread is attached to the VM, the context class loader is the bootstrap loader. 
+
 #include <string>
 
 class JavaCallbackData
 {
 // Making these public as this is basically just a struct.
 public:
-	JNIEnv*		m_JavaEnv ;			// The JNI environment
+	JavaVM*		m_JavaVM ;			// The Java Virtual Machine
 	jobject		m_AgentObject ;		// The Java agent object
 	jobject		m_KernelObject ;	// The Java kernel object (either this or agent is set usually)
 	jobject		m_HandlerObject ;	// The object that contains the method we will call
@@ -64,9 +79,13 @@ public:
 	jobject		m_CallbackData ;	// Arbitrary Java object which we'll pass back in the call.
 	int			m_CallbackID ;		// Unique ID for this callback (we use this during unregistering)
 
+private:
+	JNIEnv*		m_JavaEnv ;			// The JNI environment (private so we're forced to use the accessor function)
+
 public:
-	JavaCallbackData(JNIEnv* pEnv, jobject agentObject, jobject kernelObject, jobject handlerObject, char const* handlerMethod, jobject callbackData)
+	JavaCallbackData(JavaVM* pVM, JNIEnv* pEnv, jobject agentObject, jobject kernelObject, jobject handlerObject, char const* handlerMethod, jobject callbackData)
 	{
+		m_JavaVM		= pVM ;
 		m_JavaEnv		= pEnv ;
 		m_AgentObject	= agentObject ;
 		m_KernelObject	= kernelObject ;
@@ -76,13 +95,27 @@ public:
 		m_CallbackID   = 0 ;
 	}
 
+	JNIEnv* GetEnv()
+	{
+		// We have several options here to get the JNIEnv*.
+		// 1) We use the one we were passed originally in the registration call: m_JavaEnv
+		// 2) We call m_JavaVM->GetEnv((void**)&penv, JNI_VERSION_1_4) ;
+		// 3) We call m_JavaVM->AttachCurrentThread((void**)&penv, 0) ;
+		// I think we need to use the 3rd form if we wish to support callbacks on a different thread.
+		JNIEnv* penv ;
+		int result = m_JavaVM->AttachCurrentThread((void**)&penv, 0) ;
+
+		return penv ;
+	}
+
 	// We need to clean up the global references that we created earlier
 	~JavaCallbackData()
 	{
-		if (m_HandlerObject)m_JavaEnv->DeleteGlobalRef(m_HandlerObject) ;
-		if (m_CallbackData) m_JavaEnv->DeleteGlobalRef(m_CallbackData) ;
-		if (m_AgentObject)  m_JavaEnv->DeleteGlobalRef(m_AgentObject) ;
-		if (m_KernelObject) m_JavaEnv->DeleteGlobalRef(m_KernelObject) ;
+		JNIEnv* penv = GetEnv() ;
+		if (m_HandlerObject) penv->DeleteGlobalRef(m_HandlerObject) ;
+		if (m_CallbackData)  penv->DeleteGlobalRef(m_CallbackData) ;
+		if (m_AgentObject)   penv->DeleteGlobalRef(m_AgentObject) ;
+		if (m_KernelObject)  penv->DeleteGlobalRef(m_KernelObject) ;
 	}
 } ;
 
@@ -94,7 +127,7 @@ static void RunEventHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* 
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
 
 	// Now try to call back to Java
-	JNIEnv *jenv = pJavaData->m_JavaEnv ;
+	JNIEnv *jenv = pJavaData->GetEnv();
 
 	// We start from the Java object whose method we wish to call.
 	jobject jobj = pJavaData->m_HandlerObject ;
@@ -130,7 +163,7 @@ static void AgentEventHandler(sml::smlAgentEventId id, void* pUserData, sml::Age
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
 
 	// Now try to call back to Java
-	JNIEnv *jenv = pJavaData->m_JavaEnv ;
+	JNIEnv *jenv = pJavaData->GetEnv() ;
 
 	// We start from the Java object whose method we wish to call.
 	jobject jobj = pJavaData->m_HandlerObject ;
@@ -166,7 +199,7 @@ static void ProductionEventHandler(sml::smlProductionEventId id, void* pUserData
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
 
 	// Now try to call back to Java
-	JNIEnv *jenv = pJavaData->m_JavaEnv ;
+	JNIEnv *jenv = pJavaData->GetEnv() ;
 
 	// We start from the Java object whose method we wish to call.
 	jobject jobj = pJavaData->m_HandlerObject ;
@@ -206,7 +239,7 @@ static void SystemEventHandler(sml::smlSystemEventId id, void* pUserData, sml::K
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
 
 	// Now try to call back to Java
-	JNIEnv *jenv = pJavaData->m_JavaEnv ;
+	JNIEnv *jenv = pJavaData->GetEnv() ;
 
 	// We start from the Java object whose method we wish to call.
 	jobject jobj = pJavaData->m_HandlerObject ;
@@ -251,7 +284,18 @@ static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, j
 	// Get the method name from the Java string
 	const char *pMethodName = jenv->GetStringUTFChars(jarg5, 0);
 
-	JavaCallbackData* pJavaData = new JavaCallbackData(jenv, storeAgent ? jglobal3 : 0, storeAgent ? 0 : jglobal3, jglobal4, pMethodName, jglobal6) ;
+	// Record the virtual machine we are using
+	JavaVM vm ;
+	JavaVM* pvm = &vm ;
+	jint result = jenv->GetJavaVM(&pvm) ;
+	
+	if (result != 0)
+	{
+		printf("Error getting Java VM\n") ;
+		return 0 ;
+	}
+
+	JavaCallbackData* pJavaData = new JavaCallbackData(pvm, jenv, storeAgent ? jglobal3 : 0, storeAgent ? 0 : jglobal3, jglobal4, pMethodName, jglobal6) ;
 
 	// Release the string we got from Java
 	jenv->ReleaseStringUTFChars(jarg5, pMethodName);
