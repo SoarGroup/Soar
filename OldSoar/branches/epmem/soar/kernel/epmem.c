@@ -117,7 +117,11 @@ typedef struct arraylist_struct
              depth          - depth in the tree (root node is depth=0)
              next/prev      - dll of all nodes in the tree to allow iterative
                               implementation of several algorithms
-             in_mem         - whether this "wme" is in the current memory
+             assoc_wmes     - a list of wmes that are currently in WM that
+                              were created using this node as their template
+                              (i.e., as part of a retrieval).  The index of
+                              a particular WME in the list always equals
+                              the index of the epmem_header for the memory.
              assoc_memories - this is a list of pointers to all the episodic
                               memories that use this WME.  As such it is
                               effectively an arraylist of arraylists.
@@ -144,8 +148,7 @@ typedef struct wmetree_struct
     hash_table *children;
     struct wmetree_struct *parent; // %%%TODO: make this an array later?
     int depth;
-    bool in_mem;
-    struct wme_struct *assoc_wme;
+    arraylist *assoc_wmes;
     arraylist *assoc_memories;
     int query_count;
     int ubiquitous;
@@ -184,6 +187,34 @@ typedef struct episodic_memory_struct
 } episodic_memory;
 
 
+/*
+ * epmem_header - An arraylist of these is used to keep track of the
+ *                ^epmem link attached to each state in working memory
+ *
+ *  index        - the index of this header in g_header_stack.  This
+ *                 index is used to reference the assoc_wmes arraylist
+ *                 in a wmetree node
+ *  state        - the state that ^epmem is attached to
+ *  epmem        - The symbol that ^epmem has as an attribute
+ *  query        - The symbold that ^query has as an attribute
+ *  retrieved    - The symbold that ^retrieved has as an attribute
+ *  curr_memory  - Pointer to the memory currently in the retrieved link
+ *
+ */
+typedef struct epmem_header_struct
+{
+    int index;
+    Symbol *state;
+    Symbol *epmem;
+    wme *epmem_wme;
+    Symbol *query;
+    wme *query_wme;
+    Symbol *retrieved;
+    wme *retrieved_wme;
+    episodic_memory *curr_memory;
+} epmem_header;
+
+
 /*======================================================================
  * EpMem globals
  *----------------------------------------------------------------------
@@ -199,16 +230,15 @@ typedef struct episodic_memory_struct
                             in effect, the episodic store of the agent.
    g_memories             - This is an array of all the memories that the
                             agent has.  Each memory is an index into g_wmetree
-   g_curr_memory          - Pointer to the memory currently in the retrieved link
-   g_epmem_header         - The symbol that ^epmem is attached to
-   g_epmem_query          - The symbold that ^query is attached to
-   g_epmem_retrieved      - The symbold that ^retrieved is attached to
    g_last_tag             - The timetag of the last command on the output-link
    g_last_ret_id          - This value gets incremeted at each retrieval. It's
                             currently used by the matcher to keep track of the
                             best match for this retrieval in wmetree->last_usage
    g_num_queries          - Total number of queries that have been performed so far
-                            
+   g_header_stack         - A stack of epmem_header structs used to mirror the
+                            current state stack in WM and keep track of the
+                            ^epmem link attached to each one.
+   
 */
 
 //%%%FIXME:  move these globals to current_agent()
@@ -216,13 +246,10 @@ wme **g_current_active_wmes;
 wme **g_previous_active_wmes;
 wmetree g_wmetree;
 arraylist *g_memories;
-episodic_memory *g_curr_memory = NULL;
-Symbol *g_epmem_header;
-Symbol * g_epmem_query;
-Symbol * g_epmem_retrieved;
 unsigned long g_last_tag = 0;
 long g_last_ret_id = 0;
 long g_num_queries = 0;
+arraylist *g_header_stack;
 
 
 /* EpMem macros
@@ -345,6 +372,7 @@ unsigned long hash_wme(wme *w, short num_bits)
 arraylist *make_arraylist(int init_cap)
 {
     arraylist *al;
+    int i;
 
     if (init_cap <= 0) init_cap = 32; // default value
     
@@ -355,6 +383,11 @@ arraylist *make_arraylist(int init_cap)
     al->capacity = init_cap;
     al->size = 0;
     al->next = NULL;
+
+    for(i = 0; i < init_cap; i++)
+    {
+        al->array[i] = NULL;
+    }
 
     return al;
 }//make_arraylist
@@ -378,6 +411,50 @@ void destroy_arraylist(arraylist *al)
 }//destroy_arraylist
 
 /* ===================================================================
+   grow_arraylist
+
+   This funciton increases the length of an arraylist to a minimum
+   of a given capacity.
+   
+   Created: 06 Oct 2004
+   =================================================================== */
+void grow_arraylist(arraylist *al, int desired_capacity)
+{
+    int i;
+    void **new_array;
+    int new_capacity;
+
+    //Check to see if capacity is already correct
+    if (desired_capacity <= al->capacity) return;
+
+    //Determine the new capacity
+    new_capacity = al->capacity;
+    if (new_capacity == 0) new_capacity = 32;
+    while (new_capacity < desired_capacity)
+    {
+        new_capacity *= 2;
+    }
+    
+    //Grow the array (can't use realloc b/c of Soar's memory routines)
+    new_array = (void **)allocate_memory_and_zerofill(new_capacity * sizeof(void*),
+                                                      MISCELLANEOUS_MEM_USAGE);
+    for(i = 0; i < al->size; i++)
+    {
+        new_array[i] = al->array[i];
+    }
+
+    if (al->array != NULL)
+    {
+        free_memory(al->array, MISCELLANEOUS_MEM_USAGE);
+    }
+
+    al->array = new_array;
+    al->capacity = new_capacity;
+
+}//grow_arraylist
+
+
+/* ===================================================================
    append_entry_to_arraylist
 
    This function adds a new entry to the end of an arraylist
@@ -388,29 +465,7 @@ void append_entry_to_arraylist(arraylist *al, void *new_entry)
 {
     if (al->size == al->capacity)
     {
-        int i;
-        void **new_array;
-        int new_capacity;
-
-        //Select the new array size
-        new_capacity = al->capacity * 2;
-        if (new_capacity == 0) new_capacity = 32;
-        
-        //Grow the array (can't use realloc b/c of Soar's memory routines)
-        new_array = (void **)allocate_memory_and_zerofill(new_capacity * sizeof(void*),
-                                                          MISCELLANEOUS_MEM_USAGE);
-        for(i = 0; i < al->size; i++)
-        {
-            new_array[i] = al->array[i];
-        }
-
-        if (al->array != NULL)
-        {
-            free_memory(al->array, MISCELLANEOUS_MEM_USAGE);
-        }
-
-        al->array = new_array;
-        al->capacity = new_capacity;
+        grow_arraylist(al, al->size+1);
     }//if
 
 
@@ -420,6 +475,79 @@ void append_entry_to_arraylist(arraylist *al, void *new_entry)
     
 }//append_entry_to_arraylist
 
+/* ===================================================================
+   remove_entry_from_arraylist
+
+   Given an index, this function removes the entry at that index from
+   an arraylist and moves down subsequent entries to fill in the gap.
+   The caller is responsible for cleaning up the entry itself.
+   
+   Created: 04 Oct 2004
+   =================================================================== */
+void *remove_entry_from_arraylist(arraylist *al, int index)
+{
+    int i;
+    void *retval = NULL;
+    
+    //Catch erroneous input values
+    if (al == NULL) return NULL;
+    if (index >= al->size) return NULL;
+    if (index < 0) return NULL;
+
+    retval = al->array[index];
+    al->array[index] = NULL;
+    for(i = index + 1; i < al->size; i++)
+    {
+        al->array[i - 1] = al->array[i];
+    }
+    
+    (al->size)--;
+
+    return retval;
+    
+}//remove_entry_from_arraylist
+
+/* ===================================================================
+   get_arraylist_entry
+
+   Given an index, this function returns the entry in the arraylist
+   at that point.
+   
+   Created: 06 Oct 2004
+   =================================================================== */
+void *get_arraylist_entry(arraylist *al, int index)
+{
+    //Catch erroneous input values
+    if (al == NULL) return NULL;
+    if (index < 0) return NULL;
+    if (index >= al->size)
+    {
+        grow_arraylist(al, index + 1);
+    }
+
+    return al->array[index];
+}//get_arraylist_entry
+
+/* ===================================================================
+   set_arraylist_entry
+
+   Given an index, this function sets the entry in the arraylist
+   at that index to a given value.
+   
+   Created: 06 Oct 2004
+   =================================================================== */
+void set_arraylist_entry(arraylist *al, int index, void *newval)
+{
+    //Catch erroneous input values
+    if (al == NULL) return;
+    if (index < 0) return;
+    if (index >= al->size)
+    {
+        grow_arraylist(al, index + 1);
+    }
+
+    al->array[index] = newval;
+}//set_arraylist_entry
 
 
 /* ===================================================================
@@ -443,8 +571,7 @@ wmetree *make_wmetree_node(wme *w)
     node->children = make_hash_table(0, hash_wmetree);
     node->parent = NULL;
     node->depth = -1;
-    node->in_mem = FALSE;
-    node->assoc_wme = NULL;
+    node->assoc_wmes = make_arraylist(20);
     node->assoc_memories = make_arraylist(16);
     node->query_count = 0;
     node->ubiquitous = FALSE;
@@ -533,6 +660,69 @@ void destroy_wmetree(wmetree *tree)
     free_memory(tree, MISCELLANEOUS_MEM_USAGE);
 }//destroy_wmetree
 
+
+/* ===================================================================
+   make_epmem_header
+
+   Allocates a new epmem_header struct for a given state and fills in
+   the proper values.  The caller is responsible for setting the
+   index field.
+
+   s - the state that the header is to be attached to
+   
+   Created: 04 Oct 2004
+   =================================================================== */
+epmem_header *make_epmem_header(Symbol *s)
+{
+    epmem_header *h;
+
+    h = allocate_memory(sizeof(epmem_header), MISCELLANEOUS_MEM_USAGE);
+    h->index = -42; //A bogus value to help with debugging
+    h->state = s;
+    h->curr_memory = NULL;
+
+    //Create the ^epmem header symbols
+    h->epmem = make_new_identifier('E', s->id.level);
+    h->query = make_new_identifier('E', s->id.level);
+    h->retrieved = make_new_identifier('E', s->id.level);
+
+    //Add the ^epmem header WMEs
+    h->epmem_wme = add_input_wme(s, make_sym_constant("epmem"), h->epmem);
+    wme_add_ref(h->epmem_wme);
+    h->query_wme = add_input_wme(h->epmem, make_sym_constant("query"), h->query);
+    wme_add_ref(h->query_wme);
+    h->retrieved_wme = add_input_wme(h->epmem, make_sym_constant("retrieved"), h->retrieved);
+    wme_add_ref(h->retrieved_wme);
+
+    return h;
+}//make_epmem_header
+
+/* ===================================================================
+   destroy_epmem_header
+
+   Frees the resources used by an epmem_header struct.
+
+   Created: 04 Oct 2004
+   =================================================================== */
+void destroy_epmem_header(epmem_header *h)
+{
+    //Remove the ^epmem header WMEs
+    remove_input_wme(h->epmem_wme);
+    wme_remove_ref(h->epmem_wme);
+    remove_input_wme(h->query_wme);
+    wme_remove_ref(h->query_wme);
+    remove_input_wme(h->retrieved_wme);
+    wme_remove_ref(h->retrieved_wme);
+
+    //Dereference the ^epmem header symbols
+    symbol_remove_ref(h->epmem);
+    symbol_remove_ref(h->query);
+    symbol_remove_ref(h->retrieved);
+
+    //Free the struct
+    free_memory(h, MISCELLANEOUS_MEM_USAGE);
+    
+}//destroy_epmem_header
 
 /* ===================================================================
    symbols_are_equal_value
@@ -750,7 +940,7 @@ wmetree *epmem_find_memory_entry(arraylist *epmem, wmetree *id, char *s)
     
     for(i = 0; i < epmem->size; i++)
     {
-        wmetree *node = ((actwme *)(epmem->array[i]))->node;
+        wmetree *node = ((actwme *)get_arraylist_entry(epmem, i))->node;
         if ( (id == &g_wmetree) || (id == node->parent) )
         { 
             if (strcmp(node->attr, s) == 0)
@@ -790,7 +980,7 @@ void print_memory(arraylist *epmem, wmetree *node, int indent, int depth)
         //Find out if this node is in the arraylist
         for(i = 0; i < epmem->size; i++)
         {
-            if (((actwme *)epmem->array[i])->node == node)
+            if (((actwme *)get_arraylist_entry(epmem,i))->node == node)
             {
                 bFound = TRUE;
             }
@@ -968,7 +1158,7 @@ void add_node_to_memory(arraylist *epmem, wmetree *node, int activation)
    can then call update_wmetree again if desired.
 
    node - the root of the WME tree to be updated
-   sym - the room of the tree in working memory to update it with
+   sym - the root of the tree in working memory to update it with
    epmem - this function generates an arraylist of actwme structs
            representing all the nodes in the wmetree that are
            referenced by the working memory tree rooted by sym.
@@ -1041,8 +1231,8 @@ Symbol *update_wmetree(wmetree *node,
         //We've retrieved every WME in the query
         if (epmem->size == pos) break;
         
-        node = ((actwme *)epmem->array[pos])->node;
-        sym = (Symbol *)syms->array[pos];
+        node = ((actwme *)get_arraylist_entry(epmem,pos))->node;
+        sym = (Symbol *)get_arraylist_entry(syms,pos);
         pos++;
 
     } 
@@ -1107,7 +1297,7 @@ void record_epmem( )
         //Update the assoc_memories link on each wmetree node in curr_state
         for(i = 0; i < curr_state->size; i++)
         {
-            actwme *curr_actwme = ((actwme *)(curr_state->array[i]));
+            actwme *curr_actwme = (actwme *)get_arraylist_entry(curr_state,i);
             wmetree *node = curr_actwme->node;
             int activation = curr_actwme->activation;
 
@@ -1147,7 +1337,7 @@ void record_epmem( )
 
 //      //%%%DEBUGGING
 //      print("\nRECORDED MEMORY %d:\n", g_memories->size - 1);
-//      print_memory_graphically(((episodic_memory *)g_memories->array[g_memories->size - 1])->content);
+//      print_memory_graphically(((episodic_memory *)get_arraylist_entry(g_memories,g_memories->size - 1))->content);
     
 }//record_epmem
 
@@ -1468,56 +1658,52 @@ void consider_new_epmem_via_activation()
    epmem_clear_curr_mem
 
    This routine removes all the epmem WMEs from working memory that
-   are associated with the current memory (g_curr_memory).
+   are associated with the current memory (h->retrieved).
 
    Created: 16 Feb 2004
    Overhauled: 26 Aug 2004
    =================================================================== */
-void epmem_clear_curr_mem()
+void epmem_clear_curr_mem(epmem_header *h)
 {
     int i;
 
     //Check for "no-retrieval" wme
-    if (g_wmetree.assoc_wme != NULL)
+    if (get_arraylist_entry(g_wmetree.assoc_wmes,h->index) != NULL)
     {
-        remove_input_wme(g_wmetree.assoc_wme);
-        wme_remove_ref(g_wmetree.assoc_wme);
-        g_wmetree.assoc_wme = NULL;
+        remove_input_wme((wme *)get_arraylist_entry(g_wmetree.assoc_wmes,h->index));
+        wme_remove_ref((wme *)get_arraylist_entry(g_wmetree.assoc_wmes,h->index));
+        set_arraylist_entry(g_wmetree.assoc_wmes, h->index, NULL);
 
         return;
     }
 
     //Check for trivial case
-    if (g_curr_memory == NULL)
+    if (h->curr_memory == NULL)
     {
         return;
     }
 
     //Remove the WMEs (Traverse the array in reverse order so that
     //                 children are removed before their parents.)
-    for(i = g_curr_memory->content->size - 1; i >=0 ; i--)
+    for(i = h->curr_memory->content->size - 1; i >=0 ; i--)
     {
-        wmetree *node = ((actwme *)g_curr_memory->content->array[i])->node;
+        wmetree *node = ((actwme *)get_arraylist_entry(h->curr_memory->content,i))->node;
 
-        if (! node->in_mem)
+        if (get_arraylist_entry(node->assoc_wmes,h->index) == NULL)
         {
-            continue; // this should never happen
-        }
-        
-        if (node->assoc_wme == NULL)
-        {
-            print("\nERROR: WME should be in memory for: ");
-            print_wmetree(node, 0, 0);
+            //This is a memory leak caused by multi-valued attributes.
+            //I'm going to punt on it for now.
+//%%%              print("\nERROR: WME should be in memory for: ");
+//%%%              print_wmetree(node, 0, 0);
             continue;
         }
 
         //Remove from WM
-        remove_input_wme(node->assoc_wme);
-        wme_remove_ref(node->assoc_wme);
+        remove_input_wme(get_arraylist_entry(node->assoc_wmes,h->index));
+        wme_remove_ref((wme *)get_arraylist_entry(node->assoc_wmes,h->index));
 
         //Bookkeeping
-        node->assoc_wme = NULL;
-        node->in_mem = FALSE;
+        set_arraylist_entry(node->assoc_wmes,h->index,NULL);
     
     }//for
     
@@ -1542,8 +1728,8 @@ int compare_memories(arraylist *epmem1, arraylist *epmem2)
 
     while((pos1 < epmem1->size) && (pos2 < epmem2->size))
     {
-        wmetree *node1 = ((actwme *)epmem1->array[pos1])->node;
-        wmetree *node2 = ((actwme *)epmem2->array[pos2])->node;
+        wmetree *node1 = ((actwme *)get_arraylist_entry(epmem1,pos1))->node;
+        wmetree *node2 = ((actwme *)get_arraylist_entry(epmem2,pos2))->node;
         
         if (node1->val_type == IDENTIFIER_SYMBOL_TYPE)
         {
@@ -1651,8 +1837,8 @@ int compare_memories_act_indiv_mem(arraylist *epmem1, arraylist *epmem2)
 
     while((pos1 < epmem1->size) && (pos2 < epmem2->size))
     {
-        wmetree *node1 = ((actwme *)epmem1->array[pos1])->node;
-        wmetree *node2 = ((actwme *)epmem2->array[pos2])->node;
+        wmetree *node1 = ((actwme *)get_arraylist_entry(epmem1,pos1))->node;
+        wmetree *node2 = ((actwme *)get_arraylist_entry(epmem2,pos2))->node;
         
         if (node1->val_type == IDENTIFIER_SYMBOL_TYPE)
         {
@@ -1668,7 +1854,7 @@ int compare_memories_act_indiv_mem(arraylist *epmem1, arraylist *epmem2)
         
         if (node1 == node2)
         {
-            count += ((actwme *)epmem1->array[pos1])->activation;
+            count += ((actwme *)get_arraylist_entry(epmem1,pos1))->activation;
             pos1++;
             pos2++;
         }
@@ -1719,7 +1905,7 @@ episodic_memory *find_best_match(arraylist *cue)
     //list for each wmetree node in the cue
     for(i = 0; i < cue->size; i++)
     {
-        actwme *aw = (actwme *)cue->array[i];
+        actwme *aw = (actwme *)get_arraylist_entry(cue,i);
 
         if (aw->node->assoc_memories->size > 0)
         {
@@ -1730,7 +1916,7 @@ episodic_memory *find_best_match(arraylist *cue)
         for(j = 0; j < aw->node->assoc_memories->size; j++)
         {
             episodic_memory *epmem =
-                (episodic_memory *)aw->node->assoc_memories->array[j];
+                (episodic_memory *)get_arraylist_entry(aw->node->assoc_memories,j);
 
             if (epmem->last_usage != g_last_ret_id)
             {
@@ -1769,12 +1955,12 @@ episodic_memory *find_best_match(arraylist *cue)
 
    Given an episodic memory this function recreates the working memory
    fragment represented by the memory in working memory.  The
-   retrieved memory is rooted at the the given symbol.
+   retrieved memory is placed in the given ^epmem header.
 
    Created:    19 Jan 2004
    Overhauled: 26 Aug 2004 
    =================================================================== */
-void install_epmem_in_wm(Symbol *sym, arraylist *epmem)
+void install_epmem_in_wm(epmem_header *h, arraylist *epmem)
 {
     int i;
     Symbol *id;
@@ -1784,7 +1970,7 @@ void install_epmem_in_wm(Symbol *sym, arraylist *epmem)
     //Install the WMEs
     for(i = 0; i < epmem->size; i++)
     {
-        wmetree *node = ((actwme *)epmem->array[i])->node;
+        wmetree *node = ((actwme *)get_arraylist_entry(epmem,i))->node;
 
         //For now, avoid recursing into previous memories.
         if (strcmp(node->attr, "epmem") == 0)
@@ -1792,13 +1978,7 @@ void install_epmem_in_wm(Symbol *sym, arraylist *epmem)
             continue;
         }
 
-        //If the parent is not in memory then the child can not be either
-        if (!node->parent->in_mem)
-        {
-            continue;
-        }
-        
-        if (node->assoc_wme != NULL)
+        if (get_arraylist_entry(node->assoc_wmes,h->index) != NULL)
         {
             //%%%TODO: This happens when a memory contains the same
             //         node multiple times (e.g., a multi-valued attribute)
@@ -1809,11 +1989,19 @@ void install_epmem_in_wm(Symbol *sym, arraylist *epmem)
         //Determine the WME's ID
         if (node->parent->depth == 0)
         {
-            id = sym;
+            id = h->retrieved;
         }
         else
         {
-            id = node->parent->assoc_wme->value;
+            //If the parent is not in memory then the child can not be either
+            wme *parent_wme = (wme *)get_arraylist_entry(node->parent->assoc_wmes,h->index);
+            if (parent_wme == NULL)
+            {
+                continue;
+            }
+
+            //The value of the parent WME is the id for this WME
+            id = parent_wme->value;
         }
 
         //Determine the WME's attribute
@@ -1837,9 +2025,8 @@ void install_epmem_in_wm(Symbol *sym, arraylist *epmem)
                 break;
         }//switch
 
-        node->assoc_wme = add_input_wme(id, attr, val);
-        node->in_mem = TRUE;
-        wme_add_ref(node->assoc_wme);
+        set_arraylist_entry(node->assoc_wmes,h->index,add_input_wme(id, attr, val));
+        wme_add_ref((wme *)get_arraylist_entry(node->assoc_wmes, h->index));
     }//for
 
 }//install_epmem_in_wm
@@ -1859,7 +2046,7 @@ void install_epmem_in_wm(Symbol *sym, arraylist *epmem)
 
    Created: 19 Jan 2004
    =================================================================== */
-arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
+arraylist *respond_to_query(epmem_header *h)
 {
     arraylist *al_query;
     arraylist *al_retrieved;
@@ -1867,14 +2054,14 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
 
     //Remove the old retrieved memory
     start_timer(&current_agent(epmem_clearmem_start_time));
-    epmem_clear_curr_mem();
+    epmem_clear_curr_mem(h);
     stop_timer(&current_agent(epmem_clearmem_start_time), &current_agent(epmem_clearmem_total_time));
-    g_curr_memory = NULL;
+    h->curr_memory = NULL;
 
     //Create an arraylist representing the current query
     al_query = make_arraylist(32);
-    tc = query->id.tc_num + 1;
-    update_wmetree(&g_wmetree, query, al_query, tc);
+    tc = h->query->id.tc_num + 1;
+    update_wmetree(&g_wmetree, h->query, al_query, tc);
 
     //If the query is empty then we're done
     if (al_query->size == 0)
@@ -1887,15 +2074,15 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
     g_num_queries++;
 
     //Match query to current memories list
-    g_curr_memory = find_best_match(al_query);
+    h->curr_memory = find_best_match(al_query);
     destroy_arraylist(al_query);
 
     //Place the best fit on the retrieved link
-    if (g_curr_memory != NULL)
+    if (h->curr_memory != NULL)
     {
-        al_retrieved = g_curr_memory->content;
+        al_retrieved = h->curr_memory->content;
         start_timer(&current_agent(epmem_installmem_start_time));
-        install_epmem_in_wm(retrieved, al_retrieved);
+        install_epmem_in_wm(h, al_retrieved);
         stop_timer(&current_agent(epmem_installmem_start_time), &current_agent(epmem_installmem_total_time));
     }
     else
@@ -1903,10 +2090,12 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
         al_retrieved = NULL;
 
         //Notify the user of failed retrieval
-        g_wmetree.assoc_wme = add_input_wme(retrieved,
-                                            make_sym_constant("no-retrieval"),
-                                            make_sym_constant("true"));
-        wme_add_ref(g_wmetree.assoc_wme);
+        set_arraylist_entry(g_wmetree.assoc_wmes,
+                            h->index,
+                            add_input_wme(h->retrieved,
+                                          make_sym_constant("no-retrieval"),
+                                          make_sym_constant("true")));
+        wme_add_ref((wme *)get_arraylist_entry(g_wmetree.assoc_wmes, h->index));
     }
 
     return al_retrieved;
@@ -1925,7 +2114,7 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
    
    Created: 27 Jan 2004
    =================================================================== */
-char *epmem_retrieve_command()
+char *epmem_retrieve_command(Symbol *sym)
 {
     wme **wmes;
     int len = 0;
@@ -1933,9 +2122,9 @@ char *epmem_retrieve_command()
     tc_number tc;
     char *ret = NULL;
     
-    tc = g_epmem_query->id.tc_num + 1;
-    wmes = get_augs_of_id(g_epmem_query, tc, &len);
-    g_epmem_query->id.tc_num = tc - 1;
+    tc = sym->id.tc_num + 1;
+    wmes = get_augs_of_id(sym, tc, &len);
+    sym->id.tc_num = tc - 1;
     if (wmes == NULL) return NULL;
 
     for(i = 0; i < len; i++)
@@ -1960,7 +2149,7 @@ char *epmem_retrieve_command()
 
    27 Jan 2004
    =================================================================== */
-void increment_retrieval_count(long inc_amt)
+void increment_retrieval_count(epmem_header *h, long inc_amt)
 {
     wme **wmes;
     int len = 0;
@@ -1971,9 +2160,9 @@ void increment_retrieval_count(long inc_amt)
 
     //Find the (epmem ^retreival-count n) WME, save the value,
     //and remove the WME from WM
-    tc = g_epmem_header->id.tc_num + 1;
-    wmes = get_augs_of_id( g_epmem_header, tc, &len );
-    g_epmem_header->id.tc_num = tc - 1;
+    tc = h->epmem->id.tc_num + 1;
+    wmes = get_augs_of_id( h->epmem, tc, &len );
+    h->epmem->id.tc_num = tc - 1;
     
     if (wmes == NULL) return;
     for(i = 0; i < len; i++)
@@ -2001,7 +2190,7 @@ void increment_retrieval_count(long inc_amt)
     }
 
     //Install a new WME
-    w = add_input_wme(g_epmem_header,
+    w = add_input_wme(h->epmem,
                       make_sym_constant("retrieval-count"),
                       make_int_constant(current_count));
     wme_add_ref(w);
@@ -2017,43 +2206,170 @@ void increment_retrieval_count(long inc_amt)
        "next" - populate ^epmem.retrieved with the next memory
                 in the sequence
 
+   cmd - the command to execute
+   h - the epmem header where the command was found
+
    Created: 27 Jan 2004
    =================================================================== */
-void respond_to_command(char *cmd)
+void respond_to_command(char *cmd, epmem_header *h)
 {
     if (strcmp(cmd, "next") == 0)
     {
         //Remove the old retrieved memory
         start_timer(&current_agent(epmem_clearmem_start_time));
-        epmem_clear_curr_mem();
+        epmem_clear_curr_mem(h);
         stop_timer(&current_agent(epmem_clearmem_start_time), &current_agent(epmem_clearmem_total_time));
 
         //Check that there is a next memory available
-        if ( (g_curr_memory != NULL)
-             && (g_curr_memory->index < g_memories->size - memory_match_wait) )
+        if ( (h->curr_memory != NULL)
+             && (h->curr_memory->index < g_memories->size - memory_match_wait) )
         {
             //Update the current memory pointer to point to the next epmem
-            g_curr_memory =
-                (episodic_memory *)g_memories->array[g_curr_memory->index + 1];
+            h->curr_memory =
+                (episodic_memory *)get_arraylist_entry(g_memories,
+                                                       h->curr_memory->index + 1);
             
             //Install the new memory
             start_timer(&current_agent(epmem_installmem_start_time));
-            install_epmem_in_wm(g_epmem_retrieved, g_curr_memory->content);
+            install_epmem_in_wm(h, h->curr_memory->content);
             stop_timer(&current_agent(epmem_installmem_start_time), &current_agent(epmem_installmem_total_time));
         }
         else
         {
             //Notify the user of failed retrieval
-            g_wmetree.assoc_wme = add_input_wme(g_epmem_retrieved,
-                                                make_sym_constant("no-retrieval"),
-                                                make_sym_constant("true"));
-            wme_add_ref(g_wmetree.assoc_wme);
+            set_arraylist_entry(g_wmetree.assoc_wmes,
+                                h->index,
+                                add_input_wme(h->retrieved,
+                                              make_sym_constant("no-retrieval"),
+                                              make_sym_constant("true")));
+            wme_add_ref((wme *)get_arraylist_entry(g_wmetree.assoc_wmes, h->index));
         }
         
-        increment_retrieval_count(1);
+        increment_retrieval_count(h, 1);
     }
     
 }//respond_to_command
+
+/* ===================================================================
+   find_superstate()
+
+   Given a symbol for a state, return the symbol for its superstate.
+
+   Created: 05 Oct 2004
+   =================================================================== */
+Symbol *find_superstate(Symbol *sym)
+{
+    wme **wmes = NULL;
+    tc_number tc = sym->id.tc_num + 1; // Is this going to cause problems?
+    int len = 0;
+    int i;
+    Symbol *ss = NULL;
+
+    start_timer(&current_agent(epmem_getaugs_start_time));
+    wmes = get_augs_of_id( sym, tc, &len );
+    stop_timer(&current_agent(epmem_getaugs_start_time), &current_agent(epmem_getaugs_total_time));
+
+    if (wmes != NULL)
+    {
+        for(i = 0; i < len; i++)
+        {
+            //Check for special case: "superstate" 
+            if ( (wme_has_value(wmes[i], "superstate", NULL))
+                 && (ss == NULL)
+                 && (wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) )
+            {
+                ss = wmes[i]->value;
+                break;
+            }
+        }
+    }//if
+
+    return ss;
+        
+}//find_superstate
+
+
+/* ===================================================================
+   epmem_update_header_stack()
+
+   Update the list of epmem_header structs which maintain information
+   about what memories have been retrieved for each state in the
+   state stack.
+
+   Created: 03 Oct 2004
+   =================================================================== */
+void epmem_update_header_stack()
+{
+    Symbol *sym;
+    int i;
+    epmem_header *h;
+    arraylist *new_states = make_arraylist(20);
+    int bFound = FALSE;
+
+
+    /*
+     * Find the lowest state in g_header_stack that has an analog
+     * in working memory.  As we do the search, record any states
+     * that are lower than this in the new_states list.
+     */
+
+    //Start at the bottom state and work our way up
+    sym = current_agent(bottom_goal);
+    while(sym != current_agent(top_goal))
+    {
+        //Search for an analog to the state in g_header_stack
+        for(i = g_header_stack->size - 1; i >= 0; i--)
+        {
+            h = get_arraylist_entry(g_header_stack,i);
+            if (h->state == sym)
+            {
+                //An analog was found, remove any of its children and break
+                int j;
+                for(j = g_header_stack->size - 1; j > i; j--)
+                {
+                    destroy_epmem_header(
+                        remove_entry_from_arraylist(g_header_stack, j));
+                }
+
+                bFound = TRUE;
+                break;
+            }//if
+        }//for
+
+        //If an analog was found, exit the loop
+        if (bFound) break;
+        
+        //The current sym is a new state that needs an ^epmem link
+        //so save it away for later
+        append_entry_to_arraylist(new_states, (void *)sym);
+
+        //Move to the parent state and iterate
+        sym = find_superstate(sym);
+        
+    }//while
+
+    /*
+     * The states in new_states need an ^epmem link and a corresponding
+     * entry in the g_header_stack list.
+     */
+    for(i = new_states->size - 1; i >= 0; i--)
+    {
+        h = make_epmem_header(get_arraylist_entry(new_states,i));
+        h->index = g_header_stack->size;
+        append_entry_to_arraylist(g_header_stack, (void *)h);
+    }
+
+//      //%%%DEBUGGING:  Print the current header stack
+//      print("\nEpMem Header Stack: ");
+//      for(i = 0; i < g_header_stack->size; i++)
+//      {
+//          print_with_symbols("%y ",
+//                             ((epmem_header *)get_arraylist_entry(g_header_stack,i))->state);
+//      }
+//      print("\n");
+    
+    
+}//epmem_update_header_stack
 
 
 /* ===================================================================
@@ -2063,17 +2379,17 @@ void respond_to_command(char *cmd)
 
    Created: 20 Feb 2004
    =================================================================== */
-void epmem_print_curr_memory()
+void epmem_print_curr_memory(epmem_header *h)
 {
-    if (g_curr_memory == NULL)
+    if (h->curr_memory == NULL)
     {
         print("\nCURRENT MEMORY:  None.\n");
         return;
     }
     
     //Print the current memory
-    //%%%print("\nCURRENT MEMORY:  %d of %d\t\t", g_curr_memory, g_memories->size);
-    print_memory_graphically(g_curr_memory->content);
+    //%%%print("\nCURRENT MEMORY:  %d of %d\t\t", h->curr_memory, g_memories->size);
+    print_memory_graphically(h->curr_memory->content);
 
 }//epmem_print_curr_memory
 
@@ -2132,7 +2448,7 @@ void epmem_print_detailed_usage_memories(FILE *f)
 
     for(i = 0; i < g_memories->size; i++)
     {
-        int memsize =  ((arraylist *)g_memories->array[i])->size;
+        int memsize =  ((arraylist *)get_arraylist_entry(g_memories,i))->size;
         if (memsize > HISTOGRAM_SIZE)
         {
             fprintf(f, "ERROR!  Memories are too large.\n");
@@ -2427,10 +2743,15 @@ void epmem_update()
     char *cmd;
     arraylist *epmem = NULL;
     static int count = 0;
+    int i;
 
     count++;
 
     start_timer(&current_agent(epmem_start_time));
+
+    //Update the stack of epmem_header structs
+    epmem_update_header_stack();
+    
     start_timer(&current_agent(epmem_record_start_time));
 
     //Consider recording a new epmem
@@ -2439,38 +2760,54 @@ void epmem_update()
     stop_timer(&current_agent(epmem_record_start_time), &current_agent(epmem_record_total_time));
     start_timer(&current_agent(epmem_retrieve_start_time));
     
-    //Update the ^retrieved link as necessary
-    cmd = epmem_retrieve_command();
-    if (cmd != NULL)
-    {
-        respond_to_command(cmd);
-    }
-    else
-    {
-        //%%%DEBUGGING
-        //decay_print_most_activated_wmes(50);
-        
-        epmem = respond_to_query(g_epmem_query, g_epmem_retrieved);
+    /*
+     * Update the ^retrieved link on each epmem header as necessary
+     */
 
-        if (epmem != NULL)
+    for(i = 0; i < g_header_stack->size; i++)
+    {
+        epmem_header *h = (epmem_header *)get_arraylist_entry(g_header_stack, i);
+        //Look for a command
+        cmd = epmem_retrieve_command(h->query);
+        if (cmd != NULL)
         {
-            //New retrieval:  reset count to zero
-            increment_retrieval_count(0);
+            respond_to_command(cmd, h);
         }
         else
         {
-            //No retrieval:  remove count from working memory
-            increment_retrieval_count(-1);
-        }
-    }
+            //Look for a new cue on the query link
+        
+            //%%%DEBUGGING
+            //decay_print_most_activated_wmes(50);
+        
+            epmem = respond_to_query(h);
 
+            if (epmem != NULL)
+            {
+                //New retrieval:  reset count to zero
+                increment_retrieval_count(h, 0);
+            }
+            else
+            {
+                //No retrieval:  remove count from working memory
+                increment_retrieval_count(h, -1);
+            }
+        }//else
+
+//          //%%%DEBUGGING
+//          if (h->curr_memory != NULL)
+//          {
+//              epmem_print_curr_memory(h);
+//          }
+        
+    }//for
+    
     stop_timer(&current_agent(epmem_retrieve_start_time), &current_agent(epmem_retrieve_total_time));
     stop_timer(&current_agent(epmem_start_time), &current_agent(epmem_total_time));
 
     
-//      //%%%DEBUGGING
-//      //epmem_print_curr_memory();
-//      //epmem_print_mem_usage();
+    //%%%DEBUGGING
+    //epmem_print_mem_usage();
     
 //      //%%%DEBUGGING
 //      if (count % 1500 == 0)
@@ -2492,29 +2829,22 @@ void epmem_update()
 /* ===================================================================
    epmem_create_buffer()
 
-   This routine creates the ^epmem link on a given state.  This is
+   This routine creates the ^epmem link on the top state.  This is
    used to query the episodic memory and provided the retrieved
-   result.
+   result.  The Soar kernel is expected to call this function once
+   the top state has been created.
 
    Created: 08 Jan 2004
+   Updated: 04 Oct 2004 - to handle new epmem_header stack
    =================================================================== */
 
 void epmem_create_buffer(Symbol *s)
 {
-    wme *w;
+    epmem_header *top_state_header;
     
-    //Add the ^epmem header WMEs
-    g_epmem_header = make_new_identifier('E', s->id.level);
-    g_epmem_query = make_new_identifier('E', s->id.level);
-    g_epmem_retrieved = make_new_identifier('E', s->id.level);
-
-    w = add_input_wme(s, make_sym_constant("epmem"), g_epmem_header);
-    wme_add_ref(w);
-    w = add_input_wme(g_epmem_header, make_sym_constant("query"), g_epmem_query);
-    wme_add_ref(w);
-    w = add_input_wme(g_epmem_header, make_sym_constant("retrieved"), g_epmem_retrieved);
-    wme_add_ref(w);
-
+    top_state_header = make_epmem_header(s);
+    top_state_header->index = 0;
+    append_entry_to_arraylist(g_header_stack, (void *)top_state_header);
     
 }//epmem_create_buffer
 
@@ -2541,13 +2871,15 @@ void init_epmem(void)
     g_wmetree.children = make_hash_table(0, hash_wmetree);;
     g_wmetree.parent = NULL;
     g_wmetree.depth = 0;
-    g_wmetree.in_mem = TRUE;
-    g_wmetree.assoc_wme = NULL;
+    g_wmetree.assoc_wmes = make_arraylist(20);
 
     //Initialize the memories array
     g_memories = make_arraylist(512);
-    g_curr_memory = NULL;
 
+    //Initialize the g_header_stack array
+    g_header_stack = make_arraylist(20);
+    
+    
     //Reset the timers
     epmem_reset_cpu_usage_timers();
     
