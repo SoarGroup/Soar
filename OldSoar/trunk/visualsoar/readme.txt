@@ -7,7 +7,12 @@ manually after the build.
 You may wish to make a copy of the source before building
 if you wish to keep a "clean" copy for any reason.
 
-
+SECOND IMPORTANT NOTE:
+======================
+You may also build this project in the java IDE Eclipse, available at
+http://www.eclipse.org
+the files .project and .classpath define the build settings.
+Tested on Eclipse 3.0 with java 1.4.2.
 
 Building on Windows
 ===================
