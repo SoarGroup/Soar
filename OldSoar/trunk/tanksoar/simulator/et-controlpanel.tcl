@@ -3,8 +3,11 @@
 ### $Id$
 ###
 ### $Log$
-### Revision 1.1  2003/06/16 13:49:07  swallace
-### Initial revision
+### Revision 1.2  2003/10/09 17:21:50  rmarinie
+### When destroying all agents we now stop them first and then wait for 500 milliseconds to give Soar a chance to clean up ("fixes" a crash problem we were having).
+###
+### Revision 1.1.1.1  2003/06/16 13:49:07  swallace
+### TankSoar initial cvs version (3.0.5)
 ###
 ### Revision 1.4  1998/10/08 13:54:45  swallace
 ### Released to John
@@ -247,10 +250,16 @@ proc registerAgent {name} {
 }
 
 
-
 proc destroyAllAgents {} {
+   environmentStop
+   after 500 destroyAllAgentsRaw
+}
+proc destroyAllAgentsRaw {} {
 global tankList
 
+   
+   
+   
    foreach name [tsiListAgents] {
 	destroyAgent $name
    }
