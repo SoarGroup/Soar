@@ -258,6 +258,7 @@ public class MainFrame extends JFrame
 				
 		JMenuItem commitItem = new JMenuItem("Save");
 		commitItem.addActionListener(commitAction);
+        commitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,Event.CTRL_MASK));
 		commitAction.addPropertyChangeListener(
             new ActionButtonAssociation(commitAction,commitItem));
 				
