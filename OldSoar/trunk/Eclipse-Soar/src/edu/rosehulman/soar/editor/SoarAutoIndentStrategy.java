@@ -30,45 +30,57 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 	public void customizeDocumentCommand(IDocument doc, DocumentCommand comm) {
 		try {
 			//TODO: tear this all up, find the bug:
-			
-			System.out.println("*************************************");
-			System.out.println("comm.text:                '" + comm.text + "'");
-			System.out.println("comm.offset:              '" + comm.offset + "'");
-			System.out.println("comm.length:              '" + comm.length + "'");
-			System.out.println("comm.caretOffset:         '" + comm.caretOffset + "'");
-			System.out.println("doc.get(offset, length):  '" + doc.get(comm.offset, comm.length) + "'");
-			
 			//what is it doing vs. what should it be doing
 			//(maybe high time to check out VS?)
+			System.out.println("*************************************");
+			System.out.println("comm.text:                     '" + comm.text + "'");
+			System.out.println("comm.offset:                   '" + comm.offset + "'");
+			System.out.println("comm.length:                   '" + comm.length + "'");
+			System.out.println("comm.caretOffset:              '" + comm.caretOffset + "'");
+			System.out.println("doc.get(offset, length):       '" + doc.get(comm.offset, comm.length) + "'");
 			
-			String prevCodeLine = getPrevCodeLine(doc, comm.offset);
-			//this is the first line; we have nothing to do
-			if (prevCodeLine == "") {
-				return;
-			}
-			
-			//various checkpoints
-			String prevDocText = doc.get(0, comm.offset);						//the whole doc, beginning to offset
-			char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1);	//the last char of the last code line
+			//idea: only do indenting if you are getting a tab, newline, backspace, or replace
+			boolean isTab = false, isNewline = false, isBackspace = false, isReplace = false;
+			if (-1 != comm.text.indexOf("\t") ) isTab = true;
+			if (-1 != comm.text.indexOf("\n") ) isNewline = true;
+			if (-1 != comm.text.indexOf("\b") ) isBackspace = true;
+			if (comm.length > 0) isReplace = true;
+			//stem.out.println("doc.get(offset, length):       '" + doc.get(comm.offset, comm.length) + "'");
+			System.out.println("tab,newline,backspace,replace: '" +isTab+isNewline+isBackspace+isReplace+ "'");
+			if (!(isTab || isNewline || isBackspace || isReplace)) return;
+			//Stuff for first char, and rest of parsing
 			int currLineNumber = doc.getLineOfOffset(comm.offset);				//comm's line#
 			int currLineOffset = doc.getLineOffset(currLineNumber);				//comm's line's offset (should <= comm)
-			String currLine = getLine(doc, doc.getLineOfOffset(comm.offset));	//comm's line's text
+			String currLine = getLine(doc, currLineNumber);					//comm's line's text
 			int insertion = comm.offset - currLineOffset;						//how many chars comm is into the line
+			//String prevEdit = currLine.substring(0, insertion);				//Current Line up to insertion
+			
+			//various checkpoints
+			String prevCodeLine = getPrevCodeLine(doc, comm.offset);
+			if (prevCodeLine == "") return;	//this is the first line; we have nothing to do
+			String prevDocText = doc.get(0, comm.offset);						//?the whole doc, beginning to offset
+			char prevLastChar = prevCodeLine.charAt(prevCodeLine.length() - 1);	//?the last char of the last code line
 			String temp = currLine.substring(0, insertion) + comm.text;			//should == the whole line up to the edit
 			
 			if (insertion < currLine.length()) {
-				temp += currLine.substring(insertion);
+				//old incorrect: assumes there is no selection length in the command
+				//temp += currLine.substring(insertion);
+				//new thinking: takes the selection length into account
+				try {
+					temp += currLine.substring(insertion + comm.length);
+				}
+				catch (IndexOutOfBoundsException e) {
+					//this means we have a multi-line selection, folks.
+					//so, don't need to append anything at least
+				}
 			}
-			
 			currLine = temp;
-			
 			String newCurrLine = trimLeading(currLine);
-			
 			int numSpaces = 0;
 			String indentString = "";
 			
 			System.out.println("-------------------------------------");
-			System.out.println("text:           '" + comm.text + "'");
+			//System.out.println("text:           '" + comm.text + "'");
 			System.out.println("prevCodeLine:   '" + prevCodeLine + "'");
 			System.out.println("prevLastChar:   '" + prevLastChar + "'");
 			System.out.println("currLine:       '" + currLine + "'");
@@ -77,129 +89,104 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 			System.out.println("newCurrLine:    '" + newCurrLine + "'");
 			
 			
-			//If there's nothing here, there's nothing to do
-			if ((newCurrLine.length() == 0)) {
+			if (newCurrLine.length() == 0) {
+				//If there's nothing here, there's nothing to do
 				return;
-				
-			} else if (newCurrLine.charAt(0) == '}'
-				|| newCurrLine.startsWith("-->")
-				|| newCurrLine.startsWith("sp")) {
-				
+			}
+			else if (newCurrLine.charAt(0) == '}' || newCurrLine.startsWith("-->") || newCurrLine.startsWith("sp")) {
 				numSpaces = 0;
-				
-			} else {
-				//indent by 3 if the previous line was "sp" or "-->" 
-				if (prevCodeLine.startsWith("sp")
-						|| (prevCodeLine.endsWith("-->"))) {
+			}
+			else {
+				if (prevCodeLine.startsWith("sp") || (prevCodeLine.endsWith("-->"))) {
+					//indent by 3 if the previous line was "sp" or "-->" 
 					numSpaces = 3;
-					
+				}
+				else if (newCurrLine.startsWith("^") || newCurrLine.startsWith("-^")) {
 					//Deal with "^" and "-^"
-				} else if (newCurrLine.startsWith("^")
-						|| newCurrLine.startsWith("-^")) {
-					
-					int caretPos = prevDocText.substring(0, currLineOffset)
-					.lastIndexOf("^");
-					
-					// indent to the same place as the previous carret
+					//int caretPos = prevDocText.substring(0, currLineOffset).lastIndexOf("^");
+					int caretPos = prevCodeLine.lastIndexOf("^");
+					// indent to the same place as the previous caret
 					if (caretPos != -1) {
 						int caretLine = doc.getLineOfOffset(caretPos);
 						numSpaces = caretPos - doc.getLineOffset(caretLine);
-						
+					}
+					else {
 						// if couldn't find a previous '^', set numspaces to end of last line
-					} else {
-						int firstCharLoc = prevCodeLine.indexOf((prevCodeLine
-								.trim()).charAt(0));
-						
+						int firstCharLoc = prevCodeLine.indexOf(prevCodeLine.trim().charAt(0));
 						numSpaces = prevCodeLine.trim().length() + firstCharLoc;
 					}
-					
+				}
+				else if (prevLastChar == ')') {
 					//Deal with an ending ")"
-				} else if (prevLastChar == ')') {
 					int workingOffset = comm.offset - 1;
 					boolean done = false;
 					int parenCount = 0;
-					
 					while (!done && workingOffset > -1) {
 						if (prevDocText.charAt(workingOffset) == ')') {
 							++parenCount;
-						} else if (prevDocText.charAt(workingOffset) == '(') {
+						}
+						else if (prevDocText.charAt(workingOffset) == '(') {
 							--parenCount;
-							
 							if (parenCount <= 0) {
-								
-								int lineOff = doc.getLineOffset(doc
-										.getLineOfOffset(workingOffset));
-								
+								int lineOff = doc.getLineOffset(doc.getLineOfOffset(workingOffset));
 								numSpaces = workingOffset - lineOff;
 								done = true;
 							}
 						}
-						
 						--workingOffset;
 					}
-					
-				} else if (prevLastChar == '{') {
+				}
+				else if (prevLastChar == '{') {
 					numSpaces = prevCodeLine.indexOf('{');
-					
-				} else if (newCurrLine.startsWith("(")
+				}
+				else if (newCurrLine.startsWith("(")
 						&& ((prevLastChar == ')') || (prevLastChar == '}'))) {
 					numSpaces = 3;
-					
-				} else if (currLineNumber >= 0) {
+				}
+				else if (currLineNumber >= 0) {
 					// look for a ^ on previous line
 					int caretLocation = prevCodeLine.indexOf('^');
-					
 					if (caretLocation != -1) {
 						// Get position past string that follows the caret (ie ^string )
 						while ((prevCodeLine.charAt(caretLocation) != ' ')
 								&& (caretLocation < prevCodeLine.length())) {
-							
 							caretLocation++;
 						}
 						// look to see if string past ^string is << or { and if so, use that position
 						while (prevCodeLine.charAt(caretLocation) == ' '
-							&& (caretLocation < prevCodeLine.length())) {
-							
+								&& (caretLocation < prevCodeLine.length())) {
 							caretLocation++;
 						}
-						
 						if (prevCodeLine.charAt(caretLocation) == '{') {
 							numSpaces = caretLocation + 2;
-							
-						} else if ((prevCodeLine.charAt(caretLocation) == '<')
+						}
+						else if ((prevCodeLine.charAt(caretLocation) == '<')
 								&& (prevCodeLine.charAt(caretLocation + 1) == '<')) {
-							
 							numSpaces = caretLocation + 3;
-							
-						} else {
+						}
+						else {
 							numSpaces = caretLocation;
 						}
 					} // end of prevLine contains a '^' and thus currLine considered a value
 					
 					// else line up with previous line
 					else {
-						numSpaces = prevCodeLine.indexOf((prevCodeLine.trim())
-								.charAt(0));
+						numSpaces = prevCodeLine.indexOf((prevCodeLine.trim()).charAt(0));
 					}
-					
 				} // end of else if prevlineindex > 1
 				else { // First line of re
 					numSpaces = 0;
 				} // Does not fit a previous constraint and therefore is possibly considered a VALUE of a wme
 			}
-			
 			// properly line up negated conditions
 			if ((newCurrLine.length() != 0) && (newCurrLine.charAt(0) == '-')
 					&& (numSpaces > 0)) {
-				
 				numSpaces--;
 			}
-			
 			// no line up char found
 			if (numSpaces < 0) {
 				//numSpaces = 3;
 			}
-			
 			// variable indent to line up chars vertically
 			for (int i = 0; i < numSpaces; i++) {
 				indentString += ' ';
@@ -235,10 +222,8 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 				} else {
 					//System.out.println("not whitespace");
 				}
-				
 				comm.offset += comm.text.length();
 				comm.text = "";
-				
 			}
 		}
 		catch (BadLocationException e) {
@@ -553,6 +538,7 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 	
 	/**
 	 * Returns the previous line of code, ignoring blank or comment lines.
+	 * (PAUL: why would it ignore blank or comment lines?)
 	 * 
 	 * @param doc The document containing the code.
 	 * @param current The current offset (<i>not</i> the current line of code).
@@ -567,7 +553,7 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 			for (int lineNum = currLine - 1; lineNum >= 0; lineNum--) {
 				String line = getLine(doc, lineNum).trim();
 				if (!(line.equals("") || line.startsWith("#") || line.length() == 0)) {
-					return cropComments(line);
+					return cropComments(line).trim();
 				}
 			} // for lineNum--
 			return "";
