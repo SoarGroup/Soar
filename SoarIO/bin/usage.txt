@@ -316,7 +316,17 @@ Usage:	max-chunks
 ~~~
 ***
 max-elaborations
-Usage:	max-elaborations
+Usage:	max-elaborations [n]
+Options and arguments:
+  n	Maximum allowed elaboration cycles, must be a positive integer.
+
+The max-elaborations command is used to limit the maximum number of elaboration 
+cycles allowed during an elaboration phase.  The initial value of this variable 
+is 100. max-elaborations with no arguments prints the current value.
+
+The elaboration phase will end after max-elaboration cycles have completed, even 
+if there are more productions eligible to fire or retract; and Soar will proceed 
+to the next phase after a warning message is printed to notify the user.
 ~~~
 ***
 max-nil-output-cycles

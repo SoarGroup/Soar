@@ -33,7 +33,7 @@ bool CommandLineInterface::ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<s
 	std::string* pProduction = 0;
 
 	if (argv.size() == 2) {
-		// one argument, figure out if it is a positive integer
+		// one argument, figure out if it is a non-negative integer
 		if (argv[1][0] == '-') {
 			return HandleSyntaxError(Constants::kCLIFiringCounts, "Integer argument must be non-negative");
 		}
