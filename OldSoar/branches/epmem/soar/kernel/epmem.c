@@ -2071,7 +2071,7 @@ void epmem_update()
     }
 
     //%%%DEBUGGING
-    epmem_print_curr_memory();
+    //epmem_print_curr_memory();
 
 }//epmem_update
 
