@@ -29,17 +29,17 @@ bool CommandLineInterface::ParseMaxElaborations(gSKI::IAgent* pAgent, std::vecto
 	return DoMaxElaborations(pAgent, n);
 }
 
-bool CommandLineInterface::DoMaxElaborations(gSKI::IAgent* pAgent, int n) {
+EXPORT bool CommandLineInterface::DoMaxElaborations(gSKI::IAgent* pAgent, int n) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
 
 		if (m_RawOutput) {
-			m_ResultStream << pAgent->GetMaxElaborations();
+			m_Result << pAgent->GetMaxElaborations();
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetMaxElaborations(), buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetMaxElaborations(), buf, kMinBufferSize));
 		}
 		return true;
 	}

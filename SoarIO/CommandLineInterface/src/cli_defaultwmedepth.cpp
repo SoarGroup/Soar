@@ -28,16 +28,16 @@ bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vecto
 	return DoDefaultWMEDepth(pAgent, n);
 }
 
-bool CommandLineInterface::DoDefaultWMEDepth(gSKI::IAgent* pAgent, int n) {
+EXPORT bool CommandLineInterface::DoDefaultWMEDepth(gSKI::IAgent* pAgent, int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
 
 		if (m_RawOutput) {
-			m_ResultStream << pAgent->GetDefaultWMEDepth();
+			m_Result << pAgent->GetDefaultWMEDepth();
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetDefaultWMEDepth(), buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetDefaultWMEDepth(), buf, kMinBufferSize));
 		}
 		return true;
 	}

@@ -19,7 +19,7 @@ bool CommandLineInterface::ParseGDSPrint(gSKI::IAgent* pAgent, std::vector<std::
 	return DoGDSPrint(pAgent);
 }
 
-bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
+EXPORT bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
 
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
@@ -32,8 +32,8 @@ bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
 	RemoveListenerAndEnableCallbacks(pAgent);
 
 	if (!m_RawOutput) {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_ResultStream.str().c_str());
-		m_ResultStream.str("");
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
+		m_Result.str("");
 	}
 
 	return ret;

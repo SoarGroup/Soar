@@ -22,9 +22,9 @@ bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoHelp();
 }
 
-bool CommandLineInterface::DoHelp(std::string* pCommand) {
+EXPORT bool CommandLineInterface::DoHelp(std::string* pCommand) {
 	unused(pCommand);
-	m_ResultStream << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";
+	m_Result << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";
 	return SetError(CLIError::kNoUsageFile);
 	//std::string output;
 

@@ -25,7 +25,7 @@ bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoSource(pAgent, argv[1]);
 }
 
-bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
+EXPORT bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Chop of quotes if they are there, open doesn't like them

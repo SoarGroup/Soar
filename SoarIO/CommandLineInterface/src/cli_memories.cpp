@@ -89,7 +89,7 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 	return DoMemories(pAgent, productionType, n, production);
 }
 
-bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int productionType, int n, std::string production) {
+EXPORT bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int productionType, int n, std::string production) {
 	if (!RequireAgent(pAgent)) return false;
 
 	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
@@ -156,10 +156,10 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 		if (m_RawOutput) {
 			snprintf(buf, 1023, "\n%6lu:  %s", j->second, j->first.c_str());
 			buf[1023] = 0;
-			m_ResultStream << buf;
+			m_Result << buf;
 		} else {
-			AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, j->first.c_str());
-			AppendArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(j->second, buf, 1024));
+			AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first.c_str());
+			AppendArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(j->second, buf, 1024));
 		}
 	}
 	return true;

@@ -56,7 +56,7 @@ bool CommandLineInterface::ParsePWatch(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoPWatch(pAgent, query, 0);
 }
 
-bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::string* pProduction, bool setting) {
+EXPORT bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::string* pProduction, bool setting) {
 
 	if (!RequireAgent(pAgent)) return false;
 
@@ -83,9 +83,9 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::strin
 			if (pProd->IsWatched()) {
 				++productionCount;
 				if (m_RawOutput) {
-					m_ResultStream << '\n' << pProd->GetName();
+					m_Result << '\n' << pProd->GetName();
 				} else {
-					AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, pProd->GetName());
+					AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pProd->GetName());
 				}
 			}
 			pProd->Release();
@@ -94,7 +94,7 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::strin
 
 		if (m_RawOutput) {
 			if (!productionCount) {
-				m_ResultStream << "No watched productions found.";
+				m_Result << "No watched productions found.";
 			}
 		} else if (!m_RawOutput) {
 			char buf[kMinBufferSize];

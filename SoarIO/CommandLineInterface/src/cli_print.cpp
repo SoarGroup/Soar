@@ -104,7 +104,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoPrint(pAgent, options, depth);
 }
 
-bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int options, int depth, std::string* pArg) {
+EXPORT bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int options, int depth, std::string* pArg) {
 	// TODO: structured output
 
 	// Need agent pointer for function calls
@@ -177,8 +177,8 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int opti
 	RemoveListenerAndEnableCallbacks(pAgent);
 
 	if (!m_RawOutput) {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_ResultStream.str().c_str());
-		m_ResultStream.str("");
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
+		m_Result.str("");
 	}
 	return true;
 }

@@ -70,7 +70,7 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 	return DoPreferences(pAgent, detail);
 }
 
-bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail, std::string* pId, std::string* pAttribute) {
+EXPORT bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail, std::string* pId, std::string* pAttribute) {
 
 	if (!RequireAgent(pAgent)) return false;
 
@@ -119,8 +119,8 @@ bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail, std::
 	if (!ret) return SetError(CLIError::kgSKIError);
 
 	if (!m_RawOutput) {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_ResultStream.str().c_str());
-		m_ResultStream.str("");
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
+		m_Result.str("");
 	}
 	return true;
 }

@@ -65,7 +65,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoAlias(disable, command, &substitution);
 }
 
-bool CommandLineInterface::DoAlias(bool disable, const std::string& command, const std::vector<std::string>* pSubstitution) {
+EXPORT bool CommandLineInterface::DoAlias(bool disable, const std::string& command, const std::vector<std::string>* pSubstitution) {
 	if (disable) {
 		if (!m_Aliases.RemoveAlias(command)) return SetError(CLIError::kAliasNotFound);
 
@@ -73,12 +73,12 @@ bool CommandLineInterface::DoAlias(bool disable, const std::string& command, con
 		if (!command.size()) {
 			if (m_RawOutput) {
 				// list aliases
-				m_ResultStream << m_Aliases.List();
+				m_Result << m_Aliases.List();
 				return true;
 			} else {
 				AliasMap::const_iterator citer = m_Aliases.GetAliasMapBegin();
 				while (citer != m_Aliases.GetAliasMapEnd()) {
-					AppendArgTag(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first.c_str());
+					AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first.c_str());
 
 					std::string aliasedCommand;
 					for (std::vector<std::string>::const_iterator iter = citer->second.begin(); iter != citer->second.end(); ++iter) {
@@ -86,7 +86,7 @@ bool CommandLineInterface::DoAlias(bool disable, const std::string& command, con
 						aliasedCommand += ' ';
 					}
 					aliasedCommand = aliasedCommand.substr(0, aliasedCommand.length() - 1);
-					AppendArgTag(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand.c_str());
+					AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand.c_str());
 					++citer;
 				}
 				return true;

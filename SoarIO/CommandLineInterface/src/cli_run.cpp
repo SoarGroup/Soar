@@ -74,7 +74,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoRun(pAgent, options, count);
 }
 
-bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int options, int count) {
+EXPORT bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int options, int count) {
 	// TODO: structured output
 
 	if (!RequireAgent(pAgent)) return false;
@@ -117,39 +117,39 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {
-		m_ResultStream << "Run failed.";
+		m_Result << "Run failed.";
 		return false;	// Hopefully details are in gSKI error message
 	}
 
 	char buf[kMinBufferSize];
-	if (m_RawOutput) m_ResultStream << "\nRun successful: ";
+	if (m_RawOutput) m_Result << "\nRun successful: ";
 	switch (runResult) {
 		case gSKI_RUN_EXECUTING:
 			if (m_RawOutput) {
-				m_ResultStream << "(gSKI_RUN_EXECUTING)";						// the run is still executing
+				m_Result << "(gSKI_RUN_EXECUTING)";						// the run is still executing
 			} else {
-				AppendArgTag(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
 			break;
 		case gSKI_RUN_INTERRUPTED:
 			if (m_RawOutput) {
-				m_ResultStream << "(gSKI_RUN_INTERRUPTED)";					// the run was interrupted
+				m_Result << "(gSKI_RUN_INTERRUPTED)";					// the run was interrupted
 			} else {
-				AppendArgTag(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
 			break;
 		case gSKI_RUN_COMPLETED:
 			if (m_RawOutput) {
-				m_ResultStream << "(gSKI_RUN_COMPLETED)";						// the run completed normally
+				m_Result << "(gSKI_RUN_COMPLETED)";						// the run completed normally
 			} else {
-				AppendArgTag(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
 			break;
 		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
 			if (m_RawOutput) {
-				m_ResultStream << "(gSKI_RUN_COMPLETED_AND_INTERRUPTED)";
+				m_Result << "(gSKI_RUN_COMPLETED_AND_INTERRUPTED)";
 			} else {
-				AppendArgTag(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
 			break;
 		default:

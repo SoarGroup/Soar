@@ -53,7 +53,7 @@ bool CommandLineInterface::ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoVerbose(pAgent, query, setting);
 }
 
-bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool query, bool setting) {
+EXPORT bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool query, bool setting) {
 
 	if (!RequireAgent(pAgent)) return false;
 
@@ -62,9 +62,9 @@ bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool query, bool sett
 
 	if (query) {
 		if (m_RawOutput) {
-			m_ResultStream << "Verbose is " << pKernelHack->GetVerbosity(pAgent) ? "on." : "off.";
+			m_Result << "Verbose is " << pKernelHack->GetVerbosity(pAgent) ? "on." : "off.";
 		} else {
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetVerbosity(pAgent) ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetVerbosity(pAgent) ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}

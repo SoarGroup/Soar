@@ -18,15 +18,15 @@ bool CommandLineInterface::ParseVersion(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoVersion();
 }
 
-bool CommandLineInterface::DoVersion() {
+EXPORT bool CommandLineInterface::DoVersion() {
 
 	char buf[kMinBufferSize];
 
 	if (m_RawOutput) {
-		m_ResultStream << m_KernelVersion.major << '.' << m_KernelVersion.minor;
+		m_Result << m_KernelVersion.major << '.' << m_KernelVersion.minor;
 	} else {
-		AppendArgTag(sml_Names::kParamVersionMajor, sml_Names::kTypeInt, Int2String(m_KernelVersion.major, buf, kMinBufferSize));
-		AppendArgTag(sml_Names::kParamVersionMinor, sml_Names::kTypeInt, Int2String(m_KernelVersion.minor, buf, kMinBufferSize));
+		AppendArgTagFast(sml_Names::kParamVersionMajor, sml_Names::kTypeInt, Int2String(m_KernelVersion.major, buf, kMinBufferSize));
+		AppendArgTagFast(sml_Names::kParamVersionMinor, sml_Names::kTypeInt, Int2String(m_KernelVersion.minor, buf, kMinBufferSize));
 	}
 	return true;
 }

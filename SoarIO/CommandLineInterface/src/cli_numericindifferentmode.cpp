@@ -49,7 +49,7 @@ bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std
 	return DoNumericIndifferentMode(pAgent, mode);
 }
 
-bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsigned int mode) {
+EXPORT bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsigned int mode) {
 	if (!RequireAgent(pAgent)) return false;
 
 	switch (mode) {
@@ -67,22 +67,22 @@ bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsign
 	
 	char buf[kMinBufferSize];
 	if (m_RawOutput) {
-		m_ResultStream << "Current numeric indifferent mode: ";
+		m_Result << "Current numeric indifferent mode: ";
 	}
 
 	switch (pAgent->GetNumericIndifferentMode()) {
 		case gSKI_NUMERIC_INDIFFERENT_MODE_AVG:
 			if (m_RawOutput) {
-				m_ResultStream << "average";
+				m_Result << "average";
 			} else {
-				AppendArgTag(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, Int2String((int)gSKI_NUMERIC_INDIFFERENT_MODE_AVG, buf, kMinBufferSize));
+				AppendArgTagFast(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, Int2String((int)gSKI_NUMERIC_INDIFFERENT_MODE_AVG, buf, kMinBufferSize));
 			}
 			break;
 		case gSKI_NUMERIC_INDIFFERENT_MODE_SUM:
 			if (m_RawOutput) {
-				m_ResultStream << "sum";
+				m_Result << "sum";
 			} else {
-				AppendArgTag(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, Int2String((int)gSKI_NUMERIC_INDIFFERENT_MODE_SUM, buf, kMinBufferSize));
+				AppendArgTagFast(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, Int2String((int)gSKI_NUMERIC_INDIFFERENT_MODE_SUM, buf, kMinBufferSize));
 			}
 			break;
 		default:

@@ -15,7 +15,7 @@ bool CommandLineInterface::ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::
 	return DoInitSoar(pAgent);
 }
 
-bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
+EXPORT bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -24,9 +24,9 @@ bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 	// BUGBUG: Init soar sends output through print callback!
 	AddListenerAndDisableCallbacks(pAgent);
 	pAgent->Reinitialize();
-	m_ResultStream.str(""); // BUGBUG: This may be erasing more than it should
+	m_Result.str(""); // BUGBUG: This may be erasing more than it should
 	RemoveListenerAndEnableCallbacks(pAgent);
-	if (m_RawOutput) m_ResultStream << "Agent reinitialized.";
+	if (m_RawOutput) m_Result << "Agent reinitialized.";
 	return true;
 }
 

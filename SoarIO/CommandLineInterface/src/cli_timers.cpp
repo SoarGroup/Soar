@@ -54,7 +54,7 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoTimers(pAgent, print, setting);
 }
 
-bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, bool setting) {
+EXPORT bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, bool setting) {
 	// Need agent pointer and kernel pointer for sysparam
 	if (!RequireAgent(pAgent)) return false;
 
@@ -67,7 +67,7 @@ bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, bool setti
 		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
 
 		if (m_RawOutput) {
-			m_ResultStream << pSysparams[TIMERS_ENABLED] ? "Timers are enabled." : "Timers are disabled.";
+			m_Result << pSysparams[TIMERS_ENABLED] ? "Timers are enabled." : "Timers are disabled.";
 		} else {
 			// adds <arg name="timers">true</arg> (or false) if the timers are
 			// enabled (or disabled)

@@ -43,7 +43,7 @@ bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vecto
 	return DoMultiAttributes(pAgent, 0, n);
 }
 
-bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* pAttribute, int n) {
+EXPORT bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* pAttribute, int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!pAttribute && !n) {
@@ -56,7 +56,7 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 		gSKI::tIMultiAttributeIterator* pIt = pAgent->GetMultiAttributes();
 		if (!pIt->GetNumElements()) return SetError(CLIError::kMultiAttributeNotFound);
 
-		if (m_RawOutput) m_ResultStream << "Value\tSymbol";
+		if (m_RawOutput) m_Result << "Value\tSymbol";
 
 		gSKI::IMultiAttribute* pMA;
 
@@ -64,12 +64,12 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 			pMA = pIt->GetVal();
 
 			if (m_RawOutput) {
-				m_ResultStream << "\n" << pMA->GetMatchingPriority() << "\t" << pMA->GetAttributeName();
+				m_Result << "\n" << pMA->GetMatchingPriority() << "\t" << pMA->GetAttributeName();
 			} else {
 				// Value
-				AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(count, buf, sizeof(buf)));
+				AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(count, buf, sizeof(buf)));
 				// Symbol
-				AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, pMA->GetAttributeName());
+				AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pMA->GetAttributeName());
 			}
 
 			++count;

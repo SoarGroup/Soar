@@ -30,7 +30,7 @@ bool CommandLineInterface::ParseLS(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoLS();
 }
 
-bool CommandLineInterface::DoLS() {
+EXPORT bool CommandLineInterface::DoLS() {
 
 #ifdef WIN32
 
@@ -48,7 +48,7 @@ bool CommandLineInterface::DoLS() {
 
 	// At least one file found, concatinate additional ones with newlines
 	do {
-		m_ResultStream << '\n';
+		m_Result << '\n';
 		PrintFilename(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? true : false);
 
 	} while (FindNextFile(hFind, &FindFileData));
@@ -71,7 +71,7 @@ bool CommandLineInterface::DoLS() {
 	// Read the files
 	errno = 0;
 	while ((entry = readdir(directoryPointer)) != 0) {
-		m_ResultStream << '\n';
+		m_Result << '\n';
 		PrintFilename(entry->d_name, entry->d_type == DT_DIR);
 	}
 
@@ -89,11 +89,11 @@ void CommandLineInterface::PrintFilename(const std::string& name, bool isDirecto
 	if (m_RawOutput) {
 		// TODO: Columns and stats
 		if (isDirectory) {
-			m_ResultStream << '[';
+			m_Result << '[';
 		}
-		m_ResultStream << name;
+		m_Result << name;
 		if (isDirectory) {
-			m_ResultStream << ']';
+			m_Result << ']';
 		}
 	} else {
 		if (isDirectory) {

@@ -18,7 +18,7 @@ bool CommandLineInterface::ParsePushD(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoPushD(argv[1]);
 }
 
-bool CommandLineInterface::DoPushD(std::string& directory) {
+EXPORT bool CommandLineInterface::DoPushD(std::string& directory) {
 	
 	// Target directory required, checked in DoCD call.
 

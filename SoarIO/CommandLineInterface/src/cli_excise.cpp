@@ -70,7 +70,7 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoExcise(pAgent, options, &(argv[m_pGetOpt->GetOptind()]));
 }
 
-bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction) {
+EXPORT bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Acquire production manager
@@ -116,7 +116,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 
 	if (m_RawOutput) {
 		if (!exciseCount) return SetError(CLIError::kProductionNotFound);// TODO: Should this not be an error?
-		m_ResultStream << "\n" << exciseCount << " productions excised.";
+		m_Result << "\n" << exciseCount << " productions excised.";
 	} else {
 		// Add the count tag to the front
 		char buf[kMinBufferSize];
@@ -134,7 +134,7 @@ void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter,
 
 		if (!m_RawOutput) {
 			// Save the name for the structured response
-			AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, ip->GetName());
+			AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, ip->GetName());
 		}
 
 		// Increment the count for the structured response

@@ -17,7 +17,7 @@ bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoQuit();
 }
 
-bool CommandLineInterface::DoQuit() {
+EXPORT bool CommandLineInterface::DoQuit() {
 	// Flip the quit flag
 	m_QuitCalled = true; 
 
@@ -31,7 +31,7 @@ bool CommandLineInterface::DoQuit() {
 	}
 
 	if (m_RawOutput) {
-		m_ResultStream << "Goodbye.";
+		m_Result << "Goodbye.";
 	} else {
 		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, "Goodbye.");
 	}

@@ -25,7 +25,7 @@ bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoCD();
 }
 
-bool CommandLineInterface::DoCD(std::string* pDirectory) {
+EXPORT bool CommandLineInterface::DoCD(std::string* pDirectory) {
 
 	// If cd is typed by itself, return to original (home) directory
 	if (!pDirectory) {

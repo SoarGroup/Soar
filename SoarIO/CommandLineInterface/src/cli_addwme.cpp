@@ -34,7 +34,7 @@ bool CommandLineInterface::ParseAddWME(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoAddWME(pAgent, argv[1], argv[attributeIndex], argv[attributeIndex + 1], acceptable);
 }
 
-bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::string attribute, std::string value, bool acceptable) {
+EXPORT bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::string attribute, std::string value, bool acceptable) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -57,10 +57,10 @@ bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::s
 	}
 
 	if (m_RawOutput) {
-		m_ResultStream << "Timetag: " << timetag;
+		m_Result << "Timetag: " << timetag;
 	} else {
 		char buf[kMinBufferSize];
-		AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(timetag, buf, sizeof(buf)));
+		AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(timetag, buf, sizeof(buf)));
 	}
 	return true;
 }

@@ -26,7 +26,7 @@ bool CommandLineInterface::ParseHome(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoHome();
 }
 
-bool CommandLineInterface::DoHome(std::string* pDirectory) {
+EXPORT bool CommandLineInterface::DoHome(std::string* pDirectory) {
 
 	if (pDirectory) {
 		// Change to the passed directory if any to make sure it is valid

@@ -51,7 +51,7 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoStats(pAgent, options);
 }
 
-bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const int options) {
+EXPORT bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const int options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -87,7 +87,7 @@ bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const int options) {
 	if (!ret) return SetError(CLIError::kgSKIError);
 
 	if (m_RawOutput) {
-		m_ResultStream << pResult;
+		m_Result << pResult;
 	} else {
 		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, pResult);
 	}

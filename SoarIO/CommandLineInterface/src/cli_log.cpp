@@ -104,7 +104,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoLog(pAgent, operation, filename, toAdd);
 }
 
-bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, const std::string& filename, const std::string& toAdd) {
+EXPORT bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, const std::string& filename, const std::string& toAdd) {
 	if (!RequireAgent(pAgent)) return false;
 
 	std::ios_base::openmode mode = std::ios_base::out;
@@ -119,7 +119,6 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, con
 			if (m_pLogFile) return SetError(CLIError::kLogAlreadyOpen);
 			m_pLogFile = new std::ofstream(filename.c_str(), mode);
 			if (!m_pLogFile) return SetError(CLIError::kLogOpenFailure);
-			pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 			m_LogFilename = filename;
 			break;
 
@@ -130,7 +129,6 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, con
 
 		case OPTION_LOG_CLOSE:
 			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
-			pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 	
 			(*m_pLogFile) << "Log file closed." << std::endl;
 
@@ -147,13 +145,13 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, con
 
 	// Query at end of successful command, or by default (but not on _ADD)
 	if (m_RawOutput) {
-		m_ResultStream << m_pLogFile ? "Log file '" + m_LogFilename + "' opened." : "Log file closed.";
+		m_Result << m_pLogFile ? "Log file '" + m_LogFilename + "' opened." : "Log file closed.";
 
 	} else {
 		const char* setting = m_pLogFile ? sml_Names::kTrue : sml_Names::kFalse;
-		AppendArgTag(sml_Names::kParamLogSetting, sml_Names::kTypeBoolean, setting);
+		AppendArgTagFast(sml_Names::kParamLogSetting, sml_Names::kTypeBoolean, setting);
 
-		if (m_LogFilename.size()) AppendArgTag(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename.c_str());
+		if (m_LogFilename.size()) AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename.c_str());
 	}
 
 	return true;

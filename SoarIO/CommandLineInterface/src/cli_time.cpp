@@ -34,7 +34,7 @@ bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoTime(pAgent, argv);
 }
 
-bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+EXPORT bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
 	// Look at clock
 #ifdef WIN32
@@ -79,10 +79,10 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 	// Print elapsed time and return
 	char buf[kMinBufferSize];
 	if (m_RawOutput) {
-		m_ResultStream << "\n(" << procElapsed << "s) proc" << "\n(" << realElapsed << "s) real";
+		m_Result << "\n(" << procElapsed << "s) proc" << "\n(" << realElapsed << "s) real";
 	} else {
-		AppendArgTag(sml_Names::kParamSeconds, sml_Names::kTypeDouble, Double2String(realElapsed, buf, kMinBufferSize));
-		AppendArgTag(sml_Names::kParamSeconds, sml_Names::kTypeDouble, Double2String(procElapsed, buf, kMinBufferSize));
+		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, Double2String(realElapsed, buf, kMinBufferSize));
+		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, Double2String(procElapsed, buf, kMinBufferSize));
 	}
 	return ret;
 }

@@ -90,7 +90,7 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 	return DoWatchWMEs(pAgent, mode, adds, removes);
 }
 
-bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, bool adds, bool removes, std::string* pIdString, std::string* pAttributeString, std::string* pValueString) {
+EXPORT bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, bool adds, bool removes, std::string* pIdString, std::string* pAttributeString, std::string* pValueString) {
 
 	if (!RequireAgent(pAgent)) return false;
 

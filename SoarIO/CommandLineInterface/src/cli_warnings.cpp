@@ -53,7 +53,7 @@ bool CommandLineInterface::ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::
 	return DoWarnings(pAgent, query, setting);
 }
 
-bool CommandLineInterface::DoWarnings(gSKI::IAgent* pAgent, bool query, bool setting) {
+EXPORT bool CommandLineInterface::DoWarnings(gSKI::IAgent* pAgent, bool query, bool setting) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
@@ -65,7 +65,7 @@ bool CommandLineInterface::DoWarnings(gSKI::IAgent* pAgent, bool query, bool set
 	}
 
 	if (m_RawOutput) {
-		m_ResultStream << "Printing of warnings is " << pKernelHack->GetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM) ? "enabled." : "disabled.";
+		m_Result << "Printing of warnings is " << pKernelHack->GetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM) ? "enabled." : "disabled.";
 	} else {
 		const char* setting = pKernelHack->GetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse;
 		AppendArgTagFast(sml_Names::kParamWarningsSetting, sml_Names::kTypeBoolean, setting);

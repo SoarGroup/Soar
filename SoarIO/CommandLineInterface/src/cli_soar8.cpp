@@ -49,7 +49,7 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoSoar8(query, soar8);
 }
 
-bool CommandLineInterface::DoSoar8(bool query, bool soar8) {
+EXPORT bool CommandLineInterface::DoSoar8(bool query, bool soar8) {
 	unused(query);
 	unused(soar8);
 	SetError(CLIError::kNotImplemented);

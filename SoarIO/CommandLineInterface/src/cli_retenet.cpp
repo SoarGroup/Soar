@@ -58,7 +58,7 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoReteNet(pAgent, save, filename);
 }
 
-bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename) {
+EXPORT bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!filename.size()) return SetError(CLIError::kMissingFilenameArg);

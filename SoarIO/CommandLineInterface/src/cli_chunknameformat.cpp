@@ -74,7 +74,7 @@ bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vecto
 	return DoChunkNameFormat(pAgent, changeFormat, longFormat, countFlag ? &count : 0, patternFlag ? &pattern : 0);
 }
 
-bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFormat, bool longFormat, int* pCount, std::string* pPrefix) {
+EXPORT bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFormat, bool longFormat, int* pCount, std::string* pPrefix) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -83,9 +83,9 @@ bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFo
 
 	if (!changeFormat && !pCount && !pPrefix) {
 		if (m_RawOutput) {
-			m_ResultStream << (pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? "Long" : "Short") << "format.";
+			m_Result << (pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? "Long" : "Short") << "format.";
 		} else {
-			AppendArgTag(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
@@ -102,10 +102,10 @@ bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFo
 		} else {
 			// query
 			if (m_RawOutput) {
-				m_ResultStream << "Chunk count: " << pKernelHack->GetChunkCount(pAgent);
+				m_Result << "Chunk count: " << pKernelHack->GetChunkCount(pAgent);
 			} else {
 				char buf[kMinBufferSize];
-				AppendArgTag(sml_Names::kParamChunkCount, sml_Names::kTypeInt, Int2String(pKernelHack->GetChunkCount(pAgent), buf, kMinBufferSize));
+				AppendArgTagFast(sml_Names::kParamChunkCount, sml_Names::kTypeInt, Int2String(pKernelHack->GetChunkCount(pAgent), buf, kMinBufferSize));
 			}
 		}
 	}
@@ -116,10 +116,10 @@ bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFo
 		} else {
 			// query
 			if (m_RawOutput) {
-				if (pCount && *pCount < 0) m_ResultStream << "\n";
-				m_ResultStream << "Prefix: " << pKernelHack->GetChunkNamePrefix(pAgent);
+				if (pCount && *pCount < 0) m_Result << "\n";
+				m_Result << "Prefix: " << pKernelHack->GetChunkNamePrefix(pAgent);
 			} else {
-				AppendArgTag(sml_Names::kParamChunkNamePrefix, sml_Names::kTypeString, pKernelHack->GetChunkNamePrefix(pAgent));
+				AppendArgTagFast(sml_Names::kParamChunkNamePrefix, sml_Names::kTypeString, pKernelHack->GetChunkNamePrefix(pAgent));
 			}
 		}
 	}

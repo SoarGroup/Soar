@@ -36,7 +36,7 @@
 using namespace cli;
 using namespace sml;
 
-std::ostringstream CommandLineInterface::m_ResultStream;	
+std::ostringstream CommandLineInterface::m_Result;	
 
 EXPORT CommandLineInterface::CommandLineInterface() {
 
@@ -44,35 +44,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_pGetOpt = new GetOpt;
 
 	// Map command names to processing function pointers
-	BuildCommandMap();
-
-	// Set up the current working directory and create aliases
-	assert(DoHome());
-
-	// Give print handlers a reference to us
-	m_ResultPrintHandler.SetCLI(this);
-	m_LogPrintHandler.SetCLI(this);
-
-	// Initialize other members
-	m_QuitCalled = false;
-	m_pKernel = 0;
-	m_SourceError = false;
-	m_SourceDepth = 0;
-	m_SourceDirDepth = 0;
-	m_pLogFile = 0;
-	m_KernelVersion.major = m_KernelVersion.minor = 0;
-}
-
-EXPORT CommandLineInterface::~CommandLineInterface() {
-	if (m_pGetOpt) delete m_pGetOpt;
-	if (m_pLogFile) {
-		(*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
-		delete m_pLogFile;
-	}
-}
-
-void CommandLineInterface::BuildCommandMap() {
-
 	m_CommandMap[Constants::kCLIAddWME]					= &cli::CommandLineInterface::ParseAddWME;
 	m_CommandMap[Constants::kCLIAlias]					= &cli::CommandLineInterface::ParseAlias;
 	m_CommandMap[Constants::kCLICD]						= &cli::CommandLineInterface::ParseCD;
@@ -127,12 +98,32 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIWarnings]				= &cli::CommandLineInterface::ParseWarnings;
 	m_CommandMap[Constants::kCLIWatch]					= &cli::CommandLineInterface::ParseWatch;
 	m_CommandMap[Constants::kCLIWatchWMEs]				= &cli::CommandLineInterface::ParseWatchWMEs;
-}	
+
+	// Set up the current working directory and create aliases
+	assert(DoHome());
+
+	// Initialize other members
+	m_QuitCalled = false;
+	m_pKernel = 0;
+	m_SourceError = false;
+	m_SourceDepth = 0;
+	m_SourceDirDepth = 0;
+	m_pLogFile = 0;
+	m_KernelVersion.major = m_KernelVersion.minor = 0;
+}
+
+EXPORT CommandLineInterface::~CommandLineInterface() {
+	if (m_pGetOpt) delete m_pGetOpt;
+	if (m_pLogFile) {
+		(*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
+		delete m_pLogFile;
+	}
+}
 
 EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, ElementXML* pResponse, bool rawOutput, gSKI::Error* pError) {
 
 	// Clear the result
-	m_ResultStream.str("");
+	m_Result.str("");
 	m_ResponseTags.clear();
 	m_LastError = CLIError::kNoError;
 	m_LastErrorDetail.clear();
@@ -156,7 +147,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	bool ret = DoCommandInternal(pAgent, pCommandLine);
 
 	// Log output
-	if (m_pLogFile) (*m_pLogFile) << m_ResultStream.str() << endl;
+	if (m_pLogFile) (*m_pLogFile) << m_Result.str() << endl;
 
 	// Handle source error output
 	if (m_SourceError) {
@@ -168,7 +159,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	if (ret) {
 		// The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
-			pConnection->AddSimpleResultToSMLResponse(pResponse, m_ResultStream.str().c_str());
+			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
 
 		} else {
 			// If there are tags in the response list, add them and return
@@ -186,8 +177,8 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 
 			} else {
 				// Otherwise, return result as simple result if there is one
-				if (m_ResultStream.str().size()) {
-					pConnection->AddSimpleResultToSMLResponse(pResponse, m_ResultStream.str().c_str());
+				if (m_Result.str().size()) {
+					pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
 				} else {
 					// Or, simply return true
 					pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
@@ -201,9 +192,9 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 			errorDescription += "\nError detail: ";
 			errorDescription += m_LastErrorDetail;
 		}
-		if (m_ResultStream.str().size()) {
+		if (m_Result.str().size()) {
 			errorDescription += "\nResult before error happened:\n";
-			errorDescription += m_ResultStream.str();
+			errorDescription += m_Result.str();
 		}
 		if (m_pgSKIError && (m_pgSKIError->Id != gSKI::gSKIERR_NONE)) {
 			errorDescription += "\ngSKI Error code: ";
@@ -257,32 +248,6 @@ EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, co
 	return true ;
 }
 
-
-EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError) {
-	// This function is for processing a command without the SML layer
-	// Clear the result
-	m_ResultStream.str("");
-	m_LastError = CLIError::kNoError;
-	m_LastErrorDetail.clear();
-
-	// Save the pointers
-	m_pgSKIError = pError;
-
-	// Process the command, ignoring its result (irrelevant at this level)
-	bool ret = DoCommandInternal(pAgent, pCommandLine);
-
-	// Reset source error flag
-	m_SourceError = false;
-
-	if (ret) {
-		pResponse = m_ResultStream.str().c_str();
-	} else {
-		pResponse = CLIError::GetErrorDescription(m_LastError);
-	}
-
-	return ret;
-}
-
 bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::string& commandLine) {
 	vector<string> argv;
 	// Parse command:
@@ -303,7 +268,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 
 	// Check for help flags
 	if (CheckForHelp(argv)) {
-		m_ResultStream << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";
+		m_Result << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";
 		return SetError(CLIError::kNoUsageFile);
 	}
 
@@ -471,7 +436,6 @@ void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pTyp
 	TagArg* pTag = new TagArg();
 	pTag->SetParamFast(pParam);
 	pTag->SetTypeFast(pType);
-	// TODO: shouldn't this be SetValueFast?
 	pTag->SetValue(pValue);
 	m_ResponseTags.push_back(pTag);
 }
@@ -494,11 +458,11 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
 
 void CommandLineInterface::AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent) {
 	if (m_pKernelSML) m_pKernelSML->DisablePrintCallback(pAgent);
-	if (pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	if (pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
 }
 
 void CommandLineInterface::RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent) {
-	if (pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	if (pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, this);
 	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
 }
 

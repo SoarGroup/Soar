@@ -29,17 +29,17 @@ bool CommandLineInterface::ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std:
 	return DoMaxChunks(pAgent, n);
 }
 
-bool CommandLineInterface::DoMaxChunks(gSKI::IAgent* pAgent, int n) {
+EXPORT bool CommandLineInterface::DoMaxChunks(gSKI::IAgent* pAgent, int n) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
 
 		if (m_RawOutput) {
-			m_ResultStream << pAgent->GetMaxChunks();
+			m_Result << pAgent->GetMaxChunks();
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetMaxChunks(), buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetMaxChunks(), buf, kMinBufferSize));
 		}
 		return true;
 	}

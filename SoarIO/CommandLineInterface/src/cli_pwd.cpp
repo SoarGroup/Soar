@@ -20,16 +20,16 @@ bool CommandLineInterface::ParsePWD(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoPWD();
 }
 
-bool CommandLineInterface::DoPWD() {
+EXPORT bool CommandLineInterface::DoPWD() {
 
 	std::string directory;
 	bool ret = GetCurrentWorkingDirectory(directory);
 
 	if (directory.size()) {
 		if (m_RawOutput) {
-			m_ResultStream << directory;
+			m_Result << directory;
 		} else {
-			AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, directory.c_str());
+			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, directory.c_str());
 		}
 	}
 

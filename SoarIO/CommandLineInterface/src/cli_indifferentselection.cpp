@@ -57,7 +57,7 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 	return DoIndifferentSelection(pAgent, mode);
 }
 
-bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned int mode) {
+EXPORT bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned int mode) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!mode) {
@@ -67,33 +67,33 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 		switch (pAgent->GetIndifferentSelection()) {
 			case gSKI_USER_SELECT_FIRST:
 				if (m_RawOutput) {
-					m_ResultStream << "first";
+					m_Result << "first";
 				} else {
-					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_FIRST, buf, kMinBufferSize));
+					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_FIRST, buf, kMinBufferSize));
 				}
 				break;
 
 			case gSKI_USER_SELECT_LAST:
 				if (m_RawOutput) {
-					m_ResultStream << "last";
+					m_Result << "last";
 				} else {
-					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_LAST, buf, kMinBufferSize));
+					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_LAST, buf, kMinBufferSize));
 				}
 				break;
 
 			case gSKI_USER_SELECT_ASK:
 				if (m_RawOutput) {
-					m_ResultStream << "ask";
+					m_Result << "ask";
 				} else {
-					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_ASK, buf, kMinBufferSize));
+					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_ASK, buf, kMinBufferSize));
 				}
 				break;
 
 			case gSKI_USER_SELECT_RANDOM:
 				if (m_RawOutput) {
-					m_ResultStream << "random";
+					m_Result << "random";
 				} else {
-					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_RANDOM, buf, kMinBufferSize));
+					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_RANDOM, buf, kMinBufferSize));
 				}
 				break;
 

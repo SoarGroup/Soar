@@ -51,12 +51,12 @@ bool CommandLineInterface::ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoWaitSNC(pAgent, query, enable);
 }
 
-bool CommandLineInterface::DoWaitSNC(gSKI::IAgent* pAgent, bool query, bool enable) {
+EXPORT bool CommandLineInterface::DoWaitSNC(gSKI::IAgent* pAgent, bool query, bool enable) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (query) {
 		if (m_RawOutput) {
-			m_ResultStream << "Current waitsnc setting: " << pAgent->IsWaitingOnStateNoChange() ? "enabled" : "disabled";
+			m_Result << "Current waitsnc setting: " << pAgent->IsWaitingOnStateNoChange() ? "enabled" : "disabled";
 		} else {
 			AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, pAgent->IsWaitingOnStateNoChange() ? sml_Names::kTrue : sml_Names::kFalse);
 		}

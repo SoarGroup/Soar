@@ -17,14 +17,14 @@ bool CommandLineInterface::ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::
 	return DoSoarNews();
 }
 
-bool CommandLineInterface::DoSoarNews() {
+EXPORT bool CommandLineInterface::DoSoarNews() {
 
 	// TODO: read a file and put it here
 
 	if (m_RawOutput) {
-		m_ResultStream << "News!";
+		m_Result << "News!";
 	} else {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, "News!");
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, "News!");
 	}
 	return true;
 }

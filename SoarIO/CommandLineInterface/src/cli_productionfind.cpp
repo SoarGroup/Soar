@@ -71,7 +71,7 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 	return DoProductionFind(pAgent, mode, pattern);
 }
 
-bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigned int mode, std::string pattern) {
+EXPORT bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigned int mode, std::string pattern) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -93,8 +93,8 @@ bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigned int m
 	RemoveListenerAndEnableCallbacks(pAgent);
 
 	if (!m_RawOutput) {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_ResultStream.str().c_str());
-		m_ResultStream.str("");
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
+		m_Result.str("");
 	}
 
 	return ret;

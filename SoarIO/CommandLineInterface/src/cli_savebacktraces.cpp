@@ -55,7 +55,7 @@ bool CommandLineInterface::ParseSaveBacktraces(gSKI::IAgent* pAgent, std::vector
 	return DoSaveBacktraces(pAgent, query, setting);
 }
 
-bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool query, bool setting) {
+EXPORT bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool query, bool setting) {
 
 	if (!RequireAgent(pAgent)) return false;
 
@@ -64,9 +64,9 @@ bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool query, bo
 
 	if (query) {
 		if (m_RawOutput) {
-			m_ResultStream << "Save bactraces is " << pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? "enabled." : "disabled.";
+			m_Result << "Save bactraces is " << pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? "enabled." : "disabled.";
 		} else {
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}

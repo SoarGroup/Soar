@@ -16,7 +16,7 @@ bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoEcho(argv);
 }
 
-bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
+EXPORT bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 
 	std::string message;
 
@@ -29,9 +29,9 @@ bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 	message = message.substr(0, message.length() - 1);
 
 	if (m_RawOutput) {
-		m_ResultStream << message;
+		m_Result << message;
 	} else {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, message.c_str());
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, message.c_str());
 	}
 	return true;
 }

@@ -67,7 +67,7 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 	return DoExplainBacktraces(pAgent);
 }
 
-bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, std::string* pProduction, bool full, int condition) {
+EXPORT bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, std::string* pProduction, bool full, int condition) {
 
 	if (!RequireAgent(pAgent)) return false;
 

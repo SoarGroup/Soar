@@ -73,7 +73,7 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoMatches(pAgent, matches, wmeDetail, production);
 }
 
-bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches, int wmeDetail, const std::string& production) {
+EXPORT bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches, int wmeDetail, const std::string& production) {
 
 	if (!RequireAgent(pAgent)) return false;
 
@@ -118,8 +118,8 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches,
 	}
 
 	if (!m_RawOutput) {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_ResultStream.str().c_str());
-		m_ResultStream.str("");
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
+		m_Result.str("");
 	}
 	return true;
 }

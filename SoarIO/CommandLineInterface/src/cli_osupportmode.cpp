@@ -27,7 +27,7 @@ bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<s
 	return DoOSupportMode(pAgent, mode);
 }
 
-bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
+EXPORT bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 
 	if (!RequireAgent(pAgent)) return false;
 
@@ -50,10 +50,10 @@ bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 		}
 
 		if (m_RawOutput) {
-			m_ResultStream << mode;
+			m_Result << mode;
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(mode, buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(mode, buf, kMinBufferSize));
 		}
 	} else {
 

@@ -71,7 +71,7 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoLearn(pAgent, options);
 }
 
-bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int options) {
+EXPORT bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -85,36 +85,36 @@ bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int opti
 
 		if (m_RawOutput) {
 			if (pAgent->IsLearningOn()) {
-				m_ResultStream << "Learning is enabled.";
-				if (pSysparams[LEARNING_ONLY_SYSPARAM]) m_ResultStream << " (only)";
-				if (pSysparams[LEARNING_EXCEPT_SYSPARAM]) m_ResultStream << " (except)";
-				if (pSysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_ResultStream << " (all-levels)";
+				m_Result << "Learning is enabled.";
+				if (pSysparams[LEARNING_ONLY_SYSPARAM]) m_Result << " (only)";
+				if (pSysparams[LEARNING_EXCEPT_SYSPARAM]) m_Result << " (except)";
+				if (pSysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_Result << " (all-levels)";
 			} else {
-				m_ResultStream << "Learning is disabled.";
+				m_Result << "Learning is disabled.";
 			}
 		} else {
-			AppendArgTag(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, pAgent->IsLearningOn() ? sml_Names::kTrue : sml_Names::kFalse);
-			AppendArgTag(sml_Names::kParamLearnOnlySetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_ONLY_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
-			AppendArgTag(sml_Names::kParamLearnExceptSetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_EXCEPT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
-			AppendArgTag(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_ALL_GOALS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, pAgent->IsLearningOn() ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamLearnOnlySetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_ONLY_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamLearnExceptSetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_EXCEPT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_ALL_GOALS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		if (options & OPTION_LEARN_LIST) {
 			std::string output;
 			if (m_RawOutput) {
-				m_ResultStream << "\nforce-learn states (when learn 'only'):";
+				m_Result << "\nforce-learn states (when learn 'only'):";
 				pKernelHack->GetForceLearnStates(pAgent, output);
-				if (output.size()) m_ResultStream << '\n' + output;
+				if (output.size()) m_Result << '\n' + output;
 
-				m_ResultStream << "\ndont-learn states (when learn 'except'):";
+				m_Result << "\ndont-learn states (when learn 'except'):";
 				pKernelHack->GetDontLearnStates(pAgent, output);
-				if (output.size()) m_ResultStream << '\n' + output;
+				if (output.size()) m_Result << '\n' + output;
 
 			} else {
 				pKernelHack->GetForceLearnStates(pAgent, output);
-				AppendArgTag(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.c_str());
+				AppendArgTagFast(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.c_str());
 				pKernelHack->GetDontLearnStates(pAgent, output);
-				AppendArgTag(sml_Names::kParamLearnDontLearnStates, sml_Names::kTypeString, output.c_str());
+				AppendArgTagFast(sml_Names::kParamLearnDontLearnStates, sml_Names::kTypeString, output.c_str());
 			}
 		}
 		return true;

@@ -18,7 +18,7 @@ bool CommandLineInterface::ParseDirs(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoDirs();
 }
 
-bool CommandLineInterface::DoDirs() {
+EXPORT bool CommandLineInterface::DoDirs() {
 	
 	StringStack tempStack;
 
@@ -26,17 +26,17 @@ bool CommandLineInterface::DoDirs() {
 	GetCurrentWorkingDirectory(cwd);
 
 	if (m_RawOutput) {
-		m_ResultStream << cwd;
+		m_Result << cwd;
 	} else {
-		AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, cwd.c_str());
+		AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, cwd.c_str());
 	}
 
 	while (m_DirectoryStack.size()) {
 
 		if (m_RawOutput) {
-			m_ResultStream << ' ' << m_DirectoryStack.top();
+			m_Result << ' ' << m_DirectoryStack.top();
 		} else {
-			AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, m_DirectoryStack.top().c_str());
+			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, m_DirectoryStack.top().c_str());
 		}
 
 		tempStack.push(m_DirectoryStack.top());

@@ -28,7 +28,7 @@ bool CommandLineInterface::ParseSP(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoSP(pAgent, production);
 }
 
-bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& production) {
+EXPORT bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& production) {
 	// Must have agent to give production to
 	if (!RequireAgent(pAgent)) return false;
 
@@ -41,7 +41,7 @@ bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& product
 	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) return SetError(CLIError::kgSKIError);
 
 	if (m_RawOutput) {
-		m_ResultStream << '*';
+		m_Result << '*';
 	}
 	return true;
 }

@@ -28,15 +28,15 @@ bool CommandLineInterface::ParseMaxNilOutputCycles(gSKI::IAgent* pAgent, std::ve
 	return DoMaxNilOutputCycles(pAgent, n);
 }
 
-bool CommandLineInterface::DoMaxNilOutputCycles(gSKI::IAgent* pAgent, int n) {
+EXPORT bool CommandLineInterface::DoMaxNilOutputCycles(gSKI::IAgent* pAgent, int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
 		if (m_RawOutput) {
-			m_ResultStream << pAgent->GetMaxNilOutputCycles();
+			m_Result << pAgent->GetMaxNilOutputCycles();
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetMaxNilOutputCycles(), buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetMaxNilOutputCycles(), buf, kMinBufferSize));
 		}
 		return true;
 	}
