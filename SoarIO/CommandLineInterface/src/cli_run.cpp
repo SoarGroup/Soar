@@ -54,8 +54,9 @@ void RunForeverThread::Run() {
 
 			// Walk list of agents and stop if any are halted/interrupted
 			gSKI::tIAgentIterator* iter = m_pKernel->GetAgentManager()->GetAgentIterator(m_pError);
+			gSKI::IAgent* pAgent;
 			while (iter->IsValid()) {
-				gSKI::IAgent* pAgent = iter->GetVal();
+				pAgent = iter->GetVal();
 				runState = pAgent->GetRunState();
 				if ((runState == gSKI_RUNSTATE_HALTED) || (runState == gSKI_RUNSTATE_INTERRUPTED)) {
 					return;
@@ -153,6 +154,22 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	// TODO: Rather tricky options
 	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_OUTPUT) || (options & OPTION_RUN_STATE)) {
 		return HandleError("Options { o, O, S } not implemented yet.");
+	}
+
+	// Are we halted?
+	if (options & OPTION_RUN_SELF) {
+
+	} else {
+		gSKI::tIAgentIterator* iter = m_pKernel->GetAgentManager()->GetAgentIterator(m_pError);
+		gSKI::IAgent* pAgent;
+		while (iter->IsValid()) {
+			pAgent = iter->GetVal();
+			egSKIRunState runState = pAgent->GetRunState();
+			if (runState == gSKI_RUNSTATE_HALTED) {
+				return HandleError("System halted (try 'init-soar').");
+			}
+			iter->Next() ;
+		}
 	}
 
 	// Stop and reset the current thread
