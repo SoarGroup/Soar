@@ -19,21 +19,22 @@ _______________________
 File/Directory Listing:
 -----------------------
 
-README             - This file.
-INSTALL            - Installation and execution instructions for various platforms.
-CHANGES            - Changes since the last major release of Soar.
-LICENSE            - License agreement.
-start-soar.bat     - The Windows file used to start Soar (see INSTALL file).
-init-soar.tcl      - The Tcl/Tk initialization code for Soar (see INSTALL file).
-make-soar          - A unix script used to build the Soar kernel and Tcl interface.
-make-clean         - A unix script to clean object files created during build.
-cmdline-interface/ - The home of the command line interface source code.
-demos/             - Example Soar agents.
-demos_soar7/       - Example Soar version 7 agents.
-doc/               - Soar documentation, excluding the Soar manual and tutorial.
-kernel/            - The home of the Soar kernel source code.
-library/           - Files and libraries needed by the Soar kernel and Tcl interface.
-tcl-interface/     - The home of the Tcl interface source code.
+README.txt          - This file.
+INSTALL.txt         - Installation and execution instructions for various platforms.
+CHANGES.txt         - Changes since the last major release of Soar.
+LICENSE.txt         - License agreement.
+TROUBLESHOOTING.txt - Troubleshooting help, frequent problems.
+start-soar.bat      - The Windows file used to start Soar (see INSTALL file).
+init-soar.tcl       - The Tcl/Tk initialization code for Soar (see INSTALL file).
+make-soar           - A unix script used to build the Soar kernel and Tcl interface.
+make-clean          - A unix script to clean object files created during build.
+cmdline-interface/  - The home of the command line interface source code.
+demos/              - Example Soar agents.
+demos_soar7/        - Example Soar version 7 agents.
+doc/                - Soar documentation, excluding the Soar manual and tutorial.
+kernel/             - The home of the Soar kernel source code.
+library/            - Files and libraries needed by the Soar kernel and Tcl interface.
+tcl-interface/      - The home of the Tcl interface source code.
 
 --
 
