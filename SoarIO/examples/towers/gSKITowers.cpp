@@ -11,6 +11,7 @@
 
 using std::string;
 using std::cout;
+using std::cin;
 using std::endl;
 
 //gSKI directives
@@ -629,11 +630,18 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	char* pResponse = "\0";//we don't need to allocate space for this
 	gSKI::Error* pError = new Error();
 
-	//commLine->DoCommand(agent, "pwd", pResponse, pError);
 	commLine->DoCommand(agent, "pushd ../examples/towers", pResponse, pError);
 
 	if(!commLine->DoCommand(agent, "source towers-of-hanoi-86.soar", pResponse, pError))
-		cout << "Error in source ---------------------------------" << endl;
+	{
+		cout << "Error in sourcing productions, press non-whitespace char and 'enter' to exit --------" << endl;
+		cout << "current working directory is: ";
+		commLine->DoCommand(agent, "pwd", pResponse, pError);
+		string garbage;
+		cin >> garbage;
+		exit(1);
+	}
+
 	commLine->DoCommand(agent, "popd", pResponse, pError);
 
 	IInputLink* pILink = agent->GetInputLink();
@@ -670,14 +678,10 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 				//are inserted in back
 				IWMObject* towerIdObject = tower->GetInputLinkProfile()->GetTowerIdentifierObject();
 				assert(towerIdObject);
-				IWme* towerTopDiskWme = 0;
 				Disk* towerTopDisk = 0;
 
 				if(tower->GetSize() != 0)
-				{
 					towerTopDisk = tower->GetTopDisk();
-					towerTopDiskWme = towerTopDisk->m_iLinkProfile->GetDiskIdentifier();
-				}
 
 				Disk* disk = new Disk(tower, currentDiskSize, towerTopDisk);
 
