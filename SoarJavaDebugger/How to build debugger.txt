@@ -42,3 +42,7 @@ B) Linux/MacOS Instructions
 
 The Windows approach should broadly work, but you'll need to supply your own copy of the SoarIO DLLs and swt.jar and DLLs (.so's) to replace the included ones which are all Windows versions.
 
+javac -classpath .:swt.jar debugger/Application.java
+jar cvfm ../SoarJavaDebugger.jar JarManifest .
+
+
