@@ -212,7 +212,7 @@ proc createTank {x y agentPath agentFile newname} {
 
 	#$newname eval addTSIProductionMenu $tsiConfig(tswFrame)
 	$newname eval [list Debugger::UpdateStats]
-	$newname eval [list MatchTree::CreateProductionMenu]
+	#$newname eval [list MatchTree::CreateProductionMenu]
 	return 1
 }
 
