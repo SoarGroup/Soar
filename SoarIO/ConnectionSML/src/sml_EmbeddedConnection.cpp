@@ -182,7 +182,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).
 	int connectionType = this->IsAsynchronous() ? SML_ASYNCH_CONNECTION : SML_SYNCH_CONNECTION ;
-	m_hConnection = m_pCreateEmbeddedFunction( (Connection_Sender_Handle)this, LocalProcessMessage, connectionType) ;
+	m_hConnection = m_pCreateEmbeddedFunction( (Connection_Sender_Handle)this, LocalProcessMessage, connectionType, portToListenOn) ;
 
 	if (!m_hConnection)
 	{

@@ -49,7 +49,7 @@ Kernel::Kernel(Connection* pConnection)
 	// If we're in Windows this is not an issue (because the Windows linker supports these cyclical references)
 	// and if we're loading KernelSML dynamically (the normal fashion) this is also not a problem.
 	sml_ProcessMessage(0,0,0);
-	sml_CreateEmbeddedConnection(0,0,0);
+	sml_CreateEmbeddedConnection(0,0,0,0);
 #endif
 }
 

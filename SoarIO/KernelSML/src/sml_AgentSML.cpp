@@ -104,6 +104,9 @@ public:
 		// the listener will still exist inside gSKI and will crash when an agent event is next generated.
 		pAgentSML->GetOutputListener()->UnRegisterForKernelSMLEvents() ;
 
+		// Unregister ourselves (this is important for the same reasons as listed above)
+		pKernelSML->GetKernel()->GetAgentManager()->RemoveAgentListener(gSKIEVENT_BEFORE_AGENT_DESTROYED, this) ;
+
 		// Then delete our matching agent sml information
 		pKernelSML->DeleteAgentSML(pAgent) ;
 

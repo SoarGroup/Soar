@@ -95,7 +95,7 @@ void SimpleRemoteConnection()
 bool SimpleListener(int life)
 {
 	// Create the kernel instance
-	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false) ;
+	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
 
 	if (pKernel->HadError())
 	{
@@ -160,7 +160,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		SimpleTimer timer ;
 
 		// Create the appropriate type of connection
-		sml::Kernel* pKernel = embedded ? sml::Kernel::CreateEmbeddedConnection("KernelSML", useClientThread, fullyOptimized)
+		sml::Kernel* pKernel = embedded ? sml::Kernel::CreateEmbeddedConnection("KernelSML", useClientThread, fullyOptimized, 14444)
 										: sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
 		if (pKernel->HadError())

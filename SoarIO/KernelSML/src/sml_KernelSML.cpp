@@ -66,17 +66,29 @@ static ElementXML* AddErrorMsg(Connection* pConnection, ElementXML* pResponse, c
 }
 
 /*************************************************************
-* @brief	Returns the singleton kernel object.
+* @brief	Creates the singleton kernel object.
 *************************************************************/
-KernelSML* KernelSML::GetKernelSML()
+KernelSML* KernelSML::CreateKernelSML(unsigned short portToListenOn)
 {
-	if (s_pKernel == NULL)
-		s_pKernel = new KernelSML() ;
+	// Failed to create KernelSML because it already exists!
+	// This is really a sign of a bug.
+	if (s_pKernel != NULL)
+		return s_pKernel ;
+
+	s_pKernel = new KernelSML(portToListenOn) ;
 
 	return s_pKernel ;
 }
 
-KernelSML::KernelSML()
+/*************************************************************
+* @brief	Returns the singleton kernel object.
+*************************************************************/
+KernelSML* KernelSML::GetKernelSML()
+{
+	return s_pKernel ;
+}
+
+KernelSML::KernelSML(unsigned short portToListenOn)
 {
 	// Create a Kernel Factory
 	m_pKernelFactory = gSKI_CreateKernelFactory();
@@ -95,7 +107,7 @@ KernelSML::KernelSML()
 	BuildCommandMap() ; 
 
 	// Start listening for incoming connections
-	m_pConnectionManager = new ConnectionManager() ;
+	m_pConnectionManager = new ConnectionManager(portToListenOn) ;
 
 	// We'll use this to make sure only one connection is executing commands
 	// in the kernel at a time.

@@ -79,7 +79,7 @@ protected:
 	bool	m_bTraceCommunications ;
 
 public:
-	ConnectionManager(unsigned short port = Connection::kDefaultSMLPort) ;
+	ConnectionManager(unsigned short port) ;
 	~ConnectionManager() ;
 
 	// Add a new incoming connection to our list

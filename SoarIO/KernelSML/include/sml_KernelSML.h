@@ -133,6 +133,13 @@ public:
 	static KernelSML* GetKernelSML() ;
 
 	/*************************************************************
+	* @brief	Creates the singleton kernel object
+	*			and starts listening for incoming commands on the
+	*			given port.
+	*************************************************************/
+	static KernelSML* CreateKernelSML(unsigned short portToListenOn) ;
+
+	/*************************************************************
 	* @brief	Delete the singleton kernel object
 	*************************************************************/
 	static void DeleteSingleton()
@@ -255,7 +262,7 @@ public:
 	bool DeleteAgentSML(gSKI::IAgent* pAgent) ;
 
 protected:
-	KernelSML(void);
+	KernelSML(unsigned short portToListenOn);
 
 protected:
 	/*************************************************************

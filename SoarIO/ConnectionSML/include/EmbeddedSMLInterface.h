@@ -42,7 +42,7 @@ typedef ElementXML_Handle (*ProcessMessageFunction)(Connection_Receiver_Handle, 
 
 // Define the CreateEmbeddedConnectionFunction to take a sender's connection and the sender's message handling function
 // and return a new connection handle.
-typedef Connection_Receiver_Handle (*CreateEmbeddedConnectionFunction)(Connection_Sender_Handle, ProcessMessageFunction, int) ;
+typedef Connection_Receiver_Handle (*CreateEmbeddedConnectionFunction)(Connection_Sender_Handle, ProcessMessageFunction, int, int) ;
 
 
 ////////////////////////////////////////////////////////////////
@@ -85,6 +85,7 @@ typedef Connection_Receiver_Handle (*CreateEmbeddedConnectionFunction)(Connectio
 * @param hSenderConnection		The sender's connection object (this is opaque to us--i.e. we can't call methods on it, just pass it back later).
 * @param pSenderProcessMessage	The sender's ProcessMessage function (which this module will call when we're sending messages out).
 * @param connectionType			What form of embedded connection to create (valid values are defined below)
+* @param portToListenOn			What port to listen for incoming remote connections on
 *
 * @returns Returns a handle to a new connection object.  This module will receive this back in calls to our ProcessMessage function.
 *************************************************************/
@@ -92,7 +93,7 @@ typedef Connection_Receiver_Handle (*CreateEmbeddedConnectionFunction)(Connectio
 #define SML_SYNCH_CONNECTION	1	// Incoming messages are executed immediately on the caller's thread
 #define SML_ASYNCH_CONNECTION	2	// Incoming messages are queued and executed later on the receiver's thread
 
-EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pSenderProcessMessage, int connectionType) ;
+EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pSenderProcessMessage, int connectionType, int portToListenOn) ;
 
 /*************************************************************
 * @brief	This function is called by the sender in order to
