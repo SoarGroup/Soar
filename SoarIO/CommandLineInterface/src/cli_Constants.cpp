@@ -34,6 +34,7 @@ char const* Constants::kCLIMultiAttributes			= "multi-attributes";
 char const* Constants::kCLINumericIndifferentMode	= "numeric-indifferent-mode";
 char const* Constants::kCLIOSupportMode				= "o-support-mode";
 char const* Constants::kCLIPopD						= "popd";
+char const* Constants::kCLIPreferences				= "preferences";
 char const* Constants::kCLIPrint					= "print";
 char const* Constants::kCLIProductionFind			= "production-find";
 char const* Constants::kCLIPushD					= "pushd";

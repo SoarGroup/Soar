@@ -97,6 +97,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLINumericIndifferentMode]	= &cli::CommandLineInterface::ParseNumericIndifferentMode;
 	m_CommandMap[Constants::kCLIOSupportMode]			= &cli::CommandLineInterface::ParseOSupportMode;
 	m_CommandMap[Constants::kCLIPopD]					= &cli::CommandLineInterface::ParsePopD;
+	m_CommandMap[Constants::kCLIPreferences]			= &cli::CommandLineInterface::ParsePreferences;
 	m_CommandMap[Constants::kCLIPrint]					= &cli::CommandLineInterface::ParsePrint;
 	m_CommandMap[Constants::kCLIProductionFind]			= &cli::CommandLineInterface::ParseProductionFind;
 	m_CommandMap[Constants::kCLIPushD]					= &cli::CommandLineInterface::ParsePushD;
