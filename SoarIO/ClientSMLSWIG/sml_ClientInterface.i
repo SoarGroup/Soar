@@ -24,6 +24,7 @@
 %ignore sml::Kernel::RegisterForAgentEvent(smlAgentEventId, AgentEventHandler, void*, bool addToBack = true);
 
 %{
+#include "sml_Names.h"
 #include "sml_ElementXML.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_ClientErrors.h"
@@ -37,6 +38,7 @@
 #include "sml_ClientAgent.h"
 %}
 
+//%include "../ConnectionSML/include/sml_Names.h"
 %include "../ConnectionSML/include/sml_ElementXML.h"
 %include "../ConnectionSML/include/sml_AnalyzeXML.h"
 %include "../ClientSML/include/sml_ClientErrors.h"
