@@ -193,6 +193,13 @@ void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, Ele
 * @brief Creates a connection to the Soar kernel that is embedded
 *        within the same process as the caller.
 *
+*		 Creating in "client thread" will produce maximum performance but requires a little more work for the developer
+*		 (you need to call CheckForIncomingCommands() periodically).
+*
+*		 Creating in "soar thread" is simpler for the developer but will be slower (around a factor 2).
+*		 (It's simpler because there's no need to call CheckForIncomingCommands() periodically as this happens in a separate
+*		  thread running inside the kernel).
+*
 * @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
 *						This library will be dynamically loaded and connected to.
 * @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
