@@ -164,9 +164,14 @@ public class RuleEditor extends CustomInternalFrame
 
         if(edu.umich.visualsoar.misc.Preferences.getInstance().isAutoSoarCompleteEnabled()) 
         {
-            KeyStroke dot = KeyStroke.getKeyStroke('.');
             Keymap keymap = editorPane.getKeymap();
+
+            KeyStroke dot = KeyStroke.getKeyStroke('.');
             keymap.addActionForKeyStroke(dot, autoSoarCompleteAction);
+
+            KeyStroke langle = KeyStroke.getKeyStroke('<');
+            keymap.addActionForKeyStroke(langle, autoSoarCompleteAction);
+            
             editorPane.setKeymap(keymap);
         }
 
