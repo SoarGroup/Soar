@@ -10,6 +10,8 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.*;
+//for 3.0 compatibility
+import org.eclipse.ui.ide.*;
 
 /**
  * 
@@ -45,7 +47,9 @@ public class SoarNavigator extends ResourceNavigator {
 				IWorkbenchPage page =
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 				try {
-					page.openEditor(operatorSource);
+					//page.openEditor(operatorSource);
+					//new line for Eclipse 3.0 compatibility
+					IDE.openEditor(page, operatorSource);
 				} catch (PartInitException e) {
 				}
 			}

@@ -20,7 +20,8 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import java.io.*;
 import org.eclipse.ui.*;
-
+//for 3.0 compatibility
+import org.eclipse.ui.ide.*;
 
 /**
  * Adds an impasse to the Soar heirarchy.
@@ -135,7 +136,9 @@ public class AddImpasseWiz extends Wizard implements INewWizard {
 				IWorkbenchPage page =
 					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 				try {
-					page.openEditor(file);
+					//page.openEditor(file);
+					//new line for Eclipse 3.0 compatibility
+					IDE.openEditor(page, file);
 				} catch (PartInitException e) {
 				}
 			}
