@@ -6,7 +6,11 @@
 %rename(SetCharacterDataConst) sml::ElementXML::SetCharacterData(char const* characterData);
 %rename(SetBinaryCharacterDataConst) sml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
 
+%newobject CreateEmbeddedConnection(char const*, bool) ;
+
 %{
+#include "sml_ClientErrors.h"
+#include "sml_ClientEvents.h"
 #include "sml_ClientWMElement.h"
 #include "sml_ClientIntElement.h"
 #include "sml_ClientFloatElement.h"
@@ -19,6 +23,8 @@
 #include "sml_Connection.h"
 %}
 
+%include "../ClientSML/include/sml_ClientErrors.h"
+%include "../ClientSML/include/sml_ClientEvents.h"
 %include "../ClientSML/include/sml_ClientWMElement.h"
 %include "../ClientSML/include/sml_ClientIntElement.h"
 %include "../ClientSML/include/sml_ClientFloatElement.h"
