@@ -348,6 +348,7 @@ Symbol *make_new_identifier(char name_letter, goal_stack_level level)
     sym->id.tc_num = 0;
     sym->id.associated_output_links = NIL;
     sym->id.input_wmes = NIL;
+	sym->id.parents = NIL;
     add_to_hash_table(current_agent(identifier_hash_table), sym);
     return sym;
 }

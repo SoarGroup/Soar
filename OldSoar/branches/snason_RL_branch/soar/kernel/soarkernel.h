@@ -963,6 +963,10 @@ typedef struct identifier_struct {
     /* --- fields used for Soar I/O stuff --- */
     list *associated_output_links;
     struct wme_struct *input_wmes;
+
+	// SAN - list of wmes with this id in the value slot
+	// allows easy upwards traversal of WM graph
+	dl_list *parents;
 } identifier;
 
 typedef union symbol_union {

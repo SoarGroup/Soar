@@ -128,7 +128,11 @@ void add_wme_to_wm(wme * w)
 {
     push(w, current_agent(wmes_to_add));
     if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) {
-        post_link_addition(w->id, w->value);
+        dl_cons *dc;
+		post_link_addition(w->id, w->value);
+		allocate_with_pool(&current_agent(dl_cons_pool), &dc);
+		dc->item = w;
+		insert_at_head_of_dll(w->value->id.parents, dc, next, prev);
         if (w->attr == current_agent(operator_symbol))
             w->value->id.isa_operator++;
     }
@@ -138,7 +142,16 @@ void remove_wme_from_wm(wme * w)
 {
     push(w, current_agent(wmes_to_remove));
     if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) {
-        post_link_removal(w->id, w->value);
+        dl_cons *dc;
+		post_link_removal(w->id, w->value);
+		for (dc = w->value->id.parents; dc ; dc = dc->next){
+			if (dc->item == w)
+				break;
+		}
+		if (dc){
+			fast_remove_from_dll(w->value->id.parents, dc, dl_cons, next, prev);
+			free_with_pool(&current_agent(dl_cons_pool), dc);
+		}
         if (w->attr == current_agent(operator_symbol))
             w->value->id.isa_operator--;
     }

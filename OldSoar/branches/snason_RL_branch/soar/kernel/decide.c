@@ -340,7 +340,8 @@ void post_link_addition(Symbol * from, Symbol * to)
     if (!from)
         return;                 /* if adding a special link, we're done */
 
-    /* --- if adding link from same level, ignore it --- */
+    
+	/* --- if adding link from same level, ignore it --- */
     if (from->id.promotion_level == to->id.promotion_level)
         return;
 
