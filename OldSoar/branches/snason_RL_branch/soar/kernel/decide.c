@@ -3407,6 +3407,7 @@ preference *ProbSelect(slot *s, preference *candidates)
    unsigned int   currentCandidate=0;
    double         selectedProbability=0;
    double         currentSumOfValues=0;
+   double		  min_value;
    static int     initialized_rand = 0;
    unsigned long        rn=0;
    char           mesg[256];
@@ -3488,18 +3489,28 @@ preference *ProbSelect(slot *s, preference *candidates)
 
 	// now sum_of_probability should be the Q-value
    print("\n");
-   total_probability = 0.0;
+   
    // current_agent(max_Q) = (*candidates)->sum_of_probability; // SAN
+   min_value = (double)candidates->sum_of_probability / current_agent(Temp);
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
      /* UNTESTED */
      /* Uncomment this line for averaging vs sum of individual probabilities */
      // cand->sum_of_probability = (cand->sum_of_probability)/((double)cand->total_preferences_for_candidate);
      
 	
-     print_with_symbols("\n Candidate %y ", cand->value);
+     cand->sum_of_probability /= (double)current_agent(Temp);
+	 if (cand->sum_of_probability < min_value)
+		 min_value = cand->sum_of_probability;
+   }
+
+   total_probability = 0.0;
+
+   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+	   cand->sum_of_probability -= min_value;
+	  print_with_symbols("\n Candidate %y ", cand->value);
      /* Sum the total probabilities */
-     total_probability += exp((double)cand->sum_of_probability / current_agent(Temp));
-     print(" Q-value %f weighted value %f", cand->sum_of_probability, exp((double)cand->sum_of_probability / current_agent(Temp)));
+     total_probability += exp(cand->sum_of_probability);
+      print(" Q-value %f weighted value %f", cand->sum_of_probability, exp(cand->sum_of_probability));
 
 	 /* SAN - record max Q-value for Q-value update */
 	 /* try Sarsa
@@ -3521,7 +3532,7 @@ preference *ProbSelect(slot *s, preference *candidates)
 
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
      
-     currentSumOfValues += exp((double) cand->sum_of_probability / current_agent(Temp));
+     currentSumOfValues += exp(cand->sum_of_probability);
      // print("   Sum... %f", currentSumOfValues ); 
 
      if (selectedProbability <= currentSumOfValues) {

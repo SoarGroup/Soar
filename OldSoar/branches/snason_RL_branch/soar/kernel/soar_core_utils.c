@@ -582,9 +582,9 @@ void soar_default_create_agent_procedure (char * agent_name) {
   current_agent(RL_count)                           = 1;  // SAN
   current_agent(making_binary)                      = FALSE;  // SAN
   current_agent(next_Q)                             = 0;  // SAN
-  current_agent(alpha)                              = 0.5;  // SAN
+  current_agent(alpha)                              = 0.2;  // SAN
   current_agent(gamma)                              = 1.0;  // SAN
-  current_agent(Temp)                               = 50.0;   // SAN
+  current_agent(Temp)                               = 1.0;   // SAN
   current_agent(records)                            = NIL;
   current_agent(alias_list)                         = NIL;  /* AGR 568 */
   current_agent(all_wmes_in_rete)                   = NIL;
