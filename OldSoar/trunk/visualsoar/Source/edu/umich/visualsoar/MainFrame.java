@@ -55,6 +55,7 @@ public class MainFrame extends JFrame
 	// Soar Tool Interface (STI) object, message time, and menu objects
 	private SoarToolJavaInterface soarToolJavaInterface = null;
 	private javax.swing.Timer soarToolPumpMessageTimer = null;
+    private JMenu soarRuntimeMenu = null;
 	private JMenu soarRuntimeAgentMenu = null;
 	
 ////////////////////////////////////////
@@ -662,7 +663,7 @@ public class MainFrame extends JFrame
 	
     {
 		// Add the menu as set the mnemonic
-		JMenu soarRuntimeMenu = new JMenu("Soar Runtime");
+		soarRuntimeMenu = new JMenu("Soar Runtime");
 		soarRuntimeMenu.setMnemonic('S');
 		
 		// Add the menu items
@@ -719,7 +720,7 @@ public class MainFrame extends JFrame
 		
 		// 3P
 		// Add the Soar Runtime menu
-		MenuBar.add(createSoarRuntimeMenu());
+        MenuBar.add(createSoarRuntimeMenu());
 
 		MenuBar.add(createHelpMenu());
 		
@@ -1478,11 +1479,14 @@ public class MainFrame extends JFrame
 		}
 		catch (java.lang.UnsatisfiedLinkError ule)
         {
+            soarToolJavaInterface = null;
+            
 			// Disable all related menu items
 			soarRuntimeTermAction.setEnabled(false);
 			soarRuntimeInitAction.setEnabled(false);
 			soarRuntimeSendRawCommandAction.setEnabled(false);
 			soarRuntimeAgentMenu.setEnabled(false);
+            soarRuntimeMenu.setEnabled(false);
             
             return false;
         }				
