@@ -14,7 +14,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\"
-			IntermediateDirectory="$(ConfigurationName)"
+			IntermediateDirectory="Debug"
 			ConfigurationType="2"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
@@ -69,11 +69,11 @@ echo del *.class
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory=".\"
+			IntermediateDirectory="Release"
 			ConfigurationType="2"
 			CharacterSet="2"
-			ManagedExtensions="TRUE">
+			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
@@ -100,7 +100,10 @@ echo del *.class
 %JAVA_BIN%\javac *.java
 "/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCPreBuildEventTool"
+				Description="Remove previous Java files"
+				CommandLine="echo del *.java
+echo del *.class"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
