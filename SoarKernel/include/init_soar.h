@@ -69,11 +69,14 @@ extern void reset_timer (struct timeval *tv_to_reset);
 extern void start_timer (struct timeval *tv_for_recording_start_time);
 extern void stop_timer (struct timeval *tv_with_recorded_start_time,
                         struct timeval *tv_with_accumulated_time);
+extern double timer_value (struct timeval *tv);
 #else
 #define start_timer(X)
 #define stop_timer(X)
+#define reset_timer(X)
+#define timer_value(X)
 #endif
-extern double timer_value (struct timeval *tv);
+
 
 #ifdef REAL_TIME_BEHAVIOR
 /* RMJ */
