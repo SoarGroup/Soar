@@ -95,18 +95,16 @@ del *.class
 				OutputFile="Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../ClientSML/lib;../../ElementXML/lib;../../ConnectionSML/lib"
-				GenerateDebugInformation="TRUE"
+				GenerateDebugInformation="FALSE"
 				ImportLibrary="$(OutDir)/$(TargetName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Build Java files, Copy to release point"
+				Description="Build Java files as a sanity check, copy dll to release point"
 				CommandLine="echo on
 %JAVA_BIN%/javac $(InputDir)*.java
-%JAVA_BIN%/jar cf Java_sml_ClientInterface.jar *.java
 copy Java_sml_ClientInterface.dll ..\..\bin /Y
-copy Java_sml_ClientInterface.jar ..\..\bin /Y
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"

@@ -84,7 +84,7 @@
 				OutputFile="Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../ClientSML/lib;../../ElementXML/lib;../../ConnectionSML/lib;&quot;$(TCL_LIB)&quot;"
-				GenerateDebugInformation="TRUE"/>
+				GenerateDebugInformation="FALSE"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

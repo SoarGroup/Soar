@@ -18,8 +18,11 @@
 %ignore sml::Agent::UnregisterForProductionEvent(smlEventId, ProductionEventHandler, void*);
 %ignore sml::Agent::RegisterForRunEvent(smlEventId, RunEventHandler, void*);
 %ignore sml::Agent::UnregisterForRunEvent(smlEventId, RunEventHandler, void*);
+%ignore sml::Agent::RegisterForPrintEvent(smlEventId, PrintEventHandler, void*);
+%ignore sml::Agent::UnregisterForPrintEvent(smlEventId, PrintEventHandler, void*);
 %ignore sml::Kernel::RegisterForSystemEvent(smlEventId, SystemEventHandler, void*);
 %ignore sml::Kernel::UnregisterForSystemEvent(smlEventId, SystemEventHandler, void*);
+
 
 %{
 #include "sml_ElementXML.h"

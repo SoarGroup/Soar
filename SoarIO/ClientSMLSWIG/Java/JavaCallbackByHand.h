@@ -36,41 +36,41 @@
 // Code to insert into generated Java files:
 /*
 Kernel.java:
-  public int RegisterForSystemEventByHand(Kernel kernel, smlEventId id, Object handlerObject, String handlerMethod, Object callbackData)
-  { return smlJNI.Kernel_RegisterForSystemEventByHand(swigCPtr, id.swigValue(), kernel, handlerObject, handlerMethod, callbackData) ;}
+  public int RegisterForSystemEvent(Kernel kernel, smlEventId id, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Kernel_RegisterForSystemEvent(swigCPtr, id.swigValue(), kernel, handlerObject, handlerMethod, callbackData) ;}
 
-  public void UnregisterForSystemEventByHand(smlEventId id, int callbackReturnValue)
-  { smlJNI.Kernel_UnregisterForSystemEventByHand(swigCPtr, id.swigValue(), callbackReturnValue) ;}
+  public void UnregisterForSystemEvent(smlEventId id, int callbackReturnValue)
+  { smlJNI.Kernel_UnregisterForSystemEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
 
 Agent.java:
-  public int RegisterForRunEventByHand(Agent agent, smlEventId id, Object handlerObject, String handlerMethod, Object callbackData)
-  { return smlJNI.Agent_RegisterForRunEventByHand(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ;}
+  public int RegisterForRunEvent(Agent agent, smlEventId id, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Agent_RegisterForRunEvent(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ;}
 
-  public int RegisterForAgentEventByHand(Agent agent, smlEventId id, Object handlerObject, String handlerMethod, Object callbackData)
-  { return smlJNI.Agent_RegisterForAgentEventByHand(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ; }
+  public int RegisterForAgentEvent(Agent agent, smlEventId id, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Agent_RegisterForAgentEvent(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ; }
 
-  public int RegisterForProductionEventByHand(Agent agent, smlEventId id, Object handlerObject, String handlerMethod, Object callbackData)
-  { return smlJNI.Agent_RegisterForProductionEventByHand(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ; }
+  public int RegisterForProductionEvent(Agent agent, smlEventId id, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Agent_RegisterForProductionEvent(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ; }
 
-  public void UnregisterForRunEventByHand(smlEventId id, int callbackReturnValue)
-  { smlJNI.Agent_UnregisterForRunEventByHand(swigCPtr, id.swigValue(), callbackReturnValue) ;}
+  public void UnregisterForRunEvent(smlEventId id, int callbackReturnValue)
+  { smlJNI.Agent_UnregisterForRunEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
 
-  public void UnregisterForAgentEventByHand(smlEventId id, int callbackReturnValue)
-  { smlJNI.Agent_UnregisterForAgentEventByHand(swigCPtr, id.swigValue(), callbackReturnValue) ;}
+  public void UnregisterForAgentEvent(smlEventId id, int callbackReturnValue)
+  { smlJNI.Agent_UnregisterForAgentEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
 
-  public void UnregisterForProductionEventByHand(smlEventId id, int callbackReturnValue)
-  { smlJNI.Agent_UnregisterForProductionEventByHand(swigCPtr, id.swigValue(), callbackReturnValue) ;}
+  public void UnregisterForProductionEvent(smlEventId id, int callbackReturnValue)
+  { smlJNI.Agent_UnregisterForProductionEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
 
 smlJNI.java:
-public final static native int Agent_RegisterForRunEventByHand(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
-public final static native int Agent_RegisterForAgentEventByHand(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
-public final static native int Agent_RegisterForProductionEventByHand(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
-public final static native int Kernel_RegisterForSystemEventByHand(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
+public final static native int Agent_RegisterForRunEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
+public final static native int Agent_RegisterForAgentEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
+public final static native int Agent_RegisterForProductionEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
+public final static native int Kernel_RegisterForSystemEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
 
-public final static native void Agent_UnregisterForRunEventByHand(long jarg1, int jarg2, int jarg3);
-public final static native void Agent_UnregisterForAgentEventByHand(long jarg1, int jarg2, int jarg3);
-public final static native void Agent_UnregisterForProductionEventByHand(long jarg1, int jarg2, int jarg3);
-public final static native void Kernel_UnregisterForSystemEventByHand(long jarg1, int jarg2, int jarg3);
+public final static native void Agent_UnregisterForRunEvent(long jarg1, int jarg2, int jarg3);
+public final static native void Agent_UnregisterForAgentEvent(long jarg1, int jarg2, int jarg3);
+public final static native void Agent_UnregisterForProductionEvent(long jarg1, int jarg2, int jarg3);
+public final static native void Kernel_UnregisterForSystemEvent(long jarg1, int jarg2, int jarg3);
 
 User's java code sample:
 public class EventListener
@@ -99,10 +99,10 @@ public class EventListener
 // The strings (e.g. "runEventHandler") must match the name of the method in the above class (case sensitive).
 // An error in either the name or the type of the handler will lead to a NoSuchMethod exception when the event fires (not when it's registered).
 EventListener listener = new EventListener() ;
-int jRunCallback    = pAgent.RegisterForRunEventByHand(pAgent, smlEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
-int jAgentCallback  = pAgent.RegisterForAgentEventByHand(pAgent, smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
-int jProdCallback   = pAgent.RegisterForProductionEventByHand(pAgent, smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
-int jSystemCallback = pKernel.RegisterForSystemEventByHand(pKernel, smlEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
+int jRunCallback    = pAgent.RegisterForRunEvent(pAgent, smlEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
+int jAgentCallback  = pAgent.RegisterForAgentEvent(pAgent, smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
+int jProdCallback   = pAgent.RegisterForProductionEvent(pAgent, smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
+int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
 
 */
 
@@ -142,7 +142,7 @@ public:
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void ByHandRunEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase)
+static void RunEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -178,7 +178,7 @@ static void ByHandRunEventHandler(sml::smlEventId id, void* pUserData, sml::Agen
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void ByHandAgentEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent)
+static void AgentEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -214,7 +214,7 @@ static void ByHandAgentEventHandler(sml::smlEventId id, void* pUserData, sml::Ag
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void ByHandProductionEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
+static void ProductionEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -254,7 +254,7 @@ static void ByHandProductionEventHandler(sml::smlEventId id, void* pUserData, sm
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void ByHandSystemEventHandler(sml::smlEventId id, void* pUserData, sml::Kernel* pKernel)
+static void SystemEventHandler(sml::smlEventId id, void* pUserData, sml::Kernel* pKernel)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -315,7 +315,7 @@ static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, j
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.
-JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEventByHand(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
+JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -327,13 +327,13 @@ JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEventByHand(JNIEnv *
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
 	
 	// Register our handler.  When this is called we'll call back to the Java method.
-	arg1->RegisterForRunEvent(arg2, &ByHandRunEventHandler, pJavaData) ;
+	arg1->RegisterForRunEvent(arg2, &RunEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
 }
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEventByHand(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -345,7 +345,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEventByHand(JNIEnv
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForRunEvent(arg2, &ByHandRunEventHandler, pJavaData) ;
+	arg1->UnregisterForRunEvent(arg2, &RunEventHandler, pJavaData) ;
 
 	// Release the callback data
 	delete pJavaData ;
@@ -353,7 +353,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEventByHand(JNIEnv
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.
-JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForAgentEventByHand(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
+JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForAgentEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -365,13 +365,13 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForAgentEventByHand(JNIEnv 
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
 	
 	// Register our handler.  When this is called we'll call back to the Java method.
-	arg1->RegisterForAgentEvent(arg2, &ByHandAgentEventHandler, pJavaData) ;
+	arg1->RegisterForAgentEvent(arg2, &AgentEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
 }
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForAgentEventByHand(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForAgentEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -383,7 +383,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForAgentEventByHand(JNIE
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForAgentEvent(arg2, &ByHandAgentEventHandler, pJavaData) ;
+	arg1->UnregisterForAgentEvent(arg2, &AgentEventHandler, pJavaData) ;
 
 	// Release the callback data
 	delete pJavaData ;
@@ -391,7 +391,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForAgentEventByHand(JNIE
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.
-JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEventByHand(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
+JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -403,13 +403,13 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEventByHand(JN
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
 	
 	// Register our handler.  When this is called we'll call back to the Java method.
-	arg1->RegisterForProductionEvent(arg2, &ByHandProductionEventHandler, pJavaData) ;
+	arg1->RegisterForProductionEvent(arg2, &ProductionEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
 }
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEventByHand(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -421,7 +421,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEventByHand
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForProductionEvent(arg2, &ByHandProductionEventHandler, pJavaData) ;
+	arg1->UnregisterForProductionEvent(arg2, &ProductionEventHandler, pJavaData) ;
 
 	// Release the callback data
 	delete pJavaData ;
@@ -429,7 +429,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEventByHand
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.
-JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEventByHand(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
+JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
 {
     // jarg1 is the C++ Kernel object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
@@ -441,13 +441,13 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEventByHand(JNIEn
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
 	
 	// Register our handler.  When this is called we'll call back to the Java method.
-	arg1->RegisterForSystemEvent(arg2, &ByHandSystemEventHandler, pJavaData) ;
+	arg1->RegisterForSystemEvent(arg2, &SystemEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
 }
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEventByHand(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
 {
     // jarg1 is the C++ Kernel object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
@@ -459,7 +459,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEventByHand(JN
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForSystemEvent(arg2, &ByHandSystemEventHandler, pJavaData) ;
+	arg1->UnregisterForSystemEvent(arg2, &SystemEventHandler, pJavaData) ;
 
 	// Release the callback data
 	delete pJavaData ;
