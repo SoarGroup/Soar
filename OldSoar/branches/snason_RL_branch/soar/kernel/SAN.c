@@ -13,9 +13,10 @@ void variablize_nots_and_insert_into_conditions(not * nots, condition * conds);
 action *copy_and_variablize_result_list(preference * pref);
 void variablize_symbol(Symbol ** sym);
 void SAN_add_goal_or_impasse_tests(condition * all_conds);
-bool trace_to_state(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond);
 bool symbol_is_in_tc(Symbol * sym, tc_number tc);
 production *specify_production(instantiation *ist);
+void trace_to_prod(wme * w, tc_number tc_prod, condition ** cond);
+bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond, int depth);
 
 
 // The following three functions manage the stack of RL_records.
@@ -150,7 +151,7 @@ void record_for_RL()
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  if (prod->times_applied > 5){
+			  if (prod->times_applied > 10){
 				  prod->times_applied = 0;
 				  prod = specify_production(ist);
 				  if (prod){
@@ -172,7 +173,7 @@ production *specify_production(instantiation *ist){
 	unsigned long num;
 	wme *w;
 	int i;
-	// production *prod = NIL;
+	production *prod;
 
 	 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
 		if (cond->type == POSITIVE_CONDITION){
@@ -187,7 +188,7 @@ production *specify_production(instantiation *ist){
 	 while (1){
 		num = rand() % current_agent(num_wmes_in_rete);
 		w = current_agent(all_wmes_in_rete);
-		for (i = 0 ; i <= num; i++)
+		for (i = 0 ; i < num; i++)
 			w = w->rete_next;
 		cond = make_simple_condition(w->id, w->attr, w->value);
 		for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
@@ -199,12 +200,14 @@ production *specify_production(instantiation *ist){
 				}
 		if (!cond) continue;	
 		deallocate_condition_list(cond);
-		trace_to_state(w, tc_num, get_new_tc_number(), &cond_top);
+		trace_to_prod(w, tc_num, &cond_top);
 		for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
 		copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
 		cond_top->prev = new_bottom;
 		new_bottom->next = cond_top;
-		return build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
+		prod = build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
+		deallocate_condition_list(new_top);
+		return prod;
 	 }
 }
 
@@ -444,7 +447,18 @@ void SAN_add_goal_or_impasse_tests(condition * all_conds)
     }
 }
 
-bool trace_to_state(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond){
+
+void trace_to_prod(wme * w, tc_number tc_prod, condition ** cond){
+	tc_number tc_seen = get_new_tc_number();
+	int i = 1;
+
+	while(!trace_to_prod_depth(w, tc_prod, tc_seen, cond, i)){
+		i++;
+		tc_seen = get_new_tc_number();
+	}
+}
+
+bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond, int depth){
 	Symbol * id = w->id;
 	Symbol * attr = w->attr;
 	Symbol * value = w->value;
@@ -452,7 +466,8 @@ bool trace_to_state(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** 
 	wme * z;
 	dl_cons *dc;
 
-	if(symbol_is_in_tc(id, tc_seen)) return FALSE;
+	if (depth == 0) return FALSE;
+	// if(symbol_is_in_tc(id, tc_seen)) return FALSE;
 	new_cond = make_simple_condition(id, attr, value);
 	if (new_cond->test_for_acceptable_preference == w->acceptable)
 		insert_at_head_of_dll(*cond, new_cond, next, prev);
@@ -460,10 +475,10 @@ bool trace_to_state(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** 
 		return TRUE;
 	} else {
 		// bug - add attr test
-		add_symbol_to_tc(value, tc_seen, NIL, NIL);
+		// add_symbol_to_tc(value, tc_seen, NIL, NIL);
 		for (dc = id->id.parents ; dc ; dc = dc->next){
 			z = dc->item;
-			if (trace_to_state(z, tc_prod, tc_seen, cond))
+			if (trace_to_prod_depth(z, tc_prod, tc_seen, cond, depth - 1))
 				return TRUE;
 		}
 		remove_from_dll(*cond,*cond,next,prev);
