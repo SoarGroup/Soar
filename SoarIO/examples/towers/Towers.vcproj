@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
+				AdditionalIncludeDirectories="..\..\..\TgDI\include;..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -69,7 +69,8 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
+				AdditionalOptions="true"
+				AdditionalIncludeDirectories="..\..\..\TgDI\include;..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="4"
 				UsePrecompiledHeader="3"
@@ -138,6 +139,9 @@
 			</File>
 			<File
 				RelativePath=".\gSKITowersSoarAgent.h">
+			</File>
+			<File
+				RelativePath=".\Towers.h">
 			</File>
 		</Filter>
 		<Filter

@@ -4,8 +4,6 @@
 //standard directives
 #include <iostream>
 #include <string.h>
-#include <stdlib.h>
-#include <math.h>
 #include <string>
 #include <functional>
 #include <cassert>
@@ -13,8 +11,6 @@
 using std::string;
 using std::cout;
 using std::endl;
-using std::vector;
-using std::less;
 
 //gSKI directives
 #include "IgSKI_Wme.h"
@@ -40,29 +36,115 @@ TgD::TgD* debugger;
 
 //namespace gski_towers
 //{
+
+/*************************************************************
+* @brief	The TowerInputLinkProfile class contains all of the  
+*			wmes corresponding to theTower
+*************************************************************/
+class TowerInputLinkProfile
+{
+public:
+
+	/*************************************************************
+	* @returns	The Iwme* of the identifier that all tower child
+	*			Iwmes hang off of
+	*************************************************************/
+	IWme* GetTowerIdentifier() const { return m_pPegIdentifier;}
+
+	/*************************************************************
+	* @returns	The IWMObject* of the identifier that all tower 
+	*			child Iwmes use as a parent
+	*************************************************************/
+	IWMObject* GetTowerIdentifierObject() const {return m_pPegIdentifier->GetValue()->GetObject();}
+
+	~TowerInputLinkProfile()
+	{
+		if(m_pPegIdentifier)
+		{
+			m_pPegIdentifier->Release();
+			m_pPegIdentifier = 0;
+		}
+		
+		if(m_pPegName)
+		{
+			m_pPegName->Release();
+			m_pPegName = 0;
+		}
+	}
+private:
+	TowerInputLinkProfile()
+	{
+		m_pPegIdentifier = 0;
+		m_pPegName = 0;
+	}
+
+	IWme* m_pPegIdentifier;
+	IWme* m_pPegName;
+
+	friend class Tower;
+};
+
+
+
+/*************************************************************
+* @brief	The DiskInputLinkProfile class contains all of the
+*			Iwmes for the "disk" and "holds" structures on the
+*			input link, as well as pointers to the tower/peg
+*			that the disk sits on, and a pointer to any disk
+*			directly beneath this profile's corresponding disk
+*
+*************************************************************/
 class DiskInputLinkProfile : public IInputProducer
 {
 public:
+	/*************************************************************
+	* @returns	The IWMObject* that a disk's child wmes use as a 
+	*			parent
+	*************************************************************/
 	IWMObject* GetDiskIdentifierObject() const {return diskIdentifier->GetValue()->GetObject();}
+	/*************************************************************
+	* @returns	The IWMObject* that a "holds" structure's child  
+	*			wmes use as a parent
+	*************************************************************/
 	IWMObject* GetHoldsIdentifierObject() const {return holdsIdentifier->GetValue()->GetObject();}
+
+	/*************************************************************
+	* @returns	The IWme* for this disk's identifier
+	*************************************************************/
 	IWme* GetDiskIdentifier() const {return diskIdentifier;}
 
-	void SetDiskBeneath(Disk* inDisk)
+	/*************************************************************
+	* @brief	Updates the pointers to the peg and disk beneath
+	*			Sets flag so that Update knows an update needs
+	*			to be done
+	* @param	inDisk	The new disk beneath, or zero, if none
+	* @param	intower	The new Tower that this disk has moved to
+	*************************************************************/
+	void SetDiskBeneath(Disk* inDisk, Tower* inTower)
 	{
 		if(inDisk)
 			diskBeneath = inDisk->GetDiskInputLinkProfile()->GetDiskIdentifier();
 		else
 			diskBeneath = 0;
 
-		pegId = inDisk->GetDiskInputLinkProfile()->pegId;
+		pegId = inTower->GetInputLinkProfile()->GetTowerIdentifierObject();
 		holdsNeedsToBeUpdated = true;
 	}
 
-	//Replace the "on" and "above" wmes for the corresponding 
-	//holds wme
+	/*************************************************************
+	* @brief	Updates the wmes for "disk" and "holds" if the disk
+	*			had been moved or created.  This is a callback 
+	*			function that will automatically be called when 
+	*			the Soar agent has initiated a run
+	*			
+	* @param	pWMemory	pointer to the agent's working memory
+	*						Not client-owned, don't release.
+	* @param	object		input link parent object that the Disk
+	*						registered to update. Also not client-
+	*						owned, don't release
+	*************************************************************/
 	void Update(IWorkingMemory* pWMemory, IWMObject* object)
 	{
-cout << "Update called on disk...." << endl;
 		if(holdsNeedsToBeUpdated == false)
 			return;
 
@@ -72,7 +154,10 @@ cout << "Update called on disk...." << endl;
 		{
 			pWMemory->RemoveWme(peg);
 			peg = pWMemory->AddWmeObjectLink(object, "on", pegId);
+			onItr->Release();
 		}
+		else
+			assert(false);
 		// Get List of objects referencing this object with attribute "above"
 		tIWmeIterator* aboveItr = object->GetWMEs("above");
 
@@ -86,11 +171,12 @@ cout << "Update called on disk...." << endl;
 				holdsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", diskBeneath->GetValue()->GetObject());
 			}
 			else
-			{
 				holdsDiskBeneath = pWMemory->ReplaceStringWme(oldDiskBeneath, "none");
-			}
 
+			aboveItr->Release();
 		}
+		else
+			assert(false);
 		holdsNeedsToBeUpdated = false;
 	}
 
@@ -117,10 +203,10 @@ private:
 			name->Release();
 		if(size)
 			size->Release();
-		if(diskBeneath)
-			diskBeneath->Release();
-		if(pegId)
-			pegId->Release();
+
+		//Don't own these so just set pointers to zero
+		diskBeneath = 0;
+		pegId = 0;
 
 		//Release children of "holds"
 		if(holdsDiskBeneath)
@@ -157,26 +243,6 @@ private:
 	bool holdsNeedsToBeUpdated;
 };
 
-class TowerInputLinkProfile
-{
-public:
-
-	IWme* GetTowerIdentifier() const { return m_pPegIdentifier;}
-	IWMObject* GetTowerIdentifierObject() const {return m_pPegIdentifier->GetValue()->GetObject();}
-
-private:
-	TowerInputLinkProfile()
-	{
-		m_pPegIdentifier = 0;
-		m_pPegName = 0;
-	}
-
-	IWme* m_pPegIdentifier;
-	IWme* m_pPegName;
-
-	friend class Tower;
-};
-
 
 class IOManager
 {
@@ -186,12 +252,16 @@ public:
 		m_pWorkingMem = m_pILink->GetInputLinkMemory();
 	}
 
-	//if parent is null, parent should be the inputlink root object
+	//if parent is null, parent should be the input link root object
 	IWme* AddWMObject(IWMObject* parent, const string& name)
 	{
-		IWMObject* pILinkRootObject;
-		m_pILink->GetRootObject(&pILinkRootObject);
-		return m_pWorkingMem->AddWmeNewObject(pILinkRootObject, name.c_str());
+		IWMObject* parentToAttachTo;
+		if(parent)
+			parentToAttachTo = parent;
+		else
+			m_pILink->GetRootObject(&parentToAttachTo);
+
+		return m_pWorkingMem->AddWmeNewObject(parentToAttachTo, name.c_str());
 	}
 
 	IWme* AddIntWme(IWMObject* parent, const string& name, int value)
@@ -200,11 +270,8 @@ public:
 		if(parent)
 			parentToAttachTo = parent;
 		else
-		{		
-			IWMObject* pILinkRootObject;
-			m_pILink->GetRootObject(&pILinkRootObject);
-			parentToAttachTo = pILinkRootObject;
-		}
+			m_pILink->GetRootObject(&parentToAttachTo);
+
 		return m_pWorkingMem->AddWmeInt(parentToAttachTo, name.c_str(), value);
 	}
 
@@ -214,11 +281,8 @@ public:
 		if(parent)
 			parentToAttachTo = parent;
 		else
-		{		
-			IWMObject* pILinkRootObject;
-			m_pILink->GetRootObject(&pILinkRootObject);
-			parentToAttachTo = pILinkRootObject;
-		}
+			m_pILink->GetRootObject(&parentToAttachTo);
+
 		return m_pWorkingMem->AddWmeString(parentToAttachTo, name.c_str(), value.c_str());
 	}
 
@@ -228,7 +292,7 @@ public:
 		if(parent)
 			parentToAttachTo = parent;
 		else
-		{		
+		{
 			IWMObject* pILinkRootObject;
 			m_pILink->GetRootObject(&pILinkRootObject);
 			parentToAttachTo = pILinkRootObject;
@@ -256,6 +320,13 @@ Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) :
 		pTower(tower), m_size(inSize)
 {
 	m_iLinkProfile = new DiskInputLinkProfile();
+	assert(m_iLinkProfile);
+	m_iLinkProfile->pegId = tower->GetInputLinkProfile()->GetTowerIdentifierObject();
+	if(diskBeneath)
+		m_iLinkProfile->diskBeneath = diskBeneath->m_iLinkProfile->diskIdentifier;
+	else
+		m_iLinkProfile->diskBeneath = 0;
+
 	//============================
 	// Initialize "disk" wmes
 	//============================
@@ -263,10 +334,10 @@ Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) :
 
 	//Add the disk identifier to the input link
 	IOManager* manager = pTower->GetWorld()->GetIOManager();
+	assert(manager);
 	m_iLinkProfile->diskIdentifier = manager->AddWMObject(0, k_diskIdentifierString);
 
-	const gSKI::ISymbol* parentSymbol = m_iLinkProfile->diskIdentifier->GetValue();
-	IWMObject* parentObject = parentSymbol->GetObject();
+	IWMObject* parentObject = m_iLinkProfile->diskIdentifier->GetValue()->GetObject();
 	//attach subordinate wmes to disk identifier;
 	m_iLinkProfile->name = manager->AddIntWme(parentObject, k_nameString, m_size);
 	m_iLinkProfile->size = manager->AddIntWme(parentObject, k_diskSizeString, m_size);
@@ -276,10 +347,11 @@ Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) :
 	//============================
 	//add the holds identifier
 	m_iLinkProfile->holdsIdentifier	= manager->AddWMObject(0, k_holdsIdentifierString);
-	const gSKI::ISymbol* holdsParentSymbol = m_iLinkProfile->holdsIdentifier->GetValue();
-	IWMObject* holdsParentObject = holdsParentSymbol->GetObject();
+	IWMObject* holdsParentObject =  m_iLinkProfile->holdsIdentifier->GetValue()->GetObject();
 
 	//add holds wmes to parent object
+
+	//the "on" wme points to the peg that this disk is on
 	m_iLinkProfile->peg = manager->AddIDWme(holdsParentObject, k_holdsOnString, m_iLinkProfile->pegId);
 
 	//the "disk" wme points back to its corresponding disk
@@ -297,29 +369,19 @@ Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) :
 }
 
 
+
 void Disk::Detach()
 {
-	//Release everything this is touching that doesn't belong to us
-/*	if(m_pDiskBeneath)
-		m_pDiskBeneath->Release();
-	//m_pPegId->Release();
-	m_pPegId = 0;//poor substitute for releasing
-
-	//Remove wmes that do belong to this
-	m_pWMemory->RemoveWme(m_pDiskIdentifier);//parent wme
-	m_pWMemory->RemoveWme(m_pName);
-	m_pWMemory->RemoveWme(m_pSize);
-
-	//"holds" wmes
-	m_pWMemory->RemoveWme(m_pHoldsIdentifier);//parent wme
-	m_pWMemory->RemoveWme(m_pHoldsDiskBeneath);
-	m_pWMemory->RemoveWme(m_pPeg);
-	m_pWMemory->RemoveWme(m_pDiskWme);
-	*/ //todo move this to input link profile destructor
 	delete m_iLinkProfile;
+		pTower = 0;
 }
 
 
+void Disk::Update(Disk* diskBeneath, Tower* tower)
+{
+	pTower = tower;
+	m_iLinkProfile->SetDiskBeneath(diskBeneath, tower);
+}
 
 //======================================================
 //============ Tower Function Definitions ==============
@@ -328,24 +390,25 @@ void Disk::Detach()
 Tower::Tower(HanoiWorld* inWorld, char inName) : pWorld(inWorld), m_name(inName)
 {
 	m_iLinkProfile = new TowerInputLinkProfile();
-	IOManager* manager = pWorld->GetIOManager();
+/*	IOManager* manager = pWorld->GetIOManager();
 
 	m_iLinkProfile->m_pPegIdentifier = manager->AddWMObject(0, k_worldPegString);
 	string nameString;
 	nameString = m_name;
 	m_iLinkProfile->m_pPegName = manager->AddStringWme(m_iLinkProfile->GetTowerIdentifierObject(), k_nameString, nameString);
-}
+*/}
 
 Tower::~Tower()
 {
 /*	IWorkingMemory* pWorkingMem = m_pILink->GetInputLinkMemory();
-	pWorkingMem->RemoveWme(m_pPegIdentifier);
-	for(vector<Disk*>::iterator diskItr = m_disks.begin(); diskItr != m_disks.end(); ++diskItr)
+	pWorkingMem->RemoveWme(m_pPegIdentifier);*/
+	for(diskItr_t diskItr = m_disks.begin(); diskItr != m_disks.end(); ++diskItr)
 	{
 		(*diskItr)->Detach();
 	}
 	m_disks.clear();
-	//can't release ILink ptr*/
+
+	delete m_iLinkProfile;
 }
 
 
@@ -357,9 +420,9 @@ void Tower::AddDisk(Disk* newDisk, bool justCreated)
 	if(!justCreated)
 	{
 		if(!m_disks.empty())
-			newDisk->GetDiskInputLinkProfile()->SetDiskBeneath(m_disks.back());
+			newDisk->Update(m_disks.back(), this);
 		else
-			newDisk->GetDiskInputLinkProfile()->SetDiskBeneath(0);
+			newDisk->Update(0, this);
 	}
 
 	m_disks.push_back(newDisk);
@@ -421,9 +484,9 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	assert(agent);
 
 //create debugger
-TgD::TSI_VERSION tsiVersion = TgD::TSI40;
-debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
-debugger->Init();
+//TgD::TSI_VERSION tsiVersion = TgD::TSI40;
+//debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
+//debugger->Init();
 
 	//Source the agent's productions
 	CommandLineInterface* commLine = new CommandLineInterface();
@@ -436,6 +499,7 @@ debugger->Init();
 
 	IInputLink* pILink = agent->GetInputLink();
 	ioManager = new IOManager(pILink);
+	assert(ioManager);
 
 	//wrap up the Soar agent
 	m_agent = new SoarAgent(agent, this);
@@ -448,7 +512,10 @@ debugger->Init();
 	IWMObject* pILinkRootObject;
 	pILink->GetRootObject(&pILinkRootObject);
 
-int fooDiskCounter = 0;
+	Tower(this, 'A');
+
+/*
+
 	//Name each tower and store for later
 	for(int towerNum = 0; towerNum < inNumTowers; ++towerNum)
 	{
@@ -477,9 +544,6 @@ int fooDiskCounter = 0;
 				}
 
 				Disk* disk = new Disk(tower, currentDiskSize, towerTopDisk);
-cout << "\tI just created disk " << fooDiskCounter++ << endl;
-cout << "At that time, the top tower disk was: " << towerTopDisk << endl;
-
 
 				pILink->AddInputProducer(disk->m_iLinkProfile->GetHoldsIdentifierObject(), disk->m_iLinkProfile);
 				assert(disk);
@@ -507,8 +571,12 @@ cout << "At that time, the top tower disk was: " << towerTopDisk << endl;
 			m_towers.push_back(tower);
 		}
 	}//for
-//Print();
+	*/
 
+	delete commLine;
+	delete pError;
+	kFactory->Release();//   <--program actually doesn't leak (gski objs)if you don't do this
+	pILinkRootObject->Release();
 }
 
 
@@ -517,11 +585,13 @@ HanoiWorld::~HanoiWorld()
 	for(towerItr_t towerItr = m_towers.begin(); towerItr != m_towers.end(); ++towerItr)
 		(*towerItr)->~Tower();
 	m_towers.clear();
+
+	delete ioManager;
+	delete m_agent;
 }
 
 void HanoiWorld::Run()
 {
-	cout << "\tHanoi::Run, calling agent->MakeMove() ..." << endl;
 	m_agent->MakeMove();
 }
 

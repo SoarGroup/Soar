@@ -27,15 +27,14 @@ extern TgD::TgD* debugger;
 
 SoarAgent::SoarAgent(IAgent* inAgent, HanoiWorld* inWorld) : m_Agent(inAgent), m_World(inWorld)
 {
-cout << "\tAgent constructor called...." << endl;
 	// get input link
 	IInputLink* pILink = m_Agent->GetInputLink();
-
 	m_Agent->GetOutputLink()->SetAutomaticUpdate(true);
 }
 
 SoarAgent::~SoarAgent()
 {
+	delete m_Agent;//nobody else has a pointer to this agent, so clean it up here
 	m_Agent = 0;
 	m_World = 0;
 }
@@ -58,9 +57,13 @@ void SoarAgent::ProcessOutput(IWorkingMemory* wMemory, gSKI::IWMObject* moveIden
 		// Get the row value
 		wmeValue = sourceWMEIterator->GetVal();
 		sourceTowerString = wmeValue->GetValue()->GetString();
+		wmeValue->Release();//clean up for reuse
+
 		// Get the col value
 		wmeValue = destinationWMEIterator->GetVal();
 		destinationTowerString = wmeValue->GetValue()->GetString();
+		wmeValue->Release();//cleaned up after final use
+
 		if(destinationTowerString == "A")
 			destinationTowerNum = 0;
 		else if(destinationTowerString == "B")
@@ -80,17 +83,24 @@ void SoarAgent::ProcessOutput(IWorkingMemory* wMemory, gSKI::IWMObject* moveIden
 			wMemory->AddWmeString(moveIdentifier, "status", "complete");
 		else
 			wMemory->AddWmeString(moveIdentifier, "status", "error");
+
 	}
 	else
 	{
 		wMemory->AddWmeString(moveIdentifier, "status", "error");
 	}
+
+	//clean up more
+	sourceWMEIterator->Release();
+	destinationWMEIterator->Release();
 }
+
 
 void SoarAgent::MakeMove()
 {										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE
-	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1);
+	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT, 1);
 	assert(runResult != gSKI_RUN_ERROR);
-while(TgD::TgD::Update(false, debugger))
-	TGD_SLEEP(50);
+
+	//while(TgD::TgD::Update(false, debugger))
+	//	TGD_SLEEP(50);
 }

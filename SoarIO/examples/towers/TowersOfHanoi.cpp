@@ -1,10 +1,8 @@
 #include <iostream>
 #include <string>
 
-
 ////// Define the type of interface to Soar that you're using:
 #define GSKI_DIRECT
-
 //#define SML_THROUGH_GSKI
 //#define SML_SGIO_HYBRID
 //#define SGIO_DIRECT
@@ -20,44 +18,24 @@
 
 #ifdef SML_SGIO_HYBRID
 	//SML Directives
-	#include "sml_Client.h"
-	using namespace sml;
 #endif
 
 #ifdef SML_THROUGH_GSKI
 	//SML Directives
-	#include "sml_Client.h"
-	using namespace sml;
 #endif
 
 
-#ifdef USE_TGD_WITH_GSKI
-	//TgDI directives
-	#include "TgD.h"
-	#include "tcl.h"
-
-	#ifdef _WIN32
-		#define _WINSOCKAPI_
-		#include <Windows.h>
-		#define TGD_SLEEP Sleep
-	#else
-		#include <unistd.h>
-		#define TGD_SLEEP usleep
-	#endif
-#endif
-
-
-using std::cout; using std::cin; using std::string;
-using std::endl;
+using std::cout; using std::cin; using std::endl;
+using std::string;
 
 const int defaultNumTowers = 3;
-const int defaultNumdisks = 11;
+//const int defaultNumdisks = 11;
 
 int main(int argc, char* argv[])
 {
 	bool doPrinting = true;
 	int numTowers = defaultNumTowers;
-	int numdisks = defaultNumdisks;
+	//int numdisks = defaultNumdisks;
 
 	if(argc > 1)
 	{
@@ -66,12 +44,12 @@ int main(int argc, char* argv[])
 		// @TODO more checking, for robustness 
 	}
 
-	if(argc > 2)
-	{
-		numTowers = atoi(argv[3]);
-		if(numTowers < 3)
-			numTowers = 3;
-	}
+	//if(argc > 2)
+	//{
+	//	numTowers = atoi(argv[3]);
+	//	if(numTowers < 3)
+	//		numTowers = 3;
+	//}
 
 	//It would be flexible to read in the number of disks, but the productions are hard-coded to 11
 	//if(argc > 3)
@@ -91,21 +69,17 @@ int main(int argc, char* argv[])
 		HanoiWorld hanoi(doPrinting, numTowers);
 
 		if(doPrinting)
-		{
 			hanoi.Print();
-cout << "pre-main loop, initial print is above..." << endl;
-		}
 
-		while(!hanoi.AtGoalState())
+	/*	while(!hanoi.AtGoalState())
 		{
-cout << "Main loop, please run!" << endl;
 			hanoi.Run();
-cout << "Main loop, ran...." << endl;
+
 			if(doPrinting)
 				hanoi.Print();
 		}
 
-		hanoi.EndGameAction();
+		hanoi.EndGameAction();*/
 	}
 
 

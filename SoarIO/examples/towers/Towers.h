@@ -32,6 +32,8 @@ public:
 
 	virtual DiskInputLinkProfile* GetDiskInputLinkProfile() const { return m_iLinkProfile;}
 
+	virtual void Update(Disk* diskBeneathMe, Tower* tower);
+
 protected:
 
 	Disk();
