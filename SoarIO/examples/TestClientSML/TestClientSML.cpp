@@ -2,7 +2,7 @@
 //#include "sml_Connection.h"
 #include "sml_Client.h"
 
-#include "..\..\Profiler\include\simple_timer.h"
+#include "../../Profiler/include/simple_timer.h"
 
 // Define a sleep
 #ifdef _WIN32
@@ -17,7 +17,11 @@
 // Use Visual C++'s memory checking functionality
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
+
+#ifdef _MSC_VER
 #include <crtdbg.h>
+#endif // _MSC_VER
+
 #include <iostream>
 #include <string>
 
@@ -428,6 +432,7 @@ int main(int argc, char* argv[])
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
 
+#ifdef _MSC_VER
 	// Set the memory checking output to go to Visual Studio's debug window (so we have a copy to keep)
 	// and to stdout so we can see it immediately.
 	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
@@ -438,6 +443,7 @@ int main(int argc, char* argv[])
 	// If we allocate something in a DLL then this call won't see it because it works by overriding the
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
+#endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <return> to exit\n") ;

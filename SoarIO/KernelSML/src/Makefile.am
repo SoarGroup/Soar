@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = gnu
+
 lib_LTLIBRARIES = libKernelSML.la 
+
 libKernelSML_la_SOURCES = \
 KernelSMLdll.h\
 sml_AgentListener.h\
@@ -15,10 +17,20 @@ sml_AgentListener.cpp\
 sml_AgentSML.cpp\
 sml_ConnectionManager.cpp\
 sml_EventManager.cpp\
+sml_KernelListener.cpp\
 sml_KernelSML.cpp\
 sml_KernelSMLHandlers.cpp\
 sml_KernelSMLgSKI.cpp\
 sml_OutputListener.cpp
-INCLUDES = -I../.. -I../include -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -I../../../gSKI/include -I../../../TgDI/include -I../../CommandLineInterface/include
+
+INCLUDES = \
+-I../.. \
+-I../include \
+-I../../ClientSML/include \
+-I../../ElementXML/include \
+-I../../ConnectionSML/include \
+-I../../../gSKI/include \
+-I../../../TgDI/include \
+-I../../CommandLineInterface/include
+
 AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)
-LDADD = ../../../TgDI/lib/libtgdi.so libElementXML.la libConnectionSML.la

@@ -6,10 +6,9 @@ AC_INIT([SoarIO], [8.6.0])
 AM_INIT_AUTOMAKE([SoarIO], [8.6.0])
 AC_CONFIG_SRCDIR([ConnectionSML/src/sml_AnalyzeXML.cpp])
 AM_CONFIG_HEADER(config.h)
-AC_CONFIG_AUX_DIR(config)
 
 # Checks for programs.
-#AC_DISABLE_SHARED
+AC_DISABLE_SHARED
 AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
