@@ -15,9 +15,8 @@ using namespace cli;
 
 bool CommandLineInterface::ParseSP(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// One argument (in brackets)
-	if (argv.size() != 2) {
-		return m_Error.SetError(Constants::kCLISP);
-	}
+	if (argv.size() < 2) return m_Error.SetError(CLIError::kTooFewArgs);
+	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	// Remove first and last characters (the braces)
 	std::string production = argv[1];
@@ -39,12 +38,9 @@ bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& product
 	// Load the production
 	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), m_pgSKIError);
 
-	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) {
-		return m_Error.SetError(CLIError::kgSKIError);
-	}
+	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) return m_Error.SetError(CLIError::kgSKIError);
 
 	if (m_RawOutput) {
-		// TODO: The kernel is supposed to print this but doesnt!
 		AppendToResult('*');
 	}
 	return true;

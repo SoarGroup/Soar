@@ -15,12 +15,9 @@
 #include "cli_Constants.h"
 
 #include "sml_Names.h"
+#include "sml_StringOps.h"
 
 #include "IgSKI_Agent.h"
-
-#ifdef _MSC_VER
-#define snprintf _snprintf 
-#endif // _MSC_VER
 
 using namespace cli;
 using namespace sml;
@@ -81,13 +78,11 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 
 
 	// Print elapsed time and return
-	char realBuf[32];
-	memset(realBuf, 0, 32);
-	snprintf(realBuf, 31, "%f", realElapsed);
+	char realBuf[kMinBufferSize];
+	Double2String(realElapsed, realBuf, kMinBufferSize);
 
-	char procBuf[32];
-	memset(procBuf, 0, 32);
-	snprintf(procBuf, 31, "%f", procElapsed);
+	char procBuf[kMinBufferSize];
+	Double2String(procElapsed, procBuf, kMinBufferSize);
 
 	if (m_RawOutput) {
 		AppendToResult("\n(");
@@ -97,8 +92,8 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 		AppendToResult(realBuf);
 		AppendToResult("s) real");
 	} else {
-		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, procBuf);
-		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, realBuf);
+		AppendArgTag(sml_Names::kParamSeconds, sml_Names::kTypeDouble, procBuf);
+		AppendArgTag(sml_Names::kParamSeconds, sml_Names::kTypeDouble, realBuf);
 	}
 	return ret;
 }

@@ -114,6 +114,12 @@ public:
 	static char const* kParamMessage;
 	static char const* kParamAlias;
 	static char const* kParamAliasedCommand;
+	static char const* kParamIndifferentSelectionMode;
+	static char const* kParamNumericIndifferentMode;
+	static char const* kParamRunResult;
+	static char const* kParamVersionMajor;
+	static char const* kParamVersionMinor;
+	static char const* kParamWaitSNC;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* kTrue ;

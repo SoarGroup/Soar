@@ -113,6 +113,12 @@ char const* sml_Names::kParamTimers				= "timers";
 char const* sml_Names::kParamMessage			= "message";
 char const* sml_Names::kParamAlias				= "alias";
 char const* sml_Names::kParamAliasedCommand		= "aliasedcommand";
+char const* sml_Names::kParamIndifferentSelectionMode = "indifferentselectionmode";
+char const* sml_Names::kParamNumericIndifferentMode	= "numericindifferentmode";
+char const* sml_Names::kParamRunResult			= "runresult";
+char const* sml_Names::kParamVersionMajor		= "versionmajor";
+char const* sml_Names::kParamVersionMinor		= "versionminor";
+char const* sml_Names::kParamWaitSNC			= "waitsnc";
 
 // Values (these are not case sensitive unlike the rest)
 char const* sml_Names::kTrue	= "true" ;

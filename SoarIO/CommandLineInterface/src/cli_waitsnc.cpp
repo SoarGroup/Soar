@@ -6,10 +6,12 @@
 
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
+#include "sml_Names.h"
 
 #include "IgSKI_Agent.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
@@ -56,8 +58,13 @@ bool CommandLineInterface::DoWaitSNC(gSKI::IAgent* pAgent, bool query, bool enab
 	if (!RequireAgent(pAgent)) return false;
 
 	if (query) {
-		AppendToResult("Current waitsnc setting: ");
-		AppendToResult(pAgent->IsWaitingOnStateNoChange() ? "enabled" : "disabled");
+		if (m_RawOutput) {
+			AppendToResult("Current waitsnc setting: ");
+			AppendToResult(pAgent->IsWaitingOnStateNoChange() ? "enabled" : "disabled");
+		} else {
+			AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, pAgent->IsWaitingOnStateNoChange() ? sml_Names::kTrue : sml_Names::kFalse);
+		}
+
 		return true;
 	}
 

@@ -21,20 +21,13 @@ bool CommandLineInterface::ParsePopD(gSKI::IAgent* pAgent, std::vector<std::stri
 bool CommandLineInterface::DoPopD() {
 
 	// There must be a directory on the stack to pop
-	if (m_DirectoryStack.empty()) {
-		return m_Error.SetError(CLIError::kDirectoryStackEmpty);
-	}
+	if (m_DirectoryStack.empty()) return m_Error.SetError(CLIError::kDirectoryStackEmpty);
 
 	// Change to the directory
-	if (!DoCD(&(m_DirectoryStack.top()))) {
-		return false;
-	}
+	if (!DoCD(&(m_DirectoryStack.top()))) return false;	// error handled in DoCD
 
 	// If we're sourcing, this will be non-negative
-	if (m_SourceDirDepth >= 0) {
-		// And if it is, decrement it for each dir removed from the stack
-		--m_SourceDirDepth;
-	}
+	if (m_SourceDirDepth >= 0) --m_SourceDirDepth; // And if it is, decrement it for each dir removed from the stack
 
 	// Pop the directory stack
 	m_DirectoryStack.pop();

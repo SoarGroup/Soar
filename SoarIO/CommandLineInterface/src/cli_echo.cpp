@@ -7,7 +7,10 @@
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
 
+#include "sml_Names.h"
+
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
@@ -46,13 +49,23 @@ bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::stri
 
 bool CommandLineInterface::DoEcho(std::vector<std::string>& argv, bool noNewLine) {
 
+	std::string message;
+
 	// Concatenate arguments (spaces between arguments are lost unless enclosed in quotes)
 	for (unsigned i = 1; i < argv.size(); ++i) {
-		AppendToResult(argv[i]);
-		AppendToResult(' ');
+		message += argv[i];
+		message += ' ';
 	}
 
-	if (!noNewLine) AppendToResult('\n');
+	message = message.substr(0, message.length() - 1);
+
+	if (!noNewLine) message += '\n';
+
+	if (m_RawOutput) {
+		AppendToResult(message);
+	} else {
+		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, message.c_str());
+	}
 	return true;
 }
 

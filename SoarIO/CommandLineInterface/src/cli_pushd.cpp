@@ -24,21 +24,13 @@ bool CommandLineInterface::DoPushD(std::string& directory) {
 
 	// Save the current (soon to be old) directory
 	std::string oldDirectory;
-	if (!GetCurrentWorkingDirectory(oldDirectory)) {
-		// Error message added in function
-		return false;
-	}
+	if (!GetCurrentWorkingDirectory(oldDirectory)) return false;// Error message handled in function
 
 	// Change to the new directory.
-	if (!DoCD(&directory)) {
-		return false;
-	}
+	if (!DoCD(&directory)) return false;// Error message handled in function
 
 	// If we're sourcing, this will be non-negative
-	if (m_SourceDirDepth >= 0) {
-		// And if it is, increment it for each dir placed on the stack
-		++m_SourceDirDepth;
-	}
+	if (m_SourceDirDepth >= 0) ++m_SourceDirDepth;// And if it is, increment it for each dir placed on the stack
 
 	// Directory change successful, store old directory and move on
 	m_DirectoryStack.push(oldDirectory);

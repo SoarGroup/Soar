@@ -5,8 +5,10 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
+#include "sml_Names.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParsePWD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
@@ -23,8 +25,13 @@ bool CommandLineInterface::DoPWD() {
 	std::string directory;
 	bool ret = GetCurrentWorkingDirectory(directory);
 
-	// On success, working dir is in parameter, on failure it is empty so this statement has no effect
-	AppendToResult(directory);
+	if (directory.size()) {
+		if (m_RawOutput) {
+			AppendToResult(directory);
+		} else {
+			AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, directory.c_str());
+		}
+	}
 
 	return ret;
 }

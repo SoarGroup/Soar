@@ -7,12 +7,10 @@
 #include <fstream>
 
 #include "cli_Constants.h"
-
-#ifdef _MSC_VER
-#define snprintf _snprintf 
-#endif // _MSC_VER
+#include "sml_StringOps.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	if (argv.size() < 2) {
@@ -200,8 +198,7 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		m_SourceErrorDetail += "\nSource command error on line ";
 		// TODO: arbitrary buffer size here
 		char buf[256];
-		memset(buf, 0, 256);
-		snprintf(buf, 256, "%d", errorLine);
+		Int2String(errorLine, buf, 256);
 
 		m_SourceErrorDetail += " of ";
 		

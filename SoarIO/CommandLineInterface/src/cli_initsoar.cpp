@@ -25,7 +25,7 @@ bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 	// Simply call reinitialize
 	pAgent->Halt();
 	pAgent->Reinitialize();
-	AppendToResult("Agent reinitialized.");
+	if (m_RawOutput) AppendToResult("Agent reinitialized.");
 	return true;
 }
 

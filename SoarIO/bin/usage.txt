@@ -71,8 +71,8 @@ directory that the command line interface was started in, often referred to the
 
 See also the 'home' command.
 ~~~
-On success:
-<result>true</result>
+cd: structured output on success:
+  <result output="raw">true</result>
 ***
 chunk-name-format
 Usage:	chunk-name-format [-sl] -p [<prefix>]
@@ -95,6 +95,13 @@ Usage:	dirs
 
 Print out the current directory stack.
 ~~~
+dirs: structured output on success:
+  <result>
+    <arg param="directory" type="string">directory_string</arg>
+  </result>
+
+Notes:
+  * Each directory on the stack will be returned as a separate arg.
 ***
 echo
 Usage:	echo [-n] string
@@ -104,8 +111,8 @@ Usage:	echo [-n] string
 
 Used to echo commands to the console.
 ~~~
-On success:
-<result>string</result>
+echo: structured output on success:
+  <result><arg param="message" type="string">message</arg></result>
 ***
 excise
 Usage:	excise production_name
@@ -122,14 +129,13 @@ every production excised. The command must be called with either a specific
 production name or with a flag that indicates a particular group of productions.
 ~~~
 excise: structured output on success:
-
-<result>
-  <arg name="count">number_of_productions_excised</arg>
-  <arg name="name">production_name</arg>
-</result>
+  <result>
+    <arg param="count" type="int">number_of_productions_excised</arg>
+    <arg param="name" type="string">production_name</arg>
+  </result>
 
 Notes: 
-	Each excised production will have its name returned.
+  * Each excised production will have its name returned in a separate arg.
 ***
 explain-backtraces
 Usage:	explain-backtraces
@@ -152,6 +158,14 @@ these productions are printed.
 
 Note that firing counts are reset by a call to init-soar.
 ~~~
+firing-counts: structured output on success:
+  <result>
+    <arg param="name" type="string">production_name</arg>
+    <arg param="count" type="int">firing_count</arg>
+  </result>
+  
+Notes:
+  * Each production listed will have a name/count arg pair.
 ***
 format-watch
 Usage:	format-watch -a[so] restriction format [restriction format]...
@@ -170,20 +184,21 @@ Usage:	gds-print
 The gds-print command is a debugging command for examining the Goal Dependency 
 Set (GDS) for each goal in the stack. See the Soar manual for details.
 ~~~
+gds-print currently uses print callbacks (no structured output).
 ***
 help
 Usage:	help [command_name]
   command_name		Print online help for this command.
 ~~~
-On success:
-<result>help_string</result>
+help: does not use structured output.
+  <result output="raw">help_string</result>
 ***
 helpex
 Usage:	helpex command_name
   command_name		Print extended help for this command.
 ~~~
-On success:
-<result>help_string</result>
+helpex: does not use structured output.
+  <result output="raw">help_string</result>
 ***
 home
 Usage:	home [home_directory]
@@ -195,8 +210,8 @@ arguments. This is also the directory where the command line interface looks for
 the aliases.txt and usage.txt files, and can be used to reload those files from 
 disk.
 ~~~
-On success:
-<result>true</result>
+home: structured output on success:
+  <result output="raw">true</result>
 ***
 indifferent-selection
 Usage:	indifferent-selection [-aflr]
@@ -209,6 +224,20 @@ The indifferent-selection command allows the user to set which option should be
 used to select between operator proposals that are mutally indifferent in 
 preference memory.
 ~~~
+indifferent-selection: structured output on success:
+query:
+  <result>
+    <arg param="indifferentselectionmode" type="int">2</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+
+Notes:
+  * The integer denoting the current mode corresponds to the gSKI enum values:
+      gSKI_USER_SELECT_FIRST  = 0
+      gSKI_USER_SELECT_LAST   = 3
+      gSKI_USER_SELECT_ASK    = 1
+      gSKI_USER_SELECT_RANDOM = 2
 ***
 init-soar
 Usage:	init-soar
@@ -222,15 +251,11 @@ init-soar does not remove any productions from production memory; to do this,
 use the excise command. Note however, that all justifications will be removed 
 because they will no longer be supported.
 ~~~
-On success:
-<result>true</result>
+init-soar: structured output on success:
+  <result output="raw">true</result>
 ***
 internal-symbols
 Usage:	internal-symbols
-~~~
-***
-interrupt
-Usage:	interrupt
 ~~~
 ***
 io
@@ -256,16 +281,16 @@ mechanism). With no arguments, this command prints out the current learning
 environment status. If arguments are provided, they will alter the learning 
 environment as described in the options and arguments table.
 ~~~
-On success:
-When setting an option:
-<result>true</result>
-When querying learn status:
-<result>
-  <arg name="learn_setting" type="boolean">setting</arg>
-</result>
+learn: structured output on success:
+query:
+  <result>
+    <arg param="learn_setting" type="boolean">setting</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+  
 Notes:
-	Setting is true (learning enabled) or false (disabled).
-	Many options not implemented yet.
+  * Setting is true (learning enabled) or false (disabled).
 ***
 log
 Usage:	log [-Ae] filename
@@ -283,26 +308,25 @@ Pass a filename to start logging to that file (relative to the command line
 interface's  home directory (see the home command)). Use the close option to 
 stop logging.
 ~~~
-On success:
-<result>
-  <arg name="log_setting" type="boolean">setting</arg>
-  <arg name="filename" type="string">log_file_name</arg>
-</result>
+log: structured output on success:
+  <result>
+    <arg param="log_setting" type="boolean">setting</arg>
+    <arg param="filename" type="string">log_filename</arg>
+  </result>
+  
 Notes:
-	Setting is true (log file open) or false (closed).
-	Log filename is only included if the log is open.
+  * setting is true (log file open) or false (closed).
+  * log_filename is only included if the log is open.
 ***
 ls
 Usage:	ls
 ~~~
-On success:
-<result>true</result>
-<result>
-  <arg name="filename" type="">filename</arg>
-  <arg name="directory" type="">directory</arg>
-</result>
-Note:
-	Returns true with no args if no files are found.
+ls: structured output on success:
+files/directories found:
+  <result>
+    <arg name="filename" type="string">filename</arg>
+    <arg name="directory" type="string">directory</arg>
+  </result>
 ***
 matches
 Usage:	matches [-[a|r]12cntw]
@@ -321,8 +345,8 @@ The matches command prints a list of productions that have instantiations in the
 match set, i.e., those productions that will retract or fire in the next Propose 
 or Apply phase.  It also will preint partial match information for a single, 
 named productions.
-
 ~~~
+matches uses print callbacks, structured output pending.
 ***
 max-chunks
 Usage:	max-chunks [n]
@@ -331,6 +355,13 @@ The max-chunks command is used to limit the maximum number of chunks that may be
 created during a decision cycle.  The initial value of this variable is 50; 
 allowable settings are any integer greater than 0.
 ~~~
+max-chunks: structured output on success:
+query:
+  <result>
+    <arg name="value" type="int">max_chunks</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
 ***
 max-elaborations
 Usage:	max-elaborations [n]
@@ -344,6 +375,13 @@ The elaboration phase will end after max-elaboration cycles have completed, even
 if there are more productions eligible to fire or retract; and Soar will proceed 
 to the next phase after a warning message is printed to notify the user.
 ~~~
+max-elaborations: structured output on success:
+query:
+  <result>
+    <arg name="value" type="int">max_elaborations</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
 ***
 max-nil-output-cycles
 Usage:	max-nil-output-cycles
@@ -375,6 +413,14 @@ printed: the n productions that use the most memory.
 Output may be restricted to print memory usage for particular types of 
 productions using the command options.
 ~~~
+memories: structured output on success:
+  <result>
+    <arg param="name" type="string">production_name</arg>
+    <arg param="count" type="int">rete_tokens</arg>
+  </result>
+  
+Notes:
+  * Each production listed will have a name/count arg pair.
 ***
 multi-attributes
 Usage:	multi-attributes [symbol [n]]
@@ -392,16 +438,19 @@ produce better condition orderings.  Better orderings enable the rete network
 to run faster.  This command has no effect on the actual contents of working 
 memory and most users needn't use this at all.
 ~~~
-<result>
-  <arg name="count" type="int">number_of_multi_attributes</arg>
-  <arg name="value" type="int">value_of_multi_attribute_1</arg>
-  <arg name="name" type="string">name_of_multi_attribute_1</arg>
-</result>
-<result>true</result>
+multi-attributes: structured output on success:
+query:
+  <result>
+    <arg name="count" type="int">number_of_multi_attributes</arg>
+    <arg name="value" type="int">value_of_multi_attribute_1</arg>
+    <arg name="name" type="string">name_of_multi_attribute_1</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+
 Notes:
-	When listing, there will be a value and name for each multi attribute.
-	Total number of multi attributes will be included in count.
-	When setting, simply returns true on success.
+  * During query, there will be a count/value pair for each multi-attribute.
+  * The total number of multi-attributes will be included in count.
 ***
 numeric-indifferent-mode
 Usage:	numeric-indifferent-mode [-as]
@@ -412,6 +461,18 @@ The numeric-indifferent-mode command is used to select the method for combining
 numeric preferences. This command is only meaningful in indifferent-selection --
 random mode.
 ~~~
+numeric-indifferent-mode: structured output on success:
+query:
+  <result>
+    <arg param="numericindifferentmode" type="int">2</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+
+Notes:
+  * The integer denoting the current mode corresponds to the gSKI enum values:
+      gSKI_NUMERIC_INDIFFERENT_MODE_AVG  = 1
+      gSKI_NUMERIC_INDIFFERENT_MODE_SUM  = 0
 ***
 o-support-mode
 Usage:	o-support-mode [0|1|2|3|4]
@@ -428,6 +489,10 @@ preferences.  The o-support-mode value must be one of three values:
 
 Running o-support-mode with no arguments prints out the current o-support-mode.
 ~~~
+o-support-mode: structured output on success:
+  <result>
+    <arg param="value" type="int">mode</arg>
+  </result>
 ***
 popd
 Usage:	popd
@@ -435,8 +500,8 @@ Usage:	popd
 Pop the current working directory off the stack and change to the next directory 
 on the stack.  Can be relative pathname or fully specified path.
 ~~~
-On success:
-<result>true</result>
+popd: structured output on success:
+  <result output="raw">true</result>
 ***
 preferences
 Usage:	preferences [-0123nNtw] [id] [attribute]
@@ -472,6 +537,7 @@ Usage:	print [-fFin] production_name
   production_name
   timetag
 ~~~
+print uses print callbacks, structured output pending.
 ***
 production-find
 Usage:	production-find [-clnrs] pattern
@@ -501,6 +567,7 @@ The production-find command can also be restricted to apply to only certain
 types of productions, or to look only at the conditions or only at the actions 
 of productions by using the flags.
 ~~~
+production-find uses print callbacks, structured output pending.
 ***
 pushd
 Usage:	pushd directory
@@ -510,8 +577,8 @@ Usage:	pushd directory
 Maintain a stack of working directories and push the directory on to the stack. 
 Can be relative path name or fully specified.
 ~~~
-On success:
-<result>true</result>
+pushd: structured output on success:
+  <result output="raw">true</result>
 ***
 pwatch
 Usage:	pwatch [-d|e] [production name]
@@ -526,16 +593,20 @@ Usage:	pwd
 
 Prints the current working directory of Soar.
 ~~~
-On success:
-<result>directory_string</result>
+pwd: structured output on success:
+  <result>
+    <arg name="directory" type="string">directory_string</arg>
+  </result>
 ***
 quit
 Usage:	quit
 
 This command stops the run, quits the log and closes Soar.
 ~~~
-On success:
-<result>Goodbye.</result>
+quit: structured output on success:
+  <result>
+    <arg name="message" type="string">Goodbye.</arg>
+  </result>
 ***
 remove-wme
 Usage:	remove-wme timetag
@@ -569,6 +640,8 @@ memory; the conditions of productions are reordered and common substructures are
 shared across different productions.  This command provides a fast method of 
 saving and loading productions since a binary format is used.
 ~~~
+rete-net: structured output on success:
+  <result output="raw">true</result>
 ***
 run
 Usage:	run [count]
@@ -599,6 +672,17 @@ then soar is run by decision cycles.  If units are specified, but count is
 unpecified, then count defaults to '1'.  The unit argument indicates the unit 
 of measure to be used in counting Soar run cycles.
 ~~~
+run: most output is handled through a callback, but there is a return value:
+  <result>
+    <arg name="runresult" type="int">run_result</arg>
+  </result>
+
+Notes:
+  * The run result is as following:
+    gSKI_RUN_EXECUTING                 = 1;
+    gSKI_RUN_INTERRUPTED               = 2;
+    gSKI_RUN_COMPLETED                 = 3;
+    gSKI_RUN_COMPLETED_AND_INTERRUPTED = 4;
 ***
 set-default-depth
 Usage:	set-default-depth
@@ -621,12 +705,11 @@ Usage:	source filename
 
 Load and evaluate the contents of a file.
 ~~~
-On success:
-<result>true</result>
-<result>directory_string</result>
+source: structured output on success:
+  <result output="raw">true</result>
 Notes:
-	Returns the working directory if the pushd's in the file(s) sourced don't match
-	with popd's.
+  * source executes the 'pwd' command if the pushd's and popd's don't match up
+    after parsing the file.  Type 'helpex pwd' for details.
 ***
 sp
 Usage:	sp { production_body }
@@ -634,8 +717,8 @@ Usage:	sp { production_body }
 
 Create a new production and enter in to production memory.
 ~~~
-On success:
-<result>true</result>
+sp: structured output on success:
+  <result output="raw">true</result>
 ***
 stats
 Usage:	stats
@@ -648,23 +731,28 @@ Usage:	stats
 #  rtype_qualifier
 #  stat
 ~~~
-On success:
-<result>stats_string</result>
+stats uses print callbacks, structured output pending.
 ***
 stop-soar
 Usage:	stop-soar [-s] [reason_string]
   -s, --self
   reason_string
 ~~~
+sp: structured output on success:
+  <result output="raw">true</result>
+
+Todo: reason for stopping
 ***
 time
 Usage:	time command [arguments]
   command
   arguments
 ~~~
-<result>
-  <arg name="seconds" type="float">real_time_elapsed</arg>
-</result>
+time: structured output on success:
+  <result>
+    <arg name="seconds" type="float">proc_time_elapsed</arg>
+    <arg name="seconds" type="float">real_time_elapsed</arg>
+  </result>
 ***
 timers
 Usage:	timers [-ed]
@@ -679,10 +767,24 @@ timers.  The timers command can only enable or disable timers that have already
 been compiled in.  See the stats command for more info on the Soar timing 
 system.
 ~~~
-On success:
-<result>true</result>
-<result><arg name="timers">true</arg></result>
-<result><arg name="timers">false</arg></result>
+timers: structured output on success:
+query:
+  <result>
+    <arg name="timers" type="boolean">setting</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+***
+version
+Usage:	version
+
+Prints out the Soar Kernel version number.
+~~~
+version: structured output on success:
+  <result>
+    <arg name="versionmajor" type="int">major</arg>
+    <arg name="versionminor" type="int">minor</arg>
+  </result>
 ***
 waitsnc
 Usage:	waitsnc [-de]
@@ -694,6 +796,13 @@ state-no-change may represent a wait state rather than an impasse.  The waitsnc
 command allows users to anticipate this situation and cause Soar to generate a 
 wait state whenever a state-no-change impasse would otherwise occur.
 ~~~
+waitsnc: structured output on success:
+query:
+  <result>
+    <arg name="waitsnc" type="boolean">setting</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
 ***
 warnings
 Usage:	warnings [-ed]
@@ -703,9 +812,13 @@ Usage:	warnings [-ed]
 
 Enables and disables the printing of warning messages from the Soar kernel.
 ~~~
-<result>
-  <arg name="warnings_setting" type="boolean">true_or_false</arg>
-</result>
+warnings structured output on success:
+query:
+  <result>
+    <arg name="warnings_setting" type="boolean">setting</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
 ***
 watch
 Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>] 
@@ -757,16 +870,18 @@ Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>]
   				  * 0: Turn watches for this option off
   				  * 1: Turn watches for this option on
 ~~~
-<result>true</result>
-<result>
-  <arg name=sysparam_int type="boolean">true_or_false</arg>
-  <arg name=sysparam_int type="int">detail_level</arg>
-</result>
+watch structured output on success:
+query:
+  <result>
+    <arg name="sysparam_int" type="boolean">setting</arg>
+    <arg name="sysparam_int" type="int">detail</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+
 Notes:
-	sysparam_int is an integer constant referring to a relevant sysparam such as
-"14" (TRACE_BACKTRACING_SYSPARAM) or "5" (TRACE_FIRINGS_OF_CHUNKS_SYSPARAM).
-	true_or_false is a true or false string.
-	detail_level is 0, 1 or 2.
+  * sysparam_int is an integer constant referring to a relevant sysparam such
+    "14" (TRACE_BACKTRACING_SYSPARAM).
 ***
 watch-wmes
 Usage:	watch-wmes -[a|r] -t <type> pattern

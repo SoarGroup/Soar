@@ -54,45 +54,34 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 		char buf[kMinBufferSize];
 
 		gSKI::tIMultiAttributeIterator* pIt = pAgent->GetMultiAttributes();
-		if (!pIt->GetNumElements()) {
+		if (!pIt->GetNumElements()) return m_Error.SetError(CLIError::kMultiAttributeNotFound);
+
+		if (m_RawOutput) AppendToResult("Value\tSymbol");
+
+		gSKI::IMultiAttribute* pMA;
+
+		for(; pIt->IsValid(); pIt->Next()) {
+			pMA = pIt->GetVal();
+
 			if (m_RawOutput) {
-				AppendToResult("No multi-attributes declared for this agent.");
+				AppendToResult("\n");
+				AppendToResult(Int2String(pMA->GetMatchingPriority(), buf, kMinBufferSize));
+				AppendToResult("\t");
+				AppendToResult(pMA->GetAttributeName());
+			} else {
+				// Value
+				AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(count, buf, sizeof(buf)));
+				// Symbol
+				AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, pMA->GetAttributeName());
 			}
 
-		} else {
-			if (m_RawOutput) {
-				AppendToResult("Value\tSymbol");
-			}
-
-			gSKI::IMultiAttribute* pMA;
-
-
-			for(; pIt->IsValid(); pIt->Next()) {
-				pMA = pIt->GetVal();
-
-				if (m_RawOutput) {
-					AppendToResult("\n");
-					AppendToResult(Int2String(pMA->GetMatchingPriority(), buf, kMinBufferSize));
-					AppendToResult("\t");
-					AppendToResult(pMA->GetAttributeName());
-				} else {
-					// Value
-					AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(count, buf, sizeof(buf)));
-					// Symbol
-					AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pMA->GetAttributeName());
-				}
-
-				++count;
-				pMA->Release();
-			}
-
+			++count;
+			pMA->Release();
 		}
+
 		pIt->Release();
 
-		if (!m_RawOutput) {
-			// Add the count tag to the front
-			PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(count, buf, sizeof(buf)));
-		}
+		if (!m_RawOutput) PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(count, buf, kMinBufferSize));
 		return true;
 	}
 
@@ -102,9 +91,7 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 	// exposed by gSKI...
 
 	// Setting defaults to 10
-	if (!n) {
-		n = 10;
-	}
+	if (!n) n = 10;
 
 	// Set it
 	pAgent->SetMultiAttribute(pAttribute->c_str(), n);

@@ -5,14 +5,13 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
+#include "sml_Names.h"
+#include "sml_StringOps.h"
 
 #include "IgSKI_Agent.h"
 
-#ifdef _MSC_VER
-#define snprintf _snprintf 
-#endif // _MSC_VER
-
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
@@ -35,10 +34,14 @@ bool CommandLineInterface::DoMaxChunks(gSKI::IAgent* pAgent, int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
-		char buf[32];
-		snprintf(buf, 31, "%d", pAgent->GetMaxChunks());
-		buf[31] = 0;
-		AppendToResult(buf);
+		char buf[kMinBufferSize];
+		Int2String(pAgent->GetMaxChunks(), buf, kMinBufferSize);
+
+		if (m_RawOutput) {
+			AppendToResult(buf);
+		} else {
+			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, buf);
+		}
 		return true;
 	}
 

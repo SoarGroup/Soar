@@ -98,9 +98,9 @@ void CommandLineInterface::PrintFilename(const std::string& name, bool isDirecto
 		AppendToResult('\n');
 	} else {
 		if (isDirectory) {
-			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, name.c_str());
+			AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, name.c_str());
 		} else {
-			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, name.c_str());
+			AppendArgTag(sml_Names::kParamFilename, sml_Names::kTypeString, name.c_str());
 		}
 	}
 }

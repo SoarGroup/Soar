@@ -18,6 +18,8 @@ char const* CLIError::GetErrorDescription() {
 		case kGetOptError:						return "GetOpt returned with an error.";
 
 		case kCommandNotFound:					return "Command not found.";
+		case kProductionNotFound:				return "Production not found.";
+		case kMultiAttributeNotFound:			return "Multi-attribute not found.";
 		case kNoCommandPointer:					return "Command found but function pointer is NULL.";
 		case kNotImplemented:					return "Not implemented.";
 		case kOptionNotImplemented:				return "Option not implemented.";
@@ -26,6 +28,11 @@ char const* CLIError::GetErrorDescription() {
 		case kUnmatchedBracketOrQuote:			return "No closing quotes/brackets found.";
 		case kExtraClosingBrace:				return "Closing brace found without opening counterpart.";
 		case kUnmatchedBrace:					return "Unexpected end of file. Unmatched opening brace.";
+
+		case kTooManyArgs:						return "Too many arguments.";
+		case kTooFewArgs:						return "Too few arguments.";
+		case kUnrecognizedOption:				return "Unrecognized option.";
+		case kMissingOptionArg:					return "Missing option argument.";
 
 		case kgetcwdFail:						return "Error getting current working directory.";
 		case kgettimeofdayFail:					return "gettimeofday() failed.";
@@ -41,11 +48,6 @@ char const* CLIError::GetErrorDescription() {
 		case kNoUsageInfo:						return "Usage information not found for the command.";
 		case kNoUsageFile:						return "Usage file not available (error opening file).";
 
-		case kTooManyArgs:						return "Too many arguments.";
-		case kTooFewArgs:						return "Too few arguments.";
-		case kUnrecognizedOption:				return "Unrecognized option.";
-		case kMissingOptionArg:					return "Missing option argument.";
-
 		case kIntegerExpected:					return "Integer argument expected.";
 		case kIntegerMustBePositive:			return "Integer argument must be positive.";
 		case kIntegerMustBeNonNegative:			return "Integer argument must be non-negative.";
@@ -59,7 +61,6 @@ char const* CLIError::GetErrorDescription() {
 
 		case kNoProdTypeWhenProdName:			return "Do not specify production type when specifying a production name.";
 		case kSourceOnlyOneFile:				return "Source only one file at a time.";
-		case kProductionNotFound:				return "Production not found.";
 
 		case kLogAlreadyOpen:					return "Log already open.";
 		case kLogOpenFailure:					return "Failed to open file for logging.";

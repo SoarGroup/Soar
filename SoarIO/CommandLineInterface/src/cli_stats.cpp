@@ -5,11 +5,13 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
+#include "sml_Names.h"
 
 #include "IgSKI_Agent.h"
 #include "IgSKI_AgentPerformanceMonitor.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No arguments
@@ -43,11 +45,10 @@ bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent) {
 
 	bool ret = pPerfMon->GetStatsString(argc, argv, &pResult);
 
-	if(strlen(pResult) > 0) {
-		AppendToResult(pResult);
-	}
 	delete [] argv[0];
 	delete [] argv[1];
-	return ret;
+
+	if (!ret) return m_Error.SetError(CLIError::kgSKIError);
+	return true;
 }
 

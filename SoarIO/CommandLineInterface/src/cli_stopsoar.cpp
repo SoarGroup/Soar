@@ -55,9 +55,12 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 
 	if (self) {
 		if (!RequireAgent(pAgent)) return false;
-		return pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, m_pgSKIError);
+		if (!pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, m_pgSKIError)) return m_Error.SetError(CLIError::kgSKIError);
+		return true;
 	} else {
-		return m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, m_pgSKIError);
+		if (!RequireKernel()) return false;
+		if (!m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, m_pgSKIError)) return m_Error.SetError(CLIError::kgSKIError);
+		return true;
 	}
 }
 

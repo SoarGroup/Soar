@@ -6,10 +6,13 @@
 
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
+#include "sml_Names.h"
+#include "sml_StringOps.h"
 
 #include "IgSKI_Agent.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
@@ -57,24 +60,33 @@ bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsign
 			break;
 		case OPTION_NUMERIC_INDIFFERENT_AVERAGE:
 			pAgent->SetNumericIndifferentMode(gSKI_NUMERIC_INDIFFERENT_MODE_AVG);
-			break;
+			return true;
 		case OPTION_NUMERIC_INDIFFERENT_SUM:
 			pAgent->SetNumericIndifferentMode(gSKI_NUMERIC_INDIFFERENT_MODE_SUM);
-			break;
+			return true;
 		default:
 			return m_Error.SetError(CLIError::kInvalidNumericIndifferentMode);
 	}
 	
+	char buf[kMinBufferSize];
+
 	switch (pAgent->GetNumericIndifferentMode()) {
 		case gSKI_NUMERIC_INDIFFERENT_MODE_AVG:
-			AppendToResult("Current numeric indifferent mode: average");
+			if (m_RawOutput) {
+				AppendToResult("Current numeric indifferent mode: average");
+			} else {
+				AppendArgTag(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, Int2String((int)gSKI_NUMERIC_INDIFFERENT_MODE_AVG, buf, kMinBufferSize));
+			}
 			break;
 		case gSKI_NUMERIC_INDIFFERENT_MODE_SUM:
-			AppendToResult("Current numeric indifferent mode: sum");
+			if (m_RawOutput) {
+				AppendToResult("Current numeric indifferent mode: sum");
+			} else {
+				AppendArgTag(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, Int2String((int)gSKI_NUMERIC_INDIFFERENT_MODE_SUM, buf, kMinBufferSize));
+			}
 			break;
 		default:
 			return m_Error.SetError(CLIError::kInvalidNumericIndifferentMode);
 	}
-
 	return true;
 }

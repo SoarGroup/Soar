@@ -4,7 +4,10 @@
 
 #include "cli_CommandLineInterface.h"
 
+#include "sml_Names.h"
+
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
@@ -27,7 +30,11 @@ bool CommandLineInterface::DoQuit() {
 		delete m_pLogFile;
 	}
 
-	AppendToResult("Goodbye.");
+	if (m_RawOutput) {
+		AppendToResult("Goodbye.");
+	} else {
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, "Goodbye.");
+	}
 	return true;
 }
 

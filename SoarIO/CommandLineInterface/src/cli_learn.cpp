@@ -85,7 +85,7 @@ bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int opti
 			AppendToResult(pAgent->IsLearningOn() ? "enabled." : "disabled.");
 		} else {
 			const char* setting = pAgent->IsLearningOn() ? sml_Names::kTrue : sml_Names::kFalse;
-			AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, setting);
+			AppendArgTag(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, setting);
 		}
 		return true;
 	}

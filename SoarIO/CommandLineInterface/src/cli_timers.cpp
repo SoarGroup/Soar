@@ -69,15 +69,17 @@ bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, bool setti
 
 	if (print) {
 
-		// TODO: raw output
-
 		// print current setting
 		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
 
-		// adds <arg name="timers">true</arg> (or false) if the timers are
-		// enabled (or disabled)
-		AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean,
-			pSysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
+		if (m_RawOutput) {
+			AppendToResult(pSysparams[TIMERS_ENABLED] ? "Timers are enabled." : "Timers are disabled.");
+		} else {
+			// adds <arg name="timers">true</arg> (or false) if the timers are
+			// enabled (or disabled)
+			AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean,
+				pSysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
+		}
 
 	} else {
 		// set, don't print

@@ -420,10 +420,10 @@ int main(int argc, char** argv)
 #endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
-	//printf("\n\nPress <return> to exit\n") ;
-	//char line[100] ;
-	//char* str = gets(line) ;
-	//str = 0;
+	printf("\n\nPress <return> to exit\n") ;
+	char line[100] ;
+	char* str = gets(line) ;
+	str = 0;
 
 	return 0;
 }

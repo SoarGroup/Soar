@@ -8,6 +8,9 @@
 
 #include "cli_Constants.h"
 
+#include "sml_Names.h"
+#include "sml_StringOps.h"
+
 #include "IgSKI_Agent.h"
 #include "IgSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
@@ -17,6 +20,7 @@
 #endif // _MSC_VER
 
 using namespace cli;
+using namespace sml;
 
 struct FiringsSort {
 	bool operator()(std::pair< std::string, unsigned long > a, std::pair< std::string, unsigned long > b) const {
@@ -72,19 +76,18 @@ bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::string* pPr
 
 	if (!pIter) return m_Error.SetError(CLIError::kgSKIError);
 
-	while(pIter->IsValid()) {
-
-		foundProduction = true;
+	for(; pIter->IsValid(); pIter->Next()) {
 
 		pProd = pIter->GetVal();
 
 		if (!numberToList) {
 			if (pProd->GetFiringCount()) {
 				pProd->Release();
-				pIter->Next();
 				continue;
 			}
 		}
+
+		foundProduction = true;
 
 		std::pair< std::string, unsigned long > firing;
 		firing.first = pProd->GetName();
@@ -92,17 +95,12 @@ bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::string* pPr
 		firings.push_back(firing);
 
 		pProd->Release();
-
-		pIter->Next();
 	}
 
 	pIter->Release();
 	pIter = 0;
 
-	if (!foundProduction) {
-		AppendToResult("No productions found.");
-		return true;
-	}
+	if (!foundProduction) return m_Error.SetError(CLIError::kProductionNotFound);
 
 	FiringsSort s;
 	sort(firings.begin(), firings.end(), s);
@@ -110,10 +108,16 @@ bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::string* pPr
 	int i = 0;
 	for (std::vector< std::pair< std::string, unsigned long > >::reverse_iterator j = firings.rbegin(); 
 		j != firings.rend() && (numberToList <= 0 || i < numberToList); 
-		++j, ++i) {
-		snprintf(buf, 1023, "%6lu:  %s\n", j->second, j->first.c_str());
-		buf[1023] = 0;
-		AppendToResult(buf);
+		++j, ++i) 
+	{
+		if (m_RawOutput) {
+			snprintf(buf, 1023, "%6lu:  %s\n", j->second, j->first.c_str());
+			buf[1023] = 0;
+			AppendToResult(buf);
+		} else {
+			AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, j->first.c_str());
+			AppendArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(j->second, buf, 1024));
+		}
 	}
 	return true;
 }

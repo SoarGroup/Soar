@@ -8,6 +8,8 @@
 
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
+#include "sml_Names.h"
+#include "sml_StringOps.h"
 
 #include "IgSKI_Agent.h"
 #include "IgSKI_ProductionManager.h"
@@ -18,6 +20,7 @@
 #endif // _MSC_VER
 
 using namespace cli;
+using namespace sml;
 
 struct MemoriesSort {
 	bool operator()(std::pair< std::string, unsigned long > a, std::pair< std::string, unsigned long > b) const {
@@ -71,6 +74,10 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 	std::string production;
 	int n = 0;
 	if ((argv.size() - GetOpt::optind) == 1) {
+
+		// explicitly check for 0 since that's atoi's error value
+		if (argv[GetOpt::optind][0] == '0') return m_Error.SetError(CLIError::kIntegerMustBePositive);
+
 		n = atoi(argv[GetOpt::optind].c_str());
 		if (!n) {
 			if (productionType) return m_Error.SetError(CLIError::kNoProdTypeWhenProdName);
@@ -85,88 +92,78 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 }
 
 bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int productionType, int n, std::string production) {
-	RequireAgent(pAgent);
-
-	if (n && (n < 0)) return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
+	if (!RequireAgent(pAgent)) return false;
 
 	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
 	gSKI::tIProductionIterator* pIter = 0;
 	gSKI::IProduction* pProd = 0;
+	std::vector< std::pair< std::string, unsigned long > > memories;
 
-	if (productionType) {
-		bool foundProduction = false;
-		std::vector< std::pair< std::string, unsigned long > > memories;
+	bool foundProduction = false;
 
-		for(pIter = pProductionManager->GetAllProductions(); pIter && pIter->IsValid(); pIter->Next()) {
-
-			foundProduction = true;
-
-			pProd = pIter->GetVal();
-
-			switch (pProd->GetType()) {
-				case gSKI_CHUNK:
-					if (!(productionType & OPTION_MEMORIES_CHUNKS)) continue;
-					break;
-				case gSKI_DEFAULT:
-					if (!(productionType & OPTION_MEMORIES_DEFAULT)) continue;
-					break;
-				case gSKI_JUSTIFICATION:
-					if (!(productionType & OPTION_MEMORIES_JUSTIFICATIONS)) continue;
-					break;
-				case gSKI_USER:
-					if (!(productionType & OPTION_MEMORIES_USER)) continue;
-					break;
-
-				default:
-					pProd->Release();
-					pProd = 0;
-					pIter->Release();
-					pIter = 0;
-					return m_Error.SetError(CLIError::kInvalidProductionType);
-			}
-			
-			std::pair< std::string, unsigned long > memory;
-			memory.first = pProd->GetName();
-			memory.second = pProd->CountReteTokens();
-			memories.push_back(memory);
-			pProd->Release();
-		}
-		if (pIter) pIter->Release();
-		pIter = 0;
-
-		if (!foundProduction) {
-			AppendToResult("No productions found.");
-			return true;
-		}
-
-		MemoriesSort s;
-		sort(memories.begin(), memories.end(), s);
-		char buf[1024];
-		int i = 0;
-		for (std::vector< std::pair< std::string, unsigned long > >::reverse_iterator j = memories.rbegin(); 
-			j != memories.rend() && (n == 0 || i < n); 
-			++j, ++i) {
-			snprintf(buf, 1023, "%s: %ld\n", j->first.c_str(), j->second);
-			buf[1023] = 0;
-			AppendToResult(buf);
-		}
-		return true;
+	if (!productionType) {
+		pIter = pProductionManager->GetProduction(production.c_str());
+	} else {
+		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
 	}
 
-	pIter = pProductionManager->GetProduction(production.c_str());
-	pProd = pIter->IsValid() ? pIter->GetVal() : 0;
+	if (!pIter) return m_Error.SetError(CLIError::kgSKIError);
 
-	pIter->Release(); 
+	for(; pIter->IsValid(); pIter->Next()) {
+
+		pProd = pIter->GetVal();
+
+		switch (pProd->GetType()) {
+			case gSKI_CHUNK:
+				if (!(productionType & OPTION_MEMORIES_CHUNKS)) continue;
+				break;
+			case gSKI_DEFAULT:
+				if (!(productionType & OPTION_MEMORIES_DEFAULT)) continue;
+				break;
+			case gSKI_JUSTIFICATION:
+				if (!(productionType & OPTION_MEMORIES_JUSTIFICATIONS)) continue;
+				break;
+			case gSKI_USER:
+				if (!(productionType & OPTION_MEMORIES_USER)) continue;
+				break;
+
+			default:
+				pProd->Release();
+				pIter->Release();
+				return m_Error.SetError(CLIError::kInvalidProductionType);
+		}
+
+		foundProduction = true;
+		
+		std::pair< std::string, unsigned long > memory;
+		memory.first = pProd->GetName();
+		memory.second = pProd->CountReteTokens();
+		memories.push_back(memory);
+		pProd->Release();
+	}
+
+	pIter->Release();
 	pIter = 0;
 
-	if (!pProd) return m_Error.SetError(CLIError::kProductionNotFound);
+	if (!foundProduction) return m_Error.SetError(CLIError::kProductionNotFound);
 
+	MemoriesSort s;
+	sort(memories.begin(), memories.end(), s);
 	char buf[1024];
-	snprintf(buf, 1023, "\n Memory use for %s: %ld\n\n", production.c_str(), pProd->CountReteTokens());
-	buf[1023] = 0;
-	AppendToResult(buf);
-	pProd->Release(); 
-	pProd = 0;
+	int i = 0;
+	for (std::vector< std::pair< std::string, unsigned long > >::reverse_iterator j = memories.rbegin(); 
+		j != memories.rend() && (n == 0 || i < n); 
+		++j, ++i) 
+	{
+		if (m_RawOutput) {
+			snprintf(buf, 1023, "%6lu:  %s\n", j->second, j->first.c_str());
+			buf[1023] = 0;
+			AppendToResult(buf);
+		} else {
+			AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, j->first.c_str());
+			AppendArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(j->second, buf, 1024));
+		}
+	}
 	return true;
 }
 

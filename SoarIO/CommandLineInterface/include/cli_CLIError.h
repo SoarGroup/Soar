@@ -15,6 +15,8 @@ namespace cli {
 			kGetOptError,
 
 			kCommandNotFound,
+			kProductionNotFound,
+			kMultiAttributeNotFound,
 			kNoCommandPointer,
 			kNotImplemented,
 			kOptionNotImplemented,
@@ -23,6 +25,11 @@ namespace cli {
 			kUnmatchedBracketOrQuote,
 			kExtraClosingBrace,
 			kUnmatchedBrace,
+
+			kTooManyArgs,
+			kTooFewArgs,
+			kUnrecognizedOption,
+			kMissingOptionArg,
 
 			kgetcwdFail,
 			kgettimeofdayFail,
@@ -38,11 +45,6 @@ namespace cli {
 			kNoUsageInfo,
 			kNoUsageFile,
 
-			kTooManyArgs,
-			kTooFewArgs,
-			kUnrecognizedOption,
-			kMissingOptionArg,
-
 			kIntegerExpected,
 			kIntegerMustBePositive,
 			kIntegerMustBeNonNegative,
@@ -56,7 +58,6 @@ namespace cli {
 
 			kNoProdTypeWhenProdName,
 			kSourceOnlyOneFile,
-			kProductionNotFound,
 
 			kLogAlreadyOpen,
 			kLogOpenFailure,

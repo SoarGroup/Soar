@@ -134,7 +134,7 @@ void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter,
 
 		if (!m_RawOutput) {
 			// Save the name for the structured response
-			AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, ip->GetName());
+			AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, ip->GetName());
 		}
 
 		// Increment the count for the structured response

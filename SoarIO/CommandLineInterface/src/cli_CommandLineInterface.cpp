@@ -184,8 +184,8 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 		string errorDescription = m_Error.GetErrorDescription();
 		if (m_pgSKIError && (m_pgSKIError->Id != gSKI::gSKIERR_NONE)) {
 			errorDescription += "\ngSKI Error code: ";
-			char buf[32];
-			Int2String((int)m_pgSKIError->Id, buf, 32);
+			char buf[kMinBufferSize];
+			Int2String((int)m_pgSKIError->Id, buf, kMinBufferSize);
 			errorDescription += buf;
 			errorDescription += "\ngSKI Error text: ";
 			errorDescription += m_pgSKIError->Text;

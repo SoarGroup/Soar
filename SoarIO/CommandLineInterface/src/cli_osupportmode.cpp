@@ -5,14 +5,13 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
+#include "sml_StringOps.h"
+#include "sml_Names.h"
 
 #include "IgSKI_Agent.h"
 
-#ifdef _MSC_VER
-#define snprintf _snprintf 
-#endif // _MSC_VER
-
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	
@@ -32,10 +31,13 @@ bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 
 	if (mode < 0) {
 		egSKIOSupportMode m = pAgent->GetOSupportMode();
-		char buf[2];
-		snprintf(buf, 1, "%d", (int)m);
-		buf[1] = 0;
-		AppendToResult(buf);
+		char buf[kMinBufferSize];
+		Int2String((int)m, buf, kMinBufferSize);
+		if (m_RawOutput) {
+			AppendToResult(buf);
+		} else {
+			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, buf);
+		}
 		return true;
 	}
 

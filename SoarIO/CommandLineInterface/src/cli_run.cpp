@@ -6,12 +6,15 @@
 
 #include "cli_GetOpt.h"
 #include "cli_Constants.h"
+#include "sml_Names.h"
+#include "sml_StringOps.h"
 
 #include "IgSKI_Agent.h"
 #include "IgSKI_Kernel.h"
 #include "IgSKI_AgentManager.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
@@ -131,19 +134,36 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 		return false;	// Hopefully details are in gSKI error message
 	}
 
-	AppendToResult("\nRun successful: ");
+	char buf[kMinBufferSize];
+	if (m_RawOutput) AppendToResult("\nRun successful: ");
 	switch (runResult) {
 		case gSKI_RUN_EXECUTING:
-			AppendToResult("(gSKI_RUN_EXECUTING)");						// the run is still executing
+			if (m_RawOutput) {
+				AppendToResult("(gSKI_RUN_EXECUTING)");						// the run is still executing
+			} else {
+				AppendArgTag(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+			}
 			break;
 		case gSKI_RUN_INTERRUPTED:
-			AppendToResult("(gSKI_RUN_INTERRUPTED)");					// the run was interrupted
+			if (m_RawOutput) {
+				AppendToResult("(gSKI_RUN_INTERRUPTED)");					// the run was interrupted
+			} else {
+				AppendArgTag(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+			}
 			break;
 		case gSKI_RUN_COMPLETED:
-			AppendToResult("(gSKI_RUN_COMPLETED)");						// the run completed normally
+			if (m_RawOutput) {
+				AppendToResult("(gSKI_RUN_COMPLETED)");						// the run completed normally
+			} else {
+				AppendArgTag(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+			}
 			break;
 		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
-			AppendToResult("(gSKI_RUN_COMPLETED_AND_INTERRUPTED)");
+			if (m_RawOutput) {
+				AppendToResult("(gSKI_RUN_COMPLETED_AND_INTERRUPTED)");
+			} else {
+				AppendArgTag(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+			}
 			break;
 		default:
 			return m_Error.SetError(CLIError::kgSKIError);

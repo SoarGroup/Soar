@@ -6,7 +6,10 @@
 
 #include "cli_Constants.h"
 
+#include "sml_Names.h"
+
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
@@ -21,11 +24,22 @@ bool CommandLineInterface::DoDirs() {
 
 	std::string cwd;
 	GetCurrentWorkingDirectory(cwd);
-	AppendToResult(cwd);
+
+	if (m_RawOutput) {
+		AppendToResult(cwd);
+	} else {
+		AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, cwd.c_str());
+	}
 
 	while (m_DirectoryStack.size()) {
-		AppendToResult(' ');
-		AppendToResult(m_DirectoryStack.top());
+
+		if (m_RawOutput) {
+			AppendToResult(' ');
+			AppendToResult(m_DirectoryStack.top());
+		} else {
+			AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, m_DirectoryStack.top().c_str());
+		}
+
 		tempStack.push(m_DirectoryStack.top());
 		m_DirectoryStack.pop();
 	}
@@ -34,7 +48,6 @@ bool CommandLineInterface::DoDirs() {
 		m_DirectoryStack.push(tempStack.top());
 		tempStack.pop();
 	}
-
 	return true;
 }
 

@@ -7,9 +7,13 @@
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
 
+#include "sml_Names.h"
+#include "sml_StringOps.h"
+
 #include "IgSKI_Agent.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
@@ -61,19 +65,41 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 
 	if (!mode) {
 		// query
+		char buf[kMinBufferSize];
+
 		switch (pAgent->GetIndifferentSelection()) {
 			case gSKI_USER_SELECT_FIRST:
-				AppendToResult("first");
+				if (m_RawOutput) {
+					AppendToResult("first");
+				} else {
+					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_FIRST, buf, kMinBufferSize));
+				}
 				break;
+
 			case gSKI_USER_SELECT_LAST:
-				AppendToResult("last");
+				if (m_RawOutput) {
+					AppendToResult("last");
+				} else {
+					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_LAST, buf, kMinBufferSize));
+				}
 				break;
+
 			case gSKI_USER_SELECT_ASK:
-				AppendToResult("ask");
+				if (m_RawOutput) {
+					AppendToResult("ask");
+				} else {
+					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_ASK, buf, kMinBufferSize));
+				}
 				break;
+
 			case gSKI_USER_SELECT_RANDOM:
-				AppendToResult("random");
+				if (m_RawOutput) {
+					AppendToResult("random");
+				} else {
+					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_RANDOM, buf, kMinBufferSize));
+				}
 				break;
+
 			default:
 				return m_Error.SetError(CLIError::kInvalidIndifferentSelectionMode);
 		}
