@@ -384,7 +384,6 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
 
   Tcl_DStringInit(&command);
   Tcl_DStringAppend(&command, data, strlen(data));
-  /*Tcl_DStringAppend(&command, " { ", 3);*/
 
   /* Build output list */
   num_candidates = 0;
@@ -397,8 +396,6 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
 	Tcl_DStringAppendElement(&command, candId);
 	num_candidates++;
   }
-
-  /*Tcl_DStringAppend(&command, " }", 2);*/
 
 
   code = Tcl_EvalEx( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
@@ -436,7 +433,7 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
     print_string_to_log_file_only (temp);
   }
 
-  switch (num_candidates - result) {
+  switch (num_candidates - result - 1) {
 
 
   case 2:
@@ -471,7 +468,7 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
 
   default:
     cand =  ((soar_apiAskCallbackData *)call_data)->candidates;
-    while (result>1) { cand=cand->next_candidate; result--; }
+    while (result>0) { cand=cand->next_candidate; result--; }
     *((soar_apiAskCallbackData *)call_data)->selection = cand;
   }
  
