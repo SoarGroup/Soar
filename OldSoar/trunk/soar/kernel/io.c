@@ -761,7 +761,8 @@ Symbol *get_io_symbol_from_tio_constituent_string (char *input_string) {
   /* --- check whether it's a floating point number --- */
   if (possible_fc) {
     errno = 0;
-    float_val = (float) my_strtod (input_string,NULL,10); 
+    /*float_val = (float) strtod (input_string,NULL,10);*/
+    float_val = (float) strtod (input_string,NULL); 
     if (errno) {
       print ("Text Input Error: bad floating point number\n");
       return NIL;

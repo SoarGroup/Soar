@@ -3352,8 +3352,6 @@ extern Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr);
    interface" or something like that.
 =========================================================================== */
 
-extern double my_strtod (char *ch, char **p, int base); /* in lexer.c */
-
 extern Symbol *get_next_io_symbol_from_text_input_line (char **text_read_position); /* in io.c */
 
 /* -------------------------------------------------------------------- */

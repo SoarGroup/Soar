@@ -569,7 +569,8 @@ Symbol *float_rhs_function_code (list *args) {
     double float_val;
 
     errno = 0;
-    float_val = my_strtod(symbol_to_string (sym, FALSE, NIL,0), NULL, 10);
+    /*float_val = strtod(symbol_to_string (sym, FALSE, NIL,0), NULL, 10);*/
+    float_val = strtod(symbol_to_string (sym, FALSE, NIL,0), NULL);
     if (errno) {
       print ("Error: bad float (%y) given to 'float' RHS function\n",
 	     sym);

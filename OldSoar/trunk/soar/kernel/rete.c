@@ -6044,7 +6044,8 @@ void reteload_all_symbols (void) {
   for (i=0; i<num_float_constants; i++) {
     reteload_string();
     *(current_place_in_symtab++) = 
-      make_float_constant ((float)my_strtod(reteload_string_buf,NULL,10));
+      /*make_float_constant ((float)strtod(reteload_string_buf,NULL,10));*/
+      make_float_constant ((float)strtod(reteload_string_buf,NULL));
   }
 }
 
