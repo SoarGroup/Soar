@@ -419,7 +419,7 @@ proc Debugger::CreateDescMenu {} {
             {command "Load Water Jug Look-&Ahead" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.tcl} }
          }}
          {separator}
-         {command "Non-GUI Demo" {} "" {} -command {} }
+         {command "Non-GUI Demos" {} "" {} -command {} }
          {cascad  "&Blocksworld"  {} export 0 {
             {command "load &Blocksworld" {} "" {} -command {tsiLoadSoar8Demo blocks-world blocks-world.soar} }
             {command "load Blocksworld &Operator Subgoaling" {} "" {} -command {tsiLoadSoar8Demo blocks-world blocks-world-operator-subgoaling.soar} }
