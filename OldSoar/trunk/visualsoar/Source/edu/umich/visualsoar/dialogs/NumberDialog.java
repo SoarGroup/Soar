@@ -97,7 +97,7 @@ public class NumberDialog extends JDialog {
 		
 		buttonPanel.okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				nameText = namePanel.getText();
+				nameText = namePanel.getText().trim();
 				low = rangePanel.getLow();
 				high = rangePanel.getHigh();
 				boolean rangeIsValid = true;

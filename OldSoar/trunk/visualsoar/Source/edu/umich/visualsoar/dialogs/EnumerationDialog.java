@@ -76,69 +76,73 @@ public class EnumerationDialog extends JDialog
                                   }
                           });       
 
-        buttonPanel.cancelButton.addActionListener(new ActionListener() 
-                                                   {
-                                                       public void actionPerformed(ActionEvent e) 
-                                                           {
-                                                               approved = false;
-                                                               dispose();
-                                                           }
-                                                   });
+        buttonPanel.cancelButton.addActionListener(
+            new ActionListener() 
+            {
+                public void actionPerformed(ActionEvent e) 
+                    {
+                        approved = false;
+                        dispose();
+                    }
+            });
         
-        buttonPanel.addButton.addActionListener(new ActionListener() 
-                                                {
-                                                    public void actionPerformed(ActionEvent e) 
-                                                        {
-                                                            if (enumPanel.addString()) 
-                                                            {
-                                                                enumPanel.clearText();
-                                                            }
-                                                            focusTarget = ENUMERATION;
-                                                        }
-                                                });
+        buttonPanel.addButton.addActionListener(
+            new ActionListener() 
+            {
+                public void actionPerformed(ActionEvent e) 
+                    {
+                        if (enumPanel.addString()) 
+                        {
+                            enumPanel.clearText();
+                        }
+                        focusTarget = ENUMERATION;
+                    }
+            });
         
-        buttonPanel.removeButton.addActionListener(new ActionListener() 
-                                                   {
-                                                       public void actionPerformed(ActionEvent e) 
-                                                           {
-                                                               enumPanel.removeString();
-                                                           }
-                                                   });
+        buttonPanel.removeButton.addActionListener(
+            new ActionListener() 
+            {
+                public void actionPerformed(ActionEvent e) 
+                    {
+                        enumPanel.removeString();
+                    }
+            });
         
-        buttonPanel.okButton.addActionListener(new ActionListener() 
-                                               {
-                                                   public void actionPerformed(ActionEvent e) 
-                                                       {
-                                                           nameText = namePanel.getText();
-                                                           theStrings = enumPanel.getVector();
+        buttonPanel.okButton.addActionListener(
+            new ActionListener() 
+            {
+                public void actionPerformed(ActionEvent e) 
+                    {
+                        nameText = namePanel.getText().trim();
+                        theStrings = enumPanel.getVector();
                 
-                                                           if (nameText.length() == 0) 
-                                                           {
-                                                               JOptionPane.showMessageDialog(EnumerationDialog.this, 
-                                                                                             "Attribute names cannot have length zero", 
-                                                                                             "Invalid Name", JOptionPane.ERROR_MESSAGE);
-                                                               focusTarget = NAME;
-                                                           }
-                                                           else if (! DataMapUtils.attributeNameIsValid(nameText)) 
-                                                           {
-                                                               JOptionPane.showMessageDialog(EnumerationDialog.this, 
-                                                                                             "Attribute names may only contain letter, numbers, and hyphens", 
-                                                                                             "Invalid Name", JOptionPane.ERROR_MESSAGE);
-                                                               focusTarget = NAME;
-                                                           }
-                                                           else if (theStrings.isEmpty()) 
-                                                           {
-                                                               JOptionPane.showMessageDialog(EnumerationDialog.this, 
-                                                                                             "Enumeration may not have zero elements", 
-                                                                                             "Invalid Enumeration", JOptionPane.ERROR_MESSAGE);
-                                                               focusTarget = ENUMERATION;
-                                                           }
-                                                           else { // valid entry
-                                                               approved = true;
-                                                               dispose();
-                                                           }
-                                                       }
-                                               });
+                        if (nameText.length() == 0) 
+                        {
+                            JOptionPane.showMessageDialog(EnumerationDialog.this, 
+                                                          "Attribute names cannot have length zero", 
+                                                          "Invalid Name", JOptionPane.ERROR_MESSAGE);
+                            focusTarget = NAME;
+                        }
+                        else if (! DataMapUtils.attributeNameIsValid(nameText))
+                        {
+                            JOptionPane.showMessageDialog(EnumerationDialog.this, 
+                                                          "Attribute names may only contain letter, numbers, and hyphens", 
+                                                          "Invalid Name", JOptionPane.ERROR_MESSAGE);
+                            focusTarget = NAME;
+                        }
+                        else if (theStrings.isEmpty())
+                        {
+                            JOptionPane.showMessageDialog(EnumerationDialog.this, 
+                                                          "Enumeration may not have zero elements", 
+                                                          "Invalid Enumeration", JOptionPane.ERROR_MESSAGE);
+                            focusTarget = ENUMERATION;
+                        }
+                        else { // valid entry
+                            approved = true;
+                            dispose();
+                        }
+                    }
+            });
 
         addWindowListener(new WindowAdapter() 
                           {

@@ -62,7 +62,7 @@ public class IdentifierDialog extends JDialog {
 				
 		buttonPanel.okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				nameText = namePanel.getText();
+				nameText = namePanel.getText().trim();
 				
 				if (nameText.length() == 0) {
 					JOptionPane.showMessageDialog(IdentifierDialog.this, 
@@ -71,8 +71,8 @@ public class IdentifierDialog extends JDialog {
 				}
 				else if (! DataMapUtils.attributeNameIsValid(nameText)) {
 					JOptionPane.showMessageDialog(IdentifierDialog.this, 
-						"Attribute names may only contain letter, numbers, and hyphens", 
-						"Invalid Name", JOptionPane.ERROR_MESSAGE);
+						"Attribute names may only contain letters, numbers, and hyphens", 
+						"Invalid Name: '" + nameText + "'", JOptionPane.ERROR_MESSAGE);
 				}
 				else {
 					approved = true;

@@ -72,7 +72,7 @@ class RangePanel extends JPanel {
 	 * @return the number input in the low field
 	 */	
 	public Number getLow() {
-		String lowText = lowField.getText();
+		String lowText = lowField.getText().trim();
 		Number lowVal;
 		
 		if (type == INTEGER) {
@@ -107,7 +107,7 @@ class RangePanel extends JPanel {
 	 * @return the number input in the high field
 	 */	
 	public Number getHigh() {
-		String highText = highField.getText();
+		String highText = highField.getText().trim();
 		Number highVal;
 		
 		if (type == INTEGER) {

@@ -70,7 +70,7 @@ class EnumPanel extends JPanel {
 	}
 	
 	boolean addString() {
-		String s = newString.getText();
+		String s = newString.getText().trim();
 		if (s.length() == 0) {
 			JOptionPane.showMessageDialog(this,
 				"Zero length strings are not allowed in enumerations",
@@ -79,7 +79,7 @@ class EnumPanel extends JPanel {
 		}
 		if (s.indexOf(' ') != -1) {
 			JOptionPane.showMessageDialog(this,
-				"Spaces are not allowed in enumerations",
+				"Spaces are not allowed in enumeration values",
 				"Invalid Enumeration Data", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
