@@ -71,6 +71,16 @@ public abstract class AbstractView implements AgentFocusListener
 	/** The window that owns this view */
 	public Pane getPane() 			{ return m_Pane ; }
 	
+	protected void initContainer(MainFrame frame, Document doc, Pane parentPane)
+	{
+		setValues(frame, doc, parentPane) ;
+		Composite parent = parentPane.getWindow() ;
+		
+		// The container lets us control the layout of the controls
+		// within this window
+		m_Container	   = new Composite(parent, SWT.NULL) ;
+	}
+	
 	/********************************************************************************************
 	 * 
 	 * Returns the agent that is associated with the main frame.
@@ -111,7 +121,7 @@ public abstract class AbstractView implements AgentFocusListener
 	/********************************************************************************************
 	* 
 	* Initialize this window and its children.
-	* Should call setValues() at the start to complete initialization of the abstract view.
+	* Should call initContainer() at the start to complete initialization of the abstract view.
 	* 
 	********************************************************************************************/
 	public abstract void init(MainFrame frame, Document doc, Pane parentPane) ;
@@ -125,6 +135,18 @@ public abstract class AbstractView implements AgentFocusListener
 	* 
 	*************************************************************************/
 	public abstract general.ElementXML convertToXML(String tagName, boolean storeContent) ;
+
+	/************************************************************************
+	* 
+	* Rebuild the object from an XML representation.
+	* 
+	* @param frame			The top level window that owns this window
+	* @param doc			The document we're rebuilding
+	* @param parent			The pane window that owns this view
+	* @param element		The XML representation of this command
+	* 
+	*************************************************************************/
+	public abstract void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception ;
 
 	/************************************************************************
 	* 
@@ -168,18 +190,6 @@ public abstract class AbstractView implements AgentFocusListener
 	*************************************************************************/
 	public abstract boolean setFocus() ;
 	public abstract boolean hasFocus() ;
-
-	/************************************************************************
-	* 
-	* Rebuild the object from an XML representation.
-	* 
-	* @param frame			The top level window that owns this window
-	* @param doc			The document we're rebuilding
-	* @param parent			The pane window that owns this view
-	* @param element		The XML representation of this command
-	* 
-	*************************************************************************/
-	public abstract void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception ;
 	
 	/************************************************************************
 	* 
@@ -260,6 +270,12 @@ public abstract class AbstractView implements AgentFocusListener
 			public void widgetSelected(SelectionEvent e) { m_Frame.executeDebuggerCommand(command, false) ; } } ) ;
 	}	
 	
+	/********************************************************************************************
+	 * 
+	 * Display a dialog that allows the user to adjust properties for this window
+	 * e.g. choosing whether to clear the window everytime a new command executes or not.
+	 * 
+	********************************************************************************************/
 	public abstract void showProperties() ;
 	
 	public void fillWindowMenu(Menu menu, boolean asSubMenu)
