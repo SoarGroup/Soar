@@ -205,11 +205,11 @@ public class MainFrame
 		return m_Parent.getDisplay();
 	}
 
-	public static void ShowMessageBox(Shell shell, String title, String text)
+	protected static int ShowMessageBox(Shell shell, String title, String text, int style)
 	{
 		// Only show messages once the shell itself is going
 		if (!shell.isVisible())
-			return;
+			return SWT.CANCEL ;
 
 		if (title == null)
 			title = "Error";
@@ -217,22 +217,38 @@ public class MainFrame
 			text = "<No message>";
 
 		// Display an SWT message box
-		MessageBox msg = new MessageBox(shell, 0);
+		MessageBox msg = new MessageBox(shell, style);
 		msg.setText(title);
 		msg.setMessage(text);
-		msg.open();
+		int result = msg.open();
+		
+		return result ;
 	}
 
 	public void ShowMessageBox(String title, String text)
 	{
 		// Display an SWT message box
-		ShowMessageBox(getShell(), title, text);
+		ShowMessageBox(getShell(), title, text, 0);
 	}
 
 	public void ShowMessageBox(String text)
 	{
 		// Display an SWT message box
-		ShowMessageBox(getShell(), "Error", text);
+		ShowMessageBox(getShell(), "Error", text, 0);
+	}
+	
+	 /*******************************************************************************************
+	 * 
+	 * Show a message box with a particular icon or set of buttons
+	 *
+	 * @param title	 The title
+	 * @param text	 The content of the message box
+	 * @param style	 e.g. SWT.ICON_INFORMATION or SWT.OK | SWT.CANCEL
+	 * @return SWT.OK or SWT.CANCEL
+	********************************************************************************************/
+	public int ShowMessageBox(String title, String text, int style)
+	{
+		return ShowMessageBox(getShell(), title, text, style) ;
 	}
 
 	public void setTextFont(FontData fontData)

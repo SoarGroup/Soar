@@ -110,6 +110,10 @@ public class DemoMenu
 	/** Load a specific demo.  We'll make this public so that buttons etc. can call here to load a demo */
 	public void loadDemo(File filename, boolean echoCommand)
 	{
+		// Start by excising any existing productions
+		String exciseLine = m_Document.getSoarCommands().getExciseAllCommand() ;
+		m_Frame.executeCommandPrimeView(exciseLine, false) ;
+		
 		File filePath = new File(m_DemoPath, filename.getPath()) ;
 		String commandLine = m_Document.getSoarCommands().getSourceCommand(filePath.getPath()) ;
 

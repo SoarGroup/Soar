@@ -173,7 +173,7 @@ public class RemoteDialog extends BaseDialog
 			}
 			catch (NumberFormatException e)
 			{
-				MainFrame.ShowMessageBox(m_Dialog.getShell(), "Invalid port value", "The port number must be a positive integer.") ;
+				m_Frame.ShowMessageBox("Invalid port value", "The port number must be a positive integer.") ;
 				return ;
 			}
 		}

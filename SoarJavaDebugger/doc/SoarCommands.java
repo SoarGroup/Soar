@@ -33,6 +33,7 @@ public class SoarCommands
 	public String getPrintDepthCommand(String arg, int depth)  	{ return "print --depth " + depth + " " + arg ; }
 	public String getPrintInternalCommand(String arg)  			{ return "print --internal " + arg ; }
 	public String getExciseCommand(String arg) 					{ return "excise " + arg ; }
+	public String getExciseAllCommand()							{ return "excise --all" ; }
 	public String getPreferencesCommand(String arg) 			{ return "preferences " + arg ; }
 	public String getPreferencesNameCommand(String arg)			{ return "preferences " + arg + " --names" ; }
 	public String getMatchesCommand(String arg)					{ return "matches " + arg ; }

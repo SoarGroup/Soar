@@ -11,6 +11,7 @@
 ********************************************************************************************/
 package menu;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Menu;
 
 import sml.Agent;
@@ -92,8 +93,13 @@ public class KernelMenu
 	{
 		if (m_Document.isConnected())
 		{
-			m_Frame.ShowMessageBox("You are currently running a local Soar kernel.  Please delete that first before connecting to a remote Soar kernel.") ;
-			return ;
+			int result = m_Frame.ShowMessageBox("Kernel running", "You need are currently running a local Soar kernel.\nThis needs to be shutdown before connecting to a remote Soar.\nWould you like to shutdown the local kernel now?", SWT.ICON_WARNING | SWT.OK | SWT.CANCEL) ;
+			
+			if (result == SWT.CANCEL)
+				return ;
+			
+			// Shut down the local kernel and then go on
+			m_Document.stopLocalKernel() ;
 		}
 		
 		RemoteDialog.RemoteInfo ip = RemoteDialog.showDialog(m_Frame, "Remote Soar Kernel Connection") ;
