@@ -1,5 +1,4 @@
 #include <iostream>
-#include <fstream>
 #include <conio.h>
 #include <crtdbg.h>
 
@@ -18,10 +17,7 @@ void backspace(string& cmdline) {
 
 int main(int argc, char** argv)
 {
-	std::ifstream scriptFile;
-	if (argc == 2) {
-		scriptFile.open(argv[1]);
-	} else if (argc > 2) {
+	if (argc > 2) {
 		cout << "Too many args." << endl;
 		exit(1);
 	}
@@ -46,6 +42,14 @@ int main(int argc, char** argv)
 	int temporaryHistoryIndex = 0;
 	const int HISTORY_SIZE = 10;
 	string history[HISTORY_SIZE];
+	
+	string scriptFile;
+	if (argc > 1) {
+		scriptFile = "source ";
+		scriptFile += argv[1];
+		scriptFile += '\n';
+	}
+	string::iterator sfIter = scriptFile.begin();
 
 	for (;;) {
 		cout << previousResult << " " << AGENT_NAME << "> ";
@@ -55,12 +59,10 @@ int main(int argc, char** argv)
 		process = false;
 
 		for (;;) {
-			if (scriptFile.is_open()) {
-				if (!scriptFile.get(input)) {
-					scriptFile.close();
-					input = '\n';
-					break;
-				}
+			
+			if (sfIter != scriptFile.end()) {
+				input = *sfIter;
+				++sfIter;
 			} else {
 				input = getch();
 			}
@@ -121,8 +123,6 @@ int main(int argc, char** argv)
 			break;
 		}
 	}
-
-	scriptFile.close();
 	delete pKernel ;
 	exit (0);
 }
