@@ -1,0 +1,152 @@
+sp {waterjug*elaborate*state*name
+   (state <s> ^superstate nil)
+   -->
+   (<s> ^name waterjug)}
+
+sp {waterjug*propose*initialize
+   (state <s> ^name waterjug
+             -^jug)
+   -->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize)}
+
+sp {waterjug*apply*initialize
+   (state <s> ^operator.name initialize)
+   -->
+   (<s> ^jug <i> <j>)
+   (<i> ^volume 3
+        ^contents 0) 
+   (<j> ^volume 5
+        ^contents 0)}
+        
+ 
+ sp {waterjug*propose*fill
+    (state <s> ^name waterjug
+               ^jug <j>)
+    (<j> ^free > 0)
+    --> 
+    (<s> ^operator <o> + =)
+    (<o> ^name fill 
+         ^jug <j>)}
+ 
+ sp {waterjug*propose*empty 
+    (state <s> ^name waterjug
+               ^jug <j>)
+    (<j> ^contents > 0)
+    -->
+    (<s> ^operator <o> + =) 
+    (<o> ^name empty
+         ^jug <j>)}
+ 
+ sp {waterjug*propose*pour
+    (state <s> ^name waterjug
+               ^jug <i> { <> <i> <j> }) 
+    (<i> ^contents > 0 )
+    (<j> ^free > 0)
+    --> 
+    (<s> ^operator <o> + =)
+    (<o> ^name pour 
+         ^jug <i> 
+        ^into <j>)}
+        
+ sp {apply*fill 
+    (state <s> ^operator <o>
+               ^jug <j>)
+    (<o> ^name fill 
+         ^jug <j>)
+    (<j> ^volume <volume> 
+         ^contents <contents>
+         ^free <free>)
+    --> 
+    (<j> ^contents <volume> <contents> - 
+         ^free 0 <free> - )}
+ 
+ sp {apply*empty
+    (state <s> ^operator <o>
+               ^jug <j>)
+    (<o> ^name empty 
+         ^jug <j>)
+    (<j> ^volume <volume> 
+         ^contents <contents> 
+         ^free <free>)
+    --> 
+    (<j> ^contents 0 <contents> - 
+        ^free <volume> <free> - )}
+        
+sp {apply*pour*not-empty-source
+   (state <s> ^operator <o>)
+   (<o> ^name pour 
+        ^jug <i> 
+        ^into <j>)
+   (<j> ^volume <jvol> 
+        ^contents <jcon> 
+        ^free <jfree>)
+   (<i> ^volume <ivol> 
+        ^contents <icon> <= <jfree> 
+        ^free <ifree>)
+   --> 
+   (<i> ^contents 0 <icon> - 
+        ^free <ivol> <ifree> - )
+   (<j> ^contents (+ <jcon> <icon>) <jcon> - 
+        ^free (- <jfree> <icon>) <jfree> - )}
+      
+sp {apply*pour*empty-source
+   (state <s> ^operator <o>)
+   (<o> ^name pour 
+        ^jug <i> 
+        ^into <j>)
+   (<i> ^volume <ivol> 
+        ^contents <icon> > <jfree> 
+        ^free <ifree>)
+   (<j> ^volume <jvol> 
+        ^contents <jcon> 
+        ^free <jfree>)
+   --> 
+   (<i> ^contents (- <icon> <jfree>) <icon> - 
+        ^free (+ <ifree> <jfree>) <ifree> - )
+   (<j> ^contents <jvol> <jcon> - 
+        ^free 0 <jfree> - )}
+        
+ sp {waterjug*goal*achieved*short*reward
+    (state <s> ^name waterjug
+               ^jug <i>
+               ^jug <j>
+               ^io.reward <r>)
+    (<i> ^volume 5 ^contents 5)
+    (<j> ^volume 3 ^contents 1)
+    --> 
+    (<r> ^goal 1)}
+    
+ sp {waterjug*goal*achieved*long*reward
+    (state <s> ^name waterjug
+               ^jug <i>
+               ^jug <j>
+               ^io.reward <r>)
+    (<i> ^volume 5 ^contents 0)
+    (<j> ^volume 3 ^contents 1)
+    --> 
+    (<r> ^goal 5)}
+    
+sp {waterjug*goal*achieved*propose*halt
+  (state <s> ^name waterjug
+             ^jug <j>)
+    (<j> ^volume 3 ^contents 1)
+ -->
+  (<s> ^operator <o> + >)
+  (<o> ^name halt)}
+  
+sp {waterjug*apply*halt
+  (state <s> ^name waterjug
+  	     ^operator.name halt)
+ -->
+  (halt)}
+    
+
+   
+sp {waterjug*elaborate*free
+   (state <s> ^jug <j>)
+   (<j> ^contents <c>
+        ^volume <v>)
+   -->
+   (<j> ^free (- <v> <c>))}
+   

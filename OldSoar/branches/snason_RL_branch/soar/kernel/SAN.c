@@ -170,7 +170,7 @@ void record_for_RL()
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
 			  // if ((fabs(prod->avg_update) < 0.01) && prod->increasing){
-			  if (prod->times_updated > 30){
+			  if (prod->times_updated < 0){
 				  new_prod = specify_production(ist);
 				  if (new_prod){
 					  prod->times_updated = 0;
@@ -398,6 +398,7 @@ void learn_RL_productions(int level){
 				prod->avg_update = ((prod->times_updated - 1)*prod->avg_update + update) / prod->times_updated;
 				print_with_symbols("\n%y  ", prod->name);
 	    		print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
+				print("Update %f ", fabs(update));
 				print("Decayed average %f ", (prod->decay_abs_update / prod->decay_normalization));
 				print("Average %f ", prod->avg_update);
 				print("firings %d\n", prod->times_updated);
