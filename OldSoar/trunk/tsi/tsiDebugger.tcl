@@ -310,6 +310,8 @@ proc Debugger::update_font { newfont } {
 
 proc Debugger::updateNotebooks {} {
    variable notebook
+   variable paneWin
+   variable sashPosition
 
    set currentPage [$notebook raise]
    switch -exact $currentPage {
@@ -318,6 +320,8 @@ proc Debugger::updateNotebooks {} {
        justificationsNotebook {justificationsNotebook::Update}
        StateTree {StateTree::Update}
    }
+   
+   PanedWindow::setPercentage $paneWin $sashPosition($currentPage)
    #UpdateStats
 }
 
@@ -460,7 +464,7 @@ proc pacNotebook::create { nb } {
 
     pack $titf1 -pady 2 -padx 4 -fill both -expand yes
 
-    $nb itemconfigure pacNotebook -raisecmd  {Debugger::updateRaisedNotebook}
+    $nb itemconfigure pacNotebook -raisecmd  {Debugger::updateNotebooks}
     $nb itemconfigure pacNotebook -leavecmd {set Debugger::sashPosition(pacNotebook) $PanedWindow::panePercentage}
     #puts "set Debugger::sashPosition(pacNotebook) $PanedWindow::panePercentage"
 
@@ -522,7 +526,7 @@ proc justificationsNotebook::create { nb } {
 
     pack $titf1 -pady 2 -padx 4 -fill both -expand yes
 
-    $nb itemconfigure justificationsNotebook -raisecmd  {Debugger::updateRaisedNotebook}
+    $nb itemconfigure justificationsNotebook -raisecmd  {Debugger::updateNotebooks}
     $nb itemconfigure justificationsNotebook -leavecmd {set Debugger::sashPosition(justificationsNotebook) $PanedWindow::panePercentage}
 
     return $frame
