@@ -109,20 +109,22 @@ int AddWmeCmd (ClientData clientData,
 	       Tcl_Interp * interp,
 	       int argc, const char *argv[])
 {
-  soarResult res;
+    soarResult res;
 
-  init_soarResult(res);
+    init_soarResult(res);
 
-  Soar_SelectGlobalInterpByInterp(interp);
+    Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_AddWme( argc, argv, &res ) == SOAR_OK ) {
-	snprintf( interp->result, TCL_RESULT_SIZE, "%s", res.result);
-	interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+    if( soar_AddWme( argc, argv, &res ) == SOAR_OK ) {
+        /*snprintf( interp->result, TCL_RESULT_SIZE, "%s", res.result); voigtjr, depricated*/
+        /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr, depricated*/ /* snprintf doesn't set last char to null if output is truncated */
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
     return TCL_OK;
-  } else {
-    interp->result = res.result;
+    } else {
+        /*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
     return TCL_ERROR;
-  }
+    }
 
 }
 
@@ -133,19 +135,21 @@ int AttributePreferencesModeCmd (ClientData clientData,
 {
   soarResult res;
 
-  init_soarResult(res);
+	init_soarResult(res);
 
-  Soar_SelectGlobalInterpByInterp(interp);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_AttributePreferencesMode( argc, argv, &res ) == SOAR_OK ) {
-    printf( "DONE\n" );
-	interp->result = res.result;
-	return TCL_OK;
-  }
-  else {
-       interp->result = res.result;
-       return TCL_ERROR;
-  }
+	if ( soar_AttributePreferencesMode( argc, argv, &res ) == SOAR_OK ) {
+		printf( "DONE\n" );
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -154,20 +158,22 @@ int ChunkNameFormatCmd (ClientData clientData,
 	                Tcl_Interp * interp,
 	                int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
+	init_soarResult(res);
 
-  Soar_SelectGlobalInterpByInterp(interp);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_ChunkNameFormat( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_ChunkNameFormat( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -177,20 +183,22 @@ int DefWmeDepthCmd (ClientData clientData,
 		    Tcl_Interp * interp,
 		    int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
+	init_soarResult(res);
 
-  Soar_SelectGlobalInterpByInterp(interp);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_DefaultWmeDepth( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_DefaultWmeDepth( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -200,26 +208,28 @@ DestroyAgentCmd (ClientData clientData,
 		 Tcl_Interp * interp,
 		 int argc, char *argv[])
 {
-  soarResult res;
-  int agent_id;
+	soarResult res;
+	int agent_id;
 
-  init_soarResult(res);
+	init_soarResult(res);
 
-  Soar_SelectGlobalInterpByInterp(interp);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  agent_id = soar_agent->id;
-/*  printf( "Calling Destroy Agent on Agent %d\n", agent_id ); */
+	agent_id = soar_agent->id;
+	/*  printf( "Calling Destroy Agent on Agent %d\n", agent_id ); */
 
-  remove_rhs_function( make_sym_constant("tcl") );
-  if( soar_DestroyAgent( argc, argv, &res ) == SOAR_OK ) {
-    tcl_soar_agent_interpreters[agent_id] = NIL;
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	remove_rhs_function( make_sym_constant("tcl") );
+	if( soar_DestroyAgent( argc, argv, &res ) == SOAR_OK ) {
+		tcl_soar_agent_interpreters[agent_id] = NIL;
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -229,20 +239,22 @@ int ExciseCmd (ClientData clientData,
 	       Tcl_Interp * interp,
 	       int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
 
-  if( soar_Excise( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_Excise( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -251,20 +263,22 @@ int ExplainBacktracesCmd (ClientData clientData,
 		Tcl_Interp * interp,
 		int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
+	init_soarResult(res);
 
-  Soar_SelectGlobalInterpByInterp(interp);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_ExplainBacktraces( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_ExplainBacktraces( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -272,19 +286,21 @@ int FiringCountsCmd (ClientData clientData,
 		     Tcl_Interp * interp,
 		     int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_FiringCounts( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_FiringCounts( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -293,19 +309,21 @@ int FormatWatchCmd (ClientData clientData,
 		    Tcl_Interp * interp,
 		    int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_FormatWatch( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_FormatWatch( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -325,19 +343,21 @@ int IndifferentSelectionCmd (ClientData clientData,
 			     Tcl_Interp * interp,
 			     int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_IndifferentSelection( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_IndifferentSelection( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 int InitSoarCmd (ClientData clientData, 
@@ -355,44 +375,50 @@ int InitSoarCmd (ClientData clientData,
 }
 
 
+
 int InputPeriodCmd (ClientData clientData, 
 		    Tcl_Interp * interp,
 		    int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
 
-  if ( soar_InputPeriod( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
-
+	if ( soar_InputPeriod( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
+
+
 
 int InternalSymbolsCmd (ClientData clientData, 
 			Tcl_Interp * interp,
 			int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_InternalSymbols( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_InternalSymbols( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -401,39 +427,45 @@ int LearnCmd (ClientData clientData,
 	      Tcl_Interp * interp,
 	      int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  
-  if( soar_Learn( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+
+	if( soar_Learn( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
+
+
 
 int MatchesCmd (ClientData clientData, 
 		Tcl_Interp * interp,
 		int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_Matches( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_Matches( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -441,20 +473,23 @@ int MaxChunksCmd (ClientData clientData,
 		  Tcl_Interp * interp,
 		  int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_MaxChunks( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_MaxChunks( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
+
 
 
 int MaxElaborationsCmd (ClientData clientData, 
@@ -462,20 +497,21 @@ int MaxElaborationsCmd (ClientData clientData,
 			int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_MaxElaborations( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
-
+	if( soar_MaxElaborations( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -484,20 +520,22 @@ int MemoriesCmd (ClientData clientData,
 		 Tcl_Interp * interp,
 		 int argc, const char *argv[])
 {
- 
-  soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	soarResult res;
 
-  if( soar_Memories( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
+
+	if( soar_Memories( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -508,19 +546,21 @@ int MultiAttrCmd (ClientData clientData,
 		  int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_MultiAttributes( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_MultiAttributes( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -528,20 +568,22 @@ int NumericIndifferentCmd (ClientData clientData,
 		     Tcl_Interp * interp,
 		     int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
 
-  if ( soar_NumericIndifferentMode( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_NumericIndifferentMode( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -549,20 +591,22 @@ int OSupportModeCmd (ClientData clientData,
 		     Tcl_Interp * interp,
 		     int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
 
-  if ( soar_OSupportMode( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_OSupportMode( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -573,19 +617,21 @@ int Operand2Cmd (ClientData clientData,
 	      int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_Operand2( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_Operand2( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 
 }
 
@@ -595,19 +641,21 @@ int ProductionFindCmd (ClientData clientData,
 	   Tcl_Interp * interp,
 	   int argc, const char *argv[])
 {  
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_ProductionFind( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_ProductionFind( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+	  /*interp->result = res.result; voigtjr, depricated*/
+          Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -615,19 +663,21 @@ int PreferencesCmd (ClientData clientData,
                     Tcl_Interp * interp,
                     int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_Preferences( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_Preferences( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -637,65 +687,73 @@ int PrintCmd (ClientData clientData,
 	      Tcl_Interp * interp,
 	      int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_Print( argc, argv, &res ) == SOAR_OK ) {
-    /* interp->result = res.result; */
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_Print( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated, was already commented out, commenting out solution*/
+		/*Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) ); voigtjr, above's non-depricated solution*/
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
+
+
 
 int PwatchCmd (ClientData clientData, 
 	       Tcl_Interp * interp,
 	       int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_PWatch( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_PWatch( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
 int SoarExcludedBuildInfoCmd( ClientData clientData,
 		Tcl_Interp * interp,
-		int argc, const char *argv[] ){
-  soarResult res;
+		int argc, const char *argv[] )
+{
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
-  
-  soar_ExcludedBuildInfo( argc, argv, &res );
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  return TCL_OK;
+	soar_ExcludedBuildInfo( argc, argv, &res );
+
+	return TCL_OK;
 }
 
 int SoarBuildInfoCmd( ClientData clientData,
 		Tcl_Interp * interp,
-		int argc, const char *argv[] ){
-  soarResult res;
+		int argc, const char *argv[] )
+{
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
-  
-  soar_BuildInfo( argc, argv, &res );
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  return TCL_OK;
+	soar_BuildInfo( argc, argv, &res );
+
+	return TCL_OK;
 }
 
 #ifdef USE_DEBUG_UTILS
@@ -705,22 +763,22 @@ int PrintPoolCmd (ClientData clientData,
 	      Tcl_Interp * interp,
 	      int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
-  
-  if ( soar_Pool( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  }
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
-    
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  return TCL_OK;
+	if ( soar_Pool( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	}
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
+
 }
 
 
@@ -730,16 +788,16 @@ int QuitCmd (ClientData clientData,
 	     Tcl_Interp * interp,
 	     int argc, const char *argv[])
 {
-  static char cmd[] = "exit";
-  soarResult res;
+	static char cmd[] = "exit";
+	soarResult res;
 
-  init_soarResult(res);
-  soar_cQuit( );
+	init_soarResult(res);
+	soar_cQuit( );
 
-  (void) Tcl_Eval(interp, cmd);
-  return TCL_OK; /* Unreachable, but here to placate the compiler */
+	(void) Tcl_Eval(interp, cmd);
+	return TCL_OK; /* Unreachable, but here to placate the compiler */
 }
-
+
 
 
 int RemoveWmeCmd (ClientData clientData, 
@@ -747,22 +805,21 @@ int RemoveWmeCmd (ClientData clientData,
 		  int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-
-
-  if ( soar_RemoveWme( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
-
+	if ( soar_RemoveWme( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -771,19 +828,21 @@ int RunCmd (ClientData clientData,
 	    int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_Run( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_Run( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+	return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -794,20 +853,22 @@ int SpCmd (ClientData clientData,
 	   int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
 
-  if ( soar_Sp( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_Sp( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -817,19 +878,21 @@ int StatsCmd (ClientData clientData,
 	      int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_Stats( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_Stats( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -840,21 +903,22 @@ int StopSoarCmd (ClientData clientData,
 		 Tcl_Interp * interp,
 		 int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_Stop( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_Stop( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
-
 
 
 
@@ -862,20 +926,22 @@ int VerboseCmd (ClientData clientData,
 	      Tcl_Interp * interp,
 	      int argc, const char *argv[])
 {
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
+	init_soarResult(res);
 
-  Soar_SelectGlobalInterpByInterp(interp);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if ( soar_Verbose( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_Verbose( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -883,19 +949,22 @@ int VerboseCmd (ClientData clientData,
 #ifdef MACINTOSH
 int LogCmd(ClientData clientData,
 	   Tcl_Interp * interp,
-	   int argc, const char *argv[] ) {
+	   int argc, const char *argv[] ) 
+{
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  if ( soar_Log( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	init_soarResult(res);
+	if ( soar_Log( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 #else 
@@ -969,7 +1038,8 @@ int LogCmd (ClientData clientData,
     result = soar_Log( argc, argv, &res );
   }
   
-  interp->result = res.result; 
+  /*interp->result = res.result; voigtjr, depricated*/
+  Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
   if ( result  == SOAR_OK ) 
     return TCL_OK;
 
@@ -985,19 +1055,21 @@ int WaitSNCCmd (ClientData clientData,
 	      int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
-  if( soar_WaitSNC( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if( soar_WaitSNC( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -1007,20 +1079,22 @@ int WarningsCmd (ClientData clientData,
 		 int argc, const char *argv[])
 {
 
-  soarResult res;
+	soarResult res;
 
-  init_soarResult(res);
-  Soar_SelectGlobalInterpByInterp(interp);
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
 
 
-  if ( soar_Warnings( argc, argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
-    return TCL_OK;
-  } 
-  else {
-    interp->result = res.result;
-    return TCL_ERROR;
-  }
+	if ( soar_Warnings( argc, argv, &res ) == SOAR_OK ) {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_OK;
+	} 
+	else {
+		/*interp->result = res.result; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+		return TCL_ERROR;
+	}
 }
 
 
@@ -1038,7 +1112,6 @@ int WatchCmd (ClientData clientData,
   int result;
   const char *a;
 
-
   init_soarResult(res);
   Soar_SelectGlobalInterpByInterp(interp);
 
@@ -1046,24 +1119,26 @@ int WatchCmd (ClientData clientData,
     
     if ( string_match("aliases", argv[i]) ) {
       if( argv[i+1] == NULL ) {
-	interp->result = "Missing setting for watch alias, should be -on|-off";
-	return TCL_ERROR;
+        /*interp->result = "Missing setting for watch alias, should be -on|-off"; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( "Missing setting for watch alias, should be -on|-off", -1 ) );
+        return TCL_ERROR;
       }
       else if ( string_match("-on", argv[i+1]) ) {
-	Tcl_SetVar( interp, "print_alias_switch", "on", TCL_GLOBAL_ONLY );
-	argv[i] = '\0';
-	argv[i+1] = '\0';
-	break;
+	    Tcl_SetVar( interp, "print_alias_switch", "on", TCL_GLOBAL_ONLY );
+	    argv[i] = '\0';
+	    argv[i+1] = '\0';
+	    break;
       }
       else if ( string_match("-off", argv[i+1] ) ) {
-	Tcl_SetVar( interp, "print_alias_switch", "off", TCL_GLOBAL_ONLY );
-	argv[i] = '\0';
-	argv[i+1] = '\0';
-	break;
+	    Tcl_SetVar( interp, "print_alias_switch", "off", TCL_GLOBAL_ONLY );
+	    argv[i] = '\0';
+	    argv[i+1] = '\0';
+	    break;
       }
       else {
-	snprintf( interp->result, TCL_RESULT_SIZE, "Unrecognized argument to watch alias : %s", argv[i+1] );
-	interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+	/*snprintf( interp->result, TCL_RESULT_SIZE, "Unrecognized argument to watch alias : %s", argv[i+1] ); voigtjr, depricated*/
+	/*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+        Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Unrecognized argument to watch alias : ", argv[i+1], (char *) NULL );
 	return TCL_ERROR;
       }
     }
@@ -1110,7 +1185,7 @@ int WatchCmd (ClientData clientData,
   }
   free( newArgv ); 
   
-  interp->result = res.result;
+  Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
   
   if ( result == SOAR_OK ) 
     return TCL_OK;
@@ -1218,20 +1293,23 @@ int AskCmd (ClientData clientData,
 
   if (argc == 1)
     {
-      interp->result = too_few_args_string;
+      /*interp->result = too_few_args_string; voigtjr, depricated*/
+      Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
       return TCL_ERROR;
     }
   if (string_match_up_to(argv[1], "-add", 2))
     {
       if (argc < 3)
 		{
-		  interp->result = too_few_args_string;
+		  /*interp->result = too_few_args_string; voigtjr, depricated*/
+                  Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
 		  return TCL_ERROR;
 		}
 
       if (argc > 3)
 		{
-		  interp->result = too_many_args_string;
+		  /*interp->result = too_many_args_string; voigtjr, depricated*/
+                  Tcl_SetObjResult( interp, Tcl_NewStringObj( too_many_args_string, -1 ) );
 		  return TCL_ERROR;
 		}
 
@@ -1327,20 +1405,23 @@ int IOCmd (ClientData clientData,
 
   if (argc == 1)
     {
-      interp->result = too_few_args_string;
+      /*interp->result = too_few_args_string; voigtjr, depricated*/
+      Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
       return TCL_ERROR;
     }
   if (string_match_up_to(argv[1], "-add", 2))
     {
       if (argc < 4)
 	{
-	  interp->result = too_few_args_string;
+	  /*interp->result = too_few_args_string; voigtjr, depricated*/
+          Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
 	  return TCL_ERROR;
 	}
 
       if (argc > 5)
 	{
-	  interp->result = too_many_args_string;
+	  /*interp->result = too_many_args_string; voigtjr, depricated*/
+          Tcl_SetObjResult( interp, Tcl_NewStringObj( too_many_args_string, -1 ) );
 	  return TCL_ERROR;
 	}
 
@@ -1369,7 +1450,8 @@ int IOCmd (ClientData clientData,
             /* Soar-Bugs #131, id required for output - TMH */
             if (argc < 5)
 	    {
-	      interp->result = too_few_args_string;
+	      /*interp->result = too_few_args_string; voigtjr, depricated*/
+          Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
 	      return TCL_ERROR;
 	    }
 
@@ -1381,13 +1463,14 @@ int IOCmd (ClientData clientData,
 	  }
 	else
 	  {
-		snprintf(interp->result, TCL_RESULT_SIZE, "%s: Unrecognized IO type: %s %s", argv[0], argv[1], argv[2]);
-		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-	    
-		return TCL_ERROR;
+	    /*snprintf(interp->result, TCL_RESULT_SIZE, "%s: Unrecognized IO type: %s %s", argv[0], argv[1], argv[2]); voigtjr, depricated*/
+	    /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+	    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), argv[0], ": Unrecognized IO type: ", argv[1], " ", argv[2], (char *) NULL );
+	    return TCL_ERROR;
 	  }
 
-	interp->result = (char*)io_id;
+	/*interp->result = (char*)io_id; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( (char*)io_id, -1 ) );
 	return TCL_OK;
       }
     }
@@ -1396,7 +1479,8 @@ int IOCmd (ClientData clientData,
       switch (argc) {
       case 2:
       case 3:	  
-	interp->result = too_few_args_string;
+	/*interp->result = too_few_args_string; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
 	return TCL_ERROR;
       case 4:	  /* Delete single callback for given event */
 	  {
@@ -1410,15 +1494,16 @@ int IOCmd (ClientData clientData,
 	      }
 	    else
 	      {
-		snprintf(interp->result, TCL_RESULT_SIZE, "Attempt to delete unrecognized io type: %s",argv[2]);
-		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-
+		/*snprintf(interp->result, TCL_RESULT_SIZE, "Attempt to delete unrecognized io type: %s",argv[2]); voigtjr, depricated*/
+		/*interp->result[TCL_RESULT_SIZE-1]=0; */ /* snprintf doesn't set last char to null if output is truncated */
+	        Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Attempt to delete unrecognized io type: ", argv[2], (char *) NULL );
 		return TCL_ERROR;
 	      }
 	  }
 	  break;
       default:
-	interp->result = too_many_args_string;
+	/*interp->result = too_many_args_string; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( too_many_args_string, -1 ) );
 	return TCL_ERROR;
       }
     }
@@ -1426,7 +1511,8 @@ int IOCmd (ClientData clientData,
     {
       switch (argc) {
       case 2:	  
-	interp->result = too_few_args_string;
+	/*interp->result = too_few_args_string; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
 	return TCL_ERROR;
       case 3:	  
 	{
@@ -1442,9 +1528,10 @@ int IOCmd (ClientData clientData,
 	    }
 	  else
 	    {
-		  snprintf(interp->result, TCL_RESULT_SIZE, "Attempt to list unrecognized io type: %s",argv[2]);
-		  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-	      return TCL_ERROR;
+              /*snprintf(interp->result, TCL_RESULT_SIZE, "Attempt to list unrecognized io type: %s",argv[2]); voigtjr, depricated*/
+              /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+ 	      Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Attempt to list unrecognized io type: ", argv[2], (char *) NULL );
+              return TCL_ERROR;
 	    }
 
 	  soar_cPushCallback((soar_callback_agent) clientData,
@@ -1476,15 +1563,17 @@ int IOCmd (ClientData clientData,
 	}
 	break;
       default:
-	interp->result = too_many_args_string;
+	/*interp->result = too_many_args_string; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( too_many_args_string, -1 ) );
 	return TCL_ERROR;
       }
 
     }
   else
     {
-	  snprintf(interp->result, TCL_RESULT_SIZE, "Unrecognized option to io command: %s", argv[1]);
-	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+      /*snprintf(interp->result, TCL_RESULT_SIZE, "Unrecognized option to io command: %s", argv[1]); voigtjr*/
+      /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+      Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Unrecognized option to io command: ", argv[1], (char *) NULL );
       return TCL_ERROR;
     }
   return TCL_OK;
@@ -1547,10 +1636,11 @@ int AttentionLapseCmd (ClientData clientData,
 	 }
        else
 	 {
-	   snprintf(interp->result, TCL_RESULT_SIZE, "Unrecognized argument to attention-lapse command: %s",argv[i]);
-	   interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+	    /*snprintf(interp->result, TCL_RESULT_SIZE, "Unrecognized argument to attention-lapse command: %s",argv[i]); voigtjr, depricated*/
+	    /*interp->result[TCL_RESULT_SIZE-1]=0; */ /* snprintf doesn't set last char to null if output is truncated */
+            Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Unrecognized argument to attention-lapse command: ", argv[1], (char *) NULL );
 
-	   return TCL_ERROR;
+	    return TCL_ERROR;
 	 }
      }
  }
@@ -1591,11 +1681,13 @@ int WakeFromAttentionLapseCmd (ClientData clientData,
   Soar_SelectGlobalInterpByInterp(interp);
 
   if (argc == 1) {
-     wake_from_attention_lapse();
-     return TCL_OK;
+    wake_from_attention_lapse();
+    return TCL_OK;
   } else {
-      interp->result = "Too many arguments, should be: wake-from-attention-lapse";
-     return TCL_ERROR;
+    /*interp->result = "Too many arguments, should be: wake-from-attention-lapse"; voigtjr, depricated*/
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( "Too many arguments, should be: wake-from-attention-lapse", -1 ) );
+
+    return TCL_ERROR;
   }
 }
 
@@ -1638,11 +1730,13 @@ int StartAttentionLapseCmd (ClientData clientData,
   Soar_SelectGlobalInterpByInterp(interp);
 
   if (argc < 2) {
-      interp->result = "Too few arguments, should be: start-attention-lapse integer";
-     return TCL_ERROR;
+    /*interp->result = "Too few arguments, should be: start-attention-lapse integer"; voigtjr, depricated*/
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( "Too few arguments, should be: start-attention-lapse integer", -1 ) );
+    return TCL_ERROR;
   } else if (argc > 2) {
-      interp->result = "Too many arguments, should be: start-attention-lapse integer";
-     return TCL_ERROR;
+    /*interp->result = "Too many arguments, should be: start-attention-lapse integer"; voigtjr, depricated*/
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( "Too many arguments, should be: start-attention-lapse integer", -1 ) );
+    return TCL_ERROR;
   }
 
   if (Tcl_GetInt(interp, argv[1], &duration) == TCL_OK)
@@ -1651,19 +1745,19 @@ int StartAttentionLapseCmd (ClientData clientData,
     }
   else
     {
-	  snprintf(interp->result, TCL_RESULT_SIZE, "Expected integer for attention lapse duration: %s", argv[1]);
-	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-
+      /*snprintf(interp->result, TCL_RESULT_SIZE, "Expected integer for attention lapse duration: %s", argv[1]); voigtjr, depricated*/
+      /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+      Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Expected integer for attention lapse duration: ", argv[1], (char *) NULL );
+      
       return TCL_ERROR;
     }
 
   return TCL_OK;
 }
-
+
 #endif  /* ATTENTION_LAPSE */
 
 
-
 /*
  *----------------------------------------------------------------------
  *
@@ -1709,7 +1803,8 @@ int MonitorCmd (ClientData clientData,
 
   if (argc == 1)
     {
-      interp->result = too_few_args_string;
+      /*interp->result = too_few_args_string; voigtjr, depricated*/
+      Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
       return TCL_ERROR;
     }
 
@@ -1717,13 +1812,15 @@ int MonitorCmd (ClientData clientData,
     {
       if (argc < 4)
 	{
-	  interp->result = too_few_args_string;
+          /*interp->result = too_few_args_string; voigtjr, depricated*/
+          Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
 	  return TCL_ERROR;
 	}
 
       if (argc > 5)
 	{
-	  interp->result = too_many_args_string;
+          /*interp->result = too_many_args_string; voigtjr, depricated*/
+          Tcl_SetObjResult( interp, Tcl_NewStringObj( too_many_args_string, -1 ) );
 	  return TCL_ERROR;
 	}
 
@@ -1750,13 +1847,15 @@ int MonitorCmd (ClientData clientData,
 			      (soar_callback_data) savestring(argv[3]), 
 			      soar_callback_data_free_string,
 			      (soar_callback_id) monitor_id);
-	    interp->result = (char*)monitor_id;
+	    /*interp->result = (char*)monitor_id; voigtjr, depricated*/
+            Tcl_SetObjResult( interp, Tcl_NewStringObj( (char*)monitor_id, -1 ) );
 	    return TCL_OK;
 	  }
 	else
 	  {
-		snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to add unrecognized callback event: %s",argv[2]);
-		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+            /*snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to add unrecognized callback event: %s",argv[2]); voigtjr, depricated*/
+            /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+            Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Attempt to add unrecognized callback event: ", argv[2], (char *) NULL );
 	    return TCL_ERROR;
 	  }
       }
@@ -1765,7 +1864,8 @@ int MonitorCmd (ClientData clientData,
     {
       switch (argc) {
       case 2:
-	interp->result = too_few_args_string;
+        /*interp->result = too_few_args_string; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args_string, -1 ) );
 	return TCL_ERROR;
       case 3:	  /* Delete all callbacks of the given type */
 	  {
@@ -1778,8 +1878,9 @@ int MonitorCmd (ClientData clientData,
 	      }
 	    else
 	      {
-		snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to delete unrecognized callback event: %s",argv[2]);
-		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+		/*snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to delete unrecognized callback event: %s",argv[2]); voigtjr, depricated*/
+		/*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+                Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Attempt to delete unrecognized callback event: ", argv[2], (char *) NULL );
 		return TCL_ERROR;
 	      }
 	  }
@@ -1795,14 +1896,16 @@ int MonitorCmd (ClientData clientData,
 	      }
 	    else
 	      {
-		snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to delete unrecognized callback event: %s",argv[2]);
-		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+		/*snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to delete unrecognized callback event: %s",argv[2]); voigtjr, depricated*/
+		/*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+                Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Attempt to delete unrecognized callback event: ", argv[2], (char *) NULL );
 		return TCL_ERROR;
 	      }
 	  }
 	  break;
       default:
-	interp->result = too_many_args_string;
+        /*interp->result = too_many_args_string; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( too_many_args_string, -1 ) );
 	return TCL_ERROR;
       }
     }
@@ -1851,14 +1954,16 @@ int MonitorCmd (ClientData clientData,
 
 	  }
 	  else {
-		snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to list unrecognized callback event: %s",argv[2]);
-		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+	    /*snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to list unrecognized callback event: %s",argv[2]); voigtjr, depricated*/
+	    /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+            Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Attempt to list unrecognized callback event: ", argv[2], (char *) NULL );
 	    return TCL_ERROR;
 	  }
 	}
 	break;
       default:
-	interp->result = too_many_args_string;
+        /*interp->result = too_many_args_string; voigtjr, depricated*/
+        Tcl_SetObjResult( interp, Tcl_NewStringObj( too_many_args_string, -1 ) );
 	return TCL_ERROR;
       }
 
@@ -1874,8 +1979,9 @@ int MonitorCmd (ClientData clientData,
     }
   else
     {
-	  snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized option to monitor command: %s",argv[1]);
-	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+      /*snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized option to monitor command: %s",argv[1]); depricated, voigtjr*/
+      /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+      Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Unrecognized option to monitor command: ", argv[1], (char *) NULL );
       return TCL_ERROR;
 
     }
@@ -1896,7 +2002,7 @@ int MonitorCmd (ClientData clientData,
  *      selected destination.
  *
  *      If output-strings-destination is set to -append-to-result and 
- *      the C code performs an assignment to interp->result then
+ *      the C code performs an assignment to interp->result then           <--- voigtjr, depricated!
  *      the intermediate results will be lost (memory leak?).
  *
  * Syntax:  output-strings-destination [-push [ [-text-widget widget-name 
@@ -1926,7 +2032,8 @@ int OutputStringsDestCmd (ClientData clientData,
 
   if (argc == 1)
     {
-      interp->result = too_few_args;
+      /*interp->result = too_few_args; voigtjr, depricated */
+      Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args, -1 ) );
       return TCL_ERROR;
     }
 
@@ -1936,7 +2043,8 @@ int OutputStringsDestCmd (ClientData clientData,
 	{
 	  if (argc == 3)
 	    {
-	      interp->result = too_few_args;
+              /*interp->result = too_few_args; voigtjr, depricated */
+              Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args, -1 ) );
 	      return TCL_ERROR;
 	    }
 	  else
@@ -1948,7 +2056,8 @@ int OutputStringsDestCmd (ClientData clientData,
 	      if (argc > 4)
 		{
 		  /* Too many arguments */
-		  interp->result = "Too many arguments";
+		  /*interp->result = "Too many arguments"; voigtjr, depricated*/
+                  Tcl_SetObjResult( interp, Tcl_NewStringObj( "Too many arguments", -1 ) );
 		  return TCL_ERROR;
 		}
 
@@ -1965,7 +2074,8 @@ int OutputStringsDestCmd (ClientData clientData,
 	{
 	  if (argc == 3)
 	    {
-	      interp->result = too_few_args;
+	      /*interp->result = too_few_args; voigtjr, depricated*/
+              Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args, -1 ) );
 	      return TCL_ERROR;
 	    }
 	  else
@@ -1977,7 +2087,8 @@ int OutputStringsDestCmd (ClientData clientData,
 	      if (argc > 4)
 		{
 		  /* Too many arguments */
-		  interp->result = "Too many arguments";
+		  /*interp->result = "Too many arguments"; voigtjr*/
+                  Tcl_SetObjResult( interp, Tcl_NewStringObj( "Too many arguments", -1 ) );
 		  return TCL_ERROR;
 		}
 
@@ -1995,14 +2106,16 @@ int OutputStringsDestCmd (ClientData clientData,
 		int mode;
 
 		if (argc == 3) {
-			interp->result = too_few_args;
+			/*interp->result = too_few_args; voigtjr, depricated*/
+                        Tcl_SetObjResult( interp, Tcl_NewStringObj( too_few_args, -1 ) );
 			return TCL_ERROR;
 		}
 
 		if ((channel = Tcl_GetChannel(interp, argv[3], &mode)) == NULL
 		||  ! (mode & TCL_WRITABLE)) {
-			snprintf(interp->result, TCL_RESULT_SIZE, "%s is not a valid channel for writing.", argv[3]);
-			interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+			/*snprintf(interp->result, TCL_RESULT_SIZE, "%s is not a valid channel for writing.", argv[3]); voigtjr, depricated*/
+			/*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*//* snprintf doesn't set last char to null if output is truncated */
+                        Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), argv[3], " is not a valid channel for writing.", (char *) NULL );
 			return TCL_ERROR;
 		}
 
@@ -2031,8 +2144,9 @@ int OutputStringsDestCmd (ClientData clientData,
 	}
       else
 	{
-	  snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized argument to %s %s: %s",argv[0], argv[1], argv[2]);
-	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+	  /*snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized argument to %s %s: %s", argv[0], argv[1], argv[2]); voigtjr, depricated*/
+	  /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+          Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Unrecognized argument to ", argv[0], " ", argv[1], ": ", argv[2], (char *) NULL );
 	  return TCL_ERROR;      
 	}
     }
@@ -2043,8 +2157,9 @@ int OutputStringsDestCmd (ClientData clientData,
     }
   else
     {
-	  snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized argument to %s: %s",argv[0], argv[1]);
-	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+      /*snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized argument to %s: %s",argv[0], argv[1]); voigtjr, depricated*/
+      /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
+      Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "Unrecognized argument to ", argv[0], ": ", argv[1], (char *) NULL );
       return TCL_ERROR;      
     }
 
@@ -2122,11 +2237,13 @@ int CaptureInputCmd (ClientData clientData,
 
 
   if( soar_CaptureInput( argc, new_argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
+    /*interp->result = res.result; voigtjr, depricated*/
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
     return TCL_OK;
   } 
   else {
-    interp->result = res.result;
+    /*interp->result = res.result; voigtjr, depricated*/
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
     return TCL_ERROR;
   }
 }
@@ -2204,11 +2321,13 @@ int ReplayInputCmd (ClientData clientData,
 
 
   if( soar_ReplayInput( argc, new_argv, &res ) == SOAR_OK ) {
-    interp->result = res.result;
+    /*interp->result = res.result; voigtjr, depricated*/
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
     return TCL_OK;
   } 
   else {
-    interp->result = res.result;
+    /*interp->result = res.result; voigtjr, depricated*/
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
     return TCL_ERROR;
   }
 }
@@ -2253,15 +2372,15 @@ int ReteNetCmd (ClientData clientData,
   
   if (argc < 3)
     {
-      interp->result =  
-         "Too few arguments.\nUsage: rete-net {-save | -load} filename.";
+      /*interp->result =  "Too few arguments.\nUsage: rete-net {-save | -load} filename."; voigtjr, depricated*/
+      Tcl_SetObjResult( interp, Tcl_NewStringObj( "Too few arguments.\nUsage: rete-net {-save | -load} filename.", -1 ) );
       return TCL_ERROR;
     }
 
   if (argc > 3)
     {
-      interp->result = 
-         "Too many arguments.\nUsage: rete-net {-save | -load} filename.";
+      /*interp->result = "Too many arguments.\nUsage: rete-net {-save | -load} filename."; voigtjr, depricated*/
+      Tcl_SetObjResult( interp, Tcl_NewStringObj( "Too many arguments.\nUsage: rete-net {-save | -load} filename.", -1 ) );
       return TCL_ERROR;
     }
 
@@ -2272,8 +2391,8 @@ int ReteNetCmd (ClientData clientData,
   else if ( string_match( argv[1], "-load" ) ) 
     rete_net_op = soar_cLoadReteNet;
   else {
-    interp->result = 
-      "Unrecognized argument to ReteNet command: %s. Should be -save|-load";
+    /* interp->result = "Unrecognized argument to ReteNet command: %s. Should be -save|-load"; voigtjr, depricated*/
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( "Unrecognized argument to ReteNet command: %s. Should be -save|-load", -1 ) );
     return TCL_ERROR;
   }
   
