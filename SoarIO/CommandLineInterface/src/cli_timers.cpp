@@ -14,10 +14,10 @@ using namespace sml;
 
 bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
-		{"enable",					1, 0, 'e'},
-		{"disable",					1, 0, 'd'},
-		{"off",						1, 0, 'd'},
-		{"on",						1, 0, 'e'},
+		{"enable",					0, 0, 'e'},
+		{"disable",					0, 0, 'd'},
+		{"off",						0, 0, 'd'},
+		{"on",						0, 0, 'e'},
 		{0, 0, 0, 0}
 	};
 
