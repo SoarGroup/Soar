@@ -262,6 +262,14 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	ok = pAgent->Commit() ;
 
+	// Delete one of the shared WMEs to make sure that's ok
+	// BUGBUG: Turns out in the current gSKI implementation this can cause a crash, if we do proper cleanup
+	// If we release the children of pID here (as we should) then if there is a shared WME (like pID2)
+	// it is left with a reference to children that have been deleted.  I'm pretty sure it's a ref counting bug in gSKI's AddWmeObjectLink method.
+	// The fix I'm using here is to not create the shared WME (pID2) above here.
+	pAgent->DestroyWME(pID) ;
+	pAgent->Commit() ;
+
 	if (doInitSoars)
 		pAgent->InitSoar() ;
 
@@ -285,14 +293,6 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		return false ;
 	}
 
-	// Delete one of the shared WMEs to make sure that's ok
-	// BUGBUG: Turns out in the current gSKI implementation this can cause a crash, if we do proper cleanup
-	// If we release the children of pID here (as we should) then if there is a shared WME (like pID2)
-	// it is left with a reference to children that have been deleted.  I'm pretty sure it's a ref counting bug in gSKI's AddWmeObjectLink method.
-	// The fix I'm using here is to not create the shared WME (pID2) above here.
-	pAgent->DestroyWME(pID) ;
-	pAgent->Commit() ;
-
 	if (doInitSoars)
 		pAgent->InitSoar() ;
 
@@ -314,10 +314,23 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	std::string trace ;	// We'll pass this into the handler and build up the output in it
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
 
+	int beforeCount = 0 ;
+	int afterCount = 0 ;
+	int callback_before = pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, MyRunEventHandler, &beforeCount) ;
+	int callback_after = pAgent->RegisterForRunEvent(smlEVENT_AFTER_RUN_ENDS, MyRunEventHandler, &afterCount) ;
+
 	// Nothing should match here
-	result = pAgent->Run(2) ;
+	result = pAgent->Run(4) ;
+
+	if (beforeCount != 1 || afterCount != 1)
+	{
+		cout << "Error receiving BFORE_RUN_STARTS/AFTER_RUN_ENDS events" << endl ;
+		return false ;
+	}
 
 	pAgent->UnregisterForPrintEvent(callbackp) ;
+	pAgent->UnregisterForRunEvent(callback_before) ;
+	pAgent->UnregisterForRunEvent(callback_after) ;
 	cout << trace << endl ;
 
 	// Then add some tic tac toe stuff which should trigger output

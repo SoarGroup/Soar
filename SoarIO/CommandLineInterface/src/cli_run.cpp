@@ -104,16 +104,19 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	}
 
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
-	egSKIRunResult runResult;
+	// Decide which agents to run
 	if (options.test(RUN_SELF)) {
-		runResult = pAgent->RunInClientThread(runType, count, &m_gSKIError);
+		m_pKernel->GetAgentManager()->RemoveAllAgentsFromRunList() ;
+		m_pKernel->GetAgentManager()->AddAgentToRunList(pAgent, &m_gSKIError) ;
 		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 	} else {
-        m_pKernel->GetAgentManager()->ClearAllInterrupts();
         m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
-		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 	}
+
+	// Do the run
+    m_pKernel->GetAgentManager()->ClearAllInterrupts();
+	egSKIRunResult runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, &m_gSKIError);
+	if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {

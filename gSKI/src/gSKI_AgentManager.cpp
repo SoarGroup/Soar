@@ -350,7 +350,7 @@ namespace gSKI
          {
             // Set up to listen for this agent being done running.  This will
             //  call RemoveAgentByName after the agent completes its run
-            _agent->AddRunListener(gSKIEVENT_AFTER_RUNNING, &m_runCompleteListener);
+            _agent->AddRunListener(gSKIEVENT_AFTER_RUN_ENDS, &m_runCompleteListener);
 
             // Tell it to halt
             _agent->Halt();
@@ -510,7 +510,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::FireBeforeAgentsRunEvent()
+   void AgentManager::FireBeforeAgentsRunStepEvent()
    {
 	  AgentNotifier nf(NULL) ;	// Not an agent specific event but an agent manager event.
       m_agentListeners.Notify(gSKIEVENT_BEFORE_AGENTS_RUN_STEP, nf);
@@ -523,7 +523,7 @@ namespace gSKI
    */
    void AgentManager::AgentRunCompletedListener::HandleEvent(egSKIRunEventId eventId, IAgent* agentPtr, egSKIPhaseType phase)
    {
-      MegaAssert(eventId == gSKIEVENT_AFTER_RUNNING, "Getting an unexpected event in the agent removal listener.");
+      MegaAssert(eventId == gSKIEVENT_AFTER_RUN_ENDS, "Getting an unexpected event in the agent removal listener.");
       m_am->RemoveAgentByName(agentPtr->GetName());
    }
 

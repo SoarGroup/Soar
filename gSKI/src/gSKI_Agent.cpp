@@ -1463,11 +1463,29 @@ namespace gSKI
       }    
 
       // Notify that we stopped
+	  // This is "AFTER_RUNNING_A_PHASE" (or other chunk) not after the end of the complete run.
+	  // Use AFTER_RUN_ENDS if you want to trap the end of the complete run.
       RunNotifier nfAfterStop(this, m_lastPhase);
       m_runListeners.Notify(gSKIEVENT_AFTER_RUNNING, nfAfterStop);
 
       return retVal;
    }
+
+	/** Fire the gSKIEVENT_BEFORE_RUN_STARTS event.
+	    This is fired once before any running occurs **/
+   void Agent::FireRunStartsEvent()
+	{
+       RunNotifier nfBeforeStart(this, m_lastPhase);
+       m_runListeners.Notify(gSKIEVENT_BEFORE_RUN_STARTS, nfBeforeStart);
+	}
+
+	/** Fire the gSKIEVENT_AFTER_RUN_ENDS event.
+	    This is fired once at the end of a complete run. **/
+	void Agent::FireRunEndsEvent()
+	{
+       RunNotifier nfAfterEnd(this, m_lastPhase);
+       m_runListeners.Notify(gSKIEVENT_AFTER_RUN_ENDS, nfAfterEnd);
+	}
 
    /*
    =============================

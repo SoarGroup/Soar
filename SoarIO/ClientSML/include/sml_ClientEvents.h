@@ -79,8 +79,10 @@ typedef enum {
     smlEVENT_BEFORE_DECISION_CYCLE,
     smlEVENT_AFTER_DECISION_CYCLE,
     smlEVENT_AFTER_INTERRUPT,
-    smlEVENT_BEFORE_RUNNING,
-    smlEVENT_AFTER_RUNNING,
+	smlEVENT_BEFORE_RUN_STARTS,			// Before start of a run
+	smlEVENT_AFTER_RUN_ENDS,			// After run ends for any reason
+    smlEVENT_BEFORE_RUNNING,			// Before running one step (phase)
+    smlEVENT_AFTER_RUNNING,				// After running one step (phase)
 } smlRunEventId ;
 
 typedef enum {

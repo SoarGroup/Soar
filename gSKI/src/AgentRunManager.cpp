@@ -259,6 +259,8 @@ namespace gSKI
          return gSKI_RUN_ERROR;
       }
 
+	  // Send event for each agent to signal its about to start running
+	  FireBeforeRunStartsEvents() ;
 
       // Run all the ones that can be run
       while(!runFinished)
@@ -270,7 +272,7 @@ namespace gSKI
 		 // which allows a single listener to check for client driven interrupts for all agents.
 		 // Sometimes that's easier to work with than the agent specific events (where you get <n> events from <n> agents)
 		 AgentManager* pManager = (AgentManager*)getKernel()->GetAgentManager() ;
-		 pManager->FireBeforeAgentsRunEvent() ;
+		 pManager->FireBeforeAgentsRunStepEvent() ;
 
          // Run each agent for the interleave amount
          for(tAgentRunListIt it = m_runningAgents.begin(); it != m_runningAgents.end(); ++it)
@@ -312,6 +314,9 @@ namespace gSKI
                //  running it individularlly
                if(curData->a->GetRunState() != gSKI_RUNSTATE_STOPPED)
                {
+				  // Notify listeners that this agent is finished running
+				  ((Agent*)curData->a)->FireRunEndsEvent() ;
+
                   RemoveAgentFromRunList(curData->a);
                }
                else
@@ -329,10 +334,38 @@ namespace gSKI
          synchronizeRunList(runLength, count, false);
       }
 
+	  // Send event for each agent still in the run list that it has finished run
+	  FireAfterRunEndsEvents() ;
+
       // Finshed
       m_groupRunning = false;
       return gSKI_RUN_COMPLETED;
    }
+
+	/** Notify listeners that agents in the run list are starting or finishing their runs **/
+	void AgentRunManager::FireBeforeRunStartsEvents()
+	{
+         for(tAgentRunListIt it = m_runningAgents.begin(); it != m_runningAgents.end(); ++it)
+         {
+            AgentRunData* curData = &(*it);
+
+            // Fire the event for this agent
+            if(isValidAgent(curData->a))
+				((Agent*)curData->a)->FireRunStartsEvent() ;
+		 }
+	}
+
+	void AgentRunManager::FireAfterRunEndsEvents()
+	{
+         for(tAgentRunListIt it = m_runningAgents.begin(); it != m_runningAgents.end(); ++it)
+         {
+            AgentRunData* curData = &(*it);
+
+            // Fire the event for this agent
+            if(isValidAgent(curData->a))
+				((Agent*)curData->a)->FireRunEndsEvent() ;
+		 }
+	}
 
    /*
    =============================

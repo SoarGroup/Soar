@@ -151,6 +151,10 @@ namespace gSKI
 	  /** Look up the kernel for this run manager **/
 	  IKernel* getKernel() ;
 
+	  /** Notify listeners that agents in the run list are starting or finishing their runs **/
+	  void FireBeforeRunStartsEvents() ;
+	  void FireAfterRunEndsEvents() ;
+
    private:
 
       /** List of agents in the run list */

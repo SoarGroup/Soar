@@ -60,8 +60,10 @@
       gSKIEVENT_BEFORE_DECISION_CYCLE,
       gSKIEVENT_AFTER_DECISION_CYCLE,
       gSKIEVENT_AFTER_INTERRUPT,
-      gSKIEVENT_BEFORE_RUNNING,
-      gSKIEVENT_AFTER_RUNNING,
+	  gSKIEVENT_BEFORE_RUN_STARTS,		// Before start a run
+	  gSKIEVENT_AFTER_RUN_ENDS,			// After run ends for any reason
+      gSKIEVENT_BEFORE_RUNNING,			// Before running one phase
+      gSKIEVENT_AFTER_RUNNING,			// After running one phase
       gSKIEVENT_LAST_RUN_EVENT = gSKIEVENT_AFTER_RUNNING,
     } egSKIRunEventId;
 

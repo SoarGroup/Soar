@@ -1044,7 +1044,14 @@ namespace gSKI
                                Error*                err = 0);
       //}
 
-      /** Multi-attribute support */
+   
+	  /** Fire the gSKIEVENT_BEFORE_RUN_STARTS event **/
+	  void FireRunStartsEvent() ;
+
+	  /** Fire the gSKIEVENT_AFTER_RUN_ENDS event **/
+	  void FireRunEndsEvent() ;
+	  
+	  /** Multi-attribute support */
       //{
       virtual tIMultiAttributeIterator* GetMultiAttributes(Error* pErr = 0);
       virtual IMultiAttribute* GetMultiAttribute(const char* attribute, Error* pErr = 0);
