@@ -55,7 +55,8 @@ int main(int argc, char** argv)
 	const char AGENT_NAME[] = "test";
 	pAgent = pKernel->CreateAgent(AGENT_NAME) ;
 	assert(pAgent);
-	cout << "Agent 'test' created." << endl;
+	cout << "Agent 'test' created.\n";
+	cout << "Use the meta-commands 'raw' and 'structured' to switch output style" << endl;
 
 	// Register for print callbacks
 	pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
@@ -108,12 +109,6 @@ int main(int argc, char** argv)
 			}
 
 			switch (input) {
-				case '`':
-					raw = !raw;
-					cmdline.clear();
-					input = '\n';
-					// falls through
-
 				case '\n':
 				case '\r':
 					process = true;
@@ -175,7 +170,11 @@ int main(int argc, char** argv)
 		history[historyIndex++] = cmdline;
 		historyIndex %= HISTORY_SIZE;
 
-		if (raw) {
+		if (cmdline == "raw") {
+			raw = true;
+		} else if (cmdline == "structured") {
+			raw = false;
+		} else if (raw) {
 			output = pKernel->ExecuteCommandLine(cmdline.c_str(), AGENT_NAME);
 			previousResult = pKernel->GetLastCommandLineResult() ;
 		} else {
@@ -201,8 +200,13 @@ int main(int argc, char** argv)
 
 			delete pStructuredResponse;
 		}
+		if (output.size()) {
+			if (output[output.size() - 1] == '\n') {
+				output = output.substr(0, output.size() - 1);
+			}
+			cout << output << endl;
+		}
 
-		cout << output << endl;
 
 		if (output.find("Goodbye.") != std::string::npos) {
 			break;

@@ -120,15 +120,11 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
 	egSKIRunResult runResult;
 	if (options & OPTION_RUN_SELF) {
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		runResult = pAgent->RunInClientThread(runType, count, m_pError);
-		//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	} else {
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         m_pKernel->GetAgentManager()->ClearAllInterrupts();
         m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
 		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
-		//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	}
 
 	// Check for error

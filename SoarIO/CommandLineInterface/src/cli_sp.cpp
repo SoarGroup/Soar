@@ -37,9 +37,7 @@ bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& product
 	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
 
 	// Load the production
-	//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), m_pError);
-	//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	if(m_pError->Id != gSKI::gSKIERR_NONE) {
 		return HandleError("Unable to add the production: " + production);

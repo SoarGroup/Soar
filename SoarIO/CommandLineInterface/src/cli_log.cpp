@@ -99,14 +99,12 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const char* pFilename, bo
 		}
 
 		// Logging opened, add listener and save filename since we can't get it from ofstream
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 		m_LogFilename = pFilename;
 
 	} else if (option) {		
 		// In absence of filename, option true means close
 		if (m_pLogFile) {
 			// Remove the listener and close the file
-			//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 			delete m_pLogFile;
 			m_pLogFile = 0;
 

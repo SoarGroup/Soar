@@ -41,9 +41,7 @@ bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent) {
 
 	const char* pResult = 0;
 
-	//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	bool ret = pPerfMon->GetStatsString(argc, argv, &pResult);
-	//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	if(strlen(pResult) > 0) {
 		AppendToResult(pResult);

@@ -122,9 +122,7 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int opti
 
 	// Check for stack print
 	if (options & OPTION_PRINT_STACK) {
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		pKernelHack->PrintStackTrace(pAgent, (options & OPTION_PRINT_STATES) ? true : false, (options & OPTION_PRINT_OPERATORS) ? true : false);
-		//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 
@@ -137,43 +135,31 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int opti
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options & OPTION_PRINT_ALL) {
 		// TODO: Find out what is arg is for
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-		//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_CHUNKS) {
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
-		//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_DEFAULTS) {
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-		//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_JUSTIFICATIONS) {
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-		//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_USER) {
-		//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
-		//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 
 	// Default to symbol print
-	//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	pKernelHack->PrintSymbol(pAgent, const_cast<char*>(pArg->c_str()), name, filename, internal, full, depth);
-	//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	return true;
 }
 
