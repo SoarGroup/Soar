@@ -5,3 +5,4 @@ popd
 pushd elaborations
 source elaborations_source.soar
 popd
+source initialize-tanksoar-default.soar

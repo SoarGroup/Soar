@@ -5,5 +5,7 @@ VERSION 4
 2	0	FOLDER all all 3
 3	0	FOLDER elaborations elaborations 4
 4	3	FOPERATOR _all _all.soar 5
-5	3	FOPERATOR top-state top-state.soar 6
+5	3	FOPERATOR output output.soar 8
+6	3	FOPERATOR top-state top-state.soar 6
+7	0	OPERATOR initialize-tanksoar-default initialize-tanksoar-default.soar 7
 END

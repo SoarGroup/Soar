@@ -1,4 +1,4 @@
-44
+51
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -43,9 +43,18 @@ INTEGER_RANGE 40 -2147483648 2147483647
 SOAR_ID 41
 SOAR_ID 42
 INTEGER_RANGE 43 -2147483648 2147483647
-53
+SOAR_ID 44
+ENUMERATION 45 1 initialize-tanksoar-default
+SOAR_ID 46
+SOAR_ID 47
+SOAR_ID 48
+ENUMERATION 49 1 complete
+ENUMERATION 50 1 missile
+60
 0 io 1
 0 name 6
+0 operator 44
+0 operator 46
 0 superstate 5
 0 top-state 0
 0 type 4
@@ -73,7 +82,7 @@ INTEGER_RANGE 43 -2147483648 2147483647
 2 sound 38
 2 x 39
 2 y 40
-3 fire 7
+3 fire 48
 3 move 8
 3 radar 9
 3 radar-power 10
@@ -97,3 +106,8 @@ INTEGER_RANGE 43 -2147483648 2147483647
 19 right 29
 42 color 31
 42 distance 43
+44 name 45
+46 actions 47
+47 fire 7
+48 status 49
+48 weapon 50
