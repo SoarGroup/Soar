@@ -417,8 +417,10 @@ void learn_RL_productions(int level){
 
 				if (prod->times_updated > 15){
 					STDDEV(prod, 15);
-					if (prod->std_dev > 0.01*fabs(record->previous_Q))
-						prod->conv_value = FALSE;
+					// if (prod->std_dev > 0.01*fabs(record->previous_Q)){
+					if ((prod->std_dev > 0.01*fabs(record->previous_Q)) || (prod->std_dev > 0.1*fabs(temp))){					
+					prod->conv_value = FALSE;
+					} else { prod->conv_value = TRUE; }
 				}
 
 
