@@ -382,6 +382,27 @@ int InternalSymbolsCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl
     }
 }
 
+int DecayCmd(ClientData clientData,
+		  Tcl_Interp * interp,
+		  int objc, Tcl_Obj * const objv[])
+{
+	soarResult res;
+	char **argv;
+	int ret;
+
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
+
+	create_argv_from_objv(objc, objv, &argv);
+	ret = soar_Decay(objc, argv, &res);
+	free_argv(objc, argv);
+
+	if (ret != SOAR_OK) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
+		return TCL_ERROR;
+	}
+	return TCL_OK;
+}
  
 int RLCmd(ClientData clientData,
 		  Tcl_Interp * interp,
@@ -2200,7 +2221,8 @@ void Soar_InstallCommands(agent * the_agent)
     install_tcl_soar_cmd(the_agent, "internal-symbols", InternalSymbolsCmd);
     install_tcl_soar_cmd(the_agent, "io", IOCmd);
     install_tcl_soar_cmd(the_agent, "learn", LearnCmd);
-    install_tcl_soar_cmd(the_agent, "setRL",               RLCmd);         // SAN
+    install_tcl_soar_cmd(the_agent, "decay", DecayCmd);
+	install_tcl_soar_cmd(the_agent, "setRL",               RLCmd);         // SAN
     install_tcl_soar_cmd(the_agent, "log", LogCmd);
     install_tcl_soar_cmd(the_agent, "matches", MatchesCmd);
     install_tcl_soar_cmd(the_agent, "max-chunks", MaxChunksCmd);
