@@ -2913,7 +2913,7 @@ bool same_rhs(action * rhs1, action * rhs2)
             return FALSE;
         if (a1->value != a2->value)
             return FALSE;
-        if (preference_is_binary(a1->preference_type))
+        if (preference_is_binary(a1->preference_type) && a1->preference_type != NUMERIC_INDIFFERENT_PREFERENCE_TYPE)
             if (a1->referent != a2->referent)
                 return FALSE;
         a1 = a1->next;

@@ -364,7 +364,7 @@ condition *make_simple_condition(Symbol *id_sym,
     newcond->next = NULL;
     newcond->prev = NULL;
 
-    if (strcmp(attr_sym->var.name, "operator") == 0)
+    if (strcmp(attr_sym->sc.name, "operator") == 0)
     {
         newcond->test_for_acceptable_preference = TRUE;
     }
@@ -412,3 +412,4 @@ void SAN_add_goal_or_impasse_tests(condition * all_conds)
         }
     }
 }
+
