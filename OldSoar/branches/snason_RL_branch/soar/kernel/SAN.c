@@ -127,7 +127,7 @@ void record_for_RL()
 	wme *w;
 	slot *s;
 	instantiation *ist;
-	production *prod;
+	production *prod, *new_prod;
 	preference *pref;
  	RL_record *record;
  
@@ -152,10 +152,10 @@ void record_for_RL()
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
 			  if ((prod->times_applied > 50) && prod->increasing){
-				  prod = specify_production(ist);
-				  if (prod){
+				  new_prod = specify_production(ist);
+				  if (new_prod){
 					  prod->times_applied = 0;
-					  push(prod, record->pointer_list);
+					  push(new_prod, record->pointer_list);
 					  record->num_prod++;
 				  }
 			 
@@ -393,6 +393,7 @@ production *build_RL_production(condition *top_cond, condition *bottom_cond, not
 	current_agent(variablize_this_chunk) = chunk_var;
 	if (add_production_to_rete(prod, top_cond, 0, FALSE) == DUPLICATE_PRODUCTION){
 		   excise_production(prod, FALSE);
+		   current_agent(RL_count)--;
 		   prod = NIL;
 	} 
 	// deallocate_condition_list(new_top);

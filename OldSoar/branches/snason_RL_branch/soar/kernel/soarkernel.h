@@ -3618,7 +3618,7 @@ typedef struct ms_change_struct {
  #define DECAY_WME_CRITERIA_O_SUPPORT_ONLY       0   
  #define DECAY_WME_CRITERIA_O_ARCH               1   
  #define DECAY_WME_CRITERIA_ALL                  2   
- #define DECAY_DEFAULT_WME_CRITERIA              DECAY_WME_CRITERIA_O_SUPPORT_ONLY   
+ #define DECAY_DEFAULT_WME_CRITERIA              DECAY_WME_CRITERIA_ALL   
     
  #define DECAY_DEFAULT_ALLOW_FORGETTING          1   
     
