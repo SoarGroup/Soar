@@ -1,12 +1,26 @@
-#include "sgioTowers.h"
+#include "AgnosticTowers.h"
 
-
+#include "sgio_wmemem.h"
 
 
 using sgio::WorkingMemory;
 using sgio::SoarId;
 using sgio::StringElement;
 using sgio::IntElement;
+
+class DiskInputLinkProfile
+{
+	friend class Disk;
+
+	SoarId* m_pDiskIdentifier;
+		IntElement* m_pSize;
+		StringElement* m_pName;
+
+	SoarId* m_pHoldsIdentifier;
+		SoarId* m_pDiskBeneath;
+		SoarId* m_pPeg;
+		SoarId* m_pDisk;
+};
 
 
 //======================================================
@@ -29,7 +43,7 @@ void Detach()
 //void Update(IWorkingMemory* pWMemory, IWMObject* object);
 
 
-void Disk::SetDiskBeneath(Disk* diskBeneath /*, IWMObject* pegObject*/)
+void Disk::SetDiskBeneath(Disk* diskBeneath)
 {
 
 
@@ -84,7 +98,7 @@ void Tower::PrintEntireTower()
 //======================================================
 //=========== Hanoi Function Definitions ===============
 
-HanoiWorld::HanoiWorld(WorkingMemory* pWmemory, bool graphicsOn, int inNumTowers,  int inNumDisks)
+HanoiWorld::HanoiWorld(/*WorkingMemory* pWmemory,*/ bool graphicsOn, int inNumTowers,  int inNumDisks)
 {
 
 
