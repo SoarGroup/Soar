@@ -4,7 +4,6 @@
 %include "../sml_ClientInterface.i"
 /*
 %{
-
 struct TclUserData {
 	Tcl_Interp* interp;
 	Tcl_Obj* script;
@@ -14,46 +13,50 @@ struct TclUserData {
 //   function for our widget. However, we use the pUserData pointer
 //   for holding a reference to a Tcl callable object. 
 
-static double TclAgentEventCallBack(smlEventId id, void* pUserData, Agent* pAgent)
+void TclAgentEventCallBack(sml::smlEventId id, void* pUserData, sml::Agent* pAgent)
 {
-	TclUserData* ud = (TclUserData*)(pUserData);
-	Tcl_Obj* = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0)
-	int errorCode = Tcl_EvalEx(ud->interp, ud->script, -1, 0);
+	TclUserData* tud = static_cast<TclUserData*>(pUserData);
+	int errorCode = Tcl_EvalObjEx(tud->interp, tud->script, 0);
 	
 	if(errorCode != TCL_OK) {
 	  // not sure what we can do
 	}
-	
-   PyObject *func, *arglist;
-   PyObject *result;
-   double    dres = 0;
-   
-   func = (PyObject *) clientdata;               // Get Python function
-   arglist = Py_BuildValue("(d)",a);             // Build argument list
-   result = PyEval_CallObject(func,arglist);     // Call Python
-   Py_DECREF(arglist);                           // Trash arglist
-   if (result) {                                 // If no errors, return double
-     dres = PyFloat_AsDouble(result);
-   }
-   Py_XDECREF(result);
-   return dres;
-
 }
 %}
 
-// Attach a new method to our plot widget for adding Python functions
-%addmethods PlotWidget {
-   // Set a Python function object as a callback function
-   // Note : PyObject *pyfunc is remapped with a typempap
-   void set_pymethod(PyObject *pyfunc) {
-     self->set_method(PythonCallBack, (void *) pyfunc);
-     Py_INCREF(pyfunc);
-   }
-%addmethods Agent {
-	void TclRegisterForAgentEvent(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[]) {
-	
-	}
-	void TclRegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData) {
-	}
+// Attach a new method to Agentfor adding Tcl callback functions
+%extend sml::Agent {
+    // objv[0] : ???
+    // objv[1] : Agent pointer
+    // objv[2] : smlEventId (int)
+    // obvj[3] : Tcl proc (string)
+    // obvj[4] : user data (string?)
+        
+	int TclRegisterForAgentEvent(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[]) {
+	    
+	    TclUserData* tud = new TclUserData();
+	    tud->interp = interp;
+	    tud->script = objv[3];
+	    
+	    int eventId;
+	    
+	    if (Tcl_GetIntFromObj(interp, objv[2], &eventId) == TCL_ERROR) {
+            return TCL_ERROR;
+        }
+        
+        sml::Agent *agent = (sml::Agent *) 0 ;
+	    if ((SWIG_ConvertPtr(objv[1], (void **) &agent, SWIGTYPE_p_sml__Agent,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
+	    
+	    //create script
+	    //form is: procname AgentPtr smlEventId userdata
+	    Tcl_AppendStringsToObj(tud->script, " ", (char *)NULL);
+	    Tcl_AppendObjToObj(objv[1]);
+	    Tcl_AppendStringsToObj(tud->script, " ", (char *)NULL);
+	    Tcl_AppendObjToObj(tud->script, objv[2]);
+	    Tcl_AppendStringsToObj(tud->script, " ", (char *)NULL);
+	    Tcl_AppendObjToObj(tud->script, objv[4]);
+	    
+	    (agent)->RegisterForAgentEvent((sml::smlEventId )eventId, TclAgentEventCallBack, tud);
+	};
 }
 */
