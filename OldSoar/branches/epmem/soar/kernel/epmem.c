@@ -70,8 +70,9 @@ extern void decay_print_most_activated_wmes(int n);
 
 /*
 
-   wmetree - Used to build a tree representation of a state
-             which is used to construct an episodic memory
+   wmetree - Used to build a tree representation of the structure and content of
+             all states that the agent has encountered.  This in turn is used to
+             construct an episodic memory
 
              id   - every WME in the tree has a unique id.  I can't
                     use the timetag because multiple WMEs may have the same
@@ -488,6 +489,13 @@ int wme_equals_node(wme *w, wmetree *node)
 /* ===================================================================
    print_wmetree
 
+   Prints an ASCII graphic representation of the wmetree rooted by the
+   given node.
+
+   node - wmetree to print
+   indent - how many spaces to indent
+   depth - how many levels to descend into the tree.  A depth of zero
+           will just print the node.  
    
    Created: 09 Nov 2002
    =================================================================== */
