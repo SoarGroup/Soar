@@ -656,7 +656,7 @@ proc tsiDebugger {} {
     #lappend auto_path ..
     package require -exact BWidget 1.2.1
 
-    option add *TitleFrame.font {helvetica 11 bold italic}
+    option add *TitleFrame.font {helvetica 10 bold italic}
 
     #wm withdraw .
     toplevel .tsw
@@ -675,6 +675,11 @@ proc tsiDebugger {} {
     #wm geom .tsw 88x60+2+409
     #wm geom .tsw 18x24+2+409
     wm geom .tsw 90x62+2+40
+    if {$tcl_platform(platform) == {unix}} {
+      wm geom .tsw 110x76+2+40
+    } else {
+      wm geom .tsw 90x62+2+40
+    }
     Debugger::ChangeUpdate
 }
 

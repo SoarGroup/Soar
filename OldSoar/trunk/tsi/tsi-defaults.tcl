@@ -1,3 +1,5 @@
+# $Id$
+
 #puts "Loading tsi-defaults.tcl"
 
 ## set tsiConfig(debug) to 1 when debugging, 0 when not
@@ -18,73 +20,38 @@ set tsiConfig(debug) 0
 ## -- Tcl and Tk help menus
 set tsiConfig(expertise) 1
 
-if {$tcl_version >= 8.0} {
-	 if {$tcl_platform(platform) == {unix}} {
-		  set tsiConfig(normalFont) {courier 12 normal}
-		  set tsiConfig(boldFont)   {courier 12 bold}
-		  set tsiConfig(italicFont) {courier 12 italic}
-		  set tsiConfig(helpFont)   {courier 12 bold}
-		  set tsiConfig(searchTextFont) {courier 12 normal}
-		  set tsiConfig(searchButtonsFont) {system 12}
-        set tsiConfig(tsiFont) {courier 12 normal}
-        set tsiConfig(buttonFont) {courier 12 normal}
-        set tsiConfig(menuFont) {courier 12 normal}
-        set tsiConfig(dialogFont) {system 12}
-        set tsiConfig(dialogDefaultTextFont) {system 12}
-        set tsiConfig(smallFont) {fixed 12}
-	 } else {
-		  set tsiConfig(normalFont) {courier 10 normal}
-		  set tsiConfig(boldFont)   {courier 10 bold}
-		  set tsiConfig(italicFont) {courier 10 italic}
-		  set tsiConfig(helpFont)   {courier 10 bold}
-		  set tsiConfig(searchTextFont) {courier 10 normal}
-		  set tsiConfig(searchButtonsFont) {system 10}
-        set tsiConfig(tsiFont) {courier 10 normal}
+# Fonts
+set tsiConfig(normalFont) 	{courier 10 normal}
+set tsiConfig(boldFont)   	{courier 10 bold}
+set tsiConfig(italicFont) 	{courier 10 italic}
+set tsiConfig(helpFont)   	{courier 10 bold}
+set tsiConfig(searchTextFont) 	{courier 10 normal}
+set tsiConfig(tsiFont) 		{courier 10 normal}
+set tsiConfig(buttonFont) 	{courier 10 normal}
+set tsiConfig(menuFont) 	{courier 10 normal}
 
-        set tsiConfig(buttonFont) {courier 10 normal}
-        set tsiConfig(menuFont) {courier 10 normal}
-        set tsiConfig(dialogFont) {system 10}
-        set tsiConfig(dialogDefaultTextFont) {system 10}
-        set tsiConfig(smallFont) {fixed 10}
-	 }   
+if {$tcl_platform(platform) == {unix}} {
+	set tsiConfig(searchButtonsFont) {system 12}
+	set tsiConfig(dialogFont) 	{system 12}
+	set tsiConfig(dialogDefaultTextFont) {system 12}
+	set tsiConfig(smallFont) 	{fixed 12}
 } else {
-	 if {$tcl_platform(platform) == {unix}} {
-		  set tsiConfig(normalFont) {*-Courier-Medium-R-Normal-*-120-*}
-		  set tsiConfig(boldFont) {*-Courier-Bold-R-Normal-*-120-*}
-		  set tsiConfig(italicFont) {*-Courier-Medium-O-Normal-*-120-*}
-		  set tsiConfig(helpFont) {*-Courier-Bold-O-Normal-*-140-*}
-        set tsiConfig(buttonFont) {*-Courier-Medium-R-Normal-*-120-*}
-        set tsiConfig(menuFont) {*-Courier-Medium-R-Normal-*-120-*}
-        set tsiConfig(dialogFont) {*-Courier-Medium-R-Normal-*-120-*}
-        set tsiConfig(dialogDefaultTextFont) {*-Courier-Medium-R-Normal-*-120-*}
-        set tsiConfig(smallFont) {*-Courier-Medium-R-Normal-*-80-*}
-	 } else {
-		  set tsiConfig(normalFont) {-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*}
-		  set tsiConfig(boldFont) {-*-Courier-Bold-R-Normal--*-120-*-*-*-*-*-*}
-		  set tsiConfig(italicFont) {-*-Courier-Medium-O-Normal--*-120-*-*-*-*-*-*}
-		  set tsiConfig(helpFont) {-*-Courier-Bold-O-Normal--*-120-*-*-*-*-*-*}
-        set tsiConfig(buttonFont) {*-Courier-Medium-R-Normal-*-120-*}
-        set tsiConfig(menuFont) {*-Courier-Medium-R-Normal-*-120-*}
-        set tsiConfig(dialogFont) {*-Courier-Medium-R-Normal-*-120-*}
-        set tsiConfig(dialogDefaultTextFont) {*-Courier-Medium-R-Normal-*-120-*}
-        set tsiConfig(smallFont) {*-Courier-Medium-R-Normal-*-80-*}
-	 }
-	 set tsiConfig(searchTextFont) {8x13}
-	 set tsiConfig(searchButtonsFont) {8x13bold}
+	set tsiConfig(searchButtonsFont) {system 10}
+       	set tsiConfig(dialogFont) 	{system 10}
+       	set tsiConfig(dialogDefaultTextFont) {system 10}
+       	set tsiConfig(smallFont) 	{fixed 10}
 }
 
 set tsiConfig(promptConfigure) "-font \{$tsiConfig(boldFont)\}"
 set tsiConfig(userTextConfigure) {-underline 1}
 set tsiConfig(searchTextConfigure) {-background lightblue}
 
-if {$tcl_version >= 8.0} {
-	 #set tsiConfig(ControlPanelX) -20
-	 set tsiConfig(ControlPanelX) [expr [winfo screenwidth .] - 375]
-} else {
-	 set tsiConfig(ControlPanelX) [expr [winfo screenwidth .] - 460]
-}
+set tsiConfig(ControlPanelX) -20
+#set tsiConfig(ControlPanelX) [expr [winfo screenwidth .] - 375]
+
 set tsiConfig(ControlPanelY)  20
 set tsiConfig(AgentWindowX)   0
+
 if {$tcl_platform(platform) == {windows}} {
     set tsiConfig(AgentWindowY)   -30
 } else {

@@ -80,7 +80,7 @@ soar-bugs@umich.edu for help.
       }
    }
 
-   set tsi_version 3.1
+   set tsi_version 3.2.0
    set tsiSimulatorPath [pwd]
    
    ### Read in the default TSI parameters

@@ -22,7 +22,7 @@ proc makeTSIDefaultControlPanel { {hide 0}  {x -20} {y 1} } {
   global tsi_library tsiConfig tcl_platform
 
     set tsiConfig(ControlPanel) TSIDefaultControlPanel
-    set tsiConfig(ControlPanelVersion) 3.1
+    set tsiConfig(ControlPanelVersion) 3.2.0
  
   . configure -relief ridge -borderwidth 5
   wm title . {Agent Control Panel}
