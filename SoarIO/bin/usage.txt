@@ -403,6 +403,7 @@ Usage:	time command [arguments]
   arguments
 ~~~
 <result>
+  <arg name="seconds" type="float">process_time_elapsed</arg>
   <arg name="seconds" type="float">real_time_elapsed</arg>
 </result>
 ***

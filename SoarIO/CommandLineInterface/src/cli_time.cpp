@@ -41,40 +41,64 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 
 	// Look at clock
 #ifdef WIN32
-	DWORD start = GetTickCount();
+	DWORD realStart = GetTickCount();
 #else // WIN32
-	struct timeval start;
-	if (gettimeofday(&start, 0) != 0) {
+	struct timeval realStart;
+	if (gettimeofday(&realStart, 0) != 0) {
 		return HandleError("failed to get time: " + std::string(strerror(errno)));
 	}
 #endif // WIN32
 
+	// Look at clock for process time
+	clock_t procStart;
+	procStart = clock();
+
 	// Execute command
 	bool ret = DoCommandInternal(pAgent, argv);
 
+	// Look at clock for process time
+	clock_t procFinish;
+	procFinish = clock();
+
 	// Look at clock again, evaluate elapsed time in seconds
 #ifdef WIN32
-	DWORD elapsedx = GetTickCount() - start;
-	float elapsed = elapsedx / 1000.0f;
+	DWORD elapsedx = GetTickCount() - realStart;
+	float realElapsed = elapsedx / 1000.0f;
 #else // WIN32
-	struct timeval finish;
-	if (gettimeofday(&finish, 0) != 0) {
+	struct timeval realFinish;
+	if (gettimeofday(&realFinish, 0) != 0) {
 		return HandleError("failed to get time: " + std::string(strerror(errno)));
 	}
-	double elapsed = (finish.tv_sec + (finish.tv_usec / 1000000.0)) - (start.tv_sec + (start.tv_usec / 1000000.0));
+	double realElapsed = (realFinish.tv_sec + (realFinish.tv_usec / 1000000.0)) 
+		- (realStart.tv_sec + (realStart.tv_usec / 1000000.0));
 #endif
 
+	// TODO: from clock man page:
+	// The C standard allows for arbitrary values at the start of the program; 
+	// subtract the value returned from a call to clock() at the start
+    // of the program to get maximum portability.
+	double procElapsed = (procFinish - procStart) / (double)CLOCKS_PER_SEC;
+
+
 	// Print elapsed time and return
-	char buf[32];
-	memset(buf, 0, 32);
-	snprintf(buf, 31, "%f", elapsed);
+	char realBuf[32];
+	memset(realBuf, 0, 32);
+	snprintf(realBuf, 31, "%f", realElapsed);
+
+	char procBuf[32];
+	memset(procBuf, 0, 32);
+	snprintf(procBuf, 31, "%f", procElapsed);
 
 	if (m_RawOutput) {
 		AppendToResult("\n(");
-		AppendToResult(buf);
+		AppendToResult(procBuf);
+		AppendToResult("s) proc");
+		AppendToResult("\n(");
+		AppendToResult(realBuf);
 		AppendToResult("s) real");
 	} else {
-		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, buf);
+		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, procBuf);
+		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, realBuf);
 	}
 	return ret;
 }
