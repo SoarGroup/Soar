@@ -126,6 +126,9 @@ namespace gSKI
 
 		virtual void GetForceLearnStates(IAgent* pIAgent, std::string& res) = 0;
 		virtual void GetDontLearnStates(IAgent* pIAgent, std::string& res) = 0;
+
+		virtual void SetVerbosity(IAgent* pIAgent, bool setting) = 0;
+		virtual bool GetVerbosity(IAgent* pIAgent) = 0;
       };
    }
 }

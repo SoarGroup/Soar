@@ -551,6 +551,15 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
+	bool ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoVerbose(gSKI::IAgent* pAgent, bool query, bool setting);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
 	bool ParseVersion(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
@@ -584,6 +593,13 @@ public:
 	*		 flags and the values flag contains their new values.
 	*************************************************************/
 	bool DoWatch(gSKI::IAgent* pAgent, const int options, const int settings, const int wmeSetting, const int learnSetting);
+
+	/*************************************************************
+	*************************************************************/
+	bool ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	*************************************************************/
+	bool DoWatchWMEs();
 
 
 protected:

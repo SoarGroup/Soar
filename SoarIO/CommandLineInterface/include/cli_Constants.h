@@ -64,6 +64,7 @@ namespace cli {
 		static char const* kCLIStopSoar;
 		static char const* kCLITime;
 		static char const* kCLITimers;
+		static char const* kCLIVerbose;
 		static char const* kCLIVersion;
 		static char const* kCLIWaitSNC;
 		static char const* kCLIWarnings;

@@ -81,6 +81,9 @@ namespace gSKI
 
 		 void GetForceLearnStates(IAgent* pIAgent, std::string& res);
 		 void GetDontLearnStates(IAgent* pIAgent, std::string& res);
+
+		 void SetVerbosity(IAgent* pIAgent, bool setting);
+		 bool GetVerbosity(IAgent* pIAgent);
       };
    }
 }

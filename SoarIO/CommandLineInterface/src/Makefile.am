@@ -49,10 +49,12 @@ cli_stats.cpp\
 cli_stopsoar.cpp\
 cli_time.cpp\
 cli_timers.cpp\
+cli_verbose.cpp\
 cli_version.cpp\
 cli_waitsnc.cpp\
 cli_warnings.cpp\
-cli_watch.cpp
+cli_watch.cpp\
+cli_watchwmes.cpp
 
 INCLUDES = \
 -I../../../gSKI/include\

@@ -254,6 +254,9 @@
 					RelativePath=".\src\cli_timers.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_verbose.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_version.cpp">
 				</File>
 				<File
@@ -264,6 +267,9 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_watch.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_watchwmes.cpp">
 				</File>
 			</Filter>
 		</Filter>

@@ -2325,5 +2325,20 @@ __      _(_) |_| |_|_____| |__ (_)_ _|_____| (_)_ |_|  __ _ ___  |_____|
 		      res += buff;
 		  }
 	  }
+		
+	  void TgDWorkArounds::SetVerbosity(IAgent* pIAgent, bool setting) {
+          Agent* pAgent = (Agent*)(pIAgent);
+		  agent* pSoarAgent = pAgent->GetSoarAgent();
+
+		  pSoarAgent->soar_verbose_flag = setting;
+
+	  }
+
+	  bool TgDWorkArounds::GetVerbosity(IAgent* pIAgent) {
+          Agent* pAgent = (Agent*)(pIAgent);
+		  agent* pSoarAgent = pAgent->GetSoarAgent();
+
+		  return pSoarAgent->soar_verbose_flag;
+	  }
    }
 }
