@@ -36,8 +36,13 @@
 
 ##
 # Main dmgen program
-
+global dmGenVersion
 set dmGenVersion "1.0"
+
+proc DmGenGetVersion {} {
+   global dmGenVersion
+   return $dmGenVersion
+}
 
 ##
 # Generate a datamap and bring up the datamap window
@@ -232,7 +237,7 @@ proc dmGenMain { } {
    }
    
    puts "Sourcing input file"
-   if { [catch { source $inputFile }] } {
+   if { [catch { uplevel #0 source $inputFile }] } {
       LogError "Error while sourcing input file \"$inputFile\":\n$errorInfo" 
       exit 1
    }
