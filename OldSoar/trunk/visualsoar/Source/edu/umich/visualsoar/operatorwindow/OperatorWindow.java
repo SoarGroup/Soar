@@ -572,13 +572,34 @@ public class OperatorWindow extends JTree {
 			s = nd.getText();
 			DefaultTreeModel model = (DefaultTreeModel)getModel();
 			
-			try {
+			try
+            {
 				node.rename(this,s);
-			} catch (IOException ioe) {
+			}
+            catch (IOException ioe)
+            {
 				JOptionPane.showMessageDialog(MainFrame.getMainFrame(), 
 					"Could not rename, name may be invalid", 
 					"I/O Error", JOptionPane.ERROR_MESSAGE);
 			}
+
+            //Save the change to the .vsa file.
+            saveHierarchy();
+
+            //Save the change to the _source files
+			DefaultTreeModel tree = (DefaultTreeModel)getModel();
+			OperatorRootNode root = (OperatorRootNode)tree.getRoot();
+			try 
+            {
+
+				root.startSourcing();
+			}
+            catch(IOException ioe)
+            {
+				JOptionPane.showMessageDialog(MainFrame.getMainFrame(), 
+					"Operator file renamed successfully but '_source' file \ncould not be updated.  I recommend you try to save \nyour project manually.",
+					"I/O Error", JOptionPane.ERROR_MESSAGE);
+            }
 		}	
 	}
 	
