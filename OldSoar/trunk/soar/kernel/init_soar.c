@@ -430,8 +430,6 @@ void reset_statistics (void) {
 
 void do_one_top_level_phase (void) {
   
-  
-
   if (current_agent(system_halted)) {
     print ("\nSystem halted.  Use (init-soar) before running Soar again.");
     current_agent(stop_soar) = TRUE;
@@ -963,10 +961,14 @@ void do_one_top_level_phase (void) {
     current_agent(current_phase) = INPUT_PHASE;
 
 
+
+
     /* REW: begin 09.15.96 */
 #ifndef SOAR_8_ONLY
     if (current_agent(operand2_mode) == TRUE) {
 #endif
+
+#ifdef AGRESSIVE_ONC
       /* test for ONC, if TRUE, generate substate and go to OUTPUT */
       if ((current_agent(ms_o_assertions) == NIL) &&
           (current_agent(bottom_goal)->id.operator_slot->wmes != NIL)) {
@@ -1014,7 +1016,11 @@ void do_one_top_level_phase (void) {
 
         break;
           
-      } else {
+      } else
+
+#endif // AGRESSIVE_ONC				
+
+				{
 	/* print("\nSetting next phase to APPLY following a decision...."); */
 	current_agent(applyPhase) = TRUE;
 	current_agent(FIRING_TYPE) = PE_PRODS;
@@ -1137,11 +1143,14 @@ void run_for_n_modifications_of_output (long n) {
 #endif
   current_agent(stop_soar) = FALSE;
   current_agent(reason_for_stopping) = "";
+
   while (!current_agent(stop_soar) && n) {
     was_output_phase = (current_agent(current_phase)==OUTPUT_PHASE);
     do_one_top_level_phase();
+
     if (was_output_phase) {	
 		if (current_agent(output_link_changed)) {
+
 		  n--;
 		} else {
 		  count++;

@@ -8,6 +8,9 @@ void soar_ecBuildInfo( ) {
 	print( " Build Information.\n" );
 
 
+#ifdef AGRESSIVE_ONC
+	print( " - AGRESSIVE_ONC\n" );
+#endif
 #ifdef ALLOW_I_SUPPORTED_SUBGOAL_RESULTS_WITH_THIN_JUSTS
 	print( " - ALLOW_I_SUPPORTED_SUBGOAL_RESULTS_WITH_THIN_JUSTS\n" );
 #endif
