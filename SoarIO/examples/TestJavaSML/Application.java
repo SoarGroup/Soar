@@ -63,6 +63,9 @@ public class Application
 		Agent pAgent = agent ;	// So it's easier copying existing C++ code here
 		Kernel pKernel = m_Kernel ;
 
+		// We test the kernel for an error after creating an agent as the agent
+		// object may not be properly constructed if the create call failed so
+		// we store errors in the kernel in this case.
 		if (m_Kernel.HadError())
 			throw new IllegalStateException("Error creating agent: " + m_Kernel.GetLastErrorDescription()) ;
 
@@ -90,6 +93,9 @@ public class Application
 		
 		boolean ok = pAgent.Commit() ;
 
+		// Quick test of init-soar
+		pAgent.InitSoar() ;
+
 		// Update the square's value to be empty.  This ensures that the update
 		// call is doing something.  Otherwise, when we run we won't get a match.
 		pAgent.Update(pEmpty, "EMPTY") ;
@@ -97,10 +103,13 @@ public class Application
 		
 		// Register some event handlers
 		EventListener listener = new EventListener() ;
-		int jRunCallback   = pAgent.RegisterForRunEventByHand(pAgent, smlEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
-		int jAgentCallback = pAgent.RegisterForAgentEventByHand(pAgent, smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
-		int jProdCallback   = pAgent.RegisterForProductionEventByHand(pAgent, smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
-		int jSystemCallback = pKernel.RegisterForSystemEventByHand(pKernel, smlEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
+		int jRunCallback   = pAgent.RegisterForRunEvent(pAgent, smlEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
+		int jAgentCallback = pAgent.RegisterForAgentEvent(pAgent, smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
+		int jProdCallback   = pAgent.RegisterForProductionEvent(pAgent, smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
+		int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
+
+		// Trigger an agent event by doing init-soar
+		pAgent.InitSoar() ;
 
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 		String trace = pAgent.RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
@@ -112,22 +121,22 @@ public class Application
 		System.out.println(trace1) ;
 		
 		// Trigger an agent event by doing init-soar
-		pAgent.InitSoar() ;
+		//pAgent.InitSoar() ;
 
 		System.out.println("Unregister callbacks") ;
 		
 		// Unregister our callbacks
 		// (This isn't required, I'm just testing that it works)
-		
-		pAgent.UnregisterForRunEventByHand(smlEventId.smlEVENT_AFTER_DECISION_CYCLE, jRunCallback) ;
-		pAgent.UnregisterForAgentEventByHand(smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
-		pAgent.UnregisterForProductionEventByHand(smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, jProdCallback) ;
-		pKernel.UnregisterForSystemEventByHand(smlEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
-		
+		/*
+		pAgent.UnregisterForRunEvent(smlEventId.smlEVENT_AFTER_DECISION_CYCLE, jRunCallback) ;
+		pAgent.UnregisterForAgentEvent(smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
+		pAgent.UnregisterForProductionEvent(smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, jProdCallback) ;
+		pKernel.UnregisterForSystemEvent(smlEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
+		*/
 		String trace2 = pAgent.RunTilOutput(20) ;
 		System.out.println(trace2) ;
 		
-		pAgent.InitSoar() ;
+		//pAgent.InitSoar() ;
 
 		// Clean up
 		ok = m_Kernel.DestroyAgent(pAgent) ;
@@ -136,16 +145,71 @@ public class Application
 		m_Kernel.delete() ;
 	}
 	
+	//	 We create a file to say we succeeded or not, deleting any existing results beforehand
+	//	 The filename shows if things succeeded or not and the contents can explain further.
+	public void reportResult(String testName, boolean success, String msg)
+	{
+		try
+		{
+			// Decide on the filename to use for success/failure
+			String kSuccess = testName + "-success.txt" ;
+			String kFailure = testName + "-failure.txt" ;
+	
+			// Remove any existing result files
+			java.io.File successFile = new java.io.File(kSuccess) ;
+			java.io.File failFile = new java.io.File(kFailure) ;
+			
+			successFile.delete() ;
+			failFile.delete() ;
+	
+			// Create the output file
+			java.io.FileWriter outfile = new java.io.FileWriter(success ? successFile : failFile) ;
+	
+			if (success)
+			{
+				outfile.write("Tests SUCCEEDED") ;
+				outfile.write(msg) ;
+				System.out.println("Tests SUCCEEDED") ;
+			}
+			else
+			{
+				outfile.write("ERROR *** Tests FAILED");
+				outfile.write(msg) ;
+				System.out.println("ERROR *** Tests FAILED") ;
+			}
+	
+			outfile.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Exception occurred when writing results to file") ;
+		}
+	}
+	
 	public Application()
 	{
-		// It looks like SWIG requires us to explicitly load the library
-		// before we call any methods, so we'll do that here.
-        System.loadLibrary("Java_sml_ClientInterface");
-
-        // Initialize the kernel
-		m_Kernel = Kernel.CreateEmbeddedConnection("KernelSML", true, false, 0) ;
-		
-		Test() ;
+		boolean success = true ;
+		String  msg = "" ;
+		try
+		{
+			// It looks like SWIG requires us to explicitly load the library
+			// before we call any methods, so we'll do that here.
+	        System.loadLibrary("Java_sml_ClientInterface");
+	
+	        // Initialize the kernel
+			m_Kernel = Kernel.CreateEmbeddedConnection("KernelSML", true, false, 0) ;
+	
+			Test() ;
+		}
+		catch (Exception e)
+		{
+			success = false ;
+			msg = e.getMessage() ;
+		}
+		finally
+		{
+			reportResult("testjavasml", success, msg) ;
+		}
 	}
 	
 	public static void main(String[] args)

@@ -26,6 +26,7 @@
 #endif // _MSC_VER
 
 #include <iostream>
+#include <fstream>
 #include <string>
 
 using namespace sml ;
@@ -192,8 +193,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		IntElement* pWME2    = pAgent->CreateIntWME(pID, "speed", 200) ;
 		FloatElement* pWME3  = pAgent->CreateFloatWME(pID, "direction", 50.5) ;
 
-		ok = pAgent->Commit() ;
-//		pAgent->InitSoar() ;
+		//ok = pAgent->Commit() ;
+		//pAgent->InitSoar() ;
 
 		// Remove a wme
 		pAgent->DestroyWME(pWME3) ;
@@ -221,7 +222,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		ok = pAgent->Commit() ;
 
-//		pAgent->InitSoar() ;
+		//pAgent->InitSoar() ;
 
 		std::string trace = pAgent->Run(2) ;
 
@@ -233,7 +234,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		pAgent->DestroyWME(pID) ;
 		pAgent->Commit() ;
 
-//		pAgent->InitSoar() ;
+		//pAgent->InitSoar() ;
 
 		// Test that we get a callback after the decision cycle runs
 		int userData = 25 ;
@@ -411,31 +412,71 @@ bool RemoteTest()
 	return ok ;
 }
 
+// We create a file to say we succeeded or not, deleting any existing results beforehand
+// The filename shows if things succeeded or not and the contents can explain further.
+void ReportResult(std::string testName, bool success)
+{
+	// Decide on the filename to use for success/failure
+	std::string kSuccess = testName + "-success.txt" ;
+	std::string kFailure = testName + "-failure.txt" ;
+
+	// Remove any existing result files
+	remove(kSuccess.c_str()) ;
+	remove(kFailure.c_str()) ;
+
+	// Create the output file
+	std::ofstream outfile (success ? kSuccess.c_str() : kFailure.c_str());
+
+	if (success)
+	{
+		outfile << "\nTests SUCCEEDED" << endl ;
+		cout << "\nTests SUCCEEDED" << endl ;
+	}
+	else
+	{
+		outfile << "\n*** ERROR *** Tests FAILED" << endl ;
+		cout << "\n*** ERROR *** Tests FAILED" << endl ;
+	}
+
+	outfile.close();
+}
+
 int main(int argc, char* argv[])
 {
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 140 ;
+	//_crtBreakAlloc = 997 ;
 
 	SimpleTimer timer ;
+
+	bool stopAtEnd = true ;
+	bool remote    = false ;
 
 	// For now, any argument on the command line makes us create a remote connection.
 	// Later we'll try passing in an ip address/port number.
 	bool success = true ;
 
+	// Read the command line options:
+	// -nostop : don't ask user to hit return at the end
+	// -remote : run the test over a remote connection -- needs a listening client (usually TestCommandLineInterface) to already be running.
 	if (argc > 1)
+	{
+		for (int i = 1 ; i < argc ; i++)
+		{
+			if (!stricmp(argv[i], "-nostop"))
+				stopAtEnd = false ;
+			if (!stricmp(argv[i], "-remote"))
+				remote = true ;
+		}
+	}
+
+	if (remote)
 		success = RemoteTest() ;
-		//success = TestSML(true, true, true) ;
-		//SimpleEmbeddedConnection() ;
-		//SimpleRemoteConnection() ;
 	else
 		success = FullEmbeddedTest() ;
 
-	if (success)
-		cout << "\nTests SUCCEEDED" << endl ;
-	else
-		cout << "\n*** ERROR *** Tests FAILED" << endl ;
+	ReportResult(remote ? "testclientsml-remote" : "testclientsml", success) ;
 
 	double time = timer.Elapsed() ;
 	cout << "Total run time: " << time << endl ;
@@ -457,7 +498,10 @@ int main(int argc, char* argv[])
 #endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
-	printf("\n\nPress <return> to exit\n") ;
-	char line[100] ;
-	char* str = gets(line) ;
+	if (stopAtEnd)
+	{
+		printf("\n\nPress <return> to exit\n") ;
+		char line[100] ;
+		char* str = gets(line) ;
+	}
 }
