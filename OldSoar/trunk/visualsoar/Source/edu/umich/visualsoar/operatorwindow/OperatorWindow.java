@@ -2585,9 +2585,9 @@ public class OperatorWindow extends JTree
     {
         Writer w = new FileWriter(fileToWriteTo);
         w.write("sp {elaborate*top-state*top-state\n");
-        w.write("\t(state <s> ^superstate nil)\n");
+        w.write("   (state <s> ^superstate nil)\n");
         w.write("-->\n");
-        w.write("\t(<s> ^top-state <s>)\n");
+        w.write("   (<s> ^top-state <s>)\n");
         w.write("}\n");
         w.write("\n");
         w.close();
@@ -2601,14 +2601,14 @@ public class OperatorWindow extends JTree
     {
         Writer w = new FileWriter(fileToWriteTo);
         w.write("sp {elaborate*state*name\n");
-        w.write("\t(state <s> ^superstate.operator.name <name>)\n");
+        w.write("   (state <s> ^superstate.operator.name <name>)\n");
         w.write("-->\n");
-        w.write("\t(<s> ^name <name>)\n");
+        w.write("   (<s> ^name <name>)\n");
         w.write("}\n\n");
         w.write("sp {elaborate*state*top-state\n");
-        w.write("\t(state <s> ^superstate.top-state <ts>)\n");
+        w.write("   (state <s> ^superstate.top-state <ts>)\n");
         w.write("-->\n");
-        w.write("\t(<s> ^top-state <ts>)\n");
+        w.write("   (<s> ^top-state <ts>)\n");
         w.write("}\n\n");
         //w.write();
         w.close();
