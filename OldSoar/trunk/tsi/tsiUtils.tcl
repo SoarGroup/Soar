@@ -1864,11 +1864,10 @@ proc askCallback { args } {
 	
 	echo "Enter selection (1-[expr $numargs+2]): "
 	
-	#set choice [gets stdin]
-	set choice [uplevel {gets stdin}]
+	set choice [gets stdin]
 	
-	echo "\nChoice was $choice"
-	}
+	return $choice
+}
 
 proc askCallback2 { args } {
 	puts "\nPlease choose one of the following:\n"
@@ -1883,7 +1882,7 @@ proc askCallback2 { args } {
 	
 	puts "Enter selection (1-[expr $numargs+2]): "
 	
-	set choice [uplevel {gets stdin}]
+	set choice [gets stdin]
 	
-	puts "\nChoice was $choice"
+	return $choice
 }
