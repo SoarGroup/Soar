@@ -17,9 +17,7 @@ using sgio::WorkingMemory;
 
 SoarAgent::SoarAgent(Agent* inAgent, WorkingMemory* inWMemory, HanoiWorld* inWorld) : pAgent(inAgent), pWMemory(inWMemory),
 																						pWorld(inWorld)
-{
-
-}
+{}
 
 SoarAgent::~SoarAgent()
 {
@@ -28,7 +26,8 @@ SoarAgent::~SoarAgent()
 	pWorld = 0;
 }
 
-
+//The API mode wraps the tower names in pipes, the TSI mode doesn't
+//This translates either to the matching tower number
 int TowerStringToInt(string& sourceString)
 {
 	if(sourceString == "A" || sourceString == "|A|")
@@ -43,11 +42,11 @@ int TowerStringToInt(string& sourceString)
 	return -99;
 }
 
+//Read a command off of the output link (which MUST exist), and
+//make the game move a disk from the source tower to the destination tower
 void SoarAgent::MakeMove()
 {
-
 	pAgent->RunTilOutput();
-
 	assert(pAgent->Commands());
 
 	string sourceTower, destinationTower = "";

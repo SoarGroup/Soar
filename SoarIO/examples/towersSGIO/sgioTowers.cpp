@@ -72,6 +72,11 @@ class TowerInputLinkProfile
 	friend class Tower;
 };
 
+
+/*************************************************************
+* @brief	The DiskInputLinkProfile class contains all of the  
+*			wmes corresponding to the Disk
+*************************************************************/
 class DiskInputLinkProfile
 {
 public:
