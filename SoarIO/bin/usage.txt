@@ -107,6 +107,7 @@ Usage:	log [-a] [filename]
   -a, --append		Append log to the end of the specified file.
   -c, --close, 		Stop logging and close the current log.
       --disable, --off
+  filename              The name of the file to log to.
 ***
 ls
 Usage:	ls
