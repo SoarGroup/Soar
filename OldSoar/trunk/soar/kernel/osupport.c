@@ -291,8 +291,6 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
 
 /* RCHONG: end 10.11 */
 
-
-
 /* REW: begin 09.15.96 */
 
 #ifndef SOAR_8_ONLY
@@ -404,9 +402,15 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
 			       if ((rhs_value_is_symbol(act->id)) &&
 				   (rhs_value_to_symbol(act->id) == w->value)) {
 				 op_elab = TRUE;
-			       } else {
-				 /* this is not an operator elaboration */
-				 o_support = TRUE;
+			       } else if ( (rhs_value_is_reteloc(act->id)) &&
+												 w->value == get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up( act->id ),
+																													 rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )) {
+							 op_elab = TRUE;
+							 
+
+						 } else {
+							 /* this is not an operator elaboration */
+							 o_support = TRUE;
 			       }
 			     }
 			   }
@@ -421,6 +425,17 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
 	   }
 	}
      }
+
+     /* KJC 01/00: Warn if operator elabs mixed w/ applications */
+     if ( (current_agent(o_support_calculation_type) == 3) && 
+					(o_support == TRUE)) {
+			 
+       if (op_elab == TRUE) 
+				 /* warn user about mixed actions --> o_support */
+				 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
+														inst->prod->name);
+			 o_support = FALSE;
+     }
      /*
      assign every preference the correct support
      */  
@@ -428,15 +443,6 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
      for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
        pref->o_supported = o_support;
 
-     /* KJC 01/00: Warn if operator elabs mixed w/ applications */
-     if ( (current_agent(o_support_calculation_type) == 3) && 
-	  (o_support == TRUE)) {
-
-       if (op_elab == TRUE) 
-	 /* warn user about mixed actions --> o_support */
-	 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
-			    inst->prod->name);
-     }
      goto o_support_done;
 #ifndef SOAR_8_ONLY
   }
@@ -1009,6 +1015,7 @@ void calculate_compile_time_o_support (condition *lhs, action *rhs) {
   yes_no_maybe ynm;
   bool operator_found, possible_operator_found;
   tc_number tc;
+	
 
   /* --- initialize:  mark all rhs actions as "unknown" --- */
   for (a=rhs; a!=NIL; a=a->next)

@@ -5007,7 +5007,6 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
   rete_node *current_node;
   bool match_found;
 
-
   /* RCHONG: begin 10.11 */
 
   int prod_type;
@@ -5148,17 +5147,17 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
         operator_proposal = FALSE;
         
         for (act = node->b.p.prod->action_list; act != NIL ; act = act->next) {
-           if ((act->type == MAKE_ACTION) &&
-	       (rhs_value_is_symbol(act->attr))) {
-	      if ((strcmp(rhs_value_to_string (act->attr, action_attr),
-			  "operator") == NIL) &&
-		  (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-		 operator_proposal = TRUE;
-		 prod_type = !PE_PRODS;
-		 break;
-	      }
-	   }
-	}
+
+					if ((act->type == MAKE_ACTION) && (rhs_value_is_symbol(act->attr))) {
+						if ((strcmp(rhs_value_to_string (act->attr, action_attr),
+												"operator") == NIL) &&
+								(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
+							operator_proposal = TRUE;
+							prod_type = !PE_PRODS;
+							break;
+						}
+					}
+				}
 
         if (operator_proposal == FALSE) {
 
@@ -5225,34 +5224,53 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 		     if (current_agent(o_support_calculation_type) == 3) {
 		       
 		       /*
-			* iff RHS has only operator elaborations 
-			* then it's IE_PROD, otherwise PE_PROD, so
-			* look for non-op-elabs in the actions  KJC 1/00
-			*/
-		       for (act = node->b.p.prod->action_list;
-			    act != NIL ; act = act->next) {
-			 if (act->type == MAKE_ACTION) {
-			  if ((rhs_value_is_symbol(act->id)) &&											    
-			      /** shouldn't this be either 
-				  symbol_to_rhs_value (act->id) ==  or
-				  act->id == rhs_value_to_symbol(temp..)**/
-			      
-			      (rhs_value_to_symbol(act->id) == 
-			       temp_tok->w->value)) {
-			    op_elab = TRUE;
-			    
-			  } else {
-			    /* this is not an operator elaboration */
-			    prod_type = PE_PRODS;
-			  }
-			 }
-		       }
-		     }
+						* iff RHS has only operator elaborations 
+						* then it's IE_PROD, otherwise PE_PROD, so
+						* look for non-op-elabs in the actions  KJC 1/00
+						*/
+					 
+
+					 /* We also need to check reteloc's to see if they 
+							are referring to operator augmentations before determining
+							if this is an operator elaboration 
+					 */
+						 
+					 for (act = node->b.p.prod->action_list;
+								act != NIL ; act = act->next) {
+						 if (act->type == MAKE_ACTION) {
+							 
+							 if ((rhs_value_is_symbol(act->id)) &&											    
+									 /** shouldn't this be either 
+											 symbol_to_rhs_value (act->id) ==  or
+											 act->id == rhs_value_to_symbol(temp..)**/
+									 
+									 (rhs_value_to_symbol(act->id) == temp_tok->w->value)) {
+								 
+								 print( " + OP Elab detected from symbol.\n" );
+								 op_elab = TRUE;
+								 
+							 } else if ( (rhs_value_is_reteloc(act->id)) &&
+													 (temp_tok->w->value == 
+														get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up(act->id),
+																											rhs_value_to_reteloc_field_num(act->id),
+																											tok, w ))) {
+									 
+								 print( " * OP Elab detected from reteloc.\n" );
+								 op_elab = TRUE;
+								 
+							 } else {
+								 
+								 /* this is not an operator elaboration */
+								 prod_type = PE_PRODS;
+							 }
+						 } /* act->type == MAKE_ACTION */
+					 } /* foreach action */
+				 }			 
 		     else {
 		       prod_type = PE_PRODS;
 		       break;
 		     }
-		    }
+			 }
 		 } /* end if (pass == 0) */
 		 temp_tok = temp_tok->parent;
 	       } /* end while (temp_tok != NIL) */
@@ -5261,9 +5279,10 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 		 if (current_agent(o_support_calculation_type) != 3) break;
 		 else if (op_elab == TRUE) {
 
-		   /* warn user about mixed actions --> o_support */
-		   print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
+		   /* warn user about mixed actions --> i_support */
+		   print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
 				      node->b.p.prod->name);
+			 prod_type = IE_PRODS;
 		   break;
 		 }
 	     }  /* end for pass =  */
@@ -5298,12 +5317,15 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
         if (current_agent(soar_verbose_flag) == TRUE) {
            print_with_symbols("\n   RETE: putting [%y] into ms_o_assertions",
 			      node->b.p.prod->name);
-	}
+
+				}
+
      }
 
      else { 
        insert_at_head_of_dll (current_agent(ms_i_assertions),
 			      msc, next, prev); 
+
 
        /* REW: end 08.20.97 */
        insert_at_head_of_dll (msc->goal->id.ms_i_assertions,
@@ -5315,7 +5337,10 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
         if (current_agent(soar_verbose_flag) == TRUE) {
            print_with_symbols("\n   RETE: putting [%y] into ms_i_assertions",
 			      node->b.p.prod->name);
-	}
+
+
+				}
+
      }
 #ifndef SOAR_8_ONLY
   }
