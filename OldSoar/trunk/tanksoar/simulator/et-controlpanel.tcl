@@ -3,6 +3,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.3  2004/06/02 11:18:16  mazin_assanie
+### Added handler for deletion of control panel window.  Otherwise, agent windows would still exist.
+###
 ### Revision 1.2  2003/10/09 17:21:50  rmarinie
 ### When destroying all agents we now stop them first and then wait for 500 milliseconds to give Soar a chance to clean up ("fixes" a crash problem we were having).
 ###
@@ -40,6 +43,7 @@ proc makeETControlPanel { {hide 0} {x -20} {y 1} } {
    }
    . configure -relief ridge -borderwidth 5
    wm title . "$ETCPConfig(AgentName) Control Panel"
+   wm protocol . WM_DELETE_WINDOW { quitSoar }
    if {$x >= 0} { set x +$x }
    if {$y >= 0} { set y +$y }
    wm geometry . $x$y
