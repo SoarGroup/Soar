@@ -1081,8 +1081,12 @@ public class MainFrame extends JFrame
 					operatorDesktopSplit.setLeftComponent(new JScrollPane(operatorWindow));
 					
 					projectActionsEnable(true);
-					
+
+                    //%%%This value should be in preferences
 					operatorDesktopSplit.setDividerLocation(.30);
+
+                    //Set the title bar to include the project name
+                    setTitle(file.getName().replaceAll(".vsa", ""));
 				}
 			}
 			
@@ -1220,6 +1224,8 @@ public class MainFrame extends JFrame
 				projectActionsEnable(false);
 			}
 			catch (java.beans.PropertyVetoException pve) {}
+
+            setTitle("VisualSoar");
 		}//perform()
 
         
