@@ -185,11 +185,12 @@ typedef void (*SystemEventHandler)(smlSystemEventId id, void* pUserData, Kernel*
 
 // Handler for RHS (right hand side) function firings
 // pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
-// pResultValue is a string allocated by the caller than is of size maxLengthReturnValue that should be filled in with the return value.
-// The bool return value should be "true" if a return value is filled in, otherwise return false.
-typedef bool (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
-								char const* pFunctionName, char const* pArgument,
-								int maxLengthReturnValue, char* pReturnValue) ;
+// The return value is a string which allows the RHS function to create a symbol: e.g. ^att (exec plus 2 2) producting ^att 4
+// NOTE: This is the one place in clientSML where we use a std::string in an interface.  If you wish to compile with a pure "C" interface
+// this can be replaced by a handler that is passed a buffer and a length.  The length is passed within the framework already (from the kernel to here)
+// so this is an easy transition.
+typedef std::string (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
+								char const* pFunctionName, char const* pArgument) ;
 
 // We'll store a handler function together with a generic pointer to data of the user's choosing
 // (which is then passed back into the handler when the event occurs).

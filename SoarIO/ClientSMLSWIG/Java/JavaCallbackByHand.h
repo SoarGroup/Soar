@@ -320,11 +320,18 @@ static void SystemEventHandler(sml::smlSystemEventId id, void* pUserData, sml::K
 	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_KernelObject);
 }
 
+// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
+// exposed in a DLL with C naming (not C++ mangled names).  However, RhsEventHandler (below) returns a std::string
+// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
+// The solution is to turn off extern "C" for this method and turn it back on afterwards.
+#ifdef __cplusplus
+}
+#endif
+
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static bool RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
-							char const* pFunctionName, char const* pArgument,
-							int maxLengthReturnValue, char* pReturnValue)
+static std::string RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent,
+							char const* pFunctionName, char const* pArgument)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -339,7 +346,7 @@ static bool RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* 
 	if (cls == 0)
 	{
 		printf("Failed to get Java class\n") ;
-		return false ;
+		return "Error -- failed to get Java class" ;
 	}
 
 	// Look up the Java method we want to call.
@@ -348,14 +355,12 @@ static bool RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* 
 	// Any slip here and you get a NoSuchMethod exception and my Java VM shuts down.
 	// Method sig here is:
 	// Int eventID, Object userData, String agentName, String functionName, String argument returning a String.
-	// If the returned string is null this indicates no return value.
-	// If it's non-null we take that as being the return value and pass it back to the C++ code.
 	jmethodID mid = jenv->GetMethodID(cls, pJavaData->m_HandlerMethod.c_str(), "(ILjava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;") ;
 
 	if (mid == 0)
 	{
 		printf("Failed to get Java method\n") ;
-		return false ;
+		return "Error -- failed to get Java method" ;
 	}
 
 	// Convert our C++ strings to Java strings
@@ -366,27 +371,32 @@ static bool RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* 
 	// Make the method call.
 	jstring result = (jstring)jenv->CallObjectMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, agentName, functionName, argument) ;
 
-	// If we receive back "null" we'll take that to mean the call was not handled (should return "" instead if we have no result of interest)
-	// (Otherwise there's no way for the Java handler to pass on the callback and not respond, which could be useful in some cases)
-	if (result == 0)
+	// Get the returned string
+	std::string resultStr = "" ;
+
+	if (result != 0)
 	{
-		printf("Java rhs function method returned null\n") ;
-		return false ;
+		// Get the C string
+		char const* pResult = jenv->GetStringUTFChars(result, 0);
+
+		// Copy it into our std::string
+		resultStr = pResult ;
+
+		// Release the Java string
+		jenv->ReleaseStringUTFChars(result, pResult);
 	}
 
-	// Get the returned string
-	const char *pResult = jenv->GetStringUTFChars(result, 0);
-
-	// Copy it into our return value
-	strncpy(pReturnValue, pResult, maxLengthReturnValue) ;
-	pReturnValue[maxLengthReturnValue] = 0 ;	// Just make sure it's null terminated
-
-	// Release the Java string
-	jenv->ReleaseStringUTFChars(result, pResult);
-
-	// Return true to show that we set the return value
-	return true ;
+	// Return the result
+	return resultStr ;
 }
+
+// This is a bit ugly.  We compile this header with extern "C" around it so that the public methods can be
+// exposed in a DLL with C naming (not C++ mangled names).  However, RhsEventHandler (above) returns a std::string
+// which won't compile under "C"...even though it's a static function and hence won't appear in the DLL anyway.
+// The solution is to turn off extern "C" for this method and turn it back on afterwards.
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Collect the Java values into a single object which we'll register with our local event handler.
 // When this handler is called we'll unpack the Java data and make a callback to the Java process.

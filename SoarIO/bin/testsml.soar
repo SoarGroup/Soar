@@ -19,7 +19,7 @@ sp {apply*user*exec
 	(<o> ^name move ^space <sp>)
 	(<sp> ^row <row> ^col <col>)
 -->
-	(<ol> ^test (exec test-rhs hello <row> |"ABC DEF"| world))}
+	(<ol> ^test (exec test-rhs | hello | <row> | "ABC DEF" world |))}
 
 sp {apply*user*cmd
 	(state <s> ^operator <o> ^io.output-link <ol>)

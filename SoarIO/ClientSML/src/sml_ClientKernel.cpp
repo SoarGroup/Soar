@@ -355,15 +355,9 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 	// Look up the agent
 	Agent* pAgent = GetAgent(pAgentName) ;
 
-	// Allocate the buffer we'll use to get the result
-	char* pReturnValue = new char[maxLength+1] ;
-	pReturnValue[0] = 0 ;	// Start with a valid string, just in case somebody makes a mistake.
-
-	// We return the first value we get (in case we registered multiple times for the same function...)
-	bool result = false ;
-
 	// Go through the list of event handlers calling each in turn
-	for (RhsEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() && !result ; iter++)
+	// (Registering multiple handlers for a RHS function actually makes no sense--we'll just return the first).
+	for (RhsEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
 	{
 		RhsEventHandlerPlusData handlerWithData = *iter ;
 
@@ -371,16 +365,14 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 		void* pUserData = handlerWithData.getUserData() ;
 
 		// Call the handler
-		result = handler(id, pUserData, pAgent, pFunctionName, pArgument, maxLength, pReturnValue) ;
+		std::string result = handler(id, pUserData, pAgent, pFunctionName, pArgument) ;
 
-		if (result)
-		{
-			// If we got back a result then fill in the value in the response message.
-			GetConnection()->AddSimpleResultToSMLResponse(pResponse, pReturnValue) ;
-		}
+		// If we got back a result then fill in the value in the response message.
+		GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
+
+		// We only execute the first handler (registering multipler handlers for the same RHS function is not supported)
+		break ;
 	}
-
-	delete pReturnValue ;
 }
 
 /*************************************************************

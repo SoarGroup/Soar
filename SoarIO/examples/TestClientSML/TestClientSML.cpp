@@ -90,20 +90,15 @@ void SimpleRemoteConnection()
 	delete pKernel ;
 }
 
-bool ListenerRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName,
-						  char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
+std::string ListenerRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
 	// Return the argument we are passed plus some of our text
-	if (!strcmp(pFunctionName, "test-rhs"))
-	{
-		cout << "Received rhs function call with argument: " << pArgument << endl ;
-		std::string res = "my listener result " ;
-		res += pArgument ;
-		strncpy(pReturnValue, res.c_str(), maxLengthReturnValue) ;
-		return true ;
-	}
+	cout << "Received rhs function call with argument: " << pArgument << endl ;
 
-	return false ;
+	std::string res = "my listener result " ;
+	res += pArgument ;
+
+	return res ;
 }
 
 // Create a process that listens for remote commands and lives
@@ -191,20 +186,14 @@ void MyCreationHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 	cout << "Received notification when agent was created" << endl ;
 }
 
-bool MyRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName,
-						  char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
+std::string MyRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
-	// Return the argument we are passed plus some of our text
-	if (!strcmp(pFunctionName, "test-rhs"))
-	{
-		cout << "Received rhs function call with argument: " << pArgument << endl ;
-		std::string res = "my rhs result " ;
-		res += pArgument ;
-		strncpy(pReturnValue, res.c_str(), maxLengthReturnValue) ;
-		return true ;
-	}
+	cout << "Received rhs function call with argument: " << pArgument << endl ;
 
-	return false ;
+	std::string res = "my rhs result " ;
+	res += pArgument ;
+
+	return res ;
 }
 
 bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar)
