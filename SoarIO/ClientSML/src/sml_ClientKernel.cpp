@@ -202,20 +202,6 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 *
 * @param pCommandLine Command line string to process.
 * @param pAgentName Agent name to apply the command line to.
-* @returns The XML form of output from the command.
-*          The caller must release this handle.
-*************************************************************/
-ElementXML_Handle Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName)
-{
-	return NULL ;
-}
-
-/*************************************************************
-* @brief Execute a command line command and return the result
-*		 as an XML object.
-*
-* @param pCommandLine Command line string to process.
-* @param pAgentName Agent name to apply the command line to.
 * @returns True if the command succeeds.
 *************************************************************/
 bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse)

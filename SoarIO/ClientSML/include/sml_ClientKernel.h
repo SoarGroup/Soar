@@ -114,17 +114,6 @@ public:
 	*		 as an XML object.
 	*
 	* @param pCommandLine Command line string to process.
-	* @param pAgentName Agent name to apply the command line to.
-	* @returns The XML form of output from the command.
-	*          The caller must release this handle.
-	*************************************************************/
-	ElementXML_Handle ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName) ;
-
-	/*************************************************************
-	* @brief Execute a command line command and return the result
-	*		 as an XML object.
-	*
-	* @param pCommandLine Command line string to process.
 	* @param pAgentName   Agent name to apply the command line to.
 	* @param pResponse    The XML response will be returned within this object.
 	*                     The caller should allocate this and pass it in.
