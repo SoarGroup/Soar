@@ -23,14 +23,6 @@ namespace cli {
 		bool GetExtendedUsageFor(const std::string& command, std::string& output);
 		bool IsUsageFileAvailable();
 
-		static char const* kCLISyntaxError;
-		static char const* kCLINoUsageInfo;
-		static char const* kCLINoUsageFile;
-		static char const* kCLITooManyArgs;
-		static char const* kCLITooFewArgs;
-		static char const* kCLIUnrecognizedOption;
-		static char const* kCLIMissingOptionArg;
-
 		static char const* kCLIAddWME;
 		static char const* kCLIAlias;
 		static char const* kCLICD;

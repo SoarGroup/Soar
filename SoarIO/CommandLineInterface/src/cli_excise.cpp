@@ -53,24 +53,23 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 				options |= OPTION_EXCISE_USER;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIExcise, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// If there are options, no additional argument.
 	if (options) {
 		if (argv.size() != (unsigned)GetOpt::optind) {
-			return HandleSyntaxError(Constants::kCLIExcise, Constants::kCLITooManyArgs);
+			return m_Error.SetError(CLIError::kTooManyArgs);
 		}
 		return DoExcise(pAgent, options);
 	}
 
 	// If there are no options, there must be only one production name argument
-	if ((argv.size() - GetOpt::optind) != 1) {
-		return HandleSyntaxError(Constants::kCLIExcise);		
-	}
+	if (argv.size() == GetOpt::optind) return m_Error.SetError(CLIError::kTooFewArgs);		
+	if ((argv.size() - GetOpt::optind) > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 	// Pass the productions to the DoExcise function
 	return DoExcise(pAgent, options, &(argv[GetOpt::optind]));
@@ -82,7 +81,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 	// Acquire production manager
 	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
 	if (!pProductionManager) {
-		return HandleError("Unable to get production manager!");
+		return m_Error.SetError(CLIError::kgSKIError);
 	}
 
 	int exciseCount = 0;
@@ -114,7 +113,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 		// Check for the production
 		gSKI::tIProductionIterator* pProdIter = pProductionManager->GetProduction((*pProduction).c_str());
 		if (!pProdIter->GetNumElements()) {
-			return HandleError("Production not found: " + (*pProduction));
+			return m_Error.SetError(CLIError::kProductionNotFound);
 		}
 
 		ExciseInternal(pProdIter, exciseCount);

@@ -13,7 +13,7 @@ bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::stri
 	unused(pAgent);
 
 	if (argv.size() > 2) {
-		return HandleSyntaxError(Constants::kCLIHelp, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 
 	if (argv.size() == 2) {
@@ -25,17 +25,14 @@ bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::stri
 bool CommandLineInterface::DoHelp(std::string* pCommand) {
 	std::string output;
 
-	if (!m_pConstants->IsUsageFileAvailable()) {
-		return HandleError(Constants::kCLINoUsageFile);
-	}
+	if (!m_pConstants->IsUsageFileAvailable()) return m_Error.SetError(CLIError::kNoUsageFile);
 
 	if (pCommand) {
-		if (!m_pConstants->GetUsageFor(*pCommand, output)) {
-			return HandleError("Help for command '" + *pCommand + "' not found.");
-		}
+		if (!m_pConstants->GetUsageFor(*pCommand, output)) return m_Error.SetError(CLIError::kNoUsageInfo);
 		AppendToResult(output);
 		return true;
 	}
+
 	AppendToResult("Help is available for the following commands:\n");
 	std::list<std::string> commandList = m_pConstants->GetCommandList();
 	std::list<std::string>::const_iterator iter = commandList.begin();

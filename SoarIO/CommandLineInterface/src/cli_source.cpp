@@ -17,11 +17,11 @@ using namespace cli;
 bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	if (argv.size() < 2) {
 		// Source requires a filename
-		return HandleSyntaxError(Constants::kCLISource, Constants::kCLITooFewArgs);
+		return m_Error.SetError(CLIError::kTooFewArgs);
 
 	} else if (argv.size() > 2) {
 		// but only one filename
-		return HandleSyntaxError(Constants::kCLISource, "Source only one file at a time.");
+		return m_Error.SetError(CLIError::kSourceOnlyOneFile);
 	}
 
 	return DoSource(pAgent, argv[1]);
@@ -38,7 +38,7 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 	// Open the file
 	std::ifstream soarFile(filename.c_str());
 	if (!soarFile) {
-		return HandleError("Failed to open file '" + filename + "' for reading.");
+		return m_Error.SetError(CLIError::kOpenFileFail);
 	}
 
 	std::string line;					// Each line removed from the file
@@ -138,12 +138,12 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 			// Did we break out because of closed braces or EOF?
 			if (braces > 0) {
 				// EOF while still nested
-				HandleError("Unexpected end of file. Unmatched opening brace.");
+				m_Error.SetError(CLIError::kUnmatchedBrace);
 				HandleSourceError(lineCountCache, filename);
 				return false;
 
 			} else if (braces < 0) {
-				HandleError("Closing brace(s) found without matching opening brace.");
+				m_Error.SetError(CLIError::kExtraClosingBrace);
 				HandleSourceError(lineCountCache, filename);
 				return false;
 			}
@@ -196,21 +196,22 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		m_SourceDirDepth = 0; // TODO: redundant
 
 		m_SourceError = true;
-		m_ErrorMessage += "\nSource command error on line ";
+		m_SourceErrorDetail.clear();
+		m_SourceErrorDetail += "\nSource command error on line ";
 		// TODO: arbitrary buffer size here
 		char buf[256];
 		memset(buf, 0, 256);
 		snprintf(buf, 256, "%d", errorLine);
 
-		m_ErrorMessage += " of ";
+		m_SourceErrorDetail += " of ";
 		
 		std::string directory;
 		GetCurrentWorkingDirectory(directory); // Again, ignore error here
 
-		m_ErrorMessage += filename + " (" + directory + ")";
+		m_SourceErrorDetail += filename + " (" + directory + ")";
 
 	} else {
-		m_ErrorMessage += "\n\t--> Sourced by: " + filename;
+		m_SourceErrorDetail += "\n\t--> Sourced by: " + filename;
 	}
 }
 

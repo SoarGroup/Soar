@@ -18,7 +18,7 @@ using namespace sml;
 bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No more than three arguments
 	if (argv.size() > 3) {
-		return HandleSyntaxError(Constants::kCLIMultiAttributes, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 
 	int n = 0;
@@ -27,12 +27,12 @@ bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vecto
 	if (argv.size() > 2) {
 		if (!IsInteger(argv[2])) {
 			// Must be an integer
-			return HandleSyntaxError(Constants::kCLIMultiAttributes, "Third argument must be an integer.");
+			return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
 		}
 		n = atoi(argv[2].c_str());
 		if (n <= 0) {
 			// Must be greater than 0
-			return HandleSyntaxError(Constants::kCLIMultiAttributes, "Third argument must be greater than 0.");
+			return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
 		}
 	}
 

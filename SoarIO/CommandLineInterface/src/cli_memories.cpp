@@ -58,14 +58,14 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 				productionType |= OPTION_MEMORIES_USER;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIMemories, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Max one additional argument
-	if ((argv.size() - GetOpt::optind) > 1) return HandleSyntaxError(Constants::kCLIMemories, Constants::kCLITooManyArgs);		
+	if ((argv.size() - GetOpt::optind) > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 	// It is either a production or a number
 	std::string production;
@@ -73,7 +73,7 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 	if ((argv.size() - GetOpt::optind) == 1) {
 		n = atoi(argv[GetOpt::optind].c_str());
 		if (!n) {
-			if (productionType) return HandleSyntaxError(Constants::kCLIMemories, "Do not specify production type (-c, -j, etc) when specifying a production name.");
+			if (productionType) return m_Error.SetError(CLIError::kNoProdTypeWhenProdName);
 			production = argv[GetOpt::optind];
 		}
 	}
@@ -87,7 +87,7 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int productionType, int n, std::string production) {
 	RequireAgent(pAgent);
 
-	if (n && (n < 0)) return HandleError("n must be a positive integer.");
+	if (n && (n < 0)) return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
 
 	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
 	gSKI::tIProductionIterator* pIter = 0;
@@ -122,7 +122,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 					pProd = 0;
 					pIter->Release();
 					pIter = 0;
-					return HandleError("Invalid production type.");
+					return m_Error.SetError(CLIError::kInvalidProductionType);
 			}
 			
 			std::pair< std::string, unsigned long > memory;
@@ -159,7 +159,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 	pIter->Release(); 
 	pIter = 0;
 
-	if (!pProd) return HandleError("Production not found.");
+	if (!pProd) return m_Error.SetError(CLIError::kProductionNotFound);
 
 	char buf[1024];
 	snprintf(buf, 1023, "\n Memory use for %s: %ld\n\n", production.c_str(), pProd->CountReteTokens());

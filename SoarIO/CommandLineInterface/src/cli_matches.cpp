@@ -55,14 +55,14 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 				matches = OPTION_MATCHES_RETRACTIONS;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIMatches, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Max one additional argument and it is a production
-	if ((argv.size() - GetOpt::optind) > 1) return HandleSyntaxError(Constants::kCLIMatches, Constants::kCLITooManyArgs);		
+	if ((argv.size() - GetOpt::optind) > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 	std::string production;
 	if ((argv.size() - GetOpt::optind) == 1) {
@@ -90,7 +90,7 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches,
 			wtt = FULL_WME_TRACE;
 			break;
 		default:
-			return HandleError("Invalid WME detail level.");
+			return m_Error.SetError(CLIError::kInvalidWMEDetail);
 	}
 
 	// Attain the evil back door of doom, even though we aren't the TgD
@@ -101,7 +101,7 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches,
 
 		prod = pKernelHack->NameToProduction(pAgent, const_cast<char*>(production.c_str()));
 
-		if (!prod) return HandleError("Couldn't find production.");
+		if (!prod) return m_Error.SetError(CLIError::kProductionNotFound);
 
 		pKernelHack->PrintPartialMatchInformation(pAgent, prod, wtt);
 		return true;

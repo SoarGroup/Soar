@@ -61,9 +61,9 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 				options |= OPTION_RUN_STATE;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIRun, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
@@ -74,15 +74,15 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 	if ((unsigned)GetOpt::optind == argv.size() - 1) {
 
 		if (!IsInteger(argv[GetOpt::optind])) {
-			return HandleSyntaxError(Constants::kCLIRun, "Count must be an integer.");
+			return m_Error.SetError(CLIError::kIntegerExpected);
 		}
 		count = atoi(argv[GetOpt::optind].c_str());
 		if (count <= 0) {
-			return HandleSyntaxError(Constants::kCLIRun, "Count must be greater than 0.");
+			return m_Error.SetError(CLIError::kIntegerMustBePositive);
 		}
 
 	} else if ((unsigned)GetOpt::optind < argv.size()) {
-		return HandleSyntaxError(Constants::kCLIRun, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 
 	return DoRun(pAgent, options, count);
@@ -96,7 +96,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 
 	// TODO: Rather tricky options
 	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_OUTPUT) || (options & OPTION_RUN_STATE)) {
-		return HandleError("Options { o, O, s } not implemented yet.");
+		return m_Error.SetError(CLIError::kOptionNotImplemented);
 	}
 
 	// Default run type is forever
@@ -118,11 +118,11 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
 	egSKIRunResult runResult;
 	if (options & OPTION_RUN_SELF) {
-		runResult = pAgent->RunInClientThread(runType, count, m_pError);
+		runResult = pAgent->RunInClientThread(runType, count, m_pgSKIError);
 	} else {
         m_pKernel->GetAgentManager()->ClearAllInterrupts();
         m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
-		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
+		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pgSKIError);
 	}
 
 	// Check for error
@@ -146,7 +146,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 			AppendToResult("(gSKI_RUN_COMPLETED_AND_INTERRUPTED)");
 			break;
 		default:
-			return HandleError("Unknown egSKIRunResult code returned.");
+			return m_Error.SetError(CLIError::kgSKIError);
 	}
 	return true;
 }

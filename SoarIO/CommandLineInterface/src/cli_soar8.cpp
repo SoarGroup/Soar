@@ -40,14 +40,14 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 				soar8 = true;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLISoar8, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No non-option arguments
-	if ((unsigned)GetOpt::optind != argv.size()) return HandleSyntaxError(Constants::kCLISoar8, Constants::kCLITooManyArgs);
+	if ((unsigned)GetOpt::optind != argv.size()) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	return DoSoar8(query, soar8);
 }

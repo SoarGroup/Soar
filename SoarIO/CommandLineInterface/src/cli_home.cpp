@@ -18,7 +18,7 @@ bool CommandLineInterface::ParseHome(gSKI::IAgent* pAgent, std::vector<std::stri
 
 	// Only takes one optional argument, the directory to change home to
 	if (argv.size() > 2) {
-		return HandleSyntaxError(Constants::kCLIHome, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 	if (argv.size() > 1) {
 		return DoHome(&(argv[1]));

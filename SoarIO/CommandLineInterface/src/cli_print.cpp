@@ -52,11 +52,11 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 			case 'd':
 				options |= OPTION_PRINT_DEPTH;
 				if (!IsInteger(GetOpt::optarg)) {
-					return HandleSyntaxError(Constants::kCLIPrint, "Depth must be an integer.");
+					return m_Error.SetError(CLIError::kIntegerExpected);
 				}
 				depth = atoi(GetOpt::optarg);
 				if (depth < 0) {
-					return HandleSyntaxError(Constants::kCLIPrint, "Depth must be non-negative.");
+					return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
 				}
 				break;
 			case 'D':
@@ -90,17 +90,17 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 				options |= OPTION_PRINT_USER;
 				break;
 			case ':':
-				return HandleSyntaxError(Constants::kCLIPrint, Constants::kCLIMissingOptionArg);
+				return m_Error.SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return HandleSyntaxError(Constants::kCLIPrint, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// One additional optional argument
 	if ((argv.size() - GetOpt::optind) > 1) {
-		return HandleSyntaxError(Constants::kCLIPrint, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	} else if ((argv.size() - GetOpt::optind) == 1) {
 		return DoPrint(pAgent, options, depth, &(argv[GetOpt::optind]));
 	}

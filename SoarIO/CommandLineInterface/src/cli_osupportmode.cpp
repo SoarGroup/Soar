@@ -16,13 +16,13 @@ using namespace cli;
 
 bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	
-	if (argv.size() > 2) return HandleSyntaxError(Constants::kCLIOSupportMode, Constants::kCLITooManyArgs);
+	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	int mode = -1;
 	if (argv.size() == 2) {
-		if (!isdigit(argv[1][0])) return HandleSyntaxError(Constants::kCLIOSupportMode, "Expecting integer argument 0 <= n <= 4.");
+		if (!isdigit(argv[1][0])) return m_Error.SetError(CLIError::kIntegerOutOfRange);
 		mode = atoi(argv[1].c_str());
-		if (mode < 0 || mode > 4) return HandleSyntaxError(Constants::kCLIOSupportMode, "Expecting integer argument 0 <= n <= 4.");
+		if (mode < 0 || mode > 4) return m_Error.SetError(CLIError::kIntegerOutOfRange);
 	}
 
 	return DoOSupportMode(pAgent, mode);
@@ -39,6 +39,6 @@ bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 		return true;
 	}
 
-	return HandleError("gSKI does not support o-support changes during run-time.");
+	return m_Error.SetError(CLIError::kOptionNotImplemented);
 }
 

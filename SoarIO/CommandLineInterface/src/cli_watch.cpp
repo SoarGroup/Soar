@@ -111,11 +111,11 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				options |= OPTION_WATCH_WME_DETAIL;
 				break;
 			case ':':
-				return HandleSyntaxError(Constants::kCLIWatch, Constants::kCLIMissingOptionArg);
+				return m_Error.SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return HandleSyntaxError(Constants::kCLIWatch, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 
 		// process argument
@@ -128,11 +128,11 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 	if ((unsigned)GetOpt::optind == argv.size() - 1) {
 
 		if (!IsInteger(argv[GetOpt::optind])) {
-			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be an integer.");
+			return m_Error.SetError(CLIError::kIntegerExpected);
 		}
 		int watchLevel = atoi(argv[GetOpt::optind].c_str());
 		if ((watchLevel < 0) || (watchLevel > 5)) {
-			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be 0 to 5.");
+			return m_Error.SetError(CLIError::kIntegerOutOfRange);
 		}
 
 		if (watchLevel == 0) {
@@ -187,7 +187,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 		}
 
 	} else if ((unsigned)GetOpt::optind < argv.size()) {
-		return HandleSyntaxError(Constants::kCLIWatch, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 
 	return DoWatch(pAgent, options, values);
@@ -201,7 +201,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 //                                          |___/
 bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int option, const char* arg) {
 	if (!arg || !IsInteger(arg)) {
-		return HandleSyntaxError(Constants::kCLIWatch, "Arguments must be integers.");
+		return m_Error.SetError(CLIError::kIntegerExpected);
 	}
 	return WatchArg(values, option, atoi(arg));
 }
@@ -215,7 +215,7 @@ bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int opt
 	if (option <= OPTION_WATCH_WME_DETAIL) {
 		// Detail arguments 
 		if ((argInt < 0) || (argInt > 2)) {
-			return HandleSyntaxError(Constants::kCLIWatch, "Detail argument must 0, 1, or 2.");
+			return m_Error.SetError(CLIError::kIntegerOutOfRange);
 		}
 
 		// First, shift argInt if necessary
@@ -235,7 +235,7 @@ bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int opt
 	} else {
 		// Switch arguments
 		if ((argInt < 0) || (argInt > 1)) {
-			return HandleSyntaxError(Constants::kCLIWatch, "Switch argument must 0 or 1.");
+			return m_Error.SetError(CLIError::kIntegerOutOfRange);
 		}
 
 		if (argInt) {

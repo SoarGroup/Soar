@@ -28,7 +28,7 @@ using namespace sml;
 bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// There must at least be a command
 	if (argv.size() < 2) {
-		return HandleSyntaxError(Constants::kCLITime, Constants::kCLITooFewArgs);
+		return m_Error.SetError(CLIError::kTooFewArgs);
 	}
 
 	std::vector<std::string>::iterator iter = argv.begin();
@@ -45,7 +45,7 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 #else // WIN32
 	struct timeval realStart;
 	if (gettimeofday(&realStart, 0) != 0) {
-		return HandleError("failed to get time: " + std::string(strerror(errno)));
+		return m_Error.SetError(CLIError::kgettimeofdayFail);
 	}
 #endif // WIN32
 
@@ -67,7 +67,7 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 #else // WIN32
 	struct timeval realFinish;
 	if (gettimeofday(&realFinish, 0) != 0) {
-		return HandleError("failed to get time: " + std::string(strerror(errno)));
+		return m_Error.SetError(CLIError::kgettimeofdayFail);
 	}
 	double realElapsed = (realFinish.tv_sec + (realFinish.tv_usec / 1000000.0)) 
 		- (realStart.tv_sec + (realStart.tv_usec / 1000000.0));

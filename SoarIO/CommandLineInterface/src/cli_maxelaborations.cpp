@@ -19,12 +19,12 @@ bool CommandLineInterface::ParseMaxElaborations(gSKI::IAgent* pAgent, std::vecto
 	// n defaults to 0 (print current value)
 	int n = 0;
 
-	if (argv.size() > 2) return HandleSyntaxError(Constants::kCLIMaxElaborations, Constants::kCLITooManyArgs);
+	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	// one argument, figure out if it is a positive integer
 	if (argv.size() == 2) {
 		n = atoi(argv[1].c_str());
-		if (n <= 0) return HandleSyntaxError(Constants::kCLIMaxElaborations, "Integer argument must be positive.");
+		if (n <= 0) return m_Error.SetError(CLIError::kIntegerMustBePositive);
 	}
 
 	return DoMaxElaborations(pAgent, n);

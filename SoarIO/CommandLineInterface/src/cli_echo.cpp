@@ -31,9 +31,9 @@ bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::stri
 				noNewLine = true;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIEcho, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 

@@ -10,11 +10,11 @@ using namespace cli;
 
 bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// Exactly one argument
-	if (argv.size() < 2) return HandleSyntaxError(Constants::kCLIRemoveWME, Constants::kCLITooFewArgs);
-	if (argv.size() > 2) return HandleSyntaxError(Constants::kCLIRemoveWME, Constants::kCLITooManyArgs);
+	if (argv.size() < 2) return m_Error.SetError(CLIError::kTooFewArgs);
+	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	int timetag = atoi(argv[1].c_str());
-	if (!timetag) return HandleSyntaxError(Constants::kCLIRemoveWME, "Positive integer expected");
+	if (!timetag) return m_Error.SetError(CLIError::kIntegerMustBePositive);
 
 	return DoRemoveWME(pAgent, timetag);
 }

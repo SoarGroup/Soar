@@ -45,15 +45,15 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 				setting = false; // disable timers
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLITimers, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No non-option arguments
 	if ((unsigned)GetOpt::optind != argv.size()) {
-		return HandleSyntaxError(Constants::kCLITimers, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 
 	return DoTimers(pAgent, print, setting);
@@ -68,6 +68,9 @@ bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, bool setti
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	if (print) {
+
+		// TODO: raw output
+
 		// print current setting
 		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
 

@@ -13,7 +13,7 @@ bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::st
 	unused(pAgent);
 
 	if (argv.size() != 2) {
-		return HandleSyntaxError(Constants::kCLIHelpEx);
+		return m_Error.SetError(Constants::kCLIHelpEx);
 	}
 
 	return DoHelpEx(argv[1]);
@@ -22,13 +22,9 @@ bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::st
 bool CommandLineInterface::DoHelpEx(const std::string& command) {
 	std::string output;
 
-	if (!m_pConstants->IsUsageFileAvailable()) {
-		return HandleError(Constants::kCLINoUsageFile);
-	}
+	if (!m_pConstants->IsUsageFileAvailable()) return m_Error.SetError(CLIError::kNoUsageFile);
+	if (!m_pConstants->GetExtendedUsageFor(command, output)) return m_Error.SetError(CLIError::kNoUsageInfo);
 
-	if (!m_pConstants->GetExtendedUsageFor(command, output)) {
-		return HandleError("Extended help for command '" + command + "' not found.");
-	}
 	AppendToResult(output);
 	return true;
 }

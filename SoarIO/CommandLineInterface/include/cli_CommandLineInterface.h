@@ -24,6 +24,7 @@
 #include "cli_CommandData.h"
 //#include "cli_Constants.h"
 #include "cli_Aliases.h"
+#include "cli_CLIError.h"
 
 // gSKI includes
 #include "gSKI_Events.h"
@@ -706,27 +707,7 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool HandleError(std::string errorMessage, gSKI::Error* pError = 0);
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
 	void HandleSourceError(int errorLine, const std::string& filename);
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool HandleSyntaxError(const char* command, const std::string& details);
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool HandleSyntaxError(const char* command, const char* details = 0);
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool HandleGetOptError(char option);
 
 	/*************************************************************
 	* @brief 
@@ -764,12 +745,13 @@ protected:
 	ElementXMLList		m_ResponseTags;			// List of tags for the response.
 
 	bool				m_SourceError;			// Used to control debug printing for source command errors
+	std::string			m_SourceErrorDetail;	// Used for detailed source error output
 	int					m_SourceDepth;			// Depth of source command calls.
 	int					m_SourceDirDepth;		// Depth of directory stack since source command, used to return to the dir that source was issued in.
 
 	std::string			m_Result;				// String output from the command
-	std::string			m_ErrorMessage;			// String output from the command
-	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command
+	CLIError			m_Error;
+	gSKI::Error*		m_pgSKIError;			// gSKI error output from calls made to process the command
 
 	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result
 	LogPrintHandler		m_LogPrintHandler;		// The print callback handler, used for catching kernel/gSKI output and writing it to a log

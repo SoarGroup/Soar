@@ -55,9 +55,9 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 				operation = OPTION_LOG_QUERY;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLILog, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 	
@@ -68,7 +68,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	switch (operation) {
 		case OPTION_LOG_ADD:
 			// no less than one argument
-			if ((argv.size() - GetOpt::optind) < 1) return HandleSyntaxError(Constants::kCLILog, Constants::kCLITooFewArgs);
+			if ((argv.size() - GetOpt::optind) < 1) return m_Error.SetError(CLIError::kTooFewArgs);
 
 			// combine all args
 			for (int i = 0; i < GetOpt::optind; ++i) {
@@ -83,24 +83,24 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 
 		case OPTION_LOG_NEW:
 			// no more than one argument
-			if ((argv.size() - GetOpt::optind) > 1) return HandleSyntaxError(Constants::kCLILog, Constants::kCLITooManyArgs);
+			if ((argv.size() - GetOpt::optind) > 1) return m_Error.SetError(CLIError::kTooManyArgs);
 			if ((argv.size() - GetOpt::optind) == 1) filename = argv[1];
 			break;
 
 		case OPTION_LOG_NEWAPPEND:
 			// exactly one argument
-			if ((argv.size() - GetOpt::optind) != 1) return HandleSyntaxError(Constants::kCLILog);
+			if ((argv.size() - GetOpt::optind) != 1) return m_Error.SetError(Constants::kCLILog);
 			filename = argv[2];
 			break;
 
 		case OPTION_LOG_CLOSE:
 		case OPTION_LOG_QUERY:
 			// no arguments
-			if (argv.size() - GetOpt::optind) return HandleSyntaxError(Constants::kCLILog, Constants::kCLITooManyArgs);
+			if (argv.size() - GetOpt::optind) return m_Error.SetError(CLIError::kTooManyArgs);
 			break;
 
 		default:
-			return HandleSyntaxError(Constants::kCLILog, "Invalid operation.");
+			return m_Error.SetError(CLIError::kInvalidOperation);
 	}
 
 	return DoLog(pAgent, operation, filename, toAdd);
@@ -118,20 +118,20 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, con
 
 		case OPTION_LOG_NEW:
 			if (filename.size() == 0) break;
-			if (m_pLogFile) return HandleError("Close log file '" + m_LogFilename + "' first.");
+			if (m_pLogFile) return m_Error.SetError(CLIError::kLogAlreadyOpen);
 			m_pLogFile = new std::ofstream(filename.c_str(), mode);
-			if (!m_pLogFile) return HandleError("Failed to open file for logging.");
+			if (!m_pLogFile) return m_Error.SetError(CLIError::kLogOpenFailure);
 			pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 			m_LogFilename = filename;
 			break;
 
 		case OPTION_LOG_ADD:
-			if (!m_pLogFile) return HandleError("No log file is open.");
+			if (!m_pLogFile) return m_Error.SetError(CLIError::kLogNotOpen);
 			(*m_pLogFile) << toAdd << std::endl;
 			return true;
 
 		case OPTION_LOG_CLOSE:
-			if (!m_pLogFile) return HandleError("No log file is open.");
+			if (!m_pLogFile) return m_Error.SetError(CLIError::kLogNotOpen);
 			pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 	
 			(*m_pLogFile) << "Log file closed." << std::endl;
@@ -144,7 +144,7 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, con
 		case OPTION_LOG_QUERY:
 			break;
 		default:
-			return HandleError("Invalid operation.");
+			return m_Error.SetError(CLIError::kInvalidOperation);
 	}
 
 	// Query at end of successful command, or by default (but not on _ADD)

@@ -10,14 +10,6 @@
 using namespace cli;
 using namespace std;
 
-char const* Constants::kCLISyntaxError			= "Command syntax error.";
-char const* Constants::kCLINoUsageInfo			= "Usage information not found for that command.";
-char const* Constants::kCLINoUsageFile			= "Usage file not available (error opening file).";
-char const* Constants::kCLITooManyArgs			= "Too many arguments.";
-char const* Constants::kCLITooFewArgs			= "Too few arguments.";
-char const* Constants::kCLIUnrecognizedOption	= "Unrecognized option.";
-char const* Constants::kCLIMissingOptionArg		= "Missing option argument.";
-
 char const* Constants::kCLIAddWME					= "add-wme";			
 char const* Constants::kCLIAlias					= "alias";			
 char const* Constants::kCLICD						= "cd";			

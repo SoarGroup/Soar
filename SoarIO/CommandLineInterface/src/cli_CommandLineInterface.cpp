@@ -28,6 +28,7 @@
 #include "sml_Connection.h"
 #include "sml_TagResult.h"
 #include "sml_TagArg.h"
+#include "sml_StringOps.h"
 
 using namespace cli;
 using namespace sml;
@@ -61,9 +62,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
-	if (m_pGetOpt) {
-		delete m_pGetOpt;
-	}
+	if (m_pGetOpt) delete m_pGetOpt;
 	if (m_pLogFile) {
 		(*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
 		delete m_pLogFile;
@@ -121,14 +120,14 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 
 	// Clear the result
 	m_Result.clear();
-	m_ErrorMessage.clear();
 	m_ResponseTags.clear();
+	m_Error.SetError(CLIError::kNoError);
 
 	// Fail if quit has been called
 	if (m_QuitCalled) return false;
 
 	// Save the pointers
-	m_pError = pError;
+	m_pgSKIError = pError;
 
 	// Save the raw output flag
 	m_RawOutput = rawOutput;
@@ -145,8 +144,11 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	// Log output
 	if (m_pLogFile) (*m_pLogFile) << m_Result << endl;
 
-	// Reset source error flag
-	m_SourceError = false;
+	// Handle source error output
+	if (m_SourceError) {
+		m_Error.SetError(m_SourceErrorDetail);
+		m_SourceError = false;
+	}
 
 	if (ret) {
 		// The command succeeded, so return the result if raw output
@@ -179,7 +181,18 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 		}
 	} else {
 		// The command failed, add the error message
-		pConnection->AddErrorToSMLResponse(pResponse, m_ErrorMessage.c_str());
+		string errorDescription = m_Error.GetErrorDescription();
+		if (m_pgSKIError && (m_pgSKIError->Id != gSKI::gSKIERR_NONE)) {
+			errorDescription += "\ngSKI Error code: ";
+			char buf[32];
+			Int2String((int)m_pgSKIError->Id, buf, 32);
+			errorDescription += buf;
+			errorDescription += "\ngSKI Error text: ";
+			errorDescription += m_pgSKIError->Text;
+			errorDescription += "\ngSKI Error details: ";
+			errorDescription += m_pgSKIError->ExtendedMsg;
+		}
+		pConnection->AddErrorToSMLResponse(pResponse, errorDescription.c_str(), m_Error.GetErrorCode());
 	}
 
 	// Always returns true to indicate that we've generated any needed error message already
@@ -190,10 +203,10 @@ EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pC
 	// This function is for processing a command without the SML layer
 	// Clear the result
 	m_Result.clear();
-	m_ErrorMessage.clear();
+	m_Error.SetError(CLIError::kNoError);
 
 	// Save the pointers
-	m_pError = pError;
+	m_pgSKIError = pError;
 
 	// Process the command, ignoring its result (irrelevant at this level)
 	bool ret = DoCommandInternal(pAgent, pCommandLine);
@@ -201,49 +214,38 @@ EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pC
 	// Reset source error flag
 	m_SourceError = false;
 
-	pResponse = m_Result.c_str();
+	if (ret) {
+		pResponse = m_Result.c_str();
+	} else {
+		pResponse = m_Error.GetErrorDescription();
+	}
 
 	return ret;
 }
 
 bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::string& commandLine) {
-
 	vector<string> argv;
-
 	// Parse command:
-	if (Tokenize(commandLine, argv) == -1) {
-		return false;	// Parsing failed
-	}
-
+	if (Tokenize(commandLine, argv) == -1)  return false;	// Parsing failed
 	return DoCommandInternal(pAgent, argv);
 }
 
 bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string>& argv) {
-	if (!argv.size()) {
-		// Nothing on command line!
-		return true;
-	}
+	if (!argv.size()) return true;
 
 	// Translate aliases
 	m_Aliases.Translate(argv);
 
 	// Is the command implemented?
-	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
-		HandleError("Command '" + argv[0] + "' not found or implemented.");
-		return false;
-	}
+	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) return m_Error.SetError(CLIError::kCommandNotFound);
 
 	// Check for help flags
 	if (CheckForHelp(argv)) {
 		// Help flags found, add help to line, return true
 		string output;
-		if (!m_pConstants->IsUsageFileAvailable()) {
-			AppendToResult(Constants::kCLINoUsageFile);
-		} else if (m_pConstants->GetUsageFor(argv[0], output)) {
-			AppendToResult(output);
-		} else {
-			AppendToResult(Constants::kCLINoUsageInfo);
-		}
+		if (!m_pConstants->IsUsageFileAvailable()) return m_Error.SetError(CLIError::kNoUsageFile);
+		if (!m_pConstants->GetUsageFor(argv[0], output)) return m_Error.SetError(CLIError::kNoUsageInfo);
+		AppendToResult(output);
 		return true;
 	}
 
@@ -251,11 +253,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	CommandFunction pFunction = m_CommandMap[argv[0]];
 
 	// Just in case...
-	if (!pFunction) {
-		// Very odd, should be set in BuildCommandMap
-		HandleError("Command found but function pointer is null.");
-		return false;
-	}
+	if (!pFunction) return m_Error.SetError(CLIError::kNoCommandPointer); // Very odd, should be set in BuildCommandMap
 	
 	// Make the call
 	return (this->*pFunction)(pAgent, argv);
@@ -271,29 +269,21 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 	for (;;) {
 
 		// Is there anything to work with?
-		if(cmdline.empty()) {
-			break;
-		}
+		if(cmdline.empty()) break;
 
 		// Remove leading whitespace
 		iter = cmdline.begin();
 		while (isspace(*iter)) {
 			cmdline.erase(iter);
 
-			if (!cmdline.length()) {
-				//Nothing but space left
-				break;
-			}
+			if (!cmdline.length()) break; //Nothing but space left
 			
 			// Next character
 			iter = cmdline.begin();
 		}
 
 		// Was it actually trailing whitespace?
-		if (!cmdline.length()) {
-			// Nothing left to do
-			break;
-		}
+		if (!cmdline.length()) break;// Nothing left to do
 
 		// We have an argument
 		++argc;
@@ -313,7 +303,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 				} else if (*iter == '}') {
 					--brackets;
 					if (brackets < 0) {
-						HandleError("Closing bracket found without opening counterpart.");
+						m_Error.SetError(CLIError::kExtraClosingParen);
 						return -1;
 					}
 				}
@@ -331,7 +321,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 
 				// Did they close their quotes or brackets?
 				if (quotes || brackets) {
-					HandleError("No closing quotes/brackets found.");
+					m_Error.SetError(CLIError::kUnmatchedBracketOrQuote);
 					return -1;
 				}
 				break;
@@ -369,10 +359,7 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 	char* ret = getcwd(buf, 1024);
 
 	// If getcwd returns 0, that is bad
-	if (!ret) {
-		HandleError("Couldn't get working directory.");
-		return false;
-	}
+	if (!ret) return m_Error.SetError(CLIError::kgetcwdFail);
 
 	// Store directory in output parameter and return success
 	directory = buf;
@@ -398,67 +385,14 @@ bool CommandLineInterface::IsInteger(const string& s) {
 	return true;
 }
 
-bool CommandLineInterface::HandleSyntaxError(const char* command, const std::string& details) {
-	return HandleSyntaxError(command, details.c_str());
-}
-
-bool CommandLineInterface::HandleSyntaxError(const char* command, const char* details) {
-	string msg;
-	msg += Constants::kCLISyntaxError;
-	msg += " (";
-	msg += command;
-	msg += ")\n";
-	if (details) {
-		msg += details;
-		msg += '\n';
-	}
-	msg += "Type 'help ";
-	msg += command;
-	msg += "' or '";
-	msg += command;
-	msg += " --help' for syntax and usage.";
-	HandleError(msg);
-	return false;
-}
-
 bool CommandLineInterface::RequireAgent(gSKI::IAgent* pAgent) {
-	if (!pAgent) {
-		HandleError("An agent pointer is required for this command.");
-		return false;
-	}
+	if (!pAgent) return m_Error.SetError(CLIError::kAgentRequired);
 	return true;
 }
 
 bool CommandLineInterface::RequireKernel() {
-	if (!m_pKernel) {
-		HandleError("A kernel pointer is required for this command.");
-		return false;
-	}
+	if (!m_pKernel) return m_Error.SetError(CLIError::kKernelRequired);
 	return true;
-}
-
-bool CommandLineInterface::HandleGetOptError(char option) {
-	string msg;
-	msg += "Internal error: m_pGetOpt->GetOpt_Long returned '";
-	msg += option;
-	msg += "'!";
-	HandleError(msg);
-	return false;
-}
-
-bool CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pError) {
-	m_ErrorMessage += errorMessage;
-
-	if (pError && isError(*pError)) {
-		m_ErrorMessage += "\ngSKI error was: " ;
-		m_ErrorMessage += pError->Text ;
-		m_ErrorMessage += " details: " ;
-		m_ErrorMessage += pError->ExtendedMsg ;
-	}
-	AppendToResult(m_ErrorMessage);
-
-	// Always return false
-	return false;
 }
 
 void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const char* pValue) {

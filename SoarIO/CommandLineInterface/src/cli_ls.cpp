@@ -24,7 +24,7 @@ bool CommandLineInterface::ParseLS(gSKI::IAgent* pAgent, std::vector<std::string
 
 	// No arguments
 	if (argv.size() != 1) {
-		return HandleSyntaxError(Constants::kCLILS, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 	return DoLS();
 }
@@ -66,8 +66,7 @@ bool CommandLineInterface::DoLS() {
 	}
 
 	// Open the directory for reading
-	if ((directoryPointer = opendir(dir.c_str())) == 0) {
-		return HandleError(dir + ": cannot open for reading: " + std::string(strerror(errno)));
+	if ((directoryPointer = opendir(dir.c_str())) == 0) return m_Error.SetError(CLIError::kDirectoryOpenFailure);
 	}
 
 	// Read the files
@@ -77,9 +76,7 @@ bool CommandLineInterface::DoLS() {
 	}
 
 	// Check for error
-	if (errno != 0) {
-		return HandleError(dir + ": error reading directory entries: " + std::string(strerror(errno)));
-	}
+	if (errno != 0) return m_Error.SetError(CLIError::kDirectoryEntryReadFailure);
 
 	// Ignoring close error
 	closedir(directoryPointer);

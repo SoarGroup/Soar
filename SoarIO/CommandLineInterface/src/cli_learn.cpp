@@ -60,15 +60,15 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 				options |= OPTION_LEARN_ONLY;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLILearn, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No non-option arguments
 	if ((unsigned)GetOpt::optind != argv.size()) {
-		return HandleSyntaxError(Constants::kCLILearn, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 
 	return DoLearn(pAgent, options);
@@ -92,7 +92,7 @@ bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int opti
 
 	// Check for unimplemented options
 	if ((options & OPTION_LEARN_ALL_LEVELS) || (options & OPTION_LEARN_BOTTOM_UP) || (options & OPTION_LEARN_EXCEPT) || (options & OPTION_LEARN_LIST) || (options & OPTION_LEARN_ONLY)) {
-		return HandleError("Options {abElo} are not implemented.");
+		return m_Error.SetError(CLIError::kOptionNotImplemented);
 	}
 
 	// Enable or disable, priority to disable

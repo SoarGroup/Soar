@@ -19,12 +19,12 @@ bool CommandLineInterface::ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std:
 	// n defaults to 0 (print current value)
 	int n = 0;
 
-	if (argv.size() > 2) return HandleSyntaxError(Constants::kCLIMaxChunks, Constants::kCLITooManyArgs);
+	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	// one argument, figure out if it is a positive integer
 	if (argv.size() == 2) {
 		n = atoi(argv[1].c_str());
-		if (n <= 0) return HandleSyntaxError(Constants::kCLIMaxChunks, "Integer argument must be positive.");
+		if (n <= 0) return m_Error.SetError(CLIError::kIntegerMustBePositive);
 	}
 
 	return DoMaxChunks(pAgent, n);

@@ -33,9 +33,9 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 				self = true;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIStopSoar, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
@@ -55,9 +55,9 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 
 	if (self) {
 		if (!RequireAgent(pAgent)) return false;
-		return pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, m_pError);
+		return pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, m_pgSKIError);
 	} else {
-		return m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, m_pError);
+		return m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, m_pgSKIError);
 	}
 }
 

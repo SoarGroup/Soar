@@ -33,17 +33,19 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 				disable = true;
 				command = GetOpt::optarg;
 				break;
+			case ':':
+				return m_Error.SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return HandleSyntaxError(Constants::kCLIAlias, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// If disabling, no additional argument.
 	if (disable) {
 		if (argv.size() != (unsigned)GetOpt::optind) {
-			return HandleSyntaxError(Constants::kCLIAlias, Constants::kCLITooManyArgs);
+			return m_Error.SetError(CLIError::kTooManyArgs);
 		}
 		return DoAlias(disable, command, 0);
 	}
@@ -55,7 +57,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 
 	// If not disabling and not listing, there must be at least two additional arguments
 	if ((argv.size() - GetOpt::optind) < 2) {
-		return HandleSyntaxError(Constants::kCLIAlias, Constants::kCLITooFewArgs);		
+		return m_Error.SetError(CLIError::kTooFewArgs);		
 	}
 
 	std::vector<std::string> substitution;
@@ -72,7 +74,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 bool CommandLineInterface::DoAlias(bool disable, const std::string& command, const std::vector<std::string>* pSubstitution) {
 	if (disable) {
 		if (!m_Aliases.RemoveAlias(command)) {
-			return HandleError(command + " is not an alias.");
+			return m_Error.SetError(CLIError::kAliasNotFound);
 		}
 	} else {
 		if (!command.size()) {
@@ -82,11 +84,11 @@ bool CommandLineInterface::DoAlias(bool disable, const std::string& command, con
 		}
 
 		if (m_Aliases.IsAlias(command)) {
-			return HandleError(command + " is already an alias, remove it first to overwrite.");
+			return m_Error.SetError(CLIError::kAliasExists);
 		}
 
 		if (!m_Aliases.NewAlias((*pSubstitution), command)) {
-			return HandleError("Error adding alias '" + command + "'.");
+			return m_Error.SetError(CLIError::kAliasError);
 		}
 	}
 	return true;

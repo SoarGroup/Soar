@@ -40,14 +40,14 @@ bool CommandLineInterface::ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::s
 				enable = true;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIWaitSNC, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No additional arguments
-	if (argv.size() != (unsigned)GetOpt::optind) return HandleSyntaxError(Constants::kCLIWaitSNC, Constants::kCLITooManyArgs);		
+	if (argv.size() != (unsigned)GetOpt::optind) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 	return DoWaitSNC(pAgent, query, enable);
 }

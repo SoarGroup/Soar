@@ -9,16 +9,16 @@
 using namespace cli;
 
 bool CommandLineInterface::ParseAddWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-    if (argv.size() < 4) return HandleSyntaxError(Constants::kCLIAddWME, Constants::kCLITooFewArgs);
+	if (argv.size() < 4) return m_Error.SetError(CLIError::kTooFewArgs);
 
 	unsigned attributeIndex = (argv[2] == "^") ? 3 : 2;
 
-    if (argv.size() < (attributeIndex + 2)) return HandleSyntaxError(Constants::kCLIAddWME, Constants::kCLITooFewArgs);
-    if (argv.size() > (attributeIndex + 3)) return HandleSyntaxError(Constants::kCLIAddWME, Constants::kCLITooManyArgs);
+	if (argv.size() < (attributeIndex + 2)) return m_Error.SetError(CLIError::kTooFewArgs);
+    if (argv.size() > (attributeIndex + 3)) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	bool acceptable = false;
 	if (argv.size() > (attributeIndex + 2)) {
-		if (argv[attributeIndex + 2] != "+") return HandleSyntaxError(Constants::kCLIAddWME, "Expected acceptable preference (+) or nothing, got '" + argv[attributeIndex + 2] + "'.");
+		if (argv[attributeIndex + 2] != "+") return m_Error.SetError("Expected acceptable preference (+) or nothing, got '" + argv[attributeIndex + 2] + "'.");
 		acceptable = true;
 	}
 
@@ -31,6 +31,8 @@ bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::s
 	unused(attribute);
 	unused(value);
 	unused(acceptable);
+
+	m_Error.SetError(CLIError::kNotImplemented);
 
 	return false;
 }

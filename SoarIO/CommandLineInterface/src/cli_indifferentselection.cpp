@@ -43,14 +43,14 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 				mode = OPTION_INDIFFERENT_RANDOM;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIIndifferentSelection, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No additional arguments
-	if (argv.size() != (unsigned)GetOpt::optind) return HandleSyntaxError(Constants::kCLIIndifferentSelection, Constants::kCLITooManyArgs);		
+	if (argv.size() != (unsigned)GetOpt::optind) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 
 	return DoIndifferentSelection(pAgent, mode);
@@ -75,7 +75,7 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 				AppendToResult("random");
 				break;
 			default:
-				return HandleError("Invalid indifferent selection mode returned from kernel.");
+				return m_Error.SetError(CLIError::kInvalidIndifferentSelectionMode);
 		}
 	} else {
 		switch (mode) {
@@ -92,7 +92,7 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_RANDOM);
 				break;
 			default:
-				return HandleError("Invalid indifferent selection mode.");
+				return m_Error.SetError(CLIError::kInvalidIndifferentSelectionMode);
 
 		}
 	}

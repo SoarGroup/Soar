@@ -14,7 +14,7 @@ using namespace cli;
 bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No arguments
 	if (argv.size() != 1) {
-		return HandleSyntaxError(Constants::kCLIStats, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 
 	return DoStats(pAgent);

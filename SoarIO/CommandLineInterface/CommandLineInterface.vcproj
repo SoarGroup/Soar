@@ -116,6 +116,9 @@
 				RelativePath=".\src\cli_Aliases.cpp">
 			</File>
 			<File
+				RelativePath=".\src\cli_CLIError.cpp">
+			</File>
+			<File
 				RelativePath=".\src\cli_CommandLineInterface.cpp">
 			</File>
 			<File
@@ -273,6 +276,9 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
 				RelativePath=".\include\cli_Aliases.h">
+			</File>
+			<File
+				RelativePath=".\include\cli_CLIError.h">
 			</File>
 			<File
 				RelativePath=".\include\cli_CommandData.h">

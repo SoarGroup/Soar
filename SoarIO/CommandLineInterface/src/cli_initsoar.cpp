@@ -13,7 +13,7 @@ using namespace cli;
 bool CommandLineInterface::ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No arguments
 	if (argv.size() != 1) {
-		return HandleSyntaxError(Constants::kCLIInitSoar, Constants::kCLITooManyArgs);
+		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
 	return DoInitSoar(pAgent);
 }

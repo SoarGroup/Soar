@@ -45,14 +45,14 @@ bool CommandLineInterface::ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::
 				query = false;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIWarnings, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	if ((unsigned)GetOpt::optind != argv.size()) {
-		HandleSyntaxError(Constants::kCLIWarnings);
+		m_Error.SetError(Constants::kCLIWarnings);
 	}
 	return DoWarnings(pAgent, query, setting);
 }

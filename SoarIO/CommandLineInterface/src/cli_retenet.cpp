@@ -44,23 +44,25 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 				load = false;
 				filename = GetOpt::optarg;
 				break;
+			case ':':
+				return m_Error.SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return HandleSyntaxError(Constants::kCLIReteNet, Constants::kCLIUnrecognizedOption);
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
 			default:
-				return HandleGetOptError((char)option);
+				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Must have a save or load operation
-	if (!save && !load) return HandleSyntaxError(Constants::kCLIReteNet, Constants::kCLITooFewArgs);
-	if ((unsigned)GetOpt::optind != argv.size()) return HandleSyntaxError(Constants::kCLIReteNet, Constants::kCLITooManyArgs);
+	if (!save && !load) return m_Error.SetError(CLIError::kTooFewArgs);
+	if ((unsigned)GetOpt::optind != argv.size()) return m_Error.SetError(CLIError::kTooManyArgs);
 	return DoReteNet(pAgent, save, filename);
 }
 
 bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
-	if (!filename.size()) return HandleError("rete-net command must have a filename.");
+	if (!filename.size()) return m_Error.SetError(CLIError::kMissingFilenameArg);
 
 	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
 	gSKI::tIProductionIterator* pIter = 0;
@@ -76,17 +78,17 @@ bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::strin
 		}
 		pIter->Release();
 
-		return HandleError(save ? "Can't save rete while justifications are present." : "Can't load rete unless production memory is empty.");
+		return m_Error.SetError(save ? CLIError::kCantSaveReteWithJustifications : CLIError::kCantLoadReteWithProductions);
 	}
 	pIter->Release();
 
 	if (save) {
-		pProductionManager->SaveRete(filename.c_str(), m_pError);
+		pProductionManager->SaveRete(filename.c_str(), m_pgSKIError);
 	} else {
-		pProductionManager->LoadRete(filename.c_str(), m_pError);
+		pProductionManager->LoadRete(filename.c_str(), m_pgSKIError);
 	}
 
-	if(m_pError->Id != gSKI::gSKIERR_NONE) return HandleError(save ? "Error saving rete to file." : "Error loading rete from file.", m_pError);	
+	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) return m_Error.SetError(save ? CLIError::kReteSaveOperationFail : CLIError::kReteLoadOperationFail);	
 	return true;
 }
 
