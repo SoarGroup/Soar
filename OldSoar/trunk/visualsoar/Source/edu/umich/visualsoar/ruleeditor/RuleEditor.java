@@ -39,7 +39,7 @@ public class RuleEditor extends CustomInternalFrame
     //********** Data Members  *****************
     private OperatorNode associatedNode;
     private EditorPane editorPane = new EditorPane();
-    private UndoManager undoManager = new IgnoreSyntaxColorUndoManager();
+    private UndoManager undoManager = new CustomUndoManager();
     private String fileName;
     private boolean change = false;
     private JLabel lineNumberLabel = new JLabel("Line:");
@@ -1427,10 +1427,13 @@ public class RuleEditor extends CustomInternalFrame
 
         public void actionPerformed(ActionEvent e) 
         {
-            if(undoManager.canUndo())
+            if(!undoManager.canUndo())
+            {
+                getToolkit().beep();
+                return;
+            }
+
             undoManager.undo();
-            else
-            getToolkit().beep();
         }
     }
 
@@ -2265,12 +2268,42 @@ public class RuleEditor extends CustomInternalFrame
         }
     }//class BackupThread
 
-    class IgnoreSyntaxColorUndoManager extends UndoManager 
+    class CustomUndoManager extends UndoManager 
     {
+        public static final int positionsSize = 100;
+        int[] positions = new int[positionsSize];
+        int posNdx;
+
+        public CustomUndoManager()
+        {
+            super();
+            
+            posNdx = 0;
+            for(int i = 0; i < positionsSize; i++)
+            {
+                positions[i] = 0;
+            }
+        }
+        
         public boolean addEdit(UndoableEdit anEdit) 
         {
             if(!anEdit.getPresentationName().equals("style change")) 
             {
+                if (posNdx == positionsSize)
+                {
+                    //Shift the array to make room for future edits
+                    posNdx = 0;
+                    for(int i = positionsSize/2; i < positionsSize; i++)
+                    {
+                        positions[posNdx] = positions[i];
+                        positions[i] = 0;
+                        posNdx++;
+                    }
+                }
+                
+                positions[posNdx] = editorPane.getCaretPosition();
+                posNdx++;
+                
                 return super.addEdit(anEdit);
             }
             else 
@@ -2278,7 +2311,30 @@ public class RuleEditor extends CustomInternalFrame
                 return false;
             }
         }
-    }//IgnoreSyntaxColorUndoManager
+
+        public void undo()
+        {
+            if ( posNdx > 0)
+            {
+                posNdx--;
+                editorPane.setCaretPosition(positions[posNdx]);
+            }
+
+            super.undo();
+        }
+
+        public void redo()
+        {
+            if ( posNdx < positionsSize )
+            {
+                editorPane.setCaretPosition(positions[posNdx]);
+                posNdx++;
+            }
+
+            super.redo();
+        }
+
+    }//CustomUndoManager
 
     //Override the implementation in CustomInternalFrame
     public boolean isModified()
