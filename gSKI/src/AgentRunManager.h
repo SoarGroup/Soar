@@ -63,7 +63,7 @@ namespace gSKI
       /** 
        * @brief
        */
-      AgentRunManager(IKernel* pKernel): m_pKernel(pKernel), m_groupRunning(false) {}
+      AgentRunManager(IKernel* pKernel): m_groupRunning(false), m_pKernel(pKernel) {}
 
       /** 
        *@brief
