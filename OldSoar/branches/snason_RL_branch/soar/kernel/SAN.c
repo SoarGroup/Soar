@@ -177,6 +177,7 @@ production *specify_production(instantiation *ist){
 	wme_decay_element *decay_element;
     list *identifiers = 0;
     cons *cons;
+	not *nots = ist->nots;
 
 	 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
 		  if (cond->type == POSITIVE_CONDITION){
@@ -217,12 +218,13 @@ production *specify_production(instantiation *ist){
 			 while (decay_element != NULL)
 			 {
 				 condition *cond_top = NIL, *cond_bottom, *new_top, *new_bottom;
-				 not *new_not = NIL;
 				 w = decay_element->this_wme;
 							 
 				 // 1. Check that our new condition not already in production conditions
 				 // 2. If new condition is multi-attribute with a condition in the production,
 				 // add a not between the two values.
+				 
+
 				 for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
 					 if (c->type != POSITIVE_CONDITION)
 						 continue;
@@ -230,17 +232,8 @@ production *specify_production(instantiation *ist){
 						 continue;
 					 if (!tests_are_equal(c->data.tests.attr_test, make_equality_test_without_adding_reference(w->attr)))
 						 continue;
-					 if (!tests_are_equal(c->data.tests.value_test, make_equality_test_without_adding_reference(w->value))){
-						 allocate_with_pool(&current_agent(not_pool), &new_not);
-						 new_not->next = NIL;
-						 new_not->s1 = referent_of_equality_test(c->data.tests.value_test);
-						 symbol_add_ref(new_not->s1);
-						 new_not->s2 = w->value;
-						 symbol_add_ref(new_not->s2);
+					 if (!tests_are_equal(c->data.tests.value_test, make_equality_test_without_adding_reference(w->value)))
 						 continue;
-					 }
-					 deallocate_list_of_nots(new_not);
-					 new_not = NIL;
 					 w = NIL;
 					 break;
 				 }
@@ -259,15 +252,37 @@ production *specify_production(instantiation *ist){
 					 continue;
 				 }
 				 // free_with_pool(&current_agent(condition_pool), cond);
-				 if (new_not)
+				 /*if (new_not)
 					 new_not->next = ist->nots;
+				 */
 				 trace_to_prod(w, tc_num, &cond_top);
+				 for (c = cond_top ; c ; c = c->next){
+					 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
+					 not *new_not;
+					 if (c->type != POSITIVE_CONDITION)
+						 continue;
+					 if (!tests_are_equal(c->data.tests.id_test, cond->data.tests.id_test))
+						 continue;
+					 if (!tests_are_equal(c->data.tests.attr_test, cond->data.tests.attr_test))
+						 continue;
+					 if (!tests_are_equal(c->data.tests.value_test, cond->data.tests.value_test)){
+						 allocate_with_pool(&current_agent(not_pool), &new_not);
+						 new_not->s1 = referent_of_equality_test(c->data.tests.value_test);
+						 // symbol_add_ref(new_not->s1);
+						 new_not->s2 = referent_of_equality_test(cond->data.tests.value_test);
+						 // symbol_add_ref(new_not->s2);
+						 new_not->next = nots;
+						 nots = new_not;
+						}
+					}
+				 }
 				 for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
 				 copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
 				 cond_top->prev = new_bottom;
 				 new_bottom->next = cond_top;
-				 prod = build_RL_production(new_top, cond_bottom, new_not , ist->preferences_generated, w);
+				 prod = build_RL_production(new_top, cond_bottom, nots , ist->preferences_generated, w);
 				 deallocate_condition_list(new_top);
+				 deallocate_
 				 if (!prod){
 					 tc_num = get_new_tc_number();
 					 for (cons = identifiers; cons ; cons=cons->rest){
