@@ -18,6 +18,7 @@
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"
 #include "thread_Thread.h"
+#include "sock_Debug.h"
 
 #include <string>
 #include <iostream>
@@ -251,6 +252,15 @@ void EmbeddedConnectionSynch::SendMessage(ElementXML* pMsg)
 		return ;
 	}
 
+#ifdef _DEBUG
+	if (IsTracingCommunications())
+	{
+		char* pStr = pMsg->GenerateXMLString(true) ;
+		PrintDebugFormat("Sending %s\n", pStr) ;
+		pMsg->DeleteString(pStr) ;
+	}
+#endif
+
 	ElementXML_Handle hResponse = NULL ;
 
 	// Add a reference to this object, which will then be released by the receiver of this message when
@@ -284,6 +294,16 @@ ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait
 	// We create a new wrapper object and return that.
 	// (If we returned a pointer to m_LastResponse it could change when new messages come in).
 	ElementXML* pResult = new ElementXML(hResponse) ;
+
+#ifdef _DEBUG
+	if (IsTracingCommunications())
+	{
+		char* pStr = pResult->GenerateXMLString(true) ;
+		PrintDebugFormat("Received %s\n", pStr) ;
+		pResult->DeleteString(pStr) ;
+	}
+#endif
+
 	return pResult ;
 }
 
@@ -299,7 +319,14 @@ ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait
 
 	We have to be careful only to send calls here, not responses or the message handling will get thrown off (the client may be waiting
 	for a response and it won't see it if we may a synchronous call for the response).
+
+	BUGBUG: I've decided this is unsafe.  We can get a hang by calling through here and then as a result the call
+	triggers the other side to call back to us etc.
+	I think we need a better fix for the original problem.  We may just have to drop the simple embedded model where the
+	client is allowed to block without periodically calling to check from incoming messages.  Or we may need
+	to start a second thread in that case to do that checking.  Perhaps that thread should run on the client, not the kernel?
 */
+/*
 void EmbeddedConnectionAsynch::SendSynchMessage(ElementXML_Handle hSendMsg)
 {
 	// Make the call to the kernel, passing the message over and getting an immediate response since this is
@@ -318,7 +345,7 @@ void EmbeddedConnectionAsynch::SendSynchMessage(ElementXML_Handle hSendMsg)
 		m_pLastResponse = new ElementXML(hResponse) ;
 	}
 }
-
+*/
 void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
 {
 	ClearError() ;
@@ -335,11 +362,23 @@ void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
 	pMsg->AddRefOnHandle() ;
 	ElementXML_Handle hSendMsg = pMsg->GetXMLHandle() ;
 
-	if (m_UseSynchCalls && ((MessageSML*)pMsg)->IsCall())
+#ifdef _DEBUG
+	if (IsTracingCommunications())
+	{
+		char* pStr = pMsg->GenerateXMLString(true) ;
+		PrintDebugFormat("Sending %s\n", pStr) ;
+		pMsg->DeleteString(pStr) ;
+	}
+#endif
+
+/* I think this synch message stuff is unsafe.
+   Need to find a better solution
+if (m_UseSynchCalls && ((MessageSML*)pMsg)->IsCall())
 	{
 		SendSynchMessage(hSendMsg) ;
 	}
 	else
+*/
 	{
 		// Make the call to the kernel, passing the message over with the ASYNCH flag, which means there
 		// will be no immediate response.
@@ -380,18 +419,14 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 		return pResponse ;
 	}
 
-// BADBAD: We can't time out here.
-// We just need to have a way to detect if the connection has been closed
-// The problem is Soar can run for an arbitrary amount of time and we'll
-// be waiting for the response
-// Logic should be something like
-// while (ConnectionNotClosed()) { CheckForMessages() ; Sleep() ; }
-// We may need a better event based model to handle this, so no sleeping etc.
-// The trick is to include a "closed connection" message in the queue.
-// Then we can wait on an incoming message forever and still wake up if the connection dies.
+#ifdef _DEBUG
+//	if (IsTracingCommunications())
+//	{
+//		PrintDebugFormat("Waiting for response to %s\n", pID) ;
+//	}
+#endif
 
 	int sleepTime = 0 ;			// How long we sleep in milliseconds each pass through
-//	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)
 
 	// If we don't already have this response cached,
 	// then read any pending messages.
@@ -405,7 +440,27 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 			{
 				pResponse = m_pLastResponse ;
 				m_pLastResponse = NULL ;
+
+#ifdef _DEBUG
+				if (IsTracingCommunications())
+				{
+					char* pStr = pResponse->GenerateXMLString(true) ;
+					PrintDebugFormat("Received %s\n", pStr) ;
+					pResponse->DeleteString(pStr) ;
+				}
+#endif
+
 				return pResponse ;
+			}
+			else
+			{
+#ifdef _DEBUG
+				if (IsTracingCommunications())
+				{
+					char const* pMsgID = m_pLastResponse == NULL ? NULL : m_pLastResponse->GetAttribute(sml_Names::kAck) ;
+					PrintDebugFormat("Looking for %s found %s so ignoring it\n", pID, pMsgID == NULL ? "null" : pMsgID) ;
+				}
+#endif
 			}
 		}
 
@@ -414,17 +469,6 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 		if (wait)
 		{
 			soar_thread::Thread::SleepStatic(sleepTime) ;
-//			maxRetries-- ;
-
-			// Can't time out because could be running Soar and this return
-			// could be very slow.
-			/*
-			if (maxRetries == 0)
-			{
-				SetError(Error::kConnectionTimedOut) ;			
-				wait = false ;
-			}
-			*/
 		}
 
 	} while (wait) ;

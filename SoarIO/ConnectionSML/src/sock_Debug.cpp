@@ -61,7 +61,7 @@ void PrintDebugFormat(char const* pFormat, ...)
 	va_list args;
 	va_start(args, pFormat);
 
-	char szBuffer[512];
+	char szBuffer[4000];
 
 	int nBuf = VSNSPRINTF(szBuffer, sizeof(szBuffer), pFormat, args);
 

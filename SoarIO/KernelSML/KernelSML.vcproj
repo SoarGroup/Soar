@@ -161,9 +161,6 @@
 				RelativePath=".\src\sml_KernelSML.cpp">
 			</File>
 			<File
-				RelativePath=".\src\sml_KernelSMLgSKI.cpp">
-			</File>
-			<File
 				RelativePath=".\src\sml_KernelSMLHandlers.cpp">
 			</File>
 			<File
@@ -212,9 +209,6 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_KernelSML.h">
-			</File>
-			<File
-				RelativePath=".\include\sml_KernelSMLgSKI.h">
 			</File>
 			<File
 				RelativePath="..\ConnectionSML\include\sml_Names.h">

@@ -47,10 +47,20 @@ WMElement::~WMElement(void)
 #ifdef SML_DIRECT
 	// If we're using the direct connection methods, we need to release the gSKI object
 	// that we own.
+	// DJP: We can't do this all of the time because we currently destroy the agent (in the kernel)
+	// and then destroy the agent object here, which deletes all of the children and in turn
+	// causes a crash (as the agent has now gone).  Arrggh.
+	// I think the fix may be to delete our working memory, then call to destroy the agent
+	// and then delete the agent object (so the releases will happen ahead of the delete).
+	/*
 	if (m_WME && GetAgent()->GetConnection()->IsDirectConnection())
 	{
-		((EmbeddedConnection*)GetAgent()->GetConnection())->DirectReleaseWME(m_WME) ;
+		IdentifierSymbol* parent = GetIdentifier() ;
+		Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+
+		((EmbeddedConnection*)GetAgent()->GetConnection())->DirectReleaseWME(wm, m_WME) ;
 	}
+	*/
 #endif
 }
 

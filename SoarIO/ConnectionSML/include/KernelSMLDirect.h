@@ -50,7 +50,7 @@ typedef Direct_WorkingMemory_Handle (*DirectGetWorkingMemoryFunction)(char const
 typedef Direct_WMObject_Handle		(*DirectGetRootFunction)(char const*, bool) ;
 typedef void						(*DirectRunTilOutputFunction)(char const*) ;
 
-typedef void						(*DirectReleaseWMEFunction)(Direct_WME_Handle) ;
+typedef void						(*DirectReleaseWMEFunction)(Direct_WorkingMemory_Handle, Direct_WME_Handle) ;
 typedef void						(*DirectReleaseWMObjectFunction)(Direct_WMObject_Handle) ;
 
 /*************************************************************
@@ -104,7 +104,7 @@ EXPORT Direct_WMObject_Handle sml_DirectGetRoot(char const* pAgentName, bool inp
 
 EXPORT void sml_DirectRunTilOutput(char const* pAgentName) ;
 
-EXPORT void sml_DirectReleaseWME(Direct_WME_Handle wme) ;
+EXPORT void sml_DirectReleaseWME(Direct_WorkingMemory_Handle, Direct_WME_Handle wme) ;
 EXPORT void sml_DirectReleaseWMObject(Direct_WMObject_Handle parent) ;
 
 #ifdef __cplusplus

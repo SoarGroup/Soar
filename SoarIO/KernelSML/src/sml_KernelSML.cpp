@@ -15,10 +15,6 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
-#include <crtdbg.h>
-#endif
-
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 #include "sml_Connection.h"
@@ -62,20 +58,6 @@ using namespace gSKI ;
 
 // Singleton instance of the kernel object
 KernelSML* KernelSML::s_pKernel = NULL ;
-
-/*
-static void DebugPrint(char const* pFilename, int line, char const* pMsg)
-{
-#ifdef _WIN32
-#ifdef _DEBUG
-	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
-	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
-
-	_CrtDbgReport(_CRT_WARN, pFilename, line, "KernelSML", pMsg);
-#endif
-#endif
-}
-*/
 
 static ElementXML* AddErrorMsg(Connection* pConnection, ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1)
 {
@@ -496,7 +478,9 @@ static inline void RecordWME_Map(IWorkingMemory* wm, IWme* wme)
 	// DJP: I'm disabling this for now as there are still bugs around which objects
 	// to release prior to init-soar.  Until I've figured out what to release and what not to
 	// it's safer to leave this out (which means init-soar will fail, but nothing will crash).
-//	pAgentSML->RecordLongTimeTag( wme->GetTimeTag(), wme ) ;
+	pAgentSML->RecordLongTimeTag( wme->GetTimeTag(), wme ) ;
+
+//	KernelSML::DebugPrint(wme->GetValue()->GetString(), wme->GetTimeTag(), "Recorded\n") ;
 }
 
 static inline void RemoveWME_Map(IWorkingMemory* wm, IWme* wme)
@@ -506,7 +490,9 @@ static inline void RemoveWME_Map(IWorkingMemory* wm, IWme* wme)
 	// DJP: I'm disabling this for now as there are still bugs around which objects
 	// to release prior to init-soar.  Until I've figured out what to release and what not to
 	// it's safer to leave this out (which means init-soar will fail, but nothing will crash).
-//	pAgentSML->RemoveLongTimeTag( wme->GetTimeTag() ) ;
+	pAgentSML->RemoveLongTimeTag( wme->GetTimeTag() ) ;
+
+//	KernelSML::DebugPrint(wme->GetValue()->GetString(), wme->GetTimeTag(), "Removed\n") ;
 }
 
 /*************************************************************
@@ -548,8 +534,11 @@ EXPORT Direct_WME_Handle sml_DirectAddWME_Double(Direct_WorkingMemory_Handle wm,
 *************************************************************/
 EXPORT void sml_DirectRemoveWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)
 {
-	((IWorkingMemory*)wm)->RemoveWme((IWme*)wme) ;
+	// Remove this from the list of wme's we're tracking.  Do this before removing it from working memory
 	RemoveWME_Map((IWorkingMemory*)wm, (IWme*)wme) ;
+
+	// Remove the wme from working memory
+	((IWorkingMemory*)wm)->RemoveWme((IWme*)wme) ;
 
 	// Release the object so the client doesn't have to call back in and do that.
 	((IWme*)wme)->Release() ;
@@ -643,8 +632,11 @@ EXPORT void sml_DirectRunTilOutput(char const* pAgentName)
 	pAgent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT) ;
 }
 
-EXPORT void sml_DirectReleaseWME(Direct_WME_Handle wme)
+EXPORT void sml_DirectReleaseWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)
 {
+	// Remove this from the list of wme's we're tracking.  Do this before we release it
+	RemoveWME_Map((IWorkingMemory*)wm, (IWme*)wme) ;
+
 	((IWme*)wme)->Release() ;
 }
 

@@ -14,6 +14,10 @@
 #ifndef SML_KERNEL_SML_H
 #define SML_KERNEL_SML_H
 
+#ifdef _WIN32
+#include <crtdbg.h>
+#endif
+
 // This define allows us to pull in and out the Tcl debugger.
 // We need this during the early SML days because the Tcl debugger
 // needs local access to the gSKI kernel and that only happens here.
@@ -137,6 +141,26 @@ public:
 			delete s_pKernel ;
 
 		s_pKernel = 0 ;
+	}
+
+	/*************************************************************
+	* @brief	Handy utility function for dumping output to the
+	*			debugger.
+	*************************************************************/
+	static void DebugPrint(char const* pFilename, int line, char const* pMsg)
+	{
+#ifdef _WIN32
+#ifdef _DEBUG
+		_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
+		_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
+
+		_CrtDbgReport(_CRT_WARN, pFilename, line, "KernelSML", pMsg);
+#else
+		unused(pFilename) ;
+		unused(line) ;
+		unused(pMsg) ;
+#endif
+#endif
 	}
 
 public:

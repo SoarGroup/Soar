@@ -149,9 +149,9 @@ public:
 		m_pDirectRunTilOutputFunction(pAgentName) ;
 	}
 
-	void						DirectReleaseWME(Direct_WME_Handle wme)
+	void						DirectReleaseWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)
 	{
-		return m_pDirectReleaseWMEFunction(wme) ;
+		return m_pDirectReleaseWMEFunction(wm, wme) ;
 	}
 	void						DirectReleaseWMObject(Direct_WMObject_Handle parent)
 	{
@@ -212,7 +212,7 @@ public:
 	virtual bool ReceiveMessages(bool allMessages) ;
 
 	// Even though this is an asynch connection, send this message synchronously.
-	void SendSynchMessage(ElementXML_Handle hSendMsg) ;
+	//void SendSynchMessage(ElementXML_Handle hSendMsg) ;
 } ;
 
 

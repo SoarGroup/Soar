@@ -45,6 +45,9 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 	if (eventId != gSKIEVENT_OUTPUT_PHASE_CALLBACK)
 		return ;
 
+	if (wmelist->GetNumElements() == 0)
+		return ;
+
 	// We have to watch for one special case.  When the output-link is created, if that's the only output we
 	// don't want to stop (or you always stop on the first decision in a run).
 

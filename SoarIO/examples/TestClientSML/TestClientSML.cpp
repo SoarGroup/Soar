@@ -146,9 +146,9 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 			return false ;
 		}
 
-		// Give us lots of extra debug information on remote clients
+		// Set this to true to give us lots of extra debug information on remote clients
 		// (useful in a test app like this).
-		pKernel->SetTraceCommunications(true) ;
+		pKernel->SetTraceCommunications(false) ;
 
 		// Register a kernel event handler...unfortunately I can't seem to find an event
 		// that gSKI actually fires, so this handler won't get called.  Still, the code is there
@@ -182,7 +182,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		Identifier* pInputLink = pAgent->GetInputLink() ;
 
-		//pAgent->InitSoar() ;
+		pAgent->InitSoar() ;
 
 		if (!pInputLink)
 			cout << "Error getting input link" << endl ;
@@ -193,15 +193,15 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
 		Identifier* pID = pAgent->CreateIdWME(pInputLink, "plane") ;
 
-		//ok = pAgent->Commit() ;
-		//pAgent->InitSoar() ;
+		ok = pAgent->Commit() ;
+		pAgent->InitSoar() ;
 
 		StringElement* pWME1 = pAgent->CreateStringWME(pID, "type", "Boeing747") ;
 		IntElement* pWME2    = pAgent->CreateIntWME(pID, "speed", 200) ;
 		FloatElement* pWME3  = pAgent->CreateFloatWME(pID, "direction", 50.5) ;
 
-		//ok = pAgent->Commit() ;
-		//pAgent->InitSoar() ;
+		ok = pAgent->Commit() ;
+		pAgent->InitSoar() ;
 
 		// Remove a wme
 		pAgent->DestroyWME(pWME3) ;
@@ -209,27 +209,12 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		// Change the speed to 300
 		pAgent->Update(pWME2, 300) ;
 
-		// Added some code to check function call speed
-		// We're not usually going to need this
-		/*
-		{
-			SimpleTimer speed ;
-			speed.Start() ;
-			for (int i = 0 ; i < 10000 ; i++)
-			{
-				pAgent->Update(pWME2, i) ;
-				pAgent->Commit() ;
-			}
-			double speedTime = speed.Elapsed() ;
-			cout << " Speed test time " << speedTime << endl ;
-		}
-		*/
 		// Create a new WME that shares the same id as plane
 		//Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
 
 		ok = pAgent->Commit() ;
 
-		//pAgent->InitSoar() ;
+		pAgent->InitSoar() ;
 
 		std::string trace = pAgent->Run(2) ;
 
@@ -241,7 +226,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		pAgent->DestroyWME(pID) ;
 		pAgent->Commit() ;
 
-		//pAgent->InitSoar() ;
+		pAgent->InitSoar() ;
 
 		// Test that we get a callback after the decision cycle runs
 		int userData = 25 ;
@@ -271,8 +256,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 		// Reset the agent and repeat the process to check whether init-soar works.
-//		pAgent->InitSoar() ;
-//		trace = pAgent->RunTilOutput(20) ;
+		pAgent->InitSoar() ;
+		trace = pAgent->RunTilOutput(20) ;
 
 		bool ioOK = false ;
 
