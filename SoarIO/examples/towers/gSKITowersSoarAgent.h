@@ -1,5 +1,5 @@
-#ifndef HANOI_SOAR_AGENT
-#define HANOI_SOAR_AGENT
+#ifndef GSKI_HANOI_SOAR_AGENT
+#define GSKI_HANOI_SOAR_AGENT
 
 #include "Towers.h"
 
@@ -38,4 +38,4 @@ private:
 	SoarAgent();
 };
 
-#endif //HANOI_SOAR_AGENT
+#endif //GSKI_HANOI_SOAR_AGENT
