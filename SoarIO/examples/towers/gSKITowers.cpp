@@ -630,7 +630,7 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 
 	//Source the agent's productions
 	CommandLineInterface* commLine = new CommandLineInterface();
-	commLine->SetKernel(kernel);
+	commLine->SetKernel(kernel, kFactory->GetKernelVersion());
 	char* pResponse = "\0";//we don't need to allocate space for this
 	gSKI::Error* pError = new Error();
 

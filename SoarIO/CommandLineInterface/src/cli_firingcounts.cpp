@@ -18,8 +18,8 @@
 
 using namespace cli;
 
-const struct FiringsSort {
-	bool operator()(std::pair< std::string, unsigned long > a, std::pair< std::string, unsigned long > b) {
+struct FiringsSort {
+	bool operator()(std::pair< std::string, unsigned long > a, std::pair< std::string, unsigned long > b) const {
 		return a.second < b.second;
 	}
 };

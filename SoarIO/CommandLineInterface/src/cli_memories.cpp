@@ -19,8 +19,8 @@
 
 using namespace cli;
 
-const struct MemoriesSort {
-	bool operator()(std::pair< std::string, unsigned long > a, std::pair< std::string, unsigned long > b) {
+struct MemoriesSort {
+	bool operator()(std::pair< std::string, unsigned long > a, std::pair< std::string, unsigned long > b) const {
 		return a.second < b.second;
 	}
 };
