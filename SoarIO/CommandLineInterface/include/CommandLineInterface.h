@@ -156,7 +156,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoMultiAttributes();
+	bool DoMultiAttributes(const char* attribute, int n);
 
 	/*************************************************************
 	* @brief new-agent command, see command line spec document for details
@@ -385,6 +385,11 @@ protected:
 	*************************************************************/
 	void ExciseInternal(gSKI::tIProductionIterator* pProdIter);
 
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	void SourceError(int errorLine, const char* filename);
+
 	GetOpt			m_GetOpt;			// Pointer to GetOpt utility class
 	CommandMap		m_CommandMap;		// Mapping of command names to function pointers
 	gSKI::IKernel*	m_pKernel;			// Pointer to the current gSKI kernel
@@ -395,6 +400,7 @@ protected:
 	PrintHandler	m_PrintHandler;		// The print callback handler, used for catching kernel/gSKI output
 	bool			m_QuitCalled;		// True after DoQuit is called
 	StringStack		m_DirectoryStack;	// Directory stack for pushd/popd
+	bool			m_SourceError;		// Used to control debug printing for source command errors
 };
 
 } // namespace cli

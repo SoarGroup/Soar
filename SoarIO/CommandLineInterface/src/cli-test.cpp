@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 	bool process;
 
 	for (;;) {
-		cout << '\n' << previousResult << " " << AGENT_NAME << "> ";
+		cout << previousResult << " " << AGENT_NAME << "> ";
 		cout.flush();
 		cmdline.clear();
 		temporaryHistoryIndex = historyIndex;
@@ -77,7 +77,6 @@ int main(int argc, char** argv)
 			switch (input) {					
 				case '\n':
 				case '\r':
-					cout << endl;
 					process = true;
 					break;
 
@@ -127,7 +126,9 @@ int main(int argc, char** argv)
 			
 			std::string result; 
 			previousResult = pKernel->ProcessCommandLine(cmdline.c_str(), AGENT_NAME, &result);
-			cout << result << endl;
+			if (result.length()) {
+				cout << result << endl;
+			}
 
 			if (result == "Goodbye.") {
 				break;
@@ -136,6 +137,7 @@ int main(int argc, char** argv)
 		} else {
 
 			cout << "Not implemented." << endl;
+			break;
 			//previousResult = cli->DoCommandInternal(cmdline.c_str());
 			//cli->GetLastResult(&result);
 			//cout << result << endl;

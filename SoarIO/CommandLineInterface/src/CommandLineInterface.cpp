@@ -32,6 +32,7 @@
 #include "IgSKI_DoNotTouch.h"
 #include "IgSKI_Iterator.h"
 #include "IgSKI_Production.h"
+#include "IgSKI_MultiAttribute.h"
 
 // SML includes
 #include "sml_ElementXML.h"
@@ -124,6 +125,7 @@ CommandLineInterface::CommandLineInterface() {
 	m_QuitCalled = false;
 	m_pKernel = 0;
 	m_pAgent = 0;
+	m_SourceError = false;
 }
 
 // ____        _ _     _  ____                                          _ __  __
@@ -176,6 +178,9 @@ bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandL
 
 	// Process the command
 	bool ret = DoCommandInternal(pCommandLine);
+
+	// Reset source error flag
+	m_SourceError = false;
 
 	// Marshall the result text and return
 	sml::TagResult* pTag = new sml::TagResult() ;
@@ -301,7 +306,7 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 				// Flip the quotes flag
 				quotes = !quotes;
 
-				// Eat quotes (not adding them to arg)
+				// TODO: Eat quotes?  I used to but this screws up the sp command
 
 			} else {
 				if (*iter == '{') {
@@ -313,10 +318,10 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 						return -1;
 					}
 				}
-
-				// Add to argument
-				arg += (*iter);
 			}
+
+			// Add to argument (if we eat quotes, this has to be moved into the else above
+			arg += (*iter);
 
 			// Delete the character and move on on
 			cmdline.erase(iter);
@@ -420,9 +425,6 @@ bool CommandLineInterface::DoCD(const char* directory) {
 			m_Result += m_HomeDirectory;
 			return false;
 		}
-
-		// Lets print the current working directory on success
-		DoPWD();
 		return true;
 	}
 
@@ -432,9 +434,6 @@ bool CommandLineInterface::DoCD(const char* directory) {
 		m_Result += directory;
 		return false;
 	}
-
-	// Lets print the current working directory on success
-	DoPWD();
 	return true;
 }
 
@@ -658,77 +657,73 @@ bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 		return true;
 	}
 
-	// Just return true for debugging of source command
-	// TODO: Update towers of hanoi or something for the new syntax
-	return DoLearn(0);
+	static struct GetOpt::option longOptions[] = {
+		{"all-levels",		0, 0, 'a'},
+		{"bottom-up",		0, 0, 'b'},
+		{"disable",			0, 0, 'd'},
+		{"off",				0, 0, 'd'},
+		{"enable",			0, 0, 'e'},
+		{"on",				0, 0, 'e'},
+		{"except",			0, 0, 'E'},
+		{"list",			0, 0, 'l'},
+		{"only",			0, 0, 'o'},
+		{0, 0, 0, 0}
+	};
 
-	//static struct GetOpt::option longOptions[] = {
-	//	{"all-levels",		0, 0, 'a'},
-	//	{"bottom-up",		0, 0, 'b'},
-	//	{"disable",			0, 0, 'd'},
-	//	{"off",				0, 0, 'd'},
-	//	{"enable",			0, 0, 'e'},
-	//	{"on",				0, 0, 'e'},
-	//	{"except",			0, 0, 'E'},
-	//	{"list",			   0, 0, 'l'},
-	//	{"only",			   0, 0, 'o'},
-	//	{0, 0, 0, 0}
-	//};
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
 
-	//GetOpt::optind = 0;
-	//GetOpt::opterr = 0;
+	int option;
+	unsigned short options = 0;
 
-	//int option;
-	//unsigned short options = 0;
+	for (;;) {
+		option = m_GetOpt.GetOpt_Long(argc, argv, "abdeElo", longOptions, 0);
+		if (option == -1) {
+			break;
+		}
 
-	//for (;;) {
-	//	option = m_GetOpt.GetOpt_Long(argc, argv, "abdeElo", longOptions, 0);
-	//	if (option == -1) {
-	//		break;
-	//	}
+		switch (option) {
+			case 'a':
+				options |= OPTION_LEARN_ALL_LEVELS;
+				break;
+			case 'b':
+				options |= OPTION_LEARN_BOTTOM_UP;
+				break;
+			case 'd':
+				options |= OPTION_LEARN_DISABLE;
+				break;
+			case 'e':
+				options |= OPTION_LEARN_ENABLE;
+				break;
+			case 'E':
+				options |= OPTION_LEARN_EXCEPT;
+				break;
+			case 'l':
+				options |= OPTION_LEARN_LIST;
+				break;
+			case 'o':
+				options |= OPTION_LEARN_ONLY;
+				break;
+			case '?':
+				m_Result += "Unrecognized option.\n";
+				m_Result += CLIConstants::kCLILearnUsage;
+				return false;
+			default:
+				m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
+				m_Result += option;
+				m_Result += "'!";
+				return false;
+		}
+	}
 
-	//	switch (option) {
-	//		case 'a':
-	//			options |= OPTION_LEARN_ALL_LEVELS;
-	//			break;
-	//		case 'b':
-	//			options |= OPTION_LEARN_BOTTOM_UP;
-	//			break;
-	//		case 'd':
-	//			options |= OPTION_LEARN_DISABLE;
-	//			break;
-	//		case 'e':
-	//			options |= OPTION_LEARN_ENABLE;
-	//			break;
-	//		case 'E':
-	//			options |= OPTION_LEARN_EXCEPT;
-	//			break;
-	//		case 'l':
-	//			options |= OPTION_LEARN_LIST;
-	//			break;
-	//		case 'o':
-	//			options |= OPTION_LEARN_ONLY;
-	//			break;
-	//		case '?':
-	//			m_Result += "Unrecognized option.\n";
-	//			m_Result += CLIConstants::kCLILearnUsage;
-	//			return false;
-	//		default:
-	//			m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
-	//			m_Result += option;
-	//			m_Result += "'!";
-	//			return false;
-	//	}
-	//}
+	// No non-option arguments
+	if (GetOpt::optind != argc) {
+		m_Result += CLIConstants::kCLISyntaxError;
+		m_Result += CLIConstants::kCLILearnUsage;
+		return false;
+	}
 
-	//// No non-option arguments
-	//if (GetOpt::optind != argc) {
-	//	m_Result += CLIConstants::kCLISyntaxError;
-	//	m_Result += CLIConstants::kCLILearnUsage;
-	//	return false;
-	//}
-
-	//return DoLearn(options);
+	return DoLearn(options);
 }
 
 // ____        _
@@ -738,7 +733,34 @@ bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 //|____/ \___/|_____\___|\__,_|_|  |_| |_|
 //
 bool CommandLineInterface::DoLearn(const unsigned short options) {
-	m_Result += "TODO: do Learn";
+	// Need agent pointer for function calls
+	if (!m_pAgent) {
+		m_Result += "No agent pointer.";
+		return false;
+	}
+
+	// No options means print current settings
+	if (!options) {
+		// TODO: This is legacy output.  Bad.
+		m_Result += "Current learn settings:\n   -";
+		m_Result += m_pAgent->IsLearningOn() ? "on" : "off";
+		return true;
+	}
+
+	// Check for unimplemented options
+	if ((options & OPTION_LEARN_ALL_LEVELS) || (options & OPTION_LEARN_BOTTOM_UP) || (options & OPTION_LEARN_EXCEPT) || (options & OPTION_LEARN_LIST) || (options & OPTION_LEARN_ONLY)) {
+		m_Result += "Options {abElo} are not implemented.";
+		return false;
+	}
+
+	// Enable or disable, priority to disable
+	if (options & OPTION_LEARN_ENABLE) {
+		m_pAgent->SetLearning(true);
+	}
+
+	if (options & OPTION_LEARN_DISABLE) {
+		m_pAgent->SetLearning(false);
+	}
 	return true;
 }
 
@@ -817,7 +839,30 @@ bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
 		m_Result += CLIConstants::kCLIMultiAttributesUsage;
 		return true;
 	}
-	return DoMultiAttributes();
+
+	if (argc > 3) {
+		m_Result += CLIConstants::kCLISyntaxError;
+		m_Result += CLIConstants::kCLIMultiAttributesUsage;
+		return false;
+	}
+
+	char* attribute = 0;
+	int n = 0;
+
+	if (argc > 2) {
+		n = atoi(argv[2]);
+		if (n <= 0) {
+			m_Result += CLIConstants::kCLISyntaxError;
+			m_Result += CLIConstants::kCLIMultiAttributesUsage;
+			return false;
+		}
+	}
+
+	if (argc > 1) {
+		attribute = argv[1];
+	}
+
+	return DoMultiAttributes(attribute, n);
 }
 
 // ____        __  __       _ _   _    _   _   _        _ _           _
@@ -826,9 +871,52 @@ bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
 //| |_| | (_) | |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
 //|____/ \___/|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
 //
-bool CommandLineInterface::DoMultiAttributes() {
-	m_Result += "TODO: multi-attributes";
-	return true;
+bool CommandLineInterface::DoMultiAttributes(const char* attribute, int n) {
+	if (!m_pAgent) {
+		m_Result += "Agent needed.";
+		return false;
+	}
+
+	// Arbitrary buffer size
+	char buf[1024];
+
+	if (!attribute && !n) {
+		// No args, print current setting
+		gSKI::tIMultiAttributeIterator* pIt = m_pAgent->GetMultiAttributes();
+		if (!pIt->GetNumElements()) {
+			m_Result += "No multi-attributes declared for this agent.";
+
+		} else {
+			m_Result += "Value\tSymbol";
+			gSKI::IMultiAttribute* pMA;
+
+			for(; pIt->IsValid(); pIt->Next()) {
+				pMA = pIt->GetVal();
+				// TODO: make this platform independent
+				_snprintf(buf, sizeof(buf) - 1, "\n%d\t%s", pMA->GetMatchingPriority(), pMA->GetAttributeName());
+				m_Result += buf;
+				pMA->Release();
+			}
+
+		}
+		pIt->Release();
+		return true;
+	}
+
+	// TODO: Check whether attribute is a valid symbolic constant. The way the old kernel
+	// does this is to call get_lexeme_from_string(m_agent, argv[1]) and check that
+	// the lex type is symbolic constant. At this point, that functionality isn't
+	// exposed by gSKI...
+
+	// Setting defaults to 10
+	if (!n) {
+		n = 10;
+	}
+
+	// Set it
+	m_pAgent->SetMultiAttribute(attribute, n);
+
+ 	return true;
 }
 
 // ____                     _   _                _                    _
@@ -1330,6 +1418,7 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 		// a way to interrupt it, so lets just avoid it with an error
 		//runType = gSKI_RUN_FOREVER;	
 		m_Result += "Forever option is not implemented yet.";
+		return false;
 	}
 
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
@@ -1347,9 +1436,11 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 			m_Result += "Run: no kernel pointer.";
 			return false;
 		}
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
         m_pKernel->GetAgentManager()->ClearAllInterrupts();
         m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
 		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 	}
 
 	// Check for error
@@ -1439,9 +1530,14 @@ bool CommandLineInterface::DoSource(const char* filename) {
 	string::size_type pos;			// Used to find braces on a line (triggering multiple line spanning commands)
 	int braces = 0;					// Brace nest level (hopefully all braces are supposed to be closed)
 	string::iterator iter;			// Iterator when parsing for braces and pounds
+	int lineCount = 0;				// Count the lines per file
+	int lineCountCache = 0;			// Used to save a line number
 
 	// Go through each line of the file (Yay! C++ file parsing!)
 	while (getline(soarFile, line)) {
+	
+		// Increment line count
+		++lineCount;
 
 		// Clear out the old command
 		command.clear();
@@ -1476,6 +1572,10 @@ bool CommandLineInterface::DoSource(const char* filename) {
 		pos = line.find('{');
 
 		if (pos != string::npos) {
+			
+			// Save this line number for error messages
+			lineCountCache = lineCount;
+
 			// While we are inside braces, stay in special parsing mode
 			do {
 				// Enter special parsing mode
@@ -1501,13 +1601,28 @@ bool CommandLineInterface::DoSource(const char* filename) {
 					break;
 				}
 
+				// Did we go negative?
+				if (braces < 0) {
+					// Yes, break out on error
+					break;
+				}
+
+				// We're getting another line, increment count now
+				++lineCount;
+
 				// Get the next line from the file and repeat
 			} while (getline(soarFile, line));
 
 			// Did we break out because of closed braces or EOF?
-			if (braces) {
+			if (braces > 0) {
 				// EOF while still nested
-				m_Result += "Unexpected end of file. Did you close all of your braces?";
+				m_Result += "Unexpected end of file. Unmatched opening brace.";
+				SourceError(lineCountCache, filename);
+				return false;
+
+			} else if (braces < 0) {
+				m_Result += "Closing brace(s) found without matching opening brace.";
+				SourceError(lineCountCache, filename);
 				return false;
 			}
 
@@ -1516,17 +1631,43 @@ bool CommandLineInterface::DoSource(const char* filename) {
 		} else {
 			// No braces on line, set command to line
 			command = line;
+
+			// Set cache to same line for error message
+			lineCountCache = lineCount;
 		}
 
 		// Fire off the command
 		if (!DoCommandInternal(command.c_str())) {
 			// Command failed, error in result
+			SourceError(lineCountCache, filename);
 			return false;
 		}	
 	}
 
 	soarFile.close();
 	return true;
+}
+
+// ____                           _____
+/// ___|  ___  _   _ _ __ ___ ___| ____|_ __ _ __ ___  _ __
+//\___ \ / _ \| | | | '__/ __/ _ \  _| | '__| '__/ _ \| '__|
+// ___) | (_) | |_| | | | (_|  __/ |___| |  | | | (_) | |
+//|____/ \___/ \__,_|_|  \___\___|_____|_|  |_|  \___/|_|
+//
+void CommandLineInterface::SourceError(int errorLine, const char* filename) {
+	if (!m_SourceError) {
+		m_SourceError = true;
+		m_Result += "\nSource error ***you may need to popd back to where you started***\nFile stack: error on line ";
+		// TODO: arbitrary buffer size here
+		char buf[256];
+		memset(buf, 0, 256);
+		m_Result += itoa(errorLine, buf, 10);
+		m_Result += " of file: ";
+		m_Result += filename;
+	} else {
+		m_Result += "\n\t--> Sourced by: ";
+		m_Result += filename;
+	}
 }
 
 // ____                     ____  ____

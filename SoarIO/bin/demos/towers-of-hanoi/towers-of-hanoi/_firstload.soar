@@ -6,4 +6,4 @@ multi-attributes holds 8
 multi-attributes upper-disk 2
 multi-attributes clear 2
 
-learn -off
+learn --off
