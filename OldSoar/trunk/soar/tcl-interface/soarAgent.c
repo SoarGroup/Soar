@@ -46,18 +46,20 @@
 
 
 
-#if defined(WIN32)
+#ifdef WIN32
 #include <direct.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #endif /* WIN32 */
 
+/*
 #if defined(MACINTOSH)
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#endif /* MACINTOSH */
+#endif
+*/
 
 #include "soarCommands.h"
 

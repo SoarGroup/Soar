@@ -498,7 +498,7 @@ Soar_Init(Tcl_Interp* interp)
 	Tcl_InitMemory(interp);
 #endif
 
-#if !defined(WIN32) && !defined(MACINTOSH)
+#ifndef WIN32
 	Tcl_SetVar(interp, "tcl_man_dir", TCL_MAN_DIR, TCL_GLOBAL_ONLY);
 #endif
 

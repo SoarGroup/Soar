@@ -1017,7 +1017,7 @@ int VerboseCmd (ClientData clientData,
 }
 
 
-
+/*
 #ifdef MACINTOSH
 int LogCmd(ClientData clientData,
 	   Tcl_Interp * interp,
@@ -1045,7 +1045,7 @@ int LogCmd(ClientData clientData,
 }
 
 #else 
-
+*/
 int LogCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
 	      int objc, Tcl_Obj* const objv[])
@@ -1133,9 +1133,9 @@ int LogCmd (ClientData clientData,
   return TCL_ERROR;
   
 }
-
+/* from MACTINTOSH ifdef above
 #endif
-
+*/
 
 int WaitSNCCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
@@ -2237,8 +2237,9 @@ int CaptureInputCmd (ClientData clientData,
   Soar_SelectGlobalInterpByInterp(interp);
 
   create_argv_from_objv(objc, objv, &argv);
-
+/*
 #ifndef MACINTOSH
+*/
   if ( objc > 2 ) {
     /* Then in theory we should be opening a file,
      * and we need to do some tilde substitution
@@ -2259,11 +2260,12 @@ int CaptureInputCmd (ClientData clientData,
   else {
     new_argv = argv;
   }
+/* from MACINTOSH ifndef above
 #else
   new_argv = argv;
 
-#endif /* MACINTOSH */
-
+#endif
+*/
 
   if( soar_CaptureInput( objc, new_argv, &res ) == SOAR_OK ) {
     /*interp->result = res.result; voigtjr, deprecated*/
@@ -2326,7 +2328,10 @@ int ReplayInputCmd (ClientData clientData,
 
   create_argv_from_objv(objc, objv, &argv);
 
+/*
 #ifndef MACINTOSH
+*/
+
   if ( objc > 2 ) {
     /* Then in theory we should be opening a file,
      * and we need to do some tilde substitution
@@ -2347,11 +2352,13 @@ int ReplayInputCmd (ClientData clientData,
   else {
     new_argv = argv;
   }
+
+/* from MACINTOSH ifndef above
 #else
   new_argv = argv;
 
-#endif /* MACINTOSH */
-
+#endif
+*/
 
   if( soar_ReplayInput( objc, new_argv, &res ) == SOAR_OK ) {
     Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
