@@ -90,7 +90,7 @@ using simple agents in TankSoar, and is now fixed in Soar 8.5.
 O Support Mode 4:
 =================
 	
-	O Support Mode 3 (the deafult mode in Soar 8.3 - 8.4.5) is meant to
+	O Support Mode 3 (the default mode in Soar 8.3 - 8.5.0) is meant to
 give I-Support to elaborations of the operator.  At certain times,
 these elaborations were not detected as such, and received O-Support.
 Soar 8.5's O Support Mode 4 can overcome these problems by detecting
@@ -101,6 +101,9 @@ now receive i-support instead of o-support.  Running with 'warnings -on'
 will print messages when any such productions fire.  You should try
 to be careful not to build any such mixed productions when using
 o-support mode 4
+	While O Support Mode 3 remains the default for this release, this is
+for backwards compatibility only.  It is recommended that O Support Mode 4 is
+used from now on; in a future release, O Support Mode 4 will be the default.
 
 	
 		
@@ -202,7 +205,7 @@ Other changes for Soar 8.5 made after the above document was written:
 - Removal of many depricated Tcl/Tk functions, upgrading them to Tcl/Tk 8.4.4
 - Various stability enhancements
 - Minor crash fixes in TankSoar
-- 'init-soar' crash fix in both Eaters and TankSoar 
+- 'init-soar' crash fix in both Eaters and TankSoar
 - Fixed some broken commands
 - Fixed some broken internal behavior
   - Decision cycle bug
