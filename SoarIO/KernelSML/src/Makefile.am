@@ -19,6 +19,7 @@ sml_KernelSML.cpp\
 sml_KernelSMLHandlers.cpp\
 sml_OutputListener.cpp\
 sml_PrintListener.cpp\
+sml_ProductionListener.cpp\
 sml_RhsListener.cpp\
 sml_RunListener.cpp\
 sml_SystemListener.cpp
