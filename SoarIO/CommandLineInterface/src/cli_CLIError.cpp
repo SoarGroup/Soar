@@ -77,6 +77,8 @@ char const* CLIError::GetErrorDescription() {
 		case kReteSaveOperationFail:			return "Rete save operation failed.";
 		case kReteLoadOperationFail:			return "Rete load operation failed.";
 
+		case kInvalidProduction:				return "Invalid production.";
+
 		default:								return "Unknown error code.";
 	}
 }

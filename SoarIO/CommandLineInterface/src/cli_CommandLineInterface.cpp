@@ -59,6 +59,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_SourceDepth = 0;
 	m_SourceDirDepth = 0;
 	m_pLogFile = 0;
+	m_KernelVersion.major = m_KernelVersion.minor = 0;
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {

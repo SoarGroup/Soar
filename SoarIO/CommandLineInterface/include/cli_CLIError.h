@@ -73,6 +73,8 @@ namespace cli {
 			kCantLoadReteWithProductions = 48,
 			kReteSaveOperationFail = 49,
 			kReteLoadOperationFail = 50,
+
+			kInvalidProduction = 51,
 		};
 
 		CLIError() : m_Code(0) {}

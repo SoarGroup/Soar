@@ -21,7 +21,7 @@ bool CommandLineInterface::ParseSP(gSKI::IAgent* pAgent, std::vector<std::string
 	// Remove first and last characters (the braces)
 	std::string production = argv[1];
 	if (production.length() < 3) {
-		return m_Error.SetError(Constants::kCLISP);
+		return m_Error.SetError(CLIError::kInvalidProduction);
 	}
 	production = production.substr(1, production.length() - 2);
 

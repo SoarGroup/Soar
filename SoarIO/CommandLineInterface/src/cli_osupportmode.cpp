@@ -29,6 +29,8 @@ bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<s
 
 bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 
+	if (!RequireAgent(pAgent)) return false;
+
 	if (mode < 0) {
 		egSKIOSupportMode m = pAgent->GetOSupportMode();
 		char buf[kMinBufferSize];

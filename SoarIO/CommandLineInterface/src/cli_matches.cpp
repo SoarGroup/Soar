@@ -7,11 +7,14 @@
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
 
+#include "sml_Names.h"
+
 #include "IgSKI_Agent.h"
 #include "IgSKI_Kernel.h"
 #include "IgSKI_DoNotTouch.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
@@ -103,14 +106,24 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches,
 
 		if (!prod) return m_Error.SetError(CLIError::kProductionNotFound);
 
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		pKernelHack->PrintPartialMatchInformation(pAgent, prod, wtt);
-		return true;
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+
+	} else {
+
+		ms_trace_type mst = MS_ASSERT_RETRACT;
+		if (matches == OPTION_MATCHES_ASSERTIONS) mst = MS_ASSERT;
+		if (matches == OPTION_MATCHES_RETRACTIONS) mst = MS_RETRACT;
+
+ 		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pKernelHack->PrintMatchSet(pAgent, wtt, mst);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	}
 
-    ms_trace_type mst = MS_ASSERT_RETRACT;
-	if (matches == OPTION_MATCHES_ASSERTIONS) mst = MS_ASSERT;
-	if (matches == OPTION_MATCHES_RETRACTIONS) mst = MS_RETRACT;
-
-    pKernelHack->PrintMatchSet(pAgent, wtt, mst);
+	if (!m_RawOutput) {
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
+		m_Result.clear();
+	}
 	return true;
 }

@@ -51,9 +51,8 @@ bool CommandLineInterface::ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::
 		}
 	}
 
-	if ((unsigned)GetOpt::optind != argv.size()) {
-		m_Error.SetError(Constants::kCLIWarnings);
-	}
+	if ((unsigned)GetOpt::optind != argv.size()) m_Error.SetError(CLIError::kTooManyArgs);
+
 	return DoWarnings(pAgent, query, setting);
 }
 
