@@ -30,6 +30,8 @@
 #ifdef AMN_EP_MEM
 
 //defined in soar_core_utils.c
+//IMPORTANT:  Caller is responsible for deallocating the wme list
+//            returned by this function.
 extern wme ** get_augs_of_id( Symbol *id, tc_number tc, int *num_attr );
 
 //defined in activate.c
@@ -708,8 +710,8 @@ int wme_has_value(wme *w, char *attr_name, char *value_name)
    get_aug_of_id()
 
    This routine examines a symbol for an augmentation that as the
-   given attribute and value and returns it.  The rules for attr
-   and value are 
+   given attribute and value and returns it.  See wme_has_value()
+   for info on how the correct wme is matched to the given strings.
    
    Created: 19 Oct 2004
    =================================================================== */
@@ -719,6 +721,7 @@ wme *get_aug_of_id(Symbol *sym, char *attr_name, char *value_name)
     int len = 0;
     int i;
     tc_number tc;
+    wme *ret_wme = NULL;
     
     tc = sym->id.tc_num + 1;
     wmes = get_augs_of_id(sym, tc, &len);
@@ -729,13 +732,14 @@ wme *get_aug_of_id(Symbol *sym, char *attr_name, char *value_name)
     {
         if (wme_has_value(wmes[i], attr_name, value_name))
         {
-            return wmes[i];
+            ret_wme = wmes[i];
+            break;
         }
     }
 
-    return NULL;
+    free_memory(wmes, MISCELLANEOUS_MEM_USAGE);
+    return ret_wme;
 }//get_aug_of_id
-
 
 
 /* ===================================================================
@@ -763,28 +767,29 @@ preference *make_fake_preference_for_epmem_wme(Symbol *goal, wme *w)
      * find the ^superstate wme and use that as a stand in to backtrace to
      */
     ap_wme = get_aug_of_id(goal, "superstate", NULL);
-    if (!ap_wme) {
-        char msg[MESSAGE_SIZE];
-        strncpy(msg, "epmem.c: Internal error: couldn't find ^superstate WME on state\n", MESSAGE_SIZE);
-        msg[MESSAGE_SIZE - 1] = 0;
-        abort_with_fatal_error(msg);
+    if (!ap_wme)
+    {
+        //This should never happen.
+        print("\nepmem.c: Internal error: couldn't find ^superstate WME on state\n");
+        return NULL;
     }
 
     /*
      * make the fake preference
      */
     pref = make_preference(ACCEPTABLE_PREFERENCE_TYPE, w->id, w->attr, w->value, NIL);
+    pref->o_supported = TRUE;
     symbol_add_ref(pref->id);
     symbol_add_ref(pref->attr);
     symbol_add_ref(pref->value);
-    pref->o_supported = TRUE;
-    
+
     //This may not be necessary??
     insert_at_head_of_dll(goal->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
     pref->on_goal_list = TRUE;
-    
+
     preference_add_ref(pref);
-    
+
+        
     /*
      * make the fake instantiation
      */
@@ -852,32 +857,44 @@ void remove_fake_preference_for_epmem_wme(wme *w)
         }
     }
     
-    
-    /*
-     * remove the fake condition
-     */
-    if (cond != NULL)
-    {
-        wme_remove_ref(cond->bt.wme);
-        free_with_pool(&current_agent(condition_pool), cond);
-    }
+//      /*
+//       * remove the fake condition
+//       */
+//      if (cond != NULL)
+//      {
+//          symbol_remove_ref(cond->bt.wme->id);
+//          symbol_remove_ref(cond->bt.wme->attr);
+//          symbol_remove_ref(cond->bt.wme->value);
+//          wme_remove_ref(cond->bt.wme);
+//          free_with_pool(&current_agent(condition_pool), cond);
+//      }
 
 
-    /*
-     * remove the fake instantiation
-     */
-    if (inst != NULL)
-    {
-        free_with_pool(&current_agent(instantiation_pool), pref->inst);
-    }
+//      /*
+//       * remove the fake instantiation
+//       */
+//      if (inst != NULL)
+//      {
+//          free_with_pool(&current_agent(instantiation_pool), pref->inst);
+//          pref->inst = NULL;
+//      }
 
     /*
      * remove the fake preference
      */
     if (pref != NULL)
     {
+//          /* --- dereference component symbols --- */
+//          symbol_remove_ref(pref->id);
+//          symbol_remove_ref(pref->attr);
+//          symbol_remove_ref(pref->value);
+
+        /* --- free the memory --- */
         preference_remove_ref(pref);
+        //%%%free_with_pool(&current_agent(preference_pool), pref);
     }
+
+    w->preference = NULL;
     
 
 }//remove_fake_preference_for_epmem_wme
@@ -1121,7 +1138,7 @@ void print_wmetree(wmetree *node, int indent, int depth)
 }//print_wmetree
 
 /* ===================================================================
-   epmem_find_memory_entry
+   epmem_find_wmetree_entry
 
    Finds a descendent entry that has a particular id and attribute in a
    given memory.  If the given parent is &g_wmetree then it is assumed
@@ -1131,7 +1148,7 @@ void print_wmetree(wmetree *node, int indent, int depth)
 
    Created: 20 Feb 2004
    =================================================================== */
-wmetree *epmem_find_memory_entry(arraylist *epmem, wmetree *id, char *s)
+wmetree *epmem_find_wmetree_entry(arraylist *epmem, wmetree *id, char *s)
 {
     int i;
 
@@ -1151,7 +1168,33 @@ wmetree *epmem_find_memory_entry(arraylist *epmem, wmetree *id, char *s)
 
     return NULL;
     
-}//epmem_find_memory_entry
+}//epmem_find_wmetree_entry
+
+/* ===================================================================
+   epmem_find_actwme_entry
+
+   Finds an actwme entry in a given episodic memory that points to a
+   given wmetree.
+
+   Returns NULL if not found.
+
+   Created: 29 Nov 2004
+   =================================================================== */
+actwme *epmem_find_actwme_entry(arraylist *epmem, wmetree *target)
+{
+    int i;
+
+    if (epmem == NULL) return NULL;
+    
+    for(i = 0; i < epmem->size; i++)
+    {
+        actwme *entry = (actwme *)get_arraylist_entry(epmem, i);
+        if (entry->node == target) return entry;
+    }//for
+
+    return NULL;
+    
+}//epmem_find_actwme_entry
 
 /* ===================================================================
    print_memory
@@ -1253,25 +1296,25 @@ void print_memory_graphically(arraylist *epmem)
     char dir_char = '?';
 
     //Find the direction of movement
-    ol = epmem_find_memory_entry(epmem, &g_wmetree, "output-link");
-    move = epmem_find_memory_entry(epmem, ol, "move");
-    direction = epmem_find_memory_entry(epmem, move, "direction");
+    ol = epmem_find_wmetree_entry(epmem, &g_wmetree, "output-link");
+    move = epmem_find_wmetree_entry(epmem, ol, "move");
+    direction = epmem_find_wmetree_entry(epmem, move, "direction");
 
     //Find the current score
-    il = epmem_find_memory_entry(epmem, &g_wmetree, "input-link");
-    eater = epmem_find_memory_entry(epmem, il, "eater");
-    score = epmem_find_memory_entry(epmem, eater, "score");
+    il = epmem_find_wmetree_entry(epmem, &g_wmetree, "input-link");
+    eater = epmem_find_wmetree_entry(epmem, il, "eater");
+    score = epmem_find_wmetree_entry(epmem, eater, "score");
     
     //Find the contents of each surrounding cell
-    my_location = epmem_find_memory_entry(epmem, il, "my-location");
-    north = epmem_find_memory_entry(epmem, my_location, "north");
-    south = epmem_find_memory_entry(epmem, my_location, "south");
-    east = epmem_find_memory_entry(epmem, my_location, "east");
-    west = epmem_find_memory_entry(epmem, my_location, "west");
-    n_content = epmem_find_memory_entry(epmem, north, "content");
-    s_content = epmem_find_memory_entry(epmem, south, "content");
-    e_content = epmem_find_memory_entry(epmem, east, "content");
-    w_content = epmem_find_memory_entry(epmem, west, "content");
+    my_location = epmem_find_wmetree_entry(epmem, il, "my-location");
+    north = epmem_find_wmetree_entry(epmem, my_location, "north");
+    south = epmem_find_wmetree_entry(epmem, my_location, "south");
+    east = epmem_find_wmetree_entry(epmem, my_location, "east");
+    west = epmem_find_wmetree_entry(epmem, my_location, "west");
+    n_content = epmem_find_wmetree_entry(epmem, north, "content");
+    s_content = epmem_find_wmetree_entry(epmem, south, "content");
+    e_content = epmem_find_wmetree_entry(epmem, east, "content");
+    w_content = epmem_find_wmetree_entry(epmem, west, "content");
 
     if (n_content != NULL) n_char   = n_content->val.strval[0];
     if (s_content != NULL) s_char   = s_content->val.strval[0];
@@ -1412,7 +1455,7 @@ Symbol *update_wmetree(wmetree *node,
                     {
                         ss = wmes[i]->value;
                     }
-                    continue;
+                   continue;
                 }
 
                 //insert childnode into the arraylist
@@ -1434,7 +1477,13 @@ Symbol *update_wmetree(wmetree *node,
         sym = (Symbol *)get_arraylist_entry(syms,pos);
         pos++;
 
-    } 
+        //Deallocate the last wmes list
+        if (wmes != NULL)
+        {
+            free_memory(wmes, MISCELLANEOUS_MEM_USAGE);
+        }
+        
+    }//while
     
     //Sort the memory's arraylist using the node pointers
     qsort( (void *)epmem->array,
@@ -1865,12 +1914,16 @@ void consider_new_epmem_via_activation()
 void epmem_clear_curr_mem(epmem_header *h)
 {
     int i;
+    wme *w;
 
     //Check for "no-retrieval" wme
     if (get_arraylist_entry(g_wmetree.assoc_wmes,h->index) != NULL)
     {
-        remove_input_wme((wme *)get_arraylist_entry(g_wmetree.assoc_wmes,h->index));
-        wme_remove_ref((wme *)get_arraylist_entry(g_wmetree.assoc_wmes,h->index));
+        w = (wme *)get_arraylist_entry(g_wmetree.assoc_wmes,h->index);
+
+        remove_fake_preference_for_epmem_wme(w);
+        remove_input_wme(w);
+        wme_remove_ref(w);
         set_arraylist_entry(g_wmetree.assoc_wmes, h->index, NULL);
 
         return;
@@ -1898,8 +1951,10 @@ void epmem_clear_curr_mem(epmem_header *h)
         }
 
         //Remove from WM
-        remove_input_wme(get_arraylist_entry(node->assoc_wmes,h->index));
-        wme_remove_ref((wme *)get_arraylist_entry(node->assoc_wmes,h->index));
+        w = get_arraylist_entry(node->assoc_wmes,h->index);
+        remove_fake_preference_for_epmem_wme(w);
+        remove_input_wme(w);
+        wme_remove_ref(w);
 
         //Bookkeeping
         set_arraylist_entry(node->assoc_wmes,h->index, NULL);
@@ -1980,12 +2035,12 @@ int compare_memories_ideal(arraylist *epmem1, arraylist *epmem2)
     char *direction = NULL;
 
     //Compare the direction eater is travelling
-    node1 = epmem_find_memory_entry(epmem1, &g_wmetree, "output-link");
-    node1 = epmem_find_memory_entry(epmem1, node1, "move");
-    node1 = epmem_find_memory_entry(epmem1, node1, "direction");
-    node2 = epmem_find_memory_entry(epmem2, &g_wmetree, "output-link");
-    node2 = epmem_find_memory_entry(epmem2, node2, "move");
-    node2 = epmem_find_memory_entry(epmem2, node2, "direction");
+    node1 = epmem_find_wmetree_entry(epmem1, &g_wmetree, "output-link");
+    node1 = epmem_find_wmetree_entry(epmem1, node1, "move");
+    node1 = epmem_find_wmetree_entry(epmem1, node1, "direction");
+    node2 = epmem_find_wmetree_entry(epmem2, &g_wmetree, "output-link");
+    node2 = epmem_find_wmetree_entry(epmem2, node2, "move");
+    node2 = epmem_find_wmetree_entry(epmem2, node2, "direction");
     if ( (node1 != NULL) && (node1 == node2) )
     {
         direction = node1->val.strval;
@@ -1997,16 +2052,16 @@ int compare_memories_ideal(arraylist *epmem1, arraylist *epmem2)
     }
 
     //Find the eater's cell
-    node1 = epmem_find_memory_entry(epmem1, &g_wmetree, "input-link");
-    node1 = epmem_find_memory_entry(epmem1, node1, "my-location");
-    node2 = epmem_find_memory_entry(epmem2, &g_wmetree, "input-link");
-    node2 = epmem_find_memory_entry(epmem2, node2, "my-location");
+    node1 = epmem_find_wmetree_entry(epmem1, &g_wmetree, "input-link");
+    node1 = epmem_find_wmetree_entry(epmem1, node1, "my-location");
+    node2 = epmem_find_wmetree_entry(epmem2, &g_wmetree, "input-link");
+    node2 = epmem_find_wmetree_entry(epmem2, node2, "my-location");
 
     //Compare destination cell content
-    tmp1 = epmem_find_memory_entry(epmem1, node1, direction);
-    tmp1 = epmem_find_memory_entry(epmem1, tmp1, "content");
-    tmp2 = epmem_find_memory_entry(epmem2, node2, direction);
-    tmp2 = epmem_find_memory_entry(epmem2, tmp2, "content");
+    tmp1 = epmem_find_wmetree_entry(epmem1, node1, direction);
+    tmp1 = epmem_find_wmetree_entry(epmem1, tmp1, "content");
+    tmp2 = epmem_find_wmetree_entry(epmem2, node2, direction);
+    tmp2 = epmem_find_wmetree_entry(epmem2, tmp2, "content");
     if ( (tmp1 != NULL) && (tmp1 == tmp2) ) return 2;
 
 
@@ -2104,28 +2159,29 @@ episodic_memory *find_best_match(arraylist *cue)
     //list for each wmetree node in the cue
     for(i = 0; i < cue->size; i++)
     {
-        actwme *aw = (actwme *)get_arraylist_entry(cue,i);
+        actwme *aw_cue = (actwme *)get_arraylist_entry(cue,i);
 
-        if (aw->node->assoc_memories->size > 0)
+        if (aw_cue->node->assoc_memories->size > 0)
         {
             // note that this node was used in the match
-            aw->node->query_count++;
+            aw_cue->node->query_count++;
         }
             
-        for(j = 0; j < aw->node->assoc_memories->size; j++)
+        for(j = 0; j < aw_cue->node->assoc_memories->size; j++)
         {
             episodic_memory *epmem =
-                (episodic_memory *)get_arraylist_entry(aw->node->assoc_memories,j);
-
+                (episodic_memory *)get_arraylist_entry(aw_cue->node->assoc_memories,j);
+            actwme *aw_mem = epmem_find_actwme_entry(epmem->content, aw_cue->node);
+            
             if (epmem->last_usage != g_last_ret_id)
             {
                 epmem->last_usage = g_last_ret_id;
-                epmem->match_score = aw->activation;
+                epmem->match_score = aw_mem->activation;
                 comp_count++;
             }
             else
             {
-                epmem->match_score += aw->activation;
+                epmem->match_score += aw_mem->activation;
             }
 
             if (epmem->match_score > best_score)
@@ -2343,29 +2399,17 @@ char *epmem_retrieve_command(Symbol *sym)
    =================================================================== */
 void increment_retrieval_count(epmem_header *h, long inc_amt)
 {
-    wme **wmes;
-    int len = 0;
-    int i;
-    tc_number tc;
     long current_count = 0;
     wme *w;
 
     //Find the (epmem ^retreival-count n) WME, save the value,
     //and remove the WME from WM
-    tc = h->epmem->id.tc_num + 1;
-    wmes = get_augs_of_id( h->epmem, tc, &len );
-    h->epmem->id.tc_num = tc - 1;
-    
-    if (wmes == NULL) return;
-    for(i = 0; i < len; i++)
+    w = get_aug_of_id(h->epmem, "retrieval-count", NULL);
+    if ((w != NULL)
+        && (w->value->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) )
     {
-        if ( (wme_has_value(wmes[i], "retrieval-count", NULL))
-             && (wmes[i]->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) )
-        {
-            current_count = wmes[i]->value->ic.value;
-            remove_input_wme(wmes[i]);
-            break;
-        }
+        current_count = w->value->ic.value;
+        remove_input_wme(w);
     }
 
     //Check for remove only
@@ -2475,6 +2519,8 @@ Symbol *find_superstate(Symbol *sym)
                 break;
             }
         }
+
+        free_memory(wmes, MISCELLANEOUS_MEM_USAGE);
     }//if
 
     return ss;
