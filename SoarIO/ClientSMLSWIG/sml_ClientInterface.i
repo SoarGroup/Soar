@@ -8,8 +8,7 @@
 #include "sml_ClientIdentifier.h"
 #include "sml_ClientAgent.h"
 #include "sml_ClientKernel.h"
-#include "ElementXMLHandle.h"
-#include "ElementXMLInterface.h"
+#include "sml_ElementXML.h"
 #include "sml_AnalyzeXML.h"
 %}
 
@@ -20,8 +19,7 @@
 %include "../ClientSML/include/sml_ClientIdentifier.h"
 %include "../ClientSML/include/sml_ClientAgent.h"
 %include "../ClientSML/include/sml_ClientKernel.h"
-//%include "../ElementXML/include/ElementXMLHandle.h"
-%include "../ElementXML/include/ElementXMLInterface.h"
+%include "../ConnectionSML/include/sml_ElementXML.h"
 %include "../ConnectionSML/include/sml_AnalyzeXML.h"
 
 

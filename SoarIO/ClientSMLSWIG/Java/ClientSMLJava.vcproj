@@ -34,7 +34,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ClientSML.lib ElementXML.lib ConnectionSML.lib"
 				OutputFile="Java_sml_ClientInterface.dll"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../ClientSML/lib;../../ElementXML/lib;../../ConnectionSML/lib"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="1"/>
@@ -82,9 +82,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ClientSML.lib ElementXML.lib ConnectionSML.lib"
-				OutputFile="$(OutDir)\$(ProjectName).dll"
+				OutputFile="Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="../ClientSML/lib;../ElementXML/lib;../ConnectionSML/lib"
+				AdditionalLibraryDirectories="../../ClientSML/lib;../../ElementXML/lib;../../ConnectionSML/lib"
 				GenerateDebugInformation="TRUE"
 				ImportLibrary="$(OutDir)/$(TargetName).lib"/>
 			<Tool
@@ -159,7 +159,8 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -Wallkw -c++ -java &quot;$(InputPath)&quot;"
+$(SWIG)\swig.exe -Wall -Wallkw -c++ -java &quot;$(InputPath)&quot;
+"
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -171,7 +172,8 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -Wallkw -c++ -java &quot;$(InputPath)&quot;"
+$(SWIG)\swig.exe -Wall -Wallkw -c++ -java &quot;$(InputPath)&quot;
+"
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 		</File>
