@@ -6,6 +6,7 @@
 package edu.rosehulman.soar.errorchecking;
 
 
+import edu.rosehulman.soar.datamap.checker.*; 
 import edu.umich.visualsoar.parser.*;
 
 import org.eclipse.core.runtime.*;
@@ -27,7 +28,8 @@ public class SoarSourceChecker {
 			SoarParser parser =
 				new SoarParser (new InputStreamReader(file.getContents()));
 			
-			parser.VisualSoarFile();
+			// Now see if it passes muster with the datamap
+			DataMapChecker.matches(file, parser.VisualSoarFile());
 			
 			
 		} catch (CoreException e) {

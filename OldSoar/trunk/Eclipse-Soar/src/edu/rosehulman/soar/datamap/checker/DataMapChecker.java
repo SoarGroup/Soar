@@ -8,11 +8,11 @@ package edu.rosehulman.soar.datamap.checker;
 
 
 import edu.rosehulman.soar.datamap.*;
+import edu.rosehulman.soar.datamap.items.*;
 import edu.umich.visualsoar.parser.*;
 
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.resources.*;
-
 
 import java.io.*;
 import java.util.*;
@@ -24,13 +24,15 @@ import java.util.*;
  * @author Tim Jasko &lt;tj9582@yahoo.com&gt;
  */
 public class DataMapChecker {
+	public static final String PROBLEM_MARKER = "edu.rosehulman.soar.DatamapProblem";
+	
+	/**
+	 * Determines if the given source file matches the datamap.
+	 * 
+	 * @param source The Soar source file.
+	 * @param dm The Datamap associated with it.
+	 */
 	public static void matches(IFile source, DataMap dm) {
-		ArrayList errors = new ArrayList();
-		
-		
-
-		
-		
 		try {
 			
 			SoarParser parser =
@@ -38,62 +40,165 @@ public class DataMapChecker {
 			
 			Vector productions = parser.VisualSoarFile(); 
 			
-			Enumeration enum = productions.elements();
-			
-			System.out.println("Parsed!");
-			
-			while (enum.hasMoreElements()) {
-				Enumeration e;
-				SoarProduction sp = (SoarProduction) enum.nextElement();
-				
-				System.out.println();
-				System.out.println(sp.getName() + ":" +  sp.getProductionType());
-				
-				
-				TriplesExtractor te = new TriplesExtractor(sp);
-				
-				System.out.println(te.getStateVariableCount());
-				System.out.println(te.stateVariable().getString());
-				
-				
-				e = new EnumerationIteratorWrapper(te.triples());
-				while(e.hasMoreElements()) {
-					Triple currentTriple = (Triple)e.nextElement();
-					System.out.println("attribute: " + currentTriple.getAttribute().getString());
-					System.out.println("val: " + currentTriple.getValue().getString());
-					System.out.println("var: " + currentTriple.getVariable().getString());
-				
-				}
-				
-				
-			}
-			
-			
-			/*public void checkProductions(OperatorNode on,Vector productions, java.util.List errors) {
-
-				// Find the state that these productions should be checked against
-				SoarIdentifierVertex siv = on.getStateIdVertex();
-				if(siv == null)
-					siv = WorkingMemory.getTopstate();
-				Enumeration e = productions.elements();
-
-				while(e.hasMoreElements()) {
-					SoarProduction sp = (SoarProduction)e.nextElement();
-					errors.addAll(WorkingMemory.checkProduction(siv,sp));
-				}
-			} */
+			matches(source, productions, dm);
 			
 			
 		} catch (CoreException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
 			System.out.println("parsing error!");
-				
 		}
-		
-		
 	}
 	
+	/**
+	 * Takes an already parsed source file productions contained therein
+	 *  and determines if they match the datamap. This function find the 
+	 *  datamap associated with this file on its own, and if there is none,
+	 *  simply stops. 
+	 * 
+	 * @param source The source file.
+	 * @param productions The productions resulting in the source file being parsed.
+	 */
+	public static void matches(IFile source, Vector productions) {
+		DataMap dm = DataMap.getAssociatedDatamap(source);
+		
+		if (dm != null) {
+			matches(source, productions, dm);
+		}
+	}
+	
+	/**
+	 * Determines if an already parsed source file matches the datamap. This
+	 *  is the function called by the other forms of <code>matches</code>.
+	 *  The source file is marked in any place where it does not match up with 
+	 *  the datamap.
+	 * 
+	 * @param source The source file.
+	 * @param productions The productions contained in the source file.
+	 * @param dm The DataMap associated with this source file.
+	 */
+	public static void matches(IFile source, Vector productions, DataMap dm) {
+		try {
+			source.deleteMarkers(DataMapChecker.PROBLEM_MARKER, false, 0);
+			
+			Enumeration enum = productions.elements();
+				
+			while (enum.hasMoreElements()) {
+				ArrayList names = new ArrayList();
+				
+				SoarProduction sp = (SoarProduction) enum.nextElement();
+					
+				System.out.println();
+				System.out.println(sp.getName() + ":" +  sp.getProductionType());
+					
+					
+				TriplesExtractor te = new TriplesExtractor(sp);
+					
+				System.out.println(te.getStateVariableCount());
+				System.out.println(te.stateVariable().getString());
+					
+					
+				Enumeration e = new EnumerationIteratorWrapper(te.triples());
+					
+					
+				while(e.hasMoreElements()) {
+					Triple currentTriple = (Triple)e.nextElement();
+					//System.out.println("attribute: " + currentTriple.getAttribute().getString());
+					//System.out.println("val: " + currentTriple.getValue().getString());
+					//System.out.println("var: " + currentTriple.getVariable().getString());
+					
+					String val = currentTriple.getValue().getString();	
+					
+					//This name is part of the path
+					names.add(currentTriple.getAttribute().getString());
+					
+					if (val.matches("<\\s[0-9]*>")) {
+						// This is part of a chain of attribute names.
+						// Don't have much to do here, it would seem.
+						// Just keep looping until we reach the else.
+							
+					} else {
+
+						ArrayList nodes = dm.find(names);
+						
+						if (nodes.size() == 0) {
+							// It doesn't exist! The horror!
+							
+							IMarker prob = 
+								source.createMarker(DataMapChecker.PROBLEM_MARKER);
+							
+							prob.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+							prob.setAttribute(IMarker.LINE_NUMBER, currentTriple.getLine());
+							
+							//Make our message
+							String msg = makeName(names) 
+								+ " does not exist in the datamap.";
+							
+							prob.setAttribute(IMarker.MESSAGE, msg);
+							
+						} else {
+							// Sure, maybe it exists. But does that satisfy you?
+							boolean satisfied = false;
+							
+							for (int i=0; i<nodes.size(); ++i) {
+								DMItem node = (DMItem) nodes.get(i);
+								if (node.satisfies(currentTriple)) {
+									satisfied = true;
+								}
+							}
+							
+							if (!satisfied) { // your money back!
+								// Invalid value assignment
+								IMarker prob = 
+									source.createMarker(DataMapChecker.PROBLEM_MARKER);
+							
+								prob.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+								prob.setAttribute(IMarker.LINE_NUMBER, currentTriple.getLine());
+							
+								//Make our message
+								String msg = makeName(names) 
+									+ " does not accept a value of "
+									+ currentTriple.getValue().getString();
+							
+								prob.setAttribute(IMarker.MESSAGE, msg);
+							}
+							
+						} // else
+						
+						names.clear(); // clear out the path for the next attribute
+						
+					} // else
+				} // while
+					
+					
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+	} // matches ( ... )
+	
+	
+	/**
+	 * Puts together the path list into a readable attribute name.
+	 *  For example, an input of {"io", "input-link", "pie"} will
+	 *  yield "io.input-link.pie"
+	 *  
+	 * @param names An attribute path
+	 * @return The attribute's path with the periods back in place.
+	 */
+	private static String makeName(ArrayList names) {
+		String ret = "";
+		
+		if (names.size() > 0) {
+			ret += names.get(0);
+								
+			for (int i=1; i<names.size(); ++i) {
+				ret += "." + names.get(i);
+			} // for
+		} // if
+		
+		return ret;
+	}
 	
 	
 	

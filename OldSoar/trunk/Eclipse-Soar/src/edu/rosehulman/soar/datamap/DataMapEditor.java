@@ -266,7 +266,9 @@ public class DataMapEditor extends EditorPart {
 						DataMapEditor.this.getViewer().refresh();
 					} // if
 				break;
+				
 			} // switch
+			
 			//System.out.println("key released:" + e.keyCode);
 		}
 		

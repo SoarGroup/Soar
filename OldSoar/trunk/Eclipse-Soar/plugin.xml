@@ -60,6 +60,14 @@
 		<attribute name="type" />
 	</extension>
 	
+	<extension
+		id="DatamapProblem"
+		point="org.eclipse.core.resources.markers"
+		name="%dmproblemName">
+		<super type="org.eclipse.core.resources.problemmarker"/>
+		<persistent value="true" />
+	</extension>
+	
 	
 	<!-- Incremental builder to handle the sourcing file -->
 	
@@ -242,7 +250,7 @@
 			</filter>
 			<action
 				id="edu.rosehulman.soar.wizards.InvokeParseFile.file"
-				label="Parse File"
+				label="Check Productions"
 				icon="icons/soar.gif"
 				menubarPath="end"
 				class="edu.rosehulman.soar.wizards.actions.InvokeParseFile"

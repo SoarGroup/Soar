@@ -199,6 +199,8 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 			}
 		} catch (IndexOutOfBoundsException e) {
 			return null;
+		} catch (NullPointerException e) {
+			return null;
 		}
 
 	} // ICompletionProposal[] computeCompletionProposals( ... )

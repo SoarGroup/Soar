@@ -11,8 +11,6 @@ import java.util.ResourceBundle;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.widgets.*;
 
 import edu.rosehulman.soar.editor.util.ColorProvider;
 import edu.rosehulman.soar.sourcing.*;

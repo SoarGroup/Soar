@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.resources.*;
 
 import java.io.*;
+import java.util.*;
 
 //	Everything we need to handle XML
 import javax.xml.parsers.*;
@@ -101,6 +102,68 @@ public class DataMap {
 	public void setRoot(DMSpecial newRoot) {
 		_root = newRoot;
 	} // void setRoot(DMItem newRoot)
+	
+	
+	
+	/**
+	 * Finds all attributes matching the given path. Since names
+	 * are not necessarily unique, there may be several such matches.
+	 * 
+	 * @param names An ArrayList of Strings representing the path to the node.
+	 * @return An ArrayList of DMItems that match the given path.
+	 */
+	public ArrayList find(ArrayList names) {
+		return find( getRoot(), names, 0);
+	}
+	
+	/**
+	 * Does the actual work for find.
+	 *  Should be called with the DataMap root node and an index of 0. 
+	 * 
+	 * @param node The node to search. Use the DataMap root.
+	 * @param names A list of the names to seek through in the DataMap
+	 * @param index For recursion purposes. Use 0 here.
+	 * @return An ArrayList of all DMItems that match the given path.
+	 */
+	private ArrayList find(DMIdentifier node, ArrayList names, int index) {
+		
+			ArrayList kids = node.getChildren();
+			String name = (String) names.get(index);
+		
+			//System.out.println(node + ": " + index);
+		
+			//This is the final item! Yipee!
+			if (index == names.size()-1) {
+			
+			
+				ArrayList ret = new ArrayList();
+			
+				for (int i=0; i<kids.size(); i++) {
+					DMItem kid = (DMItem) kids.get(i);
+				
+					if (kid.getName().equals(name)) {
+						ret.add(kid);
+					} // if
+				} // for
+			
+				return ret;
+		
+			//Not the final item. There's some recursing to be done.
+			// I would like to point out that this would be prettier in Scheme.
+			} else {
+				ArrayList ret = new ArrayList();
+			
+				for (int i=0; i<kids.size(); i++) {
+					DMItem kid = (DMItem) kids.get(i);
+	
+					if (kid.getName().equals(name) && kid instanceof DMIdentifier) {
+						ret.addAll( find((DMIdentifier)kid, names, index+1));
+					} // if
+				} // for
+			
+				return ret;
+			} // else
+		} //ArrayList getSuggestions( ... )
 	
 	
 	/**

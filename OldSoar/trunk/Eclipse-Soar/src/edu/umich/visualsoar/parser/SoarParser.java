@@ -597,7 +597,7 @@ SoarProduction sp;
 
 // Ok
   final public Action action() throws ParseException {
-        Token t;
+
 
         VarAttrValMake vavm;
 
