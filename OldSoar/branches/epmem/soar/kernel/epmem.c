@@ -843,58 +843,8 @@ preference *make_fake_preference_for_epmem_wme(Symbol *goal, wme *w)
    =================================================================== */
 void remove_fake_preference_for_epmem_wme(wme *w)
 {
-    condition *cond = NULL;
-    instantiation *inst = NULL;
-    preference *pref = NULL;
 
-    pref = w->preference;
-    if (pref != NULL)
-    {
-        inst = pref->inst;
-        if (inst != NULL)
-        {
-            cond = inst->top_of_instantiated_conditions;
-        }
-    }
-    
-//      /*
-//       * remove the fake condition
-//       */
-//      if (cond != NULL)
-//      {
-//          symbol_remove_ref(cond->bt.wme->id);
-//          symbol_remove_ref(cond->bt.wme->attr);
-//          symbol_remove_ref(cond->bt.wme->value);
-//          wme_remove_ref(cond->bt.wme);
-//          free_with_pool(&current_agent(condition_pool), cond);
-//      }
-
-
-//      /*
-//       * remove the fake instantiation
-//       */
-//      if (inst != NULL)
-//      {
-//          free_with_pool(&current_agent(instantiation_pool), pref->inst);
-//          pref->inst = NULL;
-//      }
-
-    /*
-     * remove the fake preference
-     */
-    if (pref != NULL)
-    {
-//          /* --- dereference component symbols --- */
-//          symbol_remove_ref(pref->id);
-//          symbol_remove_ref(pref->attr);
-//          symbol_remove_ref(pref->value);
-
-        /* --- free the memory --- */
-        preference_remove_ref(pref);
-        //%%%free_with_pool(&current_agent(preference_pool), pref);
-    }
-
-    w->preference = NULL;
+    preference_remove_ref(w->preference);
     
 
 }//remove_fake_preference_for_epmem_wme
