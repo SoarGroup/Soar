@@ -3,14 +3,6 @@ AUTOMAKE_OPTIONS = gnu
 lib_LTLIBRARIES = libKernelSML.la 
 
 libKernelSML_la_SOURCES = \
-KernelSMLdll.h\
-sml_AgentListener.h\
-sml_AgentSML.h\
-sml_ConnectionManager.h\
-sml_EventManager.h\
-sml_KernelSML.h\
-sml_KernelSMLgSKI.h\
-sml_OutputListener.h\
 KernelSMLInterface.cpp\
 KernelSMLdll.cpp\
 sml_AgentListener.cpp\
