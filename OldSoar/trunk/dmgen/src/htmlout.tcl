@@ -1,5 +1,5 @@
 ###
-# Copyright 1995-2003 Soar Technology, Inc., University of Michigan. All 
+# Copyright 1995-2004 Soar Technology, Inc., University of Michigan. All 
 # rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without 
