@@ -216,7 +216,7 @@ void reset_timer (struct timeval *tv_to_reset) {
   tv_to_reset->tv_usec = 0;
 }
 
-#if defined(WIN32) && !defined(FAST_TIME) && !defined(FASTER_TIME)
+#if defined(WIN32)
 
 /* A fake implementation of rusage for WIN32. Taken from cygwin. */
 #define RUSAGE_SELF 0
@@ -263,10 +263,8 @@ int getrusage(int who, struct rusage* r)
    totimeval (&r->ru_utime, &user_time, 0, 0);
    return 0;
 }
+#endif /* WIN32 */
 
-#endif /* WIN32 && !FAST_TIME*/
-
-#if !(defined(FAST_TIME) && defined(WIN32)) && !defined(FASTER_TIME)
 void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
   dest_tv->tv_sec = r->ru_utime.tv_sec + r->ru_stime.tv_sec;
   dest_tv->tv_usec = r->ru_utime.tv_usec + r->ru_stime.tv_usec;
@@ -275,50 +273,7 @@ void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
     dest_tv->tv_sec++;
   }
 }
-#endif
 
-#if defined(WIN32) && defined(FAST_TIME)
-inline void totimeval (timeval *dst, LARGE_INTEGER *src)
-{
-    static bool init = false;
-    static LARGE_INTEGER freq;
-	if(!init) {
-		QueryPerformanceFrequency(&freq);
-		init = true;
-	}
-    long time_s = (long)(src->QuadPart / freq.QuadPart);
-    long time_u = (long)(((src->QuadPart / (double)freq.QuadPart) - time_s) * 1000000);
-
-    dst->tv_sec = time_s;
-    dst->tv_usec = time_u;
-}
-#endif
-
-#if defined(FASTER_TIME)
-void get_cputime_from_clock(clock_t t, struct timeval *dt)
-{
-    dt->tv_sec = t / CLOCKS_PER_SEC;
-    dt->tv_usec = (long) (((t % CLOCKS_PER_SEC) / (float) CLOCKS_PER_SEC) * ONE_MILLION);
-}
-#endif
-/*
-#if defined(WIN32) && defined(FAST_TIME)
-void start_timer (struct timeval *tv_for_recording_start_time) {
-
-    LARGE_INTEGER time;
-    BOOL ok = QueryPerformanceCounter(&time);
-    totimeval(tv_for_recording_start_time, &time);
-}
-#elif defined(FASTER_TIME)
-void start_timer(struct timeval *tv_for_recording_start_time)
-{
-    clock_t ticks;
-
-    ticks = clock();
-    get_cputime_from_clock(ticks, tv_for_recording_start_time);
-}
-#else
-*/
 void start_timer (agent* thisAgent, struct timeval *tv_for_recording_start_time) {
 
     if(thisAgent && !thisAgent->sysparams[TIMERS_ENABLED]) {
@@ -329,7 +284,7 @@ void start_timer (agent* thisAgent, struct timeval *tv_for_recording_start_time)
     getrusage (RUSAGE_SELF, &temp_rusage);
     get_cputime_from_rusage (&temp_rusage, tv_for_recording_start_time);
 }
-//#endif
+
 void stop_timer (agent* thisAgent,
 struct timeval *tv_with_recorded_start_time,
 struct timeval *tv_with_accumulated_time) {
@@ -338,26 +293,13 @@ struct timeval *tv_with_accumulated_time) {
         return;
     }
 
-#if defined(WIN32) && defined(FAST_TIME)
-    struct timeval end_tv;
-    long delta_sec, delta_usec;
-    LARGE_INTEGER time;
-    QueryPerformanceCounter(&time);
-    totimeval(&end_tv, &time);
-#elif defined(FASTER_TIME)
-    clock_t ticks;
-    struct timeval end_tv;
-    long delta_sec, delta_usec;
-    ticks = clock();
-    get_cputime_from_clock(ticks, &end_tv);
-#else
     struct rusage end_rusage;
     struct timeval end_tv;
     long delta_sec, delta_usec;
 
     getrusage (RUSAGE_SELF, &end_rusage);
     get_cputime_from_rusage (&end_rusage, &end_tv);
-#endif
+
     delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
     delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
     if (delta_usec < 0) {
