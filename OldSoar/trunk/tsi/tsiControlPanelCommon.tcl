@@ -60,9 +60,14 @@ proc tsiListAgents {} {
 
 proc createNewAgent {name {filepath ""} {filename ""}} {
    global auto_path tsi_library soar_library soar_doc_dir tsiConfig \
-       localAgents tsiAgentInfo tsiSuppressMenus
+       localAgents tsiAgentInfo tsiSuppressMenus agentCount
 
-		puts "CreateNewAgent --> $name $filepath $filename"
+   puts "CreateNewAgent --> $name $filepath $filename"
+
+   if {$name == ""} {
+       set name "soar$agentCount"
+       incr agentCount
+   }
 
    if {$filename == "**NO FILES**.soar"} {
       tk_dialog .error {No File Specified} "Please specify an agent name." \
@@ -115,6 +120,7 @@ proc createNewAgent {name {filepath ""} {filename ""}} {
    set tsiAgentInfo($name,sourceFile) "$filename"
 
    tsiLoadAgentSource $name
+
 }  ;### end createNewAgent
 
 

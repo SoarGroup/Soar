@@ -19,10 +19,11 @@
 source [file join $tsi_library tsiControlPanelCommon.tcl]
 
 proc makeTSIDefaultControlPanel { {hide 0}  {x -20} {y 1} } {
-  global tsi_library tsiConfig tcl_platform
+  global tsi_library tsiConfig tcl_platform agentCount
 
     set tsiConfig(ControlPanel) TSIDefaultControlPanel
     set tsiConfig(ControlPanelVersion) 3.2.0
+    set agentCount 1
  
   . configure -relief ridge -borderwidth 5
   wm title . {Agent Control Panel}
