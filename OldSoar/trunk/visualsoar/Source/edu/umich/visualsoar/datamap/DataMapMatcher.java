@@ -27,7 +27,10 @@ public class DataMapMatcher
      * @param startVertex the state in working memory that is being examined
      * @param triplesExtractor all the triples that were in a production
      * @param meh the structure that holds the errors when they are found */
-    public static Map matches(SoarWorkingMemoryModel dataMap,SoarIdentifierVertex startVertex,TriplesExtractor triplesExtractor,MatcherErrorHandler meh) 
+    public static Map matches(SoarWorkingMemoryModel dataMap,
+                              SoarIdentifierVertex startVertex,
+                              TriplesExtractor triplesExtractor,
+                              MatcherErrorHandler meh) 
     {
         Map varMap = new HashMap();
         Iterator iter = triplesExtractor.variables();

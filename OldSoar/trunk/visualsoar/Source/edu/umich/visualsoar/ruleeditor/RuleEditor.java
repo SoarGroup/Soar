@@ -7,6 +7,9 @@ import edu.umich.visualsoar.misc.*;
 import edu.umich.visualsoar.dialogs.*;
 import edu.umich.visualsoar.datamap.SoarWorkingMemoryModel;
 import edu.umich.visualsoar.graph.*;
+import edu.umich.visualsoar.parser.TriplesExtractor;
+import edu.umich.visualsoar.parser.Triple;
+import edu.umich.visualsoar.parser.Pair;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -66,7 +69,7 @@ public class RuleEditor extends CustomInternalFrame
 	JMenuItem pasteTextItem = new JMenuItem("Paste");
 	JMenuItem deleteSelectedTextItem = new JMenuItem("Delete");
     
-	JMenuItem openDataMapItem = new JMenuItem("Open Datamap");
+	JMenuItem openDataMapItem = new JMenuItem("Open Corresponding Datamap");
 	JMenuItem showDataMapEntryItem = new JMenuItem("Find Corresponding Datamap Entry");
 
 
@@ -332,7 +335,63 @@ public class RuleEditor extends CustomInternalFrame
         
         contextMenu.addSeparator();
         
-        contextMenu.add(showDataMapEntryItem);
+        showDataMapEntryItem.addActionListener(
+            new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    //Parse the current production
+                    String prodString = GetProductionStringUpToCaret();
+                    if (prodString == null)
+                    {
+                        //%%%Should report failure to user
+                        return;
+                    }
+                    SoarParser parser = new SoarParser(new StringReader(prodString));
+                    SoarProduction sp;
+                    try
+                    {
+                        sp = parser.soarProduction();
+                    }
+                    catch(ParseException pe)
+                    {
+                        //%%%Should report failure to user
+                        return;
+                    }
+
+                    //Find the last triple
+                    TriplesExtractor trips = new TriplesExtractor(sp);
+                    Iterator iter = trips.triples();
+                    Triple trip = null;
+                    while(iter.hasNext())
+                    {
+                        trip = (Triple)iter.next();
+                    }
+                    if (trip == null)
+                    {
+                        //%%%Should report failure to user
+                        return;
+                    }
+
+                    //Get the root vertex this production's datamap and state vertex
+                    SoarIdentifierVertex siv = getDataMapNode().getStateIdVertex();
+                    MainFrame mf = MainFrame.getMainFrame();
+                    SoarWorkingMemoryModel dataMap = mf.getOperatorWindow().getDatamap();
+
+                    //%%%YIKES! THIS IS NEXT PART IS HARD.  
+                    //Step 1: Find the (shortest) path in production that goes
+                    //        to the state.  See bottom of DataMapMatcher.java
+                    //        for clues.
+                    //Step 2: Find the path in the datamap that matches it.
+                    //        See SoarWorkingMemoryModel.java for clues.
+                        
+                        
+                    
+                    
+                }//actionPerformed
+            });
+        //%%%REMOVED UNTIL IMPLEMENTED
+        //contextMenu.add(showDataMapEntryItem);
 
         openDataMapItem.addActionListener(
             new ActionListener()
@@ -341,13 +400,7 @@ public class RuleEditor extends CustomInternalFrame
                 {
                     MainFrame mf = MainFrame.getMainFrame();
                     SoarWorkingMemoryModel dataMap = mf.getOperatorWindow().getDatamap();
-                    OperatorNode node = (OperatorNode)associatedNode.getParent();
-
-                    while(!node.hasDataMap())
-                    {
-                        node = (OperatorNode)node.getParent();
-                    }
-                    node.openDataMap(dataMap, mf);
+                    getDataMapNode().openDataMap(dataMap, mf);
                 }
             });
         contextMenu.add(openDataMapItem);
@@ -468,6 +521,23 @@ public class RuleEditor extends CustomInternalFrame
     public OperatorNode getNode() 
     {
         return associatedNode;
+    }
+
+    /**
+     * Locates the OperatorNode containing the datamap used by the
+     * productions in this node.
+     * @return the associated node
+     */
+    public OperatorNode getDataMapNode() 
+    {
+        OperatorNode node = (OperatorNode)associatedNode.getParent();
+
+        while(!node.hasDataMap())
+        {
+            node = (OperatorNode)node.getParent();
+        }
+
+        return node;
     }
 
 
@@ -808,6 +878,56 @@ public class RuleEditor extends CustomInternalFrame
         // Return the name to the caller
         return text.substring(nStartPos, nEndPos);
     }
+
+    /**
+     * Returns a string containing the production up to and including
+     * the what's under the caret.  If a production can not be found,
+     * null is returned.
+     *  */
+    public String GetProductionStringUpToCaret()
+    {
+        //Start by justifying the line
+        SoarDocument  doc = (SoarDocument)editorPane.getDocument();
+        int caretPos = editorPane.getCaretPosition();
+        caretPos = doc.autoJustify(caretPos);
+        if (caretPos > 0) 
+        {
+            editorPane.setCaretPosition(caretPos);
+        }
+
+        //Find the top of the current production
+        int pos = editorPane.getCaretPosition();
+        String text = editorPane.getText();
+        int sp_pos = text.lastIndexOf("sp ",pos);
+        if(sp_pos == -1) 
+        {
+            getToolkit().beep();
+            return null;
+        }
+ 
+        //Move beyond the caret until a separator character is reached
+        while ( (text.charAt(pos) != ' ')
+                && (text.charAt(pos) != '.')
+                && (text.charAt(pos) != '\n') )
+        {
+            try
+            {
+                pos++;
+            }
+            catch(ArrayIndexOutOfBoundsException abe)
+            {
+                return null;
+            }
+        }
+
+        //Got it!
+        String prodSoFar = text.substring(sp_pos,pos);
+        prodSoFar = makeStringValidForParser(prodSoFar);
+           
+        return prodSoFar;
+    }//GetProductionStringUpToCaret
+
+    
     /**
      * Looks for the passed string in the document, if it is searching
      * forward, then it searches for and instance of the string after the caret and selects it,
@@ -942,7 +1062,6 @@ public class RuleEditor extends CustomInternalFrame
      * In order for the file to be valid for the parser
      * there must be a newline following
      */
-
     private void makeValidForParser() 
     {
         String text = editorPane.getText();
@@ -956,6 +1075,23 @@ public class RuleEditor extends CustomInternalFrame
             editorPane.setText(text);
         }
     }
+
+    /**
+     * Same as above but for a given string
+     */
+    private String makeStringValidForParser(String prod) 
+    {
+        String text = editorPane.getText();
+        int pound = text.lastIndexOf("#");
+        int nl = text.lastIndexOf("\n");
+        if(nl < pound && pound != -1) 
+        {
+            prod += "\n";
+        }
+        return prod;
+    }
+
+
 
     /**
      * Reverts the contents of the editor to it's saved copy
@@ -1873,7 +2009,7 @@ public class RuleEditor extends CustomInternalFrame
         {
             try 
             {
-                prodSoFar = validForParser(prodSoFar);
+                prodSoFar = makeStringValidForParser(prodSoFar);
                 SoarParser soarParser = new SoarParser(new StringReader(prodSoFar));
                 SoarProduction sp = soarParser.soarProduction();
                 OperatorNode on = getNode();
@@ -1923,18 +2059,6 @@ public class RuleEditor extends CustomInternalFrame
                 MainFrame.getMainFrame().setFeedbackListData(new Vector(completeMatches));
             }
         }    // end of display()
-
-        private String validForParser(String prod) 
-        {
-            String text = editorPane.getText();
-            int pound = text.lastIndexOf("#");
-            int nl = text.lastIndexOf("\n");
-            if(nl < pound && pound != -1) 
-            {
-                prod += "\n";
-            }
-            return prod;
-        }
 
 
     }//class AutoSoarCompleteAction
@@ -2004,7 +2128,7 @@ public class RuleEditor extends CustomInternalFrame
         {
             try 
             {
-                prodSoFar = validForParser(prodSoFar);
+                prodSoFar = makeStringValidForParser(prodSoFar);
                 SoarParser soarParser = new SoarParser(new StringReader(prodSoFar));
                 SoarProduction sp = soarParser.soarProduction();
                 OperatorNode on = getNode();
@@ -2096,7 +2220,7 @@ public class RuleEditor extends CustomInternalFrame
         {
             try 
             {
-                prodSoFar = validForParser(prodSoFar);
+                prodSoFar = makeStringValidForParser(prodSoFar);
                 SoarParser soarParser = new SoarParser(new StringReader(prodSoFar));
                 SoarProduction sp = soarParser.soarProduction();
                 OperatorNode on = getNode();
@@ -2130,17 +2254,6 @@ public class RuleEditor extends CustomInternalFrame
             }
         }//attributeComplete
 
-        private String validForParser(String prod) 
-        {
-            String text = editorPane.getText();
-            int pound = text.lastIndexOf("#");
-            int nl = text.lastIndexOf("\n");
-            if(nl < pound && pound != -1) 
-            {
-                prod += "\n";
-            }
-            return prod;
-        }//validForParser
     }//class TabCompleteAction
 
     // 3P

@@ -467,13 +467,16 @@ public class SoarWorkingMemoryModel
     }
 
     /**
-     * Function finds the set of variables within a productions that matches a given string
+     * Function finds the set of variables within a productions that matches a
+     * given string
      * @param sv the SoarIdentifierVertex currently checking
      * @param sp the SoarProduction to check for matching variables
      * @param variable the string that function tries to match
      * @return a List of matches, empty list if nothing found
      */
-    public List matches(SoarIdentifierVertex sv,SoarProduction sp,String variable) 
+    public List matches(SoarIdentifierVertex sv,
+                        SoarProduction sp,
+                        String variable) 
     {
         TriplesExtractor triplesExtractor = new TriplesExtractor(sp);
         Map matchesMap = DataMapMatcher.matches(this,sv,triplesExtractor,new DoNothingMatcherErrorHandler());
