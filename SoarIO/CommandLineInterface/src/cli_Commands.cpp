@@ -57,16 +57,17 @@ using namespace sml;
 //|  __/ (_| | |  \__ \  __/ |___| |_| |
 //|_|   \__,_|_|  |___/\___|\____|____/
 //
-bool CommandLineInterface::ParseCD(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	// Only takes one optional argument, the directory to change into
 	if (argv.size() > 2) {
 		return HandleSyntaxError(Constants::kCLICD);
 	}
 	if (argv.size() > 1) {
-		return DoCD(argv[1]);
+		return DoCD(&(argv[1]));
 	}
-	string empty;
-	return DoCD(empty);
+	return DoCD();
 }
 
 // ____         ____ ____
@@ -75,10 +76,10 @@ bool CommandLineInterface::ParseCD(std::vector<std::string>& argv) {
 //| |_| | (_) | |___| |_| |
 //|____/ \___/ \____|____/
 //
-bool CommandLineInterface::DoCD(string& directory) {
+bool CommandLineInterface::DoCD(string* pDirectory) {
 
 	// If cd is typed by itself, return to original (home) directory
-	if (!directory.size()) {
+	if (!pDirectory) {
 
 		// Home dir set in constructor
 		if (chdir(m_HomeDirectory.c_str())) {
@@ -91,13 +92,13 @@ bool CommandLineInterface::DoCD(string& directory) {
 	}
 
 	// Chop of quotes if they are there, chdir doesn't like them
-	if ((directory.length() > 2) && (directory[0] == '\"') && (directory[directory.length() - 1] == '\"')) {
-		directory = directory.substr(1, directory.length() - 2);
+	if ((pDirectory->length() > 2) && ((*pDirectory)[0] == '\"') && ((*pDirectory)[pDirectory->length() - 1] == '\"')) {
+		*pDirectory = pDirectory->substr(1, pDirectory->length() - 2);
 	}
 
 	// Change to passed directory
-	if (chdir(directory.c_str())) {
-		HandleError("Could not change to directory: " + directory);
+	if (chdir(pDirectory->c_str())) {
+		HandleError("Could not change to directory: " + *pDirectory);
 		// Critical error
 		m_CriticalError = true;
 		return false;
@@ -111,7 +112,9 @@ bool CommandLineInterface::DoCD(string& directory) {
 //|  __/ (_| | |  \__ \  __/ |__| (__| | | | (_) |
 //|_|   \__,_|_|  |___/\___|_____\___|_| |_|\___/
 //
-bool CommandLineInterface::ParseEcho(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	// Very simple command, any number of arguments
 	return DoEcho(argv);
 }
@@ -141,7 +144,7 @@ bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 //|  __/ (_| | |  \__ \  __/ |___ >  < (__| \__ \  __/
 //|_|   \__,_|_|  |___/\___|_____/_/\_\___|_|___/\___|
 //
-bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all",		0, 0, 'a'},
 		{"chunks",	0, 0, 'c'},
@@ -155,7 +158,7 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 	GetOpt::opterr = 0;
 
 	int option;
-	unsigned short options = 0;
+	unsigned int options = 0;
 
 	for (;;) {
 		option = m_pGetOpt->GetOpt_Long(argv, "acdtu", longOptions, 0);
@@ -186,8 +189,21 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 		}
 	}
 
+	// If there are options, no additional argument.
+	if (options) {
+		if (argv.size() != (unsigned)GetOpt::optind) {
+			return HandleSyntaxError(Constants::kCLIExcise);
+		}
+		return DoExcise(pAgent, options);
+	}
+
+	// If there are no options, there must be only one production name argument
+	if ((argv.size() - GetOpt::optind) != 1) {
+		return HandleSyntaxError(Constants::kCLIExcise);		
+	}
+
 	// Pass the productions to the DoExcise function
-	return DoExcise(options, GetOpt::optind, argv);
+	return DoExcise(pAgent, options, &(argv[GetOpt::optind]));
 }
 
 // ____        _____          _
@@ -196,18 +212,14 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 //| |_| | (_) | |___ >  < (__| \__ \  __/
 //|____/ \___/|_____/_/\_\___|_|___/\___|
 //
-bool CommandLineInterface::DoExcise(const unsigned short options, int optind, vector<string>& argv) {
-
-	// Must have agent to excise from
-	if (!RequireAgent()) {
-		return false;
-	}
+bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int options, string* pProduction) {
+	if (!RequireAgent(pAgent)) return false;
 
 	// Acquire production manager
-	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
+	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
 
 	// Listen for #s
-	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	// Process the general options
 	if (options & OPTION_EXCISE_ALL) {
@@ -229,20 +241,19 @@ bool CommandLineInterface::DoExcise(const unsigned short options, int optind, ve
 		ExciseInternal(pProductionManager->GetUserProductions());
 	}
 
-	// Excise specific productions
-	gSKI::tIProductionIterator* pProdIter;
-	for (unsigned i = optind; i < argv.size(); ++i) {
-		// Iterate through productions
-		pProdIter = pProductionManager->GetProduction(argv[i].c_str());
-		if (pProdIter->GetNumElements()) {
-			ExciseInternal(pProdIter);
-		} else {
-			HandleError("Production not found: " + argv[i]);
-			m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	// Excise specific production
+	if (pProduction) {
+		// Check for the production
+		gSKI::tIProductionIterator* pProdIter = pProductionManager->GetProduction((*pProduction).c_str());
+		if (!pProdIter->GetNumElements()) {
+			HandleError("Production not found: " + (*pProduction));
+			pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 			return false;
 		}
+
+		ExciseInternal(pProdIter);
 	}
-	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	return true;
 }
 
@@ -272,15 +283,17 @@ void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter)
 //|  __/ (_| | |  \__ \  __/  _  |  __/ | |_) |
 //|_|   \__,_|_|  |___/\___|_| |_|\___|_| .__/
 //                                      |_|
-bool CommandLineInterface::ParseHelp(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	if (argv.size() > 2) {
 		return HandleSyntaxError(Constants::kCLIHelp);
 	}
 
 	if (argv.size() == 2) {
-		return DoHelp(argv[1]);
+		return DoHelp(&(argv[1]));
 	}
-	return DoHelp(string());
+	return DoHelp();
 }
 
 // ____        _   _      _
@@ -289,7 +302,7 @@ bool CommandLineInterface::ParseHelp(std::vector<std::string>& argv) {
 //| |_| | (_) |  _  |  __/ | |_) |
 //|____/ \___/|_| |_|\___|_| .__/
 //                         |_|
-bool CommandLineInterface::DoHelp(const string& command) {
+bool CommandLineInterface::DoHelp(string* pCommand) {
 	string output;
 
 	if (!m_Constants.IsUsageFileAvailable()) {
@@ -297,9 +310,9 @@ bool CommandLineInterface::DoHelp(const string& command) {
 		return false;
 	}
 
-	if (command.size()) {
-		if (!m_Constants.GetUsageFor(command, output)) {
-			HandleError("Help for command '" + command + "' not found.");
+	if (pCommand) {
+		if (!m_Constants.GetUsageFor(*pCommand, output)) {
+			HandleError("Help for command '" + *pCommand + "' not found.");
 			return false;
 		}
 		m_Result += output;
@@ -337,7 +350,15 @@ bool CommandLineInterface::DoHelp(const string& command) {
 	return true;
 }
 
-bool CommandLineInterface::ParseHelpEx(std::vector<std::string>& argv) {
+// ____                     _   _      _       _____
+//|  _ \ __ _ _ __ ___  ___| | | | ___| |_ __ | ____|_  __
+//| |_) / _` | '__/ __|/ _ \ |_| |/ _ \ | '_ \|  _| \ \/ /
+//|  __/ (_| | |  \__ \  __/  _  |  __/ | |_) | |___ >  <
+//|_|   \__,_|_|  |___/\___|_| |_|\___|_| .__/|_____/_/\_\
+//                                      |_|
+bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	if (argv.size() != 2) {
 		return HandleSyntaxError(Constants::kCLIHelpEx);
 	}
@@ -345,6 +366,12 @@ bool CommandLineInterface::ParseHelpEx(std::vector<std::string>& argv) {
 	return DoHelpEx(argv[1]);
 }
 
+// ____        _   _      _       _____
+//|  _ \  ___ | | | | ___| |_ __ | ____|_  __
+//| | | |/ _ \| |_| |/ _ \ | '_ \|  _| \ \/ /
+//| |_| | (_) |  _  |  __/ | |_) | |___ >  <
+//|____/ \___/|_| |_|\___|_| .__/|_____/_/\_\
+//                         |_|
 bool CommandLineInterface::DoHelpEx(const string& command) {
 	string output;
 
@@ -367,12 +394,12 @@ bool CommandLineInterface::DoHelpEx(const string& command) {
 //|  __/ (_| | |  \__ \  __/| || | | | | |_ ___) | (_) | (_| | |
 //|_|   \__,_|_|  |___/\___|___|_| |_|_|\__|____/ \___/ \__,_|_|
 //
-bool CommandLineInterface::ParseInitSoar(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No arguments
 	if (argv.size() != 1) {
 		return HandleSyntaxError(Constants::kCLIInitSoar);
 	}
-	return DoInitSoar();
+	return DoInitSoar(pAgent);
 }
 
 // ____       ___       _ _   ____
@@ -381,15 +408,13 @@ bool CommandLineInterface::ParseInitSoar(std::vector<std::string>& argv) {
 //| |_| | (_) | || | | | | |_ ___) | (_) | (_| | |
 //|____/ \___/___|_| |_|_|\__|____/ \___/ \__,_|_|
 //
-bool CommandLineInterface::DoInitSoar() {
+bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 	// Need agent pointer for function calls
-	if (!RequireAgent()) {
-		return false;
-	}
+	if (!RequireAgent(pAgent)) return false;
 
 	// Simply call reinitialize
-	m_pAgent->Halt();
-	m_pAgent->Reinitialize();
+	pAgent->Halt();
+	pAgent->Reinitialize();
 	m_Result += "Agent reinitialized.";
 	return true;
 }
@@ -400,7 +425,7 @@ bool CommandLineInterface::DoInitSoar() {
 //|  __/ (_| | |  \__ \  __/ |__|  __/ (_| | |  | | | |
 //|_|   \__,_|_|  |___/\___|_____\___|\__,_|_|  |_| |_|
 //
-bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all-levels",		0, 0, 'a'},
 		{"bottom-up",		0, 0, 'b'},
@@ -418,7 +443,7 @@ bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 	GetOpt::opterr = 0;
 
 	int option;
-	unsigned short options = 0;
+	unsigned int options = 0;
 
 	for (;;) {
 		option = m_pGetOpt->GetOpt_Long(argv, "abdeElo", longOptions, 0);
@@ -460,7 +485,7 @@ bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 		return HandleSyntaxError(Constants::kCLILearn);
 	}
 
-	return DoLearn(options);
+	return DoLearn(pAgent, options);
 }
 
 // ____        _
@@ -469,16 +494,14 @@ bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 //| |_| | (_) | |__|  __/ (_| | |  | | | |
 //|____/ \___/|_____\___|\__,_|_|  |_| |_|
 //
-bool CommandLineInterface::DoLearn(const unsigned short options) {
+bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int options) {
 	// Need agent pointer for function calls
-	if (!RequireAgent()) {
-		return false;
-	}
+	if (!RequireAgent(pAgent)) return false;
 
 	// No options means print current settings
 	if (!options) {
 		m_Result += "Learning is ";
-		m_Result += m_pAgent->IsLearningOn() ? "enabled." : "disabled.";
+		m_Result += pAgent->IsLearningOn() ? "enabled." : "disabled.";
 		return true;
 	}
 
@@ -490,11 +513,11 @@ bool CommandLineInterface::DoLearn(const unsigned short options) {
 
 	// Enable or disable, priority to disable
 	if (options & OPTION_LEARN_ENABLE) {
-		m_pAgent->SetLearning(true);
+		pAgent->SetLearning(true);
 	}
 
 	if (options & OPTION_LEARN_DISABLE) {
-		m_pAgent->SetLearning(false);
+		pAgent->SetLearning(false);
 	}
 	return true;
 }
@@ -505,7 +528,7 @@ bool CommandLineInterface::DoLearn(const unsigned short options) {
 //|  __/ (_| | |  \__ \  __/ |__| (_) | (_| |
 //|_|   \__,_|_|  |___/\___|_____\___/ \__, |
 //                                     |___/
-bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"append",	0, 0, 'a'},
 		{"close",	0, 0, 'c'},
@@ -549,7 +572,7 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 			return HandleSyntaxError(Constants::kCLILog, "No arguments when disabling.");
 		}
 
-		return DoLog(append, argv[GetOpt::optind].c_str());
+		return DoLog(pAgent, argv[GetOpt::optind].c_str(), append);
 
 	} else if ((unsigned)GetOpt::optind < argv.size()) {
 		return HandleSyntaxError(Constants::kCLILog);
@@ -560,7 +583,7 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 		return HandleSyntaxError(Constants::kCLILog, "Append requires a filename.");
 	}
 
-	return DoLog(close);
+	return DoLog(pAgent, 0, close);
 }
 
 // ____        _
@@ -569,7 +592,8 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 //| |_| | (_) | |__| (_) | (_| |
 //|____/ \___/|_____\___/ \__, |
 //                        |___/
-bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
+bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const char* pFilename, bool option) {
+	if (!RequireAgent(pAgent)) return false;
 
 	// Presence of a filename means open, absence means close or query
 	if (pFilename) {
@@ -599,25 +623,20 @@ bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
 		}
 
 		// Logging opened, add listener and save filename since we can't get it from ofstream
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 		m_LogFilename = pFilename;
 
 	} else if (option) {		
-		// In absence of filename, option means close
-		if (!m_pLogFile) {
-			// Can't close when we're not logging to begin with
-			HandleError("No log is opened.");
-			return false;
+		// In absence of filename, option true means close
+		if (m_pLogFile) {
+			// Remove the listener and close the file
+			pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
+			delete m_pLogFile;
+			m_pLogFile = 0;
+
+			// Forget the filename
+			m_LogFilename.clear();
 		}
-
-		// Remove the listener and close the file
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
-		delete m_pLogFile;
-		m_pLogFile = 0;
-
-		// Forget the filename
-		m_LogFilename.clear();
-
 	}
 
 	// Query at end of successful command, or by default
@@ -635,7 +654,9 @@ bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
 //|  __/ (_| | |  \__ \  __/ |___ ___) |
 //|_|   \__,_|_|  |___/\___|_____|____/
 //
-bool CommandLineInterface::ParseLS(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseLS(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	// No arguments
 	if (argv.size() != 1) {
 		return HandleSyntaxError(Constants::kCLILS);
@@ -698,7 +719,7 @@ bool CommandLineInterface::DoLS() {
 //|  __/ (_| | |  \__ \  __/ |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
 //|_|   \__,_|_|  |___/\___|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
 //
-bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No more than three arguments
 	if (argv.size() > 3) {
 		return HandleSyntaxError(Constants::kCLIMultiAttributes);
@@ -721,9 +742,9 @@ bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) 
 
 	// If we have two arguments, second arg is an attribute/identifer/whatever
 	if (argv.size() > 1) {
-		return DoMultiAttributes(argv[1], n);
+		return DoMultiAttributes(pAgent, &(argv[1]), n);
 	} 
-	return DoMultiAttributes(string(), n);
+	return DoMultiAttributes(pAgent, 0, n);
 }
 
 // ____        __  __       _ _   _    _   _   _        _ _           _
@@ -732,14 +753,12 @@ bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) 
 //| |_| | (_) | |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
 //|____/ \___/|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
 //
-bool CommandLineInterface::DoMultiAttributes(const string& attribute, int n) {
-	if (!RequireAgent()) {
-		return false;
-	}
+bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, string* pAttribute, int n) {
+	if (!RequireAgent(pAgent)) return false;
 
-	if (!attribute.size() && !n) {
+	if (!pAttribute && !n) {
 		// No args, print current setting
-		gSKI::tIMultiAttributeIterator* pIt = m_pAgent->GetMultiAttributes();
+		gSKI::tIMultiAttributeIterator* pIt = pAgent->GetMultiAttributes();
 		if (!pIt->GetNumElements()) {
 			m_Result += "No multi-attributes declared for this agent.";
 
@@ -774,8 +793,7 @@ bool CommandLineInterface::DoMultiAttributes(const string& attribute, int n) {
 	}
 
 	// Set it
-	m_pAgent->SetMultiAttribute(attribute.c_str(), n);
-
+	pAgent->SetMultiAttribute(pAttribute->c_str(), n);
  	return true;
 }
 
@@ -785,7 +803,9 @@ bool CommandLineInterface::DoMultiAttributes(const string& attribute, int n) {
 //|  __/ (_| | |  \__ \  __/  __/ (_) | |_) | |_| |
 //|_|   \__,_|_|  |___/\___|_|   \___/| .__/|____/
 //                                    |_|
-bool CommandLineInterface::ParsePopD(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePopD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	// No arguments
 	if (argv.size() != 1) {
 		return HandleSyntaxError(Constants::kCLIPopD);
@@ -810,7 +830,7 @@ bool CommandLineInterface::DoPopD() {
 	}
 
 	// Change to the directory
-	if (!DoCD(m_DirectoryStack.top())) {
+	if (!DoCD(&(m_DirectoryStack.top()))) {
 		return false;
 	}
 
@@ -831,7 +851,7 @@ bool CommandLineInterface::DoPopD() {
 //|  __/ (_| | |  \__ \  __/  __/| |  | | | | | |_
 //|_|   \__,_|_|  |___/\___|_|   |_|  |_|_| |_|\__|
 //
-bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all",				0, 0, 'a'},
 		{"chunks",			0, 0, 'c'},
@@ -855,7 +875,7 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 	int option;
 	// TODO: in 8.5.2 this is current_agent(default_wme_depth)
 	int depth = 1;
-	unsigned short options = 0;
+	unsigned int options = 0;
 
 	for (;;) {
 		option = m_pGetOpt->GetOpt_Long(argv, ":acd:DfFijnosSu", longOptions, 0);
@@ -923,9 +943,9 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 	if ((argv.size() - GetOpt::optind) > 1) {
 		return HandleSyntaxError(Constants::kCLIPrint);
 	} else if ((argv.size() - GetOpt::optind) == 1) {
-		return DoPrint(options, depth, argv[GetOpt::optind]);
+		return DoPrint(pAgent, options, depth, &(argv[GetOpt::optind]));
 	}
-	return DoPrint(options, depth, string());
+	return DoPrint(pAgent, options, depth);
 }
 
 // ____        ____       _       _
@@ -934,20 +954,18 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 //| |_| | (_) |  __/| |  | | | | | |_
 //|____/ \___/|_|   |_|  |_|_| |_|\__|
 //
-bool CommandLineInterface::DoPrint(const unsigned short options, int depth, const string& arg) {
+bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int options, int depth, string* pArg) {
 	// Need agent pointer for function calls
-	if (!RequireAgent()) {
-		return false;
-	}
+	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	// Check for stack print
 	if (options & OPTION_PRINT_STACK) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-		pKernelHack->PrintStackTrace(m_pAgent, (options & OPTION_PRINT_STATES) ? true : false, (options & OPTION_PRINT_OPERATORS) ? true : false);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pKernelHack->PrintStackTrace(pAgent, (options & OPTION_PRINT_STATES) ? true : false, (options & OPTION_PRINT_OPERATORS) ? true : false);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 
@@ -960,43 +978,43 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options & OPTION_PRINT_ALL) {
 		// TODO: Find out what is arg is for
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_CHUNKS) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_DEFAULTS) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_JUSTIFICATIONS) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_USER) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 
 	// Default to symbol print
-	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-	pKernelHack->PrintSymbol(m_pAgent, const_cast<char*>(arg.c_str()), name, filename, internal, full, depth);
-	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	pKernelHack->PrintSymbol(pAgent, const_cast<char*>(pArg->c_str()), name, filename, internal, full, depth);
+	pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	return true;
 }
 
@@ -1006,7 +1024,9 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 //|  __/ (_| | |  \__ \  __/  __/| |_| \__ \ | | | |_| |
 //|_|   \__,_|_|  |___/\___|_|    \__,_|___/_| |_|____/
 //
-bool CommandLineInterface::ParsePushD(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePushD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	// Only takes one argument, the directory to change into
 	if (argv.size() != 2) {
 		return HandleSyntaxError(Constants::kCLIPushD);
@@ -1032,7 +1052,7 @@ bool CommandLineInterface::DoPushD(string& directory) {
 	}
 
 	// Change to the new directory.
-	if (!DoCD(directory)) {
+	if (!DoCD(&directory)) {
 		// Critical error
 		m_CriticalError = true;
 		return false;
@@ -1055,7 +1075,9 @@ bool CommandLineInterface::DoPushD(string& directory) {
 //|  __/ (_| | |  \__ \  __/  __/ \ V  V / | |_| |
 //|_|   \__,_|_|  |___/\___|_|     \_/\_/  |____/
 //
-bool CommandLineInterface::ParsePWD(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePWD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	// No arguments to print working directory
 	if (argv.size() != 1) {
 		return HandleSyntaxError(Constants::kCLIPWD);
@@ -1086,7 +1108,9 @@ bool CommandLineInterface::DoPWD() {
 //|  __/ (_| | |  \__ \  __/ |_| | |_| | | |_
 //|_|   \__,_|_|  |___/\___|\__\_\\__,_|_|\__|
 //
-bool CommandLineInterface::ParseQuit(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+	unused(pAgent);
+
 	// Quit needs no help
 	argv.clear();
 	return DoQuit();
@@ -1113,7 +1137,7 @@ bool CommandLineInterface::DoQuit() {
 //|  __/ (_| | |  \__ \  __/  _ <| |_| | | | |
 //|_|   \__,_|_|  |___/\___|_| \_\\__,_|_| |_|
 //
-bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"decision",	0, 0, 'd'},
 		{"elaboration",	0, 0, 'e'},
@@ -1130,7 +1154,7 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 	GetOpt::opterr = 0;
 
 	int option;
-	unsigned short options = 0;
+	unsigned int options = 0;
 
 	for (;;) {
 		option = m_pGetOpt->GetOpt_Long(argv, "defoOpsS", longOptions, 0);
@@ -1188,7 +1212,7 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 		return HandleSyntaxError(Constants::kCLIRun);
 	}
 
-	return DoRun(options, count);
+	return DoRun(pAgent, options, count);
 }
 
 // ____        ____
@@ -1197,7 +1221,8 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 //| |_| | (_) |  _ <| |_| | | | |
 //|____/ \___/|_| \_\\__,_|_| |_|
 //
-bool CommandLineInterface::DoRun(const unsigned short options, int count) {
+bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int options, int count) {
+	if (!RequireAgent(pAgent)) return false;
 
 	// TODO: Rather tricky options
 	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_OUTPUT) || (options & OPTION_RUN_STATE)) {
@@ -1224,19 +1249,15 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
 	egSKIRunResult runResult;
 	if (options & OPTION_RUN_SELF) {
-		if (!RequireAgent()) {
-			return false;
-		}
-
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-		runResult = m_pAgent->RunInClientThread(runType, count, m_pError);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		runResult = pAgent->RunInClientThread(runType, count, m_pError);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	} else {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         m_pKernel->GetAgentManager()->ClearAllInterrupts();
         m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
 		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	}
 
 	// Check for error
@@ -1276,7 +1297,7 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 //|  __/ (_| | |  \__ \  __/___) | (_) | |_| | | | (_|  __/
 //|_|   \__,_|_|  |___/\___|____/ \___/ \__,_|_|  \___\___|
 //
-bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	if (argv.size() != 2) {
 		// Source requires a filename
 		return HandleSyntaxError(Constants::kCLISource);
@@ -1286,7 +1307,7 @@ bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
 		return HandleSyntaxError(Constants::kCLISource, "Source only one file at a time.");
 	}
 
-	return DoSource(argv[1]);
+	return DoSource(pAgent, argv[1]);
 }
 
 // ____       ____
@@ -1295,10 +1316,8 @@ bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
 //| |_| | (_) |__) | (_) | |_| | | | (_|  __/
 //|____/ \___/____/ \___/ \__,_|_|  \___\___|
 //
-bool CommandLineInterface::DoSource(const string& filename) {
-	if (!RequireAgent()) {
-		return false;
-	}
+bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, const string& filename) {
+	if (!RequireAgent(pAgent)) return false;
 
 	// Open the file
 	ifstream soarFile(filename.c_str());
@@ -1427,7 +1446,7 @@ bool CommandLineInterface::DoSource(const string& filename) {
 		}
 
 		// Fire off the command
-		if (!DoCommandInternal(command)) {
+		if (!DoCommandInternal(pAgent, command)) {
 			// Command failed, error in result
 			HandleSourceError(lineCountCache, filename);
 			return false;
@@ -1505,7 +1524,7 @@ void CommandLineInterface::HandleSourceError(int errorLine, const string& filena
 //|  __/ (_| | |  \__ \  __/___) |  __/
 //|_|   \__,_|_|  |___/\___|____/|_|
 //
-bool CommandLineInterface::ParseSP(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSP(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// One argument (in brackets)
 	if (argv.size() != 2) {
 		return HandleSyntaxError(Constants::kCLISP);
@@ -1518,7 +1537,7 @@ bool CommandLineInterface::ParseSP(std::vector<std::string>& argv) {
 	}
 	production = production.substr(1, production.length() - 2);
 
-	return DoSP(production);
+	return DoSP(pAgent, production);
 }
 
 // ____       ____  ____
@@ -1527,19 +1546,17 @@ bool CommandLineInterface::ParseSP(std::vector<std::string>& argv) {
 //| |_| | (_) |__) |  __/
 //|____/ \___/____/|_|
 //
-bool CommandLineInterface::DoSP(const string& production) {
+bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const string& production) {
 	// Must have agent to give production to
-	if (!RequireAgent()) {
-		return false;
-	}
+	if (!RequireAgent(pAgent)) return false;
 
 	// Acquire production manager
-	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
+	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
 
 	// Load the production
-	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), m_pError);
-	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	if(m_pError->Id != gSKI::gSKIERR_NONE) {
 		m_Result += "Unable to add the production: " + production;
@@ -1560,13 +1577,13 @@ bool CommandLineInterface::DoSP(const string& production) {
 //|  __/ (_| | |  \__ \  __/___) | || (_| | |_\__ \
 //|_|   \__,_|_|  |___/\___|____/ \__\__,_|\__|___/
 //
-bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No arguments
 	if (argv.size() != 1) {
 		return HandleSyntaxError(Constants::kCLIStats);
 	}
 
-	return DoStats();
+	return DoStats(pAgent);
 }
 
 // ____       ____  _        _
@@ -1575,13 +1592,11 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 //| |_| | (_) |__) | || (_| | |_\__ \
 //|____/ \___/____/ \__\__,_|\__|___/
 //
-bool CommandLineInterface::DoStats() {
+bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent) {
 	// Need agent pointer for function calls
-	if (!RequireAgent()) {
-		return false;
-	}
+	if (!RequireAgent(pAgent)) return false;
 
-	gSKI::IAgentPerformanceMonitor* pPerfMon = m_pAgent->GetPerformanceMonitor();
+	gSKI::IAgentPerformanceMonitor* pPerfMon = pAgent->GetPerformanceMonitor();
 
 	// This next block needs to be redone pending a rewrite on the gSKI side.
 	int argc = 1;
@@ -1598,9 +1613,9 @@ bool CommandLineInterface::DoStats() {
 
 	const char* pResult = 0;
 
-	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	bool ret = pPerfMon->GetStatsString(argc, argv, &pResult);
-	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	if(strlen(pResult) > 0) {
 		m_Result += pResult;
@@ -1616,7 +1631,7 @@ bool CommandLineInterface::DoStats() {
 //|  __/ (_| | |  \__ \  __/___) | || (_) | |_) |__) | (_) | (_| | |
 //|_|   \__,_|_|  |___/\___|____/ \__\___/| .__/____/ \___/ \__,_|_|
 //                                        |_|
-bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"self",		0, 0, 's'},
 		{0, 0, 0, 0}
@@ -1652,7 +1667,7 @@ bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 			reasonForStopping += argv[GetOpt::optind++] + ' ';
 		}
 	}
-	return DoStopSoar(self, reasonForStopping);
+	return DoStopSoar(pAgent, self, reasonForStopping);
 }
 
 // ____       ____  _             ____
@@ -1661,7 +1676,8 @@ bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 //| |_| | (_) |__) | || (_) | |_) |__) | (_) | (_| | |
 //|____/ \___/____/ \__\___/| .__/____/ \___/ \__,_|_|
 //                          |_|
-bool CommandLineInterface::DoStopSoar(bool self, const string& reasonForStopping) {
+bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const string& reasonForStopping) {
+	unused(pAgent);
 	m_Result += "TODO: do stop-soar ";
 	m_Result += self;
 	m_Result += reasonForStopping;
@@ -1674,7 +1690,7 @@ bool CommandLineInterface::DoStopSoar(bool self, const string& reasonForStopping
 //|  __/ (_| | |  \__ \  __/| | | | | | | | |  __/
 //|_|   \__,_|_|  |___/\___||_| |_|_| |_| |_|\___|
 //
-bool CommandLineInterface::ParseTime(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// There must at least be a command
 	if (argv.size() < 2) {
 		return HandleSyntaxError(Constants::kCLITime);
@@ -1683,7 +1699,7 @@ bool CommandLineInterface::ParseTime(std::vector<std::string>& argv) {
 	vector<string>::iterator iter = argv.begin();
 	argv.erase(iter);
 
-	return DoTime(argv);
+	return DoTime(pAgent, argv);
 }
 
 // ____      _____ _
@@ -1692,14 +1708,14 @@ bool CommandLineInterface::ParseTime(std::vector<std::string>& argv) {
 //| |_| | (_) | | | | | | | | |  __/
 //|____/ \___/|_| |_|_| |_| |_|\___|
 //
-bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
+bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
 #ifdef WIN32
 	// Look at clock
 	DWORD start = GetTickCount();
 
 	// Execute command
-	bool ret = DoCommandInternal(argv);
+	bool ret = DoCommandInternal(pAgent, argv);
 
 	// Look at clock again, subtracting first value
 	DWORD elapsed = GetTickCount() - start;
@@ -1728,7 +1744,7 @@ bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 //|  __/ (_| | |  \__ \  __/\ V  V / (_| | || (__| | | |
 //|_|   \__,_|_|  |___/\___| \_/\_/ \__,_|\__\___|_| |_|
 //
-bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"aliases",					1, 0, 'a'},
 		{"backtracing",				1, 0, 'b'},
@@ -1870,7 +1886,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 			WatchArg(values, OPTION_WATCH_PREFERENCES, 0);			// set true in watch 5
 
 			// TODO: This is off by default and nothing seems to turn it on
-			//pKernelHack->SetSysparam(m_pAgent, TRACE_OPERAND2_REMOVALS_SYSPARAM, false);
+			//pKernelHack->SetSysparam(pAgent, TRACE_OPERAND2_REMOVALS_SYSPARAM, false);
 
 			// Switch out the level
 			switch (watchLevel) {
@@ -1904,7 +1920,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		return HandleSyntaxError(Constants::kCLIWatch);
 	}
 
-	return DoWatch(options, values);
+	return DoWatch(pAgent, options, values);
 }
 
 //__        __    _       _        _
@@ -1976,11 +1992,9 @@ bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int opt
 //| |_| | (_) \ V  V / (_| | || (__| | | |
 //|____/ \___/ \_/\_/ \__,_|\__\___|_| |_|
 //
-bool CommandLineInterface::DoWatch(const unsigned int options, unsigned int values) {
+bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const unsigned int options, unsigned int values) {
 	// Need agent pointer for function calls
-	if (!RequireAgent()) {
-		return false;
-	}
+	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
@@ -1993,76 +2007,76 @@ bool CommandLineInterface::DoWatch(const unsigned int options, unsigned int valu
 	// Next, do we have a watch level? (none flag will set this to zero)
 	// No watch level and no none flags, that means we have to do the rest
 	if (options & OPTION_WATCH_BACKTRACING) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_BACKTRACING_SYSPARAM, values & OPTION_WATCH_BACKTRACING);
+		pKernelHack->SetSysparam(pAgent, TRACE_BACKTRACING_SYSPARAM, values & OPTION_WATCH_BACKTRACING);
 	}
 
 	if (options & OPTION_WATCH_CHUNKS) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, values & OPTION_WATCH_CHUNKS);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, values & OPTION_WATCH_CHUNKS);
 	}
 
 	if (options & OPTION_WATCH_DECISIONS) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, values & OPTION_WATCH_DECISIONS);
+		pKernelHack->SetSysparam(pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, values & OPTION_WATCH_DECISIONS);
 	}
 
 	if (options & OPTION_WATCH_DEFAULT_PRODUCTIONS) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, values & OPTION_WATCH_DEFAULT_PRODUCTIONS);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, values & OPTION_WATCH_DEFAULT_PRODUCTIONS);
 	}
 
 	if (options & OPTION_WATCH_INDIFFERENT_SELECTION) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_INDIFFERENT_SYSPARAM, values & OPTION_WATCH_INDIFFERENT_SELECTION);
+		pKernelHack->SetSysparam(pAgent, TRACE_INDIFFERENT_SYSPARAM, values & OPTION_WATCH_INDIFFERENT_SELECTION);
 	}
 
 	if (options & OPTION_WATCH_JUSTIFICATIONS) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, values & OPTION_WATCH_JUSTIFICATIONS);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, values & OPTION_WATCH_JUSTIFICATIONS);
 	}
 
 	if (options & OPTION_WATCH_LOADING) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_LOADING_SYSPARAM, values & OPTION_WATCH_LOADING);
+		pKernelHack->SetSysparam(pAgent, TRACE_LOADING_SYSPARAM, values & OPTION_WATCH_LOADING);
 	}
 
 	if (options & OPTION_WATCH_PHASES) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_PHASES_SYSPARAM, values & OPTION_WATCH_PHASES);
+		pKernelHack->SetSysparam(pAgent, TRACE_PHASES_SYSPARAM, values & OPTION_WATCH_PHASES);
 	}
 
 	if (options & OPTION_WATCH_PRODUCTIONS) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
 	}
 
 	if (options & OPTION_WATCH_PREFERENCES) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, values & OPTION_WATCH_PREFERENCES);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, values & OPTION_WATCH_PREFERENCES);
 	}
 
 	if (options & OPTION_WATCH_USER_PRODUCTIONS) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, values & OPTION_WATCH_USER_PRODUCTIONS);
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, values & OPTION_WATCH_USER_PRODUCTIONS);
 	}
 
 	if (options & OPTION_WATCH_WMES) {
-		pKernelHack->SetSysparam(m_pAgent, TRACE_WM_CHANGES_SYSPARAM, values & OPTION_WATCH_WMES);
+		pKernelHack->SetSysparam(pAgent, TRACE_WM_CHANGES_SYSPARAM, values & OPTION_WATCH_WMES);
 	}
 
 	if (options & OPTION_WATCH_LEARNING) {
 		switch (values & OPTION_WATCH_LEARNING) {
 			case 0:
 			default:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNK_NAMES_SYSPARAM, false);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNKS_SYSPARAM, false);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, false);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
+				pKernelHack->SetSysparam(pAgent, TRACE_CHUNK_NAMES_SYSPARAM, false);
+				pKernelHack->SetSysparam(pAgent, TRACE_CHUNKS_SYSPARAM, false);
+				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, false);
+				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
 				break;
 			case 1:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNKS_SYSPARAM, false);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
+				pKernelHack->SetSysparam(pAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(pAgent, TRACE_CHUNKS_SYSPARAM, false);
+				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
 				break;
 			case 2:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNKS_SYSPARAM, true);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
-				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, true);
+				pKernelHack->SetSysparam(pAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(pAgent, TRACE_CHUNKS_SYSPARAM, true);
+				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, true);
 				break;
 		}
 	}
@@ -2071,13 +2085,13 @@ bool CommandLineInterface::DoWatch(const unsigned int options, unsigned int valu
 		switch ((values & OPTION_WATCH_WME_DETAIL) >> 2) {
 			case 0:
 			default:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
+				pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
 				break;
 			case 1:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, TIMETAG_WME_TRACE);
+				pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, TIMETAG_WME_TRACE);
 				break;
 			case 2:
-				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, FULL_WME_TRACE);
+				pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, FULL_WME_TRACE);
 				break;
 		}
 	}

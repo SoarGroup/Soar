@@ -38,6 +38,10 @@
 #define EXPORT
 #endif	// WIN32
 
+#ifndef unused
+#define unused(x) (void)(x)
+#endif
+
 // Forward Declarations
 namespace gSKI {
 	class IAgent;
@@ -57,7 +61,7 @@ class CommandLineInterface;
 class GetOpt;
 
 // Define the CommandFunction which we'll call to process commands
-typedef bool (CommandLineInterface::*CommandFunction)(std::vector<std::string>& argv);
+typedef bool (CommandLineInterface::*CommandFunction)(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 // Used to store a map from command name to function handler for that command
 typedef std::map<std::string, CommandFunction>	CommandMap;
@@ -75,22 +79,30 @@ public:
 	EXPORT ~CommandLineInterface();
 
 	/*************************************************************
-	* @brief 
+	* @brief Set the kernel this command line module is interfacing with.
 	*************************************************************/
 	EXPORT void SetKernel(gSKI::IKernel* pKernel);
 
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
+	*		 This version of DoCommand is used when the command line
+	*		 interface is created by sml::KernelSML
 	*************************************************************/
 	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, bool rawOutput, gSKI::Error* pError);
 
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
+	*		 This version of DoCommand is used when the command line
+	*		 interface is created by the application that is using it
+	*		 directly (no SML layer).
 	*************************************************************/
 	EXPORT bool DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError);
 
+	/*************************************************************
+	* @brief This will return true after the quit command has been processed.
+	*************************************************************/
 	bool IsQuitCalled() { return m_QuitCalled; }
 
 	// Template for new commands:
@@ -104,109 +116,113 @@ public:
 	//bool Do();
 
 	/*************************************************************
-	* @brief cd command, see command line spec document for details
+	* @brief cd command, see usage.txt for details.
 	*************************************************************/
-	bool ParseCD(std::vector<std::string>& argv);
+	bool ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief Change the current working directory.  If an empty string is passed
+	* @brief Change the current working directory.  If a null pointer passed,
 	*		 the current working directory is changed to the home directory.
 	*		 The home directory is defined as the initial working directory.
 	*************************************************************/
-	bool DoCD(std::string& directory);
+	bool DoCD(std::string* pDirectory = 0);
 
 	/*************************************************************
-	* @brief echo command, see command line spec document for details
+	* @brief echo command, see usage.txt for details.
 	*************************************************************/
-	bool ParseEcho(std::vector<std::string>& argv);
+	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief Simply concatenate all arguments, adding them to the result.
+	* @brief Simply concatenates all arguments, adding them to the result.
 	*************************************************************/
 	bool DoEcho(std::vector<std::string>& argv);
 
 	/*************************************************************
-	* @brief excise command, see command line spec document for details
+	* @brief excise command, see usage.txt for details.
 	*************************************************************/
-	bool ParseExcise(std::vector<std::string>& argv);
+	bool ParseExcise(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief See CommandData.h for the list of flags for the options
-	*		 parameter.  If there are specific productions to excise,
-	*		 they are passed as an array of character strings with their
-	*		 number indicated by production count.
+	*		 parameter.  If there is a specific production to excise,
+	*		 it is passed, otherwise, pProduction is null.
 	*************************************************************/
-	bool DoExcise(const unsigned short options, int optind, std::vector<std::string>& argv);
+	bool DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief help command, see usage.txt for details.
 	*************************************************************/
-	bool ParseHelp(std::vector<std::string>& argv);
+	bool ParseHelp(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Generate a help string for the passed command if it exists.
+	*		 Passing null generates a general help string that lists the
+	*		 available commands along with some other help.
 	*************************************************************/
-	bool DoHelp(const std::string& command);
+	bool DoHelp(std::string* pCommand = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief helpex command, see usage.txt for details.
 	*************************************************************/
-	bool ParseHelpEx(std::vector<std::string>& argv);
+	bool ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Generate the extended help string for the passed command
+	*		 if it exists.
 	*************************************************************/
 	bool DoHelpEx(const std::string& command);
 
 	/*************************************************************
-	* @brief init-soar command, see command line spec document for details
+	* @brief init-soar command, see usage.txt for details.
 	*************************************************************/
-	bool ParseInitSoar(std::vector<std::string>& argv);
+	bool ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief Reinitializes the current agent.  No arguments necessary.
-	*		 The agent pointer member must be valid.
 	*************************************************************/
-	bool DoInitSoar();
+	bool DoInitSoar(gSKI::IAgent* pAgent);
 
 	/*************************************************************
-	* @brief learn command, see command line spec document for details
+	* @brief learn command, see usage.txt for details.
 	*************************************************************/
-	bool ParseLearn(std::vector<std::string>& argv);
+	bool ParseLearn(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief See CommandData.h for the list of flags used in the options
 	*		 parameter.  Passing no options simply prints current learn
 	*		 settings.
 	*************************************************************/
-	bool DoLearn(const unsigned short options = 0);
+	bool DoLearn(gSKI::IAgent* pAgent, const unsigned int options = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief log command, see usage.txt for details.
 	*************************************************************/
-	bool ParseLog(std::vector<std::string>& argv);
+	bool ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Presence of filename opens a file for logging.  If option is
+	*		 true, then the logging is appended to the end of the file.
+	*		 If the filename is null and the option is true, the log file is
+	*		 closed.  If the filename is null and the option false, 
+	*		 the current logging status is queried.
 	*************************************************************/
-	bool DoLog(bool option, const char* filename = 0);
+	bool DoLog(gSKI::IAgent* pAgent, const char* pFilename = 0, bool option = false);
 
 	/*************************************************************
-	* @brief ls/dir command, see command line spec document for details
+	* @brief ls/dir command, see usage.txt for details.
 	*************************************************************/
-	bool ParseLS(std::vector<std::string>& argv);
+	bool ParseLS(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief Lists current working directory, no arguments necessary.
 	*************************************************************/
 	bool DoLS();
 
 	/*************************************************************
-	* @brief multi-attributes command, see command line spec document
-	*		 for details.
+	* @brief multi-attributes command, see usage.txt for details.
 	*************************************************************/
-	bool ParseMultiAttributes(std::vector<std::string>& argv);
+	bool ParseMultiAttributes(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief Two optional arguments, attribute and n.  If no arguments,
 	*		 prints current settings.
 	*************************************************************/
-	bool DoMultiAttributes(const std::string& attribute, int n = 0);
+	bool DoMultiAttributes(gSKI::IAgent* pAgent, std::string* pAttribute = 0, int n = 0);
 
 	/*************************************************************
-	* @brief popd command, see command line spec document for details
+	* @brief popd command, see usage.txt for details.
 	*************************************************************/
-	bool ParsePopD(std::vector<std::string>& argv);
+	bool ParsePopD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief No arguments, pops a directory off the directory stack
 	*		 and changes to it.
@@ -214,103 +230,119 @@ public:
 	bool DoPopD();
 
 	/*************************************************************
-	* @brief print command, see command line spec document for details
+	* @brief print command, see usage.txt for details.
 	*************************************************************/
-	bool ParsePrint(std::vector<std::string>& argv);
+	bool ParsePrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Issues a print command to the kernel depending on the options
+	*		 (see commanddata.h), depth argument, and optional string
+	*		 argument.
 	*************************************************************/
-	bool DoPrint(const unsigned short options, int depth, const std::string& arg);
+	bool DoPrint(gSKI::IAgent* pAgent, const unsigned int options, int depth, std::string* pArg = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief pushd command, see usage.txt for details.
 	*************************************************************/
-	bool ParsePushD(std::vector<std::string>& argv);
+	bool ParsePushD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Pushes a directory on to the directory stack.  Operates
+	*		 like the unix command of the same name.  Used with popd.
 	*************************************************************/
 	bool DoPushD(std::string& directory);
 
 	/*************************************************************
-	* @brief pwd command, see command line spec document for details
+	* @brief pwd command, see usage.txt for details.
 	*************************************************************/
-	bool ParsePWD(std::vector<std::string>& argv);
+	bool ParsePWD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Prints the current working directory.
 	*************************************************************/
 	bool DoPWD();
 
 	/*************************************************************
-	* @brief exit/quit command, see command line spec document for details
+	* @brief exit/quit command, see usage.txt for details.
 	*************************************************************/
-	bool ParseQuit(std::vector<std::string>& argv);
+	bool ParseQuit(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Quits the program, really only sets the quit called
+	*		 variable to true.
 	*************************************************************/
 	bool DoQuit();
 
 	/*************************************************************
-	* @brief run command, see command line spec document for details
+	* @brief run command, see usage.txt for details.
 	*************************************************************/
-	bool ParseRun(std::vector<std::string>& argv);
+	bool ParseRun(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Starts execution of the Soar kernel.  The options decide
+	*		 the length and size of steps, the count determines the
+	*		 number of steps to execute.  Returns when the count is achieved
+	*		 or until execution is interrupted by an interrupt or an
+	*		 error.
 	*************************************************************/
-	bool DoRun(const unsigned short options, int count);
+	bool DoRun(gSKI::IAgent* pAgent, const unsigned int options, int count);
 
 	/*************************************************************
-	* @brief source command, see command line spec document for details
+	* @brief source command, see usage.txt for details.
 	*************************************************************/
-	bool ParseSource(std::vector<std::string>& argv);
+	bool ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Sources a file.  Basically executes the lines of the file
+	*		 through DoCommandInternal() ignoring comments (lines starting
+	*		 with '#').
 	*************************************************************/
-	bool DoSource(const std::string& filename);
+	bool DoSource(gSKI::IAgent* pAgent, const std::string& filename);
 
 	/*************************************************************
-	* @brief sp command, see command line spec document for details
+	* @brief sp command, see usage.txt for details.
 	*************************************************************/
-	bool ParseSP(std::vector<std::string>& argv);
+	bool ParseSP(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Soar production command, takes a production and loads it
+	*		 into production memory.  The production argument should be
+	*		 in the form accepted by gSKI, that is with the sp and 
+	*		 braces removed.
 	*************************************************************/
-	bool DoSP(const std::string& production);
+	bool DoSP(gSKI::IAgent* pAgent, const std::string& production);
 
 	/*************************************************************
-	* @brief 
+	* @brief stats command, see usage.txt for details.
 	*************************************************************/
-	bool ParseStats(std::vector<std::string>& argv);
+	bool ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Assembles a string representing the Soar kernel stats
+	*		 generated by the kernel.
 	*************************************************************/
-	bool DoStats();
+	bool DoStats(gSKI::IAgent* pAgent);
 
 	/*************************************************************
-	* @brief stop-soar command, see command line spec document for details
+	* @brief stop-soar command, see usage.txt for details.
 	*************************************************************/
-	bool ParseStopSoar(std::vector<std::string>& argv);
+	bool ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoStopSoar(bool self, const std::string& reasonForStopping);
+	bool DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string& reasonForStopping);
 
 	/*************************************************************
-	* @brief 
+	* @brief time command, see usage.txt for details.
 	*************************************************************/
-	bool ParseTime(std::vector<std::string>& argv);
+	bool ParseTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Executes the arguments as a command and times how long it
+	*		 takes for the DoCommandInternal function to return.
 	*************************************************************/
-	bool DoTime(std::vector<std::string>& argv);
+	bool DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
-	* @brief watch command, see command line spec document for details
+	* @brief watch command, see usage.txt for details.
 	*************************************************************/
-	bool ParseWatch(std::vector<std::string>& argv);
+	bool ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief 
+	* @brief Set watch settings.  The options flag contains the changed
+	*		 flags and the values flag contains their new values.
 	*************************************************************/
-	bool DoWatch(const unsigned int options, unsigned int values);
+	bool DoWatch(gSKI::IAgent* pAgent, const unsigned int options, unsigned int values);
 
 protected:
 
@@ -354,7 +386,6 @@ protected:
 	};
 
 	friend class PrintHandler;			// Allows calling of AppendToResult and log writing
-	friend class sml::KernelSML;		// Allows calling of SetKernel
 
 	/*************************************************************
 	* @brief Currently used as an output hack, the print handler calls 
@@ -368,8 +399,8 @@ protected:
 	*		 to call to process the command.  DoCommand mainly does
 	*		 SML stuff.
 	*************************************************************/
-	bool DoCommandInternal(const std::string& commandLine);
-	bool DoCommandInternal(std::vector<std::string>& argv);
+	bool DoCommandInternal(gSKI::IAgent* pAgent, const std::string& commandLine);
+	bool DoCommandInternal(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief A utility function, splits the command line into argument
@@ -413,7 +444,7 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool RequireAgent();
+	bool RequireAgent(gSKI::IAgent* pAgent);
 
 	/*************************************************************
 	* @brief 
@@ -440,7 +471,6 @@ protected:
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
-	gSKI::IAgent*		m_pAgent;				// Pointer to the gSKI agent the command is valid for
 	std::string			m_Result;				// String output from the command
 	std::string			m_ErrorMessage;				// String output from the command
 	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command

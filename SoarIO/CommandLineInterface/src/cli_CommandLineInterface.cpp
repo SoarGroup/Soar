@@ -74,7 +74,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	// Initialize other members
 	m_QuitCalled = false;
 	m_pKernel = 0;
-	m_pAgent = 0;
 	m_SourceError = false;
 	m_SourceDepth = 0;
 	m_SourceDirDepth = 0;
@@ -92,9 +91,6 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 		delete m_pGetOpt;
 	}
 	if (m_pLogFile) {
-		if (m_pAgent) {
-			m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
-		}
 		delete m_pLogFile;
 	}
 }
@@ -145,7 +141,6 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	m_CriticalError = false;
 
 	// Save the pointers
-	m_pAgent = pAgent;
 	m_pError = pError;
 	m_pConnection = pConnection;
 	m_pResponse = pResponse;
@@ -154,7 +149,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	m_RawOutput = rawOutput;
 
 	// Process the command, ignoring its result (irrelevant at this level)
-	bool ret = DoCommandInternal(pCommandLine);
+	bool ret = DoCommandInternal(pAgent, pCommandLine);
 
 	// Reset source error flag
 	m_SourceError = false;
@@ -187,11 +182,10 @@ EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pC
 	m_CriticalError = false;
 
 	// Save the pointers
-	m_pAgent = pAgent;
 	m_pError = pError;
 
 	// Process the command, ignoring its result (irrelevant at this level)
-	bool ret = DoCommandInternal(pCommandLine);
+	bool ret = DoCommandInternal(pAgent, pCommandLine);
 
 	// Reset source error flag
 	m_SourceError = false;
@@ -207,7 +201,7 @@ EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pC
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| || || | | | ||  __/ |  | | | | (_| | |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
 //
-bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
+bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::string& commandLine) {
 
 	vector<string> argv;
 
@@ -216,7 +210,7 @@ bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
 		return false;	// Parsing failed
 	}
 
-	return DoCommandInternal(argv);
+	return DoCommandInternal(pAgent, argv);
 }
 
 // ____         ____                                          _ ___       _                        _
@@ -225,7 +219,7 @@ bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| || || | | | ||  __/ |  | | | | (_| | |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
 //
-bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
+bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string>& argv) {
 	if (!argv.size()) {
 		// Nothing on command line!
 		return true;
@@ -269,7 +263,7 @@ bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
 	}
 	
 	// Make the call
-	return (this->*pFunction)(argv);
+	return (this->*pFunction)(pAgent, argv);
 }
 
 // _____     _              _
@@ -482,8 +476,8 @@ bool CommandLineInterface::HandleSyntaxError(const char* command, const char* de
 //|  _ <  __/ (_| | |_| | | | |  __// ___ \ (_| |  __/ | | | |_
 //|_| \_\___|\__, |\__,_|_|_|  \___/_/   \_\__, |\___|_| |_|\__|
 //              |_|                        |___/
-bool CommandLineInterface::RequireAgent() {
-	if (!m_pAgent) {
+bool CommandLineInterface::RequireAgent(gSKI::IAgent* pAgent) {
+	if (!pAgent) {
 		HandleError("An agent pointer is required for this command.");
 		// Critical error
 		m_CriticalError = true;
