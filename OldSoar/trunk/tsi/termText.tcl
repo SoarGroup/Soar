@@ -68,22 +68,22 @@ global tk_version
 # behave in my environment with the MWM window manager).
 
 bind $w <1> {
-    set tkPriv(selectMode) char
-    set tkPriv(mouseMoved) 0
-    set tkPriv(x) %x
-    set tkPriv(y) %y
+    set ::tk::Priv(selectMode) char
+    set ::tk::Priv(mouseMoved) 0
+    set ::tk::Priv(x) %x
+    set ::tk::Priv(y) %y
     %W tag remove sel 1.0 end
     focus %W
     break
 }
 bind $w <B1-Motion> {
-    if !$tkPriv(mouseMoved) {
-       %W mark set anchor @$tkPriv(x),$tkPriv(y)
+    if !$::tk::Priv(mouseMoved) {
+       %W mark set anchor @$::tk::Priv(x),$::tk::Priv(y)
     }
-    if {(%x != $tkPriv(x)) || (%y != $tkPriv(y))} {
-        set tkPriv(mouseMoved) 1
-        set tkPriv(x) %x
-        set tkPriv(y) %y
+    if {(%x != $::tk::Priv(x)) || (%y != $::tk::Priv(y))} {
+        set ::tk::Priv(mouseMoved) 1
+        set ::tk::Priv(x) %x
+        set ::tk::Priv(y) %y
         termTextSelectTo %W %x %y
     }
     break
@@ -102,16 +102,16 @@ bind $w <B1-Motion> {
 # The following bindings depend on this behavior to implement the
 # xterm-like actions of button one (similarly with button 3).
 bind $w <Double-1> {
-    %W mark set anchor @$tkPriv(x),$tkPriv(y)
-    set tkPriv(mouseMoved) 1
-    set tkPriv(selectMode) word
+    %W mark set anchor @$::tk::Priv(x),$::tk::Priv(y)
+    set ::tk::Priv(mouseMoved) 1
+    set ::tk::Priv(selectMode) word
     termTextSelectTo %W %x %y
     break
 }
 bind $w <Triple-1> {
-    %W mark set anchor @$tkPriv(x),$tkPriv(y)
-    set tkPriv(mouseMoved) 1
-    set tkPriv(selectMode) [termTextStepUpSelectMode $tkPriv(selectMode)]
+    %W mark set anchor @$::tk::Priv(x),$::tk::Priv(y)
+    set ::tk::Priv(mouseMoved) 1
+    set ::tk::Priv(selectMode) [termTextStepUpSelectMode $::tk::Priv(selectMode)]
     termTextSelectTo %W %x %y
     break
 }
@@ -129,9 +129,9 @@ bind $w <Triple-Shift-1>	{
 }
 bind $w <ButtonRelease-1> {
 #    tkCancelRepeat
-    tk::CancelRepeat
+    ::tk::CancelRepeat
 
-    if !$tkPriv(mouseMoved) {
+    if !$::tk::Priv(mouseMoved) {
         termTextMaybeSetCursor %W %x %y
     }
     break
@@ -145,16 +145,16 @@ bind $w <Control-1> {
 # regardless of whether tk_strictMotif is set, because we like them.
 bind $w <2> {
     %W scan mark %x %y
-    set tkPriv(x) %x
-    set tkPriv(y) %y
-    set tkPriv(mouseMoved) 0
+    set ::tk::Priv(x) %x
+    set ::tk::Priv(y) %y
+    set ::tk::Priv(mouseMoved) 0
     break
 }
 bind $w <B2-Motion> {
-    if {(%x != $tkPriv(x)) || (%y != $tkPriv(y))} {
-        set tkPriv(mouseMoved) 1
+    if {(%x != $::tk::Priv(x)) || (%y != $::tk::Priv(y))} {
+        set ::tk::Priv(mouseMoved) 1
     }
-    if $tkPriv(mouseMoved) {
+    if $::tk::Priv(mouseMoved) {
         %W scan dragto %x %y
     }
     break
@@ -163,7 +163,7 @@ bind $w <B2-Motion> {
 # uses termTextInsertByLines when pasting text (because pasted text
 # might have multiple commands in it)
 bind $w <ButtonRelease-2> {
-    if !$tkPriv(mouseMoved) {
+    if !$::tk::Priv(mouseMoved) {
         catch {termTextInsertByLines %W [selection get -displayof %W]}
     }
     break
@@ -173,7 +173,7 @@ bind $w <ButtonRelease-2> {
 # behaviors for button 3 in an Xterm (that is, they control extending
 # the current selection)
 bind $w <3> {
-    tkTextResetAnchor %W @%x,%y
+    ::tk::TextResetAnchor %W @%x,%y
     termTextSelectTo %W %x %y
     break
 }
@@ -182,12 +182,12 @@ bind $w <B3-Motion> {
     break
 }
 bind $w <Double-3> {
-    set tkPriv(selectMode) [termTextStepUpSelectMode $tkPriv(selectMode)]
+    set ::tk::Priv(selectMode) [termTextStepUpSelectMode $::tk::Priv(selectMode)]
     termTextSelectTo %W %x %y
     break
 }
 bind $w <Triple-3> {
-    set tkPriv(selectMode) [termTextStepUpSelectMode $tkPriv(selectMode)]
+    set ::tk::Priv(selectMode) [termTextStepUpSelectMode $::tk::Priv(selectMode)]
     termTextSelectTo %W %x %y
     break
 }
@@ -214,13 +214,10 @@ bind $w <Right> {
 uplevel #0 set currentHistory 0
 
 bind $w <Up> {
-echo "1"
     %W delete {insert linestart} {insert lineend}
-echo "2"
     termTextRewriteUserText %W
-echo "3"
     termTextSetCursor %W [termTextUpDownLine %W -1]
-echo "4"
+
     if { $currentHistory > 1 } {
 
         uplevel #0 set currentHistory [expr $currentHistory - 1]
@@ -263,12 +260,12 @@ bind $w <Control-Right> {
 }
 bind $w <Control-Up> {
     termTextRewriteUserText %W
-    termTextSetCursor %W [tkTextPrevPara %W insert]
+    termTextSetCursor %W [::tk::TextPrevPara %W insert]
     break
 }
 bind $w <Control-Down> {
     termTextRewriteUserText %W
-    termTextSetCursor %W [tkTextNextPara %W insert]
+    termTextSetCursor %W [::tk::TextNextPara %W insert]
     break
 }
 bind $w <Prior> {
@@ -518,7 +515,7 @@ bind $w <Control-p> {
 }
 bind $w <Control-t> {
     termTextRewriteUserText %W
-    tkTextTranspose %W
+    ::tk::TextTranspose %W
     break
 }
 bind $w <Control-v> {
@@ -600,14 +597,14 @@ bind Text <<Clear>> {
 # This is very similar to tkTextSelectTo, but it does not check whether
 # the mouse has moved.  The test comes in the mouse button bindings now.
 proc termTextSelectTo {w x y} {
-    global tkPriv
+    global ::tk::Priv
 
     set cur [$w index @$x,$y]
     if [catch {$w index anchor}] {
 	$w mark set anchor $cur
     }
     set anchor [$w index anchor]
-    switch $tkPriv(selectMode) {
+    switch $::tk::Priv(selectMode) {
 	char {
 	    if [$w compare $cur < anchor] {
 		set first $cur
@@ -636,7 +633,7 @@ proc termTextSelectTo {w x y} {
 	    }
 	}
     }
-    if {$tkPriv(mouseMoved) || ($tkPriv(selectMode) != {char})} {
+    if {$::tk::Priv(mouseMoved) || ($::tk::Priv(selectMode) != {char})} {
 	$w tag remove sel 1.0 $first
 	$w tag add sel $first $last
 	$w tag remove sel $last end
@@ -652,16 +649,16 @@ proc termTextSelectTo {w x y} {
 # Finally, tkTextSetCursor clears the current selection, but we don't
 # bother to do that, because we have disabled keystroke selection.
 proc termTextSetCursor {w pos} {
-    global tkPriv
-echo "6"
+    global ::tk::Priv
+
     if [$w compare $pos >= end] {
 	set pos {end - 1 chars}
     }
-echo "7"
+
     if [$w compare $pos <= promptEnd] {
         set pos {promptEnd + 1 chars}
     }
-echo "8"
+
     $w mark set insert $pos
     $w mark set userCursor insert
     $w see insert
@@ -728,29 +725,29 @@ proc termTextInsertByLines {w s} {
 # line corresponds to the first position AFTER THE PROMPT on the prompt
 # line
 proc termTextUpDownLine {w n} {
-    global tkPriv
+    global ::tk::Priv
 
     set i [$w index promptEnd]
     scan $i "%d.%d" pline pchar
     set i [$w index insert]
     scan $i "%d.%d" line char
-    if {[string compare $tkPriv(prevPos) $i] != 0} {
+    if {[string compare $::tk::Priv(prevPos) $i] != 0} {
         if {$pline == $line} {
-            set tkPriv(char) [expr $char - $pchar - 1]
+            set ::tk::Priv(char) [expr $char - $pchar - 1]
         } else {
-	    set tkPriv(char) $char
+	    set ::tk::Priv(char) $char
         }
     }
     if {[expr $line + $n] == $pline} {
-        set new [$w index [expr $line + $n].[expr $tkPriv(char) + $pchar + 1]]
+        set new [$w index [expr $line + $n].[expr $::tk::Priv(char) + $pchar + 1]]
     } else {
-        set new [$w index [expr $line + $n].$tkPriv(char)]
+        set new [$w index [expr $line + $n].$::tk::Priv(char)]
     }
     if {[$w compare $new == end] || [$w compare $new == {insert linestart}] ||
         [$w compare $new <= promptEnd]} {
 	set new $i
     }
-    set tkPriv(prevPos) $new
+    set ::tk::Priv(prevPos) $new
     return $new
 }
 
@@ -765,7 +762,7 @@ proc termTextUpDownLine {w n} {
 # w -		Text window in which to transpose.
 
 #    if [$w compare "$pos - 1 char" == 1.0] {}
-proc tkTextTranspose w {
+proc ::tk::TextTranspose w {
     set pos insert
     if [$w compare $pos == {promptEnd + 1 char}] {
 	set pos [$w index "$pos + 1 char"]
@@ -791,9 +788,9 @@ proc termTextMaybeSetCursor {w x y} {
 }
 
 proc termTextStepUpSelectMode {mode} {
-    global tkPriv
-    if [info exists tkPriv(selectMode)] {
-        switch $tkPriv(selectMode) {
+    global ::tk::Priv
+    if [info exists ::tk::Priv(selectMode)] {
+        switch $::tk::Priv(selectMode) {
 	    char {return word}
             word {return line}
             line {return char}
