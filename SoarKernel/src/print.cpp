@@ -340,6 +340,47 @@ void print_with_symbols (thisAgent, va_alist) va_dcl {
   print_string (thisAgent, buf);
 }
 
+#ifdef USE_STDARGS
+void tagged_output_with_symbols (agent* thisAgent, 
+						 char *format, ...) {
+  va_list args;
+  char buf[PRINT_BUFSIZE];
+  char *ch;
+  
+  va_start (args, format);
+#else
+void tagged_output_with_symbols (thisAgent, va_alist) va_dcl {
+  va_list args;
+  char buf[PRINT_BUFSIZE];
+  char *ch, *format;
+  
+  va_start (args);
+  format = va_arg(args, char *);
+#endif
+  ch = buf;
+  while (TRUE) {
+    /* --- copy anything up to the first "%" --- */
+    while ((*format != '%') && (*format != 0)) *(ch++) = *(format++);
+    if (*format == 0) break;
+    /* --- handle the %-thingy --- */
+    if (*(format+1)=='y') {
+		/* the size of the remaining buffer (after ch) is
+			the difference between the address of ch and
+			the address of the beginning of the buffer
+			*/
+      symbol_to_string (thisAgent, va_arg(args, Symbol *), TRUE, ch, PRINT_BUFSIZE - (ch - buf));
+      while (*ch) ch++;
+    } else {
+      *(ch++) = '%';
+    }
+    format += 2;
+  }
+  va_end (args);
+
+  *ch = 0;
+  generate_tagged_output (thisAgent, buf);
+}
+
 void print_spaces (agent* thisAgent, int n) {
   char *ch;
   char buf[PRINT_BUFSIZE];
@@ -1076,10 +1117,12 @@ void print_preference (agent* thisAgent, preference *pref) {
 extern "C" Bool passes_wme_filtering(agent* thisAgent, wme *w, Bool isAdd);
 void
 filtered_print_wme_add(agent* thisAgent, wme *w) {
-  if (passes_wme_filtering(thisAgent, w,TRUE)) {
+  if (passes_wme_filtering(thisAgent, w,TRUE)) 
+  {
     print (thisAgent, "=>WM: ");
+	generate_tagged_output (thisAgent, "<adding_wme>");
     print_wme(thisAgent, w);
-  }
+	generate_tagged_output (thisAgent, "</adding_wme>");  }
 }
 
 void filtered_print_wme_remove(agent* thisAgent, wme *w) 
@@ -1087,7 +1130,9 @@ void filtered_print_wme_remove(agent* thisAgent, wme *w)
   if (passes_wme_filtering(thisAgent, w,FALSE)) 
   {
     print (thisAgent, "<=WM: ");
-    print_wme(thisAgent, w);
+	generate_tagged_output (thisAgent, "<removing_wme>");
+    print_wme(thisAgent, w);  /*  print_wme takes care of tagged output itself */
+	generate_tagged_output (thisAgent, "</removing_wme>");
   }
 }
 //#endif /* USE_TCL */
@@ -1103,20 +1148,12 @@ void print_wme (agent* thisAgent, wme *w) {
 
   // KJC: added Mar 05 for structured output support
   // Might move later
-//   char buf[PRINT_BUFSIZE];
-   // tag the items in the buffer
-   // <wme timetag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
-   /* <wme>
-		 <timetag>123</timetag>
-		 <id>s1</id>
-		 <attr type=string>foo</attr>
-		 <val type=string>123</val>
-      </wme>
-   */
+  // <wme timetag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
 
-
-   // gSKI_MakeAgentCallback(gSKI_K_EVENT_STRUCTURED_OUTPUT, 0, thisAgent, static_cast<void*>(buf));
-
+  generate_tagged_output(thisAgent, "<wme ");
+  tagged_output_with_symbols (thisAgent, "id=\"%y\" attr=\"%y\" value=\"%y\" ", w->id, w->attr, w->value);
+  if (w->acceptable) generate_tagged_output (thisAgent, " preference=\"+\"");
+  generate_tagged_output(thisAgent, ">\n"); 
 }
 
 //#ifdef USE_TCL

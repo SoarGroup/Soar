@@ -855,20 +855,49 @@ void print_all_trace_formats_tcl (agent* thisAgent, Bool stack_trace, FILE* f) {
 }
 #endif /* USE_TCL */
 
-void set_print_trace_formats(agent* thisAgent){
 
+inline void set_print_trace_formats(agent* thisAgent){
+  /* --- add default object trace formats --- */
+  add_trace_format (thisAgent, FALSE, FOR_ANYTHING_TF, NIL,
+                    "%id %ifdef[(%v[name])]");
+  add_trace_format (thisAgent, FALSE, FOR_STATES_TF, NIL,
+                    "%id %ifdef[(%v[attribute] %v[impasse])]");
+  /***********  enable when determine tagged output format 
+  { Symbol *evaluate_object_sym;
+    evaluate_object_sym = make_sym_constant (thisAgent, "evaluate-object");
+    add_trace_format (thisAgent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym,
+                      "%id (evaluate-object %o[object])");
+    symbol_remove_ref (thisAgent, evaluate_object_sym);
+  }
+  *************/
  /* --- add default stack trace formats --- */
   add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL,
                     "%right[6,%dc]: %rsd[   ]==>S: %cs");
   add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
                     "%right[6,%dc]: %rsd[   ]   O: %co");
 }
-void set_tagged_trace_formats(agent* thisAgent){
+inline void set_tagged_trace_formats(agent* thisAgent){
   // KJC 03/05:  trying this for tagged output
+
+	  /* --- add tagged object trace formats --- */
+  add_trace_format (thisAgent, FALSE, FOR_ANYTHING_TF, NIL,
+                    "%id\" %ifdef[name=\"%v[name]\"]");
+  add_trace_format (thisAgent, FALSE, FOR_STATES_TF, NIL,
+                    "%id\" %ifdef[impasse_object=\"%v[attribute]\" impasse_type=\"%v[impasse]\"]");
+  /***********  enable when determine tagged output format 
+  { Symbol *evaluate_object_sym;
+    evaluate_object_sym = make_sym_constant (thisAgent, "evaluate-object");
+    add_trace_format (thisAgent, FALSE, FOR_OPERATORS_TF, evaluate_object_sym,
+                      "%id (evaluate-object %o[object])");
+    symbol_remove_ref (thisAgent, evaluate_object_sym);
+  }
+  *************/
+ /* --- add tagged stack trace formats --- */
+
   add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL, 
-	                "<state decision_cycle_count=%dc current_state_id=%cs>");
+	                "<state decision_cycle_count=\"%dc\" current_state_id=\"%cs>");
   add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
-                    "<operator decision_cycle_count=%dc current_operator_id=%co>");
+                    "<operator decision_cycle_count=\"%dc\" current_operator_id=\"%co>");
 }
 
 

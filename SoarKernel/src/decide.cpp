@@ -2770,7 +2770,7 @@ void print_lowest_slot_in_context_stack (agent* thisAgent) {
               thisAgent->bottom_goal->id.higher_goal->id.operator_slot->wmes) {
              print_stack_trace (thisAgent, thisAgent->bottom_goal,
 				thisAgent->bottom_goal,
-				FOR_STATES_TF,FALSE);
+				FOR_STATES_TF,TRUE);
 	  }
           else {
              print_stack_trace (thisAgent, thisAgent->bottom_goal,
