@@ -10,7 +10,7 @@ sml_ParseXMLFile.h\
 sml_ParseXMLString.h\
 ElementXMLInterface.cpp\
 ElementXMLdll.cpp\
-sml_ElementXMLImp.cpp\
+sml_ElementXMLImpl.cpp\
 sml_ParseXML.cpp\
 sml_ParseXMLFile.cpp\
 sml_ParseXMLString.cpp
