@@ -8,8 +8,12 @@
 //#define SML_SGIO_HYBRID
 //#define SGIO_DIRECT
 
-
 #include "AgnosticTowers.h"
+
+#ifdef SGIO_DIRECT
+	#include "sgioTowers.h"
+#endif
+
 //#include "gSKITowersSoarAgent.h"
 
 
@@ -48,15 +52,22 @@
 
 	using namespace gSKI;
 	using namespace cli;
-#else ifdef
+#endif
+	
+#ifdef SML_SGIO_HYBRID
 	//SML Directives
 	#include "sml_Client.h"
 	using namespace sml;
 #endif
 
+#ifdef SML_THROUGH_GSKI
+	//SML Directives
+	#include "sml_Client.h"
+	using namespace sml;
+#endif
 
 using std::cout; using std::cin; using std::string;
-
+using std::endl;
 
 
 const int defaultNumTowers = 3;
@@ -64,8 +75,6 @@ const int defaultNumdisks = 11;
 
 int main(int argc, char* argv[])
 {
-	cout << "***Welcome to Towers of Hanoi***" << endl << endl;
-
 	bool doPrinting = true;
 	int numTowers = defaultNumTowers;
 	int numdisks = defaultNumdisks;
@@ -96,18 +105,21 @@ int main(int argc, char* argv[])
 	// create kernel factory
 #ifdef USE_GSKI_DIRECT_NOT_SML
 	IKernelFactory* kFactory = gSKI_CreateKernelFactory();
-#else
+#endif
+
+/*  FIXME TODO this will need to be added for any interface that uses sml
+#ifdef SML_THROUGH_GSKI
 	//create connection for SML version
 	ErrorCode error;
 	Connection* pConnection = Connection::CreateEmbeddedConnection("KernelSML", &error);
 	IKernelFactory* kFactory = sml_CreateKernelFactory(pConnection);
-#endif
-
+#endif*/
+/*
 	// create kernel
 	IKernel* kernel = kFactory->Create();
 	IAgentManager* manager = kernel->GetAgentManager();
 	gSKI::IAgent* agent = manager->AddAgent("towersAgent");
-
+*/
 #ifdef USE_GSKI_DIRECT_NOT_SML
 	CommandLineInterface* commLine = new CommandLineInterface();
 	commLine->SetKernel(kernel);
@@ -159,29 +171,32 @@ int main(int argc, char* argv[])
 
 	//=============================================================================
 	//=============================================================================
-	IInputLink* iLink = agent->GetInputLink();
+//	IInputLink* iLink = agent->GetInputLink();
 
 	{
-		HanoiWorld hanoi(iLink, doPrinting, numTowers);
+		if(doPrinting)
+			cout << "***Welcome to Towers of Hanoi***" << endl << endl;
 
-		SoarAgent soarAgent(agent, &hanoi);
+		HanoiWorld hanoi(/*iLink,*/ doPrinting, numTowers);
+
+//		SoarAgent soarAgent(agent, &hanoi);
 
 		//register the SoarAgent as the output processor
-		IOutputLink* oLink = agent->GetOutputLink();
-		oLink->AddOutputProcessor("move-disk", &soarAgent); 
+//		IOutputLink* oLink = agent->GetOutputLink();
+		//oLink->AddOutputProcessor("move-disk", &soarAgent);
 
 		if(doPrinting)
 			hanoi.Print();
 
 		while(!hanoi.AtGoalState())
 		{
-			soarAgent.MakeMove();
-			//TgD::TgD::Update(false, debugger);
+			hanoi.Run();
+//			soarAgent.MakeMove();
 
-			if (doPrinting)
+			if(doPrinting)
 				hanoi.Print();
 		}
-		soarAgent.MakeMove();//this allows the agent to catch up to the game world
+//		soarAgent.MakeMove();//this allows the agent to catch up to the game world
 		//after the goal state
 	}
 

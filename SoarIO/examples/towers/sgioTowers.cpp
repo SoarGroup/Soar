@@ -8,6 +8,9 @@ using sgio::SoarId;
 using sgio::StringElement;
 using sgio::IntElement;
 
+namespace sgio_towers
+{
+
 class DiskInputLinkProfile
 {
 	friend class Disk;
@@ -20,16 +23,26 @@ class DiskInputLinkProfile
 		SoarId* m_pDiskBeneath;
 		SoarId* m_pPeg;
 		SoarId* m_pDisk;
-};
 
+	int m_size;
+};
+}//closes namespace
 
 //======================================================
 //============ Disk Function Definitions ===============
 
-Disk::Disk(int foo) //temp placeholder arg
+Disk::Disk(int inSize) : m_size(inSize) //temp placeholder arg
 {
+	/*  fixme todo must have access to working memory here
+	//Initialize "disk" wmes
+	m_pDiskIdentifier = m_pWMem->CreateIdWME(m_pWMem->GetILink(), k_diskIdentifierString);
+		m_pSize = m_pWMem->CreateIntWME(m_pDiskIdentifier, k_diskSizeString);
+		m_pName = m_pWMem->CreateStringWME(m_pDiskIdentifier, k_diskNameString);
 
-
+	//Initialize corresponding "holds" wmes
+	m_pHoldsIdentifier = m_pWMem->CreateIdWME(m_pWMem->GetILink(), k_holdsIdentifierString);
+		//m_pDiskBeneath = m_pWMem->CreateIdWME(m_pHoldsIdentifier, )
+		*/
 }
 
 void Detach()
@@ -64,15 +77,19 @@ Tower::~Tower()
 
 //will always add a smaller disk than the top, so new disk must on at end of container
 //disks that have just been created already have their disk beneath initialized, don't reset it
-void Tower::AddDisk(Disk* newDisk, bool justCreated){}
+void Tower::AddDisk(Disk* newDisk, bool justCreated)
+{
+ // fixme todo fill this in
+
+}
 
 void Tower::RemoveTopDisk()
 {
 
-
+ // fixme todo fill this in
 }
 
-Disk* Tower::GetTopDisk()
+Disk* Tower::GetTopDisk() const
 {
 	return 0 ;//fixme
 }
@@ -85,13 +102,7 @@ int Tower::GetSize() const
 void Tower::PrintDiskAtRow(int row) const
 {
 
-
-}
-
-void Tower::PrintEntireTower()
-{
-
-
+ // fixme todo fill this in
 }
 
 
@@ -101,13 +112,19 @@ void Tower::PrintEntireTower()
 HanoiWorld::HanoiWorld(/*WorkingMemory* pWmemory,*/ bool graphicsOn, int inNumTowers,  int inNumDisks)
 {
 
-
+ // fixme todo fill this in
 
 }
 
 HanoiWorld::~HanoiWorld()
 {
 
+ // fixme todo fill this in
+}
+
+void HanoiWorld::Run()
+{
+ // fixme todo fill this in
 
 }
 
@@ -119,8 +136,8 @@ bool HanoiWorld::MoveDisk(int sourceTower, int destinationTower)
 
 void HanoiWorld::Print()
 {
-
-}
+// fixme todo fill this in
+} 
 
 bool HanoiWorld::AtGoalState()
 {

@@ -3,33 +3,40 @@
 #define AGNOSTIC_TOWERS_HANOI_H
 
 #include <vector>
+
 /*
-
 #include <string.h>
-
 #include <math.h>
-
 #include <string>
 #include <map>
 */
 
-/*using std::cin;
+/*
+using std::cin;
 using std::string;
 using std::cout;
 using std::endl;
 using std::vector;
 using std::map;
 using std::less;
-using std::for_each;*/
-
+using std::for_each;
+*/
 
 
 
 //Because of how the Towers of Hanoi productions are written, there will exactly 11 disks
 const int maxNumDisks = 11;
 
-class DiskInputLinkProfile;
+const std::string k_diskIdentifierString	= "disk";
+const std::string k_diskSizeString			= "size";
+const std::string k_diskNameString			= "name";
+const std::string k_holdsIdentifierString	= "holds";
+const std::string k_holdsOnString			= "on";
+const std::string k_holdsAboveString		= "above";
+const std::string k_noneString				= "none";
 
+
+class DiskInputLinkProfile;
 
 class Disk
 {
@@ -75,13 +82,11 @@ public:
 
 	void RemoveTopDisk();
 
-	Disk* GetTopDisk();
+	Disk* GetTopDisk() const;
 
 	int GetSize() const;
 
 	void PrintDiskAtRow(int row) const;
-
-	void PrintEntireTower();
 
 private:
 	std::vector<Disk*> m_disks;
