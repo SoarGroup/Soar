@@ -3079,22 +3079,22 @@ byte add_production_to_rete(production * p,
   for (p_node=bottom_node->first_child; p_node!=NIL;
        p_node=p_node->next_sibling) {
     if (p_node->node_type != P_BNODE) continue;
-	if (current_agent(making_binary)){ // SAN
+	/*if (current_agent(making_binary)){ // SAN
 		production *temp_prod = p_node->b.p.prod;
 		float increment;
 		if (temp_prod->type == USER_PRODUCTION_TYPE) continue;
-		/* Add update to existing referent value */
+		// Add update to existing referent value
 		increment = rhs_value_to_symbol(p->action_list->referent)->fc.value;  // SAN - bug?, check for int value too
 		increment += rhs_value_to_symbol(temp_prod->action_list->referent)->fc.value;
 		temp_prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
-		/* Compute new avg of abs(update) */
+		// Compute new avg of abs(update) 
 		//temp_prod->avg_update = p->avg_update + 0.8*temp_prod->avg_update;
 		temp_prod->avg_update = p->avg_update;
 		// increment = (temp_prod->avg_update*temp_prod->times_applied) + p->avg_update; 
 		temp_prod->times_applied++;
 		// temp_prod->avg_update = increment / temp_prod->times_applied;
 	
-	}
+	}*/
     else if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */
     if (warn_on_duplicates)

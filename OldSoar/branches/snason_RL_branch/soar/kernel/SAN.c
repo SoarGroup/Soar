@@ -40,7 +40,7 @@ void pop_record(RL_record **r){
 	not *nots;
 
 	new_record = *r;
-    c = new_record->pointer_list;
+    /*c = new_record->pointer_list;
 	while(c){
 			RL_top = (condition *) c->first;
 			deallocate_condition_list(RL_top);
@@ -49,7 +49,7 @@ void pop_record(RL_record **r){
 			nots = (not *) c->first;
 			deallocate_list_of_nots(nots);
 			c = c->rest;
-	}
+	}*/
 
     free_list(new_record->pointer_list);
 	symbol_remove_ref(new_record->goal_level);
@@ -109,6 +109,7 @@ void learn_RL_productions(int level){
 	slot* s;
 	cons *c;
 	int i;
+	float increment;
 	
 	record = current_agent(records);
 
@@ -124,34 +125,36 @@ void learn_RL_productions(int level){
 		Q = compute_Q_value(record);
 
 	 	// BUG BUG divide up Q value
-		current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
+		// current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
 			// probably there is a better place to put this
 
 		c = record->pointer_list;
 		while(c){
 
 
+			prod = (production *) c->first;
+			c = c->rest;
 
-			RL_top = (condition *) c->first;
+			/*RL_top = (condition *) c->first;
 			c = c->rest;
 			RL_bottom = (condition *) c->first;
 			c = c->rest;
 			nots = (not *) c->first;
-			c = c->rest;
+			c = c->rest;*/
 
 
 			// print_condition_list(s->RL_top, 2, TRUE);
-			add_goal_tests( RL_top );
-			current_agent(variablize_this_chunk) = 1;
-			reset_variable_generator (RL_top, NIL);
-			current_agent(variablization_tc) = get_new_tc_number();
-			variablize_condition_list(RL_top);
+			// add_goal_tests( RL_top );
+			// current_agent(variablize_this_chunk) = 1;
+			// reset_variable_generator (RL_top, NIL);
+			// current_agent(variablization_tc) = get_new_tc_number();
+			// variablize_condition_list(RL_top);
 			//		print_with_symbols("\nOp %y ", s->op);
 			//		print("whatever with reference count %d\n", s->op->common.reference_count);
-			variablize_nots_and_insert_into_conditions(nots, RL_top);
+			// variablize_nots_and_insert_into_conditions(nots, RL_top);
 			//print_with_symbols("\nOp %y ", s->op);
 			//print("before make_simple_action with reference count %d\n", s->op->common.reference_count);
-			a = make_simple_action(record->goal_level, current_agent(operator_symbol), record->op);
+			// a = make_simple_action(record->goal_level, current_agent(operator_symbol), record->op);
 			//	print_with_symbols("\nOp %y ", s->op);
 			//	print("after make_simple_action with reference count %d\n", s->op->common.reference_count);
 
@@ -160,22 +163,25 @@ void learn_RL_productions(int level){
 
 
 
-			prod_type = RL_PRODUCTION_TYPE;    // temporary, perhaps will have new type one day
+			prod->type = RL_PRODUCTION_TYPE;    // temporary, perhaps will have new type one day
 			// build LHS
 
-			prod_name = generate_new_sym_constant("RL-" , &current_agent(RL_count));
+			// prod_name = generate_new_sym_constant("RL-" , &current_agent(RL_count));
 
  			// build RHS
 
-
-			a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
-			a->referent = symbol_to_rhs_value(make_float_constant(Q));
+			increment = rhs_value_to_symbol(prod->action_list->referent)->fc.value;
+			increment += Q;
+			
+			prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
+			// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+			// a->referent = symbol_to_rhs_value(make_float_constant(Q));
 
 			// print_action_list(a, 2, TRUE);
 
-			prod = make_production (prod_type, prod_name, &RL_top, &RL_bottom, &a, FALSE);
+			// prod = make_production (prod_type, prod_name, &RL_top, &RL_bottom, &a, FALSE);
 			prod->avg_update = fabs(Q);
-			prod->times_applied = 1;
+			prod->times_applied++;
 			
 			/* SAN - the following is temporary 
 			if (!Temp)
@@ -189,17 +195,17 @@ void learn_RL_productions(int level){
 			
 			// print("\n Printing action to go on prod.");
 			// print_action_list(prod->action_list, 2, TRUE);
-			rete_add_result = add_production_to_rete(prod, RL_top, NULL, TRUE);
+			// rete_add_result = add_production_to_rete(prod, RL_top, NULL, TRUE);
 
-			if (rete_add_result == DUPLICATE_PRODUCTION){
+			/*if (rete_add_result == DUPLICATE_PRODUCTION){
 				excise_production (prod, FALSE);
 				current_agent(RL_count)--;
-			}
+			}*/
 
-			deallocate_condition_list(RL_top);
+			// deallocate_condition_list(RL_top);
 			// record->RL_top = NULL;
 			// record->RL_bottom = NULL;
- 			deallocate_list_of_nots(nots);
+ 			// deallocate_list_of_nots(nots);
 		}
 
  			symbol_remove_ref(record->op);
@@ -212,7 +218,7 @@ void learn_RL_productions(int level){
 			record->previous_Q = 0;
 			free_list(record->pointer_list);
 			record->pointer_list = NIL;
-			current_agent(making_binary) = FALSE;
+			// current_agent(making_binary) = FALSE;
 
 
 		// symbol_add_ref(record->op);
@@ -617,14 +623,14 @@ void record_for_RL(){
 	  for (pref = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
 		  if (record->op == pref->value){
 		  ist = pref->inst;
-			  if (ist->prod->type == USER_PRODUCTION_TYPE){
-				  record->num_prod++;
-				copy_condition_list(ist->top_of_instantiated_conditions, &RL_top, &RL_bottom);
-				copy_nots(ist, &nots);
-				push(nots, record->pointer_list);
-				push(RL_bottom, record->pointer_list);
-				push(RL_top, record->pointer_list);
-			}
+//			  if (ist->prod->type == USER_PRODUCTION_TYPE){
+				record->num_prod++;
+				// copy_condition_list(ist->top_of_instantiated_conditions, &RL_top, &RL_bottom);
+				// copy_nots(ist, &nots);
+				push(ist->prod, record->pointer_list);
+//				push(RL_bottom, record->pointer_list);
+//				push(RL_top, record->pointer_list);
+//			}
 		}
 	}
 	}
