@@ -1064,9 +1064,14 @@ void record_epmem( )
         for(i = 0; i < curr_state->size; i++)
         {
             wmetree *node = ((actwme *)(curr_state->array[i]))->node;
-            append_entry_to_arraylist(node->assoc_memories, (void *)new_epmem);
-        }
-    }
+
+            //Only leaf WMEs are necessary so ignore non-leaves
+            if (node->children->count == 0)
+            {
+                append_entry_to_arraylist(node->assoc_memories, (void *)new_epmem);
+            }
+        }//for
+    }//while
 
     //Store the recorded memory
     new_epmem->content = curr_state;
