@@ -660,6 +660,228 @@ void destroy_wmetree(wmetree *tree)
     free_memory(tree, MISCELLANEOUS_MEM_USAGE);
 }//destroy_wmetree
 
+/* ===================================================================
+   wme_has_value
+
+   This routine returns TRUE is the given WMEs attribute and value are
+   both symbols and have then names given.  If either of the given
+   names are NULL then they are assumed to be a match (i.e., a
+   wildcard).
+
+   Created: 14 Dec 2002
+   =================================================================== */
+int wme_has_value(wme *w, char *attr_name, char *value_name)
+{
+    if (w == NULL) return FALSE;
+    
+    if (attr_name != NULL)
+    {
+        if (w->attr->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE)
+        {
+            return FALSE;
+        }
+
+        if (strcmp(w->attr->sc.name, attr_name) != 0)
+        {
+            return FALSE;
+        }
+    }
+
+    if (value_name != NULL)
+    {
+        if (w->value->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE)
+        {
+            return FALSE;
+        }
+
+        if (strcmp(w->value->sc.name, value_name) != 0)
+        {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+
+}//wme_has_value
+
+/* ===================================================================
+   get_aug_of_id()
+
+   This routine examines a symbol for an augmentation that as the
+   given attribute and value and returns it.  The rules for attr
+   and value are 
+   
+   Created: 19 Oct 2004
+   =================================================================== */
+wme *get_aug_of_id(Symbol *sym, char *attr_name, char *value_name)
+{
+    wme **wmes;
+    int len = 0;
+    int i;
+    tc_number tc;
+    
+    tc = sym->id.tc_num + 1;
+    wmes = get_augs_of_id(sym, tc, &len);
+    sym->id.tc_num = tc - 1;
+    if (wmes == NULL) return NULL;
+
+    for(i = 0; i < len; i++)
+    {
+        if (wme_has_value(wmes[i], attr_name, value_name))
+        {
+            return wmes[i];
+        }
+    }
+
+    return NULL;
+}//get_aug_of_id
+
+
+
+/* ===================================================================
+   make_fake_preference_for_epmem_wme
+
+   This function adds a fake preference to a WME so that it will not
+   be added to the goal dependency set of the state it is attached
+   to.  Currently I only need to do this for the three epmem header
+   WMEs.
+
+   (The bulk of the content of this function is taken from
+    make_fake_preference_for_goal_item() in decide.c)
+   
+   
+   Created: 18 Oct 2004
+   =================================================================== */
+preference *make_fake_preference_for_epmem_wme(Symbol *goal, wme *w)
+{
+    instantiation *inst;
+    preference *pref;
+    condition *cond;
+    wme *ap_wme;
+
+    /*
+     * find the ^superstate wme and use that as a stand in to backtrace to
+     */
+    ap_wme = get_aug_of_id(goal, "superstate", NULL);
+    if (!ap_wme) {
+        char msg[MESSAGE_SIZE];
+        strncpy(msg, "epmem.c: Internal error: couldn't find ^superstate WME on state\n", MESSAGE_SIZE);
+        msg[MESSAGE_SIZE - 1] = 0;
+        abort_with_fatal_error(msg);
+    }
+
+    /*
+     * make the fake preference
+     */
+    pref = make_preference(ACCEPTABLE_PREFERENCE_TYPE, w->id, w->attr, w->value, NIL);
+    symbol_add_ref(pref->id);
+    symbol_add_ref(pref->attr);
+    symbol_add_ref(pref->value);
+    pref->o_supported = TRUE;
+    
+    //This may not be necessary??
+    insert_at_head_of_dll(goal->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+    pref->on_goal_list = TRUE;
+    
+    preference_add_ref(pref);
+    
+    /*
+     * make the fake instantiation
+     */
+    allocate_with_pool(&current_agent(instantiation_pool), &inst);
+    pref->inst = inst;
+    pref->inst_next = pref->inst_prev = NIL;
+    inst->preferences_generated = pref;
+    inst->prod = NIL;
+    inst->next = inst->prev = NIL;
+    inst->rete_token = NIL;
+    inst->rete_wme = NIL;
+    inst->match_goal = goal;
+    inst->match_goal_level = goal->id.level;
+    inst->okay_to_variablize = TRUE;
+    inst->backtrace_number = 0;
+    inst->in_ms = FALSE;
+
+    /*
+     * make the fake condition
+     *
+     * NOTE: This is effectively an instantiation whose condition is
+     *       the ^superstate WME and whose action is the given WME
+     */
+    allocate_with_pool(&current_agent(condition_pool), &cond);
+    cond->type = POSITIVE_CONDITION;
+    cond->next = cond->prev = NIL;
+    inst->top_of_instantiated_conditions = cond;
+    inst->bottom_of_instantiated_conditions = cond;
+    inst->nots = NIL;
+    cond->data.tests.id_test = make_equality_test(ap_wme->id);
+    cond->data.tests.attr_test = make_equality_test(ap_wme->attr);
+    cond->data.tests.value_test = make_equality_test(ap_wme->value);
+    cond->test_for_acceptable_preference = TRUE;
+    cond->bt.wme = ap_wme;
+    wme_add_ref(ap_wme);
+    cond->bt.level = ap_wme->id->id.level;
+    cond->bt.trace = NIL;
+    cond->bt.prohibits = NIL;
+
+    /* --- return the fake preference --- */
+    return pref;
+}//make_fake_preference_for_epmem_wme
+
+/* ===================================================================
+   remove_fake_preference_for_epmem_wme
+
+   This function removes a fake preference on a WME created by
+   make_fake_preference_for_epmem_wme()
+   
+   Created: 21 Oct 2004
+   =================================================================== */
+void remove_fake_preference_for_epmem_wme(wme *w)
+{
+    condition *cond = NULL;
+    instantiation *inst = NULL;
+    preference *pref = NULL;
+
+    pref = w->preference;
+    if (pref != NULL)
+    {
+        inst = pref->inst;
+        if (inst != NULL)
+        {
+            cond = inst->top_of_instantiated_conditions;
+        }
+    }
+    
+    
+    /*
+     * remove the fake condition
+     */
+    if (cond != NULL)
+    {
+        wme_remove_ref(cond->bt.wme);
+        free_with_pool(&current_agent(condition_pool), cond);
+    }
+
+
+    /*
+     * remove the fake instantiation
+     */
+    if (inst != NULL)
+    {
+        free_with_pool(&current_agent(instantiation_pool), pref->inst);
+    }
+
+    /*
+     * remove the fake preference
+     */
+    if (pref != NULL)
+    {
+        preference_remove_ref(pref);
+    }
+    
+
+}//remove_fake_preference_for_epmem_wme
+
 
 /* ===================================================================
    make_epmem_header
@@ -688,14 +910,26 @@ epmem_header *make_epmem_header(Symbol *s)
 
     //Add the ^epmem header WMEs
     h->epmem_wme = add_input_wme(s, make_sym_constant("epmem"), h->epmem);
+    h->epmem_wme->preference =
+        make_fake_preference_for_epmem_wme(s, h->epmem_wme);
     wme_add_ref(h->epmem_wme);
+
     h->query_wme = add_input_wme(h->epmem, make_sym_constant("query"), h->query);
+    h->query_wme->preference =
+        make_fake_preference_for_epmem_wme(s, h->query_wme);
     wme_add_ref(h->query_wme);
+
     h->retrieved_wme = add_input_wme(h->epmem, make_sym_constant("retrieved"), h->retrieved);
+    h->retrieved_wme->preference =
+        make_fake_preference_for_epmem_wme(s, h->retrieved_wme);
     wme_add_ref(h->retrieved_wme);
 
     return h;
 }//make_epmem_header
+
+
+//Declare this in advance so that desrtroy_epmem_header() can call it.
+void epmem_clear_curr_mem(epmem_header *h);
 
 /* ===================================================================
    destroy_epmem_header
@@ -706,13 +940,22 @@ epmem_header *make_epmem_header(Symbol *s)
    =================================================================== */
 void destroy_epmem_header(epmem_header *h)
 {
+    //Remove any active memory (or a "no-retrieval" WME) from WM
+    epmem_clear_curr_mem(h);
+
     //Remove the ^epmem header WMEs
     remove_input_wme(h->epmem_wme);
+    remove_fake_preference_for_epmem_wme(h->epmem_wme);
     wme_remove_ref(h->epmem_wme);
+
     remove_input_wme(h->query_wme);
+    remove_fake_preference_for_epmem_wme(h->query_wme);
     wme_remove_ref(h->query_wme);
+
     remove_input_wme(h->retrieved_wme);
+    remove_fake_preference_for_epmem_wme(h->retrieved_wme);
     wme_remove_ref(h->retrieved_wme);
+    
 
     //Dereference the ^epmem header symbols
     symbol_remove_ref(h->epmem);
@@ -771,50 +1014,6 @@ int wmes_are_equal_value(wme *a, wme *b)
         && (symbols_are_equal_value(a->value, b->value));
 
 }//wmes_are_equal_value
-
-/* ===================================================================
-   wme_has_value
-
-   This routine returns TRUE is the given WMEs attribute and value are
-   both symbols and have then names given.  If either of the given
-   names are NULL then they are assumed to be a match (i.e., a
-   wildcard).
-
-   Created: 14 Dec 2002
-   =================================================================== */
-int wme_has_value(wme *w, char *attr_name, char *value_name)
-{
-    if (w == NULL) return FALSE;
-    
-    if (attr_name != NULL)
-    {
-        if (w->attr->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE)
-        {
-            return FALSE;
-        }
-
-        if (strcmp(w->attr->sc.name, attr_name) != 0)
-        {
-            return FALSE;
-        }
-    }
-
-    if (value_name != NULL)
-    {
-        if (w->value->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE)
-        {
-            return FALSE;
-        }
-
-        if (strcmp(w->value->sc.name, value_name) != 0)
-        {
-            return FALSE;
-        }
-    }
-
-    return TRUE;
-
-}//wme_has_value
 
 /* ===================================================================
    wme_equals_node
@@ -1703,7 +1902,7 @@ void epmem_clear_curr_mem(epmem_header *h)
         wme_remove_ref((wme *)get_arraylist_entry(node->assoc_wmes,h->index));
 
         //Bookkeeping
-        set_arraylist_entry(node->assoc_wmes,h->index,NULL);
+        set_arraylist_entry(node->assoc_wmes,h->index, NULL);
     
     }//for
     
@@ -1966,6 +2165,7 @@ void install_epmem_in_wm(epmem_header *h, arraylist *epmem)
     Symbol *id;
     Symbol *attr;
     Symbol *val;
+    wme *new_wme;
 
     //Install the WMEs
     for(i = 0; i < epmem->size; i++)
@@ -2025,8 +2225,11 @@ void install_epmem_in_wm(epmem_header *h, arraylist *epmem)
                 break;
         }//switch
 
-        set_arraylist_entry(node->assoc_wmes,h->index,add_input_wme(id, attr, val));
-        wme_add_ref((wme *)get_arraylist_entry(node->assoc_wmes, h->index));
+        new_wme = add_input_wme(id, attr, val);
+        set_arraylist_entry(node->assoc_wmes,h->index, new_wme);
+        wme_add_ref(new_wme);
+        new_wme->preference = make_fake_preference_for_epmem_wme(h->state, new_wme);
+        
     }//for
 
 }//install_epmem_in_wm
@@ -2051,6 +2254,7 @@ arraylist *respond_to_query(epmem_header *h)
     arraylist *al_query;
     arraylist *al_retrieved;
     tc_number tc;
+    wme *new_wme;
 
     //Remove the old retrieved memory
     start_timer(&current_agent(epmem_clearmem_start_time));
@@ -2090,12 +2294,13 @@ arraylist *respond_to_query(epmem_header *h)
         al_retrieved = NULL;
 
         //Notify the user of failed retrieval
-        set_arraylist_entry(g_wmetree.assoc_wmes,
-                            h->index,
-                            add_input_wme(h->retrieved,
-                                          make_sym_constant("no-retrieval"),
-                                          make_sym_constant("true")));
-        wme_add_ref((wme *)get_arraylist_entry(g_wmetree.assoc_wmes, h->index));
+        new_wme = add_input_wme(h->retrieved,
+                                make_sym_constant("no-retrieval"),
+                                make_sym_constant("true"));
+        set_arraylist_entry(g_wmetree.assoc_wmes, h->index, new_wme);
+        wme_add_ref(new_wme);
+        new_wme->preference = make_fake_preference_for_epmem_wme(h->state, new_wme);
+
     }
 
     return al_retrieved;
@@ -2113,30 +2318,17 @@ arraylist *respond_to_query(epmem_header *h)
    subsequent cycles.
    
    Created: 27 Jan 2004
+   Changed: 19 Oct 2004 - moved the loop to a general purpose function
    =================================================================== */
 char *epmem_retrieve_command(Symbol *sym)
 {
-    wme **wmes;
-    int len = 0;
-    int i;
-    tc_number tc;
-    char *ret = NULL;
-    
-    tc = sym->id.tc_num + 1;
-    wmes = get_augs_of_id(sym, tc, &len);
-    sym->id.tc_num = tc - 1;
-    if (wmes == NULL) return NULL;
-
-    for(i = 0; i < len; i++)
+    wme *w = get_aug_of_id(sym, "command", NULL);
+    if ( (w != NULL) && (w->value->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) )
     {
-        if ( (wme_has_value(wmes[i], "command", NULL))
-             && (wmes[i]->value->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) )
-        {
-            ret = wmes[i]->value->sc.name;
-        }
+        return w->value->sc.name;
     }
 
-    return ret;
+    return NULL;
 }//epmem_retrieve_command
 
 /* ===================================================================
@@ -2194,7 +2386,7 @@ void increment_retrieval_count(epmem_header *h, long inc_amt)
                       make_sym_constant("retrieval-count"),
                       make_int_constant(current_count));
     wme_add_ref(w);
-
+    w->preference = make_fake_preference_for_epmem_wme(h->state, w);
 
 }//increment_retrieval_count
 
@@ -2237,12 +2429,13 @@ void respond_to_command(char *cmd, epmem_header *h)
         else
         {
             //Notify the user of failed retrieval
-            set_arraylist_entry(g_wmetree.assoc_wmes,
-                                h->index,
-                                add_input_wme(h->retrieved,
-                                              make_sym_constant("no-retrieval"),
-                                              make_sym_constant("true")));
-            wme_add_ref((wme *)get_arraylist_entry(g_wmetree.assoc_wmes, h->index));
+            wme *w = add_input_wme(h->retrieved,
+                                   make_sym_constant("no-retrieval"),
+                                   make_sym_constant("true"));
+            set_arraylist_entry(g_wmetree.assoc_wmes, h->index, w);
+            wme_add_ref(w);
+            w->preference = make_fake_preference_for_epmem_wme(h->state, w);
+
         }
         
         increment_retrieval_count(h, 1);
@@ -2388,7 +2581,7 @@ void epmem_print_curr_memory(epmem_header *h)
     }
     
     //Print the current memory
-    //%%%print("\nCURRENT MEMORY:  %d of %d\t\t", h->curr_memory, g_memories->size);
+    print("\nCURRENT MEMORY:  %d of %d\t\t", h->curr_memory->index, g_memories->size);
     print_memory_graphically(h->curr_memory->content);
 
 }//epmem_print_curr_memory
