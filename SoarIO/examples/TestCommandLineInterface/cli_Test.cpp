@@ -319,7 +319,7 @@ int main(int argc, char** argv)
 	// Create an embedded connection to the kernel
 	// Passing false here so we don't execute Soar in our thread
 	// which means we can handle incoming remote connections automatically.
-	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false) ;
+	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnectionSoarThread("KernelSML") ;
 	assert(pKernel);
 
 	// Create agent

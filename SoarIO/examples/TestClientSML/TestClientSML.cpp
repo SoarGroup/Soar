@@ -95,7 +95,7 @@ void SimpleRemoteConnection()
 bool SimpleListener(int life)
 {
 	// Create the kernel instance
-	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
+	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnectionSoarThread("KernelSML") ;
 
 	if (pKernel->HadError())
 	{
@@ -105,7 +105,10 @@ bool SimpleListener(int life)
 
 	for (int i = 0 ; i < life ; i++)
 	{
-		bool check = pKernel->CheckForIncomingCommands() ;
+		// Don't need to check for incoming as we're using the SoarThread model.
+		// (If we switch to Client we'd need to cut this sleep down a lot to
+		//  get any kind of responsiveness).
+		//bool check = pKernel->CheckForIncomingCommands() ;
 		SLEEP(100) ;
 	}
 
@@ -160,8 +163,10 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		SimpleTimer timer ;
 
 		// Create the appropriate type of connection
-		sml::Kernel* pKernel = embedded ? sml::Kernel::CreateEmbeddedConnection("KernelSML", useClientThread, fullyOptimized, 14444)
-										: sml::Kernel::CreateRemoteConnection(true, NULL) ;
+		sml::Kernel* pKernel = embedded ?
+			(useClientThread ? sml::Kernel::CreateEmbeddedConnectionClientThread("KernelSML", fullyOptimized, 14444)
+							 : sml::Kernel::CreateEmbeddedConnectionSoarThread("KernelSML", 14456))
+			: sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
 		if (pKernel->HadError())
 		{

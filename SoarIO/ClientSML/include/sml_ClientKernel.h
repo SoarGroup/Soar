@@ -111,6 +111,7 @@ public:
 	*						kernel to check for incoming messages on remote sockets.
 	*						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
 	*						However, this kernel thread model requires a context switch whenever commands are sent to/from the kernel.
+	*						(This parameter has been folded into the name of the method instead)
 	* @param Optimized		If this is a client thread connection, we can short-circuit parts of the messaging system for sending input and
 	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
 	*						you may wish to disable this option (so everything goes through the standard paths).  Has no affect if not running on client thread.
@@ -119,7 +120,8 @@ public:
 	* @returns A new kernel object which is used to communicate with the kernel.
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized = true, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateEmbeddedConnectionClientThread(char const* pLibraryName, bool optimized = true, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateEmbeddedConnectionSoarThread(char const* pLibraryName, int portToListenOn = kDefaultSMLPort) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -283,6 +285,12 @@ protected:
 	*		 message from the kernel.
 	*************************************************************/
 	ElementXML* ProcessIncomingSML(Connection* pConnection, ElementXML* pIncoming) ;
+
+	/*************************************************************
+	* @brief The workhorse function to create an embedded connection.
+	*		 The public methods hide a few of these parameters.
+	*************************************************************/
+	static Kernel* CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn) ;
 
 };
 
