@@ -29,7 +29,7 @@ import threepenny.*;
  * This is the rule editor window 
  * @author Brad Jones
  */
-public class RuleEditor extends JInternalFrame {
+public class RuleEditor extends CustomInternalFrame {
  	// Data Members
 	private OperatorNode associatedNode;
 	private EditorPane editorPane = new EditorPane();
@@ -91,6 +91,7 @@ public class RuleEditor extends JInternalFrame {
 	 */
 	public RuleEditor(File inFileName,OperatorNode inNode) throws IOException {
 		super(inNode.getUniqueName(),true,true,true,true);
+        setType(RULE_EDITOR);
 
 		// Initalize my member variables
 		associatedNode = inNode;
@@ -190,6 +191,7 @@ public class RuleEditor extends JInternalFrame {
 	 */
 	public RuleEditor(File inFileName) throws IOException {
 		super(inFileName.getName(),true,true,true,true);
+        setType(RULE_EDITOR);
 
 		// Initalize my member variables
 		associatedNode = null;
@@ -1809,5 +1811,16 @@ public class RuleEditor extends JInternalFrame {
            
 	}
 
+    //Override the implementation in CustomInternalFrame
+    public boolean isModified()
+    {
+        return change;
+    }
+
+    //Allow user to mark a document as unchanged.
+    public void setModified(boolean b)
+    {
+        change = b;
+    }
 
 }

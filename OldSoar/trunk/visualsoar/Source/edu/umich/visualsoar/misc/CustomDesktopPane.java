@@ -147,13 +147,13 @@ public class CustomDesktopPane extends JDesktopPane {
 			x += colWidth;
 		}		
 
-		JInternalFrame currentFrame;	
+		CustomInternalFrame currentFrame;	
 		Enumeration framesEnum = frames.elements(), ulpe;
 		Point framePoint, ULPoint, bestMatch;
 		int shortest = 0, current;
 		int shortestPointIndex = 0;
 		while (framesEnum.hasMoreElements()) { // find the closest match for each frame
-			currentFrame = (JInternalFrame)framesEnum.nextElement();
+			currentFrame = (CustomInternalFrame)framesEnum.nextElement();
 			framePoint = currentFrame.getLocation();
 			
 			ulpe = ULPoints.elements();
@@ -189,7 +189,7 @@ public class CustomDesktopPane extends JDesktopPane {
 			
 			framesEnum = frames.elements();
 			while (framesEnum.hasMoreElements()) {
-				currentFrame = (JInternalFrame)framesEnum.nextElement();
+				currentFrame = (CustomInternalFrame)framesEnum.nextElement();
 				if (currentFrame.getLocation().getY() == wastedY) {
 					currentFrame.setBounds(0, wastedY, 2 * colWidth, rowHeight);
 				}
@@ -269,13 +269,13 @@ public class CustomDesktopPane extends JDesktopPane {
 			x += colWidth;
 		}		
 
-		JInternalFrame currentFrame;	
+		CustomInternalFrame currentFrame;	
 		Enumeration framesEnum = frames.elements(), ulpe;
 		Point framePoint, ULPoint, bestMatch;
 		int shortest = 0, current;
 		int shortestPointIndex = 0;
 		while (framesEnum.hasMoreElements()) { // find the closest match for each frame
-			currentFrame = (JInternalFrame)framesEnum.nextElement();
+			currentFrame = (CustomInternalFrame)framesEnum.nextElement();
 			framePoint = currentFrame.getLocation();
 			
 			ulpe = ULPoints.elements();
@@ -311,7 +311,7 @@ public class CustomDesktopPane extends JDesktopPane {
 			
 			framesEnum = frames.elements();
 			while (framesEnum.hasMoreElements()) {
-				currentFrame = (JInternalFrame)framesEnum.nextElement();
+				currentFrame = (CustomInternalFrame)framesEnum.nextElement();
 				if (currentFrame.getLocation().getX() == wastedX) {
 					currentFrame.setBounds(wastedX, 0, colWidth, 2 * rowHeight);
 				}
@@ -349,6 +349,21 @@ public class CustomDesktopPane extends JDesktopPane {
     dataMaps.remove(new Integer(id));
   }
 
+    /**
+	 * Create a version of the getAllFrames() method to return an array of 
+	 * CustomInternalFrame.
+	 */
+    public CustomInternalFrame[] getAllCustomFrames()
+    {
+        JInternalFrame[] allFrames = getAllFrames();
+        CustomInternalFrame[] allCustomFrames = new CustomInternalFrame[allFrames.length];
+        for(int i = 0; i < allFrames.length; i++)
+        {
+            allCustomFrames[i] = (CustomInternalFrame)allFrames[i];
+        }
+        
+        return allCustomFrames;
+    }
 
 	/**
 	 * This will tile all the windows in the most fantastically efficient manner 
