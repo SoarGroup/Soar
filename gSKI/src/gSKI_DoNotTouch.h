@@ -38,7 +38,9 @@ namespace gSKI
          * @brief
          */
          void SetSysparam (IAgent* agent, int param_number, long new_value);
-         long GetSysparam(IAgent* agnet, int param_number);
+         long GetSysparam(IAgent* agent, int param_number);
+		 const long* GetSysparams(IAgent* agent);
+
          rete_node* NameToProduction(IAgent* agent, char* string_to_test);
          void PrintPartialMatchInformation(IAgent* thisAgent, 
          struct rete_node_struct *p_node, wme_trace_type wtt);

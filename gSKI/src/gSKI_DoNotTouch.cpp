@@ -64,6 +64,13 @@ namespace gSKI
          return internalAgent->GetSoarAgent()->sysparams[param_number];
       }
 
+      const long* TgDWorkArounds::GetSysparams(IAgent* agent)
+      {
+         Agent* internalAgent = (Agent*)(agent);
+         MegaAssert(internalAgent != 0, "Bad agent pointer passed to GetSysparams.");
+         return internalAgent->GetSoarAgent()->sysparams;
+      }
+
       /*
       ===============================
  _   _                     _____

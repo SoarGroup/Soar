@@ -53,6 +53,11 @@ namespace gSKI
          /**
           * @brief
           */
+         virtual const long* GetSysparams(IAgent* agnet) = 0;
+
+         /**
+          * @brief
+          */
          virtual rete_node* NameToProduction(IAgent* agent, char* string_to_test) = 0;
 
          /**
