@@ -401,6 +401,15 @@ namespace eval Datamap {
       return $v
    }
 
+   ##
+   # Given a datamap graph, a start vertex and a path of node names
+   # Finds the node at the end of the path, or creates the path if
+   # it doesn't exist yet.
+   # 
+   # This function is slightly different from FindVertexFromPath above
+   # in that it creates the path if it doesn't exist yet and the
+   # path argument does NOT include the first 'state' or 'operator'
+   # element. Inconsistent, yes, but that's the way it goes.
    proc FindOrCreateVertexFromPath { dmGraph start path } {
       set NV [Graph::NullVertex]
       
@@ -411,7 +420,7 @@ namespace eval Datamap {
             set v [$dmGraph InsertVertex [Datamap::DefVertexFields]]
             $dmGraph Set $v name $s
             $dmGraph AddEdge $start $v
-            puts "$$$$ created vertex [$dmGraph Get $start name] --> $s"
+            Log "Created vertex [$dmGraph Get $start name] --> $s"
          }
          set start $v
       }

@@ -1,6 +1,48 @@
+###
+# Copyright 1995-2004 Soar Technology, Inc., University of Michigan. All 
+# rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without 
+# modification, are permitted provided that the following conditions are 
+# met:
+# 
+#    1.	Redistributions of source code must retain the above copyright 
+#       notice, this list of conditions and the following disclaimer. 
+# 
+#    2.	Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in 
+#       the documentation and/or other materials provided with the 
+#       distribution. 
+# 
+# THIS SOFTWARE IS PROVIDED BY THE SOAR CONSORTIUM ``AS IS'' AND 
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED 
+# TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE SOAR 
+# CONSORTIUM  OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES 
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE 
+# GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+# DAMAGE.
+# 
+# The views and conclusions contained in the software and documentation 
+# are those of the authors and should not be interpreted as representing 
+# official policies, either expressed or implied, of Soar Technology, Inc., 
+# the University of Michigan, or the Soar consortium.
+### 
 
+##
+# Represents a single alias
 namespace eval Alias {
 
+   ##
+   # Create an alias from a config file string mapping.
+   #
+   # @param mapping The mapping string
+   # @returns A new Alias object
    proc Create { mapping } {
       set aliasTag [GetTag Alias]
       variable $aliasTag
@@ -20,6 +62,7 @@ namespace eval Alias {
       # it to the proc.
       proc ::$aliasTag { cmd args } "return \[eval Alias::\$cmd $aliasTag \$args\]"
 
+      # we'll abuse the fact that Tcl lists are just strings here...
       set from [lindex $mapping 0]
       set arrow [lindex $mapping 1]
       set to [lindex $mapping 2]
@@ -51,11 +94,14 @@ namespace eval Alias {
       return $aliasTag
    }
 
+   ##
+   # Destroy an alias object
    proc Destroy { alias } {
       unset Alias::$alias
       rename $alias {}
    }
 
+   # Accessor functions
    proc GetFromType { aliasName } {
       upvar 0 Alias::$aliasName this
       return $this(__fromType__)
@@ -82,6 +128,13 @@ namespace eval Alias {
       return $this(__toPath__)
    }
 
+   ##
+   # Test whether this Alias matches a particular pattern
+   #
+   # @param aliasName The Alias object
+   # @param otherType S or O
+   # @param otherRoot problem-space or operator name (no globs!)
+   # @param otherPath List of attribute path components to match
    proc Matches { aliasName otherType otherRoot otherPath } {
       upvar 0 Alias::$aliasName this
       if { ![string match $this(__fromType__) $otherType] } {
@@ -93,6 +146,12 @@ namespace eval Alias {
       return [lcompare $this(__fromPath__) $otherPath]
    }
 
+   ##
+   # Write this alias as a string compatible with the 'mapping'
+   # parameter of the Create function.
+   #
+   # @param aliasName The alias object
+   # @returns A string
    proc ToString { aliasName } {
       upvar 0 Alias::$aliasName this
       set fromPath [join $this(__fromPath__) "."]
@@ -102,12 +161,18 @@ namespace eval Alias {
               
    }
 
-   proc Print { aliasName } {
-      upvar 0 Alias::$aliasName this
-      puts "Alias: from $this(__fromType__) $this(__fromRoot__) $this(__fromPath__) to \
-                        $this(__toType__) $this(__toRoot__) $this(__toPath__)"
-   }
-
+   ##
+   # Split a mapping path into its constituent components.
+   #
+   # Returns a 3-tuple of the form:
+   #    (type, root, path)
+   # where:
+   #     type - S or O or *
+   #     root - A problem-space or operator name, or a glob pattern
+   #     path - List of attribute path components
+   #
+   # @param path The path string (something like S:foo.cat.dog)
+   # @returns Triple described above...
    proc splitMapPath { path } {
       set parts [split $path "."]
       foreach { type root } [split [lindex $parts 0] ":"] {}
@@ -116,8 +181,12 @@ namespace eval Alias {
 
 } ;# namespace Alias
 
+##
+# An object representing a collection of Alias objects.
 namespace eval AliasSet {
 
+   ##
+   # Create a new AliasSet object
    proc Create {} {
       set aliasSetTag [GetTag AliasSet]
       variable $aliasSetTag
@@ -135,22 +204,34 @@ namespace eval AliasSet {
       return $aliasSetTag
    }
 
+   ##
+   # Destroy an AliasSet object
+   #
+   # @param aliasSet The object
    proc Destroy { aliasSet } {
       unset AliasSet::$aliasSet
       rename $aliasSet {}
    }
 
+   ##
+   # Returns a list of alias objects
    proc GetAliases { aliasSetName } {
       upvar 0 AliasSet::$aliasSetName this
       return $this(__aliases__)
    }
 
+   ##
+   # Add an alias
    proc AddAlias { aliasSetName alias } {
       upvar 0 AliasSet::$aliasSetName this
       lappend this(__aliases__) $alias
       return $aliasSetName
    }
 
+   ##
+   # Check all aliases in the set for a match. See Alias::Matches
+   #
+   # Returns the first matching alias
    proc FindMatchingAlias { aliasSetName otherType otherRoot otherPath } {
       upvar 0 AliasSet::$aliasSetName this
 

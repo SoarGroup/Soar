@@ -332,7 +332,11 @@ proc writeHtmlDatamap_r { fd graph vert { top 0 } } {
          puts $fd "<br>Links: "
          set txt {}
          foreach { type root path } [join $props(link) " "] {
-            lappend txt "<a href=\"$type-$root.html\">[EscapeHtmlString $root]</a>"
+            set tgt $root
+            if { [llength $path] > 0 } {
+               set tgt "$tgt.[join $path .]"
+            }
+            lappend txt "<a href=\"$type-$root.html\">[EscapeHtmlString $tgt]</a>"
          }
          puts $fd [join $txt ", "]
       }
