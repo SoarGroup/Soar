@@ -3,6 +3,7 @@ lib_LTLIBRARIES = libClientSML.la
 libClientSML_la_SOURCES = \
 sml_Client.h\
 sml_ClientAgent.h\
+sml_ClientErrors.h\
 sml_ClientEvents.h\
 sml_ClientFloatElement.h\
 sml_ClientIdentifier.h\
@@ -15,6 +16,7 @@ sml_DeltaList.h\
 sml_ObjectMap.h\
 sml_OutputDeltaList.h\
 sml_ClientAgent.cpp\
+sml_ClientErrors.cpp\
 sml_ClientFloatElement.cpp\
 sml_ClientIdentifier.cpp\
 sml_ClientIntElement.cpp\
