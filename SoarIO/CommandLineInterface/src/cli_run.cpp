@@ -157,14 +157,19 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	}
 
 	// Are we halted?
+	egSKIRunState runState;
 	if (options & OPTION_RUN_SELF) {
+		runState = pAgent->GetRunState();
+		if (runState == gSKI_RUNSTATE_HALTED) {
+			return HandleError("System halted (try 'init-soar').");
+		}
 
 	} else {
 		gSKI::tIAgentIterator* iter = m_pKernel->GetAgentManager()->GetAgentIterator(m_pError);
 		gSKI::IAgent* pAgent;
 		while (iter->IsValid()) {
 			pAgent = iter->GetVal();
-			egSKIRunState runState = pAgent->GetRunState();
+			runState = pAgent->GetRunState();
 			if (runState == gSKI_RUNSTATE_HALTED) {
 				return HandleError("System halted (try 'init-soar').");
 			}
