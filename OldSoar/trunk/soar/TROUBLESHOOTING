@@ -1,7 +1,7 @@
 This file contains some troubleshooting information for Soar 8.5.0.
 
 If this file does not resolve your problem, please send email to:
-	soar-requests@umich.edu
+	soar-group@lists.sourceforge.net
 	
 	
 1. "Cannot find package Soar" when trying to create an agent.
@@ -19,7 +19,7 @@ ________________________________________________________________
 Possibility 1: Wrong version of Tcl.
 
 The most common cause of this problem is that the wrong version of
-Tcl is installed.  This version of Soar requires Tcl 8.4.4 (it may
+Tcl is installed.  This version of Soar requires Tcl 8.4.6 (it may
 also work with later versions).
 
 The Windows distribution actually includes the
@@ -30,7 +30,7 @@ whatever version of Tcl is registered with the OS (the version
 included with Soar is NOT registered with the OS).
 
 On other platforms (i.e. *nix, Mac), make sure that you have
-installed Tcl 8.4.4.  Some unusual versions of Unix may have to
+installed Tcl 8.4.6.  Some unusual versions of Unix may have to
 get the source and compile it themselves.
 
 Possibility 2: Soar is not compiled.
