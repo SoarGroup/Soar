@@ -129,6 +129,9 @@
 			<File
 				RelativePath=".\src\sml_ObjectMap.cpp">
 			</File>
+			<File
+				RelativePath=".\src\sml_OutputDeltaList.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -166,6 +169,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_ObjectMap.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_OutputDeltaList.h">
 			</File>
 		</Filter>
 		<Filter

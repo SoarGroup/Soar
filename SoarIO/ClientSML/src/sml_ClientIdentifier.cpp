@@ -44,7 +44,7 @@ Identifier::~Identifier(void)
 * @param index			0 based index of values for this attribute
 *					   (> 0 only needed for multi-valued attributes)
 *************************************************************/
-WMElement* Identifier::GetAttribute(char const* pAttribute, int index) const
+WMElement* Identifier::FindByAttribute(char const* pAttribute, int index) const
 {
 	for (ChildrenConstIter iter = m_Children.begin() ; iter != m_Children.end() ; iter++)
 	{
@@ -92,6 +92,46 @@ Identifier* Identifier::FindIdentifier(char const* pID) const
 }
 
 /*************************************************************
+* @brief Clear the "just added" flag for this and all children
+*		 (The search is recursive over all children).
+*************************************************************/
+void Identifier::ClearJustAdded()
+{
+	this->SetJustAdded(false) ;
+
+	// Go through each child in turn
+	for (ChildrenConstIter iter = m_Children.begin() ; iter != m_Children.end() ; iter++)
+	{
+		WMElement* pWME = *iter ;
+
+		pWME->SetJustAdded(false) ;
+
+		// If this is an identifer, we clear all of its children.
+		if (pWME->IsIdentifier())
+			((Identifier*)pWME)->ClearJustAdded() ;
+	}
+}
+
+/*************************************************************
+* @brief Clear the "just added" flag for this and all children
+*		 (The search is recursive over all children).
+*************************************************************/
+void Identifier::ClearChildrenModified()
+{
+	this->m_AreChildrenModified = false ;
+
+	// Go through each child in turn
+	for (ChildrenConstIter iter = m_Children.begin() ; iter != m_Children.end() ; iter++)
+	{
+		WMElement* pWME = *iter ;
+
+		// If this is an identifer, we clear it and all of its children.
+		if (pWME->IsIdentifier())
+			((Identifier*)pWME)->ClearChildrenModified() ;
+	}
+}
+
+/*************************************************************
 * @brief Searches for a child of this identifier that has the given
 *		 time tag.
 *		 (The search is recursive over all children).
@@ -124,13 +164,40 @@ WMElement* Identifier::FindTimeTag(long timeTag) const
 	return NULL ;
 }
 
+/*************************************************************
+* @brief Gets the n-th child.
+*        Ownership of this WME is retained by the agent.
+*
+*		 This is an O(n) operation.  We could expose the iterator directly
+*		 but we want to export this interface to Java/Tcl etc. and this is easier.
+*************************************************************/
+WMElement* Identifier::GetChild(int index)
+{
+	for (ChildrenIter iter = m_Children.begin() ; iter != m_Children.end() ; iter++)
+	{
+		if (index == 0)
+			return *iter ;
+		index-- ;
+	}
+
+	return NULL ;
+}
+
 void Identifier::AddChild(WMElement* pWME)
 {
+	// Record that we're changing the list of children in case the
+	// client would like to know that this identifier was changed in some fashion.
+	this->m_AreChildrenModified = true ;
+
 	m_Children.push_back(pWME) ;
 }
 
 void Identifier::RemoveChild(WMElement* pWME)
 {
+	// Record that we're changing the list of children in case the
+	// client would like to know that this identifier was changed in some fashion.
+	this->m_AreChildrenModified = true ;
+
 	m_Children.remove(pWME) ;
 }
 

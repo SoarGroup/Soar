@@ -38,9 +38,11 @@ void printWMEs(WMElement const* pRoot)
 	if (pRoot->IsIdentifier())
 	{
 		Identifier* pID = (Identifier*)pRoot ;
-		for (Identifier::ChildrenConstIter iter = pID->GetChildrenIteratorBegin() ; iter != pID->GetChildrenIteratorEnd() ; iter++)
+		int size = pID->GetNumberChildren() ;
+
+		for (int i = 0 ; i < size ; i++)
 		{
-			WMElement const* pWME = *iter ;
+			WMElement const* pWME = pID->GetChild(i) ;
 
 			printWMEs(pWME) ;
 		}
@@ -108,16 +110,22 @@ int main(int argc, char* argv[])
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 		pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
 
+		bool ioOK = false ;
+
 		// If we have output, dump it out.
 		if (pAgent->GetOutputLink())
 		{
 			printWMEs(pAgent->GetOutputLink()) ;
 
 			// Now update the output link with "status complete"
-			Identifier* pMove = (Identifier*)pAgent->GetOutputLink()->GetAttribute("move", 0) ;
+			Identifier* pMove = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("move", 0) ;
 
 			if (pMove)
+			{
+				cout << "Marking command as completed." << endl ;
 				StringElement* pCompleted = pAgent->CreateStringWME(pMove, "status", "complete") ;
+				ioOK = true ;
+			}
 
 			pAgent->Commit() ;
 		}
@@ -135,6 +143,17 @@ int main(int argc, char* argv[])
 		{
 			printWMEs(pAgent->GetOutputLink()) ;
 		}
+
+		if (!ioOK)
+		{
+			cout << "*** ERROR: Test failed to send and receive output correctly." << endl ;
+		}
+
+		cout << endl << "If this test worked should see something like this (above here):" << endl ;
+		cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;
+		cout << "(M1 ^col 1)" << endl ;
+		cout << "And then after the command is marked as completed (during the test):" << endl ;
+		cout << "Top Identifier I3" << endl ;
 
 		// Cycle forever until debugger quits (if we're using the tcl debugger)
 		while (pKernel->CheckForIncomingCommands())

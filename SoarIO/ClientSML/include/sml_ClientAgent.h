@@ -138,6 +138,62 @@ public:
 	*************************************************************/
 	bool	DestroyWME(WMElement* pWME) ;
 
+	/*==============================================================================
+	===
+	=== There are a number of different ways to read information from
+	=== the output link.  Choose whichever method seems easiest to you.
+	===
+	=== Method 1: a) Call "RunTilOutput".
+	===			b) Call "Commands", "GetCommand" and "GetParamValue"
+	===			   to get top level WMEs that have been added since the last cycle.
+	===			c) Call "ClearOutputListChanges" before running again.
+	===
+	=== Method 2: a) Call "RunTilOutput".
+	===			b) Call "GetOutputLink" and "GetNumberChildren", "GetChild"
+	===			   to walk the tree and examine its current state.
+	===			c) You can use "IsJustAdded" and "AreChildrenModified"
+	===			   together with "ClearOutputListChanges" to
+	===			   see what WMEs just changed.
+	===
+	=== Method 3: a) Call "RunTilOutput".
+	===			b) Call "GetNumberOutputLinkChanges" and "GetOutputLinkChange"
+	===			   and "IsOutputLinkChangeAdd" to get the list of
+	===			   all WMEs added and removed since the last cycle.
+	===			c) Call "ClearOutputListChanges" before running again.
+	===
+	=== Method 1 is the closest to the original SGIO and should be sufficient
+	=== in almost all cases.  However, Methods 2 & 3 provide complete
+	=== access to the output-link, while Method 1 only allows access to
+	=== top level wmes with this format: (I1 ^output-link I3) (I3 ^move M3) (M3 ^position 10).
+	=== i.e. All commands are added as identifiers at the top level.
+	=== 
+	==============================================================================*/
+
+	/*************************************************************
+	* @brief Get number of changes to output link.
+	*        (This is since last call to "ClearOuputLinkChanges").
+	*************************************************************/
+	int		GetNumberOutputLinkChanges() ;
+
+	/*************************************************************
+	* @brief Get the n-th wme added or deleted to output link
+	*        (This is since last call to "ClearOuputLinkChanges").
+	*************************************************************/
+	WMElement*	GetOutputLinkChange(int index) ;
+
+	/*************************************************************
+	* @brief Returns true if the n-th wme change to the output-link
+	*		 was a wme being added.  (false => it was a wme being deleted).
+	*        (This is since last call to "ClearOuputLinkChanges").
+	*************************************************************/
+	bool		IsOutputLinkChangeAdd(int index) ;
+
+	/*************************************************************
+	* @brief Clear the current list of changes to the output-link.
+	*		 You should call this after processing the list of changes.
+	*************************************************************/
+	void	ClearOutputLinkChanges() ;
+
 	/*************************************************************
 	* @brief Send the most recent list of changes to working memory
 	*		 over to the kernel.

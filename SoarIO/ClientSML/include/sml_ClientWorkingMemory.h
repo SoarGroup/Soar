@@ -23,6 +23,7 @@
 
 #include "sml_ObjectMap.h"
 #include "sml_DeltaList.h"
+#include "sml_OutputDeltaList.h"
 
 namespace sml {
 
@@ -42,7 +43,15 @@ protected:
 	Agent*		m_Agent ;
 	Identifier*	m_InputLink ;
 	Identifier* m_OutputLink ;
+
+	// List of changes that are pending to be sent to the kernel
 	DeltaList	m_DeltaList ;
+
+	// List of changes to output-link since last time client checked
+	OutputDeltaList m_OutputDeltaList ;
+
+	void RecordAddition(WMElement* pWME) ;
+	void RecordDeletion(WMElement* pWME) ;
 
 public:
 	WorkingMemory() ;

@@ -37,10 +37,12 @@ protected:
 	// (When we delete this identifier we'll delete all these automatically)
 	std::list<WMElement*>		m_Children ;
 	typedef std::list<WMElement*>::iterator ChildrenIter ;
-
-public:
 	typedef std::list<WMElement*>::const_iterator ChildrenConstIter ;
 
+	// This is true if the list of children of this identifier was changed.  The client chooses when to clear these flags.
+	bool m_AreChildrenModified ;
+
+public:
 	virtual char const* GetValueType() const ;
 
 	// Returns a string form of the value stored here.
@@ -70,21 +72,59 @@ public:
 	/*************************************************************
 	* @brief Returns the n-th WME that has the given attribute
 	*		 and this identifier as its parent (or NULL).
+	*		 (<ID> ^attribute <WME>) - returns "WME"
 	*
 	* @param pAttribute		The name of the attribute to match
 	* @param index			0 based index of values for this attribute
 	*					   (> 0 only needed for multi-valued attributes)
 	*************************************************************/
-	WMElement* GetAttribute(char const* pAttribute, int index) const ;
+	WMElement* FindByAttribute(char const* pAttribute, int index) const ;
 
 	/*************************************************************
-	* @brief Returns the start (or end) of the list of children of this
-	*		 identifier.
+	* @brief Returns the value (as a string) of the first WME with this attribute.
+	*		(<ID> ^attribute value) - returns "value"
+	*
+	* @param pAttribute		The name of the attribute to match
 	*************************************************************/
-	ChildrenConstIter GetChildrenIteratorBegin() const { return m_Children.begin() ; }
-	ChildrenConstIter GetChildrenIteratorEnd()	 const { return m_Children.end() ; }
+	char const* GetParameterValue(char const* pAttribute) const { WMElement* pWME = FindByAttribute(pAttribute, 0) ; return pWME ? pWME->GetValueAsString() : NULL ; }
+
+	/*************************************************************
+	* @brief Returns the "command name" for a top-level identifier on the output-link.
+	*		 That is for output-link O1 (O1 ^move M3) returns "move".
+	*************************************************************/
+	char const* GetCommandName() const { return this->GetAttribute() ; }
+
+	/*************************************************************
+	* @brief Returns the number of children
+	*************************************************************/
+	int		GetNumberChildren() { return (int)m_Children.size() ; }
+
+	/*************************************************************
+	* @brief Gets the n-th child.
+	*        Ownership of this WME is retained by the agent.
+	*
+	*		 This is an O(n) operation.  We could expose the iterator directly
+	*		 but we want to export this interface to Java/Tcl etc. and this is easier.
+	*************************************************************/
+	WMElement* GetChild(int index) ;
+
+	/*************************************************************
+	* @brief This is true if the list of children of this identifier has changed.
+	*		 The client chooses when to clear these flags.
+	*************************************************************/
+	bool AreChildrenModified() { return m_AreChildrenModified ; }
 
 protected:
+	/*************************************************************
+	* @brief Clear the "just added" flag for this identifier and all children (recursively)
+	*************************************************************/
+	void ClearJustAdded() ;
+
+	/*************************************************************
+	* @brief Clear the "children modified" flag for this identifier and all children (recursively)
+	*************************************************************/
+	void ClearChildrenModified() ;
+
 	// This version is only needed at the top of the tree (e.g. the input link)
 	Identifier(Agent* pAgent, char const* pIdentifier, long timeTag);
 

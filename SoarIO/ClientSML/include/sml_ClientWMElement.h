@@ -20,13 +20,15 @@ class Agent ;
 class Identifier ;
 class WorkingMemory ;
 class RemoveDelta ;
+class WMDelta ;
 
 class WMElement
 {
 	// Making most methods protected, so users don't use them directly by accident.
 	// But allow working memory to work with them directly.
 	friend WorkingMemory ;
-	friend Identifier ;		// Allow it to destory WMEs
+	friend WMDelta ;		// Allow it to destroy WMEs
+	friend Identifier ;		// Allow it to destroy WMEs
 
 protected:
 	// The agent which owns this WME.
@@ -34,7 +36,7 @@ protected:
 	
 	// The time tag (a unique id for this WME)
 	// We used negative values so it's clear that this time tag is a client side tag.
-	long m_TimeTag ;
+	long	m_TimeTag ;
 
 	// The id for this wme (can be NULL if we're at the top of the tree)
 	Identifier*	m_ID ;
@@ -42,7 +44,14 @@ protected:
 	// The attribute name for this wme (the value is owned by the derived class)
 	std::string m_AttributeName ;
 
+	// This is true if the wme was just added.  The client chooses when to clear these flags.
+	bool	m_JustAdded ;
+
 public:
+	// This is true if the wme was just added.  The client chooses when to clear these flags.
+	// This is only maintained for output wmes (the client controls input wmes).
+	bool	IsJustAdded() { return m_JustAdded ; }
+
 	// Two accessors for the ID as people think about it in different ways
 	Identifier*		GetParent()	const		{ return m_ID ; }
 	Identifier*		GetIdentifier()	 const	{ return m_ID ; }
@@ -66,6 +75,8 @@ protected:
 	// agent owns all objects.
 	WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, long timeTag);
 	virtual ~WMElement(void);
+
+	void	SetJustAdded(bool state) { m_JustAdded = state ; }
 
 	Agent*		GetAgent()	{ return m_Agent ; }
 

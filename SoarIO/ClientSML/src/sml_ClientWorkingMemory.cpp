@@ -104,6 +104,23 @@ WMElement* WorkingMemory::CreateWME(Identifier* pParent, char const* pAttribute,
 	return NULL ;
 }
 
+void WorkingMemory::RecordAddition(WMElement* pWME)
+{
+	// For additions, the delta list does not take ownership of the wme.
+	m_OutputDeltaList.AddWME(pWME) ;
+
+	// Mark this wme as having just been added (in case the client would prefer
+	// to walk the tree).
+	pWME->SetJustAdded(true) ;
+}
+
+void WorkingMemory::RecordDeletion(WMElement* pWME)
+{
+	// This list takes ownership of the deleted wme.
+	// When the item is removed from the delta list it will be deleted.
+	m_OutputDeltaList.RemoveWME(pWME) ;
+}
+
 /*************************************************************
 * @brief This function is called when output is received
 *		 from the Soar kernel.
@@ -172,7 +189,13 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 				// Create a client side wme object to match the output wme and add it to
 				// our tree of objects.
 				WMElement* pAddWme = CreateWME(pParent, pAttribute, pValue, pType, timeTag) ;
-				if (pAddWme) pParent->AddChild(pAddWme) ;
+				if (pAddWme)
+				{
+					pParent->AddChild(pAddWme) ;
+
+					// Make a record that this wme was added so we can alert the client to this change.
+					RecordAddition(pAddWme) ;
+				}
 			}
 			else
 			{
@@ -202,7 +225,10 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 			if (pWME && pWME->GetParent())
 			{
 				pWME->GetParent()->RemoveChild(pWME) ;
-				delete pWME ;
+
+				// Make a record that this wme was removed, so we can tell the client about it.
+				// This recording will also involve deleting the wme.
+				RecordDeletion(pWME) ;
 			}
 		}
 	}
