@@ -57,7 +57,7 @@ LINK32=link.exe
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=copy libsoar8.4.5.dll ..\library
+PostBuild_Cmds=copy libsoar8.4.5.dll ..\library	del libsoar8.4.5.dll	del libsoar8.4.5.lib
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "dll - Win32 Debug"
@@ -88,7 +88,7 @@ LINK32=link.exe
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=copy libsoar8.4.5.dll ..\library
+PostBuild_Cmds=copy libsoar8.4.5.dll ..\library	del libsoar8.4.5.dll	del libsoar8.4.5.lib
 # End Special Build Tool
 
 !ENDIF 
