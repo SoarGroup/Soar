@@ -143,13 +143,12 @@ Aliases::Aliases() {
 		substitution.push_back(string("watch"));
 		assert(NewAlias(substitution, commandToSubstitute));
 	}
-	// watch -w 1 wmes
+	// print -i wmes
 	{
 		string commandToSubstitute("wmes");
 		std::vector<std::string> substitution;
-		substitution.push_back(string("watch"));
-		substitution.push_back(string("-w"));
-		substitution.push_back(string("1"));
+		substitution.push_back(string("print"));
+		substitution.push_back(string("-i"));
 		assert(NewAlias(substitution, commandToSubstitute));
 	}
 }

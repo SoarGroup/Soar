@@ -102,11 +102,30 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 		if (!options.test(PRINT_STACK)) return SetError(CLIError::kPrintSubOptionsOfStack);
 	}
 
-	// One additional optional argument
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
+	switch (m_pGetOpt->GetAdditionalArgCount()) {
+		case 0:  // no argument
+			// the i and d options require an argument
+			if (options.test(PRINT_INTERNAL) || options.test(PRINT_DEPTH)) return SetError(CLIError::kTooFewArgs);
+			return DoPrint(pAgent, options, depth);
 
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoPrint(pAgent, options, depth, &(argv[m_pGetOpt->GetOptind()]));
-	return DoPrint(pAgent, options, depth);
+		case 1: 
+			// the acDjus options don't allow an argument
+			if (options.test(PRINT_ALL) 
+				|| options.test(PRINT_CHUNKS) 
+				|| options.test(PRINT_DEFAULTS) 
+				|| options.test(PRINT_JUSTIFICATIONS) 
+				|| options.test(PRINT_USER) 
+				|| options.test(PRINT_STACK)) 
+			{
+				return SetError(CLIError::kTooManyArgs);
+			}
+			return DoPrint(pAgent, options, depth, &(argv[m_pGetOpt->GetOptind()]));
+
+		default: // more than 1 arg
+			break;
+	}
+
+	return SetError(CLIError::kTooManyArgs);
 }
 
 bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, PrintBitset options, int depth, const std::string* pArg) {
