@@ -46,6 +46,7 @@ public:
 	{
 		m_KernelSML = pKernelSML ;
 		m_Connection = pConnection ;
+		m_StopOnOutput = false; // default to not stopping on output
 	}
 
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist) ;
