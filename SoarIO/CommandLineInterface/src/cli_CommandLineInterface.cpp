@@ -54,7 +54,7 @@ using namespace sml;
 //| |__| (_) | | | | | | | | | | | (_| | | | | (_| | |___| | | | |  __/| || | | | ||  __/ |  |  _| (_| | (_|  __/
 // \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|_| |_|\___|___|_| |_|\__\___|_|  |_|  \__,_|\___\___|
 //
-CommandLineInterface::CommandLineInterface() {
+EXPORT CommandLineInterface::CommandLineInterface() {
 
 	// Create getopt object
 	m_pGetOpt = new GetOpt;
@@ -87,7 +87,7 @@ CommandLineInterface::CommandLineInterface() {
 //   | |__| (_) | | | | | | | | | | | (_| | | | | (_| | |___| | | | |  __/| || | | | ||  __/ |  |  _| (_| | (_|  __/
 //    \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|_| |_|\___|___|_| |_|\__\___|_|  |_|  \__,_|\___\___|
 //
-CommandLineInterface::~CommandLineInterface() {
+EXPORT CommandLineInterface::~CommandLineInterface() {
 	delete m_pGetOpt;
 	if (m_pLogFile) {
 		if (m_pAgent) {
@@ -134,7 +134,7 @@ void CommandLineInterface::BuildCommandMap() {
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
 //
-bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError) {
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError) {
 
 	// Clear the result
 	m_Result.clear();
@@ -183,7 +183,7 @@ bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAge
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
 //
-bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError) {
+EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError) {
 	// This function is for processing a command without the SML layer
 	// Clear the result
 	m_Result.clear();
@@ -391,7 +391,8 @@ bool CommandLineInterface::ParseCD(std::vector<std::string>& argv) {
 	if (argv.size() > 1) {
 		return DoCD(argv[1]);
 	}
-	return DoCD(string());
+	string blank;
+	return DoCD(blank);
 }
 
 // ____         ____ ____
@@ -511,7 +512,7 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 			case '?':
 				return HandleSyntaxError(Constants::kCLIExcise, "Unrecognized option.");
 			default:
-				return HandleGetOptError(option);
+				return HandleGetOptError((char)option);
 		}
 	}
 
@@ -754,12 +755,12 @@ bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 			case '?':
 				return HandleSyntaxError(Constants::kCLILearn, "Unrecognized option.");
 			default:
-				return HandleGetOptError(option);
+				return HandleGetOptError((char)option);
 		}
 	}
 
 	// No non-option arguments
-	if (GetOpt::optind != argv.size()) {
+	if ((unsigned)GetOpt::optind != argv.size()) {
 		return HandleSyntaxError(Constants::kCLILearn);
 	}
 
@@ -821,7 +822,6 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 	GetOpt::opterr = 0;
 
 	int option;
-	unsigned short options = 0;
 	bool append = false;
 	bool close = false;
 
@@ -841,12 +841,12 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 			case '?':
 				return HandleSyntaxError(Constants::kCLILog, "Unrecognized option.");
 			default:
-				return HandleGetOptError(option);
+				return HandleGetOptError((char)option);
 		}
 	}
 
 	// Only one non-option arg allowed, filename
-	if (GetOpt::optind == argv.size() - 1) {
+	if ((unsigned)GetOpt::optind == argv.size() - 1) {
 
 		// But not with the close option
 		if (close) {
@@ -1224,7 +1224,7 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 			case '?':
 				return HandleSyntaxError(Constants::kCLIPrint, "Unrecognized option.");
 			default:
-				return HandleGetOptError(option);
+				return HandleGetOptError((char)option);
 		}
 	}
 
@@ -1397,6 +1397,7 @@ bool CommandLineInterface::DoPWD() {
 //
 bool CommandLineInterface::ParseQuit(std::vector<std::string>& argv) {
 	// Quit needs no help
+	argv.clear();
 	return DoQuit();
 }
 
@@ -1474,7 +1475,7 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 			case '?':
 				return HandleSyntaxError(Constants::kCLIRun, "Unrecognized option.");
 			default:
-				return HandleGetOptError(option);
+				return HandleGetOptError((char)option);
 		}
 	}
 
@@ -1482,7 +1483,7 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 	int count = 1;
 
 	// Only one non-option argument allowed, count
-	if (GetOpt::optind == argv.size() - 1) {
+	if ((unsigned)GetOpt::optind == argv.size() - 1) {
 
 		if (!IsInteger(argv[GetOpt::optind])) {
 			return HandleSyntaxError(Constants::kCLIRun, "Count must be an integer.");
@@ -1951,7 +1952,7 @@ bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 			case '?':
 				return HandleSyntaxError(Constants::kCLIStopSoar, "Unrecognized option.");
 			default:
-				return HandleGetOptError(option);
+				return HandleGetOptError((char)option);
 		}
 	}
 
@@ -1972,7 +1973,9 @@ bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 //|____/ \___/____/ \__\___/| .__/____/ \___/ \__,_|_|
 //                          |_|
 bool CommandLineInterface::DoStopSoar(bool self, const string& reasonForStopping) {
-	m_Result += "TODO: do stop-soar";
+	m_Result += "TODO: do stop-soar ";
+	m_Result += self;
+	m_Result += reasonForStopping;
 	return true;
 }
 
@@ -2062,7 +2065,6 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 
 	int option;
 	int constant;
-	bool self = false;
 	unsigned int options = 0;	// what flag changed
 	unsigned int values = 0;    // new setting
 
@@ -2138,7 +2140,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 			case '?':
 				return HandleSyntaxError(Constants::kCLIWatch, "Unrecognized option.");
 			default:
-				return HandleGetOptError(option);
+				return HandleGetOptError((char)option);
 		}
 
 		// process argument
@@ -2148,7 +2150,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	}
 
 	// Only one non-option argument allowed, watch level
-	if (GetOpt::optind == argv.size() - 1) {
+	if ((unsigned)GetOpt::optind == argv.size() - 1) {
 
 		if (!IsInteger(argv[GetOpt::optind])) {
 			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be an integer.");
@@ -2429,7 +2431,7 @@ void CommandLineInterface::AppendToResult(const char* pMessage) {
 // ___) |  __/ |_| . \  __/ |  | | | |  __/ |
 //|____/ \___|\__|_|\_\___|_|  |_| |_|\___|_|
 //
-void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel) {
+EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel) {
 	m_pKernel = pKernel;
 }
 

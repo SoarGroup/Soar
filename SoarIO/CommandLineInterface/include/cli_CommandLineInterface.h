@@ -27,6 +27,16 @@
 #include "gSKI_Events.h"
 #include "IgSKI_Iterator.h"
 
+#ifdef _WIN32
+#ifdef _USRDLL
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __declspec(dllimport)
+#endif	// DLL
+#else
+#define EXPORT
+#endif	// WIN32
+
 // Forward Declarations
 namespace gSKI {
 	class IAgent;
@@ -60,25 +70,25 @@ class CommandLineInterface
 {
 public:
 
-	CommandLineInterface();
-	~CommandLineInterface();
+	EXPORT CommandLineInterface();
+	EXPORT ~CommandLineInterface();
 
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void SetKernel(gSKI::IKernel* pKernel);
+	EXPORT void SetKernel(gSKI::IKernel* pKernel);
 
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
 	*************************************************************/
-	bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
+	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
 
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
 	*************************************************************/
-	bool DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError);
+	EXPORT bool DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError);
 
 	// Template for new commands:
 	///*************************************************************

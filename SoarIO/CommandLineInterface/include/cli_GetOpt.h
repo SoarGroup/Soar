@@ -43,7 +43,7 @@ private:
 	int _getopt_internal(int argc, char *const *argv, const char *shortopts, const struct option *longopts, int *longind, int long_only);
 	char* my_index (const char *str, int chr);
 	void exchange (char **);
-	const char *_getopt_initialize (int, char *const *, const char *);
+	const char *_getopt_initialize (const char *);
 	void DeleteArgvIfItExists();
 
 };

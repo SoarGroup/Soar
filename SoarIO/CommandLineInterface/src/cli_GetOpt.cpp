@@ -87,7 +87,7 @@ void GetOpt::exchange (char **argv)
 /* Initialize the internal data when the first call is made.  */
 
 
-const char* GetOpt::_getopt_initialize (int argc, char *const *argv, const char *optstring)
+const char* GetOpt::_getopt_initialize (const char *optstring)
 {
 	/* Start processing options with ARGV-element 1 (since ARGV-element 0
 	is the program name); the sequence of previously skipped
@@ -126,7 +126,7 @@ int GetOpt::_getopt_internal (int argc, char *const *argv, const char *optstring
 	{
 		if (optind == 0)
 			optind = 1;	/* Don't scan ARGV[0], the program name.  */
-		optstring = _getopt_initialize (argc, argv, optstring);
+		optstring = _getopt_initialize (optstring);
 	}
 
 	/* Test whether ARGV[optind] points to a non-option argument.

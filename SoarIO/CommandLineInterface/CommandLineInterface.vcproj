@@ -13,29 +13,37 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="lib"
+			OutputDirectory="$(SolutionDir)\bin"
 			IntermediateDirectory="src\Debug"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;include"
-				PreprocessorDefinitions="WIN32;_DEBUG;__GW32C__"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				BufferSecurityCheck="FALSE"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
-				DebugInformationFormat="3"/>
+				WarningLevel="4"
+				DebugInformationFormat="4"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="lib\soar-cli.lib"
-				AdditionalLibraryDirectories=""/>
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="FALSE"
+				AdditionalOptions="/EXPORT:DllMain"
+				OutputFile="$(SolutionDir)\bin\CommandLineInterface.dll"
+				LinkIncremental="2"
+				IgnoreAllDefaultLibraries="FALSE"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/CommandLineInterface.pdb"
+				SubSystem="2"
+				ImportLibrary="lib/CommandLineInterface.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -50,6 +58,8 @@
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
 			<Tool
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
@@ -57,26 +67,35 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="lib"
+			OutputDirectory="$(SolutionDir)\bin"
 			IntermediateDirectory="src\Release"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\..\gSKI\include&quot;;include"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="4"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="lib\soar-cli.lib"
-				AdditionalLibraryDirectories=""/>
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="FALSE"
+				AdditionalOptions="/EXPORT:DllMain"
+				OutputFile="$(SolutionDir)\bin\CommandLineInterface.dll"
+				LinkIncremental="1"
+				IgnoreAllDefaultLibraries="FALSE"
+				GenerateDebugInformation="TRUE"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				ImportLibrary="lib/CommandLineInterface.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -91,6 +110,8 @@
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
 			<Tool
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool

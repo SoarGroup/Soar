@@ -34,10 +34,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ConnectionSML.lib soar-cli.lib"
+				AdditionalDependencies="ConnectionSML.lib"
 				OutputFile="$(SolutionDir)\bin\KernelSML.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)\CommandLineInterface\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)\ConnectionSML\lib&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/KernelSML.pdb"
 				SubSystem="2"
@@ -84,7 +84,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ConnectionSML.lib soar-cli.lib"
+				AdditionalDependencies="ConnectionSML.lib"
 				OutputFile="$(SolutionDir)\bin\KernelSML.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)\CommandLineInterface\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;"
@@ -117,6 +117,9 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
+			Name="CommandLineInterface"/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
 			Name="ElementXML"/>
