@@ -33,7 +33,6 @@ import java.util.*;
  */
 public class MainFrame extends JFrame 
 {
-
 /////////////////////////////////////////
 // Static Members
 /////////////////////////////////////////
@@ -50,6 +49,7 @@ public class MainFrame extends JFrame
     private JSplitPane feedbackDesktopSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 	public FeedbackList feedbackList = new FeedbackList();
 	Preferences prefs = Preferences.getInstance();
+    String lastWindowViewOperation = "none"; // can also be "tile" or "cascade"
 
 	// 3P
 	// Soar Tool Interface (STI) object, message time, and menu objects
@@ -120,7 +120,6 @@ public class MainFrame extends JFrame
 	 */
 	public MainFrame(String s) 
     {
-
 		// Set the Title of the window
 		super(s);
 		File	templateFolder = Preferences.getInstance().getTemplateFolder();
@@ -192,7 +191,6 @@ public class MainFrame extends JFrame
      */
 	public void setFeedbackListData(Vector v) 
     {
-
 		feedbackList.setListData(v);
 	}
 
@@ -202,7 +200,6 @@ public class MainFrame extends JFrame
      */
 	public TemplateManager getTemplateManager() 
     {
-
 		return d_templateManager;
 	}
 
@@ -212,7 +209,6 @@ public class MainFrame extends JFrame
      */
 	public OperatorWindow getOperatorWindow() 
     {
-
 		return operatorWindow;
 	}
 
@@ -223,7 +219,6 @@ public class MainFrame extends JFrame
      */
     public CustomDesktopPane getDesktopPane() 
     {
-
         return DesktopPane;
     }
 
@@ -233,7 +228,6 @@ public class MainFrame extends JFrame
 	 */
 	private JMenu createFileMenu() 
     {
-
 		JMenu fileMenu = new JMenu("File");
 		// The File Menu
 		JMenuItem newProjectItem = new JMenuItem("New Project...");
@@ -308,7 +302,6 @@ public class MainFrame extends JFrame
 	 */
 	private JMenu createEditMenu() 
     {
-
 		JMenu editMenu = new JMenu("Edit");
 		
 		JMenuItem preferencesItem = new JMenuItem("Preferences...");
@@ -324,7 +317,6 @@ public class MainFrame extends JFrame
 	 */
 	private JMenu createSearchMenu() 
     {
-
 		JMenu searchMenu = new JMenu("Search");
 
 		JMenuItem findInProjectItem = new JMenuItem("Find in Project");
@@ -351,7 +343,6 @@ public class MainFrame extends JFrame
 	 */
 	private JMenu createDatamapMenu() 
     {
-
 		JMenu datamapMenu = new JMenu("Datamap");
 
 		JMenuItem checkAllProductionsItem = new JMenuItem("Check All Productions Against the Datamap");
@@ -415,7 +406,6 @@ public class MainFrame extends JFrame
 	 */
 	private JMenu createViewMenu() 
     {
-
 		final JMenu viewMenu = new JMenu("View");
 		// View Menu
 		JMenuItem cascadeItem = new JMenuItem("Cascade Windows");
@@ -440,25 +430,20 @@ public class MainFrame extends JFrame
 		viewMenu.addMenuListener(
             new MenuListener() 
             {
-
                 public void menuCanceled(MenuEvent e) {} 
                 public void menuDeselected(MenuEvent e) 
                     {
-
                         for(int i = viewMenu.getMenuComponentCount() - 1; i > 2; --i) 
                         {
-
                             viewMenu.remove(i);
                         }
                     }
           	 	
                 public void menuSelected(MenuEvent e) 
                     {
-
                         JInternalFrame[] frames = DesktopPane.getAllFrames();
                         for(int i = 0; i < frames.length; ++i) 
                         {
-
                             JMenuItem menuItem = new JMenuItem(frames[i].getTitle());
                             menuItem.addActionListener(new WindowMenuListener(frames[i]));
                             viewMenu.add(menuItem);
@@ -543,7 +528,6 @@ public class MainFrame extends JFrame
         }
         catch(IOException IOE) 
         {
-
             JOptionPane.showMessageDialog(MainFrame.this, "There was an error reading file: " +
                                           file.getName(), "I/O Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -562,11 +546,9 @@ public class MainFrame extends JFrame
 	class SoarRuntimeAgentMenuListener extends MenuAdapter
 	
     {
-
 		public void menuSelected(MenuEvent e)
 		
         {
-
 			// Remove our existing items
 			soarRuntimeAgentMenu.removeAll();
 			
@@ -575,7 +557,6 @@ public class MainFrame extends JFrame
 			if (sti == null)
 			
             {
-
 				// Add a "not connected" menu item
 				JMenuItem menuItem=new JMenuItem("<not connected>");
 				menuItem.setEnabled(false);
@@ -592,7 +573,6 @@ public class MainFrame extends JFrame
 			if (connectionNames == null || connectionNames.length == 0)
 			
             {
-
 				// Add the "no agents" menu item
 				JMenuItem menuItem=new JMenuItem("<no agents>");
 				menuItem.setEnabled(false);
@@ -606,7 +586,6 @@ public class MainFrame extends JFrame
 			for (i=0; i < connectionNames.length; i++)
 			
             {
-
 				// Get this connection name
 				String sConnectionName=connectionNames[i];
 				
@@ -636,7 +615,6 @@ public class MainFrame extends JFrame
 	class AgentConnectionActionListener implements ActionListener
 	
     {
-
 		// Index of this agent connection in the menu
 		private String				m_sAgentConnectionName;
 		
@@ -648,7 +626,6 @@ public class MainFrame extends JFrame
 		public AgentConnectionActionListener(JCheckBoxMenuItem assocatedMenuItem, String sAgentConnectionName)
 		
         {
-
 			m_sAgentConnectionName = sAgentConnectionName;
 			m_assocatedMenuItem = assocatedMenuItem;
 		}
@@ -660,13 +637,11 @@ public class MainFrame extends JFrame
 		public void actionPerformed(ActionEvent e)
 		
         {
-
 			// Check to see if we have an STI connection
 			SoarToolJavaInterface sti=GetSoarToolJavaInterface();
 			if (sti == null)
 			
             {
-
 				// TODO
 				// Assert or throw some kind of exception?
 				return;
@@ -686,7 +661,6 @@ public class MainFrame extends JFrame
 	private JMenu createSoarRuntimeMenu()
 	
     {
-
 		// Add the menu as set the mnemonic
 		JMenu soarRuntimeMenu = new JMenu("Soar Runtime");
 		soarRuntimeMenu.setMnemonic('S');
@@ -720,7 +694,6 @@ public class MainFrame extends JFrame
 	 */
 	private JMenu createHelpMenu() 
     {
-
 		JMenu helpMenu = new JMenu("Help");
 		// Help menu
 		helpMenu.add(contactUsAction); 
@@ -735,7 +708,6 @@ public class MainFrame extends JFrame
 	 */
 	private JMenuBar createMainMenu() 
     {
-
 		JMenuBar MenuBar = new JMenuBar();
 		
 		// The Main Menu Bar
@@ -753,27 +725,59 @@ public class MainFrame extends JFrame
 		
 		return MenuBar;
 	}
-	
+
+    /**
+     * Sets a new JInternalFrame's shape and position based upon the user's
+     * apparent preference.
+     */
+    void setJIFShape(JInternalFrame newJIF)
+    {
+        JInternalFrame currJIF = DesktopPane.getSelectedFrame();
+        if ( (currJIF != null) && (currJIF.isMaximum()) )
+        {
+            try
+            {
+                newJIF.setMaximum(true);
+            }
+            catch (java.beans.PropertyVetoException pve)
+            {
+                //Unable to maximize window.  Oh well.
+            }				
+        }
+		else if ( (Preferences.getInstance().isAutoTilingEnabled())
+                  || (lastWindowViewOperation.equals("tile")) )
+        {
+			DesktopPane.performTileAction();
+		}
+        else if (lastWindowViewOperation.equals("cascade"))
+        {
+            DesktopPane.performCascadeAction();
+		}
+        else if (currJIF != null)
+        {
+            Rectangle bounds = currJIF.getBounds();
+            newJIF.reshape(bounds.x + 30,
+                           bounds.y + 30,
+                           bounds.width,
+                           bounds.height);
+        }
+        else
+        {
+            newJIF.reshape(0, 0 , 400, 400);
+        }
+
+    }//setJIFShape
+    
 	/**
 	 * Creates a rule window opening with the given file name
 	 * @param re the ruleeditor file that the rule editor should open
 	 */
 	public void addRuleEditor(RuleEditor re) 
     {
-
 		DesktopPane.add(re);
 		re.moveToFront();
-		if (Preferences.getInstance().isAutoTilingEnabled()) 
-        {
-
-			DesktopPane.performTileAction();
-		}
-		else 
-        {
-
-			re.reshape(0, 0 , 300, 200);
-		}
 		DesktopPane.revalidate();
+        setJIFShape(re);
 	}
 
 	/**
@@ -783,20 +787,10 @@ public class MainFrame extends JFrame
 	 */
 	public void addDataMap(DataMap dm) 
     {
-
 		DesktopPane.add(dm);
 		dm.moveToFront();
 		DesktopPane.revalidate();
-		if (Preferences.getInstance().isAutoTilingEnabled()) 
-        {
-
-			DesktopPane.performTileAction();
-		}
-		else 
-        {
-
-			dm.reshape(0, 0, 200, 300);
-		}
+        setJIFShape(dm);
 	}
 
 	/**
@@ -856,7 +850,6 @@ public class MainFrame extends JFrame
 	 */
     public void removeOperatorWindow() 
     {
-
 	 	operatorDesktopSplit.setLeftComponent(null);
     }
 
@@ -867,12 +860,10 @@ public class MainFrame extends JFrame
 	 */
 	class WindowMenuListener implements ActionListener
     {
-
 		JInternalFrame internalFrame;
 		
 		public WindowMenuListener(JInternalFrame jif) 
         {
-
 			internalFrame = jif;
 		}
 
@@ -880,11 +871,9 @@ public class MainFrame extends JFrame
 		
 		public void actionPerformed(ActionEvent e) 
         {
-
 			internalFrame.toFront();
 			try 
             {
-
 				internalFrame.setIcon(false);
 				internalFrame.setSelected(true);
 				internalFrame.moveToFront();
@@ -899,7 +888,6 @@ public class MainFrame extends JFrame
   	 */
   	public static void setMainFrame(MainFrame mainFrame) 
     {
-
   		s_mainFrame = mainFrame;
   	}
   	
@@ -908,7 +896,6 @@ public class MainFrame extends JFrame
   	 */
   	public static MainFrame getMainFrame() 
     {
-
   		return s_mainFrame;
   	}
   	/**
@@ -916,7 +903,6 @@ public class MainFrame extends JFrame
   	 */
   	private void projectActionsEnable(boolean areEnabled) 
     {
-
   		// Enable various actions
 		saveAllFilesAction.setEnabled(areEnabled);
 		checkAllProductionsAction.setEnabled(areEnabled);
@@ -946,27 +932,21 @@ public class MainFrame extends JFrame
 */
 	class SaveAllFilesAction extends PerformableAction 
     {
-
 		public SaveAllFilesAction() 
         {
-
 			super("Save All");
 			setEnabled(false);
 		}
 		
 		public void perform() 
         {
-
 			try 
             {
-
 				JInternalFrame[] jif = DesktopPane.getAllFrames();
 				for(int i = 0; i < jif.length; ++i) 
                 {
-
 					if(jif[i] instanceof RuleEditor) 
                     {
-
 						RuleEditor re = (RuleEditor)jif[i];
 						re.write();
 					}
@@ -974,14 +954,12 @@ public class MainFrame extends JFrame
 			}
 			catch(java.io.IOException ioe) 
             {
-
 				JOptionPane.showMessageDialog(MainFrame.this, "Error Writing File", "IO Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 
 		public void actionPerformed(ActionEvent event) 
         {
-
 			perform();
 		}
 		
@@ -995,23 +973,18 @@ public class MainFrame extends JFrame
 	 */
 	class ExitAction extends AbstractAction 
     {
-
 		public ExitAction() 
         {
-
 			super("Exit");
 		}
 		public void actionPerformed(ActionEvent event) 
         {
-
 			JInternalFrame[] frames = DesktopPane.getAllFrames();
 			prefs.write();
 			try 
             {
-
 				for(int i = 0; i < frames.length; ++i) 
                 {
-
 					frames[i].setClosed(true);
 				}
 				
@@ -1033,26 +1006,21 @@ public class MainFrame extends JFrame
      */
 	class SaveDataMapAndProjectAction extends PerformableAction 
     {
-
 		public SaveDataMapAndProjectAction() 
         {
-
 			super("Save DataMap And Project Action");
 		}
 		
 		public void perform() 
         {
-
 			if(operatorWindow != null) 
             {
-
 				operatorWindow.saveHierarchy();
 			}
 		}
 		
 		public void actionPerformed(ActionEvent event) 
         {
-
 			perform();	
 			Vector v = new Vector();
 			v.add("DataMap and Project Saved");
@@ -1067,7 +1035,6 @@ public class MainFrame extends JFrame
      */
 	public void tryOpenProject (File file) throws FileNotFoundException, IOException
     {
-
 		operatorWindow = new OperatorWindow(file);
 
 		operatorDesktopSplit.setLeftComponent(operatorWindow);
@@ -1086,18 +1053,14 @@ public class MainFrame extends JFrame
 	 */
 	class OpenProjectAction extends AbstractAction 
     {
-
 		public OpenProjectAction() 
         {
-
 			super("Open Project...");
 		}	
 		public void actionPerformed(ActionEvent event) 
         {
-
 			try 
             {
-
 				JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setFileFilter(new SoarFileFilter());
 				fileChooser.setCurrentDirectory(Preferences.getInstance().getOpenFolder());
@@ -1105,7 +1068,6 @@ public class MainFrame extends JFrame
 				File file = fileChooser.getSelectedFile();
 				if (file != null && state == JFileChooser.APPROVE_OPTION) 
                 {
-
                     //Get rid of the old project (if it exists)
                     if (operatorWindow != null)
                     {
@@ -1130,18 +1092,15 @@ public class MainFrame extends JFrame
 			
 			catch(FileNotFoundException fnfe) 
             {
-
 				JOptionPane.showMessageDialog(MainFrame.this, "File Not Found!", "File Not Found", JOptionPane.ERROR_MESSAGE);
 			}
 			catch(IOException ioe) 
             {
-
 				JOptionPane.showMessageDialog(MainFrame.this, "Error Reading File", "IOException", JOptionPane.ERROR_MESSAGE);
 				ioe.printStackTrace();
 			}
 			catch(NumberFormatException nfe) 
             {
-
                 nfe.printStackTrace();
                 JOptionPane.showMessageDialog(MainFrame.this, "Error Reading File, Data Incorrectly Formatted", "Bad File", JOptionPane.ERROR_MESSAGE);
 			}
@@ -1154,18 +1113,14 @@ public class MainFrame extends JFrame
      */
     class OpenFileAction extends AbstractAction 
     {
-
         public OpenFileAction() 
         {
-
             super("Open File...");
         }
         public void actionPerformed(ActionEvent event) 
         {
-
             try 
             {
-
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileFilter(new TextFileFilter());
                 fileChooser.setCurrentDirectory(Preferences.getInstance().getOpenFolder());
@@ -1179,7 +1134,6 @@ public class MainFrame extends JFrame
 
 			catch(NumberFormatException nfe) 
             {
-
                 nfe.printStackTrace();
                 JOptionPane.showMessageDialog(MainFrame.this, "Error Reading File, Data Incorrectly Formatted", "Bad File", JOptionPane.ERROR_MESSAGE);
 			}
@@ -1197,22 +1151,18 @@ public class MainFrame extends JFrame
 	 */
 	class NewProjectAction extends AbstractAction 
     {
-
 		public NewProjectAction() 
         {
-
 			super("New Project...");
 		}
 		
 		public void actionPerformed(ActionEvent event) 
         {
-
 			// redo this a dialog should just pass back data to the main window for processing
 			NewAgentDialog newAgentDialog = new NewAgentDialog(MainFrame.this);
 			newAgentDialog.show();
 			if (newAgentDialog.wasApproved()) 
             {
-
 				String agentName = newAgentDialog.getNewAgentName();
 				String path = newAgentDialog.getNewAgentPath();
 				String agentFileName = path + File.separator + agentName + ".vsa";
@@ -1235,10 +1185,8 @@ public class MainFrame extends JFrame
 	 */
 	class CloseProjectAction extends PerformableAction 
     {
-
 		public CloseProjectAction() 
         {
-
 			super("Close Project");
 			setEnabled(false);
 		}
@@ -1250,10 +1198,8 @@ public class MainFrame extends JFrame
 			JInternalFrame[] frames = DesktopPane.getAllFrames();
 			try 
             {
-
 				for(int i = 0; i < frames.length; ++i) 
                 {
-
 					frames[i].setClosed(true);
 				}
 				commitAction.perform();
@@ -1281,26 +1227,21 @@ public class MainFrame extends JFrame
 	 */
 	class ExportAgentAction extends PerformableAction 
     {
-
 		public ExportAgentAction() 
         {
-
 			super("Export Agent");
 		}
 		
 		public void perform() 
         {
-
 			DefaultTreeModel tree = (DefaultTreeModel)operatorWindow.getModel();
 			OperatorRootNode root = (OperatorRootNode)tree.getRoot();
 			try 
             {
-
 				root.startSourcing();
 			}
 			catch (IOException exception) 
             {
-
 				JOptionPane.showMessageDialog(MainFrame.this, "IO Error exporting agent.", "Agent Export Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
@@ -1320,16 +1261,13 @@ public class MainFrame extends JFrame
 	 */
 	class PreferencesAction extends AbstractAction 
     {
-
 		public PreferencesAction() 
         {
-
 			super("Preferences Action");
 		}
 		
 		public void actionPerformed(ActionEvent e) 
         {
-
 			PreferencesDialog	theDialog = new PreferencesDialog(MainFrame.getMainFrame());
 			theDialog.setVisible(true);
 		
@@ -1357,16 +1295,13 @@ public class MainFrame extends JFrame
 	 */	
 	class ContactUsAction extends AbstractAction 
     {
-
 		public ContactUsAction() 
         {
-
 			super("About VisualSoar");
 		}
 		
 		public void actionPerformed(ActionEvent e) 
         {
-
 			aboutDialog.setVisible(true);		
 		}
   	}
@@ -1377,10 +1312,8 @@ public class MainFrame extends JFrame
 	 */	
 	class ViewKeyBindingsAction extends AbstractAction 
     {
-
 		public ViewKeyBindingsAction() 
         {
-
 			super("VisualSoar Keybindings");
 		}
 		
@@ -1414,16 +1347,13 @@ public class MainFrame extends JFrame
 	class SoarRuntimePumpMessagesTimerListener implements ActionListener
 	
     {
-
 		public void actionPerformed(ActionEvent evt)
 		
         {
-
 			// Return if we don't have a tools interface
 			if (soarToolJavaInterface == null)
 			
             {
-
 				return;
 			}
 			
@@ -1434,7 +1364,6 @@ public class MainFrame extends JFrame
 			while (soarToolJavaInterface.IsIncomingCommandAvailable() == true)
 			
             {
-
 				// Get our command object
 				SoarToolJavaCommand commandObject=new SoarToolJavaCommand();
 				soarToolJavaInterface.GetIncomingCommand(commandObject);
@@ -1456,11 +1385,9 @@ public class MainFrame extends JFrame
 	protected void ProcessSoarToolJavaCommand(SoarToolJavaCommand command)
 	
     {
-
 		switch (command.GetCommandID())
 		
         {
-
             // Edit Production command
             case 1001:
                 // BUGBUG: JDK complains that STI_kEditProduction needs to be a constant
@@ -1468,7 +1395,6 @@ public class MainFrame extends JFrame
                 //case command.STI_kEditProduction:
 			
             {
-
 				// Edit the production
 				EditProductionByName(command.GetStringParam());
 				break;
@@ -1484,7 +1410,6 @@ public class MainFrame extends JFrame
 	protected void EditProductionByName(String sProductionName)
 	
     {
-
 		// TODO: Should we match case?
 		
 		// Find the rule and open it
@@ -1502,22 +1427,18 @@ public class MainFrame extends JFrame
 	class SoarRuntimeInitAction extends AbstractAction
 	
     {
-
 		public SoarRuntimeInitAction()
 		
         {
-
 			super("Connect");
 		}
 		
 		public void actionPerformed(ActionEvent e)
 		
         {
-
 			// Initialize the soar runtime
 			if (!SoarRuntimeInit())
             {
-
 				// Unable to connect!
 				soarToolJavaInterface=null;
 				JOptionPane.showMessageDialog(MainFrame.this, "Unable to connect to the Soar Tool Interface (STI)", "STI Error", JOptionPane.ERROR_MESSAGE);
@@ -1534,12 +1455,10 @@ public class MainFrame extends JFrame
 	boolean SoarRuntimeInit()
 	
     {
-
 		// Stop any "pump messages" timers that are currently running
 		if (soarToolPumpMessageTimer != null)
 		
         {
-
 			soarToolPumpMessageTimer.stop();
 			soarToolPumpMessageTimer=null;
 		}
@@ -1548,7 +1467,6 @@ public class MainFrame extends JFrame
 		if (soarToolJavaInterface != null)
 		
         {
-
 			soarToolJavaInterface.Term();
 			soarToolJavaInterface=null;
 		}
@@ -1588,7 +1506,6 @@ public class MainFrame extends JFrame
 		else
 		
         {
-
 			// Failure
 			return false;
 		}
@@ -1603,12 +1520,10 @@ public class MainFrame extends JFrame
 	void SoarRuntimeTerm()
 	
     {
-
 		// Stop any "pump messages" timers that are currently running
 		if (soarToolPumpMessageTimer != null)
 		
         {
-
 			soarToolPumpMessageTimer.stop();
 			soarToolPumpMessageTimer=null;
 		}
@@ -1617,7 +1532,6 @@ public class MainFrame extends JFrame
 		if (soarToolJavaInterface != null)
 		
         {
-
 			soarToolJavaInterface.Term();
 			soarToolJavaInterface=null;
 		}
@@ -1637,11 +1551,9 @@ public class MainFrame extends JFrame
 	class SoarRuntimeTermAction extends AbstractAction
 	
     {
-
 		public SoarRuntimeTermAction()
 		
         {
-
 			// Set the name and default to being disabled
 			super("Disconnect");
 			setEnabled(false);
@@ -1650,7 +1562,6 @@ public class MainFrame extends JFrame
 		public void actionPerformed(ActionEvent e)
 		
         {
-
 			// Terminate the soar runtime
 			SoarRuntimeTerm();
 		}	
@@ -1663,11 +1574,9 @@ public class MainFrame extends JFrame
      */
 	class SoarRuntimeSendRawCommandAction extends AbstractAction 
     {
-
 		public SoarRuntimeSendRawCommandAction()
 		
         {
-
 			// Set the name and default to being disabled
 			super("Send Raw Command");
 			setEnabled(false);
@@ -1676,7 +1585,6 @@ public class MainFrame extends JFrame
 		public void actionPerformed(ActionEvent e)
 		
         {
-
 			SoarRuntimeSendRawCommandDialog theDialog = new SoarRuntimeSendRawCommandDialog(MainFrame.this, GetSoarToolJavaInterface());
 			theDialog.setVisible(true);
 		}	
@@ -1684,19 +1592,15 @@ public class MainFrame extends JFrame
 		
 	class SendProductionsAction extends AbstractAction 
     {
-
 		public SendProductionsAction() 
         {
-
 			super("Send Productions");
 		}
 	
 		public void actionPerformed(ActionEvent e) 
         {
-
 			try 
             {
-
 			
 				String serverName = JOptionPane.showInputDialog(MainFrame.getMainFrame(),"Server Name");
 				String serverPort = JOptionPane.showInputDialog(MainFrame.getMainFrame(),"Server Port");
@@ -1708,12 +1612,10 @@ public class MainFrame extends JFrame
 			}
 			catch(IOException ioe) 
             {
-
 				System.err.println("IOError");
 			}
 			catch(NumberFormatException nfe) 
             {
-
 				System.err.println("Hey, how about you enter a number?");
 			}
 		}
@@ -1752,7 +1654,6 @@ public class MainFrame extends JFrame
 				
             update = new Runnable() 
             {
-
                 public void run() 
                 {
                     value = progressBar.getValue() + 1;
@@ -1761,10 +1662,8 @@ public class MainFrame extends JFrame
             };
             finish = new Runnable() 
             {
-
                 public void run() 
                 {
-
                     updateProgressBar(min);
                     progressDialog.dispose();
                 }
@@ -1778,7 +1677,6 @@ public class MainFrame extends JFrame
 
         private void updateProgressBar(int value) 
         {
-
             progressBar.setValue(value);
         }
 
@@ -1816,7 +1714,6 @@ public class MainFrame extends JFrame
             }
             catch (IOException ioe) 
             {
-
                 ioe.printStackTrace();
             }
         }//checkEntities()
@@ -1834,7 +1731,6 @@ public class MainFrame extends JFrame
     {
 		public CheckSyntaxErrorsAction() 
         {
-
 			super("Check All Productions for Syntax Errors");
 			setEnabled(false);
 		}
@@ -1989,11 +1885,9 @@ public class MainFrame extends JFrame
              */
         public void initializeEdges()
         {
-
             Enumeration edges = operatorWindow.getDatamap().getEdges();
             while(edges.hasMoreElements()) 
             {
-
                 NamedEdge currentEdge = (NamedEdge)edges.nextElement();
                 currentEdge.resetTestedStatus();
                 currentEdge.resetErrorNoted();
@@ -2129,25 +2023,21 @@ public class MainFrame extends JFrame
      */
     class GenerateDataMapAction extends AbstractAction 
     {
-
 		JProgressBar progressBar;
 		JDialog progressDialog;
 
 		public GenerateDataMapAction() 
         {
-
 			super("Generate Datamap from Operator Hierarchy");
 			setEnabled(false);
 		}
 
 		public void actionPerformed(ActionEvent ae) 
         {
-
 			int numNodes = 0;
 			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
 			while(bfe.hasMoreElements()) 
             {
-
 				numNodes++;
 				bfe.nextElement();
 			}
@@ -2165,7 +2055,6 @@ public class MainFrame extends JFrame
 
 		class UpdateThread extends Thread 
         {
-
 			Runnable update, finish;
 			int value, min, max;
 			 
@@ -2180,16 +2069,13 @@ public class MainFrame extends JFrame
 			
 			public UpdateThread() 
             {
-
 				progressBar.getMaximum();
 				progressBar.getMinimum();
 
 				update = new Runnable() 
                 {
-
 					public void run() 
                     {
-
 						value = progressBar.getValue() + 1;
 						updateProgressBar(value);
 						//System.out.println("Value is " + value);
@@ -2197,10 +2083,8 @@ public class MainFrame extends JFrame
 				};
 				finish = new Runnable() 
                 {
-
 					public void run() 
                     {
-
 						updateProgressBar(min);
 						System.out.println("Done");
 						progressDialog.dispose();
@@ -2210,7 +2094,6 @@ public class MainFrame extends JFrame
 
 			public void run() 
             {
-
                 checkNodes();
                 repCount = 0;
 
@@ -2219,26 +2102,21 @@ public class MainFrame extends JFrame
 
 			private void updateProgressBar(int value) 
             {
-
 				progressBar.setValue(value);
 			}
 						
 			public void checkNodes() 
             {
-
 				try 
                 {
-
                     do 
                     {
-
                         repCount++;
                         errors.clear();
                         bfe = operatorWindow.breadthFirstEnumeration();
 
                       checkingNodes: while(bfe.hasMoreElements()) 
                       {
-
                           current = (OperatorNode)bfe.nextElement();
                           generations.clear();
                           // If the node has a rule editor open, get the rules from the
@@ -2248,12 +2126,10 @@ public class MainFrame extends JFrame
 
                           try 
                           {
-
                               parsedProds = current.parseProductions();
                           }
                           catch(ParseException pe) 
                           {
-
                               String errString;
                               String parseError = pe.toString();
                               int i = parseError.lastIndexOf("line ");
@@ -2265,13 +2141,11 @@ public class MainFrame extends JFrame
                           }
                           catch(TokenMgrError tme) 
                           {
-
                               tme.printStackTrace();
                           }
 
                           if (parsedProds!= null)  
                           {
-
 							  operatorWindow.generateProductions((OperatorNode)current.getParent(), parsedProds, generations, current);
                               operatorWindow.checkProductions((OperatorNode)current.getParent(), parsedProds, errors);
                           }
@@ -2279,10 +2153,8 @@ public class MainFrame extends JFrame
                           Enumeration e = new EnumerationIteratorWrapper(generations.iterator());
                           while(e.hasMoreElements()) 
                           {
-
                               try 
                               {
-
                                   String errorString = e.nextElement().toString();
                                   String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
                                   vecErrors.add(
@@ -2290,7 +2162,6 @@ public class MainFrame extends JFrame
                               }
                               catch(NumberFormatException nfe) 
                               {
-
                                   System.out.println("Never happen");
                               }
                           }
@@ -2309,7 +2180,6 @@ public class MainFrame extends JFrame
 				}   // end of try
 				catch (IOException ioe) 
                 {
-
 					ioe.printStackTrace();
 				}
 			}
@@ -2320,10 +2190,8 @@ public class MainFrame extends JFrame
 
 	class FindInProjectAction extends AbstractAction 
     {
-
   		public FindInProjectAction()
         {
-
   			super("Find in Project");
 			setEnabled(false);
   		}
@@ -2337,7 +2205,6 @@ public class MainFrame extends JFrame
          */  		
 		public void actionPerformed(ActionEvent e) 
         {
-
 			FindDialog theDialog = new FindDialog(MainFrame.this, operatorWindow);
 			theDialog.setVisible(true);
 		}
@@ -2346,10 +2213,8 @@ public class MainFrame extends JFrame
 
     class ReplaceInProjectAction extends AbstractAction 
     {
-
         public ReplaceInProjectAction() 
         {
-
             super("Replace in Project");
             setEnabled(false);
         }
@@ -2363,7 +2228,6 @@ public class MainFrame extends JFrame
          */
         public void actionPerformed(ActionEvent e) 
         {
-
             ReplaceInProjectDialog replaceDialog = new ReplaceInProjectDialog(MainFrame.this, operatorWindow);
             replaceDialog.setVisible(true);
         }
@@ -2372,21 +2236,17 @@ public class MainFrame extends JFrame
 	
 	class CommitAction extends PerformableAction 
     {
-
 		public CommitAction() 
         {
-
 			super("Commit");
 			setEnabled(false);
 		}
 		
 		public void perform() 
         {
-
 			saveAllFilesAction.perform();
 			if(operatorWindow != null) 
             {
-
 				exportAgentAction.perform();
 				saveDataMapAndProjectAction.perform();
 			}
@@ -2394,7 +2254,6 @@ public class MainFrame extends JFrame
 		
 		public void actionPerformed(ActionEvent e) 
         {
-
 			perform();
 			Vector v = new Vector();
 			v.add("Save Finished");
@@ -2404,17 +2263,14 @@ public class MainFrame extends JFrame
 	
 	class SaveProjectAsAction extends AbstractAction 
     {
-
 		public SaveProjectAsAction() 
         {
-
 			super("Save Project As");
 			setEnabled(false);
 		}
 
 		public void actionPerformed(ActionEvent e) 
         {
-
 			SaveProjectAsDialog spad = new SaveProjectAsDialog(MainFrame.getMainFrame());
             spad.show();
 
@@ -2423,25 +2279,21 @@ public class MainFrame extends JFrame
 
 			if (spad.wasApproved()) 
             {
-
 				String newName = spad.getNewAgentName();
                 String newPath = spad.getNewAgentPath();
 				if(OperatorWindow.isProjectNameValid(newName)) 
                 {
-
 					operatorWindow.saveProjectAs(newName, newPath);
 
                     // Regenerate the *_source.soar files in the old project
                     try 
                     {
-
                         OperatorWindow oldOpWin = new OperatorWindow(oldProjectFile);
                         OperatorRootNode oldOrn = (OperatorRootNode)oldOpWin.getModel().getRoot();
                         oldOrn.startSourcing();
                     }
                     catch (IOException exception) 
                     {
-
                         JOptionPane.showMessageDialog(MainFrame.this, "IO Error exporting agent.", "Agent Export Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
@@ -2450,10 +2302,8 @@ public class MainFrame extends JFrame
                     for(int i = 0; i < jif.length; ++i)
           
                     {
-
                         if(jif[i] instanceof RuleEditor) 
                         {
-
                             RuleEditor oldRuleEditor = (RuleEditor)jif[i];
                             OperatorNode newNode = oldRuleEditor.getNode();
                             oldRuleEditor.fileRenamed( newNode.getFileName() );         // Update the Rule editor with the correct updated file name
@@ -2465,59 +2315,51 @@ public class MainFrame extends JFrame
 				}
 				else 
                 {
-
 					JOptionPane.showMessageDialog(MainFrame.this, "That is not a valid name for the project", "Invalid Name", JOptionPane.ERROR_MESSAGE);				
 				}
 			}
 		}
-	
 	}
 
     class TileWindowsAction extends AbstractAction 
     {
-
         public TileWindowsAction() 
         {
-
             super("Tile Windows");
         }
 
         public void actionPerformed(ActionEvent e) 
         {
-
             DesktopPane.performTileAction();
+            lastWindowViewOperation = "tile";
         }
     }
 
     class ReTileWindowsAction extends AbstractAction 
     {
-
         public ReTileWindowsAction() 
         {
-
             super("Re-Tile Windows");
         }
 
         public void actionPerformed(ActionEvent e) 
         {
-
             DesktopPane.performReTileAction();
+            lastWindowViewOperation = "tile";
         }
     }
 
     class CascadeAction extends AbstractAction 
     {
-
         public CascadeAction() 
         {
-
             super("Cascade Windows");
         }
 
         public void actionPerformed(ActionEvent e) 
         {
-
             DesktopPane.performCascadeAction();
+            lastWindowViewOperation = "cascade";
         }
     }
 }	
