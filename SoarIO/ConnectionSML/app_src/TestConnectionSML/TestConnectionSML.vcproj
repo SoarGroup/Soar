@@ -34,7 +34,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ConnectionSML.lib"
-				OutputFile="TestConnectionSML.exe"
+				OutputFile="$(SolutionDir)\bin\TestConnectionSML.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\lib"
 				GenerateDebugInformation="TRUE"
@@ -82,7 +82,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ConnectionSML.lib"
-				OutputFile="TestConnectionSML.exe"
+				OutputFile="$(SolutionDir)\bin\TestConnectionSML.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\bin"
 				GenerateDebugInformation="TRUE"

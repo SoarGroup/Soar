@@ -13,7 +13,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="bin"
+			OutputDirectory="$(SolutionDir)\bin"
 			IntermediateDirectory="src\Debug"
 			ConfigurationType="2"
 			CharacterSet="2">
@@ -35,7 +35,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ConnectionSML.lib soar-cli.lib"
-				OutputFile="bin\KernelSML.dll"
+				OutputFile="$(SolutionDir)\bin\KernelSML.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)\CommandLineInterface\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;"
 				GenerateDebugInformation="TRUE"
@@ -46,8 +46,7 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy bin\KernelSML.dll ..\bin"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -67,7 +66,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="bin"
+			OutputDirectory="$(SolutionDir)\bin"
 			IntermediateDirectory="src\Release"
 			ConfigurationType="2"
 			CharacterSet="2">
@@ -86,7 +85,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ConnectionSML.lib soar-cli.lib"
-				OutputFile="bin\KernelSML.dll"
+				OutputFile="$(SolutionDir)\bin\KernelSML.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)\CommandLineInterface\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;"
 				GenerateDebugInformation="TRUE"
@@ -98,8 +97,7 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy bin\KernelSML.dll ..\bin"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

@@ -36,7 +36,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="FALSE"
 				AdditionalDependencies="soar-cli.lib ConnectionSML.lib ElementXML.lib ClientSML.lib"
-				OutputFile="cli-test.exe"
+				OutputFile="$(SolutionDir)\bin\cli-test.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)\ClientSML\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;;&quot;$(SolutionDir)\..\gSKI\lib&quot;;&quot;$(SolutionDir)\CommandLineInterface\lib\&quot;;&quot;$(SolutionDir)\ElementXML\lib&quot;"
 				GenerateDebugInformation="TRUE"
@@ -85,7 +85,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="soar-cli.lib ConnectionSML.lib ElementXML.lib ClientSML.lib"
-				OutputFile="cli-test.exe"
+				OutputFile="$(SolutionDir)\bin\cli-test.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)\ClientSML\lib&quot;;&quot;$(SolutionDir)\ConnectionSML\lib&quot;;&quot;$(SolutionDir)\..\gSKI\lib&quot;;&quot;$(SolutionDir)\CommandLineInterface\lib\&quot;;&quot;$(SolutionDir)\ElementXML\lib&quot;"
 				GenerateDebugInformation="TRUE"/>
