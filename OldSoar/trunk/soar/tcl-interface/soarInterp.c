@@ -296,14 +296,15 @@ Soar_DestroyRegisterEntry (riPtrToRemove)
   for (riPtr = registry; riPtr != NULL; riPtr = riPtr->nextPtr) {
     if (riPtr == riPtrToRemove) {
       if (riPtr == registry)
-	{
-	  registry = riPtr->nextPtr;
-	}
+				{
+					registry = riPtr->nextPtr;
+				}
       else
-	{
-	  riPtrPrev->nextPtr = riPtr->nextPtr;
-	}
+				{
+					riPtrPrev->nextPtr = riPtr->nextPtr;
+				}
       ckfree((char *) riPtr);
+			break; /* SW 08.19.03 from SF bug report 781010 */
     }
     riPtrPrev = riPtr;
   }
