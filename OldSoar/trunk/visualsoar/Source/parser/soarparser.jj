@@ -60,7 +60,7 @@ TOKEN:
 
 < IN_SOAR_PRODUCTION > TOKEN:
 {
-	  <RARROW:		"-->">
+     <RARROW:		"-->">
 	 |<SAME_TYPE:	"<=>">
 	 |<GEQUAL:		">=">
 	 |<LDISJUNCT:	"<<">
@@ -81,7 +81,7 @@ TOKEN:
 	 |<PERIOD:		".">
 	 |<PLUS:		"+">
 	 |<QMARK:		"?">
-     |<RBRACE:		"}"> : DEFAULT
+     |<RBRACE:		"}">
 	 |<RPAREN:		")">
 	 |<TILDE:		"~">
 	 |<COLON:		":">
