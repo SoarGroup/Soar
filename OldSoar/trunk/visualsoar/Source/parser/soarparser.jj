@@ -35,12 +35,81 @@ SKIP:
 {
 	 < "#" (~["\n","\r"])*>
 	|<";#" (~["\n","\r"])*>
-	|< "echo" (~["\n","\r"])*>
-	|< "excise" (~["\n","\r"])*>
 	|" "
 	|"\t"
 	|"\n"
 	|"\r"
+	|< "global" (~["\n","\r"])*>
+	|< "set" (~["\n","\r"])*>
+	|< "puts" (~["\n","\r"])*>
+	|< "alias" (~["\n","\r"])*>
+	|< "attention-lapse" (~["\n","\r"])*>
+	|< "attribute_preferences_mode" (~["\n","\r"])*>
+	|< "capture-input" (~["\n","\r"])*>
+	|< "chunk-name-format" (~["\n","\r"])*>
+	|< "command-to-file" (~["\n","\r"])*>
+	|< "default_wme_depth" (~["\n","\r"])*>
+	|< "dirs" (~["\n","\r"])*>
+	|< "echo" (~["\n","\r"])*>
+	|< "excise" (~["\n","\r"])*>
+	|< "explain-backtraces" (~["\n","\r"])*>
+	|< "firing-counts" (~["\n","\r"])*>
+	|< "format-watch" (~["\n","\r"])*>
+	|< "gds_print" (~["\n","\r"])*>
+	|< "help" (~["\n","\r"])*>
+	|< "indifferent-selection" (~["\n","\r"])*>
+	|< "init-soar" (~["\n","\r"])*>
+	|< "input-period" (~["\n","\r"])*>
+	|< "internal-symbols" (~["\n","\r"])*>
+	|< "io" (~["\n","\r"])*>
+	|< "learn" (~["\n","\r"])*>
+	|< "log" (~["\n","\r"])*>
+	|< "matches" (~["\n","\r"])*>
+	|< "max-chunks" (~["\n","\r"])*>
+	|< "max-elaborations" (~["\n","\r"])*>
+	|< "max-nil-output-cycles" (~["\n","\r"])*>
+	|< "max_chunks" (~["\n","\r"])*>
+	|< "max_elaborations" (~["\n","\r"])*>
+	|< "memories" (~["\n","\r"])*>
+	|< "monitor" (~["\n","\r"])*>
+	|< "multi-attributes" (~["\n","\r"])*>
+	|< "o-support-mode" (~["\n","\r"])*>
+	|< "output-strings-destination" (~["\n","\r"])*>
+	|< "o_support_mode" (~["\n","\r"])*>
+	|< "popd" (~["\n","\r"])*>
+	|< "predefined-aliases" (~["\n","\r"])*>
+	|< "preferences" (~["\n","\r"])*>
+	|< "print" (~["\n","\r"])*>
+	|< "production-find" (~["\n","\r"])*>
+	|< "pushd" (~["\n","\r"])*>
+	|< "pwatch" (~["\n","\r"])*>
+	|< "quit" (~["\n","\r"])*>
+	|< "remove-wme" (~["\n","\r"])*>
+	|< "replay-input" (~["\n","\r"])*>
+	|< "rete-net" (~["\n","\r"])*>
+	|< "rhsfun" (~["\n","\r"])*>
+	|< "run" (~["\n","\r"])*>
+	|< "save_backtraces" (~["\n","\r"])*>
+	|< "send" (~["\n","\r"])*>
+	|< "soar" (~["\n","\r"])*>
+	|< "soar8" (~["\n","\r"])*>
+	|< "soarnews" (~["\n","\r"])*>
+	|< "soartk" (~["\n","\r"])*>
+	|< "start-attention-lapse" (~["\n","\r"])*>
+	|< "stats" (~["\n","\r"])*>
+	|< "stop-soar" (~["\n","\r"])*>
+	|< "topd" (~["\n","\r"])*>
+	|< "tsi" (~["\n","\r"])*>
+	|< "unalias" (~["\n","\r"])*>
+	|< "variables" (~["\n","\r"])*>
+	|< "version" (~["\n","\r"])*>
+	|< "viSTEAM" (~["\n","\r"])*>
+	|< "vt" (~["\n","\r"])*>
+	|< "vtutor" (~["\n","\r"])*>
+	|< "wake-from-attention-lapse" (~["\n","\r"])*>
+	|< "wake" (~["\n","\r"])*>
+	|< "warnings" (~["\n","\r"])*>
+	|< "watch" (~["\n","\r"])*>
 }
 
 TOKEN:
