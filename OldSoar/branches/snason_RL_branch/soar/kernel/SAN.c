@@ -151,10 +151,10 @@ void record_for_RL()
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  if ((prod->times_applied % 10 == 4) && (current_agent(d_cycle_count) > 0)){
-				  // prod->times_applied = 0;
+			  if ((prod->times_applied > 50) && prod->increasing){
 				  prod = specify_production(ist);
 				  if (prod){
+					  prod->times_applied = 0;
 					  push(prod, record->pointer_list);
 					  record->num_prod++;
 				  }
@@ -166,18 +166,35 @@ void record_for_RL()
 }
 
 production *specify_production(instantiation *ist){
-	tc_number tc_num = get_new_tc_number();
+	tc_number tc_num = get_new_tc_number(); 
 	Symbol *sym;
 	condition *cond, *c;
-	condition *cond_top = NIL, *cond_bottom, *new_top, *new_bottom;
 	wme *w;
 	int i;
 	production *prod;
 	decay_timelist_element *decay_list;
 	int decay_pos;
 	wme_decay_element *decay_element;
+    list *identifiers = 0;
+    cons *cons;
 
 	 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
+		  if (cond->type == POSITIVE_CONDITION){
+			  sym = equality_test_for_symbol_in_test(cond->data.tests.id_test);
+			  if (sym) identifiers = add_if_not_member(sym, identifiers);
+			  sym = equality_test_for_symbol_in_test(cond->data.tests.attr_test);
+			  if (sym) identifiers = add_if_not_member(sym, identifiers);
+			  sym = equality_test_for_symbol_in_test(cond->data.tests.value_test);
+			  if (sym) identifiers = add_if_not_member(sym, identifiers);
+		  }
+	  }
+
+	  for (cons = identifiers; cons ; cons=cons->rest){
+			sym = (Symbol *) cons->first;
+			add_symbol_to_tc(sym, tc_num, NIL, NIL);
+	  } 
+
+	 /* for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
 		if (cond->type == POSITIVE_CONDITION){
 			  sym = equality_test_for_symbol_in_test(cond->data.tests.id_test);
 			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
@@ -186,7 +203,7 @@ production *specify_production(instantiation *ist){
 			  sym = equality_test_for_symbol_in_test(cond->data.tests.value_test);
 			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
 		}
-	 }
+	 }*/
 	
 	 decay_list = current_agent(decay_timelist);
 	 decay_pos = current_agent(current_decay_timelist_element)->position;
@@ -199,6 +216,7 @@ production *specify_production(instantiation *ist){
 			 decay_element = decay_list[decay_pos].first_decay_element;
 			 while (decay_element != NULL)
 			 {
+				 condition *cond_top = NIL, *cond_bottom, *new_top, *new_bottom;
 				 w = decay_element->this_wme;
 							 
 		 /*num = rand() % current_agent(num_wmes_in_rete);
@@ -228,8 +246,14 @@ production *specify_production(instantiation *ist){
 				 prod = build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
 				 deallocate_condition_list(new_top);
 				 if (!prod){
+					 tc_num = get_new_tc_number();
+					 for (cons = identifiers; cons ; cons=cons->rest){
+						 sym = (Symbol *) cons->first;
+						 add_symbol_to_tc(sym, tc_num, NIL, NIL);
+					 }
 					 decay_element = decay_element->next;
 					 continue;
+					 // return NIL; // a perhaps tenporary solution to the tc_nums screwed up by build_RL_production
 				 }
 				 return prod;
 			 }
@@ -242,7 +266,7 @@ production *specify_production(instantiation *ist){
 void learn_RL_productions(int level){
 	RL_record *record;
 	production *prod;
-	float Q;
+	float Q, temp;
 	cons *c;
 	float increment;
 	
@@ -271,7 +295,9 @@ void learn_RL_productions(int level){
 			prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
 			// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 			// a->referent = symbol_to_rhs_value(make_float_constant(Q));
+			temp = prod->avg_update;
 			prod->avg_update = fabs(Q) + prod->avg_update*current_agent(epsilon);
+			prod->increasing = (prod->avg_update > temp);
 		//	prod->times_applied++;
 		}
 

@@ -680,6 +680,7 @@ extern int soar_ChunkNameFormat(int argc, const char *argv[], soarResult * res);
 
 extern int soar_Learn (int argc, const char *argv[], soarResult *res);
 
+extern  int soar_Decay (int argc, char *argv[], soarResult *res);
 
 /* soar_setRL --
 SAN

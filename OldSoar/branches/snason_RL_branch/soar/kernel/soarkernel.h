@@ -1814,6 +1814,7 @@ typedef struct production_struct {
     int OPERAND_which_assert_list;      /* RCHONG: 10.11 */
 	int times_applied;                      /* SAN - only for RL_PRODUCTION_TYPE */
     double avg_update;                      /* SAN - only for RL_PRODUCTION_TYPE */
+	bool increasing;                        /* SAN - only for RL_PRODUCTION_TYPE */
     byte interrupt;             /* SW: 7.31.03 */
 #ifdef BUG_139_WORKAROUND
     bool already_fired;         /* RPM test workaround for bug #139 */
@@ -3512,7 +3513,8 @@ typedef struct ms_change_struct {
     See activate.c for more information.   
     ======================================================================= */   
     
- void decay_init(void);   
+ void decay_init(void);
+ void reset_decay(void);
  void decay_update_new_wme(wme *w, int num_refs);   
  void activate_wmes_in_pref(preference *pref);   
  void activate_wmes_in_inst(instantiation *inst);   

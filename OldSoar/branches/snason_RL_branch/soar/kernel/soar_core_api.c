@@ -250,6 +250,7 @@ void soar_cInitializeSoar(void)
         do_preference_phase();  /* allow all instantiations to retract */
 #endif
 	reset_RL();           // SAN
+	reset_decay();
     reset_explain();
     reset_id_counters();
     reset_wme_timetags();
