@@ -4,50 +4,58 @@ package edu.umich.visualsoar.parser;
 public interface SoarParserConstants {
 
   int EOF = 0;
-  int RARROW = 9;
-  int SAME_TYPE = 10;
-  int GEQUAL = 11;
-  int LDISJUNCT = 12;
-  int LEQUAL = 13;
-  int NEQUAL = 14;
-  int RDISJUNCT = 15;
-  int SP = 16;
-  int AMPERSAND = 17;
-  int ATSIGN = 18;
-  int CARET = 19;
-  int COMMA = 20;
-  int EMARK = 21;
-  int EQUAL = 22;
-  int GREATER = 23;
-  int HYPHEN = 24;
-  int LBRACE = 25;
-  int LESS = 26;
-  int LPAREN = 27;
-  int PERIOD = 28;
-  int PLUS = 29;
-  int QMARK = 30;
-  int RBRACE = 31;
-  int RPAREN = 32;
-  int TILDE = 33;
-  int COLON = 34;
-  int LSQBRACET = 35;
-  int RSQBRACET = 36;
-  int QUOTE = 37;
-  int VARIABLE = 38;
-  int INTEGER_CONST = 39;
-  int SYMBOLIC_CONST = 40;
-  int FLOATING_POINT_CONST = 41;
-  int EXPONENT = 42;
-  int TCL_PREPROCESS = 43;
+  int SP = 7;
+  int SOARCMD = 8;
+  int RARROW = 15;
+  int SAME_TYPE = 16;
+  int GEQUAL = 17;
+  int LDISJUNCT = 18;
+  int LEQUAL = 19;
+  int NEQUAL = 20;
+  int RDISJUNCT = 21;
+  int AMPERSAND = 22;
+  int ATSIGN = 23;
+  int CARET = 24;
+  int COMMA = 25;
+  int EMARK = 26;
+  int EQUAL = 27;
+  int GREATER = 28;
+  int HYPHEN = 29;
+  int LBRACE = 30;
+  int LESS = 31;
+  int LPAREN = 32;
+  int PERIOD = 33;
+  int PLUS = 34;
+  int QMARK = 35;
+  int RBRACE = 36;
+  int RPAREN = 37;
+  int TILDE = 38;
+  int COLON = 39;
+  int LSQBRACET = 40;
+  int RSQBRACET = 41;
+  int QUOTE = 42;
+  int VARIABLE = 43;
+  int INTEGER_CONST = 44;
+  int SYMBOLIC_CONST = 45;
+  int FLOATING_POINT_CONST = 46;
+  int EXPONENT = 47;
+  int TCL_PREPROCESS = 48;
 
   int DEFAULT = 0;
+  int IN_SOAR_PRODUCTION = 1;
 
   String[] tokenImage = {
     "<EOF>",
     "<token of kind 1>",
     "<token of kind 2>",
-    "<token of kind 3>",
-    "<token of kind 4>",
+    "\" \"",
+    "\"\\t\"",
+    "\"\\n\"",
+    "\"\\r\"",
+    "\"sp\"",
+    "<SOARCMD>",
+    "<token of kind 9>",
+    "<token of kind 10>",
     "\" \"",
     "\"\\t\"",
     "\"\\n\"",
@@ -59,7 +67,6 @@ public interface SoarParserConstants {
     "\"<=\"",
     "\"<>\"",
     "\">>\"",
-    "\"sp\"",
     "\"&\"",
     "\"@\"",
     "\"^\"",
