@@ -250,7 +250,7 @@ public class TreeTraceView extends ComboCommandBase
 	 * @param agent
 	 * @param xmlParent
 	********************************************************************************************/
-	protected void displayXmlTraceEvent(Agent agent, ClientTraceXML xmlParent)
+	protected void displayXmlTraceEvent(Agent agent, ClientXML xmlParent)
 	{
 		int nChildren = xmlParent.GetNumberChildren() ;
 		
@@ -397,7 +397,27 @@ public class TreeTraceView extends ComboCommandBase
 		xmlParent.delete() ;
 	}
 	
-	public void xmlEventHandler(int eventID, Object data, final Agent agent, ClientXML xml)
+	public static class RunWrapper implements Runnable
+	{
+		TreeTraceView m_View ;
+		Agent 		  m_Agent ;
+		ClientXML 	  m_XML ;
+		
+		public RunWrapper(TreeTraceView view, Agent agent, ClientXML xml)
+		{
+			m_Agent = agent ;
+			m_XML   = xml ;
+			m_View  = view ;
+		}
+		
+		public void run()
+		{
+			m_View.displayXmlTraceEvent(m_Agent, m_XML) ;
+		}
+	}
+	
+	
+	public void xmlEventHandler(int eventID, Object data, Agent agent, ClientXML xml)
 	{
 		if (eventID != smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT.swigValue())
 			return ;
@@ -405,28 +425,31 @@ public class TreeTraceView extends ComboCommandBase
 		// The messages come collected into a parent <trace> tag so that one event
 		// can send over many pieces of a trace in a single call.  Just more
 		// efficient that way.
+		/*
 		final ClientTraceXML xmlParent = xml.ConvertToTraceXML() ;
 		if (!xmlParent.IsTagTrace() || xmlParent.GetNumberChildren() == 0)
 		{
 			xml.delete() ;
 			return ;
 		}
+		*/
 		
 		// If Soar is running in the UI thread we can make
 		// the update directly.
 		if (!Document.kDocInOwnThread)
 		{
-			displayXmlTraceEvent(agent, xmlParent) ;
+			displayXmlTraceEvent(agent, xml) ;
 			return ;
 		}
 
 		// Have to make update in the UI thread.
 		// Callback comes in the document thread.
-        Display.getDefault().syncExec(new Runnable() {
-            public void run() {
-    			displayXmlTraceEvent(agent, xmlParent) ;
-            }
-         }) ;		
+		// NOTE: I had to write a real class here to do this rather than just using my
+		// "normal" trick of making agent and xml "final" and creating a class on the fly.
+		// Doing that lead to an intermittement memory leak from the xml object--really hard to track down
+		// and I'm still not fully clear on why that happened, but I suspect if this event was called again
+		// before the wrapper had run, we had a problem.
+        Display.getDefault().asyncExec(new RunWrapper(this, agent, xml)) ;
 	}
 
 	/********************************************************************************************
