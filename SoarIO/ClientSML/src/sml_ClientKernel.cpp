@@ -59,3 +59,30 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 	return agent ;
 }
 
+/*************************************************************
+* @brief Process a command line command
+*
+* @param pCommandLine Command line string to process.
+* @param pAgentName Agent name to apply the command line to.
+* @param pResult BADBAD: I don't know how else to return a string to the client
+*                so I'm currently returning an STL string.
+*************************************************************/
+bool Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName, std::string* pResult) {
+
+	AnalyzeXML response;
+	std::string result;
+	bool ret = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
+
+	if (pResult) {
+		*pResult = response.GetResultString();
+	}
+
+	if (!ret) {
+		if (pResult) {
+			*pResult += "\nError Data:\n";
+			*pResult += response.GetErrorTag()->GetCharacterData();
+		}
+	}
+
+	return ret;
+}

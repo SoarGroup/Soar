@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include;.\lib_src\GnuWin32\include"
+				AdditionalIncludeDirectories="..\ClientSML\include;..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include;.\lib_src\GnuWin32\include"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -35,10 +35,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="FALSE"
-				AdditionalDependencies="soar-cli.lib libgw32c.a ConnectionSML.lib ElementXML.lib"
+				AdditionalDependencies="soar-cli.lib libgw32c.a ConnectionSML.lib ElementXML.lib ClientSML.lib"
 				OutputFile="bin\cli-test.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\ConnectionSML\lib;..\..\gSKI\lib;lib_src\GnuWin32\lib;lib\;..\ElementXML\lib"
+				AdditionalLibraryDirectories="..\ClientSML\lib;..\ConnectionSML\lib;..\..\gSKI\lib;lib_src\GnuWin32\lib;lib\;..\ElementXML\lib"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="0"
 				SubSystem="1"
@@ -67,13 +67,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="bin"
+			IntermediateDirectory="lib"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\ClientSML\include;..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include;.\lib_src\GnuWin32\include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -83,8 +84,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
+				AdditionalDependencies="soar-cli.lib libgw32c.a ConnectionSML.lib ElementXML.lib ClientSML.lib"
+				OutputFile="bin\cli-test.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\ClientSML\lib;..\ConnectionSML\lib;..\..\gSKI\lib;lib_src\GnuWin32\lib;lib\;..\ElementXML\lib"
 				GenerateDebugInformation="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>

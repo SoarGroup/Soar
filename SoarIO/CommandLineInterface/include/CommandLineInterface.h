@@ -8,12 +8,12 @@
 
 // Forward Declarations
 namespace gSKI {
-   class IAgent;
-   class IKernel;
-   struct Error;
+	class IAgent;
+	class IKernel;
+	struct Error;
 }
 namespace sml {
-   class ElementXML;
+	class ElementXML;
 }
 
 namespace cli {
@@ -23,10 +23,10 @@ class CommandLineInterface;
 // We need a comparator to make the map we're about to define work with char*
 struct strCompareCommand
 {
-  bool operator()(const char* s1, const char* s2) const
-  {
-    return std::strcmp(s1, s2) < 0;
-  }
+	bool operator()(const char* s1, const char* s2) const
+	{
+		return std::strcmp(s1, s2) < 0;
+	}
 };
 
 // Define the CommandFunction which we'll call to process commands
@@ -43,11 +43,11 @@ public:
 	CommandLineInterface(void);
 	~CommandLineInterface(void);
 
-   bool DoCommand(gSKI::IAgent* pAgent, gSKI::IKernel* pKernel, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
-   bool DoCommandInternal(const char* commandLine);
+	bool DoCommand(gSKI::IAgent* pAgent, gSKI::IKernel* pKernel, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
+	bool DoCommandInternal(const char* commandLine);
 
 	bool QuitCalled() { return m_QuitCalled; }
-   void GetLastResult(std::string* pResult);
+	void GetLastResult(std::string* pResult);
 
 	//bool Parse(int argc, char**& argv);
 	//bool Do();
@@ -59,7 +59,7 @@ public:
 	bool DoCD(const char* directory = 0);
 
 	bool ParseEcho(int argc, char**& argv);
-	bool DoEcho();
+	bool DoEcho(int argc, char**& argv);
 
 	bool ParseExcise(int argc, char**& argv);
 	bool DoExcise(const unsigned short options, int productionCount, char**& productions);
@@ -82,8 +82,8 @@ public:
 	bool ParseSource(int argc, char**& argv);
 	bool DoSource(const char* filename);
 
-   bool ParseSP(int argc, char**& argv);
-   bool DoSP(const char* production);
+	bool ParseSP(int argc, char**& argv);
+	bool DoSP(const char* production);
 
 	bool ParseStopSoar(int argc, char**& argv);
 	bool DoStopSoar(bool self, char const* reasonForStopping);
@@ -102,10 +102,10 @@ protected:
 
 	CommandMap	   m_CommandMap;
 	bool		      m_QuitCalled;
-   gSKI::IKernel* m_pKernel;
-   gSKI::IAgent*  m_pAgent;
-   std::string    m_Result;
-   gSKI::Error*   m_pError;
+	gSKI::IKernel* m_pKernel;
+	gSKI::IAgent*  m_pAgent;
+	std::string    m_Result;
+	gSKI::Error*   m_pError;
 
 };
 

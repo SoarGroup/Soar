@@ -417,7 +417,7 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	ElementXML* pMsg = CreateSMLCommand(pCommandName, rawOutput) ;
 
 	//add the agent name parameter
-	AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
+	AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName = 0);
 
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
