@@ -34,7 +34,8 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="lib\soar-cli.lib"/>
+				OutputFile="lib\soar-cli.lib"
+				AdditionalLibraryDirectories=""/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -56,13 +57,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			OutputDirectory="lib"
+			IntermediateDirectory="lib\Debug"
+			ConfigurationType="4"
 			CharacterSet="2"
-			ManagedExtensions="TRUE">
+			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include;.\lib_src\GnuWin32\include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -72,10 +74,10 @@
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
-				LinkIncremental="1"
-				GenerateDebugInformation="TRUE"/>
+				Name="VCLibrarianTool"
+				AdditionalDependencies="KernelSML.lib"
+				OutputFile="lib\soar-cli.lib"
+				AdditionalLibraryDirectories="..\KernelSML\lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -90,8 +92,6 @@
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCWebDeploymentTool"/>
 			<Tool
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool

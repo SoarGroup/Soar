@@ -123,6 +123,7 @@ Global
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Ansi Release.ActiveCfg = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Ansi Release.Build.0 = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.ActiveCfg = Debug|Win32
+		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.Build.0 = Debug|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Release.ActiveCfg = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Release.Build.0 = Release|Win32
 	EndGlobalSection

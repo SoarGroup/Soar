@@ -35,10 +35,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="FALSE"
-				AdditionalDependencies="soar-cli.lib libgw32c.a ConnectionSML.lib"
+				AdditionalDependencies="soar-cli.lib libgw32c.a ConnectionSML.lib ElementXML.lib"
 				OutputFile="bin\cli-test.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\ConnectionSML\lib;..\..\gSKI\lib;lib_src\GnuWin32\lib;lib\"
+				AdditionalLibraryDirectories="..\ConnectionSML\lib;..\..\gSKI\lib;lib_src\GnuWin32\lib;lib\;..\ElementXML\lib"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="0"
 				SubSystem="1"
