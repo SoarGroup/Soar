@@ -29,6 +29,13 @@
 #include <fstream>
 #include <string>
 
+#if HAVE_STRINGS_H
+#include <strings.h>
+#if HAVE_STRCASECMP
+#define stricmp strcasecmp
+#endif // HAVE_STRCASECMP
+#endif // HAVE_STRINGS_H
+
 using namespace sml ;
 
 using std::cout;

@@ -5,6 +5,14 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
+#if HAVE_STRINGS_H
+#include <strings.h>
+#if HAVE_STRCASECMP
+#define stricmp strcasecmp
+#endif // HAVE_STRCASECMP
+#endif // HAVE_STRINGS_H
+
 //#include <crtdbg.h>
 
 // Quick addition so we can time this easily.
@@ -87,7 +95,7 @@ int main(int argc, char* argv[])
 		{
 			if (!stricmp(argv[i], "-nostop"))
 				stopAtEnd = false ;
-			if(!stricmp(argv[1], "true"))
+			if (!stricmp(argv[1], "true"))
 				doPrinting = true;
 		}
 	}
