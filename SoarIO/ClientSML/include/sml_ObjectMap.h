@@ -27,7 +27,11 @@ typedef T	DataType ;
 // Used to store a map from a name to an object
 // The name should be owned by the object being stored (so we only delete the object, never the name)
 
-typedef std::map<std::string, DataType>	InternalMap ;
+typedef std::map<std::string, DataType>		InternalMap ;
+//typedef typename std::map<std::string, T>::iterator			InternalMapIter ;
+//typedef typename std::map<std::string, T>::const_iterator	InternalMapConstIter ;
+typedef typename InternalMap::iterator			InternalMapIter ;
+typedef typename InternalMap::const_iterator	InternalMapConstIter ;
 
 protected:
 	InternalMap	m_Map ;
@@ -38,7 +42,7 @@ public:
 	virtual ~ObjectMap()
 	{
 		// Delete the contents of the map
-		for(InternalMap::iterator mapIter = m_Map.begin(); mapIter != m_Map.end(); ++mapIter)
+		for(InternalMapIter mapIter = m_Map.begin(); mapIter != m_Map.end(); ++mapIter)
 		{
 			DataType pObject = mapIter->second ;
 
@@ -52,7 +56,7 @@ public:
 
 	DataType getIndex(int index)
 	{
-		for (InternalMap::iterator mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)
+		for (InternalMapIter mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)
 		{
 			if (index == 0)
 				return mapIter->second ;
@@ -74,7 +78,7 @@ public:
 	// Remove all agents not on this list
 	void keep(std::list<DataType>* pKeepList)
 	{
-		for (InternalMap::iterator mapIter = m_Map.begin() ; mapIter != m_Map.end() ;)
+		for (InternalMapIter mapIter = m_Map.begin() ; mapIter != m_Map.end() ;)
 		{
 			DataType pObject = mapIter->second ;
 
@@ -88,7 +92,7 @@ public:
 
 	DataType find(char const *pName) const
 	{
-		InternalMap::const_iterator mapIter = m_Map.find(pName);
+		InternalMapConstIter mapIter = m_Map.find(pName);
 
 		if (mapIter == m_Map.end())
 			return NULL ;
@@ -98,7 +102,7 @@ public:
 
 	bool remove(char const* pName, bool deleteObject = true)
 	{
-		InternalMap::iterator mapIter = m_Map.find(pName);
+		InternalMapIter mapIter = m_Map.find(pName);
 
 		if (mapIter == m_Map.end())
 			return false ;
