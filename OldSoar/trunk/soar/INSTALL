@@ -72,21 +72,22 @@ _______________________________________________________________
 3. Installing, running, and building Soar on GNU/Linux and Unix
 ---------------------------------------------------------------
 
-Requirements for running Soar 8.5.1 on GNU/Linux:
+Requirements for running Soar 8.5.2 on GNU/Linux:
 3.1  The X window system.  Installation instructions for X are beyond the scope
      of this document.
 
-3.2  Tcl/Tk version 8.4.6.  Newer versions should work.  If you do not have this
-     installed or do not know if you have the correct version installed, 
-     consider downloading and installing ActiveTcl (instructions follow).
+3.2  Tcl/Tk version 8.4.6 and BWidgets 1.7 (a Tcl extension).  Newer versions 
+     should work.  We recommend downloading and installing ActiveTcl 
+     (instructions follow) if you don't know what version you have.
      Installing ActiveTcl will not harm any version of Tcl currently installed
-     on your system.
+     on your system (it is installed in its own /usr/local/ActiveTcl directory).
 
+     Installing ActiveTcl:
      3.2.1  Get ActiveTcl 8.4.6 or better from here:
      http://www.activestate.com/Products/Download/Download.plex?id=ActiveTcl
      
      3.2.2  Extract the package in your home directory with this command:
-     tar xfvz ActiveTcl8.4.6.1-linux-ix86.tar.gz
+     tar xfvz ActiveTcl8.4.6.1-linux-<BUILD>.tar.gz
      
      3.2.3  AS ROOT: run install.sh in the directory you just extracted:
      su root
@@ -100,20 +101,23 @@ Requirements for running Soar 8.5.1 on GNU/Linux:
      
      3.2.5  You no longer need to be (and shouldn't be) root to continue.
      
-3.3  The Soar-Suite 8.5.1 distribution installer from:
+     3.2.6  You will need to change the first line of init-soar.tcl in step 3.5
+     below to point to the ActiveTcl wish binary.
+     
+3.3  The Soar-Suite 8.5.2 distribution installer from:
      http://sitemaker.umich.edu/soar/soar_software_downloads
      
 Installation:
-3.4  Extract the soar-suite-8.5.1-linux.tar.gz file.  It will extract into a 
+3.4  Extract the soar-suite-8.5.2-linux.tar.gz file.  It will extract into a 
      directory named "soar".  The command when using GNU's tar utility is:
-     tar xvfz soar-suite-8.5.1-linux.tar.gz
+     tar xvfz soar-suite-8.5.2-linux.tar.gz
 
      2.5.1  If the above command fails, you may need to unzip the files in a separate
      step, like this:
-     gunzip soar-suite-8.5.1-linux.tar.gz; tar xvf soar-suite-8.5.1-linux.tar
+     gunzip soar-suite-8.5.2-linux.tar.gz; tar xvf soar-suite-8.5.2-linux.tar
      
 Running Soar:
-3.5  Change into the soar-8.5.1 subdir of the newly extracted directory and type this 
+3.5  Change into the soar-8.5.2 subdir of the newly extracted directory and type this 
      command to run Soar:
      ./init-soar.tcl  
 
@@ -125,10 +129,10 @@ Running Soar:
      If you have other errors, you may need to rebuild the Soar binaries
      (instructions follow).
 
-Requirements for building Soar 8.5.1 GNU/Linux (optional):
+Requirements for building Soar 8.5.2 GNU/Linux (optional):
 3.6  A recent version of GCC and its utilites such as make.  We're not sure 
-     what versions other than 3.2.3 will work.  2.95.2 should work with no
-     problems.
+     what versions other than 3.2.3 and 3.3.3 will work.  2.95.2 should work 
+     with no problems.
 
 Building Soar (optional):
 3.7  In the Soar directory, execute these commands to build Soar:

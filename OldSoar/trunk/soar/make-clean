@@ -1,8 +1,8 @@
-#!/bin/csh
+#!/bin/sh
 pushd kernel
 make distclean
 popd
 pushd tcl-interface
 make distclean
 popd
-\rm library/libsoar8.4*
+rm library/libsoar*
