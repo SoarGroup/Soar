@@ -35,13 +35,19 @@ public class SoarEditorDocumentProvider extends FileDocumentProvider
 	{
 		IDocument document = super.createDocument(element);
 		
+		//BUG: partitioning the comments...
+		//all it seems to do is make the auto-indenter not work on comments.
+		//so, removing the partitioner, examining the results of that.
+		//RESULTS: comments not colored, act like code.
+		//I guess I need to figure out how to make the autoindentstrategy fire here, too
+		
 		if(document != null)
 		{
 			IDocumentPartitioner partitioner = createSoarPartitioner();
 			partitioner.connect(document);
 			document.setDocumentPartitioner(partitioner);
 		}
-
+		
 		return document;
 	}
 
