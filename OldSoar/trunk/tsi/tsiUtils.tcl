@@ -1601,6 +1601,8 @@ global tsiConfig
       puts $command
       puts [$command]
    }
+   
+   focus .tsw
 }
 
 #
