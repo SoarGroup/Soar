@@ -449,8 +449,11 @@ int LearnCmd (ClientData clientData,
   ret = soar_Learn( objc, argv, &res );
   free_argv(objc, argv);
 
-  Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), res.result, (char *) NULL );
-  return ret == SOAR_OK ? TCL_OK : TCL_ERROR;
+  if (ret != SOAR_OK) {
+    Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+    return TCL_ERROR;
+  }
+  return TCL_OK;
 }
 
 

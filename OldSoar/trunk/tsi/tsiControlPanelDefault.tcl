@@ -146,6 +146,8 @@ proc makeTSIDefaultControlPanel { {hide 0}  {x -20} {y 1} } {
   } else {
     wm deiconify .
   }
+  
+  createNewAgent ""
 
 }   ;### end of proc makeTSIDefaultControlPanel
 

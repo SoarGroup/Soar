@@ -212,6 +212,12 @@ proc Debugger::create { } {
                -command  {Debugger::SoarButton 0 {stop}} \
                -helptext "Halt Agent/Environment"]
    }
+   
+# probably not a good idea to have this right next to the other buttons...
+#   set but31   [Button $buttonframe.but4 -text "Init-Soar" \
+#               -repeatdelay 300 \
+#               -command  {Debugger::SoarButton 0 {init-soar}} \
+#               -helptext "Reset Agent/Environment"]
 
    set bframe [$titf2 getframe]
    set buttonframe2 [frame $bframe.butfr2]
@@ -238,6 +244,7 @@ proc Debugger::create { } {
    set cycleCanvas $bottomframe.cycle
 
    pack $but1 $but2 $but3 -side left -padx 4
+#   pack $but1 $but2 $but3 $but31 -side left -padx 4
    pack $buttonframe
    pack $but4 $but5 -side left -padx 4
    pack $buttonframe2
