@@ -215,7 +215,7 @@ class PsOrOpXmlLoader(ContentHandler):
       os.chdir(oldcwd) # Restore original working directory
 
       # resolve vertrefs
-      for n, ref in vertrefs:
+      for n, ref in self.vertrefs:
          nref = self.nodeTable[ref]
          n.AddAdjacency(nref)
 
