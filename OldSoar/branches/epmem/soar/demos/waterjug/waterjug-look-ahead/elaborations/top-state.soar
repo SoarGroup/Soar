@@ -1,0 +1,14 @@
+sp {elaborate*top-state*name
+   (state <s> ^superstate nil)
+-->
+   (<s> ^name waterjug)
+}
+
+sp {waterjug*elaborate*problem-space
+   (state <s> ^name waterjug)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name waterjug
+        ^default-state-copy yes
+        ^two-level-attributes jug
+        ^dont-copy empty)} 
