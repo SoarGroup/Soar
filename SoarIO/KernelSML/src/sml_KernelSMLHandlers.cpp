@@ -127,8 +127,7 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName
 		m_OutputListeners.push_back(pListener) ;
 
 		// Listen for output callback events
-		// voigtjr - this is crashing!
-		//pResult->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
+		pResult->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
 	}
 
 #ifdef USE_TCL_DEBUGGER
