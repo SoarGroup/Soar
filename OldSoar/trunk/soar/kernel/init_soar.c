@@ -208,7 +208,7 @@ void init_sysparams(void)
     current_agent(sysparams)[ATTENTION_LAPSE_ON_SYSPARAM] = FALSE;
 #endif                          /* ATTENTION_LAPSE */
 
-    current_agent(sysparams)[LEARNING_ON_SYSPARAM] = TRUE;
+    current_agent(sysparams)[LEARNING_ON_SYSPARAM] = FALSE;  /* bugzilla bug 338 */
     current_agent(sysparams)[LEARNING_ONLY_SYSPARAM] = FALSE;   /* AGR MVL1 */
     current_agent(sysparams)[LEARNING_EXCEPT_SYSPARAM] = FALSE; /* KJC 8/96 */
     current_agent(sysparams)[LEARNING_ALL_GOALS_SYSPARAM] = TRUE;
