@@ -4,6 +4,8 @@
 
 #include "cli_CommandLineInterface.h"
 
+#include <algorithm>
+
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
 
@@ -16,6 +18,12 @@
 #endif // _MSC_VER
 
 using namespace cli;
+
+const struct MemoriesSort {
+	bool operator()(std::pair< std::string, unsigned long > a, std::pair< std::string, unsigned long > b) {
+		return a.second < b.second;
+	}
+};
 
 bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
@@ -88,10 +96,10 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 	gSKI::IProduction* pProd = 0;
 
 	if (productionType) {
-		pIter = pProductionManager->GetAllProductions();
 		bool foundProduction = false;
+		std::vector< std::pair< std::string, unsigned long > > memories;
 
-		for(int i = 0; pIter->IsValid() && (n == 0 || i < n); pIter->Next(), ++i) {
+		for(pIter = pProductionManager->GetAllProductions(); pIter->IsValid(); pIter->Next()) {
 
 			foundProduction = true;
 
@@ -118,17 +126,31 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 					pIter = 0;
 					return HandleError("Invalid production type.");
 			}
-
-			char buf[1024];
-			snprintf(buf, 1023, "%s: %ld\n", pProd->GetName(), pProd->CountReteTokens());
-			AppendToResult(buf);
-
+			
+			std::pair< std::string, unsigned long > memory;
+			memory.first = pProd->GetName();
+			memory.second = pProd->CountReteTokens();
+			memories.push_back(memory);
 			pProd->Release();
 		}
 		pIter->Release();
 		pIter = 0;
 
-		if (!foundProduction) return HandleError("No productions found.");
+		if (!foundProduction) {
+			AppendToResult("No productions found.");
+			return true;
+		}
+
+		MemoriesSort s;
+		sort(memories.begin(), memories.end(), s);
+		char buf[1024];
+		int i = 0;
+		for (std::vector< std::pair< std::string, unsigned long > >::reverse_iterator j = memories.rbegin(); 
+			j != memories.rend() && (n == 0 || i < n); 
+			++j, ++i) {
+			snprintf(buf, 1023, "%s: %ld\n", j->first.c_str(), j->second);
+			AppendToResult(buf);
+		}
 		return true;
 	}
 
