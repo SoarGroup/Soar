@@ -58,17 +58,12 @@
  * 
  */
 
-
-
-#ifndef _SOAR_CORE_API_H_          /* excludeFromBuildInfo */
+#ifndef _SOAR_CORE_API_H_       /* excludeFromBuildInfo */
 #define _SOAR_CORE_API_H_
 
 #include "soarkernel.h"
 #include "callback.h"
 #include "soarapi_datatypes.h"
-
-
-
 
 /* *************************************************************************
  * *************************************************************************/
@@ -100,9 +95,7 @@
  *
  *
  */
-extern void soar_cInitializeSoar (void);
-
-
+extern void soar_cInitializeSoar(void);
 
 /**
  *
@@ -127,8 +120,7 @@ extern void soar_cInitializeSoar (void);
  *
  *
  */
-extern int soar_cReInitSoar (void);
-
+extern int soar_cReInitSoar(void);
 
 /**
  *
@@ -146,8 +138,7 @@ extern int soar_cReInitSoar (void);
  *
  *
  */
-extern void  soar_cCreateAgent (const char * agent_name);
-
+extern void soar_cCreateAgent(const char *agent_name);
 
 /**
  *
@@ -182,12 +173,7 @@ extern void  soar_cCreateAgent (const char * agent_name);
  *
  *
  */
-extern int soar_cRun( long n, bool all,  enum go_type_enum type,
-		      enum soar_apiSlotType slot); 
-
-
-
-
+extern int soar_cRun(long n, bool all, enum go_type_enum type, enum soar_apiSlotType slot);
 
 /**
  *
@@ -197,7 +183,7 @@ extern int soar_cRun( long n, bool all,  enum go_type_enum type,
  * \brief  Stops all agents.
  *
  */
-extern void soar_cStopAllAgents( void );
+extern void soar_cStopAllAgents(void);
 
 /**
  *
@@ -210,8 +196,7 @@ extern void soar_cStopAllAgents( void );
  *                       prematurely.
  *
  */
-extern void soar_cStopCurrentAgent( const char *reason );
-
+extern void soar_cStopCurrentAgent(const char *reason);
 
 /**
  *
@@ -233,8 +218,7 @@ extern void soar_cStopCurrentAgent( const char *reason );
  *
  *
  */
-extern int soar_cDestroyAgentByName( const char *name );
-
+extern int soar_cDestroyAgentByName(const char *name);
 
 /**
  *
@@ -255,9 +239,7 @@ extern int soar_cDestroyAgentByName( const char *name );
  *
  *
  */
-extern int soar_cDestroyAllAgentsWithName( char *name );
-
-
+extern int soar_cDestroyAllAgentsWithName(char *name);
 
 /**
  *
@@ -277,9 +259,7 @@ extern int soar_cDestroyAllAgentsWithName( char *name );
  *
  *
  */
-extern void soar_cDestroyAgentByAddress (psoar_agent delete_agent);
-
-
+extern void soar_cDestroyAgentByAddress(psoar_agent delete_agent);
 
 /**
  *
@@ -310,9 +290,7 @@ extern void soar_cDestroyAgentByAddress (psoar_agent delete_agent);
  * \see     soar_cGetIdForAgentByName
  *
  */
-extern int soar_cDestroyAgentById (int agent_id);
-
-
+extern int soar_cDestroyAgentById(int agent_id);
 
 /**
  *
@@ -330,11 +308,9 @@ extern int soar_cDestroyAgentById (int agent_id);
  *
  *
  */
-extern void soar_cQuit ( void );
-
+extern void soar_cQuit(void);
 
 /*@}*/
-
 
 /* *************************************************************************
  * *************************************************************************/
@@ -354,8 +330,6 @@ extern void soar_cQuit ( void );
  * *************************************************************************/
 
 /*@{*/
-
-
 
 /**
  *
@@ -377,11 +351,7 @@ extern void soar_cQuit ( void );
  *
  *
  */
-extern int soar_cLoadReteNet( const char *filename );
-
-
-
-
+extern int soar_cLoadReteNet(const char *filename);
 
 /**
  *
@@ -402,8 +372,7 @@ extern int soar_cLoadReteNet( const char *filename );
  *
  */
 
-extern int soar_cSaveReteNet( const char *filename );
-
+extern int soar_cSaveReteNet(const char *filename);
 
 /**
  *
@@ -440,13 +409,7 @@ extern int soar_cSaveReteNet( const char *filename );
  *
  */
 /*extern unsigned long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue,*/
-extern long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue,
-				   bool accept, psoar_wme *new_wme );
-
-
-
-
-
+extern long soar_cAddWme(const char *szId, const char *szAttr, const char *szValue, bool accept, psoar_wme * new_wme);
 
 /**
  *
@@ -466,8 +429,7 @@ extern long soar_cAddWme( const char *szId, const char *szAttr, const char *szVa
  *
  *
  */
-extern int soar_cRemoveWmeUsingTimetag( int num );
-
+extern int soar_cRemoveWmeUsingTimetag(int num);
 
 /**
  *
@@ -493,9 +455,7 @@ extern int soar_cRemoveWmeUsingTimetag( int num );
  *
  * 
  */
-extern int soar_cRemoveWme( psoar_wme wme );
-
-
+extern int soar_cRemoveWme(psoar_wme wme);
 
 /**
  *
@@ -513,9 +473,7 @@ extern int soar_cRemoveWme( psoar_wme wme );
  *
  */
 
-extern void soar_cExciseAllProductions (void);
-
-
+extern void soar_cExciseAllProductions(void);
 
 /**
  *
@@ -532,9 +490,7 @@ extern void soar_cExciseAllProductions (void);
  *
  *
  */
-extern void soar_cExciseAllTaskProductions (void);
-
-
+extern void soar_cExciseAllTaskProductions(void);
 
 /**
  *
@@ -557,9 +513,7 @@ extern void soar_cExciseAllTaskProductions (void);
  *
  *
  */
-extern void soar_cExciseAllProductionsOfType ( byte type );
-
-
+extern void soar_cExciseAllProductionsOfType(byte type);
 
 /**
  *
@@ -579,10 +533,9 @@ extern void soar_cExciseAllProductionsOfType ( byte type );
  *
  *
  */
-extern int soar_cExciseProductionByName ( const char *name );
+extern int soar_cExciseProductionByName(const char *name);
 
 /*@}*/
-
 
 /* *************************************************************************
  * *************************************************************************/
@@ -597,7 +550,6 @@ extern int soar_cExciseProductionByName ( const char *name );
  * *************************************************************************/
 /*@{*/
 
-
 /**
  *
  *
@@ -611,7 +563,7 @@ extern int soar_cExciseProductionByName ( const char *name );
  * 
  *
  */
-extern void soar_cSetSystemParameter( int param, long value );
+extern void soar_cSetSystemParameter(int param, long value);
 
 /*#define soar_cGetInputPeriod() (soar_agent->input_period)*/
 #define soar_cGetInputPeriod() (current_agent(input_period))
@@ -625,8 +577,7 @@ extern void soar_cSetSystemParameter( int param, long value );
 /*#define soar_cSetVerbosity(x) ((soar_agent->soar_verbose_flag) = (x))*/
 #define soar_cSetVerbosity(x) ((current_agent(soar_verbose_flag)) = (x))
 
-
-#ifndef NO_TIMING_STUFF 
+#ifndef NO_TIMING_STUFF
 /**
  *
  *
@@ -653,11 +604,8 @@ extern void soar_cSetSystemParameter( int param, long value );
  *
  *
  */
-extern double soar_cDetermineTimerResolution( double *min, double *max);
+extern double soar_cDetermineTimerResolution(double *min, double *max);
 #endif
-
-
-
 
 #ifdef DC_HISTOGRAM
 /**
@@ -682,9 +630,8 @@ extern double soar_cDetermineTimerResolution( double *min, double *max);
  *
  *
  */
-extern void soar_cInitializeDCHistogram( int size, int freq );
-#endif /* DC_HISTOGRAM */
-
+extern void soar_cInitializeDCHistogram(int size, int freq);
+#endif                          /* DC_HISTOGRAM */
 
 #ifdef KT_HISTOGRAM
 /**
@@ -708,8 +655,8 @@ extern void soar_cInitializeDCHistogram( int size, int freq );
  *
  *
  */
-extern void soar_cInitializeKTHistogram( int size );
-#endif /* KT_HISTOGRAM */
+extern void soar_cInitializeKTHistogram(int size);
+#endif                          /* KT_HISTOGRAM */
 
 /**
  *
@@ -727,9 +674,7 @@ extern void soar_cInitializeKTHistogram( int size );
  *
  *
  */
-extern void soar_cSetChunkNameLong( bool truly );
-
-
+extern void soar_cSetChunkNameLong(bool truly);
 
 /**
  *
@@ -756,9 +701,7 @@ extern void soar_cSetChunkNameLong( bool truly );
  *
  *
  */
-extern int soar_cSetChunkNameCount( long count );
-
-
+extern int soar_cSetChunkNameCount(long count);
 
 /**
  *
@@ -780,9 +723,7 @@ extern int soar_cSetChunkNameCount( long count );
  *
  *
  */
-extern int soar_cSetChunkNamePrefix( const char *prefix ); 
-
-
+extern int soar_cSetChunkNamePrefix(const char *prefix);
 
 /**
  *
@@ -801,10 +742,8 @@ extern int soar_cSetChunkNamePrefix( const char *prefix );
  *
  *
  */
-extern void soar_cSetLearning( enum soar_apiLearningSetting setting );
+extern void soar_cSetLearning(enum soar_apiLearningSetting setting);
 
-
-  
 /**
  *
  *
@@ -823,8 +762,7 @@ extern void soar_cSetLearning( enum soar_apiLearningSetting setting );
  *
  *
  */
-extern int soar_cSetOperand2( bool turnOn );
-
+extern int soar_cSetOperand2(bool turnOn);
 
 /**
  *
@@ -839,8 +777,7 @@ extern int soar_cSetOperand2( bool turnOn );
  *
  *
  */
-extern void soar_cSetWaitSNC( bool wait );
-
+extern void soar_cSetWaitSNC(bool wait);
 
 /**
  *
@@ -860,12 +797,7 @@ extern void soar_cSetWaitSNC( bool wait );
  *
  *
  */
-extern int soar_cMultiAttributes( const char *attr, int value );
-
-
-
-
-
+extern int soar_cMultiAttributes(const char *attr, int value);
 
 /** 
  *
@@ -892,12 +824,9 @@ extern int soar_cMultiAttributes( const char *attr, int value );
  * 
  *
  */
-extern int soar_cAttributePreferencesMode (int mode );
-
+extern int soar_cAttributePreferencesMode(int mode);
 
 /*@}*/
-
-
 
 /* *************************************************************************
  * *************************************************************************/
@@ -912,7 +841,6 @@ extern int soar_cAttributePreferencesMode (int mode );
 /* *************************************************************************
  * *************************************************************************/
 /*@{*/
-
 
 /**
  *
@@ -938,14 +866,8 @@ extern int soar_cAttributePreferencesMode (int mode );
  * \see soar_cAddCallback
  *
  */
-extern void soar_cAddInputFunction (agent * a, soar_callback_fn f, 
-				    soar_callback_data cb_data, 
-				    soar_callback_free_fn free_fn,
-				    const char * name);
-
-
-
-
+extern void soar_cAddInputFunction(agent * a, soar_callback_fn f,
+                                   soar_callback_data cb_data, soar_callback_free_fn free_fn, const char *name);
 
 /**
  *
@@ -964,9 +886,7 @@ extern void soar_cAddInputFunction (agent * a, soar_callback_fn f,
  * \see soar_cRemoveCallback
  *
  */
-extern void soar_cRemoveInputFunction (agent * a, const char * name);
-
-
+extern void soar_cRemoveInputFunction(agent * a, const char *name);
 
 /**
  *
@@ -997,13 +917,9 @@ extern void soar_cRemoveInputFunction (agent * a, const char * name);
  *
  *
  */
-extern void soar_cAddOutputFunction (agent * a, soar_callback_fn f, 
-				     soar_callback_data cb_data, 
-				     soar_callback_free_fn free_fn,
-				     const char * output_link_name);
-
-
-
+extern void soar_cAddOutputFunction(agent * a, soar_callback_fn f,
+                                    soar_callback_data cb_data,
+                                    soar_callback_free_fn free_fn, const char *output_link_name);
 
 /**
  *
@@ -1023,10 +939,7 @@ extern void soar_cAddOutputFunction (agent * a, soar_callback_fn f,
  *
  *
  */
-extern void soar_cRemoveOutputFunction (agent * a, const char * name);
-
-
-
+extern void soar_cRemoveOutputFunction(agent * a, const char *name);
 
 /**
  *
@@ -1054,13 +967,9 @@ extern void soar_cRemoveOutputFunction (agent * a, const char * name);
  *
  *
  */
-extern void soar_cPushCallback (soar_callback_agent a, 
-				SOAR_CALLBACK_TYPE type, 
-				soar_callback_fn fn, 
-				soar_callback_data data,
-				soar_callback_free_fn free_fn );
-		
-
+extern void soar_cPushCallback(soar_callback_agent a,
+                               SOAR_CALLBACK_TYPE type,
+                               soar_callback_fn fn, soar_callback_data data, soar_callback_free_fn free_fn);
 
 /**
  *
@@ -1088,15 +997,10 @@ extern void soar_cPushCallback (soar_callback_agent a,
  *
  * 
  */
-extern void soar_cAddCallback (soar_callback_agent a, 
-			       SOAR_CALLBACK_TYPE type, 
-			       soar_callback_fn fn, 
-			       soar_callback_data data,
-			       soar_callback_free_fn free_fn,
-			       soar_callback_id id);
-
-
-
+extern void soar_cAddCallback(soar_callback_agent a,
+                              SOAR_CALLBACK_TYPE type,
+                              soar_callback_fn fn,
+                              soar_callback_data data, soar_callback_free_fn free_fn, soar_callback_id id);
 
 /**
  *
@@ -1119,10 +1023,7 @@ extern void soar_cAddCallback (soar_callback_agent a,
  *
  *
  */
-extern void soar_cPopCallback (soar_callback_agent a, 
-			       SOAR_CALLBACK_TYPE type);
-
-
+extern void soar_cPopCallback(soar_callback_agent a, SOAR_CALLBACK_TYPE type);
 
 /**
  *
@@ -1142,13 +1043,7 @@ extern void soar_cPopCallback (soar_callback_agent a,
  *
  *
  */
-extern void soar_cRemoveCallback (soar_callback_agent a, 
-				  SOAR_CALLBACK_TYPE type, 
-				  soar_callback_id id);
-
-
-
-
+extern void soar_cRemoveCallback(soar_callback_agent a, SOAR_CALLBACK_TYPE type, soar_callback_id id);
 
 /**
  *
@@ -1176,13 +1071,9 @@ extern void soar_cRemoveCallback (soar_callback_agent a,
  *
  *
  */
-extern void soar_cAddGlobalCallback( SOAR_GLOBAL_CALLBACK_TYPE type,
-				      soar_callback_fn fn,
-				      soar_callback_data data,
-				      soar_callback_free_fn free_fn,
-				      soar_callback_id id );
-
-
+extern void soar_cAddGlobalCallback(SOAR_GLOBAL_CALLBACK_TYPE type,
+                                    soar_callback_fn fn,
+                                    soar_callback_data data, soar_callback_free_fn free_fn, soar_callback_id id);
 
 /**
  *
@@ -1199,10 +1090,7 @@ extern void soar_cAddGlobalCallback( SOAR_GLOBAL_CALLBACK_TYPE type,
  *
  *
  */
-extern void soar_cRemoveGlobalCallback( SOAR_GLOBAL_CALLBACK_TYPE type, 
-					soar_callback_id id);
-
-
+extern void soar_cRemoveGlobalCallback(SOAR_GLOBAL_CALLBACK_TYPE type, soar_callback_id id);
 
 /**
  *
@@ -1221,9 +1109,7 @@ extern void soar_cRemoveGlobalCallback( SOAR_GLOBAL_CALLBACK_TYPE type,
  *
  *
  */
-extern void soar_cListAllCallbacks (soar_callback_agent a,
-				    bool monitorable_only);
-
+extern void soar_cListAllCallbacks(soar_callback_agent a, bool monitorable_only);
 
 /**
  *
@@ -1239,8 +1125,7 @@ extern void soar_cListAllCallbacks (soar_callback_agent a,
  *
  *
  */
-extern void soar_cListAllCallbacksForEvent (soar_callback_agent agent,
-					SOAR_CALLBACK_TYPE type);
+extern void soar_cListAllCallbacksForEvent(soar_callback_agent agent, SOAR_CALLBACK_TYPE type);
 
 /**
  *
@@ -1256,9 +1141,7 @@ extern void soar_cListAllCallbacksForEvent (soar_callback_agent agent,
  *
  *
  */
-extern void soar_cRemoveAllMonitorableCallbacks (soar_callback_agent agent);
-
-
+extern void soar_cRemoveAllMonitorableCallbacks(soar_callback_agent agent);
 
 /**
  *
@@ -1275,9 +1158,7 @@ extern void soar_cRemoveAllMonitorableCallbacks (soar_callback_agent agent);
  *
  *
  */
-extern void soar_cRemoveAllCallbacksForEvent (soar_callback_agent agent,
-					  SOAR_CALLBACK_TYPE type);
-
+extern void soar_cRemoveAllCallbacksForEvent(soar_callback_agent agent, SOAR_CALLBACK_TYPE type);
 
 /**
  *
@@ -1298,7 +1179,6 @@ extern void soar_cRemoveAllCallbacksForEvent (soar_callback_agent agent,
  */
 extern void soar_cTestAllMonitorableCallbacks(soar_callback_agent the_agent);
 
-
 /**
  *
  *
@@ -1317,16 +1197,9 @@ extern void soar_cTestAllMonitorableCallbacks(soar_callback_agent the_agent);
  *
  *
  */
-extern SOAR_CALLBACK_TYPE soar_cCallbackNameToEnum (const char * name,
-					     bool monitor_only);
+extern SOAR_CALLBACK_TYPE soar_cCallbackNameToEnum(const char *name, bool monitor_only);
 
-
-
-
-extern void soar_cDefaultAskCallback( soar_callback_agent the_agent,
-				      soar_callback_data data,
-				      soar_call_data call_data );
-  
+extern void soar_cDefaultAskCallback(soar_callback_agent the_agent, soar_callback_data data, soar_call_data call_data);
 
 /*@}*/
 
@@ -1375,10 +1248,7 @@ extern void soar_cDefaultAskCallback( soar_callback_agent the_agent,
  * \see    soar_cWmeGetValue
  *
  */
-extern char *soar_cGetWmeId( psoar_wme w, char *buff, size_t buff_size );
-
-
-
+extern char *soar_cGetWmeId(psoar_wme w, char *buff, size_t buff_size);
 
 /**
  *
@@ -1407,11 +1277,7 @@ extern char *soar_cGetWmeId( psoar_wme w, char *buff, size_t buff_size );
  * \see    soar_cWmeGetValue
  *
  */
- extern char *soar_cGetWmeAttr( psoar_wme w, char *buff, size_t buff_size );
-
-
-
-
+extern char *soar_cGetWmeAttr(psoar_wme w, char *buff, size_t buff_size);
 
 /**
  *
@@ -1440,13 +1306,7 @@ extern char *soar_cGetWmeId( psoar_wme w, char *buff, size_t buff_size );
  * \see    soar_cWmeGetAttr
  *
  */
- extern char *soar_cGetWmeValue( psoar_wme w, char *buff, size_t buff_size );
-
-
-
-
-
-
+extern char *soar_cGetWmeValue(psoar_wme w, char *buff, size_t buff_size);
 
 /**
  *
@@ -1462,10 +1322,7 @@ extern char *soar_cGetWmeId( psoar_wme w, char *buff, size_t buff_size );
  * 
  *
  */
-extern unsigned long soar_cGetWmeTimetag( psoar_wme w );
-
-
-
+extern unsigned long soar_cGetWmeTimetag(psoar_wme w);
 
 /**
  *
@@ -1493,12 +1350,8 @@ extern unsigned long soar_cGetWmeTimetag( psoar_wme w );
  * \see soar_cAddWme
  *
  */
-extern unsigned long soar_cAddIntWme( char *szId, char *szAttr, int value,
-				      bool acceptable_preference,
-				      psoar_wme *new_wme );
-
-
-
+extern unsigned long soar_cAddIntWme(char *szId, char *szAttr, int value,
+                                     bool acceptable_preference, psoar_wme * new_wme);
 
 /**
  *
@@ -1526,11 +1379,8 @@ extern unsigned long soar_cAddIntWme( char *szId, char *szAttr, int value,
  *
  *
  */
-extern unsigned long soar_cAddFloatWme( char *szId, char *szAttr, float value,
-					bool acceptable_preference,
-					psoar_wme *new_wme );
-
-
+extern unsigned long soar_cAddFloatWme(char *szId, char *szAttr, float value,
+                                       bool acceptable_preference, psoar_wme * new_wme);
 
 /**
  *
@@ -1553,8 +1403,7 @@ extern unsigned long soar_cAddFloatWme( char *szId, char *szAttr, float value,
  *
  *
  */
-extern void soar_cInitAgentIterator( soar_apiAgentIterator *ai );
-
+extern void soar_cInitAgentIterator(soar_apiAgentIterator * ai);
 
 /**
  *
@@ -1582,8 +1431,7 @@ extern void soar_cInitAgentIterator( soar_apiAgentIterator *ai );
  *
  */
 
-extern bool soar_cStepAgentIterator( soar_apiAgentIterator *ai );
-
+extern bool soar_cStepAgentIterator(soar_apiAgentIterator * ai);
 
 /**
  *
@@ -1602,10 +1450,8 @@ extern bool soar_cStepAgentIterator( soar_apiAgentIterator *ai );
  * 
  *
  */
- 
-extern psoar_agent soar_cGetAgentByName( char *name );
 
-
+extern psoar_agent soar_cGetAgentByName(char *name);
 
 /**
  *
@@ -1623,8 +1469,7 @@ extern psoar_agent soar_cGetAgentByName( char *name );
  * 
  *
  */
-int soar_cGetIdForAgentByName( char *name );
-
+int soar_cGetIdForAgentByName(char *name);
 
 /**
  * soar_cSetCurrentAgentByName --
@@ -1640,9 +1485,7 @@ int soar_cGetIdForAgentByName( char *name );
  * 
  *
  */
-bool soar_cSetCurrentAgentByName( char *name );
-
-
+bool soar_cSetCurrentAgentByName(char *name);
 
 /**
  * soar_cSetCurrentAgent --
@@ -1658,8 +1501,7 @@ bool soar_cSetCurrentAgentByName( char *name );
  * 
  *
  */
-void soar_cSetCurrentAgent( psoar_agent agent );
-
+void soar_cSetCurrentAgent(psoar_agent agent);
 
 /**
  * soar_cGetCurrentAgent --
@@ -1671,10 +1513,7 @@ void soar_cSetCurrentAgent( psoar_agent agent );
  *               affected by API function calls
  *
  */
-psoar_agent soar_cGetCurrentAgent( );
-
-
-
+psoar_agent soar_cGetCurrentAgent();
 
 /**
  * soar_cGetAgentInputLinkId --
@@ -1701,9 +1540,7 @@ psoar_agent soar_cGetCurrentAgent( );
  *           caller when its use is accomplished.
  *
  */
-char *soar_cGetAgentInputLinkId( psoar_agent a, char *buff, size_t buff_size );
-
-
+char *soar_cGetAgentInputLinkId(psoar_agent a, char *buff, size_t buff_size);
 
 /**
  * soar_cGetAgentOutputLinkId --
@@ -1730,8 +1567,7 @@ char *soar_cGetAgentInputLinkId( psoar_agent a, char *buff, size_t buff_size );
  *           caller when its use is accomplished.
  *
  */
-char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff, size_t buff_size );
-  
+char *soar_cGetAgentOutputLinkId(psoar_agent a, char *buff, size_t buff_size);
 
 /**
  * soar_cGetAgentId --
@@ -1748,8 +1584,7 @@ char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff, size_t buff_size );
  * 
  *
  */
-int soar_cGetAgentId( psoar_agent a );
-  
+int soar_cGetAgentId(psoar_agent a);
 
 /**
  * print --
@@ -1767,13 +1602,10 @@ int soar_cGetAgentId( psoar_agent a );
  * 
  * */
 #ifdef USE_STDARGS
-void print( char *format, ... );
+void print(char *format, ...);
 #else
-void print ();
+void print();
 #endif
-
-
-
 
 /*@}*/
 

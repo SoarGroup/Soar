@@ -88,10 +88,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-
-bool constituent_char[256];   /* is the character a symbol constituent? */
-bool whitespace[256];         /* is the character whitespace? */
-bool number_starters[256];    /* could the character initiate a number? */
+bool constituent_char[256];     /* is the character a symbol constituent? */
+bool whitespace[256];           /* is the character whitespace? */
+bool number_starters[256];      /* could the character initiate a number? */
 
 /* ======================================================================
                        Start/Stop Lex from File
@@ -104,42 +103,43 @@ bool number_starters[256];    /* could the character initiate a number? */
   the corresponding start_lex_from_file() call.
 ====================================================================== */
 
-void start_lex_from_file (char *filename, FILE *already_opened_file) {
-  lexer_source_file *lsf;
+void start_lex_from_file(char *filename, FILE * already_opened_file)
+{
+    lexer_source_file *lsf;
 
-  lsf = allocate_memory (sizeof(lexer_source_file),
-                         MISCELLANEOUS_MEM_USAGE);
-  lsf->saved_lexeme = current_agent(lexeme);
-  lsf->saved_current_char = current_agent(current_char);
-  lsf->parent_file = current_agent(current_file);
-  current_agent(current_file) = lsf;
-  lsf->filename = make_memory_block_for_string (filename);
-  lsf->file = already_opened_file;
-  lsf->fake_rparen_at_eol = FALSE;
-  lsf->allow_ids = TRUE;
-  lsf->parentheses_level = 0;
-  lsf->column_of_start_of_last_lexeme = 0;
-  lsf->line_of_start_of_last_lexeme = 0;
-  lsf->current_line = 0;
-  lsf->current_column = 0;
-  lsf->buffer[0] = 0;
-  current_agent(current_char) = ' ';   /* whitespace--to force immediate read of first line */
+    lsf = allocate_memory(sizeof(lexer_source_file), MISCELLANEOUS_MEM_USAGE);
+    lsf->saved_lexeme = current_agent(lexeme);
+    lsf->saved_current_char = current_agent(current_char);
+    lsf->parent_file = current_agent(current_file);
+    current_agent(current_file) = lsf;
+    lsf->filename = make_memory_block_for_string(filename);
+    lsf->file = already_opened_file;
+    lsf->fake_rparen_at_eol = FALSE;
+    lsf->allow_ids = TRUE;
+    lsf->parentheses_level = 0;
+    lsf->column_of_start_of_last_lexeme = 0;
+    lsf->line_of_start_of_last_lexeme = 0;
+    lsf->current_line = 0;
+    lsf->current_column = 0;
+    lsf->buffer[0] = 0;
+    current_agent(current_char) = ' ';  /* whitespace--to force immediate read of first line */
 }
 
-void stop_lex_from_file (void) {
-  lexer_source_file *lsf;
+void stop_lex_from_file(void)
+{
+    lexer_source_file *lsf;
 
-  if (reading_from_top_level()) {
-    print ("Internal error: tried to stop_lex_from_file at top level\n");
-    return;
-  }
-  lsf = current_agent(current_file);
-  current_agent(current_file) = current_agent(current_file)->parent_file;
-  current_agent(current_char) = lsf->saved_current_char;
-  current_agent(lexeme) = lsf->saved_lexeme;
+    if (reading_from_top_level()) {
+        print("Internal error: tried to stop_lex_from_file at top level\n");
+        return;
+    }
+    lsf = current_agent(current_file);
+    current_agent(current_file) = current_agent(current_file)->parent_file;
+    current_agent(current_char) = lsf->saved_current_char;
+    current_agent(lexeme) = lsf->saved_lexeme;
 
-  free_memory_block_for_string (lsf->filename);
-  free_memory (lsf, MISCELLANEOUS_MEM_USAGE);
+    free_memory_block_for_string(lsf->filename);
+    free_memory(lsf, MISCELLANEOUS_MEM_USAGE);
 }
 
 /* ======================================================================
@@ -149,104 +149,97 @@ void stop_lex_from_file (void) {
   puts it into the agent variable current_char.
 ====================================================================== */
 
-void get_next_char (void) {
-  char *s;
+void get_next_char(void)
+{
+    char *s;
 
-  /* 
-     Previously this block of code was only used in conjunction with the
-     Tcl interface, however, the more robust alternate_input_string
-     mechanism subsumes input_sting, so I am using this block in 
-     all future builds of Soar8.
+    /* 
+       Previously this block of code was only used in conjunction with the
+       Tcl interface, however, the more robust alternate_input_string
+       mechanism subsumes input_sting, so I am using this block in 
+       all future builds of Soar8.
 
-     081699 SW 
-  */
+       081699 SW 
+     */
 
-  /* Soar-Bugs #54, TMH */
-  if ( current_agent(alternate_input_exit) &&
-      (current_agent(alternate_input_string) == NULL) &&
-      (current_agent(alternate_input_suffix) == NULL)   ) {
-    current_agent(current_char) = EOF_AS_CHAR;
-    control_c_handler(0);
-    return;
-  }
-
-  if (current_agent(alternate_input_string) != NULL)
-    {
-      current_agent(current_char) = *current_agent(alternate_input_string)++;
-
-      if (current_agent(current_char) == '\0') 
-        {
-          current_agent(alternate_input_string) = NIL;
-          current_agent(current_char) = 
-            *current_agent(alternate_input_suffix)++;
-        }
-    }
-  else if (current_agent(alternate_input_suffix) != NULL)
-    {
-      current_agent(current_char) = *current_agent(alternate_input_suffix)++;
-
-      if (current_agent(current_char) == '\0') 
-        {
-          current_agent(alternate_input_suffix) = NIL;
-
-          /* Soar-Bugs #54, TMH */
-          if ( current_agent(alternate_input_exit) ) {
-            current_agent(current_char) = EOF_AS_CHAR;
-            control_c_handler(0);
-            return;
-	  }
-
-          current_agent(current_char) = current_agent(current_file)->buffer 
-            [current_agent(current_file)->current_column++];
-        }
-    } 
-  else 
-    {
-      current_agent(current_char) = current_agent(current_file)->buffer 
-        [current_agent(current_file)->current_column++];
-    }
-
-  if (current_agent(current_char)) return;
-
-  if ((current_agent(current_file)->current_column == BUFSIZE) &&
-      (current_agent(current_file)->buffer[BUFSIZE-2] != '\n') &&
-      (current_agent(current_file)->buffer[BUFSIZE-2] != EOF_AS_CHAR)) {
-    char msg[512];
-	snprintf (msg, MESSAGE_SIZE,
-	     "lexer.c: Error:  line too long (max allowed is %d chars)\nFile %s, line %lu\n",
-	     MAX_LEXER_LINE_LENGTH, current_agent(current_file)->filename,
-	     current_agent(current_file)->current_line);
-	msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-    abort_with_fatal_error(msg);
-  }
-
-  s = fgets (current_agent(current_file)->buffer, BUFSIZE, current_agent(current_file)->file);
-
-  if (s) {
-    current_agent(current_file)->current_line++;
-    if (reading_from_top_level()) {
-      tell_printer_that_output_column_has_been_reset ();
-      if (current_agent(logging_to_file))
-        print_string_to_log_file_only (current_agent(current_file)->buffer);
-    }
-  } else {
-    /* s==NIL means immediate eof encountered or read error occurred */
-    if (! feof(current_agent(current_file)->file)) {
-      if(reading_from_top_level()) {
-
-        control_c_handler(0);  /* AGR 581 */
-
+    /* Soar-Bugs #54, TMH */
+    if (current_agent(alternate_input_exit) &&
+        (current_agent(alternate_input_string) == NULL) && (current_agent(alternate_input_suffix) == NULL)) {
+        current_agent(current_char) = EOF_AS_CHAR;
+        control_c_handler(0);
         return;
-      } else {
-        print ("I/O error while reading file %s; ignoring the rest of it.\n",
-               current_agent(current_file)->filename);
-      }
     }
-    current_agent(current_file)->buffer[0] = EOF_AS_CHAR;
-    current_agent(current_file)->buffer[1] = 0;
-  }
-  current_agent(current_char) = current_agent(current_file)->buffer[0];
-  current_agent(current_file)->current_column = 1;
+
+    if (current_agent(alternate_input_string) != NULL) {
+        current_agent(current_char) = *current_agent(alternate_input_string)++;
+
+        if (current_agent(current_char) == '\0') {
+            current_agent(alternate_input_string) = NIL;
+            current_agent(current_char) = *current_agent(alternate_input_suffix)++;
+        }
+    } else if (current_agent(alternate_input_suffix) != NULL) {
+        current_agent(current_char) = *current_agent(alternate_input_suffix)++;
+
+        if (current_agent(current_char) == '\0') {
+            current_agent(alternate_input_suffix) = NIL;
+
+            /* Soar-Bugs #54, TMH */
+            if (current_agent(alternate_input_exit)) {
+                current_agent(current_char) = EOF_AS_CHAR;
+                control_c_handler(0);
+                return;
+            }
+
+            current_agent(current_char) = current_agent(current_file)->buffer
+                [current_agent(current_file)->current_column++];
+        }
+    } else {
+        current_agent(current_char) = current_agent(current_file)->buffer
+            [current_agent(current_file)->current_column++];
+    }
+
+    if (current_agent(current_char))
+        return;
+
+    if ((current_agent(current_file)->current_column == BUFSIZE) &&
+        (current_agent(current_file)->buffer[BUFSIZE - 2] != '\n') &&
+        (current_agent(current_file)->buffer[BUFSIZE - 2] != EOF_AS_CHAR)) {
+        char msg[512];
+        snprintf(msg, MESSAGE_SIZE,
+                 "lexer.c: Error:  line too long (max allowed is %d chars)\nFile %s, line %lu\n",
+                 MAX_LEXER_LINE_LENGTH, current_agent(current_file)->filename,
+                 current_agent(current_file)->current_line);
+        msg[MESSAGE_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
+        abort_with_fatal_error(msg);
+    }
+
+    s = fgets(current_agent(current_file)->buffer, BUFSIZE, current_agent(current_file)->file);
+
+    if (s) {
+        current_agent(current_file)->current_line++;
+        if (reading_from_top_level()) {
+            tell_printer_that_output_column_has_been_reset();
+            if (current_agent(logging_to_file))
+                print_string_to_log_file_only(current_agent(current_file)->buffer);
+        }
+    } else {
+        /* s==NIL means immediate eof encountered or read error occurred */
+        if (!feof(current_agent(current_file)->file)) {
+            if (reading_from_top_level()) {
+
+                control_c_handler(0);   /* AGR 581 */
+
+                return;
+            } else {
+                print("I/O error while reading file %s; ignoring the rest of it.\n",
+                      current_agent(current_file)->filename);
+            }
+        }
+        current_agent(current_file)->buffer[0] = EOF_AS_CHAR;
+        current_agent(current_file)->buffer[1] = 0;
+    }
+    current_agent(current_char) = current_agent(current_file)->buffer[0];
+    current_agent(current_file)->current_column = 1;
 }
 
 /* ======================================================================
@@ -275,165 +268,169 @@ void get_next_char (void) {
 
 #define finish() { current_agent(lexeme).string[current_agent(lexeme).length]=0; }
 
-void read_constituent_string (void) {
+void read_constituent_string(void)
+{
 #ifdef __SC__
-	char *buf;
-	int i,len;
+    char *buf;
+    int i, len;
 #endif
 
-  while ((current_agent(current_char)!=EOF_AS_CHAR) &&
-         constituent_char[(unsigned char)current_agent(current_char)])
+    while ((current_agent(current_char) != EOF_AS_CHAR) &&
+           constituent_char[(unsigned char) current_agent(current_char)])
+        store_and_advance();
+    finish();
+}
+
+void read_rest_of_floating_point_number(void)
+{
+    /* --- at entry, current_char=="."; we read the "." and rest of number --- */
     store_and_advance();
-  finish();
-}  
-
-void read_rest_of_floating_point_number (void) {
-  /* --- at entry, current_char=="."; we read the "." and rest of number --- */
-  store_and_advance();
-  while (isdigit(current_agent(current_char))) store_and_advance(); /* string of digits */
-  if ((current_agent(current_char)=='e')||(current_agent(current_char)=='E')) {
-    store_and_advance();                             /* E */
-    if ((current_agent(current_char)=='+')||(current_agent(current_char)=='-'))
-      store_and_advance();                       /* optional leading + or - */
-    while (isdigit(current_agent(current_char))) store_and_advance(); /* string of digits */
-  }
-  finish();
+    while (isdigit(current_agent(current_char)))
+        store_and_advance();    /* string of digits */
+    if ((current_agent(current_char) == 'e') || (current_agent(current_char) == 'E')) {
+        store_and_advance();    /* E */
+        if ((current_agent(current_char) == '+') || (current_agent(current_char) == '-'))
+            store_and_advance();        /* optional leading + or - */
+        while (isdigit(current_agent(current_char)))
+            store_and_advance();        /* string of digits */
+    }
+    finish();
 
 #ifdef __SC__
-  if (strcmp("soar>",current_agent(lexeme).string)) { /* if the lexeme doesn't equal "soar>" */
-  	if (!(strncmp("soar>",current_agent(lexeme).string,5))) { /* but the first 5 chars are "soar>" */
-		/* then SIOW messed up so ignore the "soar>" */
-	   buf = (char *)allocate_memory((len=(strlen(current_agent(lexeme).string)+1))*sizeof(char),STRING_MEM_USAGE);
-	   for (i=0;i<=len;i++) {
-	   	   buf[i] = current_agent(lexeme).string[i];
-	   }
-	   for (i=5;i<=len;i++) {
-	   	   current_agent(lexeme).string[i-5] = buf[i];
-	   }
-	   free_memory_block_for_string(buf);
-	}
-  }
+    if (strcmp("soar>", current_agent(lexeme).string)) {        /* if the lexeme doesn't equal "soar>" */
+        if (!(strncmp("soar>", current_agent(lexeme).string, 5))) {     /* but the first 5 chars are "soar>" */
+            /* then SIOW messed up so ignore the "soar>" */
+            buf =
+                (char *) allocate_memory((len = (strlen(current_agent(lexeme).string) + 1)) * sizeof(char),
+                                         STRING_MEM_USAGE);
+            for (i = 0; i <= len; i++) {
+                buf[i] = current_agent(lexeme).string[i];
+            }
+            for (i = 5; i <= len; i++) {
+                current_agent(lexeme).string[i - 5] = buf[i];
+            }
+            free_memory_block_for_string(buf);
+        }
+    }
 #endif
 }
 
+void determine_type_of_constituent_string(void)
+{
+    bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+    bool rereadable;
 
-void determine_type_of_constituent_string (void) {
-  bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-  bool rereadable;
+    determine_possible_symbol_types_for_string(current_agent(lexeme).string,
+                                               current_agent(lexeme).length,
+                                               &possible_id,
+                                               &possible_var, &possible_sc, &possible_ic, &possible_fc, &rereadable);
 
-  determine_possible_symbol_types_for_string (current_agent(lexeme).string,
-                                              current_agent(lexeme).length,
-                                              &possible_id,
-                                              &possible_var,
-                                              &possible_sc,
-                                              &possible_ic,
-                                              &possible_fc,
-                                              &rereadable);
-
-  /* --- check whether it's a variable --- */
-  if (possible_var) {
-    current_agent(lexeme).type = VARIABLE_LEXEME;
-    return;
-  }
-
-  /* --- check whether it's an integer --- */
-  if (possible_ic) {
-    errno = 0;
-    current_agent(lexeme).type = INT_CONSTANT_LEXEME;
-    current_agent(lexeme).int_val = strtol (current_agent(lexeme).string,NULL,10);
-    if (errno) {
-      print ("Error: bad integer (probably too large)\n");
-      print_location_of_most_recent_lexeme();
-      current_agent(lexeme).int_val = 0;
+    /* --- check whether it's a variable --- */
+    if (possible_var) {
+        current_agent(lexeme).type = VARIABLE_LEXEME;
+        return;
     }
-    return;
-  }
-    
-  /* --- check whether it's a floating point number --- */
-  if (possible_fc) {
-    errno = 0;
-    current_agent(lexeme).type = FLOAT_CONSTANT_LEXEME;
-    /*current_agent(lexeme).float_val = (float) strtod (current_agent(lexeme).string,NULL,10);*/
-    current_agent(lexeme).float_val = (float) strtod (current_agent(lexeme).string,NULL); 
-    if (errno) {
-      print ("Error: bad floating point number\n");
-      print_location_of_most_recent_lexeme();
-      current_agent(lexeme).float_val = 0.0;
+
+    /* --- check whether it's an integer --- */
+    if (possible_ic) {
+        errno = 0;
+        current_agent(lexeme).type = INT_CONSTANT_LEXEME;
+        current_agent(lexeme).int_val = strtol(current_agent(lexeme).string, NULL, 10);
+        if (errno) {
+            print("Error: bad integer (probably too large)\n");
+            print_location_of_most_recent_lexeme();
+            current_agent(lexeme).int_val = 0;
+        }
+        return;
     }
-    return;
-  }
-  
-  /* --- check if it's an identifier --- */
-  if (current_agent(current_file)->allow_ids && possible_id) {
-    current_agent(lexeme).id_letter = (char)toupper(current_agent(lexeme).string[0]);
-    errno = 0;
-    current_agent(lexeme).type = IDENTIFIER_LEXEME;
-    current_agent(lexeme).id_number = strtoul (&(current_agent(lexeme).string[1]),NULL,10);
-    if (errno) {
-      print ("Error: bad number for identifier (probably too large)\n");
-      print_location_of_most_recent_lexeme();
-      current_agent(lexeme).id_number = 0;
+
+    /* --- check whether it's a floating point number --- */
+    if (possible_fc) {
+        errno = 0;
+        current_agent(lexeme).type = FLOAT_CONSTANT_LEXEME;
+        /*current_agent(lexeme).float_val = (float) strtod (current_agent(lexeme).string,NULL,10); */
+        current_agent(lexeme).float_val = (float) strtod(current_agent(lexeme).string, NULL);
+        if (errno) {
+            print("Error: bad floating point number\n");
+            print_location_of_most_recent_lexeme();
+            current_agent(lexeme).float_val = 0.0;
+        }
+        return;
     }
-    return;
-  }
 
-  /* --- otherwise it must be a symbolic constant --- */
-  if (possible_sc) {
-    current_agent(lexeme).type = SYM_CONSTANT_LEXEME;
-    if (current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
-      if (current_agent(lexeme).string[0] == '<') {
-        if (current_agent(lexeme).string[1] == '<') {
-           print ("Warning: Possible disjunctive encountered in reading symbolic constant\n");
-           print ("         If a disjunctive was intended, add a space after <<\n");
-           print ("         If a constant was intended, surround constant with vertical bars\n");
-           print_location_of_most_recent_lexeme();
-	 } else {
-           print ("Warning: Possible variable encountered in reading symbolic constant\n");
-           print ("         If a constant was intended, surround constant with vertical bars\n");
-           print_location_of_most_recent_lexeme();
-         }
-      } else {
-        if (current_agent(lexeme).string[current_agent(lexeme).length-1] == '>') {
-          if (current_agent(lexeme).string[current_agent(lexeme).length-2] == '>') {
-           print ("Warning: Possible disjunctive encountered in reading symbolic constant\n");
-           print ("         If a disjunctive was intended, add a space before >>\n");
-           print ("         If a constant was intended, surround constant with vertical bars\n");
-           print_location_of_most_recent_lexeme();
-	 } else {
-           print ("Warning: Possible variable encountered in reading symbolic constant\n");
-           print ("         If a constant was intended, surround constant with vertical bars\n");
-           print_location_of_most_recent_lexeme();
-         }
-	}
-      }
+    /* --- check if it's an identifier --- */
+    if (current_agent(current_file)->allow_ids && possible_id) {
+        current_agent(lexeme).id_letter = (char) toupper(current_agent(lexeme).string[0]);
+        errno = 0;
+        current_agent(lexeme).type = IDENTIFIER_LEXEME;
+        current_agent(lexeme).id_number = strtoul(&(current_agent(lexeme).string[1]), NULL, 10);
+        if (errno) {
+            print("Error: bad number for identifier (probably too large)\n");
+            print_location_of_most_recent_lexeme();
+            current_agent(lexeme).id_number = 0;
+        }
+        return;
     }
-    return;
-  }
 
-  /* 
-     previously the following statement was used only with the Tcl Interface
-     but its functionality is required for the API.  Thus, I am leaving
-     it in, and commenting out the block which follows it.
+    /* --- otherwise it must be a symbolic constant --- */
+    if (possible_sc) {
+        current_agent(lexeme).type = SYM_CONSTANT_LEXEME;
+        if (current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
+            if (current_agent(lexeme).string[0] == '<') {
+                if (current_agent(lexeme).string[1] == '<') {
+                    print("Warning: Possible disjunctive encountered in reading symbolic constant\n");
+                    print("         If a disjunctive was intended, add a space after <<\n");
+                    print("         If a constant was intended, surround constant with vertical bars\n");
+                    print_location_of_most_recent_lexeme();
+                } else {
+                    print("Warning: Possible variable encountered in reading symbolic constant\n");
+                    print("         If a constant was intended, surround constant with vertical bars\n");
+                    print_location_of_most_recent_lexeme();
+                }
+            } else {
+                if (current_agent(lexeme).string[current_agent(lexeme).length - 1] == '>') {
+                    if (current_agent(lexeme).string[current_agent(lexeme).length - 2] == '>') {
+                        print("Warning: Possible disjunctive encountered in reading symbolic constant\n");
+                        print("         If a disjunctive was intended, add a space before >>\n");
+                        print("         If a constant was intended, surround constant with vertical bars\n");
+                        print_location_of_most_recent_lexeme();
+                    } else {
+                        print("Warning: Possible variable encountered in reading symbolic constant\n");
+                        print("         If a constant was intended, surround constant with vertical bars\n");
+                        print_location_of_most_recent_lexeme();
+                    }
+                }
+            }
+        }
+        return;
+    }
 
-     081699 SW
-  */
-  current_agent(lexeme).type = QUOTED_STRING_LEXEME;
+    /* 
+       previously the following statement was used only with the Tcl Interface
+       but its functionality is required for the API.  Thus, I am leaving
+       it in, and commenting out the block which follows it.
 
-  /*
-  char msg[128];
-  strcpy (msg, "Internal error: can't determine_type_of_constituent_string\n");
-  abort_with_fatal_error(msg);
-  */
+       081699 SW
+     */
+    current_agent(lexeme).type = QUOTED_STRING_LEXEME;
+
+    /*
+       char msg[128];
+       strcpy (msg, "Internal error: can't determine_type_of_constituent_string\n");
+       abort_with_fatal_error(msg);
+     */
 }
 
-void do_fake_rparen (void) {
-  record_position_of_start_of_lexeme();
-  current_agent(lexeme).type = R_PAREN_LEXEME;
-  current_agent(lexeme).length = 1;
-  current_agent(lexeme).string[0] = ')';
-  current_agent(lexeme).string[1] = 0;
-  if (current_agent(current_file)->parentheses_level > 0) current_agent(current_file)->parentheses_level--;
-  current_agent(current_file)->fake_rparen_at_eol = FALSE;
+void do_fake_rparen(void)
+{
+    record_position_of_start_of_lexeme();
+    current_agent(lexeme).type = R_PAREN_LEXEME;
+    current_agent(lexeme).length = 1;
+    current_agent(lexeme).string[0] = ')';
+    current_agent(lexeme).string[1] = 0;
+    if (current_agent(current_file)->parentheses_level > 0)
+        current_agent(current_file)->parentheses_level--;
+    current_agent(current_file)->fake_rparen_at_eol = FALSE;
 }
 
 /* ======================================================================
@@ -445,283 +442,349 @@ void do_fake_rparen (void) {
   the agent variable "lexeme".
 ====================================================================== */
 
-void (*(lexer_routines[256]))(void);
+void (*(lexer_routines[256])) (void);
 
-void lex_eof (void) {
-  if (current_agent(current_file)->fake_rparen_at_eol) {
-    do_fake_rparen();
-    return;
-  }
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = EOF_LEXEME;
-}
-
-void lex_at (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = AT_LEXEME;
-}
-
-void lex_tilde (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = TILDE_LEXEME;
-}
-
-void lex_up_arrow (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = UP_ARROW_LEXEME;
-}
-
-void lex_lbrace (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = L_BRACE_LEXEME;
-}
-
-void lex_rbrace (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = R_BRACE_LEXEME;
-}
-
-void lex_exclamation_point (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = EXCLAMATION_POINT_LEXEME;
-}
-
-void lex_comma (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = COMMA_LEXEME;
-}
-
-void lex_equal (void) {
-  /* Lexeme might be "=", or symbol */
-  /* Note: this routine relies on = being a constituent character */
-
-  read_constituent_string();
-  if (current_agent(lexeme).length==1) { current_agent(lexeme).type = EQUAL_LEXEME; return; }
-  determine_type_of_constituent_string();
-}
-
-void lex_ampersand (void) {
-  /* Lexeme might be "&", or symbol */
-  /* Note: this routine relies on & being a constituent character */
-
-  read_constituent_string();
-  if (current_agent(lexeme).length==1) { current_agent(lexeme).type = AMPERSAND_LEXEME; return; }
-  determine_type_of_constituent_string();
-}
-
-void lex_lparen (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = L_PAREN_LEXEME;
-  current_agent(current_file)->parentheses_level++;
-}
-
-void lex_rparen (void) {
-  store_and_advance();
-  finish();
-  current_agent(lexeme).type = R_PAREN_LEXEME;
-  if (current_agent(current_file)->parentheses_level > 0) current_agent(current_file)->parentheses_level--;
-}
-
-void lex_greater (void) {
-  /* Lexeme might be ">", ">=", ">>", or symbol */
-  /* Note: this routine relies on =,> being constituent characters */
-
-  read_constituent_string();
-  if (current_agent(lexeme).length==1) { current_agent(lexeme).type = GREATER_LEXEME; return; }
-  if (current_agent(lexeme).length==2) {
-    if (current_agent(lexeme).string[1]=='>') { current_agent(lexeme).type = GREATER_GREATER_LEXEME; return;}
-    if (current_agent(lexeme).string[1]=='=') { current_agent(lexeme).type = GREATER_EQUAL_LEXEME; return; }
-  }
-  determine_type_of_constituent_string();
-}
-    
-void lex_less (void) {
-  /* Lexeme might be "<", "<=", "<=>", "<>", "<<", or variable */
-  /* Note: this routine relies on =,<,> being constituent characters */
-
-  read_constituent_string();
-  if (current_agent(lexeme).length==1) { current_agent(lexeme).type = LESS_LEXEME; return; }
-  if (current_agent(lexeme).length==2) {
-    if (current_agent(lexeme).string[1]=='>') { current_agent(lexeme).type = NOT_EQUAL_LEXEME; return; }
-    if (current_agent(lexeme).string[1]=='=') { current_agent(lexeme).type = LESS_EQUAL_LEXEME; return; }
-    if (current_agent(lexeme).string[1]=='<') { current_agent(lexeme).type = LESS_LESS_LEXEME; return; }
-  }
-  if (current_agent(lexeme).length==3) {
-    if ((current_agent(lexeme).string[1]=='=')&&(current_agent(lexeme).string[2]=='>'))
-      { current_agent(lexeme).type = LESS_EQUAL_GREATER_LEXEME; return; }
-  }
-  determine_type_of_constituent_string();
-
-}
-
-void lex_period (void) {
-  store_and_advance();
-  finish();
-  /* --- if we stopped at '.', it might be a floating-point number, so be
-     careful to check for this case --- */
-  if (isdigit(current_agent(current_char))) read_rest_of_floating_point_number();
-  if (current_agent(lexeme).length==1) { current_agent(lexeme).type = PERIOD_LEXEME; return; }
-  determine_type_of_constituent_string();
-}
-
-void lex_plus (void) {
-  /* Lexeme might be +, number, or symbol */
-  /* Note: this routine relies on various things being constituent chars */
-  int i;
-  bool could_be_floating_point;
-  
-  read_constituent_string();
-  /* --- if we stopped at '.', it might be a floating-point number, so be
-     careful to check for this case --- */
-  if (current_agent(current_char)=='.') {
-    could_be_floating_point = TRUE;
-    for (i=1; i<current_agent(lexeme).length; i++)
-      if (! isdigit(current_agent(lexeme).string[i])) could_be_floating_point = FALSE;
-    if (could_be_floating_point) read_rest_of_floating_point_number();
-  }
-  if (current_agent(lexeme).length==1) { current_agent(lexeme).type = PLUS_LEXEME; return; }
-  determine_type_of_constituent_string();
-}
-      
-void lex_minus (void) {
-  /* Lexeme might be -, -->, number, or symbol */
-  /* Note: this routine relies on various things being constituent chars */
-  int i;
-  bool could_be_floating_point;
-
-  read_constituent_string();
-  /* --- if we stopped at '.', it might be a floating-point number, so be
-     careful to check for this case --- */
-  if (current_agent(current_char)=='.') {
-    could_be_floating_point = TRUE;
-    for (i=1; i<current_agent(lexeme).length; i++)
-      if (! isdigit(current_agent(lexeme).string[i])) could_be_floating_point = FALSE;
-    if (could_be_floating_point) read_rest_of_floating_point_number();
-  }
-  if (current_agent(lexeme).length==1) { current_agent(lexeme).type = MINUS_LEXEME; return; }
-  if (current_agent(lexeme).length==3) {
-    if ((current_agent(lexeme).string[1]=='-')&&(current_agent(lexeme).string[2]=='>'))
-      { current_agent(lexeme).type = RIGHT_ARROW_LEXEME; return; }
-  }
-  determine_type_of_constituent_string();
-}
-
-void lex_digit (void) {
-  int i;
-  bool could_be_floating_point;
-
-  read_constituent_string();
-  /* --- if we stopped at '.', it might be a floating-point number, so be
-     careful to check for this case --- */
-  if (current_agent(current_char)=='.') {
-    could_be_floating_point = TRUE;
-    for (i=1; i<current_agent(lexeme).length; i++)
-      if (! isdigit(current_agent(lexeme).string[i])) could_be_floating_point = FALSE;
-    if (could_be_floating_point) read_rest_of_floating_point_number();
-  }
-  determine_type_of_constituent_string();
-}
-
-void lex_unknown (void) {
-  if(reading_from_top_level() && current_agent(current_char) == 0) {
-  }
-  else {
-    print ("Error:  Unknown character encountered by lexer, code=%d\n", 
-           current_agent(current_char));
-    print ("File %s, line %lu, column %lu.\n", current_agent(current_file)->filename,
-           current_agent(current_file)->current_line, 
-           current_agent(current_file)->current_column);
-    /*
-      As far as we can tell this won't work
-      currently, even if it ever does get called.
-      Thus, we're taking it out.
-      081799 SW
-    */
-    /*
-    if (! reading_from_top_level()) {
-      respond_to_load_errors ();
-      if (current_agent(load_errors_quit))
-	current_agent(current_char) = EOF_AS_CHAR;
+void lex_eof(void)
+{
+    if (current_agent(current_file)->fake_rparen_at_eol) {
+        do_fake_rparen();
+        return;
     }
-    */
-  }
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = EOF_LEXEME;
+}
+
+void lex_at(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = AT_LEXEME;
+}
+
+void lex_tilde(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = TILDE_LEXEME;
+}
+
+void lex_up_arrow(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = UP_ARROW_LEXEME;
+}
+
+void lex_lbrace(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = L_BRACE_LEXEME;
+}
+
+void lex_rbrace(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = R_BRACE_LEXEME;
+}
+
+void lex_exclamation_point(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = EXCLAMATION_POINT_LEXEME;
+}
+
+void lex_comma(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = COMMA_LEXEME;
+}
+
+void lex_equal(void)
+{
+    /* Lexeme might be "=", or symbol */
+    /* Note: this routine relies on = being a constituent character */
+
+    read_constituent_string();
+    if (current_agent(lexeme).length == 1) {
+        current_agent(lexeme).type = EQUAL_LEXEME;
+        return;
+    }
+    determine_type_of_constituent_string();
+}
+
+void lex_ampersand(void)
+{
+    /* Lexeme might be "&", or symbol */
+    /* Note: this routine relies on & being a constituent character */
+
+    read_constituent_string();
+    if (current_agent(lexeme).length == 1) {
+        current_agent(lexeme).type = AMPERSAND_LEXEME;
+        return;
+    }
+    determine_type_of_constituent_string();
+}
+
+void lex_lparen(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = L_PAREN_LEXEME;
+    current_agent(current_file)->parentheses_level++;
+}
+
+void lex_rparen(void)
+{
+    store_and_advance();
+    finish();
+    current_agent(lexeme).type = R_PAREN_LEXEME;
+    if (current_agent(current_file)->parentheses_level > 0)
+        current_agent(current_file)->parentheses_level--;
+}
+
+void lex_greater(void)
+{
+    /* Lexeme might be ">", ">=", ">>", or symbol */
+    /* Note: this routine relies on =,> being constituent characters */
+
+    read_constituent_string();
+    if (current_agent(lexeme).length == 1) {
+        current_agent(lexeme).type = GREATER_LEXEME;
+        return;
+    }
+    if (current_agent(lexeme).length == 2) {
+        if (current_agent(lexeme).string[1] == '>') {
+            current_agent(lexeme).type = GREATER_GREATER_LEXEME;
+            return;
+        }
+        if (current_agent(lexeme).string[1] == '=') {
+            current_agent(lexeme).type = GREATER_EQUAL_LEXEME;
+            return;
+        }
+    }
+    determine_type_of_constituent_string();
+}
+
+void lex_less(void)
+{
+    /* Lexeme might be "<", "<=", "<=>", "<>", "<<", or variable */
+    /* Note: this routine relies on =,<,> being constituent characters */
+
+    read_constituent_string();
+    if (current_agent(lexeme).length == 1) {
+        current_agent(lexeme).type = LESS_LEXEME;
+        return;
+    }
+    if (current_agent(lexeme).length == 2) {
+        if (current_agent(lexeme).string[1] == '>') {
+            current_agent(lexeme).type = NOT_EQUAL_LEXEME;
+            return;
+        }
+        if (current_agent(lexeme).string[1] == '=') {
+            current_agent(lexeme).type = LESS_EQUAL_LEXEME;
+            return;
+        }
+        if (current_agent(lexeme).string[1] == '<') {
+            current_agent(lexeme).type = LESS_LESS_LEXEME;
+            return;
+        }
+    }
+    if (current_agent(lexeme).length == 3) {
+        if ((current_agent(lexeme).string[1] == '=') && (current_agent(lexeme).string[2] == '>')) {
+            current_agent(lexeme).type = LESS_EQUAL_GREATER_LEXEME;
+            return;
+        }
+    }
+    determine_type_of_constituent_string();
+
+}
+
+void lex_period(void)
+{
+    store_and_advance();
+    finish();
+    /* --- if we stopped at '.', it might be a floating-point number, so be
+       careful to check for this case --- */
+    if (isdigit(current_agent(current_char)))
+        read_rest_of_floating_point_number();
+    if (current_agent(lexeme).length == 1) {
+        current_agent(lexeme).type = PERIOD_LEXEME;
+        return;
+    }
+    determine_type_of_constituent_string();
+}
+
+void lex_plus(void)
+{
+    /* Lexeme might be +, number, or symbol */
+    /* Note: this routine relies on various things being constituent chars */
+    int i;
+    bool could_be_floating_point;
+
+    read_constituent_string();
+    /* --- if we stopped at '.', it might be a floating-point number, so be
+       careful to check for this case --- */
+    if (current_agent(current_char) == '.') {
+        could_be_floating_point = TRUE;
+        for (i = 1; i < current_agent(lexeme).length; i++)
+            if (!isdigit(current_agent(lexeme).string[i]))
+                could_be_floating_point = FALSE;
+        if (could_be_floating_point)
+            read_rest_of_floating_point_number();
+    }
+    if (current_agent(lexeme).length == 1) {
+        current_agent(lexeme).type = PLUS_LEXEME;
+        return;
+    }
+    determine_type_of_constituent_string();
+}
+
+void lex_minus(void)
+{
+    /* Lexeme might be -, -->, number, or symbol */
+    /* Note: this routine relies on various things being constituent chars */
+    int i;
+    bool could_be_floating_point;
+
+    read_constituent_string();
+    /* --- if we stopped at '.', it might be a floating-point number, so be
+       careful to check for this case --- */
+    if (current_agent(current_char) == '.') {
+        could_be_floating_point = TRUE;
+        for (i = 1; i < current_agent(lexeme).length; i++)
+            if (!isdigit(current_agent(lexeme).string[i]))
+                could_be_floating_point = FALSE;
+        if (could_be_floating_point)
+            read_rest_of_floating_point_number();
+    }
+    if (current_agent(lexeme).length == 1) {
+        current_agent(lexeme).type = MINUS_LEXEME;
+        return;
+    }
+    if (current_agent(lexeme).length == 3) {
+        if ((current_agent(lexeme).string[1] == '-') && (current_agent(lexeme).string[2] == '>')) {
+            current_agent(lexeme).type = RIGHT_ARROW_LEXEME;
+            return;
+        }
+    }
+    determine_type_of_constituent_string();
+}
+
+void lex_digit(void)
+{
+    int i;
+    bool could_be_floating_point;
+
+    read_constituent_string();
+    /* --- if we stopped at '.', it might be a floating-point number, so be
+       careful to check for this case --- */
+    if (current_agent(current_char) == '.') {
+        could_be_floating_point = TRUE;
+        for (i = 1; i < current_agent(lexeme).length; i++)
+            if (!isdigit(current_agent(lexeme).string[i]))
+                could_be_floating_point = FALSE;
+        if (could_be_floating_point)
+            read_rest_of_floating_point_number();
+    }
+    determine_type_of_constituent_string();
+}
+
+void lex_unknown(void)
+{
+    if (reading_from_top_level() && current_agent(current_char) == 0) {
+    } else {
+        print("Error:  Unknown character encountered by lexer, code=%d\n", current_agent(current_char));
+        print("File %s, line %lu, column %lu.\n", current_agent(current_file)->filename,
+              current_agent(current_file)->current_line, current_agent(current_file)->current_column);
+        /*
+           As far as we can tell this won't work
+           currently, even if it ever does get called.
+           Thus, we're taking it out.
+           081799 SW
+         */
+        /*
+           if (! reading_from_top_level()) {
+           respond_to_load_errors ();
+           if (current_agent(load_errors_quit))
+           current_agent(current_char) = EOF_AS_CHAR;
+           }
+         */
+    }
     get_next_char();
     get_lexeme();
 }
 
-void lex_constituent_string (void) {
-  read_constituent_string();
-  determine_type_of_constituent_string();
+void lex_constituent_string(void)
+{
+    read_constituent_string();
+    determine_type_of_constituent_string();
 }
 
-void lex_vbar (void) {
-  current_agent(lexeme).type = SYM_CONSTANT_LEXEME;
-  get_next_char();
+void lex_vbar(void)
+{
+    current_agent(lexeme).type = SYM_CONSTANT_LEXEME;
+    get_next_char();
 
-  for (;;) {
-    if ((current_agent(current_char)==EOF_AS_CHAR)||
-        (current_agent(lexeme).length==MAX_LEXEME_LENGTH)) {
-      print ("Error:  opening '|' without closing '|'\n");
-      print_location_of_most_recent_lexeme();
-      /* BUGBUG if reading from top level, don't want to signal EOF */
-      current_agent(lexeme).type = EOF_LEXEME;
-      current_agent(lexeme).string[0]=EOF_AS_CHAR;
-      current_agent(lexeme).string[1]=0;
-      current_agent(lexeme).length = 1;
-      return;
+    for (;;) {
+        if ((current_agent(current_char) == EOF_AS_CHAR) || (current_agent(lexeme).length == MAX_LEXEME_LENGTH)) {
+            print("Error:  opening '|' without closing '|'\n");
+            print_location_of_most_recent_lexeme();
+            /* BUGBUG if reading from top level, don't want to signal EOF */
+            current_agent(lexeme).type = EOF_LEXEME;
+            current_agent(lexeme).string[0] = EOF_AS_CHAR;
+            current_agent(lexeme).string[1] = 0;
+            current_agent(lexeme).length = 1;
+            return;
+        }
+        if (current_agent(current_char) == '\\') {
+            get_next_char();
+            current_agent(lexeme).string[current_agent(lexeme).length++] = (char) current_agent(current_char);
+            get_next_char();
+        } else if (current_agent(current_char) == '|') {
+            get_next_char();
+            break;
+        } else {
+            current_agent(lexeme).string[current_agent(lexeme).length++] = (char) current_agent(current_char);
+            get_next_char();
+        }
     }
-    if (current_agent(current_char)=='\\') {
-      get_next_char();
-      current_agent(lexeme).string[current_agent(lexeme).length++] = (char)current_agent(current_char);
-      get_next_char();
-    } else if (current_agent(current_char)=='|') {
-      get_next_char();
-      break;
-    } else {
-      current_agent(lexeme).string[current_agent(lexeme).length++] = (char)current_agent(current_char);
-      get_next_char();
-    }
-  }
 
-  current_agent(lexeme).string[current_agent(lexeme).length]=0;
+    current_agent(lexeme).string[current_agent(lexeme).length] = 0;
 }
 
-void lex_quote (void) {
-  current_agent(lexeme).type = QUOTED_STRING_LEXEME;
-  get_next_char();
-  for (;;) {
-    if ((current_agent(current_char)==EOF_AS_CHAR)||(current_agent(lexeme).length==MAX_LEXEME_LENGTH)) {
-      print ("Error:  opening '\"' without closing '\"'\n");
-      print_location_of_most_recent_lexeme();
-      /* BUGBUG if reading from top level, don't want to signal EOF */
-      current_agent(lexeme).type = EOF_LEXEME;
-      current_agent(lexeme).string[0]=EOF_AS_CHAR;
-      current_agent(lexeme).string[1]=0;
-      current_agent(lexeme).length = 1;
-      return;
+void lex_quote(void)
+{
+    current_agent(lexeme).type = QUOTED_STRING_LEXEME;
+    get_next_char();
+    for (;;) {
+        if ((current_agent(current_char) == EOF_AS_CHAR) || (current_agent(lexeme).length == MAX_LEXEME_LENGTH)) {
+            print("Error:  opening '\"' without closing '\"'\n");
+            print_location_of_most_recent_lexeme();
+            /* BUGBUG if reading from top level, don't want to signal EOF */
+            current_agent(lexeme).type = EOF_LEXEME;
+            current_agent(lexeme).string[0] = EOF_AS_CHAR;
+            current_agent(lexeme).string[1] = 0;
+            current_agent(lexeme).length = 1;
+            return;
+        }
+        if (current_agent(current_char) == '\\') {
+            get_next_char();
+            current_agent(lexeme).string[current_agent(lexeme).length++] = (char) current_agent(current_char);
+            get_next_char();
+        } else if (current_agent(current_char) == '"') {
+            get_next_char();
+            break;
+        } else {
+            current_agent(lexeme).string[current_agent(lexeme).length++] = (char) current_agent(current_char);
+            get_next_char();
+        }
     }
-    if (current_agent(current_char)=='\\') {
-      get_next_char();
-      current_agent(lexeme).string[current_agent(lexeme).length++] = (char)current_agent(current_char);
-      get_next_char();
-    } else if (current_agent(current_char)=='"') {
-      get_next_char();
-      break;
-    } else {
-      current_agent(lexeme).string[current_agent(lexeme).length++] = (char)current_agent(current_char);
-      get_next_char();
-    }
-  }
-  current_agent(lexeme).string[current_agent(lexeme).length]=0;
+    current_agent(lexeme).string[current_agent(lexeme).length] = 0;
 }
 
 /* AGR 562 begin */
@@ -741,19 +804,18 @@ void lex_quote (void) {
    have done in specifying the shell command.  For that reason, my current
    plan is to follow scheme 1.  AGR 3-Jun-94  */
 
-void lex_dollar (void) {
-  current_agent(lexeme).type = DOLLAR_STRING_LEXEME;
-  current_agent(lexeme).string[0] = '$';
-  current_agent(lexeme).length = 1;
-  get_next_char();   /* consume the '$' */
-  while ((current_agent(current_char)!='\n') &&
-	 (current_agent(current_char)!=EOF_AS_CHAR) &&
-	 (current_agent(lexeme).length < MAX_LEXEME_LENGTH-1)) {
-    current_agent(lexeme).string[current_agent(lexeme).length++] =
-      current_agent(current_char);
-    get_next_char();
-  }
-  current_agent(lexeme).string[current_agent(lexeme).length] = '\0';
+void lex_dollar(void)
+{
+    current_agent(lexeme).type = DOLLAR_STRING_LEXEME;
+    current_agent(lexeme).string[0] = '$';
+    current_agent(lexeme).length = 1;
+    get_next_char();            /* consume the '$' */
+    while ((current_agent(current_char) != '\n') &&
+           (current_agent(current_char) != EOF_AS_CHAR) && (current_agent(lexeme).length < MAX_LEXEME_LENGTH - 1)) {
+        current_agent(lexeme).string[current_agent(lexeme).length++] = current_agent(current_char);
+        get_next_char();
+    }
+    current_agent(lexeme).string[current_agent(lexeme).length] = '\0';
 }
 
 /*
@@ -774,29 +836,30 @@ void lex_dollar (void) {
   table) based on the first character of the lexeme.
 ====================================================================== */
 
-void get_lexeme (void) {
+void get_lexeme(void)
+{
 
-  /* AGR 568 begin */
-  if (current_agent(lex_alias)) {
-    current_agent(lexeme) = current_agent(lex_alias)->lexeme;
-    current_agent(lex_alias) = current_agent(lex_alias)->next;
-    return;
-  }
-  /* AGR 568 end */
+    /* AGR 568 begin */
+    if (current_agent(lex_alias)) {
+        current_agent(lexeme) = current_agent(lex_alias)->lexeme;
+        current_agent(lex_alias) = current_agent(lex_alias)->next;
+        return;
+    }
+    /* AGR 568 end */
 
-  current_agent(lexeme).length = 0;
-  current_agent(lexeme).string[0] = 0;
+    current_agent(lexeme).length = 0;
+    current_agent(lexeme).string[0] = 0;
 
-  /* 
-     A block of code was removed from here which seemed 
-     to deal with a number of interface
-     and formatting details.  I am taking out ancient stuff which
-     deals with the unix interface (this should be pushed into 
-     a real interface layer if it to be used anyway) and leaving
-     behind the new Soar8 behavior which is what we used to get
-     only in the cases of using the Tcl interface
-     081699 SW
-  */
+    /* 
+       A block of code was removed from here which seemed 
+       to deal with a number of interface
+       and formatting details.  I am taking out ancient stuff which
+       deals with the unix interface (this should be pushed into 
+       a real interface layer if it to be used anyway) and leaving
+       behind the new Soar8 behavior which is what we used to get
+       only in the cases of using the Tcl interface
+       081699 SW
+     */
 
 /* AGR 534  The only time a prompt should be printed out is if there's
    a command being expected; ie. the prompt shouldn't print out if we're
@@ -804,71 +867,71 @@ void get_lexeme (void) {
    entering a production, then the parentheses level will be > 0, so that's
    the criteria we will use.  AGR  5-Apr-94  */
 
-  current_agent(load_errors_quit) = FALSE;  /* AGR 527c */
+    current_agent(load_errors_quit) = FALSE;    /* AGR 527c */
 
-  while (current_agent(load_errors_quit)==FALSE) {   /* AGR 527c */
-    if (current_agent(current_char)==EOF_AS_CHAR) break;
-    if (whitespace[(unsigned char)current_agent(current_char)]) {
-      if (current_agent(current_char) == '\n')
-      {    
-         if (current_agent(current_file)->fake_rparen_at_eol) {
-              do_fake_rparen();
-              return;
-         }
+    while (current_agent(load_errors_quit) == FALSE) {  /* AGR 527c */
+        if (current_agent(current_char) == EOF_AS_CHAR)
+            break;
+        if (whitespace[(unsigned char) current_agent(current_char)]) {
+            if (current_agent(current_char) == '\n') {
+                if (current_agent(current_file)->fake_rparen_at_eol) {
+                    do_fake_rparen();
+                    return;
+                }
 
-	 /* 
-	    A block of code was removed from here which seemed 
-	    to deal with a number of interface
-	    and formatting details.  I am taking out ancient stuff which
-	    deals with the unix interface (this should be pushed into 
-	    a real interface layer if it to be used anyway) and leaving
-	    behind the new Soar8 behavior which is what we used to get
-	    only in the cases of using the Tcl interface
-	    081699 SW
-	 */
+                /* 
+                   A block of code was removed from here which seemed 
+                   to deal with a number of interface
+                   and formatting details.  I am taking out ancient stuff which
+                   deals with the unix interface (this should be pushed into 
+                   a real interface layer if it to be used anyway) and leaving
+                   behind the new Soar8 behavior which is what we used to get
+                   only in the cases of using the Tcl interface
+                   081699 SW
+                 */
 
-      }
-      get_next_char();
-      continue;
+            }
+            get_next_char();
+            continue;
+        }
+
+        /* 
+           The following section deals with parsing Soar8 and Soar7 syntax.
+           I am removing the old (Soar7 and prior) stuff, and leaving
+           the behavior which previously was used only in conjunction
+           with the Tcl interface.
+
+           081699 SW
+         */
+
+        if (current_agent(current_char) == ';') {
+            /* --- skip the semi-colon, forces newline in Soar8 --- */
+            get_next_char();    /* consume it */
+            continue;
+        }
+        if (current_agent(current_char) == '#') {
+            /* --- read from hash to end-of-line --- */
+            while ((current_agent(current_char) != '\n') && (current_agent(current_char) != EOF_AS_CHAR))
+                get_next_char();
+            if (current_agent(current_file)->fake_rparen_at_eol) {
+                do_fake_rparen();
+                return;
+            }
+            if (current_agent(current_char) != EOF_AS_CHAR)
+                get_next_char();
+            continue;
+        }
+
+        break;                  /* if no whitespace or comments found, break out of the loop */
     }
-
-    /* 
-       The following section deals with parsing Soar8 and Soar7 syntax.
-       I am removing the old (Soar7 and prior) stuff, and leaving
-       the behavior which previously was used only in conjunction
-       with the Tcl interface.
-       
-       081699 SW
-    */
-
-    if (current_agent(current_char)==';') {
-      /* --- skip the semi-colon, forces newline in Soar8 --- */
-      get_next_char();  /* consume it */
-      continue;
-    }
-    if (current_agent(current_char)=='#') {
-      /* --- read from hash to end-of-line --- */
-      while ((current_agent(current_char)!='\n') &&
-             (current_agent(current_char)!=EOF_AS_CHAR))
-        get_next_char();
-      if (current_agent(current_file)->fake_rparen_at_eol) {
-        do_fake_rparen();
-        return;
-      }
-      if (current_agent(current_char)!=EOF_AS_CHAR) get_next_char();
-      continue;
-    }
-
-    break; /* if no whitespace or comments found, break out of the loop */
-  }
-  /* --- no more whitespace, so go get the actual lexeme --- */
-  record_position_of_start_of_lexeme();
-  if (current_agent(current_char)!=EOF_AS_CHAR)
-    (*(lexer_routines[(unsigned char)current_agent(current_char)]))();
-  else
-    lex_eof();
+    /* --- no more whitespace, so go get the actual lexeme --- */
+    record_position_of_start_of_lexeme();
+    if (current_agent(current_char) != EOF_AS_CHAR)
+        (*(lexer_routines[(unsigned char) current_agent(current_char)])) ();
+    else
+        lex_eof();
 }
-  
+
 /* ======================================================================
                             Init lexer
 
@@ -879,53 +942,67 @@ void get_lexeme (void) {
 
 char extra_constituents[] = "$%&*+-/:<=>?_";
 
-void init_lexer (void) {
-  unsigned int i;
+void init_lexer(void)
+{
+    unsigned int i;
 
-  /* --- setup constituent_char array --- */
-  for (i=0; i<256; i++)
-    if (isalnum(i)) constituent_char[i]=TRUE; else constituent_char[i]=FALSE;
-  for (i=0; i<strlen(extra_constituents); i++)
-    constituent_char[(int)extra_constituents[i]]=TRUE;
-  
-  /* --- setup whitespace array --- */
-  for (i=0; i<256; i++)
-    if (isspace(i)) whitespace[i]=TRUE; else whitespace[i]=FALSE;
+    /* --- setup constituent_char array --- */
+    for (i = 0; i < 256; i++)
+        if (isalnum(i))
+            constituent_char[i] = TRUE;
+        else
+            constituent_char[i] = FALSE;
+    for (i = 0; i < strlen(extra_constituents); i++)
+        constituent_char[(int) extra_constituents[i]] = TRUE;
 
-  /* --- setup number_starters array --- */
-  for (i=0; i<256; i++)
-    if (isdigit(i)) number_starters[i]=TRUE; else number_starters[i]=FALSE;
-  number_starters['+']=TRUE;
-  number_starters['-']=TRUE;
-  number_starters['.']=TRUE;
+    /* --- setup whitespace array --- */
+    for (i = 0; i < 256; i++)
+        if (isspace(i))
+            whitespace[i] = TRUE;
+        else
+            whitespace[i] = FALSE;
 
-  /* --- setup lexer_routines array --- */
-  for (i=0; i<256; i++) lexer_routines[i] = lex_unknown;
-  for (i=0; i<256; i++)
-    if (constituent_char[i]) lexer_routines[i] = lex_constituent_string;
-  for (i=0; i<256; i++) if (isdigit(i)) lexer_routines[i] = lex_digit;
-  lexer_routines['@'] = lex_at;
-  lexer_routines['('] = lex_lparen;
-  lexer_routines[')'] = lex_rparen;
-  lexer_routines['+'] = lex_plus;
-  lexer_routines['-'] = lex_minus;
-  lexer_routines['~'] = lex_tilde;
-  lexer_routines['^'] = lex_up_arrow;
-  lexer_routines['{'] = lex_lbrace;
-  lexer_routines['}'] = lex_rbrace;
-  lexer_routines['!'] = lex_exclamation_point;
-  lexer_routines['>'] = lex_greater;
-  lexer_routines['<'] = lex_less;
-  lexer_routines['='] = lex_equal;
-  lexer_routines['&'] = lex_ampersand;
-  lexer_routines['|'] = lex_vbar;
-  lexer_routines[','] = lex_comma;
-  lexer_routines['.'] = lex_period;
-  lexer_routines['"'] = lex_quote;
-  lexer_routines['$'] = lex_dollar;   /* AGR 562 */
+    /* --- setup number_starters array --- */
+    for (i = 0; i < 256; i++)
+        if (isdigit(i))
+            number_starters[i] = TRUE;
+        else
+            number_starters[i] = FALSE;
+    number_starters['+'] = TRUE;
+    number_starters['-'] = TRUE;
+    number_starters['.'] = TRUE;
 
-  /* --- initially we're reading from the standard input --- */
-  start_lex_from_file ("[standard input]", stdin);
+    /* --- setup lexer_routines array --- */
+    for (i = 0; i < 256; i++)
+        lexer_routines[i] = lex_unknown;
+    for (i = 0; i < 256; i++)
+        if (constituent_char[i])
+            lexer_routines[i] = lex_constituent_string;
+    for (i = 0; i < 256; i++)
+        if (isdigit(i))
+            lexer_routines[i] = lex_digit;
+    lexer_routines['@'] = lex_at;
+    lexer_routines['('] = lex_lparen;
+    lexer_routines[')'] = lex_rparen;
+    lexer_routines['+'] = lex_plus;
+    lexer_routines['-'] = lex_minus;
+    lexer_routines['~'] = lex_tilde;
+    lexer_routines['^'] = lex_up_arrow;
+    lexer_routines['{'] = lex_lbrace;
+    lexer_routines['}'] = lex_rbrace;
+    lexer_routines['!'] = lex_exclamation_point;
+    lexer_routines['>'] = lex_greater;
+    lexer_routines['<'] = lex_less;
+    lexer_routines['='] = lex_equal;
+    lexer_routines['&'] = lex_ampersand;
+    lexer_routines['|'] = lex_vbar;
+    lexer_routines[','] = lex_comma;
+    lexer_routines['.'] = lex_period;
+    lexer_routines['"'] = lex_quote;
+    lexer_routines['$'] = lex_dollar;   /* AGR 562 */
+
+    /* --- initially we're reading from the standard input --- */
+    start_lex_from_file("[standard input]", stdin);
 }
 
 /* ======================================================================
@@ -940,63 +1017,63 @@ void init_lexer (void) {
   the wrong place.
 ====================================================================== */
 
-void print_location_of_most_recent_lexeme (void) {
-  int i;
-  
-  if (current_agent(current_file)->line_of_start_of_last_lexeme ==
-      current_agent(current_file)->current_line) {
-    /* --- error occurred on current line, so print out the line --- */
-    if (! reading_from_top_level()) {
-      print ("File %s, line %lu:\n", current_agent(current_file)->filename,
-             current_agent(current_file)->current_line);
-      /*       respond_to_load_errors ();     AGR 527a */
-    }
-    if (current_agent(current_file)->buffer[strlen(current_agent(current_file)->buffer)-1]=='\n')
-      print_string (current_agent(current_file)->buffer);
-    else
-      print ("%s\n",current_agent(current_file)->buffer);
-    for (i=0; i<current_agent(current_file)->column_of_start_of_last_lexeme; i++)
-      print_string ("-");
-    print_string ("^\n");
+void print_location_of_most_recent_lexeme(void)
+{
+    int i;
 
-    /*
-      As far as we can tell this won't work
-      currently, even if it ever does get called.
-      Thus, we're taking it out.
-      081799 SW
-    */
-    /*
-    if (! reading_from_top_level()) {
-      respond_to_load_errors (); 
-      if (current_agent(load_errors_quit))
-	current_agent(current_char) = EOF_AS_CHAR;
-    }
-  */
+    if (current_agent(current_file)->line_of_start_of_last_lexeme == current_agent(current_file)->current_line) {
+        /* --- error occurred on current line, so print out the line --- */
+        if (!reading_from_top_level()) {
+            print("File %s, line %lu:\n", current_agent(current_file)->filename,
+                  current_agent(current_file)->current_line);
+            /*       respond_to_load_errors ();     AGR 527a */
+        }
+        if (current_agent(current_file)->buffer[strlen(current_agent(current_file)->buffer) - 1] == '\n')
+            print_string(current_agent(current_file)->buffer);
+        else
+            print("%s\n", current_agent(current_file)->buffer);
+        for (i = 0; i < current_agent(current_file)->column_of_start_of_last_lexeme; i++)
+            print_string("-");
+        print_string("^\n");
+
+        /*
+           As far as we can tell this won't work
+           currently, even if it ever does get called.
+           Thus, we're taking it out.
+           081799 SW
+         */
+        /*
+           if (! reading_from_top_level()) {
+           respond_to_load_errors (); 
+           if (current_agent(load_errors_quit))
+           current_agent(current_char) = EOF_AS_CHAR;
+           }
+         */
 /* AGR 527a  The respond_to_load_errors call came too early (above),
    and the "continue" prompt appeared before the offending line was printed
    out, so the respond_to_load_errors call was moved here.
    AGR 26-Apr-94 */
 
-  } else {
-    /* --- error occurred on a previous line, so just give the position --- */
-    print ("File %s, line %lu, column %lu.\n", current_agent(current_file)->filename,
-           current_agent(current_file)->line_of_start_of_last_lexeme,
-           current_agent(current_file)->column_of_start_of_last_lexeme + 1);
-    
-    /*
-      As far as we can tell this won't work
-      currently, even if it ever does get called.
-      Thus, we're taking it out.
-      081799 SW
-    */
-    /*
-    if (! reading_from_top_level()) {
-      respond_to_load_errors ();
-      if (current_agent(load_errors_quit))
-	current_agent(current_char) = EOF_AS_CHAR;
+    } else {
+        /* --- error occurred on a previous line, so just give the position --- */
+        print("File %s, line %lu, column %lu.\n", current_agent(current_file)->filename,
+              current_agent(current_file)->line_of_start_of_last_lexeme,
+              current_agent(current_file)->column_of_start_of_last_lexeme + 1);
+
+        /*
+           As far as we can tell this won't work
+           currently, even if it ever does get called.
+           Thus, we're taking it out.
+           081799 SW
+         */
+        /*
+           if (! reading_from_top_level()) {
+           respond_to_load_errors ();
+           if (current_agent(load_errors_quit))
+           current_agent(current_char) = EOF_AS_CHAR;
+           }
+         */
     }
-    */
-  }
 }
 
 /* ======================================================================
@@ -1012,22 +1089,27 @@ void print_location_of_most_recent_lexeme (void) {
   R_PAREN_LEXEME token the next time it reaches the end of a line.
 ====================================================================== */
 
-int current_lexer_parentheses_level (void) {
-  return current_agent(current_file)->parentheses_level;
+int current_lexer_parentheses_level(void)
+{
+    return current_agent(current_file)->parentheses_level;
 }
 
-void skip_ahead_to_balanced_parentheses (int parentheses_level) {
-  for (;;) {
-    if (current_agent(lexeme).type==EOF_LEXEME) return;
-    if ((current_agent(lexeme).type==R_PAREN_LEXEME) &&
-        (parentheses_level==current_agent(current_file)->parentheses_level)) return;
-    get_lexeme();
-  }
+void skip_ahead_to_balanced_parentheses(int parentheses_level)
+{
+    for (;;) {
+        if (current_agent(lexeme).type == EOF_LEXEME)
+            return;
+        if ((current_agent(lexeme).type == R_PAREN_LEXEME) &&
+            (parentheses_level == current_agent(current_file)->parentheses_level))
+            return;
+        get_lexeme();
+    }
 }
 
-void fake_rparen_at_next_end_of_line (void) {
-  current_agent(current_file)->parentheses_level++;  
-  current_agent(current_file)->fake_rparen_at_eol = TRUE;  
+void fake_rparen_at_next_end_of_line(void)
+{
+    current_agent(current_file)->parentheses_level++;
+    current_agent(current_file)->fake_rparen_at_eol = TRUE;
 }
 
 /* ======================================================================
@@ -1038,8 +1120,9 @@ void fake_rparen_at_next_end_of_line (void) {
   will be returned as SYM_CONSTANT_LEXEME's instead.
 ====================================================================== */
 
-void set_lexer_allow_ids (bool allow_identifiers) {
-  current_agent(current_file)->allow_ids = allow_identifiers;
+void set_lexer_allow_ids(bool allow_identifiers)
+{
+    current_agent(current_file)->allow_ids = allow_identifiers;
 }
 
 /* ======================================================================
@@ -1054,73 +1137,85 @@ void set_lexer_allow_ids (bool allow_identifiers) {
   special lexeme like "+", changing upper to lower case, etc.
 ====================================================================== */
 
-void determine_possible_symbol_types_for_string (char *s,
-                                                 int length_of_s,
-                                                 bool *possible_id,
-                                                 bool *possible_var,
-                                                 bool *possible_sc,
-                                                 bool *possible_ic,
-                                                 bool *possible_fc,
-                                                 bool *rereadable) {
-  char *ch;
-  bool rereadability_dead, rereadability_questionable;
+void determine_possible_symbol_types_for_string(char *s,
+                                                int length_of_s,
+                                                bool * possible_id,
+                                                bool * possible_var,
+                                                bool * possible_sc,
+                                                bool * possible_ic, bool * possible_fc, bool * rereadable)
+{
+    char *ch;
+    bool rereadability_dead, rereadability_questionable;
 
-  *possible_id = FALSE;
-  *possible_var = FALSE;
-  *possible_sc = FALSE;
-  *possible_ic = FALSE;
-  *possible_fc = FALSE;
-  *rereadable = FALSE;
+    *possible_id = FALSE;
+    *possible_var = FALSE;
+    *possible_sc = FALSE;
+    *possible_ic = FALSE;
+    *possible_fc = FALSE;
+    *rereadable = FALSE;
 
-  /* --- check if it's an integer or floating point number --- */
-  if (number_starters[(unsigned char)(*s)]) {
-    ch = s;
-    if ((*ch=='+')||(*ch=='-')) ch++;  /* optional leading + or - */
-    while (isdigit(*ch)) ch++;         /* string of digits */
-    if ((*ch==0)&&(isdigit(*(ch-1))))
-      *possible_ic = TRUE;
-    if (*ch=='.') {
-      ch++;                              /* decimal point */
-      while (isdigit(*ch)) ch++;         /* string of digits */
-      if ((*ch=='e')||(*ch=='E')) {
-        ch++;                              /* E */
-        if ((*ch=='+')||(*ch=='-')) ch++;  /* optional leading + or - */
-        while (isdigit(*ch)) ch++;         /* string of digits */
-      }
-      if (*ch==0) *possible_fc = TRUE;
+    /* --- check if it's an integer or floating point number --- */
+    if (number_starters[(unsigned char) (*s)]) {
+        ch = s;
+        if ((*ch == '+') || (*ch == '-'))
+            ch++;               /* optional leading + or - */
+        while (isdigit(*ch))
+            ch++;               /* string of digits */
+        if ((*ch == 0) && (isdigit(*(ch - 1))))
+            *possible_ic = TRUE;
+        if (*ch == '.') {
+            ch++;               /* decimal point */
+            while (isdigit(*ch))
+                ch++;           /* string of digits */
+            if ((*ch == 'e') || (*ch == 'E')) {
+                ch++;           /* E */
+                if ((*ch == '+') || (*ch == '-'))
+                    ch++;       /* optional leading + or - */
+                while (isdigit(*ch))
+                    ch++;       /* string of digits */
+            }
+            if (*ch == 0)
+                *possible_fc = TRUE;
+        }
     }
-  }
 
-  /* --- make sure it's entirely constituent characters --- */
-  for (ch=s; *ch!=0; ch++)
-    if (! constituent_char[(unsigned char)(*ch)]) return;
+    /* --- make sure it's entirely constituent characters --- */
+    for (ch = s; *ch != 0; ch++)
+        if (!constituent_char[(unsigned char) (*ch)])
+            return;
 
-  /* --- check for rereadability --- */
-  rereadability_questionable = FALSE;
-  rereadability_dead = FALSE;
-  for (ch=s; *ch!=0; ch++) {
-    if (islower(*ch) || isdigit(*ch)) continue; /* these guys are fine */
-    if (isupper(*ch)) { rereadability_dead = TRUE; break; }
-    rereadability_questionable = TRUE;
-  }
-  if (! rereadability_dead) {
-    if ((! rereadability_questionable) ||
-        (length_of_s >= LENGTH_OF_LONGEST_SPECIAL_LEXEME) ||
-        ((length_of_s==1)&&(*s=='*')))
-      *rereadable = TRUE;
-  }
+    /* --- check for rereadability --- */
+    rereadability_questionable = FALSE;
+    rereadability_dead = FALSE;
+    for (ch = s; *ch != 0; ch++) {
+        if (islower(*ch) || isdigit(*ch))
+            continue;           /* these guys are fine */
+        if (isupper(*ch)) {
+            rereadability_dead = TRUE;
+            break;
+        }
+        rereadability_questionable = TRUE;
+    }
+    if (!rereadability_dead) {
+        if ((!rereadability_questionable) ||
+            (length_of_s >= LENGTH_OF_LONGEST_SPECIAL_LEXEME) || ((length_of_s == 1) && (*s == '*')))
+            *rereadable = TRUE;
+    }
 
-  /* --- any string of constituents could be a sym constant --- */
-  *possible_sc = TRUE;
-  
-  /* --- check whether it's a variable --- */
-  if ((*s=='<')&&(*(s+length_of_s-1)=='>')) *possible_var = TRUE;
+    /* --- any string of constituents could be a sym constant --- */
+    *possible_sc = TRUE;
 
-  /* --- check if it's an identifier --- */
-  if (isalpha(*s)) {
-    /* --- is the rest of the string an integer? --- */
-    ch = s+1;
-    while (isdigit(*ch)) ch++;         /* string of digits */
-    if ((*ch==0)&&(isdigit(*(ch-1)))) *possible_id = TRUE;
-  }
+    /* --- check whether it's a variable --- */
+    if ((*s == '<') && (*(s + length_of_s - 1) == '>'))
+        *possible_var = TRUE;
+
+    /* --- check if it's an identifier --- */
+    if (isalpha(*s)) {
+        /* --- is the rest of the string an integer? --- */
+        ch = s + 1;
+        while (isdigit(*ch))
+            ch++;               /* string of digits */
+        if ((*ch == 0) && (isdigit(*(ch - 1))))
+            *possible_id = TRUE;
+    }
 }

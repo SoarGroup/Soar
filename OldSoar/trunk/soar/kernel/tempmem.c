@@ -69,96 +69,101 @@
    decider.
 ====================================================================== */
 
-slot *find_slot (Symbol *id, Symbol *attr) {
-  slot *s;
+slot *find_slot(Symbol * id, Symbol * attr)
+{
+    slot *s;
 
-  if (!id) return NIL;  /* fixes bug #135 kjh */
-  for (s=id->id.slots; s!=NIL; s=s->next)
-    if (s->attr==attr)  return s;
-  return NIL;
+    if (!id)
+        return NIL;             /* fixes bug #135 kjh */
+    for (s = id->id.slots; s != NIL; s = s->next)
+        if (s->attr == attr)
+            return s;
+    return NIL;
 }
 
+wme *find_impasse_wme(Symbol * id, Symbol * attr)
+{
+    wme *s;
 
-wme *find_impasse_wme (Symbol *id, Symbol *attr ) {
-  wme *s;
-
-
-  if (!id) return NIL;  /* fixes bug #135 kjh */
+    if (!id)
+        return NIL;             /* fixes bug #135 kjh */
 
 #ifdef DEBUG_FIND_SLOT
-  
-  print_with_symbols( "\nFind Slot '%y' in %y", attr, id );
-  
-  print ( "\nChecking the impasse_wmes" );
-  if (id->id.impasse_wmes) {
-    for (s=id->id.impasse_wmes; s!=NIL; s=s->next) {
-      print_with_symbols( "\n Found %y", s->attr );
-      if (s->attr==attr) {
-	print ("\nFound it\n" );
+
+    print_with_symbols("\nFind Slot '%y' in %y", attr, id);
+
+    print("\nChecking the impasse_wmes");
+    if (id->id.impasse_wmes) {
+        for (s = id->id.impasse_wmes; s != NIL; s = s->next) {
+            print_with_symbols("\n Found %y", s->attr);
+            if (s->attr == attr) {
+                print("\nFound it\n");
 #else
 
-  if (id->id.impasse_wmes) {
-    for (s=id->id.impasse_wmes; s!=NIL; s=s->next) {
-      /*      print_with_symbols( "\n Found %y", s->attr ); */
-      if (s->attr==attr) {
+    if (id->id.impasse_wmes) {
+        for (s = id->id.impasse_wmes; s != NIL; s = s->next) {
+            /*      print_with_symbols( "\n Found %y", s->attr ); */
+            if (s->attr == attr) {
 #endif
 
-	return s;
-      }
+                return s;
+            }
+        }
     }
-  }
-  return NULL;
+    return NULL;
 }
 
-slot *make_slot (Symbol *id, Symbol *attr) {
-  slot *s;
-  int i;
+slot *make_slot(Symbol * id, Symbol * attr)
+{
+    slot *s;
+    int i;
 
-  for (s=id->id.slots; s!=NIL; s=s->next)
-    if (s->attr==attr) return s;
-  allocate_with_pool (&current_agent(slot_pool),  &s);
-  insert_at_head_of_dll (id->id.slots, s, next, prev);
-  if ((id->id.isa_goal) &&
-      (attr==current_agent(operator_symbol)))
-    s->isa_context_slot = TRUE;
-  else
-    s->isa_context_slot = FALSE;
-  s->changed = NIL;
-  s->acceptable_preference_changed = NIL;
-  s->id = id;
-  s->attr = attr;
-  symbol_add_ref (id);
-  symbol_add_ref (attr);
-  s->wmes = NIL;
-  s->all_preferences = NIL;
-  for (i=0; i<NUM_PREFERENCE_TYPES; i++) s->preferences[i] = NIL;
-  s->impasse_type = NONE_IMPASSE_TYPE;
-  s->impasse_id = NIL;
-  s->acceptable_preference_wmes = NIL;
-  s->marked_for_possible_removal = FALSE;
-  return s;  
+    for (s = id->id.slots; s != NIL; s = s->next)
+        if (s->attr == attr)
+            return s;
+    allocate_with_pool(&current_agent(slot_pool), &s);
+    insert_at_head_of_dll(id->id.slots, s, next, prev);
+    if ((id->id.isa_goal) && (attr == current_agent(operator_symbol)))
+        s->isa_context_slot = TRUE;
+    else
+        s->isa_context_slot = FALSE;
+    s->changed = NIL;
+    s->acceptable_preference_changed = NIL;
+    s->id = id;
+    s->attr = attr;
+    symbol_add_ref(id);
+    symbol_add_ref(attr);
+    s->wmes = NIL;
+    s->all_preferences = NIL;
+    for (i = 0; i < NUM_PREFERENCE_TYPES; i++)
+        s->preferences[i] = NIL;
+    s->impasse_type = NONE_IMPASSE_TYPE;
+    s->impasse_id = NIL;
+    s->acceptable_preference_wmes = NIL;
+    s->marked_for_possible_removal = FALSE;
+    return s;
 }
 
-void mark_slot_as_changed (slot *s) {
-  dl_cons *dc;
-  
-  if (s->isa_context_slot) {
-    if (current_agent(highest_goal_whose_context_changed)) {
-      if (s->id->id.level <
-          current_agent(highest_goal_whose_context_changed)->id.level)
-        current_agent(highest_goal_whose_context_changed) = s->id;
+void mark_slot_as_changed(slot * s)
+{
+    dl_cons *dc;
+
+    if (s->isa_context_slot) {
+        if (current_agent(highest_goal_whose_context_changed)) {
+            if (s->id->id.level < current_agent(highest_goal_whose_context_changed)->id.level)
+                current_agent(highest_goal_whose_context_changed) = s->id;
+        } else {
+            current_agent(highest_goal_whose_context_changed) = s->id;
+        }
+        s->changed = (dl_cons *) s;     /* just make it nonzero */
     } else {
-      current_agent(highest_goal_whose_context_changed) = s->id;
+        if (!s->changed) {
+            allocate_with_pool(&current_agent(dl_cons_pool), &dc);
+            dc->item = s;
+            s->changed = dc;
+            insert_at_head_of_dll(current_agent(changed_slots), dc, next, prev);
+        }
     }
-    s->changed = (dl_cons *)s;  /* just make it nonzero */
-  } else {
-    if (! s->changed) {
-      allocate_with_pool (&current_agent(dl_cons_pool),  &dc);
-      dc->item = s;
-      s->changed = dc;
-      insert_at_head_of_dll (current_agent(changed_slots), dc, next, prev);
-    }
-  }
 }
 
 /* -----------------------------------------------------------------
@@ -176,41 +181,46 @@ void mark_slot_as_changed (slot *s) {
    no wmes or preferences.
 ----------------------------------------------------------------- */
 
-void mark_slot_for_possible_removal (slot *s) {
-  if (s->marked_for_possible_removal) return;
-  s->marked_for_possible_removal = TRUE;
-  push (s, current_agent(slots_for_possible_removal));
+void mark_slot_for_possible_removal(slot * s)
+{
+    if (s->marked_for_possible_removal)
+        return;
+    s->marked_for_possible_removal = TRUE;
+    push(s, current_agent(slots_for_possible_removal));
 }
 
-void remove_garbage_slots (void) {
-  cons *c;
-  slot *s;
-  
-  while (current_agent(slots_for_possible_removal)) {
-    c = current_agent(slots_for_possible_removal);
-    current_agent(slots_for_possible_removal) = current_agent(slots_for_possible_removal)->rest;
-    s = c->first;
-    free_cons (c);
-    
-    if (s->wmes || s->all_preferences) {
-      /* --- don't deallocate it if it still has any wmes or preferences --- */
-      s->marked_for_possible_removal = FALSE;
-      continue;
-    }
-    
-    /* --- deallocate the slot --- */
+void remove_garbage_slots(void)
+{
+    cons *c;
+    slot *s;
+
+    while (current_agent(slots_for_possible_removal)) {
+        c = current_agent(slots_for_possible_removal);
+        current_agent(slots_for_possible_removal) = current_agent(slots_for_possible_removal)->rest;
+        s = c->first;
+        free_cons(c);
+
+        if (s->wmes || s->all_preferences) {
+            /* --- don't deallocate it if it still has any wmes or preferences --- */
+            s->marked_for_possible_removal = FALSE;
+            continue;
+        }
+
+        /* --- deallocate the slot --- */
 #ifdef DEBUG_SLOTS
-    print_with_symbols ("\nDeallocate slot %y ^%y", s->id, s->attr);
+        print_with_symbols("\nDeallocate slot %y ^%y", s->id, s->attr);
 #endif
-    
-    if (s->changed && (! s->isa_context_slot)) {
-      remove_from_dll (current_agent(changed_slots), s->changed, next, prev);
-      free_with_pool (&current_agent(dl_cons_pool), s->changed);
+
+        if (s->changed && (!s->isa_context_slot)) {
+            remove_from_dll(current_agent(changed_slots), s->changed, next, prev);
+            free_with_pool(&current_agent(dl_cons_pool), s->changed);
+        }
+        remove_from_dll(s->id->id.slots, s, next, prev);
+        if (s->id == NULL)
+            print("ERROR!!!! in Garbage collection");
+        else
+            symbol_remove_ref(s->id);
+        symbol_remove_ref(s->attr);
+        free_with_pool(&current_agent(slot_pool), s);
     }
-    remove_from_dll (s->id->id.slots, s, next, prev);
-    if ( s->id == NULL ) print( "ERROR!!!! in Garbage collection" );
-	else symbol_remove_ref (s->id);
-    symbol_remove_ref (s->attr);
-    free_with_pool (&current_agent(slot_pool), s);
-  }
 }

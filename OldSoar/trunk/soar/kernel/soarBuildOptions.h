@@ -1,15 +1,11 @@
-#ifndef _SOAR_BUILD_OPTIONS__          /* excludeFromBuildInfo */
+#ifndef _SOAR_BUILD_OPTIONS__   /* excludeFromBuildInfo */
 #define _SOAR_BUILD_OPTIONS__
-
 
 /* ExcludeFromBuildInfo __NeXT__ */
 /* ExcludeFromBuildInfo __linux__ */
 /* ExcludeFromBuildInfo __ultrix__ */
 /* ExcludeFromBuildInfo __hpux__ */
 
-
-
- 
 /**
  *  \file BuildOptions
  *
@@ -58,16 +54,11 @@
  *
  */
 
-
-
 /* ********************************************************************* */
 /* ************************     SECTION 1      ************************* */
 /* ********************************************************************* */
 
-
-
 /* --------------- META LEVEL OPTIONS  (Select At Most 1) -------------- */
-
 
 /**
  *  \def STD
@@ -81,7 +72,7 @@
  *	 \see LITE
  *	 \see HEAVY
  */
- #define STD
+#define STD
 
 /**
  *  \def HEAVY
@@ -109,9 +100,6 @@
  */
 /* #define LITE */
 
-
-
-
 /* ********************************************************************* */
 /* ************************     SECTION 2      ************************* */
 /* ********************************************************************* */
@@ -130,8 +118,6 @@
  */
 #define MATCHTIME_INTERRUPT
 
-
-
 /**
  *  \def AGRESSIVE_ONC
  * 
@@ -142,7 +128,6 @@
  *       is no longer standard as of Soar 8.5
  */
 /* #define AGRESSIVE_ONC */
-
 
 /**
  *  \def O_REJECTS_FIRST
@@ -155,7 +140,6 @@
  *       through the preferences list.
  */
 #define O_REJECTS_FIRST
-
 
 /**
  *  \def NUMERIC_INDIFFERENT
@@ -174,9 +158,6 @@
 /* ********************************************************************* */
 
 /* ------------------------- TIMING CABAILITIES  ----------------------- */
-
-
-
 
 /**
  *  \def COUNT_KERNEL_TIMER_STOPS
@@ -208,7 +189,6 @@
  */
 /* #define DC_HISTOGRAM */
 
-
 /**
  *  \def DETAILED_TIMING_STATS
  *	 Requires: not( NO_TIMING_STUFF )
@@ -227,8 +207,6 @@
  *
  */
 /* #define DETAILED_TIMING_STATS */
-
-
 
 /**
  *  \def KERNEL_TIME_ONLY
@@ -266,8 +244,6 @@
  */
 /* #define KT_HISTOGRAM */
 
-
-	 
 /**
  *
  *  \def MHZ
@@ -282,7 +258,6 @@
  *
  */
 /* #define MHZ 1000 */
-
 
 /**
  *  \def PII_TIMERS
@@ -307,7 +282,6 @@
  */
 /* #define PII_TIMERS */
 
-
 /**
  * 
  * \def WARN_IF_TIMERS_REPORT_ZERO
@@ -328,16 +302,11 @@
  */
 /* #define WARN_IF_TIMERS_REPORT_ZERO */
 
-
-
 /* ********************************************************************* */
 /* ************************     SECTION 3      ************************* */
 /* ********************************************************************* */
 
-
 /* ------------------------ DEBUGGING OPTIONS   ------------------------ */
-
-
 
 /** 
  *  \def DEBUG_CHUNK_NAMES
@@ -347,8 +316,6 @@
  *       situations, but is not recommended for normal users.
  */
 
-
-
 /**
  *  \def DEBUG_MEMORY
  *
@@ -356,7 +323,6 @@
  *       system.  This is not recomende except for debugging the Soar
  *       kernel itself.
  */
-
 
 /**
  * \def MEMORY_POOL_STATS 
@@ -366,13 +332,9 @@
  *      if you would prefer to avoid this overhead.
  */
 
-
-
-
 /* ********************************************************************* */
 /* ************************     SECTION 4      ************************* */
 /* ********************************************************************* */
-
 
 /* ------------------------- PERFORMANCE OPTIONS   ------------------------ */
 
@@ -380,7 +342,6 @@
  *  functionality, if you're planning on using these options, consider
  *  if the meta-level build option LITE would meet your requirements.
  */
-
 
 /**
  *
@@ -402,8 +363,6 @@
  */
 /* #define ALLOW_I_SUPPORTED_SUBGOAL_RESULTS_WITH_THIN_JUSTS */
 
-
-
 /**
  *  \def DONT_ALLOW_VARIABLIZATION     - highly suggested for soar-lite
  *
@@ -416,7 +375,6 @@
  */
 /* #define DONT_ALLOW_VARIABLIZATION */
 
-
 /**
  *  \def DONT_CALC_GDS_OR_BT	    
  *     
@@ -428,7 +386,6 @@
  *	 a significantly faster kernel.
  */
 /* #define DONT_CALC_GDS_OR_BT */
-
 
 /**
  *  \def DONT_DO_IO_CYCLES
@@ -467,7 +424,6 @@
  */
 /* #define FEW_CALLBACKS */
 
-
 /**
  *  \def NO_TOP_LEVEL_REFS              - suggested (buggy?)
  *
@@ -486,8 +442,6 @@
  */
 /* #define NO_TOP_LEVEL_REFS */
 
-
-
 /**
  *   \def MAKE_PRODUCTION_FOR_THIN_JUSTS
  *        Requires: THIN_JUSTIFICATIONS
@@ -501,7 +455,6 @@
  */
 /* #define MAKE_PRODUCTION_FOR_THIN_JUSTS */
 
-
 /**
  *
  *  \def NO_ADC_CALLBACK
@@ -513,7 +466,6 @@
  */
 /* #define NO_ADC_CALLBACK */
 
-
 /**
  *  \def NO_TOP_JUST		 - highly suggested
  *
@@ -524,7 +476,6 @@
  * 
  */
 /* #define NO_TOP_JUST */
-
 
 /**
  *  
@@ -544,7 +495,6 @@
  */
 /* #define OPTIMIZE_TOP_LEVEL_RESULTS */
 
-
 /**
  *  \def REMOVE_INSTS_WITH_O_PREFS 
  *   
@@ -559,7 +509,6 @@
  *
  */
 /* #define REMOVE_INSTS_WITH_O_PREFS */
-
 
 /** 
  *  \def SINGLE_THIN_JUSTIFICATION 
@@ -610,7 +559,6 @@
  */
 /* #define SINGLE_THIN_JUSTIFICATION */
 
-
 /**
  *  \def THIN_JUSTIFICATIONS 
  *      
@@ -630,7 +578,6 @@
  */
 /* #define THIN_JUSTIFICATIONS */
 
-
 /**
  *
  * \def SOAR_8_ONLY
@@ -638,7 +585,6 @@
  *       make soar 8 a compile time option as opposed to a run time option.
  */
 /* #define SOAR_8_ONLY */
-
 
 /**
  *
@@ -649,7 +595,6 @@
  *       TSI.
  */
 /* #define TRACE_CONTEXT_DECISIONS_ONLY */
-
 
 /**
  *
@@ -664,17 +609,11 @@
  */
 /* #define WARN_IF_RESULT_IS_I_SUPPORTED */
 
-
-
-
-
 /* ********************************************************************* */
 /* ************************     SECTION 5      ************************* */
 /* ********************************************************************* */
 
-
 /* ----------------------- ADDITIONAL OPTIONS  ------------------------- */
-
 
 /**
  *  \def MAX_SIMULTANEOUS_AGENTS
@@ -703,9 +642,6 @@
  */
 #define USE_STDARGS
 
-
-
-
 /**
  * \def BUG_139_WORKAROUND
  *
@@ -722,13 +658,6 @@
  */
 /*#define BUG_139_WORKAROUND_WARNING*/
 
-
-
-
-
-
-
-
 /***************************************************************************
  *
  *         Build Descriptions
@@ -737,33 +666,21 @@
 
 #ifdef HEAVY
 
-  #define DETAILED_TIMING_STATS
+#define DETAILED_TIMING_STATS
 
-#endif /* HEAVY SOAR */
-
-
-
+#endif                          /* HEAVY SOAR */
 
 #ifdef STD
-#endif /* STD_SOAR */
-
-
+#endif                          /* STD_SOAR */
 
 #ifdef LITE
 
-  #define NO_TOP_JUST
-  #define THIN_JUSTIFICATIONS
-  #define SINGLE_THIN_JUSTIFICATION
-  #define OPTIMIZE_TOP_LEVEL_RESULTS
-  #define FEW_CALLBACKS
+#define NO_TOP_JUST
+#define THIN_JUSTIFICATIONS
+#define SINGLE_THIN_JUSTIFICATION
+#define OPTIMIZE_TOP_LEVEL_RESULTS
+#define FEW_CALLBACKS
 
-#endif /* LITE */
-
-
-
-
-
+#endif                          /* LITE */
 
 #endif
-
-

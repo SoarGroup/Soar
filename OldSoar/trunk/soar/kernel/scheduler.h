@@ -53,13 +53,8 @@
 
 extern long scheduler_cycle_count;
 
+extern void run_all_agents(long go_number, enum go_type_enum go_type,
+                           Symbol * go_slot_attr, goal_stack_level go_slot_level);
 
-extern void run_all_agents( long go_number, enum go_type_enum go_type,
-			Symbol * go_slot_attr, 
-			goal_stack_level go_slot_level); 
-
-
-extern void run_current_agent( long go_number, enum go_type_enum go_type,
-			Symbol * go_slot_attr, 
-			goal_stack_level go_slot_level); 
-
+extern void run_current_agent(long go_number, enum go_type_enum go_type,
+                              Symbol * go_slot_attr, goal_stack_level go_slot_level);
