@@ -805,7 +805,7 @@ bool Kernel::IsRunCommand(char const* pCommandLine)
 		{
 			// Look for " run" anywhere in the remaining command
 			// to simplify the problems caused by other arguments and white space may cause
-			if (line.find(spaceRunCommand) != std::string.npos)
+			if (line.find(spaceRunCommand) != std::string::npos)
 				return true ;
 		}
 	}

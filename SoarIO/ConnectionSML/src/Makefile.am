@@ -32,6 +32,6 @@ thread_Lock.cpp\
 thread_OSspecific.cpp\
 thread_Thread.cpp
 
-INCLUDES = -I../.. -I../include -I../../ElementXML/include
+INCLUDES = -I../.. -I../include -I../../ElementXML/include -I../../ClientSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
