@@ -1,6 +1,5 @@
 #include "soarkernel.h"
 #include "sysdep.h"
-
 #if !defined(__SC__) && !defined(THINK_C) && !defined(WIN32) && !defined(MACINTOSH)
 #include <sys/time.h>           /* used for timing stuff */
 #include <sys/resource.h>       /* used for timing stuff */
@@ -33,310 +32,150 @@
    Finally, timer_value() returns the accumulated value of a timer
    (in seconds).
 =================================================================== */
-
 #ifndef NO_TIMING_STUFF
+#define ONE_MILLION (1000000)
 
-#ifdef PII_TIMERS
+void reset_timer (struct timeval *tv_to_reset) {
+  tv_to_reset->tv_sec = 0;
+  tv_to_reset->tv_usec = 0;
+}
 
-#ifndef MHZ
-#error Must define MHZ as the Clock Speed on the CPU in MegaHertz
+#if defined(WIN32)
+
+/* A fake implementation of rusage for WIN32. Taken from cygwin. */
+#define RUSAGE_SELF 0
+struct rusage {
+   struct timeval ru_utime;
+   struct timeval ru_stime;
+};
+#define NSPERSEC 10000000L
+#define FACTOR (0x19db1ded53e8000L)
+
+static unsigned __int64
+__to_clock_t (FILETIME * src, int flag)
+{
+  unsigned __int64 total = ((unsigned __int64) src->dwHighDateTime << 32) + ((unsigned)src->dwLowDateTime);
+
+  /* Convert into clock ticks - the total is in 10ths of a usec.  */
+  if (flag)
+    total -= FACTOR;
+
+  total /= (unsigned __int64) (NSPERSEC / CLOCKS_PER_SEC);
+  return total;
+}
+static void totimeval (struct timeval *dst, FILETIME *src, int sub, int flag)
+{
+  __int64 x = __to_clock_t (src, flag);
+
+  x *= (int) (1e6) / CLOCKS_PER_SEC; /* Turn x into usecs */
+  x -= (__int64) sub * (int) (1e6);
+
+  dst->tv_usec = (long)(x % (__int64) (1e6)); /* And split */
+  dst->tv_sec = (long)(x / (__int64) (1e6));
+}
+
+int getrusage(int who, struct rusage* r)
+{
+   FILETIME creation_time = {0,0};
+   FILETIME exit_time = {0,0};
+   FILETIME kernel_time = {0,0};
+   FILETIME user_time = {0,0};
+
+   memset (r, 0, sizeof (*r));
+   GetProcessTimes (GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time);
+   totimeval (&r->ru_stime, &kernel_time, 0, 0);
+   totimeval (&r->ru_utime, &user_time, 0, 0);
+   return 0;
+}
+
+#endif /* WIN32 */
+
+void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
+  dest_tv->tv_sec = r->ru_utime.tv_sec + r->ru_stime.tv_sec;
+  dest_tv->tv_usec = r->ru_utime.tv_usec + r->ru_stime.tv_usec;
+  if (dest_tv->tv_usec >= ONE_MILLION) {
+    dest_tv->tv_usec -= ONE_MILLION;
+    dest_tv->tv_sec++;
+  }
+}
+
+void start_timer (struct timeval *tv_for_recording_start_time) {
+  struct rusage temp_rusage;
+  
+  getrusage (RUSAGE_SELF, &temp_rusage);
+  get_cputime_from_rusage (&temp_rusage, tv_for_recording_start_time);
+}
+
+void stop_timer (struct timeval *tv_with_recorded_start_time,
+                 struct timeval *tv_with_accumulated_time) {
+  struct rusage end_rusage;
+  struct timeval end_tv;
+  long delta_sec, delta_usec;
+  
+  getrusage (RUSAGE_SELF, &end_rusage);
+  get_cputime_from_rusage (&end_rusage, &end_tv);
+
+  delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
+  delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
+  if (delta_usec < 0) {
+    delta_usec += ONE_MILLION;
+    delta_sec--;
+  }
+
+  tv_with_accumulated_time->tv_sec += delta_sec;
+  tv_with_accumulated_time->tv_usec += delta_usec;
+  if (tv_with_accumulated_time->tv_usec >= ONE_MILLION) {
+    tv_with_accumulated_time->tv_usec -= ONE_MILLION;
+    tv_with_accumulated_time->tv_sec++;
+  }
+}
+
+double timer_value (struct timeval *tv) {
+  return (double)(tv->tv_sec) + (double)(tv->tv_usec)/(double)ONE_MILLION;
+}
 #endif
 
-#define RDTSC(llptr) ({ \
-__asm__ __volatile__ ( \
-        ".byte 0x0f; .byte 0x31" \
-        : "=A" (llptr) \
-        : : "eax", "edx"); })
-
-#define CPUID ({ \
-__asm__ __volatile__ ( \
-        ".byte 0x0f; .byte 0xa2" \
-        : : : "eax", "ebx", "ecx", "edx" ); })
-
-void SafeRDTSC(unsigned long long int *ullptr)
-{
-
-    CPUID;
-    RDTSC(*ullptr);
-
+#ifdef REAL_TIME_BEHAVIOR
+/* RMJ */
+void init_real_time (void) {
+   thisAgent->real_time_tracker =
+         (struct timeval *) malloc(sizeof(struct timeval));
+   timerclear(thisAgent->real_time_tracker);
+   thisAgent->real_time_idling = FALSE;
+   current_real_time =
+         (struct timeval *) malloc(sizeof(struct timeval));
 }
-
-int test_timers()
-{
-
-    unsigned long long int start, stop, base, baseii;
-
-    double temp;
-    struct timeval tv_start, tv_stop;
-
-    start_timer(&start);
-    start_timer(&start);
-    start_timer(&start);
-    start_timer(&start);
-
-    reset_timer(&base);
-    start_timer(&start);
-    stop_timer(&start, &base);
-
-    reset_timer(&baseii);
-    start_timer(&start);
-    stop_timer(&start, &baseii);
-
-    print("Finding overhead of RDTSC call\n");
-    print("Attempt 1  --> %ld  ", (long) base);
-    print("Attempt 2  --> %ld  ", (long) baseii);
-    base = (base > baseii) ? baseii : base;
-
-    reset_timer(&baseii);
-    start_timer(&start);
-    stop_timer(&start, &baseii);
-    base = (base > baseii) ? baseii : base;
-    print("Attempt 3  --> %ld  ", (long) baseii);
-
-    reset_timer(&baseii);
-    start_timer(&start);
-    stop_timer(&start, &baseii);
-    base = (base > baseii) ? baseii : base;
-    print("Attempt 4  --> %ld\n", (long) baseii);
-
-    print("Minimum number of Clock Cycles for RDTSC --> %ld\n", (long) base);
-    print("Overhead is:  %8.4e seconds per timer switch\n", timer_value(&base));
-
-    print("Timing 3 second Sleep\n");
-    reset_timer(&stop);
-
-    gettimeofday(&tv_start, NULL);
-    start_timer(&start);
-    sys_sleep(3);
-    stop_timer(&start, &stop);
-    gettimeofday(&tv_stop, NULL);
-
-    print("RDTSC Returns        --> %f\n", timer_value(&stop));
-
-    temp = tv_stop.tv_sec - tv_start.tv_sec;
-    temp += (double) ((tv_stop.tv_usec - tv_start.tv_usec) / (double) ONE_MILLION);
-    print("gettimeofday Returns --> %f\n\n\n", temp);
-
-    return (int) base;
-
-}
-
-void reset_timer(unsigned long long int *tv_to_reset)
-{
-    *tv_to_reset = 0ULL;
-}
-
-double timer_value(unsigned long long int *tv)
-{
-
-    return (double) ((*tv) / ((double) (MHZ * ONE_MILLION)));
-}
-
-void start_timer(unsigned long long int *tv_for_recording_start_time)
-{
-
-    SafeRDTSC(tv_for_recording_start_time);
-
-}
-
-void stop_timer(unsigned long long int *tv_with_start_time, unsigned long long int *tv_with_accumulated_time)
-{
-
-    unsigned long long int end_time;
-
-    SafeRDTSC(&end_time);
-    *tv_with_accumulated_time += (end_time - *tv_with_start_time);
-
-}
-
-#else
-
-/* ===================================================================
- *
- *  OS Independent Functions (non PII specific) 
- *
- * =================================================================== */
-void reset_timer(struct timeval *tv_to_reset)
-{
-    tv_to_reset->tv_sec = 0;
-    tv_to_reset->tv_usec = 0;
-}
-
-double timer_value(struct timeval *tv)
-{
-    return (double) (tv->tv_sec) + (double) (tv->tv_usec) / (double) ONE_MILLION;
-}
-
-/* ===================================================================
- *
- *  Macintosh and Windows Timing Functions (non PII specific) 
- *
- * =================================================================== */
-
-#if defined(MACINTOSH) || defined(WIN32)
-
-void get_cputime_from_clock(clock_t t, struct timeval *dt)
-{
-    dt->tv_sec = t / CLOCKS_PER_SEC;
-    dt->tv_usec = (long) (((t % CLOCKS_PER_SEC) / (float) CLOCKS_PER_SEC) * ONE_MILLION);
-}
-
-void start_timer(struct timeval *tv_for_recording_start_time)
-{
-    clock_t ticks;
-
-    ticks = clock();
-    get_cputime_from_clock(ticks, tv_for_recording_start_time);
-}
-
-void stop_timer(struct timeval *tv_with_recorded_start_time, struct timeval *tv_with_accumulated_time)
-{
-    clock_t ticks;
-    struct timeval end_tv;
-    long delta_sec, delta_usec;
-
-    ticks = clock();
-    get_cputime_from_clock(ticks, &end_tv);
-
-    delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
-    delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
-    if (delta_usec < 0) {
-        delta_usec += ONE_MILLION;
-        delta_sec--;
-    }
-
-    tv_with_accumulated_time->tv_sec += delta_sec;
-    tv_with_accumulated_time->tv_usec += delta_usec;
-    if (tv_with_accumulated_time->tv_usec >= ONE_MILLION) {
-        tv_with_accumulated_time->tv_usec -= ONE_MILLION;
-        tv_with_accumulated_time->tv_sec++;
-    }
-#ifdef WARN_IF_TIMERS_REPORT_ZERO
-    if (current_agent(warn_on_zero_timers) &&
-        delta_usec == 0 && delta_sec == 0 && current_agent(sysparams)[PRINT_WARNINGS_SYSPARAMS]) {
-
-        print("\nWarning:  A timer has reported zero.\n");
-        print("  This is likely the result of poor system timer resolution.\n");
-        print("  (This warning will not be repeated)\n");
-        current_agent(warn_on_zero_timers) = FALSE;
-    }
 #endif
 
-#ifdef COUNT_KERNEL_TIMER_STOPS
-    if (tv_with_accumulated_time == &(current_agent(total_kernel_time))) {
-        current_agent(kernelTimerStops)++;
-    } else {
-        current_agent(nonKernelTimerStops)++;
-    }
+#ifdef ATTENTION_LAPSE
+/* RMJ */
 
-#endif
-
-#ifdef KT_HISTOGRAM
-    if (tv_with_accumulated_time == &(current_agent(total_kernel_time)) &&
-        current_agent(d_cycle_count) < current_agent(kt_histogram_sz)) {
-
-        current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_sec += delta_sec;
-        current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_usec += delta_usec;
-
-        if (current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_usec >= ONE_MILLION) {
-
-            current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_usec -= ONE_MILLION;
-            current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_sec++;
-        }
-
-    }
-#endif
-
+void wake_from_attention_lapse (void) {
+   /* Set tracker to last time we woke up */
+   start_timer (thisAgent->attention_lapse_tracker);
+   thisAgent->attention_lapsing = FALSE;
 }
 
-#else
-
-/* ===================================================================
- *
- *  Unix Timing Functions
- *
- * =================================================================== */
-
-void get_cputime_from_rusage(struct rusage *r, struct timeval *dest_tv)
-{
-    dest_tv->tv_sec = r->ru_utime.tv_sec + r->ru_stime.tv_sec;
-    dest_tv->tv_usec = r->ru_utime.tv_usec + r->ru_stime.tv_usec;
-    if (dest_tv->tv_usec >= ONE_MILLION) {
-        dest_tv->tv_usec -= ONE_MILLION;
-        dest_tv->tv_sec++;
-    }
+void init_attention_lapse (void) {
+   thisAgent->attention_lapse_tracker =
+         (struct timeval *) malloc(sizeof(struct timeval));
+   wake_from_attention_lapse();
+#ifndef REAL_TIME_BEHAVIOR
+   current_real_time =
+         (struct timeval *) malloc(sizeof(struct timeval));
+#endif
 }
 
-void start_timer(struct timeval *tv_for_recording_start_time)
-{
-    struct rusage temp_rusage;
-
-    getrusage(RUSAGE_SELF, &temp_rusage);
-    get_cputime_from_rusage(&temp_rusage, tv_for_recording_start_time);
+void start_attention_lapse (long duration) {
+   /* Set tracker to time we should wake up */
+   start_timer (thisAgent->attention_lapse_tracker);
+   thisAgent->attention_lapse_tracker->tv_usec += 1000 * duration;
+   if (thisAgent->attention_lapse_tracker->tv_usec >= 1000000) {
+      thisAgent->attention_lapse_tracker->tv_sec +=
+            thisAgent->attention_lapse_tracker->tv_usec / 1000000;
+      thisAgent->attention_lapse_tracker->tv_usec %= 1000000;
+   }
+   thisAgent->attention_lapsing = TRUE;
 }
-
-void stop_timer(struct timeval *tv_with_recorded_start_time, struct timeval *tv_with_accumulated_time)
-{
-    struct rusage end_rusage;
-    struct timeval end_tv;
-    long delta_sec, delta_usec;
-
-    getrusage(RUSAGE_SELF, &end_rusage);
-    get_cputime_from_rusage(&end_rusage, &end_tv);
-
-    delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
-    delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
-    if (delta_usec < 0) {
-        delta_usec += ONE_MILLION;
-        delta_sec--;
-    }
-
-    tv_with_accumulated_time->tv_sec += delta_sec;
-    tv_with_accumulated_time->tv_usec += delta_usec;
-    if (tv_with_accumulated_time->tv_usec >= ONE_MILLION) {
-        tv_with_accumulated_time->tv_usec -= ONE_MILLION;
-        tv_with_accumulated_time->tv_sec++;
-    }
-
-#ifdef WARN_IF_TIMERS_REPORT_ZERO
-    if (current_agent(warn_on_zero_timers) && delta_usec == 0 && delta_sec == 0) {
-
-        print("\nWarning:  A timer has reported zero.\n");
-        print("  This is likely the result of poor system timer resolution.\n");
-        print("  (This warning will not be repeated)\n");
-        current_agent(warn_on_zero_timers) = FALSE;
-    }
+   
 #endif
-
-#ifdef COUNT_KERNEL_TIMER_STOPS
-    if (tv_with_accumulated_time == &(current_agent(total_kernel_time))) {
-        current_agent(kernelTimerStops)++;
-    } else {
-        current_agent(nonKernelTimerStops)++;
-    }
-
-#endif
-
-#ifdef KT_HISTOGRAM
-    if (tv_with_accumulated_time == &(current_agent(total_kernel_time)) &&
-        current_agent(d_cycle_count) < current_agent(kt_histogram_sz)) {
-
-        current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_sec += delta_sec;
-        current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_usec += delta_usec;
-
-        if (current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_usec >= ONE_MILLION) {
-
-            current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_usec -= ONE_MILLION;
-            current_agent(kt_histogram_tv)[current_agent(d_cycle_count)].tv_sec++;
-        }
-
-    }
-#endif
-
-}
-
-#endif                          /* UNIX */
-
-#endif                          /* ndef PII_TIMERS */
-
-#endif                          /* ndef NO_TIMING_STUFF */

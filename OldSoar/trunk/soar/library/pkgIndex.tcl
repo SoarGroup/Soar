@@ -9,7 +9,7 @@
 # full path name of this file's directory.
 
 puts "dir = $dir"
-package ifneeded Soar 8.5.1 [list
+package ifneeded Soar 8.5.2 [list
 	# First, check to see if Soar is already loaded into the
 	# current interpreter. If so, then don't load it again.
 	foreach pkg [info loaded {}] {
@@ -33,6 +33,6 @@ package ifneeded Soar 8.5.1 [list
 	}
 	
 	# Otherwise, issue the platform-specific "load" command
-	set lib "libsoar8.5.1[info sharedlibext]"
+	set lib "libsoar8.5.2[info sharedlibext]"
 	load [file join $dir $lib]
 ]

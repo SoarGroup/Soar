@@ -160,7 +160,7 @@ extern int tolower(int);
 
 #define MAJOR_VERSION_NUMBER 8
 #define MINOR_VERSION_NUMBER 5
-#define MICRO_VERSION_NUMBER 1
+#define MICRO_VERSION_NUMBER 2
 #define GREEK_VERSION_NUMBER ""
 
 extern char *soar_version_string;
