@@ -45,6 +45,7 @@ cli_quit.cpp\
 cli_removewme.cpp\
 cli_retenet.cpp\
 cli_run.cpp\
+cli_savebacktraces.cpp\
 cli_soar8.cpp\
 cli_soarnews.cpp\
 cli_source.cpp\
