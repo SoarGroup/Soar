@@ -1332,13 +1332,14 @@ namespace gSKI
 
          ///////////////////////////////////////////////////////////////////
          // Execute the next smallest step
-         do_one_top_level_phase(m_agent);
+         // do_one_top_level_phase(m_agent);
+		 run_for_n_phases(m_agent, 1);
 
          // Execute soar's determine level phase.  It does not map
          //  to any high-level phases
-         while((m_agent->current_phase == DETERMINE_LEVEL_PHASE) && !(m_agent->system_halted))
-            do_one_top_level_phase(m_agent);
-
+		 while((m_agent->current_phase == DETERMINE_LEVEL_PHASE) && !(m_agent->system_halted)) {
+           // do_one_top_level_phase(m_agent);
+			 run_for_n_phases(m_agent, 1); }
          // Remember our current phase
          m_lastPhase = m_nextPhase;
          m_nextPhase = EnumRemappings::ReMapPhaseType((unsigned short)m_agent->current_phase, 
