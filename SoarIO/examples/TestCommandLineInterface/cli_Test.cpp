@@ -9,6 +9,12 @@
 #include <assert.h>
 #include <queue>
 
+#ifdef _MSC_VER
+// Use Visual C++'s memory checking functionality
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#endif // _MSC_VER
+
 #include "sml_Connection.h"
 #include "sml_Client.h"
 #include "sml_AnalyzeXML.h"
@@ -25,7 +31,7 @@ using namespace std;
 const char			AGENT_NAME[] = "test";		// test agent name
 CommandProcessor*	g_pCommandProcessor = 0;	// pointer to the command processor singleton
 const int			HISTORY_SIZE = 10;			// number of commands to keep in history
-queue<char>			g_InputQueue;
+queue<char>*		g_pInputQueue = 0;
 soar_thread::Mutex*	g_pInputQueueMutex = 0;
 soar_thread::Event*	g_pInputQueueWriteEvent = 0;
 soar_thread::Event*	g_pWaitForInput = 0;
@@ -47,7 +53,7 @@ void InputThread::Run() {
 		lock = new soar_thread::Lock(g_pInputQueueMutex);
 
 		// push char on to queue
-		g_InputQueue.push(m_C);
+		g_pInputQueue->push(m_C);
 
 		// signal write event
 		g_pInputQueueWriteEvent->TriggerEvent();
@@ -85,7 +91,7 @@ char getKey(bool block) {
 	if (block) {
 		// yes, blocking, follow the following loop
 		// lock, check size (break if true (input available)), unlock, wait for event, repeat
-		while (!g_InputQueue.size()) {
+		while (!g_pInputQueue->size()) {
 			// unlock queue
 			delete lock;
 
@@ -97,7 +103,7 @@ char getKey(bool block) {
 		}
 	} else {
 		// not blocking, if there is nothing in the queue, return immediately
-		if (!g_InputQueue.size()) {
+		if (!g_pInputQueue->size()) {
 			// unlock queue
 			delete lock;
 			return ret;
@@ -105,8 +111,8 @@ char getKey(bool block) {
 	}
 
 	// we have a locked queue with stuff in it
-	ret = g_InputQueue.front();
-	g_InputQueue.pop();
+	ret = g_pInputQueue->front();
+	g_pInputQueue->pop();
 
 	// unlock queue
 	delete lock;
@@ -313,6 +319,8 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 // Main program
 int main(int argc, char** argv)
 {
+	//_crtBreakAlloc = 152;
+
 	if (argc > 2) {
 		cout << "Too many args." << endl;
 		exit(1);
@@ -337,6 +345,9 @@ int main(int argc, char** argv)
 	sml::Agent* pAgent;
 	pAgent = pKernel->CreateAgent(AGENT_NAME) ;
 	assert(pAgent);
+
+	assert(!g_pInputQueue);
+	g_pInputQueue = new queue<char>;
 
 	// Create command processor
 	assert(!g_pCommandProcessor);	// singleton
@@ -385,6 +396,34 @@ int main(int argc, char** argv)
 	delete g_pWaitForInput;
 	delete g_pInputQueueWriteEvent;
 	delete g_pInputQueueMutex;
+
+	delete g_pCommandProcessor;
+	delete g_pInputQueue;
+
+#ifdef _MSC_VER
+//	A deliberate memory leak which I can use to test the memory checking code is working.
+//	char* pTest = new char[10] ;
+
+	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
+	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
+
+	// Set the memory checking output to go to Visual Studio's debug window (so we have a copy to keep)
+	// and to stdout so we can see it immediately.
+	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
+	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
+
+	// Now check for memory leaks.
+	// This will only detect leaks in objects that we allocate within this executable and static libs.
+	// If we allocate something in a DLL then this call won't see it because it works by overriding the
+	// local implementation of malloc.
+	_CrtDumpMemoryLeaks();
+#endif // _MSC_VER
+
+	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
+	printf("\n\nPress <return> to exit\n") ;
+	char line[100] ;
+	char* str = gets(line) ;
+	str = 0;
 
 	return 0;
 }

@@ -4,10 +4,14 @@
 
 #include "cli_CommandLineInterface.h"
 
+#include <iostream>
+#include <fstream>
+
 #include "cli_Constants.h"
 #include "cli_Aliases.h"
 
 using namespace cli;
+using namespace std;
 
 bool CommandLineInterface::ParseHome(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
@@ -37,18 +41,63 @@ bool CommandLineInterface::DoHome(std::string* pDirectory) {
 		return false;
 	}
 
-	// Reload aliases and constants
-	if (m_pAliases) {
-		delete m_pAliases;
-		m_pAliases = 0;
+	// Load aliases from file
+	ifstream aliasesFile("aliases.txt");
+	if (aliasesFile) {
+		string line;
+		string::iterator iter;
+		vector<string> args;
+		string arg;
+
+		// For each line in the file
+		while (getline(aliasesFile, line)) {
+
+			// Skip if pounded
+			if (line[0] == '#') continue;
+			
+			// Count args per line
+			args.clear();
+
+			// Read all args
+			while(line.length()) {
+
+				// Remove leading whitespace
+				iter = line.begin();
+				while (isspace(*iter)) {
+					line.erase(iter);
+					if (!line.length()) break; // Nothing but space left
+					
+					// Next character
+					iter = line.begin();
+				}
+
+				// Was it actually trailing whitespace?
+				if (!line.length()) break;	// Nothing left to do
+				
+				// We have at least one, read the word
+				arg.clear();
+				while (!isspace(*iter)) {
+					arg += *iter;
+					line.erase(iter);
+					iter = line.begin();
+					if (iter == line.end()) break;
+				}
+
+				// Add to args
+				args.push_back(arg);
+			}
+			
+			// Add to aliases if we have at least one arg and one in the args vector
+			if (args.size() && arg.size()) {
+				args.pop_back();
+				m_Aliases.RemoveAlias(arg);
+				m_Aliases.NewAlias(args, arg);
+			}
+		}
 	}
 
-	if (m_pConstants) {
-		delete m_pConstants;
-		m_pConstants = 0;
-	}
-
-	m_pAliases = new Aliases();
+	// Reload constants
+	if (m_pConstants) delete m_pConstants;
 	m_pConstants = new Constants();
 	return true;
 }

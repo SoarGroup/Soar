@@ -17,11 +17,13 @@ namespace cli {
 
 		Aliases();
 		
+		bool IsAlias(const std::string& command);
+		bool NewAlias(const std::vector<std::string>& substitution, const std::string& commandToSubstitute);
+		bool RemoveAlias(const std::string& command);
 		bool Translate(std::vector<std::string>& argv);
 		
 	private:
 		
-		void LoadAliases(std::ifstream& aliasesFile);
 		AliasMap aliasMap;
 	};
 

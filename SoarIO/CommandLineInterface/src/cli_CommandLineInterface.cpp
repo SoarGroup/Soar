@@ -40,7 +40,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	BuildCommandMap();
 
 	// Set up the current working directory, create usage and aliases
-	m_pAliases = 0;
 	m_pConstants = 0;
 	if (!DoHome()) {
 		// TODO: figure out what to do here!
@@ -193,7 +192,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	}
 
 	// Translate aliases
-	m_pAliases->Translate(argv);
+	m_Aliases.Translate(argv);
 
 	// Is the command implemented?
 	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {

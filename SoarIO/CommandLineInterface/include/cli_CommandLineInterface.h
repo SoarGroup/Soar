@@ -23,7 +23,7 @@
 // Local includes
 #include "cli_CommandData.h"
 //#include "cli_Constants.h"
-//#include "cli_Aliases.h"
+#include "cli_Aliases.h"
 
 // gSKI includes
 #include "gSKI_Events.h"
@@ -59,7 +59,6 @@ namespace cli {
 // Forward declarations
 class CommandLineInterface;
 class GetOpt;
-class Aliases;
 class Constants;
 
 // Define the CommandFunction which we'll call to process commands
@@ -709,7 +708,7 @@ protected:
 	void PrintFilename(const std::string& name, bool isDirectory); 	 
   	 
 	Constants*			m_pConstants;			// Constants management object
-	Aliases*			m_pAliases;				// Alias management object
+	Aliases				m_Aliases;				// Alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
 
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
