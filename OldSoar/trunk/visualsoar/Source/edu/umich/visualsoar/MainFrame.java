@@ -93,6 +93,7 @@ public class MainFrame extends JFrame
     Action generateDataMapAction = new GenerateDataMapAction();
 	Action saveProjectAsAction = new SaveProjectAsAction();
 	Action contactUsAction = new ContactUsAction();
+    Action viewKeyBindingsAction = new ViewKeyBindingsAction();
 	Action findInProjectAction = new FindInProjectAction();
     Action replaceInProjectAction = new ReplaceInProjectAction();
 
@@ -536,7 +537,29 @@ public class MainFrame extends JFrame
         }//if
                     
     }//checkForUnsavedProjectOnClose()
-    
+
+
+    /**
+     * This function opens a file (assumed to be a non-Soar file).
+     */
+    void OpenFile(File file)
+    {
+        try
+        {
+            boolean oldPref = Preferences.getInstance().isHighlightingEnabled();
+            Preferences.getInstance().setHighlightingEnabled(false);  // Turn off highlighting
+            RuleEditor ruleEditor = new RuleEditor(file);
+            ruleEditor.setVisible(true);
+            addRuleEditor(ruleEditor);
+            Preferences.getInstance().setHighlightingEnabled(oldPref);  // Turn it back to what it was
+        }
+        catch(IOException IOE) 
+        {
+
+            JOptionPane.showMessageDialog(MainFrame.this, "There was an error reading file: " +
+                                          file.getName(), "I/O Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }//OpenFile()
 
     /**
      * When the Soar Runtime|Agent menu is selected, this listener
@@ -709,7 +732,8 @@ public class MainFrame extends JFrame
 		JMenu helpMenu = new JMenu("Help");
 		// Help menu
 		helpMenu.add(contactUsAction); 
-		helpMenu.setMnemonic('H');	
+        helpMenu.add(viewKeyBindingsAction);
+		helpMenu.setMnemonic('H');
 		return helpMenu;
 	}
 	
@@ -1119,23 +1143,7 @@ public class MainFrame extends JFrame
                 File file = fileChooser.getSelectedFile();
                 if(file != null && state == JFileChooser.APPROVE_OPTION) 
                 {
-
-                    try 
-                    {
-
-                        boolean oldPref = Preferences.getInstance().isHighlightingEnabled();
-                        Preferences.getInstance().setHighlightingEnabled(false);  // Turn off highlighting
-                        RuleEditor ruleEditor = new RuleEditor(file);
-                        ruleEditor.setVisible(true);
-                        addRuleEditor(ruleEditor);
-                        Preferences.getInstance().setHighlightingEnabled(oldPref);  // Turn it back to what it was
-                    }
-                    catch(IOException IOE) 
-                    {
-
-                        JOptionPane.showMessageDialog(MainFrame.this, "There was an error reading file: " +
-                                                      file.getName(), "I/O Error", JOptionPane.ERROR_MESSAGE);
-                    }
+                    OpenFile(file);
                 }
             }
 
@@ -1330,6 +1338,39 @@ public class MainFrame extends JFrame
 			aboutDialog.setVisible(true);		
 		}
   	}
+
+	/**
+	 * This is where the user user wants a list of keybindings.  The action
+     * loads the docs/KeyBindings.txt file.
+	 */	
+	class ViewKeyBindingsAction extends AbstractAction 
+    {
+
+		public ViewKeyBindingsAction() 
+        {
+
+			super("VisualSoar Keybindings");
+		}
+		
+		public void actionPerformed(ActionEvent e) 
+        {
+            File f = new File("./docs/KeyBindings.txt");
+            if (f.exists())
+            {
+                OpenFile(f);
+            }
+            else
+            {
+				JOptionPane.showMessageDialog(
+                    MainFrame.this,
+                    "The keybindings documentation file appears to be missing.\n"
+                    + "I am expecting to find a file called \"KeyBindings.txt\" in \n"
+                    + "the \"docs\" subdirectory of the VisualSoar directory.",
+                    "Could Not Find VisualSoar Keybindings",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+		}
+  	}//class ViewKeyBindingsAction
 
 
     /**
