@@ -117,6 +117,9 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	// We'll use this to make sure only one connection is executing commands
 	// in the kernel at a time.
 	m_pKernelMutex = new soar_thread::Mutex() ;
+
+	m_SuppressSystemStart = false ;
+	m_SuppressSystemStop  = false ;
 }
 
 KernelSML::~KernelSML()

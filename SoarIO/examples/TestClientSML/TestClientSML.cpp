@@ -197,7 +197,20 @@ void MyCreationHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 
 void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 {
-	cout << "Received agent event handler" << endl ;
+	cout << "Received agent event" << endl ;
+}
+
+void MySystemHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
+{
+	int* pInt = (int*)pUserData ;
+
+	// Increase the count
+	*pInt = *pInt + 1 ;
+
+	if (id == smlEVENT_SYSTEM_START)
+		cout << "Received system start" << endl ;
+	else if (id == smlEVENT_SYSTEM_STOP)
+		cout << "Received system stop" << endl ;
 }
 
 void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
@@ -275,12 +288,42 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	//cout << "About to do first run" << endl ;
 
+	int countStarts, countStops ;
+	countStarts = 0 ;
+	countStops = 0 ;
+	int systemStart = pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, &MySystemHandler, &countStarts) ;
+	int systemStop = pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, &MySystemHandler, &countStops) ;
+
 	// Test the kernel level "are agents running" event.
 	int temp1 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENTS_RUN_STEP, &MyAgentEventHandler, 0) ;
 
 	std::string result = pAgent->Run(2) ;
 
+	if (countStarts != countStops || countStarts != 1)
+	{
+		cout << "Erorr with system start/stop events" << endl ;
+		return false ;
+	}
+
+	// Now try a run with suppressed events
+	pAgent->SetSuppressSystemStart(true) ;
+	pAgent->Run(2) ;
+
+	// Run it again -- should get a start this time
+	pAgent->Run(2) ;
+
+	pAgent->SetSuppressSystemStop(true) ;
+	pAgent->Run(2) ;
+
+	if (countStarts != 3 || countStops != 3)
+	{
+		cout << "Erorr with suppressing system start/stop events" << endl ;
+		return false ;
+	}
+
 	pKernel->UnregisterForAgentEvent(temp1) ;
+	pKernel->UnregisterForSystemEvent(systemStart) ;
+	pKernel->UnregisterForSystemEvent(systemStop) ;
 
 	std::string expand = pKernel->ExpandCommandLine("p s1") ;
 	bool isRunCommand = pKernel->IsRunCommand("d 3") ;
@@ -298,7 +341,8 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	// Test that we get a callback after the decision cycle runs
 	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
-	int count = 0 ;
+	int count ;
+	count = 0 ;
 	int callback1 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &count) ;
 
 	// Register another handler for the same event, to make sure we can do that.
@@ -307,7 +351,6 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	int testData ;
 	testData = 25 ;
 	int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &testData, !addToBack) ;
-	unused(callback2);
 
 	// Run returns the result (succeeded, failed etc.)
 	// To catch the trace output we have to register a print event listener
@@ -348,9 +391,9 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	pAgent->Update(pEmpty, "EMPTY") ;
 	ok = pAgent->Commit() ;
 
-	int myCount = 0 ;
+	int myCount ;
+	myCount = 0 ;
 	int callback_run_count = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &myCount) ;
-	unused(callback_run_count);
 
 	//cout << "About to do first run-til-output" << endl ;
 
@@ -512,6 +555,8 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	cout << "Destroy the agent now" << endl ;
 
 	unreg = pAgent->UnregisterForRunEvent(callback1) ;
+	unreg = unreg && pAgent->UnregisterForRunEvent(callback2) ;
+	unreg = unreg && pAgent->UnregisterForRunEvent(callback_run_count) ;
 
 	if (!unreg)
 	{
@@ -557,80 +602,119 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		int callback5 = pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_CREATED, &MyCreationHandler, 0) ;
 		unused(callback5);
 
-		char const* name = "test-client-sml" ;
-
-		int numberAgents = pKernel->GetNumberAgents() ;
+		int nAgents = pKernel->GetNumberAgents() ;
 
 		// Report the number of agents (always 0 unless this is a remote connection to a CLI or some such)
-		cout << "Existing agents: " << numberAgents << endl ;
+		cout << "Existing agents: " << nAgents << endl ;
 
-		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
-		sml::Agent* pAgent = pKernel->CreateAgent(name) ;
+		// This number determines how many agents are created.  We create <n>, test <n> and then delete <n>
+		int numberAgents = 2 ;
+		char buffer[100] ;
 
-		double time = timer.Elapsed() ;
-		cout << "Time to initialize kernel and create agent: " << time << endl ;
-
-		if (pKernel->HadError())
+		// PHASE ONE: Agent creation
+		for (int agentCounter = 0 ; agentCounter < numberAgents ; agentCounter++)
 		{
-			cout << pKernel->GetLastErrorDescription() << endl ;
-			return false ;
+			std::string name = "test-client-sml" ;
+			name.append(itoa(agentCounter, buffer, sizeof(buffer))) ;
+
+			// NOTE: We don't delete the agent pointer.  It's owned by the kernel
+			sml::Agent* pAgent = pKernel->CreateAgent(name.c_str()) ;
+
+			double time = timer.Elapsed() ;
+			cout << "Time to initialize kernel and create agent: " << time << endl ;
+
+			if (pKernel->HadError())
+			{
+				cout << pKernel->GetLastErrorDescription() << endl ;
+				return false ;
+			}
+
+			if (!pAgent)
+				cout << "Error creating agent" << endl ;
+
+			bool ok = true ;
+
+			if (simpleInitSoar) 
+			{
+				SLEEP(200) ;
+
+				cout << "Performing simple init-soar..." << endl << endl;
+				pAgent->InitSoar() ;
+
+				SLEEP(200) ;
+
+				ok = pKernel->DestroyAgent(pAgent) ;
+				if (!ok)
+				{
+					cout << "*** ERROR: Failed to destroy agent properly ***" ;
+					return false ;
+				}
+				delete pKernel ;
+				return ok;
+			}
+
+			bool load = pAgent->LoadProductions("testsml.soar") ;
+			unused(load);
+
+			if (pAgent->HadError())
+			{
+				cout << "ERROR loading productions: " << pAgent->GetLastErrorDescription() << endl ;
+				return false ;
+			}
+
+			cout << "Loaded productions" << endl ;
+
+			if (!ok)
+				return false ;
 		}
 
-		if (!pAgent)
-			cout << "Error creating agent" << endl ;
-
-		bool ok = true ;
-
-		if (simpleInitSoar) 
+		// PHASE TWO: Agent tests
+		for (int agentTests = 0 ; agentTests < numberAgents ; agentTests++)
 		{
-			SLEEP(200) ;
+			std::string name = "test-client-sml" ;
+			name.append(itoa(agentTests, buffer, sizeof(buffer))) ;
 
-			cout << "Performing simple init-soar..." << endl << endl;
-			pAgent->InitSoar() ;
+			Agent* pAgent = pKernel->GetAgent(name.c_str()) ;
 
-			SLEEP(200) ;
+			if (!pAgent)
+				return false ;
 
-			ok = pKernel->DestroyAgent(pAgent) ;
+			// Run a suite of tests on this agent
+			bool ok = TestAgent(pKernel, pAgent, true) ;
+
+			if (!ok)
+				return false ;
+		}
+
+		// PHASE THREE: Agent creation
+		for (int agentDeletions = 0 ; agentDeletions < numberAgents ; agentDeletions++)
+		{
+			std::string name = "test-client-sml" ;
+			name.append(itoa(agentDeletions, buffer, sizeof(buffer))) ;
+
+			Agent* pAgent = pKernel->GetAgent(name.c_str()) ;
+
+			if (!pAgent)
+				return false ;
+
+			// The Before_Agent_Destroyed callback is a tricky one so we'll register for it to test it.
+			// We need to get this callback just before the agentSML data is deleted (otherwise there'll be no way to send/receive the callback)
+			// and then continue on to delete the agent after we've responded to the callback.
+			// Interestingly, we don't explicitly unregister this callback because the agent has already been destroyed so
+			// that's another test, that this callback is cleaned up correctly (and automatically).
+			int callback4 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_DESTROYED, &MyDeletionHandler, 0) ;
+			unused(callback4);
+
+			// Explicitly destroy our agent as a test, before we delete the kernel itself.
+			// (Actually, if this is a remote connection we need to do this or the agent
+			//  will remain alive).
+			bool ok = pKernel->DestroyAgent(pAgent) ;
+
 			if (!ok)
 			{
 				cout << "*** ERROR: Failed to destroy agent properly ***" ;
 				return false ;
 			}
-			delete pKernel ;
-			return ok;
-		}
-
-		bool load = pAgent->LoadProductions("testsml.soar") ;
-		unused(load);
-
-		if (pAgent->HadError())
-		{
-			cout << "ERROR loading productions: " << pAgent->GetLastErrorDescription() << endl ;
-			return false ;
-		}
-
-		cout << "Loaded productions" << endl ;
-
-		// Run a suite of tests on this agent
-		ok = TestAgent(pKernel, pAgent, true) ;
-		
-		// The Before_Agent_Destroyed callback is a tricky one so we'll register for it to test it.
-		// We need to get this callback just before the agentSML data is deleted (otherwise there'll be no way to send/receive the callback)
-		// and then continue on to delete the agent after we've responded to the callback.
-		// Interestingly, we don't explicitly unregister this callback because the agent has already been destroyed so
-		// that's another test, that this callback is cleaned up correctly (and automatically).
-		int callback4 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_DESTROYED, &MyDeletionHandler, 0) ;
-		unused(callback4);
-
-		// Explicitly destroy our agent as a test, before we delete the kernel itself.
-		// (Actually, if this is a remote connection we need to do this or the agent
-		//  will remain alive).
-		ok = pKernel->DestroyAgent(pAgent) ;
-
-		if (!ok)
-		{
-			cout << "*** ERROR: Failed to destroy agent properly ***" ;
-			return false ;
 		}
 
 		// Delete the kernel.  If this is an embedded connection this destroys the kernel.

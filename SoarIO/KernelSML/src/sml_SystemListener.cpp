@@ -71,6 +71,34 @@ void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::IKernel* kern
 	// We don't send the kernel over because we only support a single kernel object in SML
 	unused(kernel) ;
 
+	// The system start event can be suppressed by a client.
+	// This allows us to run a Soar agent without running the associated simulation
+	// (which should be listening for system-start/system-stop events).
+	if (eventID == gSKIEVENT_SYSTEM_START)
+	{
+		bool suppress = m_pKernelSML->IsSystemStartSuppressed() ;
+
+		// The flag is reset forcing the client to repeatedly suppress the system
+		// start event each time they wish to run Soar and not generate this event.
+		// (This approach makes normal "run" commands advance the system without that
+		//  command having to do special actions).
+		m_pKernelSML->SetSuppressSystemStart(false) ;
+
+		if (suppress)
+			return ;
+	}
+
+	// Similarly, system stop can be suppressed.
+	if (eventID == gSKIEVENT_SYSTEM_STOP)
+	{
+		bool suppress = m_pKernelSML->IsSystemStopSuppressed() ;
+
+		m_pKernelSML->SetSuppressSystemStop(false) ;
+
+		if (suppress)
+			return ;
+	}
+
 	ConnectionListIter connectionIter = EventManager<egSKISystemEventId>::GetBegin(eventID) ;
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.

@@ -255,19 +255,6 @@ public:
 	char const*	InitSoar() ;
 
 	/*************************************************************
-	* @brief Interrupt the currently running Soar agent.
-	*
-	* Call this after calling "Run" in order to stop a Soar agent.
-	* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
-	* and in that event handler decide if the user wishes to stop soar.
-	* If so, call to this method inside that handler.
-	*
-	* The request to Stop may not be honored immediately.
-	* Soar will stop at the next point it is considered safe to do so.
-	*************************************************************/
-	char const*	Stop(bool stopAllAgents = true) ;
-
-	/*************************************************************
 	* @brief Register for a "RunEvent".
 	*		 Multiple handlers can be registered for the same event.
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
@@ -447,6 +434,25 @@ public:
 	char const* Run(unsigned long decisions) ;
 
 	/*************************************************************
+	* @brief Interrupt the currently running Soar agent.
+	*
+	* Call this after calling "Run" in order to stop a Soar agent.
+	* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
+	* and in that event handler decide if the user wishes to stop soar.
+	* If so, call to this method inside that handler.
+	*
+	* The request to Stop may not be honored immediately.
+	* Soar will stop at the next point it is considered safe to do so.
+	*
+	* @param stopAllAgents	If false, stops just this agent.
+	* @param stopSystem		If true, fires a SystemStop event after stopping Soar.
+	*						(This overrides the SuppressSystemStop call below).
+	*						If false, fires a SystemStop event after stopping Soar if
+	*						the event has not been suppressed by a SuppressSystemStop call.
+	*************************************************************/
+	char const*	Stop(bool stopAllAgents = true, bool stopSystem = true) ;
+
+	/*************************************************************
 	* @brief   Controls whether Soar will break when it next generates
 	*		   output while running.
 	*
@@ -473,6 +479,41 @@ public:
 	*						15 was used in SGIO.
 	*************************************************************/
 	char const* RunTilOutput(unsigned long maxDecisions) ;
+
+	/*************************************************************
+	* @brief   Controls whether Soar will issue a "SystemStart" when
+	*		   Soar is next run.  This event is sent by default and
+	*		   each run resets the flag so it needs to be suppressed for
+	*		   each run if a client wishes to prevent the system from
+	*		   starting.
+	*
+	*		   This command allows a client to run Soar without running
+	*		   an associated simulation (which should listen for the SystemStart
+	*		   event and only start running when it sees that event).
+	*
+	* @param state	If true, causes Soar to not send system start.
+	*               If false, Soar will send system start as usual.
+	*************************************************************/
+	bool SetSuppressSystemStart(bool state) ;
+
+	/*************************************************************
+	* @brief   Controls whether Soar will issue a "SystemStop" when
+	*		   Soar next completes a "run".  This event is sent by default and
+	*		   each run resets the flag so it needs to be suppressed for
+	*		   each run if a client wishes to prevent the system from
+	*		   stopping.
+	*
+	*		   This command allows a client to run Soar through a series
+	*		   of small steps (e.g. repeated "RunTilOutput" calls) that
+	*		   are seen by the user as a single continuous run.
+	*		   When the user actively presses a "stop" button to stop Soar
+	*		   or the simulation, then the client calls the "Stop" method with
+	*		   systemStop set to true, triggering an event.
+	*
+	* @param state	If true, causes Soar to not send system stop.
+	*               If false, Soar will send system stop as usual when Soar next stops.
+	*************************************************************/
+	bool SetSuppressSystemStop(bool state) ;
 
 	/*************************************************************
 	* @brief Resend the complete input link to the kernel

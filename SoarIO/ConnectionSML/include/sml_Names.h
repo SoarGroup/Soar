@@ -244,11 +244,13 @@ public:
 	static char const* const kCommand_Run ;
 	static char const* const kCommand_Input ;
 	static char const* const kCommand_Output ;
-	static char const* const kCommand_CheckForIncomingCommands ;
 	static char const* const kCommand_StopOnOutput ;
 	static char const* const kCommand_RegisterForEvent ;
 	static char const* const kCommand_UnregisterForEvent ;
 	static char const* const kCommand_Event ;			// Just passes event id
+	static char const* const kCommand_SuppressSystemStart ;
+	static char const* const kCommand_SuppressSystemStop	;
+	static char const* const kCommand_CheckForIncomingCommands ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

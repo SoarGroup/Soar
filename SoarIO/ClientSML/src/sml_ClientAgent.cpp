@@ -738,9 +738,20 @@ char const* Agent::InitSoar()
 *
 * The request to Stop may not be honored immediately.
 * Soar will stop at the next point it is considered safe to do so.
+*
+* @param stopAllAgents	If false, stops just this agent.
+* @param stopSystem		If true, fires a SystemStop event after stopping Soar.
+*						(This overrides the SuppressSystemStop call below).
+*						If false, fires a SystemStop event after stopping Soar if
+*						the event has not been suppressed by a SuppressSystemStop call.
 *************************************************************/
-char const* Agent::Stop(bool stopAllAgents)
+char const* Agent::Stop(bool stopAllAgents, bool stopSystem)
 {
+	// If we want to fire a system stop event make sure its not
+	// been suppressed.
+	if (stopSystem)
+		SetSuppressSystemStop(false) ;
+
 	std::string cmd = "stop-soar" ;
 
 	if (!stopAllAgents)
@@ -766,6 +777,53 @@ char const* Agent::Run(unsigned long decisions)
 	// Execute the run command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
 	return pResult ;
+}
+
+/*************************************************************
+* @brief   Controls whether Soar will issue a "SystemStart" when
+*		   Soar is next run.  This event is sent by default and
+*		   each run resets the flag so it needs to be suppressed for
+*		   each run if a client wishes to prevent the system from
+*		   starting.
+*
+*		   This command allows a client to run Soar without running
+*		   an associated simulation (which should listen for the SystemStart
+*		   event and only start running when it sees that event).
+*
+* @param state	If true, causes Soar to not send system start.
+*               If false, Soar will send system start as usual.
+*************************************************************/
+bool Agent::SetSuppressSystemStart(bool state)
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SuppressSystemStart, NULL, sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
+	return ok ;
+}
+
+/*************************************************************
+* @brief   Controls whether Soar will issue a "SystemStop" when
+*		   Soar next completes a "run".  This event is sent by default and
+*		   each run resets the flag so it needs to be suppressed for
+*		   each run if a client wishes to prevent the system from
+*		   stopping.
+*
+*		   This command allows a client to run Soar through a series
+*		   of small steps (e.g. repeated "RunTilOutput" calls) that
+*		   are seen by the user as a single continuous run.
+*		   When the user actively presses a "stop" button to stop Soar
+*		   or the simulation, then the client calls the "Stop" method with
+*		   systemStop set to true, triggering an event.
+*
+* @param state	If true, causes Soar to not send system stop.
+*               If false, Soar will send system stop as usual when Soar next stops.
+*************************************************************/
+bool Agent::SetSuppressSystemStop(bool state)
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SuppressSystemStop, NULL, sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
+	return ok ;
 }
 
 /*************************************************************

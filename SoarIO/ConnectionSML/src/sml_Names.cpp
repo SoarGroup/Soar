@@ -233,21 +233,23 @@ char const* const sml_Names::kTrue	= "true" ;
 char const* const sml_Names::kFalse	= "false" ;
 
 // sgio style commands
-char const* const sml_Names::kCommand_CreateAgent	= "create_agent" ;
-char const* const sml_Names::kCommand_DestroyAgent	= "destroy_agent" ;
-char const* const sml_Names::kCommand_GetAgentList	= "get_agent_list" ;
-char const* const sml_Names::kCommand_LoadProductions = "load_productions" ;
-char const* const sml_Names::kCommand_GetInputLink	= "get_input_link" ;
-char const* const sml_Names::kCommand_GetOutputLink	= "get_output_link" ;
-char const* const sml_Names::kCommand_Run			= "run" ;
-char const* const sml_Names::kCommand_Input			= "input" ;
-char const* const sml_Names::kCommand_Output		= "output" ;
+char const* const sml_Names::kCommand_CreateAgent			= "create_agent" ;
+char const* const sml_Names::kCommand_DestroyAgent			= "destroy_agent" ;
+char const* const sml_Names::kCommand_GetAgentList			= "get_agent_list" ;
+char const* const sml_Names::kCommand_LoadProductions		= "load_productions" ;
+char const* const sml_Names::kCommand_GetInputLink			= "get_input_link" ;
+char const* const sml_Names::kCommand_GetOutputLink			= "get_output_link" ;
+char const* const sml_Names::kCommand_Run					= "run" ;
+char const* const sml_Names::kCommand_Input					= "input" ;
+char const* const sml_Names::kCommand_Output				= "output" ;
+char const* const sml_Names::kCommand_StopOnOutput			= "stop_on_output" ;
+char const* const sml_Names::kCommand_RegisterForEvent		= "register_for_event" ;
+char const* const sml_Names::kCommand_UnregisterForEvent	= "unregister_for_event" ;
+char const* const sml_Names::kCommand_Event					= "event" ;	// Just passes event id
+char const* const sml_Names::kCommand_SuppressSystemStart	= "suppress_system_start" ;
+char const* const sml_Names::kCommand_SuppressSystemStop	= "suppress_system_stop" ;
 char const* const sml_Names::kCommand_CheckForIncomingCommands = "check_for_incoming_commands" ;
-char const* const sml_Names::kCommand_StopOnOutput		 = "stop_on_output" ;
-char const* const sml_Names::kCommand_RegisterForEvent	 = "register_for_event" ;
-char const* const sml_Names::kCommand_UnregisterForEvent = "unregister_for_event" ;
-char const* const sml_Names::kCommand_Event				 = "event" ;	// Just passes event id
 
 // command line interface
-char const* const sml_Names::kCommand_CommandLine  = "cmdline" ;
+char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;
 char const* const sml_Names::kCommand_ExpandCommandLine  = "expandcmd" ;

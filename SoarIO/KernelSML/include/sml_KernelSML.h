@@ -130,6 +130,11 @@ protected:
 	RhsListener		m_RhsListener;
 	AgentListener	m_AgentListener;
 
+	// We can suppress system start and system stop events
+	// (allowing us to Run Soar without running a connected simulation).
+	bool			m_SuppressSystemStart ;
+	bool			m_SuppressSystemStop ;
+
 public:
 	/*************************************************************
 	* @brief	Returns the singleton kernel object.
@@ -216,6 +221,16 @@ public:
 	*		 Returns NULL if the id is not recognized.
 	*************************************************************/
 	char const* ConvertEventToString(int id) ;
+
+	/*************************************************************
+	* @brief Flags used to suppress the firing of system start and
+	*		 system stop events.
+	*************************************************************/
+	void SetSuppressSystemStart(bool state) { m_SuppressSystemStart = state ; }	
+	void SetSuppressSystemStop(bool state)  { m_SuppressSystemStop = state ; }	
+
+	bool IsSystemStartSuppressed() { return m_SuppressSystemStart ; }
+	bool IsSystemStopSuppressed()  { return m_SuppressSystemStop ; }
 
 	/*************************************************************
 	* @brief	Remove any events that this connection was listening to.
@@ -364,6 +379,9 @@ protected:
 
 	// Note: Register and unregister are both sent to this one handler
 	bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+
+	// Both suppress system start and stop are sent to this handler
+	bool KernelSML::HandleSuppressSystemEvents(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 };
 
 }

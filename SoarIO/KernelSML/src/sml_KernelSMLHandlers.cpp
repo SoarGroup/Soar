@@ -127,6 +127,8 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_GetAgentList]		= &sml::KernelSML::HandleGetAgentList ;
 	m_CommandMap[sml_Names::kCommand_RegisterForEvent]	= &sml::KernelSML::HandleRegisterForEvent ;
 	m_CommandMap[sml_Names::kCommand_UnregisterForEvent]= &sml::KernelSML::HandleRegisterForEvent ;	// Note -- both register and unregister go to same handler
+	m_CommandMap[sml_Names::kCommand_SuppressSystemStart] = &sml::KernelSML::HandleSuppressSystemEvents ;
+	m_CommandMap[sml_Names::kCommand_SuppressSystemStop]  = &sml::KernelSML::HandleSuppressSystemEvents ; // Note -- both stop/start go to same handler
 }
 
 /*************************************************************
@@ -213,35 +215,36 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	// Decide what type of event this is and where to register/unregister it
 	// gSKI uses a different class for each type of event.  We collect those together
 	// where possible to reduce the amount of extra scaffolding code.
-	if(IsSystemEventID(id)) {
-		KernelSML* pKernelSML = GetKernelSML() ;
-
+	if(IsSystemEventID(id))
+	{
+		// System Events
 		if (registerForEvent)
-			pKernelSML->AddSystemListener((egSKISystemEventId)id, pConnection) ;
+			this->AddSystemListener((egSKISystemEventId)id, pConnection) ;
 		else
-			pKernelSML->RemoveSystemListener((egSKISystemEventId)id, pConnection) ;
+			this->RemoveSystemListener((egSKISystemEventId)id, pConnection) ;
+
 	} else if(IsAgentEventID(id)) {
-		KernelSML* pKernelSML = GetKernelSML() ;
 
+		// Agent events
 		if (registerForEvent)
-			pKernelSML->AddAgentListener((egSKIAgentEventId)id, pConnection) ;
+			this->AddAgentListener((egSKIAgentEventId)id, pConnection) ;
 		else
-			pKernelSML->RemoveAgentListener((egSKIAgentEventId)id, pConnection) ;
+			this->RemoveAgentListener((egSKIAgentEventId)id, pConnection) ;
 	} else if(IsRhsEventID(id)) {
-		KernelSML* pKernelSML = GetKernelSML() ;
 
-		// Get the function name
+		// Rhs user functions
 		char const* pRhsFunctionName = pIncoming->GetArgValue(sml_Names::kParamName) ;
 
 		if (!pRhsFunctionName)
 			return InvalidArg(pConnection, pResponse, pCommandName, "Registering for rhs user function, but no function name was provided") ;
 
 		if (registerForEvent)
-			pKernelSML->AddRhsListener(pRhsFunctionName, pConnection) ;
+			this->AddRhsListener(pRhsFunctionName, pConnection) ;
 		else
-			pKernelSML->RemoveRhsListener(pRhsFunctionName, pConnection) ;
+			this->RemoveRhsListener(pRhsFunctionName, pConnection) ;
 	} else if(IsRunEventID(id)) {
-		// Since this is an agent handler check that we were passed an agent
+
+		// Run events
 		if (!pAgent)
 			return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
 
@@ -253,7 +256,8 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 		else
 			pAgentSML->RemoveRunListener((egSKIRunEventId)id, pConnection) ;
 	} else if(IsProductionEventID(id)) {
-		// Since this is an agent handler check that we were passed an agent
+
+		// Production event
 		if (!pAgent)
 			return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
 
@@ -265,7 +269,8 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 		else
 			pAgentSML->RemoveProductionListener((egSKIProductionEventId)id, pConnection) ;
 	} else if(id == (int)gSKIEVENT_PRINT) {
-		// Since this is an agent handler check that we were passed an agent
+
+		// Print event
 		if (!pAgent)
 			return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
 
@@ -277,6 +282,8 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 		else
 			pAgentSML->RemovePrintListener(gSKIEVENT_PRINT, pConnection) ;
 	} else if(id == (int)gSKIEVENT_OUTPUT_PHASE_CALLBACK) {
+
+		// Output event
 		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
 		OutputListener* pOutputListener = pAgentSML->GetOutputListener() ;
 
@@ -289,114 +296,6 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 		// The event didn't match any of our handlers
 		return InvalidArg(pConnection, pResponse, pCommandName, "KernelSML doesn't know how to handle that event id") ;
 	}
-
-	/*
-	switch (id)
-	{
-	// System listener events
-	case gSKIEVENT_BEFORE_SHUTDOWN:
-	case gSKIEVENT_AFTER_CONNECTION_LOST:
-	case gSKIEVENT_BEFORE_RESTART:
-	case gSKIEVENT_AFTER_RESTART:
-	case gSKIEVENT_BEFORE_RHS_FUNCTION_ADDED:
-	case gSKIEVENT_AFTER_RHS_FUNCTION_ADDED:
-	case gSKIEVENT_BEFORE_RHS_FUNCTION_REMOVED:
-	case gSKIEVENT_AFTER_RHS_FUNCTION_REMOVED:
-	case gSKIEVENT_BEFORE_RHS_FUNCTION_EXECUTED:
-	case gSKIEVENT_AFTER_RHS_FUNCTION_EXECUTED:
-
-	// Agent manager events too
-	case gSKIEVENT_AFTER_AGENT_CREATED:
-	case gSKIEVENT_BEFORE_AGENT_DESTROYED:
-	case gSKIEVENT_BEFORE_AGENTS_RUN_STEP:
-	case gSKIEVENT_BEFORE_AGENT_REINITIALIZED:
-	case gSKIEVENT_AFTER_AGENT_REINITIALIZED:
-
-		{
-			KernelSML* pKernelSML = GetKernelSML() ;
-
-			if (registerForEvent)
-				pKernelSML->AddKernelListener(id, pConnection) ;
-			else
-				pKernelSML->RemoveKernelListener(id, pConnection) ;
-
-			break ;
-		}
-
-	// Rhs functions are registered by function name (not event id, which is constant)
-	case gSKIEVENT_RHS_USER_FUNCTION:
-		{
-			KernelSML* pKernelSML = GetKernelSML() ;
-
-			// Get the function name
-			char const* pRhsFunctionName = pIncoming->GetArgValue(sml_Names::kParamName) ;
-
-			if (!pRhsFunctionName)
-				return InvalidArg(pConnection, pResponse, pCommandName, "Registering for rhs user function, but no function name was provided") ;
-
-			if (registerForEvent)
-				pKernelSML->AddRhsListener(pRhsFunctionName, pConnection) ;
-			else
-				pKernelSML->RemoveRhsListener(pRhsFunctionName, pConnection) ;
-
-			break ;
-		}
-
-		// Agent listener events
-	case gSKIEVENT_BEFORE_SMALLEST_STEP:
-	case gSKIEVENT_AFTER_SMALLEST_STEP:
-	case gSKIEVENT_BEFORE_ELABORATION_CYCLE:
-	case gSKIEVENT_AFTER_ELABORATION_CYCLE:
-	case gSKIEVENT_BEFORE_PHASE_EXECUTED:
-	case gSKIEVENT_AFTER_PHASE_EXECUTED:
-	case gSKIEVENT_BEFORE_DECISION_CYCLE:
-	case gSKIEVENT_AFTER_DECISION_CYCLE:
-	case gSKIEVENT_AFTER_INTERRUPT:
-	case gSKIEVENT_BEFORE_RUNNING:
-	case gSKIEVENT_AFTER_RUNNING:
-
-      // Production Manager events too
-	case gSKIEVENT_AFTER_PRODUCTION_ADDED:
-	case gSKIEVENT_BEFORE_PRODUCTION_REMOVED:
-	case gSKIEVENT_AFTER_PRODUCTION_FIRED:
-	case gSKIEVENT_BEFORE_PRODUCTION_RETRACTED:
-
-		// Print events too
-	case gSKIEVENT_PRINT:
-		{
-			// Since this is an agent handler check that we were passed an agent
-			if (!pAgent)
-				return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
-
-			// Register or unregister for this event
-			AgentSML* pAgentSML = GetAgentSML(pAgent) ;
-
-			if (registerForEvent)
-				pAgentSML->AddAgentListener(id, pConnection) ;
-			else
-				pAgentSML->RemoveAgentListener(id, pConnection) ;
-
-			break ;
-		}
-		// Output is handled in a special manner with its own unique processor.
-	case gSKIEVENT_OUTPUT_PHASE_CALLBACK:
-		{
-			AgentSML* pAgentSML = GetAgentSML(pAgent) ;
-			OutputListener* pOutputListener = pAgentSML->GetOutputListener() ;
-
-			// Register this connection as listening for this event
-			if (registerForEvent)
-				pOutputListener->AddListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
-			else
-				pOutputListener->RemoveListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
-
-			break ;
-		}
-
-	default:
-		// The event didn't match any of our handlers
-		return InvalidArg(pConnection, pResponse, pCommandName, "KernelSML doesn't know how to handle that event id") ;
-	}*/
 
 	return true ;
 }
@@ -481,6 +380,23 @@ bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandNam
 	bool ok = GetAgentSML(pAgent)->SetStopOnOutput(state) ;
 
 	return ok ;
+}
+
+bool KernelSML::HandleSuppressSystemEvents(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pResponse) ; unused(pConnection) ; unused(pError) ; unused(pAgent) ;
+
+	// Get the parameters
+	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, true) ;
+	bool stop  = strcmp(sml_Names::kCommand_SuppressSystemStop, pCommandName) == 0 ;
+
+	// Make the call.
+	if (stop)
+		SetSuppressSystemStop(state) ;
+	else
+		SetSuppressSystemStart(state) ;
+
+	return true ;
 }
 
 // Gives some cycles to the Tcl debugger
