@@ -26,6 +26,7 @@
  */
 
 #include "soarkernel.h"
+#include <limits.h>
 
 #ifdef AMN_EP_MEM
 
@@ -104,6 +105,25 @@ typedef struct arraylist_struct
 } arraylist;
 
 /*
+ * range - This structure is used to create a list of integer ranges. Example:
+ *          [1-4],[6-11],[15],[19-33] etc.  These ranges are used to keep track
+ *          of which cycles that a WME (or group of WMEs) in a wmetree was in
+ *          working memory.  It's also used for matching.  high/low - the top and
+ *          bottom of the range score - a match score (used by the matcher)
+ *          prev/next - used to make a doubly linked list
+ *
+ */
+typedef struct range_struct
+{
+    int high;
+    int low;
+    int score;
+    struct range_struct *prev;
+    struct range_struct *next;
+} range;
+
+
+/*
 
    wmetree - Used to build a tree representation of the structure and content of
              all states that the agent has encountered.  This in turn is used to
@@ -126,14 +146,15 @@ typedef struct arraylist_struct
                               (i.e., as part of a retrieval).  The index of
                               a particular WME in the list always equals
                               the index of the epmem_header for the memory.
-             assoc_memories - this is a list of pointers to all the episodic
-                              memories that use this WME.  As such it is
-                              effectively an arraylist of arraylists.
+             assoc_memories - this is a list of all the cycles when this
+                              WME was in working memory.
              query_count    - How many times this WME has been in a cue and
                               therfore triggered its associated memories to be
                               examined for a match. (performance diagnostic use
                               only)
-                      
+             ubiquitous     - a flag that indicates that this WME is no longer
+                              considered for matching because it shows up in
+                              two many memories.
 */
 
 
@@ -153,42 +174,12 @@ typedef struct wmetree_struct
     struct wmetree_struct *parent; // %%%TODO: make this an array later?
     int depth;
     arraylist *assoc_wmes;
-    arraylist *assoc_memories;
+    range *assoc_memories;
+    range *am_tail;
     int query_count;
     int ubiquitous;
 } wmetree;
 
-
-/*
- * actwme - a wme paired with an activation value.  Activation values
- *          are stored when a memory is recorded.  They need to share
- *          a data structure together so an array of them can be sorted.
- *
- */
-typedef struct actwme_struct
-{
-    wmetree *node;
-    int activation;
-} actwme;
-
-
-/*
- * episodic_memory - This data structure contains a single episodic memory.
- *
- *         content     - a list of actwme structs.
- *         index       - this memory's index in the g_memories arraylist
- *         last_usage  - the number of the last retrieval that partially
- *                       matched this memory
- *         match_score - the total match score from the last partial match
- *
- */
-typedef struct episodic_memory_struct
-{
-    arraylist *content;
-    int index;
-    int last_usage;
-    int match_score;
-} episodic_memory;
 
 
 /*
@@ -199,6 +190,8 @@ typedef struct episodic_memory_struct
  *                 index is used to reference the assoc_wmes arraylist
  *                 in a wmetree node
  *  state        - the state that ^epmem is attached to
+ *  ss_wme       - a pointer to the state's ^superstate WME (used for
+ *                 creating fake prefs)
  *  epmem        - The symbol that ^epmem has as an attribute
  *  query        - The symbold that ^query has as an attribute
  *  retrieved    - The symbold that ^retrieved has as an attribute
@@ -209,13 +202,14 @@ typedef struct epmem_header_struct
 {
     int index;
     Symbol *state;
+    wme *ss_wme;
     Symbol *epmem;
     wme *epmem_wme;
     Symbol *query;
     wme *query_wme;
     Symbol *retrieved;
     wme *retrieved_wme;
-    episodic_memory *curr_memory;
+    int curr_memory;
 } epmem_header;
 
 
@@ -232,8 +226,8 @@ typedef struct epmem_header_struct
    g_wmetree              - The head of a giant wmetree used to represent all
                             the states that that agent has seen so far.  This is,
                             in effect, the episodic store of the agent.
-   g_memories             - This is an array of all the memories that the
-                            agent has.  Each memory is an index into g_wmetree
+   g_num_memories         - The number of episodic memories that have been
+                            recorded so far
    g_last_tag             - The timetag of the last command on the output-link
    g_last_ret_id          - This value gets incremeted at each retrieval. It's
                             currently used by the matcher to keep track of the
@@ -249,7 +243,7 @@ typedef struct epmem_header_struct
 wme **g_current_active_wmes;
 wme **g_previous_active_wmes;
 wmetree g_wmetree;
-arraylist *g_memories;
+int g_num_memories = 0;
 unsigned long g_last_tag = 0;
 long g_last_ret_id = 0;
 long g_num_queries = 0;
@@ -277,17 +271,16 @@ int compare_ptr( const void *arg1, const void *arg2 )
 }//compare_ptr
 
 /* ===================================================================
-   compare_actwme
+   compare_wmetree
 
-   Compares two actwmes.   (Used for qsort() calls)
+   Compares two wmetree nodes.   (Used for qsort() calls)
    
-   Created:  22 April 2004
-   Modified: 26 Aug 2004 to use wmetree depth  (Happy Birthday to me!)
+   Created:  06 January 2005
    =================================================================== */
-int compare_actwme( const void *arg1, const void *arg2 )
+int compare_wmetree( const void *arg1, const void *arg2 )
 {
-    wmetree *w1 = (*((actwme **)arg1))->node;
-    wmetree *w2 = (*((actwme **)arg2))->node;
+    wmetree *w1 = (wmetree *)arg1;
+    wmetree *w2 = (wmetree *)arg2;
 
     if (w1->depth != w2->depth)
     {
@@ -295,25 +288,7 @@ int compare_actwme( const void *arg1, const void *arg2 )
     }
 
     return ((int)w1) - ((int)w2);
-}//compare_actwme
-
-/* ===================================================================
-   compare_actwme_by_act
-
-   Compares two actwmes based on activation.   (Used for qsort() calls)
-   This comparison results in a descending sort:  higher activation
-   is "smaller".
-   
-   Created:  13 Dec 2004
-   =================================================================== */
-int compare_actwme_by_act( const void *arg1, const void *arg2 )
-{
-    actwme *aw1 = (*(actwme **)arg1);
-    actwme *aw2 = (*(actwme **)arg2);
-
-    return aw2->activation - aw1->activation;
-}//compare_actwme_by_act
-
+}//compare_wmetree
 
 /* ===================================================================
    hash_wmetree
@@ -570,6 +545,111 @@ void set_arraylist_entry(arraylist *al, int index, void *newval)
     al->array[index] = newval;
 }//set_arraylist_entry
 
+/* ===================================================================
+   make_range
+
+   Allocates and initializes a new, range struct and returns a pointer
+   to the caller.
+
+   
+   Created: 07 Jan 2005
+   =================================================================== */
+range *make_range(int high, int low, int score)
+{
+    range *r;
+    int i;
+
+    //Check for high/low out of order
+    if (high < low)
+    {
+        i = high;
+        high = low;
+        low = i;
+    }
+    
+    r = (range *)allocate_memory(sizeof(range), MISCELLANEOUS_MEM_USAGE);
+    r->high = high;
+    r->low = low;
+    r->score = score;
+    r->prev = NULL;
+    r->next = NULL;
+
+    return r;
+}//make_range
+
+/* ===================================================================
+   destroy_range
+
+   Deallocates a given linked list of ranges.
+   
+   Created: 07 Jan 2005
+   =================================================================== */
+void destroy_range(range *r)
+{
+    range *p;
+    
+    if (r == NULL) return;
+
+    while(r->prev != NULL)
+    {
+        r = r->prev;
+    }
+
+    while(r != NULL)
+    {
+        p = r;
+        r = r->next;
+        free_memory(p, MISCELLANEOUS_MEM_USAGE);
+    }
+}//destroy_range
+
+/* ===================================================================
+   range_contains_value
+
+   Returns TRUE if a given range contains a given value
+   
+   Created: 19 Jan 2005
+   =================================================================== */
+int range_contains_value(range *r, int val)
+{
+    while(r != NULL)
+    {
+        if ( (r->low <= val) && (r->high >= val) )
+        {
+            return TRUE;
+        }
+
+        r = r->next;
+    }
+
+    return FALSE;
+}//range_contains_value
+
+/* ===================================================================
+   append_new_range
+
+   Given an existing range struct, this function creates a new range
+   struct (with given values) and inserts it after the given struct.
+   
+   Created: 12 Jan 2005
+   =================================================================== */
+range *append_new_range(range *r, int low, int high, int score)
+{
+    range *tmp = make_range(high, low, score);
+    tmp->prev = r;
+    tmp->next = NULL;
+    if (r == NULL)
+    {
+        return tmp;
+    }
+
+    tmp->next = r->next;
+    r->next = tmp;
+    if (tmp->next != NULL) tmp->next->prev = tmp;
+
+    return tmp;
+}//append_new_range
+
 
 /* ===================================================================
    make_wmetree_node
@@ -593,7 +673,8 @@ wmetree *make_wmetree_node(wme *w)
     node->parent = NULL;
     node->depth = -1;
     node->assoc_wmes = make_arraylist(20);
-    node->assoc_memories = make_arraylist(16);
+    node->assoc_memories = NULL;
+    node->am_tail = NULL;
     node->query_count = 0;
     node->ubiquitous = FALSE;
 
@@ -653,6 +734,8 @@ void dw_helper(wmetree *tree)
     {
         free_memory(tree->val.strval, MISCELLANEOUS_MEM_USAGE);
     }
+
+    destroy_range(tree->assoc_memories);
     
     if (tree->children->count == 0)
     {
@@ -745,6 +828,7 @@ wme *get_aug_of_id(Symbol *sym, char *attr_name, char *value_name)
     tc = sym->id.tc_num + 1;
     wmes = get_augs_of_id(sym, tc, &len);
     sym->id.tc_num = tc - 1;
+
     if (wmes == NULL) return NULL;
 
     for(i = 0; i < len; i++)
@@ -774,24 +858,14 @@ wme *get_aug_of_id(Symbol *sym, char *attr_name, char *value_name)
    
    
    Created: 18 Oct 2004
+   Changed: 24 Jan 2005 (to improve performance the ^superstate wme is now
+                         cached in the epmem_header)
    =================================================================== */
-preference *make_fake_preference_for_epmem_wme(Symbol *goal, wme *w)
+preference *make_fake_preference_for_epmem_wme(epmem_header *h, Symbol *goal, wme *w)
 {
     instantiation *inst;
     preference *pref;
     condition *cond;
-    wme *ap_wme;
-
-    /*
-     * find the ^superstate wme and use that as a stand in to backtrace to
-     */
-    ap_wme = get_aug_of_id(goal, "superstate", NULL);
-    if (!ap_wme)
-    {
-        //This should never happen.
-        print("\nepmem.c: Internal error: couldn't find ^superstate WME on state\n");
-        return NULL;
-    }
 
     /*
      * make the fake preference
@@ -838,13 +912,13 @@ preference *make_fake_preference_for_epmem_wme(Symbol *goal, wme *w)
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
     inst->nots = NIL;
-    cond->data.tests.id_test = make_equality_test(ap_wme->id);
-    cond->data.tests.attr_test = make_equality_test(ap_wme->attr);
-    cond->data.tests.value_test = make_equality_test(ap_wme->value);
+    cond->data.tests.id_test = make_equality_test(h->ss_wme->id);
+    cond->data.tests.attr_test = make_equality_test(h->ss_wme->attr);
+    cond->data.tests.value_test = make_equality_test(h->ss_wme->value);
     cond->test_for_acceptable_preference = TRUE;
-    cond->bt.wme = ap_wme;
-    wme_add_ref(ap_wme);
-    cond->bt.level = ap_wme->id->id.level;
+    cond->bt.wme = h->ss_wme;
+    wme_add_ref(h->ss_wme);
+    cond->bt.level = h->ss_wme->id->id.level;
     cond->bt.trace = NIL;
     cond->bt.prohibits = NIL;
 
@@ -887,8 +961,18 @@ epmem_header *make_epmem_header(Symbol *s)
     h = allocate_memory(sizeof(epmem_header), MISCELLANEOUS_MEM_USAGE);
     h->index = -42; //A bogus value to help with debugging
     h->state = s;
-    h->curr_memory = NULL;
+    h->curr_memory = 0;
 
+    //Find the superstate wme
+    h->ss_wme = get_aug_of_id(s, "superstate", NULL);
+    if (!h->ss_wme)
+    {
+        //This should never happen.
+        print_with_symbols("\nepmem.c: Internal error: couldn't find ^superstate WME on state %y\n", s);
+        return NULL;
+    }
+    
+    
     //Create the ^epmem header symbols
     h->epmem = make_new_identifier('E', s->id.level);
     h->query = make_new_identifier('E', s->id.level);
@@ -897,17 +981,17 @@ epmem_header *make_epmem_header(Symbol *s)
     //Add the ^epmem header WMEs
     h->epmem_wme = add_input_wme(s, make_sym_constant("epmem"), h->epmem);
     h->epmem_wme->preference =
-        make_fake_preference_for_epmem_wme(s, h->epmem_wme);
+        make_fake_preference_for_epmem_wme(h, s, h->epmem_wme);
     wme_add_ref(h->epmem_wme);
 
     h->query_wme = add_input_wme(h->epmem, make_sym_constant("query"), h->query);
     h->query_wme->preference =
-        make_fake_preference_for_epmem_wme(s, h->query_wme);
+        make_fake_preference_for_epmem_wme(h, s, h->query_wme);
     wme_add_ref(h->query_wme);
 
     h->retrieved_wme = add_input_wme(h->epmem, make_sym_constant("retrieved"), h->retrieved);
     h->retrieved_wme->preference =
-        make_fake_preference_for_epmem_wme(s, h->retrieved_wme);
+        make_fake_preference_for_epmem_wme(h, s, h->retrieved_wme);
     wme_add_ref(h->retrieved_wme);
 
     return h;
@@ -1125,7 +1209,7 @@ wmetree *epmem_find_wmetree_entry(arraylist *epmem, wmetree *id, char *s)
     
     for(i = 0; i < epmem->size; i++)
     {
-        wmetree *node = ((actwme *)get_arraylist_entry(epmem, i))->node;
+        wmetree *node = (wmetree *)get_arraylist_entry(epmem, i);
         if ( (id == &g_wmetree) || (id == node->parent) )
         { 
             if (strcmp(node->attr, s) == 0)
@@ -1138,32 +1222,6 @@ wmetree *epmem_find_wmetree_entry(arraylist *epmem, wmetree *id, char *s)
     return NULL;
     
 }//epmem_find_wmetree_entry
-
-/* ===================================================================
-   epmem_find_actwme_entry
-
-   Finds an actwme entry in a given episodic memory that points to a
-   given wmetree.
-
-   Returns NULL if not found.
-
-   Created: 29 Nov 2004
-   =================================================================== */
-actwme *epmem_find_actwme_entry(arraylist *epmem, wmetree *target)
-{
-    int i;
-
-    if (epmem == NULL) return NULL;
-    
-    for(i = 0; i < epmem->size; i++)
-    {
-        actwme *entry = (actwme *)get_arraylist_entry(epmem, i);
-        if (entry->node == target) return entry;
-    }//for
-
-    return NULL;
-    
-}//epmem_find_actwme_entry
 
 /* ===================================================================
    print_memory
@@ -1191,7 +1249,7 @@ void print_memory(arraylist *epmem, wmetree *node, int indent, int depth)
         //Find out if this node is in the arraylist
         for(i = 0; i < epmem->size; i++)
         {
-            if (((actwme *)get_arraylist_entry(epmem,i))->node == node)
+            if ((wmetree *)get_arraylist_entry(epmem,i) == node)
             {
                 bFound = TRUE;
             }
@@ -1335,34 +1393,14 @@ wmetree *find_child_node(wmetree *node, wme *w)
 }//find_child_node
 
 
-
-/* ===================================================================
-   add_node_to_memory
-
-   This function adds a wmetree node to a given episodic memory.
-   
-   Created: 12 Jan 2004
-   =================================================================== */
-void add_node_to_memory(arraylist *epmem, wmetree *node, int activation)
-{
-    //Allocate and init a new actwme
-    actwme *aw = (actwme *)allocate_memory(sizeof(actwme),
-                                           MISCELLANEOUS_MEM_USAGE);
-    aw->node = node;
-    aw->activation = activation;
-    
-    append_entry_to_arraylist(epmem, (void *)aw);
-    
-}//add_node_to_memory
-
-
 /* ===================================================================
    update_wmetree
 
    Updates the wmetree given a pointer to a corresponding wme in working
    memory.  The wmetree node is assumed to be initialized and empty.
    Each wme that is discovered by this algorithm is also added to a given
-   episodic memory.
+   arraylist of wmetree structs that can be used to create a new episodic
+   memory.
 
    If this function finds a ^superstate WME it does not traverse that link.
    Instead, it records the find and returns it to the caller.  The caller
@@ -1370,17 +1408,22 @@ void add_node_to_memory(arraylist *epmem, wmetree *node, int activation)
 
    node - the root of the WME tree to be updated
    sym - the root of the tree in working memory to update it with
-   epmem - this function generates an arraylist of actwme structs
+   epmem - this function generates an arraylist of wmetree structs
            representing all the nodes in the wmetree that are
            referenced by the working memory tree rooted by sym.
+   acts - this is an arraylist of integers representing the activation
+          level of each wme in the epmem list.  If this list is passed
+          in as NULL, then no activation values are returned.
    tc - a transitive closure number for avoiding loops in working mem
 
    Created: 09 Jan 2004
    Updated: 23 Feb 2004 - made breadth first and non-recursive
+   Updated: 06 Jan 2005 - no longer using actwme struct
    =================================================================== */
 Symbol *update_wmetree(wmetree *node,
                        Symbol *sym,
                        arraylist *epmem,
+                       arraylist *acts,
                        tc_number tc)
 {
     wme **wmes = NULL;
@@ -1427,10 +1470,12 @@ Symbol *update_wmetree(wmetree *node,
                    continue;
                 }
 
-                //insert childnode into the arraylist
-                start_timer(&current_agent(epmem_addnode_start_time));
-                add_node_to_memory(epmem, childnode, decay_activation_level(wmes[i]));
-                stop_timer(&current_agent(epmem_addnode_start_time), &current_agent(epmem_addnode_total_time));
+                //update all the arraylists
+                append_entry_to_arraylist(epmem, childnode);
+                if (acts != NULL)
+                {
+                    append_entry_to_arraylist(acts, (void *)decay_activation_level(wmes[i]));
+                }
                 append_entry_to_arraylist(syms, (void *)wmes[i]->value);
 
             }//for
@@ -1442,7 +1487,7 @@ Symbol *update_wmetree(wmetree *node,
         //We've retrieved every WME in the query
         if (epmem->size == pos) break;
         
-        node = ((actwme *)get_arraylist_entry(epmem,pos))->node;
+        node = (wmetree *)get_arraylist_entry(epmem,pos);
         sym = (Symbol *)get_arraylist_entry(syms,pos);
         pos++;
 
@@ -1453,12 +1498,14 @@ Symbol *update_wmetree(wmetree *node,
         }
         
     }//while
-    
-    //Sort the memory's arraylist using the node pointers
-    qsort( (void *)epmem->array,
-           (size_t)epmem->size,
-           sizeof( void * ),
-           compare_actwme );
+
+//%%%I think this is no longer needed and it's screwing up the match
+//   routine because the acts list doesn't line up with the cue
+//      //Sort the memory's arraylist using the node pointers
+//      qsort( (void *)epmem->array,
+//             (size_t)epmem->size,
+//             sizeof( void * ),
+//             compare_wmetree );
 
     //Deallocate the symbol list
     destroy_arraylist(syms);
@@ -1470,36 +1517,36 @@ Symbol *update_wmetree(wmetree *node,
 }//update_wmetree
 
 /* ===================================================================
-   trim_epmem
+   append_value_to_range
 
-   Removes entries from an episodic memory that have activation
-   lower than the given value.
+   This function adds a new integer value a range struct wherein the
+   value is greater than the struct's high value.  It returns the new range
+   struct that was created (or the range struct passed in if it was modified).
 
-   NOTE:  This routine could be a lot more efficient.
+   CAVEAT:  This function is specialized to assume that new values are always
+   appended to the end of a range (i.e., the highest new value) and thus doesn't
+   cover the general case
 
-   Created: 13 Dec 2004
+   Created: 20 Jan 2005
    =================================================================== */
-arraylist *trim_epmem(arraylist *epmem)
+range *append_value_to_range(range *r, int new_val, int score)
 {
-    if (epmem == NULL) return NULL;
-
-    //Sort the memory's arraylist using activation
-    qsort( (void *)epmem->array,
-           (size_t)epmem->size,
-           sizeof( void * ),
-           compare_actwme_by_act );
-
-    epmem->size = (int)((double)(epmem->size) * (1.0 - fraction_to_trim));
-
-    //Sort the memory's arraylist using the node pointers
-    qsort( (void *)epmem->array,
-           (size_t)epmem->size,
-           sizeof( void * ),
-           compare_actwme );
-
-    return epmem;
+    range *tmp;
     
-}//trim_epmem
+    if (new_val == r->high + 1)
+    {
+        r->high++;
+        return r;
+    }
+
+    tmp = make_range(new_val, new_val, score);
+    tmp->prev = r;
+    tmp->next = NULL;
+    r->next = tmp;
+
+    return tmp;
+    
+}//append_value_to_range
 
 
 /* ===================================================================
@@ -1509,6 +1556,7 @@ arraylist *trim_epmem(arraylist *epmem)
    this routine manages all the steps for recording it.
 
    Created: 12 Jan 2004
+   Updated: 06 Jan 2004 - No longer using the actwme and episodic_memory structs
    =================================================================== */
 void record_epmem( )
 {
@@ -1516,22 +1564,19 @@ void record_epmem( )
     Symbol *sym;
     arraylist *curr_state;
     arraylist *next_state;
+    arraylist *acts = NULL;
     int i;
-    episodic_memory *new_epmem;
-
-    //Allocate and initialize the new memory
-    new_epmem = (episodic_memory *)allocate_memory(sizeof(episodic_memory),
-                                                   MISCELLANEOUS_MEM_USAGE);
-    new_epmem->last_usage = -1;
-    new_epmem->match_score = 0;
+    int new_memory_id;
 
     //Starting with bottom_goal and moving toward top_goal, add all
     //the current states to the wmetree and record the full WM
-    //state as an arraylist of actwmes
+    //state as an arraylist of wmetree nodes
     sym = current_agent(bottom_goal);
     
     //Do only top-state for now
-    sym = current_agent(top_goal);  //%%%TODO: remove this later
+    //%%%In the future this line can be removed and an episodic
+    //%%%memory will be recorded for each state.
+    sym = current_agent(top_goal);
     
     curr_state = NULL;
     next_state = NULL;
@@ -1541,56 +1586,38 @@ void record_epmem( )
         next_state->next = curr_state;
         curr_state = next_state;
 
+        if (acts != NULL) destroy_arraylist(acts);
+        acts = make_arraylist(128);
+
+        new_memory_id = g_num_memories + 1;
+        
         tc = sym->id.tc_num + 1;
-        sym = update_wmetree(&g_wmetree, sym, curr_state, tc);
+        sym = update_wmetree(&g_wmetree, sym, curr_state, acts, tc);
 
         //Update the assoc_memories link on each wmetree node in curr_state
         for(i = 0; i < curr_state->size; i++)
         {
-            actwme *curr_actwme = (actwme *)get_arraylist_entry(curr_state,i);
-            wmetree *node = curr_actwme->node;
-            int activation = curr_actwme->activation;
+            wmetree *node = (wmetree *)get_arraylist_entry(curr_state,i);
 
-            //In order to be recorded, a WME must meet the following criteria:
-            //1.  It must be a leaf WME (i.e., it has no children)
-            //2.  It must be activated (i.e., it has a decay element)
-            //3.  It must not be marked as ubiquitous
-            if ( (node->children->count == 0)
-                 && (activation != -1)
-                 && (! node->ubiquitous) )
+            if (node->assoc_memories == NULL)
             {
-                append_entry_to_arraylist(node->assoc_memories, (void *)new_epmem);
-                
-                //Test to see if the new arraylist has too many entries.
-                //If so, this node has become too ubiquitous and will no
-                //longer be used in mat ching
-                if (g_memories->size > ubiquitous_max)
-                {
-                    float ubiquity =
-                        ((float)node->assoc_memories->size) / ((float)g_memories->size);
-                    if (ubiquity > ubiquitous_threshold)
-                    {
-                        node->ubiquitous = TRUE;
-                        destroy_arraylist(node->assoc_memories);
-                        node->assoc_memories = make_arraylist(1);
-                    }
-                    
-                }                
+                node->assoc_memories = make_range(new_memory_id, new_memory_id, 0);
+                node->am_tail = node->assoc_memories;
+            }
+            else
+            {
+                node->am_tail = append_value_to_range(node->am_tail, new_memory_id, 0);
             }
         }//for
+
+        //Update the memory counter
+        g_num_memories++;
+
     }//while
 
-//      //Reduce the size of the episodic memory
-//      new_epmem->content = trim_epmem(curr_state);
-    new_epmem->content = curr_state;
-
-    //Store the recorded memory
-    new_epmem->index = g_memories->size;
-    append_entry_to_arraylist(g_memories, (void *)new_epmem);
-
 //      //%%%DEBUGGING
-//      print("\nRECORDED MEMORY %d:\n", g_memories->size - 1);
-//      print_memory_graphically(((episodic_memory *)get_arraylist_entry(g_memories,g_memories->size - 1))->content);
+//      print("\nRECORDED MEMORY %d:\n", g_num_memories);
+//      print_memory_graphically(%%%broken);
     
 }//record_epmem
 
@@ -1918,10 +1945,16 @@ void consider_new_epmem_via_activation()
    =================================================================== */
 void epmem_clear_curr_mem(epmem_header *h)
 {
-    int i;
     wme *w;
-
-    //Check for "no-retrieval" wme
+    int i;
+    unsigned long hash_value;
+    wmetree *parent = &g_wmetree;
+    wmetree *child;
+    arraylist *queue = make_arraylist(32);
+    arraylist *remove_list = make_arraylist(32);
+    int pos = 0;                // current position in the queue
+    
+    //Check for trivial case:  just a "no-retrieval" wme
     if (get_arraylist_entry(g_wmetree.assoc_wmes,h->index) != NULL)
     {
         w = (wme *)get_arraylist_entry(g_wmetree.assoc_wmes,h->index);
@@ -1934,22 +1967,61 @@ void epmem_clear_curr_mem(epmem_header *h)
         return;
     }
 
-    //Check for trivial case
-    if (h->curr_memory == NULL)
+    //Check for trivial case:  no memory to remove
+    if (h->curr_memory == 0)
     {
         return;
     }
 
-    //Remove the WMEs (Traverse the array in reverse order so that
-    //                 children are removed before their parents.)
-    for(i = h->curr_memory->content->size - 1; i >=0 ; i--)
+    /*
+     * Find all the WMEs that are associated with this header
+     */
+    while(parent != NULL)
     {
-        wmetree *node = ((actwme *)get_arraylist_entry(h->curr_memory->content,i))->node;
+        for (hash_value = 0; hash_value < parent->children->size; hash_value++)
+        {
+            child = (wmetree *) (*(parent->children->buckets + hash_value));
+            for (; child != NIL; child = child->next)
+            {
+                //If this wmetree has an associated wme then queue it for
+                //removal
+                w = (wme *)get_arraylist_entry(child->assoc_wmes,h->index);
+                if (w != NULL)
+                {
+                    append_entry_to_arraylist(remove_list, child);
+                }
+                    
+                
+                //If this WME has children add it to the queue to search
+                //its children
+                if (child->children->count > 0)
+                {
+                    append_entry_to_arraylist(queue, child);
+                }
+            }//for
+        }//for
+        
+        //Retrieve the next node from the queue
+        parent = get_arraylist_entry(queue, pos);
+        pos++;
+    }//while
+
+    destroy_arraylist(queue);
+
+
+    /*
+     * Now remove all of the WMEs in the removal list in REVERSE
+     * order so children are removed before parents
+     */
+    for(i = remove_list->size - 1; i >=0 ; i--)
+    {
+        wmetree *node = (wmetree *)get_arraylist_entry(remove_list,i);
 
         if (get_arraylist_entry(node->assoc_wmes,h->index) == NULL)
         {
             //This is a memory leak caused by multi-valued attributes.
-            //I'm going to punt on it for now.
+            //To fix it,  I need to implement it as an array of arrays
+            //instead of just an array. I'm going to punt on it for now.
 //%%%              print("\nERROR: WME should be in memory for: ");
 //%%%              print_wmetree(node, 0, 0);
             continue;
@@ -1965,6 +2037,9 @@ void epmem_clear_curr_mem(epmem_header *h)
         set_arraylist_entry(node->assoc_wmes,h->index, NULL);
     
     }//for
+
+    destroy_arraylist(remove_list);
+
     
 }//epmem_clear_curr_mem
 
@@ -1987,8 +2062,8 @@ int compare_memories(arraylist *epmem1, arraylist *epmem2)
 
     while((pos1 < epmem1->size) && (pos2 < epmem2->size))
     {
-        wmetree *node1 = ((actwme *)get_arraylist_entry(epmem1,pos1))->node;
-        wmetree *node2 = ((actwme *)get_arraylist_entry(epmem2,pos2))->node;
+        wmetree *node1 = (wmetree *)get_arraylist_entry(epmem1,pos1);
+        wmetree *node2 = (wmetree *)get_arraylist_entry(epmem2,pos2);
         
         if (node1->val_type == IDENTIFIER_SYMBOL_TYPE)
         {
@@ -2022,114 +2097,358 @@ int compare_memories(arraylist *epmem1, arraylist *epmem2)
 }//compare_memories
 
 /* ===================================================================
-   compare_memories_ideal               *EATERS ONLY*
+   make_low_list           (helper function)
 
-   Compares two episoidic memories and returns the number of ideal
-   wmes that match.  I've handcoded ideal wmes to be the contents of
-   cells immediately adjacent to the eater and the direction the eater
-   is headed.
-  
-   Created: 23 Feb 2004
+   Given an array of linked lists of range structs, this function
+   returns a single, ordered linked list of all the low values in the
+   ranges (with duplicates merged into a single value).  The list is
+   made up of range structs where high==low and score = the sum of all
+   scores that proceed it in the other lists.
+   
+   Created: 12 Jan 2005
    =================================================================== */
-int compare_memories_ideal(arraylist *epmem1, arraylist *epmem2)
+range *make_low_list(range **r, int size, arraylist *scores)
 {
-    wmetree *node1;
-    wmetree *node2;
-    wmetree *tmp1;
-    wmetree *tmp2;
-    char *direction = NULL;
+    int i;
+    int lowest;
+    range **ptr = (range **)malloc(size*sizeof(range *));
+    int done = FALSE;
+    range *low_list = NULL;
+    range *ll_tail = NULL;
+    int score_sum = 0;
 
-    //Compare the direction eater is travelling
-    node1 = epmem_find_wmetree_entry(epmem1, &g_wmetree, "output-link");
-    node1 = epmem_find_wmetree_entry(epmem1, node1, "move");
-    node1 = epmem_find_wmetree_entry(epmem1, node1, "direction");
-    node2 = epmem_find_wmetree_entry(epmem2, &g_wmetree, "output-link");
-    node2 = epmem_find_wmetree_entry(epmem2, node2, "move");
-    node2 = epmem_find_wmetree_entry(epmem2, node2, "direction");
-    if ( (node1 != NULL) && (node1 == node2) )
+    //duplicate the given range pointer list so we can walk down
+    //the list
+    for(i = 0; i < size; i++)
     {
-        direction = node1->val.strval;
+        ptr[i] = r[i];
+    }
+
+    while(!done)
+    {
+            
+        //find the lowest low
+        lowest = INT_MAX;
+        for(i = 0; i < size; i++)
+        {
+            if (ptr[i] == NULL) continue;
+            
+            if (ptr[i]->low < lowest)
+            {
+                lowest = ptr[i]->low;
+            }
+        }
+
+        //Remove all nodes that have the lowest low
+        //(and add their scores to the sum)
+        done = TRUE;
+        for(i = 0; i < size; i++)
+        {
+            while( (ptr[i] != NULL) && (ptr[i]->low == lowest) )
+            {
+                score_sum += (int)get_arraylist_entry(scores,i);
+                ptr[i] = ptr[i]->next;
+            }
+            if (ptr[i] != NULL) done = FALSE;
+        }
+        
+        //Add the lowest low to low_list
+        ll_tail = append_new_range(ll_tail, lowest, lowest, score_sum);
+        if (low_list == NULL) low_list = ll_tail;
+
+    }//while
+    free(ptr);
+
+    //Set all the ->high values in the low_list
+    ll_tail = low_list;
+    while(ll_tail->next != NULL)
+    {
+        ll_tail->high = ll_tail->next->low - 1;
+        ll_tail = ll_tail->next;
+    }
+    ll_tail->high = INT_MAX;
+
+    return low_list;
+
+}//make_low_list
+
+/* ===================================================================
+   make_high_list           (helper function)
+
+   Given an array of linked lists of range structs, this function
+   returns a single, ordered linked list of all the high values in the
+   ranges (with duplicates merged into a single value).  The list is
+   made up of range structs where high==low and score = the sum of all
+   scores that proceed it in the other lists.
+   
+   Created: 12 Jan 2005
+   =================================================================== */
+range *make_high_list(range **r, int size, arraylist *scores)
+{
+    int i;
+    int lowest;
+    range **ptr = (range **)malloc(size*sizeof(range *));
+    int done = FALSE;
+    range *high_list = NULL;
+    range *hl_tail = NULL;
+    int score_sum = 0;
+
+    //duplicate the given range pointer list so we can walk down
+    //the list
+    for(i = 0; i < size; i++)
+    {
+        ptr[i] = r[i];
+    }
+
+    //Build the high_list
+    while(!done)
+    {
+        //find the lowest high
+        lowest = INT_MAX;
+        for(i = 0; i < size; i++)
+        {
+            if (ptr[i] == NULL) continue;
+            
+            if (ptr[i]->high < lowest)
+            {
+                lowest = ptr[i]->high;
+            }
+        }
+
+        //Remove all nodes that have the lowest high
+        //(and add their scores to the sum)
+        done = TRUE;
+        for(i = 0; i < size; i++)
+        {
+            while( (ptr[i] != NULL) && (ptr[i]->high == lowest) )
+            {
+                score_sum += (int)get_arraylist_entry(scores,i);
+                ptr[i] = ptr[i]->next;
+            }
+            if (ptr[i] != NULL) done = FALSE;
+        }
+        
+        //Add the lowest high to high_list
+        hl_tail = append_new_range(hl_tail, lowest, lowest, score_sum);
+        if (high_list == NULL) high_list = hl_tail;
+
+    }//while
+    free(ptr);
+
+    //Add a dummy node at the end with INT_MAX
+    hl_tail = append_new_range(hl_tail, INT_MAX, INT_MAX, 0);
+
+    return high_list;
+
+}//make_high_list
+
+
+/* ===================================================================
+   mrhl_calc_score
+
+   This helper function for merge_ranges_high_low calculates the
+   match score for a given range.
+
+   plow - the current node in the low list
+   phigh - the current node in the high list
+   low - the low value of the new node about to be created
+   high - the high value of the new node about to be created
+   
+   Created: 12 Jan 2005
+   =================================================================== */
+//helper function:  calculates the normal score for the next range
+int mrhl_calc_score(range *plow, range *phigh, int low)
+{
+    int score = 0;
+
+    if (low >= plow->low)
+    {
+        score = plow->score;
     }
     else
     {
-        //Wrong direction
-        return 0;
+        score = plow->prev->score;
     }
 
-    //Find the eater's cell
-    node1 = epmem_find_wmetree_entry(epmem1, &g_wmetree, "input-link");
-    node1 = epmem_find_wmetree_entry(epmem1, node1, "my-location");
-    node2 = epmem_find_wmetree_entry(epmem2, &g_wmetree, "input-link");
-    node2 = epmem_find_wmetree_entry(epmem2, node2, "my-location");
+    if (low > phigh->low)
+    {
+        score -= phigh->score;
+    }
+    else if (phigh->prev != NULL)
+    {
+        score -= phigh->prev->score;
+    }
 
-    //Compare destination cell content
-    tmp1 = epmem_find_wmetree_entry(epmem1, node1, direction);
-    tmp1 = epmem_find_wmetree_entry(epmem1, tmp1, "content");
-    tmp2 = epmem_find_wmetree_entry(epmem2, node2, direction);
-    tmp2 = epmem_find_wmetree_entry(epmem2, tmp2, "content");
-    if ( (tmp1 != NULL) && (tmp1 == tmp2) ) return 2;
-
-
-    return 0;
-
-}//compare_memories_ideal
+    return score;
+}//mrhl_calc_score
 
 /* ===================================================================
-   compare_memories_act_indiv_mem
+   merge_ranges_highlow
 
-   Compares two episodic memories and returns the number of *leaf*
-   WMEs they have in common.  Obviously both lists should reference
-   the same wmetree for this comparison to be useful.
+   Given an array of N linked lists of range structs, this function
+   merges them together.
 
-   This function ignores WMEs that are not leaf WMEs.
-   This function weights matches based upon the current activation
-   level of matching WMEs.
+   r - an array of pointers to the head of linked list of range structs
+   size - the number of lists (i.e., the length of r)
    
-   
-   Created: 09 March 2004
+   Created: 12 Jan 2005
    =================================================================== */
-int compare_memories_act_indiv_mem(arraylist *epmem1, arraylist *epmem2)
+range *merge_ranges_highlow(range **r, int size, arraylist *scores)
 {
-    int count = 0;
-    int pos1 = 0;
-    int pos2 = 0;
+    range *low_list = make_low_list(r, size, scores);
+    range *high_list = make_high_list(r, size, scores);
+    range *plow = low_list;
+    range *phigh = high_list;
+    int last = plow->low;
+    range *merged = NULL;
+    range *mtail = NULL;
+    int score = plow->score;
 
-    while((pos1 < epmem1->size) && (pos2 < epmem2->size))
+    while (phigh->next != NULL)
     {
-        wmetree *node1 = ((actwme *)get_arraylist_entry(epmem1,pos1))->node;
-        wmetree *node2 = ((actwme *)get_arraylist_entry(epmem2,pos2))->node;
-        
-        if (node1->val_type == IDENTIFIER_SYMBOL_TYPE)
+        while(phigh->low < plow->low)
         {
-            pos1++;
-            continue;
+            score = mrhl_calc_score(plow, phigh, last + 1);
+            mtail = append_new_range(mtail, last + 1, phigh->low, score);
+            last = phigh->low;
+            if (phigh->next != NULL) phigh = phigh->next;
+        }//while
+
+        if (plow->low - last > 1)
+        {
+            score = mrhl_calc_score(plow, phigh, last + 1);
+            mtail = append_new_range(mtail, last + 1, plow->low - 1, score);
+            last = plow->low - 1;
         }
-        
-        if (node2->val_type == IDENTIFIER_SYMBOL_TYPE)
+
+
+        if (plow->high < phigh->low)
         {
-            pos2++;
-            continue;
-        }
-        
-        if (node1 == node2)
-        {
-            count += ((actwme *)get_arraylist_entry(epmem1,pos1))->activation;
-            pos1++;
-            pos2++;
-        }
-        else if (node1 < node2)
-        {
-            pos1++;
+            score = mrhl_calc_score(plow, phigh, plow->low);
+            mtail = append_new_range(mtail, plow->low, plow->high, score);
+            if (merged == NULL) merged = mtail;
+            last = plow->high;
         }
         else
         {
-            pos2++;
+            score = mrhl_calc_score(plow, phigh, plow->low);
+            mtail = append_new_range(mtail, plow->low, phigh->low, score);
+            if (merged == NULL) merged = mtail;
+            last = phigh->low;
+            
+            if (phigh->next != NULL) phigh = phigh->next;
         }
+        
+        if (plow->next != NULL)
+        {
+            plow = plow->next;
+        }
+        else
+        {
+            plow->low = last + 1;
+        }                
     }//while
 
-    return count;
-}//compare_memories_act_indiv_mem
+    //Clean up
+    destroy_range(low_list);
+    destroy_range(high_list);
+    
+    return merged;
+    
+}//merge_ranges_highlow
 
+/*%%%DEBUGGING*/
+void possibly_print_node(wmetree *node, int act)
+{
+    if ( (node->parent == NULL)
+         || (node->parent->parent == NULL)
+         || (node->parent->parent->attr == NULL) )
+    {
+        return;
+    }
+
+    if ( (node->attr[0] == 'n')
+         || (node->attr[0] == 'e')
+         || (node->attr[0] == 'w')
+         || (node->attr[0] == 's') )
+    {
+        return;
+    }
+
+    if (act == -1) return;
+
+    if ( (strcmp(node->parent->parent->attr, "my-location") == 0)
+         || (strcmp(node->attr, "direction") == 0) )
+    {
+        range *r = node->assoc_memories;
+        
+        print("\t%i\t", act, 0, 0);
+        print("%s.%s.", node->parent->parent->attr, node->parent->attr);
+        print_wmetree(node, 0, 0);
+        print("\t\t\t");
+
+        if (r != NULL)
+        {
+            while(r != NULL)
+            {
+                print("[%d..%d],",r->low, r->high);
+                r = r->next;
+            }
+            print("\n");
+        }
+    }//if
+
+}//possibly_print_node
+
+
+
+
+/* ===================================================================
+   prune_cue
+
+   Given an arraylist of wmetree nodes and a corresponding arraylist
+   of activation levels of those nodes, this function prunes both
+   lists to include only activated leaf-WMEs.
+
+   cue - an arraylist of wmetree nodes representing the wmes in the cue
+   acts - the corresponding activation values of the wmes in the cue
+
+   Created:  20 Jan 2005
+   =================================================================== */
+void prune_cue(arraylist *cue, arraylist *acts)
+{
+    int i;
+    int index = 0;
+
+    for(i = 0; i < cue->size; i++)
+    {
+        wmetree *node = (wmetree *)get_arraylist_entry(cue, i);
+        int act = (int)get_arraylist_entry(acts, i);
+
+        //Only activated Leaf WMEs affect the match
+        if ((node->children->count == 0) && (act > 0))
+        {
+            set_arraylist_entry(cue, index, (void *)node);
+            set_arraylist_entry(acts, index, (void *)act);
+            index++;
+        }
+    }//for
+
+    cue->size = index;
+    acts->size = index;
+
+
+//      //%%%DEBUGGING: print the cue (REMOVE THIS LATER)
+//      print("\nAT PRUNING:\n");
+//      for(i = 0; i < cue->size; i++)
+//      {
+//          wmetree *node = (wmetree *)get_arraylist_entry(cue, i);
+//          int act = (int)get_arraylist_entry(acts, i);
+
+//          possibly_print_node(node, act);
+//      }
+    
+}//prune_cue
 
 /* ===================================================================
    find_best_match
@@ -2137,164 +2456,188 @@ int compare_memories_act_indiv_mem(arraylist *epmem1, arraylist *epmem2)
    Finds the index of the episodic memory in g_memories that most closely
    matches the cue given to the function.
 
+   cue - an arraylist of wmetree nodes representing the wmes in the cue
+   acts - the corresponding activation values of the wmes in the cue
+   
+
    Created:  19 Jan 2004
+   Updated: 18 Jan 2005 - Matches using range struct.
    =================================================================== */
-episodic_memory *find_best_match(arraylist *cue)
+int find_best_match(arraylist *cue, arraylist *acts)
 {
-    int best_score = 0;
-    episodic_memory *best_mem = NULL;
+    range **r;
     int i;
-    int j;
-    int comp_count = 0;         // number of epmems that were examined
+    range *merged;
+    range *ptr;
+    int best_score = 0;
+    int best_index = 0;
 
     start_timer(&current_agent(epmem_match_start_time));
 
     //If there aren't enough memories to examine just return
     //the first one
-    if (g_memories->size <= memory_match_wait)
+    if (g_num_memories <= memory_match_wait)
     {
         return 0;
     }
 
-    //Give this match a unique id
-    g_last_ret_id++;
-
-    //Every memory gets a match score boost if it contains a memory
-    //that's in the cue.  So we need to loop over the assoc_memories
-    //list for each wmetree node in the cue
+    //Extract pointers to all the range lists in the cues to
+    //an array of arrays (%%%probably should use an arraylist instead...)
+    r = allocate_memory(sizeof(range *) * cue->size, MISCELLANEOUS_MEM_USAGE);
     for(i = 0; i < cue->size; i++)
     {
-        actwme *aw_cue = (actwme *)get_arraylist_entry(cue,i);
+        wmetree *node = (wmetree *)get_arraylist_entry(cue, i);
 
-        if (aw_cue->node->assoc_memories->size > 0)
+        r[i] = node->assoc_memories;
+    }
+
+    //Create a merge of all the lists
+    merged = merge_ranges_highlow(r, cue->size, acts);
+
+//      //%%%REMOVE THIS
+//      print("\nScores:\n");
+    
+    //Walk the list to find the best match
+    //%%%Modify above function to just return the best range instead
+    ptr = merged;
+    while(ptr != NULL)
+    {
+//          //%%%REMOVE THIS
+//          print("%i\t%i\n", ptr->low, ptr->score);
+//          if (ptr->low != ptr->high) print("%i\t%i\n", ptr->high, ptr->score);
+
+        if (ptr->high >= g_num_memories - memory_match_wait) break;
+        
+        if (ptr->score >= best_score)
         {
-            // note that this node was used in the match
-            aw_cue->node->query_count++;
+            best_index = ptr->high;
+            best_score = ptr->score;
         }
-            
-        for(j = 0; j < aw_cue->node->assoc_memories->size; j++)
-        {
-            episodic_memory *epmem =
-                (episodic_memory *)get_arraylist_entry(aw_cue->node->assoc_memories,j);
-            actwme *aw_mem = epmem_find_actwme_entry(epmem->content, aw_cue->node);
+        ptr = ptr->next;
+    }
 
-            if (aw_mem != NULL)
-            {
-                if (epmem->last_usage != g_last_ret_id)
-                {
-                    epmem->last_usage = g_last_ret_id;
-                    epmem->match_score = aw_mem->activation;
-                    comp_count++;
-                }
-                else
-                {
-                    epmem->match_score += aw_mem->activation;
-                }
-            }
-
-            if (epmem->match_score > best_score)
-            {
-                best_score = epmem->match_score;
-                best_mem = epmem;
-            }
-        }//for
-    }//for
+    //cleanup
+    free_memory(r, MISCELLANEOUS_MEM_USAGE);
+    destroy_range(merged);
 
     stop_timer(&current_agent(epmem_match_start_time), &current_agent(epmem_match_total_time));
 
-    //%%%DEBUGGING
-//      stop_timer(&current_agent(epmem_retrieve_start_time), &current_agent(epmem_retrieve_total_time));
-//      stop_timer(&current_agent(epmem_start_time), &current_agent(epmem_total_time));
-//      print("\nmemories searched:\t%d\t%d\n",
-//            g_memories->size, comp_count);
-//      start_timer(&current_agent(epmem_start_time));
-//      start_timer(&current_agent(epmem_retrieve_start_time));
-
-    return best_mem;
+    return best_index;
+    
 }//find_best_match
 
 /* ===================================================================
    install_epmem_in_wm
 
-   Given an episodic memory this function recreates the working memory
-   fragment represented by the memory in working memory.  The
-   retrieved memory is placed in the given ^epmem header.
+   Given an episodic memory header and an epmem id this function recreates
+   the working memory fragment represented by the memory in working memory.
+   The retrieved memory is placed in the given ^epmem header.
 
    Created:    19 Jan 2004
-   Overhauled: 26 Aug 2004 
+   Overhauled: 26 Aug 2004
+   Updated:    06 Jan 2005 - No longer uses arraylist of wmetree
    =================================================================== */
-void install_epmem_in_wm(epmem_header *h, arraylist *epmem)
+void install_epmem_in_wm(epmem_header *h, int epmem_id)
 {
-    int i;
+    wmetree *parent = &g_wmetree;
+    wmetree *child;
+    arraylist *queue = make_arraylist(32);
+    int pos = 0;                // current position in the queue
     Symbol *id;
     Symbol *attr;
     Symbol *val;
     wme *new_wme;
+    unsigned long hash_value;
 
-    //Install the WMEs
-    for(i = 0; i < epmem->size; i++)
+    h->index = epmem_id;
+    
+    while(parent != NULL)
     {
-        wmetree *node = ((actwme *)get_arraylist_entry(epmem,i))->node;
-
-        //For now, avoid recursing into previous memories.
-        if (strcmp(node->attr, "epmem") == 0)
+        for (hash_value = 0; hash_value < parent->children->size; hash_value++)
         {
-            continue;
-        }
-
-        if (get_arraylist_entry(node->assoc_wmes,h->index) != NULL)
-        {
-            //%%%TODO: This happens when a memory contains the same
-            //         node multiple times (e.g., a multi-valued attribute)
-            //         Currently, I'm just ignoring it.  That is bad.
-            continue;
-        }
-
-        //Determine the WME's ID
-        if (node->parent->depth == 0)
-        {
-            id = h->retrieved;
-        }
-        else
-        {
-            //If the parent is not in memory then the child can not be either
-            wme *parent_wme = (wme *)get_arraylist_entry(node->parent->assoc_wmes,h->index);
-            if (parent_wme == NULL)
+            child = (wmetree *) (*(parent->children->buckets + hash_value));
+            for (; child != NIL; child = child->next)
             {
-                continue;
-            }
+                
+                //Make sure the child is in the memory
+                if (! range_contains_value(child->assoc_memories, epmem_id))
+                {
+                    continue;
+                }
 
-            //The value of the parent WME is the id for this WME
-            id = parent_wme->value;
-        }
+                //At least for now, avoid recursing into previous memories.
+                if (strcmp(child->attr, "epmem") == 0)
+                {
+                    continue;
+                }
 
-        //Determine the WME's attribute
-        attr = make_sym_constant(node->attr);
+                //Retrieve the new WME's ID
+                if (parent->depth == 0)
+                {
+                    //This is the root of the tree
+                    id = h->retrieved;
+                }
+                else
+                {
+                    wme *parent_wme = (wme *)get_arraylist_entry(parent->assoc_wmes,h->index);
+                    if (parent_wme == NULL)
+                    {
+                        //If the parent is not in memory then the child can
+                        //not be either
+                        continue;
+                    }
 
-        //Determine the WME's value
-        switch(node->val_type)
-        {
-            case SYM_CONSTANT_SYMBOL_TYPE:
-                val = make_sym_constant(node->val.strval);
-                break;
-            case INT_CONSTANT_SYMBOL_TYPE:
-                val = make_int_constant(node->val.intval);
-                break;
-            case FLOAT_CONSTANT_SYMBOL_TYPE:
-                val = make_float_constant(node->val.floatval);
-                break;
-            default:
-                val = make_new_identifier(node->attr[0],
-                                          id->id.level);
-                break;
-        }//switch
+                    //The value of the parent WME is the id for this WME
+                    id = parent_wme->value;
+                }
 
-        new_wme = add_input_wme(id, attr, val);
-        set_arraylist_entry(node->assoc_wmes,h->index, new_wme);
-        wme_add_ref(new_wme);
-        new_wme->preference = make_fake_preference_for_epmem_wme(h->state, new_wme);
-        
-    }//for
+                
+                //Determine the new WME's attribute
+                attr = make_sym_constant(child->attr);
+
+                //Determine the new WME's value
+                switch(child->val_type)
+                {
+                    case SYM_CONSTANT_SYMBOL_TYPE:
+                        val = make_sym_constant(child->val.strval);
+                        break;
+                    case INT_CONSTANT_SYMBOL_TYPE:
+                        val = make_int_constant(child->val.intval);
+                        break;
+                    case FLOAT_CONSTANT_SYMBOL_TYPE:
+                        val = make_float_constant(child->val.floatval);
+                        break;
+                    default:
+                        val = make_new_identifier(child->attr[0], id->id.level);
+                        break;
+                }//switch
+
+                //Create the new WME
+                new_wme = add_input_wme(id, attr, val);
+                wme_add_ref(new_wme);
+
+                new_wme->preference = make_fake_preference_for_epmem_wme(h, h->state, new_wme);
+
+                //Record this WME was created
+                set_arraylist_entry(child->assoc_wmes,h->index, new_wme);
+
+                //If this WME has children add it to the queue for future
+                //processing
+                if (child->children->count > 0)
+                {
+                    append_entry_to_arraylist(queue, child);
+                }
+
+            }//for
+        }//for
+
+        //Retrieve the next node from the queue
+        parent = get_arraylist_entry(queue, pos);
+        pos++;
+    }//while
+
+    destroy_arraylist(queue);
+
 
 }//install_epmem_in_wm
 
@@ -2305,18 +2648,16 @@ void install_epmem_in_wm(epmem_header *h, arraylist *epmem)
    is attached to another given symbol.  Any existing WMEs in the retrieval
    buffer are removed.
 
-   The routine returns a pointer to the arraylist representing the
-   memory which was placed on the the retrieved link (or NULL).
-
    query - the query
    retrieved - where to install the retrieved result
 
    Created: 19 Jan 2004
    =================================================================== */
-arraylist *respond_to_query(epmem_header *h)
+void respond_to_query(epmem_header *h)
 {
     arraylist *al_query;
     arraylist *al_retrieved;
+    arraylist *acts;
     tc_number tc;
     wme *new_wme;
 
@@ -2324,33 +2665,41 @@ arraylist *respond_to_query(epmem_header *h)
     start_timer(&current_agent(epmem_clearmem_start_time));
     epmem_clear_curr_mem(h);
     stop_timer(&current_agent(epmem_clearmem_start_time), &current_agent(epmem_clearmem_total_time));
-    h->curr_memory = NULL;
+    h->curr_memory = 0;
 
-    //Create an arraylist representing the current query
+    //Create an arraylist representing the current cue
     al_query = make_arraylist(32);
+    acts = make_arraylist(32);
     tc = h->query->id.tc_num + 1;
-    update_wmetree(&g_wmetree, h->query, al_query, tc);
+    update_wmetree(&g_wmetree, h->query, al_query, acts, tc);
 
     //If the query is empty then we're done
     if (al_query->size == 0)
     {
         destroy_arraylist(al_query);
-        return NULL;
+        destroy_arraylist(acts);
+        return;
     }
 
     //Diagnostic Counter
     g_num_queries++;
 
+    //Remove irrelevant entries from the cue to speed up matching
+    prune_cue(al_query, acts);
+
     //Match query to current memories list
-    h->curr_memory = find_best_match(al_query);
+    h->curr_memory = find_best_match(al_query, acts);
     destroy_arraylist(al_query);
+    destroy_arraylist(acts);
+
+//      //%%%DEBUGGING:
+//      print("\nBEST MATCH:  %d of %d\n", h->curr_memory, g_num_memories);
 
     //Place the best fit on the retrieved link
-    if (h->curr_memory != NULL)
+    if (h->curr_memory > 0)
     {
-        al_retrieved = h->curr_memory->content;
         start_timer(&current_agent(epmem_installmem_start_time));
-        install_epmem_in_wm(h, al_retrieved);
+        install_epmem_in_wm(h, h->curr_memory);
         stop_timer(&current_agent(epmem_installmem_start_time), &current_agent(epmem_installmem_total_time));
     }
     else
@@ -2363,11 +2712,10 @@ arraylist *respond_to_query(epmem_header *h)
                                 make_sym_constant("true"));
         set_arraylist_entry(g_wmetree.assoc_wmes, h->index, new_wme);
         wme_add_ref(new_wme);
-        new_wme->preference = make_fake_preference_for_epmem_wme(h->state, new_wme);
+        new_wme->preference = make_fake_preference_for_epmem_wme(h, h->state, new_wme);
 
     }
 
-    return al_retrieved;
 
 }//respond_to_query
 
@@ -2453,7 +2801,7 @@ void increment_retrieval_count(epmem_header *h, long inc_amt)
                       make_sym_constant("retrieval-count"),
                       make_int_constant(current_count));
     wme_add_ref(w);
-    w->preference = make_fake_preference_for_epmem_wme(h->state, w);
+    w->preference = make_fake_preference_for_epmem_wme(h, h->state, w);
 
 }//increment_retrieval_count
 
@@ -2481,17 +2829,14 @@ void respond_to_command(char *cmd, epmem_header *h)
         stop_timer(&current_agent(epmem_clearmem_start_time), &current_agent(epmem_clearmem_total_time));
 
         //Check that there is a next memory available
-        if ( (h->curr_memory != NULL)
-             && (h->curr_memory->index < g_memories->size - memory_match_wait) )
+        if (h->curr_memory < g_num_memories - memory_match_wait)
         {
             //Update the current memory pointer to point to the next epmem
-            h->curr_memory =
-                (episodic_memory *)get_arraylist_entry(g_memories,
-                                                       h->curr_memory->index + 1);
             
             //Install the new memory
             start_timer(&current_agent(epmem_installmem_start_time));
-            install_epmem_in_wm(h, h->curr_memory->content);
+            h->curr_memory++;   // next memory
+            install_epmem_in_wm(h, h->curr_memory);
             stop_timer(&current_agent(epmem_installmem_start_time), &current_agent(epmem_installmem_total_time));
         }
         else
@@ -2502,7 +2847,7 @@ void respond_to_command(char *cmd, epmem_header *h)
                                    make_sym_constant("true"));
             set_arraylist_entry(g_wmetree.assoc_wmes, h->index, w);
             wme_add_ref(w);
-            w->preference = make_fake_preference_for_epmem_wme(h->state, w);
+            w->preference = make_fake_preference_for_epmem_wme(h, h->state, w);
 
         }
         
@@ -2644,165 +2989,17 @@ void epmem_update_header_stack()
    =================================================================== */
 void epmem_print_curr_memory(epmem_header *h)
 {
-    if (h->curr_memory == NULL)
+    if (h->curr_memory == 0)
     {
         print("\nCURRENT MEMORY:  None.\n");
         return;
     }
     
     //Print the current memory
-    print("\nCURRENT MEMORY:  %d of %d\t\t", h->curr_memory->index, g_memories->size);
-    print_memory_graphically(h->curr_memory->content);
+    print("\nCURRENT MEMORY:  %d of %d\t\t", h->curr_memory, g_num_memories);
+    //%%%BROKEN: print_memory_graphically(h->curr_memory->content);
 
 }//epmem_print_curr_memory
-
-/* ===================================================================
-   epmem_calc_wmetree_size      *RECURSIVE*
-
-   Calculates the size of a wmetree in terms of numbers of nodes
-
-   Created: 15 June 2004
-   =================================================================== */
-int epmem_calc_wmetree_size(wmetree *node)
-{
-    int size = 0;
-    unsigned long hash_value;
-    wmetree *child;
-    
-    if (node == NULL) return 0;
-
-    size += node->children->size;
-    
-    for (hash_value = 0; hash_value < node->children->size; hash_value++)
-    {
-        child = (wmetree *) (*(node->children->buckets + hash_value));
-        for (; child != NIL; child = child->next)
-        {
-            size += epmem_calc_wmetree_size(child);
-        }
-    }
-
-    return size;
-}//epmem_calc_wmetree_size
-
-/* ===================================================================
-   epmem_print_detailed_usage_memories
-
-   Prints a memory usage trace for g_memories to a given file handle.
-
-   Created: 15 June 2004
-   =================================================================== */
-//NOTE:  NUM_BINS must be less than 256 and HISTOGRAM_SIZE must be greater
-//       than the maximum size of any memory.
-#define BIN_SIZE 3
-#define NUM_BINS 200
-#define HISTOGRAM_SIZE (BIN_SIZE * NUM_BINS + 1)
-void epmem_print_detailed_usage_memories(FILE *f)
-{
-    int histogram[HISTOGRAM_SIZE];
-    int i,j;
-    int largest = 0;
-    
-
-    for(i = 0; i < HISTOGRAM_SIZE; i++)
-    {
-        histogram[i] = 0;
-    }
-
-    for(i = 0; i < g_memories->size; i++)
-    {
-        int memsize =  ((arraylist *)get_arraylist_entry(g_memories,i))->size;
-        if (memsize > HISTOGRAM_SIZE)
-        {
-            fprintf(f, "ERROR!  Memories are too large.\n");
-        }
-        else
-        {
-            (histogram[memsize])++;
-        }
-
-        if (memsize > largest) largest = memsize;
-    }
-
-    //To accomodate maximum excel spreadsheet dimensions , bin the results
-    for(i = 0; i < NUM_BINS; i++)
-    {
-        int sum = 0;
-        for(j = 1; j <= BIN_SIZE; j++)
-        {
-            sum += histogram[i*BIN_SIZE + j];
-        }
-        fprintf(f, "%d\t", sum);
-    }
-    fprintf(f, "\n");
-    
-}//epmem_print_detailed_usage_memories
-
-/* ===================================================================
-   epmem_print_detailed_usage_wmetree      *RECURSIVE*
-
-   Prints a memory usage trace for a wmetree to a given file handle.
-
-   f - file handle to print to
-   node - the wmetree to print the usage stats about
-   largest - initial caller should set an int to zero and pass in a
-             ptr to it here
-
-   Created: 15 June 2004
-   =================================================================== */
-void epduw_helper(wmetree *node, int *histogram, int *largest)
-{
-    int nodesize;
-    unsigned long hash_value;
-    wmetree *child;
-
-    if (node->assoc_memories != NULL)
-    {
-        nodesize = node->assoc_memories->size;
-        (histogram[nodesize])++;
-        if (nodesize > *largest) *largest = nodesize;
-    }
-    
-    for (hash_value = 0; hash_value < node->children->size; hash_value++)
-    {
-        child = (wmetree *) (*(node->children->buckets + hash_value));
-        for (; child != NIL; child = child->next)
-        {
-            epduw_helper(child, histogram, largest);
-        }
-    }
-    
-}//epduw_helper
-
-void epmem_print_detailed_usage_wmetree(FILE *f, wmetree *node)
-{
-    static int histogram[HISTOGRAM_SIZE];
-    int i;
-    int largest = 0;
-    
-    if (node == NULL)
-    {
-        fprintf(f, "\n");
-        return;
-    }
-
-    for(i = 0; i < HISTOGRAM_SIZE; i++)
-    {
-        histogram[i] = 0;
-    }
-
-    epduw_helper(node, histogram, &largest);
-    
-    fprintf(f, "%d", histogram[2]);
-    for(i = 2; i <= largest; i++)
-    {
-        fprintf(f, "\t%d", histogram[i]);
-    }
-    fprintf(f, "\n");
-    
-}//epmem_print_detailed_usage_wmetree
-
-
 
 /* ===================================================================
    epmem_print_mem_usage
@@ -2814,19 +3011,62 @@ void epmem_print_detailed_usage_wmetree(FILE *f, wmetree *node)
    =================================================================== */
 void epmem_print_mem_usage()
 {
-    FILE *f;
+    wmetree *parent = &g_wmetree;
+    wmetree *child;
+    arraylist *queue = make_arraylist(32);
+    int qpos = 0;                // current position in the queue
+    unsigned long hash_value;
+    range *r;
+    int num_wmetrees = 0;
+    int num_ranges = 0;
+    int num_strings = 0;
+    int total_strlen = 0;
 
-    //Print the episodic memories' usage
-    f = fopen("\\temp\\epmem_ram_usage_memories.txt", "aw");
-    if (f == NULL) return;
-    epmem_print_detailed_usage_memories(f);
-    fclose(f);
+    while(parent != NULL)
+    {
+        for (hash_value = 0; hash_value < parent->children->size; hash_value++)
+        {
+            child = (wmetree *) (*(parent->children->buckets + hash_value));
+            for (; child != NIL; child = child->next)
+            {
+                if (child->val_type == SYM_CONSTANT_SYMBOL_TYPE)
+                {
+                    num_strings++;
+                    total_strlen += strlen(child->val.strval);
+                }
 
-    //Print the wmetree's usage info
-    f = fopen("\\temp\\epmem_ram_usage_wmetree.txt", "aw");
-    if (f == NULL) return;
-    epmem_print_detailed_usage_wmetree(f, &g_wmetree);
-    fclose(f);
+                r = child->assoc_memories;
+                while(r != NULL)
+                {
+                    num_ranges ++;
+                    r = r->next;
+                }
+                
+                num_wmetrees++;
+
+                //If this WME has children add it to the queue for future
+                //processing
+                if (child->children->count > 0)
+                {
+                    append_entry_to_arraylist(queue, child);
+                }
+
+            }//for
+        }//for
+
+        //Retrieve the next node from the queue
+        parent = get_arraylist_entry(queue, qpos);
+        qpos++;
+    }//while
+
+    destroy_arraylist(queue);
+    
+    print("\n");
+    print("%.6d wmetree structs = %.10d bytes\n", num_wmetrees, num_wmetrees*49);
+    print("%.6d range structs   = %.10d bytes\n", num_ranges, num_ranges*20);
+    print("%.6d symbol strings  = %.10d bytes\n", num_strings, total_strlen);
+    print("     TOTAL EPMEM ALLOC = %.10d bytes\n", num_wmetrees*49 + num_ranges*20 + total_strlen);
+    
     
 }//epmem_print_mem_usage
 
@@ -2887,6 +3127,9 @@ void epmem_print_cpu_usage()
     f = timer_value(&current_agent(epmem_installmem_total_time));
     print("    install_epmem_in_wm()            %.3lf     %.3lf\n", f, f / total);
 
+    f = timer_value(&current_agent(epmem_misc1_total_time));
+    f = timer_value(&current_agent(epmem_misc2_total_time));
+
     print("--------------------------------------------------------------------\n");
     print("TOTAL                                %.3lf     1.0\n", total);
 
@@ -2902,6 +3145,7 @@ void epmem_print_cpu_usage()
 
    Created: 13 July 2004
    =================================================================== */
+/* %%%THESE ROUTINES NEED TO BE UPDATED
 void epquw_helper(wmetree *node,
                   int *total_queries,
                   int *num_nodes,
@@ -2990,7 +3234,7 @@ void epmem_print_query_usage_wmetree()
     
 }//epmem_print_query_usage_wmetree
 
-
+*/
 
 /* ===================================================================
    epmem_update() 
@@ -3004,7 +3248,6 @@ void epmem_print_query_usage_wmetree()
 void epmem_update()
 {
     char *cmd;
-    arraylist *epmem = NULL;
     static int count = 0;
     int i;
 
@@ -3043,9 +3286,9 @@ void epmem_update()
             //%%%DEBUGGING
             //decay_print_most_activated_wmes(50);
         
-            epmem = respond_to_query(h);
+            respond_to_query(h);
 
-            if (epmem != NULL)
+            if (h->curr_memory > 0)
             {
                 //New retrieval:  reset count to zero
                 increment_retrieval_count(h, 0);
@@ -3058,7 +3301,7 @@ void epmem_update()
         }//else
 
 //          //%%%DEBUGGING
-//          if (h->curr_memory != NULL)
+//          if (h->curr_memory > 0)
 //          {
 //              epmem_print_curr_memory(h);
 //          }
@@ -3069,12 +3312,11 @@ void epmem_update()
     stop_timer(&current_agent(epmem_start_time), &current_agent(epmem_total_time));
 
     
-    //%%%DEBUGGING
-    //epmem_print_mem_usage();
     
 //      //%%%DEBUGGING
-//      if (count % 1500 == 0)
+//      if (count % 500 == 0)
 //      {
+//          epmem_print_mem_usage();
 //          epmem_print_cpu_usage();
 //          print("\nend of run %d\n", count / 1500);
 //      }
@@ -3135,9 +3377,6 @@ void init_epmem(void)
     g_wmetree.parent = NULL;
     g_wmetree.depth = 0;
     g_wmetree.assoc_wmes = make_arraylist(20);
-
-    //Initialize the memories array
-    g_memories = make_arraylist(512);
 
     //Initialize the g_header_stack array
     g_header_stack = make_arraylist(20);
