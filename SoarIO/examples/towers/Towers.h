@@ -38,7 +38,6 @@ protected:
 	Disk(const Disk&);
 	Disk operator=(const Disk&);
 
-	Disk* m_pDiskBeneath;
 	DiskInputLinkProfile* m_iLinkProfile;
 	int m_size;
 	Tower* pTower;

@@ -4,7 +4,7 @@
 
 ////// Define the type of interface to Soar that you're using:
 #define GSKI_DIRECT
-//#define USE_TGD_WITH_GSKI
+
 //#define SML_THROUGH_GSKI
 //#define SML_SGIO_HYBRID
 //#define SGIO_DIRECT
@@ -12,7 +12,9 @@
 
 #ifdef SGIO_DIRECT
 	#include "sgioTowers.h"
-#else ifdef GSKI_DIRECT
+#endif
+
+#ifdef GSKI_DIRECT
 	#include "gSKITowers.h"
 #endif
 
@@ -106,8 +108,6 @@ cout << "Main loop, ran...." << endl;
 		hanoi.EndGameAction();
 	}
 
-//	while(TgD::TgD::Update(false, debugger))
-//		TGD_SLEEP(50);
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <non-whitespace char> then enter to exit\n") ;

@@ -36,6 +36,7 @@ using namespace	gSKI;
 #include "cli_CommandLineInterface.h"	
 using namespace cli;
 
+TgD::TgD* debugger;
 
 //namespace gski_towers
 //{
@@ -61,6 +62,7 @@ public:
 	//holds wme
 	void Update(IWorkingMemory* pWMemory, IWMObject* object)
 	{
+cout << "Update called on disk...." << endl;
 		if(holdsNeedsToBeUpdated == false)
 			return;
 
@@ -182,7 +184,6 @@ public:
 	IOManager(IInputLink* inILink) : m_pILink(inILink)
 	{
 		m_pWorkingMem = m_pILink->GetInputLinkMemory();
-
 	}
 
 	//if parent is null, parent should be the inputlink root object
@@ -190,25 +191,49 @@ public:
 	{
 		IWMObject* pILinkRootObject;
 		m_pILink->GetRootObject(&pILinkRootObject);
-		return m_pWorkingMem->AddWmeNewObject(pILinkRootObject, "disk");
+		return m_pWorkingMem->AddWmeNewObject(pILinkRootObject, name.c_str());
 	}
 
 	IWme* AddIntWme(IWMObject* parent, const string& name, int value)
 	{
-
-		return 0; //fixme
+		IWMObject* parentToAttachTo;
+		if(parent)
+			parentToAttachTo = parent;
+		else
+		{		
+			IWMObject* pILinkRootObject;
+			m_pILink->GetRootObject(&pILinkRootObject);
+			parentToAttachTo = pILinkRootObject;
+		}
+		return m_pWorkingMem->AddWmeInt(parentToAttachTo, name.c_str(), value);
 	}
 
 	IWme* AddStringWme(IWMObject* parent, const string& name, const string& value)
 	{
-		return 0; //fixme
-
+		IWMObject* parentToAttachTo;
+		if(parent)
+			parentToAttachTo = parent;
+		else
+		{		
+			IWMObject* pILinkRootObject;
+			m_pILink->GetRootObject(&pILinkRootObject);
+			parentToAttachTo = pILinkRootObject;
+		}
+		return m_pWorkingMem->AddWmeString(parentToAttachTo, name.c_str(), value.c_str());
 	}
 
 	IWme* AddIDWme(IWMObject* parent, const string& name, IWMObject* linkDestination)
 	{
-
-		return 0; //fixme
+		IWMObject* parentToAttachTo;
+		if(parent)
+			parentToAttachTo = parent;
+		else
+		{		
+			IWMObject* pILinkRootObject;
+			m_pILink->GetRootObject(&pILinkRootObject);
+			parentToAttachTo = pILinkRootObject;
+		}
+		return m_pWorkingMem->AddWmeObjectLink(parentToAttachTo, name.c_str(), linkDestination);
 	}
 
 private:
@@ -228,7 +253,7 @@ private:
 //============ Disk Function Definitions ===============
 
 Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) : 
-		pTower(tower), m_size(inSize), m_pDiskBeneath(diskBeneath)
+		pTower(tower), m_size(inSize)
 {
 	m_iLinkProfile = new DiskInputLinkProfile();
 	//============================
@@ -257,12 +282,14 @@ Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) :
 	//add holds wmes to parent object
 	m_iLinkProfile->peg = manager->AddIDWme(holdsParentObject, k_holdsOnString, m_iLinkProfile->pegId);
 
-	//the holds wme points back to its corresponding disk
+	//the "disk" wme points back to its corresponding disk
 	m_iLinkProfile->diskWme = manager->AddIDWme(holdsParentObject, k_diskIdentifierString, parentObject);
 
-	if(m_pDiskBeneath)
+	//the "above" wme points to the disk beneath this one, else "none"
+	if(diskBeneath)
 	{
-		IWMObject* pDiskBeneathIdentifier = m_pDiskBeneath->m_iLinkProfile->GetDiskIdentifierObject();
+		m_iLinkProfile->diskBeneath = diskBeneath->GetDiskInputLinkProfile()->GetDiskIdentifier();
+		IWMObject* pDiskBeneathIdentifier = diskBeneath->GetDiskInputLinkProfile()->GetDiskIdentifierObject();
 		m_iLinkProfile->holdsDiskBeneath = manager->AddIDWme(holdsParentObject, k_holdsAboveString, pDiskBeneathIdentifier);
 	}
 	else
@@ -391,17 +418,22 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	IKernel* kernel = kFactory->Create();
 	IAgentManager* manager = kernel->GetAgentManager();
 	gSKI::IAgent* agent = manager->AddAgent("towersAgent");
+	assert(agent);
+
+//create debugger
+TgD::TSI_VERSION tsiVersion = TgD::TSI40;
+debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
+debugger->Init();
 
 	//Source the agent's productions
 	CommandLineInterface* commLine = new CommandLineInterface();
 	commLine->SetKernel(kernel);
 	char* pResponse = "\0";//we don't need to allocate space for this
 	gSKI::Error* pError = new Error();
-
 	assert(commLine->DoCommand(agent, "pushd ../examples/towers", pResponse, pError));
 	assert(commLine->DoCommand(agent, "source towers-of-hanoi-86.soar", pResponse, pError));
 	assert(commLine->DoCommand(agent, "popd", pResponse, pError));
-cout << "prolly sourced productions by now..." << endl;
+
 	IInputLink* pILink = agent->GetInputLink();
 	ioManager = new IOManager(pILink);
 
@@ -411,12 +443,12 @@ cout << "prolly sourced productions by now..." << endl;
 	IOutputLink* oLink = agent->GetOutputLink();
 	oLink->AddOutputProcessor("move-disk", m_agent);
 
-
 	//create Towers
 	IWorkingMemory* pWMemory = pILink->GetInputLinkMemory();
 	IWMObject* pILinkRootObject;
 	pILink->GetRootObject(&pILinkRootObject);
 
+int fooDiskCounter = 0;
 	//Name each tower and store for later
 	for(int towerNum = 0; towerNum < inNumTowers; ++towerNum)
 	{
@@ -445,6 +477,9 @@ cout << "prolly sourced productions by now..." << endl;
 				}
 
 				Disk* disk = new Disk(tower, currentDiskSize, towerTopDisk);
+cout << "\tI just created disk " << fooDiskCounter++ << endl;
+cout << "At that time, the top tower disk was: " << towerTopDisk << endl;
+
 
 				pILink->AddInputProducer(disk->m_iLinkProfile->GetHoldsIdentifierObject(), disk->m_iLinkProfile);
 				assert(disk);

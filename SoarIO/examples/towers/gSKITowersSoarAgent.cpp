@@ -2,7 +2,6 @@
 #include "gSKITowersSoarAgent.h"
 
 #include <string>
-
 #include <cassert>
 
 #define testingGTSAgent
@@ -23,10 +22,12 @@ using std::string;
 #include "IgSKI_WorkingMemory.h"
 
 using namespace gSKI;
-//using namespace gski_towers;
+
+extern TgD::TgD* debugger;
 
 SoarAgent::SoarAgent(IAgent* inAgent, HanoiWorld* inWorld) : m_Agent(inAgent), m_World(inWorld)
 {
+cout << "\tAgent constructor called...." << endl;
 	// get input link
 	IInputLink* pILink = m_Agent->GetInputLink();
 
@@ -35,7 +36,8 @@ SoarAgent::SoarAgent(IAgent* inAgent, HanoiWorld* inWorld) : m_Agent(inAgent), m
 
 SoarAgent::~SoarAgent()
 {
-	// fixme todo implement this 
+	m_Agent = 0;
+	m_World = 0;
 }
 
 void SoarAgent::ProcessOutput(IWorkingMemory* wMemory, gSKI::IWMObject* moveIdentifier)
@@ -86,7 +88,9 @@ void SoarAgent::ProcessOutput(IWorkingMemory* wMemory, gSKI::IWMObject* moveIden
 }
 
 void SoarAgent::MakeMove()
-{										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE //
-	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT, 1);
+{										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE
+	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1);
 	assert(runResult != gSKI_RUN_ERROR);
+while(TgD::TgD::Update(false, debugger))
+	TGD_SLEEP(50);
 }
