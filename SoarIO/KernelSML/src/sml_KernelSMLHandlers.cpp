@@ -487,8 +487,16 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
+
 	bool rawOutput = false;
-	const char* pCommandOutput = pIncoming->GetArgValue(sml_Names::kCommandOutput);
+
+	// The caller can ask for simple string output (raw output) or more complex, structured XML output
+	// which can then be parsed.
+	ElementXML const* pCommand = pIncoming->GetCommandTag() ;
+	const char* pCommandOutput = pCommand->GetAttribute(sml_Names::kCommandOutput) ;
+
+	if (pCommandOutput)
+		rawOutput = (strcmp(pCommandOutput, sml_Names::kRawOutput) == 0) ;
 
 	if (!pLine)
 	{
