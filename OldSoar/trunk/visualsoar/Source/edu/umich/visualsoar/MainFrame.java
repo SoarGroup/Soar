@@ -1464,16 +1464,6 @@ public class MainFrame extends JFrame
 		}
 		catch (java.lang.UnsatisfiedLinkError ule)
         {
-            JOptionPane.showMessageDialog(
-                MainFrame.this,
-                "I was unable to load the Soar Tools Interface (STI) library.\n"
-                + "Therefore this part of the VisualSoar functionality will not \n"
-                + "be available while you are running VisualSoar.  To enable \n"
-                + "the STI, make sure that the SoarToolJavaInterface1 library \n"
-                + "is in your PATH and restart VisualSoar.",
-                "DLL Load Error",
-                JOptionPane.ERROR_MESSAGE);
-
 			// Disable all related menu items
 			soarRuntimeTermAction.setEnabled(false);
 			soarRuntimeInitAction.setEnabled(false);
