@@ -272,6 +272,12 @@ public:
 	Agent* GetAgentByIndex(int index) ;
 
 	/*************************************************************
+	* @brief Returns true if this agent pointer is still valid and
+	*		 can be used.
+	*************************************************************/
+	bool	IsAgentValid(Agent* pAgent) ;
+
+	/*************************************************************
 	* @brief Process a command line command and return the result
 	*        as a string.
 	*

@@ -66,6 +66,17 @@ public:
 
 	int size() const { return (int)m_Map.size() ; }
 
+	bool contains(DataType value)
+	{
+		for (InternalMapIter mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)
+		{
+			if (mapIter->second == value)
+				return true ;
+		}
+
+		return false ;
+	}
+
 	DataType getIndex(int index)
 	{
 		for (InternalMapIter mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)

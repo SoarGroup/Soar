@@ -585,6 +585,17 @@ Agent* Kernel::GetAgentByIndex(int index)
 }
 
 /*************************************************************
+* @brief Returns true if this agent pointer is still valid and
+*		 can be used.
+*************************************************************/
+bool Kernel::IsAgentValid(Agent* pAgent)
+{
+	// We check the current list of agent pointers and see if this value is in that list
+	// to determine if it is still valid.
+	return m_AgentMap.contains(pAgent) ;
+}
+
+/*************************************************************
 * @brief Creates a new Soar agent with the given name.
 *
 * @returns A pointer to the new agent structure.  This object
