@@ -9,6 +9,12 @@
 	$1 = interp;
 }
 
+// make sure Tcl_Obj is processed last
+// don't bother doing any real type checking because it's not possible for this to be anything else
+%typecheck(2000) Tcl_Obj* {
+    $1 = 1;
+}
+
 // We need to include this stuff before we include sml_ClientInterface.i or else things will be in the wrong
 //  order in the generated code and it won't compile
 // However, this stuff requires some things that are in sml_ClientInterface.i (i.e. the definition of smlEventId and Agent)
@@ -116,12 +122,12 @@
 %include "../sml_ClientInterface.i"
 
 %extend sml::Agent {
-	int RegisterForAgentEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData) {
+	int RegisterForAgentEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    return self->RegisterForAgentEvent(sml::smlAgentEventId(lid), TclAgentEventCallback, (void*)tud);
+	    return self->RegisterForAgentEvent(sml::smlAgentEventId(lid), TclAgentEventCallback, (void*)tud, addToBack);
     };
     
     void UnregisterForAgentEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* callbackID) {
@@ -131,12 +137,12 @@
         self->UnregisterForAgentEvent(sml::smlAgentEventId(lid), lcallbackid);
     }
     
-    int RegisterForProductionEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData) {
+    int RegisterForProductionEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    return self->RegisterForProductionEvent(sml::smlProductionEventId(lid), TclProductionEventCallback, (void*)tud);
+	    return self->RegisterForProductionEvent(sml::smlProductionEventId(lid), TclProductionEventCallback, (void*)tud, addToBack);
     }
     
     void UnregisterForProductionEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* callbackID) {
@@ -146,12 +152,12 @@
         self->UnregisterForProductionEvent(sml::smlProductionEventId(lid), lcallbackid);
     }
     
-    int RegisterForRunEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData) {
+    int RegisterForRunEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, bool addToBack = true) {
         TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    return self->RegisterForRunEvent(sml::smlRunEventId(lid), TclRunEventCallback, (void*)tud);
+	    return self->RegisterForRunEvent(sml::smlRunEventId(lid), TclRunEventCallback, (void*)tud, addToBack);
     }
     
     void UnregisterForRunEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* callbackID) {
@@ -161,12 +167,12 @@
         self->UnregisterForRunEvent(sml::smlRunEventId(lid), lcallbackid);
     }
 
-    int RegisterForPrintEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData) {	    
+    int RegisterForPrintEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, bool addToBack = true) {	    
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    return self->RegisterForPrintEvent(sml::smlPrintEventId(lid), TclPrintEventCallback, (void*)tud);
+	    return self->RegisterForPrintEvent(sml::smlPrintEventId(lid), TclPrintEventCallback, (void*)tud, addToBack);
     }
 
     void UnregisterForPrintEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* callbackID) {
@@ -178,12 +184,12 @@
 }
 
 %extend sml::Kernel {
-    int RegisterForSystemEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData) {
+    int RegisterForSystemEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    return self->RegisterForSystemEvent(sml::smlSystemEventId(lid), TclSystemEventCallback, (void*)tud);
+	    return self->RegisterForSystemEvent(sml::smlSystemEventId(lid), TclSystemEventCallback, (void*)tud, addToBack);
     };
     
     void UnregisterForSystemEvent(Tcl_Interp* interp, Tcl_Obj* id, Tcl_Obj* callbackID) {
