@@ -1156,6 +1156,29 @@ int soar_ecPrintAllProductionsOfType(int type, bool internal, bool print_fname, 
     return 0;
 }
 
+void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_InterruptSetting interrupt_setting) {
+    production *prod;
+
+    /* we'll step through the list backwards, so chunks and justifications
+     * are displayed in reverse cronological order.
+     */
+
+    int type;
+    for (type = 0; type < NUM_PRODUCTION_TYPES; type++) {
+        for (prod = current_agent(all_productions_of_type)[type]; prod != NIL && prod->next != NIL; prod = prod->next)
+            /* intentionally null */ ;
+
+        while (prod != NIL) {
+            /* Print it... */
+            if(prod->interrupt == interrupt_setting) {
+                print("%s\n", prod->name->var.name);
+            }
+        
+            prod = prod->prev;
+        }
+    }
+}
+
 int soar_ecAddWmeFilter(const char *szId, const char *szAttr, const char *szValue, bool adds, bool removes)
 {
 

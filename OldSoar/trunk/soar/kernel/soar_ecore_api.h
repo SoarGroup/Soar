@@ -697,5 +697,7 @@ extern void soar_ecPrintMemories(int num, int to_print[]);
  */
 extern int soar_ecWatchLevel(int level);
 
+extern void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_InterruptSetting interrupt_setting);
+
 /*@}*/
 #endif                          /* _SOAR_ECORE_API_ */

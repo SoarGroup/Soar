@@ -2273,5 +2273,16 @@ extern int soar_BuildInfo(int argc, const char *argv[], soarResult * res);
  */
 extern int soar_ExcludedBuildInfo(int argc, const char *argv[], soarResult * res);
 
+/*
+ *----------------------------------------------------------------------
+ *
+ * soar_Interrupt --
+ *
+ *----------------------------------------------------------------------
+ */
+
+extern int soar_Interrupt(int argc, const char *argv[], soarResult * res);
+
 /*@}*/
+
 #endif

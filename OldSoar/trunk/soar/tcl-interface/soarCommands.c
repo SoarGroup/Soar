@@ -2145,6 +2145,26 @@ int ReteNetCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * c
 
 }
 
+int InterruptCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[])
+{
+	char **argv;
+	soarResult res;
+
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
+	create_argv_from_objv(objc, objv, &argv);
+
+	if( soar_Interrupt(objc, argv, &res) == SOAR_OK ) {
+		free_argv(objc, argv);
+		return TCL_OK;
+	} else {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
+        free_argv(objc, argv);
+        return TCL_ERROR;
+	}
+
+}
+
 void Soar_InstallCommands(agent * the_agent)
 {
     install_tcl_soar_cmd(the_agent, "add-wme", AddWmeCmd);
@@ -2202,6 +2222,7 @@ void Soar_InstallCommands(agent * the_agent)
     install_tcl_soar_cmd(the_agent, "soar8", Operand2Cmd);
     install_tcl_soar_cmd(the_agent, "waitsnc", WaitSNCCmd);
 /* REW: end   09.15.96 */
+	install_tcl_soar_cmd(the_agent, "interrupt", InterruptCmd); /* RPM 11.24.03 */
 
 #ifdef USE_DEBUG_UTILS
     install_tcl_soar_cmd(the_agent, "pool", PrintPoolCmd);

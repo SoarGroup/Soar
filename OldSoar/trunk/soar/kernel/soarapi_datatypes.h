@@ -160,4 +160,14 @@ typedef struct sapiwme_st {
     long timetag;
 } soarapi_wme;
 
+/*
+ * \brief The interrupt setting
+ *
+ */
+enum soar_apiInterruptSetting {
+    INTERRUPT_OFF,
+    INTERRUPT_ON,
+    INTERRUPT_PRINT
+};
+
 #endif

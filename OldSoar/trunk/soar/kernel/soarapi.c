@@ -2893,7 +2893,7 @@ int soar_DefaultWmeDepth(int argc, const char *argv[], soarResult * res)
         soar_ecSetDefaultWmeDepth(depth);
     } else {
         setSoarResultResult(res, "Expected integer for new default print depth: %s", argv[1]);
-        return SOAR_OK;
+        return SOAR_ERROR;
     }
 
     clearSoarResultResult(res);
@@ -2954,5 +2954,78 @@ int soar_GDSPrint(int argc, const char *argv[], soarResult * res)
     argv = argv;
 
     soar_ecGDSPrint();
+    return SOAR_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * soar_Interrupt --
+ *
+ *----------------------------------------------------------------------
+ */
+
+int soar_Interrupt(int argc, const char *argv[], soarResult * res)
+{
+    enum soar_apiInterruptSetting interrupt_setting;
+    Symbol *sym;
+    production *prod;
+    bool valid_args;
+    int i;
+
+    clearSoarResultResult(res);
+
+    if(argc > 3) {
+        setSoarResultResult(res, "Too many arguments\n");
+    }
+    if (argc == 1 || argc > 3) {
+        appendSoarResultResult(res, "Usage: interrupt [-on|-off] [production name]");
+        return SOAR_ERROR;
+    }
+
+    interrupt_setting = INTERRUPT_PRINT;
+    prod = NULL;
+    valid_args = TRUE;
+
+    for (i = 1; i < argc; i++) {
+        if (string_match("-on", argv[i])) {
+	        interrupt_setting = INTERRUPT_ON;
+        } else if (string_match("-off", argv[i])) {
+	        interrupt_setting = INTERRUPT_OFF;
+        } else if (string_match("-off", argv[i])) {
+	        interrupt_setting = INTERRUPT_OFF;
+        } else {
+            sym = find_sym_constant(argv[i]);
+            if (sym && sym->sc.production) {
+                prod = sym->sc.production;
+            } else {
+                setSoarResultResult(res, "Can't find production named %s", argv[i]);
+                valid_args = FALSE;
+                break;
+            }
+        }
+    }
+
+    if(!valid_args) {
+        return SOAR_ERROR;
+    } else {
+        if(prod) {
+            if(interrupt_setting == INTERRUPT_ON) {
+                prod->interrupt = TRUE;
+            } else if(interrupt_setting == INTERRUPT_OFF) {
+                prod->interrupt = FALSE;
+            } else {
+                print("%s%s", prod->name->var.name, ": ");
+                if(prod->interrupt) {
+                    print("%s\n", "on");
+                } else {
+                    print("%s\n", "off");
+                }
+            }
+        } else {
+            soar_ecPrintAllProductionsWithInterruptSetting(interrupt_setting);
+        }
+    }
+
     return SOAR_OK;
 }
