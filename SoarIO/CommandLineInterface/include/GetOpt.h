@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GETOPT_H
+#define GETOPT_H
 
 #define no_argument 0
 #define required_argument 1
@@ -41,3 +42,5 @@ private:
 };
 
 } // namespace cli
+
+#endif // GETOPT_H

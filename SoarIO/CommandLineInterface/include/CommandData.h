@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMMAND_DATA_H
+#define COMMAND_DATA_H
 
 namespace cli {
 
@@ -86,3 +87,5 @@ namespace cli {
 	const unsigned short OPTION_WATCH_WME_DETAIL             = 0x8000;
 
 } // namespace cli
+
+#endif // COMMAND_DATA_H

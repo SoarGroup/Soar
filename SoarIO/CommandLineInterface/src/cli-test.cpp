@@ -135,13 +135,14 @@ int main(int argc, char** argv)
 
 		} else {
 
-			previousResult = cli->DoCommandInternal(cmdline.c_str());
-			cli->GetLastResult(&result);
-			cout << result << endl;
+			cout << "Not implemented." << endl;
+			//previousResult = cli->DoCommandInternal(cmdline.c_str());
+			//cli->GetLastResult(&result);
+			//cout << result << endl;
 
-			if (cli->QuitCalled()) {
-				break;
-			}
+			//if (cli->QuitCalled()) {
+			//	break;
+			//}
 		}
 	}
 

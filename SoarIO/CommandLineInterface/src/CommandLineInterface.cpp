@@ -27,45 +27,57 @@ using namespace cli;
 
 #include <direct.h>
 
-char const* CLIConstants::kCLIAddWME	= "add-wme";
-char const* CLIConstants::kCLICD		= "cd";
-char const* CLIConstants::kCLIDir		= "ls";
-char const* CLIConstants::kCLIEcho		= "echo";
-char const* CLIConstants::kCLIExcise	= "excise";
-char const* CLIConstants::kCLIExit		= "exit";
-char const* CLIConstants::kCLIInitSoar	= "init-soar";
-char const* CLIConstants::kCLILearn		= "learn";
-char const* CLIConstants::kCLILS		= "ls";
-char const* CLIConstants::kCLINewAgent	= "new-agent";
-char const* CLIConstants::kCLIPrint		= "print";
-char const* CLIConstants::kCLIPWD		= "pwd";
-char const* CLIConstants::kCLIQuit		= "quit";
-char const* CLIConstants::kCLIRun		= "run";
-char const* CLIConstants::kCLISource	= "source";
-char const* CLIConstants::kCLISP		= "sp";
-char const* CLIConstants::kCLIStopSoar	= "stop-soar";
-char const* CLIConstants::kCLIWatch		= "watch";
-char const* CLIConstants::kCLIWatchWMEs	= "watch-wmes";
+//  ____ _     ___ ____                _              _
+// / ___| |   |_ _/ ___|___  _ __  ___| |_ __ _ _ __ | |_ ___
+//| |   | |    | | |   / _ \| '_ \/ __| __/ _` | '_ \| __/ __|
+//| |___| |___ | | |__| (_) | | | \__ \ || (_| | | | | |_\__ \
+// \____|_____|___\____\___/|_| |_|___/\__\__,_|_| |_|\__|___/
+//
+char const* CommandLineInterface::CLIConstants::kCLIAddWME	= "add-wme";
+char const* CommandLineInterface::CLIConstants::kCLICD		= "cd";
+char const* CommandLineInterface::CLIConstants::kCLIDir		= "ls";
+char const* CommandLineInterface::CLIConstants::kCLIEcho		= "echo";
+char const* CommandLineInterface::CLIConstants::kCLIExcise	= "excise";
+char const* CommandLineInterface::CLIConstants::kCLIExit		= "exit";
+char const* CommandLineInterface::CLIConstants::kCLIInitSoar	= "init-soar";
+char const* CommandLineInterface::CLIConstants::kCLILearn		= "learn";
+char const* CommandLineInterface::CLIConstants::kCLILS		= "ls";
+char const* CommandLineInterface::CLIConstants::kCLINewAgent	= "new-agent";
+char const* CommandLineInterface::CLIConstants::kCLIPrint		= "print";
+char const* CommandLineInterface::CLIConstants::kCLIPWD		= "pwd";
+char const* CommandLineInterface::CLIConstants::kCLIQuit		= "quit";
+char const* CommandLineInterface::CLIConstants::kCLIRun		= "run";
+char const* CommandLineInterface::CLIConstants::kCLISource	= "source";
+char const* CommandLineInterface::CLIConstants::kCLISP		= "sp";
+char const* CommandLineInterface::CLIConstants::kCLIStopSoar	= "stop-soar";
+char const* CommandLineInterface::CLIConstants::kCLIWatch		= "watch";
+char const* CommandLineInterface::CLIConstants::kCLIWatchWMEs	= "watch-wmes";
 
-char const* CLIConstants::kCLIAddWMEUsage		= "Usage:\tadd-wme";
-char const* CLIConstants::kCLICDUsage			= "Usage:\tcd [directory]";
-char const* CLIConstants::kCLIEchoUsage			= "Usage:\techo [string]";
-char const* CLIConstants::kCLIExciseUsage		= "Usage:\texcise production_name\n\texcise -[acdtu]";
-char const* CLIConstants::kCLIInitSoarUsage		= "Usage:\tinit-soar";
-char const* CLIConstants::kCLILearnUsage		= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
-char const* CLIConstants::kCLILSUsage			= "Usage:\tls";
-char const* CLIConstants::kCLINewAgentUsage		= "Usage:\tnew-agent [agent_name]";
-char const* CLIConstants::kCLIPrintUsage		= "Usage:\tprint [-fFin] production_name\n\tprint -[a|c|D|j|u][fFin]\n\tprint [-i] \
+// _   _                         ____                _              _
+//| | | |___  __ _  __ _  ___   / ___|___  _ __  ___| |_ __ _ _ __ | |_ ___
+//| | | / __|/ _` |/ _` |/ _ \ | |   / _ \| '_ \/ __| __/ _` | '_ \| __/ __|
+//| |_| \__ \ (_| | (_| |  __/ | |__| (_) | | | \__ \ || (_| | | | | |_\__ \
+// \___/|___/\__,_|\__, |\___|  \____\___/|_| |_|___/\__\__,_|_| |_|\__|___/
+//                 |___/
+char const* CommandLineInterface::CLIConstants::kCLIAddWMEUsage		= "Usage:\tadd-wme";
+char const* CommandLineInterface::CLIConstants::kCLICDUsage			= "Usage:\tcd [directory]";
+char const* CommandLineInterface::CLIConstants::kCLIEchoUsage			= "Usage:\techo [string]";
+char const* CommandLineInterface::CLIConstants::kCLIExciseUsage		= "Usage:\texcise production_name\n\texcise -[acdtu]";
+char const* CommandLineInterface::CLIConstants::kCLIInitSoarUsage		= "Usage:\tinit-soar";
+char const* CommandLineInterface::CLIConstants::kCLILearnUsage		= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
+char const* CommandLineInterface::CLIConstants::kCLILSUsage			= "Usage:\tls";
+char const* CommandLineInterface::CLIConstants::kCLINewAgentUsage		= "Usage:\tnew-agent [agent_name]";
+char const* CommandLineInterface::CLIConstants::kCLIPrintUsage		= "Usage:\tprint [-fFin] production_name\n\tprint -[a|c|D|j|u][fFin]\n\tprint [-i] \
 [-d <depth>] identifier|timetag|pattern\n\tprint -s[oS]";
-char const* CLIConstants::kCLIPWDUsage			= "Usage:\tpwd";
-char const* CLIConstants::kCLIRunUsage			= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
-char const* CLIConstants::kCLISourceUsage		= "Usage:\tsource filename";
-char const* CLIConstants::kCLISPUsage			= "Usage:\tsp { production }";
-char const* CLIConstants::kCLIStopSoarUsage		= "Usage:\tstop-soar [-s] [reason_string]";
-char const* CLIConstants::kCLIWatchUsage		= "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
+char const* CommandLineInterface::CLIConstants::kCLIPWDUsage			= "Usage:\tpwd";
+char const* CommandLineInterface::CLIConstants::kCLIRunUsage			= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
+char const* CommandLineInterface::CLIConstants::kCLISourceUsage		= "Usage:\tsource filename";
+char const* CommandLineInterface::CLIConstants::kCLISPUsage			= "Usage:\tsp { production }";
+char const* CommandLineInterface::CLIConstants::kCLIStopSoarUsage		= "Usage:\tstop-soar [-s] [reason_string]";
+char const* CommandLineInterface::CLIConstants::kCLIWatchUsage		= "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
 [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>] [-p <switch>] \
 [-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W <detail>]";
-char const* CLIConstants::kCLIWatchWMEsUsage	= "Usage:\twatch-wmes –[a|r] –t <type> pattern\n\twatch-wmes –[l|R] [–t <type>]";
+char const* CommandLineInterface::CLIConstants::kCLIWatchWMEsUsage	= "Usage:\twatch-wmes –[a|r] –t <type> pattern\n\twatch-wmes –[l|R] [–t <type>]";
 
 //  ____                                          _ _     _            ___       _             __
 // / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)_ __   ___|_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
@@ -73,36 +85,15 @@ char const* CLIConstants::kCLIWatchWMEsUsage	= "Usage:\twatch-wmes –[a|r] –t <ty
 //| |__| (_) | | | | | | | | | | | (_| | | | | (_| | |___| | | | |  __/| || | | | ||  __/ |  |  _| (_| | (_|  __/
 // \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|_| |_|\___|___|_| |_|\__\___|_|  |_|  \__,_|\___\___|
 //
-CommandLineInterface::CommandLineInterface(void)
-{
+CommandLineInterface::CommandLineInterface() {
 	BuildCommandMap();
-	m_QuitCalled = false;
 
 	char buf[512];
 	getcwd(buf, 512);
 	m_HomeDirectory = buf;
 
 	m_PrintHandler.SetCLI(this);
-}
-
-// /\/|____                                          _ _     _            ___       _             __
-//|/\// ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)_ __   ___|_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
-//   | |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` | |   | | '_ \ / _ \| || '_ \| __/ _ \ '__| |_ / _` |/ __/ _ \
-//   | |__| (_) | | | | | | | | | | | (_| | | | | (_| | |___| | | | |  __/| || | | | ||  __/ |  |  _| (_| | (_|  __/
-//    \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|_| |_|\___|___|_| |_|\__\___|_|  |_|  \__,_|\___\___|
-//
-CommandLineInterface::~CommandLineInterface(void)
-{
-}
-
-//  ____      _   _              _   ____                 _ _
-// / ___| ___| |_| |    __ _ ___| |_|  _ \ ___  ___ _   _| | |_
-//| |  _ / _ \ __| |   / _` / __| __| |_) / _ \/ __| | | | | __|
-//| |_| |  __/ |_| |__| (_| \__ \ |_|  _ <  __/\__ \ |_| | | |_
-// \____|\___|\__|_____\__,_|___/\__|_| \_\___||___/\__,_|_|\__|
-//
-void CommandLineInterface::GetLastResult(std::string* pResult) {
-	*pResult = m_Result;
+	m_QuitCalled = false;
 }
 
 // ____         ____                                          _
