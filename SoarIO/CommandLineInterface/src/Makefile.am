@@ -11,6 +11,7 @@ cli_GetOpt.cpp\
 cli_addwme.cpp\
 cli_alias.cpp\
 cli_cd.cpp\
+cli_chunknameformat.cpp\
 cli_defaultwmedepth.cpp\
 cli_dirs.cpp\
 cli_echo.cpp\
