@@ -1,5 +1,11 @@
 /* File : sml_ClientInterface.i */
 
+%rename(SetTagNameConst) sml::ElementXML::SetTagName(char const* tagName);
+%rename(AddAttributeConst) sml::ElementXML::AddAttribute(char const* attributeName, char* attributeValue);
+%rename(AddAttributeConstConst) sml::ElementXML::AddAttribute(char const* attributeName, char const* attributeValue);
+%rename(SetCharacterDataConst) sml::ElementXML::SetCharacterData(char const* characterData);
+%rename(SetBinaryCharacterDataConst) sml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
+
 %{
 #include "sml_ClientWMElement.h"
 #include "sml_ClientIntElement.h"
@@ -21,6 +27,4 @@
 %include "../ClientSML/include/sml_ClientKernel.h"
 %include "../ConnectionSML/include/sml_ElementXML.h"
 %include "../ConnectionSML/include/sml_AnalyzeXML.h"
-
-
 
