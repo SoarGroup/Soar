@@ -43,6 +43,18 @@ Usage:	alias name cmd [args..]
 
 The alias command with no arguments lists the current alias database.
 ~~~
+alias: structured output on success:
+  <result>
+    <arg name="alias" type="string">alias</arg>
+    <arg name="aliasedcommand" type="string">aliased_command</arg>
+  </result>
+
+Notes: 
+  * When listing the current alias database, each alias will have the 
+    alias/aliasedcommand pair returned.
+  * An example pair for step (step=run -s 1) would be:
+    <arg name="alias" type="string">step</arg>
+    <arg name="aliasedcommand" type="string">run -s 1</arg>
 ***
 capture-input
 Usage:	capture-input
@@ -109,11 +121,13 @@ Used to remove Soar productions from working memory. A pound sign is printed for
 every production excised. The command must be called with either a specific 
 production name or with a flag that indicates a particular group of productions.
 ~~~
-On success:
+excise: structured output on success:
+
 <result>
   <arg name="count">number_of_productions_excised</arg>
   <arg name="name">production_name</arg>
 </result>
+
 Notes: 
 	Each excised production will have its name returned.
 ***

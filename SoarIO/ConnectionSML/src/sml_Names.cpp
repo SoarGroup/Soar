@@ -111,6 +111,8 @@ char const* sml_Names::kParamPhase				= "phase" ;
 char const* sml_Names::kParamInstance			= "instance" ;
 char const* sml_Names::kParamTimers				= "timers";
 char const* sml_Names::kParamMessage			= "message";
+char const* sml_Names::kParamAlias				= "alias";
+char const* sml_Names::kParamAliasedCommand		= "aliasedcommand";
 
 // Values (these are not case sensitive unlike the rest)
 char const* sml_Names::kTrue	= "true" ;

@@ -15,22 +15,22 @@ Aliases::Aliases() {
 }
 
 bool Aliases::IsAlias(const std::string& command) {
-	return aliasMap.find(command) != aliasMap.end();
+	return m_AliasMap.find(command) != m_AliasMap.end();
 }
 
 bool Aliases::NewAlias(const std::vector<std::string>& substitution, const std::string& commandToSubstitute) {
 	if (IsAlias(commandToSubstitute)) return false;
-	aliasMap[commandToSubstitute] = substitution;
+	m_AliasMap[commandToSubstitute] = substitution;
 	return true;
 }
 
 bool Aliases::RemoveAlias(const std::string& command) {
-	return aliasMap.erase(command) ? true : false;
+	return m_AliasMap.erase(command) ? true : false;
 }
 
 std::string Aliases::List() {
 	std::string result;
-	for (AliasMapIter i = aliasMap.begin(); i != aliasMap.end(); ++i) {
+	for (AliasMapIter i = m_AliasMap.begin(); i != m_AliasMap.end(); ++i) {
 		result += i->first;
 		result += '=';
 		for (vector<string>::iterator j = i->second.begin(); j != i->second.end(); ++j) {
@@ -42,12 +42,20 @@ std::string Aliases::List() {
 	return result;
 }
 
+AliasMap::const_iterator Aliases::GetAliasMapBegin() {
+	return m_AliasMap.begin();
+}
+
+AliasMap::const_iterator Aliases::GetAliasMapEnd() {
+	return m_AliasMap.end();
+}
+
 bool Aliases::Translate(vector<string>& argv) {
 
 	if (!IsAlias(argv[0])) return false;
 
 	// Copy the alias out of the alias map
-	vector<string> newArgv = (aliasMap.find(argv[0]))->second;
+	vector<string> newArgv = (m_AliasMap.find(argv[0]))->second;
 
 	// Add the args from the passed argv to the alias
 	vector<string>::iterator vIter = argv.begin();

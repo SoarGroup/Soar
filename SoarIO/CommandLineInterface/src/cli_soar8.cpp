@@ -55,7 +55,7 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 bool CommandLineInterface::DoSoar8(bool query, bool soar8) {
 	unused(query);
 	unused(soar8);
-
+	m_Error.SetError(CLIError::kNotImplemented);
 	return false;
 }
 

@@ -17,15 +17,20 @@ namespace cli {
 
 		Aliases();
 		
+
 		bool IsAlias(const std::string& command);
 		bool NewAlias(const std::vector<std::string>& substitution, const std::string& commandToSubstitute);
 		bool RemoveAlias(const std::string& command);
-		std::string List();
+
 		bool Translate(std::vector<std::string>& argv);
-		
+
+		AliasMap::const_iterator GetAliasMapBegin();
+		AliasMap::const_iterator GetAliasMapEnd();
+		std::string List();
+
 	private:
 		
-		AliasMap aliasMap;
+		AliasMap m_AliasMap;
 	};
 
 } // namespace cli
