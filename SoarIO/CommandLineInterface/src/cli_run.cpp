@@ -21,11 +21,9 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		{"decision",	0, 0, 'd'},
 		{"elaboration",	0, 0, 'e'},
 		{"forever",		0, 0, 'f'},
-		{"operator",	0, 0, 'O'},
 		{"output",		0, 0, 'o'},
 		{"phase",		0, 0, 'p'},
-		{"self",		0, 0, 'S'},
-		{"state",		0, 0, 's'},
+		{"self",		0, 0, 's'},
 		{0, 0, 0, 0}
 	};
 
@@ -35,7 +33,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 	unsigned int options = 0;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "defoOpsS", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "defops", longOptions, 0);
 		if (option == -1) break;
 
 		switch (option) {
@@ -48,20 +46,14 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 			case 'f':
 				options |= OPTION_RUN_FOREVER;
 				break;
-			case 'O':
-				options |= OPTION_RUN_OPERATOR;
-				break;
 			case 'o':
 				options |= OPTION_RUN_OUTPUT;
 				break;
 			case 'p':
 				options |= OPTION_RUN_PHASE;
 				break;
-			case 'S':
+			case 'sS':
 				options |= OPTION_RUN_SELF;
-				break;
-			case 's':
-				options |= OPTION_RUN_STATE;
 				break;
 			case '?':
 				return m_Error.SetError(CLIError::kUnrecognizedOption);
@@ -95,11 +87,6 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	// TODO: structured output
 
 	if (!RequireAgent(pAgent)) return false;
-
-	// TODO: Rather tricky options
-	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_STATE)) {
-		return m_Error.SetError(CLIError::kOptionNotImplemented);
-	}
 
 	// Default run type is forever
 	egSKIRunType runType = gSKI_RUN_FOREVER;

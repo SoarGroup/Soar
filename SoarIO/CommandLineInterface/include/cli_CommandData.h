@@ -57,16 +57,13 @@ namespace cli {
 	const unsigned int OPTION_RUN_DECISION     = 0x01;
 	const unsigned int OPTION_RUN_ELABORATION  = 0x02;
 	const unsigned int OPTION_RUN_FOREVER      = 0x04;
-	const unsigned int OPTION_RUN_OPERATOR     = 0x08;
-	const unsigned int OPTION_RUN_OUTPUT       = 0x10;
-	const unsigned int OPTION_RUN_PHASE        = 0x20;
-	const unsigned int OPTION_RUN_SELF         = 0x40;
-	const unsigned int OPTION_RUN_STATE        = 0x80;
+	const unsigned int OPTION_RUN_OUTPUT       = 0x08;
+	const unsigned int OPTION_RUN_PHASE        = 0x10;
+	const unsigned int OPTION_RUN_SELF         = 0x20;
 
-	//const unsigned int OPTION_STATS_MEMORY	= 0x01;
-	//const unsigned int OPTION_STATS_RETE		= 0x02;
-	//const unsigned int OPTION_STATS_STATS		= 0x04;
-	//const unsigned int OPTION_STATS_SYSTEM	= 0x08;
+	const unsigned int OPTION_STATS_MEMORY	= 0x01;
+	const unsigned int OPTION_STATS_RETE	= 0x02;
+	const unsigned int OPTION_STATS_SYSTEM	= 0x04;
 
 	const unsigned int OPTION_WATCH_DECISIONS		= 0x001;
 	const unsigned int OPTION_WATCH_PHASES			= 0x002;
