@@ -108,7 +108,6 @@ public:
 			m_pDiskBeneathAsInteger	= 0;
 			m_pDiskBeneathAsString	= 0;
 		m_pDiskIdentifier	= 0;
-			m_pSize			= 0;
 	}
 
 	void SetDiskBeneath(Disk* inDisk, Tower* inTower)
@@ -201,8 +200,7 @@ private:
 				m_pDiskBeneathAsInteger = 0;
 			}
 		
-		m_pDiskIdentifier	= pWMemory->CreateIdWME(pWMemory->GetILink(), k_diskIdentifierString);
-			m_pSize			= pWMemory->CreateIntWME(m_pDiskIdentifier, k_diskSizeString, m_size);
+		m_pDiskIdentifier	= pWMemory->CreateIntWME(pWMemory->GetILink(), k_diskIdentifierString, m_size);
 
 		Commit();
 		holdsNeedsToBeUpdated = false;
@@ -216,8 +214,7 @@ private:
 		IntElement* m_pDiskBeneathAsInteger;	// size/name of disk beneath this on
 		StringElement* m_pDiskBeneathAsString;	// will be "none" when this disk has nothing beneath it
 
-	SoarId* m_pDiskIdentifier;
-		IntElement* m_pSize;					//size and name of disk
+	IntElement* m_pDiskIdentifier;				//size and name of disk
 
 	int m_size;
 	Disk* pActualDiskBeneath;
