@@ -64,8 +64,9 @@ CommandLineInterface::CommandLineInterface() {
 	getcwd(buf, 512);
 	m_HomeDirectory = buf;
 
-	// Give print handler a reference to us
-	m_PrintHandler.SetCLI(this);
+	// Give print handlers a reference to us
+	m_ResultPrintHandler.SetCLI(this);
+	m_LogPrintHandler.SetCLI(this);
 
 	// Initialize other members
 	m_QuitCalled = false;
@@ -74,10 +75,17 @@ CommandLineInterface::CommandLineInterface() {
 	m_SourceError = false;
 	m_SourceDepth = 0;
 	m_SourceDirDepth = 0;
+	m_pLogFile = 0;
 }
 
 CommandLineInterface::~CommandLineInterface() {
 	delete m_pGetOpt;
+	if (m_pLogFile) {
+		if (m_pAgent) {
+			m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
+		}
+		delete m_pLogFile;
+	}
 }
 
 // ____        _ _     _  ____                                          _ __  __
@@ -88,10 +96,10 @@ CommandLineInterface::~CommandLineInterface() {
 //                                                                                    |_|
 void CommandLineInterface::BuildCommandMap() {
 
-	m_CommandMap[Constants::kCLIAddWME]				= ParseAddWME;
 	m_CommandMap[Constants::kCLICD]					= ParseCD;
 	m_CommandMap[Constants::kCLIEcho]				= ParseEcho;
 	m_CommandMap[Constants::kCLIExcise]				= ParseExcise;
+	m_CommandMap[Constants::kCLIHelp]				= ParseHelp;
 	m_CommandMap[Constants::kCLIInitSoar]			= ParseInitSoar;
 	m_CommandMap[Constants::kCLILearn]				= ParseLearn;
 	m_CommandMap[Constants::kCLILog]				= ParseLog;
@@ -173,7 +181,12 @@ bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
 	// Check for help flags
 	if (CheckForHelp(argv)) {
 		// Help flags found, add help to line, return true
-		m_Result += m_Constants.GetUsageFor(argv[0]);
+		string output;
+		if (m_Constants.GetUsageFor(argv[0], output)) {
+			m_Result += output;
+		} else {
+			m_Result += Constants::kCLINoUsageInfo;
+		}
 		return true;
 	}
 
@@ -291,27 +304,6 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 //	m_Result += "TODO: ";
 //	return true;
 //}
-
-// ____                        _       _     ___        ____  __ _____
-//|  _ \ __ _ _ __ ___  ___   / \   __| | __| \ \      / /  \/  | ____|
-//| |_) / _` | '__/ __|/ _ \ / _ \ / _` |/ _` |\ \ /\ / /| |\/| |  _|
-//|  __/ (_| | |  \__ \  __// ___ \ (_| | (_| | \ V  V / | |  | | |___
-//|_|   \__,_|_|  |___/\___/_/   \_\__,_|\__,_|  \_/\_/  |_|  |_|_____|
-//
-bool CommandLineInterface::ParseAddWME(std::vector<std::string>& argv) {
-	return DoAddWME();
-}
-
-// ____          _       _     ___        ____  __ _____
-//|  _ \  ___   / \   __| | __| \ \      / /  \/  | ____|
-//| | | |/ _ \ / _ \ / _` |/ _` |\ \ /\ / /| |\/| |  _|
-//| |_| | (_) / ___ \ (_| | (_| | \ V  V / | |  | | |___
-//|____/ \___/_/   \_\__,_|\__,_|  \_/\_/  |_|  |_|_____|
-//
-bool CommandLineInterface::DoAddWME() {
-	m_Result += "TODO: add-wme";
-	return true;
-}
 
 // ____                      ____ ____
 //|  _ \ __ _ _ __ ___  ___ / ___|  _ \
@@ -519,6 +511,58 @@ void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter)
 	pProdIter->Release();
 }
 
+bool CommandLineInterface::ParseHelp(std::vector<std::string>& argv) {
+	if (argv.size() > 2) {
+		return HandleSyntaxError(Constants::kCLIHelp);
+	}
+
+	if (argv.size() == 2) {
+		return DoHelp(argv[1]);
+	}
+	return DoHelp(string());
+}
+
+bool CommandLineInterface::DoHelp(const string& command) {
+	string output;
+	if (command.size()) {
+		if (!m_Constants.GetUsageFor(command, output)) {
+			m_Result += "Help for command '" + command + "' not found.";
+			return false;
+		}
+		m_Result += output;
+		return true;
+	}
+	m_Result += "Help is available for the following commands:\n";
+	list<string> commandList = m_Constants.GetCommandList();
+	list<string>::const_iterator iter = commandList.begin();
+
+	int i = 0;
+	int tabs;
+	while (iter != commandList.end()) {
+		m_Result += *iter;
+		if (m_CommandMap.find(*iter) == m_CommandMap.end()) {
+			m_Result += '*';
+		} else {
+			m_Result += ' ';
+		}
+		tabs = (40 - (*iter).length() - 2) / 8; 
+		if (i % 2) {
+			m_Result += "\n";
+		} else {
+			do {
+				m_Result += '\t';
+			} while (--tabs > 0);
+		}
+		++iter;
+		++i;
+	}
+	if (i % 2) {
+		m_Result += '\n';
+	}
+	m_Result += "Type 'help' followed by the command name for help on a specific command.\n";
+	m_Result += "A Star (*) indicates the command is not yet implemented.";
+	return true;
+}
 
 // ____                     ___       _ _   ____
 //|  _ \ __ _ _ __ ___  ___|_ _|_ __ (_) |_/ ___|  ___   __ _ _ __
@@ -661,7 +705,62 @@ bool CommandLineInterface::DoLearn(const unsigned short options) {
 //|_|   \__,_|_|  |___/\___|_____\___/ \__, |
 //                                     |___/
 bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
-	return DoLog(false);
+	static struct GetOpt::option longOptions[] = {
+		{"append",	0, 0, 'a'},
+		{"close",	0, 0, 'c'},
+		{"disable",	0, 0, 'c'},
+		{"off",		0, 0, 'c'},
+		{0, 0, 0, 0}
+	};
+
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
+
+	int option;
+	unsigned short options = 0;
+	bool append = false;
+	bool close = false;
+
+	for (;;) {
+		option = m_pGetOpt->GetOpt_Long(argv, "ac", longOptions, 0);
+		if (option == -1) {
+			break;
+		}
+
+		switch (option) {
+			case 'a':
+				append = true;
+				break;
+			case 'c':
+				close = true;
+				break;
+			case '?':
+				return HandleSyntaxError(Constants::kCLILog, "Unrecognized option.\n");
+			default:
+				return HandleGetOptError(option);
+		}
+	}
+
+	// Only one non-option argument allowed, count
+	if (GetOpt::optind == argv.size() - 1) {
+
+		// But not with the close option
+		if (close) {
+			return HandleSyntaxError(Constants::kCLILog, "No arguments when disabling.\n");
+		}
+
+		return DoLog(append, argv[GetOpt::optind].c_str());
+
+	} else if ((unsigned)GetOpt::optind < argv.size()) {
+		return HandleSyntaxError(Constants::kCLILog);
+	}
+
+	// No appending without a filename, and if we got here, there is no filename
+	if (append) {
+		return HandleSyntaxError(Constants::kCLILog, "Append requires a filename.\n");
+	}
+
+	return DoLog(close);
 }
 
 // ____        _
@@ -670,8 +769,59 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 //| |_| | (_) | |__| (_) | (_| |
 //|____/ \___/|_____\___/ \__, |
 //                        |___/
-bool CommandLineInterface::DoLog(bool close, const char* filename) {
-	m_Result += "TODO: log";
+bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
+
+	// Presence of a filename means open, absence means close or query
+	if (pFilename) {
+		// Open a file
+		if (m_pLogFile) {
+			// Unless one is already opened
+			m_Result += "Close log file '" + m_LogFilename + "' first.";
+			return false;
+		}
+
+		// Create the stream
+		if (option) {
+			// Option flag means append in presence of filename
+			m_pLogFile = new ofstream(pFilename, ios_base::app);
+		} else {
+			m_pLogFile = new ofstream(pFilename);
+		}
+
+		if (!m_pLogFile) {
+			// Creation and opening was not successful
+			m_Result += "Failed to open file for logging.";
+			return false;
+		}
+
+		// Logging opened, add listener and save filename since we can't get it from ofstream
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
+		m_LogFilename = pFilename;
+
+	} else if (option) {		
+		// In absence of filename, option means close
+		if (!m_pLogFile) {
+			// Can't close when we're not logging to begin with
+			m_Result += "No log is opened.";
+			return false;
+		}
+
+		// Remove the listener and close the file
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
+		delete m_pLogFile;
+		m_pLogFile = 0;
+
+		// Forget the filename
+		m_LogFilename.clear();
+
+	}
+
+	// Query at end of successful command, or by default
+	if (!m_pLogFile) {
+		m_Result = "Log file closed.";
+	} else {
+		m_Result += "Log file '" + m_LogFilename + "' opened.";
+	}
 	return true;
 }
 
@@ -988,9 +1138,9 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 
 	// Check for stack print
 	if (options & OPTION_PRINT_STACK) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		pKernelHack->PrintStackTrace(m_pAgent, (options & OPTION_PRINT_STATES) ? true : false, (options & OPTION_PRINT_OPERATORS) ? true : false);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 
@@ -1003,43 +1153,43 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options & OPTION_PRINT_ALL) {
 		// TODO: Find out what is arg is for
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, USER_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, CHUNK_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_CHUNKS) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, CHUNK_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_DEFAULTS) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_JUSTIFICATIONS) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_USER) {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, USER_PRODUCTION_TYPE);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 
 	// Default to symbol print
-	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	pKernelHack->PrintSymbol(m_pAgent, const_cast<char*>(arg.c_str()), name, filename, internal, full, depth);
-	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	return true;
 }
 
@@ -1268,15 +1418,15 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 			return false;
 		}
 
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		runResult = m_pAgent->RunInClientThread(runType, count, m_pError);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	} else {
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         m_pKernel->GetAgentManager()->ClearAllInterrupts();
         m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
 		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
-		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	}
 
 	// Check for error
@@ -1898,7 +2048,12 @@ bool CommandLineInterface::HandleSyntaxError(const char* command, const char* de
 	if (details) {
 		m_Result += details;
 	}
-	m_Result += m_Constants.GetUsageFor(command);
+	string output;
+	if (m_Constants.GetUsageFor(command, output)) {
+		m_Result += output;
+	} else {
+		m_Result += Constants::kCLINoUsageInfo;
+	}
 	return false;
 }
 
@@ -1927,64 +2082,4 @@ bool CommandLineInterface::HandleGetOptError(char option) {
 	m_Result += option;
 	m_Result += "'!";
 	return false;
-}
-
-// _                _   _                 _ _
-//| |    ___   __ _| | | | __ _ _ __   __| | | ___ _ __
-//| |   / _ \ / _` | |_| |/ _` | '_ \ / _` | |/ _ \ '__|
-//| |__| (_) | (_| |  _  | (_| | | | | (_| | |  __/ |
-//|_____\___/ \__, |_| |_|\__,_|_| |_|\__,_|_|\___|_|
-//            |___/
-CommandLineInterface::LogHandler::LogHandler() {
-
-}
-
-// ___     _                      _
-//|_ _|___| |    ___   __ _  __ _(_)_ __   __ _
-// | |/ __| |   / _ \ / _` |/ _` | | '_ \ / _` |
-// | |\__ \ |__| (_) | (_| | (_| | | | | | (_| |
-//|___|___/_____\___/ \__, |\__, |_|_| |_|\__, |
-//                    |___/ |___/         |___/
-bool CommandLineInterface::LogHandler::IsLogging() {
-	return m_pFile ? true : false;
-}
-
-// ____  _             _   _                      _
-/// ___|| |_ __ _ _ __| |_| |    ___   __ _  __ _(_)_ __   __ _
-//\___ \| __/ _` | '__| __| |   / _ \ / _` |/ _` | | '_ \ / _` |
-// ___) | || (_| | |  | |_| |__| (_) | (_| | (_| | | | | | (_| |
-//|____/ \__\__,_|_|   \__|_____\___/ \__, |\__, |_|_| |_|\__, |
-//                                    |___/ |___/         |___/
-bool CommandLineInterface::LogHandler::StartLogging(const char* pFilename) {
-	m_pFile = new ofstream(pFilename);
-	if (!m_pFile) {
-		return false;
-	}
-
-	if (!m_pFile->is_open()) {
-		return false;
-	}
-	return true;
-}
-
-// _____           _ _                      _
-//| ____|_ __   __| | |    ___   __ _  __ _(_)_ __   __ _
-//|  _| | '_ \ / _` | |   / _ \ / _` |/ _` | | '_ \ / _` |
-//| |___| | | | (_| | |__| (_) | (_| | (_| | | | | | (_| |
-//|_____|_| |_|\__,_|_____\___/ \__, |\__, |_|_| |_|\__, |
-//                              |___/ |___/         |___/
-void CommandLineInterface::LogHandler::EndLogging() {
-	HandleEvent(gSKIEVENT_PRINT, 0, "*** Log file closed ***");
-	m_pFile->close();
-	delete m_pFile;
-}
-
-// _   _                 _ _      _____                 _
-//| | | | __ _ _ __   __| | | ___| ____|_   _____ _ __ | |_
-//| |_| |/ _` | '_ \ / _` | |/ _ \  _| \ \ / / _ \ '_ \| __|
-//|  _  | (_| | | | | (_| | |  __/ |___ \ V /  __/ | | | |_
-//|_| |_|\__,_|_| |_|\__,_|_|\___|_____| \_/ \___|_| |_|\__|
-//
-void CommandLineInterface::LogHandler::HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) {
-	m_pFile->write(msg, strlen(msg));
 }

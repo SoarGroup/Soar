@@ -1,32 +1,155 @@
+# Command line usage and specification document.
+# Author: Jonathan Voigt, http://sitemaker.umich.edu/soar/
+#
+# Lines starting with # and blank lines are ignored.
+# Lines starting with * separate commands.
+# The first line of a command section is the command name.
+#
+# All commands have a --help/-h option to print their usage information.
+#
+# Update help.soar when adding/removing commands to keep the test in sync.
+#
 add-wme
 Usage:	add-wme
 ***
+capture-input
+Usage:	capture-input
+***
 cd
 Usage:	cd [directory]
+Change the current working directory.
+Options and arguments:
+  directory 		The directory to change in to, can be relative or full
+  			path.
+***
+chunk-name-format
+Usage:	chunk-name-format [-sl] -p [<prefix>]
+	chunk-name-format [-sl] -c [<count>]
+  -c, --count
+  count
+  -l, --long
+  -p, --prefix
+  prefix
+  -s, --short
+***
+default-wme-depth
+Usage:	default-wme-depth [depth]
+  depth
 ***
 echo
 Usage:	echo [string]
+  string		The string to print back.
 ***
 excise
 Usage:	excise production_name
 	excise -[acdtu]
+  -a, --all		Excise everything.
+  -c, --chunks		Excise chunks and justifications
+  -d, --default		Excise default productions.
+  -t, --task		Excise chunks, justifications, and user productions.
+  -u, --user		Excise user productions.
+  production_name	Excise a specific production with this name.
+***
+explain-backtraces
+Usage:	explain-backtraces
+***
+firing-counts
+Usage:	firing-counts [n|production_name]
+  n
+  production_name
+***
+format-watch
+Usage:	format-watch -a[so] restriction format [restriction format]...
+	format-watch -r[so] restriction format [restriction format]...
+  -a, --add
+  -o, --object
+  -r, --remove
+  -s, --stack
+  format
+  restriction
+***
+gds-print
+Usage:	gds-print
+***
+help
+Usage:	help [command_name]
+  command_name		Print online help for this command.
+***
+indifferent-selection
+Usage:	indifferent-selection
 ***
 init-soar
 Usage:	init-soar
 ***
+internal-symbols
+Usage:	internal-symbols
+***
+interrupt
+Usage:	interrupt
+***
+io
+Usage:	io
+***
 learn
 Usage:	learn [-l]
 	learn -[d|e|E|o][ab]
+  -a, --all-levels
+  -b, --bottom-up
+  -d, --disable, --off
+  -e, --enable, --on
+  -E, --Except
+  -l, --list
+  -o, --only
 ***
 log
-Usage:	log [filename]
-	log -d
+Usage:	log [-a] [filename]
+	log -c
+  -a, --append		Append log to the end of the specified file.
+  -c, --close, 		Stop logging and close the current log.
+      --disable, --off
 ***
 ls
 Usage:	ls
 ***
+matches
+Usage:	matches [-[a|r]12cntw]
+	matches [-012cntw] production_name
+  -a, --assertions
+  -r, --retractions
+  -0, -n, -c, --names
+      --count
+  -1, -t, --timetags
+  -2, -w, --wmes
+  production_name
+***
+max-chunks
+Usage:	max-chunks
+***
+max-elaborations
+Usage:	max-elaborations
+***
+max-nil-output-cycles
+Usage:	max-nil-output-cycles
+***
+memories
+Usage:	memories [-cdju|production_name|n]
+  -c, --chunks
+  -d, --default
+  -j, --justifications
+  -u, --user
+  production_name
+  n
+***
 multi-attributes
 Usage:	multi-attributes [attribute [n]]
+  attribute
+  n
+***
+numeric-indifferent-mode
+Usage:	numeric-indifferent-mode
+***
+o-support-mode
+Usage:	o-support-mode
 ***
 popd
 Usage:	popd
@@ -36,9 +159,53 @@ Usage:	print [-fFin] production_name
 	print -[a|c|D|j|u][fFin]
 	print [-i] [-d <depth>] identifier|timetag|pattern
 	print -s[oS]
+  -a, --all
+  -c, --chunks
+  -d, --depth
+  -D, --defaults
+  -f, --full
+  -F, --filename
+  -i, --internal
+  -j, --justifications
+  -n, --name
+  -o, --operators
+  -s, --stack
+  -S, --states
+  -u, --user
+  depth
+  identifier
+  pattern
+  production_name
+  timetag
+***
+preferences
+Usage:	preferences [-0123nNtw] [id] [attribute]
+  -0, -n, --none
+  -1, -N, --names
+  -2, -t, --timetags
+  -3, -w, --wmes
+  id
+  attribute
+***
+production-find
+Usage:	production-find [-clnrs] pattern
+  -c, --chunks
+  -l, --lhs
+  -n, --nochunks
+  -r, --rhs
+  -s, --show-bindings
+  pattern
 ***
 pushd
 Usage:	pushd directory
+  directory
+***
+pwatch
+Usage:	pwatch [-d|e] [production name]
+  -d, --disable, --off
+  -e, --enable, --on
+  production_name
+
 ***
 pwd
 Usage:	pwd
@@ -46,26 +213,119 @@ Usage:	pwd
 quit
 Usage:	quit
 ***
+remove-wme
+Usage:	remove-wme
+***
+replay-input
+Usage:	replay-input
+***
+rete-net
+Usage:	rete-net
+***
 run
 Usage:	run [count]
 	run -[d|e|p][fs] [count]
 	run -[S|o|O][fs] [count]
+  -d, --decision
+  -e, --elaboration
+  -f, --forever
+  -o, --operator
+  -O, --output
+  -p, --phase
+  -s, --self
+  -S, --state
+  count
+***
+set-default-depth
+Usage:	set-default-depth
+***
+soar8
+Usage:	soar8
 ***
 source
 Usage:	source filename
+  filename
 ***
 sp
 Usage:	sp { production }
 ***
+stats
+Usage:	stats [-s <stat>] [-m <resource>] [-r <rtype_qualifier>]
+  -m, --memory
+  -r, --rete
+  -s, --system
+  resource
+  rtype_qualifier
+  stat
+***
 stop-soar
 Usage:	stop-soar [-s] [reason_string]
+  -s, --self
+  reason_string
 ***
 time
 Usage:	time command [arguments]
+  command
+  arguments
+***
+waitsnc
+Usage:	waitsnc
+***
+warnings
+Usage:	warnings [-ed]
+  -e, --enable, --on
+  -d, --disable, --off
 ***
 watch
-Usage:	watch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d 
-<switch>] [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>]
-[-p <switch>] [-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W 
-<detail>]
+Usage:	watch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>]
+	[-d <switch>] [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>]
+	[-L <switch>] [-p <switch>] [-P <switch>] [-r <switch>] [-u <switch>]
+	[-w <switch>] [-W <detail>]
+  -a, --aliases
+  -b, --backtracing
+  -c, --chunks
+  -d, --decisions
+  -D, --default-productions
+  -i, --indifferent-selection
+  -j, --justifications
+  -l, --learning
+  -L, --loading
+  -n, --none
+  -p, --phases
+  -P, --productions
+  -r, --preferences
+  -u, --user-productions
+  -w, --wmes
+  -W, --wme-detail
+  detail			Integer from 0-2:
+				  * 0: Off/lowest detail
+				  * 1: On/medium detail
+				  * 2: On/highest detail
+  level				Integer from 0-5:
+  				  * 0: Watch nothing, equivalent to -n
+  				  * 1: Watch decisions inclusive
+  				  * 2: Watch phases and decisions
+  				  * 3: Watch productions, phases, and 
+  				       decisions
+  				  * 4: Watch wmes, productions, phases,
+  				       and decisions
+  				  * 5: Watch preferences, wmes, productions,
+  				       phases, and decisions
+  switch			Switch argument:
+  				  * 0: Turn watches for this option off
+  				  * 1: Turn watches for this option on
+***
+watch-wmes
+Usage:	watch-wmes -[a|r] -t <type> pattern
+	watch-wmes -[l|R] [-t <type>]
+  -a, --add-filter
+  -l, --list-filter
+  -r, --remove-filter
+  -R, --reset-filter
+***
+verbose
+Usage:	verbose
+***
+version
+Usage:	version
 ***

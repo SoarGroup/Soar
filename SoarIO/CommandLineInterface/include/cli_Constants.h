@@ -3,10 +3,13 @@
 
 #include <string>
 #include <map>
+#include <list>
 
 namespace cli {
 
 	typedef std::map<std::string, std::string> UsageMap;
+	typedef std::map<std::string, std::string>::iterator UsageMapIter;
+	typedef std::map<std::string, std::string>::const_iterator UsageMapConstIter;
 
 	// A class containing the constants used by CommandLineInterface
 	class Constants
@@ -15,18 +18,17 @@ namespace cli {
 
 		Constants();
 		~Constants();
-
-		std::string GetUsageFor(const std::string& command);
+		
+		std::list<std::string> GetCommandList();
+		bool GetUsageFor(const std::string& command, std::string& output);
 
 		static char const* kCLISyntaxError;
+		static char const* kCLINoUsageInfo;
 
-		static char const* kCLIAddWME;
 		static char const* kCLICD;
-		static char const* kCLIDir;
 		static char const* kCLIEcho;
 		static char const* kCLIExcise;
-		static char const* kCLIExit;
-		static char const* kCLIInit;
+		static char const* kCLIHelp;
 		static char const* kCLIInitSoar;
 		static char const* kCLILearn;
 		static char const* kCLILog;

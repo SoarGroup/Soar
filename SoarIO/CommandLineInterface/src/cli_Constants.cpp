@@ -7,14 +7,12 @@ using namespace cli;
 using namespace std;
 
 char const* Constants::kCLISyntaxError		= "Command syntax error.";
+char const* Constants::kCLINoUsageInfo		= "Usage information not found for that command.";
 
-char const* Constants::kCLIAddWME			= "add-wme";
 char const* Constants::kCLICD				= "cd";			
-char const* Constants::kCLIDir				= "dir";		// alias for ls
 char const* Constants::kCLIEcho				= "echo";
 char const* Constants::kCLIExcise			= "excise";
-char const* Constants::kCLIExit				= "exit";		// alias for quit
-char const* Constants::kCLIInit				= "init";		// alias for init-soar
+char const* Constants::kCLIHelp				= "help";
 char const* Constants::kCLIInitSoar			= "init-soar";
 char const* Constants::kCLILearn			= "learn";
 char const* Constants::kCLILog				= "log";
@@ -46,19 +44,38 @@ Constants::Constants() {
 Constants::~Constants() {
 	// TODO: empty map?
 }
-std::string Constants::GetUsageFor(const std::string& command) {
-	if (m_UsageFileAvailable) {
-		return m_UsageMap[command];
 
+std::list<std::string> Constants::GetCommandList() {
+	UsageMapConstIter iter = m_UsageMap.begin();
+	std::list<std::string> result;
+	while (iter != m_UsageMap.end()) {
+		result.push_back(iter->first);
+		++iter;
+	}
+	return result;
+}
+
+bool Constants::GetUsageFor(const std::string& command, std::string& output) {
+	if (m_UsageFileAvailable) {
+		if (m_UsageMap.find(command) == m_UsageMap.end()) {
+			return false;
+		}
+		output = m_UsageMap[command];
+		return true;
 	}
 
-	return "Help not available (no usage.txt file found).";
+	output = "Help not available (no usage.txt file found).";
+	return false;
 }
 
 void Constants::LoadUsage(ifstream& usageFile) {
 
 	string line;
 	while (getline(usageFile, line)) {
+		if (!line.length() || (line[0] == '#')) {
+			continue;
+		}
+
 		string debug = GetUsage(usageFile);
 		if (line.length()) {
 			m_UsageMap[line] = debug;
@@ -69,12 +86,18 @@ void Constants::LoadUsage(ifstream& usageFile) {
 string Constants::GetUsage(ifstream& usageFile) {
 	string line, usage;
 	while (getline(usageFile, line)) {
-		if (line == "***") {
-			break;
+
+		if (line.length()) {
+			if (line[0] == '#') {
+				continue;
+			}
+			if (line[0] == '*') {
+				break;
+			}
 		}
 		usage += line;
 		usage += '\n';
 	}
-	// TODO: remove extra newline on end
+	// TODO: remove extra newline on end?
 	return usage;
 }

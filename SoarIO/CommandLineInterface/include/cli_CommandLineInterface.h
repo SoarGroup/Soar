@@ -16,6 +16,8 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <stack>
+#include <fstream>
 
 // Local includes
 #include "cli_CommandData.h"
@@ -79,15 +81,6 @@ public:
 	bool IsQuitCalled() { return m_QuitCalled; }
 
 	/*************************************************************
-	* @brief add-wme command, see command line spec document for details
-	*************************************************************/
-	bool ParseAddWME(std::vector<std::string>& argv);
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool DoAddWME();
-
-	/*************************************************************
 	* @brief cd command, see command line spec document for details
 	*************************************************************/
 	bool ParseCD(std::vector<std::string>& argv);
@@ -120,6 +113,15 @@ public:
 	bool DoExcise(const unsigned short options, int optind, std::vector<std::string>& argv);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseHelp(std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoHelp(const std::string& command);
+
+	/*************************************************************
 	* @brief init-soar command, see command line spec document for details
 	*************************************************************/
 	bool ParseInitSoar(std::vector<std::string>& argv);
@@ -147,7 +149,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoLog(bool close, const char* filename = 0);
+	bool DoLog(bool option, const char* filename = 0);
 
 	/*************************************************************
 	* @brief ls/dir command, see command line spec document for details
@@ -278,31 +280,39 @@ protected:
 		PrintHandler() { m_pCLI = 0; }
 
 		void SetCLI(CommandLineInterface* pCLI) { m_pCLI = pCLI; }
-		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) {
-			// Simply append to message result
-			m_pCLI->AppendToResult(msg);
-		}
+		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) = 0;
 	protected:
 		CommandLineInterface*	m_pCLI;	// pointer to command line interface
 	};
 
-	// Handler for logging to a file
-	class LogHandler : public gSKI::IPrintListener
+	// ResultPrint handler for result string additions
+	class ResultPrintHandler : public PrintHandler
 	{
 	public:
-		LogHandler();
+		ResultPrintHandler() {}
 
-		bool IsLogging();
-		bool StartLogging(const char* pFilename);
-		void EndLogging();
+		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) {
+			if (!m_pCLI) return;
 
-		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg);
-
-	protected:
-		std::ofstream*	m_pFile;	// pointer to file
+			// Simply append to message result
+			m_pCLI->AppendToResult(msg);
+		}
 	};
 
-	friend class PrintHandler;	// Allows calling of AppendToResult
+	// Log Print handler for log printing
+	class LogPrintHandler : public PrintHandler
+	{
+	public:
+		LogPrintHandler() {}
+
+		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) {
+			if (!m_pCLI) return;
+			if (!m_pCLI->m_pLogFile) return;
+			m_pCLI->m_pLogFile->write(msg, (std::streamsize)strlen(msg));
+		}
+	};
+
+	friend class PrintHandler;			// Allows calling of AppendToResult and log writing
 	friend class sml::KernelSML;		// Allows calling of SetKernel
 
 	/*************************************************************
@@ -378,20 +388,23 @@ protected:
 	*************************************************************/
 	bool HandleGetOptError(char option);
 
-	Constants		m_Constants;		// Pointer to constants management object
-	GetOpt*			m_pGetOpt;			// Pointer to GetOpt utility class
-	CommandMap		m_CommandMap;		// Mapping of command names to function pointers
-	gSKI::IKernel*	m_pKernel;			// Pointer to the current gSKI kernel
-	gSKI::IAgent*	m_pAgent;			// Pointer to the gSKI agent the command is valid for
-	std::string		m_Result;			// String output from the command
-	gSKI::Error*	m_pError;			// gSKI error output from calls made to process the command
-	std::string		m_HomeDirectory;	// The initial working directory, server side
-	PrintHandler	m_PrintHandler;		// The print callback handler, used for catching kernel/gSKI output
-	bool			m_QuitCalled;		// True after DoQuit is called
-	StringStack		m_DirectoryStack;	// Directory stack for pushd/popd
-	bool			m_SourceError;		// Used to control debug printing for source command errors
-	int				m_SourceDepth;		// Depth of source command calls.
-	int				m_SourceDirDepth;	// Depth of directory stack since source command.
+	Constants			m_Constants;			// Pointer to constants management object
+	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
+	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
+	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
+	gSKI::IAgent*		m_pAgent;				// Pointer to the gSKI agent the command is valid for
+	std::string			m_Result;				// String output from the command
+	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command
+	std::string			m_HomeDirectory;		// The initial working directory, server side
+	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result
+	LogPrintHandler		m_LogPrintHandler;		// The print callback handler, used for catching kernel/gSKI output and writing it to a log
+	bool				m_QuitCalled;			// True after DoQuit is called
+	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
+	bool				m_SourceError;			// Used to control debug printing for source command errors
+	int					m_SourceDepth;			// Depth of source command calls.
+	int					m_SourceDirDepth;		// Depth of directory stack since source command.
+	std::string			m_LogFilename;			// Used for logging to a file.
+	std::ofstream*		m_pLogFile;				// The log file stream
 };
 
 } // namespace cli
