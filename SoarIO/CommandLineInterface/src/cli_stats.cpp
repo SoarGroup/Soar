@@ -5,6 +5,7 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
+#include "cli_GetOpt.h"
 #include "sml_Names.h"
 
 #include "IgSKI_Agent.h"
@@ -14,39 +15,77 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	// No arguments
-	if (argv.size() != 1) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+	static struct GetOpt::option longOptions[] = {
+		{"memory",	0, 0, 'm'},
+		{"rete",	0, 0, 'r'},
+		{"system",	0, 0, 's'},
+		{0, 0, 0, 0}
+	};
+
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
+
+	unsigned int options = 0;
+
+	for (;;) {
+		int option = m_pGetOpt->GetOpt_Long(argv, "mrs", longOptions, 0);
+		if (option == -1) break;
+
+		switch (option) {
+			case 'm':
+				options |= OPTION_STATS_MEMORY;
+				break;
+			case 'r':
+				options |= OPTION_STATS_RETE;
+				break;
+			case 's':
+				options |= OPTION_STATS_SYSTEM;
+				break;
+			case '?':
+				return m_Error.SetError(CLIError::kUnrecognizedOption);
+			default:
+				return m_Error.SetError(CLIError::kGetOptError);
+		}
 	}
 
-	return DoStats(pAgent);
+	// No arguments
+	if (argv.size() != static_cast<unsigned>(GetOpt::optind)) return m_Error.SetError(CLIError::kTooManyArgs);
+
+	return DoStats(pAgent, options);
 }
 
-bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent) {
+bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const int options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
 	gSKI::IAgentPerformanceMonitor* pPerfMon = pAgent->GetPerformanceMonitor();
 
-	// This next block needs to be redone pending a rewrite on the gSKI side.
-	int argc = 1;
-	char* argv[3];
-	argv[0] = new char[6];
-	memset(argv[0], 0, 6);
-	strncpy(argv[0], "stats", 5);
+	const char* _stats = "stats";
+	const char* _memory = "-memory";
+	const char* _rete = "-rete";
+	const char* _system = "-system";
 
-	argv[1] = new char[7];
-	memset(argv[1], 0, 7);
-	strncpy(argv[1], "-stats", 6);
+	char* argv[5];
+	int argc = 0;
 
-	argv[2] = 0;
+	argv[argc++] = const_cast<char*>(_stats);
+
+	if (options & OPTION_STATS_MEMORY) {
+		argv[argc++] = const_cast<char*>(_memory);
+	}
+
+	if (options & OPTION_STATS_RETE) {
+		argv[argc++] = const_cast<char*>(_rete);
+	}
+
+	if (options & OPTION_STATS_SYSTEM) {
+		argv[argc++] = const_cast<char*>(_system);
+	}
+	argv[argc] = 0;
 
 	const char* pResult = 0;
 
 	bool ret = pPerfMon->GetStatsString(argc, argv, &pResult);
-
-	delete [] argv[0];
-	delete [] argv[1];
 
 	if (!ret) return m_Error.SetError(CLIError::kgSKIError);
 
