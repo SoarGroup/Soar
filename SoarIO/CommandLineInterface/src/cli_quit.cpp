@@ -16,8 +16,11 @@ bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::stri
 
 bool CommandLineInterface::DoQuit() {
 	// Stop any running thread
-	std::string reason("Quit command.");
-	this->DoStopSoar(0, false, reason);
+	if (m_pRunForever) {
+		m_pRunForever->Stop(true);
+		delete m_pRunForever;
+		m_pRunForever = 0;
+	}
 
 	// Simply flip the quit flag
 	m_QuitCalled = true; 

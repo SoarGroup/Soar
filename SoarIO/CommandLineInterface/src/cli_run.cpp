@@ -24,34 +24,41 @@ void RunForeverThread::Run() {
 	egSKIRunResult runResult;
 	egSKIRunState runState;
 
+	// If we're running ourself, we need an agent pointer
 	if (m_bSelf && !m_pAgent) {
-		this->Stop(false);
+		return;
 	}
 
-	if (m_bSelf && !m_pKernel) {
-		this->Stop(false);
+	// If we're running all agents, we need a kernel pointer
+	if (!m_bSelf && !m_pKernel) {
+		return;
 	}
 
+	// Loop until stopped or return
 	while (!m_QuitNow) {
 		if (m_bSelf) {
+			// Running self, run a cycle
 			runResult = m_pAgent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1, m_pError);
 			runState = m_pAgent->GetRunState();
 
-			if (runState != gSKI_RUNSTATE_RUNNING) {
-				this->Stop(false);
+			// Check if we're halted or interrupted
+			if ((runState == gSKI_RUNSTATE_HALTED) || (runState == gSKI_RUNSTATE_INTERRUPTED)) {
+				return;
 			}
 
 		} else {
+			// Running all agents, run a cycle
 			m_pKernel->GetAgentManager()->ClearAllInterrupts();
 			m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
 			runResult = m_pKernel->GetAgentManager()->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
 
+			// Walk list of agents and stop if any are halted/interrupted
 			gSKI::tIAgentIterator* iter = m_pKernel->GetAgentManager()->GetAgentIterator(m_pError);
 			while (iter->IsValid()) {
 				gSKI::IAgent* pAgent = iter->GetVal();
 				runState = pAgent->GetRunState();
 				if ((runState == gSKI_RUNSTATE_HALTED) || (runState == gSKI_RUNSTATE_INTERRUPTED)) {
-					this->Stop(false);
+					return;
 				}
 				iter->Next() ;
 			}
@@ -190,24 +197,6 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	if (runResult == gSKI_RUN_ERROR) {
 		AppendToResult("Run failed.");
 		return false;	// Hopefully details are in gSKI error message
-	}
-
-	AppendToResult("\nRun successful: ");
-	switch (runResult) {
-		case gSKI_RUN_EXECUTING:
-			AppendToResult("(gSKI_RUN_EXECUTING)");						// the run is still executing
-			break;
-		case gSKI_RUN_INTERRUPTED:
-			AppendToResult("(gSKI_RUN_INTERRUPTED)");					// the run was interrupted
-			break;
-		case gSKI_RUN_COMPLETED:
-			AppendToResult("(gSKI_RUN_COMPLETED)");						// the run completed normally
-			break;
-		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
-			AppendToResult("(gSKI_RUN_COMPLETED_AND_INTERRUPTED)");
-			break;
-		default:
-			return HandleError("Unknown egSKIRunResult code returned.");
 	}
 	return true;
 }
