@@ -123,7 +123,7 @@
 				RelativePath=".\gSKITowers.cpp">
 			</File>
 			<File
-				RelativePath=".\sgioTowers.cpp">
+				RelativePath=".\gSKITowersSoarAgent.cpp">
 			</File>
 			<File
 				RelativePath=".\TowersOfHanoi.cpp">
@@ -137,7 +137,7 @@
 				RelativePath=".\AgnosticTowers.h">
 			</File>
 			<File
-				RelativePath=".\sgioTowersSoarAgent.h">
+				RelativePath=".\gSKITowersSoarAgent.h">
 			</File>
 		</Filter>
 		<Filter

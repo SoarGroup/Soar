@@ -1,24 +1,18 @@
+#include "AgnosticTowers.h"
 #include "gSKITowersSoarAgent.h"
+
 #include <string>
-#include <iostream> //just fore testing
+#include <iostream> //just for testing
 #include <cassert>
+
 using std::cout; using std::endl;
-
-#ifdef USE_GSKI_DIRECT_NOT_SML
-	//gSKI Directives
-
-	#include "IgSKI_OutputProcessor.h"
-	#include "IgSKI_InputLink.h"
-	#include "IgSKI_OutputLink.h"
-
-	using namespace gSKI;
-#else
-	//SML Directives
-	#include "sml_Client.h"
-	using namespace sml;
-#endif
-
 using std::string;
+
+#include "IgSKI_OutputProcessor.h"
+#include "IgSKI_InputLink.h"
+#include "IgSKI_OutputLink.h"
+
+using namespace gSKI;
 
 SoarAgent::SoarAgent(IAgent* inAgent, HanoiWorld* inWorld) : m_Agent(inAgent), m_World(inWorld)
 {

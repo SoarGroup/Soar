@@ -34,17 +34,11 @@
 
 #ifdef GSKI_DIRECT
 	//gSKI directives
-	#include "IgSKI_KernelFactory.h"
-	#include "IgSKI_Kernel.h"
-	#include "IgSKI_AgentManager.h"
 	#include "IgSKI_InputProducer.h"
 	#include "IgSKI_OutputProcessor.h"
-	//#include "IgSKI_SymbolFactory.h"
 	#include "IgSKI_InputLink.h"
 	#include "IgSKI_OutputLink.h"
 	//#include "IgSKI_WorkingMemory.h"
-	#include "gSKI.h"
-	#include "gSKI_Stub.h"
 	#include "gSKI_Structures.h"
 
 	//command line interface directives
@@ -102,10 +96,7 @@ int main(int argc, char* argv[])
 
 	//}
 
-	// create kernel factory
-#ifdef USE_GSKI_DIRECT_NOT_SML
-	IKernelFactory* kFactory = gSKI_CreateKernelFactory();
-#endif
+
 
 /*  FIXME TODO this will need to be added for any interface that uses sml
 #ifdef SML_THROUGH_GSKI
@@ -115,10 +106,7 @@ int main(int argc, char* argv[])
 	IKernelFactory* kFactory = sml_CreateKernelFactory(pConnection);
 #endif*/
 /*
-	// create kernel
-	IKernel* kernel = kFactory->Create();
-	IAgentManager* manager = kernel->GetAgentManager();
-	gSKI::IAgent* agent = manager->AddAgent("towersAgent");
+
 */
 #ifdef USE_GSKI_DIRECT_NOT_SML
 	CommandLineInterface* commLine = new CommandLineInterface();
@@ -177,7 +165,7 @@ int main(int argc, char* argv[])
 		if(doPrinting)
 			cout << "***Welcome to Towers of Hanoi***" << endl << endl;
 
-		HanoiWorld hanoi(/*iLink,*/ doPrinting, numTowers);
+		HanoiWorld hanoi(doPrinting, numTowers);
 
 //		SoarAgent soarAgent(agent, &hanoi);
 

@@ -1,22 +1,13 @@
 #ifndef GSKI_HANOI_SOAR_AGENT
 #define GSKI_HANOI_SOAR_AGENT
 
-#include "Towers.h"
+#include "AgnosticTowers.h"
+#include "gSKI_OutputProcessor.h"
 
-//gSKI directives
-#ifdef USE_GSKI_DIRECT_NOT_SML
-
-	#include "IgSKI_OutputProcessor.h"
-	#include "IgSKI_Agent.h"
-	#include "IgSKI_WorkingMemory.h"
-	using namespace gSKI;
-
-#else
-	//SML Directives
-	#include "sml_Client.h"
-	using namespace sml;
-
-#endif
+class IAgent;
+class HanoiWorld;
+class IWMObject;
+class IWorkingMemory;
 
 
 class SoarAgent : public IOutputProcessor

@@ -11,38 +11,27 @@
 #include <map>
 */
 
-/*
-using std::cin;
-using std::string;
-using std::cout;
-using std::endl;
-using std::vector;
-using std::map;
-using std::less;
-using std::for_each;
-*/
-
-
-
 //Because of how the Towers of Hanoi productions are written, there will exactly 11 disks
 const int maxNumDisks = 11;
 
 const std::string k_diskIdentifierString	= "disk";
 const std::string k_diskSizeString			= "size";
-const std::string k_diskNameString			= "name";
 const std::string k_holdsIdentifierString	= "holds";
 const std::string k_holdsOnString			= "on";
 const std::string k_holdsAboveString		= "above";
 const std::string k_noneString				= "none";
-
+const std::string k_worldPegString			= "peg";
+const std::string k_nameString				= "name";
 
 class DiskInputLinkProfile;
+class Tower;
+struct DiskWMEs;
 
 class Disk
 {
 public:
 
-	Disk(int fooPlaceholderFixme);
+	Disk(Tower* tower, int size, Disk* diskBeneath);
 
 	void Detach();
 
@@ -52,7 +41,9 @@ public:
 
 	int GetSize() const {return m_size;}
 
-	void SetDiskBeneath(Disk* diskBeneath /*, IWMObject* pegObject*/);
+	DiskInputLinkProfile* GetDiskInputLinkProfile() const { return m_iLinkProfile;}
+
+	void SetDiskBeneath(Disk* diskBeneath);
 
 private:
 
@@ -60,19 +51,24 @@ private:
 	Disk(const Disk&);
 	Disk operator=(const Disk&);
 
-	bool m_holdsNeedsToBeUpdated;
+	Disk* m_pDiskBeneath;
 	DiskInputLinkProfile* m_iLinkProfile;
 	int m_size;//a convenience for other classes
+	Tower* pTower;
+
+	friend class HanoiWorld;
 };
 
 typedef std::vector<Disk*> diskContainer_t;
 typedef diskContainer_t::iterator diskItr_t;
 
+class HanoiWorld;
+class TowerInputLinkProfile;
 
 class Tower
 {
 public:
-	Tower();
+	Tower(HanoiWorld* world, char name);
 
 	~Tower();
 
@@ -86,17 +82,23 @@ public:
 
 	int GetSize() const;
 
+	TowerInputLinkProfile* GetInputLinkProfile() const {return m_iLinkProfile;}
+
+	HanoiWorld* GetWorld() const {return pWorld;}
+
 	void PrintDiskAtRow(int row) const;
 
 private:
 	std::vector<Disk*> m_disks;
 	char m_name;
 	int m_number;
+	HanoiWorld* pWorld;
+	TowerInputLinkProfile* m_iLinkProfile;
 };
 
 
-
-
+class IOManager;
+class SoarAgent;
 
 class HanoiWorld
 {
@@ -115,12 +117,15 @@ public:
 
 	bool AtGoalState();
 
+	IOManager* GetIOManager() const {return ioManager;}
+
 private:
 	typedef std::vector<Tower*> towerContainer_t;
 	typedef towerContainer_t::iterator towerItr_t;
 	towerContainer_t m_towers;
 
-	//IInputLink* m_pILink;
+	IOManager* ioManager;
+	SoarAgent* m_agent;
 	bool drawGraphics;
 };
 
