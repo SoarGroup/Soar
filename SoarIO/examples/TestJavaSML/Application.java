@@ -197,7 +197,8 @@ public class Application
 	        System.loadLibrary("Java_sml_ClientInterface");
 	
 	        // Initialize the kernel
-			m_Kernel = Kernel.CreateEmbeddedConnection("KernelSML", true, false, 0) ;
+			//m_Kernel = Kernel.CreateEmbeddedConnection("KernelSML", true, false, 0) ;
+			m_Kernel = Kernel.CreateEmbeddedConnectionClientThread("KernelSML", false, 12121) ;
 	
 			Test() ;
 		}

@@ -18,6 +18,10 @@ proc AgentReinitializedCallback {id userData agent} {
 	puts "[$agent GetAgentName] reinitialized"
 }
 
+proc AgentDestroyedCallback {id userData agent} {
+	puts "destroying [$agent GetAgentName]"
+}
+
 proc SystemShutdownCallback {id userData kernel} {
 	puts "Shutting down $kernel"
 }
@@ -27,7 +31,7 @@ lappend auto_path .
 package require tcl_sml_clientinterface
 
 #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
-set kernel [Kernel_CreateEmbeddedConnection KernelSML 0]
+set kernel [Kernel_CreateEmbeddedConnectionSoarThread KernelSML 12121]
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
 
@@ -35,7 +39,8 @@ set printCallbackId [$agent RegisterForPrintEvent $smlEVENT_PRINT PrintCallback 
 #set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_BEFORE_PRODUCTION_REMOVED ProductionExcisedCallback ""]
 set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionFiredCallback ""]
 set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback ""]
-set agentCallbackId [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
+#set agentCallbackId [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
+set agentCallbackId [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestoyedCallback ""]
 set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
 cd demos/towers-of-hanoi
 #load the TOH productions
