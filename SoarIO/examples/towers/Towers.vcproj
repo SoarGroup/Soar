@@ -70,11 +70,10 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="true"
 				AdditionalIncludeDirectories="..\..\..\TgDI\include;..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="4"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
@@ -115,6 +114,9 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
 			Name="CommandLineInterface"/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{0F4205EE-35EA-4421-8F74-513603FF003F}"
+			Name="gSKI"/>
 	</References>
 	<Files>
 		<Filter
