@@ -16,11 +16,16 @@
 
 #include "sml_ObjectMap.h"
 
+// Forward declaratiokn for ElementXML_Handle.
+struct ElementXML_InterfaceStructTag ;
+typedef struct ElementXML_InterfaceStructTag *ElementXML_Handle ;
+
 namespace sml {
 
 // Forward declarations
 class Agent ;
 class Connection ;
+class AnalyzeXML ;
 
 class Kernel
 {
@@ -31,6 +36,7 @@ protected:
 	Connection*			m_Connection ;
 	ObjectMap<Agent*>	m_AgentMap ;
 	std::string			m_CommandLineResult;
+	bool				m_CommandLineSucceeded ;
 
 	// To create a kernel object, use one of the static methods, e.g. Kernel::CreateEmbeddedConnection().
 	Kernel(Connection* pConnection);
@@ -90,19 +96,44 @@ public:
 	Agent* GetAgent(char const* pAgentName) ;
 
 	/*************************************************************
-	* @brief Process a command line command
+	* @brief Process a command line command and return the result
+	*        as a string.
 	*
 	* @param pCommandLine Command line string to process.
 	* @param pAgentName Agent name to apply the command line to.
+	* @returns The string form of output from the command.
 	*************************************************************/
-	bool ProcessCommandLine(char const* pCommandLine, char const* pAgentName) ;
+	char const* ProcessCommandLine(char const* pCommandLine, char const* pAgentName) ;
+
+	/*************************************************************
+	* @brief Execute a command line command and return the result
+	*		 as an XML object.
+	*
+	* @param pCommandLine Command line string to process.
+	* @param pAgentName Agent name to apply the command line to.
+	* @returns The XML form of output from the command.
+	*          The caller must release this handle.
+	*************************************************************/
+	ElementXML_Handle ProcessCommandLineXML(char const* pCommandLine, char const* pAgentName) ;
+
+	/*************************************************************
+	* @brief Execute a command line command and return the result
+	*		 as an XML object.
+	*
+	* @param pCommandLine Command line string to process.
+	* @param pAgentName   Agent name to apply the command line to.
+	* @param pResponse    The XML response will be returned within this object.
+	*                     The caller should allocate this and pass it in.
+	* @returns True if the command succeeds.
+	*************************************************************/
+	bool ProcessCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse) ;
 
 	/*************************************************************
 	* @brief Get last command line result
 	*
-	* @returns A pointer to the string result.
+	* @returns True if the last command line call succeeded.
 	*************************************************************/
-	const char* GetLastCommandLineResult();
+	bool GetLastCommandLineResult();
 };
 
 }//closes namespace

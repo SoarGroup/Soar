@@ -118,23 +118,72 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 *
 * @param pCommandLine Command line string to process.
 * @param pAgentName Agent name to apply the command line to.
+* @returns The string form of output from the command.
 *************************************************************/
-bool Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName) {
-
+const char* Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName)
+{
 	AnalyzeXML response;
-	bool ret = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
+	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
 
-	m_CommandLineResult = response.GetResultString();
-
-	if (!ret) {
+	if (m_CommandLineSucceeded)
+	{
+		m_CommandLineResult = response.GetResultString();
+	}
+	else
+	{
 		m_CommandLineResult += "\nError Data:\n";
 		m_CommandLineResult += response.GetErrorTag()->GetCharacterData();
 	}
 
-	return ret;
+	return m_CommandLineResult.c_str();
 }
 
-const char* Kernel::GetLastCommandLineResult() {
-	return m_CommandLineResult.c_str();
+/*************************************************************
+* @brief Execute a command line command and return the result
+*		 as an XML object.
+*
+* @param pCommandLine Command line string to process.
+* @param pAgentName Agent name to apply the command line to.
+* @returns The XML form of output from the command.
+*          The caller must release this handle.
+*************************************************************/
+ElementXML_Handle Kernel::ProcessCommandLineXML(char const* pCommandLine, char const* pAgentName)
+{
+	return NULL ;
+}
+
+/*************************************************************
+* @brief Execute a command line command and return the result
+*		 as an XML object.
+*
+* @param pCommandLine Command line string to process.
+* @param pAgentName Agent name to apply the command line to.
+* @returns True if the command succeeds.
+*************************************************************/
+bool Kernel::ProcessCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse)
+{
+	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
+
+	if (m_CommandLineSucceeded)
+	{
+		m_CommandLineResult = pResponse->GetResultString();
+	}
+	else
+	{
+		m_CommandLineResult += "\nError Data:\n";
+		m_CommandLineResult += pResponse->GetErrorTag()->GetCharacterData();
+	}
+
+	return m_CommandLineSucceeded ;
+}
+
+/*************************************************************
+* @brief Get last command line result
+*
+* @returns True if the last command line call succeeded.
+*************************************************************/
+bool Kernel::GetLastCommandLineResult()
+{
+	return m_CommandLineSucceeded ;
 }
 
