@@ -69,10 +69,10 @@ namespace cli {
 	//\__ \ || (_| | |_\__ \
 	//|___/\__\__,_|\__|___/
 	//
-	const unsigned short OPTION_STATS_MEMORY	= 0x01;
-	const unsigned short OPTION_STATS_RETE		= 0x02;
-	const unsigned short OPTION_STATS_STATS		= 0x04;
-	const unsigned short OPTION_STATS_SYSTEM	= 0x08;
+	//const unsigned short OPTION_STATS_MEMORY	= 0x01;
+	//const unsigned short OPTION_STATS_RETE		= 0x02;
+	//const unsigned short OPTION_STATS_STATS		= 0x04;
+	//const unsigned short OPTION_STATS_SYSTEM	= 0x08;
 
 	//               _       _
 	//__      ____ _| |_ ___| |__

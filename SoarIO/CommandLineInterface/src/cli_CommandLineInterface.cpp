@@ -692,6 +692,7 @@ bool CommandLineInterface::DoInitSoar() {
 	}
 
 	// Simply call reinitialize
+	m_pAgent->Halt();
 	m_pAgent->Reinitialize();
 	m_Result += "Agent reinitialized.";
 	return true;
@@ -1871,52 +1872,12 @@ bool CommandLineInterface::DoSP(const string& production) {
 //|_|   \__,_|_|  |___/\___|____/ \__\__,_|\__|___/
 //
 bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"memory",		0, 0, 'm'},
-		{"rete",		0, 0, 'r'},
-		{"stats",		0, 0, 's'},
-		{"system",		0, 0, 'S'},
-		{0, 0, 0, 0}
-	};
-
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
-
-	int option;
-	unsigned short options = 0;
-
-	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "mrsS", longOptions, 0);
-		if (option == -1) {
-			break;
-		}
-
-		switch (option) {
-			case 'm':
-				options |= OPTION_STATS_MEMORY;
-				break;
-			case 'r':
-				options |= OPTION_STATS_RETE;
-				break;
-			case 's':
-				options |= OPTION_STATS_STATS;
-				break;
-			case 'S':
-				options |= OPTION_STATS_SYSTEM;
-				break;
-			case '?':
-				return HandleSyntaxError(Constants::kCLIStats, "Unrecognized option.");
-			default:
-				return HandleGetOptError(option);
-		}
-	}
-
-	// No non-option arguments
-	if (GetOpt::optind != argv.size()) {
+	// No arguments
+	if (argv.size() != 1) {
 		return HandleSyntaxError(Constants::kCLIStats);
 	}
 
-	return DoStats(options);
+	return DoStats();
 }
 
 // ____       ____  _        _
@@ -1925,7 +1886,7 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 //| |_| | (_) |__) | || (_| | |_\__ \
 //|____/ \___/____/ \__\__,_|\__|___/
 //
-bool CommandLineInterface::DoStats(const unsigned short options) {
+bool CommandLineInterface::DoStats() {
 	// Need agent pointer for function calls
 	if (!RequireAgent()) {
 		return false;
@@ -1940,33 +1901,17 @@ bool CommandLineInterface::DoStats(const unsigned short options) {
 	memset(argv[0], 0, 6);
 	strncpy(argv[0], "stats", 5);
 
-	if (options & OPTION_STATS_MEMORY) {
-		argv[1] = new char[8];
-		memset(argv[1], 0, 8);
-		strncpy(argv[1], "-memory", 7);
+	argv[1] = new char[7];
+	memset(argv[1], 0, 7);
+	strncpy(argv[1], "-stats", 6);
 
-	} else if (options & OPTION_STATS_RETE) {
-		argv[1] = new char[6];
-		memset(argv[1], 0, 6);
-		strncpy(argv[1], "-rete", 5);
-
-
-	} else if (options & OPTION_STATS_SYSTEM) {
-		argv[1] = new char[8];
-		memset(argv[1], 0, 8);
-		strncpy(argv[1], "-system", 7);
-
-
-	} else /*if (options & OPTION_STATS_STATS) { // DEFAULT */ {
-		argv[1] = new char[7];
-		memset(argv[1], 0, 7);
-		strncpy(argv[1], "-stats", 6);
-	}
 	argv[2] = 0;
 
 	const char* pResult = 0;
 
+	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	bool ret = pPerfMon->GetStatsString(argc, argv, &pResult);
+	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	if(strlen(pResult) > 0) {
 		m_Result += pResult;

@@ -263,7 +263,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoStats(const unsigned short options);
+	bool DoStats();
 
 	/*************************************************************
 	* @brief stop-soar command, see command line spec document for details

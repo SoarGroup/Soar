@@ -250,13 +250,15 @@ sp
 Usage:	sp { production }
 ***
 stats
-Usage:	stats [-s <stat>] [-m <resource>] [-r <rtype_qualifier>]
-  -m, --memory
-  -r, --rete
-  -s, --system
-  resource
-  rtype_qualifier
-  stat
+Usage:	stats
+#Todo:
+#Usage:	stats [-s <stat>] [-m <resource>] [-r <rtype_qualifier>]
+#  -m, --memory
+#  -r, --rete
+#  -s, --system
+#  resource
+#  rtype_qualifier
+#  stat
 ***
 stop-soar
 Usage:	stop-soar [-s] [reason_string]
