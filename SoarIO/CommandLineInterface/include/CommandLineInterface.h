@@ -74,8 +74,14 @@ public:
 	bool ParseLearn(int argc, char**& argv);
 	bool DoLearn(const unsigned short options = 0);
 
+	bool ParseLS(int argc, char**& argv);
+	bool DoLS();
+
 	bool ParseNewAgent(int argc, char**& argv);
 	bool DoNewAgent(char const* agentName);
+
+	bool ParsePrint(int argc, char**& argv);
+	bool DoPrint();
 
 	bool ParsePWD(int argc, char**& argv);
 	bool DoPWD();
@@ -139,12 +145,15 @@ class CLIConstants
 public:
 	static char const* kCLIAddWME;
 	static char const* kCLICD;
+	static char const* kCLIDir;
 	static char const* kCLIEcho;
 	static char const* kCLIExcise;
 	static char const* kCLIExit;
 	static char const* kCLIInitSoar;
 	static char const* kCLILearn;
+	static char const* kCLILS;
 	static char const* kCLINewAgent;
+	static char const* kCLIPrint;
 	static char const* kCLIPWD;
 	static char const* kCLIQuit;
 	static char const* kCLIRun;
@@ -160,7 +169,9 @@ public:
 	static char const* kCLIExciseUsage;
 	static char const* kCLIInitSoarUsage;
 	static char const* kCLILearnUsage;
+	static char const* kCLILSUsage;
 	static char const* kCLINewAgentUsage;
+	static char const* kCLIPrintUsage;
 	static char const* kCLIPWDUsage;
 	static char const* kCLIQuitUsage;
 	static char const* kCLIRunUsage;

@@ -63,6 +63,7 @@ int main(int argc, char** argv)
 	char input;
 	bool previousResult = true;
 	bool process;
+	bool backslash;
 
 	for (;;) {
 		cout << '\n' << previousResult << " " << AGENT_NAME << "> ";
@@ -70,10 +71,11 @@ int main(int argc, char** argv)
 		cmdline.clear();
 		temporaryHistoryIndex = historyIndex;
 		process = false;
+
 		for (;;) {
 			input = getch();
 
-			switch (input) {
+			switch (input) {					
 				case '\n':
 				case '\r':
 					cout << endl;

@@ -28,6 +28,26 @@ namespace cli {
 	const unsigned short OPTION_LEARN_LIST       = 0x20;
 	const unsigned short OPTION_LEARN_ONLY       = 0x40;
 
+	//            _       _
+	// _ __  _ __(_)_ __ | |_
+	//| '_ \| '__| | '_ \| __|
+	//| |_) | |  | | | | | |_
+	//| .__/|_|  |_|_| |_|\__|
+	//|_|
+	const unsigned short OPTION_PRINT_ALL				= 0x0001;
+	const unsigned short OPTION_PRINT_CHUNKS			= 0x0002;
+	const unsigned short OPTION_PRINT_DEPTH				= 0x0004;
+	const unsigned short OPTION_PRINT_DEFAULTS			= 0x0008;
+	const unsigned short OPTION_PRINT_FULL				= 0x0010;
+	const unsigned short OPTION_PRINT_FILENAME			= 0x0020;
+	const unsigned short OPTION_PRINT_INTERNAL			= 0x0040;
+	const unsigned short OPTION_PRINT_JUSTIFICATIONS	= 0x0080;
+	const unsigned short OPTION_PRINT_NAME				= 0x0100;
+	const unsigned short OPTION_PRINT_OPERATORS			= 0x0200;
+	const unsigned short OPTION_PRINT_STACK				= 0x0400;
+	const unsigned short OPTION_PRINT_STATES			= 0x0800;
+	const unsigned short OPTION_PRINT_USER				= 0x1000;
+
 	// _ __ _   _ _ __
 	//| '__| | | | '_ \
 	//| |  | |_| | | | |
