@@ -277,30 +277,43 @@ Usage:	warnings [-ed]
   -d, --disable, --off
 ***
 watch
-Usage:	watch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>]
-	[-d <switch>] [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>]
-	[-L <switch>] [-p <switch>] [-P <switch>] [-r <switch>] [-u <switch>]
-	[-w <switch>] [-W <detail>]
-  -a, --aliases
-  -b, --backtracing
-  -c, --chunks
-  -d, --decisions
-  -D, --default-productions
-  -i, --indifferent-selection
-  -j, --justifications
-  -l, --learning
-  -L, --loading
-  -n, --none
-  -p, --phases
-  -P, --productions
-  -r, --preferences
-  -u, --user-productions
-  -w, --wmes
-  -W, --wme-detail
+Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>] 
+	[-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] 
+	[-L <switch>] [-p <switch>] [-P <switch>] [-r <switch>] 
+	[-u <switch>] [-w <switch>] [-W <detail>]
+  -b, --backtracing		Print backtracing infromation when a chunk
+  				is created.
+  -c, --chunks			Trace firings of chunks.
+  -d, --decisions		Print the state and operator selected each
+  				decision cycle.
+  -D, --default-productions	Trace firings of default productions.
+  -i, --indifferent-selection	When using random mode, print the score for
+  				tied operators during the decision phase
+  -j, --justifications		Trace firings of justifications.
+  -l, --learning		Print names (detail 1) or entire chunks and
+  				justifications (detail 2) when created.
+  -L, --loading			Print a '*' for each production loaded and a
+  				'#' for each production excised.
+  -n, --none			Turn all watches off.  Overrides all other
+  				flags on the line.
+  -p, --phases			Print out the phases of the decision cycle as
+  				Soar executes.
+  -P, --productions		Equivalent to '-D <switch> -u <switch>
+  				-c <switch> -j <switch>'.
+  -r, --preferences		Print out preferences asserted and retracted
+  				when productions fire and retract.
+  -u, --user-productions	Trace firings of user productions.
+  -w, --wmes			Print working memory elements that are added
+  				and deleted as productions fire and retract.
+  -W, --wme-detail		Print no (detail 0) WME information when
+  				productions fire and retract, print WME
+  				timetags (detail 1), or print full
+  				WMEs (detail 2).
   detail			Integer from 0-2:
 				  * 0: Off/lowest detail
 				  * 1: On/medium detail
 				  * 2: On/highest detail
+				See option text for specific effect.
   level				Integer from 0-5:
   				  * 0: Watch nothing, equivalent to -n
   				  * 1: Watch decisions inclusive
@@ -311,6 +324,8 @@ Usage:	watch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>]
   				       and decisions
   				  * 5: Watch preferences, wmes, productions,
   				       phases, and decisions
+  				Presence of level flag overrides all other
+  				options except -n.
   switch			Switch argument:
   				  * 0: Turn watches for this option off
   				  * 1: Turn watches for this option on

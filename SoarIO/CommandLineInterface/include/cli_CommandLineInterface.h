@@ -269,7 +269,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoWatch();
+	bool DoWatch(int level, const unsigned int options, const unsigned int values);
 
 protected:
 
@@ -387,6 +387,11 @@ protected:
 	* @brief 
 	*************************************************************/
 	bool HandleGetOptError(char option);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool WatchArg(unsigned int& values, const unsigned int option);
 
 	Constants			m_Constants;			// Pointer to constants management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class

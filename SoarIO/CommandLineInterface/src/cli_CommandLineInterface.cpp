@@ -456,6 +456,9 @@ bool CommandLineInterface::DoExcise(const unsigned short options, int optind, ve
 	// Acquire production manager
 	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
 
+	// Listen for #s
+	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+
 	// Process the general options
 	if (options & OPTION_EXCISE_ALL) {
 		ExciseInternal(pProductionManager->GetAllProductions());
@@ -486,9 +489,11 @@ bool CommandLineInterface::DoExcise(const unsigned short options, int optind, ve
 		} else {
 			m_Result += "Production not found: ";
 			m_Result += argv[i];
+			m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 			return false;
 		}
 	}
+	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	return true;
 }
 
@@ -741,7 +746,7 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 		}
 	}
 
-	// Only one non-option argument allowed, count
+	// Only one non-option arg allowed, filename
 	if (GetOpt::optind == argv.size() - 1) {
 
 		// But not with the close option
@@ -1053,7 +1058,7 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 	unsigned short options = 0;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "acd:DfFijnosSu", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, ":acd:DfFijnosSu", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -1105,6 +1110,8 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 			case 'u':
 				options |= OPTION_PRINT_USER;
 				break;
+			case ':':
+				return HandleSyntaxError(Constants::kCLIPrint, "Missing option argument.\n");
 			case '?':
 				return HandleSyntaxError(Constants::kCLIPrint, "Unrecognized option.\n");
 			default:
@@ -1153,7 +1160,6 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options & OPTION_PRINT_ALL) {
 		// TODO: Find out what is arg is for
-		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, USER_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, CHUNK_PRODUCTION_TYPE);
@@ -1720,15 +1726,14 @@ bool CommandLineInterface::DoSP(const string& production) {
 	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
 
 	// Load the production
+	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), m_pError);
+	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	if(m_pError->Id != gSKI::gSKIERR_NONE) {
 		m_Result += "Unable to add the production: " + production;
 		return false;
 	}
-
-	// Print one * per loaded production
-	m_Result += "*";
 	return true;
 }
 
@@ -1873,76 +1878,160 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	GetOpt::opterr = 0;
 
 	int option;
+	int constant;
 	bool self = false;
-	unsigned short options = 0;   // what flag changed
-	unsigned short states = 0;    // new setting
+	unsigned int options = 0;	// what flag changed
+	unsigned int values = 0;    // new setting
+	int watchLevel = -1;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, ":b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
 
-		// TODO: Arguments and more
-
 		switch (option) {
-			case 'a':
-				options |= OPTION_WATCH_ALIASES;
-				break;
 			case 'b':
+				constant = OPTION_WATCH_BACKTRACING;
 				options |= OPTION_WATCH_BACKTRACING;
 				break;
 			case 'c':
+				constant = OPTION_WATCH_CHUNKS;
 				options |= OPTION_WATCH_CHUNKS;
 				break;
 			case 'd':
+				constant = OPTION_WATCH_DECISIONS;
 				options |= OPTION_WATCH_DECISIONS;
 				break;
 			case 'D':
+				constant = OPTION_WATCH_DEFAULT_PRODUCTIONS;
 				options |= OPTION_WATCH_DEFAULT_PRODUCTIONS;
 				break;
 			case 'i':
+				constant = OPTION_WATCH_INDIFFERENT_SELECTION;
 				options |= OPTION_WATCH_INDIFFERENT_SELECTION;
 				break;
 			case 'j':
+				constant = OPTION_WATCH_JUSTIFICATIONS;
 				options |= OPTION_WATCH_JUSTIFICATIONS;
 				break;
 			case 'l':
+				constant = OPTION_WATCH_LEARNING;
 				options |= OPTION_WATCH_LEARNING;
 				break;
 			case 'L':
+				constant = OPTION_WATCH_LOADING;
 				options |= OPTION_WATCH_LOADING;
 				break;
 			case 'n':
+				constant = OPTION_WATCH_NONE;
 				options |= OPTION_WATCH_NONE;
 				break;
 			case 'p':
+				constant = OPTION_WATCH_PHASES;
 				options |= OPTION_WATCH_PHASES;
 				break;
 			case 'P':
+				constant = OPTION_WATCH_PRODUCTIONS;
 				options |= OPTION_WATCH_PRODUCTIONS;
 				break;
 			case 'r':
+				constant = OPTION_WATCH_PREFERENCES;
 				options |= OPTION_WATCH_PREFERENCES;
 				break;
 			case 'u':
+				constant = OPTION_WATCH_USER_PRODUCTIONS;
 				options |= OPTION_WATCH_USER_PRODUCTIONS;
 				break;
 			case 'w':
+				constant = OPTION_WATCH_WMES;
 				options |= OPTION_WATCH_WMES;
 				break;
 			case 'W':
+				constant = OPTION_WATCH_WME_DETAIL;
 				options |= OPTION_WATCH_WME_DETAIL;
 				break;
+			case ':':
+				return HandleSyntaxError(Constants::kCLIWatch, "Missing option argument.\n");
 			case '?':
 				return HandleSyntaxError(Constants::kCLIWatch, "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
+
+		// process argument
+		if (!WatchArg(values, constant)) {
+			return false;
+		}
 	}
 
-	// TODO: arguments, if any
-	return DoWatch();
+	// Only one non-option argument allowed, watch level
+	if (GetOpt::optind == argv.size() - 1) {
+
+		if (!IsInteger(argv[GetOpt::optind])) {
+			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be an integer.\n");
+		}
+		watchLevel = atoi(argv[GetOpt::optind].c_str());
+		if ((watchLevel < 0) || (watchLevel > 5)) {
+			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be 0 to 5.\n");
+		}
+
+	} else if ((unsigned)GetOpt::optind < argv.size()) {
+		return HandleSyntaxError(Constants::kCLIWatch);
+	}
+
+	return DoWatch(watchLevel, options, values);
+}
+
+bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int option) {
+	// If option is none, values will be ignored anyway
+	if (option == OPTION_WATCH_NONE) {
+		return true;
+	}
+
+	if (!IsInteger(GetOpt::optarg)) {
+		return HandleSyntaxError(Constants::kCLIWatch, "Arguments must be integers.\n");
+	}
+
+	// Get the arg
+	int argInt = atoi(GetOpt::optarg);
+
+	if (option <= OPTION_WATCH_WME_DETAIL) {
+		// Detail arguments 
+		if ((argInt < 0) || (argInt > 2)) {
+			return HandleSyntaxError(Constants::kCLIWatch, "Detail argument must 0, 1, or 2.\n");
+		}
+
+		// First, shift argInt if necessary
+		if (option == OPTION_WATCH_WME_DETAIL) {
+			argInt <<= 2;
+		}
+
+		// Second set the bits to 1
+		values |= option;
+
+		// Third, create a value to and
+		argInt |= ~option;
+
+		// Finally, and it with the values
+		values &= argInt;
+
+	} else {
+		// Switch arguments
+		if ((argInt < 0) || (argInt > 1)) {
+			return HandleSyntaxError(Constants::kCLIWatch, "Switch argument must 0 or 1.\n");
+		}
+
+		if (argInt) {
+			// Turn on option
+			values |= option;
+		} else {
+			// Turn off option
+			values &= ~option;
+		}
+	}
+
+	return true;
 }
 
 // ____     __        __    _       _
@@ -1951,8 +2040,167 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 //| |_| | (_) \ V  V / (_| | || (__| | | |
 //|____/ \___/ \_/\_/ \__,_|\__\___|_| |_|
 //
-bool CommandLineInterface::DoWatch() {
-	m_Result += "TODO: DoWatch";
+bool CommandLineInterface::DoWatch(int level, const unsigned int options, const unsigned int values) {
+	// Check for none, since that one is easy
+	if (options == OPTION_WATCH_NONE) {
+		// Disable all watches using the watch level
+		level = 0;
+	}
+
+	// Need agent pointer for function calls
+	if (!RequireAgent()) {
+		return false;
+	}
+
+	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
+	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+
+	// Next, do we have a watch level? (none flag will set this to zero)
+	if (level >= 0) {
+
+		// Yes, turn the settings off for a second
+		pKernelHack->SetSysparam(m_pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, false);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_PHASES_SYSPARAM, false);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, false);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, false);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, false);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, false);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_WM_CHANGES_SYSPARAM, false);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, false);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_OPERAND2_REMOVALS_SYSPARAM, false);
+
+		// Switch out the level
+		switch (level) {
+			case 0:
+			default:
+				// Turn even the default stuff off!
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNK_NAMES_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNKS_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_OPERAND2_REMOVALS_SYSPARAM, false);
+				break;
+
+			case 5:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, true);
+				// 5 includes 4
+
+			case 4:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_WM_CHANGES_SYSPARAM, true);
+				// 4 includes 3
+
+			case 3:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, true);
+				// 3 includes 2
+
+			case 2:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_PHASES_SYSPARAM, true);
+				// 2 includes 1
+
+			case 1:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, true);
+				break;
+		}
+
+		// If we did a watch level, ignore the other options
+		return true;
+	}
+
+	// No watch level and no none flags, that means we have to do the rest
+	if (options & OPTION_WATCH_BACKTRACING) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_BACKTRACING_SYSPARAM, values & OPTION_WATCH_BACKTRACING);
+	}
+
+	if (options & OPTION_WATCH_CHUNKS) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, values & OPTION_WATCH_CHUNKS);
+	}
+
+	if (options & OPTION_WATCH_DECISIONS) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, values & OPTION_WATCH_DECISIONS);
+	}
+
+	if (options & OPTION_WATCH_DEFAULT_PRODUCTIONS) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, values & OPTION_WATCH_DEFAULT_PRODUCTIONS);
+	}
+
+	if (options & OPTION_WATCH_INDIFFERENT_SELECTION) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_INDIFFERENT_SYSPARAM, values & OPTION_WATCH_INDIFFERENT_SELECTION);
+	}
+
+	if (options & OPTION_WATCH_JUSTIFICATIONS) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, values & OPTION_WATCH_JUSTIFICATIONS);
+	}
+
+	if (options & OPTION_WATCH_LOADING) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_LOADING_SYSPARAM, values & OPTION_WATCH_LOADING);
+	}
+
+	if (options & OPTION_WATCH_PHASES) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_PHASES_SYSPARAM, values & OPTION_WATCH_PHASES);
+	}
+
+	if (options & OPTION_WATCH_PRODUCTIONS) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, values & OPTION_WATCH_PRODUCTIONS);
+	}
+
+	if (options & OPTION_WATCH_PREFERENCES) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, values & OPTION_WATCH_PREFERENCES);
+	}
+
+	if (options & OPTION_WATCH_USER_PRODUCTIONS) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, values & OPTION_WATCH_USER_PRODUCTIONS);
+	}
+
+	if (options & OPTION_WATCH_WMES) {
+		pKernelHack->SetSysparam(m_pAgent, TRACE_WM_CHANGES_SYSPARAM, values & OPTION_WATCH_WMES);
+	}
+
+	if (options & OPTION_WATCH_LEARNING) {
+		switch (values & OPTION_WATCH_LEARNING) {
+			case 0:
+			default:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNK_NAMES_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNKS_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
+				break;
+			case 1:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNKS_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
+				break;
+			case 2:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_CHUNKS_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, true);
+				break;
+		}
+	}
+
+	if (options & OPTION_WATCH_WME_DETAIL) {
+		switch ((values & OPTION_WATCH_WME_DETAIL) >> 2) {
+			case 0:
+			default:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
+				break;
+			case 1:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, TIMETAG_WME_TRACE);
+				break;
+			case 2:
+				pKernelHack->SetSysparam(m_pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, FULL_WME_TRACE);
+				break;
+		}
+	}
+
 	return true;
 }
 
@@ -2025,6 +2273,14 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 //                           |___/
 bool CommandLineInterface::IsInteger(const string& s) {
 	string::const_iterator iter = s.begin();
+	
+	// Allow negatives
+	if (s.length() > 1) {
+		if (*iter == '-') {
+			++iter;
+		}
+	}
+
 	while (iter != s.end()) {
 		if (!isdigit(*iter)) {
 			return false;
@@ -2048,12 +2304,11 @@ bool CommandLineInterface::HandleSyntaxError(const char* command, const char* de
 	if (details) {
 		m_Result += details;
 	}
-	string output;
-	if (m_Constants.GetUsageFor(command, output)) {
-		m_Result += output;
-	} else {
-		m_Result += Constants::kCLINoUsageInfo;
-	}
+	m_Result += "Type 'help ";
+	m_Result += command;
+	m_Result += "' or '";
+	m_Result += command;
+	m_Result += " --help' for syntax and usage.";
 	return false;
 }
 
