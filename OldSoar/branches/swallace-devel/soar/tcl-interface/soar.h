@@ -165,7 +165,11 @@ extern void Soar_PrintToFile (agent *, soar_callback_data, soar_call_data);
 extern void Soar_PrintToChannel (agent *, soar_callback_data, soar_call_data);
 extern void Soar_PrintToTextWidget (agent *, soar_callback_data, 
 				    soar_call_data);
- 
+/* extern char *Soar_Read (agent *, char *, int); /* kjh(CUSP-B10)*/
+/* extern void Soar_RecordToFile (agent *, soar_callback_data, soar_call_data); /* kjh(CUSP-B10)*/
+/* extern void Soar_ReadFromFile (agent *, soar_callback_data, soar_call_data); /* kjh(CUSP-B10)*/
+/* extern void Soar_EndReplay(agent *); /* kjh(CUSP-B10)*/
+/* Soar_PrintToTclProc RMJ 7-1-97 */
 extern void Soar_PrintToTclProc (agent *, soar_callback_data, 
 				    soar_call_data);
 extern void Soar_RegisterArgv (int argc, char ** argv, 
