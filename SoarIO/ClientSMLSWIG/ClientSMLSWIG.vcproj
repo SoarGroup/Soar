@@ -146,74 +146,6 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
 		</Filter>
 		<File
-			RelativePath=".\sml_ClientAgent.i">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\sml_ClientFloatElement.i">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\sml_ClientIdentifier.i">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\sml_ClientIntElement.i">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-		</File>
-		<File
 			RelativePath=".\sml_ClientInterface.i">
 			<FileConfiguration
 				Name="Debug|Win32">
@@ -224,7 +156,7 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -c++ -java &quot;$(InputPath)&quot;
+$(SWIG)\swig.exe -Wall -Wallkw -c++ -java &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
@@ -236,57 +168,6 @@ $(SWIG)\swig.exe -c++ -java &quot;$(InputPath)&quot;
 C:\SWIG-1.3.22\swig.exe -c++ -java &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\sml_ClientKernel.i">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\sml_ClientStringElement.i">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-		</File>
-		<File
-			RelativePath=".\sml_ClientWMElement.i">
-			<FileConfiguration
-				Name="Debug|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32">
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine=""
-					Outputs=""/>
 			</FileConfiguration>
 		</File>
 	</Files>
