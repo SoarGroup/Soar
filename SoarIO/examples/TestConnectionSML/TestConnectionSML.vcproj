@@ -33,10 +33,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ConnectionSML.lib"
 				OutputFile="$(SolutionDir)\bin\TestConnectionSML.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\lib"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/TestConnectionSML.pdb"
 				SubSystem="1"
