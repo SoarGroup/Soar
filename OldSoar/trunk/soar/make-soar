@@ -4,7 +4,8 @@
 pushd kernel
 chmod u+x ./configure
 
-./configure
+CFLAGS="-fno-common -Werror" ./configure
+
 if [ $? == "1" ]; then
   echo
   echo "!!! Couldn't configure kernel (check for error messages above)."
