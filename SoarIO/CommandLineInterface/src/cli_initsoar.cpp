@@ -21,7 +21,11 @@ bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 
 	// Simply call reinitialize
 	pAgent->Halt();
+	// BUGBUG: Init soar sends output through print callback!
+	AddListenerAndDisableCallbacks(pAgent);
 	pAgent->Reinitialize();
+	m_Result.clear();	// BUGBUG: This may be erasing more than it should
+	RemoveListenerAndEnableCallbacks(pAgent);
 	if (m_RawOutput) AppendToResult("Agent reinitialized.");
 	return true;
 }

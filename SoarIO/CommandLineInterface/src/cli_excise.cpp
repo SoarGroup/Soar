@@ -119,7 +119,8 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 
 	char buf[kMinBufferSize];
 	if (m_RawOutput) {
-		if (!exciseCount) return m_Error.SetError(CLIError::kProductionNotFound);
+		AppendToResult("\n");	// the init-soar causes an AgentReinitialized. message
+		if (!exciseCount) return m_Error.SetError(CLIError::kProductionNotFound);// TODO: Should this not be an error?
 		AppendToResult(Int2String(exciseCount, buf, kMinBufferSize));
 		AppendToResult(" productions excised.");
 	} else {

@@ -33,9 +33,31 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 		filename = filename.substr(1, filename.length() - 2);
 	}
 
+	// Separate the path out of the filename if any
+	std::string path;
+	unsigned int separator1 = filename.rfind('/');
+	if (separator1 != std::string::npos) {
+		++separator1;
+		if (separator1 < filename.length()) {
+			path = filename.substr(0, separator1);
+			filename = filename.substr(separator1, filename.length() - separator1);
+			if (!DoPushD(path)) return false;
+		}
+	}
+	unsigned int separator2 = filename.rfind('\\');
+	if (separator2 != std::string::npos) {
+		++separator2;
+		if (separator2 < filename.length()) {
+			path = filename.substr(0, separator2);
+			filename = filename.substr(separator2, filename.length() - separator2);
+			if (!DoPushD(path)) return false;
+		}
+	}
+
 	// Open the file
 	std::ifstream soarFile(filename.c_str());
 	if (!soarFile) {
+		if (path.length()) DoPopD();
 		return m_Error.SetError(CLIError::kOpenFileFail);
 	}
 
@@ -138,11 +160,13 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 				// EOF while still nested
 				m_Error.SetError(CLIError::kUnmatchedBrace);
 				HandleSourceError(lineCountCache, filename);
+				if (path.length()) DoPopD();
 				return false;
 
 			} else if (braces < 0) {
 				m_Error.SetError(CLIError::kExtraClosingBrace);
 				HandleSourceError(lineCountCache, filename);
+				if (path.length()) DoPopD();
 				return false;
 			}
 
@@ -160,6 +184,7 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 		if (!DoCommandInternal(pAgent, command)) {
 			// Command failed, error in result
 			HandleSourceError(lineCountCache, filename);
+			if (path.length()) DoPopD();
 			return false;
 		}	
 	}
@@ -178,6 +203,7 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 	}
 
 	soarFile.close();
+	if (path.length()) DoPopD();
 	return true;
 }
 
