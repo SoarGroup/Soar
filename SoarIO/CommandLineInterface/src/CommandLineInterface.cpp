@@ -4,15 +4,14 @@
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
-//#include <winx/assertx.h>
-
-//#include <glibc/getopt.h>
+#include <stdlib.h>
 
 #include "getopt.h"
 
 #include "gSKI_Structures.h"
 #include "IgSKI_ProductionManager.h"
 #include "IgSKI_Agent.h"
+#include "IgSKI_AgentManager.h"
 #include "IgSKI_Kernel.h"
 
 #include "sml_ElementXML.h"
@@ -22,6 +21,8 @@
 using namespace std;
 using namespace cli;
 
+#include <direct.h>
+
 char const* CLIConstants::kCLIAddWME	= "add-wme";
 char const* CLIConstants::kCLICD		= "cd";
 char const* CLIConstants::kCLIEcho		= "echo";
@@ -30,6 +31,7 @@ char const* CLIConstants::kCLIExit		= "exit";
 char const* CLIConstants::kCLIInitSoar	= "init-soar";
 char const* CLIConstants::kCLILearn		= "learn";
 char const* CLIConstants::kCLINewAgent	= "new-agent";
+char const* CLIConstants::kCLIPWD		= "pwd";
 char const* CLIConstants::kCLIQuit		= "quit";
 char const* CLIConstants::kCLIRun		= "run";
 char const* CLIConstants::kCLISource	= "source";
@@ -38,21 +40,22 @@ char const* CLIConstants::kCLIStopSoar	= "stop-soar";
 char const* CLIConstants::kCLIWatch		= "watch";
 char const* CLIConstants::kCLIWatchWMEs	= "watch-wmes";
 
-char const* CLIConstants::kCLIAddWMEUsage    = "Usage:\tadd-wme";
-char const* CLIConstants::kCLICDUsage        = "Usage:\tcd [directory]";
-char const* CLIConstants::kCLIEchoUsage      = "Usage:\techo [string]";
-char const* CLIConstants::kCLIExciseUsage    = "Usage:\texcise production_name\n\texcise -[acdtu]";
-char const* CLIConstants::kCLIInitSoarUsage  = "Usage:\tinit-soar";
-char const* CLIConstants::kCLILearnUsage     = "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
-char const* CLIConstants::kCLINewAgentUsage  = "Usage:\tnew-agent [agent_name]";
-char const* CLIConstants::kCLIRunUsage       = "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
-char const* CLIConstants::kCLISourceUsage    = "Usage:\tsource filename";
-char const* CLIConstants::kCLISPUsage	      = "Usage:\tsp { production }";
-char const* CLIConstants::kCLIStopSoarUsage  = "Usage:\tstop-soar [-s] [reason_string]";
-char const* CLIConstants::kCLIWatchUsage     = "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
-											   [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>] [-p <switch>] \
-											   [-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W <detail>]";
-char const* CLIConstants::kCLIWatchWMEsUsage = "Usage:\twatch-wmes –[a|r] –t <type> pattern\n\twatch-wmes –[l|R] [–t <type>]";
+char const* CLIConstants::kCLIAddWMEUsage		= "Usage:\tadd-wme";
+char const* CLIConstants::kCLICDUsage			= "Usage:\tcd [directory]";
+char const* CLIConstants::kCLIEchoUsage			= "Usage:\techo [string]";
+char const* CLIConstants::kCLIExciseUsage		= "Usage:\texcise production_name\n\texcise -[acdtu]";
+char const* CLIConstants::kCLIInitSoarUsage		= "Usage:\tinit-soar";
+char const* CLIConstants::kCLILearnUsage		= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
+char const* CLIConstants::kCLINewAgentUsage		= "Usage:\tnew-agent [agent_name]";
+char const* CLIConstants::kCLIPWDUsage			= "Usage:\tpwd";
+char const* CLIConstants::kCLIRunUsage			= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
+char const* CLIConstants::kCLISourceUsage		= "Usage:\tsource filename";
+char const* CLIConstants::kCLISPUsage			= "Usage:\tsp { production }";
+char const* CLIConstants::kCLIStopSoarUsage		= "Usage:\tstop-soar [-s] [reason_string]";
+char const* CLIConstants::kCLIWatchUsage		= "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
+[-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>] [-p <switch>] \
+[-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W <detail>]";
+char const* CLIConstants::kCLIWatchWMEsUsage	= "Usage:\twatch-wmes –[a|r] –t <type> pattern\n\twatch-wmes –[l|R] [–t <type>]";
 
 //  ____                                          _ _     _            ___       _             __
 // / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)_ __   ___|_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
@@ -64,6 +67,12 @@ CommandLineInterface::CommandLineInterface(void)
 {
 	BuildCommandMap();
 	m_QuitCalled = false;
+
+	char buf[512];
+	getcwd(buf, 512);
+	m_HomeDirectory = buf;
+
+	m_PrintHandler.SetCLI(this);
 }
 
 // /\/|____                                          _ _     _            ___       _             __
@@ -265,16 +274,16 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 }
 
 //bool CommandLineInterface::Parse(int argc, char**& argv) {
-//   if (CheckForHelp(argc, argv)) {
-//      m_Result += CLIConstants::kCLIUsage;
-//      return true;
-//   }
-//   return Do();
+//	if (CheckForHelp(argc, argv)) {
+//		m_Result += CLIConstants::kCLIUsage;
+//		return true;
+//	}
+//	return Do();
 //}
-
+//
 //bool CommandLineInterface::Do() {
-//   m_Result += "TODO: ";
-//   return true;
+//	m_Result += "TODO: ";
+//	return true;
 //}
 
 // ____                        _       _     ___        ____  __ _____
@@ -332,12 +341,24 @@ bool CommandLineInterface::ParseCD(int argc, char**& argv) {
 bool CommandLineInterface::DoCD(const char* directory) {
 	if (!directory) {
 		// return to home/original directory
-		m_Result += "TODO: return to home or original directory.";
+		if (chdir(m_HomeDirectory.c_str())) {
+			m_Result += "Could not change to home directory: ";
+			m_Result += m_HomeDirectory;
+			return false;
+		}
+		// Lets print the current working directory on success
+		DoPWD();
 		return true;
 	}
 
-	m_Result += "TODO: change to ";
-	m_Result += directory;
+	if (chdir(directory)) {
+		m_Result += "Could not change to directory: ";
+		m_Result += directory;
+		return false;
+	}
+
+	// Lets print the current working directory on success
+	DoPWD();
 	return true;
 }
 
@@ -621,6 +642,42 @@ bool CommandLineInterface::DoNewAgent(char const* agentName) {
 	return true;
 }
 
+// ____                     ______        ______
+//|  _ \ __ _ _ __ ___  ___|  _ \ \      / /  _ \
+//| |_) / _` | '__/ __|/ _ \ |_) \ \ /\ / /| | | |
+//|  __/ (_| | |  \__ \  __/  __/ \ V  V / | |_| |
+//|_|   \__,_|_|  |___/\___|_|     \_/\_/  |____/
+//
+bool CommandLineInterface::ParsePWD(int argc, char**& argv) {
+	if (CheckForHelp(argc, argv)) {
+		m_Result += CLIConstants::kCLIPWDUsage;
+		return true;
+	}
+	if (argc > 2) {
+		m_Result += "Too many arguments.\n";
+		m_Result += CLIConstants::kCLIPWDUsage;
+		return false;
+	}
+	return DoPWD();
+}
+
+// ____        ______        ______
+//|  _ \  ___ |  _ \ \      / /  _ \
+//| | | |/ _ \| |_) \ \ /\ / /| | | |
+//| |_| | (_) |  __/ \ V  V / | |_| |
+//|____/ \___/|_|     \_/\_/  |____/
+//
+bool CommandLineInterface::DoPWD() {
+	char buf[512];
+	getcwd(buf, 512);
+	if (!buf) {
+		m_Result += "Couldn't get working directory.";
+		return false;
+	}
+	m_Result += buf;
+	return true;
+}
+
 // ____                      ___        _ _
 //|  _ \ __ _ _ __ ___  ___ / _ \ _   _(_) |_
 //| |_) / _` | '__/ __|/ _ \ | | | | | | | __|
@@ -639,7 +696,7 @@ bool CommandLineInterface::ParseQuit(int argc, char**& argv) {
 //
 bool CommandLineInterface::DoQuit() {
 	m_QuitCalled = true; 
-	m_Result = "Goodbye.";
+	m_Result += "Goodbye.";
 	return true;
 }
 
@@ -716,16 +773,16 @@ bool CommandLineInterface::ParseRun(int argc, char**& argv) {
 		}
 	}
 
+	int count = 1;
 	if (GetOpt::optind == argc - 1) {
-		m_Result += "Count: ";
-		m_Result += argv[GetOpt::optind];
+		count = atoi(argv[GetOpt::optind]);
 	} else if (GetOpt::optind < argc) {
 		m_Result += "Too many arguments.\n";
 		m_Result += CLIConstants::kCLIRunUsage;
 		return false;
 	}
 
-	return DoRun(options);
+	return DoRun(options, count);
 }
 
 // ____        ____
@@ -734,8 +791,67 @@ bool CommandLineInterface::ParseRun(int argc, char**& argv) {
 //| |_| | (_) |  _ <| |_| | | | |
 //|____/ \___/|_| \_\\__,_|_| |_|
 //
-bool CommandLineInterface::DoRun(const unsigned short options) {
-	m_Result += "TODO: do run";
+bool CommandLineInterface::DoRun(const unsigned short options, int count) {
+
+	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_OUTPUT) || (options & OPTION_RUN_STATE)) {
+		m_Result += "Options { o, O, S } not implemented yet.";
+		return false;
+	}
+
+	// Determine run unit, mutually exclusive so give smaller steps precedence, default to decision
+	egSKIRunType runType = gSKI_RUN_DECISION_CYCLE;
+	if (options & OPTION_RUN_ELABORATION) {
+		runType = gSKI_RUN_SMALLEST_STEP;
+	} else if (options & OPTION_RUN_DECISION) {
+		runType = gSKI_RUN_DECISION_CYCLE;
+	} else if (options & OPTION_RUN_FOREVER) {
+		runType = gSKI_RUN_FOREVER;	
+	}
+
+	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
+	egSKIRunResult runResult;
+	if (options & OPTION_RUN_SELF) {
+		if (!m_pAgent) {
+			m_Result += "Run self: no agent pointer.";
+			return false;
+		}
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+		runResult = m_pAgent->RunInClientThread(runType, count, m_pError);
+		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
+	} else {
+		if (!m_pKernel) {
+			m_Result += "Run: no kernel pointer.";
+			return false;
+		}
+        m_pKernel->GetAgentManager()->ClearAllInterrupts();
+        m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
+		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
+	}
+
+	// Check for error
+	if (runResult == gSKI_RUN_ERROR) {
+		m_Result += "Run failed.";
+		return false;
+	}
+
+	m_Result += "\nRun successful: ";
+	switch (runResult) {
+		case gSKI_RUN_EXECUTING:
+			m_Result += "(gSKI_RUN_EXECUTING)";
+			break;
+		case gSKI_RUN_INTERRUPTED:
+			m_Result += "(gSKI_RUN_INTERRUPTED)";
+			break;
+		case gSKI_RUN_COMPLETED:
+			m_Result += "(gSKI_RUN_COMPLETED)";
+			break;
+		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:
+			m_Result += "(gSKI_RUN_COMPLETED_AND_INTERRUPTED)";
+			break;
+		default:
+			m_Result += "Unknown egSKIRunResult code returned.";
+			return false;
+	}
 	return true;
 }
 
@@ -791,8 +907,8 @@ bool CommandLineInterface::DoSource(const char* filename) {
 		return false;
 	}
 
-	// Print one * per loaded production
-	m_Result += "*";
+	// TODO: Print one * per loaded production
+	m_Result += "File sourced successfully.";
 	return true;
 }
 
@@ -1085,6 +1201,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[CLIConstants::kCLIInitSoar]	= CommandLineInterface::ParseInitSoar;
 	m_CommandMap[CLIConstants::kCLILearn]		= CommandLineInterface::ParseLearn;
 	m_CommandMap[CLIConstants::kCLINewAgent]	= CommandLineInterface::ParseNewAgent;
+	m_CommandMap[CLIConstants::kCLIPWD]			= CommandLineInterface::ParsePWD;
 	m_CommandMap[CLIConstants::kCLIQuit]		= CommandLineInterface::ParseQuit;
 	m_CommandMap[CLIConstants::kCLIRun]			= CommandLineInterface::ParseRun;
 	m_CommandMap[CLIConstants::kCLISource]		= CommandLineInterface::ParseSource;
@@ -1102,4 +1219,8 @@ bool CommandLineInterface::CheckForHelp(int argc, char**& argv) {
 		}
 	}
 	return false;
+}
+
+void CommandLineInterface::AppendToResult(const char* pMessage) {
+	m_Result += pMessage;
 }

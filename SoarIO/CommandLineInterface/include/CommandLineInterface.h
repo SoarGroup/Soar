@@ -7,6 +7,8 @@
 #include "commanddata.h"
 #include "getopt.h"
 
+#include "gSKI_Events.h"
+
 // Forward Declarations
 namespace gSKI {
 	class IAgent;
@@ -75,11 +77,14 @@ public:
 	bool ParseNewAgent(int argc, char**& argv);
 	bool DoNewAgent(char const* agentName);
 
+	bool ParsePWD(int argc, char**& argv);
+	bool DoPWD();
+
 	bool ParseQuit(int argc, char**& argv);
 	bool DoQuit();
 
 	bool ParseRun(int argc, char**& argv);
-	bool DoRun(const unsigned short options = 0);
+	bool DoRun(const unsigned short options, int count);
 
 	bool ParseSource(int argc, char**& argv);
 	bool DoSource(const char* filename);
@@ -96,7 +101,23 @@ public:
 	bool ParseWatchWMEs(int argc, char**& argv);
 	bool DoWatchWMEs();
 
+	void AppendToResult(const char* pMessage);
+
 protected:
+
+	class PrintHandler : public gSKI::IPrintListener
+	{
+	public:
+		PrintHandler() {}
+
+		void SetCLI(CommandLineInterface* pCLI) { m_pCLI = pCLI; }
+		virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* pAgent, const char* msg)
+		{
+			m_pCLI->AppendToResult(msg);
+		}
+	protected:
+		CommandLineInterface*	m_pCLI;
+	};
 
 	int Tokenize(const char* commandLine, std::vector<std::string>& argumentVector);
 	void BuildCommandMap();
@@ -109,7 +130,8 @@ protected:
 	gSKI::IAgent*	m_pAgent;
 	std::string		m_Result;
 	gSKI::Error*	m_pError;
-
+	std::string		m_HomeDirectory;
+	PrintHandler	m_PrintHandler;
 };
 
 class CLIConstants
@@ -123,6 +145,7 @@ public:
 	static char const* kCLIInitSoar;
 	static char const* kCLILearn;
 	static char const* kCLINewAgent;
+	static char const* kCLIPWD;
 	static char const* kCLIQuit;
 	static char const* kCLIRun;
 	static char const* kCLISource;
@@ -138,6 +161,7 @@ public:
 	static char const* kCLIInitSoarUsage;
 	static char const* kCLILearnUsage;
 	static char const* kCLINewAgentUsage;
+	static char const* kCLIPWDUsage;
 	static char const* kCLIQuitUsage;
 	static char const* kCLIRunUsage;
 	static char const* kCLISourceUsage;
