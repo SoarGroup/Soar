@@ -1,0 +1,40 @@
+
+
+              Summary of changes between Soar 8.3 and Soar 8.4.
+                            Scott Wallace
+                            January, 2001
+
+
+The change from Soar8.3 to Soar8.4 should be transparent to most users.  
+Using the binary applications from the Soar web site or building Soar
+with the default build options will produce a version of Soar which is
+completely backward compatible with Soar8.3 and Soar8.2.  
+
+Under the hood, however, Soar8.4 does introduce several new features,
+these begin with the establishment of a clean distinction between the
+kernel and the interface.  This means that there are no longer any
+interface dependencies in the kernel, as a result, on version of the
+kernel can be integrated with any other application or interface.  In
+addition, Soar8.4 includes several compile time options that allow
+speedier versions to be built relatively easily.  Note that the
+flexability gained by using Soar8.4 is only an asset if you intend on
+rebuilding the Soar binaries.  If you do not intend on do this, there
+is no reason to upgrade from Soar8.3.
+
+Soar 8.4 also includes a C-level API with which Soar can easily be
+embedded into other applications.  These functions provide common
+functionality, similar to that provided by the framiliar Tcl
+interface.  For more information, please see the README.api file in the
+kernel sub-directory
+
+In addition to the API, Soar 8.4 offers several compile time options
+with which, expert users can fine tune Soar's performance.  See the
+file README.BuildOptions in the kernel subdirectory for more
+information.
+
+Finally, Soar 8.4 also incorporates some recent additions to the
+kernel, and interface, such as support for attention lapsing.
+
+
+
+
