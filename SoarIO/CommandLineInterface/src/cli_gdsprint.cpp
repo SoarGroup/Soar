@@ -34,11 +34,8 @@ EXPORT bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
 	bool ret = pKernelHack->GDSPrint(pAgent);
 	RemoveListenerAndEnableCallbacks(pAgent);
 
-	if (!m_RawOutput) {
-		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
-		m_Result.str("");
-	}
-
+	// put the result into a message(string) arg tag
+	if (!m_RawOutput) ResultToArgTag();
 	return ret;
 }
 

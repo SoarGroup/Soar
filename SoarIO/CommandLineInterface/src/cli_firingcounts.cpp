@@ -41,7 +41,7 @@ bool CommandLineInterface::ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<s
 
 	if (argv.size() == 2) {
 		// one argument, figure out if it is a non-negative integer or a production
-		if (!IsInteger(argv[1])) {
+		if (IsInteger(argv[1])) {
 			numberToList = atoi(argv[1].c_str());
 			if (numberToList < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 

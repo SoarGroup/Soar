@@ -22,7 +22,11 @@ bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoHelp();
 }
 
-EXPORT bool CommandLineInterface::DoHelp(std::string* pCommand) {
+/*************************************************************
+* @brief help command
+* @param pCommand The command to get help on, pass 0 (null) for a list of commands
+*************************************************************/
+EXPORT bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 	unused(pCommand);
 	m_Result << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";
 	return SetError(CLIError::kNoUsageFile);

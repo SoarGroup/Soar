@@ -20,6 +20,10 @@ bool CommandLineInterface::ParseInternalSymbols(gSKI::IAgent* pAgent, std::vecto
 	return DoInternalSymbols(pAgent);
 }
 
+/*************************************************************
+* @brief internal-symbols command
+* @param pAgent The pointer to the gSKI agent interface
+*************************************************************/
 EXPORT bool CommandLineInterface::DoInternalSymbols(gSKI::IAgent* pAgent) {
 
 	// Need agent pointer for function calls
@@ -32,10 +36,8 @@ EXPORT bool CommandLineInterface::DoInternalSymbols(gSKI::IAgent* pAgent) {
 	pKernelHack->PrintInternalSymbols(pAgent);
 	RemoveListenerAndEnableCallbacks(pAgent);
 
-	if (!m_RawOutput) {
-		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
-		m_Result.str("");
-	}
+	// put the result into a message(string) arg tag
+	if (!m_RawOutput) ResultToArgTag();
 	return true;
 }
 

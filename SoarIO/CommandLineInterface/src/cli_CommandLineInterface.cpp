@@ -494,3 +494,8 @@ bool CommandLineInterface::SetErrorDetail(const std::string detail) {
 	m_LastErrorDetail = detail;
 	return false;
 }
+
+void CommandLineInterface::ResultToArgTag() {
+	AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
+	m_Result.str("");
+}

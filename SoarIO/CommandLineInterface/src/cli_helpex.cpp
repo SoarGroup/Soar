@@ -18,6 +18,10 @@ bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoHelpEx(argv[1]);
 }
 
+/*************************************************************
+* @brief helpex command
+* @param command The command to get extended help on
+*************************************************************/
 EXPORT bool CommandLineInterface::DoHelpEx(const std::string& command) {
 	unused(command);
 	m_Result << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";

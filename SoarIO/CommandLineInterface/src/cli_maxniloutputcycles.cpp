@@ -28,10 +28,16 @@ bool CommandLineInterface::ParseMaxNilOutputCycles(gSKI::IAgent* pAgent, std::ve
 	return DoMaxNilOutputCycles(pAgent, n);
 }
 
-EXPORT bool CommandLineInterface::DoMaxNilOutputCycles(gSKI::IAgent* pAgent, int n) {
+/*************************************************************
+* @brief max-nil-output-cycles command
+* @param pAgent The pointer to the gSKI agent interface
+* @param n The new max nil output cycles value, use 0 to query
+*************************************************************/
+EXPORT bool CommandLineInterface::DoMaxNilOutputCycles(gSKI::IAgent* pAgent, const int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
+		// query
 		if (m_RawOutput) {
 			m_Result << pAgent->GetMaxNilOutputCycles();
 		} else {

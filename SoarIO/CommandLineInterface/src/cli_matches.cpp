@@ -7,6 +7,8 @@
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
 
+#include <assert.h>
+
 #include "sml_Names.h"
 
 #include "IgSKI_Agent.h"
@@ -27,8 +29,8 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 		{0, 0, 0, 0}
 	};
 
-	int wmeDetail = 0;
-	unsigned int matches = OPTION_MATCHES_ASSERTIONS_RETRACTIONS;
+	eWMEDetail detail = WME_DETAIL_NONE;
+	eMatchesMode mode = MATCHES_ASSERTIONS_RETRACTIONS;
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "012acnrtw", longOptions, 0);
@@ -38,21 +40,21 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 			case '0':
 			case 'n':
 			case 'c':
-				wmeDetail = 0;
+				detail = WME_DETAIL_NONE;
 				break;
 			case '1':
 			case 't':
-				wmeDetail = 1;
+				detail = WME_DETAIL_TIMETAG;
 				break;
 			case '2':
 			case 'w':
-				wmeDetail = 2;
+				detail = WME_DETAIL_FULL;
 				break;
 			case 'a':
-				matches = OPTION_MATCHES_ASSERTIONS;
+				mode = MATCHES_ASSERTIONS;
 				break;
 			case 'r':
-				matches = OPTION_MATCHES_RETRACTIONS;
+				mode = MATCHES_RETRACTIONS;
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -64,42 +66,43 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 	// Max one additional argument and it is a production
 	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);		
 
-	std::string production;
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
-		matches = OPTION_MATCHES_PRODUCTION;
-		production = argv[m_pGetOpt->GetOptind()];
-	}
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoMatches(pAgent, MATCHES_PRODUCTION, detail, &argv[m_pGetOpt->GetOptind()]);
 
-	return DoMatches(pAgent, matches, wmeDetail, production);
+	return DoMatches(pAgent, mode, detail);
 }
 
-EXPORT bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches, int wmeDetail, const std::string& production) {
+/*************************************************************
+* @brief matches command
+* @param pAgent The pointer to the gSKI agent interface
+* @param mode The mode for the command, see cli_CommandData.h
+* @param detail The WME detail, see cli_CommandData.h
+* @param pProduction The production, pass 0 (null) if not applicable to mode
+*************************************************************/
+EXPORT bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mode, const eWMEDetail detail, const std::string* pProduction) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	wme_trace_type wtt = 0;
-	switch (wmeDetail) {
-		case 0:
+	switch (detail) {
+		case WME_DETAIL_NONE:
 			wtt = NONE_WME_TRACE;
 			break;
-		case 1:
+		case WME_DETAIL_TIMETAG:
 			wtt = TIMETAG_WME_TRACE;
 			break;
-		case 2:
+		case WME_DETAIL_FULL:
 			wtt = FULL_WME_TRACE;
 			break;
 		default:
-			return SetError(CLIError::kInvalidWMEDetail);
+			assert(false);
 	}
 
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (matches == OPTION_MATCHES_PRODUCTION) {
-		rete_node* prod = 0;
-
-		prod = pKernelHack->NameToProduction(pAgent, const_cast<char*>(production.c_str()));
-
+	if (mode == MATCHES_PRODUCTION) {
+		if (!pProduction) return SetError(CLIError::kProductionRequired);
+		rete_node* prod = pKernelHack->NameToProduction(pAgent, const_cast<char*>(pProduction->c_str()));
 		if (!prod) return SetError(CLIError::kProductionNotFound);
 
 		AddListenerAndDisableCallbacks(pAgent);		
@@ -107,19 +110,16 @@ EXPORT bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int m
 		RemoveListenerAndEnableCallbacks(pAgent);
 
 	} else {
-
 		ms_trace_type mst = MS_ASSERT_RETRACT;
-		if (matches == OPTION_MATCHES_ASSERTIONS) mst = MS_ASSERT;
-		if (matches == OPTION_MATCHES_RETRACTIONS) mst = MS_RETRACT;
+		if (mode == MATCHES_ASSERTIONS) mst = MS_ASSERT;
+		if (mode == MATCHES_RETRACTIONS) mst = MS_RETRACT;
 
 		AddListenerAndDisableCallbacks(pAgent);		
 		pKernelHack->PrintMatchSet(pAgent, wtt, mst);
 		RemoveListenerAndEnableCallbacks(pAgent);
 	}
 
-	if (!m_RawOutput) {
-		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
-		m_Result.str("");
-	}
+	// put the result into a message(string) arg tag
+	if (!m_RawOutput) ResultToArgTag();
 	return true;
 }

@@ -29,12 +29,17 @@ bool CommandLineInterface::ParseMaxElaborations(gSKI::IAgent* pAgent, std::vecto
 	return DoMaxElaborations(pAgent, n);
 }
 
-EXPORT bool CommandLineInterface::DoMaxElaborations(gSKI::IAgent* pAgent, int n) {
+/*************************************************************
+* @brief max-elaborations command
+* @param pAgent The pointer to the gSKI agent interface
+* @param n The new max elaborations value, use 0 to query
+*************************************************************/
+EXPORT bool CommandLineInterface::DoMaxElaborations(gSKI::IAgent* pAgent, const int n) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
-
+		// Query
 		if (m_RawOutput) {
 			m_Result << pAgent->GetMaxElaborations();
 		} else {

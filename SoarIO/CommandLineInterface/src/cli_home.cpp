@@ -17,29 +17,24 @@ bool CommandLineInterface::ParseHome(gSKI::IAgent* pAgent, std::vector<std::stri
 	unused(pAgent);
 
 	// Only takes one optional argument, the directory to change home to
-	if (argv.size() > 2) {
-		return SetError(CLIError::kTooManyArgs);
-	}
-	if (argv.size() > 1) {
-		return DoHome(&(argv[1]));
-	}
+	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() > 1) return DoHome(&(argv[1]));
 	return DoHome();
 }
 
-EXPORT bool CommandLineInterface::DoHome(std::string* pDirectory) {
+/*************************************************************
+* @brief home command
+* @param pDirectory The directory to change the cli's initial (home) directory to, pass 0 (null) for current directory
+*************************************************************/
+EXPORT bool CommandLineInterface::DoHome(const std::string* pDirectory) {
 
 	if (pDirectory) {
 		// Change to the passed directory if any to make sure it is valid
 		// also need usage/aliases files from that directory
-		if (!DoCD(pDirectory)) {
-			return false;
-		}
-
+		if (!DoCD(pDirectory)) return false;
 	}
 	// Set Home to current directory
-	if (!GetCurrentWorkingDirectory(m_HomeDirectory)) {
-		return false;
-	}
+	if (!GetCurrentWorkingDirectory(m_HomeDirectory)) return false;
 
 	// Load aliases from file
 	ifstream aliasesFile("aliases.txt");

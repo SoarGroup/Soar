@@ -24,7 +24,7 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 		{0, 0, 0, 0}
 	};
 
-	unsigned int mode = 0;
+	eIndifferentMode mode = INDIFFERENT_QUERY;
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "aflr", longOptions, 0);
@@ -32,16 +32,16 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 
 		switch (option) {
 			case 'a':
-				mode = OPTION_INDIFFERENT_ASK;
+				mode = INDIFFERENT_ASK;
 				break;
 			case 'f':
-				mode = OPTION_INDIFFERENT_FIRST;
+				mode = INDIFFERENT_FIRST;
 				break;
 			case 'l':
-				mode = OPTION_INDIFFERENT_LAST;
+				mode = INDIFFERENT_LAST;
 				break;
 			case 'r':
-				mode = OPTION_INDIFFERENT_RANDOM;
+				mode = INDIFFERENT_RANDOM;
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -57,10 +57,15 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 	return DoIndifferentSelection(pAgent, mode);
 }
 
-EXPORT bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned int mode) {
+/*************************************************************
+* @brief indifferent-selection command
+* @param pAgent The pointer to the gSKI agent interface
+* @param mode What mode to set indifferent selection to, or query.  See eIndifferentMode
+*************************************************************/
+EXPORT bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, eIndifferentMode mode) {
 	if (!RequireAgent(pAgent)) return false;
 
-	if (!mode) {
+	if (mode == INDIFFERENT_QUERY) {
 		// query
 		char buf[kMinBufferSize];
 
@@ -102,16 +107,16 @@ EXPORT bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, u
 		}
 	} else {
 		switch (mode) {
-			case OPTION_INDIFFERENT_FIRST:
+			case INDIFFERENT_FIRST:
 				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_FIRST);
 				break;
-			case OPTION_INDIFFERENT_LAST:
+			case INDIFFERENT_LAST:
 				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_LAST);
 				break;
-			case OPTION_INDIFFERENT_ASK:
+			case INDIFFERENT_ASK:
 				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_ASK);
 				break;
-			case OPTION_INDIFFERENT_RANDOM:
+			case INDIFFERENT_RANDOM:
 				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_RANDOM);
 				break;
 			default:

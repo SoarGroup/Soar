@@ -29,12 +29,17 @@ bool CommandLineInterface::ParseMaxChunks(gSKI::IAgent* pAgent, std::vector<std:
 	return DoMaxChunks(pAgent, n);
 }
 
-EXPORT bool CommandLineInterface::DoMaxChunks(gSKI::IAgent* pAgent, int n) {
+/*************************************************************
+* @brief max-chunks command
+* @param pAgent The pointer to the gSKI agent interface
+* @param n The new max chunks value, use 0 to query
+*************************************************************/
+EXPORT bool CommandLineInterface::DoMaxChunks(gSKI::IAgent* pAgent, const int n) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
-
+		// query
 		if (m_RawOutput) {
 			m_Result << pAgent->GetMaxChunks();
 		} else {

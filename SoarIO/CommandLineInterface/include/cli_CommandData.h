@@ -9,31 +9,56 @@ namespace cli {
 		EXCISE_DEFAULT,
 		EXCISE_TASK,
 		EXCISE_USER,
-		EXCISE_NUM_OPTIONS,
+		EXCISE_NUM_OPTIONS, // must be last
 	};
 
-	const unsigned int OPTION_INDIFFERENT_RANDOM = 0x1;
-	const unsigned int OPTION_INDIFFERENT_FIRST	 = 0x2;
-	const unsigned int OPTION_INDIFFERENT_LAST	 = 0x3;
-	const unsigned int OPTION_INDIFFERENT_ASK	 = 0x4;
+	enum eIndifferentMode {
+		INDIFFERENT_QUERY,
+		INDIFFERENT_RANDOM,
+		INDIFFERENT_FIRST,
+		INDIFFERENT_LAST,
+		INDIFFERENT_ASK,
+	};
 
-	const unsigned int OPTION_LEARN_ALL_LEVELS = 0x01;
-	const unsigned int OPTION_LEARN_BOTTOM_UP  = 0x02;
-	const unsigned int OPTION_LEARN_DISABLE    = 0x04;
-	const unsigned int OPTION_LEARN_ENABLE     = 0x08;
-	const unsigned int OPTION_LEARN_EXCEPT     = 0x10;
-	const unsigned int OPTION_LEARN_LIST       = 0x20;
-	const unsigned int OPTION_LEARN_ONLY       = 0x40;
+	enum eLearnOptions {
+		LEARN_ALL_LEVELS,
+		LEARN_BOTTOM_UP,
+		LEARN_DISABLE,
+		LEARN_ENABLE,
+		LEARN_EXCEPT,
+		LEARN_LIST,
+		LEARN_ONLY,
+		LEARN_NUM_OPTIONS, // must be last
+	};
 
-	const unsigned int OPTION_MATCHES_PRODUCTION			 = 0x0;
-	const unsigned int OPTION_MATCHES_ASSERTIONS			 = 0x1;
-	const unsigned int OPTION_MATCHES_RETRACTIONS			 = 0x2;
-	const unsigned int OPTION_MATCHES_ASSERTIONS_RETRACTIONS = 0x3;
+	enum eLogMode { 
+		LOG_QUERY,
+		LOG_NEW,
+		LOG_NEWAPPEND,
+		LOG_CLOSE,
+		LOG_ADD,
+	};
 
-	const unsigned int OPTION_MEMORIES_CHUNKS		  = 0x1;
-	const unsigned int OPTION_MEMORIES_DEFAULT		  = 0x2;
-	const unsigned int OPTION_MEMORIES_JUSTIFICATIONS = 0x4;
-	const unsigned int OPTION_MEMORIES_USER			  = 0x8;
+	enum eMatchesMode {
+		MATCHES_PRODUCTION,
+		MATCHES_ASSERTIONS,
+		MATCHES_RETRACTIONS,
+		MATCHES_ASSERTIONS_RETRACTIONS,
+	};
+
+	enum eWMEDetail {
+		WME_DETAIL_NONE,
+		WME_DETAIL_TIMETAG,
+		WME_DETAIL_FULL,
+	};
+
+	enum eMemoriesOptions {
+		MEMORIES_CHUNKS,
+		MEMORIES_DEFAULT,
+		MEMORIES_JUSTIFICATIONS,
+		MEMORIES_USER,
+		MEMORIES_NUM_OPTIONS, // must be last
+	};
 
 	const unsigned int OPTION_NUMERIC_INDIFFERENT_AVERAGE = 0x1;
 	const unsigned int OPTION_NUMERIC_INDIFFERENT_SUM	  = 0x2;

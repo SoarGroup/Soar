@@ -6,6 +6,8 @@
 
 #include <fstream>
 
+#include <assert.h>
+
 #include "cli_GetOpt.h"
 #include "cli_Constants.h"
 #include "cli_CommandData.h"
@@ -29,7 +31,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 		{0, 0, 0, 0}
 	};
 
-	OPTION_LOG operation = OPTION_LOG_NEW;
+	eLogMode mode = LOG_NEW;
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "aAcdeoq", longOptions, 0);
@@ -37,19 +39,19 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 
 		switch (option) {
 			case 'a':
-				operation = OPTION_LOG_ADD;
+				mode = LOG_ADD;
 				break;
 			case 'c':
 			case 'd':
 			case 'o':
-				operation = OPTION_LOG_CLOSE;
+				mode = LOG_CLOSE;
 				break;
 			case 'e':
 			case 'A':
-				operation = OPTION_LOG_NEWAPPEND;
+				mode = LOG_NEWAPPEND;
 				break;
 			case 'q':
-				operation = OPTION_LOG_QUERY;
+				mode = LOG_QUERY;
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -58,76 +60,83 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 		}
 	}
 	
-	std::string toAdd;
-	std::string filename;
-	std::vector<std::string>::iterator iter = argv.begin();
+	switch (mode) {
+		case LOG_ADD:
+			{
+				std::string toAdd;
+				// no less than one non-option argument
+				if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
 
-	switch (operation) {
-		case OPTION_LOG_ADD:
-			// no less than one argument
-			if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
+				// move to the first non-option arg
+				std::vector<std::string>::iterator iter = argv.begin();
+				for (int i = 0; i < m_pGetOpt->GetOptind(); ++i) ++iter;
 
-			// combine all args
-			for (int i = 0; i < m_pGetOpt->GetOptind(); ++i) {
-				++iter;
+				// combine all args
+				while (iter != argv.end()) {
+					toAdd += *iter;
+					toAdd += ' ';
+					++iter;
+				}
+				return DoLog(pAgent, mode, 0, &toAdd);
 			}
-			while (iter != argv.end()) {
-				toAdd += *iter;
-				toAdd += ' ';
-				++iter;
-			}
-			break;
 
-		case OPTION_LOG_NEW:
-			// no more than one argument
+		case LOG_NEW:
+			// no more than one argument, no filename == query
 			if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
-			if (m_pGetOpt->GetAdditionalArgCount() == 1) filename = argv[1];
-			break;
+			if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoLog(pAgent, mode, &argv[1]);
+			break; // no args case handled below
 
-		case OPTION_LOG_NEWAPPEND:
+		case LOG_NEWAPPEND:
 			// exactly one argument
 			if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 			if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
-			filename = argv[2];
-			break;
+			return DoLog(pAgent, mode, &argv[1]);
 
-		case OPTION_LOG_CLOSE:
-		case OPTION_LOG_QUERY:
+		case LOG_CLOSE:
+		case LOG_QUERY:
 			// no arguments
 			if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
-			break;
+			break; // no args case handled below
 
 		default:
 			return SetError(CLIError::kInvalidOperation);
 	}
 
-	return DoLog(pAgent, operation, filename, toAdd);
+	// the no args case
+	return DoLog(pAgent, mode);
 }
 
-EXPORT bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, const std::string& filename, const std::string& toAdd) {
+/*************************************************************
+* @brief log command
+* @param pAgent The pointer to the gSKI agent interface
+* @param mode The mode for the log command, see cli_CommandData.h
+* @param pFilename The log filename, pass 0 (null) if not applicable to mode
+* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
+*************************************************************/
+EXPORT bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd) {
 	if (!RequireAgent(pAgent)) return false;
 
-	std::ios_base::openmode mode = std::ios_base::out;
+	std::ios_base::openmode openmode = std::ios_base::out;
 
-	switch (operation) {
-		case OPTION_LOG_NEWAPPEND:
-			mode |= std::ios_base::app;
+	switch (mode) {
+		case LOG_NEWAPPEND:
+			openmode |= std::ios_base::app;
 			// falls through
 
-		case OPTION_LOG_NEW:
-			if (filename.size() == 0) break;
+		case LOG_NEW:
+			if (!pFilename) break; // handle as just a query
 			if (m_pLogFile) return SetError(CLIError::kLogAlreadyOpen);
-			m_pLogFile = new std::ofstream(filename.c_str(), mode);
+			m_pLogFile = new std::ofstream(pFilename->c_str(), openmode);
 			if (!m_pLogFile) return SetError(CLIError::kLogOpenFailure);
-			m_LogFilename = filename;
+			m_LogFilename = *pFilename;
 			break;
 
-		case OPTION_LOG_ADD:
+		case LOG_ADD:
 			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
-			(*m_pLogFile) << toAdd << std::endl;
+			(*m_pLogFile) << pToAdd << std::endl;
 			return true;
 
-		case OPTION_LOG_CLOSE:
+		case LOG_CLOSE:
 			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
 	
 			(*m_pLogFile) << "Log file closed." << std::endl;
@@ -137,15 +146,19 @@ EXPORT bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operati
 			m_LogFilename.clear();
 			break;
 
-		case OPTION_LOG_QUERY:
+		case LOG_QUERY:
 			break;
-		default:
-			return SetError(CLIError::kInvalidOperation);
+		default: assert(false);
 	}
 
 	// Query at end of successful command, or by default (but not on _ADD)
 	if (m_RawOutput) {
-		m_Result << m_pLogFile ? "Log file '" + m_LogFilename + "' opened." : "Log file closed.";
+		m_Result << "Log file ";
+		if (m_pLogFile) {
+			m_Result << "'" + m_LogFilename + "' opened.";
+		} else {
+			m_Result << "closed.";
+		}
 
 	} else {
 		const char* setting = m_pLogFile ? sml_Names::kTrue : sml_Names::kFalse;

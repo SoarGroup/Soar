@@ -30,7 +30,7 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 		{0, 0, 0, 0}
 	};
 
-	unsigned int options = 0;
+	LearnBitset options(0);
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "abdeElo", longOptions, 0);
@@ -38,25 +38,25 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 
 		switch (option) {
 			case 'a':
-				options |= OPTION_LEARN_ALL_LEVELS;
+				options.set(LEARN_ALL_LEVELS);
 				break;
 			case 'b':
-				options |= OPTION_LEARN_BOTTOM_UP;
+				options.set(LEARN_BOTTOM_UP);
 				break;
 			case 'd':
-				options |= OPTION_LEARN_DISABLE;
+				options.set(LEARN_DISABLE);
 				break;
 			case 'e':
-				options |= OPTION_LEARN_ENABLE;
+				options.set(LEARN_ENABLE);
 				break;
 			case 'E':
-				options |= OPTION_LEARN_EXCEPT;
+				options.set(LEARN_EXCEPT);
 				break;
 			case 'l':
-				options |= OPTION_LEARN_LIST;
+				options.set(LEARN_LIST);
 				break;
 			case 'o':
-				options |= OPTION_LEARN_ONLY;
+				options.set(LEARN_ONLY);
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -71,7 +71,12 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoLearn(pAgent, options);
 }
 
-EXPORT bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int options) {
+/*************************************************************
+* @brief learn command
+* @param pAgent The pointer to the gSKI agent interface
+* @param options The various options set on the command line, see CommandData.h
+*************************************************************/
+EXPORT bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const LearnBitset& options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -79,7 +84,7 @@ EXPORT bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned i
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	// No options means print current settings
-	if (!options || (options & OPTION_LEARN_LIST)) {
+	if (options.none() || options.test(LEARN_LIST)) {
 
 		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
 
@@ -99,7 +104,7 @@ EXPORT bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned i
 			AppendArgTagFast(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_ALL_GOALS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
-		if (options & OPTION_LEARN_LIST) {
+		if (options.test(LEARN_LIST)) {
 			std::string output;
 			if (m_RawOutput) {
 				m_Result << "\nforce-learn states (when learn 'only'):";
@@ -120,35 +125,35 @@ EXPORT bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned i
 		return true;
 	}
 
-	if (options & OPTION_LEARN_ONLY) {
+	if (options.test(LEARN_ONLY)) {
 		pAgent->SetLearning(true);
 		pKernelHack->SetSysparam(pAgent, LEARNING_ONLY_SYSPARAM, true);
 		pKernelHack->SetSysparam(pAgent, LEARNING_EXCEPT_SYSPARAM, false);
 	}
 
-	if (options & OPTION_LEARN_EXCEPT) {
+	if (options.test(LEARN_EXCEPT)) {
 		pAgent->SetLearning(true);
 		pKernelHack->SetSysparam(pAgent, LEARNING_ONLY_SYSPARAM, false);
 		pKernelHack->SetSysparam(pAgent, LEARNING_EXCEPT_SYSPARAM, true);
 	}
 
-	if (options & OPTION_LEARN_ENABLE) {
+	if (options.test(LEARN_ENABLE)) {
 		pAgent->SetLearning(true);
 		pKernelHack->SetSysparam(pAgent, LEARNING_ONLY_SYSPARAM, false);
 		pKernelHack->SetSysparam(pAgent, LEARNING_EXCEPT_SYSPARAM, false);
 	}
 
-	if (options & OPTION_LEARN_DISABLE) {
+	if (options.test(LEARN_DISABLE)) {
 		pAgent->SetLearning(false);
 		pKernelHack->SetSysparam(pAgent, LEARNING_ONLY_SYSPARAM, false);
 		pKernelHack->SetSysparam(pAgent, LEARNING_EXCEPT_SYSPARAM, false);
 	}
 
-	if (options & OPTION_LEARN_ALL_LEVELS) {
+	if (options.test(LEARN_ALL_LEVELS)) {
 		pKernelHack->SetSysparam(pAgent, LEARNING_ALL_GOALS_SYSPARAM, true);
 	}
 
-	if (options & OPTION_LEARN_BOTTOM_UP) {
+	if (options.test(LEARN_BOTTOM_UP)) {
 		pKernelHack->SetSysparam(pAgent, LEARNING_ALL_GOALS_SYSPARAM, false);
 	}
 

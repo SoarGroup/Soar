@@ -86,15 +86,8 @@ typedef ElementXMLList::iterator ElementXMLListIter;
 
 // Define bitsets for various commands
 typedef std::bitset<EXCISE_NUM_OPTIONS> ExciseBitset;
-
-// Log command enum
-enum OPTION_LOG { 
-	OPTION_LOG_NEW,
-	OPTION_LOG_NEWAPPEND,
-	OPTION_LOG_CLOSE,
-	OPTION_LOG_ADD,
-	OPTION_LOG_QUERY,
-};
+typedef std::bitset<LEARN_NUM_OPTIONS> LearnBitset;
+typedef std::bitset<MEMORIES_NUM_OPTIONS> MemoriesBitset;
 
 class CommandLineInterface : public gSKI::IPrintListener{
 public:
@@ -143,7 +136,7 @@ public:
 	EXPORT bool DoAddWME(gSKI::IAgent* pAgent, const std::string& id, const std::string& attribute, const std::string& value, bool acceptable);
 
 	/*************************************************************
-	* @brief alias command
+	* @brief alias command, see home command
 	* @param command The alias to enable or disable, pass 0 to list aliases
 	* @param pSubstitution Pass a pointer to a vector strings to enable a new alias, pass 0 to disable a current alias
 	*************************************************************/
@@ -153,9 +146,8 @@ public:
 	* @brief cd command
 	* @param pDirectory Pointer to the directory to pass in to.  
 	*        Pass null to return to the initial (home) directory. 
-	*        Quotes, if present, are stripped.
 	*************************************************************/
-	EXPORT bool DoCD(std::string* pDirectory = 0);
+	EXPORT bool DoCD(const std::string* pDirectory = 0);
 
 	/*************************************************************
 	* @brief chunk-name-format command
@@ -190,7 +182,7 @@ public:
 	* @param options The various options set on the command line, see cli_CommandData.h
 	* @param pProduction A production to excise, optional
 	*************************************************************/
-	EXPORT bool DoExcise(gSKI::IAgent* pAgent, const ExciseBitset options, const std::string* pProduction = 0);
+	EXPORT bool DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction = 0);
 
 	/*************************************************************
 	* @brief explain-backtraces command
@@ -217,48 +209,56 @@ public:
 
 	/*************************************************************
 	* @brief help command
+	* @param pCommand The command to get help on, pass 0 (null) for a list of commands
 	*************************************************************/
-	EXPORT bool DoHelp(std::string* pCommand = 0);
+	EXPORT bool DoHelp(const std::string* pCommand = 0);
 
 	/*************************************************************
 	* @brief helpex command
+	* @param command The command to get extended help on
 	*************************************************************/
 	EXPORT bool DoHelpEx(const std::string& command);
 
 	/*************************************************************
-	* @brief home command
+	* @brief home command, loads aliases
+	* @param pDirectory The directory to change the cli's initial (home) directory to, pass 0 (null) for current directory
 	*************************************************************/
-	EXPORT bool DoHome(std::string* pDirectory = 0);
+	EXPORT bool DoHome(const std::string* pDirectory = 0);
 
 	/*************************************************************
 	* @brief indifferent-selection command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param mode What mode to set indifferent selection to, or query.  See eIndifferentMode
 	*************************************************************/
-	EXPORT bool DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned int mode);
+	EXPORT bool DoIndifferentSelection(gSKI::IAgent* pAgent, eIndifferentMode mode);
 
 	/*************************************************************
 	* @brief init-soar command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoInitSoar(gSKI::IAgent* pAgent);
 
 	/*************************************************************
 	* @brief internal-symbols command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoInternalSymbols(gSKI::IAgent* pAgent);
 
 	/*************************************************************
-	* @brief io command
-	*************************************************************/
-	EXPORT bool DoIO();
-
-	/*************************************************************
 	* @brief learn command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param options The various options set on the command line, see cli_CommandData.h
 	*************************************************************/
-	EXPORT bool DoLearn(gSKI::IAgent* pAgent, const unsigned int options = 0);
+	EXPORT bool DoLearn(gSKI::IAgent* pAgent, const LearnBitset& options);
 
 	/*************************************************************
 	* @brief log command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param mode The mode for the log command, see cli_CommandData.h
+	* @param pFilename The log filename, pass 0 (null) if not applicable to mode
+	* @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
 	*************************************************************/
-	EXPORT bool DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, const std::string& filename, const std::string& toAdd);
+	EXPORT bool DoLog(gSKI::IAgent* pAgent, const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0);
 
 	/*************************************************************
 	* @brief ls command
@@ -267,41 +267,58 @@ public:
 
 	/*************************************************************
 	* @brief matches command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param mode The mode for the command, see cli_CommandData.h
+	* @param detail The WME detail, see cli_CommandData.h
+	* @param pProduction The production, pass 0 (null) if not applicable to mode
 	*************************************************************/
-	EXPORT bool DoMatches(gSKI::IAgent* pAgent, unsigned int matches, int wmeDetail, const std::string& production);
+	EXPORT bool DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
 
 	/*************************************************************
 	* @brief max-chunks command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param n The new max chunks value, use 0 to query
 	*************************************************************/
-	EXPORT bool DoMaxChunks(gSKI::IAgent* pAgent, int n);
+	EXPORT bool DoMaxChunks(gSKI::IAgent* pAgent, const int n = 0);
 
 	/*************************************************************
 	* @brief max-elaborations command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param n The new max elaborations value, use 0 to query
 	*************************************************************/
-	EXPORT bool DoMaxElaborations(gSKI::IAgent* pAgent, int n);
+	EXPORT bool DoMaxElaborations(gSKI::IAgent* pAgent, const int n = 0);
 
 	/*************************************************************
 	* @brief max-nil-output-cycles command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param n The new max nil output cycles value, use 0 to query
 	*************************************************************/
-	EXPORT bool DoMaxNilOutputCycles(gSKI::IAgent* pAgent, int n);
+	EXPORT bool DoMaxNilOutputCycles(gSKI::IAgent* pAgent, const int n);
 
 	/*************************************************************
 	* @brief memories command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param options Options for the memories flag, see cli_CommandData.h
+	* @param n number of productions to print sorted by most memory use, use 0 for all
+	* @param pProduction specific production to print, ignored if any options are set, pass 0 (null) if not applicable
 	*************************************************************/
-	EXPORT bool DoMemories(gSKI::IAgent* pAgent, unsigned int productionType, int n, std::string production);
+	EXPORT bool DoMemories(gSKI::IAgent* pAgent, const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
 
 	/*************************************************************
 	* @brief multi-attributes command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoMultiAttributes(gSKI::IAgent* pAgent, std::string* pAttribute = 0, int n = 0);
 
 	/*************************************************************
 	* @brief numeric-indifferent mode command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsigned int mode);
 
 	/*************************************************************
 	* @brief o-support-mode command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoOSupportMode(gSKI::IAgent* pAgent, int mode);
 
@@ -312,16 +329,19 @@ public:
 
 	/*************************************************************
 	* @brief preferences command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoPreferences(gSKI::IAgent* pAgent, int detail, std::string* pId = 0, std::string* pAttribute = 0);
 
 	/*************************************************************
 	* @brief print command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoPrint(gSKI::IAgent* pAgent, const unsigned int options, int depth, std::string* pArg = 0);
 
 	/*************************************************************
 	* @brief production-find command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoProductionFind(gSKI::IAgent* pAgent, unsigned int mode, std::string pattern);
 
@@ -332,6 +352,7 @@ public:
 
 	/*************************************************************
 	* @brief pwatch command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoPWatch(gSKI::IAgent* pAgent, bool query = true, std::string* pProduction = 0, bool setting = false);
 
@@ -347,21 +368,25 @@ public:
 
 	/*************************************************************
 	* @brief remove-wme command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoRemoveWME(gSKI::IAgent*, int timetag);
 
 	/*************************************************************
 	* @brief rete-net command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename);
 
 	/*************************************************************
 	* @brief run command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoRun(gSKI::IAgent* pAgent, const unsigned int options, int count);
 
 	/*************************************************************
 	* @brief save-backtraces command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoSaveBacktraces(gSKI::IAgent* pAgent, bool query, bool setting);
 
@@ -377,31 +402,37 @@ public:
 
 	/*************************************************************
 	* @brief source command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoSource(gSKI::IAgent* pAgent, std::string filename);
 
 	/*************************************************************
 	* @brief sp command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoSP(gSKI::IAgent* pAgent, const std::string& production);
 
 	/*************************************************************
 	* @brief stats command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoStats(gSKI::IAgent* pAgent, const int options);
 
 	/*************************************************************
 	* @brief stop-soar command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string& reasonForStopping);
 
 	/*************************************************************
 	* @brief time command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief timers command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoTimers(gSKI::IAgent* pAgent, bool print, bool setting);
 
@@ -412,6 +443,7 @@ public:
 
 	/*************************************************************
 	* @brief verbose command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoVerbose(gSKI::IAgent* pAgent, bool query, bool setting);
 
@@ -422,21 +454,25 @@ public:
 
 	/*************************************************************
 	* @brief waitsnc command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoWaitSNC(gSKI::IAgent* pAgent, bool query, bool enable);
 
 	/*************************************************************
 	* @brief warnings command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoWarnings(gSKI::IAgent* pAgent, bool query, bool setting);
 
 	/*************************************************************
 	* @brief watch command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoWatch(gSKI::IAgent* pAgent, const int options, const int settings, const int wmeSetting, const int learnSetting);
 
 	/*************************************************************
 	* @brief watch-wmes command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, bool adds, bool removes, std::string* pIdString = 0, std::string* pAttributeString = 0, std::string* pValueString = 0);
 
@@ -475,7 +511,6 @@ protected:
 	bool ParseIndifferentSelection(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseInternalSymbols(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseIO(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseLearn(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseLS(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -595,6 +630,8 @@ protected:
 
 	bool SetError(cli::ErrorCode code);				// always returns false
 	bool SetErrorDetail(const std::string detail);	// always returns false
+
+	void ResultToArgTag(); // clears result
 
 	static std::ostringstream m_Result;	// Raw output from the command
 

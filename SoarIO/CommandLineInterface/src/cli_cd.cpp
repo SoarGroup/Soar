@@ -29,9 +29,8 @@ bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string
 * @brief cd command
 * @param pDirectory Pointer to the directory to pass in to.  
 *        Pass null to return to the initial (home) directory. 
-*        Quotes, if present, are stripped.
 *************************************************************/
-EXPORT bool CommandLineInterface::DoCD(std::string* pDirectory) {
+EXPORT bool CommandLineInterface::DoCD(const std::string* pDirectory) {
 
 	// if directory 0, return to original (home) directory
 	if (!pDirectory) {
@@ -40,12 +39,13 @@ EXPORT bool CommandLineInterface::DoCD(std::string* pDirectory) {
 	}
 
 	// Chop of quotes if they are there, chdir doesn't like them
+	std::string dir = *pDirectory;
 	if ((pDirectory->length() > 2) && ((*pDirectory)[0] == '\"') && ((*pDirectory)[pDirectory->length() - 1] == '\"')) {
-		*pDirectory = pDirectory->substr(1, pDirectory->length() - 2);
+		dir = pDirectory->substr(1, pDirectory->length() - 2);
 	}
 
 	// Change to directory
-	if (chdir(pDirectory->c_str())) return SetError(CLIError::kchdirFail);
+	if (chdir(dir.c_str())) return SetError(CLIError::kchdirFail);
 	return true;
 }
 
