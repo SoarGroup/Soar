@@ -24,12 +24,10 @@ extern int matherr();
 int *tclDummyMathPtr = (int *) matherr;
 
 #ifdef TK_TEST
-EXTERN int		Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
-#endif /* TK_TEST */
+EXTERN int Tktest_Init _ANSI_ARGS_((Tcl_Interp * interp));
+#endif                          /* TK_TEST */
 
-EXTERN int Soar_Init _ANSI_ARGS_((Tcl_Interp *interp));
-
-
+EXTERN int Soar_Init _ANSI_ARGS_((Tcl_Interp * interp));
 
 /*
  *----------------------------------------------------------------------
@@ -48,13 +46,12 @@ EXTERN int Soar_Init _ANSI_ARGS_((Tcl_Interp *interp));
  *----------------------------------------------------------------------
  */
 
-int
-main(argc, argv)
-    int argc;			/* Number of command-line arguments. */
-    char **argv;		/* Values of command-line arguments. */
+int main(argc, argv)
+int argc;                       /* Number of command-line arguments. */
+char **argv;                    /* Values of command-line arguments. */
 {
     Tk_Main(argc, argv, Tcl_AppInit);
-    return 0;			/* Needed only to prevent compiler warning. */
+    return 0;                   /* Needed only to prevent compiler warning. */
 }
 
 /*
@@ -76,25 +73,22 @@ main(argc, argv)
  *----------------------------------------------------------------------
  */
 
-int
-Tcl_AppInit(interp)
-    Tcl_Interp *interp;		/* Interpreter for application. */
+int Tcl_AppInit(interp)
+Tcl_Interp *interp;             /* Interpreter for application. */
 {
     if (Tcl_Init(interp) == TCL_ERROR) {
-	return TCL_ERROR;
+        return TCL_ERROR;
     }
     if (Tk_Init(interp) == TCL_ERROR) {
-	return TCL_ERROR;
+        return TCL_ERROR;
     }
     Tcl_StaticPackage(interp, "Tk", Tk_Init, (Tcl_PackageInitProc *) NULL);
 #ifdef TK_TEST
     if (Tktest_Init(interp) == TCL_ERROR) {
-	return TCL_ERROR;
+        return TCL_ERROR;
     }
-    Tcl_StaticPackage(interp, "Tktest", Tktest_Init,
-            (Tcl_PackageInitProc *) NULL);
-#endif /* TK_TEST */
-
+    Tcl_StaticPackage(interp, "Tktest", Tktest_Init, (Tcl_PackageInitProc *) NULL);
+#endif                          /* TK_TEST */
 
     /*
      * Call the init procedures for included packages.  Each call should
@@ -113,8 +107,7 @@ Tcl_AppInit(interp)
     }
     Tcl_StaticPackage(interp, "Soar", Soar_Init, (Tcl_PackageInitProc*) NULL);
 RMJ */
-    Tcl_StaticPackage(NULL, "Soar", Soar_Init, (Tcl_PackageInitProc*) NULL);
-
+    Tcl_StaticPackage(NULL, "Soar", Soar_Init, (Tcl_PackageInitProc *) NULL);
 
     /*
      * Call Tcl_CreateCommand for application-specific commands, if

@@ -46,7 +46,6 @@
  * =======================================================================
  */
 
-
 #include <string.h>
 #include "soar.h"
 
@@ -54,10 +53,9 @@
  * Forward declarations for procedures defined in this file:
  */
 
-static int ProcessList _ANSI_ARGS_((int * argc, int * argcPtr, char **argv, 
-				    char * curArg, Soar_ArgvInfo * infoPtr, 
-				    int *srcIndex));
-static void PrintSoarUsage _ANSI_ARGS_((Soar_ArgvInfo *argTable));
+static int ProcessList _ANSI_ARGS_((int *argc, int *argcPtr, char **argv,
+                                    char *curArg, Soar_ArgvInfo * infoPtr, int *srcIndex));
+static void PrintSoarUsage _ANSI_ARGS_((Soar_ArgvInfo * argTable));
 
 /*
  *----------------------------------------------------------------------
@@ -86,168 +84,153 @@ static void PrintSoarUsage _ANSI_ARGS_((Soar_ArgvInfo *argTable));
  *----------------------------------------------------------------------
  */
 
-int
-Soar_ParseArgv(argcPtr, argv, argTable, flags, srcIndex, dstIndex, 
-	       interp_type, options_done)
-  int *argcPtr;		          /* Number of arguments in argv.  Modified
-			           * to hold # args left in argv at end. */
-  char **argv;		          /* Array of arguments.  Modified to hold
-			           * those that couldn't be processed here. */
-  Soar_ArgvInfo *argTable;        /* Array of option descriptions */
-  int flags;			  /* Or'ed combination of various flag bits,
-				   * such as SOAR_ARGV_NO_LEFTOVERS. */
-  int * srcIndex;                 /* Location from which to read next argument
-				   * from argv. */
-  int * dstIndex;     	          /* Index into argv to which next unused
-				   * argument should be copied (never greater
-				   * than srcIndex). */
-  int * interp_type;              /* The current interp. type -- used in 
-				   processing lists of interps. */
-  int * options_done;             /* Flag indicating command line is 
-                                     parsed. */
+int Soar_ParseArgv(argcPtr, argv, argTable, flags, srcIndex, dstIndex, interp_type, options_done)
+int *argcPtr;                   /* Number of arguments in argv.  Modified
+                                 * to hold # args left in argv at end. */
+char **argv;                    /* Array of arguments.  Modified to hold
+                                 * those that couldn't be processed here. */
+Soar_ArgvInfo *argTable;        /* Array of option descriptions */
+int flags;                      /* Or'ed combination of various flag bits,
+                                 * such as SOAR_ARGV_NO_LEFTOVERS. */
+int *srcIndex;                  /* Location from which to read next argument
+                                 * from argv. */
+int *dstIndex;                  /* Index into argv to which next unused
+                                 * argument should be copied (never greater
+                                 * than srcIndex). */
+int *interp_type;               /* The current interp. type -- used in 
+                                   processing lists of interps. */
+int *options_done;              /* Flag indicating command line is 
+                                   parsed. */
 {
-  /* Other elements */
-  Soar_ArgvInfo *infoPtr;       /* Pointer to the current entry in the
-			         * table of argument descriptions. */
-  Soar_ArgvInfo *matchPtr;	/* Descriptor that matches current argument. */
-  char * curArg;                /* Current argument */
-  int argc;                     /* # arguments in argv still to process. */
-  int length;			/* Number of characters in current argument. */
+    /* Other elements */
+    Soar_ArgvInfo *infoPtr;     /* Pointer to the current entry in the
+                                 * table of argument descriptions. */
+    Soar_ArgvInfo *matchPtr;    /* Descriptor that matches current argument. */
+    char *curArg;               /* Current argument */
+    int argc;                   /* # arguments in argv still to process. */
+    int length;                 /* Number of characters in current argument. */
 
-  argc = *argcPtr;
+    argc = *argcPtr;
 
-  while (argc > 0) {
-	curArg = argv[*srcIndex];
+    while (argc > 0) {
+        curArg = argv[*srcIndex];
 /*	printf ("Looking at %s!\n", curArg); */
-	(*srcIndex)++;
-	argc--;
-	length = strlen(curArg);
+        (*srcIndex)++;
+        argc--;
+        length = strlen(curArg);
 
-	/*
-	 * Loop throught the argument descriptors searching for one with
-	 * the matching key string.  If found, leave a pointer to it in
-	 * matchPtr.
-	 */
+        /*
+         * Loop throught the argument descriptors searching for one with
+         * the matching key string.  If found, leave a pointer to it in
+         * matchPtr.
+         */
 
-	matchPtr = NULL;
-	infoPtr = argTable;
+        matchPtr = NULL;
+        infoPtr = argTable;
 
-	for (; 
-	     (infoPtr != NULL) && (infoPtr->type != SOAR_ARGV_END);
-	     infoPtr++) {
-	  if (infoPtr->key == NULL) {
-	    continue;
-	  }
-	  /* Match chars in arg to table entry */
-	  if (strncmp(infoPtr->key, curArg, length) != 0) {
-	    continue;
-	  }
-	  /* If the arg is the same length as the table entry
-	     then no ambiguity is possible so jump to process */
-	  
-	  if (infoPtr->key[length] == 0) {
-	    matchPtr = infoPtr;
-	    goto gotMatch;
-	  }
-	  /* If there was a previous match in an earlier pass,
-	     then we have an ambiguity. */
-	  if (matchPtr != NULL) {
-	    printf("ambiguous option: %s\n", curArg);
-	    return TCL_ERROR;
-	  }
-	  /* Record matching item and scan the rest of the table
-	     entries to verify that there is no ambiguity. */
-	  matchPtr = infoPtr;
-	}
+        for (; (infoPtr != NULL) && (infoPtr->type != SOAR_ARGV_END); infoPtr++) {
+            if (infoPtr->key == NULL) {
+                continue;
+            }
+            /* Match chars in arg to table entry */
+            if (strncmp(infoPtr->key, curArg, length) != 0) {
+                continue;
+            }
+            /* If the arg is the same length as the table entry
+               then no ambiguity is possible so jump to process */
 
-	if (matchPtr == NULL) {
+            if (infoPtr->key[length] == 0) {
+                matchPtr = infoPtr;
+                goto gotMatch;
+            }
+            /* If there was a previous match in an earlier pass,
+               then we have an ambiguity. */
+            if (matchPtr != NULL) {
+                printf("ambiguous option: %s\n", curArg);
+                return TCL_ERROR;
+            }
+            /* Record matching item and scan the rest of the table
+               entries to verify that there is no ambiguity. */
+            matchPtr = infoPtr;
+        }
 
-	    /*
-	     * Unrecognized argument.  Just copy it down, unless the caller
-	     * prefers an error to be registered.
-	     */
+        if (matchPtr == NULL) {
 
-	    if (flags & SOAR_ARGV_NO_LEFTOVERS) {
-	      printf("unrecognized argument: %s\n", curArg);
-	      return TCL_ERROR;
-	    }
-	    argv[*dstIndex] = curArg;
-	    (*dstIndex)++;
-	    continue;
-	}
+            /*
+             * Unrecognized argument.  Just copy it down, unless the caller
+             * prefers an error to be registered.
+             */
 
-	/*
-	 * Take the appropriate action based on the option type
-	 */
+            if (flags & SOAR_ARGV_NO_LEFTOVERS) {
+                printf("unrecognized argument: %s\n", curArg);
+                return TCL_ERROR;
+            }
+            argv[*dstIndex] = curArg;
+            (*dstIndex)++;
+            continue;
+        }
 
-	gotMatch:
-	infoPtr = matchPtr;
-	switch (infoPtr->type) {
-	    case SOAR_ARGV_CONSTANT:
-		*((int *) infoPtr->dst) = (int) infoPtr->src;
-		break;
-	    case SOAR_ARGV_STRING:
-		if ((argc == 0) || (argv[*srcIndex][0] == '-')) {
-		  printf("option %s requires an additional argument\n", 
-			 curArg);
-		  return TCL_ERROR;
-		} else {
-		    *((char **)infoPtr->dst) = argv[*srcIndex];
-		    (*srcIndex)++;
-		    argc--;
-		}
-		break;
-	    case SOAR_ARGV_REST:
-		*((int *) infoPtr->dst) = *dstIndex;
-		goto argsDone;
-	    case SOAR_ARGV_HELP:
-		PrintSoarUsage (argTable);
-		return TCL_ERROR;
-	    case SOAR_ARGV_TCLSH:
-		if (ProcessList(&argc, argcPtr, argv, curArg, 
-				infoPtr, srcIndex) != TCL_OK) 
+        /*
+         * Take the appropriate action based on the option type
+         */
 
-		  {
-		    return TCL_ERROR;
-		  }
-		else 
-		  {
-		    *interp_type = SOAR_ARGV_TCLSH;
-		    if (argc == 0) goto argsDone;
-		    return TCL_OK;
-		  }
-	    case SOAR_ARGV_WISH:
-		if (ProcessList(&argc, argcPtr, argv, curArg, 
-				infoPtr, srcIndex) != TCL_OK) 
-
-		  {
-		    return TCL_ERROR;
-		  }
-		else 
-		  {
-		    *interp_type = SOAR_ARGV_WISH;
-		    if (argc == 0) goto argsDone;
-		    return TCL_OK;
-		  }
-            case SOAR_ARGV_AGENT:
-		if (ProcessList(&argc, argcPtr, argv, curArg, 
-				infoPtr, srcIndex) != TCL_OK) 
-
-		  {
-		    return TCL_ERROR;
-		  }
-		else 
-		  {
-		    *interp_type = SOAR_ARGV_AGENT;
-		    if (argc == 0) goto argsDone;
-		    return TCL_OK;
-		  }
-	    default:
-		printf("bad argument type %d in Soar_ArgvInfo\n",
-			infoPtr->type);
-		return TCL_ERROR;
-	}
-      }
+      gotMatch:
+        infoPtr = matchPtr;
+        switch (infoPtr->type) {
+        case SOAR_ARGV_CONSTANT:
+            *((int *) infoPtr->dst) = (int) infoPtr->src;
+            break;
+        case SOAR_ARGV_STRING:
+            if ((argc == 0) || (argv[*srcIndex][0] == '-')) {
+                printf("option %s requires an additional argument\n", curArg);
+                return TCL_ERROR;
+            } else {
+                *((char **) infoPtr->dst) = argv[*srcIndex];
+                (*srcIndex)++;
+                argc--;
+            }
+            break;
+        case SOAR_ARGV_REST:
+            *((int *) infoPtr->dst) = *dstIndex;
+            goto argsDone;
+        case SOAR_ARGV_HELP:
+            PrintSoarUsage(argTable);
+            return TCL_ERROR;
+        case SOAR_ARGV_TCLSH:
+            if (ProcessList(&argc, argcPtr, argv, curArg, infoPtr, srcIndex) != TCL_OK)
+            {
+                return TCL_ERROR;
+            } else {
+                *interp_type = SOAR_ARGV_TCLSH;
+                if (argc == 0)
+                    goto argsDone;
+                return TCL_OK;
+            }
+        case SOAR_ARGV_WISH:
+            if (ProcessList(&argc, argcPtr, argv, curArg, infoPtr, srcIndex) != TCL_OK)
+            {
+                return TCL_ERROR;
+            } else {
+                *interp_type = SOAR_ARGV_WISH;
+                if (argc == 0)
+                    goto argsDone;
+                return TCL_OK;
+            }
+        case SOAR_ARGV_AGENT:
+            if (ProcessList(&argc, argcPtr, argv, curArg, infoPtr, srcIndex) != TCL_OK)
+            {
+                return TCL_ERROR;
+            } else {
+                *interp_type = SOAR_ARGV_AGENT;
+                if (argc == 0)
+                    goto argsDone;
+                return TCL_OK;
+            }
+        default:
+            printf("bad argument type %d in Soar_ArgvInfo\n", infoPtr->type);
+            return TCL_ERROR;
+        }
+    }
 
     /*
      * If we broke out of the loop because of an OPT_REST argument,
@@ -255,12 +238,12 @@ Soar_ParseArgv(argcPtr, argv, argTable, flags, srcIndex, dstIndex,
      * argc goes to 0.
      */
 
-    argsDone:
+  argsDone:
     while (argc) {
-	argv[*dstIndex] = argv[*srcIndex];
-	(*srcIndex)++;
-	(*dstIndex)++;
-	argc--;
+        argv[*dstIndex] = argv[*srcIndex];
+        (*srcIndex)++;
+        (*dstIndex)++;
+        argc--;
     }
 
     argv[*dstIndex] = (char *) NULL;
@@ -285,39 +268,36 @@ Soar_ParseArgv(argcPtr, argv, argTable, flags, srcIndex, dstIndex,
  *----------------------------------------------------------------------
  */
 
-static int
-ProcessList(argc, argcPtr, argv, curArg, infoPtr, srcIndex)
-  int * argc;                   /* # arguments in argv still to process. */
-  int *argcPtr;		        /* Number of arguments in argv.  Modified
-			         * to hold # args left in argv at end. */
-  char **argv;		        /* Array of arguments.  Modified to hold
-			         * those that couldn't be processed here. */
-  char * curArg;                /* Current argument */
-  Soar_ArgvInfo *infoPtr;       /* Pointer to the current entry in the
-			         * table of argument descriptions. */
-  int * srcIndex;               /* Location from which to read next argument
-				 * from argv. */
+static int ProcessList(argc, argcPtr, argv, curArg, infoPtr, srcIndex)
+int *argc;                      /* # arguments in argv still to process. */
+int *argcPtr;                   /* Number of arguments in argv.  Modified
+                                 * to hold # args left in argv at end. */
+char **argv;                    /* Array of arguments.  Modified to hold
+                                 * those that couldn't be processed here. */
+char *curArg;                   /* Current argument */
+Soar_ArgvInfo *infoPtr;         /* Pointer to the current entry in the
+                                 * table of argument descriptions. */
+int *srcIndex;                  /* Location from which to read next argument
+                                 * from argv. */
 {
-  soar_argv_list * sanl = (soar_argv_list *) infoPtr->dst;
+    soar_argv_list *sanl = (soar_argv_list *) infoPtr->dst;
 
-  if ((*argc == 0) || (argv[*srcIndex][0] == '-')) 
-    {
-      printf("option %s requires an additional argument\n", curArg);
-      return TCL_ERROR;
+    if ((*argc == 0) || (argv[*srcIndex][0] == '-')) {
+        printf("option %s requires an additional argument\n", curArg);
+        return TCL_ERROR;
     }
 
-  sanl->start_argv = *srcIndex;
-  sanl->end_argv = *srcIndex;
-  (*srcIndex)++;
-  (*argc)--;
-  while ((*argc > 0) && (argv[*srcIndex][0] != '-'))
-    {
-      sanl->end_argv = *srcIndex;
-      (*srcIndex)++;
-      (*argc)--;
+    sanl->start_argv = *srcIndex;
+    sanl->end_argv = *srcIndex;
+    (*srcIndex)++;
+    (*argc)--;
+    while ((*argc > 0) && (argv[*srcIndex][0] != '-')) {
+        sanl->end_argv = *srcIndex;
+        (*srcIndex)++;
+        (*argc)--;
     }
-  *argcPtr = *argc;
-  return TCL_OK;
+    *argcPtr = *argc;
+    return TCL_OK;
 }
 
 /*
@@ -336,10 +316,9 @@ ProcessList(argc, argcPtr, argv, curArg, infoPtr, srcIndex)
  *----------------------------------------------------------------------
  */
 
-static void
-PrintSoarUsage(argTable)
-    Soar_ArgvInfo *argTable;	/* Array of command-specific argument
-				 * descriptions. */
+static void PrintSoarUsage(argTable)
+Soar_ArgvInfo *argTable;        /* Array of command-specific argument
+                                 * descriptions. */
 {
     Soar_ArgvInfo *infoPtr;
     int width, numSpaces;
@@ -353,53 +332,52 @@ PrintSoarUsage(argTable)
 
     width = 4;
     for (infoPtr = argTable; infoPtr->type != SOAR_ARGV_END; infoPtr++) {
-      int length;
-      if (infoPtr->key == NULL) {
-	continue;
-      }
-      length = strlen(infoPtr->key);
-      if (length > width) {
-	width = length;
-      }
+        int length;
+        if (infoPtr->key == NULL) {
+            continue;
+        }
+        length = strlen(infoPtr->key);
+        if (length > width) {
+            width = length;
+        }
     }
 
     printf("Possible options:");
 
     for (infoPtr = argTable; infoPtr->type != SOAR_ARGV_END; infoPtr++) {
-      /* Print the switch name and a colon */
-      printf("\n %s:", infoPtr->key);
+        /* Print the switch name and a colon */
+        printf("\n %s:", infoPtr->key);
 
-      /* Print the spaces after the colon upto the switch description
-	 field. */
-      numSpaces = width + 1 - strlen(infoPtr->key);
-      while (numSpaces > 0) {
-	if (numSpaces >= NUM_SPACES) {
-	  printf("%s", spaces);
-	} else {
-	  printf("%s", spaces+NUM_SPACES-numSpaces);
-	}
-	numSpaces -= NUM_SPACES;
-      }
-      /* Print the switch description. */
-      printf("%s", infoPtr->help);
-	  
-      /* Print any default value, if present. */
-      switch (infoPtr->type) {
-      case SOAR_ARGV_STRING: {
-	char *string;
+        /* Print the spaces after the colon upto the switch description
+           field. */
+        numSpaces = width + 1 - strlen(infoPtr->key);
+        while (numSpaces > 0) {
+            if (numSpaces >= NUM_SPACES) {
+                printf("%s", spaces);
+            } else {
+                printf("%s", spaces + NUM_SPACES - numSpaces);
+            }
+            numSpaces -= NUM_SPACES;
+        }
+        /* Print the switch description. */
+        printf("%s", infoPtr->help);
 
-	string = *((char **) infoPtr->dst);
-	if (string != NULL) {
-	  printf("\n\t\tDefault value: \"%s\"", string);
-	}
-	break;
-      }
-      default: {
-	break;
-      }
-      }
+        /* Print any default value, if present. */
+        switch (infoPtr->type) {
+        case SOAR_ARGV_STRING:{
+                char *string;
+
+                string = *((char **) infoPtr->dst);
+                if (string != NULL) {
+                    printf("\n\t\tDefault value: \"%s\"", string);
+                }
+                break;
+            }
+        default:{
+                break;
+            }
+        }
     }
 
-    printf ("\n");
-  }
-    
+    printf("\n");
+}

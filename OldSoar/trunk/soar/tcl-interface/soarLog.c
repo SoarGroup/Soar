@@ -46,70 +46,64 @@ extern Tcl_Interp *tcl_soar_agent_interpreters[MAX_SIMULTANEOUS_AGENTS];
 
 #define BUF_SIZE 4096
 
-void
-Soar_Print (the_agent, str)
-     agent * the_agent;
-     const char * str;
+void Soar_Print(the_agent, str)
+agent *the_agent;
+const char *str;
 {
-  soar_invoke_first_callback(the_agent, PRINT_CALLBACK, (ClientData) str);
+    soar_invoke_first_callback(the_agent, PRINT_CALLBACK, (ClientData) str);
 }
 
-void
-Soar_Log (the_agent, str)
-     agent * the_agent;
-     const char * str;
+void Soar_Log(the_agent, str)
+agent *the_agent;
+const char *str;
 {
-  soar_invoke_first_callback(the_agent, LOG_CALLBACK, (ClientData) str);
+    soar_invoke_first_callback(the_agent, LOG_CALLBACK, (ClientData) str);
 }
 
-void
-Soar_LogAndPrint (the_agent, str)
-     agent * the_agent;
-     const char * str;
+void Soar_LogAndPrint(the_agent, str)
+agent *the_agent;
+const char *str;
 {
-  Soar_Log(the_agent, str);
-  Soar_Print(the_agent, str);
+    Soar_Log(the_agent, str);
+    Soar_Print(the_agent, str);
 }
 
-void
-Soar_PrintToFile (the_agent, data, call_data)
-     agent * the_agent;	
-     soar_callback_data data;
-     soar_call_data call_data;
+void Soar_PrintToFile(the_agent, data, call_data)
+agent *the_agent;
+soar_callback_data data;
+soar_call_data call_data;
 {
-  FILE * f = (FILE *) data;
-  fputs((char *) call_data, f);
+    FILE *f = (FILE *) data;
+    fputs((char *) call_data, f);
 }
 
-void
-Soar_PrintToChannel(the_agent, data, call_data)
-	agent * the_agent;
-	soar_callback_data data;
-	soar_call_data call_data;
+void Soar_PrintToChannel(the_agent, data, call_data)
+agent *the_agent;
+soar_callback_data data;
+soar_call_data call_data;
 {
-	Tcl_Channel channel = (Tcl_Channel) data;
-	Tcl_Write(channel, (char*) call_data, strlen((char*) call_data));
-	Tcl_Flush(channel);
+    Tcl_Channel channel = (Tcl_Channel) data;
+    Tcl_Write(channel, (char *) call_data, strlen((char *) call_data));
+    Tcl_Flush(channel);
 }
 
-void
-Soar_PrintToTextWidget (the_agent, data, call_data)
-     agent * the_agent;	
-     soar_callback_data data;
-     soar_call_data call_data;
+void Soar_PrintToTextWidget(the_agent, data, call_data)
+agent *the_agent;
+soar_callback_data data;
+soar_call_data call_data;
 {
-	Soar_TextWidgetPrintData * print_data = (Soar_TextWidgetPrintData *) data;
+    Soar_TextWidgetPrintData *print_data = (Soar_TextWidgetPrintData *) data;
 
-	char buf[BUF_SIZE];
-	snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
-	buf[BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-	Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], buf, -1, 0);
+    char buf[BUF_SIZE];
+    snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char *) call_data);
+    buf[BUF_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
+    Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], buf, -1, 0);
 
     /* RMJ 7-1-97 */
-	snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
-	buf[BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-	Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], buf, -1, 0);
-	Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], "update", -1, 0);
+    snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char *) call_data);
+    buf[BUF_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
+    Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], buf, -1, 0);
+    Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], "update", -1, 0);
 }
 
 /* RMJ 7-1-97 */
@@ -118,44 +112,39 @@ Soar_PrintToTextWidget (the_agent, data, call_data)
  * so productions are printed properly.  (productions have braces in
  * them and any line with braces was getting dropped) kjc
  */
-void
-Soar_PrintToTclProc (the_agent, data, call_data)
-     agent * the_agent;	
-     soar_callback_data data;
-     soar_call_data call_data;
+void Soar_PrintToTclProc(the_agent, data, call_data)
+agent *the_agent;
+soar_callback_data data;
+soar_call_data call_data;
 {
-	char buf[BUF_SIZE];
-	Soar_TextWidgetPrintData * print_data = (Soar_TextWidgetPrintData *) data;
+    char buf[BUF_SIZE];
+    Soar_TextWidgetPrintData *print_data = (Soar_TextWidgetPrintData *) data;
 
-	snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
-	buf[BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+    snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char *) call_data);
+    buf[BUF_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
 
-	Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], buf, -1, 0);
-	Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], "update", -1, 0);
+    Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], buf, -1, 0);
+    Tcl_EvalEx(tcl_soar_agent_interpreters[the_agent->id], "update", -1, 0);
 }
 
-void
-Soar_DiscardPrint (the_agent, data, call_data)
-     agent * the_agent;
-     soar_callback_data data;
-     soar_call_data call_data;
+void Soar_DiscardPrint(the_agent, data, call_data)
+agent *the_agent;
+soar_callback_data data;
+soar_call_data call_data;
 {
-  /* No need to do anything */
+    /* No need to do anything */
 }
 
-void
-Soar_AppendResult (the_agent, data, call_data)
-     agent * the_agent;
-     soar_callback_data data;
-     soar_call_data call_data;
+void Soar_AppendResult(the_agent, data, call_data)
+agent *the_agent;
+soar_callback_data data;
+soar_call_data call_data;
 {
-  Tcl_AppendStringsToObj(Tcl_GetObjResult(tcl_soar_agent_interpreters[the_agent->id]),
-	  (char *) call_data, 
-	  (char *) NULL);
+    Tcl_AppendStringsToObj(Tcl_GetObjResult(tcl_soar_agent_interpreters[the_agent->id]),
+                           (char *) call_data, (char *) NULL);
 }
 
-void
-Soar_FClose (FILE * f)
+void Soar_FClose(FILE * f)
 {
-  fclose(f);
+    fclose(f);
 }

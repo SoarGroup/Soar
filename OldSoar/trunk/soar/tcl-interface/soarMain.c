@@ -37,7 +37,7 @@
 
 #if defined(WIN32)
 #include <windows.h>
-#endif /* WIN32 */
+#endif                          /* WIN32 */
 
 #include <errno.h>
 #include <stdio.h>
@@ -46,9 +46,7 @@
 #include "soarCommandUtils.h"
 #include "soar_core_api.h"
 
-extern void cb_tclSoar_NewAgent( soar_callback_agent a,
-			  soar_callback_data d,
-			  soar_call_data c );
+extern void cb_tclSoar_NewAgent(soar_callback_agent a, soar_callback_data d, soar_call_data c);
 
 /*
  * Declarations for various library procedures and variables (don't want
@@ -59,21 +57,21 @@ extern void cb_tclSoar_NewAgent( soar_callback_agent a,
  * on some systems, so it's better just to leave it out.
  */
 
-extern int		isatty _ANSI_ARGS_((int fd));
-extern int		read _ANSI_ARGS_((int fd, char *buf, size_t size));
+extern int isatty _ANSI_ARGS_((int fd));
+extern int read _ANSI_ARGS_((int fd, char *buf, size_t size));
 
 /*
  * Global variables used by the main program:
  */
 
-RegisteredInterp * mainInterp = NULL;
+RegisteredInterp *mainInterp = NULL;
                                 /* The current active top-level interp. */
-static Tcl_Interp *interp;	/* Interpreter for this application. */
-static int tty;			/* Non-zero means standard input is a
-				 * terminal-like device.  Zero means it's
-				 * a file. */
+static Tcl_Interp *interp;      /* Interpreter for this application. */
+static int tty;                 /* Non-zero means standard input is a
+                                 * terminal-like device.  Zero means it's
+                                 * a file. */
 static char errorExitCmd[] = "exit 1";
-static char * process_name;     /* Name used to start this process */
+static char *process_name;      /* Name used to start this process */
 
 /*
  * Command-line options:
@@ -81,33 +79,24 @@ static char * process_name;     /* Name used to start this process */
 
 static option_table options;    /* Table of interpreter creation options */
 
-
-
 /**
  * Called when the DLL is first loaded into memory.
  */
 
 #if defined(WIN32)
-BOOL APIENTRY
-DllMain(hInst, reason, reserved)
-    HINSTANCE hInst;		/* Library instance handle. */
-    DWORD reason;		/* Reason this function is being called. */
-    LPVOID reserved;		/* Not used. */
+BOOL APIENTRY DllMain(hInst, reason, reserved)
+HINSTANCE hInst;                /* Library instance handle. */
+DWORD reason;                   /* Reason this function is being called. */
+LPVOID reserved;                /* Not used. */
 {
-        if (reason == DLL_PROCESS_ATTACH) {
-		init_soar();
+    if (reason == DLL_PROCESS_ATTACH) {
+        init_soar();
 
-		soar_cAddGlobalCallback( GLB_AGENT_CREATED,
-							 cb_tclSoar_NewAgent,
-							 NIL, NIL,
-							"new-agent" );
-	}
-	return TRUE;
+        soar_cAddGlobalCallback(GLB_AGENT_CREATED, cb_tclSoar_NewAgent, NIL, NIL, "new-agent");
+    }
+    return TRUE;
 }
-#endif /* WIN32 */
-
-
-
+#endif                          /* WIN32 */
 
 /*
  *----------------------------------------------------------------------
@@ -127,12 +116,8 @@ DllMain(hInst, reason, reserved)
  *----------------------------------------------------------------------
  */
 
-int
-Soar_UseIPC (void)
+int Soar_UseIPC(void)
 {
-  /* fprintf(stderr, "in Soar_UseIPC, value = %d\n",options.ipc_enabled); */
-  return options.ipc_enabled;
+    /* fprintf(stderr, "in Soar_UseIPC, value = %d\n",options.ipc_enabled); */
+    return options.ipc_enabled;
 }
-  
-
-
