@@ -26,8 +26,8 @@ set gameType deathmatch
 #set tcl_library "C:\Tcl\lib\tcl8.3"
 
 
-set soar_library [file join [pwd] [file join .. [file join "soar-8.5.0" "library"]]]
-set tsi_library [file join [pwd] [file join .. "tsi-3.2.0"]]
+set soar_library [file join [pwd] [file join .. [file join "soar-8.5.1" "library"]]]
+set tsi_library [file join [pwd] [file join .. "tsi-3.2.1"]]
 set soar_doc_dir [file join $soar_library doc]
 set doc_dir [file join $soar_library doc]
 

@@ -15,8 +15,8 @@
 
 set tcl_pkgPath {} 
 
-set soar_library [file join [file join [pwd] ..] [file join "soar-8.5.0" "library"]]
-set tsi_library  [file join [file join [pwd] ..] tsi-3.2.0]
+set soar_library [file join [file join [pwd] ..] [file join "soar-8.5.1" "library"]]
+set tsi_library  [file join [file join [pwd] ..] tsi-3.2.1]
 set soar_doc_dir [file join $soar_library doc]
 set doc_dir [file join $soar_library doc]
  

@@ -18,13 +18,13 @@ call windows-env.bat
 @IF "%VC6%" == "" goto help2
 @IF "%JDK%" == "" goto help2
 @IF "%RELEASES%" == "" goto help2
-@IF "%TCL%" == "" goto help2
+@rem @IF "%TCL%" == "" goto help2
 
 @rem Set debug/release configuration here
 set config=Release
 
 @rem Set the soar version (used to find the soar files)
-@set soarver=Soar-8.3
+@rem @set soarver=Soar-8.3
 
 @rem Create the output directory (removing the existing one if needed)
 @rem @set output=%RELEASES%\V%ver%-Windows
@@ -39,13 +39,13 @@ set config=Release
 @set PATH=%JDK%\bin;%PATH%
 
 @rem Set up the include path etc. for TCL
-@set INCLUDE=%TCL%\include;%INCLUDE%
+@rem @set INCLUDE=%TCL%\include;%INCLUDE%
 
 @echo Build STI
 @rem msdev "STI\STI.dsw" /MAKE "TestMaster - Win32 %config%" /REBUILD /out "%OUTPUT%\STIBuild.txt"
 msdev "STI\STI.dsw" /MAKE "TestMaster - Win32 %config%" /REBUILD /out STIBuild.txt"
 
-@rem @echo Build Soar-8.3
+@rem @echo Build Soar-8.5.1
 @rem msdev "%soarver%\interface\SoarInterface.dsw" /MAKE "dll - Win32 %config%" /REBUILD /out "%OUTPUT%\SoarBuild.txt"
 
 @echo Build VisualSoar

@@ -9,10 +9,12 @@
 @rem Path to top level of Visual C++ 6 compiler
 set VC6=C:\Program Files\Microsoft Visual Studio
 @rem Path to top level of JDK
-set JDK=c:\j2sdk1.4.1_03
+set JDK=C:\Progra~1\j2sdk_nb\j2sdk1.4.2
 
 @rem Path to top level of TCL installation
-set TCL=c:\tcl
+@rem 
+@rem oved by voigtjr
+@rem set TCL=c:\tcl
 
 @rem Path to releases folder for output from build
 @rem This is a relative path from the folder where this script is run.
