@@ -25,9 +25,9 @@ ls dir
 print p
 pwd topd
 quit exit
-run 1 step
-run -d 1 d
-run -e 1 e
+run -d step
+run -d d
+run -e e
 stop-soar stop
 stop-soar interrupt
 watch w
