@@ -56,24 +56,24 @@ class ConnectionManager ;
 typedef bool (KernelSML::*CommandFunction)(gSKI::IAgent*, char const*, Connection*, AnalyzeXML*, ElementXML*, gSKI::Error*);
 
 // Used to store a map from command name to function handler for that command
-typedef std::map<std::string, CommandFunction>	CommandMap ;
+typedef std::map< std::string, CommandFunction >	CommandMap ;
 typedef CommandMap::iterator					CommandMapIter ;
 typedef CommandMap::const_iterator				CommandMapConstIter ;
 
 // List of input producers that we need to delete
-typedef std::list<gSKI::IInputProducer*>	InputProducerList_t ;
+typedef std::list< gSKI::IInputProducer* >	InputProducerList_t ;
 typedef InputProducerList_t::iterator		InputProducerListIter_t ;
 
 // List of output producers that we need to delete
-typedef std::list<gSKI::IOutputProcessor*>	OutputProcessorList_t ;
+typedef std::list< gSKI::IOutputProcessor* >	OutputProcessorList_t ;
 typedef OutputProcessorList_t::iterator		OutputProcessorListIter_t ;
 
 // List of output listeners that we need to delete
-//typedef std::list<OutputListener*>			OutputListenerList_t ;
+//typedef std::list< OutputListener* >			OutputListenerList_t ;
 //typedef OutputListenerList_t::iterator		OutputListenerListIter_t ;
 
 // Map from agent pointers to information we keep for SML about those agents.
-typedef std::map<gSKI::IAgent*, AgentSML*>	AgentMap ;
+typedef std::map< gSKI::IAgent*, AgentSML* >	AgentMap ;
 typedef AgentMap::iterator					AgentMapIter ;
 typedef AgentMap::const_iterator			AgentMapConstIter ;
 

@@ -23,11 +23,11 @@ class KernelSML ;
 class Connection ;
 
 // The list of connections interested in an event
-typedef std::list<Connection*>		ConnectionList ;
+typedef std::list< Connection* >		ConnectionList ;
 typedef ConnectionList::iterator	ConnectionListIter ;
 
 // Mapping from the event to the list of connections listening to that event
-typedef std::map<egSKIEventId, ConnectionList*>	EventMap ;
+typedef std::map< egSKIEventId, ConnectionList* >	EventMap ;
 typedef EventMap::iterator						EventMapIter ;
 
 class EventManager

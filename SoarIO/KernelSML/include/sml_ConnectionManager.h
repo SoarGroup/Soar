@@ -71,8 +71,8 @@ protected:
 
 	// The list of connections.  One may be an embedded connection (part of same process).
 	// Rest will be remote connections over a socket, wrapped in a thread.
-	std::list<Connection*>		m_Connections ;
-	typedef std::list<Connection*>::iterator	ConnectionsIter ;
+	std::list< Connection* >		m_Connections ;
+	typedef std::list< Connection* >::iterator	ConnectionsIter ;
 
 	// If true dump out details about messages sent and received over sockets
 	// (and perhaps embedded connections too?)

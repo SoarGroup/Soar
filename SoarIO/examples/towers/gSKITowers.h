@@ -5,7 +5,7 @@
 #include "Towers.h"
 
 //Debugger directives
-#include "TgD.h"
+//#include "TgD.h"
 #include "tcl.h"
 #ifdef _WIN32
 #define _WINSOCKAPI_

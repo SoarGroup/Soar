@@ -108,15 +108,15 @@ public:
 } ;
 
 // Used to store a list of callback objects
-typedef std::list<Callback*>	CallbackList ;
+typedef std::list< Callback* >	CallbackList ;
 typedef CallbackList::iterator	CallbackListIter ;
 
 // Used to store a map from type (a string) to list of callbacks
-typedef std::map<std::string, CallbackList*>	CallbackMap ;
+typedef std::map< std::string, CallbackList* >	CallbackMap ;
 typedef CallbackMap::iterator					CallbackMapIter ;
 
 // Used to store a queue of messages
-typedef std::queue<ElementXML*>	MessageQueue ;
+typedef std::queue< ElementXML* >	MessageQueue ;
 
 /*************************************************************
 * @brief The Connection class represents a logical link

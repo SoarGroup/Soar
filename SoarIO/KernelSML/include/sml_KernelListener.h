@@ -28,6 +28,7 @@
 #include "IgSKI_Kernel.h"
 #include "sml_EventManager.h"
 
+#include <string>
 #include <map>
 
 namespace sml {
@@ -35,7 +36,7 @@ namespace sml {
 class Connection ;
 
 // Mapping from a rhs function name to the list of connections implementing that function
-typedef std::map<std::string, ConnectionList*>	RhsMap ;
+typedef std::map< std::string, ConnectionList* >	RhsMap ;
 typedef RhsMap::iterator						RhsMapIter ;
 
 class KernelListener : public gSKI::ISystemListener, public gSKI::IAgentListener, public gSKI::IRhsListener, public EventManager

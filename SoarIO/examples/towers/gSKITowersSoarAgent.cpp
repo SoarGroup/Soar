@@ -21,7 +21,7 @@ using std::string;
 
 using namespace gSKI;
 
-extern TgD::TgD* debugger;
+//extern TgD::TgD* debugger;
 
 SoarAgent::SoarAgent(IAgent* inAgent, HanoiWorld* inWorld) : m_Agent(inAgent), m_World(inWorld)
 {
