@@ -68,7 +68,7 @@ char* sml::Int2String(long value, char* buffer, int maxChars)
 	}
 
 	// Changed from ltoa -> snprintf by voigtjr
-	snprintf(buffer, maxChars, "%d", value);
+	snprintf(buffer, maxChars, "%ld", value);
 	buffer[maxChars - 1] = 0; // windows doesn't guarantee null termination
 	return buffer;
 }

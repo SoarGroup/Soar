@@ -31,7 +31,7 @@ using namespace sml ;
 // this XML document needs to know which parts are binary and which not
 // so it can decode them correctly.
 static char const* kEncodingAtt = "bin_encoding" ;
-static char const* kEncodingVal = "hex" ;
+//static char const* kEncodingVal = "hex" ;
 
 ParseXML::ParseXML(void)
 {

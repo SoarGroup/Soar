@@ -103,7 +103,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName)
 	// We shouldn't be passed something with an extension
 	// but if we are, we'll try to strip the extension to be helpful
 	size_t pos = libraryName.find_last_of('.') ;
-	if (pos != -1)
+	if (pos != std::string::npos)
 	{
 		libraryName.erase(pos) ;
 	}

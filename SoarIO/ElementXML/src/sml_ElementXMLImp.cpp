@@ -117,7 +117,7 @@ static char* BinaryToHexChars(char const* pBinaryBuffer, int length)
 	}
 
 	// Terminate the string
-	*pHex = NULL ;
+	*pHex = 0 ;
 
 	return pHexString ;
 }
@@ -158,7 +158,7 @@ static void HexCharsToBinary(char const* pHexString, char*& pBinaryBuffer, int& 
 inline static int CountXMLLength(xmlStringConst str)
 {
 	int len = 0 ;
-	for (char const* p = str ; *p != NULL ; p++)
+	for (char const* p = str ; *p != 0 ; p++)
 	{
 		len += CharLength(*p) ;
 	}
@@ -970,7 +970,7 @@ char* ElementXMLImpl::GenerateXMLString(char* pStart, int maxLength, bool includ
 char* ElementXMLImpl::AllocateString(int length)
 {
 	xmlString str = new char[length+1] ;
-	str[0] = NULL ;
+	str[0] = 0 ;
 
 	return str ;
 }

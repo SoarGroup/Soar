@@ -54,7 +54,7 @@ static in_addr* ConvertAddress(char const* pNetAddress)
 	address.s_addr = inet_addr(pNetAddress) ;
 
 	// Check if this method worked
-	if (address.s_addr != -1)
+	if (address.s_addr != INADDR_NONE)
 		return &address ;
 
 	// Then try it as a hostname

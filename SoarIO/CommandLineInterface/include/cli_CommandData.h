@@ -3,24 +3,12 @@
 
 namespace cli {
 
-	//               _
-	//  _____  _____(_)___  ___
-	// / _ \ \/ / __| / __|/ _ \
-	//|  __/>  < (__| \__ \  __/
-	// \___/_/\_\___|_|___/\___|
-	//
 	const unsigned int OPTION_EXCISE_ALL		= 0x01;
 	const unsigned int OPTION_EXCISE_CHUNKS		= 0x02;
 	const unsigned int OPTION_EXCISE_DEFAULT	= 0x04;
 	const unsigned int OPTION_EXCISE_TASK		= 0x08;
 	const unsigned int OPTION_EXCISE_USER		= 0x10;
 
-	// _
-	//| | ___  __ _ _ __ _ __
-	//| |/ _ \/ _` | '__| '_ \
-	//| |  __/ (_| | |  | | | |
-	//|_|\___|\__,_|_|  |_| |_|
-	//
 	const unsigned int OPTION_LEARN_ALL_LEVELS = 0x01;
 	const unsigned int OPTION_LEARN_BOTTOM_UP  = 0x02;
 	const unsigned int OPTION_LEARN_DISABLE    = 0x04;
@@ -29,12 +17,6 @@ namespace cli {
 	const unsigned int OPTION_LEARN_LIST       = 0x20;
 	const unsigned int OPTION_LEARN_ONLY       = 0x40;
 
-	//            _       _
-	// _ __  _ __(_)_ __ | |_
-	//| '_ \| '__| | '_ \| __|
-	//| |_) | |  | | | | | |_
-	//| .__/|_|  |_|_| |_|\__|
-	//|_|
 	const unsigned int OPTION_PRINT_ALL					= 0x0001;
 	const unsigned int OPTION_PRINT_CHUNKS				= 0x0002;
 	const unsigned int OPTION_PRINT_DEPTH				= 0x0004;
@@ -49,11 +31,6 @@ namespace cli {
 	const unsigned int OPTION_PRINT_STATES				= 0x0800;
 	const unsigned int OPTION_PRINT_USER				= 0x1000;
 
-	// _ __ _   _ _ __
-	//| '__| | | | '_ \
-	//| |  | |_| | | | |
-	//|_|   \__,_|_| |_|
-	//
 	const unsigned int OPTION_RUN_DECISION     = 0x01;
 	const unsigned int OPTION_RUN_ELABORATION  = 0x02;
 	const unsigned int OPTION_RUN_FOREVER      = 0x04;
@@ -63,23 +40,11 @@ namespace cli {
 	const unsigned int OPTION_RUN_SELF         = 0x40;
 	const unsigned int OPTION_RUN_STATE        = 0x80;
 
-	//     _        _
-	// ___| |_ __ _| |_ ___
-	/// __| __/ _` | __/ __|
-	//\__ \ || (_| | |_\__ \
-	//|___/\__\__,_|\__|___/
-	//
 	//const unsigned int OPTION_STATS_MEMORY	= 0x01;
 	//const unsigned int OPTION_STATS_RETE		= 0x02;
 	//const unsigned int OPTION_STATS_STATS		= 0x04;
 	//const unsigned int OPTION_STATS_SYSTEM	= 0x08;
 
-	//               _       _
-	//__      ____ _| |_ ___| |__
-	//\ \ /\ / / _` | __/ __| '_ \
-	// \ V  V / (_| | || (__| | | |
-	//  \_/\_/ \__,_|\__\___|_| |_|
-	//
 	const unsigned int OPTION_WATCH_LEARNING               = 0x0003;	// 2 bits (detail arg)
 	const unsigned int OPTION_WATCH_WME_DETAIL             = 0x000c;
 	const unsigned int OPTION_WATCH_BACKTRACING            = 0x0010;	// 1 bit (switch arg)

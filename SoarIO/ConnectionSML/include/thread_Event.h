@@ -37,4 +37,4 @@ public:
 
 } // Namespace
 
-#endif THREAD_EVENT_H
+#endif // THREAD_EVENT_H

@@ -12,3 +12,4 @@ sml_AnalyzeXML.h        sml_Errors.h              sml_StringOps.h         sml_Ta
 sml_ArgMap.h            sml_Handles.h             sml_TagArg.h            sml_TagWme.h         sock_SocketHeader.h    thread_Thread.h \
 sml_Connection.h        sml_MessageSML.h          sml_TagCommand.h        sock_ClientSocket.h  sock_SocketLib.h
 INCLUDES = -I../.. -I../include -I../../ElementXML/include
+CXXFLAGS = -Wall -Werror
