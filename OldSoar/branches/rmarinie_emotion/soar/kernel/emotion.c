@@ -17,7 +17,7 @@ typedef struct appraisal_variable_info {
 
 bool emotion_appraisals_have_changed();
 bool emotion_get_appraisal_variable_timetag(wme * appraisal_variable_wme, unsigned long * timetag);
-bool emotion_get_appraisal_frame_timetag(slot * appraisal_frame_slot, unsigned long * timetag);
+bool emotion_get_appraisal_frame_timetag(identifier appraisal_variable_id, unsigned long * timetag);
 void emotion_get_appraisals();
 void emotion_aggregate_variables();
 void emotion_update_emotion();
@@ -226,7 +226,7 @@ bool emotion_appraisals_have_changed() {
             unsigned long timetag;
 
             
-            valid = emotion_get_appraisal_frame_timetag(appraisal_frame_wme->value->id.slots, &timetag);
+            valid = emotion_get_appraisal_frame_timetag(appraisal_frame_wme->value->id, &timetag);
 
             if(valid) {
                 num_appraisals++;
@@ -414,7 +414,8 @@ bool emotion_get_appraisal_variable_infoOLD(wme * appraisal_variable_wme, apprai
     return TRUE;
 }   
 
-bool emotion_get_appraisal_frame_timetag(slot * appraisal_frame_slot, unsigned long * timetag) {
+bool emotion_get_appraisal_frame_timetag(identifier appraisal_frame_id, unsigned long * timetag) {
+    slot * appraisal_variable_slot;
     wme * appraisal_variable_wme;
     unsigned long cur_timetag;
     unsigned long max_timetag;
@@ -423,21 +424,26 @@ bool emotion_get_appraisal_frame_timetag(slot * appraisal_frame_slot, unsigned l
     valid_frame = FALSE;
     max_timetag = 0;
 
-    appraisal_variable_wme = appraisal_frame_slot->wmes;
+    appraisal_variable_slot = appraisal_frame_id.slots;
 
-    while(appraisal_variable_wme) {
-        bool valid_variable;
+    while(appraisal_variable_slot) {
+        appraisal_variable_wme = appraisal_variable_slot->wmes;
 
-        valid_variable = emotion_get_appraisal_variable_timetag(appraisal_variable_wme, &cur_timetag);
+        while(appraisal_variable_wme) {
+            bool valid_variable;
+
+            valid_variable = emotion_get_appraisal_variable_timetag(appraisal_variable_wme, &cur_timetag);
         
-        if(valid_variable) {
-            valid_frame = TRUE;
-            if(cur_timetag > max_timetag) {
-                max_timetag = cur_timetag;
+            if(valid_variable) {
+                valid_frame = TRUE;
+                if(cur_timetag > max_timetag) {
+                    max_timetag = cur_timetag;
+                }
             }
-        }
 
-        appraisal_variable_wme = appraisal_variable_wme->next;
+            appraisal_variable_wme = appraisal_variable_wme->next;
+        }
+        appraisal_variable_slot = appraisal_variable_slot->next;
     }
 
     (*timetag) = max_timetag;
