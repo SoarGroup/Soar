@@ -869,7 +869,7 @@ int lua_soar_cGetAgentOutputLinkId(lua_State *S)
 {
 	assertSS(S, 1);
 	psoar_agent a = getUserdata<psoar_agent>(S);
-	char *d = soar_cGetAgentOutputLinkId(a, NULL);
+	char *d = soar_cGetAgentOutputLinkId(a, NULL, 0);
 	
 	lua_pushstring(S,d);
 	

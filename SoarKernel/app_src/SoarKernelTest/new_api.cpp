@@ -463,7 +463,7 @@ int soar_Learn(char ** argv, int argc)
 			c != NIL;
 			c = c->rest)
 			{
-				symbol_to_string(glbAgent, (Symbol *) (c->first), TRUE, buff);
+				symbol_to_string(glbAgent, (Symbol *) (c->first), TRUE, buff, 1024);
 				printf("\n%s\n", buff);
 			}
 			printf("\ndont-learn states (when learn = -except):\n", (char *) NULL);
@@ -471,7 +471,7 @@ int soar_Learn(char ** argv, int argc)
 			c != NIL; 
 			c = c->rest)
 			{
-				symbol_to_string(glbAgent, (Symbol *) (c->first), TRUE, buff);
+				symbol_to_string(glbAgent, (Symbol *) (c->first), TRUE, buff, 1024);
 				printf("\n%s\n", buff);
 			}
 			return TRUE;

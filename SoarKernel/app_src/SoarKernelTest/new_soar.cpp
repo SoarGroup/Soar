@@ -520,9 +520,9 @@ void neatly_print_wme_augmentation_of_id (wme *w, int indentation) {
   strcpy (buf, " ^");
   ch = buf;
   while (*ch) ch++;
-  symbol_to_string (glbAgent, w->attr, TRUE, ch); while (*ch) ch++;
+  symbol_to_string (glbAgent, w->attr, TRUE, ch, 10000 - (ch - buf)); while (*ch) ch++;
   *(ch++) = ' ';
-  symbol_to_string (glbAgent, w->value, TRUE, ch); while (*ch) ch++;
+  symbol_to_string (glbAgent, w->value, TRUE, ch, 10000 - (ch - buf)); while (*ch) ch++;
   if (w->acceptable) { strcpy (ch, " +"); while (*ch) ch++; }
 
   if (get_printer_output_column(glbAgent) + (ch - buf) >= 80) {
@@ -545,8 +545,8 @@ int compare_attr (const void * e1, const void * e2)
   p1 = (wme **) e1;
   p2 = (wme **) e2;
 
-  symbol_to_string (glbAgent, (*p1)->attr, TRUE, s1);
-  symbol_to_string (glbAgent, (*p2)->attr, TRUE, s2);
+  symbol_to_string (glbAgent, (*p1)->attr, TRUE, s1, MAX_LEXEME_LENGTH*2+20);
+  symbol_to_string (glbAgent, (*p2)->attr, TRUE, s2, MAX_LEXEME_LENGTH*2+20);
 
   return (strcmp (s1, s2));
 }

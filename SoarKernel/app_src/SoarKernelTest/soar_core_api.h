@@ -77,7 +77,7 @@ void soar_cAddInputFunction (agent * a, soar_callback_fn f,
 void soar_cExciseAllProductions (void);
 void soar_cExciseAllTaskProductions (void);
 void soar_cExciseAllProductionsOfType ( byte type );
-char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff );
+char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff, size_t buff_size );
 int soar_cSetOperand2( Bool turnOn );
 int soar_cMultiAttributes( char *attribute, int value );
 void soar_cCreateAgent (const char * agent_name, bool b);

@@ -869,7 +869,7 @@ void print_multi_attribute_symbols(void)
   } else {
     print(glbAgent, "Value\tSymbol\n");
     while(m) {
-      print(glbAgent, "%ld\t%s\n", m->value, symbol_to_string(glbAgent, m->symbol, TRUE, NIL));
+      print(glbAgent, "%ld\t%s\n", m->value, symbol_to_string(glbAgent, m->symbol, TRUE, NIL, 0));
       m = m->next;
     }
   }

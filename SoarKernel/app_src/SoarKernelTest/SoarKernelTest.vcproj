@@ -105,7 +105,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies=" Lua+Lib.lib"
 				OutputFile="$(OutDir)/SoarKernelTestd.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="../../lib"
 				GenerateDebugInformation="TRUE"

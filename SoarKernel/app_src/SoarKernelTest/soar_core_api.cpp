@@ -1570,7 +1570,7 @@ void soar_cExciseAllProductionsOfType ( byte type ) {
 
 }
 
-char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff ) {
+char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff, size_t buff_size ) {
   char *temp;
   char *ret;
 
@@ -1580,7 +1580,7 @@ char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff ) {
 	return "";
   }
 
-  temp = symbol_to_string( glbAgent, ((agent *)a)->io_header_output, TRUE, buff );
+  temp = symbol_to_string( glbAgent, ((agent *)a)->io_header_output, TRUE, buff, buff_size );
   if ( buff ) return buff;
 
   ret = (char *) malloc( (strlen(temp) + 1) * sizeof(char) );
