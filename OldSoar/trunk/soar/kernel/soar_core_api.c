@@ -1783,7 +1783,17 @@ void soar_cRemoveCallback(soar_callback_agent the_agent, SOAR_CALLBACK_TYPE call
 
     head = ((agent *) the_agent)->soar_callbacks[callback_type];
 
-    for (c = head; c != NIL; c = c->rest) {
+	/* This is a non-standard for loop.
+	   Because we have to juggle the elements of this list around as we are
+	   deleting them, it is difficult to ensure that we can use a single
+	   incrementer, like c = c->rest.  The primary problem is that, if we
+	   delete the last item in the list, then the incrementer will fail
+	   (since c will be NULL).  Because of this, we manually increment the list
+	   inside the loop based on what the circumstances are.  Thus, the statements
+	   which change the value of c are the incrementers.
+	*/
+
+    for (c = head; c != NULL; /*c = c->rest*/) {
         soar_callback *cb;
 
         cb = (soar_callback *) c->first;
@@ -1793,7 +1803,7 @@ void soar_cRemoveCallback(soar_callback_agent the_agent, SOAR_CALLBACK_TYPE call
                 prev_c->rest = c->rest;
                 soar_destroy_callback(cb);
                 free_cons(c);
-				c = prev_c;
+				c = prev_c->rest;
                 /*return;*/
             } else {
                 ((agent *) the_agent)->soar_callbacks[callback_type]
@@ -1802,11 +1812,18 @@ void soar_cRemoveCallback(soar_callback_agent the_agent, SOAR_CALLBACK_TYPE call
                 free_cons(c);
 				head = ((agent *) the_agent)->soar_callbacks[callback_type]; 
 				c = head;
+				prev_c = NULL;
                 /*return;*/
             }
 
         }
-        prev_c = c;
+		else {
+			prev_c = c;
+			c = c->rest;
+
+		}
+
+        /*prev_c = c;*/
     }
 }
 
