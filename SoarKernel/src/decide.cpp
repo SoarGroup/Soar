@@ -2672,15 +2672,15 @@ void do_working_memory_phase (agent* thisAgent) {
       {
          switch (thisAgent->FIRING_TYPE) {
          case PE_PRODS:
-            print (thisAgent, "\t--- Change Working Memory (PE) ---\n");
+	   print_phase (thisAgent, "\t--- Change Working Memory (PE) ---\n",0);
             break;
          case IE_PRODS:
-            print (thisAgent, "\t--- Change Working Memory (IE) ---\n");
+	   print_phase (thisAgent, "\t--- Change Working Memory (IE) ---\n",0);
             break;
          }
       }
       else
-         print (thisAgent, "\n--- Working Memory Phase ---\n");
+	print_phase (thisAgent, "\n--- Working Memory Phase ---\n",0);
    }
    
    decide_non_context_slots(thisAgent);
@@ -2690,7 +2690,7 @@ void do_working_memory_phase (agent* thisAgent) {
 void do_decision_phase (agent* thisAgent) 
 {
    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-      print (thisAgent, "\n--- Decision Phase ---\n");
+     print_phase (thisAgent, "\n--- Decision Phase ---\n",0);
 
    decide_context_slots (thisAgent);
    do_buffered_wm_and_ownership_changes(thisAgent);
@@ -2863,7 +2863,7 @@ void elaborate_gds (agent* thisAgent) {
 #ifdef DEBUG_GDS
       print_with_symbols(thisAgent, "\n      EXPLORING INSTANTIATION: %y\n",curr_pi->inst->prod->name);
       print(thisAgent, "      ");
-      print_instantiation_with_wmes( thisAgent, curr_pi->inst , TIMETAG_WME_TRACE);
+      print_instantiation_with_wmes( thisAgent, curr_pi->inst , TIMETAG_WME_TRACE, -1);
 #endif
 
       for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next) 

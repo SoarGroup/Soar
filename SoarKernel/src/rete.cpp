@@ -7936,7 +7936,7 @@ void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
     for (msc=thisAgent->ms_retractions; msc!=NIL; msc=msc->next) {
       if(wtt != NONE_WME_TRACE) {
         print (thisAgent, "  ");
-        print_instantiation_with_wmes (thisAgent, msc->inst, wtt);
+        print_instantiation_with_wmes (thisAgent, msc->inst, wtt, -1);
         print (thisAgent, "\n");
       } else {
         if(msc->inst->prod) {

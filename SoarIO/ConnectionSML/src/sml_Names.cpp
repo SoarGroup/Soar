@@ -56,7 +56,47 @@ char const* const sml_Names::kTagResult		= "result" ;
 char const* const sml_Names::kValueDelta	= "delta" ;
 char const* const sml_Names::kValueFull		= "full" ;
 
-// <wme> tag identifiers
+// Tags defined for Trace output at each watch level:
+
+// <context> tag identifiers for Watch level 1
+char const* const sml_Names::kTagState		= "state" ;
+char const* const sml_Names::kTagOperator	= "operator" ;
+char const* const sml_Names::kState_ID		= "current_state_id" ;
+char const* const sml_Names::kState_Name	= "name" ;
+char const* const sml_Names::kState_DecisionCycleCt	= "decision_cycle_count" ;
+char const* const sml_Names::kState_ImpasseObject	= "impasse_object" ;
+char const* const sml_Names::kState_ImpasseType		= "impasse_type" ;
+char const* const sml_Names::kOperator_ID	= "current_operator_id" ;
+// should we really have a separate string for these?
+char const* const sml_Names::kOperator_Name	= "name" ;
+char const* const sml_Names::kOperator_DecisionCycleCt = "decision_cycle_count" ;
+
+// <phase> tag identifiers for Watch level 2
+char const* const sml_Names::kTagPhase  	= "phase" ;
+char const* const sml_Names::kPhase_Name  	= "name" ;
+char const* const sml_Names::kPhase_Status  	= "status" ;
+char const* const sml_Names::kPhase_FiringType 	= "firing_type" ;
+char const* const sml_Names::kPhaseName_Input  	= "INPUT" ;
+char const* const sml_Names::kPhaseName_Pref  	= "PREF" ;
+char const* const sml_Names::kPhaseName_WM  	= "WM" ;
+char const* const sml_Names::kPhaseName_Decision= "DECISION" ;
+char const* const sml_Names::kPhaseName_Output 	= "OUTPUT" ;
+// next two are new phase names
+char const* const sml_Names::kPhaseName_Propose	= "PROPOSE" ;
+char const* const sml_Names::kPhaseName_Apply  	= "APPLY" ;
+char const* const sml_Names::kPhaseName_Unknown	= "UNKNOWN" ;
+char const* const sml_Names::kPhaseStatus_Begin	= "begin" ;
+char const* const sml_Names::kPhaseStatus_End	= "end" ;
+char const* const sml_Names::kPhaseFiringType_IE= "IE" ;
+char const* const sml_Names::kPhaseFiringType_PE= "PE" ;
+
+// <prod-firing> tag identifiers for Watch level 3
+char const* const sml_Names::kTagProduction		= "production" ;
+char const* const sml_Names::kProduction_Name  	= "prod_name" ;
+char const* const sml_Names::kProduction_Firing  	 = "production_firing" ;
+char const* const sml_Names::kProduction_Retracting  = "production_retracting" ;
+
+// <wme> tag identifiers, also for Watch level 4
 char const* const sml_Names::kTagWME		= "wme" ;
 char const* const sml_Names::kWME_TimeTag	= "tag" ;
 char const* const sml_Names::kWME_Id		= "id" ;
@@ -64,8 +104,16 @@ char const* const sml_Names::kWME_Attribute	= "att" ;
 char const* const sml_Names::kWME_Value		= "value" ;
 char const* const sml_Names::kWME_ValueType	= "type" ;
 char const* const sml_Names::kWME_Action	= "action" ;
+// kjc question:  should the next entry be kWMEAction_Add?
 char const* const sml_Names::kValueAdd		= "add" ;
 char const* const sml_Names::kValueRemove	= "remove" ;
+char const* const sml_Names::kTagWMERemove	= "removing_wme" ;
+char const* const sml_Names::kTagWMEAdd 	= "adding_wme" ;
+
+// <preference> tag identifiers, also Watch level 5
+char const* const sml_Names::kTagPreference		= "preference" ;
+char const* const sml_Names::kPreference_Type	= "pref_type" ;
+
 
 // Types
 char const* const sml_Names::kTypeString	= "string" ;

@@ -84,6 +84,7 @@ extern void start_redirection_to_file (agent* thisAgent, FILE *already_opened_fi
 extern void stop_redirection_to_file (agent* thisAgent);
 
 extern void print_string (agent* thisAgent, char *s);
+extern void print_phase  (agent* thisAgent, char *s, bool end_phase);
 extern void generate_tagged_output (agent* thisAgent, char *s);
 
 #ifdef USE_STDARGS
@@ -179,7 +180,8 @@ extern void print_production (agent* thisAgent, production *p, Bool internal);
    Print_preference() prints a given preference.  Print_wme() prints a
    wme (including the timetag).  Print_instantiation_with_wmes() prints
    an instantiation's production name and the wmes it matched, using a
-   given wme_trace_type (e.g., TIMETAG_WME_TRACE).
+   given wme_trace_type (e.g., TIMETAG_WME_TRACE). Action is printing, 
+   firing or retracting -- added March 05 KJC.
 ----------------------------------------------------------------------- */
 
 extern void print_condition (agent* thisAgent, condition *cond);
@@ -192,7 +194,8 @@ extern void print_wme_for_tcl (wme *w);
 //#endif /* USE_TCL */
 extern void print_instantiation_with_wmes (agent* thisAgent, 
 										   instantiation *inst,
-                                           wme_trace_type wtt);
+                                           wme_trace_type wtt,
+										   int action);
 
 extern void print_list_of_conditions(agent* thisAgent, condition *cond); /* BUGBUG comments */
 

@@ -614,7 +614,8 @@ void create_instantiation (agent* thisAgent, production *prod,
       if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");  /* AGR 617/634 */
       print (thisAgent, "Firing ");
       print_instantiation_with_wmes
-         (thisAgent, inst, (wme_trace_type)(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]));
+         (thisAgent, inst, 
+		 (wme_trace_type)(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
    }
 
    /* --- initialize rhs_variable_bindings array with names of variables
@@ -835,12 +836,13 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
 
       if (trace_it) {
         if (!retracted_a_preference) {
-	  if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");  /* AGR 617/634 */
-          print (thisAgent, "Retracting ");
-          print_instantiation_with_wmes
-            (thisAgent, inst, (wme_trace_type)thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]);
-          if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) print (thisAgent, " -->");
-        }
+			if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");  /* AGR 617/634 */
+			print (thisAgent, "Retracting ");
+            print_instantiation_with_wmes (thisAgent, inst, 
+				(wme_trace_type)thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM],1);
+            if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) 
+				print (thisAgent, " -->");
+		}
         if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
           print (thisAgent, " ");
           print_preference (thisAgent, pref);
@@ -1032,16 +1034,16 @@ void do_preference_phase (agent* thisAgent) {
      if (thisAgent->operand2_mode == TRUE) {
 	switch (thisAgent->FIRING_TYPE) {
 	   case PE_PRODS:
-              print (thisAgent, "\t--- Firing Productions (PE) ---\n");
+	     print_phase (thisAgent, "\t--- Firing Productions (PE) ---\n",0);
 	      break;
 	   case IE_PRODS:
-              print (thisAgent, "\t--- Firing Productions (IE) ---\n");
+	     print_phase (thisAgent, "\t--- Firing Productions (IE) ---\n",0);
 	      break;
 	}
      }
 
      else
-	  print (thisAgent, "\n--- Preference Phase ---\n");
+       print_phase (thisAgent, "\n--- Preference Phase ---\n",0);
   }
 
 
@@ -1079,6 +1081,10 @@ void do_preference_phase (agent* thisAgent) {
   }
 
 /* REW: end   08.20.97 */
+
+  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
+	  print_phase (thisAgent, "\n--- END Preference Phase ---\n",1);
+  }
 
 }
 

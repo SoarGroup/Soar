@@ -234,7 +234,7 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
 
 void do_input_cycle (agent* thisAgent) {
   if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-    print (thisAgent, "\n--- Input Phase --- \n");
+    print_phase (thisAgent, "\n--- Input Phase --- \n",0);
 
   if (thisAgent->prev_top_state && (!thisAgent->top_state)) {
     /* --- top state was just removed --- */
@@ -296,6 +296,10 @@ void do_input_cycle (agent* thisAgent) {
    *     KJC 11/23/98
    */
   thisAgent->output_link_changed = FALSE;
+
+
+  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+    print_phase (thisAgent, "\n--- END Input Phase --- \n",1);
 }
 
 /* ====================================================================
@@ -614,7 +618,8 @@ void do_output_cycle (agent* thisAgent) {
   io_wme *iw_list;
   output_call_info output_call_data;
 
-  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) print (thisAgent, "\n--- Output Phase ---\n");
+  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+    print_phase (thisAgent, "\n--- Output Phase ---\n",0);
 
   for (ol=thisAgent->existing_output_links; ol!=NIL; ol=next_ol) {
     next_ol = ol->next;
@@ -672,6 +677,9 @@ void do_output_cycle (agent* thisAgent) {
       break;
     }
   } /* end of for ol */
+  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+    print_phase (thisAgent, "\n--- END Output Phase ---\n",1);
+
 }
 
 /* --------------------------------------------------------------------

@@ -1389,6 +1389,11 @@ void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slo
   set_tagged_trace_formats(thisAgent);
   gs = selection_to_trace_string (thisAgent, object, state, slot_type,allow_cycle_counts);
   generate_tagged_output(thisAgent, text_of_growable_string(gs));
+  if (slot_type == FOR_STATES_TF) {
+    generate_tagged_output(thisAgent, "</state>");
+  } else {
+	generate_tagged_output(thisAgent, "</operator>");
+  }
   set_print_trace_formats(thisAgent);
 //end KJC 03/05
   free_growable_string (thisAgent, gs);

@@ -1109,6 +1109,18 @@ void print_preference (agent* thisAgent, preference *pref) {
   if (pref->o_supported) print_string (thisAgent, "  :O ");
   print_string (thisAgent, ")");
   print (thisAgent, "\n");
+
+  // KJC: added Mar 05 for structured output support
+  // Might move later
+  // <preference id="s1" attr="foo" value="123" pref_type=">"></preference>
+  generate_tagged_output(thisAgent, "<preference ");
+  tagged_output_with_symbols (thisAgent, "id=\"%y\" attr=\"%y\" value=\"%y\" pref_type=\"", 
+	  pref->id, pref->attr, pref->value);
+//  generate_tagged_output (thisAgent, preference_type_indicator (thisAgent, pref->type));
+  if (preference_is_binary(pref->type)) {
+    tagged_output_with_symbols (thisAgent, " %y", pref->referent);
+  }
+  generate_tagged_output(thisAgent, "\"></preference>\n"); 
 }
 //#ifdef USE_TCL
 
@@ -1149,11 +1161,11 @@ void print_wme (agent* thisAgent, wme *w) {
   // KJC: added Mar 05 for structured output support
   // Might move later
   // <wme timetag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
-
   generate_tagged_output(thisAgent, "<wme ");
+//  generate_tagged_output(thisAgent, w->timetag);
   tagged_output_with_symbols (thisAgent, "id=\"%y\" attr=\"%y\" value=\"%y\" ", w->id, w->attr, w->value);
   if (w->acceptable) generate_tagged_output (thisAgent, " preference=\"+\"");
-  generate_tagged_output(thisAgent, ">\n"); 
+  generate_tagged_output(thisAgent, "></wme>\n"); 
 }
 
 //#ifdef USE_TCL
@@ -1165,22 +1177,50 @@ void print_wme_for_tcl (agent* thisAgent, wme *w)
 }
 //#endif /* USE_TCL */
 
-void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst, wme_trace_type wtt) {
+void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst, 
+									wme_trace_type wtt, int action) 
+{
+  int PRINTING = -1;
+  int FIRING = 0;
+  int RETRACTING = 1;
   condition *cond;
 
-  if (inst->prod)
-    print_with_symbols (thisAgent, "%y", inst->prod->name);
-  else
+
+  if (action == PRINTING) {
+	  generate_tagged_output(thisAgent, "<production prod_name=\"");
+  } else if (action == FIRING) {
+	  generate_tagged_output(thisAgent, "<production_firing prod_name=\"");
+  } else if (action == RETRACTING) {
+	  generate_tagged_output(thisAgent, "<production_retracting prod_name=\"");
+  }
+
+  if (inst->prod) {
+    print_with_symbols  (thisAgent, "%y", inst->prod->name);
+    tagged_output_with_symbols (thisAgent, "%y", inst->prod->name);
+  } else {
     print (thisAgent, "[dummy production]");
+	  generate_tagged_output(thisAgent, "<production prod_name=\"[dummy_production]");
+  }
+
   print (thisAgent, "\n");
 
-  if (wtt==NONE_WME_TRACE) return;
+  if (wtt==NONE_WME_TRACE) {
+	  if (action == PRINTING) {
+		  generate_tagged_output(thisAgent, "</production>");
+	  } else if (action == FIRING) {
+		  generate_tagged_output(thisAgent, "</production_firing>");
+	  } else if (action == RETRACTING) {
+		  generate_tagged_output(thisAgent, "</production_retracting>");
+	  }
+	  return;
+  }
 
   for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next)
     if (cond->type==POSITIVE_CONDITION) {
       switch (wtt) {
       case TIMETAG_WME_TRACE:
         print (thisAgent, " %lu", cond->bt.wme_->timetag);
+		//KJC need to add the tagged output here.
         break;
       case FULL_WME_TRACE:
         print (thisAgent, " ");
@@ -1188,6 +1228,14 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst, wme_t
         break;
       }
     }
+	
+	if (action == PRINTING) {
+		generate_tagged_output(thisAgent, "</production>");
+	} else if (action == FIRING) {
+		generate_tagged_output(thisAgent, "</production_firing>");
+	} else if (action == RETRACTING) {
+		generate_tagged_output(thisAgent, "</production_retracting>");
+	}
 }
 
 /***************************************************************************
@@ -1206,6 +1254,70 @@ void print_list_of_conditions(agent* thisAgent, condition *cond) {
   }
 }
 
+void print_phase (agent* thisAgent, char * s, bool end_of_phase)
+{
+  // should be more consistent with creating string, but for now, for
+  // consistency with previous versions, we'll let existing code set string.
+  print (thisAgent, s);
+
+  // the rest is all for tagged output events
+
+  if (end_of_phase) {
+    generate_tagged_output(thisAgent, "<phase status=\"END\" name=\"");
+  } else {
+    generate_tagged_output(thisAgent, "<phase name=\"");
+  }
+  switch (thisAgent->current_phase) {
+  case INPUT_PHASE:
+    generate_tagged_output(thisAgent, "INPUT\"></phase>");
+    return;
+  case PREFERENCE_PHASE:
+    generate_tagged_output(thisAgent, "PREF\"></phase>");
+    return;
+  case WM_PHASE:
+    if (thisAgent->operand2_mode == TRUE) {
+      switch (thisAgent->FIRING_TYPE) {
+      case PE_PRODS:
+	generate_tagged_output(thisAgent, "WM\" firing_type=\"PE\"></phase> ");
+	return;
+      case IE_PRODS:
+	generate_tagged_output(thisAgent, "WM\" firing_type=\"IE\"></phase> ");
+	return;
+      }
+    }
+    else
+      generate_tagged_output(thisAgent, "WM\"></phase> ");
+    return;
+  case DECISION_PHASE:
+    generate_tagged_output(thisAgent, "DECISION\"></phase> ");
+    return;
+  case OUTPUT_PHASE:
+    generate_tagged_output(thisAgent, "OUTPUT\"></phase> ");
+    return;
+  case PROPOSE_PHASE:
+    generate_tagged_output(thisAgent, "PROPOSE\"></phase> ");
+    return;
+  case APPLY_PHASE:
+    if (thisAgent->operand2_mode == TRUE) 
+      {
+	switch (thisAgent->FIRING_TYPE) {
+	case PE_PRODS:
+	  generate_tagged_output(thisAgent, "APPLY\" firing_type=\"PE\"></phase> ");
+	  return;
+	case IE_PRODS:
+	  generate_tagged_output(thisAgent, "APPLY\" firing_type=\"IE\"></phase> ");
+	  return;
+	}
+      }
+    else
+      generate_tagged_output(thisAgent, "APPLY\"></phase> ");
+    return;
+  default:
+    generate_tagged_output(thisAgent, "UNKNOWN\"></phase> ");
+    return;
+  }
+  return;
+}
 
 
 
@@ -1233,7 +1345,11 @@ void Soar_Log (agent* thisAgent, agent * the_agent, char * str)
    soar_invoke_first_callback(thisAgent, the_agent, 
 	                          LOG_CALLBACK, /*(ClientData)*/ static_cast<void*>(str));
 } 
-
+/*
+===========================
+Added for Release 8.6
+===========================
+*/
 void generate_tagged_output (agent * thisAgent, char * str)
 {
    gSKI_MakeAgentCallback(gSKI_K_EVENT_STRUCTURED_OUTPUT, 0, thisAgent, static_cast<void*>(str));

@@ -719,7 +719,8 @@ void do_one_top_level_phase (agent* thisAgent)
 
   if (thisAgent->system_halted) 
   {
-    print (thisAgent, "\nSystem halted.  Use (init-soar) before running Soar again.");
+    print (thisAgent,
+	   "\nSystem halted.  Use (init-soar) before running Soar again.");
     thisAgent->stop_soar = TRUE;
     thisAgent->reason_for_stopping = "System halted.";
     return;

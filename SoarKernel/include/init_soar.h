@@ -178,6 +178,8 @@ enum top_level_phase { INPUT_PHASE = 0,
                        WM_PHASE,
                        OUTPUT_PHASE, 
                        DECISION_PHASE,
+		       PROPOSE_PHASE,
+		       APPLY_PHASE,
                        NUM_PHASE_TYPES
                      };
 

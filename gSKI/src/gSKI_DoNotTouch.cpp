@@ -874,7 +874,7 @@ namespace gSKI
 			print (agnt, "\n");
 			if (print_source) {
 				print (agnt, "    From ");
-				print_instantiation_with_wmes (agnt, pref->inst, wtt);
+				print_instantiation_with_wmes (agnt, pref->inst, wtt, -1);
 				print (agnt, "\n");
 			}
 		}

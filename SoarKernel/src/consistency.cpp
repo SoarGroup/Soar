@@ -590,7 +590,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
    int level_change_type, diff;
    
    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) 
-      print (thisAgent, "\n--- Application Phase ---\n");
+      print_phase (thisAgent, "\n--- Application Phase ---\n",1);
    
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
    printf("\nDetermining the highest active level in the stack....\n"); 
@@ -812,7 +812,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
    int level_change_type, diff;
    
    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-      print(thisAgent, "\n--- Proposal Phase ---\n");
+      print_phase(thisAgent, "\n--- Proposal Phase ---\n",0);
    
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
    printf("\n(Propose) Determining the highest active level in the stack....\n"); 

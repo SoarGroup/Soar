@@ -4569,7 +4569,7 @@ void old_print_preference_and_source (agent* thisAgent, preference *pref,
   print(thisAgent, "\n");
   if (print_source) {
     print(thisAgent, "    From ");
-    print_instantiation_with_wmes (thisAgent, pref->inst, wtt);
+    print_instantiation_with_wmes (thisAgent, pref->inst, wtt, -1);
     print(thisAgent, "\n");
   }
 }
