@@ -143,10 +143,8 @@ namespace gSKI
    IWorkingMemory* OutputLink::GetOutputMemory(Error* error)
    {
       ClearError(error);
-      
-      MegaAssert(false, "NOT IMPLEMENTED YET!");
 
-      return 0;
+      return &m_memory;
    }
 
    /*

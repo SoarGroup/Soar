@@ -515,9 +515,6 @@ namespace gSKI
 	      return ;
 	  }
 
-	  // Cast away our "const" for now (these calls should be in another, non-const method)
-	  InputWorkingMemory* pThis = (InputWorkingMemory*)this ;
-
 	  // Get the first letter in the identifier
 	  char letter = idstring[0] ;
 
@@ -525,7 +522,7 @@ namespace gSKI
 	  unsigned long value = atol(&idstring[1]) ;
 
 	  // See if there's a symbol matching this in the kernel.
-	  Symbol* id = find_identifier(pThis->GetSoarAgent(), letter, value) ;
+	  Symbol* id = find_identifier(GetSoarAgent(), letter, value) ;
 
 	  if (!id)
 	  {
@@ -537,20 +534,11 @@ namespace gSKI
 
 	  // See if this object already exists
 	  InputWMObject* pWMObject = NULL ;
-	  tWMObjMap::iterator iter = pThis->m_wmobjectmap.find(id->common.hash_id) ;
+	  tWMObjMap::const_iterator iter = m_wmobjectmap.find(id->common.hash_id) ;
 
-	  if (iter != pThis->m_wmobjectmap.end())
+	  // If the object exists we return it.  Otherwise, we'll return NULL.
+	  if (iter != m_wmobjectmap.end())
 		  pWMObject = iter->second ;
-	  else
-	  {
-		// Let's obey the semantics for this function and not do anything if the object doesn't exist.
-		// Create the WMObject
-		//InputWMObject* pWMObject = new InputWMObject(pThis, id) ;
-
-		// This map goes from hash id for the symbol to a particular object
-		// so registering here allows us to look the object up by symbol name in the future.
-		//pThis->m_wmobjectmap.insert(tWMObjMap::value_type( id->common.hash_id, pWMObject ));
-	  }
 
 	  // We need to add a reference to this object because the caller
 	  // should release it when they're finished with it.
@@ -838,7 +826,7 @@ namespace gSKI
      ===============================
      ===============================
    */
-   agent* InputWorkingMemory::GetSoarAgent()
+   agent* InputWorkingMemory::GetSoarAgent() const
    {
       return m_agent->GetSoarAgent();
    }

@@ -681,7 +681,7 @@ namespace gSKI {
       /**
        * @brief Allows access to associated raw soar agent pointer
        */
-      agent* GetSoarAgent();
+      agent* GetSoarAgent() const;
 
       /**
        * @brief Used to retrieve an input wme given an id, attribute and value triplet

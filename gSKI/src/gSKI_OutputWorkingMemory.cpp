@@ -258,9 +258,47 @@ namespace gSKI
                                                    Error* err) const
    {
       ClearError(err);
-      MegaAssert(false, "NOT IMPLEMENTED YET!");
 
-      object = 0;
+	  // Make sure we got enough of an id string to do the lookup
+	  if (!idstring || strlen(idstring) < 2)
+	  {
+		 SetErrorExtended(err, 
+			      gSKIERR_SYMBOL_NOT_OBJECT, 
+			      "Invalid id string passed to GetObjectById function!" );
+	      return ;
+	  }
+
+	  // Get the first letter in the identifier
+	  char letter = idstring[0] ;
+
+	  // Get the numeric part of the identifier (if this isn't a number we'll get back 0)
+	  unsigned long value = atol(&idstring[1]) ;
+
+	  // See if there's a symbol matching this in the kernel.
+	  Symbol* id = find_identifier(GetSoarAgent(), letter, value) ;
+
+	  if (!id)
+	  {
+		 SetErrorExtended(err, 
+			      gSKIERR_SYMBOL_NOT_OBJECT, 
+			      "Failed to find a matching identifier in GetObjectById function!" );
+	      return ;
+	  }
+
+	  // See if this object already exists
+	  OutputWMObject* pWMObject = NULL ;
+	  tWMObjMap::const_iterator iter = m_wmobjectmap.find(id->common.hash_id) ;
+
+	  // If the object exists we return it.  Otherwise, we'll return NULL.
+	  if (iter != m_wmobjectmap.end())
+		  pWMObject = iter->second ;
+
+	  // We need to add a reference to this object because the caller
+	  // should release it when they're finished with it.
+	  if (pWMObject)
+		  pWMObject->AddRef() ;
+
+	  *object = pWMObject ;
    }
 
    tIWMObjectIterator* OutputWorkingMemory::GetAllObjects(Error* err) const
@@ -616,7 +654,7 @@ namespace gSKI
       *rootObject = m_rootOutputObject;
    }
 
-   agent* OutputWorkingMemory::GetSoarAgent()
+   agent* OutputWorkingMemory::GetSoarAgent() const
    {
       return m_agent->GetSoarAgent();
    }

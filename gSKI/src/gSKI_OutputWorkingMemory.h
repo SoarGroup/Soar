@@ -674,7 +674,7 @@ namespace gSKI {
      /**
       * @brief Helper method to retrieve raw soar agent pointer
       */
-     agent* GetSoarAgent();
+     agent* GetSoarAgent() const;
 
      /**
       * @brief Reinitializes the output working memory by cleaning out all the
