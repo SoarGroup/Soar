@@ -39,7 +39,7 @@ multi-attributes holds 10
 #multi-attributes upper-disk 
 multi-attributes clear 3
 
-learn -off
+learn --off
 
 ###
 ###

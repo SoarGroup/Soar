@@ -428,10 +428,16 @@ bool CommandLineInterface::DoCD(const char* directory) {
 		return true;
 	}
 
+	// Chop of quotes if they are there, chdir doesn't like them
+	string directoryString = directory;
+	if ((directoryString.length() > 2) && (directoryString[0] == '\"') && (directoryString[directoryString.length() - 1] == '\"')) {
+		directoryString = directoryString.substr(1, directoryString.length() - 2);
+	}
+
 	// Change to passed directory
-	if (chdir(directory)) {
+	if (chdir(directoryString.c_str())) {
 		m_Result += "Could not change to directory: ";
-		m_Result += directory;
+		m_Result += directoryString;
 		return false;
 	}
 	return true;
