@@ -673,7 +673,10 @@ public class OperatorWindow extends JTree {
    * @see SoarProduction
    * @see SoarWorkingMemoryModel#checkProduction(SoarIdentifierVertex, SoarProduction)
 	 */
-	public void checkProductions(OperatorNode on,Vector productions, java.util.List errors) {
+	public void checkProductions(OperatorNode on,
+                                 Vector productions,
+                                 java.util.List errors)
+    {
 
 		// Find the state that these productions should be checked against
 		SoarIdentifierVertex siv = on.getStateIdVertex();

@@ -5,6 +5,7 @@ import edu.umich.visualsoar.datamap.SoarWorkingMemoryModel;
 import edu.umich.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.visualsoar.parser.ParseException;
 import edu.umich.visualsoar.dialogs.*;
+import edu.umich.visualsoar.misc.*;
 
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
@@ -192,13 +193,40 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 		return id;
 	}
 
+    /**
+     * Given a parse exception discovered in this node, this function converts
+     * it into a FeedbackListObject that can be placed in the feedback window.
+     * @param pe the ParseException to parse
+     * @return the generated FeedbackListObject
+     */
+    public FeedbackListObject parseParseException(ParseException pe)
+    {
+        String parseError = pe.toString();
+        int i = parseError.lastIndexOf("line ");
+        String lineNumStr = parseError.substring(i + 5);
+        i = lineNumStr.indexOf(',');
+        int lineNum = Integer.parseInt(lineNumStr.substring(0, i));
+        lineNumStr = "(" + lineNumStr.substring(0, i) + "): ";
+        String errString = getFileName() + lineNumStr + pe.toString();
+
+        return new FeedbackListObject(this, lineNum, errString);
+    }
+
+    
+
+
   /**
    * overloaded by subclasses
    */
 	public Vector parseProductions() throws ParseException, java.io.IOException {
 		return null;
 	}
-		
+
+    public boolean CheckAgainstDatamap(Vector vecErrors) throws IOException
+    {
+        return false;           // no datamap errors found
+    }
+    
 		
 	public boolean isDragOk(int action) {
 		return false;
@@ -655,4 +683,6 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 	public abstract void source(Writer w) throws IOException;
 	public abstract void sourceChildren() throws IOException;
 	public abstract void sourceRecursive() throws IOException;
-}
+
+
+}//class OperatorNode

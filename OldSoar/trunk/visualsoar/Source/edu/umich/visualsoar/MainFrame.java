@@ -83,7 +83,8 @@ public class MainFrame extends JFrame
     Action tileWindowsAction = new TileWindowsAction();
     Action reTileWindowsAction = new ReTileWindowsAction();
     Action sendProductionsAction = new SendProductionsAction();
-	Action checkAllProductionsAction = new CheckAllProductionsAction();
+	Action checkSyntaxErrorsAction = new CheckSyntaxErrorsAction();
+	PerformableAction checkAllProductionsAction = new CheckAllProductionsAction();
     Action searchDataMapCreateAction = new SearchDataMapCreateAction();
     Action searchDataMapTestAction = new SearchDataMapTestAction();
     Action searchDataMapCreateNoTestAction = new SearchDataMapCreateNoTestAction();
@@ -265,30 +266,10 @@ public class MainFrame extends JFrame
 		exitAction.addPropertyChangeListener(
             new ActionButtonAssociation(exitAction,exitItem));
 		
-		JMenuItem checkAllProductionsItem = new JMenuItem("Check All Productions Against the Datamap");
-		checkAllProductionsItem.addActionListener(checkAllProductionsAction);
-		checkAllProductionsAction.addPropertyChangeListener(
-            new ActionButtonAssociation(checkAllProductionsAction,checkAllProductionsItem));
-
-		JMenuItem generateDataMapItem = new JMenuItem("Generate Datamap from the Operator Hierarchy");
-        generateDataMapItem.addActionListener(generateDataMapAction);
-        generateDataMapAction.addPropertyChangeListener(
-            new ActionButtonAssociation(generateDataMapAction, generateDataMapItem));
-
 		JMenuItem saveProjectAsItem = new JMenuItem("Save Project As...");
 		saveProjectAsItem.addActionListener(saveProjectAsAction);
 		saveProjectAsAction.addPropertyChangeListener(
             new ActionButtonAssociation(saveProjectAsAction,saveProjectAsItem));
-		
-		/*
-          JMenuItem checkCoverageItem = new JMenuItem("Check Coverage");
-          checkCoverageItem.addActionListener(checkCoverageAction);
-          checkCoverageAction.addPropertyChangeListener(
-              new ActionButtonAssociation(checkCoverageAction,checkCoverageItem));
-		*/
-		
-//		JMenuItem sendProductionsItem = new JMenuItem("Send Productions");
-//		sendProductionsItem.addActionListener(sendProductionsAction);
 		
 		fileMenu.add(newProjectItem);
 		fileMenu.add(openProjectItem);
@@ -299,9 +280,6 @@ public class MainFrame extends JFrame
 		
 		fileMenu.add(commitItem);
 		fileMenu.add(saveProjectAsItem);
-
-//		fileMenu.add(checkCoverageItem);
-//		fileMenu.add(sendProductionsItem);
 
 		fileMenu.addSeparator();
 
@@ -380,7 +358,12 @@ public class MainFrame extends JFrame
 		checkAllProductionsAction.addPropertyChangeListener(
             new ActionButtonAssociation(checkAllProductionsAction,checkAllProductionsItem));
 
-		JMenuItem searchDataMapTestItem = new JMenuItem("Search the Datamap for Untested WMEs");
+		JMenuItem checkSyntaxErrorsItem = new JMenuItem("Check All Productions for Syntax Errors");
+		checkSyntaxErrorsItem.addActionListener(checkSyntaxErrorsAction);
+		checkSyntaxErrorsAction.addPropertyChangeListener(
+            new ActionButtonAssociation(checkSyntaxErrorsAction,checkSyntaxErrorsItem));
+
+		JMenuItem searchDataMapTestItem = new JMenuItem("Search the Datamap for WMEs that are Never Tested");
 		searchDataMapTestItem.addActionListener(searchDataMapTestAction);
 		searchDataMapTestAction.addPropertyChangeListener(
             new ActionButtonAssociation(searchDataMapTestAction,searchDataMapTestItem));
@@ -411,7 +394,10 @@ public class MainFrame extends JFrame
             new ActionButtonAssociation(generateDataMapAction, generateDataMapItem));
 
 		datamapMenu.add(checkAllProductionsItem);
+		datamapMenu.add(checkSyntaxErrorsItem);
+		datamapMenu.addSeparator();
         datamapMenu.add(generateDataMapItem);
+		datamapMenu.addSeparator();
         datamapMenu.add(searchDataMapTestItem);
         datamapMenu.add(searchDataMapCreateItem);
         datamapMenu.add(searchDataMapTestNoCreateItem);
@@ -895,6 +881,7 @@ public class MainFrame extends JFrame
   		// Enable various actions
 		saveAllFilesAction.setEnabled(areEnabled);
 		checkAllProductionsAction.setEnabled(areEnabled);
+		checkSyntaxErrorsAction.setEnabled(areEnabled);
         searchDataMapTestAction.setEnabled(areEnabled);
         searchDataMapCreateAction.setEnabled(areEnabled);
         searchDataMapTestNoCreateAction.setEnabled(areEnabled);
@@ -1687,48 +1674,170 @@ public class MainFrame extends JFrame
 		}
 	
 	}
-	/*
-      class CheckCoverageAction extends AbstractAction 
-      {
 
-      public CheckCoverageAction() 
-      {
+    /**
+     * This is a generic class for scanning a set of entities for errors in a
+     * separate thread and providing a progress dialog while you do so.  You
+     * must subclass this class to use it.
+     */
+    abstract class UpdateThread extends Thread
+    {
+        Runnable update, finish;
+        int value, min, max;
+		JProgressBar progressBar;
+		JDialog progressDialog;
+        Vector vecEntities;
+        Vector parsedProds, vecErrors = new Vector();
+        int entityNum = 0;
 
-      super("Check Coverage");
-      setEnabled(false);
-      }
-		
-      public void actionPerformed(ActionEvent ae) 
-      {
+        public UpdateThread(Vector v, String title)
+        {
+            vecEntities = v;
+            max = v.size();
+			progressBar = new JProgressBar(0, max);
+			progressDialog = new JDialog(MainFrame.this, title);
+			progressDialog.getContentPane().setLayout(new FlowLayout());
+			progressDialog.getContentPane().add(progressBar);
+			progressBar.setStringPainted(true);
+			progressDialog.setLocationRelativeTo(MainFrame.this);
+			progressDialog.pack();
+			progressDialog.show();
+            progressBar.getMaximum();
+            progressBar.getMinimum();
+				
+            update = new Runnable() 
+            {
 
-      DataMapCoverageChecker dmcc = new DataMapCoverageChecker(getOperatorWindow().getDatamap());
-      Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-      while(bfe.hasMoreElements()) 
-      {
+                public void run() 
+                {
+                    value = progressBar.getValue() + 1;
+                    updateProgressBar(value);
+                }
+            };
+            finish = new Runnable() 
+            {
 
-      OperatorNode on = (OperatorNode)bfe.nextElement();
-      try 
-      {
+                public void run() 
+                {
 
-      Vector productions = on.parseProductions();
-      if(productions != null) 
-      {
+                    updateProgressBar(min);
+                    progressDialog.dispose();
+                }
+            };
+        }
 
-      OperatorNode parent = (OperatorNode)on.getParent();
-      SoarIdentifierVertex siv = parent.getStateIdVertex(getOperatorWindow().getDatamap());
-      if(siv == null)
-      dmcc.check(getOperatorWindow().getDatamap().getTopstate(),productions);
-      else
-      dmcc.check(siv,productions);
-      }
-      }
-      catch(ParseException pe) {}
-      catch(java.io.IOException ioe) {}
-      }
-      System.out.println("Place to Break when done");
-      }
-      }
- 	*/
+        public void run() 
+        {
+            checkEntities();
+        }
+
+        private void updateProgressBar(int value) 
+        {
+
+            progressBar.setValue(value);
+        }
+
+        /**
+         * Override this function in your subclass.  It scans the given entity
+         * for errors and places them in the vecErrors vector.  vecErrors can
+         * either contain Strings or FeedbackListObjects
+         * @param o object to scan
+         * @return true if any errors were found
+         */
+        abstract public boolean checkEntity(Object o) throws IOException;
+
+        public void checkEntities()
+        {
+            try 
+            {
+                boolean anyErrors = false;
+                for(int i = 0; i < max; i++)
+                {
+                    boolean errDetected = checkEntity(vecEntities.elementAt(i));
+                    if (errDetected)
+                    {
+                        anyErrors = true;
+                    }
+                    updateProgressBar(++entityNum);
+                    SwingUtilities.invokeLater(update);
+                }
+
+                if(!anyErrors)
+                {
+                    vecErrors.add("There were no errors detected in this project.");
+                }
+                setFeedbackListData(vecErrors);
+                SwingUtilities.invokeLater(finish);
+            }
+            catch (IOException ioe) 
+            {
+
+                ioe.printStackTrace();
+            }
+        }//checkEntities()
+
+    }//class UpdateThread
+
+
+    
+ 	/**
+     * This action searches all productions in the project for syntax
+     * errors only.   Operation status is displayed in a progress bar.
+     * Results are displayed in the feedback list
+     */
+	class CheckSyntaxErrorsAction extends AbstractAction 
+    {
+		public CheckSyntaxErrorsAction() 
+        {
+
+			super("Check All Productions for Syntax Errors");
+			setEnabled(false);
+		}
+	
+		public void actionPerformed(ActionEvent ae)
+        {
+			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
+            Vector vecNodes = new Vector(10, 50);
+			while(bfe.hasMoreElements())
+            {
+				vecNodes.add(bfe.nextElement());
+			}
+			(new CheckSyntaxThread(vecNodes, "Checking Productions...")).start();
+		}
+
+        class CheckSyntaxThread extends UpdateThread
+        {
+            public CheckSyntaxThread(Vector v, String title)
+            {
+                super(v, title);
+            }
+                
+            public boolean checkEntity(Object node) throws IOException
+            {
+                OperatorNode opNode = (OperatorNode)node;
+                
+                try
+                {
+                    opNode.parseProductions();
+                }
+                catch(ParseException pe)
+                {
+                    vecErrors.add(opNode.parseParseException(pe));
+                    return true;
+                }
+                catch(TokenMgrError tme) 
+                {
+                    tme.printStackTrace();
+                }
+
+                return false;
+            }
+        }//class CheckSyntaxThread
+	
+	}//class CheckSyntaxErrorsAction
+
+
+    
 
  	/**
      * This class is responsible for comparing all productions in the project
@@ -1736,1734 +1845,233 @@ public class MainFrame extends JFrame
      * Operation status is displayed in a progress bar.
      * Results are displayed in the feedback list
      */
-	class CheckAllProductionsAction extends AbstractAction 
+	class CheckAllProductionsAction extends PerformableAction
     {
-
-		JProgressBar progressBar;
-		JDialog progressDialog;
-        int numNodes;
-	
 		public CheckAllProductionsAction() 
         {
-
 			super("Check All Productions");
 			setEnabled(false);
 		}
 
-		public void actionPerformed(ActionEvent ae) 
+        //Same as actionPerformed() but this function waits for the thread to
+        //complete before returning (i.e., it's effectively not threaded)
+        public void perform()
         {
-
-			numNodes = 0;
+            Vector vecNodes = new Vector(10, 50);
 			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
 			while(bfe.hasMoreElements()) 
             {
-
-				numNodes++;
-				bfe.nextElement();
+				vecNodes.add(bfe.nextElement());
 			}
-			System.out.println("Nodes: " + numNodes);
-			progressBar = new JProgressBar(0, numNodes);
-			progressDialog = new JDialog(MainFrame.this, "Checking Productions");
-			progressDialog.getContentPane().setLayout(new FlowLayout());
-			progressDialog.getContentPane().add(progressBar);
-			progressBar.setStringPainted(true);
-			progressDialog.setLocationRelativeTo(MainFrame.this);
-			progressDialog.pack();
-			progressDialog.show();
-			(new UpdateThread()).start();
+
+            CheckProductionsThread cpt =
+                new CheckProductionsThread(vecNodes,
+                                           "Checking Productions...");
+            cpt.start();
+        }
+
+		public void actionPerformed(ActionEvent ae)
+        {
+            perform();
 		}
 
-		class UpdateThread extends Thread 
+        class CheckProductionsThread extends UpdateThread
         {
-
-			Runnable update, finish;
-			int value, min, max;
-			 
-
-			java.util.List errors = new LinkedList();
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			OperatorNode current;
-			Vector parsedProds, vecErrors = new Vector();
-			int nodeNum = 0;
-
-			public UpdateThread() 
+            public CheckProductionsThread(Vector v, String title)
             {
-
-				progressBar.getMaximum();
-				progressBar.getMinimum();
-				
-				update = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						value = progressBar.getValue() + 1;
-						updateProgressBar(value);
-						//System.out.println("Value is " + value);
-					}
-				};
-				finish = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						updateProgressBar(min);
-						System.out.println("Done");
-						progressDialog.dispose();
-					}
-				};
-			}
-
-			public void run() 
+                super(v, title);
+            }
+                
+            public boolean checkEntity(Object node) throws IOException
             {
-
-				checkNodes();
-                //checkNodesLog();
-			}
-
-			private void updateProgressBar(int value) 
-            {
-
-				progressBar.setValue(value);
-			}
-
-            public void checkNodes() 
-            {
-
-				try 
-                {
-
-                    boolean anyErrors = false;
-                  checkingNodes: while(bfe.hasMoreElements()) 
-                  {
-
-                      current = (OperatorNode)bfe.nextElement();
-
-                      // If the node has a rule editor open, get the rules from the
-                      // window, otherwise, open the associated file
-
-                      try 
-                      {
-
-                          parsedProds = current.parseProductions();
-
-                      }
-                      catch(ParseException pe) 
-                      {
-
-
-                          anyErrors = true;
-                          String errString;
-                          String parseError = pe.toString();
-                          int i = parseError.lastIndexOf("line ");
-                          String lineNum = parseError.substring(i + 5);
-                          i = lineNum.indexOf(',');
-                          lineNum = "(" + lineNum.substring(0, i) + "): ";
-                          errString = current.getFileName() + lineNum + "Unable to check productions due to parse error";
-                          errors.add(errString);
-                      }
-                      catch(TokenMgrError tme) 
-                      {
-
-                          tme.printStackTrace();
-                      }
-
-                      if (parsedProds!= null) 
-                      {
-
-                          operatorWindow.checkProductions((OperatorNode)current.getParent(), parsedProds, errors);
-                      }
-                      if (errors.isEmpty()) 
-                      {
-
-                          if(parsedProds != null) 
-                          {
-
-
-                              vecErrors.add("No errors detected in " + current.getFileName());
-                          }
-                      }
-                      else 
-                      {
-
-                          anyErrors = true;
-                          Enumeration e = new EnumerationIteratorWrapper(errors.iterator());
-                          while(e.hasMoreElements()) 
-                          {
-
-                              try 
-                              {
-
-                                  String errorString = e.nextElement().toString();
-                                  String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
-                                  if(errorString.endsWith("Unable to check productions due to parse error"))
-                                  {
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true,true));
-                                  }
-                                  else
-                                  {
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true));
-                                  }
-                              } catch(NumberFormatException nfe) 
-                              {
-
-                                  System.out.println("Never happen");
-                              }
-                          }
-                      }
-                      errors.clear();
-                      updateProgressBar(++nodeNum);
-                      SwingUtilities.invokeLater(update);
-                  } // while parsing operator nodes
-
-                    if(!anyErrors)
-                    vecErrors.add("There were no errors detected in this project.");
-					feedbackList.setListData(vecErrors);
-					SwingUtilities.invokeLater(finish);
-				}
-				catch (IOException ioe) 
-                {
-
-					ioe.printStackTrace();
-				}
-			}          // end of checkNodes()
-
-			/**
-             * Similar to checkNodes(), but this generates a log file.
-             */
-			public void checkNodesLog() 
-            {
-
-				try 
-                {
-
-                    FileWriter fw = new FileWriter("CheckingProductions.log");
-
-                    boolean anyErrors = false;
-                  checkingNodes: while(bfe.hasMoreElements()) 
-                  {
-
-                      current = (OperatorNode)bfe.nextElement();
-
-                      try 
-                      {
-
-                          fw.write("Looking at node " + current.toString());
-                          fw.write('\n');
-                      }
-                      catch(IOException e) 
-                      {
-
-                          e.printStackTrace();
-                      }
-
-                      // If the node has a rule editor open, get the rules from the
-                      // window, otherwise, open the associated file
-
-
-                      try 
-                      {
-
-                          parsedProds = current.parseProductions();
-                          try 
-                          {
-
-                              fw.write("Parsed Productions for node " + current.toString());
-                              fw.write('\n');
-                          }
-                          catch(IOException e) 
-                          {
-
-                              e.printStackTrace();
-                          }
-                      }
-                      catch(ParseException pe) 
-                      {
-
-
-                          try 
-                          {
-
-                              fw.write("There was a parse error when attempting to parse productions for node " + current.toString());
-                              fw.write('\n');
-                          }
-                          catch(IOException e) 
-                          {
-
-                              e.printStackTrace();
-                          }
-                          anyErrors = true;
-                          String errString;
-                          String parseError = pe.toString();
-                          int i = parseError.lastIndexOf("line ");
-                          String lineNum = parseError.substring(i + 5);
-                          i = lineNum.indexOf(',');
-                          lineNum = "(" + lineNum.substring(0, i) + "): ";
-                          errString = current.getFileName() + lineNum + "Unable to check productions due to parse error";
-                          errors.add(errString);
-                      }
-                      catch(TokenMgrError tme) 
-                      {
-
-                          tme.printStackTrace();
-                      }
-
-                      if (parsedProds!= null) 
-                      {
-
-                          try 
-                          {
-
-                              fw.write("About to check individual productions for node " + current.toString());
-                              fw.write('\n');
-                          }
-                          catch(IOException e) 
-                          {
-
-                              e.printStackTrace();
-                          }
-                          operatorWindow.checkProductionsLog((OperatorNode)current.getParent(), parsedProds, errors, fw);
-                      }
-                      if (errors.isEmpty()) 
-                      {
-
-                          if(parsedProds != null) 
-                          {
-
-                              try 
-                              {
-
-                                  fw.write("No errors detected for node " + current.toString());
-                                  fw.write('\n');
-                              }
-                              catch(IOException e) 
-                              {
-
-                                  e.printStackTrace();
-                              }
-                              vecErrors.add("No errors detected in " + current.getFileName());
-                          }
-                      }
-                      else 
-                      {
-
-                          try 
-                          {
-
-                              fw.write("Errors were detected for node " + current.toString());
-                              fw.write('\n');
-                          }
-                          catch(IOException e) 
-                          {
-
-                              e.printStackTrace();
-                          }
-
-                          anyErrors = true;
-                          Enumeration e = new EnumerationIteratorWrapper(errors.iterator());
-                          while(e.hasMoreElements()) 
-                          {
-
-                              try 
-                              {
-
-                                  String errorString = e.nextElement().toString();
-                                  String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
-                                  if(errorString.endsWith("Unable to check productions due to parse error"))
-                                  {
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true,true));
-                                  }
-                                  else
-                                  {
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true));
-                                  }
-                              } catch(NumberFormatException nfe) 
-                              {
-
-                                  System.out.println("Never happen");
-                              }
-                          }
-                      }
-                      errors.clear();
-                      updateProgressBar(++nodeNum);
-                      SwingUtilities.invokeLater(update);
-
-                      try 
-                      {
-
-                          fw.write("Check for the node " + current.toString() + " completed.  Getting next node\n");
-                          fw.write( nodeNum + " nodes out of " + numNodes + " total nodes have been completed.");
-                          fw.write('\n');
-                          fw.write('\n');
-                      }
-                      catch(IOException e) 
-                      {
-
-                          e.printStackTrace();
-                      }
-                  } // while parsing operator nodes
-
-                    if(!anyErrors)
-                    vecErrors.add("There were no errors detected in this project.");
-					feedbackList.setListData(vecErrors);
-					SwingUtilities.invokeLater(finish);
-
-                    fw.close();
-				}
-				catch (IOException ioe) 
-                {
-
-					ioe.printStackTrace();
-				}
-			}
-
-		}       // end of CheckNodesLog()
-	}      // end of CheckProductions Action
-
+                return ((OperatorNode)node).CheckAgainstDatamap(vecErrors);
+            }
+            
+        }
+
+	}//class CheckAllProductionsAction
+    
 
 	/**
-     * This action searches all Datamaps to find WMEs that
-     * are never tested by any production within the project.
-     * i.e. not in the condition side of any production and not in the output-link.
-     * Operation status is displayed in a progress bar.
-     * Results are displayed in the feedback list
-     * Double-clicking on an item in the feedback list
-     * should display the rogue node in the datamap.
+     * This action provides a framework for searching all datamaps for errors.
+     * It is intended to be subclassed.  Operation status is displayed in
+     * a progress bar.  Results are displayed in the feedback list
+     * Double-clicking on an item in the feedback list should display the rogue
+     * node in the datamap.
      */
-	class SearchDataMapTestAction extends AbstractAction 
+	abstract class SearchDataMapAction extends AbstractAction
     {
-
-		JProgressBar progressBar;
-		JDialog progressDialog;
-        int numNodes;
-
-		public SearchDataMapTestAction() 
+        int numNodes = 0;       // number of operator nodes in the project
+        int numChecks = 0;      // number of nodes scanned so far
+        
+		public SearchDataMapAction() 
         {
-
 			super("Check All Productions");
 			setEnabled(false);
 		}
 
 		public void actionPerformed(ActionEvent ae) 
         {
-
-			numNodes = 0;
+            initializeEdges();
+            numNodes = 0;
+            numChecks = 0;
+            
 			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			while(bfe.hasMoreElements()) 
+            Vector vecNodes = new Vector(10, 50);
+			while(bfe.hasMoreElements())
             {
-
-				numNodes++;
-				bfe.nextElement();
+				vecNodes.add(bfe.nextElement());
+                numNodes++;
 			}
-			System.out.println("Nodes: " + (numNodes * 2));
-			progressBar = new JProgressBar(0, numNodes * 2);
-			progressDialog = new JDialog(MainFrame.this, "Checking Productions");
-			progressDialog.getContentPane().setLayout(new FlowLayout());
-			progressDialog.getContentPane().add(progressBar);
-			progressBar.setStringPainted(true);
-			progressDialog.setLocationRelativeTo(MainFrame.this);
-			progressDialog.pack();
-			progressDialog.show();
-			(new UpdateThread()).start();
-		}   // end of constructor
 
-		class UpdateThread extends Thread 
+            //Add the nodes a second time because we'll be scanning them twice,
+            //once to check productions against the datamap and again to check
+            //the datamap for untested WMEs.  (See checkEntity() below.)
+			bfe = operatorWindow.breadthFirstEnumeration();
+			while(bfe.hasMoreElements())
+            {
+				vecNodes.add(bfe.nextElement());
+			}
+            
+			(new DatamapTestThread(vecNodes, "Scanning Datamap...")).start();
+
+		}//actionPerformed()
+
+        /**
+             *  This initializes the status of all the edges to zero, which
+             *  means that the edges have not been used by a production in any
+             *  way.
+             */
+        public void initializeEdges()
         {
 
-			Runnable update, finish;
-			int value, min, max;
-
-
-			java.util.List errors = new LinkedList();
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			OperatorNode current;
-			Vector parsedProds, vecErrors = new Vector();
-			int nodeNum = 0;
-
-			public UpdateThread() 
+            Enumeration edges = operatorWindow.getDatamap().getEdges();
+            while(edges.hasMoreElements()) 
             {
 
-				progressBar.getMaximum();
-				progressBar.getMinimum();
-
-				update = new Runnable() 
+                NamedEdge currentEdge = (NamedEdge)edges.nextElement();
+                currentEdge.resetTestedStatus();
+                currentEdge.resetErrorNoted();
+                // initialize the output-link as already tested
+                if(currentEdge.getName().equals("output-link")) 
                 {
-
-					public void run() 
-                    {
-
-						value = progressBar.getValue() + 1;
-						updateProgressBar(value);
-						//System.out.println("Value is " + value);
-					}
-				};
-				finish = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						updateProgressBar(min);
-						System.out.println("Done");
-						progressDialog.dispose();
-					}
-				};
-			}
-
-			public void run() 
-            {
-
-                initializeNodes();
-				if(checkNodes())
-                searchDataMap();
-                SwingUtilities.invokeLater(finish);
-			}
-
-			private void updateProgressBar(int value) 
-            {
-
-				progressBar.setValue(value);
-			}
-
-            /**
-             *  This initializes the status of all the edges to zero, which means that
-             *  the edges have not been used by a production in any way.
-             */
-            public void initializeNodes() 
-            {
-
-                Enumeration edges = operatorWindow.getDatamap().getEdges();
-                while(edges.hasMoreElements()) 
-                {
-
-                    NamedEdge currentEdge = (NamedEdge)edges.nextElement();
-                    currentEdge.resetTestedStatus();
-                    currentEdge.resetErrorNoted();
-                    // initialize the output-link as already tested
-                    if(currentEdge.getName().equals("output-link")) 
-                    {
-
-                        currentEdge.setOutputLinkTested(operatorWindow.getDatamap());
-                    }
+                    currentEdge.setOutputLinkTested(operatorWindow.getDatamap());
                 }
-            }     // end of searchDataMap()
+            }
+        }// initializeEdges()
 
-
-            /**
-             *  Simply go through all the nodes, checking productions
-             *  and marking the named edges in the datamap when either tested
-             *  or created by a production.
-             *  @return  false if encountered a parse error
-             */
-            public boolean checkNodes() 
+        //This function performs the actual error check
+        //The datamap associated with the given operator node is scanned and a
+        //list of errors is placed in the given Vector.
+        abstract public void searchDatamap(OperatorNode opNode, Vector v);
+        
+		class DatamapTestThread extends UpdateThread 
+        {
+			public DatamapTestThread(Vector v, String title) 
             {
-
-				try 
-                {
-
-                    boolean anyErrors = false;
-                  checkingNodes: while(bfe.hasMoreElements()) 
-                  {
-
-                      current = (OperatorNode)bfe.nextElement();
-
-                      // If the node has a rule editor open, get the rules from the
-                      // window, otherwise, open the associated file
-
-                      try 
-                      {
-
-                          parsedProds = current.parseProductions();
-
-                      }
-                      catch(ParseException pe) 
-                      {
-
-
-                          anyErrors = true;
-                          String errString;
-                          String parseError = pe.toString();
-                          int i = parseError.lastIndexOf("line ");
-                          String lineNum = parseError.substring(i + 5);
-                          i = lineNum.indexOf(',');
-                          lineNum = "(" + lineNum.substring(0, i) + "): ";
-                          errString = current.getFileName() + lineNum + "Unable to Search DataMap for extra WMEs due to parse error";
-                          errors.add(errString);
-                      }
-                      catch(TokenMgrError tme) 
-                      {
-
-                          tme.printStackTrace();
-                      }
-
-                      if (parsedProds!= null) 
-                      {
-
-                          operatorWindow.checkProductions((OperatorNode)current.getParent(), parsedProds, errors);
-                      }
-                      if (!errors.isEmpty()) 
-                      {
-
-                          anyErrors = true;
-                          Enumeration e = new EnumerationIteratorWrapper(errors.iterator());
-                          while(e.hasMoreElements()) 
-                          {
-
-                              try 
-                              {
-
-                                  String errorString = e.nextElement().toString();
-                                  String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
-                                  if(errorString.endsWith("Unable to Search DataMap for extra WMEs due to parse error")) 
-                                  {
-
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true,true));
-                                      feedbackList.setListData(vecErrors);
-                                      SwingUtilities.invokeLater(finish);
-                                      return false;
-                                  }
-                              } catch(NumberFormatException nfe) 
-                              {
-
-                                  System.out.println("Never happen");
-                              }
-                          }
-                      }
-                      errors.clear();
-                      updateProgressBar(++nodeNum);
-                      SwingUtilities.invokeLater(update);
-                  } // while parsing operator nodes
-
-					feedbackList.setListData(vecErrors);
-                    return true;
-				}
-				catch (IOException ioe) 
-                {
-
-					ioe.printStackTrace();
-				}
-                return false;  // should never get here unless try failed
-			}     // end of checkNodes()
+                super(v, title);
+			}
 
             /**
-             *  Search through the datamap and look for extra WMEs
-             *  by looking at the status of the named edge (as determined
-             *  by the check nodes function) and the edge's location within
-             *  the datamap.
-             *  Extra WMEs are classified in this action by never being tested by a
+             *  Search through the datamap and look for extra WMEs by looking at
+             *  the status of the named edge (as determined by the check nodes
+             *  function) and the edge's location within the datamap.  Extra
+             *  WMEs are classified in this action by never being tested by a
              *  production, not including any item within the output-link.
-             *  Send results to the feedback list
              */
-            public void searchDataMap() 
+            public boolean checkEntity(Object node) throws IOException
             {
+                OperatorNode opNode = (OperatorNode)node;
 
-                OperatorNode operatorNode;
-                vecErrors.clear();    // clear out errors just in case
-                vecErrors.add("Attributes never tested in productions in this agent:");
-
-                // Go through all of the nodes examining the nodes' datamap if they have one
-                Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-                while(bfe.hasMoreElements()) 
+                //For the first run, do a normal production check
+                if (numChecks < numNodes)
                 {
+                    Vector v = new Vector();
+                    boolean rc = opNode.CheckAgainstDatamap(v);
+                    if (rc)
+                    {
+                        vecErrors.add("WARNING:  datamap errors were found in "
+                                      + opNode.getFileName()
+                                      + "'s productions.  This may invalid the current scan.");
+                    }
 
-                    operatorNode = (OperatorNode)bfe.nextElement();
-                    operatorNode.searchTestDataMap(operatorWindow.getDatamap(), vecErrors);
-                    updateProgressBar(++nodeNum);
-                    SwingUtilities.invokeLater(update);
-                }   // end of while looking at all nodes
+                    numChecks++;
+                    return rc;
+                }//if
 
-                // do case of no errors
-                if(vecErrors.size() == 1) 
+                //For the second run, do the requested datamap scan
+                Vector v = new Vector();
+                searchDatamap(opNode, v);
+                numChecks++;
+                
+                if (!v.isEmpty())
                 {
-
-                    vecErrors.clear();
-                    vecErrors.add("No errors.  All attributes were tested in productions within this agents");
+                    vecErrors.addAll(v);
+                    return true;
                 }
 
-                // Add list of errors to feedback list
-                feedbackList.setListData(vecErrors);
-            }     // end of searchDataMap()
+                return false;
+            }//checkEntity()
+           
+		}//class DatamapTestThread
+	}// end of SearchDataMapAction
 
-		}   // end of UpdateThread class
-	}   // end of SearchDataMapTestAction
+    
+	/**
+     * Search for WMEs that are never tested
+     */
+	class SearchDataMapTestAction extends SearchDataMapAction
+    {
+        public void searchDatamap(OperatorNode opNode, Vector v)
+        {
+            opNode.searchTestDataMap(operatorWindow.getDatamap(), v);
+        }//searchDatamap
+	}// end of SearchDataMapTestAction
+
+    
+	/**
+     * Search for WMEs that are never created
+     */
+	class SearchDataMapCreateAction extends SearchDataMapAction
+    {
+        public void searchDatamap(OperatorNode opNode, Vector v)
+        {
+            opNode.searchCreateDataMap(operatorWindow.getDatamap(), v);
+        }//searchDatamap
+	}// class SearchDataMapCreateAction
 
 	/**
-     * This action searches all Datamaps to find WMEs that
-     * are never created by any production within the project.
-     * i.e. not in the action side of any production and not in the output-link.
-     * Operation status is displayed in a progress bar.
-     * Results are displayed in the feedback list
-     * Double-clicking on an item in the feedback list
-     * should display the rogue node in the datamap.
+     * Search for WMEs that are tested but never created
      */
-	class SearchDataMapCreateAction extends AbstractAction 
+	class SearchDataMapTestNoCreateAction extends SearchDataMapAction
     {
-
-		JProgressBar progressBar;
-		JDialog progressDialog;
-        int numNodes;
-
-		public SearchDataMapCreateAction() 
+        public void searchDatamap(OperatorNode opNode, Vector v)
         {
-
-			super("Check All Productions");
-			setEnabled(false);
-		}
-
-		public void actionPerformed(ActionEvent ae) 
-        {
-
-			numNodes = 0;
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			while(bfe.hasMoreElements()) 
-            {
-
-				numNodes++;
-				bfe.nextElement();
-			}
-			System.out.println("Nodes: " + (numNodes * 2));
-			progressBar = new JProgressBar(0, numNodes * 2);
-			progressDialog = new JDialog(MainFrame.this, "Checking Productions");
-			progressDialog.getContentPane().setLayout(new FlowLayout());
-			progressDialog.getContentPane().add(progressBar);
-			progressBar.setStringPainted(true);
-			progressDialog.setLocationRelativeTo(MainFrame.this);
-			progressDialog.pack();
-			progressDialog.show();
-			(new UpdateThread()).start();
-		}   // end of constructor
-
-		class UpdateThread extends Thread 
-        {
-
-			Runnable update, finish;
-			int value, min, max;
-
-
-			java.util.List errors = new LinkedList();
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			OperatorNode current;
-			Vector parsedProds, vecErrors = new Vector();
-			int nodeNum = 0;
-
-			public UpdateThread() 
-            {
-
-				progressBar.getMaximum();
-				progressBar.getMinimum();
-
-				update = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						value = progressBar.getValue() + 1;
-						updateProgressBar(value);
-						//System.out.println("Value is " + value);
-					}
-				};
-				finish = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						updateProgressBar(min);
-						System.out.println("Done");
-						progressDialog.dispose();
-					}
-				};
-			}
-
-			public void run() 
-            {
-
-                initializeNodes();
-				if(checkNodes())
-                searchDataMap();
-                SwingUtilities.invokeLater(finish);
-			}
-
-			private void updateProgressBar(int value) 
-            {
-
-				progressBar.setValue(value);
-			}
-
-            /**
-             *  This initializes the status of all the edges to zero, which means that
-             *  the edges have not been used by a production in any way.
-             */
-            public void initializeNodes() 
-            {
-
-                Enumeration edges = operatorWindow.getDatamap().getEdges();
-                while(edges.hasMoreElements()) 
-                {
-
-                    NamedEdge currentEdge = (NamedEdge)edges.nextElement();
-                    currentEdge.resetTestedStatus();
-                    currentEdge.resetErrorNoted();
-                    // initialize the input-link as already tested
-                    if(currentEdge.getName().equals("input-link"))
-                    currentEdge.setInputLinkCreated(operatorWindow.getDatamap());
-                }
-            }     // end of searchDataMap()
-
-            /**
-             *  Simply go through all the nodes, checking productions
-             *  and marking the named edges in the datamap when either tested
-             *  or created by a production.
-             *  @return  false if encountered a parse error
-             */
-            public boolean checkNodes() 
-            {
-
-				try 
-                {
-
-                    boolean anyErrors = false;
-                  checkingNodes: while(bfe.hasMoreElements()) 
-                  {
-
-                      current = (OperatorNode)bfe.nextElement();
-
-                      // If the node has a rule editor open, get the rules from the
-                      // window, otherwise, open the associated file
-
-                      try 
-                      {
-
-                          parsedProds = current.parseProductions();
-                      }
-                      catch(ParseException pe) 
-                      {
-
-                          anyErrors = true;
-                          String errString;
-                          String parseError = pe.toString();
-                          int i = parseError.lastIndexOf("line ");
-                          String lineNum = parseError.substring(i + 5);
-                          i = lineNum.indexOf(',');
-                          lineNum = "(" + lineNum.substring(0, i) + "): ";
-                          errString = current.getFileName() + lineNum + "Unable to Search DataMap for extra WMEs due to parse error";
-                          errors.add(errString);
-                      }
-                      catch(TokenMgrError tme) 
-                      {
-
-                          tme.printStackTrace();
-                      }
-
-                      if (parsedProds!= null) 
-                      {
-
-                          operatorWindow.checkProductions((OperatorNode)current.getParent(), parsedProds, errors);
-                      }
-
-                      if (!errors.isEmpty()) 
-                      {
-
-                          anyErrors = true;
-                          Enumeration e = new EnumerationIteratorWrapper(errors.iterator());
-                          while(e.hasMoreElements()) 
-                          {
-
-                              try 
-                              {
-
-                                  String errorString = e.nextElement().toString();
-                                  String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
-                                  if(errorString.endsWith("Unable to Search DataMap for extra WMEs due to parse error")) 
-                                  {
-
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true,true));
-                                      feedbackList.setListData(vecErrors);
-                                      SwingUtilities.invokeLater(finish);
-                                      return false;
-                                  }
-                              } catch(NumberFormatException nfe) 
-                              {
-
-                                  System.out.println("Never happen");
-                              }
-                          }
-                      }
-                      errors.clear();
-                      updateProgressBar(++nodeNum);
-                      SwingUtilities.invokeLater(update);
-
-                  } // while parsing operator nodes
-
-					feedbackList.setListData(vecErrors);
-                    return true;
-				}
-				catch (IOException ioe) 
-                {
-
-					ioe.printStackTrace();
-				}
-                return false;  // should never get here unless try failed
-			}     // end of checkNodes()
-
-
-            /**
-             *  Search through the datamap and look for extra WMEs
-             *  by looking at the status of the named edge (as determined
-             *  by the check nodes function) and the edge's location within
-             *  the datamap.
-             *  Extra WMEs are classified in this action by never being created by a
-             *  production, not including any item within the input-link.
-             *  Send results to the feedback list
-             */
-            public void searchDataMap() 
-            {
-
-                OperatorNode operatorNode;
-                vecErrors.clear();    // clear out errors just in case
-                vecErrors.add("Attributes never created in productions in this agent:");
-
-                // Go through all of the nodes examining the nodes' datamap if they have one
-                Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-                while(bfe.hasMoreElements()) 
-                {
-
-                    operatorNode = (OperatorNode)bfe.nextElement();
-                    operatorNode.searchCreateDataMap(operatorWindow.getDatamap(), vecErrors);
-                    updateProgressBar(++nodeNum);
-                    SwingUtilities.invokeLater(update);
-                }   // end of while looking at all nodes
-
-                // do case of no errors
-                if(vecErrors.size() == 1) 
-                {
-
-                    vecErrors.clear();
-                    vecErrors.add("No errors.  All attributes were created in productions within this agents");
-                }
-
-                // Add list of errors to feedback list
-                feedbackList.setListData(vecErrors);
-            }     // end of searchDataMap()
-
-		}   // end of UpdateThread class
-	}   // end of SearchDataMapCreateAction
-
+            opNode.searchTestNoCreateDataMap(operatorWindow.getDatamap(), v);
+        }//searchDatamap
+	}//class SearchDataMapTestNoCreateAction
 
 	/**
-     * This action searches all Datamaps to find WMEs that
-     * are never tested by some production within the project, but never created.
-     * i.e. not in the action side of any production and not in the output-link.
-     * Operation status is displayed in a progress bar.
-     * Results are displayed in the feedback list
-     * Double-clicking on an item in the feedback list
-     * should display the rogue node in the datamap.
+     * Search for WMEs that are created but never tested
      */
-	class SearchDataMapTestNoCreateAction extends AbstractAction 
+	class SearchDataMapCreateNoTestAction extends SearchDataMapAction
     {
-
-		JProgressBar progressBar;
-		JDialog progressDialog;
-        int numNodes;
-
-		public SearchDataMapTestNoCreateAction() 
+        public void searchDatamap(OperatorNode opNode, Vector v)
         {
-
-			super("Searching DataMap");
-			setEnabled(false);
-		}
-
-		public void actionPerformed(ActionEvent ae) 
-        {
-
-			numNodes = 0;
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			while(bfe.hasMoreElements()) 
-            {
-
-				numNodes++;
-				bfe.nextElement();
-			}
-			System.out.println("Nodes: " + (numNodes * 2));
-			progressBar = new JProgressBar(0, numNodes * 2);
-			progressDialog = new JDialog(MainFrame.this, "Checking Productions");
-			progressDialog.getContentPane().setLayout(new FlowLayout());
-			progressDialog.getContentPane().add(progressBar);
-			progressBar.setStringPainted(true);
-			progressDialog.setLocationRelativeTo(MainFrame.this);
-			progressDialog.pack();
-			progressDialog.show();
-			(new UpdateThread()).start();
-		}   // end of constructor
-
-		class UpdateThread extends Thread 
-        {
-
-			Runnable update, finish;
-			int value, min, max;
-
-
-			java.util.List errors = new LinkedList();
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			OperatorNode current;
-			Vector parsedProds, vecErrors = new Vector();
-			int nodeNum = 0;
-
-			public UpdateThread() 
-            {
-
-				progressBar.getMaximum();
-				progressBar.getMinimum();
-
-				update = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						value = progressBar.getValue() + 1;
-						updateProgressBar(value);
-						//System.out.println("Value is " + value);
-					}
-				};
-				finish = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						updateProgressBar(min);
-						System.out.println("Done");
-						progressDialog.dispose();
-					}
-				};
-			}
-
-			public void run() 
-            {
-
-                initializeNodes();
-				if(checkNodes())
-                searchDataMap();
-                SwingUtilities.invokeLater(finish);
-			}
-
-			private void updateProgressBar(int value) 
-            {
-
-				progressBar.setValue(value);
-			}
-
-            /**
-             *  This initializes the status of all the edges to zero, which means that
-             *  the edges have not been used by a production in any way.
-             */
-            public void initializeNodes() 
-            {
-
-                Enumeration edges = operatorWindow.getDatamap().getEdges();
-                while(edges.hasMoreElements()) 
-                {
-
-                    NamedEdge currentEdge = (NamedEdge)edges.nextElement();
-                    currentEdge.resetTestedStatus();
-                    currentEdge.resetErrorNoted();
-                    // initialize the input-link as already tested
-                    if(currentEdge.getName().equals("input-link"))
-                    currentEdge.setInputLinkCreated(operatorWindow.getDatamap());
-                    // initialize the output-link as already tested
-                    if(currentEdge.getName().equals("output-link"))
-                    currentEdge.setOutputLinkTested(operatorWindow.getDatamap());
-                }
-            }     // end of initializeNodes()
-
-            /**
-             *  Simply go through all the nodes, checking productions
-             *  and marking the named edges in the datamap when either tested
-             *  or created by a production.
-             *  @return  false if encountered a parse error
-             */
-            public boolean checkNodes() 
-            {
-
-				try 
-                {
-
-                    boolean anyErrors = false;
-                  checkingNodes: while(bfe.hasMoreElements()) 
-                  {
-
-                      current = (OperatorNode)bfe.nextElement();
-
-                      // If the node has a rule editor open, get the rules from the
-                      // window, otherwise, open the associated file
-
-                      try 
-                      {
-
-                          parsedProds = current.parseProductions();
-                      }
-                      catch(ParseException pe) 
-                      {
-
-                          anyErrors = true;
-                          String errString;
-                          String parseError = pe.toString();
-                          int i = parseError.lastIndexOf("line ");
-                          String lineNum = parseError.substring(i + 5);
-                          i = lineNum.indexOf(',');
-                          lineNum = "(" + lineNum.substring(0, i) + "): ";
-                          errString = current.getFileName() + lineNum + "Unable to Search DataMap for extra WMEs due to parse error";
-                          errors.add(errString);
-                      }
-                      catch(TokenMgrError tme) 
-                      {
-
-                          tme.printStackTrace();
-                      }
-
-                      if (parsedProds!= null) 
-                      {
-
-                          operatorWindow.checkProductions((OperatorNode)current.getParent(), parsedProds, errors);
-                      }
-
-                      if (!errors.isEmpty()) 
-                      {
-
-                          anyErrors = true;
-                          Enumeration e = new EnumerationIteratorWrapper(errors.iterator());
-                          while(e.hasMoreElements()) 
-                          {
-
-                              try 
-                              {
-
-                                  String errorString = e.nextElement().toString();
-                                  String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
-                                  if(errorString.endsWith("Unable to Search DataMap for extra WMEs due to parse error")) 
-                                  {
-
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true,true));
-                                      feedbackList.setListData(vecErrors);
-                                      SwingUtilities.invokeLater(finish);
-                                      return false;
-                                  }
-                              } catch(NumberFormatException nfe) 
-                              {
-
-                                  System.out.println("Never happen");
-                              }
-                          }
-                      }
-                      errors.clear();
-                      updateProgressBar(++nodeNum);
-                      SwingUtilities.invokeLater(update);
-
-                  } // while parsing operator nodes
-
-					feedbackList.setListData(vecErrors);
-                    return true;
-				}
-				catch (IOException ioe) 
-                {
-
-					ioe.printStackTrace();
-				}
-                return false;  // should never get here unless try failed
-			}     // end of checkNodes()
-
-
-            /**
-             *  Search through the datamap and look for extra WMEs
-             *  by looking at the status of the named edge (as determined
-             *  by the check nodes function) and the edge's location within
-             *  the datamap.
-             *  Extra WMEs are classified in this action by being tested by some production
-             *  within the project, but never created by any production;
-             *  not including any item within the input-link.
-             *  Send results to the feedback list
-             */
-            public void searchDataMap() 
-            {
-
-                OperatorNode operatorNode;
-                vecErrors.clear();    // clear out errors just in case
-                vecErrors.add("Attributes that were tested but never created in the productions of this agent:");
-
-                // Go through all of the nodes examining the nodes' datamap if they have one
-                Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-                while(bfe.hasMoreElements()) 
-                {
-
-                    operatorNode = (OperatorNode)bfe.nextElement();
-                    operatorNode.searchTestNoCreateDataMap(operatorWindow.getDatamap(), vecErrors);
-                    updateProgressBar(++nodeNum);
-                    SwingUtilities.invokeLater(update);
-                }   // end of while looking at all nodes
-
-                // do case of no errors
-                if(vecErrors.size() == 1) 
-                {
-
-                    vecErrors.clear();
-                    vecErrors.add("No errors.  All attributes that were tested, were also created.");
-                }
-
-                // Add list of errors to feedback list
-                feedbackList.setListData(vecErrors);
-            }     // end of searchDataMap()
-
-		}   // end of UpdateThread class
-	}   // end of SearchDataMapTestNoCreateAction
-
+            opNode.searchCreateNoTestDataMap(operatorWindow.getDatamap(), v);
+        }//searchDatamap
+	}//class SearchDataMapCreateNoTestAction
 
 	/**
-     * This action searches all Datamaps to find WMEs that
-     * are created by some production within the project, but never tested.
-     * i.e. not in the action side of any production and not in the output-link.
-     * Operation status is displayed in a progress bar.
-     * Results are displayed in the feedback list
-     * Double-clicking on an item in the feedback list
-     * should display the rogue node in the datamap.
+     * Search for WMEs that are never created and never tested
      */
-	class SearchDataMapCreateNoTestAction extends AbstractAction 
+	class SearchDataMapNoTestNoCreateAction extends SearchDataMapAction
     {
-
-		JProgressBar progressBar;
-		JDialog progressDialog;
-        int numNodes;
-
-		public SearchDataMapCreateNoTestAction() 
+        public void searchDatamap(OperatorNode opNode, Vector v)
         {
-
-			super("Searching DataMap");
-			setEnabled(false);
-		}
-
-		public void actionPerformed(ActionEvent ae) 
-        {
-
-			numNodes = 0;
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			while(bfe.hasMoreElements()) 
-            {
-
-				numNodes++;
-				bfe.nextElement();
-			}
-			System.out.println("Nodes: " + (numNodes * 2));
-			progressBar = new JProgressBar(0, numNodes * 2);
-			progressDialog = new JDialog(MainFrame.this, "Checking Productions");
-			progressDialog.getContentPane().setLayout(new FlowLayout());
-			progressDialog.getContentPane().add(progressBar);
-			progressBar.setStringPainted(true);
-			progressDialog.setLocationRelativeTo(MainFrame.this);
-			progressDialog.pack();
-			progressDialog.show();
-			(new UpdateThread()).start();
-		}   // end of constructor
-
-		class UpdateThread extends Thread 
-        {
-
-			Runnable update, finish;
-			int value, min, max;
-
-
-			java.util.List errors = new LinkedList();
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			OperatorNode current;
-			Vector parsedProds, vecErrors = new Vector();
-			int nodeNum = 0;
-
-			public UpdateThread() 
-            {
-
-				progressBar.getMaximum();
-				progressBar.getMinimum();
-
-				update = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						value = progressBar.getValue() + 1;
-						updateProgressBar(value);
-						//System.out.println("Value is " + value);
-					}
-				};
-				finish = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						updateProgressBar(min);
-						System.out.println("Done");
-						progressDialog.dispose();
-					}
-				};
-			}
-
-			public void run() 
-            {
-
-                initializeNodes();
-				if(checkNodes())
-                searchDataMap();
-                SwingUtilities.invokeLater(finish);
-			}
-
-			private void updateProgressBar(int value) 
-            {
-
-				progressBar.setValue(value);
-			}
-
-            /**
-             *  This initializes the status of all the edges to zero, which means that
-             *  the edges have not been used by a production in any way.
-             */
-            public void initializeNodes() 
-            {
-
-                Enumeration edges = operatorWindow.getDatamap().getEdges();
-                while(edges.hasMoreElements()) 
-                {
-
-                    NamedEdge currentEdge = (NamedEdge)edges.nextElement();
-                    currentEdge.resetTestedStatus();
-                    currentEdge.resetErrorNoted();
-                    // initialize the input-link as already tested
-                    if(currentEdge.getName().equals("input-link"))
-                    currentEdge.setInputLinkCreated(operatorWindow.getDatamap());
-                    // initialize the output-link as already tested
-                    if(currentEdge.getName().equals("output-link"))
-                    currentEdge.setOutputLinkTested(operatorWindow.getDatamap());
-                }
-            }     // end of initializeNodes()
-
-            /**
-             *  Simply go through all the nodes, checking productions
-             *  and marking the named edges in the datamap when either tested
-             *  or created by a production.
-             *  @return  false if encountered a parse error
-             */
-            public boolean checkNodes() 
-            {
-
-				try 
-                {
-
-                    boolean anyErrors = false;
-                  checkingNodes: while(bfe.hasMoreElements()) 
-                  {
-
-                      current = (OperatorNode)bfe.nextElement();
-
-                      // If the node has a rule editor open, get the rules from the
-                      // window, otherwise, open the associated file
-
-                      try 
-                      {
-
-                          parsedProds = current.parseProductions();
-                      }
-                      catch(ParseException pe) 
-                      {
-
-                          anyErrors = true;
-                          String errString;
-                          String parseError = pe.toString();
-                          int i = parseError.lastIndexOf("line ");
-                          String lineNum = parseError.substring(i + 5);
-                          i = lineNum.indexOf(',');
-                          lineNum = "(" + lineNum.substring(0, i) + "): ";
-                          errString = current.getFileName() + lineNum + "Unable to Search DataMap for extra WMEs due to parse error";
-                          errors.add(errString);
-                      }
-                      catch(TokenMgrError tme) 
-                      {
-
-                          tme.printStackTrace();
-                      }
-
-                      if (parsedProds!= null) 
-                      {
-
-                          operatorWindow.checkProductions((OperatorNode)current.getParent(), parsedProds, errors);
-                      }
-
-                      if (!errors.isEmpty()) 
-                      {
-
-                          anyErrors = true;
-                          Enumeration e = new EnumerationIteratorWrapper(errors.iterator());
-                          while(e.hasMoreElements()) 
-                          {
-
-                              try 
-                              {
-
-                                  String errorString = e.nextElement().toString();
-                                  String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
-                                  if(errorString.endsWith("Unable to Search DataMap for extra WMEs due to parse error")) 
-                                  {
-
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true,true));
-                                      feedbackList.setListData(vecErrors);
-                                      SwingUtilities.invokeLater(finish);
-                                      return false;
-                                  }
-                              } catch(NumberFormatException nfe) 
-                              {
-
-                                  System.out.println("Never happen");
-                              }
-                          }
-                      }
-                      errors.clear();
-                      updateProgressBar(++nodeNum);
-                      SwingUtilities.invokeLater(update);
-
-                  } // while parsing operator nodes
-
-					feedbackList.setListData(vecErrors);
-                    return true;
-				}
-				catch (IOException ioe) 
-                {
-
-					ioe.printStackTrace();
-				}
-                return false;  // should never get here unless try failed
-			}     // end of checkNodes()
-
-
-            /**
-             *  Search through the datamap and look for extra WMEs
-             *  by looking at the status of the named edge (as determined
-             *  by the check nodes function) and the edge's location within
-             *  the datamap.
-             *  Extra WMEs are classified in this action by being created by some production
-             *  within the project, but never tested by any production;
-             *  not including any item within the output-link.
-             *  Send results to the feedback list
-             */
-            public void searchDataMap() 
-            {
-
-                OperatorNode operatorNode;
-                vecErrors.clear();    // clear out errors just in case
-                vecErrors.add("Attributes that were created but never tested in the productions of this agent:");
-
-                // Go through all of the nodes examining the nodes' datamap if they have one
-                Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-                while(bfe.hasMoreElements()) 
-                {
-
-                    operatorNode = (OperatorNode)bfe.nextElement();
-                    operatorNode.searchCreateNoTestDataMap(operatorWindow.getDatamap(), vecErrors);
-                    updateProgressBar(++nodeNum);
-                    SwingUtilities.invokeLater(update);
-                }   // end of while looking at all nodes
-
-                // do case of no errors
-                if(vecErrors.size() == 1) 
-                {
-
-                    vecErrors.clear();
-                    vecErrors.add("No errors.  All attributes that were created, were also tested.");
-                }
-
-                // Add list of errors to feedback list
-                feedbackList.setListData(vecErrors);
-            }     // end of searchDataMap()
-
-		}   // end of UpdateThread class
-	}   // end of SearchDataMapCreateNoTestAction
-
-///////////////////////////
-	/**
-     * This action searches all Datamaps to find WMEs that
-     * are never tested by some production within the project and are never created.
-     * i.e. not in the action or condition side of any production and not in the io link.
-     * Operation status is displayed in a progress bar.
-     * Results are displayed in the feedback list
-     * Double-clicking on an item in the feedback list
-     * should display the rogue node in the datamap.
-     */
-	class SearchDataMapNoTestNoCreateAction extends AbstractAction 
-    {
-
-		JProgressBar progressBar;
-		JDialog progressDialog;
-        int numNodes;
-
-		public SearchDataMapNoTestNoCreateAction() 
-        {
-
-			super("Searching DataMap");
-			setEnabled(false);
-		}
-
-		public void actionPerformed(ActionEvent ae) 
-        {
-
-			numNodes = 0;
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			while(bfe.hasMoreElements()) 
-            {
-
-				numNodes++;
-				bfe.nextElement();
-			}
-			System.out.println("Nodes: " + (numNodes * 2));
-			progressBar = new JProgressBar(0, numNodes * 2);
-			progressDialog = new JDialog(MainFrame.this, "Checking Productions");
-			progressDialog.getContentPane().setLayout(new FlowLayout());
-			progressDialog.getContentPane().add(progressBar);
-			progressBar.setStringPainted(true);
-			progressDialog.setLocationRelativeTo(MainFrame.this);
-			progressDialog.pack();
-			progressDialog.show();
-			(new UpdateThread()).start();
-		}   // end of constructor
-
-		class UpdateThread extends Thread 
-        {
-
-			Runnable update, finish;
-			int value, min, max;
-
-
-			java.util.List errors = new LinkedList();
-			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-			OperatorNode current;
-			Vector parsedProds, vecErrors = new Vector();
-			int nodeNum = 0;
-
-			public UpdateThread() 
-            {
-
-				progressBar.getMaximum();
-				progressBar.getMinimum();
-
-				update = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						value = progressBar.getValue() + 1;
-						updateProgressBar(value);
-						//System.out.println("Value is " + value);
-					}
-				};
-				finish = new Runnable() 
-                {
-
-					public void run() 
-                    {
-
-						updateProgressBar(min);
-						System.out.println("Done");
-						progressDialog.dispose();
-					}
-				};
-			}
-
-			public void run() 
-            {
-
-                initializeNodes();
-				if(checkNodes())
-                searchDataMap();
-                SwingUtilities.invokeLater(finish);
-			}
-
-			private void updateProgressBar(int value) 
-            {
-
-				progressBar.setValue(value);
-			}
-
-            /**
-             *  This initializes the status of all the edges to zero, which means that
-             *  the edges have not been used by a production in any way.
-             */
-            public void initializeNodes() 
-            {
-
-                Enumeration edges = operatorWindow.getDatamap().getEdges();
-                while(edges.hasMoreElements()) 
-                {
-
-                    NamedEdge currentEdge = (NamedEdge)edges.nextElement();
-                    currentEdge.resetTestedStatus();
-                    currentEdge.resetErrorNoted();
-                    // initialize the input-link as already tested
-                    if(currentEdge.getName().equals("input-link"))
-                    currentEdge.setInputLinkCreated(operatorWindow.getDatamap());
-                    // initialize the output-link as already tested
-                    if(currentEdge.getName().equals("output-link"))
-                    currentEdge.setOutputLinkTested(operatorWindow.getDatamap());
-                }
-            }     // end of initializeNodes()
-
-            /**
-             *  Simply go through all the nodes, checking productions
-             *  and marking the named edges in the datamap when either tested
-             *  or created by a production.
-             *  @return  false if encountered a parse error
-             */
-            public boolean checkNodes() 
-            {
-
-				try 
-                {
-
-                    boolean anyErrors = false;
-                  checkingNodes: while(bfe.hasMoreElements()) 
-                  {
-
-                      current = (OperatorNode)bfe.nextElement();
-
-                      // If the node has a rule editor open, get the rules from the
-                      // window, otherwise, open the associated file
-
-                      try 
-                      {
-
-                          parsedProds = current.parseProductions();
-                      }
-                      catch(ParseException pe) 
-                      {
-
-                          anyErrors = true;
-                          String errString;
-                          String parseError = pe.toString();
-                          int i = parseError.lastIndexOf("line ");
-                          String lineNum = parseError.substring(i + 5);
-                          i = lineNum.indexOf(',');
-                          lineNum = "(" + lineNum.substring(0, i) + "): ";
-                          errString = current.getFileName() + lineNum + "Unable to Search DataMap for extra WMEs due to parse error";
-                          errors.add(errString);
-                      }
-                      catch(TokenMgrError tme) 
-                      {
-
-                          tme.printStackTrace();
-                      }
-
-                      if (parsedProds!= null) 
-                      {
-
-                          operatorWindow.checkProductions((OperatorNode)current.getParent(), parsedProds, errors);
-                      }
-
-                      if (!errors.isEmpty()) 
-                      {
-
-                          anyErrors = true;
-                          Enumeration e = new EnumerationIteratorWrapper(errors.iterator());
-                          while(e.hasMoreElements()) 
-                          {
-
-                              try 
-                              {
-
-                                  String errorString = e.nextElement().toString();
-                                  String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
-                                  if(errorString.endsWith("Unable to Search DataMap for extra WMEs due to parse error")) 
-                                  {
-
-                                      vecErrors.add(
-                                          new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true,true));
-                                      feedbackList.setListData(vecErrors);
-                                      SwingUtilities.invokeLater(finish);
-                                      return false;
-                                  }
-                              } catch(NumberFormatException nfe) 
-                              {
-
-                                  System.out.println("Never happen");
-                              }
-                          }
-                      }
-                      errors.clear();
-                      updateProgressBar(++nodeNum);
-                      SwingUtilities.invokeLater(update);
-
-                  } // while parsing operator nodes
-
-					feedbackList.setListData(vecErrors);
-                    return true;
-				}
-				catch (IOException ioe) 
-                {
-
-					ioe.printStackTrace();
-				}
-                return false;  // should never get here unless try failed
-			}     // end of checkNodes()
-
-
-            /**
-             *  Search through the datamap and look for extra WMEs
-             *  by looking at the status of the named edge (as determined
-             *  by the check nodes function) and the edge's location within
-             *  the datamap.
-             *  Extra WMEs are classified in this action by being tested by some production
-             *  within the project, but never created by any production;
-             *  not including any item within the input-link.
-             *  Send results to the feedback list
-             */
-            public void searchDataMap() 
-            {
-
-                OperatorNode operatorNode;
-                vecErrors.clear();    // clear out errors just in case
-                vecErrors.add("Attributes that were never tested and never created in the productions of this agent:");
-
-                // Go through all of the nodes examining the nodes' datamap if they have one
-                Enumeration bfe = operatorWindow.breadthFirstEnumeration();
-                while(bfe.hasMoreElements()) 
-                {
-
-                    operatorNode = (OperatorNode)bfe.nextElement();
-                    operatorNode.searchNoTestNoCreateDataMap(operatorWindow.getDatamap(), vecErrors);
-                    updateProgressBar(++nodeNum);
-                    SwingUtilities.invokeLater(update);
-                }   // end of while looking at all nodes
-
-                // do case of no errors
-                if(vecErrors.size() == 1) 
-                {
-
-                    vecErrors.clear();
-                    vecErrors.add("No errors.  All attributes were either tested or created.");
-                }
-
-                // Add list of errors to feedback list
-                feedbackList.setListData(vecErrors);
-            }     // end of searchDataMap()
-
-		}   // end of UpdateThread class
-	}   // end of SearchDataMapNoTestNoCreateAction
+            opNode.searchNoTestNoCreateDataMap(operatorWindow.getDatamap(), v);
+        }//searchDatamap
+	}//class SearchDataMapNoTestNoCreateAction
 
 
     /**
@@ -3641,7 +2249,7 @@ public class MainFrame extends JFrame
                                   System.out.println("Never happen");
                               }
                           }
-                          feedbackList.setListData(vecErrors);
+                          setFeedbackListData(vecErrors);
                           value = progressBar.getValue() + 1;
                           updateProgressBar(value);
                           //if(errors.isEmpty())

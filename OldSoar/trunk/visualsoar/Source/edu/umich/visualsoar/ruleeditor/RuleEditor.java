@@ -856,12 +856,14 @@ public class RuleEditor extends CustomInternalFrame
      public String getFile() {
         return fileName;
      }
-     
-     public Vector parseProductions() throws ParseException {
+
+
+    public Vector parseProductions() throws ParseException
+    {
         makeValidForParser();
         SoarParser parser = new SoarParser(new StringReader(getAllText()));
         return parser.VisualSoarFile();
-     }
+    }
      
      /**
       * Recolors the syntax to reflect a color preference change

@@ -3,6 +3,8 @@ import edu.umich.visualsoar.parser.*;
 import edu.umich.visualsoar.ruleeditor.RuleEditor;
 import edu.umich.visualsoar.MainFrame;
 import edu.umich.visualsoar.datamap.*;
+import edu.umich.visualsoar.util.*;
+import edu.umich.visualsoar.misc.*;
 
 import java.io.*;
 import java.awt.Component;
@@ -332,8 +334,8 @@ public class FileNode extends OperatorNode implements java.io.Serializable
     public Vector parseProductions() throws ParseException, java.io.IOException 
     {
 
-        if(name.startsWith("_"))
-        return null;
+        if(name.startsWith("_")) return null;
+        
         if(ruleEditor == null) 
         {
 
@@ -345,6 +347,75 @@ public class FileNode extends OperatorNode implements java.io.Serializable
         }
         return ruleEditor.parseProductions();
     }
+
+    /**
+     * This will check the productions in this file node for datamap errors.
+     * if a rule editor is open for the file it just forwards the call to the 
+     * open rule editor, else it opens the file and attempts to parse the
+     * productions 
+     */
+    public boolean CheckAgainstDatamap(Vector vecErrors) throws IOException
+    {
+        Vector parsedProds = new Vector();
+        boolean anyErrors = false;
+        java.util.List errors = new LinkedList();
+        
+        try
+        {
+            parsedProds = parseProductions();
+        }
+        catch(ParseException pe)
+        {
+            anyErrors = true;
+            String parseError = pe.toString();
+            int i = parseError.lastIndexOf("line ");
+            String lineNum = parseError.substring(i + 5);
+            i = lineNum.indexOf(',');
+            lineNum = "(" + lineNum.substring(0, i) + "): ";
+            String errString = getFileName() + lineNum + "Unable to check productions due to parse error";
+            errors.add(errString);
+        }
+        catch(TokenMgrError tme) 
+        {
+            tme.printStackTrace();
+        }
+
+        if (parsedProds!= null)
+        {
+            OperatorWindow ow = MainFrame.getMainFrame().getOperatorWindow();
+            ow.checkProductions((OperatorNode)getParent(), parsedProds, errors);
+        }
+        
+        if (!errors.isEmpty())
+        {
+            anyErrors = true;
+            Enumeration e = new EnumerationIteratorWrapper(errors.iterator());
+            while(e.hasMoreElements()) 
+            {
+                try 
+                {
+                    String errorString = e.nextElement().toString();
+                    String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
+                    if(errorString.endsWith("Unable to check productions due to parse error"))
+                    {
+                        vecErrors.add(
+                            new FeedbackListObject(this,Integer.parseInt(numberString),errorString,true,true));
+                    }
+                    else
+                    {
+                        vecErrors.add(
+                            new FeedbackListObject(this,Integer.parseInt(numberString),errorString,true));
+                    }
+                }
+                catch(NumberFormatException nfe)
+                { /* should never happen*/ }
+            }//while
+        }//if
+
+        return anyErrors;
+
+        
+    }//CheckAgainstDatamap
     
     /**
      * This opens/shows a rule editor with this nodes associated file
