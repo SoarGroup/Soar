@@ -812,6 +812,8 @@ void print_production (production *p, bool internal) {
   print_action_list (rhs, 4, internal);
   print_string ("\n}\n");
   deallocate_action_list (rhs);
+  if (p->type == RL_PRODUCTION_TYPE)                // SAN
+	  print("Std. dev. %f\n", p->avg_update);
 }
 
 /* ------------------------------------------------------------------

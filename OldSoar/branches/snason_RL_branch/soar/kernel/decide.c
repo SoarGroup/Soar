@@ -3319,7 +3319,6 @@ void initialize_indifferent_candidates_for_probability_selection(slot *s, prefer
       cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
       cand->total_preferences_for_candidate=0;
       cand->sum_of_probability=DEFAULT_INDIFFERENT_VALUE;
-	  cand->confidence = 0;
    }
 
 
@@ -3463,7 +3462,6 @@ preference *ProbSelect(slot *s, preference *candidates)
 	 cand->total_preferences_for_candidate += 1;
 	  // print_with_symbols("\nFound binary preference: \n Incrementing candidate %y ", cand->value);
 	    // print(" by %f", pref->referent->fc.value); 
-	 cand->confidence += abs(pref->referent->fc.value); 
 	 cand->sum_of_probability += pref->referent->fc.value;
        }
      }

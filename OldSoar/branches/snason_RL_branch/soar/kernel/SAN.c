@@ -8,7 +8,7 @@ extern void variablize_symbol (Symbol **sym);
 
 void check_conds(tc_number, RL_record *);
 not *check_nots(tc_number, RL_record *);
-rhs_value compute_Q_value();
+float compute_Q_value();
 // void build_op_tree(slot *s, condition **c);
 void add_goal_tests (condition *cond);
 action *make_simple_action( Symbol *, Symbol *, Symbol *);
@@ -97,7 +97,7 @@ void learn_RL_productions(int level){
 	Symbol *prod_name;
 	byte prod_type;
 	production *prod;
-	rhs_value Q;
+	float Q;
 	byte rete_add_result;
  	action *a;
 	slot* s;
@@ -162,11 +162,13 @@ void learn_RL_productions(int level){
 	
 	
 			a->preference_type = BINARY_INDIFFERENT_PREFERENCE_TYPE;
-			a->referent = Q;
+			a->referent = symbol_to_rhs_value(make_float_constant(Q));
 	
 			// print_action_list(a, 2, TRUE);
 	
 			prod = make_production (prod_type, prod_name, &RL_top, &RL_bottom, &a, FALSE);
+			prod->avg_update = fabs(Q);
+			prod->times_applied = 1;
 			// print("\n Printing action to go on prod.");
 			// print_action_list(prod->action_list, 2, TRUE);
 			rete_add_result = add_production_to_rete(prod, RL_top, NULL, TRUE);
@@ -213,7 +215,7 @@ void learn_RL_productions(int level){
 }
 
 /*********/
-rhs_value compute_Q_value(RL_record* r){
+float compute_Q_value(RL_record* r){
 	float Q;
 
 	
@@ -231,8 +233,8 @@ rhs_value compute_Q_value(RL_record* r){
 	// print("Q after alpha - %f\n", Q);
 
 	
-
-	return symbol_to_rhs_value(make_float_constant(Q));
+	return Q;
+	
 }
 
 /******/

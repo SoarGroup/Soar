@@ -3151,9 +3151,17 @@ byte add_production_to_rete (production *p,
        p_node=p_node->next_sibling) {
     if (p_node->node_type != P_BNODE) continue;
 	if (current_agent(making_binary)){ // SAN
-		float increment = rhs_value_to_symbol(p->action_list->referent)->fc.value;  // SAN - bug?, check for int value too
-		increment += rhs_value_to_symbol(p_node->b.p.prod->action_list->referent)->fc.value;
-		p_node->b.p.prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
+		production *temp_prod = p_node->b.p.prod;
+		float increment;
+		if (temp_prod->type == USER_PRODUCTION_TYPE) continue;
+		/* Add update to existing referent value */
+		increment = rhs_value_to_symbol(p->action_list->referent)->fc.value;  // SAN - bug?, check for int value too
+		increment += rhs_value_to_symbol(temp_prod->action_list->referent)->fc.value;
+		temp_prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
+		/* Compute new avg of abs(update) */
+		increment = (temp_prod->avg_update*temp_prod->times_applied) + p->avg_update; 
+		temp_prod->times_applied++;
+		temp_prod->avg_update = increment / temp_prod->times_applied;
 	}
     else if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */

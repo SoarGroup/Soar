@@ -675,7 +675,8 @@ void determine_highest_active_production_level_in_stack_apply() {
 	consistency check over the entire stack (by checking at the
 	bottom goal). */
 
-     if (minor_quiescence_at_goal(current_agent(bottom_goal))) {
+	 if ( ! (current_agent(ms_retractions) || current_agent(ms_i_assertions) ) ) {
+     /* if (minor_quiescence_at_goal(current_agent(bottom_goal))) { RPM */
 	 goal_stack_consistent_through_goal(current_agent(bottom_goal));
      }
      

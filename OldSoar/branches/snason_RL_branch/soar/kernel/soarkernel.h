@@ -1339,8 +1339,7 @@ typedef struct preference_struct {
 
   int total_preferences_for_candidate;
   double sum_of_probability;
-  double confidence;
-
+ 
   /* END: REW: 2003-01-08 */
 
 } preference;
@@ -1779,6 +1778,8 @@ typedef struct production_struct {
   list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
   struct instantiation_struct *instantiations; /* dll of inst's in MS */
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
+  int times_applied;                      /* SAN - only for RL_PRODUCTION_TYPE */
+  double avg_update;                      /* SAN - only for RL_PRODUCTION_TYPE */
 
 } production;
 

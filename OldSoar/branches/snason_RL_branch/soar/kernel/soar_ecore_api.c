@@ -1223,10 +1223,10 @@ int soar_ecPrintAllProductionsOfType( int type, bool internal,
       }
     }
     print("\n");
-    if (full_prod) {
+	if (full_prod) {
       print_production (prod, internal);
-      print("\n");
-    }
+      print("\n");	  
+	}
     prod = prod->prev;
   }
 
