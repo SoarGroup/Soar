@@ -154,16 +154,18 @@ Documentation
 
 Bug Fixes
 ---------
+349  tutorial images need to be updated
 375  typo in tutorial part 1: move-north  
 386  typos in tutorial part 1 (search control)  
 
 Enhancements
 ------------
-Added information about substates.
+Added information to tutorial about substates.
 
 Known Issues
 ------------
-349  tutorial images need to be updated
+380  typo in section 5.6.3
+381  o-support-mode command missing newest support modes 
 
 VisualSoar 4.5.3
 ================
