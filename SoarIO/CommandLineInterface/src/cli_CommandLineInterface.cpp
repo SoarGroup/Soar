@@ -7,36 +7,11 @@
 /////////////////////////////////////////////////////////////////
 #include "cli_CommandLineInterface.h"
 
-#include <string>
-#include <ctype.h>
-#include <string.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <fstream>
-
 #ifdef WIN32
-#include <windows.h>
-#include <winbase.h>
 #include <direct.h>
-
-#define snprintf _snprintf
-
 #endif // WIN32
 
-#include "cli_GetOpt.h"	// Not the real getopt, as that one has crazy side effects with windows libraries
-#include "cli_Constants.h"
-
-// gSKI includes
-#include "gSKI_Structures.h"
-#include "IgSKI_ProductionManager.h"
-#include "IgSKI_Agent.h"
-#include "IgSKI_AgentManager.h"
-#include "IgSKI_Kernel.h"
-#include "IgSKI_DoNotTouch.h"
-#include "IgSKI_Iterator.h"
-#include "IgSKI_Production.h"
-#include "IgSKI_MultiAttribute.h"
-#include "IgSKI_AgentPerformanceMonitor.h"
+#include "cli_GetOpt.h"
 
 // BADBAD: I think we should be using an error class instead to work with error objects.
 #include "../../gSKI/src/gSKI_Error.h"
@@ -46,7 +21,6 @@
 #include "sml_TagResult.h"
 #include "sml_TagArg.h"
 
-using namespace std;
 using namespace cli;
 using namespace sml;
 
@@ -65,9 +39,10 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	BuildCommandMap();
 
 	// Store current working directory as 'home' dir
-	char buf[512];
-	getcwd(buf, 512);
-	m_HomeDirectory = buf;
+	if (!GetCurrentWorkingDirectory(m_HomeDirectory)) {
+		// TODO: figure out what to do here!
+		// ignore for now!
+	}
 
 	// Give print handlers a reference to us
 	m_ResultPrintHandler.SetCLI(this);
@@ -135,7 +110,7 @@ void CommandLineInterface::BuildCommandMap() {
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
 //
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, bool rawOutput, gSKI::Error* pError) {
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, ElementXML* pResponse, bool rawOutput, gSKI::Error* pError) {
 
 	// Clear the result
 	m_Result.clear();
@@ -523,6 +498,12 @@ bool CommandLineInterface::HandleGetOptError(char option) {
 	return false;
 }
 
+// _   _                 _ _      _____
+//| | | | __ _ _ __   __| | | ___| ____|_ __ _ __ ___  _ __
+//| |_| |/ _` | '_ \ / _` | |/ _ \  _| | '__| '__/ _ \| '__|
+//|  _  | (_| | | | | (_| | |  __/ |___| |  | | | (_) | |
+//|_| |_|\__,_|_| |_|\__,_|_|\___|_____|_|  |_|  \___/|_|
+//
 bool CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pError) {
 	m_ErrorMessage += errorMessage;
 
@@ -538,6 +519,12 @@ bool CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pE
 	return false;
 }
 
+//    _                               _    _             _____
+//   / \   _ __  _ __   ___ _ __   __| |  / \   _ __ __ |_   _|_ _  __ _
+//  / _ \ | '_ \| '_ \ / _ \ '_ \ / _` | / _ \ | '__/ _` || |/ _` |/ _` |
+// / ___ \| |_) | |_) |  __/ | | | (_| |/ ___ \| | | (_| || | (_| | (_| |
+///_/   \_\ .__/| .__/ \___|_| |_|\__,_/_/   \_\_|  \__, ||_|\__,_|\__, |
+//        |_|   |_|                                 |___/          |___/
 void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const char* pValue) {
 	TagArg* pTag = new TagArg();
 	pTag->SetParam(pParam);
@@ -546,6 +533,12 @@ void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, c
 	m_ResponseTags.push_back(pTag);
 }
 
+//    _                               _    _             _____           _____         _
+//   / \   _ __  _ __   ___ _ __   __| |  / \   _ __ __ |_   _|_ _  __ _|  ___|_ _ ___| |_
+//  / _ \ | '_ \| '_ \ / _ \ '_ \ / _` | / _ \ | '__/ _` || |/ _` |/ _` | |_ / _` / __| __|
+// / ___ \| |_) | |_) |  __/ | | | (_| |/ ___ \| | | (_| || | (_| | (_| |  _| (_| \__ \ |_
+///_/   \_\ .__/| .__/ \___|_| |_|\__,_/_/   \_\_|  \__, ||_|\__,_|\__, |_|  \__,_|___/\__|
+//        |_|   |_|                                 |___/          |___/
 void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const char* pValue) {
 	TagArg* pTag = new TagArg();
 	pTag->SetParamFast(pParam);
@@ -554,6 +547,12 @@ void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pTyp
 	m_ResponseTags.push_back(pTag);
 }
 
+// ____                                _    _             _____           _____         _
+//|  _ \ _ __ ___ _ __   ___ _ __   __| |  / \   _ __ __ |_   _|_ _  __ _|  ___|_ _ ___| |_
+//| |_) | '__/ _ \ '_ \ / _ \ '_ \ / _` | / _ \ | '__/ _` || |/ _` |/ _` | |_ / _` / __| __|
+//|  __/| | |  __/ |_) |  __/ | | | (_| |/ ___ \| | | (_| || | (_| | (_| |  _| (_| \__ \ |_
+//|_|   |_|  \___| .__/ \___|_| |_|\__,_/_/   \_\_|  \__, ||_|\__,_|\__, |_|  \__,_|___/\__|
+//               |_|                                 |___/          |___/
 void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const char* pValue) {
 	TagArg* pTag = new TagArg();
 	pTag->SetParamFast(pParam);

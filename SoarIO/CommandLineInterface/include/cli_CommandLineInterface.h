@@ -17,7 +17,6 @@
 #include <string>
 #include <stack>
 #include <list>
-#include <fstream>
 
 // Local includes
 #include "cli_CommandData.h"
@@ -26,7 +25,6 @@
 
 // gSKI includes
 #include "gSKI_Events.h"
-#include "IgSKI_Iterator.h"
 
 #ifdef _WIN32
 #ifdef _USRDLL

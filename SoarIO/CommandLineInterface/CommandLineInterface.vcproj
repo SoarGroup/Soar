@@ -145,14 +145,81 @@
 				RelativePath=".\src\cli_CommandLineInterface.cpp">
 			</File>
 			<File
-				RelativePath=".\src\cli_Commands.cpp">
-			</File>
-			<File
 				RelativePath=".\src\cli_Constants.cpp">
 			</File>
 			<File
 				RelativePath=".\src\cli_GetOpt.cpp">
 			</File>
+			<Filter
+				Name="Commands"
+				Filter="">
+				<File
+					RelativePath=".\src\cli_cd.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_echo.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_excise.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_help.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_helpex.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_initsoar.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_learn.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_log.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_ls.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_multiattributes.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_popd.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_print.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_pushd.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_pwd.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_quit.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_run.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_source.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_sp.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_stats.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_stopsoar.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_time.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_watch.cpp">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
