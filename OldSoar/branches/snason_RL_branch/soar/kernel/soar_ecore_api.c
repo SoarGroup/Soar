@@ -1213,6 +1213,11 @@ int soar_ecPrintAllProductionsOfType( int type, bool internal,
     /* Print it... */
     if (!full_prod) {
       print_with_symbols("%y  ",prod->name);
+	  if (type == RL_PRODUCTION_TYPE){                  // SAN
+		  print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
+		  print("std_dev %f", prod->avg_update);
+	  }
+
     }
     if (print_fname) {
       print_string("# sourcefile : ");

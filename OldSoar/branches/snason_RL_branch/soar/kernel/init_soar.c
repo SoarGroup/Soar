@@ -919,6 +919,8 @@ void do_one_top_level_phase (void) {
 			 (soar_call_data) NULL);
 #endif
     do_decision_phase();
+	// SAN
+ 
 
 
 #ifndef NO_ADP_CALLBACK

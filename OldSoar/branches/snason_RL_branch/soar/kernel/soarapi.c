@@ -2290,7 +2290,7 @@ int soar_Print (int argc, const char *argv[], soarResult *res)
 	  name_only = TRUE;
 	  full_prod = FALSE; /* Soar-Bugs #161 */
 	}
-      /* --- read optional -full flag --- */
+	  /* --- read optional -full flag --- */
       else if (string_match_up_to("-full", argv[next_arg],2))
 	{
 	  full_prod = TRUE;
