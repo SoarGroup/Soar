@@ -1,18 +1,29 @@
-#include "AgnosticTowers.h"
+#include "gSKITowers.h"
 #include "gSKITowersSoarAgent.h"
 
 #include <string>
-#include <iostream> //just for testing
+
 #include <cassert>
 
-using std::cout; using std::endl;
+#define testingGTSAgent
+#ifdef testingGTSAgent
+	#include <iostream>
+	using std::cout; using std::endl;
+#endif //testingGTSAgent
+
 using std::string;
 
 #include "IgSKI_OutputProcessor.h"
 #include "IgSKI_InputLink.h"
 #include "IgSKI_OutputLink.h"
+#include "IgSKI_Agent.h"
+#include "IgSKI_WMObject.h"
+#include "IgSKI_Wme.h"
+#include "IgSKI_Symbol.h"
+#include "IgSKI_WorkingMemory.h"
 
 using namespace gSKI;
+//using namespace gski_towers;
 
 SoarAgent::SoarAgent(IAgent* inAgent, HanoiWorld* inWorld) : m_Agent(inAgent), m_World(inWorld)
 {
@@ -22,9 +33,12 @@ SoarAgent::SoarAgent(IAgent* inAgent, HanoiWorld* inWorld) : m_Agent(inAgent), m
 	m_Agent->GetOutputLink()->SetAutomaticUpdate(true);
 }
 
-SoarAgent::~SoarAgent(){}
+SoarAgent::~SoarAgent()
+{
+	// fixme todo implement this 
+}
 
-void SoarAgent::ProcessOutput(IWorkingMemory* wMemory, IWMObject* moveIdentifier)
+void SoarAgent::ProcessOutput(IWorkingMemory* wMemory, gSKI::IWMObject* moveIdentifier)
 {
 	string sourceTowerString;
 	string destinationTowerString;
