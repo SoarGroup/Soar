@@ -16,22 +16,39 @@ const std::string k_noneString				= "none";
 const std::string k_worldPegString			= "peg";
 const std::string k_nameString				= "name";
 
+/*************************************************************
+* @brief	forward declaration for class that wraps up the 
+*			wmes associated with a disk
+*************************************************************/
 class DiskInputLinkProfile;
 class Tower;
-struct DiskWMEs;
 
 class Disk
 {
 public:
-
+	/*************************************************************
+	* @brief	Public constructor initializes state  
+	* @param	tower		pointer to tower that this disk is on
+	* @param	inSize		size of disk
+	* @param	diskBeneath	pointer to disk underneath, zero if none
+	*************************************************************/
 	Disk(Tower* tower, int size, Disk* diskBeneath);
 
+	/*************************************************************
+	* @brief	Removes the disk's wmes from working memory
+	*************************************************************/
 	virtual void Detach();
 
 	virtual int GetSize() const {return m_size;}
 
 	virtual DiskInputLinkProfile* GetDiskInputLinkProfile() const { return m_iLinkProfile;}
 
+	/*************************************************************
+	* @brief	Updates the disk's tower and disk pointers 
+	* @param	diskBeneath	pointer to disk directly beneath this 
+	*						one, zero if none
+	* @param	tower	pointer to tower that disk is currently on
+	*************************************************************/
 	virtual void Update(Disk* diskBeneathMe, Tower* tower);
 
 protected:
@@ -51,24 +68,51 @@ typedef std::vector<Disk*> diskContainer_t;
 typedef diskContainer_t::iterator diskItr_t;
 
 class HanoiWorld;
+
+/*************************************************************
+* @brief	forward declaration for class that wraps up the 
+*			wmes associated with a Tower
+*************************************************************/
 class TowerInputLinkProfile;
 
 class Tower
 {
 public:
+
+	/*************************************************************
+	* @brief	Public constructor initializes state
+	* @param	inWorld		pointer to the game world
+	* @param	inName		the name of this tower
+	*************************************************************/
 	Tower(HanoiWorld* world, char name);
 
+	/*************************************************************
+	* @brief	Clean up the tower's state as well as any contained
+	*			disks
+	*************************************************************/
 	~Tower();
 
-	//will always add a smaller disk than the top, so new disk must on at end of container.
-	//Disks that have just been created already have their disk beneath initialized, don't reset it
+	/*************************************************************
+	* @brief	Add disk to top of tower. Added disk
+	*			is always smaller than the current top.  Disks that 
+	*			have just been created do not need to be updated.
+	* @param	newDisk		pointer to disk to be added
+	* @param	justCreated	whether or not this disk was just constructed
+	*************************************************************/
 	virtual void AddDisk(Disk* newDisk, bool justCreated);
 
+	/*************************************************************
+	* @brief	Remove the top disk, which will be at the back
+	*			of the container
+	*************************************************************/
 	virtual void RemoveTopDisk();
 
+	/*************************************************************
+	* @returns	pointer to the disk at top of tower
+	*************************************************************/
 	virtual Disk* GetTopDisk() const;
 
-	virtual int GetSize() const;
+	int GetSize() const { return static_cast<int>(m_disks.size()); }
 
 	virtual TowerInputLinkProfile* GetInputLinkProfile() const {return m_iLinkProfile;}
 
@@ -84,29 +128,66 @@ protected:
 	TowerInputLinkProfile* m_iLinkProfile;
 };
 
-
+/*************************************************************
+* @brief	forward declaration for class that wraps up the 
+*			working memory and/or the input link
+*************************************************************/
 class IOManager;
+
+/*************************************************************
+* @brief	forward declaration for class that wraps up the 
+*			actual Soar Kernel agent
+*************************************************************/
 class SoarAgent;
 
 class HanoiWorld
 {
 
 public:
+	/*************************************************************
+	* @brief	Public constructor initializes state
+	* @param	graphicsOn	optional bool for whether or not to print
+	*						graphics during game execution
+	* @param	inNunTowers	optional amount of towers for game
+	* @param	inNumDisks	optional amount of disks to play with
+	*************************************************************/
 	HanoiWorld(bool graphicsOn = true, int inNumTowers = 3,  int inNumDisks = 11);
 
+	/*************************************************************
+	* @brief	cleans up state, including contained Towers
+	*************************************************************/
 	~HanoiWorld();
 
+	/*************************************************************
+	* @brief	calls an interface-specific Run function in agent
+	*************************************************************/
 	virtual void Run();
 
-	//remove from the source tower, add to the destination tower
+	/*************************************************************
+	* @brief	move disk from source tower to destination tower
+	* @param	sourceTower			numerical ID of source tower
+	* @param	destinationTower	numerical ID of destination tower
+	* @returns	true if there is a disk to move, false otherwise
+	*************************************************************/
 	virtual bool MoveDisk(int sourceTower, int destinationTower);
 
+	/*************************************************************
+	* @brief	prints all towers and disks
+	*************************************************************/
 	virtual void Print();
 
+	/*************************************************************
+	* @returns	true if all disks are on goal tower, else false 
+	*************************************************************/
 	virtual bool AtGoalState();
 
 	virtual IOManager* GetIOManager() const {return ioManager;}
 
+	/*************************************************************
+	* @brief	some interfaces may need to perform additional actions
+	*			after the goal state has been reached.	Those	
+	*			operations can be performed from here
+	*************************************************************/
 	virtual void EndGameAction();
 
 protected:

@@ -39,7 +39,7 @@ TgD::TgD* debugger;
 
 /*************************************************************
 * @brief	The TowerInputLinkProfile class contains all of the  
-*			wmes corresponding to theTower
+*			wmes corresponding to the Tower
 *************************************************************/
 class TowerInputLinkProfile
 {
@@ -57,6 +57,10 @@ public:
 	*************************************************************/
 	IWMObject* GetTowerIdentifierObject() const {return m_pPegIdentifier->GetValue()->GetObject();}
 
+	/*************************************************************
+	* @brief	Release reference to wmes actually owned by this   
+	*			class, set pointers to zero
+	*************************************************************/
 	~TowerInputLinkProfile()
 	{
 		if(m_pPegIdentifier)
@@ -72,6 +76,10 @@ public:
 		}
 	}
 private:
+	/*************************************************************
+	* @brief	Initialize private data to zero.  This constructor
+	*			can only be called by friends
+	*************************************************************/
 	TowerInputLinkProfile()
 	{
 		m_pPegIdentifier = 0;
@@ -192,7 +200,8 @@ private:
 
 	/*************************************************************
 	* @brief	Initializes all of the IWme and WMObject pointers 
-	*			to zero
+	*			to zero.  This constructor can only be called by
+	*			friends
 	*************************************************************/
 	DiskInputLinkProfile()
 	{
@@ -227,7 +236,7 @@ private:
 		}
 
 		//=============================================
-		//This object doesn't own these so just set pointers to zero
+		//This object doesn't own these, so just set pointers to zero
 		//These copies of wmes/wmobjs did not increase the reference count, so we shouldn't
 		//decrease the count by calling Release()
 		if(diskBeneath)
@@ -291,20 +300,22 @@ private:
 	bool holdsNeedsToBeUpdated;
 };
 
-
+/*************************************************************
+* @brief	The IOManager class contains gSKI-specific
+*			WorkingMemory and InputLink specific pointers
+*			Has wrapper functions for manipulating the input
+*			link
+*************************************************************/
 class IOManager
 {
 public:
-	/*************************************************************
-	* @brief	Constructor initializes the input link and
-	*			working memory pointers
-	*************************************************************/
-	IOManager(IInputLink* inILink) : m_pILink(inILink)
-	{
-		m_pWorkingMem = m_pILink->GetInputLinkMemory();
-	}
 
-	//if parent is null, parent should be the input link root object
+	/*************************************************************
+	* @brief	Adds an object to an agent's working memory  
+	* @param	parent	The WMObject to add the new ojbect to
+	*					If parent is zero, the ILink root obj is used
+	* @param	name	the name of the new WMObject
+	*************************************************************/
 	IWme* AddWMObject(IWMObject* parent, const string& name)
 	{
 		IWMObject* parentToAttachTo = 0;
@@ -326,6 +337,13 @@ public:
 		return newWme;
 	}
 
+	/*************************************************************
+	* @brief	Adds an wme to an agent's working memory  
+	* @param	parent	The WMObject to add the new wme to
+	*					If parent is zero, the ILink root obj is used
+	* @param	name	the name of the new WMObject
+	* @param	value	value of wme triplet
+	*************************************************************/
 	IWme* AddIntWme(IWMObject* parent, const string& name, int value)
 	{
 		IWMObject* parentToAttachTo;
@@ -347,6 +365,13 @@ public:
 		return newWme;
 	}
 
+	/*************************************************************
+	* @brief	Adds an wme to an agent's working memory  
+	* @param	parent	The WMObject to add the new wme to
+	*					If parent is zero, the ILink root obj is used
+	* @param	name	the name of the new WMObject
+	* @param	value	value of wme triplet
+	*************************************************************/
 	IWme* AddStringWme(IWMObject* parent, const string& name, const string& value)
 	{
 		IWMObject* parentToAttachTo;
@@ -367,6 +392,13 @@ public:
 		return newWme;
 	}
 
+	/*************************************************************
+	* @brief	Adds an wme to an agent's working memory  
+	* @param	parent	The WMObject to add the new wme to
+	*					If parent is zero, the ILink root obj is used
+	* @param	name	the name of the new WMObject
+	* @param	value	value of wme triplet
+	*************************************************************/
 	IWme* AddIDWme(IWMObject* parent, const string& name, IWMObject* linkDestination)
 	{
 		IWMObject* parentToAttachTo;
@@ -388,18 +420,33 @@ public:
 		return newWme;
 	}
 
+	/*************************************************************
+	* @brief	Removes a wme from working memory  
+	* @param	victimWme	pointer to wme to be removed
+	*					If parent is zero, the ILink root obj is used
+	*************************************************************/
 	void RemoveWme(IWme* victimWme)
 	{
 		m_pWorkingMem->RemoveWme(victimWme);
 	}
 
 private:
+	/*************************************************************
+	* @brief	Private constructor initializes the input link and
+	*			working memory pointers. can only be called by
+	*			friends
+	*************************************************************/
+	IOManager(IInputLink* inILink) : m_pILink(inILink)
+	{
+		m_pWorkingMem = m_pILink->GetInputLinkMemory();
+	}
+
+
 	IInputLink* m_pILink;
 	IWorkingMemory* m_pWorkingMem;
 
 	friend class HanoiWorld;
 };
-
 
 
 
@@ -461,7 +508,6 @@ Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) :
 }
 
 
-
 void Disk::Detach()
 {
 	delete m_iLinkProfile;
@@ -478,7 +524,6 @@ void Disk::Update(Disk* diskBeneath, Tower* tower)
 //======================================================
 //============ Tower Function Definitions ==============
 
-
 Tower::Tower(HanoiWorld* inWorld, char inName) : pWorld(inWorld), m_name(inName)
 {
 	m_iLinkProfile = new TowerInputLinkProfile();
@@ -489,6 +534,7 @@ Tower::Tower(HanoiWorld* inWorld, char inName) : pWorld(inWorld), m_name(inName)
 	nameString = m_name;
 	m_iLinkProfile->m_pPegName = manager->AddStringWme(m_iLinkProfile->GetTowerIdentifierObject(), k_nameString, nameString);
 }
+
 
 Tower::~Tower()
 {
@@ -504,8 +550,6 @@ Tower::~Tower()
 }
 
 
-//will always add a smaller disk than the top, so new disk must on at end of container
-//disks that have just been created already have their disk beneath initialized, don't reset it
 void Tower::AddDisk(Disk* newDisk, bool justCreated)
 {
 	assert(newDisk);
@@ -519,6 +563,7 @@ void Tower::AddDisk(Disk* newDisk, bool justCreated)
 
 	m_disks.push_back(newDisk);
 }
+
 
 void Tower::RemoveTopDisk()
 {
@@ -537,10 +582,6 @@ Disk* Tower::GetTopDisk() const
 	return 0;
 }
 
-int Tower::GetSize() const
-{
-	return static_cast<int>(m_disks.size());
-}
 
 
 void Tower::PrintDiskAtRow(int row) const
@@ -683,7 +724,7 @@ void HanoiWorld::Run()
 	m_agent->MakeMove();
 }
 
-	//remove from the source tower, add to the destination tower
+
 bool HanoiWorld::MoveDisk(int sourceTower, int destinationTower)
 {
 	Disk* movingDisk = m_towers[sourceTower]->GetTopDisk();
