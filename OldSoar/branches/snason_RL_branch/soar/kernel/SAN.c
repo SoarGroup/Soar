@@ -64,7 +64,7 @@ void reset_RL(){
  		pop_record(&current_agent(records));
 
 	current_agent(next_Q) = 0.0;
-	current_agent(updates) = 0.0;
+ 
 
 
 
@@ -108,8 +108,7 @@ void learn_RL_productions(int level){
 	slot* s;
 	cons *c;
 	int i;
-	static FILE *Temp = NIL;
-
+	
 	record = current_agent(records);
 
 	do{
@@ -123,14 +122,7 @@ void learn_RL_productions(int level){
 
 		Q = compute_Q_value(record);
 
-		if (!Temp)
-			Temp = fopen("logupdates.txt", "w");
-
-		start_redirection_to_file(Temp);
-		print("%f\n", current_agent(updates));
-		stop_redirection_to_file();
-
-		// BUG BUG divide up Q value
+	 	// BUG BUG divide up Q value
 		current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
 			// probably there is a better place to put this
 
@@ -183,6 +175,17 @@ void learn_RL_productions(int level){
 			prod = make_production (prod_type, prod_name, &RL_top, &RL_bottom, &a, FALSE);
 			prod->avg_update = fabs(Q);
 			prod->times_applied = 1;
+			
+			/* SAN - the following is temporary 
+			if (!Temp)
+				Temp = fopen("logupdates.txt", "w");
+
+			start_redirection_to_file(Temp);
+			print_with_symbols("%y\n", temp_prod->name);
+			print("%f\n", temp_prod->avg_update);
+			stop_redirection_to_file();
+			 End temporary */
+			
 			// print("\n Printing action to go on prod.");
 			// print_action_list(prod->action_list, 2, TRUE);
 			rete_add_result = add_production_to_rete(prod, RL_top, NULL, TRUE);
@@ -246,7 +249,7 @@ float compute_Q_value(RL_record* r){
 	Q *= current_agent(alpha);
 	// print("Q after alpha %f\n", Q);
 
-	current_agent(updates) =  fabs(Q) + 0.8*current_agent(updates);
+ 
 
 
 

@@ -1194,8 +1194,8 @@ byte run_preference_semantics(slot * s, preference ** result_candidates)
 	 the new method for choosing candidates 
       */ 
 	   
-        cand = probabilistically_select(s, candidates);
-		// cand = explore_exploit_select(s, candidates);
+        // cand = probabilistically_select(s, candidates);
+		cand = explore_exploit_select(s, candidates);
 	      if (!cand){
 		     *result_candidates = candidates;
 		     return TIE_IMPASSE_TYPE;
@@ -3328,7 +3328,7 @@ void initialize_indifferent_candidates_for_probability_selection(preference * ca
 
 bool explore_exploit(preference * candidates){
 
-	if((sys_random() % RAND_MAX) >= 0.8){
+	if(((double)sys_random() / (double)RAND_MAX) <= current_agent(epsilon)){
 		return 1; 
 	} else {
 		return 0;
@@ -3415,6 +3415,7 @@ preference *explore_exploit_select(slot *s, preference *candidates){
  
 	} else {
 		   double max_value = (double)candidates->sum_of_probability;
+		   int num_max_cand = 0;
 		   preference *max_cand = candidates;
 		   // current_agent(max_Q) = (*candidates)->sum_of_probability; // SAN
  
@@ -3422,12 +3423,24 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 			  if (cand->sum_of_probability > max_value){
 				 max_value = cand->sum_of_probability;
 				 max_cand = cand;
-			  }
+				 num_max_cand = 1;
+			  } else if (cand->sum_of_probability == max_value) num_max_cand++;
 		  }
-		  return max_cand;
+		  if (num_max_cand == 1) return max_cand;
+		  else {
+			  int chosen_num;
+			  chosen_num = sys_random() % num_max_cand;
+			  cand = candidates;
+			  while (cand->sum_of_probability != max_value) cand = cand->next_candidate;
+			  while (chosen_num) {
+				  cand=cand->next_candidate;
+				  chosen_num--;
+				  while (cand->sum_of_probability != max_value) cand = cand->next_candidate;
+			  }
+		  return cand;
 		  }
 }
-
+}
 
 
 preference *probabilistically_select(slot *s, preference *candidates)
@@ -3533,15 +3546,16 @@ preference *probabilistically_select(slot *s, preference *candidates)
    }
    
    if (current_agent(numeric_indifferent_mode) == NUMERIC_INDIFFERENT_MODE_SUM) {
+	 // Boltzmann
 	   double min_value;
 
    // current_agent(max_Q) = (*candidates)->sum_of_probability; // SAN
-   min_value = (double)candidates->sum_of_probability / current_agent(Temp);
+//   min_value = (double)candidates->sum_of_probability / current_agent(Temp);
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
       
 	   // cand->sum_of_probability = (cand->sum_of_probability)/((double)cand->total_preferences_for_candidate);
      
-     cand->sum_of_probability /= (double)current_agent(Temp);
+//     cand->sum_of_probability /= (double)current_agent(Temp);
 	 if (cand->sum_of_probability < min_value)
 		 min_value = cand->sum_of_probability;
    }
@@ -3552,22 +3566,22 @@ preference *probabilistically_select(slot *s, preference *candidates)
 	   cand->sum_of_probability -= min_value;
 	   if (current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM]){
 				print_with_symbols("\n Candidate %y:  ", cand->value);
-		           print("Value (Sum) = %f", exp(cand->sum_of_probability / current_agent(Temp)));
+//		           print("Value (Sum) = %f", exp(cand->sum_of_probability / current_agent(Temp)));
 			}  
-     /* Sum the total probabilities */
-     total_probability += exp(cand->sum_of_probability / current_agent(Temp));
+     // Sum the total probabilities
+//     total_probability += exp(cand->sum_of_probability / current_agent(Temp));
        
 
 	 /* SAN - record max Q-value for Q-value update */
 	 /* try Sarsa
-	 current_agent(max_Q) = max( current_agent(max_Q) , cand->sum_of_probability );
-	*/
+	 current_agent(max_Q) = max( current_agent(max_Q) , cand->sum_of_probability ); */
+ 
    }
 
   
-   /* Now select the candidate */ 
+   // Now select the candidate 
 
-   rn = rand();
+   rn = (double) rand() ;
    selectedProbability = ((double)rn / (double)RAND_MAX) * total_probability;
 
    
@@ -3577,7 +3591,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
 
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
      
-     currentSumOfValues += exp(cand->sum_of_probability / current_agent(Temp));
+//     currentSumOfValues += exp(cand->sum_of_probability / current_agent(Temp));
      // print("   Sum... %f", currentSumOfValues ); 
 
      if (selectedProbability <= currentSumOfValues) {

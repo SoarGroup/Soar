@@ -3049,6 +3049,7 @@ byte add_production_to_rete(production * p,
     ms_change *msc;
     action *a;
     byte production_addition_result;
+	// static FILE *Temp = NIL;      // Temporary SAN
 
     /* --- build the network for all the conditions --- */
     build_network_for_condition_list(lhs_top, 1, current_agent(dummy_top_node),
@@ -3092,6 +3093,7 @@ byte add_production_to_rete(production * p,
 		// increment = (temp_prod->avg_update*temp_prod->times_applied) + p->avg_update; 
 		temp_prod->times_applied++;
 		// temp_prod->avg_update = increment / temp_prod->times_applied;
+	
 	}
     else if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */

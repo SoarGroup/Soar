@@ -683,8 +683,8 @@ extern int soar_Learn (int argc, const char *argv[], soarResult *res);
 
 /* soar_setRL --
 SAN
-set reinforcement learning parameters - alpha, gamma, Temp
-usage -- setRL [alpha|gamma|Temp] value
+set reinforcement learning parameters - alpha, gamma, epsilon
+usage -- setRL [alpha|gamma|epsilon] value
 */
 extern int soar_setRL (int argc, const char *argv[], soarResult *res);
 

@@ -783,7 +783,7 @@ int soar_setRL (int argc, const char *argv[], soarResult *res)
 	if (argc == 1){
 		print("alpha = %f\n", current_agent(alpha));
 		print("gamma = %f\n", current_agent(gamma));
-		print("Temp = %f\n", current_agent(Temp));
+		print("epsilon = %f\n", current_agent(epsilon));
 		return SOAR_OK;
 	}
 
@@ -796,8 +796,8 @@ int soar_setRL (int argc, const char *argv[], soarResult *res)
 	      current_agent(alpha) = atof(argv[2]);
 	  else if(string_match("gamma", argv[1]))
 	      current_agent(gamma) = atof(argv[2]);
-	  else if(string_match("Temp", argv[1]))
-	      current_agent(Temp) = atof(argv[2]);
+	  else if(string_match("epsilon", argv[1]))
+	      current_agent(epsilon) = atof(argv[2]);
 	  else
 	  {
        setSoarResultResult( res,

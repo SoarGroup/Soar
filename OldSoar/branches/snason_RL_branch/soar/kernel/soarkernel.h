@@ -3811,8 +3811,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   float next_Q;
   float alpha;
   float gamma;
-  double Temp;
-  double updates;
+  double epsilon;
   unsigned long RL_count;
   bool making_binary;
   RL_record *records;
