@@ -21,8 +21,15 @@ public class FeedbackList extends JList
 ///////////////////////////////////////////////////////////////////
 // Constructors
 ///////////////////////////////////////////////////////////////////
+    DefaultListModel dlm = new DefaultListModel();
+
+///////////////////////////////////////////////////////////////////
+// Constructors
+///////////////////////////////////////////////////////////////////
     public FeedbackList()
     {
+        setModel(dlm);
+        
         addMouseListener(
             new MouseAdapter() 
             {
@@ -77,7 +84,83 @@ public class FeedbackList extends JList
         setCellRenderer(new FeedbackCellRenderer());
 
     }
+
+    /**
+     * Override the default implementation.  We want to update the
+     * DefaultListModel class we're using here.
+     *
+     * BUG?:  Can this be done more efficiently???
+     */
+    public void setListData(Vector v)
+    {
+        dlm.removeAllElements();
+        int vecSize = v.size();
+        dlm.ensureCapacity(vecSize*2);
+        for(int i = 0; i < vecSize; i++)
+        {
+            dlm.add(i, v.get(i));
+        }
+
+        //Make sure no-one's been fiddling with the list model
+        if (getModel() != dlm)
+        {
+            setModel(dlm);
+        }
+    }//setListData
     
+    /**
+     * Remove all the data in the list.
+     *
+     */
+    public void clearListData()
+    {
+        dlm.removeAllElements();
+        
+        //Make sure no-one's been fiddling with the list model
+        if (getModel() != dlm)
+        {
+            setModel(dlm);
+        }
+    }//clearListData
+    
+    /**
+     * Add an item to the list
+     *
+     */
+    public void insertElementAt(Object obj, int index)
+    {
+        dlm.insertElementAt(obj, index);
+        
+        //Make sure no-one's been fiddling with the list model
+        if (getModel() != dlm)
+        {
+            setModel(dlm);
+        }
+    }//setListData
+
+    /**
+     * Append a vector to the existing list content
+     *
+     */
+    public void appendListData(Vector v)
+    {
+        dlm.ensureCapacity((v.size() + dlm.size())*2);
+        
+        for(int i = dlm.size(), j = 0;
+            j < v.size();
+            i++, j++)
+        {
+            dlm.add(i, v.get(j));
+        }
+
+        //Make sure no-one's been fiddling with the list model
+        if (getModel() != dlm)
+        {
+            setModel(dlm);
+        }
+    }//setListData
+
+
     class FeedbackCellRenderer extends JLabel implements ListCellRenderer 
     {
         private Border lineBorder = BorderFactory.createLineBorder(Color.red,2),
