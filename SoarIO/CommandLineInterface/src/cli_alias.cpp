@@ -28,7 +28,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 	std::string command;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "d:", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, ":d:", longOptions, 0);
 		if (option == -1) break;
 
 		switch (option) {

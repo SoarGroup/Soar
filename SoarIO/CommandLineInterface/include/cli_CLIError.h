@@ -75,6 +75,8 @@ namespace cli {
 			kReteLoadOperationFail = 50,
 
 			kInvalidProduction = 51,
+			kInvalidLearnSetting = 52,
+			kRemoveOrZeroExpected = 53,
 		};
 
 		CLIError() : m_Code(0) {}

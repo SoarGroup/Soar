@@ -29,7 +29,7 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 	std::string filename;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "l:r:s:", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, ":l:r:s:", longOptions, 0);
 		if (option == -1) break;
 
 		switch (option) {

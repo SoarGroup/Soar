@@ -29,8 +29,8 @@ char const* CLIError::GetErrorDescription() {
 		case kExtraClosingBrace:				return "Closing brace found without opening counterpart.";
 		case kUnmatchedBrace:					return "Unexpected end of file. Unmatched opening brace.";
 
-		case kTooManyArgs:						return "Too many arguments.";
-		case kTooFewArgs:						return "Too few arguments.";
+		case kTooManyArgs:						return "Too many non-option arguments, check syntax.";
+		case kTooFewArgs:						return "Too few non-option arguments, check syntax.";
 		case kUnrecognizedOption:				return "Unrecognized option.";
 		case kMissingOptionArg:					return "Missing option argument.";
 
@@ -78,6 +78,8 @@ char const* CLIError::GetErrorDescription() {
 		case kReteLoadOperationFail:			return "Rete load operation failed.";
 
 		case kInvalidProduction:				return "Invalid production.";
+		case kInvalidLearnSetting:				return "Invalid learn setting, expected noprint, print, fullprint, or 0-2.";
+		case kRemoveOrZeroExpected:				return "Invalid argument, expected remove or 0.";
 
 		default:								return "Unknown error code.";
 	}

@@ -474,8 +474,23 @@ int GetOpt::_getopt_internal (int argc, char *const *argv, const char *optstring
 					optarg = nextchar;
 					optind++;
 				}
-				else
-					optarg = 0;
+				//else
+				//	optarg = 0;
+//voigtjr start
+				else 
+				{
+					if (!argv[optind])
+						optarg = 0;
+					else
+					{
+						if (argv[optind][0] == '-')
+							optarg = 0;
+						else
+							optarg = argv[optind++];
+					}
+
+				}
+//voigtjr end
 				nextchar = 0;
 			}
 			else

@@ -68,21 +68,19 @@ namespace cli {
 	//const unsigned int OPTION_STATS_STATS		= 0x04;
 	//const unsigned int OPTION_STATS_SYSTEM	= 0x08;
 
-	const unsigned int OPTION_WATCH_LEARNING               = 0x0003;	// 2 bits (detail arg)
-	const unsigned int OPTION_WATCH_WME_DETAIL             = 0x000c;
-	const unsigned int OPTION_WATCH_BACKTRACING            = 0x0010;	// 1 bit (switch arg)
-	const unsigned int OPTION_WATCH_CHUNKS                 = 0x0020;
-	const unsigned int OPTION_WATCH_DECISIONS              = 0x0040;
-	const unsigned int OPTION_WATCH_DEFAULT_PRODUCTIONS    = 0x0080;
-	const unsigned int OPTION_WATCH_INDIFFERENT_SELECTION  = 0x0100;
-	const unsigned int OPTION_WATCH_JUSTIFICATIONS         = 0x0200;
-	const unsigned int OPTION_WATCH_LOADING                = 0x0400;
-	const unsigned int OPTION_WATCH_PHASES                 = 0x0800;
-	const unsigned int OPTION_WATCH_PRODUCTIONS            = 0x1000;
-	const unsigned int OPTION_WATCH_PREFERENCES            = 0x2000;
-	const unsigned int OPTION_WATCH_USER_PRODUCTIONS       = 0x4000;
-	const unsigned int OPTION_WATCH_WMES                   = 0x8000;
-	const unsigned int OPTION_WATCH_NONE                   = 0xffff;	// All bits
+	const unsigned int OPTION_WATCH_DECISIONS		= 0x001;
+	const unsigned int OPTION_WATCH_PHASES			= 0x002;
+	const unsigned int OPTION_WATCH_DEFAULT			= 0x004;
+	const unsigned int OPTION_WATCH_USER			= 0x008;
+	const unsigned int OPTION_WATCH_CHUNKS			= 0x010;
+	const unsigned int OPTION_WATCH_JUSTIFICATIONS	= 0x020;
+	const unsigned int OPTION_WATCH_WMES			= 0x040;
+	const unsigned int OPTION_WATCH_PREFERENCES		= 0x080;
+	const unsigned int OPTION_WATCH_WME_DETAIL		= 0x100;
+	const unsigned int OPTION_WATCH_LEARNING		= 0x200;
+	const unsigned int OPTION_WATCH_BACKTRACING		= 0x400;
+	const unsigned int OPTION_WATCH_INDIFFERENT		= 0x800;
+	const unsigned int OPTION_WATCH_ALL				= 0xfff;
 
 } // namespace cli
 

@@ -576,7 +576,7 @@ public:
 	* @brief Set watch settings.  The options flag contains the changed
 	*		 flags and the values flag contains their new values.
 	*************************************************************/
-	bool DoWatch(gSKI::IAgent* pAgent, const unsigned int options, unsigned int values);
+	bool DoWatch(gSKI::IAgent* pAgent, const int options, const int settings, const int wmeSetting, const int learnSetting);
 
 
 protected:
@@ -686,8 +686,9 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool WatchArg(unsigned int& values, const unsigned int option, const char* arg);
-	bool WatchArg(unsigned int& values, const unsigned int option, int argInt);
+	int ParseLevelOptarg();
+	int ParseLearningOptarg();
+	bool CheckOptargRemoveOrZero();
 
 	/*************************************************************
 	* @brief 
