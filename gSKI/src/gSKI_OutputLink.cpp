@@ -169,6 +169,12 @@ namespace gSKI
 
       //std::cout << "Normal output link update cycle!" << std::endl;
 
+	  // These update calls do two things:
+	  // First, they create and delete gSKI working memory objects
+	  // so the gSKI object map matches the current set of wmes on the output link.
+	  // These are stored in m_wmobjectmap and m_wmemap in output working memory.
+	  // Second, they notify output processors about the changes.
+
       switch (callbacktype) {
       case ADDED_OUTPUT_COMMAND:
          olink->InitialUpdate(oinfo->outputs);
@@ -187,63 +193,11 @@ namespace gSKI
          break;
       }
 
-	  // Notify any listeners about this event
-	  if (olink->m_workingMemoryListeners.GetNumListeners(gSKIEVENT_OUTPUT_PHASE_CALLBACK) != 0)
-	  {
-	     // We have a list of kernel wme objects and we need a list of gSKI objects.
-		 // I'm not sure how to convert from one to the other, but here's my best guess.
-	     std::vector<IWme*> outputWmes;
-
-		// Walk through the list of wmes from the kernel
-         for (io_wme* cur = oinfo->outputs; cur != 0; cur = cur->next)
-		 {
-		    // Get the kernel wme that corresponds to the io_wme (which is just a simple triplet of symbols)
-			wme* wme = olink->m_memory.GetOutputWme(cur->id, cur->attr, cur->value);
-
-			// DJP: Do we need to check the slot wmes too?  If this assert fails, we may need to add that slot code.
-			MegaAssert( wme != 0, "IO wme not found in kernel!");
-
-			 // Convert from kernel wme to gSKI wme here
-			 IWme* pWme = new OutputWme(&olink->m_memory, wme) ;
-			 outputWmes.push_back(pWme) ;
-		 }
-    
-		 // I think this will release the wmes when the iterator is destroyed
-         tWmeIter wmelist(outputWmes);
-
-		 // Fire the event
-         WorkingMemoryNotifier wmn(olink->m_agent, change, &wmelist);
-	     olink->m_workingMemoryListeners.Notify(gSKIEVENT_OUTPUT_PHASE_CALLBACK, wmn);
-	  }
-   }
-
-    /**
-    * @brief Listen for changes to wmes attached to the output link.
-    *
-	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
-	* @param listener	The handler to call when event is fired
-    */
-   void OutputLink::AddWorkingMemoryListener(egSKIEventId eventId, 
-							     IWorkingMemoryListener* listener, 
-								 Error*               err)
-   {
-      ClearError(err);
-      m_workingMemoryListeners.AddListener(eventId, listener);
-
-   }
-
-    /**
-    * @brief Remove an existing listener
-    *
-	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
-	* @param listener	The handler to call when event is fired
-    */
-   void OutputLink::RemoveWorkingMemoryListener(egSKIEventId eventId, 
-							     IWorkingMemoryListener* listener, 
-								 Error*               err)
-   {
-      ClearError(err);
-      m_workingMemoryListeners.RemoveListener(eventId, listener);
+	  // DJP: Notify any listeners about this event.
+	  // I'm adding this as an alternative route to get notifications about output link changes
+	  // that the existing output processor semantics doesn't support (e.g. getting all top level additions
+	  // or getting notifications of when a modification has occured to an existing structure on the output link).
+	  olink->m_memory.NotifyWorkingMemoryListeners(gSKIEVENT_OUTPUT_PHASE_CALLBACK, change, oinfo->outputs) ;
    }
 
    /*
@@ -323,6 +277,8 @@ namespace gSKI
        */
 
       // Updating the working memory object with the io wme list
+	  // This call walks the current list of wmes and creates and destroys
+	  // gSKI proxy objects to match this list.
       m_memory.UpdateWithIOWmes(wmelist);
 
       // Searching for new matching patterns for IOutputProcessors

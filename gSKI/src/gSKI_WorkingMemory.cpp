@@ -766,4 +766,33 @@ namespace gSKI
       m_wmobjectmap.clear();
    }
 
+       /**
+    * @brief Listen for changes to wmes attached to the output link.
+    *
+	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	* @param listener	The handler to call when event is fired
+    */
+   void WorkingMemory::AddWorkingMemoryListener(egSKIEventId eventId, 
+							     IWorkingMemoryListener* listener, 
+								 Error*               err)
+   {
+      ClearError(err);
+
+	  // Nothing to listen for yet.
+   }
+
+    /**
+    * @brief Remove an existing listener
+    *
+	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	* @param listener	The handler to call when event is fired
+    */
+   void WorkingMemory::RemoveWorkingMemoryListener(egSKIEventId eventId, 
+							     IWorkingMemoryListener* listener, 
+								 Error*               err)
+   {
+      ClearError(err);
+
+	  // Nothing to listen for yet.
+   }
 }

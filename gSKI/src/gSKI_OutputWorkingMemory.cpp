@@ -274,7 +274,7 @@ namespace gSKI
    {
       ClearError(err);
       MegaAssert(false, "NOT IMPLEMENTED YET!");
-      return 0;
+      return 0 ;
    }
    
    tIWMObjectIterator* OutputWorkingMemory::FindObjectsByCriteria(Error* err) const
@@ -297,6 +297,72 @@ namespace gSKI
       ClearError(err);
       MegaAssert(false, "NOT IMPLEMENTED YET!");
       return 0;
+   }
+
+	/**
+    * @brief Notify any listeners about a change to working memory.
+    *
+	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	* @param change		The type of change that just occured (e.g. addition, modification, removal)
+	* @param io_wmelist	The new list of wmes on the output link
+    */
+   void OutputWorkingMemory::NotifyWorkingMemoryListeners(egSKIEventId eventId, egSKIWorkingMemoryChange change, io_wme* io_wmelist)
+   {
+   	  // Notify any listeners about this event
+	  if (m_workingMemoryListeners.GetNumListeners(eventId) != 0)
+	  {
+		  // After the update calls we have a list of the current set of i/o objects
+		  // in m_wmobjectmap and m_wmemap of OutputWorkingMemory.
+		  // We want to send that list to the listeners.
+		  // It seems we ought to just wrap an iterator around the m_wmemap but I don't see any examples
+		  // of doing that and all my attempts so far to do it have failed, so instead we'll create a vector
+		  // and return an iterator over it.
+
+		  // BUGBUG? Should we be sending back just the wmes or the wm_objects as well?
+		  std::vector<IWme*> wmes ;
+
+		  for (tWmeMapItr iter = m_wmemap.begin() ; iter != m_wmemap.end() ; iter++)
+		  {
+			  wmes.push_back(iter->second) ;
+		  }
+
+		  // Creates a gSKI iterator which will not release the objects in its list when it is deleted.
+		  // This means that the listener should addRef() any objects they choose to keep from within the list.
+		  tWmeIter wmelist(wmes) ;
+
+		  // Fire the event
+          WorkingMemoryNotifier wmn(m_agent, change, &wmelist);
+	      m_workingMemoryListeners.Notify(eventId, wmn);
+	  }
+   }
+
+    /**
+    * @brief Listen for changes to wmes attached to the output link.
+    *
+	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	* @param listener	The handler to call when event is fired
+    */
+   void OutputWorkingMemory::AddWorkingMemoryListener(egSKIEventId eventId, 
+							     IWorkingMemoryListener* listener, 
+								 Error*               err)
+   {
+      ClearError(err);
+      m_workingMemoryListeners.AddListener(eventId, listener);
+
+   }
+
+    /**
+    * @brief Remove an existing listener
+    *
+	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	* @param listener	The handler to call when event is fired
+    */
+   void OutputWorkingMemory::RemoveWorkingMemoryListener(egSKIEventId eventId, 
+							     IWorkingMemoryListener* listener, 
+								 Error*               err)
+   {
+      ClearError(err);
+      m_workingMemoryListeners.RemoveListener(eventId, listener);
    }
 
    void OutputWorkingMemory::UpdateWithIOWmes(io_wme* wmelist)

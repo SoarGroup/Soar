@@ -25,6 +25,7 @@ namespace gSKI {
   class Agent;
   class WMObject;
   class Wme;
+  class IWorkingMemoryListener ;
 
    /** 
     * @brief The main interface for access to the various aspects of the
@@ -658,6 +659,26 @@ namespace gSKI {
        */
       void Reinitialize();
  
+	        /**
+       * @brief Listen for changes to wmes attached to the output link.
+       *
+	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	   * @param listener	The handler to call when event is fired
+       */
+	  virtual void AddWorkingMemoryListener(egSKIEventId            eventId, 
+									IWorkingMemoryListener* listener, 
+									Error*                  err = 0) ;
+
+	  /**
+       * @brief Remove an existing listener
+       *
+	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	   * @param listener	The handler to call when event is fired
+       */
+	  virtual void RemoveWorkingMemoryListener(egSKIEventId            eventId, 
+									IWorkingMemoryListener* listener, 
+									Error*                  err = 0) ;
+
    private:
       /**
        * @brief Used to retrieve an input wme given an id, attribute and value triplet

@@ -27,6 +27,8 @@ namespace gSKI {
    class Agent;
    class InputWMObject;
    class InputWme;
+   class IWorkingMemoryListener ;
+
 
    /** 
     * @brief The main interface for access to the various aspects of the
@@ -655,6 +657,26 @@ namespace gSKI {
        * @brief Creates and registers the root input wm object
        */
       void GetRootInputObject( InputWMObject** rootObject, Error* error = 0);
+
+	  /**
+       * @brief Listen for changes to working memory.
+       *
+	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	   * @param listener	The handler to call when event is fired
+       */
+	  virtual void AddWorkingMemoryListener(egSKIEventId            eventId, 
+											IWorkingMemoryListener* listener, 
+											Error*                  err = 0) ;
+
+	  /**
+       * @brief Remove an existing listener
+       *
+	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	   * @param listener	The handler to call when event is fired
+       */
+	  virtual void RemoveWorkingMemoryListener(egSKIEventId            eventId, 
+											   IWorkingMemoryListener* listener, 
+											   Error*                  err = 0) ;
 
       /**
        * @brief Allows access to associated raw soar agent pointer
