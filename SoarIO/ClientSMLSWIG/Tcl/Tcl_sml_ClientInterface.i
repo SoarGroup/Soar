@@ -10,6 +10,11 @@
 // So I am including the header file for smlEventId here and forward declaring Agent
 // Even though the header for smlEventId is included later, this isn't harmful
 %{
+	// helps quell warnings
+	#ifndef unused
+	#define unused(x) (void)(x)
+	#endif
+	
 	#include <string>
 	
 	namespace sml {
@@ -37,6 +42,9 @@
 	
 	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
 	{
+		// we can ignore the id parameter because it's already in the script (from when we registered it)
+		unused(id);
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
@@ -45,7 +53,10 @@
 	
 	void TclProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
 	{
-		// we can ignore the agent parameter because it's already in the script (from when we registered it)
+		// we can ignore the agent and id parameters because they're already in the script (from when we registered it)
+		unused(pAgent);
+		unused(id);
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		Tcl_AppendStringsToObj(script, " \"", pProdName, "\"", NULL);
@@ -63,7 +74,10 @@
 	
 	void TclRunEventCallback(sml::smlRunEventId id, void* pUserData, sml::Agent* agent, sml::smlPhase phase)
 	{
-		// we can ignore the agent parameter because it's already in the script (from when we registered it)
+		// we can ignore the agent and id parameters because they're already in the script (from when we registered it)
+		unused(agent);
+		unused(id);
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		Tcl_AppendStringsToObj(script, " ", NULL);
@@ -74,17 +88,23 @@
 	
 	void TclPrintEventCallback(sml::smlPrintEventId id, void* pUserData, sml::Agent* agent, char const* pMessage)
 	{
-		// we can ignore the agent parameter because it's already in the script (from when we registered it)
-		// but we still need to append the message (wrapped in quotes in case it has spaces)
+		// we can ignore these parameters because they're already in the script (from when we registered it)
+		unused(agent);
+		unused(id);
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		// wrap the message in quotes in case it has spaces
 		Tcl_AppendStringsToObj(script, " \"", pMessage, "\"", NULL);
 		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	
 	void TclSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* kernel)
 	{
-		// we can ignore the agent parameter because it's already in the script (from when we registered it)
+		// we can ignore these parameters because they're already in the script (from when we registered it)
+		unused(kernel);
+		unused(id);
+		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
 	}
