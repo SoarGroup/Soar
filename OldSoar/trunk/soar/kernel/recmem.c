@@ -1244,10 +1244,6 @@ void do_preference_phase (void) {
   wme *w;
   instantiation *inst;
 
-#ifdef MATCHTIME_INTERRUPT
-	if ( current_agent(stop_soar) ) return;
- 
-#endif
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
