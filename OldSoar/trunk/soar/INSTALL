@@ -72,22 +72,23 @@ __________________________________________________________________
 ------------------------------------------------------------------
 
 Requirements for running Soar 8.5.0 on GNU/Linux:
-2.1  The Soar-All 8.5.0 distribution installer from:
-     http://sourceforge.net/project/showfiles.php?group_id=65490
-     
+2.1  The X window system.  Installation instructions for X are beyond the scope
+     of this document.
+
 2.2  Tcl/Tk version 8.4.4.  Newer versions should work.  If you do not have this
      installed or do not know if you have the correct version installed, 
-     you need to download and install ActiveTcl (doing so will not harm any
-     version of tcl currently installed): 
+     consider downloading and installing ActiveTcl (instructions follow).
+     Installing ActiveTcl will not harm any version of Tcl currently installed
+     on your system.
 
      2.2.1  Get ActiveTcl 8.4.4 or better from here:
      http://www.activestate.com/Products/Download/Download.plex?id=ActiveTcl
      
-     2.2.2  Extract the package with this command:
+     2.2.2  Extract the package in your home directory with this command:
      tar xfvz ActiveTcl8.4.4.0-linux-ix86.tar.gz
      
      2.2.3  AS ROOT: run install.sh in the directory you just extracted:
-     su - root
+     su root
      cd ActiveTcl8.4.4.0-linux-ix86
      ./install.sh
      
@@ -97,36 +98,39 @@ Requirements for running Soar 8.5.0 on GNU/Linux:
      
      2.2.5  You no longer need to be (and shouldn't be) root to continue.
      
-2.3  To run VisualSoar (an optional component), you will need to download and
+2.3  The Soar-All 8.5.0 distribution installer from:
+     http://sourceforge.net/project/showfiles.php?group_id=65490
+     
+2.4  To run VisualSoar (an optional component), you will need to download and
      install version 1.3 or newer of the Java runtime environment:
      http://java.sun.com/j2se/1.4.2/download.html
-     
-     Note that your paticular version of Linux may have Java as part of its
-     distribution.  Installing java using your distribution is usually a
-     better idea than downloading and installing it yourself, but may not be
-     possible with all distributions.
-     
+          
 Installation:
-2.4  Extract the soar-all-8.5.0-linux.tbz2 file.  The command when using GNU's
-     tar utility is:
+2.5  Extract the soar-all-8.5.0-linux.tbz2 file.  It will extract into a 
+     directory named "soar-8.5.0".The command when using GNU's tar utility is:
      tar xvjf soar-all-8.5.0-linux.tbz2
-     It will extract into a directory named "soar-8.5.0".
-
+     
 Running Soar:
-2.5  Type this command to run Soar:
+2.6  Type this command to run Soar:
      ./init-soar.tcl  
+
+     You may need to change the first line of the init-soar.tcl file to point
+     to the location of the wish binary on your machine.  For example, if you
+     needed to install ActiveTcl (above), you would change that line to:
+     #!/usr/local/ActiveTcl/bin/wish
      
-     If you installed ActiveTcl, you have to use this command instead:
-     /usr/local/ActiveTcl/bin/wish init-soar.tcl
-     
-     If you have errors, you may need to build
-     
+     If you have other errors, you may need to rebuild the Soar binaries
+     (instructions follow).
 
 Requirements for building Soar 8.5.0 GNU/Linux (optional):
-2.7  You will need 
+2.7  A recent version of GCC and its utilites such as make.  We're not sure 
+     what versions will work.  3.2.3 works for sure, and 2.95.2 should have
+     no problems.
 
 Building Soar (optional):
-2.8
+2.8  In the Soar directory, execute these commands to build Soar:
+     ./make-clean
+     ./make-soar
 
 ________________________________________________________________
 3. Instructions for installing and running Soar 8.5.0 on Mac OSX

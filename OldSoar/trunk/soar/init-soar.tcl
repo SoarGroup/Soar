@@ -1,25 +1,24 @@
 #!/usr/bin/wish
 
-# the above line invokes wish on unix systems.  If you are running Soar
-# on a Unix system, you must edit the above line to reflect the full
-# pathname of your Wish executable, if it is not in /usr/tcl/bin.
-# If you are not on a Unix system, the above line is ignored.
+# If you are not on a Unix system, you can ignore this block of comments.
+#
+# The first line of this file invokes wish on unix systems.  If you 
+# are running Soar on a Unix system, you must edit the above line to 
+# reflect the full pathname of your Wish executable if it is not in 
+# the default location /usr/bin.
+#
+# If you installed ActiveTcl to its default location, the first line 
+# of this file should change to:
+#!/usr/local/ActiveTcl/bin/wish
 
+# This next line is revision information for this file and can be ignored.
+# $Id$
 
 ##  The next two lines are needed to be able to load Soar into the
-##  Wish executable.  If you desire to create an application-specific
-##  folder or directory for running Soar, you need to copy this
-##  file (start-soar.tcl) and edit the next line to change "[pwd]"
-##  to point to where you have installed Soar-8.4.  On Macs, you
-##  would specify something like: 
-##  set soar_library [file join "hard drive:Desk Top:Soar-8.4" library]
-##  Windows:  set soar_library [file join "C:/Soar-8.4" library]
-##  Unix   :  set soar_library [file join "/home/soar/Soar-8.4" library]
-##  It's a good idea to always use double quotes around the path name.
+##  wish executable.  
 
 set soar_library [file join [pwd] library]
 set env(SOAR_LIBRARY) $soar_library
-
 
 ### The next line sets the location of the Tcl-Soar Interface library.
 ### If you are not using the TSI, you can comment this line.
@@ -51,5 +50,3 @@ if { [string match "on" $batchMode] } {
 	source $batchFile
 
 }
-
-#  KJC 3/31/03
