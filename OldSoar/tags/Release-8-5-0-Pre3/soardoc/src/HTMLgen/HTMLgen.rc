@@ -1,0 +1,18 @@
+# Resource file used by the Document class of the HTML module
+from HTMLcolors import *
+
+stylesheet = 'HTMLgen.css'
+author = '1996-7 Robin Friedrich'
+email = 'friedrich@pythonpros.com'
+bgcolor = WHITE
+textcolor = BLACK
+linkcolor = RED
+vlinkcolor = RED6
+banner = None
+logo = ('../image/Buzz.gif', 56, 51)
+blank = ('../image/blank.gif', 66, 22)
+prev = ('../image/back.gif', 66, 22)
+next = ('../image/next.gif', 66, 22)
+top = ('../image/top.gif', 66, 22)
+home = ('../image/home.gif', 66, 22)
+background = '../image/bg-dots.gif'

@@ -1,0 +1,433 @@
+$Id$
+
+This file contains the installation and (optional) build instructions for 
+Soar 8.5.0 for the following platforms:
+
+1.   Windows 9x/Me/NT/2000/XP
+2.   GNU/Linux
+3.   Mac OS X
+
+________________________________________________________________
+1. Instructions for installing and running Soar 8.5.0 on Windows
+----------------------------------------------------------------
+
+Requirements for running Soar 8.5.0 on Windows:  
+1.1  The Soar-All 8.5.0 distribution installer from:
+     http://sourceforge.net/project/showfiles.php?group_id=65490
+
+1.2  To run VisualSoar (an optional component), you will need to download and
+     install version 1.3 or newer of the Java runtime environment:
+     http://java.sun.com/j2se/1.4.2/download.html
+
+Installation:
+1.3  Double click the soar-all-8.5.0-w32.exe installer and follow the prompts.
+     By default (typical installation), it will install Soar and its 
+     components and documentation into your Program Files folder.  If you are
+     an advanced user, you may choose the custom installation to select what
+     components you would like included in the install.
+
+Running Soar:
+1.4  Start Soar by launching the Start Soar icon listed in your start menu
+     under the folder "Soar".  After a few moments, the Agent Control Panel
+     will pop up.  In the Agent Control Panel, enter an agent name (in the text 
+     entry area) and press return or use the mouse to activate the "Create 
+     Agent" button to create a Soar agent.  Another window will pop up!  This
+     is the agent window.  It has pulldown menus for issuing many Soar commands 
+     and also allows you to run demos and invoke help.
+     
+1.5  You can start the other components distributed with Soar by launching 
+     their icons in the "Soar" start menu folder.
+   
+If you haven't been able to get this far, please send email to
+soar-request@umich.edu describing the results of each step above.
+We'll try to respond within a few hours.
+
+Requirements for building Soar 8.5.0 Windows (optional):
+1.6  Soar source code options must be selected when installing Soar.  If you
+     installed Soar using the "Typical" installation type, the source code
+     is installed.
+
+1.7  Microsoft Visual C++, version 6.0.  Although do not use versions greater
+     than 6.0 for developing Soar, newer versions should work without too
+     much trouble.  Other compilers may also work, but have not been tested,
+     and the rest of these instructions will not apply.
+
+Building Soar (optional):
+1.8  Go to the Kernel folder (inside the soar-8.5.0 folder) and open the 
+     Kernel.dsw project file.
+     
+1.9  Build soarkernel.lib.
+
+1.10 Open the SoarInterface.dsw project file in the Interface folder.
+
+1.11 Build libsoar8.4.5.dll.  This must be built *after* the kernel since there
+     is static linking going on.  If you rebuild the kernel, you must rebuild
+     the interface.
+     
+1.12 Confirm that the new libsoar8.4.5.dll file has been copied to the 
+     soar-8.5.0/library folder.
+     
+__________________________________________________________________
+2. Instructions for installing and running Soar 8.5.0 on GNU/Linux
+------------------------------------------------------------------
+
+Requirements for running Soar 8.5.0 on GNU/Linux:
+2.1  The X window system.  Installation instructions for X are beyond the scope
+     of this document.
+
+2.2  Tcl/Tk version 8.4.4.  Newer versions should work.  If you do not have this
+     installed or do not know if you have the correct version installed, 
+     consider downloading and installing ActiveTcl (instructions follow).
+     Installing ActiveTcl will not harm any version of Tcl currently installed
+     on your system.
+
+     2.2.1  Get ActiveTcl 8.4.4 or better from here:
+     http://www.activestate.com/Products/Download/Download.plex?id=ActiveTcl
+     
+     2.2.2  Extract the package in your home directory with this command:
+     tar xfvz ActiveTcl8.4.4.0-linux-ix86.tar.gz
+     
+     2.2.3  AS ROOT: run install.sh in the directory you just extracted:
+     su root
+     cd ActiveTcl8.4.4.0-linux-ix86
+     ./install.sh
+     
+     2.2.4  Accept all defaults during the install process (installing ActiveTcl
+     into it's own directory in /usr/local).  You do not have to mess with the
+     path and manpath environment variables.
+     
+     2.2.5  You no longer need to be (and shouldn't be) root to continue.
+     
+2.3  The Soar-All 8.5.0 distribution installer from:
+     http://sourceforge.net/project/showfiles.php?group_id=65490
+     
+2.4  To run VisualSoar (an optional component), you will need to download and
+     install version 1.3 or newer of the Java runtime environment:
+     http://java.sun.com/j2se/1.4.2/download.html
+          
+Installation:
+2.5  Extract the soar-all-8.5.0-linux.tbz2 file.  It will extract into a 
+     directory named "soar-8.5.0".The command when using GNU's tar utility is:
+     tar xvjf soar-all-8.5.0-linux.tbz2
+     
+Running Soar:
+2.6  Type this command to run Soar:
+     ./init-soar.tcl  
+
+     You may need to change the first line of the init-soar.tcl file to point
+     to the location of the wish binary on your machine.  For example, if you
+     needed to install ActiveTcl (above), you would change that line to:
+     #!/usr/local/ActiveTcl/bin/wish
+     
+     If you have other errors, you may need to rebuild the Soar binaries
+     (instructions follow).
+
+Requirements for building Soar 8.5.0 GNU/Linux (optional):
+2.7  A recent version of GCC and its utilites such as make.  We're not sure 
+     what versions will work.  3.2.3 works for sure, and 2.95.2 should have
+     no problems.
+
+Building Soar (optional):
+2.8  In the Soar directory, execute these commands to build Soar:
+     ./make-clean
+     ./make-soar
+
+________________________________________________________________
+3. Instructions for installing and running Soar 8.5.0 on Mac OSX
+----------------------------------------------------------------
+
+Requirements for running Soar 8.5.0 on Mac OSX:
+
+Installation:
+
+Running Soar:
+
+Requirements for building Soar 8.5.0 on Mac OSX (optional):
+
+Building Soar (optional):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_____________________
+OLD INSTALL NOTES
+
+UNIX:
+Instructions for installing and running Soar 8.4 on Unix systems.
+------------------------------------------------------------------
+
+(note: this distribution includes the executables for linux, so
+if you are using a linux system, you don't have to rebuild Soar.
+Just run soar by invoking start-soar.tcl. See step 4.)
+
+These instructions seem long because I've tried to include as much
+detail, and anticipate as many variances as possible.  I hope to
+write a GUI sometime soon for building Soar on Unix systems, but
+for now you'll have to follow these instructions. 
+
+Requirements:  
+
+1.  The Soar distribution, from 
+
+    ftp://ftp.eecs.umich.edu/people/kcoulter/Soar/Soar84.tgz
+
+2.  Tcl 8.0 for your Unix system.  Soar8.4 is also compatible with
+    Tcl 7.6/Wish4.2, if you already have that installed.  But for the
+    best performance and appearance, it is recommened that you build
+    and run Soar with Tcl 8.0.  If you do not already have Tcl installed
+    on your system, you can get the source code from:
+   
+    ftp://ftp.scriptics.com/pub/tcl/tcl8_0/tcl8.0.4.tar.gz
+    ftp://ftp.scriptics.com/pub/tcl/tcl8_0/tk8.0.4.tar.gz
+
+    The versions of Tcl/Tk do matter when building and running Soar,
+    so be sure you know which ones you have and which you want to use.
+    If you have both versions on your system, the config process will
+    automatically prefer Tcl8.0.  (I think...it did on my machine.)
+    The rest of this README file will refer to directions for building
+    with Tcl8.0.  To build with Tcl7.6 and Wish4.2, just substitute
+    in the different version numbers where appropriate.
+
+    see http://scriptics.com/software/8.0.html for more information
+    and to download the source code from your browser.
+
+
+This file contains the full source release of Soar-8.4, already
+precompiled to run on the Linux operating system.  If you wish
+to use some other operating system, you will have to build
+the binaries as described below.
+
+
+1.  Download Soar84.tgz and unzip and uncompress it.  Usually
+  
+     tar xfz Soar84.tgz
+
+    if you have gnu tar.  Otherwise, gunzip (or zcat) the file first
+    and pipe it to tar.  This will create a Soar-8.4 directory.
+
+2.  If you do NOT have Tcl8.0, or Tcl 7.6 and Tk 4.2 installed on your
+    system (and the version does matter), you will need to install one
+    of those now, preferably Tcl8.0.  If you do have it, locate the tcl.h
+    include file, the lib files libtcl8.0.so and libtk8.0.so, and wish8.0,
+    and go to step 3.
+
+    There are several ways that you might check to see if you have
+    Tcl 8.0 already installed:
+
+     - try running wish.  If this works, find out the version by
+         typing "set tcl_version" and "set tk_version"
+     - look in /usr/bin, /usr/ucb, /usr/tcl and other system locations.
+     - ask your system administrator, and find out where it is installed.
+
+    If you did not find Tcl in the "standard" location, you might try
+    to "find" it somewhere else on your system.  If it is installed
+    in some other directory, you don't need to re-install it, just
+    edit the "make-soar" and "start-soar.tcl" files as in steps 3 and 4.
+
+    If you do need to install Tcl 8.0, see the scriptics
+    web page listed above for instructions on downloading and 
+    installing Tcl and Tk.
+
+
+3.  After you have verified that you have Tcl and Tk installed, you
+    will need to build Soar, unless you are on a linux system, in
+    which case you can go to step 4.
+
+    Look at the make-soar file in the Soar-8.4 directory.  you may need
+    to edit the locations of header and include files.
+    --with-tcl-lib-dir should point to the directory that contains
+    libtcl8.0.so; likewise for --with-tk-lib-dir.  These two definitions
+    occur twice in the make-soar file, so make sure you change it
+    both places.  --with-tcl-doc-dir should point to the directory
+    that contains the Tcl man pages if you want to access the
+    Tcl man pages from within Soar.
+
+    If tcl.h is _not_ located in one of the following locations:
+      Soar-8.4/../..
+      /usr/include
+      /usr/local/include
+      /usr/tcl/include
+      /usr/include/tcl
+    you will need to edit the "configure" file in the interface/ subdir.
+    Search for the string "tcl.h" and add the directory where tcl.h
+    is located to the list of dirs to search (just above the for loop).
+    Save configure.  Make sure you are in the Soar-8.4 directory
+    and run make-soar.  This runs the configure script, searching 
+    your machine to see how to custom build Soar for your system.
+
+    If the make-soar procedure fails, rerun make-soar from within
+    a script or tee, to capture the output to a file and send the
+    entire file and any other pertinent information to 
+    soar-requests@umich.edu.  This script has been tested on 
+    Solaris, SunOS, IRIX, and Linux.  It should work for you.
+    
+
+4.  In the Soar-8.4 directory, check the start-soar.tcl file.
+    The first line (#!/usr/tcl/bin/wish8.0) invokes the Wish shell.
+    If your wish8.0 shell is in some other directory, change
+    the first line to match your location for wish.  Your version
+    might be called just "wish" but make sure that it is version 8.0.
+    Save start-soar.tcl.  Make sure it is executable.
+
+    Type start-soar.tcl to run Soar.  This invokes Wish, defines
+    libraries and such and invokes the TSI (Tcl-Soar Interface).
+    A window will pop up in the upper right corner of the screen --
+    this is the Agent Control Panel of the TSI.
+   
+    In the Agent Control Panel, enter an agent name (in the text entry
+    area) and press return or use the mouse to activate the "Create Agent"
+    button to create a Soar agent.  Another window will pop up!  This
+    is the agent window.  It has pulldown menus for issuing many
+    Soar commands and also allows you to run demos and invoke help.
+
+
+If you haven't been able to get this far, please send email to
+soar-request@umich.edu describing the results of each step above.
+I'll try to respond within a few hours.
+
+If you would like to create a Soar application directory, separate from
+the Soar-8.4 directory you just installed, you only need to copy 
+the "start-soar.tcl" file.  You will need to edit start-soar.tcl
+to point to the fixed location of your Soar-8.4/library directory path.
+You can also edit start-soar.tcl to not start the TSI, or start
+your own application instead. Please read start-soar.tcl carefully
+to understand which lines must be part of any startup script in
+order to run Soar.  
+
+MAC:
+Instructions for installing and running Soar 8.4 on a Macintosh.
+----------------------------------------------------------------
+
+Requirements:  you need only the Soar84.sea.hqx file from the
+Umich ftp site:
+
+ftp://ftp.eecs.umich.edu/kcoulter/Soar/Soar84.sea.hqx
+
+or the Soar Master CD v 8.4.
+
+This file contains the full source release of Soar-8.4, and the
+Tcl/Tk Installer for installing Tcl 7.6 and Tk 4.2.
+
+1.  Download Soar-8.4.sea.hqx and extract the files by dbl-clicking
+    on the .sea file.  This will create a folder called Soar-8.4.
+
+2.  Open the Soar-8.4 folder.
+
+3.  If you do NOT have Tcl 7.6 and Tk 4.2 installed on your Mac (and
+    the version does matter), you will need to install it now.  If you
+    do have it, skip to step 5.
+  
+    You can check whether or not you have these packages installed by
+    looking in "System Folder:Extensions:Tool Command Language"
+    If you have folders called "Tcl7.6" and "Tk4.2" then you can go
+    to step 5.  Otherwise, dbl-click on the "Tcl/Tk 4.2p2 Installer"
+    in the "Soar-8.4" folder.   By default the installer should try to
+    create a folder called "Tcl/Tk Folder" in the Soar-8.4 folder.
+    You can move it later if you like.  The Installer will also create
+    files in "System Folder\Extensions\Tool Command Language" so that
+    you can run Tcl and Tk from anywhere on your system.
+
+4.  If you are running MacOS 8.0 or higher, and just installed 
+    Tcl/Tk in step 3, move the application "Wish4.2(OS8) located in the
+    "Soar-8.4" folder to the "Tcl/Tk Folder" you just created during
+    the installation.  Delete "Wish4.2p2" (it only works for System 7)
+    and if you like, rename "Wish4.2(OS8)" to "Wish4.2" or "Wish4.2p2".
+    (Probably "Wish4.2" is the better name.)  [Note:  you don't need
+    this copy of Wish to run Soar, I just thought you'd want to have
+    a working version of Wish on your system, for other applications.]
+
+5.  In the Soar-8.4 folder, start Soar by dbl-clicking on the "SoarMac"
+    icon.  This invokes Wish and loads the file start-soar.tcl, which
+    defines libraries and such and invokes the TSI (Tcl-Soar Interface).
+    A window will pop up in the upper right corner of the screen --
+    this is the Agent Control Panel of the TSI.
+   
+    In the Agent Control Panel, enter an agent name (in the text entry
+    area) and press return or use the mouse to activate the "Create Agent"
+    button to create a Soar agent.  Another window will pop up!  This
+    is the agent window.  It has pulldown menus for issueing many
+    Soar commands and also allows you to run demos and invoke help.
+
+
+If you haven't been able to get this far, please send email to
+soar-request@umich.edu describing the results of each step above.
+I'll try to respond within a few hours.
+
+If you would like to create a Soar application folder, separate from
+the Soar-8.4 folder you just installed, you only need to copy two
+things to your new folder to run Soar:  the "SoarMac" application
+and the "start-soar.tcl" file.  You will need to edit start-soar.tcl
+to point to the fixed location of your Soar-8.4/library folder.
+You can also edit start-soar.tcl to not start the TSI, or start
+your own application instead.  If you know how to use the Resource
+Editor on Macs to change the properties of applications, you can
+change the "SoarMac" application to read some file other than
+start-soar.tcl, if you like.  Please read start-soar.tcl carefully
+to understand which lines must be part of any startup script in
+order to run Soar.
+
+"SoarMac" is not any magic incantation for Soar.  It is simply the
+Wish shell, with properties assigned by the Resource Editor to
+autoload start-soar.tcl.  You can achieve the same results with
+vanilla Wish4.2 by simply starting Wish, then cd'ing to the
+Soar-8.4 folder and "source"ing the start-soar.tcl file.
+
+
+
+
+========================================================================
+The rest of this document contains information that will help you build,
+modify, and maintain Soar 8.4 on a Macintosh.
+
+Requirements
+------------
+
+1. You will need the full source distribution of Tcl 7.6 and Tk 4.2 (at
+least). These are available via anonymous FTP at:
+
+ftp://ftp.scriptics.com/pub/tcl/mac/old-versions/mactcltk-full-4.2p2.sea.hqx
+
+2. You will need the Metrowerks CodeWarrior IDE, version 10 or later.
+
+
+Configuration
+-------------
+
+1. Decompress the Macintosh Tcl & Tk source installation. This will
+create a folder called "Tcl/Tk Folder".  (You will need to make sure
+this folder is in the Access Paths for the Soar interface CodeWarrior
+project file.)
+
+2. The Metrowerks project files for building the Soar kernel is
+called ppc(dot)library.(pi) (only Metrowerks kindly uses non-ascii chars,
+so I can't accurately specify the filename, but you'll get it.)
+contained in the "soar-8.4:kernel" folder.  Open the project file,
+updating any Access Paths that need to be changed for your system,
+and build the Soar kernel. The resulting library will be called
+"ppc(dot)kernel.(pi)".  You must build the kernel library first.
+
+3. The Metrowerks project files for building the Tcl & Tk interface is
+called ppc(dot)shlib.(pi) contained in the "soar-8.4:interface" folder.
+This builds Soar-8.4 as a dynamically loadable Tcl extension, and is 
+the preferred way to deploy Soar 8.4 for a PowerPC Macintosh.
+Soar can be built as a static executable but the project files are not
+included in the standard Soar distribution.
+
+4.  Make sure the new library libsoar8.4.shlib is copied to the 
+soar-8.4:library folder before running Soar.  (It is recommended that
+you save the distribution library for future use.)
+
+
+
