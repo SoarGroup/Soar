@@ -55,4 +55,8 @@ void destroy_kernel(Kernel* soarKernel)
       /* Do destruction first if necessary */
       free(soarKernel);
    }
+
+   // DJP-FREE: Need to be sure to zero this out so it is re-initialized correctly.
+   free(soar_version_string) ;
+   soar_version_string = 0 ;
 }
