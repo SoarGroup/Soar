@@ -67,14 +67,16 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	if (!pConnection->IsAsynchronous())
 		pKernelSML->StopReceiverThread() ;
 
-	// Record this as one of the active connections
-	pKernelSML->AddConnection(pConnection) ;
-
 	// Register for "calls" from the client.
 	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
 
 	// The original sender is a receiver to us so we need to reverse the type.
 	pConnection->AttachConnectionInternal((Connection_Receiver_Handle)hSenderConnection, pProcessMessage) ;
+
+	// Record this as one of the active connections
+	// Must only do this after the pConnection object has been fully initialized
+	// as the receiver thread may access it once it has been added to this list.
+	pKernelSML->AddConnection(pConnection) ;
 
 	return (Connection_Receiver_Handle)pConnection ;
 }
