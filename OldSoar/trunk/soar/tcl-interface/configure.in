@@ -21,7 +21,10 @@ VERSION=${SOAR_VERSION}
 #	smart enough to understand function prototypes.
 #--------------------------------------------------------------------
 
-CFLAGS="-O -w"
+if test -z "${CFLAGS}"; then
+  CFLAGS="-O -w"
+fi
+
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_RANLIB

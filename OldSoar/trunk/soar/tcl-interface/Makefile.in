@@ -146,8 +146,7 @@ statictk:	soartk
 lib:		libsoartk.a
 
 $(SHLIB_TARGET): $(OBJS)
-	$(SHLIB_LD) -o $(SHLIB_TARGET) $(OBJS) $(KERNEL_LIB_SPEC) $(SHLIB_LD_LIBS)
-
+	$(SHLIB_LD) -o $(SHLIB_TARGET) $(OBJS) $(KERNEL_LIB_SPEC) $(SHLIB_LD_LIBS) $(TCL_LIB_SPEC)
 
 soar: tclAppInit.c $(OBJS)
 	$(CC) $(CFLAGS) -o soar@SOAR_VERSION@ tclAppInit.c $(OBJS) $(LIBS) \
