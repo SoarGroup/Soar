@@ -1,5 +1,6 @@
 AUTOMAKE_OPTIONS = gnu
-lib_LTLIBRARIES = libClientSML.la
+
+noinst_LTLIBRARIES = libClientSML.la
 
 libClientSML_la_SOURCES = \
 sml_ClientAgent.cpp\
@@ -15,5 +16,11 @@ sml_DeltaList.cpp\
 sml_ObjectMap.cpp\
 sml_OutputDeltaList.cpp
 
-INCLUDES = -I../.. -I../include -I../../ElementXML/include -I../../ConnectionSML/include -I../../../gSKI/include
+INCLUDES = \
+-I../..\
+-I../include\
+-I../../ElementXML/include\
+-I../../ConnectionSML/include\
+-I../../../gSKI/include
+
 CXXFLAGS = $(SOAR_CXXFLAGS)

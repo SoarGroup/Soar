@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = gnu
-lib_LTLIBRARIES = libCommandLineInterface.la
+
+noinst_LTLIBRARIES = libCommandLineInterface.la
+
 libCommandLineInterface_la_SOURCES = \
 cli_Aliases.cpp\
 cli_CLIError.cpp\
@@ -53,5 +55,12 @@ cli_waitsnc.cpp\
 cli_warnings.cpp\
 cli_watch.cpp
 
-INCLUDES = -I../../../gSKI/include -I../../ElementXML/include -I../../ConnectionSML/include -I../../KernelSML/include -I../include
+INCLUDES = \
+-I../../../gSKI/include\
+-I../../ElementXML/include\
+-I../../ConnectionSML/include\
+-I../../KernelSML/include\
+-I../include\
+-I../..
+
 CXXFLAGS = $(SOAR_CXXFLAGS)

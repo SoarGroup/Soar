@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = gnu
-lib_LTLIBRARIES = libConnectionSML.la
+
+noinst_LTLIBRARIES = libConnectionSML.la
+
 libConnectionSML_la_SOURCES = \
 sml_AnalyzeXML.cpp\
 sml_ArgMap.cpp\
@@ -29,6 +31,6 @@ thread_Lock.cpp\
 thread_OSspecific.cpp\
 thread_Thread.cpp
 
-
 INCLUDES = -I../.. -I../include -I../../ElementXML/include
+
 CXXFLAGS = $(SOAR_CXXFLAGS)
