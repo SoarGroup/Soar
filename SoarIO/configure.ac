@@ -13,24 +13,28 @@ AC_CONFIG_AUX_DIR(config)
 AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
+AC_PROG_RANLIB
 
 # Checks for libraries.
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([fcntl.h limits.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
+AC_C_VOLATILE
 
 # Checks for library functions.
 AC_CHECK_LIB(pthread, pthread_create)
 AC_CHECK_LIB(tcl, Tcl_DeleteInterp)
 AC_CHECK_LIB(tk, Tk_Init)
-AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset select socket strcasecmp])
+AC_FUNC_MALLOC
+AC_FUNC_SELECT_ARGTYPES
+AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset pow select socket sqrt strcasecmp strdup])
 AC_OUTPUT(Makefile
 		  ConnectionSML/Makefile 
 		  ConnectionSML/src/Makefile 
