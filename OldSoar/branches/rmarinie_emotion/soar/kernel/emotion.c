@@ -873,10 +873,12 @@ void emotion_destructor() {
     /* free any allocated emotion symbols, WMEs */
     //emotion_free_current_aggregate_wmes();
 
-    success = remove_input_wme(soar_agent->emotions->emotion_wme);
-    soar_agent->emotions->emotion_wme = NIL;
-    if(!success) print("Emotion: tried to remove emotion_wme");
-    assert(success);
+    if(soar_agent->emotions->emotion_wme) {
+        success = remove_input_wme(soar_agent->emotions->emotion_wme);
+        soar_agent->emotions->emotion_wme = NIL;
+        if(!success) print("Emotion: tried to remove emotion_wme");
+        assert(success);
+    }
 
     if(current_agent(emotions)->emotion_wme) {
         release_io_symbol (current_agent(emotions)->emotion_symbol);
