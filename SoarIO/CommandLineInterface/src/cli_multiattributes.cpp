@@ -1,5 +1,7 @@
 #include "cli_CommandLineInterface.h"
 
+#include "cli_Constants.h"
+
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 

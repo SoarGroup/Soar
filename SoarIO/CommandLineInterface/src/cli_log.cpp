@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "cli_GetOpt.h"
+#include "cli_Constants.h"
 
 #include "sml_Names.h"
 

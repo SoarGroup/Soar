@@ -17,11 +17,13 @@
 #include <string>
 #include <stack>
 #include <list>
+#include <iostream>
+#include <fstream>
 
 // Local includes
 #include "cli_CommandData.h"
-#include "cli_Constants.h"
-#include "cli_Aliases.h"
+//#include "cli_Constants.h"
+//#include "cli_Aliases.h"
 
 // gSKI includes
 #include "gSKI_Events.h"
@@ -57,6 +59,8 @@ namespace cli {
 // Forward declarations
 class CommandLineInterface;
 class GetOpt;
+class Aliases;
+class Constants;
 
 // Define the CommandFunction which we'll call to process commands
 typedef bool (CommandLineInterface::*CommandFunction)(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -111,7 +115,7 @@ public:
 	///*************************************************************
 	//* @brief 
 	//*************************************************************/
-	//bool Parse(std::vector<std::string>& argv);
+	//bool Parse(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	///*************************************************************
 	//* @brief 
 	//*************************************************************/
@@ -168,6 +172,16 @@ public:
 	*		 if it exists.
 	*************************************************************/
 	bool DoHelpEx(const std::string& command);
+
+	/*************************************************************
+	* @brief Change the home directory to the current or passed directory.
+	*************************************************************/
+	bool ParseHome(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief If passed directory is null, get the current directory and change
+	*        to it.  Otherwise, set the home directory to pDirectory.
+	*************************************************************/
+	bool DoHome(std::string* pDirectory = 0);
 
 	/*************************************************************
 	* @brief init-soar command, see usage.txt for details.
@@ -500,8 +514,8 @@ protected:
 	*************************************************************/
 	void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
 
-	Constants			m_Constants;			// Constants management object
-	Aliases				m_Aliases;				// Alias management object
+	Constants*			m_pConstants;			// Constants management object
+	Aliases*			m_pAliases;				// Alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
 
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers

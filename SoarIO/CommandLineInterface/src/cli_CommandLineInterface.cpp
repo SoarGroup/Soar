@@ -12,6 +12,8 @@
 #endif // WIN32
 
 #include "cli_GetOpt.h"
+#include "cli_Constants.h"
+#include "cli_Aliases.h"
 
 // BADBAD: I think we should be using an error class instead to work with error objects.
 #include "../../gSKI/src/gSKI_Error.h"
@@ -32,8 +34,10 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	// Map command names to processing function pointers
 	BuildCommandMap();
 
-	// Store current working directory as 'home' dir
-	if (!GetCurrentWorkingDirectory(m_HomeDirectory)) {
+	// Set up the current working directory, create usage and aliases
+	m_pAliases = 0;
+	m_pConstants = 0;
+	if (!DoHome()) {
 		// TODO: figure out what to do here!
 		// ignore for now!
 	}
@@ -67,6 +71,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIExcise]				= &cli::CommandLineInterface::ParseExcise;
 	m_CommandMap[Constants::kCLIHelp]				= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Constants::kCLIHelpEx]				= &cli::CommandLineInterface::ParseHelpEx;
+	m_CommandMap[Constants::kCLIHome]				= &cli::CommandLineInterface::ParseHome;
 	m_CommandMap[Constants::kCLIInitSoar]			= &cli::CommandLineInterface::ParseInitSoar;
 	m_CommandMap[Constants::kCLILearn]				= &cli::CommandLineInterface::ParseLearn;
 	m_CommandMap[Constants::kCLILog]				= &cli::CommandLineInterface::ParseLog;
@@ -182,7 +187,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	}
 
 	// Translate aliases
-	m_Aliases.Translate(argv);
+	m_pAliases->Translate(argv);
 
 	// Is the command implemented?
 	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
@@ -194,9 +199,9 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	if (CheckForHelp(argv)) {
 		// Help flags found, add help to line, return true
 		string output;
-		if (!m_Constants.IsUsageFileAvailable()) {
+		if (!m_pConstants->IsUsageFileAvailable()) {
 			AppendToResult(Constants::kCLINoUsageFile);
-		} else if (m_Constants.GetUsageFor(argv[0], output)) {
+		} else if (m_pConstants->GetUsageFor(argv[0], output)) {
 			AppendToResult(output);
 		} else {
 			AppendToResult(Constants::kCLINoUsageInfo);

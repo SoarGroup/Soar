@@ -169,6 +169,9 @@
 					RelativePath=".\src\cli_helpex.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_home.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_initsoar.cpp">
 				</File>
 				<File
@@ -248,6 +251,16 @@
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+		</Filter>
+		<Filter
+			Name="Data files"
+			Filter="">
+			<File
+				RelativePath="..\bin\aliases.txt">
+			</File>
+			<File
+				RelativePath="..\bin\usage.txt">
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

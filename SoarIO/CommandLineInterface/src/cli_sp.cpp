@@ -1,5 +1,7 @@
 #include "cli_CommandLineInterface.h"
 
+#include "cli_Constants.h"
+
 #include "IgSKI_Agent.h"
 #include "IgSKI_ProductionManager.h"
 // BADBAD: I think we should be using an error class instead to work with error objects.

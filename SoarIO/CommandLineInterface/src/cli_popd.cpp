@@ -1,5 +1,7 @@
 #include "cli_CommandLineInterface.h"
 
+#include "cli_Constants.h"
+
 using namespace cli;
 
 bool CommandLineInterface::ParsePopD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {

@@ -5,6 +5,8 @@
 #include <winbase.h>
 #endif // WIN32
 
+#include "cli_Constants.h"
+
 #include "sml_Names.h"
 
 using namespace cli;

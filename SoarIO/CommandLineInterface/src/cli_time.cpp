@@ -4,6 +4,8 @@
 #include <windows.h>
 #endif // WIN32
 
+#include "cli_Constants.h"
+
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 

@@ -19,6 +19,7 @@ char const* Constants::kCLIEcho				= "echo";
 char const* Constants::kCLIExcise			= "excise";
 char const* Constants::kCLIHelp				= "help";
 char const* Constants::kCLIHelpEx			= "helpex";
+char const* Constants::kCLIHome				= "home";
 char const* Constants::kCLIInitSoar			= "init-soar";
 char const* Constants::kCLILearn			= "learn";
 char const* Constants::kCLILog				= "log";

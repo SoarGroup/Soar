@@ -1,5 +1,7 @@
 #include "cli_CommandLineInterface.h"
 
+#include "cli_Constants.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -16,11 +18,11 @@ bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::st
 bool CommandLineInterface::DoHelpEx(const std::string& command) {
 	std::string output;
 
-	if (!m_Constants.IsUsageFileAvailable()) {
+	if (!m_pConstants->IsUsageFileAvailable()) {
 		return HandleError(Constants::kCLINoUsageFile);
 	}
 
-	if (!m_Constants.GetExtendedUsageFor(command, output)) {
+	if (!m_pConstants->GetExtendedUsageFor(command, output)) {
 		return HandleError("Extended help for command '" + command + "' not found.");
 	}
 	AppendToResult(output);

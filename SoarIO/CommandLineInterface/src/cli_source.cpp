@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include "cli_Constants.h"
+
 #ifdef _MSC_VER
 #define snprintf _snprintf 
 #endif // _MSC_VER

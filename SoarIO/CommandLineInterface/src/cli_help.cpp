@@ -1,5 +1,7 @@
 #include "cli_CommandLineInterface.h"
 
+#include "cli_Constants.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -19,19 +21,19 @@ bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::stri
 bool CommandLineInterface::DoHelp(std::string* pCommand) {
 	std::string output;
 
-	if (!m_Constants.IsUsageFileAvailable()) {
+	if (!m_pConstants->IsUsageFileAvailable()) {
 		return HandleError(Constants::kCLINoUsageFile);
 	}
 
 	if (pCommand) {
-		if (!m_Constants.GetUsageFor(*pCommand, output)) {
+		if (!m_pConstants->GetUsageFor(*pCommand, output)) {
 			return HandleError("Help for command '" + *pCommand + "' not found.");
 		}
 		AppendToResult(output);
 		return true;
 	}
 	AppendToResult("Help is available for the following commands:\n");
-	std::list<std::string> commandList = m_Constants.GetCommandList();
+	std::list<std::string> commandList = m_pConstants->GetCommandList();
 	std::list<std::string>::const_iterator iter = commandList.begin();
 
 	int i = 0;

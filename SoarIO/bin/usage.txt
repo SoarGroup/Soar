@@ -108,6 +108,14 @@ Usage:	helpex command_name
 On success:
 <result>help_string</result>
 ***
+home
+Usage:	home [home_directory]
+  home_directory	Optional home directory to set as home.  Otherwise uses
+			current directory.
+~~~
+On success:
+<result>true</result>
+***
 indifferent-selection
 Usage:	indifferent-selection
 ~~~
