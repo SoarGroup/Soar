@@ -16,11 +16,4 @@
 	<Enumeration name="type" comment="" id="7">
 		<enum value="state" />
 	</Enumeration>
-	<Identifier name="operator" comment="" id="8">
-		<Enumeration name="name" comment="" id="9">
-			<enum value="pie" />
-		</Enumeration>
-		<Identifier name="someid" comment="Am I visible?" id="10">
-		</Identifier>
-	</Identifier>
 </Special>

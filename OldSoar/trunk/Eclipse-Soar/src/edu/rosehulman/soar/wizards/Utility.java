@@ -113,10 +113,23 @@ public class Utility {
 	
 	
 	/**
+	 * Gets the type of soar resource this is.
+	 * @param res
+	 * @return "file" "operator" or "impasse"
+	 */
+	public static String getSoarType(IResource res) {
+		try {
+			return res.getPersistentProperty(SOAR_TYPE);
+		} catch (CoreException e) {
+			return "";
+		}
+	}
+	
+	/**
 	 * Marks the resource as belonging to Soar.
-	 *  Mark is the type of soar resource, ie: file, operator, impass.
+	 *  Mark is the type of soar resource, ie: file, operator, impasse.
 	 * @param res The resource to mark.
-	 * @param mark What to mark this resource as.
+	 * @param mark What to mark this resource as ("file", "operator", "impasse").
 	 */
 	public static void markResource(IResource res, String mark) {
 		
@@ -130,6 +143,26 @@ public class Utility {
 		} catch (CoreException e) {
 			e.printStackTrace();
 		} // catch 
+	}
+	
+	
+	public static void associateID(IResource res, int id) {
+		try {
+			res.setPersistentProperty(DataMap.VERTEX_ID, new Integer(id).toString());
+		} catch (CoreException e) {
+			e.printStackTrace();
+		} // catch
+	}
+	
+	public static int getAssociatedID(IResource res) {
+		try {
+			return new Integer(res.getPersistentProperty(DataMap.VERTEX_ID)).intValue();
+		} catch (CoreException e) {
+			e.printStackTrace();
+			return 0;
+		} catch (NumberFormatException e) {
+			return 0;
+		}
 	}
 	
 	
@@ -211,6 +244,9 @@ public class Utility {
 		
 						newFolder.create(true, true, monitor);
 						
+						markResource(newFolder, getSoarType(res));
+						associateID(newFolder, getAssociatedID(res));
+						
 					} // if
 					
 					
@@ -242,7 +278,7 @@ public class Utility {
 					
 					
 					//Puts a datamap in the new folder.
-					try {
+					/*try {
 						IFile dmFile = newFolder.getFile("datamap.xdm");
 						
 						InputStream stream =
@@ -262,36 +298,10 @@ public class Utility {
 						
 					} catch (Exception e) {
 						e.printStackTrace();
-					} // catch
+					} // catch */
 					
 					//Adds this guy to the parent's datamap
-					try {
-						IContainer folderParent = newFolder.getParent();
-						IFile dmFile = folderParent.getFile(new Path("datamap.xdm"));
-						
-						
-						if ( dmFile.exists()) {
-							DataMap dm = new DataMap(dmFile);
-						
-							DMSpecial newOp = new DMSpecial(
-								"operator");
-							
-							DMEnumeration newEnum = new DMEnumeration("name");
-							newEnum.getEnums().add(newFolder.getName());
-							
-							newOp.addChild(newEnum);
-							
-							dm.getRoot().addChild(newOp);
-							
-							dm.saveXML(monitor);
-						} // if
-						
 
-						
-						
-					} catch (Exception e) {
-						e.printStackTrace();
-					} // catch
 					
 					
 					return newFolder;

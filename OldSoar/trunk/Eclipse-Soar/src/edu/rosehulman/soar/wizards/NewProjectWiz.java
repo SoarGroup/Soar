@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 
-
+import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.natures.*;
 import edu.rosehulman.soar.sourcing.*;
 
@@ -114,6 +114,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 				
 				newProject.setDescription(description, IResource.FORCE ,monitor);
 				
+				newProject.setPersistentProperty(DataMap.VERTEX_ID, "0");
 				
 			} catch (CoreException e) {
 				e.printStackTrace();
@@ -129,11 +130,13 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 		if (!folderAll.exists()) {
 			folderAll.create(true, true, monitor);
 		} // if
+		Utility.markResource(folderAll, "file");
 		
 		IFolder folderElaborations = newProject.getFolder("elaborations");
 		if (!folderElaborations.exists()) {
 			folderElaborations.create(true, true, monitor);
 		} // if
+		Utility.markResource(folderElaborations, "file");
 		
 		IFile file_firstload = newProject.getFile("_firstload.soar");
 		if (!file_firstload.exists()) {

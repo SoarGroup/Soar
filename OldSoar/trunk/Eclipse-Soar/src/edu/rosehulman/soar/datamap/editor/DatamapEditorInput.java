@@ -14,8 +14,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
-import java.util.*;
-
 
 /**
  * 
@@ -24,44 +22,36 @@ import java.util.*;
  */
 public class DatamapEditorInput implements IFileEditorInput {
 	private IFile _file;
-	private ArrayList _path;
-	private String _opName;
+	private int _rootID;
 	
-	public DatamapEditorInput(IFile file, ArrayList path, String opName) {
+	public DatamapEditorInput(IFile file, int rootID) {
 		_file = file;
-		_path = path;
-		_opName = opName;
+		_rootID = rootID;
 	}
 
 	public IFile getFile() {
 		return _file;
 	}
 	
-	public ArrayList getPath() {
-		return _path;
-	}
 	
 	public boolean equals( Object o) {
 		if (o instanceof DatamapEditorInput) {
 			DatamapEditorInput temp = (DatamapEditorInput) o;
 			
-			if (! _opName.equals(temp.getName()))
+			if (_rootID != temp.getRootID())
 				return false;
 			
 			if (! _file.equals(temp.getFile()))
 				return false;
 			
-			if (! _path.equals(temp.getPath()))
-				return false;
-			
 			return true;
 		}
 		
-		return false;	 
+		return false;
 	}
 	
-	public String getOperatorName() {
-		return _opName;
+	public int getRootID() {
+		return _rootID;
 	}
 
 
@@ -81,7 +71,7 @@ public class DatamapEditorInput implements IFileEditorInput {
 
 
 	public String getName() {
-		return _opName;
+		return _file.getName();
 	}
 
 
@@ -91,7 +81,7 @@ public class DatamapEditorInput implements IFileEditorInput {
 
 
 	public String getToolTipText() {
-		return _opName;
+		return _file.getFullPath().toString();
 	}
 
 

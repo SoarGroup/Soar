@@ -11,7 +11,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.ui.*;
 
-import java.util.*;
+
 
 /**
  * 
@@ -25,23 +25,18 @@ public class DatamapInputFactory implements IElementFactory {
 
 	public IAdaptable createElement(IMemento memento) {
 		
-		ArrayList path = new ArrayList();
-		int size = memento.getInteger("pathSize").intValue();
-		
-		for (int i=0; i<size; ++i) {
-			String key = new Integer(i).toString();
-			
-			path.add(memento.getString(key));
+		Integer temp = memento.getInteger("rootID");
+		int rootID = 0;
+		if (temp != null) {
+			rootID = temp.intValue();
 		}
 		
-		String filePath =  memento.getString("file");
+		String filePath = memento.getString("file");
 		
 		IFile file = SoarPlugin.getWorkspace().getRoot().getFile(new Path(filePath));
 		
-		String opName = memento.getString("opName");
-		
 
-		return new DatamapEditorInput(file, path, opName);
+		return new DatamapEditorInput(file, rootID);
 	}
 
 }

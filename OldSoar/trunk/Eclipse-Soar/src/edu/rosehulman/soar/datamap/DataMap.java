@@ -35,7 +35,12 @@ public class DataMap {
 	private HashMap _ids;
 	private int _currID=1;
 	
-	
+	/**
+	 * Qualified name for the persistent property on a resource identifying the
+	 *  datamap item that is associated with it.
+	 */
+	public static final QualifiedName VERTEX_ID
+		= new QualifiedName("edu.rosehulman.soar", "vertexID");
 	
 	
 	public int getCurrentID() {
@@ -44,6 +49,10 @@ public class DataMap {
 	
 	public void incrementCurrentID() {
 		++_currID;
+	}
+	
+	public int getAndIncrementID() {
+		return _currID++;
 	}
 	
 	/**
@@ -122,7 +131,11 @@ public class DataMap {
 	 * @return The node with that id.
 	 */
 	public DMItem getItem(int id) {
-		return (DMItem) _ids.get(new Integer(id));
+		return getItem(new Integer(id));
+	}
+	
+	public DMItem getItem(Integer id) {
+		return (DMItem) _ids.get(id);
 	}
 	
 	
@@ -784,30 +797,89 @@ public class DataMap {
 	 * @param file The Soar source file.
 	 * @return The datamap for this file.
 	 */
-	public static DataMap getAssociatedDatamap(IFile file) {
-		IContainer folder = file.getParent();
+	public static DataMap getAssociatedDatamap(IResource res) {
+		IProject proj = res.getProject();
 		
 		try {
-			IFile dmFile = folder.getFile(new Path("datamap.xdm"));
+			IFile dmFile = proj.getFile(new Path("datamap.xdm"));
 			
 			if (dmFile.exists()) {
 				DataMap dm = new DataMap(dmFile);
 			
 				return dm;
 				
-			//If that file does not exist, we'll use the one in the parent folder
 			} else {
-				IFile parentDM = folder.getParent().getFile(new Path("datamap.xdm"));
-				DataMap dm = new DataMap(parentDM);
-			
-				return dm;
-			} // else
-		
-		//If that one doesn't exist either, we pack our bags and go home.
+				return null;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			
 			return null;
+		}
+	}
+	
+	
+	
+	/**
+	 * Returns the item in the datamap that is associated with this resource.
+	 * @param res
+	 * @return
+	 */
+	public DMItem getAssociatedVertex(IResource res) {
+		if (res instanceof IContainer) {
+			return getAssociatedVertex( (IContainer) res);
+		} else {
+			return getAssociatedVertex( res.getParent() );
+		}
+	}
+	
+	private DMItem getAssociatedVertex(IContainer folder) {
+		if (folder instanceof IProject) return getRoot();
+		
+		try {
+			String strID = folder.getPersistentProperty(DataMap.VERTEX_ID);
+			
+			Integer id = new Integer(strID);
+			
+			DMItem ret = getItem(id);
+			
+			if (ret == null) {
+				return getAssociatedVertex( folder.getParent() );
+			} else {
+				return ret;
+			}
+			
+		} catch (CoreException e) {
+			return getRoot();
+		} catch (NumberFormatException e) {
+			return getAssociatedVertex( folder.getParent() );
+		}
+	}
+	
+	
+	
+	public static int getAssociatedVertexID(IResource res) {
+		if (res instanceof IContainer) {
+			return getAssociatedVertexID( (IContainer) res);
+		} else {
+			return getAssociatedVertexID( res.getParent() );
+		}
+	}
+	
+	private static int getAssociatedVertexID(IContainer folder) {
+		if (folder instanceof IProject) return 0;
+		
+		try {
+			String strID = folder.getPersistentProperty(DataMap.VERTEX_ID);
+			
+			Integer id = new Integer(strID);
+			
+			return id.intValue();
+			
+		} catch (CoreException e) {
+			return 0;
+		} catch (NumberFormatException e) {
+			return 0;
 		}
 	}
 

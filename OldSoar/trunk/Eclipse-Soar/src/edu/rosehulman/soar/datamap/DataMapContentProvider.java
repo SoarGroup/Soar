@@ -83,21 +83,13 @@ public class DataMapContentProvider implements ITreeContentProvider {
 	protected void resetRoot() {
 		DMItem root;
 		
-		ArrayList path = _fileInput.getPath();
 		
-		if (path.size() == 0) {
-			root = findOpNode(path, _fileInput.getName());
-			
-			if (root == null) {
-				root = _dm.getRoot();
-			}
-
+		int rootID = _fileInput.getRootID();
 		
-		} else {
+		root = _dm.getItem(rootID);
 		
+		if (root == null) {
 			root = _dm.getRoot();
-			
-		
 		}
 		
 		_root = root;

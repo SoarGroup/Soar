@@ -12,7 +12,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.ui.*;
 import org.eclipse.core.resources.*;
 
-import java.util.*;
 
 /**
  * 
@@ -25,25 +24,11 @@ public class DataMapInvoker implements IActionDelegate {
 
 	public void run(IAction action) {
 		IFile dmFile = _target.getProject().getFile("datamap.xdm");
-		DatamapEditorInput fei;
+		int id = DataMap.getAssociatedVertexID(_target); 
 		
-		if (_target.equals(_target.getProject())) {
-			fei = new DatamapEditorInput(dmFile, new ArrayList(), "");
-		} else {
-			String name = _target.getName();
-			 
-			ArrayList path = new ArrayList();
-			IContainer con = _target.getParent();
-			
-			while (! con.equals(_target.getProject()) ) {
-				path.add(0, con.getName());
-				con = con.getParent();
-			}
-			
-			fei = new DatamapEditorInput(dmFile, path, name);
-		}
-		
-		
+		DatamapEditorInput fei = new DatamapEditorInput(dmFile, id);
+
+
 		
 		IWorkbenchPage page =
 			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();

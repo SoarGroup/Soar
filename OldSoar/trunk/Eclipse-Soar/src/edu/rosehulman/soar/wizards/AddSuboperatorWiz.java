@@ -130,6 +130,40 @@ public class AddSuboperatorWiz extends Wizard implements INewWizard {
 		
 		//Adds this guy to the parent's datamap
 		try {
+			IContainer folderParent;
+			if (container instanceof IProject) {
+				folderParent = container;
+			} else { 
+				folderParent = container.getParent();
+			}
+			
+			DataMap dm = DataMap.getAssociatedDatamap(folderParent);
+			DMItem dmRoot = dm.getAssociatedVertex(folderParent);
+			
+			
+			DMSpecial newOp = new DMSpecial( "operator" );
+			newOp.setID( dm.getAndIncrementID() );
+			
+			DMEnumeration newEnum = new DMEnumeration("name");
+			newEnum.getEnums().add( file.getName().split("\\.")[0] );
+			newEnum.setID( dm.getAndIncrementID() );
+
+			newOp.addChild(newEnum);
+			
+			dmRoot.addChild(newOp);
+			
+			
+			Utility.associateID(file, newOp.getID());
+			
+			dm.saveXML(monitor);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} // catch
+		
+		
+		
+		try {
 			if (! (container instanceof IProject)) {
 				
 				IFile dmFile = container.getFile(new Path("datamap.xdm"));

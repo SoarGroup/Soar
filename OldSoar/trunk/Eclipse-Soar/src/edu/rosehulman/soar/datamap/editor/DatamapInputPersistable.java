@@ -8,7 +8,6 @@ package edu.rosehulman.soar.datamap.editor;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 
-import java.util.*;
 
 /**
  * 
@@ -29,15 +28,8 @@ public class DatamapInputPersistable implements IPersistableElement {
 
 	public void saveState(IMemento memento) {
 		
-		ArrayList path = _dei.getPath();
-		
-		memento.putInteger("pathSize", path.size());
-		for (int i=0; i<path.size(); ++i) {
-			String key = new Integer(i).toString();
-			memento.putString(key, (String) path.get(i));
-		}
-		
-		memento.putString("opName", _dei.getName());
+		memento.putInteger("rootID", _dei.getRootID());
+
 		memento.putString("file", _dei.getFile().getFullPath().toString());
 
 	}
