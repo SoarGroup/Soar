@@ -1,11 +1,13 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
-AC_INIT([SoarKernel], [8.6.0])
+AC_INIT([SoarKernel], [8.6.0], [soar-group@lists.sourceforge.net])
 AM_INIT_AUTOMAKE([SoarKernel], [8.6.0])
+AC_PREREQ(2.59)
+AC_REVISION($Revision$)
 AC_CONFIG_SRCDIR([src/soar.h])
 AM_CONFIG_HEADER(config.h)
+AC_PREFIX_DEFAULT(/usr/local/soar)
 
 # Checks for programs.
 AC_DISABLE_SHARED
@@ -15,6 +17,7 @@ AC_DEFINE([UNIX], [1], [BUGBUG: Defined for now, needs to be removed.])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 AC_PROG_CC
+AC_PROG_MAKE_SET
 
 # Checks for libraries.
 
