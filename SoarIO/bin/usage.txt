@@ -65,8 +65,10 @@ Options and arguments:
 ~~~
 ***
 echo
-Usage:	echo string
+Usage:	echo [-n] string
 Options and arguments:
+  -n, --nonewline	Default is to insert a newline at end of string. This
+  			disables it.
   string		The string to print back.
 
 Used to echo commands to the console.

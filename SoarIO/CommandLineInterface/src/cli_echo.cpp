@@ -5,20 +5,47 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
+#include "cli_GetOpt.h"
 
 using namespace cli;
 
 bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
-	if (argv.size() != 2) {
-		return HandleSyntaxError(Constants::kCLIEcho);
+	static struct GetOpt::option longOptions[] = {
+		{"nonewline",	0, 0, 'n'},
+		{0, 0, 0, 0}
+	};
+
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
+
+	int option;
+	bool noNewLine = false;
+
+	for (;;) {
+		option = m_pGetOpt->GetOpt_Long(argv, "n", longOptions, 0);
+		if (option == -1) break;
+
+		switch (option) {
+			case 'n':
+				noNewLine = true;
+				break;
+			case '?':
+				return HandleSyntaxError(Constants::kCLIEcho, Constants::kCLIUnrecognizedOption);
+			default:
+				return HandleGetOptError((char)option);
+		}
 	}
 
-	return DoEcho(argv);
+	if (noNewLine) {
+		argv.erase(++(argv.begin()));
+	}
+
+	return DoEcho(argv, noNewLine);
 }
 
-bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
+bool CommandLineInterface::DoEcho(std::vector<std::string>& argv, bool noNewLine) {
 
 	// Concatenate arguments (spaces between arguments are lost unless enclosed in quotes)
 	for (unsigned i = 1; i < argv.size(); ++i) {
@@ -26,8 +53,7 @@ bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 		AppendToResult(' ');
 	}
 
-	// Chop off that last space we just added in the loop
-	m_Result = m_Result.substr(0, m_Result.length() - 1);
+	if (!noNewLine) AppendToResult('\n');
 	return true;
 }
 

@@ -165,7 +165,7 @@ public:
 	/*************************************************************
 	* @brief Simply concatenates all arguments, adding them to the result.
 	*************************************************************/
-	bool DoEcho(std::vector<std::string>& argv);
+	bool DoEcho(std::vector<std::string>& argv, bool noNewLine);
 
 	/*************************************************************
 	* @brief excise command, see usage.txt for details.
