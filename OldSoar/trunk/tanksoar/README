@@ -18,6 +18,12 @@ init-tanksoar.tcl  - The Tcl/Tk initialization code for TankSoar (see INSTALL fi
 agents/            - Example and tutorial Soar agents.
 simulator/         - The TankSoar Tcl/Tk source code.
 
+_____________
+Known Issues:
+-------------
+ * Changing maps while agents are active will cause TankSoar to crash. 
+ Destroy all active agents before changing maps.
+
 --
 
 Updated for the TankSoar release version 3.0.6 by Jonathan Voigt 
