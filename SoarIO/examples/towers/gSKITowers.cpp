@@ -29,7 +29,7 @@ using std::endl;
 using namespace	gSKI;
 
 //commandline directives
-#include "cli_CommandLineInterface.h"	
+#include "cli_CommandLineInterface.h"
 using namespace cli;
 
 TgD::TgD* debugger;
@@ -116,7 +116,7 @@ public:
 	/*************************************************************
 	* @brief	Updates the pointers to the peg and disk beneath
 	*			Sets flag so that Update knows an update needs
-	*			to be done
+	*			to be done.
 	* @param	inDisk	The new disk beneath, or zero, if none
 	* @param	intower	The new Tower that this disk has moved to
 	*************************************************************/
@@ -145,7 +145,6 @@ public:
 	*************************************************************/
 	void Update(IWorkingMemory* pWMemory, IWMObject* object)
 	{
-cout << "Update called on disk " << this->size->GetValue()->GetInt() << endl;
 		if(holdsNeedsToBeUpdated == false)
 			return;
 
@@ -153,35 +152,41 @@ cout << "Update called on disk " << this->size->GetValue()->GetInt() << endl;
 		tIWmeIterator* onItr = object->GetWMEs(k_holdsOnString.c_str());
 		if(onItr->IsValid())
 		{
+			peg->Release(); //BADBAD - this plugs the leak, but we should not be using this peg ptr
+							//again having just called Release on it (according to the gSKI doc) //fixme
 			pWMemory->RemoveWme(peg);
-			//peg->Release();
 			peg = pWMemory->AddWmeObjectLink(object, k_holdsOnString.c_str(), pegId);
-
-			onItr->Release();
 		}
 		else
 			assert(false);
-/*		// Get List of objects referencing this object with attribute "above"
+		onItr->Release();
+
+		// Get List of objects referencing this object with attribute "above"
 		tIWmeIterator* aboveItr = object->GetWMEs("above");
 
 		if(aboveItr->IsValid())
 		{	//Get the old "above" value
-			IWme* oldDiskBeneath = aboveItr->GetVal();
 
 			if(diskBeneath)
 			{
+				holdsDiskBeneath->Release();//BADBAD - this plugs the leak, but we should not be using this peg ptr
+				//again having just called Release on it (according to the gSKI doc) //fixme
 				pWMemory->RemoveWme(holdsDiskBeneath);
 				holdsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", diskBeneath->GetValue()->GetObject());
 			}
 			else
+			{
+				IWme* oldDiskBeneath = aboveItr->GetVal();
+				holdsDiskBeneath->Release();//SO SHADY!  BADBAD fixme.  plugs leak, though
 				holdsDiskBeneath = pWMemory->ReplaceStringWme(oldDiskBeneath, "none");
-
-			aboveItr->Release();
+				oldDiskBeneath->Release();
+			}
 		}
 		else
 			assert(false);
+		aboveItr->Release();
 		holdsNeedsToBeUpdated = false;
-*/	}
+	}
 
 private:
 
@@ -213,14 +218,18 @@ private:
 			size = 0;
 		}
 
+		//=============================================
 		//Don't own these so just set pointers to zero
-		//diskBeneath = 0;
 		if(diskBeneath)
 		{
-//			diskBeneath->Release();
+		//	diskBeneath->Release();
 			diskBeneath = 0;
 		}
-		pegId = 0;
+		if(pegId)
+		{
+			//pegId->Release();		
+			pegId = 0;
+		}//============================================
 
 		//Release children of "holds"
 		if(holdsDiskBeneath)
@@ -230,7 +239,6 @@ private:
 		}
 		if(peg)
 		{
-cout << "\tI had to release peg, which was at: " << peg << endl;
 			peg->Release();
 			peg = 0;
 		}
@@ -446,7 +454,6 @@ void Disk::Detach()
 {
 	delete m_iLinkProfile;
 	pTower = 0;
-cout << "Disk " << m_size << " was detached" << endl;
 }
 
 
@@ -534,12 +541,6 @@ void Tower::PrintDiskAtRow(int row) const
 	}
 }
 
-/*void Tower::PrintEntireTower()
-{
-	for(vector<Disk*>::iterator fooItr = m_disks.begin(); fooItr != m_disks.end(); ++fooItr)
-		cout << (*fooItr)->GetSize() << endl;
-	cout << endl;
-}*/
 
 
 
@@ -585,12 +586,6 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	IWMObject* pILinkRootObject;
 	pILink->GetRootObject(&pILinkRootObject);
 
-/*	Tower tower(this, 'A');
-	
-	Disk disk(&tower, 2, 0);
-
-	disk.Detach();*/
-
 
 	//Name each tower and store for later
 	for(int towerNum = 0; towerNum < inNumTowers; ++towerNum)
@@ -602,7 +597,7 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 		{
 			Tower* tower = new Tower(this, 'A');
 			assert(tower);
-			IWme* diskBeneathWME = 0;
+
 			//Create disks
 			for(int currentDiskSize = maxNumDisks; currentDiskSize > 0; --currentDiskSize)
 			{
@@ -627,7 +622,6 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 			}
 
 			m_towers.push_back(tower);
-			//tower->PrintEntireTower();
 		}
 		//==============
 		//Middle tower
@@ -646,7 +640,7 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 			Tower* tower = new Tower(this, 'C');
 			m_towers.push_back(tower);
 		}
-	}//for
+	}//end-for-loop
 
 
 	delete commLine;

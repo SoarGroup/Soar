@@ -73,15 +73,15 @@ int main(int argc, char* argv[])
 		if(doPrinting)
 			hanoi.Print();
 
-	/*	while(!hanoi.AtGoalState())
-		{*/
-			hanoi.Run();/*
+		while(!hanoi.AtGoalState())
+		{
+			hanoi.Run();
 
 			if(doPrinting)
 				hanoi.Print();
 		}
 
-		hanoi.EndGameAction();*/
+		hanoi.EndGameAction();
 	}
 
 #ifdef _DEBUG
