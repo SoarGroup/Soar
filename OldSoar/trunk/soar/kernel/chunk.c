@@ -48,8 +48,8 @@
 
    ==================================================================== */
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 #include "soar_core_utils.h"
 #include "explain.h"
 

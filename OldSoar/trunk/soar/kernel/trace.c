@@ -47,8 +47,8 @@
  * =======================================================================
  */
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 
 /* --- trace format types --- */
 

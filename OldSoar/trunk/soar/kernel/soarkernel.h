@@ -56,6 +56,10 @@
 #ifndef _SOAR_H_INCLUDED /* ExcludeFromBuildInfo */
 #define _SOAR_H_INCLUDED
 
+#ifndef _MSC_VER
+#define _GNU_SOURCE
+#endif
+
 #if defined(MACINTOSH)          /* excludeFromBuildInfo */
 #include <utime.h>
 #include <signal.h>

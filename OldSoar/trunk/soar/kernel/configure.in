@@ -64,8 +64,12 @@ fi
 
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(gethostname gettimeofday getwd strtol)
+AC_CHECK_FUNCS(gethostname gettimeofday getwd strtol strtoul snprintf)
 
+#--------------------------------------------------------------------
+#       Use latest Posix standards
+#--------------------------------------------------------------------
+AC_DEFINE(POSIX_C_SOURCE,199506L)
 
 #--------------------------------------------------------------------
 #	Create the Makefile

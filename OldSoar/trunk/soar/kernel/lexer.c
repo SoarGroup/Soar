@@ -82,11 +82,11 @@
     See comments in soarkernel.h for an overview.
    ====================================================================== */
 
+#include "soarkernel.h"
 #include <ctype.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include "soarkernel.h"
 
 
 bool constituent_char[256];   /* is the character a symbol constituent? */
