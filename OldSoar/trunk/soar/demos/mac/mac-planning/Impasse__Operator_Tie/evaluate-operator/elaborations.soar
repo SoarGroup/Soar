@@ -1,4 +1,5 @@
 # this rule will cause a warning during loading in Soar; that warning can be ignored
+set warnings off
 sp {mac*evaluate*state*failure*duplicate
    (state <s1> ^desired <d>
                ^right-bank <rb>
@@ -15,6 +16,7 @@ sp {mac*evaluate*state*failure*duplicate
    -->
    (write (crlf) |Duplicate State Detected.|)
    (<s2> ^failure <d>)}
+set warnings on
 
 sp {mac*evaluate*state*failure*state-no-change
     (state <s> ^desired <d>
