@@ -565,11 +565,24 @@ For help, see the help menu.
 ###	VI.	Create the menus
 ###
 
+set menusourcedir [pwd]
 proc sourceSoarFile {} {
+   global menusourcedir
+   set olddir [pwd]
+   tsiDisplayAndSendCommand "cd $menusourcedir"
    set file [tk_getOpenFile -title {Source ...}]
    if {$file != {}} {
-      tsiDisplayAndSendCommand "soarsource \"$file\""
+	if [file isfile $file] {
+           set menusourcedir [file dirname $file]
+           set filename [file tail $file]
+	   tsiDisplayAndSendCommand "cd $menusourcedir"
+  	   tsiDisplayAndSendCommand "source $filename"
+        } else {
+	   echo "invalid file"
+        }
+      #tsiDisplayAndSendCommand "soarsource \"$file\""
    }
+   tsiDisplayAndSendCommand "cd $olddir"
 }
 proc saveReteNet {} {
    set file [tk_getSaveFile -title {Save rete-net to...}]
