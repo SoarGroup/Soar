@@ -323,7 +323,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		// Set the thread to stopped
 		//g_pInputThread->Stop(false);
 		//g_pWaitForInput->TriggerEvent();
-		return false; // BUGBUG: this false is a normal, non erroneous exit, no way to tell apart from error exits
+		return false;
 	}
 
 	DisplayPrompt(previousResult);
