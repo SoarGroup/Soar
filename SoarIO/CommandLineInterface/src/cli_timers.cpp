@@ -42,14 +42,14 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 				setting = false; // disable timers
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No non-option arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
 	return DoTimers(pAgent, print, setting);
 }

@@ -42,24 +42,24 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 
 			case 'c':
 				full = false;
-				if (!IsInteger(m_pGetOpt->GetOptArg())) return m_Error.SetError(CLIError::kIntegerExpected);
+				if (!IsInteger(m_pGetOpt->GetOptArg())) return SetError(CLIError::kIntegerExpected);
 				condition = atoi(m_pGetOpt->GetOptArg());
-				if (condition <= 0) return m_Error.SetError(CLIError::kIntegerMustBePositive);
+				if (condition <= 0) return SetError(CLIError::kIntegerMustBePositive);
 				break;
 
 			case ':':
-				return m_Error.SetError(CLIError::kMissingOptionArg);
+				return SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 
 	if (full || condition) {
-		if (m_pGetOpt->GetAdditionalArgCount() < 1) return m_Error.SetError(CLIError::kTooFewArgs);
+		if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
 	}
 
 	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoExplainBacktraces(pAgent, &argv[m_pGetOpt->GetOptind()], full, condition);;
@@ -71,7 +71,7 @@ bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, std::string
 
 	if (!RequireAgent(pAgent)) return false;
 
-	if (condition < 0) return m_Error.SetError(CLIError::kInvalidConditionNumber);
+	if (condition < 0) return SetError(CLIError::kInvalidConditionNumber);
 
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
@@ -84,7 +84,7 @@ bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, std::string
 		return true;
 	}
 
-	if (!pProduction || !pProduction->size()) return m_Error.SetError(CLIError::kProductionRequired);
+	if (!pProduction || !pProduction->size()) return SetError(CLIError::kProductionRequired);
 	if (full) condition = -1;
 
 	AddListenerAndDisableCallbacks(pAgent);

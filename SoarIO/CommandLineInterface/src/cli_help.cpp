@@ -13,7 +13,7 @@ bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::stri
 	unused(pAgent);
 
 	if (argv.size() > 2) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+		return SetError(CLIError::kTooManyArgs);
 	}
 
 	if (argv.size() == 2) {
@@ -25,10 +25,10 @@ bool CommandLineInterface::ParseHelp(gSKI::IAgent* pAgent, std::vector<std::stri
 bool CommandLineInterface::DoHelp(std::string* pCommand) {
 	std::string output;
 
-	if (!m_pConstants->IsUsageFileAvailable()) return m_Error.SetError(CLIError::kNoUsageFile);
+	if (!m_pConstants->IsUsageFileAvailable()) return SetError(CLIError::kNoUsageFile);
 
 	if (pCommand) {
-		if (!m_pConstants->GetUsageFor(*pCommand, output)) return m_Error.SetError(CLIError::kNoUsageInfo);
+		if (!m_pConstants->GetUsageFor(*pCommand, output)) return SetError(CLIError::kNoUsageInfo);
 		AppendToResult(output);
 		return true;
 	}

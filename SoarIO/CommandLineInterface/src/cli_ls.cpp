@@ -25,7 +25,7 @@ bool CommandLineInterface::ParseLS(gSKI::IAgent* pAgent, std::vector<std::string
 
 	// No arguments
 	if (argv.size() != 1) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+		return SetError(CLIError::kTooManyArgs);
 	}
 	return DoLS();
 }
@@ -48,6 +48,7 @@ bool CommandLineInterface::DoLS() {
 
 	// At least one file found, concatinate additional ones with newlines
 	do {
+		AppendToResult('\n');
 		PrintFilename(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? true : false);
 
 	} while (FindNextFile(hFind, &FindFileData));
@@ -65,7 +66,7 @@ bool CommandLineInterface::DoLS() {
 	if (!GetCurrentWorkingDirectory(dir)) return false;
 
 	// Open the directory for reading
-	if ((directoryPointer = opendir(dir.c_str())) == 0) return m_Error.SetError(CLIError::kDirectoryOpenFailure);
+	if ((directoryPointer = opendir(dir.c_str())) == 0) return SetError(CLIError::kDirectoryOpenFailure);
 
 	// Read the files
 	errno = 0;
@@ -75,7 +76,7 @@ bool CommandLineInterface::DoLS() {
 	}
 
 	// Check for error
-	if (errno != 0) return m_Error.SetError(CLIError::kDirectoryEntryReadFailure);
+	if (errno != 0) return SetError(CLIError::kDirectoryEntryReadFailure);
 
 	// Ignoring close error
 	closedir(directoryPointer);

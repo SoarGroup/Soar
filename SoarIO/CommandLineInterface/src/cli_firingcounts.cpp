@@ -39,20 +39,20 @@ bool CommandLineInterface::ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<s
 	if (argv.size() == 2) {
 		// one argument, figure out if it is a non-negative integer
 		if (argv[1][0] == '-') {
-			return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
+			return SetError(CLIError::kIntegerMustBeNonNegative);
 		}
 		if (isdigit(argv[1][0])) {
 			// integer argument, set numberToList
 			numberToList = atoi(argv[1].c_str());
 			if (numberToList < 0) {
-				return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
+				return SetError(CLIError::kIntegerMustBeNonNegative);
 			}
 		} else {
 			// non-integer argument, hopfully a production
 			pProduction = &(argv[1]);
 		}
 	} else if (argv.size() > 2) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+		return SetError(CLIError::kTooManyArgs);
 	}
 
 	return DoFiringCounts(pAgent, pProduction, numberToList);
@@ -74,7 +74,7 @@ bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::string* pPr
 		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
 	}
 
-	if (!pIter) return m_Error.SetError(CLIError::kgSKIError);
+	if (!pIter) return SetError(CLIError::kgSKIError);
 
 	for(; pIter->IsValid(); pIter->Next()) {
 
@@ -100,7 +100,7 @@ bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::string* pPr
 	pIter->Release();
 	pIter = 0;
 
-	if (!foundProduction) return m_Error.SetError(CLIError::kProductionNotFound);
+	if (!foundProduction) return SetError(CLIError::kProductionNotFound);
 
 	FiringsSort s;
 	sort(firings.begin(), firings.end(), s);

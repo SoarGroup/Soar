@@ -199,20 +199,20 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				}
 				break;
 			case ':':
-				return m_Error.SetError(CLIError::kMissingOptionArg);
+				return SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 
 	// Allow watch level by itself
 	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
 		int optind = m_pGetOpt->GetOptind();
-		if (!IsInteger(argv[optind])) return m_Error.SetError(CLIError::kIntegerExpected);
+		if (!IsInteger(argv[optind])) return SetError(CLIError::kIntegerExpected);
 		if (!ProcessWatchLevelSettings(atoi(argv[optind].c_str()), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
 	}
 
@@ -221,8 +221,8 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 bool CommandLineInterface::ProcessWatchLevelSettings(const int level, int& options, int& settings, int& wmeSetting, int& learnSetting) {
 
-	if (level < 0) return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
-	if (level > 5) return m_Error.SetError(CLIError::kIntegerOutOfRange);
+	if (level < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
+	if (level > 5) return SetError(CLIError::kIntegerOutOfRange);
 
 	// All of these are going to change
 	options = OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
@@ -266,7 +266,7 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, int& optio
 int CommandLineInterface::ParseLevelOptarg() {
 	std::string optarg(m_pGetOpt->GetOptArg());
 	if (!IsInteger(optarg)) {
-		m_Error.SetError(CLIError::kIntegerExpected);
+		SetError(CLIError::kIntegerExpected);
 		return -1;
 	}
 	return atoi(optarg.c_str());
@@ -283,14 +283,14 @@ int CommandLineInterface::ParseLearningOptarg() {
 	if (optarg == "fullprint" || optarg == "2") {
 		return 2;
 	}
-	m_Error.SetError(CLIError::kInvalidLearnSetting);
+	SetError(CLIError::kInvalidLearnSetting);
 	return -1;
 }
 
 bool CommandLineInterface::CheckOptargRemoveOrZero() {
 	std::string optarg(m_pGetOpt->GetOptArg());
 	if (optarg == "remove" || optarg == "0") return true;
-	return m_Error.SetError(CLIError::kRemoveOrZeroExpected);
+	return SetError(CLIError::kRemoveOrZeroExpected);
 }
 
 bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const int options, const int settings, const int wmeSetting, const int learnSetting) {

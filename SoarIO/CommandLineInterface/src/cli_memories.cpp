@@ -58,14 +58,14 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 				productionType |= OPTION_MEMORIES_USER;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Max one additional argument
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);		
 
 	// It is either a production or a number
 	std::string production;
@@ -74,11 +74,11 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 
 		// explicitly check for 0 since that's atoi's error value
 		int optind = m_pGetOpt->GetOptind();
-		if (argv[optind][0] == '0') return m_Error.SetError(CLIError::kIntegerMustBePositive);
+		if (argv[optind][0] == '0') return SetError(CLIError::kIntegerMustBePositive);
 
 		n = atoi(argv[optind].c_str());
 		if (!n) {
-			if (productionType) return m_Error.SetError(CLIError::kNoProdTypeWhenProdName);
+			if (productionType) return SetError(CLIError::kNoProdTypeWhenProdName);
 			production = argv[optind];
 		}
 	}
@@ -105,7 +105,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
 	}
 
-	if (!pIter) return m_Error.SetError(CLIError::kgSKIError);
+	if (!pIter) return SetError(CLIError::kgSKIError);
 
 	for(; pIter->IsValid(); pIter->Next()) {
 
@@ -128,7 +128,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 			default:
 				pProd->Release();
 				pIter->Release();
-				return m_Error.SetError(CLIError::kInvalidProductionType);
+				return SetError(CLIError::kInvalidProductionType);
 		}
 
 		foundProduction = true;
@@ -143,7 +143,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 	pIter->Release();
 	pIter = 0;
 
-	if (!foundProduction) return m_Error.SetError(CLIError::kProductionNotFound);
+	if (!foundProduction) return SetError(CLIError::kProductionNotFound);
 
 	MemoriesSort s;
 	sort(memories.begin(), memories.end(), s);

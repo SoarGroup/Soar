@@ -52,9 +52,9 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 				operation = OPTION_LOG_QUERY;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 	
@@ -65,7 +65,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	switch (operation) {
 		case OPTION_LOG_ADD:
 			// no less than one argument
-			if (m_pGetOpt->GetAdditionalArgCount() < 1) return m_Error.SetError(CLIError::kTooFewArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
 
 			// combine all args
 			for (int i = 0; i < m_pGetOpt->GetOptind(); ++i) {
@@ -80,25 +80,25 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 
 		case OPTION_LOG_NEW:
 			// no more than one argument
-			if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 			if (m_pGetOpt->GetAdditionalArgCount() == 1) filename = argv[1];
 			break;
 
 		case OPTION_LOG_NEWAPPEND:
 			// exactly one argument
-			if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
-			if (m_pGetOpt->GetAdditionalArgCount() < 1) return m_Error.SetError(CLIError::kTooFewArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
 			filename = argv[2];
 			break;
 
 		case OPTION_LOG_CLOSE:
 		case OPTION_LOG_QUERY:
 			// no arguments
-			if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 			break;
 
 		default:
-			return m_Error.SetError(CLIError::kInvalidOperation);
+			return SetError(CLIError::kInvalidOperation);
 	}
 
 	return DoLog(pAgent, operation, filename, toAdd);
@@ -116,20 +116,20 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, con
 
 		case OPTION_LOG_NEW:
 			if (filename.size() == 0) break;
-			if (m_pLogFile) return m_Error.SetError(CLIError::kLogAlreadyOpen);
+			if (m_pLogFile) return SetError(CLIError::kLogAlreadyOpen);
 			m_pLogFile = new std::ofstream(filename.c_str(), mode);
-			if (!m_pLogFile) return m_Error.SetError(CLIError::kLogOpenFailure);
+			if (!m_pLogFile) return SetError(CLIError::kLogOpenFailure);
 			pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 			m_LogFilename = filename;
 			break;
 
 		case OPTION_LOG_ADD:
-			if (!m_pLogFile) return m_Error.SetError(CLIError::kLogNotOpen);
+			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
 			(*m_pLogFile) << toAdd << std::endl;
 			return true;
 
 		case OPTION_LOG_CLOSE:
-			if (!m_pLogFile) return m_Error.SetError(CLIError::kLogNotOpen);
+			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
 			pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_LogPrintHandler);
 	
 			(*m_pLogFile) << "Log file closed." << std::endl;
@@ -142,7 +142,7 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, con
 		case OPTION_LOG_QUERY:
 			break;
 		default:
-			return m_Error.SetError(CLIError::kInvalidOperation);
+			return SetError(CLIError::kInvalidOperation);
 	}
 
 	// Query at end of successful command, or by default (but not on _ADD)

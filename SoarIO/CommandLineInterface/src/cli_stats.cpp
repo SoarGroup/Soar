@@ -39,14 +39,14 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 				options |= OPTION_STATS_SYSTEM;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
 	return DoStats(pAgent, options);
 }
@@ -84,7 +84,7 @@ bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const int options) {
 
 	bool ret = pPerfMon->GetStatsString(argc, argv, &pResult);
 
-	if (!ret) return m_Error.SetError(CLIError::kgSKIError);
+	if (!ret) return SetError(CLIError::kgSKIError);
 
 	if (m_RawOutput) {
 		AppendToResult(pResult);

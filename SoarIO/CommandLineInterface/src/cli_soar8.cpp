@@ -37,14 +37,14 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 				soar8 = true;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No non-option arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
 	return DoSoar8(query, soar8);
 }
@@ -52,7 +52,7 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 bool CommandLineInterface::DoSoar8(bool query, bool soar8) {
 	unused(query);
 	unused(soar8);
-	m_Error.SetError(CLIError::kNotImplemented);
+	SetError(CLIError::kNotImplemented);
 	return false;
 }
 

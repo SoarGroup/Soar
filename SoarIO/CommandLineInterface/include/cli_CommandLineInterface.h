@@ -830,6 +830,9 @@ protected:
 
 	void AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent);
 	void RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent);
+
+	bool SetError(cli::ErrorCode code);				// always returns false
+	bool SetErrorDetail(const std::string detail);	// always returns false
   	 
 	Constants*			m_pConstants;			// Constants management object
 	Aliases				m_Aliases;				// Alias management object
@@ -853,7 +856,8 @@ protected:
 	int					m_SourceDirDepth;		// Depth of directory stack since source command, used to return to the dir that source was issued in.
 
 	std::string			m_Result;				// String output from the command
-	CLIError			m_Error;
+	cli::ErrorCode		m_LastError;			// Last error code (see cli_CLIError.h)
+	std::string			m_LastErrorDetail;		// Additional detail concerning the last error
 	gSKI::Error*		m_pgSKIError;			// gSKI error output from calls made to process the command
 
 	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result

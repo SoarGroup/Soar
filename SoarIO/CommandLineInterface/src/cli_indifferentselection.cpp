@@ -44,14 +44,14 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 				mode = OPTION_INDIFFERENT_RANDOM;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No additional arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);		
 
 
 	return DoIndifferentSelection(pAgent, mode);
@@ -98,7 +98,7 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 				break;
 
 			default:
-				return m_Error.SetError(CLIError::kInvalidIndifferentSelectionMode);
+				return SetError(CLIError::kInvalidIndifferentSelectionMode);
 		}
 	} else {
 		switch (mode) {
@@ -115,7 +115,7 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_RANDOM);
 				break;
 			default:
-				return m_Error.SetError(CLIError::kInvalidIndifferentSelectionMode);
+				return SetError(CLIError::kInvalidIndifferentSelectionMode);
 
 		}
 	}

@@ -13,7 +13,7 @@ bool CommandLineInterface::ParsePopD(gSKI::IAgent* pAgent, std::vector<std::stri
 
 	// No arguments
 	if (argv.size() != 1) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+		return SetError(CLIError::kTooManyArgs);
 	}
 	return DoPopD();
 }
@@ -21,7 +21,7 @@ bool CommandLineInterface::ParsePopD(gSKI::IAgent* pAgent, std::vector<std::stri
 bool CommandLineInterface::DoPopD() {
 
 	// There must be a directory on the stack to pop
-	if (m_DirectoryStack.empty()) return m_Error.SetError(CLIError::kDirectoryStackEmpty);
+	if (m_DirectoryStack.empty()) return SetError(CLIError::kDirectoryStackEmpty);
 
 	// Change to the directory
 	if (!DoCD(&(m_DirectoryStack.top()))) return false;	// error handled in DoCD

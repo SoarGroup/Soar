@@ -19,11 +19,11 @@ using namespace sml;
 
 bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// Exactly one argument
-	if (argv.size() < 2) return m_Error.SetError(CLIError::kTooFewArgs);
-	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (argv.size() < 2) return SetError(CLIError::kTooFewArgs);
+	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 
 	int timetag = atoi(argv[1].c_str());
-	if (!timetag) return m_Error.SetError(CLIError::kIntegerMustBePositive);
+	if (!timetag) return SetError(CLIError::kIntegerMustBePositive);
 
 	return DoRemoveWME(pAgent, timetag);
 }
@@ -35,7 +35,7 @@ bool CommandLineInterface::DoRemoveWME(gSKI::IAgent* pAgent, int timetag) {
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (pKernelHack->RemoveWmeByTimetag(pAgent, timetag)) return m_Error.SetError(CLIError::kRemoveWMEFailed);
+	if (pKernelHack->RemoveWmeByTimetag(pAgent, timetag)) return SetError(CLIError::kRemoveWMEFailed);
 	return true;
 }
 

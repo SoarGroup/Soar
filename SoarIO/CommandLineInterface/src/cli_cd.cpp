@@ -17,7 +17,7 @@ bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string
 
 	// Only takes one optional argument, the directory to change into
 	if (argv.size() > 2) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+		return SetError(CLIError::kTooManyArgs);
 	}
 	if (argv.size() > 1) {
 		return DoCD(&(argv[1]));
@@ -32,7 +32,7 @@ bool CommandLineInterface::DoCD(std::string* pDirectory) {
 
 		// Home dir set in constructor
 		if (chdir(m_HomeDirectory.c_str())) {
-			return m_Error.SetError(CLIError::kchdirFail);
+			return SetError(CLIError::kchdirFail);
 		}
 		return true;
 	}
@@ -44,7 +44,7 @@ bool CommandLineInterface::DoCD(std::string* pDirectory) {
 
 	// Change to passed directory
 	if (chdir(pDirectory->c_str())) {
-		return m_Error.SetError(CLIError::kchdirFail);
+		return SetError(CLIError::kchdirFail);
 	}
 	return true;
 }

@@ -50,13 +50,13 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 				mode |= OPTION_PRODUCTION_FIND_SHOWBINDINGS;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooFewArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooFewArgs);
 
 	if (!mode) mode = OPTION_PRODUCTION_FIND_INCLUDE_LHS;
 

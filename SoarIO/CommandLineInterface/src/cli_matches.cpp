@@ -55,14 +55,14 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 				matches = OPTION_MATCHES_RETRACTIONS;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Max one additional argument and it is a production
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);		
 
 	std::string production;
 	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
@@ -89,7 +89,7 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches,
 			wtt = FULL_WME_TRACE;
 			break;
 		default:
-			return m_Error.SetError(CLIError::kInvalidWMEDetail);
+			return SetError(CLIError::kInvalidWMEDetail);
 	}
 
 	// Attain the evil back door of doom, even though we aren't the TgD
@@ -100,7 +100,7 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches,
 
 		prod = pKernelHack->NameToProduction(pAgent, const_cast<char*>(production.c_str()));
 
-		if (!prod) return m_Error.SetError(CLIError::kProductionNotFound);
+		if (!prod) return SetError(CLIError::kProductionNotFound);
 
 		AddListenerAndDisableCallbacks(pAgent);		
 		pKernelHack->PrintPartialMatchInformation(pAgent, prod, wtt);

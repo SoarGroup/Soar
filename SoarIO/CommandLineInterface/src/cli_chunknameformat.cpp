@@ -41,9 +41,9 @@ bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vecto
 			case 'c': 
 				countFlag = true;
 				if (m_pGetOpt->GetOptArg()) {
-					if (!IsInteger(m_pGetOpt->GetOptArg())) return m_Error.SetError(CLIError::kIntegerExpected);
+					if (!IsInteger(m_pGetOpt->GetOptArg())) return SetError(CLIError::kIntegerExpected);
 					count = atoi(m_pGetOpt->GetOptArg());
-					if (count < 0) return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
+					if (count < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 				}
 				break;
 			case 'p': 
@@ -61,15 +61,15 @@ bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vecto
 				longFormat = false;
 				break;
 			case ':':
-				return m_Error.SetError(CLIError::kMissingOptionArg);
+				return SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
 	return DoChunkNameFormat(pAgent, changeFormat, longFormat, countFlag ? &count : 0, patternFlag ? &pattern : 0);
 }
@@ -96,8 +96,8 @@ bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFo
 
 	if (pCount) {
 		if (*pCount >= 0) {
-			if (*pCount >= pKernelHack->GetSysparam(pAgent, MAX_CHUNKS_SYSPARAM)) return m_Error.SetError(CLIError::kCountGreaterThanMaxChunks);
-			if (static_cast<unsigned long>(*pCount) < pKernelHack->GetChunkCount(pAgent)) return m_Error.SetError(CLIError::kCountLessThanChunks);
+			if (*pCount >= pKernelHack->GetSysparam(pAgent, MAX_CHUNKS_SYSPARAM)) return SetError(CLIError::kCountGreaterThanMaxChunks);
+			if (static_cast<unsigned long>(*pCount) < pKernelHack->GetChunkCount(pAgent)) return SetError(CLIError::kCountLessThanChunks);
 			pKernelHack->SetChunkCount(pAgent, *pCount);
 		} else {
 			// query
@@ -113,7 +113,7 @@ bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFo
 
 	if (pPrefix) {
 		if (pPrefix->size()) {
-			if (!pKernelHack->SetChunkNamePrefix(pAgent, pPrefix->c_str())) return m_Error.SetError(CLIError::kInvalidPrefix);
+			if (!pKernelHack->SetChunkNamePrefix(pAgent, pPrefix->c_str())) return SetError(CLIError::kInvalidPrefix);
 		} else {
 			// query
 			if (m_RawOutput) {

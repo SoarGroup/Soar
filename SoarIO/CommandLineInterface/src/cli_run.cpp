@@ -53,22 +53,22 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 				options |= OPTION_RUN_SELF;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Only one non-option argument allowed, count
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 
 	// Count defaults to 0
 	int count = 0;
 	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
 		int optind = m_pGetOpt->GetOptind();
-		if (!IsInteger(argv[optind])) return m_Error.SetError(CLIError::kIntegerExpected);
+		if (!IsInteger(argv[optind])) return SetError(CLIError::kIntegerExpected);
 		count = atoi(argv[optind].c_str());
-		if (count <= 0) return m_Error.SetError(CLIError::kIntegerMustBePositive);
+		if (count <= 0) return SetError(CLIError::kIntegerMustBePositive);
 	} 
 
 	return DoRun(pAgent, options, count);
@@ -153,7 +153,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 			}
 			break;
 		default:
-			return m_Error.SetError(CLIError::kgSKIError);
+			return SetError(CLIError::kgSKIError);
 	}
 	return true;
 }

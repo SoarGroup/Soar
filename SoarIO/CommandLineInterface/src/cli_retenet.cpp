@@ -42,18 +42,18 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 				filename = m_pGetOpt->GetOptArg();
 				break;
 			case ':':
-				return m_Error.SetError(CLIError::kMissingOptionArg);
+				return SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Must have a save or load operation
 	// TODO: these errors are misleading
-	if (!save && !load) return m_Error.SetError(CLIError::kTooFewArgs);
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (!save && !load) return SetError(CLIError::kTooFewArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
 	return DoReteNet(pAgent, save, filename);
 }
@@ -61,7 +61,7 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
-	if (!filename.size()) return m_Error.SetError(CLIError::kMissingFilenameArg);
+	if (!filename.size()) return SetError(CLIError::kMissingFilenameArg);
 
 	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
 	gSKI::tIProductionIterator* pIter = 0;
@@ -77,7 +77,7 @@ bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::strin
 		}
 		pIter->Release();
 
-		return m_Error.SetError(save ? CLIError::kCantSaveReteWithJustifications : CLIError::kCantLoadReteWithProductions);
+		return SetError(save ? CLIError::kCantSaveReteWithJustifications : CLIError::kCantLoadReteWithProductions);
 	}
 	pIter->Release();
 
@@ -87,7 +87,7 @@ bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::strin
 		pProductionManager->LoadRete(filename.c_str(), m_pgSKIError);
 	}
 
-	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) return m_Error.SetError(save ? CLIError::kReteSaveOperationFail : CLIError::kReteLoadOperationFail);	
+	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) return SetError(save ? CLIError::kReteSaveOperationFail : CLIError::kReteLoadOperationFail);	
 	return true;
 }
 

@@ -34,17 +34,17 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 				command = m_pGetOpt->GetOptArg();
 				break;
 			case ':':
-				return m_Error.SetError(CLIError::kMissingOptionArg);
+				return SetError(CLIError::kMissingOptionArg);
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// If disabling, no additional argument.
 	if (disable) {
-		if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+		if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 		return DoAlias(disable, command, 0);
 	}
 	
@@ -52,7 +52,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 	if (m_pGetOpt->GetAdditionalArgCount() == 0) return DoAlias(disable, command, 0);
 
 	// If not disabling and not listing, there must be at least two additional arguments
-	if (m_pGetOpt->GetAdditionalArgCount() < 2) return m_Error.SetError(CLIError::kTooFewArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() < 2) return SetError(CLIError::kTooFewArgs);		
 
 	std::vector<std::string> substitution;
 	std::vector<std::string>::iterator iter = argv.begin();
@@ -67,7 +67,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 
 bool CommandLineInterface::DoAlias(bool disable, const std::string& command, const std::vector<std::string>* pSubstitution) {
 	if (disable) {
-		if (!m_Aliases.RemoveAlias(command)) return m_Error.SetError(CLIError::kAliasNotFound);
+		if (!m_Aliases.RemoveAlias(command)) return SetError(CLIError::kAliasNotFound);
 
 	} else {
 		if (!command.size()) {
@@ -93,7 +93,7 @@ bool CommandLineInterface::DoAlias(bool disable, const std::string& command, con
 			}
 		}
 
-		if (!m_Aliases.NewAlias((*pSubstitution), command)) return m_Error.SetError(CLIError::kAliasExists);
+		if (!m_Aliases.NewAlias((*pSubstitution), command)) return SetError(CLIError::kAliasExists);
 	}
 	return true;
 }

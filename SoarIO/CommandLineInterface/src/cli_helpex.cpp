@@ -12,8 +12,8 @@ using namespace sml;
 bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
-	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
-	if (argv.size() < 2) return m_Error.SetError(CLIError::kTooFewArgs);
+	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() < 2) return SetError(CLIError::kTooFewArgs);
 
 	return DoHelpEx(argv[1]);
 }
@@ -21,8 +21,8 @@ bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::st
 bool CommandLineInterface::DoHelpEx(const std::string& command) {
 	std::string output;
 
-	if (!m_pConstants->IsUsageFileAvailable()) return m_Error.SetError(CLIError::kNoUsageFile);
-	if (!m_pConstants->GetExtendedUsageFor(command, output)) return m_Error.SetError(CLIError::kNoUsageInfo);
+	if (!m_pConstants->IsUsageFileAvailable()) return SetError(CLIError::kNoUsageFile);
+	if (!m_pConstants->GetExtendedUsageFor(command, output)) return SetError(CLIError::kNoUsageInfo);
 
 	AppendToResult(output);
 	return true;

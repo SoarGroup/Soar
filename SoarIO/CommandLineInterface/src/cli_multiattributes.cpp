@@ -18,7 +18,7 @@ using namespace sml;
 bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No more than three arguments
 	if (argv.size() > 3) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+		return SetError(CLIError::kTooManyArgs);
 	}
 
 	int n = 0;
@@ -27,12 +27,12 @@ bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vecto
 	if (argv.size() > 2) {
 		if (!IsInteger(argv[2])) {
 			// Must be an integer
-			return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
+			return SetError(CLIError::kIntegerMustBeNonNegative);
 		}
 		n = atoi(argv[2].c_str());
 		if (n <= 0) {
 			// Must be greater than 0
-			return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
+			return SetError(CLIError::kIntegerMustBeNonNegative);
 		}
 	}
 
@@ -54,7 +54,7 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 		char buf[kMinBufferSize];
 
 		gSKI::tIMultiAttributeIterator* pIt = pAgent->GetMultiAttributes();
-		if (!pIt->GetNumElements()) return m_Error.SetError(CLIError::kMultiAttributeNotFound);
+		if (!pIt->GetNumElements()) return SetError(CLIError::kMultiAttributeNotFound);
 
 		if (m_RawOutput) AppendToResult("Value\tSymbol");
 

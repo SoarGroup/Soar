@@ -4,7 +4,6 @@ noinst_LTLIBRARIES = libCommandLineInterface.la
 
 libCommandLineInterface_la_SOURCES = \
 cli_Aliases.cpp\
-cli_CLIError.cpp\
 cli_CommandLineInterface.cpp\
 cli_Constants.cpp\
 cli_GetOpt.cpp\

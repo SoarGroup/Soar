@@ -59,33 +59,33 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 						adds = true;
 						removes = true;
 					} else {
-						return m_Error.SetError(CLIError::kInvalidWMEFilterType);
+						return SetError(CLIError::kInvalidWMEFilterType);
 					}
 				}
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (mode == 0) return m_Error.SetError(CLIError::kTooFewArgs);
+	if (mode == 0) return SetError(CLIError::kTooFewArgs);
 	
 	if (mode == OPTION_WATCH_WMES_MODE_ADD || mode == OPTION_WATCH_WMES_MODE_REMOVE) {
 		// type required
-		if (!adds && !removes) return m_Error.SetError(CLIError::kTypeRequired);
+		if (!adds && !removes) return SetError(CLIError::kTypeRequired);
 	
 		// check for too few/many args
-		if (m_pGetOpt->GetAdditionalArgCount() > 3) return m_Error.SetError(CLIError::kTooManyArgs);
-		if (m_pGetOpt->GetAdditionalArgCount() < 3) return m_Error.SetError(CLIError::kTooFewArgs);
+		if (m_pGetOpt->GetAdditionalArgCount() > 3) return SetError(CLIError::kTooManyArgs);
+		if (m_pGetOpt->GetAdditionalArgCount() < 3) return SetError(CLIError::kTooFewArgs);
 
 		int optind = m_pGetOpt->GetOptind();
 		return DoWatchWMEs(pAgent, mode, adds, removes, &argv[optind], &argv[optind + 1], &argv[optind + 2]);
 	}
 
 	// no additional arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
 	return DoWatchWMEs(pAgent, mode, adds, removes);
 }
@@ -101,21 +101,21 @@ bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, 
 	bool retb = false;
 	switch (mode) {
 		case OPTION_WATCH_WMES_MODE_ADD:
-			if (!pIdString || !pAttributeString || !pValueString) return m_Error.SetError(CLIError::kFilterExpected);
+			if (!pIdString || !pAttributeString || !pValueString) return SetError(CLIError::kFilterExpected);
 			ret = pKernelHack->AddWMEFilter(pAgent, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), adds, removes);
-			if (ret == -1) return m_Error.SetError(CLIError::kInvalidID);
-			if (ret == -2) return m_Error.SetError(CLIError::kInvalidAttribute);
-			if (ret == -3) return m_Error.SetError(CLIError::kInvalidValue);
-			if (ret == -4) return m_Error.SetError(CLIError::kDuplicateWMEFilter);
+			if (ret == -1) return SetError(CLIError::kInvalidID);
+			if (ret == -2) return SetError(CLIError::kInvalidAttribute);
+			if (ret == -3) return SetError(CLIError::kInvalidValue);
+			if (ret == -4) return SetError(CLIError::kDuplicateWMEFilter);
 			break;
 
 		case OPTION_WATCH_WMES_MODE_REMOVE:
-			if (!pIdString || !pAttributeString || !pValueString) return m_Error.SetError(CLIError::kFilterExpected);
+			if (!pIdString || !pAttributeString || !pValueString) return SetError(CLIError::kFilterExpected);
 			ret = pKernelHack->RemoveWMEFilter(pAgent, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), adds, removes);
-			if (ret == -1) return m_Error.SetError(CLIError::kInvalidID);
-			if (ret == -2) return m_Error.SetError(CLIError::kInvalidAttribute);
-			if (ret == -3) return m_Error.SetError(CLIError::kInvalidValue);
-			if (ret == -4) return m_Error.SetError(CLIError::kWMEFilterNotFound);
+			if (ret == -1) return SetError(CLIError::kInvalidID);
+			if (ret == -2) return SetError(CLIError::kInvalidAttribute);
+			if (ret == -3) return SetError(CLIError::kInvalidValue);
+			if (ret == -4) return SetError(CLIError::kWMEFilterNotFound);
 			break;
 
 		case OPTION_WATCH_WMES_MODE_LIST:
@@ -130,11 +130,11 @@ bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, 
 			this->AddListenerAndDisableCallbacks(pAgent);
 			retb = pKernelHack->ResetWMEFilters(pAgent, adds, removes);
 			this->RemoveListenerAndEnableCallbacks(pAgent);
-			if (!retb) return m_Error.SetError(CLIError::kWMEFilterNotFound);
+			if (!retb) return SetError(CLIError::kWMEFilterNotFound);
 			break;
 
 		default:
-			return m_Error.SetError(CLIError::kInvalidMode);
+			return SetError(CLIError::kInvalidMode);
 	}
 
 	return true;

@@ -117,9 +117,6 @@
 				RelativePath=".\src\cli_Aliases.cpp">
 			</File>
 			<File
-				RelativePath=".\src\cli_CLIError.cpp">
-			</File>
-			<File
 				RelativePath=".\src\cli_CommandLineInterface.cpp">
 			</File>
 			<File

@@ -13,7 +13,7 @@ bool CommandLineInterface::ParsePushD(gSKI::IAgent* pAgent, std::vector<std::str
 
 	// Only takes one argument, the directory to change into
 	if (argv.size() != 2) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+		return SetError(CLIError::kTooManyArgs);
 	}
 	return DoPushD(argv[1]);
 }

@@ -47,15 +47,15 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 				detail = 3;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Up to two non-option arguments allowed, id/attribute
 	if (m_pGetOpt->GetAdditionalArgCount() > 2) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+		return SetError(CLIError::kTooManyArgs);
 	}
 	int optind = m_pGetOpt->GetOptind();
 	if (m_pGetOpt->GetAdditionalArgCount() == 2) {
@@ -116,7 +116,7 @@ bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail, std::
 	bool ret = pKernelHack->Preferences(pAgent, argc, argv);
 	RemoveListenerAndEnableCallbacks(pAgent);
 
-	if (!ret) return m_Error.SetError(CLIError::kgSKIError);
+	if (!ret) return SetError(CLIError::kgSKIError);
 
 	if (!m_RawOutput) {
 		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());

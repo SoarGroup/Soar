@@ -45,12 +45,12 @@ bool CommandLineInterface::ParsePWatch(gSKI::IAgent* pAgent, std::vector<std::st
 				setting = true;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 
 	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoPWatch(pAgent, false, &argv[m_pGetOpt->GetOptind()], setting);
 	return DoPWatch(pAgent, query, 0);
@@ -71,7 +71,7 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::strin
 	if (query) {
 		// list all productions currently being traced
 		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
-		if (!pIter) return m_Error.SetError(CLIError::kgSKIError);
+		if (!pIter) return SetError(CLIError::kgSKIError);
 
 		int productionCount = 0;
 
@@ -111,7 +111,7 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::strin
 	if (!pProduction) {
 		// disable tracing of all productions
 		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
-		if (!pIter) return m_Error.SetError(CLIError::kgSKIError);
+		if (!pIter) return SetError(CLIError::kgSKIError);
 
 		for(; pIter->IsValid(); pIter->Next()) {
 
@@ -122,7 +122,7 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::strin
 				// shut it off
 				if (!pKernelHack->StopTracingProduction(pAgent, pProd->GetName())) {
 					// really shouldn't happen
-					return m_Error.SetError(CLIError::kgSKIError);
+					return SetError(CLIError::kgSKIError);
 				}
 			}
 			pProd->Release();
@@ -133,9 +133,9 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::strin
 
 	// we have a production
 	if (setting) {
-		if (!pKernelHack->BeginTracingProduction(pAgent, pProduction->c_str())) return m_Error.SetError(CLIError::kProductionNotFound);
+		if (!pKernelHack->BeginTracingProduction(pAgent, pProduction->c_str())) return SetError(CLIError::kProductionNotFound);
 	} else {
-		if (!pKernelHack->StopTracingProduction(pAgent, pProduction->c_str())) return m_Error.SetError(CLIError::kProductionNotFound);
+		if (!pKernelHack->StopTracingProduction(pAgent, pProduction->c_str())) return SetError(CLIError::kProductionNotFound);
 	}
 	return true;
 }

@@ -37,14 +37,14 @@ bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std
 				mode = OPTION_NUMERIC_INDIFFERENT_SUM;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No additional arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);		
 
 	return DoNumericIndifferentMode(pAgent, mode);
 }
@@ -62,7 +62,7 @@ bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsign
 			pAgent->SetNumericIndifferentMode(gSKI_NUMERIC_INDIFFERENT_MODE_SUM);
 			return true;
 		default:
-			return m_Error.SetError(CLIError::kInvalidNumericIndifferentMode);
+			return SetError(CLIError::kInvalidNumericIndifferentMode);
 	}
 	
 	char buf[kMinBufferSize];
@@ -83,7 +83,7 @@ bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsign
 			}
 			break;
 		default:
-			return m_Error.SetError(CLIError::kInvalidNumericIndifferentMode);
+			return SetError(CLIError::kInvalidNumericIndifferentMode);
 	}
 	return true;
 }

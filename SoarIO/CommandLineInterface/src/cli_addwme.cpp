@@ -18,16 +18,16 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseAddWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	if (argv.size() < 4) return m_Error.SetError(CLIError::kTooFewArgs);
+	if (argv.size() < 4) return SetError(CLIError::kTooFewArgs);
 
 	unsigned attributeIndex = (argv[2] == "^") ? 3 : 2;
 
-	if (argv.size() < (attributeIndex + 2)) return m_Error.SetError(CLIError::kTooFewArgs);
-    if (argv.size() > (attributeIndex + 3)) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (argv.size() < (attributeIndex + 2)) return SetError(CLIError::kTooFewArgs);
+    if (argv.size() > (attributeIndex + 3)) return SetError(CLIError::kTooManyArgs);
 
 	bool acceptable = false;
 	if (argv.size() > (attributeIndex + 2)) {
-		if (argv[attributeIndex + 2] != "+") return m_Error.SetError("Expected acceptable preference (+) or nothing, got '" + argv[attributeIndex + 2] + "'.");
+		if (argv[attributeIndex + 2] != "+") return SetError(CLIError::kAcceptableOrNothingExpected);
 		acceptable = true;
 	}
 
@@ -45,11 +45,11 @@ bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::s
 	if (timetag < 0) {
 		switch (timetag) {
 			case -1:
-				return m_Error.SetError(CLIError::kInvalidID);
+				return SetError(CLIError::kInvalidID);
 			case -2:
-				return m_Error.SetError(CLIError::kInvalidAttribute);
+				return SetError(CLIError::kInvalidAttribute);
 			case -3:
-				return m_Error.SetError(CLIError::kInvalidValue);
+				return SetError(CLIError::kInvalidValue);
 			default:
 				// unspecified error
 				return false;

@@ -15,13 +15,13 @@ using namespace sml;
 
 bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	
-	if (argv.size() > 2) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 
 	int mode = -1;
 	if (argv.size() == 2) {
-		if (!isdigit(argv[1][0])) return m_Error.SetError(CLIError::kIntegerOutOfRange);
+		if (!isdigit(argv[1][0])) return SetError(CLIError::kIntegerOutOfRange);
 		mode = atoi(argv[1].c_str());
-		if (mode < 0 || mode > 4) return m_Error.SetError(CLIError::kIntegerOutOfRange);
+		if (mode < 0 || mode > 4) return SetError(CLIError::kIntegerOutOfRange);
 	}
 
 	return DoOSupportMode(pAgent, mode);
@@ -46,7 +46,7 @@ bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 				mode = 4;
 				break;
 			default:
-				return m_Error.SetError(CLIError::kInvalidOSupportMode);
+				return SetError(CLIError::kInvalidOSupportMode);
 		}
 
 		char buf[kMinBufferSize];
@@ -73,7 +73,7 @@ bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 				oSupportMode = gSKI_O_SUPPORT_MODE_4;
 				break;
 			default:
-				return m_Error.SetError(CLIError::kInvalidOSupportMode);
+				return SetError(CLIError::kInvalidOSupportMode);
 		}
 		pAgent->SetOSupportMode(oSupportMode);
 	}

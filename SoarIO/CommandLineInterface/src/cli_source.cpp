@@ -15,11 +15,11 @@ using namespace sml;
 bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	if (argv.size() < 2) {
 		// Source requires a filename
-		return m_Error.SetError(CLIError::kTooFewArgs);
+		return SetError(CLIError::kTooFewArgs);
 
 	} else if (argv.size() > 2) {
 		// but only one filename
-		return m_Error.SetError(CLIError::kSourceOnlyOneFile);
+		return SetError(CLIError::kSourceOnlyOneFile);
 	}
 
 	return DoSource(pAgent, argv[1]);
@@ -58,7 +58,7 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 	std::ifstream soarFile(filename.c_str());
 	if (!soarFile) {
 		if (path.length()) DoPopD();
-		return m_Error.SetError(CLIError::kOpenFileFail);
+		return SetError(CLIError::kOpenFileFail);
 	}
 
 	std::string line;					// Each line removed from the file
@@ -158,13 +158,13 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 			// Did we break out because of closed braces or EOF?
 			if (braces > 0) {
 				// EOF while still nested
-				m_Error.SetError(CLIError::kUnmatchedBrace);
+				SetError(CLIError::kUnmatchedBrace);
 				HandleSourceError(lineCountCache, filename);
 				if (path.length()) DoPopD();
 				return false;
 
 			} else if (braces < 0) {
-				m_Error.SetError(CLIError::kExtraClosingBrace);
+				SetError(CLIError::kExtraClosingBrace);
 				HandleSourceError(lineCountCache, filename);
 				if (path.length()) DoPopD();
 				return false;

@@ -50,21 +50,21 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 				options |= OPTION_EXCISE_USER;
 				break;
 			case '?':
-				return m_Error.SetError(CLIError::kUnrecognizedOption);
+				return SetError(CLIError::kUnrecognizedOption);
 			default:
-				return m_Error.SetError(CLIError::kGetOptError);
+				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// If there are options, no additional argument.
 	if (options) {
-		if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+		if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 		return DoExcise(pAgent, options);
 	}
 
 	// If there are no options, there must be only one production name argument
-	if (m_pGetOpt->GetAdditionalArgCount() < 1) return m_Error.SetError(CLIError::kTooFewArgs);		
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);		
 
 	// Pass the production to the DoExcise function
 	return DoExcise(pAgent, options, &(argv[m_pGetOpt->GetOptind()]));
@@ -76,7 +76,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 	// Acquire production manager
 	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
 	if (!pProductionManager) {
-		return m_Error.SetError(CLIError::kgSKIError);
+		return SetError(CLIError::kgSKIError);
 	}
 
 	int exciseCount = 0;
@@ -108,7 +108,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 		// Check for the production
 		gSKI::tIProductionIterator* pProdIter = pProductionManager->GetProduction((*pProduction).c_str());
 		if (!pProdIter->GetNumElements()) {
-			return m_Error.SetError(CLIError::kProductionNotFound);
+			return SetError(CLIError::kProductionNotFound);
 		}
 
 		ExciseInternal(pProdIter, exciseCount);
@@ -117,7 +117,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 	char buf[kMinBufferSize];
 	if (m_RawOutput) {
 		AppendToResult("\n");	// the init-soar causes an AgentReinitialized. message
-		if (!exciseCount) return m_Error.SetError(CLIError::kProductionNotFound);// TODO: Should this not be an error?
+		if (!exciseCount) return SetError(CLIError::kProductionNotFound);// TODO: Should this not be an error?
 		AppendToResult(Int2String(exciseCount, buf, kMinBufferSize));
 		AppendToResult(" productions excised.");
 	} else {
