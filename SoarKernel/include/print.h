@@ -84,6 +84,8 @@ extern void start_redirection_to_file (agent* thisAgent, FILE *already_opened_fi
 extern void stop_redirection_to_file (agent* thisAgent);
 
 extern void print_string (agent* thisAgent, char *s);
+extern void print_flush_buffer (agent* thisAgent); // voigtjr
+
 #ifdef USE_STDARGS
 extern void print (agent* thisAgent, char *format, ... );
 extern void print_with_symbols (agent* thisAgent, char *format, ...);

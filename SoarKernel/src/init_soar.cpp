@@ -1361,6 +1361,7 @@ void run_for_n_phases (agent* thisAgent, long n) {
   thisAgent->reason_for_stopping = "";
   while (!thisAgent->stop_soar && n) {
     do_one_top_level_phase(thisAgent);
+	print_flush_buffer(thisAgent);
     n--;
   }
 #ifndef NO_TIMING_STUFF
@@ -1628,6 +1629,7 @@ void init_agent_memory(agent* thisAgent)
     {
       print_string (thisAgent, "\n");
       print_lowest_slot_in_context_stack (thisAgent);
+	  print_flush_buffer(thisAgent); // voigtjr
     }
   thisAgent->current_phase = INPUT_PHASE;
   if (thisAgent->operand2_mode) 

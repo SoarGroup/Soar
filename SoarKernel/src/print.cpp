@@ -29,6 +29,10 @@
    "print.h" can be included. */
 #define USE_STDARGS
 
+
+// voigtjr: Define BUFFER_PRINT_OUTPUT to buffer print output
+#define BUFFER_PRINT_OUTPUT
+
 #include "print.h"
 #include "kernel.h"
 #include "agent.h"
@@ -59,6 +63,10 @@
 
 /* JC ADDED */
 #include "gski_event_system_functions.h"
+
+// voigtjr: stl output buffering
+#include <string>
+std::string g_OutputString;
 
 /* -------------------------------------------------------------------
     Printing with an Optional Log File and with Redirection to a File
@@ -215,8 +223,15 @@ void print_string (agent* thisAgent, char *s) {
 #elif _WINDOWS
       print_string_to_window(s);
 #else
-	   Soar_LogAndPrint(thisAgent, thisAgent, s);
-      //fputs (s, stdout);
+
+#ifdef BUFFER_PRINT_OUTPUT
+	// voigtjr: stl output buffering
+	g_OutputString += s;
+#else // BUFFER_PRINT_OUTPUT
+	Soar_LogAndPrint(thisAgent, thisAgent, s);
+#endif // BUFFER_PRINT_OUTPUT
+
+	  //fputs (s, stdout);
       //fflush (stdout);
 #endif /* USE_X_DISPLAY */
 #endif /* __SC__*/
@@ -265,6 +280,22 @@ void print_string (agent* thisAgent, char *s) {
   //  if (thisAgent->logging_to_file) {
   //      fputs(s, thisAgent->log_file);
   //  }
+}
+
+//#include <iostream>
+//#include <fstream>
+// voigtjr: stl output buffering
+void print_flush_buffer(agent* thisAgent) {
+#ifdef BUFFER_PRINT_OUTPUT
+	//unsigned int size = g_OutputString.size();
+
+	//std::ofstream outfile("outstringlog.txt", std::ios_base::app);
+	//outfile << size << '\t' << '\"' << g_OutputString << '\"' << std::endl;
+	//outfile.close();
+	if (!g_OutputString.size()) return;
+	Soar_LogAndPrint(thisAgent, thisAgent, const_cast<char*> (g_OutputString.c_str()));
+	g_OutputString.clear();
+#endif // BUFFER_PRINT_OUTPUT
 }
 
 /* ---------------------------------------------------------------
