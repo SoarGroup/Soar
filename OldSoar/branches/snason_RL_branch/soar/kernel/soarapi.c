@@ -1093,6 +1093,29 @@ int soar_setRL (int argc, const char *argv[], soarResult *res)
    }
 
 
+
+/*
+ *---------------
+ soar_specialize -- SAN
+ *-----------------
+ */
+int soar_specialize (int argc, const char *argv[], soarResult *res)
+{
+	production *p;
+
+	if (argc != 2){
+		setSoarResultResult( res, "Wrong number of arguments to specialize command.");
+		return SOAR_ERROR;
+ 	}
+	p = name_to_production(argv[1]);
+	if (!p){
+		setSoarResultResult( res, "Production does not exist.");
+		return SOAR_ERROR;
+	} else {
+		p->increasing = 1;
+		return SOAR_OK;
+       }
+  }
 /*
  *----------------------------------------------------------------------
  *

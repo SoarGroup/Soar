@@ -2540,6 +2540,7 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 						  temp_Q += temp->referent->fc.value;
 				}
 			}
+			print("Operator value is %f\n", temp_Q);
           for (rec = current_agent(records) ; rec->level > goal->id.level; rec = rec->next)
 			  rec->next_Q = 0;
 		  rec->next_Q = temp_Q;

@@ -689,7 +689,7 @@ usage -- setRL [alpha|gamma|epsilon] value
 */
 extern int soar_setRL (int argc, const char *argv[], soarResult *res);
 
-
+extern int soar_specialize(int argc, const char *argv[], soarResult *res);
  
 
 /**

@@ -17,6 +17,8 @@ bool symbol_is_in_tc(Symbol * sym, tc_number tc);
 production *specify_production(instantiation *ist);
 void trace_to_prod(wme * w, tc_number tc_prod, condition ** cond);
 bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond, int depth);
+int list_length(list *);
+void STDDEV(production *p, int n);
 
 
 // The following three functions manage the stack of RL_records.
@@ -27,7 +29,6 @@ void push_record(RL_record **r, Symbol *level_sym){
 	new_record = malloc(sizeof(RL_record));
 	if (new_record != NULL) {
 		new_record->pointer_list = NIL;
-		new_record->num_prod = 0;
 		new_record->previous_Q = 0;
 		new_record->next_Q = 0;
 		new_record->reward = 0;
@@ -148,6 +149,7 @@ void record_for_RL()
 	production *prod, *new_prod;
 	preference *pref;
  	RL_record *record;
+	cons *c;
  
   // SAN - catch operator ID here
   s = current_agent(bottom_goal)->id.operator_slot;
@@ -165,23 +167,37 @@ void record_for_RL()
 		  if (record->op == pref->value){
 			  ist = pref->inst;
 			  prod = ist->prod;
-			  record->num_prod++;
-			  // prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
 			  // if ((fabs(prod->avg_update) < 0.01) && prod->increasing){
-			  if (prod->times_updated < 0){
+			   if ((prod->times_updated > 50) && !prod->conv_value){
+			 // if (prod->conv_mean && !prod->conv_value){
+					  // excise_production(prod->child, TRUE);
+					  // extract_list_element(record->pointer_list, prod->child); // bug - need to do for stack of records
+					  // prod->child = NIL;
+			//	  }
 				  new_prod = specify_production(ist);
 				  if (new_prod){
+					  print_with_symbols("Specialize %y to %y\n", prod->name, new_prod->name);
 					  prod->times_updated = 0;
+//					  prod->conv_mean = FALSE;
+					  prod->conv_value = TRUE;
+					  // prod->increasing = 0;
+					  // prod->child = new_prod;
 					  push(new_prod, record->pointer_list);
-					  record->num_prod++;
 				  }
-			 
-			  }
+			 }
 		  }
 	  }
-  }
+	  // Did any production fire while its child did not?
+	  // for (c = record->pointer_list ; c ; c = c->rest){
+	  // prod = (production *) c->first;
+	//	  if (prod->child){
+	//		  if (!member_of_list(prod->child, record->pointer_list))
+	//		  		  prod->child = NIL;
+	//	  }
+	  //}
+	  }
 }
 
 /* -----------------------------------------------------
@@ -348,10 +364,11 @@ void learn_RL_productions(int level){
 	RL_record *record;
 	production *prod;
 	instantiation *inst;
-	float update, temp;
+	float update, temp, old_avg, old_avg_avg, old_var, old_avg_var;
 	cons *c;
 	float increment;
 	preference *pref;
+	int num_prods;
 	
 	record = current_agent(records);
 
@@ -362,10 +379,11 @@ void learn_RL_productions(int level){
 
 	if (record->op){
 
-		if (record->num_prod > 0){
+		num_prods = list_length(record->pointer_list);
+		if (num_prods > 0){
 
 			update = compute_Q_value(record);
-			increment = update / record->num_prod;
+			increment = update / num_prods;
 		
 			c = record->pointer_list;
 		
@@ -389,19 +407,60 @@ void learn_RL_productions(int level){
 				// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 				// a->referent = symbol_to_rhs_value(make_float_constant(Q));
 				prod->times_updated++;
-				temp = prod->decay_abs_update;
-				prod->decay_abs_update = fabs(update) + prod->decay_abs_update*current_agent(gamma);
-				prod->decay_normalization = 1 + prod->decay_normalization*current_agent(gamma);
+				prod->value_list[prod->value_position] = temp;
+				prod->value_position = (prod->value_position + 1) % 15;
+
+				if (prod->times_updated > 15){
+					STDDEV(prod, 15);
+					if (prod->std_dev > 0.01*fabs(record->previous_Q))
+						prod->conv_value = FALSE;
+				}
+
+
+				// old_avg = prod->avg_update;
+				// old_avg = prod->avg_value;
+				// prod->avg_update = ((prod->times_updated - 1)*old_avg + update) / prod->times_updated;
+				// prod->avg_value = ((prod->times_updated - 1)*old_avg + temp) / prod->times_updated;
+				
+				// old_avg_avg = prod->avg_avg;
+				// prod->avg_avg = ((prod->times_updated - 1)*old_avg_avg + prod->avg_value) / prod->times_updated;
+				
+				// old_var = prod->var;
+				// prod->var = (((old_var + pow(old_avg,2))*(prod->times_updated - 1) + pow(temp,2)) / prod->times_updated) - pow(prod->avg_value,2);
+
+				// old_avg_var = prod->avg_var;
+				// prod->avg_var = (((old_avg_var + pow(old_avg_avg,2))*(prod->times_updated - 1) + pow(prod->avg_value,2)) / prod->times_updated) - pow(prod->avg_avg,2);
+
+				/*if (fabs(old_avg - prod->avg_update) < 0.05 && fabs(prod->avg_update) < 0.05){
+					prod->conv_mean = TRUE;
+				} else { prod->conv_mean = FALSE; }
+				old_abs = prod->decay_abs_update;
+				prod->decay_abs_update = ((prod->times_updated - 1)*old_abs + fabs(update)) / prod->times_updated;
+				if (fabs(old_abs - prod->decay_abs_update) < 0.1 && fabs(prod->decay_abs_update) < 0.1) { prod->conv_value = TRUE;
+				} else { prod->conv_value = FALSE; }*/
+				// prod->decay_abs_update = fabs(update) + prod->decay_abs_update*current_agent(gamma);
+				// prod->decay_normalization = 1 + prod->decay_normalization*current_agent(gamma);
 				// prod->decay_abs_update = ((prod->times_updated - 1)*prod->decay_abs_update + fabs(update)) / prod->times_updated;
 				// prod->increasing = (prod->decay_abs_update > temp ? 1 : 0);
 				// prod->decay_abs_update = fabs(update);
-				prod->avg_update = ((prod->times_updated - 1)*prod->avg_update + update) / prod->times_updated;
+
+				/*if (fabs(prod->avg_var) < 0.02) {
+					prod->conv_mean = TRUE; 
+				} else prod->conv_mean = FALSE; }*/
+
+
+				
 				print_with_symbols("\n%y  ", prod->name);
 	    		print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
-				print("Update %f ", fabs(update));
-				print("Decayed average %f ", (prod->decay_abs_update / prod->decay_normalization));
-				print("Average %f ", prod->avg_update);
+				print("Mean %f ", prod->mean);
+				print("Std dev %f ", prod->std_dev);
 				print("firings %d\n", prod->times_updated);
+				// print("Variance in value %f ", prod->var);
+//				print("Update %f ", fabs(update));
+//				print("Decayed average %f ", (prod->decay_abs_update / prod->decay_normalization));
+				// print("Average value %f ", prod->avg_value); 
+				// print("Var in average value %f ", prod->avg_var);
+				// print("firings %d\n", prod->times_updated);
 			
 			//	prod->times_applied++;
 			}
@@ -411,7 +470,6 @@ void learn_RL_productions(int level){
 		 	record->op = NIL;
 			record->reward = 0.0;
 			record->step = 0;
-			record->num_prod = 0;
 			record->previous_Q = 0;
 			free_list(record->pointer_list);
 			record->pointer_list = NIL;
@@ -669,4 +727,31 @@ bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, conditio
 	}
 }
 
-	
+int list_length(list *L){
+	int k=0;
+	cons *c;
+
+	for (c = L; c ; c = c->rest)
+		k++;
+
+	return k;
+}
+
+void STDDEV(production *prod, int n){
+	double mean = 0, std_dev = 0;
+	int i;
+
+	for (i = 0; i < n ; i++)
+		mean += prod->value_list[i];
+
+	mean = mean / n;
+	prod->mean = mean;
+
+	for (i = 0; i < n ; i++)
+       std_dev += pow((mean - prod->value_list[i]), 2);
+
+	std_dev = std_dev / n;
+	std_dev = pow(std_dev , .5);
+
+	prod->std_dev = std_dev;
+}
