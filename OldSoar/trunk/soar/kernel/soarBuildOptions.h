@@ -706,7 +706,13 @@
 
 
 
-
+/**
+ * \def BUG_139_WORKAROUND
+ *
+ *     Workaround for bug #139
+ *
+ */
+#define BUG_139_WORKAROUND
 
 
 

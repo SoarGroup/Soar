@@ -600,7 +600,12 @@ void create_instantiation (production *prod,
   bool trace_it;
   long index;
   Symbol **cell;
-  
+
+#ifdef BUG_139_WORKAROUND
+  /* RPM workaround for bug #139: don't fire justifications */
+  if(prod->type == JUSTIFICATION_PRODUCTION_TYPE) { return; }
+#endif
+
   allocate_with_pool (&current_agent(instantiation_pool),  &inst);
   inst->next = current_agent(newly_created_instantiations);
   current_agent(newly_created_instantiations) = inst;

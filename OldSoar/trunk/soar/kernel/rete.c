@@ -3252,6 +3252,10 @@ byte add_production_to_rete (production *p,
 #endif
 /* REW: end   08.20.97 */
 
+#ifdef BUG_139_WORKAROUND
+	msc->p_node->b.p.prod->already_fired = 0; /* RPM workaround for bug #139; mark prod as not fired yet */
+#endif
+
     insert_at_head_of_dll (current_agent(ms_retractions), msc, next, prev);
     insert_at_head_of_dll (p_node->b.p.tentative_retractions, msc,
                            next_of_node, prev_of_node);
@@ -5068,6 +5072,19 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
     if (match_found) break;
   }
 
+#ifdef BUG_139_WORKAROUND
+  /* --- test workaround for bug #139: don't rematch justifications; let them be removed --- */
+  /* note that the justification is added to the retraction list when it is first created, so
+     we let it match the first time, but not after that */
+  if (match_found && node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
+	  if (node->b.p.prod->already_fired) {
+		  return;
+	  } else {
+		  node->b.p.prod->already_fired = 1;
+	  }
+  }
+#endif
+
   /* --- if match found tentative_retractions, remove it --- */
   if (match_found) {
     msc->inst->rete_token = tok;
@@ -5633,6 +5650,11 @@ void p_node_left_removal (rete_node *node, token *tok, wme *w) {
    * and my die as a result.  There may be a better way to do this...
    */
       print( "Warning: can't find an existing inst to retract\n" );
+#ifdef BUG_139_WORKAROUND
+	  if(node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
+	    return;
+	  }
+#endif
   {     
     char msg[MESSAGE_SIZE];
 	strncpy (msg,"Internal error: can't find existing instantiation to retract\n",MESSAGE_SIZE);

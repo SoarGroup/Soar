@@ -1074,9 +1074,11 @@ void do_one_top_level_phase (void) {
 
        if (current_agent(reason_for_stopping)) 
      */
-    if (strcmp(current_agent(reason_for_stopping), "") != 0) {
-      print ("\n%s", current_agent(reason_for_stopping));
-    }
+	if (current_agent(reason_for_stopping)) {
+      if (strcmp(current_agent(reason_for_stopping), "") != 0) {
+        print ("\n%s", current_agent(reason_for_stopping));
+	  }
+	}
   }
 }
 
