@@ -1,0 +1,93 @@
+#include "sgioTowersSoarAgent.h"
+#include "sgioTowers.h"
+
+#include <cassert>
+
+//testing directives, fixme 
+#include <iostream>
+#include <string>
+using std::cout; using std::endl; using std::string;
+
+/*
+#include "sgio_command.h"
+
+using sgio::Agent;
+using sgio::WorkingMemory;
+*/
+//using sgio_towers::SoarAgent;
+//namespace sgio_towers
+//{
+
+SoarAgent::SoarAgent(Agent* inAgent, Agent* inWMemory, HanoiWorld* inWorld) : pAgent(inAgent), pWMemory(inWMemory),
+																						pWorld(inWorld)
+{
+
+}
+
+SoarAgent::~SoarAgent()
+{
+	pAgent = 0;
+	pWMemory = 0;
+	pWorld = 0;
+}
+
+
+int TowerStringToInt(string& sourceString)
+{
+	if(sourceString == "A" || sourceString == "|A|")
+		return 0;
+	else if(sourceString == "B" || sourceString == "|B|")
+		return 1;
+	else if(sourceString == "C" || sourceString == "|C|")
+		return 2;
+
+	else cout << "got unexpected tower name: " << sourceString << endl;
+	assert(0);
+	return -99;
+}
+
+void SoarAgent::MakeMove()
+{
+	// SGIO takes no arguments.  SML pass in max decisions before stop (so it's clear this is how RunTilOutput works)
+	// We also can get output from the run command.
+//	pAgent->RunTilOutput();
+	std::string output = pAgent->RunTilOutput(15);
+
+	/* SML: Adding this and enabling the tcl debugger in KernelSML lets us debug what's going on
+	while (pAgent->GetKernel()->CheckForIncomingCommands())
+	{
+		pAgent->GetKernel()->Sleep(10) ;
+	}
+	*/
+
+	assert(pAgent->Commands());
+
+	if (!pAgent->Commands())
+	{
+		cout << "Failed to receive command from Soar when one was expected." << endl ;
+		return ;
+	}
+
+	string sourceTower, destinationTower = "";
+
+	// SGIO uses a specific command object.  SML returns a standard WME for the identifier that represents the command.
+//	std::auto_ptr<sgio::Command>cmd = pAgent->GetCommand();
+	Identifier* cmd = pAgent->GetCommand(0) ;
+
+	std::string name = cmd->GetCommandName();
+
+	// SGIO returns std::string objects.  SML returns a char const*.
+//	sourceTower = cmd->GetParameterValue("source-peg").c_str();
+//	destinationTower = cmd->GetParameterValue("destination-peg").c_str();
+	sourceTower = cmd->GetParameterValue("source-peg");
+	destinationTower = cmd->GetParameterValue("destination-peg");
+
+	if(name == "move-disk" && sourceTower != "" && destinationTower != "")
+		cmd->AddStatusComplete();
+	else
+		cmd->AddStatusError();
+
+	pWorld->MoveDisk(TowerStringToInt(sourceTower), TowerStringToInt(destinationTower));
+}
+
+//}//closes namespace
