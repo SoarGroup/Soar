@@ -752,3 +752,49 @@ bool WorkingMemory::Commit()
 
 	return ok ;
 }
+
+/*************************************************************
+* @brief Resend the complete input link to the kernel
+*		 and remove our output link structures.
+*		 We do this when the user issues an "init-soar" event.
+*		 There should be no reason for the client to call this method directly.
+*************************************************************/
+void WorkingMemory::Refresh()
+{
+	if (m_InputLink)
+	{
+		AnalyzeXML response ;
+
+		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInputLink, GetAgentName()))
+		{
+			// Technically we should reset the value of the input link identifier itself, but it should never
+			// change value (since it's architecturally created) and also adding a method to set the identifier value
+			// is a bad idea if we only need it here.
+			std::string result = response.GetResultString() ;
+
+	#ifdef SML_DIRECT
+			// Get the current input link object ids
+			if (GetConnection()->IsDirectConnection())
+			{
+				Direct_WorkingMemory_Handle wm = ((EmbeddedConnection*)GetConnection())->DirectGetWorkingMemory(GetAgent()->GetAgentName(), true) ;
+				Direct_WMObject_Handle wmobject = ((EmbeddedConnection*)GetConnection())->DirectGetRoot(GetAgent()->GetAgentName(), true) ;
+				m_InputLink->SetWorkingMemoryHandle(wm) ;
+				m_InputLink->SetWMObjectHandle(wmobject) ;
+			}
+	#endif
+		}
+
+		m_InputLink->Refresh() ;
+
+		// Send the new input link over to the kernel
+		Commit() ;
+	}
+
+	// Remove the output link tree (it will be rebuilt when the agent next runs).
+	if (m_OutputLink)
+	{
+		delete m_OutputLink ;
+		m_OutputLink = NULL ;
+	}
+}
+

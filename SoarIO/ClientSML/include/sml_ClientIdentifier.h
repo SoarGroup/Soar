@@ -225,8 +225,12 @@ protected:
 
 	Direct_WorkingMemory_Handle GetWorkingMemoryHandle()		{ return m_pSymbol->m_WM ; }
 	Direct_WMObject_Handle		GetWMObjectHandle()				{ return m_pSymbol->m_WMObject ; }
+
+	virtual Direct_WME_Handle DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject) ;
 #endif
 
+	// Send over to the kernel again
+	virtual void Refresh() ;
 };
 
 }	// namespace

@@ -109,6 +109,7 @@ public:
 	static char const* kParamSeconds;
 	static char const* kParamWarningsSetting;
 	static char const* kParamPhase ;
+	static char const* kParamInstance ;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* kTrue ;

@@ -21,12 +21,18 @@ namespace sml {
 
 // Forward declaration
 class Agent ;
+class Kernel ;
 
 /** Enumeration of all event ids in the system */
 typedef enum {
     
     // Used to indicate an error in some cases
     smlEVENT_INVALID_EVENT              = 0,
+
+	// BADBAD: It would be better if these event IDs were all different enums
+	// so you couldn't accidentally pass the wrong event ID to the wrong handler etc.
+	// But gSKI defines them this way and it would be potentially risky to define them differently
+	// here on the client side.  Perhaps we'll fix it in gSKI one day and change it here as well.
 
     // Kernel events
     smlEVENT_BEFORE_SHUTDOWN            = 1,
@@ -90,9 +96,22 @@ typedef enum {
     sml_DECISION_PHASE,
 } smlPhase;
 
+// These typedefs all define types of functions.
+// For example: typedef void (*X)(type1 arg1, type2 arg2) means we're defining function "X" to take (type1 arg1, type2 arg2) and return void.
+// To provide such a handler define a function with this type and pass its address in to the registration function for the event.
+
 // Handler for Run events.
-// Passed back the event ID, the agent and the phase
-typedef void (*RunEventHandler)(smlEventId id, Agent* pAgent, smlPhase phase);
+// Passed back the event ID, the agent and the phase together with whatever user data we registered with the client
+typedef void (*RunEventHandler)(smlEventId id, void* pUserData, Agent* pAgent, smlPhase phase);
+
+// Handler for Agent events.
+typedef void (*AgentEventHandler)(smlEventId id, void* pUserData, Agent* pAgent) ;
+
+// Handler for Production manager events.
+typedef void (*ProductionEventHandler)(smlEventId id, void* pUserData, Agent* pAgent, char const* pProdName, char const* pInstantion) ;
+
+// Handler for System events.
+typedef void (*SystemEventHandler)(smlEventId id, void* pUserData, Kernel* pKernel) ;
 
 } ;	// End of namespace
 

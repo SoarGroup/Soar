@@ -12,6 +12,8 @@
 #include "sml_OutputListener.h"
 #include "sml_Connection.h"
 #include "sml_TagWme.h"
+#include "sml_AgentSML.h"
+#include "sml_KernelSML.h"
 #include "IgSKI_Wme.h"
 #include "IgSKI_Symbol.h"
 #include "IgSKI_WMObject.h"
@@ -191,12 +193,19 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 	// Send this message to all listeners
 	ConnectionListIter end = GetEnd(gSKIEVENT_OUTPUT_PHASE_CALLBACK) ;
 
+	AnalyzeXML response ;
 	while (connectionIter != end)
 	{
 		pConnection = *connectionIter ;
 
 		// When Soar is sending output, we don't want to wait for a response (which contains no information anyway)
 		// in case the caller is slow to respond to the incoming message.
+		// BADBAD: Actually, this is potentially dangerous if the client wishes to act in response to this event.
+		// because by the time they get the message we might no longer be in the output cycle.
+		// Currently, ClientSML just records the new output values and the client only sees them later when it
+		// explicitly looks for changes (once Soar has stopped running) so this is OK.
+		// We could make this safer (but a bit slower in the remote case) by changing this to SendMessageGetResponse()
+		// in which case we'd halt here (in the output cycle) until the client has finished processing the output message.
 		pConnection->SendMessage(pMsg) ;
 
 		connectionIter++ ;
@@ -204,4 +213,33 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 
 	// Clean up
 	delete pMsg ;
+}
+
+// Agent event listener (called when soar has been or is about to be re-initialized)
+// BADBAD: This shouldn't really be handled in a class called OutputListener.
+void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr)
+{
+	// Before the kernel is re-initialized we have to release all input WMEs.
+	// If we don't do this, gSKI will fail to re-initialize the kernel correctly as it
+	// assumes that all WMEs are deleted prior to reinitializing the kernel and if we have
+	// outstanding references to the objects it has no way to make the deletion happen.
+	if (eventId == gSKIEVENT_BEFORE_AGENT_REINITIALIZED)
+	{
+		AgentSML* pAgent = this->m_KernelSML->GetAgentSML(agentPtr) ;
+
+		if (pAgent)
+		{
+			pAgent->ReleaseAllWmes() ;
+		}
+	}
+
+	// After the kernel has been re-initialized we need to send everything on the output link over again
+	// when Soar is next run.
+	if (eventId == gSKIEVENT_AFTER_AGENT_REINITIALIZED)
+	{
+		// When the user types init-soar, we need to reset everything, so when the agent is next run
+		// we will send over output link information again.  The client also needs to register for this event
+		// (which it does automatically) so it can clear out its output tree to match.
+		m_TimeTags.clear() ;
+	}
 }

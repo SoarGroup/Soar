@@ -14,9 +14,12 @@
 #include "sml_ClientWorkingMemory.h"
 #include "sml_ClientEvents.h"
 #include "sml_ClientErrors.h"
+#include "sml_ListMap.h"
 
 #include <string>
 #include <map>
+#include <list>
+#include <utility>	// For std::pair
 
 namespace sml {
 
@@ -33,9 +36,22 @@ class Agent : public ClientErrors
 	friend class WorkingMemory ;
 	friend class ObjectMap<Agent*> ;	// So can delete agent
 	friend class WMElement ;
+	friend class StringElement ;
+	friend class IntElement ;
+	friend class FloatElement ;
 	friend class Identifier ;
 
-	typedef std::map<smlEventId, RunEventHandler> RunEventMap ;
+	// We'll store a handler function together with a generic pointer to data of the user's choosing
+	// (which is then passed back into the handler when the event occurs).
+	// std::pair creates a new type that combines these two primitives (that's all it does).
+	typedef std::pair<RunEventHandler, void*>			RunEventHandlerPlusData ;
+	typedef std::pair<ProductionEventHandler, void*>	ProductionEventHandlerPlusData ;
+	typedef std::pair<AgentEventHandler, void*>			AgentEventHandlerPlusData ;
+
+	// The mapping from event number to a list of handlers to call when that event fires
+	typedef sml::ListMap<smlEventId, RunEventHandlerPlusData>			RunEventMap ;
+	typedef sml::ListMap<smlEventId, ProductionEventHandlerPlusData>	ProductionEventMap ;
+	typedef sml::ListMap<smlEventId, AgentEventHandlerPlusData>			AgentEventMap ;
 
 protected:
 	// We maintain a local copy of working memory so we can just send changes
@@ -47,8 +63,10 @@ protected:
 	// The name of this agent
 	std::string		m_Name ;
 
-	// Map from event id to handler function
-	RunEventMap		m_RunEventMap ;
+	// Map from event id to handler function(s)
+	RunEventMap			m_RunEventMap ;
+	ProductionEventMap	m_ProductionEventMap ;
+	AgentEventMap		m_AgentEventMap ;
 
 protected:
 	Agent(Kernel* pKernel, char const* pAgentName);
@@ -77,6 +95,23 @@ protected:
 	* @param pResponse	The reply (no real need to fill anything in here currently)
 	*************************************************************/
 	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedRunEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedProductionEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+
+	/*************************************************************
+	* @brief Register for a particular event with the kernel.
+	*		 (This is a primitive function, should call one of the
+	*		  higher level methods which will call here if needed)
+	*************************************************************/
+	void	RegisterForEvent(smlEventId id) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event with the kernel.
+	*		 (This is a primitive function, should call one of the
+	*		  higher level methods which will call here if needed)
+	*************************************************************/
+	void	UnregisterForEvent(smlEventId id) ;
 
 public:
 	/*************************************************************
@@ -199,7 +234,11 @@ public:
 
 	/*************************************************************
 	* @brief Register for a "RunEvent".
-	*
+	*		 Multiple handlers can be registered for the same event.
+	* @param smlEventId		The event we're interested in (see the list below for valid values)
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* 
 	* Current set is:
 	* smlEVENT_BEFORE_SMALLEST_STEP,
 	* smlEVENT_AFTER_SMALLEST_STEP,
@@ -213,12 +252,54 @@ public:
 	* smlEVENT_BEFORE_RUNNING,
 	* smlEVENT_AFTER_RUNNING,
 	*************************************************************/
-	void	RegisterForRunEvent(smlEventId id, RunEventHandler handler) ;
+	void	RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForEvent(smlEventId id) ;
+	void	UnregisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData) ;
+
+	/*************************************************************
+	* @brief Register for a "ProductionEvent".
+	*		 Multiple handlers can be registered for the same event.
+	* @param smlEventId		The event we're interested in (see the list below for valid values)
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	*
+	* Current set is:
+	* Production Manager
+	* smlEVENT_AFTER_PRODUCTION_ADDED,
+	* smlEVENT_BEFORE_PRODUCTION_REMOVED,
+	* smlEVENT_AFTER_PRODUCTION_FIRED,
+	* smlEVENT_BEFORE_PRODUCTION_RETRACTED,
+	*************************************************************/
+	void	RegisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	*************************************************************/
+	void	UnregisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData) ;
+
+	/*************************************************************
+	* @brief Register for an "AgentEvent".
+	*		 Multiple handlers can be registered for the same event.
+	* @param smlEventId		The event we're interested in (see the list below for valid values)
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	*
+	* Current set is:
+	* // Agent manager
+	* smlEVENT_AFTER_AGENT_CREATED,
+	* smlEVENT_BEFORE_AGENT_DESTROYED,
+	* smlEVENT_BEFORE_AGENT_REINITIALIZED,
+	* smlEVENT_AFTER_AGENT_REINITIALIZED,
+	*************************************************************/
+	void	RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	*************************************************************/
+	void	UnregisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData) ;
 
 	/*==============================================================================
 	===
@@ -349,6 +430,13 @@ public:
 	*************************************************************/
 	char const* RunTilOutput(unsigned long maxDecisions) ;
 
+	/*************************************************************
+	* @brief Resend the complete input link to the kernel
+	*		 and remove our output link structures.
+	*		 We do this when the user issues an "init-soar" event.
+	*		 There should be no reason for the client to call this method directly.
+	*************************************************************/
+	void Refresh() ;
 };
 
 }//closes namespace

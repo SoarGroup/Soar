@@ -95,6 +95,8 @@ public:
 	virtual bool IsClosed() ;
 	virtual bool IsRemoteConnection() { return false ; }
 
+	virtual void SetTraceCommunications(bool state) ;
+
 	// Overridden in concrete subclasses
 	virtual bool IsAsynchronous() = 0 ;		// Returns true if messages are queued and executed on receiver's thread
 	virtual void SendMessage(ElementXML* pMsg) = 0 ;
@@ -187,12 +189,19 @@ public:
 class EmbeddedConnectionAsynch : public EmbeddedConnection
 {
 public:
-	static EmbeddedConnection* CreateEmbeddedConnectionAsynch() { return new EmbeddedConnectionAsynch() ; }
+	static EmbeddedConnection* CreateEmbeddedConnectionAsynch(bool useSynchCalls = false) { return new EmbeddedConnectionAsynch(useSynchCalls) ; }
 
 protected:
 	// Clients should not use this.  Use Connection::CreateEmbeddedConnection instead.
 	// Making it protected so you can't accidentally create one like this.
-	EmbeddedConnectionAsynch() { } 
+	EmbeddedConnectionAsynch(bool useSynchCalls) { m_UseSynchCalls = useSynchCalls ; } 
+
+	// The kernel can send 'call' messages back to the client directly without
+	// placing them in a queue.  In fact, it has to do this in situations
+	// where it's sending event information back and the client may not be
+	// waiting to receive an incoming message.  Thus the kernel can set this
+	// flag and send messages back directly.
+	bool	m_UseSynchCalls ;
 
 public:
 	virtual ~EmbeddedConnectionAsynch() { } 
@@ -201,6 +210,9 @@ public:
 	virtual void SendMessage(ElementXML* pMsg) ;
 	virtual ElementXML* GetResponseForID(char const* pID, bool wait) ;
 	virtual bool ReceiveMessages(bool allMessages) ;
+
+	// Even though this is an asynch connection, send this message synchronously.
+	void SendSynchMessage(ElementXML_Handle hSendMsg) ;
 } ;
 
 

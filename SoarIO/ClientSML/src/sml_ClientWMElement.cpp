@@ -55,3 +55,24 @@ void WMElement::GenerateNewTimeTag()
 	// Generate a new time tag for this wme
 	m_TimeTag = GetAgent()->GetWM()->GenerateTimeTag() ;
 }
+
+// Send over to the kernel again
+void WMElement::Refresh()
+{
+#ifdef SML_DIRECT
+	IdentifierSymbol* parent = GetIdentifier() ;
+	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+
+	if (GetAgent()->GetConnection()->IsDirectConnection())
+	{
+		// Add the new value immediately
+		Direct_WME_Handle wme = DirectAdd(wm, parent->GetWMObjectHandle()) ;
+		SetWMEHandle(wme) ;
+
+		// Return immediately, without adding it to the commit list.
+		return ;
+	}
+#endif
+
+	GetAgent()->GetWM()->GetInputDeltaList()->AddWME(this) ;
+}

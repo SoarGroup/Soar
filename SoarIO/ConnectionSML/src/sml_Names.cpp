@@ -104,6 +104,7 @@ char const* sml_Names::kParamSeconds			= "seconds";
 char const* sml_Names::kParamWarningsSetting	= "warnings_setting";
 char const* sml_Names::kParamEventID			= "eventid" ;
 char const* sml_Names::kParamPhase				= "phase" ;
+char const* sml_Names::kParamInstance			= "instance" ;
 
 // Values (these are not case sensitive unlike the rest)
 char const* sml_Names::kTrue	= "true" ;

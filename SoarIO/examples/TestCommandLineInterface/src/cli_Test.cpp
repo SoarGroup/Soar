@@ -39,6 +39,11 @@ int main(int argc, char** argv)
 	assert(pKernel);
 	cout << "Kernel created." << endl;
 
+#ifdef _DEBUG
+	// Comment this in or out to enable tracing of remote SML messages as they come in and out
+	// pKernel->SetTraceCommunications(true) ;
+#endif
+
 	// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 	sml::Agent* pAgent;
 	const char AGENT_NAME[] = "test";

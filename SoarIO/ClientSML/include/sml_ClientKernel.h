@@ -16,6 +16,8 @@
 
 #include "sml_ObjectMap.h"
 #include "sml_ClientErrors.h"
+#include "sml_ListMap.h"
+#include "sml_ClientEvents.h"
 
 // Forward declaratiokn for ElementXML_Handle.
 struct ElementXML_InterfaceStructTag ;
@@ -47,11 +49,21 @@ protected:
 	long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
 	long		m_IdCounter ;		// Used to generate unique id names
 
+	// We'll store a handler function together with a generic pointer to data of the user's choosing
+	// (which is then passed back into the handler when the event occurs).
+	// std::pair creates a new type that combines these two primitives (that's all it does).
+	typedef std::pair<SystemEventHandler, void*>		SystemEventHandlerPlusData ;
+
+	// The mapping from event number to a list of handlers to call when that event fires
+	typedef sml::ListMap<smlEventId, SystemEventHandlerPlusData>		SystemEventMap ;
+
 	Connection*			m_Connection ;
 	ObjectMap<Agent*>	m_AgentMap ;
 	std::string			m_CommandLineResult;
 	bool				m_CommandLineSucceeded ;
 	sock::SocketLib*	m_SocketLibrary ;
+
+	SystemEventMap		m_SystemEventMap ;
 
 	// To create a kernel object, use one of the static methods, e.g. Kernel::CreateEmbeddedConnection().
 	Kernel(Connection* pConnection);
@@ -67,6 +79,16 @@ protected:
 
 	long	GenerateNextID()		{ return ++m_IdCounter ; }
 	long	GenerateNextTimeTag()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
+
+	/*************************************************************
+	* @brief This function is called when an event is received
+	*		 from the Soar kernel.
+	*
+	* @param pIncoming	The event command
+	* @param pResponse	The reply (no real need to fill anything in here currently)
+	*************************************************************/
+	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedSystemEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 public:
 	/*************************************************************
@@ -201,6 +223,32 @@ public:
 	*		 for a period of time.
 	*************************************************************/
 	void Sleep(long milliseconds) ;
+
+	/*************************************************************
+	* @brief Register for a "SystemEvent".
+	*		 Multiple handlers can be registered for the same event.
+	* @param smlEventId		The event we're interested in (see the list below for valid values)
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* 
+	* Current set is:
+	* smlEVENT_BEFORE_SHUTDOWN,
+	* smlEVENT_AFTER_CONNECTION_LOST,
+	* smlEVENT_BEFORE_RESTART,
+	* smlEVENT_AFTER_RESTART,
+	* smlEVENT_BEFORE_RHS_FUNCTION_ADDED,
+	* smlEVENT_AFTER_RHS_FUNCTION_ADDED,
+	* smlEVENT_BEFORE_RHS_FUNCTION_REMOVED,
+	* smlEVENT_AFTER_RHS_FUNCTION_REMOVED,
+	* smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
+	* smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
+	*************************************************************/
+	void	RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	*************************************************************/
+	void	UnregisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData) ;
 
 protected:
 	/*************************************************************

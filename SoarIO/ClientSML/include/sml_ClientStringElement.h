@@ -47,6 +47,10 @@ protected:
 	{
 		m_Value = pValue ;
 	}
+
+#ifdef SML_DIRECT
+	virtual Direct_WME_Handle DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject) ;
+#endif
 };
 
 }	// namespace

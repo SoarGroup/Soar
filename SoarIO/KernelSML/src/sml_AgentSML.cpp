@@ -39,6 +39,14 @@ AgentSML::~AgentSML()
 void AgentSML::Clear()
 {
 	// Release any WME objects we still own.
+	ReleaseAllWmes() ;
+
+	m_AgentListener.Clear() ;
+}
+
+void AgentSML::ReleaseAllWmes()
+{
+	// Release any WME objects we still own.
 	for (TimeTagMapIter mapIter = m_TimeTagMap.begin() ; mapIter != m_TimeTagMap.end() ; mapIter++)
 	{
 		gSKI::IWme* pWme = mapIter->second ;
@@ -46,8 +54,8 @@ void AgentSML::Clear()
 	}
 
 	m_TimeTagMap.clear() ;
-
-	m_AgentListener.Clear() ;
+	m_ToClientIdentifierMap.clear() ;
+	m_IdentifierMap.clear() ;
 }
 
 void AgentSML::RemoveAllListeners(Connection* pConnection)

@@ -186,7 +186,9 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgentPtr, char const* pCommandN
 	{
 		// Create a listener for the callback
 		OutputListener* pListener = new OutputListener(this, pAgent) ;
-		pListener->AddListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
+
+		// The client now has to register for this explicitly for each connection.
+//		pListener->AddListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
 
 		// We store additional, agent specific information required for SML in the AgentSML object.
 		// NOTE: This call to GetAgentSML() will create the object if necessary...which it will be in this case.
@@ -195,6 +197,12 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgentPtr, char const* pCommandN
 
 		// Listen for output callback events
 		pAgent->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
+
+		// Listen for "before" init-soar events (we need to know when these happen so we can release all WMEs on the input link, otherwise gSKI will fail to re-init the kernel correctly.)
+		GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_BEFORE_AGENT_REINITIALIZED, pListener, false, pError) ;
+
+		// Listen for "after" init-soar events (we need to know when these happen so we can resend the output link over to the client)
+		GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_AFTER_AGENT_REINITIALIZED, pListener, false, pError) ;
 
 		// We also need to listen to input events so we can pump waiting sockets and get interrupt messages etc.
 		sml_InputProducer* pInputProducer = new sml_InputProducer(this) ;
@@ -248,10 +256,30 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	}
 
 	// Decide what type of event this is and where to register/unregister it
-	// We have to break these up because gSKI uses a different class for each type of listener
-	// so we need to connect the events to the listeners.
+	// gSKI uses a different class for each type of event.  We collect those together
+	// where possible to reduce the amount of extra scaffolding code.
 	switch (id)
 	{
+	// System listener events
+	case gSKIEVENT_BEFORE_SHUTDOWN:
+	case gSKIEVENT_AFTER_CONNECTION_LOST:
+	case gSKIEVENT_BEFORE_RESTART:
+	case gSKIEVENT_AFTER_RESTART:
+	case gSKIEVENT_BEFORE_RHS_FUNCTION_ADDED:
+	case gSKIEVENT_AFTER_RHS_FUNCTION_ADDED:
+	case gSKIEVENT_BEFORE_RHS_FUNCTION_REMOVED:
+	case gSKIEVENT_AFTER_RHS_FUNCTION_REMOVED:
+	case gSKIEVENT_BEFORE_RHS_FUNCTION_EXECUTED:
+	case gSKIEVENT_AFTER_RHS_FUNCTION_EXECUTED:
+		{
+			KernelSML* pKernelSML = GetKernelSML() ;
+
+			if (registerForEvent)
+				pKernelSML->AddKernelListener(id, pConnection) ;
+			else
+				pKernelSML->RemoveKernelListener(id, pConnection) ;
+		}
+
 		// Agent listener events
 	case gSKIEVENT_BEFORE_SMALLEST_STEP:
 	case gSKIEVENT_AFTER_SMALLEST_STEP:
@@ -264,6 +292,18 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	case gSKIEVENT_AFTER_INTERRUPT:
 	case gSKIEVENT_BEFORE_RUNNING:
 	case gSKIEVENT_AFTER_RUNNING:
+
+      // Production Manager events too
+	case gSKIEVENT_AFTER_PRODUCTION_ADDED:
+	case gSKIEVENT_BEFORE_PRODUCTION_REMOVED:
+	case gSKIEVENT_AFTER_PRODUCTION_FIRED:
+	case gSKIEVENT_BEFORE_PRODUCTION_RETRACTED:
+
+		// Agent manager events too
+	case gSKIEVENT_AFTER_AGENT_CREATED:
+	case gSKIEVENT_BEFORE_AGENT_DESTROYED:
+	case gSKIEVENT_BEFORE_AGENT_REINITIALIZED:
+	case gSKIEVENT_AFTER_AGENT_REINITIALIZED:
 		{
 			// Since this is an agent handler check that we were passed an agent
 			if (!pAgent)
@@ -279,6 +319,21 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 
 			break ;
 		}
+		// Output is handled in a special manner with its own unique processor.
+	case gSKIEVENT_OUTPUT_PHASE_CALLBACK:
+		{
+			AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+			OutputListener* pOutputListener = pAgentSML->GetOutputListener() ;
+
+			// Register this connection as listening for this event
+			if (registerForEvent)
+				pOutputListener->AddListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
+			else
+				pOutputListener->RemoveListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
+
+			break ;
+		}
+
 	default:
 		// The event didn't match any of our handlers
 		return InvalidArg(pConnection, pResponse, pCommandName, "KernelSML doesn't know how to handle that event id") ;
@@ -560,6 +615,10 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 
 	pParentObject->Release() ;
 
+	// If we have an error object, check that it hasn't been set by an earlier call.
+	if (pError)
+		return !gSKI::isError(*pError) ;
+
 	return true ;
 }
 
@@ -596,6 +655,10 @@ bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI:
 	// I'm not sure if we should release pWME here or not after
 	// calling RemoveWme() just above on it.
 	pWME->Release() ;
+
+	// If we have an error object, check that it hasn't been set by an earlier call.
+	if (pError)
+		return !gSKI::isError(*pError) ;
 
 	return true ;
 }

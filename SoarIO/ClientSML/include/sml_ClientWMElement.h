@@ -93,9 +93,13 @@ protected:
 	// and the add would create a new time tag.
 	void GenerateNewTimeTag() ;
 
+	// Send over to the kernel again
+	virtual void Refresh() ;
+
 #ifdef SML_DIRECT
 	void SetWMEHandle(Direct_WME_Handle wme)	{ m_WME = wme ; }
 	Direct_WME_Handle GetWMEHandle()			{ return m_WME ; }
+	virtual Direct_WME_Handle DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject) = 0 ;
 #endif
 
 private:

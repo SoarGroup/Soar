@@ -118,6 +118,8 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 #define SML_MESSAGE_ACTION_SYNCH	1		// Respond to the message immediately (on the caller's thread)
 #define SML_MESSAGE_ACTION_CLOSE	2		// Close down the connection
 #define SML_MESSAGE_ACTION_ASYNCH	3		// Messages are executed on the receiver's thread, not on the senders, so there is no immediate response.
+#define SML_MESSAGE_ACTION_TRACE_ON 4		// Turn on full tracing of messages (making this a special message means we can do this as a runtime choice)
+#define SML_MESSAGE_ACTION_TRACE_OFF 5		// Turn off full tracing of messages (making this a special message means we can do this as a runtime choice)
 
 EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiverConnection, ElementXML_Handle hIncomingMsg, int action) ;
 

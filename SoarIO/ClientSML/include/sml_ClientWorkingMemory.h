@@ -67,6 +67,8 @@ public:
 
 	OutputDeltaList* GetOutputLinkChanges() { return &m_OutputDeltaList ; }
 
+	DeltaList*		GetInputDeltaList()		{ return &m_DeltaList ; }
+
 	// Searches for an identifier object that matches this id.
 	Identifier*		FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index = 0) ;
 
@@ -93,6 +95,8 @@ public:
 
 	long			GenerateTimeTag() ;
 	void			GenerateNewID(char const* pAttribute, std::string* pID) ;
+
+	void			Refresh() ;
 
 	bool			Commit() ;
 };

@@ -11,6 +11,9 @@
 #include "sml_ClientStringElement.h"
 #include "sml_Connection.h"
 
+#include "sml_EmbeddedConnection.h"	// For direct methods
+#include "sml_ClientAgent.h"
+
 using namespace sml ;
 
 StringElement::StringElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pValue, long timeTag) : WMElement(pAgent, pID, pAttributeName, timeTag)
@@ -27,3 +30,11 @@ char const* StringElement::GetValueType() const
 {
 	return sml_Names::kTypeString ;
 }
+
+#ifdef SML_DIRECT
+Direct_WME_Handle StringElement::DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject)
+{
+	Direct_WME_Handle wme = ((EmbeddedConnection*)GetAgent()->GetConnection())->DirectAddWME_String(wm, wmobject, GetAttribute(), GetValue()) ;
+	return wme ;
+}
+#endif

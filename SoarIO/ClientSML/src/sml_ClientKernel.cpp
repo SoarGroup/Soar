@@ -17,6 +17,7 @@
 #include "sml_ClientAgent.h"
 #include "sml_Connection.h"
 #include "sml_Errors.h"
+#include "sml_StringOps.h"
 
 #include "sock_SocketLib.h"
 #include "thread_Thread.h"	// To get to sleep
@@ -129,8 +130,73 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 			pAgent->ReceivedEvent(&msg, pResponse) ;
 		}
 	}
+	else
+	{
+		// If this is a mesage for the kernel itself process it here
+		if (!pAgentName)
+		{
+			if (strcmp(sml_Names::kCommand_Event, pCommandName) == 0)
+			{
+				// This is an event that is not agent specific
+				this->ReceivedEvent(&msg, pResponse) ;
+			}
+		}
+	}
 
 	return pResponse ;
+}
+
+void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	smlEventId id  = (smlEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
+
+	switch (id)
+	{
+	// System listener events
+	case smlEVENT_BEFORE_SHUTDOWN:
+	case smlEVENT_AFTER_CONNECTION_LOST:
+	case smlEVENT_BEFORE_RESTART:
+	case smlEVENT_AFTER_RESTART:
+	case smlEVENT_BEFORE_RHS_FUNCTION_ADDED:
+	case smlEVENT_AFTER_RHS_FUNCTION_ADDED:
+	case smlEVENT_BEFORE_RHS_FUNCTION_REMOVED:
+	case smlEVENT_AFTER_RHS_FUNCTION_REMOVED:
+	case smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED:
+	case smlEVENT_AFTER_RHS_FUNCTION_EXECUTED:
+		ReceivedSystemEvent(id, pIncoming, pResponse) ;
+		break ;
+	}
+}
+
+/*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Kernel::ReceivedSystemEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	unused(pResponse) ;
+	unused(pIncoming) ;
+
+	// Look up the handler(s) from the map
+	SystemEventMap::ValueList* pHandlers = m_SystemEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (SystemEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		SystemEventHandlerPlusData handlerWithData = *iter ;
+
+		SystemEventHandler handler = handlerWithData.first ;
+		void* pUserData = handlerWithData.second ;
+
+		// Call the handler
+		handler(id, pUserData, this) ;
+	}
 }
 
 /*************************************************************
@@ -290,6 +356,25 @@ Agent* Kernel::GetAgentByIndex(int index)
 }
 
 /*************************************************************
+* @brief Called when an init-soar event happens so we know
+*		 to refresh the input/output links.
+*************************************************************/
+static void InitSoarHandler(smlEventId id, void* pUserData, Agent* pAgent)
+{
+	unused(pUserData) ;
+	unused(id) ;
+
+	pAgent->Refresh() ;
+}
+
+// This handler should never get called.  Output "events" are handled
+// specially with an "output" message that we capture in the kernel.
+// Perhaps this is wrong and we should just handle it like other events?
+static void OutputHandler(smlEventId, void*, Agent*)
+{
+}
+
+/*************************************************************
 * @brief Creates a new Soar agent with the given name.
 *
 * @returns A pointer to the new agent structure.  This object
@@ -319,6 +404,13 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 
 		// Record this in our list of agents
 		m_AgentMap.add(agent->GetAgentName(), agent) ;
+
+		// Register for init-soar events
+		agent->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
+
+		// Register to get output link events.  These won't come back as standard events.
+		// Instead we'll get "output" messages which are handled in a special manner.
+		agent->RegisterForAgentEvent(smlEVENT_OUTPUT_PHASE_CALLBACK, &OutputHandler, NULL) ;
 	}
 
 	// Set our error state based on what happened during this call.
@@ -437,3 +529,63 @@ void Kernel::Sleep(long milliseconds)
 	soar_thread::Thread::SleepStatic(milliseconds) ;
 }
 
+/*************************************************************
+* @brief Register for a "SystemEvent".
+*		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* 
+* Current set is:
+* smlEVENT_BEFORE_SHUTDOWN,
+* smlEVENT_AFTER_CONNECTION_LOST,
+* smlEVENT_BEFORE_RESTART,
+* smlEVENT_AFTER_RESTART,
+* smlEVENT_BEFORE_RHS_FUNCTION_ADDED,
+* smlEVENT_AFTER_RHS_FUNCTION_ADDED,
+* smlEVENT_BEFORE_RHS_FUNCTION_REMOVED,
+* smlEVENT_AFTER_RHS_FUNCTION_REMOVED,
+* smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
+* smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
+*************************************************************/
+void Kernel::RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData)
+{
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_SystemEventMap.getListSize(id) == 0)
+	{
+		AnalyzeXML response ;
+
+		char buffer[kMinBufferSize] ;
+		Int2String(id, buffer, sizeof(buffer)) ;
+
+		// Send the register command
+		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
+	}
+
+	// Record the handler
+	SystemEventHandlerPlusData handlerPlus = std::make_pair(handler, pUserData) ;
+	m_SystemEventMap.add(id, handlerPlus) ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event
+*************************************************************/
+void Kernel::UnregisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData)
+{
+	// Remove the handler from our map
+	SystemEventHandlerPlusData handlerPlus = std::make_pair(handler, pUserData) ;
+	m_SystemEventMap.remove(id, handlerPlus) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_SystemEventMap.getListSize(id) == 0)
+	{
+		AnalyzeXML response ;
+
+		char buffer[kMinBufferSize] ;
+		Int2String(id, buffer, sizeof(buffer)) ;
+
+		// Send the register command
+		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
+	}
+}

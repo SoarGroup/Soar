@@ -86,9 +86,15 @@ public:
 	// prior to deleting AgentSML, but before the underlying gSKI agent has been deleted
 	void Clear() ;
 
+	// Release all of the WMEs that we currently have references to
+	// It's a little less severe than clear() which releases everything we own, not just wmes.
+	void ReleaseAllWmes() ;
+
 	gSKI::IAgent* GetIAgent() { return m_pIAgent ; }
 
 	void SetOutputListener(OutputListener* pListener)			{ m_pOutputListener = pListener ; }
+	OutputListener* GetOutputListener()							{ return m_pOutputListener ; }
+
 	void SetInputProducer(gSKI::IInputProducer* pInputProducer)	{ m_pInputProducer = pInputProducer ; }
 
 	bool SetStopOnOutput(bool state) ;

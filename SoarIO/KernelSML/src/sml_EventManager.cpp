@@ -41,6 +41,7 @@ void EventManager::Clear()
 	m_EventMap.clear() ;
 }
 
+// Record that a particular connection wants to listen in on this event.
 bool EventManager::AddListener(egSKIEventId eventID, Connection* pConnection)
 {
 	EventMapIter mapIter = m_EventMap.find(eventID) ;

@@ -52,7 +52,14 @@ static bool DoesResponseMatch(ElementXML* pResponse, char const* pID)
 
 	char const* pMsgID = pResponse->GetAttribute(sml_Names::kAck) ;
 	
-	return (pMsgID && strcmp(pMsgID, pID) == 0) ;
+	if (!pMsgID)
+		return false ;
+
+	// Spelling this test out so we can put break points in if we wish.
+	if (strcmp(pMsgID, pID) == 0)
+		return true ;
+	else
+		return false ;
 }
 
 ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
@@ -95,6 +102,10 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		if (wait)
 		{
 			soar_thread::Thread::SleepStatic(sleepTime) ;
+
+			// Check if the connection has been closed
+			if (IsClosed())
+				return NULL ;
 
 			/* Removing this time-out logic
 			maxRetries-- ;

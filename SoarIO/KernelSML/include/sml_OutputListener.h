@@ -28,7 +28,7 @@ class Connection ;
 typedef std::map<long, bool>		OutputTimeTagMap ;
 typedef OutputTimeTagMap::iterator	OutputTimeTagIter ;
 
-class OutputListener : public gSKI::IWorkingMemoryListener, public EventManager
+class OutputListener : public gSKI::IWorkingMemoryListener, public gSKI::IAgentListener, public EventManager
 {
 protected:
 	KernelSML*		m_KernelSML ;
@@ -54,7 +54,11 @@ public:
 	{
 	}
 
+	// Working memory event listener (called when the agent generates output)
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist) ;
+
+	// Agent event listener (called when soar is re-initialized)
+	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr) ;
 
 	void SetStopOnOutput(bool state) { m_StopOnOutput = state ; }
 } ;

@@ -33,6 +33,19 @@
 #define EXPORT
 #endif	// WIN32
 
+//DJP: A quick test of statically linked version of ElementXML
+/*
+#define WIN_STATIC_LINK
+
+// Hard coding the lib here so I don't have to go and update all of the other projects
+
+#ifdef WIN_STATIC_LINK
+#undef EXPORT
+#define EXPORT
+#pragma comment (lib, "E:/SoarMich/SoarIO/ElementXML/lib/ElementXML-static.lib")
+#endif
+*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif

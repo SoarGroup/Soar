@@ -43,6 +43,7 @@ namespace TgD
 #endif
 
 #include "cli_CommandLineInterface.h"
+#include "sml_KernelListener.h"
 
 namespace soar_thread
 {
@@ -113,6 +114,9 @@ protected:
 	// multiple connections, some of which may run in different threads.
 	soar_thread::Mutex*	m_pMutex ;
 
+	// Used to listen for kernel events that are kernel based (not for a specific agent)
+	KernelListener	m_KernelListener ;
+
 #ifdef USE_TCL_DEBUGGER
 	// A hack to allow us access to the Tcl debugger until we have a real one available.
 	TgD::TgD* m_Debugger ;
@@ -126,8 +130,6 @@ public:
 
 	/*************************************************************
 	* @brief	Delete the singleton kernel object
-	*			(We only call this in debug mode so we can test memory
-	*			 releasing is correct).
 	*************************************************************/
 	static void DeleteSingleton()
 	{
@@ -151,6 +153,13 @@ public:
 	*			we're aware of to this soar kernel.
 	*************************************************************/
 	void AddConnection(Connection* pConnection) ;
+	
+	/*************************************************************
+	* @brief	Add or remove a connection from the list listening
+	*			for a particular event in the kernel.
+	*************************************************************/
+	void AddKernelListener(egSKIEventId eventID, Connection* pConnection)	 { m_KernelListener.AddListener(eventID, pConnection) ; }
+	void RemoveKernelListener(egSKIEventId eventID, Connection* pConnection) { m_KernelListener.RemoveListener(eventID, pConnection) ; }
 
 	/*************************************************************
 	* @brief	Remove any events that this connection was listening to.
@@ -201,10 +210,6 @@ public:
 	*************************************************************/
 	gSKI::IKernel* GetKernel() { return m_pIKernel ; }
 
-protected:
-	KernelSML(void);
-
-protected:
 	/*************************************************************
 	* @brief	Look up our additional SML information for a specific agent.
 	*
@@ -218,6 +223,10 @@ protected:
 	*************************************************************/
 	AgentSML*	GetAgentSML(gSKI::IAgent* pAgent) ;
 
+protected:
+	KernelSML(void);
+
+protected:
 	/*************************************************************
 	* @brief	Delete the agent sml object for this agent.
 	*************************************************************/	

@@ -12,6 +12,7 @@
 
 #include "sml_EmbeddedConnection.h"
 #include "sml_ElementXML.h"
+#include "sml_MessageSML.h"
 #include "thread_Thread.h"
 
 #include <string>
@@ -220,6 +221,20 @@ void EmbeddedConnection::CloseConnection()
 	m_hConnection = NULL ;
 }
 
+void EmbeddedConnection::SetTraceCommunications(bool state)
+{
+	ClearError() ;
+
+	m_bTraceCommunications = state ;
+
+	if (m_hConnection)
+	{
+		// Tell the kernel to turn tracing on or off
+		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, (ElementXML_Handle)NULL, state ? SML_MESSAGE_ACTION_TRACE_ON : SML_MESSAGE_ACTION_TRACE_OFF) ;
+		unused(hResponse) ;
+	}
+}
+
 void EmbeddedConnectionSynch::SendMessage(ElementXML* pMsg)
 {
 	ClearError() ;
@@ -268,6 +283,38 @@ ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait
 	return pResult ;
 }
 
+/** 
+	Even though this is an asynch connection, send this message back synchronously.
+	This turns out to be important for the kernel.
+	Here's the situation: The kernel is loaded using an asynch connection by a process which creates an agent and then waits in a keyboard handler (say).
+	A remote client establishes a connection and runs the kernel.  Output is sent over the embeddedd connection to the process which is
+	now sitting in the keyboard handler, so it never sees the incoming message and the whole process hangs.
+	(Note this is not a problem if the embedded client issues the run because then it will be in a message processing loop waiting for the run to complete).
+	The fix for this problem is to send the output from the kernel directly to the client (which is perfectly fine to do) so it is processed
+	immediately and a response is created immediately (all on the kernel's receiver thread) allowing execution to continue.
+
+	We have to be careful only to send calls here, not responses or the message handling will get thrown off (the client may be waiting
+	for a response and it won't see it if we may a synchronous call for the response).
+*/
+void EmbeddedConnectionAsynch::SendSynchMessage(ElementXML_Handle hSendMsg)
+{
+	// Make the call to the kernel, passing the message over and getting an immediate response since this is
+	// an embedded call.
+	ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_SYNCH) ;
+
+	// We cache the response
+	if (m_pLastResponse)
+	{
+		delete m_pLastResponse ;
+		m_pLastResponse = NULL ;
+	}
+
+	if (hResponse)
+	{
+		m_pLastResponse = new ElementXML(hResponse) ;
+	}
+}
+
 void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
 {
 	ClearError() ;
@@ -279,20 +326,25 @@ void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
 		return ;
 	}
 
-	ElementXML_Handle hResponse = NULL ;
-
 	// Add a reference to this object, which will then be released by the receiver of this message when
 	// they are done with it.
 	pMsg->AddRefOnHandle() ;
 	ElementXML_Handle hSendMsg = pMsg->GetXMLHandle() ;
 
-	// Make the call to the kernel, passing the message over with the ASYNCH flag, which means there
-	// will be no immediate response.
-	hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_ASYNCH) ;
-
-	if (hResponse != NULL)
+	if (m_UseSynchCalls && ((MessageSML*)pMsg)->IsCall())
 	{
-		SetError(Error::kInvalidResponse) ;
+		SendSynchMessage(hSendMsg) ;
+	}
+	else
+	{
+		// Make the call to the kernel, passing the message over with the ASYNCH flag, which means there
+		// will be no immediate response.
+		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_ASYNCH) ;
+
+		if (hResponse != NULL)
+		{
+			SetError(Error::kInvalidResponse) ;
+		}
 	}
 }
 
@@ -303,7 +355,13 @@ static bool DoesResponseMatch(ElementXML* pResponse, char const* pID)
 
 	char const* pMsgID = pResponse->GetAttribute(sml_Names::kAck) ;
 	
-	return (pMsgID && strcmp(pMsgID, pID) == 0) ;
+	if (!pMsgID)
+		return false ;
+
+	if (strcmp(pMsgID, pID) == 0)
+		return true ;
+	else
+		return false ;
 }
 
 ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wait)

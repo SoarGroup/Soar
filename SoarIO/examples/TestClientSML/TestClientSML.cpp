@@ -2,31 +2,22 @@
 //#include "sml_Connection.h"
 #include "sml_Client.h"
 
-#include "../../Profiler/include/simple_timer.h"
+#include "..\..\Profiler\include\simple_timer.h"
 
 // Define a sleep
 #ifdef _WIN32
-
-#ifdef _MSC_VER
-
-// Use Visual C++'s memory checking functionality
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-
-#endif // _MSC_VER
-
 #define _WINSOCKAPI_
 #include <Windows.h>
 #define SLEEP Sleep
-
-#else // _WIN32
-
+#else
 #include <unistd.h>
 #define SLEEP usleep
+#endif
 
-#endif // _WIN32
-
+// Use Visual C++'s memory checking functionality
+#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
+#include <crtdbg.h>
 #include <iostream>
 #include <string>
 
@@ -60,7 +51,7 @@ void printWMEs(WMElement const* pRoot)
 	}
 }
 
-void RemoteConnection()
+void SimpleRemoteConnection()
 {
 	sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
@@ -95,12 +86,31 @@ void SimpleEmbeddedConnection()
 	delete pKernel ;
 }
 
-void MyRunEventHandler(smlEventId id, Agent* pAgent, smlPhase phase)
+void MyRunEventHandler(smlEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
 {
+	int* pInt = (int*)pUserData ;
+	if (*pInt != 25)
+		cout << "***ERROR*** getting user data from callback" << endl ;
+
 	cout << "Received an event callback" << endl ;
 }
 
-void EmbeddedConnection()
+// Register a second handler for the same event, to make sure that's ok.
+void MyDuplicateRunEventHandler(smlEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
+{
+	int* pInt = (int*)pUserData ;
+	if (*pInt != 25)
+		cout << "***ERROR*** getting user data from callback" << endl ;
+
+	cout << "Received the event in my 2nd handler too" << endl ;
+}
+
+void MySystemEventHandler(smlEventId id, void* pUserData, Kernel* pKernel)
+{
+	cout << "Received kernel event" << endl ;
+}
+
+bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
 
@@ -111,32 +121,29 @@ void EmbeddedConnection()
 	{
 		SimpleTimer timer ;
 
-//		sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false) ;
-		sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection(true, NULL) ;
+		// Create the appropriate type of connection
+		sml::Kernel* pKernel = embedded ? sml::Kernel::CreateEmbeddedConnection("KernelSML", useClientThread, fullyOptimized)
+										: sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
 		if (pKernel->HadError())
 		{
 			cout << pKernel->GetLastErrorDescription() << endl ;
-			return ;
+			return false ;
 		}
 
+		// Give us lots of extra debug information on remote clients
+		// (useful in a test app like this).
 		pKernel->SetTraceCommunications(true) ;
+
+		// Register a kernel event handler...unfortunately I can't seem to find an event
+		// that gSKI actually fires, so this handler won't get called.  Still, the code is there
+		// on the SML side should anyone ever hook up this type of event inside the kernel/gSKI...
+		pKernel->RegisterForSystemEvent(smlEVENT_AFTER_RESTART, MySystemEventHandler, NULL) ;
 
 		char const* name = "test-client-sml" ;
 
-		sml::Agent* pAgent = pKernel->GetAgent(name) ;
-
-		if (!pAgent)
-		{
-			// NOTE: We don't delete the agent pointer.  It's owned by the kernel
-			pAgent = pKernel->CreateAgent(name) ;
-		}
-		else
-		{
-			// If we remove the destroyAgent call at the bottom of this test,
-			// run with a remote connection and then run again, we'll end up in this branch.
-			pAgent->InitSoar() ;
-		}
+		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
+		sml::Agent* pAgent = pKernel->CreateAgent(name) ;
 
 		double time = timer.Elapsed() ;
 		cout << "Time to initialize kernel and create agent: " << time << endl ;
@@ -144,7 +151,7 @@ void EmbeddedConnection()
 		if (pKernel->HadError())
 		{
 			cout << pKernel->GetLastErrorDescription() << endl ;
-			return ;
+			return false ;
 		}
 
 		if (!pAgent)
@@ -155,7 +162,7 @@ void EmbeddedConnection()
 		if (pAgent->HadError())
 		{
 			cout << "ERROR loading productions: " << pAgent->GetLastErrorDescription() << endl ;
-			return ;
+			return false ;
 		}
 
 		Identifier* pInputLink = pAgent->GetInputLink() ;
@@ -173,12 +180,31 @@ void EmbeddedConnection()
 
 		bool ok = pAgent->Commit() ;
 
+		// Throw in a quick init-soar which will cause us to send over the input link again
+		// This is just to test init-soar works.
+		pAgent->InitSoar() ;
+
 		// Remove a wme
 		pAgent->DestroyWME(pWME3) ;
 
 		// Change the speed to 300
 		pAgent->Update(pWME2, 300) ;
 
+		// Added some code to check function call speed
+		// We're not usually going to need this
+		/*
+		{
+			SimpleTimer speed ;
+			speed.Start() ;
+			for (int i = 0 ; i < 10000 ; i++)
+			{
+				pAgent->Update(pWME2, i) ;
+				pAgent->Commit() ;
+			}
+			double speedTime = speed.Elapsed() ;
+			cout << " Speed test time " << speedTime << endl ;
+		}
+		*/
 		// Create a new WME that shares the same id as plane
 		//Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
 
@@ -195,7 +221,11 @@ void EmbeddedConnection()
 		pAgent->Commit() ;
 
 		// Test that we get a callback after the decision cycle runs
-		pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler) ;
+		int userData = 25 ;
+		pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
+
+		// Register another handler for the same event, to make sure we can do that.
+		pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &userData) ;
 
 		// Nothing should match here
 		trace = pAgent->Run(2) ;
@@ -214,8 +244,12 @@ void EmbeddedConnection()
 		ok = pAgent->Commit() ;
 
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
-//		pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
+//		trace = pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
 		trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+
+		// Reset the agent and repeat the process to check whether init-soar works.
+		pAgent->InitSoar() ;
+		trace = pAgent->RunTilOutput(20) ;
 
 		bool ioOK = false ;
 
@@ -235,6 +269,10 @@ void EmbeddedConnection()
 			{
 				cout << "Found alternative " << pAlt->GetValueAsString() << endl ;
 			}
+			else
+			{
+				return false ;
+			}
 	
 			// Should also be able to get the command through the "GetCommands" route which tests
 			// whether we've flagged the right wmes as "just added" or not.
@@ -251,6 +289,7 @@ void EmbeddedConnection()
 			else
 			{
 				cout << "*** ERROR: Failed to find the move command" << endl ;
+				return false ;
 			}
 
 			pAgent->ClearOutputLinkChanges() ;
@@ -260,6 +299,7 @@ void EmbeddedConnection()
 			if (clearedNumberCommands != 0)
 			{
 				cout << "*** ERROR: Clearing the list of output link changes failed" << endl ;
+				return false ;
 			}
 
 			if (pMove)
@@ -274,6 +314,7 @@ void EmbeddedConnection()
 		else
 		{
 			cout << " ERROR: No output generated." << endl ;
+			return false ;
 		}
 
 		// The move command should be deleted in response to the
@@ -289,6 +330,7 @@ void EmbeddedConnection()
 		if (!ioOK)
 		{
 			cout << "*** ERROR: Test failed to send and receive output correctly." << endl ;
+			return false ;
 		}
 
 		cout << endl << "If this test worked should see something like this (above here):" << endl ;
@@ -308,13 +350,18 @@ void EmbeddedConnection()
 
 		cout << "Destroy the agent now" << endl ;
 
+		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
+
 		// Explicitly destroy our agent as a test, before we delete the kernel itself.
 		// (Actually, if this is a remote connection we need to do this or the agent
 		//  will remain alive).
 		ok = pKernel->DestroyAgent(pAgent) ;
 
 		if (!ok)
+		{
 			cout << "*** ERROR: Failed to destroy agent properly ***" ;
+			return false ;
+		}
 
 		delete pKernel ;
 
@@ -323,6 +370,30 @@ void EmbeddedConnection()
 		//pConnection->CloseConnection();
 		//delete pConnection ;
 	}// closes testing block scope
+
+	return true ;
+}
+
+bool FullEmbeddedTest()
+{
+	// Embeddded using direct calls
+	bool ok = TestSML(true, true, true) ;
+
+	// Embedded not using direct calls
+	ok = ok && TestSML(true, true, false) ;
+
+	// Embedded running on thread inside kernel
+	ok = ok && TestSML(true, false, false) ;
+
+	return ok ;
+}
+
+bool RemoteTest()
+{
+	// Remote connection.
+	// (For this to work need to run a listener--usually TestCommandLineInterface to receive the commands).
+	bool ok = TestSML(false, false, false) ;
+	return ok ;
 }
 
 int main(int argc, char* argv[])
@@ -336,16 +407,24 @@ int main(int argc, char* argv[])
 
 	// For now, any argument on the command line makes us create a remote connection.
 	// Later we'll try passing in an ip address/port number.
+	bool success = true ;
+
 	if (argc > 1)
-		SimpleEmbeddedConnection() ;
-		//RemoteConnection() ;
+		success = RemoteTest() ;
+		//success = TestSML(true, true, true) ;
+		//SimpleEmbeddedConnection() ;
+		//SimpleRemoteConnection() ;
 	else
-		EmbeddedConnection() ;
+		success = FullEmbeddedTest() ;
+
+	if (success)
+		cout << "\nTests SUCCEEDED" << endl ;
+	else
+		cout << "\n*** ERROR *** Tests FAILED" << endl ;
 
 	double time = timer.Elapsed() ;
 	cout << "Total run time: " << time << endl ;
 
-#ifdef _MSC_VER
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
 
@@ -359,10 +438,9 @@ int main(int argc, char* argv[])
 	// If we allocate something in a DLL then this call won't see it because it works by overriding the
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
-#endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <return> to exit\n") ;
-	string line;
-	cin >> line;
+	char line[100] ;
+	char* str = gets(line) ;
 }

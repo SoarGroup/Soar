@@ -88,18 +88,6 @@ Identifier::~Identifier(void)
 	// Decide if we need to delete the identifier symbol (or is someone else still using it)
 	if (m_pSymbol->GetNumberUsing() == 0)
 	{
-
-#ifdef SML_DIRECT
-	// If we're using the direct connection methods, we need to release the gSKI object
-	// that we own.
-		/* BUGBUG: Not sure on who should release this and even if we need to.
-	if (GetAgent()->GetConnection()->IsDirectConnection() && m_pSymbol->m_WMObject)
-	{
-		((EmbeddedConnection*)GetAgent()->GetConnection())->DirectReleaseWMObject(m_pSymbol->m_WMObject) ;
-	}
-	*/
-#endif
-
 		delete m_pSymbol ;
 	}
 
@@ -289,3 +277,28 @@ char const* Identifier::GetValueType() const
 {
 	return sml_Names::kTypeID ;
 }
+
+// Send over to the kernel again
+void Identifier::Refresh()
+{
+	// Add this identifier into the tree (except for input link which is auto created)
+	if (GetAgent()->GetInputLink() != this)
+		WMElement::Refresh() ;
+
+	for (ChildrenIter iter = m_pSymbol->m_Children.begin() ; iter != m_pSymbol->m_Children.end() ; iter++)
+	{
+		WMElement* pWME = *iter ;
+		pWME->Refresh() ;
+	}
+}
+
+#ifdef SML_DIRECT
+Direct_WME_Handle Identifier::DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject)
+{
+	// BUGBUG: We can't just call "Add" here because shared id's won't be handled correctly.
+	Direct_WME_Handle wme = ((EmbeddedConnection*)GetAgent()->GetConnection())->DirectAddID(wm, wmobject, GetAttribute()) ;
+	Direct_WMObject_Handle newwmobject = ((EmbeddedConnection*)GetAgent()->GetConnection())->DirectGetThisWMObject(wm, wme) ;
+	SetWMObjectHandle(newwmobject) ;
+	return wme ;
+}
+#endif

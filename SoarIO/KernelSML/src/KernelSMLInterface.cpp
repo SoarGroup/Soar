@@ -41,10 +41,12 @@ static EmbeddedConnection* GetConnectionFromHandle(Connection_Receiver_Handle hC
 
 EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pProcessMessage, int connectionType)
 {
+	bool synch = (connectionType == SML_SYNCH_CONNECTION) ;
+
 	// Create a connection object which we'll use to talk back to this sender
-	EmbeddedConnection* pConnection = connectionType == SML_SYNCH_CONNECTION ?
-										EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
-										EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch() ;
+	EmbeddedConnection* pConnection = synch ?
+						EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
+						EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch(true) ;
 
 	// Record our kernel object with this connection.  I think we only want one kernel
 	// object even if there are many connections (because there's only one kernel) so for now
@@ -89,6 +91,14 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 			KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
 			pKernelSML->Shutdown() ;
 
+			// We can now delete the KernelSML object.  This makes sense because we're closing
+			// the embedded connection to the Kernel and we need that to function (somebody has to load the DLL)
+			// If we close a remote connection we won't be coming here.
+			// Doing this cleanly is a fair challenge (we have to unload and clean up everything here and in gSKI and then not
+			// access it again from anywhere else).  If we run into problems doing that it's probably OK to remove
+			// this clean up step and just wait till the app shuts down (which will usually happen very soon after this).
+			KernelSML::DeleteSingleton() ;
+
 			// The shutdown call above will also delete our connection object as part of its cleanup
 			// so set it to NULL here to make sure we don't try to use it again.
 			pConnection = NULL ;
@@ -123,6 +133,14 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 		// There is no immediate response to an asynch message.
 		// The response will be sent back to the caller as another asynch message later, once the command has been executed.
 		return NULL ;
+	}
+
+	if (action == SML_MESSAGE_ACTION_TRACE_ON || action == SML_MESSAGE_ACTION_TRACE_OFF)
+	{
+		// Report more details on the messages being sent and received.
+		// Currently this only affects remote connections but we may extend it to all connections.
+		KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
+		pKernelSML->SetTraceCommunications( (action == SML_MESSAGE_ACTION_TRACE_ON) ) ;
 	}
 
 	// Not an action we understand, so just ignore it.

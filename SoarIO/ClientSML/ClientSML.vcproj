@@ -150,6 +150,9 @@
 				RelativePath=".\include\sml_ClientDirect.h">
 			</File>
 			<File
+				RelativePath=".\include\sml_ClientErrors.h">
+			</File>
+			<File
 				RelativePath=".\include\sml_ClientEvents.h">
 			</File>
 			<File
@@ -175,6 +178,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_DeltaList.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_ListMap.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_ObjectMap.h">

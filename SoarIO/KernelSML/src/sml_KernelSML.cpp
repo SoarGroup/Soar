@@ -261,6 +261,9 @@ void KernelSML::RemoveAllListeners(Connection* pConnection)
 
 		pAgent->RemoveAllListeners(pConnection) ;
 	}
+
+	// Remove any kernel event listeners
+	m_KernelListener.RemoveAllListeners(pConnection) ;
 }
 
 /*************************************************************

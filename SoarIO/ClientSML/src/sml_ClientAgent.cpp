@@ -56,6 +56,43 @@ void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	GetWM()->ReceivedOutput(pIncoming, pResponse) ;
 }
 
+void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	smlEventId id  = (smlEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
+
+	switch (id)
+	{
+	// Agent listener events
+	case smlEVENT_BEFORE_SMALLEST_STEP:
+	case smlEVENT_AFTER_SMALLEST_STEP:
+	case smlEVENT_BEFORE_ELABORATION_CYCLE:
+	case smlEVENT_AFTER_ELABORATION_CYCLE:
+	case smlEVENT_BEFORE_PHASE_EXECUTED:
+	case smlEVENT_AFTER_PHASE_EXECUTED:
+	case smlEVENT_BEFORE_DECISION_CYCLE:
+	case smlEVENT_AFTER_DECISION_CYCLE:
+	case smlEVENT_AFTER_INTERRUPT:
+	case smlEVENT_BEFORE_RUNNING:
+	case smlEVENT_AFTER_RUNNING:
+		ReceivedRunEvent(id, pIncoming, pResponse) ;
+		break ;
+
+	// Production Manager events too
+	case smlEVENT_AFTER_PRODUCTION_ADDED:
+	case smlEVENT_BEFORE_PRODUCTION_REMOVED:
+	case smlEVENT_AFTER_PRODUCTION_FIRED:
+	case smlEVENT_BEFORE_PRODUCTION_RETRACTED:
+		ReceivedProductionEvent(id, pIncoming, pResponse) ;
+
+	// Agent manager events too
+	case smlEVENT_AFTER_AGENT_CREATED:
+	case smlEVENT_BEFORE_AGENT_DESTROYED:
+	case smlEVENT_BEFORE_AGENT_REINITIALIZED:
+	case smlEVENT_AFTER_AGENT_REINITIALIZED:
+		ReceivedAgentEvent(id, pIncoming, pResponse) ;
+	}
+}
+
 /*************************************************************
 * @brief This function is called when an event is received
 *		 from the Soar kernel.
@@ -63,25 +100,92 @@ void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedRunEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	unused(pResponse) ;
 
-	smlEventId id  = (smlEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
 	smlPhase phase = (smlPhase)pIncoming->GetArgInt(sml_Names::kParamPhase, -1) ;
 
-	// Error in the format of the event
-	if (id == smlEVENT_INVALID_EVENT || phase == -1)
+	// Look up the handler(s) from the map
+	RunEventMap::ValueList* pHandlers = m_RunEventMap.getList(id) ;
+
+	if (!pHandlers)
 		return ;
 
-	// Look up the handler from the map
-	RunEventHandler handler = m_RunEventMap[id] ;
+	// Go through the list of event handlers calling each in turn
+	for (RunEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		RunEventHandlerPlusData handlerWithData = *iter ;
 
-	if (handler == NULL)
+		RunEventHandler handler = handlerWithData.first ;
+		void* pUserData = handlerWithData.second ;
+
+		// Call the handler
+		handler(id, pUserData, this, phase) ;
+	}
+}
+
+/*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Agent::ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	unused(pResponse) ;
+	unused(pIncoming) ;
+
+	// Look up the handler(s) from the map
+	AgentEventMap::ValueList* pHandlers = m_AgentEventMap.getList(id) ;
+
+	if (!pHandlers)
 		return ;
 
-	// Call the handler
-	handler(id, this, phase) ;
+	// Go through the list of event handlers calling each in turn
+	for (AgentEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		AgentEventHandlerPlusData handlerPlus = *iter ;
+		AgentEventHandler handler = handlerPlus.first ;
+		void* pUserData = handlerPlus.second ;
+
+		// Call the handler
+		handler(id, pUserData, this) ;
+	}
+}
+
+/*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Agent::ReceivedProductionEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	unused(pResponse) ;
+
+	char const* pProductionName = pIncoming->GetArgValue(sml_Names::kParamName) ;
+	char const* pInstance = 0 ;	// gSKI defines this but doesn't support it yet.
+
+	// Look up the handler(s) from the map
+	ProductionEventMap::ValueList* pHandlers = m_ProductionEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (ProductionEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		ProductionEventHandlerPlusData handlerPlus = *iter ;
+
+		ProductionEventHandler handler = handlerPlus.first ;
+		void* pUserData = handlerPlus.second ;
+
+		// Call the handler
+		handler(id, pUserData, this, pProductionName, pInstance) ;
+	}
 }
 
 /*************************************************************
@@ -103,13 +207,40 @@ bool Agent::LoadProductions(char const* pFilename)
 
 	bool ok = GetKernel()->GetLastCommandLineResult() ;
 
-	// BUGBUG? Are we handling error messages correctly here?
 	if (ok)
 		ClearError() ;
 	else
 		SetDetailedError(Error::kDetailedError, pResult) ;
 
 	return ok ;
+}
+
+/*************************************************************
+* @brief Register for a particular event at the kernel
+*************************************************************/
+void Agent::RegisterForEvent(smlEventId id)
+{
+	AnalyzeXML response ;
+
+	char buffer[kMinBufferSize] ;
+	Int2String(id, buffer, sizeof(buffer)) ;
+
+	// Send the register command
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, GetAgentName(), sml_Names::kParamEventID, buffer) ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event at the kernel
+*************************************************************/
+void Agent::UnregisterForEvent(smlEventId id)
+{
+	AnalyzeXML response ;
+
+	char buffer[kMinBufferSize] ;
+	Int2String(id, buffer, sizeof(buffer)) ;
+
+	// Send the unregister command
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, GetAgentName(), sml_Names::kParamEventID, buffer) ;
 }
 
 /*************************************************************
@@ -128,35 +259,112 @@ bool Agent::LoadProductions(char const* pFilename)
 * smlEVENT_BEFORE_RUNNING,
 * smlEVENT_AFTER_RUNNING,
 *************************************************************/
-void Agent::RegisterForRunEvent(smlEventId id, RunEventHandler handler)
+void Agent::RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData)
 {
-	AnalyzeXML response ;
-
-	char buffer[kMinBufferSize] ;
-	Int2String(id, buffer, sizeof(buffer)) ;
-
-	// Send the register command
-	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, GetAgentName(), sml_Names::kParamEventID, buffer) ;
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_RunEventMap.getListSize(id) == 0)
+	{
+		RegisterForEvent(id) ;
+	}
 
 	// Record the handler
-	m_RunEventMap[id] = handler ;
+	RunEventHandlerPlusData handlerPlus = std::make_pair(handler, pUserData) ;
+	m_RunEventMap.add(id, handlerPlus) ;
 }
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForEvent(smlEventId id)
+void Agent::UnregisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData)
 {
-	AnalyzeXML response ;
-
-	char buffer[kMinBufferSize] ;
-	Int2String(id, buffer, sizeof(buffer)) ;
-
-	// Send the unregister command
-	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, GetAgentName(), sml_Names::kParamEventID, buffer) ;
-
 	// Remove the handler from our map
-	m_RunEventMap.erase(id) ;
+	RunEventHandlerPlusData handlerPlus = std::make_pair(handler, pUserData) ;
+	m_RunEventMap.remove(id, handlerPlus) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_RunEventMap.getListSize(id) == 0)
+	{
+		UnregisterForEvent(id) ;
+	}
+}
+
+/*************************************************************
+* @brief Register for a "ProductionEvent".
+*		 Multiple handlers can be registered for the same event.
+*
+* Current set is:
+* Production Manager
+* smlEVENT_AFTER_PRODUCTION_ADDED,
+* smlEVENT_BEFORE_PRODUCTION_REMOVED,
+* smlEVENT_AFTER_PRODUCTION_FIRED,
+* smlEVENT_BEFORE_PRODUCTION_RETRACTED,
+*************************************************************/
+void Agent::RegisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData)
+{
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_ProductionEventMap.getListSize(id) == 0)
+	{
+		RegisterForEvent(id) ;
+	}
+
+	// Record the handler
+	m_ProductionEventMap.add(id, std::make_pair(handler, pUserData)) ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event
+*************************************************************/
+void Agent::UnregisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData)
+{
+	// Remove the handler from our map
+	m_ProductionEventMap.remove(id, std::make_pair(handler, pUserData)) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_ProductionEventMap.getListSize(id) == 0)
+	{
+		UnregisterForEvent(id) ;
+	}
+}
+
+/*************************************************************
+* @brief Register for an "AgentEvent".
+*		 Multiple handlers can be registered for the same event.
+*
+* Current set is:
+* // Agent manager
+* smlEVENT_AFTER_AGENT_CREATED,
+* smlEVENT_BEFORE_AGENT_DESTROYED,
+* smlEVENT_BEFORE_AGENT_REINITIALIZED,
+* smlEVENT_AFTER_AGENT_REINITIALIZED,
+*************************************************************/
+void Agent::RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData)
+{
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_AgentEventMap.getListSize(id) == 0)
+	{
+		RegisterForEvent(id) ;
+	}
+
+	// Record the handler
+	m_AgentEventMap.add(id, std::make_pair(handler, pUserData)) ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event
+*************************************************************/
+void Agent::UnregisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData)
+{
+	// Remove the handler from our map
+	m_AgentEventMap.remove(id, std::make_pair(handler, pUserData)) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_AgentEventMap.getListSize(id) == 0)
+	{
+		UnregisterForEvent(id) ;
+	}
 }
 
 /*************************************************************
@@ -424,9 +632,28 @@ bool Agent::Commit()
 *************************************************************/
 char const* Agent::InitSoar()
 {
+#ifdef SML_DIRECT
+	// For the direct connection we need to release all of the WMEs that are
+	// owned in this tree.  Otherwise gSKI will fail to re-init the kernel correctly
+	// when we send over the init-soar command.
+	// BUGBUG: Thinking about this more I guess we really have to register for
+	// the "before-reinit" event and do the clean up there.
+	// Otherwise, if the user issues "init-soar" without coming through this method
+	// the call would fail (e.g. from the command line).
+	if (GetConnection()->IsDirectConnection())
+	{
+		// Force a failure
+		char* pPtr = NULL ;
+		int x = *pPtr ;
+	}
+#endif
+
 	std::string cmd = "init-soar" ;
 
 	// Execute the command.
+	// The init-soar causes an event to be sent back from the kernel and when
+	// we get that, we'll queue up the input link information to be sent over again
+	// and also erase our output link information.
 	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetAgentName()) ;
 	return pResult ;
 }
@@ -491,4 +718,15 @@ char const* Agent::RunTilOutput(unsigned long maxDecisions)
 
 	SetStopOnOutput(true) ;
 	return Run(maxDecisions) ;
+}
+
+/*************************************************************
+* @brief Resend the complete input link to the kernel
+*		 and remove our output link structures.
+*		 We do this when the user issues an "init-soar" event.
+*		 There should be no reason for the client to call this method directly.
+*************************************************************/
+void Agent::Refresh()
+{
+	GetWM()->Refresh() ;
 }

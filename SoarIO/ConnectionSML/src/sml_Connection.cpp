@@ -532,7 +532,8 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	ElementXML* pMsg = CreateSMLCommand(pCommandName, rawOutput) ;
 
 	//add the agent name parameter
-	AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
+	if (pAgentName)
+		AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
 
 	bool result = SendMessageGetResponse(pResponse, pMsg) ;
 
@@ -553,7 +554,8 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	ElementXML* pMsg = CreateSMLCommand(pCommandName, rawOutput) ;
 
 	//add the agent name parameter
-	AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
+	if (pAgentName)
+		AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
 
 	// add the other parameters
 	AddParameterToSMLCommand(pMsg, pParamName1, pParamVal1);
@@ -578,7 +580,8 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	ElementXML* pMsg = CreateSMLCommand(pCommandName, rawOutput) ;
 
 	//add the agent name parameter
-	AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
+	if (pAgentName)
+		AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
 
 	// add the other parameters
 	AddParameterToSMLCommand(pMsg, pParamName1, pParamVal1);
@@ -605,7 +608,8 @@ bool Connection::SendAgentCommand(AnalyzeXML* pResponse, char const* pCommandNam
 	ElementXML* pMsg = CreateSMLCommand(pCommandName, rawOutput) ;
 
 	//add the agent name parameter
-	AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
+	if (pAgentName)
+		AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentName);
 
 	// add the other parameters
 	AddParameterToSMLCommand(pMsg, pParamName1, pParamVal1);
