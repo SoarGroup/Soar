@@ -8,27 +8,12 @@
  */
 
 package debugger;
-/*
-import javax.swing.*;
-import java.awt.*;
-import javax.swing.plaf.*;
-*/
 
 import java.io.*;
-import org.eclipse.*;
-import org.eclipse.swt.*;
-import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.layout.*;
-import org.eclipse.swt.graphics.* ;
-
 import doc.Document;
-
-import sml.*;
 
 public class Application {
 
-	private Document m_Document = null ;
-	
 	public class TopLevelExceptionHandler
 	{
 		// Called when an otherwise untrapped exception occurs in the event thread.
@@ -110,41 +95,6 @@ public class Application {
 		}
 	}
 	
-	public void SWTApp(boolean alwaysInstallLibs) throws Exception
-	{
-		// Step 1: Install the SWT (UI) libraries
-		// BUGBUG: SWT uses platform specific libraries so we need to decide which platform we're on before
-		// choosing which libraries to load.
-		Install(new String[] {"javaw.exe.manifest", "swt-awt-win32-3062.dll", "swt-win32-3062.dll"} , "", alwaysInstallLibs) ;
-		
-		// Step 2: Install the SML (Soar) libraries
-		// BUGBUG: Should choose the extension to match the platform we're on
-		String extension = ".dll" ;		
-		Install(new String[] { "KernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
-
-		Display display = new Display() ;
-		Shell shell = new Shell(display) ;
-		
-		// The document manages the Soar process
-		m_Document = new Document() ;
-		
-		MainFrame frame = new MainFrame(shell, m_Document) ;
-		frame.initComponents();
-		frame.setVisible(true);
-		
-		// We wait until we have a frame up before starting the kernel
-		// so it's just as if the user chose to do this manually
-		// (saves some special case logic in the frame)
-		Agent agent = m_Document.startLocalKernel(Kernel.GetDefaultPort()) ;
-		frame.setAgentFocus(agent) ;	
-		
-		shell.open() ;
-		
-		m_Document.pumpMessagesTillClosed() ;
-
-		display.dispose() ;
-	}
-
 	/************************************************************************
 	*
 	* Default constructor for the application -- creates the main frame and
@@ -153,7 +103,20 @@ public class Application {
 	*************************************************************************/
 	public Application(boolean alwaysInstallLibs) {
 		try {
-			SWTApp(alwaysInstallLibs) ;
+			// Step 1: Install the SWT (UI) libraries
+			// BUGBUG: SWT uses platform specific libraries so we need to decide which platform we're on before
+			// choosing which libraries to load.
+			Install(new String[] { "swt.jar", "javaw.exe.manifest", "swt-awt-win32-3062.dll", "swt-win32-3062.dll"} , "", alwaysInstallLibs) ;
+			
+			// Step 2: Install the SML (Soar) libraries
+			// BUGBUG: Should choose the extension to match the platform we're on
+			String extension = ".dll" ;		
+			Install(new String[] { "KernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
+
+			// Start the SWT version of the application (we used to have a Swing version too)
+			SWTApplication swtApp = new SWTApplication() ;
+			
+			swtApp.startApp() ;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -168,6 +131,7 @@ public class Application {
 	* 
 	*************************************************************************/
 	static public void main(String[] args) {
+		System.out.println("Start") ;
 		new Application(false);
 	}
 	

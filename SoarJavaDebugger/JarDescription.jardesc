@@ -1,30 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jardesc>
-    <jar path="E:/ThreePenny/SoarMichigan/Source/SoarDebuggerInJava.jar"/>
-    <options overwrite="true" compress="true" exportErrors="true" exportWarnings="true" saveDescription="true" descriptionLocation="/SoarDebugger/JarDescription.jardesc" useSourceFolders="false" buildIfNeeded="true"/>
-    <manifest manifestVersion="1.0" usesManifest="true" reuseManifest="false" saveManifest="false" generateManifest="true" manifestLocation="" mainClassHandleIdentifier="=SoarDebugger/&lt;debugger{Application.java[Application">
+    <jar path="E:/SoarMich/SoarDebuggerInJava.jar"/>
+    <options overwrite="true" compress="true" exportErrors="true" exportWarnings="true" saveDescription="true" descriptionLocation="/SoarJavaDebugger/JarDescription.jardesc" useSourceFolders="false" buildIfNeeded="true"/>
+    <manifest manifestVersion="1.0" usesManifest="true" reuseManifest="false" saveManifest="true" generateManifest="false" manifestLocation="/SoarJavaDebugger/JarManifest" mainClassHandleIdentifier="=SoarJavaDebugger/&lt;debugger{Application.java[Application">
         <sealing sealJar="false">
             <packagesToSeal/>
             <packagesToUnSeal/>
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportOutputFolder="false" exportJavaFiles="false">
-        <javaElement handleIdentifier="=SoarDebugger/&lt;general"/>
-        <file path="/SoarDebugger/KernelSML.dll"/>
-        <file path="/SoarDebugger/swt-awt-win32-3062.dll"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;debugger"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;helpers"/>
-        <file path="/SoarDebugger/swt-win32-3062.dll"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;modules"/>
-        <file path="/SoarDebugger/ElementXML.dll"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;doc"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;sml"/>
-        <file path="/SoarDebugger/javaw.exe.manifest"/>
-        <javaElement handleIdentifier="=SoarDebugger/swt"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;menu"/>
-        <file path="/SoarDebugger/Java_sml_ClientInterface.dll"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;dialogs"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;doc.events"/>
-        <javaElement handleIdentifier="=SoarDebugger/&lt;manager"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;menu"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;dialogs"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;general"/>
+        <file path="/SoarJavaDebugger/JarDescription.jardesc"/>
+        <file path="/SoarJavaDebugger/KernelSML.dll"/>
+        <file path="/SoarJavaDebugger/Java_sml_ClientInterface.dll"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;manager"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;doc"/>
+        <file path="/SoarJavaDebugger/usage.txt"/>
+        <file path="/SoarJavaDebugger/aliases.txt"/>
+        <file path="/SoarJavaDebugger/copySWT.bat"/>
+        <file path="/SoarJavaDebugger/copySML.bat"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;helpers"/>
+        <file path="/SoarJavaDebugger/swt/swt.jar"/>
+        <file path="/SoarJavaDebugger/ElementXML.dll"/>
+        <file path="/SoarJavaDebugger/swt-awt-win32-3062.dll"/>
+        <file path="/SoarJavaDebugger/javaw.exe.manifest"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;sml"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;modules"/>
+        <file path="/SoarJavaDebugger/swt-win32-3062.dll"/>
+        <file path="/SoarJavaDebugger/.classpath"/>
+        <file path="/SoarJavaDebugger/.project"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;debugger"/>
+        <file path="/SoarJavaDebugger/debugger.html"/>
+        <file path="/SoarJavaDebugger/How to build debugger.txt"/>
+        <javaElement handleIdentifier="=SoarJavaDebugger/&lt;doc.events"/>
+        <file path="/SoarJavaDebugger/gski_unreleased.txt"/>
     </selectedElements>
 </jardesc>
