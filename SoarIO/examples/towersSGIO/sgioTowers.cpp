@@ -1,4 +1,4 @@
-#include "Towers.h"
+#include "sgioTowers.h"
 
 //standard directives
 #include <cassert>
@@ -43,33 +43,12 @@ using sgio::IntElement;
 *************************************************************/
 class TowerInputLinkProfile
 {
-public:
-
-	/*************************************************************
-	* @returns	The Iwme* of the identifier that all tower child
-	*			Iwmes hang off of
-	*************************************************************/
-	//IWme* GetTowerIdentifier() const { return m_pPegIdentifier;}
-
-	/*************************************************************
-	* @returns	The IWMObject* of the identifier that all tower
-	*			child Iwmes use as a parent
-	*************************************************************/
-	//IWMObject* GetTowerIdentifierObject() const {return m_pPegIdentifier->GetValue()->GetObject();}
-
-	/*************************************************************
-	* @brief	Release reference to wmes actually owned by this
-	*			class, set pointers to zero
-	*************************************************************/
-
-private:
 	/*************************************************************
 	* @brief	Initialize private data to zero.  This constructor
 	*			can only be called by friends
 	*************************************************************/
 	TowerInputLinkProfile(WorkingMemory* inWorkingMemory, char inName) : pWorkingMemory(inWorkingMemory)
 	{
-		//m_pPegIdentifier = 0;
 		string tempName;
 		tempName += inName;
 
@@ -88,7 +67,6 @@ private:
 	}
 
 	WorkingMemory* pWorkingMemory; //working memory is not owned by this object
-	//SoarId* m_pPegIdentifier; //might be un necessary. may just have names hang off of ILink
 	StringElement* m_pPegName;
 
 	friend class Tower;

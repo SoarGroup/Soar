@@ -31,13 +31,14 @@ SoarAgent::~SoarAgent()
 
 int TowerStringToInt(string& sourceString)
 {
-	if(sourceString == "A")
+	if(sourceString == "A" || sourceString == "|A|")
 		return 0;
-	else if(sourceString == "B")
+	else if(sourceString == "B" || sourceString == "|B|")
 		return 1;
-	else if(sourceString == "C")
+	else if(sourceString == "C" || sourceString == "|C|")
 		return 2;
 
+	else cout << "got unexpected tower name: " << sourceString << endl;
 	assert(0);
 	return -99;
 }
