@@ -16,7 +16,7 @@
 #include <vector>
 #include <string>
 #include <stack>
-#include <stack>
+#include <list>
 #include <fstream>
 
 // Local includes
@@ -70,7 +70,11 @@ typedef CommandMap::const_iterator				CommandMapConstIter;
 
 // Define the stack for pushd/popd
 typedef std::stack<std::string> StringStack;
- 
+
+// Define the list for structured responses
+typedef std::list<sml::ElementXML*> ElementXMLList;
+typedef ElementXMLList::iterator ElementXMLListIter;
+
 class CommandLineInterface
 {
 public:
@@ -428,7 +432,7 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void ExciseInternal(gSKI::tIProductionIterator* pProdIter);
+	void ExciseInternal(gSKI::tIProductionIterator* pProdIter, int& exciseCount);
 
 	/*************************************************************
 	* @brief 
@@ -449,7 +453,12 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void HandleError(std::string errorMessage, gSKI::Error* pError = 0);
+	bool RequireKernel();
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool HandleError(std::string errorMessage, gSKI::Error* pError = 0);
 
 	/*************************************************************
 	* @brief 
@@ -466,28 +475,49 @@ protected:
 	*************************************************************/
 	bool HandleGetOptError(char option);
 
-	Constants			m_Constants;			// Pointer to constants management object
-	Aliases				m_Aliases;				// Pointer to alias management object
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	void AppendArgTagFast(const char* pParam, const char* pType, const char* pValue);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
+
+	Constants			m_Constants;			// Constants management object
+	Aliases				m_Aliases;				// Alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
+
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
+
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
-	std::string			m_Result;				// String output from the command
-	std::string			m_ErrorMessage;				// String output from the command
-	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command
-	sml::ElementXML*	m_pResponse;			// Response xml object for structured output
-	sml::Connection*	m_pConnection;			// Connection object for structured output
+
+	bool				m_RawOutput;			// True if we want string output.
 	std::string			m_HomeDirectory;		// The initial working directory, server side
-	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result
-	LogPrintHandler		m_LogPrintHandler;		// The print callback handler, used for catching kernel/gSKI output and writing it to a log
 	bool				m_QuitCalled;			// True after DoQuit is called
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
+	ElementXMLList		m_ResponseTags;			// List of tags for the response.
+
 	bool				m_SourceError;			// Used to control debug printing for source command errors
 	int					m_SourceDepth;			// Depth of source command calls.
-	int					m_SourceDirDepth;		// Depth of directory stack since source command.
+	int					m_SourceDirDepth;		// Depth of directory stack since source command, used to return to the dir that source was issued in.
+
+	std::string			m_Result;				// String output from the command
+	std::string			m_ErrorMessage;			// String output from the command
+	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command
+
+	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result
+	LogPrintHandler		m_LogPrintHandler;		// The print callback handler, used for catching kernel/gSKI output and writing it to a log
+
 	std::string			m_LogFilename;			// Used for logging to a file.
 	std::ofstream*		m_pLogFile;				// The log file stream
-	bool				m_CriticalError;		// True if DoCommand should return false.
-	bool				m_RawOutput;			// True if we want string output.
+
 };
 
 } // namespace cli

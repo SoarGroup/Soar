@@ -26,6 +26,10 @@ namespace cli {
 		static char const* kCLISyntaxError;
 		static char const* kCLINoUsageInfo;
 		static char const* kCLINoUsageFile;
+		static char const* kCLITooManyArgs;
+		static char const* kCLITooFewArgs;
+		static char const* kCLIUnrecognizedOption;
+		static char const* kCLIMissingOptionArg;
 
 		static char const* kCLICD;
 		static char const* kCLIEcho;

@@ -26,8 +26,7 @@ Options and arguments:
   			path.
 ~~~
 On success:
-<result>
-  true
+<result>true</result>
 ***
 chunk-name-format
 Usage:	chunk-name-format [-sl] -p [<prefix>]
@@ -46,12 +45,11 @@ Usage:	default-wme-depth [depth]
 ~~~
 ***
 echo
-Usage:	echo [string]
+Usage:	echo string
   string		The string to print back.
 ~~~
 On success:
-<result>
-  string
+<result>string</result>
 ***
 excise
 Usage:	excise production_name
@@ -65,7 +63,10 @@ Usage:	excise production_name
 ~~~
 On success:
 <result>
-  <arg name="production-name">production_name</arg>
+  <arg name="count">number_of_productions_excised</arg>
+  <arg name="name">production_name</arg>
+</result>
+Notes: 
 	Each excised production will have its name returned.
 ***
 explain-backtraces
@@ -98,16 +99,14 @@ Usage:	help [command_name]
   command_name		Print online help for this command.
 ~~~
 On success:
-<result>
-  help_string
+<result>help_string</result>
 ***
 helpex
 Usage:	helpex command_name
   command_name		Print extended help for this command.
 ~~~
 On success:
-<result>
-  help_string
+<result>help_string</result>
 ***
 indifferent-selection
 Usage:	indifferent-selection
@@ -117,8 +116,7 @@ init-soar
 Usage:	init-soar
 ~~~
 On success:
-<result>
-  true
+<result>true</result>
 ***
 internal-symbols
 Usage:	internal-symbols
@@ -144,8 +142,15 @@ Usage:	learn [-l]
   -o, --only
 ~~~
 On success:
+When setting an option:
+<result>true</result>
+When querying learn status:
 <result>
-  true
+  <arg name="learn_setting" type="boolean">setting</arg>
+</result>
+Notes:
+	Setting is true (learning enabled) or false (disabled).
+	Many options not implemented yet.
 ***
 log
 Usage:	log [-a] [filename]
@@ -157,15 +162,24 @@ Usage:	log [-a] [filename]
 ~~~
 On success:
 <result>
-  true
+  <arg name="log_setting" type="boolean">setting</arg>
+  <arg name="filename" type="string">log_file_name</arg>
+</result>
+Notes:
+	Setting is true (log file open) or false (closed).
+	Log filename is only included if the log is open.
 ***
 ls
 Usage:	ls
 ~~~
 On success:
+<result>true</result>
 <result>
-  <arg name="filename">filename</arg>
-  <arg name="directory">directory</arg>
+  <arg name="filename" type="">filename</arg>
+  <arg name="directory" type="">directory</arg>
+</result>
+Note:
+	Returns true with no args if no files are found.
 ***
 matches
 Usage:	matches [-[a|r]12cntw]
@@ -206,6 +220,16 @@ Usage:	multi-attributes [attribute [n]]
   attribute
   n
 ~~~
+<result>
+  <arg name="count" type="int">number_of_multi_attributes</arg>
+  <arg name="value" type="int">value_of_multi_attribute_1</arg>
+  <arg name="name" type="string">name_of_multi_attribute_1</arg>
+</result>
+<result>true</result>
+Notes:
+	When listing, there will be a value and name for each multi attribute.
+	Total number of multi attributes will be included in count.
+	When setting, simply returns true on success.
 ***
 numeric-indifferent-mode
 Usage:	numeric-indifferent-mode
@@ -219,8 +243,7 @@ popd
 Usage:	popd
 ~~~
 On success:
-<result>
-  true
+<result>true</result>
 ***
 preferences
 Usage:	preferences [-0123nNtw] [id] [attribute]
@@ -272,8 +295,7 @@ Usage:	pushd directory
   directory
 ~~~
 On success:
-<result>
-  true
+<result>true</result>
 ***
 pwatch
 Usage:	pwatch [-d|e] [production name]
@@ -287,15 +309,13 @@ pwd
 Usage:	pwd
 ~~~
 On success:
-<result>
-  directory_string
+<result>directory_string</result>
 ***
 quit
 Usage:	quit
 ~~~
 On success:
-<result>
-  true
+<result>Goodbye.</result>
 ***
 remove-wme
 Usage:	remove-wme
@@ -337,15 +357,17 @@ Usage:	source filename
   filename
 ~~~
 On success:
-<result>
-  true
+<result>true</result>
+<result>directory_string</result>
+Notes:
+	Returns the working directory if the pushd's in the file(s) sourced don't match
+	with popd's.
 ***
 sp
 Usage:	sp { production }
 ~~~
 On success:
-<result>
-  true
+<result>true</result>
 ***
 stats
 Usage:	stats
@@ -358,6 +380,8 @@ Usage:	stats
 #  rtype_qualifier
 #  stat
 ~~~
+On success:
+<result>stats_string</result>
 ***
 stop-soar
 Usage:	stop-soar [-s] [reason_string]
@@ -370,6 +394,9 @@ Usage:	time command [arguments]
   command
   arguments
 ~~~
+<result>
+  <arg name="seconds" type="float">real_time_elapsed</arg>
+</result>
 ***
 waitsnc
 Usage:	waitsnc
@@ -431,6 +458,16 @@ Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>]
   				  * 0: Turn watches for this option off
   				  * 1: Turn watches for this option on
 ~~~
+<result>true</result>
+<result>
+  <arg name=sysparam_int type="boolean">true_or_false</arg>
+  <arg name=sysparam_int type="int">detail_level</arg>
+</result>
+Notes:
+	sysparam_int is an integer constant referring to a relevant sysparam such as
+"14" (TRACE_BACKTRACING_SYSPARAM) or "5" (TRACE_FIRINGS_OF_CHUNKS_SYSPARAM).
+	true_or_false is a true or false string.
+	detail_level is 0, 1 or 2.
 ***
 watch-wmes
 Usage:	watch-wmes -[a|r] -t <type> pattern

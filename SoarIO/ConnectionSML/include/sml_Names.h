@@ -99,6 +99,10 @@ public:
 	static char const* kParamWorkingMemory ;
 	static char const* kParamAttributePath ;
 	static char const* kParamUpdate ;
+	static char const* kParamLearnSetting;
+	static char const* kParamLogSetting;
+	static char const* kParamDirectory;
+	static char const* kParamSeconds;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* kTrue ;

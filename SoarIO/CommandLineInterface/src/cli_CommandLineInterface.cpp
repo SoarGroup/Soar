@@ -43,6 +43,8 @@
 
 // SML includes
 #include "sml_Connection.h"
+#include "sml_TagResult.h"
+#include "sml_TagArg.h"
 
 using namespace std;
 using namespace cli;
@@ -138,12 +140,10 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	// Clear the result
 	m_Result.clear();
 	m_ErrorMessage.clear();
-	m_CriticalError = false;
+	m_ResponseTags.clear();
 
 	// Save the pointers
 	m_pError = pError;
-	m_pConnection = pConnection;
-	m_pResponse = pResponse;
 
 	// Save the raw output flag
 	m_RawOutput = rawOutput;
@@ -154,12 +154,35 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	// Reset source error flag
 	m_SourceError = false;
 
-	if (!m_CriticalError && ret) {
+	if (ret) {
 		// The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
 			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.c_str());
+		} else {
+			// If there are tags in the response list, add them and return
+			if (m_ResponseTags.size()) {
+				TagResult* pTag = new TagResult();
+
+				ElementXMLListIter iter = m_ResponseTags.begin();
+				while (iter != m_ResponseTags.end()) {
+					pTag->AddChild(*iter);
+					m_ResponseTags.erase(iter);
+					iter = m_ResponseTags.begin();
+				}
+
+				pResponse->AddChild(pTag);
+
+			} else {
+				// Otherwise, return result as simple result if there is one
+				if (m_Result.size()) {
+					pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.c_str());
+				} else {
+					// Or, simply return true
+					pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
+				}
+			}
 		}
-	} else if (!ret) {
+	} else {
 		// The command failed, add the error message
 		pConnection->AddErrorToSMLResponse(pResponse, m_ErrorMessage.c_str());
 	}
@@ -179,7 +202,6 @@ EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pC
 	// Clear the result
 	m_Result.clear();
 	m_ErrorMessage.clear();
-	m_CriticalError = false;
 
 	// Save the pointers
 	m_pError = pError;
@@ -231,8 +253,6 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	// Is the command implemented?
 	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
 		HandleError("Command '" + argv[0] + "' not found or implemented.");
-		// Critical error
-		m_CriticalError = true;
 		return false;
 	}
 
@@ -257,8 +277,6 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	if (!pFunction) {
 		// Very odd, should be set in BuildCommandMap
 		HandleError("Command found but function pointer is null.");
-		// This is definately a critical error
-		m_CriticalError = true;
 		return false;
 	}
 	
@@ -410,8 +428,6 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 	// If getcwd returns 0, that is bad
 	if (!ret) {
 		HandleError("Couldn't get working directory.");
-		// Critical error
-		m_CriticalError = true;
 		return false;
 	}
 
@@ -479,8 +495,14 @@ bool CommandLineInterface::HandleSyntaxError(const char* command, const char* de
 bool CommandLineInterface::RequireAgent(gSKI::IAgent* pAgent) {
 	if (!pAgent) {
 		HandleError("An agent pointer is required for this command.");
-		// Critical error
-		m_CriticalError = true;
+		return false;
+	}
+	return true;
+}
+
+bool CommandLineInterface::RequireKernel() {
+	if (!m_pKernel) {
+		HandleError("A kernel pointer is required for this command.");
 		return false;
 	}
 	return true;
@@ -498,13 +520,10 @@ bool CommandLineInterface::HandleGetOptError(char option) {
 	msg += option;
 	msg += "'!";
 	HandleError(msg);
-
-	// Critical error
-	m_CriticalError = true;
 	return false;
 }
 
-void CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pError) {
+bool CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pError) {
 	m_ErrorMessage += errorMessage;
 
 	if (pError && isError(*pError)) {
@@ -514,5 +533,32 @@ void CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pE
 		m_ErrorMessage += pError->ExtendedMsg ;
 	}
 	m_Result += m_ErrorMessage;
-	return;
+
+	// Always return false
+	return false;
 }
+
+void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const char* pValue) {
+	TagArg* pTag = new TagArg();
+	pTag->SetParam(pParam);
+	pTag->SetType(pType);
+	pTag->SetValue(pValue);
+	m_ResponseTags.push_back(pTag);
+}
+
+void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const char* pValue) {
+	TagArg* pTag = new TagArg();
+	pTag->SetParamFast(pParam);
+	pTag->SetTypeFast(pType);
+	pTag->SetValue(pValue);
+	m_ResponseTags.push_back(pTag);
+}
+
+void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const char* pValue) {
+	TagArg* pTag = new TagArg();
+	pTag->SetParamFast(pParam);
+	pTag->SetTypeFast(pType);
+	pTag->SetValue(pValue);
+	m_ResponseTags.push_front(pTag);
+}
+

@@ -34,6 +34,11 @@ const int kMinBufferSize = 25 ;
 char* Int2String(long value, char* buffer, int maxChars) ;
 
 /*************************************************************
+* @brief Convert double to string.
+*************************************************************/
+char* Double2String(double value, char* buffer, int maxChars);
+
+/*************************************************************
 * @brief Returns a copy of the string.
 *		 Some libraries may not have strdup().  If so we
 *		 can fix it here.
