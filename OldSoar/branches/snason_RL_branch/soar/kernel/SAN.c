@@ -95,8 +95,8 @@ float compute_Q_value(RL_record* r){
 	Q *= current_agent(alpha);
 	// print("Q after alpha %f\n", Q);
 
-    if (r->num_prod > 0)
-		Q = Q / r->num_prod;
+    /*if (r->num_prod > 0)
+		Q = Q / r->num_prod;*/
 
 	return Q;
 
@@ -165,11 +165,11 @@ void record_for_RL()
 			  ist = pref->inst;
 			  prod = ist->prod;
 			  record->num_prod++;
-			  prod->times_applied++;
+			  // prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  if ((fabs(prod->avg_update) < 0.01) && prod->increasing){
-			  // if (prod->firing_count < 0){
+			  // if ((fabs(prod->avg_update) < 0.01) && prod->increasing){
+			  if (prod->firing_count < 0){
 				  new_prod = specify_production(ist);
 				  if (new_prod){
 					  // prod->times_applied = 0;
@@ -346,7 +346,7 @@ production *specify_production(instantiation *ist){
 void learn_RL_productions(int level){
 	RL_record *record;
 	production *prod;
-	float Q, temp;
+	float update, temp;
 	cons *c;
 	float increment;
 	
@@ -359,27 +359,33 @@ void learn_RL_productions(int level){
 
 	if (record->op){
 
-		Q = compute_Q_value(record);
-		c = record->pointer_list;
+		if (record->num_prod > 0){
+
+			update = compute_Q_value(record);
+			increment = update / record->num_prod;
 		
-		while(c){
+			c = record->pointer_list;
+		
+			while(c){
 
 
-			prod = (production *) c->first;
-			c = c->rest;
- //			prod->type = RL_PRODUCTION_TYPE;
-
-			increment = rhs_value_to_symbol(prod->action_list->referent)->fc.value;
-			increment += Q;
-			
-			prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
-			// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
-			// a->referent = symbol_to_rhs_value(make_float_constant(Q));
-			temp = prod->decay_abs_update;
-			prod->decay_abs_update = fabs(Q) + prod->decay_abs_update*current_agent(epsilon);
-			prod->increasing = (prod->decay_abs_update > temp ? 1 : 0);
-			prod->avg_update = ((prod->times_applied - 1)*prod->avg_update + Q) / prod->times_applied;
-		//	prod->times_applied++;
+				prod = (production *) c->first;
+				c = c->rest;
+	//			prod->type = RL_PRODUCTION_TYPE;
+	
+				temp = rhs_value_to_symbol(prod->action_list->referent)->fc.value;
+				temp += increment;
+				
+				prod->action_list->referent = symbol_to_rhs_value(make_float_constant(temp));
+				// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+				// a->referent = symbol_to_rhs_value(make_float_constant(Q));
+				prod->times_updated++;
+				temp = prod->decay_abs_update;
+				prod->decay_abs_update = fabs(update) + prod->decay_abs_update*current_agent(epsilon);
+				prod->increasing = (prod->decay_abs_update > temp ? 1 : 0);
+				prod->avg_update = ((prod->times_updated - 1)*prod->avg_update + update) / prod->times_updated;
+			//	prod->times_applied++;
+			}
 		}
 
  			symbol_remove_ref(record->op);

@@ -1585,7 +1585,7 @@ production *make_production(byte type,
     p->documentation = NIL;
     p->filename = NIL;
     p->firing_count = 0;
-	p->times_applied = 0;
+	p->times_updated = 0;
 	p->decay_abs_update = 0;
 	p->avg_update = 0;
 	p->increasing = 0;

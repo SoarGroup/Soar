@@ -1812,7 +1812,7 @@ typedef struct production_struct {
     list *rhs_unbound_variables;        /* RHS vars not bound on LHS */
     struct instantiation_struct *instantiations;        /* dll of inst's in MS */
     int OPERAND_which_assert_list;      /* RCHONG: 10.11 */
-	int times_applied;                      /* SAN - only for RL_PRODUCTION_TYPE */
+	int times_updated;                      /* SAN - only for RL_PRODUCTION_TYPE */
     double decay_abs_update;                      /* SAN - only for RL_PRODUCTION_TYPE */
 	double avg_update;						/* SAN - only for RL_PRODUCTION_TYPE */
 	bool increasing;                        /* SAN - only for RL_PRODUCTION_TYPE */
