@@ -56,6 +56,7 @@ extern wme ** get_augs_of_id( Symbol *id, tc_number tc, int *num_attr );
 #define childlist_init_size 8
 #define wmelist_init_size 128   // Initial size for a wmelist array
 #define memories_init_size 512  // Initial size for the global memories array
+#define memory_match_wait 10    // How long to wait before memories can be recalled
 
 #define EPMEM_ADD 4
 #define EPMEM_CHANGE 5
@@ -143,6 +144,14 @@ typedef struct wmelist_struct
    g_wmetree              - The head of a giant wmetree used to represent all
                             the states that that agent has seen so far.  This is,
                             in effect, the episodic store of the agent.
+   g_memories             - This is an array of all the memories that the
+                            agent has.  Each memory is an index into g_wmetree
+   g_cap_memories         - Current size of the g_memories array
+   g_num_memories         - Current number of memories in g_memories
+   g_curr_memory          - Index of the memory currently in the retrieved link
+   g_epmem_header         - The symbol that ^epmem is attached to
+   g_epmem_query          - The symbold that ^query is attached to
+   g_epmem_retrieved      - The symbold that ^retrieved is attached to
                             
 */
 
@@ -153,6 +162,7 @@ wmetree g_wmetree;
 wmelist **g_memories;
 int g_cap_memories;
 int g_num_memories;
+int g_curr_memory;
 Symbol *g_epmem_header;
 Symbol * g_epmem_query;
 Symbol * g_epmem_retrieved;
@@ -166,6 +176,18 @@ Symbol * g_epmem_retrieved;
 */
 #define IS_LEAF_WME(w) ((w)->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
 
+
+/* ===================================================================
+   compare_ptr
+
+   Compares two void * pointers.  (Used for qsort() calls)
+   
+   Created: 06 Nov 2002
+   =================================================================== */
+int compare_ptr( const void *arg1, const void *arg2 )
+{
+    return *((long *)arg1) - *((long *)arg2);
+}
 
 /* ===================================================================
    make_wmetree_node
@@ -483,11 +505,11 @@ void print_wmetree(wmetree *node, int indent, bool recurse)
             default:
                 break;
         }//switch
-        print("\n");
     }//else
 
     if (recurse)
     {
+        print("\n");
         for(i = 0; i < node->num_children; i++)
         {
             print_wmetree(node->children[i], indent + 4, TRUE);
@@ -654,6 +676,11 @@ Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
         //Save the childnode away for recursive update below
         add_node_to_wmelist(childnodes, childnode);
 
+        //%%%DEBUGGING
+//          print("\t\t\tRECORDING:  ");
+//          print_wme(wmes[i]);
+
+        
         //Check for special case: "superstate" 
         if (wme_has_value(wmes[i], "superstate", NULL))
         {
@@ -684,6 +711,12 @@ Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
             update_wmetree(childnode, wmes[i]->value, wl, tc);
         }
     }
+
+    //Sort the wmelist
+    qsort( (void *)wl->nodes,
+           (size_t)wl->num_nodes,
+           sizeof( wmetree * ),
+           compare_ptr );
     
     return ss;
     
@@ -729,18 +762,6 @@ void add_wmelist_to_memories(wmelist *wl)
 }//add_wmelist_to_memories
 
 /* ===================================================================
-   compare_ptr
-
-   Compares two void * pointers.  (Used for qsort() calls)
-   
-   Created: 06 Nov 2002
-   =================================================================== */
-int compare_ptr( const void *arg1, const void *arg2 )
-{
-    return *((long *)arg1) - *((long *)arg2);
-}
-
-/* ===================================================================
    record_epmem
 
    Once it has been determined that an epmem needs to be recorded,
@@ -754,8 +775,6 @@ void record_epmem( )
     Symbol *sym;
     wmelist *curr_state;
     wmelist *next_state;
-
-    tc = current_agent(bottom_goal)->id.tc_num++;
 
     //Starting with bottom_goal and moving toward top_goal, add all
     //the current states to the wmetree and record the full WM
@@ -773,18 +792,8 @@ void record_epmem( )
         next_state->next = curr_state;
         curr_state = next_state;
 
+        tc = sym->id.tc_num + 1;
         sym = update_wmetree(&g_wmetree, sym, curr_state, tc);
-    }
-
-    //Sort the wmelists
-    next_state = curr_state;
-    while(next_state != NULL)
-    {
-        qsort( (void *)next_state->nodes,
-               (size_t)next_state->num_nodes,
-               sizeof( wmetree * ),
-               compare_ptr );
-        next_state = next_state->next;
     }
 
     //Store the recorded memory
@@ -1174,9 +1183,17 @@ wmelist *match_wmelist(wmelist *w, bool next)
     int n;
     int i;
 
-    for(i = 0; i < g_num_memories; i++)
+    //If there aren't enough memories to examine just return
+    //the first one
+    if (g_num_memories <= memory_match_wait)
+    {
+        return g_memories[0];
+    }
+    
+    for(i = 0; i < g_num_memories - memory_match_wait; i++)
     {
         n = compare_wmelist(g_memories[i], w);
+        print("\nMATCH: epmem %d with str %d", i, n);
         if (n >= best_match)
         {
             best_index = i;
@@ -1188,7 +1205,7 @@ wmelist *match_wmelist(wmelist *w, bool next)
     {
         return g_memories[best_index + 1];
     }
-    
+
     return g_memories[best_index];
 }//match_wmelist
 
@@ -1240,8 +1257,8 @@ void iwiw_helper(Symbol *id, wmetree *node)
         wme_add_ref(node->children[i]->assoc_wme);
 
         //%%%REMOVE THIS
-//      print("\t\t\tADDING:  ");
-//      print_wme(node->children[i]->assoc_wme);
+//          print("\t\t\tADDING:  ");
+//          print_wme(node->children[i]->assoc_wme);
 
         
         //Recursively create wmes for children's children
@@ -1300,7 +1317,7 @@ wmelist *respond_to_query(Symbol *query, Symbol *retrieved, bool next)
 
     //Create a wmelist representing the current query
     wl_query = make_wmelist();
-    tc = current_agent(bottom_goal)->id.tc_num++;
+    tc = query->id.tc_num + 1;
     update_wmetree(&g_wmetree, query, wl_query, tc);
 
     //Remove the old retrieved memory
@@ -1350,8 +1367,9 @@ char *epmem_retrieve_command()
     tc_number tc;
     char *ret = NULL;
     
-    tc = current_agent(bottom_goal)->id.tc_num++;
-    wmes = get_augs_of_id( g_epmem_query, tc, &len );
+    tc = g_epmem_query->id.tc_num + 1;
+    wmes = get_augs_of_id(g_epmem_query, tc, &len);
+    g_epmem_query->id.tc_num = tc - 1;
     if (wmes == NULL) return NULL;
 
     for(i = 0; i < len; i++)
@@ -1360,7 +1378,6 @@ char *epmem_retrieve_command()
              && (wmes[i]->value->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) )
         {
             ret = wmes[i]->value->sc.name;
-            remove_wme_from_wm(wmes[i]);
         }
     }
 
@@ -1388,8 +1405,10 @@ void increment_retrieval_count(long inc_amt)
 
     //Find the (epmem ^retreival-count n) WME, save the value,
     //and remove the WME from WM
-    tc = current_agent(bottom_goal)->id.tc_num++;
+    tc = g_epmem_header->id.tc_num + 1;
     wmes = get_augs_of_id( g_epmem_header, tc, &len );
+    g_epmem_header->id.tc_num = tc - 1;
+    
     if (wmes == NULL) return;
     for(i = 0; i < len; i++)
     {
@@ -1549,6 +1568,7 @@ void init_epmem(void)
                                                           MISCELLANEOUS_MEM_USAGE);
     g_cap_memories = memories_init_size;
     g_num_memories = 0;
+    g_curr_memory = -1;
 
     
 }/*init_epmem*/
