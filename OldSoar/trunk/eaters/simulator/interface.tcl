@@ -2,8 +2,11 @@
 #
 # $Id$
 # $Log$
-# Revision 1.1  2003/06/16 13:48:36  swallace
-# Initial revision
+# Revision 1.2  2003/10/21 18:26:42  snason
+#  hopefully eliminated error message after init-soar
+#
+# Revision 1.1.1.1  2003/06/16 13:48:36  swallace
+# eaters initial cvs version (3.0.5)
 #
 # Revision 8.7  1998/10/25 14:52:30  swallace
 # Synced w/ Mazin
@@ -75,7 +78,7 @@ proc setUpInputLink {agent ioID inID outID} {
 
    set inputLinkID($agent) $inID
    
-
+   
    updateInputLink $agent
 
     
@@ -91,12 +94,14 @@ proc updateInputLink {agent} {
    global inputSensorRange sensorRange eaterSelfWME eaterObject deleteList \
           currentBumpList entityList eaterX eaterY eaterDir eaterScore \
           agentMoved numberOfMoves inputLinkID tsiAgentInfo \
-       actionID 
+       actionID tsiConfig
 
 
+ if { $tsiConfig(sioDebug) > 3 } { 
+         puts "updateInputLink -- (begin) agent: $agent" 
+   }
 
-
-   ### See if there are any objects we need to delete WME's for
+    ### See if there are any objects we need to delete WME's for
    if [info exists deleteList($agent)] {
       foreach obj $deleteList($agent) {
          ### Currently we don't see other eaters, so this won't happen
@@ -153,10 +158,13 @@ proc updateInputLink {agent} {
       deleteSensorLayer $agent
    }
 
+    
+   
    ### Finally, scan the sensors and update WME's appropriately
    updateSensorWMEs $agent
 
 
+ 
    if {[info exists agentMoved($agent)] && $agentMoved($agent)} {
        
        unset agentMoved($agent)
@@ -184,12 +192,22 @@ proc removeInputLink {agent} {
           sensorRange sensorID northWME southWME westWME eastWME \
           typeOfObj natureWME otherEaterColorWME otherEaterScoreWME \
           sensorEater agentMoved inputSensorRange \
-          eaterObject
+          eaterObject tsiConfig moveDir jumpDir
+   
+   if { $tsiConfig(sioDebug) > 3 } { 
+         puts "removeInputLink -- (begin) agent: $agent" 
+   }
    catch "unset inputLinkWME($agent)"
    catch "unset inputLinkID($agent)"
    catch "unset deleteList($agent)"
-   set agentMoved($agent) 1
+   set agentMoved($agent) 0
    catch "unset inputSensorRange($agent)"
+   if [info exists moveDir($agent)] {
+        catch "unset moveDir($agent)"
+        }
+   if [info exists jumpDir($agent)] {
+        catch "unset jumpDir($agent)"
+        }
    if [info exists currentBumpList] {
       foreach i $currentBumpList {
          set obj [lindex $i 0]

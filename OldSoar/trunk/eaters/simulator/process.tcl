@@ -1,8 +1,11 @@
 #
 # $Id$
 # $Log$
-# Revision 1.1  2003/06/16 13:48:35  swallace
-# Initial revision
+# Revision 1.2  2003/10/21 18:26:42  snason
+#  hopefully eliminated error message after init-soar
+#
+# Revision 1.1.1.1  2003/06/16 13:48:35  swallace
+# eaters initial cvs version (3.0.5)
 #
 # Revision 8.7  1998/10/26 15:48:50  swallace
 # Prior to Release for 494
@@ -269,8 +272,7 @@ proc resetEaters {} {
       foreach eater $eaterList {
          set eaterTick($eater) 0
          set eaterScore($eater) 0
-         set agentMoved($eater) 1
-	 set numberOfMoves($eater) 0
+         set numberOfMoves($eater) 0
 	 eval placeEater $eater [eaterStartLocation]
 
       }
@@ -886,7 +888,7 @@ proc addRemoteAgentToEnvironment {socket} {
 	}
 	set eaterTick($newname) 0
 	set eaterScore($newname) 0
-	set agentMoved($newname) 1
+	set agentMoved($newname) 0
         set numberOfMoves($newname) 0
         eval placeEater  $newname [eaterStartLocation]
 
@@ -1015,7 +1017,7 @@ proc startEater {x y dir path name color} {
    }
    set eaterTick($newname) 0
    set eaterScore($newname) 0
-   set agentMoved($newname) 1
+   set agentMoved($newname) 0
    set numberOfMoves($newname) 0
    eval placeEater $newname $x $y $dir
 
