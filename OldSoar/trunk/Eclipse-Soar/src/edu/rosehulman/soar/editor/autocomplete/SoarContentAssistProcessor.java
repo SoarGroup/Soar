@@ -33,7 +33,7 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 	private char[] _propActivate = new char[65];
 	private char[] _infoActivate = null;
 	
-	private String _errorMsg;
+	private String _errorMsg=null;
 
 	/**
 	 * Constructor
@@ -69,134 +69,138 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 		
 		DataMap dm = getDataMap();
 		
-		
-		if (dm == null) {
-			System.out.println("Datamap not found.");
-			return null;
-		}
-		
-		String docText = viewer.getDocument().get();
-		char activator = docText.charAt(documentOffset-1);
+		try {
+			if (dm == null) {
+				System.out.println("Datamap not found.");
+				return null;
+			}
 			
-		if (activator == '^' || activator == '.') {
+			String docText = viewer.getDocument().get();
+			char activator = docText.charAt(documentOffset-1);
+				
+			if (activator == '^' || activator == '.') {
+				
+				ArrayList suggestions;
+				
+				if (activator == '^' ) {
+					suggestions = dm.getRoot().getChildren();
+				} else {
+				
+					ArrayList names = getNames(docText, documentOffset-2);
+					
+					/*for (int i=0; i<names.size(); i++) {
+						System.out.println( "\"" + names.get(i) + "\"");
+					} */
+					
+					//Go through the DataMap for our suggestions
+					suggestions = getSuggestions(dm.getRoot(), names, 0);
+					
+					/*for (int i=0; i<suggestions.size(); i++) {
+						System.out.println(suggestions.get(i));
+					} */
+				} // else
+				
+				
+				CompletionProposal[] ret = new CompletionProposal[suggestions.size()];
+				
+				
+				for (int i=0; i<ret.length; i++) {
+					DMItem sugg = (DMItem) suggestions.get(i);
+					
+					//System.out.println(sugg);
+					
+					ret[i] = new CompletionProposal(
+						sugg.getName(),
+						documentOffset,
+						0,
+						sugg.getName().length(),
+						ItemImages.getImage(sugg),
+						sugg.toString(),
+						null,
+						"");
+					
+				} // for i
+				
+	
+				if (ret.length == 0) {
+					return null;
+				} else {
+					return ret;
+				} // else
 			
-			ArrayList suggestions;
 			
-			if (activator == '^' ) {
-				suggestions = dm.getRoot().getChildren();
+			
+			//Handle partial completion
 			} else {
+				
+				ArrayList suggestions;
+				
 			
-				ArrayList names = getNames(docText, documentOffset-2);
+				ArrayList names = getNames(docText, documentOffset-1);
 				
 				/*for (int i=0; i<names.size(); i++) {
 					System.out.println( "\"" + names.get(i) + "\"");
-				} */
+				}*/
+				
+				//This is the beginning of the attribute the user is looking for.
+				String partial = (String) names.get(names.size()-1);
+				
+				names.remove(names.size()-1);
 				
 				//Go through the DataMap for our suggestions
 				suggestions = getSuggestions(dm.getRoot(), names, 0);
 				
-				/*for (int i=0; i<suggestions.size(); i++) {
+				/*System.out.println("**suggestions before");
+				for (int i=0; i<suggestions.size(); i++) {
 					System.out.println(suggestions.get(i));
-				} */
-			} // else
-			
-			
-			CompletionProposal[] ret = new CompletionProposal[suggestions.size()];
-			
-			
-			for (int i=0; i<ret.length; i++) {
-				DMItem sugg = (DMItem) suggestions.get(i);
+				}*/
 				
-				//System.out.println(sugg);
-				
-				ret[i] = new CompletionProposal(
-					sugg.getName(),
-					documentOffset,
-					0,
-					sugg.getName().length(),
-					ItemImages.getImage(sugg),
-					sugg.toString(),
-					null,
-					"");
-				
-			} // for i
-			
-
-			if (ret.length == 0) {
-				return null;
-			} else {
-				return ret;
-			} // else
-		
-		
-		
-		//Handle partial completion
-		} else {
-			
-			ArrayList suggestions;
-			
-		
-			ArrayList names = getNames(docText, documentOffset-1);
-			
-			/*for (int i=0; i<names.size(); i++) {
-				System.out.println( "\"" + names.get(i) + "\"");
-			}*/
-			
-			//This is the beginning of the attribute the user is looking for.
-			String partial = (String) names.get(names.size()-1);
-			
-			names.remove(names.size()-1);
-			
-			//Go through the DataMap for our suggestions
-			suggestions = getSuggestions(dm.getRoot(), names, 0);
-			
-			/*System.out.println("**suggestions before");
-			for (int i=0; i<suggestions.size(); i++) {
-				System.out.println(suggestions.get(i));
-			}*/
-			
-			//get rid of any suggestions that do not start with partial
-			for (int i=0; i<suggestions.size(); ++i) {
-				String name = ((DMItem) suggestions.get(i)).getName();
-				if (! name.startsWith(partial)) {
-					suggestions.remove(i);
-					--i;
+				//get rid of any suggestions that do not start with partial
+				for (int i=0; i<suggestions.size(); ++i) {
+					String name = ((DMItem) suggestions.get(i)).getName();
+					if (! name.startsWith(partial)) {
+						suggestions.remove(i);
+						--i;
+					}
 				}
+	
+				/*System.out.println("**suggestions after");
+				for (int i=0; i<suggestions.size(); i++) {
+					System.out.println(suggestions.get(i));
+				}*/
+				
+				CompletionProposal[] ret = new CompletionProposal[suggestions.size()];
+				
+				//Build the completion proposal
+				for (int i=0; i<ret.length; i++) {
+					DMItem sugg = (DMItem) suggestions.get(i);
+					
+					//System.out.println(sugg);
+					
+					String replacement = sugg.getName().substring(partial.length());
+					
+					ret[i] = new CompletionProposal(
+						replacement,
+						documentOffset,
+						0,
+						replacement.length(),
+						ItemImages.getImage(sugg),
+						sugg.toString(),
+						null,
+						"");
+					
+				} // for i
+			
+				if (ret.length == 0) {
+					return null;
+				} else {
+					return ret;
+				} // else
 			}
-
-			/*System.out.println("**suggestions after");
-			for (int i=0; i<suggestions.size(); i++) {
-				System.out.println(suggestions.get(i));
-			}*/
-			
-			CompletionProposal[] ret = new CompletionProposal[suggestions.size()];
-			
-			//Build the completion proposal
-			for (int i=0; i<ret.length; i++) {
-				DMItem sugg = (DMItem) suggestions.get(i);
-				
-				//System.out.println(sugg);
-				
-				String replacement = sugg.getName().substring(partial.length());
-				
-				ret[i] = new CompletionProposal(
-					replacement,
-					documentOffset,
-					0,
-					replacement.length(),
-					ItemImages.getImage(sugg),
-					sugg.toString(),
-					null,
-					"");
-				
-			} // for i
-		
-			if (ret.length == 0) {
-				return null;
-			} else {
-				return ret;
-			} // else	
+		} catch (IndexOutOfBoundsException e) {
+			return null;
 		}
+
 	} // ICompletionProposal[] computeCompletionProposals( ... )
 	
 	

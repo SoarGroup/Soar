@@ -580,6 +580,40 @@ public class DataMap {
 		_root = root;
 	} // static DMItem getDefault(IFolder project)
 	
+	
+	/**
+	 * Resturns the datamap associated with the given file, 
+	 *  or <code>null</code> if one does not exist.
+	 * 
+	 * @param file The Soar source file.
+	 * @return The datamap for this file.
+	 */
+	public static DataMap getAssociatedDatamap(IFile file) {
+		IContainer folder = file.getParent();
+		
+		try {
+			IFile dmFile = folder.getFile(new Path("datamap.xdm"));
+			
+			if (dmFile.exists()) {
+				DataMap dm = new DataMap(dmFile);
+			
+				return dm;
+				
+			//If that file does not exist, we'll use the one in the parent folder
+			} else {
+				IFile parentDM = folder.getParent().getFile(new Path("datamap.xdm"));
+				DataMap dm = new DataMap(parentDM);
+			
+				return dm;
+			} // else
+		
+		//If that one doesn't exist either, we pack our bags and go home.
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			return null;
+		}
+	}
 
 
 } // class

@@ -130,5 +130,24 @@ public class DMIdentifier extends DMItem {
 
 		return ret;
 	}
+	
+	public boolean isValidValue(String val) {
+		return false;
+	}
+	
+	public DMItem copy() {
+		DMIdentifier ret = new DMIdentifier(getName());
+		
+		ret._comment = this._comment;
+		
+		ArrayList newKids = (ArrayList) this._children.clone();
+		for (int i=0; i<newKids.size(); ++i) {
+			newKids.set(i, ((DMItem) newKids.get(i)).copy() );
+		}
+		
+		ret._children = newKids;
+		
+		return ret;
+	}
 
-} // class DmIdentifier
+} // class DMIdentifier

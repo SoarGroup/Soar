@@ -18,7 +18,6 @@ public class SoarPerspectiveFactory implements IPerspectiveFactory {
 
 
 	public void createInitialLayout(IPageLayout layout) {
-		// TODO createInitialLayout
 		
 		// Get the editor area.
 		String editorArea = layout.getEditorArea();

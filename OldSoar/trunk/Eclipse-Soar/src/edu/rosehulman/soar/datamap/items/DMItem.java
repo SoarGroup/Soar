@@ -7,9 +7,12 @@
 package edu.rosehulman.soar.datamap.items;
 
 
+import edu.umich.visualsoar.parser.*;
+
 import java.util.*;
 
 import org.eclipse.ui.part.*;
+
 
 /**
  *
@@ -49,6 +52,36 @@ public abstract class DMItem {
 	public ArrayList getChildren() {
 		return null;
 	}
+	
+	
+	/**
+	 * satisfies tests whether or not this edge could be used to
+	 * satisfy the constraint passed in, if so, it returns true
+	 * else false
+	 * @param triple the constraint to test satisfaction to
+	 * @return whether or not this item can satisfy that constraint
+	 */
+	public boolean satisfies(Triple triple) {
+		if (!TripleUtils.isVariable(triple.getAttribute().getString())) {
+			if (!triple.getAttribute().getString().equals(getName())) {
+				return false;
+			}
+		}
+		if (TripleUtils.isVariable(triple.getValue().getString())) {
+			return true;
+		}
+		
+		return isValidValue(triple.getValue().getString());
+	}
+	
+	
+	/**
+	 * This method determines whether or not a given value is valid
+	 * for this particular node
+	 * @param value the string we are checking the validity of
+	 * @return is the string a valid value
+	 */
+	public abstract boolean isValidValue(String val);
 	
 	/**
 	 * Sets the item's children to the given ArrayList if the item supports children.
@@ -222,4 +255,12 @@ public abstract class DMItem {
 	 */
 	public abstract String getXML(int depth);
 	
+	
+	/**
+	 * Creates a copy/clone of this node. If the node has children, copies of
+	 *  them are created as well. The reference to the node's parent is 
+	 *  <i>not</i> retained.
+	 * @return A copy of this node.
+	 */
+	public abstract DMItem copy();
 }

@@ -140,5 +140,33 @@ public class DMInteger extends DMNumericItem {
 	
 		return ret;
 	}
+	
+	public boolean isValidValue(String val) {
+		try {
+			int i = Integer.parseInt(val);
+			int lower = getLowerBound().intValue();
+			int upper = getUpperBound().intValue();
+			
+			if (i >= lower && i <= upper) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		catch(NumberFormatException nfe) {
+			return false;
+		}
+	}
+	
+	
+	public DMItem copy() {
+		DMInteger ret = new DMInteger(getName());
+		
+		ret._comment = this._comment;
+		ret._lowerBound = this._lowerBound;
+		ret._upperBound = this._upperBound;
+		
+		return ret;
+	}
 
 }

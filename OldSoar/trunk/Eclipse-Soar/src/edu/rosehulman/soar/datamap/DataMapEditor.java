@@ -106,6 +106,7 @@ public class DataMapEditor extends EditorPart {
 		viewer.expandToLevel(2);
 		
 		viewer.getTree().addKeyListener(new DMKeyListener());
+		viewer.getTree().addMouseListener(new DMMouseListener());
 
 
 		hookContextMenu();
@@ -166,19 +167,19 @@ public class DataMapEditor extends EditorPart {
 		
 		manager.add(new DeleteItem(this, target));
 		manager.add(new RenameItem(this, target));
-		EditValues ev = new EditValues(this, target);
-		if(!target.canEditValues())
-		{
-			ev.setEnabled(false);
-		}
-		manager.add(ev);
+		manager.add(new EditValues(this, target));
+	
+		manager.add(new Separator("Clipboard"));
+		manager.add(new CutItem(this, target));
+		manager.add(new CopyItem(this, target));
+		manager.add(new PasteItem(this, target));
 	
 		manager.add(new Separator("Comments"));
 		manager.add(new EditComment(this, target));
 		manager.add(new RemoveComment(this, target));
 	
 		manager.add(new Separator("Validation"));
-		//TODO The following menus items:
+		//TODO The following menu items:
 		// Validate Entry
 		// Validate All
 	
@@ -270,5 +271,33 @@ public class DataMapEditor extends EditorPart {
 		}
 		
 	} // class
+	
+	/**
+	 * Enables the user to edit Datamap items by double clicking on them.
+	 * 
+	 * 
+	 * @author Tim Jasko &lt;tj9582@yahoo.com&gt;
+	 */
+	private class DMMouseListener implements MouseListener {
+		public void mouseDoubleClick(MouseEvent e) {
+			ISelection ss = viewer.getSelection();
+			
+			if (! ss.isEmpty()) {
+				DMItem target = (DMItem) ((StructuredSelection)ss).getFirstElement();
+						
+				if (target.canEditValues()) {
+					new EditValues(DataMapEditor.this, target).run();
+				} // if 
+						
+				DataMapEditor.this.getViewer().refresh();
+			} // if
+		}
+		
+		public void mouseDown(MouseEvent e) {
+		}
+		
+		public void mouseUp(MouseEvent e) {
+		}
+	}
 
 } // class

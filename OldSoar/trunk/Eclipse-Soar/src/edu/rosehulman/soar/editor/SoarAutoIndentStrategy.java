@@ -39,10 +39,12 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 			String temp = currLine.substring(0, insertion) + comm.text;
 			
 			if (insertion < currLine.length()) {
-				temp += currLine.substring(insertion+1);
+				temp += currLine.substring(insertion);
 			} 
 			
 			currLine = temp;
+			
+
 			
 			String newCurrLine = trimLeading(currLine);
 			
@@ -198,13 +200,26 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 			//System.out.println("newCurrLine: '" + newCurrLine + "'");
 			
 
+
 			if (! newCurrLine.equals(currLine)) { // not already justified
+				System.out.println();
+				System.out.println("*currLine: '" + currLine + "'");
+				
 				System.out.println("replacing: '" +
 					doc.get(currLineOffset, doc.getLineLength(currLineNumber)) + "'");
-				doc.replace(currLineOffset, doc.getLineLength(currLineNumber),
+				System.out.println("with: '" + newCurrLine + "'");
+				
+				int lineLength = doc.getLineLength(currLineNumber); 
+				if (doc.getLineDelimiter(currLineNumber) != null) {
+					lineLength -= doc.getLineDelimiter(currLineNumber).length();
+				}
+				
+				doc.replace(currLineOffset, 
+					lineLength ,
 					newCurrLine);
 				
 				comm.offset += numSpaces;
+				comm.offset -= startingSpaces(currLine);
 				
 				if (Character.isWhitespace(comm.text.charAt(comm.text.length()-1))) {
 					System.out.println("is whitespace");
@@ -227,6 +242,18 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 		
 
 	} // void customizeDocumentCommand( ... )
+	
+	public int startingSpaces(String line) {
+		int i;
+		
+		for (i=0; i<line.length(); ++i) {
+			if (line.charAt(i) != ' ') {
+				return i;
+			}
+		}
+		
+		return i; 
+	}
 	
 	
 

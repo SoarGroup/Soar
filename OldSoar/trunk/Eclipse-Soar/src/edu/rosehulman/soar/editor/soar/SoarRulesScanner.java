@@ -11,7 +11,6 @@ import edu.rosehulman.soar.editor.util.*;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.jface.text.*;
 import org.eclipse.swt.*;
-import org.eclipse.swt.graphics.Color;
 
 import java.util.*;
 

@@ -133,5 +133,24 @@ public class DMEnumeration extends DMItem {
 
 		return ret;
 	}
+	
+	public boolean isValidValue(String val) {
+		for (int i=0; i<_enums.size(); ++i) {
+			String str = (String) _enums.get(i);
+			if (str.equals(val)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public DMItem copy() {
+		DMEnumeration ret = new DMEnumeration(getName());
+		
+		ret._comment = this._comment;
+		ret._enums = (ArrayList) this._enums.clone();
+		
+		return ret;
+	}
 
 }

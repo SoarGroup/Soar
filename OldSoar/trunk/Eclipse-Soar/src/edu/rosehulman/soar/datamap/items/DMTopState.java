@@ -42,5 +42,15 @@ public class DMTopState extends DMSpecial {
 
 		return ret;
 	}
+	
+	
+	public DMItem copy() {
+		DMIdentifier ret = new DMIdentifier(getName());
+		
+		ret._comment = this._comment;
+		ret._children = this._children;
+		
+		return ret;
+	}
 
 }

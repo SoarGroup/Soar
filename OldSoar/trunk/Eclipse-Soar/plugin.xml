@@ -229,6 +229,29 @@
   
   <!-- Add the top-level menu items to files -->
   
+
+	<!-- Parse the file -->
+	<extension point="org.eclipse.ui.popupMenus">
+		<objectContribution
+			id="edu.rosehulman.soar.wizards.parsefile.file"
+			objectClass="org.eclipse.core.resources.IFile"
+			nameFilter="*.soar">
+			<filter
+				name="projectNature"
+				value="edu.rosehulman.soar.natures.SoarProjectNature">
+			</filter>
+			<action
+				id="edu.rosehulman.soar.wizards.InvokeParseFile.file"
+				label="Parse File"
+				icon="icons/soar.gif"
+				menubarPath="end"
+				class="edu.rosehulman.soar.wizards.actions.InvokeParseFile"
+				enablesFor="1">
+			</action>
+		</objectContribution>
+	</extension>
+  
+  
   
   <extension point="org.eclipse.ui.popupMenus">
 	  <objectContribution

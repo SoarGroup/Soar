@@ -37,7 +37,11 @@ public class EditValues extends Action {
 
 		setText("Edit Value(s)...");
 		setImageDescriptor(PlatformUI.getWorkbench().
-			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_COPY_HOVER));
+			getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
+			
+		if(!target.canEditValues()) {
+			setEnabled(false);
+		}
 	}
 	
 	public void run() {

@@ -16,7 +16,7 @@ import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.ITokenScanner;
 import org.eclipse.jface.text.rules.Token;
-import org.eclipse.swt.SWT;
+
 
 import edu.umich.visualsoar.parser.ASCII_CharStream;
 import edu.umich.visualsoar.parser.SoarParserConstants;

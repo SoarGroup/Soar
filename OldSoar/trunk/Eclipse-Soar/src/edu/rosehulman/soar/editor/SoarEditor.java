@@ -8,14 +8,18 @@ package edu.rosehulman.soar.editor;
 //import java.util.ResourceBundle;
 
 
+import org.eclipse.ui.part.*;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.*;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import edu.rosehulman.soar.*;
 import edu.rosehulman.soar.editor.soar.*;
 import edu.rosehulman.soar.editor.autocomplete.*;
+import edu.rosehulman.soar.errorchecking.*;
+
 
 /**
  * Defines the main editor plug-in for the Soar Eclipse Project
@@ -108,4 +112,13 @@ public class SoarEditor extends AbstractTextEditor
 		sacp.refreshDatamap();
 	}
 	
+	
+	public void doSave(IProgressMonitor monitor) {
+		super.doSave(monitor);
+		
+		SoarSourceChecker.checkSource(
+			((FileEditorInput) this.getEditorInput()).getFile() );
+		
+		this.getVerticalRuler().update();
+	}
 }

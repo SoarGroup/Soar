@@ -10,7 +10,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.*;
-import org.eclipse.jface.dialogs.*;
 
 /**
  * 

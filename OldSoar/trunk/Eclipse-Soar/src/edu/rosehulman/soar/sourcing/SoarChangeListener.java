@@ -8,7 +8,6 @@ package edu.rosehulman.soar.sourcing;
 import edu.rosehulman.soar.natures.*;
 
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.*;
 
 /**
  * 

@@ -9,11 +9,14 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.IPluginDescriptor;
+import org.eclipse.core.runtime.*;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.widgets.*;
 
 import edu.rosehulman.soar.editor.util.ColorProvider;
 import edu.rosehulman.soar.sourcing.*;
+import edu.rosehulman.soar.datamap.*;
 
 
 /**
@@ -32,6 +35,8 @@ public class SoarPlugin extends AbstractUIPlugin
 	private ResourceBundle _resourceBundle;
 	
 	private ColorProvider _colorProvider;
+	
+	private static DataMapClipboard _datamapClipboard;
 	
 	
 	
@@ -58,13 +63,16 @@ public class SoarPlugin extends AbstractUIPlugin
 		_colorProvider = new ColorProvider();
 		
 		
+		//Make us a clipboard
+		
+		_datamapClipboard = new DataMapClipboard();
+		
 		//Set up a listener for resource changes.
-		// Doesn't seem to notify for what we wanted it to. Keep this
-		//	around just in case I need it later.
 		IResourceChangeListener listener = new SoarChangeListener();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(listener,
 			IResourceChangeEvent.PRE_AUTO_BUILD);
 	}
+
 
 	/**
 	 * Returns the shared instance.
@@ -73,6 +81,7 @@ public class SoarPlugin extends AbstractUIPlugin
 	{
 		return _plugin;
 	}
+	
 
 	/**
 	 * Returns the workspace instance.
@@ -81,6 +90,7 @@ public class SoarPlugin extends AbstractUIPlugin
 	{
 		return ResourcesPlugin.getWorkspace();
 	}
+
 
 	/**
 	 * Returns the string from the plugin's resource bundle,
@@ -99,6 +109,7 @@ public class SoarPlugin extends AbstractUIPlugin
 		}
 	}
 
+
 	/**
 	 * Returns the plugin's resource bundle,
 	 */
@@ -106,6 +117,7 @@ public class SoarPlugin extends AbstractUIPlugin
 	{
 		return _resourceBundle;
 	}
+
 
 	/**
 	 * Disposes of the color provider.
@@ -115,6 +127,7 @@ public class SoarPlugin extends AbstractUIPlugin
 		_colorProvider.dispose();
 	}
 
+
 	/**
 	 * Returns the Color provider.
 	 * @return ColorProvider
@@ -123,4 +136,11 @@ public class SoarPlugin extends AbstractUIPlugin
 	{
 		return _colorProvider;
 	}
+	
+	
+	
+	public static DataMapClipboard getDataMapClipboard() {
+		return _datamapClipboard;
+	}
+
 }

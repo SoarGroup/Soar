@@ -85,6 +85,20 @@ public class DMString extends DMItem {
 		
 		return ret;
 	}
+	
+	public boolean isValidValue(String val) {
+		return true;
+		
+	}
+	
+	
+	public DMItem copy() {
+		DMString ret = new DMString(getName());
+		
+		ret._comment = this._comment;
+		
+		return ret;
+	}
 
 
 }

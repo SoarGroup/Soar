@@ -152,4 +152,31 @@ public class DMFloat extends DMNumericItem {
 
 		return ret;
 	}
+	
+	public boolean isValidValue(String val) {
+		try {
+			double f = Double.parseDouble(val);
+			double lower = getLowerBound().doubleValue();
+			double upper = getUpperBound().doubleValue();
+			
+			if (f >= lower && f <= upper) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		catch(NumberFormatException nfe) {
+			return false;
+		}
+	}
+	
+	public DMItem copy() {
+		DMFloat ret = new DMFloat(getName());
+		
+		ret._comment = this._comment;
+		ret._lowerBound = this._lowerBound;
+		ret._upperBound = this._upperBound;
+		
+		return ret;
+	}
 }
