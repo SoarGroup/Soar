@@ -52,6 +52,7 @@ namespace cli {
 		static char const* kCLIPrint;
 		static char const* kCLIProductionFind;
 		static char const* kCLIPushD;
+		static char const* kCLIPWatch;
 		static char const* kCLIPWD;
 		static char const* kCLIQuit;
 		static char const* kCLIRemoveWME;

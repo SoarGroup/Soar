@@ -129,7 +129,10 @@ namespace gSKI
 
 		virtual void SetVerbosity(IAgent* pIAgent, bool setting) = 0;
 		virtual bool GetVerbosity(IAgent* pIAgent) = 0;
-      };
+
+		virtual bool BeginTracingProduction(IAgent* pIAgent, const char* pProductionName) = 0;
+		virtual bool StopTracingProduction(IAgent* pIAgent, const char* pProductionName) = 0;
+	  };
    }
 }
 

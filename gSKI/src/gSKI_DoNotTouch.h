@@ -84,6 +84,10 @@ namespace gSKI
 
 		 void SetVerbosity(IAgent* pIAgent, bool setting);
 		 bool GetVerbosity(IAgent* pIAgent);
+
+		 bool BeginTracingProduction(IAgent* pIAgent, const char* pProductionName);
+		 bool StopTracingProduction(IAgent* pIAgent, const char* pProductionName);
+
       };
    }
 }

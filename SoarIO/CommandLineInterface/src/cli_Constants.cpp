@@ -39,6 +39,7 @@ char const* Constants::kCLIPreferences				= "preferences";
 char const* Constants::kCLIPrint					= "print";
 char const* Constants::kCLIProductionFind			= "production-find";
 char const* Constants::kCLIPushD					= "pushd";
+char const* Constants::kCLIPWatch					= "pwatch";
 char const* Constants::kCLIPWD						= "pwd";
 char const* Constants::kCLIQuit						= "quit";
 char const* Constants::kCLIRemoveWME				= "remove-wme";

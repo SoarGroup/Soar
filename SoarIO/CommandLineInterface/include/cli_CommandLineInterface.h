@@ -421,6 +421,13 @@ public:
 	bool DoPushD(std::string& directory);
 
 	/*************************************************************
+	*************************************************************/
+	bool ParsePWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	*************************************************************/
+	bool DoPWatch(gSKI::IAgent* pAgent, bool query = true, std::string* pProduction = 0, bool setting = false);
+
+	/*************************************************************
 	* @brief pwd command, see usage.txt for details.
 	*************************************************************/
 	bool ParsePWD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

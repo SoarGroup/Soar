@@ -37,6 +37,7 @@ cli_preferences.cpp\
 cli_print.cpp\
 cli_productionfind.cpp\
 cli_pushd.cpp\
+cli_pwatch.cpp\
 cli_pwd.cpp\
 cli_quit.cpp\
 cli_removewme.cpp\

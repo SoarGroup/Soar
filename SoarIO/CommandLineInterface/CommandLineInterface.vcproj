@@ -218,6 +218,9 @@
 					RelativePath=".\src\cli_pushd.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_pwatch.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_pwd.cpp">
 				</File>
 				<File

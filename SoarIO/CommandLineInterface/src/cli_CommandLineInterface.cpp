@@ -102,6 +102,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIPrint]					= &cli::CommandLineInterface::ParsePrint;
 	m_CommandMap[Constants::kCLIProductionFind]			= &cli::CommandLineInterface::ParseProductionFind;
 	m_CommandMap[Constants::kCLIPushD]					= &cli::CommandLineInterface::ParsePushD;
+	m_CommandMap[Constants::kCLIPWatch]					= &cli::CommandLineInterface::ParsePWatch;
 	m_CommandMap[Constants::kCLIPWD]					= &cli::CommandLineInterface::ParsePWD;
 	m_CommandMap[Constants::kCLIQuit]					= &cli::CommandLineInterface::ParseQuit;
 	m_CommandMap[Constants::kCLIRemoveWME]				= &cli::CommandLineInterface::ParseRemoveWME;

@@ -2338,7 +2338,35 @@ __      _(_) |_| |_|_____| |__ (_)_ _|_____| (_)_ |_|  __ _ ___  |_____|
           Agent* pAgent = (Agent*)(pIAgent);
 		  agent* pSoarAgent = pAgent->GetSoarAgent();
 
-		  return pSoarAgent->soar_verbose_flag;
+		  return pSoarAgent->soar_verbose_flag ? true : false;
+	  }
+
+	  bool TgDWorkArounds::BeginTracingProduction(IAgent* pIAgent, const char* pProductionName) {
+          Agent* pAgent = (Agent*)(pIAgent);
+		  agent* pSoarAgent = pAgent->GetSoarAgent();
+		  
+		  Symbol *sym;
+		  sym = find_sym_constant(pSoarAgent, pProductionName);
+		  
+		  if (!sym || !(sym->sc.production))
+			  return false;
+
+		  add_pwatch(pSoarAgent, sym->sc.production);
+		  return true;
+	  }
+
+	  bool TgDWorkArounds::StopTracingProduction(IAgent* pIAgent, const char* pProductionName) {
+          Agent* pAgent = (Agent*)(pIAgent);
+		  agent* pSoarAgent = pAgent->GetSoarAgent();
+		  
+		  Symbol *sym;
+		  sym = find_sym_constant(pSoarAgent, pProductionName);
+		  
+		  if (!sym || !(sym->sc.production))
+			  return false;
+
+		  remove_pwatch(pSoarAgent, sym->sc.production);
+		  return true;
 	  }
    }
 }
