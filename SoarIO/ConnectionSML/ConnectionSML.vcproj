@@ -54,8 +54,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="bin"
-			IntermediateDirectory="Release"
+			OutputDirectory="lib"
+			IntermediateDirectory="lib\Release"
 			ConfigurationType="4"
 			CharacterSet="2">
 			<Tool
@@ -72,7 +72,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)/ConnectionSML.lib"/>
+				OutputFile="lib\ConnectionSML.lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

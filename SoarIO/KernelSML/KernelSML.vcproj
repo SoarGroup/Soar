@@ -85,8 +85,8 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ConnectionSML.lib"
-				OutputFile="..\bin\KernelSML.dll"
+				AdditionalDependencies="ConnectionSML.lib libgw32c.a soar-cli.lib"
+				OutputFile="bin\KernelSML.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\ConnectionSML\bin"
 				GenerateDebugInformation="TRUE"
@@ -98,7 +98,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy bin\KernelSML.dll ..\bin"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

@@ -4,14 +4,18 @@
 #include <vector>
 #include <string>
 
-#include "IgSKI_Agent.h"
-#include "IgSKI_Kernel.h"
-
-#include "sml_ElementXML.h"
-#include "sml_TagResult.h"
-#include "sml_TagError.h"
-
 #include "commanddata.h"
+
+// Forward Declarations
+namespace gSKI {
+   class IAgent;
+   class IKernel;
+   struct Error;
+}
+namespace sml {
+   class ElementXML;
+}
+
 namespace cli {
 
 class CommandLineInterface;
@@ -26,7 +30,7 @@ struct strCompareCommand
 };
 
 // Define the CommandFunction which we'll call to process commands
-typedef bool (CommandLineInterface::*CommandFunction)(int argc, char**& argv, std::string* result);
+typedef bool (CommandLineInterface::*CommandFunction)(int argc, char**& argv);
 
 // Used to store a map from command name to function handler for that command
 typedef std::map<char const*, CommandFunction, strCompareCommand>	CommandMap;
@@ -39,63 +43,69 @@ public:
 	CommandLineInterface(void);
 	~CommandLineInterface(void);
 
-   bool DoCommand(gSKI::IAgent* pAgent, gSKI::IKernel* pKernel, const char* pCommandLine, sml::ElementXML* pResponse);
-   bool DoCommandInternal(const char* commandLine, std::string* result);
+   bool DoCommand(gSKI::IAgent* pAgent, gSKI::IKernel* pKernel, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
+   bool DoCommandInternal(const char* commandLine);
 
 	bool QuitCalled() { return m_QuitCalled; }
+   void GetLastResult(std::string* pResult);
 
-	//bool Parse(int argc, char**& argv, std::string* result = 0);
-	//bool Do(std::string* result = 0);
+	//bool Parse(int argc, char**& argv);
+	//bool Do();
 
-	bool ParseAddWME(int argc, char**& argv, std::string* result = 0);
-	bool DoAddWME(std::string* result = 0);
+	bool ParseAddWME(int argc, char**& argv);
+	bool DoAddWME();
 
-	bool ParseCD(int argc, char**& argv, std::string* result = 0);
-	bool DoCD(const char* directory = 0, std::string* result = 0);
+	bool ParseCD(int argc, char**& argv);
+	bool DoCD(const char* directory = 0);
 
-	bool ParseEcho(int argc, char**& argv, std::string* result = 0);
-	bool DoEcho(std::string* result = 0);
+	bool ParseEcho(int argc, char**& argv);
+	bool DoEcho();
 
-	bool ParseExcise(int argc, char**& argv, std::string* result = 0);
-	bool DoExcise(const unsigned short options, int productionCount, char**& productions, std::string* result = 0);
+	bool ParseExcise(int argc, char**& argv);
+	bool DoExcise(const unsigned short options, int productionCount, char**& productions);
 
-	bool ParseInitSoar(int argc, char**& argv, std::string* result = 0);
-	bool DoInitSoar(std::string* result = 0);
+	bool ParseInitSoar(int argc, char**& argv);
+	bool DoInitSoar();
 
-	bool ParseLearn(int argc, char**& argv, std::string* result = 0);
-	bool DoLearn(const unsigned short options = 0, std::string* result = 0);
+	bool ParseLearn(int argc, char**& argv);
+	bool DoLearn(const unsigned short options = 0);
 
-	bool ParseNewAgent(int argc, char**& argv, std::string* result = 0);
-	bool DoNewAgent(char const* agentName, std::string* result = 0);
+	bool ParseNewAgent(int argc, char**& argv);
+	bool DoNewAgent(char const* agentName);
 
-	bool ParseQuit(int argc, char**& argv, std::string* result = 0);
-	bool DoQuit(std::string* result = 0);
+	bool ParseQuit(int argc, char**& argv);
+	bool DoQuit();
 
-	bool ParseRun(int argc, char**& argv, std::string* result = 0);
-	bool DoRun(const unsigned short options = 0, std::string* result = 0);
+	bool ParseRun(int argc, char**& argv);
+	bool DoRun(const unsigned short options = 0);
 
-	bool ParseSource(int argc, char**& argv, std::string* result = 0);
-	bool DoSource(const char* filename, std::string* result = 0);
+	bool ParseSource(int argc, char**& argv);
+	bool DoSource(const char* filename);
 
-   bool ParseSP(int argc, char**& argv, std::string* result = 0);
-   bool DoSP(const char* production, std::string* result = 0);
+   bool ParseSP(int argc, char**& argv);
+   bool DoSP(const char* production);
 
-	bool ParseStopSoar(int argc, char**& argv, std::string* result = 0);
-	bool DoStopSoar(bool self, char const* reasonForStopping, std::string* result = 0);
+	bool ParseStopSoar(int argc, char**& argv);
+	bool DoStopSoar(bool self, char const* reasonForStopping);
 
-	bool ParseWatch(int argc, char**& argv, std::string* result = 0);
-	bool DoWatch(std::string* result = 0);
+	bool ParseWatch(int argc, char**& argv);
+	bool DoWatch();
 
-	bool ParseWatchWMEs(int argc, char**& argv, std::string* result = 0);
-	bool DoWatchWMEs(std::string* result = 0);
+	bool ParseWatchWMEs(int argc, char**& argv);
+	bool DoWatchWMEs();
 
 protected:
 
-	int Tokenize(const char* commandLine, std::vector<std::string>& argumentVector, std::string* result = 0);
+	int Tokenize(const char* commandLine, std::vector<std::string>& argumentVector);
 	void BuildCommandMap();
+	bool CheckForHelp(int argc, char**& argv);
 
-	CommandMap	m_CommandMap;
-	bool		   m_QuitCalled;
+	CommandMap	   m_CommandMap;
+	bool		      m_QuitCalled;
+   gSKI::IKernel* m_pKernel;
+   gSKI::IAgent*  m_pAgent;
+   std::string    m_Result;
+   gSKI::Error*   m_pError;
 
 };
 

@@ -290,7 +290,7 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 
 bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
-	unused(pCommandName) ; unused(pError) ;
+	unused(pCommandName) ;
 
    if (!pAgent)
       return false ;
@@ -304,6 +304,6 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 
 	// Make the call.
-	return m_CommandLineInterface.DoCommand(pAgent, GetKernel(), pLine, pResponse) ;
+	return m_CommandLineInterface.DoCommand(pAgent, GetKernel(), pLine, pResponse, pError) ;
 }
 
