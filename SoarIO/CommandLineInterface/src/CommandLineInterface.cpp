@@ -980,9 +980,9 @@ bool CommandLineInterface::ParseWatch(int argc, char**& argv, string* result) {
 		}
 
       // convert the argument
-      switch (option) {
+//      switch (option) {
 
-      }
+//      }
 
 		switch (option) {
 			case 'h':

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="CommandLineInterface"
-	ProjectGUID="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
-	RootNamespace="getopttest"
+	Name="TestCommandLineInterface"
+	ProjectGUID="{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
+	RootNamespace="TestCommandLineInterface"
 	Keyword="ManagedCProj">
 	<Platforms>
 		<Platform
@@ -13,28 +13,31 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="lib"
+			OutputDirectory="bin"
 			IntermediateDirectory="lib"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="2"
-			ManagedExtensions="FALSE">
+			ManagedExtensions="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\include;.\lib_src\GnuWin32\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;__GW32C__"
-				MinimalRebuild="TRUE"
-				BasicRuntimeChecks="3"
+				AdditionalIncludeDirectories="include;lib_src\GnuWin32\include"
+				PreprocessorDefinitions="WIN32;_DEBUG"
+				MinimalRebuild="FALSE"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
-				BufferSecurityCheck="FALSE"
-				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="lib\soar-cli.lib"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="soar-cli.lib libgw32c.a"
+				OutputFile="bin\cli-test.exe"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="lib_src\GnuWin32\lib;lib\"
+				GenerateDebugInformation="TRUE"
+				AssemblyDebug="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -49,6 +52,8 @@
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
 			<Tool
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
@@ -66,7 +71,6 @@
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
-				UsePrecompiledHeader="3"
 				WarningLevel="3"
 				DebugInformationFormat="3"/>
 			<Tool
@@ -99,12 +103,6 @@
 		</Configuration>
 	</Configurations>
 	<References>
-		<AssemblyReference
-			RelativePath="mscorlib.dll"/>
-		<AssemblyReference
-			RelativePath="System.dll"/>
-		<AssemblyReference
-			RelativePath="System.Data.dll"/>
 	</References>
 	<Files>
 		<Filter
@@ -112,7 +110,7 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\src\CommandLineInterface.cpp">
+				RelativePath=".\src\cli-test.cpp">
 			</File>
 		</Filter>
 		<Filter
