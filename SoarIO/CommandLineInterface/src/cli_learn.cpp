@@ -9,12 +9,6 @@
 using namespace cli;
 using namespace sml;
 
-// ____                     _
-//|  _ \ __ _ _ __ ___  ___| |    ___  __ _ _ __ _ __
-//| |_) / _` | '__/ __|/ _ \ |   / _ \/ _` | '__| '_ \
-//|  __/ (_| | |  \__ \  __/ |__|  __/ (_| | |  | | | |
-//|_|   \__,_|_|  |___/\___|_____\___|\__,_|_|  |_| |_|
-//
 bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all-levels",		0, 0, 'a'},
@@ -78,12 +72,6 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoLearn(pAgent, options);
 }
 
-// ____        _
-//|  _ \  ___ | |    ___  __ _ _ __ _ __
-//| | | |/ _ \| |   / _ \/ _` | '__| '_ \
-//| |_| | (_) | |__|  __/ (_| | |  | | | |
-//|____/ \___/|_____\___|\__,_|_|  |_| |_|
-//
 bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;

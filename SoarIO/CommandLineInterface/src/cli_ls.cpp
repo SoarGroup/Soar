@@ -10,12 +10,6 @@
 using namespace cli;
 using namespace sml;
 
-// ____                     _     ____
-//|  _ \ __ _ _ __ ___  ___| |   / ___|
-//| |_) / _` | '__/ __|/ _ \ |   \___ \
-//|  __/ (_| | |  \__ \  __/ |___ ___) |
-//|_|   \__,_|_|  |___/\___|_____|____/
-//
 bool CommandLineInterface::ParseLS(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
@@ -26,12 +20,6 @@ bool CommandLineInterface::ParseLS(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoLS();
 }
 
-// ____        _     ____
-//|  _ \  ___ | |   / ___|
-//| | | |/ _ \| |   \___ \
-//| |_| | (_) | |___ ___) |
-//|____/ \___/|_____|____/
-//
 bool CommandLineInterface::DoLS() {
 
 #ifdef WIN32

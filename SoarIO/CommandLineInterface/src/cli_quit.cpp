@@ -2,12 +2,6 @@
 
 using namespace cli;
 
-// ____                      ___        _ _
-//|  _ \ __ _ _ __ ___  ___ / _ \ _   _(_) |_
-//| |_) / _` | '__/ __|/ _ \ | | | | | | | __|
-//|  __/ (_| | |  \__ \  __/ |_| | |_| | | |_
-//|_|   \__,_|_|  |___/\___|\__\_\\__,_|_|\__|
-//
 bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
@@ -16,12 +10,6 @@ bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoQuit();
 }
 
-// ____         ___        _ _
-//|  _ \  ___  / _ \ _   _(_) |_
-//| | | |/ _ \| | | | | | | | __|
-//| |_| | (_) | |_| | |_| | | |_
-//|____/ \___/ \__\_\\__,_|_|\__|
-//
 bool CommandLineInterface::DoQuit() {
 	// Simply flip the quit flag
 	m_QuitCalled = true; 

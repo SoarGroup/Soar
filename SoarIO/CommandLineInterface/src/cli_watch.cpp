@@ -12,12 +12,6 @@
 using namespace cli;
 using namespace sml;
 
-// ____                   __        __    _       _
-//|  _ \ __ _ _ __ ___  __\ \      / /_ _| |_ ___| |__
-//| |_) / _` | '__/ __|/ _ \ \ /\ / / _` | __/ __| '_ \
-//|  __/ (_| | |  \__ \  __/\ V  V / (_| | || (__| | | |
-//|_|   \__,_|_|  |___/\___| \_/\_/ \__,_|\__\___|_| |_|
-//
 bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"aliases",					1, 0, 'a'},
@@ -210,12 +204,6 @@ bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int opt
 	return WatchArg(values, option, atoi(arg));
 }
 
-//__        __    _       _        _
-//\ \      / /_ _| |_ ___| |__    / \   _ __ __ _
-// \ \ /\ / / _` | __/ __| '_ \  / _ \ | '__/ _` |
-//  \ V  V / (_| | || (__| | | |/ ___ \| | | (_| |
-//   \_/\_/ \__,_|\__\___|_| |_/_/   \_\_|  \__, |
-//                                          |___/
 bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int option, int argInt) {
 	// If option is none, values will be ignored anyway
 	if (option == OPTION_WATCH_NONE) {
@@ -260,12 +248,6 @@ bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int opt
 	return true;
 }
 
-// ____     __        __    _       _
-//|  _ \  __\ \      / /_ _| |_ ___| |__
-//| | | |/ _ \ \ /\ / / _` | __/ __| '_ \
-//| |_| | (_) \ V  V / (_| | || (__| | | |
-//|____/ \___/ \_/\_/ \__,_|\__\___|_| |_|
-//
 bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const unsigned int options, unsigned int values) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;

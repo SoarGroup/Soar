@@ -2,12 +2,6 @@
 
 using namespace cli;
 
-// ____                     ______        ______
-//|  _ \ __ _ _ __ ___  ___|  _ \ \      / /  _ \
-//| |_) / _` | '__/ __|/ _ \ |_) \ \ /\ / /| | | |
-//|  __/ (_| | |  \__ \  __/  __/ \ V  V / | |_| |
-//|_|   \__,_|_|  |___/\___|_|     \_/\_/  |____/
-//
 bool CommandLineInterface::ParsePWD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
@@ -18,12 +12,6 @@ bool CommandLineInterface::ParsePWD(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoPWD();
 }
 
-// ____        ______        ______
-//|  _ \  ___ |  _ \ \      / /  _ \
-//| | | |/ _ \| |_) \ \ /\ / /| | | |
-//| |_| | (_) |  __/ \ V  V / | |_| |
-//|____/ \___/|_|     \_/\_/  |____/
-//
 bool CommandLineInterface::DoPWD() {
 
 	std::string directory;

@@ -2,12 +2,6 @@
 
 using namespace cli;
 
-// ____                     _____     _
-//|  _ \ __ _ _ __ ___  ___| ____|___| |__   ___
-//| |_) / _` | '__/ __|/ _ \  _| / __| '_ \ / _ \
-//|  __/ (_| | |  \__ \  __/ |__| (__| | | | (_) |
-//|_|   \__,_|_|  |___/\___|_____\___|_| |_|\___/
-//
 bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
@@ -18,12 +12,6 @@ bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoEcho(argv);
 }
 
-// ____        _____     _
-//|  _ \  ___ | ____|___| |__   ___
-//| | | |/ _ \|  _| / __| '_ \ / _ \
-//| |_| | (_) | |__| (__| | | | (_) |
-//|____/ \___/|_____\___|_| |_|\___/
-//
 bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 
 	// Concatenate arguments (spaces between arguments are lost unless enclosed in quotes)

@@ -9,12 +9,6 @@
 using namespace cli;
 using namespace sml;
 
-// ____                     __  __       _ _   _    _   _   _        _ _           _
-//|  _ \ __ _ _ __ ___  ___|  \/  |_   _| | |_(_)  / \ | |_| |_ _ __(_) |__  _   _| |_ ___  ___
-//| |_) / _` | '__/ __|/ _ \ |\/| | | | | | __| | / _ \| __| __| '__| | '_ \| | | | __/ _ \/ __|
-//|  __/ (_| | |  \__ \  __/ |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
-//|_|   \__,_|_|  |___/\___|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
-//
 bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No more than three arguments
 	if (argv.size() > 3) {
@@ -43,12 +37,6 @@ bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vecto
 	return DoMultiAttributes(pAgent, 0, n);
 }
 
-// ____        __  __       _ _   _    _   _   _        _ _           _
-//|  _ \  ___ |  \/  |_   _| | |_(_)  / \ | |_| |_ _ __(_) |__  _   _| |_ ___  ___
-//| | | |/ _ \| |\/| | | | | | __| | / _ \| __| __| '__| | '_ \| | | | __/ _ \/ __|
-//| |_| | (_) | |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
-//|____/ \___/|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
-//
 bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* pAttribute, int n) {
 	if (!RequireAgent(pAgent)) return false;
 

@@ -5,12 +5,6 @@
 
 using namespace cli;
 
-// ____                     ____  _        _
-//|  _ \ __ _ _ __ ___  ___/ ___|| |_ __ _| |_ ___
-//| |_) / _` | '__/ __|/ _ \___ \| __/ _` | __/ __|
-//|  __/ (_| | |  \__ \  __/___) | || (_| | |_\__ \
-//|_|   \__,_|_|  |___/\___|____/ \__\__,_|\__|___/
-//
 bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No arguments
 	if (argv.size() != 1) {
@@ -20,12 +14,6 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoStats(pAgent);
 }
 
-// ____       ____  _        _
-//|  _ \  ___/ ___|| |_ __ _| |_ ___
-//| | | |/ _ \___ \| __/ _` | __/ __|
-//| |_| | (_) |__) | || (_| | |_\__ \
-//|____/ \___/____/ \__\__,_|\__|___/
-//
 bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;

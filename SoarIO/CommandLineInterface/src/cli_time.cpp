@@ -12,12 +12,6 @@
 using namespace cli;
 using namespace sml;
 
-// ____                    _____ _
-//|  _ \ __ _ _ __ ___  __|_   _(_)_ __ ___   ___
-//| |_) / _` | '__/ __|/ _ \| | | | '_ ` _ \ / _ \
-//|  __/ (_| | |  \__ \  __/| | | | | | | | |  __/
-//|_|   \__,_|_|  |___/\___||_| |_|_| |_| |_|\___|
-//
 bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// There must at least be a command
 	if (argv.size() < 2) {
@@ -30,12 +24,6 @@ bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoTime(pAgent, argv);
 }
 
-// ____      _____ _
-//|  _ \  __|_   _(_)_ __ ___   ___
-//| | | |/ _ \| | | | '_ ` _ \ / _ \
-//| |_| | (_) | | | | | | | | |  __/
-//|____/ \___/|_| |_|_| |_| |_|\___|
-//
 bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
 #ifdef WIN32

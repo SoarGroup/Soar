@@ -24,12 +24,6 @@
 using namespace cli;
 using namespace sml;
 
-//  ____                                          _ _     _            ___       _             __
-// / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)_ __   ___|_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
-//| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` | |   | | '_ \ / _ \| || '_ \| __/ _ \ '__| |_ / _` |/ __/ _ \
-//| |__| (_) | | | | | | | | | | | (_| | | | | (_| | |___| | | | |  __/| || | | | ||  __/ |  |  _| (_| | (_|  __/
-// \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|_| |_|\___|___|_| |_|\__\___|_|  |_|  \__,_|\___\___|
-//
 EXPORT CommandLineInterface::CommandLineInterface() {
 
 	// Create getopt object
@@ -57,12 +51,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_pLogFile = 0;
 }
 
-// /\/|____                                          _ _     _            ___       _             __
-//|/\// ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)_ __   ___|_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
-//   | |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` | |   | | '_ \ / _ \| || '_ \| __/ _ \ '__| |_ / _` |/ __/ _ \
-//   | |__| (_) | | | | | | | | | | | (_| | | | | (_| | |___| | | | |  __/| || | | | ||  __/ |  |  _| (_| | (_|  __/
-//    \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|_| |_|\___|___|_| |_|\__\___|_|  |_|  \__,_|\___\___|
-//
 EXPORT CommandLineInterface::~CommandLineInterface() {
 	if (m_pGetOpt) {
 		delete m_pGetOpt;
@@ -72,12 +60,6 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 	}
 }
 
-// ____        _ _     _  ____                                          _ __  __
-//| __ ) _   _(_) | __| |/ ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |  \/  | __ _ _ __
-//|  _ \| | | | | |/ _` | |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` | |\/| |/ _` | '_ \
-//| |_) | |_| | | | (_| | |__| (_) | | | | | | | | | | | (_| | | | | (_| | |  | | (_| | |_) |
-//|____/ \__,_|_|_|\__,_|\____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_|  |_|\__,_| .__/
-//                                                                                    |_|
 void CommandLineInterface::BuildCommandMap() {
 
 	m_CommandMap[Constants::kCLICD]					= &cli::CommandLineInterface::ParseCD;
@@ -105,12 +87,6 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIWatch]				= &cli::CommandLineInterface::ParseWatch;
 }
 
-// ____         ____                                          _
-//|  _ \  ___  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |
-//| | | |/ _ \| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |
-//| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
-//|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
-//
 EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, ElementXML* pResponse, bool rawOutput, gSKI::Error* pError) {
 
 	// Clear the result
@@ -167,12 +143,6 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	return true ;
 }
 
-// ____         ____                                          _
-//|  _ \  ___  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |
-//| | | |/ _ \| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |
-//| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
-//|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
-//
 EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError) {
 	// This function is for processing a command without the SML layer
 	// Clear the result
@@ -193,12 +163,6 @@ EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pC
 	return ret;
 }
 
-// ____         ____                                          _ ___       _                        _
-//|  _ \  ___  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |_ _|_ __ | |_ ___ _ __ _ __   __ _| |
-//| | | |/ _ \| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` || || '_ \| __/ _ \ '__| '_ \ / _` | |
-//| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| || || | | | ||  __/ |  | | | | (_| | |
-//|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
-//
 bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::string& commandLine) {
 
 	vector<string> argv;
@@ -211,12 +175,6 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::st
 	return DoCommandInternal(pAgent, argv);
 }
 
-// ____         ____                                          _ ___       _                        _
-//|  _ \  ___  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |_ _|_ __ | |_ ___ _ __ _ __   __ _| |
-//| | | |/ _ \| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` || || '_ \| __/ _ \ '__| '_ \ / _` | |
-//| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| || || | | | ||  __/ |  | | | | (_| | |
-//|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
-//
 bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string>& argv) {
 	if (!argv.size()) {
 		// Nothing on command line!
@@ -260,12 +218,6 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	return (this->*pFunction)(pAgent, argv);
 }
 
-// _____     _              _
-//|_   _|__ | | _____ _ __ (_)_______
-//  | |/ _ \| |/ / _ \ '_ \| |_  / _ \
-//  | | (_) |   <  __/ | | | |/ /  __/
-//  |_|\___/|_|\_\___|_| |_|_/___\___|
-//
 int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVector) {
 	int argc = 0;
 	string::iterator iter;
@@ -351,12 +303,6 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 	return argc;
 }
 
-//  ____ _               _    _____          _   _      _
-// / ___| |__   ___  ___| | _|  ___|__  _ __| | | | ___| |_ __
-//| |   | '_ \ / _ \/ __| |/ / |_ / _ \| '__| |_| |/ _ \ | '_ \
-//| |___| | | |  __/ (__|   <|  _| (_) | |  |  _  |  __/ | |_) |
-// \____|_| |_|\___|\___|_|\_\_|  \___/|_|  |_| |_|\___|_| .__/
-//                                                       |_|
 bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 
 	// Standard help check if there is more than one argument
@@ -369,12 +315,6 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 	return false;
 }
 
-//    _                               _ _____     ____                 _ _
-//   / \   _ __  _ __   ___ _ __   __| |_   _|__ |  _ \ ___  ___ _   _| | |_
-//  / _ \ | '_ \| '_ \ / _ \ '_ \ / _` | | |/ _ \| |_) / _ \/ __| | | | | __|
-// / ___ \| |_) | |_) |  __/ | | | (_| | | | (_) |  _ <  __/\__ \ |_| | | |_
-///_/   \_\ .__/| .__/ \___|_| |_|\__,_| |_|\___/|_| \_\___||___/\__,_|_|\__|
-//        |_|   |_|
 inline void CommandLineInterface::AppendToResult(const char* pMessage) {
 	// Simply add to result
 	m_Result += pMessage;
@@ -393,22 +333,10 @@ void CommandLineInterface::AppendToResult(const char character) {
 	m_Result += character;
 }
 
-// ____       _   _  __                    _
-/// ___|  ___| |_| |/ /___ _ __ _ __   ___| |
-//\___ \ / _ \ __| ' // _ \ '__| '_ \ / _ \ |
-// ___) |  __/ |_| . \  __/ |  | | | |  __/ |
-//|____/ \___|\__|_|\_\___|_|  |_| |_|\___|_|
-//
 EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel) {
 	m_pKernel = pKernel;
 }
 
-//  ____      _    ____                          _ __        __         _    _             ____  _               _
-// / ___| ___| |_ / ___|   _ _ __ _ __ ___ _ __ | |\ \      / /__  _ __| | _(_)_ __   __ _|  _ \(_)_ __ ___  ___| |_ ___  _ __ _   _
-//| |  _ / _ \ __| |  | | | | '__| '__/ _ \ '_ \| __\ \ /\ / / _ \| '__| |/ / | '_ \ / _` | | | | | '__/ _ \/ __| __/ _ \| '__| | | |
-//| |_| |  __/ |_| |__| |_| | |  | | |  __/ | | | |_ \ V  V / (_) | |  |   <| | | | | (_| | |_| | | | |  __/ (__| || (_) | |  | |_| |
-// \____|\___|\__|\____\__,_|_|  |_|  \___|_| |_|\__| \_/\_/ \___/|_|  |_|\_\_|_| |_|\__, |____/|_|_|  \___|\___|\__\___/|_|   \__, |
-//                                                                                   |___/                                     |___/
 bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 	// Pull an arbitrary buffer size of 1024 out of a hat and use it
 	char buf[1024];
@@ -425,12 +353,6 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 	return true;
 }
 
-// ___     ___       _
-//|_ _|___|_ _|_ __ | |_ ___  __ _  ___ _ __
-// | |/ __|| || '_ \| __/ _ \/ _` |/ _ \ '__|
-// | |\__ \| || | | | ||  __/ (_| |  __/ |
-//|___|___/___|_| |_|\__\___|\__, |\___|_|
-//                           |___/
 bool CommandLineInterface::IsInteger(const string& s) {
 	string::const_iterator iter = s.begin();
 	
@@ -450,12 +372,6 @@ bool CommandLineInterface::IsInteger(const string& s) {
 	return true;
 }
 
-// _   _                 _ _      ____              _             _____
-//| | | | __ _ _ __   __| | | ___/ ___| _   _ _ __ | |_ __ ___  _| ____|_ __ _ __ ___  _ __
-//| |_| |/ _` | '_ \ / _` | |/ _ \___ \| | | | '_ \| __/ _` \ \/ /  _| | '__| '__/ _ \| '__|
-//|  _  | (_| | | | | (_| | |  __/___) | |_| | | | | || (_| |>  <| |___| |  | | | (_) | |
-//|_| |_|\__,_|_| |_|\__,_|_|\___|____/ \__, |_| |_|\__\__,_/_/\_\_____|_|  |_|  \___/|_|
-//                                      |___/
 bool CommandLineInterface::HandleSyntaxError(const char* command, const char* details) {
 	string msg;
 	msg += Constants::kCLISyntaxError;
@@ -475,12 +391,6 @@ bool CommandLineInterface::HandleSyntaxError(const char* command, const char* de
 	return false;
 }
 
-// ____                  _             _                    _
-//|  _ \ ___  __ _ _   _(_)_ __ ___   / \   __ _  ___ _ __ | |_
-//| |_) / _ \/ _` | | | | | '__/ _ \ / _ \ / _` |/ _ \ '_ \| __|
-//|  _ <  __/ (_| | |_| | | | |  __// ___ \ (_| |  __/ | | | |_
-//|_| \_\___|\__, |\__,_|_|_|  \___/_/   \_\__, |\___|_| |_|\__|
-//              |_|                        |___/
 bool CommandLineInterface::RequireAgent(gSKI::IAgent* pAgent) {
 	if (!pAgent) {
 		HandleError("An agent pointer is required for this command.");
@@ -497,12 +407,6 @@ bool CommandLineInterface::RequireKernel() {
 	return true;
 }
 
-// _   _                 _ _       ____      _    ___        _   _____
-//| | | | __ _ _ __   __| | | ___ / ___| ___| |_ / _ \ _ __ | |_| ____|_ __ _ __ ___  _ __
-//| |_| |/ _` | '_ \ / _` | |/ _ \ |  _ / _ \ __| | | | '_ \| __|  _| | '__| '__/ _ \| '__|
-//|  _  | (_| | | | | (_| | |  __/ |_| |  __/ |_| |_| | |_) | |_| |___| |  | | | (_) | |
-//|_| |_|\__,_|_| |_|\__,_|_|\___|\____|\___|\__|\___/| .__/ \__|_____|_|  |_|  \___/|_|
-//                                                    |_|
 bool CommandLineInterface::HandleGetOptError(char option) {
 	string msg;
 	msg += "Internal error: m_pGetOpt->GetOpt_Long returned '";
@@ -512,12 +416,6 @@ bool CommandLineInterface::HandleGetOptError(char option) {
 	return false;
 }
 
-// _   _                 _ _      _____
-//| | | | __ _ _ __   __| | | ___| ____|_ __ _ __ ___  _ __
-//| |_| |/ _` | '_ \ / _` | |/ _ \  _| | '__| '__/ _ \| '__|
-//|  _  | (_| | | | | (_| | |  __/ |___| |  | | | (_) | |
-//|_| |_|\__,_|_| |_|\__,_|_|\___|_____|_|  |_|  \___/|_|
-//
 bool CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pError) {
 	m_ErrorMessage += errorMessage;
 
@@ -533,12 +431,6 @@ bool CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pE
 	return false;
 }
 
-//    _                               _    _             _____
-//   / \   _ __  _ __   ___ _ __   __| |  / \   _ __ __ |_   _|_ _  __ _
-//  / _ \ | '_ \| '_ \ / _ \ '_ \ / _` | / _ \ | '__/ _` || |/ _` |/ _` |
-// / ___ \| |_) | |_) |  __/ | | | (_| |/ ___ \| | | (_| || | (_| | (_| |
-///_/   \_\ .__/| .__/ \___|_| |_|\__,_/_/   \_\_|  \__, ||_|\__,_|\__, |
-//        |_|   |_|                                 |___/          |___/
 void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const char* pValue) {
 	TagArg* pTag = new TagArg();
 	pTag->SetParam(pParam);
@@ -547,12 +439,6 @@ void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, c
 	m_ResponseTags.push_back(pTag);
 }
 
-//    _                               _    _             _____           _____         _
-//   / \   _ __  _ __   ___ _ __   __| |  / \   _ __ __ |_   _|_ _  __ _|  ___|_ _ ___| |_
-//  / _ \ | '_ \| '_ \ / _ \ '_ \ / _` | / _ \ | '__/ _` || |/ _` |/ _` | |_ / _` / __| __|
-// / ___ \| |_) | |_) |  __/ | | | (_| |/ ___ \| | | (_| || | (_| | (_| |  _| (_| \__ \ |_
-///_/   \_\ .__/| .__/ \___|_| |_|\__,_/_/   \_\_|  \__, ||_|\__,_|\__, |_|  \__,_|___/\__|
-//        |_|   |_|                                 |___/          |___/
 void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const char* pValue) {
 	TagArg* pTag = new TagArg();
 	pTag->SetParamFast(pParam);
@@ -561,12 +447,6 @@ void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pTyp
 	m_ResponseTags.push_back(pTag);
 }
 
-// ____                                _    _             _____           _____         _
-//|  _ \ _ __ ___ _ __   ___ _ __   __| |  / \   _ __ __ |_   _|_ _  __ _|  ___|_ _ ___| |_
-//| |_) | '__/ _ \ '_ \ / _ \ '_ \ / _` | / _ \ | '__/ _` || |/ _` |/ _` | |_ / _` / __| __|
-//|  __/| | |  __/ |_) |  __/ | | | (_| |/ ___ \| | | (_| || | (_| | (_| |  _| (_| \__ \ |_
-//|_|   |_|  \___| .__/ \___|_| |_|\__,_/_/   \_\_|  \__, ||_|\__,_|\__, |_|  \__,_|___/\__|
-//               |_|                                 |___/          |___/
 void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const char* pValue) {
 	TagArg* pTag = new TagArg();
 	pTag->SetParamFast(pParam);

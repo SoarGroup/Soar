@@ -6,12 +6,6 @@
 
 using namespace cli;
 
-// ____                     ____  _             ____
-//|  _ \ __ _ _ __ ___  ___/ ___|| |_ ___  _ __/ ___|  ___   __ _ _ __
-//| |_) / _` | '__/ __|/ _ \___ \| __/ _ \| '_ \___ \ / _ \ / _` | '__|
-//|  __/ (_| | |  \__ \  __/___) | || (_) | |_) |__) | (_) | (_| | |
-//|_|   \__,_|_|  |___/\___|____/ \__\___/| .__/____/ \___/ \__,_|_|
-//                                        |_|
 bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"self",		0, 0, 's'},
@@ -51,12 +45,6 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 	return DoStopSoar(pAgent, self, reasonForStopping);
 }
 
-// ____       ____  _             ____
-//|  _ \  ___/ ___|| |_ ___  _ __/ ___|  ___   __ _ _ __
-//| | | |/ _ \___ \| __/ _ \| '_ \___ \ / _ \ / _` | '__|
-//| |_| | (_) |__) | || (_) | |_) |__) | (_) | (_| | |
-//|____/ \___/____/ \__\___/| .__/____/ \___/ \__,_|_|
-//                          |_|
 bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string& reasonForStopping) {
 	unused(pAgent);
 	AppendToResult("TODO: do stop-soar ");

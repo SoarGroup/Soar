@@ -6,12 +6,6 @@ using namespace cli;
 #include <direct.h>
 #endif // WIN32
 
-// ____                      ____ ____
-//|  _ \ __ _ _ __ ___  ___ / ___|  _ \
-//| |_) / _` | '__/ __|/ _ \ |   | | | |
-//|  __/ (_| | |  \__ \  __/ |___| |_| |
-//|_|   \__,_|_|  |___/\___|\____|____/
-//
 bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
@@ -25,12 +19,6 @@ bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoCD();
 }
 
-// ____         ____ ____
-//|  _ \  ___  / ___|  _ \
-//| | | |/ _ \| |   | | | |
-//| |_| | (_) | |___| |_| |
-//|____/ \___/ \____|____/
-//
 bool CommandLineInterface::DoCD(std::string* pDirectory) {
 
 	// If cd is typed by itself, return to original (home) directory

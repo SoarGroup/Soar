@@ -8,12 +8,6 @@
 
 using namespace cli;
 
-// ____                     ____
-//|  _ \ __ _ _ __ ___  ___/ ___|  ___  _   _ _ __ ___ ___
-//| |_) / _` | '__/ __|/ _ \___ \ / _ \| | | | '__/ __/ _ \
-//|  __/ (_| | |  \__ \  __/___) | (_) | |_| | | | (_|  __/
-//|_|   \__,_|_|  |___/\___|____/ \___/ \__,_|_|  \___\___|
-//
 bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	if (argv.size() < 2) {
 		// Source requires a filename
@@ -27,12 +21,6 @@ bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoSource(pAgent, argv[1]);
 }
 
-// ____       ____
-//|  _ \  ___/ ___|  ___  _   _ _ __ ___ ___
-//| | | |/ _ \___ \ / _ \| | | | '__/ __/ _ \
-//| |_| | (_) |__) | (_) | |_| | | | (_|  __/
-//|____/ \___/____/ \___/ \__,_|_|  \___\___|
-//
 bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, const std::string& filename) {
 	if (!RequireAgent(pAgent)) return false;
 
@@ -184,12 +172,6 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, const std::string& fil
 	return true;
 }
 
-// _   _                 _ _      ____                           _____
-//| | | | __ _ _ __   __| | | ___/ ___|  ___  _   _ _ __ ___ ___| ____|_ __ _ __ ___  _ __
-//| |_| |/ _` | '_ \ / _` | |/ _ \___ \ / _ \| | | | '__/ __/ _ \  _| | '__| '__/ _ \| '__|
-//|  _  | (_| | | | | (_| | |  __/___) | (_) | |_| | | | (_|  __/ |___| |  | | | (_) | |
-//|_| |_|\__,_|_| |_|\__,_|_|\___|____/ \___/ \__,_|_|  \___\___|_____|_|  |_|  \___/|_|
-//
 void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename) {
 	if (!m_SourceError) {
 		// PopD to original source directory

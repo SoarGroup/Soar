@@ -7,12 +7,6 @@
 
 using namespace cli;
 
-// ____                     ____  ____
-//|  _ \ __ _ _ __ ___  ___/ ___||  _ \
-//| |_) / _` | '__/ __|/ _ \___ \| |_) |
-//|  __/ (_| | |  \__ \  __/___) |  __/
-//|_|   \__,_|_|  |___/\___|____/|_|
-//
 bool CommandLineInterface::ParseSP(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// One argument (in brackets)
 	if (argv.size() != 2) {
@@ -29,12 +23,6 @@ bool CommandLineInterface::ParseSP(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoSP(pAgent, production);
 }
 
-// ____       ____  ____
-//|  _ \  ___/ ___||  _ \
-//| | | |/ _ \___ \| |_) |
-//| |_| | (_) |__) |  __/
-//|____/ \___/____/|_|
-//
 bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& production) {
 	// Must have agent to give production to
 	if (!RequireAgent(pAgent)) return false;

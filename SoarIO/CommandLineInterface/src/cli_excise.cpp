@@ -12,12 +12,6 @@
 using namespace cli;
 using namespace sml;
 
-// ____                     _____          _
-//|  _ \ __ _ _ __ ___  ___| ____|_  _____(_)___  ___
-//| |_) / _` | '__/ __|/ _ \  _| \ \/ / __| / __|/ _ \
-//|  __/ (_| | |  \__ \  __/ |___ >  < (__| \__ \  __/
-//|_|   \__,_|_|  |___/\___|_____/_/\_\___|_|___/\___|
-//
 bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all",		0, 0, 'a'},
@@ -80,12 +74,6 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoExcise(pAgent, options, &(argv[GetOpt::optind]));
 }
 
-// ____        _____          _
-//|  _ \  ___ | ____|_  _____(_)___  ___
-//| | | |/ _ \|  _| \ \/ / __| / __|/ _ \
-//| |_| | (_) | |___ >  < (__| \__ \  __/
-//|____/ \___/|_____/_/\_\___|_|___/\___|
-//
 bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
@@ -142,12 +130,6 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 	return true;
 }
 
-// _____          _          ___       _                        _
-//| ____|_  _____(_)___  ___|_ _|_ __ | |_ ___ _ __ _ __   __ _| |
-//|  _| \ \/ / __| / __|/ _ \| || '_ \| __/ _ \ '__| '_ \ / _` | |
-//| |___ >  < (__| \__ \  __/| || | | | ||  __/ |  | | | | (_| | |
-//|_____/_/\_\___|_|___/\___|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
-//
 void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter, int& exciseCount) {
 	// Iterate through the productions using the production iterator and
 	// excise and release.

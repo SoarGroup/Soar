@@ -11,12 +11,6 @@
 using namespace cli;
 using namespace sml;
 
-// ____                     _
-//|  _ \ __ _ _ __ ___  ___| |    ___   __ _
-//| |_) / _` | '__/ __|/ _ \ |   / _ \ / _` |
-//|  __/ (_| | |  \__ \  __/ |__| (_) | (_| |
-//|_|   \__,_|_|  |___/\___|_____\___/ \__, |
-//                                     |___/
 bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"append",	0, 0, 'a'},
@@ -75,12 +69,6 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoLog(pAgent, 0, close);
 }
 
-// ____        _
-//|  _ \  ___ | |    ___   __ _
-//| | | |/ _ \| |   / _ \ / _` |
-//| |_| | (_) | |__| (_) | (_| |
-//|____/ \___/|_____\___/ \__, |
-//                        |___/
 bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const char* pFilename, bool option) {
 	if (!RequireAgent(pAgent)) return false;
 

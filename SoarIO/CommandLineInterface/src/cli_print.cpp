@@ -8,12 +8,6 @@
 
 using namespace cli;
 
-// ____                     ____       _       _
-//|  _ \ __ _ _ __ ___  ___|  _ \ _ __(_)_ __ | |_
-//| |_) / _` | '__/ __|/ _ \ |_) | '__| | '_ \| __|
-//|  __/ (_| | |  \__ \  __/  __/| |  | | | | | |_
-//|_|   \__,_|_|  |___/\___|_|   |_|  |_|_| |_|\__|
-//
 bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all",				0, 0, 'a'},
@@ -111,12 +105,6 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoPrint(pAgent, options, depth);
 }
 
-// ____        ____       _       _
-//|  _ \  ___ |  _ \ _ __(_)_ __ | |_
-//| | | |/ _ \| |_) | '__| | '_ \| __|
-//| |_| | (_) |  __/| |  | | | | | |_
-//|____/ \___/|_|   |_|  |_|_| |_|\__|
-//
 bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int options, int depth, std::string* pArg) {
 	// TODO: structured output
 
