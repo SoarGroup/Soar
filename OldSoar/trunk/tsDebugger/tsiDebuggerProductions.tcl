@@ -72,6 +72,7 @@ proc Productions::Update {} {
    
    set finalProdList {}
    foreach v [lsort -dictionary [concat $userProds $defProds]] {
+      set v [regsub -all \[|\] $v ""]
       set productionGroup [string range $v 0 [expr [string first "*" $v] - 1]]
       if {[info exists productionGroupCount($productionGroup)]} {
          incr productionGroupCount($productionGroup)
@@ -79,7 +80,8 @@ proc Productions::Update {} {
          set productionGroupCount($productionGroup) 1
       }
       set productionGroupCount($productionGroup,maxvalue) $productionGroupCount($productionGroup)
-      lappend finalProdList [regsub -all \[|\] $v ""]
+      lappend finalProdList $v
+      
    }
 
    output-strings-destination -push -append-to-result
