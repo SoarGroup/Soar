@@ -22,8 +22,8 @@ global tankList mapheight mapdim tank originalMap
 }
 
 proc randomMap {} {
-    global map mapdim gridSize healthcharge energycharge tankList mapheight originalMap
-
+    global tank map mapdim gridSize healthcharge energycharge tankList mapheight originalMap
+#   added tank to list above to fix bugzilla bug 188
 
     set mapnames [glob maps/*.map]
     set mapcount [llength $mapnames]
