@@ -7,9 +7,12 @@
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
 
+#include "sml_Names.h"
+
 #include "IgSKI_Kernel.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
@@ -59,11 +62,11 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 	}
 	if (argv.size() == static_cast<unsigned>(GetOpt::optind) + 2) {
 		// id & attribute
-		DoPreferences(pAgent, detail, &argv[GetOpt::optind], &argv[GetOpt::optind + 1]);
+		return DoPreferences(pAgent, detail, &argv[GetOpt::optind], &argv[GetOpt::optind + 1]);
 	}
 	if (argv.size() == static_cast<unsigned>(GetOpt::optind) + 1) {
 		// id
-		DoPreferences(pAgent, detail, &argv[GetOpt::optind]);
+		return DoPreferences(pAgent, detail, &argv[GetOpt::optind]);
 	}
 
 	return DoPreferences(pAgent, detail);
@@ -115,5 +118,9 @@ bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail, std::
 	bool ret = pKernelHack->Preferences(pAgent, argc, argv);
 	RemoveListenerAndEnableCallbacks(pAgent);
 
+	if (!m_RawOutput) {
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
+		m_Result.clear();
+	}
 	return ret;
 }
