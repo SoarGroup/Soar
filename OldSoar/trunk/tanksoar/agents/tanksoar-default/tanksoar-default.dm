@@ -1,4 +1,4 @@
-51
+54
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -50,7 +50,10 @@ SOAR_ID 47
 SOAR_ID 48
 ENUMERATION 49 1 complete
 ENUMERATION 50 1 missile
-60
+SOAR_ID 51
+ENUMERATION 52 3 center left right
+INTEGER_RANGE 53 0 13
+68
 0 io 1
 0 name 6
 0 operator 44
@@ -104,6 +107,12 @@ ENUMERATION 50 1 missile
 19 forward 27
 19 left 28
 19 right 29
+41 energy 51
+41 health 51
+41 missiles 51
+41 obstacle 51
+41 open 51
+41 tank 51
 42 color 31
 42 distance 43
 44 name 45
@@ -111,3 +120,5 @@ ENUMERATION 50 1 missile
 47 fire 7
 48 status 49
 48 weapon 50
+51 distance 53
+51 position 52
