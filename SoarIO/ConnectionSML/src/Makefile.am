@@ -59,4 +59,3 @@ thread_Lock.cpp\
 thread_OSspecific.cpp\
 thread_Thread.cpp
 INCLUDES = -I../.. -I../include -I../../ElementXML/include
-CXXFLAGS = -Wall -g
