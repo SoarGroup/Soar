@@ -25,9 +25,6 @@
 #define TGD_SLEEP usleep
 #endif
 
-class HanoiWorld;
-class TowerInputLinkProfile;
-
 
 #endif //GSKI_TOWERS_HANOI_H
 
