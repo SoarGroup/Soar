@@ -86,6 +86,7 @@
 
 #include "soarBuildOptions.h"
 
+
 #ifndef MAX_SIMULTANEOUS_AGENTS
 #define MAX_SIMULTANEOUS_AGENTS 128
 #endif
@@ -3738,6 +3739,39 @@ typedef struct agent_struct {
 
 #endif //SOAR_DECAY
 /* MRJ end */
+
+#ifdef AMN_EP_MEM
+    TIMER_VALUE epmem_start_time;
+    TIMER_VALUE epmem_total_time;
+
+    TIMER_VALUE epmem_record_start_time;
+    TIMER_VALUE epmem_record_total_time;
+
+    TIMER_VALUE epmem_retrieve_start_time;
+    TIMER_VALUE epmem_retrieve_total_time;
+
+    TIMER_VALUE epmem_clearmem_start_time;
+    TIMER_VALUE epmem_clearmem_total_time;
+
+    TIMER_VALUE epmem_updatewmetree_start_time;
+    TIMER_VALUE epmem_updatewmetree_total_time;
+
+    TIMER_VALUE epmem_getaugs_start_time;
+    TIMER_VALUE epmem_getaugs_total_time;
+
+    TIMER_VALUE epmem_match_start_time;
+    TIMER_VALUE epmem_match_total_time;
+
+    TIMER_VALUE epmem_findchild_start_time;
+    TIMER_VALUE epmem_findchild_total_time;
+    
+    TIMER_VALUE epmem_addnode_start_time;
+    TIMER_VALUE epmem_addnode_total_time;
+    
+    TIMER_VALUE epmem_installmem_start_time;
+    TIMER_VALUE epmem_installmem_total_time;
+
+#endif //AMN_EP_MEM
 
     /* Dummy nodes and tokens */
     struct rete_node_struct *dummy_top_node;
