@@ -67,7 +67,7 @@ public:
 		m_Map.clear() ;
 	}
 
-	void add(KeyType key, ValueType value)
+	void add(KeyType key, ValueType value, bool addToBack)
 	{
 		// See if we already have a list
 		ValueList* pList = getList(key) ;
@@ -80,7 +80,10 @@ public:
 		}
 
 		// Add this item to the list
-		pList->push_back(value) ;
+		if (addToBack)
+			pList->push_back(value) ;
+		else
+			pList->push_front(value) ;
 	}
 
 	// Remove a specific value from the "key" list

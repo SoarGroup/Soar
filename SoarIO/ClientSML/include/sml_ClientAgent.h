@@ -309,6 +309,7 @@ public:
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
 	* @param handler		A function that will be called when the event happens
 	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack		Add this listener to the end of the sequence of listeners (called after existing listeners) 
 	* 
 	* Current set is:
 	* smlEVENT_BEFORE_SMALLEST_STEP,
@@ -325,7 +326,7 @@ public:
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	int	RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData) ;
+	int	RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData, bool addToBack = true) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
@@ -338,6 +339,7 @@ public:
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
 	* @param handler		A function that will be called when the event happens
 	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack		Add this listener to the end of the sequence of listeners (called after existing listeners) 
 	*
 	* Current set is:
 	* Production Manager
@@ -348,7 +350,7 @@ public:
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	int	RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData) ;
+	int	RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData, bool addToBack = true) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
@@ -361,6 +363,7 @@ public:
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
 	* @param handler		A function that will be called when the event happens
 	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack		Add this listener to the end of the sequence of listeners (called after existing listeners) 
 	*
 	* Current set is:
 	* // Agent manager
@@ -371,7 +374,7 @@ public:
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	int	RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData) ;
+	int	RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack = true) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
@@ -384,6 +387,7 @@ public:
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
 	* @param handler		A function that will be called when the event happens
 	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack		Add this listener to the end of the sequence of listeners (called after existing listeners) 
 	*
 	* Current set is:
 	* // Agent manager
@@ -391,7 +395,7 @@ public:
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	int	RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData) ;
+	int	RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData, bool addToBack = true) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event

@@ -248,7 +248,8 @@ public:
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
 	* @param handler		A function that will be called when the event happens
 	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-	* 
+	* @param addToBack		Add this listener to the end of the sequence of listeners (called after existing listeners) 
+	*
 	* Current set is:
 	* smlEVENT_BEFORE_SHUTDOWN,
 	* smlEVENT_AFTER_CONNECTION_LOST,
@@ -263,7 +264,7 @@ public:
 	*
 	* @returns Unique ID for this callback.  Required when unregistering this callback.
 	*************************************************************/
-	int	RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData) ;
+	int	RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData, bool addToBack = true) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event

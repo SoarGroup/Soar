@@ -256,7 +256,9 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		int callback1 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
 
 		// Register another handler for the same event, to make sure we can do that.
-		int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &userData) ;
+		// Register this one ahead of the previous handler (so it will fire before MyRunEventHandler)
+		bool addToBack = true ;
+		int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &userData, !addToBack) ;
 
 		// Nothing should match here
 		trace = pAgent->Run(2) ;

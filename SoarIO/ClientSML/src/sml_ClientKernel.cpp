@@ -545,7 +545,7 @@ void Kernel::Sleep(long milliseconds)
 * smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
 * smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
 *************************************************************/
-int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData)
+int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData, bool addToBack)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -566,7 +566,7 @@ int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handl
 	m_CallbackIDCounter++ ;
 
 	SystemEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
-	m_SystemEventMap.add(id, handlerPlus) ;
+	m_SystemEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
 	return m_CallbackIDCounter ;

@@ -285,7 +285,7 @@ void Agent::UnregisterForEvent(int id)
 * smlEVENT_BEFORE_RUNNING,
 * smlEVENT_AFTER_RUNNING,
 *************************************************************/
-int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData)
+int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData, bool addToBack)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -300,7 +300,7 @@ int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* 
 	// We use a struct rather than a pointer to a struct, so there's no need to new/delete
 	// everything as the objects are added and deleted.
 	RunEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
-	m_RunEventMap.add(id, handlerPlus) ;
+	m_RunEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
 	return m_CallbackIDCounter ;
@@ -357,7 +357,7 @@ void Agent::UnregisterForRunEvent(smlRunEventId id, int callbackID)
 * smlEVENT_AFTER_PRODUCTION_FIRED,
 * smlEVENT_BEFORE_PRODUCTION_RETRACTED,
 *************************************************************/
-int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData)
+int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData, bool addToBack)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -369,7 +369,7 @@ int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHa
 	// Record the handler
 	m_CallbackIDCounter++ ;
 	ProductionEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
-	m_ProductionEventMap.add(id, handlerPlus) ;
+	m_ProductionEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
 	return m_CallbackIDCounter ;
@@ -402,7 +402,7 @@ void Agent::UnregisterForProductionEvent(smlProductionEventId id, int callbackID
 * smlEVENT_BEFORE_AGENT_REINITIALIZED,
 * smlEVENT_AFTER_AGENT_REINITIALIZED,
 *************************************************************/
-int Agent::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData)
+int Agent::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -414,7 +414,7 @@ int Agent::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, 
 	// Record the handler
 	m_CallbackIDCounter++ ;
 	AgentEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
-	m_AgentEventMap.add(id, handlerPlus) ;
+	m_AgentEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
 	return m_CallbackIDCounter ;
@@ -444,7 +444,7 @@ void Agent::UnregisterForAgentEvent(smlAgentEventId id, int callbackID)
 * // Agent manager
 * smlEVENT_PRINT
 *************************************************************/
-int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData)
+int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData, bool addToBack)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -457,7 +457,7 @@ int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, 
 	m_CallbackIDCounter++ ;
 
 	PrintEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
-	m_PrintEventMap.add(id, handlerPlus) ;
+	m_PrintEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
 	return m_CallbackIDCounter ;
