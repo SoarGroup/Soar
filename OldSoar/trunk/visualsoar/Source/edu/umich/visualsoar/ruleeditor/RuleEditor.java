@@ -1574,52 +1574,54 @@ public class RuleEditor extends CustomInternalFrame
 
         public void actionPerformed(ActionEvent ae) 
         {
+            java.util.List errors = new LinkedList();;
+            Vector v = null;
+            Vector vecErrors = new Vector();
+            
             try 
             {
-                java.util.List errors = new LinkedList();
-                Vector v = parseProductions();
+                v = parseProductions();
                 MainFrame.getMainFrame().getOperatorWindow().checkProductions((OperatorNode)associatedNode.getParent(),
                                                                               v,
                                                                               errors);
-                Vector vecErrors = new Vector();
-                if (errors.isEmpty())
-                vecErrors.add("No errors detected in " + getFile());
-                else 
-                {
-                    Enumeration e =
-                        new EnumerationIteratorWrapper(errors.iterator());
-                    while(e.hasMoreElements()) 
-                    {
-                        try 
-                        {
-                            String errorString = e.nextElement().toString();
-                            String numberString =
-                                errorString.substring(errorString.indexOf("(")+1,
-                                                      errorString.indexOf(")"));
-                            vecErrors.add(new FeedbackListObject(associatedNode,
-                                                                 Integer.parseInt(numberString),
-                                                                 errorString,
-                                                                 true));
-                        }
-                        catch(NumberFormatException nfe) 
-                        {
-                            System.out.println("Never happen");
-                        }
-                    }
-                }
-                MainFrame.getMainFrame().setFeedbackListData(vecErrors);
             }
             catch(ParseException pe)
             {
-                JOptionPane.showMessageDialog(MainFrame.getMainFrame(), pe.getMessage(), "Parse Error", JOptionPane.ERROR_MESSAGE);
+                vecErrors.add("Could not check productions due to syntax Error: " + pe.getMessage());
             }
             catch(TokenMgrError tme)
             {
-                JOptionPane.showMessageDialog(MainFrame.getMainFrame(),
-                                              tme.getMessage(),
-                                              "Parse Error",
-                                              JOptionPane.ERROR_MESSAGE);
+                vecErrors.add("Could not check productions due to syntax Error: " + tme.getMessage());
             }
+            
+            if ( (errors.isEmpty()) && (vecErrors.isEmpty()) )
+            {
+                vecErrors.add("No errors detected in " + getFile());
+            }
+            else 
+            {
+                Enumeration e =
+                    new EnumerationIteratorWrapper(errors.iterator());
+                while(e.hasMoreElements()) 
+                {
+                    try 
+                    {
+                        String errorString = e.nextElement().toString();
+                        String numberString =
+                            errorString.substring(errorString.indexOf("(")+1,
+                                                  errorString.indexOf(")"));
+                        vecErrors.add(new FeedbackListObject(associatedNode,
+                                                             Integer.parseInt(numberString),
+                                                             errorString,
+                                                             true));
+                    }
+                    catch(NumberFormatException nfe) 
+                    {
+                        System.out.println("Never happen");
+                    }
+                }
+            }
+            MainFrame.getMainFrame().setFeedbackListData(vecErrors);
         }
     }
 
