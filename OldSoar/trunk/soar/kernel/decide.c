@@ -1083,7 +1083,6 @@ byte run_preference_semantics(slot * s, preference ** result_candidates)
     for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
         p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
 
-
 	 #ifdef NUMERIC_INDIFFERENCE
     /* REW: 2003-01-02 Behavior Variability Kernel Experiments
      We want to treat some binary indifferent prefs as unary indifferents,
@@ -2664,7 +2663,6 @@ void do_working_memory_phase(void)
 
 void do_decision_phase(void)
 {
-
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
     if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM])
@@ -3406,7 +3404,7 @@ preference *probabilistically_select(slot * s, preference * candidates)
 
         /* Now select the candidate */
 
-        print("\n");
+        /*print("\n");*/ /* removed to fix bugzilla bug 311 */ 
 		rn = rand();
         selectedProbability = ((double) rn / (double) RAND_MAX) * total_probability;
         currentSumOfValues = 0;
@@ -3450,7 +3448,7 @@ preference *probabilistically_select(slot * s, preference * candidates)
 
         /* Now select the candidate */
 
-		print("\n");
+		/*print("\n");*/ /* removed to fix bugzilla bug 311 */
         rn = rand();
         selectedProbability = ((double) rn / (double) RAND_MAX) * total_probability;
         currentSumOfValues = 0;
