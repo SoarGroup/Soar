@@ -5,6 +5,11 @@ Changes from tsi 3.1 to tsi 3.2 are as follows:
 
 Updated for Tcl 8.4
 Font and windowing fixes
+Demo menu updates
+
+Known Issues:
+Some of the Help Menu stuff doesn't work properly
+Some random items on other menus may not work properly
 
 
 Changes from tsi 2.6 to tsi 3.0 are as follows:
@@ -138,4 +143,5 @@ Immediate TODO:
 (might be better to do #1 after 2 & 3 to make integration easier)
 
 kjc
+
 
