@@ -1,0 +1,600 @@
+## -*- Mode: sde -*-
+##
+############################# -*- Mode: Soar -*- #############################
+## 
+## File            : default/simple-selection.soar
+## Author          : John Laird
+## Created on      : Mon Feb 27 16:15:34 1989  
+## Last Modified By: John Laird 
+## Last Modified On: Friday December 11, 1998
+## 
+## Contents:     Default productions for simple-selection problem space for Soar 8.1
+##               Only works for one level copies of internal states - copies
+##                 every attribute on the top-level state unless the top-state
+##                 has a world-state attribute, in which case it copies all of the
+##                 world-state attributes.
+##
+###############################################################################
+
+## Significant Changes made to Convert to Soar 8.1
+
+###
+#################################################################################
+###		The selection space for multi-choice impasses
+###
+
+### Use the selection problem space for all choice multiple, impasses 
+### - make it worst so that any other will dominate.
+
+sp {default*selection*propose*space*selection
+   :default
+   (state <s> ^choices multiple)
+   -->
+   (<s> ^problem-space.name selection)}
+
+### Signal that a value other than novalue has been assigned.
+
+sp {default*selection*elaborate*state*found-value-true
+   :default
+   (state <s> ^problem-space.name selection
+	        ^choices multiple
+              ^evaluation <e>)
+   (<e> ^ << numeric-value symbolic-value >> <> novalue)
+   -->
+   (<s> ^found-value true)}
+
+###
+###		The evaluate-object operator
+###
+
+### Create evaluate operator in selection problem space.
+
+sp {default*selection*propose*evaluate-object
+   :default
+   (state <s> ^problem-space.name selection
+	        ^item <x>)
+ -{(state <s> ^evaluation <e>)
+   (<e> ^object <x>
+        ^value t)}
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name evaluate-object 
+        ^object <x>)}
+
+### Label all evaluation operators with ^type evaluation.
+
+sp {default*selection*elaborate*operator*evaluate-object*type-evaluation 
+   :default
+   (state <s> ^operator <o>)
+   (<o> ^name evaluate-object)
+   -->
+   (<o> ^type evaluation)}    
+
+### Create evaluation once the eval operator is selected.
+ 
+sp {default*selection*elaborate*state*evaluation
+   :default
+   (state <s> ^operator <o>)
+   (<o> ^type evaluation)
+   -->
+   (<s> ^evaluation <e>) 
+   (<o> ^evaluation <e>)}
+
+sp {default*selection*elaborate*evaluate-operator*desired
+   :default
+   (state <s> ^operator <o>
+	        ^superstate.desired <d>)
+   (<o> ^type evaluation)
+   -->
+   (<o> ^desired <d>)}
+
+sp {default*selection*elaborate*evaluation*desired
+   :default
+   (state <s> ^superstate.desired <d>
+	        ^evaluation <e>)
+   -->
+   (<e> ^desired <d>)}
+
+sp {default*selection*elaborate*evaluate-object*superproblem-space
+   :default
+   (state <s> ^problem-space.name selection
+	        ^operator <o>
+	        ^superstate.problem-space <p2>)
+   (<o> ^type evaluation)
+   -->
+   (<o> ^superproblem-space <p2>)}
+
+sp {default*selection*elaborate*evaluate-object*superstate
+   :default
+   (state <s> ^problem-space.name selection
+	        ^operator <o>
+	        ^superstate <s2>)
+   (<o> ^type evaluation)
+   -->
+   (<o> ^superstate <s2>)}
+
+###
+###		7.3.1.1 Evaluation Objects
+###
+
+sp {default*selection*elaborate*evaluation*value
+   :default
+   (state <s> ^evaluation <e>)
+   (<e> ^ << numeric-value symbolic-value >>)
+   -->
+   (<e> ^value t)}
+
+
+sp {default*selection*elaborate*evaluation*object
+   :default
+   (state <s> ^operator <o>
+	        ^evaluation <e>)
+   (<o> ^object <x>
+	  ^evaluation <e>
+	  ^type evaluation)
+   -->
+   (<e> ^object <x>)}
+
+sp {default*selection*elaborate*evaluation*type
+   :default
+   (state <s> ^operator <o>
+	        ^evaluation <e>)
+   (<o> ^name <name>
+        ^evaluation <e>
+	  ^type evaluation)
+   -->
+   (<e> ^type <name>)}
+
+###
+###		Applying the evaluate-object operator
+###
+###	Domain specific code may directly implement an evaluation, 
+###   or an operator no-change may occur to do the job, see the next section.
+
+###
+###		The evaluation subgoal
+###
+
+###
+### These productions fire once an evaluation subgoal has been created
+### have also been generalized.
+
+sp {default*evaluate-object*elaborate*state*desired
+   :default
+   (state <s> ^impasse no-change
+	        ^attribute operator 
+              ^superstate.operator <so>)
+   (<so> ^type evaluation ^desired <d>)
+   -->
+   (<s> ^desired <d>)}
+
+
+sp {default*evaluate-object*elaborate*state*name
+   :default
+   (state <s> ^impasse no-change 
+              ^attribute operator 
+              ^superstate.operator.name evaluate-object)
+   -->
+   (<s> ^name implement-evaluate-object)}
+
+sp {default*evaluate-object*elaborate*state*problem-space
+   :default
+   (state <s> ^impasse no-change
+	        ^attribute operator
+	        ^superstate.operator <so>)
+   (<so> ^type evaluation
+	   ^superproblem-space <p>)
+   -->
+   (<s> ^problem-space <p>)}
+
+## install a copy of the state
+
+sp {default*evaluate-object*elaborate*state*copy
+   :default
+   (state <s> ^superstate.operator <so>)
+   (<so> ^type evaluation
+	   ^superstate <sss>) 
+   (<sss> -^world-state
+           ^{ <> tried-tied-operator <> problem-space 
+            <> impasse <> attribute <> choices <> quiescence 
+            <> operator <> superstate 
+            <att> } <value>)
+   -->
+   (<s> ^<att> <value>)}
+
+sp {default*evaluate-object*elaborate*state*copy*world-state
+   :default
+   (state <s> ^superstate.operator <so>)
+   (<so> ^type evaluation
+	   ^superstate.world-state <ws>)
+   -->
+   (<s> ^world-state <ws>)}
+
+sp {default*evaluate-object*elaborate*state*copy*world-state*copy
+   :default
+   (state <s> ^superstate.operator <so>)
+   (<so> ^type evaluation
+	   ^superstate.world-state <ws>)
+   (<ws> ^{ <> tried-tied-operator <> problem-space 
+            <> impasse <> attribute <> choices <> quiescence 
+            <> operator <> superstate 
+            <att> } <value>)
+   -->
+   (<ws> ^<att> <value>)}
+
+## Create pointer for uniform access even in no copy
+
+sp {default*evaluate-object*elaborate*state*look-ahead-operator*no-copy
+   :default
+   (state <s> ^problem-space <p> 
+              ^superstate.operator <so>)
+   (<so> ^type evaluation 
+         ^object <o> 
+         ^superproblem-space <p>)
+   -->
+   (<s> ^look-ahead-operator <o>)}   
+
+### install copy of operator in lookahead context.
+
+sp {default*evaluate-object*propose*look-ahead
+   :default
+   (state <s> ^problem-space.name <n> 
+              ^look-ahead-operator <o> 
+              ^superstate <ss>)
+   (state <ss> ^superstate.problem-space.name <n> 
+               ^operator.type evaluation)
+  -(<s> ^tried-tied-operator <o>)
+   -->
+   (<s> ^operator <o> + >)}
+
+### Detect that the operator has been tried when a duplicate is being used.
+
+sp {default*evaluate-object*elaborate*state*tried-tied-operator
+   :default
+   (state <s> ^problem-space <p> 
+              ^operator <o> 
+	        ^superstate.operator <so>)
+   (<so> ^type evaluation 
+	   ^superproblem-space <p> 
+         ^object <o>)
+   -->
+   (<s> ^tried-tied-operator <o>)}
+
+### Give symbol-value failure when no operators are proposed in subgoals
+
+sp {default*evaluate-object*elaborate*evaluation*failure*no-operators
+   :default
+   (state <select-g> ^operator <o2>
+                     ^evaluation <e2>)
+   (<o2> ^type evaluation ^evaluation <e2>)
+   (state <eval-g> ^superstate <select-g> ^quiescence t)
+   (state <state-nc> ^superstate <eval-g> ^attribute state ^impasse no-change ^quiescence t)
+   -->
+   (<e2> ^symbolic-value failure)}
+
+sp {default*evaluate-object*elaborate*evaluation*failure*constraint-failure
+   :default
+   (state <select-g> ^operator <o2>)
+   (<select-g> ^evaluation <e2>)
+   (<o2> ^type evaluation ^evaluation <e2>)
+   (state <eval-g> ^superstate <select-g>)
+   (state <rej-state-imp> ^superstate <eval-g> ^attribute operator ^impasse constraint-failure)
+   -->
+   (<e2> ^symbolic-value failure)}
+
+sp {default*evaluate-object*elaborate*evaluation*from-subgoal
+   :default
+   (state <s> ^superstate <ss>
+	      ^ { << required-success success partial-success 
+		indifferent partial-failure failure prohibit-failure
+		draw lose win >> <svalue> } <eb>)
+   (state <ss> ^operator <so> ^evaluation <e>)
+   (<so> ^type evaluation ^evaluation <e> ^desired <eb>)
+   -->
+   (<e> ^symbolic-value <svalue>)}
+
+###
+###     Computing evaluations
+###
+###
+###     Computing numeric evaluations
+###
+### This is domain specific, so there are no default productions for this.
+
+###
+###     Comparing numeric evaluations
+###
+
+### If two objects have equal evaluations they are indifferent.
+
+sp {default*selection*compare*equal-evaluation-indifferent 
+   :default
+   (state <s> ^problem-space.name selection 
+              ^superstate <ss>
+              ^evaluation <e1>  { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^object <x> 
+         ^numeric-value <v> 
+         ^desired <d> 
+	   ^type evaluate-object)
+   (<e2> ^object <y> 
+         ^numeric-value <v> 
+         ^desired <d> 
+	   ^type evaluate-object)
+   -->
+   (<ss> ^operator <x> = <y>)}
+
+
+###
+### Generate operator preferences based on their evaluations and info 
+### as to whether higher or lower evaluations are better.
+
+sp {default*selection*compare*higher-evaluation-better 
+   :default
+   (state <s> ^problem-space.name selection 
+              ^superstate <ss>
+	        ^evaluation <e1> { <> <e1> <e2> })
+   (state <ss> ^desired <d>)
+   (<e1> ^object <o1> 
+         ^numeric-value <v> 
+         ^desired <d>
+	   ^type evaluate-object)
+   (<e2> ^object <o2> 
+         ^numeric-value < <v> 
+         ^desired <d> 
+	   ^type evaluate-object)
+   (<d> ^better higher)
+   -->
+   (<ss> ^operator <o2> < <o1>)}
+
+
+sp {default*selection*compare*prefer-lower-evaluation 
+   :default
+   (state <s> ^problem-space.name selection  
+              ^superstate <ss>
+	        ^evaluation <e1> { <> <e1> <e2> })
+   (state <ss> ^desired <d>)
+   (<e1> ^object <o1> 
+         ^numeric-value <v> 
+         ^desired <d> 
+	   ^type evaluate-object)
+   (<e2> ^object <o2> 
+         ^numeric-value > <v> 
+         ^desired <d> 
+	   ^type evaluate-object)
+   (<d> ^better lower)
+   -->
+   (<ss> ^operator <o2> < <o1>)}  
+
+###
+###		7.3.3.3 Computing symbolic evaluations
+###
+
+
+sp {default*selection*compare*same-symbolic-evaluations-are-indifferent
+   :default
+   (state <s> ^problem-space.name selection 
+              ^superstate <ss>
+	        ^evaluation <e1>  { <> <e1> <e2> })
+   (state <ss> ^desired <d>)
+   (<e1> ^object <x> ^symbolic-value <v> ^desired <d> 
+	   ^type evaluate-object)
+   (<e2> ^object <y> ^symbolic-value <v> ^desired <d> 
+	   ^type evaluate-object)
+   -->
+   (<ss> ^operator <x> = <y>)}	
+
+sp {default*selection*compare*success-evaluation-better-than-partial-success
+   :default
+   (state <s> ^problem-space.name selection 
+              ^superstate <ss>
+              ^evaluation <e1> { <> <e1> <e2> })
+   (state <ss> ^desired <d>)
+   (<e1> ^object <x> ^symbolic-value success ^desired <d> 
+         ^type evaluate-object)
+   (<e2> ^object { <> <x> <y> } ^symbolic-value partial-success 
+         ^desired <d> ^type evaluate-object)
+   -->
+   (<ss> ^operator <x> > <y>)}	
+
+sp {default*selection*compare*partial-failure-evaluation-better-than-failure
+   :default
+   (state <s> ^problem-space.name selection 
+              ^superstate <ss>
+              ^evaluation <e1>  { <> <e1> <e2> })
+   (state <ss> ^desired <d>)
+   (<e1> ^object <x> ^symbolic-value partial-failure ^desired <d> 
+         ^type evaluate-object)
+   (<e2> ^object { <> <x> <y> } ^symbolic-value failure ^desired <d>
+         ^type evaluate-object)
+   -->
+   (<ss> ^operator <x> > <y>)}	
+
+sp {default*selection*select*required-success-evaluation-becomes-required-preference
+   :default
+   (state <s> ^problem-space.name selection 
+              ^operator <o> 
+              ^superstate <ss>
+	        ^evaluation <e1>)
+   (state <ss> ^desired <eb>)
+   (<o> ^name evaluate-object 
+        ^evaluation <e1>
+	  ^desired <eb> 
+        ^object <o1>)
+   (<e1> ^symbolic-value required-success)
+   -->
+   (<ss> ^operator <o1> !)}
+
+sp {default*selection*select*success-evaluation-becomes-best-preference
+   :default
+   (state <s> ^problem-space.name selection ^operator <o> ^superstate <ss>
+              ^evaluation <e1>)
+   (state <ss> ^desired <eb>)
+   (<o> ^name evaluate-object ^evaluation <e1>
+        ^desired <eb> ^object <o1>)
+   (<e1> ^symbolic-value << partial-success success >>)
+   -->
+   (<ss> ^operator <o1> >)}
+
+sp {default*selection*select*indifferent-evaluation-becomes-indifferent-preference
+   :default
+   (state <s> ^problem-space.name selection ^operator <o> ^superstate <ss>
+	      ^evaluation <e1>)
+   (state <ss> ^desired <eb>)
+   (<o> ^name evaluate-object ^evaluation <e1>
+	^desired <eb> ^object <o1>)
+   (<e1> ^symbolic-value indifferent)
+   -->
+   (<ss> ^operator <o1> =)}
+
+sp {default*selection*select*partial-failure-evaluation-becomes-worst-preference
+   :default
+   (state <s> ^problem-space.name selection ^operator <o> ^superstate <ss>
+              ^evaluation <e1>)
+   (state <ss> ^desired <e>)
+   (<o> ^name evaluate-object ^evaluation <e1> 
+	^desired <e>
+        ^object <o1>)
+   (<e1> ^symbolic-value partial-failure)
+   -->
+   (<ss> ^operator <o1> <)}
+
+sp {default*selection*select*failure-evaluation-becomes-reject-preference
+   :default
+   (state <s> ^problem-space.name selection ^operator <o> ^superstate <ss>
+	      ^evaluation <e1>)
+   (state <ss> ^desired <e>)
+   (<o> ^name evaluate-object ^evaluation <e1> ^desired <e>
+	^object <o1>)
+   (<e1> ^symbolic-value << lose failure >>)
+   -->
+   (<ss> ^operator <o1> -)}
+
+sp {default*selection*select*prohibit-failure-evaluation-becomes-prohibit-preference
+   :default
+   (state <s> ^problem-space.name selection ^operator <o> ^superstate <ss>
+              ^evaluation <e1>)
+   (state <ss> ^desired <e>)
+   (<o> ^name evaluate-object ^evaluation <e1> ^desired <e>
+	^object <o1>)
+   (<e1> ^symbolic-value prohibit-failure)
+   -->
+   (<ss> ^operator <o1> ~)}
+
+
+
+###
+###		7.3.3.4 Default evaluations
+###
+
+###			A.	default*pass-back-success
+## if an operator leads to success and it is being
+## tried out in a subgoal to evaluate another operator -
+## give that second operator a success evaluation also
+
+sp {default*pass-back-success 	
+   :default
+   (state <s> ^operator <o> 
+              ^superstate.superstate.operator <sso>)
+   (<o> ^name evaluate-object 
+        ^evaluation.symbolic-value << required-success success >>)
+   (<sso> ^name evaluate-object 
+          ^evaluation <e2> 
+          ^object.name)
+   -->
+   (<e2> ^symbolic-value partial-success)}
+
+
+
+###
+###		7.3.3.5 Novalue evaluations
+###
+
+### Make novalue worse than any other value.
+
+sp {default*selection*compare*novalue-evaluation-always-worse
+   :default
+   (state <s> ^problem-space.name selection  
+              ^superstate <ss>
+	        ^evaluation <e1> ^evaluation { <> <e1> <e2> })
+   (state <ss> ^desired <d>)
+   (<e1> ^object <o1> ^numeric-value novalue ^desired <d>
+	 ^type evaluate-object)
+   (<e2> ^object <o2> ^numeric-value <> novalue ^desired <d>
+	 ^type evaluate-object)
+   -->
+   (<ss> ^operator <o2> > <o1>)}	
+
+
+###
+###	     7.3.4   Halting Soar with success or failure
+###
+
+###			A.	default*top-goal*halt*state*success
+### Handle state augmentations dealing with goal termination for the top-level goal.
+
+sp {default*top-goal*halt*success
+   :default
+   (state <s> ^name <name>
+	        ^desired <eb>
+	        ^superstate nil
+	        ^<< required-success success >> <eb>)
+   -->
+   (write (crlf)   <name>  | achieved |)
+   (halt)}
+
+###			B.	default*top-goal*halt*state*failure
+
+sp {default*top-goal*halt*failure
+   :default
+   (state <s> ^superstate nil
+	        ^desired <eb>
+	        ^name <name>
+	        ^ << prohibit-failure failure >> <eb>)
+   -->
+   (write (crlf)  <name>  | failed|)
+   (halt)}
+
+###
+###		 Execution monitoring
+###
+
+### If the state is marked with ^success <d>, the goal succeeds.
+
+sp {default*monitor*goal*success
+   :default
+   (state <ts> ^superstate nil - ^verbose false)
+   (state <s> ^name <gname> ^desired <d>
+	        ^<< partial-success required-success success >> <d>)
+   -->
+   (write (crlf) |  Goal | <gname> | succeeded. |)}
+
+### If the state is marked with ^failure <d>, the goal fails.
+
+sp {default*monitor*goal*failure
+   :default
+   (state <ts> ^superstate nil - ^verbose false)
+   (state <s> ^name <gname> ^desired <d>
+	      ^<< partial-failure failure prohibit-failure >> <d>)
+   -->
+   (write (crlf) |  Goal | <gname> | failed. |)}
+
+### Print the evaluation of any object that has a name.
+
+sp {default*monitor*operator*evaluation
+   :default
+   (state <ts> ^superstate nil -^verbose false)
+   (state <s> ^operator <o>)
+   (<o> ^type evaluation ^object <obj> ^evaluation <e>)
+   (<e> ^ << numeric-value symbolic-value >> <n>)
+   (<obj> ^name <name>)
+   -->
+   (write (crlf) |  Evaluation of | <obj> | (|
+					     <name> |) is | <n>)}
+
+
+
+
+	
+
+
