@@ -583,13 +583,12 @@ bool CommandLineInterface::DoExcise(const unsigned short options, int optind, ve
 //
 void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter) {
 	// Iterate through the productions using the production iterator and
-	// excise and release.  Print one # per excised production.
+	// excise and release.
 	while(pProdIter->IsValid()) {
 		gSKI::IProduction* ip = pProdIter->GetVal();
 		ip->Excise();
 		ip->Release();
 		pProdIter->Next();
-		m_Result += '#';
 	}
 	pProdIter->Release();
 }
