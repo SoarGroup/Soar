@@ -87,6 +87,7 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	case smlEVENT_AFTER_PRODUCTION_FIRED:
 	case smlEVENT_BEFORE_PRODUCTION_RETRACTED:
 		ReceivedProductionEvent(id, pIncoming, pResponse) ;
+		break;
 
 	// Agent manager events too
 	case smlEVENT_AFTER_AGENT_CREATED:
@@ -94,6 +95,10 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	case smlEVENT_BEFORE_AGENT_REINITIALIZED:
 	case smlEVENT_AFTER_AGENT_REINITIALIZED:
 		ReceivedAgentEvent(id, pIncoming, pResponse) ;
+		break;
+
+	case smlEVENT_PRINT:
+		ReceivedPrintEvent(id, pIncoming, pResponse) ;
 	}
 }
 
@@ -152,10 +157,43 @@ void Agent::ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML*
 	{
 		AgentEventHandlerPlusData handlerPlus = *iter ;
 		AgentEventHandler handler = handlerPlus.first ;
-		void* pUserData = handlerPlus.second ;
+		//void* pUserData = handlerPlus.second ;
+		void* pUserData = pIncoming ;
 
 		// Call the handler
 		handler(id, pUserData, this) ;
+	}
+}
+
+/*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Agent::ReceivedPrintEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	unused(pResponse) ;
+
+	char const* pMessage = pIncoming->GetArgValue(sml_Names::kParamMessage) ;
+
+	// Look up the handler(s) from the map
+	PrintEventMap::ValueList* pHandlers = m_PrintEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (PrintEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		PrintEventHandlerPlusData handlerPlus = *iter ;
+		PrintEventHandler handler = handlerPlus.first ;
+		//void* pUserData = handlerPlus.second ;
+		void* pUserData = pIncoming ;
+
+		// Call the handler
+		handler(id, pUserData, this, pMessage) ;
 	}
 }
 
@@ -366,6 +404,42 @@ void Agent::UnregisterForAgentEvent(smlEventId id, AgentEventHandler handler, vo
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_AgentEventMap.getListSize(id) == 0)
+	{
+		UnregisterForEvent(id) ;
+	}
+}
+
+/*************************************************************
+* @brief Register for a "PrintEvent".
+*		 Multiple handlers can be registered for the same event.
+*
+* Current set is:
+* // Agent manager
+* smlEVENT_PRINT
+*************************************************************/
+void Agent::RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData)
+{
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_PrintEventMap.getListSize(id) == 0)
+	{
+		RegisterForEvent(id) ;
+	}
+
+	// Record the handler
+	m_PrintEventMap.add(id, std::make_pair(handler, pUserData)) ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event
+*************************************************************/
+void Agent::UnregisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData)
+{
+	// Remove the handler from our map
+	m_PrintEventMap.remove(id, std::make_pair(handler, pUserData)) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_PrintEventMap.getListSize(id) == 0)
 	{
 		UnregisterForEvent(id) ;
 	}

@@ -47,11 +47,13 @@ class Agent : public ClientErrors
 	typedef std::pair<RunEventHandler, void*>			RunEventHandlerPlusData ;
 	typedef std::pair<ProductionEventHandler, void*>	ProductionEventHandlerPlusData ;
 	typedef std::pair<AgentEventHandler, void*>			AgentEventHandlerPlusData ;
+	typedef std::pair<PrintEventHandler, void*>			PrintEventHandlerPlusData ;
 
 	// The mapping from event number to a list of handlers to call when that event fires
 	typedef sml::ListMap<smlEventId, RunEventHandlerPlusData>			RunEventMap ;
 	typedef sml::ListMap<smlEventId, ProductionEventHandlerPlusData>	ProductionEventMap ;
 	typedef sml::ListMap<smlEventId, AgentEventHandlerPlusData>			AgentEventMap ;
+	typedef sml::ListMap<smlEventId, PrintEventHandlerPlusData>			PrintEventMap ;
 
 protected:
 	// We maintain a local copy of working memory so we can just send changes
@@ -67,6 +69,7 @@ protected:
 	RunEventMap			m_RunEventMap ;
 	ProductionEventMap	m_ProductionEventMap ;
 	AgentEventMap		m_AgentEventMap ;
+	PrintEventMap		m_PrintEventMap ;
 
 protected:
 	Agent(Kernel* pKernel, char const* pAgentName);
@@ -98,6 +101,7 @@ protected:
 	void ReceivedRunEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedProductionEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedPrintEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 	/*************************************************************
 	* @brief Register for a particular event with the kernel.
@@ -300,6 +304,24 @@ public:
 	* @brief Unregister for a particular event
 	*************************************************************/
 	void	UnregisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData) ;
+
+	/*************************************************************
+	* @brief Register for an "PrintEvent".
+	*		 Multiple handlers can be registered for the same event.
+	* @param smlEventId		The event we're interested in (see the list below for valid values)
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	*
+	* Current set is:
+	* // Agent manager
+	* smlEVENT_PRINT
+	*************************************************************/
+	void	RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	*************************************************************/
+	void	UnregisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData) ;
 
 	/*==============================================================================
 	===

@@ -89,7 +89,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 	}
 
 	// Listen for #s
-	pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	//pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	int exciseCount = 0;
 
@@ -118,13 +118,13 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 		// Check for the production
 		gSKI::tIProductionIterator* pProdIter = pProductionManager->GetProduction((*pProduction).c_str());
 		if (!pProdIter->GetNumElements()) {
-			pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+			//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 			return HandleError("Production not found: " + (*pProduction));
 		}
 
 		ExciseInternal(pProdIter, exciseCount);
 	}
-	pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	//pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	if (!m_RawOutput) {
 		// Add the count tag to the front

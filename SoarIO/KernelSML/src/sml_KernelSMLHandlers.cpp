@@ -237,6 +237,7 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	assert(gSKIEVENT_LAST == (egSKIEventId)smlEVENT_LAST) ;					// Last matches
 	assert(gSKIEVENT_AFTER_RUNNING == (egSKIEventId)smlEVENT_AFTER_RUNNING) ;	// Random one in middle matches
 	assert(gSKIEVENT_BEFORE_AGENT_REINITIALIZED == (egSKIEventId)smlEVENT_BEFORE_AGENT_REINITIALIZED) ;	// Another middle one matches
+	assert(gSKIEVENT_PRINT == (egSKIEventId)smlEVENT_PRINT); // What the heck, another one
 
 	// Get the parameters
 	egSKIEventId id = (egSKIEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, gSKIEVENT_INVALID_EVENT) ;
@@ -295,6 +296,9 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	case gSKIEVENT_BEFORE_AGENT_DESTROYED:
 	case gSKIEVENT_BEFORE_AGENT_REINITIALIZED:
 	case gSKIEVENT_AFTER_AGENT_REINITIALIZED:
+
+		// Print events too
+	case gSKIEVENT_PRINT:
 		{
 			// Since this is an agent handler check that we were passed an agent
 			if (!pAgent)

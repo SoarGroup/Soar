@@ -111,6 +111,7 @@ public:
 	static char const* kParamPhase ;
 	static char const* kParamInstance ;
 	static char const* kParamTimers;
+	static char const* kParamMessage;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* kTrue ;

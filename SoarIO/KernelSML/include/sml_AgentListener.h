@@ -53,7 +53,7 @@ namespace sml {
 class KernelSML ;
 class Connection ;
 
-class AgentListener : public gSKI::IRunListener, public gSKI::IAgentListener, public gSKI::IProductionListener, public EventManager
+class AgentListener : public gSKI::IRunListener, public gSKI::IAgentListener, public gSKI::IProductionListener, public EventManager, public gSKI::IPrintListener
 {
 protected:
 	KernelSML*		m_KernelSML ;
@@ -76,6 +76,8 @@ protected:
 			case gSKIEVENT_BEFORE_RUNNING:
 			case gSKIEVENT_AFTER_RUNNING:
 				return true ;
+			default:
+				break;
 		}
 		return false ;
 	}
@@ -89,6 +91,8 @@ protected:
 			case gSKIEVENT_AFTER_PRODUCTION_FIRED:
 			case gSKIEVENT_BEFORE_PRODUCTION_RETRACTED:
 				return true ;
+			default:
+				break;
 		}
 		return false ;
 	}
@@ -102,6 +106,23 @@ protected:
 			case gSKIEVENT_BEFORE_AGENT_REINITIALIZED:
 			case gSKIEVENT_AFTER_AGENT_REINITIALIZED:
 				return true ;
+			default:
+				break;
+		}
+		return false ;
+	}
+
+	// Added by voigtjr
+	bool IsPrintEvent(egSKIEventId id)
+	{
+		switch (id)
+		{
+			// Not sure if there are more than just this print event so
+			// I'm going to keep the case logic for consistency
+			case gSKIEVENT_PRINT:
+				return true;
+			default:
+				break;
 		}
 		return false ;
 	}
@@ -131,6 +152,9 @@ public:
 
 	// Called when a "ProductionEvent" occurs in the kernel
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) ;
+
+	// Called when a "PrintEvent" occurs in the kernel (I think) (voigtjr)
+	virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg);
 } ;
 
 }

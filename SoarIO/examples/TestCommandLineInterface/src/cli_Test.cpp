@@ -15,11 +15,12 @@
 #include "sml_AnalyzeXML.h"
 #include "sml_ElementXML.h"
 #include "sml_ClientEvents.h"
+//#include "sml_ClientAgent.h"
 
 using namespace std;
 
-void PrintCallbackHandler(sml::smlEventId id, void* pUserData, sml::Kernel* pKernel) {
-	cout << "PrintCallbackHandler called." << endl;
+void PrintCallbackHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {
+	cout << pMessage;
 }
 
 void backspace(string& cmdline) {
@@ -49,15 +50,15 @@ int main(int argc, char** argv)
 	// pKernel->SetTraceCommunications(true) ;
 #endif
 
-	// Register for print callbacks
-	pKernel->RegisterForSystemEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
-
 	// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 	sml::Agent* pAgent;
 	const char AGENT_NAME[] = "test";
 	pAgent = pKernel->CreateAgent(AGENT_NAME) ;
 	assert(pAgent);
 	cout << "Agent 'test' created." << endl;
+
+	// Register for print callbacks
+	pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 
 	string cmdline;
 	string output ;
@@ -207,6 +208,7 @@ int main(int argc, char** argv)
 			break;
 		}
 	}
+	pAgent->UnregisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 	delete pKernel ;
 	return 0;
 }

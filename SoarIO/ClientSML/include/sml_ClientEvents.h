@@ -107,6 +107,9 @@ typedef void (*RunEventHandler)(smlEventId id, void* pUserData, Agent* pAgent, s
 // Handler for Agent events.
 typedef void (*AgentEventHandler)(smlEventId id, void* pUserData, Agent* pAgent) ;
 
+// Handler for Print events.
+typedef void (*PrintEventHandler)(smlEventId id, void* pUserData, Agent* pAgent, char const* pMessage) ;
+
 // Handler for Production manager events.
 typedef void (*ProductionEventHandler)(smlEventId id, void* pUserData, Agent* pAgent, char const* pProdName, char const* pInstantion) ;
 
