@@ -99,7 +99,11 @@ del *.class
 				Name="VCPostBuildEventTool"
 				Description="Build Java files"
 				CommandLine="echo on
-%JAVA_BIN%\javac $(InputDir)*.java"/>
+%JAVA_BIN%/javac $(InputDir)*.java
+%JAVA_BIN%/jar cf Java_sml_ClientInterface.jar *.java
+copy Java_sml_ClientInterface.dll ..\..\bin /Y
+copy Java_sml_ClientInterface.jar ..\..\bin /Y
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove previous Java files"
@@ -171,7 +175,7 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -package sml -java &quot;$(InputPath)&quot; 
+$(SWIG)\swig.exe -Wall -c++ -package sml -java &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
@@ -185,7 +189,7 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -package sml -java &quot;$(InputPath)&quot; 
+$(SWIG)\swig.exe -Wall -c++ -package sml -java &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>

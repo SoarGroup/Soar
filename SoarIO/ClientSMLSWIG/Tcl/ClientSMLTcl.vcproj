@@ -88,7 +88,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin /Y"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
