@@ -439,7 +439,8 @@ extern int soar_cSaveReteNet( const char *filename );
  *
  *
  */
-extern unsigned long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue,
+/*extern unsigned long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue,*/
+extern long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue,
 				   bool accept, psoar_wme *new_wme );
 
 

@@ -383,46 +383,42 @@ int soar_AddWme ( int argc, const char *argv[], soarResult *res)
 
   }
 
-  
-	soar_cAddWme( argv[1], argv[attr_index], argv[attr_index+1],
-		  acceptable, &psw );
+  if ( soar_cAddWme( argv[1], argv[attr_index], argv[attr_index+1], acceptable, &psw ) <= 0) {
+    return SOAR_ERROR;
+  }
 
-	/* SW NOTE
-	 * The old way to do this is commented out below
-	 * the reason for the change is that print_wme_for_tcl
-	 * in only used here, and moreover, we don't want to 
-	 * use a print call back since wmes added using this method
-	 * will get added into the log file which really doesn't
-	 * make a whole lot of sense.
-	 */
-	/*
-	soar_cPushCallback((soar_callback_agent) soar_agent, 
-	     PRINT_CALLBACK,
-	     (soar_callback_fn) cb_soarResult_AppendResult, 
-	     (soar_callback_data) res,
-	     (soar_callback_free_fn) NULL);
+  /* SW NOTE
+   * The old way to do this is commented out below
+   * the reason for the change is that print_wme_for_tcl
+   * in only used here, and moreover, we don't want to 
+   * use a print call back since wmes added using this method
+   * will get added into the log file which really doesn't
+   * make a whole lot of sense.
+   */
+  /*
+  soar_cPushCallback((soar_callback_agent) soar_agent, 
+       PRINT_CALLBACK,
+       (soar_callback_fn) cb_soarResult_AppendResult, 
+       (soar_callback_data) res,
+       (soar_callback_free_fn) NULL);
 
-	print_wme_for_tcl((wme *)psw);
-	soar_cPopCallback((soar_callback_agent) soar_agent, PRINT_CALLBACK);
-	*/
+  print_wme_for_tcl((wme *)psw);
+  soar_cPopCallback((soar_callback_agent) soar_agent, PRINT_CALLBACK);
+  */
 
-	setSoarResultResult( res, "%lu: ", ((wme *)psw)->timetag );
-	appendSymbolsToSoarResultResult( res, "%y ^%y %y", 
-				      ((wme *)psw)->id, 
-				      ((wme *)psw)->attr, 
-				      ((wme *)psw)->value);
-	if (((wme *)psw)->acceptable) appendSoarResultResult (res, " +");
+  setSoarResultResult( res, "%lu: ", ((wme *)psw)->timetag );
+  appendSymbolsToSoarResultResult( res, "%y ^%y %y", 
+				((wme *)psw)->id, 
+				((wme *)psw)->attr, 
+				((wme *)psw)->value);
+  if (((wme *)psw)->acceptable) appendSoarResultResult (res, " +");
 
-	return SOAR_OK;
-  
-  
-  
+  return SOAR_OK;
 }
 
 
 
 
-
 /*
  *----------------------------------------------------------------------
  *

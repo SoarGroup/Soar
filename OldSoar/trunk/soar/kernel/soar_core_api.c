@@ -853,7 +853,8 @@ int soar_cSaveReteNet( const char *filename ) {
  *
  *----------------------------------------------------------------------
  */
-unsigned long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue, 
+/*unsigned long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue, */
+long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue, 
 			    bool acceptable_preference, psoar_wme *new_wme ) {
 
   Symbol *id, *attr, *value;
