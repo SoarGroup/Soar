@@ -1,35 +1,44 @@
 #include <iostream>
 #include <string>
 
-#include "Towers.h"
-#include "SoarAgent.h"
+
+////// Define the type of interface to Soar that you're using:
+//#define GSKI_DIRECT
+//#define SML_THROUGH_GSKI
+//#define SML_SGIO_HYBRID
+//#define SGIO_DIRECT
+
+
+#include "AgnosticTowers.h"
+//#include "gSKITowersSoarAgent.h"
+
 
 //TgDI directives
-#include "TgD.h"
-#include "tcl.h"
+//#include "TgD.h"
+//#include "tcl.h"
 
 //TgDI directives
 #ifdef _WIN32
-#define _WINSOCKAPI_
-#include <Windows.h>
-#define TGD_SLEEP Sleep
+	#define _WINSOCKAPI_
+	#include <Windows.h>
+	#define TGD_SLEEP Sleep
 #else
-#include <unistd.h>
-#define TGD_SLEEP usleep
+	#include <unistd.h>
+	#define TGD_SLEEP usleep
 #endif
 
 
-#ifdef USE_GSKI_DIRECT_NOT_SML
+#ifdef GSKI_DIRECT
 	//gSKI directives
 	#include "IgSKI_KernelFactory.h"
 	#include "IgSKI_Kernel.h"
 	#include "IgSKI_AgentManager.h"
 	#include "IgSKI_InputProducer.h"
 	#include "IgSKI_OutputProcessor.h"
-	#include "IgSKI_SymbolFactory.h"
+	//#include "IgSKI_SymbolFactory.h"
 	#include "IgSKI_InputLink.h"
 	#include "IgSKI_OutputLink.h"
-	#include "IgSKI_WorkingMemory.h"
+	//#include "IgSKI_WorkingMemory.h"
 	#include "gSKI.h"
 	#include "gSKI_Stub.h"
 	#include "gSKI_Structures.h"
@@ -39,7 +48,7 @@
 
 	using namespace gSKI;
 	using namespace cli;
-#else
+#else ifdef
 	//SML Directives
 	#include "sml_Client.h"
 	using namespace sml;
@@ -112,7 +121,7 @@ int main(int argc, char* argv[])
 	//=============================================================================
 	//========================= Setup the TgDI for the TSI ========================
 	// Determine tsi version to use via command line argument
-	TgD::TSI_VERSION tsiVersion;
+	//TgD::TSI_VERSION tsiVersion;
 	/*const char * usage = "[ 25 | 40 ]";
 	if (argc > 2)
 	{
@@ -138,14 +147,14 @@ int main(int argc, char* argv[])
 		}
 	}
 	else*/
-	{
+	/*{
 		std::cout << "No TSI version specified, defaulting to 4.0.0" << std::endl; 
 		tsiVersion = TgD::TSI40;
-	}
+	}*/
 
 
 	//create debugger
-	TgD::TgD* debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, argv[0]);
+	//TgD::TgD* debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, argv[0]);
 	//debugger->Init();
 
 	//=============================================================================
@@ -167,7 +176,7 @@ int main(int argc, char* argv[])
 		while(!hanoi.AtGoalState())
 		{
 			soarAgent.MakeMove();
-			TgD::TgD::Update(false, debugger);
+			//TgD::TgD::Update(false, debugger);
 
 			if (doPrinting)
 				hanoi.Print();
