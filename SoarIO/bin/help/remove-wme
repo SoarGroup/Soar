@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                    Remove-wme
 
@@ -7,21 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 See Also
-   7 Warnings
-   8 Structured Output
-   9 Error Values
-
-   9.1 During Parsing
-   9.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -29,13 +12,9 @@
 
    Status: Complete
 
-   [edit]
-
                                     Synopsis
 
  remove-wme timetag
-
-   [edit]
 
                                     Options
 
@@ -43,8 +22,6 @@
    |timetag|A positive integer matching the timetag of an existing working  |
    |       |memory element.                                                 |
    +------------------------------------------------------------------------+
-
-   [edit]
 
                                   Description
 
@@ -56,17 +33,11 @@
 
    Beware of weird side effects, including system crashes.
 
-   [edit]
-
                                     Examples
-
-   [edit]
 
                                     See Also
 
    add-wme io
-
-   [edit]
 
                                     Warnings
 
@@ -79,65 +50,17 @@
    crashes). Removing input wmes or context/impasse wmes may have unexpected
    side effects. You've been warned.
 
-   [edit]
-
                                Structured Output
 
    Returns true on success
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kTooFewArgs, kTooManyArgs, kIntegerMustBePositive
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kKernelRequired, kRemoveWMEFailed
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Remove-wme"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:57, 22 Feb 2005.
-     * This page has been accessed 29 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                     Warnings
 
@@ -7,20 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 See Also
-   7 Structured Output
-   8 Error Values
-
-   8.1 During Parsing
-   8.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -29,13 +13,9 @@
 
    Status: Complete, EvilBackDoor
 
-   [edit]
-
                                     Synopsis
 
  warnings -[e|d]
-
-   [edit]
 
                                     Options
 
@@ -47,8 +27,6 @@
    |                    |messages.                                          |
    +------------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    Enables and disables the printing of warning messages. If an argument is
@@ -58,71 +36,19 @@
    some warnings may still be printed, since some are considered too
    important to ignore.
 
-   [edit]
-
                                     Examples
-
-   [edit]
 
                                     See Also
 
-   [edit]
-
                                Structured Output
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kUnrecognizedOption, kGetOptError, kTooManyArgs
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kKernelRequired
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Warnings"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:10, 17 Feb 2005.
-     * This page has been accessed 25 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

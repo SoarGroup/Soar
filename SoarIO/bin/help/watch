@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                      Watch
 
@@ -7,37 +5,12 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-
-   3.1 Watch Levels
-   3.2 Remove
-   3.3 Learning
-
-   4 Description
-   5 Examples
-   6 See Also
-   7 Structured Output
-
-   7.1 On Query
-   7.2 Otherwise
-
-   8 Error Values
-
-   8.1 During Parsing
-   8.2 During Execution
-
-   [edit]
 
                                       Name
 
    watch - Control the run-time tracing of Soar.
 
    Status: Complete, EvilBackDoor
-
-   [edit]
 
                                     Synopsis
 
@@ -46,8 +19,6 @@
  watch -N
  watch -[dpPwrDujcbi] [<remove>] -[n|t|f]
  watch --learning [<print|noprint|fullprint>]
-
-   [edit]
 
                                     Options
 
@@ -136,8 +107,6 @@
    |                           |below)         |                            |
    +------------------------------------------------------------------------+
 
-   [edit]
-
 Watch Levels
 
    Use of the --level (-l) flag is optional but recommended.
@@ -163,8 +132,6 @@ Watch Levels
    settings is changed from its default, it will retain its new setting until
    it is either explicitly changed again or the watch level is set to 0.
 
-   [edit]
-
 Remove
 
    The remove argument has a numeric alias; you can use 0 for remove. A mix
@@ -173,8 +140,6 @@ Remove
    +--------------------------------------------------------+
    |remove|0|Turn watching off only for the specified option|
    +--------------------------------------------------------+
-
-   [edit]
 
 Learning
 
@@ -190,8 +155,6 @@ Learning
    |---------+-+------------------------------------------------------------|
    |fullprint|2|Print entire chunks and justifications when created         |
    +------------------------------------------------------------------------+
-
-   [edit]
 
                                   Description
 
@@ -224,8 +187,6 @@ Learning
 
    The pwatch command is used to watch individual productions specified by
    name rather than watch a type of productions, such as --user.
-
-   [edit]
 
                                     Examples
 
@@ -292,17 +253,11 @@ Learning
  watch -d -p -P -f -u remove -j 0
  watch -f -l 3 -u 0 -j 0
 
-   [edit]
-
                                     See Also
 
    pwatch print run watch-wmes
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Query
 
@@ -321,17 +276,11 @@ On Query
  kParamWatchBacktracing, kTypeBoolean
  kParamWatchIndifferentSelection, kTypeBoolean
 
-   [edit]
-
 Otherwise
 
  <result output="raw">true</result>
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
@@ -339,49 +288,7 @@ During Parsing
    kIntegerExpected, kIntegerMustBeNonNegative, kIntegerOutOfRange,
    kInvalidLearnSetting, kRemoveOrZeroExpected
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kKernelRequired
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Watch"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 16:35, 9 Mar 2005.
-     * This page has been accessed 160 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

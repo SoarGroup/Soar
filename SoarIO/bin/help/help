@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                       Help
 
@@ -7,62 +5,28 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 See Also
-   7 Structured Output
-
-   7.1 On Success
-   7.2 Notes
-
-   8 Error Values
-
-   8.1 During Parsing
-   8.2 During Execution
-
-   [edit]
 
                                       Name
 
    help - Provide formatted usage information about Soar commands.
 
    Status: Incomplete
-   Need to figure out details of new help mechanism.--Jonathan 13:06, 1 Mar
-   2005 (EST)
-
-   [edit]
+   Currently uses working directory to find command-names and help/
+   subdir.--Jonathan 14:02, 25 Mar 2005 (EST)
 
                                     Synopsis
 
- help [-a]
  help [command_name]
-
-   [edit]
 
                                     Options
 
-   +------------------------------------------------------------------------+
-   |-a, --all   |List all the commands for Soar; equivalent to issuing      |
-   |            |command with no args.                                      |
-   |------------+-----------------------------------------------------------|
-   |command_name|Print usage syntax for the command.                        |
-   +------------------------------------------------------------------------+
-
-   [edit]
+   +------------------------------------------------+
+   |command_name|Print usage syntax for the command.|
+   +------------------------------------------------+
 
                                   Description
 
-   This command prints the formatted manual page for the given commandname.
-   Soar's help facility is able to do command completion, so as long as a
-   unique substring of the command-name is specified, Soar will find and
-   display the help page. To see more extensive information about a command,
-   and see examples, use helpex
-
-   [edit]
+   This command prints formatted help for the given command name.
 
                                     Examples
 
@@ -70,73 +34,23 @@
 
  help excise
 
-   [edit]
+   To see what commands help is available for:
+
+ help
 
                                     See Also
 
            helpex
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Success
 
-   [edit]
-
 Notes
-
-   [edit]
 
                                   Error Values
 
-   [edit]
-
 During Parsing
-
-   [edit]
 
 During Execution
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Help"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 18:06, 1 Mar 2005.
-     * This page has been accessed 24 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

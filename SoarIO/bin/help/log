@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                       Log
 
@@ -7,24 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 See Also
-   7 Structured Output
-
-   7.1 On Success
-   7.2 Notes
-
-   8 Error Values
-
-   8.1 During Parsing
-   8.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -32,15 +12,11 @@
 
    Status: Complete
 
-   [edit]
-
                                     Synopsis
 
  log -Ae filename
  log -a  string
  log [-cdoq]
-
-   [edit]
 
                                     Options
 
@@ -59,16 +35,12 @@
    |                             |logging is added at the end of the file.  |
    +------------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    Invoked log with no arguments (or with -q) to query the current logging
    status. Pass a filename to start logging to that file (relative to the
    command line interface's home directory (see the home command)). Use the
    close option to stop logging.
-
-   [edit]
 
                                     Examples
 
@@ -84,16 +56,9 @@
 
  log -off
 
-
-   [edit]
-
                                     See Also
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Success
 
@@ -102,8 +67,6 @@ On Success
    <arg param="filename" type="string">log_filename</arg>
  </result>
 
-   [edit]
-
 Notes
 
      * setting is true (log file open) or false (closed).
@@ -111,60 +74,14 @@ Notes
      * currently prompts and input are not logged because "log" simply
        registers on the gSKI print callback. Need to implement fully.
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kUnrecognizedOption, kGetOptError, kTooFewArgs, kTooManyArgs,
    kInvalidOperation
 
-   [edit]
-
 During Execution
 
    kLogAlreadyOpen, kLogOpenFailure, kLogNotOpen, kInvalidOperation
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Log"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:10, 17 Feb 2005.
-     * This page has been accessed 20 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

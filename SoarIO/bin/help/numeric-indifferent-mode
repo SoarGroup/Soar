@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                             Numeric-indifferent-mode
 
@@ -7,23 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Structured Output
-
-   5.1 On Query
-   5.2 Otherwise
-   5.3 Notes
-
-   6 Error Values
-
-   6.1 During Parsing
-   6.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -32,13 +13,9 @@
 
    Status: Complete
 
-   [edit]
-
                                     Synopsis
 
  numeric-indifferent-mode [-as]
-
-   [edit]
 
                                     Options
 
@@ -48,19 +25,13 @@
    |-s, --sum           |Use sum mode (see Soar manual).              |
    +------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    The numeric-indifferent-mode command is used to select the method for
    combining numeric preferences. This command is only meaningful in
    indifferent-selection --random mode.
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Query
 
@@ -68,13 +39,9 @@ On Query
    <arg param="numericindifferentmode" type="int">2</arg>
  </result>
 
-   [edit]
-
 Otherwise
 
  <result output="raw">true</result>
-
-   [edit]
 
 Notes
 
@@ -84,17 +51,11 @@ Notes
  gSKI_NUMERIC_INDIFFERENT_MODE_AVG  = 1
  gSKI_NUMERIC_INDIFFERENT_MODE_SUM  = 0
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-   [edit]
 
 During Execution
 
@@ -137,7 +98,7 @@ During Execution
    GNU Free Documentation License 1.2
 
      * This page was last modified 19:11, 17 Feb 2005.
-     * This page has been accessed 16 times.
+     * This page has been accessed 20 times.
      * Content is available under GNU Free Documentation License 1.2.
      * About Soar Wiki
      * Disclaimers

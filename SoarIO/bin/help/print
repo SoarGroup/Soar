@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                      Print
 
@@ -7,24 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 See Also
-   7 Structured Output
-
-   7.1 On Success
-   7.2 Notes
-
-   8 Error Values
-
-   8.1 During Parsing
-   8.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -35,16 +15,12 @@
    This command does too much - too overloaded. --Jonathan 13:59, 23 Mar 2005
    (EST)
 
-   [edit]
-
                                     Synopsis
 
  print [-fFin] production_name
  print -[a|c|D|j|u][fFin]
  print [-i] [-d <depth>] identifier|timetag|pattern
  print -s[oS]
-
-   [edit]
 
                                     Options
 
@@ -106,8 +82,6 @@
    |                    |timetag                                            |
    +------------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    The print command is used to print items from production memory or working
@@ -115,25 +89,19 @@
    working memory, the Soar objects are printed unless the --internal flag is
    used, in which case the wmes themselves are printed.
 
-   When printing patterns, the pattern is interpreted by the Soar kernel so
-   it must be surrounded by double quotes or curly braces. A pattern has the
-   following form:
-
- {(identifier ^attribute value [+])}
+ (identifier ^attribute value [+])
 
    The pattern is surrounded by parentheses. The identifier, attribute, and
    value must be valid Soar symbols or the wildcard symbol * which matches
    all occurences. The optional + symbol restricts pattern matches to
    acceptable preferences.
 
-   [edit]
-
                                     Examples
 
    Print the working memory elements (and their timetags) which have the
    identifier s1 as object and v2 as value:
 
- print --internal {(s1 ^* v2)}
+ print --internal (s1 ^* v2)
 
    Print the Soar stack which includes states and operators:
 
@@ -147,21 +115,14 @@
 
  print -u
 
-
-   [edit]
-
                                     See Also
 
    default-wme-depth predefined-aliases
-
-   [edit]
 
                                Structured Output
 
    print returns formatted output in a string, this needs to be
    re-done.--Jonathan 14:26, 3 Feb 2005 (EST)
-
-   [edit]
 
 On Success
 
@@ -169,64 +130,16 @@ On Success
    <arg param="message" type="string">output_string</arg>
  </result>
 
-   [edit]
-
 Notes
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kIntegerExpected, kIntegerMustBeNonNegative, kMissingOptionArg,
    kUnrecognizedOption, kGetOptError, kTooManyArgs
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kKernelRequired
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Print"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 18:59, 23 Mar 2005.
-     * This page has been accessed 56 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                     Memories
 
@@ -7,24 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 See Also
-   7 Structured Output
-
-   7.1 On Success
-   7.2 Notes
-
-   8 Error Values
-
-   8.1 During Parsing
-   8.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -32,14 +12,10 @@
 
    Status: Complete
 
-   [edit]
-
                                     Synopsis
 
  memories [-cdju] [n]
  memories production_name
-
-   [edit]
 
                                     Options
 
@@ -58,8 +34,6 @@
    |                    |that use the most memory.                          |
    +------------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    The memories command prints out the internal memory usage for full and
@@ -77,8 +51,6 @@
    Output may be restricted to print memory usage for particular types of
    productions using the command options.
 
-   [edit]
-
                                     Examples
 
    To show how to use the command in context, do this:
@@ -87,17 +59,11 @@
 
    and possibly explain the results.
 
-   [edit]
-
                                     See Also
 
            matches
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Success
 
@@ -106,66 +72,18 @@ On Success
    <arg param="count" type="int">rete_tokens</arg>
  </result>
 
-   [edit]
-
 Notes
 
      * Each production listed will have a name/count arg pair.
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kUnrecognizedOption, kGetOptError, kTooManyArgs, kIntegerMustBePositive,
    kNoProdTypeWhenProdName
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kgSKIError, kInvalidProductionType, kProductionNotFound
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Memories"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:12, 17 Feb 2005.
-     * This page has been accessed 19 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

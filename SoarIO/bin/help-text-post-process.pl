@@ -2,6 +2,8 @@
 
 use strict;
 
+my $blanklines = 0;
+
 while (<>) {
   if (/Link:/) {
     next;
@@ -10,13 +12,14 @@ while (<>) {
     next;
   }
   if (/Table of contents/) {
-    my $blanklines = 0;
+    $blanklines = 0;
     while (<>) {
       if (/ +[0-9]/) {
         $blanklines = 0;
 	next;
       }
       if (++$blanklines >= 2) {
+	$blanklines = 0;
         last;
       }
     }
@@ -25,5 +28,17 @@ while (<>) {
   if (/Retrieved from "http:\/\/winter\.eecs\.umich\.edu\/soarwiki/) {
     last;
   }
+  
+  chomp;
+  if ($_ eq "") {
+    if (++$blanklines >= 2) {
+      --$blanklines;
+      next;
+    }
+  } else {
+    $blanklines = 0;
+  }
+  
   print;
+  print "\n";
 }

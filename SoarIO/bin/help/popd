@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                       Popd
 
@@ -7,24 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-     Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Soar8.3 Description
-   6 Examples
-   7 See Also
-   8 Structured Output
-
-   8.1 On Success
-
-   9 Error Values
-
-   9.1 During Parsing
-   9.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -34,102 +14,40 @@
 
    Status: Complete
 
-   [edit]
-
                                     Synopsis
 
  popd
-
-   [edit]
 
                                     Options
 
    No options.
 
-   [edit]
-
                                   Description
-
-   [edit]
 
                               Soar8.3 Description
 
    This command pops a directory off of the directory stack and cd's to it.
    See the dirs command for an explanation of the directory stack.
 
-   [edit]
-
                                     Examples
-
-   [edit]
 
                                     See Also
 
            cd dirs home ls pushd popd source topd
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Success
 
  <result output="raw">true</result>
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kTooManyArgs
 
-   [edit]
-
 During Execution
 
    kDirectoryStackEmpty
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Popd"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:11, 17 Feb 2005.
-     * This page has been accessed 21 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

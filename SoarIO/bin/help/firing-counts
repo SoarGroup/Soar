@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                  Firing-counts
 
@@ -7,25 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 Warnings
-   7 See Also
-   8 Structured Output
-
-   8.1 On Success
-   8.2 Notes
-
-   9 Error Values
-
-   9.1 During Parsing
-   9.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -33,14 +12,10 @@
 
    Status: Complete
 
-   [edit]
-
                                     Synopsis
 
  firing-counts [n]
  firing-counts production_names
-
-   [edit]
 
                                     Options
 
@@ -55,8 +30,6 @@
    |               |times the production has fired                          |
    +------------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    The firing-counts command prints the number of times each production has
@@ -68,8 +41,6 @@
    for these productions are printed.
 
    Note that firing counts are reset by a call to init-soar.
-
-   [edit]
 
                                     Examples
 
@@ -83,25 +54,16 @@
 
  firing-counts my*first*production my*second*production
 
-
-   [edit]
-
                                     Warnings
 
    firing-counts are reset to zero after an init-soar.
    NB: This command is slow, because the sorting takes time O(n*log n)
 
-   [edit]
-
                                     See Also
 
  init-soar
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Success
 
@@ -110,65 +72,17 @@ On Success
    <arg param="count" type="int">firing_count</arg>
  </result>
 
-   [edit]
-
 Notes
 
      * Each production listed will have a name/count arg pair.
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kIntegerMustBeNonNegative, kTooManyArgs
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kgSKIError, kProductionNotFound
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Firing-counts"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:09, 17 Feb 2005.
-     * This page has been accessed 24 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

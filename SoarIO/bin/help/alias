@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                      Alias
 
@@ -7,40 +5,19 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 See Also
-   7 Structured Output
-
-   7.1 On Success
-   7.2 Notes
-
-   8 Error Values
-
-   8.1 During Parsing
-   8.2 During Execution
-
-   [edit]
 
                                       Name
 
    alias - Define a new alias, or command, using existing commands and
    arguments.
-   Status: Complete
-
-   [edit]
+   Status: Incomplete
+   Structured output.--Jonathan 15:37, 25 Mar 2005 (EST)
 
                                     Synopsis
 
  alias name [cmd <args>]
  alias -d name
  alias
-
-   [edit]
 
                                     Options
 
@@ -56,8 +33,6 @@
    |                    |number).                                           |
    +------------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    This command defines new aliases by creating Soar procedures with the
@@ -70,33 +45,29 @@
    -d flag. With no arguments, alias returns the list of defined aliases.
    With only the name given, alias returns the current definition.
 
-   [edit]
-
                                     Examples
 
    The alias wmes is defined as:
 
- alias wmes print -depth 0 -internal
+ alias wmes print -i
 
    If the user executes a command such as:
 
-           wmes {(* ^superstate nil)}
+ wmes {(* ^superstate nil)}
 
    it is as if the user had typed this command:
 
-           print -depth 0 -internal {(* ^superstate nil)}
+ print -i {(* ^superstate nil)}
 
-   [edit]
+   To check what a specific alias is defined as, you would type
+
+ alias wmes
 
                                     See Also
 
    unalias
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Success
 
@@ -104,8 +75,6 @@ On Success
    <arg name="alias" type="string">alias</arg>
    <arg name="aliasedcommand" type="string">aliased_command</arg>
  </result>
-
-   [edit]
 
 Notes
 
@@ -116,60 +85,14 @@ Notes
  <arg name="alias" type="string">step</arg>
  <arg name="aliasedcommand" type="string">run -s 1</arg>
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kMissingOptionArg, kUnrecognizedOption, kGetOptError, kTooManyArgs,
    kTooFewArgs
 
-   [edit]
-
 During Execution
 
    kAliasNotFound, kAliasExists
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Alias"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 18:57, 23 Mar 2005.
-     * This page has been accessed 39 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

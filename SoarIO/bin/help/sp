@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                        Sp
 
@@ -7,23 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 See Also
-   7 Structured Output
-
-   7.1 On Success
-
-   8 Error Values
-
-   8.1 During Parsing
-   8.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -31,22 +12,15 @@
 
    Status: Complete
 
-   [edit]
-
                                     Synopsis
 
  sp {production_body}
-
-
-   [edit]
 
                                     Options
 
    +----------------------------------+
    |production_body|A Soar production.|
    +----------------------------------+
-
-   [edit]
 
                                   Description
 
@@ -98,8 +72,6 @@
 
  :chunk          specifies that this production is a chunk
                  (this matters for learn trace)
-
-   [edit]
 
                                     Examples
 
@@ -160,75 +132,23 @@
    be passed to the Soar production parser, they must be escaped (using a
    backslash) to avoid interpretation by the scripting language.
 
-   [edit]
-
                                     See Also
 
    excise learn watch
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Success
 
  <result output="raw">true</result>
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kTooFewArgs, kTooManyArgs, kInvalidProduction
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kgSKIError
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Sp"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:11, 17 Feb 2005.
-     * This page has been accessed 35 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

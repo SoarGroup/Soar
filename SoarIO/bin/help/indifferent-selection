@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                              Indifferent-selection
 
@@ -7,23 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Structured Output
-
-   5.1 Successful Query
-   5.2 Otherwise
-   5.3 Notes
-
-   6 Error Values
-
-   6.1 During Parsing
-   6.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -33,13 +14,9 @@
    --ask gets set but the actual asking does not work at all, I think it
    locks everything up--Jonathan 13:29, 23 Feb 2005 (EST)
 
-   [edit]
-
                                     Synopsis
 
  indifferent-selection [-aflr]
-
-   [edit]
 
                                     Options
 
@@ -55,19 +32,13 @@
    |-r, --random|Select randomly (default).                                 |
    +------------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    The indifferent-selection command allows the user to set which option
    should be used to select between operator proposals that are mutally
    indifferent in preference memory.
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 Successful Query
 
@@ -75,13 +46,9 @@ Successful Query
    <arg param="indifferentselectionmode" type="int">2</arg>
  </result>
 
-   [edit]
-
 Otherwise
 
  <result output="raw">true</result>
-
-   [edit]
 
 Notes
 
@@ -93,17 +60,11 @@ Notes
  gSKI_USER_SELECT_ASK    = 1
  gSKI_USER_SELECT_RANDOM = 2
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-   [edit]
 
 During Execution
 
@@ -146,7 +107,7 @@ During Execution
    GNU Free Documentation License 1.2
 
      * This page was last modified 18:29, 23 Feb 2005.
-     * This page has been accessed 24 times.
+     * This page has been accessed 29 times.
      * Content is available under GNU Free Documentation License 1.2.
      * About Soar Wiki
      * Disclaimers

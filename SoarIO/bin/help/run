@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                       Run
 
@@ -7,25 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-     Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-
-   3.1 Deprecated Options
-
-   4 Description
-   5 Structured Output
-
-   5.1 On Success
-   5.2 Notes
-
-   6 Error Values
-
-   6.1 During Parsing
-   6.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -35,14 +14,10 @@
    Complete, except --output may work incorrectly due to gSKI--Jonathan
    14:07, 18 Feb 2005 (EST)
 
-   [edit]
-
                                     Synopsis
 
  run [count]
  run -[d|e|p|o][fs] [count]
-
-   [edit]
 
                                     Options
 
@@ -68,8 +43,6 @@
    |                 |to run Soar.                                          |
    +------------------------------------------------------------------------+
 
-   [edit]
-
 Deprecated Options
 
    These may be reimplemented in the future.
@@ -79,8 +52,6 @@ Deprecated Options
    |----------+----------------------------------------------------|
    |--state   |Run Soar until the nth time a state is selected.    |
    +---------------------------------------------------------------+
-
-   [edit]
 
                                   Description
 
@@ -94,22 +65,16 @@ Deprecated Options
    defaults to '1'. The unit argument indicates the unit of measure to be
    used in counting Soar run cycles.
 
-   [edit]
-
                                Structured Output
 
    Most output is handled through a callback, but there is a return value
    after the run is done.
-
-   [edit]
 
 On Success
 
  <result>
    <arg name="runresult" type="int">run_result</arg>
  </result>
-
-   [edit]
 
 Notes
 
@@ -120,60 +85,14 @@ Notes
  gSKI_RUN_COMPLETED                 = 3;
  gSKI_RUN_COMPLETED_AND_INTERRUPTED = 4;
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kUnrecognizedOption, kGetOptError, kIntegerExpected,
    kIntegerMustBePositive, kTooManyArgs
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kKernelRequired, kgSKIError
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Run"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:09, 18 Feb 2005.
-     * This page has been accessed 34 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

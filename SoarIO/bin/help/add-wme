@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                     Add-wme
 
@@ -7,25 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Examples
-   6 Warnings
-   7 See Also
-   8 Structured Output
-
-   8.1 On Success
-   8.2 Notes
-
-   9 Error Values
-
-   9.1 During Parsing
-   9.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -33,13 +12,9 @@
 
    Status: Complete, EvilBackDoor
 
-   [edit]
-
                                     Synopsis
 
  add-wme id [^]attribute value [+]
-
-   [edit]
 
                                     Options
 
@@ -58,8 +33,6 @@
    |         |(acceptable).                                                 |
    +------------------------------------------------------------------------+
 
-   [edit]
-
                                   Description
 
    Manually add an element to working memory. add-wme is often used by an
@@ -72,8 +45,6 @@
    value field, Soar creates a new identifier (symbol) for that field. If the
    preference is given, it can only have the value + to indicate that an
    acceptable preference should be created for this wme.
-
-   [edit]
 
                                     Examples
 
@@ -89,8 +60,6 @@
 
   add-wme Z2 message * +
 
-   [edit]
-
                                     Warnings
 
    Be careful how you use this command. It may have weird side effects
@@ -99,17 +68,11 @@
    removed thru Soar's garbage collection. Manually removing context/impasse
    wmes may have unexpected side effects.
 
-   [edit]
-
                                     See Also
 
    remove-wme
 
-   [edit]
-
                                Structured Output
-
-   [edit]
 
 On Success
 
@@ -118,65 +81,17 @@ On Success
    Perhaps this should be param = timetag? type = unsigned long?--Jonathan
    13:53, 22 Feb 2005 (EST)
 
-   [edit]
-
 Notes
 
-   [edit]
-
                                   Error Values
-
-   [edit]
 
 During Parsing
 
    kTooFewArgs, kTooManyArgs, kCustomError ("Expected acceptable preference
    (+) or nothing")
 
-   [edit]
-
 During Execution
 
    kAgentRequired, kKernelRequired, kInvalidID, kInvalidAttribute,
    kInvalidValue
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Add-wme"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 19:57, 22 Feb 2005.
-     * This page has been accessed 74 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

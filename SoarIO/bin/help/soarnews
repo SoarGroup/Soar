@@ -1,5 +1,3 @@
-   Link: Creative Commons (meta)
-   Link: copyright
 
                                     Soarnews
 
@@ -7,18 +5,6 @@
 
    This is part of the Soar Command Line Interface.
 
-    Table of contents
-   1 Name
-   2 Synopsis
-   3 Options
-   4 Description
-   5 Structured Output
-   6 Error Values
-
-   6.1 During Parsing
-   6.2 During Execution
-
-   [edit]
 
                                       Name
 
@@ -28,11 +14,7 @@
    Decide what to put in the news and where to read it from.--Jonathan 15:42,
    23 Feb 2005 (EST)
 
-   [edit]
-
                                     Synopsis
-
-   [edit]
 
                                     Options
 
@@ -40,67 +22,17 @@
    |+|
    +-+
 
-   [edit]
-
                                   Description
-
-   [edit]
 
                                Structured Output
 
    Returns the news message string.
 
-   [edit]
-
                                   Error Values
 
    No errors.
 
-   [edit]
-
 During Parsing
-
-   [edit]
 
 During Execution
 
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Soarnews"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 20:43, 23 Feb 2005.
-     * This page has been accessed 16 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers
