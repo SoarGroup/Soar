@@ -941,6 +941,8 @@ public class MainFrame extends JFrame
 		
 		public void perform() 
         {
+            RuleEditor re = null;
+            
 			try 
             {
 				JInternalFrame[] jif = DesktopPane.getAllFrames();
@@ -948,14 +950,19 @@ public class MainFrame extends JFrame
                 {
 					if(jif[i] instanceof RuleEditor) 
                     {
-						RuleEditor re = (RuleEditor)jif[i];
+						re = (RuleEditor)jif[i];
 						re.write();
 					}
 				}
 			}
 			catch(java.io.IOException ioe) 
             {
-				JOptionPane.showMessageDialog(MainFrame.this, "Error Writing File", "IO Error", JOptionPane.ERROR_MESSAGE);
+                String fn = "Unknown File!";
+                if (re != null) fn = re.getFile();
+				JOptionPane.showMessageDialog(MainFrame.this,
+                                              "Error Writing File: " + fn,
+                                              "IO Error",
+                                              JOptionPane.ERROR_MESSAGE);
 			}
 		}
 
@@ -1060,13 +1067,15 @@ public class MainFrame extends JFrame
 		}	
 		public void actionPerformed(ActionEvent event) 
         {
+            File file = null;
+            
 			try 
             {
 				JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setFileFilter(new SoarFileFilter());
 				fileChooser.setCurrentDirectory(Preferences.getInstance().getOpenFolder());
 				int state = fileChooser.showOpenDialog(MainFrame.this);
-				File file = fileChooser.getSelectedFile();
+				file = fileChooser.getSelectedFile();
 				if (file != null && state == JFileChooser.APPROVE_OPTION) 
                 {
                     //Get rid of the old project (if it exists)
@@ -1090,14 +1099,29 @@ public class MainFrame extends JFrame
                     setTitle(file.getName().replaceAll(".vsa", ""));
 				}
 			}
-			
-			catch(FileNotFoundException fnfe) 
+			catch(FileNotFoundException fnfe)
             {
-				JOptionPane.showMessageDialog(MainFrame.this, "File Not Found!", "File Not Found", JOptionPane.ERROR_MESSAGE);
+                String fn = "Unknown File";
+                if (file != null)
+                {
+                    fn = file.getName();
+                }
+				JOptionPane.showMessageDialog(MainFrame.this,
+                                              "File Not Found: " + fn,
+                                              "File Not Found",
+                                              JOptionPane.ERROR_MESSAGE);
 			}
 			catch(IOException ioe) 
             {
-				JOptionPane.showMessageDialog(MainFrame.this, "Error Reading File", "IOException", JOptionPane.ERROR_MESSAGE);
+                String fn = "Unknown File";
+                if (file != null)
+                {
+                    fn = file.getName();
+                }
+				JOptionPane.showMessageDialog(MainFrame.this,
+                                              "Error Reading File: " + fn,
+                                              "IOException",
+                                              JOptionPane.ERROR_MESSAGE);
 				ioe.printStackTrace();
 			}
 			catch(NumberFormatException nfe) 
