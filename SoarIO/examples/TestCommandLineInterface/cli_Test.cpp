@@ -7,6 +7,7 @@
 #include <iostream>
 #include <conio.h>
 #include <assert.h>
+#include <queue>
 
 #include "sml_Connection.h"
 #include "sml_Client.h"
@@ -15,12 +16,54 @@
 #include "sml_ClientEvents.h"
 //#include "sml_ClientAgent.h"
 
+#include "thread_Lock.h"
+#include "thread_Event.h"
+
 using namespace std;
 
 // globals & constants
 const char			AGENT_NAME[] = "test";		// test agent name
 CommandProcessor*	g_pCommandProcessor = 0;	// pointer to the command processor singleton
 const int			HISTORY_SIZE = 10;			// number of commands to keep in history
+queue<char>			g_InputQueue;
+soar_thread::Mutex*	g_pInputQueueMutex = 0;
+soar_thread::Event*	g_pInputQueueWriteEvent = 0;
+soar_thread::Event*	g_pWaitForInput = 0;
+InputThread*		g_pInputThread = 0;
+
+InputThread::InputThread() {
+}
+
+InputThread::~InputThread() {
+}
+
+void InputThread::Run() {
+
+	soar_thread::Lock* lock = 0;
+
+	// Get input
+	while ((!this->m_QuitNow) && (cin.get(m_C))) {
+		// serialize access to this queue
+		lock = new soar_thread::Lock(g_pInputQueueMutex);
+
+		// push char on to queue
+		g_InputQueue.push(m_C);
+
+		// signal write event
+		g_pInputQueueWriteEvent->TriggerEvent();
+
+		// unlock queue
+		delete lock;
+
+		g_pWaitForInput->WaitForEventForever();
+	}
+
+	if (cin.bad()) {
+		// BAD BAD BAD
+		cout << "cin.get() failed!  Aborting." << endl;
+		exit(1);
+	}
+}
 
 // callback functions
 void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {
@@ -31,20 +74,43 @@ void RunCallbackHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAge
 	g_pCommandProcessor->ProcessCharacter(getKey(false));
 }
 
-int getKey(bool block) {
+char getKey(bool block) {
 
-#ifdef _WIN32
-	// WINDOWS VERSION
-	if (!block) {
-		if (!kbhit()) return 0;
+	char ret = 0;	// default to 0 (no input)
+
+	// lock the queue
+	soar_thread::Lock* lock = new soar_thread::Lock(g_pInputQueueMutex);
+
+	// blocking?
+	if (block) {
+		// yes, blocking, follow the following loop
+		// lock, check size (break if true (input available)), unlock, wait for event, repeat
+		while (!g_InputQueue.size()) {
+			// unlock queue
+			delete lock;
+
+			// Wait for write event
+			g_pInputQueueWriteEvent->WaitForEventForever();
+
+			// lock queue
+			lock = new soar_thread::Lock(g_pInputQueueMutex);
+		}
+	} else {
+		// not blocking, if there is nothing in the queue, return immediately
+		if (!g_InputQueue.size()) {
+			// unlock queue
+			delete lock;
+			return ret;
+		}
 	}
-	return getch();
 
-#else // _WIN32
+	// we have a locked queue with stuff in it
+	ret = g_InputQueue.front();
+	g_InputQueue.pop();
 
-	// OTHER VERSIONS
-	return 0;
-#endif
+	// unlock queue
+	delete lock;
+	return ret;
 }
 
 // Command Processor class
@@ -89,19 +155,20 @@ bool CommandProcessor::ProcessCharacter(int c) {
 		// If the input was enter, process the command line
 		case '\n':
 		case '\r':
-			cout << endl;
 			lineCopy = line;
 			line.clear();
 			return ProcessLine(lineCopy);
 
 		// Backspaces are tricky, make them look right
 		case '\b':
-			Backspace();
+			//Backspace();
+			g_pWaitForInput->TriggerEvent();
 			break;
 
 		case 224:
 			// Windows meta char
 			meta = true;
+			g_pWaitForInput->TriggerEvent();
 			break;
 
 		case 72:
@@ -116,6 +183,7 @@ bool CommandProcessor::ProcessCharacter(int c) {
 			temporaryHistoryIndex = temporaryHistoryIndex ? (temporaryHistoryIndex - 1) : (HISTORY_SIZE - 1);
 			line = pHistory[temporaryHistoryIndex];
 			cout << line;
+			g_pWaitForInput->TriggerEvent();
 			break;
 
 		case 80:
@@ -130,15 +198,16 @@ bool CommandProcessor::ProcessCharacter(int c) {
 			temporaryHistoryIndex = ++temporaryHistoryIndex % HISTORY_SIZE;
 			line = pHistory[temporaryHistoryIndex];
 			cout << line;
+			g_pWaitForInput->TriggerEvent();
 			break;
 
 		default:
 			// Add other, non-special characters to the line
 			line += c;
-			cout << (char)c;
-			cout.flush();
+			g_pWaitForInput->TriggerEvent();
 			break;
 	}
+
 	return true;
 }
 
@@ -156,6 +225,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 	// Nothing on the command line
 	if (!commandLine.size()) {
 		DisplayPrompt(true);
+		g_pWaitForInput->TriggerEvent();
 		return true;
 	}
 
@@ -168,12 +238,14 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 	if (commandLine == "raw") {
 		raw = true;
 		DisplayPrompt(true);
+		g_pWaitForInput->TriggerEvent();
 		return true;
 
 	}
 	if (commandLine == "structured") {
 		raw = false;
 		DisplayPrompt(true);
+		g_pWaitForInput->TriggerEvent();
 		return true;
 	} 
 
@@ -220,10 +292,14 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 
 	// If this string is seen, exit
 	if (output.find("Goodbye.") != std::string::npos) {
+		// Set the thread to stopped
+		g_pInputThread->Stop(false);
+		g_pWaitForInput->TriggerEvent();
 		return false; // BUGBUG: this false is a normal, non erroneous exit, no way to tell apart from error exits
 	}
 
 	DisplayPrompt(previousResult);
+	g_pWaitForInput->TriggerEvent();
 	return true;
 }
 
@@ -251,6 +327,15 @@ int main(int argc, char** argv)
 	assert(!g_pCommandProcessor);	// singleton
 	g_pCommandProcessor = new CommandProcessor(pKernel);
 
+	// Set up synchronization stuff
+	g_pInputQueueMutex = new soar_thread::Mutex();
+	g_pInputQueueWriteEvent = new soar_thread::Event();
+	g_pWaitForInput = new soar_thread::Event();
+
+	// Create and start input thread
+	g_pInputThread = new InputThread();
+	g_pInputThread->Start();
+
 	cout << "Use the meta-commands 'raw' and 'structured' to switch output style" << endl;
 
 	// Register for necessary callbacks
@@ -266,5 +351,14 @@ int main(int argc, char** argv)
 
 	// Don't delete agent, owned by kernel
 	delete pKernel ;
+
+	// Delete input thread
+	delete g_pInputThread;
+
+	// Delete synchronization stuff
+	delete g_pWaitForInput;
+	delete g_pInputQueueWriteEvent;
+	delete g_pInputQueueMutex;
+
 	return 0;
 }

@@ -3,9 +3,23 @@
 
 #include <string>
 
+#include "thread_Thread.h"
+
 // Forward Declarations
 namespace sml {
 	class Kernel;
+};
+
+class InputThread : public soar_thread::Thread {
+public:
+	InputThread();
+	~InputThread();
+
+	void Run();
+
+protected:
+
+	char m_C;
 };
 
 class CommandProcessor {
@@ -38,6 +52,6 @@ protected:
 
 };
 
-int getKey(bool block);
+char getKey(bool block);
 
 #endif // CLI_TEST_H
