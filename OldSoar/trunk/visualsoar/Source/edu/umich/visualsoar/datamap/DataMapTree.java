@@ -781,7 +781,7 @@ public class DataMapTree extends JTree implements ClipboardOwner
                     {
                         vecErrors.add(new FeedbackListObject(opNode,
                                                              trip.getLine(),
-                                                             trip.toString()));
+                                                             sp.getName()));
                     }
                 }//while
             }//while
