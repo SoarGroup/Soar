@@ -3,6 +3,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.5  2004/07/12 14:58:48  toolshed
+### fixed erroneous stop after decision cycle monitor command
+###
 ### Revision 1.4  2004/06/02 11:26:02  mazin_assanie
 ### Previous change was not needed.  I found a better place to put it.
 ###
@@ -216,7 +219,8 @@ proc makeETControlPanel { {hide 0} {x -20} {y 1} } {
 }
 
 proc stopAfterDecision {} {
-    sendAllAgents {monitor -add after-decision-phase-cycle "stop-soar -self {}" dp1}
+#    sendAllAgents {monitor -add after-decision-phase-cycle "stop-soar -self {}" dp1}
+    sendAllAgents {monitor -add after-decision-phase-cycle "stop-soar -self" dp1}
 }
 
 proc dontStopAfterDecision {} {
