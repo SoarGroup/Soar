@@ -19,7 +19,6 @@ sp {mac*detect*state*success
 ### STATE FAILURE DETECTION
 ###
 
-# this rule will cause a warning during loading in Soar; that warning can be ignored
 sp {mac*evaluate*state*failure*more*cannibals
    (state <s> ^desired <d>
               ^<< right-bank left-bank >> <bank>)

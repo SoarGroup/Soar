@@ -1,4 +1,4 @@
-
+# this rule will cause a warning during loading in Soar; that warning can be ignored
 sp {mac*evaluate*state*failure*duplicate
    (state <s1> ^desired <d>
                ^right-bank <rb>
