@@ -31,7 +31,8 @@
 #else
 #include <dlfcn.h>      // Needed for dlopen and dlsym
 #define GetProcAddress dlsym
-#endif // WIN32
+#define LINUX_DIRECT
+#endif // _WIN32
 
 using namespace sml ;
 
@@ -127,8 +128,13 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
 #else
 #ifdef LINUX_DIRECT
+    libraryName.insert(0, "lib");
     libraryName.append(".so");
     void* hLibrary = dlopen(libraryName.c_str(), RTLD_LAZY);
+    if(hLibrary == NULL) {
+        cerr << "Error loading library " << libraryName << endl;
+        cerr << "Details: " << dlerror();
+    }
 #endif
 #endif
 
