@@ -924,7 +924,7 @@ sp {selection*elaborate*state*found-value-true
 ### there is a operator being evaluated in a higher context, assign that
 ### operator novalue.
 
-sp {selection*elaboare*evaluate-operator*all-operators-novalue
+sp {selection*elaborate*evaluate-operator*all-operators-novalue
    :default
    (state <s> ^superstate.superstate <sss>
               ^operator <o>
