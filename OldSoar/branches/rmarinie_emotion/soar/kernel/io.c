@@ -68,6 +68,7 @@
 #include <errno.h>
 #include "soarkernel.h"
 #include "soarapiUtils.h"
+#include "emotion.h" /*RPM*/
 
 #ifdef _AIX          /* excludeFromBuildInfo */
 #include <sys/select.h>
@@ -211,10 +212,18 @@ void do_input_cycle (void) {
     release_io_symbol (current_agent(io_header));
     release_io_symbol (current_agent(io_header_input));
     release_io_symbol (current_agent(io_header_output));
+
+	release_io_symbol (current_agent(io_header_emotion)); /*RPM*/
+
     current_agent(io_header) = NIL;       /* RBD added 3/25/95 */
     current_agent(io_header_input) = NIL;       /* RBD added 3/25/95 */
     current_agent(io_header_output) = NIL;       /* KJC added 3/3/99 */
     current_agent(io_header_link) = NIL;  /* KJC added 3/3/99 */
+
+	current_agent(io_header_emotion) = NIL; /*RPM*/
+
+    emotion_destructor(); /*RPM*/
+
     soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, 
 			 (soar_call_data) TOP_STATE_JUST_REMOVED);
   } else if ((!current_agent(prev_top_state)) && current_agent(top_state)) {
@@ -226,13 +235,20 @@ void do_input_cycle (void) {
                                          current_agent(io_header));
     current_agent(io_header_input) = get_new_io_identifier ('I');
     current_agent(io_header_output) = get_new_io_identifier ('I');
-    w = add_input_wme (current_agent(io_header),
+    
+	current_agent(io_header_emotion) = get_new_io_identifier('I'); /*RPM*/
+
+	w = add_input_wme (current_agent(io_header),
 		       make_sym_constant("input-link"),
 		       current_agent(io_header_input));
 
     w = add_input_wme (current_agent(io_header),
 		       make_sym_constant("output-link"),
 		       current_agent(io_header_output));
+
+	w = add_input_wme (current_agent(io_header), /*RPM*/
+                make_sym_constant("emotion-link"),
+                current_agent(io_header_emotion));
 
     /* --- add top state io link before calling input phase callback so
      * --- code can use "wmem" command.
@@ -249,6 +265,8 @@ void do_input_cycle (void) {
     soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, 
 			 (soar_call_data) NORMAL_INPUT_CYCLE);
   }
+
+  emotion_update(); /*RPM*/
 
   /* --- do any WM resulting changes --- */
   do_buffered_wm_and_ownership_changes();

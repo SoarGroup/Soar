@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=kernel - Win32 Release
+CFG=kernel - Win32 HxC Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,13 @@ CFG=kernel - Win32 Release
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "Kernel.mak" CFG="kernel - Win32 Release"
+!MESSAGE NMAKE /f "Kernel.mak" CFG="kernel - Win32 HxC Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "kernel - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "kernel - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "kernel - Win32 HxC Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -74,12 +75,36 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:".\soarkernel.lib"
 
+!ELSEIF  "$(CFG)" == "kernel - Win32 HxC Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "kernel___Win32_HxC_Debug"
+# PROP BASE Intermediate_Dir "kernel___Win32_HxC_Debug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "kernel___Win32_HxC_Debug"
+# PROP Intermediate_Dir "kernel___Win32_HxC_Debug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MTd /W3 /GX /Z7 /Od /D "_DEBUG" /D "WIN32" /D "USE_TCL" /D "WINDOWS" /FR /YX /FD /c
+# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /D "_DEBUG" /D "WIN32" /D "USE_TCL" /D "WINDOWS" /D "DEBUG_DETERMINE_LEVEL_PHASE" /D "DEBUG_RETE_PNODES" /FR /YX /FD /c
+# ADD BASE RSC /l 0x409
+# ADD RSC /l 0x409
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:".\soarkernel.lib"
+# ADD LIB32 /nologo /out:".\soarkernel.lib"
+
 !ENDIF 
 
 # Begin Target
 
 # Name "kernel - Win32 Release"
 # Name "kernel - Win32 Debug"
+# Name "kernel - Win32 HxC Debug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
@@ -110,6 +135,10 @@ SOURCE=.\debugutil.c
 # Begin Source File
 
 SOURCE=.\decide.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\emotion.c
 # End Source File
 # Begin Source File
 
@@ -254,6 +283,10 @@ SOURCE=.\callback.h
 # Begin Source File
 
 SOURCE=.\debugutil.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\emotion.h
 # End Source File
 # Begin Source File
 

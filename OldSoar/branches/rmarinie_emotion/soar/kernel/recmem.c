@@ -1317,6 +1317,8 @@ void do_preference_phase (void) {
 
 /* REW: end   08.20.97 */
 
+  emotion_update(); /*RPM*/
+
 }
 
 

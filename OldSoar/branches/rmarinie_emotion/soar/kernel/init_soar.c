@@ -43,6 +43,7 @@
 
 #include <signal.h>         /* used for control-c handler */
 #include "soarkernel.h"
+#include "emotion.h" /*RPM*/
 
 #if !defined(__SC__) && !defined(THINK_C) && !defined(WIN32) && !defined(MACINTOSH)
 #include <sys/time.h>       /* used for timing stuff */
@@ -101,6 +102,9 @@ void just_before_exit_soar (void) {
     
     if ( ((agent *)c->first)->logging_to_file ) stop_log_file ();
   }
+
+  emotion_destructor(); /*RPM*/
+
 }
 
 void exit_soar (void) {

@@ -3442,6 +3442,11 @@ typedef struct ms_change_struct {
 /* REW: end 08.20.97 */
 
 
+/* ======================================================================
+                              emotion.c
+====================================================================== */
+#include "emotion.h" /*RPM*/
+
 
 /* !!!!!!!!!!!!!!!!  here's the agent structure !!!!!!!!!!!!!!!!!!!!!!!!*/
 /*----------------------------------------------------------------------*/
@@ -3960,6 +3965,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   Symbol            * io_header_input;
   Symbol            * io_header_output;
 
+  Symbol            * io_header_emotion; /*RPM*/
+
   memory_pool         io_wme_pool;
   Symbol            * prev_top_state;
   
@@ -3977,6 +3984,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   char              * name;  /* name of this Soar agent */
   int                 id;    /* unique integer id */
   unsigned long     callback_error;  /* an error status set during callback */
+
+  emotions_struct   * emotions; /* RPM */
+
 
 /* --------- I (RBD) don't know what the following stuff is ------------ */
   
