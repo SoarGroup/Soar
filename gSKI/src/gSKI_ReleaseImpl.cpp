@@ -74,7 +74,7 @@ namespace gSKI
       // exits. By changing the number in this if statement and 
       // setting a breakpoint you can figure out exactly where the
       // offending unreleased object is allocated.
-      if(allocCount == 31)
+      if(allocCount == 22)
       {
          int x = 0;
       }

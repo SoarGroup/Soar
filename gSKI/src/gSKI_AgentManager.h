@@ -19,6 +19,8 @@
 #include "EventManagementTemplates.h"
 
 #include "IterUtils.h"
+#include "gSKI_Iterator.h"
+#include "gSKI_ReleaseImpl.h"
 
 #include "AgentRunManager.h"
 
@@ -614,6 +616,8 @@ namespace gSKI
 
          AgentRunManager           m_runManager;             /**< Manages running agents */
 
+		typedef FwdContainerType< std::vector<IAgent*> >    tAgentVec;
+		typedef Iterator<tAgentVec::V, tAgentVec::t>		tAgentIter;
    };
 
 

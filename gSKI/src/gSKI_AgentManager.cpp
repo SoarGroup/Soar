@@ -261,9 +261,22 @@ namespace gSKI
    */
    tIAgentIterator* AgentManager::GetAgentIterator(Error* err)
    {
-      ClearError(err);
+		ClearError(err);
 
-      return 0;
+		// I don't see a way to build a gSKI iterator from a map
+		// so copying the agents into a vector and creating an iterator for that.
+		std::vector<IAgent*> agents ;
+
+		for(tAgentMap::It iter = m_agents.begin() ; iter != m_agents.end(); ++iter)
+		{
+			IAgent* pAgent = iter->second ;
+			agents.push_back(pAgent) ;
+		}
+
+		// Create an iterator for our vector.  I assume the vector can now go out of scope...I hope that's right.
+		tIAgentIterator* pAgentIter = new tAgentIter(agents) ;
+
+		return pAgentIter;
    }
 
    /*

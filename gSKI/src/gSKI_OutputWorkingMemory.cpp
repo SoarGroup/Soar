@@ -356,7 +356,11 @@ namespace gSKI
 		  // of doing that and all my attempts so far to do it have failed, so instead we'll create a vector
 		  // and return an iterator over it.
 
-		  // BUGBUG? Should we be sending back just the wmes or the wm_objects as well?
+		  // NOTE: It's important that the order of the elements in this vector be such that parent WMEs
+		  // are created before children.  I.E. We need to have (I3 ^plane P1) before (P1 ^speed 10).
+		  // (Without this, the client side will have a hard time re-creating the output link).
+		  // This is currently guaranteed to occur because m_wmemap is a map based on timestamps, so the iteration
+		  // through the map will be in timestamp order, which in turn ensures the relationship we need.
 		  std::vector<IWme*> wmes ;
 
 		  for (tWmeMapItr iter = m_wmemap.begin() ; iter != m_wmemap.end() ; iter++)

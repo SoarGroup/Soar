@@ -66,7 +66,11 @@
       gSKIEVENT_LOG_WARNING,
       gSKIEVENT_LOG_INFO,
       gSKIEVENT_LOG_DEBUG,
-      gSKIEVENT_PRINT
+      gSKIEVENT_PRINT,
+
+	  // Marker for end of gSKI event list
+	  // Must always be at the end of the enum
+	  gSKIEVENT_LAST
    } egSKIEventId;
 
    /** Types of threading models 
