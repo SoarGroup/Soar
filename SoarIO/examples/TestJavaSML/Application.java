@@ -127,11 +127,11 @@ public class Application
 		// The integer we get back is only required when we unregister the handler.
 		********************************************************/
 		EventListener listener = new EventListener() ;
-		int jRunCallback    = pAgent.RegisterForRunEvent(pAgent, smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
-		int jProdCallback   = pAgent.RegisterForProductionEvent(pAgent, smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
-		int jPrintCallback  = pAgent.RegisterForPrintEvent(pAgent, smlPrintEventId.smlEVENT_PRINT, listener, "printEventHandler", this) ;		
-		int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlSystemEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
-		int jAgentCallback  = pKernel.RegisterForAgentEvent(pKernel, smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
+		int jRunCallback    = pAgent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
+		int jProdCallback   = pAgent.RegisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
+		int jPrintCallback  = pAgent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, listener, "printEventHandler", this) ;		
+		int jSystemCallback = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
+		int jAgentCallback  = pKernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
 
 		// Trigger an agent event by doing init-soar
 		pAgent.InitSoar() ;
@@ -157,11 +157,11 @@ public class Application
 		
 		// Unregister our callbacks
 		// (This isn't required, I'm just testing that it works)
-		pAgent.UnregisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, jRunCallback) ;
-		pAgent.UnregisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, jProdCallback) ;
-		pAgent.UnregisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, jPrintCallback) ;
-		pKernel.UnregisterForSystemEvent(smlSystemEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
-		pKernel.UnregisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
+		pAgent.UnregisterForRunEvent(jRunCallback) ;
+		pAgent.UnregisterForProductionEvent(jProdCallback) ;
+		pAgent.UnregisterForPrintEvent(jPrintCallback) ;
+		pKernel.UnregisterForSystemEvent(jSystemCallback) ;
+		pKernel.UnregisterForAgentEvent(jAgentCallback) ;
 		
 		String trace2 = pAgent.RunTilOutput(20) ;
 		System.out.println(trace2) ;

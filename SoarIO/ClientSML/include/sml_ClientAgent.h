@@ -28,48 +28,36 @@ class Connection ;
 class AnalyzeXML ;
 class ElementXML ;
 
-// We'll store a handler function together with a generic pointer to data of the user's choosing
-// (which is then passed back into the handler when the event occurs).
-// We also include a callback "id" which is a unique way to refer to this callback--used during unregistering.
-struct EventHandlerPlusData
+class RunEventHandlerPlusData : public EventHandlerPlusData
 {
-	void*			m_UserData ;
-	int				m_CallbackID ;
-} ;
-
-struct RunEventHandlerPlusData : public EventHandlerPlusData
-{
+public:
 	RunEventHandler m_Handler ;
 
-	RunEventHandlerPlusData(RunEventHandler handler, void* userData, int callbackID)
+	RunEventHandlerPlusData(RunEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
 	{
 		m_Handler = handler ;
-		m_UserData = userData ;
-		m_CallbackID = callbackID ;
 	}
 } ;
 
-struct ProductionEventHandlerPlusData : public EventHandlerPlusData
+class ProductionEventHandlerPlusData : public EventHandlerPlusData
 {
+public:
 	ProductionEventHandler m_Handler ;
 
-	ProductionEventHandlerPlusData(ProductionEventHandler handler, void* userData, int callbackID)
+	ProductionEventHandlerPlusData(ProductionEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
 	{
 		m_Handler = handler ;
-		m_UserData = userData ;
-		m_CallbackID = callbackID ;
 	}
 } ;
 
-struct PrintEventHandlerPlusData : public EventHandlerPlusData
+class PrintEventHandlerPlusData : public EventHandlerPlusData
 {
+public:
 	PrintEventHandler m_Handler ;
 
-	PrintEventHandlerPlusData(PrintEventHandler handler, void* userData, int callbackID)
+	PrintEventHandlerPlusData(PrintEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
 	{
 		m_Handler = handler ;
-		m_UserData = userData ;
-		m_CallbackID = callbackID ;
 	}
 } ;
 
@@ -107,6 +95,11 @@ protected:
 	RunEventMap			m_RunEventMap ;
 	ProductionEventMap	m_ProductionEventMap ;
 	PrintEventMap		m_PrintEventMap ;
+
+	// These are little utility classes we define in the .cpp file to help with searching the event maps
+	class TestRunCallback ;
+	class TestProductionCallback ;
+	class TestPrintCallback ;
 
 	// Used to generate unique IDs for callbacks
 	int		m_CallbackIDCounter ;
@@ -316,7 +309,7 @@ public:
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForRunEvent(smlRunEventId id, int callbackID) ;
+	bool	UnregisterForRunEvent(int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for a "ProductionEvent".
@@ -340,7 +333,7 @@ public:
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForProductionEvent(smlProductionEventId id, int callbackID) ;
+	bool	UnregisterForProductionEvent(int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for an "PrintEvent".
@@ -361,7 +354,7 @@ public:
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForPrintEvent(smlPrintEventId id, int callbackID) ;
+	bool	UnregisterForPrintEvent(int callbackID) ;
 
 	/*==============================================================================
 	===

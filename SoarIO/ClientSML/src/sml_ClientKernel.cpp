@@ -270,7 +270,7 @@ void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, Ele
 		SystemEventHandlerPlusData handlerWithData = *iter ;
 
 		SystemEventHandler handler = handlerWithData.m_Handler ;
-		void* pUserData = handlerWithData.m_UserData ;
+		void* pUserData = handlerWithData.getUserData() ;
 
 		// Call the handler
 		handler(id, pUserData, this) ;
@@ -313,7 +313,7 @@ void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, Eleme
 	{
 		AgentEventHandlerPlusData handlerPlus = *iter ;
 		AgentEventHandler handler = handlerPlus.m_Handler ;
-		void* pUserData = handlerPlus.m_UserData ;
+		void* pUserData = handlerPlus.getUserData() ;
 
 		// Call the handler
 		handler(id, pUserData, pAgent) ;
@@ -780,28 +780,106 @@ int Kernel::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler,
 	return m_CallbackIDCounter ;
 }
 
-static int s_CallbackID = 0 ;
-
-// These simple tests are used to identify which handler were are interested in within
-// the maps at a given time.
-static bool TestSystemCallback(SystemEventHandlerPlusData handler)
+class Kernel::TestSystemCallback : public SystemEventMap::ValueTest
 {
-	return (handler.m_CallbackID == s_CallbackID) ;
+private:
+	int m_ID ;
+public:
+	TestSystemCallback(int id) { m_ID = id ; }
+
+	bool isEqual(SystemEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+class Kernel::TestAgentCallback : public AgentEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestAgentCallback(int id) { m_ID = id ; }
+
+	bool isEqual(AgentEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+/*************************************************************
+* @brief Register a handler for a RHS (right hand side) function.
+*		 This function can be called in the RHS of a production firing
+*		 allowing a user to quickly extend Soar with custom methods added to the client.
+*
+*		 The methods should only operate on the incoming argument list and return a
+*		 result without access to other external information to remain with the theory of a Soar agent.
+*
+*		 Multiple handlers can be registered for the same function but only one will ever be called.
+*		 This will be the first handler registered in the local process (where the Kernel is executing).
+*		 If no handler is available there then the first handler registered in an external process will be called.
+*		 (The latter case could obviously be quite slow).
+*
+*		 The function is implemented by providing a handler (a RhsEventHandler).  This will be passed a single string
+*		 and returns a string.  The incoming argument string can contain arguments that the client should parse
+*		 (e.g. passing a coordinate as "12 56").  The format of the string is up to the implementor of the specific RHS function.
+*		 The handler should return true if it has filled in a return string value, otherwise it must return false.
+*
+* @param pRhsFunctionName	The name of the method we are implementing (case-sensitive)
+* @param handler			A function that will be called when the event happens
+* @param pUserData			Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack			If true add this handler is called after existing handlers.  If false, called before existing handlers.
+*
+* @returns Unique ID for this callback.  Required when unregistering this callback.
+*************************************************************/
+int	Kernel::RegisterForRhsFunctionEvent(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack)
+{
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_RhsEventMap.getListSize(pRhsFunctionName) == 0)
+	{
+		AnalyzeXML response ;
+
+		// The event ID is always the same for RHS functions
+		char buffer[kMinBufferSize] ;
+		Int2String(smlEVENT_RHS_FUNCTION, buffer, sizeof(buffer)) ;
+
+		// Send the register command for this event and this function name
+		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, buffer, sml_Names::kParamName, pRhsFunctionName) ;
+	}
+
+	// Record the handler
+	m_CallbackIDCounter++ ;
+	RhsEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	m_RhsEventMap.add(pRhsFunctionName, handlerPlus, addToBack) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
 }
 
-static bool TestAgentCallback(AgentEventHandlerPlusData handler)
+/*************************************************************
+* @brief Unregister for a particular RHS function
+*************************************************************/
+bool Kernel::UnregisterForRhsFunctionEvent(int callbackID)
 {
-	return (handler.m_CallbackID == s_CallbackID) ;
+	return false ;
 }
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Kernel::UnregisterForSystemEvent(smlSystemEventId id, int callbackID)
+bool Kernel::UnregisterForSystemEvent(int callbackID)
 {
+	// Build a test object for the callbackID we're interested in
+	TestSystemCallback test(callbackID) ;
+
+	// Find the event ID for this callbackID
+	smlSystemEventId id = m_SystemEventMap.findFirstKeyByTest(&test, (smlSystemEventId)-1) ;
+
+	if (id == -1)
+		return false ;
+
 	// Remove the handler from our map
-	s_CallbackID = callbackID ;
-	m_SystemEventMap.removeAllByTest(&TestSystemCallback) ;
+	m_SystemEventMap.removeAllByTest(&test) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_SystemEventMap.getListSize(id) == 0)
@@ -814,16 +892,26 @@ void Kernel::UnregisterForSystemEvent(smlSystemEventId id, int callbackID)
 		// Send the unregister command
 		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
 	}
+
+	return true ;
 }
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Kernel::UnregisterForAgentEvent(smlAgentEventId id, int callbackID)
+bool Kernel::UnregisterForAgentEvent(int callbackID)
 {
+	// Build a test object for the callbackID we're interested in
+	TestAgentCallback test(callbackID) ;
+
+	// Find the event ID for this callbackID
+	smlAgentEventId id = m_AgentEventMap.findFirstKeyByTest(&test, (smlAgentEventId)-1) ;
+
+	if (id == -1)
+		return false ;
+
 	// Remove the handler from our map
-	s_CallbackID = callbackID ;
-	m_AgentEventMap.removeAllByTest(&TestAgentCallback) ;
+	m_AgentEventMap.removeAllByTest(&test) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_AgentEventMap.getListSize(id) == 0)
@@ -836,4 +924,6 @@ void Kernel::UnregisterForAgentEvent(smlAgentEventId id, int callbackID)
 		// Send the unregister command
 		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
 	}
+
+	return true ;
 }

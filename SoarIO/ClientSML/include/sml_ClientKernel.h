@@ -37,31 +37,36 @@ class AnalyzeXML ;
 class ElementXML ;
 class EventThread ;
 
-struct SystemEventHandlerPlusData
+class SystemEventHandlerPlusData : public EventHandlerPlusData
 {
+public:
 	SystemEventHandler  m_Handler ;
-	void*				m_UserData ;
-	int					m_CallbackID ;
 
-	SystemEventHandlerPlusData(SystemEventHandler handler, void* userData, int callbackID)
+	SystemEventHandlerPlusData(SystemEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
 	{
 		m_Handler = handler ;
-		m_UserData = userData ;
-		m_CallbackID = callbackID ;
 	}
 } ;
 
-struct AgentEventHandlerPlusData
+class AgentEventHandlerPlusData : public EventHandlerPlusData
 {
+public:
 	AgentEventHandler m_Handler ;
-	void*			  m_UserData ;
-	int				  m_CallbackID ;
 
-	AgentEventHandlerPlusData(AgentEventHandler handler, void* userData, int callbackID)
+	AgentEventHandlerPlusData(AgentEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
 	{
 		m_Handler = handler ;
-		m_UserData = userData ;
-		m_CallbackID = callbackID ;
+	}
+} ;
+
+class RhsEventHandlerPlusData : public EventHandlerPlusData
+{
+public:
+	RhsEventHandler	m_Handler ;
+
+	RhsEventHandlerPlusData(RhsEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
+	{
+		m_Handler = handler ;
 	}
 } ;
 
@@ -80,8 +85,9 @@ protected:
 	int			m_CallbackIDCounter ;	// Used to generate unique callback IDs
 
 	// The mapping from event number to a list of handlers to call when that event fires
-	typedef sml::ListMap<smlSystemEventId, SystemEventHandlerPlusData>		SystemEventMap ;
-	typedef sml::ListMap<smlAgentEventId, AgentEventHandlerPlusData>		AgentEventMap ;
+	typedef sml::ListMap<smlSystemEventId, SystemEventHandlerPlusData>			SystemEventMap ;
+	typedef sml::ListMap<smlAgentEventId, AgentEventHandlerPlusData>			AgentEventMap ;
+	typedef sml::ListMap<std::string, RhsEventHandlerPlusData>					RhsEventMap ;
 
 	Connection*			m_Connection ;
 	ObjectMap<Agent*>	m_AgentMap ;
@@ -92,6 +98,11 @@ protected:
 	// Which handler functions to call when an event comes in
 	SystemEventMap		m_SystemEventMap ;
 	AgentEventMap		m_AgentEventMap ;
+	RhsEventMap			m_RhsEventMap ;
+
+	// Utility classes used to test for values in the event maps
+	class TestSystemCallback ;
+	class TestAgentCallback ;
 
 	// This thread is used to check for incoming events when the client goes to sleep
 	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
@@ -131,6 +142,7 @@ protected:
 	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 public:
 	/*************************************************************
@@ -326,8 +338,42 @@ public:
 
 	/*************************************************************
 	* @brief Unregister for a particular event
+	* @returns True if succeeds
 	*************************************************************/
-	void	UnregisterForSystemEvent(smlSystemEventId id, int callbackID) ;
+	bool	UnregisterForSystemEvent(int callbackID) ;
+
+	/*************************************************************
+	* @brief Register a handler for a RHS (right hand side) function.
+	*		 This function can be called in the RHS of a production firing
+	*		 allowing a user to quickly extend Soar with custom methods added to the client.
+	*
+	*		 The methods should only operate on the incoming argument list and return a
+	*		 result without access to other external information to remain with the theory of a Soar agent.
+	*
+	*		 Multiple handlers can be registered for the same function but only one will ever be called.
+	*		 This will be the first handler registered in the local process (where the Kernel is executing).
+	*		 If no handler is available there then the first handler registered in an external process will be called.
+	*		 (The latter case could obviously be quite slow).
+	*
+	*		 The function is implemented by providing a handler (a RhsEventHandler).  This will be passed a single string
+	*		 and returns a string.  The incoming argument string can contain arguments that the client should parse
+	*		 (e.g. passing a coordinate as "12 56").  The format of the string is up to the implementor of the specific RHS function.
+	*		 The handler should return true if it has filled in a return string value, otherwise it must return false.
+	*
+	* @param pRhsFunctionName	The name of the method we are implementing (case-sensitive)
+	* @param handler			A function that will be called when the event happens
+	* @param pUserData			Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack			If true add this handler is called after existing handlers.  If false, called before existing handlers.
+	*
+	* @returns Unique ID for this callback.  Required when unregistering this callback.
+	*************************************************************/
+	int	RegisterForRhsFunctionEvent(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack = true) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	* @returns True if succeeds
+	*************************************************************/
+	bool	UnregisterForRhsFunctionEvent(int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for an "AgentEvent".
@@ -353,8 +399,9 @@ public:
 
 	/*************************************************************
 	* @brief Unregister for a particular event
+	* @returns True if succeeds
 	*************************************************************/
-	void	UnregisterForAgentEvent(smlAgentEventId id, int callbackID) ;
+	bool	UnregisterForAgentEvent(int callbackID) ;
 
 protected:
 	/*************************************************************

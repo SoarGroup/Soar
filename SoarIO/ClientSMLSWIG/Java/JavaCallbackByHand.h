@@ -368,22 +368,21 @@ JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEvent(JNIEnv *jenv, 
 }
 
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
-	// jarg2 is the event ID we're registering for
-	sml::smlRunEventId arg2 = (sml::smlRunEventId)jarg2;
-
-	// jarg3 is the callback data from the registration call
-	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
+	// jarg2 is the callback data from the registration call
+	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForRunEvent(arg2, pJavaData->m_CallbackID) ;
+	bool result = arg1->UnregisterForRunEvent(pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;
+
+	return result ;
 }
 
 // This is the hand-written JNI method for registering a callback.
@@ -407,22 +406,21 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEvent(JNIEnv *
 }
 
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
-	// jarg2 is the event ID we're registering for
-	sml::smlProductionEventId arg2 = (sml::smlProductionEventId)jarg2;
-
-	// jarg3 is the callback data from the registration call
-	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
+	// jarg2 is the callback data from the registration call
+	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForProductionEvent(arg2, pJavaData->m_CallbackID) ;
+	bool result = arg1->UnregisterForProductionEvent(pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;
+
+	return result ;
 }
 
 // This is the hand-written JNI method for registering a callback.
@@ -445,22 +443,21 @@ JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForPrintEvent(JNIEnv *jenv
 	return (jint)pJavaData ;
 }
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForPrintEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForPrintEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
-	// jarg2 is the event ID we're registering for
-	sml::smlPrintEventId arg2 = (sml::smlPrintEventId)jarg2;
-
-	// jarg3 is the callback data from the registration call
-	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
+	// jarg2 is the callback data from the registration call
+	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForPrintEvent(arg2, pJavaData->m_CallbackID) ;
+	bool result = arg1->UnregisterForPrintEvent(pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;
+
+	return result ;
 }
 
 // This is the hand-written JNI method for registering a callback.
@@ -483,22 +480,21 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEvent(JNIEnv *jen
 	return (jint)pJavaData ;
 }
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
 {
     // jarg1 is the C++ Kernel object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
 
-	// jarg2 is the event ID we're registering for
-	sml::smlSystemEventId arg2 = (sml::smlSystemEventId)jarg2;
-
-	// jarg3 is the callback data from the registration call
-	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
+	// jarg2 is the callback data from the registration call
+	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForSystemEvent(arg2, pJavaData->m_CallbackID) ;
+	bool result = arg1->UnregisterForSystemEvent(pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;
+
+	return result ;
 }
 
 // This is the hand-written JNI method for registering a callback.
@@ -521,21 +517,20 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForAgentEvent(JNIEnv *jenv
 	return (jint)pJavaData ;
 }
 
-JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
 
-	// jarg2 is the event ID we're registering for
-	sml::smlAgentEventId arg2 = (sml::smlAgentEventId)jarg2;
-
-	// jarg3 is the callback data from the registration call
-	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
+	// jarg2 is the callback data from the registration call
+	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForAgentEvent(arg2, pJavaData->m_CallbackID) ;
+	bool result = arg1->UnregisterForAgentEvent(pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;
+
+	return result ;
 }
 

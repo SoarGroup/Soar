@@ -280,39 +280,70 @@ int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* 
 	return m_CallbackIDCounter ;
 }
 
-static int s_CallbackID = 0 ;
-
-// These simple tests are used to identify which handler were are interested in within
-// the maps at a given time.
-static bool TestRunCallback(RunEventHandlerPlusData handler)
+// These are little utility classes we define to help with searching the event maps
+class Agent::TestRunCallback : public RunEventMap::ValueTest
 {
-	return (handler.m_CallbackID == s_CallbackID) ;
-}
+private:
+	int m_ID ;
+public:
+	TestRunCallback(int id) { m_ID = id ; }
 
-static bool TestProductionCallback(ProductionEventHandlerPlusData handler)
-{
-	return (handler.m_CallbackID == s_CallbackID) ;
-}
+	bool isEqual(RunEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
 
-static bool TestPrintCallback(PrintEventHandlerPlusData handler)
+class Agent::TestProductionCallback : public ProductionEventMap::ValueTest
 {
-	return (handler.m_CallbackID == s_CallbackID) ;
-}
+private:
+	int m_ID ;
+public:
+	TestProductionCallback(int id) { m_ID = id ; }
+
+	bool isEqual(ProductionEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+class Agent::TestPrintCallback : public PrintEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestPrintCallback(int id) { m_ID = id ; }
+
+	bool isEqual(PrintEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForRunEvent(smlRunEventId id, int callbackID)
+bool Agent::UnregisterForRunEvent(int callbackID)
 {
+	// Build a test object for the callbackID we're interested in
+	TestRunCallback test(callbackID) ;
+
+	// Find the event ID for this callbackID
+	smlRunEventId id = m_RunEventMap.findFirstKeyByTest(&test, (smlRunEventId)-1) ;
+
+	if (id == -1)
+		return false ;
+
 	// Remove the handler from our map
-	s_CallbackID = callbackID ;
-	m_RunEventMap.removeAllByTest(&TestRunCallback) ;
+	m_RunEventMap.removeAllByTest(&test) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_RunEventMap.getListSize(id) == 0)
 	{
 		UnregisterForEvent(id) ;
 	}
+
+	return true ;
 }
 
 /*************************************************************
@@ -353,17 +384,27 @@ int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHa
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForProductionEvent(smlProductionEventId id, int callbackID)
+bool Agent::UnregisterForProductionEvent(int callbackID)
 {
+	// Build a test object for the callbackID we're interested in
+	TestProductionCallback test(callbackID) ;
+
+	// Find the event ID for this callbackID
+	smlProductionEventId id = m_ProductionEventMap.findFirstKeyByTest(&test, (smlProductionEventId)-1) ;
+
+	if (id == -1)
+		return false ;
+
 	// Remove the handler from our map
-	s_CallbackID = callbackID ;
-	m_ProductionEventMap.removeAllByTest(&TestProductionCallback) ;
+	m_ProductionEventMap.removeAllByTest(&test) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_ProductionEventMap.getListSize(id) == 0)
 	{
 		UnregisterForEvent(id) ;
 	}
+
+	return true ;
 }
 
 /*************************************************************
@@ -402,17 +443,27 @@ int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForPrintEvent(smlPrintEventId id, int callbackID)
+bool Agent::UnregisterForPrintEvent(int callbackID)
 {
+	// Build a test object for the callbackID we're interested in
+	TestPrintCallback test(callbackID) ;
+
+	// Find the event ID for this callbackID
+	smlPrintEventId id = m_PrintEventMap.findFirstKeyByTest(&test, (smlPrintEventId)-1) ;
+
+	if (id == -1)
+		return false ;
+
 	// Remove the handler from our map
-	s_CallbackID = callbackID ;
-	m_PrintEventMap.removeAllByTest(&TestPrintCallback) ;
+	m_PrintEventMap.removeAllByTest(&test) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_PrintEventMap.getListSize(id) == 0)
 	{
 		UnregisterForEvent(id) ;
 	}
+
+	return true ;
 }
 
 /*************************************************************

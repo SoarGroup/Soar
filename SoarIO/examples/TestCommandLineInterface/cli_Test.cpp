@@ -398,8 +398,8 @@ int main(int argc, char** argv)
 		while (g_pCommandProcessor->ProcessCharacter(getKey(true))) {}
 	}
 
-	pAgent->UnregisterForPrintEvent(sml::smlEVENT_PRINT, callbackID2);
-	pAgent->UnregisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, callbackID1);
+	pAgent->UnregisterForPrintEvent(callbackID2);
+	pAgent->UnregisterForRunEvent(callbackID1);
 
 	// Don't delete agent, owned by kernel
 	delete pKernel ;

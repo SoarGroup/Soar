@@ -57,11 +57,6 @@ typedef enum {
 	smlEVENT_AFTER_RHS_FUNCTION_EXECUTED
 } smlSystemEventId ;
 
-static inline bool IsSystemEventID(int id)
-{
-	return (id >= smlEVENT_BEFORE_SHUTDOWN && id <= smlEVENT_AFTER_RHS_FUNCTION_EXECUTED) ;
-}
-
 typedef enum {
     smlEVENT_BEFORE_SMALLEST_STEP = smlEVENT_AFTER_RHS_FUNCTION_EXECUTED + 1,
     smlEVENT_AFTER_SMALLEST_STEP,
@@ -76,11 +71,6 @@ typedef enum {
     smlEVENT_AFTER_RUNNING,
 } smlRunEventId ;
 
-static inline bool IsRunEventID(int id)
-{
-	return (id >= smlEVENT_BEFORE_SMALLEST_STEP && id <= smlEVENT_AFTER_RUNNING) ;
-}
-
 typedef enum {
     // Production Manager
     smlEVENT_AFTER_PRODUCTION_ADDED = smlEVENT_AFTER_RUNNING + 1,
@@ -90,11 +80,6 @@ typedef enum {
     smlEVENT_BEFORE_PRODUCTION_RETRACTED,
 } smlProductionEventId ;
 
-static inline bool IsProductionEventID(int id)
-{
-	return (id >= smlEVENT_AFTER_PRODUCTION_ADDED && id <= smlEVENT_BEFORE_PRODUCTION_RETRACTED) ;
-}
-
 typedef enum {
 	// Agent manager
     smlEVENT_AFTER_AGENT_CREATED = smlEVENT_BEFORE_PRODUCTION_RETRACTED + 1,
@@ -103,20 +88,10 @@ typedef enum {
     smlEVENT_AFTER_AGENT_REINITIALIZED,
 } smlAgentEventId ;
 
-static inline bool IsAgentEventID(int id)
-{
-	return (id >= smlEVENT_AFTER_AGENT_CREATED && id <= smlEVENT_AFTER_AGENT_REINITIALIZED) ;
-}
-
 typedef enum {
 	// Working memory changes
 	smlEVENT_OUTPUT_PHASE_CALLBACK = smlEVENT_AFTER_AGENT_REINITIALIZED + 1,
 } smlWorkingMemoryEventId ;
-
-static inline bool IsWorkingMemoryEventID(int id)
-{
-	return (id >= smlEVENT_OUTPUT_PHASE_CALLBACK && id <= smlEVENT_OUTPUT_PHASE_CALLBACK) ;
-}
 
 typedef enum {
     // Error and print callbacks
@@ -127,10 +102,13 @@ typedef enum {
     smlEVENT_PRINT,
 } smlPrintEventId ;
 
-static inline bool IsPrintEventID(int id)
-{
-	return (id >= smlEVENT_LOG_ERROR && id <= smlEVENT_PRINT) ;
-}
+typedef enum {
+	// Used to provide user handler functions for RHS (right hand side) functions
+	// fired within Soar productions.  This is different from normal events in that
+	// the handler is executing the function and returning a value, not just being notified
+	// that something has happened.
+	smlEVENT_RHS_FUNCTION = smlEVENT_PRINT + 1,
+} smlRhsEventId ;
 
 typedef enum {
     // Used to indicate an error in some cases
@@ -140,6 +118,41 @@ typedef enum {
 	// Must always be at the end of the enum
 	smlEVENT_LAST = smlEVENT_PRINT + 1
 } smlGenericEventId ;
+
+static inline bool IsSystemEventID(int id)
+{
+	return (id >= smlEVENT_BEFORE_SHUTDOWN && id <= smlEVENT_AFTER_RHS_FUNCTION_EXECUTED) ;
+}
+
+static inline bool IsRunEventID(int id)
+{
+	return (id >= smlEVENT_BEFORE_SMALLEST_STEP && id <= smlEVENT_AFTER_RUNNING) ;
+}
+
+static inline bool IsProductionEventID(int id)
+{
+	return (id >= smlEVENT_AFTER_PRODUCTION_ADDED && id <= smlEVENT_BEFORE_PRODUCTION_RETRACTED) ;
+}
+
+static inline bool IsAgentEventID(int id)
+{
+	return (id >= smlEVENT_AFTER_AGENT_CREATED && id <= smlEVENT_AFTER_AGENT_REINITIALIZED) ;
+}
+
+static inline bool IsWorkingMemoryEventID(int id)
+{
+	return (id >= smlEVENT_OUTPUT_PHASE_CALLBACK && id <= smlEVENT_OUTPUT_PHASE_CALLBACK) ;
+}
+
+static inline bool IsPrintEventID(int id)
+{
+	return (id >= smlEVENT_LOG_ERROR && id <= smlEVENT_PRINT) ;
+}
+
+static inline bool IsRhsEventID(int id)
+{
+	return (id >= smlEVENT_RHS_FUNCTION && id <= smlEVENT_RHS_FUNCTION) ;
+}
 
 typedef enum {
     sml_INPUT_PHASE,
@@ -169,6 +182,34 @@ typedef void (*ProductionEventHandler)(smlProductionEventId id, void* pUserData,
 
 // Handler for System events.
 typedef void (*SystemEventHandler)(smlSystemEventId id, void* pUserData, Kernel* pKernel) ;
+
+// Handler for RHS (right hand side) function firings
+// pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
+// pResultValue is a string allocated by the caller than is of size maxLengthReturnValue that should be filled in with the return value.
+// The bool return value should be "true" if a return value is filled in, otherwise return false.
+typedef bool (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent* pAgent,
+								char const* pFunctionName, char const* pArgument,
+								int maxLengthReturnValue, char* pReturnValue) ;
+
+// We'll store a handler function together with a generic pointer to data of the user's choosing
+// (which is then passed back into the handler when the event occurs).
+// We also include a callback "id" which is a unique way to refer to this callback--used during unregistering.
+class EventHandlerPlusData
+{
+public:
+	void*			m_UserData ;
+	int				m_CallbackID ;
+
+public:
+	EventHandlerPlusData(void* pData, int callbackID)
+	{
+		m_UserData = pData ;
+		m_CallbackID = callbackID ;
+	}
+
+	int		getCallbackID() { return m_CallbackID ; }
+	void*	getUserData()   { return m_UserData ; }
+} ;
 
 } ;	// End of namespace
 

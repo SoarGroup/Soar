@@ -40,9 +40,15 @@ typedef std::map<KeyType, ValueList*>		KeyMap ;
 typedef typename KeyMap::iterator			KeyMapIter ;
 typedef typename KeyMap::const_iterator		KeyMapConstIter ;
 
-// Define "ValueTest" as a method taking a value and returning true/false
-// We use this during deletes
-typedef bool (*ValueTest)(ValueType value) ;
+// In order to do a deletion or lookup using a test on a value
+// derive a class from this and implement "isEqual".
+// (We use this so we can extract a value from the ValueType and test that
+//  without having to rebuild the complete ValueType.  In practice this is helpful).
+class ValueTest
+{
+public:
+	virtual bool isEqual(ValueType value) = 0 ;
+} ;
 
 protected:
 	KeyMap	m_Map ;
@@ -95,33 +101,69 @@ public:
 			pList->remove(value) ;
 	}
 
-	void removeByTest(KeyType key, ValueTest test)
+	// Search all values and remove the given one(s)
+	// The way we identify which one(s) to remove is by passing in an object which implements "isEqual".
+	// When it's true we remove the object.  Returns true if at least one object was removed.
+	bool removeAllByTest(ValueTest* pTest)
 	{
-		ValueList* pList = getList(key) ;
+		bool removedAnObject = false ;
 
-		if (pList)
+		for (KeyMapIter mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)
 		{
-			// Walk the list, removing items based on if they match the test
-			for (ValueListIter iter = pList->begin() ; iter != pList->end() ;)
-			{
-				ValueType value = *iter ;
+			KeyType key = mapIter->first ;
+			ValueList* pList = getList(key) ;
 
-				if (test(value))
-					pList->erase(iter++) ;
-				else
-					iter++ ;
+			if (pList)
+			{
+				// Walk the list, removing items based on if they match the test
+				for (ValueListIter iter = pList->begin() ; iter != pList->end() ;)
+				{
+					ValueType value = *iter ;
+
+					if (pTest->isEqual(value))
+					{
+						pList->erase(iter++) ;
+						removedAnObject = true ;
+					}
+					else
+						iter++ ;
+				}
 			}
 		}
+
+		return removedAnObject ;
 	}
 
-	// Same as above "removeByTest" but applied to all keys
-	void removeAllByTest(ValueTest test)
+	// Search all values to find a matching value and return the key for that value.
+	// The "match" is based on implementing "isEqual" in a ValueTest class.
+	// The first match is returned.
+	// If there is no match, returns "notFoundKey" that you pass in (so you can choose an appropriate value that's not a key)
+	KeyType findFirstKeyByTest(ValueTest* pTest, KeyType notFoundKey)
 	{
 		for (KeyMapIter mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)
 		{
-			removeByTest(mapIter->first, test) ;
+			KeyType key = mapIter->first ;
+			ValueList* pList = getList(key) ;
+
+			if (pList)
+			{
+				// Walk the list, removing items based on if they match the test
+				for (ValueListIter iter = pList->begin() ; iter != pList->end() ;)
+				{
+					ValueType value = *iter ;
+
+					if (pTest->isEqual(value))
+						return key ;
+					else
+						iter++ ;
+				}
+			}
 		}
+
+		// Return NULL if nothing matches
+		return notFoundKey ;
 	}
+
 
 	// Remove all values for a specific key
 	void removeAll(KeyType key)

@@ -436,7 +436,13 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			return false ;
 		}
 */
-		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, callback3) ;
+		bool unreg = pAgent->UnregisterForRunEvent(callback3) ;
+
+		if (!unreg)
+		{
+			cout << "Error unregistering callback3" << endl ;
+			return false ;
+		}
 
 		cout << endl << "If this test worked should see something like this (above here):" << endl ;
 		cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;
@@ -447,7 +453,14 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		cout << "Destroy the agent now" << endl ;
 
-		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, callback1) ;
+		unreg = pAgent->UnregisterForRunEvent(callback1) ;
+
+		if (!unreg)
+		{
+			cout << "Error unregistering callback1" << endl ;
+			return false ;
+		}
+
 
 		// The Before_Agent_Destroyed callback is a tricky one so we'll register for it to test it.
 		// We need to get this callback just before the agentSML data is deleted (otherwise there'll be no way to send/receive the callback)
