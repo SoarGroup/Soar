@@ -1,0 +1,34 @@
+echo "\nLoading retreat/elaborations.soar"
+
+##################################
+## Compute enemy direction from sound, radar, or incoming
+##################################
+
+sp {elaborate*retreat*sound*direction
+   (state <s> ^name retreat
+              ^superstate <ss>)
+   (<ss> ^direction-map.<direction>.<rel-sound> <abs-sound>
+         ^io.input-link.direction <direction>
+         ^sound.absolute-direction <abs-sound>)
+-->
+   (<s> ^direction <direction>)}
+
+sp {elaborate*retreat*radar*front
+   (state <s> ^name retreat
+              ^io.input-link.radar.tank)
+-->
+   (<s> ^direction forward)}
+
+sp {elaborate*retreat*incoming*direction
+   (state <s> ^name retreat
+              ^io.input-link.incoming.<dir> yes)
+-->
+   (<s> ^direction <dir>)}
+
+sp {elaborate*retreat*radar*direction
+   (state <s> ^name retreat
+              ^io.input-link.radar.tank.position { <dir> <> center })
+-->
+   (<s> ^avoid-direction <dir>)}
+
+

@@ -1,0 +1,14 @@
+To Start:
+--------
+For Mac:  double click TankSoar application.
+
+For Windows:  double click either TANKSOAR.BAT or TANKSOARNT.BAT.
+
+
+Debugging, i.e. having a console window open to type TCL commands:
+---------
+For Mac:  a console window is always available, so don't worry about doing anything special
+
+For Windows:  Double-click either DEBUG.BAT or DEBUGNT.BAT.  When the console window appears, type "source tanksoar"
+
+Note for windows:  The xset window will remain on the screen.  To eliminate this behavior, right-click on the batch file and select properties.  Under PROGRAM, select the checkbox that says "Close on exit."  It will create a shortcut, but your preferences will be saved for that machine.
