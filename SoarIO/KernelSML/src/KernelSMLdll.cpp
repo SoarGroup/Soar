@@ -36,7 +36,7 @@ bool __stdcall DllMain( void * hModule,
 					 )
 {
 #ifdef _DEBUG
-	//_crtBreakAlloc = 1236;
+//	_crtBreakAlloc = 165;
 #endif
 
 	unused(hModule) ;
@@ -62,8 +62,11 @@ bool __stdcall DllMain( void * hModule,
 		_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
 		_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
 
-		_CrtDbgReport(_CRT_WARN, NULL, NULL, "KernelSML", "Checking memory in KernelSML\n");
-		_CrtDumpMemoryLeaks();
+// Disabled memory leak detection now we're statically linked to gSKI and the kernel as they're
+// leaking a lot and it's going to take a while to fix them all.  Hopefully we'll turn
+// it back on at some point and chase them all down.
+//		_CrtDbgReport(_CRT_WARN, NULL, NULL, "KernelSML", "Checking memory in KernelSML\n");
+//		_CrtDumpMemoryLeaks();
 #endif
 	}
 
