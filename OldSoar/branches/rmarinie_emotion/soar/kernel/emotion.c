@@ -408,6 +408,31 @@ bool emotion_get_appraisal_frame_timetag(slot * appraisal_frame_slot, unsigned l
 }
 
 bool emotion_get_appraisal_variable_timetag(wme * appraisal_variable_wme, unsigned long * timetag) {
+    
+    /* if the wme isn't one of the variables, then it isn't valid */
+    if( (!strcmp(appraisal_variable_wme->attr->var.name,"desirability") || 
+        !strcmp(appraisal_variable_wme->attr->var.name,"likelihood"))
+        &&
+        (appraisal_variable_wme->value->var.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
+        appraisal_variable_wme->value->var.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
+    {
+        (*timetag) = appraisal_variable_wme->timetag;
+        return TRUE;
+    } else if ( !strcmp(appraisal_variable_wme->attr->var.name,"object") ) {
+        if(appraisal_variable_wme->value->var.common_symbol_info.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) {
+            // fixme: get all child wmes and return the largest timetag
+            //wme ** wmelist = get_augs_of_id(appraisal_variable_wme->value->id, ???, ???)
+            (*timetag) = appraisal_variable_wme->timetag;
+            return TRUE;
+        } else {
+            (*timetag) = appraisal_variable_wme->timetag;
+            return TRUE;
+        }
+    } else { return FALSE; }
+
+}
+
+bool emotion_get_appraisal_variable_timetagOLD(wme * appraisal_variable_wme, unsigned long * timetag) {
 
     wme * value_wme;
     variable appraisal_variable_wme_attr_var;
