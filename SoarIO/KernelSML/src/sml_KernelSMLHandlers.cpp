@@ -118,8 +118,8 @@ public:
 	   unused(wmemory) ;
 	   unused(obj) ;
 
-	   // Check for any new incoming commands from remote connections, or a stop commands from the connection that's running Soar.
-	   m_KernelSML->ReceiveAllMessages() ;
+	   // Check for any new incoming commands from remote connections.
+	   //m_KernelSML->ReceiveAllMessages() ;
    }
 
 private:

@@ -29,6 +29,8 @@
 #include "sml_TagResult.h"
 #include "sock_ClientSocket.h"
 
+#include <time.h>	// For debug random start of message id's
+
 using namespace sml ;
 
 /*************************************************************
@@ -37,8 +39,17 @@ using namespace sml ;
 Connection::Connection()
 {
 	m_MessageID = 0 ;
+
+#ifdef _DEBUG
+	// It's useful to start somewhere other than 0 in debug, especially when dealing with
+	// remote connections, so it's clear which id's come from which client.
+	int rand = (int)(clock() % 10) ;
+	m_MessageID = 100 * rand ;
+#endif
+
 	m_pUserData = NULL ;
 	m_bIsDirectConnection = false ;
+	m_bTraceCommunications = false ;
 }
 
 /*************************************************************
@@ -437,6 +448,10 @@ bool Connection::SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg)
 
 	// Get the response
 	ElementXML* pResponse = GetResponse(pMsg) ;
+
+	// These was an error in getting the response
+	if (HadError())
+		return false ;
 
 	if (!pResponse)
 	{

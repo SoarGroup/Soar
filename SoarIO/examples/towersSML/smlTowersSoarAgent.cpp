@@ -26,6 +26,13 @@ SoarAgent::SoarAgent(Agent* inAgent, Agent* inWMemory, HanoiWorld* inWorld) : pA
 
 SoarAgent::~SoarAgent()
 {
+	// We need to explicitly destroy the agent.
+	// Otherwise, if we're using a remote connection it will keep running
+	// (by design, as the embedded connection will still be alive).
+	// If this is an embedded connection it doesn't matter if we destroy this
+	// or not as we're just about to unload the kernel itself, shutting everything down.
+	pAgent->GetKernel()->DestroyAgent(pAgent) ;
+
 	pAgent = 0;
 	pWMemory = 0;
 	pWorld = 0;

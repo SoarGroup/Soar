@@ -417,6 +417,21 @@ bool Agent::Commit()
 }
 
 /*************************************************************
+* @brief Reinitialize this Soar agent.
+*		 This will also cause the output link structures stored
+*		 here to be erased and the current input link to be sent over
+*		 to the Soar agent for the start of its next run.
+*************************************************************/
+char const* Agent::InitSoar()
+{
+	std::string cmd = "init-soar" ;
+
+	// Execute the command.
+	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetAgentName()) ;
+	return pResult ;
+}
+
+/*************************************************************
 * @brief Run Soar for the specified number of decisions
 *************************************************************/
 char const* Agent::Run(unsigned long decisions)

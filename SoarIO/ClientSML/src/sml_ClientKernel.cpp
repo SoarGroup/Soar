@@ -12,6 +12,8 @@
 #include "sml_ClientKernel.h"
 #include "sml_ClientAgent.h"
 #include "sml_Connection.h"
+#include "sml_Errors.h"
+
 #include "sock_SocketLib.h"
 #include "thread_Thread.h"	// To get to sleep
 #include "EmbeddedSMLInterface.h" // for static reference
@@ -59,6 +61,16 @@ Kernel::~Kernel(void)
 
 	// Deleting this shuts down the socket library if we were using it.
 	delete m_SocketLibrary ;
+}
+
+/*************************************************************
+* @brief Turning this on means we'll start dumping output about messages
+*		 being sent and received.  Currently this only applies to remote connections.
+*************************************************************/
+void Kernel::SetTraceCommunications(bool state)
+{
+	if (m_Connection)
+		m_Connection->SetTraceCommunications(state) ;
 }
 
 /*************************************************************
@@ -140,15 +152,14 @@ Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool clientTh
 	ErrorCode errorCode = 0 ;
 	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, clientThread, optimized, portToListenOn, &errorCode) ;
 
-	if (!pConnection)
-		return NULL ;
-
+	// Even if pConnection is NULL, we still build a kernel object, so we have
+	// a clean way to pass the error code back to the caller.
 	Kernel* pKernel = new Kernel(pConnection) ;
 
 	// Transfer any errors over to the kernel object, so the caller can retrieve them.
-	pKernel->SetError(pConnection->GetLastError()) ;
+	pKernel->SetError(errorCode) ;
 
-	// Register for "calls" from the client.
+	// Register for "calls" from the kernel.
 	pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
 
 	return pKernel ;
@@ -178,15 +189,19 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	// Connect to the remote socket
 	Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, (unsigned short)port, &errorCode) ;
 
-	// BUGBUG: We need to return a decent error message here as this can easily fail.
-	if (!pConnection)
-	{
-		delete pLib ;
-		return NULL ;
-	}
-
+	// Even if pConnection is NULL, we still build a kernel object, so we have
+	// a clean way to pass the error code back to the caller.
 	Kernel* pKernel = new Kernel(pConnection) ;
 	pKernel->SetSocketLib(pLib) ;
+	pKernel->SetError(errorCode) ;
+
+	// If we had an error creating the connection, abort before
+	// we try to get the current agent list
+	if (pKernel->HadError())
+		return pKernel ;
+
+	// Register for "calls" from the kernel.
+	pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
 
 	// Get the current list of active agents
 	pKernel->UpdateAgentList() ;
@@ -281,6 +296,18 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 {
 	AnalyzeXML response ;
 	Agent* agent = NULL ;
+	
+	// See if this agent already exists
+	agent = GetAgent(pAgentName) ;
+
+	// If so, trying to create it fails.
+	// (We could pass back agent, but that would hide this error from the client).
+	if (agent)
+	{
+		SetError(Error::kAgentExists) ;
+		return NULL ;
+	}
+
 	assert(GetConnection());
 	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CreateAgent, NULL, sml_Names::kParamName, pAgentName))
 	{

@@ -41,6 +41,7 @@ public:
 		kFailedToGetResponse= 19,
 		kSMLErrorMessage	= 20,
 		kDetailedError		= 21,
+		kAgentExists		= 22,
 	} ;
 
 	/** Returns a description of the error which can be shown to a user */
@@ -70,6 +71,7 @@ public:
 			case kFailedToGetResponse:	return "No response came back for the command we sent." ;
 			case kSMLErrorMessage:		return "The SML message contained an error tag.  We should display that instead of this generic error." ;
 			case kDetailedError:		return "There should be a detailed error message to accompany this and we should show that instead of this!" ;
+			case kAgentExists:			return "Trying to create an agent that already exists in the kernel." ;
 		}
 
 		return "Unknown error code" ;

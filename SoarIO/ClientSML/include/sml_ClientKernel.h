@@ -38,6 +38,7 @@ class Kernel : public ClientErrors
 {
 	// Allow the agent to call to get the connection from the kernel.
 	friend class Agent ;
+	friend class WorkingMemory ;	// Access to generate next ID methods
 
 public:
 	enum { kDefaultSMLPort = 12121 } ;
@@ -63,6 +64,9 @@ protected:
 	Connection* GetConnection() const { return m_Connection ; }
 
 	void SetSocketLib(sock::SocketLib* pLibrary) { m_SocketLibrary = pLibrary ; }
+
+	long	GenerateNextID()		{ return ++m_IdCounter ; }
+	long	GenerateNextTimeTag()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
 
 public:
 	/*************************************************************
@@ -102,10 +106,13 @@ public:
 	*************************************************************/
 	static Kernel* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort) ;
 
-	virtual ~Kernel();
+	/*************************************************************
+	* @brief Turning this on means we'll start dumping output about messages
+	*		 being sent and received.  Currently this only applies to remote connections.
+	*************************************************************/
+	void SetTraceCommunications(bool state) ;
 
-	long	GenerateNextID()		{ return ++m_IdCounter ; }
-	long	GenerateNextTimeTag()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
+	virtual ~Kernel();
 
 	/*************************************************************
 	* @brief Creates a new Soar agent with the given name.

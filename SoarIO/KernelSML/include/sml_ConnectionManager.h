@@ -74,6 +74,10 @@ protected:
 	std::list<Connection*>		m_Connections ;
 	typedef std::list<Connection*>::iterator	ConnectionsIter ;
 
+	// If true dump out details about messages sent and received over sockets
+	// (and perhaps embedded connections too?)
+	bool	m_bTraceCommunications ;
+
 public:
 	ConnectionManager(unsigned short port = Connection::kDefaultSMLPort) ;
 	~ConnectionManager() ;
@@ -87,6 +91,13 @@ public:
 	// Get the i-th connection (it's ok to call with i >= number of connections as this returns NULL in that case)
 	// So provides easy and thread safe way to get each connection in turn.
 	Connection* GetConnectionByIndex(int index) ;
+
+	/*************************************************************
+	* @brief Turning this on means we'll start dumping output about messages
+	*		 being sent and received.  Currently this only applies to remote connections.
+	*************************************************************/
+	void SetTraceCommunications(bool state) ;
+	bool IsTracingCommunications() { return m_bTraceCommunications ; }
 
 	// Go through all connections and read any incoming commands from the sockets.
 	// The messages are sent to the callback registered with the connection when it was created (ReceivedCall currently).

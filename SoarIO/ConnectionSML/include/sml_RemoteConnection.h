@@ -57,6 +57,8 @@ public:
 	virtual bool IsClosed() ;
 	virtual bool IsRemoteConnection() { return true ; }
 	virtual bool IsAsynchronous() { return true ; }
+	virtual void SetTraceCommunications(bool state) ;
+
 };
 
 } // End of namespace

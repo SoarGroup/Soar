@@ -80,8 +80,8 @@ void SimpleEmbeddedConnection()
 	// Create the kernel instance
 	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false) ;
 
-	// Sleep for 20 seconds and then quit
-	SLEEP(20*1000) ;
+	// Sleep for 40 seconds and then quit
+	SLEEP(40*1000) ;
 
 	delete pKernel ;
 }
@@ -111,8 +111,21 @@ void EmbeddedConnection()
 			return ;
 		}
 
-		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
-		sml::Agent* pAgent = pKernel->CreateAgent("test") ;
+		pKernel->SetTraceCommunications(true) ;
+
+		char const* name = "test-client-sml" ;
+
+		sml::Agent* pAgent = pKernel->GetAgent(name) ;
+
+		if (!pAgent)
+		{
+			// NOTE: We don't delete the agent pointer.  It's owned by the kernel
+			pAgent = pKernel->CreateAgent(name) ;
+		}
+		else
+		{
+			pAgent->InitSoar() ;
+		}
 
 		double time = timer.Elapsed() ;
 		cout << "Time to initialize kernel and create agent: " << time << endl ;
@@ -130,7 +143,7 @@ void EmbeddedConnection()
 
 		if (pAgent->HadError())
 		{
-			cout << pAgent->GetLastErrorDescription() << endl ;
+			cout << "ERROR loading productions: " << pAgent->GetLastErrorDescription() << endl ;
 			return ;
 		}
 
@@ -285,6 +298,8 @@ void EmbeddedConnection()
 		cout << "Destroy the agent now" << endl ;
 
 		// Explicitly destroy our agent as a test, before we delete the kernel itself.
+		// (Actually, if this is a remote connection we need to do this or the agent
+		//  will remain alive).
 		ok = pKernel->DestroyAgent(pAgent) ;
 
 		if (!ok)
@@ -311,7 +326,8 @@ int main(int argc, char* argv[])
 	// For now, any argument on the command line makes us create a remote connection.
 	// Later we'll try passing in an ip address/port number.
 	if (argc > 1)
-		RemoteConnection() ;
+		SimpleEmbeddedConnection() ;
+		//RemoteConnection() ;
 	else
 		EmbeddedConnection() ;
 

@@ -43,19 +43,13 @@ using namespace sock ;
 Socket::Socket()
 {
 	m_hSocket = NO_CONNECTION ;
-	m_Name[0] = '\0' ;
-	m_Port    = 0 ;
-	m_bSentName = false ;
-	m_bIsEnabled = true ;
+	m_bTraceCommunications = false ;
 }
 
 Socket::Socket(SOCKET hSocket)
 {
 	m_hSocket = hSocket ;
-	m_Name[0] = '\0' ;
-	m_Port    = 0 ;
-	m_bSentName = false ;
-	m_bIsEnabled = true ;
+	m_bTraceCommunications = false ;
 }
 
 Socket::~Socket()
@@ -307,7 +301,8 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 			}
 		} while (thisSend == SOCKET_ERROR) ;
 
-		PrintDebugFormat("Sent %d bytes",thisSend) ;
+		if (m_bTraceCommunications)
+			PrintDebugFormat("Sent %d bytes",thisSend) ;
 
 		bytesSent   += thisSend ;
 		pSendBuffer += thisSend ;
@@ -468,7 +463,8 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			}
 		} while (thisRead == SOCKET_ERROR) ;
 
-		PrintDebugFormat("Received %d bytes",thisRead) ;
+		if (m_bTraceCommunications)
+			PrintDebugFormat("Received %d bytes",thisRead) ;
 
 		bytesRead   += thisRead ;
 		pRecvBuffer += thisRead ;

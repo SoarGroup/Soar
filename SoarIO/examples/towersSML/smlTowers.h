@@ -5,7 +5,7 @@
 
 
 //select which type of sgio interface to use	
-#define SGIO_API_MODE
-//#define SGIO_TSI_MODE
+#define SML_EMBEDDED_MODE
+//#define SML_REMOTE_MODE
 
 #endif //SGIO_TOWERS_HANOI

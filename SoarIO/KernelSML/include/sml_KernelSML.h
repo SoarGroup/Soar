@@ -176,6 +176,13 @@ public:
 	void StopReceiverThread() ;
 
 	/*************************************************************
+	* @brief Turning this on means we'll start dumping output about messages
+	*		 being sent and received.  Currently this only applies to remote connections.
+	*************************************************************/
+	void SetTraceCommunications(bool state) ;
+	bool IsTracingCommunications() ;
+
+	/*************************************************************
 	* @brief	Takes an incoming SML message and responds with
 	*			an appropriate response message.
 	*

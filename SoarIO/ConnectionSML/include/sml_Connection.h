@@ -157,6 +157,9 @@ protected:
 	// True if we can make direct calls to gSKI to optimize I/O
 	bool m_bIsDirectConnection ;
 
+	// True if we want to dump debug info about messages sent and received.
+	bool m_bTraceCommunications ;
+
 public:
 	Connection() ;
 	virtual ~Connection() ;
@@ -237,6 +240,13 @@ public:
 	*		 The direct connection is only true if this is a synchronous embedded connection.
 	*************************************************************/
 	virtual bool IsDirectConnection() { return m_bIsDirectConnection ; }
+
+	/*************************************************************
+	* @brief Print out debug information about the messages we are sending and receiving.
+	*		 Currently only affects remote connections, but we may extend things.
+	*************************************************************/
+	virtual void		SetTraceCommunications(bool state)	{ m_bTraceCommunications = state ; }
+	virtual bool		IsTracingCommunications()			{ return m_bTraceCommunications ; }
 
 	/*************************************************************
 	* @brief Send a message to the SML receiver (e.g. from the environment to the Soar kernel).

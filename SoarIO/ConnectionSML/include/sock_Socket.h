@@ -80,13 +80,8 @@ class Socket
 protected:
 	SOCKET	m_hSocket ;
 
-	// These fields are not required to establish a socket
-	// connection, but are useful information about the socket
-	// that the owner can use.
-	bool	m_bIsEnabled ;
-	short	m_Port ;			// Port the other side is listening on
-	char	m_Name[256] ;		// Name the other side is using
-	bool	m_bSentName ;		// Have we sent our name+port to them yet?
+	// Controls whether we dump out the messages we're sending and receiving.
+	bool m_bTraceCommunications ;
 
 	// These objects are created through the ListenerSocket or ClientSocket classes.
 protected:
@@ -112,6 +107,10 @@ public:
 	void		CloseSocket() ;
 		
 public:
+	// Print out debug information about the messages we are sending and receiving.
+	// NOTE: We still print out information about start up/shut down, errors etc. without this flag being true.
+	void		SetTraceCommunications(bool state) { m_bTraceCommunications = state ; }
+
 	// Send a string of characters.  Outgoing format will be "<4-byte length>"+string data
 	bool		SendString(char const* pString) ;
 
@@ -123,22 +122,6 @@ protected:
 	bool		SendBuffer(char const* pSendBuffer, size_t bufferSize) ;
 	bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize) ;
 
-protected:
-	// I think these methods should all be removed, together with their members variables
-	// but I'm going to wait for a little to see that they're definitely not needed first...
-//	void		SetName(char const* pName)	{ SafeStrncpy(m_Name, pName, sizeof(m_Name)) ; }
-//	char const* GetName() const				{ return m_Name ; }
-
-	void		Enable(bool bEnable) 		{ m_bIsEnabled = bEnable ; }
-	bool		IsEnabled()			 		{ return m_bIsEnabled ; }
-
-	void		SetSentName(bool bSent)		{ m_bSentName = bSent ; }
-	bool		IsNameSent()				{ return m_bSentName ; }
-
-	void		SetPort(short port)  		{ m_Port = port ; }
-	short		GetPort()			 		{ return m_Port ; }
-
-	bool		IsNamed()					{ return (m_Port != 0 || m_Name[0] != '\0') ; }
 };
 
 } // Namespace

@@ -301,7 +301,7 @@ static bool DoesResponseMatch(ElementXML* pResponse, char const* pID)
 	if (!pResponse || !pID)
 		return false ;
 
-	char const* pMsgID = pResponse->GetAttribute(sml_Names::kID) ;
+	char const* pMsgID = pResponse->GetAttribute(sml_Names::kAck) ;
 	
 	return (pMsgID && strcmp(pMsgID, pID) == 0) ;
 }
@@ -318,7 +318,7 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 		return pResponse ;
 	}
 
-// BUGBUG: I don't think we can time out on these.
+// BADBAD: We can't time out here.
 // We just need to have a way to detect if the connection has been closed
 // The problem is Soar can run for an arbitrary amount of time and we'll
 // be waiting for the response
@@ -329,7 +329,7 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 // Then we can wait on an incoming message forever and still wake up if the connection dies.
 
 	int sleepTime = 0 ;			// How long we sleep in milliseconds each pass through
-	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)
+//	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)
 
 	// If we don't already have this response cached,
 	// then read any pending messages.

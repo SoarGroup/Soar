@@ -191,6 +191,20 @@ void KernelSML::StopReceiverThread()
 }
 
 /*************************************************************
+* @brief Turning this on means we'll start dumping output about messages
+*		 being sent and received.  Currently this only applies to remote connections.
+*************************************************************/
+void KernelSML::SetTraceCommunications(bool state)
+{
+	m_pConnectionManager->SetTraceCommunications(state) ;
+}
+
+bool KernelSML::IsTracingCommunications()
+{
+	return m_pConnectionManager->IsTracingCommunications() ;
+}
+
+/*************************************************************
 * @brief	Look up our additional SML information for a specific agent.
 *
 *			This will always return an AgentSML object.

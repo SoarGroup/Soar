@@ -57,6 +57,9 @@ void ListenerManager::Run()
 			// Register for "calls" from the client.
 			pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
 
+			// Set up our tracing state to match the user's preference
+			pConnection->SetTraceCommunications(KernelSML::GetKernelSML()->IsTracingCommunications()) ;
+
 			// Record the new connection in our list of connections
 			m_Parent->AddConnection(pConnection) ;
 		}
@@ -129,8 +132,9 @@ ConnectionManager::ConnectionManager(unsigned short port)
 	// (once the listener has been used to create them).
 	m_ReceiverThread = new ReceiverThread(this) ;
 	m_ReceiverThread->Start() ;
-}
 
+	m_bTraceCommunications = false ;
+}
 ConnectionManager::~ConnectionManager()
 {
 	// If we still have an active listener, shut down the connections.
@@ -148,6 +152,26 @@ void ConnectionManager::StopReceiverThread()
 	// Stop the receiver thread (and wait until is has stopped)
 	if (m_ReceiverThread)
 		m_ReceiverThread->Stop(true) ;
+}
+
+/*************************************************************
+* @brief Turning this on means we'll start dumping output about messages
+*		 being sent and received.  Currently this only applies to remote connections.
+*************************************************************/
+void ConnectionManager::SetTraceCommunications(bool state)
+{
+	m_bTraceCommunications = state ;
+
+	// Serialize thread access to the connections list
+	soar_thread::Lock lock(&m_ConnectionsMutex) ;
+
+	// Set the trace state on any existing connections
+	// (this list will usually be empty when we set this variable, but this is for completeness).
+	for (ConnectionsIter iter = m_Connections.begin() ; iter != m_Connections.end() ; iter++)
+	{
+		Connection* pConnection = *iter ;
+		pConnection->SetTraceCommunications(state) ;
+	}
 }
 
 // Close all connections

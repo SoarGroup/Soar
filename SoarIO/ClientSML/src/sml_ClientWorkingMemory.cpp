@@ -61,20 +61,19 @@ char const* WorkingMemory::GetAgentName() const
 // Searches for an identifier object that matches this id.
 Identifier*	WorkingMemory::FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index)
 {
-	// BUGBUG: Why are we ignoring the "index" param?
 	// BADBAD: For better speed we could keep a map of identifiers in use and just look this up.
 	Identifier* pMatch = NULL ;
 
 	if (searchInput)
 	{
 		if (m_InputLink)
-			pMatch = m_InputLink->FindIdentifier(pID) ;
+			pMatch = m_InputLink->FindIdentifier(pID, index) ;
 	}
 
 	if (searchOutput && !pMatch)
 	{
 		if (m_OutputLink)
-			pMatch = m_OutputLink->FindIdentifier(pID) ;
+			pMatch = m_OutputLink->FindIdentifier(pID, index) ;
 	}
 
 	return pMatch ;

@@ -37,7 +37,9 @@ void RemoteConnection::SendMessage(ElementXML* pMsg)
 	// Send it
 	m_Socket->SendString(pXMLString) ;
 
-	PrintDebug(pXMLString) ;
+	// Dump the message if we're tracing
+	if (m_bTraceCommunications)
+		PrintDebug(pXMLString) ;
 
 	// Release the XML string
 	pMsg->DeleteString(pXMLString) ;
@@ -48,7 +50,7 @@ static bool DoesResponseMatch(ElementXML* pResponse, char const* pID)
 	if (!pResponse || !pID)
 		return false ;
 
-	char const* pMsgID = pResponse->GetAttribute(sml_Names::kID) ;
+	char const* pMsgID = pResponse->GetAttribute(sml_Names::kAck) ;
 	
 	return (pMsgID && strcmp(pMsgID, pID) == 0) ;
 }
@@ -65,12 +67,12 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		return pResponse ;
 	}
 
-	// BUGBUG: I don't think we can timeout on this, because what if we run Soar
+	// BADBAD: I don't think we can timeout on this, because what if we run Soar
 	// for a long time.
 	// We may need a way to shutdown what we have.
 
-	int sleepTime = 5 ;			// How long we sleep in milliseconds each pass through
-	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)
+	int sleepTime = 0 ;			// How long we sleep in milliseconds each pass through
+//	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)
 
 	// If we don't already have this response cached,
 	// then read any pending messages.
@@ -93,6 +95,8 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		if (wait)
 		{
 			soar_thread::Thread::SleepStatic(sleepTime) ;
+
+			/* Removing this time-out logic
 			maxRetries-- ;
 
 			// Eventually time out
@@ -101,6 +105,7 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 				SetError(Error::kConnectionTimedOut) ;			
 				wait = false ;
 			}
+			*/
 		}
 
 	} while (wait) ;
@@ -129,7 +134,9 @@ bool RemoteConnection::ReceiveMessages(bool allMessages)
 			return receivedMessage ;
 		}
 
-		PrintDebug(xmlString.c_str()) ;
+		// Dump the message if we're tracing
+		if (m_bTraceCommunications)
+			PrintDebug(xmlString.c_str()) ;
 
 		// Get an XML message from the incoming string
 		ElementXML* pIncomingMsg = ElementXML::ParseXMLFromString(xmlString.c_str()) ;
@@ -165,6 +172,12 @@ bool RemoteConnection::ReceiveMessages(bool allMessages)
 	}
 
 	return receivedMessage ;
+}
+
+void RemoteConnection::SetTraceCommunications(bool state)
+{
+	m_bTraceCommunications = state ;
+	if (m_Socket) m_Socket->SetTraceCommunications(state) ;
 }
 
 void RemoteConnection::CloseConnection()

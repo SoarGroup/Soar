@@ -190,6 +190,14 @@ public:
 	bool	DestroyWME(WMElement* pWME) ;
 
 	/*************************************************************
+	* @brief Reinitialize this Soar agent.
+	*		 This will also cause the output link structures stored
+	*		 here to be erased and the current input link to be sent over
+	*		 to the Soar agent for the start of its next run.
+	*************************************************************/
+	char const*	InitSoar() ;
+
+	/*************************************************************
 	* @brief Register for a "RunEvent".
 	*
 	* Current set is:

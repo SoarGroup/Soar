@@ -384,34 +384,41 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers, int inNumDisks) : drawG
 	//create Soar and agent
 	// SML uses Kernel instead of Soar
 //	Soar* soar = 0 ;
-	Kernel* soar = 0;
+	Kernel* kernel = 0;
 
 	// SML uses different terminology here
-	#ifdef SGIO_API_MODE
+	#ifdef SML_EMBEDDED_MODE
 		// Fastest method, but need to call "GetIncomingCommands" from time to time.
-		soar = Kernel::CreateEmbeddedConnection("KernelSML", true, true) ;
+		kernel = Kernel::CreateEmbeddedConnection("KernelSML", true, true) ;
 		// Slightly slower, but polls for incoming remote commands automatically
-//		soar = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
+		// kernel = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
+
+		// SGIO equivalent
 //		soar = new APISoar();
 
-	#else //SGIO_TSI_MODE
-		soar = Kernel::CreateRemoteConnection(true, "127.0.0.1") ;
+	#else // SML_REMOTE_MODE
+		kernel = Kernel::CreateRemoteConnection(true, "127.0.0.1") ;
+
+		// SGIO equivalent
 //		soar = new SIOSoar("127.0.0.1", 6969, true);
 	#endif
-	assert(soar);
+	assert(kernel);
 
 	// SML uses a more explicit error model, so we can get details about what failed.
-	if (soar->HadError())
+	if (kernel->HadError())
 	{
 		// This string will contain a description of the error
-		std::string error = soar->GetLastErrorDescription() ;
-		assert (!soar->HadError()) ;
+		std::string error = kernel->GetLastErrorDescription() ;
+		assert (!kernel->HadError()) ;
 
 		// Shutdown if the kernel failed to initialize correctly.
 		return ;
 	}
 	
-	ioManager = new IOManager(soar);
+	// SML allows us to trace remote connections in more detail if we wish
+	//kernel->SetTraceCommunications(true) ;
+
+	ioManager = new IOManager(kernel);
 	assert(ioManager);
 
 	//wrap up the Soar agent
