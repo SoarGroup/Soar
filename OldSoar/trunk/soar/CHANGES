@@ -196,13 +196,16 @@ Timer Warnings:
 		- at runtime, the 'warnings' sysparam is set to TRUE 
 				(as with the 'warnings -on' command)
 
+_________________________________________________________________________________
+Other changes for Soar 8.5 made after the above document was written:
 
-
-
-
-
-
-
+- Removal of many depricated Tcl/Tk functions, upgrading them to Tcl/Tk 8.4.4
+- Various stability enhancements
+- Minor crash fixes in TankSoar
+- 'init-soar' crash fix in both Eaters and TankSoar 
+- Fixed some broken commands
+- Fixed some broken internal behavior
+  - Decision cycle bug
 
 
 
