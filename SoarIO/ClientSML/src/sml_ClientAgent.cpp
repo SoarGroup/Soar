@@ -191,8 +191,8 @@ void Agent::ReceivedPrintEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML*
 		PrintEventHandler handler = handlerPlus.first ;
 
 		// BUGBUG: DJP -- This shouldn't be hard-coded to pIncoming, something is wrong here.
-		//void* pUserData = handlerPlus.second ;
-		void* pUserData = pIncoming ;
+		void* pUserData = handlerPlus.second ;
+		//void* pUserData = pIncoming ;
 
 		// Call the handler
 		handler(id, pUserData, this, pMessage) ;
