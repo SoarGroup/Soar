@@ -2520,16 +2520,19 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 	  if (current_agent(sysparams)[RL_ON_SYSPARAM]){
 		/* SAN - compute Q-value when winner decided by symbolic preferences */
 		// if (!candidates->value->common.decider_flag){
-			  current_agent(next_Q) = 0;   // DEFAULT_INDIFFERENT_VALUE;
+			  double temp_Q = 0;   // DEFAULT_INDIFFERENT_VALUE;
+			  RL_record *rec;
 		 	for (temp=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; temp!=NIL; temp=temp->next){
 				if (candidates->value == temp->value){
 					  if (temp->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-						current_agent(next_Q) += temp->referent->ic.value;
+						temp_Q += temp->referent->ic.value;
 					if (temp->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
-						  current_agent(next_Q) += temp->referent->fc.value;
+						  temp_Q += temp->referent->fc.value;
 				}
 			}
-       
+          for (rec = current_agent(records) ; rec->level > goal->id.level; rec = rec->next)
+			  rec->next_Q = 0;
+		  rec->next_Q = temp_Q;
 	 	  learn_RL_productions(goal->id.level);
 		 
 	  }

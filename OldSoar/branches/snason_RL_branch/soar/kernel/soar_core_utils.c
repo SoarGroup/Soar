@@ -554,7 +554,7 @@ void soar_default_create_agent_procedure(const char *agent_name)
  
     current_agent(RL_count)                           = 1;  // SAN
     current_agent(making_binary)                      = FALSE;  // SAN
-    current_agent(next_Q)                             = 0;  // SAN
+//    current_agent(next_Q)                             = 0;  // SAN
 	current_agent(alpha)                              = 0.2;  // SAN
 	current_agent(gamma)                              = 0.9;  // SAN
 	current_agent(epsilon)                               = 0.2;   // SAN

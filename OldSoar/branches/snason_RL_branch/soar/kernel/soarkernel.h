@@ -1457,6 +1457,7 @@ typedef struct RL_record_struct{
   // struct condition_struct *RL_top;
   // struct condition_struct *RL_bottom;
   float previous_Q;
+  float next_Q;
   float reward;
   int step;
   Symbol *op;

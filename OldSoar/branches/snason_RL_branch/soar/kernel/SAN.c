@@ -21,6 +21,7 @@ void push_record(RL_record **r, Symbol *level_sym){
 		new_record->pointer_list = NIL;
 		new_record->num_prod = 0;
 		new_record->previous_Q = 0;
+		new_record->next_Q = 0;
 		new_record->reward = 0;
 		new_record->step = 0;
 	    new_record->op = NIL;
@@ -63,7 +64,7 @@ void reset_RL(){
 	while(current_agent(records))
  		pop_record(&current_agent(records));
 
-	current_agent(next_Q) = 0.0;
+	// current_agent(next_Q) = 0.0;
  
 
 
@@ -241,7 +242,7 @@ float compute_Q_value(RL_record* r){
 	Q = r->reward;
 
     // print("\n Q after reward is %f\n" , Q);
-	Q += pow(current_agent(gamma), r->step)*current_agent(next_Q);
+	Q += pow(current_agent(gamma), r->step)*(r->next_Q);
 	// print("Q after next_Q update is %f\n", Q);
 	// print("\n alpha is %f\n", current_agent(alpha));
 	Q -= r->previous_Q;
@@ -611,7 +612,7 @@ void record_for_RL(){
 	  record = current_agent(records);
    	  record->op = chosenOp->value;
 	  symbol_add_ref(record->op);       // SAN ??
-	  record->previous_Q = current_agent(next_Q);
+	  record->previous_Q = record->next_Q;
 
 	  for (pref = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
 		  if (record->op == pref->value){
