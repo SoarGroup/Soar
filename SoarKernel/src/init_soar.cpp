@@ -1295,6 +1295,10 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	  break;  /* end DECISION phase */
 	  
+  default: // 2/24/05: added default case to quell gcc compile warning
+	  assert(false && "Invalid phase enumeration value!");
+	  break;
+
   }  /* end switch stmt for current_phase */
   
   /* --- update WM size statistics --- */

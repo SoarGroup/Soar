@@ -22,14 +22,16 @@ typedef int Function ();
 
 /* Changed the order of the following test from the GDB source! */
 
+// 2/24/05: removed static keyword from function declarations below to quell gcc compiler warning
+
 #if defined (TEST)
 extern char *xmalloc (), *xrealloc ();
 #else
-static char *xmalloc (agent*, int), *xrealloc (agent*, char *, int);
+/*static*/ char *xmalloc (agent*, int), *xrealloc (agent*, char *, int);
 #endif /* TEST */
 
-static int tilde_find_prefix (char *string, int *len);
-static int tilde_find_suffix (char *string);
+/*static*/ int tilde_find_prefix (char *string, int *len);
+/*static*/ int tilde_find_suffix (char *string);
 char *tilde_expand (agent* thisAgent, char *filename); 
 char *tilde_expand_word (agent* thisAgent, char *filename); 
 
