@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\SoarIO\CommandLineInterface\include&quot;;.\include\;&quot;$(SolutionDir)\ClientSML\include\&quot;;&quot;$(SolutionDir)\..\gSKI\include\&quot;;&quot;$(SolutionDir)..\TgDI\include&quot;;$(NOINHERIT)"
+				AdditionalIncludeDirectories="C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -69,6 +69,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="4"
 				UsePrecompiledHeader="3"
@@ -119,7 +120,7 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\SoarAgent.cpp">
+				RelativePath=".\sgioTowers.cpp">
 			</File>
 			<File
 				RelativePath=".\TowersOfHanoi.cpp">
@@ -130,7 +131,13 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\SoarAgent.h">
+				RelativePath=".\AgnosticTowers.h">
+			</File>
+			<File
+				RelativePath=".\gSKITowersSoarAgent.h">
+			</File>
+			<File
+				RelativePath=".\sgioTowersSoarAgent.h">
 			</File>
 			<File
 				RelativePath=".\Towers.h">
