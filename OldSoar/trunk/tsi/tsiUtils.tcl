@@ -1415,8 +1415,8 @@ proc tsiUpdateDemoMenu {w} {
 		"[file join $soar_library .. demos waterjug readme]" 0}
 	$w.menubar.demo.m.wj add command -label {load Waterjug} \
 		-command {tsiLoadSoar8Demo waterjug waterjug.soar}
-	$w.menubar.demo.m.wj add command -label {load Waterjug-plan} \
-		-command {tsiLoadSoar8Demo waterjug waterjug-planning.soar}
+	$w.menubar.demo.m.wj add command -label {load Waterjug Look Ahead} \
+		-command {tsiLoadSoar8Demo waterjug waterjug-look-ahead.soar}
 	
 	if [winfo exists $w.menubar.demo.m.wjgui] {destroy $w.menubar.demo.m.wjgui}
 	menu $w.menubar.demo.m.wjgui -tearoff 0
@@ -1426,8 +1426,8 @@ proc tsiUpdateDemoMenu {w} {
 		"[file join $soar_library .. demos waterjug readme]" 0}
 	$w.menubar.demo.m.wjgui add command -label {load Waterjug} \
 		-command {tsiLoadSoar8Demo waterjug waterjug.tcl}
-	$w.menubar.demo.m.wjgui add command -label {load Waterjug-plan} \
-		-command {tsiLoadSoar8Demo waterjug waterjug-planning.tcl}
+	$w.menubar.demo.m.wjgui add command -label {load Waterjug Look Ahead} \
+		-command {tsiLoadSoar8Demo waterjug waterjug-look-ahead.tcl}
 
 	
     } else {
