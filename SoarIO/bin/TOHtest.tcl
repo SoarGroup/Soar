@@ -39,11 +39,12 @@ set printCallbackId [$agent RegisterForPrintEvent $smlEVENT_PRINT PrintCallback 
 #set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_BEFORE_PRODUCTION_REMOVED ProductionExcisedCallback ""]
 set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionFiredCallback ""]
 set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback ""]
-set agentCallbackId [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
-#set agentCallbackId [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestoyedCallback ""]
+set agentCallbackId1 [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
+set agentCallbackId2 [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback ""]
 set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
-cd demos/towers-of-hanoi
+
 #load the TOH productions
+cd demos/towers-of-hanoi
 set result [$agent LoadProductions towers-of-hanoi.soar]
 
 $kernel ExecuteCommandLine "run 2 -e" Soar1
@@ -67,9 +68,11 @@ puts "\n$speed"
 
 set result [$kernel ExecuteCommandLine "init-soar" Soar1]
 
+$kernel DestroyAgent $agent
+
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted
 set result [$kernel -acquire]
-#delete kernel object (automatically deletes the agent)
+#delete kernel object
 set result [$kernel -delete]
 #don't leave bad pointers around
 unset agent

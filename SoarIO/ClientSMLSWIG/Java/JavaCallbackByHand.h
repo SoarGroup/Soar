@@ -279,6 +279,7 @@ JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEvent(JNIEnv *jenv, 
 	return (jint)pJavaData ;
 }
 
+
 JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
 {
     // jarg1 is the C++ Agent object
@@ -296,6 +297,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv
 	// Release the callback data
 	delete pJavaData ;
 }
+
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.
@@ -355,6 +357,7 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEvent(JNIEnv *
 	return (jint)pJavaData ;
 }
 
+
 JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
 {
     // jarg1 is the C++ Agent object
@@ -372,6 +375,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEn
 	// Release the callback data
 	delete pJavaData ;
 }
+
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.
@@ -392,6 +396,7 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEvent(JNIEnv *jen
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
 }
+
 
 JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
 {

@@ -127,12 +127,12 @@ public class Application
 		
 		// Unregister our callbacks
 		// (This isn't required, I'm just testing that it works)
-		/*
+		
 		pAgent.UnregisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, jRunCallback) ;
 		pAgent.UnregisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
 		pAgent.UnregisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, jProdCallback) ;
-		pKernel.UnregisterForSystemEvent(smlsystemEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
-		*/
+		pKernel.UnregisterForSystemEvent(smlSystemEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
+		
 		String trace2 = pAgent.RunTilOutput(20) ;
 		System.out.println(trace2) ;
 		

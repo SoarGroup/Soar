@@ -16,6 +16,12 @@
 // Doug's custom Java code for registering/unregistering callbacks
 //
 
+%ignore sml::Agent::UnregisterForRunEvent(smlRunEventId, int);
+%ignore sml::Agent::UnregisterForAgentEvent(smlAgentEventId, int);
+%ignore sml::Agent::UnregisterForProductionEvent(smlProductionEventId, int);
+%ignore sml::Agent::UnregisterForPrintEvent(smlPrintEventId, int);
+%ignore sml::Kernel::UnregisterForSystemEvent(smlSystemEventId, int);
+
 %pragma(java) jniclasscode=%{
   public final static native int Agent_RegisterForRunEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForAgentEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
@@ -31,13 +37,13 @@
 %typemap(javacode) sml::Agent %{
   public int RegisterForRunEvent(Agent agent, smlRunEventId id, Object handlerObject, String handlerMethod, Object callbackData)
   { return smlJNI.Agent_RegisterForRunEvent(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ;}
-
+  
   public int RegisterForAgentEvent(Agent agent, smlAgentEventId id, Object handlerObject, String handlerMethod, Object callbackData)
   { return smlJNI.Agent_RegisterForAgentEvent(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ; }
 
   public int RegisterForProductionEvent(Agent agent, smlProductionEventId id, Object handlerObject, String handlerMethod, Object callbackData)
   { return smlJNI.Agent_RegisterForProductionEvent(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ; }
-
+  
   public void UnregisterForRunEvent(smlRunEventId id, int callbackReturnValue)
   { smlJNI.Agent_UnregisterForRunEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
 
@@ -51,7 +57,7 @@
 %typemap(javacode) sml::Kernel %{
   public int RegisterForSystemEvent(Kernel kernel, smlSystemEventId id, Object handlerObject, String handlerMethod, Object callbackData)
   { return smlJNI.Kernel_RegisterForSystemEvent(swigCPtr, id.swigValue(), kernel, handlerObject, handlerMethod, callbackData) ;}
-
+  
   public void UnregisterForSystemEvent(smlSystemEventId id, int callbackReturnValue)
   { smlJNI.Kernel_UnregisterForSystemEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
 %}
