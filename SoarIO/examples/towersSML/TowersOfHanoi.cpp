@@ -170,6 +170,7 @@ int main(int argc, char* argv[])
 //	_CrtDumpMemoryLeaks();
 //#endif
 
+#ifdef _MSC_VER
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	if (stopAtEnd)
 	{
@@ -178,6 +179,7 @@ int main(int argc, char* argv[])
 		char* str = gets(line) ;
 		unused(str);
 	}
+#endif //_MSC_VER
 
 	return 0;
 }

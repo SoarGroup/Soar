@@ -736,7 +736,6 @@ int main(int argc, char* argv[])
 	// If we allocate something in a DLL then this call won't see it because it works by overriding the
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
-#endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	if (stopAtEnd)
@@ -746,4 +745,5 @@ int main(int argc, char* argv[])
 		char* str = gets(line) ;
 		unused(str);
 	}
+#endif // _MSC_VER
 }
