@@ -511,11 +511,11 @@ void emotion_aggregate_variables() {
     }
 
     soar_agent->emotions->max_negative_no_object_frame_intensity = -100.0;
-    soar_agent->emotions->max_negative_object_frame_intensity = -101.0;
-    soar_agent->emotions->max_no_object_frame_intensity = -101.0;
-    soar_agent->emotions->max_object_frame_intensity = -101.0;
-    soar_agent->emotions->max_positive_no_object_frame_intensity = -101.0;
-    soar_agent->emotions->max_positive_object_frame_intensity = -101.0;
+    soar_agent->emotions->max_negative_object_frame_intensity = -100.0;
+    soar_agent->emotions->max_no_object_frame_intensity = -100.0;
+    soar_agent->emotions->max_object_frame_intensity = -100.0;
+    soar_agent->emotions->max_positive_no_object_frame_intensity = -100.0;
+    soar_agent->emotions->max_positive_object_frame_intensity = -100.0;
     
     soar_agent->emotions->sum_negative_no_object_frame_intensity = 0.0;
     soar_agent->emotions->sum_negative_object_frame_intensity = 0.0;
@@ -537,7 +537,11 @@ void emotion_aggregate_variables() {
     if(af) {
         while(af) {
             
-            intensity = af->variables[DESIRABILITY]*af->variables[DESIRABILITY];
+            /* Note that, while intensity is always positive, we allow negatives here
+               to take advantage of opposite signs (so intensities can cancel each other out)
+               Once the signed intensity is obtained, we will make it positive (at the end)
+            */
+            intensity = af->variables[DESIRABILITY]*af->variables[LIKELIHOOD];
 
             if(af->object) {
                 obj_count++;
@@ -599,13 +603,82 @@ void emotion_aggregate_variables() {
             af = af->next;
         }
 
-        soar_agent->emotions->average_negative_no_object_frame_intensity = soar_agent->emotions->sum_negative_no_object_frame_intensity / (float)neg_no_obj_count;
-        soar_agent->emotions->average_negative_object_frame_intensity = soar_agent->emotions->sum_negative_object_frame_intensity / (float)neg_obj_count;
-        soar_agent->emotions->average_no_object_frame_intensity = soar_agent->emotions->sum_no_object_frame_intensity / (float)no_obj_count;
-        soar_agent->emotions->average_object_frame_intensity = soar_agent->emotions->sum_object_frame_intensity / (float)obj_count;
-        soar_agent->emotions->average_positive_no_object_frame_intensity = soar_agent->emotions->sum_positive_no_object_frame_intensity / (float)pos_no_obj_count;
-        soar_agent->emotions->average_positive_object_frame_intensity = soar_agent->emotions->sum_positive_object_frame_intensity / (float)pos_obj_count;
+        /* calculate the averages from the sums.  Take the absolute values for the possibly negative intensities (intensity is always positive) */
+        if(neg_no_obj_count > 0) {
+            soar_agent->emotions->average_negative_no_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_negative_no_object_frame_intensity / (float)neg_no_obj_count);
+        } else {
+            soar_agent->emotions->average_negative_no_object_frame_intensity = 0;
+        }
+
+        if(neg_obj_count > 0) {
+            soar_agent->emotions->average_negative_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_negative_object_frame_intensity / (float)neg_obj_count);
+        } else {
+            soar_agent->emotions->average_negative_object_frame_intensity = 0;
+        }
+
+        if(no_obj_count > 0) {
+            soar_agent->emotions->average_no_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_no_object_frame_intensity / (float)no_obj_count);
+        } else {
+            soar_agent->emotions->average_no_object_frame_intensity = 0;
+        }
+
+        if(obj_count > 0) {
+            soar_agent->emotions->average_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_object_frame_intensity / (float)obj_count);
+        } else {
+            soar_agent->emotions->average_object_frame_intensity = 0;
+        }
+
+        if(pos_no_obj_count > 0) {
+            soar_agent->emotions->average_positive_no_object_frame_intensity = soar_agent->emotions->sum_positive_no_object_frame_intensity / (float)pos_no_obj_count;
+        } else {
+            soar_agent->emotions->average_positive_no_object_frame_intensity = 0;
+        }
+
+        if(pos_obj_count > 0) {
+            soar_agent->emotions->average_positive_object_frame_intensity = soar_agent->emotions->sum_positive_object_frame_intensity / (float)pos_obj_count;
+        } else {
+            soar_agent->emotions->average_positive_object_frame_intensity = 0;
+        }
         
+        /* take the absolute values of the possibily negative intensities (intensity is always positive) */
+        /* also take the max with 0 (no intensity can be less than 0, and the maxes are initialized to negative numbers) */
+        if(soar_agent->emotions->max_negative_no_object_frame_intensity == emotion_NO_VALUE_FLOAT) {
+            soar_agent->emotions->max_negative_no_object_frame_intensity = 0;
+        } else {
+            soar_agent->emotions->max_negative_no_object_frame_intensity = (float)fabs(soar_agent->emotions->max_negative_no_object_frame_intensity);
+        }
+
+
+        if(soar_agent->emotions->max_negative_object_frame_intensity == emotion_NO_VALUE_FLOAT) {
+            soar_agent->emotions->max_negative_object_frame_intensity = 0;
+        } else {
+            soar_agent->emotions->max_negative_object_frame_intensity = (float)fabs(soar_agent->emotions->max_negative_object_frame_intensity);
+        }
+
+        if(soar_agent->emotions->max_no_object_frame_intensity == emotion_NO_VALUE_FLOAT) {
+            soar_agent->emotions->max_no_object_frame_intensity = 0;
+        } else {
+            soar_agent->emotions->max_no_object_frame_intensity = (float)fabs(soar_agent->emotions->max_no_object_frame_intensity);
+        }
+
+        if(soar_agent->emotions->max_object_frame_intensity == emotion_NO_VALUE_FLOAT) {
+            soar_agent->emotions->max_object_frame_intensity = 0;
+        } else {
+            soar_agent->emotions->max_object_frame_intensity = (float)fabs(soar_agent->emotions->max_object_frame_intensity);
+        }
+
+        if(soar_agent->emotions->max_positive_no_object_frame_intensity == emotion_NO_VALUE_FLOAT) {
+            soar_agent->emotions->max_positive_no_object_frame_intensity = 0;
+        }
+
+        if(soar_agent->emotions->max_positive_object_frame_intensity == emotion_NO_VALUE_FLOAT) {
+            soar_agent->emotions->max_positive_object_frame_intensity = 0;
+        }
+
+        soar_agent->emotions->sum_negative_no_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_negative_no_object_frame_intensity);
+        soar_agent->emotions->sum_negative_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_negative_object_frame_intensity);
+        soar_agent->emotions->sum_no_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_no_object_frame_intensity);
+        soar_agent->emotions->sum_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_object_frame_intensity);
     } else {
         soar_agent->emotions->average_negative_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
         soar_agent->emotions->average_negative_object_frame_intensity = emotion_NO_VALUE_FLOAT;
@@ -674,30 +747,6 @@ void emotion_update_test_aggregate(wme ** agg_wme, float value, char * label) {
             add_input_wme (current_agent(io_header_emotion),wme_attr,wme_value);
     }
 }
-
-/*void emotion_update_aggregate(enum appraisal_variable_type type) {
-    Symbol *wme_attr, *wme_value;
-    float value;
-
-    value = current_agent(emotions)->aggs[type];
-
-    if(current_agent(emotions)->agg_wmes[type]) {        
-        bool success = remove_input_wme(current_agent(emotions)->agg_wmes[type]);
-        if(!success) print("Emotion: tried to remove aggregate value");
-        assert(success);
-
-        current_agent(emotions)->agg_wmes[type] = NIL;
-    }
-
-    if(value != emotion_NO_VALUE_FLOAT) {
-
-        wme_attr = get_io_sym_constant ((char*)emotion_LABELS[type]);
-        wme_value = get_io_float_constant (value);
-    
-        current_agent(emotions)->agg_wmes[type] =
-            add_input_wme (current_agent(io_header_emotion),wme_attr,wme_value);
-    }
-}*/
 
 void emotion_clear_appraisal_list(appraisal_frame ** af) {
     appraisal_frame * af_to_delete;
