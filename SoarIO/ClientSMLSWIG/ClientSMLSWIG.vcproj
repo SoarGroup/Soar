@@ -71,6 +71,7 @@
 			ManagedExtensions="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="$(JAVA_INCLUDE),$(JAVA_INCLUDE)\win32"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -80,9 +81,12 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
+				AdditionalDependencies="ClientSML.lib ElementXML.lib ConnectionSML.lib"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				GenerateDebugInformation="TRUE"/>
+				AdditionalLibraryDirectories="../ClientSML/lib;../ElementXML/lib;../ConnectionSML/lib"
+				GenerateDebugInformation="TRUE"
+				ImportLibrary="$(OutDir)/$(TargetName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
