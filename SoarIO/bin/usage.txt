@@ -14,6 +14,19 @@ add-wme
 Usage:	add-wme
 ~~~
 ***
+alias
+Usage:	alias name cmd [args..]
+	alias -d name
+	alias
+Options and arguments:
+  -d, --disable, --off	Remove the named alias.
+  name			The name of the alias, i.e. the new command.
+  cmd			The command that the alias will be replacing.
+  args			Arguments for the command (optional & optional number).
+
+The alias command with no arguments lists the current alias database.
+~~~
+***
 capture-input
 Usage:	capture-input
 ~~~
