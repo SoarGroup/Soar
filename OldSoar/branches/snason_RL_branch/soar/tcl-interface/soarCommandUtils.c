@@ -206,7 +206,7 @@ void soar_input_callback_to_tcl(soar_callback_agent the_agent, soar_callback_dat
     char *mode_name;
     int code;
 
-    mode = (int) call_data;
+     mode = (int) call_data;
     if (mode == TOP_STATE_JUST_CREATED) {
         mode_name = "top-state-just-created";
     } else if (mode == NORMAL_INPUT_CYCLE) {

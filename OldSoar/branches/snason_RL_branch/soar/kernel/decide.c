@@ -1194,8 +1194,8 @@ byte run_preference_semantics(slot * s, preference ** result_candidates)
 	 the new method for choosing candidates 
       */ 
 	   
-          // cand = probabilistically_select(s, candidates);
-		cand = explore_exploit_select(s, candidates);
+        cand = probabilistically_select(s, candidates);
+		// cand = explore_exploit_select(s, candidates);
 	      if (!cand){
 		     *result_candidates = candidates;
 		     return TIE_IMPASSE_TYPE;
@@ -3328,7 +3328,11 @@ void initialize_indifferent_candidates_for_probability_selection(preference * ca
 
 bool explore_exploit(preference * candidates){
 
-	return 0;
+	if((sys_random() % RAND_MAX) >= 0.8){
+		return 1; 
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -3367,12 +3371,7 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 	
 	assert(s != 0);
 	assert(candidates != 0);
-
-	/*if(!initialized_rand){
-		srand( (unsigned)time( NULL ) );
-		initialized_rand = 1;
-	}*/
-
+ 
 	initialize_indifferent_candidates_for_probability_selection(candidates);
 	numCandidates = count_candidates(candidates);
 
@@ -3404,7 +3403,14 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 	explore = explore_exploit(candidates);
 
 	if (explore) { 
-		return NULL;
+		int   chosen_num;
+		chosen_num = sys_random() % numCandidates;
+
+		cand = candidates;
+		while (chosen_num) { cand=cand->next_candidate; chosen_num--; }
+      
+		return cand;
+ 
 	} else {
 		   double max_value = (double)candidates->sum_of_probability;
 		   preference *max_cand = candidates;
