@@ -123,9 +123,10 @@ Usage:	explain-backtraces
 ~~~
 ***
 firing-counts
-Usage:	firing-counts [n|production_name]
+Usage:	firing-counts [n]
+	firing-counts production_name
 Options and arguments:
-  n                 Number of the top firing productions to list
+  n                 Number of the top firing productions to list, or 0.
   production_name   Production to list firing counts for
 
 The firing-counts command prints the number of times each production has fired; 
@@ -137,7 +138,7 @@ If n is zero (0), only the productions that haven't fired at all are listed. If
 one or more production names are given as arguments, only firing counts for 
 these productions are printed.
 
-Note that firing countsa are reset by a call to init-soar.
+Note that firing counts are reset by a call to init-soar.
 ~~~
 ***
 format-watch

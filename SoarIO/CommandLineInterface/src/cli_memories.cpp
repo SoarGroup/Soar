@@ -99,7 +99,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 		bool foundProduction = false;
 		std::vector< std::pair< std::string, unsigned long > > memories;
 
-		for(pIter = pProductionManager->GetAllProductions(); pIter->IsValid(); pIter->Next()) {
+		for(pIter = pProductionManager->GetAllProductions(); pIter && pIter->IsValid(); pIter->Next()) {
 
 			foundProduction = true;
 
@@ -133,7 +133,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 			memories.push_back(memory);
 			pProd->Release();
 		}
-		pIter->Release();
+		if (pIter) pIter->Release();
 		pIter = 0;
 
 		if (!foundProduction) {

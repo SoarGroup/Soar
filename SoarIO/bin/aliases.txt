@@ -15,9 +15,10 @@
 #
 alias -d unalias
 cd chdir
-init-soar init
+firing-counts fc
 help man
 help ?
+init-soar init
 ls dir
 quit exit
 run 1 step
