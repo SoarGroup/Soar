@@ -1012,9 +1012,23 @@ public class SoarDocument extends DefaultStyledDocument
         }
         newCurrLine = currLine.trim();
 
-        if( (newCurrLine.length() == 0))
+        if( (newCurrLine.length() == 0) )
         {
-            return -1;
+            //Attempt to indent the appropriate number of spaces
+            String trimmed = prevLine.trim();
+            if ( ((trimmed.startsWith("sp")) && (trimmed.indexOf("{") != -1))
+                 || ((trimmed.startsWith("(")) && (trimmed.endsWith(")")))
+                 || ((trimmed.startsWith("^")) && (trimmed.endsWith(")")))
+                 || (trimmed.startsWith("-->")) )
+            {
+                numSpaces = 3;
+            }
+            else if ( (trimmed.startsWith("(") || trimmed.startsWith("^"))
+                      && (trimmed.indexOf(")") == -1)
+                      && (trimmed.indexOf("^") != -1) )
+            {
+                numSpaces = prevLine.indexOf("^");
+            }
         }
         else if ( (newCurrLine.length() != 0)
                   && (newCurrLine.charAt(0) == '}')
@@ -1053,6 +1067,34 @@ public class SoarDocument extends DefaultStyledDocument
                     }
                 }
                 // if couldn't find a previous '^', set numspaces to end of last line
+                if(!done)
+                {
+                    prevLine = cropComments(prevLine);
+                    int firstCharLoc = prevLine.indexOf( (prevLine.trim()).charAt(0) );
+                    numSpaces = prevLine.trim().length() + firstCharLoc;
+                }
+            }
+            else if (newCurrLine.startsWith("<"))
+            {
+                String currentLine = prevLine;
+                int currentElementIndex = elemIndex;
+                boolean done = false;
+                numSpaces = 0;
+                while(!done && currentLine != null)
+                {
+                    int upPos = currentLine.indexOf('<');
+                    if(upPos != -1)
+                    {
+                        numSpaces = upPos;
+                        done = true;
+                    }
+                    else
+                    {
+                        --currentElementIndex;
+                        currentLine = getElementString(currentElementIndex,data);
+                    }
+                }
+                // if couldn't find a previous '<', set numspaces to end of last line
                 if(!done)
                 {
                     prevLine = cropComments(prevLine);
