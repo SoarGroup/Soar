@@ -6,17 +6,26 @@
 
 #include "cli_Constants.h"
 
+#include "IgSKI_Kernel.h"
+#include "IgSKI_DoNotTouch.h"
+
 using namespace cli;
 
 bool CommandLineInterface::ParseGDSPrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
 	unused(argv);
 
-	return DoGDSPrint();
+	return DoGDSPrint(pAgent);
 }
 
-bool CommandLineInterface::DoGDSPrint() {
+bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
 
-	return false;
+	// Need agent pointer for function calls
+	if (!RequireAgent(pAgent)) return false;
+	if (!RequireKernel()) return false;
+
+	// Attain the evil back door of desolation, even though we aren't the TgD
+	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+
+	return pKernelHack->GDSPrint(pAgent);
 }
 

@@ -155,6 +155,9 @@ Options and arguments:
 ***
 gds-print
 Usage:	gds-print
+
+The gds-print command is a debugging command for examining the Goal Dependency 
+Set (GDS) for each goal in the stack. See the Soar manual for details.
 ~~~
 ***
 help
