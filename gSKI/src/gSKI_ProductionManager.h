@@ -390,7 +390,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void AddProductionListener(egSKIEventId         eventId, 
+      void AddProductionListener(egSKIProductionEventId eventId, 
                                  IProductionListener* listener, 
                                  bool                 allowAsynch = false,
                                  Error*               err         = 0);
@@ -424,7 +424,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void RemoveProductionListener(egSKIEventId         eventId,
+      void RemoveProductionListener(egSKIProductionEventId eventId,
                                      IProductionListener* listener,
                                      Error*               err = 0);
 
@@ -450,7 +450,7 @@ namespace gSKI {
          /**
           * @brief 
           */
-         void operator()(egSKIEventId eventId, IProductionListener* listener)
+         void operator()(egSKIProductionEventId eventId, IProductionListener* listener)
          {
             listener->HandleEvent(eventId, m_agent, m_prod, m_match);
          }
@@ -464,7 +464,7 @@ namespace gSKI {
        * @brief Listener manager definitions 
        */
       //{
-      typedef ListenerManager<IProductionListener, ProductionNotifier>   tProductionListenerManager;
+      typedef ListenerManager<egSKIProductionEventId, IProductionListener, ProductionNotifier>   tProductionListenerManager;
       //}
 
       /** 

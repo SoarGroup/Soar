@@ -193,7 +193,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void AddSystemListener(egSKIEventId        eventId, 
+      void AddSystemListener(egSKISystemEventId          eventId, 
                                      ISystemListener*    listener, 
                                      bool                allowAsynch = false,
                                      Error*              err         = 0);
@@ -225,7 +225,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void RemoveSystemListener(egSKIEventId         eventId,
+      void RemoveSystemListener(egSKISystemEventId           eventId,
                                         ISystemListener*     listener,
                                         Error*               err = 0);
 
@@ -264,7 +264,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddRhsListener(egSKIEventId        eventId, 
+      virtual void AddRhsListener(egSKIRhsEventId  eventId, 
                                   IRhsListener*		  listener, 
                                   bool                allowAsynch = false,
                                   Error*              err         = 0) ;
@@ -311,7 +311,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRhsListener(egSKIEventId      eventId,
+      virtual void RemoveRhsListener(egSKIRhsEventId eventId,
                                      IRhsListener*     listener,
                                      Error*            err = 0) ;
 
@@ -347,7 +347,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
        */
-      void AddLogListener(egSKIEventId   eventId, 
+      void AddLogListener(egSKIPrintEventId   eventId, 
                           ILogListener*  listener, 
                           bool           allowAsynch = false,
                           Error*         err         = 0);
@@ -381,7 +381,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void RemoveLogListener(egSKIEventId   eventId,
+      void RemoveLogListener(egSKIPrintEventId   eventId,
                              ILogListener*  listener,
                              Error*         err = 0);
 
@@ -418,7 +418,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
        */
-      void AddConnectionLostListener(egSKIEventId             eventId, 
+      void AddConnectionLostListener(egSKISystemEventId               eventId, 
                                              IConnectionLostListener* listener, 
                                              bool                     allowAsynch = false,
                                              Error*                   err         = 0);
@@ -450,7 +450,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void RemoveConnectionLostListener(egSKIEventId             eventId,
+      void RemoveConnectionLostListener(egSKISystemEventId       eventId,
                                         IConnectionLostListener* listener,
                                         Error*                   err = 0);
       public:
@@ -470,7 +470,7 @@ namespace gSKI
          public:
             LogNotifier(IKernel* kernel, const char* msg): m_msg(msg), m_kernel(kernel){}
 
-            void operator()(egSKIEventId eventId, 
+            void operator()(egSKIPrintEventId eventId, 
                             ILogListener* listener) const
             {
                listener->HandleEvent(eventId, m_kernel, m_msg);
@@ -489,7 +489,7 @@ namespace gSKI
 						m_MaxLength(maxLengthReturnValue), m_ReturnValue(pReturnValue)
 						{}
 
-			bool operator()(egSKIEventId eventId, 
+			bool operator()(egSKIRhsEventId eventId, 
                             IRhsListener* listener) const
             {
 				bool haveResult = listener->HandleEvent(eventId, m_Agent, m_CommandLine, m_FunctionName, m_Argument, m_MaxLength, m_ReturnValue) ;
@@ -507,8 +507,8 @@ namespace gSKI
          /** 
           * @brief Listener manager definitions 
           */
-         typedef ListenerManager<ILogListener, LogNotifier>   tLogListenerManager;
-         typedef ListenerManager<IRhsListener, RhsNotifier>   tRhsListenerManager;
+         typedef ListenerManager<egSKIPrintEventId, ILogListener, LogNotifier>   tLogListenerManager;
+         typedef ListenerManager<egSKIRhsEventId, IRhsListener, RhsNotifier>   tRhsListenerManager;
 
          /**
           * @brief Retrieves the Soar Kernel Pointer

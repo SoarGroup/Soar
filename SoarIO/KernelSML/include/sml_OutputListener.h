@@ -8,6 +8,7 @@
 // the agent adds wmes to the output link.
 //
 /////////////////////////////////////////////////////////////////
+
 #ifndef OUTPUT_LISTENER_H
 #define OUTPUT_LISTENER_H
 
@@ -28,7 +29,7 @@ class Connection ;
 typedef std::map< long, bool >		OutputTimeTagMap ;
 typedef OutputTimeTagMap::iterator	OutputTimeTagIter ;
 
-class OutputListener : public gSKI::IWorkingMemoryListener, public gSKI::IAgentListener, public EventManager
+class OutputListener : public gSKI::IWorkingMemoryListener, public gSKI::IAgentListener, public EventManager<egSKIWorkingMemoryEventId>
 {
 protected:
 	KernelSML*		m_KernelSML ;
@@ -62,16 +63,16 @@ public:
 	void UnRegisterForKernelSMLEvents() ;
 
 	// Returns true if this is the first connection listening for this event
-	virtual bool AddListener(egSKIEventId eventID, Connection* pConnection) ;
+	virtual bool AddListener(egSKIWorkingMemoryEventId eventID, Connection* pConnection) ;
 
 	// Returns true if at least one connection remains listening for this event
-	virtual bool RemoveListener(egSKIEventId eventID, Connection* pConnection) ;
+	virtual bool RemoveListener(egSKIWorkingMemoryEventId eventID, Connection* pConnection) ;
 
 	// Working memory event listener (called when the agent generates output)
-	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist) ;
+	virtual void HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist) ;
 
 	// Agent event listener (called when soar is re-initialized)
-	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr) ;
+	virtual void HandleEvent(egSKIAgentEventId eventId, gSKI::IAgent* agentPtr) ;
 
 	void SetStopOnOutput(bool state) { m_StopOnOutput = state ; }
 } ;

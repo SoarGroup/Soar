@@ -85,7 +85,7 @@ namespace gSKI
       
    =============================
    */   
-   void AgentRunManager::HandleEvent(egSKIEventId eventId, IAgent* agentPtr)
+   void AgentRunManager::HandleEvent(egSKIAgentEventId eventId, IAgent* agentPtr)
    {
       if(eventId == gSKIEVENT_BEFORE_AGENT_DESTROYED)
          m_removedAgents.push_back(agentPtr);

@@ -828,8 +828,6 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 	safeSprintf(buf, 127, "Values from single timers:\n");
 	m_result += buf;
 #endif  // KERNEL_TIME_ONLY
-// #endif  // NO_TIMING_STUFF
-// #ifndef NO_TIMING_STUFF
 
 #ifdef WARN_IF_TIMERS_REPORT_ZERO
     /* If a warning has occured since the last init-soar, the warn flag will

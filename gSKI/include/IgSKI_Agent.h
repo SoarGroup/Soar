@@ -832,7 +832,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddRunListener(egSKIEventId        eventId, 
+      virtual void AddRunListener(egSKIRunEventId     eventId, 
                                   IRunListener*       listener, 
                                   bool                allowAsynch = false,
                                   Error*              err         = 0) = 0;
@@ -873,7 +873,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRunListener(egSKIEventId         eventId,
+      virtual void RemoveRunListener(egSKIRunEventId      eventId,
                                      IRunListener*        listener,
                                      Error*               err = 0) = 0;
 
@@ -907,7 +907,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddRhsFunctionChangeListener(egSKIEventId                 eventId, 
+      virtual void AddRhsFunctionChangeListener(egSKISystemEventId           eventId, 
                                                 IRhsFunctionChangeListener*  listener, 
                                                 bool                         allowAsynch = false,
                                                 Error*                       err         = 0) = 0;
@@ -939,7 +939,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRhsFunctionChangeListener(egSKIEventId                 eventId,
+      virtual void RemoveRhsFunctionChangeListener(egSKISystemEventId                 eventId,
                                                    IRhsFunctionChangeListener*  listener,
                                                    Error*                       err = 0) = 0;
 
@@ -972,7 +972,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
        */
-      virtual void AddRhsFunctionListener(egSKIEventId          eventId, 
+      virtual void AddRhsFunctionListener(egSKISystemEventId    eventId, 
                                           IRhsFunctionListener* listener, 
                                           bool                  allowAsynch = false,
                                           Error*                err         = 0) = 0;
@@ -1015,7 +1015,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddRhsFunctionListenerNameFilter(egSKIEventId          eventId,
+      virtual void AddRhsFunctionListenerNameFilter(egSKISystemEventId    eventId,
                                                     IRhsFunctionListener* listener,
                                                     const char*           rhsFuncNamePattern,
                                                     bool                  negate      = false,
@@ -1044,7 +1044,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRhsFunctionListener(egSKIEventId           eventId,
+      virtual void RemoveRhsFunctionListener(egSKISystemEventId     eventId,
                                              IRhsFunctionListener*  listener,
                                              Error*                 err = 0) = 0;
 
@@ -1070,7 +1070,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRhsFunctionListenerFilters(egSKIEventId          eventId,
+      virtual void RemoveRhsFunctionListenerFilters(egSKISystemEventId    eventId,
                                                     IRhsFunctionListener* listener,
                                                     Error*                err = 0) = 0;
 
@@ -1080,12 +1080,12 @@ namespace gSKI {
        *
        * These are deprecated.  Do not use them.
        */ 
-      virtual void AddPrintListener(egSKIEventId             eventId, 
+      virtual void AddPrintListener(egSKIPrintEventId        eventId, 
                                     IPrintListener*          listener, 
                                     bool                     allowAsynch = false,
                                     Error*                   err         = 0) = 0;
 
-      virtual void RemovePrintListener(egSKIEventId          eventId,
+      virtual void RemovePrintListener(egSKIPrintEventId     eventId,
                                        IPrintListener*       listener,
                                        Error*                err = 0) = 0;
 

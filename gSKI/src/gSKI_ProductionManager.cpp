@@ -891,7 +891,7 @@ _|___/    __         _    _             ____  _               _
 |_____|_|___/\__\___|_| |_|\___|_|
    ==================================
    */
-   void ProductionManager::AddProductionListener(egSKIEventId         eventId, 
+   void ProductionManager::AddProductionListener(egSKIProductionEventId eventId, 
                                                  IProductionListener* listener, 
                                                  bool                 allowAsynch ,
                                                  Error*               err)
@@ -931,7 +931,7 @@ _|___/    __         _    _             ____  _               _
 |_____|_|___/\__\___|_| |_|\___|_|
    ==================================
    */
-   void ProductionManager::RemoveProductionListener(egSKIEventId         eventId,
+   void ProductionManager::RemoveProductionListener(egSKIProductionEventId eventId,
                                                     IProductionListener* listener,
                                                     Error*               err)
    {
@@ -1008,7 +1008,7 @@ _|___/    __         _    _             ____  _               _
 
          // We have to change the the event id from a kernel id to a gSKI id
          ProductionNotifier pn(pm->m_agent, p, pi);
-         pm->m_productionListeners.Notify(EnumRemappings::RemapEventType(eventId, eventOccured), pn);
+         pm->m_productionListeners.Notify(EnumRemappings::Map_Kernel_to_gSKI_ProdEventId(eventId, eventOccured), pn);
 
          // Clean up the new data members
          if(p)

@@ -41,7 +41,9 @@ namespace gSKI {
 
 
 #include "cli_CommandLineInterface.h"
-#include "sml_KernelListener.h"
+#include "sml_SystemListener.h"
+#include "sml_RhsListener.h"
+#include "sml_AgentListener.h"
 
 namespace soar_thread
 {
@@ -87,7 +89,9 @@ typedef AgentMap::const_iterator			AgentMapConstIter ;
 class KernelSML
 {
 	// Allow the kernel listener to execute command lines directly
-	friend class KernelListener ;
+	//friend class KernelListener ;
+	friend class AgentListener;
+	friend class RhsListener;
 
 protected:
 	// The singleton kernel object
@@ -118,7 +122,9 @@ protected:
 	soar_thread::Mutex*	m_pKernelMutex ;
 
 	// Used to listen for kernel events that are kernel based (not for a specific agent)
-	KernelListener	m_KernelListener ;
+	SystemListener	m_SystemListener;
+	RhsListener		m_RhsListener;
+	AgentListener	m_AgentListener;
 
 public:
 	/*************************************************************
@@ -183,15 +189,17 @@ public:
 	* @brief	Add or remove a connection from the list listening
 	*			for a particular event in the kernel.
 	*************************************************************/
-	void AddKernelListener(egSKIEventId eventID, Connection* pConnection)	 { m_KernelListener.AddListener(eventID, pConnection) ; }
-	void RemoveKernelListener(egSKIEventId eventID, Connection* pConnection) { m_KernelListener.RemoveListener(eventID, pConnection) ; }
+	void AddSystemListener(egSKISystemEventId eventID, Connection* pConnection)	 { m_SystemListener.AddListener(eventID, pConnection) ; }
+	void AddAgentListener(egSKIAgentEventId eventID, Connection* pConnection)	 { m_AgentListener.AddListener(eventID, pConnection) ; }
+	void RemoveSystemListener(egSKISystemEventId eventID, Connection* pConnection) { m_SystemListener.RemoveListener(eventID, pConnection) ; }
+	void RemoveAgentListener(egSKIAgentEventId eventID, Connection* pConnection) { m_AgentListener.RemoveListener(eventID, pConnection) ; }
 
 	/*************************************************************
 	* @brief	Add or remove a connection from the list implementing
 	*			a particular rhs function in the kernel.
 	*************************************************************/
-	void AddRhsListener(char const* pFunctionName, Connection* pConnection)	   { m_KernelListener.AddRhsListener(pFunctionName, pConnection) ; }
-	void RemoveRhsListener(char const* pFunctionName, Connection* pConnection) { m_KernelListener.RemoveRhsListener(pFunctionName, pConnection) ; }
+	void AddRhsListener(char const* pFunctionName, Connection* pConnection)	   { m_RhsListener.AddRhsListener(pFunctionName, pConnection) ; }
+	void RemoveRhsListener(char const* pFunctionName, Connection* pConnection) { m_RhsListener.RemoveRhsListener(pFunctionName, pConnection) ; }
 
 	/*************************************************************
 	* @brief	Remove any events that this connection was listening to.

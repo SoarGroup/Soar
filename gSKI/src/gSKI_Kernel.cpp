@@ -242,7 +242,7 @@ namespace gSKI
                           |___/
       =========================
       */
-      void Kernel::AddSystemListener(egSKIEventId        nEventId, 
+      void Kernel::AddSystemListener(egSKISystemEventId  nEventId, 
                              ISystemListener*    pListener, 
                              bool                bAllowAsynch,
                              Error*              err)
@@ -265,7 +265,7 @@ namespace gSKI
 |_____|_|___/\__\___|_| |_|\___|_|
       =========================
       */
-      void Kernel::RemoveSystemListener(egSKIEventId         nEventId,
+      void Kernel::RemoveSystemListener(egSKISystemEventId  nEventId,
                                 ISystemListener*     pListener,
                                 Error*               err)
       {
@@ -278,7 +278,7 @@ namespace gSKI
 	   * Listen for rhs user function firings
 	   *
 	   **************************************************/
-	  void Kernel::AddRhsListener(egSKIEventId   nEventId, 
+	  void Kernel::AddRhsListener(egSKIRhsEventId   nEventId, 
                              IRhsListener*       pListener, 
                              bool                bAllowAsynch,
                              Error*              err)
@@ -292,7 +292,7 @@ namespace gSKI
 	   * Stop listening for rhs user function firings
 	   *
 	   **************************************************/
-      void Kernel::RemoveRhsListener(egSKIEventId    nEventId,
+      void Kernel::RemoveRhsListener(egSKIRhsEventId    nEventId,
                                 IRhsListener*        pListener,
                                 Error*               err)
       {
@@ -332,7 +332,7 @@ namespace gSKI
                                |___/
       =========================
       */
-      void Kernel::AddLogListener(egSKIEventId              nEventId, 
+      void Kernel::AddLogListener(egSKIPrintEventId         nEventId, 
                                   ILogListener*             pListener, 
                                   bool                      bAllowAsynch,
                                   Error*                    err)
@@ -358,7 +358,7 @@ namespace gSKI
                                                |___/
       =========================
       */
-   void Kernel::RemoveLogListener(egSKIEventId        nEventId,
+   void Kernel::RemoveLogListener(egSKIPrintEventId     nEventId,
                                     ILogListener*       pListener,
                                     Error*              err)
    {
@@ -382,7 +382,7 @@ namespace gSKI
 |_____\___/|___/\__|_____|_|___/\__\___|_| |_|\___|_|
       =========================
       */
-      void Kernel::AddConnectionLostListener(egSKIEventId             nEventId, 
+      void Kernel::AddConnectionLostListener(egSKISystemEventId       nEventId, 
                                              IConnectionLostListener* pListener, 
                                              bool                     bAllowAsynch,
                                              Error*                   err)
@@ -405,7 +405,7 @@ namespace gSKI
 |_____\___/|___/\__|_____|_|___/\__\___|_| |_|\___|_|
       =========================
       */
-      void Kernel::RemoveConnectionLostListener(egSKIEventId             nEventId,
+      void Kernel::RemoveConnectionLostListener(egSKISystemEventId       nEventId,
                                                 IConnectionLostListener* pListener,
                                                 Error*                   err)
       {

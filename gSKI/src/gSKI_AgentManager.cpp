@@ -463,7 +463,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::AddAgentListener(egSKIEventId        eventId, 
+   void AgentManager::AddAgentListener(egSKIAgentEventId eventId, 
                                      IAgentListener*     listener, 
                                      bool                allowAsynch,
                                      Error*              err)
@@ -476,7 +476,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::RemoveAgentListener(egSKIEventId       eventId,
+   void AgentManager::RemoveAgentListener(egSKIAgentEventId  eventId,
                                         IAgentListener*      listener,
                                         Error*               err)
    {
@@ -521,7 +521,7 @@ namespace gSKI
 
    =============================
    */
-   void AgentManager::AgentRunCompletedListener::HandleEvent(egSKIEventId eventId, IAgent* agentPtr, egSKIPhaseType phase)
+   void AgentManager::AgentRunCompletedListener::HandleEvent(egSKIRunEventId eventId, IAgent* agentPtr, egSKIPhaseType phase)
    {
       MegaAssert(eventId == gSKIEVENT_AFTER_RUNNING, "Getting an unexpected event in the agent removal listener.");
       m_am->RemoveAgentByName(agentPtr->GetName());

@@ -691,7 +691,7 @@ namespace gSKI {
 	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	   * @param listener	The handler to call when event is fired
        */
-	  virtual void AddWorkingMemoryListener(egSKIEventId            eventId, 
+	  virtual void AddWorkingMemoryListener(egSKIWorkingMemoryEventId eventId, 
 									IWorkingMemoryListener* listener, 
 									Error*                  err = 0) ;
 
@@ -701,7 +701,7 @@ namespace gSKI {
 	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	   * @param listener	The handler to call when event is fired
        */
-	  virtual void RemoveWorkingMemoryListener(egSKIEventId            eventId, 
+	  virtual void RemoveWorkingMemoryListener(egSKIWorkingMemoryEventId eventId, 
 									IWorkingMemoryListener* listener, 
 									Error*                  err = 0) ;
 
@@ -769,7 +769,7 @@ namespace gSKI {
          /**
           * @brief 
           */
-         void operator()(egSKIEventId eventId, IWorkingMemoryListener* listener)
+         void operator()(egSKIWorkingMemoryEventId eventId, IWorkingMemoryListener* listener)
          {
             listener->HandleEvent(eventId, m_agent, m_change, m_wmelist);
          }
@@ -783,7 +783,7 @@ namespace gSKI {
        * @brief Listener manager definitions 
        */
       //{
-      typedef ListenerManager<IWorkingMemoryListener, WorkingMemoryNotifier>   tWorkingMemoryListenerManager;
+      typedef ListenerManager<egSKIWorkingMemoryEventId, IWorkingMemoryListener, WorkingMemoryNotifier>   tWorkingMemoryListenerManager;
       //}
 
 	  tWorkingMemoryListenerManager m_workingMemoryListeners ;
@@ -798,7 +798,8 @@ namespace gSKI {
 	   * @param change		The type of change that just occured (e.g. addition, modification, removal)
 	   * @param io_wmelist	The new list of wmes on the output link
        */
-	  void NotifyWorkingMemoryListeners(egSKIEventId eventId, egSKIWorkingMemoryChange change, io_wme* io_wmelist) ;
+	  void NotifyWorkingMemoryListeners(egSKIWorkingMemoryEventId eventId, 
+		                                egSKIWorkingMemoryChange change, io_wme* io_wmelist) ;
 
       Agent* m_agent; /**< The agent associated with this working memory */
 

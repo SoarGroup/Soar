@@ -505,7 +505,7 @@ namespace gSKI {
 	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	   * @param listener	The handler to call when event is fired
        */
-	  virtual void AddWorkingMemoryListener(egSKIEventId            eventId, 
+	  virtual void AddWorkingMemoryListener(egSKIWorkingMemoryEventId            eventId, 
 											IWorkingMemoryListener* listener, 
 											Error*                  err = 0) = 0 ;
 
@@ -515,7 +515,7 @@ namespace gSKI {
 	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	   * @param listener	The handler to call when event is fired
        */
-	  virtual void RemoveWorkingMemoryListener(egSKIEventId            eventId, 
+	  virtual void RemoveWorkingMemoryListener(egSKIWorkingMemoryEventId            eventId, 
 											   IWorkingMemoryListener* listener, 
 											   Error*                  err = 0) = 0 ;
    };

@@ -31,7 +31,7 @@ namespace gSKI
     *  It holds a list of them, adds and removes from them
     *  and handles thread pauses when required.
     */
-   template<typename ListenerType, typename NotifierType>
+   template<typename EventType, typename ListenerType, typename NotifierType>
    class ListenerManager
    {
    public:
@@ -59,7 +59,7 @@ namespace gSKI
        * @param eventId  Id of the event to add a listener for
        * @param listener Pointer to the listener to add to list
        */
-      void AddListener(egSKIEventId eventId, tListener* listener)
+      void AddListener(EventType eventId, tListener* listener)
       {
          // Get the correct list of listeners
          tListenerVector& listenerVec = m_listeners[static_cast<tKey>(eventId)];
@@ -78,7 +78,7 @@ namespace gSKI
        * @param eventId  Id of the event to remove the listener for
        * @param listener Pointer to the listener to remove.
        */
-      void RemoveListener(egSKIEventId eventId, tListener* listener)
+      void RemoveListener(EventType eventId, tListener* listener)
       {
          tListenerMapIt itMap = m_listeners.find(static_cast<tKey>(eventId));
          if(itMap != m_listeners.end())
@@ -109,7 +109,7 @@ namespace gSKI
        *          method should callback the listener's event method
        *          with appropriate data.
        */
-      void Notify(egSKIEventId eventId, tNotifier& notifier)
+      void Notify(EventType eventId, tNotifier& notifier)
       {
          tListenerMapIt itMap = m_listeners.find(static_cast<tKey>(eventId));
          if(itMap != m_listeners.end())
@@ -133,7 +133,7 @@ namespace gSKI
 
 	  // Same as "Notify" above, but returns true if a notifier returns true
 	  // and stops notification at that point.
-	  bool NotifyGetResult(egSKIEventId eventId, tNotifier& notifier)
+	  bool NotifyGetResult(EventType eventId, tNotifier& notifier)
 	  {
 	     bool result = false ;
 
@@ -164,7 +164,7 @@ namespace gSKI
        * @param eventId Id for which to retrieve the listeners
        * @return Number of listeners for the given event
        */
-      unsigned int GetNumListeners(egSKIEventId eventId)
+      unsigned int GetNumListeners(EventType eventId)
       {
          tListenerMapIt itMap = m_listeners.find(static_cast<tKey>(eventId));
          return (itMap != m_listeners.end())? static_cast<unsigned int>(((*itMap).second).size()): 0;
@@ -174,11 +174,11 @@ namespace gSKI
        * @brief Begin and End access for listeners (allows iteration)
        */
       //{
-      tListenerVectorIt    Begin(egSKIEventId eventId)              
+      tListenerVectorIt    Begin(EventType eventId)              
       { 
          return m_listeners[static_cast<tKey>(eventId)].begin(); 
       }
-      tListenerVectorIt    End(egSKIEventId eventId)
+      tListenerVectorIt    End(EventType eventId)
       { 
          return m_listeners[static_cast<tKey>(eventId)].end();   
       }
@@ -198,8 +198,8 @@ namespace gSKI
     * @param listener Pointer to the listener to add to the manager
     * @param err      gSKI's error structure for reporting errors
     */
-   template<typename Manager, typename Listener>
-   inline void AddListenerToManager(Manager& manager, egSKIEventId eventId,
+   template<typename Manager, typename EventType, typename Listener>
+   inline void AddListenerToManager(Manager& manager, EventType eventId,
                                     Listener* listener, Error* err)
    {
       MegaAssert(listener, "Cannot add a 0 listener pointer.");
@@ -221,8 +221,8 @@ namespace gSKI
     * @param listener Pointer to the listener to add to the manager
     * @param err      gSKI's error structure for reporting errors
     */
-   template<typename Manager, typename Listener>
-   inline void RemoveListenerFromManager(Manager& manager, egSKIEventId eventId,
+   template<typename Manager, typename EventType, typename Listener>
+   inline void RemoveListenerFromManager(Manager& manager, EventType eventId,
                                          Listener* listener, Error* err)
    {
       MegaAssert(listener, "Cannot add a 0 listener pointer.");

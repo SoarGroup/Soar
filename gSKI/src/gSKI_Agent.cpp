@@ -60,19 +60,19 @@ namespace {
       MegaAssert(sym->GetType() != gSKI_VARIABLE, "Do not support returning parse variables from RHS functions.");
       switch(sym->GetType())
       {
-         case gSKI_INT:
-            return make_int_constant(thisAgent, sym->GetInt());
-         case gSKI_DOUBLE:
-            return make_float_constant(thisAgent, static_cast<float>(sym->GetDouble()));
-         case gSKI_STRING:
-			 {
-				// Gotta create a temp buffer because make_sym_constant takes a non-const pointer
-				std::vector<char> tmpBuffer(sym->GetString(), sym->GetString() + strlen(sym->GetString()) + 1);
-				return make_sym_constant(thisAgent, &tmpBuffer[0]);
-			 }
-		 default:
-			MegaAssert(sym->GetType() != gSKI_INT && sym->GetType() != gSKI_DOUBLE && sym->GetType() != gSKI_STRING, "Unsupported type returned from RHS function.") ;
-			break ;
+      case gSKI_INT:
+	return make_int_constant(thisAgent, sym->GetInt());
+      case gSKI_DOUBLE:
+	return make_float_constant(thisAgent, static_cast<float>(sym->GetDouble()));
+      case gSKI_STRING:
+	{
+	  // Gotta create a temp buffer because make_sym_constant takes a non-const pointer
+	  std::vector<char> tmpBuffer(sym->GetString(), sym->GetString() + strlen(sym->GetString()) + 1);
+	  return make_sym_constant(thisAgent, &tmpBuffer[0]);
+	}
+      default:
+	MegaAssert(sym->GetType() != gSKI_INT && sym->GetType() != gSKI_DOUBLE && sym->GetType() != gSKI_STRING, "Unsupported type returned from RHS function.") ;
+	break ;
       }
       return NIL;
    }
@@ -975,7 +975,7 @@ namespace gSKI
                          |___/
       =========================
       */
-      void Agent::AddRhsFunctionChangeListener(egSKIEventId                 nEventId, 
+      void Agent::AddRhsFunctionChangeListener(egSKISystemEventId    nEventId, 
                                         IRhsFunctionChangeListener*  pListener, 
                                         bool                         bAllowAsynch,
                                         Error*                       err)
@@ -999,7 +999,7 @@ namespace gSKI
                          |___/
       =========================
       */
-      void Agent::RemoveRhsFunctionChangeListener(egSKIEventId                 nEventId,
+      void Agent::RemoveRhsFunctionChangeListener(egSKISystemEventId    nEventId,
                                            IRhsFunctionChangeListener*  pListener,
                                            Error*                       err)
       {
@@ -1021,7 +1021,7 @@ namespace gSKI
 |_____|_|___/\__\___|_| |_|\___|_|
       =========================
       */
-      void Agent::AddRhsFunctionListener(egSKIEventId          nEventId, 
+      void Agent::AddRhsFunctionListener(egSKISystemEventId  nEventId, 
                                   IRhsFunctionListener* pListener, 
                                   bool                  bAllowAsynch,
                                   Error*                err)
@@ -1044,7 +1044,7 @@ namespace gSKI
 |_____|_|___/\__\___|_| |_|\___|_|  |_| \_|\__,_|_| |_| |_|\___|_|   |_|_|\__\___|_|
       =========================
       */
-      void Agent::AddRhsFunctionListenerNameFilter(egSKIEventId          nEventId,
+      void Agent::AddRhsFunctionListenerNameFilter(egSKISystemEventId nEventId,
                                             IRhsFunctionListener* pListener,
                                             const char*           szRhsFuncNamePattern,
                                             bool                  bNegate,
@@ -1067,7 +1067,7 @@ namespace gSKI
 |_____|_|___/\__\___|_| |_|\___|_|
       =========================
       */
-      void Agent::RemoveRhsFunctionListener(egSKIEventId           nEventId,
+      void Agent::RemoveRhsFunctionListener(egSKISystemEventId      nEventId,
                                              IRhsFunctionListener*  pListener,
                                              Error*                 err)
       {
@@ -1089,7 +1089,7 @@ namespace gSKI
 |_____|_|___/\__\___|_| |_|\___|_|  |_|   |_|_|\__\___|_|  |___/
       =========================
       */
-      void Agent::RemoveRhsFunctionListenerFilters(egSKIEventId          nEventId,
+      void Agent::RemoveRhsFunctionListenerFilters(egSKISystemEventId     nEventId,
                                                     IRhsFunctionListener* pListener,
                                                     Error*                err)
       {
@@ -1105,7 +1105,7 @@ namespace gSKI
 /_/   \_\__,_|\__,_|_|   |_|  |_|_| |_|\__|_____|_|___/\__\___|_| |_|\___|_|
    ==========================
    */
-   void Agent::AddPrintListener(egSKIEventId             eventId, 
+   void Agent::AddPrintListener(egSKIPrintEventId         eventId, 
                                  IPrintListener*          listener, 
                                  bool                     allowAsynch, 
                                  Error*                   err)
@@ -1141,7 +1141,7 @@ namespace gSKI
 |_| \_\___|_| |_| |_|\___/ \_/ \___|_|   |_|  |_|_| |_|\__|_____|_|___/\__\___|_| |_|\___|_|
    ==========================
    */
-   void Agent::RemovePrintListener(egSKIEventId          eventId,
+   void Agent::RemovePrintListener(egSKIPrintEventId      eventId,
                                     IPrintListener*       listener,
                                     Error*                err)
    {
@@ -1192,7 +1192,7 @@ namespace gSKI
 
       // We have to change the the event id from a kernel id to a gSKI id
       PrintNotifier pn(a, str);
-      a->m_printListeners.Notify(static_cast<egSKIEventId>(gSKIEVENT_PRINT), pn);
+      a->m_printListeners.Notify(static_cast<egSKIPrintEventId>(gSKIEVENT_PRINT), pn);
    }
 
    /* 
@@ -1200,7 +1200,7 @@ namespace gSKI
 
    ==========================
    */   
-   void Agent::AddRunListener(egSKIEventId     eventId, 
+   void Agent::AddRunListener(egSKIRunEventId  eventId, 
                               IRunListener*    listener, 
                               bool             allowAsynch,
                               Error*           err)
@@ -1221,7 +1221,7 @@ namespace gSKI
 
    ==========================
    */   
-   void Agent::RemoveRunListener(egSKIEventId      eventId,
+   void Agent::RemoveRunListener(egSKIRunEventId   eventId,
                                  IRunListener*     listener,
                                  Error*            err)
    {

@@ -62,7 +62,7 @@ void OutputListener::UnRegisterForKernelSMLEvents()
 }
 
 // Returns true if this is the first connection listening for this event
-bool OutputListener::AddListener(egSKIEventId eventID, Connection* pConnection)
+bool OutputListener::AddListener(egSKIWorkingMemoryEventId eventID, Connection* pConnection)
 {
 	bool first = BaseAddListener(eventID, pConnection) ;
 
@@ -76,7 +76,7 @@ bool OutputListener::AddListener(egSKIEventId eventID, Connection* pConnection)
 }
 
 // Returns true if at least one connection remains listening for this event
-bool OutputListener::RemoveListener(egSKIEventId eventID, Connection* pConnection)
+bool OutputListener::RemoveListener(egSKIWorkingMemoryEventId eventID, Connection* pConnection)
 {
 	bool last = BaseRemoveListener(eventID, pConnection) ;
 
@@ -89,7 +89,7 @@ bool OutputListener::RemoveListener(egSKIEventId eventID, Connection* pConnectio
 	return last ;
 }
 
-void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist)
+void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist)
 {
 	unused(change) ;
 
@@ -275,7 +275,7 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 
 // Agent event listener (called when soar has been or is about to be re-initialized)
 // BADBAD: This shouldn't really be handled in a class called OutputListener.
-void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr)
+void OutputListener::HandleEvent(egSKIAgentEventId eventId, gSKI::IAgent* agentPtr)
 {
 	// Before the kernel is re-initialized we have to release all input WMEs.
 	// If we don't do this, gSKI will fail to re-initialize the kernel correctly as it

@@ -3,7 +3,7 @@
 #endif // HAVE_CONFIG_H
 
 /////////////////////////////////////////////////////////////////
-// AgentListener class file.
+// ProductionListener class file.
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : September 2004
@@ -12,18 +12,19 @@
 // specific events occur within the agent:
 //
 /*
-*     gSKIEVENT_AFTER_AGENT_CREATED,
-*     gSKIEVENT_BEFORE_AGENT_DESTROYED,
-*	  gSKIEVENT_BEFORE_AGENTS_RUN_STEP,
-*     gSKIEVENT_BEFORE_AGENT_REINITIALIZED,
-*     gSKIEVENT_AFTER_AGENT_REINITIALIZED,
+*      gSKIEVENT_AFTER_PRODUCTION_ADDED,
+*      gSKIEVENT_BEFORE_PRODUCTION_REMOVED,
+*     //gSKIEVENT_BEFORE_PRODUCTION_FIRED,
+*      gSKIEVENT_AFTER_PRODUCTION_FIRED,
+*      gSKIEVENT_BEFORE_PRODUCTION_RETRACTED,
 */
 /////////////////////////////////////////////////////////////////
 
-#include "sml_AgentListener.h"
+#include "sml_ProductionListener.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
-#include "IgSKI_AgentManager.h"
+#include "IgSKI_Production.h"
+#include "IgSKI_ProductionManager.h"
 #include "sml_KernelSML.h"
 
 #include "assert.h"
@@ -34,38 +35,41 @@ using namespace sml ;
 // #define DISABLE_PRINT_OUTPUT_BUFFERING
 
 // Returns true if this is the first connection listening for this event
-bool AgentListener::AddListener(egSKIAgentEventId eventID, Connection* pConnection)
+bool ProductionListener::AddListener(egSKIProductionEventId eventID, Connection* pConnection)
 {
-	bool first = EventManager<egSKIAgentEventId>::BaseAddListener(eventID, pConnection) ;
+	bool first = BaseAddListener(eventID, pConnection) ;
 
 	if (first)
 	{
-		m_pKernelSML->GetKernel()->GetAgentManager()->AddAgentListener(eventID, this) ;
+		m_pAgent->GetProductionManager()->AddProductionListener(eventID, this) ;
 	}
 
 	return first ;
 }
 
 // Returns true if at least one connection remains listening for this event
-bool AgentListener::RemoveListener(egSKIAgentEventId eventID, Connection* pConnection)
+bool ProductionListener::RemoveListener(egSKIProductionEventId eventID, Connection* pConnection)
 {
-    bool last = EventManager<egSKIAgentEventId>::BaseRemoveListener(eventID, pConnection) ;
+	bool last = BaseRemoveListener(eventID, pConnection) ;
 
 	if (last)
 	{
-		m_pKernelSML->GetKernel()->GetAgentManager()->RemoveAgentListener(eventID, this) ;
+		m_pAgent->GetProductionManager()->RemoveProductionListener(eventID, this) ;
 	}
 
 	return last ;
 }
 
-// Called when an "AgentEvent" occurs in the kernel
-void AgentListener::HandleEvent(egSKIAgentEventId eventID, gSKI::IAgent* agentPtr)
+// Called when a "ProductionEvent" occurs in the kernel
+void ProductionListener::HandleEvent(egSKIProductionEventId eventID, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match)
 {
-	ConnectionListIter connectionIter = EventManager<egSKIAgentEventId>::GetBegin(eventID) ;
+	// This class isn't implemented in gSKI yet.
+	unused(match) ;
+
+	ConnectionListIter connectionIter = GetBegin(eventID) ;
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.
-	if (connectionIter == EventManager<egSKIAgentEventId>::GetEnd(eventID))
+	if (connectionIter == GetEnd(eventID))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
@@ -77,19 +81,19 @@ void AgentListener::HandleEvent(egSKIAgentEventId eventID, gSKI::IAgent* agentPt
 	Int2String(eventID, event, sizeof(event)) ;
 
 	// Build the SML message we're doing to send.
-	// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
-	// level event, not an agent level one (because you need to register with the kernel to get "agent created").
 	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, agentPtr == NULL ? "" : agentPtr->GetName()) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, agentPtr->GetName()) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, prod->GetName()) ;
 
 #ifdef _DEBUG
 	// Generate a text form of the XML so we can look at it in the debugger.
 	char* pStr = pMsg->GenerateXMLString(true) ;
+	pMsg->DeleteString(pStr) ;
 #endif
 
 	// Send this message to all listeners
-	ConnectionListIter end = EventManager<egSKIAgentEventId>::GetEnd(eventID) ;
+	ConnectionListIter end = GetEnd(eventID) ;
 
 	AnalyzeXML response ;
 
@@ -104,11 +108,6 @@ void AgentListener::HandleEvent(egSKIAgentEventId eventID, gSKI::IAgent* agentPt
 
 		connectionIter++ ;
 	}
-
-#ifdef _DEBUG
-	// Release the string form we generated for the debugger
-	pMsg->DeleteString(pStr) ;
-#endif
 
 	// Clean up
 	delete pMsg ;

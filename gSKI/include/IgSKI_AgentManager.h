@@ -489,7 +489,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddAgentListener(egSKIEventId        eventId, 
+      virtual void AddAgentListener(egSKIAgentEventId   eventId, 
                                     IAgentListener*     listener, 
                                     bool                allowAsynch = false,
                                     Error*              err         = 0) = 0;
@@ -523,7 +523,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveAgentListener(egSKIEventId         eventId,
+      virtual void RemoveAgentListener(egSKIAgentEventId    eventId,
                                        IAgentListener*      listener,
                                        Error*               err = 0) = 0;
    };

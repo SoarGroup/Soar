@@ -14,19 +14,19 @@
 
 namespace sml {
 
-class AgentListener;
+class PrintListener;
 
 class AgentOutputFlusher : public gSKI::IRunListener
 {
 protected:
-	gSKI::IAgent* m_Agent;
-	AgentListener* m_AgentListener;
+	gSKI::IAgent* m_pAgent;
+	PrintListener* m_pPrintListener;
 
 public:
-	AgentOutputFlusher(AgentListener* pAgentListener, gSKI::IAgent* pAgent);
+	AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent);
 	virtual ~AgentOutputFlusher();
 
-	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase);
+	virtual void HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase);
 };
 
 }

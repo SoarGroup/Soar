@@ -520,7 +520,7 @@ namespace gSKI
       virtual int GetMaxElaborations(Error* err = 0);
       virtual void SetMaxElaborations(int maxElabs, Error* err = 0);
 
-	  virtual int GetMaxNilOutputCycles(Error* err = 0);
+      virtual int GetMaxNilOutputCycles(Error* err = 0);
       virtual void SetMaxNilOutputCycles(int maxNils, Error* err = 0);
 
 
@@ -787,7 +787,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void AddRunListener(egSKIEventId        eventId, 
+      void AddRunListener(egSKIRunEventId     eventId, 
                           IRunListener*       listener, 
                           bool                allowAsynch = false,
                           Error*              err         = 0);
@@ -828,7 +828,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void RemoveRunListener(egSKIEventId         eventId,
+      void RemoveRunListener(egSKIRunEventId      eventId,
                              IRunListener*        listener,
                              Error*               err = 0);
 
@@ -862,7 +862,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddRhsFunctionChangeListener(egSKIEventId                 eventId, 
+      virtual void AddRhsFunctionChangeListener(egSKISystemEventId           eventId, 
                                                 IRhsFunctionChangeListener*  listener, 
                                                 bool                         allowAsynch = false,
                                                 Error*                       err         = 0);
@@ -894,7 +894,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRhsFunctionChangeListener(egSKIEventId                 eventId,
+      virtual void RemoveRhsFunctionChangeListener(egSKISystemEventId           eventId,
                                                    IRhsFunctionChangeListener*  listener,
                                                    Error*                       err = 0);
 
@@ -927,7 +927,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
        */
-      virtual void AddRhsFunctionListener(egSKIEventId          eventId, 
+      virtual void AddRhsFunctionListener(egSKISystemEventId       eventId, 
                                           IRhsFunctionListener* listener, 
                                           bool                  allowAsynch = false,
                                           Error*                err         = 0);
@@ -970,7 +970,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddRhsFunctionListenerNameFilter(egSKIEventId          eventId,
+      virtual void AddRhsFunctionListenerNameFilter(egSKISystemEventId    eventId,
                                                     IRhsFunctionListener* listener,
                                                     const char*           rhsFuncNamePattern,
                                                     bool                  negate      = false,
@@ -999,7 +999,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRhsFunctionListener(egSKIEventId           eventId,
+      virtual void RemoveRhsFunctionListener(egSKISystemEventId     eventId,
                                              IRhsFunctionListener*  listener,
                                              Error*                 err = 0);
 
@@ -1025,7 +1025,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRhsFunctionListenerFilters(egSKIEventId          eventId,
+      virtual void RemoveRhsFunctionListenerFilters(egSKISystemEventId    eventId,
                                                     IRhsFunctionListener* listener,
                                                     Error*                err = 0);
       /** 
@@ -1034,12 +1034,12 @@ namespace gSKI
        * These are deprecated.  Do not use them.
        */ 
       //{
-      void AddPrintListener(egSKIEventId             eventId, 
+      void AddPrintListener(egSKIPrintEventId        eventId, 
                             IPrintListener*          listener, 
                             bool                     allowAsynch = false,
                             Error*                   err         = 0);
 
-      void RemovePrintListener(egSKIEventId          eventId,
+      void RemovePrintListener(egSKIPrintEventId     eventId,
                                IPrintListener*       listener,
                                Error*                err = 0);
       //}
@@ -1077,7 +1077,7 @@ namespace gSKI
       public:
          RunNotifier(IAgent* a, egSKIPhaseType p): 
             m_agent(a), m_phase(p){}
-         void operator()(egSKIEventId eventId, IRunListener* listener)
+         void operator()(egSKIRunEventId eventId, IRunListener* listener)
          {
             listener->HandleEvent(eventId, m_agent, m_phase);
          }
@@ -1092,7 +1092,7 @@ namespace gSKI
       class PrintNotifier {
       public:
          PrintNotifier(IAgent* a, const char* msg): m_agent(a), m_msg(msg) {}
-         void operator()(egSKIEventId eventId, IPrintListener* listener) const
+         void operator()(egSKIPrintEventId eventId, IPrintListener* listener) const
          {
             listener->HandleEvent(eventId, m_agent, m_msg);
          }
@@ -1125,8 +1125,8 @@ namespace gSKI
        * @brief Listener manager definitions 
        */
       //{
-      typedef ListenerManager<IPrintListener, PrintNotifier>   tPrintListenerManager;
-      typedef ListenerManager<IRunListener, RunNotifier>       tRunListenerManager;
+      typedef ListenerManager<egSKIPrintEventId, IPrintListener, PrintNotifier>   tPrintListenerManager;
+      typedef ListenerManager<egSKIRunEventId, IRunListener, RunNotifier>       tRunListenerManager;
       //}
 
    private:

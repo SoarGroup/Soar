@@ -665,9 +665,9 @@ namespace gSKI {
 	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	   * @param listener	The handler to call when event is fired
        */
-	  virtual void AddWorkingMemoryListener(egSKIEventId            eventId, 
-											IWorkingMemoryListener* listener, 
-											Error*                  err = 0) ;
+	  virtual void AddWorkingMemoryListener(egSKIWorkingMemoryEventId eventId, 
+											IWorkingMemoryListener*   listener, 
+											Error*                    err = 0) ;
 
 	  /**
        * @brief Remove an existing listener
@@ -675,9 +675,9 @@ namespace gSKI {
 	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	   * @param listener	The handler to call when event is fired
        */
-	  virtual void RemoveWorkingMemoryListener(egSKIEventId            eventId, 
-											   IWorkingMemoryListener* listener, 
-											   Error*                  err = 0) ;
+	  virtual void RemoveWorkingMemoryListener(egSKIWorkingMemoryEventId eventId, 
+											   IWorkingMemoryListener*   listener, 
+											   Error*                    err = 0) ;
 
       /**
        * @brief Allows access to associated raw soar agent pointer

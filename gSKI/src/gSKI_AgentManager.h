@@ -506,7 +506,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void AddAgentListener(egSKIEventId        eventId, 
+      void AddAgentListener(egSKIAgentEventId   eventId, 
                             IAgentListener*     listener, 
                             bool                allowAsynch = false,
                             Error*              err         = 0);
@@ -540,7 +540,7 @@ namespace gSKI
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      void RemoveAgentListener(egSKIEventId         eventId,
+      void RemoveAgentListener(egSKIAgentEventId    eventId,
                                IAgentListener*      listener,
                                Error*               err = 0);
 
@@ -573,7 +573,7 @@ namespace gSKI
          class AgentNotifier {
          public:
             AgentNotifier(IAgent* a): m_agent(a) {}
-            void operator()(egSKIEventId eventId, IAgentListener* listener)
+            void operator()(egSKIAgentEventId eventId, IAgentListener* listener)
             {
                listener->HandleEvent(eventId, m_agent);
             }
@@ -585,7 +585,7 @@ namespace gSKI
          * @brief Listener manager definitions 
          */
          //{
-         typedef ListenerManager<IAgentListener, AgentNotifier>   tAgentListenerManager;
+         typedef ListenerManager<egSKIAgentEventId, IAgentListener, AgentNotifier>   tAgentListenerManager;
          //}
 
          /**************************** -------------- ************************/
@@ -601,7 +601,7 @@ namespace gSKI
             /** 
              * @brief The callback method for run events
              */
-            virtual void HandleEvent(egSKIEventId eventId, IAgent* agentPtr, egSKIPhaseType phase);
+            virtual void HandleEvent(egSKIRunEventId eventId, IAgent* agentPtr, egSKIPhaseType phase);
          private:
             AgentManager* m_am;  /**< We will call agent manager */
          };

@@ -377,7 +377,7 @@ namespace gSKI
 	* @param change		The type of change that just occured (e.g. addition, modification, removal)
 	* @param io_wmelist	The new list of wmes on the output link
     */
-   void OutputWorkingMemory::NotifyWorkingMemoryListeners(egSKIEventId eventId, egSKIWorkingMemoryChange change, io_wme* io_wmelist)
+   void OutputWorkingMemory::NotifyWorkingMemoryListeners(egSKIWorkingMemoryEventId eventId, egSKIWorkingMemoryChange change, io_wme* io_wmelist)
    {
    	  // Notify any listeners about this event
 	  if (m_workingMemoryListeners.GetNumListeners(eventId) != 0)
@@ -417,7 +417,7 @@ namespace gSKI
 	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	* @param listener	The handler to call when event is fired
     */
-   void OutputWorkingMemory::AddWorkingMemoryListener(egSKIEventId eventId, 
+   void OutputWorkingMemory::AddWorkingMemoryListener(egSKIWorkingMemoryEventId eventId, 
 							     IWorkingMemoryListener* listener, 
 								 Error*               err)
    {
@@ -432,7 +432,7 @@ namespace gSKI
 	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	* @param listener	The handler to call when event is fired
     */
-   void OutputWorkingMemory::RemoveWorkingMemoryListener(egSKIEventId eventId, 
+   void OutputWorkingMemory::RemoveWorkingMemoryListener(egSKIWorkingMemoryEventId eventId, 
 							     IWorkingMemoryListener* listener, 
 								 Error*               err)
    {

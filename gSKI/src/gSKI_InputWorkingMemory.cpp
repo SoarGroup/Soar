@@ -928,7 +928,7 @@ namespace gSKI
 	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	* @param listener	The handler to call when event is fired
     */
-   void InputWorkingMemory::AddWorkingMemoryListener(egSKIEventId eventId, 
+   void InputWorkingMemory::AddWorkingMemoryListener(egSKIWorkingMemoryEventId eventId, 
 							     IWorkingMemoryListener* listener, 
 								 Error*               err)
    {
@@ -943,7 +943,7 @@ namespace gSKI
 	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
 	* @param listener	The handler to call when event is fired
     */
-   void InputWorkingMemory::RemoveWorkingMemoryListener(egSKIEventId eventId, 
+   void InputWorkingMemory::RemoveWorkingMemoryListener(egSKIWorkingMemoryEventId eventId, 
 							     IWorkingMemoryListener* listener, 
 								 Error*               err)
    {

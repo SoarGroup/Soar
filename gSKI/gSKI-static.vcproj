@@ -360,6 +360,9 @@
 					RelativePath="src\gSKI_EnumRemapping.cpp">
 				</File>
 				<File
+					RelativePath=".\src\gSKI_EnumRemapping.h">
+				</File>
+				<File
 					RelativePath="src\gSKI_Iterator.cpp">
 				</File>
 				<File

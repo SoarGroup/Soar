@@ -43,7 +43,7 @@ public:
    * @param agentPtr Pointer to the agent that fired the print event
    * @param msg      Pointer to c-style string containing the print text
    */
-   virtual void HandleEvent(egSKIEventId eventId, IAgent* agentPtr, const char* msg)
+   virtual void HandleEvent(egSKIPrintEventId eventId, IAgent* agentPtr, const char* msg)
    {
       VALIDATE(eventId == gSKIEVENT_PRINT);
       VALIDATE(agentPtr == 0);

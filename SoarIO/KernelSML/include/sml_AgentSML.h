@@ -12,7 +12,10 @@
 #ifndef SML_AGENT_SML_H
 #define SML_AGENT_SML_H
 
-#include "sml_AgentListener.h" 
+//#include "sml_AgentListener.h" 
+#include "sml_ProductionListener.h"
+#include "sml_RunListener.h"
+#include "sml_PrintListener.h"
 
 // Forward declarations
 namespace gSKI {
@@ -75,7 +78,10 @@ protected:
 	IdentifierMap	m_ToClientIdentifierMap ;
 
 	// Used to listen for kernel events that are agent specific
-	AgentListener	m_AgentListener ;
+	ProductionListener m_ProductionListener;
+	RunListener m_RunListener;
+	PrintListener m_PrintListener;
+	
 
 	// We have to keep pointers to these objects so that we can release then during an init-soar.  Youch!
 	gSKI::IWMObject*	m_InputLinkRoot ;
@@ -115,8 +121,12 @@ public:
 
 	bool SetStopOnOutput(bool state) ;
 
-	void AddAgentListener(egSKIEventId eventID, Connection* pConnection)	{ m_AgentListener.AddListener(eventID, pConnection) ; }
-	void RemoveAgentListener(egSKIEventId eventID, Connection* pConnection) { m_AgentListener.RemoveListener(eventID, pConnection) ; }
+	void AddProductionListener(egSKIProductionEventId eventID, Connection* pConnection)	{ m_ProductionListener.AddListener(eventID, pConnection) ; }
+	void RemoveProductionListener(egSKIProductionEventId eventID, Connection* pConnection) { m_ProductionListener.RemoveListener(eventID, pConnection) ; }	
+	void AddRunListener(egSKIRunEventId eventID, Connection* pConnection)	{ m_RunListener.AddListener(eventID, pConnection) ; }
+	void RemoveRunListener(egSKIRunEventId eventID, Connection* pConnection) { m_RunListener.RemoveListener(eventID, pConnection) ; }	
+	void AddPrintListener(egSKIPrintEventId eventID, Connection* pConnection)	{ m_PrintListener.AddListener(eventID, pConnection) ; }
+	void RemovePrintListener(egSKIPrintEventId eventID, Connection* pConnection) { m_PrintListener.RemoveListener(eventID, pConnection) ; }	
 
 	void RemoveAllListeners(Connection* pConnection) ;
 
@@ -127,8 +137,8 @@ public:
 	*			(One day we should no longer need to do this).
 	*			Enabling/disabling affects all connections.
 	*************************************************************/
-	void DisablePrintCallback() { m_AgentListener.EnablePrintCallback(false) ; }
-	void EnablePrintCallback()  { m_AgentListener.EnablePrintCallback(true) ; }
+	void DisablePrintCallback() { m_PrintListener.EnablePrintCallback(false) ; }
+	void EnablePrintCallback()  { m_PrintListener.EnablePrintCallback(true) ; }
 
 	/*************************************************************
 	* @brief	Converts an id from a client side value to a kernel side value.

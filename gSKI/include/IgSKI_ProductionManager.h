@@ -370,7 +370,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddProductionListener(egSKIEventId         eventId, 
+      virtual void AddProductionListener(egSKIProductionEventId   eventId, 
                                          IProductionListener* listener, 
                                          bool                 allowAsynch = false,
                                          Error*               err         = 0) = 0;
@@ -404,7 +404,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveProductionListener(egSKIEventId         eventId,
+      virtual void RemoveProductionListener(egSKIProductionEventId  eventId,
                                             IProductionListener* listener,
                                             Error*               err = 0) = 0;
    };

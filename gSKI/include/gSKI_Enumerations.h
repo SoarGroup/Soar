@@ -16,11 +16,19 @@
 
 
    /** Enumeration of all event ids in the system */
-   typedef enum {
-      
-      // Used to indicate an error in some cases
-      gSKIEVENT_INVALID_EVENT              = 0,
 
+      /** These are their types:
+	  egSKISystemEventId
+	  egSKIRunEventId
+	  egSKIProductionEventId 
+	  egSKIAgentEventId
+	  egSKIWorkingMemoryEventId 
+	  egSKIPrintEventId
+	  egSKIRhsEventId
+	  egSKIGenericEventId
+      */
+
+   typedef enum {
       // Kernel events
       gSKIEVENT_BEFORE_SHUTDOWN            = 1,
       gSKIEVENT_AFTER_CONNECTION_LOST,
@@ -32,9 +40,18 @@
       gSKIEVENT_AFTER_RHS_FUNCTION_REMOVED,
       gSKIEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
       gSKIEVENT_AFTER_RHS_FUNCTION_EXECUTED,
+      gSKIEVENT_LAST_SYSTEM_EVENT  = gSKIEVENT_AFTER_RHS_FUNCTION_EXECUTED,
+    } egSKISystemEventId;
 
+    static inline bool IsSystemEventID (int id)
+    {
+ 	   return (id >= gSKIEVENT_BEFORE_SHUTDOWN && 
+ 		id <= gSKIEVENT_LAST_SYSTEM_EVENT) ;
+    }
+ 
+    typedef enum {
       // Agent events
-      gSKIEVENT_BEFORE_SMALLEST_STEP,
+      gSKIEVENT_BEFORE_SMALLEST_STEP = gSKIEVENT_LAST_SYSTEM_EVENT + 1,
       gSKIEVENT_AFTER_SMALLEST_STEP,
       gSKIEVENT_BEFORE_ELABORATION_CYCLE,
       gSKIEVENT_AFTER_ELABORATION_CYCLE,
@@ -45,39 +62,100 @@
       gSKIEVENT_AFTER_INTERRUPT,
       gSKIEVENT_BEFORE_RUNNING,
       gSKIEVENT_AFTER_RUNNING,
+      gSKIEVENT_LAST_RUN_EVENT = gSKIEVENT_AFTER_RUNNING,
+    } egSKIRunEventId;
 
+    static inline bool IsRunEventID (int id)
+    {
+ 	   return (id >= gSKIEVENT_BEFORE_SMALLEST_STEP && 
+ 		id <= gSKIEVENT_LAST_RUN_EVENT) ;
+    }
+ 
+    typedef enum {
       // Production Manager
-      gSKIEVENT_AFTER_PRODUCTION_ADDED,
+      gSKIEVENT_AFTER_PRODUCTION_ADDED  = gSKIEVENT_LAST_RUN_EVENT + 1,
       gSKIEVENT_BEFORE_PRODUCTION_REMOVED,
       //gSKIEVENT_BEFORE_PRODUCTION_FIRED,
       gSKIEVENT_AFTER_PRODUCTION_FIRED,
       gSKIEVENT_BEFORE_PRODUCTION_RETRACTED,
+      gSKIEVENT_LAST_PRODUCTION_EVENT = gSKIEVENT_BEFORE_PRODUCTION_RETRACTED,
+    } egSKIProductionEventId;
+    
+    static inline bool IsProductionEventID (int id)
+    {
+ 	   return (id >= gSKIEVENT_AFTER_PRODUCTION_ADDED && 
+ 		id <= gSKIEVENT_LAST_PRODUCTION_EVENT ) ;
+    }
 
+    typedef enum {
       // Agent manager
-      gSKIEVENT_AFTER_AGENT_CREATED,
+      gSKIEVENT_AFTER_AGENT_CREATED = gSKIEVENT_LAST_PRODUCTION_EVENT + 1,
       gSKIEVENT_BEFORE_AGENT_DESTROYED,
 	  gSKIEVENT_BEFORE_AGENTS_RUN_STEP,
       gSKIEVENT_BEFORE_AGENT_REINITIALIZED,
       gSKIEVENT_AFTER_AGENT_REINITIALIZED,
+      gSKIEVENT_LAST_AGENT_EVENT = gSKIEVENT_AFTER_AGENT_REINITIALIZED,
+    } egSKIAgentEventId;
+     
+    static inline bool IsAgentEventID (int id)
+    {
+ 	   return (id >= gSKIEVENT_AFTER_AGENT_CREATED && 
+ 		id <= gSKIEVENT_LAST_AGENT_EVENT) ;
+    }
 
-	  // Working memory changes
-	  gSKIEVENT_OUTPUT_PHASE_CALLBACK,
+    typedef enum {
+      // Working memory changes
+      gSKIEVENT_OUTPUT_PHASE_CALLBACK = gSKIEVENT_LAST_AGENT_EVENT + 1,
+      gSKIEVENT_LAST_WM_EVENT = gSKIEVENT_OUTPUT_PHASE_CALLBACK,
+    } egSKIWorkingMemoryEventId;
 
+    static inline bool IsWorkingMemoryEventID (int id)
+    {
+ 	   return (id >= gSKIEVENT_OUTPUT_PHASE_CALLBACK && 
+ 		id <= gSKIEVENT_LAST_WM_EVENT) ;
+    }
+ 
+
+    typedef enum {
       // Error and print callbacks
-      gSKIEVENT_LOG_ERROR,
+      gSKIEVENT_LOG_ERROR =  gSKIEVENT_LAST_WM_EVENT + 1,
       gSKIEVENT_LOG_WARNING,
       gSKIEVENT_LOG_INFO,
       gSKIEVENT_LOG_DEBUG,
       gSKIEVENT_PRINT,
+      gSKIEVENT_LAST_PRINT_EVENT = gSKIEVENT_PRINT,
+    } egSKIPrintEventId;
 
-	  // Rhs function callback to user function implementation
-	  // This is used to implement the function not just notify of its firing.
-	  gSKIEVENT_RHS_USER_FUNCTION,
+    static inline bool IsPrintEventID (int id)
+    {
+ 	   return (id >= gSKIEVENT_LOG_ERROR && 
+ 		id <= gSKIEVENT_LAST_PRINT_EVENT) ;
+    }
+ 
+    typedef enum { 
+ 	 // Used to provide user handler functions for RHS (right hand side) functions
+   	 // fired within Soar productions.  This is different from normal events in that
+ 	 // the handler is executing the function and returning a value, not just being notified
+ 	 // that something has happened.
+ 	 gSKIEVENT_RHS_USER_FUNCTION = gSKIEVENT_LAST_PRINT_EVENT + 1,   
+	 gSKIEVENT_LAST_RHS_EVENT = gSKIEVENT_RHS_USER_FUNCTION,
+    } egSKIRhsEventId;
+ 
+    static inline bool IsRhsEventID (int id)
+    {
+ 	   return (id >= gSKIEVENT_RHS_USER_FUNCTION && 
+ 		id <= gSKIEVENT_LAST_RHS_EVENT) ;
+    }
 
-	  // Marker for end of gSKI event list
-	  // Must always be at the end of the enum
-	  gSKIEVENT_LAST
-   } egSKIEventId;
+    typedef enum {
+       // Used to indicate an error in some cases
+       gSKIEVENT_INVALID_EVENT              = 0,
+       // Marker for end of gSKI event list
+       // Must always be at the end of the enum
+       gSKIEVENT_LAST = gSKIEVENT_LAST_RHS_EVENT + 1
+    } egSKIGenericEventId;
+
+   /** End of Event Id enumerations.  **/
 
    /** Types of threading models 
 		@li SINGLE_THREADED  Does not synchronize multi-threaded access.

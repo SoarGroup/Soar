@@ -778,7 +778,7 @@ protected:
 	bool DoWatchWMEs(gSKI::IAgent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
 
 	// Print callback events go here
-	virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) {
+	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
 		// Simply append to message result
 		CommandLineInterface::m_Result << msg;
 	}

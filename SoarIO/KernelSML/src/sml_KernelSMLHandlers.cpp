@@ -191,17 +191,18 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	// The value sent over is actually defined in sml_ClientEvents.h but we're just casting it over to egSKIEventId.
 	// So let's add some checks here to make sure that the two tables are synchronized.
 	// (If we wish we could introduce a mapping here between the two sets of ids but for now we're not doing that).
-	assert(gSKIEVENT_INVALID_EVENT == (egSKIEventId)smlEVENT_INVALID_EVENT) ;	// First matches
-	assert(gSKIEVENT_AFTER_RUNNING == (egSKIEventId)smlEVENT_AFTER_RUNNING) ;	// Random one in middle matches
-	assert(gSKIEVENT_BEFORE_AGENT_REINITIALIZED == (egSKIEventId)smlEVENT_BEFORE_AGENT_REINITIALIZED) ;	// Another middle one matches
-	assert(gSKIEVENT_PRINT == (egSKIEventId)smlEVENT_PRINT); // What the heck, another one
-	assert(gSKIEVENT_RHS_USER_FUNCTION == (egSKIEventId)smlEVENT_RHS_USER_FUNCTION) ;
-	assert(gSKIEVENT_LAST == (egSKIEventId)smlEVENT_LAST) ;					// Last matches
+	assert(gSKIEVENT_INVALID_EVENT == (egSKIGenericEventId)smlEVENT_INVALID_EVENT) ;	// First matches
+	assert(gSKIEVENT_AFTER_RUNNING == (egSKIRunEventId)smlEVENT_AFTER_RUNNING) ;	// Random one in middle matches
+	assert(gSKIEVENT_BEFORE_AGENT_REINITIALIZED == (egSKIAgentEventId)smlEVENT_BEFORE_AGENT_REINITIALIZED) ;	// Another middle one matches
+	assert(gSKIEVENT_PRINT == (egSKIPrintEventId)smlEVENT_PRINT); // What the heck, another one
+	assert(gSKIEVENT_RHS_USER_FUNCTION == (egSKIRhsEventId)smlEVENT_RHS_USER_FUNCTION) ;
+	assert(gSKIEVENT_LAST == (egSKIGenericEventId)smlEVENT_LAST) ;					// Last matches
 
 	// Get the parameters
-	egSKIEventId id = (egSKIEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, gSKIEVENT_INVALID_EVENT) ;
+	//egSKIEventId id = (egSKIEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, gSKIEVENT_INVALID_EVENT) ;
+	int id = pIncoming->GetArgInt(sml_Names::kParamEventID, gSKIEVENT_INVALID_EVENT) ;
 
-	if (id == gSKIEVENT_INVALID_EVENT)
+	if (id == (int)gSKIEVENT_INVALID_EVENT)
 	{
 		return InvalidArg(pConnection, pResponse, pCommandName, "Event id is missing") ;
 	}
@@ -209,6 +210,84 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	// Decide what type of event this is and where to register/unregister it
 	// gSKI uses a different class for each type of event.  We collect those together
 	// where possible to reduce the amount of extra scaffolding code.
+	if(IsSystemEventID(id)) {
+		KernelSML* pKernelSML = GetKernelSML() ;
+
+		if (registerForEvent)
+			pKernelSML->AddSystemListener((egSKISystemEventId)id, pConnection) ;
+		else
+			pKernelSML->RemoveSystemListener((egSKISystemEventId)id, pConnection) ;
+	} else if(IsAgentEventID(id)) {
+		KernelSML* pKernelSML = GetKernelSML() ;
+
+		if (registerForEvent)
+			pKernelSML->AddAgentListener((egSKIAgentEventId)id, pConnection) ;
+		else
+			pKernelSML->RemoveAgentListener((egSKIAgentEventId)id, pConnection) ;
+	} else if(IsRhsEventID(id)) {
+		KernelSML* pKernelSML = GetKernelSML() ;
+
+		// Get the function name
+		char const* pRhsFunctionName = pIncoming->GetArgValue(sml_Names::kParamName) ;
+
+		if (!pRhsFunctionName)
+			return InvalidArg(pConnection, pResponse, pCommandName, "Registering for rhs user function, but no function name was provided") ;
+
+		if (registerForEvent)
+			pKernelSML->AddRhsListener(pRhsFunctionName, pConnection) ;
+		else
+			pKernelSML->RemoveRhsListener(pRhsFunctionName, pConnection) ;
+	} else if(IsRunEventID(id)) {
+		// Since this is an agent handler check that we were passed an agent
+		if (!pAgent)
+			return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
+
+		// Register or unregister for this event
+		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+
+		if (registerForEvent)
+			pAgentSML->AddRunListener((egSKIRunEventId)id, pConnection) ;
+		else
+			pAgentSML->RemoveRunListener((egSKIRunEventId)id, pConnection) ;
+	} else if(IsProductionEventID(id)) {
+		// Since this is an agent handler check that we were passed an agent
+		if (!pAgent)
+			return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
+
+		// Register or unregister for this event
+		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+
+		if (registerForEvent)
+			pAgentSML->AddProductionListener((egSKIProductionEventId)id, pConnection) ;
+		else
+			pAgentSML->RemoveProductionListener((egSKIProductionEventId)id, pConnection) ;
+	} else if(id == (int)gSKIEVENT_PRINT) {
+		// Since this is an agent handler check that we were passed an agent
+		if (!pAgent)
+			return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
+
+		// Register or unregister for this event
+		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+
+		if (registerForEvent)
+			pAgentSML->AddPrintListener(gSKIEVENT_PRINT, pConnection) ;
+		else
+			pAgentSML->RemovePrintListener(gSKIEVENT_PRINT, pConnection) ;
+	} else if(id == (int)gSKIEVENT_OUTPUT_PHASE_CALLBACK) {
+		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+		OutputListener* pOutputListener = pAgentSML->GetOutputListener() ;
+
+		// Register this connection as listening for this event
+		if (registerForEvent)
+			pOutputListener->AddListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
+		else
+			pOutputListener->RemoveListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
+	} else {
+		// The event didn't match any of our handlers
+		return InvalidArg(pConnection, pResponse, pCommandName, "KernelSML doesn't know how to handle that event id") ;
+	}
+
+	/*
 	switch (id)
 	{
 	// System listener events
@@ -314,7 +393,7 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	default:
 		// The event didn't match any of our handlers
 		return InvalidArg(pConnection, pResponse, pCommandName, "KernelSML doesn't know how to handle that event id") ;
-	}
+	}*/
 
 	return true ;
 }

@@ -155,7 +155,7 @@ namespace gSKI {
     *
     *  @param strMsg Complete message to be logged
     */
-   void Log::logMsg(const std::string& strMsg, std::ofstream &outStream, egSKIEventId EventID)
+   void Log::logMsg(const std::string& strMsg, std::ofstream &outStream, egSKIPrintEventId EventID)
    {
       //
       // Write output to file

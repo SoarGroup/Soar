@@ -231,7 +231,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddSystemListener(egSKIEventId        eventId, 
+      virtual void AddSystemListener(egSKISystemEventId  eventId, 
                                      ISystemListener*    listener, 
                                      bool                allowAsynch = false,
                                      Error*              err         = 0) = 0;
@@ -263,7 +263,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveSystemListener(egSKIEventId         eventId,
+      virtual void RemoveSystemListener(egSKISystemEventId   eventId,
                                         ISystemListener*     listener,
                                         Error*               err = 0) = 0;
 
@@ -301,7 +301,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void AddRhsListener(egSKIEventId        eventId, 
+      virtual void AddRhsListener(egSKIRhsEventId  eventId, 
                                   IRhsListener*    listener, 
                                   bool                allowAsynch = false,
                                   Error*              err         = 0) = 0;
@@ -348,7 +348,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveRhsListener(egSKIEventId      eventId,
+      virtual void RemoveRhsListener(egSKIRhsEventId   eventId,
                                      IRhsListener*     listener,
                                      Error*            err = 0) = 0;
 
@@ -384,7 +384,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
        */
-      virtual void AddLogListener(egSKIEventId   eventId, 
+      virtual void AddLogListener(egSKIPrintEventId  eventId, 
                                   ILogListener*  listener, 
                                   bool           allowAsynch = false,
                                   Error*         err         = 0) = 0;
@@ -418,7 +418,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveLogListener(egSKIEventId   eventId,
+      virtual void RemoveLogListener(egSKIPrintEventId   eventId,
                                      ILogListener*  listener,
                                      Error*         err = 0) = 0;
 
@@ -455,7 +455,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
        */
-      virtual void AddConnectionLostListener(egSKIEventId             eventId, 
+      virtual void AddConnectionLostListener(egSKISystemEventId       eventId, 
                                              IConnectionLostListener* listener, 
                                              bool                     allowAsynch = false,
                                              Error*                   err         = 0) = 0;
@@ -487,7 +487,7 @@ namespace gSKI {
       *               information.  If it is 0 (the default) extended error
       *               information is not returned.
       */
-      virtual void RemoveConnectionLostListener(egSKIEventId             eventId,
+      virtual void RemoveConnectionLostListener(egSKISystemEventId       eventId,
                                                 IConnectionLostListener* listener,
                                                 Error*                   err = 0) = 0;
 

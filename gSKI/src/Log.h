@@ -132,7 +132,7 @@ namespace gSKI {
 
          @param strMsg Complete message to be logged
       */
-      void logMsg(const std::string& strMsg, std::ofstream &outStream, egSKIEventId EventID);
+      void logMsg(const std::string& strMsg, std::ofstream &outStream, egSKIPrintEventId EventID);
 
       int Mkdir(std::string &dirName);
 

@@ -97,8 +97,11 @@ namespace gSKI
 
       /** 
        * @brief The callback method for run events
+	   *
+	   *  KJC:  2/21  Actually the only event is for an egSKIAgentEvent, 
+	   *   gSKIEVENT_BEFORE_AGENT_DESTROYED, so it's not really a RunEvent.
        */
-      virtual void HandleEvent(egSKIEventId eventId, IAgent* agentPtr);
+      virtual void HandleEvent(egSKIAgentEventId eventId, IAgent* agentPtr);
 
    private:
 

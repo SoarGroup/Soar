@@ -31,7 +31,7 @@
 
 using namespace sml ;
 
-AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : m_AgentListener(pKernelSML, pAgent)
+AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : /*m_AgentListener(pKernelSML, pAgent)*/ m_ProductionListener(pKernelSML, pAgent), m_RunListener(pKernelSML, pAgent), m_PrintListener(pKernelSML, pAgent)
 {
 	m_pKernelSML = pKernelSML ;
 	m_pIAgent = pAgent ;
@@ -73,7 +73,9 @@ void AgentSML::Clear()
 	// Release any WME objects we still own.
 	ReleaseAllWmes() ;
 
-	m_AgentListener.Clear() ;
+	m_ProductionListener.Clear();
+	m_RunListener.Clear();
+	m_PrintListener.Clear();
 	m_pOutputListener->Clear() ;
 }
 
@@ -103,7 +105,9 @@ void AgentSML::ReleaseAllWmes()
 
 void AgentSML::RemoveAllListeners(Connection* pConnection)
 {
-	m_AgentListener.RemoveAllListeners(pConnection) ;
+	m_ProductionListener.RemoveAllListeners(pConnection);
+	m_RunListener.RemoveAllListeners(pConnection);
+	m_PrintListener.RemoveAllListeners(pConnection);
 	m_pOutputListener->RemoveAllListeners(pConnection) ; 
 }
 
@@ -112,7 +116,7 @@ class AgentSML::AgentBeforeDestroyedListener: public gSKI::IAgentListener
 public:
 	// This handler is called right before the agent is actually deleted
 	// inside gSKI.  We need to clean up any object we own now.
-	virtual void HandleEvent(egSKIEventId, gSKI::IAgent* pAgent)
+	virtual void HandleEvent(egSKIAgentEventId, gSKI::IAgent* pAgent)
 	{
 		KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
 

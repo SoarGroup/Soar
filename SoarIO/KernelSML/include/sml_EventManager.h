@@ -32,44 +32,146 @@ class Connection ;
 typedef std::list< Connection* >		ConnectionList ;
 typedef ConnectionList::iterator	ConnectionListIter ;
 
-// Mapping from the event to the list of connections listening to that event
-typedef std::map< egSKIEventId, ConnectionList* >	EventMap ;
-typedef EventMap::iterator						EventMapIter ;
-
+template<typename EventType>
 class EventManager
 {
 protected:
-	// Map from event id to list of connections listening to that event
-	EventMap		m_EventMap ;
+	ConnectionList*	GetListeners(typename EventType eventID)
+	{
+		EventMapIter mapIter = m_EventMap.find(eventID) ;
 
-protected:
-	ConnectionList*	GetListeners(egSKIEventId eventID) ;
+		if (mapIter == m_EventMap.end())
+			return NULL ;
+
+		return mapIter->second ;
+	}
 
 public:
-	virtual ~EventManager() ;
+    // Mapping from the event to the list of connections listening to that event
+    typedef std::map< typename EventType, ConnectionList* >	EventMap ;
+    typedef typename EventMap::iterator						EventMapIter ;
+protected:
+	// Map from event id to list of connections listening to that event
+	EventMap		m_EventMap ;
+public:
+	virtual ~EventManager()
+	{
+		// This is interesting.  We can't call clear in the destructor for the event manager because it
+		// calls virtual methods, which is apparently illegal (I get a "pure virtual method" error from Visual Studio).
+		// So we'll need to either move this to the derived classes destructors or call it explicitly before we destroy the manager.
+		// Clear() ;
+	}
 
 	// Clear the map and release all listeners
-	virtual void Clear() ;
+	virtual void Clear()
+	{
+		for (EventMapIter mapIter = m_EventMap.begin() ; mapIter != m_EventMap.end() ; mapIter++)
+		{
+			EventType eventID = mapIter->first ;
+			ConnectionList* pList = mapIter->second ;
+
+			// Can't walk through with a normal iterator because we're deleting
+			// the items from the list as we go.  We do all this so that ultimately
+			// the listener into the kernel will be removed (if RemoveListener for the specific
+			// event class wishes to do so).
+			while (pList->size() > 0)
+			{
+				Connection* pConnection = pList->front() ;
+				RemoveListener(eventID, pConnection) ;
+			}
+
+			delete pList ;
+		}
+
+		m_EventMap.clear() ;
+	}
 
 	// Returns true if this is the first connection listening for this event
-	virtual bool BaseAddListener(egSKIEventId eventID, Connection* pConnection) ;
+	virtual bool BaseAddListener(typename EventType eventID, Connection* pConnection)
+	{
+		EventMapIter mapIter = m_EventMap.find(eventID) ;
+
+		ConnectionList* pList = NULL ;
+
+		// Either create a new list or retrieve the existing list of listeners
+		if (mapIter == m_EventMap.end())
+		{
+			pList = new ConnectionList() ;
+			m_EventMap[eventID] = pList ;
+		}
+		else
+		{
+			pList = mapIter->second ;
+		}
+
+		pList->push_back(pConnection) ;
+
+		// Return true if this is the first listener for this event
+		return (pList->size() == 1) ;
+	}
 
 	// Returns true if this is the first connection listening for this event
 	// (Generally calls BaseAddListener and then registers with the kernel for this event)
-	virtual bool AddListener(egSKIEventId eventID, Connection* pConnection) = 0 ;
+	virtual bool AddListener(typename EventType eventID, Connection* pConnection) = 0 ;
 
 	// Returns true if just removed the last listener
-	virtual bool BaseRemoveListener(egSKIEventId eventID, Connection* pConnection) ;
+	virtual bool BaseRemoveListener(typename EventType eventID, Connection* pConnection)
+	{
+		ConnectionList* pList = GetListeners(eventID) ;
+
+		// We have no record of anyone listening for this event
+		// That's not an error -- it's OK to call this for all events in turn
+		// to make sure a connection is removed completely.
+		if (pList == NULL || pList->size() == 0)
+			return false ;
+
+		pList->remove(pConnection) ;
+
+		// Return true if the list is now empty
+		return pList->empty() ;
+	}
 
 	// Returns true if just removed the last listener
 	// (Generally calls BaseRemoveListener and then unregisters with the kernel for this event)
-	virtual bool RemoveListener(egSKIEventId eventID, Connection* pConnection) = 0 ;
+	virtual bool RemoveListener(typename EventType eventID, Connection* pConnection) = 0 ;
 
 	// Remove all listeners that this connection has
-	virtual void RemoveAllListeners(Connection* pConnection) ;
+	virtual void RemoveAllListeners(Connection* pConnection)
+	{
+		// Remove any listeners for this connection
+		// We do this for all possible events even though only some will
+		// be valid for this particular event manager.
+		// We could make this more efficient by defining the set for each handler
+		// but the cost of removing all should be minimal as this is a rare event.
+		for (int i = 1 ; i < gSKIEVENT_LAST ; i++)
+		{
+			EventType id = (EventType)i ;
+			RemoveListener(id, pConnection) ;
+		}
+	}
 
-	virtual ConnectionListIter	GetBegin(egSKIEventId) ;
-	virtual ConnectionListIter  GetEnd(egSKIEventId)	;
+	virtual ConnectionListIter	GetBegin(EventType eventID)
+	{
+		ConnectionList* pList = GetListeners(eventID) ;
+
+		// If nobody is listening return NULL.
+		// Key is that this must match the value returned by GetEnd()
+		// in the same situation.
+		if (!pList)
+			return NULL ;
+
+		return pList->begin() ;
+	}
+
+	virtual ConnectionListIter  GetEnd(EventType eventID)
+	{
+		ConnectionList* pList = GetListeners(eventID) ;
+
+		if (!pList)
+			return NULL ;
+
+		return pList->end() ;
+	}
 } ;
 
 } // End of namespace

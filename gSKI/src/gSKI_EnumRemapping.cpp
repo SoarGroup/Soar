@@ -166,7 +166,8 @@ namespace gSKI
    ==================================
    ==================================
    */
-   egSKIAgentEvents EnumRemappings::RemapProductionEventType(egSKIEventId eventId)
+   egSKIAgentEvents EnumRemappings::RemapProductionEventType(egSKIProductionEventId eventId)
+   /** this goes from gSKI to Kernel Events **/
    {
       if(!m_initialized) 
          Init();
@@ -192,12 +193,70 @@ namespace gSKI
    ==================================
    ==================================
    */
+
+  egSKIProductionEventId EnumRemappings::Map_Kernel_to_gSKI_ProdEventId(unsigned long eventId, unsigned char occured)
+  { 
+	unsigned long gSKIeventId;
+
+    if(!m_initialized) 
+       Init();
+
+	gSKIeventId = (EventEnumMapping[eventId][occured]);
+    
+	if (IsProductionEventID(gSKIeventId)) {
+		return static_cast<egSKIProductionEventId>(gSKIeventId);
+      } else {
+	// Error condition
+	MegaAssert(false, "Could not map a production event id");
+	return static_cast<egSKIProductionEventId>(0);
+      }
+  }
+  /**  could be changed to lines below for more explicit coding 
+      switch (eventId)
+      {
+      case gSKI_K_EVENT_PRODUCTION_ADDED:     return gSKIEVENT_AFTER_PRODUCTION_ADDED;
+      case gSKI_K_EVENT_PRODUCTION_REMOVED:   return gSKIEVENT_BEFORE_PRODUCTION_REMOVED;
+      case gSKI_K_EVENT_PRODUCTION_FIRED:     return gSKIEVENT_AFTER_PRODUCTION_FIRED;
+      case gSKI_K_EVENT_PRODUCTION_RETRACTED: return gSKIEVENT_BEFORE_PRODUCTION_RETRACTED;
+      }
+  **/
+
+   /*
+   ==================================
+   ==================================
+   */
+   /** KJC:  egSKIEventId no longer exists.  If needed, must be EventType-specific.
+
    egSKIEventId EnumRemappings::RemapEventType(unsigned long eventId, unsigned char occured)
+   // this goes from Kernel to gSKI events.  
    {
       if(!m_initialized) 
          Init();
-      return static_cast<egSKIEventId>(EventEnumMapping[eventId][occured]);
+      switch (eventId)
+      {
+
+	  THESE ARE gSKI ENUM TESTS, so THIS CODE WON'T WORK
+	  case IsSystemEventId(eventId):
+		  return static_cast<egSKISystemEventId>(EventEnumMapping[eventId][occured]);
+	  case IsRunEventId(eventId):
+		  return static_cast<egSKIRunEventId>(EventEnumMapping[eventId][occured]);
+	  case IsAgentEventId(eventId):
+		  return static_cast<egSKIAgentEventId>(EventEnumMapping[eventId][occured]);
+	  case IsWorkingMemoryEventId(eventId):
+		  return static_cast<egSKIWorkingMemoryEventId>(EventEnumMapping[eventId][occured]);
+	  case IsPrintEventId(eventId):
+		  return static_cast<egSKIPrintEventId>(EventEnumMapping[eventId][occured]);
+	  case IsRhsEventId(eventId):
+		  return static_cast<egSKIRhsEventId>(EventEnumMapping[eventId][occured]);
+	  case IsGenericEventId(eventId):
+		  return static_cast<egSKIGenericEventId>(EventEnumMapping[eventId][occured]);
+      default:
+         // Error condition
+         MegaAssert(false, "Could not map a production event id");
+         return static_cast<egSKIProductionEventId>(0);   
+	  }
    }
+   */
 
    /*
    ==================================

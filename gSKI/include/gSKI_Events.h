@@ -60,7 +60,7 @@ namespace gSKI {
       * @param agentPtr Pointer to the agent that fired the print event
       * @param msg      Pointer to c-style string containing the print text
       */
-      virtual void HandleEvent(egSKIEventId eventId, IAgent* agentPtr, const char* msg) = 0;
+      virtual void HandleEvent(egSKIPrintEventId eventId, IAgent* agentPtr, const char* msg) = 0;
    };
 
    /** 
@@ -85,7 +85,7 @@ namespace gSKI {
 	  * @param change	The type of change that just occured
       * @param wmelist  Pointer to list of wmes that are affected by this event
       */
-      virtual void HandleEvent(egSKIEventId eventId, IAgent* agentPtr, egSKIWorkingMemoryChange change, tIWmeIterator* wmelist) = 0;
+      virtual void HandleEvent(egSKIWorkingMemoryEventId eventId, IAgent* agentPtr, egSKIWorkingMemoryChange change, tIWmeIterator* wmelist) = 0;
    };
 
    /** 
@@ -110,7 +110,7 @@ namespace gSKI {
        * @param agentPtr Pointer to the agent for which the run event occured
        * @param phase    The run phase to which the event applies.
        */
-      virtual void HandleEvent(egSKIEventId   eventId, 
+      virtual void HandleEvent(egSKIRunEventId   eventId, 
                                IAgent*        agentPtr, 
                                egSKIPhaseType phase) = 0;
    };
@@ -138,7 +138,7 @@ namespace gSKI {
        * @param match    The match related to the event (this is 0 for production
        *                    added and removed events).
        */
-      virtual void HandleEvent(egSKIEventId           eventId, 
+      virtual void HandleEvent(egSKIProductionEventId eventId, 
                                IAgent*                agentPtr, 
                                IProduction*           prod,
                                IProductionInstance*   match) = 0;
@@ -164,7 +164,7 @@ namespace gSKI {
        * @param eventId  Id of the event that occured
        * @param agentPtr Pointer to the agent for which the event occured
        */
-      virtual void HandleEvent(egSKIEventId           eventId, 
+      virtual void HandleEvent(egSKIAgentEventId      eventId, 
                                IAgent*                agentPtr) = 0;
    };
 
@@ -180,7 +180,7 @@ namespace gSKI {
       /** 
        *
        */
-      virtual void HandleEvent(egSKIEventId eventId, IKernel* kernel) = 0;
+      virtual void HandleEvent(egSKISystemEventId eventId, IKernel* kernel) = 0;
    };
 
 
@@ -195,7 +195,7 @@ namespace gSKI {
 		// commandLine is true if we expect this to be handled by the command line processor (false => a custom RHS function that the user provides)
 		// pResultValue is a string allocated by the caller than is of size maxLengthReturnValue that should be filled in with the return value.
 		// The bool return value should be "true" if a return value is filled in, otherwise return false.
-		virtual bool HandleEvent(egSKIEventId eventId, IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+		virtual bool HandleEvent(egSKIRhsEventId eventId, IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
 								 int maxLengthReturnValue, char* pReturnValue) = 0;
 	};
 
@@ -211,7 +211,7 @@ namespace gSKI {
          /**
           * @brief: 
           */
-         virtual void HandleEvent(egSKIEventId  eventID, 
+         virtual void HandleEvent(egSKIPrintEventId  eventID, 
                                   IKernel*      kernel, 
                                   const char*   msg) = 0;
    };

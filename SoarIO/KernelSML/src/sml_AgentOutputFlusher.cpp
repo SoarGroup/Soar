@@ -12,7 +12,7 @@
 
 #include "sml_AgentOutputFlusher.h"
 #include "assert.h"
-#include "sml_AgentListener.h"
+#include "sml_PrintListener.h"
 
 using namespace sml ;
 
@@ -20,26 +20,26 @@ using namespace sml ;
 #define unused(x) (void)(x)
 #endif
 
-AgentOutputFlusher::AgentOutputFlusher(AgentListener* pAgentListener, gSKI::IAgent* pAgent) : m_Agent(pAgent), m_AgentListener(pAgentListener)
+AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent) : m_pAgent(pAgent), m_pPrintListener(pPrintListener)
 {
-	m_Agent->AddRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
-	m_Agent->AddRunListener(gSKIEVENT_AFTER_RUNNING, this);
+	m_pAgent->AddRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
+	m_pAgent->AddRunListener(gSKIEVENT_AFTER_RUNNING, this);
 }
 
 AgentOutputFlusher::~AgentOutputFlusher()
 {
-	m_Agent->RemoveRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
-	m_Agent->RemoveRunListener(gSKIEVENT_AFTER_RUNNING, this);
+	m_pAgent->RemoveRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
+	m_pAgent->RemoveRunListener(gSKIEVENT_AFTER_RUNNING, this);
 }
 
-void AgentOutputFlusher::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase)
+void AgentOutputFlusher::HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase)
 {
 	assert(eventId == gSKIEVENT_AFTER_DECISION_CYCLE || eventId == gSKIEVENT_AFTER_RUNNING);
-	assert(agentPtr == m_Agent);
+	assert(agentPtr == m_pAgent);
 	unused(eventId);
 	unused(agentPtr);
 	unused(phase);
 
-	assert(m_AgentListener);
-	m_AgentListener->FlushOutput();
+	assert(m_pPrintListener);
+	m_pPrintListener->FlushOutput();
 }
