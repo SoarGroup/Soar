@@ -110,6 +110,8 @@ public:
 	static char const* kCommand_GetOutputLink ;
 	static char const* kCommand_Run ;
 	static char const* kCommand_Input ;
+	static char const* kCommand_Output ;
+	static char const* kCommand_RegisterOutputTrigger ;
 
 	// Command line interface
 	static char const* kCommand_CommandLine ;

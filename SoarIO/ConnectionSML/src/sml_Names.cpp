@@ -105,6 +105,8 @@ char const* sml_Names::kCommand_GetInputLink	= "get_input_link" ;
 char const* sml_Names::kCommand_GetOutputLink	= "get_output_link" ;
 char const* sml_Names::kCommand_Run				= "run" ;
 char const* sml_Names::kCommand_Input			= "input" ;
+char const* sml_Names::kCommand_Output			= "output" ;
+char const* sml_Names::kCommand_RegisterOutputTrigger = "register_output_trigger" ;
 
 // command line interface
 char const* sml_Names::kCommand_CommandLine  = "cmdline" ;

@@ -68,6 +68,50 @@ static ElementXML* AddErrorMsg(MessageGenerator* pConnection, ElementXML* pRespo
 	return pResponse ;
 }
 
+/*
+  ==================================
+  SML output processor
+  ==================================
+*/
+class sml_OutputProcessor: public IOutputProcessor
+{
+public:
+
+   // Simple constructor
+   sml_OutputProcessor(KernelSML* pKernelSML, sml::Connection* pConnection)
+   {
+	   m_KernelSML	= pKernelSML ;
+	   m_Connection = pConnection ;
+   }
+   
+   // Virtual destructor for the usual reasons
+   virtual ~sml_OutputProcessor() 
+   {
+   }
+   
+   // The update function required by the IInputProducer interface
+   // (Responsible for updating the state of working memory)
+   virtual void ProcessOutput(IWorkingMemory* wmemory,
+							  IWMObject* obj)
+   {
+	   AnalyzeXML response ;
+
+	   // During output, we may get a new wmobject, so we need to record it so
+	   // we can find it again later on if the user makes use of this value.
+	   // I guess the same could be true for the working memory possibly.
+	   char const* pID1 = m_KernelSML->StoreObject(wmemory, kIWorkingMemory, false) ;
+	   char const* pID2 = m_KernelSML->StoreObject(obj, kIWMObject, true) ;
+
+	   m_Connection->SendClassCommand(&response, sml_Names::kgSKI_IOutputProcessor_ProcessOutput, m_ID.c_str(), 
+			sml_Names::kParamWorkingMemory, pID1,
+			sml_Names::kParamWmeObject, pID2) ;
+   }
+
+private:
+	sml::KernelSMLgSKI*	 m_KernelSML ;
+	sml::Connection*	 m_Connection ;
+};
+
 /*************************************************************
 * @brief	Returns the singleton kernel object.
 *************************************************************/
