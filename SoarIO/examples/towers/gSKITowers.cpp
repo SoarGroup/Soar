@@ -620,9 +620,9 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	assert(agent);
 
 	//create debugger
-	//TgD::TSI_VERSION tsiVersion = TgD::TSI40;
-	//debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
-	//debugger->Init();
+	TgD::TSI_VERSION tsiVersion = TgD::TSI40;
+	debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
+	debugger->Init();
 
 	//Source the agent's productions
 	CommandLineInterface* commLine = new CommandLineInterface();
@@ -676,8 +676,6 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 			{
 				//The disk currently at the front of the container is the "bottom" disk.  New, smaller, disks 
 				//are inserted in back
-				//IWMObject* towerIdObject = tower->GetInputLinkProfile()->GetTowerIdentifierObject();
-				//assert(towerIdObject);
 				Disk* towerTopDisk = 0;
 
 				if(tower->GetSize() != 0)

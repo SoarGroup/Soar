@@ -95,6 +95,7 @@ void SoarAgent::MakeMove()
 	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1);
 	assert(runResult != gSKI_RUN_ERROR);
 
-	//while(TgD::TgD::Update(false, debugger))
-	//	TGD_SLEEP(50);
+
+	while(TgD::TgD::Update(false, debugger))
+		TGD_SLEEP(50);
 }
