@@ -15,6 +15,8 @@
 #include "thread_Thread.h"
 
 #include <string>
+#include <iostream>
+#include <assert.h>
 
 #ifdef _WIN32
 #include "Windows.h"	// Needed for load library
@@ -148,7 +150,13 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName)
 	return true ;
 #else
 // BUGBUG: We'll need to do a Linux equivalent here.  Not sure what the equivalents are.
-	return false ;
+
+	return false;
+	
+// the following does not link and I can't figure out why
+//	m_pProcessMessageFunction = &sml_ProcessMessage;
+//	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
+//	return true;
 #endif
 }
 
@@ -188,6 +196,7 @@ void EmbeddedConnectionSynch::SendMessage(ElementXML* pMsg)
 	ClearError() ;
 
 	// Check that we have somebody to send this message to.
+	assert(m_hConnection);
 	if (m_hConnection == NULL)
 	{
 		SetError(Error::kNoEmbeddedLink) ;
