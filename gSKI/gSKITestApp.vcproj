@@ -35,11 +35,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gSKI.lib SoarKernelSource_md.lib"
+				AdditionalDependencies="gSKId.lib SoarKernelSource_md.lib"
 				OutputFile="$(SolutionDir)bin\gSKITestApp.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)lib&quot;;&quot;$(SolutionDir)lib_src/SKx/lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)lib&quot;;..\SoarKernel\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/gSKITestApp.pdb"
 				SubSystem="1"
