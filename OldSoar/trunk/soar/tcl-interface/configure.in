@@ -21,7 +21,7 @@ VERSION=${SOAR_VERSION}
 #	smart enough to understand function prototypes.
 #--------------------------------------------------------------------
 
-CFLAGS="-O -Wall"
+CFLAGS="-O -w"
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_RANLIB
