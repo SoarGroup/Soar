@@ -20,7 +20,7 @@
 // There is no requirement to use this attribute, but having it allows the parser of the
 // document to decode binary data without having to know in advance which blocks are encoded binary.
 // (If you don't use this attribute, then the character data will still be in its encoded form
-//  and the receiver of the document must decode it manually by calling ConvertCharacterDataToBinary()).
+//  and the receiver of the document must decode it manually by calling ConvertBinaryDataToCharacters()).
 //
 /////////////////////////////////////////////////////////////////
 
