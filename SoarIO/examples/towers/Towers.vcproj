@@ -81,7 +81,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="gSKId.lib TgDId.lib"
+				AdditionalDependencies="gSKI.lib TgDI.lib"
 				OutputFile="$(OutDir)/Towers.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\bin;..\..\..\gSKI\lib;..\..\..\TgDI\lib"
