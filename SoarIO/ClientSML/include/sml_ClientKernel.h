@@ -14,9 +14,6 @@
 
 #include "sml_ObjectMap.h"
 
-// BADBAD: Until I figure out how to return strings back... (voigtjr)
-#include <string>
-
 namespace sml {
 
 // Forward declarations
@@ -70,10 +67,12 @@ public:
 	*
 	* @param pCommandLine Command line string to process.
 	* @param pAgentName Agent name to apply the command line to.
-	* @param pResult BADBAD: I don't know how else to return a string to the client
-	*                so I'm currently returning an STL string.
+	* @param pResult Buffer to store the NULL-terminated result in.
+	*				 If NULL, ignored.  Result will be truncated if
+	*				 buffer is too small.
+	* @param resultSize Size of the result buffer
 	*************************************************************/
-	bool ProcessCommandLine(char const* pCommandLine, char const* pAgentName, std::string* pResult) ;
+	bool ProcessCommandLine(char const* pCommandLine, char const* pAgentName, char* pResult, size_t resultSize) ;
 };
 
 }//closes namespace

@@ -69,22 +69,25 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 * @param pResult BADBAD: I don't know how else to return a string to the client
 *                so I'm currently returning an STL string.
 *************************************************************/
-bool Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName, std::string* pResult) {
+bool Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName, char* pResult, size_t resultSize) {
 
 	AnalyzeXML response;
 	std::string result;
 	bool ret = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
 
 	if (pResult) {
-		*pResult = response.GetResultString();
+		result = response.GetResultString();
 	}
 
 	if (!ret) {
 		if (pResult) {
-			*pResult += "\nError Data:\n";
-			*pResult += response.GetErrorTag()->GetCharacterData();
+			result += "\nError Data:\n";
+			result += response.GetErrorTag()->GetCharacterData();
 		}
 	}
+
+	pResult = strncpy(pResult, result.c_str(), resultSize);
+	*(pResult+resultSize-1) = NULL; //make sure string is NULL terminated; this doesn't happen automatically if the string is truncated
 
 	return ret;
 }
