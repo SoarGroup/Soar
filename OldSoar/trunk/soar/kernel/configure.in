@@ -8,7 +8,8 @@ AC_INIT(soarkernel.h)
 
 #  The autoconf documentation leads me to believe this has to be here
 #  (rather than in Makefile.in), or AC_PROG_CC will change it.
-CFLAGS="-O -Werror"
+#CFLAGS="-O -Werror"
+CFLAGS="-O -Wall"
 
 AC_PROG_CC
 AC_PROG_RANLIB
