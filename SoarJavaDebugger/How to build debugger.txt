@@ -3,6 +3,9 @@ How to build the SoarJavaDebugger
 
 March 2005	Douglas Pearson
 
+A) Windows Instructions
+***********************
+
 Eclipse
 =======
 
@@ -33,3 +36,9 @@ JDK directly
 3) Run the JAR file with
    "cd .." (to where the SoarJavaDebugger.jar is located)
    "java.exe -jar SoarJavaDebugger.jar"
+
+B) Linux/MacOS Instructions
+***************************
+
+The Windows approach should broadly work, but you'll need to supply your own copy of the SoarIO DLLs and swt.jar and DLLs (.so's) to replace the included ones which are all Windows versions.
+
