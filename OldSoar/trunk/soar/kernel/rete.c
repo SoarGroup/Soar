@@ -5175,6 +5175,9 @@ void p_node_left_addition(rete_node * node, token * tok, wme * w)
                 for (OPERAND_curr_tok = node->a.np.tokens;
                      OPERAND_curr_tok != NIL; OPERAND_curr_tok = OPERAND_curr_tok->next_of_node) {
 
+                    w = OPERAND_curr_tok->w;
+                    tok = OPERAND_curr_tok->parent;
+
                     /*
 
                        i'll need to make two passes over each set of wmes that
