@@ -3,6 +3,11 @@
 #endif // HAVE_CONFIG_H
 
 /*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
+/*************************************************************************
  *
  *  file:  recmem.cpp
  *
@@ -20,18 +25,6 @@
  * Possibly_deallocate_instantiation() checks whether an instantiation
  * can be deallocated yet, and does so if possible.  This is used whenever
  * the (implicit) reference count on the instantiation decreases.
- * =======================================================================
- *
- * Copyright (c) 1995-1999 Carnegie Mellon University,
- *                         The Regents of the University of Michigan,
- *                         University of Southern California/Information
- *                         Sciences Institute.  All rights reserved.
- *
- * The Soar consortium proclaims this software is in the public domain, and
- * is made available AS IS.  Carnegie Mellon University, The University of 
- * Michigan, and The University of Southern California/Information Sciences 
- * Institute make no warranties about the software or its performance,
- * implied or otherwise.
  * =======================================================================
  */
 

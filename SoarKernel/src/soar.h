@@ -1,3 +1,8 @@
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /* soar.h */
 
 #ifndef _SOAR_H

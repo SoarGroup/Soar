@@ -2,6 +2,11 @@
 #include "config.h"
 #endif // HAVE_CONFIG_H
 
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /*******************************************************************************
    Almost all of the functions in this file are almost certainly deprecated,
    with the exception of load_file(), which can be found at the end of the file.
@@ -38,18 +43,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  
- * =======================================================================
- *
- * Copyright (c) 1995-1999 Carnegie Mellon University,
- *                         The Regents of the University of Michigan,
- *                         University of Southern California/Information
- *                         Sciences Institute.  All rights reserved.
- *
- * The Soar consortium proclaims this software is in the public domain, and
- * is made available AS IS.  Carnegie Mellon University, The University of 
- * Michigan, and The University of Southern California/Information Sciences 
- * Institute make no warranties about the software or its performance,
- * implied or otherwise.
  * =======================================================================
  */
 

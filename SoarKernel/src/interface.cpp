@@ -3,6 +3,11 @@
 #endif // HAVE_CONFIG_H
 
 /*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
+/*************************************************************************
  *
  *  file:  interface.cpp
  *
@@ -13,18 +18,6 @@
  *  user interface commands are likely to break or give unusual output.
  *  A minimal test that this routine still worked was done by Scott
  *  Wallace with Soar 8.1, Jan 1999.
- * =======================================================================
- *
- * Copyright (c) 1995-1999 Carnegie Mellon University,
- *                         The Regents of the University of Michigan,
- *                         University of Southern California/Information
- *                         Sciences Institute.  All rights reserved.
- *
- * The Soar consortium proclaims this software is in the public domain, and
- * is made available AS IS.  Carnegie Mellon University, The University of 
- * Michigan, and The University of Southern California/Information Sciences 
- * Institute make no warranties about the software or its performance,
- * implied or otherwise.
  * =======================================================================
  */
 

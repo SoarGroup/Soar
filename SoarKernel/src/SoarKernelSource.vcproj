@@ -796,12 +796,6 @@
 				RelativePath="..\include\gsysparam.h">
 			</File>
 			<File
-				RelativePath="hash_table.h">
-			</File>
-			<File
-				RelativePath="includes.h">
-			</File>
-			<File
 				RelativePath="..\include\init_soar.h">
 			</File>
 			<File

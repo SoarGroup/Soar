@@ -1,3 +1,8 @@
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /*
   Some debugging methods determining wether or not various data structures
   are in valid states. These are not fully fleshed out yet so feel free 

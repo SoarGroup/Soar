@@ -1,3 +1,8 @@
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /* instantiations.h */
 
 #ifndef INSTANTIATIONS_H

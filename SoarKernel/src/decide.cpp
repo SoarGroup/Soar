@@ -3,6 +3,11 @@
 #endif // HAVE_CONFIG_H
 
 /*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
+/*************************************************************************
  *
  *  file:  decide.cpp
  *
@@ -11,18 +16,6 @@
  *
  *  This file contains the decider as well as routine for managing
  *  slots, and the garbage collection of disconnected WMEs.
- * =======================================================================
- *
- * Copyright (c) 1995-1999 Carnegie Mellon University,
- *                         The Regents of the University of Michigan,
- *                         University of Southern California/Information
- *                         Sciences Institute.  All rights reserved.
- *
- * The Soar consortium proclaims this software is in the public domain, and
- * is made available AS IS.  Carnegie Mellon University, The University of 
- * Michigan, and The University of Southern California/Information Sciences 
- * Institute make no warranties about the software or its performance,
- * implied or otherwise.
  * =======================================================================
  */
 
