@@ -13,7 +13,6 @@ AC_CONFIG_AUX_DIR(config)
 AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
-CXXFLAGS = -Wall -g
 
 # Checks for libraries.
 

@@ -16,4 +16,4 @@ $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la \
 $(BASEDIR_PREFIX)../gSKI/lib/libgSKI.so
 towersSML_LDFLAGS = -static
 INCLUDES = -I$(BASEDIR_PREFIX)ClientSML/include 
-CXXFLAGS = -Wall -g
+AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)

@@ -112,8 +112,8 @@ int main(int argc, char* argv[])
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <non-whitespace char> then enter to exit\n") ;
-	char line[100] ;
-	char* str = gets(line) ;
+	string garbage;
+	cin>>garbage;
 	return 0;
 }
 

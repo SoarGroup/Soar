@@ -10,4 +10,4 @@ $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la \
 $(BASEDIR_PREFIX)../gSKI/lib/libgSKI.so
 testcli_LDFLAGS = -static
 INCLUDES = -I$(BASEDIR_PREFIX)ClientSML/include -I$(BASEDIR_PREFIX)ElementXML/include -I$(BASEDIR_PREFIX)ConnectionSML/include -I$(BASEDIR_PREFIX)../gSKI/include -I$(BASEDIR_PREFIX)CommandLineInterface/include
-CXXFLAGS = -Wall -g
+AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)

@@ -35,4 +35,4 @@ cli_time.cpp\
 cli_warnings.cpp\
 cli_watch.cpp
 INCLUDES = -I../../../gSKI/include -I../../ElementXML/include -I../../ConnectionSML/include -I../include
-CXXFLAGS = -Wall -g
+AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)

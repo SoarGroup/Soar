@@ -20,5 +20,5 @@ sml_KernelSMLHandlers.cpp\
 sml_KernelSMLgSKI.cpp\
 sml_OutputListener.cpp
 INCLUDES = -I../.. -I../include -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -I../../../gSKI/include -I../../../TgDI/include -I../../CommandLineInterface/include
-CXXFLAGS = -Wall -g
+AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)
 LDADD = ../../../TgDI/lib/libtgdi.so libElementXML.la libConnectionSML.la

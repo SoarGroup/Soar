@@ -21,4 +21,4 @@ INCLUDES = \
 -I$(BASEDIR_PREFIX)CommandLineInterface/include \
 -I$(BASEDIR_PREFIX)../gSKI/src \
 -I$(BASEDIR_PREFIX)../gSKI/include
-CXXFLAGS = -Wall -g
+AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)

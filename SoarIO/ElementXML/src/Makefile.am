@@ -15,4 +15,4 @@ sml_ParseXML.cpp\
 sml_ParseXMLFile.cpp\
 sml_ParseXMLString.cpp
 INCLUDES = -I../.. -I../include
-CXXFLAGS = -Wall -g
+AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)

@@ -28,4 +28,4 @@ sml_DeltaList.cpp\
 sml_ObjectMap.cpp\
 sml_OutputDeltaList.cpp
 INCLUDES = -I../.. -I../include -I../../ElementXML/include -I../../ConnectionSML/include -I../../../gSKI/include
-CXXFLAGS = -Wall -g
+AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)
