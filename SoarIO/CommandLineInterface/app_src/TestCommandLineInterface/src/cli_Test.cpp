@@ -5,6 +5,7 @@
 #include "sml_Connection.h"
 #include "sml_Client.h"
 #include "sml_AnalyzeXML.h"
+#include "sml_ElementXML.h"
 
 using namespace std;
 
@@ -57,11 +58,14 @@ int main(int argc, char** argv)
 	for (;;) {
 		cout << previousResult;
 		if (raw) {
-			cout << " raw";
+			cout << " (raw)";
+		} else {
+			cout << " (structured)";
 		}
 		cout << " " << AGENT_NAME << "> ";
 		cout.flush();
 		cmdline.clear();
+		output.clear();
 		temporaryHistoryIndex = historyIndex;
 		process = false;
 
@@ -125,6 +129,10 @@ int main(int argc, char** argv)
 		}
 		cout << endl;
 
+		if (!cmdline.size()) {
+			continue;
+		}
+
 		history[historyIndex++] = cmdline;
 		historyIndex %= HISTORY_SIZE;
 
@@ -134,7 +142,14 @@ int main(int argc, char** argv)
 		} else {
 			pStructuredResponse = new sml::AnalyzeXML();
 			previousResult = pKernel->ExecuteCommandLineXML(cmdline.c_str(), AGENT_NAME, pStructuredResponse);
-			output = pStructuredResponse->GetResultString();
+			const sml::ElementXML* pResultTag = pStructuredResponse->GetResultTag();
+			if (pResultTag) {
+				char* pOutput = pResultTag->GenerateXMLString(true);
+				if (pOutput) {
+					output = pOutput;
+				}
+				pResultTag->DeleteString(pOutput);
+			}
 			delete pStructuredResponse;
 		}
 
@@ -145,5 +160,5 @@ int main(int argc, char** argv)
 		}
 	}
 	delete pKernel ;
-	exit (0);
+	return 0;
 }

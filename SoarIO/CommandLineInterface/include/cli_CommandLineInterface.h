@@ -22,6 +22,7 @@
 // Local includes
 #include "cli_CommandData.h"
 #include "cli_Constants.h"
+#include "cli_Aliases.h"
 
 // gSKI includes
 #include "gSKI_Events.h"
@@ -90,6 +91,8 @@ public:
 	*************************************************************/
 	EXPORT bool DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError);
 
+	bool IsQuitCalled() { return m_QuitCalled; }
+
 	// Template for new commands:
 	///*************************************************************
 	//* @brief 
@@ -99,8 +102,6 @@ public:
 	//* @brief 
 	//*************************************************************/
 	//bool Do();
-
-	bool IsQuitCalled() { return m_QuitCalled; }
 
 	/*************************************************************
 	* @brief cd command, see command line spec document for details
@@ -421,12 +422,14 @@ protected:
 	bool WatchArg(unsigned int& values, const unsigned int option, int argInt);
 
 	Constants			m_Constants;			// Pointer to constants management object
+	Aliases				m_Aliases;				// Pointer to alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
 	gSKI::IAgent*		m_pAgent;				// Pointer to the gSKI agent the command is valid for
 	std::string			m_Result;				// String output from the command
 	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command
+	sml::ElementXML*	m_pResponse;			// Response xml object for structured output
 	std::string			m_HomeDirectory;		// The initial working directory, server side
 	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result
 	LogPrintHandler		m_LogPrintHandler;		// The print callback handler, used for catching kernel/gSKI output and writing it to a log

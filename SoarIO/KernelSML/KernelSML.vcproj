@@ -119,7 +119,7 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
-			Name="CommandLineInterface"/>
+			Name="CommandLineInterface-Static"/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
 			Name="ElementXML"/>

@@ -38,6 +38,7 @@
 				AdditionalOptions="/EXPORT:DllMain"
 				OutputFile="$(SolutionDir)\bin\CommandLineInterface.dll"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="FALSE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/CommandLineInterface.pdb"
@@ -119,6 +120,12 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+			Name="ConnectionSML"/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
+			Name="ElementXML"/>
 		<AssemblyReference
 			RelativePath="mscorlib.dll"/>
 		<AssemblyReference
@@ -132,7 +139,13 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
+				RelativePath=".\src\cli_Aliases.cpp">
+			</File>
+			<File
 				RelativePath=".\src\cli_CommandLineInterface.cpp">
+			</File>
+			<File
+				RelativePath=".\src\cli_Commands.cpp">
 			</File>
 			<File
 				RelativePath=".\src\cli_Constants.cpp">
@@ -145,6 +158,9 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<File
+				RelativePath=".\include\cli_Aliases.h">
+			</File>
 			<File
 				RelativePath=".\include\cli_CommandData.h">
 			</File>
