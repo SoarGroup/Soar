@@ -16,7 +16,7 @@ AC_PROG_CXX
 AC_PROG_MAKE_SET
 
 AC_ARG_ENABLE(tcl,
-     [  --enable-tcl        Turn on tcl support (needs swig >= 1.3.24)],
+     [  --enable-tcl        Turn on tcl support (needs swig >= 1.3.24 and Tcl 8.4)],
      [case "${enableval}" in
 	yes) tcl=true ;;
 	no)  tcl=false ;;
@@ -28,35 +28,23 @@ if test "$tcl" = "true"
 then
   AC_PROG_SWIG(1.3.24)
   SWIG_ENABLE_CXX
-  if test "$SWIG_LIB"
-  then
-    echo -n
-  else
-    AC_MSG_ERROR([*** Swig error, check previous message.])
-  fi
   AC_CHECK_HEADER([tcl.h],,[AC_MSG_ERROR([*** Cannot find required header!  See previous line.])])
   AC_PATH_PROG(TCLSH,tclsh,[AC_MSG_ERROR([*** Cannot find required program!  See previous line.])])
 fi
 
 AC_ARG_ENABLE(java,
-     [  --enable-java        Turn on java support (needs swig >= 1.3.24)],
+     [  --disable-java        Turn off java support (on by default).],
      [case "${enableval}" in
 	yes) java=true ;;
 	no)  java=false ;;
-	*) AC_MSG_ERROR(bad value ${enableval} for --enable-java) ;;
+	*) AC_MSG_ERROR(bad value ${enableval} for --disable-java) ;;
      esac],
-     [java=false])
+     [java=true])
 AM_CONDITIONAL(SWIGJAVA, test x$java = xtrue)
 if test "$java" = "true"
 then
   AC_PROG_SWIG(1.3.24)
   SWIG_ENABLE_CXX
-  if test "$SWIG_LIB"
-  then
-    echo -n
-  else
-    AC_MSG_ERROR([*** Swig error, check previous message.])
-  fi
 fi
 
 # Checks for libraries.

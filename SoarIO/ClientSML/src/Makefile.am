@@ -10,8 +10,10 @@ sml_ClientIdentifier.cpp\
 sml_ClientIntElement.cpp\
 sml_ClientKernel.cpp\
 sml_ClientStringElement.cpp\
+sml_ClientTraceXML.cpp\
 sml_ClientWMElement.cpp\
 sml_ClientWorkingMemory.cpp\
+sml_ClientXML.cpp\
 sml_DeltaList.cpp\
 sml_ObjectMap.cpp\
 sml_OutputDeltaList.cpp
