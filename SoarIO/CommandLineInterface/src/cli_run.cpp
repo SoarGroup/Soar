@@ -18,11 +18,11 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		{"decision",	0, 0, 'd'},
 		{"elaboration",	0, 0, 'e'},
 		{"forever",		0, 0, 'f'},
-		{"operator",	0, 0, 'o'},
-		{"output",		0, 0, 'O'},
+		{"operator",	0, 0, 'O'},
+		{"output",		0, 0, 'o'},
 		{"phase",		0, 0, 'p'},
-		{"self",		0, 0, 's'},
-		{"state",		0, 0, 'S'},
+		{"self",		0, 0, 'S'},
+		{"state",		0, 0, 's'},
 		{0, 0, 0, 0}
 	};
 
@@ -48,19 +48,19 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 			case 'f':
 				options |= OPTION_RUN_FOREVER;
 				break;
-			case 'o':
+			case 'O':
 				options |= OPTION_RUN_OPERATOR;
 				break;
-			case 'O':
+			case 'o':
 				options |= OPTION_RUN_OUTPUT;
 				break;
 			case 'p':
 				options |= OPTION_RUN_PHASE;
 				break;
-			case 's':
+			case 'S':
 				options |= OPTION_RUN_SELF;
 				break;
-			case 'S':
+			case 's':
 				options |= OPTION_RUN_STATE;
 				break;
 			case '?':
@@ -99,15 +99,13 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 
 	// TODO: Rather tricky options
 	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_OUTPUT) || (options & OPTION_RUN_STATE)) {
-		return HandleError("Options { o, O, S } not implemented yet.");
+		return HandleError("Options { o, O, s } not implemented yet.");
 	}
 
 	// Default run type is forever
 	egSKIRunType runType = gSKI_RUN_FOREVER;
 	// ... unless there is a count, then the default is a decision cycle:
-	if (count) {
-		runType = gSKI_RUN_DECISION_CYCLE;
-	}
+	if (count) runType = gSKI_RUN_DECISION_CYCLE;
 
 	// Override run type with option flag:
 	if (options & OPTION_RUN_ELABORATION) {

@@ -406,8 +406,7 @@ public:
 	*************************************************************/
 	bool ParseQuit(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief Quits the program, really only sets the quit called
-	*		 variable to true.
+	* @brief 
 	*************************************************************/
 	bool DoQuit();
 

@@ -15,10 +15,18 @@ bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::stri
 }
 
 bool CommandLineInterface::DoQuit() {
-	// Simply flip the quit flag
+	// Flip the quit flag
 	m_QuitCalled = true; 
 
-	// Toodles!
+	// Stop soar
+	DoStopSoar(0, false, std::string("Quit called."));
+
+	// Stop log
+	if (m_pLogFile) {
+		(*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
+		delete m_pLogFile;
+	}
+
 	AppendToResult("Goodbye.");
 	return true;
 }

@@ -54,10 +54,10 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 
 bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string& reasonForStopping) {
 
-	unused(pAgent);
 	unused(reasonForStopping);
 
 	if (self) {
+		if (!RequireAgent(pAgent)) return false;
 		return pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, m_pError);
 	} else {
 		return m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, m_pError);

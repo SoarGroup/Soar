@@ -107,6 +107,9 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	m_ErrorMessage.clear();
 	m_ResponseTags.clear();
 
+	// Fail if quit has been called
+	if (m_QuitCalled) return false;
+
 	// Save the pointers
 	m_pError = pError;
 
