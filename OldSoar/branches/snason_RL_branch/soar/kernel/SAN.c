@@ -13,8 +13,9 @@ void variablize_nots_and_insert_into_conditions(not * nots, condition * conds);
 action *copy_and_variablize_result_list(preference * pref);
 void variablize_symbol(Symbol ** sym);
 void SAN_add_goal_or_impasse_tests(condition * all_conds);
-void trace_to_state(wme * w, tc_number tc_num, condition ** cond);
+bool trace_to_state(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond);
 bool symbol_is_in_tc(Symbol * sym, tc_number tc);
+production *specify_production(instantiation *ist);
 
 
 // The following three functions manage the stack of RL_records.
@@ -127,12 +128,8 @@ void record_for_RL()
 	instantiation *ist;
 	production *prod;
 	preference *pref;
-	condition *cond_top, *cond_bottom, *new_top, *new_bottom, *c, *new_cond;
-	RL_record *record;
-	Symbol *sym;
-	
-	
-
+ 	RL_record *record;
+ 
   // SAN - catch operator ID here
   s = current_agent(bottom_goal)->id.operator_slot;
   w = s->wmes;
@@ -170,11 +167,12 @@ void record_for_RL()
 production *specify_production(instantiation *ist){
 	tc_number tc_num = get_new_tc_number();
 	Symbol *sym;
-	condition *cond;
-	condition *cond_top, *cond_bottom, *new_top, *new_bottom;
+	condition *cond, *c;
+	condition *cond_top = NIL, *cond_bottom, *new_top, *new_bottom;
 	unsigned long num;
 	wme *w;
-	production *prod;
+	int i;
+	// production *prod = NIL;
 
 	 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
 		if (cond->type == POSITIVE_CONDITION){
@@ -186,27 +184,28 @@ production *specify_production(instantiation *ist){
 			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
 		}
 	 }
-	num = rand() % current_agent(num_wmes_in_rete);
-	w = current_agent(all_wmes_in_rete);
-	for (int i = 0 ; i <= num; i++)
-		w = w->rete_next;
-	cond = make_simple_condition(w->id, w->attr, w->value);
-	for (condition *c = ist->top_of_instantiated_conditions ; c ; c = c->next){
+	 while (1){
+		num = rand() % current_agent(num_wmes_in_rete);
+		w = current_agent(all_wmes_in_rete);
+		for (i = 0 ; i <= num; i++)
+			w = w->rete_next;
+		cond = make_simple_condition(w->id, w->attr, w->value);
+		for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
 				if (conditions_are_equal(c, cond)){
 					deallocate_condition_list(cond);
 					cond = NIL;
 					break;
 					}
 				}
-				if (!cond){ try new wme w }	
-				else{	deallocate_condition_list(cond);
-						trace_to_state(w, tc_num, &cond_top);
-				}
-					  for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
-				  copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
-				  cond_top->prev = new_bottom;
-				  new_bottom->next = cond_top;
-				  return build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
+		if (!cond) continue;	
+		deallocate_condition_list(cond);
+		trace_to_state(w, tc_num, get_new_tc_number(), &cond_top);
+		for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
+		copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
+		cond_top->prev = new_bottom;
+		new_bottom->next = cond_top;
+		return build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
+	 }
 }
 
 // Update the value on RL productions from last cycle
@@ -445,20 +444,30 @@ void SAN_add_goal_or_impasse_tests(condition * all_conds)
     }
 }
 
-void trace_to_state(wme * w, tc_number tc_num, condition ** cond){
-	Symbol * sym = w->id;
+bool trace_to_state(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond){
+	Symbol * id = w->id;
+	Symbol * attr = w->attr;
+	Symbol * value = w->value;
 	condition *new_cond;
 	wme * z;
 	dl_cons *dc;
 
-	new_cond = make_simple_condition(w->id, w->attr, w->value);
+	if(symbol_is_in_tc(id, tc_seen)) return FALSE;
+	new_cond = make_simple_condition(id, attr, value);
 	if (new_cond->test_for_acceptable_preference == w->acceptable)
 		insert_at_head_of_dll(*cond, new_cond, next, prev);
-	if (!symbol_is_in_tc(sym, tc_num)){
-		for (dc = sym->id.parents ; dc ; dc = dc->next){
+	if (symbol_is_in_tc(id, tc_prod)){
+		return TRUE;
+	} else {
+		// bug - add attr test
+		add_symbol_to_tc(value, tc_seen, NIL, NIL);
+		for (dc = id->id.parents ; dc ; dc = dc->next){
 			z = dc->item;
-		 	trace_to_state(z, tc_num, cond);
+			if (trace_to_state(z, tc_prod, tc_seen, cond))
+				return TRUE;
 		}
+		remove_from_dll(*cond,*cond,next,prev);
+		return FALSE;
 	}
 }
 
