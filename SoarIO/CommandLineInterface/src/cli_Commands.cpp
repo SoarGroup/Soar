@@ -36,8 +36,6 @@
 
 // SML includes
 #include "sml_Connection.h"
-#include "sml_TagResult.h"
-#include "sml_TagArg.h"
 
 using namespace std;
 using namespace cli;
@@ -67,8 +65,8 @@ bool CommandLineInterface::ParseCD(std::vector<std::string>& argv) {
 	if (argv.size() > 1) {
 		return DoCD(argv[1]);
 	}
-	string blank;
-	return DoCD(blank);
+	string empty;
+	return DoCD(empty);
 }
 
 // ____         ____ ____
@@ -84,9 +82,7 @@ bool CommandLineInterface::DoCD(string& directory) {
 
 		// Home dir set in constructor
 		if (chdir(m_HomeDirectory.c_str())) {
-			m_Result += "Could not change to home directory: ";
-			m_Result += m_HomeDirectory;
-
+			HandleError("Could not change to home directory: " + m_HomeDirectory);
 			// Critical error
 			m_CriticalError = true;
 			return false;
@@ -101,9 +97,7 @@ bool CommandLineInterface::DoCD(string& directory) {
 
 	// Change to passed directory
 	if (chdir(directory.c_str())) {
-		m_Result += "Could not change to directory: ";
-		m_Result += directory;
-
+		HandleError("Could not change to directory: " + directory);
 		// Critical error
 		m_CriticalError = true;
 		return false;
@@ -203,6 +197,7 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 //|____/ \___/|_____/_/\_\___|_|___/\___|
 //
 bool CommandLineInterface::DoExcise(const unsigned short options, int optind, vector<string>& argv) {
+
 	// Must have agent to excise from
 	if (!RequireAgent()) {
 		return false;
@@ -242,8 +237,7 @@ bool CommandLineInterface::DoExcise(const unsigned short options, int optind, ve
 		if (pProdIter->GetNumElements()) {
 			ExciseInternal(pProdIter);
 		} else {
-			m_Result += "Production not found: ";
-			m_Result += argv[i];
+			HandleError("Production not found: " + argv[i]);
 			m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 			return false;
 		}
@@ -261,21 +255,8 @@ bool CommandLineInterface::DoExcise(const unsigned short options, int optind, ve
 void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter) {
 	// Iterate through the productions using the production iterator and
 	// excise and release.
-	TagResult* pTagResult = 0;
-	if (!m_RawOutput) {
-		pTagResult = new TagResult();
-		pTagResult->AddAttribute(sml_Names::kCommandOutput, sml_Names::kStructuredOutput);
-	}
-
 	while(pProdIter->IsValid()) {
 		gSKI::IProduction* ip = pProdIter->GetVal();
-		if (!m_RawOutput) {
-			const char* pProdName = ip->GetName();
-			TagArg* pArg = new TagArg();
-			pArg->SetParam("ex-prod");	// TODO fix
-			pArg->SetValue(pProdName);
-			pTagResult->AddChild(pArg);
-		}
 		ip->GetName();
 		ip->Excise();
 		ip->Release();
@@ -283,9 +264,6 @@ void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter)
 	}
 	pProdIter->Release();
 
-	if (!m_RawOutput) {
-		m_pResponse->AddChild(pTagResult);
-	}
 }
 
 // ____                     _   _      _
@@ -315,13 +293,13 @@ bool CommandLineInterface::DoHelp(const string& command) {
 	string output;
 
 	if (!m_Constants.IsUsageFileAvailable()) {
-		m_Result += Constants::kCLINoUsageFile;
+		HandleError(Constants::kCLINoUsageFile);
 		return false;
 	}
 
 	if (command.size()) {
 		if (!m_Constants.GetUsageFor(command, output)) {
-			m_Result += "Help for command '" + command + "' not found.";
+			HandleError("Help for command '" + command + "' not found.");
 			return false;
 		}
 		m_Result += output;
@@ -356,6 +334,30 @@ bool CommandLineInterface::DoHelp(const string& command) {
 	}
 	m_Result += "Type 'help' followed by the command name for help on a specific command.\n";
 	m_Result += "A Star (*) indicates the command is not yet implemented.";
+	return true;
+}
+
+bool CommandLineInterface::ParseHelpEx(std::vector<std::string>& argv) {
+	if (argv.size() != 2) {
+		return HandleSyntaxError(Constants::kCLIHelpEx);
+	}
+
+	return DoHelpEx(argv[1]);
+}
+
+bool CommandLineInterface::DoHelpEx(const string& command) {
+	string output;
+
+	if (!m_Constants.IsUsageFileAvailable()) {
+		HandleError(Constants::kCLINoUsageFile);
+		return false;
+	}
+
+	if (!m_Constants.GetExtendedUsageFor(command, output)) {
+		HandleError("Extended help for command '" + command + "' not found.");
+		return false;
+	}
+	m_Result += output;
 	return true;
 }
 
@@ -482,7 +484,7 @@ bool CommandLineInterface::DoLearn(const unsigned short options) {
 
 	// Check for unimplemented options
 	if ((options & OPTION_LEARN_ALL_LEVELS) || (options & OPTION_LEARN_BOTTOM_UP) || (options & OPTION_LEARN_EXCEPT) || (options & OPTION_LEARN_LIST) || (options & OPTION_LEARN_ONLY)) {
-		m_Result += "Options {abElo} are not implemented.";
+		HandleError("Options {abElo} are not implemented.");
 		return false;
 	}
 
@@ -574,8 +576,7 @@ bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
 		// Open a file
 		if (m_pLogFile) {
 			// Unless one is already opened
-			m_Result += "Close log file '" + m_LogFilename + "' first.";
-
+			HandleError("Close log file '" + m_LogFilename + "' first.");
 			// Critical error
 			m_CriticalError = true;
 			return false;
@@ -591,8 +592,7 @@ bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
 
 		if (!m_pLogFile) {
 			// Creation and opening was not successful
-			m_Result += "Failed to open file for logging.";
-
+			HandleError("Failed to open file for logging.");
 			// Critical error
 			m_CriticalError = true;
 			return false;
@@ -606,7 +606,7 @@ bool CommandLineInterface::DoLog(bool option, const char* pFilename) {
 		// In absence of filename, option means close
 		if (!m_pLogFile) {
 			// Can't close when we're not logging to begin with
-			m_Result += "No log is opened.";
+			HandleError("No log is opened.");
 			return false;
 		}
 
@@ -662,7 +662,7 @@ bool CommandLineInterface::DoLS() {
 	if (hFind == INVALID_HANDLE_VALUE) {
 		
 		// Not a single file, or file system error, we'll just assume no files
-		m_Result += "File not found.";
+		HandleError("File not found.");
 
 		// TODO: Although file not found isn't an error, this could be an error 
 		// like permission denied, we should check for this
@@ -686,7 +686,7 @@ bool CommandLineInterface::DoLS() {
 	FindClose(hFind);
 
 #else // WIN32
-	m_Result += "TODO: ls on non-windows platforms";
+	HandleError("TODO: ls on non-windows platforms");
 #endif // WIN32
 
 	return true;
@@ -803,7 +803,7 @@ bool CommandLineInterface::DoPopD() {
 
 	// There must be a directory on the stack to pop
 	if (m_DirectoryStack.empty()) {
-		m_Result += "Directory stack empty, no directory to change to.";
+		HandleError("Directory stack empty, no directory to change to.");
 		// Critical error
 		m_CriticalError = true;
 		return false;
@@ -811,9 +811,6 @@ bool CommandLineInterface::DoPopD() {
 
 	// Change to the directory
 	if (!DoCD(m_DirectoryStack.top())) {
-		// cd failed, error message added in cd function
-		// Critical error (probably redundant)
-		m_CriticalError = true;
 		return false;
 	}
 
@@ -1204,7 +1201,7 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 
 	// TODO: Rather tricky options
 	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_OUTPUT) || (options & OPTION_RUN_STATE)) {
-		m_Result += "Options { o, O, S } not implemented yet.";
+		HandleError("Options { o, O, S } not implemented yet.");
 		return false;
 	}
 
@@ -1220,7 +1217,7 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 		// TODO: Forever is going to hang unless a lucky halt is achieved until we implement 
 		// a way to interrupt it, so lets just avoid it with an error
 		//runType = gSKI_RUN_FOREVER;	
-		m_Result += "Forever option is not implemented yet.";
+		HandleError("Forever option is not implemented yet.");
 		return false;
 	}
 
@@ -1265,7 +1262,7 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 			m_Result += "(gSKI_RUN_COMPLETED_AND_INTERRUPTED)";
 			break;
 		default:
-			m_Result += "Unknown egSKIRunResult code returned.";
+			HandleError("Unknown egSKIRunResult code returned.");
 			// Critical error
 			m_CriticalError = true;
 			return false;
@@ -1306,9 +1303,7 @@ bool CommandLineInterface::DoSource(const string& filename) {
 	// Open the file
 	ifstream soarFile(filename.c_str());
 	if (!soarFile) {
-		m_Result += "Failed to open file '";
-		m_Result += filename;
-		m_Result += "' for reading.";
+		HandleError("Failed to open file '" + filename + "' for reading.");
 		// Critical error
 		m_CriticalError = true;
 		return false;
@@ -1411,12 +1406,12 @@ bool CommandLineInterface::DoSource(const string& filename) {
 			// Did we break out because of closed braces or EOF?
 			if (braces > 0) {
 				// EOF while still nested
-				m_Result += "Unexpected end of file. Unmatched opening brace.";
+				HandleError("Unexpected end of file. Unmatched opening brace.");
 				HandleSourceError(lineCountCache, filename);
 				return false;
 
 			} else if (braces < 0) {
-				m_Result += "Closing brace(s) found without matching opening brace.";
+				HandleError("Closing brace(s) found without matching opening brace.");
 				HandleSourceError(lineCountCache, filename);
 				return false;
 			}
@@ -1483,24 +1478,24 @@ void CommandLineInterface::HandleSourceError(int errorLine, const string& filena
 		m_SourceDirDepth = 0; // TODO: redundant
 
 		m_SourceError = true;
-		m_Result += "\nSource command error: error on line ";
+		m_ErrorMessage += "\nSource command error on line ";
 		// TODO: arbitrary buffer size here
 		char buf[256];
 		memset(buf, 0, 256);
-		m_Result += itoa(errorLine, buf, 10);
+		m_ErrorMessage += itoa(errorLine, buf, 10);
 
-		m_Result += " of file: ";
+		m_ErrorMessage += " of ";
 		
 		string directory;
 		GetCurrentWorkingDirectory(directory); // Again, ignore error here
 
-		m_Result += filename + " (" + directory + ")";
+		m_ErrorMessage += filename + " (" + directory + ")";
 
 		// Critical error
 		m_CriticalError = true;
 
 	} else {
-		m_Result += "\n\t--> Sourced by: " + filename;
+		m_ErrorMessage += "\n\t--> Sourced by: " + filename;
 	}
 }
 

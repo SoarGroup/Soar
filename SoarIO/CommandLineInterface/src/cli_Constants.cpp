@@ -14,6 +14,7 @@ char const* Constants::kCLICD				= "cd";
 char const* Constants::kCLIEcho				= "echo";
 char const* Constants::kCLIExcise			= "excise";
 char const* Constants::kCLIHelp				= "help";
+char const* Constants::kCLIHelpEx			= "helpex";
 char const* Constants::kCLIInitSoar			= "init-soar";
 char const* Constants::kCLILearn			= "learn";
 char const* Constants::kCLILog				= "log";
@@ -79,8 +80,17 @@ bool Constants::GetUsageFor(const std::string& command, std::string& output) {
 		output = m_UsageMap[command];
 		return true;
 	}
+	return false;
+}
 
-	output = "Help not available (no usage.txt file found).";
+bool Constants::GetExtendedUsageFor(const std::string& command, std::string& output) {
+	if (m_UsageFileAvailable) {
+		if (m_ExtendedUsageMap.find(command) == m_ExtendedUsageMap.end()) {
+			return false;
+		}
+		output = m_ExtendedUsageMap[command];
+		return true;
+	}
 	return false;
 }
 
@@ -108,9 +118,9 @@ void Constants::LoadUsage(ifstream& usageFile) {
 			continue;
 		}
 
-		string debug = GetUsage(usageFile);
 		if (line.length()) {
-			m_UsageMap[line] = debug;
+			m_UsageMap[line] = GetUsage(usageFile);
+			m_ExtendedUsageMap[line] = GetExtendedUsage(usageFile);
 		}
 	}
 }
@@ -122,6 +132,25 @@ void Constants::LoadUsage(ifstream& usageFile) {
 // \____|\___|\__|\___/|___/\__,_|\__, |\___|
 //                                |___/
 string Constants::GetUsage(ifstream& usageFile) {
+	string line, usage;
+	while (getline(usageFile, line)) {
+
+		if (line.length()) {
+			if (line[0] == '#') {
+				continue;
+			}
+			if (line[0] == '~') {
+				break;
+			}
+		}
+		usage += line;
+		usage += '\n';
+	}
+	// TODO: remove extra newline on end?
+	return usage;
+}
+
+string Constants::GetExtendedUsage(ifstream& usageFile) {
 	string line, usage;
 	while (getline(usageFile, line)) {
 

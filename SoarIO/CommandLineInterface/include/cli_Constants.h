@@ -20,6 +20,7 @@ namespace cli {
 		
 		std::list<std::string> GetCommandList();
 		bool GetUsageFor(const std::string& command, std::string& output);
+		bool GetExtendedUsageFor(const std::string& command, std::string& output);
 		bool IsUsageFileAvailable();
 
 		static char const* kCLISyntaxError;
@@ -30,6 +31,7 @@ namespace cli {
 		static char const* kCLIEcho;
 		static char const* kCLIExcise;
 		static char const* kCLIHelp;
+		static char const* kCLIHelpEx;
 		static char const* kCLIInitSoar;
 		static char const* kCLILearn;
 		static char const* kCLILog;
@@ -51,9 +53,11 @@ namespace cli {
 	private:
 		void LoadUsage(std::ifstream& usageFile);
 		std::string GetUsage(std::ifstream& usageFile);
+		std::string GetExtendedUsage(std::ifstream& usageFile);
 
 		bool m_UsageFileAvailable;
 		UsageMap m_UsageMap;
+		UsageMap m_ExtendedUsageMap;
 	};
 
 } // namespace cli

@@ -111,6 +111,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIEcho]				= ParseEcho;
 	m_CommandMap[Constants::kCLIExcise]				= ParseExcise;
 	m_CommandMap[Constants::kCLIHelp]				= ParseHelp;
+	m_CommandMap[Constants::kCLIHelpEx]				= ParseHelpEx;
 	m_CommandMap[Constants::kCLIInitSoar]			= ParseInitSoar;
 	m_CommandMap[Constants::kCLILearn]				= ParseLearn;
 	m_CommandMap[Constants::kCLILog]				= ParseLog;
@@ -140,11 +141,13 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 
 	// Clear the result
 	m_Result.clear();
+	m_ErrorMessage.clear();
 	m_CriticalError = false;
 
 	// Save the pointers
 	m_pAgent = pAgent;
 	m_pError = pError;
+	m_pConnection = pConnection;
 	m_pResponse = pResponse;
 
 	// Save the raw output flag
@@ -156,29 +159,14 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	// Reset source error flag
 	m_SourceError = false;
 
-	if (!m_CriticalError && ret)
-	{
-		// The command succeeded, so return the result
+	if (!m_CriticalError && ret) {
+		// The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
-			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.c_str()) ;
+			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.c_str());
 		}
-	}
-	else
-	{
-		// The command failed, so return an error message
-		std::string msg = m_Result ;
-
-		if (pError && isError(*pError))
-		{
-			msg += "gSKI error was: " ;
-			msg += pError->Text ;
-			msg += " details: " ;
-			msg += pError->ExtendedMsg ;
-		}
-
-		// Add the error message to the response
-		int errorCode = -1 ;	// -1 reserved for "no error code defined"
-		pConnection->AddErrorToSMLResponse(pResponse, msg.c_str(), errorCode) ;
+	} else if (!ret) {
+		// The command failed, add the error message
+		pConnection->AddErrorToSMLResponse(pResponse, m_ErrorMessage.c_str());
 	}
 
 	// Always returns true to indicate that we've generated any needed error message already
@@ -195,6 +183,7 @@ EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pC
 	// This function is for processing a command without the SML layer
 	// Clear the result
 	m_Result.clear();
+	m_ErrorMessage.clear();
 	m_CriticalError = false;
 
 	// Save the pointers
@@ -224,7 +213,7 @@ bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
 
 	// Parse command:
 	if (Tokenize(commandLine, argv) == -1) {
-		return false;	// Parsing failed, error in result
+		return false;	// Parsing failed
 	}
 
 	return DoCommandInternal(argv);
@@ -247,10 +236,7 @@ bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
 
 	// Is the command implemented?
 	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
-		m_Result += "Command '";
-		m_Result += argv[0];
-		m_Result += "' not found or implemented.";
-
+		HandleError("Command '" + argv[0] + "' not found or implemented.");
 		// Critical error
 		m_CriticalError = true;
 		return false;
@@ -276,8 +262,7 @@ bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
 	// Just in case...
 	if (!pFunction) {
 		// Very odd, should be set in BuildCommandMap
-		m_Result += "Command found but function pointer is null.";
-
+		HandleError("Command found but function pointer is null.");
 		// This is definately a critical error
 		m_CriticalError = true;
 		return false;
@@ -345,7 +330,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 				} else if (*iter == '}') {
 					--brackets;
 					if (brackets < 0) {
-						m_Result += "Closing bracket found without opening counterpart.";
+						HandleError("Closing bracket found without opening counterpart.");
 						return -1;
 					}
 				}
@@ -363,7 +348,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 
 				// Did they close their quotes or brackets?
 				if (quotes || brackets) {
-					m_Result += "No closing quotes/brackets found.";
+					HandleError("No closing quotes/brackets found.");
 					return -1;
 				}
 				break;
@@ -430,7 +415,7 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 
 	// If getcwd returns 0, that is bad
 	if (!ret) {
-		m_Result += "Couldn't get working directory.";
+		HandleError("Couldn't get working directory.");
 		// Critical error
 		m_CriticalError = true;
 		return false;
@@ -473,19 +458,21 @@ bool CommandLineInterface::IsInteger(const string& s) {
 //|_| |_|\__,_|_| |_|\__,_|_|\___|____/ \__, |_| |_|\__\__,_/_/\_\_____|_|  |_|  \___/|_|
 //                                      |___/
 bool CommandLineInterface::HandleSyntaxError(const char* command, const char* details) {
-	m_Result += Constants::kCLISyntaxError;
-	m_Result += " (";
-	m_Result += command;
-	m_Result += ")\n";
+	string msg;
+	msg += Constants::kCLISyntaxError;
+	msg += " (";
+	msg += command;
+	msg += ")\n";
 	if (details) {
-		m_Result += details;
-		m_Result += '\n';
+		msg += details;
+		msg += '\n';
 	}
-	m_Result += "Type 'help ";
-	m_Result += command;
-	m_Result += "' or '";
-	m_Result += command;
-	m_Result += " --help' for syntax and usage.";
+	msg += "Type 'help ";
+	msg += command;
+	msg += "' or '";
+	msg += command;
+	msg += " --help' for syntax and usage.";
+	HandleError(msg);
 	return false;
 }
 
@@ -497,7 +484,7 @@ bool CommandLineInterface::HandleSyntaxError(const char* command, const char* de
 //              |_|                        |___/
 bool CommandLineInterface::RequireAgent() {
 	if (!m_pAgent) {
-		m_Result += "An agent pointer is required for this command.";
+		HandleError("An agent pointer is required for this command.");
 		// Critical error
 		m_CriticalError = true;
 		return false;
@@ -512,10 +499,26 @@ bool CommandLineInterface::RequireAgent() {
 //|_| |_|\__,_|_| |_|\__,_|_|\___|\____|\___|\__|\___/| .__/ \__|_____|_|  |_|  \___/|_|
 //                                                    |_|
 bool CommandLineInterface::HandleGetOptError(char option) {
-	m_Result += "Internal error: m_pGetOpt->GetOpt_Long returned '";
-	m_Result += option;
-	m_Result += "'!";
+	string msg;
+	msg += "Internal error: m_pGetOpt->GetOpt_Long returned '";
+	msg += option;
+	msg += "'!";
+	HandleError(msg);
+
 	// Critical error
 	m_CriticalError = true;
 	return false;
+}
+
+void CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pError) {
+	m_ErrorMessage += errorMessage;
+
+	if (pError && isError(*pError)) {
+		m_ErrorMessage += "\ngSKI error was: " ;
+		m_ErrorMessage += pError->Text ;
+		m_ErrorMessage += " details: " ;
+		m_ErrorMessage += pError->ExtendedMsg ;
+	}
+	m_Result += m_ErrorMessage;
+	return;
 }

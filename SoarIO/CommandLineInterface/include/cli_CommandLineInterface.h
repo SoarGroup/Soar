@@ -145,6 +145,15 @@ public:
 	bool DoHelp(const std::string& command);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseHelpEx(std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoHelpEx(const std::string& command);
+
+	/*************************************************************
 	* @brief init-soar command, see command line spec document for details
 	*************************************************************/
 	bool ParseInitSoar(std::vector<std::string>& argv);
@@ -393,7 +402,8 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void HandleSourceError(int errorLine, const std::string& filename);
+	bool WatchArg(unsigned int& values, const unsigned int option, const char* arg);
+	bool WatchArg(unsigned int& values, const unsigned int option, int argInt);
 
 	/*************************************************************
 	* @brief 
@@ -403,23 +413,27 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool HandleSyntaxError(const char* command, const char* details = 0);
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
 	bool RequireAgent();
 
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool HandleGetOptError(char option);
+	void HandleError(std::string errorMessage, gSKI::Error* pError = 0);
 
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool WatchArg(unsigned int& values, const unsigned int option, const char* arg);
-	bool WatchArg(unsigned int& values, const unsigned int option, int argInt);
+	void HandleSourceError(int errorLine, const std::string& filename);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool HandleSyntaxError(const char* command, const char* details = 0);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool HandleGetOptError(char option);
 
 	Constants			m_Constants;			// Pointer to constants management object
 	Aliases				m_Aliases;				// Pointer to alias management object
@@ -428,8 +442,10 @@ protected:
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
 	gSKI::IAgent*		m_pAgent;				// Pointer to the gSKI agent the command is valid for
 	std::string			m_Result;				// String output from the command
+	std::string			m_ErrorMessage;				// String output from the command
 	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command
 	sml::ElementXML*	m_pResponse;			// Response xml object for structured output
+	sml::Connection*	m_pConnection;			// Connection object for structured output
 	std::string			m_HomeDirectory;		// The initial working directory, server side
 	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result
 	LogPrintHandler		m_LogPrintHandler;		// The print callback handler, used for catching kernel/gSKI output and writing it to a log

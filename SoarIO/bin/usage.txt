@@ -2,7 +2,8 @@
 # Author: Jonathan Voigt, http://sitemaker.umich.edu/soar/
 #
 # Lines starting with # and blank lines are ignored.
-# Lines starting with * separate commands.
+# Lines starting with ~ start the extended usage section (REQUIRED).
+# Lines starting with * separate commands (REQUIRED).
 # The first line of a command section is the command name.
 #
 # All commands have a --help/-h option to print their usage information.
@@ -11,9 +12,11 @@
 #
 add-wme
 Usage:	add-wme
+~~~
 ***
 capture-input
 Usage:	capture-input
+~~~
 ***
 cd
 Usage:	cd [directory]
@@ -21,6 +24,10 @@ Change the current working directory.
 Options and arguments:
   directory 		The directory to change in to, can be relative or full
   			path.
+~~~
+On success:
+<result>
+  true
 ***
 chunk-name-format
 Usage:	chunk-name-format [-sl] -p [<prefix>]
@@ -31,14 +38,20 @@ Usage:	chunk-name-format [-sl] -p [<prefix>]
   -p, --prefix
   prefix
   -s, --short
+~~~
 ***
 default-wme-depth
 Usage:	default-wme-depth [depth]
   depth
+~~~
 ***
 echo
 Usage:	echo [string]
   string		The string to print back.
+~~~
+On success:
+<result>
+  string
 ***
 excise
 Usage:	excise production_name
@@ -49,14 +62,21 @@ Usage:	excise production_name
   -t, --task		Excise chunks, justifications, and user productions.
   -u, --user		Excise user productions.
   production_name	Excise a specific production with this name.
+~~~
+On success:
+<result>
+  <arg name="production-name">production_name</arg>
+	Each excised production will have its name returned.
 ***
 explain-backtraces
 Usage:	explain-backtraces
+~~~
 ***
 firing-counts
 Usage:	firing-counts [n|production_name]
   n
   production_name
+~~~
 ***
 format-watch
 Usage:	format-watch -a[so] restriction format [restriction format]...
@@ -67,28 +87,50 @@ Usage:	format-watch -a[so] restriction format [restriction format]...
   -s, --stack
   format
   restriction
+~~~
 ***
 gds-print
 Usage:	gds-print
+~~~
 ***
 help
 Usage:	help [command_name]
   command_name		Print online help for this command.
+~~~
+On success:
+<result>
+  help_string
+***
+helpex
+Usage:	helpex command_name
+  command_name		Print extended help for this command.
+~~~
+On success:
+<result>
+  help_string
 ***
 indifferent-selection
 Usage:	indifferent-selection
+~~~
 ***
 init-soar
 Usage:	init-soar
+~~~
+On success:
+<result>
+  true
 ***
 internal-symbols
 Usage:	internal-symbols
+~~~
 ***
 interrupt
 Usage:	interrupt
+~~~
 ***
 io
 Usage:	io
+~~~
 ***
 learn
 Usage:	learn [-l]
@@ -100,6 +142,10 @@ Usage:	learn [-l]
   -E, --Except
   -l, --list
   -o, --only
+~~~
+On success:
+<result>
+  true
 ***
 log
 Usage:	log [-a] [filename]
@@ -108,9 +154,18 @@ Usage:	log [-a] [filename]
   -c, --close, 		Stop logging and close the current log.
       --disable, --off
   filename              The name of the file to log to.
+~~~
+On success:
+<result>
+  true
 ***
 ls
 Usage:	ls
+~~~
+On success:
+<result>
+  <arg name="filename">filename</arg>
+  <arg name="directory">directory</arg>
 ***
 matches
 Usage:	matches [-[a|r]12cntw]
@@ -122,15 +177,19 @@ Usage:	matches [-[a|r]12cntw]
   -1, -t, --timetags
   -2, -w, --wmes
   production_name
+~~~
 ***
 max-chunks
 Usage:	max-chunks
+~~~
 ***
 max-elaborations
 Usage:	max-elaborations
+~~~
 ***
 max-nil-output-cycles
 Usage:	max-nil-output-cycles
+~~~
 ***
 memories
 Usage:	memories [-cdju|production_name|n]
@@ -140,20 +199,28 @@ Usage:	memories [-cdju|production_name|n]
   -u, --user
   production_name
   n
+~~~
 ***
 multi-attributes
 Usage:	multi-attributes [attribute [n]]
   attribute
   n
+~~~
 ***
 numeric-indifferent-mode
 Usage:	numeric-indifferent-mode
+~~~
 ***
 o-support-mode
 Usage:	o-support-mode
+~~~
 ***
 popd
 Usage:	popd
+~~~
+On success:
+<result>
+  true
 ***
 preferences
 Usage:	preferences [-0123nNtw] [id] [attribute]
@@ -163,6 +230,7 @@ Usage:	preferences [-0123nNtw] [id] [attribute]
   -3, -w, --wmes
   id
   attribute
+~~~
 ***
 print
 Usage:	print [-fFin] production_name
@@ -187,6 +255,7 @@ Usage:	print [-fFin] production_name
   pattern
   production_name
   timetag
+~~~
 ***
 production-find
 Usage:	production-find [-clnrs] pattern
@@ -196,10 +265,15 @@ Usage:	production-find [-clnrs] pattern
   -r, --rhs
   -s, --show-bindings
   pattern
+~~~
 ***
 pushd
 Usage:	pushd directory
   directory
+~~~
+On success:
+<result>
+  true
 ***
 pwatch
 Usage:	pwatch [-d|e] [production name]
@@ -207,21 +281,33 @@ Usage:	pwatch [-d|e] [production name]
   -e, --enable, --on
   production_name
 
+~~~
 ***
 pwd
 Usage:	pwd
+~~~
+On success:
+<result>
+  directory_string
 ***
 quit
 Usage:	quit
+~~~
+On success:
+<result>
+  true
 ***
 remove-wme
 Usage:	remove-wme
+~~~
 ***
 replay-input
 Usage:	replay-input
+~~~
 ***
 rete-net
 Usage:	rete-net
+~~~
 ***
 run
 Usage:	run [count]
@@ -236,19 +322,30 @@ Usage:	run [count]
   -s, --self
   -S, --state
   count
+~~~
 ***
 set-default-depth
 Usage:	set-default-depth
+~~~
 ***
 soar8
 Usage:	soar8
+~~~
 ***
 source
 Usage:	source filename
   filename
+~~~
+On success:
+<result>
+  true
 ***
 sp
 Usage:	sp { production }
+~~~
+On success:
+<result>
+  true
 ***
 stats
 Usage:	stats
@@ -260,24 +357,29 @@ Usage:	stats
 #  resource
 #  rtype_qualifier
 #  stat
+~~~
 ***
 stop-soar
 Usage:	stop-soar [-s] [reason_string]
   -s, --self
   reason_string
+~~~
 ***
 time
 Usage:	time command [arguments]
   command
   arguments
+~~~
 ***
 waitsnc
 Usage:	waitsnc
+~~~
 ***
 warnings
 Usage:	warnings [-ed]
   -e, --enable, --on
   -d, --disable, --off
+~~~
 ***
 watch
 Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>] 
@@ -328,6 +430,7 @@ Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>]
   switch			Switch argument:
   				  * 0: Turn watches for this option off
   				  * 1: Turn watches for this option on
+~~~
 ***
 watch-wmes
 Usage:	watch-wmes -[a|r] -t <type> pattern
@@ -336,10 +439,13 @@ Usage:	watch-wmes -[a|r] -t <type> pattern
   -l, --list-filter
   -r, --remove-filter
   -R, --reset-filter
+~~~
 ***
 verbose
 Usage:	verbose
+~~~
 ***
 version
 Usage:	version
+~~~
 ***

@@ -146,10 +146,20 @@ int main(int argc, char** argv)
 			if (pResultTag) {
 				char* pOutput = pResultTag->GenerateXMLString(true);
 				if (pOutput) {
-					output = pOutput;
+					output += pOutput;
 				}
 				pResultTag->DeleteString(pOutput);
 			}
+
+			const sml::ElementXML* pErrorTag = pStructuredResponse->GetErrorTag();
+			if (pErrorTag) {
+				char* pOutput = pErrorTag->GenerateXMLString(true);
+				if (pOutput) {
+					output += pOutput;
+				}
+				pErrorTag->DeleteString(pOutput);
+			}
+
 			delete pStructuredResponse;
 		}
 
