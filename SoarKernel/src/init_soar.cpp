@@ -1661,8 +1661,9 @@ void init_soar (Kernel * thisKernel)
   
   /* This is not quite thread-safe, but it is a step in the right direction.
      -AJC (8/9/02) */
+  // DJP-FREE: I'm not sure why this is only done once ever.
   static Bool bInit = FALSE;
-  if (!bInit)
+  if (!bInit || !soar_version_string)
   {
 	  bInit = TRUE;
 #define INIT_SOAR_BUFFER_SIZE 1000

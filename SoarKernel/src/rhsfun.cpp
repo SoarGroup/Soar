@@ -140,6 +140,9 @@ void remove_rhs_function(agent* thisAgent, Symbol *name) {  /* code from Koss 8/
 
     free_memory(thisAgent, rf, MISCELLANEOUS_MEM_USAGE);
   }
+
+   // DJP-FREE: The name reference needs to be released now the function is gone
+   symbol_remove_ref(thisAgent,name);
 }
 
 
@@ -777,18 +780,19 @@ void init_built_in_rhs_functions (agent* thisAgent) {
 
 void remove_built_in_rhs_functions (agent* thisAgent) {
 
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "write"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "crlf"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "halt"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "make-constant-symbol"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "timestamp"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "accept"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "capitalize-symbol"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "ifeq"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "strlen"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "dont-learn"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "force-learn"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "deep-copy"));
+  // DJP-FREE: These used to call make_sym_constant, but the symbols must already exist and if we call make here again we leak a reference.
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "write"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "crlf"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "halt"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "make-constant-symbol"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "timestamp"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "accept"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "capitalize-symbol"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "ifeq"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "strlen"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "dont-learn"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "force-learn"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "deep-copy"));
 
   remove_built_in_rhs_math_functions(thisAgent);
 }

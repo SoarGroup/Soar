@@ -633,17 +633,19 @@ void init_built_in_rhs_math_functions (agent* thisAgent)
 
 void remove_built_in_rhs_math_functions (agent* thisAgent)
 {
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "+"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "*"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "-"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "/"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "div"));
-  remove_rhs_function (thisAgent, make_sym_constant (thisAgent, "mod"));
-  remove_rhs_function (thisAgent, make_sym_constant(thisAgent, "sin"));
-  remove_rhs_function (thisAgent, make_sym_constant(thisAgent, "cos"));
-  remove_rhs_function (thisAgent, make_sym_constant(thisAgent, "atan2"));
-  remove_rhs_function (thisAgent, make_sym_constant(thisAgent, "sqrt"));
-  remove_rhs_function (thisAgent, make_sym_constant(thisAgent, "abs"));
-  remove_rhs_function (thisAgent, make_sym_constant(thisAgent, "int"));
-  remove_rhs_function (thisAgent, make_sym_constant(thisAgent, "float"));
+  // DJP-FREE: These used to call make_sym_constant, but the symbols must already exist and if we call make here again we leak a reference.
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "+"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "*"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "-"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "/"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "div"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "mod"));
+  remove_rhs_function (thisAgent, find_sym_constant(thisAgent, "sin"));
+  remove_rhs_function (thisAgent, find_sym_constant(thisAgent, "cos"));
+  remove_rhs_function (thisAgent, find_sym_constant(thisAgent, "atan2"));
+  remove_rhs_function (thisAgent, find_sym_constant(thisAgent, "sqrt"));
+  remove_rhs_function (thisAgent, find_sym_constant(thisAgent, "abs"));
+  remove_rhs_function (thisAgent, find_sym_constant(thisAgent, "int"));
+  remove_rhs_function (thisAgent, find_sym_constant(thisAgent, "float"));
+
 }

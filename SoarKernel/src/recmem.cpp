@@ -292,7 +292,7 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
 
   } else
     result = NIL;
-
+  
   /* --- scan through arglist, dereference symbols and deallocate conses --- */
   for (c=arglist; c!=NIL; c=c->rest)
     if (c->first) symbol_remove_ref (thisAgent, (Symbol *)(c->first));
