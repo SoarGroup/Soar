@@ -31,20 +31,20 @@ set kernel [Kernel_CreateEmbeddedConnection KernelSML 0]
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
 
-set printCallbackId [$agent RegisterForPrintEvent $smlEVENT_PRINT PrintCallback "" ""]
-#set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_BEFORE_PRODUCTION_REMOVED ProductionExcisedCallback "" ""]
-set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionFiredCallback "" ""]
-set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback "" ""]
-set agentCallbackId [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback "" ""]
-set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback "" ""]
+set printCallbackId [$agent RegisterForPrintEvent $smlEVENT_PRINT PrintCallback ""]
+#set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_BEFORE_PRODUCTION_REMOVED ProductionExcisedCallback ""]
+set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionFiredCallback ""]
+set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback ""]
+set agentCallbackId [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
+set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
 cd demos/towers-of-hanoi
 #load the TOH productions
 set result [$agent LoadProductions towers-of-hanoi.soar]
 
 $kernel ExecuteCommandLine "run 2 -e" Soar1
 
-$agent UnregisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED $productionCallbackId ""
-$agent UnregisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED $runCallbackId ""
+$agent UnregisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED $productionCallbackId
+$agent UnregisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED $runCallbackId
 
 $kernel ExecuteCommandLine "run 3" Soar1
 
@@ -60,7 +60,7 @@ set speed [time {set result [$kernel ExecuteCommandLine "run" Soar1]}]
 cd ../..
 puts "\n$speed"
 
-set result [$kernel ExecuteCommandLine "init-soar" Soar1]
+#set result [$kernel ExecuteCommandLine "init-soar" Soar1]
 
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted
 set result [$kernel -acquire]

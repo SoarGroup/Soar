@@ -5,7 +5,7 @@
 	$1 = Tcl_DuplicateObj($input);
 }
 
-%typemap(in) Tcl_Interp* {
+%typemap(in, numinputs=0) Tcl_Interp* {
 	$1 = interp;
 }
 
