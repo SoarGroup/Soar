@@ -91,7 +91,7 @@ proc makeTSIDefaultControlPanel { {hide 0}  {x -20} {y 1} } {
        -relief sunken -textvariable newAgentName
   button .agents.create.createAgentButton \
        -text {Create New Agent} -relief raised \
-       -command {createNewAgent $newAgentName; set newAgentName {} }
+       -command {createNewAgent $newAgentName; set newAgentName {}; }
    
   pack .agents.create.name .agents.create.agentNameEntry \
         .agents.create.createAgentButton -side left

@@ -1808,6 +1808,42 @@ proc unrequire-op {} {
 }
 
 proc askCallback { args } {
+	global askCallbackChoice w
+	
+	set w [toplevel .w]
+	set l [listbox $w.l -selectmode browse]
+	wm title $w "Ask"
+	wm geometry $w +200+200
+	
+	pack $w.l
+	
+	bind $w.l <Return> {
+		global askCallbackChoice w
+		set askCallbackChoice [$w.l curselection]
+		destroy $w
+	}
+	
+	bind $w.l <Double-1> {
+		global askCallbackChoice w
+		set askCallbackChoice [$w.l curselection]
+		destroy $w
+	}
+	
+	foreach x $args {
+		$l insert end "Operator $x"
+	}
+	$l insert end "First"
+	$l insert end "Last"
+	$l insert end "Random"
+	
+	focus $w.l
+	grab $w.l
+	tkwait window $w.l
+	
+	return $askCallbackChoice
+}
+
+proc askCallback2 { args } {
 	echo "\nPlease choose one of the following:\n"
 	set numargs [llength $args]
 
@@ -1825,7 +1861,7 @@ proc askCallback { args } {
 	return $choice
 }
 
-proc askCallback2 { args } {
+proc askCallback3 { args } {
 	puts "\nPlease choose one of the following:\n"
 	set numargs [llength $args]
 

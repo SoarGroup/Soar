@@ -112,7 +112,7 @@ proc createNewAgent {name {filepath ""} {filename ""}} {
    $name alias registerWithController registerAgent $name
    $name alias tsiListAgents tsiListAgents
    $name eval tsiInitAgent
-   
+   catch {uplevel #0 [$name eval ask -add askCallback]}
 
    tsiSetupAgentVars $name
 
@@ -120,7 +120,7 @@ proc createNewAgent {name {filepath ""} {filename ""}} {
    set tsiAgentInfo($name,sourceFile) "$filename"
 
    tsiLoadAgentSource $name
-
+   
 }  ;### end createNewAgent
 
 
