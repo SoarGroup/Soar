@@ -1,3 +1,4 @@
 AUTOMAKE_OPTIONS = gnu
 SUBDIRS = \
-Java
+Java\
+Tcl

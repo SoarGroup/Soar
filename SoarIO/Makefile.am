@@ -1,2 +1,2 @@
 AUTOMAKE_OPTIONS = gnu
-SUBDIRS = ConnectionSML ElementXML CommandLineInterface ClientSML ClientSMLSWIG KernelSML examples
+SUBDIRS = ConnectionSML ElementXML CommandLineInterface ClientSML KernelSML examples ClientSMLSWIG

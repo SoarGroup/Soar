@@ -1,5 +1,9 @@
+#!/bin/sh 
+# the next line restarts using tclsh \
+exec tclsh "$0" "$@"
+
 #load the sml stuff
-load Tcl_sml_ClientInterface.dll
+load libTcl_sml_ClientInterface.so
 #lappend auto_path .
 #package require tcl_sml_clientinterface
 

@@ -10,7 +10,7 @@ AM_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr/local/soar)
 
 # Checks for programs.
-AC_DISABLE_SHARED
+#AC_DISABLE_SHARED
 AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
@@ -239,7 +239,7 @@ AC_MSG_CHECKING(for java include file jni.h)
 AC_ARG_WITH(javaincl, [  --with-javaincl=path    Set location of Java include directory], [JAVAINCDIR="$withval"], [JAVAINCDIR=])
 
 if test -z "$JAVAINCDIR"; then
-  JAVAINCDIR="/usr/j2sdk*/include /usr/local/j2sdk*/include /usr/jdk*/include /usr/local/jdk*/include /opt/j2sdk*/include /opt/jdk*/include /usr/java/include /usr/java/j2sdk*/include /usr/java/jdk*/include /usr/local/java/include /opt/java/include /usr/include/java /usr/local/include/java /usr/lib/java/include /usr/include/kaffe /usr/local/include/kaffe /usr/include"
+  JAVAINCDIR="/opt/blackdown-jdk-*/include /usr/j2sdk*/include /usr/local/j2sdk*/include /usr/jdk*/include /usr/local/jdk*/include /opt/j2sdk*/include /opt/jdk*/include /usr/java/include /usr/java/j2sdk*/include /usr/java/jdk*/include /usr/local/java/include /opt/java/include /usr/include/java /usr/local/include/java /usr/lib/java/include /usr/include/kaffe /usr/local/include/kaffe /usr/include"
 
   # Add in default installation directory on Windows for Cygwin
   case $host in
@@ -325,6 +325,11 @@ AC_SUBST(JAVALDSHARED)
 AC_SUBST(JAVACXXSHARED)
 AC_SUBST(JAVACFLAGS)
 
+GCJ=$JAVAC
+GCJFLAGS=""
+AC_SUBST(GCJ)
+AC_SUBST(GCJFLAGS)
+
 # end of swig stuff
 ##########################
 
@@ -338,6 +343,8 @@ AC_OUTPUT(Makefile
 		  ClientSML/Makefile 
 		  ClientSML/src/Makefile
 		  ClientSMLSWIG/Makefile
+		  ClientSMLSWIG/Java/Makefile
+		  ClientSMLSWIG/Tcl/Makefile
 		  KernelSML/Makefile
 		  KernelSML/src/Makefile
 		  examples/Makefile
@@ -345,5 +352,4 @@ AC_OUTPUT(Makefile
 		  examples/TestCommandLineInterface/src/Makefile
 		  examples/towersSML/Makefile
 		  examples/towers/Makefile
-		  examples/TestClientSML/Makefile
-		  examples/TestConnectionSML/Makefile)
+		  examples/TestClientSML/Makefile)
