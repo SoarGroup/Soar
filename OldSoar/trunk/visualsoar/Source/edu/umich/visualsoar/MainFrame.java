@@ -84,6 +84,7 @@ public class MainFrame extends JFrame
     Action tileWindowsAction = new TileWindowsAction();
     Action reTileWindowsAction = new ReTileWindowsAction();
     Action sendProductionsAction = new SendProductionsAction();
+	PerformableAction verifyProjectAction = new VerifyProjectAction();
 	Action checkSyntaxErrorsAction = new CheckSyntaxErrorsAction();
 	PerformableAction checkAllProductionsAction = new CheckAllProductionsAction();
     Action searchDataMapCreateAction = new SearchDataMapCreateAction();
@@ -1112,6 +1113,9 @@ public class MainFrame extends JFrame
                     //%%%This value should be in preferences
 					operatorDesktopSplit.setDividerLocation(.30);
 
+                    //Verify project integrity
+                    verifyProjectAction.perform();
+
                     //Set the title bar to include the project name
                     setTitle(file.getName().replaceAll(".vsa", ""));
 				}
@@ -1802,6 +1806,75 @@ public class MainFrame extends JFrame
 
     }//class UpdateThread
 
+
+ 	/**
+     * This action verifies that a project is intact.  Specifically
+     * it checks that all the project's files are present and can
+     * be loaded.
+     */
+	class VerifyProjectAction extends PerformableAction
+    {
+		public VerifyProjectAction() 
+        {
+			super("Verify Project Integrity");
+			setEnabled(false);
+		}
+
+        public void perform()
+        {
+			Enumeration bfe = operatorWindow.breadthFirstEnumeration();
+            Vector vecNodes = new Vector(10, 50);
+			while(bfe.hasMoreElements())
+            {
+				vecNodes.add(bfe.nextElement());
+			}
+			(new VerifyProjectThread(vecNodes, "Verifiying Project...")).start();
+        }
+        
+		public void actionPerformed(ActionEvent ae)
+        {
+            perform();
+		}
+
+        class VerifyProjectThread extends UpdateThread
+        {
+            public VerifyProjectThread(Vector v, String title)
+            {
+                super(v, title);
+            }
+                
+            public boolean checkEntity(Object node) throws IOException
+            {
+                OperatorNode opNode = (OperatorNode)node;
+
+                //Only file nodes need to be examined
+                if ( ! (opNode instanceof FileNode))
+                {
+                    return false;
+                }
+                
+                File f = new File(opNode.getFileName());
+                if (!f.canRead())
+                {
+                    vecErrors.add("Error!  Project Corrupted:  Unable to open file: "
+                                  + opNode.getFileName());
+                    return true;
+                }
+                    
+                if (!f.canWrite())
+                {
+                    vecErrors.add("Error!  Unable to write to file: "
+                                  + opNode.getFileName());
+                    return true;
+                }
+
+                //We lie and say there are errors no matter what so that
+                //the "there were no errors..." message won't appear.
+                return true;
+            }
+        }//class VerifyProjectThread
+	
+	}//class VerifyProjectAction
 
     
  	/**
