@@ -185,8 +185,21 @@ production *specify_production(instantiation *ist){
 			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
 		}
 	 }
+		decay_list = current_agent(decay_timelist);
+		decay_pos = current_agent(current_decay_timelist_element)->position;
 	 while (1){
-		num = rand() % current_agent(num_wmes_in_rete);
+		// get wmes in order of activation
+		 for (i = 0; i < DECAY_ARRAY_SIZE ; i++){
+		 
+			 decay_pos = decay_pos > 0 ? decay_pos - 1 : MAX_DECAY - 1;
+			if (decay_list[decay_pos].first_decay_element != NULL)
+			{
+				decay_element = decay_list[decay_pos].first_decay_element;
+				while (decay_element != NULL)
+				{
+		 
+		 
+		 num = rand() % current_agent(num_wmes_in_rete);
 		w = current_agent(all_wmes_in_rete);
 		for (i = 0 ; i < num; i++)
 			w = w->rete_next;
