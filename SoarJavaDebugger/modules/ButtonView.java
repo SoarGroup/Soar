@@ -34,8 +34,6 @@ import doc.Document;
 ********************************************************************************************/
 public class ButtonView extends AbstractView
 {
-	protected Composite	m_Container ;
-	
 	protected static class ButtonInfo
 	{
 		protected String	m_Name ;
@@ -64,15 +62,6 @@ public class ButtonView extends AbstractView
 	* 
 	********************************************************************************************/
 	public String getModuleBaseName() { return "buttons" ; }
-
-	/********************************************************************************************
-	* 
-	* Remove ourselves from any events that we are listening for (in preparation for deleting this window)
-	* 
-	********************************************************************************************/
-	public void removeListeners()
-	{
-	}
 	
 	/********************************************************************************************
 	* 
@@ -164,7 +153,7 @@ public class ButtonView extends AbstractView
 
 		// Even when we have a name it's possible that the view it referred to
 		// is no longer around, so this can still return null.
-		return m_MainFrame.getNameRegister().getView(m_LinkedViewName) ;
+		return m_Frame.getNameRegister().getView(m_LinkedViewName) ;
 	}
 	
 	protected void buttonPressed(SelectionEvent e, int pos)
@@ -179,12 +168,12 @@ public class ButtonView extends AbstractView
 			if (linkedView != null)
 				linkedView.executeAgentCommand(command, true) ;
 			else
-				m_MainFrame.executeCommandPrimeView(command, true) ;
+				m_Frame.executeCommandPrimeView(command, true) ;
 		}
 		
 		if (button.m_InternalCommand != null)
 		{
-			m_MainFrame.executeDebuggerCommand(button.m_InternalCommand, true) ;
+			m_Frame.executeDebuggerCommand(button.m_InternalCommand, true) ;
 		}
 	}
 

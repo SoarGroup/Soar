@@ -257,7 +257,7 @@ public class MainWindow
 		// Now connect up a specific type of view with these panes
 		AbstractView trace = new TraceView() ;
 		trace.init(m_Frame, m_Document, top) ;
-		trace.generateName() ;
+		trace.generateName(m_Frame) ;
 		top.addView(trace) ;
 
 		// Create the button view
@@ -273,13 +273,13 @@ public class MainWindow
 		// This button uses an internally scripted command to drive the debugger itself to load a demo
 		buttons.addButton("Towers of Hanoi", null, "demo towers-of-hanoi towers-of-hanoi.soar") ;
 		buttons.init(m_Frame, m_Document, buttonPane) ;
-		buttons.generateName() ;
+		buttons.generateName(m_Frame) ;
 		buttonPane.addView(buttons) ;
 
 		// Create another trace window at the bottom for now
 		AbstractView keep = new KeepCommandView() ;
 		keep.init(m_Frame, m_Document, bottom) ;
-		keep.generateName() ;
+		keep.generateName(m_Frame) ;
 		bottom.addView(keep) ;
 		
 		// Start with the focus on the top trace window
@@ -289,13 +289,13 @@ public class MainWindow
 		UpdateCommandView update2 = new UpdateCommandView() ;
 		update2.init(m_Frame, m_Document, rightTop) ;
 		update2.setInitialCommand("print <s>") ;
-		update2.generateName() ;
+		update2.generateName(m_Frame) ;
 		rightTop.addView(update2) ;
 		
 		// Command view for bottom right
 		AbstractView update1 = new KeepCommandView() ;
 		update1.init(m_Frame, m_Document, rightBottom) ;
-		update1.generateName() ;
+		update1.generateName(m_Frame) ;
 		rightBottom.addView(update1) ;
 
 		// Button bar for right bottom
@@ -306,7 +306,7 @@ public class MainWindow
 		buttons.addButton("Print stack", "print --stack") ;
 		buttons.init(m_Frame, m_Document, buttonsRightBottom) ;
 		buttons.setLinkedView(update1.getName()) ;
-		buttons.generateName() ;
+		buttons.generateName(m_Frame) ;
 		buttonsRightBottom.addView(buttons) ;
 
   		// Reset the default text font (once all windows have been created)
@@ -361,7 +361,11 @@ public class MainWindow
        	
        	// We reset the agent focus (if it existed before).
        	// This allows the new windows to all register for events with this agent.
-       	m_Frame.setAgentFocus(currentAgentFocus) ;  		
+       	m_Frame.setAgentFocus(currentAgentFocus) ;  	
+       	
+		// Apply the current font to the newly loaded windows.
+		// (The font is considered a user's preference currently not part of the layout)
+		setTextFont(m_Frame.getTextFont()) ;
 	}
   	
 	/************************************************************************
@@ -414,33 +418,42 @@ public class MainWindow
 		}
 	}
   		
-	/** Convert a sash form (and its children) to XML */
-	protected ElementXML convertSashFormToXML(SashForm sash, String tagName)
+	/** Convert a sash form (without its children) to XML */
+	public ElementXML convertSashToXML(int sashOrientation, int[] weights, String tagName)
 	{
 		ElementXML element = new ElementXML(tagName) ;
 		
 		// Record the class and style of this composite so we can rebuild it later
-		element.addAttribute(ElementXML.kClassAttribute, sash.getClass().toString()) ;
+		element.addAttribute(ElementXML.kClassAttribute, SashForm.class.toString()) ;
 		
 		// The sash form stores its orientation (the style we really need) separately
 		// from the control's style, so retreive it from orientation.
-		int style = sash.getOrientation() ;
-		element.addAttribute("style", Integer.toString(style)) ;
+		element.addAttribute("style", Integer.toString(sashOrientation)) ;
 
 		// Record the weights between the windows
-		int[] weights = sash.getWeights() ;
 		element.addAttribute("weights", Integer.toString(weights.length)) ;
 		for (int i = 0 ; i < weights.length ; i++)
 		{
 			element.addAttribute("weight" + i, Integer.toString(weights[i])) ;
 		}
+		
+		return element ;
+	}
+	
+	/** Convert a sash form (and its children) to XML */
+	protected ElementXML convertSashFormToXML(SashForm sash, String tagName)
+	{
+		int style = sash.getOrientation() ;
+		int[] weights = sash.getWeights() ;
 
+		ElementXML element = convertSashToXML(style, weights, tagName) ;
+		
 		// Add the children
 		addChildrenToXML(element, sash) ;
 		
 		return element ;
 	}
-	
+
 	/** Add all of the children of this composite as children of the XML element **/
 	protected void addChildrenToXML(ElementXML element, Composite composite)
 	{
@@ -454,7 +467,7 @@ public class MainWindow
 
 			if (pane != null)
 			{
-				element.addChildElement(pane.convertToXML("pane")) ;				
+				element.addChildElement(pane.convertToXML(Pane.kTagName)) ;				
 				continue ;
 			}
 			
@@ -529,7 +542,7 @@ public class MainWindow
 			
 			if (tagName.equalsIgnoreCase("sash") || tagName.equalsIgnoreCase("composite"))
 				loadSwtFromXML(frame, doc, parent, child) ;
-			else if (tagName.equalsIgnoreCase("pane"))
+			else if (tagName.equalsIgnoreCase(Pane.kTagName))
 				loadPaneFromXML(frame, doc, parent, child) ;
 			else
 				// Throw during development, but really we should just ignore this
@@ -572,7 +585,19 @@ public class MainWindow
 				weights[i] = element.getAttributeIntThrows("weight" + i) ;
 			}
 			
-			sash.setWeights(weights) ;
+			// If there's an error connecting the weights together,
+			// fall back on even spacing as a default
+			if (weights.length != element.getNumberChildren())
+			{
+				System.out.println("Error: Number of weights didn't match number of children, so resetting them all to equal weight") ;
+				weights = new int[element.getNumberChildren()] ;
+				
+				for (int w = 0 ; w < weights.length ; w++)
+				{
+					weights[w] = 100 / (weights.length) ;
+				}
+			}
+			sash.setWeights(weights) ;				
 		}
 		else if (tag.equalsIgnoreCase("composite"))
 		{

@@ -449,14 +449,7 @@ public class MainFrame
 	********************************************************************************************/
 	public boolean loadLayoutFile(String filename, boolean showErrors)
 	{
-		boolean ok = getMainWindow().loadLayoutFromFile(filename, showErrors);
-		
-		// Apply the current font to the newly loaded windows.
-		// (The font is considered a user's preference currently not part of the layout)
-		if (ok)
-			getMainWindow().setTextFont(m_TextFont) ;
-		
-		return ok ;
+		return getMainWindow().loadLayoutFromFile(filename, showErrors);
 	}
 
 	public boolean saveLayoutFile(String filename)

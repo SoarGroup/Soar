@@ -12,6 +12,7 @@
 package modules;
 
 import manager.Pane;
+import menu.ParseSelectedText;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
@@ -41,9 +42,6 @@ import helpers.*;
 ********************************************************************************************/
 public abstract class BaseCommandView extends AbstractView
 {
-	/** Everything lives inside this container so we can control the layout */
-	private Composite m_Container ;
-
 	private Text m_Text ;
 	
 	private Combo m_CommandCombo ;
@@ -83,7 +81,6 @@ public abstract class BaseCommandView extends AbstractView
 	public BaseCommandView()
 	{
 	}
-
 	
 	protected ParseSelectedText.SelectedObject getCurrentSelection()
 	{
@@ -117,10 +114,10 @@ public abstract class BaseCommandView extends AbstractView
 		// For now let's dump the output into the main trace window
 		// That lets us do interesting things by copying output into one of the
 		// scratch windows and working with it there.
-		AbstractView outputView = m_MainFrame.getPrimeView() ;
+		AbstractView outputView = m_Frame.getPrimeView() ;
 		if (outputView == null) outputView = this ;
 		
-		selectionObject.fillMenu(getDocument(), outputView, contextMenu, simple) ;
+		selectionObject.fillMenu(getDocument(), this, outputView, contextMenu, simple) ;
 	}
 
 	/** Windows that do auto-updates can be usefully primed with an initial command (e.g. print --stack) when defining a default behavior */
@@ -155,7 +152,7 @@ public abstract class BaseCommandView extends AbstractView
 		
 		m_Container.layout() ;
 	}
-		
+	
 	public void init(MainFrame frame, Document doc, Pane parentPane)
 	{
 		if (m_Inited)
@@ -197,7 +194,7 @@ public abstract class BaseCommandView extends AbstractView
 		m_Container.addDisposeListener(new DisposeListener() { public void widgetDisposed(DisposeEvent e) { removeListeners() ; } } ) ;
 		
 		// We want to know when the frame focuses on particular agents
-		m_MainFrame.addAgentFocusListener(this) ;
+		m_Frame.addAgentFocusListener(this) ;
 		
 		// Create a custom context menu for the text area
 		final Menu menu = new Menu (m_Text.getShell(), SWT.POP_UP);
@@ -224,7 +221,11 @@ public abstract class BaseCommandView extends AbstractView
 	 * 
 	********************************************************************************************/
 	protected void rightButtonPressed(MouseEvent e)
-	{
+	{	
+		// BUGBUG: Found a solution to replace this.
+		// Need to switch to StyledText and the getOffsetAtLocation() method will do this for me.
+		// EXCELLENT!
+		
 		// Unfortunately, SWT doesn't support getting a character location from a position
 		// so I'm adding support for it here.  However, this support is pure Windows code.
 		// We'll need to figure out how to have code like this and still compile the debugger
@@ -256,7 +257,7 @@ public abstract class BaseCommandView extends AbstractView
 	// Agent listeners (from Soar) are handled separately.
 	private void removeListeners()
 	{
-		m_MainFrame.removeAgentFocusListener(this) ;
+		m_Frame.removeAgentFocusListener(this) ;
 	}
 	
 	/************************************************************************
@@ -349,6 +350,9 @@ public abstract class BaseCommandView extends AbstractView
 		Class cl = this.getClass() ;
 		element.addAttribute(ElementXML.kClassAttribute, cl.getName()) ;
 
+		if (m_Name == null)
+			throw new IllegalStateException("We've created a view with no name -- very bad") ;
+		
 		// Store this object's properties.
 		element.addAttribute("Name", m_Name) ;
 		element.addAttribute("UpdateOnStop", Boolean.toString(m_UpdateOnStop)) ;
@@ -401,11 +405,10 @@ public abstract class BaseCommandView extends AbstractView
 	{
 		if (this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUN_ENDS.swigValue())
 		{
-			System.out.println("Received run event") ;
+			//System.out.println("Received run event") ;
 			
 			// Retrieve the current command in the combo box
-			
-			// BUGBUG: Not sure how to make this thread safe yet.
+			// (this call is thread safe and switches to the UI thread if necessary)
 			final String command = getCommandText() ;
 
 			// We don't want to execute "run" commands when Soar stops--or we'll get into an

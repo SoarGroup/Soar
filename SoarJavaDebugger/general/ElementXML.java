@@ -473,7 +473,7 @@ public class ElementXML
 
 	/** The parent node for this element (i.e. the inverse of the child relationship) */
 	public void		  setParent(ElementXML element) { this.m_Parent = element ; }
-	
+		
 	/************************************************************************
 	* 
 	* These are yet to be implemented -- but are intended to convert
@@ -718,6 +718,50 @@ public class ElementXML
 	
 	/************************************************************************
 	* 
+	* Replaces one child with another (in the same position in the list of children).
+	* 
+	* @param existingChild		The child being replaced
+	* @param newChild			The child being added (can be null -> just deletes)
+	* 
+	* @return True if replacement succeeds (i.e. existingChild is found)
+	*************************************************************************/
+	public boolean replaceChild(ElementXML existingChild, ElementXML newChild)
+	{
+		for (int i = 0 ; i < this.m_ChildElementList.size() ; i++)
+		{
+			if (getChild(i) == existingChild)
+			{
+				m_ChildElementList.remove(i) ;
+				existingChild.setParent(null) ;
+				
+				if (newChild != null)
+				{
+					m_ChildElementList.add(i, newChild) ;
+					newChild.setParent(this) ;
+				}
+				
+				return true ;
+			}
+		}
+		
+		return false ;
+	}
+
+	/************************************************************************
+	* 
+	* Removes a child from the XML tree
+	* 
+	* @param existingChild		The child being removed
+	* 
+	* @return True if removal succeeds (i.e. existingChild is found)
+	*************************************************************************/
+	public boolean removeChild(ElementXML child)
+	{
+		return replaceChild(child, null) ;
+	}
+	
+	/************************************************************************
+	* 
 	* Returns the tag name for this element.
 	* E.g. <author>Thomas</author> the tag name is "author".
 	* 
@@ -873,6 +917,35 @@ public class ElementXML
 		// Clean up
 		output.close() ;
 		fw.close() ;
+	}
+	
+	public String WriteToString()
+	{
+		StringWriter sw = new StringWriter() ;
+		BufferedWriter output = new BufferedWriter(sw) ;
+		
+		try
+		{
+			// Write out the header
+			ElementXML.WriteHeader(output) ;
+			
+			// Write out the stream
+			WriteToStream(output, 0) ;
+			
+			// Clean up
+			output.close() ;
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+			return null ;
+		}
+		
+		return sw.toString() ;
+	}
+	
+	public String toString()
+	{
+		return WriteToString() ;
 	}
 	
 	/************************************************************************

@@ -14,7 +14,12 @@ package doc;
 import general.ElementXML;
 import manager.Pane;
 import modules.AbstractView;
+import modules.TraceView;
 import debugger.MainFrame;
+import dialogs.NewWindowDialog;
+
+import org.eclipse.swt.*;
+import org.eclipse.swt.widgets.*;
 
 /************************************************************************
  * 
@@ -35,7 +40,7 @@ public class DebuggerCommands
 		m_Frame = frame ;
 		m_Document = doc ;
 	}
-	
+		
 	public Object executeCommand(String command, boolean echoCommand)
 	{
 		if (command == null)
@@ -54,28 +59,161 @@ public class DebuggerCommands
 			m_Frame.loadDemo(new java.io.File(tokens[1], tokens[2]), echoCommand) ;
 			return null ;
 		}
+		
+		// Remove an existing view: removeview <framename> <viewname>
+		if (first.equals("removeview"))
+		{
+			String frameName = tokens[1] ;
+			String viewName  = tokens[2] ;
 
-		// Add a new view: addview <framename> <viewname> sash right|left|top|bottom
+			MainFrame frame = m_Document.getFrameByName(frameName) ;
+			AbstractView view = frame.getNameRegister().getView(viewName) ;
+			Pane pane = view.getPane() ;
+
+			// Convert everything to XML
+			ElementXML xml = frame.getMainWindow().convertToXML() ;
+
+			// Find the XML element for the pane we're removing
+			ElementXML removePane = pane.getElementXML() ;
+			
+			boolean done = false ;
+			
+			while (!done)
+			{
+				ElementXML parent = removePane.getParent() ;
+				
+				// Can't remove the children of the top window as the top
+				// window is just a container that hosts everything else
+				// (i.e. it only has one child)
+				if (parent == null)
+				{
+					frame.ShowMessageBox("Can't remove the last window") ;
+					return null ;
+				}
+				
+				parent.removeChild(removePane) ;
+
+				// If the parent is a composite, remove it and its twin for now
+				if (parent.getTagName().equals("composite"))
+				{
+					removePane = parent ;
+				}
+				else if (parent.getNumberChildren() > 0)
+				{
+					// Note: For sashform's this actually leaves the XML in an invalid state with
+					// incorrect weight information (to match the wrong number of children).
+					// Fixed that by allowing the load logic to recover from that state and just
+					// default to equal weights and the result seems fine.
+					done = true ;
+				}
+				
+				removePane = parent ;
+			}
+			
+			try
+			{
+				// Rebuild the entire layout from the new XML structure.
+				frame.getMainWindow().loadFromXML(xml) ;
+			} catch (Exception e)
+			{
+				// Fatal error
+				e.printStackTrace();
+			}
+
+			return null ;
+		}
+
+		// Add a new view: addview <framename> <viewname> right|left|top|bottom
 		if (first.equals("addview"))
 		{
 			String frameName = tokens[1] ;
 			String viewName  = tokens[2] ;
-			String winType   = tokens[3] ;
-			String direction = tokens[4] ;
-			
+			String direction = tokens[3] ;
+						
 			// To the user we are adding a view, but internally we're adding a pane
 			// if we're adding a sash and then that pane will contain the view
 			MainFrame frame = m_Document.getFrameByName(frameName) ;
 			AbstractView view = frame.getNameRegister().getView(viewName) ;
 			Pane pane = view.getPane() ;
-			
+
+			// Ask for the type of window to add
+			Module module = NewWindowDialog.showDialog(frame, "Select new window", m_Document.getModuleList()) ;
+			if (module == null)
+				return null ;
+
 			// The plan is to convert the current set of windows to XML
 			// then modify that tree structure and then load the XML back in.
-			// To make this work I think when we convertToXML we should attach the
-			// XML to the windows as data (at least to the views).  Then we can
-			// go back from the view to the correct node in the XML that represents it
-			// and the manipulation at that level shouldn't be too hard.
+			// (We do this because SWT requires us to rebuild all of the windows from
+			//  the point of the change down, so we may as well rebuild everything since we
+			//  already have all of that code and it's both fairly complex and heavily used).
 			ElementXML xml = frame.getMainWindow().convertToXML() ;
+			
+			// Find the XML element for the pane we're modifying
+			ElementXML existingPane = pane.getElementXML() ;
+
+			ElementXML parent = existingPane.getParent() ;
+
+			// If the parent window is a composite then it's children have
+			// fixed locations and we treat them as a unit, so we move up
+			// another level.
+			while (parent.getTagName().equals("composite"))
+			{
+				existingPane = parent ;
+				parent = parent.getParent() ;
+			}
+
+			// Create a new XML subtree
+			int orientation = (direction.equals("right") || direction.equals("left")) ? SWT.HORIZONTAL : SWT.VERTICAL ;
+			int[] weights = new int[] { 50, 50 } ;
+			ElementXML sashParent = frame.getMainWindow().convertSashToXML(orientation, weights, "sash") ;
+			
+			// We create a new pane but with no parent window (so the pane object is not instantiated
+			// into SWT windows).  We just want to use it to generate the new XML.
+			Pane newPane = new Pane(true) ;
+			
+			// Create an instance of the class.  This view won't be fully instantiated
+			// but we'll use it to create a name and generate XML etc.
+			AbstractView newView = module.createInstance() ;
+			
+			if (newView == null)
+				return null ;
+
+			// Generate a name and make this view a child of the pane we're building
+			newView.generateName(frame) ;
+			newPane.addView(newView) ;
+
+			// Create XML for the new sash form with appropriate children
+			ElementXML newChild1 = existingPane ;
+			ElementXML newChild2 = newPane.convertToXML(Pane.kTagName) ;
+			
+			// The order to add the children depends on which side
+			// we're adding to.
+			if (direction.equals("right") || direction.equals("bottom"))
+			{
+				sashParent.addChildElement(newChild1) ;
+				sashParent.addChildElement(newChild2) ;
+			}
+			else
+			{
+				sashParent.addChildElement(newChild2) ;
+				sashParent.addChildElement(newChild1) ;				
+			}
+			
+			// Change the XML tree to insert this new sash form.			
+			boolean success = parent.replaceChild(existingPane, sashParent) ;
+			
+			if (!success)
+				throw new IllegalStateException("Error in replacing panes") ;
+				
+			try
+			{
+				// Rebuild the entire layout from the new XML structure.
+				frame.getMainWindow().loadFromXML(xml) ;
+			} catch (Exception e)
+			{
+				// Fatal error
+				e.printStackTrace();
+			}
 			
 			return null ;
 		}

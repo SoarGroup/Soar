@@ -96,9 +96,10 @@ public class Document
 			m_DocumentThread.start() ;
 		}
 		
-		Module combo1 = new Module("Auto Update Window", "Commands are entered in a combo box, the output from just the last command is shown in the text window", modules.BaseCommandView.class) ;
-		Module combo2 = new Module("Combo Box Command Window", "Commands are entered in a combo box, the text window shows the complete trace of executing all commands", modules.KeepCommandView.class) ;
-		Module combo3 = new Module("Command Line Window (Combo Box)", "A form of simple command line interface, but using a combo box for the input (not typing at a normal prompt)", TraceView.class) ;
+		// BUGBUG: The name and description should come from the classes.
+		Module combo1 = new Module("Trace View", "Commands are entered at a prompt.  Output from the commands and trace output from runs is shown in a text window.", modules.TraceView.class) ;
+		Module combo2 = new Module("Auto Update View", "The user's command is automatically executed at the end of each run.", modules.UpdateCommandView.class) ;
+		Module combo3 = new Module("Keep View", "Commands are entered at a prompt and the results are displayed in a scrolling text window.  Trace output from runs is not shown.", modules.KeepCommandView.class) ;
 
 		m_ModuleList.add(combo1) ;
 		m_ModuleList.add(combo2) ;
@@ -236,9 +237,12 @@ public class Document
 			}
 		}
 	}
-	
+		
 	protected void registerStandardKernelEvents()
 	{
+		// Added this just for testing
+//		int jSystemStartCallback = m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, "systemEventHandler", this) ;
+
 		int jAgentCreatedCallback = m_Kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_CREATED, this, "agentEventHandler", this) ;
 		int jAgentDestroyedCallback = m_Kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_DESTROYED, this, "agentEventHandler", this) ;
 		
@@ -450,6 +454,11 @@ public class Document
 		return m_IsRemote ;
 	}
 
+	public void systemEventHandler(int eventID, Object data, Kernel kernel)
+	{
+		System.out.println("Received system event") ;
+	}
+	
 	public void agentEventHandler(int eventID, Object data, String agentName)
 	{
 		Agent agent = getAgent(agentName) ;

@@ -43,16 +43,25 @@ public class Pane
 	private AbstractViewList	m_Views = new AbstractViewList() ;
 	private Composite			m_Pane ;
 	public static final String	kPaneKey = "Pane" ;
+	public static final String	kXMLKey  = "XML" ;
+	public static final String  kTagName = "pane" ;
 	
 	public Pane(Composite parent)
 	{
 		// We provide a border around the pane so we can find the edges to drag
 		m_Pane = new Group(parent, SWT.SHADOW_ETCHED_IN) ;
 		m_Pane.setLayout(new FillLayout(SWT.VERTICAL)) ;
-		
+
 		// Mark this composite as a pane window so we know we're
 		// at a leaf in the layout and moving over to the actual module's content
 		m_Pane.setData(kPaneKey, this) ;
+	}
+	
+	// Provide a way to create a Pane without a parent window
+	// This is just so we can have a temporary pane object.
+	// I'm including a parent here to make sure folks don't use this by accident.
+	public Pane(boolean noParent)
+	{
 	}
 	
 	public Composite getWindow()
@@ -63,9 +72,11 @@ public class Pane
 	public void addView(AbstractView view)
 	{
 		m_Views.add(view) ;
-		
-		if (m_Views.size() != 1)
-			throw new IllegalStateException("For now only supporting one view per pane") ;
+	}
+	
+	public boolean removeView(AbstractView view)
+	{
+		return m_Views.remove(view) ;
 	}
 	
 	public boolean setFocus()
@@ -88,6 +99,12 @@ public class Pane
 	public ElementXML convertToXML(String tagName)
 	{
 		ElementXML element = new ElementXML(tagName) ;
+
+		// We'll record a reference from the window the XML
+		// This allows us to quickly index into the XML tree at a specific
+		// point given a pane or a view.
+		if (getWindow() != null)
+			getWindow().setData(kXMLKey, element) ;
 		
 		int n = m_Views.size() ;
 		for (int i = 0 ; i < n ; i++)
@@ -98,6 +115,12 @@ public class Pane
 		}
 		
 		return element ;
+	}
+
+	/** Look up the node in the XML tree that matches this pane.  Need to have called "convertToXML" for everything before calling this */
+	public ElementXML getElementXML()
+	{
+		return (ElementXML)getWindow().getData(kXMLKey) ;
 	}
 	
 	protected void loadFromXML(MainFrame frame, Document doc, Composite parent, ElementXML element) throws Exception

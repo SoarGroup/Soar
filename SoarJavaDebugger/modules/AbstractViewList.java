@@ -22,8 +22,9 @@ public class AbstractViewList
 {
 	protected ArrayList	m_List = new ArrayList() ;
 	
-	public int size()					{ return m_List.size() ; }
-	public void add(AbstractView view)	{ m_List.add(view) ; }
-	public AbstractView get(int index)	{ return (AbstractView)m_List.get(index) ; }
-	public void clear()					{ m_List.clear() ; }
+	public int size()						{ return m_List.size() ; }
+	public void add(AbstractView view)		{ m_List.add(view) ; }
+	public boolean remove(AbstractView view){ return m_List.remove(view) ; }
+	public AbstractView get(int index)		{ return (AbstractView)m_List.get(index) ; }
+	public void clear()						{ m_List.clear() ; }
 }

@@ -38,13 +38,16 @@ public abstract class AbstractView implements AgentFocusListener
 	protected Document 		m_Document ;
 	
 	/** The main frame that owns this window.  **/
-	protected MainFrame		m_MainFrame ;
+	protected MainFrame		m_Frame ;
 	
 	/** The window that owns this view */
 	protected Pane			m_Pane ;
 
 	/** The name of this view -- this name is unique within the frame (not the entire debugger) so we can cross-reference based on this name */
 	protected String		m_Name ;
+	
+	/** The window which will contain all others within this view */
+	protected Composite		m_Container ;
 	
 	/********************************************************
 	 * All AbstractView's need to have a default constructor
@@ -56,7 +59,7 @@ public abstract class AbstractView implements AgentFocusListener
 	}
 		
 	/** The main frame that owns this window.  **/
-	public MainFrame getMainFrame() { return m_MainFrame; }
+	public MainFrame getMainFrame() { return m_Frame; }
 
 	/** The document is used to represent the Soar process.  There is one shared document for the entire debugger. **/
 	public Document getDocument() 	{ return m_Document ; }
@@ -66,19 +69,35 @@ public abstract class AbstractView implements AgentFocusListener
 
 	/** The window that owns this view */
 	public Pane getPane() 			{ return m_Pane ; }
+		
+	/** Close down this window, doing any necessary clean up */
+	public void close(boolean dispose)
+	{
+		unregisterName() ;
+		unregisterForAgentEvents(getAgentFocus()) ;
+
+		if (dispose)
+			m_Container.dispose() ;
+	}
 	
 	/** This method is called when we initialize the module. */
 	protected void setValues(MainFrame frame, Document doc, Pane parentPane)
 	{
-		m_MainFrame = frame ;
+		m_Frame = frame ;
 		m_Document  = doc ;
 		m_Pane 	    = parentPane ;
 	}
 	
 	/** Generates a unique name for this window */
-	public void generateName()
+	public void generateName(MainFrame frame)
 	{
-		m_Name = m_MainFrame.generateName(getModuleBaseName(), this) ;
+		// Use the frame that's passed in, in case our frame pointer is yet to be initialized
+		m_Name = frame.generateName(getModuleBaseName(), this) ;
+	}
+	
+	protected void unregisterName()
+	{
+		m_Frame.getNameRegister().unregisterName(getName()) ;		
 	}
 
 	/********************************************************************************************
@@ -91,7 +110,7 @@ public abstract class AbstractView implements AgentFocusListener
 	********************************************************************************************/
 	public Agent getAgentFocus()
 	{
-		return m_MainFrame.getAgentFocus() ;
+		return m_Frame.getAgentFocus() ;
 	}
 
 	/********************************************************************************************
@@ -203,15 +222,17 @@ public abstract class AbstractView implements AgentFocusListener
 		item.setText (text) ;
 		
 		item.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) { m_MainFrame.executeDebuggerCommand(command, false) ; } } ) ;
+			public void widgetSelected(SelectionEvent e) { m_Frame.executeDebuggerCommand(command, false) ; } } ) ;
 	}	
 	
 	public void fillWindowMenu(Menu menu)
 	{
-		addItem(menu, "Add window -- split right", "addview " + m_MainFrame.getName() + " " + this.getName() + " sash right") ;
-		addItem(menu, "Add window -- split left", "addview " + m_MainFrame.getName() + " " + this.getName() + " sash left") ;
-		addItem(menu, "Add window -- split top", "addview " + m_MainFrame.getName() + " " + this.getName() + " sash top") ;
-		addItem(menu, "Add window -- split bottom", "addview " + m_MainFrame.getName() + " " + this.getName() + " sash bottom") ;
+		addItem(menu, "Add window -- split right", "addview " + m_Frame.getName() + " " + this.getName() + " right") ;
+		addItem(menu, "Add window -- split left", "addview " + m_Frame.getName() + " " + this.getName() + " left") ;
+		addItem(menu, "Add window -- split top", "addview " + m_Frame.getName() + " " + this.getName() + " top") ;
+		addItem(menu, "Add window -- split bottom", "addview " + m_Frame.getName() + " " + this.getName() + " bottom") ;
+		new MenuItem(menu, SWT.SEPARATOR) ;
+		addItem(menu, "Remove window", "removeview " + m_Frame.getName() + " " + this.getName()) ;
 	}
 }
 

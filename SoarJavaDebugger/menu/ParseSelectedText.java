@@ -9,7 +9,7 @@
 * 
 * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
 ********************************************************************************************/
-package helpers;
+package menu;
 
 import modules.AbstractView;
 
@@ -34,12 +34,13 @@ public class ParseSelectedText
 		/********************************************************************************************
 		 * Fills in menu items that are appropriate for this type of object
 		 * 		
-		 * @param doc		The main document
-		 * @param view		The view which will execute the command and show the output (not required to be one where menu is displayed)
-		 * @param menu		The menu being filled in (usually a context menu)
-		 * @param simple	If true only build the most command commands.  If false, build all commands.
+		 * @param doc			The main document
+		 * @param owningView	The view where this menu will be displayed
+		 * @param outputView	The view which will execute the command and show the output (not required to be one where menu is displayed)
+		 * @param menu			The menu being filled in (usually a context menu)
+		 * @param simple		If true only build the most command commands.  If false, build all commands.
 		********************************************************************************************/
-		public abstract void fillMenu(Document doc, AbstractView view, Menu menu, boolean simple) ;
+		public abstract void fillMenu(Document doc, AbstractView owningView, AbstractView outputView, Menu menu, boolean simple) ;
 		
 		protected void addItem(final AbstractView view, Menu menu, String text, final String command)
 		{
@@ -77,14 +78,14 @@ public class ParseSelectedText
 		public String toString() { return "Production " + m_Name ; } 
 		
 		/** Fills in menu items that are appropriate for this type of object */
-		public void fillMenu(Document doc, AbstractView view, Menu menu, boolean simple)
+		public void fillMenu(Document doc, AbstractView owningView, AbstractView outputView, Menu menu, boolean simple)
 		{
-			addItem(view, menu, doc.getSoarCommands().getPrintCommand(m_Name)) ;
-			addItem(view, menu, doc.getSoarCommands().getMatchesCommand(m_Name)) ;
-			addItem(view, menu, doc.getSoarCommands().getMatchesWmesCommand(m_Name)) ;
-			addItem(view, menu, doc.getSoarCommands().getExciseCommand(m_Name)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(m_Name)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getMatchesCommand(m_Name)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getMatchesWmesCommand(m_Name)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getExciseCommand(m_Name)) ;
 			
-			addWindowSubMenu(view, menu) ;
+			addWindowSubMenu(owningView, menu) ;
 		}
 	}
 	
@@ -100,14 +101,14 @@ public class ParseSelectedText
 		public String toString() { return "ID " + m_Name ; }
 		
 		/** Fills in menu items that are appropriate for this type of object */
-		public void fillMenu(Document doc, AbstractView view, Menu menu, boolean simple)
+		public void fillMenu(Document doc, AbstractView owningView, AbstractView outputView, Menu menu, boolean simple)
 		{
-			addItem(view, menu, doc.getSoarCommands().getPrintCommand(m_Name)) ;
-			addItem(view, menu, doc.getSoarCommands().getPrintDepthCommand(m_Name, 2)) ;
-			addItem(view, menu, doc.getSoarCommands().getPrintInternalCommand(m_Name)) ;
-			addItem(view, menu, doc.getSoarCommands().getPrintCommand("{(* ^* " + m_Name + ")}")) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(m_Name)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintDepthCommand(m_Name, 2)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintInternalCommand(m_Name)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand("{(* ^* " + m_Name + ")}")) ;
 			
-			addWindowSubMenu(view, menu) ;
+			addWindowSubMenu(owningView, menu) ;
 		}
 	}
 	
@@ -126,14 +127,14 @@ public class ParseSelectedText
 		}
 		
 		/** Fills in menu items that are appropriate for this type of object */
-		public void fillMenu(Document doc, AbstractView view, Menu menu, boolean simple)
+		public void fillMenu(Document doc, AbstractView owningView, AbstractView outputView, Menu menu, boolean simple)
 		{
-			addItem(view, menu, doc.getSoarCommands().getPreferencesCommand(m_ID + " " + m_Att)) ;
-			addItem(view, menu, doc.getSoarCommands().getPreferencesNameCommand(m_ID + " " + m_Att)) ;
-			addItem(view, menu, doc.getSoarCommands().getPrintCommand(m_ID)) ;
-			addItem(view, menu, doc.getSoarCommands().getPrintCommand(m_Value)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPreferencesCommand(m_ID + " " + m_Att)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPreferencesNameCommand(m_ID + " " + m_Att)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(m_ID)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(m_Value)) ;
 			
-			addWindowSubMenu(view, menu) ;
+			addWindowSubMenu(owningView, menu) ;
 		}
 		
 		public String toString() { return "WME " + m_ID + " " + m_Att + " " + m_Value ; }
@@ -149,9 +150,9 @@ public class ParseSelectedText
 		}
 		
 		/** Fills in menu items that are appropriate for this type of object */
-		public void fillMenu(Document doc, AbstractView view, Menu menu, boolean simple)
+		public void fillMenu(Document doc, AbstractView owningView, AbstractView outputView, Menu menu, boolean simple)
 		{
-			view.fillWindowMenu(menu) ;
+			owningView.fillWindowMenu(menu) ;
 		}
 
 		public String toString() { return "Unknown " + m_Name ; }
@@ -282,7 +283,8 @@ public class ParseSelectedText
 		if (isAttribute(curr))
 		{
 			// Search backwards looking for the ID for this attribute.
-			// We do this by looking for (X .... ^att name)
+			// We do this by looking for (X .... ^att name) or
+			// (nnnn: X ... ^att name)
 			int startPos = m_SelectionStart ;
 			int openParens = m_FullText.lastIndexOf('(', startPos) ;
 			int endSpace = m_FullText.indexOf(' ', openParens) ;
