@@ -78,10 +78,12 @@ proc createNewAgent {name {filepath ""} {filename ""}} {
        set localAgents $name
    }
 
-   load {} Tk $name
+   #load {} Tk $name
    #load tk83.dll Tk $name
    $name eval [list set auto_path $auto_path]
-	# $name eval {package require Tk}
+   if [catch "$name eval {package require Tk}"] {
+	load {} Tk $name
+   }
    $name eval {package require Soar}
    $name eval [list set soar_library $soar_library]
    $name eval [list set tsi_library $tsi_library]
