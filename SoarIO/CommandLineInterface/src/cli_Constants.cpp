@@ -21,6 +21,7 @@ char const* Constants::kCLIMissingOptionArg		= "Missing option argument.";
 char const* Constants::kCLIAddWME					= "add-wme";			
 char const* Constants::kCLIAlias					= "alias";			
 char const* Constants::kCLICD						= "cd";			
+char const* Constants::kCLIDirs						= "dirs";
 char const* Constants::kCLIEcho						= "echo";
 char const* Constants::kCLIExcise					= "excise";
 char const* Constants::kCLIFiringCounts				= "firing-counts";

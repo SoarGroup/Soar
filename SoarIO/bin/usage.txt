@@ -78,6 +78,12 @@ Usage:	default-wme-depth [depth]
   depth
 ~~~
 ***
+dirs
+Usage:	dirs
+
+Print out the current directory stack.
+~~~
+***
 echo
 Usage:	echo [-n] string
   -n, --nonewline	Default is to insert a newline at end of string. This

@@ -75,6 +75,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIAddWME]					= &cli::CommandLineInterface::ParseAddWME;
 	m_CommandMap[Constants::kCLIAlias]					= &cli::CommandLineInterface::ParseAlias;
 	m_CommandMap[Constants::kCLICD]						= &cli::CommandLineInterface::ParseCD;
+	m_CommandMap[Constants::kCLIDirs]					= &cli::CommandLineInterface::ParseDirs;
 	m_CommandMap[Constants::kCLIEcho]					= &cli::CommandLineInterface::ParseEcho;
 	m_CommandMap[Constants::kCLIExcise]					= &cli::CommandLineInterface::ParseExcise;
 	m_CommandMap[Constants::kCLIFiringCounts]			= &cli::CommandLineInterface::ParseFiringCounts;

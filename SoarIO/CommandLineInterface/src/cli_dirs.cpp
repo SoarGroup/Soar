@@ -16,7 +16,25 @@ bool CommandLineInterface::ParseDirs(gSKI::IAgent* pAgent, std::vector<std::stri
 }
 
 bool CommandLineInterface::DoDirs() {
+	
+	StringStack tempStack;
 
-	return false;
+	std::string cwd;
+	GetCurrentWorkingDirectory(cwd);
+	AppendToResult(cwd);
+
+	while (m_DirectoryStack.size()) {
+		AppendToResult(' ');
+		AppendToResult(m_DirectoryStack.top());
+		tempStack.push(m_DirectoryStack.top());
+		m_DirectoryStack.pop();
+	}
+
+	while (tempStack.size()) {
+		m_DirectoryStack.push(tempStack.top());
+		tempStack.pop();
+	}
+
+	return true;
 }
 
