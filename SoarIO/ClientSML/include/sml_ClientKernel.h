@@ -248,7 +248,7 @@ public:
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
 	* @param handler		A function that will be called when the event happens
 	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-	* @param addToBack		Add this listener to the end of the sequence of listeners (called after existing listeners) 
+	* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
 	*
 	* Current set is:
 	* smlEVENT_BEFORE_SHUTDOWN,

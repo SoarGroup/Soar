@@ -532,7 +532,8 @@ void Kernel::Sleep(long milliseconds)
 * @param smlEventId		The event we're interested in (see the list below for valid values)
 * @param handler		A function that will be called when the event happens
 * @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-* 
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+*
 * Current set is:
 * smlEVENT_BEFORE_SHUTDOWN,
 * smlEVENT_AFTER_CONNECTION_LOST,
@@ -544,6 +545,8 @@ void Kernel::Sleep(long milliseconds)
 * smlEVENT_AFTER_RHS_FUNCTION_REMOVED,
 * smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
 * smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
+*
+* @returns Unique ID for this callback.  Required when unregistering this callback.
 *************************************************************/
 int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData, bool addToBack)
 {

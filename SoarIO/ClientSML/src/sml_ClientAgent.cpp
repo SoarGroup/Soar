@@ -271,7 +271,12 @@ void Agent::UnregisterForEvent(int id)
 
 /*************************************************************
 * @brief Register for a "RunEvent".
-*
+*		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+* 
 * Current set is:
 * smlEVENT_BEFORE_SMALLEST_STEP,
 * smlEVENT_AFTER_SMALLEST_STEP,
@@ -284,6 +289,8 @@ void Agent::UnregisterForEvent(int id)
 * smlEVENT_AFTER_INTERRUPT,
 * smlEVENT_BEFORE_RUNNING,
 * smlEVENT_AFTER_RUNNING,
+*
+* @returns A unique ID for this callback (used to unregister the callback later) 
 *************************************************************/
 int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData, bool addToBack)
 {
@@ -349,6 +356,10 @@ void Agent::UnregisterForRunEvent(smlRunEventId id, int callbackID)
 /*************************************************************
 * @brief Register for a "ProductionEvent".
 *		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
 *
 * Current set is:
 * Production Manager
@@ -356,6 +367,8 @@ void Agent::UnregisterForRunEvent(smlRunEventId id, int callbackID)
 * smlEVENT_BEFORE_PRODUCTION_REMOVED,
 * smlEVENT_AFTER_PRODUCTION_FIRED,
 * smlEVENT_BEFORE_PRODUCTION_RETRACTED,
+*
+* @returns A unique ID for this callback (used to unregister the callback later) 
 *************************************************************/
 int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData, bool addToBack)
 {
@@ -394,6 +407,10 @@ void Agent::UnregisterForProductionEvent(smlProductionEventId id, int callbackID
 /*************************************************************
 * @brief Register for an "AgentEvent".
 *		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
 *
 * Current set is:
 * // Agent manager
@@ -401,6 +418,8 @@ void Agent::UnregisterForProductionEvent(smlProductionEventId id, int callbackID
 * smlEVENT_BEFORE_AGENT_DESTROYED,
 * smlEVENT_BEFORE_AGENT_REINITIALIZED,
 * smlEVENT_AFTER_AGENT_REINITIALIZED,
+*
+* @returns A unique ID for this callback (used to unregister the callback later) 
 *************************************************************/
 int Agent::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack)
 {
@@ -437,12 +456,18 @@ void Agent::UnregisterForAgentEvent(smlAgentEventId id, int callbackID)
 }
 
 /*************************************************************
-* @brief Register for a "PrintEvent".
+* @brief Register for an "PrintEvent".
 *		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
 *
 * Current set is:
 * // Agent manager
 * smlEVENT_PRINT
+*
+* @returns A unique ID for this callback (used to unregister the callback later) 
 *************************************************************/
 int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData, bool addToBack)
 {
