@@ -174,6 +174,15 @@ public:
 	bool DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction = 0);
 
 	/*************************************************************
+	* @brief firing-counts command, see usage.txt for details.
+	*************************************************************/
+	bool ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoFiringCounts(gSKI::IAgent* pAgent, std::string* pProduction, int numberToList);
+
+	/*************************************************************
 	* @brief help command, see usage.txt for details.
 	*************************************************************/
 	bool ParseHelp(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

@@ -21,6 +21,7 @@ char const* Constants::kCLIMissingOptionArg		= "Missing option argument.";
 char const* Constants::kCLICD				= "cd";			
 char const* Constants::kCLIEcho				= "echo";
 char const* Constants::kCLIExcise			= "excise";
+char const* Constants::kCLIFiringCounts		= "firing-counts";
 char const* Constants::kCLIHelp				= "help";
 char const* Constants::kCLIHelpEx			= "helpex";
 char const* Constants::kCLIHome				= "home";

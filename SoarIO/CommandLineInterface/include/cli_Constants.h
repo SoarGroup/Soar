@@ -34,6 +34,7 @@ namespace cli {
 		static char const* kCLICD;
 		static char const* kCLIEcho;
 		static char const* kCLIExcise;
+		static char const* kCLIFiringCounts;
 		static char const* kCLIHelp;
 		static char const* kCLIHelpEx;
 		static char const* kCLIHome;
