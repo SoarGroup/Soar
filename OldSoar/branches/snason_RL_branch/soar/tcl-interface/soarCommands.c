@@ -112,7 +112,7 @@ int AddWmeCmd (ClientData clientData,
   int i;
 	soarResult res;
 
-  init_soarResult(res);
+	init_soarResult(res);
 
   Soar_SelectGlobalInterpByInterp(interp);
 

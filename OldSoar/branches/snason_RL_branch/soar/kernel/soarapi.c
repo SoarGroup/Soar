@@ -935,7 +935,14 @@ int soar_Learn (int argc, const char *argv[], soarResult *res)
 int soar_setRL (int argc, const char *argv[], soarResult *res)
 {
  
-	 if (argc != 3){
+	if (argc == 1){
+		print("alpha = %f\n", current_agent(alpha));
+		print("gamma = %f\n", current_agent(gamma));
+		print("Temp = %f\n", current_agent(Temp));
+		return SOAR_OK;
+	}
+
+	else if (argc != 3){
 		 setSoarResultResult( res, "Wrong number of arguments to RL command.");
 		           return SOAR_ERROR;
 			   }
