@@ -125,6 +125,8 @@ public class DocumentThread extends Thread
 		{
 			executePending() ;
 			
+			// The pause as we sleep here is just how quickly we respond to incoming commands from the user.
+			// It won't affect the speed Soar executes.
 			try { Thread.sleep(10) ; } catch (InterruptedException e) { } 
 		}
 	}

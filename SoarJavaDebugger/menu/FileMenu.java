@@ -93,8 +93,8 @@ public class FileMenu
 		MainFrame frame = m_Frame ;
 
 		m_Frame.ShowMessageBox("Not implemented in SWT version yet") ;
-
-		//frame.UseDefaultLayout() ;
+		
+		//frame.useDefaultLayout() ;
 	}
 
 	/** Change the window layout back to the default */

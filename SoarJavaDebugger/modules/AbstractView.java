@@ -11,6 +11,9 @@
 ********************************************************************************************/
 package modules;
 
+import manager.MainWindow;
+import manager.Pane;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
@@ -37,7 +40,10 @@ public abstract class AbstractView implements AgentFocusListener
 	/** The main frame that owns this window.  **/
 	protected MainFrame		m_MainFrame ;
 	
-	protected Composite		m_Panel ;
+	/** The window that owns this view */
+	protected Pane			m_Pane ;
+	
+	//protected Composite		m_Panel ;
 	
 	/********************************************************
 	 * It's nice to just use a default constructor as we will dynamically create these objects
@@ -57,10 +63,24 @@ public abstract class AbstractView implements AgentFocusListener
 	{
 		return m_MainFrame;
 	}
-		
-	public Composite getControl()
+
+	public MainWindow getMainWindow()
 	{
-		return m_Panel ;
+		return m_MainFrame.getMainWindow() ;
+	}
+	
+	public Pane getPane()
+	{
+		return m_Pane ;
+	}
+	
+	protected void setPane(Pane pane)
+	{
+		if (m_Pane != null)
+			throw new IllegalStateException("Only do this once -- or you need to remove the old value from the list of views owned by pane") ;
+		
+		m_Pane = pane ;
+		pane.addView(this) ;
 	}
 	
 	/********************************************************************************************
@@ -83,7 +103,7 @@ public abstract class AbstractView implements AgentFocusListener
 	* Initialize this window.
 	* 
 	********************************************************************************************/
-	public abstract void Init(MainFrame frame, Document doc, Composite parent) ;
+	public abstract void Init(MainFrame frame, Document doc, Pane parentPane) ;
 	
 	/************************************************************************
 	* 
@@ -105,9 +125,11 @@ public abstract class AbstractView implements AgentFocusListener
 	/************************************************************************
 	* 
 	* Set the focus to this window so the user can type commands easily.
+	* Return true if this window wants the focus.
 	* 
 	*************************************************************************/
-	public abstract void setFocus() ;
+	public abstract boolean setFocus() ;
+	public abstract boolean hasFocus() ;
 	
 	/************************************************************************
 	* 

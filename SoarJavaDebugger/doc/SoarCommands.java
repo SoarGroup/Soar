@@ -26,9 +26,11 @@ public class SoarCommands
 	private int	m_MajorVersion ;		// Soar 8.6.0 -- this is the 8
 	private int m_MinorVersion ;		// Soar 8.6.0 -- this is the 6
 	private int m_BuildVersion ;		// Soar 8.6.0 -- this is the 0
+	private Document m_Document ;
 	
-	public SoarCommands(int major, int minor, int build)
+	public SoarCommands(Document doc, int major, int minor, int build)
 	{
+		m_Document = doc ;
 		setVersion(major, minor, build) ;
 	}
 	
@@ -41,8 +43,6 @@ public class SoarCommands
 	
 	public boolean isRunCommand(String command)
 	{
-		String lower = command.toLowerCase() ;
-		
-		return (lower.startsWith("run")) ;
+		return m_Document.isRunCommand(command) ;
 	}
 }

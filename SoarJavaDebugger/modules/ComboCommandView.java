@@ -11,6 +11,8 @@
 ********************************************************************************************/
 package modules;
 
+import manager.Pane;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
@@ -56,9 +58,12 @@ public class ComboCommandView extends AbstractView
 	/** If true, will display output from "run" commands */
 	protected boolean	m_ShowTraceOutput = false ;
 	
+	/** Prompt the user to type commands in the combo box with this text */
+	protected String 	m_PromptForCommands ;
+	
 	/** If true, the combo box is at the top of the window (otherwise at the bottom) */
 	protected boolean	m_ComboAtTop = true ;
-	
+		
 	protected SoarChangeListener m_ChangeListener ;
 	
 	/** The history of commands for this window */
@@ -89,23 +94,37 @@ public class ComboCommandView extends AbstractView
 		// I'll use forms everywhere for consistency and so it's easier
 		// to extend them later if we wish to add something.
 		m_Container.setLayout(new FormLayout()) ;
-		
-		FormData attachBottom = FormDataHelper.anchorFull(0) ;
-		attachBottom.bottom = new FormAttachment(m_CommandCombo) ;
-		
-		m_Text.setLayoutData(attachBottom) ;
-		m_CommandCombo.setLayoutData(FormDataHelper.anchorBottom(0)) ;
+
+		if (!this.m_ComboAtTop)
+		{
+			FormData attachBottom = FormDataHelper.anchorFull(0) ;
+			attachBottom.bottom = new FormAttachment(m_CommandCombo) ;
+			
+			m_Text.setLayoutData(attachBottom) ;
+			m_CommandCombo.setLayoutData(FormDataHelper.anchorBottom(0)) ;
+		}
+		else
+		{
+			FormData attachTop = FormDataHelper.anchorFull(0) ;
+			attachTop.top = new FormAttachment(m_CommandCombo) ;
+			
+			m_Text.setLayoutData(attachTop) ;
+			m_CommandCombo.setLayoutData(FormDataHelper.anchorTop(0)) ;			
+		}
 		
 		m_Container.layout() ;
 	}
 		
-	public void Init(MainFrame frame, Document doc, Composite parent)
+	public void Init(MainFrame frame, Document doc, Pane parentPane)
 	{
 		if (m_Inited)
 			return ;
 
 		m_MainFrame = frame ;
 		m_Document  = doc ;
+		setPane(parentPane) ;
+		
+		Composite parent = parentPane.getWindow() ;
 		
 		// The container lets us control the layout of the controls
 		// within this window
@@ -115,7 +134,8 @@ public class ComboCommandView extends AbstractView
 		m_Text 		   = new Text(m_Container, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY) ;
 		m_CommandCombo = new Combo(m_Container, 0) ;
 		
-		m_CommandCombo.setText("<Type commands here>") ;
+		if (m_PromptForCommands != null)
+			m_CommandCombo.setText(m_PromptForCommands) ;
 		
 		layoutControls() ;
 		
@@ -127,6 +147,9 @@ public class ComboCommandView extends AbstractView
 		// Decide how many rows to show in the combo list
 		m_CommandCombo.setVisibleItemCount(this.m_CommandHistory.kMaxHistorySize > 10 ? 10 : this.m_CommandHistory.kMaxHistorySize) ;
 
+		if (getBackgroundColor() != null)
+			m_Text.setBackground(getBackgroundColor()) ;
+		
 		// Listen for when this window is disposed and unregister for anything we registered for
 //		m_Container.addDisposeListener(new DisposeListener() { public void widgetDisposed(DisposeEvent e) { removeListeners() ; } } ) ;
 		
@@ -134,32 +157,30 @@ public class ComboCommandView extends AbstractView
 		m_MainFrame.addAgentFocusListener(this) ;
 	}
 	
+	public Color getBackgroundColor()
+	{
+		return null ;
+	}
+	
 	/************************************************************************
 	* 
 	* Set the focus to this window so the user can type commands easily.
+	* Return true if this window wants the focus.
 	* 
 	*************************************************************************/
-	public void setFocus()
+	public boolean setFocus()
 	{
 		// For us, we focus on the combo box, where the user types commands.
-		m_CommandCombo.setFocus() ;		
+		m_CommandCombo.setFocus() ;
+		
+		return true ;
 	}
 	
-	private void soarStopped(SoarChangeEvent e)
+	public boolean hasFocus()
 	{
-		if (this.m_UpdateOnStop)
-		{
-			// Retrieve the current command in the combo box
-			//String command = m_CommandCombo.getEditor().getItem().toString() ;
-			String command = m_CommandCombo.getText() ;
-
-			// We don't want to execute "run" commands when Soar stops--or we'll get into an
-			// infinite loop.
-			if (!getDocument().getSoarCommands().isRunCommand(command))
-				commandEntered(command, false) ;
-		}
+		return m_CommandCombo.isFocusControl() ;
 	}
-
+	
 	private void comboKeyPressed(KeyEvent e)
 	{
 		Combo combo = (Combo)e.getSource() ;
@@ -276,20 +297,34 @@ public class ComboCommandView extends AbstractView
 	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 	{
-		// TEMP: Disabled notification that Soar stopped running until we fix
-		// output capture within the kernel.
-		/*
-		if (this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUNNING.swigValue())
+		// TEMPTEMP: Removed for now - buggy
+		if (false && this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUNNING.swigValue())
 		{
+			System.out.println("Received run event") ;
+			
 			// Retrieve the current command in the combo box
-			String command = m_CommandCombo.getEditor().getItem().toString() ;
+			final String command = getCommandText() ;
 
 			// We don't want to execute "run" commands when Soar stops--or we'll get into an
 			// infinite loop.
 			if (!getDocument().getSoarCommands().isRunCommand(command))
-				commandEntered(command, false) ;
+			{
+				// If Soar is running in the UI thread we can make
+				// the update directly.
+				if (!Document.kDocInOwnThread)
+					commandEntered(command, false) ;
+				else
+				{
+					// Have to make update in the UI thread.
+					// Callback comes in the document thread.
+			        Display.getDefault().asyncExec(new Runnable() {
+			            public void run() {
+			            	commandEntered(command, false) ;
+			            }
+			         }) ;
+				}
+			}
 		}
-		*/
 	}
 
 	/************************************************************************
@@ -330,7 +365,43 @@ public class ComboCommandView extends AbstractView
             }
          }) ;
 	}
-	
+/*
+	private void setText(final String text)
+	{
+		// If Soar is running in the UI thread we can make
+		// the update directly.
+		if (!Document.kDocInOwnThread)
+		{
+			m_Text.setText(text) ;
+			return ;
+		}
+
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	m_Text.setText(text) ;
+            }
+         }) ;
+	}
+*/
+	private String getCommandText()
+	{
+		if (!Document.kDocInOwnThread)
+			return m_CommandCombo.getText() ;
+
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().asyncExec(new Runnable() {
+        	String result ;
+            public void run() {
+            	result = m_CommandCombo.getText() ;
+            }
+         }) ;
+
+        return "p <s>" ;
+	}
+
 	public void printEventHandler(int eventID, Object data, Agent agent, String message)
 	{
 		if (m_Text.isDisposed())

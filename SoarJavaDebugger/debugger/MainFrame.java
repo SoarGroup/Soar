@@ -63,7 +63,7 @@ public class MainFrame
 	private Composite m_Parent = null ;
 	
 	/* The main window that contains everything else */	
-	private MainWindow m_MainPanel = null ;
+	private MainWindow m_MainWindow = null ;
 
 	/** The menu bar */	
 	private Menu m_MenuBar = null ;
@@ -82,11 +82,11 @@ public class MainFrame
 	
 	public Document 	getDocument()	{ return m_Document ; }
 	public Menu			getMenuBar()	{ return m_MenuBar ; }
-	public MainWindow	getMainPanel()	{ return m_MainPanel ; }
-	public Composite	getWindow()		{ return m_MainPanel.getWindow() ; }
+	public MainWindow	getMainWindow()	{ return m_MainWindow ; }
+	public Composite	getWindow()		{ return m_MainWindow.getWindow() ; }
 	
 	/** The font to use for text output (e.g. output from Soar) */
-	private Font	m_TextFont = null ; //Application.kFixedWidthFont ;
+	private Font	m_TextFont = null ;
 
 	/** Windows can register with the frame to learn when it switches focus to a different agent */
 	private AgentFocusGenerator m_AgentFocusGenerator = new AgentFocusGenerator() ;
@@ -99,19 +99,28 @@ public class MainFrame
 	private boolean m_Shown = false ;
 	private java.awt.print.PageFormat m_PageFormat = new java.awt.print.PageFormat() ;
 	
+	/** We'll keep a list of colors here that we wish to use elsewhere.  When the frame is disposed we should dispose them */
+	public Color	m_White ;
+	
+	// List of all color objects we own and should dispose of when frame closes
+	private ArrayList m_Colors = new ArrayList() ;
+	
 	public MainFrame(Composite parent, Document doc)
 	{
 		m_Parent = parent ;
-		m_MainPanel = new MainWindow(this, doc, parent) ;
+
+		m_Document = doc ;
+		// Add ourselves to the list of frames in use
+		doc.addFrame(this) ;
+			
+		m_White = new Color(getDisplay(), 255, 255, 255) ;
+		m_Colors.add(m_White) ;	// So we dispose of it when MainFrame is killed
+
+		m_MainWindow = new MainWindow(this, doc, parent) ;
 		m_MenuBar  = new Menu(getShell(), SWT.BAR);
 		
 		// Fill the space with main panel
 		m_Parent.setLayout(new FillLayout(SWT.HORIZONTAL)) ;
-		
-		m_Document = doc ;
-				
-		// Add ourselves to the list of frames in use
-		doc.addFrame(this) ;
 		
 		// Listen for changes to the state of Soar and update our menus accordingly
 		m_SoarChangeListener = new SoarChangeListener() {
@@ -136,7 +145,7 @@ public class MainFrame
 			} ;
 		} ;
 		
-		getDocument().addSoarChangeListener(m_SoarChangeListener) ;		
+		getDocument().addSoarChangeListener(m_SoarChangeListener) ;	
 	}
 	
 	public Shell getShell()
@@ -172,10 +181,43 @@ public class MainFrame
 		msg.open() ;
 	}
 	
+	public void setTextFont(FontData fontData)
+	{
+		Font oldFont = m_TextFont ;
+		
+		// BUGBUG: Should record this in app settings for next run
+		
+		m_TextFont = new Font(getDisplay(), fontData) ;
+
+		getMainWindow().setTextFont(m_TextFont) ;
+		
+		// Release the font we were using, once we've stopped using it.
+		if (oldFont != null)
+			oldFont.dispose() ;
+	}
+	
+	public FontData ShowFontDialog()
+	{
+		FontDialog dialog = new FontDialog(getShell()) ;
+		FontData data = dialog.open() ;
+		
+		return data ;
+	}
+	
 	public void close()
 	{
 		thisWindowClosing() ;
 		this.getShell().dispose();
+		
+		// Dispose of all of the colors we created
+		for (int i = 0 ; i < m_Colors.size() ; i++)
+		{
+			Color color = (Color)m_Colors.get(i) ;
+			color.dispose() ;
+		}
+		
+		if (m_TextFont != null)
+			m_TextFont.dispose() ;
 	}
 	
 	public void ShowMessageBox(String text)
@@ -214,7 +256,7 @@ public class MainFrame
 			m_AgentFocusGenerator.fireAgentGettingFocus(this, m_AgentFocus) ;
 		
 		// If we're shutting down nothing to update
-		if (this.getMainPanel().getWindow().isDisposed())
+		if (this.getMainWindow().getWindow().isDisposed())
 			return ;
 		
 		// Update the title to show the new agent name
@@ -265,8 +307,10 @@ public class MainFrame
 //		return m_PanelTree.SaveLayoutToFile(filename) ;
 	}
 	
-	public void UseDefaultLayout()
+	public void useDefaultLayout()
 	{
+		getMainWindow().useDefaultLayout() ;
+		
 		/*
 		ComboCommandWindow comboWindow1 = new ComboCommandLineWindow() ;
 		comboWindow1.setMainFrame(this) ;
@@ -392,11 +436,13 @@ public class MainFrame
 		}
 		
 		// If we didn't load a layout, use a default layout
+		/*
 		if (!loaded)
 		{
-			UseDefaultLayout() ;
+			useDefaultLayout() ;
 		}
-
+		*/
+		
 		getShell().setSize(new Point(704, 616));
 		getShell().setMenuBar(m_MenuBar);
 		//getContentPane().setLayout(null);
@@ -440,36 +486,21 @@ public class MainFrame
 			fontSize != Integer.MAX_VALUE && fontSize > 0 &&
 			fontStyle != Integer.MAX_VALUE && fontStyle >= 0)
 		{
-			setTextFont(new Font(getDisplay(), fontName, fontSize, fontStyle)) ;
+			setTextFont(new FontData(fontName, fontSize, fontStyle)) ;
 		}
 		
 		// Make sure our menus are enabled correctly
 		updateMenus() ;
+		
+		// BUGBUG: Until we get save/load for layouts working go with the default on start up
+		useDefaultLayout() ;
 	}
 		
 	public Font	getTextFont()
 	{
 		return m_TextFont ;
 	}
-	
-	public void setTextFont(Font font)
-	{
-		m_TextFont = font ;
-/*	BUGBUG: Need to update this	for SWT
-		// Change all future text areas.
-		UIManager.put("TextArea.font",font) ;
-			
-		// Change all of the existing windows
-		if (this.getDebuggerTree() != null)
-			this.getDebuggerTree().setTextFont(font) ;
-			
-		// Store the new font values
-		setAppProperty("TextFont.Name", font.getFontName()) ;
-		setAppProperty("TextFont.Size", font.getSize()) ;
-		setAppProperty("TextFont.Style", font.getStyle()) ;
-*/
-	}
-	
+		
   	public AppProperties getAppProperties()
   	{
   		return this.getDocument().getAppProperties() ;
@@ -554,17 +585,17 @@ public class MainFrame
   	
   	public int getWidth()
   	{
-  		return m_MainPanel.getWidth() ;
+  		return m_MainWindow.getWidth() ;
   	}
   	
   	public int getHeight()
   	{
-  		return m_MainPanel.getHeight() ;
+  		return m_MainWindow.getHeight() ;
   	}
   	
   	public Point getLocationOnScreen()
   	{
-  		return m_MainPanel.getLocationOnScreen() ;
+  		return m_MainWindow.getLocationOnScreen() ;
   	}
   	
 	/************************************************************************

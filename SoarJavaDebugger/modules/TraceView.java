@@ -15,8 +15,11 @@ package modules;
 
 import general.ElementXML;
 
-import java.awt.Font;
-import java.awt.event.MouseListener;
+import org.eclipse.swt.*;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.*;
+import org.eclipse.swt.graphics.* ;
+import org.eclipse.swt.events.*;
 
 import debugger.MainFrame;
 import doc.Document;
@@ -38,5 +41,12 @@ public class TraceView extends ComboCommandView
 		m_ClearComboEachCommand = true ;
 		m_ComboAtTop = false ;
 		m_ShowTraceOutput = true ;
+		m_PromptForCommands = "<Type commands here>" ;
 	}
+	
+	public Color getBackgroundColor()
+	{
+		return getMainFrame().m_White ;
+	}
+	
 }

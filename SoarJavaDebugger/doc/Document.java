@@ -39,7 +39,7 @@ public class Document
 	private SoarChangeGenerator m_SoarChangeGenerator = new SoarChangeGenerator() ;
 
 	/** This object is used to get strings for Soar commands in a version independent way */
-	private SoarCommands		m_SoarCommands = new SoarCommands(8,6,0) ;
+	private SoarCommands		m_SoarCommands = new SoarCommands(this, 8,6,0) ;
 
 	/** Stores the pointer to the Soar kernel we are currently interacting with (can be local to this process or remote) */
 	private Kernel				m_Kernel = null ;
@@ -155,6 +155,11 @@ public class Document
 			return false ;
 		
 		return a.GetAgentName().equals(b.GetAgentName()) ;
+	}
+	
+	public boolean isRunCommand(String command)
+	{
+		return m_Kernel.IsRunCommand(command) ;
 	}
 	
 	/********************************************************************************************
@@ -487,8 +492,8 @@ public class Document
 			{
 				pumpMessagesOneStep() ;
 				
-				// BUGBUG: We really want to have a way to say "sleep-until-either UI-message or command-is-executed".
-				// Not sure how to do that.  Without it we will be wasting CPU cycles polling for these results while Soar is executing.
+				// The pause as we sleep here is just how quickly we respond to commands finishing (or UI events).
+				// It won't affect the speed Soar executes.
 				try { Thread.sleep(10) ; } catch (InterruptedException e) { } 
 			}
 

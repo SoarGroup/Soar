@@ -16,6 +16,7 @@ import debugger.* ;
 import doc.Document;
 
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.graphics.FontData ;
 
 /********************************************************************************************
 * 
@@ -54,19 +55,9 @@ public class EditMenu
 	
 	private void chooseFontPerformed(ActionEvent e)
 	{
-		m_Frame.ShowMessageBox("Not implemented in SWT version yet") ;
-		// BUGBUG - SWT: Need to rewrite this
-		/*
-		MainFrame frame = m_Frame ;
+		FontData data = m_Frame.ShowFontDialog() ;
 		
-		Font currentFont = frame.getTextFont() ;
-		
-		Font font = ChooseFontDialog.ShowDialog(frame, "Choose the text font", currentFont) ;
-		
-		if (font != null)
-		{
-			frame.setTextFont(font) ;
-		}
-		*/
+		if (data != null)
+			m_Frame.setTextFont(data) ;
 	}
 }

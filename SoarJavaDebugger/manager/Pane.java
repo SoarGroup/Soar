@@ -35,7 +35,7 @@ public class Pane
 {
 	// List of views attached to this pane
 	// Each view represents a distinct module and only one is visible at a time (> 1 => we use some form of tab)
-	private ArrayList	m_Views = new ArrayList() ;
+	private AbstractViewList	m_Views = new AbstractViewList() ;
 	private Composite	m_Pane ;
 	
 	public Pane(Composite parent)
@@ -50,5 +50,26 @@ public class Pane
 		return m_Pane ;
 	}
 	
+	public void addView(AbstractView view)
+	{
+		m_Views.add(view) ;
+	}
+	
+	public boolean setFocus()
+	{
+		// BUGBUG: When we get to tabbed list should set focus to the visible view
+		// For now just take first
+		return m_Views.get(0).setFocus() ;
+	}
+	
+	public int getNumberViews()
+	{
+		return m_Views.size() ;
+	}
+	
+	public AbstractView getView(int index)
+	{
+		return m_Views.get(index) ;
+	}
 	
 }

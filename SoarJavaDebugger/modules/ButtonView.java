@@ -13,6 +13,8 @@ package modules;
 
 import general.ElementXML;
 
+import manager.Pane;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
@@ -61,7 +63,7 @@ public class ButtonView extends AbstractView
 		// We only add it to the parent window, not to each button.
 		// This (a) seems more logical from the user perspective since the menu is about the panel (not the buttons)
 		// and  (b) means we don't have to store and re-add this listener as the list of buttons changes.
-		this.getControl().addMouseListener(listener) ;
+		// SWT: this.getControl().addMouseListener(listener) ;
 	}
 
 	/********************************************************************************************
@@ -82,11 +84,13 @@ public class ButtonView extends AbstractView
 		m_ButtonList.add(button) ;
 	}
 
-	public void Init(MainFrame frame, Document doc, Composite parent)
+	public void Init(MainFrame frame, Document doc, Pane parentPane)
 	{
 		m_MainFrame = frame ;
 		m_Document  = doc ;
-		createButtonPanel(parent) ;
+		
+		setPane(parentPane) ;		
+		createButtonPanel(m_Pane.getWindow()) ;
 	}
 
 	// This view is used to display output from the commands issued by the buttons.
@@ -140,12 +144,17 @@ public class ButtonView extends AbstractView
 	/************************************************************************
 	* 
 	* Set the focus to this window so the user can type commands easily.
+	* Return true if this window wants the focus.
 	* 
 	*************************************************************************/
-	public void setFocus()
+	public boolean setFocus()
 	{
-		// For button bar we have no place to put the focus right now.
-		// BADBAD: Perhaps we could put it on one button so that return makes it activate? -- sounds like a bad plan.
+		return false ;
+	}
+
+	public boolean hasFocus()
+	{
+		return false ;
 	}
 
 	/************************************************************************
