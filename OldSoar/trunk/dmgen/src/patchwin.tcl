@@ -287,18 +287,15 @@ namespace eval PatchWin {
             $pu add separator ;# separate this from source prods
          }
          set hasLinks 1
-         set type [lindex $link 0]
-         #set names [lindex $link 1]
-         set names [lrange $link 1 end]
-         if { $type == "S" } {
-            set typeName "Problem Space"
-         } else {
-            set typeName "Operator"
-         }
          set dm [Datamap::GetDatamap $h]
-         foreach n $names {
-            set nh [Datamap::GetPsOrOp $dm $type $n]
-            $pu add command -label "Go to $typeName: $n" \
+         foreach { type root path } [join $link " "] {
+            if { $type == "S" } {
+               set typeName "Problem Space"
+            } else {
+               set typeName "Operator"
+            }
+            set nh [Datamap::GetPsOrOp $dm $type $root]
+            $pu add command -label "Go to $typeName: $root" \
                            -command "PatchWin::Create $nh"
          }
       }

@@ -148,14 +148,8 @@ namespace eval DmPatch {
    #            ShortestPaths on $g $s.
    # @returns A list of vertex names, e.g. { state operator name }
    proc GetVertexPath { g s v rpi } {
-      upvar 1 $rpi pi
-
-      set path [$g Get $v name]
-      set v $pi($v)
-      while { $v != [Graph::NullVertex] } {
-         set path [concat [$g Get $v name] $path]
-         set v $pi($v)
-      }
-      return $path
+      upvar $rpi pi
+      set vertices [Dijkstra::GetVertexPath pi $v] 
+      return [$g Get $vertices name]
    }
 } ;# namespace DmPatch

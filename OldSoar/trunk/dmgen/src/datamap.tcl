@@ -66,10 +66,9 @@ namespace eval Datamap {
    #           B = both
    # type - Type of the attribute (int string identifier unknown)
    # range - currently unused
-   # link - A link to another problemspace or operator. Is a list
-   #        where the first element is O or S to indicate type followed
-   #        by names of targets...e.g.
-   #           { S top-ps any-ps attack-delivery }
+   # link - A link to another problemspace or operator. Is a list of
+   #        aliases { type root path }, e.g.
+   #           { { S top-ps {} } { S any-ps {} } }
    #
    # prods - List of production names that contributed to this node.
    #
@@ -107,7 +106,7 @@ namespace eval Datamap {
    #
    # @param name User-specified name given to the datamap. 
    # @returns A handle to the datamap for use in later calls.
-   proc Create { { name "" }} {
+   proc Create { { name "" } } {
       variable datamaps
       set dm [GetTag DM]
       set datamaps($dm,name) $name
@@ -260,6 +259,7 @@ namespace eval Datamap {
       set failedParse 0
       set psOrOpFound 0
       set noPsOrOpFound 0
+      set aliasSet [DmGenCfg::GetAliasSet]
       foreach p $prods {
          Log "Parsing production: $p"
          incr total
@@ -269,7 +269,7 @@ namespace eval Datamap {
             incr failedParse
          } else {
             incr passedParse
-            set parts [Partition::PartitionProduction $g]
+            set parts [Partition::PartitionProduction $g $aliasSet]
             if { $parts != {} } {
                incr psOrOpFound
                Log "Processing production partitions"
@@ -279,7 +279,7 @@ namespace eval Datamap {
                # options. This is a bit of a hack, but...
                if { [DmGenCfg::Get CopyTopPs] && [DmGenCfg::Get FillTopPs] } {
                   DmGenCfg::Set FillTopPs 0
-                  set parts [Partition::PartitionProduction $g]
+                  set parts [Partition::PartitionProduction $g $aliasSet]
                   if { $parts != {} } {
                      Log "Copying top-state to calling problem space"
                      ProcessProd $dm $p $g $parts
@@ -397,6 +397,23 @@ namespace eval Datamap {
          if { $v == $NV } {
             return $NV
          }
+      }
+      return $v
+   }
+
+   proc FindOrCreateVertexFromPath { dmGraph start path } {
+      set NV [Graph::NullVertex]
+      
+      set v $start ;# return start when path is empty
+      foreach s $path {
+         set v [$dmGraph FindVertex name $s [$dmGraph GetOutAdjacencies $start]]
+         if { $v == $NV } {
+            set v [$dmGraph InsertVertex [Datamap::DefVertexFields]]
+            $dmGraph Set $v name $s
+            $dmGraph AddEdge $start $v
+            puts "$$$$ created vertex [$dmGraph Get $start name] --> $s"
+         }
+         set start $v
       }
       return $v
    }

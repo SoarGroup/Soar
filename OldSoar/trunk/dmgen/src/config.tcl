@@ -147,6 +147,8 @@ they are moved to the separate values window."
    # Table of parameter values, indexed by param name
    variable params
    if [array exists params] { unset params }
+
+   variable aliasSet [AliasSet::Create]
    
    ##
    # Read a config file.
@@ -178,6 +180,26 @@ they are moved to the separate values window."
             set c [join [split $comments "\n"] "\n# "]
             puts $fd "# $c\n"
          }
+      }
+
+      puts $fd "# Aliases #####################################################################\n\
+                # Aliases give dmgen hints about shared structure in memory. For example, if\n\
+                # you know that whenever top-state is tested that it is referring to a\n\
+                # particular named state, you can create an alias to map the structure under\n\
+                # top-state to the correct state. For example:\n\
+                #\n\
+                #     Alias S:*.top-state --> S:predict\n\
+                #\n\
+                # will map any structure detected under the top-state attribute of any state\n\
+                # to the 'predict' problem-space.\n\
+                #\n\
+                # The general syntax is:\n\
+                #    Alias \[S|O|*\]:\[name|*\].attribute.path --> \[S|O\]:name.attribute.path\n\
+                # Note that wildcards are only allowed on the left hand side of the alias.\n"
+
+      variable aliasSet
+      foreach a [$aliasSet GetAliases] {
+         puts $fd "Alias [$a ToString]\n"
       }
       if { $fd != "stdout" } {
          close $fd
@@ -212,6 +234,20 @@ they are moved to the separate values window."
    proc Get { param } {
       variable params
       return $params($param)
+   }
+
+   ##
+   # Create an alias
+   proc Alias { args } {
+      variable aliasSet
+      set a [Alias::Create [join $args " "]]
+      $aliasSet AddAlias $a
+      return $a
+   }
+
+   proc GetAliasSet { } {
+      variable aliasSet
+      return $aliasSet
    }
 
    proc escapeValue { v } {

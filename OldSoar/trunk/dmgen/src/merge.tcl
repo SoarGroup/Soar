@@ -51,27 +51,20 @@
 # @param graph Production graph
 # @param part Partition info returned by PartitionProduction
 proc ProcessProd { dm name graph part } {
-   # $part is a list of 4-tupes... 
-   foreach { type pss state p } $part {
-      if { $type == "S" } { ;# it's a problem space
-         foreach ps $pss { ;# for each destination problem space
-            set h [Datamap::FindOrCreateProblemSpace $dm $ps]
-            set hGraph [Datamap::GetGraph $h]
-            set hStart [Datamap::GetStartVertex $h]
-
-            MergeProdIntoDatamap $name $graph $state $p \
-                                 $hGraph \
-                                 $hStart
+   # $part is a list of 3-tuples, described in partition.tcl
+   foreach { start targets verts } $part {
+      foreach { type root path } $targets {
+         if { $type == "S" } { ;# it's a problem space
+            set h [Datamap::FindOrCreateProblemSpace $dm $root]
+         } else { ;# it's an operator
+            set h [Datamap::FindOrCreateOperator $dm $root]
          }
-      } else { ;# it's an operator
-         foreach op $pss { ;# for each named operator
-            set h [Datamap::FindOrCreateOperator $dm $op]
-            set hGraph [Datamap::GetGraph $h]
-            set hStart [Datamap::GetStartVertex $h]
-            MergeProdIntoDatamap $name $graph $state $p \
-                                 $hGraph \
-                                 $hStart
-         }
+         set hGraph [Datamap::GetGraph $h]
+         set hStart [Datamap::GetStartVertex $h]
+         set hStart [Datamap::FindOrCreateVertexFromPath $hGraph $hStart $path]
+         MergeProdIntoDatamap $name $graph $start $verts \
+                              $hGraph \
+                              $hStart
       }
    }
 }

@@ -50,29 +50,6 @@ namespace eval Dijkstra {
    proc Inf { } { return 99999999 }
 
    ##
-   # Algorithm initialization function. Called internally 
-   proc initSingleSource { g s } {
-      variable d
-      variable pi
-      foreach v [$g GetVertices] {
-         set d($v) [Inf]
-         set pi($v) [Graph::NullVertex]
-      }
-      set d($s) 0
-   }
-
-   ##
-   # Vertex 'relaxation' used internally.
-   proc relax { u v w } {
-      variable d 
-      variable pi
-      if { $d($v) > $d($u) } {
-         set d($v) [expr $d($u) + [$w $u $v]]
-         set pi($v) $u
-      }
-   }
-
-   ##
    # Calculate single source shortest paths on a graph using Dijkstra's
    # algorithm.
    # Returns an adjacency array.
@@ -100,6 +77,55 @@ namespace eval Dijkstra {
       }
       return [array get pi]
    }
+   ##
+   # Get path to a vertex after a shortest path calculation
+   # The source vertex is implicit in the rpi table that come
+   # from ShortestPaths.
+   #
+   # @param v Vertex we want the path to
+   # @param rpi Name of an array initialized from running Dijkstra
+   #            ShortestPaths on $g $s.
+   # @returns A list of vertices starting at s and ending at v
+   proc GetVertexPath { rpi v } {
+      upvar $rpi pi
+
+      # the path is built in reverse order
+      set path $v
+      set v $pi($v)
+      set NV [Graph::NullVertex]
+      while { $v != $NV } {
+         set path [concat $v $path]
+         set v $pi($v)
+      }
+      return $path
+   }
+
+   ##
+   # A weight function that returns a unit weight for all edges.
+   proc UnitWeight { u v } { return 1 }
+
+   ##
+   # Algorithm initialization function. Called internally 
+   proc initSingleSource { g s } {
+      variable d
+      variable pi
+      foreach v [$g GetVertices] {
+         set d($v) [Inf]
+         set pi($v) [Graph::NullVertex]
+      }
+      set d($s) 0
+   }
+
+   ##
+   # Vertex 'relaxation' used internally.
+   proc relax { u v w } {
+      variable d 
+      variable pi
+      if { $d($v) > $d($u) } {
+         set d($v) [expr $d($u) + [$w $u $v]]
+         set pi($v) $u
+      }
+   }
 
    proc getQMin { qref } {
       upvar 1 $qref q 
@@ -120,9 +146,6 @@ namespace eval Dijkstra {
       return $mv
    }
 
-   # A weight function that returns a unit weight for all edges.
-   proc UnitWeight { u v } { return 1 }
-
    proc test { } { ;# Some test code...
       set g [Graph::Create { name }] ;# Create a graph where each vertex has a 'name' field
       set n1 [$g InsertVertex { name 1 }]
@@ -136,13 +159,22 @@ namespace eval Dijkstra {
       $g AddEdge $n2 $n4
       $g AddEdge $n4 $n5
       $g AddEdge $n5 $n3
-
+#
+# Something like this:
+#    2--3
+#   / \  \
+#  1   4--5
+#
+      parray Graph::$g
+      # calculate shortest paths to all nodes from 1
       array set pi [ShortestPaths $g UnitWeight $n1]
-      set v $pi($n5)
-      while { $v != [Graph::NullVertex] } {
-         puts "[$g Get $v name] -> "
-         set v $pi($v)
-      }
+
+      # print out paths to each node
+      puts [join [$g Get [GetVertexPath pi $n1] name] " -> "]
+      puts [join [$g Get [GetVertexPath pi $n2] name] " -> "]
+      puts [join [$g Get [GetVertexPath pi $n3] name] " -> "]
+      puts [join [$g Get [GetVertexPath pi $n4] name] " -> "]
+      puts [join [$g Get [GetVertexPath pi $n5] name] " -> "]
    }
 }
 

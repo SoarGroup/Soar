@@ -165,11 +165,9 @@ proc writeXmlDatamap_r { fd graph vert depth path } {
 
    if { $props(link) != {} } {
       set link $props(link)
-      set type [lindex $link 0]
-      set names [lrange $link 1 end]
-      foreach n $names {
+      foreach { type root path } [join $link " "] {
          XmlTabs $fd $nextDepth
-         puts $fd "<link type=\"$type\" name=\"$n\"/>"
+         puts $fd "<link type=\"$type\" name=\"$root\" path=\"$path\"/>"
       }
    }
    XmlTabs $fd $nextDepth

@@ -144,17 +144,46 @@ proc GetOpNames { graph op } {
 # states testing multiple problem space names, they will all go to the
 # correct place.
 # 
-# Returns a list of tuples:
-#  1 = tag of state or operator vertex
-#  2 = type of vertex (S = problem space, O = operator)
-#  3 = list of problem-space or operator names
-#  4 = list of vertices that are part of that state or operator
+# Returns a list of tuples, each representing a partition:
+# 0 = production start vertex
+#        This is the production vertex where the partition starts
+# 1 = list of datamap target paths (type root {path}) (path may be empty)
+#        This is a list of target paths in the datamap where the start vertex
+#        and its children (in the partition) should be merged to.
+# 2 = list of { vertex { aliases } } pairs in the partition. Alias will be {} when
+#     there is no alias.
+#        This is a list of all the vertices in the partition. A vertex with an
+#        associated alias should not be "followed". That is, there will be
+#        another partition with this vertex as its start vertex. This alias is
+#        used simply to indicated shared structure across problem-spaces and 
+#        operators.
+#
+# Partition start vertices include:
+#  - identifiable state and operator vertices (using GetPsNames, and GetOpNames)
+#  - vertices that match a user-defined alias in the config file
+#
+# The first type is easy and the set of start vertices can be determined before
+# the real partitioning procedure starts. The second type has to be done more 
+# dynamically since whether a vertex matches an alias pattern depends on its
+# context (the state or operator along with its path).  We can do the alias
+# matching during the partitioning procedure of the vertices of the first
+# type. Vertices that match an alias can be added to a queue to be partitioned 
+# later.
 #
 # @param p Production graph
-# @returns The list of 4-tuples described above.
-proc PartitionProduction { p } {
+# @returns The list of 3-tuples described above.
+proc PartitionProduction { p aliasSet } {
+
    set Parts {}
-   # For all identified states and operators in the production...
+   # Q is a list of partition start vertices to process. Each entry in the
+   # list is a list of the form:
+   #     { vertex { list of targets } }
+   # where each target is a tuple of the form:
+   #     type root path
+   # i.e. each target has the same format as an alias
+   # We start with just the identifiable states and operators in the
+   # production. More may be added to the queue as we progress...
+   set Q {}
    foreach s [concat [Production::GetStates $p] [Production::GetOperators $p]] {
       if { [$p Get $s isState] } { 
          set type S
@@ -163,73 +192,145 @@ proc PartitionProduction { p } {
          set type O
          set psNames [GetOpNames $p $s]
       }
+
       # If there were no problem spaces or operators found, we just ignore it.
       # This should only happen if FillAnyPs is turned off!
       if { $psNames == {} } { continue }
 
-      # Prepare for breadth first traversal...
+      set targets {}
+      foreach n $psNames {
+         lappend targets $type $n {}   ;# (type root path), path is empty for states
+      }
+      lappend Q [list $s $targets]
+   }
+
+   # For all identified states and operators in the production...
+   while { [llength $Q] > 0 } {
+      foreach { s targets } [lindex $Q 0] {}  ;# get next state and targets
+      set Q [lrange $Q 1 end] ;# pop off next state
+
+      # Prepare for depth first traversal...
       foreach v [$p GetVertices] {
          set visited($v) 0
       }
+      set visited($s) 1
 
       set P {} ;# Current partition we're building
-      
-      set L [$p GetOutAdjacencies $s] ;# traversal queue
-      set visited($s) 1
-      foreach v $L { set visited($v) 1 }
-
-      while { [llength $L] > 0 } {
-         set v [lindex $L 0]        ;# Get head of queue
-         set L [lrange $L 1 end]    ;# Pop head of queue
-
-         # If this is not a state with a problem space, or a named operator,
-         # we keep going, otherwise, we stop the partition here, it will
-         # become a link.
-         set vIsState [$p Get $v isState]
-         set vPsNames [GetPsNames $p $v]
-         set link {}
-         if { ![expr $vIsState && { $vPsNames != {} }] } {
-
-            # Is this a named operator?
-            set vIsOp [expr [string compare [$p Get $v special] "Operator"] == 0]
-            set vOpNames [GetOpNames $p $v]
-            if { ![expr $vIsOp && { $vOpNames != {} }] } {
-               foreach a [$p GetOutAdjacencies $v] {
-                  if { !$visited($a) } {
-                     set visited($a) 1
-                     lappend L $a
-                  }
-               }
-            } else { ;# it's a named operator
-               set link [concat O $vOpNames]
-            }
-         } else { ;#it's a named problem-space
-            set link [concat S $vPsNames]
-         }
-         lappend P $v $link ;# Add v to partition
+      foreach v [$p GetOutAdjacencies $s] {
+         partitionProduction $p $v Q visited P $targets {} $aliasSet
       }
-      lappend Parts $type $psNames $s $P ;# Add current partition to list of partitions
+
+      lappend Parts $s $targets $P ;# Add current partition to list of partitions
    }
    return $Parts
 }
 
+proc partitionProduction { p v qname visitedName partName targets path aliasSet } {
+   upvar $visitedName visited
+   upvar $partName P
+   upvar $qname Q
+
+   set path [concat $path [$p Get $v name]]
+   #puts "$v Path=$path"
+   #puts "$v targets=$targets, path=$path"
+   if { $visited($v) } { return }
+   set visited($v) 1
+
+   # check whether this vertex matches the LHS any alias mappings.
+   # If it does this function will add the vertex to the queue for us
+   # but we still have to add it (and it's new links) to the current
+   # partition.
+   set newTargets [checkForAliases $aliasSet $v Q $targets $path]
+   if { $newTargets != {} } {
+      set link {}
+      foreach { tgtType tgtRoot tgtPath } $newTargets {
+         lappend link [list $tgtType $tgtRoot $tgtPath]
+      }
+      lappend P $v $link ;# add v to current partition
+
+      # Since it's in the queue, this vertex will be the start of
+      # another partition so we can quit here.
+      return
+   }
+
+   # If this is not a state with a problem space, or a named operator,
+   # we keep going, otherwise, we stop the partition here, it will
+   # become a link.
+   set vIsState [$p Get $v isState]
+   set vPsNames [GetPsNames $p $v]
+   set link {}
+   if { ![expr $vIsState && { $vPsNames != {} }] } {
+      # Is this a named operator?
+      set vIsOp [expr [string compare [$p Get $v special] "Operator"] == 0]
+      set vOpNames [GetOpNames $p $v]
+      if { ![expr $vIsOp && { $vOpNames != {} }] } {
+         foreach a [$p GetOutAdjacencies $v] {
+            partitionProduction $p $a Q visited P $targets $path $aliasSet
+         }
+      } else { ;# it's a named operator
+         #set link [concat O $vOpNames]
+         foreach p $vOpNames {
+            lappend link [list O $p {}]
+         }
+      }
+   } else { ;#it's a named problem-space
+      #set link [concat S $vPsNames]
+      foreach p $vPsNames {
+         lappend link [list S $p {}]
+      }
+   } 
+   lappend P $v $link ;# Add v to partition
+}
+
+##
+# Check whether a vertex matches any aliases.
+proc checkForAliases { aliasSet v qname targets path } {
+   upvar $qname Q
+   set newTargets {}
+   foreach { type root tgtPath } $targets {
+      set alias [$aliasSet FindMatchingAlias $type $root $path]
+      if { $alias != {} } {
+         Log "Matched alias '[$alias ToString]' with '$type:$root.$path'"
+         lappend newTargets [$alias GetToType] [$alias GetToRoot] [$alias GetToPath]
+      }
+   }
+   # aliases were found so add this vertex to the queue so it can be
+   # the start of another partition
+   if { $newTargets != {} } {
+      lappend Q [list $v $newTargets]
+   }
+   return $newTargets
+}
+
 proc test { } {
    sp { test 
-      (state <s> ^problem-space.name MyPs)
-      (<s> ^x 1)
-      (<s> ^y 5)
-      (<s> ^z 6)
-      (<s> ^superstate <ss>)
-      (<ss> ^problem-space.name SsPs)
-      (<ss> ^p 2 ^q 3 ^r 4)
-      (<s> ^operator <o>)
-      (<o> ^name bob ^param howdy)
+      (state <s> ^name MyPs)
+         (<s> ^x 1)
+         (<s> ^y 5)
+         (<s> ^z <z>)
+            (<z> ^moo |hello|)
+         (<s> ^superstate <ss>)
+            (<ss> ^name << SsPs OtherSSps >>)
+            (<ss> ^p 2 ^q 3 ^r 4)
+         (<s> ^operator <o>)
+            (<o> ^name bob ^param howdy)
    -->
       (<ss> ^p 5)
    }
 
    set g [Production::Parse test]
-   set p [PartitionProduction $g]
+   puts "Production $g"
+
+   set as [AliasSet::Create]
+   $as AddAlias [Alias::Create "S:MyPs.z --> S:SsPs"]
+   set p [PartitionProduction $g $as]
+   foreach { start targets verts } $p {
+      puts "Partition: start=$start"
+      foreach { type root path } $targets {
+         puts "  Target: type=$type, root=$root, path=$path"
+      }
+      puts "   verts = $verts"
+   }
 }
 
 } ;# namespace

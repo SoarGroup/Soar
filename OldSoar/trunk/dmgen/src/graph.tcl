@@ -169,21 +169,44 @@ proc SetAll { graphName vertex values } {
       }
    }
 }
+
+##
+# Get a field value for a vertex or set of vertices.
+#
+# If vertex is a single vertex:
+#    if name is "" returns a table of field values
+#    else returns the field value
+# If vertex is a list of vertices, then
+#    if name is "" returns a list of tables of field values
+#    else raises an error (name must not be empty)
 proc Get { graphName vertex { name "" } } {
    upvar 0 Graph::$graphName graph
-   if { $name != "" } {
-      return $graph($vertex,$name)
-   }
-   
-   set r {}
-   foreach f $graph(__fields__) {
-      if [info exists graph($vertex,$f)] {
-         lappend r $f $graph($vertex,$f)
+   if { [llength $vertex] == 1 } {
+      if { $name != "" } {
+         return $graph($vertex,$name)
+      }
+      
+      set r {}
+      foreach f $graph(__fields__) {
+         if [info exists graph($vertex,$f)] {
+            lappend r $f $graph($vertex,$f)
+         } else {
+            lappend r $f {}
+         }
+      }
+      return $r
+   } else {
+      set r {}
+      if { $name != "" } {
+         foreach v $vertex {
+            lappend r $graph($v,$name)
+         }
+         return $r
       } else {
-         lappend r $f {}
+         error "name parameter to Graph::Get must not be emtpy when\
+                mutliple vertices are specified"
       }
    }
-   return $r
 }
 
 ##
