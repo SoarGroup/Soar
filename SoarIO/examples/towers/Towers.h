@@ -52,6 +52,8 @@ public:
 
 	virtual DiskInputLinkProfile* GetDiskInputLinkProfile() const { return m_iLinkProfile;}
 
+	Tower* GetTower() const { return pTower; }
+
 	/*************************************************************
 	* @brief	Updates the disk's tower and disk pointers 
 	* @param	diskBeneath	pointer to disk directly beneath this 
@@ -120,6 +122,8 @@ public:
 	* @returns	pointer to the disk at top of tower
 	*************************************************************/
 	virtual Disk* GetTopDisk() const;
+
+	char GetName() const { return m_name; }
 
 	int GetSize() const { return static_cast<int>(m_disks.size()); }
 
