@@ -121,7 +121,7 @@ void learn_RL_productions(int level){
 //	print_with_symbols("\nOp %y ", s->op);
 //	print("after make_simple_action with reference count %d\n", s->op->common.reference_count);
 	
-	
+	print_condition_list(record->RL_top, 2, TRUE);
 	
 	current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
 	// probably there is a better place to put this
@@ -138,7 +138,7 @@ void learn_RL_productions(int level){
     a->preference_type = BINARY_INDIFFERENT_PREFERENCE_TYPE;
     a->referent = Q;
 	
-	
+	print_action_list(a, 2, TRUE);
 	
 	prod = make_production (prod_type, prod_name, &(record->RL_top), &(record->RL_bottom), &a, FALSE);
 	// print("\n Printing action to go on prod.");
