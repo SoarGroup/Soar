@@ -7,7 +7,7 @@ proc ProductionExcisedCallback {id userData agent prodName instantiation} {
 }
 
 proc ProductionFiredCallback {id userData agent prodName instantiation} {
-	puts "firing $prodName"
+	puts "fired $prodName"
 }
 
 proc PhaseExecutedCallback {id userData agent phase} {
@@ -31,7 +31,7 @@ proc SystemShutdownCallback {id userData kernel} {
 }
 
 proc RhsFunctionTest {id userData agent functionName argument} {
-	puts "Agent $agent received RHS function $functionName with argument(s) '$argument' and userData '$userData'"
+	puts "Agent $agent called RHS function $functionName with argument(s) '$argument' and userData '$userData'"
 	return "success"
 }
 
@@ -79,15 +79,22 @@ set result [$kernel ExecuteCommandLine "excise towers-of-hanoi*monitor*operator-
 set speed [time {set result [$kernel ExecuteCommandLine "run" Soar1]}]
 puts "\n$speed"
 
-set result [$kernel ExecuteCommandLine "init-soar" Soar1]
+#the output of "print s1" should contain "^rhstest success"
+if { [string first "^rhstest success" [$kernel ExecuteCommandLine "print s1" Soar1]] == -1 } {
+	puts "\nRHS test FAILED"
+} else {
+	puts "\nRHS test SUCCEEDED"
+}
+
+#set result [$kernel ExecuteCommandLine "init-soar" Soar1]
 
 #remove all the remaining callback functions (not required, just to test)
 puts "removing callbacks"
-#$kernel UnregisterForAgentEvent $agentCallbackId0
-#$kernel UnregisterForAgentEvent $agentCallbackId1
-#$kernel UnregisterForAgentEvent $agentCallbackId2
-#$kernel UnregisterForSystemEvent $systemCallbackId
-#$kernel RemoveRhsFunction $rhsCallbackId
+$kernel UnregisterForAgentEvent $agentCallbackId0
+$kernel UnregisterForAgentEvent $agentCallbackId1
+$kernel UnregisterForAgentEvent $agentCallbackId2
+$kernel UnregisterForSystemEvent $systemCallbackId
+$kernel RemoveRhsFunction $rhsCallbackId
 
 $kernel DestroyAgent $agent
 
