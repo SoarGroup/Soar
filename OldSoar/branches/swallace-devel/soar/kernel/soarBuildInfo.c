@@ -8,6 +8,9 @@ void soar_ecBuildInfo( ) {
 	print( " Build Information.\n" );
 
 
+#ifdef NUMERIC_INDIFFERENCE
+	print( " - NUMERIC_INDIFFERENCE\n" );
+#endif
 #ifdef MATCHTIME_INTERRUPT
 	print( " - MATCHTIME_INTERRUPT\n" );
 #endif

@@ -1329,6 +1329,20 @@ typedef struct preference_struct {
   goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
 #endif
 
+#ifdef NUMERIC_INDIFFERENCE
+  /* REW: 2003-01-08 Behavior Variability Kernel Experiements
+                     See decide.c for more information
+		     This is just a hack until we determine
+		     what we really want from these changes.
+  */
+
+  int total_preferences_for_candidate;
+  double sum_of_probability;
+  double confidence;
+
+  /* END: REW: 2003-01-08 */
+#endif
+
 
 } preference;
 

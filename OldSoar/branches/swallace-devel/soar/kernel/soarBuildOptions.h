@@ -146,7 +146,7 @@
 /**
  *  \def O_REJECTS_FIRST
  * 
- *       Setting this option enables Soar to deal with productions certain
+ *       Setting this option enables Soar to deal with certain
  *       productions in a more intuitive manner.  In particular, productions 
  *       that modify a wme value by reject its current value and asserting
  *       its new value need to ensure that the current and new values differ.
@@ -155,6 +155,18 @@
  */
 #define O_REJECTS_FIRST
 
+
+/**
+ *  \def NUMERIC_INDIFFERENT
+ * 
+ *       Setting this option enhances Soar's ability to acheive behavioral
+ *       variability.  Using this option indifferent preferrences can be
+ *       given an integer argument that defines the relative probability 
+ *       of two selections.  Thus if two operators have the preferences
+ *       = 5 and = 10 respectively, the second operator will have a two fold
+ *       chance of being selected over the first operator.
+ */
+#define NUMERIC_INDIFFERENCE
 
 /* ********************************************************************* */
 /* ************************     SECTION 2a     ************************* */
