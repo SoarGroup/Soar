@@ -1330,3 +1330,51 @@ void AgentPerformanceMonitor::printTimingInfo()
 
 }
 
+void AgentPerformanceMonitor::GetStats(AgentPerformanceData* pStats)
+{
+	if (!pStats) return;
+
+	agent* a = m_pAgent->GetSoarAgent();
+
+	pStats->productionCountDefault = a->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+	pStats->productionCountUser = a->num_productions_of_type[USER_PRODUCTION_TYPE];
+	pStats->productionCountChunk = a->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+	pStats->productionCountJustification = a->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
+	pStats->cycleCountDecision = a->d_cycle_count;
+	pStats->cycleCountElaboration = a->e_cycle_count;
+	pStats->productionFiringCount = a->production_firing_count;
+	pStats->wmeCountAddition = a->wme_addition_count;
+	pStats->wmeCountRemoval = a->wme_removal_count;
+	pStats->wmeCount = a->num_wmes_in_rete;
+	pStats->wmeCountAverage = a->num_wm_sizes_accumulated ? (a->cumulative_wm_size / a->num_wm_sizes_accumulated) : 0.0;
+	pStats->wmeCountMax = a->max_wm_size;
+	pStats->kernelTimeTotal = timer_value(&a->total_kernel_time);
+	pStats->matchTimeInputPhase = timer_value(&a->match_cpu_time[INPUT_PHASE]);
+	pStats->matchTimeDetermineLevelPhase = timer_value(&a->match_cpu_time[DETERMINE_LEVEL_PHASE]);
+	pStats->matchTimePreferencePhase = timer_value(&a->match_cpu_time[PREFERENCE_PHASE]);
+	pStats->matchTimeWorkingMemoryPhase = timer_value(&a->match_cpu_time[WM_PHASE]);
+	pStats->matchTimeOutputPhase = timer_value(&a->match_cpu_time[OUTPUT_PHASE]);
+	pStats->matchTimeDecisionPhase = timer_value(&a->match_cpu_time[DECISION_PHASE]);
+	pStats->ownershipTimeInputPhase = timer_value(&a->match_cpu_time[INPUT_PHASE]);
+	pStats->ownershipTimeDetermineLevelPhase = timer_value(&a->match_cpu_time[DETERMINE_LEVEL_PHASE]);
+	pStats->ownershipTimePreferencePhase = timer_value(&a->match_cpu_time[PREFERENCE_PHASE]);
+	pStats->ownershipTimeWorkingMemoryPhase = timer_value(&a->match_cpu_time[WM_PHASE]);
+	pStats->ownershipTimeOutputPhase = timer_value(&a->match_cpu_time[OUTPUT_PHASE]);
+	pStats->ownershipTimeDecisionPhase = timer_value(&a->match_cpu_time[DECISION_PHASE]);
+	pStats->chunkingTimeInputPhase = timer_value(&a->chunking_cpu_time[INPUT_PHASE]);
+	pStats->chunkingTimeDetermineLevelPhase = timer_value(&a->chunking_cpu_time[DETERMINE_LEVEL_PHASE]);
+	pStats->chunkingTimePreferencePhase = timer_value(&a->chunking_cpu_time[PREFERENCE_PHASE]);
+	pStats->chunkingTimeWorkingMemoryPhase = timer_value(&a->chunking_cpu_time[WM_PHASE]);
+	pStats->chunkingTimeOutputPhase = timer_value(&a->chunking_cpu_time[OUTPUT_PHASE]);
+	pStats->chunkingTimeDecisionPhase = timer_value(&a->chunking_cpu_time[DECISION_PHASE]);
+
+	pStats->memoryUsageMiscellaneous = a->memory_for_usage[MISCELLANEOUS_MEM_USAGE];
+	pStats->memoryUsageHash = a->memory_for_usage[HASH_TABLE_MEM_USAGE];
+	pStats->memoryUsageString = a->memory_for_usage[STRING_MEM_USAGE];
+	pStats->memoryUsagePool = a->memory_for_usage[POOL_MEM_USAGE];
+	pStats->memoryUsageStatsOverhead = a->memory_for_usage[STATS_OVERHEAD_MEM_USAGE];
+
+	// TODO: pool and rete stats
+}
+
+

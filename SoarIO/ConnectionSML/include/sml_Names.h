@@ -130,6 +130,44 @@ public:
 	static char const* const kParamChunkNamePrefix;
 	static char const* const kParamChunkCount;
 	static char const* const kParamChunkLongFormat;
+	// Parameter names for stats command
+	static char const* const kParamStatsProductionCountDefault;
+	static char const* const kParamStatsProductionCountUser;
+	static char const* const kParamStatsProductionCountChunk;
+	static char const* const kParamStatsProductionCountJustification;
+	static char const* const kParamStatsCycleCountDecision;
+	static char const* const kParamStatsCycleCountElaboration;
+	static char const* const kParamStatsProductionFiringCount;
+	static char const* const kParamStatsWmeCountAddition;
+	static char const* const kParamStatsWmeCountRemoval;
+	static char const* const kParamStatsWmeCount;
+	static char const* const kParamStatsWmeCountAverage;
+	static char const* const kParamStatsWmeCountMax;
+	static char const* const kParamStatsKernelTimeTotal;
+	static char const* const kParamStatsMatchTimeInputPhase;
+	static char const* const kParamStatsMatchTimeDetermineLevelPhase;
+	static char const* const kParamStatsMatchTimePreferencePhase;
+	static char const* const kParamStatsMatchTimeWorkingMemoryPhase;
+	static char const* const kParamStatsMatchTimeOutputPhase;
+	static char const* const kParamStatsMatchTimeDecisionPhase;
+	static char const* const kParamStatsOwnershipTimeInputPhase;
+	static char const* const kParamStatsOwnershipTimeDetermineLevelPhase;
+	static char const* const kParamStatsOwnershipTimePreferencePhase;
+	static char const* const kParamStatsOwnershipTimeWorkingMemoryPhase;
+	static char const* const kParamStatsOwnershipTimeOutputPhase;
+	static char const* const kParamStatsOwnershipTimeDecisionPhase;
+	static char const* const kParamStatsChunkingTimeInputPhase;
+	static char const* const kParamStatsChunkingTimeDetermineLevelPhase;
+	static char const* const kParamStatsChunkingTimePreferencePhase;
+	static char const* const kParamStatsChunkingTimeWorkingMemoryPhase;
+	static char const* const kParamStatsChunkingTimeOutputPhase;
+	static char const* const kParamStatsChunkingTimeDecisionPhase;
+	static char const* const kParamStatsMemoryUsageMiscellaneous;
+	static char const* const kParamStatsMemoryUsageHash;
+	static char const* const kParamStatsMemoryUsageString;
+	static char const* const kParamStatsMemoryUsagePool;
+	static char const* const kParamStatsMemoryUsageStatsOverhead;
+
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* const kTrue ;

@@ -13,16 +13,64 @@
 #define IGSKI_AGENTPERFORMANCEMONITOR_H
 
 namespace gSKI {
+	typedef struct {
+		unsigned long productionCountDefault;
+		unsigned long productionCountUser;
+		unsigned long productionCountChunk;
+		unsigned long productionCountJustification;
 
-   class IAgentPerformanceMonitor
-   {
-   public:
-      virtual ~IAgentPerformanceMonitor() {}
+		unsigned long cycleCountDecision;
+		unsigned long cycleCountElaboration;
 
-      virtual bool GetStatsString(int argc, char* argv[], 
-                                  const char** result) = 0;
+		unsigned long productionFiringCount;
 
-   }; // IAgentPerformanceMonitor
+		unsigned long wmeCountAddition;
+		unsigned long wmeCountRemoval;
+		unsigned long wmeCount;
+		double        wmeCountAverage;
+		unsigned long wmeCountMax;
+
+		double        kernelTimeTotal;
+
+		double        matchTimeInputPhase;
+		double        matchTimeDetermineLevelPhase;
+		double        matchTimePreferencePhase;
+		double        matchTimeWorkingMemoryPhase;
+		double        matchTimeOutputPhase;
+		double        matchTimeDecisionPhase;
+
+		double        ownershipTimeInputPhase;
+		double        ownershipTimeDetermineLevelPhase;
+		double        ownershipTimePreferencePhase;
+		double        ownershipTimeWorkingMemoryPhase;
+		double        ownershipTimeOutputPhase;
+		double        ownershipTimeDecisionPhase;
+
+		double        chunkingTimeInputPhase;
+		double        chunkingTimeDetermineLevelPhase;
+		double        chunkingTimePreferencePhase;
+		double        chunkingTimeWorkingMemoryPhase;
+		double        chunkingTimeOutputPhase;
+		double        chunkingTimeDecisionPhase;
+
+		unsigned long memoryUsageMiscellaneous;
+		unsigned long memoryUsageHash;
+		unsigned long memoryUsageString;
+		unsigned long memoryUsagePool;
+		unsigned long memoryUsageStatsOverhead;
+	} AgentPerformanceData;
+
+	class IAgentPerformanceMonitor
+	{
+	public:
+		virtual ~IAgentPerformanceMonitor() {}
+
+		virtual void GetStats(AgentPerformanceData* pStats) = 0;
+
+		virtual bool GetStatsString(int argc, char* argv[], 
+			const char** result) = 0;
+
+	}; // IAgentPerformanceMonitor
 
 }
 
