@@ -3861,6 +3861,7 @@ typedef struct agent_struct {
     Symbol *type_symbol;
     Symbol *wait_symbol;        /* REW:  10.24.97 */
     Symbol * RL_symbol;      // SAN
+	Symbol *phony_operator;   // SAN
     /* ----------------------- Symbol table stuff -------------------------- */
 
     unsigned long current_symbol_hash_id;

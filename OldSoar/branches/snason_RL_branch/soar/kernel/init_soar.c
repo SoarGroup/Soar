@@ -63,6 +63,10 @@ int soar_agent_ids[MAX_SIMULTANEOUS_AGENTS];
 soar_global_callback_array soar_global_callbacks;
 unsigned long soar_global_callback_error;
 
+/* SAN */
+extern void learn_RL_productions(int);
+extern float tabulate_reward_value();
+
 
 #if (defined(REAL_TIME_BEHAVIOR) || defined(ATTENTION_LAPSE))
 /* RMJ; just a temporary variable, but we don't want to
@@ -1095,6 +1099,27 @@ void do_one_top_level_phase (void) {
   if (current_agent(system_halted)) {
     current_agent(stop_soar) = TRUE;
     current_agent(reason_for_stopping) = "System halted.";
+
+	/* SAN */
+	 if (current_agent(sysparams)[RL_ON_SYSPARAM]){
+  		double r;
+		RL_record *record;
+
+		r = tabulate_reward_value();	 
+		record = current_agent(records);
+		while(record){			
+			if (record->op){
+ 				record->reward += (r*pow(current_agent(gamma), record->step));  // Fix for discounting
+		    	(record->step)++;
+			}
+			record = record->next;
+		}
+		for (record = current_agent(records) ; record ; record = record->next)
+			  record->next_Q = 0;
+
+		
+   learn_RL_productions(0);
+	 }
 
     soar_invoke_callbacks(soar_agent, 
 			 AFTER_HALT_SOAR_CALLBACK,

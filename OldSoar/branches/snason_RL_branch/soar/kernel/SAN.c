@@ -169,8 +169,8 @@ void record_for_RL()
 			  prod = ist->prod;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  // if ((fabs(prod->avg_update) < 0.01) && prod->increasing){
-			   if ((prod->times_updated > 50) && !prod->conv_value){
+	//	  if (prod->times_updated < 0){
+			  if ((prod->times_updated > 50) && !prod->conv_value){
 			 // if (prod->conv_mean && !prod->conv_value){
 					  // excise_production(prod->child, TRUE);
 					  // extract_list_element(record->pointer_list, prod->child); // bug - need to do for stack of records
@@ -269,6 +269,11 @@ production *specify_production(instantiation *ist){
 				 condition *cond_top = NIL, *cond_bottom, *new_top, *new_bottom;
 				 not *nots = NIL, *nots_last, *new_not;
 				 w = decay_element->this_wme;
+
+				 if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE){
+					 decay_element = decay_element->next;
+					 continue;
+				 }
 							 
 				 // Check that our new condition not already in production conditions
 				 for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
@@ -376,7 +381,7 @@ void learn_RL_productions(int level){
 
 	if (record->level < level)
 		return;
-
+	 
 	if (record->op){
 
 		num_prods = list_length(record->pointer_list);
