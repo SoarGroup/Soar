@@ -54,11 +54,14 @@ public class FindReplaceDialog extends JDialog {
 		contentPane.add(replacePanel, c);
 		contentPane.add(buttonPanel, c);
 		pack();		
-		getRootPane().setDefaultButton(buttonPanel.findButton);			
-		findPanel.findField.setNextFocusableComponent(
-											replacePanel.replaceField);
-		replacePanel.replaceField.setNextFocusableComponent(
-												findPanel.findField);
+		getRootPane().setDefaultButton(buttonPanel.findButton);
+
+        //Set the options components as unfocusable so user can
+        //quickly tab between the find & replace fields
+        findPanel.optionsPanel.upButton.setFocusable(false);
+        findPanel.optionsPanel.downButton.setFocusable(false);
+        findPanel.optionsPanel.matchCase.setFocusable(false);
+        findPanel.optionsPanel.wrap.setFocusable(false);
 		
 		addWindowListener(new WindowAdapter() {
 			public void windowOpened(WindowEvent we) {
