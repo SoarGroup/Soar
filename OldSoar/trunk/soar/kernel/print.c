@@ -94,7 +94,7 @@
 void start_log_file (char *filename, bool append) {
   if (current_agent(logging_to_file)) stop_log_file ();
 
-  chdir(current_agent(top_dir_stack)->directory);  /* AGR 568 */
+  sys_chdir(current_agent(top_dir_stack)->directory); /* AGR 568 */
   current_agent(log_file) = fopen (filename, (append ? "a" : "w") );
   
   if (current_agent(log_file)) {

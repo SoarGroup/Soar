@@ -687,7 +687,7 @@ void soar_default_create_agent_procedure (const char * agent_name) {
   current_agent(waitsnc_detect)                     = FALSE;
   /* REW: end   10.24.97 */
 
-  if(!sys_getwd(cur_path))
+  if(!sys_getwd(cur_path, MAXPATHLEN))
     print("Unable to set current directory while initializing agent.\n");
 
   current_agent(top_dir_stack) = 

@@ -6,13 +6,14 @@
 #include <sys/resource.h>   /* used for timing stuff */
 #endif /* !__SC__ && !THINK_C && !WIN32 */
 
+/* voigtjr 10/17/2003 - all defined in sysdep.h
 #ifdef __hpux
 #include <sys/syscall.h>
 #include <unistd.h>
 #define getrusage(a, b) syscall(SYS_GETRUSAGE, a, b)
 #define getwd(arg) getcwd(arg, (size_t) 9999)
-#endif /* __hpux */
-
+#endif
+*/
 
 /* ===================================================================
 

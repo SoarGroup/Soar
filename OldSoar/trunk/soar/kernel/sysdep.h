@@ -45,26 +45,32 @@
 
 
 /*
- *     sys_getwd     
+ *     sys_getwd
+ *     sys_chdir - added by voigtjr since this differs on win32
  */
 
 
 #if defined(WIN32)
-    #include <direct.h>
-    #define sys_getwd(arg) getcwd(arg, 9999)
+    /* #include <direct.h> */
+    /* #define sys_getwd(arg) getcwd(arg, 9999)	voigtjr - getcwd deprecated as of Win3.1 */
+    #define sys_getwd(arg, len) GetCurrentDirectory(len, arg)
+    #define sys_chdir(arg) SetCurrentDirectory(arg)
 
 #elif defined(MACINTOSH)
-    #define sys_getwd(arg) getcwd(arg, 9999)
+    #define sys_getwd(arg, len) getcwd(arg, len)
+    #define sys_chdir(arg) chdir(arg)
 
 #elif defined(__hpux)
     #include <sys/syscall.h>
     #include <unistd.h>
     #define getrusage(a, b) syscall(SYS_GETRUSAGE, a, b)
-    #define sys_getwd(arg) getcwd(arg, (size_t) 9999)
+    #define sys_getwd(arg, len) getcwd(arg, (size_t) len)
+    #define sys_chdir(arg) chdir(arg)
 
 #else
 
-    #define sys_getwd(arg) getcwd(arg, (size_t) 9999)
+    #define sys_getwd(arg, len) getcwd(arg, (size_t) len)
+    #define sys_chdir(arg) chdir(arg)
 #endif
 
 
