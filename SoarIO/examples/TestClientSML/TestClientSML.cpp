@@ -188,6 +188,11 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent(name) ;
 
+		// TEMP for testing
+//pKernel->DestroyAgent(pAgent) ;
+//delete pKernel ;
+//return true ;
+
 		double time = timer.Elapsed() ;
 		cout << "Time to initialize kernel and create agent: " << time << endl ;
 
@@ -387,8 +392,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Test that we can interrupt a run by registering a handler that
 		// interrupts Soar immediately after a decision cycle.
-		// Removed the test part for now.  Stop's not working yet and
-		// stats doesn't report anything.
+		// Removed the test part for now. Stats doesn't report anything.
 		int callback3 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyInterruptHandler, 0) ;
 
 		pAgent->InitSoar() ;
@@ -412,14 +416,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		cout << "Top Identifier I3" << endl ;
 		cout << "Together with about 6 received events" << endl ;
 
-		// Cycle forever until debugger quits (if we're using the tcl debugger)
-		/*
-		while (pKernel->CheckForIncomingCommands())
-		{
-			SLEEP(10) ;
-		}
-		*/
-
 		cout << "Destroy the agent now" << endl ;
 
 		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, callback1) ;
@@ -442,12 +438,10 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			return false ;
 		}
 
+		// Delete the kernel.  If this is an embedded connection this destroys the kernel.
+		// If it's a remote connection we just disconnect.
 		delete pKernel ;
 
-		//destroy connection
-		//cout << "Closing connection..." << endl << endl;
-		//pConnection->CloseConnection();
-		//delete pConnection ;
 	}// closes testing block scope
 
 	return true ;
@@ -512,7 +506,7 @@ int main(int argc, char* argv[])
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 822 ;
+	//_crtBreakAlloc = 77 ;
 
 	SimpleTimer timer ;
 
