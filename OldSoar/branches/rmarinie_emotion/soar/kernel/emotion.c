@@ -30,6 +30,8 @@ void emotion_clear_appraisal_list(appraisal_frame ** af);
 bool emotion_get_appraisal_frame(struct slot_struct * appraisal_variable_slot, appraisal_frame ** af);
 bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal_variable_info ** info);
 
+void emotion_free_current_aggregate_wmes();
+
 const int emotion_NUM_TYPES = 2;
 static const char * emotion_LABELS[] = {"desirability-agg","likelihood-agg"};
 static const float emotion_NO_VALUE_FLOAT = -100.0;
@@ -855,6 +857,7 @@ void emotion_init(emotions_struct ** e) {
 void emotion_destructor() {
 
     int type;
+    bool success;
 
     for(type=0; type < emotion_NUM_TYPES; type++) {
 
@@ -868,12 +871,115 @@ void emotion_destructor() {
     emotion_clear_appraisal_list(&current_agent(emotions)->appraisal_frames);
 
     /* free any allocated emotion symbols, WMEs */
+    emotion_free_current_aggregate_wmes();
+
+    success = remove_input_wme(soar_agent->emotions->emotion_wme);
+    soar_agent->emotions->emotion_wme = NIL;
+    if(!success) print("Emotion: tried to remove emotion_wme");
+    assert(success);
+
     if(current_agent(emotions)->emotion_wme) {
         release_io_symbol (current_agent(emotions)->emotion_symbol);
     }
+
 
     /* clean up emotions structure */
     free_memory(current_agent(emotions),0);
     current_agent(emotions) = NIL;
 
+}
+
+void emotion_free_current_aggregate_wmes() {
+
+    bool success;
+
+    success = remove_input_wme(soar_agent->emotions->sum_negative_object_frame_intensity_wme);
+    soar_agent->emotions->sum_negative_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove sum_negative_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->average_negative_object_frame_intensity_wme);
+    soar_agent->emotions->average_negative_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove average_negative_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->max_negative_object_frame_intensity_wme);
+    soar_agent->emotions->max_negative_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove max_negative_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->sum_negative_no_object_frame_intensity_wme);
+    soar_agent->emotions->sum_negative_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove sum_negative_no_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->average_negative_no_object_frame_intensity_wme);
+    soar_agent->emotions->average_negative_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove average_negative_no_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->max_negative_no_object_frame_intensity_wme);
+    soar_agent->emotions->max_negative_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove max_negative_no_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->sum_positive_object_frame_intensity_wme);
+    soar_agent->emotions->sum_positive_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove sum_positive_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->average_positive_object_frame_intensity_wme);
+    soar_agent->emotions->average_positive_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove average_positive_object_frame_intensity_wme");
+    assert(success);
+   
+    success = remove_input_wme(soar_agent->emotions->max_positive_object_frame_intensity_wme);
+    soar_agent->emotions->max_positive_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove max_positive_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->sum_positive_no_object_frame_intensity_wme);
+    soar_agent->emotions->sum_positive_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove sum_positive_no_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->average_positive_no_object_frame_intensity_wme);
+    soar_agent->emotions->average_positive_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove average_positive_no_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->max_positive_no_object_frame_intensity_wme);
+    soar_agent->emotions->max_positive_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove max_positive_no_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->sum_object_frame_intensity_wme);
+    soar_agent->emotions->sum_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove sum_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->average_object_frame_intensity_wme);
+    soar_agent->emotions->average_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove average_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->max_object_frame_intensity_wme);
+    soar_agent->emotions->max_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove max_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->sum_no_object_frame_intensity_wme);
+    soar_agent->emotions->sum_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove sum_no_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->average_no_object_frame_intensity_wme);
+    soar_agent->emotions->average_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove average_no_object_frame_intensity_wme");
+    assert(success);
+
+    success = remove_input_wme(soar_agent->emotions->max_no_object_frame_intensity_wme);
+    soar_agent->emotions->max_no_object_frame_intensity_wme = NIL;
+    if(!success) print("Emotion: tried to remove max_no_object_frame_intensity_wme");
+    assert(success);
 }

@@ -1,6 +1,10 @@
 #ifndef _EMOTION_H_
 #define _EMOTION_H_
 
+/*#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>*/
+
 // this structure is pretty useless
 typedef struct appraisal_variable_value {
     float value;
