@@ -133,7 +133,7 @@ void ParseXML::GetNextToken()
 	}
 	
 	// Skip leading white space
-	while (!IsEOF() && IsWhiteSpace(GetCurrentChar()))
+	while (!IsEOF() && !m_InCharData && IsWhiteSpace(GetCurrentChar()))
 		GetNextChar() ;
 	
 	// If we're at the end of file, report that as the next token.
