@@ -169,8 +169,8 @@ void record_for_RL()
 			  prod = ist->prod;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-		  // if (prod->times_updated < 0){
-			  if ((prod->times_updated > 50) && !prod->conv_value){
+		   if (prod->times_updated < 0){
+		//	  if ((prod->times_updated > 50) && !prod->conv_value){
 			 // if (prod->conv_mean && !prod->conv_value){
 					  // excise_production(prod->child, TRUE);
 					  // extract_list_element(record->pointer_list, prod->child); // bug - need to do for stack of records
@@ -426,11 +426,11 @@ void learn_RL_productions(int level){
 					} else { prod->conv_value = TRUE; }
 				}
 
-
+				prod->update = update;
 				// old_avg = prod->avg_update;
-				// old_avg = prod->avg_value;
+				old_avg = prod->mean;
 				// prod->avg_update = ((prod->times_updated - 1)*old_avg + update) / prod->times_updated;
-				// prod->avg_value = ((prod->times_updated - 1)*old_avg + temp) / prod->times_updated;
+				prod->mean = ((prod->times_updated - 1)*old_avg + temp) / prod->times_updated;
 				
 				// old_avg_avg = prod->avg_avg;
 				// prod->avg_avg = ((prod->times_updated - 1)*old_avg_avg + prod->avg_value) / prod->times_updated;
@@ -464,6 +464,7 @@ void learn_RL_productions(int level){
 	    		print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
 				print("Mean %f ", prod->mean);
 				print("Std dev %f ", prod->std_dev);
+				print("Update %f ", prod->update);
 				print("firings %d\n", prod->times_updated);
 				// print("Variance in value %f ", prod->var);
 //				print("Update %f ", fabs(update));
@@ -757,7 +758,7 @@ void STDDEV(production *prod, int n){
 		mean += prod->value_list[i];
 
 	mean = mean / n;
-	prod->mean = mean;
+	// prod->mean = mean;
 
 	for (i = 0; i < n ; i++)
        std_dev += pow((mean - prod->value_list[i]), 2);

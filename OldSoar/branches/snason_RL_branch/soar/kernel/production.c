@@ -1589,7 +1589,7 @@ production *make_production(byte type,
 	p->value_position = 0;
 	p->mean = 0;
 	p->std_dev = 0;
-	// p->avg_value = 0;
+	p->update = 0;
 	// p->avg_avg = 0;
 	// p->var = 0;
 	// p->avg_var = 0;

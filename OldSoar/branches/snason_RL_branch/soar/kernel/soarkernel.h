@@ -1812,7 +1812,7 @@ typedef struct production_struct {
     struct instantiation_struct *instantiations;        /* dll of inst's in MS */
     int OPERAND_which_assert_list;      /* RCHONG: 10.11 */
 	int times_updated;                      /* SAN - only for RL_PRODUCTION_TYPE */
-    // double decay_abs_update;                      /* SAN - only for RL_PRODUCTION_TYPE */
+    double update;                      /* SAN - only for RL_PRODUCTION_TYPE */
 	// double decay_normalization;             /* SAN - only for RL_PRODUCTION_TYPE */
 	// double avg_value;						/* SAN - only for RL_PRODUCTION_TYPE */
 	double value_list[15];   
