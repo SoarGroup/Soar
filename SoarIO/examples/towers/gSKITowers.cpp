@@ -676,8 +676,8 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 			{
 				//The disk currently at the front of the container is the "bottom" disk.  New, smaller, disks 
 				//are inserted in back
-				IWMObject* towerIdObject = tower->GetInputLinkProfile()->GetTowerIdentifierObject();
-				assert(towerIdObject);
+				//IWMObject* towerIdObject = tower->GetInputLinkProfile()->GetTowerIdentifierObject();
+				//assert(towerIdObject);
 				Disk* towerTopDisk = 0;
 
 				if(tower->GetSize() != 0)
