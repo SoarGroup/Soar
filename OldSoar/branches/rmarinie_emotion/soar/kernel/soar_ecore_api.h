@@ -39,16 +39,12 @@
  *
  */
 
-
-
-#ifndef _SOAR_ECORE_API_             /* excludeFromBuildInfo */
+#ifndef _SOAR_ECORE_API_        /* excludeFromBuildInfo */
 #define _SOAR_ECORE_API_
 
 #include "soarkernel.h"
 #include "soar_ecore_utils.h"
 #include "soar_core_api.h"
-
-
 
 /* *************************************************************************
  * *************************************************************************/
@@ -62,8 +58,6 @@
 /* *************************************************************************
  * *************************************************************************/
 /*@{*/
-
-
 
 /**
  *
@@ -84,9 +78,7 @@
  * \see soar_ecExcludedBuildInfo
  *
  */
-extern void soar_ecBuildInfo( void );
-
-
+extern void soar_ecBuildInfo(void);
 
 /**
  *
@@ -105,8 +97,7 @@ extern void soar_ecBuildInfo( void );
  *
  *
  */
-extern void soar_ecExcludedBuildInfo( void );
-
+extern void soar_ecExcludedBuildInfo(void);
 
 /**
  *
@@ -127,9 +118,7 @@ extern void soar_ecExcludedBuildInfo( void );
  *
  *
  */
-extern void soar_ecSetDefaultWmeDepth( int depth );
-
-
+extern void soar_ecSetDefaultWmeDepth(int depth);
 
 /**
  *
@@ -150,8 +139,7 @@ extern void soar_ecSetDefaultWmeDepth( int depth );
  *           A log file is opened to which output is echoed.
  *
  */
-extern int soar_ecOpenLog( const char *filename, char *mode );
-
+extern int soar_ecOpenLog(const char *filename, char *mode);
 
 /**
  *
@@ -172,12 +160,7 @@ extern int soar_ecOpenLog( const char *filename, char *mode );
  */
 extern int soar_ecCloseLog();
 
-
-
 #ifdef USE_CAPTURE_REPLAY
-
-
-
 
 /**
  *
@@ -202,8 +185,7 @@ extern int soar_ecCloseLog();
  *            execution.
  *
  * */
-extern int soar_ecCaptureInput( const char *filename );
-
+extern int soar_ecCaptureInput(const char *filename);
 
 /**
  *
@@ -230,7 +212,7 @@ extern int soar_ecCaptureInput( const char *filename );
  *
  *
  */
-extern int soar_ecReplayInput( const char *filename );
+extern int soar_ecReplayInput(const char *filename);
 
 #endif
 
@@ -249,8 +231,6 @@ extern int soar_ecReplayInput( const char *filename );
  *
  */
 extern void soar_ecGDSPrint();
-
-
 
 /**
  *    soar_ecExplainChunkTrace --
@@ -277,7 +257,6 @@ extern void soar_ecExplainChunkTrace(char *chunk_name);
  */
 extern void soar_ecExplainChunkCondition(char *chunk_name, int cond_number);
 
-
 /**
  *    soar_ecExplainChunkConditionList --
  *
@@ -293,9 +272,6 @@ extern void soar_ecExplainChunkCondition(char *chunk_name, int cond_number);
  *
  */
 extern void soar_ecExplainChunkConditionList(char *chunk_name);
-
-
-
 
 /**
  *
@@ -315,9 +291,7 @@ extern void soar_ecExplainChunkConditionList(char *chunk_name);
  *
  *
  */
-extern void soar_ecPrintFiringsForProduction( const char *name );
-
-
+extern void soar_ecPrintFiringsForProduction(const char *name);
 
 /**
  *
@@ -336,8 +310,7 @@ extern void soar_ecPrintFiringsForProduction( const char *name );
  *
  *
  */
-extern void soar_ecPrintTopProductionFirings( int n );
-
+extern void soar_ecPrintTopProductionFirings(int n);
 
 /**
  *
@@ -352,8 +325,7 @@ extern void soar_ecPrintTopProductionFirings( int n );
  *         shows information about the size and free space of these pools
  *
  */
-extern void soar_ecPrintMemoryPoolStatistics (void);
-
+extern void soar_ecPrintMemoryPoolStatistics(void);
 
 /**
  *
@@ -366,7 +338,7 @@ extern void soar_ecPrintMemoryPoolStatistics (void);
  *         without examining each pool in any depth.
  *
  */
-extern void soar_ecPrintMemoryStatistics (void);
+extern void soar_ecPrintMemoryStatistics(void);
 
 /**
  *
@@ -377,7 +349,7 @@ extern void soar_ecPrintMemoryStatistics (void);
  *
  *
  */
-extern void soar_ecPrintReteStatistics (void);
+extern void soar_ecPrintReteStatistics(void);
 
 /**
  *
@@ -390,9 +362,7 @@ extern void soar_ecPrintReteStatistics (void);
  *         current state.  Most importantly, it includes how long
  *         Soar has been running (both in seconds, and decision cycles).
  */
-extern void soar_ecPrintSystemStatistics( void );
-
-
+extern void soar_ecPrintSystemStatistics(void);
 
 #ifdef DC_HISTOGRAM
 
@@ -404,8 +374,8 @@ extern void soar_ecPrintSystemStatistics( void );
  * \brief  Print the decision cycle time histogram (if one has been kept)
  *
  */
-extern int soar_ecPrintDCHistogram( void );
-#endif /* DC_HISTOGRAM */
+extern int soar_ecPrintDCHistogram(void);
+#endif                          /* DC_HISTOGRAM */
 
 #ifdef KT_HISTOGRAM
 /**
@@ -416,9 +386,8 @@ extern int soar_ecPrintDCHistogram( void );
  * \brief  Print the kernel time histogram (if one has been kept)
  *
  */
-extern int soar_ecPrintKTHistogram( void );
-#endif /* KT_HISTOGRAM */
-
+extern int soar_ecPrintKTHistogram(void);
+#endif                          /* KT_HISTOGRAM */
 
 /**
  *
@@ -442,8 +411,7 @@ extern int soar_ecPrintKTHistogram( void );
  *
  */
 
-extern int soar_ecPrintAllProductionsOfType( int type, bool internal,
-				       bool print_fname, bool full_prod );
+extern int soar_ecPrintAllProductionsOfType(int type, bool internal, bool print_fname, bool full_prod);
 
 /**
  *
@@ -479,8 +447,7 @@ extern int soar_ecPrintAllProductionsOfType( int type, bool internal,
  * \retval -4   Fail, the filter already exists.
  */
 
-extern int soar_ecAddWmeFilter( const char *szId, const char *szAttr, 
-																const char *szValue, bool adds, bool removes );
+extern int soar_ecAddWmeFilter(const char *szId, const char *szAttr, const char *szValue, bool adds, bool removes);
 
 /**
  *
@@ -505,8 +472,8 @@ extern int soar_ecAddWmeFilter( const char *szId, const char *szAttr,
  * \retval -4   Fail, the filter could not be found.
  * 
  */
-extern int soar_ecRemoveWmeFilter( const char *idStr, const char *attrStr,
-																	 const char *valueStr, bool adds, bool removes );
+extern int soar_ecRemoveWmeFilter(const char *idStr, const char *attrStr,
+                                  const char *valueStr, bool adds, bool removes);
 
 /**
  *
@@ -520,8 +487,7 @@ extern int soar_ecRemoveWmeFilter( const char *idStr, const char *attrStr,
  * \retval -1   No removes were performed
  *  
  */
-extern int soar_ecResetWmeFilters( bool adds, bool removes);
-
+extern int soar_ecResetWmeFilters(bool adds, bool removes);
 
 /**
  *
@@ -538,8 +504,7 @@ extern int soar_ecResetWmeFilters( bool adds, bool removes);
  *                               should be listed
  *
  */
-extern void soar_ecListWmeFilters( bool adds, bool removes);
-
+extern void soar_ecListWmeFilters(bool adds, bool removes);
 
 /**
  *
@@ -560,8 +525,7 @@ extern void soar_ecListWmeFilters( bool adds, bool removes);
  * \retval -1  Fail, production could not be parsed
  *
  */
-extern int soar_ecSp ( const char *rule, const char *sourceFile );
-
+extern int soar_ecSp(const char *rule, const char *sourceFile);
 
 /**
  *
@@ -584,8 +548,7 @@ extern int soar_ecSp ( const char *rule, const char *sourceFile );
  *                         \arg \c MS_RETRACT         print only retractions
  *
  */
-extern void soar_ecPrintMatchSet( wme_trace_type wtt, ms_trace_type mst);
-
+extern void soar_ecPrintMatchSet(wme_trace_type wtt, ms_trace_type mst);
 
 /**
  *
@@ -609,8 +572,7 @@ extern void soar_ecPrintMatchSet( wme_trace_type wtt, ms_trace_type mst);
  * \retval -1  Fail, production not found.
  *
  */
-extern int soar_ecPrintMatchInfoForProduction (const char *name, wme_trace_type wtt);
-
+extern int soar_ecPrintMatchInfoForProduction(const char *name, wme_trace_type wtt);
 
 /**
  *
@@ -620,8 +582,7 @@ extern int soar_ecPrintMatchInfoForProduction (const char *name, wme_trace_type 
  * \brief  Print Soar's internally allocated symbols
  *
  */
-extern void soar_ecPrintInternalSymbols (void);
-
+extern void soar_ecPrintInternalSymbols(void);
 
 /**
  *
@@ -631,8 +592,7 @@ extern void soar_ecPrintInternalSymbols (void);
  * \brief  Print the preferences for a particular (id, attribute) pair
  *
  */
-extern int soar_ecPrintPreferences( char *szId, char *szAttr, bool print_prod, 
-			     wme_trace_type wtt );
+extern int soar_ecPrintPreferences(char *szId, char *szAttr, bool print_prod, wme_trace_type wtt);
 
 /**
  *
@@ -645,7 +605,6 @@ extern int soar_ecPrintPreferences( char *szId, char *szAttr, bool print_prod,
  */
 extern void soar_ecPrintProductionsBeingTraced();
 
-
 /**
  *
  *
@@ -655,7 +614,6 @@ extern void soar_ecPrintProductionsBeingTraced();
  *
  */
 extern void soar_ecStopAllProductionTracing();
-
 
 /**
  *
@@ -674,8 +632,7 @@ extern void soar_ecStopAllProductionTracing();
  *                production name.  No productions after this index were
  *                added to the watch list.
  */
-extern int soar_ecBeginTracingProductions( int n, const char **names );
-
+extern int soar_ecBeginTracingProductions(int n, const char **names);
 
 /**
  *
@@ -696,9 +653,7 @@ extern int soar_ecBeginTracingProductions( int n, const char **names );
  *
  *
  */
-extern int soar_ecStopTracingProductions( int n, const char **names );
-
-
+extern int soar_ecStopTracingProductions(int n, const char **names);
 
 /**
  *
@@ -722,8 +677,7 @@ extern int soar_ecStopTracingProductions( int n, const char **names );
  *                        and \c FALSE otherwise.
  *
  */
-extern void soar_ecPrintMemories( int num, int to_print[] );
-
+extern void soar_ecPrintMemories(int num, int to_print[]);
 
 /**
  *
@@ -741,13 +695,20 @@ extern void soar_ecPrintMemories( int num, int to_print[] );
  *
  *
  */
-extern int soar_ecWatchLevel( int level );
+extern int soar_ecWatchLevel(int level);
 
-
+/**
+ *
+ *
+ * soar_ecPrintAllProductionsWithInterruptSetting --
+ *
+ * \brief  Prints all productions with the specified interrupt setting
+ *
+ * \param "-> interrupt_setting"  INTERRUPT_ON or INTERRUPT_OFF
+ *                                (INTERRUPT_PRINT will never match)
+ *
+ */
+extern void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_InterruptSetting interrupt_setting);
 
 /*@}*/
-#endif /* _SOAR_ECORE_API_ */
-
-
-
-
+#endif                          /* _SOAR_ECORE_API_ */

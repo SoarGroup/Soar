@@ -8,7 +8,8 @@ AC_INIT(soarkernel.h)
 
 #  The autoconf documentation leads me to believe this has to be here
 #  (rather than in Makefile.in), or AC_PROG_CC will change it.
-CFLAGS="-O -Werror"
+#CFLAGS="-O -Werror"
+CFLAGS="-O -Wall"
 
 AC_PROG_CC
 AC_PROG_RANLIB
@@ -31,52 +32,6 @@ AC_C_CONST
 AC_TYPE_SIZE_T
 AC_HEADER_TIME
 AC_STRUCT_TM
-
-
-#--------------------------------------------------------------------
-#	Disable the creation of position-independent code if
-#	instructed to do so.
-#--------------------------------------------------------------------
-
-AC_ARG_ENABLE(pic, [  --disable-pic           disable generation of position-independent code],
-	[soar_ok=$enableval], [soar_ok=yes])
-
-if test "$soar_ok" = "yes"; then
-    AC_MSG_CHECKING("for tcl lib")
-
-    AC_ARG_WITH(tcl-lib-dir, [  --with-tcl-lib-dir=DIR  location of tclConfig.sh and libtcl],
-                TCL_LIB_DIR=$withval, TCL_LIB_DIR="NONE")
-
-    if test "$TCL_LIB_DIR" = "NONE"; then
-        dirs="../../../lib $exec_prefix/lib $prefix/lib /usr/lib /usr/local/lib /usr/tcl/lib"
-        for i in $dirs ; do
-            if test -r $i/tclConfig.sh; then
-                AC_MSG_RESULT($i)
-                TCL_LIB_DIR=$i
-                break
-            fi
-        done
-    fi
-
-    if test "$TCL_LIB_DIR" = "NONE"; then
-    AC_MSG_ERROR(Cannot find directory containing tclConfig.sh.  It should be in the same directory as libtcl)
-    fi
-
-    file=${TCL_LIB_DIR}/tclConfig.sh
-    . $file
-
-    #--------------------------------------------------------------------
-    #       Of course, if we're using GCC, all the above goes out the
-    #       window.
-    #--------------------------------------------------------------------
-
-    if test "$ac_cv_prog_gcc" = yes; then
-            TCL_SHLIB_CFLAGS="-fPIC"
-    fi
-
-else
-	TCL_SHLIB_CFLAGS=""
-fi
 
 
 #--------------------------------------------------------------------
@@ -109,8 +64,12 @@ fi
 
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(gethostname gettimeofday getwd strtol)
+AC_CHECK_FUNCS(gethostname gettimeofday getwd strtol strtoul snprintf)
 
+#--------------------------------------------------------------------
+#       Use latest Posix standards
+#--------------------------------------------------------------------
+AC_DEFINE(POSIX_C_SOURCE,199506L)
 
 #--------------------------------------------------------------------
 #	Create the Makefile

@@ -53,8 +53,8 @@
 /* Uncomment the following line to get symbol debugging printouts */
 /* #define DEBUG_SYMBOLS */
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 
 /* -------------------------------------------------------------------
                            Hash Functions
@@ -73,88 +73,100 @@
    resizable hash table routines.
 ------------------------------------------------------------------- */
 
-unsigned long compress (unsigned long h, short num_bits) {
-  unsigned long result;
+unsigned long compress(unsigned long h, short num_bits)
+{
+    unsigned long result;
 
-  if (num_bits < 16) h = (h & 0xFFFF) ^ (h >> 16);
-  if (num_bits < 8) h = (h & 0xFF) ^ (h >> 8);
-  result = 0;
-  while (h) {
-    result ^= (h & masks_for_n_low_order_bits[num_bits]);
-    h = h >> num_bits;
-  }
-  return result;
+    if (num_bits < 16)
+        h = (h & 0xFFFF) ^ (h >> 16);
+    if (num_bits < 8)
+        h = (h & 0xFF) ^ (h >> 8);
+    result = 0;
+    while (h) {
+        result ^= (h & masks_for_n_low_order_bits[num_bits]);
+        h = h >> num_bits;
+    }
+    return result;
 }
 
-unsigned long hash_string (const char *s) {   /* AGR 600 */
-  unsigned long h;
+unsigned long hash_string(const char *s)
+{                               /* AGR 600 */
+    unsigned long h;
 
-  h = 0;
-  while (*s != 0) {
-    h = ((h << 8) | (h >> 24)) ^ (*s);
-    s++; 
-  }
-  return h;
+    h = 0;
+    while (*s != 0) {
+        h = ((h << 8) | (h >> 24)) ^ (*s);
+        s++;
+    }
+    return h;
 }
 
 /* -----------------------------------------
    Hashing symbols using their basic info 
 ----------------------------------------- */
 
-unsigned long hash_variable_raw_info (char *name, short num_bits) {
-  return compress (hash_string(name), num_bits);
+unsigned long hash_variable_raw_info(char *name, short num_bits)
+{
+    return compress(hash_string(name), num_bits);
 }
 
-unsigned long hash_identifier_raw_info (char name_letter,
-                                        unsigned long name_number,
-                                        short num_bits) {
-  return compress (name_number | (name_letter << 24), num_bits);
+unsigned long hash_identifier_raw_info(char name_letter, unsigned long name_number, short num_bits)
+{
+    return compress(name_number | (name_letter << 24), num_bits);
 }
 
-unsigned long hash_sym_constant_raw_info (const char *name, short num_bits) {
-  return compress (hash_string(name), num_bits);
+unsigned long hash_sym_constant_raw_info(const char *name, short num_bits)
+{
+    return compress(hash_string(name), num_bits);
 }
 
-unsigned long hash_int_constant_raw_info (long value, short num_bits) {
-  return compress ((unsigned long)value, num_bits);
+unsigned long hash_int_constant_raw_info(long value, short num_bits)
+{
+    return compress((unsigned long) value, num_bits);
 }
 
-unsigned long hash_float_constant_raw_info (float value, short num_bits) {
-  return compress ((unsigned long)value, num_bits);
+unsigned long hash_float_constant_raw_info(float value, short num_bits)
+{
+    return compress((unsigned long) value, num_bits);
 }
 
 /* ---------------------------------------------------
    Hashing symbols using their symbol table entries
 --------------------------------------------------- */
 
-unsigned long hash_variable (void *item, short num_bits) {
-  variable *var;
-  var = item;
-  return compress (hash_string(var->name),num_bits);
+unsigned long hash_variable(void *item, short num_bits)
+{
+    variable *var;
+    var = item;
+    return compress(hash_string(var->name), num_bits);
 }
 
-unsigned long hash_identifier (void *item, short num_bits) {
-  identifier *id;
-  id = item;
-  return compress (id->name_number ^ (id->name_letter << 24), num_bits);
+unsigned long hash_identifier(void *item, short num_bits)
+{
+    identifier *id;
+    id = item;
+    return compress(id->name_number ^ (id->name_letter << 24), num_bits);
 }
 
-unsigned long hash_sym_constant (void *item, short num_bits) {
-  sym_constant *sc;
-  sc = item;
-  return compress (hash_string(sc->name),num_bits);
+unsigned long hash_sym_constant(void *item, short num_bits)
+{
+    sym_constant *sc;
+    sc = item;
+    return compress(hash_string(sc->name), num_bits);
 }
 
-unsigned long hash_int_constant (void *item, short num_bits) {
-  int_constant *ic;
-  ic = item;
-  return compress ((unsigned long)(ic->value),num_bits);
+unsigned long hash_int_constant(void *item, short num_bits)
+{
+    int_constant *ic;
+    ic = item;
+    return compress((unsigned long) (ic->value), num_bits);
 }
 
-unsigned long hash_float_constant (void *item, short num_bits) {
-  float_constant *fc;
-  fc = item;
-  return compress ((unsigned long)(fc->value),num_bits);
+unsigned long hash_float_constant(void *item, short num_bits)
+{
+    float_constant *fc;
+    fc = item;
+    return compress((unsigned long) (fc->value), num_bits);
 }
 
 /* -------------------------------------------------------------------
@@ -165,23 +177,24 @@ unsigned long hash_float_constant (void *item, short num_bits) {
 
 #define get_next_symbol_hash_id() (current_agent(current_symbol_hash_id) += 137)
 
-void init_symbol_tables (void) {
-  int i;
+void init_symbol_tables(void)
+{
+    int i;
 
-  current_agent(variable_hash_table) = make_hash_table (0, hash_variable);
-  current_agent(identifier_hash_table) = make_hash_table (0, hash_identifier);
-  current_agent(sym_constant_hash_table) = make_hash_table (0, hash_sym_constant);
-  current_agent(int_constant_hash_table) = make_hash_table (0, hash_int_constant);
-  current_agent(float_constant_hash_table) = make_hash_table (0, hash_float_constant);
+    current_agent(variable_hash_table) = make_hash_table(0, hash_variable);
+    current_agent(identifier_hash_table) = make_hash_table(0, hash_identifier);
+    current_agent(sym_constant_hash_table) = make_hash_table(0, hash_sym_constant);
+    current_agent(int_constant_hash_table) = make_hash_table(0, hash_int_constant);
+    current_agent(float_constant_hash_table) = make_hash_table(0, hash_float_constant);
 
-  init_memory_pool (&current_agent(variable_pool), sizeof(variable), "variable");
-  init_memory_pool (&current_agent(identifier_pool), sizeof(identifier), "identifier");
-  init_memory_pool (&current_agent(sym_constant_pool), sizeof(sym_constant), "sym constant");
-  init_memory_pool (&current_agent(int_constant_pool), sizeof(int_constant), "int constant");
-  init_memory_pool (&current_agent(float_constant_pool), sizeof(float_constant),
-                    "float constant");
+    init_memory_pool(&current_agent(variable_pool), sizeof(variable), "variable");
+    init_memory_pool(&current_agent(identifier_pool), sizeof(identifier), "identifier");
+    init_memory_pool(&current_agent(sym_constant_pool), sizeof(sym_constant), "sym constant");
+    init_memory_pool(&current_agent(int_constant_pool), sizeof(int_constant), "int constant");
+    init_memory_pool(&current_agent(float_constant_pool), sizeof(float_constant), "float constant");
 
-  for (i=0; i<26; i++) current_agent(id_counter)[i]=1;
+    for (i = 0; i < 26; i++)
+        current_agent(id_counter)[i] = 1;
 }
 
 /* -------------------------------------------------------------------
@@ -202,185 +215,196 @@ void init_symbol_tables (void) {
    name letter/number combination like J37.
 ------------------------------------------------------------------- */
 
-Symbol *find_variable (char *name) {
-  unsigned long hash_value;
-  Symbol *sym;
+Symbol *find_variable(char *name)
+{
+    unsigned long hash_value;
+    Symbol *sym;
 
-  hash_value = hash_variable_raw_info (name,current_agent(variable_hash_table)->log2size);
-  sym = (Symbol *) (*(current_agent(variable_hash_table)->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.next_in_hash_table) {
-    if (!strcmp(sym->var.name,name)) return sym;
-  }
-  return NIL;
+    hash_value = hash_variable_raw_info(name, current_agent(variable_hash_table)->log2size);
+    sym = (Symbol *) (*(current_agent(variable_hash_table)->buckets + hash_value));
+    for (; sym != NIL; sym = sym->common.next_in_hash_table) {
+        if (!strcmp(sym->var.name, name))
+            return sym;
+    }
+    return NIL;
 }
 
-Symbol *find_identifier (char name_letter, unsigned long name_number) {
-  unsigned long hash_value;
-  Symbol *sym;
+Symbol *find_identifier(char name_letter, unsigned long name_number)
+{
+    unsigned long hash_value;
+    Symbol *sym;
 
-  hash_value = hash_identifier_raw_info (name_letter,name_number,
-                                         current_agent(identifier_hash_table)->log2size);
-  sym = (Symbol *) (*(current_agent(identifier_hash_table)->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.next_in_hash_table) {
-    if ((name_letter==sym->id.name_letter) &&
-        (name_number==sym->id.name_number)) return sym;
-  }
-  return NIL;
+    hash_value = hash_identifier_raw_info(name_letter, name_number, current_agent(identifier_hash_table)->log2size);
+    sym = (Symbol *) (*(current_agent(identifier_hash_table)->buckets + hash_value));
+    for (; sym != NIL; sym = sym->common.next_in_hash_table) {
+        if ((name_letter == sym->id.name_letter) && (name_number == sym->id.name_number))
+            return sym;
+    }
+    return NIL;
 }
 
-Symbol *find_sym_constant (const char *name) {
-  unsigned long hash_value;
-  Symbol *sym;
+Symbol *find_sym_constant(const char *name)
+{
+    unsigned long hash_value;
+    Symbol *sym;
 
-  hash_value = hash_sym_constant_raw_info (name,
-                                           current_agent(sym_constant_hash_table)->log2size);
-  sym = (Symbol *) (*(current_agent(sym_constant_hash_table)->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.next_in_hash_table) {
-    if (!strcmp(sym->sc.name,name)) return sym;
-  }
-  return NIL;
+    hash_value = hash_sym_constant_raw_info(name, current_agent(sym_constant_hash_table)->log2size);
+    sym = (Symbol *) (*(current_agent(sym_constant_hash_table)->buckets + hash_value));
+    for (; sym != NIL; sym = sym->common.next_in_hash_table) {
+        if (!strcmp(sym->sc.name, name))
+            return sym;
+    }
+    return NIL;
 }
 
-Symbol *find_int_constant (long value) {
-  unsigned long hash_value;
-  Symbol *sym;
+Symbol *find_int_constant(long value)
+{
+    unsigned long hash_value;
+    Symbol *sym;
 
-  hash_value = hash_int_constant_raw_info (value,
-                                           current_agent(int_constant_hash_table)->log2size);
-  sym = (Symbol *) (*(current_agent(int_constant_hash_table)->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.next_in_hash_table) {
-    if (value==sym->ic.value) return sym;
-  }
-  return NIL;
+    hash_value = hash_int_constant_raw_info(value, current_agent(int_constant_hash_table)->log2size);
+    sym = (Symbol *) (*(current_agent(int_constant_hash_table)->buckets + hash_value));
+    for (; sym != NIL; sym = sym->common.next_in_hash_table) {
+        if (value == sym->ic.value)
+            return sym;
+    }
+    return NIL;
 }
 
-Symbol *find_float_constant (float value) {
-  unsigned long hash_value;
-  Symbol *sym;
+Symbol *find_float_constant(float value)
+{
+    unsigned long hash_value;
+    Symbol *sym;
 
-  hash_value = hash_float_constant_raw_info (value,
-                                        current_agent(float_constant_hash_table)->log2size);
-  sym = (Symbol *) (*(current_agent(float_constant_hash_table)->buckets + hash_value));
-  for ( ; sym!=NIL; sym = sym->common.next_in_hash_table) {
-    if (value==sym->fc.value) return sym;
-  }
-  return NIL;
+    hash_value = hash_float_constant_raw_info(value, current_agent(float_constant_hash_table)->log2size);
+    sym = (Symbol *) (*(current_agent(float_constant_hash_table)->buckets + hash_value));
+    for (; sym != NIL; sym = sym->common.next_in_hash_table) {
+        if (value == sym->fc.value)
+            return sym;
+    }
+    return NIL;
 }
 
-Symbol *make_variable (char *name) {
-  Symbol *sym;
+Symbol *make_variable(char *name)
+{
+    Symbol *sym;
 
-  sym = find_variable(name);
-  if (sym) {
-    sym->common.reference_count++;
-  } else {
-    allocate_with_pool (&current_agent(variable_pool),  &sym);
-    sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
+    sym = find_variable(name);
+    if (sym) {
+        sym->common.reference_count++;
+    } else {
+        allocate_with_pool(&current_agent(variable_pool), &sym);
+        sym->common.symbol_type = VARIABLE_SYMBOL_TYPE;
+        sym->common.reference_count = 1;
+        sym->common.hash_id = get_next_symbol_hash_id();
+        sym->var.name = make_memory_block_for_string(name);
+        sym->var.gensym_number = 0;
+        sym->var.tc_num = 0;
+        sym->var.rete_binding_locations = NIL;
+        add_to_hash_table(current_agent(variable_hash_table), sym);
+    }
+    return sym;
+}
+
+Symbol *make_new_identifier(char name_letter, goal_stack_level level)
+{
+    Symbol *sym;
+
+    if (isalpha(name_letter)) {
+        if (islower(name_letter))
+            name_letter = (char) toupper(name_letter);
+    } else {
+        name_letter = 'I';
+    }
+    allocate_with_pool(&current_agent(identifier_pool), &sym);
+    sym->common.symbol_type = IDENTIFIER_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id();
-    sym->var.name = make_memory_block_for_string (name);
-    sym->var.gensym_number = 0;
-    sym->var.tc_num = 0;
-    sym->var.rete_binding_locations = NIL;
-    add_to_hash_table (current_agent(variable_hash_table), sym);
-  }
-  return sym;
-}
-
-Symbol *make_new_identifier (char name_letter, goal_stack_level level) {
-  Symbol *sym;
-
-  if (isalpha(name_letter)) {
-    if (islower(name_letter)) name_letter = toupper(name_letter);
-  } else {
-    name_letter = 'I';
-  }
-  allocate_with_pool (&current_agent(identifier_pool),  &sym);
-  sym->common.symbol_type = IDENTIFIER_SYMBOL_TYPE;
-  sym->common.reference_count = 1;
-  sym->common.hash_id = get_next_symbol_hash_id();
-  sym->id.name_letter = name_letter;
-  sym->id.name_number = current_agent(id_counter)[name_letter-'A']++;
-  sym->id.level = level;
-  sym->id.promotion_level = level;
-  sym->id.slots = NIL;
-  sym->id.isa_goal = FALSE;
-  sym->id.isa_impasse = FALSE;
-  sym->id.isa_operator = 0;
-  sym->id.link_count = 0;
-  sym->id.unknown_level = NIL;
-  sym->id.could_be_a_link_from_below = FALSE;
-  sym->id.impasse_wmes = NIL;
-  sym->id.higher_goal = NIL;
+    sym->id.name_letter = name_letter;
+    sym->id.name_number = current_agent(id_counter)[name_letter - 'A']++;
+    sym->id.level = level;
+    sym->id.promotion_level = level;
+    sym->id.slots = NIL;
+    sym->id.isa_goal = FALSE;
+    sym->id.isa_impasse = FALSE;
+    sym->id.isa_operator = 0;
+    sym->id.link_count = 0;
+    sym->id.unknown_level = NIL;
+    sym->id.could_be_a_link_from_below = FALSE;
+    sym->id.impasse_wmes = NIL;
+    sym->id.higher_goal = NIL;
 /* REW: begin 09.15.96 */
-  sym->id.gds = NIL;
+    sym->id.gds = NIL;
 /* REW: end   09.15.96 */
 /* REW: begin 08.20.97 */
-  sym->id.saved_firing_type = NO_SAVED_PRODS;
-  sym->id.ms_o_assertions = NIL; 
-  sym->id.ms_i_assertions = NIL; 
-  sym->id.ms_retractions = NIL;  
+    sym->id.saved_firing_type = NO_SAVED_PRODS;
+    sym->id.ms_o_assertions = NIL;
+    sym->id.ms_i_assertions = NIL;
+    sym->id.ms_retractions = NIL;
 /* REW: end   08.20.97 */
-  sym->id.lower_goal = NIL;
-  sym->id.operator_slot = NIL;
-  sym->id.preferences_from_goal = NIL;
-  sym->id.tc_num = 0;
-  sym->id.associated_output_links = NIL;
-  sym->id.input_wmes = NIL;
-  add_to_hash_table (current_agent(identifier_hash_table), sym);
-  return sym;
+    sym->id.lower_goal = NIL;
+    sym->id.operator_slot = NIL;
+    sym->id.preferences_from_goal = NIL;
+    sym->id.tc_num = 0;
+    sym->id.associated_output_links = NIL;
+    sym->id.input_wmes = NIL;
+    add_to_hash_table(current_agent(identifier_hash_table), sym);
+    return sym;
 }
 
-Symbol *make_sym_constant (const char *name) {
-  Symbol *sym;
+Symbol *make_sym_constant(const char *name)
+{
+    Symbol *sym;
 
-  sym = find_sym_constant(name);
-  if (sym) {
-    sym->common.reference_count++;
-  } else {
-    allocate_with_pool (&current_agent(sym_constant_pool),  &sym);
-    sym->common.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
-    sym->common.reference_count = 1;
-    sym->common.hash_id = get_next_symbol_hash_id();
-    sym->sc.name = make_memory_block_for_string (name);
-    sym->sc.production = NIL;
-    add_to_hash_table (current_agent(sym_constant_hash_table), sym);
-  }
-  return sym;
+    sym = find_sym_constant(name);
+    if (sym) {
+        sym->common.reference_count++;
+    } else {
+        allocate_with_pool(&current_agent(sym_constant_pool), &sym);
+        sym->common.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
+        sym->common.reference_count = 1;
+        sym->common.hash_id = get_next_symbol_hash_id();
+        sym->sc.name = make_memory_block_for_string(name);
+        sym->sc.production = NIL;
+        add_to_hash_table(current_agent(sym_constant_hash_table), sym);
+    }
+    return sym;
 }
 
-Symbol *make_int_constant (long value) {
-  Symbol *sym;
+Symbol *make_int_constant(long value)
+{
+    Symbol *sym;
 
-  sym = find_int_constant(value);
-  if (sym) {
-    sym->common.reference_count++;
-  } else {
-    allocate_with_pool (&current_agent(int_constant_pool),  &sym);
-    sym->common.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
-    sym->common.reference_count = 1;
-    sym->common.hash_id = get_next_symbol_hash_id();
-    sym->ic.value = value;
-    add_to_hash_table (current_agent(int_constant_hash_table), sym);
-  }
-  return sym;
+    sym = find_int_constant(value);
+    if (sym) {
+        sym->common.reference_count++;
+    } else {
+        allocate_with_pool(&current_agent(int_constant_pool), &sym);
+        sym->common.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
+        sym->common.reference_count = 1;
+        sym->common.hash_id = get_next_symbol_hash_id();
+        sym->ic.value = value;
+        add_to_hash_table(current_agent(int_constant_hash_table), sym);
+    }
+    return sym;
 }
 
-Symbol *make_float_constant (float value) {
-  Symbol *sym;
+Symbol *make_float_constant(float value)
+{
+    Symbol *sym;
 
-  sym = find_float_constant(value);
-  if (sym) {
-    sym->common.reference_count++;
-  } else {
-    allocate_with_pool (&current_agent(float_constant_pool),  &sym);
-    sym->common.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
-    sym->common.reference_count = 1;
-    sym->common.hash_id = get_next_symbol_hash_id();
-    sym->fc.value = value;
-    add_to_hash_table (current_agent(float_constant_hash_table), sym);
-  }
-  return sym;
+    sym = find_float_constant(value);
+    if (sym) {
+        sym->common.reference_count++;
+    } else {
+        allocate_with_pool(&current_agent(float_constant_pool), &sym);
+        sym->common.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
+        sym->common.reference_count = 1;
+        sym->common.hash_id = get_next_symbol_hash_id();
+        sym->fc.value = value;
+        add_to_hash_table(current_agent(float_constant_hash_table), sym);
+    }
+    return sym;
 }
 
 /* -------------------------------------------------------------------
@@ -389,41 +413,44 @@ Symbol *make_float_constant (float value) {
 
 ------------------------------------------------------------------- */
 
-void deallocate_symbol (Symbol *sym) {
+void deallocate_symbol(Symbol * sym)
+{
 
-#ifdef DEBUG_SYMBOLS  
-  print_with_symbols ("\nDeallocating Symbol %y", sym);
+#ifdef DEBUG_SYMBOLS
+    print_with_symbols("\nDeallocating Symbol %y", sym);
 #endif
 
-  switch (sym->common.symbol_type) {
-  case VARIABLE_SYMBOL_TYPE:
-    remove_from_hash_table (current_agent(variable_hash_table), sym);
-    free_memory_block_for_string (sym->var.name);
-    free_with_pool (&current_agent(variable_pool), sym);
-    break;
-  case IDENTIFIER_SYMBOL_TYPE:
-    remove_from_hash_table (current_agent(identifier_hash_table), sym);
-    free_with_pool (&current_agent(identifier_pool), sym);
-    break;
-  case SYM_CONSTANT_SYMBOL_TYPE:
-    remove_from_hash_table (current_agent(sym_constant_hash_table), sym);
-    free_memory_block_for_string (sym->sc.name);
-    free_with_pool (&current_agent(sym_constant_pool), sym);
-    break;
-  case INT_CONSTANT_SYMBOL_TYPE:
-    remove_from_hash_table (current_agent(int_constant_hash_table), sym);
-    free_with_pool (&current_agent(int_constant_pool), sym);
-    break;
-  case FLOAT_CONSTANT_SYMBOL_TYPE:
-    remove_from_hash_table (current_agent(float_constant_hash_table), sym);
-    free_with_pool (&current_agent(float_constant_pool), sym);
-    break;
-  default:
-    { char msg[128];
-    strcpy (msg, "Internal error: called deallocate_symbol on non-symbol.\n");
-    abort_with_fatal_error(msg);
+    switch (sym->common.symbol_type) {
+    case VARIABLE_SYMBOL_TYPE:
+        remove_from_hash_table(current_agent(variable_hash_table), sym);
+        free_memory_block_for_string(sym->var.name);
+        free_with_pool(&current_agent(variable_pool), sym);
+        break;
+    case IDENTIFIER_SYMBOL_TYPE:
+        remove_from_hash_table(current_agent(identifier_hash_table), sym);
+        free_with_pool(&current_agent(identifier_pool), sym);
+        break;
+    case SYM_CONSTANT_SYMBOL_TYPE:
+        remove_from_hash_table(current_agent(sym_constant_hash_table), sym);
+        free_memory_block_for_string(sym->sc.name);
+        free_with_pool(&current_agent(sym_constant_pool), sym);
+        break;
+    case INT_CONSTANT_SYMBOL_TYPE:
+        remove_from_hash_table(current_agent(int_constant_hash_table), sym);
+        free_with_pool(&current_agent(int_constant_pool), sym);
+        break;
+    case FLOAT_CONSTANT_SYMBOL_TYPE:
+        remove_from_hash_table(current_agent(float_constant_hash_table), sym);
+        free_with_pool(&current_agent(float_constant_pool), sym);
+        break;
+    default:
+        {
+            char msg[MESSAGE_SIZE];
+            strncpy(msg, "Internal error: called deallocate_symbol on non-symbol.\n", MESSAGE_SIZE);
+            msg[MESSAGE_SIZE - 1] = 0;
+            abort_with_fatal_error(msg);
+        }
     }
-  }
 }
 
 /* -------------------------------------------------------------------
@@ -450,61 +477,73 @@ void deallocate_symbol (Symbol *sym) {
    new gensym names).
 ------------------------------------------------------------------- */
 
-void reset_id_counters (void) {
-  int i;
+void reset_id_counters(void)
+{
+    int i;
 
-  if (current_agent(identifier_hash_table)->count != 0) {
-    print ("Internal warning:  wanted to reset identifier generator numbers, but\n");
-    print ("there are still some identifiers allocated.  (Probably a memory leak.)\n");
-    print ("(Leaving identifier numbers alone.)\n");
-    return;
-  }
-  for (i=0; i<26; i++) current_agent(id_counter)[i]=1;  
+    if (current_agent(identifier_hash_table)->count != 0) {
+        print("Internal warning:  wanted to reset identifier generator numbers, but\n");
+        print("there are still some identifiers allocated.  (Probably a memory leak.)\n");
+        print("(Leaving identifier numbers alone.)\n");
+        return;
+    }
+    for (i = 0; i < 26; i++)
+        current_agent(id_counter)[i] = 1;
 }
 
-bool reset_tc_num (void *item) {
-  Symbol *sym;
+bool reset_tc_num(void *item)
+{
+    Symbol *sym;
 
-  sym = item;
-  if (sym->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) sym->id.tc_num = 0;
-  else if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE) sym->var.tc_num = 0;
-  return FALSE;
+    sym = item;
+    if (sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+        sym->id.tc_num = 0;
+    else if (sym->common.symbol_type == VARIABLE_SYMBOL_TYPE)
+        sym->var.tc_num = 0;
+    return FALSE;
 }
 
-void reset_id_and_variable_tc_numbers (void) {
-  do_for_all_items_in_hash_table (current_agent(identifier_hash_table), reset_tc_num);
-  do_for_all_items_in_hash_table (current_agent(variable_hash_table), reset_tc_num);
+void reset_id_and_variable_tc_numbers(void)
+{
+    do_for_all_items_in_hash_table(current_agent(identifier_hash_table), reset_tc_num);
+    do_for_all_items_in_hash_table(current_agent(variable_hash_table), reset_tc_num);
 }
 
-bool reset_gensym_number (void *item) {
-  Symbol *sym;
+bool reset_gensym_number(void *item)
+{
+    Symbol *sym;
 
-  sym = item;
-  sym->var.gensym_number = 0;
-  return FALSE;
+    sym = item;
+    sym->var.gensym_number = 0;
+    return FALSE;
 }
 
-void reset_variable_gensym_numbers (void) {
-  do_for_all_items_in_hash_table (current_agent(variable_hash_table), reset_gensym_number);
+void reset_variable_gensym_numbers(void)
+{
+    do_for_all_items_in_hash_table(current_agent(variable_hash_table), reset_gensym_number);
 }
 
-bool print_sym (void *item) {
-  print_string (symbol_to_string (item, TRUE, NIL));
-  print_string ("\n");
-  return FALSE;
+bool print_sym(void *item)
+{
+    print_string(symbol_to_string(item, TRUE, NIL, 0));
+    print_string("\n");
+    return FALSE;
 }
 
+#define GENERATE_NEW_SYM_CONSTANT_NAME_SIZE 2048
+Symbol *generate_new_sym_constant(char *prefix, unsigned long *counter)
+{
+    char name[GENERATE_NEW_SYM_CONSTANT_NAME_SIZE];     /* that ought to be long enough! */
+    Symbol *new;
 
-Symbol *generate_new_sym_constant (char *prefix, unsigned long *counter) {
-  char name[2000];  /* that ought to be long enough! */
-  Symbol *new;
-
-  while (TRUE) {
-    sprintf (name, "%s%lu", prefix, (*counter)++);
-    if (! find_sym_constant (name)) break;
-  }
-  new = make_sym_constant (name);
-  return new;
+    for (;;) {
+        snprintf(name, GENERATE_NEW_SYM_CONSTANT_NAME_SIZE, "%s%lu", prefix, (*counter)++);
+        name[GENERATE_NEW_SYM_CONSTANT_NAME_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
+        if (!find_sym_constant(name))
+            break;
+    }
+    new = make_sym_constant(name);
+    return new;
 }
 
 /* --------------------------------------------------------------------
@@ -513,40 +552,41 @@ Symbol *generate_new_sym_constant (char *prefix, unsigned long *counter) {
 
 -------------------------------------------------------------------- */
 
-void create_predefined_symbols (void) {
-  current_agent(problem_space_symbol) = make_sym_constant ("problem-space");
-  current_agent(state_symbol) = make_sym_constant ("state");
-  current_agent(operator_symbol) = make_sym_constant ("operator");
-  current_agent(superstate_symbol) = make_sym_constant ("superstate");
-  current_agent(io_symbol) = make_sym_constant ("io");
-  current_agent(object_symbol) = make_sym_constant ("object");
-  current_agent(attribute_symbol) = make_sym_constant ("attribute");
-  current_agent(impasse_symbol) = make_sym_constant ("impasse");
-  current_agent(choices_symbol) = make_sym_constant ("choices");
-  current_agent(none_symbol) = make_sym_constant ("none");
-  current_agent(constraint_failure_symbol) = make_sym_constant ("constraint-failure");
-  current_agent(no_change_symbol) = make_sym_constant ("no-change");
-  current_agent(multiple_symbol) = make_sym_constant ("multiple");
-  current_agent(conflict_symbol) = make_sym_constant ("conflict");
-  current_agent(tie_symbol) = make_sym_constant ("tie");
-  current_agent(item_symbol) = make_sym_constant ("item");
-  current_agent(quiescence_symbol) = make_sym_constant ("quiescence");
-  current_agent(t_symbol) = make_sym_constant ("t");
-  current_agent(nil_symbol) = make_sym_constant ("nil");
-  current_agent(type_symbol) = make_sym_constant ("type");
-  current_agent(goal_symbol) = make_sym_constant ("goal");
-  current_agent(name_symbol) = make_sym_constant ("name");
+void create_predefined_symbols(void)
+{
+    current_agent(problem_space_symbol) = make_sym_constant("problem-space");
+    current_agent(state_symbol) = make_sym_constant("state");
+    current_agent(operator_symbol) = make_sym_constant("operator");
+    current_agent(superstate_symbol) = make_sym_constant("superstate");
+    current_agent(io_symbol) = make_sym_constant("io");
+    current_agent(object_symbol) = make_sym_constant("object");
+    current_agent(attribute_symbol) = make_sym_constant("attribute");
+    current_agent(impasse_symbol) = make_sym_constant("impasse");
+    current_agent(choices_symbol) = make_sym_constant("choices");
+    current_agent(none_symbol) = make_sym_constant("none");
+    current_agent(constraint_failure_symbol) = make_sym_constant("constraint-failure");
+    current_agent(no_change_symbol) = make_sym_constant("no-change");
+    current_agent(multiple_symbol) = make_sym_constant("multiple");
+    current_agent(conflict_symbol) = make_sym_constant("conflict");
+    current_agent(tie_symbol) = make_sym_constant("tie");
+    current_agent(item_symbol) = make_sym_constant("item");
+    current_agent(quiescence_symbol) = make_sym_constant("quiescence");
+    current_agent(t_symbol) = make_sym_constant("t");
+    current_agent(nil_symbol) = make_sym_constant("nil");
+    current_agent(type_symbol) = make_sym_constant("type");
+    current_agent(goal_symbol) = make_sym_constant("goal");
+    current_agent(name_symbol) = make_sym_constant("name");
 
-  current_agent(ts_context_variable) = make_variable ("<ts>");
-  current_agent(to_context_variable) = make_variable ("<to>");
-  current_agent(sss_context_variable) = make_variable ("<sss>");
-  current_agent(sso_context_variable) = make_variable ("<sso>");
-  current_agent(ss_context_variable) = make_variable ("<ss>");
-  current_agent(so_context_variable) = make_variable ("<so>");
-  current_agent(s_context_variable) = make_variable ("<s>");
-  current_agent(o_context_variable) = make_variable ("<o>");
+    current_agent(ts_context_variable) = make_variable("<ts>");
+    current_agent(to_context_variable) = make_variable("<to>");
+    current_agent(sss_context_variable) = make_variable("<sss>");
+    current_agent(sso_context_variable) = make_variable("<sso>");
+    current_agent(ss_context_variable) = make_variable("<ss>");
+    current_agent(so_context_variable) = make_variable("<so>");
+    current_agent(s_context_variable) = make_variable("<s>");
+    current_agent(o_context_variable) = make_variable("<o>");
 
-  /* REW: begin 10.24.97 */
-  current_agent(wait_symbol) = make_variable ("wait");
-  /* REW: end   10.24.97 */
+    /* REW: begin 10.24.97 */
+    current_agent(wait_symbol) = make_variable("wait");
+    /* REW: end   10.24.97 */
 }

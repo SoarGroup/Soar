@@ -1,3 +1,9 @@
+/* This is silently disabling the msvc header file bug with warning level
+   4 turned on.  See bugzilla bug 167 */
+#ifdef _MSC_VER
+#pragma warning(disable : 4115)
+#endif
+
 /*************************************************************************
  *
  *  file:  soarkernel.h
@@ -47,8 +53,12 @@
  * =======================================================================
  */
 
-#ifndef _SOAR_H_INCLUDED /* ExcludeFromBuildInfo */
+#ifndef _SOAR_H_INCLUDED        /* ExcludeFromBuildInfo */
 #define _SOAR_H_INCLUDED
+
+#ifndef _MSC_VER
+#define _GNU_SOURCE
+#endif
 
 #if defined(MACINTOSH)          /* excludeFromBuildInfo */
 #include <utime.h>
@@ -56,7 +66,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#elif defined(WIN32)          /* excludeFromBuildInfo */
+#elif defined(WIN32)            /* excludeFromBuildInfo */
 #include <stdlib.h>
 #include <time.h>
 #include <windows.h>
@@ -70,6 +80,9 @@
 #include <stdio.h>
 #include <stddef.h>
 
+#ifdef UNIX
+#include <unistd.h>
+#endif
 
 #include "soarBuildOptions.h"
 
@@ -84,37 +97,42 @@
  *  stuff should be removed if not needed...
  */
 /*  I changed the goofy stuff to this from agent.c : */
-#ifdef __hpux                              /* excludeFromBuildInfo */
-#ifndef _INCLUDE_POSIX_SOURCE              /* excludeFromBuildInfo */
+#ifdef __hpux                   /* excludeFromBuildInfo */
+#ifndef _INCLUDE_POSIX_SOURCE   /* excludeFromBuildInfo */
 #define _INCLUDE_POSIX_SOURCE
 #endif
-#define _INCLUDE_XOPEN_SOURCE              /* excludeFromBuildInfo */
-#define _INCLUDE_HPUX_SOURCE               /* excludeFromBuildInfo */
+#define _INCLUDE_XOPEN_SOURCE   /* excludeFromBuildInfo */
+#define _INCLUDE_HPUX_SOURCE    /* excludeFromBuildInfo */
 #include <sys/types.h>
 #undef  _INCLUDE_POSIX_SOURCE
 #undef  _INCLUDE_XOPEN_SOURCE
 #undef  _INCLUDE_HPUX_SOURCE
-#endif /* __hpux */
-
+#endif                          /* __hpux */
 
 #ifndef tolower
 /* I can't believe Sun's ctype.h doesn't have this. */
 extern int tolower(int);
 #endif
 
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+#endif
+
+/* this is the size of the buffers used to print out error messages, etc */
+#define MESSAGE_SIZE 512
+/* size of the action attribute; used in rete.c, osupport.c */
+#define ACTION_ATTR_SIZE 50
 
 #include "sysdep.h"
 
-
-
-#ifdef __cplusplus                         /* excludeFromBuildInfo */
+#ifdef __cplusplus              /* excludeFromBuildInfo */
 #define extern extern "C"
 #endif
 
 #define ABSTRACT_REPLAY 1
 
 #define current_agent(x) (soar_agent->x)
-
 
 #ifdef DC_HISTOGRAM
 
@@ -134,8 +152,7 @@ extern int tolower(int);
   soar_agent->d_cycle_count++; \
 }
 
-#endif /* DC_HISTOGRAM */
-
+#endif                          /* DC_HISTOGRAM */
 
 /* --------------------------- */
 /* Current Soar version number */
@@ -146,8 +163,8 @@ extern int tolower(int);
 #define MICRO_VERSION_NUMBER 0
 #define GREEK_VERSION_NUMBER ""
 
-extern char * soar_version_string;
-extern char * soar_news_string;
+extern char *soar_version_string;
+extern char *soar_news_string;
 
 /* REW: begin 05.05.97 */
 #define OPERAND2_MODE_NAME "Operand2/Waterfall"
@@ -169,36 +186,34 @@ typedef char bool;
 #endif
 
 /* Some compilers define these. */
-#ifndef TRUE                /* excludeFromBuildInfo */
+#ifndef TRUE                    /* excludeFromBuildInfo */
 #define TRUE (1)
 #endif
-#ifndef FALSE               /* excludeFromBuildInfo */
+#ifndef FALSE                   /* excludeFromBuildInfo */
 #define FALSE (0)
 #endif
-
 
 #define NIL (0)
 
 #define EOF_AS_CHAR ((char)EOF)
 
 #ifdef PII_TIMERS
-  #define TIMER_VALUE unsigned long long int
+#define TIMER_VALUE unsigned long long int
 #else
-  #define TIMER_VALUE struct timeval
+#define TIMER_VALUE struct timeval
 #endif
 
 enum agent_id_state {
-  UNTOUCHED,
-  TOUCHED,
-  ALLOCATED
+    UNTOUCHED,
+    TOUCHED,
+    ALLOCATED
 };
 
 /* Possible modes for numeric indifference */
 enum ni_mode {
-	NUMERIC_INDIFFERENT_MODE_AVG,
-	NUMERIC_INDIFFERENT_MODE_SUM,
+    NUMERIC_INDIFFERENT_MODE_AVG,
+    NUMERIC_INDIFFERENT_MODE_SUM,
 };
-
 
 /* ---------------------------------------------------------------------
      Macros for Inserting and Removing Stuff from Doubly-Linked Lists 
@@ -398,7 +413,7 @@ typedef unsigned long tc_number;
      routine returns immediately.  
 ====================================================================== */
 
-extern void init_memory_utilities (void);
+extern void init_memory_utilities(void);
 
 /* ----------------------- */
 /* basic memory allocation */
@@ -418,29 +433,28 @@ extern void init_memory_utilities (void);
 #define fill_with_garbage(block,size) { }
 #endif
 
-extern void *allocate_memory (unsigned long size, int usage_code);
-extern void *allocate_memory_and_zerofill (unsigned long size, int usage_code);
-extern void free_memory (void *mem, int usage_code);
-
+extern void *allocate_memory(unsigned long size, int usage_code);
+extern void *allocate_memory_and_zerofill(unsigned long size, int usage_code);
+extern void free_memory(void *mem, int usage_code);
 
 /* ---------------- */
 /* string utilities */
 /* ---------------- */
 
-#define savestring(x) (char *) strcpy ( (char *)malloc (strlen (x) + 1), (x))
+#define savestring(x) (char *) strcpy ( (char *)malloc (strlen (x) + 1), (x))   /* this is relatively safe since the proper amount of memory is allocated */
 
-extern char *make_memory_block_for_string (const char *s);
-extern void free_memory_block_for_string (char *p);
+extern char *make_memory_block_for_string(const char *s);
+extern void free_memory_block_for_string(char *p);
 
-typedef void * growable_string;
+typedef void *growable_string;
 
 #define memsize_of_growable_string(gs) (*((int *)(gs)))
 #define length_of_growable_string(gs) (*(((int *)(gs))+1))
 #define text_of_growable_string(gs) (((char *)(gs)) + 2*sizeof(int *))
 
-extern growable_string make_blank_growable_string (void);
-extern void add_to_growable_string (growable_string *gs, char *string_to_add);
-extern void free_growable_string (growable_string gs);
+extern growable_string make_blank_growable_string(void);
+extern void add_to_growable_string(growable_string * gs, char *string_to_add);
+extern void free_growable_string(growable_string gs);
 
 /* ------------ */
 /* memory pools */
@@ -449,27 +463,25 @@ extern void free_growable_string (growable_string gs);
 #define MAX_POOL_NAME_LENGTH 15
 
 typedef struct memory_pool_struct {
-  void *free_list;             /* header of chain of free items */
+    void *free_list;            /* header of chain of free items */
 #ifdef MEMORY_POOL_STATS
-  long used_count;             /* for statistics only */
+    long used_count;            /* for statistics only */
 #endif
 #ifdef TRACK_MEMORY_USAGE
-  long free_list_length;
-  long pool_size;
+    long free_list_length;
+    long pool_size;
 #endif
 
-  long item_size;               /* bytes per item */
-  long items_per_block;        /* number of items in each big block */
-  long num_blocks;             /* number of big blocks in use by this pool */
-  void *first_block;           /* header of chain of blocks */
-  char name[MAX_POOL_NAME_LENGTH];  /* name of the pool (for memory-stats) */
-  struct memory_pool_struct *next;  /* next in list of all memory pools */
+    long item_size;             /* bytes per item */
+    long items_per_block;       /* number of items in each big block */
+    long num_blocks;            /* number of big blocks in use by this pool */
+    void *first_block;          /* header of chain of blocks */
+    char name[MAX_POOL_NAME_LENGTH];    /* name of the pool (for memory-stats) */
+    struct memory_pool_struct *next;    /* next in list of all memory pools */
 } memory_pool;
 
-
-extern void add_block_to_memory_pool (memory_pool *p);
-extern void init_memory_pool (memory_pool *p, long item_size, char *name);
-
+extern void add_block_to_memory_pool(memory_pool * p);
+extern void init_memory_pool(memory_pool * p, long item_size, char *name);
 
 #ifdef MEMORY_POOL_STATS
 #define increment_used_count(p) {(p)->used_count++;}
@@ -487,15 +499,14 @@ extern void init_memory_pool (memory_pool *p, long item_size, char *name);
 #define increment_free_list_length(p) { }
 #endif
 
-
 #ifdef USE_DEBUG_UTILS
 
 #define allocate_with_pool(p,dest_item_pointer) allocate_with_pool_fn( (p), (void *) (dest_item_pointer) )
 
 #define free_with_pool(p,item) free_with_pool_fn( (p), (item) )
 
-extern void allocate_with_pool_fn( memory_pool *p, void **dest );
-extern void free_with_pool_fn( memory_pool *p, void *item );
+extern void allocate_with_pool_fn(memory_pool * p, void **dest);
+extern void free_with_pool_fn(memory_pool * p, void *item);
 
 #else
 
@@ -521,16 +532,16 @@ extern void free_with_pool_fn( memory_pool *p, void *item );
 /* ------------------------- */
 
 typedef struct cons_struct {
-  void *first;
-  struct cons_struct *rest;
+    void *first;
+    struct cons_struct *rest;
 } cons;
 
 typedef cons list;
 
 typedef struct dl_cons_struct {
-  void *item;
-  struct dl_cons_struct *next;
-  struct dl_cons_struct *prev;
+    void *item;
+    struct dl_cons_struct *next;
+    struct dl_cons_struct *prev;
 } dl_cons;
 
 typedef dl_cons dl_list;
@@ -546,52 +557,49 @@ typedef dl_cons dl_list;
   push_cons_xy298->rest = (list_header); \
   (list_header) = push_cons_xy298; }
 
-extern list *destructively_reverse_list (list *c);
-extern bool member_of_list (void *item, list *the_list);
-extern list *add_if_not_member (void *item, list *old_list);
-extern void free_list (list *the_list);
+extern list *destructively_reverse_list(list * c);
+extern bool member_of_list(void *item, list * the_list);
+extern list *add_if_not_member(void *item, list * old_list);
+extern void free_list(list * the_list);
 
-typedef bool (*cons_test_fn)(cons *c);
-typedef bool (*dl_cons_test_fn)(dl_cons *dc);
+typedef bool(*cons_test_fn) (cons * c);
+typedef bool(*dl_cons_test_fn) (dl_cons * dc);
 
-extern list *extract_list_elements (list **header, cons_test_fn f);
-extern dl_list *extract_dl_list_elements (dl_list **header, dl_cons_test_fn f);
+extern list *extract_list_elements(list ** header, cons_test_fn f);
+extern dl_list *extract_dl_list_elements(dl_list ** header, dl_cons_test_fn f);
 
 /* ----------------------------- */
 /* Resizable hash table routines */
 /* ----------------------------- */
 
 extern unsigned long masks_for_n_low_order_bits[33];
-typedef unsigned long ((*hash_function)(void *item, short num_bits));
+typedef unsigned long ((*hash_function) (void *item, short num_bits));
 
 typedef struct item_in_hash_table_struct {
-  struct item_in_hash_table_struct *next;
-  char data;
+    struct item_in_hash_table_struct *next;
+    char data;
 } item_in_hash_table;
 
 typedef item_in_hash_table *bucket_array;
 
 typedef struct hash_table_struct {
-  unsigned long count;      /* number of items in the table */
-  unsigned long size;       /* number of buckets */
-  short log2size;           /* log (base 2) of size */
-  short minimum_log2size;   /* table never shrinks below this size */
-  bucket_array *buckets;
-  hash_function h;          /* call this to hash or rehash an item */
-} hash_table;  
+    unsigned long count;        /* number of items in the table */
+    unsigned long size;         /* number of buckets */
+    short log2size;             /* log (base 2) of size */
+    short minimum_log2size;     /* table never shrinks below this size */
+    bucket_array *buckets;
+    hash_function h;            /* call this to hash or rehash an item */
+} hash_table;
 
-extern struct hash_table_struct *make_hash_table (short minimum_log2size,
-                                                  hash_function h);
-extern void remove_from_hash_table (struct hash_table_struct *ht, void *item);
-extern void add_to_hash_table (struct hash_table_struct *ht, void *item);
+extern struct hash_table_struct *make_hash_table(short minimum_log2size, hash_function h);
+extern void remove_from_hash_table(struct hash_table_struct *ht, void *item);
+extern void add_to_hash_table(struct hash_table_struct *ht, void *item);
 
-typedef bool (*hash_table_callback_fn)(void *item);
+typedef bool(*hash_table_callback_fn) (void *item);
 
-extern void do_for_all_items_in_hash_table (struct hash_table_struct *ht,
-                                            hash_table_callback_fn f);
-extern void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
-                                             hash_table_callback_fn f,
-                                             unsigned long hash_value);
+extern void do_for_all_items_in_hash_table(struct hash_table_struct *ht, hash_table_callback_fn f);
+extern void do_for_all_items_in_hash_bucket(struct hash_table_struct *ht,
+                                            hash_table_callback_fn f, unsigned long hash_value);
 
 /* ======================================================================
                              lexer.c
@@ -634,101 +642,99 @@ extern void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
 #define reading_from_top_level() (! current_agent(current_file)->parent_file)
 
 #define MAX_LEXER_LINE_LENGTH 1000
-#define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5) /* a little bigger to avoid
-                                                       any off-by-one-errors */
+#define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)     /* a little bigger to avoid
+                                                           any off-by-one-errors */
 
 enum lexer_token_type {
-  EOF_LEXEME,                        /* end-of-file */
-  IDENTIFIER_LEXEME,                 /* identifier */
-  VARIABLE_LEXEME,                   /* variable */
-  SYM_CONSTANT_LEXEME,               /* symbolic constant */
-  INT_CONSTANT_LEXEME,               /* integer constant */
-  FLOAT_CONSTANT_LEXEME,             /* floating point constant */
-  L_PAREN_LEXEME,                    /* "(" */
-  R_PAREN_LEXEME,                    /* ")" */
-  L_BRACE_LEXEME,                    /* "{" */
-  R_BRACE_LEXEME,                    /* "}" */
-  PLUS_LEXEME,                       /* "+" */
-  MINUS_LEXEME,                      /* "-" */
-  RIGHT_ARROW_LEXEME,                /* "-->" */
-  GREATER_LEXEME,                    /* ">" */
-  LESS_LEXEME,                       /* "<" */
-  EQUAL_LEXEME,                      /* "=" */
-  LESS_EQUAL_LEXEME,                 /* "<=" */
-  GREATER_EQUAL_LEXEME,              /* ">=" */
-  NOT_EQUAL_LEXEME,                  /* "<>" */
-  LESS_EQUAL_GREATER_LEXEME,         /* "<=>" */
-  LESS_LESS_LEXEME,                  /* "<<" */
-  GREATER_GREATER_LEXEME,            /* ">>" */
-  AMPERSAND_LEXEME,                  /* "&" */
-  AT_LEXEME,                         /* "@" */
-  TILDE_LEXEME,                      /* "~" */
-  UP_ARROW_LEXEME,                   /* "^" */
-  EXCLAMATION_POINT_LEXEME,          /* "!" */
-  COMMA_LEXEME,                      /* "," */
-  PERIOD_LEXEME,                     /* "." */
-  QUOTED_STRING_LEXEME,              /* string in double quotes */
-  DOLLAR_STRING_LEXEME };            /* string for shell escape */
+    EOF_LEXEME,                 /* end-of-file */
+    IDENTIFIER_LEXEME,          /* identifier */
+    VARIABLE_LEXEME,            /* variable */
+    SYM_CONSTANT_LEXEME,        /* symbolic constant */
+    INT_CONSTANT_LEXEME,        /* integer constant */
+    FLOAT_CONSTANT_LEXEME,      /* floating point constant */
+    L_PAREN_LEXEME,             /* "(" */
+    R_PAREN_LEXEME,             /* ")" */
+    L_BRACE_LEXEME,             /* "{" */
+    R_BRACE_LEXEME,             /* "}" */
+    PLUS_LEXEME,                /* "+" */
+    MINUS_LEXEME,               /* "-" */
+    RIGHT_ARROW_LEXEME,         /* "-->" */
+    GREATER_LEXEME,             /* ">" */
+    LESS_LEXEME,                /* "<" */
+    EQUAL_LEXEME,               /* "=" */
+    LESS_EQUAL_LEXEME,          /* "<=" */
+    GREATER_EQUAL_LEXEME,       /* ">=" */
+    NOT_EQUAL_LEXEME,           /* "<>" */
+    LESS_EQUAL_GREATER_LEXEME,  /* "<=>" */
+    LESS_LESS_LEXEME,           /* "<<" */
+    GREATER_GREATER_LEXEME,     /* ">>" */
+    AMPERSAND_LEXEME,           /* "&" */
+    AT_LEXEME,                  /* "@" */
+    TILDE_LEXEME,               /* "~" */
+    UP_ARROW_LEXEME,            /* "^" */
+    EXCLAMATION_POINT_LEXEME,   /* "!" */
+    COMMA_LEXEME,               /* "," */
+    PERIOD_LEXEME,              /* "." */
+    QUOTED_STRING_LEXEME,       /* string in double quotes */
+    DOLLAR_STRING_LEXEME
+};                              /* string for shell escape */
 
-#define LENGTH_OF_LONGEST_SPECIAL_LEXEME 3  /* length of "-->" and "<=>"--
-                                               if a longer one is added, be
-                                               sure to update this! */
+#define LENGTH_OF_LONGEST_SPECIAL_LEXEME 3      /* length of "-->" and "<=>"--
+                                                   if a longer one is added, be
+                                                   sure to update this! */
 
 struct lexeme_info {
-  enum lexer_token_type type;         /* what kind of lexeme it is */
-  char string[MAX_LEXEME_LENGTH+1];   /* text of the lexeme */
-  int length;                         /* length of the above string */
-  long int_val;                       /* for INT_CONSTANT_LEXEME's */
-  float float_val;                    /* for FLOAT_CONSTANT_LEXEME's */
-  char id_letter;                     /* for IDENTIFIER_LEXEME's */
-  unsigned long id_number;            /* for IDENTIFIER_LEXEME's */
+    enum lexer_token_type type; /* what kind of lexeme it is */
+    char string[MAX_LEXEME_LENGTH + 1]; /* text of the lexeme */
+    int length;                 /* length of the above string */
+    long int_val;               /* for INT_CONSTANT_LEXEME's */
+    float float_val;            /* for FLOAT_CONSTANT_LEXEME's */
+    char id_letter;             /* for IDENTIFIER_LEXEME's */
+    unsigned long id_number;    /* for IDENTIFIER_LEXEME's */
 };
 
-extern void determine_possible_symbol_types_for_string (char *s,
-                                                        int length_of_s,
-                                                        bool *possible_id,
-                                                        bool *possible_var,
-                                                        bool *possible_sc,
-                                                        bool *possible_ic,
-                                                        bool *possible_fc,
-                                                        bool *rereadable);
+extern void determine_possible_symbol_types_for_string(char *s,
+                                                       int length_of_s,
+                                                       bool * possible_id,
+                                                       bool * possible_var,
+                                                       bool * possible_sc,
+                                                       bool * possible_ic, bool * possible_fc, bool * rereadable);
 
-extern void init_lexer (void);
-extern void start_lex_from_file (char *filename, FILE *already_opened_file);
-extern void stop_lex_from_file (void);
+extern void init_lexer(void);
+extern void start_lex_from_file(char *filename, FILE * already_opened_file);
+extern void stop_lex_from_file(void);
 
-extern void get_lexeme (void);
-extern void print_location_of_most_recent_lexeme (void);
+extern void get_lexeme(void);
+extern void print_location_of_most_recent_lexeme(void);
 
-extern int current_lexer_parentheses_level (void);
-extern void skip_ahead_to_balanced_parentheses (int parentheses_level);
-extern void fake_rparen_at_next_end_of_line (void);
-extern void set_lexer_allow_ids (bool allow_identifiers);
+extern int current_lexer_parentheses_level(void);
+extern void skip_ahead_to_balanced_parentheses(int parentheses_level);
+extern void fake_rparen_at_next_end_of_line(void);
+extern void set_lexer_allow_ids(bool allow_identifiers);
 
-extern void determine_type_of_constituent_string (void);
+extern void determine_type_of_constituent_string(void);
 
 /* (RBD) the rest of this stuff shouldn't be in the module interface... */
 
-#define BUFSIZE (MAX_LEXER_LINE_LENGTH+2) /* +2 for newline and null at end */
+#define BUFSIZE (MAX_LEXER_LINE_LENGTH+2)       /* +2 for newline and null at end */
 
 /* --- we'll use one of these structures for each file being read --- */
 
 typedef struct lexer_source_file_struct {
-  struct lexer_source_file_struct *parent_file;
-  char *filename;
-  FILE *file;
-  bool fake_rparen_at_eol;
-  bool allow_ids;
-  int parentheses_level;    /* 0 means top level, no left paren's seen */
-  int current_column;       /* column number of next char to read (0-based) */
-  unsigned long current_line;   /* line number of line in buffer (1-based) */
-  int column_of_start_of_last_lexeme;   /* (used for error messages) */
-  unsigned long line_of_start_of_last_lexeme;
-  char buffer[BUFSIZE];              /* holds text of current input line */
-  struct lexeme_info saved_lexeme;   /* save/restore it during nested loads */
-  char saved_current_char;           /* save/restore this too */
+    struct lexer_source_file_struct *parent_file;
+    char *filename;
+    FILE *file;
+    bool fake_rparen_at_eol;
+    bool allow_ids;
+    int parentheses_level;      /* 0 means top level, no left paren's seen */
+    int current_column;         /* column number of next char to read (0-based) */
+    unsigned long current_line; /* line number of line in buffer (1-based) */
+    int column_of_start_of_last_lexeme; /* (used for error messages) */
+    unsigned long line_of_start_of_last_lexeme;
+    char buffer[BUFSIZE];       /* holds text of current input line */
+    struct lexeme_info saved_lexeme;    /* save/restore it during nested loads */
+    char saved_current_char;    /* save/restore this too */
 } lexer_source_file;
-
 
 /* =======================================================================
                              symtab.c
@@ -862,103 +868,103 @@ typedef struct lexer_source_file_struct {
    first field.  This field is used by the resizable hash table routines. */
 
 typedef struct symbol_common_data_struct {
-  union symbol_union *next_in_hash_table;  /* next item in hash bucket */
-  unsigned long reference_count;
-  byte symbol_type;                /* one of the above xxx_SYMBOL_TYPE's */
-  byte decider_flag;               /* used only by the decider */
-  union a_union {
-    struct wme_struct *decider_wme;  /* used only by the decider */
-    unsigned long retesave_symindex; /* used for rete fastsave/fastload */
-  } a;
-  unsigned long hash_id;           /* used for hashing in the rete */
+    union symbol_union *next_in_hash_table;     /* next item in hash bucket */
+    unsigned long reference_count;
+    byte symbol_type;           /* one of the above xxx_SYMBOL_TYPE's */
+    byte decider_flag;          /* used only by the decider */
+    union a_union {
+        struct wme_struct *decider_wme; /* used only by the decider */
+        unsigned long retesave_symindex;        /* used for rete fastsave/fastload */
+    } a;
+    unsigned long hash_id;      /* used for hashing in the rete */
 } symbol_common_data;
 
 /* WARNING:  In the following structures (the five kinds of symbols),
    common_symbol_info MUST be the first field. */
 
 typedef struct sym_constant_struct {
-  symbol_common_data common_symbol_info;
-  char *name;
-  struct production_struct *production;  /* NIL if no prod. has this name */
+    symbol_common_data common_symbol_info;
+    char *name;
+    struct production_struct *production;       /* NIL if no prod. has this name */
 } sym_constant;
 
 typedef struct int_constant_struct {
-  symbol_common_data common_symbol_info;
-  long value;
+    symbol_common_data common_symbol_info;
+    long value;
 } int_constant;
 
 typedef struct float_constant_struct {
-  symbol_common_data common_symbol_info;
-  float value;
+    symbol_common_data common_symbol_info;
+    float value;
 } float_constant;
 
 typedef struct variable_struct {
-  symbol_common_data common_symbol_info;
-  char *name;
-  tc_number tc_num;
-  union symbol_union *current_binding_value;
-  unsigned long gensym_number;
-  list *rete_binding_locations;
+    symbol_common_data common_symbol_info;
+    char *name;
+    tc_number tc_num;
+    union symbol_union *current_binding_value;
+    unsigned long gensym_number;
+    list *rete_binding_locations;
 } variable;
 
 /* Note: I arranged the fields below to try to minimize space */
 typedef struct identifier_struct {
-  symbol_common_data common_symbol_info;
-  unsigned long name_number;
-  char name_letter;
+    symbol_common_data common_symbol_info;
+    unsigned long name_number;
+    char name_letter;
 
-  bool isa_goal;        /* TRUE iff this is a goal identifier */
-  bool isa_impasse;     /* TRUE iff this is an attr. impasse identifier */
+    bool isa_goal;              /* TRUE iff this is a goal identifier */
+    bool isa_impasse;           /* TRUE iff this is an attr. impasse identifier */
 
-  bool did_PE;   /* RCHONG: 10.11 */
+    bool did_PE;                /* RCHONG: 10.11 */
 
-  unsigned short isa_operator;
+    unsigned short isa_operator;
 
-  bool allow_bottom_up_chunks;
+    bool allow_bottom_up_chunks;
 
-  /* --- ownership, promotion, demotion, & garbage collection stuff --- */
-  bool could_be_a_link_from_below;
-  goal_stack_level level;
-  goal_stack_level promotion_level;
-  unsigned long link_count;
-  dl_cons *unknown_level;
+    /* --- ownership, promotion, demotion, & garbage collection stuff --- */
+    bool could_be_a_link_from_below;
+    goal_stack_level level;
+    goal_stack_level promotion_level;
+    unsigned long link_count;
+    dl_cons *unknown_level;
 
-  struct slot_struct *slots;  /* dll of slots for this identifier */
-  tc_number tc_num;           /* used for transitive closures, marking, etc. */
-  union symbol_union *variablization;  /* used by the chunker */
+    struct slot_struct *slots;  /* dll of slots for this identifier */
+    tc_number tc_num;           /* used for transitive closures, marking, etc. */
+    union symbol_union *variablization; /* used by the chunker */
 
-  /* --- fields used only on goals and impasse identifiers --- */
-  struct wme_struct *impasse_wmes;
+    /* --- fields used only on goals and impasse identifiers --- */
+    struct wme_struct *impasse_wmes;
 
-  /* --- fields used only on goals --- */
-  union symbol_union *higher_goal, *lower_goal;
-  struct slot_struct *operator_slot;
-  struct preference_struct *preferences_from_goal;
+    /* --- fields used only on goals --- */
+    union symbol_union *higher_goal, *lower_goal;
+    struct slot_struct *operator_slot;
+    struct preference_struct *preferences_from_goal;
 
-  /* REW: begin 09.15.96 */
-  struct gds_struct *gds;    /* Pointer to a goal's dependency set */
-  /* REW: begin 09.15.96 */
+    /* REW: begin 09.15.96 */
+    struct gds_struct *gds;     /* Pointer to a goal's dependency set */
+    /* REW: begin 09.15.96 */
 
-  /* REW: begin 08.20.97 */
-  int saved_firing_type;     /* FIRING_TYPE that must be restored if Waterfall
-				processing returns to this level.
-				See consistency.c */
-  struct ms_change_struct *ms_o_assertions; /* dll of o assertions at this level */
-  struct ms_change_struct *ms_i_assertions; /* dll of i assertions at this level */
-  struct ms_change_struct *ms_retractions;  /* dll of retractions at this level */
-  /* REW: end   08.2097 */
+    /* REW: begin 08.20.97 */
+    int saved_firing_type;      /* FIRING_TYPE that must be restored if Waterfall
+                                   processing returns to this level.
+                                   See consistency.c */
+    struct ms_change_struct *ms_o_assertions;   /* dll of o assertions at this level */
+    struct ms_change_struct *ms_i_assertions;   /* dll of i assertions at this level */
+    struct ms_change_struct *ms_retractions;    /* dll of retractions at this level */
+    /* REW: end   08.2097 */
 
-  /* --- fields used for Soar I/O stuff --- */
-  list *associated_output_links;
-  struct wme_struct *input_wmes;
+    /* --- fields used for Soar I/O stuff --- */
+    list *associated_output_links;
+    struct wme_struct *input_wmes;
 } identifier;
 
 typedef union symbol_union {
-  variable var;
-  identifier id;
-  sym_constant sc;
-  int_constant ic;
-  float_constant fc;
+    variable var;
+    identifier id;
+    sym_constant sc;
+    int_constant ic;
+    float_constant fc;
 } Symbol;
 
 /* WARNING: this #define's "common".  Don't use "common" anywhere in the
@@ -1022,19 +1028,19 @@ typedef union symbol_union {
      new gensym names).
 ----------------------------------------------------------------- */
 
-extern void init_symbol_tables (void);
+extern void init_symbol_tables(void);
 
-extern Symbol *find_variable (char *name);
-extern Symbol *find_identifier (char name_letter, unsigned long name_number);
-extern Symbol *find_sym_constant (const char *name);  /* AGR 600 */
-extern Symbol *find_int_constant (long value);
-extern Symbol *find_float_constant (float value);
+extern Symbol *find_variable(char *name);
+extern Symbol *find_identifier(char name_letter, unsigned long name_number);
+extern Symbol *find_sym_constant(const char *name);     /* AGR 600 */
+extern Symbol *find_int_constant(long value);
+extern Symbol *find_float_constant(float value);
 
-extern Symbol *make_variable (char *name);
-extern Symbol *make_sym_constant (const char *name);
-extern Symbol *make_int_constant (long value);
-extern Symbol *make_float_constant (float value);
-extern Symbol *make_new_identifier (char name_letter, goal_stack_level level);
+extern Symbol *make_variable(char *name);
+extern Symbol *make_sym_constant(const char *name);
+extern Symbol *make_int_constant(long value);
+extern Symbol *make_float_constant(float value);
+extern Symbol *make_new_identifier(char name_letter, goal_stack_level level);
 
 /* --- macros used for changing the reference count --- */
 #define symbol_add_ref(x) {(x)->common.reference_count++;}
@@ -1044,14 +1050,14 @@ extern Symbol *make_new_identifier (char name_letter, goal_stack_level level);
   deallocate_symbol(x); \
   }
 
-extern void deallocate_symbol (Symbol *sym);
+extern void deallocate_symbol(Symbol * sym);
 
-extern void reset_id_counters (void);
-extern void reset_id_and_variable_tc_numbers (void);
-extern void reset_variable_gensym_numbers (void);
-extern bool print_sym (void *item);
+extern void reset_id_counters(void);
+extern void reset_id_and_variable_tc_numbers(void);
+extern void reset_variable_gensym_numbers(void);
+extern bool print_sym(void *item);
 
-extern Symbol *generate_new_sym_constant (char *prefix,unsigned long *counter);
+extern Symbol *generate_new_sym_constant(char *prefix, unsigned long *counter);
 
 /* -----------------------------------------------------------------
                        Predefined Symbols
@@ -1068,8 +1074,7 @@ extern Symbol *generate_new_sym_constant (char *prefix,unsigned long *counter);
    is still 1.
 ----------------------------------------------------------------- */
 
-extern void create_predefined_symbols (void);
-
+extern void create_predefined_symbols(void);
 
 /* ========================================================================= */
 /*                                                                           */
@@ -1143,28 +1148,28 @@ extern void create_predefined_symbols (void);
 ------------------------------------------------------------------------ */
 
 typedef struct wme_struct {
-  /* WARNING:  The next three fields (id,attr,value) MUST be consecutive--
-     the rete code relies on this! */
-  Symbol *id;
-  Symbol *attr;
-  Symbol *value;
-  bool acceptable;
-  unsigned long timetag;
-  unsigned long reference_count;
-  struct wme_struct *rete_next, *rete_prev; /* used for dll of wmes in rete */
-  struct right_mem_struct *right_mems;      /* used for dll of rm's it's in */
-  struct token_struct *tokens;              /* dll of tokens in rete */
-  struct wme_struct *next, *prev;           /* (see above) */
-  struct preference_struct *preference;     /* pref. supporting it, or NIL */
-  struct output_link_struct *output_link;   /* for top-state output commands */
-  tc_number grounds_tc;                     /* for chunker use only */
-  tc_number potentials_tc, locals_tc;
-  struct preference_struct *chunker_bt_pref;
+    /* WARNING:  The next three fields (id,attr,value) MUST be consecutive--
+       the rete code relies on this! */
+    Symbol *id;
+    Symbol *attr;
+    Symbol *value;
+    bool acceptable;
+    unsigned long timetag;
+    unsigned long reference_count;
+    struct wme_struct *rete_next, *rete_prev;   /* used for dll of wmes in rete */
+    struct right_mem_struct *right_mems;        /* used for dll of rm's it's in */
+    struct token_struct *tokens;        /* dll of tokens in rete */
+    struct wme_struct *next, *prev;     /* (see above) */
+    struct preference_struct *preference;       /* pref. supporting it, or NIL */
+    struct output_link_struct *output_link;     /* for top-state output commands */
+    tc_number grounds_tc;       /* for chunker use only */
+    tc_number potentials_tc, locals_tc;
+    struct preference_struct *chunker_bt_pref;
 
-  /* REW: begin 09.15.96 */
-  struct gds_struct *gds;
-  struct wme_struct *gds_next, *gds_prev; /* used for dll of wmes in gds */
-  /* REW: end   09.15.96 */
+    /* REW: begin 09.15.96 */
+    struct gds_struct *gds;
+    struct wme_struct *gds_next, *gds_prev;     /* used for dll of wmes in gds */
+    /* REW: end   09.15.96 */
 
 } wme;
 
@@ -1204,8 +1209,8 @@ typedef struct wme_struct {
    */
 
 typedef struct gds_struct {
-  Symbol *goal;                /* pointer to the goal for the dependency set */
-  wme *wmes_in_gds;            /* pointer to the dll of WMEs in GDS of goal */
+    Symbol *goal;               /* pointer to the goal for the dependency set */
+    wme *wmes_in_gds;           /* pointer to the dll of WMEs in GDS of goal */
 } goal_dependency_set;
 /* REW: end   09.15.96 */
 
@@ -1277,7 +1282,7 @@ typedef struct gds_struct {
 
 /* WARNING: preference types must be numbered 0..(NUM_PREFERENCE_TYPES-1),
    because the slot structure contains an array using these indices. */
-#define NUM_PREFERENCE_TYPES 13  /* number of different preference types */
+#define NUM_PREFERENCE_TYPES 13 /* number of different preference types */
 
 #define ACCEPTABLE_PREFERENCE_TYPE 0
 #define REQUIRE_PREFERENCE_TYPE 1
@@ -1295,62 +1300,60 @@ typedef struct gds_struct {
 #define preference_is_unary(p) ((p)<9)
 #define preference_is_binary(p) ((p)>8)
 
-extern char * preference_name[NUM_PREFERENCE_TYPES];
+extern char *preference_name[NUM_PREFERENCE_TYPES];
 
 typedef struct preference_struct {
-  byte type;         /* acceptable, better, etc. */
-  bool o_supported;  /* is the preference o-supported? */
-  bool in_tm;        /* is this currently in TM? */
-  bool on_goal_list; /* is this pref on the list for its match goal */
-  unsigned long reference_count;
-  Symbol *id;
-  Symbol *attr;
-  Symbol *value;
-  Symbol *referent;
-  struct slot_struct *slot;
+    byte type;                  /* acceptable, better, etc. */
+    bool o_supported;           /* is the preference o-supported? */
+    bool in_tm;                 /* is this currently in TM? */
+    bool on_goal_list;          /* is this pref on the list for its match goal */
+    unsigned long reference_count;
+    Symbol *id;
+    Symbol *attr;
+    Symbol *value;
+    Symbol *referent;
+    struct slot_struct *slot;
 
-  /* dll of pref's of same type in same slot */
-  struct preference_struct *next, *prev;
+    /* dll of pref's of same type in same slot */
+    struct preference_struct *next, *prev;
 
-  /* dll of all pref's in same slot */
-  struct preference_struct *all_of_slot_next, *all_of_slot_prev;
+    /* dll of all pref's in same slot */
+    struct preference_struct *all_of_slot_next, *all_of_slot_prev;
 
-  /* dll of all pref's from the same match goal */
-  struct preference_struct *all_of_goal_next, *all_of_goal_prev;
-  
-  /* dll (without header) of cloned preferences (created when chunking) */
-  struct preference_struct *next_clone, *prev_clone;
-    
-  struct instantiation_struct *inst;
-  struct preference_struct *inst_next, *inst_prev;
-  struct preference_struct *next_candidate;
-  struct preference_struct *next_result;
+    /* dll of all pref's from the same match goal */
+    struct preference_struct *all_of_goal_next, *all_of_goal_prev;
 
-#ifdef NO_TOP_JUST 
+    /* dll (without header) of cloned preferences (created when chunking) */
+    struct preference_struct *next_clone, *prev_clone;
 
-  Symbol *match_goal;                   /* Symbol, or NIL if none */
-  goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
+    struct instantiation_struct *inst;
+    struct preference_struct *inst_next, *inst_prev;
+    struct preference_struct *next_candidate;
+    struct preference_struct *next_result;
+
+#ifdef NO_TOP_JUST
+
+    Symbol *match_goal;         /* Symbol, or NIL if none */
+    goal_stack_level match_goal_level;  /* level, or ATTRIBUTE_IMPASSE_LEVEL */
 #endif
-
 
 #ifdef NUMERIC_INDIFFERENCE
-  /* REW: 2003-01-08 Behavior Variability Kernel Experiements
-                     See decide.c for more information
-		     This is just a hack until we determine
-		     what we really want from these changes.
-  */
+    /* REW: 2003-01-08 Behavior Variability Kernel Experiements
+       See decide.c for more information
+       This is just a hack until we determine
+       what we really want from these changes.
+     */
 
-  int total_preferences_for_candidate;
-  double sum_of_probability;
+    int total_preferences_for_candidate;
+    double sum_of_probability;
 
-  /* END: REW: 2003-01-08 */
+    /* END: REW: 2003-01-08 */
 #endif
-
 
 } preference;
 
 /* Decl'd in prefmem.c and needed in decide.c */
-extern bool remove_preference_from_clones (preference *pref);
+extern bool remove_preference_from_clones(preference * pref);
 
 /* ------------------------------------------------------------------------
 
@@ -1358,7 +1361,7 @@ extern bool remove_preference_from_clones (preference *pref);
 
 ------------------------------------------------------------------------ */
 
-#define NONE_IMPASSE_TYPE 0                   /* no impasse */
+#define NONE_IMPASSE_TYPE 0     /* no impasse */
 #define CONSTRAINT_FAILURE_IMPASSE_TYPE 1
 #define CONFLICT_IMPASSE_TYPE 2
 #define TIE_IMPASSE_TYPE 3
@@ -1413,23 +1416,23 @@ extern bool remove_preference_from_clones (preference *pref);
 ------------------------------------------------------------------------ */
 
 typedef struct slot_struct {
-  struct slot_struct *next, *prev;  /* dll of slots for this id */
-  Symbol *id;                       /* id, attr of the slot */
-  Symbol *attr;
-  wme *wmes;                        /* dll of wmes in the slot */
-  wme *acceptable_preference_wmes;  /* dll of acceptable pref. wmes */
-  preference *all_preferences;      /* dll of all pref's in the slot */
-  preference *preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
-  Symbol *impasse_id;               /* NIL if slot is not impassed */
-  bool isa_context_slot;            
-  byte impasse_type;
-  bool marked_for_possible_removal;
-  dl_cons *changed;   /* for non-context slots: points to the corresponding
-                         dl_cons in changed_slots;  for context slots: just
-                         zero/nonzero flag indicating slot changed */
-  dl_cons *acceptable_preference_changed; /* for context slots: either zero,
-                                             or points to dl_cons if the slot
-                                             has changed + or ! pref's */
+    struct slot_struct *next, *prev;    /* dll of slots for this id */
+    Symbol *id;                 /* id, attr of the slot */
+    Symbol *attr;
+    wme *wmes;                  /* dll of wmes in the slot */
+    wme *acceptable_preference_wmes;    /* dll of acceptable pref. wmes */
+    preference *all_preferences;        /* dll of all pref's in the slot */
+    preference *preferences[NUM_PREFERENCE_TYPES];      /* dlls for each type */
+    Symbol *impasse_id;         /* NIL if slot is not impassed */
+    bool isa_context_slot;
+    byte impasse_type;
+    bool marked_for_possible_removal;
+    dl_cons *changed;           /* for non-context slots: points to the corresponding
+                                   dl_cons in changed_slots;  for context slots: just
+                                   zero/nonzero flag indicating slot changed */
+    dl_cons *acceptable_preference_changed;     /* for context slots: either zero,
+                                                   or points to dl_cons if the slot
+                                                   has changed + or ! pref's */
 } slot;
 
 /* -------------------------------------------------------------------
@@ -1446,7 +1449,7 @@ typedef struct slot_struct {
    further indicates the type of the test.)
 ------------------------------------------------------------------- */
 
-typedef char * test;
+typedef char *test;
 
 #define test_is_blank_test(t) ((t)==NIL)
 #define test_is_complex_test(t) (((unsigned long)(t)) & 1)
@@ -1463,26 +1466,26 @@ typedef char * test;
 #define complex_test_from_test(t) ((complex_test *) (((char *)(t))-1))
 
 typedef struct complex_test_struct {
-  byte type;                  /* see definitions below */
-  union test_info_union {
-    Symbol *referent;         /* for relational tests */
-    list *disjunction_list;   /* for disjunction tests */
-    list *conjunct_list;      /* for conjunctive tests */
-  } data;
+    byte type;                  /* see definitions below */
+    union test_info_union {
+        Symbol *referent;       /* for relational tests */
+        list *disjunction_list; /* for disjunction tests */
+        list *conjunct_list;    /* for conjunctive tests */
+    } data;
 } complex_test;
 
 /* types of the complex_test's */
 /* WARNING -- none of these can be 254 or 255 -- see rete.c */
-#define NOT_EQUAL_TEST 1         /* various relational tests */
+#define NOT_EQUAL_TEST 1        /* various relational tests */
 #define LESS_TEST 2
 #define GREATER_TEST 3
 #define LESS_OR_EQUAL_TEST 4
 #define GREATER_OR_EQUAL_TEST 5
 #define SAME_TYPE_TEST 6
-#define DISJUNCTION_TEST 7       /* item must be one of a list of constants */
-#define CONJUNCTIVE_TEST 8       /* item must pass each of a list of tests */
-#define GOAL_ID_TEST 9           /* item must be a goal identifier */
-#define IMPASSE_ID_TEST 10       /* item must be an impasse identifier */
+#define DISJUNCTION_TEST 7      /* item must be one of a list of constants */
+#define CONJUNCTIVE_TEST 8      /* item must pass each of a list of tests */
+#define GOAL_ID_TEST 9          /* item must be a goal identifier */
+#define IMPASSE_ID_TEST 10      /* item must be an impasse identifier */
 
 /* -------------------------------------------------------------------
                              Conditions
@@ -1525,49 +1528,47 @@ typedef struct complex_test_struct {
 
 /* --- info on conditions used for backtracing (and by the rete) --- */
 typedef struct bt_info_struct {
-  wme *wme;                 /* the actual wme that was matched */
-  goal_stack_level level;   /* level (at firing time) of the id of the wme */
+    wme *wme;                   /* the actual wme that was matched */
+    goal_stack_level level;     /* level (at firing time) of the id of the wme */
 
+    preference *trace;          /* preference for BT, or NIL */
 
-  preference *trace;        /* preference for BT, or NIL */
-
-  /* mvp 5-17-94 */
-  list *prohibits;          /* list of prohibit prefs to backtrace through */
-
+    /* mvp 5-17-94 */
+    list *prohibits;            /* list of prohibit prefs to backtrace through */
 
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
 typedef struct reorder_info_struct {
-  list *vars_requiring_bindings;           /* used only during reordering */
-  struct condition_struct *next_min_cost;  /* used only during reordering */
+    list *vars_requiring_bindings;      /* used only during reordering */
+    struct condition_struct *next_min_cost;     /* used only during reordering */
 } reorder_info;
 
 /* --- info on positive and negative conditions only --- */
 typedef struct three_field_tests_struct {
-  test id_test;
-  test attr_test;
-  test value_test;
+    test id_test;
+    test attr_test;
+    test value_test;
 } three_field_tests;
 
 /* --- info on negated conjunctive conditions only --- */
 typedef struct ncc_info_struct {
-  struct condition_struct *top;
-  struct condition_struct *bottom;
+    struct condition_struct *top;
+    struct condition_struct *bottom;
 } ncc_info;
 
 /* --- finally, the structure of a condition --- */
 typedef struct condition_struct {
-  byte type;
-  bool already_in_tc;                 /* used only by cond_is_in_tc stuff */
-  bool test_for_acceptable_preference;   /* for pos, neg cond's only */
-  struct condition_struct *next, *prev;
-  union condition_main_data_union {
-    three_field_tests tests;             /* for pos, neg cond's only */
-    ncc_info ncc;                        /* for ncc's only */
-  } data;
-  bt_info bt;  /* for top-level positive cond's: used for BT and by the rete */
-  reorder_info reorder;  /* used only during reordering */
+    byte type;
+    bool already_in_tc;         /* used only by cond_is_in_tc stuff */
+    bool test_for_acceptable_preference;        /* for pos, neg cond's only */
+    struct condition_struct *next, *prev;
+    union condition_main_data_union {
+        three_field_tests tests;        /* for pos, neg cond's only */
+        ncc_info ncc;           /* for ncc's only */
+    } data;
+    bt_info bt;                 /* for top-level positive cond's: used for BT and by the rete */
+    reorder_info reorder;       /* used only during reordering */
 } condition;
 
 /* -------------------------------------------------------------------
@@ -1593,7 +1594,7 @@ typedef struct condition_struct {
    while two representing the same funcall will not be equal (==).
 ------------------------------------------------------------------- */
 
-typedef char * rhs_value;
+typedef char *rhs_value;
 
 #define rhs_value_is_symbol(rv) ((((unsigned long)(rv)) & 3)==0)
 #define rhs_value_is_funcall(rv) ((((unsigned long)(rv)) & 3)==1)
@@ -1652,15 +1653,15 @@ typedef char * rhs_value;
 #define I_SUPPORT 2
 
 typedef struct action_struct {
-  struct action_struct *next;
-  byte type;
-  byte preference_type;
-  byte support;
-  bool already_in_tc;  /* used only by compile-time o-support calcs */
-  rhs_value id;
-  rhs_value attr;
-  rhs_value value;   /* for FUNCALL_ACTION's, this holds the funcall */
-  rhs_value referent;
+    struct action_struct *next;
+    byte type;
+    byte preference_type;
+    byte support;
+    bool already_in_tc;         /* used only by compile-time o-support calcs */
+    rhs_value id;
+    rhs_value attr;
+    rhs_value value;            /* for FUNCALL_ACTION's, this holds the funcall */
+    rhs_value referent;
 } action;
 
 /* -------------------------------------------------------------------
@@ -1733,26 +1734,28 @@ typedef struct action_struct {
 /* RCHONG: end 10.11 */
 
 typedef struct production_struct {
-  Symbol *name;
-  char *documentation;        /* pointer to memory block, or NIL */
-  char *filename;             /* name of source file, or NIL.  kjh CUSP(b11) */
-  unsigned long reference_count;
-  unsigned long firing_count;             /* how many times it's fired */
-  struct production_struct *next, *prev;  /* used for dll */
-  byte type;
-  byte declared_support;
+    Symbol *name;
+    char *documentation;        /* pointer to memory block, or NIL */
+    char *filename;             /* name of source file, or NIL.  kjh CUSP(b11) */
+    unsigned long reference_count;
+    unsigned long firing_count; /* how many times it's fired */
+    struct production_struct *next, *prev;      /* used for dll */
+    byte type;
+    byte declared_support;
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
-  bool trace_firings;                     /* used by pwatch */
+    bool trace_firings;         /* used by pwatch */
 #endif
 
-  struct rete_node_struct *p_node;        /* NIL if it's not in the rete */
-  action *action_list;                    /* RHS actions */
-  list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
-  struct instantiation_struct *instantiations; /* dll of inst's in MS */
-  int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
-	byte interrupt;                         /* SW: 7.31.03 */
-
+    struct rete_node_struct *p_node;    /* NIL if it's not in the rete */
+    action *action_list;        /* RHS actions */
+    list *rhs_unbound_variables;        /* RHS vars not bound on LHS */
+    struct instantiation_struct *instantiations;        /* dll of inst's in MS */
+    int OPERAND_which_assert_list;      /* RCHONG: 10.11 */
+    byte interrupt;             /* SW: 7.31.03 */
+#ifdef BUG_139_WORKAROUND
+    bool already_fired;         /* RPM test workaround for bug #139 */
+#endif
 } production;
 
 /* -------------------------------------------------------------------
@@ -1816,28 +1819,28 @@ typedef struct production_struct {
 ------------------------------------------------------------------- */
 
 typedef struct not_struct {
-  struct not_struct *next;  /* next Not in the singly-linked list */
-  Symbol *s1;               /* the two identifiers constrained to be "<>" */
-  Symbol *s2;
+    struct not_struct *next;    /* next Not in the singly-linked list */
+    Symbol *s1;                 /* the two identifiers constrained to be "<>" */
+    Symbol *s2;
 } not;
 
 typedef struct instantiation_struct {
-  production *prod;
-  struct instantiation_struct *next, *prev; /* dll of inst's from same prod */
-  struct token_struct *rete_token;       /* used by Rete for retractions */
-  wme *rete_wme;                         /* ditto */
-  condition *top_of_instantiated_conditions;
-  condition *bottom_of_instantiated_conditions;
-  not *nots;
-  preference *preferences_generated;    /* header for dll of prefs */
-  Symbol *match_goal;                   /* symbol, or NIL if none */
-  goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
-  byte okay_to_variablize;
-  bool in_ms;  /* TRUE iff this inst. is still in the match set */
-  tc_number backtrace_number;
-  bool GDS_evaluated_already;
+    production *prod;
+    struct instantiation_struct *next, *prev;   /* dll of inst's from same prod */
+    struct token_struct *rete_token;    /* used by Rete for retractions */
+    wme *rete_wme;              /* ditto */
+    condition *top_of_instantiated_conditions;
+    condition *bottom_of_instantiated_conditions;
+    not *nots;
+    preference *preferences_generated;  /* header for dll of prefs */
+    Symbol *match_goal;         /* symbol, or NIL if none */
+    goal_stack_level match_goal_level;  /* level, or ATTRIBUTE_IMPASSE_LEVEL */
+    byte okay_to_variablize;
+    bool in_ms;                 /* TRUE iff this inst. is still in the match set */
+    tc_number backtrace_number;
+    bool GDS_evaluated_already;
 #if defined(WATCH_SSCI_INSTS) || defined(THIN_JUSTIFICATIONS)
-  bool isa_ssci_inst;
+    bool isa_ssci_inst;
 #endif
 } instantiation;
 
@@ -1846,11 +1849,10 @@ typedef struct instantiation_struct {
    a backtracing-style procedure, evaluate_gds in decide.c */
 
 typedef struct pi_struct {
-  struct pi_struct *next, *prev;
-  instantiation *inst;
+    struct pi_struct *next, *prev;
+    instantiation *inst;
 } parent_inst;
 /* REW: end   09.15.96 */
-
 
 /* ====================================================================
              Global System Parameters and Related Definitions
@@ -1886,32 +1888,32 @@ typedef struct pi_struct {
     Match Set print parameters
 --------------------------------------- */
 
-#define MS_ASSERT_RETRACT 0      /* print both retractions and assertions */
-#define MS_ASSERT         1      /* print just assertions */
-#define MS_RETRACT        2      /* print just retractions */
+#define MS_ASSERT_RETRACT 0     /* print both retractions and assertions */
+#define MS_ASSERT         1     /* print just assertions */
+#define MS_RETRACT        2     /* print just retractions */
 
-typedef byte ms_trace_type;   /* must be one of the above constants */
+typedef byte ms_trace_type;     /* must be one of the above constants */
 
 /* ---------------------------------------
     How much information to print about
     the wmes matching an instantiation
 --------------------------------------- */
 
-#define NONE_WME_TRACE    1      /* don't print anything */
-#define TIMETAG_WME_TRACE 2      /* print just timetag */
-#define FULL_WME_TRACE    3      /* print whole wme */
+#define NONE_WME_TRACE    1     /* don't print anything */
+#define TIMETAG_WME_TRACE 2     /* print just timetag */
+#define FULL_WME_TRACE    3     /* print whole wme */
 #define NO_WME_TRACE_SET  4
 
-typedef byte wme_trace_type;   /* must be one of the above constants */
+typedef byte wme_trace_type;    /* must be one of the above constants */
 
 /* -------------------------------
       Ways to Do User-Select
 ------------------------------- */
 
-#define USER_SELECT_FIRST  0     /* just choose the first candidate item */
-#define USER_SELECT_ASK    1     /* ask the user */
-#define USER_SELECT_RANDOM 2     /* pick one at random */
-#define USER_SELECT_LAST   3     /* choose the last item   AGR 615 */
+#define USER_SELECT_FIRST  0    /* just choose the first candidate item */
+#define USER_SELECT_ASK    1    /* ask the user */
+#define USER_SELECT_RANDOM 2    /* pick one at random */
+#define USER_SELECT_LAST   3    /* choose the last item   AGR 615 */
 
 /* ---------------------------
    And now, the sysparam's
@@ -1980,25 +1982,25 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* RMJ */
 #define ATTENTION_LAPSE_ON_SYSPARAM              30
 
-/* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  30
+/* SAN */
+#define TRACE_INDIFFERENT_SYSPARAM               31
 
+/* --- Warning: if you add sysparams, be sure to update the next line! --- */
+#define HIGHEST_SYSPARAM_NUMBER                  31
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()
    should be used to modify them.
 ----------------------------------------- */
 
-extern void init_sysparams (void);
-extern void set_sysparam (int param_number, long new_value);
+extern void init_sysparams(void);
+extern void set_sysparam(int param_number, long new_value);
 
-
-#ifndef MAXPATHLEN                   /* excludeFromBuildInfo */
-#define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */
+#ifndef MAXPATHLEN              /* excludeFromBuildInfo */
+#define MAXPATHLEN 1024         /* AGR 536  - from sys/param.h */
 #endif
 
-#define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
-
+#define kChunkNamePrefixMaxLength  64   /* kjh (B14) */
 
 /******************************************************************
  ******************************************************************
@@ -2006,17 +2008,16 @@ extern void set_sysparam (int param_number, long new_value);
  ******************************************************************
  ******************************************************************/
 
-
 /* ========================================================================
                         main.c and init_soar.c
 ======================================================================== */
 
-extern void reset_statistics (void);
-extern void setup_signal_handling (void);
-extern void load_init_file (void);
+extern void reset_statistics(void);
+extern void setup_signal_handling(void);
+extern void load_init_file(void);
 
 /* --- signal handler that gets invoked on SIGINT --- */
-extern void control_c_handler (int the_signal); 
+extern void control_c_handler(int the_signal);
 
 /* ---------------------------------------------------------------------
                             Exiting Soar
@@ -2028,9 +2029,9 @@ extern void control_c_handler (int the_signal);
    for interfaces that do their own exiting.
 --------------------------------------------------------------------- */
 
-extern void exit_soar (void);
-extern void abort_with_fatal_error (char *);
-extern void just_before_exit_soar (void);
+extern void exit_soar(void);
+extern void abort_with_fatal_error(char *);
+extern void just_before_exit_soar(void);
 
 /* ---------------------------------------------------------------------
                        Timer Utility Routines
@@ -2050,35 +2051,32 @@ extern void just_before_exit_soar (void);
    (in seconds).
 --------------------------------------------------------------------- */
 
-
 #ifndef NO_TIMING_STUFF
 
-extern void reset_timer ( TIMER_VALUE *tv_to_reset);
-extern void start_timer ( TIMER_VALUE *tv_for_recording_start_time);
-extern void stop_timer ( TIMER_VALUE *tv_with_recorded_start_time,
-                         TIMER_VALUE *tv_with_accumulated_time);
-extern double timer_value ( TIMER_VALUE *tv);
-extern  int test_timers();
+extern void reset_timer(TIMER_VALUE * tv_to_reset);
+extern void start_timer(TIMER_VALUE * tv_for_recording_start_time);
+extern void stop_timer(TIMER_VALUE * tv_with_recorded_start_time, TIMER_VALUE * tv_with_accumulated_time);
+extern double timer_value(TIMER_VALUE * tv);
+extern int test_timers();
 
-#else  /* NO_TIMING_STUFF */
+#else                           /* NO_TIMING_STUFF */
 
 #define start_timer(X)
 #define stop_timer(X)
 #endif
 
-
 #define ONE_MILLION (1000000)
 
 #ifdef REAL_TIME_BEHAVIOR
 /* RMJ */
-extern void init_real_time ();
+extern void init_real_time();
 extern struct timeval *current_real_time;
 #endif
 
 #ifdef ATTENTION_LAPSE
 /* RMJ */
-extern void wake_from_attention_lapse ();
-extern void init_attention_lapse ();
+extern void wake_from_attention_lapse();
+extern void init_attention_lapse();
 #endif
 
 /* ---------------------------------------------------------------------
@@ -2089,8 +2087,8 @@ extern void init_attention_lapse ();
    calls to add_pwatch() and remove_pwatch().
 --------------------------------------------------------------------- */
 
-extern void add_pwatch (struct production_struct *prod);
-extern void remove_pwatch (struct production_struct *prod);
+extern void add_pwatch(struct production_struct *prod);
+extern void remove_pwatch(struct production_struct *prod);
 
 /* ---------------------------------------------------------------------
                          Reinitializing Soar
@@ -2098,7 +2096,7 @@ extern void remove_pwatch (struct production_struct *prod);
    Reinitialize_soar() does all the work for an init-soar.
 --------------------------------------------------------------------- */
 
-extern void reinitialize_soar (void);
+extern void reinitialize_soar(void);
 
 /* ---------------------------------------------------------------------
                             Running Soar
@@ -2129,23 +2127,23 @@ extern void reinitialize_soar (void);
 --------------------------------------------------------------------- */
 
 enum go_type_enum { GO_PHASE, GO_ELABORATION, GO_DECISION,
-                    GO_STATE, GO_OPERATOR, GO_SLOT, GO_OUTPUT };
+    GO_STATE, GO_OPERATOR, GO_SLOT, GO_OUTPUT
+};
 
-extern void run_forever (void);
-extern void run_for_n_phases (long n);
-extern void run_for_n_elaboration_cycles (long n);
-extern void run_for_n_decision_cycles (long n);
-extern void run_for_n_modifications_of_output (long n);
-extern void run_for_n_selections_of_slot (long n, Symbol *attr_of_slot);
-extern void run_for_n_selections_of_slot_at_level (long n,
-                                                   Symbol *attr_of_slot,
-                                                   goal_stack_level level);
+extern void run_forever(void);
+extern void run_for_n_phases(long n);
+extern void run_for_n_elaboration_cycles(long n);
+extern void run_for_n_decision_cycles(long n);
+extern void run_for_n_modifications_of_output(long n);
+extern void run_for_n_selections_of_slot(long n, Symbol * attr_of_slot);
+extern void run_for_n_selections_of_slot_at_level(long n, Symbol * attr_of_slot, goal_stack_level level);
 
 /* REW: begin 05.05.97 */
 /* Added new DETERMINE_LEVEL_PHASE here and in the timers */
 
 enum top_level_phase { INPUT_PHASE, DETERMINE_LEVEL_PHASE, PREFERENCE_PHASE, WM_PHASE,
-                       OUTPUT_PHASE, DECISION_PHASE };
+    OUTPUT_PHASE, DECISION_PHASE
+};
 /* REW: end   05.05.97 */
 
 /* =======================================================================
@@ -2178,21 +2176,20 @@ enum top_level_phase { INPUT_PHASE, DETERMINE_LEVEL_PHASE, PREFERENCE_PHASE, WM_
    or NIL if the object has no name.
 ======================================================================= */
 
-extern void reset_wme_timetags (void);
-extern wme *make_wme (Symbol *id, Symbol *attr, Symbol *value,bool acceptable);
-extern void add_wme_to_wm (wme *w);
-extern void remove_wme_from_wm (wme *w);
-extern void remove_wme_list_from_wm (wme *w);
-extern void do_buffered_wm_changes (void);
+extern void reset_wme_timetags(void);
+extern wme *make_wme(Symbol * id, Symbol * attr, Symbol * value, bool acceptable);
+extern void add_wme_to_wm(wme * w);
+extern void remove_wme_from_wm(wme * w);
+extern void remove_wme_list_from_wm(wme * w);
+extern void do_buffered_wm_changes(void);
 
 #define wme_add_ref(w) { (w)->reference_count++; }
 #define wme_remove_ref(w) { \
   (w)->reference_count--; \
   if ((w)->reference_count == 0) deallocate_wme(w); }
 
-
-extern void deallocate_wme (wme *w);
-extern Symbol *find_name_of_object (Symbol *id);
+extern void deallocate_wme(wme * w);
+extern Symbol *find_name_of_object(Symbol * id);
 
 /* =======================================================================
                                 decide.c
@@ -2215,10 +2212,10 @@ extern Symbol *find_name_of_object (Symbol *id);
    see decide.c for more information in the comments.
 ======================================================================= */
 
-extern void post_link_addition (Symbol *from, Symbol *to);
-extern void post_link_removal (Symbol *from, Symbol *to);
+extern void post_link_addition(Symbol * from, Symbol * to);
+extern void post_link_removal(Symbol * from, Symbol * to);
 
-extern void mark_context_slot_as_acceptable_preference_changed (slot *s);
+extern void mark_context_slot_as_acceptable_preference_changed(slot * s);
 
 /* ---------------------------------------------------------------------
                   Slot Management Routines (in tempmem.c)
@@ -2243,11 +2240,11 @@ extern void mark_context_slot_as_acceptable_preference_changed (slot *s);
    and garbage collects it if it has no wmes or preferences.
 --------------------------------------------------------------------- */
 
-extern slot *find_slot (Symbol *id, Symbol *attr);
-extern slot *make_slot (Symbol *id, Symbol *attr);
-extern void mark_slot_as_changed (slot *s);
-extern void mark_slot_for_possible_removal (slot *s);
-extern void remove_garbage_slots (void);
+extern slot *find_slot(Symbol * id, Symbol * attr);
+extern slot *make_slot(Symbol * id, Symbol * attr);
+extern void mark_slot_as_changed(slot * s);
+extern void mark_slot_for_possible_removal(slot * s);
+extern void remove_garbage_slots(void);
 
 /* ---------------------------------------------------------------------
                      Preference Management Routines
@@ -2279,9 +2276,8 @@ extern void remove_garbage_slots (void);
    matching values from TM, and deallocates the o-reject preferences when
    done.
 --------------------------------------------------------------------- */
-  
-extern preference *make_preference (byte type, Symbol *id, Symbol *attr,
-                                    Symbol *value, Symbol *referent);
+
+extern preference *make_preference(byte type, Symbol * id, Symbol * attr, Symbol * value, Symbol * referent);
 
 #define preference_add_ref(p) { (p)->reference_count++; }
 #define preference_remove_ref(p) { \
@@ -2289,12 +2285,12 @@ extern preference *make_preference (byte type, Symbol *id, Symbol *attr,
   if ((p)->reference_count == 0) \
     possibly_deallocate_preference_and_clones(p); }
 
-extern bool possibly_deallocate_preference_and_clones (preference *pref);
-extern void deallocate_preference (preference *pref);
+extern bool possibly_deallocate_preference_and_clones(preference * pref);
+extern void deallocate_preference(preference * pref);
 
-extern void add_preference_to_tm (preference *pref);
-extern void remove_preference_from_tm (preference *pref);
-extern void process_o_rejects_and_deallocate_them (preference *o_rejects);
+extern void add_preference_to_tm(preference * pref);
+extern void remove_preference_from_tm(preference * pref);
+extern void process_o_rejects_and_deallocate_them(preference * o_rejects);
 
 /* ---------------------------------------------------------------------
                       Top-Level Decider Routines
@@ -2316,13 +2312,13 @@ extern void process_o_rejects_and_deallocate_them (preference *o_rejects);
    to print the context slot that was just decided.
 --------------------------------------------------------------------- */
 
-extern void init_decider (void);
-extern void do_buffered_wm_and_ownership_changes (void);
-extern void do_working_memory_phase (void);
-extern void do_decision_phase (void);
-extern void create_top_goal (void);
-extern void clear_goal_stack (void);
-extern void print_lowest_slot_in_context_stack (void);
+extern void init_decider(void);
+extern void do_buffered_wm_and_ownership_changes(void);
+extern void do_working_memory_phase(void);
+extern void do_decision_phase(void);
+extern void create_top_goal(void);
+extern void clear_goal_stack(void);
+extern void print_lowest_slot_in_context_stack(void);
 
 /* =================================================================
                              interface.c                             
@@ -2372,23 +2368,23 @@ extern void print_lowest_slot_in_context_stack (void);
      should be permanently available (e.g., constants in global data memory).
 ================================================================= */
 
-typedef bool (*user_interface_routine)(void);
-extern void add_command (char *command_name, user_interface_routine f);
+typedef bool(*user_interface_routine) (void);
+extern void add_command(char *command_name, user_interface_routine f);
 
-extern bool dispatch_command (void);
+extern bool dispatch_command(void);
 
-extern void repeatedly_read_and_dispatch_commands (void);
+extern void repeatedly_read_and_dispatch_commands(void);
 
-extern void load_file (char *file_name, FILE *already_open_file);
+extern void load_file(char *file_name, FILE * already_open_file);
 
-extern void add_help (char *topic, char **lines_of_text);
+extern void add_help(char *topic, char **lines_of_text);
 
-extern void init_built_in_commands (void);
+extern void init_built_in_commands(void);
 
 extern void init_multi_agent_built_in_commands(void);
 
-extern bool old_parse_go_command (void);
-extern void old_execute_go_selection (void);
+extern bool old_parse_go_command(void);
+extern void old_execute_go_selection(void);
 
 /*  this routine is defined in interface.c, but the Symbol struct
     hasn't been defined yet, so we can't declare it yet.  So kjc
@@ -2396,33 +2392,32 @@ extern void old_execute_go_selection (void);
 extern Symbol *read_identifier_or_context_variable (void);
 */
 
-extern void respond_to_load_errors (void);
+extern void respond_to_load_errors(void);
 
 /* defined in tilde.c but also used in interface.c */
-extern char *tilde_expand (char *filename);  
+extern char *tilde_expand(char *filename);
 
 /* AGR 568 begin */
 typedef struct expansion_node {
-  struct lexeme_info lexeme;
-  struct expansion_node *next;
+    struct lexeme_info lexeme;
+    struct expansion_node *next;
 } expansion_node;
 
 typedef struct alias_struct {
-  char *alias;
-  struct expansion_node *expansion;
-  struct alias_struct *next;
+    char *alias;
+    struct expansion_node *expansion;
+    struct alias_struct *next;
 } alias_struct;
 
 typedef struct dir_stack_struct {
-  char *directory;
-  struct dir_stack_struct *next;
+    char *directory;
+    struct dir_stack_struct *next;
 } dir_stack_struct;
 /* AGR 568 end */
 
 /* AGR 568  This bug fix concerned an alias command.  But I've expanded
    it a little to also include the pushd and popd commands, which are
    all being implemented for the release of 6.2.  11-May-94 */
-
 
 /* ======================================================================
                               parser.c
@@ -2438,10 +2433,10 @@ typedef struct dir_stack_struct {
    action list; it returns TRUE if successful, FALSE if any error occurred.
 ====================================================================== */
 
-extern void init_parser (void);
-extern condition *parse_lhs (void);
-extern bool parse_rhs (action **dest_rhs);
-extern struct production_struct *parse_production (void);
+extern void init_parser(void);
+extern condition *parse_lhs(void);
+extern bool parse_rhs(action ** dest_rhs);
+extern struct production_struct *parse_production(void);
 
 /* ======================================================================
                               print.c                                
@@ -2479,25 +2474,25 @@ extern struct production_struct *parse_production (void);
    redirection file.
 ====================================================================== */
 
-extern void start_log_file (char *filename, bool append);
-extern void stop_log_file (void);
-extern void print_string_to_log_file_only (char *string);
+extern void start_log_file(char *filename, bool append);
+extern void stop_log_file(void);
+extern void print_string_to_log_file_only(char *string);
 
-extern int get_printer_output_column (void);
-extern void tell_printer_that_output_column_has_been_reset (void);
+extern int get_printer_output_column(void);
+extern void tell_printer_that_output_column_has_been_reset(void);
 
-extern void start_redirection_to_file (FILE *already_opened_file);
-extern void stop_redirection_to_file (void);
+extern void start_redirection_to_file(FILE * already_opened_file);
+extern void stop_redirection_to_file(void);
 
-extern void print_string (char *s);
+extern void print_string(char *s);
 #ifdef USE_STDARGS
-extern void print (char *format, ... );
-extern void print_with_symbols (char *format, ...);
+extern void print(char *format, ...);
+extern void print_with_symbols(char *format, ...);
 #else
-extern void print ();
-extern void print_with_symbols ();
+extern void print();
+extern void print_with_symbols();
 #endif
-extern void print_spaces (int n);
+extern void print_spaces(int n);
 
 /* ------------------------------------------------------------------------
                 String to Escaped String Conversion
@@ -2528,11 +2523,10 @@ extern void print_spaces (int n);
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-extern char *string_to_escaped_string (char *s, char first_and_last_char,
-                                       char *dest);
-extern char *symbol_to_string (Symbol *sym, bool rereadable, char *dest);
-extern char *test_to_string (test t, char *dest);
-extern char *rhs_value_to_string (rhs_value rv, char *dest);
+extern char *string_to_escaped_string(char *s, char first_and_last_char, char *dest);
+extern char *symbol_to_string(Symbol * sym, bool rereadable, char *dest, size_t dest_size);
+extern char *test_to_string(test t, char *dest, size_t dest_size);
+extern char *rhs_value_to_string(rhs_value rv, char *dest, size_t dest_size);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production
@@ -2552,9 +2546,9 @@ extern char *rhs_value_to_string (rhs_value rv, char *dest);
    format.
 ----------------------------------------------------------------------- */
 
-extern void print_condition_list (condition *conds, int indent, bool internal);
-extern void print_action_list (action *actions, int indent, bool internal);
-extern void print_production (production *p, bool internal);
+extern void print_condition_list(condition * conds, int indent, bool internal);
+extern void print_action_list(action * actions, int indent, bool internal);
+extern void print_production(production * p, bool internal);
 
 /* -----------------------------------------------------------------------
                        Other Printing Utilities
@@ -2575,17 +2569,15 @@ extern void print_production (production *p, bool internal);
    given wme_trace_type (e.g., TIMETAG_WME_TRACE).
 ----------------------------------------------------------------------- */
 
-extern void print_condition (condition *cond);
-extern void print_action (action *a);
-extern char preference_type_indicator (byte type);
-extern void print_preference (preference *pref);
-extern void print_wme (wme *w);
+extern void print_condition(condition * cond);
+extern void print_action(action * a);
+extern char preference_type_indicator(byte type);
+extern void print_preference(preference * pref);
+extern void print_wme(wme * w);
 
-extern void print_instantiation_with_wmes (instantiation *inst,
-                                           wme_trace_type wtt);
+extern void print_instantiation_with_wmes(instantiation * inst, wme_trace_type wtt);
 
-extern void print_list_of_conditions(condition *cond); /* BUGBUG comments */
-
+extern void print_list_of_conditions(condition * cond); /* BUGBUG comments */
 
 /* ========================================================================
                                production.c
@@ -2598,12 +2590,12 @@ extern void print_list_of_conditions(condition *cond); /* BUGBUG comments */
 
 /* This structure is used to break ties in favor of non-multi-attributes */
 typedef struct multi_attributes_struct {
-  Symbol *symbol;
-  long value;
-  struct multi_attributes_struct *next;
+    Symbol *symbol;
+    long value;
+    struct multi_attributes_struct *next;
 } multi_attribute;
 
-extern void init_production_utilities (void);
+extern void init_production_utilities(void);
 
 /* ------------------------------------------ */
 /* Utilities for symbols and lists of symbols */
@@ -2611,119 +2603,112 @@ extern void init_production_utilities (void);
 
 /* --- Looks at a symbol, returns appropriate first letter for a dummy
    variable or identifier to follow it.  Returns '*' if none found. --- */
-extern char first_letter_from_symbol (Symbol *sym);
+extern char first_letter_from_symbol(Symbol * sym);
 
 /* --- Takes a list of symbols and returns a copy of the same list,
    incrementing the reference count on each symbol in the list. --- */
-extern list *copy_symbol_list_adding_references (list *sym_list);
+extern list *copy_symbol_list_adding_references(list * sym_list);
 
 /* --- Frees a list of symbols, decrementing their reference counts. --- */
-extern void deallocate_symbol_list_removing_references (list *sym_list);
+extern void deallocate_symbol_list_removing_references(list * sym_list);
 
 /* ------------------- */
 /* Utilities for tests */
 /* ------------------- */
 
-extern void add_all_variables_in_action (action *a, tc_number tc, 
-					 list **var_list);
-extern void add_bound_variables_in_test (test t, tc_number tc, 
-					 list **var_list);
-extern void add_bound_variables_in_condition (condition *c, tc_number tc, 
-					      list **var_list);
-extern void unmark_variables_and_free_list (list *var_list);
+extern void add_all_variables_in_action(action * a, tc_number tc, list ** var_list);
+extern void add_bound_variables_in_test(test t, tc_number tc, list ** var_list);
+extern void add_bound_variables_in_condition(condition * c, tc_number tc, list ** var_list);
+extern void unmark_variables_and_free_list(list * var_list);
 
 /* --- Takes a test and returns a new copy of it. --- */
-extern test copy_test (test t);
+extern test copy_test(test t);
 
 /* --- Same as copy_test(), only it doesn't include goal or impasse tests
    in the new copy.  The caller should initialize the two flags to FALSE
    before calling this routine; it sets them to TRUE if it finds a goal
    or impasse test. --- */
-extern test copy_test_removing_goal_impasse_tests
-  (test t, bool *removed_goal, bool *removed_impasse);
+extern test copy_test_removing_goal_impasse_tests(test t, bool * removed_goal, bool * removed_impasse);
 
 /* --- Deallocates a test. --- */
-extern void deallocate_test (test t);
+extern void deallocate_test(test t);
 
 /* --- Destructively modifies the first test (t) by adding the second
    one (add_me) to it (usually as a new conjunct).  The first test
    need not be a conjunctive test. --- */
-extern void add_new_test_to_test (test *t, test add_me); 
+extern void add_new_test_to_test(test * t, test add_me);
 
 /* --- Same as above, only has no effect if the second test is already
    included in the first one. --- */
-extern void add_new_test_to_test_if_not_already_there (test *t, test add_me);
+extern void add_new_test_to_test_if_not_already_there(test * t, test add_me);
 
 /* --- Returns TRUE iff the two tests are identical. --- */
-extern bool tests_are_equal (test t1, test t2);
+extern bool tests_are_equal(test t1, test t2);
 
 /* --- Returns a hash value for the given test. --- */
-extern unsigned long hash_test (test t);
+extern unsigned long hash_test(test t);
 
 /* --- Returns TRUE iff the test contains an equality test for the given
    symbol.  If sym==NIL, returns TRUE iff the test contains any equality
    test. --- */
-extern bool test_includes_equality_test_for_symbol (test t, Symbol *sym);
+extern bool test_includes_equality_test_for_symbol(test t, Symbol * sym);
 
 /* --- Looks for goal or impasse tests (as directed by the two flag
    parameters) in the given test, and returns TRUE if one is found. --- */
-extern bool test_includes_goal_or_impasse_id_test (test t,
-                                                   bool look_for_goal,
-                                                   bool look_for_impasse);
+extern bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse);
 
 /* --- Looks through a test, and returns a new copy of the first equality
    test it finds.  Signals an error if there is no equality test in the
    given test. --- */
-extern test copy_of_equality_test_found_in_test (test t);
+extern test copy_of_equality_test_found_in_test(test t);
 
 /* --- Looks through a test, returns appropriate first letter for a dummy
    variable to follow it.  Returns '*' if none found. --- */
-extern char first_letter_from_test (test t);
+extern char first_letter_from_test(test t);
 
 /* ------------------------ */
 /* Utilities for conditions */
 /* ------------------------ */
 
 /* --- Deallocates a condition list (including any NCC's and tests in it). */
-extern void deallocate_condition_list (condition *cond_list);
+extern void deallocate_condition_list(condition * cond_list);
 
 /* --- Returns a new copy of the given condition. --- */
-extern condition *copy_condition (condition *cond);
+extern condition *copy_condition(condition * cond);
 
 /* --- Copies the given condition list, returning pointers to the
    top-most and bottom-most conditions in the new copy. --- */
-extern void copy_condition_list (condition *top_cond, condition **dest_top,
-                                 condition **dest_bottom);
+extern void copy_condition_list(condition * top_cond, condition ** dest_top, condition ** dest_bottom);
 
 /* --- Returns TRUE iff the two conditions are identical. --- */
-extern bool conditions_are_equal (condition *c1, condition *c2);
+extern bool conditions_are_equal(condition * c1, condition * c2);
 
 /* --- Returns a hash value for the given condition. --- */
-extern unsigned long hash_condition (condition *cond);
+extern unsigned long hash_condition(condition * cond);
 
 /* ------------------------------------ */
 /* Utilities for actions and RHS values */
 /* ------------------------------------ */
 
 /* --- Deallocates the given rhs_value. --- */
-extern void deallocate_rhs_value (rhs_value rv);
+extern void deallocate_rhs_value(rhs_value rv);
 
 /* --- Returns a new copy of the given rhs_value. --- */
-extern rhs_value copy_rhs_value (rhs_value rv);
+extern rhs_value copy_rhs_value(rhs_value rv);
 
 /* --- Deallocates the given action (singly-linked) list. --- */
-extern void deallocate_action_list (action *actions);
+extern void deallocate_action_list(action * actions);
 
 /* --- Looks through an rhs_value, returns appropriate first letter for a
    dummy variable to follow it.  Returns '*' if none found. --- */
-extern char first_letter_from_rhs_value (rhs_value rv);
+extern char first_letter_from_rhs_value(rhs_value rv);
 
 /* ------------------ */
 /* Utilities for nots */
 /* ------------------ */
 
 /* --- Deallocates the given (singly-linked) list of Nots. --- */
-extern void deallocate_list_of_nots (not *nots);
+extern void deallocate_list_of_nots(not * nots);
 
 /* --------------------------------------------------------------------
                       Transitive Closure Utilities
@@ -2764,16 +2749,13 @@ extern void deallocate_list_of_nots (not *nots);
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 -------------------------------------------------------------------- */
 
-tc_number get_new_tc_number (void);
+tc_number get_new_tc_number(void);
 
-extern void add_symbol_to_tc (Symbol *sym, tc_number tc,
-                              list **id_list, list **var_list);
-extern void add_cond_to_tc (condition *c, tc_number tc,
-                            list **id_list, list **var_list);
-extern void add_action_to_tc (action *a, tc_number tc,
-                              list **id_list, list **var_list);
-extern bool cond_is_in_tc (condition *cond, tc_number tc);
-extern bool action_is_in_tc (action *a, tc_number tc);
+extern void add_symbol_to_tc(Symbol * sym, tc_number tc, list ** id_list, list ** var_list);
+extern void add_cond_to_tc(condition * c, tc_number tc, list ** id_list, list ** var_list);
+extern void add_action_to_tc(action * a, tc_number tc, list ** id_list, list ** var_list);
+extern bool cond_is_in_tc(condition * cond, tc_number tc);
+extern bool action_is_in_tc(action * a, tc_number tc);
 
 /* --------------------------------------------------------------------
                          Variable Generator
@@ -2792,9 +2774,8 @@ extern bool action_is_in_tc (action *a, tc_number tc);
    name.  The prefix string should not include the opening "<".
 -------------------------------------------------------------------- */
 
-extern void reset_variable_generator (condition *conds_with_vars_to_avoid,
-                                      action *actions_with_vars_to_avoid);
-extern Symbol *generate_new_variable (char *prefix);
+extern void reset_variable_generator(condition * conds_with_vars_to_avoid, action * actions_with_vars_to_avoid);
+extern Symbol *generate_new_variable(char *prefix);
 
 /* -------------------------------------------------------------------
                          Production Management
@@ -2831,26 +2812,22 @@ extern Symbol *generate_new_variable (char *prefix);
   if ((p)->reference_count == 0) \
     deallocate_production(p); }
 
-extern production *make_production (byte type,
-                                    Symbol *name,
-                                    condition **lhs_top,
-                                    condition **lhs_bottom,
-                                    action **rhs_top,
-                                    bool reorder_nccs);
-extern void deallocate_production (production *prod);
-extern void excise_production (production *prod, bool print_sharp_sign);
+extern production *make_production(byte type,
+                                   Symbol * name,
+                                   condition ** lhs_top, condition ** lhs_bottom, action ** rhs_top, bool reorder_nccs);
+extern void deallocate_production(production * prod);
+extern void excise_production(production * prod, bool print_sharp_sign);
 
-extern bool canonical_cond_greater(condition *c1, condition *c2);
+extern bool canonical_cond_greater(condition * c1, condition * c2);
 
 /* =======================================================================
                                 reorder.c
    BUGBUG comments here
 ======================================================================= */
 
-extern bool reorder_action_list (action **action_list, tc_number lhs_tc);
-extern bool reorder_lhs (condition **lhs_top, condition **lhs_bottom,
-                         bool reorder_nccs);
-extern void init_reorderer (void);
+extern bool reorder_action_list(action ** action_list, tc_number lhs_tc);
+extern bool reorder_lhs(condition ** lhs_top, condition ** lhs_bottom, bool reorder_nccs);
+extern void init_reorderer(void);
 
 /* =======================================================================
                                 recmem.c
@@ -2866,36 +2843,33 @@ extern void init_reorderer (void);
    the (implicit) reference count on the instantiation decreases.
 ======================================================================= */
 
-extern void init_firer (void);
-extern void do_preference_phase (void);
+extern void init_firer(void);
+extern void do_preference_phase(void);
 
 /* RBD BUGBUG more comments here */
-extern preference *find_clone_for_level(preference *p, goal_stack_level level);
-extern void fill_in_new_instantiation_stuff (instantiation *inst,
-                                      bool need_to_do_support_calculations);
+extern preference *find_clone_for_level(preference * p, goal_stack_level level);
+extern void fill_in_new_instantiation_stuff(instantiation * inst, bool need_to_do_support_calculations);
 
 /* mvp 5-17-94 */
-extern void build_prohibits_list (instantiation *inst);
+extern void build_prohibits_list(instantiation * inst);
 
 #define possibly_deallocate_instantiation(inst) { \
   if ((! (inst)->preferences_generated) && \
       (! (inst)->in_ms)) \
     deallocate_instantiation (inst); }
 
-extern void deallocate_instantiation (instantiation *inst);
+extern void deallocate_instantiation(instantiation * inst);
 
 /* =======================================================================
                                backtrace.c
 ======================================================================= */
 
 /* RBD BUGBUG more comments here */
-extern void trace_locals (goal_stack_level grounds_level);
-extern void trace_grounded_potentials (void);
-extern bool trace_ungrounded_potentials (goal_stack_level grounds_level);
-extern void backtrace_through_instantiation (instantiation *inst,
-                                             goal_stack_level grounds_level,
-                                             condition *trace_cond,
-                                             int indent);
+extern void trace_locals(goal_stack_level grounds_level);
+extern void trace_grounded_potentials(void);
+extern bool trace_ungrounded_potentials(goal_stack_level grounds_level);
+extern void backtrace_through_instantiation(instantiation * inst,
+                                            goal_stack_level grounds_level, condition * trace_cond, int indent);
 
 /* =======================================================================
                                 chunk.c
@@ -2906,34 +2880,31 @@ extern void backtrace_through_instantiation (instantiation *inst,
 #define LOG_2_CHUNK_COND_HASH_TABLE_SIZE 10
 
 typedef struct chunk_cond_struct {
-  condition *cond;                /* points to the original condition */
+    condition *cond;            /* points to the original condition */
 
-  condition *instantiated_cond;   /* points to cond in chunk instantiation */
-  condition *variablized_cond;    /* points to cond in the actual chunk */
-  condition *saved_prev_pointer_of_variablized_cond; /* don't ask */
+    condition *instantiated_cond;       /* points to cond in chunk instantiation */
+    condition *variablized_cond;        /* points to cond in the actual chunk */
+    condition *saved_prev_pointer_of_variablized_cond;  /* don't ask */
 
-  /* dll of all cond's in a set (i.e., a chunk_cond_set, or the grounds) */
-  struct chunk_cond_struct *next, *prev;
+    /* dll of all cond's in a set (i.e., a chunk_cond_set, or the grounds) */
+    struct chunk_cond_struct *next, *prev;
 
-  /* dll of cond's in this particular hash bucket for this set */
-  struct chunk_cond_struct *next_in_bucket, *prev_in_bucket; 
+    /* dll of cond's in this particular hash bucket for this set */
+    struct chunk_cond_struct *next_in_bucket, *prev_in_bucket;
 
-  unsigned long hash_value;             /* equals hash_condition(cond) */
-  unsigned long compressed_hash_value;  /* above, compressed to a few bits */
+    unsigned long hash_value;   /* equals hash_condition(cond) */
+    unsigned long compressed_hash_value;        /* above, compressed to a few bits */
 } chunk_cond;
 
-
 typedef struct chunk_cond_set_struct {
-  chunk_cond *all;       /* header for dll of all chunk_cond's in the set */
-  chunk_cond *table[CHUNK_COND_HASH_TABLE_SIZE];  /* hash table buckets */
+    chunk_cond *all;            /* header for dll of all chunk_cond's in the set */
+    chunk_cond *table[CHUNK_COND_HASH_TABLE_SIZE];      /* hash table buckets */
 } chunk_cond_set;
 
-
-extern void init_chunker (void);
-extern void chunk_instantiation (instantiation *inst,
-                                 bool allow_variablization);
-extern chunk_cond *make_chunk_cond_for_condition (condition *cond);
-extern bool add_to_chunk_cond_set (chunk_cond_set *set, chunk_cond *new_cc);
+extern void init_chunker(void);
+extern void chunk_instantiation(instantiation * inst, bool allow_variablization);
+extern chunk_cond *make_chunk_cond_for_condition(condition * cond);
+extern bool add_to_chunk_cond_set(chunk_cond_set * set, chunk_cond * new_cc);
 
 /* =======================================================================
                                 osupport.c
@@ -2945,10 +2916,10 @@ extern bool add_to_chunk_cond_set (chunk_cond_set *set, chunk_cond *new_cc);
    each RHS action with either UNKNOWN_SUPPORT, O_SUPPORT, or I_SUPPORT.
 ======================================================================= */
 
-extern void calculate_support_for_instantiation_preferences (instantiation *inst);
-extern void calculate_compile_time_o_support (condition *lhs, action *rhs);
+extern void calculate_support_for_instantiation_preferences(instantiation * inst);
+extern void calculate_compile_time_o_support(condition * lhs, action * rhs);
 
-extern void dougs_calculate_support_for_instantiation_preferences (instantiation *inst);
+extern void dougs_calculate_support_for_instantiation_preferences(instantiation * inst);
 
 /* =======================================================================
                                  rete.c
@@ -2999,52 +2970,42 @@ extern void dougs_calculate_support_for_instantiation_preferences (instantiation
    files.  They return TRUE if successful, FALSE if any error occurred.
 ======================================================================= */
 
-extern void init_rete (void);
+extern void init_rete(void);
 
-extern bool any_assertions_or_retractions_ready (void);
-extern bool get_next_assertion (production **prod,
-                                struct token_struct **tok,
-                                wme **w);
-extern bool get_next_retraction (struct instantiation_struct **inst);
+extern bool any_assertions_or_retractions_ready(void);
+extern bool get_next_assertion(production ** prod, struct token_struct **tok, wme ** w);
+extern bool get_next_retraction(struct instantiation_struct **inst);
 /* REW: begin 08.20.97 */
 /* Special routine for retractions in removed goals.  See note in rete.c */
-extern bool get_next_nil_goal_retraction (struct instantiation_struct **inst);
+extern bool get_next_nil_goal_retraction(struct instantiation_struct **inst);
 /* REW: end   08.20.97 */
 
-#define NO_REFRACTED_INST 0              /* no refracted inst. was given */
-#define REFRACTED_INST_MATCHED 1         /* there was a match for the inst. */
-#define REFRACTED_INST_DID_NOT_MATCH 2   /* there was no match for it */
-#define DUPLICATE_PRODUCTION 3           /* the prod. was a duplicate */
-extern byte add_production_to_rete (production *p, condition *lhs_top,
-                                    instantiation *refracted_inst,
-                                    bool warn_on_duplicates);
-extern void excise_production_from_rete (production *p);
+#define NO_REFRACTED_INST 0     /* no refracted inst. was given */
+#define REFRACTED_INST_MATCHED 1        /* there was a match for the inst. */
+#define REFRACTED_INST_DID_NOT_MATCH 2  /* there was no match for it */
+#define DUPLICATE_PRODUCTION 3  /* the prod. was a duplicate */
+extern byte add_production_to_rete(production * p, condition * lhs_top,
+                                   instantiation * refracted_inst, bool warn_on_duplicates);
+extern void excise_production_from_rete(production * p);
 
-extern void add_wme_to_rete (wme *w);
-extern void remove_wme_from_rete (wme *w);
+extern void add_wme_to_rete(wme * w);
+extern void remove_wme_from_rete(wme * w);
 
-extern void p_node_to_conditions_and_nots (struct rete_node_struct *p_node,
-                                           struct token_struct *tok,
-                                           wme *w,
-                                           condition **dest_top_cond,
-                                           condition **dest_bottom_cond,
-                                           not **dest_nots,
-                                           action **dest_rhs);
-extern Symbol *get_symbol_from_rete_loc (unsigned short levels_up,
-                                         byte field_num,
-                                         struct token_struct *tok, wme *w);
+extern void p_node_to_conditions_and_nots(struct rete_node_struct *p_node,
+                                          struct token_struct *tok,
+                                          wme * w,
+                                          condition ** dest_top_cond,
+                                          condition ** dest_bottom_cond, not ** dest_nots, action ** dest_rhs);
+extern Symbol *get_symbol_from_rete_loc(unsigned short levels_up, byte field_num, struct token_struct *tok, wme * w);
 
-extern unsigned long count_rete_tokens_for_production (production *prod);
-extern void print_partial_match_information (struct rete_node_struct *p_node,
-                                             wme_trace_type wtt);
-extern void print_match_set( wme_trace_type wtt, ms_trace_type mst);
+extern unsigned long count_rete_tokens_for_production(production * prod);
+extern void print_partial_match_information(struct rete_node_struct *p_node, wme_trace_type wtt);
+extern void print_match_set(wme_trace_type wtt, ms_trace_type mst);
 
-extern int get_node_count_statistic (const char * node_type_name, 
-				     const char * column_name, 
-				     unsigned long * result);
+extern int get_node_count_statistic(const char *node_type_name, const char *column_name, unsigned long *result);
 
-extern bool save_rete_net (FILE *dest_file);
-extern bool load_rete_net (FILE *source_file);
+extern bool save_rete_net(FILE * dest_file);
+extern bool load_rete_net(FILE * source_file);
 
 /* ====================================================================
                              rhsfun.c
@@ -3071,24 +3032,22 @@ extern bool load_rete_net (FILE *source_file);
    to setup all the built-in functions.
 ==================================================================== */
 
-typedef Symbol * ((*rhs_function_routine)(list *args));
+typedef Symbol *((*rhs_function_routine) (list * args));
 
 typedef struct rhs_function_struct {
-  struct rhs_function_struct *next;
-  Symbol *name;
-  rhs_function_routine f;
-  int num_args_expected;     /* -1 means it can take any number of args */
-  bool can_be_rhs_value;
-  bool can_be_stand_alone_action;
+    struct rhs_function_struct *next;
+    Symbol *name;
+    rhs_function_routine f;
+    int num_args_expected;      /* -1 means it can take any number of args */
+    bool can_be_rhs_value;
+    bool can_be_stand_alone_action;
 } rhs_function;
 
-extern void add_rhs_function (Symbol *name,
-                              rhs_function_routine f,
-                              int num_args_expected,
-                              bool can_be_rhs_value,
-                              bool can_be_stand_alone_action);
-extern rhs_function *lookup_rhs_function (Symbol *name);
-extern void init_built_in_rhs_functions (void);
+extern void add_rhs_function(Symbol * name,
+                             rhs_function_routine f,
+                             int num_args_expected, bool can_be_rhs_value, bool can_be_stand_alone_action);
+extern rhs_function *lookup_rhs_function(Symbol * name);
+extern void init_built_in_rhs_functions(void);
 
 /* ======================================================================
                                 trace.c
@@ -3124,22 +3083,20 @@ extern void init_built_in_rhs_functions (void);
 ====================================================================== */
 
 /* trace format type restrictions */
-#define FOR_ANYTHING_TF 0          /* format applies to any object */
-#define FOR_STATES_TF 1            /* format applies only to states */
-#define FOR_OPERATORS_TF 2         /* format applies only to operators */
+#define FOR_ANYTHING_TF 0       /* format applies to any object */
+#define FOR_STATES_TF 1         /* format applies only to states */
+#define FOR_OPERATORS_TF 2      /* format applies only to operators */
 
-extern void init_tracing (void);
-extern bool add_trace_format (bool stack_trace, int type_restriction,
-                              Symbol *name_restriction, const char *format_string);
-extern bool remove_trace_format (bool stack_trace, int type_restriction,
-                                 Symbol *name_restriction);
-extern void print_all_trace_formats (bool stack_trace);
+extern void init_tracing(void);
+extern bool add_trace_format(bool stack_trace, int type_restriction,
+                             Symbol * name_restriction, const char *format_string);
+extern bool remove_trace_format(bool stack_trace, int type_restriction, Symbol * name_restriction);
+extern void print_all_trace_formats(bool stack_trace);
 
-extern void print_object_trace (Symbol *object);
-extern void print_stack_trace (Symbol *object, Symbol *state, int slot_type,
-                               bool allow_cycle_counts);
+extern void print_object_trace(Symbol * object);
+extern void print_stack_trace(Symbol * object, Symbol * state, int slot_type, bool allow_cycle_counts);
 
-extern char * help_on_trace_format_escapes[];
+extern char *help_on_trace_format_escapes[];
 
 /* =======================================================================
                                  io.c
@@ -3161,12 +3118,11 @@ extern char * help_on_trace_format_escapes[];
    inform_output_module_of_wm_changes().
 ======================================================================= */
 
-extern void init_soar_io (void);
-extern void do_input_cycle (void);
-extern void do_output_cycle (void);
+extern void init_soar_io(void);
+extern void do_input_cycle(void);
+extern void do_output_cycle(void);
 
-extern void inform_output_module_of_wm_changes (list *wmes_being_added,
-                                                list *wmes_being_removed);
+extern void inform_output_module_of_wm_changes(list * wmes_being_added, list * wmes_being_removed);
 
 /* =======================================================================
                                callback.c
@@ -3243,14 +3199,14 @@ extern unsigned long soar_global_callback_error;
 #define NORMAL_INPUT_CYCLE 2
 #define TOP_STATE_JUST_REMOVED 3
 
-extern Symbol *get_new_io_identifier (char first_letter);
-extern Symbol *get_io_sym_constant (char *name);
-extern Symbol *get_io_int_constant (long value);
-extern Symbol *get_io_float_constant (float value);
-extern void release_io_symbol (Symbol *sym);
+extern Symbol *get_new_io_identifier(char first_letter);
+extern Symbol *get_io_sym_constant(char *name);
+extern Symbol *get_io_int_constant(long value);
+extern Symbol *get_io_float_constant(float value);
+extern void release_io_symbol(Symbol * sym);
 
-extern wme *add_input_wme (Symbol *id, Symbol *attr, Symbol *value);
-extern bool remove_input_wme (wme *w);
+extern wme *add_input_wme(Symbol * id, Symbol * attr, Symbol * value);
+extern bool remove_input_wme(wme * w);
 
 /* =======================================================================
                             Output Functions
@@ -3290,44 +3246,41 @@ extern bool remove_input_wme (wme *w);
 ======================================================================= */
 
 typedef struct io_wme_struct {
-  /*
-   *  12.08.00 Put next field last, so id,attr,value fall in same position
-   * as in a wme structure
-   */
-  Symbol *id;                  /* id, attribute, and value of the wme */
-  Symbol *attr;
-  Symbol *value;
-  struct io_wme_struct *next;  /* points to next io_wme in the chain */
+    /*
+     *  12.08.00 Put next field last, so id,attr,value fall in same position
+     * as in a wme structure
+     */
+    Symbol *id;                 /* id, attribute, and value of the wme */
+    Symbol *attr;
+    Symbol *value;
+    struct io_wme_struct *next; /* points to next io_wme in the chain */
 } io_wme;
 
-
-
 enum captured_action_type {
-  ADD_WME,
-  REMOVE_WME
+    ADD_WME,
+    REMOVE_WME
 };
 
 typedef struct captured_action_struct {
 
-  struct captured_action_struct *next;
-  int dc;
-  enum captured_action_type action;
+    struct captured_action_struct *next;
+    int dc;
+    enum captured_action_type action;
 
-  void *args;
+    void *args;
 
 } captured_action;
-
 
 #define ADDED_OUTPUT_COMMAND 1
 #define MODIFIED_OUTPUT_COMMAND 2
 #define REMOVED_OUTPUT_COMMAND 3
 
 typedef struct output_call_info_struct {
-  int mode;
-  io_wme * outputs;
+    int mode;
+    io_wme *outputs;
 } output_call_info;
 
-extern Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr);
+extern Symbol *get_output_value(io_wme * outputs, Symbol * id, Symbol * attr);
 
 /* ===========================================================================
    Miscellaneous functions that I needed to declare because I used them in
@@ -3335,14 +3288,11 @@ extern Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr);
    interface" or something like that.
 =========================================================================== */
 
-extern double my_strtod (char *ch, char **p, int base); /* in lexer.c */
-
-extern Symbol *get_next_io_symbol_from_text_input_line (char **text_read_position); /* in io.c */
+extern Symbol *get_next_io_symbol_from_text_input_line(char **text_read_position);      /* in io.c */
 
 /* -------------------------------------------------------------------- */
 /*                                                                      */
 /* Macros for handling multi-agent switching in Soar.                   */
-
 
 /* RBD BUGBUG more comments here, or should this stuff be here at all? */
 
@@ -3365,15 +3315,16 @@ extern Symbol *get_next_io_symbol_from_text_input_line (char **text_read_positio
    initial positioning.
 */
 
+#define PROD_NAME_SIZE 256
 typedef struct backtrace_struct {
-   int result;                    /* 1 when this is a result of the chunk */
-   condition *trace_cond;         /* The (local) condition being traced */
-   char   prod_name[256];         /* The production's name */
-   condition *grounds;            /* The list of conds for the LHS of chunk */
-   condition *potentials;         /* The list of conds which aren't linked */
-   condition *locals;             /* Conds in the subgoal -- need to BT */
-   condition *negated;            /* Negated conditions (sub/super) */
-   struct backtrace_struct *next_backtrace; /* Pointer to next in this list */
+    int result;                 /* 1 when this is a result of the chunk */
+    condition *trace_cond;      /* The (local) condition being traced */
+    char prod_name[PROD_NAME_SIZE];     /* The production's name */
+    condition *grounds;         /* The list of conds for the LHS of chunk */
+    condition *potentials;      /* The list of conds which aren't linked */
+    condition *locals;          /* Conds in the subgoal -- need to BT */
+    condition *negated;         /* Negated conditions (sub/super) */
+    struct backtrace_struct *next_backtrace;    /* Pointer to next in this list */
 } backtrace_str;
 
 /*
@@ -3384,33 +3335,32 @@ typedef struct backtrace_struct {
 */
 
 typedef struct explain_chunk_struct {
-   char name[256];                      /* Name of this chunk/justification */
-   condition *conds;                    /* Variablized list of conditions */
-   action *actions;                     /* Variablized list of actions */
-   struct backtrace_struct *backtrace;  /* List of back traced productions */
-   struct explain_chunk_struct *next_chunk; /* Next chunk in the list */
-   condition *all_grounds;             /* All conditions which go to LHS -- 
-                                          must be in same order as the chunk's 
-                                          conditions. */
+    char name[PROD_NAME_SIZE];  /* Name of this chunk/justification */
+    condition *conds;           /* Variablized list of conditions */
+    action *actions;            /* Variablized list of actions */
+    struct backtrace_struct *backtrace; /* List of back traced productions */
+    struct explain_chunk_struct *next_chunk;    /* Next chunk in the list */
+    condition *all_grounds;     /* All conditions which go to LHS -- 
+                                   must be in same order as the chunk's 
+                                   conditions. */
 } explain_chunk_str;
 /* AGR 564 ends */
 
 /* RBD added decl's of these routines because they were called from files
    other than explain.c.  I don't know what they do. */
-extern void explain_add_temp_to_backtrace_list (backtrace_str *temp, 
-    cons *grounds, cons *pots, cons *locals, cons *negateds);
-extern void explain_add_temp_to_chunk_list(explain_chunk_str *temp);
-extern void reset_backtrace_list (void);
-extern void reset_explain (void);
-extern void init_explain (void);
-extern void explain_full_trace (void);
-extern void explain_chunk (char *chunk_name, int cond_number);
-extern void explain_list_chunks (void);
-extern explain_chunk_str *find_chunk( explain_chunk_str *chunk, char *name );
-extern void explain_trace_chunk(explain_chunk_str *chunk);
-extern condition *find_ground(explain_chunk_str *chunk, int number);
-extern void explain_trace(char *chunk_name, backtrace_str *prod_list,
-			  condition *ground);
+extern void explain_add_temp_to_backtrace_list(backtrace_str * temp,
+                                               cons * grounds, cons * pots, cons * locals, cons * negateds);
+extern void explain_add_temp_to_chunk_list(explain_chunk_str * temp);
+extern void reset_backtrace_list(void);
+extern void reset_explain(void);
+extern void init_explain(void);
+extern void explain_full_trace(void);
+extern void explain_chunk(char *chunk_name, int cond_number);
+extern void explain_list_chunks(void);
+extern explain_chunk_str *find_chunk(explain_chunk_str * chunk, char *name);
+extern void explain_trace_chunk(explain_chunk_str * chunk);
+extern condition *find_ground(explain_chunk_str * chunk, int number);
+extern void explain_trace(char *chunk_name, backtrace_str * prod_list, condition * ground);
 
 /* REW: begin 08.20.97 */
 
@@ -3422,21 +3372,21 @@ extern void explain_trace(char *chunk_name, backtrace_str *prod_list,
 
 /* --- info about a change to the match set --- */
 typedef struct ms_change_struct {
-  struct ms_change_struct *next;         /* dll for all p nodes */
-  struct ms_change_struct *prev;
-  struct ms_change_struct *next_of_node; /* dll for just this p node */
-  struct ms_change_struct *prev_of_node;
-  struct rete_node_struct *p_node;       /* for retractions, this can be NIL
-                                            if the p_node has been excised */
-  struct token_struct *tok;            /* for assertions only */
+    struct ms_change_struct *next;      /* dll for all p nodes */
+    struct ms_change_struct *prev;
+    struct ms_change_struct *next_of_node;      /* dll for just this p node */
+    struct ms_change_struct *prev_of_node;
+    struct rete_node_struct *p_node;    /* for retractions, this can be NIL
+                                           if the p_node has been excised */
+    struct token_struct *tok;   /* for assertions only */
 
-  wme *w;                              /* for assertions only */
-  struct instantiation_struct *inst;   /* for retractions only */
+    wme *w;                     /* for assertions only */
+    struct instantiation_struct *inst;  /* for retractions only */
 /* REW: begin 08.20.97 */
-  Symbol *goal;
-  goal_stack_level level;              /* Level of the match of the assertion or retraction */
-  struct ms_change_struct *next_in_level; /* dll for goal level */
-  struct ms_change_struct *prev_in_level;
+    Symbol *goal;
+    goal_stack_level level;     /* Level of the match of the assertion or retraction */
+    struct ms_change_struct *next_in_level;     /* dll for goal level */
+    struct ms_change_struct *prev_in_level;
 /* REW: end   08.20.97 */
 } ms_change;
 /* REW: end 08.20.97 */
@@ -3445,7 +3395,7 @@ typedef struct ms_change_struct {
 /* ======================================================================
                               emotion.c
 ====================================================================== */
-#include "emotion.h" /*RPM*/
+#include "emotion.h" /* RPM emotion */
 
 
 /* !!!!!!!!!!!!!!!!  here's the agent structure !!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -3462,189 +3412,186 @@ typedef struct ms_change_struct {
    then do NOT refer to it in the code as "foo" but instead as
    "current_agent(foo)". */
 
-
 /* If you define a new global, initialize it in the create_soar_agent
    routine.  AGR 527c 3-May-94 */
 
 typedef struct agent_struct {
 
-  /* ----------------------- Rete stuff -------------------------- */
-  
-  /* Hash tables for alpha memories, and for entries in left & right memories */
-  void              * left_ht;
-  void              * right_ht;
-  hash_table        *(alpha_hash_tables[16]);
-  
-  /* Number of WMEs, and list of WMEs, the Rete has been told about */
-  unsigned long       num_wmes_in_rete;
-  wme               * all_wmes_in_rete;
-  
-  /* Memory pools */
-  memory_pool         rete_node_pool;
-  memory_pool         rete_test_pool;
-  memory_pool         right_mem_pool;
-  memory_pool         token_pool;
-  memory_pool         alpha_mem_pool;
-  memory_pool         ms_change_pool;
-  memory_pool         node_varnames_pool;
-  
-  /* Dummy nodes and tokens */
-  struct rete_node_struct * dummy_top_node;
-  struct token_struct * dummy_top_token;
+    /* ----------------------- Rete stuff -------------------------- */
 
-  /* Various Rete statistics counters */
-  unsigned long       rete_node_counts[256];
-  unsigned long       rete_node_counts_if_no_sharing[256];
-  unsigned long       token_additions;
-  unsigned long       token_additions_without_sharing;
-  unsigned long       num_right_activations;
-  unsigned long       num_left_activations;
-  unsigned long       num_null_right_activations;
-  unsigned long       num_null_left_activations;
-  
-  
-  /* Miscellaneous other stuff */
-  unsigned long       alpha_mem_id_counter; /* node id's for hashing */
-  unsigned long       beta_node_id_counter;
-  struct ms_change_struct * ms_assertions;  /* changes to match set */
-  struct ms_change_struct * ms_retractions;
+    /* Hash tables for alpha memories, and for entries in left & right memories */
+    void *left_ht;
+    void *right_ht;
+    hash_table *(alpha_hash_tables[16]);
 
-  /* ----------------------- Lexer stuff -------------------------- */
-  
-  lexer_source_file * current_file; /* file we're currently reading */
-  char                current_char; /* holds current input character */
-  struct lexeme_info  lexeme;       /* holds current lexeme */
-  bool                print_prompt_flag;
-  
-  /* ---------------- Predefined Symbols -------------------------
-     Certain symbols are used so frequently that we create them at
-     system startup time and never deallocate them.  
-     ------------------------------------------------------------- */
+    /* Number of WMEs, and list of WMEs, the Rete has been told about */
+    unsigned long num_wmes_in_rete;
+    wme *all_wmes_in_rete;
 
-  Symbol            * attribute_symbol;
-  Symbol            * choices_symbol;
-  Symbol            * conflict_symbol;
-  Symbol            * constraint_failure_symbol;
-  Symbol            * goal_symbol;
-  Symbol            * impasse_symbol;
-  Symbol            * io_symbol;
-  Symbol            * item_symbol;
-  Symbol            * multiple_symbol;
-  Symbol            * name_symbol;
-  Symbol            * nil_symbol;
-  Symbol            * no_change_symbol;
-  Symbol            * none_symbol;
-  Symbol            * o_context_variable;
-  Symbol            * object_symbol;
-  Symbol            * operator_symbol;
-  Symbol            * problem_space_symbol;
-  Symbol            * quiescence_symbol;
-  Symbol            * s_context_variable;
-  Symbol            * so_context_variable;
-  Symbol            * ss_context_variable;
-  Symbol            * sso_context_variable;
-  Symbol            * sss_context_variable;
-  Symbol            * state_symbol;
-  Symbol            * superstate_symbol;
-  Symbol            * t_symbol;
-  Symbol            * tie_symbol;
-  Symbol            * to_context_variable;
-  Symbol            * ts_context_variable;
-  Symbol            * type_symbol;
-  Symbol            * wait_symbol;   /* REW:  10.24.97 */
-  
-  /* ----------------------- Symbol table stuff -------------------------- */
+    /* Memory pools */
+    memory_pool rete_node_pool;
+    memory_pool rete_test_pool;
+    memory_pool right_mem_pool;
+    memory_pool token_pool;
+    memory_pool alpha_mem_pool;
+    memory_pool ms_change_pool;
+    memory_pool node_varnames_pool;
 
-  unsigned long       current_symbol_hash_id;
-  unsigned long       id_counter[26]; 
-  
-  struct hash_table_struct * float_constant_hash_table;
-  struct hash_table_struct * identifier_hash_table;
-  struct hash_table_struct * int_constant_hash_table;
-  struct hash_table_struct * sym_constant_hash_table;
-  struct hash_table_struct * variable_hash_table;
-  
-  memory_pool         float_constant_pool;
-  memory_pool         identifier_pool;
-  memory_pool         int_constant_pool;
-  memory_pool         sym_constant_pool;
-  memory_pool         variable_pool;
-  
-  /* ----------------------- Top-level stuff -------------------------- */
+    /* Dummy nodes and tokens */
+    struct rete_node_struct *dummy_top_node;
+    struct token_struct *dummy_top_token;
 
-  /* --- headers of dll's of all productions of each type --- */
-  production        * all_productions_of_type[NUM_PRODUCTION_TYPES];
-  /* --- counts of how many productions there are of each type --- */
-  unsigned long       num_productions_of_type[NUM_PRODUCTION_TYPES];
-  
-  /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
-  list              * chunk_free_problem_spaces;
-  list              * chunky_problem_spaces;   /* AGR MVL1 */
-  
-  /* --- default depth for "print" command --- */
-  int                 default_wme_depth;      /* AGR 646 */
-  
-  /* --- stuff for "input-period" command --- */
-  /* --- in Soar8, input runs once at beginning of D cycle, no matter what */
-  int                 input_period;      /* AGR REW1 */
-  bool                input_cycle_flag;  /* AGR REW1 */
-  
-  /* --- current top level phase --- */
-  enum top_level_phase current_phase; 
-  
-  /* --- to interrupt at the end of the current phase, set stop_soar to TRUE
-     and reason_for_stopping to some appropriate string --- */
-  byte                stop_soar;
-  const char        * reason_for_stopping;
-  
-  /* --- the RHS action (halt) sets this TRUE --- */
-  bool                system_halted;
+    /* Various Rete statistics counters */
+    unsigned long rete_node_counts[256];
+    unsigned long rete_node_counts_if_no_sharing[256];
+    unsigned long token_additions;
+    unsigned long token_additions_without_sharing;
+    unsigned long num_right_activations;
+    unsigned long num_left_activations;
+    unsigned long num_null_right_activations;
+    unsigned long num_null_left_activations;
 
-  /* --- stuff for max-chunks (which is a sysparam) --- */
-  unsigned long       chunks_this_d_cycle; /* # chunks built this DC */
-  bool		    max_chunks_reached;
-  
-  /* --- list of productions whose firings are being traced --- */
-  list              * productions_being_traced; 
-  
-  /* --- various user-settable system parameters --- */
-  long                sysparams[HIGHEST_SYSPARAM_NUMBER+1];
-  
-  /* --- parameters for running Soar --- */
-  /*  --- the code loops go_number times over the go_type phases --- */
-  long                go_number;     /* How many times to "go" */
-  Symbol            * go_slot_attr;  /* The context slot checked */
-  goal_stack_level    go_slot_level; /* The goal stack level checked */
-  enum go_type_enum   go_type;       /* The phase type used */
-  
-  /* --- Top-level Statistics --- */
-  
-  /* running total of WM sizes at end of phases */
-  double              cumulative_wm_size;
-  /* number of items included in "cumulative_wm_size" sum */
-  unsigned long       num_wm_sizes_accumulated; 
-  
-  unsigned long       max_wm_size;    /* maximum size of WM so far */
-  unsigned long       wme_addition_count; /* # of wmes added to WM */
-  unsigned long       wme_removal_count;  /* # of wmes removed from WM */
-  unsigned long       d_cycle_count;          /* # of DC's run so far */
-  unsigned long       e_cycle_count;          /* # of EC's run so far */
-  /*  in Soar 8, e_cycles_this_d_cycle is reset to zero for every
-      propose and apply phase */
-  unsigned long       e_cycles_this_d_cycle;  /* # of EC's run this DC */
-  unsigned long       num_existing_wmes;      /* current WM size */
-  unsigned long       production_firing_count;  /* # of prod. firings */
+    /* Miscellaneous other stuff */
+    unsigned long alpha_mem_id_counter; /* node id's for hashing */
+    unsigned long beta_node_id_counter;
+    struct ms_change_struct *ms_assertions;     /* changes to match set */
+    struct ms_change_struct *ms_retractions;
 
-  /* REW: begin 09.15.96 */
+    /* ----------------------- Lexer stuff -------------------------- */
+
+    lexer_source_file *current_file;    /* file we're currently reading */
+    char current_char;          /* holds current input character */
+    struct lexeme_info lexeme;  /* holds current lexeme */
+    bool print_prompt_flag;
+
+    /* ---------------- Predefined Symbols -------------------------
+       Certain symbols are used so frequently that we create them at
+       system startup time and never deallocate them.  
+       ------------------------------------------------------------- */
+
+    Symbol *attribute_symbol;
+    Symbol *choices_symbol;
+    Symbol *conflict_symbol;
+    Symbol *constraint_failure_symbol;
+    Symbol *goal_symbol;
+    Symbol *impasse_symbol;
+    Symbol *io_symbol;
+    Symbol *item_symbol;
+    Symbol *multiple_symbol;
+    Symbol *name_symbol;
+    Symbol *nil_symbol;
+    Symbol *no_change_symbol;
+    Symbol *none_symbol;
+    Symbol *o_context_variable;
+    Symbol *object_symbol;
+    Symbol *operator_symbol;
+    Symbol *problem_space_symbol;
+    Symbol *quiescence_symbol;
+    Symbol *s_context_variable;
+    Symbol *so_context_variable;
+    Symbol *ss_context_variable;
+    Symbol *sso_context_variable;
+    Symbol *sss_context_variable;
+    Symbol *state_symbol;
+    Symbol *superstate_symbol;
+    Symbol *t_symbol;
+    Symbol *tie_symbol;
+    Symbol *to_context_variable;
+    Symbol *ts_context_variable;
+    Symbol *type_symbol;
+    Symbol *wait_symbol;        /* REW:  10.24.97 */
+
+    /* ----------------------- Symbol table stuff -------------------------- */
+
+    unsigned long current_symbol_hash_id;
+    unsigned long id_counter[26];
+
+    struct hash_table_struct *float_constant_hash_table;
+    struct hash_table_struct *identifier_hash_table;
+    struct hash_table_struct *int_constant_hash_table;
+    struct hash_table_struct *sym_constant_hash_table;
+    struct hash_table_struct *variable_hash_table;
+
+    memory_pool float_constant_pool;
+    memory_pool identifier_pool;
+    memory_pool int_constant_pool;
+    memory_pool sym_constant_pool;
+    memory_pool variable_pool;
+
+    /* ----------------------- Top-level stuff -------------------------- */
+
+    /* --- headers of dll's of all productions of each type --- */
+    production *all_productions_of_type[NUM_PRODUCTION_TYPES];
+    /* --- counts of how many productions there are of each type --- */
+    unsigned long num_productions_of_type[NUM_PRODUCTION_TYPES];
+
+    /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
+    list *chunk_free_problem_spaces;
+    list *chunky_problem_spaces;        /* AGR MVL1 */
+
+    /* --- default depth for "print" command --- */
+    int default_wme_depth;      /* AGR 646 */
+
+    /* --- stuff for "input-period" command --- */
+    /* --- in Soar8, input runs once at beginning of D cycle, no matter what */
+    int input_period;           /* AGR REW1 */
+    bool input_cycle_flag;      /* AGR REW1 */
+
+    /* --- current top level phase --- */
+    enum top_level_phase current_phase;
+
+    /* --- to interrupt at the end of the current phase, set stop_soar to TRUE
+       and reason_for_stopping to some appropriate string --- */
+    byte stop_soar;
+    const char *reason_for_stopping;
+
+    /* --- the RHS action (halt) sets this TRUE --- */
+    bool system_halted;
+
+    /* --- stuff for max-chunks (which is a sysparam) --- */
+    unsigned long chunks_this_d_cycle;  /* # chunks built this DC */
+    bool max_chunks_reached;
+
+    /* --- list of productions whose firings are being traced --- */
+    list *productions_being_traced;
+
+    /* --- various user-settable system parameters --- */
+    long sysparams[HIGHEST_SYSPARAM_NUMBER + 1];
+
+    /* --- parameters for running Soar --- */
+    /*  --- the code loops go_number times over the go_type phases --- */
+    long go_number;             /* How many times to "go" */
+    Symbol *go_slot_attr;       /* The context slot checked */
+    goal_stack_level go_slot_level;     /* The goal stack level checked */
+    enum go_type_enum go_type;  /* The phase type used */
+
+    /* --- Top-level Statistics --- */
+
+    /* running total of WM sizes at end of phases */
+    double cumulative_wm_size;
+    /* number of items included in "cumulative_wm_size" sum */
+    unsigned long num_wm_sizes_accumulated;
+
+    unsigned long max_wm_size;  /* maximum size of WM so far */
+    unsigned long wme_addition_count;   /* # of wmes added to WM */
+    unsigned long wme_removal_count;    /* # of wmes removed from WM */
+    unsigned long d_cycle_count;        /* # of DC's run so far */
+    unsigned long e_cycle_count;        /* # of EC's run so far */
+    /*  in Soar 8, e_cycles_this_d_cycle is reset to zero for every
+       propose and apply phase */
+    unsigned long e_cycles_this_d_cycle;        /* # of EC's run this DC */
+    unsigned long num_existing_wmes;    /* current WM size */
+    unsigned long production_firing_count;      /* # of prod. firings */
+
+    /* REW: begin 09.15.96 */
 /* in Soar 8, PE's are done only during the APPLY phase */
-  unsigned long       pe_cycle_count;          /* # of PE's run so far */
-  unsigned long       pe_cycles_this_d_cycle;  /* # of PE's run this DC */
+    unsigned long pe_cycle_count;       /* # of PE's run so far */
+    unsigned long pe_cycles_this_d_cycle;       /* # of PE's run this DC */
 
-  parent_inst *parent_list_head;
+    parent_inst *parent_list_head;
 /* REW: end   09.15.96 */
-  
-  
-  /* ----------------------- Timing statistics -------------------------- */
+
+    /* ----------------------- Timing statistics -------------------------- */
 
 /* 
 For Soar 7, the timing code has been completely revamped.  When the compile
@@ -3729,367 +3676,355 @@ total_kernel_time.  If the ordering discussed above is strictly enforced,
 total_kernel_time should always be slightly greater than the derived total
 kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
-/* REW: begin 28.07.96 */  
+/* REW: begin 28.07.96 */
 #ifndef NO_TIMING_STUFF
 
-  TIMER_VALUE      start_total_tv;
-  TIMER_VALUE      total_cpu_time;
-  TIMER_VALUE      start_kernel_tv, start_phase_tv;
-  TIMER_VALUE      total_kernel_time;
+    TIMER_VALUE start_total_tv;
+    TIMER_VALUE total_cpu_time;
+    TIMER_VALUE start_kernel_tv, start_phase_tv;
+    TIMER_VALUE total_kernel_time;
 
-  TIMER_VALUE      decision_cycle_phase_timers[6];
-  TIMER_VALUE      monitors_cpu_time[6]; 
-  TIMER_VALUE      input_function_cpu_time; 
-  TIMER_VALUE      output_function_cpu_time; 
+    TIMER_VALUE decision_cycle_phase_timers[6];
+    TIMER_VALUE monitors_cpu_time[6];
+    TIMER_VALUE input_function_cpu_time;
+    TIMER_VALUE output_function_cpu_time;
 /* REW: end 28.07.96 */
 
-/* REW: begin 28.07.96 */  
-  /* accumulated cpu time spent in various parts of the system */
+/* REW: begin 28.07.96 */
+    /* accumulated cpu time spent in various parts of the system */
 #ifdef DETAILED_TIMING_STATS
-  TIMER_VALUE      ownership_cpu_time[6];
-  TIMER_VALUE      chunking_cpu_time[6];
-  TIMER_VALUE      match_cpu_time[6];
-/* REW: begin 11.25.96 */ 
-  TIMER_VALUE      start_gds_tv, total_gds_time; 
-  TIMER_VALUE      gds_cpu_time[6];
-/* REW: end   11.25.96 */  
+    TIMER_VALUE ownership_cpu_time[6];
+    TIMER_VALUE chunking_cpu_time[6];
+    TIMER_VALUE match_cpu_time[6];
+/* REW: begin 11.25.96 */
+    TIMER_VALUE start_gds_tv, total_gds_time;
+    TIMER_VALUE gds_cpu_time[6];
+/* REW: end   11.25.96 */
 /* REW: end 28.07.96 */
 #endif
 
 #ifdef DC_HISTOGRAM
-  TIMER_VALUE        *dc_histogram_tv;
-  int                 dc_histogram_sz;
-  int                 dc_histogram_offset;
-  TIMER_VALUE         start_dc_tv;
-  int                 dc_histogram_freq;
-  bool                dc_histogram_now;
-#endif /* DC_HISTOGRAM */
-  
+    TIMER_VALUE *dc_histogram_tv;
+    int dc_histogram_sz;
+    int dc_histogram_offset;
+    TIMER_VALUE start_dc_tv;
+    int dc_histogram_freq;
+    bool dc_histogram_now;
+#endif                          /* DC_HISTOGRAM */
+
 #ifdef KT_HISTOGRAM
-  TIMER_VALUE       *kt_histogram_tv;
-  int                kt_histogram_sz;
-  int                kt_histogram_offset;
+    TIMER_VALUE *kt_histogram_tv;
+    int kt_histogram_sz;
+    int kt_histogram_offset;
 #endif
 
-#endif /* !NO_TIMING_STUFF */
-
+#endif                          /* !NO_TIMING_STUFF */
 
 #ifdef REAL_TIME_BEHAVIOR
-   /* RMJ */
-   /* Keep track of real time steps for constant real-time per decision */
-   TIMER_VALUE         *real_time_tracker;
-   bool			real_time_idling;
+    /* RMJ */
+    /* Keep track of real time steps for constant real-time per decision */
+    TIMER_VALUE *real_time_tracker;
+    bool real_time_idling;
 #endif
-
 
 #ifdef ATTENTION_LAPSE
-   /* RMJ */
-   /* Keep track of duration of attentional lapses */
-   TIMER_VALUE	       *attention_lapse_tracker;
-   bool			attention_lapsing;
+    /* RMJ */
+    /* Keep track of duration of attentional lapses */
+    TIMER_VALUE *attention_lapse_tracker;
+    bool attention_lapsing;
 #endif
 
-  
-  /* ----------------------- Chunker stuff -------------------------- */
-  
-  tc_number           backtrace_number;
-  memory_pool         chunk_cond_pool;
-  unsigned long       chunk_count;
-  unsigned long       justification_count;
-  bool                chunk_free_flag;
-  bool                chunky_flag;     /* AGR MVL1 */
-  list              * grounds;
-  tc_number           grounds_tc;
-  list              * instantiations_with_nots;
-  list              * locals;
-  tc_number           locals_tc;
-  list              * positive_potentials;
-  tc_number           potentials_tc;
-  chunk_cond_set      negated_set; 
-  preference        * results;
-  goal_stack_level    results_match_goal_level;
-  tc_number           results_tc_number;
-  tc_number           variablization_tc;
-  bool                variablize_this_chunk;
-  preference        * extra_result_prefs_from_instantiation;
-  bool                quiescence_t_flag;
-  char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
-  
-  /* ----------------------- Misc. top-level stuff -------------------------- */
-  
-  memory_pool         action_pool;
-  memory_pool         complex_test_pool;
-  memory_pool         condition_pool;
-  memory_pool         not_pool;
-  memory_pool         production_pool;
-  
-  /* ----------------------- Reorderer stuff -------------------------- */
-  
-  memory_pool         saved_test_pool;
-  
-  /* ----------------------- Memory utilities -------------------------- */
-  
-  /* Counters for memory usage of various types */
-  unsigned long       memory_for_usage[NUM_MEM_USAGE_CODES];
-  
-  /* List of all memory pools being used */
-  memory_pool       * memory_pools_in_use;
-  
-  memory_pool         cons_cell_pool; /* pool for cons cells */
-  memory_pool         dl_cons_pool;   /* doubly-linked list cells */
-  
-  /* ----------------------- Explain.c stuff -------------------------- */
-  
-  backtrace_str     * explain_backtrace_list;     /* AGR 564 */
-  explain_chunk_str * explain_chunk_list;         /* AGR 564 */
-  char                explain_chunk_name[256];    /* AGR 564 */
-  /* made explain_flag EXPLAIN_SYSPARAM instead, KJC 7/96 */
-  /* bool                explain_flag; */
-  
-  /* ----------------------- Firer stuff -------------------------- */
-  
-  memory_pool         instantiation_pool;
-  instantiation     * newly_created_instantiations;
-  
-  /* production_being_fired -- during firing, points to the prod. being fired */
-  production        * production_being_fired;
-  
-  unsigned long       max_rhs_unbound_variables;
-  Symbol           ** rhs_variable_bindings;
-  
-  /* ==================================================================
-     Decider stuff 
-     =================================================================== */
-  
-  memory_pool         preference_pool;
-  
-  unsigned long       current_wme_timetag;
-  memory_pool         wme_pool;
-  list              * wmes_to_add;
-  list              * wmes_to_remove;
-  
-  /* ---------------------------------------------------------------------
-     Top_goal and bottom_goal point to the top and bottom goal identifiers,
-     respectively.  (If there is no goal stack at all, they're both NIL.)
-     Top_state points to the top state (symbol) if there is a top state, and
-     is NIL of there isn't any top state selected.
-  --------------------------------------------------------------------- */
+    /* ----------------------- Chunker stuff -------------------------- */
 
-  Symbol            * bottom_goal;
-  Symbol            * top_goal;
-  Symbol            * top_state;
+    tc_number backtrace_number;
+    memory_pool chunk_cond_pool;
+    unsigned long chunk_count;
+    unsigned long justification_count;
+    bool chunk_free_flag;
+    bool chunky_flag;           /* AGR MVL1 */
+    list *grounds;
+    tc_number grounds_tc;
+    list *instantiations_with_nots;
+    list *locals;
+    tc_number locals_tc;
+    list *positive_potentials;
+    tc_number potentials_tc;
+    chunk_cond_set negated_set;
+    preference *results;
+    goal_stack_level results_match_goal_level;
+    tc_number results_tc_number;
+    tc_number variablization_tc;
+    bool variablize_this_chunk;
+    preference *extra_result_prefs_from_instantiation;
+    bool quiescence_t_flag;
+    char chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
 
-  Symbol            * highest_goal_whose_context_changed;
-  dl_list           * changed_slots;
-  dl_list           * context_slots_with_changed_acceptable_preferences;
-  memory_pool         slot_pool;
-  list              * slots_for_possible_removal;
+    /* ----------------------- Misc. top-level stuff -------------------------- */
 
-  dl_list           * disconnected_ids;
-  goal_stack_level    highest_level_anything_could_fall_from;
-  dl_list           * ids_with_unknown_level;
-  goal_stack_level    lowest_level_anything_could_fall_to;
-  tc_number           mark_tc_number;
-  goal_stack_level    level_at_which_marking_started;
-  goal_stack_level    walk_level;
-  tc_number           walk_tc_number;
-  list              * promoted_ids;
-  int                 link_update_mode;
+    memory_pool action_pool;
+    memory_pool complex_test_pool;
+    memory_pool condition_pool;
+    memory_pool not_pool;
+    memory_pool production_pool;
 
-  /* ------------------ Printing utilities stuff --------------------- */
+    /* ----------------------- Reorderer stuff -------------------------- */
 
-  FILE              * log_file;
-  char              * log_file_name;
-  bool                logging_to_file;
-  char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
-  int                 printer_output_column;
-  bool                redirecting_to_file;
-  FILE              * redirection_file;
-  int                 saved_printer_output_column;
+    memory_pool saved_test_pool;
 
+    /* ----------------------- Memory utilities -------------------------- */
 
-  /* kjh(CUSP-B10) begin */
-  /* ------------------ Recording/replaying stuff --------------------- */
-  /*  bool                replaying; */
-  /* kjh(CUSP-B10) end */
-  
+    /* Counters for memory usage of various types */
+    unsigned long memory_for_usage[NUM_MEM_USAGE_CODES];
+
+    /* List of all memory pools being used */
+    memory_pool *memory_pools_in_use;
+
+    memory_pool cons_cell_pool; /* pool for cons cells */
+    memory_pool dl_cons_pool;   /* doubly-linked list cells */
+
+    /* ----------------------- Explain.c stuff -------------------------- */
+
+    backtrace_str *explain_backtrace_list;      /* AGR 564 */
+    explain_chunk_str *explain_chunk_list;      /* AGR 564 */
+    char explain_chunk_name[256];       /* AGR 564 */
+    /* made explain_flag EXPLAIN_SYSPARAM instead, KJC 7/96 */
+    /* bool                explain_flag; */
+
+    /* ----------------------- Firer stuff -------------------------- */
+
+    memory_pool instantiation_pool;
+    instantiation *newly_created_instantiations;
+
+    /* production_being_fired -- during firing, points to the prod. being fired */
+    production *production_being_fired;
+
+    unsigned long max_rhs_unbound_variables;
+    Symbol **rhs_variable_bindings;
+
+    /* ==================================================================
+       Decider stuff 
+       =================================================================== */
+
+    memory_pool preference_pool;
+
+    unsigned long current_wme_timetag;
+    memory_pool wme_pool;
+    list *wmes_to_add;
+    list *wmes_to_remove;
+
+    /* ---------------------------------------------------------------------
+       Top_goal and bottom_goal point to the top and bottom goal identifiers,
+       respectively.  (If there is no goal stack at all, they're both NIL.)
+       Top_state points to the top state (symbol) if there is a top state, and
+       is NIL of there isn't any top state selected.
+       --------------------------------------------------------------------- */
+
+    Symbol *bottom_goal;
+    Symbol *top_goal;
+    Symbol *top_state;
+
+    Symbol *highest_goal_whose_context_changed;
+    dl_list *changed_slots;
+    dl_list *context_slots_with_changed_acceptable_preferences;
+    memory_pool slot_pool;
+    list *slots_for_possible_removal;
+
+    dl_list *disconnected_ids;
+    goal_stack_level highest_level_anything_could_fall_from;
+    dl_list *ids_with_unknown_level;
+    goal_stack_level lowest_level_anything_could_fall_to;
+    tc_number mark_tc_number;
+    goal_stack_level level_at_which_marking_started;
+    goal_stack_level walk_level;
+    tc_number walk_tc_number;
+    list *promoted_ids;
+    int link_update_mode;
+
+    /* ------------------ Printing utilities stuff --------------------- */
+
+#define PRINTED_OUTPUT_STRING_SIZE MAX_LEXEME_LENGTH*2+10
+    FILE *log_file;
+    char *log_file_name;
+    bool logging_to_file;
+    char printed_output_string[PRINTED_OUTPUT_STRING_SIZE];
+    int printer_output_column;
+    bool redirecting_to_file;
+    FILE *redirection_file;
+    int saved_printer_output_column;
+
+    /* kjh(CUSP-B10) begin */
+    /* ------------------ Recording/replaying stuff --------------------- */
+    /*  bool                replaying; */
+    /* kjh(CUSP-B10) end */
 
 #ifdef USE_CAPTURE_REPLAY
-  FILE              * capture_fileID;
-  FILE              * replay_fileID;
-  unsigned long     * replay_timetags;
-  captured_action   ** replay_actions;
-  unsigned long     dc_to_replay;
-  bool		    timetag_mismatch;
+    FILE *capture_fileID;
+    FILE *replay_fileID;
+    unsigned long *replay_timetags;
+    captured_action **replay_actions;
+    unsigned long dc_to_replay;
+    bool timetag_mismatch;
 #endif
 
+    /* ----------------------- Trace Formats -------------------------- */
 
-  /* ----------------------- Trace Formats -------------------------- */
-  
-  struct trace_format_struct *(object_tf_for_anything[3]);
-  struct hash_table_struct *(object_tr_ht[3]);
-  bool                printing_stack_traces;
-  struct trace_format_struct *(stack_tf_for_anything[3]);
-  struct hash_table_struct *(stack_tr_ht[3]);
-  tc_number           tf_printing_tc;   
-  
-  list               * wme_filter_list; /* kjh(CUSP-B2) */
+    struct trace_format_struct *(object_tf_for_anything[3]);
+    struct hash_table_struct *(object_tr_ht[3]);
+    bool printing_stack_traces;
+    struct trace_format_struct *(stack_tf_for_anything[3]);
+    struct hash_table_struct *(stack_tr_ht[3]);
+    tc_number tf_printing_tc;
 
-  /* ----------------------- RHS Function Stuff -------------------------- */
-  
-  /* --- "interrupt" fun. uses this to build "reason_for_stopping" msg. --- */
-  char                interrupt_source[2*MAX_LEXEME_LENGTH+100];
-  
-  /* --- "make-constant-symbol" counter --- */
-  unsigned long       mcs_counter;
+    list *wme_filter_list;      /* kjh(CUSP-B2) */
 
-  /* ----------------------- O support stuff -------------------------- */
-  
-  tc_number           o_support_tc;   
-  preference        * rhs_prefs_from_instantiation;
-  
-  /* ----------------------- I/O stuff -------------------------- */
-  
-  io_wme            * collected_io_wmes;
-  struct output_link_struct * existing_output_links;
+    /* ----------------------- RHS Function Stuff -------------------------- */
 
-  struct output_link_struct * output_link_for_tc;
-  memory_pool         output_link_pool;
-  tc_number           output_link_tc_num;
+    /* --- "interrupt" fun. uses this to build "reason_for_stopping" msg. --- */
+#define INTERRUPT_SOURCE_SIZE 2*MAX_LEXEME_LENGTH+100
+    char interrupt_source[INTERRUPT_SOURCE_SIZE];
 
-  bool                output_link_changed;
-  
-  Symbol            * io_header;
-  wme               * io_header_link;
-  
-  Symbol            * io_header_input;
-  Symbol            * io_header_output;
+    /* --- "make-constant-symbol" counter --- */
+    unsigned long mcs_counter;
 
-  Symbol            * io_header_emotion; /*RPM*/
+    /* ----------------------- O support stuff -------------------------- */
 
-  memory_pool         io_wme_pool;
-  Symbol            * prev_top_state;
-  
-  /* ------------ Varible Generator stuff (in production.c) ---------------- */
-  
-  unsigned long       current_variable_gensym_number;
-  unsigned long       gensymed_variable_count[26];
-  
-  /* ------------------- Experimental features ---------------------- */
-  int                 o_support_calculation_type;
-  int                 attribute_preferences_mode;
-  
-  /* ------------------- Info about the agent itself ---------------------- */
-  
-  char              * name;  /* name of this Soar agent */
-  int                 id;    /* unique integer id */
-  unsigned long     callback_error;  /* an error status set during callback */
+    tc_number o_support_tc;
+    preference *rhs_prefs_from_instantiation;
 
-  emotions_struct   * emotions; /* RPM */
+    /* ----------------------- I/O stuff -------------------------- */
 
+    io_wme *collected_io_wmes;
+    struct output_link_struct *existing_output_links;
+
+    struct output_link_struct *output_link_for_tc;
+    memory_pool output_link_pool;
+    tc_number output_link_tc_num;
+
+    bool output_link_changed;
+
+    Symbol *io_header;
+    wme *io_header_link;
+
+    Symbol *io_header_input;
+    Symbol *io_header_output;
+
+    Symbol * io_header_emotion; /* RPM emotion */
+
+    memory_pool io_wme_pool;
+    Symbol *prev_top_state;
+
+    /* ------------ Varible Generator stuff (in production.c) ---------------- */
+
+    unsigned long current_variable_gensym_number;
+    unsigned long gensymed_variable_count[26];
+
+    /* ------------------- Experimental features ---------------------- */
+    int o_support_calculation_type;
+    int attribute_preferences_mode;
+
+    /* ------------------- Info about the agent itself ---------------------- */
+
+    char *name;                 /* name of this Soar agent */
+    int id;                     /* unique integer id */
+    unsigned long callback_error;       /* an error status set during callback */
+
+    emotions_struct *emotions; /* RPM emotion */
 
 /* --------- I (RBD) don't know what the following stuff is ------------ */
-  
-  /* String redirection */
-  /*  
-  bool		    using_input_string;
-  char		  * input_string;
-  */
-  bool		    using_output_string;
-  char		  * output_string;
-  
-  /*mvp 5-17-94 */
-  list              * variables_set;
-  
-  multi_attribute   * multi_attributes;
-  /* char                path[MAXPATHLEN];    AGR 568 */
 
-    
-  
-  soar_callback_array soar_callbacks;
-  
-  alias_struct      * alias_list;   /* AGR 568 */
-  const char        * alternate_input_string; 
-  const char        * alternate_input_suffix; 
-  bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
-  expansion_node    * lex_alias;         /* AGR 568 */
-  bool                load_errors_quit;  /* AGR 527c */
-  dir_stack_struct  * top_dir_stack;   /* AGR 568 */
-  
-  /* RCHONG: begin 10.11 */
-  bool       did_PE;
-  bool       soar_verbose_flag;
-  int        FIRING_TYPE;
-  Symbol     *PE_level;
+    /* String redirection */
+    /*  
+       bool                   using_input_string;
+       char                 * input_string;
+       bool                   using_output_string;
+       char                 * output_string;
+     */
 
-  struct ms_change_struct * ms_o_assertions;  /* changes to match set */
-  struct ms_change_struct * ms_i_assertions;  /* changes to match set */
-  /* RCHONG: end 10.11 */
+    /*mvp 5-17-94 */
+    list *variables_set;
 
-  /* REW: begin 08.20.97 */
+    multi_attribute *multi_attributes;
+    /* char                path[MAXPATHLEN];    AGR 568 */
+
+    soar_callback_array soar_callbacks;
+
+    alias_struct *alias_list;   /* AGR 568 */
+    const char *alternate_input_string;
+    const char *alternate_input_suffix;
+    bool alternate_input_exit;  /* Soar-Bugs #54, TMH */
+    expansion_node *lex_alias;  /* AGR 568 */
+    bool load_errors_quit;      /* AGR 527c */
+    dir_stack_struct *top_dir_stack;    /* AGR 568 */
+
+    /* RCHONG: begin 10.11 */
+    bool did_PE;
+    bool soar_verbose_flag;
+    int FIRING_TYPE;
+    Symbol *PE_level;
+
+    struct ms_change_struct *ms_o_assertions;   /* changes to match set */
+    struct ms_change_struct *ms_i_assertions;   /* changes to match set */
+    /* RCHONG: end 10.11 */
+
+    /* REW: begin 08.20.97 */
 #ifndef SOAR_8_ONLY
-  bool       operand2_mode;
+    bool operand2_mode;
 #endif
-  goal_stack_level active_level;
-  goal_stack_level previous_active_level;
-  Symbol *active_goal;
-  Symbol *previous_active_goal;
-  struct ms_change_struct *nil_goal_retractions; /* dll of all retractions for removed (ie nil) goals */
-  /* REW: end   08.20.97 */
+    goal_stack_level active_level;
+    goal_stack_level previous_active_level;
+    Symbol *active_goal;
+    Symbol *previous_active_goal;
+    struct ms_change_struct *nil_goal_retractions;      /* dll of all retractions for removed (ie nil) goals */
+    /* REW: end   08.20.97 */
 
-  /* delineate btwn Pref/WM(propose) and Pref/WM(apply) KJC 10.05.98 */
-  bool       applyPhase;
+    /* delineate btwn Pref/WM(propose) and Pref/WM(apply) KJC 10.05.98 */
+    bool applyPhase;
 
-  /* REW: begin 10.24.97 */
-  bool       waitsnc;
-  bool       waitsnc_detect; 
-  /* REW: end   10.24.97 */
+    /* REW: begin 10.24.97 */
+    bool waitsnc;
+    bool waitsnc_detect;
+    /* REW: end   10.24.97 */
 
-	enum ni_mode  numeric_indifferent_mode; /* SW 08.19.2003 */
+    enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */
 
 #ifdef COUNT_KERNEL_TIMER_STOPS
-  long       kernelTimerStops;
-  long       nonKernelTimerStops;
+    long kernelTimerStops;
+    long nonKernelTimerStops;
 #endif
 #ifdef USE_AGENT_DBG_FILE
-  FILE      * dbgFile;
+    FILE *dbgFile;
 #endif
 #ifdef WARN_IF_TIMERS_REPORT_ZERO
-  bool       warn_on_zero_timers;
+    bool warn_on_zero_timers;
 #endif
 
 } agent;
 /*************** end of agent struct *****/
 
-
-
 typedef struct output_link_struct {
-  struct output_link_struct *next, *prev;  /* dll of all existing links */
-  byte status;                             /* current xxx_OL_STATUS */
-  wme *link_wme;                           /* points to the output link wme */
-  list *ids_in_tc;                         /* ids in TC(link) */
-  soar_callback *cb;                       /* corresponding output function */
+    struct output_link_struct *next, *prev;     /* dll of all existing links */
+    byte status;                /* current xxx_OL_STATUS */
+    wme *link_wme;              /* points to the output link wme */
+    list *ids_in_tc;            /* ids in TC(link) */
+    soar_callback *cb;          /* corresponding output function */
 } output_link;
 
+extern agent *soar_agent;
+extern list *all_soar_agents;
+extern int agent_count;
 
+extern agent *create_soar_agent(char *name);
+extern void destroy_soar_agent(agent * soar_agent);
 
-
-extern agent * soar_agent;
-extern list  * all_soar_agents;
-extern int     agent_count;
-
-extern agent * create_soar_agent (char * name);
-extern void    destroy_soar_agent (agent * soar_agent);
-
-extern char * c_interrupt_msg;
+extern char *c_interrupt_msg;
 
 /* Main pgm stuff */
 
-extern void init_soar (void);
-extern int  terminate_soar (void);
+extern void init_soar(void);
+extern int terminate_soar(void);
 
 #ifdef __cplusplus
 #undef extern
 #endif
 
-#endif /* _SOAR_H_INCLUDED */
+#endif                          /* _SOAR_H_INCLUDED */

@@ -57,54 +57,60 @@
    Print_memory_statistics() prints out stats on the memory usage.
 ==================================================================== */
 
-void *allocate_memory (unsigned long size, int usage_code) {
-  char *p;
+void *allocate_memory(unsigned long size, int usage_code)
+{
+    char *p;
 
-  current_agent(memory_for_usage)[usage_code] += size;
-  size += sizeof(char *);
-  current_agent(memory_for_usage)[STATS_OVERHEAD_MEM_USAGE] += sizeof(char *);
-  
-  p = (char *) malloc (size);
-  if (p==NULL) {
-    char msg[128];
-    sprintf(msg, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", size);
-    abort_with_fatal_error (msg);
-  }
-  if (((unsigned long)p) & 3) {
-    char msg[128];
-    strcpy (msg,"\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n");
-    abort_with_fatal_error(msg);
-  }
+    current_agent(memory_for_usage)[usage_code] += size;
+    size += sizeof(char *);
+    current_agent(memory_for_usage)[STATS_OVERHEAD_MEM_USAGE] += sizeof(char *);
 
-  fill_with_garbage (p, size);
+    p = (char *) malloc(size);
+    if (p == NULL) {
+        char msg[MESSAGE_SIZE];
+        snprintf(msg, MESSAGE_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", size);
+        msg[MESSAGE_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
+        abort_with_fatal_error(msg);
+    }
+    if (((unsigned long) p) & 3) {
+        char msg[MESSAGE_SIZE];
+        strncpy(msg, "\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n",
+                MESSAGE_SIZE);
+        msg[MESSAGE_SIZE - 1] = 0;
+        abort_with_fatal_error(msg);
+    }
 
-  *((unsigned long *)p) = size;
-  p += sizeof(char *);
+    fill_with_garbage(p, size);
 
-  return (void *)p;
+    *((unsigned long *) p) = size;
+    p += sizeof(char *);
+
+    return (void *) p;
 }
 
-void *allocate_memory_and_zerofill (unsigned long size, int usage_code) {
-  void *p;
+void *allocate_memory_and_zerofill(unsigned long size, int usage_code)
+{
+    void *p;
 
-  p = allocate_memory (size, usage_code);
-  memset (p, 0, size);
-  return p;
+    p = allocate_memory(size, usage_code);
+    memset(p, 0, size);
+    return p;
 }
 
-void free_memory (void *mem, int usage_code) {
-  unsigned long size;
+void free_memory(void *mem, int usage_code)
+{
+    unsigned long size;
 
-  mem = ((char *)mem)-sizeof(char *);
-  size = *((unsigned long *)mem);
-  fill_with_garbage (mem, size);
+    mem = ((char *) mem) - sizeof(char *);
+    size = *((unsigned long *) mem);
+    fill_with_garbage(mem, size);
 
-  current_agent(memory_for_usage)[STATS_OVERHEAD_MEM_USAGE] -= sizeof(char *);
-  current_agent(memory_for_usage)[usage_code] -= (size - sizeof(char *));
+    current_agent(memory_for_usage)[STATS_OVERHEAD_MEM_USAGE] -= sizeof(char *);
+    current_agent(memory_for_usage)[usage_code] -= (size - sizeof(char *));
 
-  free (mem);
+    free(mem);
 }
-  
+
 /* ====================================================================
 
                           String Utilities
@@ -131,55 +137,61 @@ void free_memory (void *mem, int usage_code) {
    (char *).
 ==================================================================== */
 
-char *make_memory_block_for_string (const char *s) {
-  char *p;
-  unsigned long size;
+char *make_memory_block_for_string(const char *s)
+{
+    char *p;
+    unsigned long size;
 
-  size = strlen(s)+1; /* plus one for trailing null character */
-  p = allocate_memory (size, STRING_MEM_USAGE);
-  strcpy(p,s);
-  return p;
+    size = strlen(s) + 1;       /* plus one for trailing null character */
+    p = allocate_memory(size, STRING_MEM_USAGE);
+    strncpy(p, s, size);
+    p[size - 1] = 0;
+    return p;
 }
 
-void free_memory_block_for_string (char *p) {
-  free_memory (p, STRING_MEM_USAGE);
+void free_memory_block_for_string(char *p)
+{
+    free_memory(p, STRING_MEM_USAGE);
 }
 
 #define INITIAL_GROWABLE_STRING_SIZE 100
 
-growable_string make_blank_growable_string (void) {
-  growable_string gs;
+growable_string make_blank_growable_string(void)
+{
+    growable_string gs;
 
-  gs = allocate_memory (2*sizeof(int *) + INITIAL_GROWABLE_STRING_SIZE,
-                        STRING_MEM_USAGE);
-  memsize_of_growable_string(gs) = INITIAL_GROWABLE_STRING_SIZE;
-  length_of_growable_string(gs) = 0;
-  *(text_of_growable_string(gs)) = 0;
-  return gs;
+    gs = allocate_memory(2 * sizeof(int *) + INITIAL_GROWABLE_STRING_SIZE, STRING_MEM_USAGE);
+    memsize_of_growable_string(gs) = INITIAL_GROWABLE_STRING_SIZE;
+    length_of_growable_string(gs) = 0;
+    *(text_of_growable_string(gs)) = 0;
+    return gs;
 }
 
-void add_to_growable_string (growable_string *gs, char *string_to_add) {
-  int current_length, length_to_add, new_length, new_memsize;
-  growable_string new;
+void add_to_growable_string(growable_string * gs, char *string_to_add)
+{
+    int current_length, length_to_add, new_length, new_memsize;
+    growable_string new;
 
-  current_length = length_of_growable_string(*gs);
-  length_to_add = strlen (string_to_add);
-  new_length = current_length + length_to_add;
-  if (new_length + 1 > memsize_of_growable_string(*gs)) {
-    new_memsize = memsize_of_growable_string(*gs);
-    while (new_length + 1 > new_memsize) new_memsize = new_memsize * 2;
-    new = allocate_memory (new_memsize + 2*sizeof(int *), STRING_MEM_USAGE);
-    memsize_of_growable_string(new) = new_memsize;
-    strcpy (text_of_growable_string(new), text_of_growable_string(*gs));
-    free_memory (*gs, STRING_MEM_USAGE);
-    *gs = new;
-  }
-  strcpy (text_of_growable_string(*gs)+current_length, string_to_add);
-  length_of_growable_string(*gs) = new_length;
+    current_length = length_of_growable_string(*gs);
+    length_to_add = strlen(string_to_add);
+    new_length = current_length + length_to_add;
+    if (new_length + 1 > memsize_of_growable_string(*gs)) {
+        new_memsize = memsize_of_growable_string(*gs);
+        while (new_length + 1 > new_memsize)
+            new_memsize = new_memsize * 2;
+        new = allocate_memory(new_memsize + 2 * sizeof(int *), STRING_MEM_USAGE);
+        memsize_of_growable_string(new) = new_memsize;
+        strcpy(text_of_growable_string(new), text_of_growable_string(*gs));
+        free_memory(*gs, STRING_MEM_USAGE);
+        *gs = new;
+    }
+    strcpy(text_of_growable_string(*gs) + current_length, string_to_add);
+    length_of_growable_string(*gs) = new_length;
 }
 
-void free_growable_string (growable_string gs) {
-  free_memory (gs, STRING_MEM_USAGE);
+void free_growable_string(growable_string gs)
+{
+    free_memory(gs, STRING_MEM_USAGE);
 }
 
 /* ====================================================================
@@ -209,58 +221,65 @@ void free_growable_string (growable_string gs) {
 /* should be 1 for maximum speed, but to avoid a gradual slowdown due
    to a gradually decreasing CPU cache hit ratio, make this a larger 
    number, must be prime */
-#define DEFAULT_BLOCK_SIZE 0x7FF0   /* about 32K bytes per block */
+#define DEFAULT_BLOCK_SIZE 0x7FF0       /* about 32K bytes per block */
 
-void add_block_to_memory_pool (memory_pool *p) {
-  char *new_block;
-  unsigned long size, i, item_num, interleave_factor;
-  char *item, *prev_item;
+void add_block_to_memory_pool(memory_pool * p)
+{
+    char *new_block;
+    unsigned long size, i, item_num, interleave_factor;
+    char *item, *prev_item;
 
-  /* --- allocate a new block for the pool --- */
-  size = p->item_size * p->items_per_block + sizeof(char *);
-  new_block = allocate_memory (size, POOL_MEM_USAGE);
-  *(char * *)new_block = p->first_block;
-  p->first_block = new_block;
-  p->num_blocks++;
+    /* --- allocate a new block for the pool --- */
+    size = p->item_size * p->items_per_block + sizeof(char *);
+    new_block = allocate_memory(size, POOL_MEM_USAGE);
+    *(char **) new_block = p->first_block;
+    p->first_block = new_block;
+    p->num_blocks++;
 
-  /* --- link up the new entries onto the free list --- */
-  interleave_factor = DEFAULT_INTERLEAVE_FACTOR;
-  if (interleave_factor >= (unsigned)(p->items_per_block)) 
-    interleave_factor = 1;
-  
-  item_num = interleave_factor;
-  prev_item = new_block + sizeof(char *);  /* prev_item is item number 0 */
-  for (i=0; i < (unsigned)(p->items_per_block) - 1; i++) {
-    item = new_block + sizeof(char *) + item_num * p->item_size;
-    *(char * *)prev_item = item;
-    prev_item = item;
-    item_num = item_num + interleave_factor;
-    if (item_num >= (unsigned)(p->items_per_block))
-      item_num -= p->items_per_block;
-  }
-  *(char * *)prev_item = p->free_list;
-  p->free_list = new_block + sizeof(char *);
+    /* --- link up the new entries onto the free list --- */
+    interleave_factor = DEFAULT_INTERLEAVE_FACTOR;
+    if (interleave_factor >= (unsigned) (p->items_per_block))
+        interleave_factor = 1;
+
+    item_num = interleave_factor;
+    prev_item = new_block + sizeof(char *);     /* prev_item is item number 0 */
+    for (i = 0; i < (unsigned) (p->items_per_block) - 1; i++) {
+        item = new_block + sizeof(char *) + item_num * p->item_size;
+        *(char **) prev_item = item;
+        prev_item = item;
+        item_num = item_num + interleave_factor;
+        if (item_num >= (unsigned) (p->items_per_block))
+            item_num -= p->items_per_block;
+    }
+    *(char **) prev_item = p->free_list;
+    p->free_list = new_block + sizeof(char *);
 }
 
-void init_memory_pool (memory_pool *p, long item_size, char *name) {
-  if (item_size < sizeof(char *)) item_size = sizeof(char *);
-  while (item_size & 3) item_size++; /* make sure item_size is multiple of 4 */
-  p->item_size = item_size;
-  p->items_per_block = DEFAULT_BLOCK_SIZE / item_size;
-  p->num_blocks = 0;
-  p->first_block = NIL;  
-  p->free_list = NIL;
+void init_memory_pool(memory_pool * p, long item_size, char *name)
+{
+    if (item_size < sizeof(char *))
+        item_size = sizeof(char *);
+    while (item_size & 3)
+        item_size++;            /* make sure item_size is multiple of 4 */
+    p->item_size = item_size;
+    p->items_per_block = DEFAULT_BLOCK_SIZE / item_size;
+    p->num_blocks = 0;
+    p->first_block = NIL;
+    p->free_list = NIL;
 #ifdef MEMORY_POOL_STATS
-  p->used_count = 0;
+    p->used_count = 0;
 #endif
-  p->next = current_agent(memory_pools_in_use);
-  current_agent(memory_pools_in_use) = p;
-  if (strlen(name) > MAX_POOL_NAME_LENGTH) {
-    char msg[2*MAX_POOL_NAME_LENGTH];
-    sprintf(msg,"mem.c: Internal error: memory pool name too long: %s\n",name);
-    abort_with_fatal_error(msg);
-  }
-  strcpy(p->name,name);
+    p->next = current_agent(memory_pools_in_use);
+    current_agent(memory_pools_in_use) = p;
+    if (strlen(name) > MAX_POOL_NAME_LENGTH) {
+        char msg[2 * MAX_POOL_NAME_LENGTH];
+        snprintf(msg, 2 * MAX_POOL_NAME_LENGTH, "mem.c: Internal error: memory pool name too long: %s\n", name);
+        msg[2 * MAX_POOL_NAME_LENGTH - 1] = 0;  /* snprintf doesn't set last char to null if output is truncated */
+        abort_with_fatal_error(msg);
+    }
+    strncpy(p->name, name, MAX_POOL_NAME_LENGTH);
+    p->name[MAX_POOL_NAME_LENGTH - 1] = 0;
+
 }
 
 /* ====================================================================
@@ -293,91 +312,108 @@ void init_memory_pool (memory_pool *p, long item_size, char *name) {
    functions return a list (or dl_list) of the extracted elements.
 ==================================================================== */
 
-cons *destructively_reverse_list (cons *c) {
-  cons *prev, *current, *next;
+cons *destructively_reverse_list(cons * c)
+{
+    cons *prev, *current, *next;
 
-  prev = NIL;
-  current = c;
-  while (current) {
-    next = current->rest;
-    current->rest = prev;
-    prev = current;
-    current = next;
-  }
-  return prev;
+    prev = NIL;
+    current = c;
+    while (current) {
+        next = current->rest;
+        current->rest = prev;
+        prev = current;
+        current = next;
+    }
+    return prev;
 }
 
-bool member_of_list (void *item, list *the_list) {
-  while (the_list) {
-    if (the_list->first == item) return TRUE;
-    the_list = the_list->rest;
-  }
-  return FALSE;
+bool member_of_list(void *item, list * the_list)
+{
+    while (the_list) {
+        if (the_list->first == item)
+            return TRUE;
+        the_list = the_list->rest;
+    }
+    return FALSE;
 }
 
-list *add_if_not_member (void *item, list *old_list) {
-  cons *c;
+list *add_if_not_member(void *item, list * old_list)
+{
+    cons *c;
 
-  for (c=old_list; c!=NIL; c=c->rest)
-    if (c->first==item) return old_list;
-  allocate_cons (&c);
-  c->first = item;
-  c->rest = old_list;
-  return c;
+    for (c = old_list; c != NIL; c = c->rest)
+        if (c->first == item)
+            return old_list;
+    allocate_cons(&c);
+    c->first = item;
+    c->rest = old_list;
+    return c;
 }
 
-void free_list (list *the_list) {
-  cons *c;
+void free_list(list * the_list)
+{
+    cons *c;
 
-  while (the_list) {
-    c = the_list;
-    the_list = the_list->rest;
-    free_cons (c);
-  }
+    while (the_list) {
+        c = the_list;
+        the_list = the_list->rest;
+        free_cons(c);
+    }
 }
 
-list *extract_list_elements (list **header, cons_test_fn f) {
-  cons *first_extracted_element, *tail_of_extracted_elements;
-  cons *c, *prev_c, *next_c;
+list *extract_list_elements(list ** header, cons_test_fn f)
+{
+    cons *first_extracted_element, *tail_of_extracted_elements;
+    cons *c, *prev_c, *next_c;
 
-  first_extracted_element = NIL;
-  tail_of_extracted_elements = NIL;
-  
-  prev_c = NIL;
-  for (c=(*header); c!=NIL; c=next_c) {
-    next_c = c->rest;
-    if (! f(c)) { prev_c = c; continue; }
-    if (prev_c) prev_c->rest = next_c; else *header = next_c;
+    first_extracted_element = NIL;
+    tail_of_extracted_elements = NIL;
+
+    prev_c = NIL;
+    for (c = (*header); c != NIL; c = next_c) {
+        next_c = c->rest;
+        if (!f(c)) {
+            prev_c = c;
+            continue;
+        }
+        if (prev_c)
+            prev_c->rest = next_c;
+        else
+            *header = next_c;
+        if (first_extracted_element)
+            tail_of_extracted_elements->rest = c;
+        else
+            first_extracted_element = c;
+        tail_of_extracted_elements = c;
+    }
     if (first_extracted_element)
-      tail_of_extracted_elements->rest = c;
-    else
-      first_extracted_element = c;
-    tail_of_extracted_elements = c;
-  }
-  if (first_extracted_element) tail_of_extracted_elements->rest = NIL;
-  return first_extracted_element;
+        tail_of_extracted_elements->rest = NIL;
+    return first_extracted_element;
 }
 
-dl_list *extract_dl_list_elements (dl_list **header, dl_cons_test_fn f) {
-  dl_cons *first_extracted_element, *tail_of_extracted_elements;
-  dl_cons *dc, *next_dc;
+dl_list *extract_dl_list_elements(dl_list ** header, dl_cons_test_fn f)
+{
+    dl_cons *first_extracted_element, *tail_of_extracted_elements;
+    dl_cons *dc, *next_dc;
 
-  first_extracted_element = NIL;
-  tail_of_extracted_elements = NIL;
+    first_extracted_element = NIL;
+    tail_of_extracted_elements = NIL;
 
-  for (dc=(*header); dc!=NIL; dc=next_dc) {
-    next_dc = dc->next;
-    if (! f(dc)) continue;
-    remove_from_dll ((*header), dc, next, prev);
+    for (dc = (*header); dc != NIL; dc = next_dc) {
+        next_dc = dc->next;
+        if (!f(dc))
+            continue;
+        remove_from_dll((*header), dc, next, prev);
+        if (first_extracted_element)
+            tail_of_extracted_elements->next = dc;
+        else
+            first_extracted_element = dc;
+        dc->prev = tail_of_extracted_elements;
+        tail_of_extracted_elements = dc;
+    }
     if (first_extracted_element)
-      tail_of_extracted_elements->next = dc;
-    else
-      first_extracted_element = dc;
-    dc->prev = tail_of_extracted_elements;
-    tail_of_extracted_elements = dc;
-  }
-  if (first_extracted_element) tail_of_extracted_elements->next = NIL;
-  return first_extracted_element;
+        tail_of_extracted_elements->next = NIL;
+    return first_extracted_element;
 }
 
 /* ====================================================================
@@ -415,118 +451,120 @@ dl_list *extract_dl_list_elements (dl_list **header, dl_cons_test_fn f) {
 ==================================================================== */
 
 unsigned long masks_for_n_low_order_bits[33] = { 0x00000000,
-  0x00000001, 0x00000003, 0x00000007, 0x0000000F,
-  0x0000001F, 0x0000003F, 0x0000007F, 0x000000FF,
-  0x000001FF, 0x000003FF, 0x000007FF, 0x00000FFF,
-  0x00001FFF, 0x00003FFF, 0x00007FFF, 0x0000FFFF,
-  0x0001FFFF, 0x0003FFFF, 0x0007FFFF, 0x000FFFFF,
-  0x001FFFFF, 0x003FFFFF, 0x007FFFFF, 0x00FFFFFF,
-  0x01FFFFFF, 0x03FFFFFF, 0x07FFFFFF, 0x0FFFFFFF,
-  0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF };
+    0x00000001, 0x00000003, 0x00000007, 0x0000000F,
+    0x0000001F, 0x0000003F, 0x0000007F, 0x000000FF,
+    0x000001FF, 0x000003FF, 0x000007FF, 0x00000FFF,
+    0x00001FFF, 0x00003FFF, 0x00007FFF, 0x0000FFFF,
+    0x0001FFFF, 0x0003FFFF, 0x0007FFFF, 0x000FFFFF,
+    0x001FFFFF, 0x003FFFFF, 0x007FFFFF, 0x00FFFFFF,
+    0x01FFFFFF, 0x03FFFFFF, 0x07FFFFFF, 0x0FFFFFFF,
+    0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF
+};
 
-struct hash_table_struct *make_hash_table (short minimum_log2size,
-                                           hash_function h) {
-  hash_table *ht;
+struct hash_table_struct *make_hash_table(short minimum_log2size, hash_function h)
+{
+    hash_table *ht;
 
-  ht = allocate_memory (sizeof(hash_table),
-                        HASH_TABLE_MEM_USAGE);
-  ht->count = 0;
-  if (minimum_log2size < 1) minimum_log2size = 1;
-  ht->size = (((unsigned long)1) << minimum_log2size);
-  ht->log2size = minimum_log2size;
-  ht->minimum_log2size = minimum_log2size;
-  ht->buckets = allocate_memory_and_zerofill (ht->size * sizeof(char *),
-                                              HASH_TABLE_MEM_USAGE);
-  ht->h = h;
-  return ht;
+    ht = allocate_memory(sizeof(hash_table), HASH_TABLE_MEM_USAGE);
+    ht->count = 0;
+    if (minimum_log2size < 1)
+        minimum_log2size = 1;
+    ht->size = (((unsigned long) 1) << minimum_log2size);
+    ht->log2size = minimum_log2size;
+    ht->minimum_log2size = minimum_log2size;
+    ht->buckets = allocate_memory_and_zerofill(ht->size * sizeof(char *), HASH_TABLE_MEM_USAGE);
+    ht->h = h;
+    return ht;
 }
 
-void resize_hash_table (hash_table *ht, short new_log2size) {
-  unsigned long i;
-  bucket_array *new_buckets;
-  item_in_hash_table *item, *next;
-  unsigned long hash_value;
-  unsigned long new_size;
+void resize_hash_table(hash_table * ht, short new_log2size)
+{
+    unsigned long i;
+    bucket_array *new_buckets;
+    item_in_hash_table *item, *next;
+    unsigned long hash_value;
+    unsigned long new_size;
 
-  new_size = (((unsigned long)1) << new_log2size);
-  new_buckets =
-    (bucket_array *) allocate_memory_and_zerofill (new_size*sizeof(char *),
-                                                   HASH_TABLE_MEM_USAGE);
+    new_size = (((unsigned long) 1) << new_log2size);
+    new_buckets = (bucket_array *) allocate_memory_and_zerofill(new_size * sizeof(char *), HASH_TABLE_MEM_USAGE);
 
-  for (i=0; i < ht->size; i++) {
-    for (item = *(ht->buckets + i); item!=NIL; item=next) {
-      next = item->next;
-      /* --- insert item into new buckets --- */
-      hash_value = (*(ht->h))(item,new_log2size);
-      item->next = *(new_buckets+hash_value);
-      *(new_buckets+hash_value) = item;
+    for (i = 0; i < ht->size; i++) {
+        for (item = *(ht->buckets + i); item != NIL; item = next) {
+            next = item->next;
+            /* --- insert item into new buckets --- */
+            hash_value = (*(ht->h)) (item, new_log2size);
+            item->next = *(new_buckets + hash_value);
+            *(new_buckets + hash_value) = item;
+        }
     }
-  }
 
-  free_memory (ht->buckets, HASH_TABLE_MEM_USAGE);
-  ht->buckets = new_buckets;
-  ht->size = new_size;
-  ht->log2size = new_log2size; 
+    free_memory(ht->buckets, HASH_TABLE_MEM_USAGE);
+    ht->buckets = new_buckets;
+    ht->size = new_size;
+    ht->log2size = new_log2size;
 }
 
-void remove_from_hash_table (struct hash_table_struct *ht, void *item) {
-  unsigned long hash_value;
-  item_in_hash_table *this_one, *prev;
+void remove_from_hash_table(struct hash_table_struct *ht, void *item)
+{
+    unsigned long hash_value;
+    item_in_hash_table *this_one, *prev;
 
-  this_one = item;
-  hash_value = (*(ht->h))(item, ht->log2size);
-  if (*(ht->buckets+hash_value)==this_one) {
-    /* --- hs is the first one on the list for the bucket --- */
-    *(ht->buckets+hash_value) = this_one->next;
-  } else {
-    /* --- hs is not the first one on the list, so find its predecessor --- */
-    prev = *(ht->buckets+hash_value);
-    while (prev->next != this_one) prev=prev->next;
-    prev->next = this_one->next;
-  }
-  this_one->next = NIL;  /* just for safety */
-  /* --- update count and possibly resize the table --- */
-  ht->count--;
-  if ((ht->count < ht->size/2) && (ht->log2size > ht->minimum_log2size))
-    resize_hash_table (ht,(short)(ht->log2size-1));
+    this_one = item;
+    hash_value = (*(ht->h)) (item, ht->log2size);
+    if (*(ht->buckets + hash_value) == this_one) {
+        /* --- hs is the first one on the list for the bucket --- */
+        *(ht->buckets + hash_value) = this_one->next;
+    } else {
+        /* --- hs is not the first one on the list, so find its predecessor --- */
+        prev = *(ht->buckets + hash_value);
+        while (prev->next != this_one)
+            prev = prev->next;
+        prev->next = this_one->next;
+    }
+    this_one->next = NIL;       /* just for safety */
+    /* --- update count and possibly resize the table --- */
+    ht->count--;
+    if ((ht->count < ht->size / 2) && (ht->log2size > ht->minimum_log2size))
+        resize_hash_table(ht, (short) (ht->log2size - 1));
 }
 
-void add_to_hash_table (struct hash_table_struct *ht, void *item) {
-  unsigned long hash_value;
-  item_in_hash_table *this_one;
+void add_to_hash_table(struct hash_table_struct *ht, void *item)
+{
+    unsigned long hash_value;
+    item_in_hash_table *this_one;
 
-  this_one = item;
-  ht->count++;
-  if (ht->count >= ht->size*2)
-    resize_hash_table (ht, (short)(ht->log2size+1));
-  hash_value = (*(ht->h))(item, ht->log2size);
-  this_one->next = *(ht->buckets+hash_value);
-  *(ht->buckets+hash_value) = this_one;
+    this_one = item;
+    ht->count++;
+    if (ht->count >= ht->size * 2)
+        resize_hash_table(ht, (short) (ht->log2size + 1));
+    hash_value = (*(ht->h)) (item, ht->log2size);
+    this_one->next = *(ht->buckets + hash_value);
+    *(ht->buckets + hash_value) = this_one;
 }
 
-void do_for_all_items_in_hash_table (struct hash_table_struct *ht,
-                                     hash_table_callback_fn f) {
-  unsigned long hash_value;
-  item_in_hash_table *item;
+void do_for_all_items_in_hash_table(struct hash_table_struct *ht, hash_table_callback_fn f)
+{
+    unsigned long hash_value;
+    item_in_hash_table *item;
 
-  for (hash_value=0; hash_value < ht->size; hash_value++) {
+    for (hash_value = 0; hash_value < ht->size; hash_value++) {
+        item = (item_in_hash_table *) (*(ht->buckets + hash_value));
+        for (; item != NIL; item = item->next)
+            if ((*f) (item))
+                return;
+    }
+}
+
+void do_for_all_items_in_hash_bucket(struct hash_table_struct *ht, hash_table_callback_fn f, unsigned long hash_value)
+{
+    item_in_hash_table *item;
+
+    hash_value = hash_value & masks_for_n_low_order_bits[ht->log2size];
     item = (item_in_hash_table *) (*(ht->buckets + hash_value));
-    for ( ; item!=NIL; item = item->next)
-      if ((*f)(item)) return;
-  }
+    for (; item != NIL; item = item->next)
+        if ((*f) (item))
+            return;
 }
-
-void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
-                                      hash_table_callback_fn f,
-                                      unsigned long hash_value) {
-  item_in_hash_table *item;
-
-  hash_value = hash_value & masks_for_n_low_order_bits[ht->log2size];
-  item = (item_in_hash_table *) (*(ht->buckets + hash_value));
-  for ( ; item!=NIL; item = item->next)
-    if ((*f)(item)) return;
-}
-
 
 /* ====================================================================
 
@@ -536,10 +574,12 @@ void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
    is used.
 ==================================================================== */
 
-void init_memory_utilities (void) {
-  int i;
-  
-  init_memory_pool (&current_agent(cons_cell_pool), sizeof(cons), "cons cell");
-  init_memory_pool (&current_agent(dl_cons_pool), sizeof(dl_cons), "dl cons");
-  for (i=0; i<NUM_MEM_USAGE_CODES; i++) current_agent(memory_for_usage)[i] = 0;
+void init_memory_utilities(void)
+{
+    int i;
+
+    init_memory_pool(&current_agent(cons_cell_pool), sizeof(cons), "cons cell");
+    init_memory_pool(&current_agent(dl_cons_pool), sizeof(dl_cons), "dl cons");
+    for (i = 0; i < NUM_MEM_USAGE_CODES; i++)
+        current_agent(memory_for_usage)[i] = 0;
 }

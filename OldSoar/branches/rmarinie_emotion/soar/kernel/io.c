@@ -55,7 +55,6 @@
  * =======================================================================
  */
 
-
 /* ==================================================================
                          I/O Code for Soar 6
 
@@ -63,19 +62,18 @@
 
    See comments in soarkernel.h for more information.
    ================================================================== */
- 
+
+#include "soarkernel.h"
 #include <ctype.h>
 #include <errno.h>
-#include "soarkernel.h"
 #include "soarapiUtils.h"
-#include "emotion.h" /*RPM*/
 
-#ifdef _AIX          /* excludeFromBuildInfo */
+#ifdef _AIX                     /* excludeFromBuildInfo */
 #include <sys/select.h>
 #endif
 
-extern void gds_invalid_so_remove_goal( wme *w );
-void calculate_output_link_tc_info (output_link *ol);
+extern void gds_invalid_so_remove_goal(wme * w);
+void calculate_output_link_tc_info(output_link * ol);
 
 /* ====================================================================
                             Input Routines
@@ -99,204 +97,205 @@ void calculate_output_link_tc_info (output_link *ol);
    do some error checking, but they're nowhere near bullet-proof.
 ==================================================================== */
 
-Symbol *get_new_io_identifier (char first_letter) {
+Symbol *get_new_io_identifier(char first_letter)
+{
 
-  return make_new_identifier (first_letter, TOP_GOAL_LEVEL);
+    return make_new_identifier(first_letter, TOP_GOAL_LEVEL);
 }
 
-Symbol *get_io_sym_constant (char *name) {
-  return make_sym_constant (name);
+Symbol *get_io_sym_constant(char *name)
+{
+    return make_sym_constant(name);
 }
 
-Symbol *get_io_int_constant (long value) {
-  return make_int_constant (value);
+Symbol *get_io_int_constant(long value)
+{
+    return make_int_constant(value);
 }
 
-Symbol *get_io_float_constant (float value) {
-  return make_float_constant (value);
+Symbol *get_io_float_constant(float value)
+{
+    return make_float_constant(value);
 }
 
-void release_io_symbol (Symbol *sym) {
-  symbol_remove_ref (sym);
+void release_io_symbol(Symbol * sym)
+{
+    symbol_remove_ref(sym);
 }
 
-wme *add_input_wme (Symbol *id, Symbol *attr, Symbol *value) {
-  wme *w;
+wme *add_input_wme(Symbol * id, Symbol * attr, Symbol * value)
+{
+    wme *w;
 
-  /* --- a little bit of error checking --- */
-  if (! (id && attr && value)) {
-    print ("Error: an input routine gave a NULL argument to add_input_wme.\n");
-    return NIL;
-  }
-  /* --- go ahead and add the wme --- */
-  w = make_wme (id, attr, value, FALSE);
-  insert_at_head_of_dll (id->id.input_wmes, w, next, prev);
-  add_wme_to_wm (w);
-
-  /* SW NOTE:
-   * In an ideal world, we could capture input wmes here as well as
-   * in soar_cAddWme.  However the problem is that based on the arguments
-   * to this function it is impossible to determine if the wme which is
-   * being added references new, or just previously defined symbols. 
-   * As a result, we cannot capture input wmes asserted using this function
-   * with any hope of accurately replaying them in the future.
-   */
-
-
-
-  return w;
-}
-
-bool remove_input_wme (wme *w) {
-  wme *temp;
-
-  /* --- a little bit of error checking --- */
-  if (!w) {
-    print ("Error: an input routine called remove_input_wme on a NULL wme.\n");
-    return FALSE;
-  }
-  for (temp=w->id->id.input_wmes; temp!=NIL; temp=temp->next)
-    if (temp==w) break;
-  if (!temp) {
-    print ("Error: an input routine called remove_input_wme on a wme that\n");
-    print ("isn't one of the input wmes currently in working memory.\n");
-    return FALSE;
-  }
-
-  /* SW NOTE:
-   * Since we cannot capture wmes asserted during add_input_wme,
-   * we will not capture wmes removed during this function call.
-   */
-
-  /* Note: for efficiency, it might be better to use a hash table for the
-     above test, rather than scanning the linked list.  We could have one
-     global hash table for all the input wmes in the system. */
-  /* --- go ahead and remove the wme --- */
-  remove_from_dll (w->id->id.input_wmes, w, next, prev);
-  /* REW: begin 09.15.96 */
-#ifndef SOAR_8_ONLY
-  if (current_agent(operand2_mode)){
-#endif
-    if (w->gds) {
-      if (w->gds->goal != NIL){
-	if (current_agent(soar_verbose_flag))
-	  print("\nremove_input_wme: Removing goal %d because element in GDS changed.\n", w->gds->goal->id.level);
-	gds_invalid_so_remove_goal(w);
-	/* NOTE: the call to remove_wme_from_wm will take care
-	   of checking if GDS should be removed */
-      }
+    /* --- a little bit of error checking --- */
+    if (!(id && attr && value)) {
+        print("Error: an input routine gave a NULL argument to add_input_wme.\n");
+        return NIL;
     }
-#ifndef SOAR_8_ONLY
-  }
-#endif
-  
-  /* REW: end   09.15.96 */
-  
-  remove_wme_from_wm (w);
+    /* --- go ahead and add the wme --- */
+    w = make_wme(id, attr, value, FALSE);
+    insert_at_head_of_dll(id->id.input_wmes, w, next, prev);
+    add_wme_to_wm(w);
 
-  return TRUE;
+    /* SW NOTE:
+     * In an ideal world, we could capture input wmes here as well as
+     * in soar_cAddWme.  However the problem is that based on the arguments
+     * to this function it is impossible to determine if the wme which is
+     * being added references new, or just previously defined symbols. 
+     * As a result, we cannot capture input wmes asserted using this function
+     * with any hope of accurately replaying them in the future.
+     */
+
+    return w;
+}
+
+bool remove_input_wme(wme * w)
+{
+    wme *temp;
+
+    /* --- a little bit of error checking --- */
+    if (!w) {
+        print("Error: an input routine called remove_input_wme on a NULL wme.\n");
+        return FALSE;
+    }
+    for (temp = w->id->id.input_wmes; temp != NIL; temp = temp->next)
+        if (temp == w)
+            break;
+    if (!temp) {
+        print("Error: an input routine called remove_input_wme on a wme that\n");
+        print("isn't one of the input wmes currently in working memory.\n");
+        return FALSE;
+    }
+
+    /* SW NOTE:
+     * Since we cannot capture wmes asserted during add_input_wme,
+     * we will not capture wmes removed during this function call.
+     */
+
+    /* Note: for efficiency, it might be better to use a hash table for the
+       above test, rather than scanning the linked list.  We could have one
+       global hash table for all the input wmes in the system. */
+    /* --- go ahead and remove the wme --- */
+    remove_from_dll(w->id->id.input_wmes, w, next, prev);
+    /* REW: begin 09.15.96 */
+#ifndef SOAR_8_ONLY
+    if (current_agent(operand2_mode)) {
+#endif
+        if (w->gds) {
+            if (w->gds->goal != NIL) {
+                if (current_agent(soar_verbose_flag))
+                    print("\nremove_input_wme: Removing goal %d because element in GDS changed.\n",
+                          w->gds->goal->id.level);
+                gds_invalid_so_remove_goal(w);
+                /* NOTE: the call to remove_wme_from_wm will take care
+                   of checking if GDS should be removed */
+            }
+        }
+#ifndef SOAR_8_ONLY
+    }
+#endif
+
+    /* REW: end   09.15.96 */
+
+    remove_wme_from_wm(w);
+
+    return TRUE;
 }
 
 #ifndef NO_IO_CALLBACKS
 
-void do_input_cycle (void) {
-  wme *w;
+void do_input_cycle(void)
+{
+    wme *w;
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
-  if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM])
-    print ("\n--- Input Phase --- \n");
+    if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM])
+        print("\n--- Input Phase --- \n");
 #endif
 
-  if (current_agent(prev_top_state) && (!current_agent(top_state))) {
-    /* --- top state was just removed --- */
-    release_io_symbol (current_agent(io_header));
-    release_io_symbol (current_agent(io_header_input));
-    release_io_symbol (current_agent(io_header_output));
+    if (current_agent(prev_top_state) && (!current_agent(top_state))) {
+        /* --- top state was just removed --- */
+        release_io_symbol(current_agent(io_header));
+        release_io_symbol(current_agent(io_header_input));
+        release_io_symbol(current_agent(io_header_output));
 
-	release_io_symbol (current_agent(io_header_emotion)); /*RPM*/
+        release_io_symbol (current_agent(io_header_emotion)); /* RPM emotion */
 
-    current_agent(io_header) = NIL;       /* RBD added 3/25/95 */
-    current_agent(io_header_input) = NIL;       /* RBD added 3/25/95 */
-    current_agent(io_header_output) = NIL;       /* KJC added 3/3/99 */
-    current_agent(io_header_link) = NIL;  /* KJC added 3/3/99 */
+        current_agent(io_header) = NIL; /* RBD added 3/25/95 */
+        current_agent(io_header_input) = NIL;   /* RBD added 3/25/95 */
+        current_agent(io_header_output) = NIL;  /* KJC added 3/3/99 */
+        current_agent(io_header_link) = NIL;    /* KJC added 3/3/99 */
 
-	current_agent(io_header_emotion) = NIL; /*RPM*/
+        current_agent(io_header_emotion) = NIL; /* RPM emotion */
 
-    emotion_destructor(); /*RPM*/
+        emotion_destructor(); /* RPM emotion */
 
-    soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, 
-			 (soar_call_data) TOP_STATE_JUST_REMOVED);
-  } else if ((!current_agent(prev_top_state)) && current_agent(top_state)) {
-    /* --- top state was just created --- */
-    /* Create io structure on top state. */
-    current_agent(io_header) = get_new_io_identifier ('I');
-    current_agent(io_header_link) = add_input_wme (current_agent(top_state),
-                                         current_agent(io_symbol),
-                                         current_agent(io_header));
-    current_agent(io_header_input) = get_new_io_identifier ('I');
-    current_agent(io_header_output) = get_new_io_identifier ('I');
-    
-	current_agent(io_header_emotion) = get_new_io_identifier('I'); /*RPM*/
+        soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, (soar_call_data) TOP_STATE_JUST_REMOVED);
+    } else if ((!current_agent(prev_top_state)) && current_agent(top_state)) {
+        /* --- top state was just created --- */
+        /* Create io structure on top state. */
+        current_agent(io_header) = get_new_io_identifier('I');
+        current_agent(io_header_link) = add_input_wme(current_agent(top_state),
+                                                      current_agent(io_symbol), current_agent(io_header));
+        current_agent(io_header_input) = get_new_io_identifier('I');
+        current_agent(io_header_output) = get_new_io_identifier('I');
 
-	w = add_input_wme (current_agent(io_header),
-		       make_sym_constant("input-link"),
-		       current_agent(io_header_input));
+        current_agent(io_header_emotion) = get_new_io_identifier('I'); /* RPM emotion */
 
-    w = add_input_wme (current_agent(io_header),
-		       make_sym_constant("output-link"),
-		       current_agent(io_header_output));
+        w = add_input_wme(current_agent(io_header), make_sym_constant("input-link"), current_agent(io_header_input));
 
-	w = add_input_wme (current_agent(io_header), /*RPM*/
+        w = add_input_wme(current_agent(io_header), make_sym_constant("output-link"), current_agent(io_header_output));
+
+        w = add_input_wme (current_agent(io_header), /* RPM emotion */
                 make_sym_constant("emotion-link"),
                 current_agent(io_header_emotion));
 
-    /* --- add top state io link before calling input phase callback so
-     * --- code can use "wmem" command.
-     */
+        /* --- add top state io link before calling input phase callback so
+         * --- code can use "wmem" command.
+         */
+        do_buffered_wm_and_ownership_changes();
+
+        soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, (soar_call_data) TOP_STATE_JUST_CREATED);
+    }
+
+    /* --- if there is a top state, do the normal input cycle --- */
+
+    if (current_agent(top_state)) {
+        soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, (soar_call_data) NORMAL_INPUT_CYCLE);
+    }
+
+    emotion_update(); /* RPM emotion */
+
+    /* --- do any WM resulting changes --- */
     do_buffered_wm_and_ownership_changes();
 
-    soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, 
-			 (soar_call_data) TOP_STATE_JUST_CREATED);
-  }
+    /* --- save current top state for next time --- */
+    current_agent(prev_top_state) = current_agent(top_state);
 
-  /* --- if there is a top state, do the normal input cycle --- */
-
-  if (current_agent(top_state)) {
-    soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, 
-			 (soar_call_data) NORMAL_INPUT_CYCLE);
-  }
-
-  emotion_update(); /*RPM*/
-
-  /* --- do any WM resulting changes --- */
-  do_buffered_wm_and_ownership_changes();
-  
-  /* --- save current top state for next time --- */
-  current_agent(prev_top_state) = current_agent(top_state);
-
-  /* --- reset the output-link status flag to FALSE
-   * --- when running til output, only want to stop if agent
-   * --- does add-wme to output.  don't stop if add-wme done
-   * --- during input cycle (eg simulator updates sensor status)
-   *     KJC 11/23/98
-   */
-  current_agent(output_link_changed) = FALSE;
+    /* --- reset the output-link status flag to FALSE
+     * --- when running til output, only want to stop if agent
+     * --- does add-wme to output.  don't stop if add-wme done
+     * --- during input cycle (eg simulator updates sensor status)
+     *     KJC 11/23/98
+     */
+    current_agent(output_link_changed) = FALSE;
 }
 
 #else
-void do_input_cycle(void) {
+void do_input_cycle(void)
+{
 
-  /*
-    I don't really think we need to do this,
-    so I'll try not using it.
-  */
-  /* do_buffered_wm_and_ownership_changes(); */
-  current_agent(prev_top_state) = current_agent(top_state);
-  current_agent(output_link_changed) = FALSE;
+    /*
+       I don't really think we need to do this,
+       so I'll try not using it.
+     */
+    /* do_buffered_wm_and_ownership_changes(); */
+    current_agent(prev_top_state) = current_agent(top_state);
+    current_agent(output_link_changed) = FALSE;
 
 }
 
-#endif /* NO_IO_CALLBACKS */
+#endif                          /* NO_IO_CALLBACKS */
 
 /* ====================================================================
                           Output Routines
@@ -325,14 +324,14 @@ void do_input_cycle(void) {
 ==================================================================== */
 
 /* --- output link statuses --- */
-#define NEW_OL_STATUS 0                    /* just created it */
-#define UNCHANGED_OL_STATUS 1              /* normal status */
-#define MODIFIED_BUT_SAME_TC_OL_STATUS 2   /* some value in its TC has been
-                                              modified, but the ids in its TC
-                                              are the same */
-#define MODIFIED_OL_STATUS 3               /* the set of ids in its TC has
-                                              changed */
-#define REMOVED_OL_STATUS 4                /* link has just been removed */
+#define NEW_OL_STATUS 0         /* just created it */
+#define UNCHANGED_OL_STATUS 1   /* normal status */
+#define MODIFIED_BUT_SAME_TC_OL_STATUS 2        /* some value in its TC has been
+                                                   modified, but the ids in its TC
+                                                   are the same */
+#define MODIFIED_OL_STATUS 3    /* the set of ids in its TC has
+                                   changed */
+#define REMOVED_OL_STATUS 4     /* link has just been removed */
 
 /* --------------------------------------------------------------------
                    Output Link Status Updates on WM Changes
@@ -360,116 +359,121 @@ void do_input_cycle(void) {
    The TC info doesn't get updated until do_output_cycle() is called.
 -------------------------------------------------------------------- */
 
-void update_for_top_state_wme_addition (wme *w) {
-  output_link *ol;
-  soar_callback *cb;
-  char link_name[1000];
+#define LINK_NAME_SIZE 1024
+void update_for_top_state_wme_addition(wme * w)
+{
+    output_link *ol;
+    soar_callback *cb;
+    char link_name[LINK_NAME_SIZE];
 
-  /* --- check whether the attribute is an output function --- */
-  symbol_to_string(w->attr, FALSE, link_name);
+    /* --- check whether the attribute is an output function --- */
+    symbol_to_string(w->attr, FALSE, link_name, LINK_NAME_SIZE);
 
-  cb = soar_exists_callback_id(soar_agent, OUTPUT_PHASE_CALLBACK, link_name);
+    cb = soar_exists_callback_id(soar_agent, OUTPUT_PHASE_CALLBACK, link_name);
 
-  if (!cb) return;
-  
-  /* --- create new output link structure --- */
-  allocate_with_pool (&current_agent(output_link_pool),  &ol);
-  insert_at_head_of_dll (current_agent(existing_output_links), ol, next, prev);
+    if (!cb)
+        return;
 
-  ol->status = NEW_OL_STATUS;
-  ol->link_wme = w;
-  wme_add_ref (w);
-  ol->ids_in_tc = NIL;
-  ol->cb = cb;
-  /* --- make wme point to the structure --- */
-  w->output_link = ol;
+    /* --- create new output link structure --- */
+    allocate_with_pool(&current_agent(output_link_pool), &ol);
+    insert_at_head_of_dll(current_agent(existing_output_links), ol, next, prev);
 
-	/* SW 07 10 2003
-		 previously, this wouldn't be done until the first OUTPUT phase.
-		 However, if we add an output command in the 1st decision cycle,
-		 Soar seems to ignore it.
+    ol->status = NEW_OL_STATUS;
+    ol->link_wme = w;
+    wme_add_ref(w);
+    ol->ids_in_tc = NIL;
+    ol->cb = cb;
+    /* --- make wme point to the structure --- */
+    w->output_link = ol;
 
-		 There may be two things going on, the first having to do with the tc 
-		 calculation, which may get done too late, in such a way that the
-		 initial calculation includes the command.  The other thing appears
-		 to be that some data structures are not initialized until the first 
-		 output phase.  Namely, id->associated_output_links does not seem
-		 reflect the current output links until the first output-phase.
+    /* SW 07 10 2003
+       previously, this wouldn't be done until the first OUTPUT phase.
+       However, if we add an output command in the 1st decision cycle,
+       Soar seems to ignore it.
 
-		 To get past these issues, we fake a transitive closure calculation
-          with the knowledge that the only thing on the output link at this
-         point is the output-link identifier itself.  This way, we capture
-         a snapshot of the empty output link, so Soar can detect any changes
-         that might occur before the first output_phase. */
-		 
+       There may be two things going on, the first having to do with the tc 
+       calculation, which may get done too late, in such a way that the
+       initial calculation includes the command.  The other thing appears
+       to be that some data structures are not initialized until the first 
+       output phase.  Namely, id->associated_output_links does not seem
+       reflect the current output links until the first output-phase.
 
-  current_agent(output_link_tc_num) = get_new_tc_number();
-  ol->link_wme->value->id.tc_num = current_agent(output_link_tc_num);
-  current_agent(output_link_for_tc) = ol;
-  /* --- add output_link to id's list --- */
-  push (current_agent(output_link_for_tc), ol->link_wme->value->id.associated_output_links);
+       To get past these issues, we fake a transitive closure calculation
+       with the knowledge that the only thing on the output link at this
+       point is the output-link identifier itself.  This way, we capture
+       a snapshot of the empty output link, so Soar can detect any changes
+       that might occur before the first output_phase. */
+
+    current_agent(output_link_tc_num) = get_new_tc_number();
+    ol->link_wme->value->id.tc_num = current_agent(output_link_tc_num);
+    current_agent(output_link_for_tc) = ol;
+    /* --- add output_link to id's list --- */
+    push(current_agent(output_link_for_tc), ol->link_wme->value->id.associated_output_links);
 
 }
 
-void update_for_top_state_wme_removal (wme *w) {
-  if (! w->output_link) return;
-  w->output_link->status = REMOVED_OL_STATUS;
+void update_for_top_state_wme_removal(wme * w)
+{
+    if (!w->output_link)
+        return;
+    w->output_link->status = REMOVED_OL_STATUS;
 }
 
-void update_for_io_wme_change (wme *w) {
-  cons *c;
-  output_link *ol;
-  
-  for (c=w->id->id.associated_output_links; c!=NIL; c=c->rest) {
-    ol = c->first;
-    if (w->value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
-      /* --- mark ol "modified" --- */
-      if ((ol->status==UNCHANGED_OL_STATUS) ||
-          (ol->status==MODIFIED_BUT_SAME_TC_OL_STATUS))
-        ol->status = MODIFIED_OL_STATUS;
-    } else {
-      /* --- mark ol "modified but same tc" --- */
-      if (ol->status==UNCHANGED_OL_STATUS)
-        ol->status = MODIFIED_BUT_SAME_TC_OL_STATUS;
+void update_for_io_wme_change(wme * w)
+{
+    cons *c;
+    output_link *ol;
+
+    for (c = w->id->id.associated_output_links; c != NIL; c = c->rest) {
+        ol = c->first;
+        if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) {
+            /* --- mark ol "modified" --- */
+            if ((ol->status == UNCHANGED_OL_STATUS) || (ol->status == MODIFIED_BUT_SAME_TC_OL_STATUS))
+                ol->status = MODIFIED_OL_STATUS;
+        } else {
+            /* --- mark ol "modified but same tc" --- */
+            if (ol->status == UNCHANGED_OL_STATUS)
+                ol->status = MODIFIED_BUT_SAME_TC_OL_STATUS;
+        }
     }
-  }
 }
 
-void inform_output_module_of_wm_changes (list *wmes_being_added,
-                                         list *wmes_being_removed) {
-  cons *c;
-  wme *w;
+void inform_output_module_of_wm_changes(list * wmes_being_added, list * wmes_being_removed)
+{
+    cons *c;
+    wme *w;
 
+    /* if wmes are added, set flag so can stop when running til output */
+    for (c = wmes_being_added; c != NIL; c = c->rest) {
+        w = c->first;
 
-  /* if wmes are added, set flag so can stop when running til output */
-  for (c=wmes_being_added; c!=NIL; c=c->rest) {
-    w = c->first;
-
-    if (w->id==current_agent(io_header)) {
-			update_for_top_state_wme_addition (w);			
-			current_agent(output_link_changed) = TRUE; /* KJC 11/23/98 */
-		}
-    if (w->id->id.associated_output_links) {
-			update_for_io_wme_change (w);			
-			current_agent(output_link_changed) = TRUE; /* KJC 11/23/98 */
-		} 
+        if (w->id == current_agent(io_header)) {
+            update_for_top_state_wme_addition(w);
+            current_agent(output_link_changed) = TRUE;  /* KJC 11/23/98 */
+        }
+        if (w->id->id.associated_output_links) {
+            update_for_io_wme_change(w);
+            current_agent(output_link_changed) = TRUE;  /* KJC 11/23/98 */
+        }
 #if DEBUG_RTO
-		else {
-			char id[100];
-			
-			symbol_to_string( w->id, FALSE, id );
-			if ( !strcmp( id, "I3" ) ) {
-				print( "--> Added to I3, but doesn't register as an OL change!" );
-			}		
-		}
+        else {
+            char id[100];
+
+            symbol_to_string(w->id, FALSE, id);
+            if (!strcmp(id, "I3")) {
+                print("--> Added to I3, but doesn't register as an OL change!");
+            }
+        }
 #endif
 
-  }
-  for (c=wmes_being_removed; c!=NIL; c=c->rest) {
-    w = c->first;
-    if (w->id==current_agent(io_header)) update_for_top_state_wme_removal (w);
-    if (w->id->id.associated_output_links) update_for_io_wme_change (w);
-  }
+    }
+    for (c = wmes_being_removed; c != NIL; c = c->rest) {
+        w = c->first;
+        if (w->id == current_agent(io_header))
+            update_for_top_state_wme_removal(w);
+        if (w->id->id.associated_output_links)
+            update_for_io_wme_change(w);
+    }
 }
 
 /* --------------------------------------------------------------------
@@ -484,72 +488,78 @@ void inform_output_module_of_wm_changes (list *wmes_being_added,
    the main routines here.
 -------------------------------------------------------------------- */
 
-void remove_output_link_tc_info (output_link *ol) {
-  cons *c, *prev_c;
-  Symbol *id;
+void remove_output_link_tc_info(output_link * ol)
+{
+    cons *c, *prev_c;
+    Symbol *id;
 
+    while (ol->ids_in_tc) {     /* for each id in the old TC... */
+        c = ol->ids_in_tc;
+        ol->ids_in_tc = c->rest;
+        id = c->first;
+        free_cons(c);
 
-  while (ol->ids_in_tc) {  /* for each id in the old TC... */
-    c = ol->ids_in_tc;
-    ol->ids_in_tc = c->rest;
-    id = c->first;
-    free_cons (c);
-
-    /* --- remove "ol" from the list of associated_output_links(id) --- */
-    prev_c = NIL;
-    for (c=id->id.associated_output_links; c!=NIL; prev_c=c, c=c->rest)
-      if (c->first == ol) break;
-    if (!c) {
-      char msg[128];
-      strcpy(msg,"io.c: Internal error: can't find output link in id's list\n");
-      abort_with_fatal_error(msg);
+        /* --- remove "ol" from the list of associated_output_links(id) --- */
+        prev_c = NIL;
+        for (c = id->id.associated_output_links; c != NIL; prev_c = c, c = c->rest)
+            if (c->first == ol)
+                break;
+        if (!c) {
+            char msg[MESSAGE_SIZE];
+            strncpy(msg, "io.c: Internal error: can't find output link in id's list\n", MESSAGE_SIZE);
+            msg[MESSAGE_SIZE - 1] = 0;
+            abort_with_fatal_error(msg);
+        }
+        if (prev_c)
+            prev_c->rest = c->rest;
+        else
+            id->id.associated_output_links = c->rest;
+        free_cons(c);
+        symbol_remove_ref(id);
     }
-    if (prev_c) prev_c->rest = c->rest;
-      else id->id.associated_output_links = c->rest;
-    free_cons (c);
-    symbol_remove_ref (id);
-  }
 }
 
+void add_id_to_output_link_tc(Symbol * id)
+{
+    slot *s;
+    wme *w;
 
-void add_id_to_output_link_tc (Symbol *id) {
-  slot *s;
-  wme *w;
-  
-  /* --- if id is already in the TC, exit --- */
-  if (id->id.tc_num == current_agent(output_link_tc_num)) return;
-  id->id.tc_num = current_agent(output_link_tc_num);
-  
-  
-  /* --- add id to output_link's list --- */
-  push (id, current_agent(output_link_for_tc)->ids_in_tc);
-  symbol_add_ref (id);  /* make sure the id doesn't get deallocated before we
-                           have a chance to free the cons cell we just added */
-  
-  /* --- add output_link to id's list --- */
-  push (current_agent(output_link_for_tc), id->id.associated_output_links);
+    /* --- if id is already in the TC, exit --- */
+    if (id->id.tc_num == current_agent(output_link_tc_num))
+        return;
+    id->id.tc_num = current_agent(output_link_tc_num);
 
-  /* --- do TC through working memory --- */
-  /* --- scan through all wmes for all slots for this id --- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
-    if (w->value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-      add_id_to_output_link_tc (w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next)
-    for (w=s->wmes; w!=NIL; w=w->next)
-      if (w->value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-        add_id_to_output_link_tc (w->value);
-  /* don't need to check impasse_wmes, because we couldn't have a pointer
-     to a goal or impasse identifier */
+    /* --- add id to output_link's list --- */
+    push(id, current_agent(output_link_for_tc)->ids_in_tc);
+    symbol_add_ref(id);         /* make sure the id doesn't get deallocated before we
+                                   have a chance to free the cons cell we just added */
+
+    /* --- add output_link to id's list --- */
+    push(current_agent(output_link_for_tc), id->id.associated_output_links);
+
+    /* --- do TC through working memory --- */
+    /* --- scan through all wmes for all slots for this id --- */
+    for (w = id->id.input_wmes; w != NIL; w = w->next)
+        if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+            add_id_to_output_link_tc(w->value);
+    for (s = id->id.slots; s != NIL; s = s->next)
+        for (w = s->wmes; w != NIL; w = w->next)
+            if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+                add_id_to_output_link_tc(w->value);
+    /* don't need to check impasse_wmes, because we couldn't have a pointer
+       to a goal or impasse identifier */
 }
 
-void calculate_output_link_tc_info (output_link *ol) {
-  /* --- if link doesn't have any substructure, there's no TC --- */
-  if (ol->link_wme->value->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;
+void calculate_output_link_tc_info(output_link * ol)
+{
+    /* --- if link doesn't have any substructure, there's no TC --- */
+    if (ol->link_wme->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+        return;
 
-  /* --- do TC starting with the link wme's value --- */
-  current_agent(output_link_for_tc) = ol;
-  current_agent(output_link_tc_num) = get_new_tc_number();
-  add_id_to_output_link_tc (ol->link_wme->value);
+    /* --- do TC starting with the link wme's value --- */
+    current_agent(output_link_for_tc) = ol;
+    current_agent(output_link_tc_num) = get_new_tc_number();
+    add_id_to_output_link_tc(ol->link_wme->value);
 }
 
 /* --------------------------------------------------------------------
@@ -562,44 +572,47 @@ void calculate_output_link_tc_info (output_link *ol) {
    get_io_wmes_for_output_link() is called.
 -------------------------------------------------------------------- */
 
-void add_wme_to_collected_io_wmes (wme *w) {
-  io_wme *new;
-  
-  allocate_with_pool (&current_agent(io_wme_pool),  &new);
-  new->next = current_agent(collected_io_wmes);
-  current_agent(collected_io_wmes) = new;
-  new->id = w->id;
-  new->attr = w->attr;
-  new->value = w->value;
+void add_wme_to_collected_io_wmes(wme * w)
+{
+    io_wme *new;
+
+    allocate_with_pool(&current_agent(io_wme_pool), &new);
+    new->next = current_agent(collected_io_wmes);
+    current_agent(collected_io_wmes) = new;
+    new->id = w->id;
+    new->attr = w->attr;
+    new->value = w->value;
 }
 
-io_wme *get_io_wmes_for_output_link (output_link *ol) {
-  cons *c;
-  Symbol *id;
-  slot *s;
-  wme *w;
+io_wme *get_io_wmes_for_output_link(output_link * ol)
+{
+    cons *c;
+    Symbol *id;
+    slot *s;
+    wme *w;
 
-  current_agent(collected_io_wmes) = NIL;
-  add_wme_to_collected_io_wmes (ol->link_wme);
-  for (c=ol->ids_in_tc; c!=NIL; c=c->rest) {
-    id = c->first;
-    for (w=id->id.input_wmes; w!=NIL; w=w->next)
-      add_wme_to_collected_io_wmes (w);
-    for (s=id->id.slots; s!=NIL; s=s->next)
-      for (w=s->wmes; w!=NIL; w=w->next)
-        add_wme_to_collected_io_wmes (w);
-  }
-  return current_agent(collected_io_wmes);
+    current_agent(collected_io_wmes) = NIL;
+    add_wme_to_collected_io_wmes(ol->link_wme);
+    for (c = ol->ids_in_tc; c != NIL; c = c->rest) {
+        id = c->first;
+        for (w = id->id.input_wmes; w != NIL; w = w->next)
+            add_wme_to_collected_io_wmes(w);
+        for (s = id->id.slots; s != NIL; s = s->next)
+            for (w = s->wmes; w != NIL; w = w->next)
+                add_wme_to_collected_io_wmes(w);
+    }
+    return current_agent(collected_io_wmes);
 }
 
-void deallocate_io_wme_list (io_wme *iw) {
-  io_wme *next;
+void deallocate_io_wme_list(io_wme * iw)
+{
+    io_wme *next;
 
-  while (iw) {
-    next = iw->next;
-    free_with_pool (&current_agent(io_wme_pool), iw);
-    iw = next;
-  }
+    while (iw) {
+        next = iw->next;
+        free_with_pool(&current_agent(io_wme_pool), iw);
+        iw = next;
+    }
 }
 
 /* --------------------------------------------------------------------
@@ -615,90 +628,91 @@ output_call_info output_call_data;
 
 #ifndef NO_IO_CALLBACKS
 
-void do_output_cycle (void) {
-  output_link *ol, *next_ol;
-  io_wme *iw_list;
+void do_output_cycle(void)
+{
+    output_link *ol, *next_ol;
+    io_wme *iw_list;
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
-  if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM]) print ("\n--- Output Phase ---\n");
+    if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM])
+        print("\n--- Output Phase ---\n");
 #endif
 
-  for (ol=current_agent(existing_output_links); ol!=NIL; ol=next_ol) {
-    next_ol = ol->next;
+    for (ol = current_agent(existing_output_links); ol != NIL; ol = next_ol) {
+        next_ol = ol->next;
 
-    switch (ol->status) {
-    case UNCHANGED_OL_STATUS:
-      /* --- link is unchanged, so do nothing --- */
-      break;
-      
-    case NEW_OL_STATUS:
+        switch (ol->status) {
+        case UNCHANGED_OL_STATUS:
+            /* --- link is unchanged, so do nothing --- */
+            break;
 
-      /* --- calculate tc, and call the output function --- */
-      calculate_output_link_tc_info (ol);
-      iw_list = get_io_wmes_for_output_link (ol);
-      output_call_data.mode = ADDED_OUTPUT_COMMAND;
-      output_call_data.outputs = iw_list;
-      (ol->cb->function)(soar_agent, ol->cb->data, &output_call_data);
-      deallocate_io_wme_list (iw_list);
-      ol->status = UNCHANGED_OL_STATUS;
-      break;
-      
-    case MODIFIED_BUT_SAME_TC_OL_STATUS:
-      /* --- don't have to redo the TC, but do call the output function --- */
-      iw_list = get_io_wmes_for_output_link (ol);
-      output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
-      output_call_data.outputs = iw_list;
-      (ol->cb->function)(soar_agent, ol->cb->data, &output_call_data);
-      deallocate_io_wme_list (iw_list);
-      ol->status = UNCHANGED_OL_STATUS;
-      break;
-      
-    case MODIFIED_OL_STATUS:
-      /* --- redo the TC, and call the output function */
-      remove_output_link_tc_info (ol);
-      calculate_output_link_tc_info (ol);
-      iw_list = get_io_wmes_for_output_link (ol);
-      output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
-      output_call_data.outputs = iw_list;
-      (ol->cb->function)(soar_agent, ol->cb->data, &output_call_data);
-      deallocate_io_wme_list (iw_list);
-      ol->status = UNCHANGED_OL_STATUS;
-      break;
-      
-    case REMOVED_OL_STATUS:
-      /* --- call the output function, and free output_link structure --- */
-      remove_output_link_tc_info (ol);            /* sets ids_in_tc to NIL */
-      iw_list = get_io_wmes_for_output_link (ol); /* gives just the link wme */
-      output_call_data.mode = REMOVED_OUTPUT_COMMAND;
-      output_call_data.outputs = iw_list;
-      (ol->cb->function)(soar_agent, ol->cb->data, &output_call_data);
-      deallocate_io_wme_list (iw_list);
-      wme_remove_ref (ol->link_wme);
-      remove_from_dll (current_agent(existing_output_links), ol, next, prev);
-      free_with_pool (&current_agent(output_link_pool), ol);
-      break;
-    }
-  } /* end of for ol */
+        case NEW_OL_STATUS:
+
+            /* --- calculate tc, and call the output function --- */
+            calculate_output_link_tc_info(ol);
+            iw_list = get_io_wmes_for_output_link(ol);
+            output_call_data.mode = ADDED_OUTPUT_COMMAND;
+            output_call_data.outputs = iw_list;
+            (ol->cb->function) (soar_agent, ol->cb->data, &output_call_data);
+            deallocate_io_wme_list(iw_list);
+            ol->status = UNCHANGED_OL_STATUS;
+            break;
+
+        case MODIFIED_BUT_SAME_TC_OL_STATUS:
+            /* --- don't have to redo the TC, but do call the output function --- */
+            iw_list = get_io_wmes_for_output_link(ol);
+            output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
+            output_call_data.outputs = iw_list;
+            (ol->cb->function) (soar_agent, ol->cb->data, &output_call_data);
+            deallocate_io_wme_list(iw_list);
+            ol->status = UNCHANGED_OL_STATUS;
+            break;
+
+        case MODIFIED_OL_STATUS:
+            /* --- redo the TC, and call the output function */
+            remove_output_link_tc_info(ol);
+            calculate_output_link_tc_info(ol);
+            iw_list = get_io_wmes_for_output_link(ol);
+            output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
+            output_call_data.outputs = iw_list;
+            (ol->cb->function) (soar_agent, ol->cb->data, &output_call_data);
+            deallocate_io_wme_list(iw_list);
+            ol->status = UNCHANGED_OL_STATUS;
+            break;
+
+        case REMOVED_OL_STATUS:
+            /* --- call the output function, and free output_link structure --- */
+            remove_output_link_tc_info(ol);     /* sets ids_in_tc to NIL */
+            iw_list = get_io_wmes_for_output_link(ol);  /* gives just the link wme */
+            output_call_data.mode = REMOVED_OUTPUT_COMMAND;
+            output_call_data.outputs = iw_list;
+            (ol->cb->function) (soar_agent, ol->cb->data, &output_call_data);
+            deallocate_io_wme_list(iw_list);
+            wme_remove_ref(ol->link_wme);
+            remove_from_dll(current_agent(existing_output_links), ol, next, prev);
+            free_with_pool(&current_agent(output_link_pool), ol);
+            break;
+        }
+    }                           /* end of for ol */
 }
 #else
 
+void do_output_cycle(void)
+{
+    output_link *ol, *next_ol;
 
-void do_output_cycle (void) {
-  output_link *ol, *next_ol;
+    for (ol = current_agent(existing_output_links); ol != NIL; ol = next_ol) {
+        next_ol = ol->next;
 
+        switch (ol->status) {
+        case UNCHANGED_OL_STATUS:
+            /* --- link is unchanged, so do nothing --- */
+            break;
 
-  for (ol=current_agent(existing_output_links); ol!=NIL; ol=next_ol) {
-    next_ol = ol->next;
-
-    switch (ol->status) {
-    case UNCHANGED_OL_STATUS:
-      /* --- link is unchanged, so do nothing --- */
-      break;
-
-    default:
-      print( "io.c: Error -- Output Link has changed, but kernel was built with NO_IO_CALLBACKS\n" );
+        default:
+            print("io.c: Error -- Output Link has changed, but kernel was built with NO_IO_CALLBACKS\n");
+        }
     }
-  }
 }
 #endif
 
@@ -715,13 +729,14 @@ void do_output_cycle (void) {
    NULL pointer.
 -------------------------------------------------------------------- */
 
-Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr) {
-  io_wme *iw;
+Symbol *get_output_value(io_wme * outputs, Symbol * id, Symbol * attr)
+{
+    io_wme *iw;
 
-  for (iw=outputs; iw!=NIL; iw=iw->next)
-    if ( ((id==NIL)||(id==iw->id)) &&
-         ((attr==NIL)||(attr==iw->attr)) ) return iw->value;
-  return NIL;
+    for (iw = outputs; iw != NIL; iw = iw->next)
+        if (((id == NIL) || (id == iw->id)) && ((attr == NIL) || (attr == iw->attr)))
+            return iw->value;
+    return NIL;
 }
 
 /* ====================================================================
@@ -748,79 +763,82 @@ Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr) {
 bool tio_constituent_char[256];
 bool tio_whitespace[256];
 
-Symbol *get_io_symbol_from_tio_constituent_string (char *input_string) {
-  int int_val;
-  float float_val;
-  bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-  bool rereadable;
-  
-  determine_possible_symbol_types_for_string (input_string,
-                                              strlen(input_string),
-                                              &possible_id,
-                                              &possible_var,
-                                              &possible_sc,
-                                              &possible_ic,
-                                              &possible_fc,
-                                              &rereadable);
+Symbol *get_io_symbol_from_tio_constituent_string(char *input_string)
+{
+    int int_val;
+    float float_val;
+    bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+    bool rereadable;
 
-  /* --- check whether it's an integer --- */
-  if (possible_ic) {
-    errno = 0;
-    int_val = strtol (input_string,NULL,10);
-    if (errno) {
-      print ("Text Input Error: bad integer (probably too large)\n");
-      return NIL;
+    determine_possible_symbol_types_for_string(input_string,
+                                               strlen(input_string),
+                                               &possible_id,
+                                               &possible_var, &possible_sc, &possible_ic, &possible_fc, &rereadable);
+
+    /* --- check whether it's an integer --- */
+    if (possible_ic) {
+        errno = 0;
+        int_val = strtol(input_string, NULL, 10);
+        if (errno) {
+            print("Text Input Error: bad integer (probably too large)\n");
+            return NIL;
+        }
+        return get_io_int_constant(int_val);
     }
-    return get_io_int_constant (int_val);
-  }
-    
-  /* --- check whether it's a floating point number --- */
-  if (possible_fc) {
-    errno = 0;
-    float_val = (float) my_strtod (input_string,NULL,10); 
-    if (errno) {
-      print ("Text Input Error: bad floating point number\n");
-      return NIL;
+
+    /* --- check whether it's a floating point number --- */
+    if (possible_fc) {
+        errno = 0;
+        /*float_val = (float) strtod (input_string,NULL,10); */
+        float_val = (float) strtod(input_string, NULL);
+        if (errno) {
+            print("Text Input Error: bad floating point number\n");
+            return NIL;
+        }
+        return get_io_float_constant(float_val);
     }
-    return get_io_float_constant (float_val);
-  }
-  
-  /* --- otherwise it must be a symbolic constant --- */
-  return get_io_sym_constant (input_string);
+
+    /* --- otherwise it must be a symbolic constant --- */
+    return get_io_sym_constant(input_string);
 }
 
 #define MAX_TEXT_INPUT_LINE_LENGTH 1000 /* used to be in soarkernel.h */
 
-Symbol *get_next_io_symbol_from_text_input_line (char **text_read_position) {
-  char *ch;
-  char input_string[MAX_TEXT_INPUT_LINE_LENGTH+2];
-  int input_lexeme_length;
+Symbol *get_next_io_symbol_from_text_input_line(char **text_read_position)
+{
+    char *ch;
+    char input_string[MAX_TEXT_INPUT_LINE_LENGTH + 2];
+    int input_lexeme_length;
 
-  ch = *text_read_position;
-  
-  /* --- scan past any whitespace --- */
-  while (tio_whitespace[(unsigned char)(*ch)]) ch++;
+    ch = *text_read_position;
 
-  /* --- if end of line, return NIL --- */
-  if ((*ch=='\n')||(*ch==0)) { *text_read_position = ch; return NIL; }
+    /* --- scan past any whitespace --- */
+    while (tio_whitespace[(unsigned char) (*ch)])
+        ch++;
 
-  /* --- if not a constituent character, return single-letter symbol --- */
-  if (! tio_constituent_char[(unsigned char)(*ch)]) {
-    input_string[0] = *ch++;
-    input_string[1] = 0;
+    /* --- if end of line, return NIL --- */
+    if ((*ch == '\n') || (*ch == 0)) {
+        *text_read_position = ch;
+        return NIL;
+    }
+
+    /* --- if not a constituent character, return single-letter symbol --- */
+    if (!tio_constituent_char[(unsigned char) (*ch)]) {
+        input_string[0] = *ch++;
+        input_string[1] = 0;
+        *text_read_position = ch;
+        return get_io_sym_constant(input_string);
+    }
+
+    /* --- read string of constituents --- */
+    input_lexeme_length = 0;
+    while (tio_constituent_char[(unsigned char) (*ch)])
+        input_string[input_lexeme_length++] = *ch++;
+
+    /* --- return the appropriate kind of symbol --- */
+    input_string[input_lexeme_length] = 0;
     *text_read_position = ch;
-    return get_io_sym_constant (input_string);
-  }
-    
-  /* --- read string of constituents --- */
-  input_lexeme_length = 0;
-  while (tio_constituent_char[(unsigned char)(*ch)])
-    input_string[input_lexeme_length++] = *ch++;
-
-  /* --- return the appropriate kind of symbol --- */
-  input_string[input_lexeme_length] = 0;
-  *text_read_position = ch;
-  return get_io_symbol_from_tio_constituent_string (input_string);
+    return get_io_symbol_from_tio_constituent_string(input_string);
 }
 
 /* ====================================================================
@@ -831,18 +849,21 @@ Symbol *get_next_io_symbol_from_text_input_line (char **text_read_position) {
 
 char extra_tio_constituents[] = "+-._";
 
-void init_soar_io (void) {
-  unsigned int i; 
+void init_soar_io(void)
+{
+    unsigned int i;
 
-  init_memory_pool (&current_agent(output_link_pool), sizeof(output_link), "output link");
-  init_memory_pool (&current_agent(io_wme_pool), sizeof(io_wme), "io wme");
+    init_memory_pool(&current_agent(output_link_pool), sizeof(output_link), "output link");
+    init_memory_pool(&current_agent(io_wme_pool), sizeof(io_wme), "io wme");
 
-  /* --- setup constituent_char array --- */
-  for (i=0; i<256; i++) tio_constituent_char[i] = isalnum(i);
-  for (i=0; i<strlen(extra_tio_constituents); i++)
-    tio_constituent_char[(int)extra_tio_constituents[i]]=TRUE;
-  
-  /* --- setup whitespace array --- */
-  for (i=0; i<256; i++) tio_whitespace[i] = isspace(i);
-  tio_whitespace[(int)'\n']=FALSE;  /* for text i/o, crlf isn't whitespace */
+    /* --- setup constituent_char array --- */
+    for (i = 0; i < 256; i++)
+        tio_constituent_char[i] = (char) isalnum(i);
+    for (i = 0; i < strlen(extra_tio_constituents); i++)
+        tio_constituent_char[(int) extra_tio_constituents[i]] = TRUE;
+
+    /* --- setup whitespace array --- */
+    for (i = 0; i < 256; i++)
+        tio_whitespace[i] = (char) isspace(i);
+    tio_whitespace[(int) '\n'] = FALSE; /* for text i/o, crlf isn't whitespace */
 }

@@ -39,7 +39,5 @@
  * =======================================================================
  */
 
-
-
-extern void init_built_in_rhs_math_functions (void);
-extern void remove_built_in_rhs_math_functions (void);
+extern void init_built_in_rhs_math_functions(void);
+extern void remove_built_in_rhs_math_functions(void);

@@ -261,15 +261,17 @@ bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal
     unsigned long timetag;
     float value;
     
+    value = 0.0;
+
     appraisal_variable_wme_attr_var = appraisal_variable_wme->attr->var;
 
     /* check to see if this is the right kind of wme */
-    if(appraisal_variable_wme_attr_var.common_symbol_info.symbol_type = SYM_CONSTANT_SYMBOL_TYPE) {
+    if(appraisal_variable_wme_attr_var.common_symbol_info.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) {
         if(!strcmp(appraisal_variable_wme_attr_var.name,"desirability")) {
             type = DESIRABILITY;
         } else if (!strcmp(appraisal_variable_wme_attr_var.name,"likelihood")) {
             type = LIKELIHOOD;
-        }
+        } else { return FALSE; }
     }
     else { return FALSE; }
 
