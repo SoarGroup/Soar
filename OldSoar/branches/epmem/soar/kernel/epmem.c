@@ -32,6 +32,11 @@
 //defined in soar_core_utils.c
 extern wme ** get_augs_of_id( Symbol *id, tc_number tc, int *num_attr );
 
+//defined in activate.c
+extern int decay_activation_level(wme *w);
+extern void decay_print_most_activated_wmes(int n);
+
+
 /* EpMem constants
    
    num_active_wmes - epmem uses the n most active wmes to decide whether to
@@ -106,6 +111,20 @@ typedef struct wmetree_struct
     struct wme_struct *assoc_wme;
 } wmetree;
 
+
+/*
+ * actwme - a wme paired with an activation value.  Activation values
+ *          are stored when a memory is recorded.  They need to share
+ *          a data structure together so an array of them can be sorted.
+ *
+ */
+typedef struct actwme_struct
+{
+    wmetree *node;
+    int activation;
+} actwme;
+
+
 /*
  * wmelist - A list of all the WMEs from a wmetree.  I use this struct
  *           as the high level handle to the episodic memory.  Each
@@ -113,6 +132,7 @@ typedef struct wmetree_struct
  *           them is a snapshot of working memory at a particular
  *           instant.
  *           nodes - an array of pointers to nodes in the wmetree
+ *           acts  - activation level of each WME at time of recording
  *           cap_nodes  - the size of the array
  *           num_nodes - the number of cells in the array that are filled
  *           next - pointer to the next wmelist
@@ -120,7 +140,7 @@ typedef struct wmetree_struct
  */
 typedef struct wmelist_struct
 {
-    wmetree **nodes;
+    actwme *nodes;
     long cap_nodes;
     long num_nodes;
     struct wmelist_struct *next;
@@ -301,12 +321,12 @@ wmelist *make_wmelist()
     wmelist *wl;
 
     wl = (wmelist *)allocate_memory(sizeof(wmelist), MISCELLANEOUS_MEM_USAGE);
-    wl->nodes = (wmetree **)allocate_memory(sizeof(wmetree *) * wmelist_init_size,
-                                            MISCELLANEOUS_MEM_USAGE);
+    wl->nodes = (actwme *)allocate_memory(sizeof(actwme) * wmelist_init_size,
+                                          MISCELLANEOUS_MEM_USAGE);
     wl->cap_nodes = wmelist_init_size;
     wl->num_nodes = 0;
     wl->next = NULL;
-    
+
     return wl;
 }//make_wmelist
 
@@ -533,7 +553,7 @@ wmetree *epmem_find_wmelist_member(wmelist *wl, wmetree *id, char *s)
     
     for(i = 0; i < wl->num_nodes; i++)
     {
-        wmetree *node = wl->nodes[i];
+        wmetree *node = wl->nodes[i].node;
         if ( (id == &g_wmetree) || (id == node->parent) )
         { 
             if (strcmp(node->attr, s) == 0)
@@ -571,7 +591,7 @@ void print_wmelist(wmelist *wl, wmetree *node, int indent, int depth)
         //Find out if this node is in the wmelist
         for(i = 0; i < wl->num_nodes; i++)
         {
-            if (wl->nodes[i] == node) bFound = TRUE;
+            if (wl->nodes[i].node == node) bFound = TRUE;
         }
         if (!bFound) return;
     
@@ -759,14 +779,14 @@ void add_child_to_wmetree(wmetree *node, wmetree *childnode)
    
    Created: 12 Jan 2004
    =================================================================== */
-void add_node_to_wmelist(wmelist *wl, wmetree *node)
+void add_node_to_wmelist(wmelist *wl, wmetree *node, int activation)
 {
     if (wl->num_nodes == wl->cap_nodes)
     {
         int i;
-        wmetree **tmp;
+        actwme *tmp;
         int newsize;
-        
+
         //Select the new array size
         newsize = wmelist_init_size;
         if (wl->cap_nodes > 0)
@@ -775,11 +795,12 @@ void add_node_to_wmelist(wmelist *wl, wmetree *node)
         }
         
         //Grow the array
-        tmp = (wmetree **)allocate_memory_and_zerofill(newsize * sizeof(wmetree *),
+        tmp = (actwme *)allocate_memory_and_zerofill(newsize * sizeof(actwme),
                                                        MISCELLANEOUS_MEM_USAGE);
         for(i = 0; i < wl->num_nodes; i++)
         {
-            tmp[i] = wl->nodes[i];
+            tmp[i].node = wl->nodes[i].node;
+            tmp[i].activation = wl->nodes[i].activation;
         }
 
         if (wl->nodes != NULL)
@@ -793,7 +814,8 @@ void add_node_to_wmelist(wmelist *wl, wmetree *node)
 
 
     //Add the node to the array
-    wl->nodes[wl->num_nodes] = node;
+    wl->nodes[wl->num_nodes].node = node;
+    wl->nodes[wl->num_nodes].activation = activation;
     wl->num_nodes++;
     
 }//add_node_to_wmelist
@@ -853,13 +875,13 @@ Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
                 }
 
                 //insert childnode into the wmelist
-                add_node_to_wmelist(wl, childnode);
-                add_node_to_wmelist(syms, (wmetree *)wmes[i]->value);
+                add_node_to_wmelist(wl, childnode, decay_activation_level(wmes[i]));
+                add_node_to_wmelist(syms, (wmetree *)wmes[i]->value, -1);
             }//for
         }//if
         
-        node = wl->nodes[pos];
-        sym = (Symbol *)syms->nodes[pos];
+        node = wl->nodes[pos].node;
+        sym = (Symbol *)syms->nodes[pos].node;
         pos++;
 
     } while(pos < wl->num_nodes);
@@ -867,7 +889,7 @@ Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
     //Sort the wmelist
     qsort( (void *)wl->nodes,
            (size_t)wl->num_nodes,
-           sizeof( wmetree * ),
+           sizeof( actwme ),
            compare_ptr );
 
     //Deallocate the symbol list
@@ -876,86 +898,6 @@ Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
     return ss;
     
 }//update_wmetree
-
-/* ===================================================================
-   old_update_wmetree          *RECURSIVE*
-
-   Updates the wmetree given a pointer to a corresponding wme in working
-   memory.  The wmetree node is assumed to have been initialized already.
-   Each wme that is discovered by this algorithm is also added to a given
-   wmelist.
-
-   If this function finds a ^superstate WME it does not traverse that link.
-   Instead, it records the find and returns it to the caller.
-   
-   This function requires a tc number.
-
-   Created: 09 Jan 2004
-   =================================================================== */
-Symbol *old_update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
-{
-    wme **wmes;
-    wmetree *childnode;
-    int len = 0;
-    int i;
-    Symbol *ss = NULL;
-    wmelist *childnodes = make_wmelist();
-
-    wmes = get_augs_of_id( sym, tc, &len );
-    if (wmes == NULL) return NULL;
-
-    for(i = 0; i < len; i++)
-    {
-        childnode = find_child_node(node, wmes[i]);
-        if (childnode == NULL)
-        {
-            childnode = make_wmetree_node(wmes[i]);
-            add_child_to_wmetree(node, childnode);
-        }
-
-        //Save the childnode away for recursive update below
-        add_node_to_wmelist(childnodes, childnode);
-
-        //Check for special case: "superstate" 
-        if (wme_has_value(wmes[i], "superstate", NULL))
-        {
-            if ( (ss == NULL)
-                 && (wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) )
-            {
-                ss = wmes[i]->value;
-            }
-            continue;
-        }
-        
-        //insert childnode into the wmelist
-        add_node_to_wmelist(wl, childnode);
-    }//for
-
-
-    //Now recursively call this function for all child nodes that
-    //aren't leaf nodes.  We can't do this inside the above for-loop 
-    //without messing up the transitive closure.
-    for(i = 0; i < len; i++)
-    {
-        childnode = childnodes->nodes[i];
-
-        //If the child isn't a leaf node, then recursively fill
-        //in the child's children
-        if (childnode->val_type == IDENTIFIER_SYMBOL_TYPE)
-        {
-            update_wmetree(childnode, wmes[i]->value, wl, tc);
-        }
-    }
-
-    //Sort the wmelist
-    qsort( (void *)wl->nodes,
-           (size_t)wl->num_nodes,
-           sizeof( wmetree * ),
-           compare_ptr );
-    
-    return ss;
-    
-}//old_update_wmetree
 
 /* ===================================================================
    add_wmelist_to_memories
@@ -1428,13 +1370,13 @@ int compare_wmelist(wmelist *w1, wmelist *w2)
 
     while((pos1 < w1->num_nodes) && (pos2 < w2->num_nodes))
     {
-        if (w1->nodes[pos1] == w2->nodes[pos2])
+        if (w1->nodes[pos1].node == w2->nodes[pos2].node)
         {
             count++;
             pos1++;
             pos2++;
         }
-        else if (w1->nodes[pos1] < w2->nodes[pos2])
+        else if (w1->nodes[pos1].node < w2->nodes[pos2].node)
         {
             pos1++;
         }
@@ -1453,6 +1395,8 @@ int compare_wmelist(wmelist *w1, wmelist *w2)
    Compares two wmelists and returns the number of *leaf* WMEs they
    have in common.  Obviously both lists should reference the same
    wmetree for this comparison to be useful.
+
+   This function ignores WMEs that are not leaf WMEs.
    
    Created: 23 Feb 2004
    =================================================================== */
@@ -1464,25 +1408,25 @@ int compare_wmelist_leaf_only(wmelist *w1, wmelist *w2)
 
     while((pos1 < w1->num_nodes) && (pos2 < w2->num_nodes))
     {
-        if (w1->nodes[pos1]->val_type == IDENTIFIER_SYMBOL_TYPE)
+        if (w1->nodes[pos1].node->val_type == IDENTIFIER_SYMBOL_TYPE)
         {
             pos1++;
             continue;
         }
         
-        if (w2->nodes[pos2]->val_type == IDENTIFIER_SYMBOL_TYPE)
+        if (w2->nodes[pos2].node->val_type == IDENTIFIER_SYMBOL_TYPE)
         {
             pos2++;
             continue;
         }
         
-        if (w1->nodes[pos1] == w2->nodes[pos2])
+        if (w1->nodes[pos1].node == w2->nodes[pos2].node)
         {
             count++;
             pos1++;
             pos2++;
         }
-        else if (w1->nodes[pos1] < w2->nodes[pos2])
+        else if (w1->nodes[pos1].node < w2->nodes[pos2].node)
         {
             pos1++;
         }
@@ -1548,6 +1492,61 @@ int compare_wmelist_ideal(wmelist *w1, wmelist *w2)
 
 }//compare_wmelist_ideal
 
+/* ===================================================================
+   compare_wmelist_act_indiv_mem
+
+   Compares two wmelists and returns the number of *leaf* WMEs they
+   have in common.  Obviously both lists should reference the same
+   wmetree for this comparison to be useful.
+
+   This function ignores WMEs that are not leaf WMEs.
+   This function weights matches based upon the current activation
+   level of matching WMEs.
+   
+   
+   Created: 09 March 2004
+   =================================================================== */
+int compare_wmelist_act_indiv_mem(wmelist *w1, wmelist *w2)
+{
+    int count = 0;
+    int pos1 = 0;
+    int pos2 = 0;
+
+    while((pos1 < w1->num_nodes) && (pos2 < w2->num_nodes))
+    {
+        //Skip non leaf wme
+        if (w1->nodes[pos1].node->val_type == IDENTIFIER_SYMBOL_TYPE)
+        {
+            pos1++;
+            continue;
+        }
+        
+        //Skip non leaf wme
+        if (w2->nodes[pos2].node->val_type == IDENTIFIER_SYMBOL_TYPE)
+        {
+            pos2++;
+            continue;
+        }
+        
+        if (w1->nodes[pos1].node == w2->nodes[pos2].node)
+        {
+            count += w1->nodes[pos1].activation;
+            pos1++;
+            pos2++;
+        }
+        else if (w1->nodes[pos1].node < w2->nodes[pos2].node)
+        {
+            pos1++;
+        }
+        else
+        {
+            pos2++;
+        }
+    }//while
+
+    return count;
+}//compare_wmelist_act_indiv_mem
+
 
 
 /* ===================================================================
@@ -1574,7 +1573,7 @@ int match_wmelist(wmelist *w)
     
     for(i = 0; i < g_num_memories - memory_match_wait; i++)
     {
-        n = compare_wmelist_ideal(g_memories[i], w);
+        n = compare_wmelist_act_indiv_mem(g_memories[i], w);
         if (n >= best_match)
         {
             best_index = i;
@@ -1656,7 +1655,7 @@ void install_wmelist_in_wm(Symbol *sym, wmelist *wl)
     //set the in_mem flag on all wmes in the wmelist
     for(i = 0; i < wl->num_nodes; i++)
     {
-        wl->nodes[i]->in_mem = TRUE;
+        wl->nodes[i].node->in_mem = TRUE;
     }
 
     //Use the recursive helper function to create the wmes
@@ -1915,6 +1914,9 @@ void epmem_update()
     }
     else
     {
+        //%%%DEBUGGING
+        //decay_print_most_activated_wmes(50);
+        
         wl = respond_to_query(g_epmem_query, g_epmem_retrieved);
         if (wl != NULL)
         {
