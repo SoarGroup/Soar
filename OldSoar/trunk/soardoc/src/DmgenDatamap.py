@@ -120,7 +120,7 @@ class Node:
       self.Productions = [] # names of source productions
       self.Type = ''
       self.Special = ''
-      self.Links = [] # List of tuples (type, name)
+      self.Links = [] # List of tuples (type, name, path)
       self.__adjacencies = []
 
    def AddAdjacency(self, n):
@@ -165,7 +165,12 @@ class PsOrOpXmlLoader(ContentHandler):
       self.nodeStack = []
       self.nodeTable = {} # nodes indexed by path
       self.prods = {} # table of all productions found (keys)
-      
+     
+      # A list of (node, vertref) tuples used to delay vertref
+      # resolution until after all the nodes have been parsed. Otherwise
+      # cycles could cause a problem.
+      self.vertrefs = []
+
       self.startFuncs = {
          'O': self.startRoot,
          'S': self.startRoot,
@@ -196,6 +201,8 @@ class PsOrOpXmlLoader(ContentHandler):
    def Load(self, fileName):
       self.dm = None
       self.prods = {}
+      self.vertrefs = []
+
       parser = make_parser()
       parser.setFeature(feature_namespaces, 0)
       parser.setContentHandler(self)
@@ -206,6 +213,12 @@ class PsOrOpXmlLoader(ContentHandler):
       os.chdir(dirName) # Change to files directory so we can easily resolve hrefs
       parser.parse(baseName)
       os.chdir(oldcwd) # Restore original working directory
+
+      # resolve vertrefs
+      for n, ref in vertrefs:
+         nref = self.nodeTable[ref]
+         n.AddAdjacency(nref)
+
       return self.root
    
    def GetResult(self): return self.root
@@ -243,8 +256,7 @@ class PsOrOpXmlLoader(ContentHandler):
    
    def startVertRef(self, name, attrs):  self.vertref = ''
    def endVertRef(self, name):
-      n = self.nodeTable[self.vertref]
-      self.currentNode.AddAdjacency(n)
+      self.vertrefs.append((self.currentNode, self.vertref))
       self.vertref = ''
    def vertRefChars(self, ch): self.vertref += str(ch)
    
@@ -270,8 +282,9 @@ class PsOrOpXmlLoader(ContentHandler):
    def startLink(self, name, attrs):
       name = str(attrs.get('name', None))
       type = str(attrs.get('type', None))
+      path = str(attrs.get('path', None))
       if name and type:
-         self.currentNode.Links.append((type, name))
+         self.currentNode.Links.append((type, name, path))
          if type == 'S' and not name in self.root.ProblemSpaces:
             self.root.ProblemSpaces.append(name)
          elif type == 'O' and not name in self.root.Operators:

@@ -1600,13 +1600,15 @@ class DatamapNodeDetailsScriptBuilder:
       table = HTMLgen.TableLite(width='100%')
       table.append(HTMLgen.TR(HTMLgen.TH('References', align='left')))
       c = 1
-      for t, name in n.Links:
+      for t, name, path in n.Links:
          o = self.collector.GetObject(typeMap[t], name)
          if o:
             td0 = HTMLgen.TD(typeLabelMap[t], ': ',
                              HTMLgen.Href(self.hg(o), o.GetName(), target='main'))
          else:
             td0 = HTMLgen.TD(typeLabelMap[t], ': ',name)
+         if path:
+            td0.append('.', path)
          if c:
             table.append(HTMLgen.TR(td0, bgcolor='#f2f2ff'))
          else:
