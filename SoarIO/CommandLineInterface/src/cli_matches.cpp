@@ -27,12 +27,11 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	int wmeDetail = 0;
 	unsigned int matches = OPTION_MATCHES_ASSERTIONS_RETRACTIONS;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "012acnrtw", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "012acnrtw", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

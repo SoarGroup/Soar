@@ -22,11 +22,10 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	bool self = false;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "s", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "s", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

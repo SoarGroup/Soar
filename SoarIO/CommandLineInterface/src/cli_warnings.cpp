@@ -28,12 +28,11 @@ bool CommandLineInterface::ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	bool query = true;
 	bool setting = true;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "ed", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "ed", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

@@ -41,13 +41,12 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	int constant;
 	unsigned int options = 0;	// what flag changed
 	unsigned int values = 0;    // new setting
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

@@ -20,11 +20,10 @@ bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::stri
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	bool noNewLine = false;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "n", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "n", longOptions, 0);
 		if (option == -1) break;
 
 		switch (option) {

@@ -30,10 +30,9 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 
 	bool print = true;
 	bool setting = false;	// enable or disable timers, default of false ignored
-	int option;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "ed", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "ed", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

@@ -21,12 +21,11 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	bool disable = false;
 	std::string command;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "d:", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "d:", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

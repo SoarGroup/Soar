@@ -32,11 +32,10 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	OPTION_LOG operation = OPTION_LOG_NEW;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "aAcdeoq", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "aAcdeoq", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

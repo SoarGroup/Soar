@@ -22,6 +22,11 @@ namespace cli {
 	const unsigned int OPTION_MATCHES_RETRACTIONS			 = 0x2;
 	const unsigned int OPTION_MATCHES_ASSERTIONS_RETRACTIONS = 0x3;
 
+	const unsigned int OPTION_MEMORIES_CHUNKS		  = 0x1;
+	const unsigned int OPTION_MEMORIES_DEFAULT		  = 0x2;
+	const unsigned int OPTION_MEMORIES_JUSTIFICATIONS = 0x4;
+	const unsigned int OPTION_MEMORIES_USER			  = 0x8;
+
 	const unsigned int OPTION_PRINT_ALL					= 0x0001;
 	const unsigned int OPTION_PRINT_CHUNKS				= 0x0002;
 	const unsigned int OPTION_PRINT_DEPTH				= 0x0004;

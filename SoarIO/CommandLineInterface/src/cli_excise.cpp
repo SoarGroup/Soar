@@ -30,11 +30,10 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	unsigned int options = 0;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "acdtu", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "acdtu", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

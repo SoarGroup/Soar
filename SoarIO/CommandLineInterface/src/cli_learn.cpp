@@ -31,11 +31,10 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	unsigned int options = 0;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, "abdeElo", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, "abdeElo", longOptions, 0);
 		if (option == -1) {
 			break;
 		}

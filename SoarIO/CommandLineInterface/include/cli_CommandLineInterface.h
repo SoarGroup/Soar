@@ -321,7 +321,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoMemories();
+	bool DoMemories(gSKI::IAgent* pAgent, unsigned int productionType, int n, std::string production);
 
 	/*************************************************************
 	* @brief multi-attributes command, see usage.txt for details.

@@ -34,13 +34,12 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	int option;
 	// TODO: in 8.5.2 this is current_agent(default_wme_depth)
 	int depth = 1;
 	unsigned int options = 0;
 
 	for (;;) {
-		option = m_pGetOpt->GetOpt_Long(argv, ":acd:DfFijnosSu", longOptions, 0);
+		int option = m_pGetOpt->GetOpt_Long(argv, ":acd:DfFijnosSu", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
