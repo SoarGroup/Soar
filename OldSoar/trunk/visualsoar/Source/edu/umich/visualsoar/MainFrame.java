@@ -1202,9 +1202,40 @@ public class MainFrame extends JFrame
 			newAgentDialog.show();
 			if (newAgentDialog.wasApproved()) 
             {
-				String agentName = newAgentDialog.getNewAgentName();
+                //Verify that the path exists
 				String path = newAgentDialog.getNewAgentPath();
+                File pathFile = new File(path);
+                if (! pathFile.exists())
+                {
+                    int choice = JOptionPane.showConfirmDialog(
+                        getMainFrame(),
+                            path + " does not exist.\nShould I create it for you?",
+                            path + " Does Not Exist",
+                            JOptionPane.OK_CANCEL_OPTION);
+
+                    if (choice == JOptionPane.CANCEL_OPTION)
+                    {
+                        return;
+                    }
+
+                    pathFile.mkdirs();
+                }//if
+
+                //Verify that the project doesn't already exist
+				String agentName = newAgentDialog.getNewAgentName();
 				String agentFileName = path + File.separator + agentName + ".vsa";
+                File agentNameFile = new File(agentFileName);
+                if (agentNameFile.exists())
+                {
+                    JOptionPane.showMessageDialog(
+                        getMainFrame(),
+                        agentName + " already exists. Please try again with a different project name or path.",
+                        agentName + " already exists!",
+                        JOptionPane.ERROR_MESSAGE);
+
+                    return;
+                }
+                
 				operatorWindow = new OperatorWindow(agentName,agentFileName,true);
 				
 				Preferences.getInstance().setOpenFolder(new File(path));
