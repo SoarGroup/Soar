@@ -1793,14 +1793,18 @@ void soar_cRemoveCallback(soar_callback_agent the_agent, SOAR_CALLBACK_TYPE call
                 prev_c->rest = c->rest;
                 soar_destroy_callback(cb);
                 free_cons(c);
-                return;
+				c = prev_c;
+                /*return;*/
             } else {
                 ((agent *) the_agent)->soar_callbacks[callback_type]
                     = head->rest;
                 soar_destroy_callback(cb);
                 free_cons(c);
-                return;
+				head = ((agent *) the_agent)->soar_callbacks[callback_type]; 
+				c = head;
+                /*return;*/
             }
+
         }
         prev_c = c;
     }
