@@ -122,6 +122,7 @@ TankSoar 3.0.8
 Bug Fixes
 ---------
 392  garbage printed to debugger output when Stop After Decision Phase is on
+393  command 'run 1' generates 'invalid command step' error
 
 Known Issues
 ------------  
