@@ -103,10 +103,10 @@ public class Application
 		
 		// Register some event handlers
 		EventListener listener = new EventListener() ;
-		int jRunCallback   = pAgent.RegisterForRunEvent(pAgent, smlEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
-		int jAgentCallback = pAgent.RegisterForAgentEvent(pAgent, smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
-		int jProdCallback   = pAgent.RegisterForProductionEvent(pAgent, smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
-		int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
+		int jRunCallback   = pAgent.RegisterForRunEvent(pAgent, smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
+		int jAgentCallback = pAgent.RegisterForAgentEvent(pAgent, smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
+		int jProdCallback   = pAgent.RegisterForProductionEvent(pAgent, smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
+		int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlSystemEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
 
 		// Trigger an agent event by doing init-soar
 		pAgent.InitSoar() ;
@@ -128,10 +128,10 @@ public class Application
 		// Unregister our callbacks
 		// (This isn't required, I'm just testing that it works)
 		/*
-		pAgent.UnregisterForRunEvent(smlEventId.smlEVENT_AFTER_DECISION_CYCLE, jRunCallback) ;
-		pAgent.UnregisterForAgentEvent(smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
-		pAgent.UnregisterForProductionEvent(smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, jProdCallback) ;
-		pKernel.UnregisterForSystemEvent(smlEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
+		pAgent.UnregisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, jRunCallback) ;
+		pAgent.UnregisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
+		pAgent.UnregisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, jProdCallback) ;
+		pKernel.UnregisterForSystemEvent(smlsystemEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
 		*/
 		String trace2 = pAgent.RunTilOutput(20) ;
 		System.out.println(trace2) ;

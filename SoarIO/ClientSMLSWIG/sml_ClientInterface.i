@@ -13,16 +13,16 @@
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
 
 // don't wrap the code for registering/unregistering callbacks because we need to provide some custom code to make it work
-%ignore sml::Agent::RegisterForAgentEvent(smlEventId, AgentEventHandler, void*);
-%ignore sml::Agent::UnregisterForAgentEvent(smlEventId, AgentEventHandler, void*);
-%ignore sml::Agent::RegisterForProductionEvent(smlEventId, ProductionEventHandler, void*);
-%ignore sml::Agent::UnregisterForProductionEvent(smlEventId, ProductionEventHandler, void*);
-%ignore sml::Agent::RegisterForRunEvent(smlEventId, RunEventHandler, void*);
-%ignore sml::Agent::UnregisterForRunEvent(smlEventId, RunEventHandler, void*);
-%ignore sml::Agent::RegisterForPrintEvent(smlEventId, PrintEventHandler, void*);
-%ignore sml::Agent::UnregisterForPrintEvent(smlEventId, PrintEventHandler, void*);
-%ignore sml::Kernel::RegisterForSystemEvent(smlEventId, SystemEventHandler, void*);
-%ignore sml::Kernel::UnregisterForSystemEvent(smlEventId, SystemEventHandler, void*);
+%ignore sml::Agent::RegisterForAgentEvent(smlAgentEventId, AgentEventHandler, void*);
+%ignore sml::Agent::UnregisterForAgentEvent(smlAgentEventId, int);
+%ignore sml::Agent::RegisterForProductionEvent(smlProductionEventId, ProductionEventHandler, void*);
+%ignore sml::Agent::UnregisterForProductionEvent(smlProductionEventId, int);
+%ignore sml::Agent::RegisterForRunEvent(smlRunEventId, RunEventHandler, void*);
+%ignore sml::Agent::UnregisterForRunEvent(smlRunEventId, int);
+%ignore sml::Agent::RegisterForPrintEvent(smlPrintEventId, PrintEventHandler, void*);
+%ignore sml::Agent::UnregisterForPrintEvent(smlPrintEventId, int);
+%ignore sml::Kernel::RegisterForSystemEvent(smlSystemEventId, SystemEventHandler, void*);
+%ignore sml::Kernel::UnregisterForSystemEvent(smlSystemEventId, int);
 
 %{
 #include "sml_ElementXML.h"

@@ -42,8 +42,13 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy to release point"
-				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin /Y"/>
+				Description="Copy to release point, make Tcl package"
+				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin /Y
+cd ..\..\bin
+%TCL_BIN%\tclsh makeTclSMLPackage.tcl
+mkdir Tcl_sml_ClientInterface
+move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
+move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -89,8 +94,13 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy to release point"
-				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin /Y"/>
+				Description="Copy to release point, make Tcl package"
+				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin /Y
+cd ..\..\bin
+%TCL_BIN%\tclsh makeTclSMLPackage.tcl
+mkdir Tcl_sml_ClientInterface
+move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
+move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
