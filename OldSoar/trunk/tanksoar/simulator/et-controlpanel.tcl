@@ -3,6 +3,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.4  2004/06/02 11:26:02  mazin_assanie
+### Previous change was not needed.  I found a better place to put it.
+###
 ### Revision 1.3  2004/06/02 11:18:16  mazin_assanie
 ### Added handler for deletion of control panel window.  Otherwise, agent windows would still exist.
 ###
@@ -43,7 +46,6 @@ proc makeETControlPanel { {hide 0} {x -20} {y 1} } {
    }
    . configure -relief ridge -borderwidth 5
    wm title . "$ETCPConfig(AgentName) Control Panel"
-   wm protocol . WM_DELETE_WINDOW { quitSoar }
    if {$x >= 0} { set x +$x }
    if {$y >= 0} { set y +$y }
    wm geometry . $x$y
