@@ -1523,15 +1523,16 @@ Symbol *update_wmetree(wmetree *node,
    value is greater than the struct's high value.  It returns the new range
    struct that was created (or the range struct passed in if it was modified).
 
-   CAVEAT:  This function is specialized to assume that new values are always
-   appended to the end of a range (i.e., the highest new value) and thus doesn't
-   cover the general case
+   CAVEAT:  This function is specialized to the episodic memory situation
+   and does not function in the general case.
 
    Created: 20 Jan 2005
    =================================================================== */
 range *append_value_to_range(range *r, int new_val, int score)
 {
     range *tmp;
+
+    if (new_val == r->high) return r;
     
     if (new_val == r->high + 1)
     {
@@ -3002,14 +3003,165 @@ void epmem_print_curr_memory(epmem_header *h)
 }//epmem_print_curr_memory
 
 /* ===================================================================
-   epmem_print_mem_usage
+   epmem_print_long_ranges
+
+   Prints out the range lists that are the longest
+
+   Created: 26 Jan 2005
+   =================================================================== */
+void epmem_print_long_ranges()
+{
+    wmetree *parent = &g_wmetree;
+    wmetree *child;
+    arraylist *queue = make_arraylist(32);
+    int qpos = 0;                // current position in the queue
+    unsigned long hash_value;
+    range *r;
+    int rangelen = 0;
+    int longest_range = 0;
+
+    /*
+     * Step 1:  Find the length longest range(s)
+     */
+
+    while(parent != NULL)
+    {
+        for (hash_value = 0; hash_value < parent->children->size; hash_value++)
+        {
+            child = (wmetree *) (*(parent->children->buckets + hash_value));
+            for (; child != NIL; child = child->next)
+            {
+                rangelen = 0;
+                r = child->assoc_memories;
+                while(r != NULL)
+                {
+                    rangelen++;
+                    r = r->next;
+                }
+
+                if (rangelen > longest_range)
+                {
+                    longest_range = rangelen;
+                }
+
+                //If this WME has children add it to the queue for future
+                //processing
+                if (child->children->count > 0)
+                {
+                    append_entry_to_arraylist(queue, child);
+                }
+
+            }//for
+        }//for
+
+        //Retrieve the next node from the queue
+        parent = get_arraylist_entry(queue, qpos);
+        qpos++;
+    }//while
+
+    destroy_arraylist(queue);
+
+    /*
+     * Step 2:  Print the range(s) with longest length
+     */
+    print("\n");
+    parent = &g_wmetree;
+    queue = make_arraylist(32);
+    qpos = 0;
+    
+    while(parent != NULL)
+    {
+        for (hash_value = 0; hash_value < parent->children->size; hash_value++)
+        {
+            child = (wmetree *) (*(parent->children->buckets + hash_value));
+            for (; child != NIL; child = child->next)
+            {
+                rangelen = 0;
+                r = child->assoc_memories;
+                while(r != NULL)
+                {
+                    rangelen++;
+                    r = r->next;
+                }
+
+                if (rangelen >= longest_range)
+                {
+                    if ( (child->parent != NULL)
+                         && (child->parent->attr != NULL) )
+                    {
+                        if ( (child->parent->parent != NULL)
+                             && (child->parent->parent->attr != NULL) )
+                        {
+                            print("%s.", child->parent->parent->attr);
+                        }
+
+                        print("%s.", child->parent->attr);
+                    }
+
+                    if (child->attr != NULL)
+                    {
+                        print("%s ", child->attr);
+                    }
+
+                    switch(child->val_type)
+                    {
+                        case SYM_CONSTANT_SYMBOL_TYPE:
+                            print(" %s", child->val.strval);
+                            break;
+                        case INT_CONSTANT_SYMBOL_TYPE:
+                            print(" %ld", child->val.intval);
+                            break;
+                        case FLOAT_CONSTANT_SYMBOL_TYPE:
+                            print(" %f", child->val.floatval);
+                            break;
+                        default:
+                            break;
+                    }//switch
+
+                    print(": ");
+                    r = child->assoc_memories;
+                    while(r != NULL)
+                    {
+                        print("[%d..%d],", r->low, r->high);
+                        r = r->next;
+                    }
+
+                    print("\b\n");
+
+                    
+                }//if
+
+                //If this WME has children add it to the queue for future
+                //processing
+                if (child->children->count > 0)
+                {
+                    append_entry_to_arraylist(queue, child);
+                }
+
+            }//for
+        }//for
+
+        //Retrieve the next node from the queue
+        parent = get_arraylist_entry(queue, qpos);
+        qpos++;
+    }//while
+
+    destroy_arraylist(queue);
+
+    
+}//epmem_print_long_ranges
+
+
+/* ===================================================================
+   epmem_print_ram_usage
 
    Prints information about how much RAM the episodic memories are
    using to a file.
 
    Created: 14 June 2004
+   Overhauled: 23 Jan 2005
    =================================================================== */
-void epmem_print_mem_usage()
+void epmem_print_ram_usage()
 {
     wmetree *parent = &g_wmetree;
     wmetree *child;
@@ -3062,13 +3214,13 @@ void epmem_print_mem_usage()
     destroy_arraylist(queue);
     
     print("\n");
-    print("%.6d wmetree structs = %.10d bytes\n", num_wmetrees, num_wmetrees*49);
+    print("%.6d wmetree structs = %.10d bytes\n", num_wmetrees, num_wmetrees*53);
     print("%.6d range structs   = %.10d bytes\n", num_ranges, num_ranges*20);
     print("%.6d symbol strings  = %.10d bytes\n", num_strings, total_strlen);
     print("     TOTAL EPMEM ALLOC = %.10d bytes\n", num_wmetrees*49 + num_ranges*20 + total_strlen);
     
     
-}//epmem_print_mem_usage
+}//epmem_print_ram_usage
 
 
 /* ===================================================================
@@ -3316,8 +3468,9 @@ void epmem_update()
 //      //%%%DEBUGGING
 //      if (count % 500 == 0)
 //      {
-//          epmem_print_mem_usage();
-//          epmem_print_cpu_usage();
+//           epmem_print_ram_usage();
+//           epmem_print_cpu_usage();
+//           epmem_print_long_ranges();
 //          print("\nend of run %d\n", count / 1500);
 //      }
     
