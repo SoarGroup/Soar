@@ -455,8 +455,10 @@ char *test_to_string(test t, char *dest, size_t dest_size)
     char *ch;
 
     if (test_is_blank_test(t)) {
-        if (!dest)
+        if (!dest) {
             dest = current_agent(printed_output_string);
+			dest_size = PRINTED_OUTPUT_STRING_SIZE;
+		}
         snprintf(dest, dest_size, "[BLANK TEST]");      /* this should never get executed */
         dest[dest_size - 1] = 0;        /* snprintf doesn't set last char to null if output is truncated */
         return dest;
@@ -466,8 +468,11 @@ char *test_to_string(test t, char *dest, size_t dest_size)
         return symbol_to_string(referent_of_equality_test(t), TRUE, dest, dest_size);
     }
 
-    if (!dest)
+    if (!dest) {
         dest = current_agent(printed_output_string);
+		dest_size = PRINTED_OUTPUT_STRING_SIZE;
+	}
+
     ch = dest;
     ct = complex_test_from_test(t);
 
@@ -575,8 +580,10 @@ char *rhs_value_to_string(rhs_value rv, char *dest, size_t dest_size)
     fl = rhs_value_to_funcall_list(rv);
     rf = fl->first;
 
-    if (!dest)
+    if (!dest) {
         dest = current_agent(printed_output_string);
+		dest_size = PRINTED_OUTPUT_STRING_SIZE;
+	}
     ch = dest;
 
     strncpy(ch, "(", dest_size - (ch - dest));
