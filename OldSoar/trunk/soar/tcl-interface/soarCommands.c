@@ -2169,7 +2169,7 @@ void Soar_InstallCommands(agent * the_agent)
     install_tcl_soar_cmd(the_agent, "input-period", InputPeriodCmd);
     install_tcl_soar_cmd(the_agent, "internal-symbols", InternalSymbolsCmd);
     install_tcl_soar_cmd(the_agent, "io", IOCmd);
-    install_tcl_soar_cmd(the_agent, "learn", LearnCmd);
+    install_tcl_soar_cmd(the_agent, "learn-core", LearnCmd);
     install_tcl_soar_cmd(the_agent, "log", LogCmd);
     install_tcl_soar_cmd(the_agent, "matches", MatchesCmd);
     install_tcl_soar_cmd(the_agent, "max-chunks", MaxChunksCmd);
