@@ -3,3 +3,4 @@ Debug
 .libs
 Makefile
 Makefile.in
+Makefile.am
