@@ -76,8 +76,8 @@
 
 int soar_ReInitSoar( int argc, const char *argv[], soarResult *res ) {
 
-  argv;
-  argc;
+  argv = argv;
+  argc = argc;
 
   clearSoarResultResult( res );
   soar_cReInitSoar();
@@ -253,9 +253,9 @@ int soar_DestroyAgent ( int argc, const char *argv[], soarResult *res)
 
 int soar_Quit( int argc, const char *argv[], soarResult *res ) {
   
-  argv;
-  argc;
-  res;
+  argv = argv;
+  argc = argc;
+  res = res;
 
   soar_cQuit();
   return SOAR_OK;
@@ -1460,7 +1460,7 @@ int soar_FiringCounts (int argc, const char *argv[], soarResult *res)
 {
   int num_requested = 0;
 
-  res;
+  res = res;
 
   if (argc > 1)
     {
@@ -1712,7 +1712,7 @@ int soar_IndifferentSelection (int argc, const char *argv[], soarResult *res)
 int soar_InternalSymbols (int argc, const char *argv[], soarResult *res)
 {
 
-  argv;
+  argv = argv;
 
   if (argc > 1)
     {
@@ -3581,8 +3581,8 @@ int soar_DefaultWmeDepth ( int argc, const char *argv[], soarResult *res )
 
 int soar_BuildInfo( int argc, const char *argv[], soarResult *res ) {
   
-  argv;
-  argc;
+  argv = argv;
+  argc = argc;
 
   soar_ecBuildInfo();
   setSoarResultResult( res, soar_version_string );
@@ -3600,8 +3600,8 @@ int soar_BuildInfo( int argc, const char *argv[], soarResult *res ) {
 
 int soar_ExcludedBuildInfo( int argc, const char *argv[], soarResult *res ) {
   
-  argv;
-  argc;
+  argv = argv;
+  argc = argc;
 
   soar_ecExcludedBuildInfo();
   setSoarResultResult( res, soar_version_string );
@@ -3620,9 +3620,9 @@ int soar_ExcludedBuildInfo( int argc, const char *argv[], soarResult *res ) {
 
 int soar_GDSPrint( int argc, const char *argv[], soarResult *res ) {
   
-  res;
-  argc;
-  argv;
+  res = res;
+  argc = argc;
+  argv = argv;
 
   soar_ecGDSPrint();
   return SOAR_OK;

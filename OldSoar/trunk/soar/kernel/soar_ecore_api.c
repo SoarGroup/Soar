@@ -40,6 +40,8 @@
  */
 
 #include "soarkernel.h"
+#include <unistd.h>
+#include <time.h>
 #include "soar_ecore_api.h"
 #include "soar_ecore_utils.h"
 #include "rete.h"

@@ -41,6 +41,7 @@
  */
 
 #include "soarkernel.h"
+#include <time.h>
 #include <stdlib.h>
 
 #include "soar_core_api.h"
@@ -2499,8 +2500,9 @@ void soar_cDefaultAskCallback( soar_callback_agent the_agent,
 
   /* AGR 615 begin */
   print("Or choose one of the following to change the user-select mode\n");
-  print("to something else:  %d (first), %d (last), %d (random)\n",
-	num_candidates+=1, num_candidates+=1, num_candidates+=1);
+  print("to something else:  %d (first)",++num_candidates);
+  print(", %d (last)",++num_candidates);
+  print(", %d (random)\n", ++num_candidates);
   /* AGR 615 end */
   for (;;) {
     char ch;

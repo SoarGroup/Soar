@@ -59,6 +59,7 @@
 #include "soarapi_datatypes.h"
 #include <assert.h>
 #include <math.h>
+#include <time.h>
 
 #ifdef NUMERIC_INDIFFERENCE
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments */

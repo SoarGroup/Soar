@@ -3471,7 +3471,7 @@ Symbol *var_bound_in_reconstructed_conds (condition *cond, /* current cond */
   abort_var_bound_in_reconstructed_conds:
   { char msg[MESSAGE_SIZE];
   strncpy (msg, "Internal error in var_bound_in_reconstructed_conds\n",MESSAGE_SIZE);
-  msg[MESSAGE_SIZE-1];
+  msg[MESSAGE_SIZE-1] = 0;
   abort_with_fatal_error(msg);
   }
   return 0; /* unreachable, but without it, gcc -Wall warns here */
@@ -4019,28 +4019,29 @@ bool ( (*(rete_test_routines[256]))
    an integer and the other is a floating point number */
 
 bool error_rete_test_routine (rete_test *rt, token *left, wme *w) {
+
   char msg[MESSAGE_SIZE];
   strncpy (msg, "Internal error: bad rete test type, hit error_rete_test_routine\n",MESSAGE_SIZE);
-  msg[MESSAGE_SIZE-1]=0;
+  msg[MESSAGE_SIZE-1] = 0;
   abort_with_fatal_error(msg);
 
-  rt;            /* unreachable, but without it, compilers warn here */
-  left;          /* unreachable, but without it, compilers warn here */
-  w;             /* unreachable, but without it, compilers warn here */
+  rt = rt;       /* unreachable, but without it, compilers warn here */
+  left = left;   /* unreachable, but without it, compilers warn here */
+  w = w;         /* unreachable, but without it, compilers warn here */
   return FALSE;  /* unreachable, but without it, gcc -Wall warns here */
 }
 
 bool id_is_goal_rete_test_routine (rete_test * rt, token * left, wme *w) {
-  rt;
-  left;
+  rt = rt;
+  left = left;
 
   return w->id->id.isa_goal;
 }
 
 bool id_is_impasse_rete_test_routine (rete_test *rt, token *left, wme *w) {
 
-  left;
-  rt;
+  left = left;
+  rt = rt;
 
   return w->id->id.isa_impasse;
 }
@@ -4049,7 +4050,7 @@ bool disjunction_rete_test_routine (rete_test *rt, token *left, wme *w) {
   Symbol *sym;
   cons *c;
 
-  left;
+  left = left;
 
   sym = field_from_wme (w,rt->right_field_num);
   for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
@@ -4060,7 +4061,7 @@ bool disjunction_rete_test_routine (rete_test *rt, token *left, wme *w) {
 bool constant_equal_rete_test_routine (rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
  
-  left;
+  left = left;
 
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
@@ -4071,7 +4072,7 @@ bool constant_not_equal_rete_test_routine (rete_test *rt, token *left,
                                            wme *w) {
   Symbol *s1, *s2;
  
-  left;
+  left = left;
 
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
@@ -4081,7 +4082,7 @@ bool constant_not_equal_rete_test_routine (rete_test *rt, token *left,
 bool constant_less_rete_test_routine (rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
  
-  left;
+  left = left;
 
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
@@ -4091,7 +4092,7 @@ bool constant_less_rete_test_routine (rete_test *rt, token *left, wme *w) {
 bool constant_greater_rete_test_routine (rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
  
-  left;
+  left = left;
 
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
@@ -4102,7 +4103,7 @@ bool constant_less_or_equal_rete_test_routine (rete_test *rt, token *left,
                                                wme *w) {
   Symbol *s1, *s2;
  
-  left;
+  left = left;
 
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
@@ -4113,7 +4114,7 @@ bool constant_greater_or_equal_rete_test_routine (rete_test *rt, token *left,
                                                   wme *w) {
   Symbol *s1, *s2;
  
-  left;
+  left = left;
 
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
@@ -4124,7 +4125,7 @@ bool constant_same_type_rete_test_routine (rete_test *rt, token *left,
                                            wme *w) {
   Symbol *s1, *s2;
  
-  left;
+  left = left;
 
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
@@ -4282,8 +4283,8 @@ void unhashed_positive_node_left_addition (rete_node *node, token *new);
 void rete_error_left (rete_node *node, token *t, wme *w) {
   char msg[MESSAGE_SIZE];
 
-  w;
-  t;
+  w = w;
+  t = t;
 
   snprintf (msg, MESSAGE_SIZE,"Rete net error:  tried to left-activate node of type %d\n",
          node->node_type);
@@ -4294,7 +4295,7 @@ void rete_error_left (rete_node *node, token *t, wme *w) {
 void rete_error_right (rete_node *node, wme *w) {
   char msg[MESSAGE_SIZE];
 
-  w;
+  w = w;
 
   snprintf (msg, MESSAGE_SIZE, "Rete net error:  tried to right-activate node of type %d\n",
          node->node_type);
@@ -5344,10 +5345,11 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 		 temp_tok = temp_tok->parent;
 	       } /* end while (temp_tok != NIL) */
 
-	       if (prod_type == PE_PRODS)
-		 if (current_agent(o_support_calculation_type) != 3 &&
-				 current_agent(o_support_calculation_type != 4 ) ) break;
-		 else if (op_elab == TRUE) {
+	       if (prod_type == PE_PRODS) {
+		 if (current_agent(o_support_calculation_type) != 3 && current_agent(o_support_calculation_type != 4 ) ) {
+                   break;
+                 }
+	       } else if (op_elab == TRUE) {
 
 		   /* warn user about mixed actions  */
 			 
@@ -7177,7 +7179,7 @@ token *dummy_matches_node_tokens;
 void dummy_matches_node_left_addition (rete_node *node, token *tok, wme *w) {
   token *new;
   
-  node;
+  node = node;
 
   /* --- just add a token record to dummy_matches_node_tokens --- */
   allocate_with_pool (&current_agent(token_pool),  &new);

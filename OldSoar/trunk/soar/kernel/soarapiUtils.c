@@ -42,6 +42,7 @@
 
 
 #include "soarkernel.h" 
+#include <unistd.h>
 #include <ctype.h>
 #include <errno.h>
 

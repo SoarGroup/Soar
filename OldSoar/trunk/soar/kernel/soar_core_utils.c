@@ -1,4 +1,5 @@
 #include "soarkernel.h"
+#include <unistd.h>
 #include "soar_core_utils.h"
 #include "rhsfun.h"
 #include "rhsfun_examples.h"
