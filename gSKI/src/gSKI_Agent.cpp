@@ -190,8 +190,8 @@ namespace gSKI
       m_kernel(kernel),
       m_ConcatRhs(),
       m_InterruptRhs(m_kernel->GetAgentManager()),
-      m_pPerfMon(0),
 	  m_ExecRhs(m_kernel),
+	  m_pPerfMon(0),
 	  m_CmdRhs(m_kernel)
    {
       MegaAssert(agentName != 0, "Null agent name pointer passed to agent constructor!");
