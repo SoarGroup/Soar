@@ -1,0 +1,32 @@
+VERSION 4
+\simple-sound-bot\simple-sound-bot.dm
+0	ROOT simple-sound-bot simple-sound-bot 1
+1	0	OPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	OPERATOR remove-sound remove-sound.soar 4
+4	2	OPERATOR wait wait.soar 5
+5	0	FOLDER elaborations elaborations 6
+6	5	FOPERATOR _all _all.soar 7
+7	5	FOPERATOR monitor monitor.soar 8
+8	5	FOPERATOR output output.soar 9
+9	5	FOPERATOR shields shields.soar 10
+10	5	FOPERATOR top-state top-state.soar 11
+11	0	HLOPERATOR attack attack.soar attack 61 12
+12	11	OPERATOR fire-missile fire-missile.soar 13
+13	11	OPERATOR move move.soar 14
+14	11	OPERATOR slide slide.soar 15
+15	11	OPERATOR turn turn.soar 16
+16	0	HLOPERATOR chase chase.soar chase 62 17
+17	16	FOPERATOR elaborations elaborations.soar 18
+18	16	OPERATOR move move.soar 19
+19	16	OPERATOR turn turn.soar 20
+20	0	HLOPERATOR retreat retreat.soar retreat 63 21
+21	20	FOPERATOR elaborations elaborations.soar 22
+22	20	OPERATOR move move.soar 23
+23	20	OPERATOR wait wait.soar 24
+24	0	HLOPERATOR wander wander.soar wander 6 25
+25	24	FOPERATOR elaborations elaborations.soar 26
+26	24	OPERATOR move move.soar 27
+27	24	OPERATOR record-sound record-sound.soar 28
+28	24	OPERATOR turn turn.soar 29
+END

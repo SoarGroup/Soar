@@ -1,0 +1,50 @@
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE OPERATOR:
+### MOVE-TILE
+###
+
+sp {eight*create*operator*move-tile
+   (state <s> ^name eight-puzzle
+              ^blank-cell <c1>)
+   (<c1> ^cell <c2>)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name move-tile
+        ^tile-cell <c2>
+        ^blank-cell <c1>)}
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE:
+### OPERATOR IMPLEMENTATION
+###
+
+sp {eight*apply*operator*move-tile
+   (state <s> ^operator <o>
+              ^binding <b1> { <> <b1> <b2>}
+              ^blank-cell <c1>)
+   (<o> ^name move-tile
+        ^tile-cell <c2>
+        ^blank-cell <c1>)
+   (<b1> ^tile <t1> ^cell <c1>)
+   (<b2> ^tile <t2> ^cell <c2>)
+-->
+   (<s> ^blank-cell <c1> - <c2>)
+   (<b1> ^tile <t1> - <t2>)
+   (<b2> ^tile <t2> - <t1>)}
+
+sp {eight*apply*operator*remove-tile-cell
+   (state <s> ^operator <o>
+              ^tile-cell <last-move>)
+   (<o> ^name move-tile
+        ^blank-cell <> <last-move>)
+-->
+   (<s> ^tile-cell <last-move> -)}
+
+sp {eight*apply*operator*add-tile-cell
+   (state <s> ^operator <o>
+              ^blank-cell <c1>)
+   (<o> ^name move-tile
+        ^blank-cell <c1>)
+-->
+   (<s> ^tile-cell <c1>)}

@@ -1,0 +1,10 @@
+Starting InitializeInterfaceLibrary
+InitializeInterfaceLibrary -- Succeeded
+Unable to connect to server
+EstablishConnection -- Did not find a client
+Starting timer
+About to check for a connection
+No connection exists
+Stopped timer
+Called TerminateInterfaceLibrary
+Called CloseAll()

@@ -1,0 +1,8 @@
+#!/bin/sh
+pushd kernel
+make distclean
+popd
+pushd tcl-interface
+make distclean
+popd
+rm library/libsoar*

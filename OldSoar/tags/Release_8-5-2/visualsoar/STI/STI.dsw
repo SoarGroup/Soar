@@ -1,0 +1,92 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "InterfaceTest"=.\InterfaceTest\InterfaceTest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name STI_Interface
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "STI_Interface"=.\STI_Interface\STI_Interface.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "Simple"=.\Simple\Simple.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "SoarToolJavaInterface"=.\SoarToolJavaInterface\SoarToolJavaInterface.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name STI_Interface
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "TestMaster"=.\TestMaster\TestMaster.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name InterfaceTest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Simple
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name SoarToolJavaInterface
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

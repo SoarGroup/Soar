@@ -1,0 +1,10 @@
+Kernel.ncb
+Kernel.plg
+soarkernel.lib
+Release
+Debug
+Makefile
+config.cache
+config.log
+config.status
+Kernel.opt

@@ -1,0 +1,47 @@
+
+sp {water-jug*propose*pour
+   (state <s> ^name water-jug
+              ^jug <i> { <> <i> <j> })
+   (<i> ^contents > 0 )
+   (<j> ^empty > 0)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name pour
+        ^jug <i>
+        ^into <j>)}
+
+## Apply pour when contents of source jug i is less than or equal to the
+## capacity available of the destination jug j.
+
+sp {water-jug*apply*pour*not-empty-source
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^jug <i>
+        ^into <j>)
+   (<j> ^volume <jvol>
+        ^contents <jcon>
+        ^empty <jempty>)
+   (<i> ^volume <ivol>
+        ^contents { <icon> <= <jempty> })
+-->
+   (<i> ^contents 0 <icon> -)
+   (<j> ^contents (+ <jcon> <icon>) <jcon> - )}
+
+## Implement pour when contents of source jug i is more than the
+## capacity available of the destination jug j.
+
+sp {water-jug*apply*pour*empty-source
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^jug <i>
+        ^into <j>)
+   (<i> ^volume <ivol>
+        ^contents { <icon> > <jempty> })
+   (<j> ^volume <jvol>
+        ^contents <jcon>
+        ^empty <jempty>)
+-->
+   (<i> ^contents (- <icon> <jempty>) <icon> - )
+   (<j> ^contents <jvol> <jcon> -)}

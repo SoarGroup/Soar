@@ -1,0 +1,108 @@
+package edu.umich.visualsoar.operatorwindow;
+
+/**
+ * This class creates an DefaultMutableTreeNode that can be passed around in Drag and Drop situations 
+ * @author Brad Jones
+ * @version 0.5a 6 15 1999
+ */ 
+
+import javax.swing.tree.*;
+import java.awt.datatransfer.*;
+import java.io.*;
+import java.util.*;
+
+public class TransferableTreeNode implements Transferable {
+	// Data Members
+	/**
+	 * @serial the DatFlavors that the node can be passed as
+	 */
+	public static final DataFlavor[] flavors = { new DataFlavor(TreeNode.class,"Visual Soar Tree Node") };
+
+	/**
+	 * @serial a list to facilitate the isDataFlavorSupported function
+	 */
+	private static final List flavorList = Arrays.asList(flavors);
+
+	/**
+	 * @data the data to be transfered
+	 */
+	public TreeNode node;
+
+	// Constructors
+	/**
+	 * @param in_data the Default mutable tree node to transfer
+	 */
+	public TransferableTreeNode(TreeNode inData) {
+		node = (TreeNode)inData.clone();
+		startAddChildren(inData);
+	}
+
+	// methods
+	/**
+	 * @return the data to be transferred
+	 */ 
+	public synchronized Object getTransferData(DataFlavor flavor) 
+		throws UnsupportedFlavorException, IOException {
+		if (flavor.equals(flavors[0])) {
+			return node;
+		}
+		throw new UnsupportedFlavorException(flavor);
+		
+	}	
+
+	/**
+	 * @return a reference to the dataflavors
+	 */
+	public synchronized DataFlavor[] getTransferDataFlavors() {
+		return flavors;
+	}
+	
+	/**
+	 * @param flavor the data flavor to check if it is supported 
+	 * @return true if the data flavor is supported false otherwise
+	 */
+	public boolean isDataFlavorSupported(DataFlavor flavor) {
+		return (flavorList.contains(flavor));
+	}
+
+	/**
+	 * Starting point for the recursion to grab all the children of the node
+	 * @param in_data the DefaultMutableTreeNode to copy
+	 */
+	private void startAddChildren(TreeNode in_data) {
+		addChildren(node,in_data);		
+	}
+
+	// The recursive function
+	/**
+	 * Does a depth first transversal of the tree to copy all the children
+	 * @param write the tree node to write the data too
+	 * @param parent the tree node to read the children from
+	 */
+	private static void addChildren(TreeNode write,TreeNode parent) {
+		TreeNode copy;
+
+		// Does this node have any children
+		if (parent.getChildCount() == 0)
+			return;
+		
+		// Yes it does, so get the first one
+		TreeNode currentChild = (TreeNode)parent.getFirstChild();
+
+		// Iteratate through all the children
+		for (int i=0;i < parent.getChildCount(); ++i) { 
+			
+			// copy the node
+			copy = (TreeNode)currentChild.clone();
+	
+			// add it to the write node
+			write.add(copy);
+
+			// add its children
+			addChildren(copy,currentChild);
+
+			// go on to the next child
+			currentChild = (TreeNode)currentChild.getNextSibling();
+		}
+	}
+}
