@@ -106,6 +106,13 @@ public class MainWindow
 		buttons.setLinkedView(trace) ;	// Use the trace window for output from the buttons
 		buttons.Init(m_MainFrame, m_Document, buttonPane.getWindow()) ;		
 		
+		// Create another trace window at the bottom for now
+		AbstractView trace2 = new ComboCommandViewKeep() ;
+		trace2.Init(m_MainFrame, m_Document, bottom.getWindow()) ;
+		
+		// Start with the focus on the top trace window
+		trace.setFocus() ;
+		
   		// Layout the three windows with a sash between them
     	FormData topData    = new FormData();
     	FormData buttonData = new FormData() ;

@@ -124,6 +124,8 @@ public class DocumentThread extends Thread
 		while (!m_AskedToStop)
 		{
 			executePending() ;
+			
+			try { Thread.sleep(10) ; } catch (InterruptedException e) { } 
 		}
 	}
 }

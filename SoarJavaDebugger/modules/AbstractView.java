@@ -104,6 +104,13 @@ public abstract class AbstractView implements AgentFocusListener
 	
 	/************************************************************************
 	* 
+	* Set the focus to this window so the user can type commands easily.
+	* 
+	*************************************************************************/
+	public abstract void setFocus() ;
+	
+	/************************************************************************
+	* 
 	* Create an instance of the class.  It does not have to be fully initialized
 	* (it's the caller's responsibility to finish the initilization).
 	* 

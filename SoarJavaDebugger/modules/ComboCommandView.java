@@ -98,7 +98,7 @@ public class ComboCommandView extends AbstractView
 		
 		m_Container.layout() ;
 	}
-	
+		
 	public void Init(MainFrame frame, Document doc, Composite parent)
 	{
 		if (m_Inited)
@@ -117,10 +117,6 @@ public class ComboCommandView extends AbstractView
 		
 		m_CommandCombo.setText("<Type commands here>") ;
 		
-		// BUGBUG: I don't think we want to do focus like this -- needs to be a more global decision
-		// about which window to focus on and then within that it should know where to put the focus.
-		m_CommandCombo.setFocus() ;
-		
 		layoutControls() ;
 		
 		m_Inited = true ;
@@ -137,7 +133,18 @@ public class ComboCommandView extends AbstractView
 		// We want to know when the frame focuses on particular agents
 		m_MainFrame.addAgentFocusListener(this) ;
 	}
-			
+	
+	/************************************************************************
+	* 
+	* Set the focus to this window so the user can type commands easily.
+	* 
+	*************************************************************************/
+	public void setFocus()
+	{
+		// For us, we focus on the combo box, where the user types commands.
+		m_CommandCombo.setFocus() ;		
+	}
+	
 	private void soarStopped(SoarChangeEvent e)
 	{
 		if (this.m_UpdateOnStop)
@@ -295,9 +302,7 @@ public class ComboCommandView extends AbstractView
 	*************************************************************************/
 	public String executeAgentCommand(String command)
 	{
-		System.out.println("Starting " + command) ;
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
-		System.out.println("Finished " + command) ;
 
 		// Output from Soar doesn't include newlines and assumes that we insert
 		// a newline before the result of the command is displayed.

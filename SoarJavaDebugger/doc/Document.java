@@ -474,14 +474,13 @@ public class Document
 		if (agent == null)
 			return null ;
 
-		// Only schedule run commands to run in their own thread
-		// All others can run immediately in UI thread (even if we have a separate doc thread)
-		// because they'll return very quickly.  By separating these out we don't really
-		// have to solve the question of how to capture the result from executing the command
-		// and pass it back to the caller...which is potentially a hard problem.
-		//if (this.kDocInOwnThread && m_Kernel.IsRunCommand(commandLine))
 		if (this.kDocInOwnThread)
 		{
+			// If Soar commands run in their own thread we issue the command and then pump the UI thread for messages
+			// while waiting for a response.  We do this so that folks calling here can see this as a synchronous call
+			// when really it's asynchronous.
+			// We also need to pump the document thread in response to an "agents_run_step" event to allow interruptions
+			// so that a Soar "run" command can be interrupted.
 			DocumentThread.Command command = m_DocumentThread.scheduleCommandToExecute(agent, commandLine) ;
 			
 			while (!m_DocumentThread.isExecutedCommand(command))
@@ -490,6 +489,7 @@ public class Document
 				
 				// BUGBUG: We really want to have a way to say "sleep-until-either UI-message or command-is-executed".
 				// Not sure how to do that.  Without it we will be wasting CPU cycles polling for these results while Soar is executing.
+				try { Thread.sleep(10) ; } catch (InterruptedException e) { } 
 			}
 
 			String result = m_DocumentThread.getExecutedCommandResult(command) ;
@@ -497,6 +497,9 @@ public class Document
 		}
 		else
 		{
+			// If we're running commands in the UI thread we can just execute it.
+			// If it's a run we need to pump messages in response to an "agents_run_step" event
+			// to keep the UI alive and allow folks to interrupt Soar.
 			String response = agent.ExecuteCommandLine(commandLine) ;			
 			return response ;
 		}

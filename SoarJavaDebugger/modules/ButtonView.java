@@ -139,6 +139,17 @@ public class ButtonView extends AbstractView
 	
 	/************************************************************************
 	* 
+	* Set the focus to this window so the user can type commands easily.
+	* 
+	*************************************************************************/
+	public void setFocus()
+	{
+		// For button bar we have no place to put the focus right now.
+		// BADBAD: Perhaps we could put it on one button so that return makes it activate? -- sounds like a bad plan.
+	}
+
+	/************************************************************************
+	* 
 	* Converts this object into an XML representation.
 	* 
 	*************************************************************************/
