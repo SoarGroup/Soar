@@ -37,6 +37,11 @@ public:
 		kCreationFailed		= 10,
 		kSMLHasNoCommand	= 11,
 		kNullArgument		= 12,
+		kConnectionTimedOut = 13,
+		kSocketError		= 14,
+		kParsingXMLError	= 15,
+		kConnectionFailed	= 16,
+		kInvalidResponse	= 17,
 	} ;
 
 	/** Returns a description of the error which can be shown to a user */
@@ -57,6 +62,11 @@ public:
 			case kCreationFailed:		return "Loaded the shared library, but the attempt to create an embedded connection failed." ;
 			case kSMLHasNoCommand:		return "This SML object does not contain a command tag" ;
 			case kNullArgument:			return "Null argument passed" ;
+			case kConnectionTimedOut:	return "Socket connection timed out" ;
+			case kSocketError:			return "Error reading data from the socket" ;
+			case kParsingXMLError:		return "Error parsing the incoming XML message" ;
+			case kConnectionFailed:		return "Failed to connect to the remote server" ;
+			case kInvalidResponse:		return "The connection sent a response when none should have been sent." ;
 		}
 
 		return "Unknown error code" ;

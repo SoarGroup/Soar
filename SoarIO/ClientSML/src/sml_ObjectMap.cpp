@@ -9,8 +9,8 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include "sml_ObjectMap.h"
+//#include "sml_ObjectMap.h"
 
-using namespace sml ;
+//using namespace sml ;
 
 // Template implementation required to be in the header.

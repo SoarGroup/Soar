@@ -20,6 +20,9 @@
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
 #include "sml_OutputListener.h"
+#include "sml_ConnectionManager.h"
+
+#include "thread_Lock.h"
 
 #include "gSKI.h"
 #include <iostream>
@@ -103,19 +106,63 @@ KernelSML::KernelSML()
 
 	// Create the map from command name to handler function
 	BuildCommandMap() ; 
+
+	// Start listening for incoming connections
+	m_pConnectionManager = new ConnectionManager() ;
+
+	// We'll use this to make sure only one connection is executing commands
+	// in the kernel at a time.
+	m_pMutex = new soar_thread::Mutex() ;
 }
 
 KernelSML::~KernelSML()
 {
-	if (m_pKernelFactory && m_pIKernel)
-		m_pKernelFactory->DestroyKernel(m_pIKernel);
-
 	// Clean up any agent specific data we still own.
+	// We do this before deleting the kernel itself, so we get
+	// clean stats on whether we've released all memory in gSKI or not.
+	// (Check the gski_unreleased.txt file in the app's exe directory for a debug build).
 	for (AgentMapIter iter = m_AgentMap.begin() ; iter != m_AgentMap.end() ; iter++)
 	{
 		AgentSML* pAgentSML = iter->second ;
 		delete pAgentSML ;
 	}
+
+	if (m_pKernelFactory && m_pIKernel)
+		m_pKernelFactory->DestroyKernel(m_pIKernel);
+
+	delete m_pConnectionManager ;
+
+	delete m_pMutex ;
+}
+
+/*************************************************************
+* @brief	Shutdown any connections and sockets in preparation
+*			for the kernel process exiting.
+*************************************************************/
+void KernelSML::Shutdown()
+{
+	if (m_pConnectionManager)
+		m_pConnectionManager->Shutdown() ;
+}
+
+/*************************************************************
+* @brief	Add a new connection to the list of connections
+*			we're aware of to this soar kernel.
+*************************************************************/
+void KernelSML::AddConnection(Connection* pConnection)
+{
+	if (m_pConnectionManager)
+		m_pConnectionManager->AddConnection(pConnection) ;
+}
+
+/*************************************************************
+* @brief	Receive and process any messages from remote connections
+*			that are waiting on a socket.
+*************************************************************/
+void KernelSML::ReceiveAllMessages()
+{
+	if (m_pConnectionManager)
+		m_pConnectionManager->ReceiveAllMessages() ;
 }
 
 /*************************************************************
@@ -142,7 +189,7 @@ AgentSML* KernelSML::GetAgentSML(gSKI::IAgent* pAgent)
 	if (iter == m_AgentMap.end())
 	{
 		// If not in the map, add it.
-		pResult = new AgentSML(pAgent) ;
+		pResult = new AgentSML(this, pAgent) ;
 		m_AgentMap[pAgent] = pResult ;
 	}
 	else
@@ -152,6 +199,20 @@ AgentSML* KernelSML::GetAgentSML(gSKI::IAgent* pAgent)
 	}
 
 	return pResult ;
+}
+
+/*************************************************************
+* @brief	Remove any event listeners for this connection.
+*************************************************************/	
+void KernelSML::RemoveAllListeners(Connection* pConnection)
+{
+	// Remove any agent specific listeners
+	for (AgentMapIter iter = m_AgentMap.begin() ; iter != m_AgentMap.end() ; iter++)
+	{
+		AgentSML* pAgent = iter->second ;
+
+		pAgent->RemoveAllListeners(pConnection) ;
+	}
 }
 
 /*************************************************************
@@ -319,6 +380,11 @@ ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, ElementXML* p
 {
 	if (!pIncomingMsg || !pConnection)
 		return NULL ;
+
+	// Make sure only one thread is executing commands in the kernel at a time.
+	// This allows us to have a separate thread for managing remote connections
+	// and yet not need the kernel itself to support multi-threaded access.
+	soar_thread::Lock lock(m_pMutex) ;
 
 #ifdef DEBUG
 	// For debugging, it's helpful to be able to look at the incoming message as an XML string

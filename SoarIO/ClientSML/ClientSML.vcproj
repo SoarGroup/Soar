@@ -144,6 +144,9 @@
 				RelativePath=".\include\sml_ClientAgent.h">
 			</File>
 			<File
+				RelativePath=".\include\sml_ClientEvents.h">
+			</File>
+			<File
 				RelativePath=".\include\sml_ClientFloatElement.h">
 			</File>
 			<File

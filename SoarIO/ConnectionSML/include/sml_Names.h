@@ -47,6 +47,9 @@ public:
 	static char const* kTagError ;
 	static char const* kErrorCode ;
 
+	// <name> tag identifiers
+	static char const* kTagName ;
+
 	// <result> tag identifiers
 	static char const* kTagResult ;
 
@@ -99,11 +102,13 @@ public:
 	static char const* kParamWorkingMemory ;
 	static char const* kParamAttributePath ;
 	static char const* kParamUpdate ;
+	static char const* kParamEventID ;
 	static char const* kParamLearnSetting;
 	static char const* kParamLogSetting;
 	static char const* kParamDirectory;
 	static char const* kParamSeconds;
 	static char const* kParamWarningsSetting;
+	static char const* kParamPhase ;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* kTrue ;
@@ -112,6 +117,7 @@ public:
 	// sgio style commands
 	static char const* kCommand_CreateAgent ;
 	static char const* kCommand_DestroyAgent ;
+	static char const* kCommand_GetAgentList ;
 	static char const* kCommand_LoadProductions ;
 	static char const* kCommand_GetInputLink ;
 	static char const* kCommand_GetOutputLink ;
@@ -120,6 +126,9 @@ public:
 	static char const* kCommand_Output ;
 	static char const* kCommand_CheckForIncomingCommands ;
 	static char const* kCommand_StopOnOutput ;
+	static char const* kCommand_RegisterForEvent ;
+	static char const* kCommand_UnregisterForEvent ;
+	static char const* kCommand_Event ;			// Just passes event id
 
 	// Command line interface
 	static char const* kCommand_CommandLine ;

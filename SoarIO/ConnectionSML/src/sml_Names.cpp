@@ -42,6 +42,9 @@ char const* sml_Names::kArgType			= "type" ;
 char const* sml_Names::kTagError		= "error" ;
 char const* sml_Names::kErrorCode		= "code" ;
 
+// <name> tag identifiers
+char const* sml_Names::kTagName			= "name" ;
+
 // <result> tag identifiers
 char const* sml_Names::kTagResult		= "result" ;
 
@@ -99,6 +102,8 @@ char const* sml_Names::kParamLogSetting			= "log_setting";
 char const* sml_Names::kParamDirectory			= "directory";
 char const* sml_Names::kParamSeconds			= "seconds";
 char const* sml_Names::kParamWarningsSetting	= "warnings_setting";
+char const* sml_Names::kParamEventID			= "eventid" ;
+char const* sml_Names::kParamPhase				= "phase" ;
 
 // Values (these are not case sensitive unlike the rest)
 char const* sml_Names::kTrue	= "true" ;
@@ -107,6 +112,7 @@ char const* sml_Names::kFalse	= "false" ;
 // sgio style commands
 char const* sml_Names::kCommand_CreateAgent		= "create_agent" ;
 char const* sml_Names::kCommand_DestroyAgent	= "destroy_agent" ;
+char const* sml_Names::kCommand_GetAgentList	= "get_agent_list" ;
 char const* sml_Names::kCommand_LoadProductions = "load_productions" ;
 char const* sml_Names::kCommand_GetInputLink	= "get_input_link" ;
 char const* sml_Names::kCommand_GetOutputLink	= "get_output_link" ;
@@ -115,6 +121,9 @@ char const* sml_Names::kCommand_Input			= "input" ;
 char const* sml_Names::kCommand_Output			= "output" ;
 char const* sml_Names::kCommand_CheckForIncomingCommands = "check_for_incoming_commands" ;
 char const* sml_Names::kCommand_StopOnOutput	= "stop_on_output" ;
+char const* sml_Names::kCommand_RegisterForEvent = "register_for_event" ;
+char const* sml_Names::kCommand_UnregisterForEvent = "unregister_for_event" ;
+char const* sml_Names::kCommand_Event			= "event" ;	// Just passes event id
 
 // command line interface
 char const* sml_Names::kCommand_CommandLine  = "cmdline" ;

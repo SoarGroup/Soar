@@ -137,10 +137,46 @@
 				RelativePath=".\src\sml_TagError.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_TagName.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_TagResult.cpp">
 			</File>
 			<File
 				RelativePath=".\src\sml_TagWme.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sock_ClientSocket.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sock_Debug.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sock_ListenerSocket.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sock_OSspecific.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sock_Socket.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sock_SocketLib.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sock_Utils.cpp">
+			</File>
+			<File
+				RelativePath=".\src\thread_Event.cpp">
+			</File>
+			<File
+				RelativePath=".\src\thread_Lock.cpp">
+			</File>
+			<File
+				RelativePath=".\src\thread_OSspecific.cpp">
+			</File>
+			<File
+				RelativePath=".\src\thread_Thread.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -193,10 +229,52 @@
 				RelativePath=".\include\sml_TagError.h">
 			</File>
 			<File
+				RelativePath=".\include\sml_TagName.h">
+			</File>
+			<File
 				RelativePath=".\include\sml_TagResult.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_TagWme.h">
+			</File>
+			<File
+				RelativePath=".\src\sock_Check.h">
+			</File>
+			<File
+				RelativePath=".\include\sock_ClientSocket.h">
+			</File>
+			<File
+				RelativePath=".\include\sock_Debug.h">
+			</File>
+			<File
+				RelativePath=".\include\sock_ListenerSocket.h">
+			</File>
+			<File
+				RelativePath=".\src\sock_OSspecific.h">
+			</File>
+			<File
+				RelativePath=".\include\sock_Socket.h">
+			</File>
+			<File
+				RelativePath=".\include\sock_SocketHeader.h">
+			</File>
+			<File
+				RelativePath=".\include\sock_SocketLib.h">
+			</File>
+			<File
+				RelativePath=".\src\sock_Utils.h">
+			</File>
+			<File
+				RelativePath=".\include\thread_Event.h">
+			</File>
+			<File
+				RelativePath=".\include\thread_Lock.h">
+			</File>
+			<File
+				RelativePath=".\include\thread_OSspecific.h">
+			</File>
+			<File
+				RelativePath=".\include\thread_Thread.h">
 			</File>
 		</Filter>
 		<Filter

@@ -12,14 +12,16 @@
 #include "sml_ClientKernel.h"
 #include "sml_ClientAgent.h"
 #include "sml_Connection.h"
+#include "sock_SocketLib.h"
 
 using namespace sml ;
 
 Kernel::Kernel(Connection* pConnection)
 {
-	m_Connection = pConnection ;
+	m_Connection     = pConnection ;
 	m_TimeTagCounter = 0 ;
-	m_IdCounter = 0 ;
+	m_IdCounter      = 0 ;
+	m_SocketLibrary  = NULL ;
 }
 
 Kernel::~Kernel(void)
@@ -31,6 +33,9 @@ Kernel::~Kernel(void)
 		m_Connection->CloseConnection() ;
 
 	delete m_Connection ;
+
+	// Deleting this shuts down the socket library if we were using it.
+	delete m_SocketLibrary ;
 }
 
 /*************************************************************
@@ -78,6 +83,12 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 			// Pass the incoming message over to the agent
 			pAgent->ReceivedOutput(&msg, pResponse) ;
 		}
+
+		if (pAgent && strcmp(sml_Names::kCommand_Event, pCommandName) == 0)
+		{
+			// This is an event specific to an agent, so handle it there.
+			pAgent->ReceivedEvent(&msg, pResponse) ;
+		}
 	}
 
 	return pResponse ;
@@ -89,13 +100,17 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 *
 * @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
 *						This library will be dynamically loaded and connected to.
+* @param SynchronousExecution	If true, Soar will run in the client's thread and the client must periodically call over to the
+*								kernel to check for incoming messages on remote sockets.
+*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
+*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
 *
 * @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
 *************************************************************/
-Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName)
+Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution)
 {
 	ErrorCode errorCode = 0 ;
-	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, &errorCode) ;
+	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, synchronousExecution, &errorCode) ;
 
 	if (!pConnection)
 		return NULL ;
@@ -112,27 +127,95 @@ Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName)
 * @brief Creates a connection to a receiver that is in a different
 *        process.  The process can be on the same machine or a different machine.
 *
+* @param sharedFileSystem	If true the local and remote machines can access the same set of files.
+*					For example, this means when loading a file of productions, sending the filename is
+*					sufficient, without actually sending the contents of the file.
+*					(NOTE: It may be a while before we really support passing in 'false' here)
 * @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
-*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
-* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
+*                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
+* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
 *
 * @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
 *************************************************************/
-Kernel* Kernel::CreateRemoteConnection(char const* pIPaddress, int port)
+Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port)
 {
 	ErrorCode errorCode = 0 ;
 
-	// The remote part is still to be written.
-	//Connection* pConnection = Connection::CreateRemoteConnection(pIPaddress, port, &errorCode) ;
-	Connection* pConnection = NULL ;
+	// Initialize the socket library before attempting to create a connection
+	sock::SocketLib* pLib = new sock::SocketLib() ;
 
+	// Connect to the remote socket
+	Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, port, &errorCode) ;
+
+	// BUGBUG: We need to return a decent error message here as this can easily fail.
 	if (!pConnection)
+	{
+		delete pLib ;
 		return NULL ;
-
-// BUGBUG: Should initialize our list of agents to match any that already exist in the kernel.
+	}
 
 	Kernel* pKernel = new Kernel(pConnection) ;
+	pKernel->SetSocketLib(pLib) ;
+
+	// Get the current list of active agents
+	pKernel->UpdateAgentList() ;
+
 	return pKernel ;
+}
+
+/*************************************************************
+* @brief Returns the number of agents (from our list of known agents).
+*************************************************************/
+int Kernel::GetNumberAgents()
+{
+	return m_AgentMap.size() ;
+}
+
+/*************************************************************
+* @brief Get the list of agents currently active in the kernel
+*		 and create local Agent objects for each one (if we
+*		 don't already have that agent registered).
+*************************************************************/
+void Kernel::UpdateAgentList()
+{
+	AnalyzeXML response ;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetAgentList))
+	{
+		ElementXML const* pResult = response.GetResultTag() ;
+		ElementXML child(NULL) ;
+		
+		// Keep a record of the agents we find, so we can delete any that have been removed.
+		std::list<Agent*>	inUse ;
+
+		for (int i = 0 ; i < pResult->GetNumberChildren() ; i++)
+		{
+			pResult->GetChild(&child, i) ;
+
+			// Look for the <name> tags
+			if (child.IsTag(sml_Names::kTagName))
+			{
+				// Get the agent's name
+				char const* pAgentName = child.GetCharacterData() ;
+
+				// If we don't know about this agent already, then add it to our list.
+				Agent* pAgent = m_AgentMap.find(pAgentName) ;
+
+				if (!pAgent)
+				{
+					pAgent = new Agent(this, pAgentName) ;
+
+					// Record this in our list of agents
+					m_AgentMap.add(pAgent->GetAgentName(), pAgent) ;
+				}
+
+				inUse.push_back(pAgent) ;
+			}
+		}
+
+		// Any agents that are in our map but not in the "inuse" list we should delete
+		// as they no longer exist.
+		m_AgentMap.keep(&inUse) ;
+	}
 }
 
 /*************************************************************
@@ -144,7 +227,16 @@ Kernel* Kernel::CreateRemoteConnection(char const* pIPaddress, int port)
 *************************************************************/
 Agent* Kernel::GetAgent(char const* pAgentName)
 {
-	return (Agent*)m_AgentMap.find(pAgentName) ;
+	return m_AgentMap.find(pAgentName) ;
+}
+
+/*************************************************************
+* @brief Returns the n-th agent from our list of known agents.
+*		 This is slower than GetAgent(pAgentName).
+*************************************************************/
+Agent* Kernel::GetAgentByIndex(int index)
+{
+	return m_AgentMap.getIndex(index) ;
 }
 
 /*************************************************************

@@ -49,13 +49,48 @@ void printWMEs(WMElement const* pRoot)
 	}
 }
 
-int main(int argc, char* argv[])
+void RemoteConnection()
 {
-	// When we have a memory leak, set this variable to
-	// the allocation number (e.g. 122) and then we'll break
-	// when that allocation occurs.
-	//_crtBreakAlloc = 62 ;
+	sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
+	if (pKernel)
+	{
+		sml::Agent* pAgent = pKernel->CreateAgent("test2") ;
+
+		// Should be two agents here if we started a command line instance as the embedded connection
+		// which creates an agent automatically (in the current test app)
+		int nAgents = pKernel->GetNumberAgents() ;
+
+		for (int i = 0 ; i < nAgents ; i++)
+		{
+			pAgent = pKernel->GetAgentByIndex(i) ;
+			cout << "Found agent: " << pAgent->GetAgentName() << endl ;
+		}
+
+		SLEEP(1000) ;
+	}
+
+	delete pKernel ;
+}
+
+void SimpleEmbeddedConnection()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", false) ;
+
+	// Sleep for 20 seconds and then quit
+	SLEEP(20*1000) ;
+
+	delete pKernel ;
+}
+
+void MyRunEventHandler(smlEventId id, Agent* pAgent, smlPhase phase)
+{
+	cout << "Received an event callback" << endl ;
+}
+
+void EmbeddedConnection()
+{
 	cout << "TestClientSML app starting..." << endl << endl;
 
 	cout << "Creating Connection..." << endl << endl;
@@ -63,7 +98,7 @@ int main(int argc, char* argv[])
 	// We'll do the test in a block, so everything should have been
 	// deleted when we test for memory leaks.
 	{
-		sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML") ;
+		sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", true) ;
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent("test") ;
@@ -105,6 +140,9 @@ int main(int argc, char* argv[])
 		pAgent->DestroyWME(pID) ;
 		pAgent->Commit() ;
 
+		// Test that we get a callback after the decision cycle runs
+		pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler) ;
+
 		// Nothing should match here
 		pAgent->Run(2) ;
 
@@ -118,7 +156,7 @@ int main(int argc, char* argv[])
 
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 //		pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
-		pAgent->RunTilOutput(20) ;	// Should just run a decision or two.
+		pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 		bool ioOK = false ;
 
@@ -206,6 +244,8 @@ int main(int argc, char* argv[])
 			SLEEP(10) ;
 		}
 
+		cout << "Destroy the agent now" << endl ;
+
 		// Explicitly destroy our agent as a test, before we delete the kernel itself.
 		ok = pKernel->DestroyAgent(pAgent) ;
 
@@ -219,9 +259,21 @@ int main(int argc, char* argv[])
 		//pConnection->CloseConnection();
 		//delete pConnection ;
 	}// closes testing block scope
+}
 
-	//A deliberate memory leak which I can use to test the memory checking code is working.
-	//char* pTest = new char[10] ;
+int main(int argc, char* argv[])
+{
+	// When we have a memory leak, set this variable to
+	// the allocation number (e.g. 122) and then we'll break
+	// when that allocation occurs.
+	//_crtBreakAlloc = 62 ;
+
+	// For now, any argument on the command line makes us create a remote connection.
+	// Later we'll try passing in an ip address/port number.
+	if (argc > 1)
+		RemoteConnection() ;
+	else
+		EmbeddedConnection() ;
 
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
@@ -236,13 +288,9 @@ int main(int argc, char* argv[])
 	// If we allocate something in a DLL then this call won't see it because it works by overriding the
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
-	//_CrtMemDumpAllObjectsSince(&memstate) ;
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <return> to exit\n") ;
 	char line[100] ;
 	char* str = gets(line) ;
-
-
-	return 0;
 }

@@ -30,23 +30,31 @@
 #include <string>
 #include <list>
 #include <map>
+#include <queue>
 
 #ifndef unused
 #define unused(x) (void)(x)
 #endif
 
 #include "sml_Errors.h"
+#include "thread_Lock.h"
 
 // These last ones are just for convenience, they could come out
 #include "sml_ElementXML.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_Names.h"
 
+namespace sock
+{
+	// Forward declarations
+	class Socket ;
+}
+
 namespace sml
 {
 
 // Forward declarations
-class ListenerConnection ;
+class ConnectionManager ;
 class Connection ;
 class ElementXML ;
 class AnalyzeXML ;
@@ -107,6 +115,9 @@ typedef CallbackList::iterator	CallbackListIter ;
 typedef std::map<std::string, CallbackList*>	CallbackMap ;
 typedef CallbackMap::iterator					CallbackMapIter ;
 
+// Used to store a queue of messages
+typedef std::queue<ElementXML*>	MessageQueue ;
+
 /*************************************************************
 * @brief The Connection class represents a logical link
 *		 between two entities that are communicating through
@@ -114,6 +125,9 @@ typedef CallbackMap::iterator					CallbackMapIter ;
 *************************************************************/
 class Connection 
 {
+public:
+	enum { kDefaultSMLPort = 12121 } ;
+
 protected:
 	// Maps from SML document types (e.g. "call") to a list of functions to call when that type of message is received.
 	CallbackMap		m_CallbackMap ;
@@ -129,6 +143,17 @@ protected:
 	// The error status of the last function called.
 	ErrorCode		m_ErrorCode ;
 
+	// A list of messages that have been received on this connection and are waiting to be executed.
+	// This queue may not be in use for a given type of connection
+	MessageQueue	m_IncomingMessageQueue ;
+
+	// A list of messages that are waiting to be returned to the original caller
+	// This queue may not be in use for a given type of connection
+	MessageQueue	m_OutgoingMessageQueue ;
+
+	// We can use this mutex to serialize acccess to the message queues
+	soar_thread::Mutex	m_Mutex ;
+
 public:
 	Connection() ;
 	virtual ~Connection() ;
@@ -139,39 +164,40 @@ public:
 	*
 	* @param pLibraryName	The name of the library to load, without an extension (e.g. "ClientSML" or "KernelSML").  Case-sensitive (to support Linux).
 	*						This library will be dynamically loaded and connected to.
+	* @param SynchronousExecution	If true, Soar will run in the client's thread and the client must periodically call over to the
+	*								kernel to check for incoming messages on remote sockets.
+	*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
+	*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
 	* @param pError			Pass in a pointer to an int and receive back an error code if there is a problem.
 	* @returns An EmbeddedConnection instance.
 	*************************************************************/
-	static Connection* CreateEmbeddedConnection(char const* pLibraryName, ErrorCode* pError) ;
+	static Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, ErrorCode* pError = NULL) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
 	*        process.  The process can be on the same machine or a different machine.
 	*
+	* @param sharedFileSystem	If true the local and remote machines can access the same set of files.
+	*					For example, this means when loading a file of productions, sending the filename is
+	*					sufficient, without actually sending the contents of the file.
+	*					(NOTE: It may be a while before we really support passing in 'false' here)
 	* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
 	*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
-	* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
+	* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
 	* @param pError		Pass in a pointer to an int and receive back an error code if there is a problem.  (Can pass NULL).
 	*
 	* @returns A RemoteConnection instance.
 	*************************************************************/
-	static Connection* CreateRemoteConnection(char const* pIPaddress, int port, ErrorCode* pError) ;
+	static Connection* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, unsigned short port = kDefaultSMLPort, ErrorCode* pError = NULL) ;
 
 	/*************************************************************
-	* @brief Starts listening for incoming connections on a particular port.
-	*        The callback function passed in is called once a connection has been made.
-	*
-	* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
-	*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
-	* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
-	* @param callback	This function will be called when the connection is made and is passed the new connection and the user data
-	* @param pUserData	This data is passed to the callback.  It allows the callback to have some context to work in.  Can be NULL.
-	* @param pError		Pass in a pointer to an int and receive back an error code if there is a problem.  (Can pass NULL).
-	*
-	* @returns A ListenerConnection instance.
+	* @brief Create a new connection object wrapping a socket.
+	*		 The socket is generally obtained from a ListenerSocket.
+	*		 (Clients don't generally use this method--use the one above instead)
 	*************************************************************/
-	static ListenerConnection* CreateListener(int port, ListenerCallback callback, void* pUserData, ErrorCode* pError) ;
+	static Connection* CreateRemoteConnection(sock::Socket* pSocket) ;
 
+public:
 	/*************************************************************
 	* @brief Shuts down this connection.
 	*************************************************************/
@@ -182,6 +208,12 @@ public:
 	*		 is otherwise not usable.
 	*************************************************************/
 	virtual bool IsClosed() = 0 ;
+
+	/*************************************************************
+	* @brief Returns true if this is a remote connection (i.e. over a socket,
+	*		 may in fact be on the same machine).
+	*************************************************************/
+	virtual bool IsRemoteConnection() = 0 ;
 
 	/*************************************************************
 	* @brief Send a message to the SML receiver (e.g. from the environment to the Soar kernel).
@@ -207,8 +239,9 @@ public:
 	*		 the remote model are closer to each other.
 	*
 	* @param allMessages	If false, only retrieves at most one message before returning, otherwise gets all messages.
+	* @return	True if read at least one message.
 	*************************************************************/
-	virtual void ReceiveMessages(bool allMessages) = 0 ;
+	virtual bool ReceiveMessages(bool allMessages) = 0 ;
 
 	/*************************************************************
 	* @brief Retrieve the response to the last call message sent.
@@ -494,6 +527,13 @@ protected:
 	* @brief Gets the list of callbacks associated with a given doctype (e.g. "call")
 	**************************************************************/
 	virtual CallbackList* Connection::GetCallbackList(char const* pType) ;
+
+	/*************************************************************
+	* @brief Removes the top message from the incoming message queue
+	*		 in a thread safe way.
+	*		 Returns NULL if there is no waiting message.
+	*************************************************************/
+	ElementXML* PopIncomingMessageQueue() ;
 
 };
 

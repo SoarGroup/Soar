@@ -15,6 +15,7 @@
 #include "gSKI_Enumerations.h"
 #include "IgSKI_Iterator.h"
 #include "IgSKI_Agent.h"
+#include "sml_EventManager.h"
 
 #include <map>
 
@@ -27,11 +28,11 @@ class Connection ;
 typedef std::map<long, bool>		OutputTimeTagMap ;
 typedef OutputTimeTagMap::iterator	OutputTimeTagIter ;
 
-class OutputListener : public gSKI::IWorkingMemoryListener
+class OutputListener : public gSKI::IWorkingMemoryListener, public EventManager
 {
 protected:
-	KernelSML*	m_KernelSML ;
-	Connection* m_Connection ;
+	KernelSML*		m_KernelSML ;
+	gSKI::IAgent*	m_Agent ;
 
 	// A list of the time tags of output wmes that we've already seen and sent to the client
 	// This allows us to only send changes over.
@@ -42,11 +43,15 @@ protected:
 	bool	m_StopOnOutput ;
 
 public:
-	OutputListener(KernelSML* pKernelSML, Connection* pConnection)
+	OutputListener(KernelSML* pKernelSML, gSKI::IAgent* pAgent)
 	{
 		m_KernelSML = pKernelSML ;
-		m_Connection = pConnection ;
+		m_Agent		= pAgent ;
 		m_StopOnOutput = false; // default to not stopping on output
+	}
+
+	virtual ~OutputListener()
+	{
 	}
 
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist) ;

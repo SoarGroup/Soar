@@ -42,7 +42,7 @@ typedef ElementXML_Handle (*ProcessMessageFunction)(Connection_Receiver_Handle, 
 
 // Define the CreateEmbeddedConnectionFunction to take a sender's connection and the sender's message handling function
 // and return a new connection handle.
-typedef Connection_Receiver_Handle (*CreateEmbeddedConnectionFunction)(Connection_Sender_Handle, ProcessMessageFunction) ;
+typedef Connection_Receiver_Handle (*CreateEmbeddedConnectionFunction)(Connection_Sender_Handle, ProcessMessageFunction, int) ;
 
 
 ////////////////////////////////////////////////////////////////
@@ -84,14 +84,15 @@ typedef Connection_Receiver_Handle (*CreateEmbeddedConnectionFunction)(Connectio
 *	
 * @param hSenderConnection		The sender's connection object (this is opaque to us--i.e. we can't call methods on it, just pass it back later).
 * @param pSenderProcessMessage	The sender's ProcessMessage function (which this module will call when we're sending messages out).
+* @param connectionType			What form of embedded connection to create (valid values are defined below)
 *
 * @returns Returns a handle to a new connection object.  This module will receive this back in calls to our ProcessMessage function.
 *************************************************************/
-EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pSenderProcessMessage) ;
 
-// The only actions we support so far
-#define MESSAGE_ACTION_NORMAL	1		// Respond to the message
-#define MESSAGE_ACTION_CLOSE	2		// Close down the connection
+#define SML_SYNCH_CONNECTION	1	// Incoming messages are executed immediately on the caller's thread
+#define SML_ASYNCH_CONNECTION	2	// Incoming messages are queued and executed later on the receiver's thread
+
+EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pSenderProcessMessage, int connectionType) ;
 
 /*************************************************************
 * @brief	This function is called by the sender in order to
@@ -108,10 +109,16 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 *
 * @param hReceiverConnection	Our module's connection object created in CreateEmbeddedConnection.  We will access methods from this object.
 * @param hIncomingMsg			The SML message to process
-* @param action					The way to process the message (valid values are defined above).  Invalid values should be ignored (just return NULL).
+* @param action					The way to process the message (valid values are defined below).  Invalid values should be ignored (just return NULL).
 *
 * @returns A new SML message object which is the response to the incoming message.  Can be NULL for some types of incoming message.
 *************************************************************/
+
+// The only actions we support so far
+#define SML_MESSAGE_ACTION_SYNCH	1		// Respond to the message immediately (on the caller's thread)
+#define SML_MESSAGE_ACTION_CLOSE	2		// Close down the connection
+#define SML_MESSAGE_ACTION_ASYNCH	3		// Messages are executed on the receiver's thread, not on the senders, so there is no immediate response.
+
 EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiverConnection, ElementXML_Handle hIncomingMsg, int action) ;
 
 #ifdef __cplusplus

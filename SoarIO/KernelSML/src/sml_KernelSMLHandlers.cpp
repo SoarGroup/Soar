@@ -19,12 +19,17 @@
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
 #include "sml_OutputListener.h"
+#include "sml_ConnectionManager.h"
+#include "sml_TagResult.h"
+#include "sml_TagName.h"
+#include "sml_ClientEvents.h"
 
 #include "gSKI.h"
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "IgSKI_KernelFactory.h"
 #include "gSKI_Stub.h"
@@ -86,6 +91,41 @@ static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 }
 */
 
+/*
+  ==================================
+  SML input producer
+  ==================================
+*/
+class sml_InputProducer: public IInputProducer
+{
+public:
+
+   // Simple constructor
+   sml_InputProducer(KernelSML* pKernelSML)
+   {
+	   m_KernelSML	= pKernelSML ;
+   }
+   
+   virtual ~sml_InputProducer() 
+   {
+   }
+   
+   // The update function required by the IInputProducer interface
+   // (Responsible for updating the state of working memory)
+   virtual void Update(IWorkingMemory* wmemory,
+                       IWMObject* obj)
+   {
+	   unused(wmemory) ;
+	   unused(obj) ;
+
+	   // Check for any new incoming commands from remote connections, or a stop commands from the connection that's running Soar.
+	   m_KernelSML->ReceiveAllMessages() ;
+   }
+
+private:
+	sml::KernelSML*		m_KernelSML ;
+};
+
 void KernelSML::BuildCommandMap()
 {
 	m_CommandMap[sml_Names::kCommand_CreateAgent]		= KernelSML::HandleCreateAgent ;
@@ -96,6 +136,9 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_StopOnOutput]		= KernelSML::HandleStopOnOutput ;
 	m_CommandMap[sml_Names::kCommand_CommandLine]		= KernelSML::HandleCommandLine ;
 	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = KernelSML::HandleCheckForIncomingCommands ;
+	m_CommandMap[sml_Names::kCommand_GetAgentList]		= KernelSML::HandleGetAgentList ;
+	m_CommandMap[sml_Names::kCommand_RegisterForEvent]	= KernelSML::HandleRegisterForEvent ;
+	m_CommandMap[sml_Names::kCommand_UnregisterForEvent]= KernelSML::HandleRegisterForEvent ;	// Note -- both register and unregister go to same handler
 }
 
 /*************************************************************
@@ -110,9 +153,9 @@ void KernelSML::BuildCommandMap()
 * @returns False if we had an error and wish to generate a generic error message (based on the incoming call + pError)
 *          True if the call succeeded or we generated another more specific error already.
 *************************************************************/
-bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgentPtr, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
-	unused(pCommandName) ; unused(pAgent) ; unused(pResponse) ;
+	unused(pCommandName) ; unused(pAgentPtr) ; unused(pResponse) ;
 
 	// Get the parameters
 	char const* pName = pIncoming->GetArgValue(sml_Names::kParamName) ;
@@ -123,21 +166,33 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 
 	// Make the call.
-	IAgent* pResult = GetKernel()->GetAgentManager()->AddAgent(pName, NULL, false, gSKI_O_SUPPORT_MODE_4, pError) ;
+	IAgent* pAgent = GetKernel()->GetAgentManager()->AddAgent(pName, NULL, false, gSKI_O_SUPPORT_MODE_4, pError) ;
 
 	// Register for output from this agent
-	if (pResult)
+	if (pAgent)
 	{
 		// Create a listener for the callback
-		OutputListener* pListener = new OutputListener(this, pConnection) ;
+		OutputListener* pListener = new OutputListener(this, pAgent) ;
+		pListener->AddListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pConnection) ;
 
 		// We store additional, agent specific information required for SML in the AgentSML object.
 		// NOTE: This call to GetAgentSML() will create the object if necessary...which it will be in this case.
-		AgentSML* pAgentSML = GetAgentSML(pResult) ;
+		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
 		pAgentSML->SetOutputListener(pListener) ;
 
 		// Listen for output callback events
-		pResult->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
+		pAgent->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
+
+		// We also need to listen to input events so we can pump waiting sockets and get interrupt messages etc.
+		sml_InputProducer* pInputProducer = new sml_InputProducer(this) ;
+		pAgentSML->SetInputProducer(pInputProducer) ;
+
+		// Add the input producer to the top level of the input link (doesn't matter for us which WME it's attached to)
+		IInputLink* pInputLink = pAgent->GetInputLink() ;
+		IWMObject* pRoot = NULL ;
+		pInputLink->GetRootObject(&pRoot) ;
+		pAgent->GetInputLink()->AddInputProducer(pRoot, pInputProducer) ;
+		pRoot->Release() ;
 	}
 
 #ifdef USE_TCL_DEBUGGER
@@ -152,7 +207,71 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName
 	// Return true if we got an agent constructed.
 	// If not, pError should contain the error and returning false
 	// means we'll pass that back to the caller.
-	return (pResult != NULL) ;
+	return (pAgent != NULL) ;
+}
+
+// Handle registering and unregistering for kernel events
+bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pError) ;
+
+	// Decide if registering or unregistering
+	bool registerForEvent = (strcmp(pCommandName, sml_Names::kCommand_RegisterForEvent) == 0) ;
+
+	// The value sent over is actually defined in sml_ClientEvents.h but we're just casting it over to egSKIEventId.
+	// So let's add some checks here to make sure that the two tables are synchronized.
+	// (If we wish we could introduce a mapping here between the two sets of ids but for now we're not doing that).
+	assert(gSKIEVENT_INVALID_EVENT == smlEVENT_INVALID_EVENT) ;	// First matches
+	assert(gSKIEVENT_LAST == smlEVENT_LAST) ;					// Last matches
+	assert(gSKIEVENT_AFTER_RUNNING == smlEVENT_AFTER_RUNNING) ;	// Random one in middle matches
+	assert(gSKIEVENT_BEFORE_AGENT_REINITIALIZED == smlEVENT_BEFORE_AGENT_REINITIALIZED) ;	// Another middle one matches
+
+	// Get the parameters
+	egSKIEventId id = (egSKIEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, gSKIEVENT_INVALID_EVENT) ;
+
+	if (id == gSKIEVENT_INVALID_EVENT)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Event id is missing") ;
+	}
+
+	// Decide what type of event this is and where to register/unregister it
+	// We have to break these up because gSKI uses a different class for each type of listener
+	// so we need to connect the events to the listeners.
+	switch (id)
+	{
+		// Agent listener events
+	case gSKIEVENT_BEFORE_SMALLEST_STEP:
+	case gSKIEVENT_AFTER_SMALLEST_STEP:
+	case gSKIEVENT_BEFORE_ELABORATION_CYCLE:
+	case gSKIEVENT_AFTER_ELABORATION_CYCLE:
+	case gSKIEVENT_BEFORE_PHASE_EXECUTED:
+	case gSKIEVENT_AFTER_PHASE_EXECUTED:
+	case gSKIEVENT_BEFORE_DECISION_CYCLE:
+	case gSKIEVENT_AFTER_DECISION_CYCLE:
+	case gSKIEVENT_AFTER_INTERRUPT:
+	case gSKIEVENT_BEFORE_RUNNING:
+	case gSKIEVENT_AFTER_RUNNING:
+		{
+			// Since this is an agent handler check that we were passed an agent
+			if (!pAgent)
+				return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
+
+			// Register or unregister for this event
+			AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+
+			if (registerForEvent)
+				pAgentSML->AddAgentListener(id, pConnection) ;
+			else
+				pAgentSML->RemoveAgentListener(id, pConnection) ;
+
+			break ;
+		}
+	default:
+		// The event didn't match any of our handlers
+		return InvalidArg(pConnection, pResponse, pCommandName, "KernelSML doesn't know how to handle that event id") ;
+	}
+
+	return true ;
 }
 
 bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
@@ -161,6 +280,9 @@ bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandNam
 
 	if (!pAgent)
 		return false ;
+
+	// Release any wmes or other objects we're keeping
+	GetAgentSML(pAgent)->Clear() ;
 
 	// Make the call.
 	GetKernel()->GetAgentManager()->RemoveAgent(pAgent, pError) ;
@@ -171,6 +293,48 @@ bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandNam
 	return true ;
 }
 
+bool KernelSML::HandleGetAgentList(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pAgent) ; unused(pCommandName) ; unused(pConnection) ; unused(pIncoming) ;
+
+	// Make the call.
+	IAgentManager* pManager = GetKernel()->GetAgentManager() ;
+
+	// Get the list of agents
+	tIAgentIterator* iter = pManager->GetAgentIterator(pError) ;
+
+	if (!iter)
+		return false ;
+
+	// Create the result tag
+	TagResult* pTagResult = new TagResult() ;
+	pTagResult->AddAttribute(sml_Names::kCommandOutput, sml_Names::kStructuredOutput) ;
+
+	// Walk the list of agents and return their names
+	while (iter->IsValid())
+	{
+		IAgent* pAgent = iter->GetVal() ;
+
+		// Add a name tag to the output
+		TagName* pTagName = new TagName() ;
+		pTagName->SetName(pAgent->GetName()) ;
+		pTagResult->AddChild(pTagName) ;
+
+		// Apparently, we don't release agent objects return from an agent iterator.  There is no such method.
+		//pAgent->Release() ;
+
+		iter->Next() ;
+	}
+
+	iter->Release() ;
+
+	// Add the result tag to the response
+	pResponse->AddChild(pTagResult) ;
+
+	// Return true to indicate we've filled in all of the result tag we need
+	return true ;
+}
+
 // Set a flag so Soar will break when it next generates output.  This allows us to
 // run for "n decisions" OR "until output" which we can't do with raw gSKI calls.
 bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
@@ -178,7 +342,6 @@ bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandNam
 	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ; unused(pError) ;
 
 	// Get the parameters
-
 	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, true) ;
 
 	// Make the call.
@@ -203,6 +366,10 @@ bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const*
 		keepGoing = TgD::TgD::Update(false, m_Debugger) ;
 	}
 #endif
+
+	// Also check for any incoming calls from remote sockets
+//	if (m_pConnectionManager)
+//		m_pConnectionManager->ReceiveAllMessages() ;
 
 	return this->ReturnBoolResult(pConnection, pResponse, keepGoing) ;
 }
@@ -277,6 +444,7 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 	// We store additional information for SML in the AgentSML structure, so look that up.
 	AgentSML* pAgentSML = GetAgentSML(pAgent) ;
 
+	bool addingToInputLink = true ;
 	IWorkingMemory* pInputWM = pAgent->GetInputLink()->GetInputLinkMemory(pError) ;
 
 	// First get the object which will own this new wme
@@ -292,6 +460,7 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 	{
 		pInputWM = pAgent->GetOutputLink()->GetOutputMemory(pError) ;
 		pInputWM->GetObjectById(pID, &pParentObject) ;
+		addingToInputLink = false ;
 	}
 
 	// Failed to find the parent.
@@ -321,7 +490,7 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 		if (pLinkObject)
 		{
 			// Create a new wme with the same value as an existing wme
-			pInputWM->AddWmeObjectLink(pParentObject, pAttribute, pLinkObject, pError) ;
+			pWME = pInputWM->AddWmeObjectLink(pParentObject, pAttribute, pLinkObject, pError) ;
 			pLinkObject->Release() ;
 		}
 		else
@@ -357,12 +526,20 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 		return false ;
 	}
 
+	// BUGBUG: TEMP code while there's a ref counting problem in gSKI on the output link side
+	// so for now, don't store this reference in our table
+	if (!addingToInputLink)
+	{
+		pWME = NULL ;
+	}
+
 	// Well here's a surprise.  The kernel doesn't support a direct lookup from timeTag to wme.
 	// So we need to maintain our own map out here so we can find the WME's quickly for removal.
 	// So where we had planned to map from client time tag to kernel time tag, we'll instead
 	// map from client time tag to IWme*.
 	// That means we need to be careful to delete the IWme* objects later.
-	pAgentSML->RecordTimeTag(pTimeTag, pWME) ;
+	if (pWME)
+		pAgentSML->RecordTimeTag(pTimeTag, pWME) ;
 
 	// We'll release this when the table of time tags is eventually destroyed or
 	// when the wme is deleted.
@@ -387,21 +564,24 @@ bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI:
 	if (!pWME)
 		return false ;
 
-	// Remove the object from the time tag table
-	pAgentSML->RemoveTimeTag(pTimeTag) ;
-
 	// If this is an identifier, need to remove it from the ID mapping table too.
 	if (pWME->GetValue()->GetType() == gSKI_OBJECT)
 	{
-		// BUGBUG: I think we need a reverse ID mapping table, to get back
-		// from the kernel id to the client id, so we can do cleanup.
-		// Otherwise, I don't see how to do the cleanup.
+		// Get the kernel-side identifier
+		std::string id = pWME->GetValue()->GetString() ;
+
+		// Remove it from the id mapping table
+		pAgentSML->RemoveID(id.c_str()) ;
 	}
+
+	// Remove the object from the time tag table
+	pAgentSML->RemoveTimeTag(pTimeTag) ;
 
 	// Remove the wme from working memory
 	pInputWM->RemoveWme(pWME, pError) ;
 
-	// I'm not sure if we release pWME 
+	// I'm not sure if we should release pWME here or not after
+	// calling RemoveWme() just above on it.
 	pWME->Release() ;
 
 	return true ;

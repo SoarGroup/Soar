@@ -20,6 +20,11 @@
 struct ElementXML_InterfaceStructTag ;
 typedef struct ElementXML_InterfaceStructTag *ElementXML_Handle ;
 
+namespace sock
+{
+	class SocketLib ;
+}
+
 namespace sml {
 
 // Forward declarations
@@ -33,6 +38,9 @@ class Kernel
 	// Allow the agent to call to get the connection from the kernel.
 	friend Agent ;
 
+public:
+	enum { kDefaultSMLPort = 12121 } ;
+
 protected:
 	long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
 	long		m_IdCounter ;		// Used to generate unique id names
@@ -41,6 +49,7 @@ protected:
 	ObjectMap<Agent*>	m_AgentMap ;
 	std::string			m_CommandLineResult;
 	bool				m_CommandLineSucceeded ;
+	sock::SocketLib*	m_SocketLibrary ;
 
 	// To create a kernel object, use one of the static methods, e.g. Kernel::CreateEmbeddedConnection().
 	Kernel(Connection* pConnection);
@@ -52,6 +61,8 @@ protected:
 	*************************************************************/
 	Connection* GetConnection() const { return m_Connection ; }
 
+	void SetSocketLib(sock::SocketLib* pLibrary) { m_SocketLibrary = pLibrary ; }
+
 public:
 	/*************************************************************
 	* @brief Creates a connection to the Soar kernel that is embedded
@@ -59,22 +70,30 @@ public:
 	*
 	* @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
 	*						This library will be dynamically loaded and connected to.
+	* @param SynchronousExecution	If true, Soar will run in the client's thread and the client must periodically call over to the
+	*								kernel to check for incoming messages on remote sockets.
+	*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
+	*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
 	*
 	* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
 	*************************************************************/
-	static Kernel* CreateEmbeddedConnection(char const* pLibraryName) ;
+	static Kernel* CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
 	*        process.  The process can be on the same machine or a different machine.
 	*
+	* @param sharedFileSystem	If true the local and remote machines can access the same set of files.
+	*					For example, this means when loading a file of productions, sending the filename is
+	*					sufficient, without actually sending the contents of the file.
+	*					(NOTE: It may be a while before we really support passing in 'false' here)
 	* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
-	*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
-	* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
+	*                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
+	* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
 	*
 	* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
 	*************************************************************/
-	static Kernel* CreateRemoteConnection(char const* pIPaddress, int port) ;
+	static Kernel* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort) ;
 
 	virtual ~Kernel();
 
@@ -91,6 +110,18 @@ public:
 	Agent* CreateAgent(char const* pAgentName) ;
 
 	/*************************************************************
+	* @brief Get the list of agents currently active in the kernel
+	*		 and create local Agent objects for each one (if we
+	*		 don't already have that agent registered).
+	*************************************************************/
+	void UpdateAgentList() ;
+
+	/*************************************************************
+	* @brief Returns the number of agents (from our list of known agents).
+	*************************************************************/
+	int GetNumberAgents() ;
+
+	/*************************************************************
 	* @brief Destroys an agent in the kernel (and locally).
 	*************************************************************/
 	bool DestroyAgent(Agent* pAgent) ;
@@ -103,6 +134,12 @@ public:
 	*		   kernel is destroyed.
 	*************************************************************/
 	Agent* GetAgent(char const* pAgentName) ;
+
+	/*************************************************************
+	* @brief Returns the n-th agent from our list of known agents.
+	*		 This is slower than GetAgent(pAgentName).
+	*************************************************************/
+	Agent* GetAgentByIndex(int index) ;
 
 	/*************************************************************
 	* @brief Process a command line command and return the result

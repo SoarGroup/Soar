@@ -14,18 +14,47 @@
 
 #include "IgSKI_WME.h"
 #include "IgSKI_Agent.h"
+#include "IgSKI_InputProducer.h"
+
+#include <assert.h>
 
 using namespace sml ;
 
 AgentSML::~AgentSML()
 {
+	// Release any objects we still own
+	Clear() ;
+
 	// If we have an output listener object, delete it now.
 	// NOTE: At this point we're assuming AgentSML objects live as long as the underlying gSKI IAgent object.
 	// If not, we need to unregister this listener, but we shouldn't do that here as the IAgent object may
 	// be invalid by the time this destructor is called.
 	delete m_pOutputListener ;
+
+	delete m_pInputProducer ;
 }
 
+// Release any objects or other data we are keeping.  We do this just
+// prior to deleting AgentSML, but before the underlying gSKI agent has been deleted
+void AgentSML::Clear()
+{
+	// Release any WME objects we still own.
+	for (TimeTagMapIter mapIter = m_TimeTagMap.begin() ; mapIter != m_TimeTagMap.end() ; mapIter++)
+	{
+		gSKI::IWme* pWme = mapIter->second ;
+		pWme->Release() ;
+	}
+
+	m_TimeTagMap.clear() ;
+
+	m_AgentListener.Clear() ;
+}
+
+void AgentSML::RemoveAllListeners(Connection* pConnection)
+{
+	m_AgentListener.RemoveAllListeners(pConnection) ;
+	m_pOutputListener->RemoveAllListeners(pConnection) ; 
+}
 
 /*************************************************************
 * @brief	When set, this flag will cause Soar to break when
@@ -74,6 +103,24 @@ bool AgentSML::ConvertID(char const* pClientID, std::string* pKernelID)
 void AgentSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
 {
 	m_IdentifierMap[pClientID] = pKernelID ;
+
+	// Record in both directions, so we can clean up (at which time we only know the kernel side ID).
+	m_ToClientIdentifierMap[pKernelID] = pClientID ;
+}
+
+void AgentSML::RemoveID(char const* pKernelID)
+{
+	IdentifierMapIter iter = m_ToClientIdentifierMap.find(pKernelID) ;
+
+	// This identifier should have been in the table
+	assert (iter != m_ToClientIdentifierMap.end()) ;
+	if (iter == m_ToClientIdentifierMap.end())
+		return ;
+
+	// Delete this mapping from both tables
+	std::string clientID = iter->second ;
+	m_IdentifierMap.erase(clientID) ;
+	m_ToClientIdentifierMap.erase(pKernelID) ;
 }
 
 /*************************************************************
@@ -100,8 +147,7 @@ gSKI::IWme* AgentSML::ConvertTimeTag(char const* pTimeTag)
 }
 
 /*************************************************************
-* @brief	Converts a time tag from a client side value to
-*			a kernel side object.
+* @brief	Maps from a client side time tag to a kernel side WME.
 *************************************************************/
 void AgentSML::RecordTimeTag(char const* pTimeTag, gSKI::IWme* pWME)
 {

@@ -14,6 +14,7 @@
 #include "sml_Connection.h"
 #include "sml_ClientIdentifier.h"
 #include "sml_OutputDeltaList.h"
+#include "sml_StringOps.h"
 
 #include <iostream>     
 #include <sstream>     
@@ -53,6 +54,32 @@ void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 }
 
 /*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	smlEventId id  = (smlEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
+	smlPhase phase = (smlPhase)pIncoming->GetArgInt(sml_Names::kParamPhase, -1) ;
+
+	// Error in the format of the event
+	if (id == smlEVENT_INVALID_EVENT || phase == -1)
+		return ;
+
+	// Look up the handler from the map
+	RunEventHandler handler = m_RunEventMap[id] ;
+
+	if (handler == NULL)
+		return ;
+
+	// Call the handler
+	handler(id, this, phase) ;
+}
+
+/*************************************************************
 * @brief Load a set of productions from a file.
 *
 * The file must currently be on a filesystem that the kernel can
@@ -63,8 +90,56 @@ bool Agent::LoadProductions(char const* pFilename)
 {
 	AnalyzeXML response ;
 
+	// BUGBUG: Think this should be calling "source filename" instead of gSKI LoadProductions.
 	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_LoadProductions, GetAgentName(), sml_Names::kParamFilename, pFilename) ;
 	return ok ;
+}
+
+/*************************************************************
+* @brief Register for a "RunEvent".
+*
+* Current set is:
+* smlEVENT_BEFORE_SMALLEST_STEP,
+* smlEVENT_AFTER_SMALLEST_STEP,
+* smlEVENT_BEFORE_ELABORATION_CYCLE,
+* smlEVENT_AFTER_ELABORATION_CYCLE,
+* smlEVENT_BEFORE_PHASE_EXECUTED,
+* smlEVENT_AFTER_PHASE_EXECUTED,
+* smlEVENT_BEFORE_DECISION_CYCLE,
+* smlEVENT_AFTER_DECISION_CYCLE,
+* smlEVENT_AFTER_INTERRUPT,
+* smlEVENT_BEFORE_RUNNING,
+* smlEVENT_AFTER_RUNNING,
+*************************************************************/
+void Agent::RegisterForRunEvent(smlEventId id, RunEventHandler handler)
+{
+	AnalyzeXML response ;
+
+	char buffer[kMinBufferSize] ;
+	Int2String(id, buffer, sizeof(buffer)) ;
+
+	// Send the register command
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, GetAgentName(), sml_Names::kParamEventID, buffer) ;
+
+	// Record the handler
+	m_RunEventMap[id] = handler ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event
+*************************************************************/
+void Agent::UnregisterForEvent(smlEventId id)
+{
+	AnalyzeXML response ;
+
+	char buffer[kMinBufferSize] ;
+	Int2String(id, buffer, sizeof(buffer)) ;
+
+	// Send the unregister command
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, GetAgentName(), sml_Names::kParamEventID, buffer) ;
+
+	// Remove the handler from our map
+	m_RunEventMap.erase(id) ;
 }
 
 /*************************************************************

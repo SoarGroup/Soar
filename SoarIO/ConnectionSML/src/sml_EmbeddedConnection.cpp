@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////
-// EmbeddedConnection class
+// EmbeddedConnectionSynch class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
@@ -10,14 +10,17 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#ifdef _WIN32
-#include "Windows.h"
-#endif
-
 #include "sml_EmbeddedConnection.h"
 #include "sml_ElementXML.h"
+#include "thread_Thread.h"
 
 #include <string>
+
+#ifdef _WIN32
+#include "Windows.h"	// Needed for load library
+
+#undef SendMessage		// Windows defines this as a macro.  Yikes!
+#endif // WIN32
 
 using namespace sml ;
 
@@ -49,14 +52,15 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	if (pConnection == NULL)
 		return NULL ;
 
-	if (action == MESSAGE_ACTION_CLOSE)
+	if (action == SML_MESSAGE_ACTION_CLOSE)
 	{
-		delete pConnection ;
+		// Close our connection to the remote process
+		pConnection->ClearConnectionHandle() ;
 
 		return NULL ;
 	}
 
-	if (action == MESSAGE_ACTION_NORMAL)
+	if (action == SML_MESSAGE_ACTION_SYNCH)
 	{
 		// Create an object to wrap this message.
 		ElementXML incomingMsg(hIncomingMsg) ;
@@ -71,12 +75,23 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 		return hResponse ;
 	}
 
+	if (action == SML_MESSAGE_ACTION_ASYNCH)
+	{
+		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
+		ElementXML* pIncomingMsg = new ElementXML(hIncomingMsg) ;
+
+		pConnection->AddToIncomingMessageQueue(pIncomingMsg) ;
+
+		// There is no immediate response to an asynch message.
+		// The response will be sent back to the caller as another asynch message later, once the command has been executed.
+		return NULL ;
+	}
+
 	// Not an action we understand, so just ignore it.
 	// This allows future versions to use other actions if they wish and
 	// we'll remain somewhat compatible.
 	return NULL ;
 }
-
 
 bool EmbeddedConnection::AttachConnection(char const* pLibraryName)
 {
@@ -119,7 +134,8 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName)
 
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).
-	m_hConnection = m_pCreateEmbeddedFunction( (Connection_Sender_Handle)this, LocalProcessMessage) ;
+	int connectionType = this->IsAsynchronous() ? SML_ASYNCH_CONNECTION : SML_SYNCH_CONNECTION ;
+	m_hConnection = m_pCreateEmbeddedFunction( (Connection_Sender_Handle)this, LocalProcessMessage, connectionType) ;
 
 	if (!m_hConnection)
 	{
@@ -153,8 +169,21 @@ bool EmbeddedConnection::IsClosed()
 	return (m_hConnection == NULL) ;
 }
 
+void EmbeddedConnection::CloseConnection()
+{
+	ClearError() ;
 
-void EmbeddedConnection::SendMessage(ElementXML* pMsg)
+	if (m_hConnection)
+	{
+		// Make the call to the kernel to close this connection
+		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, (ElementXML_Handle)NULL, SML_MESSAGE_ACTION_CLOSE) ;
+		unused(hResponse) ;
+	}
+	
+	m_hConnection = NULL ;
+}
+
+void EmbeddedConnectionSynch::SendMessage(ElementXML* pMsg)
 {
 	ClearError() ;
 
@@ -174,13 +203,13 @@ void EmbeddedConnection::SendMessage(ElementXML* pMsg)
 
 	// Make the call to the kernel, passing the message over and getting an immediate response since this is
 	// an embedded call.
-	hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, MESSAGE_ACTION_NORMAL) ;
+	hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_SYNCH) ;
 
 	// We cache the response
 	m_pLastResponse->Attach(hResponse) ;
 }
 
-ElementXML* EmbeddedConnection::GetResponseForID(char const* pID, bool wait)
+ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait)
 {
 	// For the embedded connection there's no ambiguity over what was the "last" call.
 	unused(pID) ;
@@ -201,16 +230,143 @@ ElementXML* EmbeddedConnection::GetResponseForID(char const* pID, bool wait)
 	return pResult ;
 }
 
-void EmbeddedConnection::CloseConnection()
+void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
 {
 	ClearError() ;
 
-	if (m_hConnection)
+	// Check that we have somebody to send this message to.
+	if (m_hConnection == NULL)
 	{
-		// Make the call to the kernel to close this connection
-		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, (ElementXML_Handle)NULL, MESSAGE_ACTION_CLOSE) ;
-		unused(hResponse) ;
+		SetError(Error::kNoEmbeddedLink) ;
+		return ;
 	}
+
+	ElementXML_Handle hResponse = NULL ;
+
+	// Add a reference to this object, which will then be released by the receiver of this message when
+	// they are done with it.
+	pMsg->AddRefOnHandle() ;
+	ElementXML_Handle hSendMsg = pMsg->GetXMLHandle() ;
+
+	// Make the call to the kernel, passing the message over with the ASYNCH flag, which means there
+	// will be no immediate response.
+	hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_ASYNCH) ;
+
+	if (hResponse != NULL)
+	{
+		SetError(Error::kInvalidResponse) ;
+	}
+}
+
+static bool DoesResponseMatch(ElementXML* pResponse, char const* pID)
+{
+	if (!pResponse || !pID)
+		return false ;
+
+	char const* pMsgID = pResponse->GetAttribute(sml_Names::kID) ;
 	
-	m_hConnection = NULL ;
+	return (pMsgID && strcmp(pMsgID, pID) == 0) ;
+}
+
+ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wait)
+{
+	ElementXML* pResponse = NULL ;
+
+	// Check if we already have this response cached
+	if (DoesResponseMatch(m_pLastResponse, pID))
+	{
+		pResponse = m_pLastResponse ;
+		m_pLastResponse = NULL ;
+		return pResponse ;
+	}
+
+// BUGBUG: I don't think we can time out on these.
+// We just need to have a way to detect if the connection has been closed
+// The problem is Soar can run for an arbitrary amount of time and we'll
+// be waiting for the response
+// Logic should be something like
+// while (ConnectionNotClosed()) { CheckForMessages() ; Sleep() ; }
+// We may need a better event based model to handle this, so no sleeping etc.
+// The trick is to include a "closed connection" message in the queue.
+// Then we can wait on an incoming message forever and still wake up if the connection dies.
+
+	int sleepTime = 5 ;			// How long we sleep in milliseconds each pass through
+	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)
+
+	// If we don't already have this response cached,
+	// then read any pending messages.
+	do
+	{
+		// Loop until there are no more messages waiting for us
+		while (ReceiveMessages(false))
+		{
+			// Check each message to see if it's a match
+			if (DoesResponseMatch(m_pLastResponse, pID))
+			{
+				pResponse = m_pLastResponse ;
+				m_pLastResponse = NULL ;
+				return pResponse ;
+			}
+		}
+
+		// At this point we didn't find the message sitting on the incoming connection
+		// so we need to decide if we should wait or not.
+		if (wait)
+		{
+			soar_thread::Thread::SleepStatic(sleepTime) ;
+			maxRetries-- ;
+
+			// Eventually time out
+			if (maxRetries == 0)
+			{
+				SetError(Error::kConnectionTimedOut) ;			
+				wait = false ;
+			}
+		}
+
+	} while (wait) ;
+
+	// If we get here we didn't find the response.
+	// Either it's not come in yet (and we didn't choose to wait for it)
+	// or we've timed out waiting for it.
+	return NULL ;
+}
+
+bool EmbeddedConnectionAsynch::ReceiveMessages(bool allMessages)
+{
+	bool receivedMessage = false ;
+
+	ElementXML* pIncomingMsg = PopIncomingMessageQueue() ;
+
+	// While we have messages waiting to come in keep reading them
+	while (pIncomingMsg)
+	{
+		// Record that we got at least one message
+		receivedMessage = true ;
+
+		// Pass this message back to the client and possibly get their response
+		ElementXML* pResponse = this->InvokeCallbacks(pIncomingMsg) ;
+
+		// If we got a response to the incoming message, send that response back.
+		if (pResponse)
+		{
+			SendMessage(pResponse) ;		
+		}
+
+		// We're done with the response
+		delete pResponse ;
+
+		// Record the last incoming message
+		delete m_pLastResponse ;
+		m_pLastResponse = pIncomingMsg ;
+
+		// If we're only asked to read one message, we're done.
+		if (!allMessages)
+			break ;
+
+		// Get the next message from the queue
+		pIncomingMsg = PopIncomingMessageQueue() ;
+	}
+
+	return receivedMessage ;
 }

@@ -42,18 +42,29 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 	if (m_StopOnOutput)
 	{
 		// If we've been asked to interrupt Soar when we receive output, then do so now.
-		// I'm not really clear on the correct parameters for stopping Soar here and what impact it will have.
+		// I'm not really clear on the correct parameters for stopping Soar here and what impact the choices will have.
 		agentPtr->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING) ;
 
 		// Clear the flag, so we don't keep trying to stop.  The caller can reset it before the next run if they wish.
 		m_StopOnOutput = false ;
 	}
 
+	ConnectionListIter connectionIter = GetBegin(gSKIEVENT_OUTPUT_PHASE_CALLBACK) ;
+
+	// Whoops--nobody is listening to this event.
+	// We can't unregister it from the kernel, or "stop on output" would stop working.
+	if (connectionIter == GetEnd(gSKIEVENT_OUTPUT_PHASE_CALLBACK))
+		return ;
+
+	// We need the first connection for when we're building the message.  Perhaps this is a sign that
+	// we shouldn't have rolled these methods into Connection.
+	Connection* pConnection = *connectionIter ;
+
 	// Build the SML message we're doing to send.
-	ElementXML* pMsg = m_Connection->CreateSMLCommand(sml_Names::kCommand_Output) ;
+	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Output) ;
 
 	// Add the agent parameter and as a side-effect, get a pointer to the <command> tag.  This is an optimization.
-	ElementXML_Handle hCommand = m_Connection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, agentPtr->GetName()) ;
+	ElementXML_Handle hCommand = pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, agentPtr->GetName()) ;
 	ElementXML command(hCommand) ;
 
 	// We are passed a list of all wmes in the transitive closure (TC) of the output link.
@@ -68,10 +79,10 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 	}
 
 	// Build the list of WME changes
-    for(; wmelist->IsValid(); wmelist->Next())
-    {
+	for(; wmelist->IsValid(); wmelist->Next())
+	{
 		// Get the next wme
-        gSKI::IWme* pWME = wmelist->GetVal();
+		gSKI::IWme* pWME = wmelist->GetVal();
 
 		long timeTag = pWME->GetTimeTag() ;
 
@@ -109,7 +120,7 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 		// Values retrieved via "GetVal" have to be released.
 		// Ah, but not if they come from an Iterator rather than an IteratorWithRelease.
 		// At least, it seems like if I call Release here it causes a crash on exit, while if I don't all seems well.
-        //pWME->Release();
+		//pWME->Release();
 	}
 
 	// At this point we check the list of time tags and any which are not marked as "in use" must
@@ -153,10 +164,19 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 	pMsg->DeleteString(pStr) ;
 #endif
 
-	// Send the message
-	AnalyzeXML response ;
-	bool ok = m_Connection->SendMessageGetResponse(&response, pMsg) ;
-	unused(ok) ;
+	// Send this message to all listeners
+	ConnectionListIter end = GetEnd(gSKIEVENT_OUTPUT_PHASE_CALLBACK) ;
+
+	while (connectionIter != end)
+	{
+		pConnection = *connectionIter ;
+
+		// When Soar is sending output, we don't want to wait for a response (which contains no information anyway)
+		// in case the caller is slow to respond to the incoming message.
+		pConnection->SendMessage(pMsg) ;
+
+		connectionIter++ ;
+	}
 
 	// Clean up
 	delete pMsg ;

@@ -24,7 +24,7 @@
 
 using namespace sml ;
 
-static ElementXML* ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData)
+ElementXML* ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData)
 {
 	unused(pUserData) ;
 
@@ -39,15 +39,20 @@ static EmbeddedConnection* GetConnectionFromHandle(Connection_Receiver_Handle hC
 	return (EmbeddedConnection*)hConnection ;
 }
 
-EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pProcessMessage)
+EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pProcessMessage, int connectionType)
 {
 	// Create a connection object which we'll use to talk back to this sender
-	EmbeddedConnection* pConnection = EmbeddedConnection::CreateEmbeddedConnection() ;
+	EmbeddedConnection* pConnection = connectionType == SML_SYNCH_CONNECTION ?
+										EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
+										EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch() ;
 
 	// Record our kernel object with this connection.  I think we only want one kernel
 	// object even if there are many connections (because there's only one kernel) so for now
 	// that's how things are set up.
 	pConnection->SetUserData(KernelSML::GetKernelSML()) ;
+
+	// Record this as one of the active connections
+	KernelSML::GetKernelSML()->AddConnection(pConnection) ;
 
 	// Register for "calls" from the client.
 	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
@@ -62,17 +67,27 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 {
 	EmbeddedConnection* pConnection = GetConnectionFromHandle(hReceiverConnection) ;
 
-	if (action == MESSAGE_ACTION_CLOSE)
+	if (action == SML_MESSAGE_ACTION_CLOSE)
 	{
 		if (pConnection)
 		{
-			delete pConnection ;
+			// Close our connection to the remote process
+			pConnection->ClearConnectionHandle() ;
+
+			// When the embedded connection disconnects we're about to exit the application
+			// so shutdown any remote connections cleanly and do any other cleanup.
+			KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
+			pKernelSML->Shutdown() ;
+
+			// The shutdown call above will also delete our connection object as part of its cleanup
+			// so set it to NULL here to make sure we don't try to use it again.
+			pConnection = NULL ;
 		}
 
 		return NULL ;
 	}
 
-	if (action == MESSAGE_ACTION_NORMAL)
+	if (action == SML_MESSAGE_ACTION_SYNCH)
 	{
 		// Create an object to wrap this message.
 		// When this object is deleted, it releases our reference to this handle.
@@ -86,6 +101,18 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 		ElementXML_Handle hResponse = pResponse->Detach() ;
 		delete pResponse ;
 		return hResponse ;
+	}
+
+	if (action == SML_MESSAGE_ACTION_ASYNCH)
+	{
+		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
+		ElementXML* pIncomingMsg = new ElementXML(hIncomingMsg) ;
+
+		pConnection->AddToIncomingMessageQueue(pIncomingMsg) ;
+
+		// There is no immediate response to an asynch message.
+		// The response will be sent back to the caller as another asynch message later, once the command has been executed.
+		return NULL ;
 	}
 
 	// Not an action we understand, so just ignore it.

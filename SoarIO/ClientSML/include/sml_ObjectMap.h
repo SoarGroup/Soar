@@ -13,17 +13,11 @@
 #define SML_OBJECT_MAP_H
 
 #include <map>
+#include <list>
+#include <string>
+#include <algorithm>	// To get std::find
 
 namespace sml {
-
-// We need a comparator to make the map we're about to define work with char*
-struct strCompareObjectMap
-{
-  bool operator()(const char* s1, const char* s2) const
-  {
-    return std::strcmp(s1, s2) < 0;
-  }
-};
 
 template <typename T>
 class ObjectMap
@@ -33,7 +27,7 @@ typedef T	DataType ;
 // Used to store a map from a name to an object
 // The name should be owned by the object being stored (so we only delete the object, never the name)
 
-typedef std::map<const char*, DataType, strCompareObjectMap>	InternalMap ;
+typedef std::map<std::string, DataType>	InternalMap ;
 
 protected:
 	InternalMap	m_Map ;
@@ -54,12 +48,42 @@ public:
 		}
 	}
 
-	// NOTE: The name of the object being added needs to be owned by the object (we just delete the object at the end)
-	// Also, if there's already an object with this name in the map, this could cause a leak.  The caller is currently
-	// in charge of checking for that.
+	int size() const { return (int)m_Map.size() ; }
+
+	DataType getIndex(int index)
+	{
+		for (InternalMap::iterator mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)
+		{
+			if (index == 0)
+				return mapIter->second ;
+			index-- ;
+		}
+
+		return NULL ;
+	}
+
 	void add(char const* pName, DataType pObject)
 	{
+		// If we already have an object registered with this name delete it.
+		// Otherwise we'll have a memory leak.
+		remove(pName) ;
+
 		m_Map[pName] = pObject ;
+	}
+
+	// Remove all agents not on this list
+	void keep(std::list<DataType>* pKeepList)
+	{
+		for (InternalMap::iterator mapIter = m_Map.begin() ; mapIter != m_Map.end() ;)
+		{
+			DataType pObject = mapIter->second ;
+
+			// For lists, you have to use std::find, they don't have a member function
+			if (std::find(pKeepList->begin(), pKeepList->end(), pObject) != pKeepList->end())
+				mapIter++ ;
+			else
+				mapIter = m_Map.erase(mapIter) ;
+		}
 	}
 
 	DataType find(char const *pName) const

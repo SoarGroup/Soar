@@ -21,11 +21,13 @@
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"
 #include "sml_EmbeddedConnection.h"
+#include "sml_RemoteConnection.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_TagCommand.h"
 #include "sml_TagArg.h"
 #include "sml_TagError.h"
 #include "sml_TagResult.h"
+#include "sock_ClientSocket.h"
 
 using namespace sml ;
 
@@ -66,6 +68,15 @@ Connection::~Connection()
 		// Delete the list itself
 		delete pList ;
 	}
+
+	// Clear out any messages sitting on the queues
+	while (m_IncomingMessageQueue.size() > 0)
+	{
+		ElementXML* pMsg = m_IncomingMessageQueue.back() ;
+		delete pMsg ;
+
+		m_IncomingMessageQueue.pop() ;
+	}
 }
 
 
@@ -75,15 +86,22 @@ Connection::~Connection()
 *
 * @param pLibraryName	The name of the library to load, without an extension (e.g. "ClientSML" or "KernelSML").  Case-sensitive (to support Linux).
 *						This library will be dynamically loaded and connected to.
+* @param SynchronousExecution	If true, Soar will run in the client's thread and the client must periodically call over to the
+*								kernel to check for incoming messages on remote sockets.
+*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
+*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
 * @param pError			Pass in a pointer to an int and receive back an error code if there is a problem.
 * @returns An EmbeddedConnection instance.
 *************************************************************/
-Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, ErrorCode* pError)
+Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, ErrorCode* pError)
 {
 	// Set an initial error code and then replace it if something goes wrong.
 	if (pError) *pError = Error::kNoError ;
 
-	EmbeddedConnection* pConnection = EmbeddedConnection::CreateEmbeddedConnection() ;
+	EmbeddedConnection* pConnection = synchronousExecution ?
+									EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
+									EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch() ;
+
 	pConnection->AttachConnection(pLibraryName) ;
 
 	// Report any errors
@@ -96,34 +114,46 @@ Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, Error
 * @brief Creates a connection to a receiver that is in a different
 *        process.  The process can be on the same machine or a different machine.
 *
+* @param sharedFileSystem	If true the local and remote machines can access the same set of files.
+*					For example, this means when loading a file of productions, sending the filename is
+*					sufficient, without actually sending the contents of the file.
+*					(NOTE: It may be a while before we really support passing in 'false' here)
 * @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
-*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
-* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
+*                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
+* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
 * @param pError		Pass in a pointer to an int and receive back an error code if there is a problem.  (Can pass NULL).
 *
 * @returns A RemoteConnection instance.
 *************************************************************/
-Connection* Connection::CreateRemoteConnection(char const* pIPaddress, int port, ErrorCode* pError)
+Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, unsigned short port, ErrorCode* pError)
 {
-	return NULL ;
+	sock::ClientSocket* pSocket = new sock::ClientSocket() ;
+
+	bool ok = pSocket->ConnectToServer(pIPaddress, port) ;
+
+	if (!ok && pError)
+	{
+		// BADBAD: Can we get a more detailed error from pSocket?
+		*pError = Error::kConnectionFailed ;
+		delete pSocket ;
+		return NULL ;
+	}
+
+	// Wrap the socket inside a remote connection object
+	RemoteConnection* pConnection = new RemoteConnection(sharedFileSystem, pSocket) ;
+
+	return pConnection ;
 }
 
 /*************************************************************
-* @brief Starts listening for incoming connections on a particular port.
-*        The callback function passed in is called once a connection has been made.
-*
-* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
-*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
-* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
-* @param callback	This function will be called when the connection is made and is passed the new connection and the user data
-* @param pUserData	This data is passed to the callback.  It allows the callback to have some context to work in.  Can be NULL.
-* @param pError		Pass in a pointer to an int and receive back an error code if there is a problem.  (Can pass NULL).
-*
-* @returns A ListenerConnection instance.
+* @brief Create a new connection object wrapping a socket.
+*		 The socket is generally obtained from a ListenerSocket.
 *************************************************************/
-ListenerConnection* Connection::CreateListener(int port, ListenerCallback callback, void* pUserData, ErrorCode* pError)
+Connection* Connection::CreateRemoteConnection(sock::Socket* pSocket)
 {
-	return NULL ;
+	// This is a server side connection, so it doesn't have any way to know
+	// if the client and it share the same file system, so just set it to true by default.
+	return new RemoteConnection(true, pSocket) ;
 }
 
 /*************************************************************
@@ -902,6 +932,30 @@ void Connection::AddSimpleResultToSMLResponse(ElementXML* pResponse, char const*
 	TagResult* pTag = new TagResult() ;
 
 	pTag->SetCharacterData(pResult) ;
+	pTag->AddAttributeFastFast(sml_Names::kCommandOutput, sml_Names::kRawOutput) ;
 
 	pResponse->AddChild(pTag) ;
 }
+
+/*************************************************************
+* @brief Removes the top message from the incoming message queue
+*		 in a thread safe way.
+*		 Returns NULL if there is no waiting message.
+*************************************************************/
+ElementXML* Connection::PopIncomingMessageQueue()
+{
+	// Ensure only one thread is changing the message queue at a time
+	// This lock is released when we exit this function.
+	soar_thread::Lock lock(&m_Mutex) ;
+
+	if (m_IncomingMessageQueue.size() == 0)
+		return NULL ;
+
+	// 	Read the first message that's waiting
+	ElementXML* pIncomingMsg = m_IncomingMessageQueue.front() ;
+	m_IncomingMessageQueue.pop() ;
+
+	return pIncomingMsg ;
+}
+
+

@@ -43,8 +43,6 @@
 #define unused(x) (void)(x)
 #endif
 
-#include "sml_Errors.h"
-
 namespace sml
 {
 
@@ -91,7 +89,7 @@ class ElementXMLImpl
 	friend class MessageGenerator ;
 
 protected:
-	ErrorCode		m_ErrorCode ;		// Used to report any errors.
+//	ErrorCode		m_ErrorCode ;		// Used to report any errors.  BUGBUG: Still need to define this.
 	bool			m_UseCData ;		// If true, should store character data in a CDATA section when encoding as XML.
 	xmlStringConst	m_TagName ;			// The tag name (e.g. in <name>...</name> the tag name is "name")
 	xmlString		m_CharacterData ;	// The character data (e.g. in <name>Albert Einstein</name> the char data is "Albert Einstein")

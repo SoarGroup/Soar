@@ -12,8 +12,10 @@
 #define SML_AGENT_H
 
 #include "sml_ClientWorkingMemory.h"
+#include "sml_ClientEvents.h"
 
 #include <string>
+#include <map>
 
 namespace sml {
 
@@ -26,10 +28,12 @@ class Agent
 {
 	// Don't want users creating and destroying agent objects without
 	// going through the kernel
-	friend Kernel ;
-	friend WorkingMemory ;
-	friend ObjectMap<Agent*> ;	// So can delete agent
-	friend WMElement ;
+	friend class Kernel ;
+	friend class WorkingMemory ;
+	friend class ObjectMap<Agent*> ;	// So can delete agent
+	friend class WMElement ;
+
+	typedef std::map<smlEventId, RunEventHandler> RunEventMap ;
 
 protected:
 	// We maintain a local copy of working memory so we can just send changes
@@ -41,13 +45,17 @@ protected:
 	// The name of this agent
 	std::string		m_Name ;
 
+	// Map from event id to handler function
+	RunEventMap		m_RunEventMap ;
+
 protected:
 	Agent(Kernel* pKernel, char const* pAgentName);
 
+	// This is protected so the client doesn't try to delete it.
+	// Client should just delete the kernel object (or call Kernel::DestroyAgent() if just want to destroy this agent).
 	virtual ~Agent();
 
 	Connection* GetConnection() const ;
-	char const* GetAgentName() const	{ return m_Name.c_str() ; }
 	WorkingMemory* GetWM() 				{ return &m_WorkingMemory ; } 
 	Kernel*		GetKernel() const		{ return m_Kernel ; }
 
@@ -60,7 +68,20 @@ protected:
 	*************************************************************/
 	void ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
+	/*************************************************************
+	* @brief This function is called when an event is received
+	*		 from the Soar kernel.
+	*
+	* @param pIncoming	The event command
+	* @param pResponse	The reply (no real need to fill anything in here currently)
+	*************************************************************/
+	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+
 public:
+	/*************************************************************
+	* @brief Returns this agent's name.
+	*************************************************************/
+	char const* GetAgentName() const	{ return m_Name.c_str() ; }
 
 	/*************************************************************
 	* @brief Load a set of productions from a file.
@@ -156,6 +177,29 @@ public:
 	*		 the client calls "Commit"
 	*************************************************************/
 	bool	DestroyWME(WMElement* pWME) ;
+
+	/*************************************************************
+	* @brief Register for a "RunEvent".
+	*
+	* Current set is:
+	* smlEVENT_BEFORE_SMALLEST_STEP,
+	* smlEVENT_AFTER_SMALLEST_STEP,
+	* smlEVENT_BEFORE_ELABORATION_CYCLE,
+	* smlEVENT_AFTER_ELABORATION_CYCLE,
+	* smlEVENT_BEFORE_PHASE_EXECUTED,
+	* smlEVENT_AFTER_PHASE_EXECUTED,
+	* smlEVENT_BEFORE_DECISION_CYCLE,
+	* smlEVENT_AFTER_DECISION_CYCLE,
+	* smlEVENT_AFTER_INTERRUPT,
+	* smlEVENT_BEFORE_RUNNING,
+	* smlEVENT_AFTER_RUNNING,
+	*************************************************************/
+	void	RegisterForRunEvent(smlEventId id, RunEventHandler handler) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	*************************************************************/
+	void	UnregisterForEvent(smlEventId id) ;
 
 	/*==============================================================================
 	===

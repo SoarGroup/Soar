@@ -38,7 +38,7 @@ protected:
 
 	bool		m_IsSML ;			// True if this is an <sml> XML object
 
-	ArgMap		m_ArgMap ;			// Map from name to <arg> elements.  BUGBUG: To support multiple commands need multiple of these maps (one per command).
+	ArgMap		m_ArgMap ;			// Map from name to <arg> elements.
 
 public:
 	AnalyzeXML();

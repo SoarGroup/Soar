@@ -44,6 +44,11 @@ namespace TgD
 
 #include "cli_CommandLineInterface.h"
 
+namespace soar_thread
+{
+	class Mutex ;
+}
+
 namespace sml {
 
 // Forward declarations
@@ -53,6 +58,7 @@ class AnalyzeXML ;
 class KernelSML ;
 class OutputListener ;
 class AgentSML; 
+class ConnectionManager ;
 
 // Define the CommandFunction which we'll call to process commands
 typedef bool (KernelSML::*CommandFunction)(gSKI::IAgent*, char const*, Connection*, AnalyzeXML*, ElementXML*, gSKI::Error*);
@@ -81,6 +87,10 @@ typedef AgentMap::const_iterator			AgentMapConstIter ;
 
 class KernelSML
 {
+protected:
+	// The singleton kernel object
+	static KernelSML*	s_pKernel ;
+
 protected:	
 	// Map from command name to function to handle it
 	CommandMap	m_CommandMap ;
@@ -89,19 +99,24 @@ protected:
 	// required for SML about each agent.
 	AgentMap		m_AgentMap ;
 
+	// Command line interface module
+	cli::CommandLineInterface m_CommandLineInterface ;
+
+	// The gSKI kernel objects
+	gSKI::IKernelFactory* m_pKernelFactory ;   
+	gSKI::IKernel* m_pIKernel ;
+
+	// A listener socket and the list of connections to the kernel
+	ConnectionManager* m_pConnectionManager ;
+
+	// We'll use a mutex to serialize execution of commands within the kernel when we have
+	// multiple connections, some of which may run in different threads.
+	soar_thread::Mutex*	m_pMutex ;
+
 #ifdef USE_TCL_DEBUGGER
 	// A hack to allow us access to the Tcl debugger until we have a real one available.
 	TgD::TgD* m_Debugger ;
 #endif
-
-	// Command line interface module
-	cli::CommandLineInterface m_CommandLineInterface ;
-
-	// The singleton kernel object
-	static KernelSML*	s_pKernel ;
-
-	gSKI::IKernelFactory* m_pKernelFactory ;   
-	gSKI::IKernel* m_pIKernel ;
 
 public:
 	/*************************************************************
@@ -124,6 +139,30 @@ public:
 
 public:
 	~KernelSML(void);
+
+	/*************************************************************
+	* @brief	Shutdown any connections and sockets in preparation
+	*			for the kernel process exiting.
+	*************************************************************/
+	void Shutdown() ;
+
+	/*************************************************************
+	* @brief	Add a new connection to the list of connections
+	*			we're aware of to this soar kernel.
+	*************************************************************/
+	void AddConnection(Connection* pConnection) ;
+
+	/*************************************************************
+	* @brief	Remove any events that this connection was listening to.
+	*			Generally do this just prior to deleting the connection.
+	*************************************************************/
+	void RemoveAllListeners(Connection* pConnection) ;
+
+	/*************************************************************
+	* @brief	Receive and process any messages from remote connections
+	*			that are waiting on a socket.
+	*************************************************************/
+	void ReceiveAllMessages() ;
 
 	/*************************************************************
 	* @brief	Takes an incoming SML message and responds with
@@ -223,7 +262,10 @@ protected:
 	bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool KernelSML::HandleGetAgentList(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 
+	// Note: Register and unregister are both sent to this one handler
+	bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 };
 
 }

@@ -111,12 +111,12 @@ static ElementXML* AddResultID(Connection* pConnection, ElementXML* pResponse, c
   SML input processor
   ==================================
 */
-class sml_InputProducer: public IInputProducer
+class sml_InputProducer_gSKI: public IInputProducer
 {
 public:
 
    // Simple constructor
-   sml_InputProducer(KernelSMLgSKI* pKernelSML, sml::Connection* pConnection, char const* pID)
+   sml_InputProducer_gSKI(KernelSMLgSKI* pKernelSML, sml::Connection* pConnection, char const* pID)
    {
 	   m_KernelSML	= pKernelSML ;
 	   m_ID			= pID ;
@@ -124,7 +124,7 @@ public:
    }
    
    // Virtual destructor for the usual reasons
-   virtual ~sml_InputProducer() 
+   virtual ~sml_InputProducer_gSKI() 
    {
    }
    
@@ -425,7 +425,7 @@ bool KernelSMLgSKI::IInputLink_AddInputProducer(void* pThis, char const* pComman
 	}
 
 	// Create the local, kernel side InputProducer object
-	sml_InputProducer* pInputProducer = new sml_InputProducer(this, pConnection, pInputProducerID) ;
+	sml_InputProducer_gSKI* pInputProducer = new sml_InputProducer_gSKI(this, pConnection, pInputProducerID) ;
 
 	// We have to keep track of this object and delete it when
 	// the KernelSMLgSKI object is deleted.  (We could add a mechanism for deleting them

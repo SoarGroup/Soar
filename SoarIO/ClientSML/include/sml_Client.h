@@ -17,5 +17,6 @@
 #include "sml_ClientIntElement.h"
 #include "sml_ClientFloatElement.h"
 #include "sml_ClientIdentifier.h"
+#include "sml_ClientEvents.h"
 
 #endif //SML_CLIENT_SML_H
