@@ -1,7 +1,10 @@
-sp {elaborate*top-state*name
-  (state <s> ^superstate nil)
+sp {elaborations*elaborate*top-state
+   (state <s> ^superstate nil)
 -->
-  (<s> ^name towers-of-hanoi
-       ^top-state <s>)
-}
+   (<s> ^top-state <s>)}
 
+sp {elaborations*elaborate*super*top-state
+   (state <ss> ^superstate.top-state <s>)
+-->
+   (<ss> ^top-state <s>)
+}

@@ -1,11 +1,3 @@
-
-sp {elaborate*state*top-state
-    (state <s> ^superstate <ss>)
-    (<ss> ^top-state <ts>)
-    -->
-    (<s> ^top-state <ts>)}
-
-
 sp {elaborate*state*desired
     (state <s> ^superstate <ss>)
     (<ss> ^operator <o>)
