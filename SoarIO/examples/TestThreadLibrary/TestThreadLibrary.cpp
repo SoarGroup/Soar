@@ -11,6 +11,11 @@
 #include <crtdbg.h>
 #endif // _MSC_VER
 
+#ifdef _WIN32
+#include <windows.h>
+#define sleep(x) Sleep(1000*x)
+#endif // _WIN32
+
 using namespace soar_thread;
 using namespace std;
 
@@ -192,10 +197,12 @@ public:
 		g_pMutex = new Mutex();
 		
 		cout << "Starting deadlock test... ";
-		Lock lock1(g_pMutex);
+		Lock* pLock1 = new Lock(g_pMutex);
 		cout << "About to lock again, this should be deadlock (control-c to quit)" << endl;
-		Lock lock2(g_pMutex);
+		Lock* pLock2 = new Lock(g_pMutex);
 		
+		delete pLock1;
+		delete pLock2;
 		delete g_pMutex;
 		
 		return Result(false) ;
@@ -242,9 +249,9 @@ int main(int argc, char* argv[])
 #endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
-	//printf("\n\nPress <return> to exit\n") ;
-	//char line[100] ;
-	//char* str = gets(line) ;
+	printf("\n\nPress <return> to exit\n") ;
+	char line[100] ;
+	char* str = gets(line) ;
 
 	return 0;
 }
