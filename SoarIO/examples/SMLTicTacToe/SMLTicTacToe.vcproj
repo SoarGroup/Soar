@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\TgDI\include;.\include;..\..\..\gSKI\include;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
+				AdditionalIncludeDirectories="include;..\..\ClientSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_WIN32"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -32,10 +32,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
 				ShowProgress="0"
-				OutputFile="../SML/bin/SMLTicTacToe.exe"
+				OutputFile="bin/SMLTicTacToe.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\gSKI\lib;..\..\..\TgDI\lib"
+				AdditionalLibraryDirectories="..\..\ClientSML\lib;..\..\ConnectionSML\lib;..\..\ElementXML\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/gSKITicTacToe.pdb"
 				SubSystem="1"
@@ -44,9 +45,8 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="copy dll to tgdix, copy soar file to tgdix"
-				CommandLine="copy  bin\gSKId.dll lib_src\TgDIx\bin
-copy agents\tictactoe.soar lib_src\TgDIx\bin
+				Description="Copy SML dlls into example bin folder so we can run"
+				CommandLine="copy  ..\..\bin\*.dll bin\*.dll
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -73,7 +73,7 @@ copy agents\tictactoe.soar lib_src\TgDIx\bin
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories=".\lib_src\TgDIx\include;.\include;.\lib_src\TgDIx\lib_src\gSKIx\include;..\SML\ClientSML\include"
+				AdditionalIncludeDirectories="include;..\..\ClientSML\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="4"
 				UsePrecompiledHeader="3"
@@ -84,8 +84,10 @@ copy agents\tictactoe.soar lib_src\TgDIx\bin
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../SML/bin/SMLTicTacToe.exe"
+				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
+				OutputFile="bin/SMLTicTacToe.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\ClientSML\lib;..\..\ConnectionSML\lib;..\..\ElementXML\lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -94,7 +96,9 @@ copy agents\tictactoe.soar lib_src\TgDIx\bin
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				Description="Copy SML dlls into example bin folder so we can run"
+				CommandLine="copy  ..\..\bin\*.dll bin\*.dll"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -114,15 +118,6 @@ copy agents\tictactoe.soar lib_src\TgDIx\bin
 		</Configuration>
 	</Configurations>
 	<References>
-		<ProjectReference
-			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
-			Name="ClientSML"/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
-			Name="ConnectionSML"/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			Name="ElementXML"/>
 	</References>
 	<Files>
 		<Filter
@@ -133,13 +128,10 @@ copy agents\tictactoe.soar lib_src\TgDIx\bin
 				RelativePath=".\src\board.cpp">
 			</File>
 			<File
-				RelativePath=".\src\gSKISoarAgent.cpp">
+				RelativePath=".\src\main.cpp">
 			</File>
 			<File
-				RelativePath=".\src\gSKISoarSquare.cpp">
-			</File>
-			<File
-				RelativePath=".\src\gSKITicTacToe.cpp">
+				RelativePath=".\src\soar_agent.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -150,10 +142,7 @@ copy agents\tictactoe.soar lib_src\TgDIx\bin
 				RelativePath=".\include\board.h">
 			</File>
 			<File
-				RelativePath=".\include\gSKISoarAgent.h">
-			</File>
-			<File
-				RelativePath=".\include\gSKISoarSquare.h">
+				RelativePath=".\include\soar_agent.h">
 			</File>
 		</Filter>
 		<Filter

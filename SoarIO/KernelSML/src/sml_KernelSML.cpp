@@ -18,6 +18,7 @@
 #include "sml_KernelSML.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
+#include "sml_OutputListener.h"
 
 #include "gSKI.h"
 #include <iostream>
@@ -31,6 +32,7 @@
 #include "../../gSKI/src/gSKI_Error.h"
 #include "gSKI_ErrorIds.h"
 #include "gSKI_Enumerations.h"
+#include "gSKI_Events.h"
 #include "IgSKI_AgentManager.h"
 #include "IgSKI_Agent.h"
 #include "IgSKI_ProductionManager.h"
@@ -68,51 +70,6 @@ static ElementXML* AddErrorMsg(MessageGenerator* pConnection, ElementXML* pRespo
 	return pResponse ;
 }
 
-/*
-  ==================================
-  SML output processor
-  ==================================
-*/
-/*
-class sml_OutputProcessor: public IOutputProcessor
-{
-public:
-
-   // Simple constructor
-   sml_OutputProcessor(KernelSML* pKernelSML, sml::Connection* pConnection)
-   {
-	   m_KernelSML	= pKernelSML ;
-	   m_Connection = pConnection ;
-   }
-   
-   // Virtual destructor for the usual reasons
-   virtual ~sml_OutputProcessor() 
-   {
-   }
-   
-   // The update function required by the IInputProducer interface
-   // (Responsible for updating the state of working memory)
-   virtual void ProcessOutput(IWorkingMemory* wmemory,
-							  IWMObject* obj)
-   {
-	   AnalyzeXML response ;
-
-	   // During output, we may get a new wmobject, so we need to record it so
-	   // we can find it again later on if the user makes use of this value.
-	   // I guess the same could be true for the working memory possibly.
-	   char const* pID1 = m_KernelSML->StoreObject(wmemory, kIWorkingMemory, false) ;
-	   char const* pID2 = m_KernelSML->StoreObject(obj, kIWMObject, true) ;
-
-	   m_Connection->SendClassCommand(&response, sml_Names::kgSKI_IOutputProcessor_ProcessOutput, m_ID.c_str(), 
-			sml_Names::kParamWorkingMemory, pID1,
-			sml_Names::kParamWmeObject, pID2) ;
-   }
-
-private:
-	sml::KernelSML*		m_KernelSML ;
-	sml::Connection*	m_Connection ;
-};
-*/
 /*************************************************************
 * @brief	Returns the singleton kernel object.
 *************************************************************/
@@ -150,6 +107,11 @@ KernelSML::~KernelSML()
 	if (m_pKernelFactory && m_pIKernel)
 		m_pKernelFactory->DestroyKernel(m_pIKernel);
 
+	// Delete the list of output listeners
+	for (OutputListenerListIter_t iter = m_OutputListeners.begin() ; iter != m_OutputListeners.end() ; iter++)
+	{
+		delete *iter ;
+	}
 }
 
 /*************************************************************

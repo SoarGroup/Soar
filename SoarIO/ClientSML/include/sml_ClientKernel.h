@@ -32,8 +32,32 @@ protected:
 	ObjectMap<Agent*>	m_AgentMap ;
 	std::string			m_CommandLineResult;
 
-public:
+	// To create a kernel object, use one of the static methods, e.g. Kernel::CreateEmbeddedConnection().
 	Kernel(Connection* pConnection);
+
+public:
+	/*************************************************************
+	* @brief Creates a connection to the Soar kernel that is embedded
+	*        within the same process as the caller.
+	*
+	* @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
+	*						This library will be dynamically loaded and connected to.
+	*
+	* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
+	*************************************************************/
+	static Kernel* CreateEmbeddedConnection(char const* pLibraryName) ;
+
+	/*************************************************************
+	* @brief Creates a connection to a receiver that is in a different
+	*        process.  The process can be on the same machine or a different machine.
+	*
+	* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
+	*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
+	* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
+	*
+	* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
+	*************************************************************/
+	static Kernel* CreateRemoteConnection(char const* pIPaddress, int port) ;
 
 	virtual ~Kernel();
 

@@ -36,17 +36,13 @@ int main(int argc, char** argv)
 	}
 
 	CommandLineInterface* cli;
-	sml::Connection* pConnection;
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
 
 	if (useSML) {
 
-		// Create a connection
-		ErrorCode error;
-		pConnection = sml::Connection::CreateEmbeddedConnection("KernelSML", &error) ;
-
-		pKernel = new sml::Kernel(pConnection) ;
+		// Create an embedded connection to the kernel
+		pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML") ;
 		cout << "Kernel created." << endl;
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
@@ -149,11 +145,6 @@ int main(int argc, char** argv)
 	if (useSML) {
 		delete pKernel ;
 
-		////destroy connection
-		//cout << "Closing connection..." << endl << endl;
-
-		pConnection->CloseConnection();
-		delete pConnection ;
 	} else {
 		delete cli;
 	}

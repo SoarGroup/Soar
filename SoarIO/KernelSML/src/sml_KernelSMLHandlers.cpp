@@ -17,6 +17,7 @@
 #include "sml_KernelSML.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
+#include "sml_OutputListener.h"
 
 #include "gSKI.h"
 #include <iostream>
@@ -32,10 +33,12 @@
 #include "../../gSKI/src/gSKI_Error.h"
 #include "gSKI_ErrorIds.h"
 #include "gSKI_Enumerations.h"
+#include "gSKI_Events.h"
 #include "IgSKI_AgentManager.h"
 #include "IgSKI_Agent.h"
 #include "IgSKI_ProductionManager.h"
 #include "IgSKI_OutputProcessor.h"
+#include "IgSKI_OutputLink.h"
 #include "IgSKI_InputProducer.h"
 #include "IgSKI_Symbol.h"
 #include "IgSKI_WME.h"
@@ -114,6 +117,17 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName
 
 	// Make the call.
 	IAgent* pResult = GetKernel()->GetAgentManager()->AddAgent(pName, NULL, false, gSKI_O_SUPPORT_MODE_4, pError) ;
+
+	// Register for output from this agent
+	if (pResult)
+	{
+		// Create a listener for the callback
+		OutputListener* pListener = new OutputListener(this, pConnection) ;
+		m_OutputListeners.push_back(pListener) ;
+
+		// Listen for output callback events
+		pResult->GetOutputLink()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
+	}
 
 #ifdef USE_TCL_DEBUGGER
 	// BADBAD: Now create the Tcl debugger.  This is a complete hack and can come out once we have some way to debug this stuff.
@@ -200,6 +214,8 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 	IWorkingMemory* pInputWM = pAgent->GetInputLink()->GetInputLinkMemory(pError) ;
 
 	// First get the object which will own this new wme
+	// Because we build from the top down, this should always exist by the
+	// time we wish to add structure beneath it.
 	IWMObject* pParentObject = NULL ;
 	pInputWM->GetObjectById(pID, &pParentObject) ;
 
@@ -285,7 +301,6 @@ bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI:
 	}
 
 	// Remove the wme from working memory
-	// BUGBUG? Do we need to be in the input phase when this happens?
 	pInputWM->RemoveWme(pWME, pError) ;
 
 	// I'm not sure if we release pWME 

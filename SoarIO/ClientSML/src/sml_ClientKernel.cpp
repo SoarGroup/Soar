@@ -25,6 +25,58 @@ Kernel::Kernel(Connection* pConnection)
 Kernel::~Kernel(void)
 {
 	// When the agent map is deleted, it will delete its contents (the Agent objects)
+
+	// We also need to close the connection
+	if (m_Connection)
+		m_Connection->CloseConnection() ;
+
+	delete m_Connection ;
+}
+
+/*************************************************************
+* @brief Creates a connection to the Soar kernel that is embedded
+*        within the same process as the caller.
+*
+* @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
+*						This library will be dynamically loaded and connected to.
+*
+* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
+*************************************************************/
+Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName)
+{
+	ErrorCode errorCode = 0 ;
+	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, &errorCode) ;
+
+	if (!pConnection)
+		return NULL ;
+
+	Kernel* pKernel = new Kernel(pConnection) ;
+	return pKernel ;
+}
+
+/*************************************************************
+* @brief Creates a connection to a receiver that is in a different
+*        process.  The process can be on the same machine or a different machine.
+*
+* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
+*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
+* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
+*
+* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
+*************************************************************/
+Kernel* Kernel::CreateRemoteConnection(char const* pIPaddress, int port)
+{
+	ErrorCode errorCode = 0 ;
+
+	// The remote part is still to be written.
+	//Connection* pConnection = Connection::CreateRemoteConnection(pIPaddress, port, &errorCode) ;
+	Connection* pConnection = NULL ;
+
+	if (!pConnection)
+		return NULL ;
+
+	Kernel* pKernel = new Kernel(pConnection) ;
+	return pKernel ;
 }
 
 /*************************************************************

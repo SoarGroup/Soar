@@ -141,6 +141,9 @@
 			<File
 				RelativePath=".\src\sml_KernelSMLHandlers.cpp">
 			</File>
+			<File
+				RelativePath=".\src\sml_OutputListener.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -172,6 +175,9 @@
 			</File>
 			<File
 				RelativePath="..\ConnectionSML\include\sml_Names.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_OutputListener.h">
 			</File>
 		</Filter>
 		<Filter

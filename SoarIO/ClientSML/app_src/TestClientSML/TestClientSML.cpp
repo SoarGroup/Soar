@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 98 ;
+	//_crtBreakAlloc = 62 ;
 
 	cout << "TestClientSML app starting..." << endl << endl;
 
@@ -30,11 +30,7 @@ int main(int argc, char* argv[])
 	// We'll do the test in a block, so everything should have been
 	// deleted when we test for memory leaks.
 	{
-		//create a connection
-		ErrorCode error;
-		sml::Connection* pConnection = sml::Connection::CreateEmbeddedConnection("KernelSML", &error) ;
-
-		sml::Kernel* pKernel = new sml::Kernel(pConnection) ;
+		sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML") ;
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent("test") ;
@@ -69,10 +65,9 @@ int main(int argc, char* argv[])
 		delete pKernel ;
 
 		//destroy connection
-		cout << "Closing connection..." << endl << endl;
-
-		pConnection->CloseConnection();
-		delete pConnection ;
+		//cout << "Closing connection..." << endl << endl;
+		//pConnection->CloseConnection();
+		//delete pConnection ;
 	}// closes testing block scope
 
 	//A deliberate memory leak which I can use to test the memory checking code is working.
