@@ -96,7 +96,7 @@ cout << "SENT STATUS ERROR========================================" << endl;
 
 void SoarAgent::MakeMove()
 {										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE //
-	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1);
+	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT, 1);
 	cout << "Run result is: " <<  runResult << endl;
 	assert(runResult != gSKI_RUN_ERROR);
 }

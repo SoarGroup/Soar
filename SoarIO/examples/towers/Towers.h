@@ -76,7 +76,6 @@ public:
 		IWMObject* holdsParentObject = holdsParentSymbol->GetObject();
 		
 		//add holds wmes to parent object
-cout <<"I'm adding 'on' to holds...." << endl;
 		m_pPeg = m_pWMemory->AddWmeObjectLink(holdsParentObject, "on", m_pPegId);
 
 		//the holds wme points back to its corresponding disk
@@ -105,10 +104,13 @@ cout <<"I'm adding 'on' to holds...." << endl;
 		parentSymbol = m_pHoldsIdentifier->GetValue();
 		parentObject = parentSymbol->GetObject();
 		m_pWMemory->RemoveObject(parentObject);
+
+		m_pDiskBeneath->Release();
+		m_pPegId->Release();
 	}
 
 	//Replace the "on" and "above" wmes for the corresponding 
-	//holds wme regardless of whether they have changed
+	//holds wme
 	void Update(IWorkingMemory* pWMemory, IWMObject* object)
 	{
 		if(m_holdsNeedsToBeUpdated == false)
@@ -118,14 +120,6 @@ cout <<"I'm adding 'on' to holds...." << endl;
 		tIWmeIterator* onItr = object->GetWMEs("on");
 		if(onItr->IsValid())
 		{
-			// Get the old "on" value
-			//IWme* oldTowerLink = onItr->GetVal();\
-			// Replace the wme attribute "on" with the new value
-			//const gSKI::ISymbol* pegParentSymbol = m_pPeg->GetValue();
-			//assert(pegParentSymbol);
-			//IWMObject* pegParentObject = pegParentSymbol->GetObject();
-			//m_pPeg->Release();
-			cout<<"Releasing m_pPeg"<<endl;
 			pWMemory->RemoveWme(m_pPeg);
 
 			m_pPeg = pWMemory->AddWmeObjectLink(object, "on", m_pPegId);
@@ -140,12 +134,8 @@ cout <<"I'm adding 'on' to holds...." << endl;
 
 			if(m_pDiskBeneath)
 			{
-				/*const gSKI::ISymbol* aboveParentSymbol = m_pHoldsDiskBeneath->GetValue();
-				assert(aboveParentSymbol);
-				IWMObject* aboveParentObject = aboveParentSymbol->GetObject();*/
-
 				pWMemory->RemoveWme(m_pHoldsDiskBeneath);
-				m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", m_pDiskBeneath->GetValue()->GetObject());/*aboveParentObject*/
+				m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", m_pDiskBeneath->GetValue()->GetObject());
 			}
 			else
 			{
@@ -207,8 +197,6 @@ typedef diskContainer_t::iterator diskItr_t;
 
 
 
-
-
 class Tower
 {
 public:
@@ -224,8 +212,15 @@ public:
 
 	~Tower()
 	{
-		m_pPegIdentifier->Release();
+
+		IWorkingMemory* pWorkingMem = m_pILink->GetInputLinkMemory();
+		pWorkingMem->RemoveObject(m_pPegIdentifier->GetValue()->GetObject());
+		for(vector<Disk*>::iterator diskItr = m_disks.begin(); diskItr != m_disks.end(); ++diskItr)
+		{
+			(*diskItr)->Detach();
+		}
 		m_disks.clear();//TODO @TODO release these too?
+		//can't release ILink ptr
 	}
 
 	//will always add a smaller disk than the top, so new disk must on at end of container
@@ -320,7 +315,6 @@ public:
 		//Name each tower and store for later
 		for(int towerNum = 0; towerNum < inNumTowers; ++towerNum)
 		{
-
 			//==============
 			//"Left" tower
 			//==============
@@ -376,11 +370,10 @@ public:
 
 	~HanoiWorld()
 	{
-//fixme call a destroy function on the towers first 
-//TODO @TODO
+		for(towerItr_t towerItr = m_towers.begin(); towerItr != m_towers.end(); ++towerItr)
+			(*towerItr)->~Tower();
 		m_towers.clear();
 	}
-
 
 	//remove from the source tower, add to the destination tower
 	bool MoveDisk(int sourceTower, int destinationTower)
