@@ -332,7 +332,7 @@ int soar_cReInitSoar (void) {
  *----------------------------------------------------------------------
  */
 
-void soar_cCreateAgent (char * agent_name) {
+void soar_cCreateAgent (const char * agent_name) {
 
   if (soar_exists_global_callback( GLB_CREATE_AGENT )) {
     soar_invoke_global_callbacks( NULL, GLB_CREATE_AGENT, 
@@ -498,7 +498,7 @@ void soar_cStopCurrentAgent( const char *reason ) {
  *
  *----------------------------------------------------------------------
  */
-int soar_cDestroyAgentByName( char *name ) {
+int soar_cDestroyAgentByName( const char *name ) {
   cons *c;
   int name_count = 0;
   psoar_agent *delete_me = NULL;
@@ -673,7 +673,7 @@ void soar_cQuit ( void )
  *
  *----------------------------------------------------------------------
  */
-int soar_cLoadReteNet( char *filename ) {
+int soar_cLoadReteNet( const char *filename ) {
 
 
   char pipe_command[]  = "zcat ";
@@ -774,7 +774,7 @@ int soar_cLoadReteNet( char *filename ) {
  *----------------------------------------------------------------------
  */
 
-int soar_cSaveReteNet( char *filename ) {
+int soar_cSaveReteNet( const char *filename ) {
   
   char *command_line;
   char pipe_command[]  = "compress > ";

@@ -1773,6 +1773,7 @@ production *parse_production (void) {
   byte prod_type;
   byte rete_addition_result;
   bool rhs_okay;
+	bool interrupt_on_match;
 
   reset_placeholder_variable_generator ();
 
@@ -1801,6 +1802,7 @@ production *parse_production (void) {
   /* --- read optional flags --- */
   declared_support = UNDECLARED_SUPPORT;
   prod_type = USER_PRODUCTION_TYPE;
+	interrupt_on_match = FALSE;
   while (TRUE) {
     if (current_agent(lexeme).type!=SYM_CONSTANT_LEXEME) break;
     if (!strcmp(current_agent(lexeme).string,":o-support")) {
@@ -1820,6 +1822,16 @@ production *parse_production (void) {
     }
     if (!strcmp(current_agent(lexeme).string,":default")) {
       prod_type = DEFAULT_PRODUCTION_TYPE;
+      get_lexeme();
+      continue;
+    }
+    if (!strcmp(current_agent(lexeme).string,":interrupt")) {
+#ifdef MATCHTIME_INTERRUPT
+      interrupt_on_match = TRUE;
+			/* print ("\nRead interrupt\n"); */
+#else
+			print( "WARNING :interrupt is not supported with the current build options..." );
+#endif
       get_lexeme();
       continue;
     }
@@ -1897,6 +1909,7 @@ production *parse_production (void) {
 
   p->documentation = documentation;
   p->declared_support = declared_support;
+	p->interrupt = interrupt_on_match;
   rete_addition_result = add_production_to_rete (p, lhs_top, NIL, TRUE);
   deallocate_condition_list (lhs_top);
 

@@ -162,8 +162,6 @@ bool discard_chunk_varnames = TRUE;
 
 
 
-
-
 /* **********************************************************************
 
    SECTION 1:  Rete Net Structures and Declarations
@@ -5281,13 +5279,15 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 
 		   /* warn user about mixed actions  */
 			 
-			 if ( current_agent(o_support_calculation_type) == 3 ) {
+			 if ( current_agent(o_support_calculation_type) == 3 && 
+						current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
 				 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
 														node->b.p.prod->name);
 				 prod_type = PE_PRODS;
 				 break;
 			 }
-			 else if ( current_agent(o_support_calculation_type) == 4 ) {
+			 else if ( current_agent(o_support_calculation_type) == 4 &&
+								 current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
 				 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
 														node->b.p.prod->name);
 				 prod_type = IE_PRODS;
@@ -5312,6 +5312,7 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 	} /* end if (operator_proposal == FALSE) */
 
      } /* end UNDECLARED_SUPPORT */
+	
 
      if (prod_type == PE_PRODS) {
        insert_at_head_of_dll (current_agent(ms_o_assertions), msc, next, prev);
@@ -5362,8 +5363,36 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
      insert_at_head_of_dll (current_agent(ms_assertions), msc, next, prev);
 #endif
 
-  /* RCHONG: end 10.11 */
 
+#ifdef MATCHTIME_INTERRUPT
+			 if ( node->b.p.prod->interrupt ) {
+				 char *ch;				 
+				 node->b.p.prod->interrupt++;
+				 current_agent(stop_soar)++;
+
+				 /*				 print( "INTERRUPT CALLED! [Phase] (Interrupt, Stop) is [%d] (%d,%d)\n", current_agent(current_phase), node->b.p.prod->interrupt, current_agent(stop_soar) ); */
+
+
+				 /*
+					 Note that this production name might not be completely accurate.
+					 If two productions match, the last matched production name will be
+					 saved, but if this production then gets retracted on the same
+					 elaboration cycle, while the first matching production remains
+					 on the assertion list, Soar will still halt, but the production
+					 named will be inaccurate.
+				 */
+				 strcpy (current_agent(interrupt_source), "*** Interrupt (probably) from production ");
+				 ch = current_agent(interrupt_source);
+				 while (*ch) ch++;
+				 symbol_to_string (node->b.p.prod->name, TRUE, ch); 
+				 while (*ch) ch++;
+				 strcpy (ch, " ***");
+				 current_agent(reason_for_stopping) = current_agent(interrupt_source);
+
+			 }
+#endif
+
+  /* RCHONG: end 10.11 */
   insert_at_head_of_dll (node->b.p.tentative_assertions, msc,
                          next_of_node, prev_of_node);
   activation_exit_sanity_check();
@@ -5397,7 +5426,14 @@ void p_node_left_removal (rete_node *node, token *tok, wme *w) {
       remove_from_dll (node->b.p.tentative_assertions, msc,
                        next_of_node, prev_of_node);
 
+#ifdef MATCHTIME_INTERRUPT
+			if (node->b.p.prod->interrupt > 1 ) {
+				node->b.p.prod->interrupt--;
+				current_agent(stop_soar)--;
+				/*				print ( "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", node->b.p.prod->interrupt, current_agent(stop_soar) ); */
 
+			}
+#endif
       /* REW: begin 09.15.96 */
 #ifndef SOAR_8_ONLY
       if (current_agent(operand2_mode) == TRUE) {

@@ -74,7 +74,7 @@
  *----------------------------------------------------------------------
  */
 
-int soar_ReInitSoar( int argc, char *argv[], soarResult *res ) {
+int soar_ReInitSoar( int argc, const char *argv[], soarResult *res ) {
 
   clearSoarResultResult( res );
   soar_cReInitSoar();
@@ -95,7 +95,7 @@ int soar_ReInitSoar( int argc, char *argv[], soarResult *res ) {
  *----------------------------------------------------------------------
  */
 
-int soar_CreateAgent( int argc, char *argv[], soarResult *res ) {
+int soar_CreateAgent( int argc, const char *argv[], soarResult *res ) {
   char too_few[] = "Too few arguments, a name must be supplied.";
   char too_many[] = "Too many arguments, only a name may be supplied.";
 
@@ -217,7 +217,7 @@ int soar_Run (int argc, const char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_DestroyAgent ( int argc, char *argv[], soarResult *res)
+int soar_DestroyAgent ( int argc, const char *argv[], soarResult *res)
 {
 
   if (argc > 2)
@@ -248,7 +248,7 @@ int soar_DestroyAgent ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Quit( int argc, char *argv[], soarResult *res ) {
+int soar_Quit( int argc, const char *argv[], soarResult *res ) {
   
 
   soar_cQuit();
@@ -280,7 +280,7 @@ int soar_Quit( int argc, char *argv[], soarResult *res ) {
  *----------------------------------------------------------------------
  */
 
-int soar_ReteNet( int argc, char *argv[], soarResult *res ) {
+int soar_ReteNet( int argc, const char *argv[], soarResult *res ) {
   
   if (argc < 3)
     {
@@ -2461,7 +2461,7 @@ int soar_PWatch (int argc, const char *argv[], soarResult *res)
 /* TLD = top level disambiguation, not tomato and lettuce donut */ 
 #define TLD 4
 
-int soar_Pool ( int argc, char *argv[], soarResult *res)
+int soar_Pool ( int argc, const char *argv[], soarResult *res)
 {
 
   bool print_free;
@@ -3028,7 +3028,7 @@ int soar_AttributePreferencesMode (int argc, const char *argv[], soarResult *res
  *----------------------------------------------------------------------
  */
 
-int soar_Watch (int argc, char *argv[], soarResult *res)
+int soar_Watch (int argc, const char *argv[], soarResult *res)
 {
 
   clearSoarResultResult( res );
@@ -3621,7 +3621,7 @@ int soar_ExcludedBuildInfo( int argc, const char *argv[], soarResult *res ) {
  */
 
 
-int soar_GDSPrint( int argc, char *argv[], soarResult *res ) {
+int soar_GDSPrint( int argc, const char *argv[], soarResult *res ) {
   
   soar_ecGDSPrint();
   return SOAR_OK;

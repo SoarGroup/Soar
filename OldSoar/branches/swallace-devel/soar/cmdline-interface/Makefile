@@ -52,7 +52,7 @@ all:	soar_app
 
 lib:	libsoarnui.a
 
-soar_app: $(OBJS) main.o
+soar_app: $(OBJS) main.o 
 	$(CC) $(CFLAGS) -o soar_app $(OBJS) main.o $(LIBS) 
 
 tests: nit1.o $(OBJS)

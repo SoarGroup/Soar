@@ -436,13 +436,16 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
        if (op_elab == TRUE ) { 
 
 					 /* warn user about mixed actions */
-				 if ( current_agent(o_support_calculation_type) == 3 ) {
+				 if ( current_agent(o_support_calculation_type) == 3 &&
+							current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM] ) {
 
 					 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
 														inst->prod->name);
 					 o_support = TRUE;
 				 }
-				 else if ( current_agent(o_support_calculation_type) == 4 ) {
+				 else if ( current_agent(o_support_calculation_type) == 4 &&
+									 current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
+
 					 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
 														inst->prod->name);
 					 o_support = FALSE;

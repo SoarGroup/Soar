@@ -1235,8 +1235,8 @@ int soar_ecPrintAllProductionsOfType( int type, bool internal,
 
 
 
-int soar_ecAddWmeFilter( char *szId, char *szAttr, char *szValue, 
-			 bool adds, bool removes ) {
+int soar_ecAddWmeFilter( const char *szId, const char *szAttr, 
+												 const char *szValue, bool adds, bool removes ) {
 
   Symbol *id,*attr,*value;
   wme_filter *wf, *existing_wf;
@@ -1301,8 +1301,8 @@ error_out:
 
 
 
-int soar_ecRemoveWmeFilter( char *szId, char *szAttr, char *szValue, 
-			    bool adds, bool removes ) {
+int soar_ecRemoveWmeFilter( const char *szId, const char *szAttr, 
+														const char *szValue, bool adds, bool removes ) {
   Symbol *id,*attr,*value;
   wme_filter *wf;
   int return_value = -4;

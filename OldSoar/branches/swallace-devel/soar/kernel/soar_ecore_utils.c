@@ -39,7 +39,7 @@ bool passes_wme_filtering(wme *w, bool isAdd) {
   return FALSE; /* no defined filters match -> w passes */
 }
 
-int parse_filter_type(char *s, bool *forAdds, bool *forRemoves) {
+int parse_filter_type(const char *s, bool *forAdds, bool *forRemoves) {
   if        (!strcmp(s,"-adds")) {
     *forAdds = TRUE;
     *forRemoves = FALSE;
@@ -239,7 +239,7 @@ production_memory_use *print_memories_insert_in_list(production_memory_use *new,
 
 
 
-int read_wme_filter_component(char *s, Symbol **sym) {
+int read_wme_filter_component(const char *s, Symbol **sym) {
   get_lexeme_from_string(s);
   if(current_agent(lexeme).type == IDENTIFIER_LEXEME) {
 

@@ -8,6 +8,12 @@ void soar_ecBuildInfo( ) {
 	print( " Build Information.\n" );
 
 
+#ifdef MATCHTIME_INTERRUPT
+	print( " - MATCHTIME_INTERRUPT\n" );
+#endif
+#ifdef O_REJECTS_FIRST
+	print( " - O_REJECTS_FIRST\n" );
+#endif
 #ifdef AGRESSIVE_ONC
 	print( " - AGRESSIVE_ONC\n" );
 #endif
@@ -17,10 +23,6 @@ void soar_ecBuildInfo( ) {
 
 #ifdef ATTENTION_LAPSE
 	print( " - ATTENTION_LAPSE\n" );
-#endif
-
-#ifdef CALLBACK_H_INCLUDED
-	print( " - CALLBACK_H_INCLUDED\n" );
 #endif
 
 #ifdef COUNT_KERNEL_TIMER_STOPS
@@ -156,7 +158,7 @@ void soar_ecBuildInfo( ) {
 #endif
 
 #ifdef MAX_SIMULTANEOUS_AGENTS
-	print( " - MAX_SIMULTANEOUS_AGENTS\n" );
+	print( " - MAX_SIMULTANEOUS_AGENTS %d\n", MAX_SIMULTANEOUS_AGENTS );
 #endif
 
 #ifdef MEMORY_POOL_STATS
@@ -164,7 +166,7 @@ void soar_ecBuildInfo( ) {
 #endif
 
 #ifdef MHZ
-	print( " - MHZ\n" );
+	print( " - MHZ %d\n", MHZ );
 #endif
 
 #ifdef NO_ADC_CALLBACK

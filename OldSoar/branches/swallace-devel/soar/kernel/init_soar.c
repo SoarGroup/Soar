@@ -1018,7 +1018,7 @@ void do_one_top_level_phase (void) {
           
       } else
 
-// end AGRESSIVE_ONC				
+/* end AGRESSIVE_ONC	*/
 #endif 
 
 				{

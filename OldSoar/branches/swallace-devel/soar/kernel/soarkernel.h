@@ -176,6 +176,7 @@ typedef char bool;
 #define FALSE (0)
 #endif
 
+
 #define NIL (0)
 
 #define EOF_AS_CHAR ((char)EOF)
@@ -1691,6 +1692,11 @@ typedef struct action_struct {
 
       OPERAND_which_assert_list: (BUGBUG need info from REW or RCHONG)
 
+			interrupt: TRUE iff we should break when this production matches 
+			            (but before it fires).  Note: this functionality is
+									only used when the compile time option:
+									MATCHTIME_INTERRUPT is defined.
+
    Reference counts on productions:
       +1 if it's in production memory (i.e., hasn't been excised)
       +1 for each existing instantiation pointing to it
@@ -1728,6 +1734,7 @@ typedef struct production_struct {
   list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
   struct instantiation_struct *instantiations; /* dll of inst's in MS */
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
+	bool interrupt;                         /* SW: 7.31.03 */
 
 } production;
 

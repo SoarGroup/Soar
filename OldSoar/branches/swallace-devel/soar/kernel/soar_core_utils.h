@@ -44,7 +44,7 @@ extern bool string_match_up_to (const char * string1, const char * string2, int 
 extern void excise_all_productions_of_type (byte type);
 
 
-extern void soar_default_create_agent_procedure (char * agent_name);
+extern void soar_default_create_agent_procedure (const char * agent_name);
 extern void soar_default_destroy_agent_procedure (psoar_agent delete_agent);
 
 #endif
