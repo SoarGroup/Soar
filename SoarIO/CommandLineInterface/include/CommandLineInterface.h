@@ -401,6 +401,11 @@ protected:
 	*************************************************************/
 	void SourceError(int errorLine, const char* filename);
 
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool IsInteger(const std::string& s);
+
 	GetOpt			m_GetOpt;			// Pointer to GetOpt utility class
 	CommandMap		m_CommandMap;		// Mapping of command names to function pointers
 	gSKI::IKernel*	m_pKernel;			// Pointer to the current gSKI kernel

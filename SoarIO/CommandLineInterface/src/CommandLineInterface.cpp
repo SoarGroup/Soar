@@ -823,7 +823,13 @@ bool CommandLineInterface::DoLS() {
 	// At least one file found, concatinate additional ones with newlines
 	do {
 		// TODO: Columns and stats
+		if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+			m_Result += '[';
+		}
 		m_Result += FindFileData.cFileName;
+		if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+			m_Result += ']';
+		}
 		m_Result += '\n';
 	} while (FindNextFile(hFind, &FindFileData));
 
@@ -862,6 +868,13 @@ bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
 	// If we have 3 arguments, third one is an integer
 	if (argc > 2) {
 		// TODO: verify int before atoi call
+		string s = argv[2];
+		if (!IsInteger(s)) {
+			// Must be an integer
+			m_Result += CLIConstants::kCLISyntaxError;
+			m_Result += CLIConstants::kCLIMultiAttributesUsage;
+			return false;
+		}
 		n = atoi(argv[2]);
 		if (n <= 0) {
 			// Must be non-negative and greater than 0
@@ -1016,6 +1029,7 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 	// TODO: in 8.5.2 this is current_agent(default_wme_depth)
 	int depth = 1;
 	unsigned short options = 0;
+	string s;
 
 	for (;;) {
 		option = m_GetOpt.GetOpt_Long(argc, argv, "acd:DfFijnosSu", longOptions, 0);
@@ -1032,6 +1046,12 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 				break;
 			case 'd':
 				options |= OPTION_PRINT_DEPTH;
+				s = GetOpt::optarg;
+				if (!IsInteger(s)) {
+					m_Result += CLIConstants::kCLISyntaxError;
+					m_Result += CLIConstants::kCLIPrintUsage;
+					return false;
+				}
 				depth = atoi(GetOpt::optarg);
 				break;
 			case 'D':
@@ -2062,5 +2082,22 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 
 	// Store directory in output parameter and return success
 	directory = buf;
+	return true;
+}
+
+// ___     ___       _
+//|_ _|___|_ _|_ __ | |_ ___  __ _  ___ _ __
+// | |/ __|| || '_ \| __/ _ \/ _` |/ _ \ '__|
+// | |\__ \| || | | | ||  __/ (_| |  __/ |
+//|___|___/___|_| |_|\__\___|\__, |\___|_|
+//                           |___/
+bool CommandLineInterface::IsInteger(const string& s) {
+	string::const_iterator iter = s.begin();
+	while (iter != s.end()) {
+		if (!isdigit(*iter)) {
+			return false;
+		}
+		++iter;
+	}
 	return true;
 }
