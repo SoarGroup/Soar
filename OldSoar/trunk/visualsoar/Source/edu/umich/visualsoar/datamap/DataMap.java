@@ -55,11 +55,15 @@ public class DataMap extends CustomInternalFrame
                 public void internalFrameClosing(InternalFrameEvent e) 
                     {
 
-                        MainFrame.getMainFrame().getDesktopPane().dmRemove(id);
+                        MainFrame mf = MainFrame.getMainFrame();
+                        mf.getDesktopPane().dmRemove(id);
                         dispose();
 
                         if(Preferences.getInstance().isAutoTilingEnabled())
-                        MainFrame.getMainFrame().getDesktopPane().performTileAction();
+                        {
+                            mf.getDesktopPane().performTileAction();
+                        }
+                        mf.selectNewInternalFrame();
                     }
             });
 

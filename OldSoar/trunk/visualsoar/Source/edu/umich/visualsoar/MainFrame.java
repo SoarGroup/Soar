@@ -806,18 +806,51 @@ public class MainFrame extends JFrame
      */
 	public void showRuleEditor(RuleEditor re) 
     {
-
 		try 
         {
-
 			if (re.isIcon())
             re.setIcon(false);
 			re.setSelected(true);
 			re.moveToFront();
 		}
-		catch (java.beans.PropertyVetoException pve) { System.err.println("Guess we can't do that");}				
+		catch (java.beans.PropertyVetoException pve)
+        {
+            System.err.println("Guess we can't do that");
+        }				
 	}
 						
+	/**
+     * Selects a currently open editor window and brings it to the front.
+     * If none are open then no action is taken.
+     */
+    public void selectNewInternalFrame()
+    {
+        JInternalFrame[] jif = DesktopPane.getAllFrames();
+        RuleEditor re = null;
+        for(int i = jif.length-1; i >= 0; i--)
+        {
+            if(jif[i].isShowing()) 
+            {
+                try 
+                {
+                    if (jif[i].isIcon())
+                    {
+                        jif[i].setIcon(false);
+                    }
+                    jif[i].setSelected(true);
+                    jif[i].moveToFront();
+                    break;
+                }
+                catch (java.beans.PropertyVetoException pve)
+                {
+                    //Don't break;
+                }				
+            }
+        }//for
+
+	}//selectNewInternalFrame()
+						
+
 	/**
 	 * Gets rid of the operator window
 	 */

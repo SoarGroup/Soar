@@ -148,8 +148,13 @@ public class RuleEditor extends CustomInternalFrame
                         }
                         dispose();
 
+                        MainFrame mf = MainFrame.getMainFrame();
                         if(Preferences.getInstance().isAutoTilingEnabled())
-                        MainFrame.getMainFrame().getDesktopPane().performTileAction();
+                        {
+                            mf.getDesktopPane().performTileAction();
+                        }
+                        
+                        mf.selectNewInternalFrame();
                     }
             });
 
@@ -1398,8 +1403,13 @@ public class RuleEditor extends CustomInternalFrame
             {
                 // This is not an error
             }
+            MainFrame mf = MainFrame.getMainFrame();
             if(Preferences.getInstance().isAutoTilingEnabled())
-            MainFrame.getMainFrame().getDesktopPane().performTileAction();
+            {
+                mf.getDesktopPane().performTileAction();
+            }
+            
+            mf.selectNewInternalFrame();
         }
     }
 
