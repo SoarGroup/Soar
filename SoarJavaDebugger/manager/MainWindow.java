@@ -305,7 +305,7 @@ public class MainWindow
 		buttons.addButton("Print op", "print <o>") ;
 		buttons.addButton("Print stack", "print --stack") ;
 		buttons.init(m_Frame, m_Document, buttonsRightBottom) ;
-		buttons.setLinkedView(update1) ;
+		buttons.setLinkedView(update1.getName()) ;
 		buttons.generateName() ;
 		buttonsRightBottom.addView(buttons) ;
 
@@ -338,6 +338,32 @@ public class MainWindow
        	m_Frame.setAgentFocus(currentAgentFocus) ;
   	}
 
+  	public void loadFromXML(ElementXML root) throws Exception
+	{
+		// Find the version of the layout file.
+		String version = root.getAttributeThrows(ElementXML.kVersionAttribute) ;
+
+		if (!version.equals("1.0"))
+			throw new Exception("Layout file is from an unsupported version " + version) ;
+		
+		// Pick up the current focus so we can restore it at the end
+  		Agent currentAgentFocus = m_Frame.getAgentFocus() ;
+
+		// Get rid of any existing windows and create a new blank window
+		clearLayout() ;
+		
+		// Load all of the windows
+		loadChildrenFromXML(m_Frame, m_Document, m_Window, root) ;
+  		
+		// Note: Must update the parent because we've changed its children here.
+		// Without this the new windows don't appear on screen at all.
+       	m_Window.getParent().layout(true) ;
+       	
+       	// We reset the agent focus (if it existed before).
+       	// This allows the new windows to all register for events with this agent.
+       	m_Frame.setAgentFocus(currentAgentFocus) ;  		
+	}
+  	
 	/************************************************************************
 	* 
 	* Loads the window layout from an XML file.
@@ -349,29 +375,7 @@ public class MainWindow
 		{
 			ElementXML root = ElementXML.ReadFromFile(filename);
 			
-			// Find the version of the layout file.
-			String version = root.getAttributeThrows(ElementXML.kVersionAttribute) ;
-
-			if (!version.equals("1.0"))
-				throw new Exception("Layout file is from an unsupported version " + version) ;
-			
-			// Pick up the current focus so we can restore it at the end
-	  		Agent currentAgentFocus = m_Frame.getAgentFocus() ;
-
-			// Get rid of any existing windows and create a new blank window
-			clearLayout() ;
-			
-			// Load all of the windows
-			loadChildrenFromXML(m_Frame, m_Document, m_Window, root) ;
-	  		
-			// Note: Must update the parent because we've changed its children here.
-			// Without this the new windows don't appear on screen at all.
-	       	m_Window.getParent().layout(true) ;
-	       	
-	       	// We reset the agent focus (if it existed before).
-	       	// This allows the new windows to all register for events with this agent.
-	       	m_Frame.setAgentFocus(currentAgentFocus) ;
-			
+			loadFromXML(root) ;
 			
 			return true ;
 		}
@@ -391,7 +395,7 @@ public class MainWindow
   	
 	public boolean saveLayoutToFile(String filename)
 	{
-		ElementXML root = convertToXML("Debugger") ;
+		ElementXML root = convertToXML() ;
 
 		try
 		{
@@ -498,9 +502,9 @@ public class MainWindow
 		return element ;
 	}
 	
-	protected ElementXML convertToXML(String tagName)
+	public ElementXML convertToXML()
 	{
-		ElementXML root = new ElementXML(tagName) ;
+		ElementXML root = new ElementXML("Debugger") ;
 
 		// Add a version to the layout file so we can have later debuggers handle earlier layout files
 		// in a special manner if we wish.

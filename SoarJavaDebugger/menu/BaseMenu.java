@@ -45,6 +45,7 @@ public class BaseMenu
 		// This uses the rather less flexible Swing style model to enable/disable items.
 		// We should probably move that logic into the action objects as a method and have
 		// each report whether it should be enabled or not based on the current state of the system.
+		// For that we need a piece of code to call which returns true/false for each menu item's enable state.
 		m_Header.addArmListener(new ArmListener() {
 			public void widgetArmed(ArmEvent e) {
 				for (int i = 0 ; i < m_Menu.getItemCount() ; i++)

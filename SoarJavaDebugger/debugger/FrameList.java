@@ -12,6 +12,7 @@
 package debugger;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import doc.Module;
@@ -30,9 +31,22 @@ public class FrameList
 	public void	add(MainFrame f)	{ m_List.add(f) ; }
 	public void remove(MainFrame f) { m_List.remove(f) ; }
 	public MainFrame get(int index)	{ return (MainFrame)m_List.get(index) ; }
-	
-	public int getUnusedChannel()
+
+	public boolean isNameInUse(String name)
 	{
-		throw new IllegalStateException("Not implemented yet") ;
+		return (find(name) != null) ;
+	}
+	
+	public MainFrame find(String frameName)
+	{
+		for (Iterator iter = m_List.iterator() ; iter.hasNext() ;)
+		{
+			MainFrame frame = (MainFrame)iter.next() ;
+			if (frame.getName().equals(frameName))
+				return frame ;
+		}
+		
+		return null ;
+		
 	}
 }

@@ -87,6 +87,9 @@ public class MainFrame
 	
 	/** Map of module names that are currently in use in this frame */
 	private NameRegister m_NameMap = new NameRegister() ;
+	
+	/** Each frame has a unique name within the debugger (for the life of one running of the app) */
+	private String m_Name ;
 
 	/**
 	 * We associate a default agent with a MainFrame, so that windows within
@@ -144,9 +147,13 @@ public class MainFrame
 		m_Parent = parent;
 
 		m_Document = doc;
-		// Add ourselves to the list of frames in use
-		doc.addFrame(this);
-
+		
+		// Add ourselves to the list of frames in use and
+		// get back a unique name to use
+		String name = doc.addFrame(this);
+		
+		m_Name = name ;
+ 
 		m_DebuggerCommands = new DebuggerCommands(this, doc);
 
 		m_White = new Color(getDisplay(), 255, 255, 255);
@@ -183,6 +190,11 @@ public class MainFrame
 		getDocument().addSoarChangeListener(m_SoarChangeListener);
 	}
 
+	public String getName()
+	{
+		return m_Name ;
+	}
+	
 	public Shell getShell()
 	{
 		return m_Parent.getShell();
@@ -639,7 +651,7 @@ public class MainFrame
 	 * Executes a command that affects the debugger itself, using some form of
 	 * scripting language we define
 	 */
-	public void executeInternalCommand(String commandLine, boolean echoCommand)
+	public void executeDebuggerCommand(String commandLine, boolean echoCommand)
 	{
 		m_DebuggerCommands.executeCommand(commandLine, echoCommand);
 	}

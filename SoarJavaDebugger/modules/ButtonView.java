@@ -45,7 +45,7 @@ public class ButtonView extends AbstractView
 	
 	/** A list of ButtonInfo objects */
 	protected ArrayList m_ButtonList = new ArrayList() ;
-	protected AbstractView m_LinkedView ;
+	protected String 	m_LinkedViewName ;
 	
 	public ButtonView()
 	{
@@ -109,11 +109,14 @@ public class ButtonView extends AbstractView
 	 * 
 	 * The button pane can be linked to a specific view -- in which case commands are executed there.
 	 * If it is not linked it defaults to using the prime view for output.
+	 * We use the name of the view instead of the view itself so that we can save and load the
+	 * connection and also when loading we may load this button pane before the view it is linked
+	 * to and just storing the name avoids a problem of when to resolve the name into the view.
 	 * 
 	 ********************************************************************************************/
-	public void setLinkedView(AbstractView view)
+	public void setLinkedView(String viewName)
 	{
-		m_LinkedView = view ;
+		m_LinkedViewName = viewName ;
 	}
 	
 	public void init(MainFrame frame, Document doc, Pane parentPane)
@@ -154,6 +157,16 @@ public class ButtonView extends AbstractView
 		}
 	}
 	
+	protected AbstractView getLinkedView()
+	{
+		if (m_LinkedViewName == null)
+			return null ;
+
+		// Even when we have a name it's possible that the view it referred to
+		// is no longer around, so this can still return null.
+		return m_MainFrame.getNameRegister().getView(m_LinkedViewName) ;
+	}
+	
 	protected void buttonPressed(SelectionEvent e, int pos)
 	{
 		ButtonInfo button = (ButtonInfo)m_ButtonList.get(pos) ;
@@ -162,15 +175,16 @@ public class ButtonView extends AbstractView
 		// Execute the command in the prime view for the debugger
 		if (command != null)
 		{
-			if (m_LinkedView != null)
-				m_LinkedView.executeAgentCommand(command, true) ;
+			AbstractView linkedView = getLinkedView() ;
+			if (linkedView != null)
+				linkedView.executeAgentCommand(command, true) ;
 			else
 				m_MainFrame.executeCommandPrimeView(command, true) ;
 		}
 		
 		if (button.m_InternalCommand != null)
 		{
-			m_MainFrame.executeInternalCommand(button.m_InternalCommand, true) ;
+			m_MainFrame.executeDebuggerCommand(button.m_InternalCommand, true) ;
 		}
 	}
 
@@ -221,6 +235,9 @@ public class ButtonView extends AbstractView
 		// Store this object's properties.
 		element.addAttribute("Name", m_Name) ;
 		element.addAttribute("ButtonCount", Integer.toString(m_ButtonList.size())) ;
+
+		if (m_LinkedViewName != null)
+			element.addAttribute("LinkedView", m_LinkedViewName) ;
 		
 		// Save information for each button in the panel
 		for (int i = 0 ; i < m_ButtonList.size() ; i++)
@@ -269,8 +286,9 @@ public class ButtonView extends AbstractView
 		
 		m_ButtonList.clear() ;
 		
-		m_Name   = element.getAttribute("Name") ;
+		m_Name   = element.getAttributeThrows("Name") ;
 		int size = element.getAttributeIntThrows("ButtonCount") ;
+		m_LinkedViewName = element.getAttribute("LinkedView") ;	// This one is optional
 		
 		for (int i = 0 ; i < size ; i++)
 		{

@@ -55,6 +55,17 @@ public class ParseSelectedText
 		{
 			addItem(view, menu, command, command) ;
 		}
+		
+		protected void addWindowSubMenu(AbstractView view, Menu menu)
+		{
+			MenuItem header = new MenuItem(menu, SWT.CASCADE) ;
+			header.setText("Window") ;
+			
+			Menu windowMenu = new Menu(menu.getShell(), SWT.DROP_DOWN) ;
+			header.setMenu(windowMenu) ;
+			
+			view.fillWindowMenu(windowMenu) ;
+		}	
 	}
 	
 	public static class SelectedProduction extends SelectedObject
@@ -72,6 +83,8 @@ public class ParseSelectedText
 			addItem(view, menu, doc.getSoarCommands().getMatchesCommand(m_Name)) ;
 			addItem(view, menu, doc.getSoarCommands().getMatchesWmesCommand(m_Name)) ;
 			addItem(view, menu, doc.getSoarCommands().getExciseCommand(m_Name)) ;
+			
+			addWindowSubMenu(view, menu) ;
 		}
 	}
 	
@@ -93,6 +106,8 @@ public class ParseSelectedText
 			addItem(view, menu, doc.getSoarCommands().getPrintDepthCommand(m_Name, 2)) ;
 			addItem(view, menu, doc.getSoarCommands().getPrintInternalCommand(m_Name)) ;
 			addItem(view, menu, doc.getSoarCommands().getPrintCommand("{(* ^* " + m_Name + ")}")) ;
+			
+			addWindowSubMenu(view, menu) ;
 		}
 	}
 	
@@ -117,6 +132,8 @@ public class ParseSelectedText
 			addItem(view, menu, doc.getSoarCommands().getPreferencesNameCommand(m_ID + " " + m_Att)) ;
 			addItem(view, menu, doc.getSoarCommands().getPrintCommand(m_ID)) ;
 			addItem(view, menu, doc.getSoarCommands().getPrintCommand(m_Value)) ;
+			
+			addWindowSubMenu(view, menu) ;
 		}
 		
 		public String toString() { return "WME " + m_ID + " " + m_Att + " " + m_Value ; }
@@ -134,7 +151,7 @@ public class ParseSelectedText
 		/** Fills in menu items that are appropriate for this type of object */
 		public void fillMenu(Document doc, AbstractView view, Menu menu, boolean simple)
 		{
-			addItem(view, menu, doc.getSoarCommands().getPrintCommand(m_Name)) ;			
+			view.fillWindowMenu(menu) ;
 		}
 
 		public String toString() { return "Unknown " + m_Name ; }

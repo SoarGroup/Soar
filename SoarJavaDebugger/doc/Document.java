@@ -56,7 +56,7 @@ public class Document
 	private Display				m_Display = null ;
 	
 	/** There is only one document in the debugger.  If you want to work with another Soar process, start another debugger */
-	private static Document		s_Document ;
+	//private static Document		s_Document ;
 	
 	/**
 	 * We have to decide how to keep the UI thread responsive while Soar is running (possibly for a long time).
@@ -76,7 +76,7 @@ public class Document
 	
 	public Document()
 	{
-		Document.s_Document = this ;
+		//Document.s_Document = this ;
 		
 		// Load the user's preferences from the properties file.
 		// If we change the version number, it will cause all existing preferences
@@ -106,7 +106,7 @@ public class Document
 	}
 	
 	/** Returns the single document instance for this debugger.  If possible pass a document pointer around instead of using this backdoor */
-	public static Document getMainDocument() { return s_Document ; }
+	//public static Document getMainDocument() { return s_Document ; }
 	
 	/** Gives us a frame to work with */
 	public MainFrame getFirstFrame() 		 { return m_FrameList.get(0) ; }
@@ -180,9 +180,30 @@ public class Document
 	 * We maintain a list of MainFrames in the debugger.  A MainFrame has a menu bar and children.
 	 * 
 	********************************************************************************************/
-	public void addFrame(MainFrame frame)
+	public String addFrame(MainFrame frame)
 	{
+		// Generate a unique name for this frame (not used by any other frames)
+		String baseName = "mainframe" ;
+		String name = null ;
+
+		for (int i = m_FrameList.size()+1 ; i < 200 && name == null ; i++)
+		{
+			String candidate = baseName + i ;
+
+			// Just do a linear search of the frame list -- it'll be small
+			if (!m_FrameList.isNameInUse(candidate))
+				name = candidate ;
+		}
+
 		m_FrameList.add(frame) ;
+
+		// Returns the name to use for this frame
+		return name ;
+	}
+	
+	public MainFrame getFrameByName(String frameName)
+	{
+		return m_FrameList.find(frameName) ;
 	}
 	
 	public void removeFrame(MainFrame frame)
@@ -194,7 +215,7 @@ public class Document
 	{
 		return m_FrameList.size() ;
 	}
-
+	
 	/********************************************************************************************
 	 * 
 	 * Shutdown.  We generally only call this when we're about to terminate the debugger.

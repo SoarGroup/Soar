@@ -196,6 +196,23 @@ public abstract class AbstractView implements AgentFocusListener
 		// We still get a notification in case we need to do any other clean-up.
 		unregisterForAgentEvents(e.getAgent()) ;
 	}
+	
+	protected void addItem(Menu menu, String text, final String command)
+	{
+		MenuItem item = new MenuItem (menu, SWT.PUSH);
+		item.setText (text) ;
+		
+		item.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) { m_MainFrame.executeDebuggerCommand(command, false) ; } } ) ;
+	}	
+	
+	public void fillWindowMenu(Menu menu)
+	{
+		addItem(menu, "Add window -- split right", "addview " + m_MainFrame.getName() + " " + this.getName() + " sash right") ;
+		addItem(menu, "Add window -- split left", "addview " + m_MainFrame.getName() + " " + this.getName() + " sash left") ;
+		addItem(menu, "Add window -- split top", "addview " + m_MainFrame.getName() + " " + this.getName() + " sash top") ;
+		addItem(menu, "Add window -- split bottom", "addview " + m_MainFrame.getName() + " " + this.getName() + " sash bottom") ;
+	}
 }
 
 

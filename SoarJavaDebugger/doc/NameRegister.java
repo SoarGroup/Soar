@@ -34,7 +34,7 @@ public class NameRegister
 		m_NameMap.clear() ;
 	}
 	
-	public AbstractView lookupView(String name)
+	public AbstractView getView(String name)
 	{
 		return (AbstractView)m_NameMap.get(name) ;
 	}

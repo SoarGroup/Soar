@@ -13,29 +13,6 @@ import java.io.*;
 import doc.Document;
 
 public class Application {
-
-	public class TopLevelExceptionHandler
-	{
-		// Called when an otherwise untrapped exception occurs in the event thread.
-		public void handle(Throwable thrown)
-		{
-			debugger.MainFrame frame = Document.getMainDocument().getFirstFrame() ;
-
-			if (frame != null)
-				frame.ShowMessageBox("Unexpected exception thrown", thrown.getStackTrace() + thrown.getMessage()) ;
-		}
-	}
-
-	private void SetupExceptionHandler()
-	{
-		// BUGBUG: This isn't working.
-		
-		// This property is documented by Sun as a temporary workaround
-		// for a feature missing from their APIs.
-		// It allows me to install a global exception handler for the
-		// main event thread.
-		// System.setProperty("sun.awt.exception.handler","VisualEditor.TopLevelExceptionHandler");
-	}
 	
 	/************************************************************************
 	*
