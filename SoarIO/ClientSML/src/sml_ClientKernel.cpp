@@ -123,14 +123,19 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 const char* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAgentName)
 {
 	AnalyzeXML response;
-	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
+	bool wantRawOutput = true ;
+
+	// Send the command line to the kernel
+	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine, wantRawOutput);
 
 	if (m_CommandLineSucceeded)
 	{
+		// Get the result as a string
 		m_CommandLineResult = response.GetResultString();
 	}
 	else
 	{
+		// Get the error message
 		m_CommandLineResult += "\nError Data:\n";
 		m_CommandLineResult += response.GetErrorTag()->GetCharacterData();
 	}
@@ -162,17 +167,10 @@ ElementXML_Handle Kernel::ExecuteCommandLineXML(char const* pCommandLine, char c
 *************************************************************/
 bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse)
 {
-	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
+	if (!pCommandLine || !pResponse)
+		return false ;
 
-	if (m_CommandLineSucceeded)
-	{
-		m_CommandLineResult = pResponse->GetResultString();
-	}
-	else
-	{
-		m_CommandLineResult += "\nError Data:\n";
-		m_CommandLineResult += pResponse->GetErrorTag()->GetCharacterData();
-	}
+	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(pResponse, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine);
 
 	return m_CommandLineSucceeded ;
 }
