@@ -1,9 +1,8 @@
 /* File : Tcl_sml_ClientInterface.i */
 %module Tcl_sml_ClientInterface
 
-%typemap(in, numinputs=0) Tcl_Interp* {
-	$1 = interp;
-}
+// this includes support for wrapping Tcl_Interp*, which we need for our custom callback code
+%include typemaps.i
 
 // We need to include this stuff before we include sml_ClientInterface.i or else things will be in the wrong
 //  order in the generated code and it won't compile
@@ -11,6 +10,8 @@
 // So I am including the header file for smlEventId here and forward declaring Agent
 // Even though the header for smlEventId is included later, this isn't harmful
 %{
+	#include <string>
+	
 	namespace sml {
 	class Agent;
 	}
@@ -21,33 +22,18 @@
 		Tcl_Obj* script;
 	};
 	
-	/*
-	bool TclRhsCallback(sml::smlRhsEventId, void* pUserData, Agent* pAgent, char const* pFunctionName,
-	                    char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
+	std::string TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
+	                    char const* pArgument)
 	{
 	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
 	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
-	    Tcl_AppendStringsToObj(script, pFunctionName, " ", NULL);
-	    Tcl_AppendObjToObj(script, Tcl_NewIntObj(maxLengthReturnValue));
+	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
+	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", pArgument, "\"", NULL);
 	    Tcl_EvalObjEx(tud->interp, script, 0);
 	    Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
 	    
-	    //check the result
-	    //should be a list with two items
-	    //first item should be a bool
-	    //second item should be the text
-	    int length = 0;
-	    int error = Tcl_ListObjLength(tud->interp, res, &length);
-	    if(error == TCL_OK && length==2) {
-	        Tcl_Obj* retval;
-	        Tcl_ListObjIndex(tud->interp, res, 0, &retVal);
-	    }
-	    
-	    pReturnValue = NULL;
-	    return false;
+	    return Tcl_GetString(res);
 	}
-	*/
 	
 	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
 	{
@@ -118,7 +104,7 @@
 	    return tud;
 	}
 	
-	TclUserData* CreateTclSystemUserData(sml::Kernel* self, int id, char* proc, char* userData, Tcl_Interp* interp) {
+	TclUserData* CreateTclSystemUserData(sml::Kernel* self, int id, const char* proc, const char* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
 	    
 	    tud->interp = interp;
@@ -133,7 +119,7 @@
 	    return tud;
 	}
 	
-	TclUserData* CreateTclUserData(int id, char* proc, char* userData, Tcl_Interp* interp) {
+	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
 	    
 	    tud->interp = interp;
@@ -180,10 +166,8 @@
 	    return self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
     };
     
-    /*
     int AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
-	    TclUserData* tud = CreateTclUserData(smlEVENT_RHS_USER_FUNCTION, pRhsFunctionName, userData, interp);
+	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pRhsFunctionName, userData, interp);
 	    return self->AddRhsFunction(pRhsFunctionName, TclRhsEventCallback, (void*)tud, addToBack);
     };
-    */
 }

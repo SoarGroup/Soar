@@ -30,6 +30,11 @@ proc SystemShutdownCallback {id userData kernel} {
 	puts "Shutting down kernel $kernel"
 }
 
+proc RhsFunctionTest {id userData agent functionName argument} {
+	puts "Agent $agent received RHS function $functionName with argument(s) '$argument' and userData '$userData'"
+	return "success"
+}
+
 #load the sml stuff
 lappend auto_path .
 package require tcl_sml_clientinterface
@@ -41,6 +46,7 @@ set agentCallbackId0 [$kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATE
 set agentCallbackId1 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
 set agentCallbackId2 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback ""]
 set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
+set rhsCallbackId [$kernel AddRhsFunction RhsFunctionTest ""]
 
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
@@ -51,8 +57,9 @@ set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_AFTER_PROD
 set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback ""]
 
 #load the TOH productions
-cd demos/towers-of-hanoi
-set result [$agent LoadProductions towers-of-hanoi.soar]
+set result [$agent LoadProductions demos/towers-of-hanoi/towers-of-hanoi.soar]
+#loads a function to test the user-defined RHS function stuff
+set result [$agent LoadProductions TOHtest.soar]
 
 $kernel ExecuteCommandLine "run 2 -e" Soar1
 
@@ -70,10 +77,18 @@ set result [$kernel ExecuteCommandLine "excise towers-of-hanoi*monitor*operator-
 
 #run TOH the rest of the way and time it using Tcl's built-in timer
 set speed [time {set result [$kernel ExecuteCommandLine "run" Soar1]}]
-cd ../..
 puts "\n$speed"
 
 set result [$kernel ExecuteCommandLine "init-soar" Soar1]
+
+#remove all the remaining callback functions (not required, just to test)
+puts "removing callbacks"
+#$kernel UnregisterForAgentEvent $agentCallbackId0
+#$kernel UnregisterForAgentEvent $agentCallbackId1
+#$kernel UnregisterForAgentEvent $agentCallbackId2
+#$kernel UnregisterForSystemEvent $systemCallbackId
+#$kernel RemoveRhsFunction $rhsCallbackId
+
 $kernel DestroyAgent $agent
 
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted
