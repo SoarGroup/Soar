@@ -236,6 +236,11 @@ bool ElementXML::IsTag(char const* pTagName) const
 	if (!pThisTag)
 		return false ;
 
+	// In some cases we'll use the same exact pointer
+	// and this is common enough to include for performance
+	if (pThisTag == pTagName)
+		return true ;
+
 	return (IsStringEqual(pThisTag, pTagName)) ;
 }
 

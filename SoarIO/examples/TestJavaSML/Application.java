@@ -64,6 +64,37 @@ public class Application
 		{
 			System.out.println("Received print event in Java: " + message) ;
 		}
+		
+		public String testRhsHandler(int eventID, Object data, String agentName, String functionName, String argument)
+		{
+			System.out.println("Received rhs function event in Java for function: " + functionName + "(" + argument + ")") ;
+			return "My rhs result " + argument ;
+		}
+	}
+	
+	void printWMEs(WMElement pRoot)
+	{
+		if (pRoot.GetParent() == null)
+			System.out.println("Top Identifier " + pRoot.GetValueAsString()) ;
+		else
+		{
+			System.out.println("(" + pRoot.GetParent().GetIdentifierSymbol() + " ^" + pRoot.GetAttribute() + " " + pRoot.GetValueAsString() + ")") ;
+		}
+
+		/* Need to wait for proper casting operators before this will work
+		if (pRoot.IsIdentifier())
+		{
+			Identifier pID = (Identifier)pRoot ;
+			int size = pID.GetNumberChildren() ;
+
+			for (int i = 0 ; i < size ; i++)
+			{
+				WMElement pWME = pID.GetChild(i) ;
+
+				printWMEs(pWME) ;
+			}
+		}
+		*/
 	}
 	
 	private void Test()
@@ -132,6 +163,7 @@ public class Application
 		int jPrintCallback  = pAgent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, listener, "printEventHandler", this) ;		
 		int jSystemCallback = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
 		int jAgentCallback  = pKernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
+		int jRhsCallback    = pKernel.AddRhsFunction("test-rhs", listener, "testRhsHandler", this) ;		
 
 		// Trigger an agent event by doing init-soar
 		pAgent.InitSoar() ;
@@ -150,8 +182,16 @@ public class Application
 
 		System.out.println(trace1) ;
 
+		// See if our RHS function worked
+		String value = pAgent.GetOutputLink().GetParameterValue("test") ;
+		
+		if (value == null)
+			throw new IllegalStateException("RHS function failed to set a value for ^test") ;
+		
+		System.out.println("Value of ^test (via RHS function) is: " + value) ;
+		
 		// Now stress things a little
-		String traceLong = pAgent.Run(500) ;
+		// String traceLong = pAgent.Run(500) ;
 		
 		System.out.println("Unregister callbacks") ;
 		
@@ -162,6 +202,7 @@ public class Application
 		pAgent.UnregisterForPrintEvent(jPrintCallback) ;
 		pKernel.UnregisterForSystemEvent(jSystemCallback) ;
 		pKernel.UnregisterForAgentEvent(jAgentCallback) ;
+		pKernel.RemoveRhsFunction(jRhsCallback) ;
 		
 		String trace2 = pAgent.RunTilOutput(20) ;
 		System.out.println(trace2) ;
@@ -235,10 +276,10 @@ public class Application
 
 			Test() ;
 		}
-		catch (Exception e)
+		catch (Throwable t)
 		{
 			success = false ;
-			msg = e.getMessage() ;
+			msg = t.getMessage() ;
 		}
 		finally
 		{

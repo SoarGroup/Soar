@@ -103,6 +103,7 @@ protected:
 	// Utility classes used to test for values in the event maps
 	class TestSystemCallback ;
 	class TestAgentCallback ;
+	class TestRhsCallback ;
 
 	// This thread is used to check for incoming events when the client goes to sleep
 	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
@@ -113,6 +114,21 @@ protected:
 	Kernel(Connection* pConnection);
 
 	void InitEvents() ;
+
+	
+	/*************************************************************
+	* @brief Register for a particular event with the kernel.
+	*		 (This is a primitive function, should call one of the
+	*		  higher level methods which will call here if needed)
+	*************************************************************/
+	void	RegisterForEventWithKernel(int id, char const* pAgentName) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event with the kernel.
+	*		 (This is a primitive function, should call one of the
+	*		  higher level methods which will call here if needed)
+	*************************************************************/
+	void	UnregisterForEventWithKernel(int id, char const* pAgentName) ;
 
 	/*************************************************************
 	* @brief Creates a new Agent* object (not to be confused
@@ -367,13 +383,14 @@ public:
 	*
 	* @returns Unique ID for this callback.  Required when unregistering this callback.
 	*************************************************************/
-	int	RegisterForRhsFunctionEvent(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack = true) ;
+	int	AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack = true) ;
 
 	/*************************************************************
-	* @brief Unregister for a particular event
+	* @brief Unregister for a particular rhs function callback
+	*        using the ID passed back from AddRhsFunction().
 	* @returns True if succeeds
 	*************************************************************/
-	bool	UnregisterForRhsFunctionEvent(int callbackID) ;
+	bool RemoveRhsFunction(int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for an "AgentEvent".

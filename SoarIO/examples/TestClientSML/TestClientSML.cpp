@@ -90,6 +90,22 @@ void SimpleRemoteConnection()
 	delete pKernel ;
 }
 
+bool ListenerRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName,
+						  char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
+{
+	// Return the argument we are passed plus some of our text
+	if (!strcmp(pFunctionName, "test-rhs"))
+	{
+		cout << "Received rhs function call with argument: " << pArgument << endl ;
+		std::string res = "my listener result " ;
+		res += pArgument ;
+		strncpy(pReturnValue, res.c_str(), maxLengthReturnValue) ;
+		return true ;
+	}
+
+	return false ;
+}
+
 // Create a process that listens for remote commands and lives
 // for "life" 10'ths of a second (e.g. 10 = live for 1 second)
 bool SimpleListener(int life)
@@ -108,9 +124,11 @@ bool SimpleListener(int life)
 		return false ;
 	}
 
-//	pKernel->SetTraceCommunications(true) ;
+	// Register here so we can test the order that RHS functions are called
+	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &ListenerRhsFunctionHandler, 0) ; 
 
-//pKernel->CreateAgent("test1") ;
+	// Comment this in if you need to debug the messages going back and forth.
+	// pKernel->SetTraceCommunications(true) ;
 
 	int pause = 100 ;
 
@@ -173,6 +191,22 @@ void MyCreationHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 	cout << "Received notification when agent was created" << endl ;
 }
 
+bool MyRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName,
+						  char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
+{
+	// Return the argument we are passed plus some of our text
+	if (!strcmp(pFunctionName, "test-rhs"))
+	{
+		cout << "Received rhs function call with argument: " << pArgument << endl ;
+		std::string res = "my rhs result " ;
+		res += pArgument ;
+		strncpy(pReturnValue, res.c_str(), maxLengthReturnValue) ;
+		return true ;
+	}
+
+	return false ;
+}
+
 bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
@@ -213,6 +247,9 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Report the number of agents (always 0 unless this is a remote connection to a CLI or some such)
 		cout << "Existing agents: " << numberAgents << endl ;
+
+		// Record a RHS function
+		int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ; 
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent(name) ;
@@ -441,6 +478,14 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		if (!unreg)
 		{
 			cout << "Error unregistering callback3" << endl ;
+			return false ;
+		}
+
+		bool unregRhs = pKernel->RemoveRhsFunction(callback_rhs1) ;
+
+		if (!unreg)
+		{
+			cout << "Error unregistering rhs function" << endl ;
 			return false ;
 		}
 

@@ -105,6 +105,9 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	// Start listening for incoming connections
 	m_pConnectionManager = new ConnectionManager(portToListenOn) ;
 
+	// Start the kernel listener listening for events from gSKI
+	m_KernelListener.Init(this) ;
+
 	// We'll use this to make sure only one connection is executing commands
 	// in the kernel at a time.
 	m_pKernelMutex = new soar_thread::Mutex() ;
@@ -134,6 +137,8 @@ KernelSML::~KernelSML()
 		// Now delete the agent information we're keeping.
 		delete pAgentSML ;
 	}
+
+	m_KernelListener.Clear() ;
 
 	if (m_pKernelFactory && m_pIKernel)
 		m_pKernelFactory->DestroyKernel(m_pIKernel);
@@ -172,6 +177,22 @@ void KernelSML::AddConnection(Connection* pConnection)
 bool KernelSML::ReceiveAllMessages()
 {
 	return m_pConnectionManager->ReceiveAllMessages() ;
+}
+
+/*************************************************************
+* @brief	There should always be exactly one local connection
+*			to us (the process that loaded us).
+*************************************************************/
+Connection* KernelSML::GetEmbeddedConnection()
+{
+	int index = 0 ;
+	for (Connection* pConnection = m_pConnectionManager->GetConnectionByIndex(index) ; pConnection != NULL ; index++)
+	{
+		if (!pConnection->IsRemoteConnection())
+			return pConnection ;
+	}
+
+	return NULL ;
 }
 
 /*************************************************************

@@ -107,7 +107,7 @@ typedef enum {
 	// fired within Soar productions.  This is different from normal events in that
 	// the handler is executing the function and returning a value, not just being notified
 	// that something has happened.
-	smlEVENT_RHS_FUNCTION = smlEVENT_PRINT + 1,
+	smlEVENT_RHS_USER_FUNCTION = smlEVENT_PRINT + 1,
 } smlRhsEventId ;
 
 typedef enum {
@@ -116,7 +116,7 @@ typedef enum {
 
 	// Marker for end of sml event list
 	// Must always be at the end of the enum
-	smlEVENT_LAST = smlEVENT_PRINT + 1
+	smlEVENT_LAST = smlEVENT_RHS_USER_FUNCTION + 1
 } smlGenericEventId ;
 
 static inline bool IsSystemEventID(int id)
@@ -151,7 +151,7 @@ static inline bool IsPrintEventID(int id)
 
 static inline bool IsRhsEventID(int id)
 {
-	return (id >= smlEVENT_RHS_FUNCTION && id <= smlEVENT_RHS_FUNCTION) ;
+	return (id >= smlEVENT_RHS_USER_FUNCTION && id <= smlEVENT_RHS_USER_FUNCTION) ;
 }
 
 typedef enum {

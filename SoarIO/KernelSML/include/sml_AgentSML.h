@@ -117,6 +117,7 @@ public:
 
 	void AddAgentListener(egSKIEventId eventID, Connection* pConnection)	{ m_AgentListener.AddListener(eventID, pConnection) ; }
 	void RemoveAgentListener(egSKIEventId eventID, Connection* pConnection) { m_AgentListener.RemoveListener(eventID, pConnection) ; }
+
 	void RemoveAllListeners(Connection* pConnection) ;
 
 	/*************************************************************

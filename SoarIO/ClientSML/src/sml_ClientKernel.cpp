@@ -243,6 +243,9 @@ void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	} else if (IsAgentEventID(id))
 	{
 		ReceivedAgentEvent((smlAgentEventId)id, pIncoming, pResponse) ;
+	} else if (IsRhsEventID(id))
+	{
+		ReceivedRhsEvent((smlRhsEventId)id, pIncoming, pResponse) ;
 	}
 }
 
@@ -318,6 +321,66 @@ void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, Eleme
 		// Call the handler
 		handler(id, pUserData, pAgent) ;
 	}
+}
+
+/*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (the result of executing this rhs function)
+*************************************************************/
+void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	// Get the function name and the argument to the function
+	// (We pass a single string but it could be parsed further to other values by the client)
+	char const* pFunctionName = pIncoming->GetArgValue(sml_Names::kParamFunction) ;
+	char const* pArgument     = pIncoming->GetArgValue(sml_Names::kParamValue) ;
+	char const* pAgentName	  = pIncoming->GetArgValue(sml_Names::kParamName) ;
+	int maxLength			  = pIncoming->GetArgInt(sml_Names::kParamLength, 0) ;
+
+	if (!pFunctionName || !pAgentName || maxLength == 0)
+	{
+		// Should always include a function name
+		SetError(Error::kInvalidArgument) ;
+		return ;
+	}
+
+	// Look up the handler(s) from the map
+	RhsEventMap::ValueList* pHandlers = m_RhsEventMap.getList(pFunctionName) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Look up the agent
+	Agent* pAgent = GetAgent(pAgentName) ;
+
+	// Allocate the buffer we'll use to get the result
+	char* pReturnValue = new char[maxLength+1] ;
+	pReturnValue[0] = 0 ;	// Start with a valid string, just in case somebody makes a mistake.
+
+	// We return the first value we get (in case we registered multiple times for the same function...)
+	bool result = false ;
+
+	// Go through the list of event handlers calling each in turn
+	for (RhsEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() && !result ; iter++)
+	{
+		RhsEventHandlerPlusData handlerWithData = *iter ;
+
+		RhsEventHandler handler = handlerWithData.m_Handler ;
+		void* pUserData = handlerWithData.getUserData() ;
+
+		// Call the handler
+		result = handler(id, pUserData, pAgent, pFunctionName, pArgument, maxLength, pReturnValue) ;
+
+		if (result)
+		{
+			// If we got back a result then fill in the value in the response message.
+			GetConnection()->AddSimpleResultToSMLResponse(pResponse, pReturnValue) ;
+		}
+	}
+
+	delete pReturnValue ;
 }
 
 /*************************************************************
@@ -571,7 +634,7 @@ Agent* Kernel::MakeAgent(char const* pAgentName)
 	// Instead we'll get "output" messages which are handled in a special manner.
 	// BADBAD: We shouldn't register this for all clients--just those doing I/O.
 	// We need to separate those out.  This just makes everyone slower than they need to be.
-	agent->RegisterForEvent(smlEVENT_OUTPUT_PHASE_CALLBACK) ;
+	RegisterForEventWithKernel(smlEVENT_OUTPUT_PHASE_CALLBACK, agent->GetAgentName()) ;
 
 	return agent ;
 }
@@ -691,6 +754,34 @@ void Kernel::Sleep(long milliseconds)
 }
 
 /*************************************************************
+* @brief Register for a particular event at the kernel
+*************************************************************/
+void Kernel::RegisterForEventWithKernel(int id, char const* pAgentName)
+{
+	AnalyzeXML response ;
+
+	char buffer[kMinBufferSize] ;
+	Int2String(id, buffer, sizeof(buffer)) ;
+
+	// Send the register command
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, pAgentName, sml_Names::kParamEventID, buffer) ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event at the kernel
+*************************************************************/
+void Kernel::UnregisterForEventWithKernel(int id, char const* pAgentName)
+{
+	AnalyzeXML response ;
+
+	char buffer[kMinBufferSize] ;
+	Int2String(id, buffer, sizeof(buffer)) ;
+
+	// Send the unregister command
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, pAgentName, sml_Names::kParamEventID, buffer) ;
+}
+
+/*************************************************************
 * @brief Register for a "SystemEvent".
 *		 Multiple handlers can be registered for the same event.
 * @param smlEventId		The event we're interested in (see the list below for valid values)
@@ -718,13 +809,7 @@ int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handl
 	// to register for this event.  No need to do this multiple times.
 	if (m_SystemEventMap.getListSize(id) == 0)
 	{
-		AnalyzeXML response ;
-
-		char buffer[kMinBufferSize] ;
-		Int2String(id, buffer, sizeof(buffer)) ;
-
-		// Send the register command
-		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
+		RegisterForEventWithKernel(id, NULL) ;
 	}
 
 	// Record the handler
@@ -762,13 +847,7 @@ int Kernel::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler,
 	// to register for this event.  No need to do this multiple times.
 	if (m_AgentEventMap.getListSize(id) == 0)
 	{
-		AnalyzeXML response ;
-
-		char buffer[kMinBufferSize] ;
-		Int2String(id, buffer, sizeof(buffer)) ;
-
-		// Send the register command
-		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
+		RegisterForEventWithKernel(id, NULL) ;
 	}
 
 	// Record the handler
@@ -806,6 +885,19 @@ public:
 	}
 } ;
 
+class Kernel::TestRhsCallback : public RhsEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestRhsCallback(int id) { m_ID = id ; }
+
+	bool isEqual(RhsEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
 /*************************************************************
 * @brief Register a handler for a RHS (right hand side) function.
 *		 This function can be called in the RHS of a production firing
@@ -831,7 +923,7 @@ public:
 *
 * @returns Unique ID for this callback.  Required when unregistering this callback.
 *************************************************************/
-int	Kernel::RegisterForRhsFunctionEvent(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack)
+int	Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -841,7 +933,7 @@ int	Kernel::RegisterForRhsFunctionEvent(char const* pRhsFunctionName, RhsEventHa
 
 		// The event ID is always the same for RHS functions
 		char buffer[kMinBufferSize] ;
-		Int2String(smlEVENT_RHS_FUNCTION, buffer, sizeof(buffer)) ;
+		Int2String(smlEVENT_RHS_USER_FUNCTION, buffer, sizeof(buffer)) ;
 
 		// Send the register command for this event and this function name
 		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, buffer, sml_Names::kParamName, pRhsFunctionName) ;
@@ -859,9 +951,34 @@ int	Kernel::RegisterForRhsFunctionEvent(char const* pRhsFunctionName, RhsEventHa
 /*************************************************************
 * @brief Unregister for a particular RHS function
 *************************************************************/
-bool Kernel::UnregisterForRhsFunctionEvent(int callbackID)
+bool Kernel::RemoveRhsFunction(int callbackID)
 {
-	return false ;
+	// Build a test object for the callbackID we're interested in
+	TestRhsCallback test(callbackID) ;
+
+	// Find the function for this callbackID (for RHS functions the key is a function name not an event id)
+	std::string functionName = m_RhsEventMap.findFirstKeyByTest(&test, "") ;
+
+	if (functionName.length() == 0)
+		return false ;
+
+	// Remove the handler from our map
+	m_RhsEventMap.removeAllByTest(&test) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_RhsEventMap.getListSize(functionName) == 0)
+	{
+		AnalyzeXML response ;
+
+		// The event ID is always RHS_USER_FUNCTION in this case
+		char buffer[kMinBufferSize] ;
+		Int2String(smlEVENT_RHS_USER_FUNCTION, buffer, sizeof(buffer)) ;
+
+		// Send the unregister command
+		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer, sml_Names::kParamName, functionName.c_str()) ;
+	}
+
+	return true ;
 }
 
 /*************************************************************
@@ -884,13 +1001,7 @@ bool Kernel::UnregisterForSystemEvent(int callbackID)
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_SystemEventMap.getListSize(id) == 0)
 	{
-		AnalyzeXML response ;
-
-		char buffer[kMinBufferSize] ;
-		Int2String(id, buffer, sizeof(buffer)) ;
-
-		// Send the unregister command
-		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
+		UnregisterForEventWithKernel(id, NULL) ;
 	}
 
 	return true ;
@@ -916,13 +1027,7 @@ bool Kernel::UnregisterForAgentEvent(int callbackID)
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_AgentEventMap.getListSize(id) == 0)
 	{
-		AnalyzeXML response ;
-
-		char buffer[kMinBufferSize] ;
-		Int2String(id, buffer, sizeof(buffer)) ;
-
-		// Send the unregister command
-		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
+		UnregisterForEventWithKernel(id, NULL) ;
 	}
 
 	return true ;

@@ -7,8 +7,8 @@
 // hopefully this problem will go away in the future if/when we switch to Java 1.5, which has proper enum support
 %javaconstvalue("smlSystemEventId.smlEVENT_AFTER_RHS_FUNCTION_EXECUTED.swigValue() + 1") smlEVENT_BEFORE_SMALLEST_STEP;
 %javaconstvalue("smlProductionEventId.smlEVENT_BEFORE_PRODUCTION_RETRACTED.swigValue() + 1") smlEVENT_AFTER_AGENT_CREATED;
-%javaconstvalue("smlPrintEventId.smlEVENT_PRINT.swigValue() + 1") smlEVENT_LAST;
-%javaconstvalue("smlPrintEventId.smlEVENT_PRINT.swigValue() + 1") smlEVENT_RHS_FUNCTION;
+%javaconstvalue("smlPrintEventId.smlEVENT_PRINT.swigValue() + 1") smlEVENT_RHS_USER_FUNCTION;
+%javaconstvalue("smlRhsEventId.smlEVENT_RHS_USER_FUNCTION.swigValue() + 1") smlEVENT_LAST;
 %javaconstvalue("smlWorkingMemoryEventId.smlEVENT_OUTPUT_PHASE_CALLBACK.swigValue() + 1") smlEVENT_LOG_ERROR;
 %javaconstvalue("smlRunEventId.smlEVENT_AFTER_RUNNING.swigValue() + 1") smlEVENT_AFTER_PRODUCTION_ADDED;
 %javaconstvalue("smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue() + 1") smlEVENT_OUTPUT_PHASE_CALLBACK;
@@ -23,6 +23,7 @@
 %ignore sml::Agent::UnregisterForPrintEvent(int);
 %ignore sml::Kernel::UnregisterForSystemEvent(int);
 %ignore sml::Kernel::UnregisterForAgentEvent(int);
+%ignore sml::Kernel::RemoveRhsFunction(int);
 
 %pragma(java) jniclasscode=%{
   static {
@@ -39,12 +40,14 @@
   public final static native int Agent_RegisterForPrintEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_RegisterForSystemEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_RegisterForAgentEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
+  public final static native int Kernel_AddRhsFunction(long jarg1, String jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
 
   public final static native boolean Agent_UnregisterForRunEvent(long jarg1, int jarg2);
   public final static native boolean Agent_UnregisterForProductionEvent(long jarg1, int jarg2);
   public final static native boolean Agent_UnregisterForPrintEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForSystemEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForAgentEvent(long jarg1, int jarg2);
+  public final static native boolean Kernel_RemoveRhsFunction(long jarg1, int jarg2);
 %}
 
 %typemap(javacode) sml::Agent %{
@@ -79,6 +82,12 @@
 
   public boolean UnregisterForAgentEvent(int callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForAgentEvent(swigCPtr, callbackReturnValue) ;}
+
+  public int AddRhsFunction(String functionName, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Kernel_AddRhsFunction(swigCPtr, functionName, this, handlerObject, handlerMethod, callbackData) ; }
+
+  public boolean RemoveRhsFunction(int callbackReturnValue)
+  { return smlJNI.Kernel_RemoveRhsFunction(swigCPtr, callbackReturnValue) ;}
 
 %}
 

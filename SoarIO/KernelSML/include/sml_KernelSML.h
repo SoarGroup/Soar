@@ -79,6 +79,9 @@ typedef AgentMap::const_iterator			AgentMapConstIter ;
 
 class KernelSML
 {
+	// Allow the kernel listener to execute command lines directly
+	friend class KernelListener ;
+
 protected:
 	// The singleton kernel object
 	static KernelSML*	s_pKernel ;
@@ -175,6 +178,13 @@ public:
 	*************************************************************/
 	void AddKernelListener(egSKIEventId eventID, Connection* pConnection)	 { m_KernelListener.AddListener(eventID, pConnection) ; }
 	void RemoveKernelListener(egSKIEventId eventID, Connection* pConnection) { m_KernelListener.RemoveListener(eventID, pConnection) ; }
+
+	/*************************************************************
+	* @brief	Add or remove a connection from the list implementing
+	*			a particular rhs function in the kernel.
+	*************************************************************/
+	void AddRhsListener(char const* pFunctionName, Connection* pConnection)	   { m_KernelListener.AddRhsListener(pFunctionName, pConnection) ; }
+	void RemoveRhsListener(char const* pFunctionName, Connection* pConnection) { m_KernelListener.RemoveRhsListener(pFunctionName, pConnection) ; }
 
 	/*************************************************************
 	* @brief	Remove any events that this connection was listening to.
@@ -292,6 +302,9 @@ protected:
 
 	// Remove a value from working memory.  The time tag is the string form of an int.
 	bool RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI::Error* pError) ;
+
+	// There should always be exactly one local connection to the kernel (the process that loaded us).
+	Connection* GetEmbeddedConnection() ;
 
 	// Our command handlers
 

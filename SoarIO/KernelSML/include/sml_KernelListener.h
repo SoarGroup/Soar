@@ -34,8 +34,68 @@ namespace sml {
 
 class Connection ;
 
-class KernelListener : public gSKI::ISystemListener, public gSKI::IAgentListener, public EventManager
+// Mapping from a rhs function name to the list of connections implementing that function
+typedef std::map<std::string, ConnectionList*>	RhsMap ;
+typedef RhsMap::iterator						RhsMapIter ;
+
+class KernelListener : public gSKI::ISystemListener, public gSKI::IAgentListener, public gSKI::IRhsListener, public EventManager
 {
+protected:
+	// Mapping from a rhs function name to the list of connections implementing that function
+	RhsMap	m_RhsMap ;
+
+	// Record if we've registered with the kernel to listen to RHS functions
+	bool m_bListeningRHS ;
+
+	// The kernel
+	KernelSML* m_pKernelSML ;
+
+public:
+	KernelListener()
+	{
+		m_bListeningRHS = false ;
+	}
+
+	virtual ~KernelListener()
+	{
+		Clear() ;
+	}
+
+	// Initialize this listener
+	void Init(KernelSML* pKernelSML) ;
+
+	// Release memory
+	virtual void Clear() ;
+
+	// Returns true if this is the first connection listening for this event
+	virtual bool AddListener(egSKIEventId eventID, Connection* pConnection) ;
+
+	// Returns true if at least one connection remains listening for this event
+	virtual bool RemoveListener(egSKIEventId eventID, Connection* pConnection) ;
+
+	// Returns true if this is the first connection listening for this function name
+	void AddRhsListener(char const* pFunctionName, Connection* pConnection) ;
+
+	// Returns true if at least one connection remains listening for this function name
+	void RemoveRhsListener(char const* pFunctionName, Connection* pConnection) ;
+
+	virtual void RemoveAllListeners(Connection* pConnection) ;
+
+	// Returns the list of connections listening for this RHS function to fire
+	ConnectionList* GetRhsListeners(char const* pFunctionName) ;
+
+	// Called when a "SystemEvent" occurs in the kernel
+	virtual void HandleEvent(egSKIEventId eventId, gSKI::IKernel* kernel) ;
+
+	// Called when an "AgentEvent" occurs in the kernel
+	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr) ;
+
+	// Called when a "RhsEvent" occurs in the kernel
+	virtual bool HandleEvent(egSKIEventId eventId, gSKI::IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+						     int maxLengthReturnValue, char* pReturnValue) ;
+
+	virtual bool ExecuteCommandLine(gSKI::IAgent* pAgent, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue) ;
+
 protected:
 	bool IsSystemEvent(egSKIEventId id)
 	{
@@ -71,28 +131,6 @@ protected:
 		}
 		return false ;
 	}
-
-public:
-	KernelListener()
-	{
-	}
-
-	virtual ~KernelListener()
-	{
-		Clear() ;
-	}
-
-	// Returns true if this is the first connection listening for this event
-	virtual bool AddListener(egSKIEventId eventID, Connection* pConnection) ;
-
-	// Returns true if at least one connection remains listening for this event
-	virtual bool RemoveListener(egSKIEventId eventID, Connection* pConnection) ;
-
-	// Called when a "SystemEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIEventId eventId, gSKI::IKernel* kernel) ;
-
-	// Called when an "AgentEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr) ;
 } ;
 
 }

@@ -116,6 +116,7 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 		std::string att = pWME->GetAttribute()->GetString() ;
 
 		// Check whether we're adding the output link
+		// BADBAD: It would be nice to be able to do this without hard-coding the output-link's attribute here.
 		isJustOutputLink = (type == gSKI_OBJECT && strcmp(att.c_str(), "output-link") == 0) ;
 	}
 

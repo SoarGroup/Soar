@@ -14,6 +14,13 @@ sp {apply*move
 	(<ol> ^move <m> ^alternative <m>)
 	(<m> ^row <row> ^col <col>)}
 
+sp {apply*user*cmd
+	(state <s> ^operator <o> ^io.output-link <ol>)
+	(<o> ^name move ^space <sp>)
+	(<sp> ^row <row> ^col <col> ^content <content>)
+-->
+	(<ol> ^test (exec test-rhs hello <row> |"ABC DEF"| world <content>))}
+
 sp {remove*complete*commands
 	(state <s> ^operator <o> ^io.output-link <ol>)
     	(<ol> ^<attr> <val>)

@@ -52,6 +52,8 @@ class AgentListener : public gSKI::IRunListener, public gSKI::IProductionListene
 protected:
 	KernelSML*		m_KernelSML ;
 	gSKI::IAgent*	m_Agent ;
+
+	// When false we don't forward print callback events to the listeners.  (Useful when we're backdooring into the kernel)
 	bool			m_EnablePrintCallback ;
 
 	bool IsRunEvent(egSKIEventId id)

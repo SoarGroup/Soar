@@ -194,8 +194,7 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	assert(gSKIEVENT_AFTER_RUNNING == (egSKIEventId)smlEVENT_AFTER_RUNNING) ;	// Random one in middle matches
 	assert(gSKIEVENT_BEFORE_AGENT_REINITIALIZED == (egSKIEventId)smlEVENT_BEFORE_AGENT_REINITIALIZED) ;	// Another middle one matches
 	assert(gSKIEVENT_PRINT == (egSKIEventId)smlEVENT_PRINT); // What the heck, another one
-
-	// TEMPTEMP: Taking this out while adding a new event
+	assert(gSKIEVENT_RHS_USER_FUNCTION == (egSKIEventId)smlEVENT_RHS_USER_FUNCTION) ;
 	assert(gSKIEVENT_LAST == (egSKIEventId)smlEVENT_LAST) ;					// Last matches
 
 	// Get the parameters
@@ -236,6 +235,25 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 				pKernelSML->AddKernelListener(id, pConnection) ;
 			else
 				pKernelSML->RemoveKernelListener(id, pConnection) ;
+
+			break ;
+		}
+
+	// Rhs functions are registered by function name (not event id, which is constant)
+	case gSKIEVENT_RHS_USER_FUNCTION:
+		{
+			KernelSML* pKernelSML = GetKernelSML() ;
+
+			// Get the function name
+			char const* pRhsFunctionName = pIncoming->GetArgValue(sml_Names::kParamName) ;
+
+			if (!pRhsFunctionName)
+				return InvalidArg(pConnection, pResponse, pCommandName, "Registering for rhs user function, but no function name was provided") ;
+
+			if (registerForEvent)
+				pKernelSML->AddRhsListener(pRhsFunctionName, pConnection) ;
+			else
+				pKernelSML->RemoveRhsListener(pRhsFunctionName, pConnection) ;
 
 			break ;
 		}

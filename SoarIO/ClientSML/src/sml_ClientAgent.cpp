@@ -209,34 +209,6 @@ bool Agent::LoadProductions(char const* pFilename)
 }
 
 /*************************************************************
-* @brief Register for a particular event at the kernel
-*************************************************************/
-void Agent::RegisterForEvent(int id)
-{
-	AnalyzeXML response ;
-
-	char buffer[kMinBufferSize] ;
-	Int2String(id, buffer, sizeof(buffer)) ;
-
-	// Send the register command
-	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, GetAgentName(), sml_Names::kParamEventID, buffer) ;
-}
-
-/*************************************************************
-* @brief Unregister for a particular event at the kernel
-*************************************************************/
-void Agent::UnregisterForEvent(int id)
-{
-	AnalyzeXML response ;
-
-	char buffer[kMinBufferSize] ;
-	Int2String(id, buffer, sizeof(buffer)) ;
-
-	// Send the unregister command
-	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, GetAgentName(), sml_Names::kParamEventID, buffer) ;
-}
-
-/*************************************************************
 * @brief Register for a "RunEvent".
 *		 Multiple handlers can be registered for the same event.
 * @param smlEventId		The event we're interested in (see the list below for valid values)
@@ -265,7 +237,7 @@ int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* 
 	// to register for this event.  No need to do this multiple times.
 	if (m_RunEventMap.getListSize(id) == 0)
 	{
-		RegisterForEvent(id) ;
+		GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
 	}
 
 	// Record the handler
@@ -340,7 +312,7 @@ bool Agent::UnregisterForRunEvent(int callbackID)
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_RunEventMap.getListSize(id) == 0)
 	{
-		UnregisterForEvent(id) ;
+		GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
 	}
 
 	return true ;
@@ -369,7 +341,7 @@ int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHa
 	// to register for this event.  No need to do this multiple times.
 	if (m_ProductionEventMap.getListSize(id) == 0)
 	{
-		RegisterForEvent(id) ;
+		GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
 	}
 
 	// Record the handler
@@ -401,7 +373,7 @@ bool Agent::UnregisterForProductionEvent(int callbackID)
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_ProductionEventMap.getListSize(id) == 0)
 	{
-		UnregisterForEvent(id) ;
+		GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
 	}
 
 	return true ;
@@ -427,7 +399,7 @@ int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, 
 	// to register for this event.  No need to do this multiple times.
 	if (m_PrintEventMap.getListSize(id) == 0)
 	{
-		RegisterForEvent(id) ;
+		GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
 	}
 
 	// Record the handler
@@ -460,7 +432,7 @@ bool Agent::UnregisterForPrintEvent(int callbackID)
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_PrintEventMap.getListSize(id) == 0)
 	{
-		UnregisterForEvent(id) ;
+		GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
 	}
 
 	return true ;

@@ -248,4 +248,3 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, co
 	// Clean up
 	delete pMsg;
 }
-

@@ -135,20 +135,6 @@ protected:
 	void ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
-	/*************************************************************
-	* @brief Register for a particular event with the kernel.
-	*		 (This is a primitive function, should call one of the
-	*		  higher level methods which will call here if needed)
-	*************************************************************/
-	void	RegisterForEvent(int id) ;
-
-	/*************************************************************
-	* @brief Unregister for a particular event with the kernel.
-	*		 (This is a primitive function, should call one of the
-	*		  higher level methods which will call here if needed)
-	*************************************************************/
-	void	UnregisterForEvent(int id) ;
-
 public:
 	/*************************************************************
 	* @brief Returns this agent's name.
