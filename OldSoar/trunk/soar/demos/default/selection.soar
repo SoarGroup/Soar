@@ -95,7 +95,7 @@ sp {selection*apply*state*evaluation
    (<s> ^evaluation <e>) 
    (<e> ^superoperator <ob>)}
 
-sp {selection*apply*state*evaluation*elaboration
+sp {selection*elaborate*evaluate-operator*evaluation
    :default
    (state <s> ^name selection
               ^operator <o>
