@@ -10,5 +10,5 @@ source Impasse__Operator_Tie.soar
 pushd Impasse__Operator_Tie
 source Impasse__Operator_Tie_source.soar
 popd
-source initialize.soar
+source initialize-mac.soar
 source move-boat.soar

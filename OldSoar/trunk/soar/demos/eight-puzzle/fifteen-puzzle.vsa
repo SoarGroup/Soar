@@ -13,6 +13,6 @@ VERSION 4
 10	9	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 13 11
 11	10	FOPERATOR elaborations elaborations.soar 12
 12	10	OPERATOR move-tile move-tile.soar 13
-13	0	OPERATOR initialize initialize.soar 14
+13	0	OPERATOR initialize-fifteen-puzzle initialize-fifteen-puzzle.soar 14
 14	0	OPERATOR move-tile move-tile.soar 15
 END

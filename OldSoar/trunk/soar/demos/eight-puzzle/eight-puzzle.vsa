@@ -10,9 +10,9 @@ VERSION 4
 7	3	FOPERATOR top-state top-state.soar 8
 8	0	FOPERATOR _readme _readme.soar 9
 9	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 8 10
-10	9	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 13 12
-11	10	FOPERATOR elaborations elaborations.soar 13
-12	10	OPERATOR move-tile move-tile.soar 14
-13	0	OPERATOR initialize initialize.soar 15
-14	0	OPERATOR move-tile move-tile.soar 16
+10	9	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 13 11
+11	10	FOPERATOR elaborations elaborations.soar 12
+12	10	OPERATOR move-tile move-tile.soar 13
+13	0	OPERATOR initialize-eight-puzzle initialize-eight-puzzle.soar 14
+14	0	OPERATOR move-tile move-tile.soar 15
 END

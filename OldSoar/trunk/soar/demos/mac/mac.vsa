@@ -9,6 +9,6 @@ VERSION 4
 6	3	FOPERATOR search-control search-control.soar 7
 7	3	FOPERATOR top-state top-state.soar 8
 8	0	FOPERATOR _readme _readme.soar 9
-9	0	OPERATOR initialize initialize.soar 10
+9	0	OPERATOR initialize-mac initialize-mac.soar 10
 10	0	OPERATOR move-boat move-boat.soar 11
 END

@@ -7,11 +7,10 @@ VERSION 4
 4	3	FOPERATOR clear clear.soar 5
 5	3	FOPERATOR detect-success detect-success.soar 6
 6	3	FOPERATOR monitor monitor.soar 7
-7	3	FOPERATOR top-state top-state.soar 8
-8	0	FOPERATOR _readme _readme.soar 9
-9	0	FOPERATOR search-control search-control.soar 10
-10	0	OPERATOR initialize initialize.soar 11
-11	0	HLOPERATOR move-block move-block.soar move-block 19 12
-12	11	FOPERATOR elaborations elaborations.soar 13
-13	11	OPERATOR move-block move-block.soar 14
+7	0	FOPERATOR _readme _readme.soar 8
+8	0	FOPERATOR search-control search-control.soar 9
+9	0	OPERATOR initialize-blocks-world-operator-subgoaling initialize-blocks-world-operator-subgoaling.soar 10
+10	0	HLOPERATOR move-block move-block.soar move-block 19 11
+11	10	FOPERATOR elaborations elaborations.soar 12
+12	10	OPERATOR move-block move-block.soar 13
 END

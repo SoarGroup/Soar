@@ -6,5 +6,5 @@ pushd elaborations
 source elaborations_source.soar
 popd
 source _readme.soar
-source initialize.soar
+source initialize-toh.soar
 source move-disk.soar

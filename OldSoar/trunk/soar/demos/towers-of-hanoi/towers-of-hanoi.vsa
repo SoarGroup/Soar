@@ -7,8 +7,7 @@ VERSION 4
 4	3	FOPERATOR disk-relations disk-relations.soar 5
 5	3	FOPERATOR goal-test goal-test.soar 6
 6	3	FOPERATOR monitor monitor.soar 7
-7	3	FOPERATOR top-state top-state.soar 8
-8	0	FOPERATOR _readme _readme.soar 9
-9	0	OPERATOR initialize initialize.soar 10
-10	0	OPERATOR move-disk move-disk.soar 11
+7	0	FOPERATOR _readme _readme.soar 8
+8	0	OPERATOR initialize-toh initialize-toh.soar 9
+9	0	OPERATOR move-disk move-disk.soar 10
 END

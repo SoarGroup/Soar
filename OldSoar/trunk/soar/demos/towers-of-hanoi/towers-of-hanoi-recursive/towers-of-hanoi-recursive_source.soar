@@ -6,7 +6,7 @@ pushd elaborations
 source elaborations_source.soar
 popd
 source _readme.soar
-source initialize.soar
+source initialize-toh-recursive.soar
 source move-disk.soar
 pushd move-disk
 source move-disk_source.soar

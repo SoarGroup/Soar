@@ -15,7 +15,7 @@ ENUMERATION 12 1 table
 SOAR_ID 13
 SOAR_ID 14
 SOAR_ID 15
-ENUMERATION 16 1 initialize
+ENUMERATION 16 1 initialize-blocks-world-look-ahead
 ENUMERATION 17 4 A B C table
 ENUMERATION 18 2 block table
 SOAR_ID 19

@@ -4,7 +4,7 @@ ENUMERATION 1 1 state
 ENUMERATION 2 1 nil
 ENUMERATION 3 1 towers-of-hanoi
 SOAR_ID 4
-ENUMERATION 5 1 initialize
+ENUMERATION 5 1 initialize-toh
 SOAR_ID 6
 ENUMERATION 7 1 move-disk
 SOAR_ID 8

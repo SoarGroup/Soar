@@ -7,5 +7,5 @@ source elaborations_source.soar
 popd
 source _readme.soar
 source search-control.soar
-source initialize.soar
+source initialize-blocks-world-look-ahead.soar
 source move-block.soar

@@ -1,8 +1,8 @@
 # Classic 3 block blocks world with look ahead
 # John E. Laird
 # University of Michigan
-# October 26, 2003
-# Soar version 8.4
+# May 25, 2004
+# Soar version 8.5.1
 
 # This is a simple version of blocks world
 # Three blocks and the table.

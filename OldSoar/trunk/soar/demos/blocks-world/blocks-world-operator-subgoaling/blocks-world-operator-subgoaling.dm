@@ -1,4 +1,4 @@
-27
+31
 SOAR_ID 0
 ENUMERATION 1 1 state
 ENUMERATION 2 1 nil
@@ -15,7 +15,7 @@ ENUMERATION 12 1 table
 SOAR_ID 13
 SOAR_ID 14
 SOAR_ID 15
-ENUMERATION 16 1 initialize
+ENUMERATION 16 1 initialize-blocks-world-operator-subgoaling
 ENUMERATION 17 4 A B C table
 ENUMERATION 18 2 block table
 SOAR_ID 19
@@ -26,14 +26,22 @@ SOAR_ID 23
 ENUMERATION 24 1 no-change
 ENUMERATION 25 1 operator
 ENUMERATION 26 1 operator-subgoal
-39
+ENUMERATION 27 1 none
+ENUMERATION 28 1 no-change
+ENUMERATION 29 1 t
+ENUMERATION 30 1 operator
+43
+0 attribute 30
+0 choices 27
 0 clear 14
 0 desired 7
+0 impasse 28
 0 name 3
 0 object 14
 0 ontop 6
 0 operator 4
 0 operator 15
+0 quiescence 29
 0 success 7
 0 superstate 2
 0 type 1

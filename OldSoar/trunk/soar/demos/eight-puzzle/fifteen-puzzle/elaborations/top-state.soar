@@ -1,14 +1,3 @@
-sp {elaborate*top-state*name
-   (state <s> ^superstate nil)
--->
-   (<s> ^name fifteen-puzzle)
-}
-
-sp {eight*elaborate*name
-   (state <s> ^superstate nil)
--->
-   (<s> ^desired <d>)}
-
 sp {eight*elaborate*problem-space
    (state <s> ^name fifteen-puzzle)
 -->

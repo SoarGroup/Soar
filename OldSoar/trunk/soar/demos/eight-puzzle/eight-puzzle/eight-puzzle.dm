@@ -4,7 +4,7 @@ ENUMERATION 1 1 state
 ENUMERATION 2 1 nil
 ENUMERATION 3 1 eight-puzzle
 SOAR_ID 4
-ENUMERATION 5 1 initialize
+ENUMERATION 5 1 initialize-eight-puzzle
 SOAR_ID 6
 ENUMERATION 7 1 move-tile
 SOAR_ID 8

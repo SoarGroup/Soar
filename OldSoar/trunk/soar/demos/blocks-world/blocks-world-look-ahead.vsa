@@ -10,6 +10,6 @@ VERSION 4
 7	3	FOPERATOR top-state top-state.soar 8
 8	0	FOPERATOR _readme _readme.soar 9
 9	0	FOPERATOR search-control search-control.soar 10
-10	0	OPERATOR initialize initialize.soar 11
+10	0	OPERATOR initialize-blocks-world-look-ahead initialize-blocks-world-look-ahead.soar 11
 11	0	OPERATOR move-block move-block.soar 12
 END

@@ -1,8 +1,8 @@
 # Classic 3 block blocks world
 # John E. Laird
 # University of Michigan
-# October 26, 2003
-# Soar version 8.4
+# 5/23/04
+# Soar version 8.5.1
 
 # This is a simple version of blocks world
 # Three blocks and the table.
@@ -12,4 +12,6 @@
 
 # In this formulation, clear is computed as an elaboration
 # (in elaborations/clear). The table is always clear.
+
+
 
