@@ -32,6 +32,13 @@ bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 		m_Result << "Help is available for the following commands:\n";
 		helpFile = m_HomeDirectory + "/command-names";
 	} else {
+		// check for aliases
+		if (m_Aliases.IsAlias(*pCommand)) {
+			m_Result << *pCommand << " is an alias.  Type 'alias " << *pCommand 
+				<< "' to find out what command it is an alias for and look up help on that command.";
+			return true;
+		}
+
 		helpFile = m_HomeDirectory + "/help/" + *pCommand;
 	}
 

@@ -32,7 +32,7 @@ namespace cli {
 
 		AliasMap::const_iterator GetAliasMapBegin();
 		AliasMap::const_iterator GetAliasMapEnd();
-		std::string List();
+		std::string List(const std::string* pCommand = 0);
 
 	private:
 		

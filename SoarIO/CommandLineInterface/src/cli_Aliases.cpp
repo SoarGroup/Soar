@@ -165,9 +165,12 @@ bool Aliases::RemoveAlias(const std::string& command) {
 	return m_AliasMap.erase(command) ? true : false;
 }
 
-std::string Aliases::List() {
+std::string Aliases::List(const std::string* pCommand) {
 	std::string result;
 	for (AliasMapIter i = m_AliasMap.begin(); i != m_AliasMap.end(); ++i) {
+		if (pCommand) {
+			if (i->first != *pCommand) continue;
+		}
 		result += i->first;
 		result += '=';
 		for (vector<string>::iterator j = i->second.begin(); j != i->second.end(); ++j) {

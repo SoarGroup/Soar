@@ -51,9 +51,6 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 	// If not disabling and no arguments, list aliases
 	if (m_pGetOpt->GetAdditionalArgCount() == 0) return DoAlias();
 
-	// If not disabling and not listing, there must be at least two additional arguments
-	if (m_pGetOpt->GetAdditionalArgCount() < 2) return SetError(CLIError::kTooFewArgs);		
-
 	std::vector<std::string> substitution;
 	std::vector<std::string>::iterator iter = argv.begin();
 
@@ -99,6 +96,13 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 		if (!m_Aliases.RemoveAlias(*pCommand)) return SetError(CLIError::kAliasNotFound);
 		return true;
 	} 
+
+	// if substitution is empty, list only that alias
+	if (!pSubstitution->size()) {
+		// FIXME structured output
+		m_Result << m_Aliases.List(pCommand);
+		return true;
+	}
 
 	// new alias
 	if (!m_Aliases.NewAlias((*pSubstitution), *pCommand)) return SetError(CLIError::kAliasExists);
