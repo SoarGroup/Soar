@@ -137,7 +137,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoAddWME();
+	bool DoAddWME(gSKI::IAgent* pAgent, std::string id, std::string attribute, std::string value, bool acceptable);
 
 	/*************************************************************
 	* @brief 
@@ -685,6 +685,11 @@ protected:
 	* @brief 
 	*************************************************************/
 	void HandleSourceError(int errorLine, const std::string& filename);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool HandleSyntaxError(const char* command, const std::string& details);
 
 	/*************************************************************
 	* @brief 

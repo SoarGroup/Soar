@@ -72,6 +72,7 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 
 void CommandLineInterface::BuildCommandMap() {
 
+	m_CommandMap[Constants::kCLIAddWME]				= &cli::CommandLineInterface::ParseAddWME;
 	m_CommandMap[Constants::kCLIAlias]				= &cli::CommandLineInterface::ParseAlias;
 	m_CommandMap[Constants::kCLICD]					= &cli::CommandLineInterface::ParseCD;
 	m_CommandMap[Constants::kCLIEcho]				= &cli::CommandLineInterface::ParseEcho;
@@ -378,6 +379,10 @@ bool CommandLineInterface::IsInteger(const string& s) {
 		++iter;
 	}
 	return true;
+}
+
+bool CommandLineInterface::HandleSyntaxError(const char* command, const std::string& details) {
+	return HandleSyntaxError(command, details.c_str());
 }
 
 bool CommandLineInterface::HandleSyntaxError(const char* command, const char* details) {

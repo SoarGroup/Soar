@@ -31,6 +31,7 @@ namespace cli {
 		static char const* kCLIUnrecognizedOption;
 		static char const* kCLIMissingOptionArg;
 
+		static char const* kCLIAddWME;
 		static char const* kCLIAlias;
 		static char const* kCLICD;
 		static char const* kCLIEcho;

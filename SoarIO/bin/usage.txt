@@ -11,7 +11,26 @@
 # Update help.soar when adding/removing commands to keep the test in sync.
 #
 add-wme
-Usage:	add-wme
+Usage:	add-wme id [^]attribute value [+]
+Options and arguments:
+  id		Must be an existing identifier.
+  ^		Leading ^ on attribute is optional.
+  attribute	Attribute can by any Soar symbol.  Use * to have Soar create
+  		a new identifier.
+  value		Value ican by any soar symbol.  Use * to have Soar create
+  		a new identifier.
+  +		If the optional preference is specified, its value must be 
+  		+ (acceptable).
+
+Manually add an element to working memory.  add-wme is often used by an input 
+function to update Soar's information about the state of the external world.
+
+add-wme adds a new wme with the given id, attribute, value and optional 
+preference.  The given id must be an existing identifier.  The attribute and 
+value fields can be any Soar symbol.  If * is given in the attribute or value 
+field, Soar creates a new identifier (symbol) for that field.  If the preference 
+is given, it can only have the value + to indicate that an acceptable preference 
+should be created for this wme.
 ~~~
 ***
 alias
