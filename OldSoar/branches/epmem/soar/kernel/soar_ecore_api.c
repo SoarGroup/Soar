@@ -503,6 +503,9 @@ void soar_ecPrintTopProductionFirings(int n)
 
     num_prods = current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE] +
         current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE] +
+#ifdef AMN_MONITOR
+        current_agent(num_productions_of_type)[MONITOR_PRODUCTION_TYPE] +
+#endif
         current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE];
 
     if (num_prods == 0) {
@@ -522,6 +525,12 @@ void soar_ecPrintTopProductionFirings(int n)
         *(ap_item++) = p;
     for (p = current_agent(all_productions_of_type)[CHUNK_PRODUCTION_TYPE]; p != NIL; p = p->next)
         *(ap_item++) = p;
+#ifdef AMN_MONITOR
+  for (p=current_agent(all_productions_of_type)[MONITOR_PRODUCTION_TYPE]; 
+       p!=NIL; 
+       p=p->next)
+    *(ap_item++) = p;
+#endif
 
     /* --- now print out the results --- */
     if (n == 0) {
@@ -793,6 +802,17 @@ void soar_ecPrintSystemStatistics(void)
 
     print("Soar %s on %s at %s\n", soar_version_string, hostname, ctime((const time_t *) &current_time));
 
+#ifdef AMN_MONITOR
+  print ("%lu productions (%lu default, %lu user, %lu chunks, %lu monitor)\n",
+	 current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE] +
+	 current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE] +
+	 current_agent(num_productions_of_type)[MONITOR_PRODUCTION_TYPE] +
+	 current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE],
+	 current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE],
+	 current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE],
+	 current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE],
+	 current_agent(num_productions_of_type)[MONITOR_PRODUCTION_TYPE]);
+#else
     print("%lu productions (%lu default, %lu user, %lu chunks)\n",
           current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE] +
           current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE] +
@@ -800,6 +820,7 @@ void soar_ecPrintSystemStatistics(void)
           current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE],
           current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE],
           current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
+#endif
     print("   + %lu justifications\n", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
 
     /* REW: begin 28.07.96 */

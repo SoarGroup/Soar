@@ -7,3 +7,7 @@ Makefile
 config.cache
 config.log
 config.status
+Kernel.suo
+Kernel.vcproj
+Kernel.sln
+epmem.015

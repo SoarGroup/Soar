@@ -1904,7 +1904,18 @@ production *parse_production(void)
 #ifdef MATCHTIME_INTERRUPT
             interrupt_on_match = TRUE;
 #else
-            print("WARNING :interrupt is not supported with the current build options...");
+            print("WARNING :interrupt is not supported with the current compile options...");
+#endif
+            get_lexeme();
+            continue;
+        }
+        
+        if (!strcmp(current_agent(lexeme).string,":monitor"))
+        {
+#ifdef AMN_MONITOR
+            prod_type = MONITOR_PRODUCTION_TYPE;
+#else
+            print("WARNING :monitor is not supported with the current compile options...");
 #endif
             get_lexeme();
             continue;

@@ -22,6 +22,12 @@ extern void execute_go_selection(agent * the_agent,
 extern void print_current_learn_settings(void);
 extern void print_multi_attribute_symbols(void);
 
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+extern void print_current_decay_settings(void);
+#endif
+/* end MRJ 5/23/01 */
+
 extern int read_pref_detail_from_string(const char *the_lexeme, bool * print_productions, wme_trace_type * wtt);
 extern int read_pattern_component(Symbol ** dest_sym);
 extern list *read_pattern_and_get_matching_wmes(void);

@@ -75,6 +75,11 @@
 extern void gds_invalid_so_remove_goal(wme * w);
 void calculate_output_link_tc_info(output_link * ol);
 
+#ifdef AMN_EP_MEM
+extern void epmem_create_buffer(Symbol *s);  //epmem.c
+#endif //AMN_EP_MEM
+
+
 /* ====================================================================
                             Input Routines
 
@@ -235,6 +240,10 @@ void do_input_cycle(void)
 
         w = add_input_wme(current_agent(io_header), make_sym_constant("output-link"), current_agent(io_header_output));
 
+#ifdef AMN_EP_MEM
+    epmem_create_buffer(current_agent(top_state));
+#endif //AMN_EP_MEM
+        
         /* --- add top state io link before calling input phase callback so
          * --- code can use "wmem" command.
          */

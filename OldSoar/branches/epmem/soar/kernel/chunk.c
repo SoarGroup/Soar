@@ -1637,6 +1637,13 @@ void chunk_instantiation(instantiation * inst, bool allow_variablization)
 #endif
 #endif
 
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+    //Boost tested wmes in justification or chunk
+    activate_wmes_in_inst(chunk_inst);
+#endif 
+/* end MRJ 5/23/01 */
+    
     return;
 
   chunking_done:{

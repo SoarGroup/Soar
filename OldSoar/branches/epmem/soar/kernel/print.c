@@ -930,6 +930,11 @@ void print_production(production * p, bool internal)
     case CHUNK_PRODUCTION_TYPE:
         print_string("    :chunk\n");
         break;
+#ifdef AMN_MONITOR
+    case MONITOR_PRODUCTION_TYPE:
+        print_string ("    :monitor\n");
+        break;
+#endif
     case JUSTIFICATION_PRODUCTION_TYPE:
         print_string("    :justification ;# not reloadable\n");
         break;

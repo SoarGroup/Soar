@@ -744,6 +744,26 @@ extern int soar_cSetChunkNamePrefix(const char *prefix);
  */
 extern void soar_cSetLearning(enum soar_apiLearningSetting setting);
 
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+ /**
+ *
+ *
+ * soar_cSetDecay --
+ *
+ * \brief  Adjust the decay settings.
+ *
+ * \param "-> setting"  one of: 
+ *                        \arg \c ON
+ *                        \arg \c OFF
+ *
+ *
+ */
+extern void soar_cSetDecay( enum soar_apiDecaySetting setting, long exp );
+
+#endif
+/* end MRJ 5/23/01 */
+
 /**
  *
  *

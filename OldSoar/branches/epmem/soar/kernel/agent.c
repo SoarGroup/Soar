@@ -62,6 +62,10 @@ char *soar_version_string;
 
 extern int soar_agent_ids[];
 
+#ifdef AMN_EP_MEM
+extern void init_epmem(); // epmem.c
+#endif /* AMN end */
+
 /*
   Try to assign a unique and previously unassigned id.  If none are
    available, assign a unique, but previously assigned id.
@@ -154,6 +158,22 @@ void init_soar_agent(void)
     init_sysparams();
     init_tracing();
     init_explain();             /* AGR 564 */
+
+
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+    decay_init();
+#endif
+/* end MRJ 5/23/01 */
+  
+/* AMN Episodic Memory 03 Nov 2002 */
+#ifdef AMN_EP_MEM
+    /* See epmem.c */
+    init_epmem();                 
+#endif
+/* AMN end */
+
+
 #ifdef REAL_TIME_BEHAVIOR
     /* RMJ */
     init_real_time();

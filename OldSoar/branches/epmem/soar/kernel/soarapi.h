@@ -677,6 +677,53 @@ extern int soar_ChunkNameFormat(int argc, const char *argv[], soarResult * res);
  */
 extern int soar_Learn(int argc, const char *argv[], soarResult * res);
 
+#ifdef SOAR_DECAY
+/* MRJ 5/23/01 */
+
+/**
+ *
+ *
+ * soar_Decay --
+ *
+ * \brief  This is the command procedure for the "decay" command.
+ *
+ *         With no arguments, this command prints out the current decay 
+ *         status.  Any of the following arguments may be given:
+ *
+ * \arg \c on         - turns all memory decay on 
+ * \arg \c off        - turns all memory decay off 
+ *
+ * \param  "-> argc" The number of arguments is the \c argv block
+ * \param  "-> argv" An array of strings, each of which is a word in the
+ *                   argument list to this function
+ * \param  "<- res"  A SoarResult structure which will be filled in by the 
+ *
+ *
+ * \par    Syntax:
+   \verbatim
+           decay arg*
+              arg  ::=  -on | -only
+   \endverbatim
+ *
+ * \return Returns a standard Tcl completion code.
+ *
+ * \par    SoarResult:
+ *           \arg On \c SOAR_ERROR:  Contains details about error.
+ *           \arg On \c SOAR_OK:     Is empty or contains info from 
+ *                                   the 'list' sub-command.
+ *
+ * \par    Side effects:
+ *           Sets booleans for whether or not wme decay is taking place.
+ *
+ *
+ */
+extern int soar_Decay (int argc, char *argv[], soarResult *res);
+
+
+#endif
+/* end MRJ 5/23/01 */
+
+
 /**
  *
  *

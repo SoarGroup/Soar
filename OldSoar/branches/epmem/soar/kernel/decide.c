@@ -2131,6 +2131,29 @@ void decide_non_context_slot(slot * s)
 
                 /* REW: end   09.15.96 */
 
+
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+    if (current_agent(sysparams)[WME_DECAY_SYSPARAM])
+    {
+        decay_update_new_wme(w, s->num_changes);
+
+//          //This code provides a boosting effect for o-supported WMEs
+//          //that were created by the agent.
+//          if ( (w->preference != NIL)
+//               && (w->preference->o_supported == TRUE) )
+//          {
+//              decay_update_new_wme(w, s->num_changes + 2);
+//          }
+//          else
+//          {
+//              decay_update_new_wme(w, s->num_changes);
+//          }
+    }
+#endif
+/* end MRJ 5/23/01 */
+
+                            
                 add_wme_to_wm(w);
             }
         }

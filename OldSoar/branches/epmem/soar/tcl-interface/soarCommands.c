@@ -402,6 +402,36 @@ int LearnCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * con
     return TCL_OK;
 }
 
+#ifdef SOAR_DECAY
+
+int DecayCmd (ClientData clientData, 
+              Tcl_Interp * interp,
+              int objc,
+              Tcl_Obj * const objv[])
+{
+    soarResult res;
+    char **argv;
+
+    init_soarResult(res);
+    Soar_SelectGlobalInterpByInterp(interp);
+  
+    create_argv_from_objv(objc, objv, &argv);
+    if( soar_Decay( objc, argv, &res ) == SOAR_OK )
+    {
+        interp->result = res.result;
+        return TCL_OK;
+    }
+    else
+    {
+        interp->result = res.result;
+        return TCL_ERROR;
+    }
+}
+
+#endif
+// end of MRJ
+
+
 int MatchesCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[])
 {
     soarResult res;
@@ -2267,5 +2297,10 @@ void Soar_InstallCommands(agent * the_agent)
 #ifdef DC_HISTOGRAM
     install_tcl_soar_cmd(the_agent, "init-dc", initDCHistogramCmd);
 #endif
+
+#ifdef SOAR_DECAY
+    install_tcl_soar_cmd(the_agent, "decay", DecayCmd);
+#endif
+    
 
 }

@@ -441,6 +441,10 @@ int soar_Excise(int argc, const char *argv[], soarResult * res)
             soar_cExciseAllProductionsOfType(JUSTIFICATION_PRODUCTION_TYPE);
         } else if (string_match_up_to(argv[i], "-default", 2))
             soar_cExciseAllProductionsOfType(DEFAULT_PRODUCTION_TYPE);
+#ifdef AMN_MONITOR
+      else if ( string_match_up_to(argv[i], "-monitor", 2))
+            soar_cExciseAllProductionsOfType( MONITOR_PRODUCTION_TYPE );
+#endif
         else if (string_match_up_to(argv[i], "-task", 2))
             soar_cExciseAllTaskProductions();
         else if (string_match_up_to(argv[i], "-user", 2))
@@ -760,6 +764,291 @@ int soar_Learn(int argc, const char *argv[], soarResult * res)
     clearSoarResultResult(res);
     return SOAR_OK;
 }
+
+
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+/*
+ *----------------------------------------------------------------------
+ *
+ * soar_Decay --
+ *
+ *----------------------------------------------------------------------
+ */
+
+int soar_Decay (int argc, char *argv[], soarResult *res)
+{
+    int i;
+    double exp;
+
+    if (argc == 1)
+    {
+        print_current_decay_settings();
+        clearSoarResultResult( res );
+        return SOAR_OK;
+    }
+
+    for (i = 1; i < argc; i++)
+    {
+        if ( string_match("-on", argv[i]))
+        {
+            soar_cSetDecay( DECAY_ON, 0 );
+            print("Decay is on.\n");
+		}
+        else if ( string_match_up_to("-off", argv[i], 4))
+        {
+            soar_cSetDecay( DECAY_OFF, 0 );
+            print("Decay is off.\n");
+		}
+        else if ( string_match_up_to("-activation", argv[i], 4))
+        {
+            if(++i < argc)
+            {
+                if (string_match_up_to("-", argv[i], 0))
+                {
+                    setSoarResultResult(res, "Activation mode not specified: current options are: 'once' or 'persistent'");
+                    return SOAR_ERROR;
+                }
+                else if (string_match_up_to("once", argv[i], 0))
+                {
+                    soar_cSetDecay(DECAY_PERSISTENT_ACTIVATION, 0);
+                    print("Instantiations will only boost WMEs on the cycle they are created.\n");
+                }
+                else if (string_match_up_to("persistent", argv[i], 4))
+                {
+                    soar_cSetDecay(DECAY_PERSISTENT_ACTIVATION, 1);
+                    print("Instantiations will activate wmes until retraction.");
+                }
+                else
+                {
+                    setSoarResultResult(res, "Invalid activation mode specified: current options are: 'once' or 'persistent'");
+                    return SOAR_ERROR;
+                }
+                    
+            }
+            else
+            {
+                setSoarResultResult(res, "Activation mode not specified: current options are: 'once' or 'persistent'");
+                return SOAR_ERROR;
+            }
+        }
+        else if ( string_match_up_to("-i-support-mode", argv[i], 4))
+        {
+            if(++i < argc)
+            {
+                if (string_match_up_to("-", argv[i], 0))
+                {
+                    setSoarResultResult(res, "I-support mode not specified: current options are: 'none', 'no-create' or 'uniform'");
+                    return SOAR_ERROR;
+                }
+                else if (string_match_up_to("none", argv[i], 0))
+                {
+                    soar_cSetDecay(DECAY_I_SUPPORT_MODE, DECAY_I_SUPPORT_MODE_NONE);
+                    print("I-supported WMEs will not affect activation levels.\n");
+                }
+                else if (string_match_up_to("no-create", argv[i], 5))
+                {
+                    soar_cSetDecay(DECAY_I_SUPPORT_MODE, DECAY_I_SUPPORT_MODE_NO_CREATE);
+                    print("I-supported WMEs will boost supporting WMEs except when first created.\n");
+                }
+                else if (string_match_up_to("uniform", argv[i], 3))
+                {
+                    soar_cSetDecay(DECAY_I_SUPPORT_MODE, DECAY_I_SUPPORT_MODE_UNIFORM);
+                    print("I-supported WMEs will always boost supporting WMEs when referenced.\n");
+                }
+                else
+                {
+                    setSoarResultResult(res, "Invalid I-support mode specified: current options are: 'none', 'no-create' or 'uniform'");
+                    return SOAR_ERROR;
+                }
+                    
+            }
+            else
+            {
+                setSoarResultResult(res, "I-support mode not specified: current options are: 'none', 'no-create' or 'uniform'");
+                return SOAR_ERROR;
+            }
+        }
+        else if ( string_match_up_to("-forgetting", argv[i], 4))
+        {
+            if(++i < argc)
+            {
+                if (string_match_up_to("-", argv[i], 0))
+                {
+                    setSoarResultResult(res, "Forgetting mode not specified: current options are: 'on' or 'off'");
+                    return SOAR_ERROR;
+                }
+                else if (string_match_up_to("on", argv[i], 0))
+                {
+                    soar_cSetDecay(DECAY_FORGETTING, 1);
+                    print("Forgotten WMEs will be removed from working memory.\n");
+                }
+                else if (string_match_up_to("off", argv[i], 0))
+                {
+                    soar_cSetDecay(DECAY_FORGETTING, 0);
+                    print("Forgotten WMEs will NOT be removed from working memory.\n");
+                }
+                else
+                {
+                    setSoarResultResult(res, "Invalid forgetting mode specified: current options are: 'on' or 'off'");
+                    return SOAR_ERROR;
+                }
+                    
+            }
+            else
+            {
+                setSoarResultResult(res, "Invalid forgetting mode specified: current options are: 'on' or 'off'");
+                return SOAR_ERROR;
+            }
+        }
+        else if ( string_match_up_to("-wme-criteria", argv[i], 6))
+        {
+            if(++i < argc)
+            {
+                if (string_match_up_to("-", argv[i], 0))
+                {
+                    setSoarResultResult(res, "Criteria not specified: current options are: 'o-support', 'arch' or 'all'");
+                    return SOAR_ERROR;
+                }
+                else if (string_match_up_to("o-support", argv[i], 3))
+                {
+                    soar_cSetDecay(DECAY_CRITERIA, DECAY_WME_CRITERIA_O_SUPPORT_ONLY);
+                    print("Only o-supported WMEs will be activated.\n");
+                }
+                else if (string_match_up_to("arch", argv[i], 4))
+                {
+                    soar_cSetDecay(DECAY_CRITERIA, DECAY_WME_CRITERIA_O_ARCH);
+                    print("O-supported and architectural WMEs will be activated.\n");
+                }
+                else if (string_match_up_to("all", argv[i], 0))
+                {
+                    soar_cSetDecay(DECAY_CRITERIA, DECAY_WME_CRITERIA_ALL);
+                    print("All WMEs in working memory will be activated.\n");
+                }
+                else
+                {
+                    setSoarResultResult(res, "Invalid criteria specified: current options are: 'o-support', 'arch' or 'all'");
+                    return SOAR_ERROR;
+                }
+                    
+            }
+            else
+            {
+                setSoarResultResult(res, "Criteria not specified: current options are: 'o-support', 'arch' or 'all'");
+                return SOAR_ERROR;
+            }
+        }
+        else if ( string_match_up_to("-precision", argv[i], 5))
+        {
+            if(++i < argc)
+            {
+                if (string_match_up_to("-", argv[i], 0))
+                {
+                    setSoarResultResult(res, "Precision value not specified: current options are: 'high' or 'low'");
+                    return SOAR_ERROR;
+                }
+                else if (string_match_up_to("high", argv[i], 2))
+                {
+                    soar_cSetDecay(DECAY_PRECISION, DECAY_PRECISION_HIGH);
+                    print("WME activation levels will be calculated with high precision (slower).\n");
+                }
+                else if (string_match_up_to("low", argv[i], 2))
+                {
+                    soar_cSetDecay(DECAY_PRECISION, DECAY_PRECISION_LOW);
+                    print("WME activation levels will be calculated with low precision (faster).\n");
+                }
+                else
+                {
+                    setSoarResultResult(res, "Invalid precision specified: current options are: 'high' or 'low'");
+                    return SOAR_ERROR;
+                }
+                    
+            }
+            else
+            {
+                setSoarResultResult(res, "Precision not specified: current options are: 'high' or 'low'");
+                return SOAR_ERROR;
+            }
+        }
+        else if ( string_match_up_to("-log", argv[i], 0))
+        {
+            if(++i < argc)
+            {
+                if (string_match_up_to("-", argv[i], 0))
+                {
+                    setSoarResultResult(res, "Logging mode not specified: current options are: <filename> or 'off'");
+                    return SOAR_ERROR;
+                }
+                else if (string_match_up_to("off", argv[i], 0))
+                {
+                    soar_cSetDecay(DECAY_LOGGING, 0);
+                    print("Log file closed.");
+                }
+                else
+                {
+                    FILE *f = fopen(argv[i], "w");
+                    if (f == NIL)
+                    {
+                        setSoarResultResult(res, "Error opening filename specified.");
+                        return SOAR_ERROR;
+                    }
+                    print("Log file %s opened.\n", argv[i]);
+                    soar_cSetDecay(DECAY_LOGGING, (long)f);
+                }
+                    
+            }
+            else
+            {
+                setSoarResultResult(res, "Logging mode not specified: current options are: <filename> or 'off'");
+                return SOAR_ERROR;
+            }
+        }
+        else if ( string_match_up_to("-exponent", argv[i], 4))
+        {
+			if (current_agent(sysparams)[WME_DECAY_SYSPARAM])
+            {
+				// read up that argument
+				i++;
+				setSoarResultResult(res, "Cannot set decay exponent while decay is on: use \"decay -off\" first");
+				return SOAR_ERROR;
+			}
+            else
+            {
+				if(++i < argc)
+                {
+					if (string_match_up_to("-", argv[i], 0))
+                    {
+						setSoarResultResult(res, "Exponent not set: should be a positive number");
+						return SOAR_ERROR;
+					}
+                    else
+                    {
+						exp = (double) atof(argv[i]);
+						soar_cSetDecay(DECAY_EXPONENT, (long) (-DECAY_EXPONENT_DIVISOR * exp));
+					}
+				}
+                else
+                {
+					setSoarResultResult(res, "Invalid argument when trying to set exponent");
+					return SOAR_ERROR;
+				}
+			}
+		}
+        else
+        {
+            setSoarResultResult( res, "Unrecognized argument to decay command: %s", argv[i]);
+            return SOAR_ERROR;
+        }
+    }//for
+
+    clearSoarResultResult( res );
+    return SOAR_OK;
+    
+}//soar_Decay
+
+#endif //SOAR_DECAY
+/* end MRJ 5/23/01 */
+
 
 /*
  *----------------------------------------------------------------------
@@ -1486,8 +1775,15 @@ int soar_Memories(int argc, const char *argv[], soarResult * res)
         } else if (string_match_up_to(argv[i], "-defaults", 2)) {
             mems_to_print[DEFAULT_PRODUCTION_TYPE] = TRUE;
             set_mems = TRUE;
-
-        } else if (string_match_up_to(argv[i], "-justifications", 2)) {
+        }
+#ifdef AMN_MONITOR
+      else if (string_match_up_to(argv[i], "-monitor", 2))
+      {
+          mems_to_print[MONITOR_PRODUCTION_TYPE] = TRUE;
+          set_mems = TRUE;
+      }
+#endif
+       else if (string_match_up_to(argv[i], "-justifications", 2)) {
             mems_to_print[JUSTIFICATION_PRODUCTION_TYPE] = TRUE;
             set_mems = TRUE;
 
@@ -1517,6 +1813,9 @@ int soar_Memories(int argc, const char *argv[], soarResult * res)
         mems_to_print[CHUNK_PRODUCTION_TYPE] = TRUE;
         mems_to_print[USER_PRODUCTION_TYPE] = TRUE;
         mems_to_print[DEFAULT_PRODUCTION_TYPE] = TRUE;
+#ifdef AMN_MONITOR
+        mems_to_print[MONITOR_PRODUCTION_TYPE] = TRUE;
+#endif
     }
     /*printf("chunkflag = %d\nuserflag = %d\ndefflag = %d\njustflag = %d\n",
      *     mems_to_print[CHUNK_PRODUCTION_TYPE],
@@ -1900,8 +2199,18 @@ int soar_Print(int argc, const char *argv[], soarResult * res)
              * printed in the reverse order they were loaded...
              */
             soar_ecPrintAllProductionsOfType(DEFAULT_PRODUCTION_TYPE, internal, print_filename, full_prod);
+        }
+#ifdef AMN_MONITOR
+      else if (string_match_up_to("-monitor", argv[next_arg],4))
+	{
+          output_arg = TRUE; 
+	  soar_ecPrintAllProductionsOfType( MONITOR_PRODUCTION_TYPE,
+					    internal, print_filename, 
+					    full_prod );
 
-        } else if (string_match_up_to("-user", argv[next_arg], 2)) {
+	}
+#endif
+          else if (string_match_up_to("-user", argv[next_arg], 2)) {
             output_arg = TRUE;  /* TEST for Soar-Bugs #161 */
             soar_ecPrintAllProductionsOfType(USER_PRODUCTION_TYPE, internal, print_filename, full_prod);
         } else if (string_match_up_to("-chunks", argv[next_arg], 2)) {

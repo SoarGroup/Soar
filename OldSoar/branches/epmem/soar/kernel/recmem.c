@@ -884,6 +884,12 @@ void retract_instantiation(instantiation * inst)
     trace_it = (bool) trace_firings_of_inst(inst);
 #endif
 
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+  decay_update_wmes_in_retracted_inst(inst);
+#endif
+/* end MRJ 5/23/01 */
+    
     /* --- retract any preferences that are in TM and aren't o-supported --- */
     pref = inst->preferences_generated;
     while (pref != NIL) {
@@ -1091,6 +1097,13 @@ void assert_new_preferences(void)
                 preference_add_ref(pref);
                 preference_remove_ref(pref);
             }
+
+/* MRJ 5/23/01 */
+#ifdef SOAR_DECAY
+            activate_wmes_in_pref(pref);
+#endif
+/* end MRJ 5/23/01 */
+
         }
 
 #if defined(WATCH_INSTS_WITH_O_PREFS) || defined(REMOVE_INSTS_WITH_O_PREFS) || defined(THIN_JUSTIFICATIONS) || defined(WATCH_SSCI_INSTS) || defined(OPTIMIZE_TOP_LEVEL_RESULTS)
@@ -1260,7 +1273,26 @@ void do_preference_phase(void)
 
 #endif
 
-    current_agent(newly_created_instantiations) = NIL;
+#ifdef SOAR_DECAY
+/* MRJ 5/23/01 */
+/*
+  In some cases (especially in Soar 8) the existence of an ms-change struct
+  does not guarantee that the production will actually fire.  Specifically, if
+  the goal is removed by GDS or the operator is removed then the production
+  will not fire.  However, when this occurs reference count is decremented
+  again when the ms-change is removed.  At least we think this might be what's
+  going on.  At the moment it seems prudent to stick with an "if it ain't broke
+  don't fix it" approach.  If you start seeing WMEs with unexplained
+  references, this would be the first place to look.  (MRJ & AMN, July 2003)
+*/
+    if (current_agent(sysparams)[WME_DECAY_SYSPARAM])
+    {
+        decay_update_wmes_tested_in_prods();
+    } 
+#endif
+/* end MRJ 5/23/01 */
+
+  current_agent(newly_created_instantiations) = NIL;
 
     /* MVP 6-8-94 */
     while (get_next_assertion(&prod, &tok, &w)) {
