@@ -1165,6 +1165,7 @@ public class MainFrame extends JFrame
                 {
                     OpenFile(file);
                 }
+
             }
 
 			catch(NumberFormatException nfe) 
@@ -1213,6 +1214,9 @@ public class MainFrame extends JFrame
                 exportAgentAction.perform();
 				
 				operatorDesktopSplit.setDividerLocation(.30);
+
+                //Set the title bar to include the project name
+                setTitle(agentName);
 			}
 		}
 	}
