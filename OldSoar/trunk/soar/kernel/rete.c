@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4244 4100 4701 4127 at top of file!")
-#pragma warning(disable : 4115 4244 4100 4701 4127)
+#pragma message("Disabling compiler warnings 4100 4701 at top of file!")
+#pragma warning(disable : 4100 4701)
 #endif
 
 /*************************************************************************
@@ -878,7 +878,7 @@ bool any_assertions_or_retractions_ready (void) {
 
   else
 
-  return (current_agent(ms_assertions) || current_agent(ms_retractions));
+  return (bool)(current_agent(ms_assertions) || current_agent(ms_retractions));
 #endif
 
 }
@@ -887,7 +887,7 @@ bool any_assertions_or_retractions_ready (void) {
 /* RCHONG: begin 10.11 */
 
 bool any_i_assertions_or_retractions_ready (void) {
-   return (current_agent(ms_i_assertions) || current_agent(ms_retractions));
+   return (bool)(current_agent(ms_i_assertions) || current_agent(ms_retractions));
 }
 
 /* RCHONG: end 10.11 */
@@ -2037,7 +2037,7 @@ bool find_var_location (Symbol *var, rete_node_level current_depth,
   void *dummy;
   if (! var->var.rete_binding_locations) return FALSE;
   dummy = var->var.rete_binding_locations->first;
-  result->levels_up = current_depth - (rete_node_level)dummy_to_varloc_depth (dummy);
+  result->levels_up = (unsigned short)(current_depth - (rete_node_level)dummy_to_varloc_depth (dummy));
   result->field_num = (byte) dummy_to_varloc_field_num (dummy);
   return TRUE;
 }
@@ -2502,8 +2502,8 @@ void add_rete_tests_for_test (test t,
     if (ct->data.referent->common.symbol_type!=VARIABLE_SYMBOL_TYPE) {
       allocate_with_pool (&current_agent(rete_test_pool),  &new_rt);
       new_rt->right_field_num = field_num;
-      new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
-                     test_type_to_relational_test_type[ct->type];
+      new_rt->type = (unsigned char)(CONSTANT_RELATIONAL_RETE_TEST +
+                     test_type_to_relational_test_type[ct->type]);
       new_rt->data.constant_referent = ct->data.referent;
       symbol_add_ref (ct->data.referent);
       new_rt->next = *rt;
@@ -2522,8 +2522,8 @@ void add_rete_tests_for_test (test t,
     }
     allocate_with_pool (&current_agent(rete_test_pool),  &new_rt);
     new_rt->right_field_num = field_num;
-    new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
-                   test_type_to_relational_test_type[ct->type];
+    new_rt->type = (unsigned char)(VARIABLE_RELATIONAL_RETE_TEST +
+                   test_type_to_relational_test_type[ct->type]);
     new_rt->data.variable_referent = where;
     new_rt->next = *rt;
     *rt = new_rt;
@@ -2599,11 +2599,11 @@ bool single_rete_tests_are_identical (rete_test *rt1, rete_test *rt2) {
   if (rt1->right_field_num != rt2->right_field_num) return FALSE;
 
   if (test_is_variable_relational_test(rt1->type))
-    return (var_locations_equal (rt1->data.variable_referent,
+    return (bool)(var_locations_equal (rt1->data.variable_referent,
                                  rt2->data.variable_referent));
 
   if (test_is_constant_relational_test(rt1->type)) {
-    return (rt1->data.constant_referent == rt2->data.constant_referent);
+    return (bool)(rt1->data.constant_referent == rt2->data.constant_referent);
   }
 
   if (rt1->type==ID_IS_GOAL_RETE_TEST) return TRUE;
@@ -2844,7 +2844,7 @@ rete_node *make_node_for_negative_cond (condition *cond,
                      cond->test_for_acceptable_preference);
 
   /* --- determine desired node type --- */
-  node_type = hash_this_node ? NEGATIVE_BNODE : UNHASHED_NEGATIVE_BNODE;
+  node_type = (bool)(hash_this_node ? NEGATIVE_BNODE : UNHASHED_NEGATIVE_BNODE);
 
   /* --- look for a matching existing node --- */
   for (node=parent->first_child; node!=NIL; node=node->next_sibling)
@@ -2944,7 +2944,7 @@ void build_network_for_condition_list (condition *cond_list,
   
   /* --- return results to caller --- */
   if (dest_bottom_node) *dest_bottom_node = node;
-  if (dest_bottom_depth) *dest_bottom_depth = current_depth-1;
+  if (dest_bottom_depth) *dest_bottom_depth = (unsigned short)(current_depth-1);
   if (dest_vars_bound) {
     *dest_vars_bound = vars_bound;
   } else {
@@ -4044,7 +4044,7 @@ bool constant_equal_rete_test_routine (rete_test *rt, token *left, wme *w) {
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return (s1 == s2);
+  return (bool)(s1 == s2);
 }
 
 bool constant_not_equal_rete_test_routine (rete_test *rt, token *left,
@@ -4053,7 +4053,7 @@ bool constant_not_equal_rete_test_routine (rete_test *rt, token *left,
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return (s1 != s2);
+  return (bool)(s1 != s2);
 }
 
 bool constant_less_rete_test_routine (rete_test *rt, token *left, wme *w) {
@@ -4061,7 +4061,7 @@ bool constant_less_rete_test_routine (rete_test *rt, token *left, wme *w) {
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return numeric_comparison_between_symbols (s1, s2, < );
+  return (bool)numeric_comparison_between_symbols (s1, s2, < );
 }
 
 bool constant_greater_rete_test_routine (rete_test *rt, token *left, wme *w) {
@@ -4069,7 +4069,7 @@ bool constant_greater_rete_test_routine (rete_test *rt, token *left, wme *w) {
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return numeric_comparison_between_symbols (s1, s2, > );
+  return (bool)numeric_comparison_between_symbols (s1, s2, > );
 }
 
 bool constant_less_or_equal_rete_test_routine (rete_test *rt, token *left,
@@ -4078,7 +4078,7 @@ bool constant_less_or_equal_rete_test_routine (rete_test *rt, token *left,
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return numeric_comparison_between_symbols (s1, s2, <= );
+  return (bool)numeric_comparison_between_symbols (s1, s2, <= );
 }
 
 bool constant_greater_or_equal_rete_test_routine (rete_test *rt, token *left,
@@ -4087,7 +4087,7 @@ bool constant_greater_or_equal_rete_test_routine (rete_test *rt, token *left,
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return numeric_comparison_between_symbols (s1, s2, >= );
+  return (bool)numeric_comparison_between_symbols (s1, s2, >= );
 }
 
 bool constant_same_type_rete_test_routine (rete_test *rt, token *left,
@@ -4096,7 +4096,7 @@ bool constant_same_type_rete_test_routine (rete_test *rt, token *left,
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return (s1->common.symbol_type == s2->common.symbol_type);
+  return (bool)(s1->common.symbol_type == s2->common.symbol_type);
 }
 
 bool variable_equal_rete_test_routine (rete_test *rt, token *left, wme *w) {
@@ -4115,7 +4115,7 @@ bool variable_equal_rete_test_routine (rete_test *rt, token *left, wme *w) {
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return (s1 == s2);
+  return (bool)(s1 == s2);
 }
 
 bool variable_not_equal_rete_test_routine (rete_test *rt, token *left,
@@ -4135,7 +4135,7 @@ bool variable_not_equal_rete_test_routine (rete_test *rt, token *left,
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return (s1 != s2);
+  return (bool)(s1 != s2);
 }
 
 bool variable_less_rete_test_routine (rete_test *rt, token *left, wme *w) {
@@ -4154,7 +4154,7 @@ bool variable_less_rete_test_routine (rete_test *rt, token *left, wme *w) {
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return numeric_comparison_between_symbols (s1, s2, < );
+  return (bool)numeric_comparison_between_symbols (s1, s2, < );
 }
 
 bool variable_greater_rete_test_routine (rete_test *rt, token *left, wme *w) {
@@ -4173,7 +4173,7 @@ bool variable_greater_rete_test_routine (rete_test *rt, token *left, wme *w) {
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return numeric_comparison_between_symbols (s1, s2, > );
+  return (bool)numeric_comparison_between_symbols (s1, s2, > );
 }
 
 bool variable_less_or_equal_rete_test_routine (rete_test *rt, token *left,
@@ -4193,7 +4193,7 @@ bool variable_less_or_equal_rete_test_routine (rete_test *rt, token *left,
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return numeric_comparison_between_symbols (s1, s2, <= );
+  return (bool)numeric_comparison_between_symbols (s1, s2, <= );
 }
 
 bool variable_greater_or_equal_rete_test_routine (rete_test *rt, token *left,
@@ -4213,7 +4213,7 @@ bool variable_greater_or_equal_rete_test_routine (rete_test *rt, token *left,
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return numeric_comparison_between_symbols (s1, s2, >= );
+  return (bool)numeric_comparison_between_symbols (s1, s2, >= );
 }
 
 bool variable_same_type_rete_test_routine (rete_test *rt, token *left,
@@ -4232,7 +4232,7 @@ bool variable_same_type_rete_test_routine (rete_test *rt, token *left,
     w = left->w;
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
-  return (s1->common.symbol_type == s2->common.symbol_type);
+  return (bool)(s1->common.symbol_type == s2->common.symbol_type);
 }
 
 
@@ -5658,7 +5658,7 @@ void remove_token_and_subtree (token *root) {
   
   tok = root;
   
-  while (TRUE) {
+  for (;;) {
     /* --- move down to the leftmost leaf --- */
     while (tok->first_child) tok = tok->first_child;
     next_value_for_tok = tok->next_sibling ? tok->next_sibling : tok->parent;
@@ -5863,7 +5863,7 @@ void retesave_one_byte (byte b) {
 }
 
 byte reteload_one_byte () {
-  return fgetc (rete_fs_file);
+  return (unsigned char)fgetc (rete_fs_file);
 }
 
 void retesave_two_bytes (unsigned long w) {
@@ -5913,7 +5913,8 @@ void retesave_string (char *s) {
 }
 
 void reteload_string () {
-  int i, ch;
+  int i;
+  unsigned char ch;
   i = 0;
   do {
     ch = reteload_one_byte();
@@ -6110,7 +6111,7 @@ void reteload_alpha_memories (void) {
     id = reteload_symbol_from_index();
     attr = reteload_symbol_from_index();
     value = reteload_symbol_from_index();
-    acceptable = reteload_one_byte() ? TRUE : FALSE;
+    acceptable = (bool)(reteload_one_byte() ? TRUE : FALSE);
     *(reteload_am_table+i) = find_or_make_alpha_mem (id,attr,value,acceptable);
   }
 }
@@ -6196,7 +6197,7 @@ varnames *reteload_varnames (void) {
 }
 
 void retesave_node_varnames (node_varnames *nvn, rete_node *node) {
-  while (TRUE) {
+  for (;;) {
     if (node->node_type == DUMMY_TOP_BNODE) return;
     if (node->node_type == CN_BNODE) {
       node=node->b.cn.partner->parent;

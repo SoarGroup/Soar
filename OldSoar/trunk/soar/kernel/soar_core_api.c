@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4127 4244 4100 4706 4701 at top of file!")
-#pragma warning(disable : 4115 4127 4244 4100 4706 4701)
+#pragma message("Disabling compiler warnings 4100 4706 4701 at top of file!")
+#pragma warning(disable : 4100 4706 4701)
 #endif
 
 /**
@@ -142,21 +142,21 @@ void soar_cInitializeSoar (void)
   int i;
 
 
-  if ( MICRO_VERSION_NUMBER > 0 ) {
-	snprintf( buffer, SOAR_CINITIALIZESOAR_BUFFER_SIZE,
-	     "%d.%d.%d",
-	     MAJOR_VERSION_NUMBER, 
-	     MINOR_VERSION_NUMBER, 
-	     MICRO_VERSION_NUMBER);
-	buffer[SOAR_CINITIALIZESOAR_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+#if MICRO_VERSION_NUMBER > 0
+  snprintf( buffer, SOAR_CINITIALIZESOAR_BUFFER_SIZE,
+       "%d.%d.%d",
+       MAJOR_VERSION_NUMBER, 
+       MINOR_VERSION_NUMBER, 
+       MICRO_VERSION_NUMBER);
+  buffer[SOAR_CINITIALIZESOAR_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+#else
+  snprintf(buffer, SOAR_CINITIALIZESOAR_BUFFER_SIZE,
+      "%d.%d",
+      MAJOR_VERSION_NUMBER, 
+      MINOR_VERSION_NUMBER);
+  buffer[SOAR_CINITIALIZESOAR_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+#endif
 
-  } else {
-	snprintf(buffer, SOAR_CINITIALIZESOAR_BUFFER_SIZE,
-	    "%d.%d",
-	    MAJOR_VERSION_NUMBER, 
-	    MINOR_VERSION_NUMBER);
-	buffer[SOAR_CINITIALIZESOAR_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-  }
   soar_version_string = savestring(buffer);
 
   /*  RCHONG and REW added following to soar_version_string.
@@ -2334,7 +2334,7 @@ void soar_cInitAgentIterator( soar_apiAgentIterator *ai ) {
     if ( ((agent *)c->first) == soar_agent ) {
       ai->_begin = c;
       ai->_current = c;
-      ai->more = (agent_count > 0) ? TRUE : FALSE;
+      ai->more = (bool)((agent_count > 0) ? TRUE : FALSE);
     }
   }
   if ( ai->_begin == NIL ) { print( "ERROR!!!!!!!!!!"); }
@@ -2502,14 +2502,14 @@ void soar_cDefaultAskCallback( soar_callback_agent the_agent,
   print("to something else:  %d (first), %d (last), %d (random)\n",
 	num_candidates+=1, num_candidates+=1, num_candidates+=1);
   /* AGR 615 end */
-  while (TRUE) {
+  for (;;) {
     char ch;
     
     /*  char buf[256]; *//* kjh(CUSP-B10) */
     print ("Enter selection (1-%d): ", num_candidates);
     chosen_num = -1;
     scanf (" %d", &chosen_num);
-    do { ch=getchar(); } while ((ch!='\n') && (ch!=EOF_AS_CHAR));
+    do { ch=(char)getchar(); } while ((ch!='\n') && (ch!=EOF_AS_CHAR));
     
     if (ch==EOF_AS_CHAR) clearerr(stdin); /* Soar-Bugs #103, TMH */
     

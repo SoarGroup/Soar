@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4127 at top of file!")
-#pragma warning(disable : 4115 4127)
-#endif
-
 /*************************************************************************
  *
  *  file:  osupport.c
@@ -1000,7 +994,7 @@ void add_tc_through_lhs_and_rhs (condition *lhs, action *rhs, tc_number tc,
   for (a=rhs; a!=NIL; a=a->next) a->already_in_tc = FALSE;
 
   /* --- keep trying to add new stuff to the tc --- */  
-  while (TRUE) {
+  for (;;) {
     anything_changed = FALSE;
     for (c=lhs; c!=NIL; c=c->next)
       if (! c->already_in_tc)

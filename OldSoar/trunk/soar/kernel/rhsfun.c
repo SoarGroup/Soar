@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4701 4100 4127 4244 at top of file!")
-#pragma warning(disable : 4115 4701 4100 4127 4244)
+#pragma message("Disabling compiler warnings 4701 4100 at top of file!")
+#pragma warning(disable : 4701 4100)
 #endif
 
 /*************************************************************************
@@ -339,7 +339,7 @@ Symbol *accept_rhs_function_code (list *args) {
   char buf[2000], *s;
   Symbol *sym;
 
-  while (TRUE) {
+  for (;;) {
     s = fgets (buf, 2000, stdin);
     /*    s = Soar_Read(soar_agent, buf, 2000); */ /* kjh(CUSP-B10) */
     if (!s) {
@@ -386,7 +386,7 @@ capitalize_symbol_rhs_function_code (list *args)
 
   symbol_to_capitalize = symbol_to_string(sym, FALSE, NIL, 0);
   symbol_to_capitalize = savestring(symbol_to_capitalize);
-  *symbol_to_capitalize = toupper(*symbol_to_capitalize);
+  *symbol_to_capitalize = (char)toupper(*symbol_to_capitalize);
   return make_sym_constant(symbol_to_capitalize);
 }
 

@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4244 4127 4701 at top of file!")
-#pragma warning(disable : 4115 4244 4127 4701)
-#endif
-
 /*************************************************************************
  *
  *  file:  chunk.c
@@ -230,7 +224,7 @@ void variablize_symbol (Symbol **sym) {
 
   /* --- need to create a new variable --- */
   (*sym)->id.tc_num = current_agent(variablization_tc);
-  prefix[0] = tolower((*sym)->id.name_letter);
+  prefix[0] = (char)tolower((*sym)->id.name_letter);
   prefix[1] = 0;
   var = generate_new_variable (prefix);
   (*sym)->id.variablization = var;
@@ -667,7 +661,7 @@ void add_goal_or_impasse_tests (chunk_cond *all_ccs) {
     if ( (id->id.isa_goal || id->id.isa_impasse) &&
          (id->id.tc_num != tc) ) {
       allocate_with_pool (&current_agent(complex_test_pool),  &ct);
-      ct->type = (id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST;
+      ct->type = (char)((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST);
       t = make_test_from_complex_test(ct);
       add_new_test_to_test (&(cc->variablized_cond->data.tests.id_test), t);
       id->id.tc_num = tc;
@@ -944,6 +938,10 @@ void chunk_instantiation (instantiation *inst, bool allow_variablization) {
 #endif
 
 
+  /* These two lines quell compiler warnings */
+  temp_explain_chunk.conds = NULL;
+  temp_explain_chunk.actions = NULL;
+
 
   
   /* --- if it only matched an attribute impasse, don't chunk --- */
@@ -1158,7 +1156,7 @@ void chunk_instantiation (instantiation *inst, bool allow_variablization) {
       g->id.allow_bottom_up_chunks = FALSE;
   }
 
-  grounds_level = inst->match_goal_level - 1;
+  grounds_level = (short)(inst->match_goal_level - 1);
 
 
   current_agent(backtrace_number)++; 
@@ -1285,7 +1283,7 @@ void chunk_instantiation (instantiation *inst, bool allow_variablization) {
 
   current_agent(quiescence_t_flag) = FALSE;
 
-  while (TRUE) {
+  for (;;) {
     trace_locals (grounds_level);
     trace_grounded_potentials ();
     if (! trace_ungrounded_potentials (grounds_level)) break;

@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4127 at top of file!")
-#pragma warning(disable : 4115 4127)
-#endif
-
 /*
  * =======================================================================
  *  File:  soarScheduler.c
@@ -77,7 +71,7 @@ void run_all_agents (long go_number,
       the_agent->stop_soar = FALSE;
     }
     
-    while (TRUE) {
+    for (;;) {
       
       if (cycle_count == go_number) break;
       cycle_count++;

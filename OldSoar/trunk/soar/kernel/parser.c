@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4244 4127 at top of file!")
-#pragma warning(disable : 4115 4244 4127)
-#endif
-
 /*************************************************************************
  *
  *  file:  parser.c
@@ -88,7 +82,7 @@ test make_placeholder_test (char first_letter) {
   Symbol *new_var;
 
   if (isalpha(first_letter)) {
-    if (isupper(first_letter)) first_letter = tolower(first_letter);
+    if (isupper(first_letter)) first_letter = (char)tolower(first_letter);
   } else {
     first_letter = 'v';
   }
@@ -1387,7 +1381,7 @@ action *parse_preferences (Symbol *id, rhs_value attr, rhs_value value) {
 
   prev_a = NIL;
   
-  saw_plus_sign = (current_agent(lexeme).type==PLUS_LEXEME);
+  saw_plus_sign = (bool)(current_agent(lexeme).type==PLUS_LEXEME);
   preference_type = parse_preference_specifier_without_referent ();
   if ((preference_type==ACCEPTABLE_PREFERENCE_TYPE) && (! saw_plus_sign)) {
     /* If the routine gave us a + pref without seeing a + sign, then it's
@@ -1396,7 +1390,7 @@ action *parse_preferences (Symbol *id, rhs_value attr, rhs_value value) {
     if (current_agent(lexeme).type==COMMA_LEXEME) get_lexeme();
   }
   
-  while (TRUE) {
+  for (;;) {
     /* --- read referent --- */
     if (preference_is_binary(preference_type)) {
       referent = parse_rhs_value();
@@ -1422,7 +1416,7 @@ action *parse_preferences (Symbol *id, rhs_value attr, rhs_value value) {
     if (preference_is_binary(preference_type)) a->referent = referent;
 
     /* --- look for another preference type specifier --- */
-    saw_plus_sign = (current_agent(lexeme).type==PLUS_LEXEME);
+    saw_plus_sign = (bool)(current_agent(lexeme).type==PLUS_LEXEME);
     preference_type = parse_preference_specifier_without_referent ();
     
     /* --- exit loop when done reading preferences --- */
@@ -1475,7 +1469,7 @@ action *parse_preferences_soar8_non_operator (Symbol *id, rhs_value attr, rhs_va
 
   prev_a = NIL;
   
-  saw_plus_sign = (current_agent(lexeme).type==PLUS_LEXEME);
+  saw_plus_sign = (bool)(current_agent(lexeme).type==PLUS_LEXEME);
   preference_type = parse_preference_specifier_without_referent ();
   if ((preference_type==ACCEPTABLE_PREFERENCE_TYPE) && (! saw_plus_sign)) {
     /* If the routine gave us a + pref without seeing a + sign, then it's
@@ -1484,7 +1478,7 @@ action *parse_preferences_soar8_non_operator (Symbol *id, rhs_value attr, rhs_va
     if (current_agent(lexeme).type==COMMA_LEXEME) get_lexeme();
   }
   
-  while (TRUE) {
+  for (;;) {
     /* step through the pref list, print warning messages when necessary. */
 
     /* --- read referent --- */
@@ -1522,7 +1516,7 @@ action *parse_preferences_soar8_non_operator (Symbol *id, rhs_value attr, rhs_va
     }
 
     /* --- look for another preference type specifier --- */
-    saw_plus_sign = (current_agent(lexeme).type==PLUS_LEXEME);
+    saw_plus_sign = (bool)(current_agent(lexeme).type==PLUS_LEXEME);
     preference_type = parse_preference_specifier_without_referent ();
     
     /* --- exit loop when done reading preferences --- */
@@ -1816,7 +1810,7 @@ production *parse_production (void) {
   declared_support = UNDECLARED_SUPPORT;
   prod_type = USER_PRODUCTION_TYPE;
 	interrupt_on_match = FALSE;
-  while (TRUE) {
+  for (;;) {
     if (current_agent(lexeme).type!=SYM_CONSTANT_LEXEME) break;
     if (!strcmp(current_agent(lexeme).string,":o-support")) {
       declared_support = DECLARED_O_SUPPORT;

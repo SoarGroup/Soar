@@ -88,20 +88,6 @@
 
 
 /*
- *   sys_gethostname
- */
-
-#if defined (THINK_C) || defined(_WINDOWS) || defined (__SC__) || defined(WIN32) || defined(MACINTOSH)
-
-   #define sys_gethostname(buff,len)  (1)
-
-#else
-   #define sys_gethostname(buff,len)  gethostname(buff,len)
-
-#endif
-
-
-/*
  *   timersub
  */
 

@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4701 4131 4100 at top of file!")
-#pragma warning(disable : 4115 4701 4131 4100)
+#pragma message("Disabling compiler warnings 4701 4131 4100 at top of file!")
+#pragma warning(disable : 4701 4131 4100)
 #endif
 
 /***********************************************************

@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warning 4115 at top of file!")
-#pragma warning(disable : 4115)
-#endif
-
 /*************************************************************************
  *
  *  file:  callback.c

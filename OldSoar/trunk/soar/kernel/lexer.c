@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4100 4244 4127 at top of file!")
-#pragma warning(disable : 4115 4100 4244 4127)
+#pragma message("Disabling compiler warning 4100 at top of file!")
+#pragma warning(disable : 4100)
 #endif
 
 /*************************************************************************
@@ -396,7 +396,7 @@ void determine_type_of_constituent_string (void) {
   
   /* --- check if it's an identifier --- */
   if (current_agent(current_file)->allow_ids && possible_id) {
-    current_agent(lexeme).id_letter = toupper(current_agent(lexeme).string[0]);
+    current_agent(lexeme).id_letter = (char)toupper(current_agent(lexeme).string[0]);
     errno = 0;
     current_agent(lexeme).type = IDENTIFIER_LEXEME;
     current_agent(lexeme).id_number = my_strtoul (&(current_agent(lexeme).string[1]),NULL,10);
@@ -697,7 +697,8 @@ void lex_constituent_string (void) {
 void lex_vbar (void) {
   current_agent(lexeme).type = SYM_CONSTANT_LEXEME;
   get_next_char();
-  do {
+
+  for (;;) {
     if ((current_agent(current_char)==EOF_AS_CHAR)||
         (current_agent(lexeme).length==MAX_LEXEME_LENGTH)) {
       print ("Error:  opening '|' without closing '|'\n");
@@ -720,14 +721,15 @@ void lex_vbar (void) {
       current_agent(lexeme).string[current_agent(lexeme).length++] = (char)current_agent(current_char);
       get_next_char();
     }
-  } while(TRUE);
+  }
+
   current_agent(lexeme).string[current_agent(lexeme).length]=0;
 }
 
 void lex_quote (void) {
   current_agent(lexeme).type = QUOTED_STRING_LEXEME;
   get_next_char();
-  do {
+  for (;;) {
     if ((current_agent(current_char)==EOF_AS_CHAR)||(current_agent(lexeme).length==MAX_LEXEME_LENGTH)) {
       print ("Error:  opening '\"' without closing '\"'\n");
       print_location_of_most_recent_lexeme();
@@ -749,7 +751,7 @@ void lex_quote (void) {
       current_agent(lexeme).string[current_agent(lexeme).length++] = (char)current_agent(current_char);
       get_next_char();
     }
-  } while(TRUE);
+  }
   current_agent(lexeme).string[current_agent(lexeme).length]=0;
 }
 
@@ -1046,7 +1048,7 @@ int current_lexer_parentheses_level (void) {
 }
 
 void skip_ahead_to_balanced_parentheses (int parentheses_level) {
-  while (TRUE) {
+  for (;;) {
     if (current_agent(lexeme).type==EOF_LEXEME) return;
     if ((current_agent(lexeme).type==R_PAREN_LEXEME) &&
         (parentheses_level==current_agent(current_file)->parentheses_level)) return;

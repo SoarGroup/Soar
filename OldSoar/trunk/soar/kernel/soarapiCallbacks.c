@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4100 at top of file!")
-#pragma warning(disable : 4115 4100)
+#pragma message("Disabling compiler warning 4100 at top of file!")
+#pragma warning(disable : 4100)
 #endif
 
 #include "soarkernel.h"

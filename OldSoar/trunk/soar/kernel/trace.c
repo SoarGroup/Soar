@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4127 at top of file!")
-#pragma warning(disable : 4115 4127)
-#endif
-
 /*************************************************************************
  *
  *  file:  trace.c
@@ -208,7 +202,7 @@ list *parse_attribute_path_in_brackets (void) {
   } else {
     /* --- normal case: read the attribute path --- */
     path = NIL;
-    while (TRUE) {
+    for (;;) {
       ch = name;
       while ((*format!=0)&&(*format!=']')&&(*format!='.')) *ch++ = *format++;
       if (*format==0) {

@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4100 4244 at top of file!")
-#pragma warning(disable : 4115 4100 4244)
+#pragma message("Disabling compiler warning 4100 at top of file!")
+#pragma warning(disable : 4100)
 #endif
 
 /*
@@ -107,7 +107,7 @@ int getInt( const char *string, int *i ) {
 Symbol * space_to_remove_from_cfps;
 
 bool cfps_removal_test_function (cons *c) {
-  return (c->first == space_to_remove_from_cfps);
+  return (bool)(c->first == space_to_remove_from_cfps);
 }
 
 
@@ -576,7 +576,7 @@ bool tests_are_equal_with_bindings (test t1, test test2, list **bindings) {
   test t2;
 
   /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
-  if (test_is_blank_test(t1)) return(test_is_blank_test(test2));
+  if (test_is_blank_test(t1)) return (bool)(test_is_blank_test(test2));
 
   /* If the pattern doesn't include "(state", but the test from the
      production does, strip it out of the production's. */

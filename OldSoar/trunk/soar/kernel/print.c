@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4127 4244 at top of file!")
-#pragma warning(disable : 4115 4127 4244)
-#endif
-
 /*************************************************************************
  *
  *  file:  print.c
@@ -280,7 +274,7 @@ void print_with_symbols (va_alist) va_dcl {
 #endif
   ch = buf;
   
-  while (TRUE) {
+  for (;;) {
       /* --- copy anything up to the first "%" --- */
 	  while ((*format != '%') && (*format != 0)) *(ch++) = *(format++);
 
@@ -442,8 +436,8 @@ char *symbol_to_string (Symbol *sym, bool rereadable, char *dest, size_t dest_si
                                                 &possible_fc,
                                                 &is_rereadable);
 
-    has_angle_bracket = sym->sc.name[0] == '<' ||
-                        sym->sc.name[strlen(sym->sc.name)-1] == '>';
+    has_angle_bracket = (bool)(sym->sc.name[0] == '<' ||
+                               sym->sc.name[strlen(sym->sc.name)-1] == '>');
 
     if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
         (!is_rereadable) ||
@@ -766,7 +760,7 @@ bool pick_actions_with_matching_id (dl_cons *dc) {
   action *a;
   a = dc->item;
   if (a->type!=MAKE_ACTION) return FALSE;
-  return (rhs_value_to_symbol(a->id) == action_id_to_match);
+  return (bool)(rhs_value_to_symbol(a->id) == action_id_to_match);
 }
 
 #define PRINT_ACTION_LIST_TEMP_SIZE 10000

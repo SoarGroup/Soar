@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4127 4244 4100 4701 at top of file!")
-#pragma warning(disable : 4115 4127 4244 4100 4701)
+#pragma message("Disabling compiler warnings 4100 4701 at top of file!")
+#pragma warning(disable : 4100 4701)
 #endif
 
 /*************************************************************************
@@ -113,7 +113,7 @@ bool reorder_action_list (action **action_list, tc_number lhs_tc) {
     /* --- scan through remaining_actions, look for one that's legal --- */
     prev_a = NIL;
     a = remaining_actions;
-    while (TRUE) {
+    for (;;) {
       if (!a) break; /* looked at all candidates, but none were legal */
       if (legal_to_execute_action (a, lhs_tc)) break;
       prev_a = a;
@@ -170,7 +170,7 @@ bool all_variables_in_rhs_value_bound (rhs_value rv, tc_number tc) {
     /* --- ordinary (symbol) rhs values --- */
     sym = rhs_value_to_symbol (rv);
     if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-      return (sym->var.tc_num == tc);
+      return (bool)(sym->var.tc_num == tc);
     return TRUE;
   }
 }

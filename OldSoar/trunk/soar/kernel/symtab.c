@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4244 4127 at top of file!")
-#pragma warning(disable : 4115 4244 4127)
-#endif
-
 /*************************************************************************
  *
  *  file:  symtab.c
@@ -297,7 +291,7 @@ Symbol *make_new_identifier (char name_letter, goal_stack_level level) {
   Symbol *sym;
 
   if (isalpha(name_letter)) {
-    if (islower(name_letter)) name_letter = toupper(name_letter);
+    if (islower(name_letter)) name_letter = (char)toupper(name_letter);
   } else {
     name_letter = 'I';
   }
@@ -506,7 +500,7 @@ Symbol *generate_new_sym_constant (char *prefix, unsigned long *counter) {
   char name[GENERATE_NEW_SYM_CONSTANT_NAME_SIZE];  /* that ought to be long enough! */
   Symbol *new;
 
-  while (TRUE) {
+  for (;;) {
 	  snprintf (name, GENERATE_NEW_SYM_CONSTANT_NAME_SIZE, "%s%lu", prefix, (*counter)++);
 	  name[GENERATE_NEW_SYM_CONSTANT_NAME_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     if (! find_sym_constant (name)) break;

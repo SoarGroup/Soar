@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4127 4706 at top of file!")
-#pragma warning(disable : 4115 4127 4706)
+#pragma message("Disabling compiler warning 4706 at top of file!")
+#pragma warning(disable : 4706)
 #endif
 
 /**
@@ -688,10 +688,16 @@ void soar_ecPrintSystemStatistics( void ) {
 
 
 
-  if (sys_gethostname (hostname, MAX_LEXEME_LENGTH)) {
-	strncpy (hostname, "[host name unknown]",MAX_LEXEME_LENGTH+1);
-	hostname[MAX_LEXEME_LENGTH]=0;
+#if !defined (THINK_C) && !defined (__SC__) && !defined(MACINTOSH) && !defined(WIN32) && !defined(_WINDOWS)
+  if (gethostname (hostname, MAX_LEXEME_LENGTH))  {
+#endif
+
+    strncpy (hostname, "[host name unknown]",MAX_LEXEME_LENGTH+1);
+    hostname[MAX_LEXEME_LENGTH]=0;
+
+#if !defined (THINK_C) && !defined (__SC__) && !defined(MACINTOSH) && !defined(WIN32) && !defined(_WINDOWS)
   }
+#endif
 
   current_time = time(NULL);
 

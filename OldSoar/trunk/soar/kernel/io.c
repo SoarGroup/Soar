@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4244 at top of file!")
-#pragma warning(disable : 4115 4244)
-#endif
-
 /*************************************************************************
  *
  *  file:  io.c
@@ -828,11 +822,11 @@ void init_soar_io (void) {
   init_memory_pool (&current_agent(io_wme_pool), sizeof(io_wme), "io wme");
 
   /* --- setup constituent_char array --- */
-  for (i=0; i<256; i++) tio_constituent_char[i] = isalnum(i);
+  for (i=0; i<256; i++) tio_constituent_char[i] = (char)isalnum(i);
   for (i=0; i<strlen(extra_tio_constituents); i++)
     tio_constituent_char[(int)extra_tio_constituents[i]]=TRUE;
   
   /* --- setup whitespace array --- */
-  for (i=0; i<256; i++) tio_whitespace[i] = isspace(i);
+  for (i=0; i<256; i++) tio_whitespace[i] = (char)isspace(i);
   tio_whitespace[(int)'\n']=FALSE;  /* for text i/o, crlf isn't whitespace */
 }

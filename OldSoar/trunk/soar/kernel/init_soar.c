@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4244 4130 at top of file!")
-#pragma warning(disable : 4115 4244 4130)
-#endif
-
 /*************************************************************************
  *
  *  file:  init_soar.c
@@ -261,7 +255,7 @@ void add_pwatch (production *prod) {
 production *prod_to_remove_pwatch_of;
 
 bool remove_pwatch_test_fn (cons *c) {
-  return (c->first == prod_to_remove_pwatch_of);
+  return (bool)(c->first == prod_to_remove_pwatch_of);
 }
 
 void remove_pwatch (production *prod) {
@@ -1066,9 +1060,24 @@ void do_one_top_level_phase (void) {
 			 (soar_call_data) NULL);
   }
   
-  if (current_agent(stop_soar))
-    if (current_agent(reason_for_stopping) != "")
+  if (current_agent(stop_soar)) {
+
+    /* (voigtjr)
+       this old test is nonsense, it compares pointers:
+       
+       if (current_agent(reason_for_stopping) != "")
+
+       what really should happen here is reason_for_stopping should be
+       set to NULL in the cases where nothing should be printed, instead 
+       of being assigned a pointer to a zero length (NULL) string, then
+       we could simply say:
+
+       if (current_agent(reason_for_stopping)) 
+     */
+    if (strcmp(current_agent(reason_for_stopping), "") != 0) {
       print ("\n%s", current_agent(reason_for_stopping));
+    }
+  }
 }
 
 void run_forever (void) {
@@ -1152,7 +1161,7 @@ void run_for_n_modifications_of_output (long n) {
   current_agent(reason_for_stopping) = "";
 
   while (!current_agent(stop_soar) && n) {
-    was_output_phase = (current_agent(current_phase)==OUTPUT_PHASE);
+    was_output_phase = (bool)(current_agent(current_phase)==OUTPUT_PHASE);
     do_one_top_level_phase();
 
     if (was_output_phase) {	
@@ -1222,7 +1231,7 @@ void run_for_n_selections_of_slot (long n, Symbol *attr_of_slot) {
   current_agent(reason_for_stopping) = "";
   count = 0;
   while (!current_agent(stop_soar) && (count < n)) {
-    was_decision_phase = (current_agent(current_phase)==DECISION_PHASE);
+    was_decision_phase = (bool)(current_agent(current_phase)==DECISION_PHASE);
     do_one_top_level_phase();
     if (was_decision_phase)
       if (attr_of_slot_just_decided()==attr_of_slot) count++;
@@ -1249,7 +1258,7 @@ void run_for_n_selections_of_slot_at_level (long n,
   current_agent(reason_for_stopping) = "";
   count = 0;
   while (!current_agent(stop_soar) && (count < n)) {
-    was_decision_phase = (current_agent(current_phase)==DECISION_PHASE);
+    was_decision_phase = (bool)(current_agent(current_phase)==DECISION_PHASE);
     do_one_top_level_phase();
     if (was_decision_phase) {
       if (current_agent(bottom_goal)->id.level < level) break;

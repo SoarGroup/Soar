@@ -1,3 +1,9 @@
+/* This is silently disabling the msvc header file bug with warning level
+   4 turned on.  See bugzilla bug 167 */
+#ifdef _MSC_VER
+#pragma warning(disable : 4115)
+#endif
+
 /*************************************************************************
  *
  *  file:  soarkernel.h

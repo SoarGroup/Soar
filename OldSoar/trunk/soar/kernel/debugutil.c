@@ -1,10 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4244 at top of file!")
-#pragma warning(disable : 4115 4244)
-#endif
-
-
 #include "debugutil.h"
 
 extern void detailed_print_wme (wme *w );
@@ -70,7 +63,7 @@ void * get_item_in_pool_block( memory_pool *p, long n, long b, bool p_free ) {
   item = block_head;
 
   
-  in_free_list =  check_for_addr_in_free_list( p, block_head  );
+  in_free_list =  (char)check_for_addr_in_free_list( p, block_head  );
   
   if ( !in_free_list || p_free ) {
     print( "%ld, %p, %p, ", b, (char *)block_head, *(char **)block_head );

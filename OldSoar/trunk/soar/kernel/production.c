@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4244 4127 4701 4100 4131 at top of file!")
-#pragma warning(disable : 4115 4244 4127 4701 4100 4131 )
+#pragma message("Disabling compiler warnings 4701 4100 4131 at top of file!")
+#pragma warning(disable : 4701 4100 4131 )
 #endif
 
 /*************************************************************************
@@ -407,7 +407,7 @@ bool tests_are_equal (test t1, test t2) {
   complex_test *ct1, *ct2;
 
   if (test_is_blank_or_equality_test(t1))
-    return (t1==t2); /* Warning: this relies on the representation of tests */
+    return (bool)(t1==t2); /* Warning: this relies on the representation of tests */
 
   ct1 = complex_test_from_test(t1);
   ct2 = complex_test_from_test(t2);
@@ -635,7 +635,7 @@ bool test_includes_equality_test_for_symbol (test t, Symbol *sym) {
   if (test_is_blank_test(t)) return FALSE;
   
   if (test_is_blank_or_equality_test(t)) {
-    if (sym) return (referent_of_equality_test(t) == sym);
+    if (sym) return (bool)(referent_of_equality_test(t) == sym);
     return TRUE;
   }
   
@@ -1314,9 +1314,9 @@ void add_action_to_tc (action *a, tc_number tc,
 
 bool symbol_is_in_tc (Symbol *sym, tc_number tc) {
   if (sym->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-    return (sym->var.tc_num == tc);
+    return (bool)(sym->var.tc_num == tc);
   if (sym->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-    return (sym->id.tc_num == tc);
+    return (bool)(sym->id.tc_num == tc);
   return FALSE;
 }
 
@@ -1352,7 +1352,7 @@ bool cond_is_in_tc (condition *cond, tc_number tc) {
   new_vars = NIL;
   for (c=cond->data.ncc.top; c!=NIL; c=c->next)
     c->already_in_tc = FALSE;
-  while (TRUE) {
+  for (;;) {
     anything_changed = FALSE;
     for (c=cond->data.ncc.top; c!=NIL; c=c->next)
       if (! c->already_in_tc)
@@ -1433,12 +1433,12 @@ Symbol *generate_new_variable (char *prefix) {
 
   first_letter = *prefix;
   if (isalpha(first_letter)) {
-    if (isupper(first_letter)) first_letter = tolower(first_letter);
+    if (isupper(first_letter)) first_letter = (char)tolower(first_letter);
   } else {
     first_letter = 'v';
   }
 
-  while (TRUE) {
+  for (;;) {
 	snprintf (name, NAME_BUF_SIZE, "<%s%lu>", prefix,
              current_agent(gensymed_variable_count)[first_letter-'a']++);
 	name[NAME_BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */

@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warning 4115 4244 at top of file!")
-#pragma warning(disable : 4115 4244)
-#endif
-
 /*************************************************************************
  *
  *  file:  recmem.c
@@ -520,7 +514,7 @@ void fill_in_new_instantiation_stuff (instantiation *inst,
       for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next){
         cons *c; bool b;
         c = saved_flags; saved_flags = c->rest;
-        b = (c->first ? TRUE : FALSE); free_cons (c);
+        b = (bool)(c->first ? TRUE : FALSE); free_cons (c);
         if (pref->o_supported != b) difference_found = TRUE;
         pref->o_supported = b;
       }
@@ -659,7 +653,7 @@ void create_instantiation (production *prod,
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
   /* --- print trace info --- */
-  trace_it = trace_firings_of_inst (inst);
+  trace_it = (bool)trace_firings_of_inst (inst);
   if (trace_it) {
     if (get_printer_output_column()!=1) print ("\n");  /* AGR 617/634 */
     print ("Firing ");
@@ -713,8 +707,8 @@ void create_instantiation (production *prod,
 #ifndef SOAR_8_ONLY
 	if (current_agent(operand2_mode) == TRUE) {
 #endif
-	  pref->o_supported =
-	    (current_agent(FIRING_TYPE) == PE_PRODS) ? TRUE : FALSE;
+	  pref->o_supported = (bool)((current_agent(FIRING_TYPE) == PE_PRODS) ? TRUE : FALSE);
+
 #ifndef SOAR_8_ONLY
 	}
 
@@ -889,7 +883,7 @@ void retract_instantiation (instantiation *inst) {
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
   
-  trace_it = trace_firings_of_inst (inst);
+  trace_it = (bool)trace_firings_of_inst (inst);
 #endif
 
   /* --- retract any preferences that are in TM and aren't o-supported --- */

@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4127 4244 4100 4189 at top of file!")
-#pragma warning(disable : 4115 4127 4244 4100 4189)
-#endif
-
 /* ************************************************************************
  *
  *  file:  decide.c
@@ -712,7 +706,7 @@ void do_demotion (void) {
 
   /* --- do the walk --- */
   g = current_agent(top_goal);
-  while (TRUE) {
+  for (;;) {
     if (!g) break;
     if (g->id.level > current_agent(lowest_level_anything_could_fall_to)) break;
     if (g->id.level >= current_agent(highest_level_anything_could_fall_from)) {
@@ -2122,7 +2116,7 @@ bool context_slot_is_decidable (slot *s) {
   Symbol *v;
   preference *p;
   
-  if (! s->wmes) return (s->changed != NIL);
+  if (! s->wmes) return (bool)(s->changed != NIL);
   v = s->wmes->value;
   for (p=s->preferences[RECONSIDER_PREFERENCE_TYPE]; p!=NIL; p=p->next)
     if (v==p->value) return TRUE;
@@ -2502,9 +2496,9 @@ void decide_context_slots (void) {
   s = goal->id.operator_slot;
 
   /* --- loop down context stack --- */
-  while (TRUE) {
+  for (;;) {
     /* --- find next slot to decide --- */
-    while (TRUE) {
+    for (;;) {
       if (context_slot_is_decidable(s)) break;
 
       if ((s==goal->id.operator_slot) || (! s->wmes)) {
@@ -3204,6 +3198,8 @@ void create_gds_for_goal( Symbol *goal){
    has been determined to be a choice among indifferent candidates.
 
    Note: the slot is only needed for debugging/data verification
+
+   Note: slot parameter removed by voigtjr to quell compiler warnings
 */
 
 /* SAN: 2003-10-30 */
@@ -3211,7 +3207,8 @@ void create_gds_for_goal( Symbol *goal){
    appropriate numeric-indifferent-mode 
 */
 
-void initialize_indifferent_candidates_for_probability_selection(slot *s, preference *candidates)
+/*void initialize_indifferent_candidates_for_probability_selection(slot *s, preference *candidates)*/
+void initialize_indifferent_candidates_for_probability_selection(preference *candidates)
 {
    preference*    cand=0;
 
@@ -3234,7 +3231,8 @@ void initialize_indifferent_candidates_for_probability_selection(slot *s, prefer
    }
 }
 
-unsigned int count_candidates(slot *s, preference *candidates)
+/*unsigned int count_candidates(slot *s, preference *candidates)*/
+unsigned int count_candidates(preference *candidates)
 {
    unsigned int   numCandidates = 0;
    preference*    cand=0;
@@ -3271,14 +3269,15 @@ preference *probabilistically_select(slot *s, preference *candidates)
    preference*    cand=0; 
    preference*    pref=0; 
    double         total_probability=0;
-   preference*    selectedCandidate=0;
    unsigned int   numCandidates = 0;
-   unsigned int   currentCandidate=0;
    double         selectedProbability=0;
    double         currentSumOfValues=0;
    static int     initialized_rand = 0;
    unsigned long        rn=0;
  
+   /* initialized, but not referenced, so i commented them out:
+   preference*    selectedCandidate=0;
+   unsigned int   currentCandidate=0;*/
 
    assert(s != 0);
    assert(candidates != 0);
@@ -3293,8 +3292,13 @@ preference *probabilistically_select(slot *s, preference *candidates)
 	 print_candidates(candidates);  
 	 */
    
+   /* s param uneccesary, commented out to quell compiler warning.  see comment
+      block above the following function definitions
    initialize_indifferent_candidates_for_probability_selection(s, candidates);
-   numCandidates = count_candidates(s,candidates);
+   numCandidates = count_candidates(s,candidates);*/
+
+   initialize_indifferent_candidates_for_probability_selection(candidates);
+   numCandidates = count_candidates(candidates);
 
 	 /*
 	 print("\n numCandidates = %d", numCandidates);
@@ -3308,6 +3312,9 @@ preference *probabilistically_select(slot *s, preference *candidates)
       Next some error checking here to ensure that the binary preference
       is indeed really an indifferent+value preference....
       someday.
+
+      also, precision loss (long to float conversion) here:
+     		value = (float)pref->referent->ic.value;
    */
 
    for (pref=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE];
@@ -3319,7 +3326,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
 						 value = pref->referent->fc.value;
 					 }
 			else if ( pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) {
-						 value = pref->referent->ic.value;
+						 value = (float)pref->referent->ic.value;
 					 }
 			else continue;
 			for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {

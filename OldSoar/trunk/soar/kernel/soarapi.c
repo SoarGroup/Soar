@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4115 4100 4127 4701 4706 4702 at top of file!")
-#pragma warning(disable : 4115 4100 4127 4701 4706 4702)
+#pragma message("Disabling compiler warnings 4100 4701 4706 4702 at top of file!")
+#pragma warning(disable : 4100 4701 4706 4702)
 #endif
 
 /**
@@ -1049,39 +1049,41 @@ int soar_Operand2 ( int argc, const char *argv[], soarResult *res)
   if ( !soar_cSetOperand2( turnOn ) ) {
     
     if ( turnOn ) {
-      if (MICRO_VERSION_NUMBER > 0) {
-	  snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
-		"Soar%d.%d.%d %s on : reinitializing Soar",
-		MAJOR_VERSION_NUMBER, 
-		MINOR_VERSION_NUMBER, 
-		MICRO_VERSION_NUMBER,
-		OPERAND2_MODE_NAME);
-	  buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-      } else {
-	  snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
-		"Soar%d.%d %s on : reinitializing Soar",
-		MAJOR_VERSION_NUMBER, 
-		MINOR_VERSION_NUMBER,
-		OPERAND2_MODE_NAME);
-	  buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-      }
-    }
-    else {
+
+#if MICRO_VERSION_NUMBER > 0
+      snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
+	    "Soar%d.%d.%d %s on : reinitializing Soar",
+	    MAJOR_VERSION_NUMBER, 
+	    MINOR_VERSION_NUMBER, 
+	    MICRO_VERSION_NUMBER,
+	    OPERAND2_MODE_NAME);
+      buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+#else
+      snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
+	    "Soar%d.%d %s on : reinitializing Soar",
+	    MAJOR_VERSION_NUMBER, 
+	    MINOR_VERSION_NUMBER,
+	    OPERAND2_MODE_NAME);
+      buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+#endif
+
+    } else {
       
-      if ( MICRO_VERSION_NUMBER > 0 ) {
-	snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
-		"Soar%d.%d.%d - running in Soar7 mode:  reinitializing Soar",
-		MAJOR_VERSION_NUMBER, 
-		MINOR_VERSION_NUMBER, 
-		MICRO_VERSION_NUMBER);
-	buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-      } else {
-	  snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
-		"Soar%d.%d - running in Soar7 mode: reinitializing Soar",
-		MAJOR_VERSION_NUMBER, 
-		MINOR_VERSION_NUMBER);
-	  buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
-      }
+#if MICRO_VERSION_NUMBER > 0
+      snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
+	      "Soar%d.%d.%d - running in Soar7 mode:  reinitializing Soar",
+	      MAJOR_VERSION_NUMBER, 
+	      MINOR_VERSION_NUMBER, 
+	      MICRO_VERSION_NUMBER);
+      buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+#else 
+      snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
+	    "Soar%d.%d - running in Soar7 mode: reinitializing Soar",
+	    MAJOR_VERSION_NUMBER, 
+	    MINOR_VERSION_NUMBER);
+      buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+#endif
+
     } 
     print("%s\n",buffer); 
     return SOAR_OK;
