@@ -125,8 +125,6 @@ namespace gSKI
          MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
 
          print_partial_match_information(internalAgent->GetSoarAgent(), p_node, wtt);
-		 print_flush_buffer(internalAgent->GetSoarAgent());
-
       }
 
       /* 
@@ -144,7 +142,6 @@ namespace gSKI
          MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
 
          print_match_set(internalAgent->GetSoarAgent(), wtt, mst);
-		 print_flush_buffer(internalAgent->GetSoarAgent());
       }
 
       /*
@@ -176,8 +173,6 @@ namespace gSKI
                print (internalAgent->GetSoarAgent(), "\n");
             }
          }
- 		 print_flush_buffer(internalAgent->GetSoarAgent());
-
       }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1035,7 +1030,6 @@ namespace gSKI
             return;
          } /* end of switch statement */
          output_arg = true;  /* Soar-bugs #161 */
-		 print_flush_buffer(internalAgent->GetSoarAgent());
       }
 
       /*
@@ -1065,7 +1059,6 @@ namespace gSKI
             do_print_for_production(internalAgent->GetSoarAgent(), prod,internal,
                                     print_filename,full_prod);
          }
-		 print_flush_buffer(internalAgent->GetSoarAgent());
       }
 
 
@@ -2231,7 +2224,6 @@ __      _(_) |_| |_|_____| |__ (_)_ _|_____| (_)_ |_|  __ _ ___  |_____|
          }
 
          free_list(agnt, current_pf_list);
-		 print_flush_buffer(internalAgent->GetSoarAgent());
          return true;
       } ////
 
@@ -2305,7 +2297,6 @@ __      _(_) |_| |_|_____| |__ (_)_ _|_____| (_)_ |_|  __ _ ___  |_____|
          }
 
          print(agnt, "************************************************************\n");
-		 print_flush_buffer(agnt); // voigtjr
          return true;
       }////
 
