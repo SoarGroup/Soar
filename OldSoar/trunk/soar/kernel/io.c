@@ -374,20 +374,22 @@ void update_for_top_state_wme_addition (wme *w) {
 		 There may be two things going on, the first having to do with the tc 
 		 calculation, which may get done too late, in such a way that the
 		 initial calculation includes the command.  The other thing appears
-		 to be that some datastructures are not iniailized until the first 
+		 to be that some data structures are not initialized until the first 
 		 output phase.  Namely, id->associated_output_links does not seem
 		 reflect the current output links until the first output-phase.
 
-		 To get past these issues, I call calculate_output_link_tc_info
-		 here on the new ol.  This ensures that the first tc calculation 
-		 includes only the output link structure itself.  So as soon as
-		 a command is added, its tc number will change (hopefully guarenteeing
-		 that the command is observed by Soar).  In addition, calling this
-		 fn now creates the id->associated_output_links structures so that 
-		 they exist for the first output phase. */
+		 To get past these issues, we fake a transitive closure calculation
+          with the knowledge that the only thing on the output link at this
+         point is the output-link identifier itself.  This way, we capture
+         a snapshot of the empty output link, so Soar can detect any changes
+         that might occur before the first output_phase. */
 		 
 
-	calculate_output_link_tc_info( ol ); 
+  current_agent(output_link_tc_num) = get_new_tc_number();
+  ol->link_wme->value->id.tc_num = current_agent(output_link_tc_num);
+  current_agent(output_link_for_tc) = ol;
+  /* --- add output_link to id's list --- */
+  push (current_agent(output_link_for_tc), ol->link_wme->value->id.associated_output_links);
 
 }
 
