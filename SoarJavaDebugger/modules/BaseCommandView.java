@@ -111,7 +111,7 @@ public abstract class BaseCommandView extends ComboCommandBase
 		// so I'm adding support for it here.  However, this support is pure Windows code.
 		// We'll need to figure out how to have code like this and still compile the debugger
 		// on Linux (even if this option won't work on Linux).
-		
+		/*
 		// Send an EM_CHARFROMPOS message to the underlying edit control
 		int handle = m_Text.handle ;
 		int lParam = e.y << 16 | e.x ;	// Coords are packed as high-word, low-word
@@ -126,6 +126,7 @@ public abstract class BaseCommandView extends ComboCommandBase
 		m_Text.clearSelection() ;
 		m_Text.setSelection(charPos) ;
 		//System.out.println("Char " + charPos + " Line " + linePos) ;
+		 */
 	}
 
 	/********************************************************************************************
