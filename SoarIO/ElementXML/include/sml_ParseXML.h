@@ -73,7 +73,8 @@ protected:
 	void		SetCurrentToken(char val, TokenType type)		 { m_TokenValue = val ; m_TokenType = type ; }
 	void		SetInCharData(bool state)		{ m_InCharData = state ; }
 
-	void		RecordError(std::string pStr)	{ if (!m_Error) m_ErrorMsg = pStr ; m_Error = true ; }
+	void		RecordError(std::string pStr)	{ if (!m_Error)
+													{ m_ErrorMsg = pStr ; m_Error = true ; } }
 	inline bool	IsError()						{ return m_Error ; }
 	char		GetEscapeChar() ;
 
@@ -278,6 +279,12 @@ protected:
 	virtual void		GetNextToken() ;
 
 	virtual void		InitializeLexer() ;
+
+	// To support reading a stream of XML documents from a single string/file
+	// we need to mark when a new token is being read, because we end up reading
+	// the first token from the next stream at the end of the current document and need
+	// to be able to backup.  (This has no impact if we're just reading one XML document from a stream).
+	virtual void		StartingNewToken() = 0 ;
 
 public:
 	ParseXML(void);

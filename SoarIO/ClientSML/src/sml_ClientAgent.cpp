@@ -587,6 +587,13 @@ static void XMLEventImplementationHandler(smlPrintEventId id, void* pUserData, A
 	size_t endPos   = 0 ;
 	size_t length = strlen(pMessage) ;
 
+	// We get sent a series of discrete XML documents in pMessage.
+	// We'll collect those into a single, macro XML object and pass that to the client
+	// so that we get one update event with lots of data rather than many update events.
+	// It allows the client to be more efficient.
+	ElementXML* pTraceXML = new ElementXML() ;
+	pTraceXML->SetTagName(sml_Names::kTagTrace) ;
+
 	while (startPos < length)
 	{
 		ElementXML* pXML = ElementXML::ParseXMLFromStringSequence(pMessage, startPos, &endPos) ;
@@ -595,12 +602,32 @@ static void XMLEventImplementationHandler(smlPrintEventId id, void* pUserData, A
 		if (!pXML)
 			break ;
 
-		// Take message, parse it and then call each handler in turn
-		pAgent->SendXMLEvent(smlEVENT_XML_TRACE_OUTPUT, pXML) ;
-
+		// Collect smaller pieces into one parent message.
+		pTraceXML->AddChild(pXML) ;
+		
 		// Start the next parse from the end of this parse.
 		startPos = endPos ;
 	}
+
+	// If we can't parse pMessage into anything valid, we're done.
+	if (pTraceXML->GetNumberChildren() == 0)
+	{
+		delete pTraceXML ;
+		return ;
+	}
+
+#ifdef _DEBUG
+	// It's helpful to see the XML
+	char* pStr = pTraceXML->GenerateXMLString(true) ;
+#endif
+
+	// Take message and call each handler in turn
+	// NOTE: pTraceXML is deleted by SendXMLEvent when it's done.
+	pAgent->SendXMLEvent(smlEVENT_XML_TRACE_OUTPUT, pTraceXML) ;
+
+#ifdef _DEBUG
+	ElementXML::DeleteString(pStr) ;
+#endif
 }
 
 /*************************************************************

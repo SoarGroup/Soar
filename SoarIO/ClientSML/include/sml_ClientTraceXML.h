@@ -22,6 +22,9 @@ public:
 	// These methods provide access to specific attributes and tags without
 	// the client needing to pass in/know the strings.  They're all very simple.
 
+	// Trace tag contains everything else
+	bool IsTagTrace() const	; 
+
 	// State tag attributes
 	bool IsTagState() const ;
 	char const* GetDecisionCycleCount() const ;
@@ -29,19 +32,45 @@ public:
 	char const* GetImpasseObject() const ;
 	char const* GetImpasseType() const ;
 
+	// Operator tag attributes
+	bool IsTagOperator() const ;
+	char const* GetOperatorID() const ;
+	char const* GetOperatorName() const	;
+	// Included in tag, same as state
+	// char const* GetDecisionCycleCount() const ;
+
 	// Phase tag attributes
 	bool IsTagPhase() const ;
 	char const* GetPhaseName() const ;
 	char const* GetPhaseStatus() const ;
 
+	// Firing-production tag, contains production
+	bool IsTagFiringProduction() const ;
+	bool IsTagRetractingProduction() const ;
+
+	// Production
+	bool IsTagProduction() const ;
+	char const* GetProductionName() const ;
+
 	// Add-wme contains wme
 	bool IsTagAddWme() const ;
+	bool IsTagRemoveWme() const ;
 
 	// Wme tag attributes
 	bool IsTagWme() const ;
 	char const* GetWmeID() const ;
 	char const* GetWmeAttribute() const ;
 	char const* GetWmeValue() const ;
+	char const* GetWmeTimeTag() const ;
+
+	// Preference tag
+	bool IsTagPreference() const ;
+	char const* GetPreferenceID() const ;
+	char const* GetPreferenceAttribute() const ;
+	char const* GetPreferenceValue() const ;
+	char const* GetPreferenceType() const ;
+	char const* GetPreferenceTimeTag() const ;
+
 } ;
 
 } //closes namespace

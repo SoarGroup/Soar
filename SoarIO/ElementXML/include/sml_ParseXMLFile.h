@@ -64,7 +64,17 @@ protected:
 	{
 		return m_CurrentLine[m_Pos] ;
 	}
-		
+	
+	// To support reading a stream of XML documents from a single string/file
+	// we need to mark when a new token is being read, because we end up reading
+	// the first token from the next stream at the end of the current document and need
+	// to be able to backup.  (This has no impact if we're just reading one XML document from a stream).
+	virtual void		StartingNewToken()
+	{
+		// Not implementing anything on the file side yet for this.
+		// Only add something here if we decide we want to read multiple docs from a file.
+	}
+
 public:
 	ParseXMLFile(FILE* pInputFile);
 	virtual ~ParseXMLFile(void);

@@ -43,6 +43,9 @@ protected:
 	// Number of chars in the current line buffer (when pos reaches this, read another line)
 	size_t		m_LineLength ;
 
+	// Location when we start the current token
+	size_t		m_StartTokenPos ;
+
 	/************************************************************************
 	* 
 	* Read the next character from the input string.
@@ -73,10 +76,19 @@ protected:
 	{
 		return m_pInputLine[m_Pos] ;
 	}
-		
+	
+	// To support reading a stream of XML documents from a single string/file
+	// we need to mark when a new token is being read, because we end up reading
+	// the first token from the next stream at the end of the current document and need
+	// to be able to backup.  (This has no impact if we're just reading one XML document from a stream).
+	virtual void		StartingNewToken()
+	{
+		m_StartTokenPos = m_Pos ;
+	}
+
 public:
 	ParseXMLString(char const* pInputLine, size_t startPos);
-	size_t getEndPosition() { return m_Pos ; }
+	size_t getEndPosition() { return m_StartTokenPos ; }
 	virtual ~ParseXMLString(void);
 };
 

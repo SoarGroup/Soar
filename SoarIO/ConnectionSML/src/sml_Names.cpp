@@ -58,6 +58,9 @@ char const* const sml_Names::kValueFull		= "full" ;
 
 // Tags defined for Trace output at each watch level:
 
+// <trace> contains the rest.
+char const* const sml_Names::kTagTrace		= "trace" ;
+
 // <context> tag identifiers for Watch level 1
 char const* const sml_Names::kTagState		= "state" ;
 char const* const sml_Names::kTagOperator	= "operator" ;
@@ -100,7 +103,7 @@ char const* const sml_Names::kTagProduction_Retracting  = "retracting_production
 char const* const sml_Names::kTagWME		= "wme" ;
 char const* const sml_Names::kWME_TimeTag	= "tag" ;
 char const* const sml_Names::kWME_Id		= "id" ;
-char const* const sml_Names::kWME_Attribute	= "att" ;
+char const* const sml_Names::kWME_Attribute	= "attr" ;
 char const* const sml_Names::kWME_Value		= "value" ;
 char const* const sml_Names::kWME_ValueType	= "type" ;
 char const* const sml_Names::kWME_Action	= "action" ;

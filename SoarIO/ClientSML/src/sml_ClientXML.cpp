@@ -34,6 +34,7 @@ ClientXML::ClientXML(ElementXML* pXML)
 ClientXML::~ClientXML()
 {
 	delete m_pElementXML ;
+	m_pElementXML = NULL ;
 }
 
 /*************************************************************
@@ -101,8 +102,12 @@ int ClientXML::GetNumberChildren() const
 *************************************************************/
 bool ClientXML::GetChild(ClientXML* pChild, int index) const
 {
-	// The child value we're filling in should be missing
-	assert(pChild->m_pElementXML == NULL) ;
+	// If we're reusing a child object delete what it used to contain
+	if (pChild->m_pElementXML != NULL)
+	{
+		delete pChild->m_pElementXML ;
+		pChild->m_pElementXML = NULL ;
+	}
 
 	// Retrieve the child and attach it to the pChild object we were passed.
 	ElementXML* pXML = new ElementXML() ;
@@ -219,28 +224,9 @@ int	 ClientXML::GetCharacterDataLength() const
 *
 * @param includeChildren	Includes all children in the XML output.
 *
-* We use std::string here to provide SWIG compatability at
-* the cost of additional string copy (internally) that isn't
-* really necessary.
-* 
 * @returns The string form of the object.
 *************************************************************/
-std::string ClientXML::GenerateXMLString(bool includeChildren) const
-{
-	char* pString = m_pElementXML->GenerateXMLString(includeChildren) ;
-	std::string result = pString ;
-	ElementXML::DeleteString(pString) ;
-
-	return result ;
-}
-
-/*************************************************************
-* Same as above but caller must delete the string that is returned by calling
-* back to the DeleteString() method of this class.
-*
-* This method is faster as it involves fewer string copies than the one above.
-*************************************************************/
-char* ClientXML::GenerateXMLStringFast(bool includeChildren) const
+char* ClientXML::GenerateXMLString(bool includeChildren) const
 {
 	return m_pElementXML->GenerateXMLString(includeChildren) ;
 }

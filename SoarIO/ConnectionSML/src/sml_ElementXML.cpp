@@ -73,7 +73,16 @@ ElementXML::ElementXML(ElementXML_Handle hXML)
 ElementXML::~ElementXML(void)
 {
 	if (m_hXML)
-		::sml_ReleaseRef(m_hXML) ;
+	{
+		int refCount = ::sml_ReleaseRef(m_hXML) ;
+
+		// This code should be unnecessary but harmless and it makes a useful place
+		// to put a break point if there are ref-counting problems with an object.
+		if (refCount == 0)
+		{
+			m_hXML = NULL ;
+		}
+	}
 }
 
 /*************************************************************

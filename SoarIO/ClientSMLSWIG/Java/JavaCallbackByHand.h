@@ -484,7 +484,10 @@ static void XMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* 
 	jobject jNewObject = jenv->NewObject(jsmlClass, cons, (long)pJavaCopy, true) ;
 
 	if (!jNewObject)
+	{
+		delete pJavaCopy ;
 		return ;
+	}
 
 	// Make the method call.
 	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_AgentObject, jNewObject);

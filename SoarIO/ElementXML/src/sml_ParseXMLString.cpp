@@ -24,6 +24,7 @@ ParseXMLString::ParseXMLString(char const* pInputLine, size_t startPos)
 {
 	m_pInputLine = pInputLine ;
 	m_Pos = startPos ;
+	m_StartTokenPos = m_Pos ;
 	m_LineLength = strlen(m_pInputLine) ;
 
 	InitializeLexer() ;

@@ -59,6 +59,8 @@ public:
 
 
 	// Tags defined for Trace output at each watch level:
+	// <trace> contains the rest.
+	static char const* const kTagTrace ;
 
 	// <context> tag identifiers for Watch level 1
 	static char const* const kTagState ;

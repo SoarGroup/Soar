@@ -228,7 +228,7 @@ void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientX
 	// pXML should be some structured trace output.
 	// Let's examine it a bit.
 	// We'll start by turning it back into XML so we can look at it in the debugger.
-	char* pStr = pXML->GenerateXMLStringFast(true) ;
+	char* pStr = pXML->GenerateXMLString(true) ;
 
 	// This will always succeed.  If this isn't really trace XML
 	// the methods checking on tag names etc. will just fail
@@ -246,7 +246,9 @@ void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientX
 
 	// Make a copy of the object we've been passed which should remain valid
 	// after the event handler has completed.  We only keep the last message
-	// in this test.
+	// in this test.  This is a stress test for our memory allocation logic.
+	// We're not allowed to keep pXML that we're passed, but we can copy it and keep the copy.
+	// (The copy is very efficient, the underlying object is ref-counted).
 	if (s_ClientXMLStorage != NULL)
 		delete s_ClientXMLStorage ;
 	s_ClientXMLStorage = new ClientXML(pXML) ;
@@ -415,7 +417,15 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	int callback_before = pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, MyRunEventHandler, &beforeCount) ;
 	int callback_after = pAgent->RegisterForRunEvent(smlEVENT_AFTER_RUN_ENDS, MyRunEventHandler, &afterCount) ;
 
-	//pAgent->ExecuteCommandLine("watch 5") ;
+	/* Some temp code to generate more complex watch traces.  Not usually part of the test
+	Identifier* pSquare1 = pAgent->CreateIdWME(pInputLink, "square") ;
+	StringElement* pEmpty1 = pAgent->CreateStringWME(pSquare1, "content", "RANDOM") ;
+	IntElement* pRow1 = pAgent->CreateIntWME(pSquare1, "row", 1) ;
+	IntElement* pCol1 = pAgent->CreateIntWME(pSquare1, "col", 2) ;
+	pAgent->Update(pEmpty1, "EMPTY") ;
+	ok = pAgent->Commit() ;
+	pAgent->ExecuteCommandLine("watch 3") ;
+	*/
 
 	// Nothing should match here
 	result = pAgent->Run(4) ;
@@ -436,7 +446,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	// If we crash on this access there's a problem with the ref-counting of
 	// the XML message we're passed in MyXMLEventHandler.
-	if (!s_ClientXMLStorage->ConvertToTraceXML()->IsTagState())
+	if (!s_ClientXMLStorage->ConvertToTraceXML()->IsTagTrace())
 	{
 		cout << "Error in storing an XML trace event" << endl ;
 		return false ;

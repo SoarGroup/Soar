@@ -124,6 +124,9 @@ void ParseXML::GetNextToken()
 	if (IsError())
 		return ;
 
+	// Record where this token starts (matters when we're doing a sequence of XML docs)
+	StartingNewToken() ;
+
 	// If we're already at EOF when we ask
 	// for the next token, that's an error.
 	if (IsEOF() && GetTokenType() == kEOF)

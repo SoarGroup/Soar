@@ -178,23 +178,11 @@ public:
 	*
 	* @param includeChildren	Includes all children in the XML output.
 	*
-	* We use std::string here to provide SWIG compatability at
-	* the cost of additional string copy (internally) that isn't
-	* really necessary.
-	* 
 	* @returns The string form of the object.
 	*************************************************************/
-	std::string GenerateXMLString(bool includeChildren) const ;
+	char* GenerateXMLString(bool includeChildren) const ;
 
-    /*************************************************************
-	* Same as above but caller must delete the string that is returned by calling
-	* back to the DeleteString() method of this class.
-	*
-	* This method is faster as it involves fewer string copies than the one above.
-	*************************************************************/
-	char* GenerateXMLStringFast(bool includeChildren) const ;
-
-    /*************************************************************
+	/*************************************************************
     * @brief Returns the length of string needed to represent this object (does not include the trailing null, so add one for that)
 	*	*
 	* @param includeChildren	Includes all children in the XML output.
