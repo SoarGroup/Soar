@@ -121,6 +121,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_Input]				= &sml::KernelSML::HandleInput ;
 	m_CommandMap[sml_Names::kCommand_StopOnOutput]		= &sml::KernelSML::HandleStopOnOutput ;
 	m_CommandMap[sml_Names::kCommand_CommandLine]		= &sml::KernelSML::HandleCommandLine ;
+	m_CommandMap[sml_Names::kCommand_ExpandCommandLine]	= &sml::KernelSML::HandleExpandCommandLine ;
 	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = &sml::KernelSML::HandleCheckForIncomingCommands ;
 	m_CommandMap[sml_Names::kCommand_GetAgentList]		= &sml::KernelSML::HandleGetAgentList ;
 	m_CommandMap[sml_Names::kCommand_RegisterForEvent]	= &sml::KernelSML::HandleRegisterForEvent ;
@@ -708,6 +709,7 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 	return ok ;
 }
 
+// Executes a generic command line for a specific agent
 bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
 	unused(pCommandName) ;
@@ -737,3 +739,20 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	return m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse, rawOutput, pError) ;
 }
 
+// Expands a command line's aliases and returns it without executing it.
+bool KernelSML::HandleExpandCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ;
+	unused(pAgent) ; 	// Agent should be NULL
+
+	// Get the parameters
+	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
+
+	if (!pLine)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Command line missing") ;
+	}
+
+	// Make the call.
+	return m_CommandLineInterface.ExpandCommand(pConnection, pLine, pResponse, pError) ;
+}

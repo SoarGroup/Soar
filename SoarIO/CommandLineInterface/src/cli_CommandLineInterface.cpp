@@ -205,6 +205,42 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	return true ;
 }
 
+/*************************************************************
+* @brief Takes a command line and expands any aliases and returns
+*		 the result.  The command is NOT executed.
+*************************************************************/
+EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pError) ;
+
+	m_Error.SetError(CLIError::kNoError);
+
+	std::string result ;
+	vector<string> argv;
+
+	// 1) Parse command
+	if (Tokenize(pCommandLine, argv) == -1)
+		return false ;
+
+	// 2) Translate aliases
+	if (!argv.empty())
+	{
+		m_Aliases.Translate(argv);
+		
+		// 3) Reassemble the command line
+		for (unsigned int i = 0 ; i < argv.size() ; i++)
+		{
+			result += argv[i] ;
+			if (i != argv.size()-1) result += " " ;
+		}
+	}
+
+	pConnection->AddSimpleResultToSMLResponse(pResponse, result.c_str());
+
+	return true ;
+}
+
+
 EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError) {
 	// This function is for processing a command without the SML layer
 	// Clear the result

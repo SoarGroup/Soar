@@ -148,3 +148,4 @@ char const* const sml_Names::kCommand_Event				 = "event" ;	// Just passes event
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine  = "cmdline" ;
+char const* const sml_Names::kCommand_ExpandCommandLine  = "expandcmd" ;

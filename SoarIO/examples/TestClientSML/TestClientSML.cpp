@@ -349,11 +349,23 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		//cout << "About to do first run" << endl ;
 
+		// Test the kernel level "are agents running" event.
 		int temp1 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENTS_RUN_STEP, &MyAgentEventHandler, 0) ;
 
 		std::string result = pAgent->Run(2) ;
 
 		pKernel->UnregisterForAgentEvent(temp1) ;
+
+		std::string expand = pKernel->ExpandCommandLine("p s1") ;
+		bool isRunCommand = pKernel->IsRunCommand("d 3") ;
+		isRunCommand = isRunCommand && pKernel->IsRunCommand("e 5") ;
+		isRunCommand = isRunCommand && pKernel->IsRunCommand("run -d 10") ;
+
+		if (!isRunCommand)
+		{
+			cout << "Error expanding run command aliases" << endl ;
+			return false ;
+		}
 
 		// Delete one of the shared WMEs to make sure that's ok
 		// BUGBUG: Turns out in the current gSKI implementation this can cause a crash, if we do proper cleanup

@@ -704,6 +704,71 @@ bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentN
 }
 
 /*************************************************************
+* @brief Takes a command line and expands all the aliases within
+*		 it without executing it.
+*
+*		 This can be useful when trying to determine what a command
+*		 is about to do.  It does NOT need to be called before
+*		 calling ExecuteCommandLine() as that expands aliases automatically.
+*
+* @param pCommandLine Command line string to process.
+* @returns The expanded command line.
+*************************************************************/
+char const* Kernel::ExpandCommandLine(char const* pCommandLine)
+{
+	AnalyzeXML response;
+
+	// Send the command line to the kernel
+	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_ExpandCommandLine, NULL, sml_Names::kParamLine, pCommandLine);
+
+	if (m_CommandLineSucceeded)
+	{
+		// Get the result as a string
+		char const *pResult = response.GetResultString();
+		m_CommandLineResult = (pResult == NULL)? "<null>" : pResult ;
+	}
+	else
+	{
+		// Get the error message
+		m_CommandLineResult = "\nError: ";
+		if (response.GetErrorTag()) {
+			m_CommandLineResult += response.GetErrorTag()->GetCharacterData();
+		} else {
+			m_CommandLineResult += "Unknown error.";
+		}
+	}
+
+	return m_CommandLineResult.c_str();
+}
+
+/*************************************************************
+* @brief Returns true if this command line is a run command
+*************************************************************/
+bool Kernel::IsRunCommand(char const* pCommandLine)
+{
+	// Expand any aliases (this is the tricky part)
+	char const* pExpandedLine = ExpandCommandLine(pCommandLine) ;
+
+	if (!pExpandedLine)
+		return false ;
+
+	std::string line = pExpandedLine ;
+
+	// We might have a list of these one day but after alias expansion right
+	// now it's just one command that should start "run xxx"
+	std::string runCommand = "run " ;
+
+	if (line.size() < runCommand.size())
+		return false ;
+
+	// Check if the expanded command line starts with "run " or not.
+	if (line.substr(0, runCommand.size()).compare(runCommand) == 0)
+		return true ;
+
+	return false ;
+}
+
+/*************************************************************
 * @brief Get last command line result
 *
 * @returns True if the last command line call succeeded.

@@ -127,6 +127,12 @@ public:
 	*************************************************************/
 	bool IsQuitCalled() { return m_QuitCalled; }
 
+	/*************************************************************
+	* @brief Takes a command line and expands any aliases and returns
+	*		 the result.  The command is NOT executed.
+	*************************************************************/
+	EXPORT bool ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
+
 	// Template for new commands:
 	///*************************************************************
 	//* @brief 
