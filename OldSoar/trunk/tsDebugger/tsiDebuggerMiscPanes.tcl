@@ -151,7 +151,7 @@ proc MiscPanes::SetupSoarConsole { pane3 {reset 0}} {
 }
 
 proc MiscPanes::CreateExecutionFrame { bottomframe } {
-
+global tsiConfig
    # Set up bottom Soar execution buttons
    $bottomframe configure -height 500
    
