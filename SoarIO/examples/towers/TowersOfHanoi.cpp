@@ -18,6 +18,7 @@
 #define TGD_SLEEP usleep
 #endif
 
+
 #ifdef USE_GSKI_DIRECT_NOT_SML
 	//gSKI directives
 	#include "IgSKI_KernelFactory.h"
@@ -31,8 +32,13 @@
 	#include "IgSKI_WorkingMemory.h"
 	#include "gSKI.h"
 	#include "gSKI_Stub.h"
+	#include "gSKI_Structures.h"
+
+	//command line interface directives
+	#include "cli_CommandLineInterface.h"
 
 	using namespace gSKI;
+	using namespace cli;
 #else
 	//SML Directives
 	#include "sml_Client.h"
@@ -42,12 +48,13 @@
 
 using std::cout; using std::cin; using std::string;
 
+
+
 const int defaultNumTowers = 3;
 const int defaultNumdisks = 11;
 
 int main(int argc, char* argv[])
 {
-
 	cout << "***Welcome to Towers of Hanoi***" << endl << endl;
 
 	bool doPrinting = true;
@@ -73,7 +80,7 @@ int main(int argc, char* argv[])
 	//{
 	//	numdisks = atoi(argv[3]);
 	//	if(numdisks < 5)
-	//		numdisks = 5; 
+	//		numdisks = 5;
 
 	//}
 
@@ -90,8 +97,17 @@ int main(int argc, char* argv[])
 	// create kernel
 	IKernel* kernel = kFactory->Create();
 	IAgentManager* manager = kernel->GetAgentManager();
-	gSKI::IAgent* agent = manager->AddAgent("towersAgent", "towers-of-hanoi-86.soar");
+	gSKI::IAgent* agent = manager->AddAgent("towersAgent");
 
+#ifdef USE_GSKI_DIRECT_NOT_SML
+	CommandLineInterface* commLine = new CommandLineInterface();
+	commLine->SetKernel(kernel);
+	char* pResponse = "\0";//we don't need to allocate space for this
+	gSKI::Error* pError = new Error();
+	assert(commLine->DoCommand(agent, "pushd ../examples/towers", pResponse, pError));
+	assert(commLine->DoCommand(agent, "source towers-of-hanoi-86.soar", pResponse, pError));
+	assert(commLine->DoCommand(agent, "popd", pResponse, pError));
+#endif
 
 	//=============================================================================
 	//========================= Setup the TgDI for the TSI ========================
@@ -103,7 +119,7 @@ int main(int argc, char* argv[])
 		// "TgDITestd" should be argv[0] but windows puts the entire path in there
 		std::cout << "Towers: too many arguments.\nUsage: towers " << usage << std::endl;
 		return 1;
-	} 
+	}
 	else if (argc == 2)
 	{
 		if (strcmp(argv[1], "25") == 0)
@@ -134,8 +150,6 @@ int main(int argc, char* argv[])
 
 	//=============================================================================
 	//=============================================================================
-
-
 	IInputLink* iLink = agent->GetInputLink();
 
 	HanoiWorld hanoi(iLink, doPrinting, numTowers);
@@ -150,20 +164,20 @@ int main(int argc, char* argv[])
 		hanoi.Print();
 
 int foo = 0;
-while(!hanoi.AtGoalState() && foo++ < 60)
+while(!hanoi.AtGoalState()/* && foo++ < 1*/)
 	{
 		soarAgent.MakeMove();
 		TgD::TgD::Update(false, debugger);
 
-		while(TgD::TgD::Update(false, debugger))
-			TGD_SLEEP(50);
+//		while(TgD::TgD::Update(false, debugger))
+//			TGD_SLEEP(50);
 	}
 
 	if(doPrinting)
 		hanoi.Print();
 
-	while(TgD::TgD::Update(false, debugger))
-		TGD_SLEEP(50);
+//	while(TgD::TgD::Update(false, debugger))
+//		TGD_SLEEP(50);
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <non-whitespace char> then enter to exit\n") ;

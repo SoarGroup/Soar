@@ -19,11 +19,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\include\;&quot;$(SolutionDir)\ClientSML\include\&quot;;&quot;$(SolutionDir)\..\gSKI\include\&quot;;&quot;$(SolutionDir)..\TgDI\include&quot;;$(NOINHERIT)"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)..\SoarIO\CommandLineInterface\include&quot;;.\include\;&quot;$(SolutionDir)\ClientSML\include\&quot;;&quot;$(SolutionDir)\..\gSKI\include\&quot;;&quot;$(SolutionDir)..\TgDI\include&quot;;$(NOINHERIT)"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="5"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
@@ -109,6 +109,9 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
+			Name="CommandLineInterface"/>
 	</References>
 	<Files>
 		<Filter

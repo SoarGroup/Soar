@@ -214,7 +214,8 @@ public:
 	{
 
 		IWorkingMemory* pWorkingMem = m_pILink->GetInputLinkMemory();
-		pWorkingMem->RemoveObject(m_pPegIdentifier->GetValue()->GetObject());
+		//pWorkingMem->RemoveObject(m_pPegIdentifier->GetValue()->GetObject());
+		pWorkingMem->RemoveWme(m_pPegIdentifier);
 		for(vector<Disk*>::iterator diskItr = m_disks.begin(); diskItr != m_disks.end(); ++diskItr)
 		{
 			(*diskItr)->Detach();
