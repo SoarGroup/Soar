@@ -624,6 +624,9 @@ namespace gSKI {
       */
       virtual void SetIndifferentSelection(egSKIUserSelectType t, Error* err = 0) = 0;
 
+      virtual int GetDefaultWMEDepth(Error* err = 0) = 0;
+      virtual void SetDefaultWMEDepth(int d, Error* err = 0) = 0;
+
        /**
        * @brief Gets the current phase for this agent
        *

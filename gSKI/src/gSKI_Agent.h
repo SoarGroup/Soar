@@ -574,11 +574,14 @@ namespace gSKI
        * @returns The current o-support mode for this agent.
        */
       /* TODO: O-Support mode investigations */
-      egSKIOSupportMode GetOSupportMode(Error* err = 0);
+      virtual egSKIOSupportMode GetOSupportMode(Error* err = 0);
       virtual void SetOSupportMode(egSKIOSupportMode mode, Error* err = 0);
 
       virtual egSKIUserSelectType GetIndifferentSelection(Error* err = 0);
       virtual void SetIndifferentSelection(egSKIUserSelectType t, Error* err = 0);
+
+      virtual int GetDefaultWMEDepth(Error* err = 0);
+      virtual void SetDefaultWMEDepth(int d, Error* err = 0);
 
        /**
        * @brief Gets the current phase for this agent

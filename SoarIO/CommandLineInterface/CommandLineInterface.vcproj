@@ -141,6 +141,9 @@
 					RelativePath=".\src\cli_cd.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_defaultwmedepth.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_dirs.cpp">
 				</File>
 				<File

@@ -37,8 +37,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	GetOpt::optind = 0;
 	GetOpt::opterr = 0;
 
-	// TODO: in 8.5.2 this is current_agent(default_wme_depth)
-	int depth = 1;
+	int depth = pAgent->GetDefaultWMEDepth();
 	unsigned int options = 0;
 
 	for (;;) {
