@@ -269,8 +269,8 @@ explain_chunk_str *find_chunk(agent* thisAgent, explain_chunk_str *chunk, char *
   }
 
   print(thisAgent, "Could not find the chunk.  Maybe explain was not on when it was created.");
-  /* BUGBUG *** shouldn't have user interface stuff in kernel!! */
-  print (thisAgent, "\nFor Soar 7: set save_backtraces 1 before the chunk is created.\n");
+  /* bug noted *** shouldn't have user interface stuff in kernel!! */
+  print (thisAgent, "\nFor Soar 7 and later: set save_backtraces 1 before the chunk is created.\n");
 
   return (NULL);
 }

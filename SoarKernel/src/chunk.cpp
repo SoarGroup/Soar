@@ -54,7 +54,7 @@
    for a given instantiation.  This is the main routine here.
 
    The results are accumulated in the list "results," linked via the
-   "next_result" field of the preference structures.  (BUGBUG: to save
+   "next_result" field of the preference structures.  (NOTE: to save
    space, just use conses for this.)
 
    Add_pref_to_results() adds a preference to the results.
@@ -62,11 +62,13 @@
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
 
-/*#define add_results_if_needed(sym) \
+#ifdef USE_MACROS
+#define add_results_if_needed(sym) \
   { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
       if ( ((sym)->id.level >= thisAgent->results_match_goal_level) && \
            ((sym)->id.tc_num != thisAgent->results_tc_number) ) \
-        add_results_for_id(sym); }*/
+        add_results_for_id(sym); }
+#else
 inline void add_results_if_needed(agent* thisAgent, Symbol * sym)
 { 
   if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
@@ -74,6 +76,7 @@ inline void add_results_if_needed(agent* thisAgent, Symbol * sym)
            ((sym)->id.tc_num != thisAgent->results_tc_number) )
         add_results_for_id(thisAgent, sym);
 }
+#endif /* USE_MACROS */
 
 extern void add_pref_to_results (agent* thisAgent, preference *pref) {
   preference *p;

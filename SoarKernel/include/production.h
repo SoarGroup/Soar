@@ -47,7 +47,7 @@
         of this production that are currently in the match set (i.e.,
         Rete-supported).
 
-      OPERAND_which_assert_list: (BUGBUG need info from REW or RCHONG)
+      OPERAND_which_assert_list: (need comment info from REW or RCHONG)
 
    Reference counts on productions:
       +1 if it's in production memory (i.e., hasn't been excised)
