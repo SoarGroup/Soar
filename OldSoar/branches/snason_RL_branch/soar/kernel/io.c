@@ -74,6 +74,7 @@
 #endif
 
 extern void gds_invalid_so_remove_goal( wme *w );
+void calculate_output_link_tc_info(output_link * ol);
 
 /* ====================================================================
                             Input Routines
@@ -343,14 +344,14 @@ void do_input_cycle(void) {
    Note that we don't update all the TC information after every WM change.
    The TC info doesn't get updated until do_output_cycle() is called.
 -------------------------------------------------------------------- */
-
+#define LINK_NAME_SIZE 1024
 void update_for_top_state_wme_addition (wme *w) {
   output_link *ol;
   soar_callback *cb;
-  char link_name[1000];
+  char link_name[LINK_NAME_SIZE];
 
   /* --- check whether the attribute is an output function --- */
-  symbol_to_string(w->attr, FALSE, link_name);
+  symbol_to_string(w->attr, FALSE, link_name, LINK_NAME_SIZE);
 
   cb = soar_exists_callback_id(soar_agent, OUTPUT_PHASE_CALLBACK, link_name);
 
@@ -367,6 +368,31 @@ void update_for_top_state_wme_addition (wme *w) {
   ol->cb = cb;
   /* --- make wme point to the structure --- */
   w->output_link = ol;
+ 
+  /* SW 07 10 2003
+       previously, this wouldn't be done until the first OUTPUT phase.
+       However, if we add an output command in the 1st decision cycle,
+       Soar seems to ignore it.
+
+       There may be two things going on, the first having to do with the tc 
+       calculation, which may get done too late, in such a way that the
+       initial calculation includes the command.  The other thing appears
+       to be that some data structures are not initialized until the first 
+       output phase.  Namely, id->associated_output_links does not seem
+       reflect the current output links until the first output-phase.
+
+       To get past these issues, we fake a transitive closure calculation
+       with the knowledge that the only thing on the output link at this
+       point is the output-link identifier itself.  This way, we capture
+       a snapshot of the empty output link, so Soar can detect any changes
+       that might occur before the first output_phase. */
+
+    current_agent(output_link_tc_num) = get_new_tc_number();
+    ol->link_wme->value->id.tc_num = current_agent(output_link_tc_num);
+    current_agent(output_link_for_tc) = ol;
+    /* --- add output_link to id's list --- */
+    push(current_agent(output_link_for_tc), ol->link_wme->value->id.associated_output_links);
+
 }
 
 void update_for_top_state_wme_removal (wme *w) {
@@ -409,7 +435,18 @@ void inform_output_module_of_wm_changes (list *wmes_being_added,
 		update_for_io_wme_change (w);
  		current_agent(output_link_changed) = TRUE; /* KJC 11/23/98 */
 	}
-  }
+  
+#if DEBUG_RTO
+        else {
+            char id[100];
+
+            symbol_to_string(w->id, FALSE, id);
+            if (!strcmp(id, "I3")) {
+                print("--> Added to I3, but doesn't register as an OL change!");
+            }
+        }
+#endif
+		}
   for (c=wmes_being_removed; c!=NIL; c=c->rest) {
     w = c->first;
     if (w->id==current_agent(io_header)) update_for_top_state_wme_removal (w);
@@ -444,9 +481,10 @@ void remove_output_link_tc_info (output_link *ol) {
     for (c=id->id.associated_output_links; c!=NIL; prev_c=c, c=c->rest)
       if (c->first == ol) break;
     if (!c) {
-      char msg[128];
-      strcpy(msg,"io.c: Internal error: can't find output link in id's list\n");
-      abort_with_fatal_error(msg);
+      char msg[MESSAGE_SIZE];
+      strncpy(msg,"io.c: Internal error: can't find output link in id's list\n", MESSAGE_SIZE);
+      msg[MESSAGE_SIZE - 1] = 0;
+	  abort_with_fatal_error(msg);
     }
     if (prev_c) prev_c->rest = c->rest;
       else id->id.associated_output_links = c->rest;
@@ -559,90 +597,93 @@ output_call_info output_call_data;
 
 #ifndef NO_IO_CALLBACKS
 
-void do_output_cycle (void) {
-  output_link *ol, *next_ol;
-  io_wme *iw_list;
+void do_output_cycle(void)
+{
+    output_link *ol, *next_ol;
+    io_wme *iw_list;
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
-  if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM]) print ("\n--- Output Phase ---\n");
+    if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM])
+        print("\n--- Output Phase ---\n");
 #endif
 
-  for (ol=current_agent(existing_output_links); ol!=NIL; ol=next_ol) {
-    next_ol = ol->next;
+    for (ol = current_agent(existing_output_links); ol != NIL; ol = next_ol) {
+        next_ol = ol->next;
 
-    switch (ol->status) {
-    case UNCHANGED_OL_STATUS:
-      /* --- link is unchanged, so do nothing --- */
-      break;
-      
-    case NEW_OL_STATUS:
+        switch (ol->status) {
+        case UNCHANGED_OL_STATUS:
+            /* --- link is unchanged, so do nothing --- */
+            break;
 
-      /* --- calculate tc, and call the output function --- */
-      calculate_output_link_tc_info (ol);
-      iw_list = get_io_wmes_for_output_link (ol);
-      output_call_data.mode = ADDED_OUTPUT_COMMAND;
-      output_call_data.outputs = iw_list;
-      (ol->cb->function)(soar_agent, ol->cb->data, &output_call_data);
-      deallocate_io_wme_list (iw_list);
-      ol->status = UNCHANGED_OL_STATUS;
-      break;
-      
-    case MODIFIED_BUT_SAME_TC_OL_STATUS:
-      /* --- don't have to redo the TC, but do call the output function --- */
-      iw_list = get_io_wmes_for_output_link (ol);
-      output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
-      output_call_data.outputs = iw_list;
-      (ol->cb->function)(soar_agent, ol->cb->data, &output_call_data);
-      deallocate_io_wme_list (iw_list);
-      ol->status = UNCHANGED_OL_STATUS;
-      break;
-      
-    case MODIFIED_OL_STATUS:
-      /* --- redo the TC, and call the output function */
-      remove_output_link_tc_info (ol);
-      calculate_output_link_tc_info (ol);
-      iw_list = get_io_wmes_for_output_link (ol);
-      output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
-      output_call_data.outputs = iw_list;
-      (ol->cb->function)(soar_agent, ol->cb->data, &output_call_data);
-      deallocate_io_wme_list (iw_list);
-      ol->status = UNCHANGED_OL_STATUS;
-      break;
-      
-    case REMOVED_OL_STATUS:
-      /* --- call the output function, and free output_link structure --- */
-      remove_output_link_tc_info (ol);            /* sets ids_in_tc to NIL */
-      iw_list = get_io_wmes_for_output_link (ol); /* gives just the link wme */
-      output_call_data.mode = REMOVED_OUTPUT_COMMAND;
-      output_call_data.outputs = iw_list;
-      (ol->cb->function)(soar_agent, ol->cb->data, &output_call_data);
-      deallocate_io_wme_list (iw_list);
-      wme_remove_ref (ol->link_wme);
-      remove_from_dll (current_agent(existing_output_links), ol, next, prev);
-      free_with_pool (&current_agent(output_link_pool), ol);
-      break;
-    }
-  } /* end of for ol */
+        case NEW_OL_STATUS:
+
+            /* --- calculate tc, and call the output function --- */
+           
+			calculate_output_link_tc_info(ol);
+            iw_list = get_io_wmes_for_output_link(ol);
+            output_call_data.mode = ADDED_OUTPUT_COMMAND;
+            output_call_data.outputs = iw_list;
+            (ol->cb->function) (soar_agent, ol->cb->data, &output_call_data);
+            deallocate_io_wme_list(iw_list);
+            ol->status = UNCHANGED_OL_STATUS;
+            break;
+
+        case MODIFIED_BUT_SAME_TC_OL_STATUS:
+            /* --- don't have to redo the TC, but do call the output function --- */
+            iw_list = get_io_wmes_for_output_link(ol);
+            output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
+            output_call_data.outputs = iw_list;
+            (ol->cb->function) (soar_agent, ol->cb->data, &output_call_data);
+            deallocate_io_wme_list(iw_list);
+            ol->status = UNCHANGED_OL_STATUS;
+            break;
+
+        case MODIFIED_OL_STATUS:
+            /* --- redo the TC, and call the output function */
+            remove_output_link_tc_info(ol);
+            calculate_output_link_tc_info(ol);
+            iw_list = get_io_wmes_for_output_link(ol);
+            output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
+            output_call_data.outputs = iw_list;
+            (ol->cb->function) (soar_agent, ol->cb->data, &output_call_data);
+            deallocate_io_wme_list(iw_list);
+            ol->status = UNCHANGED_OL_STATUS;
+            break;
+
+        case REMOVED_OL_STATUS:
+            /* --- call the output function, and free output_link structure --- */
+            remove_output_link_tc_info(ol);     /* sets ids_in_tc to NIL */
+            iw_list = get_io_wmes_for_output_link(ol);  /* gives just the link wme */
+            output_call_data.mode = REMOVED_OUTPUT_COMMAND;
+            output_call_data.outputs = iw_list;
+            (ol->cb->function) (soar_agent, ol->cb->data, &output_call_data);
+            deallocate_io_wme_list(iw_list);
+            wme_remove_ref(ol->link_wme);
+            remove_from_dll(current_agent(existing_output_links), ol, next, prev);
+            free_with_pool(&current_agent(output_link_pool), ol);
+            break;
+        }
+    }                           /* end of for ol */
 }
 #else
 
+void do_output_cycle(void)
+{
+    output_link *ol, *next_ol;
 
-void do_output_cycle (void) {
-  output_link *ol, *next_ol;
+    for (ol = current_agent(existing_output_links); ol != NIL; ol = next_ol) {
+        next_ol = ol->next;
 
+        switch (ol->status) {
+        case UNCHANGED_OL_STATUS:
+            /* --- link is unchanged, so do nothing --- */
+            break;
 
-  for (ol=current_agent(existing_output_links); ol!=NIL; ol=next_ol) {
-    next_ol = ol->next;
+        default:
+            print("io.c: Error -- Output Link has changed, but kernel was built with NO_IO_CALLBACKS\n");
+        }
+   }
 
-    switch (ol->status) {
-    case UNCHANGED_OL_STATUS:
-      /* --- link is unchanged, so do nothing --- */
-      break;
-
-    default:
-      print( "io.c: Error -- Output Link has changed, but kernel was built with NO_IO_CALLBACKS\n" );
-    }
-  }
 }
 #endif
 
@@ -692,80 +733,88 @@ Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr) {
 bool tio_constituent_char[256];
 bool tio_whitespace[256];
 
-Symbol *get_io_symbol_from_tio_constituent_string (char *input_string) {
-  int int_val;
-  float float_val;
-  bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
-  bool rereadable;
-  
-  determine_possible_symbol_types_for_string (input_string,
-                                              strlen(input_string),
-                                              &possible_id,
-                                              &possible_var,
-                                              &possible_sc,
-                                              &possible_ic,
-                                              &possible_fc,
-                                              &rereadable);
+Symbol *get_io_symbol_from_tio_constituent_string(char *input_string)
+{
+    int int_val;
+    float float_val;
+    bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+    bool rereadable;
 
-  /* --- check whether it's an integer --- */
-  if (possible_ic) {
-    errno = 0;
-    int_val = strtol (input_string,NULL,10);
-    if (errno) {
-      print ("Text Input Error: bad integer (probably too large)\n");
-      return NIL;
+    determine_possible_symbol_types_for_string(input_string,
+                                               strlen(input_string),
+                                               &possible_id,
+                                               &possible_var, &possible_sc, &possible_ic, &possible_fc, &rereadable);
+
+    /* --- check whether it's an integer --- */
+    if (possible_ic) {
+        errno = 0;
+        int_val = strtol(input_string, NULL, 10);
+        if (errno) {
+            print("Text Input Error: bad integer (probably too large)\n");
+            return NIL;
+        }
+        return get_io_int_constant(int_val);
     }
-    return get_io_int_constant (int_val);
-  }
-    
-  /* --- check whether it's a floating point number --- */
-  if (possible_fc) {
-    errno = 0;
-    float_val = (float) my_strtod (input_string,NULL,10); 
-    if (errno) {
-      print ("Text Input Error: bad floating point number\n");
-      return NIL;
+
+    /* --- check whether it's a floating point number --- */
+    if (possible_fc) {
+        errno = 0;
+        /*float_val = (float) strtod (input_string,NULL,10); */
+        float_val = (float) strtod(input_string, NULL);
+        if (errno) {
+            print("Text Input Error: bad floating point number\n");
+            return NIL;
+        }
+        return get_io_float_constant(float_val);
     }
-    return get_io_float_constant (float_val);
-  }
-  
-  /* --- otherwise it must be a symbolic constant --- */
-  return get_io_sym_constant (input_string);
+
+    /* --- otherwise it must be a symbolic constant --- */
+    return get_io_sym_constant(input_string);
+
+
 }
 
 #define MAX_TEXT_INPUT_LINE_LENGTH 1000 /* used to be in soarkernel.h */
 
-Symbol *get_next_io_symbol_from_text_input_line (char **text_read_position) {
-  char *ch;
-  char input_string[MAX_TEXT_INPUT_LINE_LENGTH+2];
-  int input_lexeme_length;
+Symbol *get_next_io_symbol_from_text_input_line(char **text_read_position)
+{
+    char *ch;
+    char input_string[MAX_TEXT_INPUT_LINE_LENGTH + 2];
+    int input_lexeme_length;
 
-  ch = *text_read_position;
-  
-  /* --- scan past any whitespace --- */
-  while (tio_whitespace[(unsigned char)(*ch)]) ch++;
+    ch = *text_read_position;
 
-  /* --- if end of line, return NIL --- */
-  if ((*ch=='\n')||(*ch==0)) { *text_read_position = ch; return NIL; }
+    /* --- scan past any whitespace --- */
+    while (tio_whitespace[(unsigned char) (*ch)])
+        ch++;
 
-  /* --- if not a constituent character, return single-letter symbol --- */
-  if (! tio_constituent_char[(unsigned char)(*ch)]) {
-    input_string[0] = *ch++;
-    input_string[1] = 0;
+    /* --- if end of line, return NIL --- */
+    if ((*ch == '\n') || (*ch == 0)) {
+        *text_read_position = ch;
+        return NIL;
+    }
+
+    /* --- if not a constituent character, return single-letter symbol --- */
+    if (!tio_constituent_char[(unsigned char) (*ch)]) {
+        input_string[0] = *ch++;
+        input_string[1] = 0;
+        *text_read_position = ch;
+        return get_io_sym_constant(input_string);
+    }
+
+    /* --- read string of constituents --- */
+    input_lexeme_length = 0;
+    while (tio_constituent_char[(unsigned char) (*ch)])
+        input_string[input_lexeme_length++] = *ch++;
+
+    /* --- return the appropriate kind of symbol --- */
+    input_string[input_lexeme_length] = 0;
+
+
     *text_read_position = ch;
-    return get_io_sym_constant (input_string);
-  }
-    
-  /* --- read string of constituents --- */
-  input_lexeme_length = 0;
-  while (tio_constituent_char[(unsigned char)(*ch)])
-    input_string[input_lexeme_length++] = *ch++;
-
-  /* --- return the appropriate kind of symbol --- */
-  input_string[input_lexeme_length] = 0;
-  *text_read_position = ch;
-  return get_io_symbol_from_tio_constituent_string (input_string);
+    return get_io_symbol_from_tio_constituent_string(input_string);
 }
+
 
 /* ====================================================================
 
@@ -782,11 +831,11 @@ void init_soar_io (void) {
   init_memory_pool (&current_agent(io_wme_pool), sizeof(io_wme), "io wme");
 
   /* --- setup constituent_char array --- */
-  for (i=0; i<256; i++) tio_constituent_char[i] = isalnum(i);
+  for (i=0; i<256; i++) tio_constituent_char[i] = (char) isalnum(i);
   for (i=0; i<strlen(extra_tio_constituents); i++)
     tio_constituent_char[(int)extra_tio_constituents[i]]=TRUE;
   
   /* --- setup whitespace array --- */
-  for (i=0; i<256; i++) tio_whitespace[i] = isspace(i);
+  for (i=0; i<256; i++) tio_whitespace[i] = (char) isspace(i);
   tio_whitespace[(int)'\n']=FALSE;  /* for text i/o, crlf isn't whitespace */
 }

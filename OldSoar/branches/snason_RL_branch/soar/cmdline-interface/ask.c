@@ -18,7 +18,7 @@ void askCallback( soar_callback_agent the_agent,
   for (cand = ((soar_apiAskCallbackData *)call_data)->candidates;
        cand!=NIL; cand=cand->next_candidate) {
     num_candidates++;
-    print( " --> %s\n", symbol_to_string( cand->value, TRUE, NULL ) );
+    print( " --> %s\n", symbol_to_string( cand->value, TRUE, NULL, 0 ) );
   }
 }
 

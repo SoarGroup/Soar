@@ -59,495 +59,437 @@
 extern soar_global_callback_array soar_global_callbacks;
 extern unsigned long soar_global_callback_error;
 
-char * soar_callback_names[] = {    /* Must match order of       */
-  "none",                           /* SOAR_CALLBACK_TYPE        */
-  "system-startup",
-  "system-termination",
-  "before-init-soar",
-  "after-init-soar",
-  "after-halt-soar",
-  "before-schedule-cycle",
-  "after-schedule-cycle",
-  "before-decision-cycle",
-  "after-decision-cycle",
-  "before-input-phase",
-  "input-phase-cycle",
-  "after-input-phase",
-  "before-preference-phase-cycle",
-  "after-preference-phase-cycle",
-  "before-wm-phase-cycle",
-  "after-wm-phase-cycle",
-  "before-output-phase",
-  "output-phase",
-  "after-output-phase",
-  "before-decision-phase-cycle",
-  "after-decision-phase-cycle",
-  "wm-changes",
-  "create-new-context",
-  "pop-context-stack",
-  "create-new-attribute-impasse",
-  "remove-attribute-impasse",
-  "production-just-added",
-  "production-just-about-to-be-excised",
-  "firing",
-  "retraction",
-  "system-parameter-changed",
-  "print",
-  "log",  
-  "ask"
+char *soar_callback_names[] = { /* Must match order of       */
+    "none",                     /* SOAR_CALLBACK_TYPE        */
+    "system-startup",
+    "system-termination",
+    "before-init-soar",
+    "after-init-soar",
+    "after-halt-soar",
+    "before-schedule-cycle",
+    "after-schedule-cycle",
+    "before-decision-cycle",
+    "after-decision-cycle",
+    "before-input-phase",
+    "input-phase-cycle",
+    "after-input-phase",
+    "before-preference-phase-cycle",
+    "after-preference-phase-cycle",
+    "before-wm-phase-cycle",
+    "after-wm-phase-cycle",
+    "before-output-phase",
+    "output-phase",
+    "after-output-phase",
+    "before-decision-phase-cycle",
+    "after-decision-phase-cycle",
+    "wm-changes",
+    "create-new-context",
+    "pop-context-stack",
+    "create-new-attribute-impasse",
+    "remove-attribute-impasse",
+    "production-just-added",
+    "production-just-about-to-be-excised",
+    "firing",
+    "retraction",
+    "system-parameter-changed",
+    "print",
+    "log",
+    "ask"
 #ifdef ATTENTION_LAPSE
-  "init-lapse-duration"
+        "init-lapse-duration"
 #endif
-  /*  "read",	*/			/* kjh CUSP B10 */
-  /*  "record",	*/			/* kjh CUSP B10 */
-  /* Nothing corresponds to NUMBER_OF_CALLBACKS */
+        /*  "read",   *//* kjh CUSP B10 */
+        /*  "record", *//* kjh CUSP B10 */
+        /* Nothing corresponds to NUMBER_OF_CALLBACKS */
 };
 
-
-
-void soar_init_callbacks (soar_callback_agent the_agent)
+void soar_init_callbacks(soar_callback_agent the_agent)
 {
-  SOAR_CALLBACK_TYPE ct;
+    SOAR_CALLBACK_TYPE ct;
 
-  for (ct = 1; ct < NUMBER_OF_CALLBACKS; ct++)
-    {
-      ((agent *)the_agent)->soar_callbacks[ct] = (list *) NIL;
+    for (ct = 1; ct < NUMBER_OF_CALLBACKS; ct++) {
+        ((agent *) the_agent)->soar_callbacks[ct] = (list *) NIL;
     }
-  ((agent *)the_agent)->callback_error = 0;
-}
-
-
-void soar_init_global_callbacks (void) {
-  SOAR_GLOBAL_CALLBACK_TYPE gct;
-  
-  for (gct = 1; gct < NUMBER_OF_GLOBAL_CALLBACKS; gct++) {
-    soar_global_callbacks[gct] = (list *)NIL;
-  }
+    ((agent *) the_agent)->callback_error = 0;
 }
 
-
-void soar_callback_data_free_string (soar_callback_data data)
+void soar_init_global_callbacks(void)
 {
-  free((char *) data);
+    SOAR_GLOBAL_CALLBACK_TYPE gct;
+
+    for (gct = 1; gct < NUMBER_OF_GLOBAL_CALLBACKS; gct++) {
+        soar_global_callbacks[gct] = (list *) NIL;
+    }
 }
-
-char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i, 
-				   bool monitorable_only)
+
+void soar_callback_data_free_string(soar_callback_data data)
 {
-  int limit;
-
-  if (monitorable_only)
-    {
-      limit = NUMBER_OF_MONITORABLE_CALLBACKS;
-    }
-  else 
-    {
-      limit = NUMBER_OF_CALLBACKS;
-    }
-
-  if ((0 < i) && (i < limit))
-    {
-      return soar_callback_names[i];
-    }
-  return NULL;
+    free((char *) data);
 }
-
-
-bool soar_exists_callback(soar_callback_agent the_agent,
-			  SOAR_CALLBACK_TYPE callback_type)
+
+char *soar_callback_enum_to_name(SOAR_CALLBACK_TYPE i, bool monitorable_only)
 {
-  list * cb_cons;
+    int limit;
 
-  if ( (agent *)the_agent == NULL ) return FALSE;
-
-  cb_cons = ((agent *)the_agent)->soar_callbacks[callback_type];
-
-  if (cb_cons == NULL)
-    {
-      return FALSE;
+    if (monitorable_only) {
+        limit = NUMBER_OF_MONITORABLE_CALLBACKS;
+    } else {
+        limit = NUMBER_OF_CALLBACKS;
     }
 
-  return TRUE;
+    if ((0 < i) && (i < limit)) {
+        return soar_callback_names[i];
+    }
+    return NULL;
 }
-
-soar_callback * soar_exists_callback_id (soar_callback_agent the_agent,
-					 SOAR_CALLBACK_TYPE callback_type,
-					 soar_callback_id id)
+
+bool soar_exists_callback(soar_callback_agent the_agent, SOAR_CALLBACK_TYPE callback_type)
 {
-  cons * c;
+    list *cb_cons;
 
-  if ( (agent *)the_agent == NULL ) return FALSE;
+    if ((agent *) the_agent == NULL)
+        return FALSE;
 
-  for (c = ((agent *)the_agent)->soar_callbacks[callback_type];
-       c != NIL;
-       c = c->rest)
-    {
-      soar_callback * cb;
+    cb_cons = ((agent *) the_agent)->soar_callbacks[callback_type];
 
-      cb = (soar_callback *) c->first;
-
-      if (!strcmp(cb->id, id))
-	{
-	  return cb;
-	}
+    if (cb_cons == NULL) {
+        return FALSE;
     }
 
-  return NULL;
+    return TRUE;
 }
-
+
+soar_callback *soar_exists_callback_id(soar_callback_agent the_agent,
+                                       SOAR_CALLBACK_TYPE callback_type, soar_callback_id id)
+{
+    cons *c;
+
+    if ((agent *) the_agent == NULL)
+        return FALSE;
+
+    for (c = ((agent *) the_agent)->soar_callbacks[callback_type]; c != NIL; c = c->rest) {
+        soar_callback *cb;
+
+        cb = (soar_callback *) c->first;
+
+        if (!strcmp(cb->id, id)) {
+            return cb;
+        }
+    }
+
+    return NULL;
+}
+
 void soar_destroy_callback(soar_callback * cb)
 {
-  if (cb->id)
-    {
-      free((char*)cb->id);
+    if (cb->id) {
+        free((char *) cb->id);
     }
-  if (cb->free_function)
-    {
-      cb->free_function(cb->data);
+    if (cb->free_function) {
+        cb->free_function(cb->data);
     }
-  free((void *) cb);
+    free((void *) cb);
 }
-
-void soar_invoke_callbacks (soar_callback_agent the_agent, 
-			    SOAR_CALLBACK_TYPE callback_type, 
-			    soar_call_data call_data)
+
+void soar_invoke_callbacks(soar_callback_agent the_agent, SOAR_CALLBACK_TYPE callback_type, soar_call_data call_data)
 {
-  cons * c;
+    cons *c;
 
 /* REW: begin 28.07.96 */
-  /* We want to stop the Soar kernel timers whenever a callback is initiated and
-     keep track of how much time the callbacks take cumulatively. This 
-     switch doesn't include every pre-defined callback -- however, it should 
-     provide a good "ballpark" estimate because it is focused on all those
-     that occur doing do_one_top_level_phase in init_soar.c.
+    /* We want to stop the Soar kernel timers whenever a callback is initiated and
+       keep track of how much time the callbacks take cumulatively. This 
+       switch doesn't include every pre-defined callback -- however, it should 
+       provide a good "ballpark" estimate because it is focused on all those
+       that occur doing do_one_top_level_phase in init_soar.c.
 
-     Note that this case will only be compiled if NO_TIMING_STUFF is   not 
-     defined.  So, if you are worried about the performance costs of this case,
-     you can always get rid of it by not including the timing code. */
+       Note that this case will only be compiled if NO_TIMING_STUFF is   not 
+       defined.  So, if you are worried about the performance costs of this case,
+       you can always get rid of it by not including the timing code. */
 
 #ifndef NO_TIMING_STUFF
-  switch (callback_type) {
-    /* This case is necssary to make sure we are in one of the decision cycle
-       monitors when the routine is invoked.  If so, then we want to turn off
-       the current timers and turn on the appropriate monitor timers.  The 
-       'appropriate' timer is determined by the current phase.  */
+    switch (callback_type) {
+        /* This case is necssary to make sure we are in one of the decision cycle
+           monitors when the routine is invoked.  If so, then we want to turn off
+           the current timers and turn on the appropriate monitor timers.  The 
+           'appropriate' timer is determined by the current phase.  */
 
 #ifndef FEW_CALLBACKS
 
-  case BEFORE_DECISION_CYCLE_CALLBACK:
-  case BEFORE_INPUT_PHASE_CALLBACK:
-  case AFTER_INPUT_PHASE_CALLBACK:
-    /* for these three: current_agent(current_phase) = INPUT_PHASE */
-  case BEFORE_OUTPUT_PHASE_CALLBACK:
-  case AFTER_OUTPUT_PHASE_CALLBACK:
-    /* for these two: current_agent(current_phase) = OUTPUT_PHASE */
-  case BEFORE_PREFERENCE_PHASE_CALLBACK:
-  case AFTER_PREFERENCE_PHASE_CALLBACK:
-    /* for these two: current_agent(current_phase) = PREFERENCE_PHASE */
-  case BEFORE_WM_PHASE_CALLBACK:
-  case AFTER_WM_PHASE_CALLBACK:
-    /* for these two: current_agent(current_phase) = WM_PHASE */
-  case BEFORE_DECISION_PHASE_CALLBACK:
-  case AFTER_DECISION_PHASE_CALLBACK:
+    case BEFORE_DECISION_CYCLE_CALLBACK:
+    case BEFORE_INPUT_PHASE_CALLBACK:
+    case AFTER_INPUT_PHASE_CALLBACK:
+        /* for these three: current_agent(current_phase) = INPUT_PHASE */
+    case BEFORE_OUTPUT_PHASE_CALLBACK:
+    case AFTER_OUTPUT_PHASE_CALLBACK:
+        /* for these two: current_agent(current_phase) = OUTPUT_PHASE */
+    case BEFORE_PREFERENCE_PHASE_CALLBACK:
+    case AFTER_PREFERENCE_PHASE_CALLBACK:
+        /* for these two: current_agent(current_phase) = PREFERENCE_PHASE */
+    case BEFORE_WM_PHASE_CALLBACK:
+    case AFTER_WM_PHASE_CALLBACK:
+        /* for these two: current_agent(current_phase) = WM_PHASE */
+    case BEFORE_DECISION_PHASE_CALLBACK:
+    case AFTER_DECISION_PHASE_CALLBACK:
 #endif
 
 #ifndef NO_ADC_CALLBACK
-  case AFTER_DECISION_CYCLE_CALLBACK:
+    case AFTER_DECISION_CYCLE_CALLBACK:
 
 #ifndef KERNEL_TIME_ONLY
-    /* for these three: current_agent(current_phase) = DECISION_PHASE */
+        /* for these three: current_agent(current_phase) = DECISION_PHASE */
 
-	stop_timer (&current_agent(start_phase_tv), 
-                    &current_agent(decision_cycle_phase_timers[current_agent(current_phase)]));
+        stop_timer(&current_agent(start_phase_tv),
+                   &current_agent(decision_cycle_phase_timers[current_agent(current_phase)]));
 #endif
 
-	stop_timer (&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
+        stop_timer(&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
 #ifndef KERNEL_TIME_ONLY
-        start_timer (&current_agent(start_phase_tv));
+        start_timer(&current_agent(start_phase_tv));
 #endif
         break;
 
 #endif
 
 #ifndef NO_IO_CALLBACKS
-  case INPUT_PHASE_CALLBACK:
-      /* Stop the kernel and phase timers for the input function */
+    case INPUT_PHASE_CALLBACK:
+        /* Stop the kernel and phase timers for the input function */
 
 #ifndef KERNEL_TIME_ONLY
-       stop_timer (&current_agent(start_phase_tv), 
+        stop_timer(&current_agent(start_phase_tv),
                    &current_agent(decision_cycle_phase_timers[current_agent(current_phase)]));
 #endif
 
-       stop_timer (&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
-       start_timer (&current_agent(start_kernel_tv));
-       break;
+        stop_timer(&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
+        start_timer(&current_agent(start_kernel_tv));
+        break;
 #endif
-  default: 
-    break;
+    default:
+        break;
 
-  }
+    }
 
 #endif
 
 /* REW: end 28.07.96 */
-  for (c = ((agent *)the_agent)->soar_callbacks[callback_type];
-       c != NIL;
-       c = c->rest)
-    {
-      soar_callback * cb;
+    for (c = ((agent *) the_agent)->soar_callbacks[callback_type]; c != NIL; c = c->rest) {
+        soar_callback *cb;
 
-      cb = (soar_callback *) c->first;
-      cb->function(the_agent, cb->data, call_data);
+        cb = (soar_callback *) c->first;
+        cb->function(the_agent, cb->data, call_data);
     }
-
 
 /* REW: begin 28.07.96 */
 
 #ifndef NO_TIMING_STUFF
-  switch (callback_type) {
+    switch (callback_type) {
 
 #ifndef FEW_CALLBACKS
 
-  case BEFORE_DECISION_CYCLE_CALLBACK:
-  case BEFORE_INPUT_PHASE_CALLBACK:
-  case AFTER_INPUT_PHASE_CALLBACK:
-  case BEFORE_OUTPUT_PHASE_CALLBACK:
-  case AFTER_OUTPUT_PHASE_CALLBACK:
-  case BEFORE_PREFERENCE_PHASE_CALLBACK:
-  case AFTER_PREFERENCE_PHASE_CALLBACK:
-  case BEFORE_WM_PHASE_CALLBACK:
-  case AFTER_WM_PHASE_CALLBACK:
-  case BEFORE_DECISION_PHASE_CALLBACK:
-  case AFTER_DECISION_PHASE_CALLBACK:
+    case BEFORE_DECISION_CYCLE_CALLBACK:
+    case BEFORE_INPUT_PHASE_CALLBACK:
+    case AFTER_INPUT_PHASE_CALLBACK:
+    case BEFORE_OUTPUT_PHASE_CALLBACK:
+    case AFTER_OUTPUT_PHASE_CALLBACK:
+    case BEFORE_PREFERENCE_PHASE_CALLBACK:
+    case AFTER_PREFERENCE_PHASE_CALLBACK:
+    case BEFORE_WM_PHASE_CALLBACK:
+    case AFTER_WM_PHASE_CALLBACK:
+    case BEFORE_DECISION_PHASE_CALLBACK:
+    case AFTER_DECISION_PHASE_CALLBACK:
 #endif
 
 #ifndef NO_ADC_CALLBACK
 
-  case AFTER_DECISION_CYCLE_CALLBACK:
+    case AFTER_DECISION_CYCLE_CALLBACK:
 
 #ifndef KERNEL_TIME_ONLY
-       stop_timer (&current_agent(start_phase_tv), 
-                    &current_agent(monitors_cpu_time[current_agent(current_phase)]));
+        stop_timer(&current_agent(start_phase_tv), &current_agent(monitors_cpu_time[current_agent(current_phase)]));
 #endif
 
-       start_timer(&current_agent(start_kernel_tv));
+        start_timer(&current_agent(start_kernel_tv));
 #ifndef KERNEL_TIME_ONLY
-       start_timer(&current_agent(start_phase_tv));
+        start_timer(&current_agent(start_phase_tv));
 #endif
-       break;
+        break;
 
 #endif
 
 #ifndef NO_IO_CALLBACKS
-  case INPUT_PHASE_CALLBACK:
-    /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
-       stop_timer (&current_agent(start_kernel_tv), 
-                   &current_agent(input_function_cpu_time));
-       start_timer (&current_agent(start_kernel_tv));
+    case INPUT_PHASE_CALLBACK:
+        /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
+        stop_timer(&current_agent(start_kernel_tv), &current_agent(input_function_cpu_time));
+        start_timer(&current_agent(start_kernel_tv));
 #ifndef KERNEL_TIME_ONLY
-       start_timer (&current_agent(start_phase_tv)); 
+        start_timer(&current_agent(start_phase_tv));
 #endif
-       break;
+        break;
 #endif
-  default: 
-    break;
+    default:
+        break;
 
-  }
+    }
 
 #endif
 
 /* REW: end 28.07.96 */
 
 }
-
-void soar_invoke_first_callback (soar_callback_agent the_agent, 
-				 SOAR_CALLBACK_TYPE callback_type, 
-				 soar_call_data call_data)
+
+void soar_invoke_first_callback(soar_callback_agent the_agent,
+                                SOAR_CALLBACK_TYPE callback_type, soar_call_data call_data)
 {
-  list * head;
+    list *head;
 
 /* REW: begin 28.07.96 */
 
 #ifndef NO_TIMING_STUFF
-  switch (callback_type) {
+    switch (callback_type) {
 
 #ifndef FEW_CALLBACKS
 
-  case BEFORE_DECISION_CYCLE_CALLBACK:
-  case BEFORE_INPUT_PHASE_CALLBACK:
-  case AFTER_INPUT_PHASE_CALLBACK:
-    /* for these three: current_agent(current_phase) = INPUT_PHASE */
-  case BEFORE_OUTPUT_PHASE_CALLBACK:
-  case AFTER_OUTPUT_PHASE_CALLBACK:
-    /* for these two: current_agent(current_phase) = OUTPUT_PHASE */
-  case BEFORE_PREFERENCE_PHASE_CALLBACK:
-  case AFTER_PREFERENCE_PHASE_CALLBACK:
-    /* for these two: current_agent(current_phase) = PREFERENCE_PHASE */
-  case BEFORE_WM_PHASE_CALLBACK:
-  case AFTER_WM_PHASE_CALLBACK:
-    /* for these two: current_agent(current_phase) = WM_PHASE */
-  case BEFORE_DECISION_PHASE_CALLBACK:
-  case AFTER_DECISION_PHASE_CALLBACK:
+    case BEFORE_DECISION_CYCLE_CALLBACK:
+    case BEFORE_INPUT_PHASE_CALLBACK:
+    case AFTER_INPUT_PHASE_CALLBACK:
+        /* for these three: current_agent(current_phase) = INPUT_PHASE */
+    case BEFORE_OUTPUT_PHASE_CALLBACK:
+    case AFTER_OUTPUT_PHASE_CALLBACK:
+        /* for these two: current_agent(current_phase) = OUTPUT_PHASE */
+    case BEFORE_PREFERENCE_PHASE_CALLBACK:
+    case AFTER_PREFERENCE_PHASE_CALLBACK:
+        /* for these two: current_agent(current_phase) = PREFERENCE_PHASE */
+    case BEFORE_WM_PHASE_CALLBACK:
+    case AFTER_WM_PHASE_CALLBACK:
+        /* for these two: current_agent(current_phase) = WM_PHASE */
+    case BEFORE_DECISION_PHASE_CALLBACK:
+    case AFTER_DECISION_PHASE_CALLBACK:
 
 #endif
 
 #ifndef NO_ADC_CALLBACK
-  case AFTER_DECISION_CYCLE_CALLBACK:
-    /* for these three: current_agent(current_phase) = DECISION_PHASE */
+    case AFTER_DECISION_CYCLE_CALLBACK:
+        /* for these three: current_agent(current_phase) = DECISION_PHASE */
 
 #ifndef KERNEL_TIME_ONLY
-	stop_timer (&current_agent(start_phase_tv), 
-                    &current_agent(decision_cycle_phase_timers[current_agent(current_phase)]));
+        stop_timer(&current_agent(start_phase_tv),
+                   &current_agent(decision_cycle_phase_timers[current_agent(current_phase)]));
 #endif
-	stop_timer (&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
+        stop_timer(&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
 #ifndef KERNEL_TIME_ONLY
-        start_timer (&current_agent(start_phase_tv));
+        start_timer(&current_agent(start_phase_tv));
 #endif
         break;
 #endif
 
 #ifndef NO_IO_CALLBACKS
-  case INPUT_PHASE_CALLBACK:
-      /* Stop the kernel and phase timers for the input function */
+    case INPUT_PHASE_CALLBACK:
+        /* Stop the kernel and phase timers for the input function */
 
 #ifndef KERNEL_TIME_ONLY
-       stop_timer (&current_agent(start_phase_tv), 
+        stop_timer(&current_agent(start_phase_tv),
                    &current_agent(decision_cycle_phase_timers[current_agent(current_phase)]));
 #endif
 
-       stop_timer (&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
-       start_timer (&current_agent(start_kernel_tv));
-       break;
+        stop_timer(&current_agent(start_kernel_tv), &current_agent(total_kernel_time));
+        start_timer(&current_agent(start_kernel_tv));
+        break;
 #endif
-  default:
-    break;
+    default:
+        break;
 
-
-  }
+    }
 
 #endif
 /* REW: end 28.07.96 */
- 
-  printf("ver1 %d\n", callback_type); 
 
+    head = ((agent *) the_agent)->soar_callbacks[callback_type];
 
-  head = ((agent *)the_agent)->soar_callbacks[callback_type];
+    if (head != NULL) {
+        soar_callback *cb;
 
-  printf("ver2 %d\n", callback_type);
-
-  if (head != NULL)
-    {
-      soar_callback * cb;
-	  printf("ver3 %d\n", callback_type);
-
-      cb = (soar_callback *) head->first;
-	  printf("ver4 %d\n", callback_type);
-      cb->function(the_agent, cb->data, call_data);
-	  printf("ver5 %d\n", callback_type);
+        cb = (soar_callback *) head->first;
+        cb->function(the_agent, cb->data, call_data);
     }
-
-  printf("ver6 %d\n", callback_type);
-
 
 /* REW: begin 28.07.96 */
 
 #ifndef NO_TIMING_STUFF
-  switch (callback_type) {
+    switch (callback_type) {
 
 #ifndef FEW_CALLBACKS
 
-  case BEFORE_DECISION_CYCLE_CALLBACK:
-  case BEFORE_INPUT_PHASE_CALLBACK:
-  case AFTER_INPUT_PHASE_CALLBACK:
-  case BEFORE_OUTPUT_PHASE_CALLBACK:
-  case AFTER_OUTPUT_PHASE_CALLBACK:
-  case BEFORE_PREFERENCE_PHASE_CALLBACK:
-  case AFTER_PREFERENCE_PHASE_CALLBACK:
-  case BEFORE_WM_PHASE_CALLBACK:
-  case AFTER_WM_PHASE_CALLBACK:
-  case BEFORE_DECISION_PHASE_CALLBACK:
-  case AFTER_DECISION_PHASE_CALLBACK:
+    case BEFORE_DECISION_CYCLE_CALLBACK:
+    case BEFORE_INPUT_PHASE_CALLBACK:
+    case AFTER_INPUT_PHASE_CALLBACK:
+    case BEFORE_OUTPUT_PHASE_CALLBACK:
+    case AFTER_OUTPUT_PHASE_CALLBACK:
+    case BEFORE_PREFERENCE_PHASE_CALLBACK:
+    case AFTER_PREFERENCE_PHASE_CALLBACK:
+    case BEFORE_WM_PHASE_CALLBACK:
+    case AFTER_WM_PHASE_CALLBACK:
+    case BEFORE_DECISION_PHASE_CALLBACK:
+    case AFTER_DECISION_PHASE_CALLBACK:
 
 #endif
 #ifndef NO_ADC_CALLBACK
-  case AFTER_DECISION_CYCLE_CALLBACK:
+    case AFTER_DECISION_CYCLE_CALLBACK:
 #ifndef KERNEL_TIME_ONLY
-       stop_timer (&current_agent(start_phase_tv), 
-                   &current_agent(monitors_cpu_time[current_agent(current_phase)]));
+        stop_timer(&current_agent(start_phase_tv), &current_agent(monitors_cpu_time[current_agent(current_phase)]));
 #endif
-       start_timer(&current_agent(start_kernel_tv));
+        start_timer(&current_agent(start_kernel_tv));
 #ifndef KERNEL_TIME_ONLY
-       start_timer(&current_agent(start_phase_tv));
+        start_timer(&current_agent(start_phase_tv));
 #endif
-       break;
+        break;
 #endif
 
 #ifndef NO_IO_CALLBACKS
-  case INPUT_PHASE_CALLBACK:
-    /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
-       stop_timer (&current_agent(start_kernel_tv), 
-                   &current_agent(input_function_cpu_time));
-       start_timer (&current_agent(start_kernel_tv));
+    case INPUT_PHASE_CALLBACK:
+        /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
+        stop_timer(&current_agent(start_kernel_tv), &current_agent(input_function_cpu_time));
+        start_timer(&current_agent(start_kernel_tv));
 #ifndef KERNEL_TIME_ONLY
-       start_timer (&current_agent(start_phase_tv)); 
+        start_timer(&current_agent(start_phase_tv));
 #endif
-       break;
+        break;
 #endif
-  default: 
-    break;
+    default:
+        break;
 
-
-  }
+    }
 
 #endif
 
 /* REW: end 28.07.96 */
 
 }
-
 
-
-
-
-
-bool soar_exists_global_callback( SOAR_GLOBAL_CALLBACK_TYPE callback_type )
+bool soar_exists_global_callback(SOAR_GLOBAL_CALLBACK_TYPE callback_type)
 {
-  list * cb_cons;
+    list *cb_cons;
 
-  cb_cons = soar_global_callbacks[callback_type];
+    cb_cons = soar_global_callbacks[callback_type];
 
-  if (cb_cons == NULL)
-    {
-      return FALSE;
+    if (cb_cons == NULL) {
+        return FALSE;
     }
 
-  return TRUE;
+    return TRUE;
 }
 
-
-
-
-
-void soar_invoke_global_callbacks ( soar_callback_agent a, 
-            			    SOAR_CALLBACK_TYPE callback_type, 
-				    soar_call_data call_data)
+void soar_invoke_global_callbacks(soar_callback_agent a, SOAR_CALLBACK_TYPE callback_type, soar_call_data call_data)
 {
-  cons * c;
+    cons *c;
 
-  /* So far, there's no need to mess with the timers, becuase
-   * we have only implemented function which get called at 
-   * agent creation and destruction
-   */ 
+    /* So far, there's no need to mess with the timers, becuase
+     * we have only implemented function which get called at 
+     * agent creation and destruction
+     */
 
-  for (c = soar_global_callbacks[callback_type];
-       c != NIL;
-       c = c->rest)
-    {
-      soar_callback * cb;
+    for (c = soar_global_callbacks[callback_type]; c != NIL; c = c->rest) {
+        soar_callback *cb;
 
-      cb = (soar_callback *) c->first;
-      cb->function( a, cb->data, call_data);
+        cb = (soar_callback *) c->first;
+        cb->function(a, cb->data, call_data);
     }
-
 
 }

@@ -59,82 +59,79 @@
  * =======================================================================
  */
 
-
 #include "soarkernel.h"
-/* #include <soar.h>	*/	/* kjh(CUSP-B10 (for Soar_Read) */
+                                /* #include <soar.h>	*//* kjh(CUSP-B10 (for Soar_Read) */
 #include <time.h>
 #include "rhsfun_math.h"
 #include "rhsfun.h"
 
-
 rhs_function *available_rhs_functions = NIL;
 
-void add_rhs_function (Symbol *name,
-                       rhs_function_routine f,
-                       int num_args_expected,
-                       bool can_be_rhs_value,
-                       bool can_be_stand_alone_action) {
-  rhs_function *rf;
+void add_rhs_function(Symbol * name,
+                      rhs_function_routine f,
+                      int num_args_expected, bool can_be_rhs_value, bool can_be_stand_alone_action)
+{
+    rhs_function *rf;
 
-  if ((!can_be_rhs_value) && (!can_be_stand_alone_action)) {
-    print ("Internal error: attempt to add_rhs_function that can't appear anywhere\n");
-    return;
-  }
-  for (rf=available_rhs_functions; rf!=NIL; rf=rf->next)
-    if (rf->name==name) break;
-  if (rf) {
-    print_with_symbols ("Internal error: attempt to add_rhs_function that already exists: %y\n", name);
-    return;
-  }
-  rf = allocate_memory (sizeof(rhs_function), MISCELLANEOUS_MEM_USAGE);
-  rf->next = available_rhs_functions;
-  available_rhs_functions = rf;
-  rf->name = name;
-  rf->f = f;
-  rf->num_args_expected = num_args_expected;
-  rf->can_be_rhs_value = can_be_rhs_value;
-  rf->can_be_stand_alone_action = can_be_stand_alone_action;
+    if ((!can_be_rhs_value) && (!can_be_stand_alone_action)) {
+        print("Internal error: attempt to add_rhs_function that can't appear anywhere\n");
+        return;
+    }
+    for (rf = available_rhs_functions; rf != NIL; rf = rf->next)
+        if (rf->name == name)
+            break;
+    if (rf) {
+        print_with_symbols("Internal error: attempt to add_rhs_function that already exists: %y\n", name);
+        return;
+    }
+    rf = allocate_memory(sizeof(rhs_function), MISCELLANEOUS_MEM_USAGE);
+    rf->next = available_rhs_functions;
+    available_rhs_functions = rf;
+    rf->name = name;
+    rf->f = f;
+    rf->num_args_expected = num_args_expected;
+    rf->can_be_rhs_value = can_be_rhs_value;
+    rf->can_be_stand_alone_action = can_be_stand_alone_action;
 }
 
-rhs_function *lookup_rhs_function (Symbol *name) {
-  rhs_function *rf;
+rhs_function *lookup_rhs_function(Symbol * name)
+{
+    rhs_function *rf;
 
-  for (rf=available_rhs_functions; rf!=NIL; rf=rf->next)
-    if (rf->name==name) return rf;
-  return NIL;
+    for (rf = available_rhs_functions; rf != NIL; rf = rf->next)
+        if (rf->name == name)
+            return rf;
+    return NIL;
 }
 
+void remove_rhs_function(Symbol * name)
+{                               /* code from Koss 8/00 */
 
+    rhs_function *rf = NIL, *prev;
 
-void remove_rhs_function(Symbol *name) {  /* code from Koss 8/00 */
+    /* Find registered function by name */
+    for (prev = NIL, rf = available_rhs_functions; rf != NIL; prev = rf, rf = rf->next)
+        if (rf->name == name)
+            break;
 
-  rhs_function *rf = NIL, *prev;
+    /* If not found, there's a problem */
+    if (rf == NIL) {
+        fprintf(stderr, "Internal error: attempt to remove_rhs_function that does not exist.\n");
+        print_with_symbols("Internal error: attempt to remove_rhs_function that does not exist: %y\n", name);
+    }
 
-  /* Find registered function by name */
-  for (prev = NIL, rf = available_rhs_functions;
-       rf != NIL;
-       prev = rf, rf = rf->next)
-    if (rf->name == name) break;
+    /* Else, remove it */
+    else {
 
-  /* If not found, there's a problem */
-  if (rf == NIL) {
-    fprintf(stderr, "Internal error: attempt to remove_rhs_function that does not exist.\n");
-    print_with_symbols("Internal error: attempt to remove_rhs_function that does not exist: %y\n", name);
-  }
+        /* Head of list special */
+        if (prev == NIL)
+            available_rhs_functions = rf->next;
+        else
+            prev->next = rf->next;
 
-  /* Else, remove it */
-  else {
-
-    /* Head of list special */
-    if (prev == NIL)
-      available_rhs_functions = rf->next;
-    else
-      prev->next = rf->next;
-
-    free_memory(rf, MISCELLANEOUS_MEM_USAGE);
-  }
+        free_memory(rf, MISCELLANEOUS_MEM_USAGE);
+    }
 }
-
 
 /* ====================================================================
 
@@ -146,34 +143,33 @@ void remove_rhs_function(Symbol *name) {  /* code from Koss 8/00 */
 /* --------------------------------------------------------------------
 			       User-Select
 -------------------------------------------------------------------- */
-Symbol *user_select_rhsfun (list *args) {
-  Symbol *uselect;
+Symbol *user_select_rhsfun(list * args)
+{
+    Symbol *uselect;
 
-  uselect = args->first;
+    uselect = args->first;
 
-  if (!strcmp(uselect->sc.name,"first")) {
-    set_sysparam (USER_SELECT_MODE_SYSPARAM, USER_SELECT_FIRST);
-    return NIL;
-  }
+    if (!strcmp(uselect->sc.name, "first")) {
+        set_sysparam(USER_SELECT_MODE_SYSPARAM, USER_SELECT_FIRST);
+        return NIL;
+    }
 /* AGR 615 begin */
-  if (!strcmp(uselect->sc.name,"last")) {
-    set_sysparam (USER_SELECT_MODE_SYSPARAM, USER_SELECT_LAST);
-    return NIL;
-  }
+    if (!strcmp(uselect->sc.name, "last")) {
+        set_sysparam(USER_SELECT_MODE_SYSPARAM, USER_SELECT_LAST);
+        return NIL;
+    }
 /* AGR 615 end */
-  if ((!strcmp(uselect->sc.name,"ask")) ||
-      (!strcmp(uselect->sc.name,"t"))) {
-    set_sysparam (USER_SELECT_MODE_SYSPARAM, USER_SELECT_ASK);
-    return NIL;
-  }
-  if ((!strcmp(uselect->sc.name,"random")) ||
-      (!strcmp(uselect->sc.name,"nil"))) {
-    set_sysparam (USER_SELECT_MODE_SYSPARAM, USER_SELECT_RANDOM);
-    return NIL;
-  }
-  print ("Expected first, ask, or random for new value of user-select.\n");
+    if ((!strcmp(uselect->sc.name, "ask")) || (!strcmp(uselect->sc.name, "t"))) {
+        set_sysparam(USER_SELECT_MODE_SYSPARAM, USER_SELECT_ASK);
+        return NIL;
+    }
+    if ((!strcmp(uselect->sc.name, "random")) || (!strcmp(uselect->sc.name, "nil"))) {
+        set_sysparam(USER_SELECT_MODE_SYSPARAM, USER_SELECT_RANDOM);
+        return NIL;
+    }
+    print("Expected first, ask, or random for new value of user-select.\n");
 
-  return NIL;
+    return NIL;
 }
 
 /* --------------------------------------------------------------------
@@ -182,18 +178,19 @@ Symbol *user_select_rhsfun (list *args) {
    Takes any number of arguments, and prints each one.
 -------------------------------------------------------------------- */
 
-Symbol *write_rhs_function_code (list *args) {
-  Symbol *arg;
-  char *string;
-  
-  for ( ; args!=NIL; args=args->rest) {
-    arg = args->first;
-    /* --- Note use of FALSE here--print the symbol itself, not a rereadable
-       version of it --- */
-    string = symbol_to_string (arg, FALSE, NIL);
-    print_string (string);
-  }
-  return NIL;
+Symbol *write_rhs_function_code(list * args)
+{
+    Symbol *arg;
+    char *string;
+
+    for (; args != NIL; args = args->rest) {
+        arg = args->first;
+        /* --- Note use of FALSE here--print the symbol itself, not a rereadable
+           version of it --- */
+        string = symbol_to_string(arg, FALSE, NIL, 0);
+        print_string(string);
+    }
+    return NIL;
 }
 
 /* --------------------------------------------------------------------
@@ -202,8 +199,10 @@ Symbol *write_rhs_function_code (list *args) {
    Just returns a sym_constant whose print name is a line feed.
 -------------------------------------------------------------------- */
 
-Symbol *crlf_rhs_function_code (list *args) {
-  return make_sym_constant ("\n");
+Symbol *crlf_rhs_function_code(list * args)
+{
+    args = args;                /* shuts up compiler */
+    return make_sym_constant("\n");
 }
 
 /* --------------------------------------------------------------------
@@ -212,9 +211,11 @@ Symbol *crlf_rhs_function_code (list *args) {
    Just sets a flag indicating that the system has halted.
 -------------------------------------------------------------------- */
 
-Symbol *halt_rhs_function_code (list *args) {
-  current_agent(system_halted) = TRUE;
-  return NIL;
+Symbol *halt_rhs_function_code(list * args)
+{
+    args = args;                /* shuts up compiler */
+    current_agent(system_halted) = TRUE;
+    return NIL;
 }
 
 /* --------------------------------------------------------------------
@@ -227,28 +228,36 @@ Symbol *halt_rhs_function_code (list *args) {
 
 /* MVP 6-27-94 */
 
-char * RHS_interrupt_msg = "*** RHS Function Interrupt ***";
+char *RHS_interrupt_msg = "*** RHS Function Interrupt ***";
 
-Symbol *interrupt_rhs_function_code (list *args) {
-  char *ch;
-  
-  cons * c;
-  agent * the_agent;
+Symbol *interrupt_rhs_function_code(list * args)
+{
+    char *ch;
 
-  for(c = all_soar_agents; c != NIL; c = c->rest) {
-    the_agent = ((agent *) c->first);
-    the_agent->stop_soar = TRUE;
-    the_agent->reason_for_stopping =  RHS_interrupt_msg;
-  }
+    cons *c;
+    agent *the_agent;
 
-  strcpy (current_agent(interrupt_source), "*** Interrupt from production ");
-  ch = current_agent(interrupt_source);
-  while (*ch) ch++;
-  symbol_to_string (current_agent(production_being_fired)->name, TRUE, ch); 
-  while (*ch) ch++;
-  strcpy (ch, " ***");
-  current_agent(reason_for_stopping) = current_agent(interrupt_source);
-  return NIL;
+    args = args;                /* shuts up compiler */
+
+    for (c = all_soar_agents; c != NIL; c = c->rest) {
+        the_agent = ((agent *) c->first);
+        the_agent->stop_soar = TRUE;
+        the_agent->reason_for_stopping = RHS_interrupt_msg;
+    }
+
+    strncpy(current_agent(interrupt_source), "*** Interrupt from production ", INTERRUPT_SOURCE_SIZE);
+    current_agent(interrupt_source)[INTERRUPT_SOURCE_SIZE - 1] = 0;
+    ch = current_agent(interrupt_source);
+    while (*ch)
+        ch++;
+    symbol_to_string(current_agent(production_being_fired)->name, TRUE, ch,
+                     INTERRUPT_SOURCE_SIZE - (ch - current_agent(interrupt_source)));
+    while (*ch)
+        ch++;
+    strncpy(ch, " ***", INTERRUPT_SOURCE_SIZE - (ch - current_agent(interrupt_source)));
+    ch[INTERRUPT_SOURCE_SIZE - (ch - current_agent(interrupt_source)) - 1] = 0;
+    current_agent(reason_for_stopping) = current_agent(interrupt_source);
+    return NIL;
 }
 
 /* --------------------------------------------------------------------
@@ -260,24 +269,28 @@ Symbol *interrupt_rhs_function_code (list *args) {
    concatenation of those arguments.
 -------------------------------------------------------------------- */
 
-Symbol *make_constant_symbol_rhs_function_code (list *args) {
-  char buf[1000]; /* that ought to be long enough */
-  char *string;
-  cons *c;
+#define MAKE_CONSTANT_SYMBOL_BUF_SIZE 1024
+Symbol *make_constant_symbol_rhs_function_code(list * args)
+{
+    char buf[MAKE_CONSTANT_SYMBOL_BUF_SIZE];    /* that ought to be long enough */
+    char *string;
+    cons *c;
 
-  if (!args) {
-    strcpy (buf, "constant");
-  } else {
-    buf[0] = 0;
-    for (c=args; c!=NIL; c=c->rest) {
-      string = symbol_to_string (c->first, FALSE, NIL);
-      strcat (buf, string);
+    if (!args) {
+        strncpy(buf, "constant", MAKE_CONSTANT_SYMBOL_BUF_SIZE);
+        buf[MAKE_CONSTANT_SYMBOL_BUF_SIZE - 1] = 0;
+    } else {
+        buf[0] = 0;
+        for (c = args; c != NIL; c = c->rest) {
+            string = symbol_to_string(c->first, FALSE, NIL, 0);
+            strncat(buf, string, MAKE_CONSTANT_SYMBOL_BUF_SIZE);
+            buf[MAKE_CONSTANT_SYMBOL_BUF_SIZE - 1] = 0;
+        }
     }
-  }
-  if ((!args) && (!find_sym_constant (buf))) return make_sym_constant (buf);
-  return generate_new_sym_constant (buf, &current_agent(mcs_counter));
+    if ((!args) && (!find_sym_constant(buf)))
+        return make_sym_constant(buf);
+    return generate_new_sym_constant(buf, &current_agent(mcs_counter));
 }
-
 
 /* --------------------------------------------------------------------
                                Timestamp
@@ -286,33 +299,37 @@ Symbol *make_constant_symbol_rhs_function_code (list *args) {
    of the current local time.
 -------------------------------------------------------------------- */
 
-Symbol *timestamp_rhs_function_code (list *args) {
-  long now;
-  struct tm *temp;
-  char buf[100];
+#define TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE 100
+Symbol *timestamp_rhs_function_code(list * args)
+{
+    long now;
+    struct tm *temp;
+    char buf[TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE];
 
-  now = time(NULL);
+    args = args;                /* shuts up compiler */
+
+    now = time(NULL);
 #ifdef THINK_C
-  temp = localtime ((const time_t *)&now);
+    temp = localtime((const time_t *) &now);
 #else
 #ifdef __SC__
-  temp = localtime ((const time_t *)&now);
+    temp = localtime((const time_t *) &now);
 #else
 #ifdef __ultrix
-  temp = localtime ((const time_t *)&now);
+    temp = localtime((const time_t *) &now);
 #else
 #ifdef MACINTOSH
-  temp = localtime ((const time_t *) &now);
+    temp = localtime((const time_t *) &now);
 #else
-  temp = localtime (&now);
+    temp = localtime(&now);
 #endif
 #endif
 #endif
 #endif
-  sprintf (buf, "%d/%d/%d-%02d:%02d:%02d",
-           temp->tm_mon + 1, temp->tm_mday, temp->tm_year,
-           temp->tm_hour, temp->tm_min, temp->tm_sec);
-  return make_sym_constant (buf);
+    snprintf(buf, TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE, "%d/%d/%d-%02d:%02d:%02d",
+             temp->tm_mon + 1, temp->tm_mday, temp->tm_year, temp->tm_hour, temp->tm_min, temp->tm_sec);
+    buf[TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE - 1] = 0;  /* snprintf doesn't set last char to null if output is truncated */
+    return make_sym_constant(buf);
 }
 
 /* --------------------------------------------------------------------
@@ -322,26 +339,29 @@ Symbol *timestamp_rhs_function_code (list *args) {
    symbol from that line.
 -------------------------------------------------------------------- */
 
-Symbol *accept_rhs_function_code (list *args) {
-  char buf[2000], *s;
-  Symbol *sym;
+Symbol *accept_rhs_function_code(list * args)
+{
+    char buf[2000], *s;
+    Symbol *sym;
 
-  while (TRUE) {
-    s = fgets (buf, 2000, stdin);
-    /*    s = Soar_Read(soar_agent, buf, 2000); */ /* kjh(CUSP-B10) */
-    if (!s) {
-      /* s==NIL means immediate eof encountered or read error occurred */
-      return NIL;
+    args = args;                /* shuts up compiler */
+
+    for (;;) {
+        s = fgets(buf, 2000, stdin);
+        /*    s = Soar_Read(soar_agent, buf, 2000); *//* kjh(CUSP-B10) */
+        if (!s) {
+            /* s==NIL means immediate eof encountered or read error occurred */
+            return NIL;
+        }
+        s = buf;
+        sym = get_next_io_symbol_from_text_input_line(&s);
+        if (sym)
+            break;
     }
-    s = buf;
-    sym = get_next_io_symbol_from_text_input_line (&s);
-    if (sym) break;
-  }
-  symbol_add_ref (sym);
-  release_io_symbol (sym); /* because it was obtained using get_io_... */
-  return sym;
+    symbol_add_ref(sym);
+    release_io_symbol(sym);     /* because it was obtained using get_io_... */
+    return sym;
 }
-
 
 /* ---------------------------------------------------------------------
   Capitalize a Symbol
@@ -349,32 +369,31 @@ Symbol *accept_rhs_function_code (list *args) {
 
 #include <ctype.h>
 
-Symbol * 
-capitalize_symbol_rhs_function_code (list *args) 
+Symbol *capitalize_symbol_rhs_function_code(list * args)
 {
-  char * symbol_to_capitalize;
-  Symbol * sym;
+    char *symbol_to_capitalize;
+    Symbol *sym;
 
-  if (!args) {
-    print ("Error: 'capitalize-symbol' function called with no arguments.\n");
-    return NIL;
-  }
+    if (!args) {
+        print("Error: 'capitalize-symbol' function called with no arguments.\n");
+        return NIL;
+    }
 
-  sym = (Symbol *) args->first;
-  if (sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE) {
-    print_with_symbols ("Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
-    return NIL;
-  }
+    sym = (Symbol *) args->first;
+    if (sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE) {
+        print_with_symbols("Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
+        return NIL;
+    }
 
-  if (args->rest) {
-    print ("Error: 'capitalize-symbol' takes exactly 1 argument.\n");
-    return NIL;
-  }
+    if (args->rest) {
+        print("Error: 'capitalize-symbol' takes exactly 1 argument.\n");
+        return NIL;
+    }
 
-  symbol_to_capitalize = symbol_to_string(sym, FALSE, NIL);
-  symbol_to_capitalize = savestring(symbol_to_capitalize);
-  *symbol_to_capitalize = toupper(*symbol_to_capitalize);
-  return make_sym_constant(symbol_to_capitalize);
+    symbol_to_capitalize = symbol_to_string(sym, FALSE, NIL, 0);
+    symbol_to_capitalize = savestring(symbol_to_capitalize);
+    *symbol_to_capitalize = (char) toupper(*symbol_to_capitalize);
+    return make_sym_constant(symbol_to_capitalize);
 }
 
 /* AGR 520 begin     6-May-94 */
@@ -416,7 +435,6 @@ ifeq -- checks if the first argument is "eq" to the second argument
            V-------V    V-------V    V-------V    V-------V    V-------V
                      or           or           or           or
 
-
            for a ball that takes this path.
 
                o
@@ -444,47 +462,46 @@ strlen <val> - returns the string length of the output string so that
 
 ------------------------------------------------------------ */
 
-Symbol *ifeq_rhs_function_code (list *args) {
-  Symbol *arg1, *arg2;
-  cons *c;
+Symbol *ifeq_rhs_function_code(list * args)
+{
+    Symbol *arg1, *arg2;
+    cons *c;
 
-  if (!args) {
-    print ("Error: 'ifeq' function called with no arguments\n");
-    return NIL;
-  }
-
-  /* --- two or more arguments --- */
-  arg1 = args->first;
-  c=args->rest;
-  arg2 = c->first;
-  c=c->rest;
-
-  if (arg1 == arg2)
-    {
-      symbol_add_ref((Symbol *)(c->first));
-      return c->first;
+    if (!args) {
+        print("Error: 'ifeq' function called with no arguments\n");
+        return NIL;
     }
-  else if (c->rest)
-    {
-      symbol_add_ref((Symbol *)(c->rest->first));
-      return c->rest->first;
-    }
-  else return NIL;
+
+    /* --- two or more arguments --- */
+    arg1 = args->first;
+    c = args->rest;
+    arg2 = c->first;
+    c = c->rest;
+
+    if (arg1 == arg2) {
+        symbol_add_ref((Symbol *) (c->first));
+        return c->first;
+    } else if (c->rest) {
+        symbol_add_ref((Symbol *) (c->rest->first));
+        return c->rest->first;
+    } else
+        return NIL;
 }
 
+Symbol *strlen_rhs_function_code(list * args)
+{
+    Symbol *arg;
+    char *string;
 
-Symbol *strlen_rhs_function_code (list *args) {
-  Symbol *arg;
-  char *string;
+    arg = args->first;
 
-  arg = args->first;
+    /* --- Note use of FALSE here--print the symbol itself, not a rereadable
+       version of it --- */
+    string = symbol_to_string(arg, FALSE, NIL, 0);
 
-  /* --- Note use of FALSE here--print the symbol itself, not a rereadable
-     version of it --- */
-  string = symbol_to_string (arg, FALSE, NIL);
-
-  return make_int_constant (strlen(string));
+    return make_int_constant(strlen(string));
 }
+
 /* AGR 520     end */
 
 /* --------------------------------------------------------------------
@@ -494,32 +511,33 @@ Hack for learning.  Allow user to denote states in which learning
 shouldn't occur when "learning" is set to "except".
 -------------------------------------------------------------------- */
 
-Symbol *dont_learn_rhs_function_code (list *args) {
-  Symbol *state;
+Symbol *dont_learn_rhs_function_code(list * args)
+{
+    Symbol *state;
 
-  if (!args) {
-    print ("Error: 'dont-learn' function called with no arg.\n");
-    return NIL;
-  }
+    if (!args) {
+        print("Error: 'dont-learn' function called with no arg.\n");
+        return NIL;
+    }
 
-  state = (Symbol *) args->first;
-  if (state->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
-    print_with_symbols ("Error: non-identifier (%y) passed to dont-learn function.\n", state);
-    return NIL;
-  } else if (! state->id.isa_goal) {
-      print_with_symbols("Error: identifier passed to dont-learn is not a state: %y.\n",state);
-  }
-  
-  if (args->rest) {
-    print ("Error: 'dont-learn' takes exactly 1 argument.\n");
-    return NIL;
-  }
+    state = (Symbol *) args->first;
+    if (state->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+        print_with_symbols("Error: non-identifier (%y) passed to dont-learn function.\n", state);
+        return NIL;
+    } else if (!state->id.isa_goal) {
+        print_with_symbols("Error: identifier passed to dont-learn is not a state: %y.\n", state);
+    }
 
-  if (! member_of_list (state, current_agent(chunk_free_problem_spaces))) {
-    push (state, current_agent(chunk_free_problem_spaces));
-    /* print_with_symbols("State  %y  added to chunk_free_list.\n",state); */
-  } 
-  return NIL;
+    if (args->rest) {
+        print("Error: 'dont-learn' takes exactly 1 argument.\n");
+        return NIL;
+    }
+
+    if (!member_of_list(state, current_agent(chunk_free_problem_spaces))) {
+        push(state, current_agent(chunk_free_problem_spaces));
+        /* print_with_symbols("State  %y  added to chunk_free_list.\n",state); */
+    }
+    return NIL;
 
 }
 
@@ -530,36 +548,35 @@ Hack for learning.  Allow user to denote states in which learning
 should occur when "learning" is set to "only".
 -------------------------------------------------------------------- */
 
-Symbol *force_learn_rhs_function_code (list *args) {
-  Symbol *state;
+Symbol *force_learn_rhs_function_code(list * args)
+{
+    Symbol *state;
 
-  if (!args) {
-    print ("Error: 'force-learn' function called with no arg.\n");
+    if (!args) {
+        print("Error: 'force-learn' function called with no arg.\n");
+        return NIL;
+    }
+
+    state = (Symbol *) args->first;
+    if (state->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
+        print_with_symbols("Error: non-identifier (%y) passed to force-learn function.\n", state);
+        return NIL;
+    } else if (!state->id.isa_goal) {
+        print_with_symbols("Error: identifier passed to force-learn is not a state: %y.\n", state);
+    }
+
+    if (args->rest) {
+        print("Error: 'force-learn' takes exactly 1 argument.\n");
+        return NIL;
+    }
+
+    if (!member_of_list(state, current_agent(chunky_problem_spaces))) {
+        push(state, current_agent(chunky_problem_spaces));
+        /* print_with_symbols("State  %y  added to chunky_list.\n",state); */
+    }
     return NIL;
-  }
-
-  state = (Symbol *) args->first;
-  if (state->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
-    print_with_symbols ("Error: non-identifier (%y) passed to force-learn function.\n", state);
-    return NIL;
-  } else if (! state->id.isa_goal) {
-      print_with_symbols("Error: identifier passed to force-learn is not a state: %y.\n",state);
-  }
-
-  
-  if (args->rest) {
-    print ("Error: 'force-learn' takes exactly 1 argument.\n");
-    return NIL;
-  }
-
-  if (! member_of_list (state, current_agent(chunky_problem_spaces))) {
-    push (state, current_agent(chunky_problem_spaces));
-    /* print_with_symbols("State  %y  added to chunky_list.\n",state); */
-  } 
-  return NIL;
 
 }
-
 
 /* ====================================================================
 
@@ -567,62 +584,43 @@ Symbol *force_learn_rhs_function_code (list *args) {
 
 ====================================================================  */
 
-void init_built_in_rhs_functions (void) {
-  add_rhs_function (make_sym_constant ("write"), write_rhs_function_code,
-                    -1, FALSE, TRUE);
-  add_rhs_function (make_sym_constant ("crlf"), crlf_rhs_function_code,
-                    0, TRUE, FALSE);
-  add_rhs_function (make_sym_constant ("halt"), halt_rhs_function_code,
-                    0, FALSE, TRUE);
-  add_rhs_function (make_sym_constant ("interrupt"),
-                    interrupt_rhs_function_code,
-                    0, FALSE, TRUE);
-  add_rhs_function (make_sym_constant ("make-constant-symbol"),
-                    make_constant_symbol_rhs_function_code,
-                    -1, TRUE, FALSE);
-  add_rhs_function (make_sym_constant ("timestamp"),
-                    timestamp_rhs_function_code,
-                    0, TRUE, FALSE);
-  add_rhs_function (make_sym_constant ("accept"), accept_rhs_function_code,
-                    0, TRUE, FALSE);
-  add_rhs_function (make_sym_constant ("capitalize-symbol"),
-		    capitalize_symbol_rhs_function_code,
-		    1,
-		    TRUE,
-		    FALSE);
+void init_built_in_rhs_functions(void)
+{
+    add_rhs_function(make_sym_constant("write"), write_rhs_function_code, -1, FALSE, TRUE);
+    add_rhs_function(make_sym_constant("crlf"), crlf_rhs_function_code, 0, TRUE, FALSE);
+    add_rhs_function(make_sym_constant("halt"), halt_rhs_function_code, 0, FALSE, TRUE);
+    add_rhs_function(make_sym_constant("interrupt"), interrupt_rhs_function_code, 0, FALSE, TRUE);
+    add_rhs_function(make_sym_constant("make-constant-symbol"),
+                     make_constant_symbol_rhs_function_code, -1, TRUE, FALSE);
+    add_rhs_function(make_sym_constant("timestamp"), timestamp_rhs_function_code, 0, TRUE, FALSE);
+    add_rhs_function(make_sym_constant("accept"), accept_rhs_function_code, 0, TRUE, FALSE);
+    add_rhs_function(make_sym_constant("capitalize-symbol"), capitalize_symbol_rhs_function_code, 1, TRUE, FALSE);
 /* AGR 520  begin */
-  add_rhs_function (make_sym_constant ("ifeq"), ifeq_rhs_function_code,
-		    4, TRUE, FALSE);
-  add_rhs_function (make_sym_constant ("strlen"), strlen_rhs_function_code,
-		    1, TRUE, FALSE);
+    add_rhs_function(make_sym_constant("ifeq"), ifeq_rhs_function_code, 4, TRUE, FALSE);
+    add_rhs_function(make_sym_constant("strlen"), strlen_rhs_function_code, 1, TRUE, FALSE);
 /* AGR 520  end   */
 
-  add_rhs_function (make_sym_constant ("dont-learn"),
-		    dont_learn_rhs_function_code,
-                    1, FALSE, TRUE);
-  add_rhs_function (make_sym_constant ("force-learn"),
-		    force_learn_rhs_function_code,
-                    1, FALSE, TRUE);
+    add_rhs_function(make_sym_constant("dont-learn"), dont_learn_rhs_function_code, 1, FALSE, TRUE);
+    add_rhs_function(make_sym_constant("force-learn"), force_learn_rhs_function_code, 1, FALSE, TRUE);
 
-  init_built_in_rhs_math_functions();
+    init_built_in_rhs_math_functions();
 }
 
+void remove_built_in_rhs_functions(void)
+{
 
+    remove_rhs_function(make_sym_constant("write"));
+    remove_rhs_function(make_sym_constant("crlf"));
+    remove_rhs_function(make_sym_constant("halt"));
+    remove_rhs_function(make_sym_constant("interrupt"));
+    remove_rhs_function(make_sym_constant("make-constant-symbol"));
+    remove_rhs_function(make_sym_constant("timestamp"));
+    remove_rhs_function(make_sym_constant("accept"));
+    remove_rhs_function(make_sym_constant("capitalize-symbol"));
+    remove_rhs_function(make_sym_constant("ifeq"));
+    remove_rhs_function(make_sym_constant("strlen"));
+    remove_rhs_function(make_sym_constant("dont-learn"));
+    remove_rhs_function(make_sym_constant("force-learn"));
 
-void remove_built_in_rhs_functions (void) {
-
-  remove_rhs_function (make_sym_constant ("write"));
-  remove_rhs_function (make_sym_constant ("crlf"));
-  remove_rhs_function (make_sym_constant ("halt"));
-  remove_rhs_function (make_sym_constant ("interrupt"));
-  remove_rhs_function (make_sym_constant ("make-constant-symbol"));
-  remove_rhs_function (make_sym_constant ("timestamp"));
-  remove_rhs_function (make_sym_constant ("accept"));
-  remove_rhs_function (make_sym_constant ("capitalize-symbol"));
-  remove_rhs_function (make_sym_constant ("ifeq"));
-  remove_rhs_function (make_sym_constant ("strlen"));
-  remove_rhs_function (make_sym_constant ("dont-learn"));
-  remove_rhs_function (make_sym_constant ("force-learn"));
-
-  remove_built_in_rhs_math_functions();
+    remove_built_in_rhs_math_functions();
 }

@@ -226,6 +226,7 @@ void init_sysparams (void) {
   current_agent(sysparams)[LEARNING_EXCEPT_SYSPARAM] = FALSE;  /* KJC 8/96 */
   current_agent(sysparams)[LEARNING_ALL_GOALS_SYSPARAM] = TRUE;
   current_agent(sysparams)[RL_ON_SYSPARAM] = TRUE;               // SAN
+  current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM] = TRUE;   // SAN
   current_agent(sysparams)[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_RANDOM;
   current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM] = TRUE;
   current_agent(sysparams)[PRINT_ALIAS_SYSPARAM] = TRUE;  /* AGR 627 */
@@ -256,7 +257,7 @@ void add_pwatch (production *prod) {
 production *prod_to_remove_pwatch_of;
 
 bool remove_pwatch_test_fn (cons *c) {
-  return (c->first == prod_to_remove_pwatch_of);
+  return (bool) (c->first == prod_to_remove_pwatch_of);
 }
 
 void remove_pwatch (production *prod) {
@@ -323,55 +324,52 @@ void reset_statistics (void) {
 
 #ifndef KERNEL_TIME_ONLY
 
-  reset_timer (&current_agent(decision_cycle_phase_timers[INPUT_PHASE]));
-  reset_timer (&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE]));
-  reset_timer (&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE]));
-  reset_timer (&current_agent(decision_cycle_phase_timers[WM_PHASE]));
-  reset_timer (&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE]));
-  reset_timer (&current_agent(decision_cycle_phase_timers[DECISION_PHASE]));
+   reset_timer(&current_agent(decision_cycle_phase_timers[INPUT_PHASE]));
+    reset_timer(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE]));
+    reset_timer(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE]));
+    reset_timer(&current_agent(decision_cycle_phase_timers[WM_PHASE]));
+    reset_timer(&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE]));
+    reset_timer(&current_agent(decision_cycle_phase_timers[DECISION_PHASE]));
 
-  reset_timer (&current_agent(monitors_cpu_time[INPUT_PHASE]));
-  reset_timer (&current_agent(monitors_cpu_time[DETERMINE_LEVEL_PHASE]));
-  reset_timer (&current_agent(monitors_cpu_time[PREFERENCE_PHASE]));
-  reset_timer (&current_agent(monitors_cpu_time[WM_PHASE]));
-  reset_timer (&current_agent(monitors_cpu_time[OUTPUT_PHASE]));
-  reset_timer (&current_agent(monitors_cpu_time[DECISION_PHASE]));
+    reset_timer(&current_agent(monitors_cpu_time[INPUT_PHASE]));
+    reset_timer(&current_agent(monitors_cpu_time[DETERMINE_LEVEL_PHASE]));
+    reset_timer(&current_agent(monitors_cpu_time[PREFERENCE_PHASE]));
+    reset_timer(&current_agent(monitors_cpu_time[WM_PHASE]));
+    reset_timer(&current_agent(monitors_cpu_time[OUTPUT_PHASE]));
+    reset_timer(&current_agent(monitors_cpu_time[DECISION_PHASE]));
 
+#ifdef DETAILED_TIMING_STATS
+    reset_timer(&current_agent(match_cpu_time[INPUT_PHASE]));
+    reset_timer(&current_agent(match_cpu_time[DETERMINE_LEVEL_PHASE]));
+    reset_timer(&current_agent(match_cpu_time[PREFERENCE_PHASE]));
+    reset_timer(&current_agent(match_cpu_time[WM_PHASE]));
+    reset_timer(&current_agent(match_cpu_time[OUTPUT_PHASE]));
+    reset_timer(&current_agent(match_cpu_time[DECISION_PHASE]));
 
+    reset_timer(&current_agent(ownership_cpu_time[INPUT_PHASE]));
+    reset_timer(&current_agent(ownership_cpu_time[DETERMINE_LEVEL_PHASE]));
+    reset_timer(&current_agent(ownership_cpu_time[PREFERENCE_PHASE]));
+    reset_timer(&current_agent(ownership_cpu_time[WM_PHASE]));
+    reset_timer(&current_agent(ownership_cpu_time[OUTPUT_PHASE]));
+    reset_timer(&current_agent(ownership_cpu_time[DECISION_PHASE]));
 
+    reset_timer(&current_agent(chunking_cpu_time[INPUT_PHASE]));
+    reset_timer(&current_agent(chunking_cpu_time[DETERMINE_LEVEL_PHASE]));
+    reset_timer(&current_agent(chunking_cpu_time[PREFERENCE_PHASE]));
+    reset_timer(&current_agent(chunking_cpu_time[WM_PHASE]));
+    reset_timer(&current_agent(chunking_cpu_time[OUTPUT_PHASE]));
+    reset_timer(&current_agent(chunking_cpu_time[DECISION_PHASE]));
 
- #ifdef DETAILED_TIMING_STATS
-  reset_timer (&current_agent(match_cpu_time[INPUT_PHASE]));
-  reset_timer (&current_agent(match_cpu_time[DETERMINE_LEVEL_PHASE]));
-  reset_timer (&current_agent(match_cpu_time[PREFERENCE_PHASE]));
-  reset_timer (&current_agent(match_cpu_time[WM_PHASE]));
-  reset_timer (&current_agent(match_cpu_time[OUTPUT_PHASE]));
-  reset_timer (&current_agent(match_cpu_time[DECISION_PHASE]));
+/* REW: begin 11.25.96 */
+    reset_timer(&current_agent(total_gds_time));
 
-  reset_timer (&current_agent(ownership_cpu_time[INPUT_PHASE]));
-  reset_timer (&current_agent(ownership_cpu_time[DETERMINE_LEVEL_PHASE]));
-  reset_timer (&current_agent(ownership_cpu_time[PREFERENCE_PHASE]));
-  reset_timer (&current_agent(ownership_cpu_time[WM_PHASE]));
-  reset_timer (&current_agent(ownership_cpu_time[OUTPUT_PHASE]));
-  reset_timer (&current_agent(ownership_cpu_time[DECISION_PHASE]));
-
-  reset_timer (&current_agent(chunking_cpu_time[INPUT_PHASE]));
-  reset_timer (&current_agent(chunking_cpu_time[DETERMINE_LEVEL_PHASE]));
-  reset_timer (&current_agent(chunking_cpu_time[PREFERENCE_PHASE]));
-  reset_timer (&current_agent(chunking_cpu_time[WM_PHASE]));
-  reset_timer (&current_agent(chunking_cpu_time[OUTPUT_PHASE]));
-  reset_timer (&current_agent(chunking_cpu_time[DECISION_PHASE]));
-
-/* REW: begin 11.25.96 */ 
-  reset_timer (&current_agent(total_gds_time));
-
-  reset_timer (&current_agent(gds_cpu_time[INPUT_PHASE]));     
-  reset_timer (&current_agent(gds_cpu_time[DETERMINE_LEVEL_PHASE]));
-  reset_timer (&current_agent(gds_cpu_time[PREFERENCE_PHASE]));
-  reset_timer (&current_agent(gds_cpu_time[WM_PHASE]));        
-  reset_timer (&current_agent(gds_cpu_time[OUTPUT_PHASE]));    
-  reset_timer (&current_agent(gds_cpu_time[DECISION_PHASE]));  
-/* REW: end   11.25.96 */ 
+    reset_timer(&current_agent(gds_cpu_time[INPUT_PHASE]));
+    reset_timer(&current_agent(gds_cpu_time[DETERMINE_LEVEL_PHASE]));
+    reset_timer(&current_agent(gds_cpu_time[PREFERENCE_PHASE]));
+    reset_timer(&current_agent(gds_cpu_time[WM_PHASE]));
+    reset_timer(&current_agent(gds_cpu_time[OUTPUT_PHASE]));
+    reset_timer(&current_agent(gds_cpu_time[DECISION_PHASE]));
+/* REW: end   11.25.96 */
 #endif
 #endif
 #ifdef DC_HISTOGRAM
@@ -919,7 +917,7 @@ void do_one_top_level_phase (void) {
 			 (soar_call_data) NULL);
 #endif
     do_decision_phase();
-	// SAN
+
  
 
 
@@ -970,9 +968,10 @@ void do_one_top_level_phase (void) {
 #ifndef SOAR_8_ONLY
     if (current_agent(operand2_mode) == TRUE) {
 #endif
-      /* test for ONC, if TRUE, generate substate and go to OUTPUT */
-      if ((current_agent(ms_o_assertions) == NIL) &&
-          (current_agent(bottom_goal)->id.operator_slot->wmes != NIL)) {
+ 
+#ifdef AGRESSIVE_ONC
+            /* test for ONC, if TRUE, generate substate and go to OUTPUT */
+            if ((current_agent(ms_o_assertions) == NIL) && (current_agent(bottom_goal)->id.operator_slot->wmes != NIL)) {
 
 #ifndef FEW_CALLBACKS
         soar_invoke_callbacks(soar_agent, BEFORE_DECISION_PHASE_CALLBACK,
@@ -1017,7 +1016,11 @@ void do_one_top_level_phase (void) {
 
         break;
           
-      } else {
+      } else 
+			/* end AGRESSIVE_ONC */
+#endif
+
+			{
 	/* print("\nSetting next phase to APPLY following a decision...."); */
 	current_agent(applyPhase) = TRUE;
 	current_agent(FIRING_TYPE) = PE_PRODS;
@@ -1056,9 +1059,26 @@ void do_one_top_level_phase (void) {
 			 (soar_call_data) NULL);
   }
   
-  if (current_agent(stop_soar))
-    if (current_agent(reason_for_stopping) != "")
-      print ("\n%s", current_agent(reason_for_stopping));
+   if (current_agent(stop_soar)) {
+
+        /* (voigtjr)
+           this old test is nonsense, it compares pointers:
+
+           if (current_agent(reason_for_stopping) != "")
+
+           what really should happen here is reason_for_stopping should be
+           set to NULL in the cases where nothing should be printed, instead 
+           of being assigned a pointer to a zero length (NULL) string, then
+           we could simply say:
+
+           if (current_agent(reason_for_stopping)) 
+         */
+        if (current_agent(reason_for_stopping)) {
+            if (strcmp(current_agent(reason_for_stopping), "") != 0) {
+                print("\n%s", current_agent(reason_for_stopping));
+            }
+        }
+    }
 }
 
 void run_forever (void) {
@@ -1141,7 +1161,7 @@ void run_for_n_modifications_of_output (long n) {
   current_agent(stop_soar) = FALSE;
   current_agent(reason_for_stopping) = "";
   while (!current_agent(stop_soar) && n) {
-    was_output_phase = (current_agent(current_phase)==OUTPUT_PHASE);
+    was_output_phase = (bool) (current_agent(current_phase)==OUTPUT_PHASE);
     do_one_top_level_phase();
     if (was_output_phase) {	
 		if (current_agent(output_link_changed)) {
@@ -1209,7 +1229,7 @@ void run_for_n_selections_of_slot (long n, Symbol *attr_of_slot) {
   current_agent(reason_for_stopping) = "";
   count = 0;
   while (!current_agent(stop_soar) && (count < n)) {
-    was_decision_phase = (current_agent(current_phase)==DECISION_PHASE);
+    was_decision_phase = (bool) (current_agent(current_phase)==DECISION_PHASE);
     do_one_top_level_phase();
     if (was_decision_phase)
       if (attr_of_slot_just_decided()==attr_of_slot) count++;
@@ -1236,7 +1256,7 @@ void run_for_n_selections_of_slot_at_level (long n,
   current_agent(reason_for_stopping) = "";
   count = 0;
   while (!current_agent(stop_soar) && (count < n)) {
-    was_decision_phase = (current_agent(current_phase)==DECISION_PHASE);
+    was_decision_phase = (bool) (current_agent(current_phase)==DECISION_PHASE);
     do_one_top_level_phase();
     if (was_decision_phase) {
       if (current_agent(bottom_goal)->id.level < level) break;

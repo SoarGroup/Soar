@@ -70,30 +70,38 @@ extern int soar_agent_ids[];
   Try to assign a unique and previously unassigned id.  If none are
    available, assign a unique, but previously assigned id.
 */
-int next_available_agent_id() {
-  int i;
-  
-  for( i = 0; i < MAX_SIMULTANEOUS_AGENTS; i++ ) {
-    if ( soar_agent_ids[i] == UNTOUCHED ) {
-      soar_agent_ids[i] = ALLOCATED;
-      return i;
-    }
-  }
-  for( i = 0; i < MAX_SIMULTANEOUS_AGENTS; i++ ) {
-    if ( soar_agent_ids[i] == TOUCHED ) {
-      soar_agent_ids[i] = ALLOCATED;
-      return i;
-    }
-  }
-  {
-    char msg[128];
-    sprintf( msg, "agent.c: Error: Too many simultaneous agents (> %d\n", MAX_SIMULTANEOUS_AGENTS );
+int next_available_agent_id()
+{
+    int i;
 
-  abort_with_fatal_error( msg );
-  }
-  return -1;   /* To placate compilier */
+    for (i = 0; i < MAX_SIMULTANEOUS_AGENTS; i++) {
+        if (soar_agent_ids[i] == UNTOUCHED) {
+            soar_agent_ids[i] = ALLOCATED;
+            return i;
+        }
+    }
+    for (i = 0; i < MAX_SIMULTANEOUS_AGENTS; i++) {
+        if (soar_agent_ids[i] == TOUCHED) {
+            soar_agent_ids[i] = ALLOCATED;
+            return i;
+        }
+    }
+    {
+        char msg[MESSAGE_SIZE];
+        snprintf(msg, MESSAGE_SIZE, "agent.c: Error: Too many simultaneous agents (> %d\n", MAX_SIMULTANEOUS_AGENTS);
+        msg[MESSAGE_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
+
+        abort_with_fatal_error(msg);
+    }
+    return -1;                  /* To placate compilier */
+
+
+
+
+
+
+
 }
-
 
 
 #ifdef ATTENTION_LAPSE
@@ -103,32 +111,32 @@ int next_available_agent_id() {
    will normally be provided as a user-defined TCL procedure.
 */
 
-long init_lapse_duration( TIMER_VALUE *tv ) {
-   int ret;
-   long time_since_last_lapse;
-   char buf[128];
+long init_lapse_duration(TIMER_VALUE * tv)
+{
+    int ret;
+    long time_since_last_lapse;
+    char buf[128];
 
-   start_timer (current_real_time);
-   timersub(current_real_time, tv, current_real_time);
-   time_since_last_lapse = (long)(1000 * timer_value( tv ) );
+    start_timer(current_real_time);
+    timersub(current_real_time, tv, current_real_time);
+    time_since_last_lapse = (long) (1000 * timer_value(tv));
 
-   if ( soar_exists_callback( soar_agent, INIT_LAPSE_DURATION_CALLBACK ) ) {
+    if (soar_exists_callback(soar_agent, INIT_LAPSE_DURATION_CALLBACK)) {
 
-     /* SW 11.07.00
-      *
-      *  Modified this to use the generic soar interface, as opposed
-      *  to being Tcl specific.  This requires a new callback
-      *  in particular, here the callback receives the value 
-      *  time_since_last_lapse, and must RESET this value to
-      *  the appropriate number
-      */
-     soar_invoke_callback( soar_agent, INIT_LAPSE_DURATION_CALLBACK,
-			   (void *)&time_since_last_lapse );
-     
-     return time_since_last_lapse;
-   }
-   return 0;
-}
+        /* SW 11.07.00
+         *
+         *  Modified this to use the generic soar interface, as opposed
+         *  to being Tcl specific.  This requires a new callback
+         *  in particular, here the callback receives the value 
+         *  time_since_last_lapse, and must RESET this value to
+         *  the appropriate number
+         */
+        soar_invoke_callback(soar_agent, INIT_LAPSE_DURATION_CALLBACK, (void *) &time_since_last_lapse);
+
+        return time_since_last_lapse;
+    }
+    return 0;
+} 
 
 
 #endif
@@ -152,7 +160,8 @@ void init_soar_agent(void) {
   create_predefined_symbols();
   init_production_utilities();
   init_built_in_rhs_functions ();
-  add_bot_rhs_functions (soar_agent);
+  /*add_bot_rhs_functions (soar_agent); */
+  add_bot_rhs_functions(); 
   init_rete ();
   init_lexer ();
   init_firer ();
@@ -172,26 +181,29 @@ void init_soar_agent(void) {
 #endif
 
 
-  /* --- add default object trace formats --- */
-  add_trace_format (FALSE, FOR_ANYTHING_TF, NIL,
-                    "%id %ifdef[(%v[name])]");
-  add_trace_format (FALSE, FOR_STATES_TF, NIL,
-                    "%id %ifdef[(%v[attribute] %v[impasse])]");
-  { Symbol *evaluate_object_sym;
-    evaluate_object_sym = make_sym_constant ("evaluate-object");
-    add_trace_format (FALSE, FOR_OPERATORS_TF, evaluate_object_sym,
-                      "%id (evaluate-object %o[object])");
-    symbol_remove_ref (evaluate_object_sym);
-  }
-  /* --- add default stack trace formats --- */
-  add_trace_format (TRUE, FOR_ANYTHING_TF, NIL,
-                    "%right[6,%dc]: %rsd[   ]==>S: %id %ifdef[(%v[name])]");
-  add_trace_format (TRUE, FOR_STATES_TF, NIL,
-                    "%right[6,%dc]: %rsd[   ]==>S: %cs");
-  add_trace_format (TRUE, FOR_OPERATORS_TF, NIL,
-                    "%right[6,%dc]: %rsd[   ]   O: %co");
-  reset_statistics ();
+     /* --- add default object trace formats --- */
+    add_trace_format(FALSE, FOR_ANYTHING_TF, NIL, "%id %ifdef[(%v[name])]");
+    add_trace_format(FALSE, FOR_STATES_TF, NIL, "%id %ifdef[(%v[attribute] %v[impasse])]");
+    {
+        Symbol *evaluate_object_sym;
+        evaluate_object_sym = make_sym_constant("evaluate-object");
+        add_trace_format(FALSE, FOR_OPERATORS_TF, evaluate_object_sym, "%id (evaluate-object %o[object])");
+        symbol_remove_ref(evaluate_object_sym);
+    }
+    /* --- add default stack trace formats --- */
+    add_trace_format(TRUE, FOR_ANYTHING_TF, NIL, "%right[6,%dc]: %rsd[   ]==>S: %id %ifdef[(%v[name])]");
+    add_trace_format(TRUE, FOR_STATES_TF, NIL, "%right[6,%dc]: %rsd[   ]==>S: %cs");
+    add_trace_format(TRUE, FOR_OPERATORS_TF, NIL, "%right[6,%dc]: %rsd[   ]   O: %co");
+    reset_statistics();
+
+
+
+
+
+
 }
+
+
 
 
 

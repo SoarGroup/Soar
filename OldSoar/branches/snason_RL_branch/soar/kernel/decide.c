@@ -58,25 +58,23 @@
 #include "soarkernel.h"
 #include "soarapi_datatypes.h"
 #include <assert.h>
+#include <math.h>
+#include <time.h>
 
-
+#ifdef NUMERIC_INDIFFERENCE
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
-preference *ProbSelect(slot *s, preference *candidates);
-void EnableProbIndifferentSelection();
-void DisableProbIndifferentSelection();
+preference *probabilistically_select(slot *s, preference *candidates);
+ 
 // SAN
 extern void learn_RL_productions();
 extern float tabulate_reward_value();
 extern void record_for_RL();
 extern void push_record();
 
-unsigned char useProbIndifferentSelection=1;
-
-/* ProbSelect specific values */
- #define DEFAULT_INDIFFERENT_VALUE 0
+ 
 /* REW: 2003-01-06 A temporary helper function */
 
-void PrintCandidates(preference *candidates) {
+void print_candidates(preference *candidates) {
    preference*    cand=0; 
    int max_count=0;
 
@@ -171,105 +169,110 @@ extern void remove_operator_if_necessary(slot *s, wme *w);
    called *before* do_buffered_link_changes() and do_buffered_wm_changes().
 ====================================================================== */
 
-void mark_context_slot_as_acceptable_preference_changed (slot *s) {
-  dl_cons *dc;
-  
-  if (s->acceptable_preference_changed) return;
-  allocate_with_pool (&current_agent(dl_cons_pool),  &dc);
-  dc->item = s;
-  s->acceptable_preference_changed = dc;
-  insert_at_head_of_dll (current_agent(context_slots_with_changed_acceptable_preferences), dc,
-                         next, prev);
+void mark_context_slot_as_acceptable_preference_changed(slot * s)
+{
+    dl_cons *dc;
+
+    if (s->acceptable_preference_changed)
+        return;
+    allocate_with_pool(&current_agent(dl_cons_pool), &dc);
+    dc->item = s;
+    s->acceptable_preference_changed = dc;
+    insert_at_head_of_dll(current_agent(context_slots_with_changed_acceptable_preferences), dc, next, prev);
 }
 
 /* --- This updates the acceptable preference wmes for a single slot. --- */
-void do_acceptable_preference_wme_changes_for_slot (slot *s) {
-  wme *w, *next_w;
-  preference *p;
+void do_acceptable_preference_wme_changes_for_slot(slot * s)
+{
+    wme *w, *next_w;
+    preference *p;
 
-  /* --- first, reset marks to "NOTHING" --- */
-  for (w=s->acceptable_preference_wmes; w!=NIL; w=w->next)
-    w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-  
-  /* --- now mark values for which we WANT a wme as "CANDIDATE" values --- */
-  for (p=s->preferences[REQUIRE_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-  for (p=s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+    /* --- first, reset marks to "NOTHING" --- */
+    for (w = s->acceptable_preference_wmes; w != NIL; w = w->next)
+        w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
 
-  /* --- remove any existing wme's that aren't CANDIDATEs; mark the
-     rest as ALREADY_EXISTING --- */
+    /* --- now mark values for which we WANT a wme as "CANDIDATE" values --- */
+    for (p = s->preferences[REQUIRE_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+    for (p = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
 
-  w = s->acceptable_preference_wmes;
-  while (w) {
-    next_w = w->next;
-    if (w->value->common.decider_flag==CANDIDATE_DECIDER_FLAG) {
-      w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
-      w->value->common.a.decider_wme = w;
-      w->preference = NIL;  /* we'll update this later */
-    } else {
-      remove_from_dll (s->acceptable_preference_wmes, w, next, prev);
+    /* --- remove any existing wme's that aren't CANDIDATEs; mark the
+       rest as ALREADY_EXISTING --- */
+
+    w = s->acceptable_preference_wmes;
+    while (w) {
+        next_w = w->next;
+        if (w->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
+            w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
+            w->value->common.a.decider_wme = w;
+            w->preference = NIL;        /* we'll update this later */
+        } else {
+            remove_from_dll(s->acceptable_preference_wmes, w, next, prev);
 /* REW: begin 09.15.96 */
-      /* IF we lose an acceptable preference for an operator, then that
-         operator comes out of the slot immediately in OPERAND2.
-         However, if the lost acceptable preference is not for item
-         in the slot, then we don;t need to do anything special until
-         mini-quiescence. */
+            /* IF we lose an acceptable preference for an operator, then that
+               operator comes out of the slot immediately in OPERAND2.
+               However, if the lost acceptable preference is not for item
+               in the slot, then we don;t need to do anything special until
+               mini-quiescence. */
 
 #ifndef SOAR_8_ONLY
-      if (current_agent(operand2_mode))
+            if (current_agent(operand2_mode))
 #endif
-         remove_operator_if_necessary(s,w);
+                remove_operator_if_necessary(s, w);
 /* REW: end   09.15.96 */
-      remove_wme_from_wm (w);
+            remove_wme_from_wm(w);
+        }
+        w = next_w;
     }
-    w = next_w;
-  }
 
-  /* --- add the necessary wme's that don't ALREADY_EXIST --- */
+    /* --- add the necessary wme's that don't ALREADY_EXIST --- */
 
-  for (p=s->preferences[REQUIRE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-    if (p->value->common.decider_flag==ALREADY_EXISTING_WME_DECIDER_FLAG) {
-      /* --- found existing wme, so just update its trace --- */
-      w = p->value->common.a.decider_wme;
-      if (! w->preference) w->preference = p;
-    } else {
-      w = make_wme (p->id, p->attr, p->value, TRUE);
-      insert_at_head_of_dll (s->acceptable_preference_wmes, w, next, prev);
-      w->preference = p;
-      add_wme_to_wm (w);
-      p->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
-      p->value->common.a.decider_wme = w;
+    for (p = s->preferences[REQUIRE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+        if (p->value->common.decider_flag == ALREADY_EXISTING_WME_DECIDER_FLAG) {
+            /* --- found existing wme, so just update its trace --- */
+            w = p->value->common.a.decider_wme;
+            if (!w->preference)
+                w->preference = p;
+        } else {
+            w = make_wme(p->id, p->attr, p->value, TRUE);
+            insert_at_head_of_dll(s->acceptable_preference_wmes, w, next, prev);
+            w->preference = p;
+            add_wme_to_wm(w);
+            p->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
+            p->value->common.a.decider_wme = w;
+        }
     }
-  }
-  for (p=s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-    if (p->value->common.decider_flag==ALREADY_EXISTING_WME_DECIDER_FLAG) {
-      /* --- found existing wme, so just update its trace --- */
-      w = p->value->common.a.decider_wme;
-      if (! w->preference) w->preference = p;
-    } else {
-      w = make_wme (p->id, p->attr, p->value, TRUE);
-      insert_at_head_of_dll (s->acceptable_preference_wmes, w, next, prev);
-      w->preference = p;
-      add_wme_to_wm (w);
-      p->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
-      p->value->common.a.decider_wme = w;
+    for (p = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+        if (p->value->common.decider_flag == ALREADY_EXISTING_WME_DECIDER_FLAG) {
+            /* --- found existing wme, so just update its trace --- */
+            w = p->value->common.a.decider_wme;
+            if (!w->preference)
+                w->preference = p;
+        } else {
+            w = make_wme(p->id, p->attr, p->value, TRUE);
+            insert_at_head_of_dll(s->acceptable_preference_wmes, w, next, prev);
+            w->preference = p;
+            add_wme_to_wm(w);
+            p->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
+            p->value->common.a.decider_wme = w;
+        }
     }
-  }
 }
 
-void do_buffered_acceptable_preference_wme_changes (void) {
-  dl_cons *dc;
-  slot *s;
+void do_buffered_acceptable_preference_wme_changes(void)
+{
+    dl_cons *dc;
+    slot *s;
 
-  while (current_agent(context_slots_with_changed_acceptable_preferences)) {
-    dc = current_agent(context_slots_with_changed_acceptable_preferences);
-    current_agent(context_slots_with_changed_acceptable_preferences) = dc->next;
-    s = dc->item;
-    free_with_pool (&current_agent(dl_cons_pool), dc);
-    do_acceptable_preference_wme_changes_for_slot (s);
-    s->acceptable_preference_changed = NIL;
-  }
+    while (current_agent(context_slots_with_changed_acceptable_preferences)) {
+        dc = current_agent(context_slots_with_changed_acceptable_preferences);
+        current_agent(context_slots_with_changed_acceptable_preferences) = dc->next;
+        s = dc->item;
+        free_with_pool(&current_agent(dl_cons_pool), dc);
+        do_acceptable_preference_wme_changes_for_slot(s);
+        s->acceptable_preference_changed = NIL;
+    }
 }
 
 
@@ -314,37 +317,41 @@ void do_buffered_acceptable_preference_wme_changes (void) {
    Post a link addition for later processing.
 ---------------------------------------------- */
 
-void post_link_addition (Symbol *from, Symbol *to) {
+void post_link_addition(Symbol * from, Symbol * to)
+{
 
-  /* --- don't add links to goals/impasses, except the special one
-     (NIL,goal) --- */
-  if ((to->id.isa_goal || to->id.isa_impasse) && from) return;
+    /* --- don't add links to goals/impasses, except the special one
+       (NIL,goal) --- */
+    if ((to->id.isa_goal || to->id.isa_impasse) && from)
+        return;
 
-  to->id.link_count++;
+    to->id.link_count++;
 
 #ifdef DEBUG_LINKS
-  if (from)
-    print_with_symbols ("\nAdding link from %y to %y", from, to);
-  else
-    print_with_symbols ("\nAdding special link to %y", to);
-  print (" (count=%lu)", to->id.link_count);
+    if (from)
+        print_with_symbols("\nAdding link from %y to %y", from, to);
+    else
+        print_with_symbols("\nAdding special link to %y", to);
+    print(" (count=%lu)", to->id.link_count);
 #endif
 
-  if (!from) return;  /* if adding a special link, we're done */
-  
-  /* --- if adding link from same level, ignore it --- */
-  if (from->id.promotion_level == to->id.promotion_level) return;
+    if (!from)
+        return;                 /* if adding a special link, we're done */
 
-  /* --- if adding link from lower to higher, mark higher accordingly --- */
-  if (from->id.promotion_level > to->id.promotion_level) {
-    to->id.could_be_a_link_from_below = TRUE;
-    return;
-  }
+    /* --- if adding link from same level, ignore it --- */
+    if (from->id.promotion_level == to->id.promotion_level)
+        return;
 
-  /* --- otherwise buffer it for later --- */
-  to->id.promotion_level = from->id.promotion_level;
-  symbol_add_ref (to);
-  push (to, current_agent(promoted_ids));
+    /* --- if adding link from lower to higher, mark higher accordingly --- */
+    if (from->id.promotion_level > to->id.promotion_level) {
+        to->id.could_be_a_link_from_below = TRUE;
+        return;
+    }
+
+    /* --- otherwise buffer it for later --- */
+    to->id.promotion_level = from->id.promotion_level;
+    symbol_add_ref(to);
+    push(to, current_agent(promoted_ids));
 }
 
 /* ----------------------------------------------
@@ -355,59 +362,63 @@ void post_link_addition (Symbol *from, Symbol *to) {
   { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
       promote_id_and_tc(sym,new_level); }
                                     
-void promote_id_and_tc (Symbol *id, goal_stack_level new_level) {
-  slot *s;
-  preference *pref;
-  wme *w;
-  
-  /* --- if it's already that high, or is going to be soon, don't bother -- */
-  if (id->id.level <= new_level) return;
-  if (id->id.promotion_level < new_level) return;
+void promote_id_and_tc(Symbol * id, goal_stack_level new_level)
+{
+    slot *s;
+    preference *pref;
+    wme *w;
 
-  /* --- update its level, etc. --- */
-  id->id.level = new_level;
-  id->id.promotion_level = new_level;
-  id->id.could_be_a_link_from_below = TRUE;
+    /* --- if it's already that high, or is going to be soon, don't bother -- */
+    if (id->id.level <= new_level)
+        return;
+    if (id->id.promotion_level < new_level)
+        return;
 
-  /* --- sanity check --- */
-  if (id->id.isa_goal || id->id.isa_impasse) {
-    char msg[128];
-    strcpy (msg, "decide.c: Internal error: tried to promote a goal or impasse id\n");
-    abort_with_fatal_error(msg);
-    /* Note--since we can't promote a goal, we don't have to worry about
-       slot->acceptable_preference_wmes below */
-  }
-  
-  /* --- scan through all preferences and wmes for all slots for this id -- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
-    promote_if_needed (w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next) {
-    for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next) {
-      promote_if_needed (pref->value);
-      if (preference_is_binary(pref->type))
-        promote_if_needed (pref->referent);
+    /* --- update its level, etc. --- */
+    id->id.level = new_level;
+    id->id.promotion_level = new_level;
+    id->id.could_be_a_link_from_below = TRUE;
+
+    /* --- sanity check --- */
+    if (id->id.isa_goal || id->id.isa_impasse) {
+        char msg[MESSAGE_SIZE];
+        strncpy(msg, "decide.c: Internal error: tried to promote a goal or impasse id\n", MESSAGE_SIZE);
+        msg[MESSAGE_SIZE - 1] = 0;
+        abort_with_fatal_error(msg);
+        /* Note--since we can't promote a goal, we don't have to worry about
+           slot->acceptable_preference_wmes below */
     }
-    for (w=s->wmes; w!=NIL; w=w->next)
-      promote_if_needed (w->value);
-  } /* end of for slots loop */
-}
 
+    /* --- scan through all preferences and wmes for all slots for this id -- */
+    for (w = id->id.input_wmes; w != NIL; w = w->next)
+        promote_if_needed(w->value);
+    for (s = id->id.slots; s != NIL; s = s->next) {
+        for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next) {
+            promote_if_needed(pref->value);
+            if (preference_is_binary(pref->type))
+                promote_if_needed(pref->referent);
+        }
+        for (w = s->wmes; w != NIL; w = w->next)
+            promote_if_needed(w->value);
+    }                           /* end of for slots loop */
+}
 /* ----------------------------------------------
    Do all buffered promotions.
 ---------------------------------------------- */
 
-void do_promotion (void) {
-  cons *c;
-  Symbol *to;
+void do_promotion(void)
+{
+    cons *c;
+    Symbol *to;
 
-  while (current_agent(promoted_ids)) {
-    c = current_agent(promoted_ids);
-    to = c->first;
-    current_agent(promoted_ids) = current_agent(promoted_ids)->rest;
-    free_cons (c);
-    promote_id_and_tc (to, to->id.promotion_level);
-    symbol_remove_ref (to);
-  }
+    while (current_agent(promoted_ids)) {
+        c = current_agent(promoted_ids);
+        to = c->first;
+        current_agent(promoted_ids) = current_agent(promoted_ids)->rest;
+        free_cons(c);
+        promote_id_and_tc(to, to->id.promotion_level);
+        symbol_remove_ref(to);
+    }
 }
 
 /* ======================================================================
@@ -445,56 +456,59 @@ void do_promotion (void) {
    Post a link removal for later processing.
 ---------------------------------------------- */
 
-void post_link_removal (Symbol *from, Symbol *to) {
-  dl_cons *dc;
+void post_link_removal(Symbol * from, Symbol * to)
+{
+    dl_cons *dc;
 
-  /* --- don't remove links to goals/impasses, except the special one
-     (NIL,goal) --- */
-  if ((to->id.isa_goal || to->id.isa_impasse) && from) return;
+    /* --- don't remove links to goals/impasses, except the special one
+       (NIL,goal) --- */
+    if ((to->id.isa_goal || to->id.isa_impasse) && from)
+        return;
 
-  to->id.link_count--;
+    to->id.link_count--;
 
 #ifdef DEBUG_LINKS
-  if (from) {
-    print_with_symbols ("\nRemoving link from %y to %y", from, to);
-    print (" (%d to %d)", from->id.level, to->id.level);
-  } else {
-    print_with_symbols ("\nRemoving special link to %y ", to);
-    print (" (%d)", to->id.level);
-  }
-  print (" (count=%lu)", to->id.link_count);
+    if (from) {
+        print_with_symbols("\nRemoving link from %y to %y", from, to);
+        print(" (%d to %d)", from->id.level, to->id.level);
+    } else {
+        print_with_symbols("\nRemoving special link to %y ", to);
+        print(" (%d)", to->id.level);
+    }
+    print(" (count=%lu)", to->id.link_count);
 #endif
 
-  /* --- if a gc is in progress, handle differently --- */
-  if (current_agent(link_update_mode)==JUST_UPDATE_COUNT) return;
+    /* --- if a gc is in progress, handle differently --- */
+    if (current_agent(link_update_mode) == JUST_UPDATE_COUNT)
+        return;
 
-  if ((current_agent(link_update_mode)==UPDATE_DISCONNECTED_IDS_LIST) &&
-      (to->id.link_count==0)) {
-    if (to->id.unknown_level) {
-      dc = to->id.unknown_level;
-      remove_from_dll (current_agent(ids_with_unknown_level), dc, next, prev);
-      insert_at_head_of_dll (current_agent(disconnected_ids), dc, next, prev);
-    } else {
-      symbol_add_ref (to);
-      allocate_with_pool (&current_agent(dl_cons_pool),  &dc);
-      dc->item = to;
-      to->id.unknown_level = dc;   
-      insert_at_head_of_dll (current_agent(disconnected_ids), dc, next, prev);
+    if ((current_agent(link_update_mode) == UPDATE_DISCONNECTED_IDS_LIST) && (to->id.link_count == 0)) {
+        if (to->id.unknown_level) {
+            dc = to->id.unknown_level;
+            remove_from_dll(current_agent(ids_with_unknown_level), dc, next, prev);
+            insert_at_head_of_dll(current_agent(disconnected_ids), dc, next, prev);
+        } else {
+            symbol_add_ref(to);
+            allocate_with_pool(&current_agent(dl_cons_pool), &dc);
+            dc->item = to;
+            to->id.unknown_level = dc;
+            insert_at_head_of_dll(current_agent(disconnected_ids), dc, next, prev);
+        }
+        return;
     }
-    return;
-  }
-    
-  /* --- if removing a link from a different level, there must be some other
-     link at the same level, so we can ignore this change --- */
-  if (from && (from->id.level != to->id.level)) return;
-  
-  if (! to->id.unknown_level) {
-    symbol_add_ref (to);
-    allocate_with_pool (&current_agent(dl_cons_pool),  &dc);
-    dc->item = to;
-    to->id.unknown_level = dc;   
-    insert_at_head_of_dll (current_agent(ids_with_unknown_level), dc, next, prev);
-  }
+
+    /* --- if removing a link from a different level, there must be some other
+       link at the same level, so we can ignore this change --- */
+    if (from && (from->id.level != to->id.level))
+        return;
+
+    if (!to->id.unknown_level) {
+        symbol_add_ref(to);
+        allocate_with_pool(&current_agent(dl_cons_pool), &dc);
+        dc->item = to;
+        to->id.unknown_level = dc;
+        insert_at_head_of_dll(current_agent(ids_with_unknown_level), dc, next, prev);
+    }
 }
 
 /* ----------------------------------------------
@@ -503,39 +517,40 @@ void post_link_removal (Symbol *from, Symbol *to) {
    id from TM.
 ---------------------------------------------- */
 
-void garbage_collect_id (Symbol *id) {
-  slot *s;
-  preference *pref, *next_pref;
+void garbage_collect_id(Symbol * id)
+{
+    slot *s;
+    preference *pref, *next_pref;
 
-#ifdef DEBUG_LINKS  
-  print_with_symbols ("\n*** Garbage collecting id: %y",id);
+#ifdef DEBUG_LINKS
+    print_with_symbols("\n*** Garbage collecting id: %y", id);
 #endif
 
-  /* Note--for goal/impasse id's, this does not remove the impasse wme's.
-     This is handled by remove_existing_such-and-such... */
+    /* Note--for goal/impasse id's, this does not remove the impasse wme's.
+       This is handled by remove_existing_such-and-such... */
 
-  /* --- remove any input wmes from the id --- */
-  remove_wme_list_from_wm (id->id.input_wmes);
-  id->id.input_wmes = NIL;
+    /* --- remove any input wmes from the id --- */
+    remove_wme_list_from_wm(id->id.input_wmes);
+    id->id.input_wmes = NIL;
 
-  for (s=id->id.slots; s!=NIL; s=s->next) {
-    /* --- remove any existing attribute impasse for the slot --- */
-    if (s->impasse_type!=NONE_IMPASSE_TYPE)
-      remove_existing_attribute_impasse_for_slot (s);
-    /* --- remove all wme's from the slot --- */
-    remove_wme_list_from_wm (s->wmes);
-    s->wmes = NIL;
-    /* --- remove all preferences for the slot --- */
-    pref = s->all_preferences;
-    while (pref) {
-      next_pref = pref->all_of_slot_next;
-      remove_preference_from_tm (pref);
-      /* Note:  the call to remove_preference_from_slot handles the removal
-         of acceptable_preference_wmes */
-      pref = next_pref;
-    }
-    mark_slot_for_possible_removal (s);
-  } /* end of for slots loop */
+    for (s = id->id.slots; s != NIL; s = s->next) {
+        /* --- remove any existing attribute impasse for the slot --- */
+        if (s->impasse_type != NONE_IMPASSE_TYPE)
+            remove_existing_attribute_impasse_for_slot(s);
+        /* --- remove all wme's from the slot --- */
+        remove_wme_list_from_wm(s->wmes);
+        s->wmes = NIL;
+        /* --- remove all preferences for the slot --- */
+        pref = s->all_preferences;
+        while (pref) {
+            next_pref = pref->all_of_slot_next;
+            remove_preference_from_tm(pref);
+            /* Note:  the call to remove_preference_from_slot handles the removal
+               of acceptable_preference_wmes */
+            pref = next_pref;
+        }
+        mark_slot_for_possible_removal(s);
+    }                           /* end of for slots loop */
 }
 
 /* ----------------------------------------------
@@ -561,52 +576,56 @@ void garbage_collect_id (Symbol *id) {
   { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
       mark_id_and_tc_as_unknown_level(sym); }
 
-void mark_id_and_tc_as_unknown_level (Symbol *id) {
-  slot *s;
-  preference *pref;
-  wme *w;
-  dl_cons *dc;
+void mark_id_and_tc_as_unknown_level(Symbol * id)
+{
+    slot *s;
+    preference *pref;
+    wme *w;
+    dl_cons *dc;
 
-  /* --- if id is already marked, do nothing --- */
-  if (id->id.tc_num==current_agent(mark_tc_number)) return;
-  
-  /* --- don't mark anything higher up as disconnected--in order to be higher
-     up, it must have a link to it up there --- */
-  if (id->id.level < current_agent(level_at_which_marking_started)) return; 
+    /* --- if id is already marked, do nothing --- */
+    if (id->id.tc_num == current_agent(mark_tc_number))
+        return;
 
-  /* --- mark id, so we won't do it again later --- */
-  id->id.tc_num = current_agent(mark_tc_number);
+    /* --- don't mark anything higher up as disconnected--in order to be higher
+       up, it must have a link to it up there --- */
+    if (id->id.level < current_agent(level_at_which_marking_started))
+        return;
 
-  /* --- update range of goal stack levels we'll need to walk --- */
-  if (id->id.level < current_agent(highest_level_anything_could_fall_from))
-    current_agent(highest_level_anything_could_fall_from) = id->id.level;
-  if (id->id.level > current_agent(lowest_level_anything_could_fall_to))
-    current_agent(lowest_level_anything_could_fall_to) = id->id.level;
-  if (id->id.could_be_a_link_from_below)
-    current_agent(lowest_level_anything_could_fall_to) = LOWEST_POSSIBLE_GOAL_LEVEL;
+    /* --- mark id, so we won't do it again later --- */
+    id->id.tc_num = current_agent(mark_tc_number);
 
-  /* --- add id to the set of ids with unknown level --- */
-  if (! id->id.unknown_level) {
-    allocate_with_pool (&current_agent(dl_cons_pool),  &dc);
-    dc->item = id;
-    id->id.unknown_level = dc;
-    insert_at_head_of_dll (current_agent(ids_with_unknown_level), dc, next, prev);
-    symbol_add_ref (id);
-  }
+    /* --- update range of goal stack levels we'll need to walk --- */
+    if (id->id.level < current_agent(highest_level_anything_could_fall_from))
+        current_agent(highest_level_anything_could_fall_from) = id->id.level;
+    if (id->id.level > current_agent(lowest_level_anything_could_fall_to))
+        current_agent(lowest_level_anything_could_fall_to) = id->id.level;
+    if (id->id.could_be_a_link_from_below)
+        current_agent(lowest_level_anything_could_fall_to) = LOWEST_POSSIBLE_GOAL_LEVEL;
 
-  /* -- scan through all preferences and wmes for all slots for this id -- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
-    mark_unknown_level_if_needed (w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next) {
-    for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next) {
-      mark_unknown_level_if_needed (pref->value);
-      if (preference_is_binary(pref->type))
-        mark_unknown_level_if_needed (pref->referent);
+    /* --- add id to the set of ids with unknown level --- */
+    if (!id->id.unknown_level) {
+        allocate_with_pool(&current_agent(dl_cons_pool), &dc);
+        dc->item = id;
+        id->id.unknown_level = dc;
+        insert_at_head_of_dll(current_agent(ids_with_unknown_level), dc, next, prev);
+        symbol_add_ref(id);
     }
-    if(s->impasse_id) mark_unknown_level_if_needed(s->impasse_id);
-    for (w=s->wmes; w!=NIL; w=w->next)
-      mark_unknown_level_if_needed (w->value);
-  } /* end of for slots loop */
+
+    /* -- scan through all preferences and wmes for all slots for this id -- */
+    for (w = id->id.input_wmes; w != NIL; w = w->next)
+        mark_unknown_level_if_needed(w->value);
+    for (s = id->id.slots; s != NIL; s = s->next) {
+        for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next) {
+            mark_unknown_level_if_needed(pref->value);
+            if (preference_is_binary(pref->type))
+                mark_unknown_level_if_needed(pref->referent);
+        }
+        if (s->impasse_id)
+            mark_unknown_level_if_needed(s->impasse_id);
+        for (w = s->wmes; w != NIL; w = w->next)
+            mark_unknown_level_if_needed(w->value);
+    }                           /* end of for slots loop */
 }
 
 /* ----------------------------------------------
@@ -623,116 +642,121 @@ void mark_id_and_tc_as_unknown_level (Symbol *id) {
       if ((sym)->id.tc_num!=current_agent(walk_tc_number)) \
         walk_and_update_levels(sym); }
 
-void walk_and_update_levels (Symbol *id) {
-  slot *s;
-  preference *pref;
-  wme *w;
-  dl_cons *dc;
+void walk_and_update_levels(Symbol * id)
+{
+    slot *s;
+    preference *pref;
+    wme *w;
+    dl_cons *dc;
 
-  /* --- mark id so we don't walk it twice --- */
-  id->id.tc_num = current_agent(walk_tc_number);
+    /* --- mark id so we don't walk it twice --- */
+    id->id.tc_num = current_agent(walk_tc_number);
 
-  /* --- if we already know its level, and it's higher up, then exit --- */
-  if ((! id->id.unknown_level) && (id->id.level < current_agent(walk_level))) return;
+    /* --- if we already know its level, and it's higher up, then exit --- */
+    if ((!id->id.unknown_level) && (id->id.level < current_agent(walk_level)))
+        return;
 
-  /* --- if we didn't know its level before, we do now --- */
-  if (id->id.unknown_level) {
-    dc = id->id.unknown_level;
-    remove_from_dll (current_agent(ids_with_unknown_level), dc, next, prev);
-    free_with_pool (&current_agent(dl_cons_pool), dc);
-    symbol_remove_ref (id);
-    id->id.unknown_level = NIL;
-    id->id.level = current_agent(walk_level);
-    id->id.promotion_level = current_agent(walk_level);
-  }
-  
-  /* -- scan through all preferences and wmes for all slots for this id -- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
-    update_levels_if_needed (w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next) {
-    for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next) {
-      update_levels_if_needed (pref->value);
-      if (preference_is_binary(pref->type))
-        update_levels_if_needed (pref->referent);
+    /* --- if we didn't know its level before, we do now --- */
+    if (id->id.unknown_level) {
+        dc = id->id.unknown_level;
+        remove_from_dll(current_agent(ids_with_unknown_level), dc, next, prev);
+        free_with_pool(&current_agent(dl_cons_pool), dc);
+        symbol_remove_ref(id);
+        id->id.unknown_level = NIL;
+        id->id.level = current_agent(walk_level);
+        id->id.promotion_level = current_agent(walk_level);
     }
-    if(s->impasse_id) update_levels_if_needed(s->impasse_id);
-    for (w=s->wmes; w!=NIL; w=w->next)
-      update_levels_if_needed (w->value);
-  } /* end of for slots loop */
+
+    /* -- scan through all preferences and wmes for all slots for this id -- */
+    for (w = id->id.input_wmes; w != NIL; w = w->next)
+        update_levels_if_needed(w->value);
+    for (s = id->id.slots; s != NIL; s = s->next) {
+        for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next) {
+            update_levels_if_needed(pref->value);
+            if (preference_is_binary(pref->type))
+                update_levels_if_needed(pref->referent);
+        }
+        if (s->impasse_id)
+            update_levels_if_needed(s->impasse_id);
+        for (w = s->wmes; w != NIL; w = w->next)
+            update_levels_if_needed(w->value);
+    }               /* end of for slots loop */
 }
 
 /* ----------------------------------------------
    Do all buffered demotions and gc's.
 ---------------------------------------------- */
 
-void do_demotion (void) {
-  Symbol *g, *id;
-  dl_cons *dc, *next_dc;
+void do_demotion(void)
+{
+    Symbol *g, *id;
+    dl_cons *dc, *next_dc;
 
-  /* --- scan through ids_with_unknown_level, move the ones with link_count==0
-   *  over to disconnected_ids --- */
-  for (dc=current_agent(ids_with_unknown_level); dc!=NIL; dc=next_dc) {
-    next_dc = dc->next;
-    id = dc->item;
-    if (id->id.link_count==0) {
-      remove_from_dll (current_agent(ids_with_unknown_level), dc, next, prev);
-      insert_at_head_of_dll (current_agent(disconnected_ids), dc, next, prev);
+    /* --- scan through ids_with_unknown_level, move the ones with link_count==0
+     *  over to disconnected_ids --- */
+    for (dc = current_agent(ids_with_unknown_level); dc != NIL; dc = next_dc) {
+        next_dc = dc->next;
+        id = dc->item;
+        if (id->id.link_count == 0) {
+            remove_from_dll(current_agent(ids_with_unknown_level), dc, next, prev);
+            insert_at_head_of_dll(current_agent(disconnected_ids), dc, next, prev);
+        }
     }
-  }
 
-  /* --- keep garbage collecting ids until nothing left to gc --- */
-  current_agent(link_update_mode) = UPDATE_DISCONNECTED_IDS_LIST;
-  while (current_agent(disconnected_ids)) {
-    dc = current_agent(disconnected_ids);
-    current_agent(disconnected_ids) = current_agent(disconnected_ids)->next;
-    id = dc->item;
-    free_with_pool (&current_agent(dl_cons_pool), dc);
-    garbage_collect_id (id);
-    symbol_remove_ref (id);
-  }
-  current_agent(link_update_mode) = UPDATE_LINKS_NORMALLY;
- 
-  /* --- if nothing's left with an unknown level, we're done --- */
-  if (! current_agent(ids_with_unknown_level)) return;
-
-  /* --- do the mark --- */
-  current_agent(highest_level_anything_could_fall_from) =
-                LOWEST_POSSIBLE_GOAL_LEVEL;
-  current_agent(lowest_level_anything_could_fall_to) = -1;
-  current_agent(mark_tc_number) = get_new_tc_number();
-  for (dc=current_agent(ids_with_unknown_level); dc!=NIL; dc=dc->next) {
-    id = dc->item;
-    current_agent(level_at_which_marking_started) = id->id.level;
-    mark_id_and_tc_as_unknown_level (id);
-  }
-
-  /* --- do the walk --- */
-  g = current_agent(top_goal);
-  while (TRUE) {
-    if (!g) break;
-    if (g->id.level > current_agent(lowest_level_anything_could_fall_to)) break;
-    if (g->id.level >= current_agent(highest_level_anything_could_fall_from)) {
-      current_agent(walk_level) = g->id.level;
-      current_agent(walk_tc_number) = get_new_tc_number();
-      walk_and_update_levels (g);
+    /* --- keep garbage collecting ids until nothing left to gc --- */
+    current_agent(link_update_mode) = UPDATE_DISCONNECTED_IDS_LIST;
+    while (current_agent(disconnected_ids)) {
+        dc = current_agent(disconnected_ids);
+        current_agent(disconnected_ids) = current_agent(disconnected_ids)->next;
+        id = dc->item;
+        free_with_pool(&current_agent(dl_cons_pool), dc);
+        garbage_collect_id(id);
+        symbol_remove_ref(id);
     }
-    g = g->id.lower_goal;
-  }
+    current_agent(link_update_mode) = UPDATE_LINKS_NORMALLY;
 
-  /* --- GC anything left with an unknown level after the walk --- */
-  current_agent(link_update_mode) = JUST_UPDATE_COUNT;
-  while (current_agent(ids_with_unknown_level)) {
-    dc = current_agent(ids_with_unknown_level);
-    current_agent(ids_with_unknown_level) =
-                  current_agent(ids_with_unknown_level)->next;
-    id = dc->item;
-    free_with_pool (&current_agent(dl_cons_pool), dc);
-    id->id.unknown_level = NIL;    /* AGR 640:  GAP set to NIL because */
-                                   /* symbol may still have pointers to it */
-    garbage_collect_id (id);
-    symbol_remove_ref (id);
-  }
-  current_agent(link_update_mode) = UPDATE_LINKS_NORMALLY;
+    /* --- if nothing's left with an unknown level, we're done --- */
+    if (!current_agent(ids_with_unknown_level))
+        return;
+
+    /* --- do the mark --- */
+    current_agent(highest_level_anything_could_fall_from) = LOWEST_POSSIBLE_GOAL_LEVEL;
+    current_agent(lowest_level_anything_could_fall_to) = -1;
+    current_agent(mark_tc_number) = get_new_tc_number();
+    for (dc = current_agent(ids_with_unknown_level); dc != NIL; dc = dc->next) {
+        id = dc->item;
+        current_agent(level_at_which_marking_started) = id->id.level;
+        mark_id_and_tc_as_unknown_level(id);
+    }
+
+    /* --- do the walk --- */
+    g = current_agent(top_goal);
+    for (;;) {
+        if (!g)
+            break;
+        if (g->id.level > current_agent(lowest_level_anything_could_fall_to))
+            break;
+        if (g->id.level >= current_agent(highest_level_anything_could_fall_from)) {
+            current_agent(walk_level) = g->id.level;
+            current_agent(walk_tc_number) = get_new_tc_number();
+            walk_and_update_levels(g);
+        }
+        g = g->id.lower_goal;
+    }
+
+    /* --- GC anything left with an unknown level after the walk --- */
+    current_agent(link_update_mode) = JUST_UPDATE_COUNT;
+    while (current_agent(ids_with_unknown_level)) {
+        dc = current_agent(ids_with_unknown_level);
+        current_agent(ids_with_unknown_level) = current_agent(ids_with_unknown_level)->next;
+        id = dc->item;
+        free_with_pool(&current_agent(dl_cons_pool), dc);
+        id->id.unknown_level = NIL;     /* AGR 640:  GAP set to NIL because */
+        /* symbol may still have pointers to it */
+        garbage_collect_id(id);
+        symbol_remove_ref(id);
+    }
+    current_agent(link_update_mode) = UPDATE_LINKS_NORMALLY;
 }
 
 /* ------------------------------------------------------------------
@@ -743,29 +767,30 @@ void do_demotion (void) {
    disconnected wmes.
 ------------------------------------------------------------------ */
 
-void do_buffered_link_changes (void) {
+void do_buffered_link_changes(void)
+{
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  struct timeval saved_start_tv;
+    struct timeval saved_start_tv;
 #endif
 #endif
 
-  /* --- if no promotions or demotions are buffered, do nothing --- */
-  if (! (current_agent(promoted_ids) ||
-         current_agent(ids_with_unknown_level) ||
-         current_agent(disconnected_ids))) return;
+    /* --- if no promotions or demotions are buffered, do nothing --- */
+    if (!(current_agent(promoted_ids) || current_agent(ids_with_unknown_level) || current_agent(disconnected_ids)))
+        return;
 
-#ifndef NO_TIMING_STUFF
-#ifdef DETAILED_TIMING_STATS  
-  start_timer (&saved_start_tv);
-#endif
-#endif
-  do_promotion ();  
-  do_demotion ();
+
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  stop_timer (&saved_start_tv, &current_agent(ownership_cpu_time[current_agent(current_phase)]));
+    start_timer(&saved_start_tv);
+#endif
+#endif
+    do_promotion();
+    do_demotion();
+#ifndef NO_TIMING_STUFF
+#ifdef DETAILED_TIMING_STATS
+    stop_timer(&saved_start_tv, &current_agent(ownership_cpu_time[current_agent(current_phase)]));
 #endif
 #endif
 }
@@ -802,254 +827,264 @@ void do_buffered_link_changes (void) {
    require preference for the slot.
 ************************************************************************** */
 
-byte require_preference_semantics (slot *s, preference **result_candidates) {
-  preference *p;
-  preference *candidates;
-  Symbol *value;
-  
-  /* --- collect set of required items into candidates list --- */
-  for (p=s->preferences[REQUIRE_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-  candidates = NIL;
-  for (p=s->preferences[REQUIRE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-    if (p->value->common.decider_flag == NOTHING_DECIDER_FLAG) {
-      p->next_candidate = candidates;
-      candidates = p;
-      /* --- unmark it, in order to prevent it from being added twice --- */
-      p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+byte require_preference_semantics(slot * s, preference ** result_candidates)
+{
+    preference *p;
+    preference *candidates;
+    Symbol *value;
+
+    /* --- collect set of required items into candidates list --- */
+    for (p = s->preferences[REQUIRE_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+    candidates = NIL;
+    for (p = s->preferences[REQUIRE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+        if (p->value->common.decider_flag == NOTHING_DECIDER_FLAG) {
+            p->next_candidate = candidates;
+            candidates = p;
+            /* --- unmark it, in order to prevent it from being added twice --- */
+            p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+        }
     }
-  }
-  *result_candidates = candidates;
-  
-  /* --- if more than one required item, we have a constraint failure --- */
-  if (candidates->next_candidate) return CONSTRAINT_FAILURE_IMPASSE_TYPE;
-  
-  /* --- just one require, check for require-prohibit impasse --- */
-  value = candidates->value;
-  for (p=s->preferences[PROHIBIT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    if (p->value == value) return CONSTRAINT_FAILURE_IMPASSE_TYPE;
-  
-  /* --- the lone require is the winner --- */
-  return NONE_IMPASSE_TYPE;
+    *result_candidates = candidates;
+
+    /* --- if more than one required item, we have a constraint failure --- */
+    if (candidates->next_candidate)
+        return CONSTRAINT_FAILURE_IMPASSE_TYPE;
+
+    /* --- just one require, check for require-prohibit impasse --- */
+    value = candidates->value;
+    for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        if (p->value == value)
+            return CONSTRAINT_FAILURE_IMPASSE_TYPE;
+
+    /* --- the lone require is the winner --- */
+    return NONE_IMPASSE_TYPE;
 }
 
-byte run_preference_semantics (slot *s, preference **result_candidates) {
-  preference *p, *p2, *cand, *prev_cand;
-  bool match_found, not_all_indifferent, not_all_parallel;
-  preference *candidates;
+byte run_preference_semantics(slot * s, preference ** result_candidates)
+{
+    preference *p, *p2, *cand, *prev_cand;
+    bool match_found, not_all_indifferent, not_all_parallel;
+    preference *candidates;
 
-  /* --- if the slot has no preferences at all, things are trivial --- */
-  if (! s->all_preferences) {
-    if (! s->isa_context_slot) mark_slot_for_possible_removal (s);
-    *result_candidates = NIL;
-    return NONE_IMPASSE_TYPE;
-  }
-  
-  /* === Requires === */
-  if (s->preferences[REQUIRE_PREFERENCE_TYPE]) {
-    return require_preference_semantics (s, result_candidates);
-  }
-    
-  /* === Acceptables, Prohibits, Rejects === */
-
-  /* --- mark everything that's acceptable, then unmark the prohibited
-         and rejected items --- */
-  for (p=s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-  for (p=s->preferences[PROHIBIT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-  for (p=s->preferences[REJECT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-
-  /* --- now scan through acceptables and build the list of candidates --- */
-  candidates = NIL;
-  for (p=s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-    if (p->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
-      p->next_candidate = candidates;
-      candidates = p;
-      /* --- unmark it, in order to prevent it from being added twice --- */
-      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+    /* --- if the slot has no preferences at all, things are trivial --- */
+    if (!s->all_preferences) {
+        if (!s->isa_context_slot)
+            mark_slot_for_possible_removal(s);
+        *result_candidates = NIL;
+        return NONE_IMPASSE_TYPE;
     }
-  }
 
-  /* === Handling of attribute_preferences_mode 2 === */
+    /* === Requires === */
+    if (s->preferences[REQUIRE_PREFERENCE_TYPE]) {
+        return require_preference_semantics(s, result_candidates);
+    }
+
+    /* === Acceptables, Prohibits, Rejects === */
+
+    /* --- mark everything that's acceptable, then unmark the prohibited
+       and rejected items --- */
+    for (p = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+    for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+    for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+
+    /* --- now scan through acceptables and build the list of candidates --- */
+    candidates = NIL;
+    for (p = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+        if (p->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
+            p->next_candidate = candidates;
+            candidates = p;
+            /* --- unmark it, in order to prevent it from being added twice --- */
+            p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+        }
+    }
+
+
+    /* === Handling of attribute_preferences_mode 2 === */
 #ifndef SOAR_8_ONLY
-  if ( ( (current_agent(attribute_preferences_mode)==2) ||
-			(current_agent(operand2_mode) ==TRUE) )  &&
-		 (! s->isa_context_slot)) {
+    if (((current_agent(attribute_preferences_mode) == 2) ||
+         (current_agent(operand2_mode) == TRUE)) && (!s->isa_context_slot)) {
+
 #else
-  if ( ! s->isa_context_slot ) {
+    if (!s->isa_context_slot) {
 #endif
-    *result_candidates = candidates;
-    return NONE_IMPASSE_TYPE;
-  }
-       
-  /* === If there are only 0 or 1 candidates, we're done === */
-  if ((!candidates) || (! candidates->next_candidate)) {
-    *result_candidates = candidates;
-    return NONE_IMPASSE_TYPE;
-  }
+        *result_candidates = candidates;
+        return NONE_IMPASSE_TYPE;
+    }
 
-  /* === Better/Worse === */
-  if (s->preferences[BETTER_PREFERENCE_TYPE] ||
-      s->preferences[WORSE_PREFERENCE_TYPE]) {
-    Symbol *j, *k;
+    /* === If there are only 0 or 1 candidates, we're done === */
+    if ((!candidates) || (!candidates->next_candidate)) {
+        *result_candidates = candidates;
+        return NONE_IMPASSE_TYPE;
+    }
 
-    /* -------------------- Algorithm to find conflicted set: 
-      conflicted = {}
-      for each (j > k):
-        if j is (candidate or conflicted)
+    /* === Better/Worse === */
+    if (s->preferences[BETTER_PREFERENCE_TYPE] || s->preferences[WORSE_PREFERENCE_TYPE]) {
+        Symbol *j, *k;
+
+        /* -------------------- Algorithm to find conflicted set: 
+           conflicted = {}
+           for each (j > k):
+           if j is (candidate or conflicted)
            and k is (candidate or conflicted)
            and at least one of j,k is a candidate
-          then if (k > j) or (j < k) then
-            conflicted += j, if not already true
-            conflicted += k, if not already true
-            candidate -= j, if not already true
-            candidate -= k, if not already true
-      for each (j < k):
-        if j is (candidate or conflicted)
+           then if (k > j) or (j < k) then
+           conflicted += j, if not already true
+           conflicted += k, if not already true
+           candidate -= j, if not already true
+           candidate -= k, if not already true
+           for each (j < k):
+           if j is (candidate or conflicted)
            and k is (candidate or conflicted)
            and at least one of j,k is a candidate
            then if (k < j)
-             then
-                conflicted += j, if not already true
-                conflicted += k, if not already true
-                candidate -= j, if not already true
-                candidate -= k, if not already true
-      ----------------------- */
-    
-    for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-      p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
-    }
-    for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-      p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
-    }
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-      cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-    }
-    for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-      j = p->value;
-      k = p->referent;
-      if (j==k) continue;
-      if (j->common.decider_flag && k->common.decider_flag) {
-        if(k->common.decider_flag != CONFLICTED_DECIDER_FLAG)
-          k->common.decider_flag = FORMER_CANDIDATE_DECIDER_FLAG;
-        if ((j->common.decider_flag!=CONFLICTED_DECIDER_FLAG) ||
-            (k->common.decider_flag!=CONFLICTED_DECIDER_FLAG)) {
-          for (p2=s->preferences[BETTER_PREFERENCE_TYPE]; p2; p2=p2->next)
-            if ((p2->value==k)&&(p2->referent==j)) {
-              j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              break;
-            }
-          for (p2=s->preferences[WORSE_PREFERENCE_TYPE]; p2; p2=p2->next)
-            if ((p2->value==j)&&(p2->referent==k)) {
-              j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              break;
-            }
+           then
+           conflicted += j, if not already true
+           conflicted += k, if not already true
+           candidate -= j, if not already true
+           candidate -= k, if not already true
+           ----------------------- */
+
+        for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+            p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
         }
-      }
-    }
-    for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-      j = p->value;
-      k = p->referent;
-      if (j==k) continue;
-      if (j->common.decider_flag && k->common.decider_flag) {
-        if(j->common.decider_flag != CONFLICTED_DECIDER_FLAG)
-          j->common.decider_flag = FORMER_CANDIDATE_DECIDER_FLAG;
-        if ((j->common.decider_flag!=CONFLICTED_DECIDER_FLAG) ||
-            (k->common.decider_flag!=CONFLICTED_DECIDER_FLAG)) {
-          for (p2=s->preferences[WORSE_PREFERENCE_TYPE]; p2; p2=p2->next)
-            if ((p2->value==k)&&(p2->referent==j)) {
-              j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              break;
+        for (p = s->preferences[WORSE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+            p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
+        }
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+            cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+        }
+        for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            j = p->value;
+            k = p->referent;
+            if (j == k)
+                continue;
+            if (j->common.decider_flag && k->common.decider_flag) {
+                if (k->common.decider_flag != CONFLICTED_DECIDER_FLAG)
+                    k->common.decider_flag = FORMER_CANDIDATE_DECIDER_FLAG;
+                if ((j->common.decider_flag != CONFLICTED_DECIDER_FLAG) ||
+                    (k->common.decider_flag != CONFLICTED_DECIDER_FLAG)) {
+                    for (p2 = s->preferences[BETTER_PREFERENCE_TYPE]; p2; p2 = p2->next)
+                        if ((p2->value == k) && (p2->referent == j)) {
+                            j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+                            k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+                            break;
+                        }
+                    for (p2 = s->preferences[WORSE_PREFERENCE_TYPE]; p2; p2 = p2->next)
+                        if ((p2->value == j) && (p2->referent == k)) {
+                            j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+                            k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+                            break;
+                        }
+                }
             }
         }
-      }
-    }
-    
-    /* --- now scan through candidates list, look for conflicted stuff --- */
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      if (cand->value->common.decider_flag==CONFLICTED_DECIDER_FLAG) break;
-    if (cand) {
-      /* --- collect conflicted candidates into new candidates list --- */
-      prev_cand = NIL;
-      cand = candidates;
-      while (cand) {
-        if (cand->value->common.decider_flag != CONFLICTED_DECIDER_FLAG) {
-          if (prev_cand)
-            prev_cand->next_candidate = cand->next_candidate;
-          else
-            candidates = cand->next_candidate;
-        } else {
-          prev_cand = cand;
+        for (p = s->preferences[WORSE_PREFERENCE_TYPE]; p != NIL; p = p->next) {
+            j = p->value;
+            k = p->referent;
+            if (j == k)
+                continue;
+            if (j->common.decider_flag && k->common.decider_flag) {
+                if (j->common.decider_flag != CONFLICTED_DECIDER_FLAG)
+                    j->common.decider_flag = FORMER_CANDIDATE_DECIDER_FLAG;
+                if ((j->common.decider_flag != CONFLICTED_DECIDER_FLAG) ||
+                    (k->common.decider_flag != CONFLICTED_DECIDER_FLAG)) {
+                    for (p2 = s->preferences[WORSE_PREFERENCE_TYPE]; p2; p2 = p2->next)
+                        if ((p2->value == k) && (p2->referent == j)) {
+                            j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+                            k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+                            break;
+                        }
+                }
+            }
         }
-        cand = cand->next_candidate;
-      }
-      *result_candidates = candidates;
-      return CONFLICT_IMPASSE_TYPE;
+
+        /* --- now scan through candidates list, look for conflicted stuff --- */
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+            if (cand->value->common.decider_flag == CONFLICTED_DECIDER_FLAG)
+                break;
+        if (cand) {
+            /* --- collect conflicted candidates into new candidates list --- */
+            prev_cand = NIL;
+            cand = candidates;
+            while (cand) {
+                if (cand->value->common.decider_flag != CONFLICTED_DECIDER_FLAG) {
+                    if (prev_cand)
+                        prev_cand->next_candidate = cand->next_candidate;
+                    else
+                        candidates = cand->next_candidate;
+                } else {
+                    prev_cand = cand;
+                }
+                cand = cand->next_candidate;
+            }
+            *result_candidates = candidates;
+            return CONFLICT_IMPASSE_TYPE;
+        }
+        /* --- no conflicts found, remove former_candidates from candidates --- */
+        prev_cand = NIL;
+        cand = candidates;
+        while (cand) {
+            if (cand->value->common.decider_flag == FORMER_CANDIDATE_DECIDER_FLAG) {
+                if (prev_cand)
+                    prev_cand->next_candidate = cand->next_candidate;
+                else
+                    candidates = cand->next_candidate;
+            } else {
+                prev_cand = cand;
+            }
+            cand = cand->next_candidate;
+        }
     }
-    /* --- no conflicts found, remove former_candidates from candidates --- */
-    prev_cand = NIL;
-    cand = candidates;
-    while (cand) {
-      if (cand->value->common.decider_flag == FORMER_CANDIDATE_DECIDER_FLAG) {
+
+    /* === Bests === */
+    if (s->preferences[BEST_PREFERENCE_TYPE]) {
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+            cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+        for (p = s->preferences[BEST_PREFERENCE_TYPE]; p != NIL; p = p->next)
+            p->value->common.decider_flag = BEST_DECIDER_FLAG;
+        prev_cand = NIL;
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+            if (cand->value->common.decider_flag == BEST_DECIDER_FLAG) {
+                if (prev_cand)
+                    prev_cand->next_candidate = cand;
+                else
+                    candidates = cand;
+                prev_cand = cand;
+            }
         if (prev_cand)
-          prev_cand->next_candidate = cand->next_candidate;
-        else
-          candidates = cand->next_candidate;
-      } else {
-        prev_cand = cand;
-      }
-      cand = cand->next_candidate;
+            prev_cand->next_candidate = NIL;
     }
-  }
-  
-  /* === Bests === */
-  if (s->preferences[BEST_PREFERENCE_TYPE]) {
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-    for (p=s->preferences[BEST_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-      p->value->common.decider_flag = BEST_DECIDER_FLAG;
-    prev_cand = NIL;
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      if (cand->value->common.decider_flag == BEST_DECIDER_FLAG) {
+
+    /* === Worsts === */
+    if (s->preferences[WORST_PREFERENCE_TYPE]) {
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+            cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+        for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next)
+            p->value->common.decider_flag = WORST_DECIDER_FLAG;
+        prev_cand = NIL;
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+            if (cand->value->common.decider_flag != WORST_DECIDER_FLAG) {
+                if (prev_cand)
+                    prev_cand->next_candidate = cand;
+                else
+                    candidates = cand;
+                prev_cand = cand;
+            }
         if (prev_cand)
-          prev_cand->next_candidate = cand;
-        else
-          candidates = cand;
-        prev_cand = cand;
-      }
-    if (prev_cand) prev_cand->next_candidate = NIL;
-  }
-  
-  /* === Worsts === */
-  if (s->preferences[WORST_PREFERENCE_TYPE]) {
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-    for (p=s->preferences[WORST_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-      p->value->common.decider_flag = WORST_DECIDER_FLAG;
-    prev_cand = NIL;
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      if (cand->value->common.decider_flag != WORST_DECIDER_FLAG) {
-        if (prev_cand)
-          prev_cand->next_candidate = cand;
-        else
-          candidates = cand;
-        prev_cand = cand;
-      }
-    if (prev_cand) prev_cand->next_candidate = NIL;
-  }
-  
-  /* === If there are only 0 or 1 candidates, we're done === */
-  if ((!candidates) || (! candidates->next_candidate)) {
-    *result_candidates = candidates;
-    return NONE_IMPASSE_TYPE;
-  }
+            prev_cand->next_candidate = NIL;
+    }
+
+    /* === If there are only 0 or 1 candidates, we're done === */
+    if ((!candidates) || (!candidates->next_candidate)) {
+        *result_candidates = candidates;
+        return NONE_IMPASSE_TYPE;
+    }
 
   /* === Indifferents === */
   for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
@@ -1057,7 +1092,8 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
   for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
 
-    /* REW: 2003-01-02 Behavior Variability Kernel Experiments
+	#ifdef NUMERIC_INDIFFERENCE
+	/* REW: 2003-01-02 Behavior Variability Kernel Experiments
      We want to treat some binary indifferent prefs as unary indifferents,
      the second pref is really an int representing a probability value.
      So we identify these preferences here.
@@ -1069,14 +1105,19 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
       p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
   
   /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
-  
+	#endif
+	
   not_all_indifferent = FALSE;
   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
     /* --- if cand is unary indifferent, it's fine --- */
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
       continue;
-    else if ( (useProbIndifferentSelection) && (cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) )
+	
+	#ifdef NUMERIC_INDIFFERENCE
+	else if (cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG)
       continue;
+	#endif
+	
 	/* --- check whether cand is binary indifferent to each other one --- */
     for (p=candidates; p!=NIL; p=p->next_candidate) {
       if (p==cand) continue;
@@ -1144,25 +1185,27 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
       /* ** intentiaonal fall through here... ** */
     }
     case USER_SELECT_RANDOM: {
-      int num_candidates, chosen_num;
-      num_candidates = 0;
       
+#ifdef NUMERIC_INDIFFERENCE
 	  /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
       /* If useProbIndifferentSelection is 1, then we choose the
 	 the new method for choosing candidates 
       */ 
-	
-      if(useProbIndifferentSelection){
-	   // SAN - mucking about
-          cand = ProbSelect(s, candidates);
+	   
+          cand = probabilistically_select(s, candidates);
 	      if (!cand){
 		     *result_candidates = candidates;
 		     return TIE_IMPASSE_TYPE;
 		}
-	  }
-	  else{ 
-	  	  for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-        num_candidates++;
+		  *result_candidates = cand;
+		  break;
+#else
+		  
+		  int num_candidates, chosen_num;
+		  num_candidates = 0;
+
+		  for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+			num_candidates++;
 
       chosen_num = sys_random() % num_candidates;
 
@@ -1172,12 +1215,14 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
      }
 	  *result_candidates = cand;  
 	  break;
-							 }
+#endif
+	}
     default:
-      { char msg[128];
-	  sprintf(msg, "decide.c: Error: bad value of user_select_mode: %ld\n",
+      { char msg[MESSAGE_SIZE];
+	  snprintf(msg, MESSAGE_SIZE, "decide.c: Error: bad value of user_select_mode: %ld\n",
 	      current_agent(sysparams)[USER_SELECT_MODE_SYSPARAM]);
-      abort_with_fatal_error(msg);
+      msg[MESSAGE_SIZE - 1] = 0;  /* snprintf doesn't set last char to null if output is truncated */
+	  abort_with_fatal_error(msg);
       }
     }
     (*result_candidates)->next_candidate = NIL;
@@ -1455,14 +1500,18 @@ byte run_preference_semantics_for_consistency_check (slot *s, preference **resul
     cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
   for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
-  /* REW: 2003-01-26 Behavior Variability Kernel Experiments
+  
+#ifdef NUMERIC_INDIFFERENCE
+
+	/* REW: 2003-01-26 Behavior Variability Kernel Experiments
      We want to treat some binary indifferent prefs as unary indifferents,
      the second pref is really an int representing a probability value.
      So we identify these preferences here.
 	 -- want to guarantee decision is not interrupted by a new indiff pref
   */
   for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-    if(p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+     if( (p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
+				(p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
        
       p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
   /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
@@ -1471,10 +1520,14 @@ byte run_preference_semantics_for_consistency_check (slot *s, preference **resul
     /* --- if cand is unary indifferent, it's fine --- */
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
 		continue;
-	else if ( (useProbIndifferentSelection) && (cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ) {
+	
+#ifdef NUMERIC_INDIFFERENCE
+	else if (cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) {
       /* print("\n Ignoring this candidate because it has a constant value for the second pref"); */
       continue;
 	}
+#endif
+
     /* --- check whether cand is binary indifferent to each other one --- */
     for (p=candidates; p!=NIL; p=p->next_candidate) {
       if (p==cand) continue;
@@ -1584,13 +1637,14 @@ byte run_preference_semantics_for_consistency_check (slot *s, preference **resul
    (if non-NIL) for backtracing.
 ------------------------------------------------------------------ */
 
-void add_impasse_wme (Symbol *id, Symbol *attr, Symbol *value, preference *p) {
-  wme *w;
-  
-  w = make_wme (id, attr, value, FALSE);
-  insert_at_head_of_dll (id->id.impasse_wmes, w, next, prev);
-  w->preference = p;
-  add_wme_to_wm (w);
+void add_impasse_wme(Symbol * id, Symbol * attr, Symbol * value, preference * p)
+{
+    wme *w;
+
+    w = make_wme(id, attr, value, FALSE);
+    insert_at_head_of_dll(id->id.impasse_wmes, w, next, prev);
+    w->preference = p;
+    add_wme_to_wm(w);
 }
 
 /* ------------------------------------------------------------------
@@ -1601,44 +1655,45 @@ void add_impasse_wme (Symbol *id, Symbol *attr, Symbol *value, preference *p) {
    and all the extra stuff for goal identifiers.
 ------------------------------------------------------------------ */
 
-Symbol *create_new_impasse (bool isa_goal, Symbol *object, Symbol *attr,
-                            byte impasse_type, goal_stack_level level) {
-  Symbol *id;
+Symbol *create_new_impasse(bool isa_goal, Symbol * object, Symbol * attr, byte impasse_type, goal_stack_level level)
+{
+    Symbol *id;
 
-  id = make_new_identifier ((char)(isa_goal ? 'S' : 'I'), level);
-  post_link_addition (NIL, id);  /* add the special link */
+    id = make_new_identifier((char) (isa_goal ? 'S' : 'I'), level);
+    post_link_addition(NIL, id);        /* add the special link */
 
-  add_impasse_wme (id, current_agent(type_symbol), isa_goal ? current_agent(state_symbol) : current_agent(impasse_symbol),
-                   NIL);
+    add_impasse_wme(id, current_agent(type_symbol),
+                    isa_goal ? current_agent(state_symbol) : current_agent(impasse_symbol), NIL);
 
-  if (isa_goal)
-    add_impasse_wme (id, current_agent(superstate_symbol), object, NIL);
-  else
-    add_impasse_wme (id, current_agent(object_symbol), object, NIL);
+    if (isa_goal)
+        add_impasse_wme(id, current_agent(superstate_symbol), object, NIL);
+    else
+        add_impasse_wme(id, current_agent(object_symbol), object, NIL);
 
-  if (attr) add_impasse_wme (id, current_agent(attribute_symbol), attr, NIL);
-  
-  switch (impasse_type) {
-  case NONE_IMPASSE_TYPE:
-    break;    /* this happens only when creating the top goal */
-  case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-    add_impasse_wme (id, current_agent(impasse_symbol), current_agent(constraint_failure_symbol), NIL);
-    add_impasse_wme (id, current_agent(choices_symbol), current_agent(none_symbol), NIL);
-    break;
-  case CONFLICT_IMPASSE_TYPE:
-    add_impasse_wme (id, current_agent(impasse_symbol), current_agent(conflict_symbol), NIL);
-    add_impasse_wme (id, current_agent(choices_symbol), current_agent(multiple_symbol), NIL);
-    break;
-  case TIE_IMPASSE_TYPE:
-    add_impasse_wme (id, current_agent(impasse_symbol), current_agent(tie_symbol), NIL);
-    add_impasse_wme (id, current_agent(choices_symbol), current_agent(multiple_symbol), NIL);
-    break;
-  case NO_CHANGE_IMPASSE_TYPE:
-    add_impasse_wme (id, current_agent(impasse_symbol), current_agent(no_change_symbol), NIL);
-    add_impasse_wme (id, current_agent(choices_symbol), current_agent(none_symbol), NIL);
-    break;
-  }
-  return id;
+    if (attr)
+        add_impasse_wme(id, current_agent(attribute_symbol), attr, NIL);
+
+    switch (impasse_type) {
+    case NONE_IMPASSE_TYPE:
+        break;                  /* this happens only when creating the top goal */
+    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+        add_impasse_wme(id, current_agent(impasse_symbol), current_agent(constraint_failure_symbol), NIL);
+        add_impasse_wme(id, current_agent(choices_symbol), current_agent(none_symbol), NIL);
+        break;
+    case CONFLICT_IMPASSE_TYPE:
+        add_impasse_wme(id, current_agent(impasse_symbol), current_agent(conflict_symbol), NIL);
+        add_impasse_wme(id, current_agent(choices_symbol), current_agent(multiple_symbol), NIL);
+        break;
+    case TIE_IMPASSE_TYPE:
+        add_impasse_wme(id, current_agent(impasse_symbol), current_agent(tie_symbol), NIL);
+        add_impasse_wme(id, current_agent(choices_symbol), current_agent(multiple_symbol), NIL);
+        break;
+    case NO_CHANGE_IMPASSE_TYPE:
+        add_impasse_wme(id, current_agent(impasse_symbol), current_agent(no_change_symbol), NIL);
+        add_impasse_wme(id, current_agent(choices_symbol), current_agent(none_symbol), NIL);
+        break;
+    }
+    return id;
 }
 
 /* ------------------------------------------------------------------
@@ -1648,44 +1703,44 @@ Symbol *create_new_impasse (bool isa_goal, Symbol *object, Symbol *attr,
    slot.
 ------------------------------------------------------------------ */
 
-void create_new_attribute_impasse_for_slot (slot *s, byte impasse_type) {
-  Symbol *id;
-  
-  s->impasse_type = impasse_type;
-  id = create_new_impasse (FALSE, s->id, s->attr, impasse_type,
-                           ATTRIBUTE_IMPASSE_LEVEL);
-  s->impasse_id = id;
-  id->id.isa_impasse = TRUE;
+void create_new_attribute_impasse_for_slot(slot * s, byte impasse_type)
+{
+    Symbol *id;
+
+    s->impasse_type = impasse_type;
+    id = create_new_impasse(FALSE, s->id, s->attr, impasse_type, ATTRIBUTE_IMPASSE_LEVEL);
+    s->impasse_id = id;
+    id->id.isa_impasse = TRUE;
 
 #ifndef FEW_CALLBACKS
-  soar_invoke_callbacks(soar_agent, 
-                       CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK, 
-                       (soar_call_data) s);
+    soar_invoke_callbacks(soar_agent, CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK, (soar_call_data) s);
+
+
 #endif
 
 
 }
 
-void remove_existing_attribute_impasse_for_slot (slot *s) {
-  Symbol *id;
+void remove_existing_attribute_impasse_for_slot(slot * s)
+{
+    Symbol *id;
 
 
 #ifndef FEW_CALLBACKS
-  soar_invoke_callbacks(soar_agent, 
-                       REMOVE_ATTRIBUTE_IMPASSE_CALLBACK, 
-                       (soar_call_data) s);
+    soar_invoke_callbacks(soar_agent, REMOVE_ATTRIBUTE_IMPASSE_CALLBACK, (soar_call_data) s);
+
+
 
 #endif
 
-  id = s->impasse_id;
-  s->impasse_id = NIL;
-  s->impasse_type = NONE_IMPASSE_TYPE;
-  remove_wme_list_from_wm (id->id.impasse_wmes);
-  id->id.impasse_wmes = NIL;
-  post_link_removal (NIL, id);  /* remove the special link */
-  symbol_remove_ref (id);
+    id = s->impasse_id;
+    s->impasse_id = NIL;
+    s->impasse_type = NONE_IMPASSE_TYPE;
+    remove_wme_list_from_wm(id->id.impasse_wmes);
+    id->id.impasse_wmes = NIL;
+    post_link_removal(NIL, id); /* remove the special link */
+    symbol_remove_ref(id);
 }
-
 /* ------------------------------------------------------------------
             Fake Preferences for Goal ^Item Augmentations
   
@@ -1712,74 +1767,72 @@ void remove_existing_attribute_impasse_for_slot (slot *s) {
    Remove_fake_preference_for_goal_item() is called to clean up the
    fake stuff once the (goal ^item) wme is no longer needed.
 ------------------------------------------------------------------ */
+preference *make_fake_preference_for_goal_item(Symbol * goal, preference * cand)
+{
+    slot *s;
+    wme *ap_wme;
+    instantiation *inst;
+    preference *pref;
+    condition *cond;
 
-preference *make_fake_preference_for_goal_item (Symbol *goal,
-                                                preference *cand) {
-  slot *s;
-  wme *ap_wme;
-  instantiation *inst;
-  preference *pref;
-  condition *cond;
+    /* --- find the acceptable preference wme we want to backtrace to --- */
+    s = cand->slot;
+    for (ap_wme = s->acceptable_preference_wmes; ap_wme != NIL; ap_wme = ap_wme->next)
+        if (ap_wme->value == cand->value)
+            break;
+    if (!ap_wme) {
+        char msg[MESSAGE_SIZE];
+        strncpy(msg, "decide.c: Internal error: couldn't find acceptable pref wme\n", MESSAGE_SIZE);
+        msg[MESSAGE_SIZE - 1] = 0;
+        abort_with_fatal_error(msg);
+    }
+    /* --- make the fake preference --- */
+    /* kjc:  here's where we changed REQUIRE to ACCEPTABLE */
+    pref = make_preference(ACCEPTABLE_PREFERENCE_TYPE, goal, current_agent(item_symbol), cand->value, NIL);
+    symbol_add_ref(pref->id);
+    symbol_add_ref(pref->attr);
+    symbol_add_ref(pref->value);
+    insert_at_head_of_dll(goal->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+    pref->on_goal_list = TRUE;
+    preference_add_ref(pref);
+    /* --- make the fake instantiation --- */
+    allocate_with_pool(&current_agent(instantiation_pool), &inst);
+    pref->inst = inst;
+    pref->inst_next = pref->inst_prev = NIL;
+    inst->preferences_generated = pref;
+    inst->prod = NIL;
+    inst->next = inst->prev = NIL;
+    inst->rete_token = NIL;
+    inst->rete_wme = NIL;
+    inst->match_goal = goal;
+    inst->match_goal_level = goal->id.level;
+    inst->okay_to_variablize = TRUE;
+    inst->backtrace_number = 0;
+    inst->in_ms = FALSE;
+    /* --- make the fake condition --- */
+    allocate_with_pool(&current_agent(condition_pool), &cond);
+    cond->type = POSITIVE_CONDITION;
+    cond->next = cond->prev = NIL;
+    inst->top_of_instantiated_conditions = cond;
+    inst->bottom_of_instantiated_conditions = cond;
+    inst->nots = NIL;
+    cond->data.tests.id_test = make_equality_test(ap_wme->id);
+    cond->data.tests.attr_test = make_equality_test(ap_wme->attr);
+    cond->data.tests.value_test = make_equality_test(ap_wme->value);
+    cond->test_for_acceptable_preference = TRUE;
+    cond->bt.wme = ap_wme;
+    wme_add_ref(ap_wme);
+    cond->bt.level = ap_wme->id->id.level;
+    cond->bt.trace = NIL;
+    cond->bt.prohibits = NIL;
 
-  /* --- find the acceptable preference wme we want to backtrace to --- */
-  s = cand->slot;
-  for (ap_wme=s->acceptable_preference_wmes; ap_wme!=NIL; ap_wme=ap_wme->next)
-    if (ap_wme->value==cand->value) break;
-  if (!ap_wme) {
-    char msg[128];
-    strcpy (msg,
-	    "decide.c: Internal error: couldn't find acceptable pref wme\n");
-    abort_with_fatal_error(msg);
-  }
-  /* --- make the fake preference --- */
-  /* kjc:  here's where we changed REQUIRE to ACCEPTABLE */
-  pref = make_preference (ACCEPTABLE_PREFERENCE_TYPE, goal, current_agent(item_symbol),
-                          cand->value, NIL);
-  symbol_add_ref (pref->id);
-  symbol_add_ref (pref->attr);
-  symbol_add_ref (pref->value);
-  insert_at_head_of_dll (goal->id.preferences_from_goal, pref,
-                         all_of_goal_next, all_of_goal_prev);
-  pref->on_goal_list = TRUE;
-  preference_add_ref (pref);
-  /* --- make the fake instantiation --- */
-  allocate_with_pool (&current_agent(instantiation_pool),  &inst);
-  pref->inst = inst;
-  pref->inst_next = pref->inst_prev = NIL;
-  inst->preferences_generated = pref;
-  inst->prod = NIL;
-  inst->next = inst->prev = NIL;
-  inst->rete_token = NIL;
-  inst->rete_wme = NIL;
-  inst->match_goal = goal;
-  inst->match_goal_level = goal->id.level;
-  inst->okay_to_variablize = TRUE;
-  inst->backtrace_number = 0;
-  inst->in_ms = FALSE;
-  /* --- make the fake condition --- */
-  allocate_with_pool (&current_agent(condition_pool),  &cond);
-  cond->type = POSITIVE_CONDITION;
-  cond->next = cond->prev = NIL;
-  inst->top_of_instantiated_conditions = cond;
-  inst->bottom_of_instantiated_conditions = cond;
-  inst->nots = NIL;
-  cond->data.tests.id_test = make_equality_test (ap_wme->id);
-  cond->data.tests.attr_test = make_equality_test (ap_wme->attr);
-  cond->data.tests.value_test = make_equality_test (ap_wme->value);
-  cond->test_for_acceptable_preference = TRUE;
-  cond->bt.wme = ap_wme;
-  wme_add_ref (ap_wme);
-  cond->bt.level = ap_wme->id->id.level;
-  cond->bt.trace = NIL;
-  cond->bt.prohibits = NIL;
-
-
-  /* --- return the fake preference --- */
-  return pref;
+    /* --- return the fake preference --- */
+    return pref;
 }
 
-void remove_fake_preference_for_goal_item (preference *pref) {
-  preference_remove_ref (pref); /* everything else happens automatically */
+void remove_fake_preference_for_goal_item(preference * pref)
+{
+    preference_remove_ref(pref);        /* everything else happens automatically */
 }
 
 /* ------------------------------------------------------------------
@@ -1791,53 +1844,55 @@ void remove_fake_preference_for_goal_item (preference *pref) {
    set of items that should be there.
 ------------------------------------------------------------------ */
 
-void update_impasse_items (Symbol *id, preference *items) {
-  wme *w, *next_w;
-  preference *cand;
-  preference *bt_pref;
+void update_impasse_items(Symbol * id, preference * items)
+{
+    wme *w, *next_w;
+    preference *cand;
+    preference *bt_pref;
 
-  /* --- reset flags on existing items to "NOTHING" --- */
-  for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
-    if (w->attr==current_agent(item_symbol))
-      w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+    /* --- reset flags on existing items to "NOTHING" --- */
+    for (w = id->id.impasse_wmes; w != NIL; w = w->next)
+        if (w->attr == current_agent(item_symbol))
+            w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
 
-  /* --- mark set of desired items as "CANDIDATEs" --- */
-  for (cand=items; cand!=NIL; cand=cand->next_candidate)
-    cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+    /* --- mark set of desired items as "CANDIDATEs" --- */
+    for (cand = items; cand != NIL; cand = cand->next_candidate)
+        cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
 
-  /* --- for each existing item:  if it's supposed to be there still, then
-     mark it "ALREADY_EXISTING"; otherwise remove it --- */
-  w = id->id.impasse_wmes;
-  while (w) {
-    next_w = w->next;
-    if (w->attr==current_agent(item_symbol)) {
-      if (w->value->common.decider_flag==CANDIDATE_DECIDER_FLAG) {
-        w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
-        w->value->common.a.decider_wme = w; /* so we can update the pref later */
-      } else {
-        remove_from_dll (id->id.impasse_wmes, w, next, prev);
+    /* --- for each existing item:  if it's supposed to be there still, then
+       mark it "ALREADY_EXISTING"; otherwise remove it --- */
+    w = id->id.impasse_wmes;
+    while (w) {
+        next_w = w->next;
+        if (w->attr == current_agent(item_symbol)) {
+            if (w->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
+                w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
+                w->value->common.a.decider_wme = w;     /* so we can update the pref later */
+            } else {
+                remove_from_dll(id->id.impasse_wmes, w, next, prev);
+                if (id->id.isa_goal)
+                    remove_fake_preference_for_goal_item(w->preference);
+                remove_wme_from_wm(w);
+            }
+        }
+        w = next_w;
+    }
+
+    /* --- for each desired item:  if it doesn't ALREADY_EXIST, add it --- */
+    for (cand = items; cand != NIL; cand = cand->next_candidate) {
         if (id->id.isa_goal)
-          remove_fake_preference_for_goal_item (w->preference);
-        remove_wme_from_wm (w);
-      }
+            bt_pref = make_fake_preference_for_goal_item(id, cand);
+        else
+            bt_pref = cand;
+        if (cand->value->common.decider_flag == ALREADY_EXISTING_WME_DECIDER_FLAG) {
+            if (id->id.isa_goal)
+                remove_fake_preference_for_goal_item(cand->value->common.a.decider_wme->preference);
+            cand->value->common.a.decider_wme->preference = bt_pref;
+        } else {
+            add_impasse_wme(id, current_agent(item_symbol), cand->value, bt_pref);
+        }
     }
-    w = next_w;
-  }
 
-  /* --- for each desired item:  if it doesn't ALREADY_EXIST, add it --- */
-  for (cand=items; cand!=NIL; cand=cand->next_candidate) {
-    if (id->id.isa_goal)
-      bt_pref = make_fake_preference_for_goal_item (id, cand);
-    else
-      bt_pref = cand;
-    if (cand->value->common.decider_flag==ALREADY_EXISTING_WME_DECIDER_FLAG) {
-      if (id->id.isa_goal) remove_fake_preference_for_goal_item
-        (cand->value->common.a.decider_wme->preference);
-      cand->value->common.a.decider_wme->preference = bt_pref;
-    } else {
-      add_impasse_wme (id, current_agent(item_symbol), cand->value, bt_pref);
-    }
-  }
 }
 
 /* ------------------------------------------------------------------
@@ -1848,261 +1903,265 @@ void update_impasse_items (Symbol *id, preference *items) {
    updates the wmes and/or impasse for the slot accordingly.
 ------------------------------------------------------------------ */
 
-void decide_non_context_slot (slot *s) {
-  byte impasse_type;
-  wme *w, *next_w;
-  preference *candidates, *cand;
+void decide_non_context_slot(slot * s)
+{
+    byte impasse_type;
+    wme *w, *next_w;
+    preference *candidates, *cand;
 #ifndef DONT_CALC_GDS_OR_BT
-  preference *pref;
+    preference *pref;
 #endif
-  
-  impasse_type = run_preference_semantics (s, &candidates);
-  
-  if (impasse_type==NONE_IMPASSE_TYPE) {
-    /* --- no impasse, so remove any existing one and update the wmes --- */
-    if (s->impasse_type!=NONE_IMPASSE_TYPE)
-      remove_existing_attribute_impasse_for_slot (s);
-    /* --- reset marks on existing wme values to "NOTHING" --- */
-    for (w=s->wmes; w!=NIL; w=w->next)
-      w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-    /* --- set marks on desired values to "CANDIDATES" --- */
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-    /* --- for each existing wme, if we want it there, mark it as
-       ALREADY_EXISTING; otherwise remove it --- */
-    w = s->wmes;
-    while (w) {
-      next_w = w->next;
-      if (w->value->common.decider_flag==CANDIDATE_DECIDER_FLAG) {
-        w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
-        w->value->common.a.decider_wme = w; /* so we can set the pref later */
-      } else {
-        remove_from_dll (s->wmes, w, next, prev);
 
-#ifndef DONT_CALC_GDS_OR_BT
-	/* REW: begin 09.15.96 */
-#ifndef SOAR_8_ONLY
-        if (current_agent(operand2_mode)){
-#endif
-          if (w->gds) {
-    	    if (w->gds->goal != NIL){
-	      /* If the goal pointer is non-NIL, then goal is in the stack */
-	      if (current_agent(soar_verbose_flag)) {
-		print("\n          Removing goal %d because element in GDS changed.", w->gds->goal->id.level); 
-		print(" WME: "); 
-		print_wme(w); }
-	      gds_invalid_so_remove_goal(w);
-	    }
-	  }
-#ifndef SOAR_8_ONLY
-	}
-#endif
-#endif /* DONT_CALC_GDS_OR_BT */
-	/* REW: end   09.15.96 */
-        remove_wme_from_wm (w);
-      }
-      w = next_w;
-    }  /* end while (W) */
+    impasse_type = run_preference_semantics(s, &candidates);
 
-    /* --- for each desired value, if it's not already there, add it --- */
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-      if (cand->value->common.decider_flag==ALREADY_EXISTING_WME_DECIDER_FLAG){
-	/* REW: begin 11.22.97 */ 
-	/* print("\n This WME was marked as already existing...."); print_wme(cand->value->common.a.decider_wme); */
-	
-	/* REW: end   11.22.97 */ 
-        cand->value->common.a.decider_wme->preference = cand;
-      } else {
-        w = make_wme (cand->id, cand->attr, cand->value, FALSE);
-        insert_at_head_of_dll (s->wmes, w, next, prev);
-        w->preference = cand;
-
+    if (impasse_type == NONE_IMPASSE_TYPE) {
+        /* --- no impasse, so remove any existing one and update the wmes --- */
+        if (s->impasse_type != NONE_IMPASSE_TYPE)
+            remove_existing_attribute_impasse_for_slot(s);
+        /* --- reset marks on existing wme values to "NOTHING" --- */
+        for (w = s->wmes; w != NIL; w = w->next)
+            w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+        /* --- set marks on desired values to "CANDIDATES" --- */
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+            cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+        /* --- for each existing wme, if we want it there, mark it as
+           ALREADY_EXISTING; otherwise remove it --- */
+        w = s->wmes;
+        while (w) {
+            next_w = w->next;
+            if (w->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
+                w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
+                w->value->common.a.decider_wme = w;     /* so we can set the pref later */
+            } else {
+                remove_from_dll(s->wmes, w, next, prev);
 
 #ifndef DONT_CALC_GDS_OR_BT
-	/* REW: begin 09.15.96 */
+                /* REW: begin 09.15.96 */
 #ifndef SOAR_8_ONLY
-        if (current_agent(operand2_mode)) {
+                if (current_agent(operand2_mode)) {
 #endif
-	/* Whenever we add a WME to WM, we also want to check and see if
-           this new WME is o-supported.  If so, then we want to add the
-           supergoal dependencies of the new, o-supported element to the
-           goal in which the element was created (as long as the o_supported
-           element was not created in the top state -- the top goal has
-           no gds).  */
+                    if (w->gds) {
+                        if (w->gds->goal != NIL) {
+                            /* If the goal pointer is non-NIL, then goal is in the stack */
+                            if (current_agent(soar_verbose_flag)) {
+                                print("\n          Removing goal %d because element in GDS changed.",
+                                      w->gds->goal->id.level);
+                                print(" WME: ");
+                                print_wme(w);
+                            }
+                            gds_invalid_so_remove_goal(w);
+                        }
+                    }
+#ifndef SOAR_8_ONLY
+                }
+#endif
+#endif                          /* DONT_CALC_GDS_OR_BT */
+                /* REW: end   09.15.96 */
+                remove_wme_from_wm(w);
+            }
+            w = next_w;
+        }                       /* end while (W) */
+
+        /* --- for each desired value, if it's not already there, add it --- */
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+            if (cand->value->common.decider_flag == ALREADY_EXISTING_WME_DECIDER_FLAG) {
+                /* REW: begin 11.22.97 */
+                /* print("\n This WME was marked as already existing...."); print_wme(cand->value->common.a.decider_wme); */
+                /* REW: end   11.22.97 */
+                cand->value->common.a.decider_wme->preference = cand;
+            } else {
+                w = make_wme(cand->id, cand->attr, cand->value, FALSE);
+                insert_at_head_of_dll(s->wmes, w, next, prev);
+                w->preference = cand;
+
+#ifndef DONT_CALC_GDS_OR_BT
+                /* REW: begin 09.15.96 */
+#ifndef SOAR_8_ONLY
+                if (current_agent(operand2_mode)) {
+#endif
+                    /* Whenever we add a WME to WM, we also want to check and see if
+                       this new WME is o-supported.  If so, then we want to add the
+                       supergoal dependencies of the new, o-supported element to the
+                       goal in which the element was created (as long as the o_supported
+                       element was not created in the top state -- the top goal has
+                       no gds).  */
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	  /* REW: begin 11.25.96 */ 
-	  start_timer(&current_agent(start_gds_tv));
-	  /* REW: end   11.25.96 */ 
-#endif            
+                    /* REW: begin 11.25.96 */
+                    start_timer(&current_agent(start_gds_tv));
+                    /* REW: end   11.25.96 */
 #endif
-	  current_agent(parent_list_head) = NIL;
+#endif
+                    current_agent(parent_list_head) = NIL;
 
-	  /* If the working memory element being added is going to have
-	     o_supported preferences and the instantion that created it
-	     is not in the top_level_goal (where there is no GDS), then
-	     loop over the preferences for this WME and determine which
-	     WMEs should be added to the goal's GDS (the goal here being the
-	     goal to which the added memory is attached). */
-
+                    /* If the working memory element being added is going to have
+                       o_supported preferences and the instantion that created it
+                       is not in the top_level_goal (where there is no GDS), then
+                       loop over the preferences for this WME and determine which
+                       WMEs should be added to the goal's GDS (the goal here being the
+                       goal to which the added memory is attached). */
 
 #ifdef NO_TOP_JUST
-	
-          if ((w->preference->o_supported == TRUE) &&
-	      (w->preference->match_goal_level != 1)) {
 
-	    if (w->preference->match_goal->id.gds == NIL) {
-	      /* If there is no GDS yet for this goal,
-	       * then we need to create one */
-	      if (w->preference->match_goal_level ==
-		   w->preference->id->id.level) {
-		 
-		 create_gds_for_goal( w->preference->match_goal );
+                    if ((w->preference->o_supported == TRUE) && (w->preference->match_goal_level != 1)) {
+
+                        if (w->preference->match_goal->id.gds == NIL) {
+                            /* If there is no GDS yet for this goal,
+                             * then we need to create one */
+                            if (w->preference->match_goal_level == w->preference->id->id.level) {
+
+                                create_gds_for_goal(w->preference->match_goal);
 #else
-          if ((w->preference->o_supported == TRUE) &&
-	      (w->preference->inst->match_goal_level != 1)) {
+                    if ((w->preference->o_supported == TRUE) && (w->preference->inst->match_goal_level != 1)) {
 
-	    if (w->preference->inst->match_goal->id.gds == NIL) {
-	      /* If there is no GDS yet for this goal,
-	       * then we need to create one */
 
-               if (w->preference->inst->match_goal_level ==
-		   w->preference->id->id.level) {
+                        if (w->preference->inst->match_goal->id.gds == NIL) {
+                            /* If there is no GDS yet for this goal,
+                             * then we need to create one */
 
-		 create_gds_for_goal( w->preference->inst->match_goal );
+                            if (w->preference->inst->match_goal_level == w->preference->id->id.level) {
+
+                                create_gds_for_goal(w->preference->inst->match_goal);
 #endif
 
-	       /* REW: BUG When chunks and result instantiations both create
-                * preferences for the same WME, then we only want to create
-                * the GDS for the highest goal.  Right now I ensure that we
-                * elaborate the correct GDS with the tests in the loop just
-                * below this code, but the GDS creation above assumes that
-                * the chunk will be first on the GDS list.  This order
-                * appears to be always true, although I am not 100% certain
-                * (I think it occurs this way because the chunk is
-                * necessarily added to the instantiaton list after the
-                * original instantiation and lists get built such older items
-                * appear further from the head of the list) . If not true,
-                * then we need to keep track of any GDS's that get created
-                * here to remove them later if we find a higher match goal
-                * for the WME. For now, the program just exits in this
-                * situation; otherwise, we would build a GDS for the wrong
-                * level and never elaborate it (resulting in a memory
-                * leak). 
-		*/
-	       } else {
-		 char msg[256];
-		 print_wme( w );
-		 print_preference( w->preference );
+                                /* REW: BUG When chunks and result instantiations both create
+                                 * preferences for the same WME, then we only want to create
+                                 * the GDS for the highest goal.  Right now I ensure that we
+                                 * elaborate the correct GDS with the tests in the loop just
+                                 * below this code, but the GDS creation above assumes that
+                                 * the chunk will be first on the GDS list.  This order
+                                 * appears to be always true, although I am not 100% certain
+                                 * (I think it occurs this way because the chunk is
+                                 * necessarily added to the instantiaton list after the
+                                 * original instantiation and lists get built such older items
+                                 * appear further from the head of the list) . If not true,
+                                 * then we need to keep track of any GDS's that get created
+                                 * here to remove them later if we find a higher match goal
+                                 * for the WME. For now, the program just exits in this
+                                 * situation; otherwise, we would build a GDS for the wrong
+                                 * level and never elaborate it (resulting in a memory
+                                 * leak). 
+                                 */
+                            } else {
+                                char msg[MESSAGE_SIZE];
+                                print_wme(w);
+                                print_preference(w->preference);
+
 #ifdef NO_TOP_JUST
-		 sprintf(msg,"**** (NO_TOP_JUST) Wanted to create a GDS for a WME level (%d) different from the instantiation level (%d).....Big problems....exiting....(instantiation = %p, inst->match_goal_level = %d)****\n\n", w->preference->id->id.level, w->preference->match_goal_level, w->preference->inst, w->preference->inst->match_goal_level );
+                                snprintf(msg, MESSAGE_SIZE,
+                                         "**** (NO_TOP_JUST) Wanted to create a GDS for a WME level (%d) different from the instantiation level (%d).....Big problems....exiting....(instantiation = %p, inst->match_goal_level = %d)****\n\n",
+                                         w->preference->id->id.level, w->preference->match_goal_level,
+                                         w->preference->inst, w->preference->inst->match_goal_level);
+                                msg[MESSAGE_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
 #else
-		 sprintf(msg,"**** Wanted to create a GDS for a WME level (%d) different from the instantiation level (%d).....Big problems....exiting....****\n\n", w->preference->id->id.level, w->preference->inst->match_goal_level );
+                                snprintf(msg, MESSAGE_SIZE,
+                                         "**** Wanted to create a GDS for a WME level (%d) different from the instantiation level (%d).....Big problems....exiting....****\n\n",
+                                         w->preference->id->id.level, w->preference->inst->match_goal_level);
+                                msg[MESSAGE_SIZE - 1] = 0;      /* snprintf doesn't set last char to null if output is truncated */
 #endif
-		 abort_with_fatal_error(msg);
-	       }
-	    } /* end if no GDS yet for goal... */
+                                abort_with_fatal_error(msg);
+                            }
+                        }
+                        /* end if no GDS yet for goal... */
+                        /* Loop over all the preferences for this WME:
+                         *   If the instantiation that lead to the preference has not 
+                         *         been already explored; OR
+                         *   If the instantiation is not an subgoal instantiation
+                         *          for a chunk instantiation we are already exploring
+                         *   Then
+                         *      Add the instantiation to a list of instantiations that
+                         *          will be explored in elaborate_gds().
+                         */
+                        for (pref = w->preference; pref != NIL; pref = pref->next) {
+#ifdef DEBUG_GDS_HIGH
+                            print("\n\n   ");
+                            print_preference(pref);
+                            print("   Goal level of preference: %d\n", pref->id->id.level);
+#endif
 
+                            if (pref->inst->GDS_evaluated_already == FALSE) {
+#ifdef DEBUG_GDS_HIGH
+                                print_with_symbols("   Match goal lev of instantiation %y ", pref->inst->prod->name);
+                                print("is %d\n", pref->inst->match_goal_level);
+#endif
+                                if (pref->inst->match_goal_level > pref->id->id.level) {
+#ifdef DEBUG_GDS_HIGH
+                                    print_with_symbols
+                                        ("        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n",
+                                         pref->inst->prod->name);
+#endif
 
-	      
-	    /* Loop over all the preferences for this WME:
-	     *   If the instantiation that lead to the preference has not 
-	     *         been already explored; OR
-	     *   If the instantiation is not an subgoal instantiation
-	     *          for a chunk instantiation we are already exploring
-	     *   Then
-	     *      Add the instantiation to a list of instantiations that
-	     *          will be explored in elaborate_gds().
-	     */
+                                } else {
+#ifdef DEBUG_GDS_HIGH
+                                    print_with_symbols("\n   Adding %y to list of parent instantiations\n",
+                                                       pref->inst->prod->name);
+#endif
+                                    uniquely_add_to_head_of_dll(pref->inst);
+                                    pref->inst->GDS_evaluated_already = TRUE;
+                                }
+                            }   /* end if GDS_evaluated_already is FALSE */
+#ifdef DEBUG_GDS_HIGH
+                            else
+                                print_with_symbols("\n    Instantiation %y was already explored; skipping it\n",
+                                                   pref->inst->prod->name);
+#endif
 
-	      for (pref=w->preference; pref!=NIL; pref=pref->next) {
-                #ifdef DEBUG_GDS_HIGH
-		  print("\n\n   "); print_preference(pref);
-		  print("   Goal level of preference: %d\n",
-			pref->id->id.level);
-		#endif
+                        }       /* end of forloop over preferences for this wme */
 
-		if (pref->inst->GDS_evaluated_already == FALSE) {
-                  #ifdef DEBUG_GDS_HIGH
-		   print_with_symbols("   Match goal lev of instantiation %y ",
-				      pref->inst->prod->name);
-		   print("is %d\n", pref->inst->match_goal_level);
-                  #endif
-		  if (pref->inst->match_goal_level > pref->id->id.level) {
-                    #ifdef DEBUG_GDS_HIGH
-		    print_with_symbols("        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
-                    #endif
-		    
-		   } else {
-                    #ifdef DEBUG_GDS_HIGH
-		     print_with_symbols("\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name); 
-                    #endif
-		    uniquely_add_to_head_of_dll(pref->inst);
-		    pref->inst->GDS_evaluated_already = TRUE;
-		   }
-		}  /* end if GDS_evaluated_already is FALSE */
-                #ifdef DEBUG_GDS_HIGH
-		  else
-		    print_with_symbols("\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod->name);
-                #endif
+#ifdef DEBUG_GDS_HIGH
+                        print("\n    CALLING ELABORATE GDS....\n");
+#endif
+                        elaborate_gds();
 
-	      }  /* end of forloop over preferences for this wme */
+                        /* technically, the list should be empty at this point ??? */
 
-	      
-              #ifdef DEBUG_GDS_HIGH
-                print("\n    CALLING ELABORATE GDS....\n");
-              #endif 
-              elaborate_gds();
+                        free_parent_list();
+#ifdef DEBUG_GDS_HIGH
+                        print("    FINISHED ELABORATING GDS.\n\n");
+#endif
+                    }
 
-              /* technically, the list should be empty at this point ??? */
-  
-              free_parent_list(); 
-              #ifdef DEBUG_GDS_HIGH
-	        print("    FINISHED ELABORATING GDS.\n\n");
-              #endif
-	  }  /* end if w->preference->o_supported == TRUE ... */
-
-
+                    /* end if w->preference->o_supported == TRUE ... */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	  /* REW: begin 11.25.96 */ 
-	  stop_timer(&current_agent(start_gds_tv), 
-		   &current_agent(gds_cpu_time[current_agent(current_phase)]));
-	  /* REW: end   11.25.96 */
-#endif 
+                    /* REW: begin 11.25.96 */
+                    stop_timer(&current_agent(start_gds_tv),
+                               &current_agent(gds_cpu_time[current_agent(current_phase)]));
+                    /* REW: end   11.25.96 */
+#endif
 #endif
 #ifndef SOAR_8_ONLY
-	}  /* end if current_agent(OPERAND2_MODE) ... */
+                }               /* end if current_agent(OPERAND2_MODE) ... */
 #endif
 
-#endif /* DONT_CALC_GDS_OR_BT */
+#endif                          /* DONT_CALC_GDS_OR_BT */
 
+                /* REW: end   09.15.96 */
 
-	/* REW: end   09.15.96 */
-
-        add_wme_to_wm (w);
-      }
+                add_wme_to_wm(w);
+            }
+        }
+        return;
     }
-    return;
-  } /* end of if impasse type == NONE */
 
-  /* --- impasse type != NONE --- */
-  if (s->wmes) {  /* --- remove any existing wmes --- */
-    remove_wme_list_from_wm (s->wmes); 
-    s->wmes = NIL;
-  }
-  /* --- create and/or update impasse structure --- */
-  if (s->impasse_type!=NONE_IMPASSE_TYPE) {
-    if (s->impasse_type != impasse_type) {
-      remove_existing_attribute_impasse_for_slot (s);
-      create_new_attribute_impasse_for_slot (s, impasse_type);
+    /* end of if impasse type == NONE */
+    /* --- impasse type != NONE --- */
+    if (s->wmes) {              /* --- remove any existing wmes --- */
+        remove_wme_list_from_wm(s->wmes);
+        s->wmes = NIL;
     }
-    update_impasse_items (s->impasse_id, candidates);
-  } else {
-    create_new_attribute_impasse_for_slot (s, impasse_type);
-    update_impasse_items (s->impasse_id, candidates);
-  }
+    /* --- create and/or update impasse structure --- */
+    if (s->impasse_type != NONE_IMPASSE_TYPE) {
+        if (s->impasse_type != impasse_type) {
+            remove_existing_attribute_impasse_for_slot(s);
+            create_new_attribute_impasse_for_slot(s, impasse_type);
+        }
+        update_impasse_items(s->impasse_id, candidates);
+    } else {
+        create_new_attribute_impasse_for_slot(s, impasse_type);
+        update_impasse_items(s->impasse_id, candidates);
+    }
 }
 
 /* ------------------------------------------------------------------
@@ -2112,18 +2171,19 @@ void decide_non_context_slot (slot *s) {
    decides each one.
 ------------------------------------------------------------------ */
 
-void decide_non_context_slots (void) {
-  dl_cons *dc;
-  slot *s;
+void decide_non_context_slots(void)
+{
+    dl_cons *dc;
+    slot *s;
 
-  while (current_agent(changed_slots)) {
-    dc = current_agent(changed_slots);
-    current_agent(changed_slots) = current_agent(changed_slots)->next;
-    s = dc->item;
-    decide_non_context_slot (s);
-    s->changed = NIL;
-    free_with_pool (&current_agent(dl_cons_pool), dc);
-  }
+    while (current_agent(changed_slots)) {
+        dc = current_agent(changed_slots);
+        current_agent(changed_slots) = current_agent(changed_slots)->next;
+        s = dc->item;
+        decide_non_context_slot(s);
+        s->changed = NIL;
+        free_with_pool(&current_agent(dl_cons_pool), dc);
+    }
 }
 
 /* ------------------------------------------------------------------
@@ -2136,15 +2196,18 @@ void decide_non_context_slots (void) {
      - it has no installed value but does have changed preferences
 ------------------------------------------------------------------ */
 
-bool context_slot_is_decidable (slot *s) {
-  Symbol *v;
-  preference *p;
-  
-  if (! s->wmes) return (s->changed != NIL);
-  v = s->wmes->value;
-  for (p=s->preferences[RECONSIDER_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    if (v==p->value) return TRUE;
-  return FALSE;
+bool context_slot_is_decidable(slot * s)
+{
+    Symbol *v;
+    preference *p;
+
+    if (!s->wmes)
+        return (bool) (s->changed != NIL);
+    v = s->wmes->value;
+    for (p = s->preferences[RECONSIDER_PREFERENCE_TYPE]; p != NIL; p = p->next)
+        if (v == p->value)
+            return TRUE;
+    return FALSE;
 }
 
 /* ------------------------------------------------------------------
@@ -2154,17 +2217,18 @@ bool context_slot_is_decidable (slot *s) {
    given context slot.
 ------------------------------------------------------------------ */
 
-void remove_wmes_for_context_slot (slot *s) {
-  wme *w;
-  
- 
-  if (!s->wmes) return;
-  /* Note that we only need to handle one wme--context slots never have
-     more than one wme in them */
-  w = s->wmes;
-  preference_remove_ref (w->preference);
-  remove_wme_from_wm (w);
-  s->wmes = NIL;
+void remove_wmes_for_context_slot(slot * s)
+{
+    wme *w;
+
+    if (!s->wmes)
+        return;
+    /* Note that we only need to handle one wme--context slots never have
+       more than one wme in them */
+    w = s->wmes;
+    preference_remove_ref(w->preference);
+    remove_wme_from_wm(w);
+    s->wmes = NIL;
 }
 
 /* ------------------------------------------------------------------
@@ -2177,7 +2241,6 @@ void remove_wmes_for_context_slot (slot *s) {
 
 void remove_existing_context_and_descendents (Symbol *goal) {
   preference *p;
-  slot *s;   // SAN
 
   ms_change *head, *tail;  /* REW:   08.20.97 */
 
@@ -2222,10 +2285,7 @@ void remove_existing_context_and_descendents (Symbol *goal) {
   }
   
   /* --- remove wmes for this goal, and garbage collect --- */
-  s = goal->id.operator_slot;         // SAN
-  remove_wmes_for_context_slot (s);
-  // deallocate_condition_list(s->RL_top);
-  // deallocate_list_of_nots(s->RL_nots);
+  remove_wmes_for_context_slot (goal->id.operator_slot);
   update_impasse_items (goal, NIL); /* causes items & fake pref's to go away */
   remove_wme_list_from_wm (goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;
@@ -2323,13 +2383,7 @@ void create_new_context (Symbol *attr_of_impasse, byte impasse_type) {
   /* SAN */
   if (current_agent(sysparams)[RL_ON_SYSPARAM])
 	push_record(&current_agent(records), id);
-  /*id->id.operator_slot->reward = 0;
-  id->id.operator_slot->op = NIL;
-  id->id.operator_slot->RL_bottom = NIL;
-  id->id.operator_slot->RL_top = NIL;
-  id->id.operator_slot->RL_nots = NIL;
-  id->id.operator_slot->step = 0;
-  */
+  
 
 #ifndef FEW_CALLBACKS
 
@@ -2349,43 +2403,51 @@ void create_new_context (Symbol *attr_of_impasse, byte impasse_type) {
    does so by looking at the impasse wmes for the next lower goal
    in the goal stack.
 ------------------------------------------------------------------ */
+byte type_of_existing_impasse(Symbol * goal)
+{
+    wme *w;
+    char msg[MESSAGE_SIZE];
 
-byte type_of_existing_impasse (Symbol *goal) {
-  wme *w;
-  char msg[128];
-
-  if (! goal->id.lower_goal) return NONE_IMPASSE_TYPE;
-  for (w=goal->id.lower_goal->id.impasse_wmes; w!=NIL; w=w->next)
-    if (w->attr==current_agent(impasse_symbol)) {
-      if (w->value==current_agent(no_change_symbol))
-	return NO_CHANGE_IMPASSE_TYPE;
-      if (w->value==current_agent(tie_symbol))
-	return TIE_IMPASSE_TYPE;
-      if (w->value==current_agent(constraint_failure_symbol))
-        return CONSTRAINT_FAILURE_IMPASSE_TYPE;
-      if (w->value==current_agent(conflict_symbol))
-	return CONFLICT_IMPASSE_TYPE;
-      if (w->value==current_agent(none_symbol))
-	return NONE_IMPASSE_TYPE;
-      strcpy (msg,"decide.c: Internal error: bad type of existing impasse.\n");
-      abort_with_fatal_error(msg);
-    }
-  strcpy (msg,"decide.c: Internal error: couldn't find type of existing impasse.\n");
-  abort_with_fatal_error(msg);
-  return 0; /* unreachable, but without it, gcc -Wall warns here */
+    if (!goal->id.lower_goal)
+        return NONE_IMPASSE_TYPE;
+    for (w = goal->id.lower_goal->id.impasse_wmes; w != NIL; w = w->next)
+        if (w->attr == current_agent(impasse_symbol)) {
+            if (w->value == current_agent(no_change_symbol))
+                return NO_CHANGE_IMPASSE_TYPE;
+            if (w->value == current_agent(tie_symbol))
+                return TIE_IMPASSE_TYPE;
+            if (w->value == current_agent(constraint_failure_symbol))
+                return CONSTRAINT_FAILURE_IMPASSE_TYPE;
+            if (w->value == current_agent(conflict_symbol))
+                return CONFLICT_IMPASSE_TYPE;
+            if (w->value == current_agent(none_symbol))
+                return NONE_IMPASSE_TYPE;
+            strncpy(msg, "decide.c: Internal error: bad type of existing impasse.\n", MESSAGE_SIZE);
+            msg[MESSAGE_SIZE - 1] = 0;
+            abort_with_fatal_error(msg);
+        }
+    strncpy(msg, "decide.c: Internal error: couldn't find type of existing impasse.\n", MESSAGE_SIZE);
+    msg[MESSAGE_SIZE - 1] = 0;
+    abort_with_fatal_error(msg);
+    return 0;                   /* unreachable, but without it, gcc -Wall warns here */
 }
 
-Symbol *attribute_of_existing_impasse (Symbol *goal) {
-  wme *w;
+Symbol *attribute_of_existing_impasse(Symbol * goal)
+{
+    wme *w;
 
-  if (! goal->id.lower_goal) return NIL;
-  for (w=goal->id.lower_goal->id.impasse_wmes; w!=NIL; w=w->next)
-    if (w->attr==current_agent(attribute_symbol)) return w->value;
-  { char msg[128];
-  strcpy (msg, "decide.c: Internal error: couldn't find attribute of existing impasse.\n");
-  abort_with_fatal_error(msg);
-  }
-  return NIL; /* unreachable, but without it, gcc -Wall warns here */
+    if (!goal->id.lower_goal)
+        return NIL;
+    for (w = goal->id.lower_goal->id.impasse_wmes; w != NIL; w = w->next)
+        if (w->attr == current_agent(attribute_symbol))
+            return w->value;
+    {
+        char msg[MESSAGE_SIZE];
+        strncpy(msg, "decide.c: Internal error: couldn't find attribute of existing impasse.\n", MESSAGE_SIZE);
+        msg[MESSAGE_SIZE - 1] = 0;
+        abort_with_fatal_error(msg);
+    }
+    return NIL;                 /* unreachable, but without it, gcc -Wall warns here */
 }
 
 /* ------------------------------------------------------------------
@@ -2421,9 +2483,10 @@ bool decide_context_slot (Symbol *goal, slot *s) {
         impasse_type = NO_CHANGE_IMPASSE_TYPE;
       } else if (candidates->next_candidate) {
         /* --- more than one winner ==> internal error --- */
-	char msg[128];
-        strcpy (msg,"decide.c: Internal error: more than one winner for context slot\n");
-        abort_with_fatal_error(msg);
+	char msg[MESSAGE_SIZE];
+        strncpy (msg,"decide.c: Internal error: more than one winner for context slot\n", MESSAGE_SIZE);
+        msg[MESSAGE_SIZE - 1] = 0;
+		abort_with_fatal_error(msg);
       }
     }
   }  /* end if !context_slot_is_decidable  */
@@ -2532,7 +2595,7 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 
 void decide_context_slots (void) {
   Symbol *goal;
-  RL_record *record;
+  RL_record *record;   // SAN
   slot *s;
   float r;           // SAN
 
@@ -2568,15 +2631,15 @@ void decide_context_slots (void) {
   s = goal->id.operator_slot;
 
   /* --- loop down context stack --- */
-  while (TRUE) {
+  for (;;) {
     /* --- find next slot to decide --- */
-    while (TRUE) {
+    for (;;) {
       if (context_slot_is_decidable(s)) break;
 
       if ((s==goal->id.operator_slot) || (! s->wmes)) {
         /* --- no more slots to look at for this goal; have we reached
            the last slot in whole stack? --- */
-        if (! goal->id.lower_goal) break;
+        if (!goal->id.lower_goal) break;
         /* --- no, go down one level --- */
         goal = goal->id.lower_goal;
 	s = goal->id.operator_slot;
@@ -2612,51 +2675,50 @@ void decide_context_slots (void) {
    to print the context slot that was just decided.
 ********************************************************************** */    
 
-void init_decider (void) {
-  init_memory_pool (&current_agent(slot_pool), sizeof(slot), "slot");
-  init_memory_pool (&current_agent(wme_pool), sizeof(wme), "wme");
-  init_memory_pool (&current_agent(preference_pool),
-		    sizeof(preference), "preference");
+void init_decider(void)
+{
+    init_memory_pool(&current_agent(slot_pool), sizeof(slot), "slot");
+    init_memory_pool(&current_agent(wme_pool), sizeof(wme), "wme");
+    init_memory_pool(&current_agent(preference_pool), sizeof(preference), "preference");
+} 
+
+void do_buffered_wm_and_ownership_changes(void)
+{
+    do_buffered_acceptable_preference_wme_changes();
+    do_buffered_link_changes();
+    do_buffered_wm_changes();
+    remove_garbage_slots();
 }
 
-void do_buffered_wm_and_ownership_changes (void) {
-  do_buffered_acceptable_preference_wme_changes();
-  do_buffered_link_changes();
-  do_buffered_wm_changes();
-  remove_garbage_slots();
-}
-
-void do_working_memory_phase (void) {
+void do_working_memory_phase(void)
+{
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
-  if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM]) {
+    if (current_agent(sysparams)[TRACE_PHASES_SYSPARAM]) {
 #ifndef SOAR_8_ONLY
-     if (current_agent(operand2_mode) == TRUE) {
+        if (current_agent(operand2_mode) == TRUE) {
 #endif
-	switch (current_agent(FIRING_TYPE)) {
-	   case PE_PRODS:
-              print ("\t--- Change Working Memory (PE) ---\n");
-	      break;
-	   case IE_PRODS:
-              print ("\t--- Change Working Memory (IE) ---\n");
-	      break;
-	}
+            switch (current_agent(FIRING_TYPE)) {
+            case PE_PRODS:
+                print("\t--- Change Working Memory (PE) ---\n");
+                break;
+            case IE_PRODS:
+                print("\t--- Change Working Memory (IE) ---\n");
+                break;
+            }
 #ifndef SOAR_8_ONLY
-     }
+        }
 
-     else
-        print ("\n--- Working Memory Phase ---\n");
+        else
+            print("\n--- Working Memory Phase ---\n");
 #endif
-  }
+    }
 
 #endif
 
-//  print_with_symbols("\nAt beginning of wmphase, bottom goal is %y\n", current_agent(bottom_goal));
-  decide_non_context_slots();
-//    print_with_symbols("\nAfter decide_non_context_slots, bottom goal is %y\n", current_agent(bottom_goal));
-  do_buffered_wm_and_ownership_changes();
-//    print_with_symbols("\nAfter do ownership changes, bottom goal is %y\n", current_agent(bottom_goal));
+    decide_non_context_slots();
+    do_buffered_wm_and_ownership_changes();
 }
 
 void do_decision_phase (void) {
@@ -2685,487 +2747,444 @@ void do_decision_phase (void) {
   do_buffered_wm_and_ownership_changes();
 }  
 
-void create_top_goal (void) {
-  create_new_context (NIL, NONE_IMPASSE_TYPE);
-  current_agent(highest_goal_whose_context_changed) = NIL;  /* nothing changed yet */
-  do_buffered_wm_and_ownership_changes();
+void create_top_goal(void)
+{
+    create_new_context(NIL, NONE_IMPASSE_TYPE);
+    current_agent(highest_goal_whose_context_changed) = NIL;    /* nothing changed yet */
+    do_buffered_wm_and_ownership_changes();
 }
 
-void clear_goal_stack (void) {
-  if (!current_agent(top_goal)) return;
-  remove_existing_context_and_descendents (current_agent(top_goal));
-  current_agent(highest_goal_whose_context_changed) = NIL;  /* nothing changed                                                                yet */
-  do_buffered_wm_and_ownership_changes();
-  current_agent(top_state) = NIL;
-  do_input_cycle();  /* tell input functions that the top state is gone */
-  do_output_cycle(); /* tell output functions that output commands are gone */
+void clear_goal_stack(void)
+{
+    if (!current_agent(top_goal))
+        return;
+    remove_existing_context_and_descendents(current_agent(top_goal));
+    current_agent(highest_goal_whose_context_changed) = NIL;    /* nothing changed                                                                yet */
+    do_buffered_wm_and_ownership_changes();
+    current_agent(top_state) = NIL;
+    do_input_cycle();           /* tell input functions that the top state is gone */
+    do_output_cycle();          /* tell output functions that output commands are gone */
 }
-  
-void print_lowest_slot_in_context_stack (void) {
 
-	 
-	
+void print_lowest_slot_in_context_stack(void)
+{
 
-  /* REW: begin 10.24.97 */
-  /* This doesn't work yet so for now just print the last selection */
-  if (current_agent(operand2_mode) && 
-      current_agent(waitsnc) &&
-      current_agent(waitsnc_detect)) {
+    /* REW: begin 10.24.97 */
+    /* This doesn't work yet so for now just print the last selection */
+    if (current_agent(operand2_mode) && current_agent(waitsnc) && current_agent(waitsnc_detect)) {
 
-    current_agent(waitsnc_detect) = FALSE;
-    print_stack_trace (current_agent(wait_symbol),
-                       current_agent(bottom_goal), FOR_ANYTHING_TF, TRUE);
-  }
-  else {
-   
-	/* REW: end   10.24.97 */
+        current_agent(waitsnc_detect) = FALSE;
+        print_stack_trace(current_agent(wait_symbol), current_agent(bottom_goal), FOR_ANYTHING_TF, TRUE);
+    } else {
 
-	if (current_agent(bottom_goal)->id.operator_slot->wmes)
-	  print_stack_trace (current_agent(bottom_goal)->id.operator_slot->wmes->value,
-						 current_agent(bottom_goal), FOR_OPERATORS_TF, TRUE);
+        /* REW: end   10.24.97 */
+        if (current_agent(bottom_goal)->id.operator_slot->wmes)
+            print_stack_trace(current_agent(bottom_goal)->id.operator_slot->wmes->value,
+                              current_agent(bottom_goal), FOR_OPERATORS_TF, TRUE);
 
+        /* RCHONG: begin 10.11 */
+        /*
+           this coded is needed just so that when an ONC is created in OPERAND
+           (i.e. if the previous goal's operator slot is not empty), it's stack
+           trace line doesn't get a number.  this is done because in OPERAND,
+           ONCs are detected for "free".
+         */
 
-  /* RCHONG: begin 10.11 */
-  /*
-  this coded is needed just so that when an ONC is created in OPERAND
-  (i.e. if the previous goal's operator slot is not empty), it's stack
-  trace line doesn't get a number.  this is done because in OPERAND,
-  ONCs are detected for "free".
-  */
+        else {
 
-	else {
-   
-    /* REW: begin 09.15.96 */
+            /* REW: begin 09.15.96 */
 #ifndef SOAR_8_ONLY
-	  if (current_agent(operand2_mode) == FALSE) 
-		print_stack_trace (current_agent(bottom_goal),
-						   current_agent(bottom_goal), FOR_STATES_TF,TRUE);
-    /* REW: end   09.15.96 */
+            if (current_agent(operand2_mode) == FALSE)
+                print_stack_trace(current_agent(bottom_goal), current_agent(bottom_goal), FOR_STATES_TF, TRUE);
+            /* REW: end   09.15.96 */
 
-	  else {
+            else {
 #endif
-		if (current_agent(d_cycle_count) == 0)
-          print_stack_trace (current_agent(bottom_goal),
-							 current_agent(bottom_goal), FOR_STATES_TF,TRUE);
-		else {
-          if (current_agent(bottom_goal)->id.higher_goal->id.operator_slot->wmes) {
-			print_stack_trace (current_agent(bottom_goal),
-							   current_agent(bottom_goal),
-							   FOR_STATES_TF,FALSE);
-		  }
-          else {
-			print_stack_trace (current_agent(bottom_goal),
-							   current_agent(bottom_goal),
-							   FOR_STATES_TF,TRUE);
-		  }
-		}
+                if (current_agent(d_cycle_count) == 0)
+                    print_stack_trace(current_agent(bottom_goal), current_agent(bottom_goal), FOR_STATES_TF, TRUE);
+                else {
+                    if (current_agent(bottom_goal)->id.higher_goal->id.operator_slot->wmes) {
+                        print_stack_trace(current_agent(bottom_goal), current_agent(bottom_goal), FOR_STATES_TF, FALSE);
+                    } else {
+                        print_stack_trace(current_agent(bottom_goal), current_agent(bottom_goal), FOR_STATES_TF, TRUE);
+                    }
+                }
 #ifndef SOAR_8_ONLY
-	  }
+            }
 #endif
-	}
-  }
-  /* RCHONG: end 10.11 */
+        }
+    }
+    /* RCHONG: end 10.11 */
 
 }
-
-
-
 
 /* REW: begin 09.15.96 */
 
-void uniquely_add_to_head_of_dll(instantiation *inst)
+void uniquely_add_to_head_of_dll(instantiation * inst)
 {
 
-  parent_inst *new_pi, *curr_pi;
-   
-  /* print("UNIQUE DLL:         scanning parent list...\n"); */
+    parent_inst *new_pi, *curr_pi;
 
-  for (curr_pi = current_agent(parent_list_head);
-       curr_pi;
-       curr_pi = curr_pi->next) {
-     if (curr_pi->inst == inst) {
-        #ifdef DEBUG_GDS
-        print_with_symbols("UNIQUE DLL:            %y is already in parent list\n",curr_pi->inst->prod->name);
-        #endif
-        return;
-     }
-     #ifdef DEBUG_GDS
-         print_with_symbols("UNIQUE DLL:            %y\n",curr_pi->inst->prod->name); 
-     #endif
-  } /* end for loop */
+    /* print("UNIQUE DLL:         scanning parent list...\n"); */
 
-  new_pi = (parent_inst *) malloc(sizeof(parent_inst));
-  new_pi->next = NIL;
-  new_pi->prev = NIL;
-  new_pi->inst = inst;
+    for (curr_pi = current_agent(parent_list_head); curr_pi; curr_pi = curr_pi->next) {
+        if (curr_pi->inst == inst) {
+#ifdef DEBUG_GDS
+            print_with_symbols("UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod->name);
+#endif
+            return;
+        }
+#ifdef DEBUG_GDS
+        print_with_symbols("UNIQUE DLL:            %y\n", curr_pi->inst->prod->name);
+#endif
+    }                           /* end for loop */
 
-  new_pi->next = current_agent(parent_list_head);
+    new_pi = (parent_inst *) malloc(sizeof(parent_inst));
+    new_pi->next = NIL;
+    new_pi->prev = NIL;
+    new_pi->inst = inst;
 
-  if (current_agent(parent_list_head) != NIL)
-     current_agent(parent_list_head)->prev = new_pi;
+    new_pi->next = current_agent(parent_list_head);
 
-  current_agent(parent_list_head) = new_pi;
-  #ifdef DEBUG_GDS
-   print_with_symbols("UNIQUE DLL:         added: %y\n",inst->prod->name); 
-  #endif
+    if (current_agent(parent_list_head) != NIL)
+        current_agent(parent_list_head)->prev = new_pi;
+
+    current_agent(parent_list_head) = new_pi;
+#ifdef DEBUG_GDS
+    print_with_symbols("UNIQUE DLL:         added: %y\n", inst->prod->name);
+#endif
 }
 
-void elaborate_gds () {
+void elaborate_gds()
+{
 
-wme *wme_matching_this_cond;
-goal_stack_level  wme_goal_level;
-preference *pref_for_this_wme, *pref;
-condition *cond;
-parent_inst *curr_pi, *temp_pi;
-slot *s;
-instantiation *inst;
+    wme *wme_matching_this_cond;
+    goal_stack_level wme_goal_level;
+    preference *pref_for_this_wme, *pref;
+    condition *cond;
+    parent_inst *curr_pi, *temp_pi;
+    slot *s;
+    instantiation *inst;
 
-  for (curr_pi=current_agent(parent_list_head); curr_pi; curr_pi=temp_pi) {
+    for (curr_pi = current_agent(parent_list_head); curr_pi; curr_pi = temp_pi) {
 
-     inst = curr_pi->inst;
+        inst = curr_pi->inst;
 
-     #ifdef DEBUG_GDS
-          print_with_symbols("\n      EXPLORING INSTANTIATION: %y\n",curr_pi->inst->prod->name);
-          print("      ");
-	  print_instantiation_with_wmes( curr_pi->inst , TIMETAG_WME_TRACE);
-     #endif
+#ifdef DEBUG_GDS
+        print_with_symbols("\n      EXPLORING INSTANTIATION: %y\n", curr_pi->inst->prod->name);
+        print("      ");
+        print_instantiation_with_wmes(curr_pi->inst, TIMETAG_WME_TRACE);
+#endif
 
-     for (cond=inst->top_of_instantiated_conditions;
-	  cond!=NIL;
-	  cond=cond->next) {
+        for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next) {
 
-	if (cond->type != POSITIVE_CONDITION) continue;
-	/* We'll deal with negative instantiations after we get the
-	 * positive ones figured out */
+            if (cond->type != POSITIVE_CONDITION)
+                continue;
+            /* We'll deal with negative instantiations after we get the
+             * positive ones figured out */
 
-	wme_matching_this_cond = cond->bt.wme;
-	wme_goal_level         = cond->bt.level;
-	pref_for_this_wme      = wme_matching_this_cond->preference;
+            wme_matching_this_cond = cond->bt.wme;
+            wme_goal_level = cond->bt.level;
+            pref_for_this_wme = wme_matching_this_cond->preference;
 
-        #ifdef DEBUG_GDS
-	 print("\n       wme_matching_this_cond at goal_level = %d : ",
-	       wme_goal_level);
-	 print_wme(wme_matching_this_cond); 
+#ifdef DEBUG_GDS
+            print("\n       wme_matching_this_cond at goal_level = %d : ", wme_goal_level);
+            print_wme(wme_matching_this_cond);
 
-	 if (pref_for_this_wme) {
-	   print("       pref_for_this_wme                        : ");
-	   print_preference(pref_for_this_wme);
-	 } 
-        #endif
+            if (pref_for_this_wme) {
+                print("       pref_for_this_wme                        : ");
+                print_preference(pref_for_this_wme);
+            }
+#endif
 
+            /* WME is in a supergoal or is arch-supported WME
+             *  (except for fake instantiations, which do have prefs, so
+             *  they get handled under "wme is local and i-supported")
+             */
+            if ((pref_for_this_wme == NIL) || (wme_goal_level < inst->match_goal_level)) {
 
-        /* WME is in a supergoal or is arch-supported WME
-	 *  (except for fake instantiations, which do have prefs, so
-	 *  they get handled under "wme is local and i-supported")
-	 */
-	if ((pref_for_this_wme == NIL) ||
-	    (wme_goal_level < inst->match_goal_level)) {
+#ifdef DEBUG_GDS
+                if (pref_for_this_wme == NIL) {
+                    print("         this wme has no preferences (it's an arch-created wme)\n");
+                } else if (wme_goal_level < inst->match_goal_level) {
+                    print("         this wme is in the supergoal\n");
+                }
+                print_with_symbols("inst->match_goal [%y]\n", inst->match_goal);
+#endif
 
-          #ifdef DEBUG_GDS
-	    if (pref_for_this_wme == NIL) {
-	       print("         this wme has no preferences (it's an arch-created wme)\n");
-	    }
-	    else if (wme_goal_level < inst->match_goal_level) {
-	       print("         this wme is in the supergoal\n");
-	    }
-	    print_with_symbols("inst->match_goal [%y]\n" , inst->match_goal);  
-          #endif
+                if (wme_matching_this_cond->gds != NIL) {
+                    /* Then we want to check and see if the old GDS value
+                     * should be changed */
+                    if (wme_matching_this_cond->gds->goal == NIL) {
+                        /* The goal is NIL: meaning that the goal for the GDS
+                         * is no longer around */
+                        fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds,
+                                             wme_matching_this_cond, wme, gds_next, gds_prev);
 
-	  if (wme_matching_this_cond->gds != NIL){
-	    /* Then we want to check and see if the old GDS value
-	     * should be changed */
-	    if (wme_matching_this_cond->gds->goal == NIL) {
-	      /* The goal is NIL: meaning that the goal for the GDS
-	       * is no longer around */
-	       fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
-                                    wme_matching_this_cond, wme,
-				    gds_next, gds_prev);
+                        /* We have to check for GDS removal anytime we take a
+                         * WME off the GDS wme list, not just when a WME is
+                         * removed from memory. */
+                        if (!wme_matching_this_cond->gds->wmes_in_gds) {
+                            free_memory(wme_matching_this_cond->gds, MISCELLANEOUS_MEM_USAGE);
+#ifdef DEBUG_GDS
+                            print("\n  REMOVING GDS FROM MEMORY.");
+#endif
+                        }
+                        wme_matching_this_cond->gds = inst->match_goal->id.gds;
+                        insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
+                                              wme_matching_this_cond, gds_next, gds_prev);
+#ifdef DEBUG_GDS
+                        print("\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+#endif
 
-	       /* We have to check for GDS removal anytime we take a
-		* WME off the GDS wme list, not just when a WME is
-		* removed from memory. */
-               if (!wme_matching_this_cond->gds->wmes_in_gds) {
-		 free_memory(wme_matching_this_cond->gds,
-			     MISCELLANEOUS_MEM_USAGE);
-                 #ifdef DEBUG_GDS
-                   print("\n  REMOVING GDS FROM MEMORY.");
-                 #endif
-	       }
-               wme_matching_this_cond->gds = inst->match_goal->id.gds;
-               insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds, 
-                                     wme_matching_this_cond, gds_next,
-				     gds_prev);
-               #ifdef DEBUG_GDS
-	         print("\n       .....GDS' goal is NIL so switching from old to new GDS list....\n"); 
-               #endif
-	    
-	    } else if (wme_matching_this_cond->gds->goal->id.level >
-		       inst->match_goal_level) {
-	      /* if the WME currently belongs to the GDS of a goal below
-	       * the current one */
-	       /* 1. Take WME off old (current) GDS list 
-                * 2. Check to see if old GDS WME list is empty.  If so,
-		*         remove(free) it.
-		* 3. Add WME to new GDS list
-		* 4. Update WME pointer to new GDS list
-		*/
-	       if (inst->match_goal_level == 1) 
-		 print("\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+                    } else if (wme_matching_this_cond->gds->goal->id.level > inst->match_goal_level) {
+                        /* if the WME currently belongs to the GDS of a goal below
+                         * the current one */
+                        /* 1. Take WME off old (current) GDS list 
+                         * 2. Check to see if old GDS WME list is empty.  If so,
+                         *         remove(free) it.
+                         * 3. Add WME to new GDS list
+                         * 4. Update WME pointer to new GDS list
+                         */
+                        if (inst->match_goal_level == 1)
+                            print("\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
 
-	       fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
-                                    wme_matching_this_cond, wme,
-				    gds_next, gds_prev);
-               if (!wme_matching_this_cond->gds->wmes_in_gds) {
-		 free_memory(wme_matching_this_cond->gds,
-			     MISCELLANEOUS_MEM_USAGE);
-                 #ifdef DEBUG_GDS
-                   print("\n  REMOVING GDS FROM MEMORY.");
-                 #endif
-	       } 
-               wme_matching_this_cond->gds = inst->match_goal->id.gds;
-               insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
-				     wme_matching_this_cond, gds_next,
-				     gds_prev);
-               #ifdef DEBUG_GDS
-	        print("\n       ....switching from old to new GDS list....\n");
-               #endif
-	       wme_matching_this_cond->gds = inst->match_goal->id.gds;
-	    }
-	  } else {
-	    /* We know that the WME should be in the GDS of the current
-	     * goal if the WME's GDS does not already exist.
-	     * (i.e., if NIL GDS) */
-	    wme_matching_this_cond->gds = inst->match_goal->id.gds;
+                        fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds,
+                                             wme_matching_this_cond, wme, gds_next, gds_prev);
+                        if (!wme_matching_this_cond->gds->wmes_in_gds) {
+                            free_memory(wme_matching_this_cond->gds, MISCELLANEOUS_MEM_USAGE);
+#ifdef DEBUG_GDS
+                            print("\n  REMOVING GDS FROM MEMORY.");
+#endif
+                        }
+                        wme_matching_this_cond->gds = inst->match_goal->id.gds;
+                        insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
+                                              wme_matching_this_cond, gds_next, gds_prev);
+#ifdef DEBUG_GDS
+                        print("\n       ....switching from old to new GDS list....\n");
+#endif
+                        wme_matching_this_cond->gds = inst->match_goal->id.gds;
+                    }
+                } else {
+                    /* We know that the WME should be in the GDS of the current
+                     * goal if the WME's GDS does not already exist.
+                     * (i.e., if NIL GDS) */
+                    wme_matching_this_cond->gds = inst->match_goal->id.gds;
 
-	    insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
-				  wme_matching_this_cond, gds_next, gds_prev);
-	    if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
-	      print("\nDEBUG DEBUG : The new header should never have a prev value.\n");
-            #ifdef DEBUG_GDS
-              print_with_symbols("\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal); 
-            #endif
-	  } /* end else clause for "if wme_matching_this_cond->gds != NIL" */
+                    insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
+                                          wme_matching_this_cond, gds_next, gds_prev);
+                    if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
+                        print("\nDEBUG DEBUG : The new header should never have a prev value.\n");
+#ifdef DEBUG_GDS
+                    print_with_symbols("\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n",
+                                       wme_matching_this_cond->gds->goal);
+#endif
+                }               /* end else clause for "if wme_matching_this_cond->gds != NIL" */
 
+#ifdef DEBUG_GDS
+                print("            Added WME to GDS for goal = %d", wme_matching_this_cond->gds->goal->id.level);
+                print_with_symbols(" [%y]\n", wme_matching_this_cond->gds->goal);
+#endif
+            }
+            /* end "wme in supergoal or arch-supported" */
+            else {
+                /* wme must be local */
 
-          #ifdef DEBUG_GDS
-	    print("            Added WME to GDS for goal = %d",
-		  wme_matching_this_cond->gds->goal->id.level);
-	    print_with_symbols(" [%y]\n", wme_matching_this_cond->gds->goal);  
-          #endif
-        } /* end "wme in supergoal or arch-supported" */
+                /* if wme's pref is o-supported, then just ignore it and
+                 * move to next condition */
+                if (pref_for_this_wme->o_supported == TRUE) {
+#ifdef DEBUG_GDS
+                    print("         this wme is local and o-supported\n");
+#endif
+                    continue;
+                }
 
-	else {
-	  /* wme must be local */
+                else {
+                    /* wme's pref is i-supported, so remember it's instantiation
+                     * for later examination */
 
-	  /* if wme's pref is o-supported, then just ignore it and
-	   * move to next condition */
-	  if (pref_for_this_wme->o_supported == TRUE) {
-             #ifdef DEBUG_GDS
-	      print("         this wme is local and o-supported\n");
-             #endif
-             continue;
-	  }
-
-	  else {
-	    /* wme's pref is i-supported, so remember it's instantiation
-	     * for later examination */
-
-	      /* this test avoids "backtracing" through the top state */
-	      if (inst->match_goal_level == 1) {
-                #ifdef DEBUG_GDS
-		  print("         don't back up through top state\n");  
-		  if (inst->prod)
-		    if (inst->prod->name)
-		       print_with_symbols("         don't back up through top state for instantiation %y\n", inst->prod->name);
-                #endif
-		continue;
-	      }
-
-	      else { /* (inst->match_goal_level != 1) */
-                #ifdef DEBUG_GDS
-		 print("         this wme is local and i-supported\n"); 
-                #endif
-                s = find_slot (pref_for_this_wme->id, pref_for_this_wme->attr);
-		if (s == NIL) {
-		   /* this must be an arch-wme from a fake instantiation */
-		   
-                   #ifdef DEBUG_GDS
-		     print("here's the wme with no slot:\t");
-		     print_wme(pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme);
-                   #endif
-
-		   /* this is the same code as above, just using the 
-		    * differently-named pointer.  it probably should
-		    * be a subroutine */
-		   {
-		     wme *fake_inst_wme_cond;
-
-		     fake_inst_wme_cond =
-		       pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme;
-		     if (fake_inst_wme_cond->gds != NIL){
-		       /* Then we want to check and see if the old GDS
-			* value should be changed */
-		       if (fake_inst_wme_cond->gds->goal == NIL) {
-			 /* The goal is NIL: meaning that the goal for
-			  * the GDS is no longer around */
-
-			 fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-					      fake_inst_wme_cond, wme,
-					      gds_next, gds_prev);
-
-			 /* We have to check for GDS removal anytime we take
-			  * a WME off the GDS wme list, not just when a WME
-			  *is removed from memory. */
-			 if (!fake_inst_wme_cond->gds->wmes_in_gds) {
-			   free_memory(fake_inst_wme_cond->gds,
-				       MISCELLANEOUS_MEM_USAGE);
-                           #ifdef DEBUG_GDS
-			     print("\n  REMOVING GDS FROM MEMORY.");
-                           #endif
-			 }
-	       
-			 fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-			 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds, 
-					       fake_inst_wme_cond, gds_next, gds_prev);
-                         #ifdef DEBUG_GDS
-			 print("\n       .....GDS' goal is NIL so switching from old to new GDS list....\n"); 
-                         #endif
-		       } else if (fake_inst_wme_cond->gds->goal->id.level >
-				  inst->match_goal_level) {
-			 /* if the WME currently belongs to the GDS of a
-			  *goal below the current one */
-			 /* 1. Take WME off old (current) GDS list 
-			  * 2. Check to see if old GDS WME list is empty.
-			  *    If so, remove(free) it.
-			  * 3. Add WME to new GDS list
-			  * 4. Update WME pointer to new GDS list
-			  */
-			 if (inst->match_goal_level == 1) 
-			   print("\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
-
-			 fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
-					      fake_inst_wme_cond, wme,
-					      gds_next, gds_prev);
-			 if (!fake_inst_wme_cond->gds->wmes_in_gds) {
-			   free_memory(fake_inst_wme_cond->gds,
-				       MISCELLANEOUS_MEM_USAGE);
-                           #ifdef DEBUG_GDS
- 			    print("\n  REMOVING GDS FROM MEMORY.");
-                           #endif
-			 }
-	       
-			 fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-			 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
-					       fake_inst_wme_cond, gds_next,
-					       gds_prev);
-                         #ifdef DEBUG_GDS
-			   print("\n       .....switching from old to new GDS list....\n");
-                         #endif
-			   fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-		       }
-		     } else {
-		       /* We know that the WME should be in the GDS of
-			* the current goal if the WME's GDS does not
-			* already exist. (i.e., if NIL GDS) */
-		       fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-
-		       insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-					     fake_inst_wme_cond,
-					     gds_next, gds_prev);
-		       if (fake_inst_wme_cond->gds->wmes_in_gds->gds_prev)
-			 print("\nDEBUG DEBUG : The new header should never have a prev value.\n");
-                       #ifdef DEBUG_GDS
- 		         print_with_symbols("\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal); 
-                       #endif
-		     }
-                     #ifdef DEBUG_GDS
-		       print("            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id.level);
-		       print_with_symbols(" [%y]\n",
-					  fake_inst_wme_cond->gds->goal);  
-                     #endif
-		   }  /* matches { wme *fake_inst_wme_cond  */
-		} else {
-		  /* this was the original "local & i-supported" action */
-	     
-		  for (pref=s->preferences[ACCEPTABLE_PREFERENCE_TYPE];
-		       pref;
-		       pref=pref->next) {
-
-                    #ifdef DEBUG_GDS
-		       print("           looking at pref for the wme: ");
-		       print_preference(pref); 
-                    #endif
-
-                    /* REW BUG: may have to go over all insts regardless
-		     * of this visited_already flag... */
-
-		    if (pref->inst->GDS_evaluated_already == FALSE) {
-	
-                       #ifdef DEBUG_GDS	      
-		         print_with_symbols("\n           adding inst that produced the pref to GDS: %y\n",pref->inst->prod->name); 
-                       #endif
-
-		       uniquely_add_to_head_of_dll(pref->inst);
-		       pref->inst->GDS_evaluated_already = TRUE;
+                    /* this test avoids "backtracing" through the top state */
+                    if (inst->match_goal_level == 1) {
+#ifdef DEBUG_GDS
+                        print("         don't back up through top state\n");
+                        if (inst->prod)
+                            if (inst->prod->name)
+                                print_with_symbols("         don't back up through top state for instantiation %y\n",
+                                                   inst->prod->name);
+#endif
+                        continue;
                     }
 
-                    else {
-                      #ifdef DEBUG_GDS
-		        print("           the inst producing this pref was already explored; skipping it\n"); 
-                      #endif
-		    }
+                    else {      /* (inst->match_goal_level != 1) */
+#ifdef DEBUG_GDS
+                        print("         this wme is local and i-supported\n");
+#endif
+                        s = find_slot(pref_for_this_wme->id, pref_for_this_wme->attr);
+                        if (s == NIL) {
+                            /* this must be an arch-wme from a fake instantiation */
 
-		  }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/
-		}
-	      }
-	  }
+#ifdef DEBUG_GDS
+                            print("here's the wme with no slot:\t");
+                            print_wme(pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme);
+#endif
+
+                            /* this is the same code as above, just using the 
+                             * differently-named pointer.  it probably should
+                             * be a subroutine */
+                            {
+                                wme *fake_inst_wme_cond;
+
+                                fake_inst_wme_cond = pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme;
+                                if (fake_inst_wme_cond->gds != NIL) {
+                                    /* Then we want to check and see if the old GDS
+                                     * value should be changed */
+                                    if (fake_inst_wme_cond->gds->goal == NIL) {
+                                        /* The goal is NIL: meaning that the goal for
+                                         * the GDS is no longer around */
+
+                                        fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                                             fake_inst_wme_cond, wme, gds_next, gds_prev);
+
+                                        /* We have to check for GDS removal anytime we take
+                                         * a WME off the GDS wme list, not just when a WME
+                                         *is removed from memory. */
+                                        if (!fake_inst_wme_cond->gds->wmes_in_gds) {
+                                            free_memory(fake_inst_wme_cond->gds, MISCELLANEOUS_MEM_USAGE);
+#ifdef DEBUG_GDS
+                                            print("\n  REMOVING GDS FROM MEMORY.");
+#endif
+                                        }
+
+                                        fake_inst_wme_cond->gds = inst->match_goal->id.gds;
+                                        insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                                              fake_inst_wme_cond, gds_next, gds_prev);
+#ifdef DEBUG_GDS
+                                        print
+                                            ("\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+#endif
+                                    } else if (fake_inst_wme_cond->gds->goal->id.level > inst->match_goal_level) {
+                                        /* if the WME currently belongs to the GDS of a
+                                         *goal below the current one */
+                                        /* 1. Take WME off old (current) GDS list 
+                                         * 2. Check to see if old GDS WME list is empty.
+                                         *    If so, remove(free) it.
+                                         * 3. Add WME to new GDS list
+                                         * 4. Update WME pointer to new GDS list
+                                         */
+                                        if (inst->match_goal_level == 1)
+                                            print("\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+
+                                        fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                                             fake_inst_wme_cond, wme, gds_next, gds_prev);
+                                        if (!fake_inst_wme_cond->gds->wmes_in_gds) {
+                                            free_memory(fake_inst_wme_cond->gds, MISCELLANEOUS_MEM_USAGE);
+#ifdef DEBUG_GDS
+                                            print("\n  REMOVING GDS FROM MEMORY.");
+#endif
+                                        }
+
+                                        fake_inst_wme_cond->gds = inst->match_goal->id.gds;
+                                        insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                                              fake_inst_wme_cond, gds_next, gds_prev);
+#ifdef DEBUG_GDS
+                                        print("\n       .....switching from old to new GDS list....\n");
+#endif
+                                        fake_inst_wme_cond->gds = inst->match_goal->id.gds;
+                                    }
+                                } else {
+                                    /* We know that the WME should be in the GDS of
+                                     * the current goal if the WME's GDS does not
+                                     * already exist. (i.e., if NIL GDS) */
+                                    fake_inst_wme_cond->gds = inst->match_goal->id.gds;
+
+                                    insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+                                                          fake_inst_wme_cond, gds_next, gds_prev);
+                                    if (fake_inst_wme_cond->gds->wmes_in_gds->gds_prev)
+                                        print("\nDEBUG DEBUG : The new header should never have a prev value.\n");
+#ifdef DEBUG_GDS
+                                    print_with_symbols
+                                        ("\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n",
+                                         fake_inst_wme_cond->gds->goal);
+#endif
+                                }
+#ifdef DEBUG_GDS
+                                print("            Added WME to GDS for goal = %d",
+                                      fake_inst_wme_cond->gds->goal->id.level);
+                                print_with_symbols(" [%y]\n", fake_inst_wme_cond->gds->goal);
+#endif
+                            }   /* matches { wme *fake_inst_wme_cond  */
+                        } else {
+                            /* this was the original "local & i-supported" action */
+
+                            for (pref = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; pref; pref = pref->next) {
+
+#ifdef DEBUG_GDS
+                                print("           looking at pref for the wme: ");
+                                print_preference(pref);
+#endif
+
+                                /* REW BUG: may have to go over all insts regardless
+                                 * of this visited_already flag... */
+
+                                if (pref->inst->GDS_evaluated_already == FALSE) {
+
+#ifdef DEBUG_GDS
+                                    print_with_symbols("\n           adding inst that produced the pref to GDS: %y\n",
+                                                       pref->inst->prod->name);
+#endif
+
+                                    uniquely_add_to_head_of_dll(pref->inst);
+                                    pref->inst->GDS_evaluated_already = TRUE;
+                                }
+                               else {
+#ifdef DEBUG_GDS
+                                    print
+                                        ("           the inst producing this pref was already explored; skipping it\n");
+#endif
+                                }
+                            }   /* for pref = s->pref[ACCEPTABLE_PREF ... */
+                        }
+                    }
+                }
+            }
+
+        }                       /* for (cond = inst->top_of_instantiated_cond ...  */
+
+        /* remove just used instantiation from list */
+
+#ifdef DEBUG_GDS
+        print_with_symbols("\n      removing instantiation: %y\n", curr_pi->inst->prod->name);
+#endif
+
+        if (curr_pi->next != NIL)
+            curr_pi->next->prev = curr_pi->prev;
+        if (curr_pi->prev != NIL)
+            curr_pi->prev->next = curr_pi->next;
+        if (current_agent(parent_list_head) == curr_pi)
+            current_agent(parent_list_head) = curr_pi->next;
+
+        temp_pi = curr_pi->next;
+        free(curr_pi);
+
+    }                           /* end of "for (curr_pi = current_agent(parent_list_head) ... */
+
+    if (current_agent(parent_list_head) != NIL) {
+#ifdef DEBUG_GDS
+        print("\n    RECURSING using these parents:\n");
+        for (curr_pi = current_agent(parent_list_head); curr_pi; curr_pi = curr_pi->next) {
+            print_with_symbols("      %y\n", curr_pi->inst->prod->name);
         }
-	
-     }  /* for (cond = inst->top_of_instantiated_cond ...  */
+#endif
+        /* recursively explore the parents of all the instantiations */
 
+        elaborate_gds();
 
-    /* remove just used instantiation from list */
+        /* free the parent instantiation list.  technically, the list
+         * should be empty at this point ??? */
+        free_parent_list();
+    }
 
-    #ifdef DEBUG_GDS
-     print_with_symbols("\n      removing instantiation: %y\n",
-			curr_pi->inst->prod->name); 
-    #endif
-  
-    if (curr_pi->next != NIL) curr_pi->next->prev = curr_pi->prev;
-    if (curr_pi->prev != NIL) curr_pi->prev->next = curr_pi->next;
-
-    if (current_agent(parent_list_head) == curr_pi)
-      current_agent(parent_list_head) = curr_pi->next;
- 
-    temp_pi = curr_pi->next;
-    free(curr_pi);
-
-  } /* end of "for (curr_pi = current_agent(parent_list_head) ... */
-
-
-  if (current_agent(parent_list_head) != NIL) {
-    #ifdef DEBUG_GDS
-     print("\n    RECURSING using these parents:\n");
-     for (curr_pi = current_agent(parent_list_head);
-	  curr_pi;
-	  curr_pi = curr_pi->next) {
-       print_with_symbols("      %y\n",curr_pi->inst->prod->name);
-     } 
-    #endif
-
-     /* recursively explore the parents of all the instantiations */
-
-     elaborate_gds();
-
-     /* free the parent instantiation list.  technically, the list
-      * should be empty at this point ??? */
-     free_parent_list(); 
-  }
-
-} /* end of elaborate_gds   */
-
-
-
+}                               /* end of elaborate_gds   */
 
 /* REW BUG: this needs to be smarter to deal with wmes that get support from
 multiple instantiations.  for example ^enemy-out-there could be made by 50
@@ -3175,127 +3194,101 @@ we're gonna yank out the goal -- even when that i-supported element itself
 may not be removed (due to multiple preferences).  So, we'll say that this is
 a "twitchy" version of OPERAND2, and leave open the possibility that other
 approaches may be better */
-
-void gds_invalid_so_remove_goal (wme *w) {
+void gds_invalid_so_remove_goal(wme * w)
+{
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  /* REW: begin 11.25.96 */ 
-  start_timer(&current_agent(start_gds_tv));
-  /* REW: end   11.25.96 */ 
+    /* REW: begin 11.25.96 */
+    start_timer(&current_agent(start_gds_tv));
+    /* REW: end   11.25.96 */
 #endif
 #endif
 
-  if (current_agent(soar_verbose_flag)) soar_ecGDSPrint();
+    if (current_agent(soar_verbose_flag))
+        soar_ecGDSPrint();
 
-  /* REW: BUG.  I have no idea right now if this is a terrible hack or
-   * actually what we want to do.  The idea here is that the context of
-   * the immediately higher goal above a retraction should be marked as
-   * having its context changed in order that the architecture doesn't
-   * look below this level for context changes.  I think it's a hack b/c
-   * it seems like there should aready be mechanisms for doing this in
-   * the architecture but I couldn't find any.
-   */
-  /* Note: the inner 'if' is correct -- we only want to change
-   * highest_goal_whose_context_changed if the pointer is currently at
-   * or below (greater than) the goal which we are going to retract.
-   * However, I'm not so sure about the outer 'else.'  If we don't set
-   * this to the goal above the retraction, even if the current value
-   * is NIL, we still seg fault in certain cases.  But setting it as we do 
-   * in the inner 'if' seems to clear up the difficulty.
-   */
+    /* REW: BUG.  I have no idea right now if this is a terrible hack or
+     * actually what we want to do.  The idea here is that the context of
+     * the immediately higher goal above a retraction should be marked as
+     * having its context changed in order that the architecture doesn't
+     * look below this level for context changes.  I think it's a hack b/c
+     * it seems like there should aready be mechanisms for doing this in
+     * the architecture but I couldn't find any.
+     */
+    /* Note: the inner 'if' is correct -- we only want to change
+     * highest_goal_whose_context_changed if the pointer is currently at
+     * or below (greater than) the goal which we are going to retract.
+     * However, I'm not so sure about the outer 'else.'  If we don't set
+     * this to the goal above the retraction, even if the current value
+     * is NIL, we still seg fault in certain cases.  But setting it as we do 
+     * in the inner 'if' seems to clear up the difficulty.
+     */
 
-   if (current_agent(highest_goal_whose_context_changed)) {
-      if (current_agent(highest_goal_whose_context_changed)->id.level >=
-          w->gds->goal->id.level) {
-        current_agent(highest_goal_whose_context_changed) =
-	  w->gds->goal->id.higher_goal;
-      }
-   } else {
-     /* If nothing has yet changed (highest_ ... = NIL) then set
-      * the goal automatically */
-     current_agent(highest_goal_whose_context_changed) =
-       w->gds->goal->id.higher_goal; 
-   }
+    if (current_agent(highest_goal_whose_context_changed)) {
+        if (current_agent(highest_goal_whose_context_changed)->id.level >= w->gds->goal->id.level) {
+            current_agent(highest_goal_whose_context_changed) = w->gds->goal->id.higher_goal;
+        }
+    } else {
+        /* If nothing has yet changed (highest_ ... = NIL) then set
+         * the goal automatically */
+        current_agent(highest_goal_whose_context_changed) = w->gds->goal->id.higher_goal;
+    }
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
-   if (current_agent(sysparams)[TRACE_OPERAND2_REMOVALS_SYSPARAM]) {
-     print_with_symbols("\n    REMOVING GOAL [%y] due to change in GDS WME ",
-			w->gds->goal);
-     print_wme(w);
-   }
+    if (current_agent(sysparams)[TRACE_OPERAND2_REMOVALS_SYSPARAM]) {
+        print_with_symbols("\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
+        print_wme(w);
+    }
 #endif
- 
-   remove_existing_context_and_descendents(w->gds->goal);
-   /* BUG: Need to reset highest_goal here ???*/
 
-   /* usually, we'd call do_buffered_wm_and_ownership_changes() here, but
-    * we don't need to because it will be done at the end of the working
-    * memory phase; cf. the end of do_working_memory_phase().
-    */
+    remove_existing_context_and_descendents(w->gds->goal);
+    /* BUG: Need to reset highest_goal here ??? */
+    /* usually, we'd call do_buffered_wm_and_ownership_changes() here, but
+     * we don't need to because it will be done at the end of the working
+     * memory phase; cf. the end of do_working_memory_phase().
+     */
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  /* REW: begin 11.25.96 */ 
-  stop_timer(&current_agent(start_gds_tv), 
-             &current_agent(gds_cpu_time[current_agent(current_phase)]));
-  /* REW: end   11.25.96 */ 
+    /* REW: begin 11.25.96 */
+    stop_timer(&current_agent(start_gds_tv), &current_agent(gds_cpu_time[current_agent(current_phase)]));
+    /* REW: end   11.25.96 */
+
 #endif
 #endif
 }
-
 
 void free_parent_list()
 {
-  parent_inst *curr_pi;
+    parent_inst *curr_pi;
 
-  for (curr_pi = current_agent(parent_list_head);
-       curr_pi;
-       curr_pi = curr_pi->next)
-     free(curr_pi);
-
-  current_agent(parent_list_head) = NIL;
+    for (curr_pi = current_agent(parent_list_head); curr_pi; curr_pi = curr_pi->next)
+        free(curr_pi);
+    current_agent(parent_list_head) = NIL;
 }
 
-void create_gds_for_goal( Symbol *goal){
-   goal_dependency_set *gds;
+void create_gds_for_goal(Symbol * goal)
+{
+    goal_dependency_set *gds;
 
-   gds = allocate_memory(sizeof(goal_dependency_set), MISCELLANEOUS_MEM_USAGE);
-   gds->goal = goal;
-   gds->wmes_in_gds = NIL;
-   goal->id.gds = gds;
-   #ifdef DEBUG_GDS
-     print_with_symbols("\nCreated GDS for goal [%y].\n", gds->goal);
-   #endif
+
+
+
+    gds = allocate_memory(sizeof(goal_dependency_set), MISCELLANEOUS_MEM_USAGE);
+    gds->goal = goal;
+    gds->wmes_in_gds = NIL;
+    goal->id.gds = gds;
+#ifdef DEBUG_GDS
+    print_with_symbols("\nCreated GDS for goal [%y].\n", gds->goal);
+#endif
 }
 
 
 /* Behavior variability */
-/*
-===========================================
 
-===========================================
-*/
-void EnableProbIndifferentSelection()
-{
-   useProbIndifferentSelection=1;
-}
-/*
-===========================================
+#ifdef NUMERIC_INDIFFERENCE
 
-===========================================
-*/
-void DisableProbIndifferentSelection()
-{
-   useProbIndifferentSelection=0;
-}
-
-
-/*
-===========================================
-
-===========================================
-*/
 /* REW: 2003-01-06 */
 /* This a helper function that sets the decider flag to candidate for
    all the items on the candidate list and initializes the counters 
@@ -3308,37 +3301,20 @@ void DisableProbIndifferentSelection()
    Note: the slot is only needed for debugging/data verification
 */
 
-void initialize_indifferent_candidates_for_probability_selection(slot *s, preference *candidates)
+void initialize_indifferent_candidates_for_probability_selection(preference * candidates)
 {
-   preference*    cand=0;
+    preference *cand = 0;
 
-   for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-   {
-     /* print_with_symbols("\nInitializing candidate %y",cand->value); 
-      */
-      cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-      cand->total_preferences_for_candidate=0;
-      cand->sum_of_probability=DEFAULT_INDIFFERENT_VALUE;
-   }
-
-
-   /*    
-   for (cand=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
-   {
-     print_with_symbols ("\n  Candidate (unary indifferent preference)  %y %y %y", cand->id, cand->attr, cand->value);
-     print("\n Candidate decider flag : %d ", cand->value->common.decider_flag);
-   }
-
-   for (cand=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
-     {     
-         print_with_symbols ("\n  Candidate (binary indifferent preference)  %y %y %y", cand->id, cand->attr, cand->value);
-     print("\n Candidate decider flag : %d ", cand->value->common.decider_flag);
-     
-   }
-   */
-  
-
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+        /* print_with_symbols("\nInitializing candidate %y",cand->value); 
+         */
+        cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+        cand->total_preferences_for_candidate = 0;
+		cand->sum_of_probability = 0;
+         
+    }
 }
+
 
 /*
 ===========================================
@@ -3352,66 +3328,40 @@ void initialize_indifferent_candidates_for_probability_selection(slot *s, prefer
 
 ===========================================
 */
-unsigned int getNumCandidates(slot *s, preference *candidates)
+unsigned int count_candidates(preference * candidates)
 {
-   unsigned int   numCandidates = 0;
-   preference*    cand=0;
+    unsigned int numCandidates = 0;
+    preference *cand = 0;
 
-   /*
-   // Count up the number of candidates
-      REW: 2003-01-06
-      I'm assuming that all of the candidates have unary or 
-      unary+value (binary) indifferent preferences at this point.
-      So we loop over the candidates list and count the number of
-      elements in the list.
-   */
-   
+    /*
+       Count up the number of candidates
+       REW: 2003-01-06
+       I'm assuming that all of the candidates have unary or 
+       unary+value (binary) indifferent preferences at this point.
+       So we loop over the candidates list and count the number of
+       elements in the list.
+     */
 
-   for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-   {
-      numCandidates++;
-   }
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+        numCandidates++;
 
- 
-   /* REW: 2003-01-06
-      Commented this original implementation.  It does not work because 
-      there can be unnary and binary preferences for slot values
-      that have been filtered from the candiates list.  
-      Eg, a worst preference for a slot value with a unary indifferent
-
-   for (cand=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
-   {
-      numCandidates++;
-   }
-
-   for (cand=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
-   {
-      numCandidates++;
-   }
-   */
-
-   return numCandidates;
+    return numCandidates;
 }
 
 
 
-
-
-preference *ProbSelect(slot *s, preference *candidates)
+preference *probabilistically_select(slot *s, preference *candidates)
 {
-   preference*    cand=0; 
-   preference*    pref=0; 
+   preference    *cand=0; 
+   preference    *pref=0; 
    double        total_probability=0;
-   preference*    selectedCandidate=0;
    unsigned int   numCandidates = 0;
-   unsigned int   currentCandidate=0;
    double         selectedProbability=0;
    double         currentSumOfValues=0;
-   double		  min_value;
    static int     initialized_rand = 0;
    unsigned long        rn=0;
-   char           mesg[256];
- 
+   double default_ni;
+   
    assert(s != 0);
    assert(candidates != 0);
 
@@ -3424,8 +3374,8 @@ preference *ProbSelect(slot *s, preference *candidates)
     // print("\nCandidates at top of ProbSelect");
       // PrintCandidates(candidates); 
    
-   initialize_indifferent_candidates_for_probability_selection(s, candidates);
-   numCandidates = getNumCandidates(s,candidates);
+   initialize_indifferent_candidates_for_probability_selection(candidates);
+   numCandidates = count_candidates(candidates);
    /* print("\n numCandidates = %d", numCandidates);
     */
 
@@ -3433,23 +3383,21 @@ preference *ProbSelect(slot *s, preference *candidates)
    /* print("\nCandidates before unary indifferent loop");
       PrintCandidates(candidates); 
    */
-   /*for (pref=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next)
-   {
-     print_with_symbols("\nPreference for %y", pref->value);
-     
-     for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-     print_with_symbols("\nConsidering candidate %y", cand->value);
-	
-       if (cand->value == pref->value) {
-	 cand->total_preferences_for_candidate += 1;
-	 cand->sum_of_probability += DEFAULT_INDIFFERENT_VALUE;
-	  print_with_symbols("\nFound unary preference: \n Incrementing candidate %y by default value", cand->value); 
-	 print("\nValues: total_preferences %d   sum_of_probability %f", cand->total_preferences_for_candidate, cand->sum_of_probability);
-	 
-       }
-     }
-   }*/
+  
 
+
+   switch (current_agent(numeric_indifferent_mode)) {
+   case NUMERIC_INDIFFERENT_MODE_AVG:
+	   default_ni = 50;
+	   break;
+
+   case NUMERIC_INDIFFERENT_MODE_SUM:
+   default:
+	   default_ni = 0;
+	   break;
+   }
+   
+   
    /* BUGBUGBUG 
       Next some error checking here to ensure that the binary preference
       is indeed really an indifferent+value preference....
@@ -3458,12 +3406,19 @@ preference *ProbSelect(slot *s, preference *candidates)
 
    for (pref=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next)
    {
-     for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-       if (cand->value == pref->value) {
-	 cand->total_preferences_for_candidate += 1;
+	   float value;
+	   if (pref->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
+           value = pref->referent->fc.value;
+	   } else if (pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
+		   value = (float) pref->referent->ic.value;
+	   } else
+		   continue;
+	   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+		if (cand->value == pref->value) {
+			cand->total_preferences_for_candidate += 1;
 	  // print_with_symbols("\nFound binary preference: \n Incrementing candidate %y ", cand->value);
 	    // print(" by %f", pref->referent->fc.value); 
-	 cand->sum_of_probability += pref->referent->fc.value;
+			cand->sum_of_probability += value;
        }
      }
    }
@@ -3488,16 +3443,22 @@ preference *ProbSelect(slot *s, preference *candidates)
    }*/
 
 	// now sum_of_probability should be the Q-value
-   print("\n");
+   for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+	   if (cand->total_preferences_for_candidate == 0) {
+		   cand->sum_of_probability = default_ni;
+		   cand->total_preferences_for_candidate = 1;
+	   }
+   }
    
+   if (current_agent(numeric_indifferent_mode) == NUMERIC_INDIFFERENT_MODE_SUM) {
+	   double min_value;
+
    // current_agent(max_Q) = (*candidates)->sum_of_probability; // SAN
    min_value = (double)candidates->sum_of_probability / current_agent(Temp);
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-     /* UNTESTED */
-     /* Uncomment this line for averaging vs sum of individual probabilities */
-     // cand->sum_of_probability = (cand->sum_of_probability)/((double)cand->total_preferences_for_candidate);
+      
+	   // cand->sum_of_probability = (cand->sum_of_probability)/((double)cand->total_preferences_for_candidate);
      
-	
      cand->sum_of_probability /= (double)current_agent(Temp);
 	 if (cand->sum_of_probability < min_value)
 		 min_value = cand->sum_of_probability;
@@ -3507,10 +3468,13 @@ preference *ProbSelect(slot *s, preference *candidates)
 
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
 	   cand->sum_of_probability -= min_value;
-	  print_with_symbols("\n Candidate %y ", cand->value);
+	   if (current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM]){
+				print_with_symbols("\n Candidate %y:  ", cand->value);
+		           print("Value (Sum) = %f", exp(cand->sum_of_probability / current_agent(Temp)));
+			}  
      /* Sum the total probabilities */
-     total_probability += exp(cand->sum_of_probability);
-      print(" Q-value %f weighted value %f", cand->sum_of_probability, exp(cand->sum_of_probability));
+     total_probability += exp(cand->sum_of_probability / current_agent(Temp));
+       
 
 	 /* SAN - record max Q-value for Q-value update */
 	 /* try Sarsa
@@ -3519,7 +3483,7 @@ preference *ProbSelect(slot *s, preference *candidates)
    }
 
    
-   
+   print("\n");
    /* Now select the candidate */ 
 
    rn = rand();
@@ -3532,22 +3496,71 @@ preference *ProbSelect(slot *s, preference *candidates)
 
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
      
-     currentSumOfValues += exp(cand->sum_of_probability);
+     currentSumOfValues += exp(cand->sum_of_probability / current_agent(Temp));
      // print("   Sum... %f", currentSumOfValues ); 
 
      if (selectedProbability <= currentSumOfValues) {
-       print_with_symbols("\n    Returning candidate %y", cand->value); 
+       // print_with_symbols("\n    Returning candidate %y", cand->value); 
 	  // current_agent(next_Q) = cand->sum_of_probability;
 		
        return cand;
      }
    }
+ }  else if (current_agent(numeric_indifferent_mode) == NUMERIC_INDIFFERENT_MODE_AVG) {
 
-   print("\nERROR ERROR ERROR\nProbability Selection failed.  Choosing indifferent preferences the former way.  But will crash if all are binary+value preferences.");
-   return 0;
+        total_probability = 0.0;
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+
+            if (current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM]) {
+				print_with_symbols("\n Candidate %y:  ", cand->value);  
+		           print("Value (Avg) = %f", fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
+			}    
+            /* Total probability represents the range of values that
+             * we'll map into for selection.  Here we don't expect the use
+             * of negative values, so we'll warn when we see one.
+             */
+
+            total_probability += fabs(cand->sum_of_probability / cand->total_preferences_for_candidate);
+
+
+
+            if (cand->sum_of_probability < 0.0) {
+                print_with_symbols
+                    ("WARNING: Candidate %y has a negative value, which is unexpected with 'numeric-indifferent-mode -avg'",
+                     cand->value);
+            }
+            /* print("\n   Total (Avg) Probability = %f", total_probability ); */
+        }
+
+        /* Now select the candidate */
+
+
+		print("\n");
+        rn = rand();
+        selectedProbability = ((double) rn / (double) RAND_MAX) * total_probability;
+        currentSumOfValues = 0;
+
+        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+            currentSumOfValues += fabs(cand->sum_of_probability / cand->total_preferences_for_candidate);
+
+            if (selectedProbability <= currentSumOfValues) {
+                /*
+                   print_with_symbols("\n    Returning (Avg) candidate %y", cand->value); 
+                 */
+
+                return cand;
+            }
+        }
+ } else {
+	 print("\nERROR: Invalid Numeric Indifferent Selection Mode!\n");
+ }
+
+
+	 print("\nERROR ERROR ERROR\nProbability Selection failed.  Choosing indifferent preferences the former way.  But will crash if all are binary+value preferences.");
+     return NIL;
 
 }
 
 
-
+#endif
 

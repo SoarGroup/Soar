@@ -281,7 +281,7 @@ string getCommandFromFile( int (*readCharacter)(FILE *), FILE *f,
 
   char *input; 
   int brace_level;
-  int inQuotedString;
+  char inQuotedString;
   int  inputInt;
 
   
@@ -306,7 +306,7 @@ string getCommandFromFile( int (*readCharacter)(FILE *), FILE *f,
     /* convert to char */
     *input = (char) inputInt;
 
-    if ( *input == '#' ) {
+    if ( *input == '#' && !inQuotedString ) {
 
       /* consume until end of line, without incrementing */
       while( (inputInt = (*readCharacter)(f)) ) {
@@ -327,13 +327,18 @@ string getCommandFromFile( int (*readCharacter)(FILE *), FILE *f,
     if ( *input == '\n' || *input == ';' ) {
       *input = '\n';
       if ( !inQuotedString && brace_level == 0 ) { 
-	*input = '\0';
-	break;
+				*input = '\0';
+				break;
       }
     }
     else if ( *input == '"' ) {
-      inQuotedString = !inQuotedString;
+			if ( inQuotedString == '"' ) inQuotedString = 0;
+			else if ( inQuotedString == 0 ) inQuotedString = '"';
     }
+		else if ( *input == '|' ) {
+			if ( inQuotedString == '|' ) inQuotedString = 0;
+			else if ( inQuotedString == 0 ) inQuotedString = '|';
+		}
     else if ( *input == '{' ) {
       brace_level++;
     }

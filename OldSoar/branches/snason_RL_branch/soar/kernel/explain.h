@@ -44,6 +44,5 @@
 /* KBS commented this out -- redundant with agent variable */
 /* extern bool explain_flag;   Flag for whether we're explaining or not */
 
-extern bool explain_interface_routine (void);
+extern bool explain_interface_routine(void);
 extern char *help_on_explain[];
-

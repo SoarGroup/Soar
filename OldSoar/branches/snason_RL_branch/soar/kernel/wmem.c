@@ -49,10 +49,8 @@
 
 #include "soarkernel.h"
 
-
-extern void filtered_print_wme_add( wme *w );
-extern void filtered_print_wme_remove( wme *w );
-
+extern void filtered_print_wme_add(wme * w);
+extern void filtered_print_wme_remove(wme * w);
 
 /* ======================================================================
 
@@ -82,183 +80,195 @@ extern void filtered_print_wme_remove( wme *w );
    or NIL if the object has no name.
 ====================================================================== */
 
-
-void reset_wme_timetags (void) {
-  if (current_agent(num_existing_wmes) != 0) {
-    print ("Internal warning:  wanted to reset wme timetag generator, but\n");
-    print ("there are still some wmes allocated. (Probably a memory leak.)\n");
-    print ("(Leaving timetag numbers alone.)\n");
-    return;
-  }
-  current_agent(current_wme_timetag) = 1;
+void reset_wme_timetags(void)
+{
+    if (current_agent(num_existing_wmes) != 0) {
+        print("Internal warning:  wanted to reset wme timetag generator, but\n");
+        print("there are still some wmes allocated. (Probably a memory leak.)\n");
+        print("(Leaving timetag numbers alone.)\n");
+        return;
+    }
+    current_agent(current_wme_timetag) = 1;
 }
 
-wme *make_wme (Symbol *id, Symbol *attr, Symbol *value, bool acceptable) {
-  wme *w;
+wme *make_wme(Symbol * id, Symbol * attr, Symbol * value, bool acceptable)
+{
+    wme *w;
 
-  current_agent(num_existing_wmes)++;
-  allocate_with_pool (&current_agent(wme_pool),  &w);
-  w->id = id;
-  w->attr = attr;
-  w->value = value;
-  symbol_add_ref (id);
-  symbol_add_ref (attr);
-  symbol_add_ref (value);
-  w->acceptable = acceptable;
-  w->timetag = current_agent(current_wme_timetag)++;
-  w->reference_count = 0;
-  w->preference = NIL;
-  w->output_link = NIL;
-  w->grounds_tc = 0;
-  w->potentials_tc = 0;
-  w->locals_tc = 0;
+    current_agent(num_existing_wmes)++;
+    allocate_with_pool(&current_agent(wme_pool), &w);
+    w->id = id;
+    w->attr = attr;
+    w->value = value;
+    symbol_add_ref(id);
+    symbol_add_ref(attr);
+    symbol_add_ref(value);
+    w->acceptable = acceptable;
+    w->timetag = current_agent(current_wme_timetag)++;
+    w->reference_count = 0;
+    w->preference = NIL;
+    w->output_link = NIL;
+    w->grounds_tc = 0;
+    w->potentials_tc = 0;
+    w->locals_tc = 0;
 
 /* REW: begin 09.15.96 */
-  /* When we first create a WME, it had no gds value.  
-     Do this for ALL wmes, regardless of the operand mode, so that no undefined pointers
-     are floating around. */
-     w->gds = NIL;
+    /* When we first create a WME, it had no gds value.  
+       Do this for ALL wmes, regardless of the operand mode, so that no undefined pointers
+       are floating around. */
+    w->gds = NIL;
 /* REW: end 09.15.96 */
 
-  return w;
+    return w;
 }
 
 /* --- lists of buffered WM changes --- */
 
-void add_wme_to_wm (wme *w) {
-  push (w, current_agent(wmes_to_add));
-  if (w->value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
-    post_link_addition (w->id, w->value);
-    if (w->attr==current_agent(operator_symbol)) w->value->id.isa_operator++;
-  }
+void add_wme_to_wm(wme * w)
+{
+    push(w, current_agent(wmes_to_add));
+    if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) {
+        post_link_addition(w->id, w->value);
+        if (w->attr == current_agent(operator_symbol))
+            w->value->id.isa_operator++;
+    }
 }
 
-void remove_wme_from_wm (wme *w) {
-  push (w, current_agent(wmes_to_remove));
-  if (w->value->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) {
-    post_link_removal (w->id, w->value);
-    if (w->attr==current_agent(operator_symbol)) w->value->id.isa_operator--;
-  }
-  /* REW: begin 09.15.96 */
-  /* When we remove a WME, we always have to determine if it's on a GDS, and, if
-     so, after removing the WME, if there are no longer any WMEs on the GDS,
-     then we can free the GDS memory */
-  if (w->gds){
-    fast_remove_from_dll(w->gds->wmes_in_gds, w, wme, gds_next, gds_prev);
-    /* print("\nRemoving WME on some GDS"); */
-          if (!w->gds->wmes_in_gds) {
-		 free_memory(w->gds, MISCELLANEOUS_MEM_USAGE);
-                 /* print("REMOVING GDS FROM MEMORY. \n"); */
-	  }
-  }
-  /* REW: end   09.15.96 */
+void remove_wme_from_wm(wme * w)
+{
+    push(w, current_agent(wmes_to_remove));
+    if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) {
+        post_link_removal(w->id, w->value);
+        if (w->attr == current_agent(operator_symbol))
+            w->value->id.isa_operator--;
+    }
+    /* REW: begin 09.15.96 */
+    /* When we remove a WME, we always have to determine if it's on a GDS, and, if
+       so, after removing the WME, if there are no longer any WMEs on the GDS,
+       then we can free the GDS memory */
+    if (w->gds) {
+        fast_remove_from_dll(w->gds->wmes_in_gds, w, wme, gds_next, gds_prev);
+        /* print("\nRemoving WME on some GDS"); */
+        if (!w->gds->wmes_in_gds) {
+            free_memory(w->gds, MISCELLANEOUS_MEM_USAGE);
+            /* print("REMOVING GDS FROM MEMORY. \n"); */
+        }
+    }
+    /* REW: end   09.15.96 */
 }
 
-void remove_wme_list_from_wm (wme *w) {
-  wme *next_w;
+void remove_wme_list_from_wm(wme * w)
+{
+    wme *next_w;
 
-  while (w) {
-    next_w = w->next;
-    remove_wme_from_wm (w);
-    w = next_w;
-  }
+    while (w) {
+        next_w = w->next;
+        remove_wme_from_wm(w);
+        w = next_w;
+    }
 }
 
-void do_buffered_wm_changes (void) {
-  cons *c, *next_c;
-  wme *w;
+void do_buffered_wm_changes(void)
+{
+    cons *c, *next_c;
+    wme *w;
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  struct timeval start_tv;
+    struct timeval start_tv;
 #endif
 #endif
 
-  /* --- if no wme changes are buffered, do nothing --- */
-  if (!current_agent(wmes_to_add) && !current_agent(wmes_to_remove)) return;
+    /* --- if no wme changes are buffered, do nothing --- */
+    if (!current_agent(wmes_to_add) && !current_agent(wmes_to_remove))
+        return;
 
-  /* --- call output module in case any changes are output link changes --- */
-  inform_output_module_of_wm_changes (current_agent(wmes_to_add), current_agent(wmes_to_remove));
+    /* --- call output module in case any changes are output link changes --- */
+    inform_output_module_of_wm_changes(current_agent(wmes_to_add), current_agent(wmes_to_remove));
 
+    /* --- invoke callback routine.  wmes_to_add and wmes_to_remove can   --- */
+    /* --- be fetched from the agent structure.                           --- */
+    soar_invoke_callbacks(soar_agent, WM_CHANGES_CALLBACK, (soar_call_data) NULL);
 
-  /* --- invoke callback routine.  wmes_to_add and wmes_to_remove can   --- */
-  /* --- be fetched from the agent structure.                           --- */
-  soar_invoke_callbacks(soar_agent, WM_CHANGES_CALLBACK, 
-			(soar_call_data) NULL); 
-
-
-  /* --- stuff wme changes through the rete net --- */
+    /* --- stuff wme changes through the rete net --- */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  start_timer (&start_tv);
+    start_timer(&start_tv);
 #endif
 #endif
-  for (c=current_agent(wmes_to_add); c!=NIL; c=c->rest) add_wme_to_rete (c->first);
-  for (c=current_agent(wmes_to_remove); c!=NIL; c=c->rest) remove_wme_from_rete (c->first);
+    for (c = current_agent(wmes_to_add); c != NIL; c = c->rest)
+        add_wme_to_rete(c->first);
+    for (c = current_agent(wmes_to_remove); c != NIL; c = c->rest)
+        remove_wme_from_rete(c->first);
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  stop_timer (&start_tv, &current_agent(match_cpu_time[current_agent(current_phase)]));
+    stop_timer(&start_tv, &current_agent(match_cpu_time[current_agent(current_phase)]));
 #endif
 #endif
 
-  /* --- do tracing and cleanup stuff --- */
-  for (c=current_agent(wmes_to_add); c!=NIL; c=next_c) {
-    next_c = c->rest;
-    w = c->first;
+    /* --- do tracing and cleanup stuff --- */
+    for (c = current_agent(wmes_to_add); c != NIL; c = next_c) {
+        next_c = c->rest;
+        w = c->first;
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
-    if (current_agent(sysparams)[TRACE_WM_CHANGES_SYSPARAM]) {
-      /* print ("=>WM: ");
-       * print_wme (w);
-       */
-      filtered_print_wme_add(w); /* kjh(CUSP-B2) begin */
-    }
+        if (current_agent(sysparams)[TRACE_WM_CHANGES_SYSPARAM]) {
+            /* print ("=>WM: ");
+             * print_wme (w);
+             */
+            filtered_print_wme_add(w);  /* kjh(CUSP-B2) begin */
+        }
 #endif
 
-    wme_add_ref (w);
-    free_cons (c);
-    current_agent(wme_addition_count)++;
-  }
-  for (c=current_agent(wmes_to_remove); c!=NIL; c=next_c) {
-    next_c = c->rest;
-    w = c->first;
+        wme_add_ref(w);
+        free_cons(c);
+        current_agent(wme_addition_count)++;
+    }
+    for (c = current_agent(wmes_to_remove); c != NIL; c = next_c) {
+        next_c = c->rest;
+        w = c->first;
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
-    if (current_agent(sysparams)[TRACE_WM_CHANGES_SYSPARAM]) {
-      /* print ("<=WM: "); 
-       * print_wme (w);
-       */
-      filtered_print_wme_remove (w);  /* kjh(CUSP-B2) begin */
+        if (current_agent(sysparams)[TRACE_WM_CHANGES_SYSPARAM]) {
+            /* print ("<=WM: "); 
+             * print_wme (w);
+             */
+            filtered_print_wme_remove(w);       /* kjh(CUSP-B2) begin */
+        }
+#endif
+
+        wme_remove_ref(w);
+        free_cons(c);
+        current_agent(wme_removal_count)++;
     }
-#endif
-
-    wme_remove_ref (w);
-    free_cons (c);
-    current_agent(wme_removal_count)++;
-  }
-  current_agent(wmes_to_add) = NIL;
-  current_agent(wmes_to_remove) = NIL;
+    current_agent(wmes_to_add) = NIL;
+    current_agent(wmes_to_remove) = NIL;
 }
 
-void deallocate_wme (wme *w) {
-#ifdef DEBUG_WMES  
-  print_with_symbols ("\nDeallocate wme: ");
-  print_wme (w);
+void deallocate_wme(wme * w)
+{
+#ifdef DEBUG_WMES
+    print_with_symbols("\nDeallocate wme: ");
+    print_wme(w);
 #endif
-  symbol_remove_ref (w->id);
-  symbol_remove_ref (w->attr);
-  symbol_remove_ref (w->value);
-  free_with_pool (&current_agent(wme_pool), w);
-  current_agent(num_existing_wmes)--;
+    symbol_remove_ref(w->id);
+    symbol_remove_ref(w->attr);
+    symbol_remove_ref(w->value);
+    free_with_pool(&current_agent(wme_pool), w);
+    current_agent(num_existing_wmes)--;
 }
 
-Symbol *find_name_of_object (Symbol *object) {
-  slot *s;
+Symbol *find_name_of_object(Symbol * object)
+{
+    slot *s;
 
-  if (object->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) return NIL;
-  s = find_slot (object, current_agent(name_symbol));
-  if (! s) return NIL;
-  if (! s->wmes) return NIL;
-  return s->wmes->value;
+    if (object->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+        return NIL;
+    s = find_slot(object, current_agent(name_symbol));
+    if (!s)
+        return NIL;
+    if (!s->wmes)
+        return NIL;
+    return s->wmes->value;
 }
