@@ -183,7 +183,12 @@ bool CommandProcessor::ProcessCharacter(int c) {
 			break;
 
 		case 72:
-			if (!meta) break;
+			if (!meta) {
+				// Add other, non-special characters to the line
+				line += c;
+				g_pWaitForInput->TriggerEvent();
+				break;
+			}
 			meta = false;
 			// Up Arrow
 			while (line.size()) {
@@ -198,7 +203,12 @@ bool CommandProcessor::ProcessCharacter(int c) {
 			break;
 
 		case 80:
-			if (!meta) break;
+			if (!meta) {
+				// Add other, non-special characters to the line
+				line += c;
+				g_pWaitForInput->TriggerEvent();
+				break;
+			}
 			meta = false;
 			// Down Arrow
 			while (line.size()) {
