@@ -299,16 +299,7 @@ public class MainWindow
 
 		// Create the button view
 		ButtonView buttons = new ButtonView() ;
-		buttons.addButton("Help", "help") ;
-		buttons.addButton("Init-soar", "init-soar") ;
-		buttons.addButton("Run 1 -d", "run 1 --decision") ;
-		buttons.addButton("Run 1 -e", "run 1 --elaboration") ;
-		buttons.addButton("Run", "run") ;
-		buttons.addButton("Stop", "stop-soar") ;
-		buttons.addButton("Matches", "matches") ;
-		buttons.addButton("Print <s>", "print <s>") ;
-		// This button uses an internally scripted command to drive the debugger itself to load a demo
-		buttons.addButton("Towers of Hanoi", null, "demo towers-of-hanoi towers-of-hanoi.soar") ;
+		buttons.addDefaultCommands() ;
 		buttons.init(m_Frame, m_Document, buttonPane) ;
 		buttons.generateName(m_Frame) ;
 		buttonPane.addView(buttons) ;
@@ -375,6 +366,18 @@ public class MainWindow
        	m_Frame.setAgentFocus(currentAgentFocus) ;
   	}
 
+  	public void loadFromXMLNoThrow(ElementXML root)
+  	{
+  		try
+		{
+			loadFromXML(root) ;
+		} catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+  	}
+  	
   	public void loadFromXML(ElementXML root) throws Exception
 	{
 		// Find the version of the layout file.

@@ -33,8 +33,11 @@ public class BaseDialog
 	protected Shell 	m_Dialog ;
 	protected Button	m_OK ;
 	protected Button	m_Cancel ;
+	protected Composite m_OpenArea ;
+	protected boolean	m_Cancelled ;
 	
-	protected Shell getDialog() { return m_Dialog ; }
+	protected Composite getOpenArea() 	{ return m_OpenArea ; }
+	protected Shell		getDialog() 	{ return m_Dialog ; }
 	
 	/********************************************************************************************
 	* 
@@ -51,6 +54,11 @@ public class BaseDialog
 				m_Dialog.getDisplay().sleep() ;
 			}
 		}		
+	}
+	
+	protected void open()
+	{
+		m_Dialog.open() ;
 	}
 	
 	/********************************************************************************************
@@ -85,11 +93,15 @@ public class BaseDialog
 	protected BaseDialog(Composite parent, String title, boolean modal)
 	{
 		// Create the dialog
-		m_Dialog = new Shell(parent.getShell(), modal ? SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL : SWT.DIALOG_TRIM) ;
+		m_Dialog = new Shell(parent.getShell(), modal ? SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE : SWT.DIALOG_TRIM | SWT.RESIZE) ;
 		m_Dialog.setText(title) ;
 		m_Dialog.setLayout(new FormLayout()) ;
 		
 		int margin = 10 ;
+		
+		// The open area is filled in by dialogs derived from this one.
+		Composite openArea = new Composite(m_Dialog, 0) ;
+		openArea.setLayout(new FillLayout()) ;
 		
 		// Add ok and cancel buttons at the bottom right
 		Button ok = new Button(m_Dialog, SWT.PUSH) ;
@@ -105,10 +117,15 @@ public class BaseDialog
 		okData.bottom = new FormAttachment(100, -margin) ;
 		okData.right  = new FormAttachment(cancel, -10) ;
 		ok.setLayoutData(okData);
-		
+
+		FormData openData = FormDataHelper.anchorTop(0) ;
+		openData.bottom = new FormAttachment(ok) ;
+		openArea.setLayoutData(openData) ;
+
 		// Make these members so derived classes can work with them
 		m_OK = ok ;
 		m_Cancel = cancel ;
+		m_OpenArea = openArea ;
 		
 		m_Dialog.setDefaultButton(ok) ;
 	}
@@ -120,6 +137,7 @@ public class BaseDialog
 	********************************************************************************************/
 	protected void endDialog(boolean ok)
 	{
+		m_Cancelled = !ok ;
 		m_Dialog.close() ;
 		m_Dialog.dispose() ;
 	}

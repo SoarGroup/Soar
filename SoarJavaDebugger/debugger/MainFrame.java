@@ -311,12 +311,8 @@ public class MainFrame
 		// which we can then save.
 		RecordWindowPositions();
 
-		// Look up the name of the default window layout
-		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile);
-
-		// Save the current window positions and other information to the layout
-		// file
-		this.saveLayoutFile(layoutFile.toString());
+		// Save current layout file
+		saveCurrentLayoutFile() ;
 
 		// Save the user's preferences to the properties file.
 		try
@@ -439,6 +435,22 @@ public class MainFrame
 		m_AgentMenu.updateMenu();
 	}
 
+	/********************************************************************************************
+	 * 
+	 * Save the current layout so when we next launch the app next we'll go back to
+	 * this layout.
+	 * 
+	 * @return True if save file successfully
+	********************************************************************************************/
+	public boolean saveCurrentLayoutFile()
+	{
+		// Look up the name of the default window layout
+		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile);
+	
+		// Save the current window positions and other information to the layout file
+		return this.saveLayoutFile(layoutFile.toString());
+	}
+	
 	/********************************************************************************************
 	 * 
 	 * Load a layout (window positions, types of windows etc.) from a file.

@@ -46,7 +46,7 @@ public class SwtInputDialog extends BaseDialog
 		
 		dialog.getDialog().setSize(400, 110) ;
 		dialog.centerDialog(parent) ;
-		dialog.getDialog().open() ;
+		dialog.open() ;
 		
 		dialog.pumpMessages() ;
 		
@@ -65,13 +65,15 @@ public class SwtInputDialog extends BaseDialog
 				
 		int margin = 10 ;
 		
+		getOpenArea().setLayout(new FormLayout()) ;
+		
 		// Place the prompt text
-		Label promptLabel = new Label(getDialog(), SWT.NULL) ;
+		Label promptLabel = new Label(getOpenArea(), SWT.NULL) ;
 		promptLabel.setText(prompt) ;
 		promptLabel.setLayoutData(FormDataHelper.anchorTopLeft(margin)) ;
 		
 		// The field where the user types their response
-		Text entryField = new Text(getDialog(), SWT.NULL) ;
+		Text entryField = new Text(getOpenArea(), SWT.NULL) ;
 		entryField.setText(initialValue) ;
 		entryField.setFocus() ;
 		

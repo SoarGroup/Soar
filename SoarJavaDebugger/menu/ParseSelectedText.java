@@ -59,13 +59,7 @@ public class ParseSelectedText
 		
 		protected void addWindowSubMenu(AbstractView view, Menu menu)
 		{
-			MenuItem header = new MenuItem(menu, SWT.CASCADE) ;
-			header.setText("Window") ;
-			
-			Menu windowMenu = new Menu(menu.getShell(), SWT.DROP_DOWN) ;
-			header.setMenu(windowMenu) ;
-			
-			view.fillWindowMenu(windowMenu) ;
+			view.fillWindowMenu(menu, true) ;
 		}	
 	}
 	
@@ -152,7 +146,7 @@ public class ParseSelectedText
 		/** Fills in menu items that are appropriate for this type of object */
 		public void fillMenu(Document doc, AbstractView owningView, AbstractView outputView, Menu menu, boolean simple)
 		{
-			owningView.fillWindowMenu(menu) ;
+			owningView.fillWindowMenu(menu, false) ;
 		}
 
 		public String toString() { return "Unknown " + m_Name ; }

@@ -23,6 +23,7 @@ import org.eclipse.swt.events.*;
 import doc.* ;
 import doc.events.*;
 import debugger.* ;
+import dialogs.PropertiesDialog;
 
 import sml.Agent;
 
@@ -256,8 +257,23 @@ public abstract class AbstractView implements AgentFocusListener
 			public void widgetSelected(SelectionEvent e) { m_Frame.executeDebuggerCommand(command, false) ; } } ) ;
 	}	
 	
-	public void fillWindowMenu(Menu menu)
+	public abstract void showProperties() ;
+	
+	public void fillWindowMenu(Menu menu, boolean asSubMenu)
 	{
+		if (asSubMenu)
+		{
+			MenuItem header = new MenuItem(menu, SWT.CASCADE) ;
+			header.setText("Window") ;
+			
+			Menu windowMenu = new Menu(menu.getShell(), SWT.DROP_DOWN) ;
+			header.setMenu(windowMenu) ;
+
+			menu = windowMenu ;
+		}
+		
+		addItem(menu, "Properties...", "properties " + m_Frame.getName() + " " + this.getName()) ;
+		new MenuItem(menu, SWT.SEPARATOR) ;
 		addItem(menu, "Add window to right ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachRightValue) ;
 		addItem(menu, "Add window to left ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachLeftValue) ;
 		addItem(menu, "Add window to top ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachTopValue) ;
@@ -273,6 +289,13 @@ public abstract class AbstractView implements AgentFocusListener
 		menu.addMenuListener(new MenuListener() {
 			public void menuShown(MenuEvent e)
 			{
+				// Clear any existing items from the menu and then create new items
+				while (menu.getItemCount() > 0)
+				{
+					MenuItem child = menu.getItem(0) ;
+					child.dispose() ;
+				}
+
 				// We'll build the menu dynamically based on the text the user selects etc.
 				fillInContextMenu(menu, control) ;
 			}

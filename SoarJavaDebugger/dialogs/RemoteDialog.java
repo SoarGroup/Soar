@@ -67,7 +67,7 @@ public class RemoteDialog extends BaseDialog
 				
 		dialog.getDialog().setSize(400, 200) ;
 		dialog.centerDialog(parent) ;
-		dialog.getDialog().open() ;
+		dialog.open() ;
 		
 		dialog.pumpMessages() ;
 		
@@ -87,8 +87,10 @@ public class RemoteDialog extends BaseDialog
 		m_Frame = frame ;
 		int margin = 10 ;
 
+		getOpenArea().setLayout(new FormLayout()) ;
+
 		// Create a container for the text entry portion
-		Composite group = new Group(getDialog(), 0) ;
+		Composite group = new Group(getOpenArea(), 0) ;
 
 		GridLayout layout = new GridLayout() ;
 		layout.numColumns = 2 ;
@@ -128,7 +130,7 @@ public class RemoteDialog extends BaseDialog
 
 		// Add some help information
 		// Using read-only text because label doesn't want to wrap.
-		Text help = new Text(getDialog(), SWT.MULTI | SWT.WRAP | SWT.READ_ONLY) ;
+		Text help = new Text(getOpenArea(), SWT.MULTI | SWT.WRAP | SWT.READ_ONLY) ;
 		help.setText("You can leave the IP address blank if you are connecting to a process on the same machine.  The default port number for Soar is " + Kernel.GetDefaultPort()) ;
 		
 		FormData form = FormDataHelper.anchorTop(0) ;

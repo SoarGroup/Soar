@@ -108,13 +108,6 @@ public abstract class BaseCommandView extends AbstractView
 		
 		if (selectionObject != null)
 			selection = selectionObject.toString() ;
-
-		// Clear any existing items from the menu and then create new items
-		while (contextMenu.getItemCount() > 0)
-		{
-			MenuItem child = contextMenu.getItem(0) ;
-			child.dispose() ;
-		}
 		
 		boolean simple = true ;
 		

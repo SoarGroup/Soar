@@ -46,7 +46,7 @@ public class SelectAgentDialog extends BaseDialog
 				
 		dialog.getDialog().setSize(400, 200) ;
 		dialog.centerDialog(parent) ;
-		dialog.getDialog().open() ;
+		dialog.open() ;
 		
 		dialog.pumpMessages() ;
 		
@@ -65,8 +65,10 @@ public class SelectAgentDialog extends BaseDialog
 				
 		int margin = 10 ;
 		
+		getOpenArea().setLayout(new FormLayout()) ;
+
 		// Create the list of agents and anchor it to the top
-		m_Agents = new List(getDialog(), SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER) ;
+		m_Agents = new List(getOpenArea(), SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER) ;
 		m_Agents.setItems(agentNames) ;
 		m_Agents.setLayoutData(FormDataHelper.anchorTop(margin)) ;
 		

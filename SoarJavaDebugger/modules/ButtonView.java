@@ -25,6 +25,7 @@ import sml.Agent;
 
 import java.util.*;
 import debugger.MainFrame;
+import dialogs.PropertiesDialog;
 import doc.Document;
 
 /********************************************************************************************
@@ -39,6 +40,7 @@ public class ButtonView extends AbstractView
 		protected String	m_Name ;
 		protected String	m_Command ;
 		protected String	m_InternalCommand ;
+		protected Button	m_Button ;
 	}
 	
 	/** A list of ButtonInfo objects */
@@ -47,6 +49,23 @@ public class ButtonView extends AbstractView
 	
 	public ButtonView()
 	{
+	}
+	
+	// BADBAD: Should support a range of different sets of commands and allow the user
+	// to pick which set to start from in some fashion.
+	public void addDefaultCommands()
+	{
+		addButton("Help", "help") ;
+		addButton("Init-soar", "init-soar") ;
+		addButton("Run 1 -d", "run 1 --decision") ;
+		addButton("Run 1 -e", "run 1 --elaboration") ;
+		addButton("Run", "run") ;
+		addButton("Stop", "stop-soar") ;
+		addButton("Matches", "matches") ;
+		addButton("Print <s>", "print <s>") ;
+		
+		// This button uses an internally scripted command to drive the debugger itself to load a demo
+		addButton("Towers of Hanoi", null, "demo towers-of-hanoi towers-of-hanoi.soar") ;
 	}
 	
 	public void setTextFont(Font f)
@@ -119,6 +138,89 @@ public class ButtonView extends AbstractView
 		m_LinkedViewName = viewName ;
 	}
 		
+	protected MenuItem addButtonViewItem(Menu menu, String text)
+	{
+		MenuItem item = new MenuItem (menu, SWT.PUSH);
+		item.setText (text) ;
+		
+		return item ;
+	}	
+
+	protected ButtonInfo getButtonInfo(Button button)
+	{
+		for (int i = 0 ; i < this.m_ButtonList.size() ; i++)
+		{
+			ButtonInfo info = (ButtonInfo)m_ButtonList.get(i) ;
+			if (info.m_Button == button)
+				return info ;
+		}
+		
+		return null ;
+	}
+	
+	protected void removeButton(Button button)
+	{
+		ButtonInfo info = getButtonInfo(button) ;
+		
+		if (m_ButtonList.size() == 1)
+		{
+			m_Frame.ShowMessageBox("Can't remove the last button -- remove the window instead") ;
+			return ;
+		}
+		
+		m_ButtonList.remove(info) ;
+		
+		// Recreate the button panel
+		createButtonPanel(m_Container.getParent()) ;
+	}
+	
+	protected void editButton(Button button)
+	{
+		ButtonInfo info = getButtonInfo(button) ;
+		
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
+		
+		properties[0] = new PropertiesDialog.StringProperty("Label", info.m_Name) ;
+		properties[1] = new PropertiesDialog.StringProperty("Command to execute", info.m_Command) ;
+		properties[2] = new PropertiesDialog.StringProperty("Internal command to execute (very advanced)", info.m_InternalCommand) ;
+		
+		PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+
+		info.m_Name 		   = ((PropertiesDialog.StringProperty)properties[0]).getValue() ;
+		info.m_Command 		   = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
+		info.m_InternalCommand = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
+		
+		// Update the label
+		button.setText(info.m_Name) ;
+	}
+
+	protected void addButton()
+	{
+		ButtonInfo info = new ButtonInfo() ;
+		info.m_Name = "Name" ;
+		
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
+		
+		properties[0] = new PropertiesDialog.StringProperty("Label", info.m_Name) ;
+		properties[1] = new PropertiesDialog.StringProperty("Command to execute", info.m_Command) ;
+		properties[2] = new PropertiesDialog.StringProperty("Internal command to execute (very advanced)", info.m_InternalCommand) ;
+		
+		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+
+		info.m_Name 		   = ((PropertiesDialog.StringProperty)properties[0]).getValue() ;
+		info.m_Command 		   = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
+		info.m_InternalCommand = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
+		
+		if (ok)
+		{
+			// Add the new button
+			addButton(info.m_Name, info.m_Command, info.m_InternalCommand) ;
+			
+			// Recreate the button panel
+			createButtonPanel(m_Container.getParent()) ;			
+		}
+	}
+
 	/************************************************************************
 	* 
 	* Given a context menu and a control, fill in the items you want to 
@@ -131,9 +233,36 @@ public class ButtonView extends AbstractView
 	* be attached to a specific control.
 	* 
 	*************************************************************************/
-	protected void fillInContextMenu(Menu contextMenu, Control control)
+	protected void fillInContextMenu(Menu contextMenu, final Control control)
 	{
-		fillWindowMenu(contextMenu) ;
+		if (control instanceof Button)
+		{
+			MenuItem item = addButtonViewItem(contextMenu, "Edit button...") ;
+
+			item.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) { editButton((Button)control) ; } } ) ;
+
+			new MenuItem(contextMenu, SWT.SEPARATOR) ;
+			item = addButtonViewItem(contextMenu, "Remove button") ;
+			new MenuItem(contextMenu, SWT.SEPARATOR) ;
+
+			item.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) { removeButton((Button)control) ; } } ) ;
+
+			fillWindowMenu(contextMenu, true) ;
+		}
+		else
+		{
+			MenuItem item = addButtonViewItem(contextMenu, "Add button...") ;
+
+			item.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) { addButton() ; } } ) ;
+
+			new MenuItem(contextMenu, SWT.SEPARATOR) ;
+
+			// In background container
+			fillWindowMenu(contextMenu, false) ;
+		}
 	}
 
 	/********************************************************************************************
@@ -150,21 +279,26 @@ public class ButtonView extends AbstractView
 		{
 			// Add some default buttons if none have been specified so we
 			// can definitely see the window etc.
-			addButton("Run", "run") ;
-			addButton("Stop", "stop-soar") ;
+			addDefaultCommands() ;
 		}
 		
 		createButtonPanel(m_Pane.getWindow()) ;
-		
-		// Create a context menu for m_Text.
-		// It will be filled in via a call to fillInContextMenu when the menu is popped up
-		// (this allows for dynamic content)
-		createContextMenu(m_Container) ;
-
+	}
+	
+	public void showProperties()
+	{
+		m_Frame.ShowMessageBox("No properties yet for the button view -- coming soon.") ;
 	}
 
 	protected void createButtonPanel(final Composite parent)
 	{
+		// Allow us to recreate the panel by calling this multiple times
+		if (m_Container != null)
+		{
+			m_Container.dispose() ;
+			m_Container = null ;
+		}
+		
 		// The container lets us control the layout of the controls
 		// within this window
 		m_Container	   = new Composite(parent, SWT.NULL) ;
@@ -212,7 +346,28 @@ public class ButtonView extends AbstractView
 			button.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) { buttonPressed(e, pos) ; } ;
 			}) ;
+			
+			// Record a reference to the button, in case we need it.
+			info.m_Button = button ;
 		}
+		
+		// Create a context menu for m_Text.
+		// It will be filled in via a call to fillInContextMenu when the menu is popped up
+		// (this allows for dynamic content)
+		createContextMenu(m_Container) ;
+
+		// Create a context menu for each button -- allowing us to modify it etc.
+		for (int i = 0 ; i < m_ButtonList.size() ; i++)
+		{
+			ButtonInfo info = (ButtonInfo)m_ButtonList.get(i) ;
+			Button button = info.m_Button ;
+			
+			createContextMenu(button) ;
+		}
+		
+		// Layout the parent again, because this set of windows has changed
+		// This only matters if we're recreating the windows
+		parent.layout(true) ;
 	}
 	
 	protected AbstractView getLinkedView()

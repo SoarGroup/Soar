@@ -55,7 +55,7 @@ public class NewWindowDialog extends BaseDialog
 		dialog.getDialog().pack() ;
 		dialog.getDialog().setSize(500, 300) ;
 		dialog.centerDialog(frame.getWindow()) ;
-		dialog.getDialog().open() ;
+		dialog.open() ;
 		
 		dialog.pumpMessages() ;
 		
@@ -87,11 +87,13 @@ public class NewWindowDialog extends BaseDialog
 
 		int margin = 10 ;
 
+		getOpenArea().setLayout(new FormLayout()) ;
+
 		// Create the text description area
-		m_Description = new Text(getDialog(), SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER) ;
+		m_Description = new Text(getOpenArea(), SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER) ;
 				
 		// Create the list of agents and anchor it to the top
-		m_Modules = new List(getDialog(), SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER) ;
+		m_Modules = new List(getOpenArea(), SWT.SINGLE | SWT.V_SCROLL | SWT.BORDER) ;
 		m_Modules.setItems(moduleNames) ;
 		
 		FormData data = new FormData() ;

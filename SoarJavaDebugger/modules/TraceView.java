@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.* ;
 import org.eclipse.swt.events.*;
 
 import debugger.MainFrame;
+import dialogs.PropertiesDialog;
 import doc.Document;
 
 /************************************************************************
@@ -59,5 +60,34 @@ public class TraceView extends BaseCommandView
 	* 
 	********************************************************************************************/
 	public String getModuleBaseName() { return "trace" ; }
+	
+	public void showProperties()
+	{
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
+		
+		properties[0] = new PropertiesDialog.BooleanProperty("Update automatically on stop", m_UpdateOnStop) ;
+		properties[1] = new PropertiesDialog.BooleanProperty("Clear display before each command", m_ClearEachCommand) ;
+		properties[2] = new PropertiesDialog.BooleanProperty("Combo at top", m_ComboAtTop) ;
+		
+		PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+		
+		m_UpdateOnStop = ((PropertiesDialog.BooleanProperty)properties[0]).getValue() ;
+		m_ClearEachCommand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;
+		boolean comboAtTop = ((PropertiesDialog.BooleanProperty)properties[2]).getValue() ;
+
+		// We need to know if this value has changed as we'll need to rebuild the layout
+		boolean comboMoving = (comboAtTop != m_ComboAtTop) ;
+		m_ComboAtTop = comboAtTop ;
+		
+		if (comboMoving)
+		{
+			// Convert everything to XML (using the new setting we just changed)
+			ElementXML xml = m_Frame.getMainWindow().convertToXML() ;
+
+			// Rebuild the entire layout from the new XML structure.
+			m_Frame.getMainWindow().loadFromXMLNoThrow(xml) ;
+		}
+	}
+
 	
 }

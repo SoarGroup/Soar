@@ -11,6 +11,8 @@
 ********************************************************************************************/
 package modules;
 
+import dialogs.PropertiesDialog;
+
 /************************************************************************
  * 
 * This version of the BaseCommandView updates at the end of each run
@@ -35,4 +37,16 @@ public class UpdateCommandView extends BaseCommandView
 	********************************************************************************************/
 	public String getModuleBaseName() { return "update" ; }
 	
+	public void showProperties()
+	{
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[2] ;
+		
+		properties[0] = new PropertiesDialog.BooleanProperty("Update automatically on stop", m_UpdateOnStop) ;
+		properties[1] = new PropertiesDialog.BooleanProperty("Clear display before each command", m_ClearEachCommand) ;
+		
+		PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+
+		m_UpdateOnStop = ((PropertiesDialog.BooleanProperty)properties[0]).getValue() ;
+		m_ClearEachCommand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;
+	}
 }
