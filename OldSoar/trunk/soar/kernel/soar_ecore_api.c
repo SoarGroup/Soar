@@ -152,7 +152,8 @@ int soar_ecCaptureInput(const char *filename)
         if (current_agent(capture_fileID)) {
             return -2;
         }
-        if (!(f = fopen(filename, "w"))) {
+        f = fopen(filename, "w");
+        if (!f) {
             return -3;
         } else {
             current_agent(capture_fileID) = f;
@@ -198,7 +199,8 @@ int soar_ecReplayInput(const char *filename)
         char header[80];
         soarapi_wme *sapiw;
 
-        if (!(f = fopen(filename, "r"))) {
+        f = fopen(filename, "r");
+        if (!f) {
             return -1;
         } else {
             fgets(header, 28, f);

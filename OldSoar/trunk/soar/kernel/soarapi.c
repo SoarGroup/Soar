@@ -505,9 +505,6 @@ int soar_CaptureInput(int argc, const char *argv[], soarResult * res)
             } else {
                 setSoarResultResult(res, "closed");
             }
-        } else if (argc < 2) {
-
-            return SOAR_ERROR;
         } else {
             setSoarResultResult(res, too_many);
             return SOAR_ERROR;
@@ -589,9 +586,6 @@ int soar_ReplayInput(int argc, const char *argv[], soarResult * res)
             } else {
                 setSoarResultResult(res, "closed");
             }
-        } else if (argc < 2) {
-            setSoarResultResult(res, too_few);
-            return SOAR_ERROR;
         } else {
             setSoarResultResult(res, too_many);
             return SOAR_ERROR;

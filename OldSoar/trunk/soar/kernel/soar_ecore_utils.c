@@ -104,6 +104,8 @@ void replay_input_wme(soar_callback_agent agent, soar_callback_data dummy, soar_
     psoar_wme psw;
     captured_action *c_action;
     soarapi_wme *c_wme;
+    agent;  /* hopefully quells compiler warning */
+    dummy;  /* hopefully quells compiler warning */
 
     if (mode != (soar_call_data) NORMAL_INPUT_CYCLE)
         return;
