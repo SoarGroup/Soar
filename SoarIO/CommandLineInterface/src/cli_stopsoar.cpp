@@ -8,6 +8,8 @@
 #include "cli_Constants.h"
 
 #include "IgSKI_Agent.h"
+#include "IgSKI_AgentManager.h"
+#include "IgSKI_Kernel.h"
 
 using namespace cli;
 
@@ -53,17 +55,12 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string& reasonForStopping) {
 
 	unused(pAgent);
-	unused(self);
 	unused(reasonForStopping);
 
-	if (!m_pRun) {
-		return HandleError("Not running!");
+	if (self) {
+		return pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, m_pError);
+	} else {
+		return m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, m_pError);
 	}
-
-	// Stop and reset the current thread
-	m_pRun->Stop(true);
-	delete m_pRun;
-	m_pRun = 0;
-	return true;
 }
 

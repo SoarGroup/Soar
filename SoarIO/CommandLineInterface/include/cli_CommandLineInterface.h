@@ -25,8 +25,6 @@
 //#include "cli_Constants.h"
 //#include "cli_Aliases.h"
 
-#include "thread_Thread.h"
-
 // gSKI includes
 #include "gSKI_Events.h"
 
@@ -78,25 +76,6 @@ typedef std::stack<std::string> StringStack;
 // Define the list for structured responses
 typedef std::list<sml::ElementXML*> ElementXMLList;
 typedef ElementXMLList::iterator ElementXMLListIter;
-
-// This class is filled out in cli_Run.cpp
-// Used when run forever is called
-class RunThread : public soar_thread::Thread {
-public:
-
-	RunThread(int count, egSKIRunType runType, bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError);
-
-protected:
-
-	void Run();
-
-	int m_Count;
-	egSKIRunType m_RunType;
-	bool m_bSelf;
-	gSKI::IKernel* m_pKernel;
-	gSKI::IAgent* m_pAgent;
-	gSKI::Error* m_pError;
-};
 
 class CommandLineInterface
 {
@@ -596,8 +575,6 @@ protected:
 	std::string			m_Result;				// String output from the command
 	std::string			m_ErrorMessage;			// String output from the command
 	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command
-
-	RunThread*	m_pRun;			// Pointer to run forever thread object
 
 	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result
 	LogPrintHandler		m_LogPrintHandler;		// The print callback handler, used for catching kernel/gSKI output and writing it to a log
