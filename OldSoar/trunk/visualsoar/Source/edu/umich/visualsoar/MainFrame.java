@@ -72,7 +72,7 @@ public class MainFrame extends JFrame
 	Action newProjectAction = new NewProjectAction();
 	Action openProjectAction = new OpenProjectAction();
     Action openFileAction = new OpenFileAction();
-	Action closeProjectAction = new CloseProjectAction();
+	PerformableAction closeProjectAction = new CloseProjectAction();
 	PerformableAction saveAllFilesAction = new SaveAllFilesAction();
 	PerformableAction exportAgentAction = new ExportAgentAction();
 	PerformableAction saveDataMapAndProjectAction = new SaveDataMapAndProjectAction();
@@ -148,54 +148,13 @@ public class MainFrame extends JFrame
 		addWindowListener(
             new WindowAdapter() 
             {
-
                 public void windowClosing(WindowEvent e) 
                 {
-                    //If the user has modifed files that have not been saved,
-                    //we need to ask the user what to do about it.
-                    if (MainFrame.getMainFrame().isModified())
-                    {
-                        String[] buttons = { "Save all files, then exit.",
-                                             "Exit without Saving" };
-
-                        String selectedValue = (String)
-                            JOptionPane.showInputDialog(
-                                MainFrame.getMainFrame(),
-                                "This project has unsaved files.  What should I do?",
-                                "Abandon Project",
-                                JOptionPane.QUESTION_MESSAGE,
-                                null,
-                                buttons,
-                                buttons[0]);
-
-                        //If user hits Cancel button
-                        if (selectedValue == null)
-                        {
-                            return;
-                        }
-
-                        //If user selects Save all files, then exit
-                        if (selectedValue.equals(buttons[0]))
-                        {
-                            MainFrame.getMainFrame().saveAllFilesAction.perform();
-                        }
-                        
-                        //If user selects Exit without Saving
-                        if (selectedValue.equals(buttons[1]))
-                        {
-                            //Make all files as unchanged
-                            CustomInternalFrame[] frames = DesktopPane.getAllCustomFrames();
-                            for(int i = 0; i < frames.length; ++i) 
-                            {
-                                frames[i].setModified(false);
-                            }
-                            
-                        }
-                    }//if
+                    checkForUnsavedProjectOnClose();
                     
                     exitAction.actionPerformed(
                         new ActionEvent(e.getSource(),e.getID(),"Exit"));
-                }//windowClosing()
+                }
             });//addWindowListener()
         
 		if(templateFolder != null)
@@ -526,6 +485,58 @@ public class MainFrame extends JFrame
 		return viewMenu;
 	}
 
+    /**
+     * This function is called when the project is being closed (i.e.,
+     * due to window close, opening new project or selecting "Close Project"
+     * from the File menu).  It detects unsaved changes and asks the user
+     * what to do about it.
+     */
+    void checkForUnsavedProjectOnClose()
+    {
+        //If the user has modifed files that have not been saved,
+        //we need to ask the user what to do about it.
+        if (isModified())
+        {
+            String[] buttons = { "Save all files, then exit.",
+                                 "Exit without Saving" };
+
+            String selectedValue = (String)
+                JOptionPane.showInputDialog(
+                    getMainFrame(),
+                    "This project has unsaved files.  What should I do?",
+                    "Abandon Project",
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    buttons,
+                    buttons[0]);
+
+            //If user hits Cancel button
+            if (selectedValue == null)
+            {
+                return;
+            }
+
+            //If user selects Save all files, then exit
+            if (selectedValue.equals(buttons[0]))
+            {
+                saveAllFilesAction.perform();
+            }
+                        
+            //If user selects Exit without Saving
+            if (selectedValue.equals(buttons[1]))
+            {
+                //Make all files as unchanged
+                CustomInternalFrame[] frames = DesktopPane.getAllCustomFrames();
+                for(int i = 0; i < frames.length; ++i) 
+                {
+                    frames[i].setModified(false);
+                }
+                            
+            }
+        }//if
+                    
+    }//checkForUnsavedProjectOnClose()
+    
 
     /**
      * When the Soar Runtime|Agent menu is selected, this listener
@@ -879,10 +890,10 @@ public class MainFrame extends JFrame
   Actions
   ########################################################################################/*
 	
-                                                                                            /**
-                                                                                             * Runs through all the Rule Editors in the Desktop Pane and tells them to save
-                                                                                             * themselves
-                                                                                             */
+/**
+* Runs through all the Rule Editors in the Desktop Pane and tells them to save
+* themselves.
+*/
 	class SaveAllFilesAction extends PerformableAction 
     {
 
@@ -1045,6 +1056,13 @@ public class MainFrame extends JFrame
 				if (file != null && state == JFileChooser.APPROVE_OPTION) 
                 {
 
+                    //Get rid of the old project (if it exists)
+                    if (operatorWindow != null)
+                    {
+                        MainFrame.getMainFrame().closeProjectAction.perform();
+                    }
+                    
+                    //Open the new project
 					operatorWindow = new OperatorWindow(file);
 					if(file.getParent() != null)
                     Preferences.getInstance().setOpenFolder(file.getParentFile());
@@ -1177,7 +1195,7 @@ public class MainFrame extends JFrame
 	 * Close Project Action
      * Closes all open windows in the desktop pane
 	 */
-	class CloseProjectAction extends AbstractAction 
+	class CloseProjectAction extends PerformableAction 
     {
 
 		public CloseProjectAction() 
@@ -1187,8 +1205,9 @@ public class MainFrame extends JFrame
 			setEnabled(false);
 		}
 		
-		public void actionPerformed(ActionEvent event) 
+		public void perform()
         {
+            checkForUnsavedProjectOnClose();
 
 			JInternalFrame[] frames = DesktopPane.getAllFrames();
 			try 
@@ -1205,7 +1224,14 @@ public class MainFrame extends JFrame
 				projectActionsEnable(false);
 			}
 			catch (java.beans.PropertyVetoException pve) {}
-		}
+		}//perform()
+
+        
+        public void actionPerformed(ActionEvent event) 
+        {
+            perform();
+        }
+
 	}
 	
 	/**
@@ -1240,7 +1266,8 @@ public class MainFrame extends JFrame
 			}
 		}
 		
-		public void actionPerformed(ActionEvent event) {	
+		public void actionPerformed(ActionEvent event)
+        {
 			perform();
 			Vector v = new Vector();
 			v.add("Export Finished");
@@ -1266,26 +1293,22 @@ public class MainFrame extends JFrame
 			PreferencesDialog	theDialog = new PreferencesDialog(MainFrame.getMainFrame());
 			theDialog.setVisible(true);
 		
-			//to realize the change immediately... takes too long				
-/*			if (theDialog.wasApproved()) 
-            {
+			//Update all open source code files
+            //COMMENTED OUT: this takes too long
+//  			if (theDialog.wasApproved()) 
+//              {
+//                  // make the change realized...
+//                  JInternalFrame[] theFrames = DesktopPane.getAllFrames();
 
-            // make the change realized...
-            JInternalFrame[] theFrames = DesktopPane.getAllFrames();
-
-            for (int i = 0; i < theFrames.length; i++) 
-            {
-
-            if (theFrames[i] instanceof RuleEditor) 
-            {
-
-            ((RuleEditor)theFrames[i]).recolorSyntax();
-            }
-
-            }
-			}
-*/		
-		}
+//                  for (int i = 0; i < theFrames.length; i++) 
+//                  {
+//                      if (theFrames[i] instanceof RuleEditor) 
+//                      {
+//                          ((RuleEditor)theFrames[i]).recolorSyntax();
+//                      }
+//                  }
+//  			}//if
+		}//actionPerformed()
 	}
 	
 	/**
