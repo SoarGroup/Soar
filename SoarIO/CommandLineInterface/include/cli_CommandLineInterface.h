@@ -351,6 +351,17 @@ public:
 	bool DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
+	* @brief timers command, see usage.txt for details.
+	*************************************************************/
+	bool ParseTimers(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief If print is true, returns the current setting of the
+	*		 stats timers. If setting is true, enables stats timers.  
+	*        False disables stats timers.
+	*************************************************************/
+	bool DoTimers(gSKI::IAgent* pAgent, bool print, bool setting);
+
+	/*************************************************************
 	* @brief 
 	*************************************************************/
 	bool ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

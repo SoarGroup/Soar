@@ -6,10 +6,9 @@ AC_INIT([SoarIO], [8.6.0])
 AM_INIT_AUTOMAKE([SoarIO], [8.6.0])
 AC_CONFIG_SRCDIR([ConnectionSML/src/sml_AnalyzeXML.cpp])
 AM_CONFIG_HEADER(config.h)
-AC_CONFIG_AUX_DIR(config)
 
 # Checks for programs.
-#AC_DISABLE_SHARED
+AC_DISABLE_SHARED
 AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
@@ -35,6 +34,10 @@ AC_CHECK_LIB(tk, Tk_Init)
 AC_FUNC_MALLOC
 AC_FUNC_SELECT_ARGTYPES
 AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset pow select socket sqrt strcasecmp strdup])
+
+SOAR_CXXFLAGS="-Wall -g"
+AC_SUBST(SOAR_CXXFLAGS)
+
 AC_OUTPUT(Makefile
 		  ConnectionSML/Makefile 
 		  ConnectionSML/src/Makefile 

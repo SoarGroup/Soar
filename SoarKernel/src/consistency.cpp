@@ -46,7 +46,7 @@ void remove_operator_if_necessary(agent* thisAgent, slot *s, wme *w){
   /* REW: begin 11.25.96 */ 
   #ifndef NO_TIMING_STUFF
   #ifdef DETAILED_TIMING_STATS
-  start_timer(&thisAgent->start_gds_tv);
+  start_timer(thisAgent, &thisAgent->start_gds_tv);
   #endif
   #endif
   /* REW: end   11.25.96 */ 
@@ -102,7 +102,7 @@ void remove_operator_if_necessary(agent* thisAgent, slot *s, wme *w){
   /* REW: begin 11.25.96 */ 
   #ifndef NO_TIMING_STUFF
   #ifdef DETAILED_TIMING_STATS
-  stop_timer(&thisAgent->start_gds_tv, 
+  stop_timer(thisAgent, &thisAgent->start_gds_tv, 
              &thisAgent->gds_cpu_time[thisAgent->current_phase]);
   #endif
   #endif
@@ -519,7 +519,7 @@ Bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol *goal) {
    
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-   start_timer(&thisAgent->start_gds_tv);
+   start_timer(thisAgent, &thisAgent->start_gds_tv);
 #endif
 #endif
    
@@ -543,7 +543,7 @@ Bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol *goal) {
    
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-   stop_timer(&thisAgent->start_gds_tv, 
+   stop_timer(thisAgent, &thisAgent->start_gds_tv, 
       &thisAgent->gds_cpu_time[thisAgent->current_phase]);
 #endif
 #endif

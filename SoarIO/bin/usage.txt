@@ -406,6 +406,16 @@ Usage:	time command [arguments]
   <arg name="seconds" type="float">real_time_elapsed</arg>
 </result>
 ***
+timers
+Usage:	timers [-ed]
+  -e, --enable, --on     Turn stats timers on.
+  -d, --disable, --off   Turn stats timers off.
+~~~
+On success:
+<result>true</result>
+<result><arg name="timers">true</arg></result>
+<result><arg name="timers">false</arg></result>
+***
 waitsnc
 Usage:	waitsnc
 ~~~

@@ -66,7 +66,6 @@ double soar_cDetermineTimerResolution( double *min, double *max) {
   struct timeval start, end, total;
 #endif
   
-  
   top = ONE_MILLION;
   min_delta = ONE_MILLION;
   min_nz_delta = ONE_MILLION;
@@ -75,12 +74,12 @@ double soar_cDetermineTimerResolution( double *min, double *max) {
 
   for( i = 0; i < ONE_MILLION; i = (i+1)*2 ) {
     reset_timer( &end );
-    start_timer( &start );
+    start_timer( NULL, &start );
     for( j = 0; j < i*top; j++ ) {
       q = j*i;
     }
-    stop_timer( &start, &end );
-    stop_timer( &start, &total );
+    stop_timer( NULL, &start, &end );
+    stop_timer( NULL, &start, &total );
     delta = timer_value( &end );
     
     if ( delta < min_delta ) min_delta = delta;
@@ -1130,9 +1129,9 @@ void AgentPerformanceMonitor::printTimingInfo()
     print(a, "A short delay will be issued using the sleep() command, and \n");
     print(a, "timed using Soar's timers....\n");
     reset_timer(&stop);
-    start_timer(&start);
+    start_timer(a, &start);
     sys_sleep(3);
-    stop_timer(&start, &stop);
+    stop_timer(a, &start, &stop);
     print(a, "Sleep interval  -->   3 seconds\n");
 #ifndef NO_TIMING_STUFF
     print(a, "Timers report   -->  %8.5f seconds\n", timer_value(&stop));
