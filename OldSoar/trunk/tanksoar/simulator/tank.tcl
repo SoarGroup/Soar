@@ -117,7 +117,9 @@ proc createTank {x y agentPath agentFile newname} {
 	$newname alias stop environmentStop
 	#$newname alias stop-soar environmentStop
  	if $ETCPConfig(afterDecision) { 
-	   $newname eval monitor -add after-decision-phase-cycle \"stop-soar -self \{\}\" dp1
+#	   $newname eval monitor -add after-decision-phase-cycle \"stop-soar -self \{\}\" dp1
+#         changed to fix bugzilla bug 392
+	  $newname eval monitor -add after-decision-phase-cycle \"stop-soar -self\" dp1
   	}
    if $ETCPConfig(afterDecision) {
       stopAfterDecision
