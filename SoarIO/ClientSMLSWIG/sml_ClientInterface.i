@@ -12,6 +12,7 @@
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*, int);
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
 
+// don't wrap the code for registering/unregistering callbacks because we need to provide some custom code to make it work
 %ignore sml::Agent::RegisterForAgentEvent(smlEventId, AgentEventHandler, void*);
 %ignore sml::Agent::UnregisterForAgentEvent(smlEventId, AgentEventHandler, void*);
 %ignore sml::Agent::RegisterForProductionEvent(smlEventId, ProductionEventHandler, void*);
@@ -22,7 +23,6 @@
 %ignore sml::Agent::UnregisterForPrintEvent(smlEventId, PrintEventHandler, void*);
 %ignore sml::Kernel::RegisterForSystemEvent(smlEventId, SystemEventHandler, void*);
 %ignore sml::Kernel::UnregisterForSystemEvent(smlEventId, SystemEventHandler, void*);
-
 
 %{
 #include "sml_ElementXML.h"
