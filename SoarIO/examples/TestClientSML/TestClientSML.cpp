@@ -415,6 +415,8 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	int callback_before = pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, MyRunEventHandler, &beforeCount) ;
 	int callback_after = pAgent->RegisterForRunEvent(smlEVENT_AFTER_RUN_ENDS, MyRunEventHandler, &afterCount) ;
 
+	//pAgent->ExecuteCommandLine("watch 5") ;
+
 	// Nothing should match here
 	result = pAgent->Run(4) ;
 

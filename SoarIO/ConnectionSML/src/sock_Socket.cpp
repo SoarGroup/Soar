@@ -433,7 +433,7 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				if (IsErrorWouldBlock())
 				{
 					PrintDebug("Waiting for socket to unblock") ;
-					SleepMillisecs(100) ;	// BUGBUG: Need a more realistic value here or better yet, a proper way to pass control back to the caller while we're blocked.
+					SleepMillisecs(10) ;	// BADBAD: Should have a proper way to pass control back to the caller while we're blocked.
 				}
 				else
 #endif

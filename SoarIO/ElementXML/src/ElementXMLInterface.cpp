@@ -470,14 +470,12 @@ bool sml_SetTagNameFast(ElementXML_Handle hXML, char const* tagName)
 ////////////////////////////////////////////////////////////////
 int sml_GetLastError(ElementXML_Handle hXML)
 {
-//	return GetElementFromHandle(hXML)->GetLastError() ;
-	// BUGBUG: Still to write
-	return -1 ;
+	return GetElementFromHandle(hXML)->GetLastError() ;
 }
 
 char const* sml_GetLastErrorDescription(ElementXML_Handle hXML)
 {
-	return NULL ;
+	return GetElementFromHandle(hXML)->GetLastErrorDescription() ;
 }
 
 /*************************************************************

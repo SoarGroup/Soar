@@ -72,6 +72,19 @@ public class Application
 		{
 			String xmlText = xml.GenerateXMLStringFast(true) ;
 			System.out.println("Received xml trace event in Java: " + xmlText) ;
+
+			String allChildren = "" ;
+			
+			if (xml.GetNumberChildren() > 0)
+			{
+				ClientXML child = new ClientXML() ;
+				xml.GetChild(child, 0) ;
+				
+				String childText = child.GenerateXMLStringFast(true) ;
+				allChildren += childText ;
+				
+				child.delete() ;
+			}
 			
 			if (m_Keep != null)
 				m_Keep.delete() ;
@@ -184,6 +197,8 @@ public class Application
 		// Trigger an agent event by doing init-soar
 		pAgent.InitSoar() ;
 
+		//pAgent.ExecuteCommandLine("watch 5") ;
+		
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 		String trace = pAgent.RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 

@@ -21,14 +21,27 @@ class ClientTraceXML : public ClientXML
 public:
 	// These methods provide access to specific attributes and tags without
 	// the client needing to pass in/know the strings.  They're all very simple.
-	bool IsTagState() const ;
 
 	// State tag attributes
+	bool IsTagState() const ;
 	char const* GetDecisionCycleCount() const ;
 	char const* GetStateID() const ;
 	char const* GetImpasseObject() const ;
 	char const* GetImpasseType() const ;
 
+	// Phase tag attributes
+	bool IsTagPhase() const ;
+	char const* GetPhaseName() const ;
+	char const* GetPhaseStatus() const ;
+
+	// Add-wme contains wme
+	bool IsTagAddWme() const ;
+
+	// Wme tag attributes
+	bool IsTagWme() const ;
+	char const* GetWmeID() const ;
+	char const* GetWmeAttribute() const ;
+	char const* GetWmeValue() const ;
 } ;
 
 } //closes namespace

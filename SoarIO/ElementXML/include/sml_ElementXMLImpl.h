@@ -95,7 +95,7 @@ class ElementXMLImpl
 	friend class MessageGenerator ;
 
 protected:
-//	ErrorCode		m_ErrorCode ;		// Used to report any errors.  BUGBUG: Still need to define this.
+	int				m_ErrorCode ;		// Used to report any errors.
 	bool			m_UseCData ;		// If true, should store character data in a CDATA section when encoding as XML.
 	xmlStringConst	m_TagName ;			// The tag name (e.g. in <name>...</name> the tag name is "name")
 	xmlString		m_CharacterData ;	// The character data (e.g. in <name>Albert Einstein</name> the char data is "Albert Einstein")
@@ -155,6 +155,19 @@ public:
 	* @returns Reports the current reference count (must be > 0)
     *************************************************************/
 	int GetRefCount() ;
+
+	/*************************************************************
+	* @returns If an error occurs, this code can provide further details.
+	*		   (Not currently used -- but provided for later expansion)
+    *************************************************************/
+	int GetLastError() { return m_ErrorCode ; }
+
+	/*************************************************************
+	* @returns If an error occurs, this provides a text description of
+	*		   the error.
+	*		   (Not currently used -- but provided for later expansion)
+    *************************************************************/
+	char const* GetLastErrorDescription() { return NULL ; }
 
 	////////////////////////////////////////////////////////////////
 	//

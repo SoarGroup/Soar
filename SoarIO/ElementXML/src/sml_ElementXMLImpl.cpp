@@ -255,6 +255,7 @@ ElementXMLImpl::ElementXMLImpl(void)
 
 	m_TagName = NULL ;
 	m_CharacterData = NULL ;
+	m_ErrorCode = 0 ;
 
 	// Creation of the object creates an initial reference.
 	m_RefCount = 1 ;
