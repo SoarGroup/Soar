@@ -479,8 +479,8 @@ extern int soar_ecPrintAllProductionsOfType( int type, bool internal,
  * \retval -4   Fail, the filter already exists.
  */
 
-extern int soar_ecAddWmeFilter( char *szId, char *szAttr, char *szValue, 
-			 bool adds, bool removes );
+extern int soar_ecAddWmeFilter( const char *szId, const char *szAttr, 
+																const char *szValue, bool adds, bool removes );
 
 /**
  *
@@ -505,8 +505,8 @@ extern int soar_ecAddWmeFilter( char *szId, char *szAttr, char *szValue,
  * \retval -4   Fail, the filter could not be found.
  * 
  */
-extern int soar_ecRemoveWmeFilter( char *idStr, char *attrStr, char *valueStr, 
-			    bool adds, bool removes );
+extern int soar_ecRemoveWmeFilter( const char *idStr, const char *attrStr,
+																	 const char *valueStr, bool adds, bool removes );
 
 /**
  *

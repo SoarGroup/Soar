@@ -43,7 +43,7 @@ extern int compare_firing_counts (const void * e1, const void * e2);
 
 
 extern production_memory_use *print_memories_insert_in_list(production_memory_use *n, production_memory_use *l);
-extern int read_wme_filter_component(char *s, Symbol **sym );
+extern int read_wme_filter_component(const char *s, Symbol **sym );
 extern void soar_alternate_input(agent *ai_agent,
                      const char  *ai_string, 
                      const char  *ai_suffix, 

@@ -124,7 +124,7 @@
  *  
  */
 
-extern int soar_ReInitSoar( int argc, char *argv[], soarResult *res );
+extern int soar_ReInitSoar( int argc, const char *argv[], soarResult *res );
 
 
 
@@ -164,7 +164,7 @@ extern int soar_ReInitSoar( int argc, char *argv[], soarResult *res );
  * 
  */
 
-extern int soar_CreateAgent( int argc, char *argv[], soarResult *res );
+extern int soar_CreateAgent( int argc, const char *argv[], soarResult *res );
 
 
 /**
@@ -273,7 +273,7 @@ extern int soar_Run (int argc, const char *argv[], soarResult *res);
  *
  *
  */
-extern int soar_DestroyAgent ( int argc, char *argv[], soarResult *res);
+extern int soar_DestroyAgent ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -308,7 +308,7 @@ extern int soar_DestroyAgent ( int argc, char *argv[], soarResult *res);
  *
  *
  */
-extern int soar_Quit( int argc, char *argv[], soarResult *res );
+extern int soar_Quit( int argc, const char *argv[], soarResult *res );
 
 
 
@@ -381,7 +381,7 @@ extern int soar_Quit( int argc, char *argv[], soarResult *res );
  *
  */
 
-extern int soar_ReteNet( int argc, char *argv[], soarResult *res );
+extern int soar_ReteNet( int argc, const char *argv[], soarResult *res );
 
 
 
@@ -1765,7 +1765,7 @@ extern int soar_PWatch (int argc, const char *argv[], soarResult *res);
  *
  */
 #ifdef USE_DEBUG_UTILS
-extern int soar_Pool (int argc, char *argv[], soarResult *res);
+extern int soar_Pool (int argc, const char *argv[], soarResult *res);
 #endif
 
 
@@ -2255,7 +2255,7 @@ extern int soar_AttributePreferencesMode (int argc, const char *argv[],
  *
  * */
 
-extern int soar_Watch (int argc, char *argv[], soarResult *res);
+extern int soar_Watch (int argc, const char *argv[], soarResult *res);
 
 
 

@@ -75,14 +75,14 @@ extern void read_rhs_pattern_and_get_matching_productions (list **current_pf_lis
                                                     bool just_chunks, bool no_chunks);
 extern bool wme_filter_component_match(Symbol *filterComponent, Symbol *wmeComponent);
 extern bool passes_wme_filtering(wme *w, bool isAdd);
-extern int parse_filter_type(char *s, bool *forAdds, bool *forRemoves);
+extern int parse_filter_type(const char *s, bool *forAdds, bool *forRemoves);
 
 extern void print_current_watch_settings (void);
-extern int set_watch_setting ( int dest_sysparam_number, char * param, 
-			char * arg, soarResult *res);
+extern int set_watch_setting ( int dest_sysparam_number, const char * param, 
+			const char * arg, soarResult *res);
 extern int set_watch_level_inc (int level);
 extern int set_watch_prod_group_setting (int  prodgroup,
-				  char * prodtype, char * arg,
+				  const char * prodtype, const char * arg,
 				  soarResult *res);
 
 extern int parse_run_command (int argc, const char * argv[],

@@ -142,8 +142,8 @@ extern int tolower(int);
 /* --------------------------- */
 
 #define MAJOR_VERSION_NUMBER 8
-#define MINOR_VERSION_NUMBER 4
-#define MICRO_VERSION_NUMBER 5
+#define MINOR_VERSION_NUMBER 5
+#define MICRO_VERSION_NUMBER 0
 #define GREEK_VERSION_NUMBER ""
 
 extern char * soar_version_string;
@@ -175,6 +175,7 @@ typedef char bool;
 #ifndef FALSE               /* excludeFromBuildInfo */
 #define FALSE (0)
 #endif
+
 
 #define NIL (0)
 
@@ -1328,6 +1329,20 @@ typedef struct preference_struct {
   goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
 #endif
 
+#ifdef NUMERIC_INDIFFERENCE
+  /* REW: 2003-01-08 Behavior Variability Kernel Experiements
+                     See decide.c for more information
+		     This is just a hack until we determine
+		     what we really want from these changes.
+  */
+
+  int total_preferences_for_candidate;
+  double sum_of_probability;
+  double confidence;
+
+  /* END: REW: 2003-01-08 */
+#endif
+
 
 } preference;
 
@@ -1691,6 +1706,11 @@ typedef struct action_struct {
 
       OPERAND_which_assert_list: (BUGBUG need info from REW or RCHONG)
 
+			interrupt: TRUE iff we should break when this production matches 
+			            (but before it fires).  Note: this functionality is
+									only used when the compile time option:
+									MATCHTIME_INTERRUPT is defined.
+
    Reference counts on productions:
       +1 if it's in production memory (i.e., hasn't been excised)
       +1 for each existing instantiation pointing to it
@@ -1728,6 +1748,7 @@ typedef struct production_struct {
   list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
   struct instantiation_struct *instantiations; /* dll of inst's in MS */
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
+	bool interrupt;                         /* SW: 7.31.03 */
 
 } production;
 

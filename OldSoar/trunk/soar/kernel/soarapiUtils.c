@@ -982,8 +982,8 @@ void print_current_watch_settings (void)
  *----------------------------------------------------------------------
  */
 
-int set_watch_setting ( int dest_sysparam_number, char * param, 
-			char * arg, soarResult *res) 
+int set_watch_setting ( int dest_sysparam_number, const char * param, 
+			const char * arg, soarResult *res) 
 {
   if (arg == NULL)
     {
@@ -1039,7 +1039,7 @@ int set_watch_setting ( int dest_sysparam_number, char * param,
  */
 
 int set_watch_prod_group_setting (int  prodgroup,
-				  char * prodtype, char * arg,
+				  const char * prodtype, const char * arg,
 				  soarResult *res) 
 {
   if (arg == NULL)

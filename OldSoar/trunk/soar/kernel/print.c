@@ -801,6 +801,10 @@ void print_production (production *p, bool internal) {
     print_string ("    :o-support\n");
   else if (p->declared_support==DECLARED_I_SUPPORT)
     print_string ("    :i-support\n");
+#ifdef MATCHTIME_INTERRUPT
+	if (p->interrupt)
+		print_string( "    :interrupt\n");
+#endif
 
   /* --- print the LHS and RHS --- */
   p_node_to_conditions_and_nots (p->p_node, NIL, NIL, &top, &bottom, NIL,&rhs);

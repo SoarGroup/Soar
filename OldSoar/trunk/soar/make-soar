@@ -18,5 +18,5 @@ chmod u+x ./configure
 ./configure --with-preferred-tcl-version=8.3 --with-preferred-tk-version=8.3
 
 make
-cp  libsoar8.4* ../library
+cp  libsoar8.5* ../library
 popd

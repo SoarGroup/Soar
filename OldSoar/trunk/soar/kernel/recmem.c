@@ -556,6 +556,8 @@ void fill_in_new_instantiation_stuff (instantiation *inst,
    lists of instantiations of that production.
 
    (4) Finally, o-rejects are processed.
+
+	 Note: Using the O_REJECTS_FIRST flag, step (4) becomes step (2b)
 ======================================================================= */
 
 void init_firer (void) {
@@ -964,11 +966,15 @@ void retract_instantiation (instantiation *inst) {
    each instantiation from newly_created_instantiations, linking each
    onto the list of instantiations for that particular production.
    O-rejects are bufferred and handled after everything else.
-
+	 
    Note that some instantiations on newly_created_instantiations are not
    in the match set--for the initial instantiations of chunks/justifications,
    if they don't match WM, we have to assert the o-supported preferences
    and throw away the rest.
+
+	 Note also that this ordering is different if the compile-time
+	 flag 'O_REJECTS_FIRST' is defined.  In this situation, o-rejects are 
+	 processed before other prefrences.
 ----------------------------------------------------------------------- */
 
 void assert_new_preferences (void) {
@@ -993,6 +999,41 @@ void assert_new_preferences (void) {
      print("\n   in assert_new_preferences:");
   /* REW: end   09.15.96 */
 
+#ifdef O_REJECTS_FIRST
+	{
+
+		slot *s;
+		preference *p, *next_p;
+
+			/* Do an initial loop to process o-rejects, then re-loop
+				 to process normal preferences.  No buffering should be needed.
+			*/
+  for (inst=current_agent(newly_created_instantiations);
+       inst!=NIL;
+       inst=next_inst) {
+		next_inst = inst->next;
+		
+    for (pref=inst->preferences_generated; pref!=NIL; pref=next_pref) {
+      next_pref = pref->inst_next;
+      if ((pref->type==REJECT_PREFERENCE_TYPE)&&(pref->o_supported)) {
+        /* --- o-reject: just put it in the buffer for later --- */
+     
+				s = find_slot (pref->id, pref->attr);
+				if (s) {
+					/* --- remove all pref's in the slot that have the same value --- */
+					p = s->all_preferences;
+					while (p) {
+						next_p = p->all_of_slot_next;
+						if (p->value==pref->value)
+							remove_preference_from_tm (p);
+						p = next_p;
+					}
+				}
+			}
+		}
+	}      
+	}
+#endif
 
   for (inst=current_agent(newly_created_instantiations);
        inst!=NIL;
@@ -1026,19 +1067,21 @@ void assert_new_preferences (void) {
 
     for (pref=inst->preferences_generated; pref!=NIL; pref=next_pref) {
       next_pref = pref->inst_next;
+
       if ((pref->type==REJECT_PREFERENCE_TYPE)&&(pref->o_supported)) {
         /* --- o-reject: just put it in the buffer for later --- */
+#ifndef O_REJECTS_FIRST
         pref->next = o_rejects;
         o_rejects = pref;
-
+#endif
 
 	/* REW: begin 09.15.96 */
 	/* No knowledge retrieval necessary in Operand2 */
 	/* REW: end   09.15.96 */
 
       } else if (inst->in_ms || pref->o_supported) {
-        /* --- normal case --- */
-        add_preference_to_tm (pref);
+				/* --- normal case --- */
+				add_preference_to_tm (pref);
 
 
 	/* REW: begin 09.15.96 */
@@ -1184,7 +1227,9 @@ void assert_new_preferences (void) {
 #endif /* NO_TOP_JUST */
 
   }
+#ifndef O_REJECTS_FIRST
   if (o_rejects) process_o_rejects_and_deallocate_them (o_rejects);
+#endif
 }
 
 /* -----------------------------------------------------------------------
@@ -1199,7 +1244,10 @@ void do_preference_phase (void) {
   wme *w;
   instantiation *inst;
 
-
+#ifdef MATCHTIME_INTERRUPT
+	if ( current_agent(stop_soar) ) return;
+ 
+#endif
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
@@ -1241,6 +1289,7 @@ void do_preference_phase (void) {
        current_agent(system_halted) = TRUE;
        return;
      }
+
      create_instantiation (prod, tok, w);
    }
 

@@ -545,7 +545,7 @@ bool string_match_up_to (const char * string1, const char * string2, int positio
 
 
 
-void soar_default_create_agent_procedure (char * agent_name) {
+void soar_default_create_agent_procedure (const char * agent_name) {
   int i;                                          /* loop index */
   char cur_path[MAXPATHLEN];   /* AGR 536 */
 

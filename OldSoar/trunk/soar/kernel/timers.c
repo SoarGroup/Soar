@@ -215,7 +215,7 @@ void stop_timer (struct timeval *tv_with_recorded_start_time,
 
 #ifdef WARN_IF_TIMERS_REPORT_ZERO
   if ( current_agent(warn_on_zero_timers) &&
-       delta_usec == 0 && delta_sec == 0 ) {
+       delta_usec == 0 && delta_sec == 0 && current_agent(sysparams)[PRINT_WARNINGS_SYSPARAMS] ) {
 
     print ("\nWarning:  A timer has reported zero.\n");
     print ("  This is likely the result of poor system timer resolution.\n" );

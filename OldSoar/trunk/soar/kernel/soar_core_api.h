@@ -146,7 +146,7 @@ extern int soar_cReInitSoar (void);
  *
  *
  */
-extern void  soar_cCreateAgent (char * agent_name);
+extern void  soar_cCreateAgent (const char * agent_name);
 
 
 /**
@@ -233,7 +233,7 @@ extern void soar_cStopCurrentAgent( const char *reason );
  *
  *
  */
-extern int soar_cDestroyAgentByName( char *name );
+extern int soar_cDestroyAgentByName( const char *name );
 
 
 /**
@@ -377,7 +377,7 @@ extern void soar_cQuit ( void );
  *
  *
  */
-extern int soar_cLoadReteNet( char *filename );
+extern int soar_cLoadReteNet( const char *filename );
 
 
 
@@ -402,7 +402,7 @@ extern int soar_cLoadReteNet( char *filename );
  *
  */
 
-extern int soar_cSaveReteNet( char *filename );
+extern int soar_cSaveReteNet( const char *filename );
 
 
 /**
