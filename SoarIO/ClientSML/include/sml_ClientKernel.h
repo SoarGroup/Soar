@@ -26,9 +26,13 @@ namespace sml {
 class Agent ;
 class Connection ;
 class AnalyzeXML ;
+class ElementXML ;
 
 class Kernel
 {
+	// Allow the agent to call to get the connection from the kernel.
+	friend Agent ;
+
 protected:
 	long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
 	long		m_IdCounter ;		// Used to generate unique id names
@@ -40,6 +44,13 @@ protected:
 
 	// To create a kernel object, use one of the static methods, e.g. Kernel::CreateEmbeddedConnection().
 	Kernel(Connection* pConnection);
+
+	/*************************************************************
+	* @brief Returns the connection information for this kernel
+	*		 which is how we communicate with the kernel (e.g. embedded,
+	*		 remotely over a socket etc.)
+	*************************************************************/
+	Connection* GetConnection() const { return m_Connection ; }
 
 public:
 	/*************************************************************
@@ -69,13 +80,6 @@ public:
 
 	long	GenerateNextID()		{ return ++m_IdCounter ; }
 	long	GenerateNextTimeTag()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
-
-	/*************************************************************
-	* @brief Returns the connection information for this kernel
-	*		 which is how we communicate with the kernel (e.g. embedded,
-	*		 remotely over a socket etc.)
-	*************************************************************/
-	Connection* GetConnection() const { return m_Connection ; }
 
 	/*************************************************************
 	* @brief Creates a new Soar agent with the given name.
@@ -137,6 +141,20 @@ public:
 
 	// This call gives some cycles to the Tcl debugger.  It should come out eventually.
 	bool CheckForIncomingCommands() ;
+
+protected:
+	/*************************************************************
+	* @brief This function is called when we receive a "call" SML
+	*		 message from the kernel.
+	*************************************************************/
+	static ElementXML* ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData) ;
+
+	/*************************************************************
+	* @brief This function is called (indirectly) when we receive a "call" SML
+	*		 message from the kernel.
+	*************************************************************/
+	ElementXML* ProcessIncomingSML(Connection* pConnection, ElementXML* pIncoming) ;
+
 };
 
 }//closes namespace

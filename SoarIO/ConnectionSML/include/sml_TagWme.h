@@ -50,7 +50,7 @@ public:
 			this->AddAttributeFast(sml_Names::kWME_ValueType, CopyString(pType), false) ;
 	}
 
-	void SetTimeTag(int timeTag)
+	void SetTimeTag(long timeTag)
 	{
 		char buffer[kMinBufferSize] ;
 		Int2String(timeTag, buffer, sizeof(buffer)) ;

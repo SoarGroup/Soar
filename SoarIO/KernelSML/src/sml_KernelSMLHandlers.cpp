@@ -158,6 +158,7 @@ bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const*
 #ifdef USE_TCL_DEBUGGER
 	if (m_Debugger)
 	{
+		// The update function returns false if the user exits the debugger.
 		keepGoing = TgD::TgD::Update(false, m_Debugger) ;
 	}
 #endif
@@ -239,6 +240,15 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 	// time we wish to add structure beneath it.
 	IWMObject* pParentObject = NULL ;
 	pInputWM->GetObjectById(pID, &pParentObject) ;
+
+	// Soar also allows the environment to modify elements on the output link.
+	// This is a form of backdoor input, so we need to check on the output side too
+	// if we don't find our parent on the input side.
+	if (!pParentObject)
+	{
+		pInputWM = pAgent->GetOutputLink()->GetOutputMemory(pError) ;
+		pInputWM->GetObjectById(pID, &pParentObject) ;
+	}
 
 	// Failed to find the parent.
 	if (!pParentObject)

@@ -24,6 +24,7 @@ char const* sml_Names::kSoarVersion		= "soarversion" ;
 char const* sml_Names::kSMLVersion		= "smlversion" ;
 char const* sml_Names::kSMLVersionValue	= "8.6.0" ;
 char const* sml_Names::kSoarVersionValue= "1.0" ;
+char const* sml_Names::kOutputLinkName  = "output-link" ;
 
 // <command> tag identifiers
 char const* sml_Names::kTagCommand		= "command" ;

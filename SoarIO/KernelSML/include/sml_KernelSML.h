@@ -17,7 +17,7 @@
 // This define allows us to pull in and out the Tcl debugger.
 // We need this during the early SML days because the Tcl debugger
 // needs local access to the gSKI kernel and that only happens here.
-//#define USE_TCL_DEBUGGER
+#define USE_TCL_DEBUGGER
 
 // Forward declarations
 namespace gSKI {

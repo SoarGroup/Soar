@@ -13,7 +13,7 @@
 
 using namespace sml ;
 
-StringElement::StringElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pValue) : WMElement(pAgent, pID, pAttributeName)
+StringElement::StringElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pValue, long timeTag) : WMElement(pAgent, pID, pAttributeName, timeTag)
 {
 	m_Value = pValue ;
 }
@@ -23,7 +23,7 @@ StringElement::~StringElement(void)
 }
 
 // Returns the type of the value stored here (e.g. "string" or "int" etc.)
-char const* StringElement::GetValueType()
+char const* StringElement::GetValueType() const
 {
 	return sml_Names::kTypeString ;
 }

@@ -44,24 +44,27 @@ protected:
 
 public:
 	// Two accessors for the ID as people think about it in different ways
-	Identifier*		GetParent()			{ return m_ID ; }
-	Identifier*		GetIdentifier()		{ return m_ID ; }
+	Identifier*		GetParent()	const		{ return m_ID ; }
+	Identifier*		GetIdentifier()	 const	{ return m_ID ; }
 
-	char const*	GetAttribute()	{ return m_AttributeName.c_str() ; }
+	char const*	GetAttribute() const	{ return m_AttributeName.c_str() ; }
 
 	// Returns the type of the value stored here (e.g. "string" or "int" etc.)
-	virtual char const* GetValueType()	= 0 ;
+	virtual char const* GetValueType() const = 0 ;
 
 	// Returns a string form of the value stored here.
-	virtual char const* GetValueAsString() = 0 ;
+	virtual char const* GetValueAsString() const = 0 ;
 
-	long		GetTimeTag()	{ return m_TimeTag ; }
+	long		GetTimeTag() const	{ return m_TimeTag ; }
+
+	// The Identifier class overrides this to return true.  (The poor man's RTTI).
+	virtual bool IsIdentifier() const { return false ; }
 
 protected:
 	// Keep these protected, so user can only create and destroy WMEs through
 	// the methods exposed in the agent class.  This makes it clear that the
 	// agent owns all objects.
-	WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName);
+	WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, long timeTag);
 	virtual ~WMElement(void);
 
 	Agent*		GetAgent()	{ return m_Agent ; }

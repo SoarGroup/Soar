@@ -34,15 +34,15 @@ protected:
 
 public:
 	// Returns the type of the value stored here (e.g. "string" or "int" etc.)
-	virtual char const* GetValueType()	;
+	virtual char const* GetValueType() const	;
 
 	// Returns a string form of the value stored here.
-	virtual char const* GetValueAsString() ;
+	virtual char const* GetValueAsString() const ;
 
-	int GetValue() { return m_Value ; }
+	int GetValue() const { return m_Value ; }
 
 protected:
-	IntElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, int value) ;
+	IntElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, int value, long timeTag) ;
 	virtual ~IntElement(void);
 
 	void SetValue(int value)

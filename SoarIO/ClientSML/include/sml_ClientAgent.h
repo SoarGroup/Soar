@@ -19,6 +19,8 @@ namespace sml {
 
 class Kernel ;
 class Connection ;
+class AnalyzeXML ;
+class ElementXML ;
 
 class Agent
 {
@@ -49,6 +51,15 @@ protected:
 	WorkingMemory* GetWM() 			{ return &m_WorkingMemory ; } 
 	Kernel*		GetKernel() const	{ return m_Kernel ; }
 
+	/*************************************************************
+	* @brief This function is called when output is received
+	*		 from the Soar kernel.
+	*
+	* @param pIncoming	The output command (list of wmes added/removed from output link)
+	* @param pResponse	The reply (no real need to fill anything in here currently)
+	*************************************************************/
+	void ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+
 public:
 
 	/*************************************************************
@@ -67,6 +78,12 @@ public:
 	*		 The agent retains ownership of this object.
 	*************************************************************/
 	Identifier* GetInputLink() ;
+
+	/*************************************************************
+	* @brief Returns the id object for the output link.
+	*		 The agent retains ownership of this object.
+	*************************************************************/
+	Identifier* GetOutputLink() ;
 
 	/*************************************************************
 	* @brief Builds a new WME that has a string value and schedules
@@ -126,6 +143,18 @@ public:
 	*		 over to the kernel.
 	*************************************************************/
 	bool Commit() ;
+
+	/*************************************************************
+	* @brief   Run Soar for the specified number of decisions
+	*
+	* This command will currently run all agents, even though it's part of the
+	* Agent class here.
+	*
+	* @returns The result of executing the start of the run command.
+	*		   The output from during the run is sent to a different callback.
+	*************************************************************/
+	char const* Run(unsigned long decisions) ;
+
 };
 
 }//closes namespace

@@ -14,6 +14,10 @@
 #include "sml_Connection.h"
 #include "sml_ClientIdentifier.h"
 
+#include <iostream>     
+#include <sstream>     
+#include <iomanip>
+
 #include <cassert>
 #include <string>
 
@@ -33,6 +37,18 @@ Agent::~Agent()
 Connection* Agent::GetConnection() const
 {
 	return m_Kernel->GetConnection() ;
+}
+
+/*************************************************************
+* @brief This function is called when output is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The output command (list of wmes added/removed from output link)
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	GetWM()->ReceivedOutput(pIncoming, pResponse) ;
 }
 
 /*************************************************************
@@ -57,6 +73,15 @@ bool Agent::LoadProductions(char const* pFilename)
 Identifier* Agent::GetInputLink()
 {
 	return GetWM()->GetInputLink() ;
+}
+
+/*************************************************************
+* @brief Returns the id object for the output link.
+*		 The agent retains ownership of this object.
+*************************************************************/
+Identifier* Agent::GetOutputLink()
+{
+	return GetWM()->GetOutputLink() ;
 }
 
 /*************************************************************
@@ -152,4 +177,19 @@ bool Agent::Commit()
 	return GetWM()->Commit() ;
 }
 
+/*************************************************************
+* @brief Run Soar for the specified number of decisions
+*************************************************************/
+char const* Agent::Run(unsigned long decisions)
+{
+	// Convert int to a string
+	std::ostringstream ostr ;
+	ostr << decisions ;
 
+	// Create the command line for the run command
+	std::string cmd = "run -d " + ostr.str() ;
+
+	// Execute the run command.
+	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetName()) ;
+	return pResult ;
+}

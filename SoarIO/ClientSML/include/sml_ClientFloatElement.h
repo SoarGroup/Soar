@@ -34,16 +34,16 @@ protected:
 
 public:
 	// Returns the type of the value stored here (e.g. "string" or "int" etc.)
-	virtual char const* GetValueType()	;
+	virtual char const* GetValueType() const	;
 
 	// Returns a string form of the value stored here.
-	virtual char const* GetValueAsString() ;
+	virtual char const* GetValueAsString() const ;
 
 	// Returns the current value
-	double GetValue() { return m_Value ; }
+	double GetValue() const { return m_Value ; }
 
 protected:
-	FloatElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, double value) ;
+	FloatElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, double value, long timeTag) ;
 	virtual ~FloatElement(void);
 
 	void SetValue(double value)

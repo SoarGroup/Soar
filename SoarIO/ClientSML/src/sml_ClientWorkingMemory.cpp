@@ -34,12 +34,14 @@ using namespace sml ;
 
 WorkingMemory::WorkingMemory()
 {
-	m_InputLink = NULL ;
-	m_Agent		= NULL ;
+	m_InputLink  = NULL ;
+	m_OutputLink = NULL ;
+	m_Agent		 = NULL ;
 }
 
 WorkingMemory::~WorkingMemory()
 {
+	delete m_OutputLink ;
 	delete m_InputLink ;
 }
 
@@ -51,6 +53,162 @@ Connection* WorkingMemory::GetConnection() const
 char const* WorkingMemory::GetAgentName() const
 {
 	return GetAgent()->GetName() ;
+}
+
+// Searches for an identifier object that matches this id.
+Identifier*	WorkingMemory::FindIdentifier(char const* pID, bool searchInput, bool searchOutput)
+{
+	// BADBAD: For better speed we could keep a map of identifiers in use and just look this up.
+	Identifier* pMatch = NULL ;
+
+	if (searchInput)
+	{
+		if (m_InputLink)
+			pMatch = m_InputLink->FindIdentifier(pID) ;
+	}
+
+	if (searchOutput && !pMatch)
+	{
+		if (m_OutputLink)
+			pMatch = m_OutputLink->FindIdentifier(pID) ;
+	}
+
+	return pMatch ;
+}
+
+// Create a new WME of the appropriate type based on this information.
+WMElement* WorkingMemory::CreateWME(Identifier* pParent, char const* pAttribute, char const* pValue, char const* pType, long timeTag)
+{
+	// Value is an identifier
+	if (strcmp(pType, sml_Names::kTypeID) == 0)
+		return new Identifier(GetAgent(), pParent, pAttribute, pValue, timeTag) ;
+
+	// Value is a string
+	if (strcmp(pType, sml_Names::kTypeString) == 0)
+		return new StringElement(GetAgent(), pParent, pAttribute, pValue, timeTag) ;
+
+	// Value is an int
+	if (strcmp(pType, sml_Names::kTypeInt) == 0)
+	{
+		int value = atoi(pValue) ;
+		return new IntElement(GetAgent(), pParent, pAttribute, value, timeTag) ;
+	}
+
+	// Value is a float
+	if (strcmp(pType, sml_Names::kTypeDouble) == 0)
+	{
+		double value = atof(pValue) ;
+		return new FloatElement(GetAgent(), pParent, pAttribute, value, timeTag) ;
+	}
+
+	return NULL ;
+}
+
+/*************************************************************
+* @brief This function is called when output is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The output command (list of wmes added/removed from output link)
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+#ifdef _DEBUG
+	char * pMsg = pIncoming->GetCommandTag()->GenerateXMLString(true) ;
+	ElementXML::DeleteString(pMsg) ;
+#endif
+
+	// Get the command tag which contains the list of wmes
+	ElementXML const* pCommand = pIncoming->GetCommandTag() ;
+
+	int nChildren = pCommand->GetNumberChildren() ;
+
+	ElementXML wmeXML(NULL) ;
+	ElementXML* pWmeXML = &wmeXML ;
+
+	bool ok = true ;
+
+	for (int i = 0 ; i < nChildren ; i++)
+	{
+		pCommand->GetChild(&wmeXML, i) ;
+
+		// Ignore tags that aren't wmes.
+		if (!pWmeXML->IsTag(sml_Names::kTagWME))
+			continue ;
+
+		// Find out if this is an add or a remove
+		char const* pAction = pWmeXML->GetAttribute(sml_Names::kWME_Action) ;
+
+		if (!pAction)
+			continue ;
+
+		bool add = IsStringEqual(pAction, sml_Names::kValueAdd) ;
+		bool remove = IsStringEqual(pAction, sml_Names::kValueRemove) ;
+
+		if (add)
+		{
+			// We're adding structure to the output link
+			char const* pID			= pWmeXML->GetAttribute(sml_Names::kWME_Id) ;	// These IDs will be kernel side ids (e.g. "I3" not "i3")
+			char const* pAttribute  = pWmeXML->GetAttribute(sml_Names::kWME_Attribute) ;
+			char const* pValue		= pWmeXML->GetAttribute(sml_Names::kWME_Value) ;
+			char const* pType		= pWmeXML->GetAttribute(sml_Names::kWME_ValueType) ;	// Can be NULL (=> string)
+			char const* pTimeTag	= pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will be kernel side time tags (e.g. +5 not -7)
+
+			// Set the default value
+			if (!pType)
+				pType = sml_Names::kTypeString ;
+
+			// Check we got everything we need
+			if (!pID || !pAttribute || !pValue || !pTimeTag)
+				continue ;
+
+			long timeTag = atoi(pTimeTag) ;
+
+			// Find the parent wme that we're adding this new wme to
+			Identifier* pParent = FindIdentifier(pID, false, true) ;
+
+			if (pParent)
+			{
+				// Create a client side wme object to match the output wme and add it to
+				// our tree of objects.
+				WMElement* pAddWme = CreateWME(pParent, pAttribute, pValue, pType, timeTag) ;
+				if (pAddWme) pParent->AddChild(pAddWme) ;
+			}
+			else
+			{
+				// We should only fail to find the parent when we're adding the output link itself.
+				if (strcmpi(pAttribute, sml_Names::kOutputLinkName) == 0)
+				{
+					m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
+				}
+			}
+		}
+		else if (remove)
+		{
+			// We're removing structure from the output link
+			char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will usually be kernel side time tags (e.g. +5 not -7)
+
+			long timeTag = atoi(pTimeTag) ;
+
+			// If we have no output link we can't delete things from it.
+			if (!m_OutputLink)
+				continue ;
+
+			// Find the WME which matches this tag.
+			// This may fail as we may have removed the parent of this WME already in the series of remove commands.
+			WMElement* pWME = m_OutputLink->FindTimeTag(timeTag) ;
+
+			// Delete the WME
+			if (pWME && pWME->GetParent())
+			{
+				pWME->GetParent()->RemoveChild(pWME) ;
+				delete pWME ;
+			}
+		}
+	}
+
+	// Returns false if any of the adds/removes fails
+	return ok ;
 }
 
 /*************************************************************
@@ -65,11 +223,23 @@ Identifier* WorkingMemory::GetInputLink()
 
 		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInputLink, GetAgentName()))
 		{
-			m_InputLink = new Identifier(GetAgent(), response.GetResultString()) ;
+			m_InputLink = new Identifier(GetAgent(), response.GetResultString(), GenerateTimeTag()) ;
 		}
 	}
 
 	return m_InputLink ;
+}
+
+/*************************************************************
+* @brief Returns the id object for the output link.
+*		 The agent retains ownership of this object.
+*
+* The value will be NULL until the first output phase has executed
+* in the Soar kernel and we've received the information from the kernel.
+*************************************************************/
+Identifier* WorkingMemory::GetOutputLink()
+{
+	return m_OutputLink ;
 }
 
 /*************************************************************
@@ -84,7 +254,7 @@ Identifier* WorkingMemory::GetInputLink()
 *************************************************************/
 StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
 {
-	StringElement* pWME = new StringElement(GetAgent(), parent, pAttribute, pValue) ;
+	StringElement* pWME = new StringElement(GetAgent(), parent, pAttribute, pValue, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -101,7 +271,7 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 *************************************************************/
 IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
 {
-	IntElement* pWME = new IntElement(GetAgent(), parent, pAttribute, value) ;
+	IntElement* pWME = new IntElement(GetAgent(), parent, pAttribute, value, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -118,7 +288,7 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
 *************************************************************/
 FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAttribute, double value)
 {
-	FloatElement* pWME = new FloatElement(GetAgent(), parent, pAttribute, value) ;
+	FloatElement* pWME = new FloatElement(GetAgent(), parent, pAttribute, value, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -250,7 +420,7 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 	std::string id ;
 	GenerateNewID(pAttribute, &id) ;
 
-	Identifier* pWME = new Identifier(GetAgent(), parent, pAttribute, id.c_str()) ;
+	Identifier* pWME = new Identifier(GetAgent(), parent, pAttribute, id.c_str(), GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;

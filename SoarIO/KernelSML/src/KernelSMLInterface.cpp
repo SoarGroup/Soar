@@ -32,29 +32,6 @@ static ElementXML* ReceivedCall(Connection* pConnection, ElementXML* pIncoming, 
 	KernelSML* pKernel = (KernelSML*)pConnection->GetUserData() ;
 
 	return pKernel->ProcessIncomingSML(pConnection, pIncoming) ;
-
-	/* Some test code
-	// Switch from a static callback into one local to the sending object
-	ElementXML* pXML = new ElementXML() ;
-
-	pXML->SetTagName("resultKernel") ;
-	pXML->AddAttribute("ack", "1") ;
-	pXML->AddAttribute("doctype", "response") ;
-
-	// Send back a test notification
-	ElementXML* pNotify = new ElementXML() ;
-	pNotify->SetTagName("notifyFromKernel") ;
-	pNotify->AddAttribute("doctype", "notify") ;
-	
-	pConnection->SendMessage(pNotify) ;
-
-	// Must release messages we send but don't release
-	// messages we return as responses (or we'll pass back garbage).
-	// Need to make this memory model clear in the docs.
-	delete pNotify ;
-
-	return pXML ;
-	*/
 }
 
 static EmbeddedConnection* GetConnectionFromHandle(Connection_Receiver_Handle hConnection)
@@ -72,6 +49,7 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	// that's how things are set up.
 	pConnection->SetUserData(KernelSML::GetKernelSML()) ;
 
+	// Register for "calls" from the client.
 	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
 
 	// The original sender is a receiver to us so we need to reverse the type.

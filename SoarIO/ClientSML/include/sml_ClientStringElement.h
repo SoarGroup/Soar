@@ -31,16 +31,16 @@ protected:
 
 public:
 	// Returns the type of the value stored here (e.g. "string" or "int" etc.)
-	virtual char const* GetValueType()	;
+	virtual char const* GetValueType() const	;
 
 	// Returns a string form of the value stored here.
-	virtual char const* GetValueAsString() { return m_Value.c_str() ; }
+	virtual char const* GetValueAsString() const { return m_Value.c_str() ; }
 
 	// Returns the current value
-	char const* GetValue() { return m_Value.c_str() ; }
+	char const* GetValue() const { return m_Value.c_str() ; }
 
 protected:
-	StringElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pValue) ;
+	StringElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pValue, long timeTag) ;
 	virtual ~StringElement(void);
 
 	void SetValue(char const* pValue)

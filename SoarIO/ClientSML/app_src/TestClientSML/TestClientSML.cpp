@@ -26,6 +26,27 @@ using std::cin;
 using std::endl;
 using std::string;
 
+void printWMEs(WMElement const* pRoot)
+{
+	if (pRoot->GetParent() == NULL)
+		cout << "Top Identifier " << pRoot->GetValueAsString() << endl ;
+	else
+	{
+		cout << "(" << pRoot->GetParent()->GetValueAsString() << " ^" << pRoot->GetAttribute() << " " << pRoot->GetValueAsString() << ")" << endl ;
+	}
+
+	if (pRoot->IsIdentifier())
+	{
+		Identifier* pID = (Identifier*)pRoot ;
+		for (Identifier::ChildrenConstIter iter = pID->GetChildrenIteratorBegin() ; iter != pID->GetChildrenIteratorEnd() ; iter++)
+		{
+			WMElement const* pWME = *iter ;
+
+			printWMEs(pWME) ;
+		}
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	// When we have a memory leak, set this variable to
@@ -48,13 +69,14 @@ int main(int argc, char* argv[])
 		if (!pAgent)
 			cout << "Error creating agent" << endl ;
 
-		pAgent->LoadProductions("test.soar") ;
+		pAgent->LoadProductions("tictactoe.soar") ;
 
 		Identifier* pInputLink = pAgent->GetInputLink() ;
 
 		if (!pInputLink)
 			cout << "Error getting input link" << endl ;
 
+		// Some simple tests
 		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
 
 		Identifier* pID = pAgent->CreateIdWME(pInputLink, "plane") ;
@@ -71,6 +93,48 @@ int main(int argc, char* argv[])
 		pAgent->Update(pWME2, 300) ;
 
 		ok = pAgent->Commit() ;
+
+		// Nothing should match here
+		pAgent->Run(2) ;
+
+		// Then add some tic tac toe stuff which should trigger output
+		Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;
+		StringElement* pEmpty = pAgent->CreateStringWME(pSquare, "content", "EMPTY") ;
+		IntElement* pRow = pAgent->CreateIntWME(pSquare, "row", 1) ;
+		IntElement* pCol = pAgent->CreateIntWME(pSquare, "col", 2) ;
+
+		ok = pAgent->Commit() ;
+
+		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
+		pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
+
+		// If we have output, dump it out.
+		if (pAgent->GetOutputLink())
+		{
+			printWMEs(pAgent->GetOutputLink()) ;
+
+			// Now update the output link with "status complete"
+			Identifier* pMove = (Identifier*)pAgent->GetOutputLink()->GetAttribute("move", 0) ;
+
+			if (pMove)
+				StringElement* pCompleted = pAgent->CreateStringWME(pMove, "status", "complete") ;
+
+			pAgent->Commit() ;
+		}
+		else
+		{
+			cout << " ERROR: No output generated." << endl ;
+		}
+
+		// The move command should be deleted in response to the
+		// the status complete getting added
+		pAgent->Run(2) ;
+
+		// Dump out the output link again.
+		if (pAgent->GetOutputLink())
+		{
+			printWMEs(pAgent->GetOutputLink()) ;
+		}
 
 		// Cycle forever until debugger quits (if we're using the tcl debugger)
 		while (pKernel->CheckForIncomingCommands())

@@ -33,12 +33,15 @@ class StringElement ;
 class IntElement ;
 class FloatElement ;
 class Identifier ;
+class ElementXML ;
+class AnalyzeXML ;
 
 class WorkingMemory
 {
 protected:
 	Agent*		m_Agent ;
 	Identifier*	m_InputLink ;
+	Identifier* m_OutputLink ;
 	DeltaList	m_DeltaList ;
 
 public:
@@ -51,8 +54,15 @@ public:
 	char const*		GetAgentName() const ;
 	Connection*		GetConnection()	const ;
 
+	// Searches for an identifier object that matches this id.
+	Identifier*		FindIdentifier(char const* pID, bool searchInput, bool searchOutput) ;
+
+	// Create a new WME of the appropriate type based on this information.
+	WMElement*		CreateWME(Identifier* pParent, char const* pAttribute, char const* pValue, char const* pType, long timeTag) ;
+
 	// These functions are documented in the agent and handled here.
 	Identifier*		GetInputLink() ;
+	Identifier*		GetOutputLink() ;
 	StringElement*	CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
 	IntElement*		CreateIntWME(Identifier* parent, char const* pAttribute, int value) ;
 	FloatElement*	CreateFloatWME(Identifier* parent, char const* pAttribute, double value) ;
@@ -63,6 +73,8 @@ public:
 	void			UpdateFloat(FloatElement* pWME, double value) ;
 
 	bool			DestroyWME(WMElement* pWME) ;
+
+	bool			ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 	long			GenerateTimeTag() ;
 	void			GenerateNewID(char const* pAttribute, std::string* pID) ;

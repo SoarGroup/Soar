@@ -13,10 +13,9 @@
 
 using namespace sml ;
 
-WMElement::WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName)
+WMElement::WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, long timeTag)
 {
-	// Generate a time tag for this wme
-	m_TimeTag = pAgent->GetWM()->GenerateTimeTag() ;
+	m_TimeTag = timeTag ;
 
 	// Record the agent that owns this wme.
 	m_Agent			= pAgent ;

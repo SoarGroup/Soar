@@ -18,7 +18,7 @@
 
 using namespace sml ;
 
-FloatElement::FloatElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, double value) : WMElement(pAgent, pID, pAttributeName)
+FloatElement::FloatElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, double value, long timeTag) : WMElement(pAgent, pID, pAttributeName, timeTag)
 {
 	m_Value = value ;
 }
@@ -28,20 +28,21 @@ FloatElement::~FloatElement(void)
 }
 
 // Returns the type of the value stored here (e.g. "string" or "int" etc.)
-char const* FloatElement::GetValueType()
+char const* FloatElement::GetValueType() const
 {
 	return sml_Names::kTypeDouble ;
 }
 
 // Returns a string form of the value stored here.
-char const* FloatElement::GetValueAsString()
+char const* FloatElement::GetValueAsString() const
 {
 	// Convert double to a string
 	std::ostringstream ostr ;
 	ostr << m_Value ;
 
 	// We keep ownership of the result here.
-	m_StringForm = ostr.str () ;
+	FloatElement* pThis = (FloatElement*)this ;
+	pThis->m_StringForm = ostr.str () ;
 
 	return m_StringForm.c_str() ;
 }

@@ -34,6 +34,56 @@ Kernel::~Kernel(void)
 }
 
 /*************************************************************
+* @brief This function is called when we receive a "call" SML
+*		 message from the kernel.
+*
+* This is a static method and it's only function is to call
+* a normal member function.
+*************************************************************/
+ElementXML* Kernel::ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData)
+{
+	Kernel* pKernel = (Kernel*)pUserData ;
+
+	return pKernel->ProcessIncomingSML(pConnection, pIncoming) ;
+}
+
+/*************************************************************
+* @brief This function is called (indirectly) when we receive a "call" SML
+*		 message from the kernel.
+*************************************************************/
+ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pIncomingMsg)
+{
+	// Analyze the message and find important tags
+	AnalyzeXML msg ;
+	msg.Analyze(pIncomingMsg) ;
+
+	// Create a reply
+	ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;
+
+	// Get the "name" attribute from the <command> tag
+	char const* pCommandName = msg.GetCommandName() ;
+
+	// Look up the agent name parameter (most commands have this)
+	char const* pAgentName = msg.GetArgValue(sml_Names::kParamAgent) ;
+
+	// Find the client agent structure that matches this agent
+	if (pAgentName && pCommandName)
+	{
+		Agent* pAgent = GetAgent(pAgentName) ;
+
+		// If this is a command for a known agent and it's an "output" command
+		// then we're interested in it.
+		if (pAgent && strcmp(sml_Names::kCommand_Output, pCommandName) == 0)
+		{
+			// Pass the incoming message over to the agent
+			pAgent->ReceivedOutput(&msg, pResponse) ;
+		}
+	}
+
+	return pResponse ;
+}
+
+/*************************************************************
 * @brief Creates a connection to the Soar kernel that is embedded
 *        within the same process as the caller.
 *
@@ -51,6 +101,10 @@ Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName)
 		return NULL ;
 
 	Kernel* pKernel = new Kernel(pConnection) ;
+
+	// Register for "calls" from the client.
+	pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
+
 	return pKernel ;
 }
 
@@ -74,6 +128,8 @@ Kernel* Kernel::CreateRemoteConnection(char const* pIPaddress, int port)
 
 	if (!pConnection)
 		return NULL ;
+
+// BUGBUG: Should initialize our list of agents to match any that already exist in the kernel.
 
 	Kernel* pKernel = new Kernel(pConnection) ;
 	return pKernel ;
@@ -120,7 +176,7 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 * @param pAgentName Agent name to apply the command line to.
 * @returns The string form of output from the command.
 *************************************************************/
-const char* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAgentName)
+char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAgentName)
 {
 	AnalyzeXML response;
 	bool wantRawOutput = true ;
