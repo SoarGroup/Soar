@@ -96,8 +96,6 @@ void just_before_exit_soar(void)
         if (((agent *) c->first)->logging_to_file)
             stop_log_file();
     }
-
-    emotion_destructor(); /* RPM emotion */
 }
 
 void exit_soar(void)

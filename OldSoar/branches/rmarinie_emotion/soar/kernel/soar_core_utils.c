@@ -758,6 +758,9 @@ void soar_default_destroy_agent_procedure(psoar_agent delete_agent)
         abort_with_fatal_error(msg);
     }
 
+    /* free the emotion-related stuff */
+    emotion_destructor(); /* RPM emotion */
+
     /* Free agent id */
     soar_agent_ids[((agent *) soar_agent)->id] = TOUCHED;
 
