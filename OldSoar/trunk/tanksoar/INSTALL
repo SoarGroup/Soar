@@ -3,9 +3,9 @@ _________________________
 Installing TankSoar-3.0.6
 -------------------------
 
-TankSoar 3.0.6 is part of the Soar-All package and is installed as a component 
-of that package.  Installation instructions for Soar-All are located in the 
-INSTALL file in the soar-8.5.0 directory of the Soar-All package and on the Soar 
+TankSoar 3.0.6 is part of the Soar-Suite package and is installed as a component 
+of that package.  Installation instructions for Soar-Suite are located in the 
+INSTALL file in the soar-8.5.0 directory of the Soar-Suite package and on the Soar 
 website:
 
 	http://sitemaker.umich.edu/soar/
@@ -17,7 +17,7 @@ Running TankSoar-3.0.6 on Windows:
 Simply double-click the start-tanksoar.bat file.  
 
 This .bat file will run init-tanksoar.tcl using the version of Tcl/Tk 
-distributed with Soar-All 8.5.0.
+distributed with Soar-Suite 8.5.0.
 
 _______________________________
 Running TankSoar-3.0.6 on Unix:
@@ -32,9 +32,6 @@ wish binary on your machine.  For example, if you needed to install ActiveTcl
 when you installed Soar, you would change that first line to: 
 #!/usr/local/ActiveTcl/bin/wish
 
-_________________________________
-Running TankSoar-3.0.6 on Mac OSX
----------------------------------
 
 --
 

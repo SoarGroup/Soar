@@ -1,6 +1,16 @@
 This file contains some troubleshooting information for Soar 8.5.0.
 
-If this file does not resolve your problem, please send email to ???
+If this file does not resolve your problem, please send email to:
+	soar-requests@umich.edu
+	
+	
+1. "Cannot find package Soar" when trying to create an agent.
+
+2. "Tcl84.dll not found" or "Tk84.dll not found"
+
+3. When I double-click on the VisualSoar jar file, it pops up an error box
+that says it can't find the main class and is exiting?  What gives?
+
 
 ________________________________________________________________
 1. "Cannot find package Soar" when trying to create an agent.
@@ -66,3 +76,34 @@ installer for Windows should have done this for you.
 If you installed ActiveTcl, then the installer should have done
 this for you.  If you are manually installing Tcl, then you may
 have to do this step yourself.
+
+__________________________________________________________________________
+3. When I double-click on the VisualSoar jar file, it pops up an error box
+that says it can't find the main class and is exiting?  What gives?
+--------------------------------------------------------------------------
+
+A:  For some reason, certain java installations are configured incorrectly
+to launch java applications in jar files.  We are not exactly sure why this
+happens.  To fix the problem, you'll need to edit your registry.  If you
+don't feel comfortable editing the registry, you could also just create a
+text file whose contents are:
+
+javaw.exe -jar VisualSoar.jar
+
+and save it in the same directory as "start-visualSoar.bat"
+
+Otherwise, open up Regedit and find the following key:
+
+HKEY_CLASSES_ROOT\Applications\javaw.exe\shell\open\command
+
+Its current value will probably be something like this:
+
+"C:\j2sdk1.4.2_01\bin\javaw.exe" "%1"
+
+Add a "-jar" between the 2 quoted items and a "%*" to the end.  In the
+above example, you would change it to:
+
+"C:\j2sdk1.4.2_01\bin\javaw.exe" -jar "%1\" %*
+
+That should allow you to launch VisualSoar by double-clicking the jar
+file.
