@@ -10,9 +10,9 @@ information, please see the website:
 ____________________
 File/Directory list:
 --------------------
-README           - This file.
-INSTALL          - Installation and execution notes.
-LICENSE          - The license that Eaters is distributed under.
+README.txt       - This file.
+INSTALL.txt      - Installation and execution notes.
+LICENSE.txt      - The license that Eaters is distributed under.
 start-eaters.bat - The Windows file used to start Eaters (see INSTALL file).
 init-eaters.tcl  - The Tcl/Tk initialization code for Eaters (see INSTALL file).
 agents/          - Example and tutorial Soar agents.
