@@ -1,10 +1,5 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-
-#ifndef HAVE_MEMSET
-#error "missing required memset function"
-#endif // HAVE_MEMSET
-
 #endif // HAVE_CONFIG_H
 
 #include "cli_CommandLineInterface.h"

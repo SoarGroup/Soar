@@ -7,11 +7,6 @@
 /////////////////////////////////////////////////////////////////
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-
-#ifndef HAVE_GETCWD
-#error "CommandLineInterface::GetCurrentWorkingDirectory requires missing getcwd"
-#endif // HAVE_GETCWD
-
 #endif // HAVE_CONFIG_H
 
 #include "cli_CommandLineInterface.h"
