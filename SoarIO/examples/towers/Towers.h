@@ -20,13 +20,10 @@ using std::map;
 using std::less;
 using std::for_each;
 
-
 //Because of how the Towers of Hanoi productions are written, there will exactly 11 disks
 const int maxNumDisks = 11;
-const int middleTowerNumber = 1;// towers are 0,1,2
 
 #define USE_GSKI_DIRECT_NOT_SML
-
 
 #ifdef USE_GSKI_DIRECT_NOT_SML
 
@@ -44,7 +41,6 @@ const int middleTowerNumber = 1;// towers are 0,1,2
 
 	#include "sml_Client.h"
 	using namespace sml;
-
 #endif
 
 
@@ -59,60 +55,71 @@ public:
 		//============================
 		// Initialize "disk" wmes
 		//============================
-		IWorkingMemory* pWMemory = pILink->GetInputLinkMemory();
+		m_pWMemory = pILink->GetInputLinkMemory();
 		IWMObject* pILinkRootObject;
 		pILink->GetRootObject(&pILinkRootObject);
 		//Add the disk identifier to the input link
-		m_pDiskIdentifier = pWMemory->AddWmeNewObject(pILinkRootObject, "disk");
+		m_pDiskIdentifier = m_pWMemory->AddWmeNewObject(pILinkRootObject, "disk");
 
 		const gSKI::ISymbol* parentSymbol = m_pDiskIdentifier->GetValue();
 		IWMObject* parentObject = parentSymbol->GetObject();
 		//attach subordinate wmes to disk identifier;
-		m_pName = pWMemory->AddWmeInt(parentObject, "name", m_size);
-		m_pSize = pWMemory->AddWmeInt(parentObject, "size", m_size);
+		m_pName = m_pWMemory->AddWmeInt(parentObject, "name", m_size);
+		m_pSize = m_pWMemory->AddWmeInt(parentObject, "size", m_size);
 
 		//============================
 		// Initialize "holds" wmes
 		//============================
 		//add the holds identifier
-		m_pHoldsIdentifier = pWMemory->AddWmeNewObject(pILinkRootObject, "holds");
+		m_pHoldsIdentifier = m_pWMemory->AddWmeNewObject(pILinkRootObject, "holds");
 		const gSKI::ISymbol* holdsParentSymbol = m_pHoldsIdentifier->GetValue();
 		IWMObject* holdsParentObject = holdsParentSymbol->GetObject();
 		
 		//add holds wmes to parent object
-		m_pPeg = pWMemory->AddWmeObjectLink(holdsParentObject, "on", m_pPegId);
+cout <<"I'm adding 'on' to holds...." << endl;
+		m_pPeg = m_pWMemory->AddWmeObjectLink(holdsParentObject, "on", m_pPegId);
+	//	m_actualPegWME = m_p
 
 		//the holds wme points back to its corresponding disk
-		m_pDiskWme = pWMemory->AddWmeObjectLink(holdsParentObject, "disk", parentObject);
+		m_pDiskWme = m_pWMemory->AddWmeObjectLink(holdsParentObject, "disk", parentObject);
 
 		if(m_pDiskBeneath)
 		{
 			IWMObject* pDiskBeneathIdentifier = m_pDiskBeneath->GetValue()->GetObject();
-			m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(holdsParentObject, "above", pDiskBeneathIdentifier);
+			m_pHoldsDiskBeneath = m_pWMemory->AddWmeObjectLink(holdsParentObject, "above", pDiskBeneathIdentifier);
 		}
 		else
-			m_pHoldsDiskBeneath = pWMemory->AddWmeString(holdsParentObject, "above", "none");
-	
+			m_pHoldsDiskBeneath = m_pWMemory->AddWmeString(holdsParentObject, "above", "none");
+
+		m_holdsNeedsToBeUpdated = false;
+
 	}
 
 
-	void Detach(IWorkingMemory* pWMemory)
+	void Detach()
 	{
 		//Release everything hanging off of "disk" parent wme
 		const gSKI::ISymbol* parentSymbol = m_pDiskIdentifier->GetValue();
 		IWMObject* parentObject = parentSymbol->GetObject();
-		pWMemory->RemoveObject(parentObject);
+		m_pWMemory->RemoveObject(parentObject);
 
 		//Release everything hanging off of "holds" parent wme
 		parentSymbol = m_pHoldsIdentifier->GetValue();
 		parentObject = parentSymbol->GetObject();
-		pWMemory->RemoveObject(parentObject);
+		m_pWMemory->RemoveObject(parentObject);
 	}
 
 	//Replace the "on" and "above" wmes for the corresponding 
 	//holds wme regardless of whether they have changed
 	void Update(IWorkingMemory* pWMemory, IWMObject* object)
 	{
+cout << "Update called...." << endl;
+		if(m_holdsNeedsToBeUpdated == false)
+		{
+cout << "Update returning early because no update is needed..."	<< endl;
+			return;
+		}
+
 		// Get List of objects referencing this object with attribute "on"
 		tIWmeIterator* onItr = object->GetWMEs("on");
 		if(onItr->IsValid())
@@ -122,11 +129,15 @@ public:
 
 			// Replace the wme attribute "on" with the new value
 			const gSKI::ISymbol* pegParentSymbol = m_pPeg->GetValue();
+			assert(pegParentSymbol);
 			IWMObject* pegParentObject = pegParentSymbol->GetObject();
 
-			m_pPeg = pWMemory->ReplaceWmeObjectLink(oldTowerLink, pegParentObject);
+			m_pPeg->Release();
+			//m_pPeg = pWMemory->AddWmeObjectLink(object, "on", pegParentObject);
+			m_pPeg = pWMemory->AddWmeObjectLink(object, "on", m_actualPegWME->GetValue()->GetObject());
+			
+cout << "I'm also adding 'on' to holds....." << endl;
 		}
-
 		// Get List of objects referencing this object with attribute "above"
 		tIWmeIterator* aboveItr = object->GetWMEs("above");
 
@@ -134,12 +145,15 @@ public:
 		{	//Get the old "above" value
 			IWme* oldDiskBeneath = aboveItr->GetVal();
 
-			const gSKI::ISymbol* aboveParentSymbol = m_pHoldsDiskBeneath->GetValue();
-			IWMObject* aboveParentObject = aboveParentSymbol->GetObject();
-
 			if(m_pDiskBeneath)
 			{
-				m_pHoldsDiskBeneath = pWMemory->ReplaceWmeObjectLink(oldDiskBeneath, aboveParentObject);
+				const gSKI::ISymbol* aboveParentSymbol = m_pHoldsDiskBeneath->GetValue();
+				assert(aboveParentSymbol);
+				IWMObject* aboveParentObject = aboveParentSymbol->GetObject();
+
+				//pWMemory->RemoveObject(m_pHoldsDiskBeneath->GetValue()->GetObject());
+				m_pHoldsDiskBeneath->Release();
+				m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", aboveParentObject);
 			}
 			else
 			{
@@ -147,20 +161,27 @@ public:
 			}
 
 		}
+		m_holdsNeedsToBeUpdated = false;
 	}
 
 
 	 IWme* const GetIdentifierWME() const {return m_pDiskIdentifier;}
 
+	 IWme* const GetHoldsIdentifierWME() const {return m_pHoldsIdentifier;}
+
 	 int GetSize() const {return m_size;}
 
-	 void SetDiskBeneath(Disk* diskBeneath)
+	 void SetDiskBeneath(Disk* diskBeneath, IWme* pegWME)
 	 {
 		//TODO //FIXME @TODO release ref to wme of old disk beneath (if it's not zero)  ????
+
 		if(diskBeneath)
 			m_pDiskBeneath = diskBeneath->GetIdentifierWME();
-		//set as none string
+		else
+			m_pDiskBeneath = 0;
 
+		m_actualPegWME = pegWME;
+		m_holdsNeedsToBeUpdated = true;
 	 }
 
 private:
@@ -168,20 +189,26 @@ private:
 	Disk(const Disk&);
 	Disk operator=(const Disk&);
 
-	int m_size;//a convenience for other classes
-	IWme* m_pDiskIdentifier;
-	IWme* m_pName;
-	IWme* m_pSize;
+	bool m_holdsNeedsToBeUpdated;
 
-	IWme* m_pDiskBeneath;
+	IWorkingMemory* m_pWMemory;
+
+	int m_size;//a convenience for other classes
+
+	IWme* m_pDiskIdentifier;
+		IWme* m_pName;
+		IWme* m_pSize;
+
+	IWme* m_pDiskBeneath;	//wme of actual disk beneath
 
 	//"holds" wmes
-	IWMObject* m_pPegId;
+	IWme* m_actualPegWME; //wme of actual peg
+	IWMObject* m_pPegId;			//peg wme that appears on the holds structure on input link
 
 	IWme* m_pHoldsIdentifier;
-	IWme* m_pHoldsDiskBeneath;
-	IWme* m_pPeg;
-	IWme* m_pDiskWme;
+		IWme* m_pHoldsDiskBeneath;//disk wme that appears on the holds structure on the input link
+		IWme* m_pPeg;
+		IWme* m_pDiskWme;
 };
 
 typedef vector<Disk*> diskContainer_t;
@@ -211,20 +238,25 @@ public:
 	}
 
 	//will always add a smaller disk than the top, so new disk must on at end of container
-	void AddDisk(Disk* newDisk)
+	//disks that have just been created already have their disk beneath initialized, don't reset it
+	void AddDisk(Disk* newDisk, bool justCreated)
 	{
 		assert(newDisk);
-		if(!m_disks.empty())
-			newDisk->SetDiskBeneath(m_disks.back());
-		else
-			newDisk->SetDiskBeneath(0);
+		if(!justCreated)
+		{
+			if(!m_disks.empty())
+				newDisk->SetDiskBeneath(m_disks.back(), m_pPegIdentifier);
+			else
+				newDisk->SetDiskBeneath(0, m_pPegIdentifier);
+		}
+
 		m_disks.push_back(newDisk);
 	}
 
 	void RemoveTopDisk()
 	{
 		if(m_disks.size() != 0)
-			m_disks.erase(m_disks.begin());
+			m_disks.erase(--m_disks.end());
 	}
 
 	Disk* GetTopDisk()
@@ -261,7 +293,7 @@ public:
 	}
 
 	void PrintEntireTower()
-	{	
+	{
 		for(vector<Disk*>::iterator fooItr = m_disks.begin(); fooItr != m_disks.end(); ++fooItr)
 			cout << (*fooItr)->GetSize() << endl;
 		cout << endl;
@@ -275,7 +307,7 @@ private:
 	IInputLink* m_pILink;
 
 	IWme* m_pPegIdentifier;
-	IWme* m_pPegName;
+		IWme* m_pPegName;
 };
 
 
@@ -319,12 +351,14 @@ public:
 						towerTopDiskWme = tower->GetTopDisk()->GetIdentifierWME();
 
 					Disk* disk = new Disk(pILink, currentDiskSize, towerIdObject, towerTopDiskWme);
+
+					pILink->AddInputProducer(disk->GetHoldsIdentifierWME()->GetValue()->GetObject(), disk);
 					assert(disk);
-					tower->AddDisk(disk);
+					tower->AddDisk(disk, true);
 				}
 
 				m_towers.push_back(tower);
-				tower->PrintEntireTower();
+				//tower->PrintEntireTower();
 			}
 			//==============
 			//Middle tower
@@ -358,21 +392,25 @@ public:
 
 
 	//remove from the source tower, add to the destination tower
-	void MoveDisk(int sourceTower, int destinationTower)
+	bool MoveDisk(int sourceTower, int destinationTower)
 	{
 		Disk* movingDisk = m_towers[sourceTower]->GetTopDisk();
+		if(!movingDisk)
+			return false;
+
 		assert(movingDisk);
 		m_towers[sourceTower]->RemoveTopDisk();
 
-		m_towers[destinationTower]->AddDisk(movingDisk);
+		m_towers[destinationTower]->AddDisk(movingDisk, false);
+		return true;
 	}
 
 
 	void Print()
-	{ 
+	{
 
 		for(int row = maxNumDisks - 1; row >= 0; --row)
-		{		
+		{
 			for(int towerCounter = 0; towerCounter < static_cast<int>(m_towers.size()); ++towerCounter)
 			{
 				cout << "(";
@@ -399,6 +437,7 @@ private:
 	IInputLink* m_pILink;
 	bool drawGraphics;
 };
+
 
 #endif //TOWERS_HANOI_H
 

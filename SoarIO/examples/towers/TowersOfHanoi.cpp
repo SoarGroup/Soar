@@ -40,7 +40,6 @@
 #endif
 
 
-
 using std::cout; using std::cin; using std::string;
 
 const int defaultNumTowers = 3;
@@ -151,19 +150,23 @@ int main(int argc, char* argv[])
 		hanoi.Print();
 
 int foo = 0;
-	while(!hanoi.AtGoalState() && foo++ < 60)
+while(!hanoi.AtGoalState() && foo++ < 60)
 	{
 		soarAgent.MakeMove();
 		TgD::TgD::Update(false, debugger);
+
+		while(TgD::TgD::Update(false, debugger))
+			TGD_SLEEP(50);
 	}
 
-	hanoi.Print();
+	if(doPrinting)
+		hanoi.Print();
 
 	while(TgD::TgD::Update(false, debugger))
 		TGD_SLEEP(50);
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
-	printf("\n\nPress <non-whitespace char> to exit\n") ;
+	printf("\n\nPress <non-whitespace char> then enter to exit\n") ;
 	string garbage;
 	cin>>garbage;
 	return 0;

@@ -77,17 +77,25 @@ cout << "\tDestination tower is: " << destinationTowerString << endl;
 			sourceTowerNum = 2;
 
 		// move disk in game environment
-		m_World->MoveDisk(sourceTowerNum, destinationTowerNum);
-		wMemory->AddWmeString(moveIdentifier, "status", "complete");
+		if(m_World->MoveDisk(sourceTowerNum, destinationTowerNum) == true)
+			wMemory->AddWmeString(moveIdentifier, "status", "complete");
+		else
+		{
+			wMemory->AddWmeString(moveIdentifier, "status", "error");
+cout << "SENT STATUS ERROR========================================" << endl;
+		}
 	}
 	else
+	{
 		wMemory->AddWmeString(moveIdentifier, "status", "error");
+cout << "SENT STATUS ERROR========================================" << endl;
+	}
 
 	m_World->Print();
 }
 
 void SoarAgent::MakeMove()
-{										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE
+{										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE //
 	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1);
 	cout << "Run result is: " <<  runResult << endl;
 	assert(runResult != gSKI_RUN_ERROR);
