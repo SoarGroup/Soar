@@ -186,7 +186,7 @@ EXPORT bool CommandLineInterface::DoPreferences(sml::Connection* pConnection, sm
 	return ret;
 }
 
-EXPORT bool CommandLineInterface::DoPrint(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, PrintBitset& options, int depth, const std::string* pArg) {
+EXPORT bool CommandLineInterface::DoPrint(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, PrintBitset options, int depth, const std::string* pArg) {
 	bool ret = DoPrint(pAgent, options, depth, pArg);
 	GetLastResultSML(pConnection, pResponse);
 	return ret;

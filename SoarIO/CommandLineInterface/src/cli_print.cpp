@@ -109,7 +109,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoPrint(pAgent, options, depth);
 }
 
-bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, PrintBitset& options, int depth, const std::string* pArg) {
+bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, PrintBitset options, int depth, const std::string* pArg) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

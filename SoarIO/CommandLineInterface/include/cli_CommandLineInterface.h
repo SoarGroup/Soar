@@ -433,7 +433,7 @@ public:
 	* @param pArg The identifier/timetag/pattern/production name to print, 
 	*        or 0 (null) if not applicable
 	*************************************************************/
-	EXPORT bool DoPrint(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, PrintBitset& options, int depth, const std::string* pArg = 0);
+	EXPORT bool DoPrint(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, PrintBitset options, int depth, const std::string* pArg = 0);
 
 	/*************************************************************
 	* @brief production-find command
@@ -752,7 +752,7 @@ protected:
 	bool DoOSupportMode(gSKI::IAgent* pAgent, int mode = -1);
 	bool DoPopD();
 	bool DoPreferences(gSKI::IAgent* pAgent, const ePreferencesDetail detail, const std::string* pId = 0, const std::string* pAttribute = 0);
-	bool DoPrint(gSKI::IAgent* pAgent, PrintBitset& options, int depth, const std::string* pArg = 0);
+	bool DoPrint(gSKI::IAgent* pAgent, PrintBitset options, int depth, const std::string* pArg = 0);
 	bool DoProductionFind(gSKI::IAgent* pAgent, const ProductionFindBitset& options, const std::string& pattern);
 	bool DoPushD(const std::string& directory);
 	bool DoPWatch(gSKI::IAgent* pAgent, bool query = true, const std::string* pProduction = 0, bool setting = false);
