@@ -37,6 +37,7 @@
 ##
 # Main dmgen program
 
+set dmGenVersion "0.9.0"
 
 ##
 # Generate a datamap and bring up the datamap window
@@ -64,11 +65,17 @@ proc GenerateDatamap { { name "" } { prods {} } { compiled 1 } } {
 ###
 ## Everything from here down is for running from the command line.
 proc dmGenUsage {} {
-   puts stderr "Usage: wish/tclsh path/to/dmgen.tcl \[options\]"
+   puts stderr "Usage: tclsh path/to/dmgen.tcl \[options\]"
    puts stderr "   -g : Prints a default config file to stdout."
    puts stderr "   -f configFile : Specify a config file. Defaults to \"dmgenfile\"."
    puts stderr "   -h : Print this message and exit."
    puts stderr "   -C param value : Set configuration parameter, overriding config file."
+   puts stderr "   -v : Print dmgen version."
+}
+
+proc dmGenPrintVersion { } {
+   global dmGenVersion
+   puts "Version $dmGenVersion"
 }
 
 if [info exists dmGenArgs] {
@@ -112,6 +119,9 @@ proc dmGenParseArgs { } {
             set dmGenArgs(GenerateConfig) 1
          } elseif { $opt == "h" } {
             return 0
+         } elseif { $opt == "v" } {
+            dmGenPrintVersion
+            exit 0
          } else {
             puts stderr "Unknown option $opt"
             return 0
