@@ -28,6 +28,64 @@ class Connection ;
 class AnalyzeXML ;
 class ElementXML ;
 
+// We'll store a handler function together with a generic pointer to data of the user's choosing
+// (which is then passed back into the handler when the event occurs).
+// We also include a callback "id" which is a unique way to refer to this callback--used during unregistering.
+struct EventHandlerPlusData
+{
+	void*			m_UserData ;
+	int				m_CallbackID ;
+} ;
+
+struct RunEventHandlerPlusData : public EventHandlerPlusData
+{
+	RunEventHandler m_Handler ;
+
+	RunEventHandlerPlusData(RunEventHandler handler, void* userData, int callbackID)
+	{
+		m_Handler = handler ;
+		m_UserData = userData ;
+		m_CallbackID = callbackID ;
+	}
+} ;
+
+struct ProductionEventHandlerPlusData : public EventHandlerPlusData
+{
+	ProductionEventHandler m_Handler ;
+
+	ProductionEventHandlerPlusData(ProductionEventHandler handler, void* userData, int callbackID)
+	{
+		m_Handler = handler ;
+		m_UserData = userData ;
+		m_CallbackID = callbackID ;
+	}
+} ;
+
+struct AgentEventHandlerPlusData : public EventHandlerPlusData
+{
+	AgentEventHandler m_Handler ;
+
+	AgentEventHandlerPlusData(AgentEventHandler handler, void* userData, int callbackID)
+	{
+		m_Handler = handler ;
+		m_UserData = userData ;
+		m_CallbackID = callbackID ;
+	}
+} ;
+
+struct PrintEventHandlerPlusData : public EventHandlerPlusData
+{
+	PrintEventHandler m_Handler ;
+
+	PrintEventHandlerPlusData(PrintEventHandler handler, void* userData, int callbackID)
+	{
+		m_Handler = handler ;
+		m_UserData = userData ;
+		m_CallbackID = callbackID ;
+	}
+} ;
+
+
 class Agent : public ClientErrors
 {
 	// Don't want users creating and destroying agent objects without
@@ -41,14 +99,7 @@ class Agent : public ClientErrors
 	friend class FloatElement ;
 	friend class Identifier ;
 
-	// We'll store a handler function together with a generic pointer to data of the user's choosing
-	// (which is then passed back into the handler when the event occurs).
-	// std::pair creates a new type that combines these two primitives (that's all it does).
-	typedef std::pair<RunEventHandler, void*>			RunEventHandlerPlusData ;
-	typedef std::pair<ProductionEventHandler, void*>	ProductionEventHandlerPlusData ;
-	typedef std::pair<AgentEventHandler, void*>			AgentEventHandlerPlusData ;
-	typedef std::pair<PrintEventHandler, void*>			PrintEventHandlerPlusData ;
-
+protected:
 	// The mapping from event number to a list of handlers to call when that event fires
 	typedef sml::ListMap<smlEventId, RunEventHandlerPlusData>			RunEventMap ;
 	typedef sml::ListMap<smlEventId, ProductionEventHandlerPlusData>	ProductionEventMap ;
@@ -70,6 +121,9 @@ protected:
 	ProductionEventMap	m_ProductionEventMap ;
 	AgentEventMap		m_AgentEventMap ;
 	PrintEventMap		m_PrintEventMap ;
+
+	// Used to generate unique IDs for callbacks
+	int		m_CallbackIDCounter ;
 
 protected:
 	Agent(Kernel* pKernel, char const* pAgentName);
@@ -255,13 +309,15 @@ public:
 	* smlEVENT_AFTER_INTERRUPT,
 	* smlEVENT_BEFORE_RUNNING,
 	* smlEVENT_AFTER_RUNNING,
+	*
+	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	void	RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData) ;
+	int	RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData) ;
+	void	UnregisterForRunEvent(smlEventId id, int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for a "ProductionEvent".
@@ -276,13 +332,15 @@ public:
 	* smlEVENT_BEFORE_PRODUCTION_REMOVED,
 	* smlEVENT_AFTER_PRODUCTION_FIRED,
 	* smlEVENT_BEFORE_PRODUCTION_RETRACTED,
+	*
+	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	void	RegisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData) ;
+	int	RegisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData) ;
+	void	UnregisterForProductionEvent(smlEventId id, int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for an "AgentEvent".
@@ -297,13 +355,15 @@ public:
 	* smlEVENT_BEFORE_AGENT_DESTROYED,
 	* smlEVENT_BEFORE_AGENT_REINITIALIZED,
 	* smlEVENT_AFTER_AGENT_REINITIALIZED,
+	*
+	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	void	RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData) ;
+	int	RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData) ;
+	void	UnregisterForAgentEvent(smlEventId id, int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for an "PrintEvent".
@@ -315,13 +375,15 @@ public:
 	* Current set is:
 	* // Agent manager
 	* smlEVENT_PRINT
+	*
+	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	void	RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData) ;
+	int	RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData) ;
+	void	UnregisterForPrintEvent(smlEventId id, int callbackID) ;
 
 	/*==============================================================================
 	===

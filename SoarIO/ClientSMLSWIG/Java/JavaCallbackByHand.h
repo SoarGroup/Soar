@@ -118,6 +118,7 @@ public:
 	jobject		m_HandlerObject ;	// The object that contains the method we will call
 	std::string m_HandlerMethod ;	// The name of the method we will call
 	jobject		m_CallbackData ;	// Arbitrary Java object which we'll pass back in the call.
+	int			m_CallbackID ;		// Unique ID for this callback (we use this during unregistering)
 
 public:
 	JavaCallbackData(JNIEnv* pEnv, jobject agentObject, jobject kernelObject, jobject handlerObject, char const* handlerMethod, jobject callbackData)
@@ -128,6 +129,7 @@ public:
 		m_HandlerObject = handlerObject ;
 		m_HandlerMethod = handlerMethod ;
 		m_CallbackData = callbackData ;
+		m_CallbackID   = 0 ;
 	}
 
 	// We need to clean up the global references that we created earlier
@@ -327,7 +329,7 @@ JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEvent(JNIEnv *jenv, 
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
 	
 	// Register our handler.  When this is called we'll call back to the Java method.
-	arg1->RegisterForRunEvent(arg2, &RunEventHandler, pJavaData) ;
+	pJavaData->m_CallbackID = arg1->RegisterForRunEvent(arg2, &RunEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
@@ -345,7 +347,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForRunEvent(arg2, &RunEventHandler, pJavaData) ;
+	arg1->UnregisterForRunEvent(arg2, pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;
@@ -365,7 +367,7 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForAgentEvent(JNIEnv *jenv,
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
 	
 	// Register our handler.  When this is called we'll call back to the Java method.
-	arg1->RegisterForAgentEvent(arg2, &AgentEventHandler, pJavaData) ;
+	pJavaData->m_CallbackID = arg1->RegisterForAgentEvent(arg2, &AgentEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
@@ -383,7 +385,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForAgentEvent(JNIEnv *je
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForAgentEvent(arg2, &AgentEventHandler, pJavaData) ;
+	arg1->UnregisterForAgentEvent(arg2, pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;
@@ -403,7 +405,7 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEvent(JNIEnv *
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
 	
 	// Register our handler.  When this is called we'll call back to the Java method.
-	arg1->RegisterForProductionEvent(arg2, &ProductionEventHandler, pJavaData) ;
+	pJavaData->m_CallbackID = arg1->RegisterForProductionEvent(arg2, &ProductionEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
@@ -421,7 +423,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEn
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForProductionEvent(arg2, &ProductionEventHandler, pJavaData) ;
+	arg1->UnregisterForProductionEvent(arg2, pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;
@@ -441,7 +443,7 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEvent(JNIEnv *jen
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
 	
 	// Register our handler.  When this is called we'll call back to the Java method.
-	arg1->RegisterForSystemEvent(arg2, &SystemEventHandler, pJavaData) ;
+	pJavaData->m_CallbackID = arg1->RegisterForSystemEvent(arg2, &SystemEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
 	return (jint)pJavaData ;
@@ -459,7 +461,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
 
 	// Unregister our handler.
-	arg1->UnregisterForSystemEvent(arg2, &SystemEventHandler, pJavaData) ;
+	arg1->UnregisterForSystemEvent(arg2, pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;

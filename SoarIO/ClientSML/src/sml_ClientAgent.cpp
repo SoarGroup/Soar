@@ -37,6 +37,7 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 	m_Kernel = pKernel ;
 	m_Name	 = pName ;
 	m_WorkingMemory.SetAgent(this) ;
+	m_CallbackIDCounter = 0 ;
 }
 
 Agent::~Agent()
@@ -127,8 +128,8 @@ void Agent::ReceivedRunEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* p
 	{
 		RunEventHandlerPlusData handlerWithData = *iter ;
 
-		RunEventHandler handler = handlerWithData.first ;
-		void* pUserData = handlerWithData.second ;
+		RunEventHandler handler = handlerWithData.m_Handler ;
+		void* pUserData = handlerWithData.m_UserData ;
 
 		// Call the handler
 		handler(id, pUserData, this, phase) ;
@@ -157,8 +158,8 @@ void Agent::ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML*
 	for (AgentEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
 	{
 		AgentEventHandlerPlusData handlerPlus = *iter ;
-		AgentEventHandler handler = handlerPlus.first ;
-		void* pUserData = handlerPlus.second ;
+		AgentEventHandler handler = handlerPlus.m_Handler ;
+		void* pUserData = handlerPlus.m_UserData ;
 
 		// Call the handler
 		handler(id, pUserData, this) ;
@@ -188,11 +189,9 @@ void Agent::ReceivedPrintEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML*
 	for (PrintEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
 	{
 		PrintEventHandlerPlusData handlerPlus = *iter ;
-		PrintEventHandler handler = handlerPlus.first ;
+		PrintEventHandler handler = handlerPlus.m_Handler ;
 
-		// BUGBUG: DJP -- This shouldn't be hard-coded to pIncoming, something is wrong here.
-		void* pUserData = handlerPlus.second ;
-		//void* pUserData = pIncoming ;
+		void* pUserData = handlerPlus.m_UserData ;
 
 		// Call the handler
 		handler(id, pUserData, this, pMessage) ;
@@ -224,8 +223,8 @@ void Agent::ReceivedProductionEvent(smlEventId id, AnalyzeXML* pIncoming, Elemen
 	{
 		ProductionEventHandlerPlusData handlerPlus = *iter ;
 
-		ProductionEventHandler handler = handlerPlus.first ;
-		void* pUserData = handlerPlus.second ;
+		ProductionEventHandler handler = handlerPlus.m_Handler ;
+		void* pUserData = handlerPlus.m_UserData ;
 
 		// Call the handler
 		handler(id, pUserData, this, pProductionName, pInstance) ;
@@ -310,7 +309,7 @@ void Agent::UnregisterForEvent(smlEventId id)
 * smlEVENT_BEFORE_RUNNING,
 * smlEVENT_AFTER_RUNNING,
 *************************************************************/
-void Agent::RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData)
+int Agent::RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -320,18 +319,49 @@ void Agent::RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pU
 	}
 
 	// Record the handler
-	RunEventHandlerPlusData handlerPlus = std::make_pair(handler, pUserData) ;
+	m_CallbackIDCounter++ ;
+
+	// We use a struct rather than a pointer to a struct, so there's no need to new/delete
+	// everything as the objects are added and deleted.
+	RunEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
 	m_RunEventMap.add(id, handlerPlus) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
+}
+
+static int s_CallbackID = 0 ;
+
+// These simple tests are used to identify which handler were are interested in within
+// the maps at a given time.
+static bool TestRunCallback(RunEventHandlerPlusData handler)
+{
+	return (handler.m_CallbackID == s_CallbackID) ;
+}
+
+static bool TestProductionCallback(ProductionEventHandlerPlusData handler)
+{
+	return (handler.m_CallbackID == s_CallbackID) ;
+}
+
+static bool TestAgentCallback(AgentEventHandlerPlusData handler)
+{
+	return (handler.m_CallbackID == s_CallbackID) ;
+}
+
+static bool TestPrintCallback(PrintEventHandlerPlusData handler)
+{
+	return (handler.m_CallbackID == s_CallbackID) ;
 }
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData)
+void Agent::UnregisterForRunEvent(smlEventId id, int callbackID)
 {
 	// Remove the handler from our map
-	RunEventHandlerPlusData handlerPlus = std::make_pair(handler, pUserData) ;
-	m_RunEventMap.remove(id, handlerPlus) ;
+	s_CallbackID = callbackID ;
+	m_RunEventMap.removeAllByTest(&TestRunCallback) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_RunEventMap.getListSize(id) == 0)
@@ -351,7 +381,7 @@ void Agent::UnregisterForRunEvent(smlEventId id, RunEventHandler handler, void* 
 * smlEVENT_AFTER_PRODUCTION_FIRED,
 * smlEVENT_BEFORE_PRODUCTION_RETRACTED,
 *************************************************************/
-void Agent::RegisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData)
+int Agent::RegisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -361,16 +391,22 @@ void Agent::RegisterForProductionEvent(smlEventId id, ProductionEventHandler han
 	}
 
 	// Record the handler
-	m_ProductionEventMap.add(id, std::make_pair(handler, pUserData)) ;
+	m_CallbackIDCounter++ ;
+	ProductionEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	m_ProductionEventMap.add(id, handlerPlus) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
 }
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData)
+void Agent::UnregisterForProductionEvent(smlEventId id, int callbackID)
 {
 	// Remove the handler from our map
-	m_ProductionEventMap.remove(id, std::make_pair(handler, pUserData)) ;
+	s_CallbackID = callbackID ;
+	m_ProductionEventMap.removeAllByTest(&TestProductionCallback) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_ProductionEventMap.getListSize(id) == 0)
@@ -390,7 +426,7 @@ void Agent::UnregisterForProductionEvent(smlEventId id, ProductionEventHandler h
 * smlEVENT_BEFORE_AGENT_REINITIALIZED,
 * smlEVENT_AFTER_AGENT_REINITIALIZED,
 *************************************************************/
-void Agent::RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData)
+int Agent::RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -400,16 +436,22 @@ void Agent::RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void
 	}
 
 	// Record the handler
-	m_AgentEventMap.add(id, std::make_pair(handler, pUserData)) ;
+	m_CallbackIDCounter++ ;
+	AgentEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	m_AgentEventMap.add(id, handlerPlus) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
 }
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData)
+void Agent::UnregisterForAgentEvent(smlEventId id, int callbackID)
 {
 	// Remove the handler from our map
-	m_AgentEventMap.remove(id, std::make_pair(handler, pUserData)) ;
+	s_CallbackID = callbackID ;
+	m_AgentEventMap.removeAllByTest(&TestAgentCallback) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_AgentEventMap.getListSize(id) == 0)
@@ -426,7 +468,7 @@ void Agent::UnregisterForAgentEvent(smlEventId id, AgentEventHandler handler, vo
 * // Agent manager
 * smlEVENT_PRINT
 *************************************************************/
-void Agent::RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData)
+int Agent::RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -436,16 +478,23 @@ void Agent::RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void
 	}
 
 	// Record the handler
-	m_PrintEventMap.add(id, std::make_pair(handler, pUserData)) ;
+	m_CallbackIDCounter++ ;
+
+	PrintEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	m_PrintEventMap.add(id, handlerPlus) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
 }
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData)
+void Agent::UnregisterForPrintEvent(smlEventId id, int callbackID)
 {
 	// Remove the handler from our map
-	m_PrintEventMap.remove(id, std::make_pair(handler, pUserData)) ;
+	s_CallbackID = callbackID ;
+	m_PrintEventMap.removeAllByTest(&TestPrintCallback) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_PrintEventMap.getListSize(id) == 0)

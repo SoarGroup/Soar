@@ -727,9 +727,9 @@ int main(int argc, char* argv[])
 #endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
-	printf("\n\nPress a non-whitespace character and then <return> to exit\n") ;
-	string line;
-	std::cin >> line;
+	printf("\n\nPress <return> to exit\n") ;
+	char line[100] ;
+	char* str = gets(line) ;
 
 	return 0;
 }

@@ -36,6 +36,20 @@ class Connection ;
 class AnalyzeXML ;
 class ElementXML ;
 
+struct SystemEventHandlerPlusData
+{
+	SystemEventHandler  m_Handler ;
+	void*				m_UserData ;
+	int					m_CallbackID ;
+
+	SystemEventHandlerPlusData(SystemEventHandler handler, void* userData, int callbackID)
+	{
+		m_Handler = handler ;
+		m_UserData = userData ;
+		m_CallbackID = callbackID ;
+	}
+} ;
+
 class Kernel : public ClientErrors
 {
 	// Allow the agent to call to get the connection from the kernel.
@@ -48,11 +62,7 @@ public:
 protected:
 	long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
 	long		m_IdCounter ;		// Used to generate unique id names
-
-	// We'll store a handler function together with a generic pointer to data of the user's choosing
-	// (which is then passed back into the handler when the event occurs).
-	// std::pair creates a new type that combines these two primitives (that's all it does).
-	typedef std::pair<SystemEventHandler, void*>		SystemEventHandlerPlusData ;
+	int			m_CallbackIDCounter ;	// Used to generate unique callback IDs
 
 	// The mapping from event number to a list of handlers to call when that event fires
 	typedef sml::ListMap<smlEventId, SystemEventHandlerPlusData>		SystemEventMap ;
@@ -242,13 +252,15 @@ public:
 	* smlEVENT_AFTER_RHS_FUNCTION_REMOVED,
 	* smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
 	* smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
+	*
+	* @returns Unique ID for this callback.  Required when unregistering this callback.
 	*************************************************************/
-	void	RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData) ;
+	int	RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData) ;
+	void	UnregisterForSystemEvent(smlEventId id, int callbackID) ;
 
 protected:
 	/*************************************************************

@@ -40,6 +40,10 @@ typedef std::map<KeyType, ValueList*>		KeyMap ;
 typedef typename KeyMap::iterator			KeyMapIter ;
 typedef typename KeyMap::const_iterator		KeyMapConstIter ;
 
+// Define "ValueTest" as a method taking a value and returning true/false
+// We use this during deletes
+typedef bool (*ValueTest)(ValueType value) ;
+
 protected:
 	KeyMap	m_Map ;
 
@@ -86,6 +90,34 @@ public:
 
 		if (pList)
 			pList->remove(value) ;
+	}
+
+	void removeByTest(KeyType key, ValueTest test)
+	{
+		ValueList* pList = getList(key) ;
+
+		if (pList)
+		{
+			// Walk the list, removing items based on if they match the test
+			for (ValueListIter iter = pList->begin() ; iter != pList->end() ;)
+			{
+				ValueType value = *iter ;
+
+				if (test(value))
+					pList->erase(iter++) ;
+				else
+					iter++ ;
+			}
+		}
+	}
+
+	// Same as above "removeByTest" but applied to all keys
+	void removeAllByTest(ValueTest test)
+	{
+		for (KeyMapIter mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)
+		{
+			removeByTest(mapIter->first, test) ;
+		}
 	}
 
 	// Remove all values for a specific key

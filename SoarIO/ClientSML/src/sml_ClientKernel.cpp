@@ -34,6 +34,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_IdCounter      = 0 ;
 	m_SocketLibrary  = NULL ;
 	m_LastError		 = Error::kNoError ;
+	m_CallbackIDCounter = 0 ;
 
 #ifdef LINUX_STATIC_LINK
 	// On Linux the linker only makes a single pass through the libraries
@@ -192,8 +193,8 @@ void Kernel::ReceivedSystemEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXM
 	{
 		SystemEventHandlerPlusData handlerWithData = *iter ;
 
-		SystemEventHandler handler = handlerWithData.first ;
-		void* pUserData = handlerWithData.second ;
+		SystemEventHandler handler = handlerWithData.m_Handler ;
+		void* pUserData = handlerWithData.m_UserData ;
 
 		// Call the handler
 		handler(id, pUserData, this) ;
@@ -549,7 +550,7 @@ void Kernel::Sleep(long milliseconds)
 * smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
 * smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
 *************************************************************/
-void Kernel::RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData)
+int Kernel::RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -565,18 +566,34 @@ void Kernel::RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, v
 	}
 
 	// Record the handler
-	SystemEventHandlerPlusData handlerPlus = std::make_pair(handler, pUserData) ;
+	// We use a struct rather than a pointer to a struct, so there's no need to new/delete
+	// everything as the objects are added and deleted.
+	m_CallbackIDCounter++ ;
+
+	SystemEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
 	m_SystemEventMap.add(id, handlerPlus) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
+}
+
+static int s_CallbackID = 0 ;
+
+// These simple tests are used to identify which handler were are interested in within
+// the maps at a given time.
+static bool TestSystemCallback(SystemEventHandlerPlusData handler)
+{
+	return (handler.m_CallbackID == s_CallbackID) ;
 }
 
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Kernel::UnregisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData)
+void Kernel::UnregisterForSystemEvent(smlEventId id, int callbackID)
 {
 	// Remove the handler from our map
-	SystemEventHandlerPlusData handlerPlus = std::make_pair(handler, pUserData) ;
-	m_SystemEventMap.remove(id, handlerPlus) ;
+	s_CallbackID = callbackID ;
+	m_SystemEventMap.removeAllByTest(&TestSystemCallback) ;
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_SystemEventMap.getListSize(id) == 0)

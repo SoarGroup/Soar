@@ -245,10 +245,10 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		// Test that we get a callback after the decision cycle runs
 		int userData = 25 ;
-		pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
+		int callback1 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
 
 		// Register another handler for the same event, to make sure we can do that.
-		pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &userData) ;
+		int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &userData) ;
 
 		// Nothing should match here
 		trace = pAgent->Run(2) ;
@@ -373,7 +373,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		cout << "Destroy the agent now" << endl ;
 
-		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
+//		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
+		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, callback1) ;
 
 		// Explicitly destroy our agent as a test, before we delete the kernel itself.
 		// (Actually, if this is a remote connection we need to do this or the agent
@@ -453,7 +454,7 @@ int main(int argc, char* argv[])
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 997 ;
+	//_crtBreakAlloc = 822 ;
 
 	SimpleTimer timer ;
 

@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	cout << "Use the meta-commands 'raw' and 'structured' to switch output style" << endl;
 
 	// Register for print callbacks
-	pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
+	int callbackID = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 
 	string cmdline;
 	string output ;
@@ -212,7 +212,7 @@ int main(int argc, char** argv)
 			break;
 		}
 	}
-	pAgent->UnregisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
+	pAgent->UnregisterForPrintEvent(sml::smlEVENT_PRINT, callbackID);
 	delete pKernel ;
 	return 0;
 }
