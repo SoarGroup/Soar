@@ -77,7 +77,7 @@ source initWindows.tcl
 source windowGlobal.tcl
 source windowAgentInfo.tcl
 source windowManualControl.tcl
-#source windowConstants.tcl
+source windowConstants.tcl
 
 
 if {[file exists "SIU_Interface.tcl"]} {
