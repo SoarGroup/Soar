@@ -84,6 +84,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLILearn]				= &cli::CommandLineInterface::ParseLearn;
 	m_CommandMap[Constants::kCLILog]				= &cli::CommandLineInterface::ParseLog;
 	m_CommandMap[Constants::kCLILS]					= &cli::CommandLineInterface::ParseLS;
+	m_CommandMap[Constants::kCLIMatches]			= &cli::CommandLineInterface::ParseMatches;
 	m_CommandMap[Constants::kCLIMultiAttributes]	= &cli::CommandLineInterface::ParseMultiAttributes;
 	m_CommandMap[Constants::kCLIPopD]				= &cli::CommandLineInterface::ParsePopD;
 	m_CommandMap[Constants::kCLIPrint]				= &cli::CommandLineInterface::ParsePrint;

@@ -31,6 +31,7 @@ char const* Constants::kCLIInitSoar			= "init-soar";
 char const* Constants::kCLILearn			= "learn";
 char const* Constants::kCLILog				= "log";
 char const* Constants::kCLILS				= "ls";
+char const* Constants::kCLIMatches			= "matches";
 char const* Constants::kCLIMultiAttributes	= "multi-attributes";
 char const* Constants::kCLIPopD				= "popd";
 char const* Constants::kCLIPrint			= "print";

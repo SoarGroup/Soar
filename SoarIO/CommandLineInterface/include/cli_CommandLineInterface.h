@@ -85,7 +85,6 @@ typedef ElementXMLList::iterator ElementXMLListIter;
 		OPTION_LOG_QUERY,
 	};
 
-
 class CommandLineInterface
 {
 public:
@@ -295,7 +294,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoMatches();
+	bool DoMatches(gSKI::IAgent* pAgent, unsigned int matches, int wmeDetail, const std::string& production);
 
 	/*************************************************************
 	* @brief 

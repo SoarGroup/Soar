@@ -17,6 +17,11 @@ namespace cli {
 	const unsigned int OPTION_LEARN_LIST       = 0x20;
 	const unsigned int OPTION_LEARN_ONLY       = 0x40;
 
+	const unsigned int OPTION_MATCHES_PRODUCTION			 = 0x0;
+	const unsigned int OPTION_MATCHES_ASSERTIONS			 = 0x1;
+	const unsigned int OPTION_MATCHES_RETRACTIONS			 = 0x2;
+	const unsigned int OPTION_MATCHES_ASSERTIONS_RETRACTIONS = 0x3;
+
 	const unsigned int OPTION_PRINT_ALL					= 0x0001;
 	const unsigned int OPTION_PRINT_CHUNKS				= 0x0002;
 	const unsigned int OPTION_PRINT_DEPTH				= 0x0004;
