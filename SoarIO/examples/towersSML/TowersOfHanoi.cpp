@@ -9,7 +9,8 @@
 //#define GSKI_DIRECT
 //#define SML_THROUGH_GSKI
 //#define SML_SGIO_HYBRID
-#define SGIO_DIRECT
+//#define SGIO_DIRECT
+#define SML_STANDARD
 
 #ifdef SGIO_DIRECT
 
@@ -18,10 +19,10 @@
 #elif defined GSKI_DIRECT
 	#include "gSKITowers.h"
 
-#elif defined SML_SGIO_HYBRID
-	//SML Directives
+#elif defined SML_STANDARD
+	#include "smlTowers.h"
 
-#elif defined SML_THROUGH_GSKI
+#elif defined SML_GSKI_STYLE
 	//SML Directives
 
 #endif

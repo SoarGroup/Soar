@@ -1,4 +1,4 @@
-#include "sgioTowers.h"
+#include "smlTowers.h"
 
 //standard directives
 #include <cassert>
@@ -34,7 +34,7 @@ using sgio::IntElement;
 */
 
 //
-#include "sgioTowersSoarAgent.h"
+#include "smlTowersSoarAgent.h"
 //using sgio_towers::SoarAgent;
 
 
@@ -388,7 +388,10 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers, int inNumDisks) : drawG
 
 	// SML uses different terminology here
 	#ifdef SGIO_API_MODE
-		soar = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
+		// Fastest method, but need to call "GetIncomingCommands" from time to time.
+		soar = Kernel::CreateEmbeddedConnection("KernelSML", true, true) ;
+		// Slightly slower, but polls for incoming remote commands automatically
+//		soar = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
 //		soar = new APISoar();
 
 	#else //SGIO_TSI_MODE
