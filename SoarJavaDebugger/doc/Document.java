@@ -301,6 +301,18 @@ public class Document
 		if (m_Kernel == null)
 			return false ;
 
+		// Make sure we're stopped
+		if (this.kDocInOwnThread)
+		{
+			if (m_DocumentThread.isBusy())
+			{
+				if (this.getFirstFrame() != null)
+					this.getFirstFrame().ShowMessageBox("Soar is currently executing.  Need to stop it first before deleting the kernel.") ;
+
+				return false ;
+			}
+		}
+		
 		m_Kernel.delete() ;
 		
 		m_Kernel = null ;
@@ -380,6 +392,11 @@ public class Document
 	{
 		if (m_Kernel == null)
 			return false ;
+
+		// NOTE: We don't check whether Soar is still running before allowing a remote disconnect
+		// (unlike in the localStop call).  This is because setting an agent running and then disconnecting
+		// should be OK.  We may need to handle some error conditions that occur when we do this
+		// but by and large it should be acceptable and it would be good to make it work.
 		
 		m_Kernel.delete() ;
 		
@@ -488,7 +505,7 @@ public class Document
 	public String sendAgentCommand(Agent agent, String commandLine)
 	{
 		if (agent == null)
-			return null ;
+			return "Error: Agent is missing.  Need to create one before executing commands" ;
 
 		if (this.kDocInOwnThread)
 		{

@@ -51,5 +51,13 @@ public class TraceView extends BaseCommandView
 	
 	public boolean canBePrimeWindow() { return true ; }
 	
+	/********************************************************************************************
+	* 
+	* This "base name" is used to generate a unique name for the window.
+	* For example, returning a base name of "trace" would lead to windows named
+	* "trace1", "trace2" etc.
+	* 
+	********************************************************************************************/
+	public String getModuleBaseName() { return "trace" ; }
 	
 }

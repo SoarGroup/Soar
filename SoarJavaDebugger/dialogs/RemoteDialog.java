@@ -49,6 +49,7 @@ public class RemoteDialog extends BaseDialog
 	private Text		m_IP ;
 	private Text		m_Port ;
 	private RemoteInfo	m_Result ;
+	private MainFrame	m_Frame ;
 	
 	/********************************************************************************************
 	* 
@@ -58,10 +59,11 @@ public class RemoteDialog extends BaseDialog
 	* @param title			The title for the dialog
 	* @return The value the user entered or null if they cancelled the dialog 
 	********************************************************************************************/
-	public static RemoteInfo showDialog(Composite parent, String title)
+	public static RemoteInfo showDialog(MainFrame frame, String title)
 	{
 		// Create the dialog window
-		RemoteDialog dialog = new RemoteDialog(parent, title) ;
+		Composite parent = frame.getWindow() ;
+		RemoteDialog dialog = new RemoteDialog(frame, title) ;
 				
 		dialog.getDialog().setSize(400, 200) ;
 		dialog.centerDialog(parent) ;
@@ -77,11 +79,12 @@ public class RemoteDialog extends BaseDialog
 	* Create the dialog -- the constructor is private because we use a static method to build this.
 	* 
 	********************************************************************************************/
-	private RemoteDialog(Composite parent, String title)
+	private RemoteDialog(MainFrame frame, String title)
 	{
 		// Create a basic dialog with OK and Cancel buttons
-		super(parent, title, true) ;
+		super(frame.getWindow(), title, true) ;
 
+		m_Frame = frame ;
 		int margin = 10 ;
 
 		// Create a container for the text entry portion
@@ -97,10 +100,21 @@ public class RemoteDialog extends BaseDialog
 		ip.setText("IP address:") ;
 		m_IP = new Text(group, 0) ;
 		
+		// Set the initial value to match user's last choice
+		String ipText = m_Frame.getAppStringProperty("RemoteDialog.IP") ;
+		if (ipText != null)
+			m_IP.setText(ipText) ;
+		
 		Label port = new Label(group, SWT.RIGHT) ;
 		port.setText("Port number:") ;
 		m_Port = new Text(group, 0) ;
-		m_Port.setText(Integer.toString(Kernel.GetDefaultPort())) ;
+
+		// Use the user's last choice or the default port if there is no choice
+		String portText = m_Frame.getAppStringProperty("RemoteDialog.Port") ;
+		if (portText != null && portText.length() > 0)
+			m_Port.setText(portText) ;
+		else
+			m_Port.setText(Integer.toString(Kernel.GetDefaultPort())) ;
 
 		// Lay them out
 		GridData data = new GridData(GridData.FILL_HORIZONTAL) ;
@@ -137,6 +151,10 @@ public class RemoteDialog extends BaseDialog
 	********************************************************************************************/
 	protected void endDialog(boolean ok)
 	{
+		// Store the user's choices (even if they cancel)
+		m_Frame.setAppProperty("RemoteDialog.IP", m_IP.getText()) ;
+		m_Frame.setAppProperty("RemoteDialog.Port", m_Port.getText()) ;
+		
 		// If the user cancelled or no agents are selected we're done
 		if (!ok)
 		{

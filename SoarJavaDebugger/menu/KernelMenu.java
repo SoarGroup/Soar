@@ -56,7 +56,7 @@ public class KernelMenu
 		
 		menu.add(m_RemoteConnect) ;
 		menu.add(m_RemoteDisconnect) ;
-		//menu.add(new javax.swing.JSeparator()) ;
+		menu.addSeparator() ;
 		menu.add(m_StartKernel) ;
 		menu.add(m_StopKernel) ;
 
@@ -96,7 +96,7 @@ public class KernelMenu
 			return ;
 		}
 		
-		RemoteDialog.RemoteInfo ip = RemoteDialog.showDialog(m_Frame.getWindow(), "Remote Soar Kernel Connection") ;
+		RemoteDialog.RemoteInfo ip = RemoteDialog.showDialog(m_Frame, "Remote Soar Kernel Connection") ;
 		
 		// Check if the user cancelled
 		if (ip == null)

@@ -123,10 +123,11 @@ public abstract class BaseCommandView extends AbstractView
 		selectionObject.fillMenu(getDocument(), outputView, contextMenu, simple) ;
 	}
 
+	/** Windows that do auto-updates can be usefully primed with an initial command (e.g. print --stack) when defining a default behavior */
 	public void setInitialCommand(String command)
 	{
 		m_CommandHistory.UpdateHistoryList(command, true) ;
-		makeComboBoxMatchHistory() ;
+		makeComboBoxMatchHistory(!m_ClearComboEachCommand) ;
 	}
 	
 	private void layoutControls()
@@ -155,15 +156,12 @@ public abstract class BaseCommandView extends AbstractView
 		m_Container.layout() ;
 	}
 		
-	public void Init(MainFrame frame, Document doc, Pane parentPane)
+	public void init(MainFrame frame, Document doc, Pane parentPane)
 	{
 		if (m_Inited)
 			return ;
 
-		m_MainFrame = frame ;
-		m_Document  = doc ;
-		setPane(parentPane) ;
-		
+		setValues(frame, doc, parentPane) ;
 		Composite parent = parentPane.getWindow() ;
 		
 		// The container lets us control the layout of the controls
@@ -292,7 +290,7 @@ public abstract class BaseCommandView extends AbstractView
 		}
 	}
 	
-	private void makeComboBoxMatchHistory()
+	private void makeComboBoxMatchHistory(boolean placeTopItemInCombo)
 	{
 		// Changing the list of items clears the text entry field
 		// which we may not wish to do, so we'll keep it and manually
@@ -302,7 +300,10 @@ public abstract class BaseCommandView extends AbstractView
 		String[] history = m_CommandHistory.getHistory() ;
 		this.m_CommandCombo.setItems(history) ;	
 		
-		m_CommandCombo.setText(text) ;
+		if (placeTopItemInCombo && history[0] != null)
+			m_CommandCombo.setText(history[0]) ;
+		else
+			m_CommandCombo.setText(text) ;
 	}
 	
 	private void commandEntered(String command, boolean updateHistory)
@@ -317,7 +318,7 @@ public abstract class BaseCommandView extends AbstractView
 			this.m_CommandHistory.UpdateHistoryList(command, true) ;
 
 			// Update the combo box to match the history list
-			makeComboBoxMatchHistory() ;
+			makeComboBoxMatchHistory(false) ;
 		}
 		
 		// Clear the text from the edit control in the combo box if we're
@@ -349,7 +350,7 @@ public abstract class BaseCommandView extends AbstractView
 		element.addAttribute(ElementXML.kClassAttribute, cl.getName()) ;
 
 		// Store this object's properties.
-		//element.addAttribute("Channel", Integer.toString(m_Channel)) ;
+		element.addAttribute("Name", m_Name) ;
 		element.addAttribute("UpdateOnStop", Boolean.toString(m_UpdateOnStop)) ;
 		element.addAttribute("ClearEachCommand", Boolean.toString(m_ClearEachCommand)) ;
 		element.addAttribute("ClearComboEachCommand", Boolean.toString(this.m_ClearComboEachCommand)) ;
@@ -373,8 +374,9 @@ public abstract class BaseCommandView extends AbstractView
 	*************************************************************************/
 	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception
 	{
-		m_MainFrame		   = frame ;
-		m_Document		   = doc ;
+		setValues(frame, doc, parent) ;
+
+		m_Name			   = element.getAttribute("Name") ;
 		m_UpdateOnStop	   = element.getAttributeBooleanThrows("UpdateOnStop") ;
 		m_ClearEachCommand = element.getAttributeBooleanThrows("ClearEachCommand") ;
 		m_ClearComboEachCommand = element.getAttributeBooleanThrows("ClearComboEachCommand") ;
@@ -385,11 +387,14 @@ public abstract class BaseCommandView extends AbstractView
 		if (history != null)
 			this.m_CommandHistory.LoadFromXML(doc, history) ;
 		
+		// Register that this module's name is in use
+		frame.getNameRegister().registerName(m_Name, this) ;
+		
 		// Actually create the window
-		Init(frame, doc, parent) ;
+		init(frame, doc, parent) ;
 
 		// Reset the combo box to match the history list we just loaded	
-		makeComboBoxMatchHistory() ;
+		makeComboBoxMatchHistory(!m_ClearComboEachCommand) ;
 	}
 	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase)

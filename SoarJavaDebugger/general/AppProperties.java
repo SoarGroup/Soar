@@ -118,6 +118,77 @@ public class AppProperties extends java.util.Properties
 	{
 		return m_Filename;
 	}
+	
+	public void setAppProperty(String property, String value)
+	{
+		this.setProperty(property, value);
+	}
+
+	public void setAppProperty(String property, double value)
+	{
+		this.setProperty(property, Double.toString(value));
+	}
+
+	public void setAppProperty(String property, int value)
+	{
+		this.setProperty(property, Integer.toString(value));
+	}
+
+	public void setAppProperty(String property, boolean value)
+	{
+		this.setProperty(property, String.valueOf(value));
+	}
+
+	public String getAppStringProperty(String property)
+	{
+		return this.getProperty(property);
+	}
+
+	public boolean getAppBooleanProperty(String property, boolean defaultValue)
+	{
+		String value = this.getProperty(property);
+
+		if (value != null)
+		{
+			return (value.equalsIgnoreCase("true"));
+		}
+
+		return defaultValue;
+	}
+
+	public double getAppDoubleProperty(String property)
+	{
+		try
+		{
+			String value = this.getProperty(property);
+			if (value != null)
+			{
+				double d = Double.parseDouble(value);
+				return d;
+			}
+		} catch (NumberFormatException e)
+		{
+		}
+
+		return Double.NaN;
+	}
+
+	public int getAppIntegerProperty(String property)
+	{
+		try
+		{
+			String value = this.getProperty(property);
+			if (value != null)
+			{
+				int i = Integer.parseInt(value);
+				return i;
+			}
+		} catch (NumberFormatException e)
+		{
+		}
+
+		return Integer.MAX_VALUE;
+	}	
 }
 
 

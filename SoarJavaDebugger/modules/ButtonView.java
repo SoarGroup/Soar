@@ -58,6 +58,15 @@ public class ButtonView extends AbstractView
 
 	/********************************************************************************************
 	* 
+	* This "base name" is used to generate a unique name for the window.
+	* For example, returning a base name of "trace" would lead to windows named
+	* "trace1", "trace2" etc.
+	* 
+	********************************************************************************************/
+	public String getModuleBaseName() { return "buttons" ; }
+
+	/********************************************************************************************
+	* 
 	* Remove ourselves from any events that we are listening for (in preparation for deleting this window)
 	* 
 	********************************************************************************************/
@@ -107,12 +116,9 @@ public class ButtonView extends AbstractView
 		m_LinkedView = view ;
 	}
 	
-	public void Init(MainFrame frame, Document doc, Pane parentPane)
+	public void init(MainFrame frame, Document doc, Pane parentPane)
 	{
-		m_MainFrame = frame ;
-		m_Document  = doc ;
-		
-		setPane(parentPane) ;		
+		setValues(frame, doc, parentPane) ;
 		createButtonPanel(m_Pane.getWindow()) ;
 	}
 
@@ -213,8 +219,7 @@ public class ButtonView extends AbstractView
 		element.addAttribute(ElementXML.kClassAttribute, cl.getName()) ;
 
 		// Store this object's properties.
-		//element.addAttribute("Channel", Integer.toString(m_Channel)) ;
-
+		element.addAttribute("Name", m_Name) ;
 		element.addAttribute("ButtonCount", Integer.toString(m_ButtonList.size())) ;
 		
 		// Save information for each button in the panel
@@ -260,11 +265,11 @@ public class ButtonView extends AbstractView
 	*************************************************************************/
 	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception
 	{
-		m_MainFrame		   = frame ;		
-		m_Document		   = doc ;
+		setValues(frame, doc, parent) ;
 		
 		m_ButtonList.clear() ;
 		
+		m_Name   = element.getAttribute("Name") ;
 		int size = element.getAttributeIntThrows("ButtonCount") ;
 		
 		for (int i = 0 ; i < size ; i++)
@@ -279,8 +284,11 @@ public class ButtonView extends AbstractView
 			m_ButtonList.add(button) ;
 		}
 		
+		// Register that this module's name is in use
+		frame.getNameRegister().registerName(m_Name, this) ;
+
 		// Actually create the window
-		Init(frame, doc, parent) ;
+		init(frame, doc, parent) ;
 	}
 
 	/** So far the button panel doesn't care about events from the agent */

@@ -42,46 +42,45 @@ public abstract class AbstractView implements AgentFocusListener
 	
 	/** The window that owns this view */
 	protected Pane			m_Pane ;
-	
-	//protected Composite		m_Panel ;
+
+	/** The name of this view -- this name is unique within the frame (not the entire debugger) so we can cross-reference based on this name */
+	protected String		m_Name ;
 	
 	/********************************************************
-	 * It's nice to just use a default constructor as we will dynamically create these objects
-	 * using reflective methods like: class.newInstance().
-	 * If we add parameters here we'll need to change that logic to look up an appropriate
-	 * constructor method and call it.
+	 * All AbstractView's need to have a default constructor
+	 * as that's how we build them (using reflection) when
+	 * loading/saving or picking up module plug-ins.
 	 *********************************************************/
 	public AbstractView()
 	{
 	}
+		
+	/** The main frame that owns this window.  **/
+	public MainFrame getMainFrame() { return m_MainFrame; }
+
+	/** The document is used to represent the Soar process.  There is one shared document for the entire debugger. **/
+	public Document getDocument() 	{ return m_Document ; }
+
+	/** The name of this view -- this name is unique within the frame (not the entire debugger) so we can cross-reference based on this name */
+	public String	getName() 		{ return m_Name ; }
+
+	/** The window that owns this view */
+	public Pane getPane() 			{ return m_Pane ; }
 	
-	public abstract void setTextFont(Font f) ;
-	
-	public doc.Document getDocument() 		   { return m_Document ; }
-	
-	public MainFrame getMainFrame()
+	/** This method is called when we initialize the module. */
+	protected void setValues(MainFrame frame, Document doc, Pane parentPane)
 	{
-		return m_MainFrame;
+		m_MainFrame = frame ;
+		m_Document  = doc ;
+		m_Pane 	    = parentPane ;
+	}
+	
+	/** Generates a unique name for this window */
+	public void generateName()
+	{
+		m_Name = m_MainFrame.generateName(getModuleBaseName(), this) ;
 	}
 
-	public MainWindow getMainWindow()
-	{
-		return m_MainFrame.getMainWindow() ;
-	}
-	
-	public Pane getPane()
-	{
-		return m_Pane ;
-	}
-	
-	protected void setPane(Pane pane)
-	{
-		if (m_Pane != null)
-			throw new IllegalStateException("Only do this once -- or you need to remove the old value from the list of views owned by pane") ;
-		
-		m_Pane = pane ;
-	}
-	
 	/********************************************************************************************
 	 * 
 	 * Returns the agent that is associated with the main frame.
@@ -94,15 +93,30 @@ public abstract class AbstractView implements AgentFocusListener
 	{
 		return m_MainFrame.getAgentFocus() ;
 	}
-	
-	//public abstract void registerContextMenuMouseListener(MouseListener listener) ;
+
+	/********************************************************************************************
+	* 
+	* This "base name" is used to generate a unique name for the window.
+	* For example, returning a base name of "trace" would lead to windows named
+	* "trace1", "trace2" etc.
+	* 
+	********************************************************************************************/
+	public abstract String getModuleBaseName() ;
+
+	/********************************************************************************************
+	* 
+	* Change the font we use to display text items in this window.
+	* 
+	********************************************************************************************/
+	public abstract void setTextFont(Font f) ;
 		
 	/********************************************************************************************
 	* 
-	* Initialize this window.
+	* Initialize this window and its children.
+	* Should call setValues() and generateName() at the start to complete initialization of the abstract view.
 	* 
 	********************************************************************************************/
-	public abstract void Init(MainFrame frame, Document doc, Pane parentPane) ;
+	public abstract void init(MainFrame frame, Document doc, Pane parentPane) ;
 	
 	/************************************************************************
 	* 

@@ -12,9 +12,10 @@
 package general;
 
 import general.* ;
-import javax.swing.*;
 import java.io.*;
-import java.awt.*;
+
+import org.eclipse.swt.*;
+import org.eclipse.swt.widgets.*;
 
 /********************************************************************************************
 * 
@@ -37,7 +38,7 @@ public class SaveLoad
 	* @return	The name of the file to use (or null if user canceled)
 	* 
 	********************************************************************************************/
-	public static String LoadFileDialog(Component parent, String fileExt, String fileDescription, AppProperties props, String fileSaveName, String fileLoadName)
+	public static String LoadFileDialog(Composite parent, String[] fileExts, String[] fileDescriptions, AppProperties props, String fileSaveName, String fileLoadName)
 	{
 		String currentDirSave = fileSaveName + ".CurrentDir" ;
 		String currentDirLoad = fileLoadName + ".CurrentDir" ;
@@ -48,33 +49,29 @@ public class SaveLoad
 		// If there's no FileLoad entry, try the FileSave entry
 		if (initialDir == null)
 			initialDir = props.getProperty(currentDirSave) ;
-			
-	    JFileChooser chooser = new JFileChooser();
+		
+	    FileDialog chooser = new FileDialog(parent.getShell(), SWT.OPEN) ;
 
 		// Specify the file extensions we want
-	    GeneralFileFilter filter = new GeneralFileFilter(fileExt, fileDescription);
-	    chooser.setFileFilter(filter);
+	    chooser.setFilterNames(fileDescriptions) ;
+	    chooser.setFilterExtensions(fileExts) ;
 	    
 	    // Open up on the same folder we last used, if possible.
 	    if (initialDir != null)
-		    chooser.setCurrentDirectory(new File(initialDir)) ;
+		    chooser.setFilterPath(initialDir) ;
 		    
 		// Ask the user to select a file to open.
-	    int returnVal = chooser.showOpenDialog(parent);
+	    String returnVal = chooser.open() ;
 	    
-	    // Store the current directory for future use.
-	    // Do this even if the user canceled--they will probably quickly return here again.
-	    props.setProperty(currentDirLoad,chooser.getCurrentDirectory().getAbsolutePath()) ;
+	    // Check for cancel
+	    if (returnVal == null)
+	    	return null ;
 	    
-	    if(returnVal == JFileChooser.APPROVE_OPTION)
-	    {
-	    	// Get the user's choice of file.
-	    	String filePath = chooser.getSelectedFile().getAbsolutePath() ;
-			
-			return filePath ;
-	    }
-	    
-	    return null ;
+	    // Store the directory that the user chose
+	    File currentDir = new File(returnVal) ;
+	    props.setProperty(currentDirLoad, currentDir.getParent()) ;
+	    	    
+	    return returnVal ;
 	}
 		
 	/********************************************************************************************
@@ -91,7 +88,7 @@ public class SaveLoad
 	* @return	The name of the file to use (or null if user canceled)
 	* 
 	********************************************************************************************/
-	public static String SaveFileDialog(Component parent, String fileExt, String fileDescription, AppProperties props, String fileSaveName, String fileLoadName)
+	public static String SaveFileDialog(Composite parent, String[] fileExts, String[] fileDescriptions, AppProperties props, String fileSaveName, String fileLoadName)
 	{
 		String currentDirSave = fileSaveName + ".CurrentDir" ;
 		String currentDirLoad = fileLoadName + ".CurrentDir" ;
@@ -103,51 +100,55 @@ public class SaveLoad
 		if (initialDir == null)
 			initialDir = props.getProperty(currentDirLoad) ;
 	
-	    JFileChooser chooser = new JFileChooser();
+	    FileDialog chooser = new FileDialog(parent.getShell(), SWT.SAVE) ;
 
 		// Specify the file extensions we want
-	    GeneralFileFilter filter = new GeneralFileFilter(fileExt, fileDescription);
-	    chooser.setFileFilter(filter);
+	    chooser.setFilterNames(fileDescriptions) ;
+	    chooser.setFilterExtensions(fileExts) ;
 	    
 	    // Open up on the same folder we last used, if possible.
 	    if (initialDir != null)
-		    chooser.setCurrentDirectory(new File(initialDir)) ;
+		    chooser.setFilterPath(initialDir) ;
 		    
-		// Ask the user to select a file to save.
-	    int returnVal = chooser.showSaveDialog(parent);
+		// Ask the user to select a file to open.
+	    String filePath = chooser.open() ;
 	    
-	    // Store the current directory for future use.
-	    // Do this even if the user canceled--they will probably quickly return here again.
-	    props.setProperty(currentDirSave,chooser.getCurrentDirectory().getAbsolutePath()) ;
-	    
-	    if(returnVal == JFileChooser.APPROVE_OPTION)
-	    {
-	    	// Get the user's choice of file.
-	    	String filePath = chooser.getSelectedFile().getAbsolutePath() ;
+	    // Check for cancel
+	    if (filePath == null)
+	    	return null ;
+	    	    
+	    // Store the directory that the user chose
+	    File currentDir = new File(filePath) ;
+	    props.setProperty(currentDirSave, currentDir.getParent()) ;
+	       	
+    	// Find out if the user entered an extension
+    	// If not, we will use a default one.
+    	if (FileExt.GetLowerFileExtension(filePath) == "")
+    	{
+    		// Don't think with SWT we can get the user's choice in the extensions
+    		// so just take the first
+	    	String ext = FileExt.GetLowerFileExtension(fileExts[0]) ;
 	    	
-	    	// Find out if the user entered an extension
-	    	// If not, we will use a default one.
-	    	if (FileExt.GetLowerFileExtension(filePath) == "")
-	    	{
-		    	// Get the user's preferred extension
-		    	String ext = null ;
-		    	javax.swing.filechooser.FileFilter selectedFilter = chooser.getFileFilter() ;
-		    	if (selectedFilter instanceof GeneralFileFilter)
-		    	{
-		    		ext = ((GeneralFileFilter)selectedFilter).getPrimaryExtension() ;
-		    	}
-		    	
-		    	// Provide a default if the user chose "*.*"
-		    	if (ext == null)
-		    		ext = fileExt ;
-		    	
-		    	// Change/add the file extension as necessary
-		    	filePath = FileExt.SetFileExtension(filePath, ext) ;
-	    	}
-	    	
-	    	return filePath ;
-	    }
-	    
-	    return null ;
+	    	// Change/add the file extension as necessary
+	    	filePath = FileExt.SetFileExtension(filePath, ext) ;
+    	}
+
+    	// Check if the file already exists and if so prompt.
+    	// We could fix this so it appears while the dialog is still visible
+    	// but only be writing a facade for FileDialog() and replacing the logic for "open".
+    	// This is fine for now.
+    	File file = new File(filePath) ;
+    	if (file.exists())
+    	{
+    		MessageBox msg = new MessageBox(parent.getShell(), SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
+    		msg.setText("Save As") ;
+    		msg.setMessage(filePath + " already exists.\nDo you want to replace it?");
+    		int choice = msg.open();
+    		
+    		if (choice == SWT.CANCEL)
+    			return null ;
+    	}
+
+	    return filePath ;
 	}
 }

@@ -53,6 +53,7 @@ public class FileMenu
 		menu.add(m_Load) ;
 		menu.add(m_Save) ;
 		menu.add(m_Default) ;
+		menu.addSeparator() ;
 		menu.add(m_Exit) ;
 		
 		return menu ;
@@ -61,30 +62,19 @@ public class FileMenu
 	/** Load a new window layout */
 	private void loadPerformed(ActionEvent e)
 	{
-		MainFrame frame = m_Frame ;
-		
-		m_Frame.ShowMessageBox("Not implemented in SWT version yet") ;
-
-		/*
-		String filename = SaveLoad.LoadFileDialog(null, "xml", "Debugger Layout file", frame.getAppProperties(), "SaveFile", "LoadFile") ;
+		String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(), new String[] { "*.xml" }, new String[] { "Debugger Layout file (*.xml)" } , m_Frame.getAppProperties(), "SaveFile", "LoadFile") ;
 		
 		if (filename != null)
-			frame.LoadLayoutFile(filename) ;
-		*/
+			m_Frame.loadLayoutFile(filename, true) ;
 	}
 
 	/** Save the current window layout */
 	private void savePerformed(ActionEvent e)
 	{
-		MainFrame frame = m_Frame ;
-
-		m_Frame.ShowMessageBox("Not implemented in SWT version yet") ;
-		/*
-		String filename = SaveLoad.SaveFileDialog(null, "xml", "Debugger Layout file", frame.getAppProperties(), "SaveFile", "LoadFile") ;
+		String filename = SaveLoad.SaveFileDialog(m_Frame.getWindow(), new String[] { "*.xml" }, new String[] { "Debugger Layout file (*.xml)" }, m_Frame.getAppProperties(), "SaveFile", "LoadFile") ;
 
 		if (filename != null)
-			frame.SaveLayoutFile(filename) ;		
-		*/
+			m_Frame.saveLayoutFile(filename) ;
 	}
 
 	/** Change the window layout back to the default */

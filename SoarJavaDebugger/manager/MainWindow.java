@@ -47,7 +47,7 @@ public class MainWindow
 	// around between frameworks and decouple the code from the particular window system
 	// we're using.
 	private Composite 	m_Window ;
-	private MainFrame	m_MainFrame ;
+	private MainFrame	m_Frame ;
 	private Document	m_Document ;
 	public final static String kAttachKey = "Attach" ;
 	public final static String kAttachBottomValue = "Bottom" ;
@@ -57,7 +57,7 @@ public class MainWindow
 	
 	public MainWindow(MainFrame frame, Document doc, Composite parent)
 	{
-		m_MainFrame = frame ;
+		m_Frame = frame ;
 		m_Document  = doc ;
 		
 		m_Window = new Composite(parent, 0) ;
@@ -193,7 +193,10 @@ public class MainWindow
 		// so they unregister any events for the current agent
 		// Then at the end we'll reset the focus, allowing them to re-register
 		// for events.
-		m_MainFrame.setAgentFocus(null) ;
+		m_Frame.setAgentFocus(null) ;
+		
+		// Unregister all names that were in use with this frame
+		m_Frame.getNameRegister().clear() ;
 		
 		// Now delete everything
 		m_Window.dispose() ;
@@ -222,28 +225,25 @@ public class MainWindow
   		vertSashRight.setLayoutData(FormDataHelper.anchorFull(0)) ;
 
   		// The button bar is a fixed size window so it is linked to the window above
-  		// and moves as one with it.  To make this happen we'll create this pair.
-  		Composite pair	  = new Composite(vertSashLeft, 0) ;
-  		
-  		// Adding a 2nd button bar with more print commands
-  		Composite pair2 = new Composite(vertSashRight, 0) ;
-
+  		// and moves as one with it.  To make this happen we'll create this pair.  		
   		// These panes contain a SWT Window and a module/view that provides specific debugging content
-  		Pane top  		  	 = new Pane(pair) ;
-  		Pane buttonPane   	 = new Pane(pair) ;
-  		Pane bottom       	 = new Pane(vertSashLeft) ;
-  		Pane rightTop     	 = new Pane(pair2) ;
-  		Pane buttonsRightTop = new Pane(pair2) ;
-  		Pane rightBottom  	 = new Pane(vertSashRight) ;
+  		Composite pair	  		= new Composite(vertSashLeft, 0) ;
+  		Pane top  		  	 	= new Pane(pair) ;
+  		Pane buttonPane   	 	= new Pane(pair) ;
+  		Pane bottom       	 	= new Pane(vertSashLeft) ;
+  		Pane rightTop  	 		= new Pane(vertSashRight) ;
+  		Composite pair2 		= new Composite(vertSashRight, 0) ;
+  		Pane rightBottom     	= new Pane(pair2) ;
+  		Pane buttonsRightBottom = new Pane(pair2) ;
 
   		// Attach the button panes to a window as a single, resizable unit
   		attachToBottom(top, buttonPane) ;
-  		attachToBottom(rightTop, buttonsRightTop) ;
+  		attachToBottom(rightBottom, buttonsRightBottom) ;
       	
   		// Have to set the weights after we have added the panes, so that the size of the weights array
   		// matches the current list of controls
   		vertSashLeft.setWeights(new int[] { 80, 20 }) ;
-  		vertSashRight.setWeights(new int[] { 50, 50 }) ;
+  		vertSashRight.setWeights(new int[] { 65, 35 }) ;
   		horizSash.setWeights(new int[] { 60, 40 } ) ;
   		
   		// Record the list of panes in use
@@ -251,60 +251,67 @@ public class MainWindow
   		m_PaneList.add(buttonPane) ;
   		m_PaneList.add(bottom) ;
   		m_PaneList.add(rightTop) ;
-  		m_PaneList.add(buttonsRightTop) ;
   		m_PaneList.add(rightBottom) ;
+  		m_PaneList.add(buttonsRightBottom) ;
 		
 		// Now connect up a specific type of view with these panes
 		AbstractView trace = new TraceView() ;
-		trace.Init(m_MainFrame, m_Document, top) ;
+		trace.init(m_Frame, m_Document, top) ;
+		trace.generateName() ;
 		top.addView(trace) ;
 
 		// Create the button view
 		ButtonView buttons = new ButtonView() ;
+		buttons.addButton("Help", "help") ;
 		buttons.addButton("Init-soar", "init-soar") ;
-		buttons.addButton("Excise all", "excise --all") ;
-		buttons.addButton("Excise chunks", "excise --chunks") ;
-		buttons.addButton("Run 5", "run 5") ;
+		buttons.addButton("Run 1 -d", "run 1 --decision") ;
+		buttons.addButton("Run 1 -e", "run 1 --elaboration") ;
 		buttons.addButton("Run", "run") ;
-		buttons.addButton("Stop", "stop-soar") ;		
+		buttons.addButton("Stop", "stop-soar") ;
 		buttons.addButton("Matches", "matches") ;
 		buttons.addButton("Print <s>", "print <s>") ;
 		// This button uses an internally scripted command to drive the debugger itself to load a demo
 		buttons.addButton("Towers of Hanoi", null, "demo towers-of-hanoi towers-of-hanoi.soar") ;
-		buttons.Init(m_MainFrame, m_Document, buttonPane) ;
+		buttons.init(m_Frame, m_Document, buttonPane) ;
+		buttons.generateName() ;
 		buttonPane.addView(buttons) ;
 
 		// Create another trace window at the bottom for now
 		AbstractView keep = new KeepCommandView() ;
-		keep.Init(m_MainFrame, m_Document, bottom) ;
+		keep.init(m_Frame, m_Document, bottom) ;
+		keep.generateName() ;
 		bottom.addView(keep) ;
 		
 		// Start with the focus on the top trace window
 		trace.setFocus() ;
-		
-		// Command view for top right
-		AbstractView update1 = new KeepCommandView() ;
-		update1.Init(m_MainFrame, m_Document, rightTop) ;
-		rightTop.addView(update1) ;
 
-		// Button bar for right top
+		// Command view for top right
+		UpdateCommandView update2 = new UpdateCommandView() ;
+		update2.init(m_Frame, m_Document, rightTop) ;
+		update2.setInitialCommand("print <s>") ;
+		update2.generateName() ;
+		rightTop.addView(update2) ;
+		
+		// Command view for bottom right
+		AbstractView update1 = new KeepCommandView() ;
+		update1.init(m_Frame, m_Document, rightBottom) ;
+		update1.generateName() ;
+		rightBottom.addView(update1) ;
+
+		// Button bar for right bottom
 		buttons = new ButtonView() ;
 		buttons.addButton("Matches", "matches") ;
 		buttons.addButton("Print state", "print <s>") ;
 		buttons.addButton("Print op", "print <o>") ;
 		buttons.addButton("Print stack", "print --stack") ;
-		buttons.Init(m_MainFrame, m_Document, buttonsRightTop) ;
+		buttons.init(m_Frame, m_Document, buttonsRightBottom) ;
 		buttons.setLinkedView(update1) ;
-		buttonsRightTop.addView(buttons) ;
-
-		// Command view for bottom right
-		AbstractView update2 = new UpdateCommandView() ;
-		update2.Init(m_MainFrame, m_Document, rightBottom) ;
-		rightBottom.addView(update2) ;
+		buttons.generateName() ;
+		buttonsRightBottom.addView(buttons) ;
 
   		// Reset the default text font (once all windows have been created)
 		// as part of "the default layout".
-  		m_MainFrame.setTextFont(new FontData("Courier New", 8, SWT.NORMAL)) ;  		
+  		m_Frame.setTextFont(m_Frame.kDefaultFontData) ;  		
   	}
   	
   	/********************************************************************************************
@@ -314,7 +321,7 @@ public class MainWindow
   	********************************************************************************************/
   	public void useDefaultLayout()
   	{
-  		Agent currentAgentFocus = m_MainFrame.getAgentFocus() ;
+  		Agent currentAgentFocus = m_Frame.getAgentFocus() ;
   		
   		// Dispose of all existing windows
   		clearLayout() ;
@@ -328,7 +335,7 @@ public class MainWindow
        	
        	// We reset the agent focus (if it existed before).
        	// This allows the new windows to all register for events with this agent.
-       	m_MainFrame.setAgentFocus(currentAgentFocus) ;
+       	m_Frame.setAgentFocus(currentAgentFocus) ;
   	}
 
 	/************************************************************************
@@ -349,13 +356,13 @@ public class MainWindow
 				throw new Exception("Layout file is from an unsupported version " + version) ;
 			
 			// Pick up the current focus so we can restore it at the end
-	  		Agent currentAgentFocus = m_MainFrame.getAgentFocus() ;
+	  		Agent currentAgentFocus = m_Frame.getAgentFocus() ;
 
 			// Get rid of any existing windows and create a new blank window
 			clearLayout() ;
 			
 			// Load all of the windows
-			loadChildrenFromXML(m_MainFrame, m_Document, m_Window, root) ;
+			loadChildrenFromXML(m_Frame, m_Document, m_Window, root) ;
 	  		
 			// Note: Must update the parent because we've changed its children here.
 			// Without this the new windows don't appear on screen at all.
@@ -363,7 +370,7 @@ public class MainWindow
 	       	
 	       	// We reset the agent focus (if it existed before).
 	       	// This allows the new windows to all register for events with this agent.
-	       	m_MainFrame.setAgentFocus(currentAgentFocus) ;
+	       	m_Frame.setAgentFocus(currentAgentFocus) ;
 			
 			
 			return true ;
@@ -374,7 +381,7 @@ public class MainWindow
 
 			// Report any errors to the user.
 			if (showErrors)
-				m_MainFrame.ShowMessageBox("Error loading file: " + filename, msg) ;	
+				m_Frame.ShowMessageBox("Error loading file: " + filename, msg) ;	
 			else
 				System.out.println("Error loading file: " + filename + " " + msg) ;
 
@@ -398,7 +405,7 @@ public class MainWindow
 			String msg = e.getMessage();
 
 			// Report any errors to the user.
-			m_MainFrame.ShowMessageBox("Error saving file: " + filename, msg) ;			
+			m_Frame.ShowMessageBox("Error saving file: " + filename, msg) ;			
 			return false ;
 		}
 	}

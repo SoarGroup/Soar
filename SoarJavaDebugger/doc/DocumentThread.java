@@ -56,6 +56,8 @@ public class DocumentThread extends Thread
 	/** The main document (which owns the Soar kernel object etc.) */
 	private Document  m_Document = null ;
 	
+	private boolean	  m_IsExecutingCommand = false ;
+	
 	public DocumentThread(Document doc)
 	{
 		m_Document = doc ;
@@ -65,6 +67,12 @@ public class DocumentThread extends Thread
 	public synchronized void askToStop()
 	{
 		m_AskedToStop = true ;
+	}
+
+	/** Returns true if we're actively executing a command or are just about to */
+	public synchronized boolean isBusy()
+	{
+		return m_IsExecutingCommand || m_ToExecuteQueue.size() > 0 ;
 	}
 	
 	/** Schedule a command to execute later */
@@ -114,9 +122,12 @@ public class DocumentThread extends Thread
 		Command command ;
 		while ( (command = popNextCommand()) != null )
 		{
+			m_IsExecutingCommand = true ;
 			String result = command.m_Agent.ExecuteCommandLine(command.m_Command) ;
 			recordCommandResult(command, result) ;
-		}		
+		}
+		
+		m_IsExecutingCommand = false ;
 	}
 	
 	public void run()

@@ -56,8 +56,9 @@ import sml.*;
  ******************************************************************************/
 public class MainFrame
 {
-	private static final String kNoAgent = "<no agent>";
+	public static final FontData kDefaultFontData = new FontData("Courier New", 8, SWT.NORMAL) ;
 
+	private static final String kNoAgent = "<no agent>";
 	private static String m_WindowLayoutFile = "SoarDebuggerWindows.xml";
 
 	private Composite m_Parent = null;
@@ -83,6 +84,9 @@ public class MainFrame
 
 	/** Used to script the debugger itself */
 	private DebuggerCommands m_DebuggerCommands = null;
+	
+	/** Map of module names that are currently in use in this frame */
+	private NameRegister m_NameMap = new NameRegister() ;
 
 	/**
 	 * We associate a default agent with a MainFrame, so that windows within
@@ -242,6 +246,11 @@ public class MainFrame
 	public FontData ShowFontDialog()
 	{
 		FontDialog dialog = new FontDialog(getShell());
+
+		// Select our current font as the initial font
+		if (m_TextFont != null)
+			dialog.setFontData(m_TextFont.getFontData()[0]) ;
+
 		FontData data = dialog.open();
 
 		return data;
@@ -319,6 +328,9 @@ public class MainFrame
 
 	public String ShowInputDialog(String title, String prompt, String initialValue)
 	{
+		if (initialValue == null)
+			initialValue = "" ;
+		
 		String name = SwtInputDialog.showDialog(this.getShell(), title, prompt, initialValue);
 		return name;
 	}
@@ -409,7 +421,14 @@ public class MainFrame
 	********************************************************************************************/
 	public boolean loadLayoutFile(String filename, boolean showErrors)
 	{
-		return getMainWindow().loadLayoutFromFile(filename, showErrors);
+		boolean ok = getMainWindow().loadLayoutFromFile(filename, showErrors);
+		
+		// Apply the current font to the newly loaded windows.
+		// (The font is considered a user's preference currently not part of the layout)
+		if (ok)
+			getMainWindow().setTextFont(m_TextFont) ;
+		
+		return ok ;
 	}
 
 	public boolean saveLayoutFile(String filename)
@@ -422,6 +441,35 @@ public class MainFrame
 		getMainWindow().useDefaultLayout();
 	}
 
+	 /*******************************************************************************************
+	 * 
+	 * Generates a unique name from a base name (e.g. from "trace" might create "trace3").
+	 * The name is unique within the frame so we can use it to cross-reference windows within a layout.
+	 * It may not be unique within the entire debugger.
+	 * 
+	 * @param baseName		Cannot contain digits
+	 * @return	The generated name (which has been registered as in use)
+	********************************************************************************************/
+	public String generateName(String baseName, AbstractView view)
+	{
+		// Try 200 times -- should be plenty.
+		for (int i = 1 ; i < 200 ; i++)
+		{
+			String candidate = baseName + i ;
+		
+			if (!m_NameMap.isNameInUse(candidate))
+			{
+				m_NameMap.registerName(candidate, view) ;
+				return candidate ;
+			}
+		}
+		
+		throw new IllegalStateException("Could not generate a unique name for basename " + baseName) ;
+	}
+	
+	/** The map used to register module names as being "in use" */
+	public NameRegister getNameRegister() { return m_NameMap ; }
+	
 	/***************************************************************************
 	 * 
 	 * Initializes the frame and all of its children.
@@ -431,15 +479,14 @@ public class MainFrame
 	 **************************************************************************/
 	public void initComponents()
 	{
-		// the following code sets the frame's initial state
-		m_MenuBar.setVisible(true);
-
 		// Add the menus
 		m_FileMenu = FileMenu.createMenu(this, getDocument(), "File", 'F');
 		m_EditMenu = menu.EditMenu.createMenu(this, getDocument(), "Edit", 'E');
 		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "Demos", 'D');
-		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "Agent", 'A');
+		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "Agents", 'A');
 		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "Kernel", 'k');
+
+		getShell().setMenuBar(m_MenuBar);
 
 		// Look up the name of the default window layout
 		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile);
@@ -458,9 +505,6 @@ public class MainFrame
 			useDefaultLayout();
 		}
 
-		getShell().setSize(new Point(704, 616));
-		getShell().setMenuBar(m_MenuBar);
-
 		getShell().addShellListener(new ShellAdapter() {
 
 			public void shellClosed(ShellEvent e)
@@ -470,6 +514,8 @@ public class MainFrame
 		});
 
 		// Maximize the window
+		// BUGBUG: Should save and restore the frame's size and position
+		// (not assume you want it maximized)
 		getShell().setMaximized(true);
 
 		// Try to load the user's font preference
@@ -485,10 +531,7 @@ public class MainFrame
 
 		// Make sure our menus are enabled correctly
 		updateMenus();
-
-		// BUGBUG: Until we get save/load for layouts working go with the
-		// default on start up
-		//useDefaultLayout() ;
+		updateTitle() ;
 	}
 
 	public Font getTextFont()
@@ -503,77 +546,42 @@ public class MainFrame
 
 	public void setAppProperty(String property, String value)
 	{
-		this.getAppProperties().setProperty(property, value);
+		this.getAppProperties().setAppProperty(property, value);
 	}
 
 	public void setAppProperty(String property, double value)
 	{
-		this.getAppProperties().setProperty(property, Double.toString(value));
+		this.getAppProperties().setAppProperty(property, value);
 	}
 
 	public void setAppProperty(String property, int value)
 	{
-		this.getAppProperties().setProperty(property, Integer.toString(value));
+		this.getAppProperties().setAppProperty(property, value);
 	}
 
 	public void setAppProperty(String property, boolean value)
 	{
-		this.getAppProperties().setProperty(property, String.valueOf(value));
+		this.getAppProperties().setAppProperty(property, value);
 	}
 
 	public String getAppStringProperty(String property)
 	{
-		return this.getAppProperties().getProperty(property);
+		return this.getAppProperties().getAppStringProperty(property) ;
 	}
 
 	public boolean getAppBooleanProperty(String property, boolean defaultValue)
 	{
-		String value = this.getAppProperties().getProperty(property);
-
-		if (value != null)
-		{
-			return (value.equalsIgnoreCase("true"));
-		}
-
-		return defaultValue;
+		return this.getAppProperties().getAppBooleanProperty(property, defaultValue) ;
 	}
 
 	public double getAppDoubleProperty(String property)
 	{
-		try
-		{
-			String value = this.getAppProperties().getProperty(property);
-			if (value != null)
-			{
-				double d = Double.parseDouble(value);
-				return d;
-			}
-		} catch (NumberFormatException e)
-		{
-		}
-
-		return Double.NaN;
+		return this.getAppProperties().getAppDoubleProperty(property) ;
 	}
 
 	public int getAppIntegerProperty(String property)
 	{
-		try
-		{
-			String value = this.getAppProperties().getProperty(property);
-			if (value != null)
-			{
-				int i = Integer.parseInt(value);
-				return i;
-			}
-		} catch (NumberFormatException e)
-		{
-		}
-
-		return Integer.MAX_VALUE;
-	}
-
-	private void initialize()
-	{
+		return this.getAppProperties().getAppIntegerProperty(property) ;
 	}
 
 	public int getWidth()

@@ -55,11 +55,23 @@ public class DemoMenu
 	{
 		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
 		
-		File path = new File("..") ;
-		path = new File(path, "SoarIO") ;
-		path = new File(path, "bin") ;
-		path = new File(path, "demos") ;
-		
+		// Look up the user's saved value (if there is one)
+		String savedPath = m_Frame.getAppStringProperty("DemoMenu.DemoPath") ;
+		File path = null ;
+
+		if (savedPath != null)
+		{
+			path = new File(savedPath) ;
+		}
+		else
+		{
+			// Default path is "..\SoarIO\bin\demos"
+			path = new File("..") ;
+			path = new File(path, "SoarIO") ;
+			path = new File(path, "bin") ;
+			path = new File(path, "demos") ;
+		}
+ 		
 		try
 		{
 			// Canonical path produces an absolute path but also removes
@@ -103,7 +115,7 @@ public class DemoMenu
 
 		m_Frame.executeCommandPrimeView(commandLine, echoCommand) ;
 		
-		if (echoCommand)
+		if (echoCommand && m_Frame.getAgentFocus() != null)
 			m_Frame.displayTextInPrimeView("\nType 'run' to execute the demo.") ;
 	}
 
@@ -119,25 +131,21 @@ public class DemoMenu
 
 	private void setDemoPath(ActionEvent e)
 	{
-		// For now I'll use a file dialog rather than a directory dialog because
-		// this allows me to set an original file path, which can be very helpful
-		// (and on Windows at least the file dialog is much more familiar to the user).
-		FileDialog fileDialog = new FileDialog(m_Frame.getShell(), 0) ;
-		
-		fileDialog.setFileName(m_DemoPath.getPath() + File.separator) ;
-		fileDialog.setText("Select a file in the root of the demos folder") ;
+		DirectoryDialog folderDialog = new DirectoryDialog(m_Frame.getShell(), 0) ;
+		folderDialog.setText("Set Demos path") ;
+		folderDialog.setMessage("Select the root of the demos folder") ;
+		folderDialog.setFilterPath(m_DemoPath.getPath() + File.separator) ;
 
 		// Display the dialog
-		String filePath = fileDialog.open() ;
+		String filePath = folderDialog.open() ;
 	
 		// Check if the user cancelled
 		if (filePath == null)
 			return ;
 		
-		// Extract the folder from the path
-		File file = new File(filePath) ;
-		m_DemoPath = new File(file.getParent()) ;
-		
+		// Record the new path
+		m_DemoPath = new File(filePath) ;
+		m_Frame.setAppProperty("DemoMenu.DemoPath", m_DemoPath.getPath()) ;
 	}
 
 }

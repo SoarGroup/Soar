@@ -61,21 +61,15 @@ public class BaseMenu
 	
 	public Menu getMenu() { return m_Menu ; }
 	
-	public void addSeparator()
+	public MenuItem addSeparator()
 	{
-		// Don't know how yet in SWT
+		MenuItem item = new MenuItem(m_Menu, SWT.SEPARATOR) ;
+		return item ;
 	}
 	
 	public BaseMenu addSubmenu(String name)
 	{
 	   BaseMenu subMenu = new BaseMenu(m_Menu, name, (char)0) ;
-	   /*
-	   MenuItem subMenuItem = new MenuItem(m_Menu, SWT.CASCADE);
-	   subMenuItem.setText(name);
-
-	   Menu subMenu = new Menu(m_Menu.getShell(), SWT.DROP_DOWN);
-	   subMenuItem.setMenu(subMenu);
-	   */
 	   return subMenu ;
 	}
 	

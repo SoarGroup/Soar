@@ -30,7 +30,8 @@ public class EditMenu
 	private MainFrame m_Frame = null ;
 	private Document  m_Document = null ;
 	
-	private AbstractAction m_ChooseFont = new AbstractAction("Choose text font") { public void actionPerformed(ActionEvent e) { chooseFontPerformed(e) ; } } ;
+	private AbstractAction m_ChooseFont = new AbstractAction("Choose text font...")  { public void actionPerformed(ActionEvent e) { chooseFontPerformed(e) ; } } ;
+	private AbstractAction m_DefaultFont = new AbstractAction("Use default font") { public void actionPerformed(ActionEvent e) { useDefaultFont(e) ; } } ;
 
 	/** Create this menu */
 	public static EditMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
@@ -49,10 +50,16 @@ public class EditMenu
 		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
 		
 		menu.add(m_ChooseFont) ;
+		menu.add(m_DefaultFont) ;
 		
 		return menu ;
 	}
-	
+
+	private void useDefaultFont(ActionEvent e)
+	{
+  		m_Frame.setTextFont(m_Frame.kDefaultFontData) ;  		
+	}
+
 	private void chooseFontPerformed(ActionEvent e)
 	{
 		FontData data = m_Frame.ShowFontDialog() ;
