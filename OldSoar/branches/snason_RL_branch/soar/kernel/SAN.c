@@ -151,7 +151,7 @@ void record_for_RL()
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  if ((prod->times_applied % 10 == 9) && (current_agent(d_cycle_count) < 100)){
+			  if ((prod->times_applied % 10 == 9) && (current_agent(d_cycle_count) < 0)){
 				  // prod->times_applied = 0;
 				  prod = specify_production(ist);
 				  if (prod){
