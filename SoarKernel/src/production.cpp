@@ -1581,14 +1581,13 @@ void deallocate_production (agent* thisAgent, production *prod) {
 }
 
 void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sign) {
-	if (prod->trace_firings) remove_pwatch (thisAgent, prod);
-	remove_from_dll (thisAgent->all_productions_of_type[prod->type], prod, next, prev);
-	thisAgent->num_productions_of_type[prod->type]--;
-	// voigtjr: this should be the job of the user interface, not soar
-	//if (print_sharp_sign) print (thisAgent, "#");
-	if (prod->p_node) excise_production_from_rete (thisAgent, prod);
-	prod->name->sc.production = NIL;
-	production_remove_ref (thisAgent, prod);
+  if (prod->trace_firings) remove_pwatch (thisAgent, prod);
+  remove_from_dll (thisAgent->all_productions_of_type[prod->type], prod, next, prev);
+  thisAgent->num_productions_of_type[prod->type]--;
+  if (print_sharp_sign) print (thisAgent, "#");
+  if (prod->p_node) excise_production_from_rete (thisAgent, prod);
+  prod->name->sc.production = NIL;
+  production_remove_ref (thisAgent, prod);
 }
 
 void excise_all_productions_of_type(agent* thisAgent,
