@@ -1019,6 +1019,8 @@ int LogCmd(ClientData clientData,
 
   init_soarResult(res);
 
+  Soar_SelectGlobalInterpByInterp(interp);
+
   create_argv_from_objv(objc, objv, &argv);
   ret = soar_Log( objc, argv, &res );
   free_argv(objc, argv);
