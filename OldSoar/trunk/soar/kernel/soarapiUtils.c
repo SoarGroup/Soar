@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warning 4100 at top of file!")
-#pragma warning(disable : 4100)
-#endif
-
 /*
  * =======================================================================
  *  File:  soarCommandUtils.c
@@ -433,6 +427,7 @@ void cb_appendToSoarResultResult( agent *the_agent,
 				  soar_callback_data data,
 				  soar_call_data call_data ) {
 
+  the_agent = the_agent;
 
   appendSoarResultResult( ((soarResult *)data), (char *)call_data);
 
@@ -749,6 +744,12 @@ void read_pattern_and_get_matching_productions (list **current_pf_list, bool sho
 
 bool funcalls_match(list *fc1, list *fc2) {
   /* I have no idea how to do this. */
+
+  /* voigtjr: neither do I, so I'm just going to shut up the compiler 
+     warnings with these next two lines */
+  fc1 = fc1;
+  fc2 = fc2;
+
   return FALSE;
 }
 

@@ -1,10 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warning 4100 at top of file!")
-#pragma warning(disable : 4100)
-#endif
-
-
 #include "soarkernel.h"
 
 
@@ -47,7 +40,7 @@ void control_c_handler (int the_signal) {
 
 #endif
 
-
+  the_signal = the_signal;
 }
 
 

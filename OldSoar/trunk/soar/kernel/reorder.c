@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warning 4100 at top of file!")
-#pragma warning(disable : 4100)
-#endif
-
 /*************************************************************************
  *
  *  file:  reorder.c
@@ -1005,7 +999,9 @@ bool test_tests_for_root(test t, list *roots) {
   }
 }
 
-void remove_isa_state_tests_for_non_roots(condition **lhs_top, condition **lhs_bottom, list *roots)
+/* voigtjr: lhs_bottom never referenced in function, removed*/
+/*void remove_isa_state_tests_for_non_roots(condition **lhs_top, condition **lhs_bottom, list *roots)*/
+void remove_isa_state_tests_for_non_roots(condition **lhs_top, list *roots)
 {
   condition *cond;
   bool a,b;
@@ -1040,7 +1036,9 @@ bool reorder_lhs (condition **lhs_top, condition **lhs_bottom,
 
 
   /* SBH/MVP 6-24-94 Fix to include only root "STATE" test in the LHS of a chunk.*/
-  if (roots) remove_isa_state_tests_for_non_roots(lhs_top,lhs_bottom,roots);
+  /* voigtjr: lhs_bottom never referenced in function, removed */
+  /*if (roots) remove_isa_state_tests_for_non_roots(lhs_top,lhs_bottom,roots);*/
+  if (roots) remove_isa_state_tests_for_non_roots(lhs_top,roots);
 
   /* MVP 6-8-94 - fix provided by Bob */
   if (!roots) {

@@ -1,16 +1,14 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warning 4100 at top of file!")
-#pragma warning(disable : 4100)
-#endif
-
 #include "soar_ecore_utils.h"
 
 extern Symbol *make_symbol_for_current_lexeme (void);
 
 void cb_soar_PrintToFile (soar_callback_agent the_agent, soar_callback_data data,
 		       soar_call_data call_data) {
+  
   FILE * f = (FILE *) data;
+
+  the_agent = the_agent; /* stops compiler warning */
+
   fputs((char *) call_data, f);
 }
 

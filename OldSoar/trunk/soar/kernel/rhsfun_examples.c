@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4701 4131 4100 at top of file!")
-#pragma warning(disable : 4701 4131 4100)
-#endif
-
 /***********************************************************
 
   file:  rhsfun_examples.c
@@ -104,8 +98,8 @@ float round_off_heading_float(float n, float m)
 
 Symbol *round_off_heading_air_rhs_function_code (list *args) {
   Symbol *arg;
-  float n, f_m;
-  long i_m;
+  float n = 0, f_m = 0;
+  long i_m = 0;
   cons *c;
   bool float_found = FALSE;
 
@@ -159,8 +153,8 @@ Symbol *round_off_heading_air_rhs_function_code (list *args) {
 -------------------------------------------------------------------- */
 Symbol *round_off_air_rhs_function_code (list *args) {
   Symbol *arg;
-  float n, f_m;
-  long i_m;
+  float n = 0, f_m = 0;
+  long i_m = 0;
   cons *c;
   bool float_found = FALSE;
 
@@ -215,19 +209,14 @@ typedef double float64;
 #define Y 1
 #define Z 2
 
-void vector_from_to_position(pos1,pos2,vector)
-float64 pos1[3];
-float64 pos2[3];
-float64 vector[3];
+void vector_from_to_position(float64 pos1[3],float64 pos2[3],float64 vector[3])
 {
 	vector[X] = pos2[X] - pos1[X];
 	vector[Y] = pos2[Y] - pos1[Y];
 	vector[Z] = pos2[Z] - pos1[Z];
 }
 
-void vec2_norm(v, r, abort)
-float64 v[3], r[3];
-int abort;
+void vec2_norm(float64 v[3], float64 r[3], int abort)
 {
 	float64 mag,mag2;
 	mag2 = v[X] * v[X] + v[Y] * v[Y];
@@ -257,9 +246,7 @@ float64 convert_to_soar_angle (float64 heading_in_rads)
     return heading;
 }
 
-void hrl_xydof_to_heading(xydof,output)
-float64 xydof[3];
-float64 *output;
+void hrl_xydof_to_heading(float64 xydof[3],float64 *output)
 {
     float64 heading_in_rads;
 	
@@ -294,8 +281,7 @@ float64 bracket_rad_to_deg (float64 var)
   return (float64) air_soar_round_off_angle ((long) RAD_TO_DEG(var), 1);
 }
 
-long convert (flo)
-float64 flo;
+long convert (float64 flo)
 {
 	long tempx;
 	tempx = (long) flo;
@@ -462,7 +448,7 @@ Symbol *compute_range_rhs_function_code (list *args) {
  
 /*****************************************************************************/
 
-void add_bot_rhs_functions (agent *a) 
+void add_bot_rhs_functions () 
 {
   add_rhs_function (make_sym_constant("round-off-heading"),
 		    round_off_heading_air_rhs_function_code,
@@ -490,7 +476,7 @@ void add_bot_rhs_functions (agent *a)
 		    FALSE);
 }
 
-void remove_bot_rhs_functions (agent *a) 
+void remove_bot_rhs_functions () 
 {
   remove_rhs_function (make_sym_constant("round-off-heading"));
   remove_rhs_function (make_sym_constant("round-off"));

@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4701 4100 at top of file!")
-#pragma warning(disable : 4701 4100)
-#endif
-
 /*************************************************************************
  *
  *  file:  rhsfun.c
@@ -209,6 +203,7 @@ Symbol *write_rhs_function_code (list *args) {
 -------------------------------------------------------------------- */
 
 Symbol *crlf_rhs_function_code (list *args) {
+  args = args;   /* shuts up compiler */
   return make_sym_constant ("\n");
 }
 
@@ -219,6 +214,7 @@ Symbol *crlf_rhs_function_code (list *args) {
 -------------------------------------------------------------------- */
 
 Symbol *halt_rhs_function_code (list *args) {
+  args = args;   /* shuts up compiler */
   current_agent(system_halted) = TRUE;
   return NIL;
 }
@@ -240,6 +236,8 @@ Symbol *interrupt_rhs_function_code (list *args) {
   
   cons * c;
   agent * the_agent;
+
+  args = args;   /* shuts up compiler */
 
   for(c = all_soar_agents; c != NIL; c = c->rest) {
     the_agent = ((agent *) c->first);
@@ -303,6 +301,8 @@ Symbol *timestamp_rhs_function_code (list *args) {
   struct tm *temp;
   char buf[TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE];
 
+  args = args;   /* shuts up compiler */
+
   now = time(NULL);
 #ifdef THINK_C
   temp = localtime ((const time_t *)&now);
@@ -338,6 +338,8 @@ Symbol *timestamp_rhs_function_code (list *args) {
 Symbol *accept_rhs_function_code (list *args) {
   char buf[2000], *s;
   Symbol *sym;
+
+  args = args;   /* shuts up compiler */
 
   for (;;) {
     s = fgets (buf, 2000, stdin);

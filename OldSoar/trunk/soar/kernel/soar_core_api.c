@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4100 4701 at top of file!")
-#pragma warning(disable : 4100 4701)
-#endif
-
 /**
  * \file soar_core_api.c
  *   
@@ -2472,6 +2466,9 @@ void soar_cTestCallback (soar_callback_agent the_agent,
 				  soar_callback_data data,
 				  soar_call_data call_data)
 {
+  the_agent = the_agent; /* stops compiler warning */
+  call_data = call_data; /* stops compiler warning */
+
   print("%s test callback executed.\n", (char *) data);
 }
 
@@ -2481,11 +2478,12 @@ void soar_cDefaultAskCallback( soar_callback_agent the_agent,
 			       soar_callback_data data,
 			       soar_call_data call_data ) {
   
-  
-  
   int num_candidates, chosen_num;
   preference *cand;
 
+  the_agent = the_agent; /* stops compiler warning */
+  data = data;           /* stops compiler warning */
+  
   *((soar_apiAskCallbackData *)call_data)->selection = NULL;
 
   num_candidates = 0;

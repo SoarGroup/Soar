@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4100 4701 at top of file!")
-#pragma warning(disable : 4100 4701)
-#endif
-
 /*************************************************************************
  *
  *  file:  rete.c
@@ -2295,7 +2289,7 @@ node_varnames *make_nvn_for_posneg_cond (condition *cond,
 
 node_varnames *get_nvn_for_condition_list (condition *cond_list,
                                            node_varnames *parent_nvn) {
-  node_varnames *new;
+  node_varnames *new = NULL;
   condition *cond;
   list *vars;
   
@@ -4029,20 +4023,33 @@ bool error_rete_test_routine (rete_test *rt, token *left, wme *w) {
   strncpy (msg, "Internal error: bad rete test type, hit error_rete_test_routine\n",MESSAGE_SIZE);
   msg[MESSAGE_SIZE-1]=0;
   abort_with_fatal_error(msg);
-  return FALSE; /* unreachable, but without it, gcc -Wall warns here */
+
+  rt;            /* unreachable, but without it, compilers warn here */
+  left;          /* unreachable, but without it, compilers warn here */
+  w;             /* unreachable, but without it, compilers warn here */
+  return FALSE;  /* unreachable, but without it, gcc -Wall warns here */
 }
 
-bool id_is_goal_rete_test_routine (rete_test *rt, token *left, wme *w) {
+bool id_is_goal_rete_test_routine (rete_test * rt, token * left, wme *w) {
+  rt;
+  left;
+
   return w->id->id.isa_goal;
 }
 
 bool id_is_impasse_rete_test_routine (rete_test *rt, token *left, wme *w) {
+
+  left;
+  rt;
+
   return w->id->id.isa_impasse;
 }
 
 bool disjunction_rete_test_routine (rete_test *rt, token *left, wme *w) {
   Symbol *sym;
   cons *c;
+
+  left;
 
   sym = field_from_wme (w,rt->right_field_num);
   for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
@@ -4053,6 +4060,8 @@ bool disjunction_rete_test_routine (rete_test *rt, token *left, wme *w) {
 bool constant_equal_rete_test_routine (rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
  
+  left;
+
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
   return (bool)(s1 == s2);
@@ -4062,6 +4071,8 @@ bool constant_not_equal_rete_test_routine (rete_test *rt, token *left,
                                            wme *w) {
   Symbol *s1, *s2;
  
+  left;
+
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
   return (bool)(s1 != s2);
@@ -4070,6 +4081,8 @@ bool constant_not_equal_rete_test_routine (rete_test *rt, token *left,
 bool constant_less_rete_test_routine (rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
  
+  left;
+
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
   return (bool)numeric_comparison_between_symbols (s1, s2, < );
@@ -4078,6 +4091,8 @@ bool constant_less_rete_test_routine (rete_test *rt, token *left, wme *w) {
 bool constant_greater_rete_test_routine (rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
  
+  left;
+
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
   return (bool)numeric_comparison_between_symbols (s1, s2, > );
@@ -4087,6 +4102,8 @@ bool constant_less_or_equal_rete_test_routine (rete_test *rt, token *left,
                                                wme *w) {
   Symbol *s1, *s2;
  
+  left;
+
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
   return (bool)numeric_comparison_between_symbols (s1, s2, <= );
@@ -4096,6 +4113,8 @@ bool constant_greater_or_equal_rete_test_routine (rete_test *rt, token *left,
                                                   wme *w) {
   Symbol *s1, *s2;
  
+  left;
+
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
   return (bool)numeric_comparison_between_symbols (s1, s2, >= );
@@ -4105,6 +4124,8 @@ bool constant_same_type_rete_test_routine (rete_test *rt, token *left,
                                            wme *w) {
   Symbol *s1, *s2;
  
+  left;
+
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
   return (bool)(s1->common.symbol_type == s2->common.symbol_type);
@@ -4260,6 +4281,10 @@ void unhashed_positive_node_left_addition (rete_node *node, token *new);
 
 void rete_error_left (rete_node *node, token *t, wme *w) {
   char msg[MESSAGE_SIZE];
+
+  w;
+  t;
+
   snprintf (msg, MESSAGE_SIZE,"Rete net error:  tried to left-activate node of type %d\n",
          node->node_type);
   msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
@@ -4268,6 +4293,9 @@ void rete_error_left (rete_node *node, token *t, wme *w) {
 
 void rete_error_right (rete_node *node, wme *w) {
   char msg[MESSAGE_SIZE];
+
+  w;
+
   snprintf (msg, MESSAGE_SIZE, "Rete net error:  tried to right-activate node of type %d\n",
          node->node_type);
   msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
@@ -6695,7 +6723,7 @@ void retesave_rete_node_and_children (rete_node *node) {
 
 void reteload_node_and_children (rete_node *parent) {
   byte type, left_unlinked_flag;
-  rete_node *new, *ncc_top;
+  rete_node *new = NULL, *ncc_top;
   unsigned long count;
   alpha_mem *am;
   production *prod;
@@ -6703,6 +6731,8 @@ void reteload_node_and_children (rete_node *parent) {
   list *ubv_list;
   var_location left_hash_loc;
   rete_test *other_tests;
+
+  left_hash_loc.levels_up = 0; /* quells compiler warning */
   
   type = reteload_one_byte();
 
@@ -7147,6 +7177,8 @@ token *dummy_matches_node_tokens;
 void dummy_matches_node_left_addition (rete_node *node, token *tok, wme *w) {
   token *new;
   
+  node;
+
   /* --- just add a token record to dummy_matches_node_tokens --- */
   allocate_with_pool (&current_agent(token_pool),  &new);
   new->node = NIL;

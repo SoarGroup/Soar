@@ -151,7 +151,8 @@ void init_soar_agent(void) {
   create_predefined_symbols();
   init_production_utilities();
   init_built_in_rhs_functions ();
-  add_bot_rhs_functions (soar_agent);
+  /*add_bot_rhs_functions (soar_agent);*/
+  add_bot_rhs_functions ();
   init_rete ();
   init_lexer ();
   init_firer ();

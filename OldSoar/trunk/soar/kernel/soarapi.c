@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4100 4701 4706 4702 at top of file!")
-#pragma warning(disable : 4100 4701 4706 4702)
-#endif
-
 /**
  * \file soarapi.c
  *                      The High Level Interface to Soar
@@ -81,6 +75,9 @@
  */
 
 int soar_ReInitSoar( int argc, const char *argv[], soarResult *res ) {
+
+  argv;
+  argc;
 
   clearSoarResultResult( res );
   soar_cReInitSoar();
@@ -256,11 +253,13 @@ int soar_DestroyAgent ( int argc, const char *argv[], soarResult *res)
 
 int soar_Quit( int argc, const char *argv[], soarResult *res ) {
   
+  argv;
+  argc;
+  res;
 
   soar_cQuit();
   return SOAR_OK;
 }
-
 
 
 
@@ -1459,8 +1458,9 @@ int soar_ExplainBacktraces ( int argc, const char *argv[], soarResult *res)
 
 int soar_FiringCounts (int argc, const char *argv[], soarResult *res)
 {
-  int num_requested;
+  int num_requested = 0;
 
+  res;
 
   if (argc > 1)
     {
@@ -1482,7 +1482,6 @@ int soar_FiringCounts (int argc, const char *argv[], soarResult *res)
   
   
 }
-
 
 
 
@@ -1709,8 +1708,11 @@ int soar_IndifferentSelection (int argc, const char *argv[], soarResult *res)
  *
  *----------------------------------------------------------------------
  */
+
 int soar_InternalSymbols (int argc, const char *argv[], soarResult *res)
 {
+
+  argv;
 
   if (argc > 1)
     {
@@ -1812,55 +1814,43 @@ int soar_Memories ( int argc, const char *argv[], soarResult *res)
   for (i = 0; i < NUM_PRODUCTION_TYPES; i++)
     mems_to_print[i] = FALSE;
 
-  for (i = 1; i < argc; i++)
-    {
-      if (string_match_up_to(argv[i], "-chunks", 2))
-	{
-	  mems_to_print[CHUNK_PRODUCTION_TYPE] = TRUE;
-	  set_mems = TRUE;
-	}
-      else if (string_match_up_to(argv[i], "-user", 2))
-	{
-	  mems_to_print[USER_PRODUCTION_TYPE] = TRUE;
-	  set_mems = TRUE;
-	}
-      else if (string_match_up_to(argv[i], "-defaults", 2))
-	{
-	  mems_to_print[DEFAULT_PRODUCTION_TYPE] = TRUE;
-	  set_mems = TRUE;
-	}
-      else if (string_match_up_to(argv[i], "-justifications", 2))
-	{
-	  mems_to_print[JUSTIFICATION_PRODUCTION_TYPE] = TRUE;
-	  set_mems = TRUE;
-	}
-      else if ((prod = name_to_production(argv[i])))
-	{
-	  print("\n Memory use for %s: %ld\n\n", argv[i], 
-		count_rete_tokens_for_production(prod));
-	  set_mems = TRUE;
-  	}
-      else if (getInt( argv[i], &num) == SOAR_OK)
-	{
-	  if (num <= 0)
-	    {
-	      setSoarResultResult( res, 
-		      "Count argument to memories must be a positive integer, not: %s", 
-		      argv[i]);
-	      return SOAR_ERROR;
-	    }
-	  else
-	    {
-	      num_items = num;
-	    }
-	}
-      else
-	{
-	  setSoarResultResult( res, 
-		  "Unrecognized argument to memories: %s", argv[i]);
-	  return SOAR_ERROR;
-	}
+  for (i = 1; i < argc; i++) {
+    if (string_match_up_to(argv[i], "-chunks", 2)) {
+      mems_to_print[CHUNK_PRODUCTION_TYPE] = TRUE;
+      set_mems = TRUE;
+
+    } else if (string_match_up_to(argv[i], "-user", 2)) {
+      mems_to_print[USER_PRODUCTION_TYPE] = TRUE;
+      set_mems = TRUE;
+
+    } else if (string_match_up_to(argv[i], "-defaults", 2)) {
+      mems_to_print[DEFAULT_PRODUCTION_TYPE] = TRUE;
+      set_mems = TRUE;
+
+    } else if (string_match_up_to(argv[i], "-justifications", 2)) {
+      mems_to_print[JUSTIFICATION_PRODUCTION_TYPE] = TRUE;
+      set_mems = TRUE;
+
+    } else {
+      prod = name_to_production(argv[i]);
+      if (prod) {
+        print("\n Memory use for %s: %ld\n\n", argv[i], count_rete_tokens_for_production(prod));
+        set_mems = TRUE;
+
+      } else if (getInt( argv[i], &num) == SOAR_OK) {
+        if (num <= 0) {
+          setSoarResultResult( res, "Count argument to memories must be a positive integer, not: %s", argv[i]);
+          return SOAR_ERROR;
+        } else {
+          num_items = num;
+        }
+
+      } else {
+        setSoarResultResult( res, "Unrecognized argument to memories: %s", argv[i]);
+        return SOAR_ERROR;
+      }
     }
+  }
 
   if (!set_mems) {
     mems_to_print[JUSTIFICATION_PRODUCTION_TYPE] = TRUE;
@@ -2871,148 +2861,92 @@ int soar_Log ( int argc, const char *argv[], soarResult *res)
   char * too_few = "Too few arguments, should be: log [-new | -existing] pathname | log -add string | log -query | log -off";
   char * too_many = "Too many arguments, should be: log [-new | -existing] pathname | log -add string | log -query | log -off";
 
-  if (argc < 2)
-    {
-      setSoarResultResult( res, "The log file is " );
-      if (soar_exists_callback(soar_agent,
-			       LOG_CALLBACK))
-	{
-	  appendSoarResultResult( res, 
-			   "open.  Use log -off to close the file." );
-	}
-      else
-	{
-	  appendSoarResultResult( res, "closed." ); 
-	}
+  if (argc < 2) {
+    setSoarResultResult( res, "The log file is " );
 
-      return SOAR_OK;      
+    if (soar_exists_callback(soar_agent, LOG_CALLBACK)) {
+      appendSoarResultResult( res, "open.  Use log -off to close the file." );
+    } else {
+      appendSoarResultResult( res, "closed." ); 
     }
 
-  if (argc > 3)
-    {
+    return SOAR_OK;      
+  }
+
+  if (argc > 3) {
+    setSoarResultResult( res,  too_many );
+    return SOAR_ERROR;      
+  }
+
+  if (string_match_up_to("-add", argv[1], 2)) {
+    if (argc == 3) {
+      soar_invoke_first_callback( soar_agent, LOG_CALLBACK, argv[2] );
+    } else if (argc < 3) {
+      setSoarResultResult( res,  too_few );
+      return SOAR_ERROR;      
+    } else {
       setSoarResultResult( res,  too_many );
       return SOAR_ERROR;      
     }
 
-  if (string_match_up_to("-add", argv[1], 2))
-    {
-      if (argc == 3)
-	{
-
-	  soar_invoke_first_callback( soar_agent,
-				      LOG_CALLBACK,
-				      argv[2] );
-	}
-      else if (argc < 3)
-	{
-	  setSoarResultResult( res,  too_few );
-	  return SOAR_ERROR;      
-	}
-      else 
-	{
-	  setSoarResultResult( res,  too_many );
-	  return SOAR_ERROR;      
-	}
-    }
-  else if (string_match_up_to("-query", argv[1], 2))
-    {
-      if (argc == 2)
-	{
-	  if (soar_exists_callback( soar_agent,
-				   LOG_CALLBACK))
-	    {
-	      setSoarResultResult( res, "open" );
-	    }
-	  else
-	    {
-	      setSoarResultResult( res,  "closed" );
-	    }
-	}
-      else if (argc < 2)
-	{
-	  setSoarResultResult( res,  too_few );
-	  return SOAR_ERROR;      
-	}
-      else 
-	{
-	  setSoarResultResult( res,  too_many );
-	  return SOAR_ERROR;      
-	}
-    }
-  else if (string_match_up_to("-off", argv[1], 2))
-    {
-      if (argc == 2)
-	{
-	  if( soar_ecCloseLog( ) == 0 ) {
-	    setSoarResultResult( res, "log file closed" );
-	  }
-	  else {
-	    setSoarResultResult( res, 
-				 "Attempt to close non-existant log file" );
-	    
-	  }
-	}
-      else if (argc > 2)
-	{
-	  setSoarResultResult( res, too_many );
-	  return SOAR_ERROR;      
-	}
-    }
-  else
-    { /* Either we have a file open/append request or there is an error */
-      
-      const char * filename;
-      char * mode;
-
-      if (argc == 2)
-	{
-	  filename = argv[1];
-	  mode = "w";
-	} 
-      else if (string_match_up_to("-new", argv[1], 2))
-	{
-	  filename = argv[2];
-	  mode = "w";
-	}
-      else if (string_match_up_to("-new", argv[2], 2))
-	{
-	  filename = argv[1];
-	  mode = "w";
-	}
-      else if (string_match_up_to("-existing", argv[1], 2))
-	{
-	  filename = argv[2];
-	  mode = "a";
-	}
-      else if (string_match_up_to("-existing", argv[2], 2))
-	{
-	  filename = argv[1];
-	  mode = "a";
-	}
-      else
-	{
-	  setSoarResultResult( res, 
-		  "log: unrecognized arguments: %s %s",
-		  argv[1], argv[2]);
-	  return SOAR_ERROR;
-	}
-
-      
-      if ( soar_ecOpenLog( filename, mode ) == 0 ) {
-	  
-	/* Soar-Bugs #74 TMH */
-	setSoarResultResult( res,
-			     "log file '%s' opened",
-			     filename);
+  } else if (string_match_up_to("-query", argv[1], 2)) {
+    if (argc == 2) {
+      if (soar_exists_callback( soar_agent, LOG_CALLBACK)) {
+        setSoarResultResult( res, "open" );
+      } else {
+        setSoarResultResult( res,  "closed" );
       }
-      else {
-	setSoarResultResult( res,
-			     "log: Error: unable to open '%s'",
-			     filename);
-	return SOAR_ERROR;
-	
-      }
+
+    } else {
+      setSoarResultResult( res,  too_many );
+      return SOAR_ERROR;      
     }
+
+  } else if (string_match_up_to("-off", argv[1], 2)) {
+    if (argc == 2) {
+      if( soar_ecCloseLog( ) == 0 ) {
+        setSoarResultResult( res, "log file closed" );
+      } else {
+        setSoarResultResult( res, "Attempt to close non-existant log file" );
+      }
+    } else if (argc > 2) {
+      setSoarResultResult( res, too_many );
+      return SOAR_ERROR;      
+    }
+
+  } else { /* Either we have a file open/append request or there is an error */
+    const char * filename;
+    char * mode;
+    
+    if (argc == 2) {
+      filename = argv[1];
+      mode = "w";
+    } else if (string_match_up_to("-new", argv[1], 2)) {
+      filename = argv[2];
+      mode = "w";
+    } else if (string_match_up_to("-new", argv[2], 2)) {
+      filename = argv[1];
+      mode = "w";
+    } else if (string_match_up_to("-existing", argv[1], 2)) {
+      filename = argv[2];
+      mode = "a";
+    } else if (string_match_up_to("-existing", argv[2], 2)) {
+      filename = argv[1];
+      mode = "a";
+    } else {
+      setSoarResultResult( res, "log: unrecognized arguments: %s %s", argv[1], argv[2]);
+      return SOAR_ERROR;
+    }
+
+    if ( soar_ecOpenLog( filename, mode ) == 0 ) {
+      /* Soar-Bugs #74 TMH */
+      setSoarResultResult( res, "log file '%s' opened", filename);
+      
+    } else {
+      setSoarResultResult( res, "log: Error: unable to open '%s'", filename);
+      return SOAR_ERROR;
+    }
+  }
   
   return SOAR_OK;
 }
@@ -3647,6 +3581,9 @@ int soar_DefaultWmeDepth ( int argc, const char *argv[], soarResult *res )
 
 int soar_BuildInfo( int argc, const char *argv[], soarResult *res ) {
   
+  argv;
+  argc;
+
   soar_ecBuildInfo();
   setSoarResultResult( res, soar_version_string );
   return SOAR_OK;
@@ -3663,10 +3600,14 @@ int soar_BuildInfo( int argc, const char *argv[], soarResult *res ) {
 
 int soar_ExcludedBuildInfo( int argc, const char *argv[], soarResult *res ) {
   
+  argv;
+  argc;
+
   soar_ecExcludedBuildInfo();
   setSoarResultResult( res, soar_version_string );
   return SOAR_OK;
 }
+
 
 
 /*
@@ -3677,11 +3618,13 @@ int soar_ExcludedBuildInfo( int argc, const char *argv[], soarResult *res ) {
  *----------------------------------------------------------------------
  */
 
-
 int soar_GDSPrint( int argc, const char *argv[], soarResult *res ) {
   
+  res;
+  argc;
+  argv;
+
   soar_ecGDSPrint();
   return SOAR_OK;
 }
-
 

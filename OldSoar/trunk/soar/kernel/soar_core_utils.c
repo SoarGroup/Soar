@@ -795,7 +795,7 @@ void soar_default_destroy_agent_procedure (psoar_agent delete_agent)
    /* change the current agent to the one to delete */
   soar_agent = delete_agent; 
   remove_built_in_rhs_functions();
-  remove_bot_rhs_functions (soar_agent);
+  remove_bot_rhs_functions ();
 
   if ( already_deleted ) {
     char msg[MESSAGE_SIZE];
