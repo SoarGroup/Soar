@@ -10,6 +10,6 @@ set tsiConfig(simulationName) {Eaters}
 set tsiConfig(hasEnvironment) 1
 
 set tsiConfig(ControlPanel) ETControlPanel
-set tsiConfig(ControlPanelVersion) 1.1
+set tsiConfig(ControlPanelVersion) 3.2.0
 
 set tsiSuppressMenus(demos) 1

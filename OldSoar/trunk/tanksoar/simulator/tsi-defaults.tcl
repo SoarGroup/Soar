@@ -9,9 +9,8 @@ set tsiConfig(expertise) 1
 set tsiConfig(interfaceType) 2
 set tsiConfig(searchTextFont) fixed
 set tsiConfig(ControlPanel) ETControlPanel
-set tsiConfig(ControlPanelVersion) 1.1
+set tsiConfig(ControlPanelVersion) 3.2.0
 set tsiConfig(hasEnvironment) 1
 set tsiConfig(ControlPanel) ETControlPanel
-set tsiConfig(ControlPanelVersion) 1.1
 
 set tsiSuppressMenus(commands,3) 1
