@@ -329,6 +329,8 @@ int ElementXMLImpl::ReleaseRef()
 	// Have to store this locally, before we call "delete this"
 	int refCount = m_RefCount ;
 
+//	printf("Release Ref for hXML = 0x%x making ref count %d\n", (int)this, m_RefCount) ;
+
 	if (m_RefCount == 0)
 		delete this ;
 
@@ -345,6 +347,16 @@ int ElementXMLImpl::AddRef()
 {
 	m_RefCount++ ;
 
+//	printf("Add Ref for hXML = 0x%x making ref count %d\n", (int)this, m_RefCount) ;
+
+	return m_RefCount ;
+}
+
+/*************************************************************
+* @returns Reports the current reference count (must be > 0)
+*************************************************************/
+int ElementXMLImpl::GetRefCount()
+{
 	return m_RefCount ;
 }
 

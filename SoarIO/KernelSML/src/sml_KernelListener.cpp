@@ -144,7 +144,6 @@ void KernelListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr)
 #ifdef _DEBUG
 	// Generate a text form of the XML so we can look at it in the debugger.
 	char* pStr = pMsg->GenerateXMLString(true) ;
-	pMsg->DeleteString(pStr) ;
 #endif
 
 	// Send this message to all listeners
@@ -163,6 +162,11 @@ void KernelListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr)
 
 		connectionIter++ ;
 	}
+
+#ifdef _DEBUG
+	// Release the string form we generated for the debugger
+	pMsg->DeleteString(pStr) ;
+#endif
 
 	// Clean up
 	delete pMsg ;

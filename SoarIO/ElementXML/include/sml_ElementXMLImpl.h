@@ -95,7 +95,7 @@ protected:
 	xmlString		m_CharacterData ;	// The character data (e.g. in <name>Albert Einstein</name> the char data is "Albert Einstein")
 	xmlAttributeMap	m_AttributeMap ;	// Mapping from attribute-name to attribute-value (e.g. in <name first="Albert"> first is an attribute with value "Albert")
 	xmlList			m_Children ;		// List of children of this element
-	int				m_RefCount ;		// Reference count.  Set to 1 on initialization.  When reaches 0 the object is deleted.
+	volatile int	m_RefCount ;		// Reference count.  Set to 1 on initialization.  When reaches 0 the object is deleted.
 	bool			m_DataIsBinary ;	// If true, then the character data is treated as a binary buffer (can contain embedded nulls) and the binary length is needed
 	int				m_BinaryDataLength ;// Gives the length of the character data buffer, when it's being treated as a binary buffer.  (only valid if m_IsDataBinary is true).
 
@@ -144,6 +144,11 @@ public:
 	* @returns The new reference count (will be at least 2).
 	*************************************************************/
 	int AddRef() ;
+
+	/*************************************************************
+	* @returns Reports the current reference count (must be > 0)
+    *************************************************************/
+	int GetRefCount() ;
 
 	////////////////////////////////////////////////////////////////
 	//

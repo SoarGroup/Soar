@@ -105,6 +105,14 @@ int ElementXML::AddRefOnHandle()
 	return ::sml_AddRef(m_hXML) ;
 }
 
+/*************************************************************
+* @returns Reports the current reference count (must be > 0)
+*************************************************************/
+int ElementXML::GetRefCount()
+{
+	return ::sml_GetRefCount(m_hXML) ;
+}
+
 ////////////////////////////////////////////////////////////////
 //
 // Ownership functions

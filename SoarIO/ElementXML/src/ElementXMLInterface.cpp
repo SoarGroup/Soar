@@ -67,6 +67,14 @@ int sml_ReleaseRef(ElementXML_Handle hXML)
 }
 
 /*************************************************************
+* @returns Reports the current reference count (must be > 0)
+*************************************************************/
+int sml_GetRefCount(ElementXML_Handle hXML)
+{
+	return GetElementFromHandle(hXML)->GetRefCount() ;
+}
+
+/*************************************************************
 * @brief Add a new reference to this object.
 *        The object will only be deleted after calling
 *        releaseRef() one more time than addRef() has been

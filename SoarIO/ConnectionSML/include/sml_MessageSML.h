@@ -27,6 +27,8 @@ public:
 	MessageSML() ;
 	MessageSML(DocType type, int id) ;
 
+	virtual ~MessageSML() { }
+
 	char const* GetID()
 	{
 		char const* pID = this->GetAttribute(sml_Names::kID) ;

@@ -35,6 +35,8 @@ RemoteConnection::~RemoteConnection()
 
 void RemoteConnection::SendMessage(ElementXML* pMsg)
 {
+	ClearError() ;
+
 	// Convert the message to an XML string
 	char* pXMLString = pMsg->GenerateXMLString(true) ;
 

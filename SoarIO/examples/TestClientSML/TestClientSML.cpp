@@ -94,8 +94,13 @@ void SimpleRemoteConnection()
 // for "life" 10'ths of a second (e.g. 10 = live for 1 second)
 bool SimpleListener(int life)
 {
+	// Choose how to connect (usually use NewThread) but for
+	// testing currentThread can be helpful.
+	bool useCurrentThread = false ;
+
 	// Create the kernel instance
-	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("KernelSML") ;
+	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread("KernelSML") :
+											  sml::Kernel::CreateKernelInNewThread("KernelSML") ;
 
 	if (pKernel->HadError())
 	{
@@ -103,13 +108,25 @@ bool SimpleListener(int life)
 		return false ;
 	}
 
+//	pKernel->SetTraceCommunications(true) ;
+
+//pKernel->CreateAgent("test1") ;
+
+	int pause = 100 ;
+
+	// If we're running in this thread we need to wake up more rapidly.
+	if (useCurrentThread)
+	{ life *= 10 ; pause /= 10 ; }
+
 	for (int i = 0 ; i < life ; i++)
 	{
-		// Don't need to check for incoming as we're using the SoarThread model.
+		// Don't need to check for incoming as we're using the NewThread model.
 		// (If we switch to Client we'd need to cut this sleep down a lot to
 		//  get any kind of responsiveness).
-		//bool check = pKernel->CheckForIncomingCommands() ;
-		SLEEP(100) ;
+		if (useCurrentThread)
+			bool check = pKernel->CheckForIncomingCommands() ;
+
+		SLEEP(pause) ;
 	}
 
 	delete pKernel ;
@@ -181,7 +198,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Set this to true to give us lots of extra debug information on remote clients
 		// (useful in a test app like this).
-		pKernel->SetTraceCommunications(false) ;
+//		pKernel->SetTraceCommunications(true) ;
 
 		// Register a kernel event handler...unfortunately I can't seem to find an event
 		// that gSKI actually fires, so this handler won't get called.  Still, the code is there
@@ -191,6 +208,11 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		int callback5 = pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_CREATED, &MyCreationHandler, 0) ;
 
 		char const* name = "test-client-sml" ;
+
+		int numberAgents = pKernel->GetNumberAgents() ;
+
+		// Report the number of agents (always 0 unless this is a remote connection to a CLI or some such)
+		cout << "Existing agents: " << numberAgents << endl ;
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent(name) ;
@@ -211,8 +233,13 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		if (simpleInitSoar) 
 		{
+			SLEEP(200) ;
+
 			cout << "Performing simple init-soar..." << endl << endl;
 			pAgent->InitSoar() ;
+
+			SLEEP(200) ;
+
 			ok = pKernel->DestroyAgent(pAgent) ;
 			if (!ok)
 			{

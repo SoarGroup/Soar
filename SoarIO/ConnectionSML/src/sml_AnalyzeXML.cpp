@@ -140,6 +140,23 @@ int AnalyzeXML::GetArgInt(char const* pArgName, int argPos, int defaultValue) co
 *************************************************************/
 void AnalyzeXML::Analyze(ElementXML const* pRootXML)
 {
+	// If we've already used this object to run an analysis before
+	// we need to delete any existing references and start over
+	// (this is not really recommended as creating an AnalyzeXML object is pretty quick and painless)
+	if (m_hRootObject)
+	{
+		::sml_ReleaseRef(m_hRootObject) ;
+
+		delete m_pCommand ;
+		delete m_pResult ;
+		delete m_pError ;
+
+		m_pCommand = 0 ;
+		m_pResult = 0 ;
+		m_pError = 0 ;
+		m_IsSML		= false ;
+	}
+
 	// We need to keep this handle around for the life
 	// of the AnalyzeXML object.
 	m_hRootObject = pRootXML->GetXMLHandle() ;

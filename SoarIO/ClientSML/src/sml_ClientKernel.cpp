@@ -291,6 +291,12 @@ void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, Eleme
 	// Get the name of the agent this event refers to.
 	char const* pAgentName = pIncoming->GetArgValue(sml_Names::kParamName) ;
 
+	// Look up the handler(s) from the map
+	AgentEventMap::ValueList* pHandlers = m_AgentEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
 	// See if we already have an Agent* for this agent.
 	// We may not, because "agent created" events are included in the list that come here.
 	Agent* pAgent = GetAgent(pAgentName) ;
@@ -301,12 +307,6 @@ void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, Eleme
 		// We have to do this now because we'll be passing it back to the caller in a minute
 		pAgent = MakeAgent(pAgentName) ;
 	}
-
-	// Look up the handler(s) from the map
-	AgentEventMap::ValueList* pHandlers = m_AgentEventMap.getList(id) ;
-
-	if (!pHandlers)
-		return ;
 
 	// Go through the list of event handlers calling each in turn
 	for (AgentEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
@@ -569,6 +569,8 @@ Agent* Kernel::MakeAgent(char const* pAgentName)
 
 	// Register to get output link events.  These won't come back as standard events.
 	// Instead we'll get "output" messages which are handled in a special manner.
+	// BADBAD: We shouldn't register this for all clients--just those doing I/O.
+	// We need to separate those out.  This just makes everyone slower than they need to be.
 	agent->RegisterForEvent(smlEVENT_OUTPUT_PHASE_CALLBACK) ;
 
 	return agent ;

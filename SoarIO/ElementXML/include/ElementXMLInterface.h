@@ -80,6 +80,11 @@ EXPORT int sml_ReleaseRef(ElementXML_Handle hXML) ;
 *************************************************************/
 EXPORT int sml_AddRef(ElementXML_Handle hXML) ;
 
+/*************************************************************
+* @returns Reports the current reference count (must be > 0)
+*************************************************************/
+EXPORT int sml_GetRefCount(ElementXML_Handle hXML) ;
+
 ////////////////////////////////////////////////////////////////
 //
 // Tag functions (e.g the tag in <name>...</name> is "name")

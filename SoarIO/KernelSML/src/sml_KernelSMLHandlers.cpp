@@ -234,6 +234,8 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 				pKernelSML->AddKernelListener(id, pConnection) ;
 			else
 				pKernelSML->RemoveKernelListener(id, pConnection) ;
+
+			break ;
 		}
 
 		// Agent listener events
