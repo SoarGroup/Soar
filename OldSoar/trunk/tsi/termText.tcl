@@ -128,7 +128,9 @@ bind $w <Triple-Shift-1>	{
     break
 }
 bind $w <ButtonRelease-1> {
-    tkCancelRepeat
+#    tkCancelRepeat
+    tk::CancelRepeat
+
     if !$tkPriv(mouseMoved) {
         termTextMaybeSetCursor %W %x %y
     }
@@ -212,10 +214,15 @@ bind $w <Right> {
 uplevel #0 set currentHistory 0
 
 bind $w <Up> {
+echo "1"
     %W delete {insert linestart} {insert lineend}
+echo "2"
     termTextRewriteUserText %W
+echo "3"
     termTextSetCursor %W [termTextUpDownLine %W -1]
+echo "4"
     if { $currentHistory > 1 } {
+
         uplevel #0 set currentHistory [expr $currentHistory - 1]
     }
     if { $currentHistory > 0 } {
@@ -646,13 +653,15 @@ proc termTextSelectTo {w x y} {
 # bother to do that, because we have disabled keystroke selection.
 proc termTextSetCursor {w pos} {
     global tkPriv
-
+echo "6"
     if [$w compare $pos >= end] {
 	set pos {end - 1 chars}
     }
+echo "7"
     if [$w compare $pos <= promptEnd] {
         set pos {promptEnd + 1 chars}
     }
+echo "8"
     $w mark set insert $pos
     $w mark set userCursor insert
     $w see insert
