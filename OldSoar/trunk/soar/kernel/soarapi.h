@@ -236,7 +236,7 @@ extern int soar_CreateAgent( int argc, char *argv[], soarResult *res );
  *           Runs the Soar agents for the indicated duration
  * 
  * */
-extern int soar_Run (int argc, char *argv[], soarResult *res);
+extern int soar_Run (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -433,7 +433,7 @@ extern int soar_ReteNet( int argc, char *argv[], soarResult *res );
  *           Adds the given wme to working memory.
  *
  * */
-extern int soar_AddWme ( int argc, char *argv[], soarResult *res);
+extern int soar_AddWme ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -479,7 +479,7 @@ extern int soar_AddWme ( int argc, char *argv[], soarResult *res);
  *
  * */
 
-extern int soar_RemoveWme (int argc, char *argv[], soarResult *res);
+extern int soar_RemoveWme (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -524,7 +524,7 @@ extern int soar_RemoveWme (int argc, char *argv[], soarResult *res);
  *           For -all and -task, does an init-soar.
  *
  * */
-extern int soar_Excise ( int argc, char *argv[], soarResult *res);
+extern int soar_Excise ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -586,7 +586,7 @@ extern int soar_Excise ( int argc, char *argv[], soarResult *res);
  *           Opens and/or closes captured input files.  
  *
  * */
-extern int soar_CaptureInput( int argc, char *argv[], soarResult *res );
+extern int soar_CaptureInput( int argc, const char *argv[], soarResult *res );
 
 
 /**
@@ -624,7 +624,7 @@ extern int soar_CaptureInput( int argc, char *argv[], soarResult *res );
  *           Opens and/or closes replay files.  
  *
  * */
-extern int soar_ReplayInput( int argc, char *argv[], soarResult *res );
+extern int soar_ReplayInput( int argc, const char *argv[], soarResult *res );
 #endif
 
 
@@ -662,7 +662,7 @@ extern int soar_ReplayInput( int argc, char *argv[], soarResult *res );
  *
  *
  */
-extern int soar_ChunkNameFormat (int argc, char *argv[], soarResult *res);
+extern int soar_ChunkNameFormat (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -721,7 +721,7 @@ extern int soar_ChunkNameFormat (int argc, char *argv[], soarResult *res);
  *
  *
  */
-extern int soar_Learn (int argc, char *argv[], soarResult *res);
+extern int soar_Learn (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -769,7 +769,7 @@ extern int soar_Learn (int argc, char *argv[], soarResult *res);
  *           Sets the maximum elaborations allowed.
  *
  *---------------------------------------------------------------------- */
-extern int soar_MaxElaborations (int argc, char *argv[], soarResult *res);
+extern int soar_MaxElaborations (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -816,7 +816,7 @@ extern int soar_MaxElaborations (int argc, char *argv[], soarResult *res);
  *           Sets the maximum chunks allowed.
  *
  *---------------------------------------------------------------------- */
-extern int soar_MaxChunks (int argc, char *argv[], soarResult *res);
+extern int soar_MaxChunks (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -855,7 +855,7 @@ extern int soar_MaxChunks (int argc, char *argv[], soarResult *res);
  *           Also modifies the soar_version_string.
  *
  * */
-extern int soar_Operand2 ( int argc, char *argv[], soarResult *res);
+extern int soar_Operand2 ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -894,7 +894,7 @@ extern int soar_Operand2 ( int argc, char *argv[], soarResult *res);
  *           Changes the wait/snc state
  *
  *---------------------------------------------------------------------- */
-extern int soar_WaitSNC ( int argc, char *argv[], soarResult *res);
+extern int soar_WaitSNC ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -940,7 +940,7 @@ extern int soar_WaitSNC ( int argc, char *argv[], soarResult *res);
  *           Sets/prints the input period for the agent.
  *
  *---------------------------------------------------------------------- */
-extern int soar_InputPeriod ( int argc, char *argv[], soarResult *res);
+extern int soar_InputPeriod ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -981,7 +981,7 @@ extern int soar_InputPeriod ( int argc, char *argv[], soarResult *res);
  *           of symbols that are declared to multi-attributed.
  *
  * */
-extern int soar_MultiAttributes (int argc, char *argv[], soarResult *res);
+extern int soar_MultiAttributes (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1025,7 +1025,7 @@ extern int soar_MultiAttributes (int argc, char *argv[], soarResult *res);
  *
  *
  */
-extern int soar_OSupportMode (int argc, char *argv[], soarResult *res);
+extern int soar_OSupportMode (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1101,7 +1101,7 @@ extern int soar_OSupportMode (int argc, char *argv[], soarResult *res);
  *           None.
  *
  * */
-extern int soar_ExplainBacktraces ( int argc, char *argv[], soarResult *res);
+extern int soar_ExplainBacktraces ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1153,7 +1153,7 @@ extern int soar_ExplainBacktraces ( int argc, char *argv[], soarResult *res);
  *           Prints information about production firings.
  *
  * */
-extern int soar_FiringCounts (int argc, char *argv[], soarResult *res);
+extern int soar_FiringCounts (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1271,7 +1271,7 @@ extern int soar_FiringCounts (int argc, char *argv[], soarResult *res);
  *
  *
  */
-extern int soar_FormatWatch ( int argc, char *argv[], soarResult *res);
+extern int soar_FormatWatch ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1320,7 +1320,7 @@ extern int soar_FormatWatch ( int argc, char *argv[], soarResult *res);
  *           Modifies the setting of the indifferent-selection option.
  *
  * */
-extern int soar_IndifferentSelection (int argc, char *argv[], soarResult *res);
+extern int soar_IndifferentSelection (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1355,7 +1355,7 @@ extern int soar_IndifferentSelection (int argc, char *argv[], soarResult *res);
  *
  *
  */
-extern int soar_InternalSymbols (int argc, char *argv[], soarResult *res);
+extern int soar_InternalSymbols (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1409,7 +1409,7 @@ extern int soar_InternalSymbols (int argc, char *argv[], soarResult *res);
  *           Prints production match information.
  *
  * */
-extern int soar_Matches (int argc, char *argv[], soarResult *res);
+extern int soar_Matches (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1452,7 +1452,7 @@ extern int soar_Matches (int argc, char *argv[], soarResult *res);
  *           Prints information about memory usage of partial matches.
  *
  * */
-extern int soar_Memories ( int argc, char *argv[], soarResult *res);
+extern int soar_Memories ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1519,7 +1519,7 @@ extern int soar_Memories ( int argc, char *argv[], soarResult *res);
  *           Prints the productions found
  *
  * */
-extern int soar_ProductionFind (int argc, char *argv[], soarResult *res );
+extern int soar_ProductionFind (int argc, const char *argv[], soarResult *res );
 
 
 
@@ -1569,7 +1569,7 @@ extern int soar_ProductionFind (int argc, char *argv[], soarResult *res );
  *           Prints preference information.
  *
  * */
-extern int soar_Preferences ( int argc, char *argv[], soarResult *res);
+extern int soar_Preferences ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1664,7 +1664,7 @@ extern int soar_Preferences ( int argc, char *argv[], soarResult *res);
  *      print -filename <production-name>+
  *
  * */
-extern int soar_Print (int argc, char *argv[], soarResult *res);
+extern int soar_Print (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1712,7 +1712,7 @@ extern int soar_Print (int argc, char *argv[], soarResult *res);
  *
  * */
 
-extern int soar_PWatch (int argc, char *argv[], soarResult *res);
+extern int soar_PWatch (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1829,7 +1829,7 @@ extern int soar_Pool (int argc, char *argv[], soarResult *res);
  *
  * */
 
-extern int soar_Sp (int argc, char *argv[], soarResult *res);
+extern int soar_Sp (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1920,7 +1920,7 @@ extern int soar_Sp (int argc, char *argv[], soarResult *res);
  *
  */
 
-extern int soar_Stats ( int argc, char *argv[], soarResult *res);
+extern int soar_Stats ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1955,7 +1955,7 @@ extern int soar_Stats ( int argc, char *argv[], soarResult *res);
  *
  */
 
-extern int soar_Stop (int argc, char *argv[], soarResult *res);
+extern int soar_Stop (int argc, const char *argv[], soarResult *res);
 
 
 
@@ -1994,7 +1994,7 @@ extern int soar_Stop (int argc, char *argv[], soarResult *res);
  *           none.  it just sets soar_verbose_flag.
  *
  * */
-extern int soar_Verbose ( int argc, char *argv[], soarResult *res);
+extern int soar_Verbose ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -2035,7 +2035,7 @@ extern int soar_Verbose ( int argc, char *argv[], soarResult *res);
  *
  * */
 
-extern int soar_Warnings ( int argc, char *argv[], soarResult *res);
+extern int soar_Warnings ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -2079,7 +2079,7 @@ extern int soar_Warnings ( int argc, char *argv[], soarResult *res);
  *           Opens and/or closes log files.
  *
  * */
-extern int soar_Log ( int argc, char *argv[], soarResult *res);
+extern int soar_Log ( int argc, const char *argv[], soarResult *res);
 
 
 
@@ -2129,7 +2129,7 @@ extern int soar_Log ( int argc, char *argv[], soarResult *res);
  *
  * */
 
-extern int soar_AttributePreferencesMode (int argc, char *argv[], 
+extern int soar_AttributePreferencesMode (int argc, const char *argv[], 
 					  soarResult *res);
 
 
@@ -2301,7 +2301,7 @@ extern int soar_Watch (int argc, char *argv[], soarResult *res);
  *
  *
  */
-extern int soar_DefaultWmeDepth ( int argc, char *argv[], soarResult *res );
+extern int soar_DefaultWmeDepth ( int argc, const char *argv[], soarResult *res );
 
 
 
@@ -2346,7 +2346,7 @@ extern int soar_DefaultWmeDepth ( int argc, char *argv[], soarResult *res );
  *
  *
  */
-extern int soar_BuildInfo( int argc, char *argv[], soarResult *res );
+extern int soar_BuildInfo( int argc, const char *argv[], soarResult *res );
 
 
 
@@ -2390,7 +2390,7 @@ extern int soar_BuildInfo( int argc, char *argv[], soarResult *res );
  *
  *
  */
-extern int soar_ExcludedBuildInfo( int argc, char *argv[], soarResult *res );
+extern int soar_ExcludedBuildInfo( int argc, const char *argv[], soarResult *res );
 
 /*@}*/
 #endif

@@ -480,7 +480,7 @@ void soar_cStopAllAgents( void ) {
  *
  *----------------------------------------------------------------------
  */
-void soar_cStopCurrentAgent( char *reason ) {
+void soar_cStopCurrentAgent( const char *reason ) {
   current_agent(stop_soar) = TRUE;
   current_agent(reason_for_stopping) =  reason;
 
@@ -849,7 +849,7 @@ int soar_cSaveReteNet( char *filename ) {
  *
  *----------------------------------------------------------------------
  */
-unsigned long soar_cAddWme( char *szId, char *szAttr, char *szValue, 
+unsigned long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue, 
 			    bool acceptable_preference, psoar_wme *new_wme ) {
 
   Symbol *id, *attr, *value;
@@ -1303,7 +1303,7 @@ void soar_cExciseAllProductionsOfType ( byte type ) {
  *
  *----------------------------------------------------------------------
  */
-int soar_cExciseProductionByName ( char *name ) {
+int soar_cExciseProductionByName ( const char *name ) {
   production *p;
   
   if (  (p = name_to_production( name ))  ) {
@@ -1507,7 +1507,7 @@ int soar_cSetChunkNameCount( long count  ) {
  *
  *----------------------------------------------------------------------
  */
-int soar_cSetChunkNamePrefix( char *prefix ) {
+int soar_cSetChunkNamePrefix( const char *prefix ) {
   
   if ( strchr( prefix, '*' ) ) {
     return -1;
@@ -1623,7 +1623,7 @@ void soar_cSetWaitSNC( bool on ) {
  *
  *----------------------------------------------------------------------
  */
-int soar_cMultiAttributes( char *attribute, int value ){
+int soar_cMultiAttributes( const char *attribute, int value ){
   multi_attribute *m;
   Symbol *s;
 
@@ -1753,7 +1753,7 @@ int soar_cAttributePreferencesMode (int mode )
  */
 void soar_cAddInputFunction (agent * a, soar_callback_fn f, 
 			     soar_callback_data cb_data, 
-			     soar_callback_free_fn free_fn, char * name) {
+			     soar_callback_free_fn free_fn, const char * name) {
   soar_cAddCallback(a, INPUT_PHASE_CALLBACK, f, cb_data, free_fn, name);
 }
 
@@ -1768,7 +1768,7 @@ void soar_cAddInputFunction (agent * a, soar_callback_fn f,
  *
  *----------------------------------------------------------------------
  */
-void soar_cRemoveInputFunction (agent * a, char * name) {
+void soar_cRemoveInputFunction (agent * a, const char * name) {
   soar_cRemoveCallback(a, INPUT_PHASE_CALLBACK, name);
 }
 
@@ -1788,7 +1788,7 @@ void soar_cRemoveInputFunction (agent * a, char * name) {
 void soar_cAddOutputFunction (agent * a, soar_callback_fn f, 
 			  soar_callback_data cb_data, 
 			  soar_callback_free_fn free_fn,
-			  char * output_link_name)
+			  const char * output_link_name)
 {
   if (soar_exists_callback_id (a, OUTPUT_PHASE_CALLBACK, output_link_name)
       != NULL)
@@ -1816,7 +1816,7 @@ void soar_cAddOutputFunction (agent * a, soar_callback_fn f,
  *
  *----------------------------------------------------------------------
  */
-void soar_cRemoveOutputFunction (agent * a, char * name) {
+void soar_cRemoveOutputFunction (agent * a, const char * name) {
   soar_callback * cb;
   output_link *ol;
 
@@ -2172,7 +2172,7 @@ void soar_cTestAllMonitorableCallbacks(soar_callback_agent the_agent)
 
 
 
-SOAR_CALLBACK_TYPE soar_cCallbackNameToEnum (char * name,
+SOAR_CALLBACK_TYPE soar_cCallbackNameToEnum (const char * name,
 					     bool monitorable_only)
 {
   int limit;

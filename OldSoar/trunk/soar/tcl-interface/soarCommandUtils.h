@@ -71,10 +71,10 @@ extern void execute_go_selection (agent * the_agent,
 extern void get_context_var_info (Symbol **dest_goal,
 				  Symbol **dest_attr_of_slot,
 				  Symbol **dest_current_value);
-extern void get_lexeme_from_string (char * the_lexeme);
+extern void get_lexeme_from_string (const char * the_lexeme);
 extern void install_tcl_soar_cmd (agent *, char *, Tcl_CmdProc *);
 extern bool is_production_name (char *);
-extern production * name_to_production (char * string_to_test);
+extern production * name_to_production (const char * string_to_test);
 extern void neatly_print_wme_augmentation_of_id (wme *w, int indentation);
 extern int  parse_go_command (Tcl_Interp * interp, int argc, char * argv[],
 			      long * go_number, enum go_type_enum * go_type,
@@ -101,9 +101,9 @@ extern void print_preference_and_source (preference *pref,
 					 wme_trace_type wtt);
 extern int  print_production_firings (Tcl_Interp * interp, 
 				      int num_requested);
-extern int read_id_or_context_var_from_string (char * the_lexeme, Symbol **);
+extern int read_id_or_context_var_from_string (const char * the_lexeme, Symbol **);
 extern Symbol *read_identifier_or_context_variable (void);
-extern int read_attribute_from_string (Symbol *id, char * the_lexeme,
+extern int read_attribute_from_string (Symbol *id, const char * the_lexeme,
 				       Symbol * * attr);  /* kjh (CUSP-B7) */
 extern int read_pref_detail_from_string (char *the_lexeme,
                                   bool *print_productions,
@@ -125,15 +125,15 @@ extern int set_watch_prod_group_setting (Tcl_Interp * interp, int prodgroup,
 extern int set_watch_level_inc (Tcl_Interp * interp, int level);
 /* soar_alternate_input Soar-Bugs #54  TMH */
 extern void soar_alternate_input( agent *ai_agent,
-                                  char  *ai_string, 
-                                  char  *ai_suffix, 
+                                  const char  *ai_string, 
+                                  const char  *ai_suffix, 
                                   bool   ai_exit   );
 extern bool soar_agent_already_defined (char *);
 extern void soar_callback_to_tcl (soar_callback_agent,
 				  soar_callback_data,
 				  soar_call_data);
-extern bool string_match (char *, char *);
-extern bool string_match_up_to (char *, char *, int);
+extern bool string_match (const char *, const char *);
+extern bool string_match_up_to (const char *, const char *, int);
 
 extern void soar_input_callback_to_tcl (soar_callback_agent the_agent, 
 					soar_callback_data data,

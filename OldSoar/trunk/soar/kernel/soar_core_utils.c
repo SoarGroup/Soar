@@ -33,7 +33,7 @@ extern void init_soar_agent();
  *----------------------------------------------------------------------
  */
 
-int read_id_or_context_var_from_string (char * the_lexeme,
+int read_id_or_context_var_from_string (const char * the_lexeme,
 					Symbol * * result_id) 
 {
   Symbol *id;
@@ -140,7 +140,7 @@ Symbol *read_identifier_or_context_variable (void) {
  *----------------------------------------------------------------------
  */
 
-production * name_to_production (char * string_to_test)
+production * name_to_production (const char * string_to_test)
 {
   Symbol * sym;
 
@@ -191,10 +191,10 @@ void do_print_for_identifier (Symbol *id, int depth, bool internal) {
  *----------------------------------------------------------------------
  */
 
-void get_lexeme_from_string (char * the_lexeme)
+void get_lexeme_from_string (const char * the_lexeme)
 {
   int i;
-  char * c;
+  const char * c;
   bool sym_constant_start_found = FALSE;
   bool sym_constant_end_found = FALSE;
 
@@ -488,7 +488,7 @@ void neatly_print_wme_augmentation_of_id (wme *w, int indentation) {
  *----------------------------------------------------------------------
  */
 
-bool string_match (char * string1, char * string2)
+bool string_match (const char * string1, const char * string2)
 {
   if ((string1 == NULL) && (string2 == NULL))
     return TRUE;
@@ -520,7 +520,7 @@ bool string_match (char * string1, char * string2)
  *----------------------------------------------------------------------
  */
 
-bool string_match_up_to (char * string1, char * string2, int positions)
+bool string_match_up_to (const char * string1, const char * string2, int positions)
 {
     unsigned int i,num; 
 

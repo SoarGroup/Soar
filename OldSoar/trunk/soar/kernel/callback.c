@@ -199,7 +199,7 @@ void soar_destroy_callback(soar_callback * cb)
 {
   if (cb->id)
     {
-      free(cb->id);
+      free((char*)cb->id);
     }
   if (cb->free_function)
     {

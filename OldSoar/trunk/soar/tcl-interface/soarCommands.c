@@ -107,7 +107,7 @@ int initKTHistogramCmd (ClientData clientData,
 
 int AddWmeCmd (ClientData clientData, 
 	       Tcl_Interp * interp,
-	       int argc, char *argv[])
+	       int argc, const char *argv[])
 {
   soarResult res;
 
@@ -128,7 +128,7 @@ int AddWmeCmd (ClientData clientData,
 
 int AttributePreferencesModeCmd (ClientData clientData, 
 				 Tcl_Interp * interp,
-				 int argc, char *argv[])
+				 int argc, const char *argv[])
 {
   soarResult res;
 
@@ -151,7 +151,7 @@ int AttributePreferencesModeCmd (ClientData clientData,
 
 int ChunkNameFormatCmd (ClientData clientData, 
 	                Tcl_Interp * interp,
-	                int argc, char *argv[])
+	                int argc, const char *argv[])
 {
   soarResult res;
 
@@ -174,7 +174,7 @@ int ChunkNameFormatCmd (ClientData clientData,
 
 int DefWmeDepthCmd (ClientData clientData, 
 		    Tcl_Interp * interp,
-		    int argc, char *argv[])
+		    int argc, const char *argv[])
 {
   soarResult res;
 
@@ -226,7 +226,7 @@ DestroyAgentCmd (ClientData clientData,
 
 int ExciseCmd (ClientData clientData, 
 	       Tcl_Interp * interp,
-	       int argc, char *argv[])
+	       int argc, const char *argv[])
 {
   soarResult res;
 
@@ -248,7 +248,7 @@ int ExciseCmd (ClientData clientData,
 
 int ExplainBacktracesCmd (ClientData clientData, 
 		Tcl_Interp * interp,
-		int argc, char *argv[])
+		int argc, const char *argv[])
 {
   soarResult res;
 
@@ -269,7 +269,7 @@ int ExplainBacktracesCmd (ClientData clientData,
 
 int FiringCountsCmd (ClientData clientData, 
 		     Tcl_Interp * interp,
-		     int argc, char *argv[])
+		     int argc, const char *argv[])
 {
   soarResult res;
 
@@ -290,7 +290,7 @@ int FiringCountsCmd (ClientData clientData,
 
 int FormatWatchCmd (ClientData clientData, 
 		    Tcl_Interp * interp,
-		    int argc, char *argv[])
+		    int argc, const char *argv[])
 {
   soarResult res;
 
@@ -310,7 +310,7 @@ int FormatWatchCmd (ClientData clientData,
 
 int GDS_PrintCmd (ClientData clientData, 
 		  Tcl_Interp * interp,
-		  int argc, char *argv[])
+		  int argc, const char *argv[])
 {
 
 
@@ -322,7 +322,7 @@ int GDS_PrintCmd (ClientData clientData,
 
 int IndifferentSelectionCmd (ClientData clientData, 
 			     Tcl_Interp * interp,
-			     int argc, char *argv[])
+			     int argc, const char *argv[])
 {
   soarResult res;
 
@@ -341,7 +341,7 @@ int IndifferentSelectionCmd (ClientData clientData,
 
 int InitSoarCmd (ClientData clientData, 
 		 Tcl_Interp * interp,
-		 int argc, char *argv[])
+		 int argc, const char *argv[])
 {
 
   Soar_SelectGlobalInterpByInterp(interp);
@@ -356,7 +356,7 @@ int InitSoarCmd (ClientData clientData,
 
 int InputPeriodCmd (ClientData clientData, 
 		    Tcl_Interp * interp,
-		    int argc, char *argv[])
+		    int argc, const char *argv[])
 {
   soarResult res;
 
@@ -377,7 +377,7 @@ int InputPeriodCmd (ClientData clientData,
 
 int InternalSymbolsCmd (ClientData clientData, 
 			Tcl_Interp * interp,
-			int argc, char *argv[])
+			int argc, const char *argv[])
 {
   soarResult res;
 
@@ -398,7 +398,7 @@ int InternalSymbolsCmd (ClientData clientData,
 
 int LearnCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   soarResult res;
 
@@ -418,7 +418,7 @@ int LearnCmd (ClientData clientData,
 
 int MatchesCmd (ClientData clientData, 
 		Tcl_Interp * interp,
-		int argc, char *argv[])
+		int argc, const char *argv[])
 {
   soarResult res;
 
@@ -438,7 +438,7 @@ int MatchesCmd (ClientData clientData,
 
 int MaxChunksCmd (ClientData clientData, 
 		  Tcl_Interp * interp,
-		  int argc, char *argv[])
+		  int argc, const char *argv[])
 {
   soarResult res;
 
@@ -458,7 +458,7 @@ int MaxChunksCmd (ClientData clientData,
 
 int MaxElaborationsCmd (ClientData clientData, 
 			Tcl_Interp * interp,
-			int argc, char *argv[])
+			int argc, const char *argv[])
 {
 
   soarResult res;
@@ -481,7 +481,7 @@ int MaxElaborationsCmd (ClientData clientData,
 
 int MemoriesCmd (ClientData clientData, 
 		 Tcl_Interp * interp,
-		 int argc, char *argv[])
+		 int argc, const char *argv[])
 {
  
   soarResult res;
@@ -504,7 +504,7 @@ int MemoriesCmd (ClientData clientData,
 
 int MultiAttrCmd (ClientData clientData, 
 		  Tcl_Interp * interp,
-		  int argc, char *argv[])
+		  int argc, const char *argv[])
 {
 
   soarResult res;
@@ -526,7 +526,7 @@ int MultiAttrCmd (ClientData clientData,
 
 int OSupportModeCmd (ClientData clientData, 
 		     Tcl_Interp * interp,
-		     int argc, char *argv[])
+		     int argc, const char *argv[])
 {
   soarResult res;
 
@@ -549,7 +549,7 @@ int OSupportModeCmd (ClientData clientData,
 
 int Operand2Cmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
 
   soarResult res;
@@ -572,7 +572,7 @@ int Operand2Cmd (ClientData clientData,
 
 int ProductionFindCmd (ClientData clientData, 
 	   Tcl_Interp * interp,
-	   int argc, char *argv[])
+	   int argc, const char *argv[])
 {  
   soarResult res;
 
@@ -592,7 +592,7 @@ int ProductionFindCmd (ClientData clientData,
 
 int PreferencesCmd (ClientData clientData,
                     Tcl_Interp * interp,
-                    int argc, char *argv[])
+                    int argc, const char *argv[])
 {
   soarResult res;
 
@@ -614,7 +614,7 @@ int PreferencesCmd (ClientData clientData,
 
 int PrintCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   soarResult res;
 
@@ -633,7 +633,7 @@ int PrintCmd (ClientData clientData,
 
 int PwatchCmd (ClientData clientData, 
 	       Tcl_Interp * interp,
-	       int argc, char *argv[])
+	       int argc, const char *argv[])
 {
   soarResult res;
 
@@ -653,7 +653,7 @@ int PwatchCmd (ClientData clientData,
 
 int SoarExcludedBuildInfoCmd( ClientData clientData,
 		Tcl_Interp * interp,
-		int argc, char *argv[] ){
+		int argc, const char *argv[] ){
   soarResult res;
 
   init_soarResult(res);
@@ -666,7 +666,7 @@ int SoarExcludedBuildInfoCmd( ClientData clientData,
 
 int SoarBuildInfoCmd( ClientData clientData,
 		Tcl_Interp * interp,
-		int argc, char *argv[] ){
+		int argc, const char *argv[] ){
   soarResult res;
 
   init_soarResult(res);
@@ -682,7 +682,7 @@ int SoarBuildInfoCmd( ClientData clientData,
 
 int PrintPoolCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   soarResult res;
 
@@ -707,7 +707,7 @@ int PrintPoolCmd (ClientData clientData,
 
 int QuitCmd (ClientData clientData, 
 	     Tcl_Interp * interp,
-	     int argc, char *argv[])
+	     int argc, const char *argv[])
 {
   static char cmd[] = "exit";
   soarResult res;
@@ -723,7 +723,7 @@ int QuitCmd (ClientData clientData,
 
 int RemoveWmeCmd (ClientData clientData, 
 		  Tcl_Interp * interp,
-		  int argc, char *argv[])
+		  int argc, const char *argv[])
 {
 
   soarResult res;
@@ -747,7 +747,7 @@ int RemoveWmeCmd (ClientData clientData,
 
 int RunCmd (ClientData clientData, 
 	    Tcl_Interp * interp,
-	    int argc, char *argv[])
+	    int argc, const char *argv[])
 {
 
   soarResult res;
@@ -770,7 +770,7 @@ int RunCmd (ClientData clientData,
 
 int SpCmd (ClientData clientData, 
 	   Tcl_Interp * interp,
-	   int argc, char *argv[])
+	   int argc, const char *argv[])
 {
 
   soarResult res;
@@ -793,7 +793,7 @@ int SpCmd (ClientData clientData,
 
 int StatsCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
 
   soarResult res;
@@ -817,7 +817,7 @@ int StatsCmd (ClientData clientData,
 
 int StopSoarCmd (ClientData clientData, 
 		 Tcl_Interp * interp,
-		 int argc, char *argv[])
+		 int argc, const char *argv[])
 {
   soarResult res;
 
@@ -839,7 +839,7 @@ int StopSoarCmd (ClientData clientData,
 
 int VerboseCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   soarResult res;
 
@@ -859,7 +859,7 @@ int VerboseCmd (ClientData clientData,
 #ifdef MACINTOSH
 int LogCmd(ClientData clientData,
 	   Tcl_Interp * interp,
-	   int argc, char *argv[] ) {
+	   int argc, const char *argv[] ) {
 
   soarResult res;
 
@@ -878,13 +878,13 @@ int LogCmd(ClientData clientData,
 
 int LogCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   soarResult res;
   char **newArgv;
   bool tildeOccurs, tildeFlag;
   int i, result;
-  char *c;
+  const char *c;
   Tcl_DString buffer;
 
   /*
@@ -958,7 +958,7 @@ int LogCmd (ClientData clientData,
 
 int WaitSNCCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
 
   soarResult res;
@@ -980,7 +980,7 @@ int WaitSNCCmd (ClientData clientData,
 
 int WarningsCmd (ClientData clientData, 
 		 Tcl_Interp * interp,
-		 int argc, char *argv[])
+		 int argc, const char *argv[])
 {
 
   soarResult res;
@@ -1005,14 +1005,14 @@ int WarningsCmd (ClientData clientData,
 
 int WatchCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   soarResult res;
   int i;
   char **newArgv;
   int newArgc;
   int result;
-  char *a;
+  const char *a;
 
 
   init_soarResult(res);
@@ -1124,7 +1124,7 @@ int WatchCmd (ClientData clientData,
 
 int EchoCmd (ClientData clientData, 
 	     Tcl_Interp * interp,
-	     int argc, char *argv[])
+	     int argc, const char *argv[])
 {
   int i;
   bool newline = TRUE;
@@ -1181,7 +1181,7 @@ int EchoCmd (ClientData clientData,
 
 int AskCmd (ClientData clientData, 
 			Tcl_Interp * interp,
-			int argc, char *argv[])
+			int argc, const char *argv[])
 {
   static char * too_few_args_string = "Too few arguments, should be: ask [-add <proc>] | [-remove]";
   static char * too_many_args_string = "Too many arguments, should be: ask [-add <proc>] | [-remove]";
@@ -1290,11 +1290,11 @@ static int io_proc_counter = 1;
 
 int IOCmd (ClientData clientData, 
 	   Tcl_Interp * interp,
-	   int argc, char *argv[])
+	   int argc, const char *argv[])
 {
   static char * too_few_args_string = "Too few arguments, should be: io [-add -input script [id]] | [-add -output script id] | [-delete [-input|-output] id] | [-list [-input|-output]";
   static char * too_many_args_string = "Too many arguments, should be: io [-add -input script [id]] | [-add -output script id] | [-delete [-input|-output] id] | [-list [-input|-output]";
-  char * io_id;
+  const char * io_id;
   char   buff[10];          /* What size is good here? */
 
   Soar_SelectGlobalInterpByInterp(interp);
@@ -1360,7 +1360,7 @@ int IOCmd (ClientData clientData,
 	    return TCL_ERROR;
 	  }
 
-	interp->result = io_id;
+	interp->result = (char*)io_id;
 	return TCL_OK;
       }
     }
@@ -1496,7 +1496,7 @@ int IOCmd (ClientData clientData,
 
 int AttentionLapseCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   Soar_SelectGlobalInterpByInterp(interp);
 
@@ -1560,7 +1560,7 @@ int AttentionLapseCmd (ClientData clientData,
 
 int WakeFromAttentionLapseCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   Soar_SelectGlobalInterpByInterp(interp);
 
@@ -1605,7 +1605,7 @@ int WakeFromAttentionLapseCmd (ClientData clientData,
 
 int StartAttentionLapseCmd (ClientData clientData, 
 	      Tcl_Interp * interp,
-	      int argc, char *argv[])
+	      int argc, const char *argv[])
 {
   int duration;
 
@@ -1672,11 +1672,11 @@ static int monitor_counter = 1;
 
 int MonitorCmd (ClientData clientData, 
 		Tcl_Interp * interp,
-		int argc, char *argv[])
+		int argc, const char *argv[])
 {
   static char * too_few_args_string = "Too few arguments, should be: monitor [-add event script [id]] | [-delete event [id]] | [-list [event] | clear]";
   static char * too_many_args_string = "Too many arguments, should be: monitor [-add event script [id]] | [-delete event [id]] | [-list [event] | -clear]";
-  char * monitor_id;
+  const char * monitor_id;
   char   buff[10];          /* What size is good here? */
 
   Soar_SelectGlobalInterpByInterp(interp);
@@ -1723,7 +1723,7 @@ int MonitorCmd (ClientData clientData,
 			      (soar_callback_data) savestring(argv[3]), 
 			      soar_callback_data_free_string,
 			      (soar_callback_id) monitor_id);
-	    interp->result = monitor_id;
+	    interp->result = (char*)monitor_id;
 	    return TCL_OK;
 	  }
 	else
@@ -1896,7 +1896,7 @@ int MonitorCmd (ClientData clientData,
  */
 int OutputStringsDestCmd (ClientData clientData, 
 			  Tcl_Interp * interp,
-			  int argc, char *argv[])
+			  int argc, const char *argv[])
 {
   static char * too_few_args = "Too few arguments, should be: output-strings-destination [ -push [[-text-widget widget-name [interp-name]] | [-channel channel-id] | [-procedure tcl-procedure-name] | -discard |-append-to-result] | -pop]";
 
@@ -2062,10 +2062,10 @@ int OutputStringsDestCmd (ClientData clientData,
 
 int CaptureInputCmd (ClientData clientData, 
 	    Tcl_Interp * interp,
-	    int argc, char *argv[])
+	    int argc, const char *argv[])
 {
   soarResult res;
-  char **new_argv;
+  const char **new_argv;
   int i;
   char *buffer;
   Tcl_DString temp;
@@ -2082,13 +2082,13 @@ int CaptureInputCmd (ClientData clientData,
     new_argv = (char **) malloc( argc * sizeof( char *) );
     for( i = 0; i < 2; i++ ) {
       new_argv[i] = (char *) malloc( sizeof(char) * (strlen( argv[i] ) + 1) );
-      strcpy( new_argv[i], argv[i] );
+      strcpy( (char*)new_argv[i], argv[i] );
     }
     for( i = 2; i < argc; i++ ) {
       /* Hopefully, there will just be 1 iteration through here.... */
       buffer = Tcl_TildeSubst(interp, argv[i], &temp);
       new_argv[i] = (char *) malloc( sizeof(char) * (strlen( buffer ) + 1) );
-      strcpy( new_argv[i], buffer );
+      strcpy( (char*)new_argv[i], buffer );
     }
   }
   else {
@@ -2143,11 +2143,11 @@ int CaptureInputCmd (ClientData clientData,
 
 int ReplayInputCmd (ClientData clientData, 
 	    Tcl_Interp * interp,
-	    int argc, char *argv[])
+	    int argc, const char *argv[])
 {
 
   soarResult res;
-  char **new_argv;
+  const char **new_argv;
   int i;
   char *buffer;
   Tcl_DString temp;
@@ -2164,13 +2164,13 @@ int ReplayInputCmd (ClientData clientData,
     new_argv = (char **) malloc( argc * sizeof( char *) );
     for( i = 0; i < 2; i++ ) {
       new_argv[i] = (char *) malloc( sizeof(char) * (strlen( argv[i] ) + 1) );
-      strcpy( new_argv[i], argv[i] );
+      strcpy( (char*)new_argv[i], argv[i] );
     }
     for( i = 2; i < argc; i++ ) {
       /* Hopefully, there will just be 1 iteration through here.... */
       buffer = Tcl_TildeSubst(interp, argv[i], &temp);
       new_argv[i] = (char *) malloc( sizeof(char) * (strlen( buffer ) + 1) );
-      strcpy( new_argv[i], buffer );
+      strcpy( (char*)new_argv[i], buffer );
     }
   }
   else {
@@ -2220,7 +2220,7 @@ int ReplayInputCmd (ClientData clientData,
 
 int ReteNetCmd (ClientData clientData, 
 		Tcl_Interp * interp,
-		int argc, char *argv[])
+		int argc, const char *argv[])
 {
   
 

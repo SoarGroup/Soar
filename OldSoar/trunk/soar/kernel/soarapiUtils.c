@@ -75,7 +75,7 @@ char * preference_name[] = {
 };
 
 
-int getInt( char *string, int *i ) {
+int getInt( const char *string, int *i ) {
 
   long l;
   char *c;
@@ -105,7 +105,7 @@ bool cfps_removal_test_function (cons *c) {
 }
 
 
-void do_print_for_production_name (char *prod_name, bool internal,
+void do_print_for_production_name (const char *prod_name, bool internal,
 				   bool print_filename, bool full_prod) 
 {
   Symbol *sym;
@@ -284,7 +284,7 @@ void print_multi_attribute_symbols(void)
  *----------------------------------------------------------------------
  */
 
-int read_pref_detail_from_string (char *the_lexeme,
+int read_pref_detail_from_string (const char *the_lexeme,
                                   bool *print_productions,
                                   wme_trace_type *wtt)
 {
@@ -1151,7 +1151,7 @@ int set_watch_prod_group_setting (int  prodgroup,
  *
  *----------------------------------------------------------------------
  */
-int parse_run_command (int argc, char * argv[],
+int parse_run_command (int argc, const char * argv[],
 		       long * go_number, 
 		       enum go_type_enum * go_type,
 		       Symbol * * go_slot_attr, 
@@ -1408,7 +1408,7 @@ int parse_go_command (int argc, char * argv[],
  *----------------------------------------------------------------------
  */
 
-int parse_memory_stats (int argc, char * argv[], soarResult *res)
+int parse_memory_stats (int argc, const char * argv[], soarResult *res)
 {
   if (argc == 2)
     {
@@ -1599,7 +1599,7 @@ int parse_memory_stats (int argc, char * argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int parse_rete_stats ( int argc, char * argv[], soarResult *res)
+int parse_rete_stats ( int argc, const char * argv[], soarResult *res)
 {
   unsigned long data;
 
@@ -1686,7 +1686,7 @@ int parse_rete_stats ( int argc, char * argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int parse_system_stats (int argc, char * argv[], soarResult *res)
+int parse_system_stats (int argc, const char * argv[], soarResult *res)
 {
   #ifndef NO_TIMING_STUFF
   double total_kernel_time, total_kernel_msec;

@@ -170,9 +170,9 @@ typedef struct ask_cb_data_st {
 } soar_apiAskCallbackData;
 
 typedef struct sapiwme_st {
-  char *id;
-  char *attr;
-  char *value;
+  const char *id;
+  const char *attr;
+  const char *value;
   long timetag;
 } soarapi_wme;
 

@@ -131,7 +131,7 @@ void free_memory (void *mem, int usage_code) {
    (char *).
 ==================================================================== */
 
-char *make_memory_block_for_string (char *s) {
+char *make_memory_block_for_string (const char *s) {
   char *p;
   unsigned long size;
 

@@ -83,7 +83,7 @@ void soar_ecSetDefaultWmeDepth( int depth ) {
  *
  *----------------------------------------------------------------------
  */
-int soar_ecOpenLog( char *filename, char *mode ) {
+int soar_ecOpenLog( const char *filename, char *mode ) {
 
   FILE * f;
 
@@ -140,7 +140,7 @@ int soar_ecCloseLog() {
  *----------------------------------------------------------------------
  */
 #ifdef USE_CAPTURE_REPLAY
-int soar_ecCaptureInput( char *filename ) { 
+int soar_ecCaptureInput( const char *filename ) { 
 
   FILE *f;
   
@@ -179,7 +179,7 @@ int soar_ecCaptureInput( char *filename ) {
  *       command
  *----------------------------------------------------------------------
  */
-int soar_ecReplayInput( char *filename ) {
+int soar_ecReplayInput( const char *filename ) {
   
   
   if ( filename == NIL ) {
@@ -485,7 +485,7 @@ int i;
  *
  *----------------------------------------------------------------------
  */
-void soar_ecPrintFiringsForProduction( char *name ) {
+void soar_ecPrintFiringsForProduction( const char *name ) {
 
   production *p;
   
@@ -1367,7 +1367,7 @@ int soar_ecResetWmeFilters( bool adds, bool removes) {
     wf = (wme_filter *) c->first;
     if ((adds && wf->adds) || (removes && wf->removes)) {
       *prev_cons_rest = c->rest;
-      print_with_symbols("Removed: \(%y ^%y %y\) ",wf->id,wf->attr,wf->value);
+      print_with_symbols("Removed: (%y ^%y %y) ",wf->id,wf->attr,wf->value);
       print("%s %s\n", (wf->adds ? "adds" : ""),(wf->removes ? "removes":""));
       symbol_remove_ref(wf->id);
       symbol_remove_ref(wf->attr);
@@ -1393,7 +1393,7 @@ void soar_ecListWmeFilters( bool adds, bool removes) {
   for (c=current_agent(wme_filter_list); c!=NIL; c=c->rest) {
     wf = (wme_filter *) c->first;
     if ((adds && wf->adds) || (removes && wf->removes)) {
-      print_with_symbols("wme filter: \(%y ^%y %y\) ", wf->id, 
+      print_with_symbols("wme filter: (%y ^%y %y) ", wf->id, 
 			 wf->attr, wf->value);
 
       print("%s %s\n", (wf->adds ? "adds" : ""),(wf->removes ? "removes":""));
@@ -1403,7 +1403,7 @@ void soar_ecListWmeFilters( bool adds, bool removes) {
 
 
 
-int soar_ecSp ( char *rule, char *sourceFile ) {
+int soar_ecSp ( const char *rule, const char *sourceFile ) {
 
   production *p;
 
@@ -1560,7 +1560,7 @@ void soar_ecStopAllProductionTracing() {
   
 }
 
-int soar_ecBeginTracingProductions( int n, char **names ) {
+int soar_ecBeginTracingProductions( int n, const char **names ) {
 
   int i;
   production *prod;
@@ -1579,7 +1579,7 @@ int soar_ecBeginTracingProductions( int n, char **names ) {
 }
 
 
-int soar_ecStopTracingProductions( int n, char **names ) {
+int soar_ecStopTracingProductions( int n, const char **names ) {
   
   int i;
   production *prod;
@@ -1602,7 +1602,7 @@ void soar_ecPrintMatchSet( wme_trace_type wtt, ms_trace_type mst ) {
   print_match_set( wtt, mst );
 }
 
-int soar_ecPrintMatchInfoForProduction( char * name, wme_trace_type wtt ) {
+int soar_ecPrintMatchInfoForProduction( const char * name, wme_trace_type wtt ) {
   production *p;
   struct rete_node_struct *p_node;
 

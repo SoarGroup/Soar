@@ -425,7 +425,7 @@ extern void free_memory (void *mem, int usage_code);
 
 #define savestring(x) (char *) strcpy ( (char *)malloc (strlen (x) + 1), (x))
 
-extern char *make_memory_block_for_string (char *s);
+extern char *make_memory_block_for_string (const char *s);
 extern void free_memory_block_for_string (char *p);
 
 typedef void * growable_string;
@@ -1027,7 +1027,7 @@ extern Symbol *find_int_constant (long value);
 extern Symbol *find_float_constant (float value);
 
 extern Symbol *make_variable (char *name);
-extern Symbol *make_sym_constant (char *name);
+extern Symbol *make_sym_constant (const char *name);
 extern Symbol *make_int_constant (long value);
 extern Symbol *make_float_constant (float value);
 extern Symbol *make_new_identifier (char name_letter, goal_stack_level level);
@@ -3015,8 +3015,8 @@ extern void print_partial_match_information (struct rete_node_struct *p_node,
                                              wme_trace_type wtt);
 extern void print_match_set( wme_trace_type wtt, ms_trace_type mst);
 
-extern int get_node_count_statistic (char * node_type_name, 
-				     char * column_name, 
+extern int get_node_count_statistic (const char * node_type_name, 
+				     const char * column_name, 
 				     unsigned long * result);
 
 extern bool save_rete_net (FILE *dest_file);
@@ -3106,7 +3106,7 @@ extern void init_built_in_rhs_functions (void);
 
 extern void init_tracing (void);
 extern bool add_trace_format (bool stack_trace, int type_restriction,
-                              Symbol *name_restriction, char *format_string);
+                              Symbol *name_restriction, const char *format_string);
 extern bool remove_trace_format (bool stack_trace, int type_restriction,
                                  Symbol *name_restriction);
 extern void print_all_trace_formats (bool stack_trace);
@@ -3566,7 +3566,7 @@ typedef struct agent_struct {
   /* --- to interrupt at the end of the current phase, set stop_soar to TRUE
      and reason_for_stopping to some appropriate string --- */
   bool                stop_soar;
-  char              * reason_for_stopping;
+  const char        * reason_for_stopping;
   
   /* --- the RHS action (halt) sets this TRUE --- */
   bool                system_halted;
@@ -3975,8 +3975,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   soar_callback_array soar_callbacks;
   
   alias_struct      * alias_list;   /* AGR 568 */
-  char              * alternate_input_string; 
-  char              * alternate_input_suffix; 
+  const char        * alternate_input_string; 
+  const char        * alternate_input_suffix; 
   bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
   expansion_node    * lex_alias;         /* AGR 568 */
   bool                load_errors_quit;  /* AGR 527c */

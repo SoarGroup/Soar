@@ -47,7 +47,7 @@ extern Tcl_Interp *tcl_soar_agent_interpreters[MAX_SIMULTANEOUS_AGENTS];
 void
 Soar_Print (the_agent, str)
      agent * the_agent;
-     char * str;
+     const char * str;
 {
   soar_invoke_first_callback(the_agent, PRINT_CALLBACK, (ClientData) str);
 }
@@ -55,7 +55,7 @@ Soar_Print (the_agent, str)
 void
 Soar_Log (the_agent, str)
      agent * the_agent;
-     char * str;
+     const char * str;
 {
   soar_invoke_first_callback(the_agent, LOG_CALLBACK, (ClientData) str);
 }
@@ -63,7 +63,7 @@ Soar_Log (the_agent, str)
 void
 Soar_LogAndPrint (the_agent, str)
      agent * the_agent;
-     char * str;
+     const char * str;
 {
   Soar_Log(the_agent, str);
   Soar_Print(the_agent, str);

@@ -150,7 +150,7 @@ extern void soar_ecSetDefaultWmeDepth( int depth );
  *           A log file is opened to which output is echoed.
  *
  */
-extern int soar_ecOpenLog( char *mode, char *filename );
+extern int soar_ecOpenLog( const char *filename, char *mode );
 
 
 /**
@@ -202,7 +202,7 @@ extern int soar_ecCloseLog();
  *            execution.
  *
  * */
-extern int soar_ecCaptureInput( char *filename );
+extern int soar_ecCaptureInput( const char *filename );
 
 
 /**
@@ -230,7 +230,7 @@ extern int soar_ecCaptureInput( char *filename );
  *
  *
  */
-extern int soar_ecReplayInput( char *filename );
+extern int soar_ecReplayInput( const char *filename );
 
 #endif
 
@@ -315,7 +315,7 @@ extern void soar_ecExplainChunkConditionList(char *chunk_name);
  *
  *
  */
-extern void soar_ecPrintFiringsForProduction( char *name );
+extern void soar_ecPrintFiringsForProduction( const char *name );
 
 
 
@@ -560,7 +560,7 @@ extern void soar_ecListWmeFilters( bool adds, bool removes);
  * \retval -1  Fail, production could not be parsed
  *
  */
-extern int soar_ecSp ( char *rule, char *sourceFile );
+extern int soar_ecSp ( const char *rule, const char *sourceFile );
 
 
 /**
@@ -609,7 +609,7 @@ extern void soar_ecPrintMatchSet( wme_trace_type wtt, ms_trace_type mst);
  * \retval -1  Fail, production not found.
  *
  */
-extern int soar_ecPrintMatchInfoForProduction (char *name, wme_trace_type wtt);
+extern int soar_ecPrintMatchInfoForProduction (const char *name, wme_trace_type wtt);
 
 
 /**
@@ -674,7 +674,7 @@ extern void soar_ecStopAllProductionTracing();
  *                production name.  No productions after this index were
  *                added to the watch list.
  */
-extern int soar_ecBeginTracingProductions( int n, char **names );
+extern int soar_ecBeginTracingProductions( int n, const char **names );
 
 
 /**
@@ -696,7 +696,7 @@ extern int soar_ecBeginTracingProductions( int n, char **names );
  *
  *
  */
-extern int soar_ecStopTracingProductions( int n, char **names );
+extern int soar_ecStopTracingProductions( int n, const char **names );
 
 
 

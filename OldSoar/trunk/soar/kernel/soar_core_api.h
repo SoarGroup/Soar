@@ -210,7 +210,7 @@ extern void soar_cStopAllAgents( void );
  *                       prematurely.
  *
  */
-extern void soar_cStopCurrentAgent( char *reason );
+extern void soar_cStopCurrentAgent( const char *reason );
 
 
 /**
@@ -439,7 +439,7 @@ extern int soar_cSaveReteNet( char *filename );
  *
  *
  */
-extern unsigned long soar_cAddWme( char *szId, char *szAttr, char *szValue,
+extern unsigned long soar_cAddWme( const char *szId, const char *szAttr, const char *szValue,
 				   bool accept, psoar_wme *new_wme );
 
 
@@ -578,7 +578,7 @@ extern void soar_cExciseAllProductionsOfType ( byte type );
  *
  *
  */
-extern int soar_cExciseProductionByName ( char *name );
+extern int soar_cExciseProductionByName ( const char *name );
 
 /*@}*/
 
@@ -775,7 +775,7 @@ extern int soar_cSetChunkNameCount( long count );
  *
  *
  */
-extern int soar_cSetChunkNamePrefix( char *prefix ); 
+extern int soar_cSetChunkNamePrefix( const char *prefix ); 
 
 
 
@@ -855,7 +855,7 @@ extern void soar_cSetWaitSNC( bool wait );
  *
  *
  */
-extern int soar_cMultiAttributes( char *attr, int value );
+extern int soar_cMultiAttributes( const char *attr, int value );
 
 
 
@@ -936,7 +936,7 @@ extern int soar_cAttributePreferencesMode (int mode );
 extern void soar_cAddInputFunction (agent * a, soar_callback_fn f, 
 				    soar_callback_data cb_data, 
 				    soar_callback_free_fn free_fn,
-				    char * name);
+				    const char * name);
 
 
 
@@ -959,7 +959,7 @@ extern void soar_cAddInputFunction (agent * a, soar_callback_fn f,
  * \see soar_cRemoveCallback
  *
  */
-extern void soar_cRemoveInputFunction (agent * a, char * name);
+extern void soar_cRemoveInputFunction (agent * a, const char * name);
 
 
 
@@ -995,7 +995,7 @@ extern void soar_cRemoveInputFunction (agent * a, char * name);
 extern void soar_cAddOutputFunction (agent * a, soar_callback_fn f, 
 				     soar_callback_data cb_data, 
 				     soar_callback_free_fn free_fn,
-				     char * output_link_name);
+				     const char * output_link_name);
 
 
 
@@ -1018,7 +1018,7 @@ extern void soar_cAddOutputFunction (agent * a, soar_callback_fn f,
  *
  *
  */
-extern void soar_cRemoveOutputFunction (agent * a, char * name);
+extern void soar_cRemoveOutputFunction (agent * a, const char * name);
 
 
 
@@ -1312,7 +1312,7 @@ extern void soar_cTestAllMonitorableCallbacks(soar_callback_agent the_agent);
  *
  *
  */
-extern SOAR_CALLBACK_TYPE soar_cCallbackNameToEnum (char * name,
+extern SOAR_CALLBACK_TYPE soar_cCallbackNameToEnum (const char * name,
 					     bool monitor_only);
 
 

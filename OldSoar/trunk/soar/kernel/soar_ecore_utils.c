@@ -273,8 +273,8 @@ int read_wme_filter_component(char *s, Symbol **sym) {
  */
 
 void soar_alternate_input(agent *ai_agent,
-                     char  *ai_string, 
-                     char  *ai_suffix, 
+                     const char  *ai_string, 
+                     const char  *ai_suffix, 
                      bool   ai_exit   )
 {
   ai_agent->alternate_input_string = ai_string;
@@ -299,7 +299,7 @@ void soar_alternate_input(agent *ai_agent,
  *----------------------------------------------------------------------
  */
 
-int read_attribute_from_string (Symbol *id, char * the_lexeme, Symbol * * attr)
+int read_attribute_from_string (Symbol *id, const char * the_lexeme, Symbol * * attr)
 {
   Symbol *attr_tmp;
   slot *s;

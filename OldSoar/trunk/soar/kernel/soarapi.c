@@ -126,7 +126,7 @@ int soar_CreateAgent( int argc, char *argv[], soarResult *res ) {
  *----------------------------------------------------------------------
  */
 
-int soar_Run (int argc, char *argv[], soarResult *res)
+int soar_Run (int argc, const char *argv[], soarResult *res)
 {
   agent * the_agent;
   cons  * c;
@@ -339,7 +339,7 @@ int soar_ReteNet( int argc, char *argv[], soarResult *res ) {
  *----------------------------------------------------------------------
  */
 
-int soar_AddWme ( int argc, char *argv[], soarResult *res)
+int soar_AddWme ( int argc, const char *argv[], soarResult *res)
 {
 
   static char * too_few_args  = "Too few arguments.\nUsage: add-wme id [^] { attribute | '*'} { value | '*' } [+]";
@@ -431,7 +431,7 @@ int soar_AddWme ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_RemoveWme (int argc, char *argv[], soarResult *res)
+int soar_RemoveWme (int argc, const char *argv[], soarResult *res)
 {
   int num;
 
@@ -489,7 +489,7 @@ int soar_RemoveWme (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Excise ( int argc, char *argv[], soarResult *res)
+int soar_Excise ( int argc, const char *argv[], soarResult *res)
 {
   int i;
 
@@ -547,7 +547,7 @@ int soar_Excise ( int argc, char *argv[], soarResult *res)
  *
  *----------------------------------------------------------------------
  */
-int soar_CaptureInput( int argc, char *argv[], soarResult *res ) {
+int soar_CaptureInput( int argc, const char *argv[], soarResult *res ) {
 
   char * too_many = "Too many arguments, should be: capture-input [-open pathname | -query | -close]";
   char * too_few = "Too few arguments, should be: capture-input [-open pathname | -query | -close]";
@@ -668,7 +668,7 @@ int soar_CaptureInput( int argc, char *argv[], soarResult *res ) {
  *
  *----------------------------------------------------------------------
  */
-int soar_ReplayInput( int argc, char *argv[], soarResult *res ) {
+int soar_ReplayInput( int argc, const char *argv[], soarResult *res ) {
 
 
   char * too_few = "Too few arguments, should be: replay-input [-open pathname | -query | -close]";
@@ -777,7 +777,7 @@ int soar_ReplayInput( int argc, char *argv[], soarResult *res ) {
  *
  *----------------------------------------------------------------------
  */
-int soar_ChunkNameFormat (int argc, char *argv[], soarResult *res)
+int soar_ChunkNameFormat (int argc, const char *argv[], soarResult *res)
 {
   unsigned long tmp_chunk_count;
   int i;
@@ -858,7 +858,7 @@ int soar_ChunkNameFormat (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Learn (int argc, char *argv[], soarResult *res)
+int soar_Learn (int argc, const char *argv[], soarResult *res)
 {
 
   if (argc == 1)
@@ -933,7 +933,7 @@ int soar_Learn (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_MaxElaborations (int argc, char *argv[], soarResult *res)
+int soar_MaxElaborations (int argc, const char *argv[], soarResult *res)
 {
   int num;
 
@@ -969,7 +969,7 @@ int soar_MaxElaborations (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_MaxChunks (int argc, char *argv[], soarResult *res)
+int soar_MaxChunks (int argc, const char *argv[], soarResult *res)
 {
   int num;
 
@@ -1014,7 +1014,7 @@ int soar_MaxChunks (int argc, char *argv[], soarResult *res)
  */
 
 
-int soar_Operand2 ( int argc, char *argv[], soarResult *res)
+int soar_Operand2 ( int argc, const char *argv[], soarResult *res)
 {
 
 #ifndef SOAR_8_ONLY
@@ -1123,7 +1123,7 @@ int soar_Operand2 ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_WaitSNC ( int argc, char *argv[], soarResult *res)
+int soar_WaitSNC ( int argc, const char *argv[], soarResult *res)
 {
 
   if (argc == 1)
@@ -1175,7 +1175,7 @@ int soar_WaitSNC ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_InputPeriod ( int argc, char *argv[], soarResult *res)
+int soar_InputPeriod ( int argc, const char *argv[], soarResult *res)
 {
   int period;
 
@@ -1221,7 +1221,7 @@ int soar_InputPeriod ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_MultiAttributes (int argc, char *argv[], soarResult *res)
+int soar_MultiAttributes (int argc, const char *argv[], soarResult *res)
 {
   int num;
 
@@ -1277,7 +1277,7 @@ int soar_MultiAttributes (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_OSupportMode (int argc, char *argv[], soarResult *res)
+int soar_OSupportMode (int argc, const char *argv[], soarResult *res)
 {
 
   if (argc > 2)
@@ -1327,7 +1327,7 @@ int soar_OSupportMode (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_ExplainBacktraces ( int argc, char *argv[], soarResult *res)
+int soar_ExplainBacktraces ( int argc, const char *argv[], soarResult *res)
 {
 
   if (argc == 1)
@@ -1399,7 +1399,7 @@ int soar_ExplainBacktraces ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_FiringCounts (int argc, char *argv[], soarResult *res)
+int soar_FiringCounts (int argc, const char *argv[], soarResult *res)
 {
   int num_requested;
 
@@ -1436,7 +1436,7 @@ int soar_FiringCounts (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_FormatWatch ( int argc, char *argv[], soarResult *res)
+int soar_FormatWatch ( int argc, const char *argv[], soarResult *res)
 {
   static char * too_few_args  = "Too few arguments.\nUsage: format-watch {-object | -stack} [{{ -add {s|o|*} [name] \"format\" }|{-remove {s|o|*} [name]}}]";
   static char * too_many_args = "Too many arguments.\nUsage: format-watch {-object | -stack} [{{ -add {s|o|*} [name] \"format\" }|{-remove {s|o|*} [name]}}]";
@@ -1602,7 +1602,7 @@ int soar_FormatWatch ( int argc, char *argv[], soarResult *res)
 /* AGR 615  Adding the "last" option to this command was pretty simple
    and the changes are integrated into this entire function.  94.11.08 */
 
-int soar_IndifferentSelection (int argc, char *argv[], soarResult *res)
+int soar_IndifferentSelection (int argc, const char *argv[], soarResult *res)
 {
 
 
@@ -1651,7 +1651,7 @@ int soar_IndifferentSelection (int argc, char *argv[], soarResult *res)
  *
  *----------------------------------------------------------------------
  */
-int soar_InternalSymbols (int argc, char *argv[], soarResult *res)
+int soar_InternalSymbols (int argc, const char *argv[], soarResult *res)
 {
 
   if (argc > 1)
@@ -1677,7 +1677,7 @@ int soar_InternalSymbols (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Matches (int argc, char *argv[], soarResult *res)
+int soar_Matches (int argc, const char *argv[], soarResult *res)
 {
   wme_trace_type wtt = NONE_WME_TRACE;
   ms_trace_type  mst = MS_ASSERT_RETRACT;
@@ -1742,7 +1742,7 @@ int soar_Matches (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Memories ( int argc, char *argv[], soarResult *res)
+int soar_Memories ( int argc, const char *argv[], soarResult *res)
 {
   int i;
   int num;
@@ -1833,7 +1833,7 @@ int soar_Memories ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_ProductionFind (int argc, char *argv[], soarResult *res )
+int soar_ProductionFind (int argc, const char *argv[], soarResult *res )
 {  
   int i;
 
@@ -1987,7 +1987,7 @@ int soar_ProductionFind (int argc, char *argv[], soarResult *res )
  */
 
 /* kjh (CUSP-B7): Replace samed named procedure in soarCommands.c */
-int soar_Preferences ( int argc, char *argv[], soarResult *res)
+int soar_Preferences ( int argc, const char *argv[], soarResult *res)
 {
 /* kjh (CUSP-B7) begin */
   static char * too_many_args = "Too many arguments.\nUsage: preferences [id] [attribute] [detail]";
@@ -2098,7 +2098,7 @@ int soar_Preferences ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Print (int argc, char *argv[], soarResult *res)
+int soar_Print (int argc, const char *argv[], soarResult *res)
 {
   static char * too_few_args  = "Too few arguments.\nUsage: print [-depth n] [-internal] arg*";
 
@@ -2381,7 +2381,7 @@ int soar_Print (int argc, char *argv[], soarResult *res)
 
 #ifndef TRACE_CONTEXT_DECISIONS_ONLY
 
-int soar_PWatch (int argc, char *argv[], soarResult *res)
+int soar_PWatch (int argc, const char *argv[], soarResult *res)
 {
   bool trace_productions = TRUE;
   int next_arg = 1;
@@ -2563,7 +2563,7 @@ int soar_Pool ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Sp (int argc, char *argv[], soarResult *res)
+int soar_Sp (int argc, const char *argv[], soarResult *res)
 {
 
 
@@ -2604,7 +2604,7 @@ int soar_Sp (int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Stats ( int argc, char *argv[], soarResult *res)
+int soar_Stats ( int argc, const char *argv[], soarResult *res)
 {
 
   if (   (argc == 1) 
@@ -2663,9 +2663,9 @@ int soar_Stats ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Stop (int argc, char *argv[], soarResult *res)
+int soar_Stop (int argc, const char *argv[], soarResult *res)
 {
-  char *reason;
+  const char *reason;
 
   if (argc > 3) {
     setSoarResultResult( res, 
@@ -2703,7 +2703,7 @@ int soar_Stop (int argc, char *argv[], soarResult *res)
  *
  *----------------------------------------------------------------------
  */
-int soar_Verbose ( int argc, char *argv[], soarResult *res)
+int soar_Verbose ( int argc, const char *argv[], soarResult *res)
 {
   int i;
 
@@ -2754,7 +2754,7 @@ int soar_Verbose ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Warnings ( int argc, char *argv[], soarResult *res)
+int soar_Warnings ( int argc, const char *argv[], soarResult *res)
 {
 
   if (argc == 1)
@@ -2807,7 +2807,7 @@ int soar_Warnings ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_Log ( int argc, char *argv[], soarResult *res)
+int soar_Log ( int argc, const char *argv[], soarResult *res)
 {
   char * too_few = "Too few arguments, should be: log [-new | -existing] pathname | log -add string | log -query | log -off";
   char * too_many = "Too many arguments, should be: log [-new | -existing] pathname | log -add string | log -query | log -off";
@@ -2902,7 +2902,7 @@ int soar_Log ( int argc, char *argv[], soarResult *res)
   else
     { /* Either we have a file open/append request or there is an error */
       
-      char * filename;
+      const char * filename;
       char * mode;
 
       if (argc == 2)
@@ -2969,7 +2969,7 @@ int soar_Log ( int argc, char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-int soar_AttributePreferencesMode (int argc, char *argv[], soarResult *res)
+int soar_AttributePreferencesMode (int argc, const char *argv[], soarResult *res)
 {
 
   int i;
@@ -3543,7 +3543,7 @@ watch wmes syntax:\n\
  *----------------------------------------------------------------------
  */
 
-int soar_DefaultWmeDepth ( int argc, char *argv[], soarResult *res )
+int soar_DefaultWmeDepth ( int argc, const char *argv[], soarResult *res )
 {
   int depth;
 
@@ -3586,7 +3586,7 @@ int soar_DefaultWmeDepth ( int argc, char *argv[], soarResult *res )
  *----------------------------------------------------------------------
  */
 
-int soar_BuildInfo( int argc, char *argv[], soarResult *res ) {
+int soar_BuildInfo( int argc, const char *argv[], soarResult *res ) {
   
   soar_ecBuildInfo();
   setSoarResultResult( res, soar_version_string );
@@ -3602,7 +3602,7 @@ int soar_BuildInfo( int argc, char *argv[], soarResult *res ) {
  *----------------------------------------------------------------------
  */
 
-int soar_ExcludedBuildInfo( int argc, char *argv[], soarResult *res ) {
+int soar_ExcludedBuildInfo( int argc, const char *argv[], soarResult *res ) {
   
   soar_ecExcludedBuildInfo();
   setSoarResultResult( res, soar_version_string );

@@ -12,7 +12,7 @@ void cb_appendToSoarResultResult( agent *the_agent,
 
 
 
-extern int getInt( char *string, int *i );
+extern int getInt( const char *string, int *i );
 extern bool cfps_removal_test_function (cons *c);
 
 
@@ -24,7 +24,7 @@ extern bool cfps_removal_test_function (cons *c);
 extern void do_print_for_production (production *prod, bool internal, 
 			      bool print_filename, bool full_prod);
 
-extern void do_print_for_production_name (char *prod_name, bool internal,
+extern void do_print_for_production_name (const char *prod_name, bool internal,
 				   bool print_filename, bool full_prod) ;
 extern void do_print_for_wme (wme *w, int depth, bool internal);
 
@@ -50,7 +50,7 @@ extern void print_multi_attribute_symbols(void);
 
 
 
-extern int read_pref_detail_from_string (char *the_lexeme,
+extern int read_pref_detail_from_string (const char *the_lexeme,
                                   bool *print_productions,
                                   wme_trace_type *wtt);
 extern int read_pattern_component (Symbol **dest_sym);
@@ -85,7 +85,7 @@ extern int set_watch_prod_group_setting (int  prodgroup,
 				  char * prodtype, char * arg,
 				  soarResult *res);
 
-extern int parse_run_command (int argc, char * argv[],
+extern int parse_run_command (int argc, const char * argv[],
 		       long * go_number, 
 		       enum go_type_enum * go_type,
 		       Symbol * * go_slot_attr, 
@@ -99,11 +99,11 @@ extern int parse_go_command (int argc, char * argv[],
 		      Symbol * * go_slot_attr, 
 		      goal_stack_level * go_slot_level,
 		      soarResult *res);
-extern int parse_memory_stats (int argc, char * argv[], soarResult *res);
+extern int parse_memory_stats (int argc, const char * argv[], soarResult *res);
 
 
-extern int parse_rete_stats ( int argc, char * argv[], soarResult *res);
-extern int parse_system_stats (int argc, char * argv[], soarResult *res);
+extern int parse_rete_stats ( int argc, const char * argv[], soarResult *res);
+extern int parse_system_stats (int argc, const char * argv[], soarResult *res);
 
 extern int printTimingInfo();
 

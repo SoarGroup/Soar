@@ -406,7 +406,7 @@ typedef void * soar_callback_agent;
 /**
  *  A callback id is also a string 
  */
-typedef char * soar_callback_id;  
+typedef const char * soar_callback_id;  
 
 /**
  *  Data sent to the callback function each time it is invoked.
@@ -421,7 +421,7 @@ typedef void * soar_callback_data;
  *  of this data is determined solely by the type of
  *  callback and the internals of Soar 
  */
-typedef void * soar_call_data;
+typedef const void * soar_call_data;
 
 /**
  *  Any callback registered with Soar, must be in

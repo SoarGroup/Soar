@@ -331,7 +331,7 @@ Symbol *make_new_identifier (char name_letter, goal_stack_level level) {
   return sym;
 }
 
-Symbol *make_sym_constant (char *name) {
+Symbol *make_sym_constant (const char *name) {
   Symbol *sym;
 
   sym = find_sym_constant(name);

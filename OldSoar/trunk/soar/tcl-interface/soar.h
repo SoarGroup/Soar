@@ -153,14 +153,14 @@ extern RegisteredInterp * Soar_GetRegisteredInterp (char * name);
 extern RegisteredInterp * Soar_GetRegisteredInterpByInterp (Tcl_Interp * interp);
 extern void Soar_InstallCommands(agent * new_agent);
 extern void Soar_LinkInterpVars2Agent(Tcl_Interp * interp, agent * new_agent);
-extern void Soar_Log (agent *, char *);
-extern void Soar_LogAndPrint (agent *, char *);
+extern void Soar_Log (agent *, const char *);
+extern void Soar_LogAndPrint (agent *, const char *);
 extern void Soar_Main (int argc, char ** argv);
 extern RegisteredInterp * Soar_MakeRegisterEntry (Tcl_Interp * interp, agent * agentPtr);
 extern Soar_TextWidgetPrintData *
-       Soar_MakeTextWidgetPrintData (Tcl_Interp * interp, char * widget_name);
+       Soar_MakeTextWidgetPrintData (Tcl_Interp * interp, const char * widget_name);
 extern int  Soar_NameInRegistry (char * name);
-extern void Soar_Print (agent *, char *);
+extern void Soar_Print (agent *, const char *);
 extern void Soar_PrintToFile (agent *, soar_callback_data, soar_call_data);
 extern void Soar_PrintToChannel (agent *, soar_callback_data, soar_call_data);
 extern void Soar_PrintToTextWidget (agent *, soar_callback_data, 

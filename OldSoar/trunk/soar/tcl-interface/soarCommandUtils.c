@@ -437,7 +437,7 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
 
 
 Soar_TextWidgetPrintData *
-Soar_MakeTextWidgetPrintData (Tcl_Interp * interp, char * widget_name)
+Soar_MakeTextWidgetPrintData (Tcl_Interp * interp, const char * widget_name)
 {
   Soar_TextWidgetPrintData * data;
 

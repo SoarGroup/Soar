@@ -331,7 +331,7 @@ Soar_DestroyRegisterEntry (riPtrToRemove)
 
 int SoarnewsCmd (ClientData clientData, 
 		 Tcl_Interp * interp,
-		 int argc, char *argv[])
+		 int argc, const char *argv[])
 {
   /* BUGBUG update soarnews printout on successive versions */
 
@@ -363,7 +363,7 @@ int SoarnewsCmd (ClientData clientData,
  */
 int VersionCmd (ClientData clientData, 
 		Tcl_Interp * interp,
-		int argc, char *argv[])
+		int argc, const char *argv[])
 {
   if (argc > 1)
     {

@@ -150,12 +150,12 @@ void deallocate_trace_format_list (trace_format *tf) {
    the end-of-string, a "[" or "]", or the end of the escape sequence.
 ---------------------------------------------------------------------- */
 
-char *format;
+const char *format;
 char *format_string_error_message;
 
 trace_format *parse_item_from_format_string (void);
 
-trace_format *parse_format_string (char *string) {
+trace_format *parse_format_string (const char *string) {
   trace_format *first, *prev, *new;
 
   format = string;
@@ -707,7 +707,7 @@ bool remove_trace_format (bool stack_trace,
 bool add_trace_format (bool stack_trace,
                        int type_restriction,
                        Symbol *name_restriction,
-                       char *format_string) {
+                       const char *format_string) {
   tracing_rule *tr;
   trace_format *new_tf;
   hash_table *ht;

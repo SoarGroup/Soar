@@ -6921,8 +6921,8 @@ void print_node_count_statistics (void) {
 }
 
 /* Returns 0 if result invalid, 1 if result valid */
-int get_node_count_statistic (char * node_type_name, 
-			      char * column_name,
+int get_node_count_statistic (const char * node_type_name, 
+			      const char * column_name,
 			      unsigned long * result) 
 {
   int i;
