@@ -571,59 +571,75 @@ bool tests_are_equal_with_bindings (test t1, test test2, list **bindings) {
   test t2;
 
   /* t1 is from the pattern given to "pf"; t2 is from a production's condition list. */
-  if (test_is_blank_test(t1)) return (bool)(test_is_blank_test(test2));
+  if (test_is_blank_test(t1)) {
+    return (bool)(test_is_blank_test(test2));
+  }
 
   /* If the pattern doesn't include "(state", but the test from the
      production does, strip it out of the production's. */
-  if ((!test_includes_goal_or_impasse_id_test(t1,TRUE,FALSE)) &&
-      test_includes_goal_or_impasse_id_test(test2,TRUE,FALSE)) {
+  if ((!test_includes_goal_or_impasse_id_test(t1,TRUE,FALSE)) && 
+       test_includes_goal_or_impasse_id_test(test2,TRUE,FALSE)) {
     goal_test = FALSE;
     impasse_test = FALSE;
     t2 = copy_test_removing_goal_impasse_tests(test2, &goal_test, &impasse_test);
-  }
-  else
+  } else {
     t2 = copy_test(test2) ; /* DJP 4/3/96 -- Always make t2 into a copy */
+  }
 
   if (test_is_blank_or_equality_test(t1)) {
-    if (!(test_is_blank_or_equality_test(t2) && !(test_is_blank_test(t2)))) dealloc_and_return(t2,FALSE)
-    else {
+    if (!(test_is_blank_or_equality_test(t2) && !(test_is_blank_test(t2)))) {
+      dealloc_and_return(t2,FALSE);
+    } else {
       if (symbols_are_equal_with_bindings(referent_of_equality_test(t1),
 					  referent_of_equality_test(t2),
-					  bindings))
-	dealloc_and_return(t2,TRUE)
-      else
-	dealloc_and_return(t2,FALSE)
+                                          bindings)) {
+	dealloc_and_return(t2,TRUE);
+      } else {
+	dealloc_and_return(t2,FALSE);
+      }
     }
   }
 
   ct1 = complex_test_from_test(t1);
   ct2 = complex_test_from_test(t2);
 
-  if (ct1->type != ct2->type) dealloc_and_return(t2,FALSE)
+  if (ct1->type != ct2->type) {
+    dealloc_and_return(t2,FALSE);
+  }
 
   switch(ct1->type) {
-  case GOAL_ID_TEST: dealloc_and_return(t2,TRUE)
-  case IMPASSE_ID_TEST: dealloc_and_return(t2,TRUE)
+  case GOAL_ID_TEST: 
+    dealloc_and_return(t2,TRUE);
+  case IMPASSE_ID_TEST: 
+    dealloc_and_return(t2,TRUE);
 
   case DISJUNCTION_TEST:
-    for (c1=ct1->data.disjunction_list, c2=ct2->data.disjunction_list;
-         ((c1!=NIL)&&(c2!=NIL));
-         c1=c1->rest, c2=c2->rest)
-      if (c1->first != c2->first) dealloc_and_return(t2,FALSE)
-    if (c1==c2) dealloc_and_return(t2,TRUE)  /* make sure they both hit end-of-list */
-    dealloc_and_return(t2,FALSE)
+    for (c1=ct1->data.disjunction_list, c2=ct2->data.disjunction_list; ((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest) {
+      if (c1->first != c2->first) {
+        dealloc_and_return(t2,FALSE);
+      }
+    }
+    if (c1==c2) {
+      dealloc_and_return(t2,TRUE);  /* make sure they both hit end-of-list */
+    }
+    dealloc_and_return(t2,FALSE);
 
   case CONJUNCTIVE_TEST:
-    for (c1=ct1->data.conjunct_list, c2=ct2->data.conjunct_list;
-         ((c1!=NIL)&&(c2!=NIL));
-         c1=c1->rest, c2=c2->rest)
-      if (! tests_are_equal_with_bindings(c1->first,c2->first,bindings)) dealloc_and_return(t2,FALSE)
-    if (c1==c2) dealloc_and_return(t2,TRUE)  /* make sure they both hit end-of-list */
-    dealloc_and_return(t2,FALSE)
+    for (c1=ct1->data.conjunct_list, c2=ct2->data.conjunct_list; ((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest) {
+      if (! tests_are_equal_with_bindings(c1->first,c2->first,bindings)) {
+        dealloc_and_return(t2,FALSE);
+      }
+    }
+    if (c1==c2) {
+      dealloc_and_return(t2,TRUE);  /* make sure they both hit end-of-list */
+    }
+    dealloc_and_return(t2,FALSE);
 
   default:  /* relational tests other than equality */
-    if (symbols_are_equal_with_bindings(ct1->data.referent,ct2->data.referent,bindings)) dealloc_and_return(t2,TRUE)
-    dealloc_and_return(t2,FALSE)
+    if (symbols_are_equal_with_bindings(ct1->data.referent,ct2->data.referent,bindings)) {
+      dealloc_and_return(t2,TRUE);
+    }
+    dealloc_and_return(t2,FALSE);
   }
 }
 

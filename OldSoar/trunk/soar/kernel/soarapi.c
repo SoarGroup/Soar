@@ -1105,9 +1105,7 @@ int soar_Operand2 ( int argc, const char *argv[], soarResult *res)
   else {
     setSoarResultResult( res, "Soar8 Mode must remain on in this build" );
     return SOAR_ERROR;
-  }
-}
-    
+  }    
 
 #endif
 

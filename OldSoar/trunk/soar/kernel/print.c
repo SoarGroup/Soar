@@ -153,57 +153,23 @@ void stop_redirection_to_file (void) {
 
 void print_string (char *s) {
   char *ch;
-#ifdef __SC__
-  char *buf, *strbuf;
-  int i,len, usebuf = 0, num_of_inserts = 0;
-#endif
 
   for (ch=s; *ch!=0; ch++) {
-    if (*ch=='\n')
+    if (*ch=='\n') {
       current_agent(printer_output_column) = 1;
-    else
+    } else {
       current_agent(printer_output_column)++;
-    /* BUGBUG doesn't handle tabs correctly */
-#ifdef __SC__ /* Symantec C++ compiler? A Macintosh thing? */
-	if (current_agent(printer_output_column) >= 80)
-	{
-		current_agent(printer_output_column) = 1;
-		len = strlen((usebuf?strbuf:s))+2;
-		buf = (char *)allocate_memory(len*sizeof(char),STRING_MEM_USAGE);
-		for (i=0;(s+i+num_of_inserts) <= ch;i++) {
-			buf[i] = (usebuf?strbuf:s)[i];
-		}
-		buf[i] = '\n';
-		for (;i<=(len-1);i++) {
-			buf[i+1] = (usebuf?strbuf:s)[i];
-		}
-		if (usebuf) free_memory_block_for_string(strbuf);
-		strbuf = (char *)allocate_memory(len*sizeof(char),STRING_MEM_USAGE);
-		for (i=0;i<=len; i++) {
-			strbuf[i] = buf[i];
-		}
-		free_memory_block_for_string(buf);
-		usebuf=1;
-		num_of_inserts++;
-	}
+    }
   }
 
   if (current_agent(redirecting_to_file)) {
     fputs (s, current_agent(redirection_file));
   } else {
-  	fputs ((usebuf?strbuf:s), stdout);
-    fflush (stdout);
-	if (usebuf) free_memory_block_for_string(strbuf);
-#else
-  }
-
-  if (current_agent(redirecting_to_file)) {
-    fputs (s, current_agent(redirection_file));
-  } else {
+    /* this code is never executed since using_output_string is never true
     if (current_agent(using_output_string)) 
-      strcat(current_agent(output_string),s); /* this code is never executed since using_output_string is never true */
+      strcat(current_agent(output_string),s);
     else {
-
+    */
       /* 
 	 A bunch of crazy, interface dependent functions used to be called
 	 here.  I am removing all of that, and using the Tcl interface
@@ -217,10 +183,9 @@ void print_string (char *s) {
 
       soar_invoke_first_callback( soar_agent, LOG_CALLBACK, s );
       soar_invoke_first_callback( soar_agent, PRINT_CALLBACK, s );
-
-#endif /* __SC__*/
-    }
-    if (current_agent(logging_to_file)) fputs (s, current_agent(log_file));
+  }
+  if (current_agent(logging_to_file)) {
+    fputs (s, current_agent(log_file));
   }
 }
 

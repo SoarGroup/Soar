@@ -581,8 +581,10 @@ void soar_default_create_agent_procedure (const char * agent_name) {
   current_agent(variables_set)                      = NIL;
 
   /* String redirection */
+  /*
   current_agent(using_output_string)		    = FALSE;
   current_agent(output_string)			    = NIL;
+  */
 
   /* Who needs it if there's an alternate_input_string? */
   /*

@@ -4010,9 +4010,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /*  
   bool		    using_input_string;
   char		  * input_string;
-  */
   bool		    using_output_string;
   char		  * output_string;
+  */
   
   /*mvp 5-17-94 */
   list              * variables_set;
