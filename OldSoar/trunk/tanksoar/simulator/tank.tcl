@@ -79,7 +79,12 @@ proc createTank {x y agentPath agentFile newname} {
 					 error 0 Ok
 			error "Tried to create duplicate tanks"
 	}
-	createNewAgent $newname $agentPath "$agentFile.soar"
+
+	if {[string last ".soar" $agentFile] == -1 && [string last ".rete" $agentFile] == -1 } { 
+			set agentFile "$agentFile.soar"
+	}
+
+	createNewAgent $newname $agentPath $agentFile
 	if {![interp exists $newname]} {
 	   return 0
 	}

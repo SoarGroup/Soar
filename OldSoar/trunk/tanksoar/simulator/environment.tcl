@@ -518,8 +518,8 @@ global runningSimulation
 }
 
 proc runSimulation {w} {
-global runningSimulation tickDelay soarTimePerTick soarTimeUnit \
-	 worldCount worldCountLimit winningTank scoreLimit tank skipSimTick
+global runningSimulation tickDelay soarTimePerTick soarTimeUnit tankList \
+	 worldCount worldCountLimit winningTank scoreLimit tank skipSimTick tsiConfig
 
 	set agents [interp slaves]
 	set agents [ldelete $agents siu]
@@ -532,17 +532,51 @@ global runningSimulation tickDelay soarTimePerTick soarTimeUnit \
 		# could be a bug.  May need to call tsiOnEnvironmentStop
 	}
 
+	set hun	[expr $worldCount % 200]
+		if { !$hun } {
+				puts "World Count -> $worldCount"
+		}
+
 	if {$worldCount >= $worldCountLimit} {
 		set runningSimulation 0
-		tk_dialog .info {Game Over} \
-							 "Time limit reached. Winner is $winningTank" info 0 Ok
+		
+			if { $tsiConfig(autorun) == 0 } {
+					tk_dialog .info {Game Over} \
+							"Time limit reached. Winner is $winningTank" info 0 Ok
+
+			} else {
+					puts -nonewline "FINAL SCORES:"
+					foreach t $tankList {
+							set s $tank($t,score)
+
+							puts -nonewline " $s"
+					}
+					puts "\n\n"
+					exit
+			}
+			
 		return
 	}
 
 	if {[info exists winningTank] && $tank($winningTank,score) >= $scoreLimit} {
 		set runningSimulation 0
-		tk_dialog .info {Game Over} \
-							 "$scoreLimit points achieved. Winner is $winningTank" info 0 Ok
+			if { $tsiConfig(autorun) == 0 } {
+
+					tk_dialog .info {Game Over} \
+							"$scoreLimit points achieved. Winner is $winningTank" info 0 Ok
+
+			} else {
+					puts -nonewline "FINAL SCORES:"
+					foreach t $tankList {
+							set s $tank($t,score)
+
+							puts -nonewline " $s"
+
+					}
+					puts "\n\n"
+					exit
+			}
+
 		set scoreLimit 9999
 		return
 	}
@@ -552,7 +586,9 @@ global runningSimulation tickDelay soarTimePerTick soarTimeUnit \
 	} else {
 		 incr worldCount
 		 tickSimulation $w
-		 update
+			if { $tsiConfig(autorun) == 0 } {	
+					update 
+			}
 	}
 	[lindex $agents 0] eval [list run-soar $soarTimePerTick $soarTimeUnit]
 	if {[info exists runningSimulation] && $runningSimulation} {

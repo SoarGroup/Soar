@@ -4,22 +4,26 @@
 set ETCPConfig(AgentName) Tank
 set ETCPConfig(AgentFolder) [file join .. agents]
 
-set mode off
-if { [llength $argv] > 0 } { set mode [lindex $argv 0] }
+if { [llength $argv] < 1 } {
+		set mode normal
+		set tsiConfig(autorun) 0
+		puts "Mode normal"
+} else {
+		set mode commandline 
+		set tsiConfig(autorun) 1
+}
 
-if { ![string compare $mode client] } {
+source PDFileMenus.tcl
+source et-controlpanel.tcl
 
-  tsi 1 -mode client -controlpanel makeTSIFileSelectionControlPanel
+if { $mode == "normal" } {
 
-  wm deiconify .
+  tsi 1 -controlpanel makeETControlPanel
 
 } else {
-
-  source PDFileMenus.tcl
-  source et-controlpanel.tcl
-
-  tsi 1 -mode $mode -controlpanel makeETControlPanel
-
+		
+#		source [file join $tsi_library "tsiInit.tcl"]
+		tsi 0 -controlpanel makeETControlPanel
 }
 
 #>-=>
@@ -59,10 +63,12 @@ source tankworld_search.tcl
 source tankworld_sensors.tcl
 source environment.tcl
 
+
 #>-=>
 # Source TSI and it's control panel
 #>-=>
 source tsi_display.tcl
+
 
 #>-=>
 # Set up this environment's windows
@@ -72,6 +78,7 @@ source windowGlobal.tcl
 source windowAgentInfo.tcl
 source windowManualControl.tcl
 #source windowConstants.tcl
+
 
 if {[file exists "SIU_Interface.tcl"]} {
 	interp create siu
@@ -85,6 +92,25 @@ if {[file exists "SIU_Interface.tcl"]} {
 
 displayManualWindow
 loadWindowPreferences
+
+
+
+
+if { $tsiConfig(autorun) != 0  } { 
+		
+		set names [list red green yellow blue orange purple magenta black cyan]
+
+		set i 0
+		foreach a $argv {
+				
+				# Make the path relative to the tanksoar top-level directory, not
+				# to the simulator directory.
+				createTank -1 -1 [file join .. [file dirname $a]] [file tail $a] [lindex $names $i]
+				incr i
+		}
+		environmentRun
+		set worldCountLimit 1400
+}
 
 proc dummyMonitor {{arg1 0} {arg2 0} {arg3 0} {arg4 0} {arg5 0} {arg6 0} {arg7 0}} {
 	return
