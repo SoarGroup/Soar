@@ -74,8 +74,6 @@ namespace cli {
 			kCountLessThanChunks				= 69,
 			kAcceptableOrNothingExpected		= 70,
 			kSourceError						= 71,
-			kNoConnection						= 72,
-			kNoElementXML						= 73,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -146,8 +144,6 @@ namespace cli {
 				case kCountLessThanChunks:				return "Cannot set chunk count less than the current number of chunks.";
 				case kAcceptableOrNothingExpected:		return "Expected acceptable preference (+) or nothing, check syntax.";
 				case kSourceError:						return "Source command error.";
-				case kNoConnection:						return "Missing required Connection pointer.";
-				case kNoElementXML:						return "Missing required ElementXML pointer.";
 				default:								return "Unknown error code.";
 			}
 		}

@@ -879,7 +879,6 @@ protected:
 	sml::KernelSML*		m_pKernelSML;
 	gSKI::Version		m_KernelVersion;		// Kernel version number
 	std::string			m_HomeDirectory;		// The initial working directory, server side
-	bool				m_QuitCalled;			// True after DoQuit is called
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
 	std::string			m_LogFilename;			// Used for logging to a file.
 	std::ofstream*		m_pLogFile;				// The log file stream

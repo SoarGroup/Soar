@@ -17,6 +17,7 @@ typedef unsigned long tgSKIErrId;
 struct Version{
    unsigned short major;
    unsigned short minor;
+   unsigned short micro;
 };
 
    /** IMPORTANT NOTE

@@ -60,7 +60,7 @@ namespace gSKI {
    Version KernelFactory::GetGSKIVersion(Error* err)const 
    {
       ClearError(err);
-      Version v = {gSKI::MajorVersionNumber, gSKI::MinorVersionNumber };
+      Version v = {gSKI::MajorVersionNumber, gSKI::MinorVersionNumber, gSKI::MicroVersionNumber };
       return v;
    }
 
@@ -76,7 +76,7 @@ namespace gSKI {
    Version KernelFactory::GetKernelVersion(Error* err) const 
    {
       ClearError(err); 
-      Version v = {MAJOR_VERSION_NUMBER, MINOR_VERSION_NUMBER };
+      Version v = {MAJOR_VERSION_NUMBER, MINOR_VERSION_NUMBER, MICRO_VERSION_NUMBER };
       return (v);
    }
 

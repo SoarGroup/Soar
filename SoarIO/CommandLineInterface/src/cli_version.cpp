@@ -23,10 +23,11 @@ bool CommandLineInterface::DoVersion() {
 	char buf[kMinBufferSize];
 
 	if (m_RawOutput) {
-		m_Result << m_KernelVersion.major << '.' << m_KernelVersion.minor;
+		m_Result << m_KernelVersion.major << '.' << m_KernelVersion.minor << '.' << m_KernelVersion.micro;
 	} else {
 		AppendArgTagFast(sml_Names::kParamVersionMajor, sml_Names::kTypeInt, Int2String(m_KernelVersion.major, buf, kMinBufferSize));
 		AppendArgTagFast(sml_Names::kParamVersionMinor, sml_Names::kTypeInt, Int2String(m_KernelVersion.minor, buf, kMinBufferSize));
+		AppendArgTagFast(sml_Names::kParamVersionMicro, sml_Names::kTypeInt, Int2String(m_KernelVersion.micro, buf, kMinBufferSize));
 	}
 	return true;
 }

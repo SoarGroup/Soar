@@ -103,7 +103,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	assert(DoHome());
 
 	// Initialize other members
-	m_QuitCalled = false;
 	m_pKernel = 0;
 	m_SourceError = false;
 	m_SourceDepth = 0;
@@ -132,15 +131,9 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 * @param pResponse Pointer to XML response object
 *************************************************************/
 EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, ElementXML* pResponse) {
-
-	// Fail if quit has been called
-	if (m_QuitCalled) return false;
-
 	// No way to return data
-	if (!pConnection) return SetError(CLIError::kNoConnection);
-
-	// No way to return data
-	if (!pResponse) return SetError(CLIError::kNoElementXML);
+	if (!pConnection) return false;
+	if (!pResponse) return false;
 
 	// Log input
 	if (m_pLogFile) {
@@ -295,14 +288,12 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 
 	// Process command
 	CommandFunction pFunction = m_CommandMap[argv[0]];
-
-	// Just in case...
 	assert(pFunction);
 	
 	// Initialize GetOpt
 	m_pGetOpt->Initialize();
 
-	// Make the call
+	// Make the Parse call
 	return (this->*pFunction)(pAgent, argv);
 }
 

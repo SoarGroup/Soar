@@ -18,9 +18,6 @@ bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::stri
 }
 
 bool CommandLineInterface::DoQuit() {
-	// Flip the quit flag
-	m_QuitCalled = true; 
-
 	// Stop soar
 	DoStopSoar(0, false, 0);
 
