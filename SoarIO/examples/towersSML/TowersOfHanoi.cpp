@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 		// DJP: Not sure how we can tell if this has really worked or not.
 		// It looks like we'll be stuck in an infinite loop looking for the goal state
 		// if something goes wrong, so I think if we get here it's a success.
-		ReportResult("towers-sml", true) ;
+		ReportResult(remoteConnection ? "towers-sml-remote" : "towers-sml", true) ;
 
 		time = timer.Elapsed() ;
 		cout << "Time after initialization to complete: " << time << endl ;
