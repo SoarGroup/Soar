@@ -300,26 +300,26 @@ extern "C"
 template <typename P, typename T>
 inline void allocate_with_pool(agent* thisAgent, P p, T** dest_item_pointer)
 {
-   /*
+   
   if (! (p)->free_list) add_block_to_memory_pool(thisAgent, p);
-  *(dest_item_pointer) = static_cast<T>((p)->free_list);
+  *(dest_item_pointer) = static_cast< T* > ((p)->free_list);
   (p)->free_list =  *(void * *)(*(dest_item_pointer));
   fill_with_garbage (*(dest_item_pointer), (p)->item_size);
   increment_used_count(p);
-   */
-   *dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
+ 
+   //*dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
 }
 
 template <typename P, typename T>
 inline void free_with_pool(P p, T * item)
 {
-   /*
+
   fill_with_garbage ((item), (p)->item_size);
   *(void * *)(item) = (p)->free_list;
   (p)->free_list = (void *)(item);
   decrement_used_count(p); 
-   */
-   free(item);
+ 
+   //free(item);
 }
 
 extern "C"
