@@ -666,7 +666,7 @@ void soar_default_create_agent_procedure(const char *agent_name)
         current_agent(num_productions_of_type)[i] = 0;
     }
 
-    current_agent(o_support_calculation_type) = 3;      /* KJC 7/00 */
+    current_agent(o_support_calculation_type) = 4;      /* RPM 5/20/04 */
     current_agent(numeric_indifferent_mode) = NUMERIC_INDIFFERENT_MODE_AVG;     /* KJC 7/00 */
     current_agent(attribute_preferences_mode) = 0;      /* RBD 4/17/95 */
 
