@@ -57,10 +57,12 @@ KernelSML* KernelSML::s_pKernel = NULL ;
 static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 {
 #ifdef _WIN32
+#ifdef _DEBUG
 	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
 	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
 
 	_CrtDbgReport(_CRT_WARN, pFilename, line, "KernelSML", pMsg);
+#endif
 #endif
 }
 

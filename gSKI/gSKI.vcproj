@@ -81,7 +81,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)include&quot;;&quot;$(ProjectDir)lib_src\pcre-4.5&quot;;&quot;$(ProjectDir)lib_src\SKx\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)include&quot;;&quot;$(ProjectDir)lib_src\pcre-4.5&quot;;&quot;$(ProjectDir)..\SoarKernel\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;GSKI;NO_MEGA_UNIT_TESTS; _DLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -89,8 +89,8 @@
 				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="TRUE"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>

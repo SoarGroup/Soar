@@ -78,7 +78,6 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\SML\ClientSML\bin\ClientSML.lib"
 				OutputFile="../../../bin/TestClientSML.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
