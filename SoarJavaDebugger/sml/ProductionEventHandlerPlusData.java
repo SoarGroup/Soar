@@ -46,8 +46,8 @@ public class ProductionEventHandlerPlusData extends EventHandlerPlusData {
     return (cPtr == 0) ? null : new SWIGTYPE_p_f_enum_sml__smlProductionEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__void(cPtr, false);
   }
 
-  public ProductionEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlProductionEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__void handler, SWIGTYPE_p_void userData, int callbackID) {
-    this(smlJNI.new_ProductionEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlProductionEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__void.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
+  public ProductionEventHandlerPlusData(int eventID, SWIGTYPE_p_f_enum_sml__smlProductionEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__void handler, SWIGTYPE_p_void userData, int callbackID) {
+    this(smlJNI.new_ProductionEventHandlerPlusData(eventID, SWIGTYPE_p_f_enum_sml__smlProductionEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__void.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
   }
 
 }

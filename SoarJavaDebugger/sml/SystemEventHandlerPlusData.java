@@ -46,8 +46,8 @@ public class SystemEventHandlerPlusData extends EventHandlerPlusData {
     return (cPtr == 0) ? null : new SWIGTYPE_p_f_enum_sml__smlSystemEventId_p_void_p_sml__Kernel__void(cPtr, false);
   }
 
-  public SystemEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlSystemEventId_p_void_p_sml__Kernel__void handler, SWIGTYPE_p_void userData, int callbackID) {
-    this(smlJNI.new_SystemEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlSystemEventId_p_void_p_sml__Kernel__void.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
+  public SystemEventHandlerPlusData(int eventID, SWIGTYPE_p_f_enum_sml__smlSystemEventId_p_void_p_sml__Kernel__void handler, SWIGTYPE_p_void userData, int callbackID) {
+    this(smlJNI.new_SystemEventHandlerPlusData(eventID, SWIGTYPE_p_f_enum_sml__smlSystemEventId_p_void_p_sml__Kernel__void.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
   }
 
 }

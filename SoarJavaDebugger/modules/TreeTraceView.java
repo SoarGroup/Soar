@@ -19,16 +19,11 @@ import helpers.CommandHistory;
 import manager.Pane;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.*;
 
-import sml.Agent;
+import sml.*;
 import debugger.MainFrame;
 import doc.Document;
 
@@ -41,6 +36,26 @@ import doc.Document;
 public class TreeTraceView extends ComboCommandBase
 {
 	protected Tree m_Tree ;
+	
+	protected int m_xmlCallback = -1 ;
+	
+	/** The last root (top level item) added to the tree.  We add new sub items under this */
+	protected TreeItem m_LastRoot ;
+
+	protected static final String[] kPadSpaces = { "", " ", "  ", "   ", "    ", "     " } ;
+	
+	public TreeTraceView()
+	{
+		m_ClearEachCommand = false ;
+		m_UpdateOnStop = false ;
+		m_ClearComboEachCommand = true ;
+		m_ComboAtTop = false ;
+		m_ShowTraceOutput = false ;
+		m_PromptForCommands = "<Type commands here>" ;		
+	}
+
+	/** This window can be the main display window */
+	public boolean canBePrimeWindow() { return true ; }
 
 	/********************************************************************************************
 	* 
@@ -50,7 +65,12 @@ public class TreeTraceView extends ComboCommandBase
 	protected void createDisplayControl(Composite parent)
 	{
 		m_Tree = new Tree(parent, SWT.BORDER) ;
+		m_LastRoot = null ;
 		
+		createContextMenu(m_Tree) ;
+
+		/*
+		 * Test code
 		Tree tree = m_Tree ;
 		File [] roots = File.listRoots ();
 		for (int i=0; i<roots.length; i++) {
@@ -81,6 +101,7 @@ public class TreeTraceView extends ComboCommandBase
 				}
 			}
 		});
+		*/
 	}
 
 	/********************************************************************************************
@@ -103,12 +124,102 @@ public class TreeTraceView extends ComboCommandBase
 
 	/************************************************************************
 	* 
-	* Add the text to the view (needs to be done in a thread safe way)
+	* Add the text to the view in a thread safe way (switches to UI thread)
+	* 
+	*************************************************************************/
+	protected void appendSubTextSafely(final String text)
+	{
+		// If Soar is running in the UI thread we can make
+		// the update directly.
+		if (!Document.kDocInOwnThread)
+		{
+			appendSubText(text) ;
+			return ;
+		}
+
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	appendSubText(text) ;
+            }
+         }) ;
+	}
+	
+	/************************************************************************
+	* 
+	* Add the text to the view (this method assumes always called from UI thread)
+	* 
+	*************************************************************************/
+	protected void appendSubText(String text)
+	{
+		String[] lines = text.split(getLineSeparator()) ;
+
+		// Add the sub items under the last root in the tree
+		if (m_LastRoot == null)
+		{
+			m_LastRoot = new TreeItem(m_Tree, 0) ;
+		}
+
+		TreeItem lastItem = m_LastRoot ;
+		
+		// Stop updating the tree while we add to it
+		m_Tree.setRedraw(false) ;
+
+		for (int i = 0 ; i < lines.length ; i++)
+		{	
+			if (lines[i].length() == 0)
+				continue ;
+			
+			TreeItem node = new TreeItem (lastItem, 0);
+			node.setText (lines[i]);
+			node.setData (null);	// No additional watch data to attach here (for later expansion)
+			//new TreeItem (root, 0);
+		}
+
+		// Scroll to the bottom -- not doing this for sub items to save speed
+		// Requires that we issue a final top level item at the end of a run.
+		//if (lastItem != null)
+		//	m_Tree.showItem(lastItem) ;
+
+		// Redraw the updated tree
+		m_Tree.setRedraw(true) ;		
+	}
+	
+	/************************************************************************
+	* 
+	* Add the text to the view (this method assumes always called from UI thread)
 	* 
 	*************************************************************************/
 	protected void appendText(String text)
 	{
+		String[] lines = text.split(getLineSeparator()) ;
+
+		TreeItem lastItem = null ;
 		
+		// Stop updating the tree while we add to it
+		m_Tree.setRedraw(false) ;
+		for (int i = 0 ; i < lines.length ; i++)
+		{	
+			if (lines[i].length() == 0)
+				continue ;
+			
+			TreeItem root = new TreeItem (m_Tree, 0);
+			root.setText (lines[i]);
+			root.setData (null);	// No additional watch data to attach here (for later expansion)
+			lastItem = root ;
+			//new TreeItem (root, 0);
+		}
+
+		// Scroll to the bottom -- horribly slow
+		if (lastItem != null)
+		{
+			m_Tree.showItem(lastItem) ;
+			m_LastRoot = lastItem ;
+		}
+		
+		// Redraw the updated tree
+		m_Tree.setRedraw(true) ;
 	}
 
 	/************************************************************************
@@ -120,6 +231,226 @@ public class TreeTraceView extends ComboCommandBase
 	{
 		
 	}
+	
+	/** Add spaces to the length until reaches minLength */
+	protected String padLeft(String orig, int minLength)
+	{
+		if (orig.length() >= minLength)
+			return orig ;
+		
+		// Add the appropriate number of spaces.  If this throws
+		// we need to increase the size of the kPadSpaces array.
+		return kPadSpaces[minLength - orig.length()] + orig ;
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * This handler should only be called from the UI thread as it does a lot of UI work.
+	 * 
+	 * @param agent
+	 * @param xmlParent
+	********************************************************************************************/
+	protected void displayXmlTraceEvent(Agent agent, ClientTraceXML xmlParent)
+	{
+		int nChildren = xmlParent.GetNumberChildren() ;
+		
+		for (int childIndex = 0 ; childIndex < nChildren ; childIndex++)
+		{
+			// Analyze the children as ClientTraceXML objects
+			ClientTraceXML xmlTrace = new ClientTraceXML() ;
+
+			// Get each child in turn
+			xmlParent.GetChild(xmlTrace, childIndex) ;
+			
+			StringBuffer text = new StringBuffer() ;
+			final int decisionDigits = 3 ;
+			
+			// This is a state change (new decision)
+			if (xmlTrace.IsTagState())
+			{
+				// 3:    ==>S: S2 (operator no-change)
+				text.append(padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
+				text.append(": ==>S: ") ;
+				text.append(xmlTrace.GetStateID()) ;
+				
+				if (xmlTrace.GetImpasseObject() != null)
+				{
+					text.append(" [") ;
+					text.append(xmlTrace.GetImpasseObject()) ;
+					text.append(" ") ;
+					text.append(xmlTrace.GetImpasseType()) ;
+					text.append("]") ;
+				}
+				
+				if (text.length() != 0)
+					this.appendText(text.toString()) ;
+			} else if (xmlTrace.IsTagOperator())
+			{
+				 //2:    O: O8 (move-block)
+				text.append(padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
+				text.append(":    O: ") ;
+				text.append(xmlTrace.GetOperatorID()) ;
+				
+				if (xmlTrace.GetOperatorName() != null)
+				{
+					text.append(" [") ;
+					text.append(xmlTrace.GetOperatorName()) ;
+					text.append("]") ;
+				}
+	
+				if (text.length() != 0)
+					this.appendText(text.toString()) ;
+				
+			} else if (xmlTrace.IsTagPhase())
+			{
+				text.append("--- ") ;
+				text.append(xmlTrace.GetPhaseName()) ;
+				text.append(" ") ;
+				text.append("phase ") ;
+				if (xmlTrace.GetPhaseStatus() != null)
+					text.append(xmlTrace.GetPhaseStatus()) ;
+				text.append("---") ;
+				
+				if (text.length() != 0)
+					this.appendSubText(text.toString()) ;
+			}
+			else if (xmlTrace.IsTagAddWme() || xmlTrace.IsTagRemoveWme())
+			{
+				boolean adding = xmlTrace.IsTagAddWme() ;
+				for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
+				{
+					ClientTraceXML child = new ClientTraceXML() ;
+					xmlTrace.GetChild(child, i) ;
+					
+					if (child.IsTagWme())
+					{
+						text.append(adding ? "=>WM: (" : "<=WM: (") ;
+						text.append(child.GetWmeTimeTag()) ;
+						text.append(": ") ;
+						text.append(child.GetWmeID()) ;
+						text.append(" ^") ;
+						text.append(child.GetWmeAttribute()) ;
+						text.append(" ") ;
+						text.append(child.GetWmeValue()) ;
+						text.append(")") ;
+					}
+					
+					child.delete() ;
+				}
+				
+				if (text.length() != 0)
+					this.appendSubText(text.toString()) ;	
+
+			} else if (xmlTrace.IsTagPreference())
+			{
+				text.append("--> (") ;
+				text.append(xmlTrace.GetPreferenceID()) ;
+				text.append(" ^") ;
+				text.append(xmlTrace.GetPreferenceAttribute()) ;
+				text.append(" ") ;
+				text.append(xmlTrace.GetPreferenceValue()) ;
+				text.append(" + )") ;	// BUGBUG: + hard-coded for now -- PreferenceType present but empty
+
+								if (text.length() != 0)
+					this.appendSubText(text.toString()) ;
+				
+			} 
+			else if (xmlTrace.IsTagFiringProduction() || xmlTrace.IsTagRetractingProduction())
+			{
+				boolean firing = xmlTrace.IsTagFiringProduction() ;
+
+				for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
+				{
+					ClientTraceXML child = new ClientTraceXML() ;
+					xmlTrace.GetChild(child, i) ;
+					if (child.IsTagProduction())
+					{
+						if (i > 0)
+							text.append(getLineSeparator()) ;
+						
+						text.append(firing ? "Firing " : "Retracting ") ;
+						text.append(child.GetProductionName()) ;
+					}
+					child.delete() ;
+				}
+
+				if (text.length() != 0)
+					this.appendSubText(text.toString()) ;			
+	
+			}
+			else
+			{
+				// These lines can be helpful if debugging this
+				String xmlText = xmlParent.GenerateXMLString(true) ;
+				System.out.println(xmlText) ;
+			}
+
+			// Manually clean up the child too
+			System.out.print('x') ;
+			xmlTrace.delete() ;		
+		}
+		
+		// Technically this will happen when the object is garbage collected (and finalized)
+		// but without it we'll get a million memory leak messages because (a) gc may not have been run for a while
+		// (b) even if it runs not all objects will be reclaimed and (c) finalize isn't guaranteed before we exit
+		// so all in all, let's just call it ourselves here :)
+		xmlParent.delete() ;
+	}
+	
+	public void xmlEventHandler(int eventID, Object data, final Agent agent, ClientXML xml)
+	{
+		if (eventID != smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT.swigValue())
+			return ;
+
+		// The messages come collected into a parent <trace> tag so that one event
+		// can send over many pieces of a trace in a single call.  Just more
+		// efficient that way.
+		final ClientTraceXML xmlParent = xml.ConvertToTraceXML() ;
+		if (!xmlParent.IsTagTrace() || xmlParent.GetNumberChildren() == 0)
+		{
+			xml.delete() ;
+			return ;
+		}
+		
+		// If Soar is running in the UI thread we can make
+		// the update directly.
+		if (!Document.kDocInOwnThread)
+		{
+			displayXmlTraceEvent(agent, xmlParent) ;
+			return ;
+		}
+
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().syncExec(new Runnable() {
+            public void run() {
+    			displayXmlTraceEvent(agent, xmlParent) ;
+            }
+         }) ;		
+	}
+
+	/********************************************************************************************
+	 * 
+	 * Register for events of particular interest to this view
+	 * 
+	 ********************************************************************************************/
+	protected void registerForViewAgentEvents(Agent agent)
+	{
+		m_xmlCallback = agent.RegisterForXMLEvent(smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, this, "xmlEventHandler", null) ;
+	}
+
+	protected boolean unregisterForViewAgentEvents(Agent agent)
+	{
+		boolean ok = true ;
+		
+		if (m_xmlCallback != -1)
+			ok = agent.UnregisterForXMLEvent(m_xmlCallback) ;
+
+		m_xmlCallback = -1 ;
+		
+		return ok ;
+	}
+
 	
 	protected void storeContent(ElementXML element)
 	{

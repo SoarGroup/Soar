@@ -37,6 +37,14 @@ public class EventHandlerPlusData {
     swigCPtr = 0;
   }
 
+  public void setM_EventID(int m_EventID) {
+    smlJNI.set_EventHandlerPlusData_m_EventID(swigCPtr, m_EventID);
+  }
+
+  public int getM_EventID() {
+    return smlJNI.get_EventHandlerPlusData_m_EventID(swigCPtr);
+  }
+
   public void setM_UserData(SWIGTYPE_p_void m_UserData) {
     smlJNI.set_EventHandlerPlusData_m_UserData(swigCPtr, SWIGTYPE_p_void.getCPtr(m_UserData));
   }
@@ -54,17 +62,21 @@ public class EventHandlerPlusData {
     return smlJNI.get_EventHandlerPlusData_m_CallbackID(swigCPtr);
   }
 
-  public EventHandlerPlusData(SWIGTYPE_p_void pData, int callbackID) {
-    this(smlJNI.new_EventHandlerPlusData(SWIGTYPE_p_void.getCPtr(pData), callbackID), true);
+  public EventHandlerPlusData(int eventID, SWIGTYPE_p_void pData, int callbackID) {
+    this(smlJNI.new_EventHandlerPlusData(eventID, SWIGTYPE_p_void.getCPtr(pData), callbackID), true);
   }
 
-  public int getCallbackID() {
-    return smlJNI.EventHandlerPlusData_getCallbackID(swigCPtr);
+  public int getEventID() {
+    return smlJNI.EventHandlerPlusData_getEventID(swigCPtr);
   }
 
   public SWIGTYPE_p_void getUserData() {
     long cPtr = smlJNI.EventHandlerPlusData_getUserData(swigCPtr);
     return (cPtr == 0) ? null : new SWIGTYPE_p_void(cPtr, false);
+  }
+
+  public int getCallbackID() {
+    return smlJNI.EventHandlerPlusData_getCallbackID(swigCPtr);
   }
 
 }

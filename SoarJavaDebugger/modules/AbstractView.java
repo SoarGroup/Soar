@@ -50,6 +50,8 @@ public abstract class AbstractView implements AgentFocusListener
 	/** The window which will contain all others within this view */
 	protected Composite		m_Container ;
 	
+	public static String getLineSeparator() { return "\n" ; }
+	
 	/********************************************************
 	 * All AbstractView's need to have a default constructor
 	 * as that's how we build them (using reflection) when

@@ -46,8 +46,8 @@ public class AgentEventHandlerPlusData extends EventHandlerPlusData {
     return (cPtr == 0) ? null : new SWIGTYPE_p_f_enum_sml__smlAgentEventId_p_void_p_sml__Agent__void(cPtr, false);
   }
 
-  public AgentEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlAgentEventId_p_void_p_sml__Agent__void handler, SWIGTYPE_p_void userData, int callbackID) {
-    this(smlJNI.new_AgentEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlAgentEventId_p_void_p_sml__Agent__void.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
+  public AgentEventHandlerPlusData(int eventID, SWIGTYPE_p_f_enum_sml__smlAgentEventId_p_void_p_sml__Agent__void handler, SWIGTYPE_p_void userData, int callbackID) {
+    this(smlJNI.new_AgentEventHandlerPlusData(eventID, SWIGTYPE_p_f_enum_sml__smlAgentEventId_p_void_p_sml__Agent__void.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
   }
 
 }

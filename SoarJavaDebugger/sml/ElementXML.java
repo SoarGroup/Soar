@@ -212,6 +212,11 @@ public class ElementXML {
     return (cPtr == 0) ? null : new ElementXML(cPtr, false);
   }
 
+  public static ElementXML ParseXMLFromStringSequence(String pString, long startPos, SWIGTYPE_p_size_t endPos) {
+    long cPtr = smlJNI.ElementXML_ParseXMLFromStringSequence(pString, startPos, SWIGTYPE_p_size_t.getCPtr(endPos));
+    return (cPtr == 0) ? null : new ElementXML(cPtr, false);
+  }
+
   public static ElementXML ParseXMLFromFile(String pFilename) {
     long cPtr = smlJNI.ElementXML_ParseXMLFromFile(pFilename);
     return (cPtr == 0) ? null : new ElementXML(cPtr, false);

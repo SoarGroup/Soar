@@ -37,17 +37,26 @@ public class RhsEventHandlerPlusData extends EventHandlerPlusData {
     super.delete();
   }
 
-  public void setM_Handler(SWIGTYPE_p_f_enum_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string m_Handler) {
-    smlJNI.set_RhsEventHandlerPlusData_m_Handler(swigCPtr, SWIGTYPE_p_f_enum_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string.getCPtr(m_Handler));
+  public void setM_Handler(SWIGTYPE_p_f_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string m_Handler) {
+    smlJNI.set_RhsEventHandlerPlusData_m_Handler(swigCPtr, SWIGTYPE_p_f_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string.getCPtr(m_Handler));
   }
 
-  public SWIGTYPE_p_f_enum_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string getM_Handler() {
+  public SWIGTYPE_p_f_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string getM_Handler() {
     long cPtr = smlJNI.get_RhsEventHandlerPlusData_m_Handler(swigCPtr);
-    return (cPtr == 0) ? null : new SWIGTYPE_p_f_enum_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string(cPtr, false);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_f_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string(cPtr, false);
   }
 
-  public RhsEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string handler, SWIGTYPE_p_void userData, int callbackID) {
-    this(smlJNI.new_RhsEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
+  public void setM_FunctionName(SWIGTYPE_p_std__string m_FunctionName) {
+    smlJNI.set_RhsEventHandlerPlusData_m_FunctionName(swigCPtr, SWIGTYPE_p_std__string.getCPtr(m_FunctionName));
+  }
+
+  public SWIGTYPE_p_std__string getM_FunctionName() {
+    long cPtr = smlJNI.get_RhsEventHandlerPlusData_m_FunctionName(swigCPtr);
+    return (cPtr == 0) ? null : new SWIGTYPE_p_std__string(cPtr, false);
+  }
+
+  public RhsEventHandlerPlusData(int eventID, String pFunctionName, SWIGTYPE_p_f_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string handler, SWIGTYPE_p_void userData, int callbackID) {
+    this(smlJNI.new_RhsEventHandlerPlusData(eventID, pFunctionName, SWIGTYPE_p_f_sml__smlRhsEventId_p_void_p_sml__Agent_p_q_const__char_p_q_const__char__std__string.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
   }
 
 }

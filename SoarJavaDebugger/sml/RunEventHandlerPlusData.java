@@ -46,8 +46,8 @@ public class RunEventHandlerPlusData extends EventHandlerPlusData {
     return (cPtr == 0) ? null : new SWIGTYPE_p_f_enum_sml__smlRunEventId_p_void_p_sml__Agent_enum_sml__smlPhase__void(cPtr, false);
   }
 
-  public RunEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlRunEventId_p_void_p_sml__Agent_enum_sml__smlPhase__void handler, SWIGTYPE_p_void userData, int callbackID) {
-    this(smlJNI.new_RunEventHandlerPlusData(SWIGTYPE_p_f_enum_sml__smlRunEventId_p_void_p_sml__Agent_enum_sml__smlPhase__void.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
+  public RunEventHandlerPlusData(int eventID, SWIGTYPE_p_f_enum_sml__smlRunEventId_p_void_p_sml__Agent_enum_sml__smlPhase__void handler, SWIGTYPE_p_void userData, int callbackID) {
+    this(smlJNI.new_RunEventHandlerPlusData(eventID, SWIGTYPE_p_f_enum_sml__smlRunEventId_p_void_p_sml__Agent_enum_sml__smlPhase__void.getCPtr(handler), SWIGTYPE_p_void.getCPtr(userData), callbackID), true);
   }
 
 }

@@ -23,8 +23,10 @@ import org.eclipse.swt.internal.win32.TCHAR;
 import org.eclipse.swt.events.*;
 
 import sml.Agent;
+import sml.Kernel;
 import sml.smlPrintEventId;
 import sml.smlRunEventId;
+import sml.smlSystemEventId;
 
 import debugger.* ;
 import doc.* ;
@@ -85,17 +87,15 @@ public abstract class ComboCommandBase extends AbstractView
 	/** The control we're using to display the output in this case **/
 	protected abstract Control getDisplayControl() ;
 	
+	/************************************************************************
+	* 
+	* Go from current selection (where right click occured) to the object
+	* selected by the user (e.g. a production name).
+	* 
+	*************************************************************************/
 	protected ParseSelectedText.SelectedObject getCurrentSelection()
 	{
 		return null ;
-		/*
-		if (m_Text.getCaretPosition() == -1)
-			return null ;
-		
-		ParseSelectedText selection = new ParseSelectedText(m_Text.getText(), m_Text.getCaretPosition(), 0) ;
-		
-		return selection.getParsedObject() ;
-		*/
 	}
 	
 	/************************************************************************
@@ -116,7 +116,7 @@ public abstract class ComboCommandBase extends AbstractView
 		ParseSelectedText.SelectedObject selectionObject = getCurrentSelection() ;
 
 		if (selectionObject == null)
-			return ;
+			selectionObject = new ParseSelectedText.SelectedUnknown(null) ;
 		
 		boolean simple = true ;
 		
@@ -407,6 +407,41 @@ public abstract class ComboCommandBase extends AbstractView
 		restoreContent(element) ;
 	}
 	
+	protected void updateNow()
+	{
+		//System.out.println("Updating window's contents") ;
+		
+		// Retrieve the current command in the combo box
+		// (this call is thread safe and switches to the UI thread if necessary)
+		final String command = getCommandText() ;
+
+		// We don't want to execute "run" commands when Soar stops--or we'll get into an
+		// infinite loop.
+		if (!getDocument().getSoarCommands().isRunCommand(command))
+		{
+			// If Soar is running in the UI thread we can make
+			// the update directly.
+			if (!Document.kDocInOwnThread)
+				commandEntered(command, false) ;
+			else
+			{
+				// Have to make update in the UI thread.
+				// Callback comes in the document thread.
+		        Display.getDefault().asyncExec(new Runnable() {
+		            public void run() {
+		            	commandEntered(command, false) ;
+		            }
+		         }) ;
+			}
+		}		
+	}
+	
+	public void stopEventHandler(int eventID, Object data, Kernel kernel)
+	{
+		if (this.m_UpdateOnStop && eventID == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue())
+			updateNow() ;
+	}	
+	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 	{
 		boolean updateNow = false ;
@@ -421,37 +456,12 @@ public abstract class ComboCommandBase extends AbstractView
 
 		// BUGBUG: I think we might want to register for SYSTEM_STOP instead of AFTER_RUN
 		// otherwise we may get a lot of updates during "RunTilOutput" cycles.
-		if (this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUN_ENDS.swigValue())
-			updateNow = true ;
+//		if (this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUN_ENDS.swigValue())
+//			updateNow = true ;
 		
-
 		if (updateNow)
 		{
-			//System.out.println("Updating window's contents") ;
-			
-			// Retrieve the current command in the combo box
-			// (this call is thread safe and switches to the UI thread if necessary)
-			final String command = getCommandText() ;
-
-			// We don't want to execute "run" commands when Soar stops--or we'll get into an
-			// infinite loop.
-			if (!getDocument().getSoarCommands().isRunCommand(command))
-			{
-				// If Soar is running in the UI thread we can make
-				// the update directly.
-				if (!Document.kDocInOwnThread)
-					commandEntered(command, false) ;
-				else
-				{
-					// Have to make update in the UI thread.
-					// Callback comes in the document thread.
-			        Display.getDefault().asyncExec(new Runnable() {
-			            public void run() {
-			            	commandEntered(command, false) ;
-			            }
-			         }) ;
-				}
-			}
+			updateNow() ;
 		}
 	}
 
@@ -469,14 +479,14 @@ public abstract class ComboCommandBase extends AbstractView
 	public String executeAgentCommand(String command, boolean echoCommand)
 	{
 		if (echoCommand)
-			appendText("\n" + command) ;
+			appendTextSafely(getLineSeparator() + command) ;
 		
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
 
 		// Output from Soar doesn't include newlines and assumes that we insert
 		// a newline before the result of the command is displayed.
 		if (result != null && result.length() > 0)
-			appendText("\n" + result) ;
+			appendTextSafely(getLineSeparator() + result) ;
 
 		return result ;
 	}
@@ -491,24 +501,28 @@ public abstract class ComboCommandBase extends AbstractView
 	*************************************************************************/
 	public void displayText(String text)
 	{
-		appendText(text) ;
+		appendTextSafely(text) ;
 	}
 
 	/************************************************************************
 	* 
-	* Add the text to the view (needs to be done in a thread safe way)
+	* Add the text to the view (this method assumes always called from UI thread)
 	* 
 	*************************************************************************/
 	protected abstract void appendText(String text) ;
 
-	/*
-	private void appendText(final String text)
+	/************************************************************************
+	* 
+	* Add the text to the view in a thread safe way (switches to UI thread)
+	* 
+	*************************************************************************/
+	protected void appendTextSafely(final String text)
 	{
 		// If Soar is running in the UI thread we can make
 		// the update directly.
 		if (!Document.kDocInOwnThread)
 		{
-			m_Text.append(text) ;
+			appendText(text) ;
 			return ;
 		}
 
@@ -516,11 +530,10 @@ public abstract class ComboCommandBase extends AbstractView
 		// Callback comes in the document thread.
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
-            	m_Text.append(text) ;
+            	appendText(text) ;
             }
          }) ;
 	}
-	*/
 	
 	private class GetTextRunnable implements Runnable
 	{
@@ -554,16 +567,24 @@ public abstract class ComboCommandBase extends AbstractView
 		}
 		
 		if (eventID == smlPrintEventId.smlEVENT_PRINT.swigValue())
-			appendText(message) ;
+			appendTextSafely(message) ;
 	}
 
+	/********************************************************************************************
+	 * 
+	 * Register for events of particular interest to this view
+	 * 
+	 ********************************************************************************************/
+	protected abstract void registerForViewAgentEvents(Agent agent) ;
+	protected abstract boolean unregisterForViewAgentEvents(Agent agent) ;
+	
 	protected void registerForAgentEvents(Agent agent)
 	{
 		if (agent == null)
 			return ;
 		
 		if (m_StopCallback == -1)
-			m_StopCallback  = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_RUN_ENDS, this, "runEventHandler", this) ;
+			m_StopCallback	= agent.GetKernel().RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, "stopEventHandler", this) ;
 		
 		if (m_ShowTraceOutput && m_PrintCallback == -1)
 			m_PrintCallback = agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this, "printEventHandler", this) ;
@@ -580,6 +601,8 @@ public abstract class ComboCommandBase extends AbstractView
 			agent.UnregisterForRunEvent(m_DecisionCallback) ;
 			m_DecisionCallback = -1 ;
 		}
+		
+		registerForViewAgentEvents(agent) ;
 	}
 	
 	protected void unregisterForAgentEvents(Agent agent)
@@ -590,7 +613,7 @@ public abstract class ComboCommandBase extends AbstractView
 		boolean ok = true ;
 
 		if (m_StopCallback != -1)
-			ok = agent.UnregisterForRunEvent(m_StopCallback) && ok ;
+			ok = agent.GetKernel().UnregisterForSystemEvent(m_StopCallback) && ok ;
 
 		if (m_PrintCallback != -1)
 			ok = agent.UnregisterForPrintEvent(m_PrintCallback) && ok ;
@@ -601,6 +624,8 @@ public abstract class ComboCommandBase extends AbstractView
 		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;
 		m_DecisionCallback = -1 ;
+		
+		ok = unregisterForViewAgentEvents(agent) && ok ;
 		
 		if (!ok)
 			throw new IllegalStateException("Problem unregistering for events") ;

@@ -137,6 +137,10 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kValueFull();
   }
 
+  public static String getKTagTrace() {
+    return smlJNI.get_sml_Names_kTagTrace();
+  }
+
   public static String getKTagState() {
     return smlJNI.get_sml_Names_kTagState();
   }

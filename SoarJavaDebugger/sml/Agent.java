@@ -41,6 +41,9 @@ public class Agent extends ClientErrors {
 
   public int RegisterForPrintEvent(smlPrintEventId id, Object handlerObject, String handlerMethod, Object callbackData)
   { return smlJNI.Agent_RegisterForPrintEvent(swigCPtr, id.swigValue(), this, handlerObject, handlerMethod, callbackData) ; }
+
+  public int RegisterForXMLEvent(smlXMLEventId id, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Agent_RegisterForXMLEvent(swigCPtr, id.swigValue(), this, handlerObject, handlerMethod, callbackData) ; }
   
   public boolean UnregisterForRunEvent(int callbackReturnValue)
   { return smlJNI.Agent_UnregisterForRunEvent(swigCPtr, callbackReturnValue) ;}
@@ -50,6 +53,13 @@ public class Agent extends ClientErrors {
 
   public boolean UnregisterForPrintEvent(int callbackReturnValue)
   { return smlJNI.Agent_UnregisterForPrintEvent(swigCPtr, callbackReturnValue) ;}
+
+  public boolean UnregisterForXMLEvent(int callbackReturnValue)
+  { return smlJNI.Agent_UnregisterForXMLEvent(swigCPtr, callbackReturnValue) ;}
+
+  public void SendXMLEvent(smlXMLEventId id, ElementXML pXMLMessage) {
+    smlJNI.Agent_SendXMLEvent(swigCPtr, id.swigValue(), ElementXML.getCPtr(pXMLMessage));
+  }
 
   public String GetAgentName() {
     return smlJNI.Agent_GetAgentName(swigCPtr);

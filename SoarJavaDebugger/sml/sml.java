@@ -37,4 +37,8 @@ public class sml implements smlConstants {
     return smlJNI.IsRhsEventID(id);
   }
 
+  public static boolean IsXMLEventID(int id) {
+    return smlJNI.IsXMLEventID(id);
+  }
+
 }

@@ -8,9 +8,8 @@
 
 package sml;
 
-public final class smlGenericEventId {
-  public final static smlGenericEventId smlEVENT_INVALID_EVENT = new smlGenericEventId("smlEVENT_INVALID_EVENT", 0);
-  public final static smlGenericEventId smlEVENT_LAST = new smlGenericEventId("smlEVENT_LAST", smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT.swigValue() + 1);
+public final class smlXMLEventId {
+  public final static smlXMLEventId smlEVENT_XML_TRACE_OUTPUT = new smlXMLEventId("smlEVENT_XML_TRACE_OUTPUT", smlRhsEventId.smlEVENT_RHS_USER_FUNCTION.swigValue() + 1);
 
   public final int swigValue() {
     return swigValue;
@@ -20,27 +19,27 @@ public final class smlGenericEventId {
     return swigName;
   }
 
-  public static smlGenericEventId swigToEnum(int swigValue) {
+  public static smlXMLEventId swigToEnum(int swigValue) {
     if (swigValue < swigValues.length && swigValues[swigValue].swigValue == swigValue)
       return swigValues[swigValue];
     for (int i = 0; i < swigValues.length; i++)
       if (swigValues[i].swigValue == swigValue)
         return swigValues[i];
-    throw new IllegalArgumentException("No enum " + smlGenericEventId.class + " with value " + swigValue);
+    throw new IllegalArgumentException("No enum " + smlXMLEventId.class + " with value " + swigValue);
   }
 
-  private smlGenericEventId(String swigName) {
+  private smlXMLEventId(String swigName) {
     this.swigName = swigName;
     this.swigValue = swigNext++;
   }
 
-  private smlGenericEventId(String swigName, int swigValue) {
+  private smlXMLEventId(String swigName, int swigValue) {
     this.swigName = swigName;
     this.swigValue = swigValue;
     swigNext = swigValue+1;
   }
 
-  private static smlGenericEventId[] swigValues = { smlEVENT_INVALID_EVENT, smlEVENT_LAST };
+  private static smlXMLEventId[] swigValues = { smlEVENT_XML_TRACE_OUTPUT };
   private static int swigNext = 0;
   private final int swigValue;
   private final String swigName;

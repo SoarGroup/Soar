@@ -27,6 +27,7 @@ JDK directly
 1) Building using just the Java JDK.
    From the SoarJavaDebugger folder (the current folder matters):
    "javac.exe -classpath .;swt.jar debugger\Application.java"
+   (on Linux: -classpath .:swt.jar -- i.e. ":" instead of ";")
 
 2) Creating JAR file:
    From the SoarJavaDebugger folder:

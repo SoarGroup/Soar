@@ -22,6 +22,8 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.custom.*;
 
+import sml.Agent;
+
 import debugger.MainFrame;
 import doc.Document;
 
@@ -111,22 +113,23 @@ public abstract class BaseCommandView extends ComboCommandBase
 		// so I'm adding support for it here.  However, this support is pure Windows code.
 		// We'll need to figure out how to have code like this and still compile the debugger
 		// on Linux (even if this option won't work on Linux).
-		/*
-		// Send an EM_CHARFROMPOS message to the underlying edit control
-		int handle = m_Text.handle ;
-		int lParam = e.y << 16 | e.x ;	// Coords are packed as high-word, low-word
-		int result = org.eclipse.swt.internal.win32.OS.SendMessage (handle, org.eclipse.swt.internal.win32.OS.EM_CHARFROMPOS, 0, lParam);
-
-		// Break out the character and line position from the result
-		int charPos = result & (0xFFFF) ;
-		int linePos = (result >>> 16) ;
-		
-		// Set the selection to the character position (which is measured from the first character
-		// in the control).
-		m_Text.clearSelection() ;
-		m_Text.setSelection(charPos) ;
-		//System.out.println("Char " + charPos + " Line " + linePos) ;
-		 */
+		if (true)	// Comment out this section on Linux or set this to false (if that allows it to compile)
+		{	
+			// Send an EM_CHARFROMPOS message to the underlying edit control
+			int handle = m_Text.handle ;
+			int lParam = e.y << 16 | e.x ;	// Coords are packed as high-word, low-word
+			int result = org.eclipse.swt.internal.win32.OS.SendMessage (handle, org.eclipse.swt.internal.win32.OS.EM_CHARFROMPOS, 0, lParam);
+	
+			// Break out the character and line position from the result
+			int charPos = result & (0xFFFF) ;
+			int linePos = (result >>> 16) ;
+			
+			// Set the selection to the character position (which is measured from the first character
+			// in the control).
+			m_Text.clearSelection() ;
+			m_Text.setSelection(charPos) ;
+			//System.out.println("Char " + charPos + " Line " + linePos) 
+		}
 	}
 
 	/********************************************************************************************
@@ -159,27 +162,26 @@ public abstract class BaseCommandView extends ComboCommandBase
 	}
 
 	/********************************************************************************************
+	 * 
+	 * Register for events of particular interest to this view
+	 * 
+	 ********************************************************************************************/
+	protected void registerForViewAgentEvents(Agent agent)
+	{
+	}
+
+	protected boolean unregisterForViewAgentEvents(Agent agent)
+	{
+		return true ;
+	}
+
+	/********************************************************************************************
 	 * @param text
 	 * 
 	 * @see modules.ComboCommandBase#appendText(java.lang.String)
 	 ********************************************************************************************/
-
 	protected void appendText(final String text)
 	{
-		// If Soar is running in the UI thread we can make
-		// the update directly.
-		if (!Document.kDocInOwnThread)
-		{
-			m_Text.append(text) ;
-			return ;
-		}
-
-		// Have to make update in the UI thread.
-		// Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable() {
-            public void run() {
-            	m_Text.append(text) ;
-            }
-         }) ;
+		m_Text.append(text) ;
 	}
 }

@@ -294,12 +294,9 @@ public class MainFrame
 	 **************************************************************************/
 	private void thisWindowClosing()
 	{
-		// BUGBUG: Should ask if we wish to destroy the agent (if there is a
-		// focus agent)
-
 		// Keep track of the fact that we're in the act of closing this window
 		m_bClosing = true;
-
+		
 		// Need to explicitly release the focus which in turn will cause any
 		// listeners to unregister
 		// from this agent (is its still alive). Otherwise our listeners will
