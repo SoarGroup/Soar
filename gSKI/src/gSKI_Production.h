@@ -220,6 +220,8 @@ namespace gSKI {
 
       virtual unsigned long CountReteTokens(Error * pErr = 0);
 
+	  bool IsWatched();
+
      private:
   
         /** 

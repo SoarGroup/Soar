@@ -207,6 +207,8 @@ namespace gSKI {
          @returns Rete token count
       */
       virtual unsigned long CountReteTokens(Error * pErr = 0) = 0;
+
+	  virtual bool IsWatched() = 0;
    };
 }
 #endif

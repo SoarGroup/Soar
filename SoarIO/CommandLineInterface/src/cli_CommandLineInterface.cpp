@@ -455,8 +455,17 @@ void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pTyp
 	TagArg* pTag = new TagArg();
 	pTag->SetParamFast(pParam);
 	pTag->SetTypeFast(pType);
+	// TODO: shouldn't this be SetValueFast?
 	pTag->SetValue(pValue);
 	m_ResponseTags.push_back(pTag);
+}
+
+void CommandLineInterface::PrependArgTag(const char* pParam, const char* pType, const char* pValue) {
+	TagArg* pTag = new TagArg();
+	pTag->SetParam(pParam);
+	pTag->SetType(pType);
+	pTag->SetValue(pValue);
+	m_ResponseTags.push_front(pTag);
 }
 
 void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const char* pValue) {

@@ -125,7 +125,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 		AppendToResult(" productions excised.");
 	} else {
 		// Add the count tag to the front
-		PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(exciseCount, buf, kMinBufferSize));
+		PrependArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(exciseCount, buf, kMinBufferSize));
 	}
 
 	return true;

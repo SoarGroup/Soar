@@ -425,4 +425,8 @@ namespace gSKI
       }
    }
 
+   bool Production::IsWatched() 
+   {
+	   return m_soarProduction->trace_firings ? true : false;
+   }
 }
