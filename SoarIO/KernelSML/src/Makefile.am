@@ -12,7 +12,6 @@ sml_EventManager.cpp\
 sml_KernelListener.cpp\
 sml_KernelSML.cpp\
 sml_KernelSMLHandlers.cpp\
-sml_KernelSMLgSKI.cpp\
 sml_OutputListener.cpp
 
 INCLUDES = \
