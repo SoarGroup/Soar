@@ -136,7 +136,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoAlias();
+	bool DoAlias(bool disable, const std::string& command, const std::vector<std::string>* pSubstitution);
 
 	/*************************************************************
 	* @brief cd command, see usage.txt for details.

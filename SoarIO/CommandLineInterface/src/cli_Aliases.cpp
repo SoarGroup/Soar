@@ -28,6 +28,20 @@ bool Aliases::RemoveAlias(const std::string& command) {
 	return aliasMap.erase(command) ? true : false;
 }
 
+std::string Aliases::List() {
+	std::string result;
+	for (AliasMapIter i = aliasMap.begin(); i != aliasMap.end(); ++i) {
+		result += i->first;
+		result += '=';
+		for (vector<string>::iterator j = i->second.begin(); j != i->second.end(); ++j) {
+			result += *j;
+			result += ' ';
+		}
+		result += '\n';
+	}	
+	return result;
+}
+
 bool Aliases::Translate(vector<string>& argv) {
 
 	if (!IsAlias(argv[0])) return false;

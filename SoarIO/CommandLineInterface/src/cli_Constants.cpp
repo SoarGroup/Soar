@@ -18,6 +18,7 @@ char const* Constants::kCLITooFewArgs			= "Too few arguments.";
 char const* Constants::kCLIUnrecognizedOption	= "Unrecognized option.";
 char const* Constants::kCLIMissingOptionArg		= "Missing option argument.";
 
+char const* Constants::kCLIAlias			= "alias";			
 char const* Constants::kCLICD				= "cd";			
 char const* Constants::kCLIEcho				= "echo";
 char const* Constants::kCLIExcise			= "excise";

@@ -70,6 +70,7 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 
 void CommandLineInterface::BuildCommandMap() {
 
+	m_CommandMap[Constants::kCLIAlias]				= &cli::CommandLineInterface::ParseAlias;
 	m_CommandMap[Constants::kCLICD]					= &cli::CommandLineInterface::ParseCD;
 	m_CommandMap[Constants::kCLIEcho]				= &cli::CommandLineInterface::ParseEcho;
 	m_CommandMap[Constants::kCLIExcise]				= &cli::CommandLineInterface::ParseExcise;
