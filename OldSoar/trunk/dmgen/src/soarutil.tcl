@@ -44,6 +44,22 @@
 namespace eval SoarUtil {
 
 ##
+# Strip the bars off a Soar string if they're both there.
+#
+# @param s The String to process
+# @returns If s has bars, returns s with the bars removed. Otherwise,
+#          returns s
+proc StripSoarBars { s } {
+   set n [string length $s]
+   if { $n > 1 && \
+        [string range $s 0 0 ] == "|" && \
+        [string range $s end end ] == "|" } {
+      return [string range $s 1 [expr $n - 2]]
+   }
+   return $s
+}
+
+##
 # Run a soar command and return its output.
 #
 # @param cmd Command to run
@@ -90,7 +106,7 @@ proc GetSoarProductions { } {
    set b [split [RunSoarCommand "print -all"] " \n"]
    foreach p $b {
       if { [llength $p] > 0 } {
-         lappend L $p
+         lappend L [StripSoarBars $p]
       }
    }
    return $L
