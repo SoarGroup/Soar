@@ -89,6 +89,7 @@ void print_candidates(preference *candidates) {
 
 
 /* END: 2003-01-02 Behavior Variability Kernel Experiments */
+#endif
 
 extern void soar_ecGDSPrint();
 
@@ -1515,7 +1516,8 @@ byte run_preference_semantics_for_consistency_check (slot *s, preference **resul
        
       p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
   /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
-  not_all_indifferent = FALSE;
+#endif
+	 not_all_indifferent = FALSE;
   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
     /* --- if cand is unary indifferent, it's fine --- */
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
@@ -2516,7 +2518,7 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 	  if (current_agent(sysparams)[RL_ON_SYSPARAM]){
 		/* SAN - compute Q-value when winner decided by symbolic preferences */
 		// if (!candidates->value->common.decider_flag){
-			  current_agent(next_Q) = DEFAULT_INDIFFERENT_VALUE;
+			  current_agent(next_Q) = 0;   // DEFAULT_INDIFFERENT_VALUE;
 		 	for (temp=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; temp!=NIL; temp=temp->next){
 				if (candidates->value == temp->value){
 					  if (temp->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
@@ -3482,8 +3484,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
 	*/
    }
 
-   
-   print("\n");
+  
    /* Now select the candidate */ 
 
    rn = rand();
@@ -3535,7 +3536,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
         /* Now select the candidate */
 
 
-		print("\n");
+	 
         rn = rand();
         selectedProbability = ((double) rn / (double) RAND_MAX) * total_probability;
         currentSumOfValues = 0;
