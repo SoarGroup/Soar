@@ -69,7 +69,7 @@ class ProductionBlock(DocBlock.DocBlock):
             pass
 
    def GuessType(self):
-      name = self.GetName()
+      name = self.GetName().lower()
       for k, v in _TypeGuessTable.items():
          if name.find(k) != -1:
             return v
