@@ -7,8 +7,17 @@
 %rename(SetBinaryCharacterDataConst) sml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
 
 %newobject sml::Kernel::CreateEmbeddedConnection(char const*, bool, bool, int);
+%newobject sml::Kernel::CreateEmbeddedConnection(char const*, bool, bool);
+%newobject sml::Kernel::CreateEmbeddedConnection(char const*, bool);
+%newobject sml::Kernel::CreateRemoteConnection(bool, char const*, int);
+%newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
+
 
 %{
+#include "sml_Errors.h"
+#include "sml_Connection.h"
+#include "sml_ElementXML.h"
+#include "sml_AnalyzeXML.h"
 #include "sml_ClientErrors.h"
 #include "sml_ClientEvents.h"
 #include "sml_ClientWMElement.h"
@@ -16,13 +25,14 @@
 #include "sml_ClientFloatElement.h"
 #include "sml_ClientStringElement.h"
 #include "sml_ClientIdentifier.h"
-#include "sml_ClientAgent.h"
 #include "sml_ClientKernel.h"
-#include "sml_ElementXML.h"
-#include "sml_AnalyzeXML.h"
-#include "sml_Connection.h"
+#include "sml_ClientAgent.h"
 %}
 
+%include "../ConnectionSML/include/sml_Errors.h"
+%include "../ConnectionSML/include/sml_Connection.h"
+%include "../ConnectionSML/include/sml_ElementXML.h"
+%include "../ConnectionSML/include/sml_AnalyzeXML.h"
 %include "../ClientSML/include/sml_ClientErrors.h"
 %include "../ClientSML/include/sml_ClientEvents.h"
 %include "../ClientSML/include/sml_ClientWMElement.h"
@@ -30,10 +40,7 @@
 %include "../ClientSML/include/sml_ClientFloatElement.h"
 %include "../ClientSML/include/sml_ClientStringElement.h"
 %include "../ClientSML/include/sml_ClientIdentifier.h"
-%include "../ClientSML/include/sml_ClientAgent.h"
 %include "../ClientSML/include/sml_ClientKernel.h"
-%include "../ConnectionSML/include/sml_ElementXML.h"
-%include "../ConnectionSML/include/sml_AnalyzeXML.h"
-%include "../ConnectionSML/include/sml_Connection.h"
+%include "../ClientSML/include/sml_ClientAgent.h"
 
 

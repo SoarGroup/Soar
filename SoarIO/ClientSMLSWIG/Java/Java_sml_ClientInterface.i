@@ -1,7 +1,8 @@
 /* File : sml_ClientInterface.i */
 %module sml
 
-%newobject Connection::CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn = kDefaultSMLPort, ErrorCode* pError = NULL) ;
+%javaconst(1); // strongly recommended by SWIG manual section 19.3.5.1
+
 %include "../sml_ClientInterface.i"
 
 
