@@ -61,7 +61,8 @@ extern unsigned long hash_string(const char *s);
                           in matching.
    ubiquitous_max       - There must be at least this many episodic memories
                           before any node can be considered ubiquitous
-
+   fraction_to_trim     - fraction of a new memory to trim before recording it
+                          
    %%%TODO:  Made these values command line configurable
 
 */
@@ -72,6 +73,7 @@ extern unsigned long hash_string(const char *s);
 #define memory_match_wait 1     // %%%TODO: no longer needed?
 #define ubiquitous_threshold 1.0
 #define ubiquitous_max 25
+#define fraction_to_trim 0.0
 
 /*======================================================================
  * Data structures
@@ -294,6 +296,23 @@ int compare_actwme( const void *arg1, const void *arg2 )
 
     return ((int)w1) - ((int)w2);
 }//compare_actwme
+
+/* ===================================================================
+   compare_actwme_by_act
+
+   Compares two actwmes based on activation.   (Used for qsort() calls)
+   This comparison results in a descending sort:  higher activation
+   is "smaller".
+   
+   Created:  13 Dec 2004
+   =================================================================== */
+int compare_actwme_by_act( const void *arg1, const void *arg2 )
+{
+    actwme *aw1 = (*(actwme **)arg1);
+    actwme *aw2 = (*(actwme **)arg2);
+
+    return aw2->activation - aw1->activation;
+}//compare_actwme_by_act
 
 
 /* ===================================================================
@@ -1451,6 +1470,39 @@ Symbol *update_wmetree(wmetree *node,
 }//update_wmetree
 
 /* ===================================================================
+   trim_epmem
+
+   Removes entries from an episodic memory that have activation
+   lower than the given value.
+
+   NOTE:  This routine could be a lot more efficient.
+
+   Created: 13 Dec 2004
+   =================================================================== */
+arraylist *trim_epmem(arraylist *epmem)
+{
+    if (epmem == NULL) return NULL;
+
+    //Sort the memory's arraylist using activation
+    qsort( (void *)epmem->array,
+           (size_t)epmem->size,
+           sizeof( void * ),
+           compare_actwme_by_act );
+
+    epmem->size = (int)((double)(epmem->size) * (1.0 - fraction_to_trim));
+
+    //Sort the memory's arraylist using the node pointers
+    qsort( (void *)epmem->array,
+           (size_t)epmem->size,
+           sizeof( void * ),
+           compare_actwme );
+
+    return epmem;
+    
+}//trim_epmem
+
+
+/* ===================================================================
    record_epmem
 
    Once it has been determined that an epmem needs to be recorded,
@@ -1508,7 +1560,7 @@ void record_epmem( )
                  && (! node->ubiquitous) )
             {
                 append_entry_to_arraylist(node->assoc_memories, (void *)new_epmem);
-
+                
                 //Test to see if the new arraylist has too many entries.
                 //If so, this node has become too ubiquitous and will no
                 //longer be used in mat ching
@@ -1528,8 +1580,11 @@ void record_epmem( )
         }//for
     }//while
 
-    //Store the recorded memory
+//      //Reduce the size of the episodic memory
+//      new_epmem->content = trim_epmem(curr_state);
     new_epmem->content = curr_state;
+
+    //Store the recorded memory
     new_epmem->index = g_memories->size;
     append_entry_to_arraylist(g_memories, (void *)new_epmem);
 
@@ -2122,16 +2177,19 @@ episodic_memory *find_best_match(arraylist *cue)
             episodic_memory *epmem =
                 (episodic_memory *)get_arraylist_entry(aw_cue->node->assoc_memories,j);
             actwme *aw_mem = epmem_find_actwme_entry(epmem->content, aw_cue->node);
-            
-            if (epmem->last_usage != g_last_ret_id)
+
+            if (aw_mem != NULL)
             {
-                epmem->last_usage = g_last_ret_id;
-                epmem->match_score = aw_mem->activation;
-                comp_count++;
-            }
-            else
-            {
-                epmem->match_score += aw_mem->activation;
+                if (epmem->last_usage != g_last_ret_id)
+                {
+                    epmem->last_usage = g_last_ret_id;
+                    epmem->match_score = aw_mem->activation;
+                    comp_count++;
+                }
+                else
+                {
+                    epmem->match_score += aw_mem->activation;
+                }
             }
 
             if (epmem->match_score > best_score)
