@@ -477,7 +477,17 @@ int MatchesCmd (ClientData clientData,
   free_argv(objc, argv);
 
   if( ret == SOAR_OK ) {
-    Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );
+
+	/* 
+	   We can't call this next line since the interp's result object has already been built up (via
+	   soar_Matches calling Soar_AppendResult many times).  If we called this now, we would overwrite
+	   the output.  For now I'm just commenting it out (since it seems that the soar result is always
+	   empty when the function returns SOAR_OK), but if some useful information does ever get output
+	   here, then it should be appended to the existing info, not set to overwrite it
+
+    */
+    /*Tcl_SetObjResult( interp, Tcl_NewStringObj( res.result, -1 ) );*/
+
     return TCL_OK;
   }
   else {
