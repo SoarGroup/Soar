@@ -2739,7 +2739,8 @@ void print_lowest_slot_in_context_stack(void)
                 if (current_agent(d_cycle_count) == 0)
                     print_stack_trace(current_agent(bottom_goal), current_agent(bottom_goal), FOR_STATES_TF, TRUE);
                 else {
-                    if (current_agent(bottom_goal)->id.higher_goal->id.operator_slot->wmes) {
+                    if (current_agent(bottom_goal)->id.higher_goal && 
+						current_agent(bottom_goal)->id.higher_goal->id.operator_slot->wmes) {
                         print_stack_trace(current_agent(bottom_goal), current_agent(bottom_goal), FOR_STATES_TF, FALSE);
                     } else {
                         print_stack_trace(current_agent(bottom_goal), current_agent(bottom_goal), FOR_STATES_TF, TRUE);
