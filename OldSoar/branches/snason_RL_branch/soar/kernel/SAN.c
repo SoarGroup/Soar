@@ -115,29 +115,33 @@ float tabulate_reward_value(){
 
 // record_for_RL
 // If an operator has been selected, go through binary indifferent preferences that fired for it
-// For each preference, store a pointer to the production that generated it.
+// For each preference, store a pointer to the production that generated it. Later, each production
+// on this list will have its RL-value updated.
+// Also, if an RL-production needs to be specified, build a new production and place a pointer to it
+// on this list.
 
 void record_for_RL()
 {
-	wme *chosenOp, *w;
-	slot *s, *t;
+	wme *w;
+	slot *s;
 	instantiation *ist;
 	production *prod;
 	preference *pref;
-	condition *cond_top, *cond_bottom, *new_top, *new_bottom;
+	condition *cond_top, *cond_bottom, *new_top, *new_bottom, *c, *new_cond;
 	RL_record *record;
 	Symbol *sym;
-	tc_number tc_num;
+	
+	
 
   // SAN - catch operator ID here
   s = current_agent(bottom_goal)->id.operator_slot;
-  chosenOp = s->wmes;
-  if (chosenOp){
+  w = s->wmes;
+  if (w){
 
 	  // print_wme(chosenOp);
 
 	  record = current_agent(records);
-   	  record->op = chosenOp->value;
+   	  record->op = w->value;
 	  symbol_add_ref(record->op);       // SAN ??
 	  record->previous_Q = record->next_Q;
 
@@ -148,75 +152,62 @@ void record_for_RL()
 			  record->num_prod++;
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
+			  // Potentially build new RL-production
 			  if (prod->times_applied > 5){
-				  list *identifiers = 0;
-				  cons *c;
 				  prod->times_applied = 0;
-				  tc_num = get_new_tc_number();
-				  /*for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
-					  if (cond->type == POSITIVE_CONDITION){
-						  sym = equality_test_for_symbol_in_test(cond->data.tests.id_test);
-						  if (sym) identifiers = add_if_not_member(sym, identifiers);
-						  sym = equality_test_for_symbol_in_test(cond->data.tests.attr_test);
-						  if (sym) identifiers = add_if_not_member(sym, identifiers);
-						  sym = equality_test_for_symbol_in_test(cond->data.tests.value_test);
-						  if (sym) identifiers = add_if_not_member(sym, identifiers);
-					  }
-				  }*/
-				  for (cond_top = ist->top_of_instantiated_conditions; cond_top ; cond_top = cond_top->next){
-					  if (cond_top->type == POSITIVE_CONDITION){
-						  sym = equality_test_for_symbol_in_test(cond_top->data.tests.id_test);
-						  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
-						  sym = equality_test_for_symbol_in_test(cond_top->data.tests.attr_test);
-						  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
-						  sym = equality_test_for_symbol_in_test(cond_top->data.tests.value_test);
-						  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
-					}
-				  }
-				  prod = 0;
-				  cond_top = 0;
-				  /*for (c = identifiers; c ; c=c->rest){
-					  if (prod) break;
-					  sym = (Symbol *) c->first;
-					  for (t = sym->id.slots ; t ; t=t->next){
-						  if (prod) break;
-						  for (w = t->wmes ; w ; w=w->next){
-							  prod = build_RL_production(ist->top_of_instantiated_conditions, ist->nots, ist->preferences_generated, w);
-							  if (prod) break;
-						  }
-					  }
-				  }
-				  */
-				  for (w = current_agent(all_wmes_in_rete) ; w ; w = w->rete_next){
-					  	condition *c, *new_cond = make_simple_condition(w->id, w->attr, w->value);
-							for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
-								if (conditions_are_equal(c, new_cond)){
-									deallocate_condition_list(new_cond);
-									new_cond = NIL;
-									break;
-								}
-							}
-						if (!new_cond) continue;	
-						deallocate_condition_list(new_cond);
-						trace_to_state(w, tc_num, &cond_top);
-						break;
-				  }
-				  for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
-				  copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
-				  cond_top->prev = new_bottom;
-				  new_bottom->next = cond_top;
-				  prod = build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
+				  prod = specify_production(ist);
 				  if (prod){
 					  push(prod, record->pointer_list);
 					  record->num_prod++;
 				  }
-				  free_list(identifiers);
+			 
 			  }
 		  }
 	  }
   }
 }
 
+production *specify_production(instantiation *ist){
+	tc_number tc_num = get_new_tc_number();
+	Symbol *sym;
+	condition *cond;
+	condition *cond_top, *cond_bottom, *new_top, *new_bottom;
+	unsigned long num;
+	wme *w;
+	production *prod;
+
+	 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
+		if (cond->type == POSITIVE_CONDITION){
+			  sym = equality_test_for_symbol_in_test(cond->data.tests.id_test);
+			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
+			  sym = equality_test_for_symbol_in_test(cond->data.tests.attr_test);
+			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
+			  sym = equality_test_for_symbol_in_test(cond->data.tests.value_test);
+			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
+		}
+	 }
+	num = rand() % current_agent(num_wmes_in_rete);
+	w = current_agent(all_wmes_in_rete);
+	for (int i = 0 ; i <= num; i++)
+		w = w->rete_next;
+	cond = make_simple_condition(w->id, w->attr, w->value);
+	for (condition *c = ist->top_of_instantiated_conditions ; c ; c = c->next){
+				if (conditions_are_equal(c, cond)){
+					deallocate_condition_list(cond);
+					cond = NIL;
+					break;
+					}
+				}
+				if (!cond){ try new wme w }	
+				else{	deallocate_condition_list(cond);
+						trace_to_state(w, tc_num, &cond_top);
+				}
+					  for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
+				  copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
+				  cond_top->prev = new_bottom;
+				  new_bottom->next = cond_top;
+				  return build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
+}
 
 // Update the value on RL productions from last cycle
 void learn_RL_productions(int level){
