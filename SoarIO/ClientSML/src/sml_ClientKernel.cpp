@@ -25,6 +25,10 @@
 #include "thread_Thread.h"	// To get to sleep
 #include "EmbeddedSMLInterface.h" // for static reference
 
+#include <iostream>     
+#include <sstream>     
+#include <iomanip>
+
 #include <assert.h>
 
 using namespace sml ;
@@ -1229,4 +1233,36 @@ bool Kernel::UnregisterForAgentEvent(int callbackID)
 	}
 
 	return true ;
+}
+
+/*************************************************************
+* @brief The smlEVENT_INTERRUPT_CHECK event fires every n-th
+*		 step (phase) during a run.  The n is controlled by
+*		 this rate.  By setting a larger value there is less
+*		 overhead (checking to see if we wish to interrupt the run)
+*		 but response time to an interrupt will go down.
+*
+*		 Setting this rate does not register you for the event.
+*		 You should call RegisterForSystemEvent to do that.
+*		 Also, any other event can be used as the basis for an
+*		 interruption (e.g. registering for each decision cycle)
+*		 but those don't offer the same throttle control as this event.
+*
+* @param newRate >= 1
+*************************************************************/
+bool Kernel::SetInterruptCheckRate(int newRate)
+{
+	// Reject invalid rates
+	if (newRate <= 0)
+		return false ;
+
+	AnalyzeXML response ;
+
+	// Convert int to a string
+	std::ostringstream ostr ;
+	ostr << newRate ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SetInterruptCheckRate, NULL, sml_Names::kParamValue, ostr.str().c_str()) ;
+
+	return ok ;
 }

@@ -45,6 +45,7 @@ namespace gSKI
    Kernel::Kernel(const IKernelFactory* kf) : m_log(0), m_kF(kf)
    {
       m_soarKernel   = create_kernel();
+	  m_InterruptCheckRate = 1 ;
       init_soar( m_soarKernel );
       m_instanceInfo = new InstanceInfo("test1", "test2", gSKI_IN_PROCESS, gSKI_SINGLE_THREAD);
       m_agentMgr     = new AgentManager(this);
@@ -336,6 +337,13 @@ namespace gSKI
 		  m_systemListeners.Notify(gSKIEVENT_SYSTEM_STOP, sys) ;
 	  }
 
+	  /** Notify listeners that Soar is running and give them a chance to interrupt it (without having to start up separate threads etc.) */
+	  void Kernel::FireInterruptCheckEvent()
+	  {
+		  SystemNotifier sys(this) ;
+		  m_systemListeners.Notify(gSKIEVENT_INTERRUPT_CHECK, sys) ;
+	  }
+
    /*
    =========================
     _       _     _ _                _     _     _
@@ -458,6 +466,9 @@ namespace gSKI
     static  EvilBackDoor::TgDWorkArounds evilBackDoor;
     return &evilBackDoor;
   }
+
+  int Kernel::GetInterruptCheckRate() const			{ return m_InterruptCheckRate ; }
+  void Kernel::SetInterruptCheckRate(int newRate)	{ if (newRate >= 1) m_InterruptCheckRate = newRate ; }
 
 
 }

@@ -397,6 +397,23 @@ public:
 	bool	UnregisterForSystemEvent(int callbackID) ;
 
 	/*************************************************************
+	* @brief The smlEVENT_INTERRUPT_CHECK event fires every n-th
+	*		 step (phase) during a run.  The n is controlled by
+	*		 this rate.  By setting a larger value there is less
+	*		 overhead (checking to see if we wish to interrupt the run)
+	*		 but response time to an interrupt will go down.
+	*
+	*		 Setting this rate does not register you for the event.
+	*		 You should call RegisterForSystemEvent to do that.
+	*		 Also, any other event can be used as the basis for an
+	*		 interruption (e.g. registering for each decision cycle)
+	*		 but those don't offer the same throttle control as this event.
+	*
+	* @param newRate >= 1
+	*************************************************************/
+	bool SetInterruptCheckRate(int newRate) ;
+
+	/*************************************************************
 	* @brief Register a handler for a RHS (right hand side) function.
 	*		 This function can be called in the RHS of a production firing
 	*		 allowing a user to quickly extend Soar with custom methods added to the client.

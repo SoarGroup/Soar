@@ -129,6 +129,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_UnregisterForEvent]= &sml::KernelSML::HandleRegisterForEvent ;	// Note -- both register and unregister go to same handler
 	m_CommandMap[sml_Names::kCommand_SuppressSystemStart] = &sml::KernelSML::HandleSuppressSystemEvents ;
 	m_CommandMap[sml_Names::kCommand_SuppressSystemStop]  = &sml::KernelSML::HandleSuppressSystemEvents ; // Note -- both stop/start go to same handler
+	m_CommandMap[sml_Names::kCommand_SetInterruptCheckRate] = &sml::KernelSML::HandleSetInterruptCheckRate ;
 }
 
 /*************************************************************
@@ -367,6 +368,20 @@ bool KernelSML::HandleGetAgentList(gSKI::IAgent* pAgent, char const* pCommandNam
 	return true ;
 }
 
+// Controls the frequency of the smlEVENT_INTERRUPT_CHECK event
+bool KernelSML::HandleSetInterruptCheckRate(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ; unused(pError) ; unused(pAgent) ;
+
+	// Get the parameters
+	int newRate = pIncoming->GetArgInt(sml_Names::kParamValue, 1) ;
+
+	// Make the call.
+	GetKernel()->SetInterruptCheckRate(newRate) ;
+
+	return true ;
+}
+
 // Set a flag so Soar will break when it next generates output.  This allows us to
 // run for "n decisions" OR "until output" which we can't do with raw gSKI calls.
 bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
@@ -399,20 +414,19 @@ bool KernelSML::HandleSuppressSystemEvents(gSKI::IAgent* pAgent, char const* pCo
 	return true ;
 }
 
-// Gives some cycles to the Tcl debugger
+// Check if anyone has sent us a command (e.g. over a socket from a remote debugger)
 bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
 	unused(pAgent) ; unused(pCommandName) ; unused(pError) ; unused(pIncoming) ;
 
-	// Need to return false if we're not using the debugger, which looks
-	// the same to the caller as if we had the debugger up and the user has quit from it.
-	bool keepGoing = false ;
+	// We let the caller know if we read at least one message
+	bool receivedOneMessage = false ;
 
 	// Also check for any incoming calls from remote sockets
 	if (m_pConnectionManager)
-		keepGoing = keepGoing || m_pConnectionManager->ReceiveAllMessages() ;
+		receivedOneMessage = m_pConnectionManager->ReceiveAllMessages() ;
 
-	return this->ReturnBoolResult(pConnection, pResponse, keepGoing) ;
+	return this->ReturnBoolResult(pConnection, pResponse, receivedOneMessage) ;
 }
 
 bool KernelSML::HandleLoadProductions(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)

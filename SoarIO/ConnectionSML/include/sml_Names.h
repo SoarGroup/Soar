@@ -253,6 +253,7 @@ public:
 	static char const* const kCommand_SuppressSystemStart ;
 	static char const* const kCommand_SuppressSystemStop	;
 	static char const* const kCommand_CheckForIncomingCommands ;
+	static char const* const kCommand_SetInterruptCheckRate ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

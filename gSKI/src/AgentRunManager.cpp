@@ -232,6 +232,7 @@ namespace gSKI
       egSKIRunResult runResult;
       AgentRunData*  curData;
       bool           runFinished = false;
+	  int			 stepCount = 0 ;
 
       ClearError(err);
 
@@ -263,6 +264,13 @@ namespace gSKI
       {
          // Assume it is finished until proven otherwise
          runFinished = true;
+
+		 // Callback to clients to see if they wish to stop this run.
+		 // A client can use any event, but this one is designed to allow clients
+		 // to throttle back the frequency of the event to control performance.
+		if ((stepCount % getKernel()->GetInterruptCheckRate()) == 0)
+			((Kernel*)getKernel())->FireInterruptCheckEvent() ;
+		stepCount++ ;
 
 		 // Notify listeners that Soar is running.  This event is a kernel level (agent manager) event
 		 // which allows a single listener to check for client driven interrupts for all agents.

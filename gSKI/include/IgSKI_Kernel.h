@@ -491,6 +491,16 @@ namespace gSKI {
                                                 IConnectionLostListener* listener,
                                                 Error*                   err = 0) = 0;
 
+	  /**
+      *  @brief Get/Set the interrupt check rate.
+      *
+      *  The gSKIEVENT_INTERRUPT_CHECK is fired every n-th step
+	  *  through the run cycle where n is this rate.
+	  *  Currently a step is a phase.
+	  */
+	  virtual int GetInterruptCheckRate() const	= 0 ;
+	  virtual void SetInterruptCheckRate(int newRate) = 0 ;
+
       private:
          //
          // We are adding an interface here to allow for some workarounds

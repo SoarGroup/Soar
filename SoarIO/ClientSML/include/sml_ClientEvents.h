@@ -64,6 +64,7 @@ typedef enum {
     smlEVENT_AFTER_RESTART,
 	smlEVENT_SYSTEM_START,						// The simulation (if any) should start running
 	smlEVENT_SYSTEM_STOP,						// The simulation (if any) should stop running
+	smlEVENT_INTERRUPT_CHECK,					// Chance for client to interrupt a run (designed to be low bandwidth)
     smlEVENT_BEFORE_RHS_FUNCTION_ADDED,
     smlEVENT_AFTER_RHS_FUNCTION_ADDED,
     smlEVENT_BEFORE_RHS_FUNCTION_REMOVED,

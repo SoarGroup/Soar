@@ -252,6 +252,7 @@ char const* const sml_Names::kCommand_Event					= "event" ;	// Just passes event
 char const* const sml_Names::kCommand_SuppressSystemStart	= "suppress_system_start" ;
 char const* const sml_Names::kCommand_SuppressSystemStop	= "suppress_system_stop" ;
 char const* const sml_Names::kCommand_CheckForIncomingCommands = "check_for_incoming_commands" ;
+char const* const sml_Names::kCommand_SetInterruptCheckRate	= "set_interrupt_check_rate" ;
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;
