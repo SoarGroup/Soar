@@ -36,7 +36,7 @@ using namespace cli;
 
 TgD::TgD* debugger;
 time_t gSKITowersDAGTimer;
-#define GSKI_DAG_TOWERS_USE_TIMER
+//#define GSKI_DAG_TOWERS_USE_TIMER
 
 //namespace gski_towers
 //{

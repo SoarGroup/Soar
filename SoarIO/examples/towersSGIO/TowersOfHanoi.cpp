@@ -2,6 +2,9 @@
 #include <string>
 //#include <crtdbg.h>
 
+// Quick addition so we can time this easily.
+#include "..\..\Profiler\include\simple_timer.h"
+
 ////// Define the type of interface to Soar that you're using:
 //#define GSKI_DIRECT
 //#define SML_THROUGH_GSKI
@@ -32,14 +35,14 @@ const int defaultNumTowers = 3;
 
 int main(int argc, char* argv[])
 {
-	bool doPrinting = true;
+	bool doPrinting = false;
 	int numTowers = defaultNumTowers;
 	//int numdisks = defaultNumdisks;
 
 	if(argc > 1)
 	{
-		if(!strcmp(argv[1], "false"))
-			doPrinting = false;
+		if(!strcmp(argv[1], "true"))
+			doPrinting = true;
 		// @TODO more checking, for robustness 
 	}
 
@@ -62,10 +65,17 @@ int main(int argc, char* argv[])
 	//=============================================================================
 	//=============================================================================
 	{
+		SimpleTimer timer ;
+		SimpleTimer total ;
+
 		if(doPrinting)
 			cout << "***Welcome to Towers of Hanoi***" << endl << endl;
 
 		HanoiWorld hanoi(doPrinting, numTowers);
+
+		double time = timer.Elapsed() ;
+		cout << "Time to initialize: " << time << endl ;
+		timer.Start() ;
 
 		if(doPrinting)
 			hanoi.Print();
@@ -79,6 +89,11 @@ int main(int argc, char* argv[])
 		}
 
 		hanoi.EndGameAction();
+
+		time = timer.Elapsed() ;
+		cout << "Time after initialization to complete: " << time << endl ;
+		time = total.Elapsed() ;
+		cout << "Total run time: " << time << endl ;
 	}
 
 //#ifdef _DEBUG

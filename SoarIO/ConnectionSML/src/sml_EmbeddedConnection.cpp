@@ -95,7 +95,9 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	return NULL ;
 }
 
-bool EmbeddedConnection::AttachConnection(char const* pLibraryName)
+// BUGBUG: We still need to pass the port to listen on over to the other side
+// I'm waiting until the Linux code has settled down before doing this.
+bool EmbeddedConnection::AttachConnection(char const* pLibraryName, int portToListenOn)
 {
 	ClearError() ;
 
@@ -161,7 +163,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName)
 }
 
 // Link two embedded connections together.
-void EmbeddedConnection::AttachConnection(Connection_Receiver_Handle hConnection, ProcessMessageFunction pProcessMessage)
+void EmbeddedConnection::AttachConnectionInternal(Connection_Receiver_Handle hConnection, ProcessMessageFunction pProcessMessage)
 {
 	ClearError() ;
 	m_hConnection = hConnection ;

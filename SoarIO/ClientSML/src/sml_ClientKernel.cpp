@@ -13,7 +13,10 @@
 #include "sml_ClientAgent.h"
 #include "sml_Connection.h"
 #include "sock_SocketLib.h"
+#include "thread_Thread.h"	// To get to sleep
+
 #include <assert.h>
+
 using namespace sml ;
 
 Kernel::Kernel(Connection* pConnection)
@@ -22,6 +25,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_TimeTagCounter = 0 ;
 	m_IdCounter      = 0 ;
 	m_SocketLibrary  = NULL ;
+	m_LastError		 = Error::kNoError ;
 }
 
 Kernel::~Kernel(void)
@@ -104,18 +108,23 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 *								kernel to check for incoming messages on remote sockets.
 *								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
 *								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
+* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 *
-* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
+* @returns A new kernel object which is used to communicate with the kernel.
+*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 *************************************************************/
-Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution)
+Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, int portToListenOn)
 {
 	ErrorCode errorCode = 0 ;
-	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, synchronousExecution, &errorCode) ;
+	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, synchronousExecution, portToListenOn, &errorCode) ;
 
 	if (!pConnection)
 		return NULL ;
 
 	Kernel* pKernel = new Kernel(pConnection) ;
+
+	// Transfer any errors over to the kernel object, so the caller can retrieve them.
+	pKernel->SetError(pConnection->GetLastError()) ;
 
 	// Register for "calls" from the client.
 	pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
@@ -259,6 +268,9 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 		m_AgentMap.add(agent->GetAgentName(), agent) ;
 	}
 
+	// Set our error state based on what happened during this call.
+	SetError(GetConnection()->GetLastError()) ;
+
 	return agent ;
 }
 
@@ -342,7 +354,16 @@ bool Kernel::GetLastCommandLineResult()
 	return m_CommandLineSucceeded ;
 }
 
-// This call gives some cycles to the Tcl debugger.  It should come out eventually.
+/*************************************************************
+* @brief If this is an embedded connection using "synchronous execution"
+*		 then we need to call this periodically to look for commands
+*		 coming in from remote sockets.
+*		 If this is a remote connection or an embedded connection
+*		 with asynch execution, commands are executed on a different
+*		 thread inside the kernel, so that thread checks for these
+*		 incoming commands automatically (without the client
+*		 having to call this).
+*************************************************************/
 bool Kernel::CheckForIncomingCommands()
 {
 	AnalyzeXML response ;
@@ -353,3 +374,13 @@ bool Kernel::CheckForIncomingCommands()
 
 	return false ;
 }
+
+/*************************************************************
+* @brief This is a utility wrapper to let us sleep the entire client process
+*		 for a period of time.
+*************************************************************/
+void Kernel::Sleep(long milliseconds)
+{
+	soar_thread::Thread::SleepStatic(milliseconds) ;
+}
+

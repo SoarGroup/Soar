@@ -161,8 +161,19 @@ public:
 	/*************************************************************
 	* @brief	Receive and process any messages from remote connections
 	*			that are waiting on a socket.
+	*			Returning false indicates we should stop checking
+	*			for more messages (and presumably shutdown completely).
 	*************************************************************/
-	void ReceiveAllMessages() ;
+	bool ReceiveAllMessages() ;
+
+	/*************************************************************
+	* @brief	Stop the thread that is used to receive messages
+	*			from remote connections.  We do this when we're
+	*			using a "synchronized" embedded connection, which
+	*			means commands execute in the client's thread instead
+	*			of the receiver thread.
+	*************************************************************/
+	void StopReceiverThread() ;
 
 	/*************************************************************
 	* @brief	Takes an incoming SML message and responds with

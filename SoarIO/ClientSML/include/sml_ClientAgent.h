@@ -13,6 +13,7 @@
 
 #include "sml_ClientWorkingMemory.h"
 #include "sml_ClientEvents.h"
+#include "sml_ClientErrors.h"
 
 #include <string>
 #include <map>
@@ -24,7 +25,7 @@ class Connection ;
 class AnalyzeXML ;
 class ElementXML ;
 
-class Agent
+class Agent : public ClientErrors
 {
 	// Don't want users creating and destroying agent objects without
 	// going through the kernel
@@ -57,7 +58,6 @@ protected:
 
 	Connection* GetConnection() const ;
 	WorkingMemory* GetWM() 				{ return &m_WorkingMemory ; } 
-	Kernel*		GetKernel() const		{ return m_Kernel ; }
 
 	/*************************************************************
 	* @brief This function is called when output is received
@@ -84,6 +84,11 @@ public:
 	char const* GetAgentName() const	{ return m_Name.c_str() ; }
 
 	/*************************************************************
+	* @brief Returns a pointer to the kernel object that owns this Agent.
+	*************************************************************/
+	Kernel*		GetKernel() const		{ return m_Kernel ; }
+
+	/*************************************************************
 	* @brief Load a set of productions from a file.
 	*
 	* The file must currently be on a filesystem that the kernel can
@@ -99,6 +104,11 @@ public:
 	*		 The agent retains ownership of this object.
 	*************************************************************/
 	Identifier* GetInputLink() ;
+
+	/*************************************************************
+	* @brief An alternative that matches the older SGIO interface.
+	*************************************************************/
+	Identifier* GetILink() { return GetInputLink() ; }
 
 	/*************************************************************
 	* @brief Returns the id object for the output link.
@@ -264,6 +274,18 @@ public:
 	*		 
 	*************************************************************/
 	int		GetNumberCommands() ;
+
+	/*************************************************************
+	* @brief Returns true if there are "commands" available.
+	*		 A command in this context
+	*		 is an identifier wme that have been added to the top level of
+	*		 the output-link since the last call to "ClearOutputLinkChanges".
+	*
+	*		 NOTE: This function may involve searching a list so it's
+	*		 best to not call it repeatedly.
+	*		 
+	*************************************************************/
+	bool	Commands() { return GetNumberCommands() > 0 ; }
 
 	/*************************************************************
 	* @brief Get the n-th "command".  A command in this context

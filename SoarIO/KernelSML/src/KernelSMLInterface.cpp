@@ -49,16 +49,25 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	// Record our kernel object with this connection.  I think we only want one kernel
 	// object even if there are many connections (because there's only one kernel) so for now
 	// that's how things are set up.
-	pConnection->SetUserData(KernelSML::GetKernelSML()) ;
+	KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
+	pConnection->SetUserData(pKernelSML) ;
 
 	// Record this as one of the active connections
-	KernelSML::GetKernelSML()->AddConnection(pConnection) ;
+	pKernelSML->AddConnection(pConnection) ;
+
+	// If this is a synchronous connection then commands will execute on the embedded client's thread
+	// and we don't use the receiver thread.  (Why not?  If we allowed it to run then we'd have to (a)
+	// sychronize execution between the two threads and (b) sometimes Soar would be running in the client's thread and
+	// sometimes in the receiver's thread (depending on where "run" came from) and that could easily introduce a lot of
+	// complicated bugs or where performance would be different depending on whether you pressed "run" in the environment or "run" in a
+	// remote debugger).
+	pKernelSML->StopReceiverThread() ;
 
 	// Register for "calls" from the client.
 	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
 
 	// The original sender is a receiver to us so we need to reverse the type.
-	pConnection->AttachConnection((Connection_Receiver_Handle)hSenderConnection, pProcessMessage) ;
+	pConnection->AttachConnectionInternal((Connection_Receiver_Handle)hSenderConnection, pProcessMessage) ;
 
 	return (Connection_Receiver_Handle)pConnection ;
 }

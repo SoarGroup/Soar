@@ -103,6 +103,9 @@
 				RelativePath=".\src\sml_ClientAgent.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_ClientErrors.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_ClientFloatElement.cpp">
 			</File>
 			<File

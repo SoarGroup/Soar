@@ -88,10 +88,22 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 *************************************************************/
 bool Agent::LoadProductions(char const* pFilename)
 {
-	AnalyzeXML response ;
+	// gSKI's LoadProductions command doesn't support all of the command line commands we need,
+	// so we'll send this through the command line processor instead by creating a "source" command.
+	std::string cmd = "source " ;
+	cmd += pFilename ;
 
-	// BUGBUG: Think this should be calling "source filename" instead of gSKI LoadProductions.
-	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_LoadProductions, GetAgentName(), sml_Names::kParamFilename, pFilename) ;
+	// Execute the source command
+	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetAgentName()) ;
+
+	bool ok = GetKernel()->GetLastCommandLineResult() ;
+
+	// BUGBUG? Are we handling error messages correctly here?
+	if (ok)
+		ClearError() ;
+	else
+		SetDetailedError(Error::kDetailedError, pResult) ;
+
 	return ok ;
 }
 

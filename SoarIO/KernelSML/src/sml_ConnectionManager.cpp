@@ -110,28 +110,42 @@ ConnectionManager::~ConnectionManager()
 		Shutdown() ;
 }
 
+// Cause the receiver thread to quit.
+void ConnectionManager::StopReceiverThread()
+{
+	// Stop the receiver thread (and wait until is has stopped)
+	if (m_ReceiverThread)
+		m_ReceiverThread->Stop(true) ;
+}
+
 // Close all connections
 void ConnectionManager::Shutdown()
 {
 //	PrintDebug("Shutting down connection manager") ;
 
 	// Stop the thread (and wait until it has stopped)
-	m_ListenerManager->Stop(true) ;
+	if (m_ListenerManager)
+	{
+		m_ListenerManager->Stop(true) ;
 
-	// Remove the listener
-	delete m_ListenerManager ;
-	m_ListenerManager = NULL ;
+		// Remove the listener
+		delete m_ListenerManager ;
+		m_ListenerManager = NULL ;
+	}
 
 //	PrintDebug("Listener stopped") ;
 
 	// Stop the receiver thread (and wait until is has stopped)
-	m_ReceiverThread->Stop(true) ;
+	if (m_ReceiverThread)
+	{
+		m_ReceiverThread->Stop(true) ;
 
-//	PrintDebug("Receiver stopped") ;
+	//	PrintDebug("Receiver stopped") ;
 
-	// Remove the thread
-	delete m_ReceiverThread ;
-	m_ReceiverThread = NULL ;
+		// Remove the thread
+		delete m_ReceiverThread ;
+		m_ReceiverThread = NULL ;
+	}
 
 	// Serialize thread access to the connections list
 	soar_thread::Lock lock(&m_ConnectionsMutex) ;
@@ -197,7 +211,9 @@ void ConnectionManager::RemoveConnection(Connection* pConnection)
 // Go through all connections and read any incoming commands from the sockets.
 // The messages are sent to the callback registered with the connection when it was created (ReceivedCall currently).
 // Those calls could take a long time to execute (e.g. a call to Run Soar).
-void ConnectionManager::ReceiveAllMessages()
+// Returning false indicates we should stop checking
+// for more messages (and presumably shutdown completely).
+bool ConnectionManager::ReceiveAllMessages()
 {
 	int index = 0 ;
 
@@ -237,4 +253,8 @@ void ConnectionManager::ReceiveAllMessages()
 		// Get the next connection (will return NULL once we reach the end of the list)
 		pConnection = GetConnectionByIndex(index++) ;
 	}
+
+	// So far we don't have some sort of shutdown message the remote connections
+	// can send, but if we decide to implement it this allows us to return it.
+	return true ;
 }

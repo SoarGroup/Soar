@@ -168,10 +168,12 @@ public:
 	*								kernel to check for incoming messages on remote sockets.
 	*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
 	*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
+	* @param port			The port number the server should use to receive remote connections.  The default port for SML is 12121 (picked at random).
+	*
 	* @param pError			Pass in a pointer to an int and receive back an error code if there is a problem.
 	* @returns An EmbeddedConnection instance.
 	*************************************************************/
-	static Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, ErrorCode* pError = NULL) ;
+	static Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, int portToListenOn = kDefaultSMLPort, ErrorCode* pError = NULL) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -433,6 +435,8 @@ public:
 	*		 0 if successful, otherwise an error code to indicate what went wrong.
 	*************************************************************/
 	ErrorCode GetLastError() { return m_ErrorCode ; }
+
+	bool	  HadError()	 { return m_ErrorCode != Error::kNoError ; } 
 
 	/*************************************************************
 	* @brief Creates a new ID that's unique for this generator.

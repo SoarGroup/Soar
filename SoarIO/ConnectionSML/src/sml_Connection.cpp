@@ -90,10 +90,12 @@ Connection::~Connection()
 *								kernel to check for incoming messages on remote sockets.
 *								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
 *								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
+* @param port			The port number the server should use to receive remote connections.  The default port for SML is 12121 (picked at random).
+*
 * @param pError			Pass in a pointer to an int and receive back an error code if there is a problem.
 * @returns An EmbeddedConnection instance.
 *************************************************************/
-Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, ErrorCode* pError)
+Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, int portToListenOn, ErrorCode* pError)
 {
 	// Set an initial error code and then replace it if something goes wrong.
 	if (pError) *pError = Error::kNoError ;
@@ -102,7 +104,7 @@ Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool 
 									EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
 									EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch() ;
 
-	pConnection->AttachConnection(pLibraryName) ;
+	pConnection->AttachConnection(pLibraryName, portToListenOn) ;
 
 	// Report any errors
 	if (pError) *pError = pConnection->GetLastError() ;
@@ -420,8 +422,14 @@ ElementXML* Connection::InvokeCallbacks(ElementXML *pIncomingMsg)
 *************************************************************/
 bool Connection::SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg)
 {
-	// Send the command over
+	// Send the command over.
 	SendMessage(pMsg);
+
+	// There was an error in the send, so we're done.
+	if (HadError())
+	{
+		return false ;
+	}
 
 	// Get the response
 	ElementXML* pResponse = GetResponse(pMsg) ;
@@ -429,21 +437,33 @@ bool Connection::SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg)
 	if (!pResponse)
 	{
 		// We failed to get a reply when one was expected
+		SetError(Error::kFailedToGetResponse) ;
 		return false ;
 	}
 
 	// Analyze the response and return the analysis
 	pAnalysis->Analyze(pResponse) ;
 
+#ifdef _DEBUG
+	char* pMsgText = pResponse->GenerateXMLString(true) ;
+	pResponse->DeleteString(pMsgText) ;
+#endif
+
 	delete pResponse ;
 
 	// If the response is not SML, return false
 	if (!pAnalysis->IsSML())
+	{
+		SetError(Error::kResponseIsNotSML) ;
 		return false ;
+	}
 
 	// If we got an error, return false.
 	if (pAnalysis->GetErrorTag())
+	{
+		SetError(Error::kSMLErrorMessage) ;
 		return false ;
+	}
 
 	return true ;
 }

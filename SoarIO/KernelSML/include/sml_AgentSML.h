@@ -78,7 +78,7 @@ protected:
 	AgentListener	m_AgentListener ;
 
 public:
-	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : m_AgentListener(pKernelSML, pAgent) { m_pKernelSML = pKernelSML ; m_pIAgent = pAgent ; m_pOutputListener = NULL ; }
+	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : m_AgentListener(pKernelSML, pAgent) { m_pKernelSML = pKernelSML ; m_pIAgent = pAgent ; m_pOutputListener = NULL ; m_pInputProducer = NULL ; }
 
 	~AgentSML() ;
 

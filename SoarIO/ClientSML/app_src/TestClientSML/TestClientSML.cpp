@@ -2,6 +2,8 @@
 #include "sml_Connection.h"
 #include "sml_Client.h"
 
+#include "..\..\Profiler\include\simple_timer.h"
+
 // Define a sleep
 #ifdef _WIN32
 #define _WINSOCKAPI_
@@ -98,15 +100,38 @@ void EmbeddedConnection()
 	// We'll do the test in a block, so everything should have been
 	// deleted when we test for memory leaks.
 	{
+		SimpleTimer timer ;
+
 		sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", true) ;
+
+		if (pKernel->HadError())
+		{
+			cout << pKernel->GetLastErrorDescription() << endl ;
+			return ;
+		}
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent("test") ;
+
+		double time = timer.Elapsed() ;
+		cout << "Time to initialize kernel and create agent: " << time << endl ;
+
+		if (pKernel->HadError())
+		{
+			cout << pKernel->GetLastErrorDescription() << endl ;
+			return ;
+		}
 
 		if (!pAgent)
 			cout << "Error creating agent" << endl ;
 
 		pAgent->LoadProductions("testsml.soar") ;
+
+		if (pAgent->HadError())
+		{
+			cout << pAgent->GetLastErrorDescription() << endl ;
+			return ;
+		}
 
 		Identifier* pInputLink = pAgent->GetInputLink() ;
 
@@ -237,12 +262,15 @@ void EmbeddedConnection()
 		cout << "(M1 ^col 1)" << endl << "(I3 ^alternative M1)" << endl ;
 		cout << "And then after the command is marked as completed (during the test):" << endl ;
 		cout << "Top Identifier I3" << endl ;
+		cout << "Together with about 6 received events" << endl ;
 
 		// Cycle forever until debugger quits (if we're using the tcl debugger)
+		/*
 		while (pKernel->CheckForIncomingCommands())
 		{
 			SLEEP(10) ;
 		}
+		*/
 
 		cout << "Destroy the agent now" << endl ;
 
@@ -266,7 +294,9 @@ int main(int argc, char* argv[])
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 62 ;
+	//_crtBreakAlloc = 140 ;
+
+	SimpleTimer timer ;
 
 	// For now, any argument on the command line makes us create a remote connection.
 	// Later we'll try passing in an ip address/port number.
@@ -274,6 +304,9 @@ int main(int argc, char* argv[])
 		RemoteConnection() ;
 	else
 		EmbeddedConnection() ;
+
+	double time = timer.Elapsed() ;
+	cout << "Total run time: " << time << endl ;
 
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;

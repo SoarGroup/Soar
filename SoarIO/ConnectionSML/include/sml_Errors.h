@@ -15,11 +15,6 @@ typedef int ErrorCode ;
 
 #include <string>
 
-// BADBAD: We need to define a real assert function to report errors
-#ifndef ASSERT
-#define ASSERT(x)
-#endif
-
 class Error
 {
 public:
@@ -42,6 +37,10 @@ public:
 		kParsingXMLError	= 15,
 		kConnectionFailed	= 16,
 		kInvalidResponse	= 17,
+		kResponseIsNotSML	= 18,
+		kFailedToGetResponse= 19,
+		kSMLErrorMessage	= 20,
+		kDetailedError		= 21,
 	} ;
 
 	/** Returns a description of the error which can be shown to a user */
@@ -57,7 +56,7 @@ public:
 			case kNoResponseToCall:		return "This type of message requires a response but no callback created a response" ;
 			case kNoEmbeddedLink:		return "This embedded connection has not been set up correctly, so there is nowhere to send the messages to" ;
 			case kArgumentIsNotSML:		return "The ElementXML object passed in is not a pointer to a valid SML message" ;
-			case kLibraryNotFound:		return "Could not locate the shared library when trying to load it.  It may be in an unexpected location." ;
+			case kLibraryNotFound:		return "The library name passed into CreateEmbeddedConnection could not be found.  It should either be in the same folder as the main executable or on the path." ;
 			case kFunctionsNotFound:	return "Loaded the shared library, but could not find the necessary exported functions.  Check their names and types." ;
 			case kCreationFailed:		return "Loaded the shared library, but the attempt to create an embedded connection failed." ;
 			case kSMLHasNoCommand:		return "This SML object does not contain a command tag" ;
@@ -67,6 +66,10 @@ public:
 			case kParsingXMLError:		return "Error parsing the incoming XML message" ;
 			case kConnectionFailed:		return "Failed to connect to the remote server" ;
 			case kInvalidResponse:		return "The connection sent a response when none should have been sent." ;
+			case kResponseIsNotSML:		return "The kernel sent back a response that is not formatted as an SML message." ;
+			case kFailedToGetResponse:	return "No response came back for the command we sent." ;
+			case kSMLErrorMessage:		return "The SML message contained an error tag.  We should display that instead of this generic error." ;
+			case kDetailedError:		return "There should be a detailed error message to accompany this and we should show that instead of this!" ;
 		}
 
 		return "Unknown error code" ;

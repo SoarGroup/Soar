@@ -15,6 +15,7 @@
 #include <string>
 
 #include "sml_ObjectMap.h"
+#include "sml_ClientErrors.h"
 
 // Forward declaratiokn for ElementXML_Handle.
 struct ElementXML_InterfaceStructTag ;
@@ -33,7 +34,7 @@ class Connection ;
 class AnalyzeXML ;
 class ElementXML ;
 
-class Kernel
+class Kernel : public ClientErrors
 {
 	// Allow the agent to call to get the connection from the kernel.
 	friend class Agent ;
@@ -74,10 +75,12 @@ public:
 	*								kernel to check for incoming messages on remote sockets.
 	*								If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
 	*								However, this asynchronous model requires a context switch whenever commands are sent to/from the kernel.
+	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 	*
-	* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
+	* @returns A new kernel object which is used to communicate with the kernel.
+	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution) ;
+	static Kernel* CreateEmbeddedConnection(char const* pLibraryName, bool synchronousExecution, int portToListenOn = kDefaultSMLPort) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -91,7 +94,8 @@ public:
 	*                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
 	* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
 	*
-	* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
+	* @returns A new kernel object which is used to communicate with the kernel
+	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
 	static Kernel* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort) ;
 
@@ -170,8 +174,23 @@ public:
 	*************************************************************/
 	bool GetLastCommandLineResult();
 
-	// This call gives some cycles to the Tcl debugger.  It should come out eventually.
+	/*************************************************************
+	* @brief If this is an embedded connection using "synchronous execution"
+	*		 then we need to call this periodically to look for commands
+	*		 coming in from remote sockets.
+	*		 If this is a remote connection or an embedded connection
+	*		 with asynch execution, commands are executed on a different
+	*		 thread inside the kernel, so that thread checks for these
+	*		 incoming commands automatically (without the client
+	*		 having to call this).
+	*************************************************************/
 	bool CheckForIncomingCommands() ;
+
+	/*************************************************************
+	* @brief This is a utility wrapper to let us sleep the entire client process
+	*		 for a period of time.
+	*************************************************************/
+	void Sleep(long milliseconds) ;
 
 protected:
 	/*************************************************************

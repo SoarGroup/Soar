@@ -59,8 +59,8 @@ public:
 	}
 
 	// Link two embedded connections together
-	virtual void AttachConnection(Connection_Receiver_Handle hConnection, ProcessMessageFunction pProcessMessage) ;
-	virtual bool AttachConnection(char const* pLibraryName) ;
+	virtual void AttachConnectionInternal(Connection_Receiver_Handle hConnection, ProcessMessageFunction pProcessMessage) ;
+	virtual bool AttachConnection(char const* pLibraryName, int portToListenOn) ;
 	virtual void ClearConnectionHandle() { m_hConnection = NULL ; }
 
 	virtual void CloseConnection() ;

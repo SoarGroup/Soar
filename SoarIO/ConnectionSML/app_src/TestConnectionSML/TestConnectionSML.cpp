@@ -409,8 +409,8 @@ public:
 		pConnection2->RegisterCallback(Call2, this, sml_Names::kDocType_Call, true) ;
 
 		// Connect the two together
-		((EmbeddedConnectionSynch*)pConnection1)->AttachConnection((Connection_Receiver_Handle)(pConnection2), ProcessMessage) ;
-		((EmbeddedConnectionSynch*)pConnection2)->AttachConnection((Connection_Receiver_Handle)(pConnection1), ProcessMessage) ;
+		((EmbeddedConnectionSynch*)pConnection1)->AttachConnectionInternal((Connection_Receiver_Handle)(pConnection2), ProcessMessage) ;
+		((EmbeddedConnectionSynch*)pConnection2)->AttachConnectionInternal((Connection_Receiver_Handle)(pConnection1), ProcessMessage) ;
 
 		// Send a "call" over.
 		pConnection1->SendMessage(pXML1) ;

@@ -197,9 +197,9 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgentPtr, char const* pCommandN
 
 #ifdef USE_TCL_DEBUGGER
 	// BADBAD: Now create the Tcl debugger.  This is a complete hack and can come out once we have some way to debug this stuff.
-	if (m_Debugger == NULL)
+	if (m_Debugger == NULL && pAgent)
 	{
-		m_Debugger = CreateTgD(pResult, GetKernel(), GetKernelFactory()->GetKernelVersion(), TgD::TSI40, "") ;
+		m_Debugger = CreateTgD(pAgent, GetKernel(), GetKernelFactory()->GetKernelVersion(), TgD::TSI40, "") ;
 		m_Debugger->Init() ;
 	}	
 #endif
@@ -368,8 +368,8 @@ bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const*
 #endif
 
 	// Also check for any incoming calls from remote sockets
-//	if (m_pConnectionManager)
-//		m_pConnectionManager->ReceiveAllMessages() ;
+	if (m_pConnectionManager)
+		keepGoing = keepGoing || m_pConnectionManager->ReceiveAllMessages() ;
 
 	return this->ReturnBoolResult(pConnection, pResponse, keepGoing) ;
 }

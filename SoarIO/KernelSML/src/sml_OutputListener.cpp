@@ -39,7 +39,27 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 	if (eventId != gSKIEVENT_OUTPUT_PHASE_CALLBACK)
 		return ;
 
-	if (m_StopOnOutput)
+	// We have to watch for one special case.  When the output-link is created, if that's the only output we
+	// don't want to stop (or you always stop on the first decision in a run).
+
+	// First make sure we are only passed one value, otherwise we did get real output.
+	bool isJustOutputLink = wmelist->GetNumElements() == 1 ;
+	if (isJustOutputLink)
+	{
+		// Get the first wme
+		gSKI::IWme* pWME = wmelist->GetVal();
+
+		// Look up the type of value this is
+		egSKISymbolType type = pWME->GetValue()->GetType() ;
+
+		// Get the attribute name
+		std::string att = pWME->GetAttribute()->GetString() ;
+
+		// Check whether we're adding the output link
+		isJustOutputLink = (type == gSKI_OBJECT && strcmp(att.c_str(), "output-link") == 0) ;
+	}
+
+	if (m_StopOnOutput && !isJustOutputLink)
 	{
 		// If we've been asked to interrupt Soar when we receive output, then do so now.
 		// I'm not really clear on the correct parameters for stopping Soar here and what impact the choices will have.
@@ -51,7 +71,7 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 
 	ConnectionListIter connectionIter = GetBegin(gSKIEVENT_OUTPUT_PHASE_CALLBACK) ;
 
-	// Whoops--nobody is listening to this event.
+	// Check if nobody is listening to this event and if so we're done.
 	// We can't unregister it from the kernel, or "stop on output" would stop working.
 	if (connectionIter == GetEnd(gSKIEVENT_OUTPUT_PHASE_CALLBACK))
 		return ;

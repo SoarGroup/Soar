@@ -90,7 +90,12 @@ public:
 
 	// Go through all connections and read any incoming commands from the sockets.
 	// The messages are sent to the callback registered with the connection when it was created (ReceivedCall currently).
-	void ReceiveAllMessages() ;
+	// Returning false indicates we should stop checking
+	// for more messages (and presumably shutdown completely).
+	bool ReceiveAllMessages() ;
+
+	// Cause the receiver thread to quit.
+	void StopReceiverThread() ;
 
 	// Close all connections
 	void Shutdown() ;
