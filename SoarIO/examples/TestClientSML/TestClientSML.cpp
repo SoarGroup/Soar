@@ -151,7 +151,7 @@ void MyDeletionHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 	cout << "Received notification before agent was deleted" << endl ;
 }
 
-bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
+bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
 
@@ -200,6 +200,22 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		if (!pAgent)
 			cout << "Error creating agent" << endl ;
 
+		bool ok = true ;
+
+		if (simpleInitSoar) 
+		{
+			cout << "Performing simple init-soar..." << endl << endl;
+			pAgent->InitSoar() ;
+			ok = pKernel->DestroyAgent(pAgent) ;
+			if (!ok)
+			{
+				cout << "*** ERROR: Failed to destroy agent properly ***" ;
+				return false ;
+			}
+			delete pKernel ;
+			return ok;
+		}
+
 		bool load = pAgent->LoadProductions("testsml.soar") ;
 
 		if (pAgent->HadError())
@@ -214,8 +230,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		if (!pInputLink)
 			cout << "Error getting input link" << endl ;
-
-		bool ok = true ;
 
 		// Some simple tests
 		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
@@ -441,14 +455,17 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 bool FullEmbeddedTest()
 {
+	// Simple embedded, direct init-soar
+	bool ok = TestSML(true, true, true, true) ;
+
 	// Embeddded using direct calls
-	bool ok = TestSML(true, true, true) ;
+	ok = ok && TestSML(true, true, true, false) ;
 
 	// Embedded not using direct calls
-	ok = ok && TestSML(true, true, false) ;
+	ok = ok && TestSML(true, true, false, false) ;
 
 	// Embedded running on thread inside kernel
-	ok = ok && TestSML(true, false, false) ;
+	ok = ok && TestSML(true, false, false, false) ;
 
 	return ok ;
 }
@@ -457,7 +474,7 @@ bool RemoteTest()
 {
 	// Remote connection.
 	// (For this to work need to run a listener--usually TestCommandLineInterface to receive the commands).
-	bool ok = TestSML(false, false, false) ;
+	bool ok = TestSML(false, false, false, false) ;
 	return ok ;
 }
 
