@@ -12,6 +12,7 @@
 #include <vector>
 
 using std::cout;
+using std::cerr;
 using std::cin;
 using std::endl;
 using std::string;
@@ -258,6 +259,7 @@ private:
 		{
 			// This string will contain a description of the error.
 			std::string error = pAgent->GetLastErrorDescription() ;
+			cerr << error << endl;
 			assert (!pAgent->HadError()) ;
 		}
 
