@@ -477,15 +477,15 @@ static void XMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* 
 		return ;
 
 	// Call constructor with the address of the C++ object that is being wrapped
-	// by the SWIG sml/ClientXML object.  The safest approach here seems to be to
-	// create a copy of pXML which we can then keep (while pXML will go out of scope at the end of the method)
-	// and pass the new pJavaCopy back to Java and have SWIG take ownership of it (by passing "true" as the 2nd param).
-	sml::ClientXML* pJavaCopy = new sml::ClientXML(pXML) ;
-	jobject jNewObject = jenv->NewObject(jsmlClass, cons, (long)pJavaCopy, true) ;
+	// by the SWIG sml/ClientXML object.  To mimic the C++ semantics we'll create a new
+	// SWIG (Java) object which does not own pXML (achieved by passing "false" as second param).
+	// That way when the Java object is garbage collected it won't try to release pXML.
+	// If a Java user wishes to keep pXML it will have to make a copy, just like in C++.
+	// NOTE: Java long == C++ (long long) (i.e. 64-bit)
+	jobject jNewObject = jenv->NewObject(jsmlClass, cons, (long long)pXML, false) ;
 
 	if (!jNewObject)
 	{
-		delete pJavaCopy ;
 		return ;
 	}
 

@@ -91,7 +91,10 @@ public class Application
 			
 			m_Keep = new ClientXML(xml) ;
 			
-			xml.delete() ;
+			// No need to explicitly delete xml now.  The Java version is like C++
+			// where you need to copy the object to keep it, which means you don't need to
+			// explicitly delete it.
+			//xml.delete() ;
 		}
 
 		public String testRhsHandler(int eventID, Object data, String agentName, String functionName, String argument)

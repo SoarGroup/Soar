@@ -136,41 +136,6 @@ public class TreeTraceView extends ComboCommandBase
 
 		// When the user expands a node in the tree we may unpack some cached data
 		m_Tree.addListener (SWT.Expand, new ExpandListener()) ;
-
-		
-		/*
-		 * Test code
-		Tree tree = m_Tree ;
-		File [] roots = File.listRoots ();
-		for (int i=0; i<roots.length; i++) {
-			TreeItem root = new TreeItem (tree, 0);
-			root.setText (roots [i].toString ());
-			root.setData (roots [i]);
-			new TreeItem (root, 0);
-		}
-
-		tree.addListener (SWT.Expand, new Listener () {
-			public void handleEvent (final Event event) {
-				final TreeItem root = (TreeItem) event.item;
-				TreeItem [] items = root.getItems ();
-				for (int i= 0; i<items.length; i++) {
-					if (items [i].getData () != null) return;
-					items [i].dispose ();
-				}
-				File file = (File) root.getData ();
-				File [] files = file.listFiles ();
-				if (files == null) return;
-				for (int i= 0; i<files.length; i++) {
-					TreeItem item = new TreeItem (root, 0);
-					item.setText (files [i].getName ());
-					item.setData (files [i]);
-					if (files [i].isDirectory()) {
-						new TreeItem (item, 0);
-					}
-				}
-			}
-		});
-		*/
 	}
 
 	/********************************************************************************************
@@ -520,14 +485,15 @@ public class TreeTraceView extends ComboCommandBase
 		// The messages come collected into a parent <trace> tag so that one event
 		// can send over many pieces of a trace in a single call.  Just more
 		// efficient that way.
-		/*
-		final ClientTraceXML xmlParent = xml.ConvertToTraceXML() ;
+		
+		ClientTraceXML xmlParent = xml.ConvertToTraceXML() ;
 		if (!xmlParent.IsTagTrace() || xmlParent.GetNumberChildren() == 0)
 		{
 			xml.delete() ;
 			return ;
 		}
-		*/
+		// The conversion creates a new SWIG object which we have to delete.
+		xmlParent.delete() ;
 		
 		// If Soar is running in the UI thread we can make
 		// the update directly.
@@ -544,7 +510,12 @@ public class TreeTraceView extends ComboCommandBase
 		// Doing that lead to an intermittement memory leak from the xml object--really hard to track down
 		// and I'm still not fully clear on why that happened, but I suspect if this event was called again
 		// before the wrapper had run, we had a problem.
-        Display.getDefault().asyncExec(new RunWrapper(this, agent, xml)) ;
+		
+		// We need to create a new copy of the XML we were passed because we're
+		// going to use an asynch call, which won't execute until after this function has
+		// completed and xml goes out of scope.
+		ClientXML pKeep = new ClientXML(xml) ;
+        Display.getDefault().asyncExec(new RunWrapper(this, agent, pKeep)) ;
 	}
 
 	/********************************************************************************************

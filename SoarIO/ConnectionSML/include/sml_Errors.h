@@ -58,7 +58,7 @@ public:
 			case kNoResponseToCall:		return "This type of message requires a response but no callback created a response" ;
 			case kNoEmbeddedLink:		return "This embedded connection has not been set up correctly, so there is nowhere to send the messages to" ;
 			case kArgumentIsNotSML:		return "The ElementXML object passed in is not a pointer to a valid SML message" ;
-			case kLibraryNotFound:		return "The library name passed into CreateEmbeddedConnection could not be found.  It should either be in the same folder as the main executable or on the path." ;
+			case kLibraryNotFound:		return "The library name passed into CreateNewKernel could not be found.  It should either be in the same folder as the main executable or on the path." ;
 			case kFunctionsNotFound:	return "Loaded the shared library, but could not find the necessary exported functions.  Check their names and types." ;
 			case kCreationFailed:		return "Loaded the shared library, but the attempt to create an embedded connection failed." ;
 			case kSMLHasNoCommand:		return "This SML object does not contain a command tag" ;

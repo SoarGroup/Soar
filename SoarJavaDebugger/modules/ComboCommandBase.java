@@ -312,8 +312,8 @@ public abstract class ComboCommandBase extends AbstractView
 		if (m_ClearComboEachCommand)
 			this.m_CommandCombo.setText("") ;
 
-		// Send the command to Soar
-		executeAgentCommand(command, false) ;
+		// Send the command to Soar and echo into the trace
+		executeAgentCommand(command, true) ;
 	}
 	
 	public void setTextFont(Font f)
