@@ -56,8 +56,8 @@ set result [$agent LoadProductions towers-of-hanoi.soar]
 
 $kernel ExecuteCommandLine "run 2 -e" Soar1
 
-$agent UnregisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED $productionCallbackId
-$agent UnregisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED $runCallbackId
+$agent UnregisterForProductionEvent $productionCallbackId
+$agent UnregisterForRunEvent $runCallbackId
 
 $kernel ExecuteCommandLine "run 3" Soar1
 
