@@ -170,10 +170,12 @@ production *specify_production(instantiation *ist){
 	Symbol *sym;
 	condition *cond, *c;
 	condition *cond_top = NIL, *cond_bottom, *new_top, *new_bottom;
-	unsigned long num;
 	wme *w;
 	int i;
 	production *prod;
+	decay_timelist_element *decay_list;
+	int decay_pos;
+	wme_decay_element *decay_element;
 
 	 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
 		if (cond->type == POSITIVE_CONDITION){
@@ -185,45 +187,55 @@ production *specify_production(instantiation *ist){
 			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
 		}
 	 }
-		decay_list = current_agent(decay_timelist);
-		decay_pos = current_agent(current_decay_timelist_element)->position;
-	 while (1){
+	
+	 decay_list = current_agent(decay_timelist);
+	 decay_pos = current_agent(current_decay_timelist_element)->position;
+	 
 		// get wmes in order of activation
-		 for (i = 0; i < DECAY_ARRAY_SIZE ; i++){
-		 
-			 decay_pos = decay_pos > 0 ? decay_pos - 1 : MAX_DECAY - 1;
-			if (decay_list[decay_pos].first_decay_element != NULL)
-			{
-				decay_element = decay_list[decay_pos].first_decay_element;
-				while (decay_element != NULL)
-				{
-		 
-		 
-		 num = rand() % current_agent(num_wmes_in_rete);
+	 for (i = 0; i < DECAY_ARRAY_SIZE ; i++){
+		 decay_pos = decay_pos > 0 ? decay_pos - 1 : MAX_DECAY - 1;
+		 if (decay_list[decay_pos].first_decay_element != NULL)
+		 {
+			 decay_element = decay_list[decay_pos].first_decay_element;
+			 while (decay_element != NULL)
+			 {
+				 w = decay_element->this_wme;
+							 
+		 /*num = rand() % current_agent(num_wmes_in_rete);
 		w = current_agent(all_wmes_in_rete);
 		for (i = 0 ; i < num; i++)
-			w = w->rete_next;
-		cond = make_simple_condition(w->id, w->attr, w->value, w->acceptable);
-		// Check that the condition made from this wme is not already
-		// in the condition list of the production.
-		for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
-				if (conditions_are_equal(c, cond)){
-					free_with_pool(&current_agent(condition_pool), cond);
-					cond = NIL;
-					break;
-					}
-				}
-		if (!cond) continue;	
-		free_with_pool(&current_agent(condition_pool), cond);
-		trace_to_prod(w, tc_num, &cond_top);
-		for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
-		copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
-		cond_top->prev = new_bottom;
-		new_bottom->next = cond_top;
-		prod = build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
-		deallocate_condition_list(new_top);
-		return prod;
+			w = w->rete_next;*/
+				 cond = make_simple_condition(w->id, w->attr, w->value, w->acceptable);
+				 // Check that the condition made from this wme is not already
+				 // in the condition list of the production.
+				 for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
+					 if (conditions_are_equal(c, cond)){
+					 free_with_pool(&current_agent(condition_pool), cond);
+					 cond = NIL;
+					 break;
+					 }
+				 }
+				 if (!cond){
+					 decay_element = decay_element->next;
+					 continue;
+				 }
+				 free_with_pool(&current_agent(condition_pool), cond);
+				 trace_to_prod(w, tc_num, &cond_top);
+				 for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
+				 copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
+				 cond_top->prev = new_bottom;
+				 new_bottom->next = cond_top;
+				 prod = build_RL_production(new_top, cond_bottom, ist->nots, ist->preferences_generated, w);
+				 deallocate_condition_list(new_top);
+				 if (!prod){
+					 decay_element = decay_element->next;
+					 continue;
+				 }
+				 return prod;
+			 }
+		 }
 	 }
+	 return NIL;
 }
 
 // Update the value on RL productions from last cycle
