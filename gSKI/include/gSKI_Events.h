@@ -184,6 +184,21 @@ namespace gSKI {
    };
 
 
+	class IRhsListener
+	{
+	public:
+		/** Virtual destructor */
+		virtual ~IRhsListener() {}
+
+		// Handler for RHS (right hand side) function firings
+		// pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
+		// commandLine is true if we expect this to be handled by the command line processor (false => a custom RHS function that the user provides)
+		// pResultValue is a string allocated by the caller than is of size maxLengthReturnValue that should be filled in with the return value.
+		// The bool return value should be "true" if a return value is filled in, otherwise return false.
+		virtual bool HandleEvent(egSKIEventId eventId, IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+								 int maxLengthReturnValue, char* pReturnValue) = 0;
+	};
+
    /**
     * @brief: 
     */

@@ -161,7 +161,7 @@ namespace gSKI
    const char* Kernel::GetLogLocation(Error* err) const
    {
       ClearError(err);
-      
+
       return 0;
    }
    
@@ -272,6 +272,55 @@ namespace gSKI
          ClearError(err);
          //m_systemListeners.RemoveListener(nEventId, pListener);
       }
+
+	  /**************************************************
+	   *
+	   * Listen for rhs user function firings
+	   *
+	   **************************************************/
+	  void Kernel::AddRhsListener(egSKIEventId   nEventId, 
+                             IRhsListener*       pListener, 
+                             bool                bAllowAsynch,
+                             Error*              err)
+      {
+         ClearError(err);
+         m_rhsListeners.AddListener(nEventId, pListener);
+      }
+
+	  /**************************************************
+	   *
+	   * Stop listening for rhs user function firings
+	   *
+	   **************************************************/
+      void Kernel::RemoveRhsListener(egSKIEventId    nEventId,
+                                IRhsListener*        pListener,
+                                Error*               err)
+      {
+         ClearError(err);
+         m_rhsListeners.RemoveListener(nEventId, pListener);
+      }
+
+	  /**************************************************
+	   *
+	   * Notify listeners about a RHS user function firing.
+	   * The listeners can provide the return value for this function.
+	   *
+	   * If this function returns true, pReturnValue should be filled in with the return value.
+	   * maxReturnValueLength indicates the size of the pReturnValue buffer (which is allocated by the
+	   * caller of this function not the listener who responds).
+	   *
+	   * If "commandLine" is true then we will execute this with the command line processor
+	   * rather than a generic user function that the user provides.
+	   *
+	   **************************************************/
+	  bool Kernel::FireRhsNotification(IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+									   int maxReturnValueLength, char* pReturnValue)
+	  {
+			RhsNotifier rhs(pAgent, commandLine, pFunctionName, pArgument, maxReturnValueLength, pReturnValue) ;
+			bool result = m_rhsListeners.NotifyGetResult(gSKIEVENT_RHS_USER_FUNCTION, rhs) ;
+
+			return result ;
+	  }
 
    /*
    =========================

@@ -267,6 +267,91 @@ namespace gSKI {
                                         ISystemListener*     listener,
                                         Error*               err = 0) = 0;
 
+      /**
+      *  @brief Adds a listener for rhs (right hand side) user functions
+      *
+      *  Call this method to register a listener to receive rhs user functions.
+	  *
+	  *  This event is unusual in that the listener is providing the implementation of
+	  *  the function.  The arguments are passed in a single string and the return value
+	  *  is also a string.  If multiple listeners register, the first value returned will be used.
+	  *
+      *  RHS user events are:
+      *     @li gSKIEVENT_RHS_USER_FUNCTION
+      *
+      *  If this listener has already been added for the given event, nothing happens
+      *
+      *  Possible Errors:
+      *     @li gSKIERR_INVALID_PTR -- If you pass an invalid pointer for a listener.
+      *
+      *  @param eventId  One of the valid event ids listed above
+      *  @param listener A pointer to a client owned listener that will be called back when
+      *                      an event occurs.  Because the listener is client owned, it is not
+      *                      cleaned up by the kernel when it shuts down.  The same listener
+      *                      can be registered to recieve multiple events.  If this listener
+      *                      is 0, no listener is added and an error is recored in err.
+      *  @param allowAsynch A flag indicating whether or not it is ok for the listener to be
+      *                         notified asynchonously of system operation.  If you specify "true"
+      *                         the system may not callback the listener until some time after
+      *                         the event occurs. This flag is only a hint, the system may callback
+      *                         your listener synchronously.  The main purpose of this flag is to
+      *                         allow for efficient out-of-process implementation of event callbacks
+      *  @param  err Pointer to client-owned error structure.  If the pointer
+      *               is not 0 this structure is filled with extended error
+      *               information.  If it is 0 (the default) extended error
+      *               information is not returned.
+      */
+      virtual void AddRhsListener(egSKIEventId        eventId, 
+                                  IRhsListener*    listener, 
+                                  bool                allowAsynch = false,
+                                  Error*              err         = 0) = 0;
+
+	  /**************************************************
+	   *
+	   * Notify listeners about a RHS user function firing.
+	   * The listeners can provide the return value for this function.
+	   *
+	   * If this function returns true, pReturnValue should be filled in with the return value.
+	   * maxReturnValueLength indicates the size of the pReturnValue buffer (which is allocated by the
+	   * caller of this function not the listener who responds).
+	   *
+	   * If "commandLine" is true then we will execute this with the command line processor
+	   * rather than a generic user function that the user provides.
+	   *
+	   **************************************************/
+	  virtual bool FireRhsNotification(IAgent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+									   int maxReturnValueLength, char* pReturnValue) = 0 ;
+
+      /**
+      *  @brief Removes a rhs listener
+      *
+      *  Call this method to remove a previously added event listener.
+      *  The system will automatically remove all listeners when the kernel shutsdown;
+      *   however, since all listeners are client owned, the client is responsible for
+      *   cleaning up memory used by listeners.
+      *
+      *  If the given listener is not registered to receive the given event, this
+      *     function will do nothing (but a warning is logged).
+      *
+      *  System events are:
+      *     @li gSKIEVENT_RHS_USER_FUNCTION
+      *
+      *  Possible Errors:
+      *     @li gSKIERR_INVALID_PTR -- If you pass an invalid pointer for a listener.
+      *
+      *  @param eventId  One of the valid event ids listed above
+      *  @param listener A pointer to the listener you would like to remove.  Passing a 0
+      *                     pointer causes nothing to happen except an error being recorded
+      *                     to err.
+      *  @param  err Pointer to client-owned error structure.  If the pointer
+      *               is not 0 this structure is filled with extended error
+      *               information.  If it is 0 (the default) extended error
+      *               information is not returned.
+      */
+      virtual void RemoveRhsListener(egSKIEventId      eventId,
+                                     IRhsListener*     listener,
+                                     Error*            err = 0) = 0;
+
      /**
       *  @brief Adds a listener for debug log events
       *

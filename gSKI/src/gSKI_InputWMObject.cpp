@@ -460,7 +460,7 @@ namespace gSKI
 	  it != m_producerset.end();
 	  ++it ) {
 
-      int setsize = m_producerset.size();
+      int setsize = (int)m_producerset.size();
       setsize = setsize;
 
       // Invoking the input producers

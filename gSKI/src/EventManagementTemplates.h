@@ -131,6 +131,32 @@ namespace gSKI
          // Do a stop after all callbacks here!
       }
 
+	  // Same as "Notify" above, but returns true if a notifier returns true
+	  // and stops notification at that point.
+	  bool NotifyGetResult(egSKIEventId eventId, tNotifier& notifier)
+	  {
+	     bool result = false ;
+
+         tListenerMapIt itMap = m_listeners.find(static_cast<tKey>(eventId));
+         if(itMap != m_listeners.end())
+         {
+            // Just for convenience, we get a reference to the list
+            tListenerVector& listenerVec = (*itMap).second;
+
+            tListenerVectorIt itVec;
+            tListenerVectorIt itEND = listenerVec.end();
+            for(itVec= listenerVec.begin(); itVec != itEND; ++itVec)
+            {
+               result = notifier(eventId, *itVec);
+               
+			   if (result)
+				   return result ;
+            }
+         }
+
+		 return result ;
+	  }
+
       /** 
        * @brief Get the number of listeners this manager is holding for
        *           the given event.

@@ -20,6 +20,8 @@
 
 #include "ConcatRhsFunction.h"
 #include "InterruptRhsFunction.h"
+#include "ExecRhsFunction.h"
+#include "CmdRhsFunction.h"
 
 typedef struct agent_struct agent;
 
@@ -1196,6 +1198,8 @@ namespace gSKI
 
       ConcatRhsFunction     m_ConcatRhs;
       InterruptRhsFunction  m_InterruptRhs;
+	  ExecRhsFunction		m_ExecRhs ;
+	  CmdRhsFunction		m_CmdRhs ;
 
       /** List of all client defined rhs function */
       tRhsFunctionMap       m_rhsFunctions;

@@ -69,6 +69,10 @@
       gSKIEVENT_LOG_DEBUG,
       gSKIEVENT_PRINT,
 
+	  // Rhs function callback to user function implementation
+	  // This is used to implement the function not just notify of its firing.
+	  gSKIEVENT_RHS_USER_FUNCTION,
+
 	  // Marker for end of gSKI event list
 	  // Must always be at the end of the enum
 	  gSKIEVENT_LAST
