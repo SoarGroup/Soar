@@ -1,4 +1,3 @@
-                                                                                                                                                                                                                                                              
          Summary of changes between SoarSuite 8.5.1 and SoarSuite 8.5.2
                             July, 2004
 
@@ -107,8 +106,19 @@ Bug Fixes
 ---------
 254  Some special characters in StringWME's do not transfer to Soar
 
+Eaters 3.0.8
+============
+
+Bug Fixes
+---------
+391  garbage printed to debugger output when Stop After Decision Phase is on
+
 TankSoar 3.0.8
 ==============
+
+Bug Fixes
+---------
+392  garbage printed to debugger output when Stop After Decision Phase is on
 
 Known Issues
 ------------  
