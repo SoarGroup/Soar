@@ -52,6 +52,9 @@
 
 using namespace sml ;
 
+// Uncomment this symbol to disable print output buffering.
+// #define DISABLE_PRINT_OUTPUT_BUFFERING
+
 // Returns true if this is the first connection listening for this event
 bool AgentListener::AddListener(egSKIEventId eventID, Connection* pConnection)
 {
@@ -65,7 +68,9 @@ bool AgentListener::AddListener(egSKIEventId eventID, Connection* pConnection)
 			m_Agent->GetProductionManager()->AddProductionListener(eventID, this) ;
 		else if (IsPrintEvent(eventID))	
 		{
+#ifndef DISABLE_PRINT_OUTPUT_BUFFERING
 			m_pAgentOutputFlusher = new AgentOutputFlusher(this, m_Agent);
+#endif // DISABLE_PRINT_OUTPUT_BUFFERING
 			m_Agent->AddPrintListener(eventID, this); 
 		}
 	}
@@ -87,8 +92,10 @@ bool AgentListener::RemoveListener(egSKIEventId eventID, Connection* pConnection
 		else if (IsPrintEvent(eventID))
 		{
 			m_Agent->RemovePrintListener(eventID, this); 
+#ifndef DISABLE_PRINT_OUTPUT_BUFFERING
 			delete m_pAgentOutputFlusher;
 			m_pAgentOutputFlusher = 0;
+#endif // DISABLE_PRINT_OUTPUT_BUFFERING
 		}
 	}
 
@@ -219,6 +226,10 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, co
 
 	// Buffer print output to be flushed later
 	m_BufferedPrintOutput += msg;
+
+#ifdef DISABLE_PRINT_OUTPUT_BUFFERING
+	FlushOutput();
+#endif
 }
 
 void AgentListener::FlushOutput() 
