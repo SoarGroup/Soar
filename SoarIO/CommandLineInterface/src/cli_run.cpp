@@ -90,8 +90,8 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		}
 	}
 
-	// Count defaults to 1 (which are ignored if the options default, since they default to forever)
-	int count = 1;
+	// Count defaults to 0
+	int count = 0;
 
 	// Only one non-option argument allowed, count
 	if ((unsigned)GetOpt::optind == argv.size() - 1) {
@@ -127,8 +127,11 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 		return HandleError("Already running!");
 	}
 
-	// Determine run unit, mutually exclusive so give smaller steps precedence, default to gSKI_RUN_FOREVER
+	// Determine run unit, mutually exclusive so give smaller steps precedence, default to gSKI_RUN_FOREVER if there is no count
 	egSKIRunType runType = gSKI_RUN_FOREVER;
+	if (count) {
+		runType = gSKI_RUN_DECISION_CYCLE;
+	}
 	if (options & OPTION_RUN_ELABORATION) {
 		runType = gSKI_RUN_SMALLEST_STEP;
 
@@ -140,7 +143,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	}
 
 	if (runType == gSKI_RUN_FOREVER) {
-		m_pRunForever = new RunForeverThread(options & OPTION_RUN_SELF, m_pKernel, pAgent, m_pError);
+		m_pRunForever = new RunForeverThread((options & OPTION_RUN_SELF) ? true : false, m_pKernel, pAgent, m_pError);
 		m_pRunForever->Start();
 		return true;
 	}

@@ -70,7 +70,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\TgDI\include;..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
+				AdditionalIncludeDirectories="../../ConnectionSML/include;..\..\..\TgDI\include;..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="4"
 				UsePrecompiledHeader="0"
