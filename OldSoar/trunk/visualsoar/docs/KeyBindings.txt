@@ -62,3 +62,6 @@ object) and presses a mouse button. The user holds the button down
 while moving the pointer ("dragging" the object) to another place.
 The meaning of this action can often be modified by holding certain
 keys on the keyboard at the same time.
+
+When using drag and drop with the datamap you should note that the
+mouse cursor changes as you begin the operation (the drag part).
