@@ -3,6 +3,11 @@
 
 #include <cassert>
 
+//testing directives, fixme 
+#include <iostream>
+#include <string>
+using std::cout; using std::endl; using std::string;
+
 #include "sgio_command.h"
 using sgio::Agent;
 using sgio::WorkingMemory;
@@ -24,25 +29,39 @@ SoarAgent::~SoarAgent()
 }
 
 
+int TowerStringToInt(string& sourceString)
+{
+	if(sourceString == "A")
+		return 0;
+	else if(sourceString == "B")
+		return 1;
+	else if(sourceString == "C")
+		return 2;
+
+	assert(0);
+	return -99;
+}
 
 void SoarAgent::MakeMove()
 {
-	pAgent->RunTilOutput();
-//	assert(pAgent->Commands());
 
-	int sourceTower, destinationTower = -22;
+	pAgent->RunTilOutput();
+
+	assert(pAgent->Commands());
+
+	string sourceTower, destinationTower = "";
 
 	std::auto_ptr<sgio::Command>cmd = pAgent->GetCommand();
 	std::string name = cmd->GetCommandName();
-	sourceTower = atoi(cmd->GetParameterValue("source-peg").c_str());
-	destinationTower = atoi(cmd->GetParameterValue("destination-peg").c_str());
+	sourceTower = cmd->GetParameterValue("source-peg").c_str();
+	destinationTower = cmd->GetParameterValue("destination-peg").c_str();
 
-	if(name == "move-disk" && sourceTower != -22 && destinationTower != -22)
+	if(name == "move-disk" && sourceTower != "" && destinationTower != "")
 		cmd->AddStatusComplete();
 	else
 		cmd->AddStatusError();
 
-	pWorld->MoveDisk(sourceTower, destinationTower);
+	pWorld->MoveDisk(TowerStringToInt(sourceTower), TowerStringToInt(destinationTower));
 }
 
 //}//closes namespace

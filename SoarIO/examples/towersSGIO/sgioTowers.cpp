@@ -34,7 +34,6 @@ using sgio::IntElement;
 
 
 
-
 //namespace sgio_towers
 //{
 
@@ -75,14 +74,16 @@ private:
 		tempName += inName;
 
 		m_pPegName = pWorkingMemory->CreateStringWME(pWorkingMemory->GetILink(), k_worldPegString, tempName);
+		pWorkingMemory->Commit();
 	}
 
 	~TowerInputLinkProfile()
 	{
 		//Release the top WME, all the rest go automatically
 		pWorkingMemory->DestroyWME(m_pPegName);
+		pWorkingMemory->Commit();
 
-		//this objectec doesn't own WM, so can't delete it
+		//this object doesn't own WM, can't delete it
 		pWorkingMemory = 0;
 	}
 
@@ -100,19 +101,27 @@ public:
 	~DiskInputLinkProfile()
 	{
 		pWMemory->DestroyWME(m_pHoldsIdentifier);
+		pWMemory->DestroyWME(m_pDiskIdentifier);
+		Commit();
 		m_pHoldsIdentifier	= 0;
 			m_pDisk			= 0;
 			m_pDiskBeneathAsInteger	= 0;
 			m_pDiskBeneathAsString	= 0;
+		m_pDiskIdentifier	= 0;
+			m_pSize			= 0;
 	}
 
 	void SetDiskBeneath(Disk* inDisk, Tower* inTower)
 	{
 		pActualDiskBeneath = inDisk;
-
-		char buffer[33];
-		currentPeg = itoa(inTower->GetSize(), buffer, 10);
+		currentPeg = inTower->GetName();
 		holdsNeedsToBeUpdated = true;
+	}
+
+
+	void Commit()
+	{
+		pWMemory->Commit();
 	}
 
 	void Update()
@@ -132,7 +141,7 @@ public:
 			//remove the "none string", put the integer for size there
 			else
 			{
-				assert(m_pDiskBeneathAsInteger);// we had to have an intrger here before
+				assert(m_pDiskBeneathAsInteger);// we had to have an integer here before
 				pWMemory->DestroyWME(m_pDiskBeneathAsInteger);
 				m_pDiskBeneathAsInteger = 0;
 				assert(m_pDiskBeneathAsString == 0);
@@ -159,15 +168,14 @@ public:
 			{
 				assert(m_pDiskBeneathAsInteger);
 				assert(m_pDiskBeneathAsString == 0);
-				
+
 				//do the update only if we're actually on top of a different disk than last time
 				if(m_pDiskBeneathAsInteger->GetValue() != pActualDiskBeneath->GetSize())
 					pWMemory->Update(m_pDiskBeneathAsInteger, pActualDiskBeneath->GetSize());
 			}
 		}
 
-
-		pWMemory->Commit();
+		Commit();
 	}
 
 private:
@@ -175,13 +183,12 @@ private:
 	DiskInputLinkProfile(WorkingMemory* inWMemory, Disk* inDisk, Disk* inDiskBeneath) : pWMemory(inWMemory), 
 																						pActualDiskBeneath(inDiskBeneath)
 	{
-		if(inDiskBeneath)
-			m_size = inDiskBeneath->GetSize();
+		m_size = inDisk->GetSize();
 
 		currentPeg = inDisk->GetTower()->GetName();
 
 		m_pHoldsIdentifier	= pWMemory->CreateIdWME(pWMemory->GetILink(), k_holdsIdentifierString);
-			m_pPeg			= pWMemory->CreateStringWME(m_pHoldsIdentifier, k_worldPegString, currentPeg);
+			m_pPeg			= pWMemory->CreateStringWME(m_pHoldsIdentifier, k_holdsOnString, currentPeg);
 			m_pDisk			= pWMemory->CreateIntWME(m_pHoldsIdentifier, k_diskIdentifierString, m_size);
 			if(inDiskBeneath)
 			{
@@ -193,16 +200,24 @@ private:
 				m_pDiskBeneathAsString = pWMemory->CreateStringWME(m_pHoldsIdentifier, k_holdsAboveString, k_noneString);
 				m_pDiskBeneathAsInteger = 0;
 			}
-		holdsNeedsToBeUpdated = true;
+		
+		m_pDiskIdentifier	= pWMemory->CreateIdWME(pWMemory->GetILink(), k_diskIdentifierString);
+			m_pSize			= pWMemory->CreateIntWME(m_pDiskIdentifier, k_diskSizeString, m_size);
+
+		Commit();
+		holdsNeedsToBeUpdated = false;
 	}
 
 	WorkingMemory* pWMemory;
 
 	SoarId* m_pHoldsIdentifier;
-		StringElement* m_pPeg;		//name of peg that the disk is on
-		IntElement* m_pDisk;		// size and name of disk
+		StringElement* m_pPeg;					//name of peg that the disk is on
+		IntElement* m_pDisk;					//size and name of disk
 		IntElement* m_pDiskBeneathAsInteger;	// size/name of disk beneath this on
 		StringElement* m_pDiskBeneathAsString;	// will be "none" when this disk has nothing beneath it
+
+	SoarId* m_pDiskIdentifier;
+		IntElement* m_pSize;					//size and name of disk
 
 	int m_size;
 	Disk* pActualDiskBeneath;
@@ -215,7 +230,7 @@ private:
 /*************************************************************
 * @brief	The IOManager class contains SGIO WorkingMemory
 *			and Soar pointers, which it is responsible for 
-*			cleaning up, and has wrapper functions for 
+*			cleaning up, and has wrapper functions for
 *			manipulating the input link
 *************************************************************/
 class IOManager
@@ -237,18 +252,12 @@ private:
 		assert(pAgent);
 
 		//Load agent's productions
-		if(! pAgent->LoadProductions("towers-of-hanoi-SGIO.soar"))
-		{
-			cout << "Program ending because productions failed to load. Press any key followed by 'enter' " << endl;
-			string foo;
-			cin >> foo;
-			exit(1);
-		}
+		pAgent->LoadProductions("towers-of-hanoi-SGIO_source.soar");
 
 		pWMemory = new WorkingMemory(pAgent);
 		assert(pWMemory);
-	}
 
+	}
 	~IOManager()
 	{
 		delete pWMemory;
@@ -275,7 +284,7 @@ Disk::Disk(Tower* inTower, int inSize, Disk* inDiskBeneath) : pTower(inTower), m
 	assert(pTower->GetWorld());
 	assert(pTower->GetWorld()->GetIOManager());
 	m_iLinkProfile = new DiskInputLinkProfile(pTower->GetWorld()->GetIOManager()->GetWorkingMemory(), this, inDiskBeneath);
-	assert(m_iLinkProfile);
+	assert(m_iLinkProfile);	
 }
 
 void Disk::Detach()
@@ -314,7 +323,7 @@ Tower::~Tower()
 	pWorld = 0;
 }
 
-//will always add a smaller disk than the top, so new disk must on at end of container
+//will always add a smaller disk than the top, so new disk must at end of container
 //disks that have just been created already have their disk beneath initialized, don't reset it
 void Tower::AddDisk(Disk* newDisk, bool justCreated)
 {
@@ -369,16 +378,13 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers, int inNumDisks) : drawG
 	Soar* soar = 0;
 
 
-//	#ifdef SGIO_API_MODE
+	#ifdef SGIO_API_MODE
 		soar = new APISoar();
 
-//	#else //SGIO_TSI_MODE
-//cout << "attempting construction of TSI agent" << endl;
-//		soar = new SIOSoar("127.0.0.1", 6969, true);
-//	#endif
+	#else //SGIO_TSI_MODE
+		soar = new SIOSoar("127.0.0.1", 6969, true);
+	#endif
 	assert(soar);
-	if(soar)
-cout << "Successfully created Soar..." << endl;
 
 	ioManager = new IOManager(soar);
 	assert(ioManager);
@@ -386,6 +392,7 @@ cout << "Successfully created Soar..." << endl;
 	//wrap up the Soar agent
 	m_agent = new SoarAgent(ioManager->GetAgent(), ioManager->GetWorkingMemory(), this);
 	assert(m_agent);
+
 
 	//create Towers
 
@@ -397,7 +404,6 @@ cout << "Successfully created Soar..." << endl;
 		//==============
 		if(towerNum == 0)
 		{
-cout << "Creating tower A" << endl;
 			Tower* tower = new Tower(this, 'A');
 			assert(tower);
 
@@ -411,10 +417,10 @@ cout << "Creating tower A" << endl;
 
 				if(tower->GetSize() != 0)
 					towerTopDisk = tower->GetTopDisk();
-//cout << "Constructing a disk... " << endl;
+
 				Disk* disk = new Disk(tower, currentDiskSize, towerTopDisk);
 				assert(disk);
-cout << "\tdisk creation success!" << endl;
+
 				tower->AddDisk(disk, true);
 			}
 
@@ -464,13 +470,15 @@ void HanoiWorld::Run()
 bool HanoiWorld::MoveDisk(int sourceTower, int destinationTower)
 {
 	Disk* movingDisk = m_towers[sourceTower]->GetTopDisk();
+
+	assert(movingDisk);
+
 	if(!movingDisk)
 		return false;
 
-	assert(movingDisk);
 	m_towers[sourceTower]->RemoveTopDisk();
-
 	m_towers[destinationTower]->AddDisk(movingDisk, false);
+
 	return true;
 }
 
