@@ -33,41 +33,17 @@ public class DataMap {
 	private DMSpecial _root;
 	private IFile _file;
 	private HashMap _ids;
-	
-	public static final QualifiedName NODE_NUMBER_ID
-		= new QualifiedName("edu.rosehulman.soar", "DMNumber");
+	private int _currID=1;
 	
 	
-	public static int getCurrentID(IResource res) {
-		try {
-			String id = res.getProject().getPersistentProperty(NODE_NUMBER_ID);
-			
-			return Integer.parseInt(id);
-		
-		} catch (CoreException e) {
-			return 0;
-		} catch (NumberFormatException e) {
-			return 0;
-		}
-	}
-	
-	public static void incrementCurrentID(IResource res) {
-		Integer newID = new Integer( getCurrentID(res) + 1);
-		
-		try {
-			res.getProject().setPersistentProperty(NODE_NUMBER_ID, newID.toString());
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	
 	public int getCurrentID() {
-		return DataMap.getCurrentID(_file);
+		return _currID;
 	}
 	
 	public void incrementCurrentID() {
-		DataMap.incrementCurrentID(_file);
+		++_currID;
 	}
 	
 	/**
@@ -140,8 +116,54 @@ public class DataMap {
 	} // void setRoot(DMItem newRoot)
 	
 	
+	/**
+	 * Gets the node with the given id. Not guaranteed to be up to date.
+	 * @param id The id. Duh.
+	 * @return The node with that id.
+	 */
 	public DMItem getItem(int id) {
 		return (DMItem) _ids.get(new Integer(id));
+	}
+	
+	
+	/**
+	 * Replaces the item with a new item of a different type but the same name.
+	 * @param doomed The item to be replaced.
+	 * @param replacementType An item of the type to replace this with.
+	 */
+	public void replace(DMItem doomed, DMItem replacementType) {
+		DMItem temp = replacementType.createNew();
+	
+		temp.setName(doomed.getName());
+		
+		DMItem dmParent = doomed.getParent();
+		ArrayList siblings = dmParent.getChildren(); 
+		
+		//Get the exact position of the item in the child list so we 
+		// can insert the replacement there.
+		int loc = siblings.indexOf(doomed);
+		 
+		//Make the new item recognize its parent.
+		temp.setParent(dmParent);
+		//Deal with the fact that it was automatically added to the 
+		// end of the child list in the last call.
+		siblings.remove(temp);
+		//Replace the old child with a newer, better one.
+		// Don't you wish you could do that with your kids?
+		siblings.set(loc, temp);
+		
+		_ids.put(new Integer(temp.getID()), temp);
+	}
+	
+	
+	/**
+	 * Removes the given item from the datamap.
+	 * @param doomed The item to be removed.
+	 */
+	public void remove (DMItem doomed) {
+		doomed.setParent(null);
+		
+		_ids.remove(new Integer(doomed.getID()));
 	}
 	
 	
@@ -290,6 +312,9 @@ public class DataMap {
 	 */
 	private void parseRoot(Element rootNode) {
 		ArrayList pointers = new ArrayList();
+		
+		
+		// Set up the root node
 		_root = new DMSpecial();
 		
 		String name = rootNode.getAttribute("name");
@@ -298,6 +323,18 @@ public class DataMap {
 		_root.setName(name);
 		_root.setComment(comment);
 		
+		Integer id = new Integer(0);
+		try {
+			id = new Integer(rootNode.getAttribute("id"));
+		} catch (NumberFormatException e) {
+		}
+		_root.setID(id.intValue());
+		
+		// put this in the HashMap
+		_ids.put(id, _root);
+		
+		
+		// Set up everything else
 		NodeList kids = rootNode.getChildNodes();
 		
 		for (int i=0; i<kids.getLength(); i++) {
@@ -310,11 +347,17 @@ public class DataMap {
 			} // if
 		} // for i
 		
+		// Link pointer nodes into their targets
 		for (int i=0; i<pointers.size(); ++i) {
 			DMPointer pointer = (DMPointer) pointers.get(i);
 			
-			if (pointer.getTargetFile().equals(this.getFile())) {
-				pointer.setTarget( getItem(pointer.getTargetID()) );
+			
+			DMItem target = getItem(pointer.getTargetID());
+			
+			if (target != null) {
+				pointer.setTarget( target );
+			} else { //cull dead links
+				remove (pointer);
 			}
 		}
 		
@@ -428,7 +471,7 @@ public class DataMap {
 			ret = temp;
 			
 		//*****************************************
-		//             TopState
+		//             TopState - shouldn't exist anymore
 		} else if (type.equals("TopState")) {
 			DMTopState temp = new DMTopState();
 			
@@ -438,7 +481,7 @@ public class DataMap {
 			ret = temp;
 		
 		//*****************************************
-		//               Link
+		//               Link - shouldn't exist anymore
 		} else if (type.equals("Link")) {
 			DMLink temp = new DMLink();
 			
@@ -454,11 +497,7 @@ public class DataMap {
 		//               Pointer
 		} else if (type.equals("Pointer")) {
 			DMPointer temp = new DMPointer();
-		
-			IPath filePath = new Path(node.getAttribute("targetFile"));
-			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(filePath);
 			
-			temp.setTargetFile(file);
 			
 			temp.setTargetID( Integer.parseInt(node.getAttribute("targetID")) );
 			
@@ -489,8 +528,15 @@ public class DataMap {
 		
 		ret.setName(name);
 		ret.setComment(comment);
-		ret.setID(id.intValue());
 		
+		int idInt = id.intValue(); 
+		
+		ret.setID(idInt);
+		
+		
+		// update the current ID
+		if (idInt >= _currID) 
+			_currID = idInt + 1;
 		
 		// put this in the HashMap
 		_ids.put(id, ret);

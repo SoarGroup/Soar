@@ -11,7 +11,6 @@ import edu.rosehulman.soar.datamap.items.*;
 
 import org.eclipse.jface.action.Action;
 
-import java.util.ArrayList;
 
 /**
  *
@@ -49,7 +48,7 @@ public class ChangeType extends Action {
 	 * Change the target's type.
 	 */
 	public void run() {
-		DMItem temp = _itemType.createNew(_parent.getFile());
+		/*DMItem temp = _itemType.createNew(_parent.getFile());
 	
 		temp.setName(_target.getName());
 		
@@ -67,7 +66,9 @@ public class ChangeType extends Action {
 		siblings.remove(temp);
 		//Replace the old child with a newer, better one.
 		// Don't you wish you could do that with your kids?
-		siblings.set(loc, temp);
+		siblings.set(loc, temp); */
+		
+		_parent.getDataMap().replace(_target, _itemType);
 		
 		_parent.defecateUpon();
 		_parent.getViewer().refresh();

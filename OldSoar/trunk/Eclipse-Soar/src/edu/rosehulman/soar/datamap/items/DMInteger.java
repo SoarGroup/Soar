@@ -6,13 +6,12 @@
  */
 package edu.rosehulman.soar.datamap.items;
 
-import edu.rosehulman.soar.datamap.*;
+
 import edu.rosehulman.soar.datamap.items.dialogs.*;
 import edu.rosehulman.soar.datamap.validators.*;
 
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.dialogs.*;
-import org.eclipse.core.resources.*;
 
 /**
  * Represents an Integer on the datamap.
@@ -120,11 +119,11 @@ public class DMInteger extends DMNumericItem {
 		return false;
 	}
 	
-	public DMItem createNew(IFile file) {
-		DMItem ret = new DMInteger();
+	public DMItem createNew() {
+		DMInteger ret = new DMInteger();
 		
-		ret._id = DataMap.getCurrentID(file);
-		DataMap.incrementCurrentID(file);
+		ret.setLowerBound(new Integer(Integer.MIN_VALUE));
+		ret.setUpperBound(new Integer(Integer.MAX_VALUE));
 		
 		return ret;
 	}

@@ -49,11 +49,17 @@ public class AddItem extends Action {
 	 * user, then adds it to the target if OK was pressed. 
 	 */
 	public void run() {
-		DMItem temp = mItemType.createNew(mParent.getFile());
+		DMItem temp = mItemType.createNew();
 	
 		int res = temp.initValuesDialog(mParent);
 		
 		if (res == Dialog.OK) {
+			
+			DataMap dm = mParent.getContentProvider().getDataMap();
+			
+			temp.setID(dm.getCurrentID());
+			dm.incrementCurrentID();
+			
 			mTarget.addChild(temp);
 			mParent.getViewer().refresh();
 			mParent.getViewer().expandToLevel(temp, 1);

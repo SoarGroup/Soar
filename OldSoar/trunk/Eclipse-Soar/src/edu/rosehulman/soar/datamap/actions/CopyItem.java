@@ -48,6 +48,6 @@ public class CopyItem extends Action {
 	public void run() {
 		DataMapClipboard dmc = SoarPlugin.getDataMapClipboard();
 		
-		dmc.copy(_target, _parent.getFile());
+		dmc.copy(_target);
 	}
 }

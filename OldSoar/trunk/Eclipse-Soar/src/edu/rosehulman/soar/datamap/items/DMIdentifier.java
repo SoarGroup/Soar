@@ -10,9 +10,7 @@ import java.util.*;
 
 import org.eclipse.jface.dialogs.*;
 import org.eclipse.ui.part.*;
-import org.eclipse.core.resources.*;
 
-import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.datamap.validators.*;
 
 
@@ -105,11 +103,9 @@ public class DMIdentifier extends DMItem {
 		return true;
 	}
 	
-	public DMItem createNew(IFile file) {
+	public DMItem createNew() {
 		DMItem ret = new DMIdentifier();
 		
-		ret._id = DataMap.getCurrentID(file);
-		DataMap.incrementCurrentID(file);
 		
 		return ret;
 	}

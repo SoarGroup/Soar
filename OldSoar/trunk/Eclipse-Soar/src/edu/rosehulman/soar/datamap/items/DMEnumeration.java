@@ -6,12 +6,12 @@
  */
 package edu.rosehulman.soar.datamap.items;
 
-import edu.rosehulman.soar.datamap.*;
+
 import edu.rosehulman.soar.datamap.items.dialogs.*;
 
 import java.util.ArrayList;
 
-import org.eclipse.core.resources.*;
+
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.dialogs.*;
 
@@ -106,11 +106,9 @@ public class DMEnumeration extends DMItem {
 		return false;
 	}
 	
-	public DMItem createNew(IFile file) {
+	public DMItem createNew() {
 		DMItem ret = new DMEnumeration();
 		
-		ret._id = DataMap.getCurrentID(file);
-		DataMap.incrementCurrentID(file);
 		
 		return ret;
 	}

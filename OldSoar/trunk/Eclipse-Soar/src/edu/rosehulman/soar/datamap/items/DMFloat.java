@@ -6,13 +6,11 @@
  */
 package edu.rosehulman.soar.datamap.items;
 
-import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.datamap.items.dialogs.*;
 import edu.rosehulman.soar.datamap.validators.*;
 
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.dialogs.*;
-import org.eclipse.core.resources.*;
 
 /**
  *
@@ -122,11 +120,11 @@ public class DMFloat extends DMNumericItem {
 		return false;
 	}
 	
-	public DMItem createNew(IFile file) {
-		DMItem ret = new DMFloat();
+	public DMItem createNew() {
+		DMFloat ret = new DMFloat();
 		
-		ret._id = DataMap.getCurrentID(file);
-		DataMap.incrementCurrentID(file);
+		ret.setLowerBound(new Double(Double.MIN_VALUE));
+		ret.setUpperBound(new Double(Double.MAX_VALUE));
 		
 		return ret;
 	}

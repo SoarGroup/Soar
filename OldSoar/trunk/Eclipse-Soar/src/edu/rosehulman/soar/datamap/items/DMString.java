@@ -8,9 +8,7 @@ package edu.rosehulman.soar.datamap.items;
 
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.dialogs.*;
-import org.eclipse.core.resources.*;
 
-import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.datamap.validators.*;
 
 /**
@@ -67,11 +65,9 @@ public class DMString extends DMItem {
 		return 0;
 	}
 	
-	public DMItem createNew(IFile file) {
+	public DMItem createNew() {
 		DMItem ret = new DMString();
 		
-		ret._id = DataMap.getCurrentID(file);
-		DataMap.incrementCurrentID(file);
 		
 		return ret;
 	}

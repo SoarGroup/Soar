@@ -134,6 +134,9 @@ public class DataMapContentProvider implements ITreeContentProvider {
 		return _root;
 	}
 
+	public DataMap getDataMap() {
+		return _dm;
+	}
 	
 
 	public Object[] getChildren(Object parentElement) {

@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 
-import edu.rosehulman.soar.datamap.*;
+
 import edu.rosehulman.soar.natures.*;
 import edu.rosehulman.soar.sourcing.*;
 
@@ -115,7 +115,6 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 				newProject.setDescription(description, IResource.FORCE ,monitor);
 				
 				
-				newProject.setPersistentProperty(DataMap.NODE_NUMBER_ID, "10");
 			} catch (CoreException e) {
 				e.printStackTrace();
 			} // catch

@@ -45,7 +45,7 @@ public class DeleteItem extends Action {
 				"Do you really want to delete the attribute named \""
 				+ _target.getName() + "\"?")) {
 
-			_target.setParent(null);
+			_parent.getDataMap().remove(_target);
 			
 			_parent.defecateUpon();
 			_parent.getViewer().refresh();

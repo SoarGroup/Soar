@@ -7,12 +7,12 @@
 package edu.rosehulman.soar.datamap.items;
 
 
+
 import edu.umich.visualsoar.parser.*;
 
 import java.util.*;
 
 import org.eclipse.ui.part.*;
-import org.eclipse.core.resources.*;
 
 
 /**
@@ -227,9 +227,9 @@ public abstract class DMItem {
 	/**
 	 * Creates a new instance of this class of item.
 	 * 
-	 * @return A new descendent of DMItem
+	 * @return A new instance of DMItem
 	 */
-	public abstract DMItem createNew(IFile dmFile);
+	public abstract DMItem createNew();
 	
 	/**
 	 * Returns a string indicating the type of this Item.

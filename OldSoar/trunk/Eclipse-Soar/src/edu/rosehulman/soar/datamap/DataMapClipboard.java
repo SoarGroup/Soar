@@ -9,7 +9,6 @@ package edu.rosehulman.soar.datamap;
 
 import edu.rosehulman.soar.datamap.items.*;
 
-import org.eclipse.core.resources.*;
 
 /**
  * 
@@ -18,7 +17,6 @@ import org.eclipse.core.resources.*;
  */
 public class DataMapClipboard {
 	private DMItem _item;
-	private IFile _file;
 	private int _status = 0;
 	
 	public static final int EMPTY = 0;
@@ -50,9 +48,8 @@ public class DataMapClipboard {
 	 * Copies the DMItem to the clipboard.
 	 * @param item The DMItem to copy.
 	 */
-	public void copy(DMItem item, IFile file) {
+	public void copy(DMItem item) {
 		_item = item;
-		_file = file;
 		_status = COPIED;
 	}
 	
@@ -62,10 +59,11 @@ public class DataMapClipboard {
 	 *  its parent, effectively deleting it.
 	 * @param item The item to cut.
 	 */
-	public void cut(DMItem item, IFile file) {
+	public void cut(DMItem item, DataMap dm) {
 		_item = item;
-		_file = file;
-		item.setParent(null);
+		
+		dm.remove(item);
+		
 		_status = CUT;
 	}
 	
@@ -73,15 +71,24 @@ public class DataMapClipboard {
 	 * Pastes the item in the clipboard to the supplied parent.
 	 * @param parent The lucky parent!
 	 */
-	public void pasteTo(DMItem parent) {
+	public void pasteTo(DMItem parent, DataMap dm) {
 		// we don't copy the item until it is pasted, so that we 
 		// can paste multiple copies of the item if we want to.
-		parent.addChild(_item.copy());
+		
+		DMItem pastee = _item.copy();
+		pastee.setID(dm.getCurrentID());
+		dm.incrementCurrentID();
+		
+		parent.addChild( pastee );
 	}
 	
 	
-	public void pasteLinkTo(DMItem parent) {
+	public void pasteLinkTo(DMItem parent, DataMap dm) {
 		DMPointer pnt = new DMPointer(_item.getName());
+		
+		pnt.setID(dm.getCurrentID());
+		dm.incrementCurrentID();
+		
 		pnt.setTarget(_item);
 		// we don't copy the item until it is pasted, so that we 
 		// can paste multiple copies of the item if we want to.

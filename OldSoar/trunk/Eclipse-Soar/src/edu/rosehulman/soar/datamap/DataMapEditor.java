@@ -174,6 +174,7 @@ public class DataMapEditor extends EditorPart {
 		manager.add(new CutItem(this, target));
 		manager.add(new CopyItem(this, target));
 		manager.add(new PasteItem(this, target));
+		manager.add(new CreateLink(this, target));
 	
 		manager.add(new Separator("Comments"));
 		manager.add(new EditComment(this, target));
@@ -200,6 +201,10 @@ public class DataMapEditor extends EditorPart {
 	
 	public IFile getFile() {
 		return _fileInput.getFile();
+	}
+	
+	public DataMap getDataMap() {
+		return _content.getDataMap();
 	}
 	
 	/**

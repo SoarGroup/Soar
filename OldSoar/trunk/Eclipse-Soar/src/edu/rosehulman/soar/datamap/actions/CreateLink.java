@@ -50,7 +50,7 @@ public class CreateLink extends Action {
 	public void run() {
 		DataMapClipboard dmc = SoarPlugin.getDataMapClipboard();
 		
-		dmc.pasteLinkTo(_target);
+		dmc.pasteLinkTo(_target, _parent.getDataMap());
 		
 		_parent.defecateUpon();
 		_parent.getViewer().refresh();

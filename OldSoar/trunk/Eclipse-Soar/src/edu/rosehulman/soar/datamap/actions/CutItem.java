@@ -49,7 +49,7 @@ public class CutItem extends Action {
 	public void run() {
 		DataMapClipboard dmc = SoarPlugin.getDataMapClipboard();
 		
-		dmc.cut(_target, _parent.getFile());
+		dmc.cut(_target, _parent.getDataMap());
 		
 		_parent.defecateUpon();
 		_parent.getViewer().refresh();

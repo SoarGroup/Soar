@@ -49,7 +49,7 @@ public class PasteItem extends Action {
 	public void run() {
 		DataMapClipboard dmc = SoarPlugin.getDataMapClipboard();
 		
-		dmc.pasteTo(_target);
+		dmc.pasteTo(_target, _parent.getDataMap());
 		
 		_parent.defecateUpon();
 		_parent.getViewer().refresh();

@@ -5,21 +5,20 @@
  */
 package edu.rosehulman.soar.datamap.items;
 
-import edu.rosehulman.soar.datamap.*;
+
 
 import org.eclipse.ui.part.WorkbenchPart;
-import org.eclipse.core.resources.*;
+
 
 import java.util.*;
 
 /**
  * 
  * 
- * @author Tim Jasko &lt;tj9582@yahoo.com&gt;
+ * @author Tim Jasko (tj9582@yahoo.com)
  */
 public class DMPointer extends DMItem {
 	private DMItem _target;
-	private IFile _targetFile;
 	private int _targetID;
 	
 	
@@ -39,13 +38,6 @@ public class DMPointer extends DMItem {
 		_targetID = targetID;
 	}
 	
-	public IFile getTargetFile() {
-		return _targetFile;
-	}
-	
-	public void setTargetFile(IFile file) {
-		_targetFile = file;
-	}
 	
 	/**
 	 * Sets the attribute pointed to.
@@ -70,11 +62,9 @@ public class DMPointer extends DMItem {
 	}
 
 
-	public DMItem createNew(IFile file) {
+	public DMItem createNew() {
 		DMItem ret = new DMPointer();
 		
-		ret._id = DataMap.getCurrentID(file);
-		DataMap.incrementCurrentID(file);
 		
 		return ret;
 	}
@@ -132,8 +122,7 @@ public class DMPointer extends DMItem {
 		ret += tabs;
 		
 		ret += "<" + getTypeName() + getSharedXML()
-			+ " targetID=\"" + _target._id + "\"" 
-			+ " targetFile=\"" + _targetFile.getFullPath() + "\""
+			+ " targetID=\"" + _target._id + "\""
 			+ " />\n";
 		
 		
@@ -142,8 +131,13 @@ public class DMPointer extends DMItem {
 
 
 	public DMItem copy() {
-		// TODO copy
-		return null;
+		DMPointer ret = new DMPointer(getName());
+		
+		ret._comment = this._comment;
+		ret._target = this._target;
+		ret._targetID = this._targetID;
+		
+		return ret;
 	}
 
 }
