@@ -123,6 +123,7 @@
     typedef enum {
       // Error and print callbacks
       gSKIEVENT_LOG_ERROR =  gSKIEVENT_LAST_WM_EVENT + 1,
+	  gSKIEVENT_FIRST_PRINT_EVENT = gSKIEVENT_LOG_ERROR,
       gSKIEVENT_LOG_WARNING,
       gSKIEVENT_LOG_INFO,
       gSKIEVENT_LOG_DEBUG,
