@@ -46,11 +46,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TGDI", "..\TgDI\TgDI.vcproj
 		{0F4205EE-35EA-4421-8F74-513603FF003F} = {0F4205EE-35EA-4421-8F74-513603FF003F}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMLTicTacToe", "examples\SMLTicTacToe\SMLTicTacToe.vcproj", "{676E0B76-D371-4419-B727-9381CAC70EF0}"
-	ProjectSection(ProjectDependencies) = postProject
-		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Ansi Release = Ansi Release
@@ -118,12 +113,6 @@ Global
 		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Debug.Build.0 = Debug|Win32
 		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Release.ActiveCfg = Release|Win32
 		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Release.Build.0 = Release|Win32
-		{676E0B76-D371-4419-B727-9381CAC70EF0}.Ansi Release.ActiveCfg = Release|Win32
-		{676E0B76-D371-4419-B727-9381CAC70EF0}.Ansi Release.Build.0 = Release|Win32
-		{676E0B76-D371-4419-B727-9381CAC70EF0}.Debug.ActiveCfg = Debug|Win32
-		{676E0B76-D371-4419-B727-9381CAC70EF0}.Debug.Build.0 = Debug|Win32
-		{676E0B76-D371-4419-B727-9381CAC70EF0}.Release.ActiveCfg = Release|Win32
-		{676E0B76-D371-4419-B727-9381CAC70EF0}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

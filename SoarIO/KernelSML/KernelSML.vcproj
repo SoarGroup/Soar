@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\CommandLineInterface\include;..\..\TgDI\include;include;..\ElementXML\include;..\ConnectionSML\include;&quot;$(JDK)\include&quot;;&quot;$(JDK)\include\win32&quot;;..\..\gSKI\include"
+				AdditionalIncludeDirectories="..\CommandLineInterface\include;..\..\TgDI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -72,7 +72,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="lib_src\TgDIx\include;include;..\ElementXML\include;..\ConnectionSML\include;&quot;$(JDK)\include&quot;;&quot;$(JDK)\include\win32&quot;;lib_src\gSKIx\include"
+				AdditionalIncludeDirectories="..\CommandLineInterface\include;..\..\TgDI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
