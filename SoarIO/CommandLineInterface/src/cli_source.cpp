@@ -198,7 +198,7 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		m_SourceErrorDetail += "\nSource command error on line ";
 		// TODO: arbitrary buffer size here
 		char buf[256];
-		Int2String(errorLine, buf, 256);
+		m_SourceErrorDetail += Int2String(errorLine, buf, 256);
 
 		m_SourceErrorDetail += " of ";
 		
