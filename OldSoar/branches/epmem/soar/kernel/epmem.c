@@ -114,6 +114,7 @@ typedef struct arraylist_struct
                               with this tree node (*only* if this is a leaf node)
              children       - children of the current node (hash table)
              parent         - parent of the current node.
+             depth          - depth in the tree (root node is depth=0)
              next/prev      - dll of all nodes in the tree to allow iterative
                               implementation of several algorithms
              in_mem         - whether this "wme" is in the current memory
@@ -142,6 +143,7 @@ typedef struct wmetree_struct
 
     hash_table *children;
     struct wmetree_struct *parent; // %%%TODO: make this an array later?
+    int depth;
     bool in_mem;
     struct wme_struct *assoc_wme;
     arraylist *assoc_memories;
@@ -246,16 +248,22 @@ int compare_ptr( const void *arg1, const void *arg2 )
 /* ===================================================================
    compare_actwme
 
-   Compares two actwmes passed in as void *.  (Used for qsort() calls)
+   Compares two actwmes.   (Used for qsort() calls)
    
-   Created: 22 April 2004
+   Created:  22 April 2004
+   Modified: 26 Aug 2004 to use wmetree depth  (Happy Birthday to me!)
    =================================================================== */
 int compare_actwme( const void *arg1, const void *arg2 )
 {
-    actwme *aw1 = (actwme *)arg1;
-    actwme *aw2 = (actwme *)arg2;
+    wmetree *w1 = (*((actwme **)arg1))->node;
+    wmetree *w2 = (*((actwme **)arg2))->node;
 
-    return aw1->node == aw2->node;
+    if (w1->depth != w2->depth)
+    {
+        return w1->depth - w2->depth;
+    }
+
+    return ((int)w1) - ((int)w2);
 }//compare_actwme
 
 
@@ -434,6 +442,7 @@ wmetree *make_wmetree_node(wme *w)
     node->val_type = IDENTIFIER_SYMBOL_TYPE;
     node->children = make_hash_table(0, hash_wmetree);
     node->parent = NULL;
+    node->depth = -1;
     node->in_mem = FALSE;
     node->assoc_wme = NULL;
     node->assoc_memories = make_arraylist(16);
@@ -1002,6 +1011,7 @@ Symbol *update_wmetree(wmetree *node,
                 {
                     childnode = make_wmetree_node(wmes[i]);
                     childnode->parent = node;
+                    childnode->depth = node->depth + 1;
                     add_to_hash_table(node->children, childnode);
                 }
 
@@ -1455,19 +1465,17 @@ void consider_new_epmem_via_activation()
 }//consider_new_epmem_via_activation
 
 /* ===================================================================
-   epmem_clear_mem               *RECURSIVE*
+   epmem_clear_curr_mem
 
    This routine removes all the epmem WMEs from working memory that
-   are associated with a given wmetree (via ->assoc_wme).  This
-   function assumes that it will initially be called with an argument
-   of &g_wmetree.
+   are associated with the current memory (g_curr_memory).
 
    Created: 16 Feb 2004
+   Overhauled: 26 Aug 2004
    =================================================================== */
-void epmem_clear_mem(wmetree *node)
+void epmem_clear_curr_mem()
 {
-    wmetree *child;
-    unsigned long hash_value;
+    int i;
 
     //Check for "no-retrieval" wme
     if (g_wmetree.assoc_wme != NULL)
@@ -1485,39 +1493,35 @@ void epmem_clear_mem(wmetree *node)
         return;
     }
 
-    
-    
-    //Find all the wmes attached to the given node
-    for (hash_value = 0; hash_value < node->children->size; hash_value++)
+    //Remove the WMEs (Traverse the array in reverse order so that
+    //                 children are removed before their parents.)
+    for(i = g_curr_memory->content->size - 1; i >=0 ; i--)
     {
-        child = (wmetree *) (*(node->children->buckets + hash_value));
-        for (; child != NIL; child = child->next)
+        wmetree *node = ((actwme *)g_curr_memory->content->array[i])->node;
+
+        if (! node->in_mem)
         {
-            if (! child->in_mem) continue;
-            if (strcmp(child->attr, "epmem") == 0) continue;
-            if (child->assoc_wme == NULL)
-            {
-                print("\nERROR: WME should be in memory for: ");
-                print_wmetree(child, 0, 0);
-                continue;
-            }
+            continue; // this should never happen
+        }
+        
+        if (node->assoc_wme == NULL)
+        {
+            print("\nERROR: WME should be in memory for: ");
+            print_wmetree(node, 0, 0);
+            continue;
+        }
 
-            //Recursive call.  Do this first so leaf WMEs are
-            //deallocated first.
-            epmem_clear_mem(child);
+        //Remove from WM
+        remove_input_wme(node->assoc_wme);
+        wme_remove_ref(node->assoc_wme);
 
-            //Remove from WM
-            remove_input_wme(child->assoc_wme);
-            wme_remove_ref(child->assoc_wme);
-
-            //Bookkeeping
-            child->assoc_wme = NULL;
-            child->in_mem = FALSE;
-        }//for
-    }//for
-
+        //Bookkeeping
+        node->assoc_wme = NULL;
+        node->in_mem = FALSE;
     
-}//epmem_clear_mem
+    }//for
+    
+}//epmem_clear_curr_mem
 
 /* ===================================================================
    compare_memories
@@ -1761,86 +1765,83 @@ episodic_memory *find_best_match(arraylist *cue)
 }//find_best_match
 
 /* ===================================================================
-   iwiwm_helper                *RECURSIVE*
-
-   helper function for install_epmem_in_wm.
-
-   Created: 20 Jan 2004
-   =================================================================== */
-void iwiwm_helper(Symbol *id, wmetree *node)
-{
-    wmetree *child;
-    unsigned long hash_value;
-    Symbol *attr;
-    Symbol *val;
-
-    //Create the wmes attached to sym
-    for (hash_value = 0; hash_value < node->children->size; hash_value++)
-    {
-        child = (wmetree *) (*(node->children->buckets + hash_value));
-        for (; child != NIL; child = child->next)
-        {
-            if (! child->in_mem) continue;
-            //For now, avoid recursing into previous memories.
-            if (strcmp(child->attr, "epmem") == 0) continue;
-            if (child->assoc_wme != NULL)
-            {
-                //%%%TODO: I think this is an error.  What do I do about it?
-            }
-        
-            attr = make_sym_constant(child->attr);
-
-            switch(child->val_type)
-            {
-                case SYM_CONSTANT_SYMBOL_TYPE:
-                    val = make_sym_constant(child->val.strval);
-                    break;
-                case INT_CONSTANT_SYMBOL_TYPE:
-                    val = make_int_constant(child->val.intval);
-                    break;
-                case FLOAT_CONSTANT_SYMBOL_TYPE:
-                    val = make_float_constant(child->val.floatval);
-                    break;
-
-                default:
-                    val = make_new_identifier(child->attr[0],
-                                              id->id.level);
-                    break;
-            }//switch
-
-            child->assoc_wme = add_input_wme(id, attr, val);
-            wme_add_ref(child->assoc_wme);
-
-            //Recursively create wmes for children's children
-            iwiwm_helper(val, child);
-
-        }//for
-    }//for
-    
-}//iwiwm_helper
-
-/* ===================================================================
    install_epmem_in_wm
 
    Given an episodic memory this function recreates the working memory
    fragment represented by the memory in working memory.  The
    retrieved memory is rooted at the the given symbol.
 
-   Created:  19 Jan 2004
+   Created:    19 Jan 2004
+   Overhauled: 26 Aug 2004 
    =================================================================== */
 void install_epmem_in_wm(Symbol *sym, arraylist *epmem)
 {
     int i;
+    Symbol *id;
+    Symbol *attr;
+    Symbol *val;
 
-    //set the in_mem flag on all wmes in the wmelist
+    //Install the WMEs
     for(i = 0; i < epmem->size; i++)
     {
-        ((actwme *)epmem->array[i])->node->in_mem = TRUE;
-    }
+        wmetree *node = ((actwme *)epmem->array[i])->node;
 
-    //Use the recursive helper function to create the wmes
-    iwiwm_helper(sym, &(g_wmetree));
-    
+        //For now, avoid recursing into previous memories.
+        if (strcmp(node->attr, "epmem") == 0)
+        {
+            continue;
+        }
+
+        //If the parent is not in memory then the child can not be either
+        if (!node->parent->in_mem)
+        {
+            continue;
+        }
+        
+        if (node->assoc_wme != NULL)
+        {
+            //%%%TODO: This happens when a memory contains the same
+            //         node multiple times (e.g., a multi-valued attribute)
+            //         Currently, I'm just ignoring it.  That is bad.
+            continue;
+        }
+
+        //Determine the WME's ID
+        if (node->parent->depth == 0)
+        {
+            id = sym;
+        }
+        else
+        {
+            id = node->parent->assoc_wme->value;
+        }
+
+        //Determine the WME's attribute
+        attr = make_sym_constant(node->attr);
+
+        //Determine the WME's value
+        switch(node->val_type)
+        {
+            case SYM_CONSTANT_SYMBOL_TYPE:
+                val = make_sym_constant(node->val.strval);
+                break;
+            case INT_CONSTANT_SYMBOL_TYPE:
+                val = make_int_constant(node->val.intval);
+                break;
+            case FLOAT_CONSTANT_SYMBOL_TYPE:
+                val = make_float_constant(node->val.floatval);
+                break;
+            default:
+                val = make_new_identifier(node->attr[0],
+                                          id->id.level);
+                break;
+        }//switch
+
+        node->assoc_wme = add_input_wme(id, attr, val);
+        node->in_mem = TRUE;
+        wme_add_ref(node->assoc_wme);
+    }//for
+
 }//install_epmem_in_wm
 
 /* ===================================================================
@@ -1869,7 +1870,7 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
     
     //Remove the old retrieved memory
     start_timer(&current_agent(epmem_clearmem_start_time));
-    epmem_clear_mem(&g_wmetree);
+    epmem_clear_curr_mem();
     stop_timer(&current_agent(epmem_clearmem_start_time), &current_agent(epmem_clearmem_total_time));
     g_curr_memory = NULL;
 
@@ -2027,7 +2028,7 @@ void respond_to_command(char *cmd)
     {
         //Remove the old retrieved memory
         start_timer(&current_agent(epmem_clearmem_start_time));
-        epmem_clear_mem(&g_wmetree);
+        epmem_clear_curr_mem();
         stop_timer(&current_agent(epmem_clearmem_start_time), &current_agent(epmem_clearmem_total_time));
 
         //Check that there is a next memory available
@@ -2272,6 +2273,8 @@ void epmem_reset_cpu_usage_timers()
     reset_timer(&current_agent(epmem_findchild_total_time));
     reset_timer(&current_agent(epmem_addnode_total_time));
     reset_timer(&current_agent(epmem_installmem_total_time));
+    reset_timer(&current_agent(epmem_misc1_total_time));
+    reset_timer(&current_agent(epmem_misc2_total_time));
 }
 
 /* ===================================================================
@@ -2301,7 +2304,7 @@ void epmem_print_cpu_usage()
     f = timer_value(&current_agent(epmem_retrieve_total_time));
     print("episodic retrieval                   %.3lf     %.3lf\n", f, f / total);
     f = timer_value(&current_agent(epmem_clearmem_total_time));
-    print("    epmem_clear_mem()                %.3lf     %.3lf\n", f, f / total);
+    print("    epmem_clear_curr_mem()           %.3lf     %.3lf\n", f, f / total);
     print("    update_wmetree() is also called here (see above)\n");
     f = timer_value(&current_agent(epmem_match_total_time));
     print("    find_best_match()                %.3lf     %.3lf\n", f, f / total);
@@ -2540,6 +2543,8 @@ void init_epmem(void)
     g_wmetree.val_type = IDENTIFIER_SYMBOL_TYPE;
     g_wmetree.children = make_hash_table(0, hash_wmetree);;
     g_wmetree.parent = NULL;
+    g_wmetree.depth = 0;
+    g_wmetree.in_mem = TRUE;
     g_wmetree.assoc_wme = NULL;
 
     //Initialize the memories array
