@@ -77,8 +77,12 @@ popd
 sp {top-level*elaborate*state*task*waterjug
     (state <s> ^superstate nil)
     -->
-    (<s> ^name waterjug 
-         ^problem-space <p>)
+    (<s> ^name waterjug)}
+
+sp {waterjug*elaborate*problem-space
+    (state <s> ^name waterjug)
+-->
+    (<s> ^problem-space <p>)
     (<p> ^name waterjug 
          ^default-state-copy yes
          ^two-level-attributes jug
@@ -90,7 +94,8 @@ sp {top-level*elaborate*state*task*waterjug
 ###
 
 sp {waterjug*elaborate*state*initial*desired-state
-    (state <s> ^problem-space.name waterjug
+    (state <s> ^superstate nil
+               ^problem-space.name waterjug
                ^name waterjug)
     -->
     (<s> ^desired.jug <k>
