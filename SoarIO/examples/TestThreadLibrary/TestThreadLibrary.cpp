@@ -28,9 +28,9 @@ public:
 	bool Result(bool ok)
 	{
 		if (ok)
-			printf("Test %s passed\n", m_pTestName) ;
+			printf("Test %s passed\n\n", m_pTestName) ;
 		else
-			printf("Test %s failed\n", m_pTestName) ;
+			printf("Test %s failed\n\n", m_pTestName) ;
 
 		return ok ;
 	}
@@ -123,10 +123,11 @@ public:
 class TestThread_1 : public Test
 {
 public:
-	TestThread_1() : Test("Thread_1") { }
+	TestThread_1() : Test("'busy thread with wait for stop'") { }
 
 	bool Run()
 	{
+		cout << "Starting busy thread";
 		ThreadBusy thread;
 		thread.Start();
 		sleep(5);
@@ -138,11 +139,12 @@ public:
 class TestThread_2 : public Test
 {
 public:
-	TestThread_2() : Test("Thread_2") { }
+	TestThread_2() : Test("'busy thread with stop then sleep then check'") { }
 
 	bool Run()
 	{
 		ThreadBusy thread;
+		cout << "Starting busy thread 2";
 		thread.Start();
 		sleep(5);
 		thread.Stop(false);
@@ -154,7 +156,7 @@ public:
 class TestThread_3 : public Test
 {
 public:
-	TestThread_3() : Test("Thread_3") { }
+	TestThread_3() : Test("'classic simple buffer reader/writer'") { }
 
 	bool Run()
 	{
@@ -164,6 +166,7 @@ public:
 		
 		ThreadReader threadR;
 		ThreadWriter threadW;
+		cout << "Starting buffer reader/writer";
 		threadR.Start();
 		threadW.Start();
 		sleep(5);
@@ -179,18 +182,40 @@ public:
 	}
 };
 
+class TestThread_4 : public Test
+{
+public:
+	TestThread_4() : Test("'simple deadlock'") { }
+
+	bool Run()
+	{
+		g_pMutex = new Mutex();
+		
+		cout << "Starting deadlock test... ";
+		Lock lock1(g_pMutex);
+		cout << "About to lock again, this should be deadlock (control-c to quit)" << endl;
+		Lock lock2(g_pMutex);
+		
+		delete g_pMutex;
+		
+		return Result(false) ;
+	}
+};
+
 int main(int argc, char* argv[])
 {
 	// Start off with some general tests of ElementXML
 	TestThread_1 test1;
 	TestThread_2 test2;
 	TestThread_3 test3;
+	TestThread_4 test4;
 
 	bool ok = true ;
 
 	ok = ok && test1.Run() ;
 	ok = ok && test2.Run() ;
 	ok = ok && test3.Run() ;
+	ok = ok && test4.Run() ;	 // Warning:  should never return!
 
 	if (ok)
 		printf("\n\nAll tests passed\n") ;
