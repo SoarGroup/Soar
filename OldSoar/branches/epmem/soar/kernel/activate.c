@@ -362,6 +362,46 @@ void decay_init(void)
 
 }//decay_init
 
+
+/* ============================================================================
+   decay_activation_level
+
+   This function is provided for external use.  Given a WME, this it
+   calculates an approximate activation level of that WME as an
+   integeer between 0 and (DECAY_ARRAY_SIZE - 1).  The higher the
+   number the more activated the WME is.  Calculating a real valued
+   activation level is expensive and usually unnecessary.  This
+   function provides a nice compromise.
+
+   If the given WME does not have a decay element, this function
+   returns a value of -1 for its activation level.
+
+   Created:  09 March 2004
+   ========================================================================= */
+int decay_activation_level(wme *w)
+{
+    int wme_pos;
+    int curr_pos;
+
+    if (!w->has_decay_element)
+    {
+        return -1;
+    }
+
+    wme_pos = w->decay_element->time_spot->position;
+    curr_pos = current_agent(current_decay_timelist_element)->position;
+
+    if (wme_pos >= curr_pos)
+    {
+        return wme_pos - curr_pos;
+    }
+    else
+    {
+        return DECAY_ARRAY_SIZE - curr_pos + wme_pos;
+    }
+    
+}//decay_activation_level
+
 /* ============================================================================
    decay_reference_wme()       *RECURSIVE*
 
