@@ -167,6 +167,7 @@ bool Aliases::RemoveAlias(const std::string& command) {
 
 std::string Aliases::List(const std::string* pCommand) {
 	std::string result;
+
 	for (AliasMapIter i = m_AliasMap.begin(); i != m_AliasMap.end(); ++i) {
 		if (pCommand) {
 			if (i->first != *pCommand) continue;
@@ -177,8 +178,13 @@ std::string Aliases::List(const std::string* pCommand) {
 			result += *j;
 			result += ' ';
 		}
+		if (pCommand) return result;
 		result += '\n';
-	}	
+	}
+
+	// didn't find one?
+	if (pCommand) return result;
+
 	// remove trailing newline
 	result = result.substr(0, result.size()-1);
 	return result;

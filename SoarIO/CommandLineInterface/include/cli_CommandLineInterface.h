@@ -152,7 +152,8 @@ public:
 	* @param pResponse Pointer to XML response
 	* @param command The alias to enable or disable, pass 0 to list aliases
 	* @param pSubstitution Pass a pointer to a vector strings to enable a new 
-	*        alias, pass 0 to disable a current alias
+	*        alias, pass 0 to disable a current alias, pass empty vector to list
+	*        command's (the parameter) alias
 	*************************************************************/
 	EXPORT bool DoAlias(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string* pCommand = 0, const std::vector<std::string>* pSubstitution = 0);
 

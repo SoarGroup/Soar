@@ -67,7 +67,9 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 	if (!pCommand && !pSubstitution) {
 		// list aliases
 		if (m_RawOutput) {
-			m_Result << m_Aliases.List();
+			std::string result = m_Aliases.List();
+			if (!result.size()) return SetError(CLIError::kAliasNotFound);
+			m_Result << result;
 			return true;
 
 		} else {
@@ -100,7 +102,9 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 	// if substitution is empty, list only that alias
 	if (!pSubstitution->size()) {
 		// FIXME structured output
-		m_Result << m_Aliases.List(pCommand);
+		std::string result = m_Aliases.List(pCommand);
+		if (!result.size()) return SetError(CLIError::kAliasNotFound);
+		m_Result << result;
 		return true;
 	}
 
