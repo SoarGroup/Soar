@@ -16,6 +16,7 @@
 #include "sml_ClientKernel.h"
 #include "sml_ElementXML.h"
 #include "sml_AnalyzeXML.h"
+#include "sml_Connection.h"
 %}
 
 %include "../ClientSML/include/sml_ClientWMElement.h"
@@ -27,4 +28,6 @@
 %include "../ClientSML/include/sml_ClientKernel.h"
 %include "../ConnectionSML/include/sml_ElementXML.h"
 %include "../ConnectionSML/include/sml_AnalyzeXML.h"
+%include "../ConnectionSML/include/sml_Connection.h"
+
 
