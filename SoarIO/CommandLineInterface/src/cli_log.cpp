@@ -124,7 +124,7 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const char* pFilename, bo
 
 	// Query at end of successful command, or by default
 	if (m_RawOutput) {
-		m_Result += m_pLogFile ? "Log file '" + m_LogFilename + "' opened." : "Log file closed.";
+		AppendToResult(m_pLogFile ? "Log file '" + m_LogFilename + "' opened." : "Log file closed.");
 
 	} else {
 		const char* setting = m_pLogFile ? sml_Names::kTrue : sml_Names::kFalse;

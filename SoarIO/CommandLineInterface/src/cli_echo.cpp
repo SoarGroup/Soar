@@ -28,8 +28,8 @@ bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 
 	// Concatenate arguments (spaces between arguments are lost unless enclosed in quotes)
 	for (unsigned i = 1; i < argv.size(); ++i) {
-		m_Result += argv[i];
-		m_Result += ' ';
+		AppendToResult(argv[i]);
+		AppendToResult(' ');
 	}
 
 	// Chop off that last space we just added in the loop

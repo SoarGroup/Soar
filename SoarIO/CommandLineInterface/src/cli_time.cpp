@@ -57,16 +57,16 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 
 	if (m_RawOutput) {
 		// Print time elapsed and return
-		m_Result += "\n(";
-		m_Result += buf;
-		m_Result += "s) real";
+		AppendToResult("\n(");
+		AppendToResult(buf);
+		AppendToResult("s) real");
 	} else {
 		AppendArgTagFast(sml_Names::kParamSeconds, sml_Names::kTypeDouble, buf);
 	}
 	return ret;
 
 #else
-	m_Result += "TODO: time on non-windows platform";
+	AppendToResult("TODO: time on non-windows platform");
 	return true;
 #endif
 }

@@ -62,12 +62,12 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 		gSKI::tIMultiAttributeIterator* pIt = pAgent->GetMultiAttributes();
 		if (!pIt->GetNumElements()) {
 			if (m_RawOutput) {
-				m_Result += "No multi-attributes declared for this agent.";
+				AppendToResult("No multi-attributes declared for this agent.");
 			}
 
 		} else {
 			if (m_RawOutput) {
-				m_Result += "Value\tSymbol";
+				AppendToResult("Value\tSymbol");
 			}
 
 			gSKI::IMultiAttribute* pMA;
@@ -77,10 +77,10 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 				pMA = pIt->GetVal();
 
 				if (m_RawOutput) {
-					m_Result += "\n";
-					m_Result += Int2String(pMA->GetMatchingPriority(), buf, kMinBufferSize);
-					m_Result += "\t";
-					m_Result += pMA->GetAttributeName();
+					AppendToResult("\n");
+					AppendToResult(Int2String(pMA->GetMatchingPriority(), buf, kMinBufferSize));
+					AppendToResult("\t");
+					AppendToResult(pMA->GetAttributeName());
 				} else {
 					// Value
 					AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(count, buf, sizeof(buf)));

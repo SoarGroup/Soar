@@ -59,9 +59,9 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 //                          |_|
 bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string& reasonForStopping) {
 	unused(pAgent);
-	m_Result += "TODO: do stop-soar ";
-	m_Result += self;
-	m_Result += reasonForStopping;
+	AppendToResult("TODO: do stop-soar ");
+	AppendToResult(self);
+	AppendToResult(reasonForStopping);
 	return true;
 }
 

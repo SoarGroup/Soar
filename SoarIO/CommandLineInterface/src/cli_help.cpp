@@ -39,38 +39,38 @@ bool CommandLineInterface::DoHelp(std::string* pCommand) {
 		if (!m_Constants.GetUsageFor(*pCommand, output)) {
 			return HandleError("Help for command '" + *pCommand + "' not found.");
 		}
-		m_Result += output;
+		AppendToResult(output);
 		return true;
 	}
-	m_Result += "Help is available for the following commands:\n";
+	AppendToResult("Help is available for the following commands:\n");
 	std::list<std::string> commandList = m_Constants.GetCommandList();
 	std::list<std::string>::const_iterator iter = commandList.begin();
 
 	int i = 0;
 	int tabs;
 	while (iter != commandList.end()) {
-		m_Result += *iter;
+		AppendToResult(*iter);
 		if (m_CommandMap.find(*iter) == m_CommandMap.end()) {
-			m_Result += '*';
+			AppendToResult('*');
 		} else {
-			m_Result += ' ';
+			AppendToResult(' ');
 		}
 		tabs = (40 - (*iter).length() - 2) / 8; 
 		if (i % 2) {
-			m_Result += "\n";
+			AppendToResult("\n");
 		} else {
 			do {
-				m_Result += '\t';
+				AppendToResult('\t');
 			} while (--tabs > 0);
 		}
 		++iter;
 		++i;
 	}
 	if (i % 2) {
-		m_Result += '\n';
+		AppendToResult('\n');
 	}
-	m_Result += "Type 'help' followed by the command name for help on a specific command.\n";
-	m_Result += "A Star (*) indicates the command is not yet implemented.";
+	AppendToResult("Type 'help' followed by the command name for help on a specific command.\n");
+	AppendToResult("A Star (*) indicates the command is not yet implemented.");
 	return true;
 }
 

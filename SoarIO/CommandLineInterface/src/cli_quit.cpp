@@ -27,7 +27,7 @@ bool CommandLineInterface::DoQuit() {
 	m_QuitCalled = true; 
 
 	// Toodles!
-	m_Result += "Goodbye.";
+	AppendToResult("Goodbye.");
 	return true;
 }
 

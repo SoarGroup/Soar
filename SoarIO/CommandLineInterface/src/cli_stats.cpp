@@ -52,7 +52,7 @@ bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent) {
 	pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 
 	if(strlen(pResult) > 0) {
-		m_Result += pResult;
+		AppendToResult(pResult);
 	}
 	delete [] argv[0];
 	delete [] argv[1];

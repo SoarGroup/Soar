@@ -140,23 +140,23 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {
-		m_Result += "Run failed.";
+		AppendToResult("Run failed.");
 		return false;	// Hopefully details are in gSKI error message
 	}
 
-	m_Result += "\nRun successful: ";
+	AppendToResult("\nRun successful: ");
 	switch (runResult) {
 		case gSKI_RUN_EXECUTING:
-			m_Result += "(gSKI_RUN_EXECUTING)";						// the run is still executing
+			AppendToResult("(gSKI_RUN_EXECUTING)");						// the run is still executing
 			break;
 		case gSKI_RUN_INTERRUPTED:
-			m_Result += "(gSKI_RUN_INTERRUPTED)";					// the run was interrupted
+			AppendToResult("(gSKI_RUN_INTERRUPTED)");					// the run was interrupted
 			break;
 		case gSKI_RUN_COMPLETED:
-			m_Result += "(gSKI_RUN_COMPLETED)";						// the run completed normally
+			AppendToResult("(gSKI_RUN_COMPLETED)");						// the run completed normally
 			break;
 		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
-			m_Result += "(gSKI_RUN_COMPLETED_AND_INTERRUPTED)";
+			AppendToResult("(gSKI_RUN_COMPLETED_AND_INTERRUPTED)");
 			break;
 		default:
 			return HandleError("Unknown egSKIRunResult code returned.");

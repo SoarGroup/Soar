@@ -236,11 +236,11 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 		// Help flags found, add help to line, return true
 		string output;
 		if (!m_Constants.IsUsageFileAvailable()) {
-			m_Result += Constants::kCLINoUsageFile;
+			AppendToResult(Constants::kCLINoUsageFile);
 		} else if (m_Constants.GetUsageFor(argv[0], output)) {
-			m_Result += output;
+			AppendToResult(output);
 		} else {
-			m_Result += Constants::kCLINoUsageInfo;
+			AppendToResult(Constants::kCLINoUsageInfo);
 		}
 		return true;
 	}
@@ -374,9 +374,22 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 // / ___ \| |_) | |_) |  __/ | | | (_| | | | (_) |  _ <  __/\__ \ |_| | | |_
 ///_/   \_\ .__/| .__/ \___|_| |_|\__,_| |_|\___/|_| \_\___||___/\__,_|_|\__|
 //        |_|   |_|
-void CommandLineInterface::AppendToResult(const char* pMessage) {
+inline void CommandLineInterface::AppendToResult(const char* pMessage) {
 	// Simply add to result
 	m_Result += pMessage;
+}
+inline void CommandLineInterface::AppendToResult(const std::string& message) {
+	// Simply add to result
+	m_Result += message;
+}
+// TODO: Inlines wont work on these two for some reason...
+void CommandLineInterface::AppendToResult(const bool boolean) {
+	// Simply add to result
+	m_Result += boolean;
+}
+void CommandLineInterface::AppendToResult(const char character) {
+	// Simply add to result
+	m_Result += character;
 }
 
 // ____       _   _  __                    _
@@ -513,7 +526,7 @@ bool CommandLineInterface::HandleError(std::string errorMessage, gSKI::Error* pE
 		m_ErrorMessage += " details: " ;
 		m_ErrorMessage += pError->ExtendedMsg ;
 	}
-	m_Result += m_ErrorMessage;
+	AppendToResult(m_ErrorMessage);
 
 	// Always return false
 	return false;

@@ -53,7 +53,7 @@ bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& product
 
 	if (m_RawOutput) {
 		// TODO: The kernel is supposed to print this but doesnt!
-		m_Result += '*';
+		AppendToResult('*');
 	}
 	return true;
 }

@@ -53,13 +53,13 @@ bool CommandLineInterface::DoLS() {
 		if (m_RawOutput) {
 			// TODO: Columns and stats
 			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				m_Result += '[';
+				AppendToResult('[');
 			}
-			m_Result += FindFileData.cFileName;
+			AppendToResult(FindFileData.cFileName);
 			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				m_Result += ']';
+				AppendToResult(']');
 			}
-			m_Result += '\n';
+			AppendToResult('\n');
 		} else {
 			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 				AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, FindFileData.cFileName);

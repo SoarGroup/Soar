@@ -30,7 +30,7 @@ bool CommandLineInterface::DoPWD() {
 	bool ret = GetCurrentWorkingDirectory(directory);
 
 	// On success, working dir is in parameter, on failure it is empty so this statement has no effect
-	m_Result += directory;
+	AppendToResult(directory);
 
 	return ret;
 }

@@ -35,7 +35,7 @@ bool CommandLineInterface::DoHelpEx(const std::string& command) {
 	if (!m_Constants.GetExtendedUsageFor(command, output)) {
 		return HandleError("Extended help for command '" + command + "' not found.");
 	}
-	m_Result += output;
+	AppendToResult(output);
 	return true;
 }
 

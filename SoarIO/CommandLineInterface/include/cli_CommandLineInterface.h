@@ -395,6 +395,9 @@ protected:
 	*		 completion of a command.
 	*************************************************************/
 	void AppendToResult(const char* pMessage);
+	void AppendToResult(const std::string& message);
+	void AppendToResult(const bool message);
+	void AppendToResult(const char message);
 
 	/*************************************************************
 	* @brief Does the bulk of command parsing and chooses what function

@@ -91,8 +91,8 @@ bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int opti
 	// No options means print current settings
 	if (!options) {
 		if (m_RawOutput) {
-			m_Result += "Learning is ";
-			m_Result += pAgent->IsLearningOn() ? "enabled." : "disabled.";
+			AppendToResult("Learning is ");
+			AppendToResult(pAgent->IsLearningOn() ? "enabled." : "disabled.");
 		} else {
 			const char* setting = pAgent->IsLearningOn() ? sml_Names::kTrue : sml_Names::kFalse;
 			AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, setting);
