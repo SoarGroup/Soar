@@ -251,7 +251,7 @@ void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
 }
 
 void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, char *name) {
-  if (item_size < sizeof(char *)) item_size = sizeof(char *);
+  if (item_size < (long)sizeof(char *)) item_size = sizeof(char *);
   while (item_size & 3) item_size++; /* make sure item_size is multiple of 4 */
   p->item_size = item_size;
   p->items_per_block = DEFAULT_BLOCK_SIZE / item_size;

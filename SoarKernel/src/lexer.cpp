@@ -1053,13 +1053,13 @@ void init_lexer (agent* thisAgent)
        switch(i)
        {
        case '+':
-          number_starters['+']=TRUE;
+          number_starters[(int)'+']=TRUE;
           break;
        case '-':
-          number_starters['-']=TRUE;
+          number_starters[(int)'-']=TRUE;
           break;
        case '.':
-          number_starters['.']=TRUE;
+          number_starters[(int)'.']=TRUE;
           break;
        default:
           number_starters[i] = (isdigit(i) != 0);
@@ -1080,61 +1080,61 @@ void init_lexer (agent* thisAgent)
         switch(i)
         {
         case '@':
-           lexer_routines['@'] = lex_at;
+           lexer_routines[(int)'@'] = lex_at;
            break;
         case '(':
-           lexer_routines['('] = lex_lparen;
+           lexer_routines[(int)'('] = lex_lparen;
            break;
         case ')':
-           lexer_routines[')'] = lex_rparen;
+           lexer_routines[(int)')'] = lex_rparen;
            break;
         case '+':
-           lexer_routines['+'] = lex_plus;
+           lexer_routines[(int)'+'] = lex_plus;
            break;
         case '-':
-           lexer_routines['-'] = lex_minus;
+           lexer_routines[(int)'-'] = lex_minus;
            break;
         case '~':
-           lexer_routines['~'] = lex_tilde;
+           lexer_routines[(int)'~'] = lex_tilde;
            break;
         case '^':
-           lexer_routines['^'] = lex_up_arrow;
+           lexer_routines[(int)'^'] = lex_up_arrow;
            break;
         case '{':
-           lexer_routines['{'] = lex_lbrace;
+           lexer_routines[(int)'{'] = lex_lbrace;
            break;
         case '}':
-           lexer_routines['}'] = lex_rbrace;
+           lexer_routines[(int)'}'] = lex_rbrace;
            break;
         case '!':
-           lexer_routines['!'] = lex_exclamation_point;
+           lexer_routines[(int)'!'] = lex_exclamation_point;
            break;
         case '>':
-           lexer_routines['>'] = lex_greater;
+           lexer_routines[(int)'>'] = lex_greater;
            break;
         case '<':
-           lexer_routines['<'] = lex_less;
+           lexer_routines[(int)'<'] = lex_less;
            break;
         case '=':
-           lexer_routines['='] = lex_equal;
+           lexer_routines[(int)'='] = lex_equal;
            break;
         case '&':
-           lexer_routines['&'] = lex_ampersand;
+           lexer_routines[(int)'&'] = lex_ampersand;
            break;
         case '|':
-           lexer_routines['|'] = lex_vbar;
+           lexer_routines[(int)'|'] = lex_vbar;
            break;
         case ',':
-           lexer_routines[','] = lex_comma;
+           lexer_routines[(int)','] = lex_comma;
            break;
         case '.':
-           lexer_routines['.'] = lex_period;
+           lexer_routines[(int)'.'] = lex_period;
            break;
         case '"':
-           lexer_routines['"'] = lex_quote;
+           lexer_routines[(int)'"'] = lex_quote;
            break;
         case '$':
-           lexer_routines['$'] = lex_dollar;   /* AGR 562 */
+           lexer_routines[(int)'$'] = lex_dollar;   /* AGR 562 */
            break;
         default:
            if (isdigit(i)) 

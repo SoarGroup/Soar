@@ -9,7 +9,7 @@
  *
  * =======================================================================
 
-/*  This code is now obsolete, replaced by code in the Tcl interface.
+    This code is now obsolete, replaced by code in the Tcl interface.
 
     The schedule_agents function is the entry point to the multi-agent
     soar scheduler.  A round robin scheduling protocol is used for now.

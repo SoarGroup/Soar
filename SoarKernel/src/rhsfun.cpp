@@ -55,7 +55,7 @@
 
 #include <map>
 
-/* #include <soar.h>		/* kjh(CUSP-B10 (for Soar_Read) */
+// #include <soar.h>		/* kjh(CUSP-B10 (for Soar_Read) */
 #include <time.h>
 
 void add_rhs_function (agent* thisAgent, 
@@ -346,7 +346,7 @@ Symbol *accept_rhs_function_code (agent* thisAgent, list *args, void* user_data)
 
   while (TRUE) {
     s = fgets (buf, 2000, stdin);
-    /*    s = Soar_Read(thisAgent, buf, 2000); /* kjh(CUSP-B10) */
+    //    s = Soar_Read(thisAgent, buf, 2000); /* kjh(CUSP-B10) */
     if (!s) {
       /* s==NIL means immediate eof encountered or read error occurred */
       return NIL;

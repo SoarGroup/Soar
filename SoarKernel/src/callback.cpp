@@ -73,8 +73,8 @@ char * soar_callback_names[] = {    /* Must match order of       */
   "system-parameter-changed",
   "print",
   "log",  
-/*  "read",				/* kjh CUSP B10 */
-/*  "record",				/* kjh CUSP B10 */
+//  "read",				/* kjh CUSP B10 */
+//  "record",				/* kjh CUSP B10 */
   /* Nothing corresponds to NUMBER_OF_CALLBACKS */
 };
 

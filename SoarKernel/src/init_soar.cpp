@@ -773,7 +773,7 @@ void reinitialize_agent (agent* thisAgent) {
 
 void do_one_top_level_phase (agent* thisAgent) 
 {
-  /*  Symbol *iterate_goal_sym;  kjc commented /* RCHONG: end 10.11 */
+  //  Symbol *iterate_goal_sym;  kjc commented /* RCHONG: end 10.11 */
 
   if (thisAgent->system_halted) 
   {
@@ -1267,7 +1267,7 @@ void do_one_top_level_phase (agent* thisAgent)
 			  break;
    
 		  } else 
-#endif AGRESSIVE_ONC
+#endif //AGRESSIVE_ONC
 		  {
 
 			  /* printf("\nSetting next phase to APPLY following a decision...."); */
@@ -1294,6 +1294,8 @@ void do_one_top_level_phase (agent* thisAgent)
      gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_APPLY_PHASE, 0);
 
 	  break;  /* end DECISION phase */
+  default:
+	  break; // quell gcc warning
 	  
   }  /* end switch stmt for current_phase */
   

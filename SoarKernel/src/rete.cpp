@@ -455,28 +455,28 @@ inline void mark_node_as_right_unlinked(rete_node * node)
   (node)->b.posneg.next_from_alpha_mem = static_cast<rete_node_struct *>((void *)1);
 }
 
-//#define relink_to_right_mem(node) { \
-//  rete_node *rtrm_ancestor, *rtrm_prev; \
-//  /* find first ancestor that's linked */ \
-//  rtrm_ancestor = (node)->b.posneg.nearest_ancestor_with_same_am; \
-//  while (rtrm_ancestor && node_is_right_unlinked(rtrm_ancestor)) \
-//    rtrm_ancestor = rtrm_ancestor->b.posneg.nearest_ancestor_with_same_am; \
-//  if (rtrm_ancestor) { \
-//    /* insert just before that ancestor */ \
-//    rtrm_prev = rtrm_ancestor->b.posneg.prev_from_alpha_mem; \
-//    (node)->b.posneg.next_from_alpha_mem = rtrm_ancestor; \
-//    (node)->b.posneg.prev_from_alpha_mem = rtrm_prev; \
-//    rtrm_ancestor->b.posneg.prev_from_alpha_mem = (node); \
-//    if (rtrm_prev) rtrm_prev->b.posneg.next_from_alpha_mem = (node); \
-//   else (node)->b.posneg.alpha_mem_->beta_nodes = (node); \
-//  } else { \
-//   /* no such ancestor, insert at tail of list */ \
-//  rtrm_prev = (node)->b.posneg.alpha_mem_->last_beta_node; \
-// (node)->b.posneg.next_from_alpha_mem = NIL; \
-//   (node)->b.posneg.prev_from_alpha_mem = rtrm_prev; \
-//   (node)->b.posneg.alpha_mem_->last_beta_node = (node); \
-//   if (rtrm_prev) rtrm_prev->b.posneg.next_from_alpha_mem = (node); \
-//   else (node)->b.posneg.alpha_mem_->beta_nodes = (node); \
+//#define relink_to_right_mem(node) { 
+//  rete_node *rtrm_ancestor, *rtrm_prev; 
+//  /* find first ancestor that's linked */ 
+//  rtrm_ancestor = (node)->b.posneg.nearest_ancestor_with_same_am; 
+//  while (rtrm_ancestor && node_is_right_unlinked(rtrm_ancestor)) 
+//    rtrm_ancestor = rtrm_ancestor->b.posneg.nearest_ancestor_with_same_am; 
+//  if (rtrm_ancestor) { 
+//    /* insert just before that ancestor */ 
+//    rtrm_prev = rtrm_ancestor->b.posneg.prev_from_alpha_mem; 
+//    (node)->b.posneg.next_from_alpha_mem = rtrm_ancestor; 
+//    (node)->b.posneg.prev_from_alpha_mem = rtrm_prev; 
+//    rtrm_ancestor->b.posneg.prev_from_alpha_mem = (node); 
+//    if (rtrm_prev) rtrm_prev->b.posneg.next_from_alpha_mem = (node); 
+//   else (node)->b.posneg.alpha_mem_->beta_nodes = (node); 
+//  } else { 
+//   /* no such ancestor, insert at tail of list */ 
+//  rtrm_prev = (node)->b.posneg.alpha_mem_->last_beta_node; 
+// (node)->b.posneg.next_from_alpha_mem = NIL; 
+//   (node)->b.posneg.prev_from_alpha_mem = rtrm_prev; 
+//   (node)->b.posneg.alpha_mem_->last_beta_node = (node); 
+//   if (rtrm_prev) rtrm_prev->b.posneg.next_from_alpha_mem = (node); 
+//   else (node)->b.posneg.alpha_mem_->beta_nodes = (node); 
 // } }
 inline void relink_to_right_mem(rete_node * node)
 {

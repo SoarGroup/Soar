@@ -1151,7 +1151,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 		get_line_from_window(msg,buff,255);
 		sscanf(msg,"%d",num_candidates);
 #else
-	/*  char buf[256]; /* kjh(CUSP-B10) */
+	//  char buf[256]; /* kjh(CUSP-B10) */
         print (thisAgent, "Enter selection (1-%d): ", num_candidates);
         chosen_num = -1;
         scanf (" %d", &chosen_num);
@@ -1161,7 +1161,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	
      /* kjh(CUSP-B10) BEGIN*/
      /* Soar_Read(thisAgent, buf, 256);
-	          sscanf(buf,"%d",&chosen_num);
+	          sscanf(buf,"%d",&chosen_num); */
      /* kjh(CUSP-B10) END*/
 
 #endif
@@ -1234,7 +1234,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     default:
       { char msg[BUFFER_MSG_SIZE];
       snprintf(msg, BUFFER_MSG_SIZE, "decide.c: Error: bad value of user_select_mode: %d\n",
-	      thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM]);
+	      (int)thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM]);
       msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
       abort_with_fatal_error(thisAgent, msg);
       }
@@ -3123,7 +3123,7 @@ void elaborate_gds (agent* thisAgent) {
                               add_wme_to_gds(thisAgent, inst->match_goal->id.gds, fake_inst_wme_cond);
 
                               //                                 fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-                              //                                 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
+                              //                                 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
                               //                                    fake_inst_wme_cond, gds_next,
                               //                                    gds_prev);
 #ifdef DEBUG_GDS
@@ -3239,7 +3239,7 @@ void elaborate_gds (agent* thisAgent) {
                }
             }
          }
-      }  /* for (cond = inst->top_of_instantiated_cond ...  *;'/
+      }  /* for (cond = inst->top_of_instantiated_cond ...  *;*/
 
 
          /* remove just used instantiation from list */
