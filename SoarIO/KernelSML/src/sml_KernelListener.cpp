@@ -232,7 +232,7 @@ void KernelListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr)
 	// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
 	// level event, not an agent level one (because you need to register with the kernel to get "agent created").
 	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, agentPtr->GetName()) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, agentPtr == NULL ? "" : agentPtr->GetName()) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 
 #ifdef _DEBUG

@@ -145,6 +145,9 @@ namespace gSKI
        */
       void initializeForRun(egSKIRunType  runLength, unsigned long steps);
 
+	  /** Look up the kernel for this run manager **/
+	  IKernel* getKernel() ;
+
    private:
 
       /** List of agents in the run list */

@@ -163,6 +163,12 @@ bool RemoteConnection::ReceiveMessages(bool allMessages)
 			return receivedMessage ;
 		}
 
+#ifdef _DEBUG
+		// Check that the parse worked
+		//char* pMsgText = pIncomingMsg->GenerateXMLString(true) ;
+		//pIncomingMsg->DeleteString(pMsgText) ;
+#endif
+
 		// Record that we got at least one message
 		receivedMessage = true ;
 

@@ -225,6 +225,7 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	// Agent manager events too
 	case gSKIEVENT_AFTER_AGENT_CREATED:
 	case gSKIEVENT_BEFORE_AGENT_DESTROYED:
+	case gSKIEVENT_BEFORE_AGENTS_RUN_STEP:
 	case gSKIEVENT_BEFORE_AGENT_REINITIALIZED:
 	case gSKIEVENT_AFTER_AGENT_REINITIALIZED:
 

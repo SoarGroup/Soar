@@ -510,6 +510,17 @@ namespace gSKI
 
    =============================
    */
+   void AgentManager::FireBeforeAgentsRunEvent()
+   {
+	  AgentNotifier nf(NULL) ;	// Not an agent specific event but an agent manager event.
+      m_agentListeners.Notify(gSKIEVENT_BEFORE_AGENTS_RUN_STEP, nf);
+   }
+
+   /*
+   =============================
+
+   =============================
+   */
    void AgentManager::AgentRunCompletedListener::HandleEvent(egSKIEventId eventId, IAgent* agentPtr, egSKIPhaseType phase)
    {
       MegaAssert(eventId == gSKIEVENT_AFTER_RUNNING, "Getting an unexpected event in the agent removal listener.");

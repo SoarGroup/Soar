@@ -21,6 +21,7 @@
 #include "gSKI_Agent.h"
 #include "gSKI_Error.h"
 #include "gSKI_Enumerations.h"
+#include "gSKI_AgentManager.h"
 
 #include <algorithm>
 
@@ -205,6 +206,20 @@ namespace gSKI
          m_runningAgents.erase(it);
    }
 
+   IKernel* AgentRunManager::getKernel()
+   {
+	   // Right now there seems to be no easy way to locate the kernel object
+	   // so we go through the agent list.  If this ever presents a problem we
+	   // could explicitly pass the kernel pointer around.
+	   if (m_runningAgents.empty())
+		   return NULL ;
+
+	   AgentRunData* pAgentData = &m_runningAgents.front() ;
+	   Agent* pAgent = (Agent*)pAgentData->a ;
+	   Kernel* pKernel = pAgent->GetKernel() ;
+	   return (IKernel*)pKernel ;
+   }
+
    /*
    =============================
 
@@ -251,6 +266,11 @@ namespace gSKI
          // Assume it is finished until proven otherwise
          runFinished = true;
 
+		 // Notify listeners that Soar is running.  This event is a kernel level (agent manager) event
+		 // which allows a single listener to check for client driven interrupts for all agents.
+		 // Sometimes that's easier to work with than the agent specific events (where you get <n> events from <n> agents)
+		 AgentManager* pManager = (AgentManager*)getKernel()->GetAgentManager() ;
+		 pManager->FireBeforeAgentsRunEvent() ;
 
          // Run each agent for the interleave amount
          for(tAgentRunListIt it = m_runningAgents.begin(); it != m_runningAgents.end(); ++it)

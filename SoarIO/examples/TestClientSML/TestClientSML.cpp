@@ -195,6 +195,19 @@ void MyCreationHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 	cout << "Received notification when agent was created" << endl ;
 }
 
+void MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
+{
+	cout << "Received agent event handler" << endl ;
+}
+
+void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
+{
+	// In this case the user data is a string we're building up
+	std::string* pTrace = (std::string*)pUserData ;
+
+	(*pTrace) += pMessage ;
+}
+
 std::string MyRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
 	cout << "Received rhs function call with argument: " << pArgument << endl ;
@@ -230,7 +243,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Set this to true to give us lots of extra debug information on remote clients
 		// (useful in a test app like this).
-		// pKernel->SetTraceCommunications(true) ;
+	    // pKernel->SetTraceCommunications(true) ;
 
 		// Register a kernel event handler...unfortunately I can't seem to find an event
 		// that gSKI actually fires, so this handler won't get called.  Still, the code is there
@@ -336,7 +349,11 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		//cout << "About to do first run" << endl ;
 
-		std::string trace = pAgent->Run(2) ;
+		int temp1 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENTS_RUN_STEP, &MyAgentEventHandler, 0) ;
+
+		std::string result = pAgent->Run(2) ;
+
+		pKernel->UnregisterForAgentEvent(temp1) ;
 
 		// Delete one of the shared WMEs to make sure that's ok
 		// BUGBUG: Turns out in the current gSKI implementation this can cause a crash, if we do proper cleanup
@@ -360,8 +377,16 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &testData, !addToBack) ;
 		unused(callback2);
 
+		// Run returns the result (succeeded, failed etc.)
+		// To catch the trace output we have to register a print event listener
+		std::string trace ;	// We'll pass this into the handler and build up the output in it
+		int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+
 		// Nothing should match here
-		trace = pAgent->Run(2) ;
+		result = pAgent->Run(2) ;
+
+		pAgent->UnregisterForPrintEvent(callbackp) ;
+		cout << trace << endl ;
 
 		// Then add some tic tac toe stuff which should trigger output
 		Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;
@@ -525,12 +550,14 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			return false ;
 		}
 
+		/* These comments haven't kept up with the test -- does a lot more now
 		cout << endl << "If this test worked should see something like this (above here):" << endl ;
 		cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;
 		cout << "(M1 ^col 1)" << endl << "(I3 ^alternative M1)" << endl ;
 		cout << "And then after the command is marked as completed (during the test):" << endl ;
 		cout << "Top Identifier I3" << endl ;
 		cout << "Together with about 6 received events" << endl ;
+		*/
 
 		cout << "Destroy the agent now" << endl ;
 

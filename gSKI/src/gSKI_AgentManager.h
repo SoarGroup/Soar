@@ -555,7 +555,8 @@ namespace gSKI
       //{
       void FireBeforeAgentReinitialized(IAgent* a);
       void FireAfterAgentReinitialized(IAgent* a);
-      //}
+ 	  void FireBeforeAgentsRunEvent() ;
+     //}
  
       public: 
 

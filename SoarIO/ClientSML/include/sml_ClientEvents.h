@@ -84,6 +84,7 @@ typedef enum {
 	// Agent manager
     smlEVENT_AFTER_AGENT_CREATED = smlEVENT_BEFORE_PRODUCTION_RETRACTED + 1,
     smlEVENT_BEFORE_AGENT_DESTROYED,
+	smlEVENT_BEFORE_AGENTS_RUN_STEP,
     smlEVENT_BEFORE_AGENT_REINITIALIZED,
     smlEVENT_AFTER_AGENT_REINITIALIZED,
 } smlAgentEventId ;
@@ -166,6 +167,8 @@ typedef enum {
 // These typedefs all define types of functions.
 // For example: typedef void (*X)(type1 arg1, type2 arg2) means we're defining function "X" to take (type1 arg1, type2 arg2) and return void.
 // To provide such a handler define a function with this type and pass its address in to the registration function for the event.
+// For example, for RunEventHandler you define a function like this:
+// void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase) { do-stuff ; }
 
 // Handler for Run events.
 // Passed back the event ID, the agent and the phase together with whatever user data we registered with the client
