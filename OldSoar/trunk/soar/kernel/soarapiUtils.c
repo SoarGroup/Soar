@@ -1315,18 +1315,23 @@ int parse_memory_stats(int argc, const char *argv[], soarResult * res)
         for (i = 0; i < NUM_MEM_USAGE_CODES; i++)
             total += current_agent(memory_for_usage)[i];
 
-        setSoarResultResult(res, "%lu", total);
+		print("%lu", total);
+        /*setSoarResultResult(res, "%lu", total);*/
     } else if (!strcmp("-overhead", argv[2])) {
-        setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[STATS_OVERHEAD_MEM_USAGE]);
+		print("%lu", current_agent(memory_for_usage)[STATS_OVERHEAD_MEM_USAGE]);
+        /*setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[STATS_OVERHEAD_MEM_USAGE]);*/
     } else if (!strcmp("-strings", argv[2])) {
-        setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[STRING_MEM_USAGE]);
+		print("%lu", current_agent(memory_for_usage)[STRING_MEM_USAGE]);
+        /*setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[STRING_MEM_USAGE]);*/
     } else if (!strcmp("-hash-table", argv[2])) {
-        setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[HASH_TABLE_MEM_USAGE]);
+		print("%lu", current_agent(memory_for_usage)[HASH_TABLE_MEM_USAGE]);
+        /*setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[HASH_TABLE_MEM_USAGE]);*/
     } else if (!strcmp("-pool", argv[2])) {     /* Handle pool stats */
         if (argc == 3) {
             soar_ecPrintMemoryPoolStatistics();
         } else if (!strcmp("-total", argv[3])) {
-            setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[POOL_MEM_USAGE]);
+			print("%lu", current_agent(memory_for_usage)[POOL_MEM_USAGE]);
+            /*setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[POOL_MEM_USAGE]);*/
         } else {                /* Match pool name or invalid item */
             memory_pool *p;
             memory_pool *pool_found = NIL;
@@ -1371,18 +1376,23 @@ int parse_memory_stats(int argc, const char *argv[], soarResult * res)
                 total_items = pool_found->num_blocks * pool_found->items_per_block;
 
                 if (!strcmp("-item-size", argv[4])) {
-                    setSoarResultResult(res, "%lu", pool_found->item_size);
+					print("%lu", pool_found->item_size);
+                    /*setSoarResultResult(res, "%lu", pool_found->item_size);*/
                 }
 #ifdef MEMORY_POOL_STATS
                 else if (!strcmp("-used", argv[4])) {
-                    setSoarResultResult(res, "%lu", pool_found->used_count);
+					print("%lu", pool_found->used_count);
+                    /*setSoarResultResult(res, "%lu", pool_found->used_count);*/
                 } else if (!strcmp("-free", argv[4])) {
-                    setSoarResultResult(res, "%lu", total_items - pool_found->used_count);
+					print("%lu", total_items - pool_found->used_count);
+                    /*setSoarResultResult(res, "%lu", total_items - pool_found->used_count);*/
                 }
 #endif
                 else if (!strcmp("-total-bytes", argv[4])) {
-                    setSoarResultResult(res, "%lu",
-                                        pool_found->num_blocks * pool_found->items_per_block * pool_found->item_size);
+					print("%lu",
+                          pool_found->num_blocks * pool_found->items_per_block * pool_found->item_size);
+                    /*setSoarResultResult(res, "%lu",
+                                        pool_found->num_blocks * pool_found->items_per_block * pool_found->item_size);*/
                 } else {
                     setSoarResultResult(res, "Unrecognized argument to stats: -memory -pool %s %s", argv[3], argv[4]);
                     return SOAR_ERROR;
@@ -1394,7 +1404,8 @@ int parse_memory_stats(int argc, const char *argv[], soarResult * res)
             }
         }
     } else if (!strcmp("-misc", argv[2])) {
-        setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[MISCELLANEOUS_MEM_USAGE]);
+		print("%lu", current_agent(memory_for_usage)[MISCELLANEOUS_MEM_USAGE]);
+        /*setSoarResultResult(res, "%lu", current_agent(memory_for_usage)[MISCELLANEOUS_MEM_USAGE]);*/
     } else {
         setSoarResultResult(res, "Unrecognized argument to stats: -memory %s", argv[2]);
         return SOAR_ERROR;
@@ -1458,7 +1469,8 @@ int parse_rete_stats(int argc, const char *argv[], soarResult * res)
     }
 
     if (get_node_count_statistic(argv[2], (char *) argv[3] + 1, &data)) {
-        setSoarResultResult(res, "%lu", data);
+		print("%lu", data);
+        /*setSoarResultResult(res, "%lu", data);*/
     } else {
         setSoarResultResult(res, "Unrecognized argument to stats: -rete %s %s", argv[2], argv[3]);
         return SOAR_ERROR;
@@ -1537,67 +1549,105 @@ int parse_system_stats(int argc, const char *argv[], soarResult * res)
         soar_ecPrintSystemStatistics();
     } else {
         if (!strcmp("-default-production-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE]);
+			print("%lu", current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE]);
+            /*setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE]);*/
         } else if (!strcmp("-user-production-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE]);
+            print("%lu", current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE]);
+			/*setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE]);*/
 
         } else if (!strcmp("-chunk-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
+			print("%lu", current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
+            /*setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);*/
         } else if (!strcmp("-justification-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
+			print("%lu", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
+            /*setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);*/
         } else if (!strcmp("-all-productions-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE]
+            print("%lu", current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE]
                                 + current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE]
                                 + current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
 
+			/*setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE]
+                                + current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE]
+                                + current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);*/
+
         } else if (!strcmp("-dc-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(d_cycle_count));
+			print("%lu", current_agent(d_cycle_count));
+            /*setSoarResultResult(res, "%lu", current_agent(d_cycle_count));*/
         } else if (!strcmp("-ec-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(e_cycle_count));
+			print("%lu", current_agent(e_cycle_count));
+            /*setSoarResultResult(res, "%lu", current_agent(e_cycle_count));*/
         } else if (!strcmp("-ecs/dc", argv[2])) {
-            setSoarResultResult(res, "%.3f", (current_agent(d_cycle_count)
+            print("%.3f", (current_agent(d_cycle_count)
                                               ? ((double) current_agent(e_cycle_count)
                                                  / current_agent(d_cycle_count))
                                               : 0.0));
+			/*setSoarResultResult(res, "%.3f", (current_agent(d_cycle_count)
+                                              ? ((double) current_agent(e_cycle_count)
+                                                 / current_agent(d_cycle_count))
+                                              : 0.0));*/
         } else if (!strcmp("-firings-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(production_firing_count));
+			print("%lu", current_agent(production_firing_count));
+            /*setSoarResultResult(res, "%lu", current_agent(production_firing_count));*/
         } else if (!strcmp("-firings/ec", argv[2])) {
-            setSoarResultResult(res, "%.3f", (current_agent(e_cycle_count)
+			print("%.3f", (current_agent(e_cycle_count)
                                               ? ((double) current_agent(production_firing_count)
                                                  / current_agent(e_cycle_count))
                                               : 0.0));
+            /*setSoarResultResult(res, "%.3f", (current_agent(e_cycle_count)
+                                              ? ((double) current_agent(production_firing_count)
+                                                 / current_agent(e_cycle_count))
+                                              : 0.0));*/
         } else if (!strcmp("-wme-change-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(wme_addition_count)
+            print("%lu", current_agent(wme_addition_count)
                                 + current_agent(wme_removal_count));
+			/*setSoarResultResult(res, "%lu", current_agent(wme_addition_count)
+                                + current_agent(wme_removal_count));*/
         } else if (!strcmp("-wme-addition-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(wme_addition_count));
+			print("%lu", current_agent(wme_addition_count));
+            /*setSoarResultResult(res, "%lu", current_agent(wme_addition_count));*/
         } else if (!strcmp("-wme-removal-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(wme_removal_count));
+			print("%lu", current_agent(wme_removal_count));
+            /*setSoarResultResult(res, "%lu", current_agent(wme_removal_count));*/
         } else if (!strcmp("-wme-count", argv[2])) {
             setSoarResultResult(res, "%lu", current_agent(num_wmes_in_rete));
         } else if (!strcmp("-wme-avg-count", argv[2])) {
-            setSoarResultResult(res, "%.3f", (current_agent(num_wm_sizes_accumulated)
+			print("%.3f", (current_agent(num_wm_sizes_accumulated)
                                               ? (current_agent(cumulative_wm_size)
                                                  / current_agent(num_wm_sizes_accumulated))
                                               : 0.0));
+            /*setSoarResultResult(res, "%.3f", (current_agent(num_wm_sizes_accumulated)
+                                              ? (current_agent(cumulative_wm_size)
+                                                 / current_agent(num_wm_sizes_accumulated))
+                                              : 0.0));*/
         } else if (!strcmp("-wme-max-count", argv[2])) {
-            setSoarResultResult(res, "%lu", current_agent(max_wm_size));
+			print("%lu", current_agent(max_wm_size));
+            /*setSoarResultResult(res, "%lu", current_agent(max_wm_size));*/
         }
 #ifndef NO_TIMING_STUFF
         else if (!strcmp("-total-time", argv[2])) {
-            setSoarResultResult(res, "%.3f", total_kernel_time);
+			print("%.3f", total_kernel_time);
+            /*setSoarResultResult(res, "%.3f", total_kernel_time);*/
         } else if (!strcmp("-ms/dc", argv[2])) {
-            setSoarResultResult(res, "%.3f", (current_agent(d_cycle_count)
+			print("%.3f", (current_agent(d_cycle_count)
                                               ? total_kernel_msec / current_agent(d_cycle_count)
                                               : 0.0));
+            /*setSoarResultResult(res, "%.3f", (current_agent(d_cycle_count)
+                                              ? total_kernel_msec / current_agent(d_cycle_count)
+                                              : 0.0));*/
         } else if (!strcmp("-ms/ec", argv[2])) {
-            setSoarResultResult(res, "%.3f", (current_agent(e_cycle_count)
+			print("%.3f", (current_agent(e_cycle_count)
                                               ? total_kernel_msec / current_agent(e_cycle_count)
                                               : 0.0));
+            /*setSoarResultResult(res, "%.3f", (current_agent(e_cycle_count)
+                                              ? total_kernel_msec / current_agent(e_cycle_count)
+                                              : 0.0));*/
         } else if (!strcmp("-ms/firing", argv[2])) {
-            setSoarResultResult(res, "%.3f", (current_agent(production_firing_count)
+			print("%.3f", (current_agent(production_firing_count)
                                               ? total_kernel_msec / current_agent(production_firing_count)
                                               : 0.0));
+            /*setSoarResultResult(res, "%.3f", (current_agent(production_firing_count)
+                                              ? total_kernel_msec / current_agent(production_firing_count)
+                                              : 0.0));*/
         }
 #endif                          /* NO_TIMING_STUFF */
 #ifdef DETAILED_TIMING_STATS
@@ -1615,7 +1665,8 @@ int parse_system_stats(int argc, const char *argv[], soarResult * res)
             wme_changes = current_agent(wme_addition_count)
                 + current_agent(wme_removal_count);
 
-            setSoarResultResult(res, "%.3f", (wme_changes ? time / wme_changes : 0.0));
+			print("%.3f", (wme_changes ? time / wme_changes : 0.0));
+            /*setSoarResultResult(res, "%.3f", (wme_changes ? time / wme_changes : 0.0));*/
         } else if (!strcmp("-match-time", argv[2])) {
 
             time = timer_value(&current_agent(match_cpu_time[INPUT_PHASE]))
@@ -1625,7 +1676,8 @@ int parse_system_stats(int argc, const char *argv[], soarResult * res)
                 + timer_value(&current_agent(match_cpu_time[OUTPUT_PHASE]))
                 + timer_value(&current_agent(match_cpu_time[DECISION_PHASE]));
 
-            setSoarResultResult(res, "%.3f", time);
+			print("%.3f", time);
+            /*setSoarResultResult(res, "%.3f", time);*/
 
         } else if (!strcmp("-ownership-time", argv[2])) {
             time = timer_value(&current_agent(ownership_cpu_time[INPUT_PHASE]))
@@ -1635,7 +1687,8 @@ int parse_system_stats(int argc, const char *argv[], soarResult * res)
                 + timer_value(&current_agent(ownership_cpu_time[OUTPUT_PHASE]))
                 + timer_value(&current_agent(ownership_cpu_time[DECISION_PHASE]));
 
-            setSoarResultResult(res, "%.3f", time);
+            print("%.3f", time);
+			/*setSoarResultResult(res, "%.3f", time);*/
 
         } else if (!strcmp("-chunking-time", argv[2])) {
             time = timer_value(&current_agent(chunking_cpu_time[INPUT_PHASE]))
@@ -1645,7 +1698,8 @@ int parse_system_stats(int argc, const char *argv[], soarResult * res)
                 + timer_value(&current_agent(chunking_cpu_time[OUTPUT_PHASE]))
                 + timer_value(&current_agent(chunking_cpu_time[DECISION_PHASE]));
 
-            setSoarResultResult(res, "%.3f", time);
+			print("%.3f", time);
+            /*setSoarResultResult(res, "%.3f", time);*/
 
         }
 #endif                          /* DETAILED_TIMING_STATS */
