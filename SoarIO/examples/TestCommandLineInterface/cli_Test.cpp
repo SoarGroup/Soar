@@ -316,6 +316,14 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
+	string scriptFile;
+	if (argc > 1) {
+		scriptFile = "source ";
+		scriptFile += argv[1];
+		scriptFile += '\n';
+	}
+	string::iterator scriptIter = scriptFile.begin();
+
 	// Create an embedded connection to the kernel
 	// Passing false here so we don't execute Soar in our thread
 	// which means we can handle incoming remote connections automatically.
@@ -346,6 +354,14 @@ int main(int argc, char** argv)
 	// Register for necessary callbacks
 	int callbackID1 = pAgent->RegisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, RunCallbackHandler, 0);
 	int callbackID2 = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
+
+	// Do script if any
+	if (scriptFile.size()) {
+		while (scriptIter != scriptFile.end()) {
+			g_pCommandProcessor->ProcessCharacter(*scriptIter);
+			++scriptIter;
+		}
+	}
 
 	// Main command loop
 	g_pCommandProcessor->DisplayPrompt(true);
