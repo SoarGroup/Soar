@@ -43,7 +43,7 @@ void Thread::SleepStatic(long milliseconds)
 Thread::Thread()
 {
 	m_QuitNow = false ;
-	m_Stopped = false ;
+	m_Stopped = true ;
 }
 
 Thread::~Thread() 
@@ -58,6 +58,7 @@ void Thread::Sleep(long milliseconds)
 
 void Thread::Start()
 {
+	m_Stopped = false;
 	// This creates a new thread and calls our static start function which in
 	// turn calls back to the "Run" method of this class, so the user of the thread
 	// has a nice object wrapped in a class to work with for their thread.
