@@ -30,6 +30,20 @@ class Connection ;
 typedef std::map< std::string, ConnectionList* >	RhsMap ;
 typedef RhsMap::iterator						RhsMapIter ;
 
+//
+// NOTE: this class differs from the other listener classes in that it does not inherit from EventManager
+// The reason is because it's signatures for some functions are different (i.e. Add/RemoveListener).
+// To emphasize that this is different, the names of some of these functions have actually been changed
+//  from the "standard" set by the other listener classes, i.e. AddListener -> AddRhsListener.
+// These differences exist because the nature of the Rhs listener is different.  In some sense, RhsListener is
+//  more specific than the other listeners because it doesn't need to specify an event (there is only one).
+// We could make changes to the EventManager template so that the RhsListener type is handled as a special case,
+//  but the only real benefit of that is that we could treat all listener classes as type EventManager.  However,
+//  we don't need that capability.
+// The other disadvantage of not inheriting from EventManager is that it defines a couple methods that
+//  RhsListener doesn't have.  However, RhsListener has no need for these things right now. If that changes in
+//  the future, we may revisit this decision.
+//
 class RhsListener : public gSKI::IRhsListener
 {
 protected:
