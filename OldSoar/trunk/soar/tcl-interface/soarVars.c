@@ -44,11 +44,11 @@
 /* forward declarations of prototypes */
 
 char *PositiveIntegerCheck(ClientData clientdata, Tcl_Interp *interp,
-			   const char *name1, const char *name2, int flags);
+			   char *name1, char *name2, int flags);
 char *Mode_0_1_2_3_Check(ClientData clientData, Tcl_Interp *interp,
-			 const char *name1, const char *name2, int flags);
+			 char *name1, char *name2, int flags);
 char *soar8Mode_Attr_Check(ClientData clientData, Tcl_Interp *interp,
-			   const char *name1, const char *name2, int flags);
+			   char *name1, char *name2, int flags);
 
 
 /*
@@ -195,10 +195,10 @@ Soar_LinkInterpVars2Agent(new_interp, new_agent)
  
 char *
 PositiveIntegerCheck(ClientData clientData, Tcl_Interp *interp,
-			   const char *name1, const char *name2, int flags)
+			   char *name1, char *name2, int flags)
 {
   int n;
-  const char *value;
+  char *value;
   long *correct = clientData;
   char oldval[10];
 
@@ -230,10 +230,10 @@ PositiveIntegerCheck(ClientData clientData, Tcl_Interp *interp,
  */
 char *
 Mode_0_1_2_3_Check(ClientData clientData, Tcl_Interp *interp,
-		 const char *name1, const char *name2, int flags)
+		 char *name1, char *name2, int flags)
 {
   int n;
-  const char *value;
+  char *value;
   long *correct = clientData;
   char oldval[10];
 
@@ -266,10 +266,10 @@ Mode_0_1_2_3_Check(ClientData clientData, Tcl_Interp *interp,
  */
 char *
 soar8Mode_Attr_Check(ClientData clientData, Tcl_Interp *interp,
-		 const char *name1, const char *name2, int flags)
+		 char *name1, char *name2, int flags)
 {
   int n;
-  const char *value;
+  char *value;
   long *correct = clientData;
   char oldval[10];
 
