@@ -10,9 +10,9 @@ package.  For more information, please see the website:
 ____________________
 File/Directory list:
 --------------------
-README             - This file.
-INSTALL            - Installation and execution notes.
-LICENSE            - The license that TankSoar is distributed under.
+README.txt         - This file.
+INSTALL.txt        - Installation and execution notes.
+LICENSE.txt        - The license that TankSoar is distributed under.
 start-tanksoar.bat - The Windows file used to start TankSoar (see INSTALL file).
 init-tanksoar.tcl  - The Tcl/Tk initialization code for TankSoar (see INSTALL file).
 agents/            - Example and tutorial Soar agents.
