@@ -443,11 +443,11 @@ Soar_Init(Tcl_Interp* interp)
   /* char szBuffer[] = "tk_messageBox -type ok -message \"Soar_Init called\" -icon info";  */
 	char name[32];
 	agent *new_agent;
-	int i;
 
 
 
 #if !defined(WIN32)
+    int i;
 	static int soar_init_invoked = 0;
 
 	/* In WIN32, this is done in DllMain. Maybe there's a better
