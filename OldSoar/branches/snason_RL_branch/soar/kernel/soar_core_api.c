@@ -1522,6 +1522,7 @@ void soar_cSetLearning( enum soar_apiLearningSetting setting ) {
     break;
   case RL_ON:
 	  set_sysparam (RL_ON_SYSPARAM, TRUE);
+	  break;
   case RL_OFF:
 	  set_sysparam (RL_ON_SYSPARAM, FALSE);
 

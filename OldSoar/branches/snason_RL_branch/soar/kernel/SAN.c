@@ -232,7 +232,9 @@ float compute_Q_value(RL_record* r){
 	Q *= current_agent(alpha);
 	// print("Q after alpha %f\n", Q);
 
-	
+    if (r->num_prod > 0) 
+		Q = Q / r->num_prod;
+
 	return Q;
 	
 }
