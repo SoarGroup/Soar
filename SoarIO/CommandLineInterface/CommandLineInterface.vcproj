@@ -75,9 +75,8 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="KernelSML.lib"
 				OutputFile="lib\soar-cli.lib"
-				AdditionalLibraryDirectories="..\KernelSML\lib"/>
+				AdditionalLibraryDirectories=""/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
