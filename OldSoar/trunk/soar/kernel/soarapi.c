@@ -3371,27 +3371,37 @@ watch wmes syntax:\n\
 	else if ((string_match("-all", argv[i])) ||
 		 (string_match("-a",argv[i])))
 	  {
-	    set_watch_prod_group_setting(0, argv[i], argv[++i], res);
+            int t = i+1;
+	    set_watch_prod_group_setting(0, argv[i], argv[t], res);
+            i++;
 	  }
 	else if ((string_match("-chunks", argv[i])) ||
 		 (string_match("-c",argv[i])))
 	  {
-	    set_watch_prod_group_setting(1, argv[i], argv[++i], res);
+            int t = i+1;
+	    set_watch_prod_group_setting(1, argv[i], argv[t], res);
+            i++;
 	  }
 	else if ((string_match("-defaults", argv[i])) ||
 		 (string_match("-d",argv[i])))
 	  {
-	    set_watch_prod_group_setting( 2, argv[i], argv[++i], res);
+            int t = i+1;
+	    set_watch_prod_group_setting( 2, argv[i], argv[t], res);
+            i++;
 	  }
 	else if ((string_match("-justifications", argv[i])) ||
 		 (string_match("-j",argv[i])))
 	  {
-	    set_watch_prod_group_setting( 3, argv[i], argv[++i], res);
+            int t = i+1;
+	    set_watch_prod_group_setting( 3, argv[i], argv[t], res);
+            i++;
 	  }
 	else if ((string_match("-user", argv[i])) ||
 		 (string_match("-u",argv[i])))
 	  {
-	    set_watch_prod_group_setting( 4, argv[i], argv[++i], res);
+            int t = i+1;
+	    set_watch_prod_group_setting( 4, argv[i], argv[t], res);
+            i++;
 	  }
 	else if (string_match_up_to("-nowmes", argv[i],4))
 	  {
