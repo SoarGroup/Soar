@@ -706,7 +706,7 @@ int soar_cSaveReteNet(const char *filename)
     char *append_loc;
 
     if (current_agent(all_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]) {
-        // printing message as per bugzilla bug #154
+        /* printing message as per bugzilla bug #154 */
         print("Internal error: can't save rete with justifications present. If you want to save, do an init-soar and try again.\n");
         return SOAR_ERROR;
     }
