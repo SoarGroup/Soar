@@ -866,6 +866,7 @@ void do_one_top_level_phase (void) {
        * current_agent(d_cycle_count)++;
        */
       increment_current_agent_d_cycle_count;
+ 
 
            /* MRJ 5/23/01 */   
  #ifdef SOAR_DECAY   

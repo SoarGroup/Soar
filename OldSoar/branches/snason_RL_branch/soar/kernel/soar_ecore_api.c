@@ -1137,7 +1137,8 @@ int soar_ecPrintAllProductionsOfType(int type, bool internal, bool print_fname, 
 
     while (prod != NIL) {
         /* Print it... */
-        if (!full_prod) {
+        print("\n");
+		if (!full_prod) {
             print_with_symbols("%y  ", prod->name);
 	        if (type == RL_PRODUCTION_TYPE){                  // SAN
 				print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
@@ -1154,10 +1155,10 @@ int soar_ecPrintAllProductionsOfType(int type, bool internal, bool print_fname, 
                 print_string(" _unknown_ ");
             }
         }
-        print("\n");
+        
         if (full_prod) {
-            print_production(prod, internal);
             print("\n");
+			print_production(prod, internal);            
         }
         prod = prod->prev;
     }

@@ -61,6 +61,7 @@ void reset_RL(){
 	// current_agent(next_Q) = 0.0;
 }
 
+
 void copy_nots(not * top_not, not ** dest_not)
 {
     not *new;
@@ -169,10 +170,10 @@ void record_for_RL()
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
 			  // if ((fabs(prod->avg_update) < 0.01) && prod->increasing){
-			  if (prod->firing_count < 0){
+			  if (prod->times_updated > 30){
 				  new_prod = specify_production(ist);
 				  if (new_prod){
-					  // prod->times_applied = 0;
+					  prod->times_updated = 0;
 					  push(new_prod, record->pointer_list);
 					  record->num_prod++;
 				  }
@@ -381,9 +382,17 @@ void learn_RL_productions(int level){
 				// a->referent = symbol_to_rhs_value(make_float_constant(Q));
 				prod->times_updated++;
 				temp = prod->decay_abs_update;
-				prod->decay_abs_update = fabs(update) + prod->decay_abs_update*current_agent(epsilon);
-				prod->increasing = (prod->decay_abs_update > temp ? 1 : 0);
+				// prod->decay_abs_update = fabs(update) + prod->decay_abs_update*current_agent(gamma);
+				// prod->decay_abs_update = ((prod->times_updated - 1)*prod->decay_abs_update + fabs(update)) / prod->times_updated;
+				// prod->increasing = (prod->decay_abs_update > temp ? 1 : 0);
+				prod->decay_abs_update = fabs(update);
 				prod->avg_update = ((prod->times_updated - 1)*prod->avg_update + update) / prod->times_updated;
+				print_with_symbols("\n%y  ", prod->name);
+	    		print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
+				print("Decayed average %f ", prod->decay_abs_update);
+				print("Average %f ", prod->avg_update);
+				print("firings %d\n", prod->times_updated);
+			
 			//	prod->times_applied++;
 			}
 		}
