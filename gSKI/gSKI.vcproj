@@ -14,7 +14,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="bin"
-			IntermediateDirectory="$(OutDir)/Debug"
+			IntermediateDirectory="bin/Debug"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="SoarKernelSource_md.lib"
-				OutputFile="$(SolutionDir)bin/$(ProjectName)d.dll"
+				OutputFile="bin/gSKId.dll"
 				AdditionalLibraryDirectories="..\SoarKernel\lib"
 				GenerateDebugInformation="TRUE"
 				MapLines="TRUE"

@@ -844,9 +844,10 @@ _|___/    __         _    _             ____  _               _
          string prod = inputFile.substr(match[1].rm_so, match[1].rm_eo-match[1].rm_so );
 
          // TODO: Remove this or send it to the Debug log (when there is one)
-         cout << "========================" << endl;
-         cout << "PRODUCTION = " << prod << endl;
-         cout << "========================" << endl;
+		 //voigtjr: removed next three lines
+         //cout << "========================" << endl;
+         //cout << "PRODUCTION = " << prod << endl;
+         //cout << "========================" << endl;
 
          // TODO: This should not be needed, FIX!
 //         soarAlternateInput(a, const_cast<char *>(prod.c_str()), ") ", true); 
