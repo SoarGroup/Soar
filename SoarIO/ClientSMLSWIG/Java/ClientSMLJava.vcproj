@@ -49,9 +49,9 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove previous Java files"
-				CommandLine="echo del *.java
-echo del *.class
-"/>
+				CommandLine="echo on
+del *.java
+del *.class"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -102,9 +102,9 @@ echo del *.class
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove previous Java files"
-				CommandLine="echo del *.java
-echo del *.class
-"/>
+				CommandLine="echo on
+del *.java
+del *.class"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
