@@ -35,7 +35,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	};
 
 	int depth = pAgent->GetDefaultWMEDepth();
-	unsigned int options = 0;
+	PrintBitset options(0);
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, ":acd:DfFijnosSu", longOptions, 0);
@@ -43,13 +43,13 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 
 		switch (option) {
 			case 'a':
-				options |= OPTION_PRINT_ALL;
+				options.set(PRINT_ALL);
 				break;
 			case 'c':
-				options |= OPTION_PRINT_CHUNKS;
+				options.set(PRINT_CHUNKS);
 				break;
 			case 'd':
-				options |= OPTION_PRINT_DEPTH;
+				options.set(PRINT_DEPTH);
 				if (!IsInteger(m_pGetOpt->GetOptArg())) {
 					return SetError(CLIError::kIntegerExpected);
 				}
@@ -59,34 +59,34 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 				}
 				break;
 			case 'D':
-				options |= OPTION_PRINT_DEFAULTS;
+				options.set(PRINT_DEFAULTS);
 				break;
 			case 'f':
-				options |= OPTION_PRINT_FULL;
+				options.set(PRINT_FULL);
 				break;
 			case 'F':
-				options |= OPTION_PRINT_FILENAME;
+				options.set(PRINT_FILENAME);
 				break;
 			case 'i':
-				options |= OPTION_PRINT_INTERNAL;
+				options.set(PRINT_INTERNAL);
 				break;
 			case 'j':
-				options |= OPTION_PRINT_JUSTIFICATIONS;
+				options.set(PRINT_JUSTIFICATIONS);
 				break;
 			case 'n':
-				options |= OPTION_PRINT_NAME;
+				options.set(PRINT_NAME);
 				break;
 			case 'o':
-				options |= OPTION_PRINT_OPERATORS;
+				options.set(PRINT_OPERATORS);
 				break;
 			case 's':
-				options |= OPTION_PRINT_STACK;
+				options.set(PRINT_STACK);
 				break;
 			case 'S':
-				options |= OPTION_PRINT_STATES;
+				options.set(PRINT_STATES);
 				break;
 			case 'u':
-				options |= OPTION_PRINT_USER;
+				options.set(PRINT_USER);
 				break;
 			case ':':
 				return SetError(CLIError::kMissingOptionArg);
@@ -104,9 +104,14 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoPrint(pAgent, options, depth);
 }
 
-EXPORT bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int options, int depth, std::string* pArg) {
-	// TODO: structured output
-
+/*************************************************************
+* @brief print command
+* @param pAgent The pointer to the gSKI agent interface
+* @param options The options to the print command, see cli_CommandData.h
+* @param depth WME depth
+* @param pArg The identifier/timetag/pattern/production name to print, or 0 (null) if not applicable
+*************************************************************/
+EXPORT bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const PrintBitset& options, int depth, const std::string* pArg) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -114,21 +119,21 @@ EXPORT bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned i
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	// Check for stack print
-	if (options & OPTION_PRINT_STACK) {
+	if (options.test(PRINT_STACK)) {
 		AddListenerAndDisableCallbacks(pAgent);
-		pKernelHack->PrintStackTrace(pAgent, (options & OPTION_PRINT_STATES) ? true : false, (options & OPTION_PRINT_OPERATORS) ? true : false);
+		pKernelHack->PrintStackTrace(pAgent, (options.test(PRINT_STATES)) ? true : false, (options.test(PRINT_OPERATORS)) ? true : false);
 		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
 
 	// Cache the flags since it makes function calls huge
-	bool internal = (options & OPTION_PRINT_INTERNAL) ? true : false;
-	bool filename = (options & OPTION_PRINT_FILENAME) ? true : false;
-	bool full = (options & OPTION_PRINT_FULL) ? true : false;
-	bool name = (options & OPTION_PRINT_NAME) ? true : false;
+	bool internal = (options.test(PRINT_INTERNAL)) ? true : false;
+	bool filename = (options.test(PRINT_FILENAME)) ? true : false;
+	bool full = (options.test(PRINT_FULL)) ? true : false;
+	bool name = (options.test(PRINT_NAME)) ? true : false;
 
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
-	if (options & OPTION_PRINT_ALL) {
+	if (options.test(PRINT_ALL)) {
 		// TODO: Find out what is arg is for
 		AddListenerAndDisableCallbacks(pAgent);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
@@ -138,25 +143,25 @@ EXPORT bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned i
 		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
-	if (options & OPTION_PRINT_CHUNKS) {
+	if (options.test(PRINT_CHUNKS)) {
 		AddListenerAndDisableCallbacks(pAgent);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
 		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
-	if (options & OPTION_PRINT_DEFAULTS) {
+	if (options.test(PRINT_DEFAULTS)) {
 		AddListenerAndDisableCallbacks(pAgent);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
 		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
-	if (options & OPTION_PRINT_JUSTIFICATIONS) {
+	if (options.test(PRINT_JUSTIFICATIONS)) {
 		AddListenerAndDisableCallbacks(pAgent);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
-	if (options & OPTION_PRINT_USER) {
+	if (options.test(PRINT_USER)) {
 		AddListenerAndDisableCallbacks(pAgent);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
 		RemoveListenerAndEnableCallbacks(pAgent);

@@ -50,17 +50,22 @@ bool CommandLineInterface::ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::s
 
 	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
-	return DoVerbose(pAgent, query, setting);
+	return DoVerbose(pAgent, query ? 0 : &setting);
 }
 
-EXPORT bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool query, bool setting) {
+/*************************************************************
+* @brief verbose command
+* @param pAgent The pointer to the gSKI agent interface
+* @param pSetting The verbose setting, true to turn on, false to turn off, pass 0 (null) to query
+*************************************************************/
+EXPORT bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool* pSetting) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (query) {
+	if (!pSetting) {
 		if (m_RawOutput) {
 			m_Result << "Verbose is " << pKernelHack->GetVerbosity(pAgent) ? "on." : "off.";
 		} else {
@@ -69,7 +74,7 @@ EXPORT bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool query, bo
 		return true;
 	}
 
-	pKernelHack->SetVerbosity(pAgent, setting);
+	pKernelHack->SetVerbosity(pAgent, *pSetting);
 	return true;
 }
 

@@ -28,6 +28,11 @@ bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std:
 	return DoRemoveWME(pAgent, timetag);
 }
 
+/*************************************************************
+* @brief remove-wme command
+* @param pAgent The pointer to the gSKI agent interface
+* @param timetag The timetag of the wme to remove
+*************************************************************/
 EXPORT bool CommandLineInterface::DoRemoveWME(gSKI::IAgent* pAgent, int timetag) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;

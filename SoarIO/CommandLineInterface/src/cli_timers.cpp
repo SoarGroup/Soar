@@ -51,18 +51,26 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 	// No non-option arguments
 	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
-	return DoTimers(pAgent, print, setting);
+	return DoTimers(pAgent, print ? &setting : 0);
 }
 
-EXPORT bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, bool setting) {
+/*************************************************************
+* @brief timers command
+* @param pAgent The pointer to the gSKI agent interface
+* @param pSetting The timers setting, true to turn on, false to turn off, pass 0 (null) to query
+*************************************************************/
+EXPORT bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool* pSetting) {
 	// Need agent pointer and kernel pointer for sysparam
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (print) {
+	if (pSetting) {
+		// set, don't print
+		pKernelHack->SetSysparam(pAgent, TIMERS_ENABLED, *pSetting);
 
+	} else {
 		// print current setting
 		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
 
@@ -71,13 +79,8 @@ EXPORT bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, boo
 		} else {
 			// adds <arg name="timers">true</arg> (or false) if the timers are
 			// enabled (or disabled)
-			AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean,
-				pSysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean, pSysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
-
-	} else {
-		// set, don't print
-		pKernelHack->SetSysparam(pAgent, TIMERS_ENABLED, setting);
 	}
 	return true;
 }

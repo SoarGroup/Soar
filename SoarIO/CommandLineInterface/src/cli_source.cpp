@@ -25,6 +25,11 @@ bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoSource(pAgent, argv[1]);
 }
 
+/*************************************************************
+* @brief source command
+* @param pAgent The pointer to the gSKI agent interface
+* @param filename The file to source
+*************************************************************/
 EXPORT bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 

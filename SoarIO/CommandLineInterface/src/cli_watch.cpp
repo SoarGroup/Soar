@@ -39,8 +39,8 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 		{0, 0, 0, 0}
 	};
 
-	int options = 0;
-	int settings = 0;
+	WatchBitset options(0);
+	WatchBitset settings(0);
 	int learnSetting = 0;
 	int wmeSetting = 0;
 
@@ -50,72 +50,72 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 		switch (option) {
 			case 'b'://backtracing
-				options |= OPTION_WATCH_BACKTRACING;
+				options.set(WATCH_BACKTRACING);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_BACKTRACING;
+					settings.reset(WATCH_BACKTRACING);
 				} else {
-					settings |= OPTION_WATCH_BACKTRACING;
+					settings.set(WATCH_BACKTRACING);
 				}
 				break;
 
 			case 'c'://chunks
-				options |= OPTION_WATCH_CHUNKS;
+				options.set(WATCH_CHUNKS);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_CHUNKS;
+					settings.reset(WATCH_CHUNKS);
 				} else {
-					settings |= OPTION_WATCH_CHUNKS;
+					settings.set(WATCH_CHUNKS);
 				}
 				break;
 
 			case 'd'://decisions
-				options |= OPTION_WATCH_DECISIONS;
+				options.set(WATCH_DECISIONS);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_DECISIONS;
+					settings.reset(WATCH_DECISIONS);
 				} else {
-					settings |= OPTION_WATCH_DECISIONS;
+					settings.set(WATCH_DECISIONS);
 				}
 				break;
 
 			case 'D'://default-productions
-				options |= OPTION_WATCH_DEFAULT;
+				options.set(WATCH_DEFAULT);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_DEFAULT;
+					settings.reset(WATCH_DEFAULT);
 				} else {
-					settings |= OPTION_WATCH_DEFAULT;
+					settings.set(WATCH_DEFAULT);
 				}
 				break;
 
 			case 'f'://fullwmes
-				options |= OPTION_WATCH_WME_DETAIL;
+				options.set(WATCH_WME_DETAIL);
 				wmeSetting = 2;
 				break;
 
 			case 'i'://indifferent-selection
-				options |= OPTION_WATCH_INDIFFERENT;
+				options.set(WATCH_INDIFFERENT);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_INDIFFERENT;
+					settings.reset(WATCH_INDIFFERENT);
 				} else {
-					settings |= OPTION_WATCH_INDIFFERENT;
+					settings.set(WATCH_INDIFFERENT);
 				}
 				break;
 
 			case 'j'://justifications
-				options |= OPTION_WATCH_JUSTIFICATIONS;
+				options.set(WATCH_JUSTIFICATIONS);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_JUSTIFICATIONS;
+					settings.reset(WATCH_JUSTIFICATIONS);
 				} else {
-					settings |= OPTION_WATCH_JUSTIFICATIONS;
+					settings.set(WATCH_JUSTIFICATIONS);
 				}
 				break;
 
 			case 'L'://learning
-				options |= OPTION_WATCH_LEARNING;
+				options.set(WATCH_LEARNING);
 				learnSetting = ParseLearningOptarg();
 				if (learnSetting == -1) return false; //error, code set in ParseLearningOptarg
 				break;
@@ -125,77 +125,78 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				break;
 
 			case 'N'://none
-				options = OPTION_WATCH_ALL;
-				settings = 0;
+				options.reset();  // clear every bit
+				options.flip();   // flip every bit
+				settings.reset(); // clear every bit
 				learnSetting = 0;
 				wmeSetting = 0;
 				break;
 
 			case 'n'://nowmes
-				options |= OPTION_WATCH_WME_DETAIL;
+				options.set(WATCH_WME_DETAIL);
 				wmeSetting = 0;
 				break;
 
 			case 'p'://phases
-				options |= OPTION_WATCH_PHASES;
+				options.set(WATCH_PHASES);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_PHASES;
+					settings.reset(WATCH_PHASES);
 				} else {
-					settings |= OPTION_WATCH_PHASES;
+					settings.set(WATCH_PHASES);
 				}
 				break;
 
 			case 'P'://productions (default, user, justifications, chunks)
-				options |= OPTION_WATCH_DEFAULT;
-				options |= OPTION_WATCH_USER;
-				options |= OPTION_WATCH_CHUNKS;
-				options |= OPTION_WATCH_JUSTIFICATIONS;
+				options.set(WATCH_DEFAULT);
+				options.set(WATCH_USER);
+				options.set(WATCH_CHUNKS);
+				options.set(WATCH_JUSTIFICATIONS);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_DEFAULT;
-					settings &= ~OPTION_WATCH_USER;
-					settings &= ~OPTION_WATCH_CHUNKS;
-					settings &= ~OPTION_WATCH_JUSTIFICATIONS;
+					settings.reset(WATCH_DEFAULT);
+					settings.reset(WATCH_USER);
+					settings.reset(WATCH_CHUNKS);
+					settings.reset(WATCH_JUSTIFICATIONS);
 				} else {
-					settings |= OPTION_WATCH_DEFAULT;
-					settings |= OPTION_WATCH_USER;
-					settings |= OPTION_WATCH_CHUNKS;
-					settings |= OPTION_WATCH_JUSTIFICATIONS;
+					settings.set(WATCH_DEFAULT);
+					settings.set(WATCH_USER);
+					settings.set(WATCH_CHUNKS);
+					settings.set(WATCH_JUSTIFICATIONS);
 				}
 				break;
 
 			case 'r'://preferences
-				options |= OPTION_WATCH_PREFERENCES;
+				options.set(WATCH_PREFERENCES);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_PREFERENCES;
+					settings.reset(WATCH_PREFERENCES);
 				} else {
-					settings |= OPTION_WATCH_PREFERENCES;
+					settings.set(WATCH_PREFERENCES);
 				}
 				break;
 
 			case 't'://timetags
-				options |= OPTION_WATCH_WME_DETAIL;
+				options.set(WATCH_WME_DETAIL);
 				wmeSetting = 1;
 				break;
 
 			case 'u'://user-productions
-				options |= OPTION_WATCH_USER;
+				options.set(WATCH_USER);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_USER;
+					settings.reset(WATCH_USER);
 				} else {
-					settings |= OPTION_WATCH_USER;
+					settings.set(WATCH_USER);
 				}
 				break;
 			case 'w'://wmes
-				options |= OPTION_WATCH_WMES;
+				options.set(WATCH_WMES);
 				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
-					settings &= ~OPTION_WATCH_WMES;
+					settings.reset(WATCH_WMES);
 				} else {
-					settings |= OPTION_WATCH_WMES;
+					settings.set(WATCH_WMES);
 				}
 				break;
 			case ':':
@@ -219,46 +220,57 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoWatch(pAgent, options, settings, wmeSetting, learnSetting);
 }
 
-bool CommandLineInterface::ProcessWatchLevelSettings(const int level, int& options, int& settings, int& wmeSetting, int& learnSetting) {
+bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting) {
 
 	if (level < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 	if (level > 5) return SetError(CLIError::kIntegerOutOfRange);
 
 	// All of these are going to change
-	options = OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
-		| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
-		| OPTION_WATCH_PHASES | OPTION_WATCH_DECISIONS;
+	options.set(WATCH_PREFERENCES);
+	options.set(WATCH_WMES);
+	options.set(WATCH_DEFAULT);
+	options.set(WATCH_USER);
+	options.set(WATCH_CHUNKS);
+	options.set(WATCH_JUSTIFICATIONS);
+	options.set(WATCH_PHASES);
+	options.set(WATCH_DECISIONS);
 
 	// Start with all off, turn on as appropriate
-	settings &= ~(OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
-		| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
-		| OPTION_WATCH_PHASES | OPTION_WATCH_DECISIONS);
+	settings.reset(WATCH_PREFERENCES);
+	settings.reset(WATCH_WMES);
+	settings.reset(WATCH_DEFAULT);
+	settings.reset(WATCH_USER);
+	settings.reset(WATCH_CHUNKS);
+	settings.reset(WATCH_JUSTIFICATIONS);
+	settings.reset(WATCH_PHASES);
+	settings.reset(WATCH_DECISIONS);
 
 	switch (level) {
 		case 0:// none
-			options = OPTION_WATCH_ALL;
-			settings = 0;
+			options.reset();
+			options.flip();
+			settings.reset();
 			learnSetting = 0;
 			wmeSetting = 0;
 			break;
 			
 		case 5:// preferences
-			settings |= OPTION_WATCH_PREFERENCES;
+			settings.set(WATCH_PREFERENCES);
 			// falls through
 		case 4:// wmes
-			settings |= OPTION_WATCH_WMES;
+			settings.set(WATCH_WMES);
 			// falls through
 		case 3:// productions (default, user, chunks, justifications)
-			settings |= OPTION_WATCH_DEFAULT;
-			settings |= OPTION_WATCH_USER;
-			settings |= OPTION_WATCH_CHUNKS;
-			settings |= OPTION_WATCH_JUSTIFICATIONS;
+			settings.set(WATCH_DEFAULT);
+			settings.set(WATCH_USER);
+			settings.set(WATCH_CHUNKS);
+			settings.set(WATCH_JUSTIFICATIONS);
 			// falls through
 		case 2:// phases
-			settings |= OPTION_WATCH_PHASES;
+			settings.set(WATCH_PHASES);
 			// falls through
 		case 1:// decisions
-			settings |= OPTION_WATCH_DECISIONS;
+			settings.set(WATCH_DECISIONS);
 			break;
 	}
 	return true;
@@ -274,15 +286,10 @@ int CommandLineInterface::ParseLevelOptarg() {
 
 int CommandLineInterface::ParseLearningOptarg() {
 	std::string optarg(m_pGetOpt->GetOptArg());
-	if (optarg == "noprint" || optarg == "0") {
-		return 0;
-	}
-	if (optarg == "print" || optarg == "1") {
-		return 1;
-	}
-	if (optarg == "fullprint" || optarg == "2") {
-		return 2;
-	}
+	if (optarg == "noprint"   || optarg == "0") return 0;
+	if (optarg == "print"     || optarg == "1") return 1;
+	if (optarg == "fullprint" || optarg == "2") return 2;
+
 	SetError(CLIError::kInvalidLearnSetting);
 	return -1;
 }
@@ -293,14 +300,22 @@ bool CommandLineInterface::CheckOptargRemoveOrZero() {
 	return SetError(CLIError::kRemoveOrZeroExpected);
 }
 
-EXPORT bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const int options, const int settings, const int wmeSetting, const int learnSetting) {
+/*************************************************************
+* @brief watch command
+* @param pAgent The pointer to the gSKI agent interface
+* @param options Options for the watch command, see cli_CommandData.h
+* @param settings Settings for the watch command, if a flag (option) is set, its setting is set using this (true/on or false/off)
+* @param wmeSetting Setting for wme detail, not binary so it has its own arg
+* @param learnSetting Setting for learn level, not binary so it has its own arg
+*************************************************************/
+EXPORT bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (!options) {
+	if (options.none()) {
 		// Print watch settings.
 		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
 		char buf[kMinBufferSize];
@@ -404,47 +419,47 @@ EXPORT bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const int option
 	}
 
 	// No watch level and no none flags, that means we have to do the rest
-	if (options & OPTION_WATCH_BACKTRACING) {
-		pKernelHack->SetSysparam(pAgent, TRACE_BACKTRACING_SYSPARAM, settings & OPTION_WATCH_BACKTRACING);
+	if (options.test(WATCH_BACKTRACING)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_BACKTRACING_SYSPARAM, settings.test(WATCH_BACKTRACING));
 	}
 
-	if (options & OPTION_WATCH_CHUNKS) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, settings & OPTION_WATCH_CHUNKS);
+	if (options.test(WATCH_CHUNKS)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, settings.test(WATCH_CHUNKS));
 	}
 
-	if (options & OPTION_WATCH_DECISIONS) {
-		pKernelHack->SetSysparam(pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, settings & OPTION_WATCH_DECISIONS);
+	if (options.test(WATCH_DECISIONS)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, settings.test(WATCH_DECISIONS));
 	}
 
-	if (options & OPTION_WATCH_DEFAULT) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, settings & OPTION_WATCH_DEFAULT);
+	if (options.test(WATCH_DEFAULT)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, settings.test(WATCH_DEFAULT));
 	}
 
-	if (options & OPTION_WATCH_INDIFFERENT) {
-		pKernelHack->SetSysparam(pAgent, TRACE_INDIFFERENT_SYSPARAM, settings & OPTION_WATCH_INDIFFERENT);
+	if (options.test(WATCH_INDIFFERENT)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_INDIFFERENT_SYSPARAM, settings.test(WATCH_INDIFFERENT));
 	}
 
-	if (options & OPTION_WATCH_JUSTIFICATIONS) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, settings & OPTION_WATCH_JUSTIFICATIONS);
+	if (options.test(WATCH_JUSTIFICATIONS)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, settings.test(WATCH_JUSTIFICATIONS));
 	}
 
-	if (options & OPTION_WATCH_PHASES) {
-		pKernelHack->SetSysparam(pAgent, TRACE_PHASES_SYSPARAM, settings & OPTION_WATCH_PHASES);
+	if (options.test(WATCH_PHASES)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_PHASES_SYSPARAM, settings.test(WATCH_PHASES));
 	}
 
-	if (options & OPTION_WATCH_PREFERENCES) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, settings & OPTION_WATCH_PREFERENCES);
+	if (options.test(WATCH_PREFERENCES)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, settings.test(WATCH_PREFERENCES));
 	}
 
-	if (options & OPTION_WATCH_USER) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, settings & OPTION_WATCH_USER);
+	if (options.test(WATCH_USER)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, settings.test(WATCH_USER));
 	}
 
-	if (options & OPTION_WATCH_WMES) {
-		pKernelHack->SetSysparam(pAgent, TRACE_WM_CHANGES_SYSPARAM, settings & OPTION_WATCH_WMES);
+	if (options.test(WATCH_WMES)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_WM_CHANGES_SYSPARAM, settings.test(WATCH_WMES));
 	}
 
-	if (options & OPTION_WATCH_LEARNING) {
+	if (options.test(WATCH_LEARNING)) {
 		switch (learnSetting) {
 			default:
 				// falls through
@@ -469,7 +484,7 @@ EXPORT bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const int option
 		}
 	}
 
-	if (options & OPTION_WATCH_WME_DETAIL) {
+	if (options.test(WATCH_WME_DETAIL)) {
 		switch (wmeSetting) {
 			default:
 				// falls through

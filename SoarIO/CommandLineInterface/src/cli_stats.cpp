@@ -22,7 +22,7 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 		{0, 0, 0, 0}
 	};
 
-	unsigned int options = 0;
+	StatsBitset options(0);
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "mrs", longOptions, 0);
@@ -30,13 +30,13 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 
 		switch (option) {
 			case 'm':
-				options |= OPTION_STATS_MEMORY;
+				options.set(STATS_MEMORY);
 				break;
 			case 'r':
-				options |= OPTION_STATS_RETE;
+				options.set(STATS_RETE);
 				break;
 			case 's':
-				options |= OPTION_STATS_SYSTEM;
+				options.set(STATS_SYSTEM);
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -51,7 +51,12 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoStats(pAgent, options);
 }
 
-EXPORT bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const int options) {
+/*************************************************************
+* @brief stats command
+* @param pAgent The pointer to the gSKI agent interface
+* @param options The options for the stats command
+*************************************************************/
+EXPORT bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const StatsBitset& options) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -67,15 +72,15 @@ EXPORT bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const int option
 
 	argv[argc++] = const_cast<char*>(_stats);
 
-	if (options & OPTION_STATS_MEMORY) {
+	if (options.test(STATS_MEMORY)) {
 		argv[argc++] = const_cast<char*>(_memory);
 	}
 
-	if (options & OPTION_STATS_RETE) {
+	if (options.test(STATS_RETE)) {
 		argv[argc++] = const_cast<char*>(_rete);
 	}
 
-	if (options & OPTION_STATS_SYSTEM) {
+	if (options.test(STATS_SYSTEM)) {
 		argv[argc++] = const_cast<char*>(_system);
 	}
 	argv[argc] = 0;

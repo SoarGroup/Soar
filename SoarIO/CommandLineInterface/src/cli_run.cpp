@@ -27,7 +27,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		{0, 0, 0, 0}
 	};
 
-	unsigned int options = 0;
+	RunBitset options(0);
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "defops", longOptions, 0);
@@ -35,22 +35,22 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 
 		switch (option) {
 			case 'd':
-				options |= OPTION_RUN_DECISION;
+				options.set(RUN_DECISION);
 				break;
 			case 'e':
-				options |= OPTION_RUN_ELABORATION;
+				options.set(RUN_ELABORATION);
 				break;
 			case 'f':
-				options |= OPTION_RUN_FOREVER;
+				options.set(RUN_FOREVER);
 				break;
 			case 'o':
-				options |= OPTION_RUN_OUTPUT;
+				options.set(RUN_OUTPUT);
 				break;
 			case 'p':
-				options |= OPTION_RUN_PHASE;
+				options.set(RUN_PHASE);
 				break;
 			case 's':
-				options |= OPTION_RUN_SELF;
+				options.set(RUN_SELF);
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -74,9 +74,13 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 	return DoRun(pAgent, options, count);
 }
 
-EXPORT bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int options, int count) {
-	// TODO: structured output
-
+/*************************************************************
+* @brief run command
+* @param pAgent The pointer to the gSKI agent interface
+* @param options Options for the run command, see cli_CommandData.h
+* @param count The count, units or applicability depends on options
+*************************************************************/
+EXPORT bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Default run type is forever
@@ -85,19 +89,19 @@ EXPORT bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int
 	if (count) runType = gSKI_RUN_DECISION_CYCLE;
 
 	// Override run type with option flag:
-	if (options & OPTION_RUN_ELABORATION) {
+	if (options.test(RUN_ELABORATION)) {
 		runType = gSKI_RUN_SMALLEST_STEP;
 
-	} else if (options & OPTION_RUN_PHASE) {
+	} else if (options.test(RUN_PHASE)) {
 		runType = gSKI_RUN_PHASE;
 
-	} else if (options & OPTION_RUN_DECISION) {
+	} else if (options.test(RUN_DECISION)) {
 		runType = gSKI_RUN_DECISION_CYCLE;
 
-	} else if (options & OPTION_RUN_OUTPUT) {
+	} else if (options.test(RUN_OUTPUT)) {
 		runType = gSKI_RUN_UNTIL_OUTPUT;
 
-	} else if (options & OPTION_RUN_FOREVER) {
+	} else if (options.test(RUN_FOREVER)) {
 		runType = gSKI_RUN_FOREVER;	
 	}
 
@@ -107,7 +111,7 @@ EXPORT bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int
 
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
 	egSKIRunResult runResult;
-	if (options & OPTION_RUN_SELF) {
+	if (options.test(RUN_SELF)) {
 		runResult = pAgent->RunInClientThread(runType, count, m_pgSKIError);
 	} else {
         m_pKernel->GetAgentManager()->ClearAllInterrupts();

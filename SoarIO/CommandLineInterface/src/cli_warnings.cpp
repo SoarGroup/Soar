@@ -50,17 +50,22 @@ bool CommandLineInterface::ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::
 
 	if (m_pGetOpt->GetAdditionalArgCount()) SetError(CLIError::kTooManyArgs);
 
-	return DoWarnings(pAgent, query, setting);
+	return DoWarnings(pAgent, query ? 0 : &setting);
 }
 
-EXPORT bool CommandLineInterface::DoWarnings(gSKI::IAgent* pAgent, bool query, bool setting) {
+/*************************************************************
+* @brief warnings command
+* @param pAgent The pointer to the gSKI agent interface
+* @param pSetting The warnings setting, true to turn on, false to turn off, pass 0 (null) to query
+*************************************************************/
+EXPORT bool CommandLineInterface::DoWarnings(gSKI::IAgent* pAgent, bool* pSetting) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (!query) {
-		pKernelHack->SetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM, setting);
+	if (pSetting) {
+		pKernelHack->SetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM, *pSetting);
 		return true;
 	}
 

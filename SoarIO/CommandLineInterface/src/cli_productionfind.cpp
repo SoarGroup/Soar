@@ -25,7 +25,7 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 		{0, 0, 0, 0}
 	};
 
-	unsigned int mode = 0;
+	ProductionFindBitset options(0);
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "clnrs", longOptions, 0);
@@ -33,21 +33,19 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 
 		switch (option) {
 			case 'c':
-				mode |= OPTION_PRODUCTION_FIND_INCLUDE_CHUNKS;
+				options.set(PRODUCTION_FIND_INCLUDE_CHUNKS);
 				break;
 			case 'l':
-				mode |= OPTION_PRODUCTION_FIND_INCLUDE_LHS;
-				//mode &= ~OPTION_PRODUCTION_FIND_INCLUDE_RHS;
+				options.set(PRODUCTION_FIND_INCLUDE_LHS);
 				break;
-			case 'n':
-				mode &= ~OPTION_PRODUCTION_FIND_INCLUDE_CHUNKS;
+			case 'n':	// BUGBUG: this option seems silly, something is wrong here.
+				options.reset(PRODUCTION_FIND_INCLUDE_CHUNKS);
 				break;
 			case 'r':
-				mode |= OPTION_PRODUCTION_FIND_INCLUDE_RHS;
-				//mode &= ~OPTION_PRODUCTION_FIND_INCLUDE_LHS;
+				options.set(PRODUCTION_FIND_INCLUDE_RHS);
 				break;
 			case 's':
-				mode |= OPTION_PRODUCTION_FIND_SHOWBINDINGS;
+				options.set(PRODUCTION_FIND_SHOWBINDINGS);
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -58,20 +56,25 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 
 	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooFewArgs);
 
-	if (!mode) mode = OPTION_PRODUCTION_FIND_INCLUDE_LHS;
+	if (options.none()) options.set(PRODUCTION_FIND_INCLUDE_LHS);
 
 	std::string pattern;
 	for (unsigned i = m_pGetOpt->GetOptind(); i < argv.size(); ++i) {
 		pattern += argv[i];
 		pattern += ' ';
 	}
-
 	pattern = pattern.substr(0, pattern.length() - 1);
 
-	return DoProductionFind(pAgent, mode, pattern);
+	return DoProductionFind(pAgent, options, pattern);
 }
 
-EXPORT bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigned int mode, std::string pattern) {
+/*************************************************************
+* @brief production-find command
+* @param pAgent The pointer to the gSKI agent interface
+* @param options The options to the command, see cli_CommandData.h
+* @param pattern Any pattern that can appear in productions.
+*************************************************************/
+EXPORT bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, const ProductionFindBitset& options, const std::string& pattern) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -83,12 +86,12 @@ EXPORT bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigne
 	bool ret = pKernelHack->ProductionFind(pAgent, 
 		0, 
 		m_pKernel, 
-		(mode & OPTION_PRODUCTION_FIND_INCLUDE_LHS) ? true : false, 
-		(mode & OPTION_PRODUCTION_FIND_INCLUDE_RHS) ? true : false, 
+		options.test(PRODUCTION_FIND_INCLUDE_LHS), 
+		options.test(PRODUCTION_FIND_INCLUDE_RHS), 
 		const_cast<char*>(pattern.c_str()), 
-		(mode & OPTION_PRODUCTION_FIND_SHOWBINDINGS) ? true : false, 
-		(mode & OPTION_PRODUCTION_FIND_INCLUDE_CHUNKS) ? true : false, 
-		(mode & OPTION_PRODUCTION_FIND_INCLUDE_CHUNKS) ? true : false);
+		options.test(PRODUCTION_FIND_SHOWBINDINGS), 
+		options.test(PRODUCTION_FIND_INCLUDE_CHUNKS),   // BUGBUG: what?
+		options.test(PRODUCTION_FIND_INCLUDE_CHUNKS));  // BUGBUG: what?
 	
 	RemoveListenerAndEnableCallbacks(pAgent);
 

@@ -60,57 +60,89 @@ namespace cli {
 		MEMORIES_NUM_OPTIONS, // must be last
 	};
 
-	const unsigned int OPTION_NUMERIC_INDIFFERENT_AVERAGE = 0x1;
-	const unsigned int OPTION_NUMERIC_INDIFFERENT_SUM	  = 0x2;
+	enum eNumericIndifferentMode {
+		NUMERIC_INDIFFERENT_QUERY,
+		NUMERIC_INDIFFERENT_AVERAGE,
+		NUMERIC_INDIFFERENT_SUM,
+	};
 
-	const unsigned int OPTION_PRINT_ALL					= 0x0001;
-	const unsigned int OPTION_PRINT_CHUNKS				= 0x0002;
-	const unsigned int OPTION_PRINT_DEPTH				= 0x0004;
-	const unsigned int OPTION_PRINT_DEFAULTS			= 0x0008;
-	const unsigned int OPTION_PRINT_FULL				= 0x0010;
-	const unsigned int OPTION_PRINT_FILENAME			= 0x0020;
-	const unsigned int OPTION_PRINT_INTERNAL			= 0x0040;
-	const unsigned int OPTION_PRINT_JUSTIFICATIONS		= 0x0080;
-	const unsigned int OPTION_PRINT_NAME				= 0x0100;
-	const unsigned int OPTION_PRINT_OPERATORS			= 0x0200;
-	const unsigned int OPTION_PRINT_STACK				= 0x0400;
-	const unsigned int OPTION_PRINT_STATES				= 0x0800;
-	const unsigned int OPTION_PRINT_USER				= 0x1000;
+	enum ePreferencesDetail {
+		PREFERENCES_ONLY,
+		PREFERENCES_NAMES,
+		PREFERENCES_TIMETAGS,
+		PREFERENCES_WMES,
+	};
 
-	const unsigned int OPTION_PRODUCTION_FIND_INCLUDE_LHS	 = 0x1;
-	const unsigned int OPTION_PRODUCTION_FIND_INCLUDE_RHS	 = 0x2;
-	const unsigned int OPTION_PRODUCTION_FIND_INCLUDE_CHUNKS = 0x4;
-	const unsigned int OPTION_PRODUCTION_FIND_SHOWBINDINGS	 = 0x8;
+	enum ePrintOptions {
+		PRINT_ALL,
+		PRINT_CHUNKS,
+		PRINT_DEPTH,
+		PRINT_DEFAULTS,
+		PRINT_FULL,
+		PRINT_FILENAME,
+		PRINT_INTERNAL,
+		PRINT_JUSTIFICATIONS,
+		PRINT_NAME,
+		PRINT_OPERATORS,
+		PRINT_STACK,
+		PRINT_STATES,
+		PRINT_USER,
+		PRINT_NUM_OPTIONS, // must be last
+	};
 
-	const unsigned int OPTION_RUN_DECISION     = 0x01;
-	const unsigned int OPTION_RUN_ELABORATION  = 0x02;
-	const unsigned int OPTION_RUN_FOREVER      = 0x04;
-	const unsigned int OPTION_RUN_OUTPUT       = 0x08;
-	const unsigned int OPTION_RUN_PHASE        = 0x10;
-	const unsigned int OPTION_RUN_SELF         = 0x20;
+	enum eProductionFindOptions {
+		PRODUCTION_FIND_INCLUDE_LHS,
+		PRODUCTION_FIND_INCLUDE_RHS,
+		PRODUCTION_FIND_INCLUDE_CHUNKS,
+		PRODUCTION_FIND_SHOWBINDINGS,
+		PRODUCTION_FIND_NUM_OPTIONS, // must be last
+	};
 
-	const unsigned int OPTION_STATS_MEMORY	= 0x01;
-	const unsigned int OPTION_STATS_RETE	= 0x02;
-	const unsigned int OPTION_STATS_SYSTEM	= 0x04;
+	enum eRunOptions {
+		RUN_DECISION,
+		RUN_ELABORATION,
+		RUN_FOREVER,
+		RUN_OUTPUT,
+		RUN_PHASE,
+		RUN_SELF,
+		RUN_NUM_OPTIONS, // must be last
+	};
 
-	const unsigned int OPTION_WATCH_DECISIONS		= 0x001;
-	const unsigned int OPTION_WATCH_PHASES			= 0x002;
-	const unsigned int OPTION_WATCH_DEFAULT			= 0x004;
-	const unsigned int OPTION_WATCH_USER			= 0x008;
-	const unsigned int OPTION_WATCH_CHUNKS			= 0x010;
-	const unsigned int OPTION_WATCH_JUSTIFICATIONS	= 0x020;
-	const unsigned int OPTION_WATCH_WMES			= 0x040;
-	const unsigned int OPTION_WATCH_PREFERENCES		= 0x080;
-	const unsigned int OPTION_WATCH_WME_DETAIL		= 0x100;
-	const unsigned int OPTION_WATCH_LEARNING		= 0x200;
-	const unsigned int OPTION_WATCH_BACKTRACING		= 0x400;
-	const unsigned int OPTION_WATCH_INDIFFERENT		= 0x800;
-	const unsigned int OPTION_WATCH_ALL				= 0xfff;
+	enum eStatsOptions {
+		STATS_MEMORY,
+		STATS_RETE,
+		STATS_SYSTEM,
+		STATS_NUM_OPTIONS, // must be last
+	};
 
-	const unsigned int OPTION_WATCH_WMES_MODE_ADD		= 0x1;
-	const unsigned int OPTION_WATCH_WMES_MODE_REMOVE	= 0x2;
-	const unsigned int OPTION_WATCH_WMES_MODE_LIST		= 0x3;
-	const unsigned int OPTION_WATCH_WMES_MODE_RESET		= 0x4;
+	enum eWatchOptions {
+		WATCH_DECISIONS,
+		WATCH_PHASES,
+		WATCH_DEFAULT,
+		WATCH_USER,
+		WATCH_CHUNKS,
+		WATCH_JUSTIFICATIONS,
+		WATCH_WMES,
+		WATCH_PREFERENCES,
+		WATCH_WME_DETAIL,
+		WATCH_LEARNING,
+		WATCH_BACKTRACING,
+		WATCH_INDIFFERENT,
+		WATCH_NUM_OPTIONS, // must be last
+	};
+
+	enum eWatchWMEsMode {
+		WATCH_WMES_ADD,
+		WATCH_WMES_REMOVE,
+		WATCH_WMES_LIST,
+		WATCH_WMES_RESET,
+	};
+
+	enum eWatchWMEsOptions {
+		WATCH_WMES_TYPE_ADDS,
+		WATCH_WMES_TYPE_REMOVES,
+		WATCH_WMES_TYPE_NUM_OPTIONS, // must be last
+	};
 
 } // namespace cli
 

@@ -17,12 +17,15 @@ bool CommandLineInterface::ParseQuit(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoQuit();
 }
 
+/*************************************************************
+* @brief quit command
+*************************************************************/
 EXPORT bool CommandLineInterface::DoQuit() {
 	// Flip the quit flag
 	m_QuitCalled = true; 
 
 	// Stop soar
-	DoStopSoar(0, false, std::string("Quit called."));
+	DoStopSoar(0, false, 0);
 
 	// Stop log
 	if (m_pLogFile) {

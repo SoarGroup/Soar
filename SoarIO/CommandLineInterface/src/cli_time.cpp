@@ -34,6 +34,11 @@ bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoTime(pAgent, argv);
 }
 
+/*************************************************************
+* @brief time command
+* @param pAgent The pointer to the gSKI agent interface
+* @param argv The command line with the time arg removed
+*************************************************************/
 EXPORT bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
 	// Look at clock

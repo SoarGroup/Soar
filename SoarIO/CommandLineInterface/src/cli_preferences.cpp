@@ -23,7 +23,7 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 		{0, 0, 0, 0}
 	};
 
-	int detail = 0;
+	ePreferencesDetail detail = PREFERENCES_ONLY;
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "0123nNtw", longOptions, 0);
@@ -32,19 +32,19 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 		switch (option) {
 			case '0':
 			case 'n':
-				detail = 0;
+				detail = PREFERENCES_ONLY;
 				break;
 			case '1':
 			case 'N':
-				detail = 1;
+				detail = PREFERENCES_NAMES;
 				break;
 			case '2':
 			case 't':
-				detail = 2;
+				detail = PREFERENCES_TIMETAGS;
 				break;
 			case '3':
 			case 'w':
-				detail = 3;
+				detail = PREFERENCES_WMES;
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -54,9 +54,8 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 	}
 
 	// Up to two non-option arguments allowed, id/attribute
-	if (m_pGetOpt->GetAdditionalArgCount() > 2) {
-		return SetError(CLIError::kTooManyArgs);
-	}
+	if (m_pGetOpt->GetAdditionalArgCount() > 2) return SetError(CLIError::kTooManyArgs);
+
 	int optind = m_pGetOpt->GetOptind();
 	if (m_pGetOpt->GetAdditionalArgCount() == 2) {
 		// id & attribute
@@ -70,28 +69,36 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 	return DoPreferences(pAgent, detail);
 }
 
-EXPORT bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail, std::string* pId, std::string* pAttribute) {
+/*************************************************************
+* @brief preferences command
+* @param pAgent The pointer to the gSKI agent interface
+* @param detail The preferences detail level, see cli_CommandData.h
+* @param pId An existing soar identifier or 0 (null)
+* @param pAttribute An existing soar attribute of the specified identifier or 0 (null)
+*************************************************************/
+EXPORT bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, const ePreferencesDetail detail, const std::string* pId, const std::string* pAttribute) {
 
 	if (!RequireAgent(pAgent)) return false;
 
+	// This whole implementation is a big hack.
+
+	// First, define some constants
 	const char* _preferences = "preferences";
 	const char* _0 = "0";
 	const char* _1 = "1";
 	const char* _2 = "2";
 	const char* _3 = "3";
 
+	// Next, start arranging the argv
 	char* argv[5];
 	int argc = 0;
 	argv[argc++] = const_cast<char*>(_preferences);
 
-	if (pId) {
-		argv[argc++] = const_cast<char*>(pId->c_str());
-	}
+	// Include the ID and Attribute as needed
+	if (pId) argv[argc++] = const_cast<char*>(pId->c_str());
+	if (pAttribute) argv[argc++] = const_cast<char*>(pAttribute->c_str());
 
-	if (pAttribute) {
-		argv[argc++] = const_cast<char*>(pAttribute->c_str());
-	}
-
+	// Include the detail level
 	switch (detail) {
 		default:
 		case 0:
@@ -108,10 +115,13 @@ EXPORT bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail
 			break;
 	}
 
+	// Set the final arg to 0
 	argv[argc] = 0;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+
+	// Fire the hack off
 	AddListenerAndDisableCallbacks(pAgent);
 	bool ret = pKernelHack->Preferences(pAgent, argc, argv);
 	RemoveListenerAndEnableCallbacks(pAgent);

@@ -17,33 +17,29 @@ using namespace sml;
 
 bool CommandLineInterface::ParseMultiAttributes(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// No more than three arguments
-	if (argv.size() > 3) {
-		return SetError(CLIError::kTooManyArgs);
-	}
+	if (argv.size() > 3) return SetError(CLIError::kTooManyArgs);
 
 	int n = 0;
-
 	// If we have 3 arguments, third one is an integer
 	if (argv.size() > 2) {
-		if (!IsInteger(argv[2])) {
-			// Must be an integer
-			return SetError(CLIError::kIntegerMustBeNonNegative);
-		}
+		if (!IsInteger(argv[2])) return SetError(CLIError::kIntegerExpected);
 		n = atoi(argv[2].c_str());
-		if (n <= 0) {
-			// Must be greater than 0
-			return SetError(CLIError::kIntegerMustBeNonNegative);
-		}
+		if (n <= 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 	}
 
 	// If we have two arguments, second arg is an attribute/identifer/whatever
-	if (argv.size() > 1) {
-		return DoMultiAttributes(pAgent, &(argv[1]), n);
-	} 
-	return DoMultiAttributes(pAgent, 0, n);
+	if (argv.size() > 1) return DoMultiAttributes(pAgent, &argv[1], n);
+
+	return DoMultiAttributes(pAgent);
 }
 
-EXPORT bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* pAttribute, int n) {
+/*************************************************************
+* @brief multi-attributes command
+* @param pAgent The pointer to the gSKI agent interface
+* @param pAttribute The attribute, pass 0 (null) for query
+* @param n The count, pass 0 (null) for query if pAttribute is also null, otherwise this will default to 10
+*************************************************************/
+EXPORT bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, const std::string* pAttribute, int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!pAttribute && !n) {

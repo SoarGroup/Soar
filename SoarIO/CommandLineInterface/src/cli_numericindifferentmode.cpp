@@ -23,7 +23,7 @@ bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std
 		{0, 0, 0, 0}
 	};
 
-	unsigned int mode = 0;
+	eNumericIndifferentMode mode = NUMERIC_INDIFFERENT_QUERY;
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "as", longOptions, 0);
@@ -31,10 +31,10 @@ bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std
 
 		switch (option) {
 			case 'a':
-				mode = OPTION_NUMERIC_INDIFFERENT_AVERAGE;
+				mode = NUMERIC_INDIFFERENT_AVERAGE;
 				break;
 			case 's':
-				mode = OPTION_NUMERIC_INDIFFERENT_SUM;
+				mode = NUMERIC_INDIFFERENT_SUM;
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -49,16 +49,21 @@ bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std
 	return DoNumericIndifferentMode(pAgent, mode);
 }
 
-EXPORT bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsigned int mode) {
+/*************************************************************
+* @brief numeric-indifferent mode command
+* @param pAgent The pointer to the gSKI agent interface
+* @param mode The mode for this command, see cli_CommandData.h
+*************************************************************/
+EXPORT bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, const eNumericIndifferentMode mode) {
 	if (!RequireAgent(pAgent)) return false;
 
 	switch (mode) {
 		case 0:
 			break;
-		case OPTION_NUMERIC_INDIFFERENT_AVERAGE:
+		case NUMERIC_INDIFFERENT_AVERAGE:
 			pAgent->SetNumericIndifferentMode(gSKI_NUMERIC_INDIFFERENT_MODE_AVG);
 			return true;
-		case OPTION_NUMERIC_INDIFFERENT_SUM:
+		case NUMERIC_INDIFFERENT_SUM:
 			pAgent->SetNumericIndifferentMode(gSKI_NUMERIC_INDIFFERENT_MODE_SUM);
 			return true;
 		default:

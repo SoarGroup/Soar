@@ -52,17 +52,22 @@ bool CommandLineInterface::ParseSaveBacktraces(gSKI::IAgent* pAgent, std::vector
 		}
 	}
 	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
-	return DoSaveBacktraces(pAgent, query, setting);
+	return DoSaveBacktraces(pAgent, query ? 0 : &setting);
 }
 
-EXPORT bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool query, bool setting) {
+/*************************************************************
+* @brief save-backtraces command
+* @param pAgent The pointer to the gSKI agent interface
+* @param setting The new setting, pass 0 (null) for query
+*************************************************************/
+EXPORT bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool* pSetting) {
 
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (query) {
+	if (!pSetting) {
 		if (m_RawOutput) {
 			m_Result << "Save bactraces is " << pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? "enabled." : "disabled.";
 		} else {
@@ -71,7 +76,7 @@ EXPORT bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool qu
 		return true;
 	}
 
-	pKernelHack->SetSysparam(pAgent, EXPLAIN_SYSPARAM, setting);
+	pKernelHack->SetSysparam(pAgent, EXPLAIN_SYSPARAM, *pSetting);
 	return true;
 }
 

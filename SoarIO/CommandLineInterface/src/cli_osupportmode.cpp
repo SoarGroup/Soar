@@ -27,6 +27,11 @@ bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<s
 	return DoOSupportMode(pAgent, mode);
 }
 
+/*************************************************************
+* @brief o-support-mode command
+* @param pAgent The pointer to the gSKI agent interface
+* @param mode The new o-support mode.  Use -1 to query.
+*************************************************************/
 EXPORT bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 
 	if (!RequireAgent(pAgent)) return false;

@@ -18,6 +18,9 @@ bool CommandLineInterface::ParseVersion(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoVersion();
 }
 
+/*************************************************************
+* @brief version command
+*************************************************************/
 EXPORT bool CommandLineInterface::DoVersion() {
 
 	char buf[kMinBufferSize];
