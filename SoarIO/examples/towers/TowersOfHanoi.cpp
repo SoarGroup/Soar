@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 	// create kernel
 	IKernel* kernel = kFactory->Create();
 	IAgentManager* manager = kernel->GetAgentManager();
-	gSKI::IAgent* agent = manager->AddAgent("towersAgent", "C:\\Documents and Settings\\stokesd\\Desktop\\SML\\SoarIO\\bin\\towers-of-hanoi-86.soar");
+	gSKI::IAgent* agent = manager->AddAgent("towersAgent", "towers-of-hanoi-86.soar");
 
 
 	//=============================================================================

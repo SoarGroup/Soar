@@ -78,7 +78,6 @@ public:
 		//add holds wmes to parent object
 cout <<"I'm adding 'on' to holds...." << endl;
 		m_pPeg = m_pWMemory->AddWmeObjectLink(holdsParentObject, "on", m_pPegId);
-	//	m_actualPegWME = m_p
 
 		//the holds wme points back to its corresponding disk
 		m_pDiskWme = m_pWMemory->AddWmeObjectLink(holdsParentObject, "disk", parentObject);
@@ -120,15 +119,17 @@ cout <<"I'm adding 'on' to holds...." << endl;
 		if(onItr->IsValid())
 		{
 			// Get the old "on" value
-			IWme* oldTowerLink = onItr->GetVal();
-
+			//IWme* oldTowerLink = onItr->GetVal();\
 			// Replace the wme attribute "on" with the new value
-	//		const gSKI::ISymbol* pegParentSymbol = m_pPeg->GetValue();
-	//		assert(pegParentSymbol);
-	//		IWMObject* pegParentObject = pegParentSymbol->GetObject();
+			//const gSKI::ISymbol* pegParentSymbol = m_pPeg->GetValue();
+			//assert(pegParentSymbol);
+			//IWMObject* pegParentObject = pegParentSymbol->GetObject();
+			//m_pPeg->Release();
+			cout<<"Releasing m_pPeg"<<endl;
+			pWMemory->RemoveWme(m_pPeg);
 
-			m_pPeg->Release();
 			m_pPeg = pWMemory->AddWmeObjectLink(object, "on", m_pPegId);
+			//m_pPeg = pWMemory->AddWmeObjectLink(object, "on", pegParentObject);
 		}
 		// Get List of objects referencing this object with attribute "above"
 		tIWmeIterator* aboveItr = object->GetWMEs("above");
@@ -139,12 +140,12 @@ cout <<"I'm adding 'on' to holds...." << endl;
 
 			if(m_pDiskBeneath)
 			{
-				const gSKI::ISymbol* aboveParentSymbol = m_pHoldsDiskBeneath->GetValue();
+				/*const gSKI::ISymbol* aboveParentSymbol = m_pHoldsDiskBeneath->GetValue();
 				assert(aboveParentSymbol);
-				IWMObject* aboveParentObject = aboveParentSymbol->GetObject();
+				IWMObject* aboveParentObject = aboveParentSymbol->GetObject();*/
 
-				m_pHoldsDiskBeneath->Release();
-				m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", aboveParentObject);
+				pWMemory->RemoveWme(m_pHoldsDiskBeneath);
+				m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", m_pDiskBeneath->GetValue()->GetObject());/*aboveParentObject*/
 			}
 			else
 			{
@@ -164,7 +165,7 @@ cout <<"I'm adding 'on' to holds...." << endl;
 
 	void SetDiskBeneath(Disk* diskBeneath, IWMObject* pegObject)
 	 {
-		//TODO //FIXME @TODO release ref to wme of old disk beneath (if it's not zero)  ????
+		//TODO //FIXME @TODO release ref to wme of old disk beneath (if its not zero)  ????
 
 		if(diskBeneath)
 			m_pDiskBeneath = diskBeneath->GetIdentifierWME();
