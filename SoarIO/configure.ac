@@ -14,8 +14,48 @@ AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 AC_PROG_MAKE_SET
-AC_PROG_SWIG(1.3.24)
-SWIG_ENABLE_CXX
+
+AC_ARG_ENABLE(tcl,
+     [  --enable-tcl        Turn on tcl support (needs swig >= 1.3.24)],
+     [case "${enableval}" in
+	yes) tcl=true ;;
+	no)  tcl=false ;;
+	*) AC_MSG_ERROR(bad value ${enableval} for --enable-tcl) ;;
+     esac],
+     [tcl=false])
+AM_CONDITIONAL(SWIGTCL, test x$tcl = xtrue)
+if test "$tcl" = "true"
+then
+  AC_PROG_SWIG(1.3.24)
+  SWIG_ENABLE_CXX
+  if test "$SWIG_LIB"
+  then
+    echo -n
+  else
+    AC_MSG_ERROR([*** Swig error, check previous message.])
+  fi
+fi
+
+AC_ARG_ENABLE(java,
+     [  --enable-java        Turn on java support (needs swig >= 1.3.24)],
+     [case "${enableval}" in
+	yes) java=true ;;
+	no)  java=false ;;
+	*) AC_MSG_ERROR(bad value ${enableval} for --enable-java) ;;
+     esac],
+     [java=false])
+AM_CONDITIONAL(SWIGJAVA, test x$java = xtrue)
+if test "$java" = "true"
+then
+  AC_PROG_SWIG(1.3.24)
+  SWIG_ENABLE_CXX
+  if test "$SWIG_LIB"
+  then
+    echo -n
+  else
+    AC_MSG_ERROR([*** Swig error, check previous message.])
+  fi
+fi
 
 # Checks for libraries.
 
@@ -219,113 +259,116 @@ AC_MSG_RESULT($LINKFORSHARED)
 AC_ARG_WITH(java, [  --with-java=path        Set location of Java executable],[JAVABIN="$withval"], [JAVABIN=])
 AC_ARG_WITH(javac, [  --with-javac=path       Set location of Javac executable],[JAVACBIN="$withval"], [JAVACBIN=])
 
-if test -z "$JAVABIN" ; then
-  AC_CHECK_PROGS(JAVA, java kaffe guavac)
-else
-  JAVA="$JAVABIN"
-fi
+if test "$java" = "true" ; then
 
-if test -z "$JAVACBIN" ; then
-  AC_CHECK_PROGS(JAVAC, javac)
-else
-  JAVAC="$JAVACBIN"
-fi
-
-AC_MSG_CHECKING(for java include file jni.h)
-AC_ARG_WITH(javaincl, [  --with-javaincl=path    Set location of Java include directory], [JAVAINCDIR="$withval"], [JAVAINCDIR=])
-
-if test -z "$JAVAINCDIR"; then
-  JAVAINCDIR="/opt/sun-jdk-*/include /opt/blackdown-jdk-*/include /usr/j2sdk*/include /usr/local/j2sdk*/include /usr/jdk*/include /usr/local/jdk*/include /opt/j2sdk*/include /opt/jdk*/include /usr/java/include /usr/java/j2sdk*/include /usr/java/jdk*/include /usr/local/java/include /opt/java/include /usr/include/java /usr/local/include/java /usr/lib/java/include /usr/include/kaffe /usr/local/include/kaffe /usr/include"
-
-  # Add in default installation directory on Windows for Cygwin
-  case $host in
-  *-*-cygwin* | *-*-mingw*) JAVAINCDIR="c:/Program*Files/Java/jdk*/include d:/Program*Files/Java/jdk*/include c:/j2sdk*/include d:/j2sdk*/include c:/jdk*/include d:/jdk*/include $JAVAINCDIR";;
-  *-*-darwin*) JAVAINCDIR="/System/Library/Frameworks/JavaVM.framework/Headers $JAVAINCDIR";;
-  *);;
-  esac
-fi
-
-JAVAINC=""
-for d in $JAVAINCDIR ; do
-  if test -r "$d/jni.h" ; then
-    AC_MSG_RESULT($d)
-    JAVAINCDIR=$d
-    JAVAINC=-I\"$d\"
-    break
-  fi
-done
-
-if test "$JAVAINC" = "" ; then
-  AC_MSG_RESULT(not found)
-  AC_MSG_ERROR([Cannot find jni.h, this is critical, consider --with-javaincl flag], 1)
-else
-  # now look for <arch>/jni_md.h
-  AC_MSG_CHECKING(for java include file jni_md.h)
-  JAVAMDDIR=`find "$JAVAINCDIR" -follow -name jni_md.h -print`
-  if test "$JAVAMDDIR" = "" ; then
-    AC_MSG_RESULT(not found)
+  if test -z "$JAVABIN" ; then
+    AC_CHECK_PROGS(JAVA, java kaffe guavac)
   else
-    JAVAMDDIR=`dirname "$JAVAMDDIR"`
-    JAVAINC="${JAVAINC} -I\"$JAVAMDDIR\""
-    AC_MSG_RESULT($JAVAMDDIR)
+    JAVA="$JAVABIN"
   fi
-fi
+
+  if test -z "$JAVACBIN" ; then
+    AC_CHECK_PROGS(JAVAC, javac)
+  else
+    JAVAC="$JAVACBIN"
+  fi
+
+  AC_MSG_CHECKING(for java include file jni.h)
+  AC_ARG_WITH(javaincl, [  --with-javaincl=path    Set location of Java include directory], [JAVAINCDIR="$withval"], [JAVAINCDIR=])
+
+  if test -z "$JAVAINCDIR"; then
+    JAVAINCDIR="/opt/sun-jdk-*/include /opt/blackdown-jdk-*/include /usr/j2sdk*/include /usr/local/j2sdk*/include /usr/jdk*/include /usr/local/jdk*/include /opt/j2sdk*/include /opt/jdk*/include /usr/java/include /usr/java/j2sdk*/include /usr/java/jdk*/include /usr/local/java/include /opt/java/include /usr/include/java /usr/local/include/java /usr/lib/java/include /usr/include/kaffe /usr/local/include/kaffe /usr/include"
+
+    # Add in default installation directory on Windows for Cygwin
+    case $host in
+    *-*-cygwin* | *-*-mingw*) JAVAINCDIR="c:/Program*Files/Java/jdk*/include d:/Program*Files/Java/jdk*/include c:/j2sdk*/include d:/j2sdk*/include c:/jdk*/include d:/jdk*/include $JAVAINCDIR";;
+    *-*-darwin*) JAVAINCDIR="/System/Library/Frameworks/JavaVM.framework/Headers $JAVAINCDIR";;
+    *);;
+    esac
+  fi
+
+  JAVAINC=""
+  for d in $JAVAINCDIR ; do
+    if test -r "$d/jni.h" ; then
+      AC_MSG_RESULT($d)
+      JAVAINCDIR=$d
+      JAVAINC=-I\"$d\"
+      break
+    fi
+  done
+
+  if test "$JAVAINC" = "" ; then
+    AC_MSG_RESULT(not found)
+    AC_MSG_ERROR([Cannot find jni.h, this is critical, consider --with-javaincl flag], 1)
+  else
+    # now look for <arch>/jni_md.h
+    AC_MSG_CHECKING(for java include file jni_md.h)
+    JAVAMDDIR=`find "$JAVAINCDIR" -follow -name jni_md.h -print`
+    if test "$JAVAMDDIR" = "" ; then
+      AC_MSG_RESULT(not found)
+    else
+      JAVAMDDIR=`dirname "$JAVAMDDIR"`
+      JAVAINC="${JAVAINC} -I\"$JAVAMDDIR\""
+      AC_MSG_RESULT($JAVAMDDIR)
+    fi
+  fi
 
 # java.exe on Cygwin requires the Windows standard (Pascal) calling convention as it is a normal Windows executable and not a Cygwin built executable
-case $host in
-*-*-cygwin* | *-*-mingw*)
-    if test "$GCC" = yes; then
-        JAVADYNAMICLINKING=" -mno-cygwin -Wl,--add-stdcall-alias"
-        JAVACFLAGS="-mno-cygwin"
-    else
-        JAVADYNAMICLINKING=""
-        JAVACFLAGS=""
-    fi ;;
-*-*-darwin*) 
-        JAVADYNAMICLINKING="-dynamiclib -framework JavaVM"
-        JAVACFLAGS=""
-        ;;
-*)
-        JAVADYNAMICLINKING=""
-        JAVACFLAGS=""
-        ;;
-esac
+  case $host in
+  *-*-cygwin* | *-*-mingw*)
+      if test "$GCC" = yes; then
+          JAVADYNAMICLINKING=" -mno-cygwin -Wl,--add-stdcall-alias"
+          JAVACFLAGS="-mno-cygwin"
+      else
+          JAVADYNAMICLINKING=""
+          JAVACFLAGS=""
+      fi ;;
+  *-*-darwin*) 
+          JAVADYNAMICLINKING="-dynamiclib -framework JavaVM"
+          JAVACFLAGS=""
+          ;;
+  *)
+          JAVADYNAMICLINKING=""
+          JAVACFLAGS=""
+          ;;
+  esac
 
-# Java on Windows platforms including Cygwin doesn't use libname.dll, rather name.dll when loading dlls
-case $host in
-*-*-cygwin* | *-*-mingw*) JAVALIBRARYPREFIX="";;
-*)JAVALIBRARYPREFIX="lib";;
-esac
+  # Java on Windows platforms including Cygwin doesn't use libname.dll, rather name.dll when loading dlls
+  case $host in
+  *-*-cygwin* | *-*-mingw*) JAVALIBRARYPREFIX="";;
+  *)JAVALIBRARYPREFIX="lib";;
+  esac
 
-# Java on Mac OS X tweaks
-case $host in
-*-*-darwin*) 
-    JAVASO=".jnilib"
-    JAVALDSHARED='$(CC)'
-    JAVACXXSHARED='$(CXX)'
-    ;;
-*)
-    JAVASO=$SO
-    JAVALDSHARED='$(LDSHARED)'
-    JAVACXXSHARED='$(CXXSHARED)'
-    ;;
-esac
+  # Java on Mac OS X tweaks
+  case $host in
+  *-*-darwin*) 
+      JAVASO=".jnilib"
+      JAVALDSHARED='$(CC)'
+      JAVACXXSHARED='$(CXX)'
+      ;;
+  *)
+      JAVASO=$SO
+      JAVALDSHARED='$(LDSHARED)'
+      JAVACXXSHARED='$(CXXSHARED)'
+      ;;
+  esac
 
-AC_SUBST(JAVA)
-AC_SUBST(JAVAC)
-AC_SUBST(JAVAINC)
-AC_SUBST(JAVADYNAMICLINKING)
-AC_SUBST(JAVALIBRARYPREFIX)
-AC_SUBST(JAVASO)
-AC_SUBST(JAVALDSHARED)
-AC_SUBST(JAVACXXSHARED)
-AC_SUBST(JAVACFLAGS)
+  AC_SUBST(JAVA)
+  AC_SUBST(JAVAC)
+  AC_SUBST(JAVAINC)
+  AC_SUBST(JAVADYNAMICLINKING)
+  AC_SUBST(JAVALIBRARYPREFIX)
+  AC_SUBST(JAVASO)
+  AC_SUBST(JAVALDSHARED)
+  AC_SUBST(JAVACXXSHARED)
+  AC_SUBST(JAVACFLAGS)
 
-GCJ=$JAVAC
-GCJFLAGS=""
-AC_SUBST(GCJ)
-AC_SUBST(GCJFLAGS)
+  GCJ=$JAVAC
+  GCJFLAGS=""
+  AC_SUBST(GCJ)
+  AC_SUBST(GCJFLAGS)
 
+fi
 # end of swig stuff
 ##########################
 

@@ -4,7 +4,11 @@ AUTOMAKE_OPTIONS = gnu
 
 EXTRA_DIST = Tcl_sml_ClientInterface.i
 
+if SWIGTCL
 lib_LTLIBRARIES = libTcl_sml_ClientInterface.la
+else
+lib_LTLIBRARIES =
+endif
 
 libTcl_sml_ClientInterface_la_SOURCES = Tcl_sml_ClientInterface_wrap.cpp 
 
@@ -16,7 +20,7 @@ INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../Connec
 
 CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 
-SWIGOPT    = -tcl -c++ -Wall -pkgversion 1.0 $(INCLUDES)
+SWIGOPT    = -tcl -Wall -pkgversion 1.0 $(INCLUDES)
 
 Tcl_sml_ClientInterface_wrap.cpp: Tcl_sml_ClientInterface.i
 	$(SWIG) $(SWIGOPT) -o $@ $<

@@ -4,7 +4,11 @@ AUTOMAKE_OPTIONS = gnu
 
 EXTRA_DIST = Java_sml_ClientInterface.i
 
+if SWIGJAVA
 lib_LTLIBRARIES = libJava_sml_ClientInterface.la
+else
+lib_LTLIBRARIES = 
+endif
 
 libJava_sml_ClientInterface_la_LIBADD = \
 $(BASEDIR_PREFIX)KernelSML/src/libKernelSML.la \
@@ -18,7 +22,7 @@ INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../Connec
 CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 CLEANFILES = *.java *.class Java_sml_ClientInterface_wrap.cpp
 
-SWIGOPT    = -java -c++ -Wall -package sml $(INCLUDES)
+SWIGOPT    = -java -Wall -package sml $(INCLUDES)
 
 Java_sml_ClientInterface_wrap.cpp: Java_sml_ClientInterface.i
 	$(SWIG) $(SWIGOPT) -o $@ $<
