@@ -60,10 +60,10 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 		return HandleError("Not running!");
 	}
 
+	// Stop and reset the current thread
 	m_pRunForever->Stop(true);
 	delete m_pRunForever;
 	m_pRunForever = 0;
-
 	return true;
 }
 

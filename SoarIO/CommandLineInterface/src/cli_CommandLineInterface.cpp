@@ -62,6 +62,10 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
+	if (m_pRunForever) {
+		m_pRunForever->Stop(true);
+		delete m_pRunForever;
+	}
 	if (m_pGetOpt) {
 		delete m_pGetOpt;
 	}

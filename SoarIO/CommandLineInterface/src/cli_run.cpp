@@ -21,14 +21,40 @@ RunForeverThread::RunForeverThread(bool self, gSKI::IKernel* pKernel, gSKI::IAge
 }
 
 void RunForeverThread::Run() {
+	egSKIRunResult runResult;
+	egSKIRunState runState;
+
+	if (m_bSelf && !m_pAgent) {
+		this->Stop(false);
+	}
+
+	if (m_bSelf && !m_pKernel) {
+		this->Stop(false);
+	}
+
 	while (!m_QuitNow) {
-		egSKIRunResult runResult;
 		if (m_bSelf) {
 			runResult = m_pAgent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1, m_pError);
+			runState = m_pAgent->GetRunState();
+
+			if (runState != gSKI_RUNSTATE_RUNNING) {
+				this->Stop(false);
+			}
+
 		} else {
 			m_pKernel->GetAgentManager()->ClearAllInterrupts();
 			m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
 			runResult = m_pKernel->GetAgentManager()->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
+
+			gSKI::tIAgentIterator* iter = m_pKernel->GetAgentManager()->GetAgentIterator(m_pError);
+			while (iter->IsValid()) {
+				gSKI::IAgent* pAgent = iter->GetVal();
+				runState = pAgent->GetRunState();
+				if ((runState == gSKI_RUNSTATE_HALTED) || (runState == gSKI_RUNSTATE_INTERRUPTED)) {
+					this->Stop(false);
+				}
+				iter->Next() ;
+			}
 		}
 	}
 }
@@ -122,9 +148,11 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 		return HandleError("Options { o, O, S } not implemented yet.");
 	}
 
-	// Can't run if already running
+	// Stop and reset the current thread
 	if (m_pRunForever) {
-		return HandleError("Already running!");
+		m_pRunForever->Stop(true);
+		delete m_pRunForever;
+		m_pRunForever = 0;
 	}
 
 	// Determine run unit, mutually exclusive so give smaller steps precedence, default to gSKI_RUN_FOREVER if there is no count
