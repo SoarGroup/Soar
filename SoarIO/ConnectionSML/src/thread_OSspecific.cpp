@@ -84,6 +84,7 @@ OSSpecificEvent* soar_thread::MakeEvent()
 #include <pthread.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <errno.h>
 
 struct ThreadArgs {
     ThreadFuncPtr threadFuncPtr;
@@ -126,14 +127,24 @@ class LinuxMutex : public OSSpecificMutex
 {
 protected:
 	pthread_mutex_t mutex;
+	pthread_mutexattr_t mutexattr;
 
 public:
-	LinuxMutex()			{ pthread_mutex_init(&mutex,0); }
-	virtual ~LinuxMutex()	{ pthread_mutex_destroy(&mutex); }
+	LinuxMutex()			
+	{ 
+		pthread_mutexattr_init(&mutexattr);
+		pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE_NP);
+		pthread_mutex_init(&mutex, &mutexattr); 
+	}
+	virtual ~LinuxMutex()	
+	{ 
+		pthread_mutex_destroy(&mutex); 
+		pthread_mutexattr_destroy(&mutexattr);
+	}
 
 	void Lock()			{ pthread_mutex_lock(&mutex); }
 	void Unlock()		{ pthread_mutex_unlock(&mutex); }
-	bool TryToLock()	{ /* TODO: Needs to be written with pthread_mutex_trylock(&mutex) ; */ return false; }
+	bool TryToLock()	{ return (pthread_mutex_trylock(&mutex) != EBUSY); }
 } ;
 
 OSSpecificMutex* soar_thread::MakeMutex()
