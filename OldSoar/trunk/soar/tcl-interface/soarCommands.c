@@ -1122,11 +1122,10 @@ int WatchCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * con
 
     free_argv(objc, argv);
 
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
-
     if (result == SOAR_OK)
         return TCL_OK;
 
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
     return TCL_ERROR;
 
 }
