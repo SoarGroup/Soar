@@ -131,7 +131,7 @@ Soar_PrintToTclProc (the_agent, data, call_data)
 	snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
 #endif
 
-	sprintf(buf, "%s {%s} ", print_data->text_widget, (char*) call_data);
+	/*sprintf(buf, "%s {%s} ", print_data->text_widget, (char*) call_data);*/
 
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], buf);
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], "update");
