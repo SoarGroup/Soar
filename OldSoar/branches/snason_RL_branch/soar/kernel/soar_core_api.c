@@ -1525,6 +1525,7 @@ void soar_cSetLearning( enum soar_apiLearningSetting setting ) {
 	  break;
   case RL_OFF:
 	  set_sysparam (RL_ON_SYSPARAM, FALSE);
+	  // should I also call reset_RL here? SAN
 
   }
 

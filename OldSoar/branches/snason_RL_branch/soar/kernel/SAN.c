@@ -63,6 +63,11 @@ void reset_RL(){
 	while(current_agent(records))
  		pop_record(&current_agent(records));
 
+	current_agent(next_Q) = 0.0;
+	current_agent(updates) = 0.0;
+
+
+
 }
 /*******/
 void add_goal_tests( condition *cond ){
@@ -103,6 +108,7 @@ void learn_RL_productions(int level){
 	slot* s;
 	cons *c;
 	int i;
+	static FILE *Temp = NIL;
 
 	record = current_agent(records);
 
@@ -116,6 +122,13 @@ void learn_RL_productions(int level){
 	if (record->op){
 
 		Q = compute_Q_value(record);
+
+		if (!Temp)
+			Temp = fopen("logupdates.txt", "w");
+
+		start_redirection_to_file(Temp);
+		print("%f\n", current_agent(updates));
+		stop_redirection_to_file();
 
 		// BUG BUG divide up Q value
 		current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
@@ -232,6 +245,8 @@ float compute_Q_value(RL_record* r){
 	// print("Q after previous %f\n", Q);
 	Q *= current_agent(alpha);
 	// print("Q after alpha %f\n", Q);
+
+	current_agent(updates) =  fabs(Q) + 0.8*current_agent(updates);
 
 
 
