@@ -541,8 +541,8 @@ proc showAbout {} {
   global tsiConfig
 
   tsiInfoWindow .tsiAbout " 
-The Tcl/Tk Soar Interface, developed for Soar version 7.0.4,
-TSI ver. $tsiConfig(ControlPanelVersion), expertise: $tsiConfig(expertise), debug: $tsiConfig(debug)
+The TsDebugger, based on the original TSI, Tcl Soar Interfiace,
+TSDebugger ver. $tsiConfig(ControlPanelVersion), expertise: $tsiConfig(expertise), debug: $tsiConfig(debug)
 Major contributors (in alphabetical order):
     Mazin Assanie
     Gordon D. Baxter
@@ -1066,10 +1066,7 @@ proc excise {args} {
 }
 
 proc tsiDetermineWatchSettings {} {
-   global watchValue
    global tsiConfig
-
-   
 
    if $tsiConfig(debug) {puts "\n>A> Determining Watch Settings"} 
 
@@ -1085,32 +1082,32 @@ proc tsiDetermineWatchSettings {} {
 
    if $tsiConfig(debug) {puts "\n>A> Determining Watch Settings 3"} 
 
-   set watchValue(decisions) [regexp {Decisions:[ ]+on} $watchString]
+   set Debugger::watchValue(decisions) [regexp {Decisions:[ ]+on} $watchString]
 
    if $tsiConfig(debug) {puts "\n>A> Determining Watch Settings 4"} 
 
-   set watchValue(phases) [regexp {Phases:[ ]+on} $watchString]
+   set Debugger::watchValue(phases) [regexp {Phases:[ ]+on} $watchString]
    ### Default doesn't appear to work in Soar 7.0.4
-   #set {watchValue(productions -default)} \
+   #set {Debugger::watchValue(productions -default)} \
    #     [regexp {default productions:[ ]+on} $watchString]
 
    if $tsiConfig(debug) {puts "\n>A> Determining Watch Settings done"} 
 
-   set {watchValue(-user)} \
+   set {Debugger::watchValue(-user)} \
        [regexp {user productions:[ ]+on} $watchString]
-   set {watchValue(-chunks)} \
+   set {Debugger::watchValue(-chunks)} \
        [regexp {chunks:[ ]+on} $watchString]
-   set {watchValue(-justifications)} \
+   set {Debugger::watchValue(-justifications)} \
        [regexp {justifications:[ ]+on} $watchString]
-   regexp {WME detail level:[ ]+([1-3])} $watchString dummy watchValue(WMElevel)
+   regexp {WME detail level:[ ]+([1-3])} $watchString dummy Debugger::watchValue(WMElevel)
    if $tsiConfig(debug) {puts "\n>A> Determining Watch Settings done"} 
 
-   set watchValue(wmes) [regexp {Working memory changes:[ ]+on} $watchString]
-   set watchValue(preferences) [regexp {firings/retractions:[ ]+on} $watchString]
-   set watchValue(learning) [regexp {Learning:[ ]+-print} $watchString]
-   set watchValue(backtracing) [regexp {Backtracing:[ ]+on} $watchString]
-   set watchValue(aliases) [regexp {Alias printing:[ ]+on} $watchString]
-   set watchValue(loading) [regexp {Loading:[ ]+on} $watchString]
+   set Debugger::watchValue(wmes) [regexp {Working memory changes:[ ]+on} $watchString]
+   set Debugger::watchValue(preferences) [regexp {firings/retractions:[ ]+on} $watchString]
+   set Debugger::watchValue(learning) [regexp {Learning:[ ]+-print} $watchString]
+   set Debugger::watchValue(backtracing) [regexp {Backtracing:[ ]+on} $watchString]
+   set Debugger::watchValue(aliases) [regexp {Alias printing:[ ]+on} $watchString]
+   set Debugger::watchValue(loading) [regexp {Loading:[ ]+on} $watchString]
 
    if $tsiConfig(debug) {puts "\n>A> Determining Watch Settings done"} 
 

@@ -19,6 +19,7 @@ namespace eval Debugger {
    variable view0 1
    variable view1 0
    variable view2 0
+   variable watchValue
 }
 
 proc Debugger::_create_intro { } {
@@ -36,7 +37,7 @@ proc Debugger::_create_intro { } {
 	   -foreground grey90 -background white]
    set frame [frame $ximg.f -background white]
    set prg   [ProgressBar $frame.prg -width 500 -height 30 -background white \
-	   -variable Debugger::prgindic -maximum 12]
+	   -variable Debugger::prgindic -maximum 9]
    pack $prg
    place $frame -x 10 -y 220 -anchor nw
    pack $ximg
@@ -83,6 +84,7 @@ proc Debugger::create { } {
    set cycleIcons(oi) [image create photo -file [file join $tsi_library images c_oi.gif]]
 
    set prgindic 0
+   tsiDetermineWatchSettings
    SelectFont::loadfont
 
    # Menu description
@@ -176,7 +178,7 @@ proc Debugger::DoBindings {} {
    tsiBind <Control-Key-1> [list $notebook raise [$notebook page 0]]
    tsiBind <Control-Key-2> [list $notebook raise [$notebook page 1]]
    tsiBind <Control-Key-3> [list $notebook raise [$notebook page 2]]
-   tsiBind <Control-q> exit
+   tsiBind <Control-q> quitSoar
    tsiBind <Control-s> step
 }
    
@@ -241,10 +243,37 @@ proc Debugger::tsiBind {keysym command} {
    bind $soarConsoleText $keysym $command
 }
    
-
+proc Debugger::OpenHelpFile {whichHelp} {
+   global soar_doc_dir soar_library tsiConfig
+   
+   if [info exists soar_doc_dir] {
+      set docDir $soar_doc_dir
+   } else {
+      set docDir [file normalize [file join $soar_library .. doc]]
+   }
+   switch $whichHelp {
+      ReleaseNote {
+         ShowFile [file join $docDir .. Soar.Relnotes]
+         puts "ShowFile [file join $docDir Soar.Relnotes]"
+      }
+      Changes1 {
+         ShowFile [file join $docDir .. CHANGES]
+      }
+      Changes2 {
+         ShowFile [file join $docDir .. changes.txt]
+      }
+      License {
+         ShowFile [file join $docDir .. license.txt]
+      }
+      ManPages {
+         ShowManPage [file join $docDir cat] 0
+         puts "ShowManPage [file join $docDir cat] 0"
+      }
+   }
+}
 
 proc Debugger::CreateDescMenu {} {
-   
+
    return {
      "&File" all file 0 {
          {command "S&ource file..." {} "Source agent productions" {} -command sourceSoarFile}
@@ -254,8 +283,8 @@ proc Debugger::CreateDescMenu {} {
          {separator}
          {command "Lo&g Output to New File..." {} "" {} -command openLogFile}
          {command "Log Output to &Existing File..." {} "" {} -command appendLogFile}
-         {command "Lo&gging Off" {} "" {} -command {tsiDisplayAndSendCommand {log -off}}}
-         {command "Lo&g Status" {} "" {} -command {tsiDisplayAndSendCommand {log -query}}}
+         {command "Logging O&ff" {} "" {} -command {tsiDisplayAndSendCommand {log -off}}}
+         {command "Log S&tatus" {} "" {} -command {tsiDisplayAndSendCommand {log -query}}}
          {separator}
          {command "E&xit" {} "Close Soar Agent Debugger" {} -command quitSoar}
       }
@@ -264,59 +293,108 @@ proc Debugger::CreateDescMenu {} {
          {command "Copy (Ctrl-&c)" {} "" {} -command {Debugger::DoEditCommand Copy} }
          {command "Paste (Ctrl-&v)" {} "" {} -command {Debugger::DoEditCommand Paste} }
          {separator}
-         {command "Find in Text" {} "" {} -command {} }
+         {command "&Find in Console Text" {} "" {} -command {searchWindow $tsiConfig(tswFrame)} }
          {separator}
          {command "&Preferences" {} "Modify TSI Preferences" {} -command makeTSIPrefsWindow}
       }
       "&Commands" all commands 0 {
-         {command "Restart Agent" {} "" {} -command {Debugger::ReloadAgent} }
-         {command "Reload Productions" {} "" {} -command {tsiLoadAgentSource} }
+         {command "Re&start Agent" {} "" {} -command {Debugger::ReloadAgent} }
+         {command "Re&load Productions" {} "" {} -command {tsiLoadAgentSource} }
          {separator}
-         {command "Clear Working Memory" {} "" {} -command {init-soar} }
-         {cascad  "Excise Productions"  {} export 0 {
-            {command "All" {} "" {} -command {excise -all} }
-            {command "Chunks" {} "" {} -command {excise -chunks} }
-            {command "Task Productions" {} "" {} -command {excise -task} }
-            {command "User Productions" {} "" {} -command {excise -user} }
+         {command "&Clear Working Memory" {} "" {} -command {init-soar} }
+         {cascad  "&Excise Productions"  {} export 0 {
+            {command "&All" {} "" {} -command {excise -all} }
+            {command "&Chunks" {} "" {} -command {excise -chunks} }
+            {command "&Task Productions" {} "" {} -command {excise -task} }
+            {command "&User Productions" {} "" {} -command {excise -user} }
          }}
          {separator}
-         {cascad  "Indifferent Selection Mode"  {} export 0 {
-            {command "First" {} "" {} -command {} }
-            {command "Last" {} "" {} -command {} }
-            {command "Ask" {} "" {} -command {} }
-            {command "Random" {} "" {} -command {} }
+         {cascad  "&Indifferent Selection Mode"  {} export 0 {
+            {command "&First" {} "" {} -command {} }
+            {command "&Last" {} "" {} -command {} }
+            {command "&Ask" {} "" {} -command {} }
+            {command "&Random" {} "" {} -command {} }
          }}
       }
       "&Debug Level" all watch 0 {
-         {command "Show Current Watch Status" {} "" {} -command {} }
+         {command "Show Current &Watch Status" {} "" {} -command {tsiDisplayAndSendCommand watch} }
          {separator}
-         {command "1. Decisions" {} "" {} -command {} }
-         {command "2. Phases" {} "" {} -command {} }
-         {command "All Productions" {} "" {} -command {} }
-         {command "No Productions" {} "" {} -command {} }
-         {command "3a. User Productions" {} "" {} -command {} }
-         {command "3b. Chunks" {} "" {} -command {} }
-         {command "3c. Justifications" {} "" {} -command {} }
-         {command "4. WMEs" {} "" {} -command {} }
-         {command "5. Preferences" {} "" {} -command {} }
+         {checkbutton "&Decisions" {all option} "" {}
+            -variable Debugger::watchValue(decisions)
+            -command  {resetWatch decisions}
+         }
+         {checkbutton "&Phases" {all option} "" {}
+            -variable Debugger::watchValue(phases) 
+            -command  {resetWatch phases}
+         }
+         {command "&All Productions" {} "" {} -command {tsiDisplayAndSendCommand {watch productions -on}} }
+         {command "&No Productions" {} "" {} -command {tsiDisplayAndSendCommand {watch productions -off}} }
+         {checkbutton "3a. &User Productions" {all option} "" {}
+            -variable Debugger::watchValue(-user) 
+            -command  {resetWatch {-user} -print -noprint}
+         }
+         {checkbutton "3b. &Chunks" {all option} "" {}
+            -variable Debugger::watchValue(-chunks) 
+            -command  {resetWatch {-chunks} -print -noprint}
+         }
+         {checkbutton "3c. &Justifications" {all option} "" {}
+            -variable Debugger::watchValue(-justifications) 
+            -command  {resetWatch {-justifications} -print -noprint}
+         }
+
+         {checkbutton "4. W&MEs" {all option} "" {}
+            -variable Debugger::watchValue(wmes) 
+            -command  {resetWatch wmes}
+         }
+         {checkbutton "5. P&references" {all option} "" {}
+            -variable Debugger::watchValue(preferences) 
+            -command  {resetWatch preferences}
+         }
          {separator}
-         {command "Nothing" {} "" {} -command {} }
-         {command "1 Only" {} "" {} -command {} }
-         {command "1-2 Only" {} "" {} -command {} }
-         {command "1-3 Only" {} "" {} -command {} }
-         {command "1-4 Only" {} "" {} -command {} }
-         {command "1-5" {} "" {} -command {} }
+         {command "N&othing" {} "" {} -command {set watchLevel(decisions) 0; set watchLevel(phases) 0; \
+                     set watchLevel(productions) 0; set watchLevel(wmes) 0; \
+                     set watchLevel(preferences) 0; \
+                     tsiDisplayAndSendCommand {watch none}} }
+         {command "&1 Only" {} "" {} -command {tsiDisplayAndSendCommand {watch 1}} }
+         {command "1-&2 Only" {} "" {} -command {tsiDisplayAndSendCommand {watch 2}} }
+         {command "1-&3 Only" {} "" {} -command {tsiDisplayAndSendCommand {watch 3}} }
+         {command "1-&4 Only" {} "" {} -command {tsiDisplayAndSendCommand {watch 4}} }
+         {command "1-&5" {} "" {} -command {tsiDisplayAndSendCommand {watch 5}} }
          {separator}
-         {cascad  "WME Detail"  {} export 0 {
-            {command "None" {} "" {} -command {} }
-            {command "Timetags" {} "" {} -command {} }
-            {command "Full" {} "" {} -command {} }
+         {cascad  "WM&E Detail"  {} export 0 {
+            {radiobutton "&None" {all option} "" {}
+               -variable Debugger::watchValue(WMElevel)
+               -value 1 
+               -command  {tsiSetWMELevel}
+            }
+            {radiobutton "&Time Tags" {all option} "" {}
+               -variable Debugger::watchValue(WMElevel) 
+               -value 2 
+               -command  {tsiSetWMELevel}
+            }
+            {radiobutton "&Full" {all option} "" {}
+               -variable Debugger::watchValue(WMElevel) 
+               -value 3 
+               -command  {tsiSetWMELevel}
+            }
          }}
          {separator}
-         {command "Aliases" {} "" {} -command {} }
-         {command "Backtracing" {} "" {} -command {} }
-         {command "Production Loading" {} "" {} -command {} }
-         {command "Learn Print" {} "" {} -command {} }
+         {checkbutton "A&liases" {all option} "" {}
+            -variable Debugger::watchValue(aliases) 
+            -command  {resetWatch aliases}
+         }
+         {checkbutton "&Backtracing" {all option} "" {}
+            -variable Debugger::watchValue(backtracing) 
+            -command  {resetWatch backtracing}
+         }
+         {checkbutton "Produc&tion Loading" {all option} "" {}
+            -variable Debugger::watchValue(loading) 
+            -command  {resetWatch loading}
+         }
+         {checkbutton "Learn Pr&int" {all option} "" {}
+            -variable Debugger::watchValue(learning) 
+            -command  {resetWatch learning -print -noprint}
+         }
       }
       "&View" all view 0 {
          {checkbutton "&Toolbar" {all option} "Show/hide Toolbar" {}
@@ -334,79 +412,68 @@ proc Debugger::CreateDescMenu {} {
             -variable Debugger::view2
             -command  {Debugger::SetNotebook 2}}
          {separator}
-         {command "Layout 1 - Minimal" {} "" {} -command {Debugger::LoadLayout 1} }
-         {command "Layout 2 - Simple" {} "" {} -command {Debugger::LoadLayout 2} }
-         {command "Layout 3 - Default" {} "" {} -command {Debugger::LoadLayout 3} }
-         {command "Layout 4 - More Watch Panes" {} "" {} -command {Debugger::LoadLayout 4} }
-         {separator}
-         {command "&Save Global Window Preferences" {} "" {} -command {} }
-         {command "&Load Global Window Preferences" {} "" {} -command {} }
-         {command "&Reset Window Preferences" {} "" {} -command {} }
+         {command "Layout &1 - Minimal" {} "" {} -command {Debugger::LoadLayout 1} }
+         {command "Layout &2 - Simple" {} "" {} -command {Debugger::LoadLayout 2} }
+         {command "Layout &3 - Default" {} "" {} -command {Debugger::LoadLayout 3} }
+         {command "Layout &4 - More Watch Panes" {} "" {} -command {Debugger::LoadLayout 4} }
       }
-      "&Demo" all demo 0 {
+      "De&mo" all demo 0 {
          {command "GUI Demos" {} "" {} -command {} }
-         {command "Eight Puzzle" {} "" {} -command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.tcl} }
-         {cascad  "Water Jug"  {} export 0 {
-            {command "Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos water-jug readme]" 0} }
-            {command "Load Water Jug" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug.tcl} }
-            {command "Load Water Jug Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.tcl} }
+         {command "&Eight Puzzle" {} "" {} -command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.tcl} }
+         {cascad  "&Water Jug"  {} export 0 {
+            {command "&Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos water-jug readme]" 0} }
+            {command "Load &Water Jug" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug.tcl} }
+            {command "Load Water Jug Look-&Ahead" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.tcl} }
          }}
          {separator}
          {command "Non-GUI Demo" {} "" {} -command {} }
-         {cascad  "Blocksworld"  {} export 0 {
-            {command "load Blocksworld" {} "" {} -command {tsiLoadSoar8Demo blocks-world blocks-world.soar} }
-            {command "load Blocksworld Operator Subgoaling" {} "" {} -command {tsiLoadSoar8Demo blocks-world blocks-world-operator-subgoaling.soar} }
-            {command "load Blocksworld Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo blocks-world blocks-world-look-ahead.soar} }
+         {cascad  "&Blocksworld"  {} export 0 {
+            {command "load &Blocksworld" {} "" {} -command {tsiLoadSoar8Demo blocks-world blocks-world.soar} }
+            {command "load Blocksworld &Operator Subgoaling" {} "" {} -command {tsiLoadSoar8Demo blocks-world blocks-world-operator-subgoaling.soar} }
+            {command "load Blocksworld &Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo blocks-world blocks-world-look-ahead.soar} }
          }}
-         {cascad  "Eight-Puzzle"  {} export 0 {
-            {command "Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos eight-puzzle readme.txt]" 0} }
-            {command "Load Eight-puzzle" {} "" {} -command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.soar} }
-            {command "Load Fifteen-puzzle" {} "" {} -command {tsiLoadSoar8Demo eight-puzzle fifteen-puzzle.soar} }
+         {cascad  "E&ight-Puzzle"  {} export 0 {
+            {command "&Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos eight-puzzle readme.txt]" 0} }
+            {command "Load E&ight-puzzle" {} "" {} -command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.soar} }
+            {command "Load &Fifteen-puzzle" {} "" {} -command {tsiLoadSoar8Demo eight-puzzle fifteen-puzzle.soar} }
          }}
-         {cascad  "Missionaries"  {} export 0 {
-            {command "Load M-a-C" {} "" {} -command {tsiLoadSoar8Demo mac mac.soar} }
-            {command "Load M-a-C Planning" {} "" {} -command {tsiLoadSoar8Demo mac mac-planning.soar} }
+         {cascad  "&Missionaries"  {} export 0 {
+            {command "Load &M-a-C" {} "" {} -command {tsiLoadSoar8Demo mac mac.soar} }
+            {command "Load M-a-C &Planning" {} "" {} -command {tsiLoadSoar8Demo mac mac-planning.soar} }
          }}
-         {cascad  "Towers of Hanoi"  {} export 0 {
-            {command "Load Towers of Hanoi" {} "" {} -command {tsiLoadSoar8Demo towers-of-hanoi towers-of-hanoi.soar} }
-            {command "Load Towers of Hanoi Recursive" {} "" {} -command {tsiLoadSoar8Demo towers-of-hanoi towers-of-hanoi-recursive.soar} }
+         {cascad  "&Towers of Hanoi"  {} export 0 {
+            {command "Load &Towers of Hanoi" {} "" {} -command {tsiLoadSoar8Demo towers-of-hanoi towers-of-hanoi.soar} }
+            {command "Load Towers of Hanoi &Recursive" {} "" {} -command {tsiLoadSoar8Demo towers-of-hanoi towers-of-hanoi-recursive.soar} }
          }}
-         {cascad  "Water Jug"  {} export 0 {
-            {command "Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos water-jug readme]" 0} }
-            {command "Load Water Jug" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug.soar} }
-            {command "Load Water Jug Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.soar} }
+         {cascad  "Water &Jug"  {} export 0 {
+            {command "&Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos water-jug readme]" 0} }
+            {command "Load Water &Jug" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug.soar} }
+            {command "Load Water Jug &Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.soar} }
          }}
          {separator}
-         {cascad  "Default Rules"  {} export 0 {
-            {command "Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos default readme.txt]" 0} }
-            {command "Simple" {} "" {} -command {tsiLoadSoar8DefaultProds simple.soar} }
-            {command "Selection" {} "" {} -command {tsiLoadSoar8DefaultProds selection.soar} }
+         {cascad  "&Default Rules"  {} export 0 {
+            {command "&Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos default readme.txt]" 0} }
+            {command "&Simple" {} "" {} -command {tsiLoadSoar8DefaultProds simple.soar} }
+            {command "S&election" {} "" {} -command {tsiLoadSoar8DefaultProds selection.soar} }
          }}
       }
      "&Help" all help 0 {
-         {command "A&bout the TSI" {} "" {} -command {showAbout}}
-         {command "TSI Key Bindings" {} "" {} -command {} }
-         {command "Help -all" {} "" {} -command {} }
+         {command "&About the TSI" {} "" {} -command {showAbout}}
+         {command "&Help -all" {} "" {} -command {tsiDisplayAndSendCommand {help -all}} }
          {separator}
-         {cascad  "Soar"  {} export 0 {
-            {command "Open Soar Man Page" {} "" {} -command {} }
-            {command "List All Commands" {} "" {} -command {} }
-            {command "Release Notes" {} "" {} -command {} }
-            {command "Init File" {} "" {} -command {} }
-            {command "News" {} "" {} -command {} }
-            {command "Version" {} "" {} -command {} }
+         {cascad  "&Soar"  {} export 0 {
+            {command "&Man Pages" {} "" {} -command {Debugger::OpenHelpFile ManPages} }
+            {command "&List All Commands" {} "" {} -command {tsiDisplayAndSendCommand {help -all}} }
+            {command "&Release Notes" {} "" {} -command {Debugger::OpenHelpFile ReleaseNote} }
+            {command "&Changes" {} "" {} -command {Debugger::OpenHelpFile Changes1} }
+            {command "&Additional Changes" {} "" {} -command {Debugger::OpenHelpFile Changes2} }
+            {command "L&icense" {} "" {} -command {Debugger::OpenHelpFile License} }
+            {command "&News" {} "" {} -command {tsiDisplayAndSendCommand soarnews} }
+            {command "&Version" {} "" {} -command {tsiDisplayAndSendCommand version} }
          }}
-         {cascad  "Tcl/Tk"  {} export 0 {
-            {command "Open Man Page" {} "" {} -command {} }
-            {command "Version" {} "" {} -command {} }
-            {command "DLL Location" {} "" {} -command {} }
-         }}
-         {cascad  "WWW"  {} export 0 {
-            {command "Soar" {} "" {} -command {} }
-            {command "Scriptics" {} "" {} -command {} }
-            {command "General" {} "" {} -command {} }
-            {command "Man Pages" {} "" {} -command {} }
-            {command "Sunscript" {} "" {} -command {} }
+         {cascad  "&Tcl/Tk"  {} export 0 {
+            {command "&Version" {} "" {} -command {tsiDisplayAndSendCommand {info tclversion}} }
+            {command "&DLL Location" {} "" {} -command {tsiDisplayAndSendCommand {info library}} }
          }}
     }
    }
@@ -585,7 +652,7 @@ proc tsiDebugger {} {
 
     #wm geom .tsw [wm geom .tsw]
     #raise .tsw
-    wm geom .tsw 638x622+127+13
+    #wm geom .tsw 638x622+127+13
     
     set tsiAgentInfo(sourceDir) source_path
     set tsiAgentInfo(sourceFile) source_file

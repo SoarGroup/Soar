@@ -181,8 +181,7 @@ global tsiConfig
 
 ######## Set the watch options from a menu
 proc resetWatch {attribute {on -on} {off -off}} {
-   global watchValue
-   if $watchValue($attribute) {
+   if $Debugger::watchValue($attribute) {
       tsiDisplayAndSendCommand [concat watch $attribute $on]
    } else {
       tsiDisplayAndSendCommand [concat watch $attribute $off]
@@ -190,8 +189,7 @@ proc resetWatch {attribute {on -on} {off -off}} {
 }
 
 proc tsiSetWMELevel {} {
-   global watchValue
-   switch $watchValue(WMElevel) {
+   switch $Debugger::watchValue(WMElevel) {
       1 {tsiDisplayAndSendCommand {watch -nowmes}}
       2 {tsiDisplayAndSendCommand {watch -timetags}}
       3 {tsiDisplayAndSendCommand {watch -fullwmes}}

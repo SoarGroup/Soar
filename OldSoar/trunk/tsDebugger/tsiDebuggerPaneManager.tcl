@@ -110,23 +110,26 @@ proc PaneManager::LoadLayout { {whichLayout 1} } {
    switch $whichLayout {
       1 {
          #wm geom .tsw 594x273+1005+73
-         #set layoutList {h-w-100 Soar-w-93 Buttons-w-0}
-         set layoutList {h-w-100-m-1 Soar-w-93-m-1 Buttons-w-0-m-1}
+         set layoutList {h-w-100-m-1 Soar-w-90-m-1 Buttons-w-15-m-1}
+         wm geom .tsw 825x674+7+7
       }
       2 {
          #wm geom .tsw 594x1007+1005+73
-         #set layoutList {h-w-44 {v-w-50 {h-w-50 StateStack-w-40 Watch-w-60} WME-w-50} Soar-w-49 Buttons-w-7}
-         set layoutList {h-w-44-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-40-m-1 Watch-w-60-m-1} WME-w-50-m-1} Soar-w-49-m-1 Buttons-w-7-m-1}
+         set layoutList {h-w-45-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-50-m-1 Watch-w-50-m-1} WME-w-50-m-1} Soar-w-40-m-1 Buttons-w-15-m-1}
+         #set layoutList {h-w-44-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-40-m-1 Watch-w-60-m-1} WME-w-50-m-1} Soar-w-49-m-1 Buttons-w-7-m-1}
+         wm geom .tsw 825x674+7+7
         }
       3 {
          #wm geom .tsw 1256x1053+199+11
-         #set layoutList {v-w-82 {h-w-44 {v-w-50 {h-w-50 StateStack-w-40 OPrefs-w-60} WME-w-50} Soar-w-49 Buttons-w-0} {h-w-18 Watch-w-50 Watch-w-50}}
-         set layoutList {v-w-82-m-1 {h-w-44-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-40-m-1 OPrefs-w-60-m-1} WME-w-50-m-1} Soar-w-49-m-1 Buttons-w-0-m-1} {h-w-18-m-1 Watch-w-50-m-1 Watch-w-50-m-1}}
+         set layoutList {v-w-82-m-1 {h-w-45-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-40-m-1 OPrefs-w-60-m-1} WME-w-50-m-1} Soar-w-40-m-1 Buttons-w-15-m-1} {h-w-14-m-1 Watch-w-50-m-1 Watch-w-50-m-1}}
+         #set layoutList {v-w-82-m-1 {h-w-49-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-40-m-1 OPrefs-w-60-m-1} WME-w-50-m-1} Soar-w-49-m-1 Buttons-w-0-m-1} {h-w-14-m-1 Watch-w-50-m-1 Watch-w-50-m-1}}
+         wm geom .tsw 1006x674+7+7
         }
       4 {
          #wm geom .tsw 1256x1053+199+11
-         #set layoutList {v-w-82 {h-w-44 {v-w-50 {h-w-50 StateStack-w-40 Matches-w-60} WME-w-50} Soar-w-49 Buttons-w-0} {h-w-18 {v-w-50 {h-w-50 Watch-w-50 Watch-w-50}} {v-w-50 {h-w-50 Watch-w-50 Watch-w-50}}}}
-         set layoutList {v-w-82-m-1 {h-w-44-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-40-m-1 Matches-w-60-m-1} WME-w-50-m-1} Soar-w-49-m-1 Buttons-w-0-m-1} {h-w-18-m-1 {v-w-50-m-1 {h-w-50-m-1 Watch-w-50-m-1 Watch-w-50-m-1}} {v-w-50-m-1 {h-w-50-m-1 Watch-w-50-m-1 Watch-w-50-m-1}}}}
+         set layoutList {v-w-82-m-1 {h-w-44-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-40-m-1 Matches-w-60-m-1} WME-w-50-m-1} Soar-w-40-m-1 Buttons-w-15-m-1} {h-w-14-m-1 {v-w-50-m-1 {h-w-50-m-1 Watch-w-50-m-1 Watch-w-50-m-1}} {v-w-50-m-1 {h-w-50-m-1 Watch-w-50-m-1 Watch-w-50-m-1}}}}
+         #set layoutList {v-w-82-m-1 {h-w-48-m-1 {v-w-50-m-1 {h-w-50-m-1 StateStack-w-40-m-1 Matches-w-60-m-1} WME-w-50-m-1} Soar-w-49-m-1 Buttons-w-0-m-1} {h-w-14-m-1 {v-w-50-m-1 {h-w-50-m-1 Watch-w-50-m-1 Watch-w-50-m-1}} {v-w-50-m-1 {h-w-50-m-1 Watch-w-50-m-1 Watch-w-50-m-1}}}}
+         wm geom .tsw 1006x674+7+7
       }
    }
    
@@ -165,7 +168,7 @@ proc PaneManager::CreatePanedFrame { parentFrame orientation } {
 
    #puts "CreatePanedFrame called."
    set paneID [GetNewPaneName]
-   set paneWin [PanedWindow $parentFrame.$paneID -side $orientation -weights extra] 
+   set paneWin [PanedWindow $parentFrame.$paneID -side $orientation -weights available] 
 
    if {$paneList == {} } {
       set topPane $paneWin
