@@ -21,7 +21,7 @@
 
 using namespace sml ;
 
-IntElement::IntElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, int value, long timeTag) : WMElement(pAgent, pID, pAttributeName, timeTag)
+IntElement::IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, int value, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
 {
 	m_Value = value ;
 }

@@ -233,6 +233,10 @@ bool Agent::LoadProductions(char const* pFilename)
 *************************************************************/
 int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData, bool addToBack)
 {
+	// BUGBUG: I think we should do a better job of checking whether this handler has already been registered for this event and
+	// at least asserting.  That's a general issue for all events.  I'm not sure what happens -- I think two copies of the same handler
+	// will be registered and get called twice.
+
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
 	if (m_RunEventMap.getListSize(id) == 0)
@@ -793,8 +797,12 @@ char const* Agent::RunTilOutput(unsigned long maxDecisions)
 #ifdef SML_DIRECT
 	if (GetConnection()->IsDirectConnection())
 	{
+		// We have to call clearInterrupts before the run.
+		// This clears any interrupt flags set by a previous interrupt, such as from a previous setStopOnOutput call.
+		bool clearInterrupts = true ;
+
 		SetStopOnOutput(true) ;
-		((EmbeddedConnection*)GetConnection())->DirectRun(GetAgentName(), maxDecisions) ;
+		((EmbeddedConnection*)GetConnection())->DirectRun(GetAgentName(), maxDecisions, clearInterrupts) ;
 		return "DirectCall -- no output" ;
 	}
 #endif

@@ -42,6 +42,7 @@ public:
 		kSMLErrorMessage	= 20,
 		kDetailedError		= 21,
 		kAgentExists		= 22,
+		kOutputError		= 23,
 	} ;
 
 	/** Returns a description of the error which can be shown to a user */
@@ -72,6 +73,7 @@ public:
 			case kSMLErrorMessage:		return "The SML message contained an error tag.  We should display that instead of this generic error." ;
 			case kDetailedError:		return "There should be a detailed error message to accompany this and we should show that instead of this!" ;
 			case kAgentExists:			return "Trying to create an agent that already exists in the kernel." ;
+			case kOutputError:			return "Invalid format for output" ;
 		}
 
 		return "Unknown error code" ;

@@ -13,6 +13,7 @@
 
 namespace sml {
 
+// Actual error codes are in sml_Errors.h
 typedef int ErrorCode ;
 
 class ClientErrors

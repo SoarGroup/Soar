@@ -218,6 +218,297 @@ std::string MyRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgen
 	return res ;
 }
 
+bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
+{
+	// Record a RHS function
+	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ; 
+
+	Identifier* pInputLink = pAgent->GetInputLink() ;
+	if (!pInputLink)
+		cout << "Error getting input link" << endl ;
+
+	if (doInitSoars)
+		pAgent->InitSoar() ;
+
+	cout << "Done our first init-soar" << endl ;
+
+	// Some simple tests
+	StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
+	unused(pWME);
+	Identifier* pID = pAgent->CreateIdWME(pInputLink, "plane") ;
+
+	bool ok = pAgent->Commit() ;
+	if (doInitSoars)
+		pAgent->InitSoar() ;
+
+	StringElement* pWME1 = pAgent->CreateStringWME(pID, "type", "Boeing747") ;
+	unused(pWME1);
+	IntElement* pWME2    = pAgent->CreateIntWME(pID, "speed", 200) ;
+	FloatElement* pWME3  = pAgent->CreateFloatWME(pID, "direction", 50.5) ;
+
+	ok = pAgent->Commit() ;
+
+	if (doInitSoars)
+		pAgent->InitSoar() ;
+	
+	// Remove a wme
+	pAgent->DestroyWME(pWME3) ;
+
+	// Change the speed to 300
+	pAgent->Update(pWME2, 300) ;
+
+	// Create a new WME that shares the same id as plane
+	//Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
+
+	ok = pAgent->Commit() ;
+
+	if (doInitSoars)
+		pAgent->InitSoar() ;
+
+	//cout << "About to do first run" << endl ;
+
+	// Test the kernel level "are agents running" event.
+	int temp1 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENTS_RUN_STEP, &MyAgentEventHandler, 0) ;
+
+	std::string result = pAgent->Run(2) ;
+
+	pKernel->UnregisterForAgentEvent(temp1) ;
+
+	std::string expand = pKernel->ExpandCommandLine("p s1") ;
+	bool isRunCommand = pKernel->IsRunCommand("d 3") ;
+	isRunCommand = isRunCommand && pKernel->IsRunCommand("e 5") ;
+	isRunCommand = isRunCommand && pKernel->IsRunCommand("run -d 10") ;
+
+	if (!isRunCommand)
+	{
+		cout << "Error expanding run command aliases" << endl ;
+		return false ;
+	}
+
+	// Delete one of the shared WMEs to make sure that's ok
+	// BUGBUG: Turns out in the current gSKI implementation this can cause a crash, if we do proper cleanup
+	// If we release the children of pID here (as we should) then if there is a shared WME (like pID2)
+	// it is left with a reference to children that have been deleted.  I'm pretty sure it's a ref counting bug in gSKI's AddWmeObjectLink method.
+	// The fix I'm using here is to not create the shared WME (pID2) above here.
+	pAgent->DestroyWME(pID) ;
+	pAgent->Commit() ;
+
+	if (doInitSoars)
+		pAgent->InitSoar() ;
+
+	// Test that we get a callback after the decision cycle runs
+	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
+	int count = 0 ;
+	int callback1 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &count) ;
+
+	// Register another handler for the same event, to make sure we can do that.
+	// Register this one ahead of the previous handler (so it will fire before MyRunEventHandler)
+	bool addToBack = true ;
+	int testData ;
+	testData = 25 ;
+	int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &testData, !addToBack) ;
+	unused(callback2);
+
+	// Run returns the result (succeeded, failed etc.)
+	// To catch the trace output we have to register a print event listener
+	std::string trace ;	// We'll pass this into the handler and build up the output in it
+	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+
+	// Nothing should match here
+	result = pAgent->Run(2) ;
+
+	pAgent->UnregisterForPrintEvent(callbackp) ;
+	cout << trace << endl ;
+
+	// Then add some tic tac toe stuff which should trigger output
+	Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;
+	StringElement* pEmpty = pAgent->CreateStringWME(pSquare, "content", "RANDOM") ;
+	IntElement* pRow = pAgent->CreateIntWME(pSquare, "row", 1) ;
+	unused(pRow);
+	IntElement* pCol = pAgent->CreateIntWME(pSquare, "col", 2) ;
+	unused(pCol);
+
+	ok = pAgent->Commit() ;
+
+	// Update the square's value to be empty.  This ensures that the update
+	// call is doing something.  Otherwise, when we run we won't get a match.
+	pAgent->Update(pEmpty, "EMPTY") ;
+	ok = pAgent->Commit() ;
+
+	int myCount = 0 ;
+	int callback_run_count = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &myCount) ;
+	unused(callback_run_count);
+
+	//cout << "About to do first run-til-output" << endl ;
+
+	// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
+//		trace = pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
+	trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+
+	// We should stop quickly (after a decision or two)
+	if (myCount > 10)
+	{
+		cout << "Error in RunTilOutput -- it didn't stop on the output" << endl ;
+		return false ;
+	}
+	if (myCount == 0)
+	{
+		cout << "Error in callback handler for MyRunEventHandler -- failed to update count" << endl ;
+		return false ;
+	}
+	cout << "Agent ran for " << myCount << " decisions before we got output" << endl ;
+
+	// Reset the agent and repeat the process to check whether init-soar works.
+	if (doInitSoars)
+	{
+		pAgent->InitSoar() ;
+		trace = pAgent->RunTilOutput(20) ;
+	}
+
+	bool ioOK = false ;
+
+	//cout << "Time to dump output link" << endl ;
+
+	// If we have output, dump it out.
+	if (pAgent->GetOutputLink())
+	{
+		printWMEs(pAgent->GetOutputLink()) ;
+
+		// Now update the output link with "status complete"
+		Identifier* pMove = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("move", 0) ;
+
+		// We add an "alternative" to check that we handle shared WMEs correctly.
+		// Look it up here.
+		Identifier* pAlt = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("alternative", 0) ;
+
+		if (pAlt)
+		{
+			cout << "Found alternative " << pAlt->GetValueAsString() << endl ;
+		}
+		else
+		{
+			return false ;
+		}
+
+		// Should also be able to get the command through the "GetCommands" route which tests
+		// whether we've flagged the right wmes as "just added" or not.
+		int numberCommands = pAgent->GetNumberCommands() ;
+
+		// Get the first two commands (move and alternate)
+		Identifier* pCommand1 = pAgent->GetCommand(0) ;
+		Identifier* pCommand2 = pAgent->GetCommand(1) ;
+
+		if (numberCommands == 2 && (strcmp(pCommand1->GetCommandName(), "move") == 0 || (strcmp(pCommand2->GetCommandName(), "move") == 0)))
+		{
+			cout << "Found move command" << endl ;
+		}
+		else
+		{
+			cout << "*** ERROR: Failed to find the move command" << endl ;
+			return false ;
+		}
+
+		pAgent->ClearOutputLinkChanges() ;
+
+		int clearedNumberCommands = pAgent->GetNumberCommands() ;
+
+		if (clearedNumberCommands != 0)
+		{
+			cout << "*** ERROR: Clearing the list of output link changes failed" << endl ;
+			return false ;
+		}
+
+		if (pMove)
+		{
+			cout << "Marking command as completed." << endl ;
+			StringElement* pCompleted = pAgent->CreateStringWME(pMove, "status", "complete") ;
+			unused(pCompleted);
+			ioOK = true ;
+		}
+
+		pAgent->Commit() ;
+	}
+	else
+	{
+		cout << " ERROR: No output generated." << endl ;
+		return false ;
+	}
+
+	// The move command should be deleted in response to the
+	// the status complete getting added
+	trace = pAgent->Run(2) ;
+
+	// Dump out the output link again.
+	if (pAgent->GetOutputLink())
+	{
+		printWMEs(pAgent->GetOutputLink()) ;
+	}
+
+	if (!ioOK)
+	{
+		cout << "*** ERROR: Test failed to send and receive output correctly." << endl ;
+		return false ;
+	}
+
+	// Test that we can interrupt a run by registering a handler that
+	// interrupts Soar immediately after a decision cycle.
+	// Removed the test part for now. Stats doesn't report anything.
+	int callback3 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyInterruptHandler, 0) ;
+
+	if (doInitSoars)
+		pAgent->InitSoar() ;
+
+	pAgent->Run(20) ;
+
+	std::string stats = pAgent->ExecuteCommandLine("stats") ;
+	size_t pos = stats.find("1 decision cycles") ;
+	unused(pos);
+/*
+	if (pos == std::string.npos)
+	{
+		cout << "*** ERROR: Failed to interrupt Soar during a run." << endl ;
+		return false ;
+	}
+*/
+	bool unreg = pAgent->UnregisterForRunEvent(callback3) ;
+
+	if (!unreg)
+	{
+		cout << "Error unregistering callback3" << endl ;
+		return false ;
+	}
+
+	bool unregRhs = pKernel->RemoveRhsFunction(callback_rhs1) ;
+	unused(unregRhs);
+
+	if (!unreg)
+	{
+		cout << "Error unregistering rhs function" << endl ;
+		return false ;
+	}
+
+	/* These comments haven't kept up with the test -- does a lot more now
+	cout << endl << "If this test worked should see something like this (above here):" << endl ;
+	cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;
+	cout << "(M1 ^col 1)" << endl << "(I3 ^alternative M1)" << endl ;
+	cout << "And then after the command is marked as completed (during the test):" << endl ;
+	cout << "Top Identifier I3" << endl ;
+	cout << "Together with about 6 received events" << endl ;
+	*/
+
+	cout << "Destroy the agent now" << endl ;
+
+	unreg = pAgent->UnregisterForRunEvent(callback1) ;
+
+	if (!unreg)
+	{
+		cout << "Error unregistering callback1" << endl ;
+		return false ;
+	}
+
+	return true ;
+}
+
 bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
@@ -231,8 +522,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Create the appropriate type of connection
 		sml::Kernel* pKernel = embedded ?
-			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("KernelSML", fullyOptimized, 14444)
-							 : sml::Kernel::CreateKernelInNewThread("KernelSML", 14456))
+			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("KernelSML", fullyOptimized, Kernel::GetDefaultPort())
+			: sml::Kernel::CreateKernelInNewThread("KernelSML", Kernel::GetDefaultPort()))
 			: sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
 		if (pKernel->HadError())
@@ -259,9 +550,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Report the number of agents (always 0 unless this is a remote connection to a CLI or some such)
 		cout << "Existing agents: " << numberAgents << endl ;
-
-		// Record a RHS function
-		int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ; 
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent(name) ;
@@ -310,278 +598,9 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		cout << "Loaded productions" << endl ;
 
-		Identifier* pInputLink = pAgent->GetInputLink() ;
-		if (!pInputLink)
-			cout << "Error getting input link" << endl ;
-
-		pAgent->InitSoar() ;
-
-		//cout << "Done our first init-soar" << endl ;
-
-		// Some simple tests
-		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
-		unused(pWME);
-		Identifier* pID = pAgent->CreateIdWME(pInputLink, "plane") ;
-
-		ok = pAgent->Commit() ;
-		pAgent->InitSoar() ;
-
-		StringElement* pWME1 = pAgent->CreateStringWME(pID, "type", "Boeing747") ;
-		unused(pWME1);
-		IntElement* pWME2    = pAgent->CreateIntWME(pID, "speed", 200) ;
-		FloatElement* pWME3  = pAgent->CreateFloatWME(pID, "direction", 50.5) ;
-
-		ok = pAgent->Commit() ;
-		pAgent->InitSoar() ;
-
-		// Remove a wme
-		pAgent->DestroyWME(pWME3) ;
-
-		// Change the speed to 300
-		pAgent->Update(pWME2, 300) ;
-
-		// Create a new WME that shares the same id as plane
-		//Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
-
-		ok = pAgent->Commit() ;
-
-		pAgent->InitSoar() ;
-
-		//cout << "About to do first run" << endl ;
-
-		// Test the kernel level "are agents running" event.
-		int temp1 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENTS_RUN_STEP, &MyAgentEventHandler, 0) ;
-
-		std::string result = pAgent->Run(2) ;
-
-		pKernel->UnregisterForAgentEvent(temp1) ;
-
-		std::string expand = pKernel->ExpandCommandLine("p s1") ;
-		bool isRunCommand = pKernel->IsRunCommand("d 3") ;
-		isRunCommand = isRunCommand && pKernel->IsRunCommand("e 5") ;
-		isRunCommand = isRunCommand && pKernel->IsRunCommand("run -d 10") ;
-
-		if (!isRunCommand)
-		{
-			cout << "Error expanding run command aliases" << endl ;
-			return false ;
-		}
-
-		// Delete one of the shared WMEs to make sure that's ok
-		// BUGBUG: Turns out in the current gSKI implementation this can cause a crash, if we do proper cleanup
-		// If we release the children of pID here (as we should) then if there is a shared WME (like pID2)
-		// it is left with a reference to children that have been deleted.  I'm pretty sure it's a ref counting bug in gSKI's AddWmeObjectLink method.
-		// The fix I'm using here is to not create the shared WME (pID2) above here.
-		pAgent->DestroyWME(pID) ;
-		pAgent->Commit() ;
-
-		pAgent->InitSoar() ;
-
-		// Test that we get a callback after the decision cycle runs
-		// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
-		int count = 0 ;
-		int callback1 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &count) ;
-
-		// Register another handler for the same event, to make sure we can do that.
-		// Register this one ahead of the previous handler (so it will fire before MyRunEventHandler)
-		bool addToBack = true ;
-		int testData = 25 ;
-		int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &testData, !addToBack) ;
-		unused(callback2);
-
-		// Run returns the result (succeeded, failed etc.)
-		// To catch the trace output we have to register a print event listener
-		std::string trace ;	// We'll pass this into the handler and build up the output in it
-		int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
-
-		// Nothing should match here
-		result = pAgent->Run(2) ;
-
-		pAgent->UnregisterForPrintEvent(callbackp) ;
-		cout << trace << endl ;
-
-		// Then add some tic tac toe stuff which should trigger output
-		Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;
-		StringElement* pEmpty = pAgent->CreateStringWME(pSquare, "content", "RANDOM") ;
-		IntElement* pRow = pAgent->CreateIntWME(pSquare, "row", 1) ;
-		unused(pRow);
-		IntElement* pCol = pAgent->CreateIntWME(pSquare, "col", 2) ;
-		unused(pCol);
-
-		ok = pAgent->Commit() ;
-
-		// Update the square's value to be empty.  This ensures that the update
-		// call is doing something.  Otherwise, when we run we won't get a match.
-		pAgent->Update(pEmpty, "EMPTY") ;
-		ok = pAgent->Commit() ;
-
-		int myCount = 0 ;
-		int callback_run_count = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &myCount) ;
-		unused(callback_run_count);
-
-		//cout << "About to do first run-til-output" << endl ;
-
-		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
-//		trace = pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
-		trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
-
-		// We should stop quickly (after a decision or two)
-		if (myCount > 10)
-		{
-			cout << "Error in RunTilOutput -- it didn't stop on the output" << endl ;
-			return false ;
-		}
-		if (myCount == 0)
-		{
-			cout << "Error in callback handler for MyRunEventHandler -- failed to update count" << endl ;
-			return false ;
-		}
-		cout << "Agent ran for " << myCount << " decisions before we got output" << endl ;
-
-		// Reset the agent and repeat the process to check whether init-soar works.
-		pAgent->InitSoar() ;
-		trace = pAgent->RunTilOutput(20) ;
-
-		bool ioOK = false ;
-
-		//cout << "Time to dump output link" << endl ;
-
-		// If we have output, dump it out.
-		if (pAgent->GetOutputLink())
-		{
-			printWMEs(pAgent->GetOutputLink()) ;
-
-			// Now update the output link with "status complete"
-			Identifier* pMove = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("move", 0) ;
-
-			// We add an "alternative" to check that we handle shared WMEs correctly.
-			// Look it up here.
-			Identifier* pAlt = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("alternative", 0) ;
-
-			if (pAlt)
-			{
-				cout << "Found alternative " << pAlt->GetValueAsString() << endl ;
-			}
-			else
-			{
-				return false ;
-			}
-	
-			// Should also be able to get the command through the "GetCommands" route which tests
-			// whether we've flagged the right wmes as "just added" or not.
-			int numberCommands = pAgent->GetNumberCommands() ;
-
-			// Get the first two commands (move and alternate)
-			Identifier* pCommand1 = pAgent->GetCommand(0) ;
-			Identifier* pCommand2 = pAgent->GetCommand(1) ;
-
-			if (numberCommands == 2 && (strcmp(pCommand1->GetCommandName(), "move") == 0 || (strcmp(pCommand2->GetCommandName(), "move") == 0)))
-			{
-				cout << "Found move command" << endl ;
-			}
-			else
-			{
-				cout << "*** ERROR: Failed to find the move command" << endl ;
-				return false ;
-			}
-
-			pAgent->ClearOutputLinkChanges() ;
-
-			int clearedNumberCommands = pAgent->GetNumberCommands() ;
-
-			if (clearedNumberCommands != 0)
-			{
-				cout << "*** ERROR: Clearing the list of output link changes failed" << endl ;
-				return false ;
-			}
-
-			if (pMove)
-			{
-				cout << "Marking command as completed." << endl ;
-				StringElement* pCompleted = pAgent->CreateStringWME(pMove, "status", "complete") ;
-				unused(pCompleted);
-				ioOK = true ;
-			}
-
-			pAgent->Commit() ;
-		}
-		else
-		{
-			cout << " ERROR: No output generated." << endl ;
-			return false ;
-		}
-
-		// The move command should be deleted in response to the
-		// the status complete getting added
-		trace = pAgent->Run(2) ;
-
-		// Dump out the output link again.
-		if (pAgent->GetOutputLink())
-		{
-			printWMEs(pAgent->GetOutputLink()) ;
-		}
-
-		if (!ioOK)
-		{
-			cout << "*** ERROR: Test failed to send and receive output correctly." << endl ;
-			return false ;
-		}
-
-		// Test that we can interrupt a run by registering a handler that
-		// interrupts Soar immediately after a decision cycle.
-		// Removed the test part for now. Stats doesn't report anything.
-		int callback3 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyInterruptHandler, 0) ;
-
-		pAgent->InitSoar() ;
-		pAgent->Run(20) ;
-
-		std::string stats = pAgent->ExecuteCommandLine("stats") ;
-		size_t pos = stats.find("1 decision cycles") ;
-		unused(pos);
-/*
-		if (pos == std::string.npos)
-		{
-			cout << "*** ERROR: Failed to interrupt Soar during a run." << endl ;
-			return false ;
-		}
-*/
-		bool unreg = pAgent->UnregisterForRunEvent(callback3) ;
-
-		if (!unreg)
-		{
-			cout << "Error unregistering callback3" << endl ;
-			return false ;
-		}
-
-		bool unregRhs = pKernel->RemoveRhsFunction(callback_rhs1) ;
-		unused(unregRhs);
-
-		if (!unreg)
-		{
-			cout << "Error unregistering rhs function" << endl ;
-			return false ;
-		}
-
-		/* These comments haven't kept up with the test -- does a lot more now
-		cout << endl << "If this test worked should see something like this (above here):" << endl ;
-		cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;
-		cout << "(M1 ^col 1)" << endl << "(I3 ^alternative M1)" << endl ;
-		cout << "And then after the command is marked as completed (during the test):" << endl ;
-		cout << "Top Identifier I3" << endl ;
-		cout << "Together with about 6 received events" << endl ;
-		*/
-
-		cout << "Destroy the agent now" << endl ;
-
-		unreg = pAgent->UnregisterForRunEvent(callback1) ;
-
-		if (!unreg)
-		{
-			cout << "Error unregistering callback1" << endl ;
-			return false ;
-		}
-
-
+		// Run a suite of tests on this agent
+		ok = TestAgent(pKernel, pAgent, true) ;
+		
 		// The Before_Agent_Destroyed callback is a tricky one so we'll register for it to test it.
 		// We need to get this callback just before the agentSML data is deleted (otherwise there'll be no way to send/receive the callback)
 		// and then continue on to delete the agent after we've responded to the callback.

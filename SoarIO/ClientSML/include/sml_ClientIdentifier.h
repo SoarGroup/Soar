@@ -112,6 +112,8 @@ protected:
 	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
 	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
 
+	void SetParent(Identifier* pParent) ;
+
 public:
 	virtual char const* GetValueType() const ;
 
@@ -219,7 +221,7 @@ protected:
 	Identifier(Agent* pAgent, char const* pIdentifier, long timeTag);
 
 	// The normal case (where there is a parent id)
-	Identifier(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) ;
+	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) ;
 
 	virtual ~Identifier(void);
 

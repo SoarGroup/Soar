@@ -382,6 +382,8 @@ bool KernelListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* pAgent, boo
 		// Only call to embedded connections
 		bool embeddedPhase = (phase == 0) ;
 
+		ConnectionListIter connectionIter = pList->begin() ;
+
 		// Keep looping until we get a result
 		while (connectionIter != pList->end() && !result)
 		{

@@ -45,7 +45,7 @@ public:
 	virtual FloatElement* ConvertToFloatElement() { return this; }
 
 protected:
-	FloatElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, double value, long timeTag) ;
+	FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long timeTag) ;
 	virtual ~FloatElement(void);
 
 	void SetValue(double value)

@@ -100,8 +100,7 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 		return ;
 
 	// We have to watch for one special case.  When the output-link is created, if that's the only output we
-	// don't want to stop (or you always stop on the first decision in a run).
-
+	// don't want to stop (or you always stop on the first decision in a run-til-output).
 	// First make sure we are only passed one value, otherwise we did get real output.
 	bool isJustOutputLink = wmelist->GetNumElements() == 1 ;
 	if (isJustOutputLink)
@@ -117,7 +116,7 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 
 		// Check whether we're adding the output link
 		// BADBAD: It would be nice to be able to do this without hard-coding the output-link's attribute here.
-		isJustOutputLink = (type == gSKI_OBJECT && strcmp(att.c_str(), "output-link") == 0) ;
+		isJustOutputLink = (type == gSKI_OBJECT && strcmp(att.c_str(), sml_Names::kOutputLinkName) == 0) ;
 	}
 
 	if (m_StopOnOutput && !isJustOutputLink)

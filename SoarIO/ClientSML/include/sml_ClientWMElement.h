@@ -33,7 +33,7 @@ class WMElement
 	// Making most methods protected, so users don't use them directly by accident.
 	// But allow working memory to work with them directly.
 	friend class WorkingMemory ;
-	friend class Identifier ;				// Access to just added information
+	friend class Identifier ;			// Access to just added information
 	friend class WMDelta ;				// Allow it to destroy WMEs
 	friend class IdentifierSymbol ;		// Allow it to destroy WMEs
 
@@ -44,6 +44,10 @@ protected:
 	// The time tag (a unique id for this WME)
 	// We used negative values so it's clear that this time tag is a client side tag.
 	long	m_TimeTag ;
+
+	// The identifier symbol as a string.  This can be necessary when connecting up
+	// disconnected segments of a graph.
+	std::string			m_IDName ;
 
 	// The id for this wme (can be NULL if we're at the top of the tree)
 	IdentifierSymbol*	m_ID ;
@@ -66,6 +70,9 @@ public:
 	// Two accessors for the ID as people think about it in different ways
 	IdentifierSymbol*		GetParent()		const	{ return m_ID ; }
 	IdentifierSymbol*		GetIdentifier()	const	{ return m_ID ; }
+
+	// This will always be valid even if we no identifier symbol
+	char const* GetIdentifierName() const { return m_IDName.c_str() ; }
 
 	char const*	GetAttribute() const	{ return m_AttributeName.c_str() ; }
 
@@ -91,10 +98,12 @@ protected:
 	// Keep these protected, so user can only create and destroy WMEs through
 	// the methods exposed in the agent class.  This makes it clear that the
 	// agent owns all objects.
-	WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, long timeTag);
+	WMElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, long timeTag);
 	virtual ~WMElement(void);
 
 	void	SetJustAdded(bool state) { m_JustAdded = state ; }
+
+	void SetParent(Identifier* pParent) ;
 
 	Agent*		GetAgent()	{ return m_Agent ; }
 

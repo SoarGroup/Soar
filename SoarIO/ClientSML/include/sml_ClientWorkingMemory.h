@@ -25,6 +25,8 @@
 #include "sml_DeltaList.h"
 #include "sml_OutputDeltaList.h"
 
+#include <list>
+
 namespace sml {
 
 // Forward declarations
@@ -50,8 +52,18 @@ protected:
 	// List of changes to output-link since last time client checked
 	OutputDeltaList m_OutputDeltaList ;
 
+	typedef std::list<WMElement*> WmeList ;
+	typedef WmeList::iterator WmeListIter ;
+
+	// A temporary list of wme's with no parent identifier
+	// Should always be empty at the end of an output call from the kernel.
+	WmeList		m_OutputOrphans ;
+
 	void RecordAddition(WMElement* pWME) ;
 	void RecordDeletion(WMElement* pWME) ;
+
+	WMElement* SearchWmeListForID(WmeList* pWmeList, char const* pID, bool deleteFromList) ;
+	Identifier* FindIdentifierInWmeList(WmeList* pWmeList, char const* pID) ;
 
 public:
 	WorkingMemory() ;
@@ -73,7 +85,7 @@ public:
 	Identifier*		FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index = 0) ;
 
 	// Create a new WME of the appropriate type based on this information.
-	WMElement*		CreateWME(Identifier* pParent, char const* pAttribute, char const* pValue, char const* pType, long timeTag) ;
+	WMElement*		CreateWME(Identifier* pParent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long timeTag) ;
 
 	// These functions are documented in the agent and handled here.
 	Identifier*		GetInputLink() ;

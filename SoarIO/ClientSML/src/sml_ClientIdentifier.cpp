@@ -66,21 +66,24 @@ void IdentifierSymbol::RemoveChild(WMElement* pWME)
 }
 
 // This version is only needed at the top of the tree (e.g. the input link)
-Identifier::Identifier(Agent* pAgent, char const* pIdentifier, long timeTag) : WMElement(pAgent, NULL, NULL, timeTag)
+Identifier::Identifier(Agent* pAgent, char const* pIdentifier, long timeTag) : WMElement(pAgent, NULL, NULL, NULL, timeTag)
 {
 	m_pSymbol = new IdentifierSymbol(this) ;
 	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
 }
 
 // The normal case (where there is a parent id)
-Identifier::Identifier(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) : WMElement(pAgent, pID, pAttributeName, timeTag)
+Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
 {
 	m_pSymbol = new IdentifierSymbol(this) ;
 	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
 
 #ifdef SML_DIRECT
 	// Pass along with working memory object.  (Note: If you pass id's from input-link to output-link this just breaks gSKI all over the place, so please don't).
-	m_pSymbol->m_WM = pID->GetSymbol()->m_WM ;
+	if (pParent)
+		m_pSymbol->m_WM = pParent->GetSymbol()->m_WM ;
+	else
+		m_pSymbol->m_WM = NULL ;
 #endif
 }
 
@@ -96,6 +99,16 @@ Identifier::~Identifier(void)
 	}
 
 	m_pSymbol = NULL ;
+}
+
+void Identifier::SetParent(Identifier* pParent)
+{
+	WMElement::SetParent(pParent) ;
+
+#ifdef SML_DIRECT
+	// Pass along with working memory object.  (Note: If you pass id's from input-link to output-link this just breaks gSKI all over the place, so please don't).
+	m_pSymbol->m_WM = pParent->GetSymbol()->m_WM ;
+#endif
 }
 
 /*************************************************************

@@ -57,19 +57,34 @@ int TowerStringToInt(string& sourceString)
 	return -99;
 }
 
+void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
+{
+	// In this case the user data is a string we're building up
+	std::string* pTrace = (std::string*)pUserData ;
+
+	(*pTrace) += pMessage ;
+}
+
 void SoarAgent::MakeMove()
 {
 	// SGIO takes no arguments.  SML pass in max decisions before stop (so it's clear this is how RunTilOutput works)
-	// We also can get output from the run command.
 //	pAgent->RunTilOutput();
+
+	const bool collectDebugInfo = false ;
+	int callbackp ;
+
+	// When debugging this it can be nice to capture the trace output to see what's happening.
+	if (collectDebugInfo)
+	{
+		std::string trace ;	// We'll pass this into the handler and build up the output in it
+		callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+		pAgent->ExecuteCommandLine("watch 1") ;
+	}
+
 	std::string output = pAgent->RunTilOutput(15);
 
-	/* SML: Adding this and enabling the tcl debugger in KernelSML lets us debug what's going on
-	while (pAgent->GetKernel()->CheckForIncomingCommands())
-	{
-		pAgent->GetKernel()->Sleep(10) ;
-	}
-	*/
+	if (collectDebugInfo)
+		pAgent->UnregisterForPrintEvent(callbackp) ;
 
 	assert(pAgent->Commands());
 

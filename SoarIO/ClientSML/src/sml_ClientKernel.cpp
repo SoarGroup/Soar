@@ -304,7 +304,8 @@ void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, Eleme
 	// We may not, because "agent created" events are included in the list that come here.
 	Agent* pAgent = GetAgent(pAgentName) ;
 
-	if (!pAgent)
+	// Agent name can be null for some agent manager events
+	if (!pAgent && pAgentName)
 	{
 		// Create a new client side agent object
 		// We have to do this now because we'll be passing it back to the caller in a minute
@@ -555,6 +556,9 @@ void Kernel::UpdateAgentList()
 *************************************************************/
 Agent* Kernel::GetAgent(char const* pAgentName)
 {
+	if (!pAgentName)
+		return NULL ;
+
 	return m_AgentMap.find(pAgentName) ;
 }
 
@@ -608,6 +612,9 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 *************************************************************/
 Agent* Kernel::MakeAgent(char const* pAgentName)
 {
+	if (!pAgentName)
+		return NULL ;
+
 	// If we already have an agent structure for this name just
 	// return it.
 	Agent* agent = GetAgent(pAgentName) ;

@@ -44,7 +44,7 @@ public:
 	virtual IntElement* ConvertToIntElement() { return this; }
 
 protected:
-	IntElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, int value, long timeTag) ;
+	IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, int value, long timeTag) ;
 	virtual ~IntElement(void);
 
 	void SetValue(int value)

@@ -144,9 +144,9 @@ public:
 	{
 		return m_pDirectGetRootFunction(pAgentName, input) ;
 	}
-	void						DirectRun(char const* pAgentName, int decisions)
+	void						DirectRun(char const* pAgentName, int decisions, bool clearInterrupts)
 	{
-		m_pDirectRunFunction(pAgentName, decisions) ;
+		m_pDirectRunFunction(pAgentName, decisions, clearInterrupts) ;
 	}
 
 	void						DirectReleaseWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)

@@ -19,23 +19,28 @@
 #include "sml_EmbeddedConnection.h"	// For direct methods
 #include "sml_ClientDirect.h"
 
+#include "assert.h"
+
 using namespace sml ;
 
-WMElement::WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, long timeTag)
+WMElement::WMElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, long timeTag)
 {
 	m_TimeTag = timeTag ;
 
 	// Record the agent that owns this wme.
 	m_Agent			= pAgent ;
 
-	// id and attribute name can both be NULL if this is at the top of the tree.
+	m_ID = NULL ;
+
+	// parent and attribute name can both be NULL if this is at the top of the tree.
 	if (pAttributeName)
 		m_AttributeName = pAttributeName ;
 
-	m_ID = NULL ;
-
 	if (pID)
-		m_ID = pID->GetSymbol() ;
+		m_IDName = pID ;
+
+	if (pParent)
+		m_ID = pParent->GetSymbol() ;
 
 #ifdef SML_DIRECT
 	m_WME = 0 ;
@@ -44,24 +49,18 @@ WMElement::WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName,
 
 WMElement::~WMElement(void)
 {
-#ifdef SML_DIRECT
-	// If we're using the direct connection methods, we need to release the gSKI object
-	// that we own.
-	// DJP: We can't do this all of the time because we currently destroy the agent (in the kernel)
-	// and then destroy the agent object here, which deletes all of the children and in turn
-	// causes a crash (as the agent has now gone).  Arrggh.
-	// I think the fix may be to delete our working memory, then call to destroy the agent
-	// and then delete the agent object (so the releases will happen ahead of the delete).
-	/*
-	if (m_WME && GetAgent()->GetConnection()->IsDirectConnection())
-	{
-		IdentifierSymbol* parent = GetIdentifier() ;
-		Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
+}
 
-		((EmbeddedConnection*)GetAgent()->GetConnection())->DirectReleaseWME(wm, m_WME) ;
-	}
-	*/
-#endif
+void WMElement::SetParent(Identifier* pParent)
+{
+	// We should only set the parent once and only to the same
+	// string value as the ID we used when we constructed the WME.
+	// (This method is only called when we have dangling parts of a graph while
+	//  it's being built).
+	assert(m_ID == NULL) ;
+	assert(m_IDName.compare(pParent->GetValueAsString()) == 0) ;
+
+	m_ID = pParent->GetSymbol() ;
 }
 
 void WMElement::GenerateNewTimeTag()

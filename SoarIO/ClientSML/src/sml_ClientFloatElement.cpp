@@ -25,7 +25,7 @@
 
 using namespace sml ;
 
-FloatElement::FloatElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, double value, long timeTag) : WMElement(pAgent, pID, pAttributeName, timeTag)
+FloatElement::FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
 {
 	m_Value = value ;
 }

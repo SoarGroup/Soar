@@ -33,9 +33,11 @@
 #include "sml_ClientFloatElement.h"
 #include "sml_TagWme.h"
 #include "sml_StringOps.h"
+#include "sml_Errors.h"
 
 #include "sml_EmbeddedConnection.h"	// For access to direct methods
 #include "sml_ClientDirect.h"
+#include <assert.h>
 
 using namespace sml ;
 
@@ -78,34 +80,74 @@ Identifier*	WorkingMemory::FindIdentifier(char const* pID, bool searchInput, boo
 	{
 		if (m_OutputLink)
 			pMatch = m_OutputLink->FindIdentifier(pID, index) ;
+
+		if (!pMatch && !m_OutputOrphans.empty())
+			pMatch = FindIdentifierInWmeList(&m_OutputOrphans, pID) ;
 	}
 
 	return pMatch ;
 }
 
+// Finds the first WME in the list that has the given string as its identifier
+WMElement* WorkingMemory::SearchWmeListForID(WmeList* pWmeList, char const* pID, bool deleteFromList)
+{
+	for (WmeListIter iter = pWmeList->begin() ; iter != pWmeList->end() ; iter++)
+	{
+		WMElement* pWME = *iter ;
+		if (strcmp(pWME->GetIdentifierName(), pID) == 0)
+		{
+			if (deleteFromList)
+				pWmeList->erase(iter) ;
+			return pWME ;
+		}
+	}
+
+	return NULL ;
+}
+
+// Finds the first WME that has the identifier as its value
+Identifier* WorkingMemory::FindIdentifierInWmeList(WmeList* pWmeList, char const* pID)
+{
+	for (WmeListIter iter = pWmeList->begin() ; iter != pWmeList->end() ; iter++)
+	{
+		WMElement* pWME = *iter ;
+
+		if (pWME->IsIdentifier())
+		{
+			Identifier* pIdentifier = (Identifier*)pWME ;
+
+			// This test includes checking for "this" being a match
+			Identifier* pMatch = pIdentifier->FindIdentifier(pID) ;
+			return pMatch ;
+		}
+	}
+
+	return NULL ;
+}
+
 // Create a new WME of the appropriate type based on this information.
-WMElement* WorkingMemory::CreateWME(Identifier* pParent, char const* pAttribute, char const* pValue, char const* pType, long timeTag)
+WMElement* WorkingMemory::CreateWME(Identifier* pParent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long timeTag)
 {
 	// Value is an identifier
 	if (strcmp(pType, sml_Names::kTypeID) == 0)
-		return new Identifier(GetAgent(), pParent, pAttribute, pValue, timeTag) ;
+		return new Identifier(GetAgent(), pParent, pID, pAttribute, pValue, timeTag) ;
 
 	// Value is a string
 	if (strcmp(pType, sml_Names::kTypeString) == 0)
-		return new StringElement(GetAgent(), pParent, pAttribute, pValue, timeTag) ;
+		return new StringElement(GetAgent(), pParent, pID, pAttribute, pValue, timeTag) ;
 
 	// Value is an int
 	if (strcmp(pType, sml_Names::kTypeInt) == 0)
 	{
 		int value = atoi(pValue) ;
-		return new IntElement(GetAgent(), pParent, pAttribute, value, timeTag) ;
+		return new IntElement(GetAgent(), pParent, pID, pAttribute, value, timeTag) ;
 	}
 
 	// Value is a float
 	if (strcmp(pType, sml_Names::kTypeDouble) == 0)
 	{
 		double value = atof(pValue) ;
-		return new FloatElement(GetAgent(), pParent, pAttribute, value, timeTag) ;
+		return new FloatElement(GetAgent(), pParent, pID, pAttribute, value, timeTag) ;
 	}
 
 	return NULL ;
@@ -172,6 +214,11 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 
 	bool ok = true ;
 
+	// Make sure the output orphans list is empty
+	// We'll use this to store output wmes that have no parent identifier yet
+	// (this is rare but can happen if the kernel generates wmes in an unusual order)
+	m_OutputOrphans.clear() ;
+
 	for (int i = 0 ; i < nChildren ; i++)
 	{
 		pCommand->GetChild(&wmeXML, i) ;
@@ -213,12 +260,13 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 			//  as its value, but any one will do because the true parent is the
 			//  identifier symbol which is the same for any identifiers).
 			Identifier* pParent = FindIdentifier(pID, false, true) ;
+			WMElement* pAddWme = NULL ;
 
 			if (pParent)
 			{
 				// Create a client side wme object to match the output wme and add it to
 				// our tree of objects.
-				WMElement* pAddWme = CreateWME(pParent, pAttribute, pValue, pType, timeTag) ;
+				pAddWme = CreateWME(pParent, pID, pAttribute, pValue, pType, timeTag) ;
 				if (pAddWme)
 				{
 					pParent->AddChild(pAddWme) ;
@@ -226,13 +274,46 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 					// Make a record that this wme was added so we can alert the client to this change.
 					RecordAddition(pAddWme) ;
 				}
+				else
+				{
+					GetAgent()->SetDetailedError(Error::kOutputError, "Unable to create an output wme -- type was not recognized") ;
+				}
 			}
 			else
 			{
-				// We should only fail to find the parent when we're adding the output link itself.
+				// See if this is the output-link itself (we want to keep a handle to that specially)
 				if (IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
 				{
 					m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
+				} else
+				{
+					// If we reach here we've received output which is out of order (e.g. (Y ^att value) before (X ^att Y))
+					// so there's no parent to connect it to.  We'll create the wme, keep it on a special list of orphans
+					// and try to reconnect it later.
+					pAddWme = CreateWME(NULL, pID, pAttribute, pValue, pType, timeTag) ;
+
+					if (pAddWme)
+						m_OutputOrphans.push_back(pAddWme) ;
+				}
+			}
+
+			// If we have an output wme still waiting to be connected to its parent
+			// and we get in a new wme that is creating an identifier see if they match up.
+			if (pAddWme && pAddWme->IsIdentifier() && !m_OutputOrphans.empty())
+			{
+				Identifier* pPossibleParent = (Identifier*)pAddWme ;
+				bool deleteFromList = true ;
+				WMElement* pWme = SearchWmeListForID(&m_OutputOrphans, pPossibleParent->GetValueAsString(), deleteFromList) ;
+
+				while (pWme)
+				{
+					pWme->SetParent(pPossibleParent) ;
+					pPossibleParent->AddChild(pWme) ;
+
+					// Make a record that this wme was added so we can alert the client to this change.
+					RecordAddition(pWme) ;
+
+					pWme = SearchWmeListForID(&m_OutputOrphans, pPossibleParent->GetValueAsString(), deleteFromList) ;
 				}
 			}
 		}
@@ -261,6 +342,13 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 				RecordDeletion(pWME) ;
 			}
 		}
+	}
+
+	if (!m_OutputOrphans.empty())
+	{
+		ok = false ;
+		GetAgent()->SetDetailedError(Error::kOutputError, "Some output WMEs have no matching parent IDs -- they are ophans") ;
+		m_OutputOrphans.clear() ;	// Have to discard them.
 	}
 
 	// Returns false if any of the adds/removes fails
@@ -320,7 +408,7 @@ Identifier* WorkingMemory::GetOutputLink()
 *************************************************************/
 StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
 {
-	StringElement* pWME = new StringElement(GetAgent(), parent, pAttribute, pValue, GenerateTimeTag()) ;
+	StringElement* pWME = new StringElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pValue, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -350,7 +438,7 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 *************************************************************/
 IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
 {
-	IntElement* pWME = new IntElement(GetAgent(), parent, pAttribute, value, GenerateTimeTag()) ;
+	IntElement* pWME = new IntElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -380,7 +468,7 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
 *************************************************************/
 FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAttribute, double value)
 {
-	FloatElement* pWME = new FloatElement(GetAgent(), parent, pAttribute, value, GenerateTimeTag()) ;
+	FloatElement* pWME = new FloatElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -579,7 +667,7 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 	std::string id ;
 	GenerateNewID(pAttribute, &id) ;
 
-	Identifier* pWME = new Identifier(GetAgent(), parent, pAttribute, id.c_str(), GenerateTimeTag()) ;
+	Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, id.c_str(), GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -617,7 +705,7 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 	std::string id = pSharedValue->GetValueAsString() ;
 
 	// Create the new WME with the same value
-	Identifier* pWME = new Identifier(GetAgent(), parent, pAttribute, id.c_str(), GenerateTimeTag()) ;
+	Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, id.c_str(), GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;

@@ -20,7 +20,7 @@
 
 using namespace sml ;
 
-StringElement::StringElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pValue, long timeTag) : WMElement(pAgent, pID, pAttributeName, timeTag)
+StringElement::StringElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
 {
 	m_Value = pValue ;
 }
