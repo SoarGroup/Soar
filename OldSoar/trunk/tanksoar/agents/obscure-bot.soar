@@ -1,1 +1,1 @@
-rete-net -load "C:/Program Files/Soar/Soar-Suite-8.5.2/tanksoar-3.0.8/agents/obscure-bot.soarx"
+rete-net -load "obscure-bot.soarx"
