@@ -1475,7 +1475,8 @@ byte run_preference_semantics_for_consistency_check (slot *s, preference **resul
 	 -- want to guarantee decision is not interrupted by a new indiff pref
   */
   for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-    if(p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+    if( (p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
+				(p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
        
       p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
   /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
@@ -3370,10 +3371,15 @@ preference *probabilistically_select(slot *s, preference *candidates)
 				 /*print_with_symbols("\nConsidering candidate %y", cand->value); */
 
 				 if (cand->value == pref->value) {
-					 /*print_with_symbols("\nFound unary preference: \n Incrementing candidate %y by %f", pref->referent->fc.value); */
 					 cand->total_preferences_for_candidate += 1;
-					 cand->confidence += (int)fabs(pref->referent->fc.value); 
-					 cand->sum_of_probability += pref->referent->fc.value;
+					 if ( pref->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) {
+						 cand->confidence += (int)fabs(pref->referent->fc.value); 
+						 cand->sum_of_probability += pref->referent->fc.value;
+					 }
+					 else if ( pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) {
+						 cand->confidence += abs(pref->referent->ic.value);
+						 cand->sum_of_probability += pref->referent->ic.value;
+					 }
 
 					 /*print("\nValues: total_preferences %d   sum_of_probability %f", cand->total_preferences_for_candidate, cand->sum_of_probability); */
 
@@ -3432,7 +3438,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
    }
 
    print("\nERROR ERROR ERROR\nProbability Selection failed.  Choosing indifferent preferences the former way.  But will crash if all are binary+value preferences.");
-   return 0;
+   return NIL;
 
 }
 
