@@ -222,8 +222,9 @@
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
 echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
+echo SWIG: %SWIG%
 echo on
-C:\SWIG-1.3.22\swig.exe -c++ -java &quot;$(InputPath)&quot;
+$(SWIG)\swig.exe -c++ -java &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
