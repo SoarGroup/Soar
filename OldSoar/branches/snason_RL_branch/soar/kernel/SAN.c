@@ -151,8 +151,8 @@ void record_for_RL()
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  if (prod->times_applied > 10){
-				  prod->times_applied = 0;
+			  if ((prod->times_applied % 10 == 9) && (current_agent(d_cycle_count) < 100)){
+				  // prod->times_applied = 0;
 				  prod = specify_production(ist);
 				  if (prod){
 					  push(prod, record->pointer_list);
@@ -244,7 +244,7 @@ void learn_RL_productions(int level){
 			prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
 			// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 			// a->referent = symbol_to_rhs_value(make_float_constant(Q));
-			prod->avg_update = fabs(Q);
+			prod->avg_update = fabs(Q) + prod->avg_update*current_agent(epsilon);
 		//	prod->times_applied++;
 		}
 
