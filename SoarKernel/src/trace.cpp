@@ -547,7 +547,7 @@ void print_trace_format_list (agent* thisAgent, trace_format *tf) {
     case CURRENT_OPERATOR_TFT: print_string (thisAgent, "%co"); break;
     case DECISION_CYCLE_COUNT_TFT: print_string (thisAgent, "%dc"); break;
     case ELABORATION_CYCLE_COUNT_TFT: print_string (thisAgent, "%ec"); break;
-    case IDENTIFIER_TFT: print_string (thisAgent, "id=%id"); break;
+    case IDENTIFIER_TFT: print_string (thisAgent, "%id"); break;
 
     case IF_ALL_DEFINED_TFT:
       print_string (thisAgent, "%ifdef[");
@@ -1095,7 +1095,8 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
       } else {
         temp_gs = object_to_trace_string (thisAgent, tparams.current_s);
  
-		add_to_growable_string (thisAgent, &result, "id=");
+		// KJC added to play with tagged output...
+		//add_to_growable_string (thisAgent, &result, "id=");
 
 		add_to_growable_string (thisAgent, &result, text_of_growable_string(temp_gs));
  
