@@ -198,7 +198,7 @@ bool Agent::IsOutputLinkChangeAdd(int index)
 	WMDelta* pDelta = pDeltas->GetDeltaWME(index) ;
 
 	if (!pDelta)
-		return NULL ;
+		return false ;
 
 	bool isAddition = (pDelta->getChangeType() == WMDelta::kAdded) ;
 

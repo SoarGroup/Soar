@@ -221,10 +221,10 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	// The value sent over is actually defined in sml_ClientEvents.h but we're just casting it over to egSKIEventId.
 	// So let's add some checks here to make sure that the two tables are synchronized.
 	// (If we wish we could introduce a mapping here between the two sets of ids but for now we're not doing that).
-	assert(gSKIEVENT_INVALID_EVENT == smlEVENT_INVALID_EVENT) ;	// First matches
-	assert(gSKIEVENT_LAST == smlEVENT_LAST) ;					// Last matches
-	assert(gSKIEVENT_AFTER_RUNNING == smlEVENT_AFTER_RUNNING) ;	// Random one in middle matches
-	assert(gSKIEVENT_BEFORE_AGENT_REINITIALIZED == smlEVENT_BEFORE_AGENT_REINITIALIZED) ;	// Another middle one matches
+	assert(gSKIEVENT_INVALID_EVENT == (egSKIEventId)smlEVENT_INVALID_EVENT) ;	// First matches
+	assert(gSKIEVENT_LAST == (egSKIEventId)smlEVENT_LAST) ;					// Last matches
+	assert(gSKIEVENT_AFTER_RUNNING == (egSKIEventId)smlEVENT_AFTER_RUNNING) ;	// Random one in middle matches
+	assert(gSKIEVENT_BEFORE_AGENT_REINITIALIZED == (egSKIEventId)smlEVENT_BEFORE_AGENT_REINITIALIZED) ;	// Another middle one matches
 
 	// Get the parameters
 	egSKIEventId id = (egSKIEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, gSKIEVENT_INVALID_EVENT) ;
