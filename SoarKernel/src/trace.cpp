@@ -547,7 +547,7 @@ void print_trace_format_list (agent* thisAgent, trace_format *tf) {
     case CURRENT_OPERATOR_TFT: print_string (thisAgent, "%co"); break;
     case DECISION_CYCLE_COUNT_TFT: print_string (thisAgent, "%dc"); break;
     case ELABORATION_CYCLE_COUNT_TFT: print_string (thisAgent, "%ec"); break;
-    case IDENTIFIER_TFT: print_string (thisAgent, "%id"); break;
+    case IDENTIFIER_TFT: print_string (thisAgent, "id=%id"); break;
 
     case IF_ALL_DEFINED_TFT:
       print_string (thisAgent, "%ifdef[");
@@ -855,6 +855,23 @@ void print_all_trace_formats_tcl (agent* thisAgent, Bool stack_trace, FILE* f) {
 }
 #endif /* USE_TCL */
 
+void set_print_trace_formats(agent* thisAgent){
+
+ /* --- add default stack trace formats --- */
+  add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL,
+                    "%right[6,%dc]: %rsd[   ]==>S: %cs");
+  add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
+                    "%right[6,%dc]: %rsd[   ]   O: %co");
+}
+void set_tagged_trace_formats(agent* thisAgent){
+  // KJC 03/05:  trying this for tagged output
+  add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL, 
+	                "<state decision_cycle_count=%dc current_state_id=%cs>");
+  add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
+                    "<operator decision_cycle_count=%dc current_operator_id=%co>");
+}
+
+
 /* ======================================================================
                       Trace Format List To String
 
@@ -1077,8 +1094,12 @@ growable_string trace_format_list_to_string (agent* thisAgent, trace_format *tf,
         found_undefined = TRUE;
       } else {
         temp_gs = object_to_trace_string (thisAgent, tparams.current_s);
-        add_to_growable_string (thisAgent, &result, text_of_growable_string(temp_gs));
-        free_growable_string (thisAgent, temp_gs);
+ 
+		add_to_growable_string (thisAgent, &result, "id=");
+
+		add_to_growable_string (thisAgent, &result, text_of_growable_string(temp_gs));
+ 
+		free_growable_string (thisAgent, temp_gs);
       }
       break;
     case CURRENT_OPERATOR_TFT:
@@ -1334,6 +1355,12 @@ void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slo
   thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
   gs = selection_to_trace_string (thisAgent, object, state, slot_type,allow_cycle_counts);
   print_string (thisAgent, text_of_growable_string(gs));
+//start KJC 03/05
+  set_tagged_trace_formats(thisAgent);
+  gs = selection_to_trace_string (thisAgent, object, state, slot_type,allow_cycle_counts);
+  generate_tagged_output(thisAgent, text_of_growable_string(gs));
+  set_print_trace_formats(thisAgent);
+//end KJC 03/05
   free_growable_string (thisAgent, gs);
 }
 

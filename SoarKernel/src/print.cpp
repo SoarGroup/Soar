@@ -1103,7 +1103,7 @@ void print_wme (agent* thisAgent, wme *w) {
 
   // KJC: added Mar 05 for structured output support
   // Might move later
-   char buf[PRINT_BUFSIZE];
+//   char buf[PRINT_BUFSIZE];
    // tag the items in the buffer
    // <wme timetag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
    /* <wme>
@@ -1197,6 +1197,11 @@ void Soar_Log (agent* thisAgent, agent * the_agent, char * str)
 	                          LOG_CALLBACK, /*(ClientData)*/ static_cast<void*>(str));
 } 
 
+void generate_tagged_output (agent * thisAgent, char * str)
+{
+   gSKI_MakeAgentCallback(gSKI_K_EVENT_STRUCTURED_OUTPUT, 0, thisAgent, static_cast<void*>(str));
+   //gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
+}
 /*
 ===========================
 
