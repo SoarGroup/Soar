@@ -21,7 +21,6 @@ cli_helpex.cpp\
 cli_home.cpp\
 cli_indifferentselection.cpp\
 cli_initsoar.cpp\
-cli_io.cpp\
 cli_learn.cpp\
 cli_log.cpp\
 cli_ls.cpp\
