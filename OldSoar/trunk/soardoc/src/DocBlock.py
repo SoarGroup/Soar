@@ -75,6 +75,9 @@ class DocBlock:
    def GetDocLineNo(self): return self.__docLineNo
 
    def IsTemp(self): return self.__isTemp
+   def CopyTempInfo(self, temp):
+      self.SetSourceFile(temp.GetSourceFile())
+      self.SetSourceLineNo(temp.GetSourceLineNo())
 
    def GetName(self): return self.__name
    def SetName(self, name): self.__name = name

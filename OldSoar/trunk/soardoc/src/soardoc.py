@@ -68,7 +68,9 @@ import SoarLogXml
 
 import DmgenDatamap
 
-__prodRegEx = re.compile(r'sp\s+[{"]\s*(\S+)')
+from HTMLgen import HTMLgen
+
+__prodRegEx = re.compile(r'sp\s+([{"])\s*(\S+)')
 __cmdRegEx = re.compile(r'@(\S*)(.*$)')
 __otherCommentRegEx = re.compile(r'^\s*#+\s*(.*)')
 
@@ -155,6 +157,45 @@ def blockIsUnnamedProduction(block):
       return 0
 
 ##
+# A cheap way of extracting a production.
+#
+# Performs a very simple "parse" of a production, counting
+# opening and closing braces. It returns the sub string of
+# rawSource that is from the start of the string to the
+# closing brace of the production.
+#
+# TODO: this code won't work for productions enclosed in
+# quotes rather than braces!
+#
+# @param rawSource Some Soar code that starts with sp
+def extractProductionSource(rawSource, delim):
+   if delim == '{':
+      pushChar = '{'
+      popChar = '}'
+   elif delim == '"':
+      pushChar = '"'
+      popChar = '"'
+   else:
+      print 'Unexpected production delimiter:', delim
+      return ''
+   
+   s = rawSource.find(delim)  
+   if s == -1:
+      return ''
+   
+   stack = 1
+   for i in range(s + 1, len(rawSource)):
+      c = rawSource[i]
+      if c == popChar:
+         stack -= 1
+      elif c == pushChar:
+         stack += 1
+      if stack == 0:
+         return rawSource[0:i+1]
+   return ''
+   
+
+##
 # Parses a list of command blocks out of the given file.
 # Returns a new list. If @blocks is not None, the new blocks
 # are appended to it.
@@ -170,8 +211,14 @@ def parseSoarFileDocs(fileName, blocks = None):
    blockLineNo = 0 # line number of start of current block
    block = None # current block
 
+   curProdSrc = ''
+   curProdDelim = ''
+   curProdBlock = None
+
    otherComments = []   
    while rawline:
+      if curProdSrc:
+         curProdSrc += rawline
       lineno += 1
       line = rawline.strip()
       if line[0:3] == '##!': # soardoc block marker
@@ -196,7 +243,12 @@ def parseSoarFileDocs(fileName, blocks = None):
       elif not ignore: # let's see if we can find a production
          y = __prodRegEx.match(line)
          if y: # found a production
-            prodName = y.groups()[0]
+            prodName = y.groups()[1]
+
+            if curProdSrc:
+               curProdBlock.Source = extractProductionSource(curProdSrc, curProdDelim)
+
+            curProdDelim = y.groups()[0]   
             if block: # there was a preceding, unnamed doc block
                if block[0][0] == 'production':
                   block.pop(0) # get rid of empty @production command
@@ -217,15 +269,20 @@ def parseSoarFileDocs(fileName, blocks = None):
                if cfg.UseExistingComments and otherComments:
                   o.SetDesc('<blockquote><i>%s</i></blockquote>' %
                                 '<br>\n'.join(otherComments))
+            curProdBlock = o
+            if o:
+               curProdSrc = rawline
+            else:
+               curProdSrc = ''
                
             otherComments = []
          elif cfg.UseExistingComments:
             m = __otherCommentRegEx.search(line)
             if m:
-               otherComments.append(m.groups()[0])
+               otherComments.append(str(HTMLgen.Text(m.groups()[0])))
             elif line: # a non-empty, non-comment line, clear otherComments
                otherComments = []
-            else:
+            elif otherComments:
                otherComments.append('') # maintain whitespace between comment
                                         # blocks
             
@@ -234,6 +291,10 @@ def parseSoarFileDocs(fileName, blocks = None):
          rawline = f.readline()
       else:         
          rawline = f.readline()
+   # don't forget the last production in the file!
+   if curProdSrc:
+      curProdBlock.Source = extractProductionSource(curProdSrc, curProdDelim)
+
    # If we haven't encountered anything, ignore this file.
    if len(blocks) - count != 0:
       # Append a fake file block marked as temporary

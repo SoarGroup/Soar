@@ -54,6 +54,7 @@ class ProductionBlock(DocBlock.DocBlock):
       self.ProblemSpaces = []
       self.Operators = []
       self.Type = None
+      self.Source = ''
       for cmd, args in block:
          if self.handleBlockCommand(cmd, args):
             continue
@@ -78,6 +79,16 @@ class ProductionBlock(DocBlock.DocBlock):
       return visitor.VisitProductionBlock(self)
 
    def GetNameCommand(self): return 'production'
+
+   ##
+   # Override CopyTempInfo because, besides the source
+   # location info that everyone wants, we have to copy
+   # the production source code as well.
+   def CopyTempInfo(self, temp):
+      self.SetSourceFile(temp.GetSourceFile())
+      self.SetSourceLineNo(temp.GetSourceLineNo())
+      if not self.Source and temp.Source:
+         self.Source = temp.Source
 
 ##   def __str__(self):
 ##      return '%s\nCreated=%s\nMods=%s' % (DocBlock.DocBlock.__str__(self),

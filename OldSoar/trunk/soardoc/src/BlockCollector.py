@@ -196,12 +196,10 @@ class Collector(DocBlock.DocBlockVisitor):
       if table.has_key(b.GetName()):
          f = table[b.GetName()]
          if f.IsTemp() and not b.IsTemp():
-            b.SetSourceFile(f.GetSourceFile())
-            b.SetSourceLineNo(f.GetSourceLineNo())
+            b.CopyTempInfo(f)
             table[b.GetName()] = b
          elif not f.IsTemp() and b.IsTemp():
-            f.SetSourceFile(b.GetSourceFile())
-            f.SetSourceLineNo(b.GetSourceLineNo())
+            f.CopyTempInfo(b)
       else:
          table[b.GetName()] = b
       self.assignLineRefs(b)

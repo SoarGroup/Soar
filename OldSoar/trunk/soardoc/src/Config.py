@@ -112,6 +112,16 @@ the directory should be ignored.
    ('GenerateSource', 1,
     'If 1, then browsable source code is generated. If 0, then no source is\n' +
     'generated.'),
+   
+#--------------------------------------------------------   
+   ('ShowProdSourceInline', 1,
+    'If 1, then the source code of small productions is listed inline with the\n' +
+    'documentation of the production.'),
+   
+#--------------------------------------------------------   
+   ('MaxProdSourceLines', 50,
+    'The maximum number of source lines to show when ShowProdSourceInline is\n' +
+    'enabled. Setting this value to 0 will always show the entire production.'),
 
 #--------------------------------------------------------   
    ('UseExistingComments', 0,

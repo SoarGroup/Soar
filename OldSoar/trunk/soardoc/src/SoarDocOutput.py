@@ -966,7 +966,41 @@ class Writer(DocBlock.DocBlockVisitor):
       
       self.writeGroupMembership(b, td)
       self.writeChangeHistory(b, td, 3)
-      h.append(t)      
+      self.writeProductionSource(b, td)
+      h.append(t)
+
+   ##
+   # If ShowProdSourceInline is set, this writes the
+   # production source out, limiting the text if
+   # MaxProdSourceLines is set.
+   def writeProductionSource(self, b, td):
+      cfg = Config.Instance()
+      if not (cfg.ShowProdSourceInline and b.Source):
+         return
+
+      # count lines and determine if we need a "more" link   
+      lines = b.Source.split('\n')
+      more = 0 
+      if cfg.MaxProdSourceLines > 0:
+         more = cfg.MaxProdSourceLines < len(lines)
+         if more:
+            lines = lines[0:cfg.MaxProdSourceLines]
+
+      # generate the more link if necessary
+      moreLine = ''
+      if more and cfg.GenerateSource:
+         lineHref = self.hg.GetSourceLineHref(b.GetSourceFile(),
+                                              b.GetSourceLineNo())
+         moreLine = HTMLgen.Small(HTMLgen.Href(lineHref, 'more...'))
+
+      # Stick a heading, the source in <pre> tags, and the more link
+      # into a <div> section with a nice grey background like the source
+      # code pages.
+      td.append(HTMLgen.P(),
+                HTMLgen.Div(HTMLgen.Heading(3, 'Source'),
+                            HTMLgen.Pre(HTMLgen.Text('\n'.join(lines))),
+                            moreLine,
+                            style='width:100%;background-color: #eeeeee'))
 
    # This is empty because productions are written within VisitFileBlock   
    def VisitProductionBlock(self, b): pass
