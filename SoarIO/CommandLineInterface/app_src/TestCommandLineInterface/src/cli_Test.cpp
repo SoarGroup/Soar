@@ -1,5 +1,6 @@
 #include <iostream>
 #include <conio.h>
+#include <crtdbg.h>
 
 #include "sml_Connection.h"
 #include "sml_Client.h"

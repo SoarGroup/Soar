@@ -53,6 +53,9 @@ using namespace cli;
 //
 CommandLineInterface::CommandLineInterface() {
 
+	// Create getopt object
+	m_pGetOpt = new GetOpt;
+
 	// Map command names to processing function pointers
 	BuildCommandMap();
 
@@ -71,6 +74,10 @@ CommandLineInterface::CommandLineInterface() {
 	m_SourceError = false;
 	m_SourceDepth = 0;
 	m_SourceDirDepth = 0;
+}
+
+CommandLineInterface::~CommandLineInterface() {
+	delete m_pGetOpt;
 }
 
 // ____        _ _     _  ____                                          _ __  __
@@ -137,40 +144,23 @@ bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandL
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| || || | | | ||  __/ |  | | | | (_| | |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
 //
-bool CommandLineInterface::DoCommandInternal(const char* commandLine) {
+bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
 
-	vector<string> argumentVector;
+	vector<string> argv;
 
 	// Parse command:
-	int argc = Tokenize(commandLine, argumentVector);
-	if (!argc) {
-		return true;	// Nothing on the command line, so consider it processed OK
-	} else if (argc == -1) {
+	if (Tokenize(commandLine, argv) == -1) {
 		return false;	// Parsing failed, error in result
 	}
 
-	// Marshall arg{c/v} for getopt:
-	// TODO: since we're not using gnu getopt anymore, we should lose
-	// this step of using char* and just stick to the vector
-	char** argv = new char*[argc + 1]; // leave space for extra null
-	int arglen;
+	return DoCommandInternal(argv);
+}
 
-	// For each arg
-	for (int i = 0; i < argc; ++i) {
-		// Save its length
-		arglen = argumentVector[i].length();
-
-		// Leave space for null
-		argv[i] = new char[ arglen + 1 ];
-
-		// Copy the string
-		strncpy(argv[i], argumentVector[i].data(), arglen);
-
-		// Set final index to null
-		argv[i][ arglen ] = 0;
+bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
+	if (!argv.size()) {
+		// Nothing on command line!
+		return true;
 	}
-	// Set final index to null
-	argv[argc] = 0;
 
 	// Is the command implemented?
 	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
@@ -181,7 +171,7 @@ bool CommandLineInterface::DoCommandInternal(const char* commandLine) {
 	}
 
 	// Check for help flags
-	if (CheckForHelp(argc, argv)) {
+	if (CheckForHelp(argv)) {
 		// Help flags found, add help to line, return true
 		m_Result += m_Constants.GetUsageFor(argv[0]);
 		return true;
@@ -198,18 +188,7 @@ bool CommandLineInterface::DoCommandInternal(const char* commandLine) {
 	}
 	
 	// Make the call
-	// TODO: shouldn't this be a const passing since we don't want processCommand to mess with it?
-	// But isn't getopt's intended behavior to mess with it?
-	bool ret = (this->*pFunction)(argc, argv);
-
-	// Free memory from argv
-	for (int j = 0; j < argc; ++j) {
-		delete [] argv[j];
-	}
-	delete [] argv;
-
-	// Return what the Do function returned
-	return ret;
+	return (this->*pFunction)(argv);
 }
 
 // _____     _              _
@@ -218,9 +197,8 @@ bool CommandLineInterface::DoCommandInternal(const char* commandLine) {
 //  | | (_) |   <  __/ | | | |/ /  __/
 //  |_|\___/|_|\_\___|_| |_|_/___\___|
 //
-int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argumentVector) {
+int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVector) {
 	int argc = 0;
-	string cmdline(commandLine);
 	string::iterator iter;
 	string arg;
 	bool quotes = false;
@@ -305,7 +283,7 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 }
 
 // Templates for new additions
-//bool CommandLineInterface::Parse(int argc, char** argv) {
+//bool CommandLineInterface::Parse(std::vector<std::string>& argv) {
 //	return Do();
 //}
 //
@@ -320,7 +298,7 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 //|  __/ (_| | |  \__ \  __// ___ \ (_| | (_| | \ V  V / | |  | | |___
 //|_|   \__,_|_|  |___/\___/_/   \_\__,_|\__,_|  \_/\_/  |_|  |_|_____|
 //
-bool CommandLineInterface::ParseAddWME(int argc, char** argv) {
+bool CommandLineInterface::ParseAddWME(std::vector<std::string>& argv) {
 	return DoAddWME();
 }
 
@@ -341,12 +319,15 @@ bool CommandLineInterface::DoAddWME() {
 //|  __/ (_| | |  \__ \  __/ |___| |_| |
 //|_|   \__,_|_|  |___/\___|\____|____/
 //
-bool CommandLineInterface::ParseCD(int argc, char** argv) {
+bool CommandLineInterface::ParseCD(std::vector<std::string>& argv) {
 	// Only takes one optional argument, the directory to change into
-	if (argc > 2) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLICD));
+	if (argv.size() > 2) {
+		return HandleSyntaxError(Constants::kCLICD);
 	}
-	return DoCD(argv[1]);
+	if (argv.size() > 1) {
+		return DoCD(argv[1]);
+	}
+	return DoCD(string());
 }
 
 // ____         ____ ____
@@ -355,10 +336,10 @@ bool CommandLineInterface::ParseCD(int argc, char** argv) {
 //| |_| | (_) | |___| |_| |
 //|____/ \___/ \____|____/
 //
-bool CommandLineInterface::DoCD(const char* directory) {
+bool CommandLineInterface::DoCD(string& directory) {
 
 	// If cd is typed by itself, return to original (home) directory
-	if (!directory) {
+	if (!directory.size()) {
 
 		// Home dir set in constructor
 		if (chdir(m_HomeDirectory.c_str())) {
@@ -370,15 +351,14 @@ bool CommandLineInterface::DoCD(const char* directory) {
 	}
 
 	// Chop of quotes if they are there, chdir doesn't like them
-	string directoryString = directory;
-	if ((directoryString.length() > 2) && (directoryString[0] == '\"') && (directoryString[directoryString.length() - 1] == '\"')) {
-		directoryString = directoryString.substr(1, directoryString.length() - 2);
+	if ((directory.length() > 2) && (directory[0] == '\"') && (directory[directory.length() - 1] == '\"')) {
+		directory = directory.substr(1, directory.length() - 2);
 	}
 
 	// Change to passed directory
-	if (chdir(directoryString.c_str())) {
+	if (chdir(directory.c_str())) {
 		m_Result += "Could not change to directory: ";
-		m_Result += directoryString;
+		m_Result += directory;
 		return false;
 	}
 	return true;
@@ -390,9 +370,9 @@ bool CommandLineInterface::DoCD(const char* directory) {
 //|  __/ (_| | |  \__ \  __/ |__| (__| | | | (_) |
 //|_|   \__,_|_|  |___/\___|_____\___|_| |_|\___/
 //
-bool CommandLineInterface::ParseEcho(int argc, char** argv) {
+bool CommandLineInterface::ParseEcho(std::vector<std::string>& argv) {
 	// Very simple command, any number of arguments
-	return DoEcho(argc, argv);
+	return DoEcho(argv);
 }
 
 // ____        _____     _
@@ -401,10 +381,10 @@ bool CommandLineInterface::ParseEcho(int argc, char** argv) {
 //| |_| | (_) | |__| (__| | | | (_) |
 //|____/ \___/|_____\___|_| |_|\___/
 //
-bool CommandLineInterface::DoEcho(int argc, char** argv) {
+bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 
 	// Concatenate arguments (spaces between arguments are lost unless enclosed in quotes)
-	for (int i = 1; i < argc; ++i) {
+	for (unsigned i = 1; i < argv.size(); ++i) {
 		m_Result += argv[i];
 		m_Result += ' ';
 	}
@@ -420,7 +400,7 @@ bool CommandLineInterface::DoEcho(int argc, char** argv) {
 //|  __/ (_| | |  \__ \  __/ |___ >  < (__| \__ \  __/
 //|_|   \__,_|_|  |___/\___|_____/_/\_\___|_|___/\___|
 //
-bool CommandLineInterface::ParseExcise(int argc, char** argv) {
+bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all",		0, 0, 'a'},
 		{"chunks",	0, 0, 'c'},
@@ -437,7 +417,7 @@ bool CommandLineInterface::ParseExcise(int argc, char** argv) {
 	unsigned short options = 0;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long(argc, argv, "acdtu", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, "acdtu", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -459,19 +439,14 @@ bool CommandLineInterface::ParseExcise(int argc, char** argv) {
 				options |= OPTION_EXCISE_USER;
 				break;
 			case '?':
-				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIExcise), "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIExcise, "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
 	}
 
 	// Pass the productions to the DoExcise function
-	int productionCount = argc - GetOpt::optind;	// Number of Productions = total productions - processed productions
-	char** productions = argv + GetOpt::optind;		// Advance pointer to first productions (GetOpt puts all non-options at the end)
-	// productions == 0 if optind == argc because argv[argc] == 0
-
-	// Make the call
-	return DoExcise(options, productionCount, productions);
+	return DoExcise(options, GetOpt::optind, argv);
 }
 
 // ____        _____          _
@@ -480,7 +455,7 @@ bool CommandLineInterface::ParseExcise(int argc, char** argv) {
 //| |_| | (_) | |___ >  < (__| \__ \  __/
 //|____/ \___/|_____/_/\_\___|_|___/\___|
 //
-bool CommandLineInterface::DoExcise(unsigned short options, int productionCount, char** productions) {
+bool CommandLineInterface::DoExcise(const unsigned short options, int optind, vector<string>& argv) {
 	// Must have agent to excise from
 	if (!RequireAgent()) {
 		return false;
@@ -511,14 +486,14 @@ bool CommandLineInterface::DoExcise(unsigned short options, int productionCount,
 
 	// Excise specific productions
 	gSKI::tIProductionIterator* pProdIter;
-	for (int i = 0; i < productionCount; ++i) {
+	for (unsigned i = optind; i < argv.size(); ++i) {
 		// Iterate through productions
-		pProdIter = pProductionManager->GetProduction(productions[i]);
+		pProdIter = pProductionManager->GetProduction(argv[i].c_str());
 		if (pProdIter->GetNumElements()) {
 			ExciseInternal(pProdIter);
 		} else {
 			m_Result += "Production not found: ";
-			m_Result += productions[i];
+			m_Result += argv[i];
 			return false;
 		}
 	}
@@ -551,10 +526,10 @@ void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter)
 //|  __/ (_| | |  \__ \  __/| || | | | | |_ ___) | (_) | (_| | |
 //|_|   \__,_|_|  |___/\___|___|_| |_|_|\__|____/ \___/ \__,_|_|
 //
-bool CommandLineInterface::ParseInitSoar(int argc, char** argv) {
+bool CommandLineInterface::ParseInitSoar(std::vector<std::string>& argv) {
 	// No arguments
-	if (argc != 1) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIInitSoar));
+	if (argv.size() != 1) {
+		return HandleSyntaxError(Constants::kCLIInitSoar);
 	}
 	return DoInitSoar();
 }
@@ -578,7 +553,7 @@ bool CommandLineInterface::DoInitSoar() {
 //|  __/ (_| | |  \__ \  __/ |__|  __/ (_| | |  | | | |
 //|_|   \__,_|_|  |___/\___|_____\___|\__,_|_|  |_| |_|
 //
-bool CommandLineInterface::ParseLearn(int argc, char** argv) {
+bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all-levels",		0, 0, 'a'},
 		{"bottom-up",		0, 0, 'b'},
@@ -599,7 +574,7 @@ bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 	unsigned short options = 0;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long(argc, argv, "abdeElo", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, "abdeElo", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -627,15 +602,15 @@ bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 				options |= OPTION_LEARN_ONLY;
 				break;
 			case '?':
-				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLILearn), "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLILearn, "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
 	}
 
 	// No non-option arguments
-	if (GetOpt::optind != argc) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLILearn));
+	if (GetOpt::optind != argv.size()) {
+		return HandleSyntaxError(Constants::kCLILearn);
 	}
 
 	return DoLearn(options);
@@ -685,7 +660,7 @@ bool CommandLineInterface::DoLearn(const unsigned short options) {
 //|  __/ (_| | |  \__ \  __/ |__| (_) | (_| |
 //|_|   \__,_|_|  |___/\___|_____\___/ \__, |
 //                                     |___/
-bool CommandLineInterface::ParseLog(int argc, char** argv) {
+bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 	return DoLog(false);
 }
 
@@ -706,10 +681,10 @@ bool CommandLineInterface::DoLog(bool close, const char* filename) {
 //|  __/ (_| | |  \__ \  __/ |___ ___) |
 //|_|   \__,_|_|  |___/\___|_____|____/
 //
-bool CommandLineInterface::ParseLS(int argc, char** argv) {
+bool CommandLineInterface::ParseLS(std::vector<std::string>& argv) {
 	// No arguments
-	if (argc != 1) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLILS));
+	if (argv.size() != 1) {
+		return HandleSyntaxError(Constants::kCLILS);
 	}
 	return DoLS();
 }
@@ -769,34 +744,32 @@ bool CommandLineInterface::DoLS() {
 //|  __/ (_| | |  \__ \  __/ |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
 //|_|   \__,_|_|  |___/\___|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
 //
-bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
+bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) {
 	// No more than three arguments
-	if (argc > 3) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIMultiAttributes));
+	if (argv.size() > 3) {
+		return HandleSyntaxError(Constants::kCLIMultiAttributes);
 	}
 
-	char* attribute = 0;
 	int n = 0;
 
 	// If we have 3 arguments, third one is an integer
-	if (argc > 2) {
+	if (argv.size() > 2) {
 		if (!IsInteger(argv[2])) {
 			// Must be an integer
-			return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIMultiAttributes), "Third argument must be an integer.\n");
+			return HandleSyntaxError(Constants::kCLIMultiAttributes, "Third argument must be an integer.\n");
 		}
-		n = atoi(argv[2]);
+		n = atoi(argv[2].c_str());
 		if (n <= 0) {
-			// Must be non-negative and greater than 0
-			return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIMultiAttributes), "Third argument must be greater than 0.\n");
+			// Must be greater than 0
+			return HandleSyntaxError(Constants::kCLIMultiAttributes, "Third argument must be greater than 0.\n");
 		}
 	}
 
 	// If we have two arguments, second arg is an attribute/identifer/whatever
-	if (argc > 1) {
-		attribute = argv[1];
-	}
-
-	return DoMultiAttributes(attribute, n);
+	if (argv.size() > 1) {
+		return DoMultiAttributes(argv[1], n);
+	} 
+	return DoMultiAttributes(string(), n);
 }
 
 // ____        __  __       _ _   _    _   _   _        _ _           _
@@ -805,12 +778,12 @@ bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
 //| |_| | (_) | |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
 //|____/ \___/|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
 //
-bool CommandLineInterface::DoMultiAttributes(const char* attribute, int n) {
+bool CommandLineInterface::DoMultiAttributes(const string& attribute, int n) {
 	if (!RequireAgent()) {
 		return false;
 	}
 
-	if (!attribute && !n) {
+	if (!attribute.size() && !n) {
 		// No args, print current setting
 		gSKI::tIMultiAttributeIterator* pIt = m_pAgent->GetMultiAttributes();
 		if (!pIt->GetNumElements()) {
@@ -847,7 +820,7 @@ bool CommandLineInterface::DoMultiAttributes(const char* attribute, int n) {
 	}
 
 	// Set it
-	m_pAgent->SetMultiAttribute(attribute, n);
+	m_pAgent->SetMultiAttribute(attribute.c_str(), n);
 
  	return true;
 }
@@ -858,10 +831,10 @@ bool CommandLineInterface::DoMultiAttributes(const char* attribute, int n) {
 //|  __/ (_| | |  \__ \  __/  __/ (_) | |_) | |_| |
 //|_|   \__,_|_|  |___/\___|_|   \___/| .__/|____/
 //                                    |_|
-bool CommandLineInterface::ParsePopD(int argc, char** argv) {
+bool CommandLineInterface::ParsePopD(std::vector<std::string>& argv) {
 	// No arguments
-	if (argc != 1) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPopD));
+	if (argv.size() != 1) {
+		return HandleSyntaxError(Constants::kCLIPopD);
 	}
 	return DoPopD();
 }
@@ -881,7 +854,7 @@ bool CommandLineInterface::DoPopD() {
 	}
 
 	// Change to the directory
-	if (!DoCD(m_DirectoryStack.top().c_str())) {
+	if (!DoCD(m_DirectoryStack.top())) {
 		// cd failed, error message added in cd function
 		return false;
 	}
@@ -903,7 +876,7 @@ bool CommandLineInterface::DoPopD() {
 //|  __/ (_| | |  \__ \  __/  __/| |  | | | | | |_
 //|_|   \__,_|_|  |___/\___|_|   |_|  |_|_| |_|\__|
 //
-bool CommandLineInterface::ParsePrint(int argc, char** argv) {
+bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"all",				0, 0, 'a'},
 		{"chunks",			0, 0, 'c'},
@@ -930,7 +903,7 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 	unsigned short options = 0;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long(argc, argv, "acd:DfFijnosSu", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, "acd:DfFijnosSu", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -945,11 +918,11 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 			case 'd':
 				options |= OPTION_PRINT_DEPTH;
 				if (!IsInteger(GetOpt::optarg)) {
-					return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPrint), "Depth must be an integer.\n");
+					return HandleSyntaxError(Constants::kCLIPrint, "Depth must be an integer.\n");
 				}
 				depth = atoi(GetOpt::optarg);
 				if (depth < 0) {
-					return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPrint), "Depth must be non-negative.\n");
+					return HandleSyntaxError(Constants::kCLIPrint, "Depth must be non-negative.\n");
 				}
 				break;
 			case 'D':
@@ -983,20 +956,19 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 				options |= OPTION_PRINT_USER;
 				break;
 			case '?':
-				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPrint), "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIPrint, "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
 	}
 
 	// One additional optional argument
-	if ((argc - GetOpt::optind) > 1) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPrint));
+	if ((argv.size() - GetOpt::optind) > 1) {
+		return HandleSyntaxError(Constants::kCLIPrint);
+	} else if ((argv.size() - GetOpt::optind) == 1) {
+		return DoPrint(options, depth, argv[GetOpt::optind]);
 	}
-
-	char* pArg = argv[GetOpt::optind]; // argv == 0 if optind == argc because argv[argc] == 0
-
-	return DoPrint(options, depth, pArg);
+	return DoPrint(options, depth, string());
 }
 
 // ____        ____       _       _
@@ -1005,7 +977,7 @@ bool CommandLineInterface::ParsePrint(int argc, char** argv) {
 //| |_| | (_) |  __/| |  | | | | | |_
 //|____/ \___/|_|   |_|  |_|_| |_|\__|
 //
-bool CommandLineInterface::DoPrint(const unsigned short options, int depth, const char* pArg) {
+bool CommandLineInterface::DoPrint(const unsigned short options, int depth, const string& arg) {
 	// Need agent pointer for function calls
 	if (!RequireAgent()) {
 		return false;
@@ -1030,43 +1002,43 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options & OPTION_PRINT_ALL) {
-		// TODO: Find out what is pArg is for
+		// TODO: Find out what is arg is for
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, USER_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, CHUNK_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, CHUNK_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_CHUNKS) {
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, CHUNK_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, CHUNK_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_DEFAULTS) {
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_JUSTIFICATIONS) {
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_USER) {
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(pArg), internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, USER_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 		return true;
 	}
 
 	// Default to symbol print
 	m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
-	pKernelHack->PrintSymbol(m_pAgent, const_cast<char*>(pArg), name, filename, internal, full, depth);
+	pKernelHack->PrintSymbol(m_pAgent, const_cast<char*>(arg.c_str()), name, filename, internal, full, depth);
 	m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_PrintHandler);
 	return true;
 }
@@ -1077,10 +1049,10 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 //|  __/ (_| | |  \__ \  __/  __/| |_| \__ \ | | | |_| |
 //|_|   \__,_|_|  |___/\___|_|    \__,_|___/_| |_|____/
 //
-bool CommandLineInterface::ParsePushD(int argc, char** argv) {
+bool CommandLineInterface::ParsePushD(std::vector<std::string>& argv) {
 	// Only takes one argument, the directory to change into
-	if (argc != 2) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPushD));
+	if (argv.size() != 2) {
+		return HandleSyntaxError(Constants::kCLIPushD);
 	}
 	return DoPushD(argv[1]);
 }
@@ -1091,7 +1063,7 @@ bool CommandLineInterface::ParsePushD(int argc, char** argv) {
 //| |_| | (_) |  __/| |_| \__ \ | | | |_| |
 //|____/ \___/|_|    \__,_|___/_| |_|____/
 //
-bool CommandLineInterface::DoPushD(const char* pDirectory) {
+bool CommandLineInterface::DoPushD(string& directory) {
 	
 	// Target directory required, checked in DoCD call.
 
@@ -1103,7 +1075,7 @@ bool CommandLineInterface::DoPushD(const char* pDirectory) {
 	}
 
 	// Change to the new directory.
-	if (!DoCD(pDirectory)) {
+	if (!DoCD(directory)) {
 		return false;
 	}
 
@@ -1124,10 +1096,10 @@ bool CommandLineInterface::DoPushD(const char* pDirectory) {
 //|  __/ (_| | |  \__ \  __/  __/ \ V  V / | |_| |
 //|_|   \__,_|_|  |___/\___|_|     \_/\_/  |____/
 //
-bool CommandLineInterface::ParsePWD(int argc, char** argv) {
+bool CommandLineInterface::ParsePWD(std::vector<std::string>& argv) {
 	// No arguments to print working directory
-	if (argc != 1) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIPWD));
+	if (argv.size() != 1) {
+		return HandleSyntaxError(Constants::kCLIPWD);
 	}
 	return DoPWD();
 }
@@ -1155,7 +1127,7 @@ bool CommandLineInterface::DoPWD() {
 //|  __/ (_| | |  \__ \  __/ |_| | |_| | | |_
 //|_|   \__,_|_|  |___/\___|\__\_\\__,_|_|\__|
 //
-bool CommandLineInterface::ParseQuit(int argc, char** argv) {
+bool CommandLineInterface::ParseQuit(std::vector<std::string>& argv) {
 	// Quit needs no help
 	return DoQuit();
 }
@@ -1181,7 +1153,7 @@ bool CommandLineInterface::DoQuit() {
 //|  __/ (_| | |  \__ \  __/  _ <| |_| | | | |
 //|_|   \__,_|_|  |___/\___|_| \_\\__,_|_| |_|
 //
-bool CommandLineInterface::ParseRun(int argc, char** argv) {
+bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"decision",	0, 0, 'd'},
 		{"elaboration",	0, 0, 'e'},
@@ -1201,7 +1173,7 @@ bool CommandLineInterface::ParseRun(int argc, char** argv) {
 	unsigned short options = 0;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long(argc, argv, "defoOpsS", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, "defoOpsS", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -1232,7 +1204,7 @@ bool CommandLineInterface::ParseRun(int argc, char** argv) {
 				options |= OPTION_RUN_STATE;
 				break;
 			case '?':
-				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIRun), "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIRun, "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1242,18 +1214,18 @@ bool CommandLineInterface::ParseRun(int argc, char** argv) {
 	int count = 1;
 
 	// Only one non-option argument allowed, count
-	if (GetOpt::optind == argc - 1) {
+	if (GetOpt::optind == argv.size() - 1) {
 
 		if (!IsInteger(argv[GetOpt::optind])) {
-			return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIRun), "Count must be an integer.\n");
+			return HandleSyntaxError(Constants::kCLIRun, "Count must be an integer.\n");
 		}
-		count = atoi(argv[GetOpt::optind]);
+		count = atoi(argv[GetOpt::optind].c_str());
 		if (count <= 0) {
-			return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIRun), "Count must be greater than 0.\n");
+			return HandleSyntaxError(Constants::kCLIRun, "Count must be greater than 0.\n");
 		}
 
-	} else if (GetOpt::optind < argc) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIRun));
+	} else if ((unsigned)GetOpt::optind < argv.size()) {
+		return HandleSyntaxError(Constants::kCLIRun);
 	}
 
 	return DoRun(options, count);
@@ -1340,14 +1312,14 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 //|  __/ (_| | |  \__ \  __/___) | (_) | |_| | | | (_|  __/
 //|_|   \__,_|_|  |___/\___|____/ \___/ \__,_|_|  \___\___|
 //
-bool CommandLineInterface::ParseSource(int argc, char** argv) {
-	if (argc != 2) {
+bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
+	if (argv.size() != 2) {
 		// Source requires a filename
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLISource));
+		return HandleSyntaxError(Constants::kCLISource);
 
-	} else if (argc > 2) {
+	} else if (argv.size() > 2) {
 		// but only one filename
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLISource), "Source only one file at a time.\n");
+		return HandleSyntaxError(Constants::kCLISource, "Source only one file at a time.\n");
 	}
 
 	return DoSource(argv[1]);
@@ -1359,18 +1331,13 @@ bool CommandLineInterface::ParseSource(int argc, char** argv) {
 //| |_| | (_) |__) | (_) | |_| | | | (_|  __/
 //|____/ \___/____/ \___/ \__,_|_|  \___\___|
 //
-bool CommandLineInterface::DoSource(const char* filename) {
-	if (!filename) {
-		m_Result += "Please supply a filename to source.";
-		return false;
-	}
-
+bool CommandLineInterface::DoSource(const string& filename) {
 	if (!RequireAgent()) {
 		return false;
 	}
 
 	// Open the file
-	ifstream soarFile(filename);
+	ifstream soarFile(filename.c_str());
 	if (!soarFile) {
 		m_Result += "Failed to open file '";
 		m_Result += filename;
@@ -1496,7 +1463,7 @@ bool CommandLineInterface::DoSource(const char* filename) {
 		}
 
 		// Fire off the command
-		if (!DoCommandInternal(command.c_str())) {
+		if (!DoCommandInternal(command)) {
 			// Command failed, error in result
 			HandleSourceError(lineCountCache, filename);
 			return false;
@@ -1534,7 +1501,7 @@ bool CommandLineInterface::DoSource(const char* filename) {
 //|  _  | (_| | | | | (_| | |  __/___) | (_) | |_| | | | (_|  __/ |___| |  | | | (_) | |
 //|_| |_|\__,_|_| |_|\__,_|_|\___|____/ \___/ \__,_|_|  \___\___|_____|_|  |_|  \___/|_|
 //
-void CommandLineInterface::HandleSourceError(int errorLine, const char* filename) {
+void CommandLineInterface::HandleSourceError(int errorLine, const string& filename) {
 	if (!m_SourceError) {
 		// PopD to original source directory
 		while (m_SourceDirDepth) {
@@ -1544,7 +1511,7 @@ void CommandLineInterface::HandleSourceError(int errorLine, const char* filename
 
 		// Reset depths to zero
 		m_SourceDepth = 0;
-		m_SourceDirDepth = 0;
+		m_SourceDirDepth = 0; // TODO: redundant
 
 		m_SourceError = true;
 		m_Result += "\nSource command error: error on line ";
@@ -1558,12 +1525,10 @@ void CommandLineInterface::HandleSourceError(int errorLine, const char* filename
 		string directory;
 		GetCurrentWorkingDirectory(directory); // Again, ignore error here
 
-		m_Result += filename;
-		m_Result += " (" + directory + ")";
+		m_Result += filename + " (" + directory + ")";
 
 	} else {
-		m_Result += "\n\t--> Sourced by: ";
-		m_Result += filename;
+		m_Result += "\n\t--> Sourced by: " + filename;
 	}
 }
 
@@ -1573,20 +1538,20 @@ void CommandLineInterface::HandleSourceError(int errorLine, const char* filename
 //|  __/ (_| | |  \__ \  __/___) |  __/
 //|_|   \__,_|_|  |___/\___|____/|_|
 //
-bool CommandLineInterface::ParseSP(int argc, char** argv) {
+bool CommandLineInterface::ParseSP(std::vector<std::string>& argv) {
 	// One argument (in brackets)
-	if (argc != 2) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLISP));
+	if (argv.size() != 2) {
+		return HandleSyntaxError(Constants::kCLISP);
 	}
 
 	// Remove first and last characters (the braces)
 	string production = argv[1];
 	if (production.length() < 3) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLISP));
+		return HandleSyntaxError(Constants::kCLISP);
 	}
 	production = production.substr(1, production.length() - 2);
 
-	return DoSP(production.c_str());
+	return DoSP(production);
 }
 
 // ____       ____  ____
@@ -1595,13 +1560,7 @@ bool CommandLineInterface::ParseSP(int argc, char** argv) {
 //| |_| | (_) |__) |  __/
 //|____/ \___/____/|_|
 //
-bool CommandLineInterface::DoSP(const char* production) {
-	// Must have production
-	if (!production) {
-		m_Result += "sp command requires a production.";
-		return false;
-	}
-
+bool CommandLineInterface::DoSP(const string& production) {
 	// Must have agent to give production to
 	if (!RequireAgent()) {
 		return false;
@@ -1611,11 +1570,10 @@ bool CommandLineInterface::DoSP(const char* production) {
 	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
 
 	// Load the production
-	pProductionManager->AddProduction(const_cast<char*>(production), m_pError);
+	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), m_pError);
 
 	if(m_pError->Id != gSKI::gSKIERR_NONE) {
-		m_Result += "Unable to add the production: ";
-		m_Result += production;
+		m_Result += "Unable to add the production: " + production;
 		return false;
 	}
 
@@ -1630,7 +1588,7 @@ bool CommandLineInterface::DoSP(const char* production) {
 //|  __/ (_| | |  \__ \  __/___) | || (_) | |_) |__) | (_) | (_| | |
 //|_|   \__,_|_|  |___/\___|____/ \__\___/| .__/____/ \___/ \__,_|_|
 //                                        |_|
-bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
+bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"self",		0, 0, 's'},
 		{0, 0, 0, 0}
@@ -1643,7 +1601,7 @@ bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
 	bool self = false;
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long(argc, argv, "s", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, "s", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -1653,7 +1611,7 @@ bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
 				self = true;
 				break;
 			case '?':
-				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIStopSoar), "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIStopSoar, "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1661,13 +1619,12 @@ bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
 
 	// Concatinate remaining args for 'reason'
 	string reasonForStopping;
-	if (GetOpt::optind < argc) {
-		while (GetOpt::optind < argc) {
-			reasonForStopping += argv[GetOpt::optind++];
-			reasonForStopping += ' ';
+	if ((unsigned)GetOpt::optind < argv.size()) {
+		while ((unsigned)GetOpt::optind < argv.size()) {
+			reasonForStopping += argv[GetOpt::optind++] + ' ';
 		}
 	}
-	return DoStopSoar(self, reasonForStopping.c_str());
+	return DoStopSoar(self, reasonForStopping);
 }
 
 // ____       ____  _             ____
@@ -1676,7 +1633,7 @@ bool CommandLineInterface::ParseStopSoar(int argc, char** argv) {
 //| |_| | (_) |__) | || (_) | |_) |__) | (_) | (_| | |
 //|____/ \___/____/ \__\___/| .__/____/ \___/ \__,_|_|
 //                          |_|
-bool CommandLineInterface::DoStopSoar(bool self, char const* reasonForStopping) {
+bool CommandLineInterface::DoStopSoar(bool self, const string& reasonForStopping) {
 	m_Result += "TODO: do stop-soar";
 	return true;
 }
@@ -1687,15 +1644,16 @@ bool CommandLineInterface::DoStopSoar(bool self, char const* reasonForStopping) 
 //|  __/ (_| | |  \__ \  __/| | | | | | | | |  __/
 //|_|   \__,_|_|  |___/\___||_| |_|_| |_| |_|\___|
 //
-bool CommandLineInterface::ParseTime(int argc, char** argv) {
+bool CommandLineInterface::ParseTime(std::vector<std::string>& argv) {
 	// There must at least be a command
-	if (argc < 2) {
-		return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLITime));
+	if (argv.size() < 2) {
+		return HandleSyntaxError(Constants::kCLITime);
 	}
 
-	char** newArgv = argv + 1;
+	vector<string>::iterator iter = argv.begin();
+	argv.erase(iter);
 
-	return DoTime(argc - 1, newArgv);
+	return DoTime(argv);
 }
 
 // ____      _____ _
@@ -1704,22 +1662,14 @@ bool CommandLineInterface::ParseTime(int argc, char** argv) {
 //| |_| | (_) | | | | | | | | |  __/
 //|____/ \___/|_| |_|_| |_| |_|\___|
 //
-bool CommandLineInterface::DoTime(int argc, char** argv) {
+bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 
 #ifdef WIN32
-	// I know this is lame marshalling it back 
-	// up again only so it can get unmarshalled
-	string command;
-	for (int i = 0;i < argc; ++i) {
-		command += argv[i];
-		command += ' ';
-	}
-
 	// Look at clock
 	DWORD start = GetTickCount();
 
 	// Execute command
-	bool ret = DoCommandInternal(command.c_str());
+	bool ret = DoCommandInternal(argv);
 
 	// Look at clock again, subtracting first value
 	DWORD elapsed = GetTickCount() - start;
@@ -1748,7 +1698,7 @@ bool CommandLineInterface::DoTime(int argc, char** argv) {
 //|  __/ (_| | |  \__ \  __/\ V  V / (_| | || (__| | | |
 //|_|   \__,_|_|  |___/\___| \_/\_/ \__,_|\__\___|_| |_|
 //
-bool CommandLineInterface::ParseWatch(int argc, char** argv) {
+bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"aliases",					1, 0, 'a'},
 		{"backtracing",				1, 0, 'b'},
@@ -1778,7 +1728,7 @@ bool CommandLineInterface::ParseWatch(int argc, char** argv) {
 	unsigned short states = 0;    // new setting
 
 	for (;;) {
-		option = m_GetOpt.GetOpt_Long(argc, argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
+		option = m_pGetOpt->GetOpt_Long(argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -1835,7 +1785,7 @@ bool CommandLineInterface::ParseWatch(int argc, char** argv) {
 				options |= OPTION_WATCH_WME_DETAIL;
 				break;
 			case '?':
-				return HandleSyntaxError(m_Constants.GetUsageFor(Constants::kCLIWatch), "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIWatch, "Unrecognized option.\n");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1862,14 +1812,12 @@ bool CommandLineInterface::DoWatch() {
 //| |___| | | |  __/ (__|   <|  _| (_) | |  |  _  |  __/ | |_) |
 // \____|_| |_|\___|\___|_|\_\_|  \___/|_|  |_| |_|\___|_| .__/
 //                                                       |_|
-bool CommandLineInterface::CheckForHelp(int argc, char** argv) {
+bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 
 	// Standard help check if there is more than one argument
-	if (argc > 1) {
-		string argv1 = argv[1];
-
+	if (argv.size() > 1) {
 		// Is one of the two help strings present?
-		if (argv1 == "-h" || argv1 == "--help") {
+		if (argv[1] == "-h" || argv[1] == "--help") {
 			return true;
 		}
 	}
@@ -1925,10 +1873,9 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 // | |\__ \| || | | | ||  __/ (_| |  __/ |
 //|___|___/___|_| |_|\__\___|\__, |\___|_|
 //                           |___/
-bool CommandLineInterface::IsInteger(const char* s) {
-	const string str = s;
-	string::const_iterator iter = str.begin();
-	while (iter != str.end()) {
+bool CommandLineInterface::IsInteger(const string& s) {
+	string::const_iterator iter = s.begin();
+	while (iter != s.end()) {
 		if (!isdigit(*iter)) {
 			return false;
 		}
@@ -1943,12 +1890,15 @@ bool CommandLineInterface::IsInteger(const char* s) {
 //|  _  | (_| | | | | (_| | |  __/___) | |_| | | | | || (_| |>  <| |___| |  | | | (_) | |
 //|_| |_|\__,_|_| |_|\__,_|_|\___|____/ \__, |_| |_|\__\__,_/_/\_\_____|_|  |_|  \___/|_|
 //                                      |___/
-bool CommandLineInterface::HandleSyntaxError(const string& usage, const char* details) {
+bool CommandLineInterface::HandleSyntaxError(const char* command, const char* details) {
 	m_Result += Constants::kCLISyntaxError;
+	m_Result += " (";
+	m_Result += command;
+	m_Result += ")\n";
 	if (details) {
 		m_Result += details;
 	}
-	m_Result += usage;
+	m_Result += m_Constants.GetUsageFor(command);
 	return false;
 }
 
@@ -1973,7 +1923,7 @@ bool CommandLineInterface::RequireAgent() {
 //|_| |_|\__,_|_| |_|\__,_|_|\___|\____|\___|\__|\___/| .__/ \__|_____|_|  |_|  \___/|_|
 //                                                    |_|
 bool CommandLineInterface::HandleGetOptError(char option) {
-	m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
+	m_Result += "Internal error: m_pGetOpt->GetOpt_Long returned '";
 	m_Result += option;
 	m_Result += "'!";
 	return false;

@@ -12,6 +12,8 @@ int		GetOpt::optopt = '?';
 int 	GetOpt::first_nonopt;
 int 	GetOpt::last_nonopt;
 int		GetOpt::ordering;
+int		GetOpt::argc = 0;
+char**	GetOpt::argv = 0;
 
 char* GetOpt::my_index (const char *str, int chr)
 {
@@ -501,8 +503,52 @@ int GetOpt::_getopt_internal (int argc, char *const *argv, const char *optstring
 	}
 }
 
-int GetOpt::GetOpt_Long (int argc, char *const *argv, const char *options, const struct option *long_options, int *opt_index)
+int GetOpt::GetOpt_Long (std::vector<std::string>& argvector, const char *options, const struct option *long_options, int *opt_index)
 {
-	return _getopt_internal (argc, argv, options, long_options, opt_index, 0);
+	if (optind == 0) {
+		DeleteArgvIfItExists();
+
+		argc = argvector.size();
+
+		argv = new char*[argc + 1]; // leave space for extra null
+		int arglen;
+
+		// For each arg
+		for (int i = 0; i < argc; ++i) {
+			// Save its length
+			arglen = argvector[i].length();
+
+			// Leave space for null
+			argv[i] = new char[ arglen + 1 ];
+
+			// Copy the string
+			strncpy(argv[i], argvector[i].data(), arglen);
+
+			// Set final index to null
+			argv[i][ arglen ] = 0;
+		}
+		// Set final index to null
+		argv[argc] = 0;
+	} else {
+		argc = argvector.size();
+	}
+
+	int ret = _getopt_internal (argc, argv, options, long_options, opt_index, 0);
+	
+	for (int j = 0; j < argc; ++j) {
+		argvector[j] = argv[j];
+	}
+
+	return ret;
 }
 
+void GetOpt::DeleteArgvIfItExists() {
+	if (!argv) return;
+
+	for (int i = 0; i < argc; ++i) {
+		delete [] argv[i];
+		argv[i] = 0;
+	}
+	delete [] argv;
+	argv = 0;
+}

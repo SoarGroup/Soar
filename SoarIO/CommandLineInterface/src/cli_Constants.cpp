@@ -6,7 +6,7 @@
 using namespace cli;
 using namespace std;
 
-char const* Constants::kCLISyntaxError		= "Command syntax error.\n";
+char const* Constants::kCLISyntaxError		= "Command syntax error.";
 
 char const* Constants::kCLIAddWME			= "add-wme";
 char const* Constants::kCLICD				= "cd";			
@@ -75,5 +75,6 @@ string Constants::GetUsage(ifstream& usageFile) {
 		usage += line;
 		usage += '\n';
 	}
+	// TODO: remove extra newline on end
 	return usage;
 }

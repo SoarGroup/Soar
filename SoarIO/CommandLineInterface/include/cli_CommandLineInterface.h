@@ -19,7 +19,6 @@
 
 // Local includes
 #include "cli_CommandData.h"
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 // gSKI includes
@@ -41,9 +40,10 @@ namespace cli {
 
 // Forward declarations
 class CommandLineInterface;
+class GetOpt;
 
 // Define the CommandFunction which we'll call to process commands
-typedef bool (CommandLineInterface::*CommandFunction)(int argc, char** argv);
+typedef bool (CommandLineInterface::*CommandFunction)(std::vector<std::string>& argv);
 
 // Used to store a map from command name to function handler for that command
 typedef std::map<std::string, CommandFunction>	CommandMap;
@@ -57,8 +57,8 @@ class CommandLineInterface
 {
 public:
 
-	// Simple constructor
 	CommandLineInterface();
+	~CommandLineInterface();
 
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
@@ -70,7 +70,7 @@ public:
 	///*************************************************************
 	//* @brief 
 	//*************************************************************/
-	//bool Parse(int argc, char** argv);
+	//bool Parse(std::vector<std::string>& argv);
 	///*************************************************************
 	//* @brief 
 	//*************************************************************/
@@ -81,7 +81,7 @@ public:
 	/*************************************************************
 	* @brief add-wme command, see command line spec document for details
 	*************************************************************/
-	bool ParseAddWME(int argc, char** argv);
+	bool ParseAddWME(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -90,39 +90,39 @@ public:
 	/*************************************************************
 	* @brief cd command, see command line spec document for details
 	*************************************************************/
-	bool ParseCD(int argc, char** argv);
+	bool ParseCD(std::vector<std::string>& argv);
 	/*************************************************************
-	* @brief Change the current working directory.  If null is passed
+	* @brief Change the current working directory.  If an empty string is passed
 	*		 the current working directory is changed to the home directory.
 	*		 The home directory is defined as the initial working directory.
 	*************************************************************/
-	bool DoCD(const char* directory = 0);
+	bool DoCD(std::string& directory);
 
 	/*************************************************************
 	* @brief echo command, see command line spec document for details
 	*************************************************************/
-	bool ParseEcho(int argc, char** argv);
+	bool ParseEcho(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief Simply concatenate all arguments, adding them to the result.
 	*************************************************************/
-	bool DoEcho(int argc, char** argv);
+	bool DoEcho(std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief excise command, see command line spec document for details
 	*************************************************************/
-	bool ParseExcise(int argc, char** argv);
+	bool ParseExcise(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief See CommandData.h for the list of flags for the options
 	*		 parameter.  If there are specific productions to excise,
 	*		 they are passed as an array of character strings with their
 	*		 number indicated by production count.
 	*************************************************************/
-	bool DoExcise(const unsigned short options, int productionCount = 0, char** productions = 0);
+	bool DoExcise(const unsigned short options, int optind, std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief init-soar command, see command line spec document for details
 	*************************************************************/
-	bool ParseInitSoar(int argc, char** argv);
+	bool ParseInitSoar(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief Reinitializes the current agent.  No arguments necessary.
 	*		 The agent pointer member must be valid.
@@ -132,7 +132,7 @@ public:
 	/*************************************************************
 	* @brief learn command, see command line spec document for details
 	*************************************************************/
-	bool ParseLearn(int argc, char** argv);
+	bool ParseLearn(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief See CommandData.h for the list of flags used in the options
 	*		 parameter.  Passing no options simply prints current learn
@@ -143,7 +143,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool ParseLog(int argc, char** argv);
+	bool ParseLog(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -152,7 +152,7 @@ public:
 	/*************************************************************
 	* @brief ls/dir command, see command line spec document for details
 	*************************************************************/
-	bool ParseLS(int argc, char** argv);
+	bool ParseLS(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief Lists current working directory, no arguments necessary.
 	*************************************************************/
@@ -162,17 +162,17 @@ public:
 	* @brief multi-attributes command, see command line spec document
 	*		 for details.
 	*************************************************************/
-	bool ParseMultiAttributes(int argc, char** argv);
+	bool ParseMultiAttributes(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief Two optional arguments, attribute and n.  If no arguments,
 	*		 prints current settings.
 	*************************************************************/
-	bool DoMultiAttributes(const char* attribute = 0, int n = 0);
+	bool DoMultiAttributes(const std::string& attribute, int n = 0);
 
 	/*************************************************************
 	* @brief popd command, see command line spec document for details
 	*************************************************************/
-	bool ParsePopD(int argc, char** argv);
+	bool ParsePopD(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief No arguments, pops a directory off the directory stack
 	*		 and changes to it.
@@ -182,25 +182,25 @@ public:
 	/*************************************************************
 	* @brief print command, see command line spec document for details
 	*************************************************************/
-	bool ParsePrint(int argc, char** argv);
+	bool ParsePrint(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoPrint(const unsigned short options, int depth, const char* pArg);
+	bool DoPrint(const unsigned short options, int depth, const std::string& arg);
 
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool ParsePushD(int argc, char** argv);
+	bool ParsePushD(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoPushD(const char* directory);
+	bool DoPushD(std::string& directory);
 
 	/*************************************************************
 	* @brief pwd command, see command line spec document for details
 	*************************************************************/
-	bool ParsePWD(int argc, char** argv);
+	bool ParsePWD(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -209,7 +209,7 @@ public:
 	/*************************************************************
 	* @brief exit/quit command, see command line spec document for details
 	*************************************************************/
-	bool ParseQuit(int argc, char** argv);
+	bool ParseQuit(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -218,7 +218,7 @@ public:
 	/*************************************************************
 	* @brief run command, see command line spec document for details
 	*************************************************************/
-	bool ParseRun(int argc, char** argv);
+	bool ParseRun(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -227,43 +227,43 @@ public:
 	/*************************************************************
 	* @brief source command, see command line spec document for details
 	*************************************************************/
-	bool ParseSource(int argc, char** argv);
+	bool ParseSource(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoSource(const char* filename);
+	bool DoSource(const std::string& filename);
 
 	/*************************************************************
 	* @brief sp command, see command line spec document for details
 	*************************************************************/
-	bool ParseSP(int argc, char** argv);
+	bool ParseSP(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoSP(const char* production);
+	bool DoSP(const std::string& production);
 
 	/*************************************************************
 	* @brief stop-soar command, see command line spec document for details
 	*************************************************************/
-	bool ParseStopSoar(int argc, char** argv);
+	bool ParseStopSoar(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoStopSoar(bool self, char const* reasonForStopping);
+	bool DoStopSoar(bool self, const std::string& reasonForStopping);
 
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool ParseTime(int argc, char** argv);
+	bool ParseTime(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoTime(int argc, char** argv);
+	bool DoTime(std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief watch command, see command line spec document for details
 	*************************************************************/
-	bool ParseWatch(int argc, char** argv);
+	bool ParseWatch(std::vector<std::string>& argv);
 	/*************************************************************
 	* @brief 
 	*************************************************************/
@@ -322,13 +322,14 @@ protected:
 	*		 to call to process the command.  DoCommand mainly does
 	*		 SML stuff.
 	*************************************************************/
-	bool DoCommandInternal(const char* commandLine);
+	bool DoCommandInternal(const std::string& commandLine);
+	bool DoCommandInternal(std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief A utility function, splits the command line into argument
 	*		 tokens and stores them in the argumentVector string.
 	*************************************************************/
-	int Tokenize(const char* commandLine, std::vector<std::string>& argumentVector);
+	int Tokenize(std::string commandLine, std::vector<std::string>& argumentVector);
 
 	/*************************************************************
 	* @brief A utility function used in the constructor to build the mapping
@@ -340,7 +341,7 @@ protected:
 	* @brief Standard parsing of -h and --help flags.  Returns
 	*		 true if the flag is present.
 	*************************************************************/
-	bool CheckForHelp(int argc, char** argv);
+	bool CheckForHelp(std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief 
@@ -355,17 +356,17 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void HandleSourceError(int errorLine, const char* filename);
+	void HandleSourceError(int errorLine, const std::string& filename);
 
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool IsInteger(const char* s);
+	bool IsInteger(const std::string& s);
 
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool HandleSyntaxError(const std::string& usage, const char* details = 0);
+	bool HandleSyntaxError(const char* command, const char* details = 0);
 
 	/*************************************************************
 	* @brief 
@@ -378,7 +379,7 @@ protected:
 	bool HandleGetOptError(char option);
 
 	Constants		m_Constants;		// Pointer to constants management object
-	GetOpt			m_GetOpt;			// Pointer to GetOpt utility class
+	GetOpt*			m_pGetOpt;			// Pointer to GetOpt utility class
 	CommandMap		m_CommandMap;		// Mapping of command names to function pointers
 	gSKI::IKernel*	m_pKernel;			// Pointer to the current gSKI kernel
 	gSKI::IAgent*	m_pAgent;			// Pointer to the gSKI agent the command is valid for

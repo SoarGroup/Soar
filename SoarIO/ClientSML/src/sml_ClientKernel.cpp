@@ -128,12 +128,9 @@ const char* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 	// Send the command line to the kernel
 	m_CommandLineSucceeded = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CommandLine, pAgentName, sml_Names::kParamLine, pCommandLine, wantRawOutput);
 
-	if (m_CommandLineSucceeded)
-	{
-		// Get the result as a string
-		m_CommandLineResult = response.GetResultString();
-	}
-	else
+	// Get the result as a string
+	m_CommandLineResult = response.GetResultString();
+	if (!m_CommandLineSucceeded)
 	{
 		// Get the error message
 		m_CommandLineResult += "\nError Data:\n";

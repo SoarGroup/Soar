@@ -30,7 +30,7 @@
 
 ### Does not include planning and chunking.
 
-learn -off
+learn --off
 
 ###
 ### MISSIONARIES-AND-CANNIBALS PROBLEM SPACE:
