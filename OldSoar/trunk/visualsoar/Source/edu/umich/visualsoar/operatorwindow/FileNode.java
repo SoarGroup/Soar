@@ -393,6 +393,19 @@ public class FileNode extends OperatorNode implements java.io.Serializable
         ruleEditor.setLine(line);
     }
     
+    /**
+     * This opens/shows a rule editor with this nodes associated file
+     * and displays a substring of the file starting on a given line
+     * @param pw the Project window
+     * @param line the line number to place the caret on
+     * @param assocString the substring to place the caret on
+    */
+    public void openRulesToString(MainFrame pw, int line, String assocString) 
+    {
+        openRules(pw);
+        ruleEditor.highlightString(line, assocString);
+    }
+    
     protected String getFullPathName() 
     {
 

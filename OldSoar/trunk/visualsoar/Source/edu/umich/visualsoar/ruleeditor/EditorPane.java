@@ -270,7 +270,26 @@ public class EditorPane extends javax.swing.JEditorPane
         return n - 1;
     }
 
+    /**
+     * Returns the text of the specified line in the document
+     */
+    public String getLineText(int lineNum) throws BadLocationException
+    {
+        Document doc = getDocument();
+        Element map = doc.getDefaultRootElement();
+        int startOffset = getLineStartOffset(lineNum - 1);
+        int endOffset = doc.getLength() - 1;
+        
+        if (lineNum + 1 < map.getElementCount())
+        {
+            endOffset = getLineStartOffset(lineNum) - 1;
+        }
 
+        return doc.getText(startOffset, endOffset - startOffset);
+        
+    }//getLineText()
+
+    
     /**
      * Stolen from JTextComponent...
      *

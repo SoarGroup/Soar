@@ -1503,7 +1503,10 @@ public class OperatorWindow extends JTree {
 							line = line.toLowerCase();
 						}						
 						if (line.indexOf(stringToFind) != -1) {
-							v.add(new FeedbackListObject(current,lnr.getLineNumber(),line));
+							v.add(new FeedbackListObject(current,
+                                                         lnr.getLineNumber(),
+                                                         line,
+                                                         stringToFind));
 						}
 						line = lnr.readLine();
 					}

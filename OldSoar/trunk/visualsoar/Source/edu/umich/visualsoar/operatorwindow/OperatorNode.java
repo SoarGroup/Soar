@@ -494,6 +494,7 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 	 */
 	public void openRules(MainFrame pw) {}
 
+    
   /**
    * Overloaded operation
    */
@@ -518,6 +519,17 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 	 * @param line the line number to place the caret on
 	 */
 	public void openRules(MainFrame pw, int line) {}
+	
+	/**
+	 * If the node supports this operation it should be overloaded in the subclass
+	 * if this function gets called it means that the node did not properly overload
+	 * the function, so the user just told the program to do something that it cannot
+	 * all this function does is print out an error message to that effect
+	 * @param pw the Project window
+     * @param line the line number to place the caret on
+     * @param assocString the substring to place the caret on
+	 */
+    public void openRulesToString(MainFrame pw, int line, String assocString) {}
 	
 	/**
 	 * This is the default implementation of what

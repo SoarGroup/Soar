@@ -179,7 +179,10 @@ public class ReplaceInProjectDialog extends JDialog {
 							      line = line.toLowerCase();
 						      }
 						      if (line.indexOf(toFind) != -1) {
-						  	    v.add(new FeedbackListObject(current, lnr.getLineNumber(), "Replaced " + toFind + " with " + toReplace + ".") );
+						  	    v.add(new FeedbackListObject(current,
+                                                             lnr.getLineNumber(),
+                                                             "Replaced " + toFind + " with " + toReplace + ".",
+                                                             toReplace) );
 						      }
 						      line = lnr.readLine();
 					      }
@@ -327,7 +330,7 @@ public class ReplaceInProjectDialog extends JDialog {
                   if( reFileName.equals(fn) )
                   {
                     d_ruleEditor = be;
-                    d_ruleEditor.setLine(1);
+                    d_ruleEditor.resetCaret();
                     searchingRuleEditor = true;
                     fn = null;
                   }    // found rule editor that matches filename where bfe is currently at
@@ -363,7 +366,7 @@ public class ReplaceInProjectDialog extends JDialog {
                          if( reFileName.equals(fn) )
                          {
                           d_ruleEditor = re;
-                          d_ruleEditor.setLine(1);
+                          d_ruleEditor.resetCaret();
                           searchingRuleEditor = true;
                          }    // found rule editor that matches filename where bfe is currently at
                         }
