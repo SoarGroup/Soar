@@ -13,25 +13,23 @@ public:
 	CommandProcessor(sml::Kernel* pKernel);
 	~CommandProcessor();
 
-	void DisplayPrompt();
+	void DisplayPrompt(bool previousResult);
 
 	// returns false on error or exit
-	bool ProcessCharacter();
+	bool ProcessCharacter(int c);
 
 protected:
 
 	void Backspace();
 
 	// returns false on error or exit
-	bool ProcessLine();
+	bool ProcessLine(std::string& commandLine);
 
 	sml::Kernel* pKernel;
 
-	char		inputChar;		// character of input
-	std::string commandLine;	// everything typed before \n \r
-	std::string output;
-	bool		previousResult;	// boolean result of last command
+	std::string line;			// everything typed before \n \r
 	bool		raw;			// true when output is 'raw' as opposed to 'structured'
+	bool		meta;			// windows meta key
 
 	// History variables
 	int			historyIndex;
@@ -39,5 +37,7 @@ protected:
 	std::string* pHistory;
 
 };
+
+int getKey(bool block);
 
 #endif // CLI_TEST_H
