@@ -13,15 +13,15 @@
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
 
 // don't wrap the code for registering/unregistering callbacks because we need to provide some custom code to make it work
-%ignore sml::Agent::RegisterForAgentEvent(smlAgentEventId, AgentEventHandler, void*);
+%ignore sml::Agent::RegisterForAgentEvent(smlAgentEventId, AgentEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::UnregisterForAgentEvent(smlAgentEventId, int);
-%ignore sml::Agent::RegisterForProductionEvent(smlProductionEventId, ProductionEventHandler, void*);
+%ignore sml::Agent::RegisterForProductionEvent(smlProductionEventId, ProductionEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::UnregisterForProductionEvent(smlProductionEventId, int);
-%ignore sml::Agent::RegisterForRunEvent(smlRunEventId, RunEventHandler, void*);
+%ignore sml::Agent::RegisterForRunEvent(smlRunEventId, RunEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::UnregisterForRunEvent(smlRunEventId, int);
-%ignore sml::Agent::RegisterForPrintEvent(smlPrintEventId, PrintEventHandler, void*);
+%ignore sml::Agent::RegisterForPrintEvent(smlPrintEventId, PrintEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::UnregisterForPrintEvent(smlPrintEventId, int);
-%ignore sml::Kernel::RegisterForSystemEvent(smlSystemEventId, SystemEventHandler, void*);
+%ignore sml::Kernel::RegisterForSystemEvent(smlSystemEventId, SystemEventHandler, void*, bool addToBack = true);
 %ignore sml::Kernel::UnregisterForSystemEvent(smlSystemEventId, int);
 
 %{
