@@ -1,3 +1,8 @@
 AUTOMAKE_OPTIONS = gnu
-SUBDIRS = TestCommandLineInterface towersSML towers TestClientSML TestConnectionSML
+SUBDIRS = \
+TestConnectionSML \
+TestCommandLineInterface \
+TestClientSML \
+towers \
+towersSML 
 export CUSTOM_CXXFLAGS
