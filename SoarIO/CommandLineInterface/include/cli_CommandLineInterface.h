@@ -109,26 +109,41 @@ public:
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
-	*		 This version of DoCommand is used when the command line
-	*		 interface is created by sml::KernelSML
+	* @param pConnection The connection, for communication to the client
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param pCommandLine The command line string, arguments separated by spaces
+	* @param pResponse Pointer to XML response object
+	* @param rawOutput Set to true for human-readable raw output string, set to false for XML structured output
+	* @param pError Pointer to the client-owned gSKI error object
 	*************************************************************/
 	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, bool rawOutput, gSKI::Error* pError);
 
 	/*************************************************************
 	* @brief Takes a command line and expands any aliases and returns
 	*		 the result.  The command is NOT executed.
+	* @param pConnection The connection, for communication to the client
+	* @param pCommandLine The command line string, arguments separated by spaces
+	* @param pResponse Pointer to XML response object
+	* @param pError Pointer to the client-owned gSKI error object
 	*************************************************************/
 	EXPORT bool ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
 
 	/*************************************************************
-	* @brief 
+	* @brief add-wme command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param id Id string for the new wme
+	* @param attribute Attribute string for the new wme
+	* @param value Value string for the new wme
+	* @param acceptable True to give wme acceptable preference
 	*************************************************************/
-	EXPORT bool DoAddWME(gSKI::IAgent* pAgent, std::string id, std::string attribute, std::string value, bool acceptable);
+	EXPORT bool DoAddWME(gSKI::IAgent* pAgent, const std::string& id, const std::string& attribute, const std::string& value, bool acceptable);
 
 	/*************************************************************
-	* @brief 
+	* @brief alias command
+	* @param command The alias to enable or disable, pass 0 to list aliases
+	* @param pSubstitution Pass a pointer to a vector strings to enable a new alias, pass 0 to disable a current alias 
 	*************************************************************/
-	EXPORT bool DoAlias(bool disable, const std::string& command, const std::vector<std::string>* pSubstitution);
+	EXPORT bool DoAlias(const std::string* pCommand = 0, const std::vector<std::string>* pSubstitution = 0);
 
 	/*************************************************************
 	* @brief Change the current working directory.  If a null pointer passed,

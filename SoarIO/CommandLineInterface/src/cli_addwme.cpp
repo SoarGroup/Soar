@@ -34,7 +34,15 @@ bool CommandLineInterface::ParseAddWME(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoAddWME(pAgent, argv[1], argv[attributeIndex], argv[attributeIndex + 1], acceptable);
 }
 
-EXPORT bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::string attribute, std::string value, bool acceptable) {
+/*************************************************************
+* @brief add-wme command
+* @param pAgent The pointer to the gSKI agent interface
+* @param id Id string for the new wme
+* @param attribute Attribute string for the new wme
+* @param value Value string for the new wme
+* @param acceptable True to give wme acceptable preference
+*************************************************************/
+EXPORT bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, const std::string& id, const std::string& attribute, const std::string& value, bool acceptable) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 

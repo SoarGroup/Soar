@@ -45,11 +45,11 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 	// If disabling, no additional argument.
 	if (disable) {
 		if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
-		return DoAlias(disable, command, 0);
+		return DoAlias(&command);
 	}
 	
 	// If not disabling and no arguments, list aliases
-	if (m_pGetOpt->GetAdditionalArgCount() == 0) return DoAlias(disable, command, 0);
+	if (m_pGetOpt->GetAdditionalArgCount() == 0) return DoAlias();
 
 	// If not disabling and not listing, there must be at least two additional arguments
 	if (m_pGetOpt->GetAdditionalArgCount() < 2) return SetError(CLIError::kTooFewArgs);		
@@ -62,39 +62,51 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 		substitution.push_back(*iter);
 	}
 
-	return DoAlias(disable, command, &substitution);
+	return DoAlias(&command, &substitution);
 }
 
-EXPORT bool CommandLineInterface::DoAlias(bool disable, const std::string& command, const std::vector<std::string>* pSubstitution) {
-	if (disable) {
-		if (!m_Aliases.RemoveAlias(command)) return SetError(CLIError::kAliasNotFound);
+/*************************************************************
+* @brief alias command
+* @param command The alias to enable or disable, pass 0 to list aliases
+* @param pSubstitution Pass a pointer to a vector strings to enable a new alias, pass 0 to disable a current alias 
+*************************************************************/
+EXPORT bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vector<std::string>* pSubstitution) {
 
-	} else {
-		if (!command.size()) {
-			if (m_RawOutput) {
-				// list aliases
-				m_Result << m_Aliases.List();
-				return true;
-			} else {
-				AliasMap::const_iterator citer = m_Aliases.GetAliasMapBegin();
-				while (citer != m_Aliases.GetAliasMapEnd()) {
-					AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first.c_str());
+	if (!pCommand && !pSubstitution) {
+		// list aliases
+		if (m_RawOutput) {
+			m_Result << m_Aliases.List();
+			return true;
 
-					std::string aliasedCommand;
-					for (std::vector<std::string>::const_iterator iter = citer->second.begin(); iter != citer->second.end(); ++iter) {
-						aliasedCommand += *iter;
-						aliasedCommand += ' ';
-					}
-					aliasedCommand = aliasedCommand.substr(0, aliasedCommand.length() - 1);
-					AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand.c_str());
-					++citer;
+		} else {
+			AliasMap::const_iterator citer = m_Aliases.GetAliasMapBegin();
+			while (citer != m_Aliases.GetAliasMapEnd()) {
+				AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first.c_str());
+
+				std::string aliasedCommand;
+				for (std::vector<std::string>::const_iterator iter = citer->second.begin(); iter != citer->second.end(); ++iter) {
+					aliasedCommand += *iter;
+					aliasedCommand += ' ';
 				}
-				return true;
+				aliasedCommand = aliasedCommand.substr(0, aliasedCommand.length() - 1);
+				AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand.c_str());
+				++citer;
 			}
+			return true;
 		}
-
-		if (!m_Aliases.NewAlias((*pSubstitution), command)) return SetError(CLIError::kAliasExists);
 	}
+
+	// command needs to have a size
+	if (!pCommand || !pCommand->size()) return SetError(CLIError::kAliasNotFound);
+
+	if (!pSubstitution) {
+		// no substitution, remove
+		if (!m_Aliases.RemoveAlias(*pCommand)) return SetError(CLIError::kAliasNotFound);
+		return true;
+	} 
+
+	// new alias
+	if (!m_Aliases.NewAlias((*pSubstitution), *pCommand)) return SetError(CLIError::kAliasExists);
 	return true;
 }
 
