@@ -87,6 +87,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIHome]					= &cli::CommandLineInterface::ParseHome;
 	m_CommandMap[Constants::kCLIIndifferentSelection]	= &cli::CommandLineInterface::ParseIndifferentSelection;
 	m_CommandMap[Constants::kCLIInitSoar]				= &cli::CommandLineInterface::ParseInitSoar;
+	m_CommandMap[Constants::kCLIInternalSymbols]		= &cli::CommandLineInterface::ParseInternalSymbols;
 	m_CommandMap[Constants::kCLILearn]					= &cli::CommandLineInterface::ParseLearn;
 	m_CommandMap[Constants::kCLILog]					= &cli::CommandLineInterface::ParseLog;
 	m_CommandMap[Constants::kCLILS]						= &cli::CommandLineInterface::ParseLS;

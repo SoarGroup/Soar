@@ -24,6 +24,7 @@ char const* Constants::kCLIHelpEx					= "helpex";
 char const* Constants::kCLIHome						= "home";
 char const* Constants::kCLIIndifferentSelection		= "indifferent-selection";
 char const* Constants::kCLIInitSoar					= "init-soar";
+char const* Constants::kCLIInternalSymbols			= "internal-symbols";
 char const* Constants::kCLILearn					= "learn";
 char const* Constants::kCLILog						= "log";
 char const* Constants::kCLILS						= "ls";

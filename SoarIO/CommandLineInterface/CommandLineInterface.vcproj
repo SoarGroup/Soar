@@ -174,6 +174,9 @@
 					RelativePath=".\src\cli_initsoar.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_internalsymbols.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_learn.cpp">
 				</File>
 				<File

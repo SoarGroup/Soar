@@ -29,6 +29,7 @@
 #include "rhsfun.h"
 #include "decide.h"
 
+extern Bool print_sym (agent* thisAgent, void *item, FILE* f);
 
 namespace gSKI 
 {
@@ -2109,5 +2110,23 @@ namespace gSKI
 			if (!RemoveWme(pSoarAgent, pWme)) return 0; // this is the correct case
 			return -2;                  /* Unspecified Failure */
 		}
+
+		 void TgDWorkArounds::PrintInternalSymbols(IAgent* pIAgent)
+		 {
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			print_string(pSoarAgent, "\n--- Symbolic Constants: ---\n");
+			do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->sym_constant_hash_table, print_sym, 0);
+			print_string(pSoarAgent, "\n--- Integer Constants: ---\n");
+			do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->int_constant_hash_table, print_sym, 0);
+			print_string(pSoarAgent, "\n--- Floating-Point Constants: ---\n");
+			do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->float_constant_hash_table, print_sym, 0);
+			print_string(pSoarAgent, "\n--- Identifiers: ---\n");
+			do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->identifier_hash_table, print_sym, 0);
+			print_string(pSoarAgent, "\n--- Variables: ---\n");
+			do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->variable_hash_table, print_sym, 0);
+		 }
+
 	}
 }

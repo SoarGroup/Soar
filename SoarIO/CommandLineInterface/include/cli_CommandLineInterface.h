@@ -278,6 +278,13 @@ public:
 	bool DoInitSoar(gSKI::IAgent* pAgent);
 
 	/*************************************************************
+	*************************************************************/
+	bool ParseInternalSymbols(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	*************************************************************/
+	bool DoInternalSymbols(gSKI::IAgent* pAgent);
+
+	/*************************************************************
 	* @brief 
 	*************************************************************/
 	bool ParseIO(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

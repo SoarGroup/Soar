@@ -135,6 +135,8 @@ namespace gSKI
 
 		virtual long AddWme(IAgent* pIAgent, const char* pIdString, const char* pAttrString, const char* pValueString, bool acceptable) = 0;
 		virtual int RemoveWmeByTimetag(IAgent* pIAgent, int num) = 0;
+
+        virtual void PrintInternalSymbols(IAgent* pIAgent) = 0;
 	  };
    }
 }

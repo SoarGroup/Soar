@@ -182,7 +182,7 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int opti
 	RemoveListenerAndEnableCallbacks(pAgent);
 
 	if (!m_RawOutput) {
-		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
+		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
 		m_Result.clear();
 	}
 	return true;

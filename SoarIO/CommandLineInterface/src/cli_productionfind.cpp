@@ -96,7 +96,7 @@ bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigned int m
 	RemoveListenerAndEnableCallbacks(pAgent);
 
 	if (!m_RawOutput) {
-		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
+		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
 		m_Result.clear();
 	}
 
