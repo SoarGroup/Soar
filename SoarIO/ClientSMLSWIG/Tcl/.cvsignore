@@ -1,7 +1,0 @@
-.deps
-.libs
-Makefile
-Makefile.in
-Tcl_sml_ClientInterface_wrap.cpp
-*.lo
-Debug

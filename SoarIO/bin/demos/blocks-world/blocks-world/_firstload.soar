@@ -1,9 +1,0 @@
-# Give information to the rule reording algorithm to make the match more efficient.
-multi-attributes ontop 3
-multi-attributes clear 3
-multi-attributes objects 4
-
-# learning is irrelevant for this formulation
-learn --off
-
-
