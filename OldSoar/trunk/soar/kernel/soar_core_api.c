@@ -694,17 +694,23 @@ int soar_cLoadReteNet( const char *filename ) {
   int i;
 
 
-  if ( !filename ) 
-    return -1; 
+  if ( !filename ) {
+	print ("Internal error: No file name specified.\n");
+	return SOAR_ERROR;
+  }
 
   /* --- check for empty system --- */
-  if (current_agent(all_wmes_in_rete)) 
-    return -2;
+  if (current_agent(all_wmes_in_rete)) {
+	print ("Internal error: Can't load RETE in non-empty system.  Restart Soar first.\n");
+	return SOAR_ERROR;
+  }
 
 
   for (i=0; i<NUM_PRODUCTION_TYPES; i++)
-    if (current_agent(num_productions_of_type)[i]) 
-      return -3;
+	  if (current_agent(num_productions_of_type)[i]) {
+		print ("Internal error: Can't load RETE in non-empty system.  Restart Soar first.\n");
+	    return SOAR_ERROR;
+	  }
     
  
 
@@ -720,7 +726,8 @@ int soar_cLoadReteNet( const char *filename ) {
       if (!(f = fopen(filename, "rb"))) {
 
 	/* --- error when opening the file --- */    
-	return -4;
+	print ("Internal error: Error opening file.\n");
+	return SOAR_ERROR;
       }
       else {
 	fclose(f);
@@ -754,7 +761,9 @@ int soar_cLoadReteNet( const char *filename ) {
   if (! f) 
     {
       /* --- error when opening the pipe or file --- */
-      return -4;
+	  print ("Internal error: error opening file.\n");
+	  return SOAR_ERROR;
+
     }
 
   result = load_rete_net(f);
@@ -770,7 +779,7 @@ int soar_cLoadReteNet( const char *filename ) {
       fclose(f);
     }
 
-  return 0;
+  return SOAR_OK;
 }
 
 
@@ -792,8 +801,11 @@ int soar_cSaveReteNet( const char *filename ) {
   bool using_compression_filter = FALSE;
   char *append_loc;
   
-  if (current_agent(all_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE])
-    return -1;
+  if (current_agent(all_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]) {
+	  print ("Internal error: can't save rete with justifications present.\n");
+	  return SOAR_ERROR;
+  }
+  
 
 
 #if !defined(MACINTOSH) /* Mac doesn't have pipes */
@@ -829,7 +841,8 @@ int soar_cSaveReteNet( const char *filename ) {
   if (! f) 
     {
       /* --- error when opening the pipe or file --- */
-      return -2;
+	  print ("Internal error: error opening file.\n");
+	  return SOAR_ERROR;
     }
 
   save_rete_net(f);
@@ -845,7 +858,7 @@ int soar_cSaveReteNet( const char *filename ) {
       fclose(f);
     }
 
-  return 0;
+  return SOAR_OK;
 }
 
 
