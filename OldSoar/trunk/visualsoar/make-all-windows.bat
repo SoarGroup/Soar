@@ -36,10 +36,10 @@ set config=Release
 @echo on
 
 @rem Set up the include path etc. for JDK
-@path=%path%;%JDK%\bin
+@set PATH=%JDK%\bin;%PATH%
 
 @rem Set up the include path etc. for TCL
-set INCLUDE=%include%;%TCL%\include
+@set INCLUDE=%TCL%\include;%INCLUDE%
 
 @echo Build STI
 @rem msdev "STI\STI.dsw" /MAKE "TestMaster - Win32 %config%" /REBUILD /out "%OUTPUT%\STIBuild.txt"
