@@ -118,7 +118,24 @@ public class ButtonView extends AbstractView
 	{
 		m_LinkedViewName = viewName ;
 	}
-	
+		
+	/************************************************************************
+	* 
+	* Given a context menu and a control, fill in the items you want to 
+	* see in the menu.  The simplest is to just call "fillWindowMenu".
+	* 
+	* This call is made after the user has clicked to bring up the menu
+	* so we can create a dymanic menu based on the current context.
+	* 
+	* You also have to call createContextMenu() to request a context menu
+	* be attached to a specific control.
+	* 
+	*************************************************************************/
+	protected void fillInContextMenu(Menu contextMenu, Control control)
+	{
+		fillWindowMenu(contextMenu) ;
+	}
+
 	/********************************************************************************************
 	* 
 	* Initialize this window and its children.
@@ -138,6 +155,12 @@ public class ButtonView extends AbstractView
 		}
 		
 		createButtonPanel(m_Pane.getWindow()) ;
+		
+		// Create a context menu for m_Text.
+		// It will be filled in via a call to fillInContextMenu when the menu is popped up
+		// (this allows for dynamic content)
+		createContextMenu(m_Container) ;
+
 	}
 
 	protected void createButtonPanel(final Composite parent)

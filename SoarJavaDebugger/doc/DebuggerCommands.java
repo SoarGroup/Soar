@@ -42,6 +42,7 @@ public class DebuggerCommands
 		m_Document = doc ;
 	}
 		
+	// Return value is currently null, but we'll allow for it to return values in the future.
 	public Object executeCommand(String command, boolean echoCommand)
 	{
 		if (command == null)
@@ -77,38 +78,68 @@ public class DebuggerCommands
 			// Find the XML element for the pane we're removing
 			ElementXML removePane = pane.getElementXML() ;
 			
-			boolean done = false ;
+			// If we're removing a fixed size view we want to just remove the parent
+			// composite to leave just the other pane in the pair.
+			// If we're removing a variable size view and its part of a composite
+			// we delete the other (fixed size) pane as well which can lead to a chain.
+			boolean removingFixedSize = view.isFixedSizeView() ;
 			
-			while (!done)
+			if (removingFixedSize)
 			{
+				// With a fixed size window we just promote the other side of the pair
+				// up a level in the hierarchy.
 				ElementXML parent = removePane.getParent() ;
 				
-				// Can't remove the children of the top window as the top
-				// window is just a container that hosts everything else
-				// (i.e. it only has one child)
-				if (parent == null)
-				{
-					frame.ShowMessageBox("Can't remove the last window") ;
-					return null ;
-				}
+				if (parent.getNumberChildren() != 2)
+					throw new IllegalStateException("The parent of a fixed size window should be a composite pair") ;
 				
-				parent.removeChild(removePane) ;
-
-				// If the parent is a composite, remove it and its twin for now
-				if (parent.getTagName().equals("composite"))
+				// Find the other pane of the pair
+				ElementXML otherPane = parent.getChild(0) ;
+				if (otherPane == removePane)
+					otherPane = parent.getChild(1) ;
+				
+				// Promote the other pane to the position of the current parent
+				ElementXML superParent = parent.getParent() ;
+				superParent.replaceChild(parent, otherPane) ;
+			}
+			else
+			{
+				// With a variable sized window, if we're removing it from a pair
+				// (with a fixed sized window) we need to remove the pair.
+				// This can lead to a chain reaction up the hierarchy.
+				boolean done = false ;
+	
+				while (!done)
 				{
+					ElementXML parent = removePane.getParent() ;
+					
+					// Can't remove the children of the top window as the top
+					// window is just a container that hosts everything else
+					// (i.e. it only has one child)
+					if (parent == null)
+					{
+						frame.ShowMessageBox("Can't remove the last window") ;
+						return null ;
+					}
+					
+					parent.removeChild(removePane) ;
+	
+					// If the parent is a composite, remove it and its twin for now
+					if (parent.getTagName().equals("composite"))
+					{
+						removePane = parent ;
+					}
+					else if (parent.getNumberChildren() > 0)
+					{
+						// Note: For sashform's this actually leaves the XML in an invalid state with
+						// incorrect weight information (to match the wrong number of children).
+						// Fixed that by allowing the load logic to recover from that state and just
+						// default to equal weights and the result seems fine.
+						done = true ;
+					}
+					
 					removePane = parent ;
 				}
-				else if (parent.getNumberChildren() > 0)
-				{
-					// Note: For sashform's this actually leaves the XML in an invalid state with
-					// incorrect weight information (to match the wrong number of children).
-					// Fixed that by allowing the load logic to recover from that state and just
-					// default to equal weights and the result seems fine.
-					done = true ;
-				}
-				
-				removePane = parent ;
 			}
 			
 			try
@@ -202,7 +233,7 @@ public class DebuggerCommands
 
 				// The order to add the children depends on which side
 				// we're adding to.
-				if (direction.equals("right") || direction.equals("bottom"))
+				if (direction.equals(MainWindow.kAttachRightValue) || direction.equals(MainWindow.kAttachBottomValue))
 				{
 					newParent.addChildElement(newChild1) ;
 					newParent.addChildElement(newChild2) ;

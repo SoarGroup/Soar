@@ -179,6 +179,20 @@ public abstract class AbstractView implements AgentFocusListener
 	
 	/************************************************************************
 	* 
+	* Given a context menu and a control, fill in the items you want to 
+	* see in the menu.  The simplest is to just call "fillWindowMenu".
+	* 
+	* This call is made after the user has clicked to bring up the menu
+	* so we can create a dymanic menu based on the current context.
+	* 
+	* You also have to call createContextMenu() to request a context menu
+	* be attached to a specific control.
+	* 
+	*************************************************************************/
+	protected abstract void fillInContextMenu(Menu contextMenu, Control control) ;
+	
+	/************************************************************************
+	* 
 	* Register and unregister for Soar events for this agent.
 	* (E.g. a trace window might register for the print event)
 	* 
@@ -244,13 +258,33 @@ public abstract class AbstractView implements AgentFocusListener
 	
 	public void fillWindowMenu(Menu menu)
 	{
-		addItem(menu, "Add window -- split right", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachRightValue) ;
-		addItem(menu, "Add window -- split left", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachLeftValue) ;
-		addItem(menu, "Add window -- split top", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachTopValue) ;
-		addItem(menu, "Add window -- split bottom", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachBottomValue) ;
+		addItem(menu, "Add window to right ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachRightValue) ;
+		addItem(menu, "Add window to left ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachLeftValue) ;
+		addItem(menu, "Add window to top ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachTopValue) ;
+		addItem(menu, "Add window to bottom ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachBottomValue) ;
 		new MenuItem(menu, SWT.SEPARATOR) ;
 		addItem(menu, "Remove window", "removeview " + m_Frame.getName() + " " + this.getName()) ;
 	}
+	
+	protected Menu createContextMenu(final Control control)
+	{
+		// Create a custom context menu for the text area
+		final Menu menu = new Menu (control.getShell(), SWT.POP_UP);
+		menu.addMenuListener(new MenuListener() {
+			public void menuShown(MenuEvent e)
+			{
+				// We'll build the menu dynamically based on the text the user selects etc.
+				fillInContextMenu(menu, control) ;
+			}
+			public void menuHidden(MenuEvent e)
+			{
+			}
+		
+		}) ;
+		control.setMenu (menu);
+		return menu ;
+	}
+	
 }
 
 

@@ -22,8 +22,6 @@ import org.eclipse.swt.internal.win32.OS;
 import org.eclipse.swt.internal.win32.TCHAR;
 import org.eclipse.swt.events.*;
 
-import com.sun.corba.se.internal.corba.EncapsInputStream;
-
 import sml.Agent;
 import sml.smlPrintEventId;
 import sml.smlRunEventId;
@@ -45,8 +43,6 @@ public abstract class BaseCommandView extends AbstractView
 	private Text m_Text ;
 	
 	private Combo m_CommandCombo ;
-
-	protected Menu m_ContextMenu ;
 	
 	private boolean		m_Inited = false ;
 		
@@ -92,8 +88,19 @@ public abstract class BaseCommandView extends AbstractView
 		return selection.getParsedObject() ;
 	}
 		
-	// This method can be overridden by derived classes
-	protected void fillInContextMenu(Menu contextMenu)
+	/************************************************************************
+	* 
+	* Given a context menu and a control, fill in the items you want to 
+	* see in the menu.  The simplest is to just call "fillWindowMenu".
+	* 
+	* This call is made after the user has clicked to bring up the menu
+	* so we can create a dymanic menu based on the current context.
+	* 
+	* You also have to call createContextMenu() to request a context menu
+	* be attached to a specific control.
+	* 
+	*************************************************************************/
+	protected void fillInContextMenu(Menu contextMenu, Control control)
 	{
 		// Get the current selected text
 		ParseSelectedText.SelectedObject selectionObject = getCurrentSelection() ;
@@ -213,21 +220,10 @@ public abstract class BaseCommandView extends AbstractView
 		// We want to know when the frame focuses on particular agents
 		m_Frame.addAgentFocusListener(this) ;
 		
-		// Create a custom context menu for the text area
-		final Menu menu = new Menu (m_Text.getShell(), SWT.POP_UP);
-		menu.addMenuListener(new MenuListener() {
-			public void menuShown(MenuEvent e)
-			{
-				// We'll build the menu dynamically based on the text the user selects etc.
-				fillInContextMenu(menu) ;
-			}
-			public void menuHidden(MenuEvent e)
-			{
-			}
-		
-		}) ;
-		m_ContextMenu = menu ;
-		m_Text.setMenu (menu);
+		// Create a context menu for m_Text.
+		// It will be filled in via a call to fillInContextMenu when the menu is popped up
+		// (this allows for dynamic content)
+		createContextMenu(m_Text) ;
 	}
 	
 	 /*******************************************************************************************
