@@ -46,7 +46,6 @@
 #include "IgSKI_Production.h"
 #include "IgSKI_ProductionManager.h"
 #include "IgSKI_Kernel.h"
-#include "IgSKI_AgentManager.h"
 #include "sml_KernelSML.h"
 
 using namespace sml ;
@@ -62,8 +61,6 @@ bool AgentListener::AddListener(egSKIEventId eventID, Connection* pConnection)
 			m_Agent->AddRunListener(eventID, this) ;
 		else if (IsProductionEvent(eventID))
 			m_Agent->GetProductionManager()->AddProductionListener(eventID, this) ;
-		else if (IsAgentEvent(eventID))
-			KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->AddAgentListener(eventID, this) ;
 		else if (IsPrintEvent(eventID))					// added by voigtjr
 			m_Agent->AddPrintListener(eventID, this); 
 	}
@@ -82,8 +79,6 @@ bool AgentListener::RemoveListener(egSKIEventId eventID, Connection* pConnection
 			m_Agent->RemoveRunListener(eventID, this) ;
 		else if (IsProductionEvent(eventID))
 			m_Agent->GetProductionManager()->RemoveProductionListener(eventID, this) ;
-		else if (IsAgentEvent(eventID))
-			KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->RemoveAgentListener(eventID, this) ;
 		else if (IsPrintEvent(eventID))					// added by voigtjr
 			m_Agent->RemovePrintListener(eventID, this); 
 	}
@@ -117,55 +112,6 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, eg
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, agentPtr->GetName()) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamPhase, phaseStr) ;
-
-#ifdef _DEBUG
-	// Generate a text form of the XML so we can look at it in the debugger.
-	char* pStr = pMsg->GenerateXMLString(true) ;
-	pMsg->DeleteString(pStr) ;
-#endif
-
-	// Send this message to all listeners
-	ConnectionListIter end = GetEnd(eventID) ;
-
-	AnalyzeXML response ;
-
-	while (connectionIter != end)
-	{
-		pConnection = *connectionIter ;
-
-		// It would be faster to just send a message here without waiting for a response
-		// but that could produce incorrect behavior if the client expects to act *during*
-		// the event that we're notifying them about (e.g. notification that we're in the input phase).
-		pConnection->SendMessageGetResponse(&response, pMsg) ;
-
-		connectionIter++ ;
-	}
-
-	// Clean up
-	delete pMsg ;
-}
-
-// Called when an "AgentEvent" occurs in the kernel
-void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr)
-{
-	ConnectionListIter connectionIter = GetBegin(eventID) ;
-
-	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.
-	if (connectionIter == GetEnd(eventID))
-		return ;
-
-	// We need the first connection for when we're building the message.  Perhaps this is a sign that
-	// we shouldn't have rolled these methods into Connection.
-	Connection* pConnection = *connectionIter ;
-
-	// Convert eventID to a string
-	char event[kMinBufferSize] ;
-	Int2String(eventID, event, sizeof(event)) ;
-
-	// Build the SML message we're doing to send.
-	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, agentPtr->GetName()) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 
 #ifdef _DEBUG
 	// Generate a text form of the XML so we can look at it in the debugger.

@@ -420,7 +420,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		// and then continue on to delete the agent after we've responded to the callback.
 		// Interestingly, we don't explicitly unregister this callback because the agent has already been destroyed so
 		// that's another test, that this callback is cleaned up correctly (and automatically).
-		int callback4 = pAgent->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_DESTROYED, &MyDeletionHandler, 0) ;
+		int callback4 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_DESTROYED, &MyDeletionHandler, 0) ;
 
 		// Explicitly destroy our agent as a test, before we delete the kernel itself.
 		// (Actually, if this is a remote connection we need to do this or the agent

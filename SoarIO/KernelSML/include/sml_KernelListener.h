@@ -34,7 +34,7 @@ namespace sml {
 
 class Connection ;
 
-class KernelListener : public gSKI::ISystemListener, public EventManager
+class KernelListener : public gSKI::ISystemListener, public gSKI::IAgentListener, public EventManager
 {
 protected:
 	bool IsSystemEvent(egSKIEventId id)
@@ -57,6 +57,21 @@ protected:
 		return false ;
 	}
 
+	bool IsAgentEvent(egSKIEventId id)
+	{
+		switch (id)
+		{
+			case gSKIEVENT_AFTER_AGENT_CREATED:
+			case gSKIEVENT_BEFORE_AGENT_DESTROYED:
+			case gSKIEVENT_BEFORE_AGENT_REINITIALIZED:
+			case gSKIEVENT_AFTER_AGENT_REINITIALIZED:
+				return true ;
+			default:
+				break;
+		}
+		return false ;
+	}
+
 public:
 	KernelListener()
 	{
@@ -75,6 +90,9 @@ public:
 
 	// Called when a "SystemEvent" occurs in the kernel
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IKernel* kernel) ;
+
+	// Called when an "AgentEvent" occurs in the kernel
+	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr) ;
 } ;
 
 }

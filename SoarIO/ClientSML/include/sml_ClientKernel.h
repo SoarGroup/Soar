@@ -51,6 +51,20 @@ struct SystemEventHandlerPlusData
 	}
 } ;
 
+struct AgentEventHandlerPlusData
+{
+	AgentEventHandler m_Handler ;
+	void*			  m_UserData ;
+	int				  m_CallbackID ;
+
+	AgentEventHandlerPlusData(AgentEventHandler handler, void* userData, int callbackID)
+	{
+		m_Handler = handler ;
+		m_UserData = userData ;
+		m_CallbackID = callbackID ;
+	}
+} ;
+
 class Kernel : public ClientErrors
 {
 	// Allow the agent to call to get the connection from the kernel.
@@ -67,6 +81,7 @@ protected:
 
 	// The mapping from event number to a list of handlers to call when that event fires
 	typedef sml::ListMap<smlSystemEventId, SystemEventHandlerPlusData>		SystemEventMap ;
+	typedef sml::ListMap<smlAgentEventId, AgentEventHandlerPlusData>		AgentEventMap ;
 
 	Connection*			m_Connection ;
 	ObjectMap<Agent*>	m_AgentMap ;
@@ -74,7 +89,9 @@ protected:
 	bool				m_CommandLineSucceeded ;
 	sock::SocketLib*	m_SocketLibrary ;
 
+	// Which handler functions to call when an event comes in
 	SystemEventMap		m_SystemEventMap ;
+	AgentEventMap		m_AgentEventMap ;
 
 	// This thread is used to check for incoming events when the client goes to sleep
 	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
@@ -83,6 +100,14 @@ protected:
 
 	// To create a kernel object, use one of the static methods, e.g. Kernel::CreateEmbeddedConnection().
 	Kernel(Connection* pConnection);
+
+	void InitEvents() ;
+
+	/*************************************************************
+	* @brief Creates a new Agent* object (not to be confused
+	*		 with actually creating a Soar agent -- see CreateAgent for that)
+	*************************************************************/
+	Agent* MakeAgent(char const* pAgentName) ;
 
 	/*************************************************************
 	* @brief Returns the connection information for this kernel
@@ -105,6 +130,7 @@ protected:
 	*************************************************************/
 	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 public:
 	/*************************************************************
@@ -147,6 +173,11 @@ public:
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
 	static Kernel* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort) ;
+
+	/*************************************************************
+	* @brief Returns the default port we use for remote connections.
+	*************************************************************/
+	static int GetDefaultPort() { return kDefaultSMLPort ; }
 
 	/*************************************************************
 	* @brief Turning this on means we'll start dumping output about messages
@@ -297,6 +328,33 @@ public:
 	* @brief Unregister for a particular event
 	*************************************************************/
 	void	UnregisterForSystemEvent(smlSystemEventId id, int callbackID) ;
+
+	/*************************************************************
+	* @brief Register for an "AgentEvent".
+	*		 Multiple handlers can be registered for the same event.
+	* @param smlEventId		The event we're interested in (see the list below for valid values)
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+	*
+	* This event is registered with the kernel because they relate to the creation and destruction of agents (amongst other things).
+	* If we associated it with the agent there'd be no way to register for "agent creation" events.
+	*
+	* Current set is:
+	* // Agent manager
+	* smlEVENT_AFTER_AGENT_CREATED,
+	* smlEVENT_BEFORE_AGENT_DESTROYED,
+	* smlEVENT_BEFORE_AGENT_REINITIALIZED,
+	* smlEVENT_AFTER_AGENT_REINITIALIZED,
+	*
+	* @returns A unique ID for this callback (used to unregister the callback later) 
+	*************************************************************/
+	int	RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack = true) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	*************************************************************/
+	void	UnregisterForAgentEvent(smlAgentEventId id, int callbackID) ;
 
 protected:
 	/*************************************************************

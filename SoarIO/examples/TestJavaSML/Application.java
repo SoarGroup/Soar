@@ -35,9 +35,19 @@ public class Application
 			Application me = (Application)data ;
 		}
 
-		public void agentEventHandler(int eventID, Object data, Agent agent)
+		// We pass back the agent's name because the Java Agent object may not yet
+		// exist for this agent yet.  The underlying C++ object *will* exist by the 
+		// time this method is called.  So instead we look up the Agent object
+		// from the kernel with GetAgent().
+		public void agentEventHandler(int eventID, Object data, String agentName)
 		{
 			System.out.println("Received agent event in Java") ;
+			
+			Application me = (Application)data ;
+			Agent agent = me.m_Kernel.GetAgent(agentName) ;
+			
+			if (agent == null)
+				throw new IllegalStateException("Error in agent event handler -- got event for agent that hasn't been created yet in ClientSML") ;
 		}
 
 		public void productionEventHandler(int eventID, Object data, Agent agent, String prodName, String instantiation)
@@ -72,7 +82,7 @@ public class Application
 		// we store errors in the kernel in this case.
 		if (m_Kernel.HadError())
 			throw new IllegalStateException("Error creating agent: " + m_Kernel.GetLastErrorDescription()) ;
-
+		
 		// Load some productions
 		boolean load = agent.LoadProductions("testsml.soar") ;
 
@@ -117,11 +127,11 @@ public class Application
 		// The integer we get back is only required when we unregister the handler.
 		********************************************************/
 		EventListener listener = new EventListener() ;
-		int jRunCallback   = pAgent.RegisterForRunEvent(pAgent, smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
-		int jAgentCallback = pAgent.RegisterForAgentEvent(pAgent, smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
+		int jRunCallback    = pAgent.RegisterForRunEvent(pAgent, smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
 		int jProdCallback   = pAgent.RegisterForProductionEvent(pAgent, smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
-		int jPrintCallback = pAgent.RegisterForPrintEvent(pAgent, smlPrintEventId.smlEVENT_PRINT, listener, "printEventHandler", this) ;		
+		int jPrintCallback  = pAgent.RegisterForPrintEvent(pAgent, smlPrintEventId.smlEVENT_PRINT, listener, "printEventHandler", this) ;		
 		int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlSystemEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
+		int jAgentCallback  = pKernel.RegisterForAgentEvent(pKernel, smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
 
 		// Trigger an agent event by doing init-soar
 		pAgent.InitSoar() ;
@@ -139,16 +149,19 @@ public class Application
 		String trace1 = pAgent.RunTilOutput(20) ;
 
 		System.out.println(trace1) ;
+
+		// Now stress things a little
+		String traceLong = pAgent.Run(500) ;
 		
 		System.out.println("Unregister callbacks") ;
 		
 		// Unregister our callbacks
 		// (This isn't required, I'm just testing that it works)
 		pAgent.UnregisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, jRunCallback) ;
-		pAgent.UnregisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
 		pAgent.UnregisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, jProdCallback) ;
 		pAgent.UnregisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, jPrintCallback) ;
 		pKernel.UnregisterForSystemEvent(smlSystemEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
+		pKernel.UnregisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
 		
 		String trace2 = pAgent.RunTilOutput(20) ;
 		System.out.println(trace2) ;

@@ -158,7 +158,7 @@ typedef enum {
 // Passed back the event ID, the agent and the phase together with whatever user data we registered with the client
 typedef void (*RunEventHandler)(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase);
 
-// Handler for Agent events.
+// Handler for Agent events (such as creation/destruction etc.).
 typedef void (*AgentEventHandler)(smlAgentEventId id, void* pUserData, Agent* pAgent) ;
 
 // Handler for Print events.

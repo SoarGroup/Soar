@@ -17,11 +17,11 @@
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
 
 // don't wrap the code for registering callbacks because we need to provide some custom code to make it work
-%ignore sml::Agent::RegisterForAgentEvent(smlAgentEventId, AgentEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::RegisterForProductionEvent(smlProductionEventId, ProductionEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::RegisterForRunEvent(smlRunEventId, RunEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::RegisterForPrintEvent(smlPrintEventId, PrintEventHandler, void*, bool addToBack = true);
 %ignore sml::Kernel::RegisterForSystemEvent(smlSystemEventId, SystemEventHandler, void*, bool addToBack = true);
+%ignore sml::Kernel::RegisterForAgentEvent(smlAgentEventId, AgentEventHandler, void*, bool addToBack = true);
 
 %{
 #include "sml_ElementXML.h"

@@ -71,9 +71,6 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	} else if (IsProductionEventID(id))
 	{
 		ReceivedProductionEvent((smlProductionEventId)id, pIncoming, pResponse) ;
-	} else if (IsAgentEventID(id))
-	{
-		ReceivedAgentEvent((smlAgentEventId)id, pIncoming, pResponse) ;
 	} else if (IsPrintEventID(id))
 	{
 		ReceivedPrintEvent((smlPrintEventId)id, pIncoming, pResponse) ;
@@ -109,36 +106,6 @@ void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML
 
 		// Call the handler
 		handler(id, pUserData, this, phase) ;
-	}
-}
-
-/*************************************************************
-* @brief This function is called when an event is received
-*		 from the Soar kernel.
-*
-* @param pIncoming	The event command
-* @param pResponse	The reply (no real need to fill anything in here currently)
-*************************************************************/
-void Agent::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
-{
-	unused(pResponse) ;
-	unused(pIncoming) ;
-
-	// Look up the handler(s) from the map
-	AgentEventMap::ValueList* pHandlers = m_AgentEventMap.getList(id) ;
-
-	if (!pHandlers)
-		return ;
-
-	// Go through the list of event handlers calling each in turn
-	for (AgentEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
-	{
-		AgentEventHandlerPlusData handlerPlus = *iter ;
-		AgentEventHandler handler = handlerPlus.m_Handler ;
-		void* pUserData = handlerPlus.m_UserData ;
-
-		// Call the handler
-		handler(id, pUserData, this) ;
 	}
 }
 
@@ -327,11 +294,6 @@ static bool TestProductionCallback(ProductionEventHandlerPlusData handler)
 	return (handler.m_CallbackID == s_CallbackID) ;
 }
 
-static bool TestAgentCallback(AgentEventHandlerPlusData handler)
-{
-	return (handler.m_CallbackID == s_CallbackID) ;
-}
-
 static bool TestPrintCallback(PrintEventHandlerPlusData handler)
 {
 	return (handler.m_CallbackID == s_CallbackID) ;
@@ -399,57 +361,6 @@ void Agent::UnregisterForProductionEvent(smlProductionEventId id, int callbackID
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_ProductionEventMap.getListSize(id) == 0)
-	{
-		UnregisterForEvent(id) ;
-	}
-}
-
-/*************************************************************
-* @brief Register for an "AgentEvent".
-*		 Multiple handlers can be registered for the same event.
-* @param smlEventId		The event we're interested in (see the list below for valid values)
-* @param handler		A function that will be called when the event happens
-* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
-*
-* Current set is:
-* // Agent manager
-* smlEVENT_AFTER_AGENT_CREATED,
-* smlEVENT_BEFORE_AGENT_DESTROYED,
-* smlEVENT_BEFORE_AGENT_REINITIALIZED,
-* smlEVENT_AFTER_AGENT_REINITIALIZED,
-*
-* @returns A unique ID for this callback (used to unregister the callback later) 
-*************************************************************/
-int Agent::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack)
-{
-	// If we have no handlers registered with the kernel, then we need
-	// to register for this event.  No need to do this multiple times.
-	if (m_AgentEventMap.getListSize(id) == 0)
-	{
-		RegisterForEvent(id) ;
-	}
-
-	// Record the handler
-	m_CallbackIDCounter++ ;
-	AgentEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
-	m_AgentEventMap.add(id, handlerPlus, addToBack) ;
-
-	// Return the ID.  We use this later to unregister the callback
-	return m_CallbackIDCounter ;
-}
-
-/*************************************************************
-* @brief Unregister for a particular event
-*************************************************************/
-void Agent::UnregisterForAgentEvent(smlAgentEventId id, int callbackID)
-{
-	// Remove the handler from our map
-	s_CallbackID = callbackID ;
-	m_AgentEventMap.removeAllByTest(&TestAgentCallback) ;
-
-	// If we just removed the last handler, then unregister from the kernel for this event
-	if (m_AgentEventMap.getListSize(id) == 0)
 	{
 		UnregisterForEvent(id) ;
 	}

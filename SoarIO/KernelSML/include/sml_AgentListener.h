@@ -21,12 +21,6 @@
 *     @li gSKIEVENT_BEFORE_RUNNING
 *     @li gSKIEVENT_AFTER_RUNNING
 *
-*      // Agent manager events
-*      gSKIEVENT_AFTER_AGENT_CREATED,
-*      gSKIEVENT_BEFORE_AGENT_DESTROYED,
-*      gSKIEVENT_BEFORE_AGENT_REINITIALIZED,
-*      gSKIEVENT_AFTER_AGENT_REINITIALIZED,
-*
 *      // Production Manager
 *      gSKIEVENT_AFTER_PRODUCTION_ADDED,
 *      gSKIEVENT_BEFORE_PRODUCTION_REMOVED,
@@ -53,7 +47,7 @@ namespace sml {
 class KernelSML ;
 class Connection ;
 
-class AgentListener : public gSKI::IRunListener, public gSKI::IAgentListener, public gSKI::IProductionListener, public EventManager, public gSKI::IPrintListener
+class AgentListener : public gSKI::IRunListener, public gSKI::IProductionListener, public EventManager, public gSKI::IPrintListener
 {
 protected:
 	KernelSML*		m_KernelSML ;
@@ -97,21 +91,6 @@ protected:
 		return false ;
 	}
 
-	bool IsAgentEvent(egSKIEventId id)
-	{
-		switch (id)
-		{
-			case gSKIEVENT_AFTER_AGENT_CREATED:
-			case gSKIEVENT_BEFORE_AGENT_DESTROYED:
-			case gSKIEVENT_BEFORE_AGENT_REINITIALIZED:
-			case gSKIEVENT_AFTER_AGENT_REINITIALIZED:
-				return true ;
-			default:
-				break;
-		}
-		return false ;
-	}
-
 	// Added by voigtjr
 	bool IsPrintEvent(egSKIEventId id)
 	{
@@ -147,9 +126,6 @@ public:
 
 	// Called when a "RunEvent" occurs in the kernel
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase) ;
-
-	// Called when an "AgentEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr) ;
 
 	// Called when a "ProductionEvent" occurs in the kernel
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) ;

@@ -66,6 +66,24 @@ Kernel::Kernel(Connection* pConnection)
 #endif
 }
 
+/*************************************************************
+* @brief Called when an init-soar event happens so we know
+*		 to refresh the input/output links.
+*************************************************************/
+static void InitSoarHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
+{
+	unused(pUserData) ;
+	unused(id) ;
+
+	pAgent->Refresh() ;
+}
+
+void Kernel::InitEvents()
+{
+	// Register for init-soar events
+	RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
+}
+
 Kernel::~Kernel(void)
 {
 	// When the agent map is deleted, it will delete its contents (the Agent objects)
@@ -222,6 +240,9 @@ void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	if (IsSystemEventID(id))
 	{
 		ReceivedSystemEvent((smlSystemEventId)id, pIncoming, pResponse) ;
+	} else if (IsAgentEventID(id))
+	{
+		ReceivedAgentEvent((smlAgentEventId)id, pIncoming, pResponse) ;
 	}
 }
 
@@ -253,6 +274,49 @@ void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, Ele
 
 		// Call the handler
 		handler(id, pUserData, this) ;
+	}
+}
+
+/*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	unused(pResponse) ;
+
+	// Get the name of the agent this event refers to.
+	char const* pAgentName = pIncoming->GetArgValue(sml_Names::kParamName) ;
+
+	// See if we already have an Agent* for this agent.
+	// We may not, because "agent created" events are included in the list that come here.
+	Agent* pAgent = GetAgent(pAgentName) ;
+
+	if (!pAgent)
+	{
+		// Create a new client side agent object
+		// We have to do this now because we'll be passing it back to the caller in a minute
+		pAgent = MakeAgent(pAgentName) ;
+	}
+
+	// Look up the handler(s) from the map
+	AgentEventMap::ValueList* pHandlers = m_AgentEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (AgentEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		AgentEventHandlerPlusData handlerPlus = *iter ;
+		AgentEventHandler handler = handlerPlus.m_Handler ;
+		void* pUserData = handlerPlus.m_UserData ;
+
+		// Call the handler
+		handler(id, pUserData, pAgent) ;
 	}
 }
 
@@ -319,7 +383,12 @@ Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool clientTh
 	pKernel->SetError(errorCode) ;
 
 	// Register for "calls" from the kernel.
-	pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
+	if (pConnection)
+	{
+		pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
+
+		pKernel->InitEvents() ;
+	}
 
 	return pKernel ;
 }
@@ -361,6 +430,9 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 
 	// Register for "calls" from the kernel.
 	pConnection->RegisterCallback(ReceivedCall, pKernel, sml_Names::kDocType_Call, true) ;
+
+	// Register for important events
+	pKernel->InitEvents() ;
 
 	// Get the current list of active agents
 	pKernel->UpdateAgentList() ;
@@ -407,10 +479,7 @@ void Kernel::UpdateAgentList()
 
 				if (!pAgent)
 				{
-					pAgent = new Agent(this, pAgentName) ;
-
-					// Record this in our list of agents
-					m_AgentMap.add(pAgent->GetAgentName(), pAgent) ;
+					pAgent = MakeAgent(pAgentName) ;
 				}
 
 				inUse.push_back(pAgent) ;
@@ -445,27 +514,6 @@ Agent* Kernel::GetAgentByIndex(int index)
 }
 
 /*************************************************************
-* @brief Called when an init-soar event happens so we know
-*		 to refresh the input/output links.
-*************************************************************/
-static void InitSoarHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
-{
-	unused(pUserData) ;
-	unused(id) ;
-
-	pAgent->Refresh() ;
-}
-
-// This handler should never get called.  Output "events" are handled
-// specially with an "output" message that we capture in the kernel.
-// Perhaps this is wrong and we should just handle it like other events?
-/*
-static void OutputHandler(smlWorkingMemoryEventId, void*, Agent*)
-{
-}
-*/
-
-/*************************************************************
 * @brief Creates a new Soar agent with the given name.
 *
 * @returns A pointer to the new agent structure.  This object
@@ -491,22 +539,29 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 	assert(GetConnection());
 	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CreateAgent, NULL, sml_Names::kParamName, pAgentName))
 	{
-		agent = new Agent(this, pAgentName) ;
-
-		// Record this in our list of agents
-		m_AgentMap.add(agent->GetAgentName(), agent) ;
-
-		// Register for init-soar events
-		agent->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
-
-		// Register to get output link events.  These won't come back as standard events.
-		// Instead we'll get "output" messages which are handled in a special manner.
-		agent->RegisterForEvent(smlEVENT_OUTPUT_PHASE_CALLBACK) ;
-//		agent->RegisterForAgentEvent(smlEVENT_OUTPUT_PHASE_CALLBACK, &OutputHandler, NULL) ;
+		agent = MakeAgent(pAgentName) ;
 	}
 
 	// Set our error state based on what happened during this call.
 	SetError(GetConnection()->GetLastError()) ;
+
+	return agent ;
+}
+
+/*************************************************************
+* @brief Creates a new Agent* object (not to be confused
+*		 with actually creating a Soar agent -- see CreateAgent for that)
+*************************************************************/
+Agent* Kernel::MakeAgent(char const* pAgentName)
+{
+	Agent* agent = new Agent(this, pAgentName) ;
+
+	// Record this in our list of agents
+	m_AgentMap.add(agent->GetAgentName(), agent) ;
+
+	// Register to get output link events.  These won't come back as standard events.
+	// Instead we'll get "output" messages which are handled in a special manner.
+	agent->RegisterForEvent(smlEVENT_OUTPUT_PHASE_CALLBACK) ;
 
 	return agent ;
 }
@@ -674,11 +729,57 @@ int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handl
 	return m_CallbackIDCounter ;
 }
 
+/*************************************************************
+* @brief Register for an "AgentEvent".
+*		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+*
+* Current set is:
+* // Agent manager
+* smlEVENT_AFTER_AGENT_CREATED,
+* smlEVENT_BEFORE_AGENT_DESTROYED,
+* smlEVENT_BEFORE_AGENT_REINITIALIZED,
+* smlEVENT_AFTER_AGENT_REINITIALIZED,
+*
+* @returns A unique ID for this callback (used to unregister the callback later) 
+*************************************************************/
+int Kernel::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack)
+{
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_AgentEventMap.getListSize(id) == 0)
+	{
+		AnalyzeXML response ;
+
+		char buffer[kMinBufferSize] ;
+		Int2String(id, buffer, sizeof(buffer)) ;
+
+		// Send the register command
+		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
+	}
+
+	// Record the handler
+	m_CallbackIDCounter++ ;
+	AgentEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	m_AgentEventMap.add(id, handlerPlus, addToBack) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
+}
+
 static int s_CallbackID = 0 ;
 
 // These simple tests are used to identify which handler were are interested in within
 // the maps at a given time.
 static bool TestSystemCallback(SystemEventHandlerPlusData handler)
+{
+	return (handler.m_CallbackID == s_CallbackID) ;
+}
+
+static bool TestAgentCallback(AgentEventHandlerPlusData handler)
 {
 	return (handler.m_CallbackID == s_CallbackID) ;
 }
@@ -700,7 +801,29 @@ void Kernel::UnregisterForSystemEvent(smlSystemEventId id, int callbackID)
 		char buffer[kMinBufferSize] ;
 		Int2String(id, buffer, sizeof(buffer)) ;
 
-		// Send the register command
+		// Send the unregister command
+		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
+	}
+}
+
+/*************************************************************
+* @brief Unregister for a particular event
+*************************************************************/
+void Kernel::UnregisterForAgentEvent(smlAgentEventId id, int callbackID)
+{
+	// Remove the handler from our map
+	s_CallbackID = callbackID ;
+	m_AgentEventMap.removeAllByTest(&TestAgentCallback) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_AgentEventMap.getListSize(id) == 0)
+	{
+		AnalyzeXML response ;
+
+		char buffer[kMinBufferSize] ;
+		Int2String(id, buffer, sizeof(buffer)) ;
+
+		// Send the unregister command
 		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer) ;
 	}
 }

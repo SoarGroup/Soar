@@ -61,18 +61,6 @@ struct ProductionEventHandlerPlusData : public EventHandlerPlusData
 	}
 } ;
 
-struct AgentEventHandlerPlusData : public EventHandlerPlusData
-{
-	AgentEventHandler m_Handler ;
-
-	AgentEventHandlerPlusData(AgentEventHandler handler, void* userData, int callbackID)
-	{
-		m_Handler = handler ;
-		m_UserData = userData ;
-		m_CallbackID = callbackID ;
-	}
-} ;
-
 struct PrintEventHandlerPlusData : public EventHandlerPlusData
 {
 	PrintEventHandler m_Handler ;
@@ -103,7 +91,6 @@ protected:
 	// The mapping from event number to a list of handlers to call when that event fires
 	typedef sml::ListMap<smlRunEventId, RunEventHandlerPlusData>				RunEventMap ;
 	typedef sml::ListMap<smlProductionEventId, ProductionEventHandlerPlusData>	ProductionEventMap ;
-	typedef sml::ListMap<smlAgentEventId, AgentEventHandlerPlusData>			AgentEventMap ;
 	typedef sml::ListMap<smlPrintEventId, PrintEventHandlerPlusData>			PrintEventMap ;
 
 protected:
@@ -119,7 +106,6 @@ protected:
 	// Map from event id to handler function(s)
 	RunEventMap			m_RunEventMap ;
 	ProductionEventMap	m_ProductionEventMap ;
-	AgentEventMap		m_AgentEventMap ;
 	PrintEventMap		m_PrintEventMap ;
 
 	// Used to generate unique IDs for callbacks
@@ -154,7 +140,6 @@ protected:
 	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 	/*************************************************************
@@ -356,30 +341,6 @@ public:
 	* @brief Unregister for a particular event
 	*************************************************************/
 	void	UnregisterForProductionEvent(smlProductionEventId id, int callbackID) ;
-
-	/*************************************************************
-	* @brief Register for an "AgentEvent".
-	*		 Multiple handlers can be registered for the same event.
-	* @param smlEventId		The event we're interested in (see the list below for valid values)
-	* @param handler		A function that will be called when the event happens
-	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-	* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
-	*
-	* Current set is:
-	* // Agent manager
-	* smlEVENT_AFTER_AGENT_CREATED,
-	* smlEVENT_BEFORE_AGENT_DESTROYED,
-	* smlEVENT_BEFORE_AGENT_REINITIALIZED,
-	* smlEVENT_AFTER_AGENT_REINITIALIZED,
-	*
-	* @returns A unique ID for this callback (used to unregister the callback later) 
-	*************************************************************/
-	int	RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack = true) ;
-
-	/*************************************************************
-	* @brief Unregister for a particular event
-	*************************************************************/
-	void	UnregisterForAgentEvent(smlAgentEventId id, int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for an "PrintEvent".

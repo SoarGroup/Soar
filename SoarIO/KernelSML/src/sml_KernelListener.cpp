@@ -28,6 +28,8 @@
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
 #include "IgSKI_Kernel.h"
+#include "IgSKI_AgentManager.h"
+#include "IgSKI_Agent.h"
 #include "sml_KernelSML.h"
 
 using namespace sml ;
@@ -41,6 +43,8 @@ bool KernelListener::AddListener(egSKIEventId eventID, Connection* pConnection)
 	{
 		if (IsSystemEvent(eventID))
 			KernelSML::GetKernelSML()->GetKernel()->AddSystemListener(eventID, this) ;
+		else if (IsAgentEvent(eventID))
+			KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->AddAgentListener(eventID, this) ;
 	}
 
 	return first ;
@@ -55,6 +59,8 @@ bool KernelListener::RemoveListener(egSKIEventId eventID, Connection* pConnectio
 	{
 		if (IsSystemEvent(eventID))
 			KernelSML::GetKernelSML()->GetKernel()->RemoveSystemListener(eventID, this) ;
+		else if (IsAgentEvent(eventID))
+			KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->RemoveAgentListener(eventID, this) ;
 	}
 
 	return last ;
@@ -110,3 +116,55 @@ void KernelListener::HandleEvent(egSKIEventId eventID, gSKI::IKernel* kernel)
 	// Clean up
 	delete pMsg ;
 }
+
+// Called when an "AgentEvent" occurs in the kernel
+void KernelListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr)
+{
+	ConnectionListIter connectionIter = GetBegin(eventID) ;
+
+	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.
+	if (connectionIter == GetEnd(eventID))
+		return ;
+
+	// We need the first connection for when we're building the message.  Perhaps this is a sign that
+	// we shouldn't have rolled these methods into Connection.
+	Connection* pConnection = *connectionIter ;
+
+	// Convert eventID to a string
+	char event[kMinBufferSize] ;
+	Int2String(eventID, event, sizeof(event)) ;
+
+	// Build the SML message we're doing to send.
+	// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
+	// level event, not an agent level one (because you need to register with the kernel to get "agent created").
+	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, agentPtr->GetName()) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
+
+#ifdef _DEBUG
+	// Generate a text form of the XML so we can look at it in the debugger.
+	char* pStr = pMsg->GenerateXMLString(true) ;
+	pMsg->DeleteString(pStr) ;
+#endif
+
+	// Send this message to all listeners
+	ConnectionListIter end = GetEnd(eventID) ;
+
+	AnalyzeXML response ;
+
+	while (connectionIter != end)
+	{
+		pConnection = *connectionIter ;
+
+		// It would be faster to just send a message here without waiting for a response
+		// but that could produce incorrect behavior if the client expects to act *during*
+		// the event that we're notifying them about (e.g. notification that we're in the input phase).
+		pConnection->SendMessageGetResponse(&response, pMsg) ;
+
+		connectionIter++ ;
+	}
+
+	// Clean up
+	delete pMsg ;
+}
+
