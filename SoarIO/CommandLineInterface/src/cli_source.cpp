@@ -2,6 +2,10 @@
 
 #include <fstream>
 
+#ifdef _MSC_VER
+#define snprintf _snprintf 
+#endif // _MSC_VER
+
 using namespace cli;
 
 // ____                     ____
