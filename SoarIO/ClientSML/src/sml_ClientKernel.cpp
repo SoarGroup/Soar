@@ -978,6 +978,8 @@ public:
 	TestRhsCallbackFull(int eventID, char const* functionName, RhsEventHandler handler, void* pUserData)
 	{ m_EventID = eventID ; m_FunctionName = functionName ; m_Handler = handler ; m_UserData = pUserData ; }
 
+	virtual ~TestRhsCallbackFull() { } ;
+
 	bool isEqual(RhsEventHandlerPlusData handlerPlus)
 	{
 		return handlerPlus.m_FunctionName.compare(m_FunctionName) == 0 &&
