@@ -8,10 +8,14 @@
 #include "sml_AnalyzeXML.h"
 #include "EmbeddedSMLInterface.h"
 
+#include <stdlib.h>
+#include <iostream>
+
+#ifdef _MSC_VER
 // Use Visual C++'s memory checking functionality
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
 #include <crtdbg.h>
+#endif // _MSC_VER
 
 using namespace sml ;
 
@@ -162,8 +166,8 @@ public:
 		ok = ok && Check(pChild2->GetAttribute("missing") == NULL, "missing3") ;
 
 		ElementXML test ;
-		ok = ok && Check(pTop->GetChild(&test, 3)  == NULL, "missing child +3") ;
-		ok = ok && Check(pTop->GetChild(&test, -3) == NULL, "missing child -3") ;
+		ok = ok && Check(pTop->GetChild(&test, 3)  == 0, "missing child +3") ;
+		ok = ok && Check(pTop->GetChild(&test, -3) == 0, "missing child -3") ;
 
 		// Create an XML string and print it out
 		char* pStr = pTop->GenerateXMLString(true) ;
@@ -703,6 +707,7 @@ int main(int argc, char* argv[])
 	else
 		printf("\n\n*** Error: At least one test failed.  Stopped testing at that point.\n") ;
 
+#ifdef _MSC_VER
 //	A deliberate memory leak which I can use to test the memory checking code is working.
 //	char* pTest = new char[10] ;
 
@@ -719,11 +724,12 @@ int main(int argc, char* argv[])
 	// If we allocate something in a DLL then this call won't see it because it works by overriding the
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
+#endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
-	printf("\n\nPress <return> to exit\n") ;
-	char line[100] ;
-	char* str = gets(line) ;
+	printf("\n\nPress a non-whitespace character and then <return> to exit\n") ;
+	string line;
+	std::cin >> line;
 
 	return 0;
 }

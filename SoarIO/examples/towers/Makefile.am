@@ -15,7 +15,6 @@ $(BASEDIR_PREFIX)ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la \
 $(BASEDIR_PREFIX)../TgDI/lib/libtgdi.so \
 $(BASEDIR_PREFIX)../gSKI/lib/libgSKI.so
-towers_LDFLAGS = -static
 INCLUDES = \
 -I$(BASEDIR_PREFIX)../TgDI/include \
 -I$(BASEDIR_PREFIX)CommandLineInterface/include \

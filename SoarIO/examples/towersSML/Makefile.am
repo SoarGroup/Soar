@@ -14,6 +14,5 @@ $(BASEDIR_PREFIX)CommandLineInterface/src/libCommandLineInterface.la \
 $(BASEDIR_PREFIX)ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la \
 $(BASEDIR_PREFIX)../gSKI/lib/libgSKI.so
-towersSML_LDFLAGS = -static
 INCLUDES = -I$(BASEDIR_PREFIX)ClientSML/include 
 AM_CXXFLAGS = $(CUSTOM_CXXFLAGS)
