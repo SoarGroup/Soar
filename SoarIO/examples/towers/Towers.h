@@ -139,7 +139,6 @@ public:
 
 			if(m_pDiskBeneath)
 			{
-			//	m_pHoldsDiskBeneath = pWMemory->ReplaceIntWme(oldDiskBeneath, m_pDiskBeneath->GetValue()->GetInt());
 				m_pHoldsDiskBeneath = pWMemory->ReplaceWmeObjectLink(oldDiskBeneath, aboveParentObject);
 			}
 			else
@@ -147,7 +146,6 @@ public:
 				m_pHoldsDiskBeneath = pWMemory->ReplaceStringWme(oldDiskBeneath, "none");
 			}
 
-			//in the else case, there should already be a string "none" for this wme, so there's no need to change it
 		}
 	}
 
@@ -258,7 +256,7 @@ public:
 			cout<<"--";
 		else
 		{
-			cout << m_disks[row];
+			cout << m_disks[row]->GetSize();
 		}
 	}
 
@@ -272,44 +270,6 @@ private:
 	IWme* m_pPegIdentifier;
 	IWme* m_pPegName;
 };
-
-//Function object for finding the top disk on a tower
-//This is a smaller object that CollectTowerDisks, which can be used to get the top disk as well
-/*class TopDiskOnTower
-{
-public:
-	TopDiskOnTower(int towerNumber) : m_targetTower(towerNumber), m_pTopDisk(0), m_smallestDiskSize(maxNumDisks+1) {}
-
-	//Iterate through all disks passed in, store those with matching tower number,
-	//then find one with smallest size - that must be the top disk
-	void operator()(Disk* disk)
-	{
-		if(disk->GetTowerNumber() == m_targetTower)
-		{
-cout << "\t\tLooking at disk of size: " << disk->GetSize() << " on tower " << m_targetTower << endl;
-			int size = disk->GetSize();
-
-			if(size < m_smallestDiskSize)
-			{
-cout << "\t\t\t and it became the smallest so far... " <<endl;
-				m_smallestDiskSize = size;
-				m_pTopDisk = disk;
-			}
-			//TODO @TODO //FIXME, release this ref?
-		}
-	}
-
-	Disk* GetTopDisk() const
-	{ 
-		cout << "When getting the top disk for tower " << m_targetTower << ", the top size was " << m_smallestDiskSize << endl;	
-		return m_pTopDisk;
-	}
-
-private:
-	int m_targetTower;
-	int m_smallestDiskSize;
-	Disk* m_pTopDisk;
-};*/
 
 
 
@@ -388,9 +348,8 @@ public:
 			//==============
 			if(towerNum == 0)
 			{
-				//pWMemory->AddWmeString(parentObject, "name", "A");
-	/*			Tower* tower = new Tower(pILink, "A");
-
+				Tower* tower = new Tower(pILink, "A");
+				assert(tower);
 				IWme* diskBeneathWME = 0;
 				//Create disks
 				for(int currentDiskSize = maxNumDisks; currentDiskSize > 0; --currentDiskSize)
@@ -398,18 +357,18 @@ public:
 					//The disk currently at the back of the container is the "top" disk.  New, smaller, disks 
 					//are inserted in front
 					IWMObject* towerIdObject = tower->GetTowerIdentifierObject();
+					assert(towerIdObject);
 					IWme* towerTopDiskWme = 0;
 
-			//		if(tower->GetSize() != 0)
-			//			IWme 
+					if(tower->GetSize() != 0)
+						towerTopDiskWme = tower->GetTopDisk()->GetIdentifierWME();
 
-//					Disk* disk = new Disk(pILink, currentDiskSize, , 
-	//										tower->GetTopDisk()->GetIdentifierWME());
+					Disk* disk = new Disk(pILink, currentDiskSize, towerIdObject, towerTopDiskWme);
 					assert(disk);
-					m_towers[towerNum]->AddDisk(disk);
+					tower->AddDisk(disk);
 				}
+
 				m_towers.push_back(tower);
-*/
 			}
 			//==============
 			//Middle tower
@@ -429,15 +388,15 @@ public:
 				m_towers.push_back(tower);
 			}
 		}
-
-cout << "World initialized.  This is what I look like:" << endl;
 Print();
+
 	}
 
 
 	~HanoiWorld()
 	{
-//fixme, remove parent objects instead of releaseing //TODO @TODO
+//fixme call a destroy function on the towers first 
+//TODO @TODO
 		m_towers.clear();
 	}
 
@@ -455,14 +414,18 @@ Print();
 
 	void Print()
 	{ 
-		for(int towerCounter = 0; towerCounter < m_towers.size(); ++towerCounter)
-		{
-			for(int row = maxNumDisks; row >=0; --row)
+
+		for(int row = maxNumDisks - 1; row >=0; --row)
+		{		
+			for(int towerCounter = 0; towerCounter < static_cast<int>(m_towers.size()); ++towerCounter)
 			{
+				cout << "(";
 				m_towers[towerCounter]->PrintDiskAtRow(row);
+				cout << ")    ";
 			}
+			cout << endl;
 		}
-			cout<<"======================" << endl;
+		cout<<"======================" << endl;
 	}
 
 	bool AtGoalState()
@@ -480,8 +443,6 @@ private:
 	IInputLink* m_pILink;
 	bool drawGraphics;
 };
-
-
 
 #endif //TOWERS_HANOI_H
 
