@@ -1,0 +1,27 @@
+
+# prob.6
+# An EBG problem for the safe-to-stack system,
+# in which FRAGILE(ENDTABLE)=NO and LIGHTER(BOX,ENDTABLE)
+# are both given.
+
+sp {top-ps*current-state
+    (state <g> ^problem-space <p> ^superstate nil)
+    (<p> ^name top-ps)
+    -->
+    (<g> ^real-state <s>)
+    (<s> ^object <b> + &, <e> + &
+         ^box <b> 
+         ^endtable <e>
+         ^weight <w> + & 
+         ^volume <v> + &
+         ^density <d> + &
+         ^color <c1> + &, <c2> + &
+         ^holds <h> + & )
+    (<b> ^color <c1> ^volume <v> ^density <d>)
+    (<e> ^color <c2> ^weight <w> ^fragile no)
+    (<w> ^value 5 ^is default)
+    (<v> ^value 1)
+    (<d> ^value 0.2)
+    (<c1> ^value red)
+    (<c2> ^value blue)
+    (<h> ^box <b> ^on <e>)}
