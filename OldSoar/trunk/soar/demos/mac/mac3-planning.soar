@@ -1,5 +1,5 @@
 ###
-### FILE          : mac.soar
+### FILE          : mac3-planning.soar
 ###
 
 ###
@@ -9,9 +9,10 @@
 ###
 
 ###
-### CREATED(3)    : Aug 22, 96
-### CREATED(2)    : May 10, 93
-### CREATED(1)    : May 21, 91
+### CREATED(4)    : May 27, 2004
+### CREATED(3)    : Aug 22, 1996
+### CREATED(2)    : May 10, 1993
+### CREATED(1)    : May 21, 1991
 ###
 
 ###
@@ -30,7 +31,7 @@
 
 multi-attributes holds 3
 
-#learn -off
+learn -off
 pushd ../default
 source simple.soar
 source selection.soar
@@ -39,36 +40,19 @@ popd
 ###
 ### MISSIONARIES-AND-CANNIBALS NAME
 ###
+sp {mac*propose*initialize
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name initialize-mac)
+}
 
-sp {top-state*elaborate*missionaries-and-cannibals
-	(state <s> ^superstate nil)
-	-->
-	(<s> ^name mac)}
-
-###
-### MISSIONARIES-AND-CANNIBALS PROBLEM SPACE
-###
-
-sp {mac*elaborate*problem-space
-	(state <s> ^name mac)
-	-->
-	(<s> ^problem-space <p>)
-	(<p> ^name missionaries-and-cannibals
-		  ^default-state-copy yes
-		  ^one-level-attributes boat
-		  ^two-level-attributes holds)}
-
-###
-### MISSIONARIES-AND-CANNIBALS PROBLEM SPACE:
-### INITIAL-STATE
-###
-
-sp {mac*elaborate*initial-state
-	(state <s> ^problem-space <p>
-				  ^superstate nil)
-	(<p> ^name missionaries-and-cannibals)
-	-->
-	(<s> ^holds <h1> <h2> <h3> <h4> 
+sp {mac*apply*initialize
+   (state <s> ^operator.name initialize-mac)
+-->
+   (<s> ^name mac
+        ^holds <h1> <h2> <h3> <h4> 
 		  ^boat <leftbank>
 		  ^desired <d>)
 	(<h1> ^type missionaries 
@@ -92,6 +76,19 @@ sp {mac*elaborate*initial-state
 	(<rightbank> ^name rightbank
 					 ^opposite-of <leftbank>)
 	}
+
+###
+### MISSIONARIES-AND-CANNIBALS PROBLEM SPACE
+###
+
+sp {mac*elaborate*problem-space
+	(state <s> ^name mac)
+	-->
+	(<s> ^problem-space <p>)
+	(<p> ^name missionaries-and-cannibals
+		  ^default-state-copy yes
+		  ^one-level-attributes boat
+		  ^two-level-attributes holds)}
 
 ###
 ### MISSIONARIES-AND-CANNIBALS PROBLEM SPACE OPERATORS: 
@@ -219,7 +216,8 @@ sp {mac*evaluate*state*failure*more*cannibals
 			^number > <n>
 			^side <loc>)
 	-->
-	(<s> ^failure <d>)}
+	(<s> ^failure <d>)
+      (write (crlf) |Failure - too many cannibals on side:| <loc>)}
 
 sp {mac*evaluate*state*failure*state-no-change
 	(state <s> ^desired <d>
@@ -229,7 +227,8 @@ sp {mac*evaluate*state*failure*state-no-change
 					^quiescence t
 					^impasse no-change)
 	-->
-	(<s> ^failure <d>)}
+	(<s> ^failure <d>)
+      (write (crlf) |Failure - no operators can apply.|)}
 
 sp {mac*evaluate*state*failure*detect-state-duplicate
 	(state <s> ^holds <a1> <a2>
@@ -251,7 +250,8 @@ sp {mac*evaluate*state*failure*detect-state-duplicate
 			^side <side>)
   -(state <sss> ^superstate <ss>)
 	-->
-	(<ss> ^failure <d>)}
+	(<ss> ^failure <d>)
+      (write (crlf) |Failure - Duplicate State.|)}
 
 ###
 ### EVALUATION: STATE SUCCESS/GOAL TEST
@@ -272,7 +272,8 @@ sp {mac*detect*state*success
 			^side <loc>)
 	(<loc> ^name rightbank)
 	-->
-	(<s> ^success <d>)}
+	(<s> ^success <d>)
+      (write (crlf) |Success.|)}
 ###
 ### MOVE-MAC-BOAT MONITOR OPERATOR AND STATE
 ###

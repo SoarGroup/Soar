@@ -2,6 +2,7 @@
 ### FILE               : blocks-opsub.soar
 ### AUTHOR(1)          : John.E.Laird [ Soar 8.2 ]
 ### CREATED(1)         : December 12, 1998
+### Last modified      : May 27, 2004
 ###
 ### Uses operator subgoaling to solve blocks-world
 
@@ -13,10 +14,28 @@ learn -off
 
 source ../default/simple.soar
 
-sp {top-ps*elaborate*initial-state
-   (state <s> ^name top-goal)
-   -->
-   (<s> ^world-state <s>
+###
+### Initialize the state
+###
+
+sp {blocks-world*propose*initialize-blocks-world
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name initialize-blocks-world)
+}
+
+## Modify the following rule to change the initial state or the goal.
+## It is necessary for the initial state and the desired state to share the same
+## identifiers for the objects (<blockA>, <blockB>, <blockC>, <table>) because of
+## the way the goal is detected (in elaborations/detect-success).
+
+sp {blocks-world*apply*initialize
+   (state <s> ^operator.name initialize-blocks-world)
+-->
+   (<s> ^name blocks-world
+        ^world-state <s>
         ^ontop <ontop1> <ontop2> <ontop3> 
         ^clear <blockA> <blockC> <table>
         ^object <blockA> <blockB> <blockC> <table>)
@@ -38,7 +57,7 @@ sp {top-ps*elaborate*initial-state
 ###
 
 sp {top-ps*propose*operator*build-tower
-   (state <s> ^name top-state
+   (state <s> ^name blocks-world
               ^object <blockA> <blockB> <blockC> <table>)
    (<blockA> ^name A ^type block)
    (<blockB> ^name B ^type block)
@@ -93,6 +112,14 @@ sp {blocks-world*copy*desired-tower
               ^superstate.operator.desired <d>)
    -->
    (<s> ^desired <d>)}
+
+sp {blocks-world*copy*world-state
+   :default
+   (state <s> ^impasse no-change 
+              ^attribute operator 
+              ^superstate.world-state <ws>)
+   -->
+   (<s> ^world-state <ws>)}
 
 ###
 ### BLOCKS-WORLD PROBLEM SPACE:
