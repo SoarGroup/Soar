@@ -45,6 +45,7 @@ public class RuleEditor extends CustomInternalFrame
     private JLabel lineNumberLabel = new JLabel("Line:");
     private JLabel modifiedLabel = new JLabel("");
 
+
     //For keeping track of find/replace operations
     private String findString = null;
     private String replaceString = null;
@@ -58,6 +59,15 @@ public class RuleEditor extends CustomInternalFrame
     private DefaultHighlighter.DefaultHighlightPainter hlPainter
     = new DefaultHighlighter.DefaultHighlightPainter(hlColor);
     private Object lastHighlight = null;
+
+    //Context Menu Items
+    JMenuItem cutSelectedTextItem = new JMenuItem("Cut");
+	JMenuItem copySelectedTextItem = new JMenuItem("Copy");
+	JMenuItem pasteTextItem = new JMenuItem("Paste");
+	JMenuItem deleteSelectedTextItem = new JMenuItem("Delete");
+    
+	JMenuItem openDataMapItem = new JMenuItem("Open Datamap");
+	JMenuItem showDataMapEntryItem = new JMenuItem("Find Corresponding Datamap Entry");
 
 
 
@@ -90,6 +100,8 @@ public class RuleEditor extends CustomInternalFrame
     private Action tabCompleteAction = new TabCompleteAction();
     private Action autoSoarCompleteAction = new AutoSoarCompleteAction();
 
+
+    
     // 3P
     // Menu item handlers for the STI operations in this window.
     private Action sendProductionToSoarAction = new SendProductionToSoarAction();
@@ -203,6 +215,7 @@ public class RuleEditor extends CustomInternalFrame
             });
 
         adjustKeymap();
+        setupContextMenu();
     }//RuleEditor ctor
 
     /**
@@ -251,6 +264,7 @@ public class RuleEditor extends CustomInternalFrame
                     }
             });
         adjustKeymap();
+        setupContextMenu();
 
     }//RuleEditor ctor
 
@@ -290,6 +304,53 @@ public class RuleEditor extends CustomInternalFrame
         keymap.removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_F,
                                                              Event.ALT_MASK));
         editorPane.setKeymap(keymap);
+
+    }
+
+    private void setupContextMenu()
+    {
+        JPopupMenu contextMenu = editorPane.getContextMenu();
+
+        cutSelectedTextItem.addActionListener(cutAction);
+        contextMenu.add(cutSelectedTextItem);
+        
+        copySelectedTextItem.addActionListener(copyAction);
+        contextMenu.add(copySelectedTextItem);
+        
+        pasteTextItem.addActionListener(pasteAction);
+        contextMenu.add(pasteTextItem);
+        
+        deleteSelectedTextItem.addActionListener(
+            new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    editorPane.replaceSelection("");
+                }
+            });
+        contextMenu.add(deleteSelectedTextItem);
+        
+        contextMenu.addSeparator();
+        
+        contextMenu.add(showDataMapEntryItem);
+
+        openDataMapItem.addActionListener(
+            new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    MainFrame mf = MainFrame.getMainFrame();
+                    SoarWorkingMemoryModel dataMap = mf.getOperatorWindow().getDatamap();
+                    OperatorNode node = (OperatorNode)associatedNode.getParent();
+
+                    while(!node.hasDataMap())
+                    {
+                        node = (OperatorNode)node.getParent();
+                    }
+                    node.openDataMap(dataMap, mf);
+                }
+            });
+        contextMenu.add(openDataMapItem);
 
     }
 
@@ -1304,6 +1365,8 @@ public class RuleEditor extends CustomInternalFrame
             }
         }
     }
+
+
 
     ////////////////////////////////////////////////////////
     // ACTIONS

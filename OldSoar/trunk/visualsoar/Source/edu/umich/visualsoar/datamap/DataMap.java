@@ -117,6 +117,10 @@ public class DataMap extends CustomInternalFrame
 		setJMenuBar(menuBar);
 	}
 
+    public int getId()
+    {
+        return id;
+    }
 
     public Vector searchTestDataMap(SoarIdentifierVertex in_siv, String dataMapName) 
     {

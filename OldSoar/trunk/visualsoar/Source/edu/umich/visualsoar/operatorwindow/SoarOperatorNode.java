@@ -257,6 +257,15 @@ class SoarOperatorNode extends FileNode
         return dataMapId;
     }
 
+    /**
+   * @return whether an openDataMap() call on this node will work
+   */
+	public boolean hasDataMap()
+    {
+		return isHighLevel;
+	}
+
+
     
     /**
      * This is a helper function that renames the folder for which this node is

@@ -47,6 +47,15 @@ public class OperatorRootNode extends FolderNode implements java.io.Serializable
 ///////////////////////////////////////////////////////////////////
 // Methods
 ///////////////////////////////////////////////////////////////////
+
+  /**
+   * @return whether an openDataMap() call on this node will work
+   */
+	public boolean hasDataMap()
+    {
+		return true;
+	}
+    
 	/**
 	 * Given a Writer this writes out a description of the root node
 	 * that can be read back in later

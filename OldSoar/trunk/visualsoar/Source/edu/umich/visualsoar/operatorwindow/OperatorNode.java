@@ -32,11 +32,11 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 	static protected JMenuItem addSuboperatorItem = new JMenuItem("Add a Suboperator...");
 	static protected JMenuItem addFileItem = new JMenuItem("Add a File...");
 
-  static protected JMenu impasseSubMenu = new JMenu("Add an Impasse...");
-  static protected JMenuItem tieImpasseItem = new JMenuItem("Operator Tie Impasse");
-  static protected JMenuItem conflictImpasseItem = new JMenuItem("Operator Conflict Impasse");
-  static protected JMenuItem constraintImpasseItem = new JMenuItem("Operator Constraint-Failure Impasse");
-  static protected JMenuItem stateNoChangeImpasseItem = new JMenuItem("State No-Change Impasse");
+    static protected JMenu impasseSubMenu = new JMenu("Add an Impasse...");
+    static protected JMenuItem tieImpasseItem = new JMenuItem("Operator Tie Impasse");
+    static protected JMenuItem conflictImpasseItem = new JMenuItem("Operator Conflict Impasse");
+    static protected JMenuItem constraintImpasseItem = new JMenuItem("Operator Constraint-Failure Impasse");
+    static protected JMenuItem stateNoChangeImpasseItem = new JMenuItem("State No-Change Impasse");
 
 	static protected JMenuItem openRulesItem = new JMenuItem("Open Rules");
 	static protected JMenuItem openDataMapItem = new JMenuItem("Open DataMap");
@@ -220,6 +220,15 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 	public final int getId() {
 		return id;
 	}
+
+  /**
+   * @return whether an openDataMap() call on this node will work
+   */
+	public boolean hasDataMap()
+    {
+		return false;
+	}
+
 
     /**
      * Given a parse exception discovered in this node, this function converts

@@ -19,6 +19,7 @@ import edu.umich.visualsoar.misc.Preferences;
 public class EditorPane extends javax.swing.JEditorPane
 
 {
+    private JPopupMenu contextMenu;
 
     /**
      * @serial a reference to the DropTargetListener for Drag and Drop operations, may be deleted in future
@@ -29,6 +30,7 @@ public class EditorPane extends javax.swing.JEditorPane
      * @serial a reference to the DropTarget for Drag and Drop operations, may be deleted in future
      */
     private DropTarget dropTarget = new DropTarget(this,DnDConstants.ACTION_COPY,dtListener,true);
+
 
     class EPDropTargetListener implements DropTargetListener
     {
@@ -120,8 +122,37 @@ public class EditorPane extends javax.swing.JEditorPane
         map.addActionForKeyStroke(rightArrow, justifyAction);
 
         setKeymap(map);
+
+        //Setup the context menu
+        contextMenu = new JPopupMenu();
+        MouseListener popupListener = new PopupListener();
+        addMouseListener(popupListener);
+
+        
+    }//EditorPane ctor
+
+    public JPopupMenu getContextMenu()
+    {
+        return contextMenu;
     }
 
+    /**
+     * Watches for right clicks in order to pop up the context menu.
+     * 
+     */
+    class PopupListener extends MouseAdapter
+    {
+        public void mouseReleased(MouseEvent e)
+        {
+            if (e.getButton() == e.BUTTON3)
+            {
+                contextMenu.show(e.getComponent(), e.getX(), e.getY());
+            }
+        }
+    }//class PopupListener
+
+
+    
     public boolean getScrollableTracksViewportWidth()
     {
         if (getParent() instanceof JViewport)

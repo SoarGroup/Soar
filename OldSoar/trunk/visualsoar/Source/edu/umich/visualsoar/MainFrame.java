@@ -790,10 +790,27 @@ public class MainFrame extends JFrame
 	 */
 	public void addDataMap(DataMap dm) 
     {
-		DesktopPane.add(dm);
-		dm.moveToFront();
-		DesktopPane.revalidate();
-        setJIFShape(dm);
+        if (!DesktopPane.hasDataMap(dm))
+        {
+            DesktopPane.add(dm);
+            DesktopPane.revalidate();
+            setJIFShape(dm);
+        }
+        else
+        {
+            dm = DesktopPane.dmGetDataMap(dm.getId());
+        }
+
+        try
+        {
+            dm.setSelected(true);
+            dm.moveToFront();
+        }
+		catch (java.beans.PropertyVetoException pve)
+        {
+            //no sweat.
+        }
+
 	}
 
 	/**

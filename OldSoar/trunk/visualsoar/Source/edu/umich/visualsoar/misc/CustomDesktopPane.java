@@ -319,27 +319,52 @@ public class CustomDesktopPane extends JDesktopPane {
 		}
 	} // verticalTile
 
-  /**
-   *  Checks to see if a datamap is already open within the desktop
-   *  @param id the id that denotes the correct datamap.
-   */
-  public DataMap dmGetDataMap(int id) {
-      return (DataMap) dataMaps.get( new Integer(id) );
-  }
+    /**
+     *  Checks to see if a datamap is already open within the desktop
+     *  @param id the id that denotes the correct datamap.
+     */
+    public DataMap dmGetDataMap(int id) {
+        return (DataMap) dataMaps.get( new Integer(id) );
+    }
 
+    /**
+     *  Checks to see if a datamap is already open within the desktop
+     *  @param dm the datamap to look for
+     */
+    public boolean hasDataMap(DataMap dm)
+    {
+        //Make sure this datamap isn't already there
+        JInternalFrame[] jif = getAllFrames();
+        for(int i = 0; i < jif.length; ++i) 
+        {
+            if ( (jif[i] instanceof DataMap)
+                 && (((DataMap)jif[i]).getId() == dm.getId()) )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
   /**
    *  Adds a dataMap to the hashtable of datamaps that are open within the desktop
    *  @param id the id that denotes the correct datamap
    *  @param dm the datamap that is being stored in the hashtable
    */
-  public void dmAddDataMap(int id, DataMap value) {
-    try {
-      dataMaps.put(new Integer(id), value);
+    public void dmAddDataMap(int id, DataMap value)
+    {
+        if (hasDataMap(value)) return;
+        
+        //Try to add the new datamap
+        try
+        {
+            dataMaps.put(new Integer(id), value);
+        }
+        catch (NullPointerException npe) {
+            System.err.println("error-key or value was null");
+        }
     }
-    catch (NullPointerException npe) {
-      System.err.println("error-key or value was null");
-    }
-  }
 
   /**
    *  removes a datamap from the hashtable that holds all open datamaps within the desktop
