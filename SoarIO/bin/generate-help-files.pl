@@ -32,4 +32,8 @@ for (my $i = 0; $i < $#links; $i++) {
   unlink "help/@names[$i].wiki.html" or die "Could not remove help/@names[$i].wiki.html: $!";
   
   `elinks -dump -no-numbering -no-references help/@names[$i].html > help/@names[$i]`;
+
+  chdir "help" or die "Could not change to help directory: $!";
+  `html2latex --pdf @names[$i].html`;
+  chdir ".." or die "Could not change back to bin directory: $!";
 }
