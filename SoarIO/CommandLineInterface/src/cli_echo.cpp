@@ -29,7 +29,7 @@ bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 	message = message.substr(0, message.length() - 1);
 
 	if (m_RawOutput) {
-		AppendToResult(message);
+		m_ResultStream << message;
 	} else {
 		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, message.c_str());
 	}

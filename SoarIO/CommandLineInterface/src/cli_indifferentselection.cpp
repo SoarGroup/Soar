@@ -67,7 +67,7 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 		switch (pAgent->GetIndifferentSelection()) {
 			case gSKI_USER_SELECT_FIRST:
 				if (m_RawOutput) {
-					AppendToResult("first");
+					m_ResultStream << "first";
 				} else {
 					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_FIRST, buf, kMinBufferSize));
 				}
@@ -75,7 +75,7 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 
 			case gSKI_USER_SELECT_LAST:
 				if (m_RawOutput) {
-					AppendToResult("last");
+					m_ResultStream << "last";
 				} else {
 					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_LAST, buf, kMinBufferSize));
 				}
@@ -83,7 +83,7 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 
 			case gSKI_USER_SELECT_ASK:
 				if (m_RawOutput) {
-					AppendToResult("ask");
+					m_ResultStream << "ask";
 				} else {
 					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_ASK, buf, kMinBufferSize));
 				}
@@ -91,7 +91,7 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned
 
 			case gSKI_USER_SELECT_RANDOM:
 				if (m_RawOutput) {
-					AppendToResult("random");
+					m_ResultStream << "random";
 				} else {
 					AppendArgTag(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_RANDOM, buf, kMinBufferSize));
 				}

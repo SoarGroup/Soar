@@ -67,7 +67,7 @@ bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, bool setti
 		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
 
 		if (m_RawOutput) {
-			AppendToResult(pSysparams[TIMERS_ENABLED] ? "Timers are enabled." : "Timers are disabled.");
+			m_ResultStream << pSysparams[TIMERS_ENABLED] ? "Timers are enabled." : "Timers are disabled.";
 		} else {
 			// adds <arg name="timers">true</arg> (or false) if the timers are
 			// enabled (or disabled)

@@ -114,14 +114,12 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int opt
 		ExciseInternal(pProdIter, exciseCount);
 	}
 
-	char buf[kMinBufferSize];
 	if (m_RawOutput) {
-		AppendToResult("\n");	// the init-soar causes an AgentReinitialized. message
 		if (!exciseCount) return SetError(CLIError::kProductionNotFound);// TODO: Should this not be an error?
-		AppendToResult(Int2String(exciseCount, buf, kMinBufferSize));
-		AppendToResult(" productions excised.");
+		m_ResultStream << "\n" << exciseCount << " productions excised.";
 	} else {
 		// Add the count tag to the front
+		char buf[kMinBufferSize];
 		PrependArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(exciseCount, buf, kMinBufferSize));
 	}
 

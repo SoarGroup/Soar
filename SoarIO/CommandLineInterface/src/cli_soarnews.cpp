@@ -22,7 +22,7 @@ bool CommandLineInterface::DoSoarNews() {
 	// TODO: read a file and put it here
 
 	if (m_RawOutput) {
-		AppendToResult("News!");
+		m_ResultStream << "News!";
 	} else {
 		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, "News!");
 	}

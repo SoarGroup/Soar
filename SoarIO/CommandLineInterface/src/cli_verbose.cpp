@@ -62,8 +62,7 @@ bool CommandLineInterface::DoVerbose(gSKI::IAgent* pAgent, bool query, bool sett
 
 	if (query) {
 		if (m_RawOutput) {
-			AppendToResult("Verbose is ");
-			AppendToResult(pKernelHack->GetVerbosity(pAgent) ? "on." : "off.");
+			m_ResultStream << "Verbose is " << pKernelHack->GetVerbosity(pAgent) ? "on." : "off.";
 		} else {
 			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetVerbosity(pAgent) ? sml_Names::kTrue : sml_Names::kFalse);
 		}

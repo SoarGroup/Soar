@@ -56,7 +56,7 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 		gSKI::tIMultiAttributeIterator* pIt = pAgent->GetMultiAttributes();
 		if (!pIt->GetNumElements()) return SetError(CLIError::kMultiAttributeNotFound);
 
-		if (m_RawOutput) AppendToResult("Value\tSymbol");
+		if (m_RawOutput) m_ResultStream << "Value\tSymbol";
 
 		gSKI::IMultiAttribute* pMA;
 
@@ -64,10 +64,7 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, std::string* 
 			pMA = pIt->GetVal();
 
 			if (m_RawOutput) {
-				AppendToResult("\n");
-				AppendToResult(Int2String(pMA->GetMatchingPriority(), buf, kMinBufferSize));
-				AppendToResult("\t");
-				AppendToResult(pMA->GetAttributeName());
+				m_ResultStream << "\n" << pMA->GetMatchingPriority() << "\t" << pMA->GetAttributeName();
 			} else {
 				// Value
 				AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(count, buf, sizeof(buf)));

@@ -41,7 +41,7 @@ bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& product
 	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) return SetError(CLIError::kgSKIError);
 
 	if (m_RawOutput) {
-		AppendToResult('*');
+		m_ResultStream << '*';
 	}
 	return true;
 }

@@ -27,7 +27,7 @@ bool CommandLineInterface::DoPWD() {
 
 	if (directory.size()) {
 		if (m_RawOutput) {
-			AppendToResult(directory);
+			m_ResultStream << directory;
 		} else {
 			AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, directory.c_str());
 		}

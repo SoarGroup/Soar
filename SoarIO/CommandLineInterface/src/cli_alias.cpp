@@ -73,7 +73,7 @@ bool CommandLineInterface::DoAlias(bool disable, const std::string& command, con
 		if (!command.size()) {
 			if (m_RawOutput) {
 				// list aliases
-				AppendToResult(m_Aliases.List());
+				m_ResultStream << m_Aliases.List();
 				return true;
 			} else {
 				AliasMap::const_iterator citer = m_Aliases.GetAliasMapBegin();

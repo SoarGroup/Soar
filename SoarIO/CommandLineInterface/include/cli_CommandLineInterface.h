@@ -25,6 +25,7 @@
 #endif
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 // Local includes
 #include "cli_CommandData.h"
@@ -693,7 +694,7 @@ protected:
 			if (!m_pCLI) return;
 
 			// Simply append to message result
-			m_pCLI->AppendToResult(msg);
+			CommandLineInterface::m_ResultStream << msg;
 		}
 	};
 
@@ -710,32 +711,7 @@ protected:
 		}
 	};
 
-	friend class PrintHandler;			// Allows calling of AppendToResult and log writing
-
-	/*************************************************************
-	* @brief Currently used as an output hack, the print handler calls 
-	*		 this to add output to the result that gets sent back upon
-	*		 completion of a command.
-	*************************************************************/
-	inline void CommandLineInterface::AppendToResult(const char* pMessage) {
-		// Simply add to result
-		m_Result += pMessage;
-	}
-
-	inline void CommandLineInterface::AppendToResult(const std::string& message) {
-		// Simply add to result
-		m_Result += message;
-	}
-
-	inline void CommandLineInterface::AppendToResult(const bool boolean) {
-		// Simply add to result
-		m_Result += boolean;
-	}
-
-	inline void CommandLineInterface::AppendToResult(const char character) {
-		// Simply add to result
-		m_Result += character;
-	}
+	friend class PrintHandler;			// Allows result append and log writing
 
 	/*************************************************************
 	* @brief Does the bulk of command parsing and chooses what function
@@ -831,7 +807,9 @@ protected:
 
 	bool SetError(cli::ErrorCode code);				// always returns false
 	bool SetErrorDetail(const std::string detail);	// always returns false
-  	 
+
+	static std::ostringstream m_ResultStream;	// Raw output from the command
+
 	Aliases				m_Aliases;				// Alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
 
@@ -852,7 +830,7 @@ protected:
 	int					m_SourceDepth;			// Depth of source command calls.
 	int					m_SourceDirDepth;		// Depth of directory stack since source command, used to return to the dir that source was issued in.
 
-	std::string			m_Result;				// String output from the command
+
 	cli::ErrorCode		m_LastError;			// Last error code (see cli_CLIError.h)
 	std::string			m_LastErrorDetail;		// Additional detail concerning the last error
 	gSKI::Error*		m_pgSKIError;			// gSKI error output from calls made to process the command

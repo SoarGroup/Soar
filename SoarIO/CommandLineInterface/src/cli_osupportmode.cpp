@@ -49,12 +49,11 @@ bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 				return SetError(CLIError::kInvalidOSupportMode);
 		}
 
-		char buf[kMinBufferSize];
-		Int2String(mode, buf, kMinBufferSize);
 		if (m_RawOutput) {
-			AppendToResult(buf);
+			m_ResultStream << mode;
 		} else {
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, buf);
+			char buf[kMinBufferSize];
+			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(mode, buf, kMinBufferSize));
 		}
 	} else {
 

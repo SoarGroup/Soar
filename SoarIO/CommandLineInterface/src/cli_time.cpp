@@ -76,24 +76,13 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
     // of the program to get maximum portability.
 	double procElapsed = (procFinish - procStart) / (double)CLOCKS_PER_SEC;
 
-
 	// Print elapsed time and return
-	char realBuf[kMinBufferSize];
-	Double2String(realElapsed, realBuf, kMinBufferSize);
-
-	char procBuf[kMinBufferSize];
-	Double2String(procElapsed, procBuf, kMinBufferSize);
-
+	char buf[kMinBufferSize];
 	if (m_RawOutput) {
-		AppendToResult("\n(");
-		AppendToResult(procBuf);
-		AppendToResult("s) proc");
-		AppendToResult("\n(");
-		AppendToResult(realBuf);
-		AppendToResult("s) real");
+		m_ResultStream << "\n(" << procElapsed << "s) proc" << "\n(" << realElapsed << "s) real";
 	} else {
-		AppendArgTag(sml_Names::kParamSeconds, sml_Names::kTypeDouble, procBuf);
-		AppendArgTag(sml_Names::kParamSeconds, sml_Names::kTypeDouble, realBuf);
+		AppendArgTag(sml_Names::kParamSeconds, sml_Names::kTypeDouble, Double2String(realElapsed, buf, kMinBufferSize));
+		AppendArgTag(sml_Names::kParamSeconds, sml_Names::kTypeDouble, Double2String(procElapsed, buf, kMinBufferSize));
 	}
 	return ret;
 }

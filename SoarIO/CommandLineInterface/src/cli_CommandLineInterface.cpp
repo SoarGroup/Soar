@@ -36,6 +36,8 @@
 using namespace cli;
 using namespace sml;
 
+std::ostringstream CommandLineInterface::m_ResultStream;	
+
 EXPORT CommandLineInterface::CommandLineInterface() {
 
 	// Create getopt object
@@ -130,9 +132,10 @@ void CommandLineInterface::BuildCommandMap() {
 EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, ElementXML* pResponse, bool rawOutput, gSKI::Error* pError) {
 
 	// Clear the result
-	m_Result.clear();
+	m_ResultStream.str("");
 	m_ResponseTags.clear();
-	SetError(CLIError::kNoError);
+	m_LastError = CLIError::kNoError;
+	m_LastErrorDetail.clear();
 
 	// Fail if quit has been called
 	if (m_QuitCalled) return false;
@@ -153,7 +156,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	bool ret = DoCommandInternal(pAgent, pCommandLine);
 
 	// Log output
-	if (m_pLogFile) (*m_pLogFile) << m_Result << endl;
+	if (m_pLogFile) (*m_pLogFile) << m_ResultStream.str() << endl;
 
 	// Handle source error output
 	if (m_SourceError) {
@@ -165,7 +168,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	if (ret) {
 		// The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
-			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.c_str());
+			pConnection->AddSimpleResultToSMLResponse(pResponse, m_ResultStream.str().c_str());
 
 		} else {
 			// If there are tags in the response list, add them and return
@@ -183,8 +186,8 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 
 			} else {
 				// Otherwise, return result as simple result if there is one
-				if (m_Result.size()) {
-					pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.c_str());
+				if (m_ResultStream.str().size()) {
+					pConnection->AddSimpleResultToSMLResponse(pResponse, m_ResultStream.str().c_str());
 				} else {
 					// Or, simply return true
 					pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
@@ -198,9 +201,9 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 			errorDescription += "\nError detail: ";
 			errorDescription += m_LastErrorDetail;
 		}
-		if (m_Result.size()) {
+		if (m_ResultStream.str().size()) {
 			errorDescription += "\nResult before error happened:\n";
-			errorDescription += m_Result;
+			errorDescription += m_ResultStream.str();
 		}
 		if (m_pgSKIError && (m_pgSKIError->Id != gSKI::gSKIERR_NONE)) {
 			errorDescription += "\ngSKI Error code: ";
@@ -258,7 +261,7 @@ EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, co
 EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError) {
 	// This function is for processing a command without the SML layer
 	// Clear the result
-	m_Result.clear();
+	m_ResultStream.str("");
 	m_LastError = CLIError::kNoError;
 	m_LastErrorDetail.clear();
 
@@ -272,7 +275,7 @@ EXPORT bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pC
 	m_SourceError = false;
 
 	if (ret) {
-		pResponse = m_Result.c_str();
+		pResponse = m_ResultStream.str().c_str();
 	} else {
 		pResponse = CLIError::GetErrorDescription(m_LastError);
 	}
@@ -300,7 +303,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 
 	// Check for help flags
 	if (CheckForHelp(argv)) {
-		AppendToResult("Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki");
+		m_ResultStream << "Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki";
 		return SetError(CLIError::kNoUsageFile);
 	}
 

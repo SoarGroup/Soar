@@ -33,8 +33,8 @@ bool CommandLineInterface::DoInternalSymbols(gSKI::IAgent* pAgent) {
 	RemoveListenerAndEnableCallbacks(pAgent);
 
 	if (!m_RawOutput) {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
-		m_Result.clear();
+		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_ResultStream.str().c_str());
+		m_ResultStream.str("");
 	}
 	return true;
 }

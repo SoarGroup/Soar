@@ -26,7 +26,7 @@ bool CommandLineInterface::DoDirs() {
 	GetCurrentWorkingDirectory(cwd);
 
 	if (m_RawOutput) {
-		AppendToResult(cwd);
+		m_ResultStream << cwd;
 	} else {
 		AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, cwd.c_str());
 	}
@@ -34,8 +34,7 @@ bool CommandLineInterface::DoDirs() {
 	while (m_DirectoryStack.size()) {
 
 		if (m_RawOutput) {
-			AppendToResult(' ');
-			AppendToResult(m_DirectoryStack.top());
+			m_ResultStream << ' ' << m_DirectoryStack.top();
 		} else {
 			AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, m_DirectoryStack.top().c_str());
 		}

@@ -85,12 +85,12 @@ bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int opti
 
 		if (m_RawOutput) {
 			if (pAgent->IsLearningOn()) {
-				AppendToResult("Learning is enabled.");
-				if (pSysparams[LEARNING_ONLY_SYSPARAM]) AppendToResult(" (only)");
-				if (pSysparams[LEARNING_EXCEPT_SYSPARAM]) AppendToResult(" (except)");
-				if (pSysparams[LEARNING_ALL_GOALS_SYSPARAM]) AppendToResult(" (all-levels)");
+				m_ResultStream << "Learning is enabled.";
+				if (pSysparams[LEARNING_ONLY_SYSPARAM]) m_ResultStream << " (only)";
+				if (pSysparams[LEARNING_EXCEPT_SYSPARAM]) m_ResultStream << " (except)";
+				if (pSysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_ResultStream << " (all-levels)";
 			} else {
-				AppendToResult("Learning is disabled.");
+				m_ResultStream << "Learning is disabled.";
 			}
 		} else {
 			AppendArgTag(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, pAgent->IsLearningOn() ? sml_Names::kTrue : sml_Names::kFalse);
@@ -102,12 +102,14 @@ bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int opti
 		if (options & OPTION_LEARN_LIST) {
 			std::string output;
 			if (m_RawOutput) {
-				AppendToResult("\nforce-learn states (when learn 'only'):");
+				m_ResultStream << "\nforce-learn states (when learn 'only'):";
 				pKernelHack->GetForceLearnStates(pAgent, output);
-				if (output.size()) AppendToResult('\n' + output);
-				AppendToResult("\ndont-learn states (when learn 'except'):");
+				if (output.size()) m_ResultStream << '\n' + output;
+
+				m_ResultStream << "\ndont-learn states (when learn 'except'):";
 				pKernelHack->GetDontLearnStates(pAgent, output);
-				if (output.size()) AppendToResult('\n' + output);
+				if (output.size()) m_ResultStream << '\n' + output;
+
 			} else {
 				pKernelHack->GetForceLearnStates(pAgent, output);
 				AppendArgTag(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.c_str());

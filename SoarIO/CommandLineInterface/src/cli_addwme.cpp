@@ -56,11 +56,10 @@ bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::s
 		}
 	}
 
-	char buf[kMinBufferSize];
 	if (m_RawOutput) {
-		AppendToResult("Timetag: ");
-		AppendToResult(Int2String(timetag, buf, sizeof(buf)));
+		m_ResultStream << "Timetag: " << timetag;
 	} else {
+		char buf[kMinBufferSize];
 		AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(timetag, buf, sizeof(buf)));
 	}
 	return true;

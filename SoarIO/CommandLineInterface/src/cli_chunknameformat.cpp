@@ -83,7 +83,7 @@ bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFo
 
 	if (!changeFormat && !pCount && !pPrefix) {
 		if (m_RawOutput) {
-			AppendToResult(pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? "Long format." : "Short format.");
+			m_ResultStream << (pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? "Long" : "Short") << "format.";
 		} else {
 			AppendArgTag(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? sml_Names::kTrue : sml_Names::kFalse);
 		}
@@ -101,11 +101,10 @@ bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFo
 			pKernelHack->SetChunkCount(pAgent, *pCount);
 		} else {
 			// query
-			char buf[kMinBufferSize];
 			if (m_RawOutput) {
-				AppendToResult("Chunk count: ");
-				AppendToResult(Int2String(pKernelHack->GetChunkCount(pAgent), buf, kMinBufferSize));
+				m_ResultStream << "Chunk count: " << pKernelHack->GetChunkCount(pAgent);
 			} else {
+				char buf[kMinBufferSize];
 				AppendArgTag(sml_Names::kParamChunkCount, sml_Names::kTypeInt, Int2String(pKernelHack->GetChunkCount(pAgent), buf, kMinBufferSize));
 			}
 		}
@@ -117,9 +116,8 @@ bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFo
 		} else {
 			// query
 			if (m_RawOutput) {
-				if (pCount && *pCount < 0) AppendToResult("\n");
-				AppendToResult("Prefix: ");
-				AppendToResult(pKernelHack->GetChunkNamePrefix(pAgent));
+				if (pCount && *pCount < 0) m_ResultStream << "\n";
+				m_ResultStream << "Prefix: " << pKernelHack->GetChunkNamePrefix(pAgent);
 			} else {
 				AppendArgTag(sml_Names::kParamChunkNamePrefix, sml_Names::kTypeString, pKernelHack->GetChunkNamePrefix(pAgent));
 			}

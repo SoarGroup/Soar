@@ -119,8 +119,8 @@ bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail, std::
 	if (!ret) return SetError(CLIError::kgSKIError);
 
 	if (!m_RawOutput) {
-		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
-		m_Result.clear();
+		AppendArgTag(sml_Names::kParamMessage, sml_Names::kTypeString, m_ResultStream.str().c_str());
+		m_ResultStream.str("");
 	}
 	return true;
 }

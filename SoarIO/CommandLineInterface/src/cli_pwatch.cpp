@@ -83,8 +83,7 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::strin
 			if (pProd->IsWatched()) {
 				++productionCount;
 				if (m_RawOutput) {
-					AppendToResult(pProd->GetName());
-					AppendToResult('\n');
+					m_ResultStream << '\n' << pProd->GetName();
 				} else {
 					AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, pProd->GetName());
 				}
@@ -94,11 +93,8 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, std::strin
 		pIter->Release();
 
 		if (m_RawOutput) {
-			if (productionCount) {
-				// trim trailing newline
-				m_Result = m_Result.substr(0, m_Result.size() - 1);
-			} else {
-				AppendToResult("No watched productions found.");
+			if (!productionCount) {
+				m_ResultStream << "No watched productions found.";
 			}
 		} else if (!m_RawOutput) {
 			char buf[kMinBufferSize];

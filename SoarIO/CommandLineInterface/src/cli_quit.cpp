@@ -31,7 +31,7 @@ bool CommandLineInterface::DoQuit() {
 	}
 
 	if (m_RawOutput) {
-		AppendToResult("Goodbye.");
+		m_ResultStream << "Goodbye.";
 	} else {
 		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, "Goodbye.");
 	}

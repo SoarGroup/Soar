@@ -66,18 +66,21 @@ bool CommandLineInterface::DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsign
 	}
 	
 	char buf[kMinBufferSize];
+	if (m_RawOutput) {
+		m_ResultStream << "Current numeric indifferent mode: ";
+	}
 
 	switch (pAgent->GetNumericIndifferentMode()) {
 		case gSKI_NUMERIC_INDIFFERENT_MODE_AVG:
 			if (m_RawOutput) {
-				AppendToResult("Current numeric indifferent mode: average");
+				m_ResultStream << "average";
 			} else {
 				AppendArgTag(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, Int2String((int)gSKI_NUMERIC_INDIFFERENT_MODE_AVG, buf, kMinBufferSize));
 			}
 			break;
 		case gSKI_NUMERIC_INDIFFERENT_MODE_SUM:
 			if (m_RawOutput) {
-				AppendToResult("Current numeric indifferent mode: sum");
+				m_ResultStream << "sum";
 			} else {
 				AppendArgTag(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, Int2String((int)gSKI_NUMERIC_INDIFFERENT_MODE_SUM, buf, kMinBufferSize));
 			}

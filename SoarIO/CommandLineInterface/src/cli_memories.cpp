@@ -154,18 +154,13 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 		++j, ++i) 
 	{
 		if (m_RawOutput) {
-			snprintf(buf, 1023, "%6lu:  %s\n", j->second, j->first.c_str());
+			snprintf(buf, 1023, "\n%6lu:  %s", j->second, j->first.c_str());
 			buf[1023] = 0;
-			AppendToResult(buf);
+			m_ResultStream << buf;
 		} else {
 			AppendArgTag(sml_Names::kParamName, sml_Names::kTypeString, j->first.c_str());
 			AppendArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(j->second, buf, 1024));
 		}
-	}
-
-	if (m_RawOutput) {
-		// strip last newline
-		m_Result = m_Result.substr(0, m_Result.size()-1);
 	}
 	return true;
 }

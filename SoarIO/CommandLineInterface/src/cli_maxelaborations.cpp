@@ -34,13 +34,12 @@ bool CommandLineInterface::DoMaxElaborations(gSKI::IAgent* pAgent, int n) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!n) {
-		char buf[kMinBufferSize];
-		Int2String(pAgent->GetMaxElaborations(), buf, kMinBufferSize);
 
 		if (m_RawOutput) {
-			AppendToResult(buf);
+			m_ResultStream << pAgent->GetMaxElaborations();
 		} else {
-			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, buf);
+			char buf[kMinBufferSize];
+			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetMaxElaborations(), buf, kMinBufferSize));
 		}
 		return true;
 	}

@@ -87,7 +87,7 @@ bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const int options) {
 	if (!ret) return SetError(CLIError::kgSKIError);
 
 	if (m_RawOutput) {
-		AppendToResult(pResult);
+		m_ResultStream << pResult;
 	} else {
 		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, pResult);
 	}

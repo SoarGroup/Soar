@@ -48,7 +48,7 @@ bool CommandLineInterface::DoLS() {
 
 	// At least one file found, concatinate additional ones with newlines
 	do {
-		AppendToResult('\n');
+		m_ResultStream << '\n';
 		PrintFilename(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? true : false);
 
 	} while (FindNextFile(hFind, &FindFileData));
@@ -71,7 +71,7 @@ bool CommandLineInterface::DoLS() {
 	// Read the files
 	errno = 0;
 	while ((entry = readdir(directoryPointer)) != 0) {
-		AppendToResult('\n');
+		m_ResultStream << '\n';
 		PrintFilename(entry->d_name, entry->d_type == DT_DIR);
 	}
 
@@ -89,11 +89,11 @@ void CommandLineInterface::PrintFilename(const std::string& name, bool isDirecto
 	if (m_RawOutput) {
 		// TODO: Columns and stats
 		if (isDirectory) {
-			AppendToResult('[');
+			m_ResultStream << '[';
 		}
-		AppendToResult(name);
+		m_ResultStream << name;
 		if (isDirectory) {
-			AppendToResult(']');
+			m_ResultStream << ']';
 		}
 	} else {
 		if (isDirectory) {
