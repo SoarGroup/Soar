@@ -455,6 +455,10 @@ namespace gSKI
                                         Error*                   err = 0);
       public:
 
+		 // Notify listeners to start or stop the entire system (the simulation)
+		 void FireSystemStart() ;
+		 void FireSystemStop() ;
+
          /**
           * @brief: Fetch the logger.
           */
@@ -462,6 +466,22 @@ namespace gSKI
          {
             return m_log;
          }
+
+		 /** 
+         * @brief Event notifier for system callbacks
+         */
+         class SystemNotifier {
+         public:
+            SystemNotifier(IKernel* kernel): m_kernel(kernel){}
+
+            void operator()(egSKISystemEventId eventId, 
+                            ISystemListener* listener) const
+            {
+               listener->HandleEvent(eventId, m_kernel);
+            }
+         private:
+            IKernel*          m_kernel;
+         };
 
          /** 
          * @brief Event notifier for print callback
@@ -509,6 +529,7 @@ namespace gSKI
           */
          typedef ListenerManager<egSKIPrintEventId, ILogListener, LogNotifier>   tLogListenerManager;
          typedef ListenerManager<egSKIRhsEventId, IRhsListener, RhsNotifier>   tRhsListenerManager;
+         typedef ListenerManager<egSKISystemEventId, ISystemListener, SystemNotifier>   tSystemListenerManager;
 
          /**
           * @brief Retrieves the Soar Kernel Pointer
@@ -539,6 +560,9 @@ namespace gSKI
 
 		 /** */
          tRhsListenerManager         m_rhsListeners;
+
+		 /** */
+		 tSystemListenerManager		 m_systemListeners ;
 
          /** */
          Log*                        m_log;            /**< The log file nanager */

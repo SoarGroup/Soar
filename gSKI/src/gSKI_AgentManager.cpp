@@ -46,7 +46,7 @@ namespace gSKI
         |___/                                         |___/
    =============================
    */
-   AgentManager::AgentManager(Kernel* krnl) : m_kernel(krnl)
+   AgentManager::AgentManager(Kernel* krnl) : m_kernel(krnl), m_runManager(krnl)
    {
       m_runCompleteListener.SetAgentManager(this);
 

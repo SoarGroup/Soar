@@ -63,7 +63,7 @@ namespace gSKI
       /** 
        * @brief
        */
-      AgentRunManager(): m_groupRunning(false) {}
+      AgentRunManager(IKernel* pKernel): m_pKernel(pKernel), m_groupRunning(false) {}
 
       /** 
        *@brief
@@ -168,6 +168,9 @@ namespace gSKI
 
       /** Flag indicating that agent group is running */
       bool            m_groupRunning;
+
+	  /** Pointer to the kernel */
+	  IKernel*		   m_pKernel ;
    };
 }
 

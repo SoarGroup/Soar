@@ -22,6 +22,7 @@
 #include "gSKI_Error.h"
 #include "gSKI_Enumerations.h"
 #include "gSKI_AgentManager.h"
+#include "gSKI_Kernel.h"
 
 #include <algorithm>
 
@@ -208,16 +209,7 @@ namespace gSKI
 
    IKernel* AgentRunManager::getKernel()
    {
-	   // Right now there seems to be no easy way to locate the kernel object
-	   // so we go through the agent list.  If this ever presents a problem we
-	   // could explicitly pass the kernel pointer around.
-	   if (m_runningAgents.empty())
-		   return NULL ;
-
-	   AgentRunData* pAgentData = &m_runningAgents.front() ;
-	   Agent* pAgent = (Agent*)pAgentData->a ;
-	   Kernel* pKernel = pAgent->GetKernel() ;
-	   return (IKernel*)pKernel ;
+		return m_pKernel ;
    }
 
    /*
@@ -258,6 +250,10 @@ namespace gSKI
          m_groupRunning = false; 
          return gSKI_RUN_ERROR;
       }
+
+	  // Fire one event to indicate the entire system (simulation) should start.
+	  // (Above gSKI we can choose to suppress this event in some situations)
+	  ((Kernel*)getKernel())->FireSystemStart() ;
 
 	  // Send event for each agent to signal its about to start running
 	  FireBeforeRunStartsEvents() ;
@@ -336,6 +332,10 @@ namespace gSKI
 
 	  // Send event for each agent still in the run list that it has finished run
 	  FireAfterRunEndsEvents() ;
+
+	  // Fire one event to indicate the entire system (simulation) should stop.
+	  // (Above gSKI we can choose to suppress this event in some situations)
+	  ((Kernel*)getKernel())->FireSystemStop() ;
 
       // Finshed
       m_groupRunning = false;

@@ -248,7 +248,7 @@ namespace gSKI
                              Error*              err)
       {
          ClearError(err);
-         //m_systemListeners.AddListener(nEventId, pListener);
+         m_systemListeners.AddListener(nEventId, pListener);
       }
 
 
@@ -270,7 +270,7 @@ namespace gSKI
                                 Error*               err)
       {
          ClearError(err);
-         //m_systemListeners.RemoveListener(nEventId, pListener);
+         m_systemListeners.RemoveListener(nEventId, pListener);
       }
 
 	  /**************************************************
@@ -320,6 +320,20 @@ namespace gSKI
 			bool result = m_rhsListeners.NotifyGetResult(gSKIEVENT_RHS_USER_FUNCTION, rhs) ;
 
 			return result ;
+	  }
+
+	  /** Notify listeners that they should start the "system" (the simulation usually) */
+	  void Kernel::FireSystemStart()
+	  {
+		  SystemNotifier sys(this) ;
+		  m_systemListeners.Notify(gSKIEVENT_SYSTEM_START, sys) ;
+	  }
+
+	  /** Notify listeners that they should stop the "system" (the simulation usually) */
+	  void Kernel::FireSystemStop()
+	  {
+		  SystemNotifier sys(this) ;
+		  m_systemListeners.Notify(gSKIEVENT_SYSTEM_STOP, sys) ;
 	  }
 
    /*
