@@ -23,7 +23,6 @@ bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
 
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
-	if (!RequireKernel()) return false;
 
 	// Attain the evil back door of desolation, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();

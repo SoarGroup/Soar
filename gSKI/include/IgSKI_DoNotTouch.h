@@ -21,6 +21,8 @@ typedef struct agent_struct agent;
 
 typedef void * soar_callback_agent;
 
+#include <string>
+
 namespace gSKI
 {
    class IAgent;
@@ -122,6 +124,8 @@ namespace gSKI
          */
         virtual bool GDSPrint(IAgent* thisAgent) = 0;
 
+		virtual void GetForceLearnStates(IAgent* pIAgent, std::string& res) = 0;
+		virtual void GetDontLearnStates(IAgent* pIAgent, std::string& res) = 0;
       };
    }
 }

@@ -115,7 +115,6 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const unsigned int opti
 
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
-	if (!RequireKernel()) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();

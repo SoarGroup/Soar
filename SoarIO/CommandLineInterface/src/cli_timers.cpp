@@ -62,7 +62,6 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool print, bool setting) {
 	// Need agent pointer and kernel pointer for sysparam
 	if (!RequireAgent(pAgent)) return false;
-	if (!RequireKernel()) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();

@@ -77,7 +77,6 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigned int mode, std::string pattern) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
-	if (!RequireKernel()) return false;
 
 	// Attain the evil back door of damnation, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();

@@ -300,7 +300,6 @@ bool CommandLineInterface::CheckOptargRemoveOrZero() {
 bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const int options, const int settings, const int wmeSetting, const int learnSetting) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
-	if (!RequireKernel()) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();

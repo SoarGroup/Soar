@@ -389,6 +389,8 @@ bool CommandLineInterface::IsInteger(const string& s) {
 }
 
 bool CommandLineInterface::RequireAgent(gSKI::IAgent* pAgent) {
+	// Requiring an agent implies requiring a kernel
+	if (!RequireKernel()) return false;
 	if (!pAgent) return m_Error.SetError(CLIError::kAgentRequired);
 	return true;
 }

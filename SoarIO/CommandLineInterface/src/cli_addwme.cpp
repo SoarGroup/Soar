@@ -6,6 +6,9 @@
 
 #include "cli_Constants.h"
 
+#include "IgSKI_WorkingMemory.h"
+#include "IgSKI_Agent.h"
+
 using namespace cli;
 
 bool CommandLineInterface::ParseAddWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
@@ -31,6 +34,11 @@ bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::s
 	unused(attribute);
 	unused(value);
 	unused(acceptable);
+
+	//if (!RequireAgent(pAgent)) return false;
+
+	//gSKI::IWorkingMemory* pWorkingMemory = pAgent->GetWorkingMemory();
+	//pWorkingMemory->AddWme(idSymbol, attrSymbol, valSymbol);
 
 	m_Error.SetError(CLIError::kNotImplemented);
 

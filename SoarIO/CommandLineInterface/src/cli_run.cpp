@@ -95,7 +95,6 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	// TODO: structured output
 
 	if (!RequireAgent(pAgent)) return false;
-	if (!RequireKernel()) return false;
 
 	// TODO: Rather tricky options
 	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_STATE)) {

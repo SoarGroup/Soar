@@ -79,7 +79,6 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches, int wmeDetail, const std::string& production) {
 
 	if (!RequireAgent(pAgent)) return false;
-	if (!RequireKernel()) return false;
 
 	wme_trace_type wtt = 0;
 	switch (wmeDetail) {

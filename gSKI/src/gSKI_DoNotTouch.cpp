@@ -2300,6 +2300,30 @@ __      _(_) |_| |_|_____| |__ (_)_ _|_____| (_)_ |_|  __ _ ___  |_____|
          return true;
       }////
 
+	  void TgDWorkArounds::GetForceLearnStates(IAgent* pIAgent, std::string& res) {
+          Agent* pAgent = (Agent*)(pIAgent);
+		  agent* pSoarAgent = pAgent->GetSoarAgent();
 
+		  cons *c;
+		  char buff[1024];
+
+		  for (c = pSoarAgent->chunky_problem_spaces; c != NIL; c = c->rest) {
+		      symbol_to_string(pSoarAgent, (Symbol *) (c->first), TRUE, buff, 1024);
+		      res += buff;
+		  }
+	  }
+
+	  void TgDWorkArounds::GetDontLearnStates(IAgent* pIAgent, std::string& res) {
+          Agent* pAgent = (Agent*)(pIAgent);
+		  agent* pSoarAgent = pAgent->GetSoarAgent();
+
+		  cons *c;
+		  char buff[1024];
+
+		  for (c = pSoarAgent->chunk_free_problem_spaces; c != NIL; c = c->rest) {
+			  symbol_to_string(pSoarAgent, (Symbol *) (c->first), TRUE, buff, 1024);
+		      res += buff;
+		  }
+	  }
    }
 }

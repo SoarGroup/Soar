@@ -15,6 +15,7 @@
 
 #include "IgSKI_DoNotTouch.h"
 
+#include <string>
 
 namespace gSKI
 {
@@ -77,6 +78,9 @@ namespace gSKI
                              bool        no_chunks);
 
          bool GDSPrint(IAgent* thisAgent);
+
+		 void GetForceLearnStates(IAgent* pIAgent, std::string& res);
+		 void GetDontLearnStates(IAgent* pIAgent, std::string& res);
       };
    }
 }

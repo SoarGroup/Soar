@@ -104,6 +104,11 @@ public:
 	static char const* const kParamUpdate ;
 	static char const* const kParamEventID ;
 	static char const* const kParamLearnSetting;
+	static char const* const kParamLearnOnlySetting;
+	static char const* const kParamLearnExceptSetting;
+	static char const* const kParamLearnAllLevelsSetting;
+	static char const* const kParamLearnForceLearnStates;
+	static char const* const kParamLearnDontLearnStates;
 	static char const* const kParamLogSetting;
 	static char const* const kParamDirectory;
 	static char const* const kParamSeconds;
