@@ -1,14 +1,12 @@
 #include <iostream>
+#include <fstream>
 #include <conio.h>
 #include <crtdbg.h>
 
 #include "sml_Connection.h"
 #include "sml_Client.h"
 
-#include "cli_CommandLineInterface.h"
-
 using namespace std;
-using namespace cli;
 
 void backspace(string& cmdline) {
 	if (cmdline.size()) {
@@ -20,51 +18,34 @@ void backspace(string& cmdline) {
 
 int main(int argc, char** argv)
 {
-	bool useSML = true;
-	const char AGENT_NAME[] = "test";
-
-	const int HISTORY_SIZE = 10;
-	string history[HISTORY_SIZE];
-	int historyIndex = 0;
-	int temporaryHistoryIndex = 0;
-
-	// check to see if we should use SML
-	if (argc > 1) {
-		string argv1 = argv[1];
-		if (argv1 == "-e") {
-			useSML = false;
-		}
+	std::ifstream scriptFile;
+	if (argc == 2) {
+		scriptFile.open(argv[1]);
+	} else if (argc > 2) {
+		cout << "Too many args." << endl;
+		exit(1);
 	}
 
-	//CommandLineInterface* cli;
+	// Create an embedded connection to the kernel
 	sml::Kernel* pKernel;
+	pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML") ;
+	cout << "Kernel created." << endl;
+
+	// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 	sml::Agent* pAgent;
-
-	//gSKI::
-	//gSKI::IKernel* pgKernel;
-	//gSKI::IAgent* pgAgent;
-
-	if (useSML) {
-
-		// Create an embedded connection to the kernel
-		pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML") ;
-		cout << "Kernel created." << endl;
-
-		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
-		pAgent = pKernel->CreateAgent(AGENT_NAME) ;
-		cout << "Agent 'test' created." << endl;
-
-	} else {
-		//cli = new CommandLineInterface();
-		//pgKernel = 
-		//cli->SetKernel(pgKernel);
-	}
+	const char AGENT_NAME[] = "test";
+	pAgent = pKernel->CreateAgent(AGENT_NAME) ;
+	cout << "Agent 'test' created." << endl;
 
 	string cmdline;
 	string output ;
 	char input;
 	bool previousResult = true;
 	bool process;
+	int historyIndex = 0;
+	int temporaryHistoryIndex = 0;
+	const int HISTORY_SIZE = 10;
+	string history[HISTORY_SIZE];
 
 	for (;;) {
 		cout << previousResult << " " << AGENT_NAME << "> ";
@@ -74,7 +55,13 @@ int main(int argc, char** argv)
 		process = false;
 
 		for (;;) {
-			input = getch();
+			if (scriptFile.is_open()) {
+				if (!scriptFile.get(input)) {
+					break;
+				}
+			} else {
+				input = getch();
+			}
 
 			switch (input) {					
 				case '\n':
@@ -124,33 +111,16 @@ int main(int argc, char** argv)
 		history[historyIndex++] = cmdline;
 		historyIndex %= HISTORY_SIZE;
 
-		if (useSML) {
-			
-			output = pKernel->ExecuteCommandLine(cmdline.c_str(), AGENT_NAME);
-			previousResult = pKernel->GetLastCommandLineResult() ;
-		    cout << output << endl;
+		output = pKernel->ExecuteCommandLine(cmdline.c_str(), AGENT_NAME);
+		previousResult = pKernel->GetLastCommandLineResult() ;
+		cout << output << endl;
 
-			if (output == "Goodbye.") {
-				break;
-			}
-
-		} else {
-			//char const* pOutput;
-			//cli->DoCommand(pAgent, cmdline.c_str(), pOutput, pError);
-		 //   cout << output << endl;
-
-			//if (std::string(pOutput) == "Goodbye.") {
-			//	break;
-			//}
+		if (output == "Goodbye.") {
+			break;
 		}
 	}
 
-	if (useSML) {
-		delete pKernel ;
-
-	//} else {
-	//	delete cli;
-	}
-
+	scriptFile.close();
+	delete pKernel ;
 	exit (0);
 }
