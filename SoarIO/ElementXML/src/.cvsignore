@@ -2,3 +2,5 @@ Debug
 Makefile
 Makefile.in
 .deps
+.libs
+*.lo
