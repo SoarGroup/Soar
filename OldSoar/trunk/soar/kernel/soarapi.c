@@ -50,7 +50,7 @@
 #include "soarapiUtils.h"
 #include "soarapiCallbacks.h"
 #include "scheduler.h"
-
+
 
 
 
@@ -479,10 +479,10 @@ int soar_RemoveWme (int argc, const char *argv[], soarResult *res)
   clearSoarResultResult( res );
   return SOAR_OK;
 }
-
 
 
-
+
+
 /*
  *----------------------------------------------------------------------
  *
@@ -850,7 +850,7 @@ int soar_ChunkNameFormat (int argc, const char *argv[], soarResult *res)
 /* kjh (B14) end */
 
 
-
+
 
 /*
  *----------------------------------------------------------------------
@@ -1005,7 +1005,7 @@ int soar_MaxChunks (int argc, const char *argv[], soarResult *res)
   clearSoarResultResult( res );
   return SOAR_OK;
 }
-
+
 
 /* REW: begin 09.15.96 */
 /*
@@ -1114,7 +1114,7 @@ int soar_Operand2 ( int argc, const char *argv[], soarResult *res)
 
 
 /* REW: end   09.15.96 */
-
+
 
 
 
@@ -1173,7 +1173,7 @@ int soar_WaitSNC ( int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1320,7 +1320,7 @@ int soar_NumericIndifferentMode (int argc, const char *argv[], soarResult *res)
 
   return SOAR_OK;
 }
-
+
 
 
 /*
@@ -1364,7 +1364,7 @@ int soar_OSupportMode (int argc, const char *argv[], soarResult *res)
        "%d", current_agent(o_support_calculation_type));
   return SOAR_OK;
 }
-
+
 
 
 
@@ -1374,7 +1374,7 @@ int soar_OSupportMode (int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1446,7 +1446,7 @@ int soar_ExplainBacktraces ( int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1483,7 +1483,7 @@ int soar_FiringCounts (int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1640,13 +1640,13 @@ int soar_FormatWatch ( int argc, const char *argv[], soarResult *res)
   clearSoarResultResult( res );
   return SOAR_OK;
 }
-
 
 
 
 
 
-
+
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1663,7 +1663,7 @@ int soar_IndifferentSelection (int argc, const char *argv[], soarResult *res)
 
 
   if (argc > 2) {
-    setSoarResultResult( res,  "Too many arguments, should be: user-select [-first | -last | -ask | -random ]" );
+    setSoarResultResult( res,  "Too many arguments, should be: indifferent-selection [-first | -last | -ask | -random ]" );
     return SOAR_ERROR;
   }
   if ( argc == 2 ) {
@@ -1697,9 +1697,9 @@ int soar_IndifferentSelection (int argc, const char *argv[], soarResult *res)
 
   return SOAR_OK;
 }
-
 
-
+
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1724,7 +1724,7 @@ int soar_InternalSymbols (int argc, const char *argv[], soarResult *res)
 }
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1789,7 +1789,7 @@ int soar_Matches (int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1876,11 +1876,11 @@ int soar_Memories ( int argc, const char *argv[], soarResult *res)
   clearSoarResultResult( res );
   return SOAR_OK;
 }
-
 
 
 
-
+
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2033,7 +2033,7 @@ int soar_ProductionFind (int argc, const char *argv[], soarResult *res )
 }
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2146,7 +2146,7 @@ int soar_Preferences ( int argc, const char *argv[], soarResult *res)
   return SOAR_OK;
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2425,7 +2425,7 @@ int soar_Print (int argc, const char *argv[], soarResult *res)
     return SOAR_OK;
 
 }
-
+
 
 
 /*
@@ -2506,7 +2506,7 @@ int soar_PWatch (int argc, const char *argv[], soarResult *res)
   }
 
 }
-
+
 
 #endif
 
@@ -2652,7 +2652,7 @@ int soar_Sp (int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2711,7 +2711,7 @@ int soar_Stats ( int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2751,7 +2751,7 @@ int soar_Stop (int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /* RCHONG: begin 10.11 */
 /*
  *----------------------------------------------------------------------
@@ -2802,7 +2802,7 @@ int soar_Verbose ( int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3017,7 +3017,7 @@ int soar_Log ( int argc, const char *argv[], soarResult *res)
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3074,7 +3074,7 @@ int soar_AttributePreferencesMode (int argc, const char *argv[], soarResult *res
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3585,13 +3585,13 @@ watch wmes syntax:\n\
 
   return SOAR_OK;
 }
-
 
 
 
 
 
-
+
+
 /*
  *----------------------------------------------------------------------
  *
