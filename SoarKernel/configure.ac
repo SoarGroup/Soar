@@ -9,7 +9,7 @@ AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.
 AC_DEFINE([_DEBUG], [1], [BUGBUG: Defined for now, needs to be removed.])
-AC_DEFINE([_USE_TCL], [1], [BUGBUG: Defined for now, needs to be removed.])
+AC_DEFINE([USE_TCL], [1], [BUGBUG: Defined for now, needs to be removed.])
 AC_DEFINE([UNIX], [1], [BUGBUG: Defined for now, needs to be removed.])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
