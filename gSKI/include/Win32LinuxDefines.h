@@ -24,8 +24,8 @@
 // stuff, otherwise we use nothing.  If we are using gSKI, then
 // the DLL should declare functions as dllexport, and anything
 // using the DLL should declare it as dllimport.
-#if defined (WIN32) && !defined(_LIB)
-#  if defined(_USRDLL) && defined(GSKI)
+#if defined (WIN32) && !defined(_LIB) && defined(GSKI)
+#  if defined(_USRDLL)
 #     define gSKI_EXPORT __declspec(dllexport) 
 #  else
 #     define gSKI_EXPORT __declspec(dllimport)

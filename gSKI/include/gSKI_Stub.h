@@ -14,6 +14,8 @@
 #define GSKI_STUB_H
 #include "IgSKI_KernelFactory.h"
 
+#include "Win32LinuxDefines.h"
+/*
 #ifdef WIN32
 #  ifndef _DLL
 #     define GSKI_API __declspec(dllimport)
@@ -23,10 +25,10 @@
 #else
 #  define GSKI_API
 #endif // WIN32
-
+*/
 extern "C" 
 {
-   GSKI_API gSKI::IKernelFactory* gSKI_CreateKernelFactory(void);
+   gSKI_EXPORT gSKI::IKernelFactory* gSKI_CreateKernelFactory(void);
 }
 
 

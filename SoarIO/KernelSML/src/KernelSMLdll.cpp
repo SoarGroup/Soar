@@ -35,7 +35,7 @@ bool __stdcall DllMain( void * hModule,
                        void * lpReserved
 					 )
 {
-	//_crtBreakAlloc = 100;
+	_crtBreakAlloc = 1236;
 	unused(hModule) ;
 	unused(ul_reason_for_call) ;
 	unused(lpReserved) ;
