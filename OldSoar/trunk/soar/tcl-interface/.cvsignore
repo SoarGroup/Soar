@@ -1,9 +1,9 @@
 SoarInterface.ncb
 SoarInterface.plg
-libsoar8.5.1.exp
+libsoar8.5.2.exp
 SoarInterface.bsc
 Release
-libsoar8.5.1.pdb
+libsoar8.5.2.pdb
 Debug
 Makefile
 config.cache
