@@ -577,6 +577,7 @@ global runningSimulation tickDelay soarTimePerTick soarTimeUnit tankList \
 					exit
 			}
 
+		set scoreLimit 9999
 		return
 	}
 
