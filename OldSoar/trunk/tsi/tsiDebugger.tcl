@@ -397,6 +397,34 @@ proc Debugger::ChangeUpdate {} {
    $Debugger::mainframe showtoolbar 0 $Debugger::toolbar1
 }
 
+# The actual learn command in SoarInterface is learn-core
+# We wrap that function with this one so we can update the interface easily
+#  to display the new learn setting (if any)
+# This proc is located in this file so that it doesn't get loaded before the
+#  Debugger stuff is created (if it does, then the variable won't get bound
+#  to the display correctly, so the display won't be updated when the setting
+#  changes).
+proc learn {args} {
+   
+   variable Debugger::learnSettings
+   
+   if {[string trim $args]==""} {
+     learn-core
+   } else {
+     learn-core $args
+   }
+   
+   output-strings-destination -push -append-to-result
+
+   set ls [split [learn-core] "\n"]
+   set ls2 [lrange $ls 1 [llength $ls]]
+   set learnSettings "Learn:"
+   foreach s $ls2 {
+      set learnSettings "$learnSettings [removeFirstChar [string trim $s]] "
+   }
+   output-strings-destination -pop
+}
+
 proc Debugger::UpdateStats {} {
 
    variable learnSettings
@@ -406,7 +434,7 @@ proc Debugger::UpdateStats {} {
 
    output-strings-destination -push -append-to-result
 
-   set ls [split [learn] "\n"]
+   set ls [split [learn-core] "\n"]
    set ls2 [lrange $ls 1 [llength $ls]]
    set learnSettings "Learn:"
    foreach s $ls2 {
