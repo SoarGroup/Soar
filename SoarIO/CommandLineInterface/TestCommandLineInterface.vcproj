@@ -17,27 +17,33 @@
 			IntermediateDirectory="lib"
 			ConfigurationType="1"
 			CharacterSet="2"
-			ManagedExtensions="TRUE">
+			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;lib_src\GnuWin32\include"
+				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include;.\lib_src\GnuWin32\include"
 				PreprocessorDefinitions="WIN32;_DEBUG"
-				MinimalRebuild="FALSE"
-				BasicRuntimeChecks="0"
+				MinimalRebuild="TRUE"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
+				BufferSecurityCheck="FALSE"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="soar-cli.lib libgw32c.a"
+				IgnoreImportLibrary="FALSE"
+				AdditionalDependencies="soar-cli.lib libgw32c.a ConnectionSML.lib"
 				OutputFile="bin\cli-test.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="lib_src\GnuWin32\lib;lib\"
+				AdditionalLibraryDirectories="..\ConnectionSML\lib;..\..\gSKI\lib;lib_src\GnuWin32\lib;lib\"
 				GenerateDebugInformation="TRUE"
-				AssemblyDebug="1"/>
+				AssemblyDebug="0"
+				SubSystem="1"
+				TargetMachine="1"
+				FixedBaseAddress="0"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

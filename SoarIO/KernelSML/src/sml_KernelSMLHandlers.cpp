@@ -292,6 +292,9 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 {
 	unused(pCommandName) ; unused(pError) ;
 
+   if (!pAgent)
+      return false ;
+
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
 
@@ -301,15 +304,6 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 
 	// Make the call.
-	// TODO: Command output should go straight to XML instead of using strings.
-	string result;	// command output
-
-	// TODO: This returns false if the command fails for any reason.  I don't think this is where we should handle this,
-	// since the error is detailed in result which is 'correct' output anyway.
-	m_CommandLineInterface.DoCommand(pLine, &result);
-
-	this->ReturnResult(pConnection, pResponse, result.c_str());
-
-	return true ;
+	return m_CommandLineInterface.DoCommand(pAgent, GetKernel(), pLine, pResponse) ;
 }
 

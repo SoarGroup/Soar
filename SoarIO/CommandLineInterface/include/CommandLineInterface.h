@@ -4,6 +4,13 @@
 #include <vector>
 #include <string>
 
+#include "IgSKI_Agent.h"
+#include "IgSKI_Kernel.h"
+
+#include "sml_ElementXML.h"
+#include "sml_TagResult.h"
+#include "sml_TagError.h"
+
 #include "commanddata.h"
 namespace cli {
 
@@ -32,7 +39,8 @@ public:
 	CommandLineInterface(void);
 	~CommandLineInterface(void);
 
-	bool DoCommand(const char* commandLine, std::string* result = 0);
+   bool DoCommand(gSKI::IAgent* pAgent, gSKI::IKernel* pKernel, const char* pCommandLine, sml::ElementXML* pResponse);
+   bool DoCommandInternal(const char* commandLine, std::string* result);
 
 	bool QuitCalled() { return m_QuitCalled; }
 

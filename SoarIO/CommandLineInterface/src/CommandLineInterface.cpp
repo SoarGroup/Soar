@@ -9,6 +9,8 @@
 #include <glibc/getopt.h>
 
 using namespace std;
+using namespace sml;
+using namespace gSKI;
 using namespace cli;
 
 extern char *optarg;
@@ -74,7 +76,31 @@ CommandLineInterface::~CommandLineInterface(void)
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
 //
-bool CommandLineInterface::DoCommand(const char* commandLine, string* result) {
+bool CommandLineInterface::DoCommand(IAgent* pAgent, IKernel* pKernel, const char* pCommandLine, ElementXML* pResponse) {
+
+   string result;
+   bool ret = DoCommandInternal(pCommandLine, &result);
+
+   if (ret) {
+      TagResult* pTag = new TagResult() ;
+	   pTag->SetCharacterData(result.c_str()) ;
+	   pResponse->AddChild(pTag) ;
+   } else {
+      TagError* pTag = new TagError();
+      pTag->SetCharacterData(result.c_str()) ;
+      pResponse->AddChild(pTag) ;
+   }
+
+   return ret;
+}
+
+// ____         ____                                          _ ___       _                        _
+//|  _ \  ___  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |_ _|_ __ | |_ ___ _ __ _ __   __ _| |
+//| | | |/ _ \| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` || || '_ \| __/ _ \ '__| '_ \ / _` | |
+//| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| || || | | | ||  __/ |  | | | | (_| | |
+//|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
+//
+bool CommandLineInterface::DoCommandInternal(const char* commandLine, string* result) {
 
 	vector<string> argumentVector;
    

@@ -14,14 +14,14 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="lib"
-			IntermediateDirectory="lib"
+			IntermediateDirectory="lib\Debug"
 			ConfigurationType="4"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\include;.\lib_src\GnuWin32\include"
+				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include;.\lib_src\GnuWin32\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;__GW32C__"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"

@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="lib"
+			IntermediateDirectory="lib\Debug"
 			ConfigurationType="4"
 			CharacterSet="2">
 			<Tool
@@ -32,7 +32,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="bin/ClientSML.lib"/>
+				OutputFile="lib\ClientSML.lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

@@ -35,9 +35,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="ConnectionSML.lib libgw32c.a soar-cli.lib"
-				OutputFile="..\bin\KernelSML.dll"
+				OutputFile="bin\KernelSML.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\CommandLineInterface\lib;..\CommandLineInterface\lib_src\GnuWin32\lib;..\ConnectionSML\bin"
+				AdditionalLibraryDirectories="..\CommandLineInterface\lib;..\CommandLineInterface\lib_src\GnuWin32\lib;..\ConnectionSML\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/KernelSML.pdb"
 				SubSystem="2"
@@ -46,7 +46,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy bin\KernelSML.dll ..\bin"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

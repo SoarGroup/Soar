@@ -33,7 +33,7 @@ int main()
 		}
 		cout << endl;
 
-      previousResult = cli->DoCommand(cmdline.c_str(), &result);
+      previousResult = cli->DoCommandInternal(cmdline.c_str(), &result);
       cout << result << endl;
 
 		if (cli->QuitCalled()) {

@@ -33,7 +33,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../bin/ElementXML.dll"
+				OutputFile="bin\ElementXML.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/ElementXML.pdb"
@@ -43,7 +43,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy bin\ElementXML.dll ..\bin"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
