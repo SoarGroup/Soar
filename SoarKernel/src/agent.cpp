@@ -113,12 +113,6 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
   add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
                     "%right[6,%dc]: %rsd[   ]   O: %co");
 
-  // KJC 03/05:  trying this for tagged output
-  add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL, 
-	                "<state decision_cycle_count=%dc current_state_id=%cs>");
-  add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
-                    "<operator decision_cycle_count=%dc current_operator_id=%co>");
-
   reset_statistics (thisAgent);
    
   /* RDF: For gSKI */
