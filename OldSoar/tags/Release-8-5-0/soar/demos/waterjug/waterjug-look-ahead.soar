@@ -1,0 +1,3 @@
+pushd waterjug-look-ahead
+source waterjug-look-ahead_source.soar
+popd
