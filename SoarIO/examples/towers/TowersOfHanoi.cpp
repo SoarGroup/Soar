@@ -8,21 +8,21 @@
 //#define SML_SGIO_HYBRID
 //#define SGIO_DIRECT
 
-
 #ifdef SGIO_DIRECT
+	//select which type of sgio interface to use	
+	//#define SGIO_API_MODE
+	#define SGIO_TSI_MODE
 	#include "sgioTowers.h"
-#endif
 
-#ifdef GSKI_DIRECT
+#elif defined GSKI_DIRECT
 	#include "gSKITowers.h"
-#endif
 
-#ifdef SML_SGIO_HYBRID
+#elif defined SML_SGIO_HYBRID
 	//SML Directives
-#endif
 
-#ifdef SML_THROUGH_GSKI
+#elif defined SML_THROUGH_GSKI
 	//SML Directives
+
 #endif
 
 
