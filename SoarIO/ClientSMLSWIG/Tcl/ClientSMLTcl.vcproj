@@ -48,7 +48,8 @@ cd ..\..\bin
 %TCL_BIN%\tclsh makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
 move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
-move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\"/>
+move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -100,7 +101,8 @@ cd ..\..\bin
 %TCL_BIN%\tclsh makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
 move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
-move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\"/>
+move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -152,6 +154,7 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\"/>
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
 echo TCL_INCLUDE: %TCL_INCLUDE%
 echo TCL_LIB: %TCL_LIB%
+echo TCL_BIN: %TCL_BIN%
 echo SWIG: %SWIG%
 echo on
 $(SWIG)\swig.exe -Wall -c++ -tcl &quot;$(InputPath)&quot;
