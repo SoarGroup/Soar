@@ -172,7 +172,8 @@ Connection* ConnectionManager::GetConnectionByIndex(int i)
 	soar_thread::Lock lock(&m_ConnectionsMutex) ;
 
 	// Get the n'th connection
-	for (ConnectionsIter iter = m_Connections.begin() ; iter != m_Connections.end() && i > 0 ; iter++)
+	ConnectionsIter iter;
+	for (iter = m_Connections.begin() ; iter != m_Connections.end() && i > 0 ; iter++)
 	{
 		i-- ;
 	}
