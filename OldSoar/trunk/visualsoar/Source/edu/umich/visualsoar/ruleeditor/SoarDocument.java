@@ -39,31 +39,30 @@ public class SoarDocument extends DefaultStyledDocument
         
         if (length == 1)
         {
-/*          switch (str.charAt(0))
-            {
-            case ' ':
-            case '\n':
-            case ')':
-            case '>':
-            case '.':
-            case '\"':
-*/                  colorSyntax(offset);
-//} 
+            colorSyntax(offset);
         }
         else
         {
-            Element currElem = root.getElement(root.getElementIndex(offset));
-            Content data = getContent();
-            String elStr = getElementString(currElem,data);
-            if(elStr.length() > str.length())
-            colorSyntax(currElem.getStartOffset(),
-                        elStr.length(),
-                        new StringReader(elStr));
-            else
             colorSyntax(offset, str.length(), new StringReader(str));
-        }   
 
-    }
+//Commented out for now.  I don't understand this code and it no longer seems
+//to work. -:AMN: 24 Nov 03
+//              Element currElem = root.getElement(root.getElementIndex(offset));
+//              Content data = getContent();
+//              String elStr = getElementString(currElem,data);
+//              if(elStr.length() > str.length())
+//              {
+//                  colorSyntax(currElem.getStartOffset(),
+//                              elStr.length(),
+//                              new StringReader(elStr));
+//              }
+//              else
+//              {
+//                  colorSyntax(offset, str.length(), new StringReader(str));
+//              }
+        }//else
+
+    }//insertString()
     
     public void remove(int offs, int len) throws BadLocationException
     {
@@ -414,17 +413,44 @@ public class SoarDocument extends DefaultStyledDocument
     } // ColorSyntaxThread
 
     /**
-     * Given a reader, this function attempts to guess the correct lexical state
-     * to start the parser in.
+     * The Token class created by JavaCC does not have a copy ctor.
+     * Since we can't edit that class we improvise a copy ctor here.
      *
-     * @param r Reader 
-     * @return a lexical state id
+     * @param dest Token to copy to 
+     * @param src Token to copy from 
+     * @author Andrew Nuxoll
+     * 24 Nov 03
+     */
+    void copyToken(Token dst, Token src)
+    {
+        dst.kind         = src.kind;
+        dst.beginLine    = src.beginLine;
+        dst.beginColumn  = src.beginColumn;
+        dst.endLine      = src.endLine;
+        dst.endColumn    = src.endColumn;
+        dst.image        = src.image;
+        dst.next         = src.next;
+        dst.specialToken = src.specialToken;
+    }
+    
+
+/**
+     * Given a reader, this function attempts to guess the correct lexical state
+     * to start the parser in.  Once guessed, the correct first token and
+     * token mamager is returned.
+     *
+     * @param r Reader
+     * @param tok Token
+     * @return a SoarParserTokenManager
      * @author Andrew Nuxoll
      * 17 Nov 03
      */
-    protected int guessLexicalState(Reader r)
+    protected SoarParserTokenManager guessLexicalState(Reader r,
+                                                       Token tok)
     {
-        Token tok = new Token();
+        SoarParserTokenManager mgr = null;
+        Token ispTok = new Token(); // Token retrieved using IN_SOAR_PRODCTION
+        Token defTok  = new Token(); // Token retrieved using DEFAULT
         
         //Save our position in the reader
         try
@@ -433,27 +459,26 @@ public class SoarDocument extends DefaultStyledDocument
         
             //Since we don't know what lexical state we're in, guess
             //the most likely state: IN_SOAR_PRODUCTION
-            SoarParserTokenManager  mgr =
-                new SoarParserTokenManager(new ASCII_CharStream(r, 0, 0));
+            mgr = new SoarParserTokenManager(new ASCII_CharStream(r, 0, 0));
             mgr.SwitchTo(SoarParserConstants.IN_SOAR_PRODUCTION);
 
             //Get a token
             try
             {
-                tok = mgr.getNextToken();
+                ispTok = mgr.getNextToken();
             }
             catch (TokenMgrError tme)
             {
                 //Set the kind so that the other lexical state is tried.
-                tok.kind = SoarParserConstants.SYMBOLIC_CONST;
+                ispTok.kind = SoarParserConstants.SYMBOLIC_CONST;
             }
         
             //If the token is anything other than SYMBOLIC_CONST then
             //we probably picked the right lexical state.
-            if (tok.kind != SoarParserConstants.SYMBOLIC_CONST)
+            if (ispTok.kind != SoarParserConstants.SYMBOLIC_CONST)
             {
-                r.reset();
-                return SoarParserConstants.IN_SOAR_PRODUCTION;
+                copyToken(tok, ispTok);
+                return mgr;
             }
 
             //Reset the reader and try the DEFAULT lexical state
@@ -463,57 +488,49 @@ public class SoarDocument extends DefaultStyledDocument
             //Get a token
             try
             {
-                tok = mgr.getNextToken();
+                defTok = mgr.getNextToken();
             }
             catch (TokenMgrError tme)
             {
                 //Guess we'd better stick with IN_SOAR_PRODUCTION
-                r.reset();
-                return SoarParserConstants.IN_SOAR_PRODUCTION;
+                mgr = new SoarParserTokenManager(new ASCII_CharStream(r, 0, 0));
+                mgr.SwitchTo(SoarParserConstants.IN_SOAR_PRODUCTION);
+                copyToken(tok, ispTok);
+                return mgr;
             }
-            
-            r.reset();
+
+            //Looks like the default state worked
+            copyToken(tok,defTok);
         }
         catch(IOException ioe)
         {
-            //There should be not errors with r.mark() and r.reset()
+            //This exception occurs when we call reset() on a closed reader
+            //In this case we should stick with IN_SOAR_PRODUCTION
+            mgr = new SoarParserTokenManager(new ASCII_CharStream(r, 0, 0));
+            mgr.SwitchTo(SoarParserConstants.IN_SOAR_PRODUCTION);
+            copyToken(tok, ispTok);
+            return mgr;
         }
 
-        return SoarParserConstants.DEFAULT;
+        return mgr;
     }//guessLexicalState()
     
     //Color the syntax of a single line
     public void colorSyntax(int caretPos)
     {
         Content                 data = getContent();
-        Token                   currToken;
+        Token                   currToken = new Token();
         Element                 currElem = root.getElement(root.getElementIndex(caretPos));
         String                  currLine;
         int                     offset = currElem.getStartOffset();
         
         currLine = getElementString(currElem, data);
 
-        //Since we don't know what lexical state we're in, guess
-        //the most likely state.
+        //Create a token manager. Since we don't know what lexical state we're
+        //in, guess the most likely state.
         Reader r = new StringReader(currLine);
-        int state = guessLexicalState(r);
-        SoarParserTokenManager  mgr =
-            new SoarParserTokenManager(new ASCII_CharStream(r, 0, 0));
-        mgr.SwitchTo(state);
+        SoarParserTokenManager mgr = guessLexicalState(r, currToken);
 
-        try
-        {
-            currToken = mgr.getNextToken();
-        }
-        catch (TokenMgrError tme)
-        {
-            /* this just means the syntax wasn't valid at
-             * the current state of entry we assume that more
-             * is coming and give up for now
-             */
-            return;
-        }
-        
         // init all the text to black
         colorRange(offset, currLine.length(), SoarParserConstants.DEFAULT);
                 
@@ -556,27 +573,11 @@ public class SoarDocument extends DefaultStyledDocument
         startPos = currElem.getStartOffset();
         endPos = root.getElement(root.getElementIndex(caretPos + length)).getEndOffset() - 1;
         totalLength = endPos - startPos; 
-        Token currToken;
+        Token currToken = new Token();
 
-        //Since we don't know what lexical state we're in, guess
-        //the most likely state.
-        int state = guessLexicalState(r);
-        SoarParserTokenManager  mgr =
-            new SoarParserTokenManager(new ASCII_CharStream(r, 0, 0));
-        mgr.SwitchTo(state);
-
-
-        //Get a token
-        try
-        {
-            currToken = mgr.getNextToken();
-        }
-        catch (TokenMgrError tme)
-        {
-            //This means the syntax wasn't valid at the current state of
-            //entry so we assume that more is coming and give up for now
-            return;
-        }
+        //Create a token manager with our best guess for the current lexical
+        //state and get the first token. 
+        SoarParserTokenManager  mgr = guessLexicalState(r, currToken);
         
         currLineNum = startLineNum + currToken.beginLine;
         braceDepth = 0;
