@@ -42,8 +42,8 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy to release point for testing"
-				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin\Tcl_sml_ClientInterface.dll"/>
+				Description="Copy to release point"
+				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin /Y"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -89,6 +89,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy to release point"
 				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin /Y"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
