@@ -22,6 +22,10 @@ namespace TgD {
   class TgD;
 }
 
+namespace cli {
+	class CommandLineInterface;
+}
+
 namespace gSKI {
 
   class IAgentManager;
@@ -410,6 +414,7 @@ namespace gSKI {
       virtual EvilBackDoor::ITgDWorkArounds* getWorkaroundObject() = 0;
 
       friend class TgD::TgD;
+	  friend class cli::CommandLineInterface;
 
    };
 
