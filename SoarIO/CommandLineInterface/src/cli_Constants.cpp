@@ -8,6 +8,7 @@ using namespace std;
 
 char const* Constants::kCLISyntaxError		= "Command syntax error.";
 char const* Constants::kCLINoUsageInfo		= "Usage information not found for that command.";
+char const* Constants::kCLINoUsageFile		= "Usage file not available (error opening file).";
 
 char const* Constants::kCLICD				= "cd";			
 char const* Constants::kCLIEcho				= "echo";
@@ -30,8 +31,14 @@ char const* Constants::kCLIStopSoar			= "stop-soar";
 char const* Constants::kCLITime				= "time";
 char const* Constants::kCLIWatch			= "watch";
 
+//  ____                _              _
+// / ___|___  _ __  ___| |_ __ _ _ __ | |_ ___
+//| |   / _ \| '_ \/ __| __/ _` | '_ \| __/ __|
+//| |__| (_) | | | \__ \ || (_| | | | | |_\__ \
+// \____\___/|_| |_|___/\__\__,_|_| |_|\__|___/
+//
 Constants::Constants() {
-	ifstream usageFile ("usage.txt");
+	ifstream usageFile("usage.txt");
 
 	m_UsageFileAvailable = usageFile ? true : false;
 
@@ -41,10 +48,12 @@ Constants::Constants() {
 	usageFile.close();
 }
 
-Constants::~Constants() {
-	// TODO: empty map?
-}
-
+//  ____      _    ____                                          _ _     _     _
+// / ___| ___| |_ / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)___| |_
+//| |  _ / _ \ __| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` | |   | / __| __|
+//| |_| |  __/ |_| |__| (_) | | | | | | | | | | | (_| | | | | (_| | |___| \__ \ |_
+// \____|\___|\__|\____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|___/\__|
+//
 std::list<std::string> Constants::GetCommandList() {
 	UsageMapConstIter iter = m_UsageMap.begin();
 	std::list<std::string> result;
@@ -55,6 +64,12 @@ std::list<std::string> Constants::GetCommandList() {
 	return result;
 }
 
+//  ____      _   _   _                      _____
+// / ___| ___| |_| | | |___  __ _  __ _  ___|  ___|__  _ __
+//| |  _ / _ \ __| | | / __|/ _` |/ _` |/ _ \ |_ / _ \| '__|
+//| |_| |  __/ |_| |_| \__ \ (_| | (_| |  __/  _| (_) | |
+// \____|\___|\__|\___/|___/\__,_|\__, |\___|_|  \___/|_|
+//                                |___/
 bool Constants::GetUsageFor(const std::string& command, std::string& output) {
 	if (m_UsageFileAvailable) {
 		if (m_UsageMap.find(command) == m_UsageMap.end()) {
@@ -68,6 +83,22 @@ bool Constants::GetUsageFor(const std::string& command, std::string& output) {
 	return false;
 }
 
+// ___     _   _                      _____ _ _         _             _ _       _     _
+//|_ _|___| | | |___  __ _  __ _  ___|  ___(_) | ___   / \__   ____ _(_) | __ _| |__ | | ___
+// | |/ __| | | / __|/ _` |/ _` |/ _ \ |_  | | |/ _ \ / _ \ \ / / _` | | |/ _` | '_ \| |/ _ \
+// | |\__ \ |_| \__ \ (_| | (_| |  __/  _| | | |  __// ___ \ V / (_| | | | (_| | |_) | |  __/
+//|___|___/\___/|___/\__,_|\__, |\___|_|   |_|_|\___/_/   \_\_/ \__,_|_|_|\__,_|_.__/|_|\___|
+//                         |___/
+bool Constants::IsUsageFileAvailable() {
+	return m_UsageFileAvailable;
+}
+
+// _                    _ _   _
+//| |    ___   __ _  __| | | | |___  __ _  __ _  ___
+//| |   / _ \ / _` |/ _` | | | / __|/ _` |/ _` |/ _ \
+//| |__| (_) | (_| | (_| | |_| \__ \ (_| | (_| |  __/
+//|_____\___/ \__,_|\__,_|\___/|___/\__,_|\__, |\___|
+//                                        |___/
 void Constants::LoadUsage(ifstream& usageFile) {
 
 	string line;
@@ -83,6 +114,12 @@ void Constants::LoadUsage(ifstream& usageFile) {
 	}
 }
 
+//  ____      _   _   _
+// / ___| ___| |_| | | |___  __ _  __ _  ___
+//| |  _ / _ \ __| | | / __|/ _` |/ _` |/ _ \
+//| |_| |  __/ |_| |_| \__ \ (_| | (_| |  __/
+// \____|\___|\__|\___/|___/\__,_|\__, |\___|
+//                                |___/
 string Constants::GetUsage(ifstream& usageFile) {
 	string line, usage;
 	while (getline(usageFile, line)) {

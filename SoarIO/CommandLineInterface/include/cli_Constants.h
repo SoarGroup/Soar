@@ -17,13 +17,14 @@ namespace cli {
 	public:
 
 		Constants();
-		~Constants();
 		
 		std::list<std::string> GetCommandList();
 		bool GetUsageFor(const std::string& command, std::string& output);
+		bool IsUsageFileAvailable();
 
 		static char const* kCLISyntaxError;
 		static char const* kCLINoUsageInfo;
+		static char const* kCLINoUsageFile;
 
 		static char const* kCLICD;
 		static char const* kCLIEcho;

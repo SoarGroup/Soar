@@ -154,10 +154,19 @@ Usage:	o-support-mode
 popd
 Usage:	popd
 ***
+preferences
+Usage:	preferences [-0123nNtw] [id] [attribute]
+  -0, -n, --none
+  -1, -N, --names
+  -2, -t, --timetags
+  -3, -w, --wmes
+  id
+  attribute
+***
 print
 Usage:	print [-fFin] production_name
 	print -[a|c|D|j|u][fFin]
-	print [-i] [-d <depth>] identifier|timetag|pattern
+	print [-fFin] [-d <depth>] identifier|timetag|pattern
 	print -s[oS]
   -a, --all
   -c, --chunks
@@ -177,15 +186,6 @@ Usage:	print [-fFin] production_name
   pattern
   production_name
   timetag
-***
-preferences
-Usage:	preferences [-0123nNtw] [id] [attribute]
-  -0, -n, --none
-  -1, -N, --names
-  -2, -t, --timetags
-  -3, -w, --wmes
-  id
-  attribute
 ***
 production-find
 Usage:	production-find [-clnrs] pattern

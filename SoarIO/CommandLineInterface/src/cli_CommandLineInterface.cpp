@@ -80,6 +80,12 @@ CommandLineInterface::CommandLineInterface() {
 	m_pLogFile = 0;
 }
 
+// /\/|____                                          _ _     _            ___       _             __
+//|/\// ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)_ __   ___|_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
+//   | |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` | |   | | '_ \ / _ \| || '_ \| __/ _ \ '__| |_ / _` |/ __/ _ \
+//   | |__| (_) | | | | | | | | | | | (_| | | | | (_| | |___| | | | |  __/| || | | | ||  __/ |  |  _| (_| | (_|  __/
+//    \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|_| |_|\___|___|_| |_|\__\___|_|  |_|  \__,_|\___\___|
+//
 CommandLineInterface::~CommandLineInterface() {
 	delete m_pGetOpt;
 	if (m_pLogFile) {
@@ -187,6 +193,12 @@ bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
 	return DoCommandInternal(argv);
 }
 
+// ____         ____                                          _ ___       _                        _
+//|  _ \  ___  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |_ _|_ __ | |_ ___ _ __ _ __   __ _| |
+//| | | |/ _ \| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` || || '_ \| __/ _ \ '__| '_ \ / _` | |
+//| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| || || | | | ||  __/ |  | | | | (_| | |
+//|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
+//
 bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
 	if (!argv.size()) {
 		// Nothing on command line!
@@ -208,7 +220,9 @@ bool CommandLineInterface::DoCommandInternal(vector<string>& argv) {
 	if (CheckForHelp(argv)) {
 		// Help flags found, add help to line, return true
 		string output;
-		if (m_Constants.GetUsageFor(argv[0], output)) {
+		if (!m_Constants.IsUsageFileAvailable()) {
+			m_Result += Constants::kCLINoUsageFile;
+		} else if (m_Constants.GetUsageFor(argv[0], output)) {
 			m_Result += output;
 		} else {
 			m_Result += Constants::kCLINoUsageInfo;
@@ -466,7 +480,7 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 				options |= OPTION_EXCISE_USER;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIExcise, "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIExcise, "Unrecognized option.");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -551,6 +565,12 @@ void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter)
 	pProdIter->Release();
 }
 
+// ____                     _   _      _
+//|  _ \ __ _ _ __ ___  ___| | | | ___| |_ __
+//| |_) / _` | '__/ __|/ _ \ |_| |/ _ \ | '_ \
+//|  __/ (_| | |  \__ \  __/  _  |  __/ | |_) |
+//|_|   \__,_|_|  |___/\___|_| |_|\___|_| .__/
+//                                      |_|
 bool CommandLineInterface::ParseHelp(std::vector<std::string>& argv) {
 	if (argv.size() > 2) {
 		return HandleSyntaxError(Constants::kCLIHelp);
@@ -562,8 +582,20 @@ bool CommandLineInterface::ParseHelp(std::vector<std::string>& argv) {
 	return DoHelp(string());
 }
 
+// ____        _   _      _
+//|  _ \  ___ | | | | ___| |_ __
+//| | | |/ _ \| |_| |/ _ \ | '_ \
+//| |_| | (_) |  _  |  __/ | |_) |
+//|____/ \___/|_| |_|\___|_| .__/
+//                         |_|
 bool CommandLineInterface::DoHelp(const string& command) {
 	string output;
+
+	if (!m_Constants.IsUsageFileAvailable()) {
+		m_Result += Constants::kCLINoUsageFile;
+		return false;
+	}
+
 	if (command.size()) {
 		if (!m_Constants.GetUsageFor(command, output)) {
 			m_Result += "Help for command '" + command + "' not found.";
@@ -686,7 +718,7 @@ bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 				options |= OPTION_LEARN_ONLY;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLILearn, "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLILearn, "Unrecognized option.");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -715,9 +747,8 @@ bool CommandLineInterface::DoLearn(const unsigned short options) {
 
 	// No options means print current settings
 	if (!options) {
-		// TODO: This is legacy output.  Bad.
-		m_Result += "Current learn settings:\n   -";
-		m_Result += m_pAgent->IsLearningOn() ? "on" : "off";
+		m_Result += "Learning is ";
+		m_Result += m_pAgent->IsLearningOn() ? "enabled." : "disabled.";
 		return true;
 	}
 
@@ -775,7 +806,7 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 				close = true;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLILog, "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLILog, "Unrecognized option.");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -786,7 +817,7 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 
 		// But not with the close option
 		if (close) {
-			return HandleSyntaxError(Constants::kCLILog, "No arguments when disabling.\n");
+			return HandleSyntaxError(Constants::kCLILog, "No arguments when disabling.");
 		}
 
 		return DoLog(append, argv[GetOpt::optind].c_str());
@@ -797,7 +828,7 @@ bool CommandLineInterface::ParseLog(std::vector<std::string>& argv) {
 
 	// No appending without a filename, and if we got here, there is no filename
 	if (append) {
-		return HandleSyntaxError(Constants::kCLILog, "Append requires a filename.\n");
+		return HandleSyntaxError(Constants::kCLILog, "Append requires a filename.");
 	}
 
 	return DoLog(close);
@@ -952,12 +983,12 @@ bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) 
 	if (argv.size() > 2) {
 		if (!IsInteger(argv[2])) {
 			// Must be an integer
-			return HandleSyntaxError(Constants::kCLIMultiAttributes, "Third argument must be an integer.\n");
+			return HandleSyntaxError(Constants::kCLIMultiAttributes, "Third argument must be an integer.");
 		}
 		n = atoi(argv[2].c_str());
 		if (n <= 0) {
 			// Must be greater than 0
-			return HandleSyntaxError(Constants::kCLIMultiAttributes, "Third argument must be greater than 0.\n");
+			return HandleSyntaxError(Constants::kCLIMultiAttributes, "Third argument must be greater than 0.");
 		}
 	}
 
@@ -1118,11 +1149,11 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 			case 'd':
 				options |= OPTION_PRINT_DEPTH;
 				if (!IsInteger(GetOpt::optarg)) {
-					return HandleSyntaxError(Constants::kCLIPrint, "Depth must be an integer.\n");
+					return HandleSyntaxError(Constants::kCLIPrint, "Depth must be an integer.");
 				}
 				depth = atoi(GetOpt::optarg);
 				if (depth < 0) {
-					return HandleSyntaxError(Constants::kCLIPrint, "Depth must be non-negative.\n");
+					return HandleSyntaxError(Constants::kCLIPrint, "Depth must be non-negative.");
 				}
 				break;
 			case 'D':
@@ -1156,9 +1187,9 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 				options |= OPTION_PRINT_USER;
 				break;
 			case ':':
-				return HandleSyntaxError(Constants::kCLIPrint, "Missing option argument.\n");
+				return HandleSyntaxError(Constants::kCLIPrint, "Missing option argument.");
 			case '?':
-				return HandleSyntaxError(Constants::kCLIPrint, "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIPrint, "Unrecognized option.");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1205,34 +1236,35 @@ bool CommandLineInterface::DoPrint(const unsigned short options, int depth, cons
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options & OPTION_PRINT_ALL) {
 		// TODO: Find out what is arg is for
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, USER_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, CHUNK_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_CHUNKS) {
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, CHUNK_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_DEFAULTS) {
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_JUSTIFICATIONS) {
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
 	if (options & OPTION_PRINT_USER) {
 		m_pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
-        pKernelHack->PrintUser(m_pAgent, const_cast<char*>(arg.c_str()), internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
 		m_pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
 		return true;
 	}
@@ -1407,7 +1439,7 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 				options |= OPTION_RUN_STATE;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIRun, "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIRun, "Unrecognized option.");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -1420,11 +1452,11 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 	if (GetOpt::optind == argv.size() - 1) {
 
 		if (!IsInteger(argv[GetOpt::optind])) {
-			return HandleSyntaxError(Constants::kCLIRun, "Count must be an integer.\n");
+			return HandleSyntaxError(Constants::kCLIRun, "Count must be an integer.");
 		}
 		count = atoi(argv[GetOpt::optind].c_str());
 		if (count <= 0) {
-			return HandleSyntaxError(Constants::kCLIRun, "Count must be greater than 0.\n");
+			return HandleSyntaxError(Constants::kCLIRun, "Count must be greater than 0.");
 		}
 
 	} else if ((unsigned)GetOpt::optind < argv.size()) {
@@ -1526,7 +1558,7 @@ bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
 
 	} else if (argv.size() > 2) {
 		// but only one filename
-		return HandleSyntaxError(Constants::kCLISource, "Source only one file at a time.\n");
+		return HandleSyntaxError(Constants::kCLISource, "Source only one file at a time.");
 	}
 
 	return DoSource(argv[1]);
@@ -1828,7 +1860,7 @@ bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 				self = true;
 				break;
 			case '?':
-				return HandleSyntaxError(Constants::kCLIStopSoar, "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIStopSoar, "Unrecognized option.");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -2013,9 +2045,9 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 				options |= OPTION_WATCH_WME_DETAIL;
 				break;
 			case ':':
-				return HandleSyntaxError(Constants::kCLIWatch, "Missing option argument.\n");
+				return HandleSyntaxError(Constants::kCLIWatch, "Missing option argument.");
 			case '?':
-				return HandleSyntaxError(Constants::kCLIWatch, "Unrecognized option.\n");
+				return HandleSyntaxError(Constants::kCLIWatch, "Unrecognized option.");
 			default:
 				return HandleGetOptError(option);
 		}
@@ -2030,18 +2062,22 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	if (GetOpt::optind == argv.size() - 1) {
 
 		if (!IsInteger(argv[GetOpt::optind])) {
-			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be an integer.\n");
+			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be an integer.");
 		}
 		int watchLevel = atoi(argv[GetOpt::optind].c_str());
 		if ((watchLevel < 0) || (watchLevel > 5)) {
-			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be 0 to 5.\n");
+			return HandleSyntaxError(Constants::kCLIWatch, "Watch level must be 0 to 5.");
 		}
 
 		if (watchLevel == 0) {
 			// Turn everything off
-			WatchArg(values, OPTION_WATCH_NONE, 0);
+			options |= OPTION_WATCH_NONE;
 		} else {
 		
+			// Activate the options
+			options |= OPTION_WATCH_DECISIONS | OPTION_WATCH_PHASES | OPTION_WATCH_DEFAULT_PRODUCTIONS | OPTION_WATCH_USER_PRODUCTIONS
+				| OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS | OPTION_WATCH_WMES | OPTION_WATCH_PREFERENCES;
+
 			// Reset some settings per old soar 8.5.2 behavior
 			// Don't reset wme detail or learning unless watch 0
 			WatchArg(values, OPTION_WATCH_DECISIONS, 0);			// set true in watch 1
@@ -2091,13 +2127,25 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	return DoWatch(options, values);
 }
 
+//__        __    _       _        _
+//\ \      / /_ _| |_ ___| |__    / \   _ __ __ _
+// \ \ /\ / / _` | __/ __| '_ \  / _ \ | '__/ _` |
+//  \ V  V / (_| | || (__| | | |/ ___ \| | | (_| |
+//   \_/\_/ \__,_|\__\___|_| |_/_/   \_\_|  \__, |
+//                                          |___/
 bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int option, const char* arg) {
 	if (!arg || !IsInteger(arg)) {
-		return HandleSyntaxError(Constants::kCLIWatch, "Arguments must be integers.\n");
+		return HandleSyntaxError(Constants::kCLIWatch, "Arguments must be integers.");
 	}
 	return WatchArg(values, option, atoi(arg));
 }
 
+//__        __    _       _        _
+//\ \      / /_ _| |_ ___| |__    / \   _ __ __ _
+// \ \ /\ / / _` | __/ __| '_ \  / _ \ | '__/ _` |
+//  \ V  V / (_| | || (__| | | |/ ___ \| | | (_| |
+//   \_/\_/ \__,_|\__\___|_| |_/_/   \_\_|  \__, |
+//                                          |___/
 bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int option, int argInt) {
 	// If option is none, values will be ignored anyway
 	if (option == OPTION_WATCH_NONE) {
@@ -2107,7 +2155,7 @@ bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int opt
 	if (option <= OPTION_WATCH_WME_DETAIL) {
 		// Detail arguments 
 		if ((argInt < 0) || (argInt > 2)) {
-			return HandleSyntaxError(Constants::kCLIWatch, "Detail argument must 0, 1, or 2.\n");
+			return HandleSyntaxError(Constants::kCLIWatch, "Detail argument must 0, 1, or 2.");
 		}
 
 		// First, shift argInt if necessary
@@ -2127,7 +2175,7 @@ bool CommandLineInterface::WatchArg(unsigned int& values, const unsigned int opt
 	} else {
 		// Switch arguments
 		if ((argInt < 0) || (argInt > 1)) {
-			return HandleSyntaxError(Constants::kCLIWatch, "Switch argument must 0 or 1.\n");
+			return HandleSyntaxError(Constants::kCLIWatch, "Switch argument must 0 or 1.");
 		}
 
 		if (argInt) {
@@ -2358,6 +2406,7 @@ bool CommandLineInterface::HandleSyntaxError(const char* command, const char* de
 	m_Result += ")\n";
 	if (details) {
 		m_Result += details;
+		m_Result += '\n';
 	}
 	m_Result += "Type 'help ";
 	m_Result += command;
