@@ -66,8 +66,9 @@ extern void just_before_exit_soar (agent* thisAgent);
 
 extern void reset_timer (struct timeval *tv_to_reset);
 #ifndef NO_TIMING_STUFF
-extern void start_timer (struct timeval *tv_for_recording_start_time);
-extern void stop_timer (struct timeval *tv_with_recorded_start_time,
+extern void start_timer (agent* thisAgent, struct timeval *tv_for_recording_start_time);
+extern void stop_timer (agent* thisAgent,
+                        struct timeval *tv_with_recorded_start_time,
                         struct timeval *tv_with_accumulated_time);
 extern double timer_value (struct timeval *tv);
 #else

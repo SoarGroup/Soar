@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /*************************************************************************
  *
  *  file:  init_soar.cpp
@@ -308,7 +304,7 @@ void get_cputime_from_clock(clock_t t, struct timeval *dt)
     dt->tv_usec = (long) (((t % CLOCKS_PER_SEC) / (float) CLOCKS_PER_SEC) * ONE_MILLION);
 }
 #endif
-
+/*
 #if defined(WIN32) && defined(FAST_TIME)
 void start_timer (struct timeval *tv_for_recording_start_time) {
 
@@ -325,16 +321,25 @@ void start_timer(struct timeval *tv_for_recording_start_time)
     get_cputime_from_clock(ticks, tv_for_recording_start_time);
 }
 #else
+*/
+void start_timer (agent* thisAgent, struct timeval *tv_for_recording_start_time) {
 
-void start_timer (struct timeval *tv_for_recording_start_time) {
-  struct rusage temp_rusage;
-  
-  getrusage (RUSAGE_SELF, &temp_rusage);
-  get_cputime_from_rusage (&temp_rusage, tv_for_recording_start_time);
+    if(thisAgent && !thisAgent->sysparams[TIMERS_ENABLED]) {
+        return;
+    }
+    struct rusage temp_rusage;
+
+    getrusage (RUSAGE_SELF, &temp_rusage);
+    get_cputime_from_rusage (&temp_rusage, tv_for_recording_start_time);
 }
-#endif
-void stop_timer (struct timeval *tv_with_recorded_start_time,
-                 struct timeval *tv_with_accumulated_time) {
+//#endif
+void stop_timer (agent* thisAgent,
+struct timeval *tv_with_recorded_start_time,
+struct timeval *tv_with_accumulated_time) {
+
+    if(thisAgent && !thisAgent->sysparams[TIMERS_ENABLED]) {
+        return;
+    }
 
 #if defined(WIN32) && defined(FAST_TIME)
     struct timeval end_tv;
@@ -343,32 +348,32 @@ void stop_timer (struct timeval *tv_with_recorded_start_time,
     QueryPerformanceCounter(&time);
     totimeval(&end_tv, &time);
 #elif defined(FASTER_TIME)
-	clock_t ticks;
+    clock_t ticks;
     struct timeval end_tv;
     long delta_sec, delta_usec;
     ticks = clock();
     get_cputime_from_clock(ticks, &end_tv);
 #else
-  struct rusage end_rusage;
-  struct timeval end_tv;
-  long delta_sec, delta_usec;
-  
-  getrusage (RUSAGE_SELF, &end_rusage);
-  get_cputime_from_rusage (&end_rusage, &end_tv);
-#endif
-  delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
-  delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
-  if (delta_usec < 0) {
-    delta_usec += ONE_MILLION;
-    delta_sec--;
-  }
+    struct rusage end_rusage;
+    struct timeval end_tv;
+    long delta_sec, delta_usec;
 
-  tv_with_accumulated_time->tv_sec += delta_sec;
-  tv_with_accumulated_time->tv_usec += delta_usec;
-  if (tv_with_accumulated_time->tv_usec >= ONE_MILLION) {
-    tv_with_accumulated_time->tv_usec -= ONE_MILLION;
-    tv_with_accumulated_time->tv_sec++;
-  }
+    getrusage (RUSAGE_SELF, &end_rusage);
+    get_cputime_from_rusage (&end_rusage, &end_tv);
+#endif
+    delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
+    delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
+    if (delta_usec < 0) {
+        delta_usec += ONE_MILLION;
+        delta_sec--;
+    }
+
+    tv_with_accumulated_time->tv_sec += delta_sec;
+    tv_with_accumulated_time->tv_usec += delta_usec;
+    if (tv_with_accumulated_time->tv_usec >= ONE_MILLION) {
+        tv_with_accumulated_time->tv_usec -= ONE_MILLION;
+        tv_with_accumulated_time->tv_sec++;
+    }
 }
 
 double timer_value (struct timeval *tv) {
@@ -481,6 +486,7 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[EXPLAIN_SYSPARAM] = FALSE; /* KJC 7/96 */
   thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = TRUE;  /* kjh(B14) */
   thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
+  thisAgent->sysparams[TIMERS_ENABLED] = TRUE;
 }
 
 /* ===================================================================
@@ -854,7 +860,7 @@ void do_one_top_level_phase (agent* thisAgent)
 #endif
 
 #ifndef NO_TIMING_STUFF   /* REW: begin 28.07.96 */
-  start_timer (&thisAgent->start_phase_tv);
+  start_timer (thisAgent, &thisAgent->start_phase_tv);
 #endif
 
   /* for Operand2 mode using the new decision cycle ordering,
@@ -896,7 +902,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
 /* REW: begin 28.07.96 */
 #ifndef NO_TIMING_STUFF
-  stop_timer (&thisAgent->start_phase_tv, 
+  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
               &thisAgent->decision_cycle_phase_timers[INPUT_PHASE]);
 #endif
 /* REW: end 28.07.96 */
@@ -937,7 +943,7 @@ void do_one_top_level_phase (agent* thisAgent)
   case DETERMINE_LEVEL_PHASE:
 
     #ifndef NO_TIMING_STUFF
-	  start_timer (&thisAgent->start_phase_tv);
+	  start_timer (thisAgent, &thisAgent->start_phase_tv);
     #endif
      
       /* Still need to register callbacks for both before and after
@@ -949,7 +955,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  determine_highest_active_production_level_in_stack_propose(thisAgent);
           
       #ifndef NO_TIMING_STUFF
-	  stop_timer (&thisAgent->start_phase_tv, 
+	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                  &thisAgent->decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE]);
       #endif
 
@@ -964,7 +970,7 @@ void do_one_top_level_phase (agent* thisAgent)
       /* REW: begin 28.07.96 */
      
       #ifndef NO_TIMING_STUFF
-      start_timer (&thisAgent->start_phase_tv);
+      start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
       /* REW: end 28.07.96 */
  
@@ -986,7 +992,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
       /* REW: begin 28.07.96 */
       #ifndef NO_TIMING_STUFF
-          stop_timer (&thisAgent->start_phase_tv, 
+          stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                       &thisAgent->decision_cycle_phase_timers[PREFERENCE_PHASE]);
       #endif
       /* REW: end 28.07.96 */
@@ -1000,7 +1006,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	  /* REW: begin 28.07.96 */
       #ifndef NO_TIMING_STUFF
-	  start_timer (&thisAgent->start_phase_tv);
+	  start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
       /* REW: end 28.07.96 */
 	
@@ -1041,7 +1047,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
     /* REW: begin 28.07.96 */
      #ifndef NO_TIMING_STUFF
-         stop_timer (&thisAgent->start_phase_tv, 
+         stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                      &thisAgent->decision_cycle_phase_timers[WM_PHASE]);
      #endif
 
@@ -1063,7 +1069,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
       /* REW: begin 28.07.96 */
       #ifndef NO_TIMING_STUFF
-	  start_timer (&thisAgent->start_phase_tv);
+	  start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
       /* REW: end 28.07.96 */
     
@@ -1075,10 +1081,10 @@ void do_one_top_level_phase (agent* thisAgent)
    
 	  /* REW: begin 28.07.96 */
       #ifndef NO_TIMING_STUFF
-      stop_timer (&thisAgent->start_phase_tv, 
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-      stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-      start_timer (&thisAgent->start_kernel_tv);
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif
       /* REW: end 28.07.96 */
 
@@ -1086,9 +1092,9 @@ void do_one_top_level_phase (agent* thisAgent)
 
       /* REW: begin 28.07.96 */
       #ifndef NO_TIMING_STUFF
-      stop_timer (&thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
-      start_timer (&thisAgent->start_kernel_tv);
-      start_timer (&thisAgent->start_phase_tv);
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
       /* REW: end 28.07.96 */
 
@@ -1108,7 +1114,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
           /* timers stopped KJC 10-04-98 */
           #ifndef NO_TIMING_STUFF
-          stop_timer (&thisAgent->start_phase_tv, 
+          stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                      &thisAgent->decision_cycle_phase_timers[OUTPUT_PHASE]);
           #endif
      
@@ -1133,7 +1139,7 @@ void do_one_top_level_phase (agent* thisAgent)
      
 	  /* REW: begin 28.07.96 */
       #ifndef NO_TIMING_STUFF   
-	  stop_timer (&thisAgent->start_phase_tv, 
+	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
 		  &thisAgent->decision_cycle_phase_timers[OUTPUT_PHASE]);
       #endif
       /* REW: end 28.07.96 */
@@ -1156,7 +1162,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	  /* REW: begin 28.07.96 */
       #ifndef NO_TIMING_STUFF
-	  start_timer (&thisAgent->start_phase_tv);
+	  start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
       /* REW: end 28.07.96 */
 
@@ -1254,7 +1260,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
 			  /* REW: begin 28.07.96 */
               #ifndef NO_TIMING_STUFF
-              stop_timer (&thisAgent->start_phase_tv, 
+              stop_timer (thisAgent, &thisAgent->start_phase_tv, 
 				  &thisAgent->decision_cycle_phase_timers[DECISION_PHASE]);
               #endif
 	          /* REW: end 28.07.96 */
@@ -1279,7 +1285,7 @@ void do_one_top_level_phase (agent* thisAgent)
  
 	  /* REW: begin 28.07.96 */
       #ifndef NO_TIMING_STUFF
-	  stop_timer (&thisAgent->start_phase_tv, 
+	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
 		  &thisAgent->decision_cycle_phase_timers[DECISION_PHASE]);
       #endif
 	  /* REW: end 28.07.96 */
@@ -1331,8 +1337,8 @@ void do_one_top_level_phase (agent* thisAgent)
 
 void run_forever (agent* thisAgent) {
     #ifndef NO_TIMING_STUFF
-	start_timer (&thisAgent->start_total_tv);
-	start_timer (&thisAgent->start_kernel_tv);
+	start_timer (thisAgent, &thisAgent->start_total_tv);
+	start_timer (thisAgent, &thisAgent->start_kernel_tv);
     #endif
 
 	thisAgent->stop_soar = FALSE;
@@ -1342,8 +1348,8 @@ void run_forever (agent* thisAgent) {
 	}
 
     #ifndef NO_TIMING_STUFF
-	stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-	stop_timer (&thisAgent->start_total_tv, &thisAgent->total_cpu_time);
+	stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+	stop_timer (thisAgent, &thisAgent->start_total_tv, &thisAgent->total_cpu_time);
     #endif
 }
 
@@ -1351,8 +1357,8 @@ void run_for_n_phases (agent* thisAgent, long n) {
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
 #ifndef NO_TIMING_STUFF
-  start_timer (&thisAgent->start_total_tv);
-  start_timer (&thisAgent->start_kernel_tv);
+  start_timer (thisAgent, &thisAgent->start_total_tv);
+  start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
   thisAgent->reason_for_stopping = "";
@@ -1361,8 +1367,8 @@ void run_for_n_phases (agent* thisAgent, long n) {
     n--;
   }
 #ifndef NO_TIMING_STUFF
-  stop_timer (&thisAgent->start_total_tv, &thisAgent->total_cpu_time);
-  stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+  stop_timer (thisAgent, &thisAgent->start_total_tv, &thisAgent->total_cpu_time);
+  stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
 #endif
 }
 
@@ -1372,8 +1378,8 @@ void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
 #ifndef NO_TIMING_STUFF
-  start_timer (&thisAgent->start_total_tv);
-  start_timer (&thisAgent->start_kernel_tv);
+  start_timer (thisAgent, &thisAgent->start_total_tv);
+  start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
   thisAgent->reason_for_stopping = "";
@@ -1389,8 +1395,8 @@ void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
     do_one_top_level_phase(thisAgent);
   }
 #ifndef NO_TIMING_STUFF
-  stop_timer (&thisAgent->start_total_tv, &thisAgent->total_cpu_time);
-  stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+  stop_timer (thisAgent, &thisAgent->start_total_tv, &thisAgent->total_cpu_time);
+  stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
 #endif
 }
 
@@ -1401,8 +1407,8 @@ void run_for_n_modifications_of_output (agent* thisAgent, long n) {
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
 #ifndef NO_TIMING_STUFF
-  start_timer (&thisAgent->start_total_tv);
-  start_timer (&thisAgent->start_kernel_tv);
+  start_timer (thisAgent, &thisAgent->start_total_tv);
+  start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
   thisAgent->reason_for_stopping = "";
@@ -1421,8 +1427,8 @@ void run_for_n_modifications_of_output (agent* thisAgent, long n) {
 	}
   }
 #ifndef NO_TIMING_STUFF
-  stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-  stop_timer (&thisAgent->start_total_tv, &thisAgent->total_cpu_time);
+  stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+  stop_timer (thisAgent, &thisAgent->start_total_tv, &thisAgent->total_cpu_time);
 #endif
 }
 
@@ -1432,8 +1438,8 @@ void run_for_n_decision_cycles (agent* thisAgent, long n) {
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
 #ifndef NO_TIMING_STUFF
-  start_timer (&thisAgent->start_total_tv);
-  start_timer (&thisAgent->start_kernel_tv);
+  start_timer (thisAgent, &thisAgent->start_total_tv);
+  start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
   thisAgent->reason_for_stopping = "";
@@ -1446,8 +1452,8 @@ void run_for_n_decision_cycles (agent* thisAgent, long n) {
     do_one_top_level_phase(thisAgent);
   }
 #ifndef NO_TIMING_STUFF
-  stop_timer (&thisAgent->start_total_tv, &thisAgent->total_cpu_time);
-  stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+  stop_timer (thisAgent, &thisAgent->start_total_tv, &thisAgent->total_cpu_time);
+  stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
 #endif
 }
 
@@ -1464,8 +1470,8 @@ void run_for_n_selections_of_slot (agent* thisAgent, long n, Symbol *attr_of_slo
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
 #ifndef NO_TIMING_STUFF
-  start_timer (&thisAgent->start_total_tv);
-  start_timer (&thisAgent->start_kernel_tv);
+  start_timer (thisAgent, &thisAgent->start_total_tv);
+  start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
   thisAgent->reason_for_stopping = "";
@@ -1477,8 +1483,8 @@ void run_for_n_selections_of_slot (agent* thisAgent, long n, Symbol *attr_of_slo
       if (attr_of_slot_just_decided(thisAgent)==attr_of_slot) count++;
   }
 #ifndef NO_TIMING_STUFF
-  stop_timer (&thisAgent->start_total_tv, &thisAgent->total_cpu_time);
-  stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+  stop_timer (thisAgent, &thisAgent->start_total_tv, &thisAgent->total_cpu_time);
+  stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
 #endif
 }
 
@@ -1491,8 +1497,8 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, long n,
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
 #ifndef NO_TIMING_STUFF
-  start_timer (&thisAgent->start_total_tv);
-  start_timer (&thisAgent->start_kernel_tv);
+  start_timer (thisAgent, &thisAgent->start_total_tv);
+  start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
   thisAgent->reason_for_stopping = "";
@@ -1508,8 +1514,8 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, long n,
     }
   }
 #ifndef NO_TIMING_STUFF
-  stop_timer (&thisAgent->start_total_tv, &thisAgent->total_cpu_time);
-  stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+  stop_timer (thisAgent, &thisAgent->start_total_tv, &thisAgent->total_cpu_time);
+  stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
 #endif
 }
 
@@ -1700,7 +1706,7 @@ void init_soar (Kernel * thisKernel)
     // (remove it if it isn't)
 #ifndef NO_TIMING_STUFF
     struct timeval tv;
-    start_timer (&tv);
+    start_timer (NULL, &tv);
 #endif
   }
   /* --- set the random number generator seed to a "random" value --- */

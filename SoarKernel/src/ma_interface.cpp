@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /*******************************************************************************
    Almost all of the functions in this file are almost certainly deprecated.
    This is the only function in interface.cpp which is needed by other files.

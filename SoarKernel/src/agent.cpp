@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /*************************************************************************
  *
  *  file:  agent.cpp
@@ -134,7 +130,7 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
 ===============================
 */
 agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {
-  //int i;                                          /* loop index */
+  int i;                                          /* loop index */
   char cur_path[MAXPATHLEN];   /* AGR 536 */
 
   agent* newAgent = (agent *) malloc(sizeof(agent));
@@ -294,7 +290,7 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {
   newAgent->attention_lapse_tracker = 0;
 
 
-  if(!getcwd(cur_path, MAXPATHLEN))
+  if(!getwd(cur_path))
     print(newAgent, "Unable to set current directory while initializing agent.\n");
   newAgent->top_dir_stack = (dir_stack_struct *) malloc(sizeof(dir_stack_struct));   /* AGR 568 */
   newAgent->top_dir_stack->directory = (char *) malloc(MAXPATHLEN*sizeof(char));   /* AGR 568 */

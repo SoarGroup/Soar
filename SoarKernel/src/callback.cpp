@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /*************************************************************************
  *
  *  file:  callback.cpp
@@ -260,17 +256,17 @@ void soar_invoke_callbacks (agent* thisAgent,
   case AFTER_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_CYCLE_CALLBACK:
     /* for these three: thisAgent->current_phase = DECISION_PHASE */
-	stop_timer (&thisAgent->start_phase_tv, 
+	stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                     &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-	stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-        start_timer (&thisAgent->start_phase_tv);
+	stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+        start_timer (thisAgent, &thisAgent->start_phase_tv);
         break;
   case INPUT_PHASE_CALLBACK:
       /* Stop the kernel and phase timers for the input function */
-       stop_timer (&thisAgent->start_phase_tv, 
+       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-       stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-       start_timer (&thisAgent->start_kernel_tv);
+       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+       start_timer (thisAgent, &thisAgent->start_kernel_tv);
        break;
   default: break;
   }
@@ -305,17 +301,17 @@ void soar_invoke_callbacks (agent* thisAgent,
   case BEFORE_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_CYCLE_CALLBACK:
-       stop_timer (&thisAgent->start_phase_tv, 
+       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                     &thisAgent->monitors_cpu_time[thisAgent->current_phase]);
-       start_timer(&thisAgent->start_kernel_tv);
-       start_timer(&thisAgent->start_phase_tv);
+       start_timer(thisAgent, &thisAgent->start_kernel_tv);
+       start_timer(thisAgent, &thisAgent->start_phase_tv);
        break;
   case INPUT_PHASE_CALLBACK:
     /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
-       stop_timer (&thisAgent->start_kernel_tv, 
+       stop_timer (thisAgent, &thisAgent->start_kernel_tv, 
                    &thisAgent->input_function_cpu_time);
-       start_timer (&thisAgent->start_kernel_tv);
-       start_timer (&thisAgent->start_phase_tv); 
+       start_timer (thisAgent, &thisAgent->start_kernel_tv);
+       start_timer (thisAgent, &thisAgent->start_phase_tv); 
        break;
   default: break;
   }
@@ -353,17 +349,17 @@ void soar_invoke_first_callback (agent* thisAgent,
   case AFTER_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_CYCLE_CALLBACK:
     /* for these three: thisAgent->current_phase = DECISION_PHASE */
-	stop_timer (&thisAgent->start_phase_tv, 
+	stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                     &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-	stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-        start_timer (&thisAgent->start_phase_tv);
+	stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+        start_timer (thisAgent, &thisAgent->start_phase_tv);
         break;
   case INPUT_PHASE_CALLBACK:
       /* Stop the kernel and phase timers for the input function */
-       stop_timer (&thisAgent->start_phase_tv, 
+       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-       stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-       start_timer (&thisAgent->start_kernel_tv);
+       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+       start_timer (thisAgent, &thisAgent->start_kernel_tv);
        break;
   default: break;
   }
@@ -397,17 +393,17 @@ void soar_invoke_first_callback (agent* thisAgent,
   case BEFORE_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_CYCLE_CALLBACK:
-       stop_timer (&thisAgent->start_phase_tv, 
+       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->monitors_cpu_time[thisAgent->current_phase]);
-       start_timer(&thisAgent->start_kernel_tv);
-       start_timer(&thisAgent->start_phase_tv);
+       start_timer(thisAgent, &thisAgent->start_kernel_tv);
+       start_timer(thisAgent, &thisAgent->start_phase_tv);
        break;
   case INPUT_PHASE_CALLBACK:
     /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
-       stop_timer (&thisAgent->start_kernel_tv, 
+       stop_timer (thisAgent, &thisAgent->start_kernel_tv, 
                    &thisAgent->input_function_cpu_time);
-       start_timer (&thisAgent->start_kernel_tv);
-       start_timer (&thisAgent->start_phase_tv); 
+       start_timer (thisAgent, &thisAgent->start_kernel_tv);
+       start_timer (thisAgent, &thisAgent->start_phase_tv); 
        break;
   default: break;
   }

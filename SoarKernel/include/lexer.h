@@ -44,8 +44,6 @@ extern "C"
 {
 #endif
 
-#include <stdio.h>
-
 typedef char Bool;
 typedef struct agent_struct agent;
 

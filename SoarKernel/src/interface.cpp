@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /*************************************************************************
  *
  *  file:  interface.cpp
@@ -79,6 +75,48 @@
 #undef _INCLUDE_HPUX_SOURCE
 #define _STRUCT_TIMEVAL
 #endif /* __hpux */
+
+#if defined(__hpux) || defined(UNIX)
+#include <sys/syscall.h>
+#include <unistd.h>
+
+#ifndef USE_MACROS
+
+inline char * getwd(char * arg)
+{
+	return getcwd(arg, (size_t) 9999);
+}
+
+#endif /* USE_MACROS */
+
+#endif /* __hpux */
+
+#if defined(WIN32)
+#include <direct.h>
+
+#ifndef USE_MACROS
+
+inline char * getwd(char * arg)
+{
+	return _getcwd(arg, (size_t) 9999);
+}
+
+#endif /* USE_MACROS */
+
+#endif /* WIN32 */
+
+#if defined(MACINTOSH)
+
+#ifndef USE_MACROS
+
+inline char * getwd(char * arg)
+{
+	return getcwd(arg, (size_t) 9999);
+}
+
+#endif /* USE_MACROS */
+
+#endif /* MACINTOSH */
 
 /* This is a temporary hack during the Tcl->Soar integration.  When
  * we get to a point where we can remove the old command interpreter
@@ -249,8 +287,7 @@ Bool dispatch_command (Kernel* thisKernel, agent* thisAgent) {
       if (result)
 	print(thisAgent, "  FAILED.\n");
       else {
-  /* voigtjr: getwd -> getcwd, the 9999 is exactly what the old macro used to do so nothing is changing */
-	if(getcwd(expanded_string, 9999))
+	if(getwd(expanded_string))
 	  strcpy(thisAgent->top_dir_stack->directory, expanded_string);
       }
       free((void *) expanded_string);
@@ -271,8 +308,7 @@ Bool dispatch_command (Kernel* thisKernel, agent* thisAgent) {
       if (result)
 	print(thisAgent, "  FAILED.\n");
       else {
-  /* voigtjr: getwd -> getcwd, the 9999 is exactly what the old macro used to do so nothing is changing */
-	if(getcwd(expanded_string, 9999))
+	if(getwd(expanded_string))
 	  strcpy(thisAgent->top_dir_stack->directory, expanded_string);
       }
       free((void *) expanded_string);
@@ -298,8 +334,7 @@ Bool dispatch_command (Kernel* thisKernel, agent* thisAgent) {
 	top_dir->directory = expanded_string;
 	top_dir->next = thisAgent->top_dir_stack;
 	thisAgent->top_dir_stack = top_dir;
-  /* voigtjr: getwd -> getcwd, the 9999 is exactly what the old macro used to do so nothing is changing */
-	if(getcwd(expanded_string, 9999))
+	if(getwd(expanded_string))
 	  strcpy(thisAgent->top_dir_stack->directory, expanded_string);
       }
       if (current_lexer_parentheses_level(thisAgent) != parentheses_level-1)
@@ -321,8 +356,7 @@ Bool dispatch_command (Kernel* thisKernel, agent* thisAgent) {
 	thisAgent->top_dir_stack = top_dir;
 
 	chdir(thisAgent->top_dir_stack->directory);
-  /* voigtjr: getwd -> getcwd, the 9999 is exactly what the old macro used to do so nothing is changing */
-	if (getcwd(thisAgent->top_dir_stack->directory, 9999))
+	if (getwd (thisAgent->top_dir_stack->directory)) {
 	  print(thisAgent, "Current directory now is: %s\n", thisAgent->top_dir_stack->directory);
 	} else {
 	  print(thisAgent, "Error: unable to determine current working directory.\n");
@@ -1333,7 +1367,7 @@ Bool chdir_interface_routine (agent* thisAgent) {
   if (chdir_res)
     print(thisAgent, "  FAILED.\n");
   else {
-    if(getcwd(pathname, MAXPATHLEN))
+    if(getwd(pathname))
       strcpy(thisAgent->top_dir_stack->directory, pathname);
   }  
 
@@ -1369,7 +1403,7 @@ Bool pwd_interface_routine (agent* thisAgent) {
   get_lexeme(thisAgent);  /* consume "pwd" */
 
   chdir(thisAgent->top_dir_stack->directory);
-  if (getcwd (pathname, MAXPATHLEN)) {
+  if (getwd (pathname)) {
     print(thisAgent, "Current directory: %s\n", pathname);
     strcpy(thisAgent->top_dir_stack->directory, pathname);
   } else {
@@ -1402,7 +1436,7 @@ Bool ls_interface_routine (void) {
   get_lexeme(thisAgent);  /* consume "ls" or "lf" */
 
   /*chdir(thisAgent->path);*/
-  if (getcwd(pathname, MAXPATHLEN))
+  if (getwd(pathname))
   {
   	print(thisAgent, "\nCurrent directory is: %s\n\n",pathname);
   }
@@ -1481,7 +1515,7 @@ Bool pushd_interface_routine (agent* thisAgent) {
     top_dir->directory = expanded_string;
     top_dir->next = thisAgent->top_dir_stack;
     thisAgent->top_dir_stack = top_dir;
-    if(getcwd(pathname, MAXPATHLEN))
+    if(getwd(pathname))
       strcpy(thisAgent->top_dir_stack->directory, pathname);
   }  
 
@@ -1524,7 +1558,7 @@ Bool popd_interface_routine (agent* thisAgent) {
     thisAgent->top_dir_stack = top_dir;
 
     chdir(thisAgent->top_dir_stack->directory);
-    if (getcwd(pathname, MAXPATHLEN)) {
+    if (getwd (pathname)) {
       print(thisAgent, "Current directory now is: %s\n", pathname);
       strcpy(thisAgent->top_dir_stack->directory, pathname);
     } else {

@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /*************************************************************************
  *
  *  file:  decide.cpp
@@ -2005,7 +2001,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
               /* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-              start_timer(&thisAgent->start_gds_tv);
+              start_timer(thisAgent, &thisAgent->start_gds_tv);
 #endif 
 #endif
               /* REW: end   11.25.96 */ 
@@ -2117,7 +2113,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
               /* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-              stop_timer(&thisAgent->start_gds_tv, 
+              stop_timer(thisAgent, &thisAgent->start_gds_tv, 
                  &thisAgent->gds_cpu_time[thisAgent->current_phase]);
 #endif
 #endif
@@ -3314,7 +3310,7 @@ void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
   /* REW: begin 11.25.96 */ 
   #ifndef NO_TIMING_STUFF
   #ifdef DETAILED_TIMING_STATS
-  start_timer(&thisAgent->start_gds_tv);
+  start_timer(thisAgent, &thisAgent->start_gds_tv);
   #endif
   #endif
   /* REW: end   11.25.96 */ 
@@ -3368,7 +3364,7 @@ void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
   /* REW: begin 11.25.96 */ 
   #ifndef NO_TIMING_STUFF
   #ifdef DETAILED_TIMING_STATS
-  stop_timer(&thisAgent->start_gds_tv, 
+  stop_timer(thisAgent, &thisAgent->start_gds_tv, 
              &thisAgent->gds_cpu_time[thisAgent->current_phase]);
   #endif
   #endif

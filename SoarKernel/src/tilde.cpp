@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /*******************************************************************************
    Almost all of the functions in this file are almost certainly deprecated,
    with the exception of load_file(), which can be found at the end of the file.

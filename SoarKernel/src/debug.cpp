@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /*
   Some debugging methods determining wether or not various data structures
   are in valid states. These are not fully fleshed out yet so feel free 
