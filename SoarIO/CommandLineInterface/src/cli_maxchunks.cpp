@@ -37,6 +37,7 @@ bool CommandLineInterface::DoMaxChunks(gSKI::IAgent* pAgent, int n) {
 	if (!n) {
 		char buf[32];
 		snprintf(buf, 31, "%d", pAgent->GetMaxChunks());
+		buf[31] = 0;
 		AppendToResult(buf);
 		return true;
 	}

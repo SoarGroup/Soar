@@ -37,6 +37,7 @@ bool CommandLineInterface::DoMaxElaborations(gSKI::IAgent* pAgent, int n) {
 	if (!n) {
 		char buf[32];
 		snprintf(buf, 31, "%d", pAgent->GetMaxElaborations());
+		buf[31] = 0;
 		AppendToResult(buf);
 		return true;
 	}

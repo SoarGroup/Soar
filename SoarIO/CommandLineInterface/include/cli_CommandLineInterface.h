@@ -353,6 +353,15 @@ public:
 	bool DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsigned int mode);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoOSupportMode(gSKI::IAgent* pAgent, int mode);
+
+	/*************************************************************
 	* @brief popd command, see usage.txt for details.
 	*************************************************************/
 	bool ParsePopD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

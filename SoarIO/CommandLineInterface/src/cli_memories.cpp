@@ -147,6 +147,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 			j != memories.rend() && (n == 0 || i < n); 
 			++j, ++i) {
 			snprintf(buf, 1023, "%s: %ld\n", j->first.c_str(), j->second);
+			buf[1023] = 0;
 			AppendToResult(buf);
 		}
 		return true;
@@ -162,6 +163,7 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 
 	char buf[1024];
 	snprintf(buf, 1023, "\n Memory use for %s: %ld\n\n", production.c_str(), pProd->CountReteTokens());
+	buf[1023] = 0;
 	AppendToResult(buf);
 	pProd->Release(); 
 	pProd = 0;

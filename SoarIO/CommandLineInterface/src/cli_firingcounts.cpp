@@ -112,6 +112,7 @@ bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::string* pPr
 		j != firings.rend() && (numberToList <= 0 || i < numberToList); 
 		++j, ++i) {
 		snprintf(buf, 1023, "%6lu:  %s\n", j->second, j->first.c_str());
+		buf[1023] = 0;
 		AppendToResult(buf);
 	}
 	return true;

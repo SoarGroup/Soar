@@ -197,6 +197,9 @@
 					RelativePath=".\src\cli_numericindifferentmode.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_osupportmode.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_popd.cpp">
 				</File>
 				<File

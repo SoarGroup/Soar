@@ -23,6 +23,7 @@ bool CommandLineInterface::DoVersion() {
 
 	char buf[32];
 	snprintf(buf, 31, "%d.%d", m_KernelVersion.major, m_KernelVersion.minor);
+	buf[31] = 0;
 	AppendToResult(buf);
 	return true;
 }

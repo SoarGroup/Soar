@@ -392,7 +392,19 @@ random mode.
 ~~~
 ***
 o-support-mode
-Usage:	o-support-mode
+Usage:	o-support-mode [0|1|2|3|4]
+
+The o-support-mode is used to control the way that O-support is determined for 
+preferences.  The o-support-mode value must be one of three values:
+
+  0	O-support works as described in the Soar manual.
+  1	Same as 0 but a message is printed if the alternative scheme would have
+  	made a difference in the Soar program.
+  2	The alternative O-support scheme is used (see Soar manual for details).
+  3	?
+  4	?
+
+Running o-support-mode with no arguments prints out the current o-support-mode.
 ~~~
 ***
 popd
