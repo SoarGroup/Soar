@@ -20,12 +20,41 @@
 		Tcl_Interp* interp;
 		Tcl_Obj* script;
 	};
-
+	
+	/*
+	bool TclRhsCallback(sml::smlRhsEventId, void* pUserData, Agent* pAgent, char const* pFunctionName,
+	                    char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
+	{
+	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
+	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
+	    Tcl_AppendStringsToObj(script, pFunctionName, " ", NULL);
+	    Tcl_AppendObjToObj(script, Tcl_NewIntObj(maxLengthReturnValue));
+	    Tcl_EvalObjEx(tud->interp, script, 0);
+	    Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
+	    
+	    //check the result
+	    //should be a list with two items
+	    //first item should be a bool
+	    //second item should be the text
+	    int length = 0;
+	    int error = Tcl_ListObjLength(tud->interp, res, &length);
+	    if(error == TCL_OK && length==2) {
+	        Tcl_Obj* retval;
+	        Tcl_ListObjIndex(tud->interp, res, 0, &retVal);
+	    }
+	    
+	    pReturnValue = NULL;
+	    return false;
+	}
+	*/
+	
 	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
 	{
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
-	    Tcl_AppendObjToObj(tud->script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
-		Tcl_EvalObjEx(tud->interp, tud->script, 0);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
+		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	
 	void TclProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
@@ -140,6 +169,7 @@
 }
 
 %extend sml::Kernel {
+
     int RegisterForSystemEvent(Tcl_Interp* interp, sml::smlSystemEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    return self->RegisterForSystemEvent(id, TclSystemEventCallback, (void*)tud, addToBack);
@@ -149,4 +179,11 @@
 	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
 	    return self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
     };
+    
+    /*
+    int AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
+	    TclUserData* tud = CreateTclUserData(smlEVENT_RHS_USER_FUNCTION, pRhsFunctionName, userData, interp);
+	    return self->AddRhsFunction(pRhsFunctionName, TclRhsEventCallback, (void*)tud, addToBack);
+    };
+    */
 }
