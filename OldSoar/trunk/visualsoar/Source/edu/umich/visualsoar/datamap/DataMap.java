@@ -212,7 +212,7 @@ public class DataMap extends CustomInternalFrame
 
             if (isGeneratedNode(value)) 
             {
-                setForeground(Color.green.darker());
+                setForeground(Color.green.darker().darker());
             }
 
 /// The following were just for testing purposes /////      

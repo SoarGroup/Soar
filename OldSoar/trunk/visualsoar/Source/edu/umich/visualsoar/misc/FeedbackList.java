@@ -172,7 +172,7 @@ public class FeedbackList extends JList
         {
             setOpaque(true);
             textColor = Color.blue.darker();
-            floTextColor = Color.green.darker();
+            floTextColor = Color.green.darker().darker();
             setFont(new Font("SansSerif",Font.PLAIN,12));
         }
         
