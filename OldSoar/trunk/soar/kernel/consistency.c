@@ -885,7 +885,7 @@ void determine_highest_active_production_level_in_stack_propose() {
      want operators to fire in the proposal phase
   */
   if ( !( current_agent(ms_retractions) || current_agent(ms_i_assertions ) ) ) {
-  /* if (minor_quiescence_at_goal(current_agent(bottom_goal))) { */
+  /*if (minor_quiescence_at_goal(current_agent(bottom_goal))) {*/
     /* This is minor quiescence */
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
         print("\n Propose Phase Quiescence has been reached...going to decision\n");

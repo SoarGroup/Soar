@@ -932,12 +932,19 @@ bool get_next_assertion (production **prod,
 
      } else {
        
-       /* If there is not an active goal, then there should not be any
-	  assertions.  If there are, then we generate and error message
-	  and abort. */
-       
-       if ((current_agent(ms_i_assertions)) ||
-	   (current_agent(ms_o_assertions))) {
+      /* REW: 2003-11-05 */
+	  /* If there is not an active goal, then there should not be any
+	     assertions during apply.  If there are, then we generate and error message
+         and abort.  In propose, there must not be any i_asssertions.  There
+         may be o_assertions that are ready to fire, but these are ignored in
+         propose.*/
+
+	if (  (  (current_agent(FIRING_TYPE) == PE_PRODS) &&
+          current_agent(ms_o_assertions)  )
+    ||
+      (  (current_agent(FIRING_TYPE) == IE_PRODS) &&
+         current_agent(ms_i_assertions)  )  ){
+
 	 char msg[MESSAGE_SIZE];
 	 strncpy(msg,"\nrete.c: Error: No active goal, but assertions are on the assertion list.",MESSAGE_SIZE);
 	 msg[MESSAGE_SIZE-1]=0;
