@@ -16,10 +16,13 @@ sml_AgentOutputFlusher.cpp\
 sml_AgentSML.cpp\
 sml_ConnectionManager.cpp\
 sml_EventManager.cpp\
-sml_KernelListener.cpp\
 sml_KernelSML.cpp\
 sml_KernelSMLHandlers.cpp\
-sml_OutputListener.cpp
+sml_OutputListener.cpp\
+sml_PrintListener.cpp\
+sml_RhsListener.cpp\
+sml_RunListener.cpp\
+sml_SystemListener.cpp
 
 INCLUDES = \
 -I../.. \
