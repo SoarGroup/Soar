@@ -10,8 +10,17 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_STRINGS_H
+#include <strings.h>  // strcasecmp
+#endif
+
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "sml_StringOps.h"
 
@@ -34,7 +43,11 @@ bool sml::IsStringEqualIgnoreCase(char const* pStr1, char const* pStr2)
 	if (pStr1 == NULL || pStr2 == NULL)
 		return false ;
 
-	return (stricmp(pStr1, pStr2) == 0) ;
+#ifdef HAVE_STRINGS_H
+		return (strcasecmp(pStr1, pStr2) == 0);
+#else
+		return (stricmp(pStr1, pStr2) == 0) ;
+#endif
 }
 
 /*************************************************************
@@ -50,8 +63,10 @@ char* sml::Int2String(long value, char* buffer, int maxChars)
 		return buffer ;
 	}
 
-	// The 10 here is the base.
-	return ltoa(value, buffer, 10) ;
+	// Changed from ltoa -> snprintf by voigtjr
+	snprintf(buffer, maxChars, "%d", value);
+	buffer[maxChars - 1] = 0; // windows doesn't guarantee null termination
+	return buffer;
 }
 
 /*************************************************************

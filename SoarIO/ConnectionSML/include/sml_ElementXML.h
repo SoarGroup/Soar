@@ -49,7 +49,7 @@ class Connection ;
 class ElementXML
 {
 	// Let Connection have access to Fast methods (which are protected because they take care to use correctly).
-	friend Connection ;
+	friend class Connection ;
 
 protected:
 	ElementXML_Handle m_hXML ;	// Reference to the underlying object which is created from the ElementXML DLL.

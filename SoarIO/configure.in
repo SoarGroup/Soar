@@ -1,0 +1,28 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.59)
+AC_INIT([SoarIO], [8.6.0])
+AM_INIT_AUTOMAKE([SoarIO], [8.6.0])
+AC_CONFIG_SRCDIR([ConnectionSML/src/sml_AnalyzeXML.cpp])
+AM_CONFIG_HEADER(config.h)
+
+# Checks for programs.
+AC_PROG_LIBTOOL
+AC_PROG_CXX
+
+# Checks for libraries.
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([stdlib.h string.h strings.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_CONST
+AC_C_INLINE
+AC_TYPE_SIZE_T
+
+# Checks for library functions.
+AC_CHECK_FUNCS([getcwd memset])
+AC_OUTPUT(Makefile ConnectionSML/Makefile ConnectionSML/src/Makefile)
