@@ -11,7 +11,7 @@ New Windows Installer:
 ======================
 
 	The Windows installer is now built with a different technology which
-is much easier for us and results in a smaller package.
+is much easier for us and results in a much smaller package.
 
 =========================
 Several kernel bug fixes:
@@ -19,6 +19,15 @@ Several kernel bug fixes:
 
 	Almost all known bugs fixed, including all known crash bugs. See the
 details section below for more information.
+
+==================
+New TankSoar Bots:
+==================
+
+	TankSoar now comes with two new bots.  Mapping-bot demonstrates how a
+tank might build up an internal map of the level.  Obscure-bot is a challenge bot
+for people to test their own bots against.  The code is provided in an obfuscated
+binary.  See obscure-bot.txt in the TankSoar agents directory for details.
 
 ==========================
 SoarDoc and DMGen updated:
@@ -39,7 +48,8 @@ DMGen:
 Documentation Updated:
 ======================
 
-	The tutorials have had some typo fixes and explain substates better.
+	The tutorials have had some typo fixes and screenshot updates, and also
+explain substates better.
 
 ==================
 Tcl Soar Debugger:
@@ -125,10 +135,15 @@ TankSoar 3.0.8
 
 Bug Fixes
 ---------
+map loading menu now defaults to maps directory
 188  Selecting Map->Random Map causes error message when agent present on
 	current map
 392  garbage printed to debugger output when Stop After Decision Phase is on
 393  command 'run 1' generates 'invalid command step' error
+
+Enhancements
+------------
+new challenge bot (obscure-bot) and mapping bot provided
 
 Known Issues
 ------------  
