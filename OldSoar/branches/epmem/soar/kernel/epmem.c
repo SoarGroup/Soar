@@ -2028,6 +2028,180 @@ void epmem_print_curr_memory()
 
 }//epmem_print_curr_memory
 
+/* ===================================================================
+   epmem_calc_wmetree_size      *RECURSIVE*
+
+   Calculates the size of a wmetree in terms of numbers of nodes
+
+   Created: 15 June 2004
+   =================================================================== */
+int epmem_calc_wmetree_size(wmetree *node)
+{
+    int size = 0;
+    unsigned long hash_value;
+    wmetree *child;
+    
+    if (node == NULL) return 0;
+
+    size += node->children->size;
+    
+    for (hash_value = 0; hash_value < node->children->size; hash_value++)
+    {
+        child = (wmetree *) (*(node->children->buckets + hash_value));
+        for (; child != NIL; child = child->next)
+        {
+            size += epmem_calc_wmetree_size(child);
+        }
+    }
+
+    return size;
+}//epmem_calc_wmetree_size
+
+/* ===================================================================
+   epmem_print_detailed_usage_memories
+
+   Prints a memory usage trace for g_memories to a given file handle.
+
+   Created: 15 June 2004
+   =================================================================== */
+//NOTE:  NUM_BINS must be less than 256 and HISTOGRAM_SIZE must be greater
+//       than the maximum size of any memory.
+#define BIN_SIZE 3
+#define NUM_BINS 200
+#define HISTOGRAM_SIZE (BIN_SIZE * NUM_BINS + 1)
+void epmem_print_detailed_usage_memories(FILE *f)
+{
+    int histogram[HISTOGRAM_SIZE];
+    int i,j;
+    int largest = 0;
+    
+
+    for(i = 0; i < HISTOGRAM_SIZE; i++)
+    {
+        histogram[i] = 0;
+    }
+
+    for(i = 0; i < g_memories->size; i++)
+    {
+        int memsize =  ((arraylist *)g_memories->array[i])->size;
+        if (memsize > HISTOGRAM_SIZE)
+        {
+            fprintf(f, "ERROR!  Memories are too large.\n");
+        }
+        else
+        {
+            (histogram[memsize])++;
+        }
+
+        if (memsize > largest) largest = memsize;
+    }
+
+    //To accomodate maximum excel spreadsheet dimensions , bin the results
+    for(i = 0; i < NUM_BINS; i++)
+    {
+        int sum = 0;
+        for(j = 1; j <= BIN_SIZE; j++)
+        {
+            sum += histogram[i*BIN_SIZE + j];
+        }
+        fprintf(f, "%d\t", sum);
+    }
+    fprintf(f, "\n");
+    
+}//epmem_print_detailed_usage_memories
+
+/* ===================================================================
+   epmem_print_detailed_usage_wmetree      *RECURSIVE*
+
+   Prints a memory usage trace for a wmetree to a given file handle.
+
+   f - file handle to print to
+   node - the wmetree to print the usage stats about
+   largest - initial caller should set an int to zero and pass in a
+             ptr to it here
+
+   Created: 15 June 2004
+   =================================================================== */
+void epduw_helper(wmetree *node, int *histogram, int *largest)
+{
+    int nodesize;
+    unsigned long hash_value;
+    wmetree *child;
+
+    if (node->assoc_memories != NULL)
+    {
+        nodesize = node->assoc_memories->size;
+        (histogram[nodesize])++;
+        if (nodesize > *largest) *largest = nodesize;
+    }
+    
+    for (hash_value = 0; hash_value < node->children->size; hash_value++)
+    {
+        child = (wmetree *) (*(node->children->buckets + hash_value));
+        for (; child != NIL; child = child->next)
+        {
+            epduw_helper(child, histogram, largest);
+        }
+    }
+    
+}//epduw_helper
+
+void epmem_print_detailed_usage_wmetree(FILE *f, wmetree *node)
+{
+    static int histogram[HISTOGRAM_SIZE];
+    int i;
+    int largest = 0;
+    
+    if (node == NULL)
+    {
+        fprintf(f, "\n");
+        return;
+    }
+
+    for(i = 0; i < HISTOGRAM_SIZE; i++)
+    {
+        histogram[i] = 0;
+    }
+
+    epduw_helper(node, histogram, &largest);
+    
+    fprintf(f, "%d", histogram[2]);
+    for(i = 2; i <= largest; i++)
+    {
+        fprintf(f, "\t%d", histogram[i]);
+    }
+    fprintf(f, "\n");
+    
+}//epmem_print_detailed_usage_wmetree
+
+
+
+/* ===================================================================
+   epmem_print_mem_usage
+
+   Prints information about how much RAM the episodic memories are
+   using to a file.
+
+   Created: 14 June 2004
+   =================================================================== */
+void epmem_print_mem_usage()
+{
+    FILE *f;
+
+    //Print the episodic memories' usage
+    f = fopen("\\temp\\epmem_ram_usage_memories.txt", "aw");
+    if (f == NULL) return;
+    epmem_print_detailed_usage_memories(f);
+    fclose(f);
+
+    //Print the wmetree's usage info
+    f = fopen("\\temp\\epmem_ram_usage_wmetree.txt", "aw");
+    if (f == NULL) return;
+    epmem_print_detailed_usage_wmetree(f, &g_wmetree);
+    fclose(f);
+    
+}//epmem_print_mem_usage
+
 
 /* ===================================================================
    epmem_update() 
@@ -2072,6 +2246,7 @@ void epmem_update()
 
     //%%%DEBUGGING
     //epmem_print_curr_memory();
+    //epmem_print_mem_usage();
 
 }//epmem_update
 
