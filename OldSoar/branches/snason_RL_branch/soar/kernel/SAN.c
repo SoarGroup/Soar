@@ -240,6 +240,7 @@ production *specify_production(instantiation *ist){
 						 continue;
 					 }
 					 deallocate_list_of_nots(new_not);
+					 new_not = NIL;
 					 w = NIL;
 					 break;
 				 }
