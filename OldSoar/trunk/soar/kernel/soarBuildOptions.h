@@ -658,6 +658,16 @@
  */
 /*#define BUG_139_WORKAROUND_WARNING*/
 
+/**
+ * \def USE_CAPTURE_REPLAY
+ *
+ *     Enables commands which allow wme changes to be saved to
+ *     a file and replayed later
+ *
+ */
+/*#define BUG_139_WORKAROUND_WARNING*/
+#define USE_CAPTURE_REPLAY
+
 /***************************************************************************
  *
  *         Build Descriptions

@@ -75,11 +75,11 @@ void capture_input_wme(enum captured_action_type action, soarapi_wme * sw, wme *
 
         fprintf(current_agent(capture_fileID), " : %s %s %s : ", sw->id, sw->attr, sw->value);
 
-        fprintf(current_agent(capture_fileID), "%s ", symbol_to_string(w->id, TRUE, NULL));
+        fprintf(current_agent(capture_fileID), "%s ", symbol_to_string(w->id, TRUE, NULL, 0 ));
 
-        fprintf(current_agent(capture_fileID), "%s ", symbol_to_string(w->attr, TRUE, NULL));
+        fprintf(current_agent(capture_fileID), "%s ", symbol_to_string(w->attr, TRUE, NULL, 0));
 
-        fprintf(current_agent(capture_fileID), "%s\n", symbol_to_string(w->value, TRUE, NULL));
+        fprintf(current_agent(capture_fileID), "%s\n", symbol_to_string(w->value, TRUE, NULL, 0));
 
         break;
 

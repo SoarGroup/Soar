@@ -62,6 +62,8 @@
 #define pclose(stream) _pclose(stream)
 #endif
 
+#define USE_CAPTURE_REPLAY
+
 extern Tcl_Interp *tcl_soar_agent_interpreters[MAX_SIMULTANEOUS_AGENTS];
 extern remove_rhs_function(Symbol * name);
 
@@ -1980,11 +1982,11 @@ int CaptureInputCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Ob
     if (soar_CaptureInput(objc, new_argv, &res) == SOAR_OK) {
         /*interp->result = res.result; voigtjr, deprecated */
         Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
-        free_argv(argv);
+        free_argv(objc, argv);
         return TCL_OK;
     } else {
         Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
-        free_argv(argv);
+        free_argv(objc, argv);
         return TCL_ERROR;
     }
 }
@@ -2066,11 +2068,11 @@ int ReplayInputCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj
 
     if (soar_ReplayInput(objc, new_argv, &res) == SOAR_OK) {
         Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
-        free_argv(argv);
+        free_argv(objc, argv);
         return TCL_OK;
     } else {
         Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
-        free_argv(argv);
+        free_argv(objc, argv);
         return TCL_ERROR;
     }
 }
