@@ -37,7 +37,6 @@ public class SWTApplication
 		
 		MainFrame frame = new MainFrame(shell, m_Document) ;
 		frame.initComponents();
-		frame.setVisible(true);
 		
 		// We wait until we have a frame up before starting the kernel
 		// so it's just as if the user chose to do this manually
@@ -47,7 +46,7 @@ public class SWTApplication
 		
 		shell.open() ;
 		
-		m_Document.pumpMessagesTillClosed() ;
+		m_Document.pumpMessagesTillClosed(display) ;
 
 		display.dispose() ;
 	}

@@ -21,6 +21,8 @@ import modules.TraceView;
 import java.io.IOException;
 import java.util.*;
 
+import org.eclipse.swt.widgets.Display;
+
 /********************************************************************************************
 * 
 * This class represents the soar process.
@@ -49,6 +51,9 @@ public class Document
 	
 	/** The list of all main frames in the application -- each frame has a menu bar */
 	private FrameList			m_FrameList = new FrameList() ;
+	
+	/** We have to pump messages on this display to keep the app alive */
+	private Display				m_Display = null ;
 	
 	/** There is only one document in the debugger.  If you want to work with another Soar process, start another debugger */
 	private static Document		s_Document ;
@@ -133,6 +138,14 @@ public class Document
 		}
 		
 		return agents ;
+	}
+	
+	public boolean isAgentValid(Agent agent)
+	{
+		if (m_Kernel == null)
+			return false ;
+		
+		return m_Kernel.IsAgentValid(agent) ;
 	}
 
 	/********************************************************************************************
@@ -435,18 +448,18 @@ public class Document
 	public SoarCommands	getSoarCommands()	{ return m_SoarCommands ; }
 	
 	// Pump messages continuously until the window is closed
-	public void pumpMessagesTillClosed()
+	public void pumpMessagesTillClosed(org.eclipse.swt.widgets.Display display)
 	{
+		m_Display = display ;
+		
 		if (getNumberFrames() == 0)
 			return ;
 		
-		org.eclipse.swt.widgets.Display display = getFirstFrame().getDisplay() ;
-
 		while (getNumberFrames() > 0)
 		{
-			if (!display.readAndDispatch())
+			if (!m_Display.readAndDispatch())
 			{
-				display.sleep() ;
+				m_Display.sleep() ;
 			}
 		}
 	}
@@ -454,13 +467,11 @@ public class Document
 	// Pump messages one step 
 	public void pumpMessagesOneStep()
 	{
-		if (getNumberFrames() == 0)
+		if (getNumberFrames() == 0 || m_Display == null)
 			return ;
 		
-		org.eclipse.swt.widgets.Display display = getFirstFrame().getDisplay() ;
-
 		// Pump any waiting messages
-		while (display.readAndDispatch()) { }
+		while (m_Display.readAndDispatch()) { }
 	}
 	
 	/** Register for all events from Soar */

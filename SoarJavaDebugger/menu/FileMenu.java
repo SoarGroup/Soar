@@ -91,10 +91,8 @@ public class FileMenu
 	private void useDefaultPerformed(ActionEvent e)
 	{
 		MainFrame frame = m_Frame ;
-
-		m_Frame.ShowMessageBox("Not implemented in SWT version yet") ;
 		
-		//frame.useDefaultLayout() ;
+		frame.useDefaultLayout() ;
 	}
 
 	/** Change the window layout back to the default */

@@ -151,7 +151,7 @@ public class ComboCommandView extends AbstractView
 			m_Text.setBackground(getBackgroundColor()) ;
 		
 		// Listen for when this window is disposed and unregister for anything we registered for
-//		m_Container.addDisposeListener(new DisposeListener() { public void widgetDisposed(DisposeEvent e) { removeListeners() ; } } ) ;
+		m_Container.addDisposeListener(new DisposeListener() { public void widgetDisposed(DisposeEvent e) { removeListeners() ; } } ) ;
 		
 		// We want to know when the frame focuses on particular agents
 		m_MainFrame.addAgentFocusListener(this) ;
@@ -160,6 +160,13 @@ public class ComboCommandView extends AbstractView
 	public Color getBackgroundColor()
 	{
 		return null ;
+	}
+	
+	// We need to remove listeners that we registered for within the debugger here.
+	// Agent listeners (from Soar) are handled separately.
+	private void removeListeners()
+	{
+		m_MainFrame.removeAgentFocusListener(this) ;
 	}
 	
 	/************************************************************************
@@ -408,7 +415,10 @@ public class ComboCommandView extends AbstractView
 	{
 		if (m_Text.isDisposed())
 		{
-			System.out.println("Naughty -- we're still registered for the print event although our window has been closed") ;
+			if (eventID == smlPrintEventId.smlEVENT_PRINT.swigValue())
+				System.out.println("Naughty -- we're still registered for the print event although our window has been closed: agent " + agent.GetAgentName()) ;
+			else
+				System.out.println("Naughty -- got another print event although our window has been closed: agent " + agent.GetAgentName()) ;
 			return ;
 		}
 		
@@ -437,7 +447,10 @@ public class ComboCommandView extends AbstractView
 		boolean ok = agent.UnregisterForRunEvent(m_StopCallback) ;
 
 		if (m_ShowTraceOutput)
+		{
+			System.out.println("Unregister print event for " + agent.GetAgentName()) ;
 			ok = agent.UnregisterForPrintEvent(m_PrintCallback) && ok ;
+		}
 		
 		if (!ok)
 			throw new IllegalStateException("Problem unregistering for events") ;

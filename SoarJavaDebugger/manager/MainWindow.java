@@ -15,7 +15,13 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.* ;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
+
+import sml.Agent;
+
+import helpers.FormDataHelper;
+
 import java.util.*;
 
 import modules.* ;
@@ -165,40 +171,88 @@ public class MainWindow
   	********************************************************************************************/
   	public void useDefaultLayout()
   	{
+  		Agent currentAgentFocus = null ;
+  		
   		// Close any existing windows and start fresh
   		if (m_Window != null)
   		{
   			Composite parent = m_Window.getParent() ;
   			
-  			// BUGBUG: We need to unregister some events and register them again for this to work.
-  			// Right now the panes aren't cleaning up completely correctly.
+  			// We need to clear the focus before deleting all of the windows
+  			// so they unregister any events for the current agent
+  			// Then at the end we'll reset the focus, allowing them to re-register
+  			// for events.
+  			currentAgentFocus = m_MainFrame.getAgentFocus() ;
+  			m_MainFrame.setAgentFocus(null) ;
+  			
+  			// Now delete everything
   			m_Window.dispose() ;
   			m_PaneList.clear() ;
   			
 			m_Window = new Composite(parent, 0) ;
 			m_Window.setLayout(new FormLayout()) ;
-			
-			// Note: Must update the parent because we've changed its children here.
-			// Without this the new windows don't appear on screen at all.
-	       	m_Window.getParent().layout() ;
   		}
   		
-  		Pane top  		  = new Pane(m_Window) ;
-  		Pane buttonPane   = new Pane(m_Window) ;
-  		Pane bottom       = new Pane(m_Window) ;
-  		Pane rightTop     = new Pane(m_Window) ;
-  		Pane rightBottom  = new Pane(m_Window) ;
+  		// Horiz sash has 3 windows has vertSashLeft and vertSashRight as its children
+  		SashForm horizSash = new SashForm(m_Window, SWT.HORIZONTAL) ;
+  		horizSash.setLayoutData(FormDataHelper.anchorFull(0)) ;
 
-  		Sash divider1 = new Sash(m_Window, SWT.HORIZONTAL) ;
-  		Sash divider2 = new Sash(m_Window, SWT.VERTICAL) ;
-  		Sash divider3 = new Sash(m_Window, SWT.HORIZONTAL) ;
+  		// Column of panes on the left
+  		SashForm vertSashLeft = new SashForm(horizSash, SWT.VERTICAL) ;
+  		vertSashLeft.setLayoutData(FormDataHelper.anchorFull(0)) ;
 
+  		// Column of panes on the right
+  		SashForm vertSashRight = new SashForm(horizSash, SWT.VERTICAL) ;
+  		vertSashRight.setLayoutData(FormDataHelper.anchorFull(0)) ;
+
+  		// The button bar is a fixed size window so it is linked to the window above
+  		// and moves as one with it.  To make this happen we'll create this pair.
+  		Composite pair	  = new Composite(vertSashLeft, 0) ;
+  		pair.setLayout(new FormLayout()) ;
+
+  		// These panes contain a SWT Window and a module/view that provides specific debugging content
+  		Pane top  		  = new Pane(pair) ;
+  		Pane buttonPane   = new Pane(pair) ;
+  		Pane bottom       = new Pane(vertSashLeft) ;
+  		Pane rightTop     = new Pane(vertSashRight) ;
+  		Pane rightBottom  = new Pane(vertSashRight) ;
+
+  		// Layout logic for just the top and buttonPane windows
+  		FormData topData  = new FormData() ;
+  		FormData buttonData = new FormData() ;
+  		
+      	topData.left      = new FormAttachment(0);
+    	topData.right     = new FormAttachment(100);
+    	topData.top       = new FormAttachment(0);
+      	topData.bottom    = new FormAttachment(buttonPane.getWindow());
+      	
+      	buttonData.left   = new FormAttachment(0) ;
+      	buttonData.right  = new FormAttachment(100) ;
+      	// If we bind the button's top to the window it makes the top window very small and the buttons very large
+      	// buttonData.top    = new FormAttachment(top.getWindow()) ;
+      	buttonData.bottom = new FormAttachment(100) ;
+      	
+      	top.getWindow().setLayoutData(topData) ;
+      	buttonPane.getWindow().setLayoutData(buttonData) ;
+
+  		// Have to set the weights after we have added the panes, so that the size of the weights array
+  		// matches the current list of controls
+  		vertSashLeft.setWeights(new int[] { 80, 20 }) ;
+  		vertSashRight.setWeights(new int[] { 50, 50 }) ;
+  		horizSash.setWeights(new int[] { 70, 30 } ) ;
+  		
+  		// Record the list of panes in use
   		m_PaneList.add(top) ;
   		m_PaneList.add(buttonPane) ;
   		m_PaneList.add(bottom) ;
   		m_PaneList.add(rightTop) ;
   		m_PaneList.add(rightBottom) ;
-  		
+  		  		
+  		/*
+  		Sash divider1 = new Sash(m_Window, SWT.HORIZONTAL) ;
+  		Sash divider2 = new Sash(m_Window, SWT.VERTICAL) ;
+  		Sash divider3 = new Sash(m_Window, SWT.HORIZONTAL) ;
+
   		// Layout the three windows with a sash between them
     	FormData topData    = new FormData();
     	FormData buttonData = new FormData() ;
@@ -251,6 +305,7 @@ public class MainWindow
 		layoutControls(divider1, 0.8) ;
 		layoutControls(divider2, 0.7) ;
 		layoutControls(divider3, 0.5) ;
+		*/
 		
 		// Now connect up a specific type of view with these panes
 		AbstractView trace = new TraceView() ;
@@ -282,7 +337,20 @@ public class MainWindow
   		// Reset the default text font (once all windows have been created)
 		// as part of "the default layout".
   		m_MainFrame.setTextFont(new FontData("Courier New", 8, SWT.NORMAL)) ;
+  		
+		// Note: Must update the parent because we've changed its children here.
+		// Without this the new windows don't appear on screen at all.
+       	m_Window.getParent().layout(true) ;
+       	
+       	// We reset the agent focus (if it existed before).
+       	// This allows the new windows to all register for events with this agent.
+       	m_MainFrame.setAgentFocus(currentAgentFocus) ;
   	}
+  	
+	public boolean saveLayoutToFile(String filename)
+	{
+		return false ;
+	}
   	
 	public void layoutControls(Sash divider, double position)
 	{

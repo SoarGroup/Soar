@@ -118,7 +118,6 @@ public class AgentMenu
 			
 			MainFrame frame = new MainFrame(shell, m_Document) ;
 			frame.initComponents() ;
-			frame.setVisible(true) ;
 
 			shell.open() ;
 		

@@ -344,6 +344,7 @@ class smlJNI {
   public final static native boolean Kernel_DestroyAgent(long jarg1, long jarg2);
   public final static native long Kernel_GetAgent(long jarg1, String jarg2);
   public final static native long Kernel_GetAgentByIndex(long jarg1, int jarg2);
+  public final static native boolean Kernel_IsAgentValid(long jarg1, long jarg2);
   public final static native String Kernel_ExecuteCommandLine(long jarg1, String jarg2, String jarg3);
   public final static native boolean Kernel_ExecuteCommandLineXML(long jarg1, String jarg2, String jarg3, long jarg4);
   public final static native String Kernel_ExpandCommandLine(long jarg1, String jarg2);

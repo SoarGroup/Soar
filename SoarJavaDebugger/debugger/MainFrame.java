@@ -71,7 +71,7 @@ public class MainFrame
 	/** The menus in the menu bar */
 	private FileMenu 	m_FileMenu = null ;
 	private EditMenu 	m_EditMenu = null ;
-	private KernelMenu 	m_RemoteMenu = null ;
+	private KernelMenu 	m_KernelMenu = null ;
 	private AgentMenu	m_AgentMenu = null ;
 	
 	/** The main document object -- represents the Soar process.  There is only one of these ever in the debugger. */
@@ -97,6 +97,8 @@ public class MainFrame
 	private SoarChangeListener m_SoarChangeListener = null ;
 	
 	private boolean m_Shown = false ;
+	private boolean m_bClosing = false ;
+	
 	private java.awt.print.PageFormat m_PageFormat = new java.awt.print.PageFormat() ;
 	
 	/** We'll keep a list of colors here that we wish to use elsewhere.  When the frame is disposed we should dispose them */
@@ -127,9 +129,7 @@ public class MainFrame
 			public void soarConnectionChanged(SoarConnectionEvent e)
 			{
 				// If the connection has changed reset the focus to null
-				// This also invalidates any existing agent reference we had so don't try
-				// to unregister event handlers etc.
-				setAgentFocus(null, true) ;
+				setAgentFocus(null) ;
 				
 				updateMenus() ; 
 			} ;
@@ -139,7 +139,7 @@ public class MainFrame
 				// If we're removing the current focus agent then
 				// set the focus to null for this window.
 				if (e.isAgentRemoved() && Document.isSameAgent(e.getAgent(), m_AgentFocus))
-					setAgentFocus(null, false) ;
+					setAgentFocus(null) ;
 				
 				updateMenus() ; 
 			} ;
@@ -158,15 +158,10 @@ public class MainFrame
 		return m_Parent.getDisplay() ;
 	}
 	
-	public void setVisible(boolean state)
-	{
-		// BUGBUG - SWT: Not sure how this maps
-	}
-		
-	public void ShowMessageBox(String title, String text)
+	public static void ShowMessageBox(Shell shell, String title, String text)
 	{
 		// Only show messages once the shell itself is going
-		if (!getShell().isVisible())
+		if (!shell.isVisible())
 			return ;
 		
 		if (title == null)
@@ -175,10 +170,22 @@ public class MainFrame
 			text = "<No message>" ;
 		
 		// Display an SWT message box
-		MessageBox msg = new MessageBox(getShell(), 0) ;
+		MessageBox msg = new MessageBox(shell, 0) ;
 		msg.setText(title) ;
 		msg.setMessage(text) ;
 		msg.open() ;
+	}
+
+	public void ShowMessageBox(String title, String text)
+	{		
+		// Display an SWT message box
+		ShowMessageBox(getShell(), title, text) ;
+	}
+
+	public void ShowMessageBox(String text)
+	{		
+		// Display an SWT message box
+		ShowMessageBox(getShell(), "Error", text) ;
 	}
 	
 	public void setTextFont(FontData fontData)
@@ -204,10 +211,47 @@ public class MainFrame
 		return data ;
 	}
 	
-	public void close()
-	{
-		thisWindowClosing() ;
-		this.getShell().dispose();
+	/************************************************************************
+	*
+	* Close the window when the close box is clicked.
+	* 
+	* @param e				Window closing event
+	* 
+	*************************************************************************/
+	private void thisWindowClosing()
+	{	
+		// BUGBUG: Should ask if we wish to destroy the agent (if there is a focus agent)
+
+		// Keep track of the fact that we're in the act of closing this window
+		m_bClosing = true ;
+		
+		// Need to explicitly release the focus which in turn will cause any listeners to unregister
+		// from this agent (is its still alive).  Otherwise our listeners will still be registered and
+		// will try to display output in windows that are disposed.
+		this.setAgentFocus(null) ;
+		
+		// Record the current window positions as properties,
+		// which we can then save.
+		RecordWindowPositions() ;
+
+		// Look up the name of the default window layout
+		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile) ;
+		
+		// Save the current window positions and other information to the layout file
+		this.SaveLayoutFile(layoutFile.toString()) ;
+
+		// Save the user's preferences to the properties file.
+		try
+		{
+			this.getAppProperties().Save() ;
+		}
+		catch (Throwable t)
+		{
+			general.Debug.println("Error saving properties file: " + t.getMessage()) ;
+		}
+		
+		// Remove us from the list of active frames
+		this.getDocument().removeFrame(this) ;
 		
 		// Dispose of all of the colors we created
 		for (int i = 0 ; i < m_Colors.size() ; i++)
@@ -218,36 +262,37 @@ public class MainFrame
 		
 		if (m_TextFont != null)
 			m_TextFont.dispose() ;
+
+		// Exit the app if we're the last frame
+		if (this.getDocument().getNumberFrames() == 0)
+		{
+			getDocument().close() ;
+			System.exit(0);
+		}
 	}
 	
-	public void ShowMessageBox(String text)
-	{		
-		// Display an SWT message box
-		ShowMessageBox("Error", text) ;
+	public void close()
+	{
+		thisWindowClosing() ;
+		this.getShell().dispose();
 	}
-
+	
 	public String ShowInputDialog(String title, String prompt, String initialValue)
 	{
 		String name = SwtInputDialog.showDialog(this.getShell(), title, prompt, initialValue) ;
 		return name ;
 	}
 	
-	/** Use this after creating a new window to select the specific agent to focus on */
+	/** Switch to focusing on a new agent. */
 	public void setAgentFocus(Agent agent)
-	{
-		setAgentFocus(agent, false) ;
-	}
-	
-	/** Switch to focusing on a new agent.  If invalidate is true then we can't clear events from the previous agent (it's gone) */
-	private void setAgentFocus(Agent agent, boolean invalidateExistingAgents)
 	{
 		// If we're already focused on this agent nothing to do
 		if (m_AgentFocus == agent)
 			return ;
 		
 		/** First let everyone know that focus is going away from one agent */
-		if (m_AgentFocus != null)
-			m_AgentFocusGenerator.fireAgentLosingFocus(this, invalidateExistingAgents ? null : m_AgentFocus) ;
+		if (m_AgentFocus != null && m_Document.isAgentValid(m_AgentFocus))
+			m_AgentFocusGenerator.fireAgentLosingFocus(this, m_AgentFocus) ;
 		
 		/** Now let everyone know that focus has gone to the new agent */
 		m_AgentFocus = agent ;
@@ -277,6 +322,11 @@ public class MainFrame
 	
 	private void updateTitle()
 	{
+		// Don't want to register an asynch update to the window's title if
+		// we're in the act of closing down.
+		if (this.m_bClosing)
+			return ;
+		
 		final String agentName = (m_AgentFocus == null ? kNoAgent : m_AgentFocus.GetAgentName()) ;
 
 		// Need to make sure we make this change in the SWT thread as the event may come to us
@@ -291,7 +341,7 @@ public class MainFrame
 	/** Enable/disable menu items to reflect the current state of the Soar/the debugger. */
 	private void updateMenus()
 	{
-		m_RemoteMenu.updateMenu() ;
+		m_KernelMenu.updateMenu() ;
 		m_AgentMenu.updateMenu() ;
 	}
 	
@@ -303,8 +353,7 @@ public class MainFrame
 
 	public boolean SaveLayoutFile(String filename)
 	{
-		return false ;
-//		return m_PanelTree.SaveLayoutToFile(filename) ;
+		return getMainWindow().saveLayoutToFile(filename) ;
 	}
 	
 	public void useDefaultLayout()
@@ -421,7 +470,7 @@ public class MainFrame
 		//jMenuBar1.add(m_AgentMenu.getJMenu()) ;
 
 		// Add the remote connection menu
-		m_RemoteMenu = KernelMenu.createMenu(this, getDocument(), "Remote", 'R') ;
+		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "Kernel", 'k') ;
 		//jMenuBar1.add(m_RemoteMenu.getJMenu()) ;
 				
 		// Look up the name of the default window layout
@@ -451,24 +500,13 @@ public class MainFrame
 //		getContentPane().add(jBottomPanel);
 //		getContentPane().add(jLeftPanel);
 
-		m_Parent.addControlListener(new ControlAdapter() {
-			public void controlResized(ControlEvent e) {
-				thisComponentResized(m_Parent.getClientArea());
-			}
-		});
-		
 		getShell().addShellListener(new ShellAdapter() {
-			// BUGBUG: Appears to be no SWT equivalent for opened
-			/*
-			public void windowOpened(java.awt.event.WindowEvent e) {
-				thisWindowOpened(e);
-			}
-			*/
+
 			public void shellClosed(ShellEvent e) {
 				thisWindowClosing();
 			}
 		});
-
+		
 		// Maximize the window
 		// For JDK 1.4: this.setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
 		// JDK 1.3 approximation.
@@ -597,198 +635,6 @@ public class MainFrame
   	{
   		return m_MainWindow.getLocationOnScreen() ;
   	}
-  	
-	/************************************************************************
-	*
-	* Called when the component is added to a parent container: we do
-	* initialization here that has to wait until the component has been created.
-	* 
-	*************************************************************************/
-	public void addNotify() {
-		/* BUGBUG: Need to find SWT equiv
-		super.addNotify();
-		
-		if (m_Shown)
-			return;
-			
-		// resize frame to account for menubar
-		JMenuBar jMenuBar = getJMenuBar();
-		if (jMenuBar != null) {
-			int jMenuBarHeight = jMenuBar.getPreferredSize().height;
-			Dimension dimension = getSize();
-			dimension.height += jMenuBarHeight;
-			setSize(dimension);
-		}
-
-		initialize() ;
-
-		m_Shown = true;
-		*/
-	}
-
-	/************************************************************************
-	*
-	* Close the window when the close box is clicked.
-	* 
-	* @param e				Window closing event
-	* 
-	*************************************************************************/
-	void thisWindowClosing()
-	{	
-		// BUGBUG: Should ask if we wish to destroy the agent (if there is a focus agent)
-
-		// In any case we MUST unregister for events from the current agent or we'll
-		// get callbacks to the views which are closing...they'll try to display them in controls
-		// that have been disposed.  It's bad.  But for now I can't figure out how to tell when
-		// the current agent has been destroyed (and so we can't unregister) and when it hasn't.
-		// this.setAgentFocus(null, false) ;
-		
-		setVisible(false);
-		
-		// Record the current window positions as properties,
-		// which we can then save.
-		RecordWindowPositions() ;
-
-		// Look up the name of the default window layout
-		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile) ;
-		
-		// Save the current window positions and other information to the layout file
-		this.SaveLayoutFile(layoutFile.toString()) ;
-
-		// Save the user's preferences to the properties file.
-		try
-		{
-			this.getAppProperties().Save() ;
-		}
-		catch (Throwable t)
-		{
-			general.Debug.println("Error saving properties file: " + t.getMessage()) ;
-		}
-
-		// Delete the main frame window
-		//m_MainPanel.dispose();
-		
-		// Remove us from the list of active frames
-		this.getDocument().removeFrame(this) ;
-		
-		// Exit the app if we're the last frame
-		if (this.getDocument().getNumberFrames() == 0)
-		{
-			getDocument().close() ;
-			System.exit(0);
-		}
-	}
-	
-	/************************************************************************
-	*
-	* Returns the divider position as a percentage of the total
-	* height (or width) of the pane.
-	* 
-	* @param pane			The split pane
-	* 
-	* @return Divider location as a percentage of total pane height (or width)
-	* 
-	*************************************************************************/
-	protected double getDividerProportionalLocation(SwtSplitPane pane)
-	{
-		return pane.getDividerLocation() ;
-	}
-/*
-	// Gets the amount beyond the divider, rather than the amount before the divider
-	// so we can keep that part constant.
-	protected int getDividerLocationRemainder(JSplitPane pane)
-	{		
-		// The remainder depends on the way the pane is split.
-		int size = 0 ;
-		if (pane.getOrientation() == JSplitPane.VERTICAL_SPLIT)
-		{
-			size = pane.getHeight() ;
-			
-			if (pane.getBottomComponent() == null ||
-				pane.getTopComponent() == null)
-				return size ;
-		}
-		else
-		{
-			size = pane.getWidth() ;
-
-			if (pane.getLeftComponent() == null ||
-				pane.getRightComponent() == null)
-				return size ;
-		}
-			
-		int pos = pane.getDividerLocation() ;
-
-		if (pos == -1)
-			return pos ;
-
-		int remainder = size - pos ;
-		
-		return remainder ;
-	}
-	
-	// Set the location based on a fixed value beyond the divider
-	// rather than before the divider.
-	protected void setDividerLocationRemainder(JSplitPane pane, int remainder)
-	{
-		// The remainder depends on the way the pane is split.
-		int size = 0 ;
-		if (pane.getOrientation() == JSplitPane.VERTICAL_SPLIT)
-			size = pane.getHeight() ;
-		else
-			size = pane.getWidth() ;
-			
-		int pos = size - remainder ;
-		
-		pane.setDividerLocation(pos) ;
-	}
-*/
-	/************************************************************************
-	*
-	* Lays out the position of the child windows.  We handle our own layout
-	* for this frame, because it's complex and using a layout manager would
-	* be more complicated than just doing it ourselves.
-	*
-	*************************************************************************/
-	/*
-	public void layoutChildWindows() {
-		// Get the size of this frame.
-		Point thisSize = m_MainPanel.getSize() ;
-		
-		m_MainPanel.setSize(thisSize) ;
-		m_PanelTree.setPanelDividers() ;
-	}
-	*/
-	/************************************************************************
-	*
-	* Layout the windows in their initial position when the window is opened.
-	* 
-	* @param e				Window opening event.
-	* 
-	*************************************************************************/
-	/*
-	public void thisWindowOpened(java.awt.event.WindowEvent e)
-	{
-		// Make sure all of the child windows are laid out correctly.
-		this.layoutChildWindows() ;
-	}
-	*/
-	/************************************************************************
-	*
-	* Layout the child windows in their correct positions whenever the
-	* frame is resized.
-	* 
-	* @param e				Window resize event.
-	* 
-	*************************************************************************/
-	public void thisComponentResized(Rectangle newSize)
-	{
-	}
-	
-	public void jMenuFileExitActionPerformed(java.awt.event.ActionEvent e)
-	{
-		thisWindowClosing() ;
-	}
 		
 	protected void RecordWindowPositions()
 	{

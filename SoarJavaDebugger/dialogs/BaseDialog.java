@@ -30,7 +30,9 @@ import org.eclipse.swt.events.*;
 public class BaseDialog
 {
 	// The dialog box
-	private Shell m_Dialog ;
+	protected Shell 	m_Dialog ;
+	protected Button	m_OK ;
+	protected Button	m_Cancel ;
 	
 	protected Shell getDialog() { return m_Dialog ; }
 	
@@ -88,7 +90,7 @@ public class BaseDialog
 		m_Dialog.setLayout(new FormLayout()) ;
 		
 		int margin = 10 ;
-				
+		
 		// Add ok and cancel buttons at the bottom right
 		Button ok = new Button(m_Dialog, SWT.PUSH) ;
 		ok.setText("OK") ;
@@ -103,6 +105,10 @@ public class BaseDialog
 		okData.bottom = new FormAttachment(100, -margin) ;
 		okData.right  = new FormAttachment(cancel, -10) ;
 		ok.setLayoutData(okData);
+		
+		// Make these members so derived classes can work with them
+		m_OK = ok ;
+		m_Cancel = cancel ;
 		
 		m_Dialog.setDefaultButton(ok) ;
 	}

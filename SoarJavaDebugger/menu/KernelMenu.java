@@ -17,6 +17,7 @@ import sml.Agent;
 import sml.Kernel;
 
 import debugger.MainFrame;
+import dialogs.RemoteDialog;
 import doc.Document;
 
 /************************************************************************
@@ -32,10 +33,10 @@ public class KernelMenu
 	private Document m_Document = null ;
 	private MainFrame m_Frame	= null ;
 
-	private AbstractAction m_StartKernel      = new AbstractAction("Start local Soar")				{ public void actionPerformed(ActionEvent e) { startKernelPerformed(e) ; } } ;
-	private AbstractAction m_StopKernel       = new AbstractAction("Stop local Soar") 				{ public void actionPerformed(ActionEvent e) { stopKernelPerformed(e) ; } } ;
-	private AbstractAction m_RemoteConnect 	  = new AbstractAction("Connect to remote Soar...") 	{ public void actionPerformed(ActionEvent e) { remoteConnectPerformed(e) ; } } ;
-	private AbstractAction m_RemoteDisconnect = new AbstractAction("Disconnect from remote Soar") 	{ public void actionPerformed(ActionEvent e) { remoteDisconnectPerformed(e) ; } } ;
+	private AbstractAction m_StartKernel      = new AbstractAction("Create new local Soar Kernel")		{ public void actionPerformed(ActionEvent e) { startKernelPerformed(e) ; } } ;
+	private AbstractAction m_StopKernel       = new AbstractAction("Delete local Soar Kernel") 			{ public void actionPerformed(ActionEvent e) { stopKernelPerformed(e) ; } } ;
+	private AbstractAction m_RemoteConnect 	  = new AbstractAction("Connect to remote Soar...") 		{ public void actionPerformed(ActionEvent e) { remoteConnectPerformed(e) ; } } ;
+	private AbstractAction m_RemoteDisconnect = new AbstractAction("Disconnect from remote Soar") 		{ public void actionPerformed(ActionEvent e) { remoteDisconnectPerformed(e) ; } } ;
 
 	/** Create this menu */
 	public static KernelMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
@@ -69,7 +70,7 @@ public class KernelMenu
 	{
 		m_StartKernel.setEnabled(!m_Document.isConnected()) ;
 		m_StopKernel.setEnabled(m_Document.isConnected() && !m_Document.isRemote()) ;
-		m_RemoteConnect.setEnabled(!m_Document.isConnected()) ;
+		m_RemoteConnect.setEnabled(!(m_Document.isConnected() && m_Document.isRemote())) ;
 		m_RemoteDisconnect.setEnabled(m_Document.isConnected() && m_Document.isRemote()) ;
 	}
 
@@ -89,11 +90,21 @@ public class KernelMenu
 	
 	private void remoteConnectPerformed(ActionEvent e)
 	{
-		// BADBAD: Need a UI to ask for IP and port number here
-		// For now just hard coding.
+		if (m_Document.isConnected())
+		{
+			m_Frame.ShowMessageBox("You are currently running a local Soar kernel.  Please delete that first before connecting to a remote Soar kernel.") ;
+			return ;
+		}
+		
+		RemoteDialog.RemoteInfo ip = RemoteDialog.showDialog(m_Frame.getWindow(), "Remote Soar Kernel Connection") ;
+		
+		// Check if the user cancelled
+		if (ip == null)
+			return ;
+		
 		try
 		{
-			m_Document.remoteConnect(null, Kernel.GetDefaultPort()) ;
+			m_Document.remoteConnect(ip.getIP(), ip.getPort()) ;
 		}
 		catch (Exception ex)
 		{

@@ -106,6 +106,10 @@ public class Kernel extends ClientErrors {
     return (cPtr == 0) ? null : new Agent(cPtr, false);
   }
 
+  public boolean IsAgentValid(Agent pAgent) {
+    return smlJNI.Kernel_IsAgentValid(swigCPtr, Agent.getCPtr(pAgent));
+  }
+
   public String ExecuteCommandLine(String pCommandLine, String pAgentName) {
     return smlJNI.Kernel_ExecuteCommandLine(swigCPtr, pCommandLine, pAgentName);
   }
