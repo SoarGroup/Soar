@@ -89,23 +89,6 @@
 	    return tud;
 	}
 	
-	TclUserData* CreateTclSystemUserData(sml::Kernel* self, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
-		TclUserData* tud = new TclUserData();
-	    
-	    tud->interp = interp;
-	    // put all of the arguments together so we can just execute this as a single script later
-	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
-	    tud->script = proc;
-	    Tcl_AppendStringsToObj(tud->script, " ", NULL);
-	    Tcl_AppendObjToObj(tud->script, id);
-	    Tcl_AppendStringsToObj(tud->script, " \"", NULL);
-	    Tcl_AppendObjToObj(tud->script, userData);
-	    Tcl_AppendStringsToObj(tud->script, "\" ", NULL);
-	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Kernel,0));
-	    
-	    return tud;
-	}
-	
 	TclUserData* CreateTclSystemUserData(sml::Kernel* self, sml::smlSystemEventId id, char* proc, char* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
 	    

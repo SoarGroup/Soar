@@ -16,6 +16,7 @@
 // Doug's custom Java code for registering/unregistering callbacks
 //
 
+// in the Java case, we will also provide custom code for unregistering from events
 %ignore sml::Agent::UnregisterForRunEvent(smlRunEventId, int);
 %ignore sml::Agent::UnregisterForAgentEvent(smlAgentEventId, int);
 %ignore sml::Agent::UnregisterForProductionEvent(smlProductionEventId, int);

@@ -19,11 +19,11 @@ proc AgentReinitializedCallback {id userData agent} {
 }
 
 proc AgentDestroyedCallback {id userData agent} {
-	puts "destroying [$agent GetAgentName]"
+	puts "destroying agent [$agent GetAgentName]"
 }
 
 proc SystemShutdownCallback {id userData kernel} {
-	puts "Shutting down $kernel"
+	puts "Shutting down kernel $kernel"
 }
 
 #load the sml stuff
@@ -31,7 +31,7 @@ lappend auto_path .
 package require tcl_sml_clientinterface
 
 #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
-set kernel [Kernel_CreateEmbeddedConnectionSoarThread KernelSML 12121]
+set kernel [Kernel_CreateEmbeddedConnectionSoarThread KernelSML]
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
 
@@ -72,7 +72,7 @@ $kernel DestroyAgent $agent
 
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted
 set result [$kernel -acquire]
-#delete kernel object
+#delete kernel object (this will also delete any agents that are still around)
 set result [$kernel -delete]
 #don't leave bad pointers around
 unset agent
