@@ -28,10 +28,15 @@ public class SoarCommands
 	private int m_BuildVersion ;		// Soar 8.6.0 -- this is the 0
 	private Document m_Document ;
 	
-	public String getSourceCommand()
-	{
-		return "source" ;
-	}
+	public String getSourceCommand(String arg) 					{ return "source " + arg ; }
+	public String getPrintCommand(String arg)  					{ return "print " + arg ; }
+	public String getPrintDepthCommand(String arg, int depth)  	{ return "print --depth " + depth + " " + arg ; }
+	public String getPrintInternalCommand(String arg)  			{ return "print --internal " + arg ; }
+	public String getExciseCommand(String arg) 					{ return "excise " + arg ; }
+	public String getPreferencesCommand(String arg) 			{ return "preferences " + arg ; }
+	public String getPreferencesNameCommand(String arg)			{ return "preferences " + arg + " --names" ; }
+	public String getMatchesCommand(String arg)					{ return "matches " + arg ; }
+	public String getMatchesWmesCommand(String arg)				{ return "matches " + arg + " --wmes"; }
 	
 	public SoarCommands(Document doc, int major, int minor, int build)
 	{

@@ -17,7 +17,11 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.* ;
+import org.eclipse.swt.internal.win32.OS;
+import org.eclipse.swt.internal.win32.TCHAR;
 import org.eclipse.swt.events.*;
+
+import com.sun.corba.se.internal.corba.EncapsInputStream;
 
 import sml.Agent;
 import sml.smlPrintEventId;
@@ -80,11 +84,45 @@ public class ComboCommandView extends AbstractView
 	{
 	}
 
-	public void registerContextMenuMouseListener(MouseListener listener)
-	{	
-		m_Text.addMouseListener(listener) ;
-	}
 	
+	protected ParseSelectedText.SelectedObject getCurrentSelection()
+	{
+		if (m_Text.getCaretPosition() == -1)
+			return null ;
+		
+		ParseSelectedText selection = new ParseSelectedText(m_Text.getText(), m_Text.getCaretPosition(), 0) ;
+		
+		return selection.getParsedObject() ;
+	}
+		
+	// This method can be overridden by derived classes
+	protected void fillInContextMenu(Menu contextMenu)
+	{
+		// Get the current selected text
+		ParseSelectedText.SelectedObject selectionObject = getCurrentSelection() ;
+		String selection = "<none>" ;
+		
+		if (selectionObject != null)
+			selection = selectionObject.toString() ;
+
+		// Clear any existing items from the menu and then create new items
+		while (contextMenu.getItemCount() > 0)
+		{
+			MenuItem child = contextMenu.getItem(0) ;
+			child.dispose() ;
+		}
+		
+		boolean simple = true ;
+		
+		// For now let's dump the output into the main trace window
+		// That lets us do interesting things by copying output into one of the
+		// scratch windows and working with it there.
+		AbstractView outputView = m_MainFrame.getPrimeView() ;
+		if (outputView == null) outputView = this ;
+		
+		selectionObject.fillMenu(getDocument(), outputView, contextMenu, simple) ;
+	}
+
 	public void setInitialCommand(String command)
 	{
 		m_CommandHistory.UpdateHistoryList(command, true) ;
@@ -143,6 +181,11 @@ public class ComboCommandView extends AbstractView
 		
 		m_Inited = true ;
 
+		m_Text.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e)
+			{ if (e.button == 2 || e.button == 3) rightButtonPressed(e) ; } ;
+		}) ;
+		
 		// Listen for key presses on the combo box so we know when the user presses return
 		m_CommandCombo.addKeyListener(new KeyAdapter() { public void keyPressed(KeyEvent e) { comboKeyPressed(e) ; } }) ;
 		
@@ -175,28 +218,36 @@ public class ComboCommandView extends AbstractView
 		m_Text.setMenu (menu);
 	}
 	
-	protected String getCurrentSelection()
+	 /*******************************************************************************************
+	 * 
+	 * When the user clicks the right mouse button, sets the selection to that location (just like a left click).
+	 * This makes right clicking on a piece of text much easier as it's just one click rather than
+	 * having to left click to place the selection and then right click to bring up the menu.
+	 * 
+	*******************************************************************************************
+	 */
+	protected void rightButtonPressed(MouseEvent e)
 	{
-		String selected = m_Text.getSelectionText() ;
+		// Unfortunately, SWT doesn't support getting a character location from a position
+		// so I'm adding support for it here.  However, this support is pure Windows code.
+		// We'll need to figure out how to have code like this and still compile the debugger
+		// on Linux (even if this option won't work on Linux).
 		
-		return selected ;
-	}
-	
-	// This method can be overridden by derived classes
-	protected void fillInContextMenu(Menu contextMenu)
-	{
-		// Get the current selected text
-		String selection = getCurrentSelection() ;
+		// Send an EM_CHARFROMPOS message to the underlying edit control
+		int handle = m_Text.handle ;
+		int lParam = e.y << 16 | e.x ;	// Coords are packed as high-word, low-word
+		int result = OS.SendMessage (handle, OS.EM_CHARFROMPOS, 0, lParam);
 
-		// Clear any existing items from the menu and then create new items
-		while (contextMenu.getItemCount() > 0)
-		{
-			MenuItem child = contextMenu.getItem(0) ;
-			child.dispose() ;
-		}
+		// Break out the character and line position from the result
+		int charPos = result & (0xFFFF) ;
+		int linePos = (result >>> 16) ;
 		
-		MenuItem item = new MenuItem (contextMenu, SWT.PUSH);
-		item.setText ("Selection is " + selection);	
+		// Set the selection to the character position (which is measured from the first character
+		// in the control).
+		m_Text.clearSelection() ;
+		m_Text.setSelection(charPos) ;
+		
+		//System.out.println("Char " + charPos + " Line " + linePos) ;
 	}
 	
 	public Color getBackgroundColor()

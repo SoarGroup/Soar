@@ -64,6 +64,7 @@ public class DemoMenu
 		{
 			// Canonical path produces an absolute path but also removes
 			// my ".." above, making the result cleaner.
+			// (It can throw because the canonical process can fail)
 			m_DemoPath = new File(path.getCanonicalPath()) ;
 		}
 		catch (java.io.IOException e)
@@ -92,7 +93,7 @@ public class DemoMenu
 	public void loadDemo(File filename)
 	{
 		File filePath = new File(m_DemoPath, filename.getPath()) ;
-		String commandLine = m_Document.getSoarCommands().getSourceCommand() + " " + filePath.getPath() ;
+		String commandLine = m_Document.getSoarCommands().getSourceCommand(filePath.getPath()) ;
 
 		m_Frame.executeCommandPrimeView(commandLine, true) ;
 		m_Frame.displayTextInPrimeView("\nType 'run' to execute the demo.") ;

@@ -96,7 +96,7 @@ public abstract class AbstractView implements AgentFocusListener
 		return m_MainFrame.getAgentFocus() ;
 	}
 	
-	public abstract void registerContextMenuMouseListener(MouseListener listener) ;
+	//public abstract void registerContextMenuMouseListener(MouseListener listener) ;
 		
 	/********************************************************************************************
 	* 

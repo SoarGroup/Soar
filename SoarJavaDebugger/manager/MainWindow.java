@@ -258,7 +258,7 @@ public class MainWindow
   		// matches the current list of controls
   		vertSashLeft.setWeights(new int[] { 80, 20 }) ;
   		vertSashRight.setWeights(new int[] { 50, 50 }) ;
-  		horizSash.setWeights(new int[] { 70, 30 } ) ;
+  		horizSash.setWeights(new int[] { 60, 40 } ) ;
   		
   		// Record the list of panes in use
   		m_PaneList.add(top) ;
@@ -278,7 +278,9 @@ public class MainWindow
 		buttons.addButton("Excise chunks", "excise --chunks") ;
 		buttons.addButton("Run 5", "run 5") ;
 		buttons.addButton("Run", "run") ;
-		buttons.addButton("Stop", "stop-soar") ;
+		buttons.addButton("Stop", "stop-soar") ;		
+		buttons.addButton("Matches", "matches") ;
+		buttons.addButton("Print <s>", "print <s>") ;
 		buttons.addButton("Towers of Hanoi", null, new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_MainFrame.loadDemo(new java.io.File("towers-of-hanoi", "towers-of-hanoi.soar")) ; } }) ;
 		buttons.Init(m_MainFrame, m_Document, buttonPane) ;		
 		
