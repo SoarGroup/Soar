@@ -327,7 +327,8 @@ typedef void (*soar_callback_fn)(soar_callback_agent,
 typedef void (*soar_callback_free_fn)(soar_callback_data);
 typedef struct cons_struct cons;
 typedef cons list;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 
 typedef struct callback_struct 
 {

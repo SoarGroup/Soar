@@ -105,7 +105,7 @@ enum egSKIPhases
 };
 
 /* We have to forward declare these to keep from having a circular reference */
-struct agent_struct;
+struct agent;
 union  symbol_union;
 
 /**
@@ -129,7 +129,7 @@ union  symbol_union;
 typedef void (*gSKI_K_CallbackFunctionPtr)(unsigned long         eventId, 
                                            unsigned char         eventOccured,
                                            void*                 object, 
-                                           struct agent_struct*  soarAgent, 
+                                           struct agent*         soarAgent, 
                                            void*                 data);
 
 /**

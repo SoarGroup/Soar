@@ -28,7 +28,8 @@
 // Soar kernel forward declarations.
 typedef struct production_struct production;
 typedef struct condition_struct condition;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 
 namespace gSKI {
 

@@ -22,7 +22,8 @@ extern "C"
 #endif
 
 typedef char Bool;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 typedef struct kernel_struct Kernel;
 
 extern void init_built_in_rhs_math_functions (agent* thisAgent);

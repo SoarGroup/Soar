@@ -34,7 +34,8 @@ extern "C"
 
 typedef char Bool;
 typedef unsigned char byte;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 
 /* -------------------------------
       Types of Productions

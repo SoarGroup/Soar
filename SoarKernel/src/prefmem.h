@@ -46,7 +46,7 @@ extern "C"
 
 typedef char Bool;
 typedef unsigned char byte;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
 typedef struct preference_struct preference;
 typedef union symbol_union Symbol;
 

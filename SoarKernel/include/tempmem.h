@@ -37,7 +37,8 @@ extern "C"
 typedef char Bool;
 typedef union symbol_union Symbol;
 typedef struct slot_struct slot;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 
 extern slot *find_slot (Symbol *id, Symbol *attr);
 extern slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr);

@@ -52,7 +52,8 @@ extern "C"
 #include <stdio.h>
 
 typedef char Bool;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 
 #ifdef WIN32
 typedef struct _iobuf FILE;

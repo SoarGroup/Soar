@@ -38,7 +38,7 @@ typedef char Bool;
 typedef signed short goal_stack_level;
 typedef struct slot_struct slot;
 typedef struct wme_struct wme;
-typedef struct agent_struct agent;
+////typedef struct agent_struct agent;
 typedef struct ms_change_struct ms_change;
 typedef union symbol_union Symbol;
 

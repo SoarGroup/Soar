@@ -15,8 +15,9 @@
 
 #include "IgSKI_Match.h"
 
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
 typedef struct condition_struct condition;
+struct agent;
 
 namespace gSKI {
 

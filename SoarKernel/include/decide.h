@@ -39,7 +39,8 @@ typedef struct wme_struct wme;
 typedef struct slot_struct slot;
 typedef struct instantiation_struct instantiation;
 typedef struct preference_struct preference;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 
 extern void post_link_addition (agent* thisAgent, Symbol *from, Symbol *to);
 extern void post_link_removal (agent* thisAgent, Symbol *from, Symbol *to);

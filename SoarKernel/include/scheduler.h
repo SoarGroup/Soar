@@ -30,7 +30,8 @@ extern "C"
 #endif
 
 typedef char Bool;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 
 extern long scheduler_cycle_count;
 extern void schedule_agents (agent* thisAgent, int cycles);

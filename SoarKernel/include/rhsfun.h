@@ -204,7 +204,8 @@ inline unsigned long rhs_value_to_unboundvar(rhs_value rv)
 typedef char Bool;
 typedef unsigned char byte;
 
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 typedef struct kernel_struct Kernel;
 
 typedef struct action_struct {

@@ -18,7 +18,8 @@
 #include "IterUtils.h"
 
 typedef struct condition_struct condition;
-typedef struct agent_struct agent;
+//typedef struct agent_struct agent;
+struct agent;
 
 namespace gSKI {
 
