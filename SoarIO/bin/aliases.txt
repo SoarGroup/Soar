@@ -13,8 +13,10 @@
 #
 # Format: substitution words [...] command_to_substitute
 #
+alias -d unalias
 cd chdir
 init-soar init
+help man
 help ?
 ls dir
 quit exit

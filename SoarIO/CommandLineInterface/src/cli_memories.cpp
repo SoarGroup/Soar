@@ -120,7 +120,6 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 			}
 
 			char buf[1024];
-			memset(buf, 0, 1024);
 			snprintf(buf, 1023, "%s: %ld\n", pProd->GetName(), pProd->CountReteTokens());
 			AppendToResult(buf);
 
@@ -142,7 +141,6 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, unsigned int product
 	if (!pProd) return HandleError("Production not found.");
 
 	char buf[1024];
-	memset(buf, 0, 1024);
 	snprintf(buf, 1023, "\n Memory use for %s: %ld\n\n", production.c_str(), pProd->CountReteTokens());
 	AppendToResult(buf);
 	pProd->Release(); 

@@ -290,13 +290,21 @@ matches
 Usage:	matches [-[a|r]12cntw]
 	matches [-012cntw] production_name
 Options and arguments:
-  -a, --assertions
-  -r, --retractions
-  -0, -n, -c, --names
-      --count
-  -1, -t, --timetags
-  -2, -w, --wmes
-  production_name
+  -a, --assertions	Print match set information only about assertions.
+  -r, --retractions	Print match set information only about retractions.
+  -0, -n, -c, --names	For the match set, print only the names of the 
+      --count		productions that are about to fire or retract (the default).
+  -1, -t, --timetags	Also print the timetags of the wmes that match the 
+  			productions.
+  -2, -w, --wmes	Also print the wmes that match the productions.
+  production_name	Print information about partial matches for the named
+  			production.
+
+The matches command prints a list of productions that have instantiations in the 
+match set, i.e., those productions that will retract or fire in the next Propose 
+or Apply phase.  It also will preint partial match information for a single, 
+named productions.
+
 ~~~
 ***
 max-chunks
@@ -312,14 +320,31 @@ Usage:	max-nil-output-cycles
 ~~~
 ***
 memories
-Usage:	memories [-cdju|production_name|n]
+Usage:	memories [-cdju] [n]
+	memories production_name
 Options and arguments:
-  -c, --chunks
-  -d, --default
-  -j, --justifications
-  -u, --user
-  production_name
-  n
+  -c, --chunks		Print memory usage of chunks.
+  -d, --default		Print memory usage of default productions.
+  -j, --justifications	Print memory usage of justifications.
+  -u, --user		Print memory usage of user-defined productions.
+  production_name	Print memory usage for a specific production.
+  n			Number of productions to print, sorted by those that
+  			use the most memory.
+
+The memories command prints out the internal memory usage for full and partial 
+matches of production instantiations, with the productions using the most memory 
+printed first.
+
+Memory usage is recorded according to the tokens that are allocated in the rete 
+network for the given production(s).
+
+With no arguments, the memories command prints memory usage for all productions. 
+If a production_name is specified, memory usage will be printed only for that 
+production.  If a positive integer n is given, only n productions will be 
+printed: the n productions that use the most memory.
+
+Output may be restricted to print memory usage for particular types of 
+productions using the command options.
 ~~~
 ***
 multi-attributes
