@@ -42,8 +42,18 @@ bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, std::string id, std::s
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	unsigned long timetag = pKernelHack->AddWme(pAgent, id.c_str(), attribute.c_str(), value.c_str(), acceptable);
-	if (timetag <= 0) {
-		return m_Error.SetError("Add Wme returned non-positive timetag.");
+	if (timetag < 0) {
+		switch (timetag) {
+			case -1:
+				return m_Error.SetError(CLIError::kInvalidID);
+			case -2:
+				return m_Error.SetError(CLIError::kInvalidAttribute);
+			case -3:
+				return m_Error.SetError(CLIError::kInvalidValue);
+			default:
+				// unspecified error
+				return false;
+		}
 	}
 
 	char buf[kMinBufferSize];

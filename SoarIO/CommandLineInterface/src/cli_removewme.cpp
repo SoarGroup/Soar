@@ -35,10 +35,7 @@ bool CommandLineInterface::DoRemoveWME(gSKI::IAgent* pAgent, int timetag) {
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (pKernelHack->RemoveWmeByTimetag(pAgent, timetag)) {
-		// this is failure
-		return m_Error.SetError("Failed to remove WME.");
-	}
+	if (pKernelHack->RemoveWmeByTimetag(pAgent, timetag)) return m_Error.SetError(CLIError::kRemoveWMEFailed);
 	return true;
 }
 

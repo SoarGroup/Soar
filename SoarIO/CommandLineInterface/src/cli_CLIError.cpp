@@ -81,6 +81,12 @@ char const* CLIError::GetErrorDescription() {
 		case kInvalidLearnSetting:				return "Invalid learn setting, expected noprint, print, fullprint, or 0-2.";
 		case kRemoveOrZeroExpected:				return "Invalid argument, expected remove or 0.";
 
+		case kInvalidID:						return "Unknown or invalid ID.";
+		case kInvalidAttribute:					return "Unknown or invalid attribute.";
+		case kInvalidValue:						return "Unknown or invalid value.";
+
+		case kRemoveWMEFailed:					return "Remove WME failed.";
+
 		default:								return "Unknown error code.";
 	}
 }

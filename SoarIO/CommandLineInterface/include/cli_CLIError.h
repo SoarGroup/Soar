@@ -77,6 +77,12 @@ namespace cli {
 			kInvalidProduction = 51,
 			kInvalidLearnSetting = 52,
 			kRemoveOrZeroExpected = 53,
+
+			kInvalidID = 54,
+			kInvalidAttribute = 55,
+			kInvalidValue = 56,
+
+			kRemoveWMEFailed = 57,
 		};
 
 		CLIError() : m_Code(0) {}
