@@ -54,6 +54,8 @@ extern "C"
 {
 #endif
 
+#include <stdio.h>
+
 struct not_struct;
 
 typedef char Bool;
