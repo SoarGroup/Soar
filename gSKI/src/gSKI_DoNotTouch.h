@@ -97,6 +97,9 @@ namespace gSKI
 		 int RemoveWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes);
 		 bool ResetWMEFilters(IAgent* pIAgent, bool adds, bool removes);
 		 void ListWMEFilters(IAgent* pIAgent, bool adds, bool removes);
+
+		 void ExplainListChunks(IAgent* pIAgent);
+		 bool ExplainChunks(IAgent* pIAgent, const char* pProduction, int mode);
 	  };
    }
 }

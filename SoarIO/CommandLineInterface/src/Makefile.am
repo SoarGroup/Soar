@@ -15,6 +15,7 @@ cli_defaultwmedepth.cpp\
 cli_dirs.cpp\
 cli_echo.cpp\
 cli_excise.cpp\
+cli_explainbacktraces.cpp\
 cli_firingcounts.cpp\
 cli_gdsprint.cpp\
 cli_help.cpp\

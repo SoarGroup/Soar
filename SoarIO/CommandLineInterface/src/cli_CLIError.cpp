@@ -96,6 +96,9 @@ char const* CLIError::GetErrorDescription() {
 		case kTypeRequired:						return "A type (-t adds/removes/both) is required for this command.";
 		case kWMEFilterNotFound:				return "The specified WME filter was not found.";
 
+		case kProductionRequired:				return "A production is required.";
+		case kInvalidConditionNumber:			return "Condition number must be a non-negative integer.";
+
 		default:								return "Unknown error code.";
 	}
 }

@@ -92,6 +92,9 @@ namespace cli {
 			kInvalidMode = 62,
 			kTypeRequired = 63,
 			kWMEFilterNotFound = 64,
+
+			kProductionRequired = 65,
+			kInvalidConditionNumber = 66,
 		};
 
 		CLIError() : m_Code(0) {}

@@ -17,6 +17,7 @@ char const* Constants::kCLIDefaultWMEDepth			= "default-wme-depth";
 char const* Constants::kCLIDirs						= "dirs";
 char const* Constants::kCLIEcho						= "echo";
 char const* Constants::kCLIExcise					= "excise";
+char const* Constants::kCLIExplainBacktraces		= "explain-backtraces";
 char const* Constants::kCLIFiringCounts				= "firing-counts";
 char const* Constants::kCLIGDSPrint					= "gds-print";
 char const* Constants::kCLIHelp						= "help";

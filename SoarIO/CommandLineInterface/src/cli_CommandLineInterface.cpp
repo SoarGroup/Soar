@@ -80,6 +80,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIDirs]					= &cli::CommandLineInterface::ParseDirs;
 	m_CommandMap[Constants::kCLIEcho]					= &cli::CommandLineInterface::ParseEcho;
 	m_CommandMap[Constants::kCLIExcise]					= &cli::CommandLineInterface::ParseExcise;
+	m_CommandMap[Constants::kCLIExplainBacktraces]		= &cli::CommandLineInterface::ParseExplainBacktraces;
 	m_CommandMap[Constants::kCLIFiringCounts]			= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Constants::kCLIGDSPrint]				= &cli::CommandLineInterface::ParseGDSPrint;
 	m_CommandMap[Constants::kCLIHelp]					= &cli::CommandLineInterface::ParseHelp;

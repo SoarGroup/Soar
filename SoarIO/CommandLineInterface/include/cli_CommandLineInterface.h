@@ -211,6 +211,13 @@ public:
 	bool DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction = 0);
 
 	/*************************************************************
+	*************************************************************/
+	bool ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	*************************************************************/
+	bool DoExplainBacktraces(gSKI::IAgent* pAgent, std::string* pProduction = 0, bool full = false, int condition = false);
+
+	/*************************************************************
 	* @brief firing-counts command, see usage.txt for details.
 	*************************************************************/
 	bool ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

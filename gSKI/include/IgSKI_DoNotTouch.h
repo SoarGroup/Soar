@@ -142,6 +142,9 @@ namespace gSKI
 		virtual int RemoveWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes) = 0;
 		virtual bool ResetWMEFilters(IAgent* pIAgent, bool adds, bool removes) = 0;
 		virtual void ListWMEFilters(IAgent* pIAgent, bool adds, bool removes) = 0;
+
+	    virtual void ExplainListChunks(IAgent* pIAgent) = 0;
+		virtual bool ExplainChunks(IAgent* pIAgent, const char* pProduction, int mode) = 0;
 	  };
    }
 }
