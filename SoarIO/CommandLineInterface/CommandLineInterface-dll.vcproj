@@ -15,7 +15,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)\bin"
 			IntermediateDirectory="src\Debug"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
@@ -33,7 +33,18 @@
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="FALSE"
+				AdditionalOptions="/EXPORT:DllMain"
+				OutputFile="$(SolutionDir)bin\CommandLineInterface.dll"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="FALSE"
+				GenerateDebugInformation="TRUE"
+				ProgramDatabaseFile="$(OutDir)/CommandLineInterface.pdb"
+				SubSystem="2"
+				ImportLibrary="lib/CommandLineInterface.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -49,6 +60,8 @@
 			<Tool
 				Name="VCXMLDataGeneratorTool"/>
 			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
 				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
@@ -57,7 +70,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)\bin"
 			IntermediateDirectory="src\Release"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
 			<Tool
@@ -72,7 +85,18 @@
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="FALSE"
+				AdditionalOptions="/EXPORT:DllMain"
+				OutputFile="$(SolutionDir)\bin\CommandLineInterface.dll"
+				LinkIncremental="1"
+				IgnoreAllDefaultLibraries="FALSE"
+				GenerateDebugInformation="TRUE"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				ImportLibrary="lib/CommandLineInterface.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -87,6 +111,8 @@
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
 			<Tool
 				Name="VCManagedWrapperGeneratorTool"/>
 			<Tool
