@@ -18,16 +18,22 @@
 using namespace std;
 
 // globals & constants
-const char			AGENT_NAME[] = "test";
-CommandProcessor*	g_pCommandProcessor = 0;
-const int			HISTORY_SIZE = 10;
+const char			AGENT_NAME[] = "test";		// test agent name
+CommandProcessor*	g_pCommandProcessor = 0;	// pointer to the command processor singleton
+const int			HISTORY_SIZE = 10;			// number of commands to keep in history
 
 // callback functions
 void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {
-	cout << pMessage;
+	cout << pMessage;	// simply display whatever comes back through the event
 }
 
 void RunCallbackHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase) {
+
+	// BUGBUG: Does not work yet. (cin.rdbuf()->in_avail()), straight from Stroustrup, doesn't work.
+	// Simple algorithm:
+	//  - Test to see if cin.get is going to block.
+	//  - If it is going to block (no input), then return. 
+	//  - If it is not going to block (input ready) then process a character.
 	if (cin.rdbuf()->in_avail()) {
 		g_pCommandProcessor->ProcessCharacter();
 	}
@@ -36,24 +42,33 @@ void RunCallbackHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAge
 // Command Processor class
 CommandProcessor::CommandProcessor(sml::Kernel* pKernel) {
 
+	// Save kernel pointer
 	this->pKernel = pKernel;
 
+	// Init members to sane values
 	inputChar = 0;
 	previousResult = true;
 	raw = true;
 
-	// History variables
+	// Init history variables
 	historyIndex = 0;
 	temporaryHistoryIndex = 0;
+
+	// Create circular buffer
 	pHistory = new std::string[HISTORY_SIZE];
 }
 
 CommandProcessor::~CommandProcessor() {
+	// Delete circular buffer
 	delete [] pHistory;
 }
 
 void CommandProcessor::DisplayPrompt() {
+	// If we're prompting, we can toss out the old command line
 	commandLine.clear();
+
+	// Display the boolean (soon to be int?) result of the previous command
+	// then the output format, then the agent name, and flush
 	cout << previousResult;
 	cout << (raw ? " (raw)" : " (structured)") << " " << AGENT_NAME << "> ";
 	cout.flush();
@@ -63,16 +78,17 @@ bool CommandProcessor::ProcessCharacter() {
 
 	// Read stdin
 	if (!cin.get(inputChar)) {
-		return false;
+		return false;	// BUGBUG: false here means error as opposed to false below meaning quit
 	}
 
 	switch (inputChar) {
 
-		// Process returns
+		// If the input was enter, process the command line
 		case '\n':
 		case '\r':
 			return ProcessLine();
 
+		// Backspaces are tricky, make them look right
 		case '\b':
 			Backspace();
 			break;
@@ -80,7 +96,7 @@ bool CommandProcessor::ProcessCharacter() {
 		case -32:
 			// BUGBUG: An arrow meta-char on windows, I think, need to figure out exactly what this is, seems broken on linux
 			if (!cin.get(inputChar)) {
-				return false;
+				return false;	// BUGBUG: false here means error as opposed to false below meaning quit
 			}
 
 			switch (inputChar) {
@@ -89,27 +105,33 @@ bool CommandProcessor::ProcessCharacter() {
 					while (commandLine.size()) {
 						Backspace(); // remove the echo from the line ?
 					}
+
+					// Retrieve something from history, overwrite command line, echo it
 					temporaryHistoryIndex = temporaryHistoryIndex ? (temporaryHistoryIndex - 1) : (HISTORY_SIZE - 1);
 					commandLine = pHistory[temporaryHistoryIndex];
 					cout << commandLine;
 					break;
+
 				case 80:
 					// Down Arrow
 					while (commandLine.size()) {
 						Backspace(); // remove the echo from the line ?
 					}
+
+					// Retrieve something from history, overwrite command line, echo it
 					temporaryHistoryIndex = ++temporaryHistoryIndex % HISTORY_SIZE;
 					commandLine = pHistory[temporaryHistoryIndex];
 					cout << commandLine;
 					break;
+
 				default:
-					// Ignore others
+					// Ignore other weird characters
 					break;
 			}
 			break;
 
 		default:
-			// Add the character to the line
+			// Add other, non-special characters to the line
 			commandLine += inputChar;
 			break;
 	}
@@ -117,6 +139,7 @@ bool CommandProcessor::ProcessCharacter() {
 }
 
 void CommandProcessor::Backspace() {
+	// Handle local echo of backspaces
 	if (commandLine.size()) {
 		cout << "\b \b";
 		cout.flush();
@@ -126,18 +149,21 @@ void CommandProcessor::Backspace() {
 
 bool CommandProcessor::ProcessLine() {
 
+	// Default true
 	previousResult = true;
 
+	// Nothing on the command line
 	if (!commandLine.size()) {
 		DisplayPrompt();
 		return true;
 	}
 
+	// Store the command line into the history buffer
 	pHistory[historyIndex++] = commandLine;
 	historyIndex %= HISTORY_SIZE;
 	temporaryHistoryIndex = historyIndex;
 
-	// Process meta-commands first
+	// Process meta-commands first, since they return
 	if (commandLine == "raw") {
 		raw = true;
 		DisplayPrompt();
@@ -150,7 +176,7 @@ bool CommandProcessor::ProcessLine() {
 		return true;
 	} 
 
-	// Process command line
+	// Process command line differently depending on the type of output
 	if (raw) {
 		output = pKernel->ExecuteCommandLine(commandLine.c_str(), AGENT_NAME);
 		previousResult = pKernel->GetLastCommandLineResult() ;
@@ -190,7 +216,7 @@ bool CommandProcessor::ProcessLine() {
 
 	// If this string is seen, exit
 	if (output.find("Goodbye.") != std::string::npos) {
-		return false;
+		return false; // BUGBUG: this false is a normal, non erroneous exit, no way to tell apart from error exits
 	}
 
 	DisplayPrompt();
@@ -228,6 +254,7 @@ int main(int argc, char** argv)
 	int callbackID1 = pAgent->RegisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, RunCallbackHandler, 0);
 	int callbackID2 = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 
+	// Main command loop
 	g_pCommandProcessor->DisplayPrompt();
 	while (g_pCommandProcessor->ProcessCharacter()) {}
 
