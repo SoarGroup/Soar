@@ -36,7 +36,7 @@
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="FALSE"
 				AdditionalOptions="/EXPORT:DllMain"
-				OutputFile="$(SolutionDir)\bin\CommandLineInterface.dll"
+				OutputFile="$(SolutionDir)bin\CommandLineInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="FALSE"
@@ -154,7 +154,16 @@
 				Name="Commands"
 				Filter="">
 				<File
+					RelativePath=".\src\cli_addwme.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_alias.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_cd.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_dirs.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_echo.cpp">
@@ -164,6 +173,9 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_firingcounts.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_gdsprint.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_help.cpp">
@@ -178,6 +190,9 @@
 					RelativePath=".\src\cli_initsoar.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_io.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_learn.cpp">
 				</File>
 				<File
@@ -187,13 +202,34 @@
 					RelativePath=".\src\cli_ls.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_matches.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_maxelaborations.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_maxniloutputcycles.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_memories.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_multiattributes.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_numericindifferentmode.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_popd.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_preferences.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_print.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_productionfind.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_pushd.cpp">
@@ -205,7 +241,16 @@
 					RelativePath=".\src\cli_quit.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_removewme.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_retenet.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_run.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_soar8.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_source.cpp">
@@ -226,10 +271,16 @@
 					RelativePath=".\src\cli_timers.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_version.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_warnings.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_watch.cpp">
+				</File>
+				<File
+					RelativePath=".\src\cli_wmes.cpp">
 				</File>
 			</Filter>
 		</Filter>
