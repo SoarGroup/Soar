@@ -52,7 +52,13 @@ extern unsigned long hash_string(const char *s);
    memory_match_wait   - How long to wait before memories can be recalled.  This
                          value is expressed in the number of newer memories that
                          must exist before this one is retrievable.
-                      
+   ubiquitous_threshold - When a wmetree node's assoc_memories list has
+                          a number of entries that exceeds this fraction
+                          of the total number of episodic memories then it
+                          has become too ubiquitous and is no longer used
+                          in matching.
+   ubiquitous_max       - There must be at least this many episodic memories
+                          before any node can be considered ubiquitous
 
    %%%TODO:  Made these values command line configurable
 
@@ -62,6 +68,8 @@ extern unsigned long hash_string(const char *s);
 #define num_wmes_changed 1
 #define memories_init_size 512
 #define memory_match_wait 1     // %%%TODO: no longer needed?
+#define ubiquitous_threshold 1.0
+#define ubiquitous_max 25
 
 /*======================================================================
  * Data structures
@@ -138,6 +146,7 @@ typedef struct wmetree_struct
     struct wme_struct *assoc_wme;
     arraylist *assoc_memories;
     int query_count;
+    int ubiquitous;
 } wmetree;
 
 
@@ -429,6 +438,7 @@ wmetree *make_wmetree_node(wme *w)
     node->assoc_wme = NULL;
     node->assoc_memories = make_arraylist(16);
     node->query_count = 0;
+    node->ubiquitous = FALSE;
 
     if (w == NULL) return node;
     
@@ -1094,9 +1104,28 @@ void record_epmem( )
             //In order to be recorded, a WME must meet the following criteria:
             //1.  It must be a leaf WME (i.e., it has no children)
             //2.  It must be activated (i.e., it has a decay element)
-            if ( (node->children->count == 0) && (activation != -1) )
+            //3.  It must not be marked as ubiquitous
+            if ( (node->children->count == 0)
+                 && (activation != -1)
+                 && (! node->ubiquitous) )
             {
                 append_entry_to_arraylist(node->assoc_memories, (void *)new_epmem);
+
+                //Test to see if the new arraylist has too many entries.
+                //If so, this node has become too ubiquitous and will no
+                //longer be used in mat ching
+                if (g_memories->size > ubiquitous_max)
+                {
+                    float ubiquity =
+                        ((float)node->assoc_memories->size) / ((float)g_memories->size);
+                    if (ubiquity > ubiquitous_threshold)
+                    {
+                        node->ubiquitous = TRUE;
+                        destroy_arraylist(node->assoc_memories);
+                        node->assoc_memories = make_arraylist(1);
+                    }
+                    
+                }                
             }
         }//for
     }//while
@@ -1669,6 +1698,8 @@ episodic_memory *find_best_match(arraylist *cue)
     int j;
     int comp_count = 0;         // number of epmems that were examined
 
+    start_timer(&current_agent(epmem_match_start_time));
+
     //If there aren't enough memories to examine just return
     //the first one
     if (g_memories->size <= memory_match_wait)
@@ -1689,9 +1720,9 @@ episodic_memory *find_best_match(arraylist *cue)
         if (aw->node->assoc_memories->size > 0)
         {
             // note that this node was used in the match
-            aw->node->query_count++; 
+            aw->node->query_count++;
         }
-        
+            
         for(j = 0; j < aw->node->assoc_memories->size; j++)
         {
             episodic_memory *epmem =
@@ -1716,9 +1747,15 @@ episodic_memory *find_best_match(arraylist *cue)
         }//for
     }//for
 
-//      //%%%REMOVE THIS
+    stop_timer(&current_agent(epmem_match_start_time), &current_agent(epmem_match_total_time));
+
+    //%%%DEBUGGING
+//      stop_timer(&current_agent(epmem_retrieve_start_time), &current_agent(epmem_retrieve_total_time));
+//      stop_timer(&current_agent(epmem_start_time), &current_agent(epmem_total_time));
 //      print("\nmemories searched:\t%d\t%d\n",
 //            g_memories->size, comp_count);
+//      start_timer(&current_agent(epmem_start_time));
+//      start_timer(&current_agent(epmem_retrieve_start_time));
 
     return best_mem;
 }//find_best_match
@@ -1852,9 +1889,7 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
     g_num_queries++;
 
     //Match query to current memories list
-    start_timer(&current_agent(epmem_match_start_time));
     g_curr_memory = find_best_match(al_query);
-    stop_timer(&current_agent(epmem_match_start_time), &current_agent(epmem_match_total_time));
     destroy_arraylist(al_query);
 
     //Place the best fit on the retrieved link
@@ -2300,11 +2335,14 @@ void epquw_helper(wmetree *node,
     if (node->assoc_memories != NULL)
     {
         nodesize = node->assoc_memories->size;
-        (total_queries[nodesize]) += node->query_count;
-        (num_nodes[nodesize]) ++;
-        if (nodesize > *largest) *largest = nodesize;
+        if (nodesize < HISTOGRAM_SIZE)
+        {
+            (total_queries[nodesize]) += node->query_count;
+            (num_nodes[nodesize]) ++;
+            if (nodesize > *largest) *largest = nodesize;
+        }
 
-//          //%%%REMOVE THIS IF-CLAUSE
+//          //%%%DEBUGGING:  REMOVE THIS IF-CLAUSE LATER
 //          if ( (num_nodes[nodesize] > 0)
 //               && ( total_queries[nodesize] / num_nodes[nodesize] > 250)
 //               && ( total_queries[nodesize] / num_nodes[nodesize] < 300) )
@@ -2430,14 +2468,15 @@ void epmem_update()
     stop_timer(&current_agent(epmem_start_time), &current_agent(epmem_total_time));
 
     
-    //%%%DEBUGGING
-    //epmem_print_curr_memory();
-    //epmem_print_mem_usage();
+//      //%%%DEBUGGING
+//      //epmem_print_curr_memory();
+//      //epmem_print_mem_usage();
     
 //      //%%%DEBUGGING
 //      if (count % 1500 == 0)
 //      {
 //          epmem_print_cpu_usage();
+//          print("\nend of run %d\n", count / 1500);
 //      }
     
 //      //%%%DEBUGGING
