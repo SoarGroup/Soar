@@ -1,3 +1,7 @@
+proc PrintCallback {id userData agent message} {
+   puts $message
+}
+
 #load the sml stuff
 load Tcl_sml_ClientInterface.dll
 #lappend auto_path .
@@ -8,8 +12,10 @@ set kernel [Kernel_CreateEmbeddedConnection KernelSML 0]
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
 
-cd demos/towers-of-hanoi
+set result [$agent RegisterForPrintEvent 35 PrintCallback "whatever" ""]
+puts $result
 
+cd demos/towers-of-hanoi
 #load the TOH productions
 set result [$kernel ExecuteCommandLine "source towers-of-hanoi.soar" Soar1]
 #set the watch level to 0
@@ -19,7 +25,6 @@ set result [$kernel ExecuteCommandLine "excise towers-of-hanoi*monitor*operator-
 
 #run TOH and time it using Tcl's built-in timer
 set speed [time {set result [$kernel ExecuteCommandLine "run 2048" Soar1]}]
-
 cd ../..
 puts $speed
 
