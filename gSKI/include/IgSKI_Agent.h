@@ -24,8 +24,7 @@
 //        IT IS NEEDED FOR THE TSI UNTIL IT CAN GET REWRITTEN!
 //
 //
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 
 namespace gSKI {
 

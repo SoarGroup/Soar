@@ -23,8 +23,7 @@
 #include "ExecRhsFunction.h"
 #include "CmdRhsFunction.h"
 
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 
 // For the listeners
 #ifdef WIN32

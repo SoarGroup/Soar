@@ -17,8 +17,7 @@ typedef struct production_struct production;
 typedef unsigned char wme_trace_type;
 typedef struct rete_node_struct rete_node;
 typedef unsigned char ms_trace_type;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 
 typedef void * soar_callback_agent;
 

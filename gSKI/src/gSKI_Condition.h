@@ -16,8 +16,7 @@
 #include "IgSKI_Condition.h"
 
 typedef struct condition_struct condition;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 typedef char * test;
 
 namespace gSKI {

@@ -17,8 +17,7 @@
 
 typedef char * test;
 
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 
 namespace gSKI 
 {

@@ -25,8 +25,7 @@
 #include <map>
 
 
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 typedef std::set<std::string> tStringSet;
 
 namespace gSKI {
