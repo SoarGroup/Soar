@@ -6,8 +6,12 @@ use strict;
 while (<>) {
 
   if (/\\begin\{tabular\}\{\|c\|c\|\}/) {
-    print "\\begin{tabular}{|l|p{4.8in}|}\n";
+    print "\\begin{tabular}{|p{1in}|p{5in}|}\n";
   } else {
-    print;
+    if (/\\begin\{tabular\}\{\|c\|c\|c\|\}/) {
+      print "\\begin{tabular}{|p{1in}|p{1in}|p{4in}|}\n";
+    } else {
+      print;
+    }
   }
 }

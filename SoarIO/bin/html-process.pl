@@ -47,6 +47,11 @@ while (my $element = $html->look_down("id","footer")) {
   $element->delete();
 }
 
+while (my $element = $html->look_down("class","printfooter")) {
+  #print "SERVED printfooter\n";
+  $element->delete();
+}
+
 while (my $element = $html->look_down("id","toc")) {
   #print "SERVED toc\n";
   $element->delete();

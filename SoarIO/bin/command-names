@@ -36,6 +36,7 @@ remove-wme
 rete-net
 run
 save-backtraces
+set-library-location
 soar8
 soarnews
 source

@@ -34,6 +34,9 @@ for (my $i = 0; $i < $#links; $i++) {
   `elinks -dump -no-numbering -no-references help/@names[$i].html > help/@names[$i]`;
 
   chdir "help" or die "Could not change to help directory: $!";
-  `html2latex --pdf @names[$i].html`;
+  `html2latex --nopar @names[$i].html`;
+  `../fixtables.pl < @names[$i].tex > @names[$i].tex.new`;
+  rename "@names[$i].tex.new", "@names[$i].tex" or die "Could not rename @names[$i].tex.new: $!";
+  `pdflatex --interaction=nonstopmode @names[$i].tex`;
   chdir ".." or die "Could not change back to bin directory: $!";
 }
