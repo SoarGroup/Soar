@@ -253,9 +253,9 @@ bool Agent::LoadProductions(char const* pFilename)
 	}
 
 	// Execute the source command
-	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetAgentName()) ;
+	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
 
-	bool ok = GetKernel()->GetLastCommandLineResult() ;
+	bool ok = GetLastCommandLineResult() ;
 
 	if (ok)
 		ClearError() ;
@@ -774,7 +774,29 @@ char const* Agent::InitSoar()
 	// The init-soar causes an event to be sent back from the kernel and when
 	// we get that, we'll queue up the input link information to be sent over again
 	// and also erase our output link information.
-	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetAgentName()) ;
+	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
+	return pResult ;
+}
+
+/*************************************************************
+* @brief Interrupt the currently running Soar agent.
+*
+* Call this after calling "Run" in order to stop a Soar agent.
+* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
+* and in that event handler decide if the user wishes to stop soar.
+* If so, call to this method inside that handler.
+*
+* The request to Stop may not be honored immediately.
+* Soar will stop at the next point it is considered safe to do so.
+*************************************************************/
+char const* Agent::Stop(bool stopAllAgents)
+{
+	// BUGBUG: Not sure how to handle the stopAllAgents option yet.
+
+	std::string cmd = "stop" ;
+
+	// Execute the command.
+	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
 	return pResult ;
 }
 
@@ -791,7 +813,7 @@ char const* Agent::Run(unsigned long decisions)
 	std::string cmd = "run -d " + ostr.str() ;
 
 	// Execute the run command.
-	char const* pResult = GetKernel()->ExecuteCommandLine(cmd.c_str(), GetAgentName()) ;
+	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
 	return pResult ;
 }
 
@@ -828,6 +850,9 @@ char const* Agent::RunTilOutput(unsigned long maxDecisions)
 {
 	ClearOutputLinkChanges() ;
 
+	// Send any pending input link changes to Soar
+	Commit() ;
+
 #ifdef SML_DIRECT
 	if (GetConnection()->IsDirectConnection())
 	{
@@ -849,4 +874,45 @@ char const* Agent::RunTilOutput(unsigned long maxDecisions)
 void Agent::Refresh()
 {
 	GetWM()->Refresh() ;
+}
+
+/*************************************************************
+* @brief Process a command line command and return the result
+*        as a string.
+*
+* @param pCommandLine Command line string to process.
+* @param pAgentName Agent name to apply the command line to.
+* @returns The string form of output from the command.
+*************************************************************/
+char const* Agent::ExecuteCommandLine(char const* pCommandLine)
+{
+	return GetKernel()->ExecuteCommandLine(pCommandLine, GetAgentName()) ;
+}
+
+/*************************************************************
+* @brief Execute a command line command and return the result
+*		 as an XML object.
+*
+* @param pCommandLine Command line string to process.
+* @param pAgentName   Agent name to apply the command line to.
+* @param pResponse    The XML response will be returned within this object.
+*                     The caller should allocate this and pass it in.
+* @returns True if the command succeeds.
+*************************************************************/
+bool Agent::ExecuteCommandLineXML(char const* pCommandLine, AnalyzeXML* pResponse)
+{
+	return GetKernel()->ExecuteCommandLineXML(pCommandLine, GetAgentName(), pResponse) ;
+}
+
+/*************************************************************
+* @brief Get last command line result
+*
+* (This is the last result for any command sent to the kernel,
+*  not just for this agent).
+*
+* @returns True if the last command line call succeeded.
+*************************************************************/
+bool Agent::GetLastCommandLineResult()
+{
+	return GetKernel()->GetLastCommandLineResult() ;
 }

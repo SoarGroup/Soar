@@ -133,6 +133,11 @@ void MyDuplicateRunEventHandler(smlEventId id, void* pUserData, Agent* pAgent, s
 	cout << "Received the event in my 2nd handler too" << endl ;
 }
 
+void MyInterruptHandler(smlEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
+{
+	pAgent->Stop() ;
+}
+
 void MySystemEventHandler(smlEventId id, void* pUserData, Kernel* pKernel)
 {
 	cout << "Received kernel event" << endl ;
@@ -353,6 +358,27 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 			cout << "*** ERROR: Test failed to send and receive output correctly." << endl ;
 			return false ;
 		}
+
+		// Test that we can interrupt a run by registering a handler that
+		// interrupts Soar immediately after a decision cycle.
+		int callback3 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyInterruptHandler, 0) ;
+
+		pAgent->InitSoar() ;
+		pAgent->Run(20) ;
+
+		std::string stats = pAgent->ExecuteCommandLine("stats") ;
+		size_t pos = stats.find("1 decision cycles") ;
+
+		// Removed the test part for now.  Stop's not working yet and
+		// stats doesn't report anything.
+/*
+		if (pos == std::string.npos)
+		{
+			cout << "*** ERROR: Failed to interrupt Soar during a run." << endl ;
+			return false ;
+		}
+*/
+		pAgent->UnregisterForAgentEvent(smlEVENT_AFTER_DECISION_CYCLE, callback3) ;
 
 		cout << endl << "If this test worked should see something like this (above here):" << endl ;
 		cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;

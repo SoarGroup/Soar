@@ -291,6 +291,19 @@ public:
 	char const*	InitSoar() ;
 
 	/*************************************************************
+	* @brief Interrupt the currently running Soar agent.
+	*
+	* Call this after calling "Run" in order to stop a Soar agent.
+	* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
+	* and in that event handler decide if the user wishes to stop soar.
+	* If so, call to this method inside that handler.
+	*
+	* The request to Stop may not be honored immediately.
+	* Soar will stop at the next point it is considered safe to do so.
+	*************************************************************/
+	char const*	Stop(bool stopAllAgents = true) ;
+
+	/*************************************************************
 	* @brief Register for a "RunEvent".
 	*		 Multiple handlers can be registered for the same event.
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
@@ -505,6 +518,9 @@ public:
 	* like "IsJustAdded" will refer to the changes that occur as a result of
 	* this run.
 	*
+	* This function also calls "Commit" to make sure any pending input
+	* link changes have been sent to Soar.
+	*
 	* We don't generally want Soar to just run until it generates
 	* output without any limit as an error in the AI logic might cause
 	* it to never return control to the environment.
@@ -521,6 +537,38 @@ public:
 	*		 There should be no reason for the client to call this method directly.
 	*************************************************************/
 	void Refresh() ;
+
+	/*************************************************************
+	* @brief Process a command line command and return the result
+	*        as a string.
+	*
+	* @param pCommandLine Command line string to process.
+	* @param pAgentName Agent name to apply the command line to.
+	* @returns The string form of output from the command.
+	*************************************************************/
+	char const* ExecuteCommandLine(char const* pCommandLine) ;
+
+	/*************************************************************
+	* @brief Execute a command line command and return the result
+	*		 as an XML object.
+	*
+	* @param pCommandLine Command line string to process.
+	* @param pAgentName   Agent name to apply the command line to.
+	* @param pResponse    The XML response will be returned within this object.
+	*                     The caller should allocate this and pass it in.
+	* @returns True if the command succeeds.
+	*************************************************************/
+	bool ExecuteCommandLineXML(char const* pCommandLine, AnalyzeXML* pResponse) ;
+
+	/*************************************************************
+	* @brief Get last command line result
+	*
+	* (This is the last result for any command sent to the kernel,
+	*  not just for this agent).
+	*
+	* @returns True if the last command line call succeeded.
+	*************************************************************/
+	bool GetLastCommandLineResult();
 };
 
 }//closes namespace

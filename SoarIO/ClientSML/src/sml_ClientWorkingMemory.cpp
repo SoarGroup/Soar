@@ -711,6 +711,8 @@ bool WorkingMemory::Commit()
 	int deltas = m_DeltaList.GetSize() ;
 
 	// If nothing has changed, we have no work to do.
+	// This allows us to call Commit() multiple times without causing problems
+	// as later calls will be ignored if the current set of changes has been sent already.
 	if (deltas == 0)
 		return true ;
 
