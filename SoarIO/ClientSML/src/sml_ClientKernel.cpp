@@ -906,7 +906,6 @@ public:
 *		 The function is implemented by providing a handler (a RhsEventHandler).  This will be passed a single string
 *		 and returns a string.  The incoming argument string can contain arguments that the client should parse
 *		 (e.g. passing a coordinate as "12 56").  The format of the string is up to the implementor of the specific RHS function.
-*		 The handler should return true if it has filled in a return string value, otherwise it must return false.
 *
 * @param pRhsFunctionName	The name of the method we are implementing (case-sensitive)
 * @param handler			A function that will be called when the event happens
