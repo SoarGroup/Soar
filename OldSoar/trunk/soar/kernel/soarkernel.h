@@ -1338,7 +1338,6 @@ typedef struct preference_struct {
 
   int total_preferences_for_candidate;
   double sum_of_probability;
-  double confidence;
 
   /* END: REW: 2003-01-08 */
 #endif

@@ -1,4 +1,4 @@
-/*************************************************************************
+/* ************************************************************************
  *
  *  file:  decide.c
  *
@@ -62,19 +62,14 @@
 #ifdef NUMERIC_INDIFFERENCE
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
 preference *probabilistically_select(slot *s, preference *candidates);
-void EnableProbIndifferentSelection();
-void DisableProbIndifferentSelection();
 
 
-/* The numeric indifference value used when none is supplied 
+/*
+ * The numeric indifference value used when none is supplied 
  * (this should not be zero)
  */
- #define DEFAULT_INDIFFERENCE_VALUE 1
+#define DEFAULT_INDIFFERENCE_VALUE 50
 
-/* The value initially given to a preference 
- * (this should typically be zero)
- */
- #define INITIAL_INDIFFERENCE_VALUE 0
 
 
 /* REW: 2003-01-06 A temporary helper function */
@@ -3248,28 +3243,10 @@ void initialize_indifferent_candidates_for_probability_selection(slot *s, prefer
      /* print_with_symbols("\nInitializing candidate %y",cand->value); 
       */
       cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-      cand->total_preferences_for_candidate=0;
-      cand->sum_of_probability=INITIAL_INDIFFERENCE_VALUE;
-			cand->confidence = 0;
+      cand->total_preferences_for_candidate = 0;
+      cand->sum_of_probability = 0;
    }
-
-
-   /*    
-   for (cand=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
-   {
-     print_with_symbols ("\n  Candidate (unary indifferent preference)  %y %y %y", cand->id, cand->attr, cand->value);
-     print("\n Candidate decider flag : %d ", cand->value->common.decider_flag);
-   }
-
-   for (cand=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
-     {     
-         print_with_symbols ("\n  Candidate (binary indifferent preference)  %y %y %y", cand->id, cand->attr, cand->value);
-     print("\n Candidate decider flag : %d ", cand->value->common.decider_flag);
-     
-   }
-   */
   
-
 }
 
 unsigned int count_candidates(slot *s, preference *candidates)
@@ -3302,7 +3279,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
 {
    preference*    cand=0; 
    preference*    pref=0; 
-   double        total_probability=0;
+   double         total_probability=0;
    preference*    selectedCandidate=0;
    unsigned int   numCandidates = 0;
    unsigned int   currentCandidate=0;
@@ -3346,17 +3323,13 @@ preference *probabilistically_select(slot *s, preference *candidates)
 					 cand->total_preferences_for_candidate += 1;
 					 cand->sum_of_probability += DEFAULT_INDIFFERENCE_VALUE;
 					 
-                     /*
-					 print_with_symbols("\nFound unary preference: \n Incrementing candidate %y by default value", cand->value); 
-					 
-					 print("\nValues: total_preferences %d   sum_of_probability %f", cand->total_preferences_for_candidate, cand->sum_of_probability);
-					 */
 				 }
 			 }
 		 }
 	 
 
-   /* BUGBUGBUG 
+   /*
+		 BUGBUGBUG 
       Next some error checking here to ensure that the binary preference
       is indeed really an indifferent+value preference....
       someday.
@@ -3373,49 +3346,21 @@ preference *probabilistically_select(slot *s, preference *candidates)
 				 if (cand->value == pref->value) {
 					 cand->total_preferences_for_candidate += 1;
 					 if ( pref->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) {
-						 cand->confidence += (int)fabs(pref->referent->fc.value); 
 						 cand->sum_of_probability += pref->referent->fc.value;
 					 }
 					 else if ( pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) {
-						 cand->confidence += abs(pref->referent->ic.value);
 						 cand->sum_of_probability += pref->referent->ic.value;
 					 }
-
-					 /*print("\nValues: total_preferences %d   sum_of_probability %f", cand->total_preferences_for_candidate, cand->sum_of_probability); */
-
 				 }
 			 }
 		 }
 	 
 
-	 /*	 
-	 for (cand=candidates; cand!=NIL; cand=cand->next_candidate){
-		 if (cand->total_preferences_for_candidate < 1)
-			 return NIL;
-		 else
-			 cand->confidence /= cand->total_preferences_for_candidate;
-	 }
-	 
-   for (cand=candidates; cand!=NIL; cand=cand->next_candidate){
-	   for(pref=cand->next_candidate; pref!=NIL; pref=pref->next_candidate){
-		   if (cand->sum_of_probability >= pref->sum_of_probability){
-			   if ( (cand->sum_of_probability - cand->confidence) > 
-							(pref->sum_of_probability + pref->confidence))
-				   return NIL;
-		   }
-		   else if ((cand->sum_of_probability + cand->confidence) > 
-								(pref->sum_of_probability - pref->confidence))
-			   return NIL;
-	   }
-   }
-  */
-
-
    total_probability = 0.0;
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
      
 	
-     /*print_with_symbols("\n Candidate %y ", cand->value); */
+     /* print_with_symbols("\n Candidate %y ", cand->value); */
      /* Sum the total probabilities */
      total_probability += cand->sum_of_probability;
 		 /*print("\n   Total Probability = %f", total_probability );*/
@@ -3437,7 +3382,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
      }
    }
 
-   print("\nERROR ERROR ERROR\nProbability Selection failed.  Choosing indifferent preferences the former way.  But will crash if all are binary+value preferences.");
+   print("\nERROR: Probability Selection failed. This should never happen.\n");
    return NIL;
 
 }
