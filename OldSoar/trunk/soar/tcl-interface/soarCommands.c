@@ -2145,6 +2145,29 @@ int ReteNetCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * c
 
 }
 
+/*
+ *----------------------------------------------------------------------
+ *
+ * InterruptCmd --
+ *
+ *      This command sets and queries information regarding
+ *      interrupts on productions.  It can turn interrupts on single
+ *      productions on or off, list the current setting for a
+ *      production, or list all productions which currently have
+ *      interrupts on or off.
+ *
+ * Syntax:  interrupt [-on|-off] [production name]
+ *
+ * Results:
+ *      Returns a standard Tcl completion code.
+ *
+ * Side effects:
+ *      Sets the interrupt byte for a production or prints
+ *           current interrupt settings
+ *
+ *----------------------------------------------------------------------
+ */
+
 int InterruptCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[])
 {
 	char **argv;
@@ -2188,6 +2211,7 @@ void Soar_InstallCommands(agent * the_agent)
     install_tcl_soar_cmd(the_agent, "init-soar", InitSoarCmd);
     install_tcl_soar_cmd(the_agent, "input-period", InputPeriodCmd);
     install_tcl_soar_cmd(the_agent, "internal-symbols", InternalSymbolsCmd);
+	install_tcl_soar_cmd(the_agent, "interrupt", InterruptCmd); /* RPM 11.24.03 */
     install_tcl_soar_cmd(the_agent, "io", IOCmd);
     install_tcl_soar_cmd(the_agent, "learn-core", LearnCmd);
     install_tcl_soar_cmd(the_agent, "log", LogCmd);
@@ -2222,7 +2246,6 @@ void Soar_InstallCommands(agent * the_agent)
     install_tcl_soar_cmd(the_agent, "soar8", Operand2Cmd);
     install_tcl_soar_cmd(the_agent, "waitsnc", WaitSNCCmd);
 /* REW: end   09.15.96 */
-	install_tcl_soar_cmd(the_agent, "interrupt", InterruptCmd); /* RPM 11.24.03 */
 
 #ifdef USE_DEBUG_UTILS
     install_tcl_soar_cmd(the_agent, "pool", PrintPoolCmd);

@@ -2992,8 +2992,6 @@ int soar_Interrupt(int argc, const char *argv[], soarResult * res)
 	        interrupt_setting = INTERRUPT_ON;
         } else if (string_match("-off", argv[i])) {
 	        interrupt_setting = INTERRUPT_OFF;
-        } else if (string_match("-off", argv[i])) {
-	        interrupt_setting = INTERRUPT_OFF;
         } else {
             sym = find_sym_constant(argv[i]);
             if (sym && sym->sc.production) {

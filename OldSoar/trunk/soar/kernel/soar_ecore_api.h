@@ -697,6 +697,17 @@ extern void soar_ecPrintMemories(int num, int to_print[]);
  */
 extern int soar_ecWatchLevel(int level);
 
+/**
+ *
+ *
+ * soar_ecPrintAllProductionsWithInterruptSetting --
+ *
+ * \brief  Prints all productions with the specified interrupt setting
+ *
+ * \param "-> interrupt_setting"  INTERRUPT_ON or INTERRUPT_OFF
+ *                                (INTERRUPT_PRINT will never match)
+ *
+ */
 extern void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_InterruptSetting interrupt_setting);
 
 /*@}*/

@@ -1170,7 +1170,8 @@ void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_InterruptSetting i
 
         while (prod != NIL) {
             /* Print it... */
-            if(prod->interrupt == interrupt_setting) {
+
+            if( (interrupt_setting == INTERRUPT_ON && prod->interrupt) || (interrupt_setting == INTERRUPT_OFF && !prod->interrupt) ) {
                 print("%s\n", prod->name->var.name);
             }
         

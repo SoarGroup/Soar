@@ -2278,6 +2278,35 @@ extern int soar_ExcludedBuildInfo(int argc, const char *argv[], soarResult * res
  *
  * soar_Interrupt --
  *
+ * \brief  This command sets and queries information regarding
+ *         interrupts on productions.  It can turn interrupts on single
+ *         productions on or off, list the current setting for a
+ *         production, or list all productions which currently have
+ *         interrupts on or off.
+ *
+ * \param  "-> argc" The number of arguments is the \c argv block
+ * \param  "-> argv" An array of strings, each of which is a word in the
+ *                   argument list to this function
+ * \param  "<- res"  A SoarResult structure which will be filled in by the
+ *                   function.
+ *
+ * \par    Syntax:
+   \verbatim
+           interrupt [-on|-off] [production name]
+   \endverbatim
+ *
+ * \return Returns a Soar completion code.
+ *
+ * \par    SoarResult:
+ *           \arg On \c SOAR_ERROR:  Contains details about error.
+ *           \arg On \c SOAR_OK:     Is empty.
+ *
+ *
+ * \par    Side effects:
+ *           Sets the interrupt byte for a production or prints
+ *           current interrupt settings
+ *
+ *
  *----------------------------------------------------------------------
  */
 
