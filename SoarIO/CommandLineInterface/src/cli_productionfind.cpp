@@ -6,12 +6,14 @@
 
 #include "cli_Constants.h"
 #include "cli_GetOpt.h"
+#include "sml_Names.h"
 
 #include "IgSKI_Agent.h"
 #include "IgSKI_Kernel.h"
 #include "IgSKI_DoNotTouch.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
@@ -80,7 +82,9 @@ bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigned int m
 	// Attain the evil back door of damnation, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	return pKernelHack->ProductionFind(pAgent, 
+	AddListenerAndDisableCallbacks(pAgent);
+
+	bool ret = pKernelHack->ProductionFind(pAgent, 
 		0, 
 		m_pKernel, 
 		(mode & OPTION_PRODUCTION_FIND_INCLUDE_LHS) ? true : false, 
@@ -89,5 +93,14 @@ bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, unsigned int m
 		(mode & OPTION_PRODUCTION_FIND_SHOWBINDINGS) ? true : false, 
 		(mode & OPTION_PRODUCTION_FIND_INCLUDE_CHUNKS) ? true : false, 
 		(mode & OPTION_PRODUCTION_FIND_INCLUDE_CHUNKS) ? true : false);
+	
+	RemoveListenerAndEnableCallbacks(pAgent);
+
+	if (!m_RawOutput) {
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
+		m_Result.clear();
+	}
+
+	return ret;
 }
 

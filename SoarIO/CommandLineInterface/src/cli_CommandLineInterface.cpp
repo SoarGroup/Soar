@@ -29,6 +29,7 @@
 #include "sml_TagResult.h"
 #include "sml_TagArg.h"
 #include "sml_StringOps.h"
+#include "sml_KernelSML.h"
 
 using namespace cli;
 using namespace sml;
@@ -349,9 +350,10 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 	return false;
 }
 
-EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion) {
+EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML) {
 	m_pKernel = pKernel;
 	m_KernelVersion = kernelVersion;
+	m_pKernelSML = pKernelSML;
 }
 
 bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
@@ -420,3 +422,12 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
 	m_ResponseTags.push_front(pTag);
 }
 
+void CommandLineInterface::AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent) {
+	if (m_pKernelSML) m_pKernelSML->DisablePrintCallback(pAgent);
+	if (pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+}
+
+void CommandLineInterface::RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent) {
+	if (pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
+}

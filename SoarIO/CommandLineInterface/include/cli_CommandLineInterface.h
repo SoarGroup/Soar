@@ -97,7 +97,7 @@ public:
 	/*************************************************************
 	* @brief Set the kernel this command line module is interfacing with.
 	*************************************************************/
-	EXPORT void SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion);
+	EXPORT void SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML = 0);
 
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
@@ -728,6 +728,9 @@ protected:
 	* @brief This is a utility function used by DoLS 	 
 	*************************************************************/ 	 
 	void PrintFilename(const std::string& name, bool isDirectory); 	 
+
+	void AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent);
+	void RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent);
   	 
 	Constants*			m_pConstants;			// Constants management object
 	Aliases				m_Aliases;				// Alias management object
@@ -736,6 +739,7 @@ protected:
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
+	sml::KernelSML*		m_pKernelSML;
 	gSKI::Version		m_KernelVersion;		// Kernel version number
 
 	bool				m_RawOutput;			// True if we want string output.

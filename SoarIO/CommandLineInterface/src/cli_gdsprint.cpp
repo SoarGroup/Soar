@@ -5,11 +5,13 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
+#include "sml_Names.h"
 
 #include "IgSKI_Kernel.h"
 #include "IgSKI_DoNotTouch.h"
 
 using namespace cli;
+using namespace sml;
 
 bool CommandLineInterface::ParseGDSPrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(argv);
@@ -26,6 +28,15 @@ bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
 	// Attain the evil back door of desolation, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	return pKernelHack->GDSPrint(pAgent);
+	AddListenerAndDisableCallbacks(pAgent);
+	bool ret = pKernelHack->GDSPrint(pAgent);
+	RemoveListenerAndEnableCallbacks(pAgent);
+
+	if (!m_RawOutput) {
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
+		m_Result.clear();
+	}
+
+	return ret;
 }
 

@@ -106,9 +106,9 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches,
 
 		if (!prod) return m_Error.SetError(CLIError::kProductionNotFound);
 
-		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		AddListenerAndDisableCallbacks(pAgent);		
 		pKernelHack->PrintPartialMatchInformation(pAgent, prod, wtt);
-		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		RemoveListenerAndEnableCallbacks(pAgent);
 
 	} else {
 
@@ -116,9 +116,9 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, unsigned int matches,
 		if (matches == OPTION_MATCHES_ASSERTIONS) mst = MS_ASSERT;
 		if (matches == OPTION_MATCHES_RETRACTIONS) mst = MS_RETRACT;
 
- 		pAgent->AddPrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		AddListenerAndDisableCallbacks(pAgent);		
 		pKernelHack->PrintMatchSet(pAgent, wtt, mst);
-		pAgent->RemovePrintListener(gSKIEVENT_PRINT, &m_ResultPrintHandler);
+		RemoveListenerAndEnableCallbacks(pAgent);
 	}
 
 	if (!m_RawOutput) {
