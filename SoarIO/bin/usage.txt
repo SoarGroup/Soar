@@ -20,10 +20,15 @@ Usage:	capture-input
 ***
 cd
 Usage:	cd [directory]
-Change the current working directory.
 Options and arguments:
   directory 		The directory to change in to, can be relative or full
   			path.
+
+Change the current working directory. If run with no arguments, returns to the 
+directory that the command line interface was started in, often referred to the 
+'home' directory.
+
+See also the 'home' command.
 ~~~
 On success:
 <result>true</result>
@@ -31,6 +36,7 @@ On success:
 chunk-name-format
 Usage:	chunk-name-format [-sl] -p [<prefix>]
 	chunk-name-format [-sl] -c [<count>]
+Options and arguments:
   -c, --count
   count
   -l, --long
@@ -41,12 +47,16 @@ Usage:	chunk-name-format [-sl] -p [<prefix>]
 ***
 default-wme-depth
 Usage:	default-wme-depth [depth]
+Options and arguments:
   depth
 ~~~
 ***
 echo
 Usage:	echo string
+Options and arguments:
   string		The string to print back.
+
+Used to echo commands to the console.
 ~~~
 On success:
 <result>string</result>
@@ -54,12 +64,17 @@ On success:
 excise
 Usage:	excise production_name
 	excise -[acdtu]
+Options and arguments:
   -a, --all		Excise everything.
   -c, --chunks		Excise chunks and justifications
   -d, --default		Excise default productions.
   -t, --task		Excise chunks, justifications, and user productions.
   -u, --user		Excise user productions.
   production_name	Excise a specific production with this name.
+
+Used to remove Soar productions from working memory. A pound sign is printed for 
+every production excised. The command must be called with either a specific 
+production name or with a flag that indicates a particular group of productions.
 ~~~
 On success:
 <result>
@@ -75,6 +90,7 @@ Usage:	explain-backtraces
 ***
 firing-counts
 Usage:	firing-counts [n|production_name]
+Options and arguments:
   n
   production_name
 ~~~
@@ -82,6 +98,7 @@ Usage:	firing-counts [n|production_name]
 format-watch
 Usage:	format-watch -a[so] restriction format [restriction format]...
 	format-watch -r[so] restriction format [restriction format]...
+Options and arguments:
   -a, --add
   -o, --object
   -r, --remove
@@ -96,6 +113,7 @@ Usage:	gds-print
 ***
 help
 Usage:	help [command_name]
+Options and arguments:
   command_name		Print online help for this command.
 ~~~
 On success:
@@ -103,6 +121,7 @@ On success:
 ***
 helpex
 Usage:	helpex command_name
+Options and arguments:
   command_name		Print extended help for this command.
 ~~~
 On success:
@@ -110,8 +129,14 @@ On success:
 ***
 home
 Usage:	home [home_directory]
+Options and arguments:
   home_directory	Optional home directory to set as home.  Otherwise uses
 			current directory.
+
+Used to set the directory where the cd command returns to when invoked with no 
+arguments. This is also the directory where the command line interface looks for 
+the aliases.txt and usage.txt files, and can be used to reload those files from 
+disk.
 ~~~
 On success:
 <result>true</result>
@@ -122,6 +147,15 @@ Usage:	indifferent-selection
 ***
 init-soar
 Usage:	init-soar
+
+The init-soar command reinitializes Soar. It empties working memory, wiping out 
+the subgoal stack, and resets all runtime statistics. The firing counts for all 
+productions is reset to zero. The init-soar command allows a Soar program that 
+has been halted to be reset and start its execution from the beginning.
+
+init-soar does not remove any productions from production memory; to do this, 
+use the excise command. Note however, that all justifications will be removed 
+because they will no longer be supported.
 ~~~
 On success:
 <result>true</result>
@@ -141,13 +175,22 @@ Usage:	io
 learn
 Usage:	learn [-l]
 	learn -[d|e|E|o][ab]
-  -a, --all-levels
-  -b, --bottom-up
-  -d, --disable, --off
-  -e, --enable, --on
-  -E, --Except
-  -l, --list
-  -o, --only
+Options and arguments:
+  -a, --all-levels      Build productions whenever a subgoal returns a result
+  -b, --bottom-up       Build productions only for subgoals that have not yet
+                        had any subgoals with chunks built
+  -d, --disable, --off  Turn chunking off
+  -e, --enable, --on    Turn chunking on
+  -E, --except          Chunking is on, except as specified by RHS dont-learn
+                        actions
+  -l, --list            Prints listings of dont-learn and force-learn states
+  -o, --only            Chunking is on only as specified by RHS force-learn
+                        actions
+
+The learn command controls the parameters for chunking (Soar's learning 
+mechanism). With no arguments, this command prints out the current learning 
+environment status. If arguments are provided, they will alter the learning 
+environment as described in the options and arguments table.
 ~~~
 On success:
 When setting an option:
@@ -163,10 +206,18 @@ Notes:
 log
 Usage:	log [-a] [filename]
 	log -c
+Options and arguments:
   -a, --append		Append log to the end of the specified file.
   -c, --close, 		Stop logging and close the current log.
       --disable, --off
   filename              The name of the file to log to.
+
+The log command is used to log all Soar output to a file. The log command does 
+not yet support user input logging.
+
+Invoke log with no arguments to query the current logging status. Pass a 
+filename to start logging to that file (relative to the command line interface's 
+home directory (see the home command)). Use the close option to stop logging.
 ~~~
 On success:
 <result>
@@ -192,6 +243,7 @@ Note:
 matches
 Usage:	matches [-[a|r]12cntw]
 	matches [-012cntw] production_name
+Options and arguments:
   -a, --assertions
   -r, --retractions
   -0, -n, -c, --names
@@ -215,6 +267,7 @@ Usage:	max-nil-output-cycles
 ***
 memories
 Usage:	memories [-cdju|production_name|n]
+Options and arguments:
   -c, --chunks
   -d, --default
   -j, --justifications
@@ -225,6 +278,7 @@ Usage:	memories [-cdju|production_name|n]
 ***
 multi-attributes
 Usage:	multi-attributes [attribute [n]]
+Options and arguments:
   attribute
   n
 ~~~
@@ -255,6 +309,7 @@ On success:
 ***
 preferences
 Usage:	preferences [-0123nNtw] [id] [attribute]
+Options and arguments:
   -0, -n, --none
   -1, -N, --names
   -2, -t, --timetags
@@ -268,6 +323,7 @@ Usage:	print [-fFin] production_name
 	print -[a|c|D|j|u][fFin]
 	print [-fFin] [-d <depth>] identifier|timetag|pattern
 	print -s[oS]
+Options and arguments:
   -a, --all
   -c, --chunks
   -d, --depth
@@ -290,6 +346,7 @@ Usage:	print [-fFin] production_name
 ***
 production-find
 Usage:	production-find [-clnrs] pattern
+Options and arguments:
   -c, --chunks
   -l, --lhs
   -n, --nochunks
@@ -307,6 +364,7 @@ On success:
 ***
 pwatch
 Usage:	pwatch [-d|e] [production name]
+Options and arguments:
   -d, --disable, --off
   -e, --enable, --on
   production_name
@@ -341,6 +399,7 @@ run
 Usage:	run [count]
 	run -[d|e|p][fs] [count]
 	run -[S|o|O][fs] [count]
+Options and arguments:
   -d, --decision
   -e, --elaboration
   -f, --forever
@@ -381,6 +440,7 @@ stats
 Usage:	stats
 #Todo:
 #Usage:	stats [-s <stat>] [-m <resource>] [-r <rtype_qualifier>]
+#Options and arguments:
 #  -m, --memory
 #  -r, --rete
 #  -s, --system
@@ -393,12 +453,14 @@ On success:
 ***
 stop-soar
 Usage:	stop-soar [-s] [reason_string]
+Options and arguments:
   -s, --self
   reason_string
 ~~~
 ***
 time
 Usage:	time command [arguments]
+Options and arguments:
   command
   arguments
 ~~~
@@ -408,6 +470,7 @@ Usage:	time command [arguments]
 ***
 timers
 Usage:	timers [-ed]
+Options and arguments:
   -e, --enable, --on     Turn stats timers on.
   -d, --disable, --off   Turn stats timers off.
 ~~~
@@ -422,6 +485,7 @@ Usage:	waitsnc
 ***
 warnings
 Usage:	warnings [-ed]
+Options and arguments:
   -e, --enable, --on
   -d, --disable, --off
 ~~~
@@ -434,6 +498,7 @@ Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>]
 	[-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] 
 	[-L <switch>] [-p <switch>] [-P <switch>] [-r <switch>] 
 	[-u <switch>] [-w <switch>] [-W <detail>]
+Options and arguments:
   -b, --backtracing		Print backtracing infromation when a chunk
   				is created.
   -c, --chunks			Trace firings of chunks.
@@ -493,6 +558,7 @@ Notes:
 watch-wmes
 Usage:	watch-wmes -[a|r] -t <type> pattern
 	watch-wmes -[l|R] [-t <type>]
+Options and arguments:
   -a, --add-filter
   -l, --list-filter
   -r, --remove-filter
