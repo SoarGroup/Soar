@@ -8,7 +8,7 @@ load libTcl_sml_ClientInterface.so
 #package require tcl_sml_clientinterface
 
 #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
-set kernel [Kernel_CreateEmbeddedConnection KernelSML 0]
+set kernel [Kernel_CreateKernelInCurrentThread KernelSML 0]
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
 

@@ -31,7 +31,7 @@ lappend auto_path .
 package require tcl_sml_clientinterface
 
 #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
-set kernel [Kernel_CreateEmbeddedConnectionSoarThread KernelSML]
+set kernel [Kernel_CreateKernelInCurrentThread KernelSML]
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
 
