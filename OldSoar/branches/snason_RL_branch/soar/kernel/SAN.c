@@ -61,6 +61,23 @@ void reset_RL(){
 	// current_agent(next_Q) = 0.0;
 }
 
+void copy_nots(not * top_not, not ** dest_not)
+{
+    not *new;
+
+    *dest_not = NIL;
+    while (top_not) {
+		allocate_with_pool(&current_agent(not_pool), &new);
+		new->s1 = top_not->s1;
+   	    symbol_add_ref(new->s1);
+    	new->s2 = top_not->s2;
+		symbol_add_ref(new->s2);
+		new->next = *dest_not;
+		*dest_not = new;
+        top_not = top_not->next;
+    }
+}
+
 
 float compute_Q_value(RL_record* r){
 	float Q;
@@ -165,6 +182,18 @@ void record_for_RL()
   }
 }
 
+/* -----------------------------------------------------
+specify_production:
+This function builds a new RL-production with a LHS more specific
+than the given RL-production. It does this by selecting a WME currently
+in WM and trying to add it to the old production's condition list. The WME
+is rejected if it is already matched in the production's instantiation.
+Otherwise, the function traces through WM, from the id of the prospective
+WME until it hits an identifier in the production's instantiation. All WMEs
+in this trace are also added as conditions to the new production. 
+In this implementation, WMEs are tried in order of decreasing activation.
+------------------------------------------------------------- */
+
 production *specify_production(instantiation *ist){
 	tc_number tc_num = get_new_tc_number(); 
 	Symbol *sym;
@@ -177,9 +206,10 @@ production *specify_production(instantiation *ist){
 	wme_decay_element *decay_element;
     list *identifiers = 0;
     cons *cons;
-	not *nots = ist->nots;
+	
 
-	 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
+	// Make a list of identifiers in the old production instantiation.
+	for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
 		  if (cond->type == POSITIVE_CONDITION){
 			  sym = equality_test_for_symbol_in_test(cond->data.tests.id_test);
 			  if (sym) identifiers = add_if_not_member(sym, identifiers);
@@ -190,6 +220,7 @@ production *specify_production(instantiation *ist){
 		  }
 	  }
 
+	// Mark the identifiers in the old production instantiation.
 	  for (cons = identifiers; cons ; cons=cons->rest){
 			sym = (Symbol *) cons->first;
 			add_symbol_to_tc(sym, tc_num, NIL, NIL);
@@ -218,13 +249,10 @@ production *specify_production(instantiation *ist){
 			 while (decay_element != NULL)
 			 {
 				 condition *cond_top = NIL, *cond_bottom, *new_top, *new_bottom;
+				 not *nots = NIL, *nots_last, *new_not;
 				 w = decay_element->this_wme;
 							 
-				 // 1. Check that our new condition not already in production conditions
-				 // 2. If new condition is multi-attribute with a condition in the production,
-				 // add a not between the two values.
-				 
-
+				 // Check that our new condition not already in production conditions
 				 for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
 					 if (c->type != POSITIVE_CONDITION)
 						 continue;
@@ -255,10 +283,14 @@ production *specify_production(instantiation *ist){
 				 /*if (new_not)
 					 new_not->next = ist->nots;
 				 */
+				 // Find conditions linking new condition to old production instantiation
 				 trace_to_prod(w, tc_num, &cond_top);
+
+				 // If one of the new WMEs is in the same slot as an WME in the instantiation,
+				 // place a Not between their values.
 				 for (c = cond_top ; c ; c = c->next){
 					 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
-					 not *new_not;
+					 
 					 if (c->type != POSITIVE_CONDITION)
 						 continue;
 					 if (!tests_are_equal(c->data.tests.id_test, cond->data.tests.id_test))
@@ -268,21 +300,30 @@ production *specify_production(instantiation *ist){
 					 if (!tests_are_equal(c->data.tests.value_test, cond->data.tests.value_test)){
 						 allocate_with_pool(&current_agent(not_pool), &new_not);
 						 new_not->s1 = referent_of_equality_test(c->data.tests.value_test);
-						 // symbol_add_ref(new_not->s1);
+						 symbol_add_ref(new_not->s1);
 						 new_not->s2 = referent_of_equality_test(cond->data.tests.value_test);
-						 // symbol_add_ref(new_not->s2);
+						 symbol_add_ref(new_not->s2);
 						 new_not->next = nots;
 						 nots = new_not;
 						}
 					}
 				 }
-				 for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
+				 
+				 // Make new condition list, consisting of both new and old conditions.
 				 copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
+				 for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
 				 cond_top->prev = new_bottom;
 				 new_bottom->next = cond_top;
+				 // Make new nots list, consisting of both new and old nots.
+				 copy_nots(ist->nots, &new_not);
+				 if (nots){
+					 for (nots_last = nots ; nots_last->next ; nots_last = nots_last->next);
+				 	 nots_last->next = new_not;
+				 } else { nots = new_not; }
+
 				 prod = build_RL_production(new_top, cond_bottom, nots , ist->preferences_generated, w);
 				 deallocate_condition_list(new_top);
-				 deallocate_
+			 	 deallocate_list_of_nots(nots);
 				 if (!prod){
 					 tc_num = get_new_tc_number();
 					 for (cons = identifiers; cons ; cons=cons->rest){

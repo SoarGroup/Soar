@@ -3415,6 +3415,14 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 	   }
    }
 
+	   if (current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM]){
+		   for (cand = candidates ; cand != NIL ; cand = cand->next_candidate) {
+			   print_with_symbols("\n Candidate %y:  ", cand->value);
+			   print("%f \n", cand->sum_of_probability);
+		   }
+		  
+		}  
+
 	explore = explore_exploit(candidates);
 
 	if (explore) { 
