@@ -203,7 +203,7 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		// TODO: arbitrary buffer size here
 		char buf[256];
 		memset(buf, 0, 256);
-		m_ErrorMessage += itoa(errorLine, buf, 10);
+		snprintf(buf, 256, "%d", errorLine);
 
 		m_ErrorMessage += " of ";
 		

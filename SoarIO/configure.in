@@ -25,4 +25,4 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_CHECK_FUNCS([getcwd memset])
-AC_OUTPUT(Makefile ConnectionSML/Makefile ConnectionSML/src/Makefile ElementXML/Makefile ElementXML/src/Makefile)
+AC_OUTPUT(Makefile ConnectionSML/Makefile ConnectionSML/src/Makefile ElementXML/Makefile ElementXML/src/Makefile CommandLineInterface/Makefile CommandLineInterface/src/Makefile)

@@ -80,29 +80,29 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 //                                                                                    |_|
 void CommandLineInterface::BuildCommandMap() {
 
-	m_CommandMap[Constants::kCLICD]					= ParseCD;
-	m_CommandMap[Constants::kCLIEcho]				= ParseEcho;
-	m_CommandMap[Constants::kCLIExcise]				= ParseExcise;
-	m_CommandMap[Constants::kCLIHelp]				= ParseHelp;
-	m_CommandMap[Constants::kCLIHelpEx]				= ParseHelpEx;
-	m_CommandMap[Constants::kCLIInitSoar]			= ParseInitSoar;
-	m_CommandMap[Constants::kCLILearn]				= ParseLearn;
-	m_CommandMap[Constants::kCLILog]				= ParseLog;
-	m_CommandMap[Constants::kCLILS]					= ParseLS;
-	m_CommandMap[Constants::kCLIMultiAttributes]	= ParseMultiAttributes;
-	m_CommandMap[Constants::kCLIPopD]				= ParsePopD;
-	m_CommandMap[Constants::kCLIPrint]				= ParsePrint;
-	m_CommandMap[Constants::kCLIPushD]				= ParsePushD;
-	m_CommandMap[Constants::kCLIPWD]				= ParsePWD;
-	m_CommandMap[Constants::kCLIQuit]				= ParseQuit;
-	m_CommandMap[Constants::kCLIRun]				= ParseRun;
-	m_CommandMap[Constants::kCLISource]				= ParseSource;
-	m_CommandMap[Constants::kCLISP]					= ParseSP;
-	m_CommandMap[Constants::kCLIStats]				= ParseStats;
-	m_CommandMap[Constants::kCLIStopSoar]			= ParseStopSoar;
-	m_CommandMap[Constants::kCLITime]				= ParseTime;
-	m_CommandMap[Constants::kCLIWarnings]			= ParseWarnings;
-	m_CommandMap[Constants::kCLIWatch]				= ParseWatch;
+	m_CommandMap[Constants::kCLICD]					= &cli::CommandLineInterface::ParseCD;
+	m_CommandMap[Constants::kCLIEcho]				= &cli::CommandLineInterface::ParseEcho;
+	m_CommandMap[Constants::kCLIExcise]				= &cli::CommandLineInterface::ParseExcise;
+	m_CommandMap[Constants::kCLIHelp]				= &cli::CommandLineInterface::ParseHelp;
+	m_CommandMap[Constants::kCLIHelpEx]				= &cli::CommandLineInterface::ParseHelpEx;
+	m_CommandMap[Constants::kCLIInitSoar]			= &cli::CommandLineInterface::ParseInitSoar;
+	m_CommandMap[Constants::kCLILearn]				= &cli::CommandLineInterface::ParseLearn;
+	m_CommandMap[Constants::kCLILog]				= &cli::CommandLineInterface::ParseLog;
+	m_CommandMap[Constants::kCLILS]					= &cli::CommandLineInterface::ParseLS;
+	m_CommandMap[Constants::kCLIMultiAttributes]	= &cli::CommandLineInterface::ParseMultiAttributes;
+	m_CommandMap[Constants::kCLIPopD]				= &cli::CommandLineInterface::ParsePopD;
+	m_CommandMap[Constants::kCLIPrint]				= &cli::CommandLineInterface::ParsePrint;
+	m_CommandMap[Constants::kCLIPushD]				= &cli::CommandLineInterface::ParsePushD;
+	m_CommandMap[Constants::kCLIPWD]				= &cli::CommandLineInterface::ParsePWD;
+	m_CommandMap[Constants::kCLIQuit]				= &cli::CommandLineInterface::ParseQuit;
+	m_CommandMap[Constants::kCLIRun]				= &cli::CommandLineInterface::ParseRun;
+	m_CommandMap[Constants::kCLISource]				= &cli::CommandLineInterface::ParseSource;
+	m_CommandMap[Constants::kCLISP]					= &cli::CommandLineInterface::ParseSP;
+	m_CommandMap[Constants::kCLIStats]				= &cli::CommandLineInterface::ParseStats;
+	m_CommandMap[Constants::kCLIStopSoar]			= &cli::CommandLineInterface::ParseStopSoar;
+	m_CommandMap[Constants::kCLITime]				= &cli::CommandLineInterface::ParseTime;
+	m_CommandMap[Constants::kCLIWarnings]			= &cli::CommandLineInterface::ParseWarnings;
+	m_CommandMap[Constants::kCLIWatch]				= &cli::CommandLineInterface::ParseWatch;
 }
 
 // ____         ____                                          _
