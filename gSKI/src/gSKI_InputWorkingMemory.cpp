@@ -132,8 +132,6 @@ namespace gSKI
       
       InputWMObject* iobj = GetOrCreateObjectFromSymbol(idSymbol);
       
-// BUGBUG: Shouldn't iobj be released after the AddWme call?
-
       return AddWme(iobj, attrSymbol, valSymbol);
    }
    

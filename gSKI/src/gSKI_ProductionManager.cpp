@@ -371,6 +371,11 @@ _|___/    __         _    _             ____  _               _
          //cout << "====================\n" << file << "====================\n";
          bool success = parseSources(sourcedFiles, file, pname, err);
 
+		 // DJP - BUGBUG: This function returns true based on whether "parseSources" succeeds, which is in turn based
+		 // on whether it finds other "source" commands in the file.  If there are none, we always get "true" back.
+		 // Also, we're not getting extended error information
+		 // about "parseProductions" failing etc.  This is a key area to get good error information back as it's
+		 // very likely we'll have errors inside sourced soar files and right now this doesn't support that.
          return success;
       } else { //if it already has been opened, then we don't have to worry about
          //loading it
