@@ -56,14 +56,14 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 	unused(self);
 	unused(reasonForStopping);
 
-	if (!m_pRunForever) {
+	if (!m_pRun) {
 		return HandleError("Not running!");
 	}
 
 	// Stop and reset the current thread
-	m_pRunForever->Stop(true);
-	delete m_pRunForever;
-	m_pRunForever = 0;
+	m_pRun->Stop(true);
+	delete m_pRun;
+	m_pRun = 0;
 	return true;
 }
 

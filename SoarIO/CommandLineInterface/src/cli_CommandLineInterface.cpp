@@ -58,13 +58,13 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_SourceDepth = 0;
 	m_SourceDirDepth = 0;
 	m_pLogFile = 0;
-	m_pRunForever = 0;
+	m_pRun = 0;
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
-	if (m_pRunForever) {
-		m_pRunForever->Stop(true);
-		delete m_pRunForever;
+	if (m_pRun) {
+		m_pRun->Stop(true);
+		delete m_pRun;
 	}
 	if (m_pGetOpt) {
 		delete m_pGetOpt;

@@ -81,15 +81,16 @@ typedef ElementXMLList::iterator ElementXMLListIter;
 
 // This class is filled out in cli_Run.cpp
 // Used when run forever is called
-class RunForeverThread : public soar_thread::Thread {
+class RunThread : public soar_thread::Thread {
 public:
 
-	RunForeverThread(bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError);
+	RunThread(int count, bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError);
 
 protected:
 
 	void Run();
 	bool m_bSelf;
+	int m_Count;
 	gSKI::IKernel* m_pKernel;
 	gSKI::IAgent* m_pAgent;
 	gSKI::Error* m_pError;
@@ -585,7 +586,7 @@ protected:
 	std::string			m_ErrorMessage;			// String output from the command
 	gSKI::Error*		m_pError;				// gSKI error output from calls made to process the command
 
-	RunForeverThread*	m_pRunForever;			// Pointer to run forever thread object
+	RunThread*	m_pRun;			// Pointer to run forever thread object
 
 	ResultPrintHandler	m_ResultPrintHandler;	// The print callback handler, used for catching kernel/gSKI output and writing it to result
 	LogPrintHandler		m_LogPrintHandler;		// The print callback handler, used for catching kernel/gSKI output and writing it to a log

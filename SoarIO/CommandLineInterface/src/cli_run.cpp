@@ -13,14 +13,20 @@
 
 using namespace cli;
 
-RunForeverThread::RunForeverThread(bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError) {
+RunThread::RunThread(int count, bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError) {
+	// if count comes in as zero, set to negative (run forever)
+	if (count) {
+		m_Count = count;
+	} else {
+		m_Count = -1;
+	}
 	m_bSelf = self;
 	m_pKernel = pKernel;
 	m_pAgent = pAgent;
 	m_pError = pError;
 }
 
-void RunForeverThread::Run() {
+void RunThread::Run() {
 	egSKIRunResult runResult;
 	egSKIRunState runState;
 
@@ -34,7 +40,7 @@ void RunForeverThread::Run() {
 		return;
 	}
 
-	// Loop until stopped or return
+	// Loop until stopped (this->Stop()), count reduced to 0, or halted/interrupted
 	while (!m_QuitNow) {
 		if (m_bSelf) {
 			// Running self, run a cycle
@@ -62,6 +68,14 @@ void RunForeverThread::Run() {
 					return;
 				}
 				iter->Next() ;
+			}
+		}
+
+		// If the count is positive, decrement it and return if that makes it zero
+		// If the count is negative, loop forever
+		if (m_Count > 0) {
+			if (!(--m_Count)) {
+				return;
 			}
 		}
 	}
@@ -124,7 +138,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		}
 	}
 
-	// Count defaults to 0
+	// Count defaults to 0 (forever)
 	int count = 0;
 
 	// Only one non-option argument allowed, count
@@ -178,10 +192,10 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	}
 
 	// Stop and reset the current thread
-	if (m_pRunForever) {
-		m_pRunForever->Stop(true);
-		delete m_pRunForever;
-		m_pRunForever = 0;
+	if (m_pRun) {
+		m_pRun->Stop(true);
+		delete m_pRun;
+		m_pRun = 0;
 	}
 
 	// Determine run unit, mutually exclusive so give smaller steps precedence, default to gSKI_RUN_FOREVER if there is no count
@@ -199,27 +213,8 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 		runType = gSKI_RUN_FOREVER;	
 	}
 
-	if (runType == gSKI_RUN_FOREVER) {
-		m_pRunForever = new RunForeverThread((options & OPTION_RUN_SELF) ? true : false, m_pKernel, pAgent, m_pError);
-		m_pRunForever->Start();
-		return true;
-	}
-
-	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
-	egSKIRunResult runResult;
-	if (options & OPTION_RUN_SELF) {
-		runResult = pAgent->RunInClientThread(runType, count, m_pError);
-	} else {
-        m_pKernel->GetAgentManager()->ClearAllInterrupts();
-        m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
-		runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
-	}
-
-	// Check for error
-	if (runResult == gSKI_RUN_ERROR) {
-		AppendToResult("Run failed.");
-		return false;	// Hopefully details are in gSKI error message
-	}
+	m_pRun = new RunThread(count, (options & OPTION_RUN_SELF) ? true : false, m_pKernel, pAgent, m_pError);
+	m_pRun->Start();
 	return true;
 }
 
