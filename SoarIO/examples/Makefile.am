@@ -1,2 +1,2 @@
 AUTOMAKE_OPTIONS = gnu
-SUBDIRS = TestCommandLineInterface
+SUBDIRS = TestCommandLineInterface towersSML towers

@@ -3,7 +3,7 @@
 //#include <crtdbg.h>
 
 // Quick addition so we can time this easily.
-#include "..\..\Profiler\include\simple_timer.h"
+#include "../../Profiler/include/simple_timer.h"
 
 ////// Define the type of interface to Soar that you're using:
 //#define GSKI_DIRECT

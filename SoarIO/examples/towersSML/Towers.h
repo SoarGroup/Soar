@@ -103,7 +103,7 @@ public:
 	* @brief	Clean up the tower's state as well as any contained
 	*			disks
 	*************************************************************/
-	~Tower();
+	virtual ~Tower();
 
 	/*************************************************************
 	* @brief	Add disk to top of tower. Added disk
@@ -171,7 +171,7 @@ public:
 	/*************************************************************
 	* @brief	cleans up state, including contained Towers
 	*************************************************************/
-	~HanoiWorld();
+	virtual ~HanoiWorld();
 
 	/*************************************************************
 	* @brief	calls an interface-specific Run function in agent

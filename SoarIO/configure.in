@@ -28,6 +28,8 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_CHECK_LIB(pthread, pthread_create)
+AC_CHECK_LIB(tcl, Tcl_DeleteInterp)
+AC_CHECK_LIB(tk, Tk_Init)
 AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset select socket strcasecmp])
 AC_OUTPUT(Makefile
 		  ConnectionSML/Makefile 
@@ -42,4 +44,6 @@ AC_OUTPUT(Makefile
 		  KernelSML/src/Makefile
 		  examples/Makefile
 		  examples/TestCommandLineInterface/Makefile
-		  examples/TestCommandLineInterface/src/Makefile)
+		  examples/TestCommandLineInterface/src/Makefile
+		  examples/towersSML/Makefile
+		  examples/towers/Makefile)
