@@ -94,8 +94,6 @@ KernelSML::KernelSML()
 
 #ifdef USE_TCL_DEBUGGER
 	m_Debugger = NULL ;
-	m_DebuggerKernel = NULL ;
-	m_DebuggerKernelFactory = NULL ;
 #endif
 
 	// Create the map from command name to handler function

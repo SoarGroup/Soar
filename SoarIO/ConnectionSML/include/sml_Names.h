@@ -111,7 +111,7 @@ public:
 	static char const* kCommand_Run ;
 	static char const* kCommand_Input ;
 	static char const* kCommand_Output ;
-	static char const* kCommand_RegisterOutputTrigger ;
+	static char const* kCommand_CheckForIncomingCommands ;
 
 	// Command line interface
 	static char const* kCommand_CommandLine ;

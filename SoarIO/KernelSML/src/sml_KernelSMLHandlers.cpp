@@ -89,6 +89,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_Input]				= KernelSML::HandleInput ;
 
 	m_CommandMap[sml_Names::kCommand_CommandLine]		= KernelSML::HandleCommandLine ;
+	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = KernelSML::HandleCheckForIncomingCommands ;
 }
 
 /*************************************************************
@@ -126,7 +127,7 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName
 		m_OutputListeners.push_back(pListener) ;
 
 		// Listen for output callback events
-//		pResult->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
+		pResult->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
 	}
 
 #ifdef USE_TCL_DEBUGGER
@@ -142,6 +143,25 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName
 	// If not, pError should contain the error and returning false
 	// means we'll pass that back to the caller.
 	return (pResult != NULL) ;
+}
+
+// Gives some cycles to the Tcl debugger
+bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pAgent) ; unused(pCommandName) ; unused(pError) ; unused(pIncoming) ;
+
+	// Need to return false if we're not using the debugger, which looks
+	// the same to the caller as if we had the debugger up and the user has quit from it.
+	bool keepGoing = false ;
+
+#ifdef USE_TCL_DEBUGGER
+	if (m_Debugger)
+	{
+		keepGoing = TgD::TgD::Update(false, m_Debugger) ;
+	}
+#endif
+
+	return this->ReturnBoolResult(pConnection, pResponse, keepGoing) ;
 }
 
 bool KernelSML::HandleLoadProductions(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)

@@ -134,6 +134,9 @@ public:
 	* @returns True if the last command line call succeeded.
 	*************************************************************/
 	bool GetLastCommandLineResult();
+
+	// This call gives some cycles to the Tcl debugger.  It should come out eventually.
+	bool CheckForIncomingCommands() ;
 };
 
 }//closes namespace

@@ -120,6 +120,9 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
 			Name="ElementXML"/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}"
+			Name="TGDI"/>
 	</References>
 	<Files>
 		<Filter

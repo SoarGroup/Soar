@@ -185,3 +185,14 @@ bool Kernel::GetLastCommandLineResult()
 	return m_CommandLineSucceeded ;
 }
 
+// This call gives some cycles to the Tcl debugger.  It should come out eventually.
+bool Kernel::CheckForIncomingCommands()
+{
+	AnalyzeXML response ;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CheckForIncomingCommands))
+	{
+		return response.GetResultBool(false) ;
+	}
+
+	return false ;
+}

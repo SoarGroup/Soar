@@ -1,5 +1,7 @@
-*.dll
+TgDITest
+Debug
 *.ilk
-*.exe
 *.pdb
+*.exe
 gski_unreleased.txt
+gSKId.map

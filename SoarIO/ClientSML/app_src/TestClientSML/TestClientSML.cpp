@@ -2,6 +2,16 @@
 #include "sml_Connection.h"
 #include "sml_Client.h"
 
+// Define a sleep
+#ifdef _WIN32
+#define _WINSOCKAPI_
+#include <Windows.h>
+#define SLEEP Sleep
+#else
+#include <unistd.h>
+#define SLEEP usleep
+#endif
+
 // Use Visual C++'s memory checking functionality
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -61,6 +71,12 @@ int main(int argc, char* argv[])
 		pAgent->Update(pWME2, 300) ;
 
 		ok = pAgent->Commit() ;
+
+		// Cycle forever until debugger quits (if we're using the tcl debugger)
+		while (pKernel->CheckForIncomingCommands())
+		{
+			SLEEP(10) ;
+		}
 
 		delete pKernel ;
 
