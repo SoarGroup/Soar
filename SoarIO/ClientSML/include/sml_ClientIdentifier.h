@@ -114,6 +114,8 @@ public:
 
 	// The Identifier class overrides this to return true.  (The poor man's RTTI).
 	virtual bool IsIdentifier() const { return true ; }
+	
+	virtual Identifier* ConvertToIdentifier() { return this; }
 
 	/*************************************************************
 	* @brief Searches for a child of this identifier that has pID as

@@ -41,6 +41,8 @@ public:
 
 	// Returns the current value
 	double GetValue() const { return m_Value ; }
+	
+	virtual FloatElement* ConvertToFloatElement() { return this; }
 
 protected:
 	FloatElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, double value, long timeTag) ;

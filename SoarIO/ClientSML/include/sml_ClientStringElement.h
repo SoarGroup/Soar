@@ -38,6 +38,8 @@ public:
 
 	// Returns the current value
 	char const* GetValue() const { return m_Value.c_str() ; }
+	
+	virtual StringElement* ConvertToStringElement() { return this; }
 
 protected:
 	StringElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, char const* pValue, long timeTag) ;

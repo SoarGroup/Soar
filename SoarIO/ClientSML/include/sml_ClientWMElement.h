@@ -21,6 +21,9 @@ namespace sml {
 class Agent ;
 class Identifier ;
 class IdentifierSymbol ;
+class IntElement ;
+class FloatElement ;
+class StringElement ;
 class WorkingMemory ;
 class RemoveDelta ;
 class WMDelta ;
@@ -76,6 +79,13 @@ public:
 
 	// The Identifier class overrides this to return true.  (The poor man's RTTI).
 	virtual bool IsIdentifier() const { return false ; }
+	
+	// Class conversions for SWIG language bridges. (The even poorer man's RTTI).
+	// Each subclass overrides the appropriate method.
+	virtual Identifier* ConvertToIdentifier() { return NULL; }
+	virtual IntElement* ConvertToIntElement() { return NULL; }
+	virtual FloatElement* ConvertToFloatElement() { return NULL; }
+	virtual StringElement* ConvertToStringElement() { return NULL; }
 
 protected:
 	// Keep these protected, so user can only create and destroy WMEs through

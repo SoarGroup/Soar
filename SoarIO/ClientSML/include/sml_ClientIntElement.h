@@ -40,6 +40,8 @@ public:
 	virtual char const* GetValueAsString() const ;
 
 	int GetValue() const { return m_Value ; }
+	
+	virtual IntElement* ConvertToIntElement() { return this; }
 
 protected:
 	IntElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, int value, long timeTag) ;
