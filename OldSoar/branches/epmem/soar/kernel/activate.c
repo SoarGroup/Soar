@@ -284,7 +284,11 @@ void decay_init_quickboost(void)
                      history_iter <= (el.history_count - 1);
                      history_iter++)
                 {
-                    sum += current_agent(decay_power_array)[time_iter - el.boost_history[history_iter] + 1];
+                    int n = time_iter - el.boost_history[history_iter] + 1;
+                    if (n < DECAY_POWER_ARRAY_SIZE)
+                    {
+                        sum += current_agent(decay_power_array)[n];
+                    }
                 }
         
                 activation_level = (float) log((double) sum);
@@ -1340,7 +1344,11 @@ long decay_boost_wme(wme_decay_element *cur_decay_el)
                  history_iter <= (cur_decay_el->history_count - 1);
                  history_iter++)
             {
-                sum += current_agent(decay_power_array)[time_iter - cur_decay_el->boost_history[history_iter] + 1];
+                int n = time_iter - cur_decay_el->boost_history[history_iter] + 1;
+                if (n < DECAY_POWER_ARRAY_SIZE)
+                {
+                    sum += current_agent(decay_power_array)[n];
+                }
             }
         
             activation_level = (float) log((double) sum);
@@ -1448,7 +1456,11 @@ void decay_print_most_activated_wmes(int n)
                 sum = 0;
                 for (history_iter = 0; history_iter <= (decay_element->history_count - 1); history_iter++)
                 {
-                    sum += current_agent(decay_power_array)[decay_element->time_spot->time- decay_element->boost_history[history_iter] + 1];
+                    int n = decay_element->time_spot->time- decay_element->boost_history[history_iter] + 1;
+                    if (n < DECAY_POWER_ARRAY_SIZE)
+                    {
+                        sum += current_agent(decay_power_array)[n];
+                    }
                 }
                 sprintf(act_buf, "%f\n", sum);
                 print(act_buf);
