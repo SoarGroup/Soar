@@ -1420,7 +1420,6 @@ public class MainFrame extends JFrame
 
 			// Initialize the soar runtime
 			if (!SoarRuntimeInit())
-			
             {
 
 				// Unable to connect!
@@ -1458,9 +1457,34 @@ public class MainFrame extends JFrame
 			soarToolJavaInterface=null;
 		}
 		
-		// Create and initialize our interface object
-		soarToolJavaInterface = new SoarToolJavaInterface();
-		if (soarToolJavaInterface.Init("VisualSoar", false /* bIsRuntime */) == true)
+		// Load the interface object
+		try 
+        {
+            soarToolJavaInterface = new SoarToolJavaInterface();
+		}
+		catch (java.lang.UnsatisfiedLinkError ule)
+        {
+            JOptionPane.showMessageDialog(
+                MainFrame.this,
+                "I was unable to load the Soar Tools Interface (STI) library.\n"
+                + "Therefore this part of the VisualSoar functionality will not \n"
+                + "be available while you are running VisualSoar.  To enable \n"
+                + "the STI, make sure that the SoarToolJavaInterface1 library \n"
+                + "is in your PATH and restart VisualSoar.",
+                "DLL Load Error",
+                JOptionPane.ERROR_MESSAGE);
+
+			// Disable all related menu items
+			soarRuntimeTermAction.setEnabled(false);
+			soarRuntimeInitAction.setEnabled(false);
+			soarRuntimeSendRawCommandAction.setEnabled(false);
+			soarRuntimeAgentMenu.setEnabled(false);
+            
+            return false;
+        }				
+        
+        //Initialize the interface object
+        if (soarToolJavaInterface.Init("VisualSoar", false /* bIsRuntime */) == true)
 		{			
 			// Create our pump messages timer to be fired every 1000 ms
 			soarToolPumpMessageTimer = new javax.swing.Timer(1000, new SoarRuntimePumpMessagesTimerListener());
