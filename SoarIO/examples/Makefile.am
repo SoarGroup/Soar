@@ -3,7 +3,8 @@ SUBDIRS = \
 TestCommandLineInterface \
 TestClientSML \
 towers \
-towersSML 
+towersSML \
+TestThreadLibrary
 
 #can't get this next one to link
 #TestConnectionSML 
