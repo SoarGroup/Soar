@@ -268,7 +268,7 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 			pAgentSML->AddProductionListener((egSKIProductionEventId)id, pConnection) ;
 		else
 			pAgentSML->RemoveProductionListener((egSKIProductionEventId)id, pConnection) ;
-	} else if(id == (int)gSKIEVENT_PRINT) {
+	} else if(IsPrintEventID(id)) {
 
 		// Print event
 		if (!pAgent)
