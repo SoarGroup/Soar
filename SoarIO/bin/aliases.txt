@@ -15,6 +15,7 @@
 #
 alias -d unalias
 cd chdir
+default-wme-depth set-default-depth
 firing-counts fc
 gds-print gds_print
 help man
