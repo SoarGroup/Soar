@@ -1821,9 +1821,9 @@ class DMTDropTargetListener implements DropTargetListener
             e.rejectDrop();
             return;
         }
-            
-        Vector data = null;
 
+        //Get the WME we're dropping
+        Vector data = null;
         try 
         {
             data = (Vector)e.getTransferable().getTransferData(chosen);
@@ -1834,9 +1834,32 @@ class DMTDropTargetListener implements DropTargetListener
             e.dropComplete(false);
             return;
         }
+
+        //Get the target for the drop
         TreePath path = getPathForLocation(x, y);
         SoarVertex vertex = ((FakeTreeNode)path.getLastPathComponent()).getEnumeratingVertex();
-        swmm.addTriple(vertex,(String)data.get(1),swmm.getVertexForId(((Integer)data.get(0)).intValue()));
+
+        //Get the thing we're dropping
+        SoarVertex dataVertex =
+            swmm.getVertexForId(((Integer)data.get(0)).intValue());
+
+        //If we are moving a node, we have to first make sure that we're
+        //not creating a loop.
+        if ((action & DnDConstants.ACTION_MOVE) != 0)
+        {
+            for(int i = 0; i < path.getPathCount(); i++)
+            {
+                SoarVertex v = ((FakeTreeNode)path.getPath()[i]).getEnumeratingVertex();
+                if (dataVertex.equals(v))
+                {
+                    e.rejectDrop();
+                    return;
+                }
+            }
+        }
+
+        //Perform the drop
+        swmm.addTriple(vertex,(String)data.get(1),dataVertex);
         if(action == DnDConstants.ACTION_MOVE) 
         {
             NamedEdge ne = (NamedEdge)data.get(2);
@@ -1856,7 +1879,10 @@ class DMTDropTargetListener implements DropTargetListener
         {
             FakeTreeNode ftn = (FakeTreeNode)path.getLastPathComponent();
             if (ftn.isLeaf())
-            return false;
+            {
+                return false;
+            }
+            
             return true;
         }
         return false;
