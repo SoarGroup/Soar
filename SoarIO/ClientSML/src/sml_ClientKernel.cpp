@@ -13,7 +13,7 @@
 #include "sml_ClientAgent.h"
 #include "sml_Connection.h"
 #include "sock_SocketLib.h"
-
+#include <assert.h>
 using namespace sml ;
 
 Kernel::Kernel(Connection* pConnection)
@@ -250,6 +250,7 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 {
 	AnalyzeXML response ;
 	Agent* agent = NULL ;
+	assert(GetConnection());
 	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_CreateAgent, NULL, sml_Names::kParamName, pAgentName))
 	{
 		agent = new Agent(this, pAgentName) ;
@@ -303,7 +304,11 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 	{
 		// Get the error message
 		m_CommandLineResult = "\nError: ";
-		m_CommandLineResult += response.GetErrorTag()->GetCharacterData();
+		if (response.GetErrorTag()) {
+			m_CommandLineResult += response.GetErrorTag()->GetCharacterData();
+		} else {
+			m_CommandLineResult += "Unknown error.";
+		}
 	}
 
 	return m_CommandLineResult.c_str();
