@@ -1,0 +1,7 @@
+7 : move-disk ( size = 1, to = C )
+8 : move-disk ( size = 2, to = B )
+11 : move-disk ( size = 1, to = B )
+12 : move-disk ( size = 3, to = C )
+17 : move-disk ( size = 1, to = A )
+18 : move-disk ( size = 2, to = C )
+21 : move-disk ( size = 1, to = C )
