@@ -2823,7 +2823,12 @@ watch wmes syntax:\n\
                     != SOAR_OK) {
                     return SOAR_ERROR;
                 }
-            }
+            } else if (string_match("indifferent-selection", argv[i])) {
+				if (set_watch_setting(TRACE_INDIFFERENT_SYSPARAM, argv[i], argv[++i], res)
+					!= SOAR_OK) {
+					return SOAR_ERROR;
+				}
+			}
             /* Pushed to interface  081699 
                else if (string_match("aliases", argv[i]))
                {

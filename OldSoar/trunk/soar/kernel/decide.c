@@ -1083,13 +1083,35 @@ byte run_preference_semantics(slot * s, preference ** result_candidates)
     for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
         p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
 
+
+	 #ifdef NUMERIC_INDIFFERENCE
+    /* REW: 2003-01-02 Behavior Variability Kernel Experiments
+     We want to treat some binary indifferent prefs as unary indifferents,
+     the second pref is really an int representing a probability value.
+     So we identify these preferences here.
+  */
+	for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
+    if((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) || 
+	   (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
+     
+      p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+  
+  /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
+
+	#endif
+
     not_all_indifferent = FALSE;
     for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
         /* --- if cand is unary indifferent, it's fine --- */
         if (cand->value->common.decider_flag == UNARY_INDIFFERENT_DECIDER_FLAG)
             continue;
 
-        /* --- check whether cand is binary indifferent to each other one --- */
+        #ifdef NUMERIC_INDIFFERENCE
+		else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )
+		continue;
+		#endif
+		
+		/* --- check whether cand is binary indifferent to each other one --- */
         for (p = candidates; p != NIL; p = p->next_candidate) {
             if (p == cand)
                 continue;
@@ -1474,13 +1496,35 @@ byte run_preference_semantics_for_consistency_check(slot * s, preference ** resu
     for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next)
         p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
 
-    not_all_indifferent = FALSE;
+    #ifdef NUMERIC_INDIFFERENCE
+  /* REW: 2003-01-26 Behavior Variability Kernel Experiments
+     We want to treat some binary indifferent prefs as unary indifferents,
+     the second pref is really an int representing a probability value.
+     So we identify these preferences here.
+	 -- want to guarantee decision is not interrupted by a new indiff pref
+  */
+  for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
+    if( (p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
+				(p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
+       
+      p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+  /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
+#endif
+
+	not_all_indifferent = FALSE;
     for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
         /* --- if cand is unary indifferent, it's fine --- */
         if (cand->value->common.decider_flag == UNARY_INDIFFERENT_DECIDER_FLAG)
             continue;
 
-        /* --- check whether cand is binary indifferent to each other one --- */
+        #ifdef NUMERIC_INDIFFERENCE
+		else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )  {
+      /* print("\n Ignoring this candidate because it has a constant value for the second pref"); */
+      continue;
+		}
+		#endif
+		
+		/* --- check whether cand is binary indifferent to each other one --- */
         for (p = candidates; p != NIL; p = p->next_candidate) {
             if (p == cand)
                 continue;
@@ -3209,17 +3253,9 @@ void initialize_indifferent_candidates_for_probability_selection(preference * ca
         /* print_with_symbols("\nInitializing candidate %y",cand->value); 
          */
         cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-        cand->total_preferences_for_candidate = 1;
-        switch (current_agent(numeric_indifferent_mode)) {
-        case NUMERIC_INDIFFERENT_MODE_AVG:
-            cand->sum_of_probability = 50;
-            break;
-
-        case NUMERIC_INDIFFERENT_MODE_SUM:
-        default:
-            cand->sum_of_probability = 0;
-            break;
-        }
+        cand->total_preferences_for_candidate = 0;
+		cand->sum_of_probability = 0;
+         
     }
 }
 
@@ -3260,6 +3296,7 @@ preference *probabilistically_select(slot * s, preference * candidates)
     double currentSumOfValues = 0;
     static int initialized_rand = 0;
     unsigned long rn = 0;
+	double default_ni;
 
     /* initialized, but not referenced, so i commented them out:
        preference*    selectedCandidate=0;
@@ -3291,6 +3328,17 @@ preference *probabilistically_select(slot * s, preference * candidates)
        print_candidates(candidates); 
      */
 
+
+	switch (current_agent(numeric_indifferent_mode)) {
+	case NUMERIC_INDIFFERENT_MODE_AVG:
+		default_ni = 50;
+		break;
+
+	case NUMERIC_INDIFFERENT_MODE_SUM:
+	default:
+		default_ni = 0;
+		break;
+	}
     /*
        BUGBUGBUG 
        Next some error checking here to ensure that the binary preference
@@ -3320,14 +3368,22 @@ preference *probabilistically_select(slot * s, preference * candidates)
         }
     }
 
+	for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
+		if (cand->total_preferences_for_candidate == 0) {
+			cand->sum_of_probability = default_ni;
+			cand->total_preferences_for_candidate = 1;
+		}
+	}
+
     if (current_agent(numeric_indifferent_mode) == NUMERIC_INDIFFERENT_MODE_SUM) {
 
         total_probability = 0.0;
         for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
 
-            /* print_with_symbols("\n Candidate %y ", cand->value);
-               print("\n  Candidate value (Sum) = %f", exp(cand->sum_of_probability / TEMPERATURE));
-             */
+            if (current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM]){
+				print_with_symbols("\n Candidate %y:  ", cand->value);
+		           print("Value (Sum) = %f", exp(cand->sum_of_probability / TEMPERATURE));
+			}     
             /*  Total Probability represents the range of values, we expect
              *  the use of negative valued preferences, so its possible the
              *  sum is negative, here that means a fractional probability
@@ -3338,7 +3394,8 @@ preference *probabilistically_select(slot * s, preference * candidates)
 
         /* Now select the candidate */
 
-        rn = rand();
+        print("\n");
+		rn = rand();
         selectedProbability = ((double) rn / (double) RAND_MAX) * total_probability;
         currentSumOfValues = 0;
 
@@ -3360,9 +3417,10 @@ preference *probabilistically_select(slot * s, preference * candidates)
         total_probability = 0.0;
         for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
 
-            /* print_with_symbols("\n Candidate %y ", cand->value);  
-               print("\n  Candidate value (Avg) = %f", fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
-             */
+            if (current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM]) {
+				print_with_symbols("\n Candidate %y:  ", cand->value);  
+		           print("Value (Avg) = %f", fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
+			}    
             /* Total probability represents the range of values that
              * we'll map into for selection.  Here we don't expect the use
              * of negative values, so we'll warn when we see one.
@@ -3380,6 +3438,7 @@ preference *probabilistically_select(slot * s, preference * candidates)
 
         /* Now select the candidate */
 
+		print("\n");
         rn = rand();
         selectedProbability = ((double) rn / (double) RAND_MAX) * total_probability;
         currentSumOfValues = 0;

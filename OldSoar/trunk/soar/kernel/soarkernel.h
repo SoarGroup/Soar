@@ -1982,8 +1982,11 @@ typedef byte wme_trace_type;    /* must be one of the above constants */
 /* RMJ */
 #define ATTENTION_LAPSE_ON_SYSPARAM              30
 
+/* SAN */
+#define TRACE_INDIFFERENT_SYSPARAM               31
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  30
+#define HIGHEST_SYSPARAM_NUMBER                  31
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

@@ -955,6 +955,8 @@ void print_current_watch_settings(void)
 
     print("  Loading:  %s\n", current_agent(sysparams)[TRACE_LOADING_SYSPARAM] ? "on" : "off");
 
+	print("  Indifferent-selection:  %s\n", current_agent(sysparams)[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off");
+
     print("\n");
 }
 
