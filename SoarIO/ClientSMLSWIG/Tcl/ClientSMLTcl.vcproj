@@ -41,7 +41,9 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				Description="Copy to release point for testing"
+				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin\Tcl_sml_ClientInterface.dll"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -136,7 +138,8 @@
 echo TCL_INCLUDE: %TCL_INCLUDE%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -Wallkw -c++ -tcl &quot;$(InputPath)&quot;"
+$(SWIG)\swig.exe -Wall -Wallkw -c++ -tcl &quot;$(InputPath)&quot;
+"
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -147,7 +150,8 @@ $(SWIG)\swig.exe -Wall -Wallkw -c++ -tcl &quot;$(InputPath)&quot;"
 echo TCL_INCLUDE: %TCL_INCLUDE%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -Wallkw -c++ -Tcl &quot;$(InputPath)&quot;"
+$(SWIG)\swig.exe -Wall -Wallkw -c++ -Tcl &quot;$(InputPath)&quot;
+"
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 		</File>
