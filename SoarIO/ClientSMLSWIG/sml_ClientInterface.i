@@ -21,8 +21,6 @@
 %ignore sml::Kernel::RegisterForSystemEvent(smlEventId, SystemEventHandler, void*);
 %ignore sml::Kernel::UnregisterForSystemEvent(smlEventId, SystemEventHandler, void*);
 
-
-
 %{
 #include "sml_ElementXML.h"
 #include "sml_AnalyzeXML.h"
