@@ -142,6 +142,8 @@ KernelSML::~KernelSML()
 	if (m_pKernelFactory && m_pIKernel)
 		m_pKernelFactory->DestroyKernel(m_pIKernel);
 
+	delete m_pKernelFactory ;
+
 	delete m_pConnectionManager ;
 
 	delete m_pMutex ;
