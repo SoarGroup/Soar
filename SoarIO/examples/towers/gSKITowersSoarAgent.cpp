@@ -1,4 +1,4 @@
-#include "SoarAgent.h"
+#include "gSKITowersSoarAgent.h"
 #include <string>
 #include <iostream> //just fore testing
 #include <cassert>
