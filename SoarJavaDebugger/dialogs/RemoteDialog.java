@@ -93,11 +93,11 @@ public class RemoteDialog extends BaseDialog
 		group.setLayout(layout) ;
 		
 		// Create the text entry fields
-		Label ip = new Label(group, 0) ;
+		Label ip = new Label(group, SWT.RIGHT) ;
 		ip.setText("IP address:") ;
 		m_IP = new Text(group, 0) ;
 		
-		Label port = new Label(group, 0) ;
+		Label port = new Label(group, SWT.RIGHT) ;
 		port.setText("Port number:") ;
 		m_Port = new Text(group, 0) ;
 		m_Port.setText(Integer.toString(Kernel.GetDefaultPort())) ;

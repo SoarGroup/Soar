@@ -392,10 +392,7 @@ public abstract class BaseCommandView extends AbstractView
 	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 	{
-		// TEMPTEMP: Removed for now - buggy (getting multiple events from a simple "run 1")
-		// Turns out gSKI is currently generating one of these events per phase if we run with "run 1" rather than "run --self 1".  Lovely.
-		// Have to wait to fix it in gSKI.
-		if (false && this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUNNING.swigValue())
+		if (this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUN_ENDS.swigValue())
 		{
 			System.out.println("Received run event") ;
 			
@@ -484,21 +481,27 @@ public abstract class BaseCommandView extends AbstractView
          }) ;
 	}
 
+	private class GetTextRunnable implements Runnable
+	{
+    	private String m_Result ;
+    	
+        public void run() {
+        	m_Result = m_CommandCombo.getText() ;
+        }
+        public String getResult() { return m_Result ; }
+	}
+	
 	private String getCommandText()
 	{
 		if (!Document.kDocInOwnThread)
 			return m_CommandCombo.getText() ;
 
-		// Have to make update in the UI thread.
-		// Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable() {
-        	String result ;
-            public void run() {
-            	result = m_CommandCombo.getText() ;
-            }
-         }) ;
+		// We need to call m_CommandCombo.getText() from the UI thread
+		// so we have to go through this little dance
+		GetTextRunnable op = new GetTextRunnable() ;
+        Display.getDefault().syncExec(op) ;
 
-        return "p <s>" ;
+        return op.getResult() ;
 	}
 
 	public void printEventHandler(int eventID, Object data, Agent agent, String message)
@@ -518,7 +521,7 @@ public abstract class BaseCommandView extends AbstractView
 		if (agent == null)
 			return ;
 		
-		m_StopCallback  = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_RUNNING, this, "runEventHandler", this) ;
+		m_StopCallback  = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_RUN_ENDS, this, "runEventHandler", this) ;
 		
 		if (m_ShowTraceOutput)
 			m_PrintCallback = agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this, "printEventHandler", this) ;		

@@ -18,6 +18,8 @@ public final class smlRunEventId {
   public final static smlRunEventId smlEVENT_BEFORE_DECISION_CYCLE = new smlRunEventId("smlEVENT_BEFORE_DECISION_CYCLE");
   public final static smlRunEventId smlEVENT_AFTER_DECISION_CYCLE = new smlRunEventId("smlEVENT_AFTER_DECISION_CYCLE");
   public final static smlRunEventId smlEVENT_AFTER_INTERRUPT = new smlRunEventId("smlEVENT_AFTER_INTERRUPT");
+  public final static smlRunEventId smlEVENT_BEFORE_RUN_STARTS = new smlRunEventId("smlEVENT_BEFORE_RUN_STARTS");
+  public final static smlRunEventId smlEVENT_AFTER_RUN_ENDS = new smlRunEventId("smlEVENT_AFTER_RUN_ENDS");
   public final static smlRunEventId smlEVENT_BEFORE_RUNNING = new smlRunEventId("smlEVENT_BEFORE_RUNNING");
   public final static smlRunEventId smlEVENT_AFTER_RUNNING = new smlRunEventId("smlEVENT_AFTER_RUNNING");
 
@@ -49,7 +51,7 @@ public final class smlRunEventId {
     swigNext = swigValue+1;
   }
 
-  private static smlRunEventId[] swigValues = { smlEVENT_BEFORE_SMALLEST_STEP, smlEVENT_AFTER_SMALLEST_STEP, smlEVENT_BEFORE_ELABORATION_CYCLE, smlEVENT_AFTER_ELABORATION_CYCLE, smlEVENT_BEFORE_PHASE_EXECUTED, smlEVENT_AFTER_PHASE_EXECUTED, smlEVENT_BEFORE_DECISION_CYCLE, smlEVENT_AFTER_DECISION_CYCLE, smlEVENT_AFTER_INTERRUPT, smlEVENT_BEFORE_RUNNING, smlEVENT_AFTER_RUNNING };
+  private static smlRunEventId[] swigValues = { smlEVENT_BEFORE_SMALLEST_STEP, smlEVENT_AFTER_SMALLEST_STEP, smlEVENT_BEFORE_ELABORATION_CYCLE, smlEVENT_AFTER_ELABORATION_CYCLE, smlEVENT_BEFORE_PHASE_EXECUTED, smlEVENT_AFTER_PHASE_EXECUTED, smlEVENT_BEFORE_DECISION_CYCLE, smlEVENT_AFTER_DECISION_CYCLE, smlEVENT_AFTER_INTERRUPT, smlEVENT_BEFORE_RUN_STARTS, smlEVENT_AFTER_RUN_ENDS, smlEVENT_BEFORE_RUNNING, smlEVENT_AFTER_RUNNING };
   private static int swigNext = 0;
   private final int swigValue;
   private final String swigName;
