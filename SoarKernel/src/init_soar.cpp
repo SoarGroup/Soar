@@ -280,6 +280,7 @@ void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
 }
 #endif
 
+#if defined(WIN32) && defined(FAST_TIME)
 inline void totimeval (timeval *dst, LARGE_INTEGER *src)
 {
     static bool init = false;
@@ -294,6 +295,7 @@ inline void totimeval (timeval *dst, LARGE_INTEGER *src)
     dst->tv_sec = time_s;
     dst->tv_usec = time_u;
 }
+#endif
 
 #if defined(FASTER_TIME)
 void get_cputime_from_clock(clock_t t, struct timeval *dt)
