@@ -94,9 +94,8 @@ public:
 	// <prod-firing> tag identifiers for Watch level 3
 	static char const* const kTagProduction ;
 	static char const* const kProduction_Name ;
-	static char const* const kProduction_Action ;
-	static char const* const kProduction_Firing ;
-	static char const* const kProduction_Retracting ;
+ 	static char const* const kTagProduction_Firing ;
+	static char const* const kTagProduction_Retracting ;
 	
 	// <wme> tag identifiers, also Watch level 4
 	static char const* const kTagWME ;

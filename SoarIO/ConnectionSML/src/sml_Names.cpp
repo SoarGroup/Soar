@@ -76,15 +76,15 @@ char const* const sml_Names::kTagPhase  	= "phase" ;
 char const* const sml_Names::kPhase_Name  	= "name" ;
 char const* const sml_Names::kPhase_Status  	= "status" ;
 char const* const sml_Names::kPhase_FiringType 	= "firing_type" ;
-char const* const sml_Names::kPhaseName_Input  	= "INPUT" ;
-char const* const sml_Names::kPhaseName_Pref  	= "PREF" ;
-char const* const sml_Names::kPhaseName_WM  	= "WM" ;
-char const* const sml_Names::kPhaseName_Decision= "DECISION" ;
-char const* const sml_Names::kPhaseName_Output 	= "OUTPUT" ;
+char const* const sml_Names::kPhaseName_Input  	= "input" ;
+char const* const sml_Names::kPhaseName_Pref  	= "preference" ;
+char const* const sml_Names::kPhaseName_WM  	= "workingmemory" ;
+char const* const sml_Names::kPhaseName_Decision= "decision" ;
+char const* const sml_Names::kPhaseName_Output 	= "output" ;
 // next two are new phase names
-char const* const sml_Names::kPhaseName_Propose	= "PROPOSE" ;
-char const* const sml_Names::kPhaseName_Apply  	= "APPLY" ;
-char const* const sml_Names::kPhaseName_Unknown	= "UNKNOWN" ;
+char const* const sml_Names::kPhaseName_Propose	= "propose" ;
+char const* const sml_Names::kPhaseName_Apply  	= "apply" ;
+char const* const sml_Names::kPhaseName_Unknown	= "unknown" ;
 char const* const sml_Names::kPhaseStatus_Begin	= "begin" ;
 char const* const sml_Names::kPhaseStatus_End	= "end" ;
 char const* const sml_Names::kPhaseFiringType_IE= "IE" ;
@@ -92,9 +92,9 @@ char const* const sml_Names::kPhaseFiringType_PE= "PE" ;
 
 // <prod-firing> tag identifiers for Watch level 3
 char const* const sml_Names::kTagProduction		= "production" ;
-char const* const sml_Names::kProduction_Name  	= "prod_name" ;
-char const* const sml_Names::kProduction_Firing  	 = "production_firing" ;
-char const* const sml_Names::kProduction_Retracting  = "production_retracting" ;
+char const* const sml_Names::kProduction_Name  	= "prodname" ;
+char const* const sml_Names::kTagProduction_Firing  	= "firing_production" ;
+char const* const sml_Names::kTagProduction_Retracting  = "retracting_production" ;
 
 // <wme> tag identifiers, also for Watch level 4
 char const* const sml_Names::kTagWME		= "wme" ;

@@ -1187,11 +1187,11 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 
 
   if (action == PRINTING) {
-	  generate_tagged_output(thisAgent, "<production prod_name=\"");
+	  generate_tagged_output(thisAgent, "<production prodname=\"");
   } else if (action == FIRING) {
-	  generate_tagged_output(thisAgent, "<production_firing prod_name=\"");
+	  generate_tagged_output(thisAgent, "<firing_production> <production prodname=\"");
   } else if (action == RETRACTING) {
-	  generate_tagged_output(thisAgent, "<production_retracting prod_name=\"");
+	  generate_tagged_output(thisAgent, "<retracting_production> <production prodname=\"");
   }
 
   if (inst->prod) {
@@ -1199,7 +1199,7 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
     tagged_output_with_symbols (thisAgent, "%y", inst->prod->name);
   } else {
     print (thisAgent, "[dummy production]");
-	  generate_tagged_output(thisAgent, "<production prod_name=\"[dummy_production]");
+	  generate_tagged_output(thisAgent, "<production prodname=\"[dummy_production]");
   }
 
   print (thisAgent, "\n");
@@ -1208,9 +1208,9 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 	  if (action == PRINTING) {
 		  generate_tagged_output(thisAgent, "</production>");
 	  } else if (action == FIRING) {
-		  generate_tagged_output(thisAgent, "</production_firing>");
+		  generate_tagged_output(thisAgent, "</production></firing_production>");
 	  } else if (action == RETRACTING) {
-		  generate_tagged_output(thisAgent, "</production_retracting>");
+		  generate_tagged_output(thisAgent, "</production></retracting_production>");
 	  }
 	  return;
   }
@@ -1232,9 +1232,9 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 	if (action == PRINTING) {
 		generate_tagged_output(thisAgent, "</production>");
 	} else if (action == FIRING) {
-		generate_tagged_output(thisAgent, "</production_firing>");
+		generate_tagged_output(thisAgent, "</production></firing_production>");
 	} else if (action == RETRACTING) {
-		generate_tagged_output(thisAgent, "</production_retracting>");
+		generate_tagged_output(thisAgent, "</production></retracting_production>");
 	}
 }
 
@@ -1263,57 +1263,57 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
   // the rest is all for tagged output events
 
   if (end_of_phase) {
-    generate_tagged_output(thisAgent, "<phase status=\"END\" name=\"");
+    generate_tagged_output(thisAgent, "<phase status=\"end\" name=\"");
   } else {
     generate_tagged_output(thisAgent, "<phase name=\"");
   }
   switch (thisAgent->current_phase) {
   case INPUT_PHASE:
-    generate_tagged_output(thisAgent, "INPUT\"></phase>");
+    generate_tagged_output(thisAgent, "input\"></phase>");
     return;
   case PREFERENCE_PHASE:
-    generate_tagged_output(thisAgent, "PREF\"></phase>");
+    generate_tagged_output(thisAgent, "preference\"></phase>");
     return;
   case WM_PHASE:
     if (thisAgent->operand2_mode == TRUE) {
       switch (thisAgent->FIRING_TYPE) {
       case PE_PRODS:
-	generate_tagged_output(thisAgent, "WM\" firing_type=\"PE\"></phase> ");
+	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"PE\"></phase> ");
 	return;
       case IE_PRODS:
-	generate_tagged_output(thisAgent, "WM\" firing_type=\"IE\"></phase> ");
+	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"IE\"></phase> ");
 	return;
       }
     }
     else
-      generate_tagged_output(thisAgent, "WM\"></phase> ");
+      generate_tagged_output(thisAgent, "workingmemory\"></phase> ");
     return;
   case DECISION_PHASE:
-    generate_tagged_output(thisAgent, "DECISION\"></phase> ");
+    generate_tagged_output(thisAgent, "decision\"></phase> ");
     return;
   case OUTPUT_PHASE:
-    generate_tagged_output(thisAgent, "OUTPUT\"></phase> ");
+    generate_tagged_output(thisAgent, "output\"></phase> ");
     return;
   case PROPOSE_PHASE:
-    generate_tagged_output(thisAgent, "PROPOSE\"></phase> ");
+    generate_tagged_output(thisAgent, "propose\"></phase> ");
     return;
   case APPLY_PHASE:
     if (thisAgent->operand2_mode == TRUE) 
       {
 	switch (thisAgent->FIRING_TYPE) {
 	case PE_PRODS:
-	  generate_tagged_output(thisAgent, "APPLY\" firing_type=\"PE\"></phase> ");
+	  generate_tagged_output(thisAgent, "apply\" firing_type=\"PE\"></phase> ");
 	  return;
 	case IE_PRODS:
-	  generate_tagged_output(thisAgent, "APPLY\" firing_type=\"IE\"></phase> ");
+	  generate_tagged_output(thisAgent, "apply\" firing_type=\"IE\"></phase> ");
 	  return;
 	}
       }
     else
-      generate_tagged_output(thisAgent, "APPLY\"></phase> ");
+      generate_tagged_output(thisAgent, "apply\"></phase> ");
     return;
   default:
-    generate_tagged_output(thisAgent, "UNKNOWN\"></phase> ");
+    generate_tagged_output(thisAgent, "unknown\"></phase> ");
     return;
   }
   return;
