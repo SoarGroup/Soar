@@ -23,7 +23,10 @@
 
 #endif // HAVE_CONFIG_H
 
+#ifdef HAVE_STRINGS_H
 #include <strings.h>  // strcasecmp
+#endif
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
