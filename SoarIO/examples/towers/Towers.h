@@ -210,15 +210,15 @@ public:
 		m_disks.clear();//TODO @TODO release these too?
 	}
 
-	//will always add a smaller disk than the top, so new disk must on at beginning of container
+	//will always add a smaller disk than the top, so new disk must on at end of container
 	void AddDisk(Disk* newDisk)
 	{
 		assert(newDisk);
 		if(!m_disks.empty())
-			newDisk->SetDiskBeneath(m_disks.front());
+			newDisk->SetDiskBeneath(m_disks.back());
 		else
 			newDisk->SetDiskBeneath(0);
-		m_disks.insert(m_disks.begin(), newDisk);
+		m_disks.push_back(newDisk);
 	}
 
 	void RemoveTopDisk()
@@ -231,8 +231,8 @@ public:
 	{
 		if(m_disks.size() != 0)
 		{
-			assert(m_disks.front());
-			return m_disks.front();
+			assert(m_disks.back());
+			return m_disks.back();
 		}
 		return 0;
 	}
@@ -260,8 +260,15 @@ public:
 		}
 	}
 
+	void PrintEntireTower()
+	{	
+		for(vector<Disk*>::iterator fooItr = m_disks.begin(); fooItr != m_disks.end(); ++fooItr)
+			cout << (*fooItr)->GetSize() << endl;
+		cout << endl;
+	}
+
 private:
-	std::vector<Disk*> m_disks;
+	vector<Disk*> m_disks;
 	char m_name;
 	int m_number;
 
@@ -274,58 +281,6 @@ private:
 
 
 
-
-//used to store the disks in the tower
-//can be used to get the top disk, to print the tower, etc
-/*class CollectTowerDisks
-{
-public:
-	CollectTowerDisks(int towerNumber) : m_towerNumber(towerNumber)	{}
-
-	~CollectTowerDisks()
-	{
-		//TODO @TODO //FIXME release refs?
-		m_disks.clear();
-		diskSizes.clear();
-	}
-
-	void operator() (Disk* inDisk)
-	{
-		if(inDisk->GetTowerNumber() == m_towerNumber)
-		{	//The map will be ordered by size
-			//Since no small disks can be under big disks, iterating through the map in one 
-			//direction will always give you increasing/decreasing disks by size
-			m_disks[inDisk->GetSize()] = inDisk;
-			diskSizes.insert(diskSizes.begin(), inDisk->GetSize());
-		}
-	}
-
-
-	void PrintDisksAtRow(int row)
-	{
-		if(static_cast<int>(/*m_disks.size()*//* diskSizes.size()) <= row)
-			cout<<"--";
-		else
-		{
-			//map<int, Disk*, std::less<int> >::iterator diskItr = m_disks.begin();
-			//for(int counter = 0; counter <= row; ++counter, ++diskItr)
-			//{
-			//	if(counter == row)
-			//		cout << ((*diskItr).second)->GetSize();
-			//}
-			cout << diskSizes[row];
-		}
-	}
-
-	int GetNumDisks()
-	{
-		return static_cast<int>(diskSizes.size());
-	}
-private:
-	int m_towerNumber;
-	map<int, Disk*, std::less<int> > m_disks;
-	vector<int> diskSizes;
-};*/
 
 class HanoiWorld
 {
@@ -354,8 +309,8 @@ public:
 				//Create disks
 				for(int currentDiskSize = maxNumDisks; currentDiskSize > 0; --currentDiskSize)
 				{
-					//The disk currently at the back of the container is the "top" disk.  New, smaller, disks 
-					//are inserted in front
+					//The disk currently at the front of the container is the "bottom" disk.  New, smaller, disks 
+					//are inserted in back
 					IWMObject* towerIdObject = tower->GetTowerIdentifierObject();
 					assert(towerIdObject);
 					IWme* towerTopDiskWme = 0;
@@ -369,6 +324,7 @@ public:
 				}
 
 				m_towers.push_back(tower);
+				tower->PrintEntireTower();
 			}
 			//==============
 			//Middle tower
@@ -388,7 +344,7 @@ public:
 				m_towers.push_back(tower);
 			}
 		}
-Print();
+//Print();
 
 	}
 
@@ -415,7 +371,7 @@ Print();
 	void Print()
 	{ 
 
-		for(int row = maxNumDisks - 1; row >=0; --row)
+		for(int row = maxNumDisks - 1; row >= 0; --row)
 		{		
 			for(int towerCounter = 0; towerCounter < static_cast<int>(m_towers.size()); ++towerCounter)
 			{

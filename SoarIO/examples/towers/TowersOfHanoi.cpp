@@ -150,7 +150,8 @@ int main(int argc, char* argv[])
 	if(doPrinting)
 		hanoi.Print();
 
-	while(!hanoi.AtGoalState())
+int foo = 0;
+	while(!hanoi.AtGoalState() && foo++ < 60)
 	{
 		soarAgent.MakeMove();
 		TgD::TgD::Update(false, debugger);
