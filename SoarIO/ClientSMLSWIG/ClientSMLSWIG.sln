@@ -1,5 +1,9 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLSWIG", "ClientSMLSWIG.vcproj", "{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLJava", "Java\ClientSMLJava.vcproj", "{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLTcl", "Tcl\ClientSMLTcl.vcproj", "{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -13,6 +17,10 @@ Global
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Debug.Build.0 = Debug|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release.ActiveCfg = Release|Win32
 		{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}.Release.Build.0 = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug.ActiveCfg = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Debug.Build.0 = Debug|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release.ActiveCfg = Release|Win32
+		{45B36CE7-2FAB-4BBB-A1E3-50BDA1C1E59B}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
