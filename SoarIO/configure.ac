@@ -53,7 +53,7 @@ fi
 AC_HEADER_STDC
 AC_HEADER_DIRENT
 AC_HEADER_TIME
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h math.h netdb.h netinet/in.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h],,
+AC_CHECK_HEADERS([arpa/inet.h dlfcn.h fcntl.h limits.h math.h netdb.h netinet/in.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h],,
 	[AC_MSG_ERROR([*** Cannot find required header!  See previous line.])])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -65,6 +65,7 @@ AC_C_VOLATILE
 
 # Checks for library functions.
 AC_CHECK_LIB(pthread, pthread_create)
+AC_CHECK_LIB(dl, dlopen)
 AC_FUNC_MALLOC
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_CLOSEDIR_VOID
