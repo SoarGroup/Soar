@@ -190,6 +190,10 @@ public:
 
 private:
 
+	/*************************************************************
+	* @brief	Initializes all of the IWme and WMObject pointers 
+	*			to zero
+	*************************************************************/
 	DiskInputLinkProfile()
 	{
 		diskIdentifier = 0;
@@ -204,6 +208,10 @@ private:
 		holdsNeedsToBeUpdated = true;
 	}
 
+	/*************************************************************
+	* @brief	Destructor releases all owned wmes, sets everything 
+	*			to zero.  
+	*************************************************************/
 	~DiskInputLinkProfile()
 	{
 		//Release children of "disk"
@@ -219,15 +227,17 @@ private:
 		}
 
 		//=============================================
-		//Don't own these so just set pointers to zero
+		//This object doesn't own these so just set pointers to zero
+		//These copies of wmes/wmobjs did not increase the reference count, so we shouldn't
+		//decrease the count by calling Release()
 		if(diskBeneath)
 		{
-		//	diskBeneath->Release();
+			//diskBeneath->Release();  //don't do it!
 			diskBeneath = 0;
 		}
 		if(pegId)
 		{
-			//pegId->Release();		
+			//pegId->Release();		  //don't do it!
 			pegId = 0;
 		}//============================================
 
@@ -285,6 +295,10 @@ private:
 class IOManager
 {
 public:
+	/*************************************************************
+	* @brief	Constructor initializes the input link and
+	*			working memory pointers
+	*************************************************************/
 	IOManager(IInputLink* inILink) : m_pILink(inILink)
 	{
 		m_pWorkingMem = m_pILink->GetInputLinkMemory();
@@ -375,8 +389,7 @@ public:
 	}
 
 	void RemoveWme(IWme* victimWme)
-	{	//These are equivalent
-		//victimWme->Release();
+	{
 		m_pWorkingMem->RemoveWme(victimWme);
 	}
 
@@ -386,7 +399,6 @@ private:
 
 	friend class HanoiWorld;
 };
-
 
 
 
@@ -557,19 +569,23 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	gSKI::IAgent* agent = manager->AddAgent("towersAgent");
 	assert(agent);
 
-//create debugger
-//TgD::TSI_VERSION tsiVersion = TgD::TSI40;
-//debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
-//debugger->Init();
+	//create debugger
+	//TgD::TSI_VERSION tsiVersion = TgD::TSI40;
+	//debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
+	//debugger->Init();
 
 	//Source the agent's productions
 	CommandLineInterface* commLine = new CommandLineInterface();
 	commLine->SetKernel(kernel);
 	char* pResponse = "\0";//we don't need to allocate space for this
 	gSKI::Error* pError = new Error();
-	assert(commLine->DoCommand(agent, "pushd ../examples/towers", pResponse, pError));
-	assert(commLine->DoCommand(agent, "source towers-of-hanoi-86.soar", pResponse, pError));
-	assert(commLine->DoCommand(agent, "popd", pResponse, pError));
+
+	//commLine->DoCommand(agent, "pwd", pResponse, pError);
+	commLine->DoCommand(agent, "pushd ../examples/towers", pResponse, pError);
+
+	if(!commLine->DoCommand(agent, "source towers-of-hanoi-86.soar", pResponse, pError))
+		cout << "Error in source ---------------------------------" << endl;
+	commLine->DoCommand(agent, "popd", pResponse, pError);
 
 	IInputLink* pILink = agent->GetInputLink();
 	ioManager = new IOManager(pILink);

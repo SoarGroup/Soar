@@ -36,7 +36,7 @@
 				AdditionalDependencies="gSKId.lib TgDId.lib"
 				OutputFile="$(OutDir)/Towers.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(SolutionDir)\..\TgDI\lib&quot;;&quot;$(SolutionDir)\..\gSKI\lib&quot;;&quot;$(SolutionDir)\bin&quot;"
+				AdditionalLibraryDirectories="..\..\bin;..\..\..\gSKI\lib;..\..\..\TgDI\lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/Towers.pdb"
 				SubSystem="1"
@@ -81,8 +81,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="gSKId.lib TgDId.lib"
 				OutputFile="$(OutDir)/Towers.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\bin;..\..\..\gSKI\lib;..\..\..\TgDI\lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -117,6 +119,9 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{0F4205EE-35EA-4421-8F74-513603FF003F}"
 			Name="gSKI"/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}"
+			Name="TGDI"/>
 	</References>
 	<Files>
 		<Filter
