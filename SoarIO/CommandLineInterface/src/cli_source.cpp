@@ -27,8 +27,13 @@ bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoSource(pAgent, argv[1]);
 }
 
-bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, const std::string& filename) {
+bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
+
+	// Chop of quotes if they are there, open doesn't like them
+	if ((filename.length() > 2) && (filename[0] == '\"') && (filename[filename.length() - 1] == '\"')) {
+		filename = filename.substr(1, filename.length() - 2);
+	}
 
 	// Open the file
 	std::ifstream soarFile(filename.c_str());

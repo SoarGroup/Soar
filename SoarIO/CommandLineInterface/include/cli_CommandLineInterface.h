@@ -337,7 +337,7 @@ public:
 	*		 through DoCommandInternal() ignoring comments (lines starting
 	*		 with '#').
 	*************************************************************/
-	bool DoSource(gSKI::IAgent* pAgent, const std::string& filename);
+	bool DoSource(gSKI::IAgent* pAgent, std::string filename);
 
 	/*************************************************************
 	* @brief sp command, see usage.txt for details.
