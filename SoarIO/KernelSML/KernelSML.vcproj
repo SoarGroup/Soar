@@ -34,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ConnectionSML.lib libgw32c.a soar-cli.lib"
+				AdditionalDependencies="ConnectionSML.lib soar-cli.lib"
 				OutputFile="bin\KernelSML.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\CommandLineInterface\lib;..\CommandLineInterface\lib_src\GnuWin32\lib;..\ConnectionSML\lib"
@@ -85,7 +85,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ConnectionSML.lib libgw32c.a soar-cli.lib"
+				AdditionalDependencies="ConnectionSML.lib soar-cli.lib"
 				OutputFile="bin\KernelSML.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\ConnectionSML\bin"

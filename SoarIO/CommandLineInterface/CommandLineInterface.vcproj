@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include;.\lib_src\GnuWin32\include"
+				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;__GW32C__"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -64,7 +64,7 @@
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include;.\lib_src\GnuWin32\include"
+				AdditionalIncludeDirectories="..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -114,6 +114,9 @@
 			<File
 				RelativePath=".\src\CommandLineInterface.cpp">
 			</File>
+			<File
+				RelativePath=".\src\GetOpt.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -124,6 +127,9 @@
 			</File>
 			<File
 				RelativePath=".\include\CommandLineInterface.h">
+			</File>
+			<File
+				RelativePath=".\include\GetOpt.h">
 			</File>
 		</Filter>
 		<Filter

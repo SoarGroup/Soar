@@ -5,6 +5,7 @@
 #include <string>
 
 #include "commanddata.h"
+#include "getopt.h"
 
 // Forward Declarations
 namespace gSKI {
@@ -18,6 +19,7 @@ namespace sml {
 
 namespace cli {
 
+// Forward declarations
 class CommandLineInterface;
 
 // We need a comparator to make the map we're about to define work with char*
@@ -100,12 +102,13 @@ protected:
 	void BuildCommandMap();
 	bool CheckForHelp(int argc, char**& argv);
 
-	CommandMap	   m_CommandMap;
-	bool		      m_QuitCalled;
-	gSKI::IKernel* m_pKernel;
-	gSKI::IAgent*  m_pAgent;
-	std::string    m_Result;
-	gSKI::Error*   m_pError;
+	GetOpt			m_GetOpt;
+	CommandMap		m_CommandMap;
+	bool			m_QuitCalled;
+	gSKI::IKernel*	m_pKernel;
+	gSKI::IAgent*	m_pAgent;
+	std::string		m_Result;
+	gSKI::Error*	m_pError;
 
 };
 

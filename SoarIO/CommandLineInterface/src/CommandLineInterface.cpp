@@ -4,9 +4,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
-#include <winx/assertx.h>
+//#include <winx/assertx.h>
 
-#include <glibc/getopt.h>
+//#include <glibc/getopt.h>
+
+#include "getopt.h"
 
 #include "gSKI_Structures.h"
 #include "IgSKI_ProductionManager.h"
@@ -19,9 +21,6 @@
 
 using namespace std;
 using namespace cli;
-
-extern char *optarg;
-extern int optind, opterr, optopt;
 
 char const* CLIConstants::kCLIAddWME	= "add-wme";
 char const* CLIConstants::kCLICD		= "cd";
@@ -384,7 +383,7 @@ bool CommandLineInterface::ParseExcise(int argc, char**& argv) {
 		return true;
 	}
 
-	static struct option longOptions[] = {
+	static struct GetOpt::option longOptions[] = {
 		{"all",		0, 0, 'a'},
 		{"chunks",	0, 0, 'c'},
 		{"default", 0, 0, 'd'},
@@ -393,14 +392,14 @@ bool CommandLineInterface::ParseExcise(int argc, char**& argv) {
 		{0, 0, 0, 0}
 	};
 
-	optind = 0;
-	opterr = 0;
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
 
 	int option;
 	unsigned short options = 0;
 
 	for (;;) {
-		option = getopt_long (argc, argv, "acdtu", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long (argc, argv, "acdtu", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -426,7 +425,7 @@ bool CommandLineInterface::ParseExcise(int argc, char**& argv) {
 				m_Result += CLIConstants::kCLIExciseUsage;
 				return false;
 			default:
-				m_Result += "Internal error: getopt_long returned '";
+				m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
 				m_Result += option;
 				m_Result += "'!";
 				return false;
@@ -435,13 +434,13 @@ bool CommandLineInterface::ParseExcise(int argc, char**& argv) {
 
 	int productionCount = 0;
 	char** productions = 0;
-	if (optind < argc) {
-		productions = new char*[argc - optind + 1];
-		while (optind < argc) {
-			productions[productionCount] = new char[strlen(argv[optind]) + 1];
-			strcpy(productions[productionCount], argv[optind]);
-			productions[productionCount][strlen(argv[optind])] = 0;
-			++optind;
+	if (GetOpt::optind < argc) {
+		productions = new char*[argc - GetOpt::optind + 1];
+		while (GetOpt::optind < argc) {
+			productions[productionCount] = new char[strlen(argv[GetOpt::optind]) + 1];
+			strcpy(productions[productionCount], argv[GetOpt::optind]);
+			productions[productionCount][strlen(argv[GetOpt::optind])] = 0;
+			++GetOpt::optind;
 			++productionCount;
 		}
 		productions[productionCount] = 0;
@@ -510,7 +509,7 @@ bool CommandLineInterface::ParseLearn(int argc, char**& argv) {
 		return true;
 	}
 
-	static struct option longOptions[] = {
+	static struct GetOpt::option longOptions[] = {
 		{"all-levels",		0, 0, 'a'},
 		{"bottom-up",		0, 0, 'b'},
 		{"disable",			0, 0, 'd'},
@@ -523,14 +522,14 @@ bool CommandLineInterface::ParseLearn(int argc, char**& argv) {
 		{0, 0, 0, 0}
 	};
 
-	optind = 0;
-	opterr = 0;
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
 
 	int option;
 	unsigned short options = 0;
 
 	for (;;) {
-		option = getopt_long (argc, argv, "abdeElo", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long (argc, argv, "abdeElo", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -562,14 +561,14 @@ bool CommandLineInterface::ParseLearn(int argc, char**& argv) {
 				m_Result += CLIConstants::kCLILearnUsage;
 				return false;
 			default:
-				m_Result += "Internal error: getopt_long returned '";
+				m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
 				m_Result += option;
 				m_Result += "'!";
 				return false;
 		}
 	}
 
-	if (optind < argc) {
+	if (GetOpt::optind < argc) {
 		m_Result += "Too many arguments.\n";
 		m_Result += CLIConstants::kCLILearnUsage;
 		return false;
@@ -656,7 +655,7 @@ bool CommandLineInterface::ParseRun(int argc, char**& argv) {
 		return true;
 	}
 
-	static struct option longOptions[] = {
+	static struct GetOpt::option longOptions[] = {
 		{"decision",		0, 0, 'd'},
 		{"elaboration",	0, 0, 'e'},
 		{"forever",			0, 0, 'f'},
@@ -668,14 +667,14 @@ bool CommandLineInterface::ParseRun(int argc, char**& argv) {
 		{0, 0, 0, 0}
 	};
 
-	optind = 0;
-	opterr = 0;
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
 
 	int option;
 	unsigned short options = 0;
 
 	for (;;) {
-		option = getopt_long (argc, argv, "defoOpsS", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long (argc, argv, "defoOpsS", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -710,17 +709,17 @@ bool CommandLineInterface::ParseRun(int argc, char**& argv) {
 				m_Result += CLIConstants::kCLIRunUsage;
 				return false;
 			default:
-				m_Result += "Internal error: getopt_long returned '";
+				m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
 				m_Result += option;
 				m_Result += "'!";
 				return false;
 		}
 	}
 
-	if (optind == argc - 1) {
+	if (GetOpt::optind == argc - 1) {
 		m_Result += "Count: ";
-		m_Result += argv[optind];
-	} else if (optind < argc) {
+		m_Result += argv[GetOpt::optind];
+	} else if (GetOpt::optind < argc) {
 		m_Result += "Too many arguments.\n";
 		m_Result += CLIConstants::kCLIRunUsage;
 		return false;
@@ -866,19 +865,19 @@ bool CommandLineInterface::ParseStopSoar(int argc, char**& argv) {
 		return true;
 	}
 
-	static struct option longOptions[] = {
+	static struct GetOpt::option longOptions[] = {
 		{"self",		0, 0, 's'},
 		{0, 0, 0, 0}
 	};
 
-	optind = 0;
-	opterr = 0;
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
 
 	int option;
 	bool self = false;
 
 	for (;;) {
-		option = getopt_long (argc, argv, "s", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long (argc, argv, "s", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -892,7 +891,7 @@ bool CommandLineInterface::ParseStopSoar(int argc, char**& argv) {
 				m_Result += CLIConstants::kCLIStopSoarUsage;
 				return false;
 			default:
-				m_Result += "Internal error: getopt_long returned '";
+				m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
 				m_Result += option;
 				m_Result += "'!";
 				return false;
@@ -900,9 +899,9 @@ bool CommandLineInterface::ParseStopSoar(int argc, char**& argv) {
 	}
 
 	string reasonForStopping;
-	if (optind < argc) {
-		while (optind < argc) {
-			reasonForStopping += argv[optind++];
+	if (GetOpt::optind < argc) {
+		while (GetOpt::optind < argc) {
+			reasonForStopping += argv[GetOpt::optind++];
 			reasonForStopping += ' ';
 		}
 	}
@@ -932,7 +931,7 @@ bool CommandLineInterface::ParseWatch(int argc, char**& argv) {
 		return true;
 	}
 
-	static struct option longOptions[] = {
+	static struct GetOpt::option longOptions[] = {
 		{"aliases",		            1, 0, 'a'},
 		{"backtracing",		      1, 0, 'b'},
 		{"chunks",		            1, 0, 'c'},
@@ -952,8 +951,8 @@ bool CommandLineInterface::ParseWatch(int argc, char**& argv) {
 		{0, 0, 0, 0}
 	};
 
-	optind = 0;
-	opterr = 0;
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
 
 	int option;
 	bool self = false;
@@ -961,7 +960,7 @@ bool CommandLineInterface::ParseWatch(int argc, char**& argv) {
 	unsigned short states = 0;    // new setting
 
 	for (;;) {
-		option = getopt_long (argc, argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
+		option = m_GetOpt.GetOpt_Long (argc, argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
 		if (option == -1) {
 			break;
 		}
@@ -1025,7 +1024,7 @@ bool CommandLineInterface::ParseWatch(int argc, char**& argv) {
 				m_Result += CLIConstants::kCLIWatchUsage;
 				return false;
 			default:
-				m_Result += "Internal error: getopt_long returned '";
+				m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
 				m_Result += option;
 				m_Result += "'!";
 				return false;
@@ -1078,21 +1077,21 @@ bool CommandLineInterface::DoWatchWMEs() {
 //|____/ \__,_|_|_|\__,_|\____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_|  |_|\__,_| .__/
 //                                                                                    |_|
 void CommandLineInterface::BuildCommandMap() {
-	m_CommandMap[CLIConstants::kCLIAddWME]		   = CommandLineInterface::ParseAddWME;
-	m_CommandMap[CLIConstants::kCLICD]			   = CommandLineInterface::ParseCD;
-	m_CommandMap[CLIConstants::kCLIEcho]		   = CommandLineInterface::ParseEcho;
-	m_CommandMap[CLIConstants::kCLIExcise]		   = CommandLineInterface::ParseExcise;
-	m_CommandMap[CLIConstants::kCLIExit]		   = CommandLineInterface::ParseQuit;
-	m_CommandMap[CLIConstants::kCLIInitSoar]	   = CommandLineInterface::ParseInitSoar;
-	m_CommandMap[CLIConstants::kCLILearn]		   = CommandLineInterface::ParseLearn;
-	m_CommandMap[CLIConstants::kCLINewAgent]     = CommandLineInterface::ParseNewAgent;
-	m_CommandMap[CLIConstants::kCLIQuit]		   = CommandLineInterface::ParseQuit;
-	m_CommandMap[CLIConstants::kCLIRun]			   = CommandLineInterface::ParseRun;
-	m_CommandMap[CLIConstants::kCLISource]		   = CommandLineInterface::ParseSource;
-	m_CommandMap[CLIConstants::kCLISP]	         = CommandLineInterface::ParseSP;
-	m_CommandMap[CLIConstants::kCLIStopSoar]	   = CommandLineInterface::ParseStopSoar;
-	m_CommandMap[CLIConstants::kCLIWatch]	      = CommandLineInterface::ParseWatch;
-	m_CommandMap[CLIConstants::kCLIWatchWMEs]	   = CommandLineInterface::ParseWatchWMEs;
+	m_CommandMap[CLIConstants::kCLIAddWME]		= CommandLineInterface::ParseAddWME;
+	m_CommandMap[CLIConstants::kCLICD]			= CommandLineInterface::ParseCD;
+	m_CommandMap[CLIConstants::kCLIEcho]		= CommandLineInterface::ParseEcho;
+	m_CommandMap[CLIConstants::kCLIExcise]		= CommandLineInterface::ParseExcise;
+	m_CommandMap[CLIConstants::kCLIExit]		= CommandLineInterface::ParseQuit;
+	m_CommandMap[CLIConstants::kCLIInitSoar]	= CommandLineInterface::ParseInitSoar;
+	m_CommandMap[CLIConstants::kCLILearn]		= CommandLineInterface::ParseLearn;
+	m_CommandMap[CLIConstants::kCLINewAgent]	= CommandLineInterface::ParseNewAgent;
+	m_CommandMap[CLIConstants::kCLIQuit]		= CommandLineInterface::ParseQuit;
+	m_CommandMap[CLIConstants::kCLIRun]			= CommandLineInterface::ParseRun;
+	m_CommandMap[CLIConstants::kCLISource]		= CommandLineInterface::ParseSource;
+	m_CommandMap[CLIConstants::kCLISP]			= CommandLineInterface::ParseSP;
+	m_CommandMap[CLIConstants::kCLIStopSoar]	= CommandLineInterface::ParseStopSoar;
+	m_CommandMap[CLIConstants::kCLIWatch]		= CommandLineInterface::ParseWatch;
+	m_CommandMap[CLIConstants::kCLIWatchWMEs]	= CommandLineInterface::ParseWatchWMEs;
 }
 
 bool CommandLineInterface::CheckForHelp(int argc, char**& argv) {

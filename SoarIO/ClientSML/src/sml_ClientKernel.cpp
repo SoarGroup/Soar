@@ -77,12 +77,13 @@ bool Kernel::ProcessCommandLine(char const* pCommandLine, char const* pAgentName
 		*pResult = response.GetResultString();
 	}
 
-	if (!ret) {
-		if (pResult) {
-			*pResult += "\nError Data:\n";
-			*pResult += response.GetErrorTag()->GetCharacterData();
-		}
-	}
+	// We don't really care about this message
+	//if (!ret) {
+	//	if (pResult) {
+	//		*pResult += "\nError Data:\n";
+	//		*pResult += response.GetErrorTag()->GetCharacterData();
+	//	}
+	//}
 
 	return ret;
 }
