@@ -72,6 +72,7 @@ extern "C"
 
 #if defined(__hpux) || defined(UNIX)
 #include <sys/syscall.h>
+#include <sys/param.h>
 #include <unistd.h>
 
 /* I'm not sure why this macro is in here, but it causes problems in 
@@ -93,7 +94,7 @@ inline char * getwd(char * arg)
 #ifdef WIN32
 	return _getcwd(arg, (size_t) 9999);
 #else
-        return getcwd(arg, (size_t) 9999);
+        return getcwd(arg, (size_t) MAXPATHLEN);
 #endif
 }
 
