@@ -81,6 +81,8 @@ int getrusage(int who, struct rusage* r)
    FILETIME kernel_time = {0,0};
    FILETIME user_time = {0,0};
 
+   who = who; // shuts up compiler
+
    memset (r, 0, sizeof (*r));
    GetProcessTimes (GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time);
    totimeval (&r->ru_stime, &kernel_time, 0, 0);
