@@ -12,11 +12,11 @@ bool CommandLineInterface::ParseIO(gSKI::IAgent* pAgent, std::vector<std::string
 	unused(pAgent);
 	unused(argv);
 
-	return DoIO();
+	return m_Error.SetError(CLIError::kNotImplemented);
 }
 
 bool CommandLineInterface::DoIO() {
-
-	return false;
+	
+	return m_Error.SetError(CLIError::kNotImplemented);
 }
 

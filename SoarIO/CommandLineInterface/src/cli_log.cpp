@@ -89,7 +89,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 
 		case OPTION_LOG_NEWAPPEND:
 			// exactly one argument
-			if ((argv.size() - GetOpt::optind) != 1) return m_Error.SetError(Constants::kCLILog);
+			if ((argv.size() - GetOpt::optind) != 1) return m_Error.SetError(CLIError::kTooManyArgs);
 			filename = argv[2];
 			break;
 
