@@ -50,7 +50,6 @@
 #include "soarkernel.h"
 #include <stdio.h>
 #include <ctype.h>
-#include <unistd.h>
 
 #ifdef USE_STDARGS
 #include <stdarg.h>

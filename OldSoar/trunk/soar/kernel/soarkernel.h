@@ -80,6 +80,9 @@
 #include <stdio.h>
 #include <stddef.h>
 
+#ifdef UNIX
+#include <unistd.h>
+#endif
 
 #include "soarBuildOptions.h"
 
