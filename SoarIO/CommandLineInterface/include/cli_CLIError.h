@@ -74,6 +74,7 @@ namespace cli {
 			kCountLessThanChunks				= 69,
 			kAcceptableOrNothingExpected		= 70,
 			kSourceError						= 71,
+			kMustSaveOrLoad						= 72,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -144,6 +145,7 @@ namespace cli {
 				case kCountLessThanChunks:				return "Cannot set chunk count less than the current number of chunks.";
 				case kAcceptableOrNothingExpected:		return "Expected acceptable preference (+) or nothing, check syntax.";
 				case kSourceError:						return "Source command error.";
+				case kMustSaveOrLoad:					return "Must save or load, check command syntax.";
 				default:								return "Unknown error code.";
 			}
 		}

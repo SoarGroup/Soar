@@ -87,7 +87,6 @@ bool CommandLineInterface::DoLS() {
 
 void CommandLineInterface::PrintFilename(const std::string& name, bool isDirectory) {
 	if (m_RawOutput) {
-		// TODO: Columns and stats
 		if (isDirectory) {
 			m_Result << '[';
 		}

@@ -113,8 +113,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& op
 	}
 
 	if (m_RawOutput) {
-		if (!exciseCount) return SetError(CLIError::kProductionNotFound);// TODO: Should this not be an error?
-		m_Result << "\n" << exciseCount << " productions excised.";
+		m_Result << "\n" << exciseCount << " production" << (exciseCount == 1 ? " " : "s ") << "excised.";
 	} else {
 		// Add the count tag to the front
 		char buf[kMinBufferSize];

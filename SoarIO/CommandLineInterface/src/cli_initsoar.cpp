@@ -21,11 +21,17 @@ bool CommandLineInterface::DoInitSoar(gSKI::IAgent* pAgent) {
 
 	// Simply call reinitialize
 	pAgent->Halt();
-	// BUGBUG: Init soar sends output through print callback!
+
+	// Save the current result
+	std::string oldResult = m_Result.str();
+
 	AddListenerAndDisableCallbacks(pAgent);
 	pAgent->Reinitialize();
-	m_Result.str(""); // BUGBUG: This may be erasing more than it should
 	RemoveListenerAndEnableCallbacks(pAgent);
+
+	// restore the old result, ignoring output from init-soar
+	m_Result.str(oldResult); 
+
 	if (m_RawOutput) m_Result << "Agent reinitialized.";
 	return true;
 }

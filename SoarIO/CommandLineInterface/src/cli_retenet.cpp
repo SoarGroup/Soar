@@ -51,9 +51,8 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 	}
 
 	// Must have a save or load operation
-	// TODO: these errors are misleading
-	if (!save && !load) return SetError(CLIError::kTooFewArgs);
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
+	if (!save && !load) return SetError(CLIError::kMustSaveOrLoad);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kMissingOptionArg);
 
 	return DoReteNet(pAgent, save, filename);
 }

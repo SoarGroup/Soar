@@ -70,10 +70,6 @@ bool CommandLineInterface::DoTime(gSKI::IAgent* pAgent, std::vector<std::string>
 		- (realStart.tv_sec + (realStart.tv_usec / 1000000.0));
 #endif
 
-	// TODO: from clock man page:
-	// The C standard allows for arbitrary values at the start of the program; 
-	// subtract the value returned from a call to clock() at the start
-    // of the program to get maximum portability.
 	double procElapsed = (procFinish - procStart) / (double)CLOCKS_PER_SEC;
 
 	// Print elapsed time and return

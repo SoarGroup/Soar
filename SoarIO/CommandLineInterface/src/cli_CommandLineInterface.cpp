@@ -335,8 +335,6 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 				// Flip the quotes flag
 				quotes = !quotes;
 
-				// TODO: Eat quotes?  I used to but this screws up the sp command
-
 			} else {
 				if (*iter == '{') {
 					++brackets;

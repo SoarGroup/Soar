@@ -217,14 +217,14 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 
 		// Reset depths to zero
 		m_SourceDepth = 0;
-		m_SourceDirDepth = 0; // TODO: redundant
+		m_SourceDirDepth = 0; // redundant
 
 		m_SourceError = true;
 		m_SourceErrorDetail.clear();
 		m_SourceErrorDetail += "\nSource command error on line ";
-		// TODO: arbitrary buffer size here
-		char buf[256];
-		m_SourceErrorDetail += Int2String(errorLine, buf, 256);
+
+		char buf[kMinBufferSize];
+		m_SourceErrorDetail += Int2String(errorLine, buf, kMinBufferSize);
 
 		m_SourceErrorDetail += " of ";
 		

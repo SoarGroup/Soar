@@ -19,13 +19,19 @@ bool CommandLineInterface::ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::
 
 bool CommandLineInterface::DoSoarNews() {
 
-	// TODO: read a file and put it here
+	m_Result << "This is Soar ";
+	
+	// Make DoVersion print its result to the result string
+	bool rawOutputSave = m_RawOutput;
+	m_RawOutput = true;
+	DoVersion();
+	m_RawOutput = rawOutputSave;
 
-	if (m_RawOutput) {
-		m_Result << "News!";
-	} else {
-		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, "News!");
-	}
+	m_Result << ".\n";
+	m_Result << "Please visit the Soar home page at\n\thttp://sitemaker.umich.edu/soar/\n";
+	m_Result << "Please see the readme file included with this release for more information.";
+
+	if (!m_RawOutput) ResultToArgTag();
 	return true;
 }
 

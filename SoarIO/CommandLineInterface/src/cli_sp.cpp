@@ -8,8 +8,6 @@
 
 #include "IgSKI_Agent.h"
 #include "IgSKI_ProductionManager.h"
-// BADBAD: I think we should be using an error class instead to work with error objects.
-#include "../../gSKI/src/gSKI_Error.h"
 
 using namespace cli;
 
@@ -36,7 +34,10 @@ bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& product
 	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
 
 	// Load the production
+	this->AddListenerAndDisableCallbacks(pAgent);
 	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), &m_gSKIError);
+	this->RemoveListenerAndEnableCallbacks(pAgent);
+
 	if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 
 	if (m_RawOutput) {

@@ -127,7 +127,6 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const PrintBitset& opti
 
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options.test(PRINT_ALL)) {
-		// TODO: Find out what is arg is for
 		AddListenerAndDisableCallbacks(pAgent);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
@@ -166,7 +165,6 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const PrintBitset& opti
 	if (pArg) {
 		pKernelHack->PrintSymbol(pAgent, const_cast<char*>(pArg->c_str()), name, filename, internal, full, depth);
 	} else {
-		// TODO: Find out what is arg is for
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);

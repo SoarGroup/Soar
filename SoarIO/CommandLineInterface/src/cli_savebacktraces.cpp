@@ -4,8 +4,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_Constants.h"
-
 #include "cli_GetOpt.h"
 
 #include "sml_Names.h"

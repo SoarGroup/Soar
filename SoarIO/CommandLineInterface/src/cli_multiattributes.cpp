@@ -72,6 +72,7 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::IAgent* pAgent, const std::st
 		return true;
 	}
 
+	// This next comment straight out of the TgDI
 	// TODO: Check whether attribute is a valid symbolic constant. The way the old kernel
 	// does this is to call get_lexeme_from_string(m_agent, argv[1]) and check that
 	// the lex type is symbolic constant. At this point, that functionality isn't
