@@ -75,6 +75,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_TCL"
 				BasicRuntimeChecks="3"
@@ -88,7 +89,7 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				CompileAs="0"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
