@@ -94,6 +94,9 @@ namespace gSKI
 		 void PrintInternalSymbols(IAgent* pIAgent);
 
 		 int AddWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes);
+		 int RemoveWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes);
+		 bool ResetWMEFilters(IAgent* pIAgent, bool adds, bool removes);
+		 void ListWMEFilters(IAgent* pIAgent, bool adds, bool removes);
 	  };
    }
 }

@@ -98,6 +98,7 @@ bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, 
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
 	int ret = 0;
+	bool retb = false;
 	switch (mode) {
 		case OPTION_WATCH_WMES_MODE_ADD:
 			if (!pIdString || !pAttributeString || !pValueString) return m_Error.SetError(CLIError::kFilterExpected);
@@ -107,6 +108,31 @@ bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, 
 			if (ret == -3) return m_Error.SetError(CLIError::kInvalidValue);
 			if (ret == -4) return m_Error.SetError(CLIError::kDuplicateWMEFilter);
 			break;
+
+		case OPTION_WATCH_WMES_MODE_REMOVE:
+			if (!pIdString || !pAttributeString || !pValueString) return m_Error.SetError(CLIError::kFilterExpected);
+			ret = pKernelHack->RemoveWMEFilter(pAgent, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), adds, removes);
+			if (ret == -1) return m_Error.SetError(CLIError::kInvalidID);
+			if (ret == -2) return m_Error.SetError(CLIError::kInvalidAttribute);
+			if (ret == -3) return m_Error.SetError(CLIError::kInvalidValue);
+			if (ret == -4) return m_Error.SetError(CLIError::kWMEFilterNotFound);
+			break;
+
+		case OPTION_WATCH_WMES_MODE_LIST:
+			if (!adds && !removes) adds = removes = true;
+			this->AddListenerAndDisableCallbacks(pAgent);
+			pKernelHack->ListWMEFilters(pAgent, adds, removes);
+			this->RemoveListenerAndEnableCallbacks(pAgent);
+			break;
+
+		case OPTION_WATCH_WMES_MODE_RESET:
+			if (!adds && !removes) adds = removes = true;
+			this->AddListenerAndDisableCallbacks(pAgent);
+			retb = pKernelHack->ResetWMEFilters(pAgent, adds, removes);
+			this->RemoveListenerAndEnableCallbacks(pAgent);
+			if (!retb) return m_Error.SetError(CLIError::kWMEFilterNotFound);
+			break;
+
 		default:
 			return m_Error.SetError(CLIError::kInvalidMode);
 	}

@@ -1912,7 +1912,7 @@ namespace gSKI
 
 			// now create and add the wme
 			wme* pWme = make_wme(pSoarAgent, pId, pAttr, pValue, acceptable);			
-			
+
 			symbol_remove_ref(pSoarAgent, pWme->attr);
 			symbol_remove_ref(pSoarAgent, pWme->value);
 			insert_at_head_of_dll(pWme->id->id.input_wmes, pWme, next, prev);
@@ -2005,12 +2005,12 @@ namespace gSKI
 
 		int RemoveWme(agent* pSoarAgent, wme* pWme)
 		{
-		//	wme *w, *w2;
-		//	Symbol *id;
-		//	slot *s;
+			//	wme *w, *w2;
+			//	Symbol *id;
+			//	slot *s;
 
-		//	w = (wme *) the_wme;
-	
+			//	w = (wme *) the_wme;
+
 			Symbol* pId = pWme->id;
 
 			// remove w from whatever list of wmes it's on
@@ -2119,8 +2119,8 @@ namespace gSKI
 			return -2;                  /* Unspecified Failure */
 		}
 
-		 void TgDWorkArounds::PrintInternalSymbols(IAgent* pIAgent)
-		 {
+		void TgDWorkArounds::PrintInternalSymbols(IAgent* pIAgent)
+		{
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
 
@@ -2134,83 +2134,177 @@ namespace gSKI
 			do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->identifier_hash_table, print_sym, 0);
 			print_string(pSoarAgent, "\n--- Variables: ---\n");
 			do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->variable_hash_table, print_sym, 0);
-		 }
+		}
 
-		 bool read_wme_filter_component(agent* pSoarAgent, const char *s, Symbol ** sym)
-		 {
-			 get_lexeme_from_string(pSoarAgent, const_cast<char*>(s));
-			 if (pSoarAgent->lexeme.type == IDENTIFIER_LEXEME) {
-				 if ((*sym = find_identifier(pSoarAgent, pSoarAgent->lexeme.id_letter, pSoarAgent->lexeme.id_number)) == NIL) {
-					 return false;          /* Identifier does not exist */
-				 }
-			 } else {
-				 *sym = make_symbol_for_current_lexeme(pSoarAgent);
-			 }
-			 // Added by voigtjr because if this function can 
-			 // legally return success with *sym == 0, my logic in AddWmeFilter will be broken.
-			 assert(*sym);
-			 return true;
-		 }
+		bool read_wme_filter_component(agent* pSoarAgent, const char *s, Symbol ** sym)
+		{
+			get_lexeme_from_string(pSoarAgent, const_cast<char*>(s));
+			if (pSoarAgent->lexeme.type == IDENTIFIER_LEXEME) {
+				if ((*sym = find_identifier(pSoarAgent, pSoarAgent->lexeme.id_letter, pSoarAgent->lexeme.id_number)) == NIL) {
+					return false;          /* Identifier does not exist */
+				}
+			} else {
+				*sym = make_symbol_for_current_lexeme(pSoarAgent);
+			}
+			// Added by voigtjr because if this function can 
+			// legally return success with *sym == 0, my logic in AddWmeFilter will be broken.
+			assert(*sym);
+			return true;
+		}
 
-		 int TgDWorkArounds::AddWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes)
-		 {
+		int TgDWorkArounds::AddWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
 
-			 Agent* pAgent = (Agent*)(pIAgent);
-			 agent* pSoarAgent = pAgent->GetSoarAgent();
+			Symbol* pId = 0;
+			if (!read_wme_filter_component(pSoarAgent, pIdString, &pId)) {
+				return -1;
+			}
 
-			 Symbol* pId = 0;
-			 if (!read_wme_filter_component(pSoarAgent, pIdString, &pId)) {
-				 return -1;
-			 }
+			Symbol* pAttr = 0;
+			if (!read_wme_filter_component(pSoarAgent, pAttrString, &pAttr)) {
+				symbol_remove_ref(pSoarAgent, pId);
+				return -2;
+			}
 
-			 Symbol* pAttr = 0;
-			 if (!read_wme_filter_component(pSoarAgent, pAttrString, &pAttr)) {
-				 symbol_remove_ref(pSoarAgent, pId);
-				 return -2;
-			 }
+			Symbol* pValue = 0;
+			if (!read_wme_filter_component(pSoarAgent, pValueString, &pValue)) {
+				symbol_remove_ref(pSoarAgent, pId);
+				symbol_remove_ref(pSoarAgent, pAttr);
+				return -3;
+			}
 
-			 Symbol* pValue = 0;
-			 if (!read_wme_filter_component(pSoarAgent, pValueString, &pValue)) {
-				 symbol_remove_ref(pSoarAgent, pId);
-				 symbol_remove_ref(pSoarAgent, pAttr);
-				 return -3;
-			 }
+			/* check to see if such a filter has already been added: */
+			cons *c;
+			wme_filter* existing_wf;
+			for (c = pSoarAgent->wme_filter_list; c != NIL; c = c->rest) {
 
-			 /* check to see if such a filter has already been added: */
-			 cons *c;
-			 wme_filter* existing_wf;
-			 for (c = pSoarAgent->wme_filter_list; c != NIL; c = c->rest) {
+				existing_wf = static_cast<wme_filter*>(c->first);
 
-				 existing_wf = static_cast<wme_filter*>(c->first);
+				// check for duplicate
+				if ((existing_wf->adds == adds) 
+					&& (existing_wf->removes == removes)
+					&& (existing_wf->id == pId) 
+					&& (existing_wf->attr == pAttr)
+					&& (existing_wf->value == pValue)) 
+				{
+					symbol_remove_ref(pSoarAgent, pId);
+					symbol_remove_ref(pSoarAgent, pAttr);
+					symbol_remove_ref(pSoarAgent, pValue);
+					return -4; // Filter already exists
+				}
+			}
 
-				 // check for duplicate
-				 if ((existing_wf->adds == adds) 
-					 && (existing_wf->removes == removes)
-					 && (existing_wf->id == pId) 
-					 && (existing_wf->attr == pAttr)
-					 && (existing_wf->value == pValue)) 
-				 {
-					 symbol_remove_ref(pSoarAgent, pId);
-					 symbol_remove_ref(pSoarAgent, pAttr);
-					 symbol_remove_ref(pSoarAgent, pValue);
-					 return -4; // Filter already exists
-				 }
-			 }
+			wme_filter* wf = static_cast<wme_filter*>(allocate_memory(pSoarAgent, sizeof(wme_filter), MISCELLANEOUS_MEM_USAGE));
+			wf->id = pId;
+			wf->attr = pAttr;
+			wf->value = pValue;
+			wf->adds = adds;
+			wf->removes = removes;
 
-			 wme_filter* wf = static_cast<wme_filter*>(allocate_memory(pSoarAgent, sizeof(wme_filter), MISCELLANEOUS_MEM_USAGE));
-			 wf->id = pId;
-			 wf->attr = pAttr;
-			 wf->value = pValue;
-			 wf->adds = adds;
-			 wf->removes = removes;
+			/* Rather than add refs for the new filter symbols and then remove refs 
+			* for the identical symbols created from the string parameters, skip
+			* the two nullifying steps altogether and just return immediately
+			* after pushing the new filter:
+			*/
+			push(pSoarAgent, wf, pSoarAgent->wme_filter_list);     
+			return 0;
+		}
 
-			 /* Rather than add refs for the new filter symbols and then remove refs 
-			 * for the identical symbols created from the string parameters, skip
-			 * the two nullifying steps altogether and just return immediately
-			 * after pushing the new filter:
-			 */
-			 push(pSoarAgent, wf, pSoarAgent->wme_filter_list);       /* note: nested macro */
-			 return 0;
-		 }
+		int TgDWorkArounds::RemoveWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			Symbol* pId = 0;
+			if (!read_wme_filter_component(pSoarAgent, pIdString, &pId)) {
+				return -1;
+			}
+
+			Symbol* pAttr = 0;
+			if (!read_wme_filter_component(pSoarAgent, pAttrString, &pAttr)) {
+				symbol_remove_ref(pSoarAgent, pId);
+				return -2;
+			}
+
+			Symbol* pValue = 0;
+			if (!read_wme_filter_component(pSoarAgent, pValueString, &pValue)) {
+				symbol_remove_ref(pSoarAgent, pId);
+				symbol_remove_ref(pSoarAgent, pAttr);
+				return -3;
+			}
+
+			cons* c;
+			cons** prev_cons_rest = &pSoarAgent->wme_filter_list;
+			for (c = pSoarAgent->wme_filter_list; c != NIL; c = c->rest) {
+				wme_filter* wf = static_cast<wme_filter*>(c->first);
+
+				// check for duplicate
+				if ((wf->adds == adds) 
+					&& (wf->removes == removes)
+					&& (wf->id == pId) 
+					&& (wf->attr == pAttr)
+					&& (wf->value == pValue)) 
+				{
+					*prev_cons_rest = c->rest;
+					symbol_remove_ref(pSoarAgent, pId);
+					symbol_remove_ref(pSoarAgent, pAttr);
+					symbol_remove_ref(pSoarAgent, pValue);
+					free_memory(pSoarAgent, wf, MISCELLANEOUS_MEM_USAGE);
+					free_cons(pSoarAgent, c);
+					return 0; /* assume that AddWMEFilter did not add duplicates */
+				}
+				prev_cons_rest = &(c->rest);
+			}
+			assert(!c);
+			symbol_remove_ref(pSoarAgent, pId);
+			symbol_remove_ref(pSoarAgent, pAttr);
+			symbol_remove_ref(pSoarAgent, pValue);
+			return -4;
+		}
+
+		bool TgDWorkArounds::ResetWMEFilters(IAgent* pIAgent, bool adds, bool removes)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			cons*c;
+			bool didRemoveSome = false;
+			cons** prev_cons_rest = &pSoarAgent->wme_filter_list;
+			for (c = pSoarAgent->wme_filter_list; c != NIL; c = c->rest) {
+
+				wme_filter* wf = static_cast<wme_filter*>(c->first);
+				if ((adds && wf->adds) || (removes && wf->removes)) {
+					*prev_cons_rest = c->rest;
+					print_with_symbols(pSoarAgent, "Removed: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
+					print(pSoarAgent, "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
+					symbol_remove_ref(pSoarAgent, wf->id);
+					symbol_remove_ref(pSoarAgent, wf->attr);
+					symbol_remove_ref(pSoarAgent, wf->value);
+					free_memory(pSoarAgent, wf, MISCELLANEOUS_MEM_USAGE);
+					free_cons(pSoarAgent, c);
+					didRemoveSome = true;
+				}
+				prev_cons_rest = &(c->rest);
+			}
+			return didRemoveSome;
+		}
+
+		void TgDWorkArounds::ListWMEFilters(IAgent* pIAgent, bool adds, bool removes)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			cons *c;
+			for (c = pSoarAgent->wme_filter_list; c != NIL; c = c->rest) {
+				wme_filter* wf = static_cast<wme_filter*>(c->first);
+
+				if ((adds && wf->adds) || (removes && wf->removes)) {
+					print_with_symbols(pSoarAgent, "wme filter: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
+					print(pSoarAgent, "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
+				}
+			}
+		}
 	}
 }

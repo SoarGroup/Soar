@@ -91,6 +91,7 @@ namespace cli {
 			kDuplicateWMEFilter = 61, 
 			kInvalidMode = 62,
 			kTypeRequired = 63,
+			kWMEFilterNotFound = 64,
 		};
 
 		CLIError() : m_Code(0) {}
