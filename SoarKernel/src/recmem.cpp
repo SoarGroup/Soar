@@ -287,7 +287,7 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
     result = (*(rf->f))(thisAgent, arglist, rf->user_data);
 
     #ifndef NO_TIMING_STUFF  // restart the kernel timer
-    start_timer (&thisAgent->start_kernel_tv);
+    start_timer (thisAgent, &thisAgent->start_kernel_tv);
     #endif
 
   } else
