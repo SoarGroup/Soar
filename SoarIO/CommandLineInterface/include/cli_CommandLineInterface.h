@@ -502,6 +502,13 @@ public:
 	EXPORT bool DoSaveBacktraces(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool* pSetting = 0);
 
 	/*************************************************************
+	* @brief set-library-location command
+	* @param pConnection Pointer to connection
+	* @param pLocation Pointer to the new help location, or null for query.
+	*************************************************************/
+	EXPORT bool DoSetLibraryLocation(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string* pLocation = 0);
+
+	/*************************************************************
 	* @brief soar8 command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
@@ -688,6 +695,7 @@ protected:
 	bool ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseRun(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSaveBacktraces(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseSetLibraryLocation(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -742,6 +750,7 @@ protected:
 	bool DoReteNet(gSKI::IAgent* pAgent, bool save, const std::string& filename);
 	bool DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count = 0);
 	bool DoSaveBacktraces(gSKI::IAgent* pAgent, bool* pSetting = 0);
+	bool DoSetLibraryLocation(const std::string* pLocation = 0);
 	bool DoSoar8(bool* pSoar8);
 	bool DoSoarNews();
 	bool DoSource(gSKI::IAgent* pAgent, std::string filename);
@@ -858,7 +867,8 @@ protected:
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
 	sml::KernelSML*		m_pKernelSML;
 	gSKI::Version		m_KernelVersion;		// Kernel version number
-	std::string			m_HomeDirectory;		// The initial working directory, server side
+	std::string			m_HomeDirectory;		// The initial working directory, server side, see CD command
+	std::string			m_LibraryDirectory;		// The library directory, server side, see help command
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
 	std::string			m_LogFilename;			// Used for logging to a file.
 	std::ofstream*		m_pLogFile;				// The log file stream

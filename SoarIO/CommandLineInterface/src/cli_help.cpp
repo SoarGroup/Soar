@@ -30,7 +30,7 @@ bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 	std::string helpFile;
 	if (!pCommand || !pCommand->size()) {
 		m_Result << "Help is available for the following commands:\n";
-		helpFile = m_HomeDirectory + "/command-names";
+		helpFile = m_LibraryDirectory + "/command-names";
 	} else {
 		// check for aliases
 		if (m_Aliases.IsAlias(*pCommand)) {
@@ -39,7 +39,7 @@ bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 			return true;
 		}
 
-		helpFile = m_HomeDirectory + "/help/" + *pCommand;
+		helpFile = m_LibraryDirectory + "/help/" + *pCommand;
 	}
 
 	std::ifstream helpFileStream(helpFile.c_str());

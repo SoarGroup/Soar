@@ -246,6 +246,9 @@
 					RelativePath=".\src\cli_savebacktraces.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_setlibrarylocation.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_soar8.cpp">
 				</File>
 				<File

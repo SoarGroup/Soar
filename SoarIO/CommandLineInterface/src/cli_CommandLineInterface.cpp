@@ -82,6 +82,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIReteNet]				= &cli::CommandLineInterface::ParseReteNet;
 	m_CommandMap[Constants::kCLIRun]					= &cli::CommandLineInterface::ParseRun;
 	m_CommandMap[Constants::kCLISaveBacktraces]			= &cli::CommandLineInterface::ParseSaveBacktraces;
+	m_CommandMap[Constants::kCLISetLibraryLocation]		= &cli::CommandLineInterface::ParseSetLibraryLocation;
 	m_CommandMap[Constants::kCLISoar8]					= &cli::CommandLineInterface::ParseSoar8;
 	m_CommandMap[Constants::kCLISoarNews]				= &cli::CommandLineInterface::ParseSoarNews;
 	m_CommandMap[Constants::kCLISource]					= &cli::CommandLineInterface::ParseSource;
@@ -97,8 +98,11 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIWatch]					= &cli::CommandLineInterface::ParseWatch;
 	m_CommandMap[Constants::kCLIWatchWMEs]				= &cli::CommandLineInterface::ParseWatchWMEs;
 
-	// Set Home to current directory
+	// Set home to current directory
 	GetCurrentWorkingDirectory(m_HomeDirectory);
+
+	// Set library directory to home directory
+	m_LibraryDirectory = m_HomeDirectory;
 
 	// Initialize other members
 	m_pKernel = 0;

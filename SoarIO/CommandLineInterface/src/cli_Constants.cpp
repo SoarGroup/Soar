@@ -44,6 +44,7 @@ char const* Constants::kCLIRemoveWME				= "remove-wme";
 char const* Constants::kCLIReteNet					= "rete-net";
 char const* Constants::kCLIRun						= "run";
 char const* Constants::kCLISaveBacktraces			= "save-backtraces";
+char const* Constants::kCLISetLibraryLocation		= "set-library-location";
 char const* Constants::kCLISoar8					= "soar8";
 char const* Constants::kCLISoarNews					= "soarnews";
 char const* Constants::kCLISource					= "source";
