@@ -97,22 +97,25 @@ typedef struct arraylist_struct
              all states that the agent has encountered.  This in turn is used to
              construct an episodic memory
 
-             id   - every WME in the tree has a unique id.  I can't
-                    use the timetag because multiple WMEs may have the same
-                    value.
-             attr - the string representing the WME attribute associated
-                    with this tree node
-             attr - the string representing the WME value associated
-                    with this tree node (*only* if this is a leaf node)
-             is_leaf - TRUE means that this node has no children
-             children - children of the current node (hash table)
-             parent - parent of the current node.
-             next/prev - dll of all nodes in the tree to allow iterative
-                         implementation of several algorithms
-             in_mem - whether this "wme" is in the current memory
+             id             - every WME in the tree has a unique id.  I can't
+                              use the timetag because multiple WMEs may have the same
+                              value.
+             attr           - the string representing the WME attribute associated
+                              with this tree node
+             val            - the string representing the WME value associated
+                              with this tree node (*only* if this is a leaf node)
+             children       - children of the current node (hash table)
+             parent         - parent of the current node.
+             next/prev      - dll of all nodes in the tree to allow iterative
+                              implementation of several algorithms
+             in_mem         - whether this "wme" is in the current memory
              assoc_memories - this is a list of pointers to all the episodic
                               memories that use this WME.  As such it is
                               effectively an arraylist of arraylists.
+             query_count    - How many times this WME has been in a cue and
+                              therfore triggered its associated memories to be
+                              examined for a match. (performance diagnostic use
+                              only)
                       
 */
 
@@ -134,6 +137,7 @@ typedef struct wmetree_struct
     bool in_mem;
     struct wme_struct *assoc_wme;
     arraylist *assoc_memories;
+    int query_count;
 } wmetree;
 
 
@@ -192,7 +196,8 @@ typedef struct episodic_memory_struct
    g_last_ret_id          - This value gets incremeted at each retrieval. It's
                             currently used by the matcher to keep track of the
                             best match for this retrieval in wmetree->last_usage
-   
+   g_num_queries          - Total number of queries that have been performed so far
+                            
 */
 
 //%%%FIXME:  move these globals to current_agent()
@@ -206,6 +211,7 @@ Symbol * g_epmem_query;
 Symbol * g_epmem_retrieved;
 unsigned long g_last_tag = 0;
 long g_last_ret_id = 0;
+long g_num_queries = 0;
 
 
 /* EpMem macros
@@ -422,6 +428,7 @@ wmetree *make_wmetree_node(wme *w)
     node->in_mem = FALSE;
     node->assoc_wme = NULL;
     node->assoc_memories = make_arraylist(16);
+    node->query_count = 0;
 
     if (w == NULL) return node;
     
@@ -708,7 +715,7 @@ void print_wmetree(wmetree *node, int indent, int depth)
 /* ===================================================================
    epmem_find_memory_entry
 
-   Finds a descendent entry that has a particular id and attributein a
+   Finds a descendent entry that has a particular id and attribute in a
    given memory.  If the given parent is &g_wmetree then it is assumed
    to be a wildcard match.
 
@@ -964,17 +971,27 @@ Symbol *update_wmetree(wmetree *node,
     arraylist *syms = make_arraylist(32);
     int pos = 0;
 
-    do
+    start_timer(&current_agent(epmem_updatewmetree_start_time));
+
+    
+    while(pos <= epmem->size)
     {
+        start_timer(&current_agent(epmem_getaugs_start_time));
         wmes = get_augs_of_id( sym, tc, &len );
+        stop_timer(&current_agent(epmem_getaugs_start_time), &current_agent(epmem_getaugs_total_time));
+
         if (wmes != NULL)
         {
             for(i = 0; i < len; i++)
             {
+                start_timer(&current_agent(epmem_findchild_start_time));
                 childnode = find_child_node(node, wmes[i]);
+                stop_timer(&current_agent(epmem_findchild_start_time), &current_agent(epmem_findchild_total_time));
+
                 if (childnode == NULL)
                 {
                     childnode = make_wmetree_node(wmes[i]);
+                    childnode->parent = node;
                     add_to_hash_table(node->children, childnode);
                 }
 
@@ -990,7 +1007,9 @@ Symbol *update_wmetree(wmetree *node,
                 }
 
                 //insert childnode into the arraylist
+                start_timer(&current_agent(epmem_addnode_start_time));
                 add_node_to_memory(epmem, childnode, decay_activation_level(wmes[i]));
+                stop_timer(&current_agent(epmem_addnode_start_time), &current_agent(epmem_addnode_total_time));
                 append_entry_to_arraylist(syms, (void *)wmes[i]->value);
 
             }//for
@@ -998,12 +1017,15 @@ Symbol *update_wmetree(wmetree *node,
 
         //Special Case:  no wmes found attached to the given symbol
         if (epmem->size == 0) break;
+
+        //We've retrieved every WME in the query
+        if (epmem->size == pos) break;
         
         node = ((actwme *)epmem->array[pos])->node;
         sym = (Symbol *)syms->array[pos];
         pos++;
 
-    } while(pos < epmem->size);
+    } 
     
     //Sort the memory's arraylist using the node pointers
     qsort( (void *)epmem->array,
@@ -1014,6 +1036,8 @@ Symbol *update_wmetree(wmetree *node,
     //Deallocate the symbol list
     destroy_arraylist(syms);
 
+    stop_timer(&current_agent(epmem_updatewmetree_start_time), &current_agent(epmem_updatewmetree_total_time));
+    
     return ss;
     
 }//update_wmetree
@@ -1063,10 +1087,14 @@ void record_epmem( )
         //Update the assoc_memories link on each wmetree node in curr_state
         for(i = 0; i < curr_state->size; i++)
         {
-            wmetree *node = ((actwme *)(curr_state->array[i]))->node;
+            actwme *curr_actwme = ((actwme *)(curr_state->array[i]));
+            wmetree *node = curr_actwme->node;
+            int activation = curr_actwme->activation;
 
-            //Only leaf WMEs are necessary so ignore non-leaves
-            if (node->children->count == 0)
+            //In order to be recorded, a WME must meet the following criteria:
+            //1.  It must be a leaf WME (i.e., it has no children)
+            //2.  It must be activated (i.e., it has a decay element)
+            if ( (node->children->count == 0) && (activation != -1) )
             {
                 append_entry_to_arraylist(node->assoc_memories, (void *)new_epmem);
             }
@@ -1428,6 +1456,8 @@ void epmem_clear_mem(wmetree *node)
         return;
     }
 
+    
+    
     //Find all the wmes attached to the given node
     for (hash_value = 0; hash_value < node->children->size; hash_value++)
     {
@@ -1456,6 +1486,7 @@ void epmem_clear_mem(wmetree *node)
             child->in_mem = FALSE;
         }//for
     }//for
+
     
 }//epmem_clear_mem
 
@@ -1622,47 +1653,6 @@ int compare_memories_act_indiv_mem(arraylist *epmem1, arraylist *epmem2)
 }//compare_memories_act_indiv_mem
 
 
-
-/* ===================================================================
-   old_find_best_match
-
-   Finds the index of the episodic memory in g_memories that most closely
-   matches the cue given to the function.
-
-   Created:  19 Jan 2004
-   =================================================================== */
-int old_find_best_match(arraylist *cue)
-{
-    int best_match = 0;
-    int best_index = 0;
-    int n;
-    int i;
-
-    //If there aren't enough memories to examine just return
-    //the first one
-    if (g_memories->size <= memory_match_wait)
-    {
-        return 0;
-    }
-    
-    for(i = 0; i < g_memories->size - memory_match_wait; i++)
-    {
-        n = compare_memories_act_indiv_mem((arraylist *)g_memories->array[i],
-                                           cue);
-        if (n >= best_match)
-        {
-            best_index = i;
-            best_match = n;
-        }
-    }
-
-    //Check for no match found
-    if (best_match == 0) return -1;
-
-    return best_index;
-}//old_find_best_match
-
-
 /* ===================================================================
    find_best_match
 
@@ -1677,6 +1667,7 @@ episodic_memory *find_best_match(arraylist *cue)
     episodic_memory *best_mem = NULL;
     int i;
     int j;
+    int comp_count = 0;         // number of epmems that were examined
 
     //If there aren't enough memories to examine just return
     //the first one
@@ -1694,6 +1685,13 @@ episodic_memory *find_best_match(arraylist *cue)
     for(i = 0; i < cue->size; i++)
     {
         actwme *aw = (actwme *)cue->array[i];
+
+        if (aw->node->assoc_memories->size > 0)
+        {
+            // note that this node was used in the match
+            aw->node->query_count++; 
+        }
+        
         for(j = 0; j < aw->node->assoc_memories->size; j++)
         {
             episodic_memory *epmem =
@@ -1703,6 +1701,7 @@ episodic_memory *find_best_match(arraylist *cue)
             {
                 epmem->last_usage = g_last_ret_id;
                 epmem->match_score = aw->activation;
+                comp_count++;
             }
             else
             {
@@ -1716,6 +1715,10 @@ episodic_memory *find_best_match(arraylist *cue)
             }
         }//for
     }//for
+
+//      //%%%REMOVE THIS
+//      print("\nmemories searched:\t%d\t%d\n",
+//            g_memories->size, comp_count);
 
     return best_mem;
 }//find_best_match
@@ -1828,7 +1831,9 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
     if (g_memories->size < 1) return NULL;
     
     //Remove the old retrieved memory
+    start_timer(&current_agent(epmem_clearmem_start_time));
     epmem_clear_mem(&g_wmetree);
+    stop_timer(&current_agent(epmem_clearmem_start_time), &current_agent(epmem_clearmem_total_time));
     g_curr_memory = NULL;
 
     //Create an arraylist representing the current query
@@ -1843,15 +1848,22 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
         return NULL;
     }
 
+    //Diagnostic Counter
+    g_num_queries++;
+
     //Match query to current memories list
+    start_timer(&current_agent(epmem_match_start_time));
     g_curr_memory = find_best_match(al_query);
+    stop_timer(&current_agent(epmem_match_start_time), &current_agent(epmem_match_total_time));
     destroy_arraylist(al_query);
 
     //Place the best fit on the retrieved link
     if (g_curr_memory != NULL)
     {
         al_retrieved = g_curr_memory->content;
+        start_timer(&current_agent(epmem_installmem_start_time));
         install_epmem_in_wm(retrieved, al_retrieved);
+        stop_timer(&current_agent(epmem_installmem_start_time), &current_agent(epmem_installmem_total_time));
     }
     else
     {
@@ -1979,7 +1991,9 @@ void respond_to_command(char *cmd)
     if (strcmp(cmd, "next") == 0)
     {
         //Remove the old retrieved memory
+        start_timer(&current_agent(epmem_clearmem_start_time));
         epmem_clear_mem(&g_wmetree);
+        stop_timer(&current_agent(epmem_clearmem_start_time), &current_agent(epmem_clearmem_total_time));
 
         //Check that there is a next memory available
         if ( (g_curr_memory != NULL)
@@ -1990,7 +2004,9 @@ void respond_to_command(char *cmd)
                 (episodic_memory *)g_memories->array[g_curr_memory->index + 1];
             
             //Install the new memory
+            start_timer(&current_agent(epmem_installmem_start_time));
             install_epmem_in_wm(g_epmem_retrieved, g_curr_memory->content);
+            stop_timer(&current_agent(epmem_installmem_start_time), &current_agent(epmem_installmem_total_time));
         }
         else
         {
@@ -2204,6 +2220,162 @@ void epmem_print_mem_usage()
 
 
 /* ===================================================================
+   epmem_reset_cpu_usage_timers() 
+
+   Created: 07 Jul 2004
+   =================================================================== */
+void epmem_reset_cpu_usage_timers()
+{
+    reset_timer(&current_agent(epmem_total_time));
+    reset_timer(&current_agent(epmem_record_total_time));
+    reset_timer(&current_agent(epmem_retrieve_total_time));
+    reset_timer(&current_agent(epmem_clearmem_start_time));
+    reset_timer(&current_agent(epmem_clearmem_total_time));
+    reset_timer(&current_agent(epmem_updatewmetree_total_time));
+    reset_timer(&current_agent(epmem_getaugs_total_time));
+    reset_timer(&current_agent(epmem_match_total_time));
+    reset_timer(&current_agent(epmem_findchild_total_time));
+    reset_timer(&current_agent(epmem_addnode_total_time));
+    reset_timer(&current_agent(epmem_installmem_total_time));
+}
+
+/* ===================================================================
+   epmem_print_cpu_usage() 
+
+   Created: 07 Jul 2004
+   =================================================================== */
+void epmem_print_cpu_usage()
+{
+    double total = timer_value(&current_agent(epmem_total_time));
+    double f;
+    
+    print("\n**** Epmem CPU Usage Results ****\n\n");
+    print("Routine                             Time      Fraction of Total Time\n");
+    print("----------------------------------  --------  ----------------------\n");
+
+    f = timer_value(&current_agent(epmem_record_total_time));
+    print("record_epmem()                       %.3lf     %.3lf\n", f, f / total);
+    f = timer_value(&current_agent(epmem_updatewmetree_total_time));
+    print("    update_wmetree()                 %.3lf     %.3lf\n", f, f / total);
+    f = timer_value(&current_agent(epmem_getaugs_total_time));
+    print("        get_augs_of_id()             %.3lf     %.3lf\n", f, f / total);
+    f = timer_value(&current_agent(epmem_findchild_total_time));
+    print("        find_child_node()            %.3lf     %.3lf\n", f, f / total);
+    f = timer_value(&current_agent(epmem_addnode_total_time));
+    print("        add_node_to_memory()         %.3lf     %.3lf\n", f, f / total);
+    f = timer_value(&current_agent(epmem_retrieve_total_time));
+    print("episodic retrieval                   %.3lf     %.3lf\n", f, f / total);
+    f = timer_value(&current_agent(epmem_clearmem_total_time));
+    print("    epmem_clear_mem()                %.3lf     %.3lf\n", f, f / total);
+    print("    update_wmetree() is also called here (see above)\n");
+    f = timer_value(&current_agent(epmem_match_total_time));
+    print("    find_best_match()                %.3lf     %.3lf\n", f, f / total);
+    f = timer_value(&current_agent(epmem_installmem_total_time));
+    print("    install_epmem_in_wm()            %.3lf     %.3lf\n", f, f / total);
+
+    print("--------------------------------------------------------------------\n");
+    print("TOTAL                                %.3lf     1.0\n", total);
+
+    epmem_reset_cpu_usage_timers();
+
+}//epmem_print_cpu_usage
+
+/* ===================================================================
+   epmem_print_query_usage_wmetree      *RECURSIVE*
+
+   Prints a info showing how often nodes of a particular size
+   (in terms of number of children) were used in a query cue.
+
+   Created: 13 July 2004
+   =================================================================== */
+void epquw_helper(wmetree *node,
+                  int *total_queries,
+                  int *num_nodes,
+                  int *largest)
+{
+    int nodesize;
+    unsigned long hash_value;
+    wmetree *child;
+
+    if (node->assoc_memories != NULL)
+    {
+        nodesize = node->assoc_memories->size;
+        (total_queries[nodesize]) += node->query_count;
+        (num_nodes[nodesize]) ++;
+        if (nodesize > *largest) *largest = nodesize;
+
+//          //%%%REMOVE THIS IF-CLAUSE
+//          if ( (num_nodes[nodesize] > 0)
+//               && ( total_queries[nodesize] / num_nodes[nodesize] > 250)
+//               && ( total_queries[nodesize] / num_nodes[nodesize] < 300) )
+//          {
+//              print_wmetree(node, 0, 3);
+//              print("...has a high contribution to query time: %d.\n",
+//                    total_queries[nodesize] / num_nodes[nodesize]);
+//          }
+
+    }
+
+    for (hash_value = 0; hash_value < node->children->size; hash_value++)
+    {
+        child = (wmetree *) (*(node->children->buckets + hash_value));
+        for (; child != NIL; child = child->next)
+        {
+            epquw_helper(child, total_queries, num_nodes, largest);
+        }
+    }
+    
+}//epquw_helper
+
+void epmem_print_query_usage_wmetree()
+{
+    FILE *f;
+    static int total_queries[HISTOGRAM_SIZE];
+    static int num_nodes[HISTOGRAM_SIZE];
+    int i;
+    int largest = 0;
+
+    //Print the episodic memories' usage
+    f = fopen("\\temp\\epmem_query_usage_wmetree.txt", "aw");
+    if (f == NULL) return;
+
+    for(i = 0; i < HISTOGRAM_SIZE; i++)
+    {
+        total_queries[i] = 0;
+        num_nodes[i] = 0;
+    }
+
+    epquw_helper(&g_wmetree, total_queries, num_nodes, &largest);
+    
+    if (num_nodes[2] == 0)
+    {
+        fprintf(f, "0");
+    }
+    else
+    {
+        fprintf(f, "%d", total_queries[2] / num_nodes[2]);
+    }
+        
+    for(i = 2; i <= largest; i++)
+    {
+        if (num_nodes[i] == 0)
+        {
+            fprintf(f, "\t0");
+        }
+        else
+        {
+            fprintf(f, "\t%d", total_queries[i] / num_nodes[i]);
+        }
+
+    }
+    fprintf(f, "\n");
+    fclose(f);
+    
+}//epmem_print_query_usage_wmetree
+
+
+
+/* ===================================================================
    epmem_update() 
 
    This routine is called at every output phase to allow the episodic
@@ -2216,10 +2388,19 @@ void epmem_update()
 {
     char *cmd;
     arraylist *epmem = NULL;
+    static int count = 0;
+
+    count++;
+
+    start_timer(&current_agent(epmem_start_time));
+    start_timer(&current_agent(epmem_record_start_time));
 
     //Consider recording a new epmem
     consider_new_epmem_via_output();
 
+    stop_timer(&current_agent(epmem_record_start_time), &current_agent(epmem_record_total_time));
+    start_timer(&current_agent(epmem_retrieve_start_time));
+    
     //Update the ^retrieved link as necessary
     cmd = epmem_retrieve_command();
     if (cmd != NULL)
@@ -2232,6 +2413,7 @@ void epmem_update()
         //decay_print_most_activated_wmes(50);
         
         epmem = respond_to_query(g_epmem_query, g_epmem_retrieved);
+
         if (epmem != NULL)
         {
             //New retrieval:  reset count to zero
@@ -2244,10 +2426,28 @@ void epmem_update()
         }
     }
 
+    stop_timer(&current_agent(epmem_retrieve_start_time), &current_agent(epmem_retrieve_total_time));
+    stop_timer(&current_agent(epmem_start_time), &current_agent(epmem_total_time));
+
+    
     //%%%DEBUGGING
     //epmem_print_curr_memory();
     //epmem_print_mem_usage();
+    
+//      //%%%DEBUGGING
+//      if (count % 1500 == 0)
+//      {
+//          epmem_print_cpu_usage();
+//      }
+    
+//      //%%%DEBUGGING
+//      if (count % 100 == 0)
+//      {
+//          epmem_print_query_usage_wmetree();
+//          print("\n%d queries and %d memories\n", g_num_queries, g_memories->size);
+//      }
 
+    
 }//epmem_update
 
 /* ===================================================================
@@ -2307,6 +2507,8 @@ void init_epmem(void)
     g_memories = make_arraylist(512);
     g_curr_memory = NULL;
 
+    //Reset the timers
+    epmem_reset_cpu_usage_timers();
     
 }/*init_epmem*/
 
