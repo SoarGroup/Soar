@@ -287,7 +287,7 @@ protected:
 		PrintHandler() {}
 
 		void SetCLI(CommandLineInterface* pCLI) { m_pCLI = pCLI; }
-		virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* pAgent, const char* msg) {
+		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) {
 			// Simply append to message result
 			m_pCLI->AppendToResult(msg);
 		}

@@ -105,7 +105,7 @@ public:
 	* @param pValueType	The type of the value (e.g. "int" or "string".  Anything can go here as long as the recipient understands it) (usually will be NULL).
 	* 
 	* @returns Pointer to the ElementXML_Handle for the <command> tag (not the full message, just the <command> part)
-	*		   This is rarely needed, but could be used to optimize the code.
+	*		   This is rarely needed, but could be used to optimize the code.  DO NOT release this handle.
 	*************************************************************/
 	virtual ElementXML_Handle AddParameterToSMLCommand(ElementXML* pCommand, char const* pName, char const* pValue, char const* pValueType = NULL) ;
 

@@ -136,6 +136,7 @@ public:
 	static char const* kgSKI_IWorkingMemory_AddWmeInt ;
 	static char const* kgSKI_IWorkingMemory_AddWmeDouble ;
 	static char const* kgSKI_IWorkingMemory_RemoveObject ;
+	static char const* kgSKI_IWorkingMemory_AddWmeObjectLink ;
 	static char const* kgSKI_IWorkingMemory_GetAgent ;
 	static char const* kgSKI_IAgent_RunInClientThread ;
 	static char const* kgSKI_IWMObject_GetWMEs ;

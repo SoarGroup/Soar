@@ -26,6 +26,7 @@ namespace gSKI {
 	class IAgent ;
 	class IInputProducer ;
 	class IOutputProcessor ;
+	class IWme ;
 	struct Error ;
 }
 
@@ -80,8 +81,10 @@ typedef std::map<std::string, std::string>	IdentifierMap ;
 typedef IdentifierMap::iterator				IdentifierMapIter ;
 typedef IdentifierMap::const_iterator		IdentifierMapConstIter ;
 
-// Map from a client side time tag (as a string) to a kernel side one (e.g. "-3" => "93")
-typedef std::map<std::string, int>		TimeTagMap ;
+// Map from a client side time tag (as a string) to a kernel side WME* object
+// (Had planned to just map the time tag to a kernel time tag...but it turns out
+//  there's no quick way to look up an object in the kernel from its time tag).
+typedef std::map<std::string, gSKI::IWme*>		TimeTagMap ;
 typedef TimeTagMap::iterator			TimeTagMapIter ;
 typedef TimeTagMap::const_iterator		TimeTagMapConstIter ;
 
@@ -97,7 +100,7 @@ protected:
 	// Map from client side identifiers to kernel side ones
 	IdentifierMap	m_IdentifierMap ;
 
-	// Map from client side time tags (as strings) to kernel side ones
+	// Map from client side time tags (as strings) to kernel side WME* objects
 	TimeTagMap		m_TimeTagMap ;
 
 	// A list of InputProducer objects we have created.
@@ -204,8 +207,9 @@ protected:
 	* @brief	Converts a time tag from a client side value to
 	*			a kernel side one.
 	*************************************************************/
-	long ConvertTimeTag(char const* pTimeTag) ;
-	void RecordTimeTag(char const* pTimeTag, long kernelTimeTag) ;
+	gSKI::IWme* ConvertTimeTag(char const* pTimeTag) ;
+	void RecordTimeTag(char const* pTimeTag, gSKI::IWme* pWme) ;
+	void RemoveTimeTag(char const* pTimeTag) ;
 
 	void BuildCommandMap() ;
 
@@ -213,6 +217,9 @@ protected:
 
 	// Add a value to working memory
 	bool AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, char const* pTimeTag, gSKI::Error* pError) ;
+
+	// Remove a value from working memory.  The time tag is the string form of an int.
+	bool RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI::Error* pError) ;
 
 	// Our command handlers
 

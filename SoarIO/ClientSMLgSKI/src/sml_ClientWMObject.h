@@ -13,7 +13,7 @@ class WMObject : public IWMObject
 public:
 	WMObject(char const* pID, ClientSML* pClientSML) ;
 
-	sml::tIWmeIterator* GetWMEs(const char* attributeName = 0,
+	virtual sml::tIWmeIterator* GetWMEs(const char* attributeName = 0,
 							egSKISymbolType valueType = gSKI_ANY_SYMBOL,
 							gSKI::Error* err = 0) const;
 

@@ -1,5 +1,6 @@
 #include "sml_ClientWMObject.h"
 #include "sml_ClientWMIterator.h"
+#include "sml_ClientWME.h"
 #include "sml_ClientRelease.h"
 #include "sml_ClientSML.h"
 #include "sml_ClientIterator.h"

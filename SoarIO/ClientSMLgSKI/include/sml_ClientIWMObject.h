@@ -4,6 +4,7 @@
 #include "sml_ClientObject.h"
 #include "sml_ClientIIterator.h"
 #include "sml_ClientIRelease.h"
+#include "sml_ClientIWME.h"
 
 namespace sml
 {

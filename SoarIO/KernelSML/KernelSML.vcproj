@@ -170,6 +170,9 @@
 				RelativePath=".\include\sml_KernelSML.h">
 			</File>
 			<File
+				RelativePath=".\include\sml_KernelSMLgSKI.h">
+			</File>
+			<File
 				RelativePath="..\ConnectionSML\include\sml_Names.h">
 			</File>
 		</Filter>

@@ -1,7 +1,7 @@
 #ifndef SML_CLIENT_WORKINGMEMORY
 #define SML_CLIENT_WORKINGMEMORY
 
-#include "gSKI_Structures.h"
+#include "gSKI_ClientStructures.h"
 #include "sml_ClientIWorkingMemory.h"
 
 namespace sml
@@ -32,6 +32,8 @@ public:
                              const char* attr,
                              int intValue,
 							 gSKI::Error* err = 0);
+
+	virtual IWme* AddWmeObjectLink(IWMObject* wmObject, const char* attr, IWMObject* value, gSKI::Error* err = 0) ;
 
 	virtual void RemoveObject(sml::IWMObject* object, gSKI::Error* err = 0);
 

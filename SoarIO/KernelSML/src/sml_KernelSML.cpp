@@ -333,33 +333,37 @@ void KernelSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
 
 /*************************************************************
 * @brief	Converts a time tag from a client side value to
-*			a kernel side one.
+*			a kernel side object
 *************************************************************/
-long KernelSML::ConvertTimeTag(char const* pTimeTag)
+IWme* KernelSML::ConvertTimeTag(char const* pTimeTag)
 {
 	if (pTimeTag == NULL)
-		return -1 ;
+		return NULL ;
 
 	TimeTagMapIter iter = m_TimeTagMap.find(pTimeTag) ;
 
 	if (iter == m_TimeTagMap.end())
 	{
-		return -1 ;
+		return NULL ;
 	}
 	else
 	{
 		// If we found a mapping, return the mapped value
-		long result = iter->second ;
+		IWme* result = iter->second ;
 		return result ;
 	}
 }
 
 /*************************************************************
 * @brief	Converts a time tag from a client side value to
-*			a kernel side one.
+*			a kernel side object.
 *************************************************************/
-void KernelSML::RecordTimeTag(char const* pTimeTag, long kernelTimeTag)
+void KernelSML::RecordTimeTag(char const* pTimeTag, IWme* pWME)
 {
-	m_TimeTagMap[pTimeTag] = kernelTimeTag ;
+	m_TimeTagMap[pTimeTag] = pWME ;
 }
 
+void KernelSML::RemoveTimeTag(char const* pTimeTag)
+{
+	m_TimeTagMap.erase(pTimeTag) ;
+}

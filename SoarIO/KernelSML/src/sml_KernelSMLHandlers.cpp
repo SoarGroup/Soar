@@ -134,6 +134,9 @@ bool KernelSML::HandleLoadProductions(gSKI::IAgent* pAgent, char const* pCommand
 {
 	unused(pCommandName) ; unused(pResponse) ;
 
+	if (!pAgent)
+		return false ;
+
 	// Get the parameters
 	char const* pFilename = pIncoming->GetArgValue(sml_Names::kParamFilename) ;
 
@@ -151,6 +154,9 @@ bool KernelSML::HandleLoadProductions(gSKI::IAgent* pAgent, char const* pCommand
 bool KernelSML::HandleGetInputLink(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
 	unused(pCommandName) ; unused(pConnection) ; unused(pIncoming) ;
+
+	if (!pAgent)
+		return false ;
 
 	// We want the input link's id
 	// Start with the root object for the input link
@@ -203,12 +209,35 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 
 	IWme* pWME = NULL ;
 
-	// Then add a wme of the appropriate type
 	if (IsStringEqual(sml_Names::kTypeString, pType))
 	{
+		// Add a WME with a string value
 		pWME = pInputWM->AddWmeString(pParentObject, pAttribute, pValue, pError) ;
-	} else
+	}
+	else if (IsStringEqual(sml_Names::kTypeID, pType))
 	{
+		// Add a WME with an identifier value
+		pWME = pInputWM->AddWmeNewObject(pParentObject, pAttribute, pError) ;
+		
+		if (pWME)
+		{
+			// We need to record the id that the kernel assigned to this object and match it against the id the
+			// client is using, so that in future we can map the client's id to the kernel's.
+			char const* pKernelID = pWME->GetValue()->GetString() ;
+			RecordIDMapping(pValue, pKernelID) ;
+		}
+	}
+	else if (IsStringEqual(sml_Names::kTypeInt, pType))
+	{
+		// Add a WME with an int value
+		int value = atoi(pValue) ;
+		pWME = pInputWM->AddWmeInt(pParentObject, pAttribute, value, pError) ;
+	}
+	else if (IsStringEqual(sml_Names::kTypeDouble, pType))
+	{
+		// Add a WME with a float value
+		double value = atof(pValue) ;
+		pWME = pInputWM->AddWmeDouble(pParentObject, pAttribute, value, pError) ;
 	}
 
 	if (!pWME)
@@ -217,13 +246,50 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 		return false ;
 	}
 
-	// We need to record the time tag so that we can refer to this object in the future
-	// by the client's time tag.
-	long tag = pWME->GetTimeTag(pError) ;
-	RecordTimeTag(pTimeTag, tag) ;
+	// Well here's a surprise.  The kernel doesn't support a direct lookup from timeTag to wme.
+	// So we need to maintain our own map out here so we can find the WME's quickly for removal.
+	// So where we had planned to map from client time tag to kernel time tag, we'll instead
+	// map from client time tag to IWme*.
+	// That means we need to be careful to delete the IWme* objects later.
+	RecordTimeTag(pTimeTag, pWME) ;
 
-	pWME->Release() ;
+	// We'll release this when the table of time tags is eventually destroyed or
+	// when the wme is deleted.
+//	pWME->Release() ;
+
 	pParentObject->Release() ;
+
+	return true ;
+}
+
+bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI::Error* pError)
+{
+	IWorkingMemory* pInputWM = pAgent->GetInputLink()->GetInputLinkMemory(pError) ;
+
+	// Get the wme that matches this time tag
+	IWme* pWME = ConvertTimeTag(pTimeTag) ;
+
+	// Failed to find the wme--that shouldn't happen.
+	if (!pWME)
+		return false ;
+
+	// Remove the object from the time tag table
+	RemoveTimeTag(pTimeTag) ;
+
+	// If this is an identifier, need to remove it from the ID mapping table too.
+	if (pWME->GetValue()->GetType() == gSKI_OBJECT)
+	{
+		// BUGBUG: I think we need a reverse ID mapping table, to get back
+		// from the kernel id to the client id, so we can do cleanup.
+		// Otherwise, I don't see how to do the cleanup.
+	}
+
+	// Remove the wme from working memory
+	// BUGBUG? Do we need to be in the input phase when this happens?
+	pInputWM->RemoveWme(pWME, pError) ;
+
+	// I'm not sure if we release pWME 
+	pWME->Release() ;
 
 	return true ;
 }
@@ -231,7 +297,7 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 // Add or remove a list of wmes we've been sent
 bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
-	unused(pCommandName) ;
+	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ;
 
 	if (!pAgent)
 		return false ;
@@ -243,6 +309,8 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 
 	ElementXML wmeXML(NULL) ;
 	ElementXML* pWmeXML = &wmeXML ;
+
+	bool ok = true ;
 
 	for (int i = 0 ; i < nChildren ; i++)
 	{
@@ -259,6 +327,7 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 			continue ;
 
 		bool add = IsStringEqual(pAction, sml_Names::kValueAdd) ;
+		bool remove = IsStringEqual(pAction, sml_Names::kValueRemove) ;
 
 		if (add)
 		{
@@ -281,11 +350,19 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 			ConvertID(pID, &id) ;
 
 			// Add the wme
-			AddInputWME(pAgent, pID, pAttribute, pValue, pType, pTimeTag, pError) ;
+			ok = AddInputWME(pAgent, id.c_str(), pAttribute, pValue, pType, pTimeTag, pError) && ok ;
+		}
+		else if (remove)
+		{
+			char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// May be (will be?) a client side time tag (e.g. -3 not +3)
+
+			// Remove the wme
+			ok = RemoveInputWME(pAgent, pTimeTag, pError) && ok ;
 		}
 	}
 
-	return true ;
+	// Returns false if any of the adds/removes fails
+	return ok ;
 }
 
 bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)

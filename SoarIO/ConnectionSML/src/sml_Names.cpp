@@ -132,6 +132,7 @@ char const* sml_Names::kgSKI_IWorkingMemory_AddWmeString	= "gski::iworkingmemory
 char const* sml_Names::kgSKI_IWorkingMemory_AddWmeInt		= "gski::iworkingmemory::addwmeint" ;
 char const* sml_Names::kgSKI_IWorkingMemory_RemoveObject	= "gski::iworkingmemory::removeobject" ;
 char const* sml_Names::kgSKI_IWorkingMemory_GetAgent		= "gski::iworkingmemory::getagent" ;
+char const* sml_Names::kgSKI_IWorkingMemory_AddWmeObjectLink= "gski::iworkingmemory::addwmeobjectlink" ;
 char const* sml_Names::kgSKI_IAgent_RunInClientThread		= "gski::iagent::runinclientthread" ;
 char const* sml_Names::kgSKI_IWMObject_GetWMEs				= "gski::iwmobject::getwmes" ;
 char const* sml_Names::kgSKI_IInputLink_AddInputProducer	= "gski::iinputlink::addinputproducer" ;

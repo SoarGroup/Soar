@@ -541,6 +541,28 @@ bool KernelSMLgSKI::IWorkingMemory_AddWmeInt(void* pThis, char const* pCommandNa
 	return ReturnResult(pConnection, pResponse, pResult, kIWme, kShouldBeReleased) ;
 }
 
+bool KernelSMLgSKI::IWorkingMemory_AddWmeObjectLink(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError)
+{
+	unused(pCommandName) ;
+
+	// Get the parameters
+	int arg = 1 ;
+	IWMObject* pWMobject = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamWmeObject, arg++), kIWMObject) ;
+	char const* pAttr = pIncoming->GetArgValue(sml_Names::kParamAttribute, arg++) ;
+	IWMObject* pVal = (IWMObject*)LookupObject(pIncoming->GetArgValue(sml_Names::kParamValue, arg++), kIWMObject) ;
+
+	if (!pWMobject || !pAttr || !pVal)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName) ;
+	}
+
+	// Make the call
+	IWme* pResult = ((IWorkingMemory*)pThis)->AddWmeObjectLink(pWMobject, pAttr, pVal, pError) ;
+
+	// Return the pointer as an id to the caller
+	return ReturnResult(pConnection, pResponse, pResult, kIWme, kShouldBeReleased) ;
+}
+
 
 bool KernelSMLgSKI::IWorkingMemory_AddWmeDouble(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError)
 {
@@ -557,7 +579,7 @@ bool KernelSMLgSKI::IWorkingMemory_AddWmeDouble(void* pThis, char const* pComman
 		return InvalidArg(pConnection, pResponse, pCommandName) ;
 	}
 
-	float val = atof(pVal) ;
+	double val = atof(pVal) ;
 
 	// Make the call
 	IWme* pResult = ((IWorkingMemory*)pThis)->AddWmeDouble(pWMobject, pAttr, val, pError) ;
@@ -924,7 +946,9 @@ bool KernelSMLgSKI::CreateKernelFactory(void* pThis, char const* pCommandName, C
 void KernelSMLgSKI::BuildCommandMap()
 {
 	m_CommandMap[sml_Names::kgSKI_IAgent_RunInClientThread]	= KernelSMLgSKI::IAgent_RunInClientThread ;
-	m_CommandMap[sml_Names::kgSKI_IWMObject_GetWMEs]		= KernelSMLgSKI::IWMObject_GetWMEs ;
+
+	m_CommandMap[sml_Names::kgSKI_IWMObject_GetWMEs]			= KernelSMLgSKI::IWMObject_GetWMEs ;
+
 	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_IsValid]= KernelSMLgSKI::IIterator_Pointer_IsValid ;
 	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_GetVal] = KernelSMLgSKI::IIterator_Pointer_GetVal ;
 	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_Next]	= KernelSMLgSKI::IIterator_Pointer_Next ;
@@ -935,6 +959,7 @@ void KernelSMLgSKI::BuildCommandMap()
 	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeInt]		= KernelSMLgSKI::IWorkingMemory_AddWmeInt ;
 	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_RemoveObject]	= KernelSMLgSKI::IWorkingMemory_RemoveObject ;
 	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_GetAgent]		= KernelSMLgSKI::IWorkingMemory_GetAgent ;
+	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeObjectLink]	= KernelSMLgSKI::IWorkingMemory_AddWmeObjectLink ;
 
 	m_CommandMap[sml_Names::kgSKI_ISymbol_GetObject]	 = KernelSMLgSKI::ISymbol_GetObject ;
 	m_CommandMap[sml_Names::kgSKI_ISymbol_GetString]	 = KernelSMLgSKI::ISymbol_GetString ;
@@ -955,7 +980,7 @@ void KernelSMLgSKI::BuildCommandMap()
 	m_CommandMap[sml_Names::kgSKI_IKernelFactory_DestroyKernel] = KernelSMLgSKI::IKernelFactory_DestroyKernel ;
 	m_CommandMap[sml_Names::kgSKI_IRelease_Release]				= KernelSMLgSKI::IRelease_Release ;
 
-	m_CommandMap[sml_Names::kgSKI_IAgent_GetOutputLink]	= KernelSMLgSKI::IAgent_GetOutputLink ;
+	m_CommandMap[sml_Names::kgSKI_IAgent_GetOutputLink]			  = KernelSMLgSKI::IAgent_GetOutputLink ;
 	m_CommandMap[sml_Names::kgSKI_IOutputLink_AddOutputProcessor] = KernelSMLgSKI::IOutputLink_AddOutputProcessor ;
 	m_CommandMap[sml_Names::kgSKI_IOutputLink_GetOutputLinkMemory]= KernelSMLgSKI::IOutputLink_GetOutputLinkMemory ;
 	m_CommandMap[sml_Names::kgSKI_IOutputLink_SetAutomaticUpdate] = KernelSMLgSKI::IOutputLink_SetAutomaticUpdate ;

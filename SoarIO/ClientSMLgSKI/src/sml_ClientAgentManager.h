@@ -18,9 +18,8 @@
 #include "sml_ClientIAgentManager.h"
 #include "sml_IdMap.h"
 
-#include "IgSKI_Iterator.h"
-#include "gSKI_Structures.h"
-#include "gSKI_Enumerations.h"
+#include "gSKI_ClientStructures.h"
+#include "gSKI_ClientEnumerations.h"
 
 namespace sml
 {

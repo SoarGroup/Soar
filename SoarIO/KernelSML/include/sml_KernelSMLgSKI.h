@@ -268,6 +268,7 @@ protected:
 	bool KernelSMLgSKI::IInputLink_AddInputProducer(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
 
 	bool KernelSMLgSKI::IWMObject_GetWMEs(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
+
 	bool KernelSMLgSKI::IWme_GetValue(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
 	bool KernelSMLgSKI::ISymbol_GetObject(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
 	bool KernelSMLgSKI::ISymbol_GetString(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
@@ -283,6 +284,7 @@ protected:
 	bool KernelSMLgSKI::IWorkingMemory_AddWmeDouble(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
 	bool KernelSMLgSKI::IWorkingMemory_RemoveObject(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
 	bool KernelSMLgSKI::IWorkingMemory_GetAgent(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
+	bool KernelSMLgSKI::IWorkingMemory_AddWmeObjectLink(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
 
 	bool KernelSMLgSKI::IAgent_RunInClientThread(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;
 	bool KernelSMLgSKI::IAgent_GetOutputLink(void* pThis, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error *pError) ;

@@ -28,10 +28,10 @@ bool IsStringEqualIgnoreCase(char const* pStr1, char const* pStr2) ;
 
 /*************************************************************
 * @brief Convert int to string.
-*		 Minimum buffer size is 12 (for a 32-bit int).
+*		 Minimum buffer size is 25 (for a 64-bit int).
 *************************************************************/
-const int kMinBufferSize = 12 ;
-char* Int2String(int value, char* buffer, int maxChars) ;
+const int kMinBufferSize = 25 ;
+char* Int2String(long value, char* buffer, int maxChars) ;
 
 /*************************************************************
 * @brief Returns a copy of the string.

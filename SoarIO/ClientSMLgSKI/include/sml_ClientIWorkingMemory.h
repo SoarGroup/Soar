@@ -34,6 +34,8 @@ public:
 
 	virtual void RemoveObject(sml::IWMObject* object, gSKI::Error* err = 0) = 0;
 
+	virtual IWme* AddWmeObjectLink(IWMObject* wmObject, const char* attr, IWMObject* value, gSKI::Error* err = 0) ;
+
 	virtual sml::IAgent* GetAgent(gSKI::Error* err = 0) = 0;
 };
 

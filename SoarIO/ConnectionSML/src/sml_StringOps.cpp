@@ -39,20 +39,19 @@ bool sml::IsStringEqualIgnoreCase(char const* pStr1, char const* pStr2)
 
 /*************************************************************
 * @brief Convert int to string.
-*		 Minimum buffer size is 12 (for a 32-bit int).
 *************************************************************/
-char* sml::Int2String(int value, char* buffer, int maxChars)
+char* sml::Int2String(long value, char* buffer, int maxChars)
 {
-	// A 32-bit value can be 10 digits, plus one for -ve and one for NULL.
+	// A 64-bit value can be 20 digits, plus one for -ve and one for NULL.
 	// Anything less than that is not safe.
-	if (maxChars < 12)
+	if (maxChars < kMinBufferSize)
 	{
 		buffer[0] = '0' ;
 		return buffer ;
 	}
 
 	// The 10 here is the base.
-	return itoa(value, buffer, 10) ;
+	return ltoa(value, buffer, 10) ;
 }
 
 /*************************************************************

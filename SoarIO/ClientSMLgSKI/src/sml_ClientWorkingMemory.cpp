@@ -91,6 +91,24 @@ void WorkingMemory::RemoveObject(sml::IWMObject* wmObject, gSKI::Error* err)
 		sml_Names::kParamWmeObject, wmObject->GetId()) ;
 }
 
+IWme* WorkingMemory::AddWmeObjectLink(IWMObject* wmObject, const char* attr, IWMObject* value, gSKI::Error* err)
+{
+	AnalyzeXML response ;
+
+	IWme* pValue = NULL ;
+
+	if (GetConnection()->SendClassCommand(&response, sml_Names::kgSKI_IWorkingMemory_AddWmeObjectLink, GetId(),
+		sml_Names::kParamWmeObject, wmObject->GetId(),
+		sml_Names::kParamAttribute, attr,
+		sml_Names::kParamValue, value->GetId()))
+	{
+		pValue = new WME(response.GetResultString(), GetClientSML()) ;
+	}
+
+	return pValue ;
+}
+
+
 sml::IAgent* WorkingMemory::GetAgent(gSKI::Error*)
 {
 	if (!m_pAgent)
