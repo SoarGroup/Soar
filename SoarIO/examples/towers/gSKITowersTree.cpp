@@ -613,7 +613,7 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 
 	commLine->DoCommand(agent, "pushd ../examples/towers", pResponse, pError);
 
-	if(!commLine->DoCommand(agent, "source towers-of-hanoi-SGIO_source.soar", pResponse, pError))
+	if(!commLine->DoCommand(agent, "source towers-of-hanoi-tree.soar", pResponse, pError))
 	{
 		cout << "current working directory is: ";
 		commLine->DoCommand(agent, "pwd", pResponse, pError);
