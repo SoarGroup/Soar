@@ -264,15 +264,35 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 	}
 	else if (IsStringEqual(sml_Names::kTypeID, pType))
 	{
-		// Add a WME with an identifier value
-		pWME = pInputWM->AddWmeNewObject(pParentObject, pAttribute, pError) ;
-		
-		if (pWME)
+		// There are two cases here.  We're either adding a new identifier
+		// or we're adding a new wme that has an existing identifier as it's value.
+
+		// Convert the value (itself an identifier) from client to kernel
+		std::string value ;
+		ConvertID(pValue, &value) ;
+
+		// See if we can find an object with this id (if so we're not adding a new identifier)
+		IWMObject* pLinkObject = NULL ;
+		pInputWM->GetObjectById(value.c_str(), &pLinkObject) ;
+
+		if (pLinkObject)
 		{
-			// We need to record the id that the kernel assigned to this object and match it against the id the
-			// client is using, so that in future we can map the client's id to the kernel's.
-			char const* pKernelID = pWME->GetValue()->GetString() ;
-			RecordIDMapping(pValue, pKernelID) ;
+			// Create a new wme with the same value as an existing wme
+			pInputWM->AddWmeObjectLink(pParentObject, pAttribute, pLinkObject, pError) ;
+			pLinkObject->Release() ;
+		}
+		else
+		{
+			// Add a WME with an identifier value
+			pWME = pInputWM->AddWmeNewObject(pParentObject, pAttribute, pError) ;
+			
+			if (pWME)
+			{
+				// We need to record the id that the kernel assigned to this object and match it against the id the
+				// client is using, so that in future we can map the client's id to the kernel's.
+				char const* pKernelID = pWME->GetValue()->GetString() ;
+				RecordIDMapping(pValue, pKernelID) ;
+			}
 		}
 	}
 	else if (IsStringEqual(sml_Names::kTypeInt, pType))
