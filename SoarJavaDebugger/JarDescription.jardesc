@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jardesc>
+    <jar path="E:/ThreePenny/SoarMichigan/Source/SoarDebuggerInJava.jar"/>
+    <options overwrite="true" compress="true" exportErrors="true" exportWarnings="true" saveDescription="true" descriptionLocation="/SoarDebugger/JarDescription.jardesc" useSourceFolders="false" buildIfNeeded="true"/>
+    <manifest manifestVersion="1.0" usesManifest="true" reuseManifest="false" saveManifest="false" generateManifest="true" manifestLocation="" mainClassHandleIdentifier="=SoarDebugger/&lt;debugger{Application.java[Application">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportOutputFolder="false" exportJavaFiles="false">
+        <javaElement handleIdentifier="=SoarDebugger/&lt;general"/>
+        <file path="/SoarDebugger/KernelSML.dll"/>
+        <file path="/SoarDebugger/swt-awt-win32-3062.dll"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;debugger"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;helpers"/>
+        <file path="/SoarDebugger/swt-win32-3062.dll"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;modules"/>
+        <file path="/SoarDebugger/ElementXML.dll"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;doc"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;sml"/>
+        <file path="/SoarDebugger/javaw.exe.manifest"/>
+        <javaElement handleIdentifier="=SoarDebugger/swt"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;menu"/>
+        <file path="/SoarDebugger/Java_sml_ClientInterface.dll"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;dialogs"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;doc.events"/>
+        <javaElement handleIdentifier="=SoarDebugger/&lt;manager"/>
+    </selectedElements>
+</jardesc>

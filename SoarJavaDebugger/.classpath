@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="swt/" kind="src" path=""/>
+	<classpathentry sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
+	<classpathentry kind="lib" path="swt"/>
+	<classpathentry kind="output" path=""/>
+</classpath>
