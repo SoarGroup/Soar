@@ -1865,9 +1865,6 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
     arraylist *al_retrieved;
     tc_number tc;
 
-    //Verify that there is at least one memory to retrieve
-    if (g_memories->size < 1) return NULL;
-    
     //Remove the old retrieved memory
     start_timer(&current_agent(epmem_clearmem_start_time));
     epmem_clear_curr_mem();
@@ -1907,8 +1904,8 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
 
         //Notify the user of failed retrieval
         g_wmetree.assoc_wme = add_input_wme(retrieved,
-                                             make_sym_constant("no-retrieval"),
-                                             make_sym_constant("true"));
+                                            make_sym_constant("no-retrieval"),
+                                            make_sym_constant("true"));
         wme_add_ref(g_wmetree.assoc_wme);
     }
 
