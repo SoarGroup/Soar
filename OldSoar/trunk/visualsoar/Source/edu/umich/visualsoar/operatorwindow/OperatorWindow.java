@@ -1808,6 +1808,8 @@ public class OperatorWindow extends JTree
         File dataMapFile = new File(parent.getPath() + File.separator + projectName + ".dm");
         File elabFolder = new File(parent.getPath() + File.separator + "elaborations");
         File allFolder = new File(parent.getPath() + File.separator + "all");
+        File initFile = new File(parent.getPath() + File.separator
+                                 + "initialize-" + projectName + ".soar"); 
         File tclFile = new File(parent.getPath() + File.separator + "_firstload.soar");
         parent.mkdir();
         
@@ -1823,9 +1825,13 @@ public class OperatorWindow extends JTree
         
         elabFolder.mkdir();
         allFolder.mkdir();
+        
         try 
         {
+            //Root node
             OperatorRootNode root = createOperatorRootNode(projectName,parent.getParent(),parent.getName());
+
+            //Elaborations Folder
             FolderNode elaborationsFolderNode = createFolderNode("elaborations",elabFolder.getName());
             File topStateElabsFile = new File(elabFolder,"top-state.soar");
             File allFile = new File(elabFolder,"_all.soar");
@@ -1833,13 +1839,23 @@ public class OperatorWindow extends JTree
             allFile.createNewFile();
             writeOutTopStateElabs(topStateElabsFile,projectName);
             writeOutAllElabs(allFile);
+
+            //Initialize File
+            initFile.createNewFile();
+            writeOutInitRules(initFile, projectName);
             
+            //TCL file
             tclFile.createNewFile();
+
+            //Construct the tree
             root.add(createFileOperatorNode("_firstload",tclFile.getName()));
             root.add(createFolderNode("all",allFolder.getName()));
             root.add(elaborationsFolderNode);
             elaborationsFolderNode.add(createFileOperatorNode("_all",allFile.getName()));
             elaborationsFolderNode.add(createFileOperatorNode("top-state",topStateElabsFile.getName()));
+            root.add(createSoarOperatorNode("initialize-" + projectName,
+                                            initFile.getName()));
+
             return new DefaultTreeModel(root);
         }
         catch (IOException ioe) 
@@ -2568,14 +2584,8 @@ public class OperatorWindow extends JTree
     private void writeOutTopStateElabs(File fileToWriteTo,String topStateName) throws IOException 
     {
         Writer w = new FileWriter(fileToWriteTo);
-        w.write("sp {elaborate*top-state*name\n");
-        w.write("\t(state <s> ^superstate nil)\n");
-        w.write("-->\n");
-        w.write("\t(<s> ^name " + topStateName + ")\n");
-        w.write("}\n");
-        w.write("\n");
         w.write("sp {elaborate*top-state*top-state\n");
-        w.write("\t(state <s> ^name " + topStateName + ")\n");
+        w.write("\t(state <s> ^superstate nil)\n");
         w.write("-->\n");
         w.write("\t(<s> ^top-state <s>)\n");
         w.write("}\n");
@@ -2604,6 +2614,32 @@ public class OperatorWindow extends JTree
         w.close();
     }
 
+
+    /**
+     * Writes out the default productions in the _all.soar file
+     * @param fileToWriteTo the _all.soar file
+     */
+    private void writeOutInitRules(File fileToWriteTo,String topStateName) throws IOException 
+    {
+        Writer w = new FileWriter(fileToWriteTo);
+        w.write("sp {propose*initialize-" + topStateName + "\n");
+        w.write("   (state <s> ^superstate nil\n");
+        w.write("             -^name)\n");
+        w.write("-->\n");
+        w.write("   (<s> ^operator <o> +)\n");
+        w.write("   (<o> ^name initialize-" + topStateName + ")\n");
+        w.write("}\n");
+        w.write("\n");
+        w.write("sp {apply*initialize-" + topStateName + "\n");
+        w.write("   (state <s> ^operator <op>)\n");
+        w.write("   (<op> ^name initialize-" + topStateName + ")\n");
+        w.write("-->\n");
+        w.write("   (<s> ^name " + topStateName + ")\n");
+        w.write("}\n\n");
+
+        w.close();
+    }
+    
     /**
      * Responsible for keeping track of the backup project files
      */

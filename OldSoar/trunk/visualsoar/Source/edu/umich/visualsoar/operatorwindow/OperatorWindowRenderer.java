@@ -42,14 +42,8 @@ public class OperatorWindowRenderer extends DefaultTreeCellRenderer {
       OperatorNode node = (OperatorNode) value;
 
       if(node instanceof FolderNode) {
-        if(node.toString().equals("all")) {
-          setIcon(TextFolderIcons.getIcon("operator"));
-        }
-        else if(node.toString().equals("elaborations")) {
           setIcon(TextFolderIcons.getIcon("file"));
-        }
       }
-
       else if(node instanceof SoarOperatorNode) {
         SoarOperatorNode soarNode = (SoarOperatorNode) value;
         // Make sure that it is a leaf node
