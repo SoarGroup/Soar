@@ -310,8 +310,6 @@ bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const WatchBitset& opti
 	if (options.none()) {
 		// Print watch settings.
 		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
-		char buf[kMinBufferSize];
-		char buf2[kMinBufferSize];
 		int learning;
 		if (!pSysparams[TRACE_CHUNK_NAMES_SYSPARAM] 
 			&& !pSysparams[TRACE_CHUNKS_SYSPARAM] 
@@ -369,41 +367,42 @@ bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const WatchBitset& opti
 			m_Result << "\n  Indifferent selection:  " << pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off";
 
 		} else {
-			AppendArgTag(Int2String(TRACE_CONTEXT_DECISIONS_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			char buf[kMinBufferSize];
+			AppendArgTag(sml_Names::kParamWatchDecisions, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
-			AppendArgTag(Int2String(TRACE_PHASES_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchPhases, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_PHASES_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
-			AppendArgTag(Int2String(TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchProductionDefault, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
-			AppendArgTag(Int2String(TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchProductionUser, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
-			AppendArgTag(Int2String(TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchProductionChunks, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_FIRINGS_OF_CHUNKS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
-			AppendArgTag(Int2String(TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchProductionJustifications, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
 			// Subtract one here because the kernel constants (e.g. TIMETAG_WME_TRACE) are one plus the number we use
-			AppendArgTag(Int2String(TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeInt, 
-				Int2String(pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]-1, buf2, kMinBufferSize));
+			AppendArgTag(sml_Names::kParamWatchWMEDetail, sml_Names::kTypeInt, 
+				Int2String(pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]-1, buf, kMinBufferSize));
 
-			AppendArgTag(Int2String(TRACE_WM_CHANGES_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchWorkingMemoryChanges, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_WM_CHANGES_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
-			AppendArgTag(Int2String(TRACE_FIRINGS_PREFERENCES_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchPreferences, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
-			AppendArgTag(Int2String(TRACE_CHUNKS_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeInt, 
-				Int2String(learning, buf2, kMinBufferSize));
+			AppendArgTag(sml_Names::kParamWatchLearning, sml_Names::kTypeInt, 
+				Int2String(learning, buf, kMinBufferSize));
 
-			AppendArgTag(Int2String(TRACE_BACKTRACING_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchBacktracing, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_BACKTRACING_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
-			AppendArgTag(Int2String(TRACE_INDIFFERENT_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
+			AppendArgTag(sml_Names::kParamWatchIndifferentSelection, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 

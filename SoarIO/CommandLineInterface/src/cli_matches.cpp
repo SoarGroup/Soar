@@ -66,7 +66,10 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 	// Max one additional argument and it is a production
 	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);		
 
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoMatches(pAgent, MATCHES_PRODUCTION, detail, &argv[m_pGetOpt->GetOptind()]);
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
+		if (mode != MATCHES_ASSERTIONS_RETRACTIONS) return SetError(CLIError::kTooManyArgs);
+		return DoMatches(pAgent, MATCHES_PRODUCTION, detail, &argv[m_pGetOpt->GetOptind()]);
+	}
 
 	return DoMatches(pAgent, mode, detail);
 }

@@ -120,10 +120,10 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const PrintBitset& opti
 	}
 
 	// Cache the flags since it makes function calls huge
-	bool internal = (options.test(PRINT_INTERNAL)) ? true : false;
-	bool filename = (options.test(PRINT_FILENAME)) ? true : false;
-	bool full = (options.test(PRINT_FULL)) ? true : false;
-	bool name = (options.test(PRINT_NAME)) ? true : false;
+	bool internal = options.test(PRINT_INTERNAL);
+	bool filename = options.test(PRINT_FILENAME);
+	bool full = options.test(PRINT_FULL);
+	bool name = options.test(PRINT_NAME);
 
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options.test(PRINT_ALL)) {

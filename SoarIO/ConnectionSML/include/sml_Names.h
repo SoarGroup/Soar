@@ -167,7 +167,19 @@ public:
 	static char const* const kParamStatsMemoryUsageString;
 	static char const* const kParamStatsMemoryUsagePool;
 	static char const* const kParamStatsMemoryUsageStatsOverhead;
-
+	// Parameter names for watch command
+	static char const* const kParamWatchDecisions;
+	static char const* const kParamWatchPhases;
+	static char const* const kParamWatchProductionDefault;
+	static char const* const kParamWatchProductionUser;
+	static char const* const kParamWatchProductionChunks;
+	static char const* const kParamWatchProductionJustifications;
+	static char const* const kParamWatchWMEDetail;
+	static char const* const kParamWatchWorkingMemoryChanges;
+	static char const* const kParamWatchPreferences;
+	static char const* const kParamWatchLearning;
+	static char const* const kParamWatchBacktracing;
+	static char const* const kParamWatchIndifferentSelection;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* const kTrue ;

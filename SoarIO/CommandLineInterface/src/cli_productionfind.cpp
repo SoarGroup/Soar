@@ -33,13 +33,15 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 
 		switch (option) {
 			case 'c':
-				options.set(PRODUCTION_FIND_INCLUDE_CHUNKS);
+				options.set(PRODUCTION_FIND_ONLY_CHUNKS);
+				options.reset(PRODUCTION_FIND_NO_CHUNKS);
 				break;
 			case 'l':
 				options.set(PRODUCTION_FIND_INCLUDE_LHS);
 				break;
-			case 'n':	// BUGBUG: this option seems silly, something is wrong here.
-				options.reset(PRODUCTION_FIND_INCLUDE_CHUNKS);
+			case 'n':
+				options.set(PRODUCTION_FIND_NO_CHUNKS);
+				options.reset(PRODUCTION_FIND_ONLY_CHUNKS);
 				break;
 			case 'r':
 				options.set(PRODUCTION_FIND_INCLUDE_RHS);
@@ -84,8 +86,8 @@ bool CommandLineInterface::DoProductionFind(gSKI::IAgent* pAgent, const Producti
 		options.test(PRODUCTION_FIND_INCLUDE_RHS), 
 		const_cast<char*>(pattern.c_str()), 
 		options.test(PRODUCTION_FIND_SHOWBINDINGS), 
-		options.test(PRODUCTION_FIND_INCLUDE_CHUNKS),   // BUGBUG: what?
-		options.test(PRODUCTION_FIND_INCLUDE_CHUNKS));  // BUGBUG: what?
+		options.test(PRODUCTION_FIND_ONLY_CHUNKS),
+		options.test(PRODUCTION_FIND_NO_CHUNKS));
 	
 	RemoveListenerAndEnableCallbacks(pAgent);
 
