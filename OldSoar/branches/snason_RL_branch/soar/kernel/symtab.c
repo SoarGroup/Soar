@@ -538,6 +538,7 @@ void create_predefined_symbols (void) {
   current_agent(type_symbol) = make_sym_constant ("type");
   current_agent(goal_symbol) = make_sym_constant ("goal");
   current_agent(name_symbol) = make_sym_constant ("name");
+  current_agent(RL_symbol) = make_sym_constant ("RL");
 
   current_agent(ts_context_variable) = make_variable ("<ts>");
   current_agent(to_context_variable) = make_variable ("<to>");

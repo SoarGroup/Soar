@@ -197,6 +197,9 @@ proc my-input-procedure {mode} {
              set horizontal [random 4] 
 	     set vertical [random 4]
 	     set pass_loc [random 4]
+	     #set horizontal 0
+	     #set vertical 3
+	     #set pass_loc 1
 	     set dest_loc [random 4]
   	     set reward 0
         }
@@ -364,9 +367,12 @@ if {[info exists old_output]==1} {
 io -add -input my-input-procedure input-test
 io -add -output my-output-procedure output-link
 
-  set horizontal [random 5] 
-  set vertical [random 5]
-  set pass_loc [random 4]
+set horizontal [random 5] 
+set vertical [random 5]
+set pass_loc [random 4]
+#set horizontal 0
+#set vertical 3
+#set pass_loc 1
   set dest_loc [random 4]
   set reward 0
  

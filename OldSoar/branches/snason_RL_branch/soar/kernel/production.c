@@ -1461,7 +1461,6 @@ Symbol *generate_new_variable (char *prefix) {
 
 extern char *name_of_production_being_reordered;
 
-
 production *make_production (byte type,
                              Symbol *name,
                              condition **lhs_top,
@@ -1528,7 +1527,7 @@ production *make_production (byte type,
 
   return p;
 }
-
+ 
 void deallocate_production (production *prod) {
   if (prod->instantiations) {
     char msg[128];

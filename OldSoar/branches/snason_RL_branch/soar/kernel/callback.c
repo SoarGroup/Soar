@@ -428,17 +428,25 @@ void soar_invoke_first_callback (soar_callback_agent the_agent,
 #endif
 /* REW: end 28.07.96 */
  
+  printf("ver1 %d\n", callback_type); 
 
 
   head = ((agent *)the_agent)->soar_callbacks[callback_type];
 
+  printf("ver2 %d\n", callback_type);
+
   if (head != NULL)
     {
       soar_callback * cb;
+	  printf("ver3 %d\n", callback_type);
 
       cb = (soar_callback *) head->first;
+	  printf("ver4 %d\n", callback_type);
       cb->function(the_agent, cb->data, call_data);
+	  printf("ver5 %d\n", callback_type);
     }
+
+  printf("ver6 %d\n", callback_type);
 
 
 /* REW: begin 28.07.96 */

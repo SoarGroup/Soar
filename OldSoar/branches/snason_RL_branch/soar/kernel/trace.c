@@ -1280,7 +1280,6 @@ void print_object_trace (Symbol *object) {
 void print_stack_trace (Symbol *object, Symbol *state, int slot_type,
                         bool allow_cycle_counts) {
   growable_string gs;
-
   current_agent(tf_printing_tc)  = get_new_tc_number();
   gs = selection_to_trace_string (object, state, slot_type,allow_cycle_counts);
   print_string (text_of_growable_string(gs));

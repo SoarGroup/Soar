@@ -18,15 +18,14 @@ void push_record(RL_record **r, Symbol *level_sym){
 
 	new_record = malloc(sizeof(RL_record));
 	if (new_record != NULL) {
+		new_record->pointer_list = NIL;
+		new_record->num_prod = 0;
+		new_record->previous_Q = 0;
 		new_record->reward = 0;
-	    new_record->previous_Q = 0;
-		new_record->op = NIL;
-		new_record->goal_level = level_sym;
-		symbol_add_ref(new_record->goal_level);
-	    new_record->RL_bottom = NIL;
-		new_record->RL_top = NIL;
-		new_record->RL_nots = NIL;
 		new_record->step = 0;
+	    new_record->op = NIL;
+		new_record->goal_level = level_sym;
+		symbol_add_ref(new_record->goal_level);		
 		new_record->level = level_sym->id.level;
 	 	new_record->next = *r;
 		*r = new_record;
@@ -35,10 +34,23 @@ void push_record(RL_record **r, Symbol *level_sym){
 
 void pop_record(RL_record **r){
 	RL_record *new_record;
+	cons *c;
+	condition *RL_top;
+	not *nots;
 
 	new_record = *r;
-	deallocate_condition_list(new_record->RL_top);
-	deallocate_list_of_nots(new_record->RL_nots);
+    c = new_record->pointer_list;
+	while(c){
+			RL_top = (condition *) c->first;
+			deallocate_condition_list(RL_top);
+			c = c->rest;
+			c = c->rest;
+			nots = (not *) c->first;
+			deallocate_list_of_nots(nots);
+			c = c->rest;
+	}
+
+    free_list(new_record->pointer_list);
 	symbol_remove_ref(new_record->goal_level);
 	if (new_record->op)
 		symbol_remove_ref(new_record->op);
@@ -80,20 +92,22 @@ void add_goal_tests( condition *cond ){
 /* ********** */
 void learn_RL_productions(int level){
 	RL_record *record;
+	condition *RL_top, *RL_bottom;
+	not *nots;
 	Symbol *prod_name;
 	byte prod_type;
 	production *prod;
 	rhs_value Q;
 	byte rete_add_result;
-	not *nots;
-	action *a;
+ 	action *a;
 	slot* s;
+	cons *c;
+	int i;
 	
 	record = current_agent(records);
 	
 	do{
-	    
-	
+
 	if (record->level < level)
 		return;
 
@@ -101,72 +115,91 @@ void learn_RL_productions(int level){
 	
 	if (record->op){
      
+		Q = compute_Q_value(record);
+		// BUG BUG divide up Q value
+		current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
+			// probably there is a better place to put this
+
+		c = record->pointer_list;
+		while(c){
+			
+			
+		
+			RL_top = (condition *) c->first;
+			c = c->rest;
+			RL_bottom = (condition *) c->first;
+			c = c->rest;
+			nots = (not *) c->first;
+			c = c->rest;
+
+		
+			// print_condition_list(s->RL_top, 2, TRUE);
+			add_goal_tests( RL_top );
+			current_agent(variablize_this_chunk) = 1;
+			reset_variable_generator (RL_top, NIL);
+			current_agent(variablization_tc) = get_new_tc_number();
+			variablize_condition_list(RL_top);
+			//		print_with_symbols("\nOp %y ", s->op);
+			//		print("whatever with reference count %d\n", s->op->common.reference_count);
+			variablize_nots_and_insert_into_conditions(nots, RL_top);   
+			//print_with_symbols("\nOp %y ", s->op);
+			//print("before make_simple_action with reference count %d\n", s->op->common.reference_count);
+			a = make_simple_action(record->goal_level, current_agent(operator_symbol), record->op);
+			//	print_with_symbols("\nOp %y ", s->op);
+			//	print("after make_simple_action with reference count %d\n", s->op->common.reference_count);
+	
+			// print_condition_list(record->RL_top, 2, TRUE);
+	
+			
+ 
+	
+			prod_type = RL_PRODUCTION_TYPE;    // temporary, perhaps will have new type one day
+			// build LHS
+			
+			prod_name = generate_new_sym_constant("RL-" , &current_agent(RL_count));
+  
+ 			// build RHS
+	
+	
+			a->preference_type = BINARY_INDIFFERENT_PREFERENCE_TYPE;
+			a->referent = Q;
+	
+			// print_action_list(a, 2, TRUE);
+	
+			prod = make_production (prod_type, prod_name, &RL_top, &RL_bottom, &a, FALSE);
+			// print("\n Printing action to go on prod.");
+			// print_action_list(prod->action_list, 2, TRUE);
+			rete_add_result = add_production_to_rete(prod, RL_top, NULL, TRUE);
+    	
+			if (rete_add_result == DUPLICATE_PRODUCTION){
+				excise_production (prod, FALSE);
+				current_agent(RL_count)--;
+			}
+	
+			deallocate_condition_list(RL_top);
+			// record->RL_top = NULL;
+			// record->RL_bottom = NULL;
+ 			deallocate_list_of_nots(nots);
+		}
+
+ 			symbol_remove_ref(record->op);
+			// symbol_remove_ref(record->goal_level);
+			record->op = NIL;
+			// current_agent(RL_count)++;
+			record->reward = 0.0;
+			record->step = 0;
+			record->num_prod = 0;
+			record->previous_Q = 0;
+			free_list(record->pointer_list);
+			record->pointer_list = NIL;
+			current_agent(making_binary) = FALSE;
+
+
 		// symbol_add_ref(record->op);
 		// symbol_add_ref(record->goal_level);
 //		print_with_symbols("\nOp %y ", s->op);
 //		print("at start learn_RL_productions with reference count %d\n", s->op->common.reference_count);
-	{
-	 tc_number RL_tc;
-	 RL_tc = get_new_tc_number();
-	 check_conds(RL_tc, record);
-     nots = check_nots(RL_tc,record);
-	}
-		
-	// print_condition_list(s->RL_top, 2, TRUE);
-	add_goal_tests( record->RL_top );
-	current_agent(variablize_this_chunk) = 1;
-	reset_variable_generator (record->RL_top, NIL);
-    current_agent(variablization_tc) = get_new_tc_number();
-    variablize_condition_list(record->RL_top);
-//		print_with_symbols("\nOp %y ", s->op);
-//		print("whatever with reference count %d\n", s->op->common.reference_count);
-	variablize_nots_and_insert_into_conditions(nots, record->RL_top);   
-//print_with_symbols("\nOp %y ", s->op);
-//print("before make_simple_action with reference count %d\n", s->op->common.reference_count);
-	a = make_simple_action(record->goal_level, current_agent(operator_symbol), record->op);
-//	print_with_symbols("\nOp %y ", s->op);
-//	print("after make_simple_action with reference count %d\n", s->op->common.reference_count);
-	
-	// print_condition_list(record->RL_top, 2, TRUE);
-	
-	current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
-	// probably there is a better place to put this
- 
-	
-	prod_type = USER_PRODUCTION_TYPE;    // temporary, perhaps will have new type one day
- 
-	// build LHS
-    prod_name = generate_new_sym_constant("RL-" , &current_agent(RL_count));
-  
- 	// build RHS
-	
-	Q = compute_Q_value(record);
-    a->preference_type = BINARY_INDIFFERENT_PREFERENCE_TYPE;
-    a->referent = Q;
-	
-	// print_action_list(a, 2, TRUE);
-	
-	prod = make_production (prod_type, prod_name, &(record->RL_top), &(record->RL_bottom), &a, FALSE);
-	// print("\n Printing action to go on prod.");
-	// print_action_list(prod->action_list, 2, TRUE);
-	rete_add_result = add_production_to_rete(prod, record->RL_top, NULL, TRUE);
-    	
-	if (rete_add_result == DUPLICATE_PRODUCTION){
-		excise_production (prod, FALSE);
-		current_agent(RL_count)--;
-	}
-	deallocate_condition_list(record->RL_top);
-	record->RL_top = NULL;
-	record->RL_bottom = NULL;
- 	deallocate_list_of_nots(nots);
- 	symbol_remove_ref(record->op);
-	// symbol_remove_ref(record->goal_level);
-	record->op = NIL;
-	// current_agent(RL_count)++;
-	record->reward = 0.0;
-	record->step = 0;
-	record->previous_Q = 0;
-	current_agent(making_binary) = FALSE;
+	 
 	}
 
 	if (record->level > level){
@@ -292,6 +325,7 @@ action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym){
 // it puts tc on conditions to be used for nots, and removes duplicate conditions
 // to add - if value is dangling id (ie only matches on RHS), remove condition
 /************/
+/*
 void check_conds(tc_number RL_tc, RL_record *r){
 	condition * next_cond, *temp_cond, *iter_cond;
 
@@ -342,11 +376,12 @@ not *check_nots(tc_number RL_tc, RL_record *r){
 	}
 	return collected_nots;
 }
-
+*/
 /**********/
 void copy_nots(instantiation *inst, not **dest_top){
     not *n, *new_not;
 
+	*dest_top = NIL;
 	for(n = inst->nots; n != NIL ; n=n->next){
       allocate_with_pool (&current_agent(not_pool), &new_not);
       new_not->next = *dest_top;
@@ -527,15 +562,20 @@ void build_op_tree(slot *op, condition **c){
 	}
 }*/
 
-/*******/
+/*******************************
+SAN - explanation of this unintuitive function:
+If an operator has been selected, go through binary indifferent preferences that fired for it
+For each preference, if it is a user_production_type (ie, prototype), copy the components of its instantiation
+The list record->pointer_list is (conditions_top, conditions_bottom, nots, conditions_top, conditions_bottom, etc.)*/
 void record_for_RL(){
 	wme *chosenOp;
 	slot *s;
 	instantiation *ist;
 	preference *pref;
+	condition *RL_top, *RL_bottom;
+	not *nots;
 	RL_record *record;
- 	int i = 0;
-		
+ 
   // SAN - catch operator ID here
   s = current_agent(bottom_goal)->id.operator_slot;
   chosenOp = s->wmes;
@@ -544,7 +584,32 @@ void record_for_RL(){
 	  // print_wme(chosenOp);
 
 	  record = current_agent(records);
-	  ist = chosenOp->preference->inst;
+   	  record->op = chosenOp->value;
+	  symbol_add_ref(record->op);       // SAN ??
+	  record->previous_Q = current_agent(next_Q);
+
+	  for (pref = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
+		  if (record->op == pref->value){
+		  ist = pref->inst;
+			  if (ist->prod->type == USER_PRODUCTION_TYPE){
+				  record->num_prod++;
+				copy_condition_list(ist->top_of_instantiated_conditions, &RL_top, &RL_bottom);
+				copy_nots(ist, &nots);
+				push(nots, record->pointer_list);
+				push(RL_bottom, record->pointer_list);
+				push(RL_top, record->pointer_list);
+			}
+		}
+	}
+	}
+}
+
+
+
+
+
+
+	 
 	  
 	  //print_with_symbols("\n Chosen op - %y \n" , chosenOp);
    
@@ -564,30 +629,21 @@ void record_for_RL(){
 	// print_condition_list(current_agent(RL_top), 2, TRUE);	
 	// print("\n Printing operator conditions. ");
 	// print_condition_list(chosenOp->preference->inst->top_of_instantiated_conditions, 2, TRUE);
-	record->op = chosenOp->value;
-	symbol_add_ref(record->op);       // SAN ??
+
+
 //	print_with_symbols("\nOp %y ", record->op);
 //	print("with next_Q %f\n", record->previous_Q);
 //print("after setting in slot with reference count %d\n", s->op->common.reference_count);
 	// symbol_add_ref(chosenOp->value);             // ref covered by conditions?
-	
-	record->previous_Q = current_agent(next_Q);
+
 	
 	  
-    RL_copy_condition_list (ist->top_of_instantiated_conditions, &(record->RL_top),
-                                 &(record->RL_bottom)); // collect conditions in operator proposal
+    /* RL_copy_condition_list (ist->top_of_instantiated_conditions, &(record->RL_top),
+                                 &(record->RL_bottom)); // collect conditions in operator proposal */
 
-    copy_nots(ist, &(record->RL_nots));
+ 
 
-	for (pref = ist->preferences_generated ; pref != NIL; pref = pref->inst_next){
-		// print("Type is %d\n", pref->type);
-		if (pref->type == ACCEPTABLE_PREFERENCE_TYPE){
-			record->RL_bottom->next = make_simple_condition(pref->id, pref->attr, pref->value);
-			// print_condition(s->RL_bottom->next);
-			record->RL_bottom->next->prev = record->RL_bottom;
-			record->RL_bottom = record->RL_bottom->next;
-		}
-	}
+ 
 
 	
   	// add condition testing for acceptable operator on state, to top of condition list
@@ -634,8 +690,7 @@ void record_for_RL(){
     // call add_wme_to_wm to add these wmes in the second "do_buffered_wm_etc." call
   // SAN - end
 
-  }
-}
+ 
 /*
 void collect_RL_conditions(){
 	// after firing new productions in do_preference_phase

@@ -1127,9 +1127,8 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
       askd.selection = result_candidates;
       
       if ( soar_exists_callback( soar_agent, ASK_CALLBACK ) ) {
-	soar_invoke_first_callback( soar_agent, ASK_CALLBACK, 
+		  soar_invoke_first_callback( soar_agent, ASK_CALLBACK, 
 				    (soar_call_data) &askd );
-	
 	break;  /* ** prevent fallthrough ** */
       }
       else {
@@ -2448,8 +2447,7 @@ bool decide_context_slot (Symbol *goal, slot *s) {
   if (attribute_of_impasse==current_agent(state_symbol)) 
     remove_wmes_for_context_slot (goal->id.operator_slot);
 
-
-  /* --- if we have a winner, remove any existing impasse and install the
+   /* --- if we have a winner, remove any existing impasse and install the
      new value for the current slot --- */
   if (impasse_type==NONE_IMPASSE_TYPE) {
 	  if (current_agent(sysparams)[RL_ON_SYSPARAM]){
@@ -2464,14 +2462,14 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 						  current_agent(next_Q) += temp->referent->fc.value;
 				}
 			}
- 
+       
 	 	  learn_RL_productions(goal->id.level);
 		 
 	  }
 	/* end SAN */
     for(temp = candidates; temp; temp = temp->next_candidate)
       preference_add_ref(temp);
-    if (goal->id.lower_goal)
+	if (goal->id.lower_goal)
       remove_existing_context_and_descendents (goal->id.lower_goal);
     w = make_wme (s->id, s->attr, candidates->value, FALSE);
 	insert_at_head_of_dll (s->wmes, w, next, prev);
@@ -2510,7 +2508,7 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 #endif    
     current_agent(waitsnc_detect)                     = TRUE; 
 	if ( soar_exists_callback( soar_agent, WAIT_CALLBACK ) ) {
-	  soar_invoke_first_callback( soar_agent, WAIT_CALLBACK, NULL );
+		soar_invoke_first_callback( soar_agent, WAIT_CALLBACK, NULL );
 	}
 
   } else {
@@ -2671,6 +2669,7 @@ void do_decision_phase (void) {
 #endif
 
   decide_context_slots ();
+
   do_buffered_wm_and_ownership_changes();
 
   /* SAN - collect conditions for current operator */
@@ -2704,6 +2703,9 @@ void clear_goal_stack (void) {
   
 void print_lowest_slot_in_context_stack (void) {
 
+	 
+	
+
   /* REW: begin 10.24.97 */
   /* This doesn't work yet so for now just print the last selection */
   if (current_agent(operand2_mode) && 
@@ -2732,7 +2734,7 @@ void print_lowest_slot_in_context_stack (void) {
   */
 
 	else {
-
+   
     /* REW: begin 09.15.96 */
 #ifndef SOAR_8_ONLY
 	  if (current_agent(operand2_mode) == FALSE) 
@@ -3400,12 +3402,12 @@ preference *ProbSelect(slot *s, preference *candidates)
 {
    preference*    cand=0; 
    preference*    pref=0; 
-   float        total_probability=0;
+   double        total_probability=0;
    preference*    selectedCandidate=0;
    unsigned int   numCandidates = 0;
    unsigned int   currentCandidate=0;
-   float         selectedProbability=0;
-   float         currentSumOfValues=0;
+   double         selectedProbability=0;
+   double         currentSumOfValues=0;
    static int     initialized_rand = 0;
    unsigned long        rn=0;
    char           mesg[256];
@@ -3498,8 +3500,8 @@ preference *ProbSelect(slot *s, preference *candidates)
 	
      print_with_symbols("\n Candidate %y ", cand->value);
      /* Sum the total probabilities */
-     total_probability += exp(cand->sum_of_probability / current_agent(Temp));
-     print(" Q-value %f weighted value %f", cand->sum_of_probability, exp(cand->sum_of_probability / current_agent(Temp)));
+     total_probability += exp((double)cand->sum_of_probability / current_agent(Temp));
+     print(" Q-value %f weighted value %f", cand->sum_of_probability, exp((double)cand->sum_of_probability / current_agent(Temp)));
 
 	 /* SAN - record max Q-value for Q-value update */
 	 /* try Sarsa
@@ -3521,7 +3523,7 @@ preference *ProbSelect(slot *s, preference *candidates)
 
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
      
-     currentSumOfValues += exp(cand->sum_of_probability / current_agent(Temp));
+     currentSumOfValues += exp((double) cand->sum_of_probability / current_agent(Temp));
      // print("   Sum... %f", currentSumOfValues ); 
 
      if (selectedProbability <= currentSumOfValues) {

@@ -145,7 +145,7 @@ long init_lapse_duration( TIMER_VALUE *tv ) {
 
 
 void init_soar_agent(void) {
-
+ 
   /* --- initialize everything --- */
   init_memory_utilities();
   init_symbol_tables();

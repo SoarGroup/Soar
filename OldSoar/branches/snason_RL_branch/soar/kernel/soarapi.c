@@ -2329,6 +2329,13 @@ int soar_Print (int argc, const char *argv[], soarResult *res)
 					    internal, print_filename,
 					    full_prod );
 	}
+	  else if (string_match_up_to("-RL", argv[next_arg],2))
+	  {
+		  output_arg = TRUE;
+		  soar_ecPrintAllProductionsOfType( RL_PRODUCTION_TYPE,
+			  internal, print_filename,
+			  full_prod );
+	  }
       else if (string_match_up_to("-",argv[next_arg],1))
 	{
 	  setSoarResultResult( res, 
@@ -2885,10 +2892,10 @@ int soar_Log ( int argc, const char *argv[], soarResult *res)
       if (argc == 3)
 	{
 
-	  soar_invoke_first_callback( soar_agent,
+		  soar_invoke_first_callback( soar_agent,
 				      LOG_CALLBACK,
 				      argv[2] );
-	}
+	  }
       else if (argc < 3)
 	{
 	  setSoarResultResult( res,  too_few );
@@ -3241,6 +3248,11 @@ int soar_Watch (int argc, char *argv[], soarResult *res)
 		  i++;
 		  set_watch_prod_group_setting( 4, argv[i], argv[++i], res);
 		}
+		else if ((string_match("-RL", argv[i+1])) ||
+			(string_match("-r", argv[i+1]))) {
+			i++;
+			set_watch_prod_group_setting( 5, argv[i], argv[++i], res);
+		}
 
 		else /* something else follows setting, so it's inclusive */
 		  {
@@ -3435,6 +3447,11 @@ watch wmes syntax:\n\
 	  {
 	    set_watch_prod_group_setting( 4, argv[i], argv[++i], res);
 	  }
+	else if ((string_match("-RL", argv[i])) ||
+		(string_match("-r",argv[i])))
+	{
+		set_watch_prod_group_setting( 5, argv[i], argv[++i], res);
+	}
 	else if (string_match_up_to("-nowmes", argv[i],4))
 	  {
 	    set_sysparam(TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,

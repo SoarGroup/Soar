@@ -98,7 +98,6 @@ int soar_ecOpenLog( const char *filename, char *mode ) {
   soar_invoke_first_callback( soar_agent,
 			      LOG_CALLBACK,
 			      "**** log opened ****\n");
-  
   return 0;
 
 }
@@ -116,10 +115,10 @@ int soar_ecOpenLog( const char *filename, char *mode ) {
 int soar_ecCloseLog() {
 
   if (soar_exists_callback( soar_agent, LOG_CALLBACK )) {
-    soar_invoke_first_callback( soar_agent,
+	  soar_invoke_first_callback( soar_agent,
 				LOG_CALLBACK,
 				"\n**** log closed ****\n");
-    soar_cPopCallback( soar_agent,
+	  soar_cPopCallback( soar_agent,
 		       LOG_CALLBACK);
     
     return 0;
@@ -851,7 +850,8 @@ void soar_ecPrintSystemStatistics( void ) {
   print ("%lu productions (%lu default, %lu user, %lu chunks)\n",
 	 current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE] +
 	 current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE] +
-	 current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE],
+	 current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE] +
+	 current_agent(num_productions_of_type)[RL_PRODUCTION_TYPE],
 	 current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE],
 	 current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE],
 	 current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
@@ -1677,6 +1677,7 @@ int soar_ecWatchLevel( int level ) {
   set_sysparam(TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM,     FALSE);
   set_sysparam(TRACE_FIRINGS_OF_CHUNKS_SYSPARAM,         FALSE);
   set_sysparam(TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, FALSE);
+  set_sysparam(TRACE_FIRINGS_OF_RL_SYSPARAM,             FALSE);
   set_sysparam(TRACE_WM_CHANGES_SYSPARAM,                FALSE);
   set_sysparam(TRACE_FIRINGS_PREFERENCES_SYSPARAM,       FALSE);
   set_sysparam(TRACE_OPERAND2_REMOVALS_SYSPARAM,         FALSE);
@@ -1706,6 +1707,7 @@ int soar_ecWatchLevel( int level ) {
     set_sysparam(TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM,     TRUE);
     set_sysparam(TRACE_FIRINGS_OF_CHUNKS_SYSPARAM,         TRUE);
     set_sysparam(TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, TRUE);
+	set_sysparam(TRACE_FIRINGS_OF_RL_SYSPARAM,              TRUE);
 
   case 2:
 

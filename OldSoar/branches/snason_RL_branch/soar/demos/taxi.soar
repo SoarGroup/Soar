@@ -27,16 +27,13 @@ sp {elaborate*arrived
  -->
    (<s> ^arrived no)}
   
-#   ---------  top state -------------- #
+#   ---------  top state - proposals -------------- #
 
 sp {propose*get
   (state <s> ^name taxi
              ^io.input-link <il>
              -^passenger yes)
-  (<il> ^pass_loc <p>
-        ^dest_loc <d>
-        ^horizontal <h>
-        ^vertical <v>)
+  (<il> ^pass_loc <p>)
   -->
   (<s> ^operator <o> + =)
   (<o> ^name get
@@ -46,15 +43,11 @@ sp {propose*get
    (state <s> ^name taxi
               ^io.input-link <il>
               ^passenger yes)
-   (<il> ^dest_loc <p>
-         ^horizontal <h>
-         ^vertical <v>)
+   (<il> ^dest_loc <p>)
   -->
    (<s> ^operator <o> + =)
    (<o> ^name put
         ^location <p>)}
-
- 
         
  sp {propose*halt
      (state <s> ^name taxi
@@ -63,6 +56,20 @@ sp {propose*get
  -->
      (<s> ^operator <o> + >)
      (<o> ^name halt)}
+     
+# ---------------- top level - RL ---------------------- #
+
+sp {RL*top
+  (state <s> ^name taxi
+  	     ^io.input-link <il>
+             ^operator <o> +)
+  (<il> ^pass_loc <p>
+        ^dest_loc <d>
+        ^horizontal <h>
+        ^vertical <v>)
+  (<o> ^name <n>)
+-->
+  (<s> ^operator <o> = 0)}
 
 
 # ---------------- top level - applications ------------ #
@@ -102,6 +109,21 @@ sp {propose*navigate
    (<s> ^operator <o1> + =)
    (<o1> ^name navigate
         ^location <p>)}
+
+# -------------- second level - RL ---------------------- #
+
+
+sp {RL*mid
+  (state <s> ^superstate.operator.name { <name> << put get >> }
+  	     ^io.input-link <il>
+             ^operator <o> +)
+  (<il> ^pass_loc <p>
+        ^dest_loc <d>
+        ^horizontal <h>
+        ^vertical <v>)
+  (<o> ^name <n>)
+-->
+  (<s> ^operator <o> = 0)}
         
 # -------------- second level - applications ------------ #
    
@@ -131,9 +153,8 @@ sp {apply*putdown
 sp {propose*move*north
    (state <s> ^superstate.operator.name navigate
               ^io.input-link <il>)
-   (<il> ^dest_loc <d>
-         ^horizontal <h>
-         ^vertical <v>)
+   (<il> ^horizontal <h>
+         ^vertical <v>)   
  -->
    (<s> ^operator <o> + =)
    (<o> ^name move
@@ -143,9 +164,9 @@ sp {propose*move*north
 sp {propose*move*south
    (state <s> ^superstate.operator.name navigate
               ^io.input-link <il>)
-   (<il> ^dest_loc <d>
-         ^horizontal <h>
+   (<il> ^horizontal <h>
          ^vertical <v>)
+   
  -->
    (<s> ^operator <o> + =)
    (<o> ^name move
@@ -154,8 +175,7 @@ sp {propose*move*south
  sp {propose*move*east
     (state <s> ^superstate.operator.name navigate
                ^io.input-link <il>)
-    (<il> ^dest_loc <d>
-          ^horizontal <h>
+    (<il> ^horizontal <h>
           ^vertical <v>)
   -->
     (<s> ^operator <o> + =)
@@ -165,13 +185,27 @@ sp {propose*move*south
   sp {propose*move*west
      (state <s> ^superstate.operator.name navigate
                 ^io.input-link <il>)
-     (<il> ^dest_loc <d>
-           ^horizontal <h>
+     (<il> ^horizontal <h>
            ^vertical <v>)
    -->
      (<s> ^operator <o> + =)
      (<o> ^name move
         ^direction west)}
+   
+ # ------------- third level - RL -------------------------- #
+ 
+ sp {RL*bottom
+    (state <s> ^superstate.operator.name navigate
+    	       ^operator <o> +
+               ^io.input-link <il>)
+    (<il> ^pass_loc <p>
+          ^dest_loc <d>
+          ^horizontal <h>
+          ^vertical <v>)
+    (<o> ^name <n>
+         ^direction <dir>)
+ -->
+    (<s> ^operator <o> = 0)}
    
  # ------------- third level - applications ---------------- #
   sp {apply*move

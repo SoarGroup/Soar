@@ -339,7 +339,7 @@ void soar_cCreateAgent (char * agent_name) {
 				  (soar_call_data)agent_name);
   }
   else {
-    soar_default_create_agent_procedure( agent_name );
+     soar_default_create_agent_procedure( agent_name );
   }
 
 }
@@ -631,10 +631,10 @@ void soar_cQuit ( void )
 			      LOG_CALLBACK))
   {
     
-    soar_invoke_first_callback( soar_agent,
+	  soar_invoke_first_callback( soar_agent,
 				LOG_CALLBACK,
 				"\n**** quit cmd issued ****\n");
-    soar_cPopCallback(soar_agent, LOG_CALLBACK);
+	  soar_cPopCallback(soar_agent, LOG_CALLBACK);
   }
 #ifdef USE_AGENT_DBG_FILE
   fclose( current_agent(dbgFile) );
@@ -1252,6 +1252,7 @@ void soar_cExciseAllProductions (void) {
   soar_cExciseAllProductionsOfType( CHUNK_PRODUCTION_TYPE );
   soar_cExciseAllProductionsOfType( JUSTIFICATION_PRODUCTION_TYPE );
   soar_cExciseAllProductionsOfType( USER_PRODUCTION_TYPE );
+  soar_cExciseAllProductionsOfType( RL_PRODUCTION_TYPE );
   current_agent(RL_count) = 0;       // SAN
   soar_cReInitSoar();
 }
@@ -1272,6 +1273,7 @@ void soar_cExciseAllTaskProductions (void) {
   soar_cExciseAllProductionsOfType( CHUNK_PRODUCTION_TYPE );
   soar_cExciseAllProductionsOfType( JUSTIFICATION_PRODUCTION_TYPE );
   soar_cExciseAllProductionsOfType( USER_PRODUCTION_TYPE );
+  soar_cExciseAllProductionsOfType( RL_PRODUCTION_TYPE );  // SAN
   current_agent(RL_count) = 0;     // SAN
   soar_cReInitSoar();
 }
@@ -2345,9 +2347,9 @@ bool soar_cStepAgentIterator( soar_apiAgentIterator *ai ) {
 
 psoar_agent soar_cGetAgentByName( char *name ) {
   cons *c;
-
+  
   for( c = all_soar_agents; c != NIL; c = c->rest ) {
-    if ( !strcmp( ((agent *)c->first)->name, name ) ) {
+  	  if ( !strcmp( ((agent *)c->first)->name, name ) ) {
       return (psoar_agent)c->first;
     }
   }

@@ -49,7 +49,7 @@ Soar_Print (the_agent, str)
      agent * the_agent;
      const char * str;
 {
-  soar_invoke_first_callback(the_agent, PRINT_CALLBACK, (ClientData) str);
+	soar_invoke_first_callback(the_agent, PRINT_CALLBACK, (ClientData) str);
 }
 
 void
@@ -57,7 +57,7 @@ Soar_Log (the_agent, str)
      agent * the_agent;
      const char * str;
 {
-  soar_invoke_first_callback(the_agent, LOG_CALLBACK, (ClientData) str);
+	soar_invoke_first_callback(the_agent, LOG_CALLBACK, (ClientData) str);
 }
 
 void
@@ -120,15 +120,20 @@ Soar_PrintToTclProc (the_agent, data, call_data)
      soar_callback_data data;
      soar_call_data call_data;
 {
+	int length;
+	char * buf;
 	Soar_TextWidgetPrintData * print_data = (Soar_TextWidgetPrintData *) data;
 
-	char buf[1024];
+	length = strlen(print_data->text_widget) + strlen( (char *) call_data) + 10;
+	buf = (char *) malloc(length*sizeof(char));
+	// char buf[1024];
 	/*    printf("args:   %s<>%s\n", print_data->text_widget, (char*) call_data); */
 	sprintf(buf, "%s \"%s\" ", print_data->text_widget, (char*) call_data);
 	/*    printf("here's the buf: >> %s\nendbuf\n",buf);  */
 
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], buf);
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], "update");
+	free(buf);
 }
 
 void

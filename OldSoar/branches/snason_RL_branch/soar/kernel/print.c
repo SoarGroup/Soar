@@ -214,10 +214,9 @@ void print_string (char *s) {
 	 
 	 081699 SW
       */
-
-      soar_invoke_first_callback( soar_agent, LOG_CALLBACK, s );
-      soar_invoke_first_callback( soar_agent, PRINT_CALLBACK, s );
-
+       
+		soar_invoke_first_callback( soar_agent, LOG_CALLBACK, s );
+		soar_invoke_first_callback( soar_agent, PRINT_CALLBACK, s );
 #endif /* __SC__*/
     }
     if (current_agent(logging_to_file)) fputs (s, current_agent(log_file));
@@ -796,6 +795,7 @@ void print_production (production *p, bool internal) {
   case JUSTIFICATION_PRODUCTION_TYPE:
     print_string ("    :justification ;# not reloadable\n");
     break;
+  case RL_PRODUCTION_TYPE: print_string("     :RL\n"); break;
   }
   if (p->declared_support==DECLARED_O_SUPPORT)
     print_string ("    :o-support\n");

@@ -870,12 +870,12 @@ void find_nonzero_RL(list **prods){
 	production *prod;
 	action *a;
 
-	for (prod=current_agent(all_productions_of_type)[USER_PRODUCTION_TYPE]; prod!=NIL; prod=prod->next){
+	for (prod=current_agent(all_productions_of_type)[RL_PRODUCTION_TYPE]; prod!=NIL; prod=prod->next){
 		for (a = prod->action_list; a!=NIL; a=a->next){
-		    if ((a->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE) && 
-				(rhs_value_to_symbol(a->referent)->fc.value != 0)){
+		    if (rhs_value_to_symbol(a->referent)->fc.value != 0){
 				push(prod,(*prods));
-				print_with_symbols("%y\n", prod->name);
+				print_with_symbols("%y ", prod->name);
+				print("%f\n", rhs_value_to_symbol(a->referent)->fc.value);
 			}
 		}
 	}
@@ -947,6 +947,8 @@ void print_current_watch_settings (void)
 	 current_agent(sysparams)[TRACE_FIRINGS_OF_CHUNKS_SYSPARAM] ? "on" : "off");
   print ("    justifications:  %s\n",
 	 current_agent(sysparams)[TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM] ? "on" : "off");
+  print ("    RL:  %s\n",
+	  current_agent(sysparams)[TRACE_FIRINGS_OF_RL_SYSPARAM] ? "on" : "off");
   print ("    WME detail level:  %d\n",
 	 current_agent(sysparams)[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]);
   print ("  Working memory changes:  %s\n",
@@ -1075,6 +1077,7 @@ int set_watch_prod_group_setting (int  prodgroup,
 	set_sysparam (TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, TRUE);
 	set_sysparam (TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, TRUE);
 	set_sysparam (TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, TRUE);
+	set_sysparam (TRACE_FIRINGS_OF_RL_SYSPARAM, TRUE);
 	break;
       case 1:
 	set_sysparam (TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, TRUE);
@@ -1088,6 +1091,9 @@ int set_watch_prod_group_setting (int  prodgroup,
       case 4:
 	set_sysparam (TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, TRUE);
 	break;
+	  case 5:
+		  	set_sysparam (TRACE_FIRINGS_OF_RL_SYSPARAM, TRUE);
+			break;
       }
     }
   else if ( !strcmp("-noprint", arg))
@@ -1098,6 +1104,7 @@ int set_watch_prod_group_setting (int  prodgroup,
 	set_sysparam (TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, FALSE);
 	set_sysparam (TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, FALSE);
 	set_sysparam (TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, FALSE);
+		set_sysparam (TRACE_FIRINGS_OF_RL_SYSPARAM, FALSE);
 	break;
       case 1:
 	set_sysparam (TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, FALSE);
@@ -1111,6 +1118,9 @@ int set_watch_prod_group_setting (int  prodgroup,
       case 4:
 	set_sysparam (TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, FALSE);
 	break;
+	  case 5:
+		  	set_sysparam (TRACE_FIRINGS_OF_RL_SYSPARAM, FALSE);
+			break;
       }
     }
   else if ( !strcmp("-fullprint", arg))
@@ -1668,6 +1678,7 @@ int parse_rete_stats ( int argc, const char * argv[], soarResult *res)
  *                     -user-production-count
  *                     -chunk-count
  *                     -justification-count
+ *                     -RL-count
  *                     -all-productions-count
  *                     -dc-count
  *                     -ec-count
@@ -1751,12 +1762,18 @@ int parse_system_stats (int argc, const char * argv[], soarResult *res)
 	  setSoarResultResult( res,  "%lu", 
 		  current_agent(num_productions_of_type)[JUSTIFICATION_PRODUCTION_TYPE]);
 	}
+	  else if (!strcmp("-RL-count", argv[2]))                                // SAN
+	  {
+		  setSoarResultResult( res, "%lu",
+			  current_agent(num_productions_of_type)[RL_PRODUCTION_TYPE]);
+	  }
       else if (!strcmp("-all-productions-count", argv[2]))
 	{
 	  setSoarResultResult( res, "%lu", 
 		  current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE]
 		  + current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE]
-		  + current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]);
+		  + current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]
+		  + current_agent(num_productions_of_type)[RL_PRODUCTION_TYPE]);        // SAN
 
 	}
       else if (!strcmp("-dc-count", argv[2]))

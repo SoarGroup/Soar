@@ -555,6 +555,7 @@ void soar_default_create_agent_procedure (char * agent_name) {
   this_agent = (agent *) malloc(sizeof(agent));  
   memset(this_agent, 0, sizeof(*this_agent) );
 
+
   curr_agent = soar_agent;
   soar_agent = this_agent;
 
@@ -737,7 +738,9 @@ void soar_default_create_agent_procedure (char * agent_name) {
 
   init_soar_agent();
                                          /* Add agent to global list   */
-                                         /* of all agents.             */
+										/* of all agents.             */
+//  _asm int 3;
+
   push(soar_agent,all_soar_agents);
 
   soar_invoke_global_callbacks( soar_agent, GLB_AGENT_CREATED,
