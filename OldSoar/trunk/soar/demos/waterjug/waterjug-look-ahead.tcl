@@ -125,7 +125,7 @@ global soar_library
 global interp_type
 
 excise -all
-source waterjug.soar
+source waterjug-look-ahead.soar
 
 drawscreen .water
 
@@ -135,7 +135,7 @@ drawscreen .water
 ### OPERATORS
 ###
 
-sp {waterjug*monitor*state*picture 
+sp {waterjug*monitor*state*pic 
     (state <s> ^jug <i> <j>)
     (<i> ^volume 3 ^contents <icon>)
     (<j> ^volume 5 ^contents <jcon>)
@@ -143,7 +143,7 @@ sp {waterjug*monitor*state*picture
     (tcl |picture | <icon> | | <jcon> | state|)
 }
 
-sp {waterjug*monitor*operator-application*empty*picture
+sp {waterjug*monitor*operator-application*empty*pic
     (state <s> ^operator <o>)
     (<o> ^name empty
     	 ^jug <i>)
@@ -158,7 +158,7 @@ sp {waterjug*monitor*operator-application*empty*picture
     (tcl | picture | <xcon> | | <ycon> | dump| <volume>)
 }
 
-sp {waterjug*monitor*operator-application*fill*picture
+sp {waterjug*monitor*operator-application*fill*pic
     (state <s> ^operator <o>)
     (<o> ^name fill 
     	 ^jug <i>)
@@ -171,7 +171,7 @@ sp {waterjug*monitor*operator-application*fill*picture
     (tcl | picture | <xcon> | | <ycon> | fill| <volume>)
 }
 
-sp {waterjug*monitor*operator-application*pour*picture
+sp {waterjug*monitor*operator-application*pour*pic
     (state <s> ^operator <o>)
     (<o> ^name pour 
     	 ^jug <i>
@@ -186,7 +186,7 @@ sp {waterjug*monitor*operator-application*pour*picture
     (tcl | picture | <xcon> | | <ycon> | | <ivol> |pour| <jvol>)
 }
 
-sp {waterjug*monitor*tied-operator*empty*picture
+sp {waterjug*monitor*tied-operator*empty*pic
     (state <s> ^impasse tie 
                ^attribute operator 
                ^item <item>)
@@ -201,7 +201,7 @@ sp {waterjug*monitor*tied-operator*empty*picture
     (tcl | picture | <xcon> | | <ycon> | dump| <volume>)
 }
 
-sp {waterjug*monitor*tied-operator*fill*picture
+sp {waterjug*monitor*tied-operator*fill*pic
     (state <s> ^impasse tie 
                ^attribute operator 
                ^item <item>)
@@ -215,7 +215,7 @@ sp {waterjug*monitor*tied-operator*fill*picture
     (tcl | picture | <xcon> | | <ycon> | fill| <volume>)
 }
 
-sp {waterjug*monitor*tied-operator*pour*picture
+sp {waterjug*monitor*tied-operator*pour*pic
     (state <s> ^impasse tie 
                ^attribute operator 
                ^item <item>)
