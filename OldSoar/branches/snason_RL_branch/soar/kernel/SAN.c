@@ -19,7 +19,8 @@ void push_record(RL_record **r, int level){
 	new_record = malloc(sizeof(RL_record));
 	if (new_record != NULL) {
 		new_record->reward = 0;
-	    new_record->op = NIL;
+	    new_record->previous_Q = 0;
+		new_record->op = NIL;
 	    new_record->RL_bottom = NIL;
 		new_record->RL_top = NIL;
 		new_record->RL_nots = NIL;
@@ -176,17 +177,18 @@ rhs_value compute_Q_value(RL_record* r){
 	float Q;
 
 	
-	print_with_symbols("\n Q value for %y\n", r->op);
+	// print_with_symbols("\n Q value for %y\n", r->op);
 	
 	Q = r->reward;
 
-    print("\n Q after reward is %f\n" , Q);
+    // print("\n Q after reward is %f\n" , Q);
 	Q += pow(current_agent(gamma), r->step)*current_agent(next_Q);
-	print("Q after next_Q update is %f", Q);
+	// print("Q after next_Q update is %f", Q);
 	// print("\n alpha is %f\n", current_agent(alpha));
 	Q -= r->previous_Q;
-	print("Q after previous - %f\n", Q);
+	// print("Q after previous - %f\n", Q);
 	Q *= current_agent(alpha);
+	// print("Q after alpha - %f\n", Q);
 
 	
 
@@ -555,8 +557,8 @@ void record_for_RL(){
 	// print("\n Printing operator conditions. ");
 	// print_condition_list(chosenOp->preference->inst->top_of_instantiated_conditions, 2, TRUE);
 	record->op = chosenOp->value;
-	print_with_symbols("\nOp %y ", record->op);
-	print("with next_Q %f\n", record->previous_Q);
+//	print_with_symbols("\nOp %y ", record->op);
+//	print("with next_Q %f\n", record->previous_Q);
 //print("after setting in slot with reference count %d\n", s->op->common.reference_count);
 	// symbol_add_ref(chosenOp->value);             // ref covered by conditions?
 	

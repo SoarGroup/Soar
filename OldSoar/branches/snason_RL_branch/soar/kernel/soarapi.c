@@ -927,6 +927,35 @@ int soar_Learn (int argc, const char *argv[], soarResult *res)
   return SOAR_OK;
 }
 
+/*
+ *---------------
+ soar_setRL -- SAN
+ *-----------------
+ */
+int soar_setRL (int argc, const char *argv[], soarResult *res)
+{
+ 
+	 if (argc != 3){
+		 setSoarResultResult( res, "Wrong number of arguments to RL command.");
+		           return SOAR_ERROR;
+			   }
+
+	  if (string_match("alpha", argv[1]))
+	      current_agent(alpha) = atof(argv[2]);
+	  else if(string_match("gamma", argv[1]))
+	      current_agent(gamma) = atof(argv[2]);
+	  else if(string_match("Temp", argv[1]))
+	      current_agent(Temp) = atof(argv[2]);
+	  else
+	  {
+       setSoarResultResult( res,
+		  		   "Unrecognized parameter to RL command: %s",
+		  		   argv[1]);
+	   return SOAR_ERROR;
+       }
+       
+       return SOAR_OK;
+   }
 
 
 /*

@@ -421,6 +421,25 @@ int LearnCmd (ClientData clientData,
   }
 }
 
+int RLCmd(ClientData clientData,
+		  Tcl_Interp * interp,
+		  int argc, const char *argv[])
+{
+	soarResult res;
+
+	init_soarResult(res);
+	Soar_SelectGlobalInterpByInterp(interp);
+
+	if ( soar_setRL( argc, argv, &res ) == SOAR_OK ) {
+		interp->result = res.result;
+		return TCL_OK;
+	}
+	else {
+		interp->result = res.result;
+		return TCL_ERROR;
+	}
+}
+
 int MatchesCmd (ClientData clientData, 
 		Tcl_Interp * interp,
 		int argc, const char *argv[])
@@ -2297,6 +2316,7 @@ void Soar_InstallCommands (agent * the_agent)
   install_tcl_soar_cmd(the_agent, "internal-symbols",    InternalSymbolsCmd);  
   install_tcl_soar_cmd(the_agent, "io",                  IOCmd);
   install_tcl_soar_cmd(the_agent, "learn",               LearnCmd);
+  install_tcl_soar_cmd(the_agent, "setRL",               RLCmd);         // SAN
   install_tcl_soar_cmd(the_agent, "log",                 LogCmd);
   install_tcl_soar_cmd(the_agent, "matches",             MatchesCmd);
   install_tcl_soar_cmd(the_agent, "max-chunks",          MaxChunksCmd);
