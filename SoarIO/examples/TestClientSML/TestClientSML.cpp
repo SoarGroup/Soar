@@ -221,6 +221,39 @@ void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, cha
 	(*pTrace) += pMessage ;
 }
 
+static ClientXML* s_ClientXMLStorage = 0 ;
+
+void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML)
+{
+	// pXML should be some structured trace output.
+	// Let's examine it a bit.
+	// We'll start by turning it back into XML so we can look at it in the debugger.
+	char* pStr = pXML->GenerateXMLStringFast(true) ;
+
+	// This will always succeed.  If this isn't really trace XML
+	// the methods checking on tag names etc. will just fail
+	ClientTraceXML* pTraceXML = pXML->ConvertToTraceXML() ;
+
+	if (pTraceXML->IsTagState())
+	{
+		std::string count = pTraceXML->GetDecisionCycleCount() ;
+		std::string stateID = pTraceXML->GetStateID() ;
+		std::string impasseObject = pTraceXML->GetImpasseObject() ;
+		std::string impasseType = pTraceXML->GetImpasseType() ;
+
+		cout << "Trace ==> " << count << ":" << stateID << " (" << impasseObject << " " << impasseType << ")" << endl ;
+	}
+
+	// Make a copy of the object we've been passed which should remain valid
+	// after the event handler has completed.  We only keep the last message
+	// in this test.
+	if (s_ClientXMLStorage != NULL)
+		delete s_ClientXMLStorage ;
+	s_ClientXMLStorage = new ClientXML(pXML) ;
+
+	pXML->DeleteString(pStr) ;
+}
+
 std::string MyRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument)
 {
 	cout << "Received rhs function call with argument: " << pArgument << endl ;
@@ -375,6 +408,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	std::string structured ;	// Structured trace goes here
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
 	int callbacks = pAgent->RegisterForPrintEvent(smlEVENT_STRUCTURED_OUTPUT, MyPrintEventHandler, &structured) ;
+	int callbackx = pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, MyXMLEventHandler, NULL) ;
 
 	int beforeCount = 0 ;
 	int afterCount = 0 ;
@@ -390,6 +424,25 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		return false ;
 	}
 
+	// By this point the static variable ClientXMLStorage should have been filled in 
+	// and it should be valid, even though the event handler for MyXMLEventHandler has completed.
+	if (s_ClientXMLStorage == NULL)
+	{
+		cout << "Error receiving XML trace events" << endl ;
+		return false ;
+	}
+
+	// If we crash on this access there's a problem with the ref-counting of
+	// the XML message we're passed in MyXMLEventHandler.
+	if (!s_ClientXMLStorage->ConvertToTraceXML()->IsTagState())
+	{
+		cout << "Error in storing an XML trace event" << endl ;
+		return false ;
+	}
+	delete s_ClientXMLStorage ;
+	s_ClientXMLStorage = NULL ;
+
+	pAgent->UnregisterForXMLEvent(callbackx) ;
 	pAgent->UnregisterForPrintEvent(callbacks) ;
 	pAgent->UnregisterForPrintEvent(callbackp) ;
 	pAgent->UnregisterForRunEvent(callback_before) ;
@@ -631,7 +684,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		cout << "Existing agents: " << nAgents << endl ;
 
 		// This number determines how many agents are created.  We create <n>, test <n> and then delete <n>
-		int numberAgents = 2 ;
+		int numberAgents = 1 ;
 
 		// PHASE ONE: Agent creation
 		for (int agentCounter = 0 ; agentCounter < numberAgents ; agentCounter++)

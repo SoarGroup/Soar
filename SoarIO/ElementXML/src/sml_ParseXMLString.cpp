@@ -20,10 +20,10 @@
 
 using namespace sml ;
 
-ParseXMLString::ParseXMLString(char const* pInputLine)
+ParseXMLString::ParseXMLString(char const* pInputLine, size_t startPos)
 {
 	m_pInputLine = pInputLine ;
-	m_Pos = 0 ;
+	m_Pos = startPos ;
 	m_LineLength = strlen(m_pInputLine) ;
 
 	InitializeLexer() ;

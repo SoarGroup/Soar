@@ -604,6 +604,26 @@ ElementXML* ElementXML::ParseXMLFromString(char const* pString)
 }
 
 /*************************************************************
+* @brief Parse an XML document from a (long) string and return an ElementXML object
+*		 for the document.  This version supports a sequence of XML strings which
+*		 need to be parsed in order (rather than all being part of one document).
+*
+* @param  pString	The XML document stored in a string.
+* @param  startPos  We'll start parsing the current XML document from this position (0 == beginning of the string)
+* @param  endPos    This value is filled in at the end of the parse and indicates where the parse ended. (if endPos == strlen(pString) we're done)
+* @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
+*************************************************************/
+ElementXML* ElementXML::ParseXMLFromStringSequence(char const* pString, size_t startPos, size_t* endPos)
+{
+	ElementXML_Handle hXML = ::sml_ParseXMLFromStringSequence(pString, startPos, endPos) ;
+
+	if (!hXML)
+		return NULL ;
+
+	return new ElementXML(hXML) ;
+}
+
+/*************************************************************
 * @brief Parse an XML document from a file and return an ElementXML object
 *		 for the document.
 *

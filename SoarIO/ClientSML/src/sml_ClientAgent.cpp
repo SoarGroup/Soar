@@ -20,6 +20,8 @@
 #include "sml_OutputDeltaList.h"
 #include "sml_StringOps.h"
 #include "sml_Events.h"
+#include "sml_ClientXML.h"
+#include "sml_ClientTraceXML.h"
 
 #include "sml_ClientDirect.h"
 #include "sml_EmbeddedConnection.h"	// For access to direct methods
@@ -39,6 +41,7 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 	m_Name	 = pName ;
 	m_WorkingMemory.SetAgent(this) ;
 	m_CallbackIDCounter = 0 ;
+	m_XMLCallback = -1 ;
 }
 
 Agent::~Agent()
@@ -218,7 +221,6 @@ bool Agent::LoadProductions(char const* pFilename)
 	return ok ;
 }
 
-
 // These are little utility classes we define to help with searching the event maps
 class Agent::TestRunCallback : public RunEventMap::ValueTest
 {
@@ -228,32 +230,6 @@ public:
 	TestRunCallback(int id) { m_ID = id ; }
 
 	bool isEqual(RunEventHandlerPlusData handler)
-	{
-		return handler.m_CallbackID == m_ID ;
-	}
-} ;
-
-class Agent::TestProductionCallback : public ProductionEventMap::ValueTest
-{
-private:
-	int m_ID ;
-public:
-	TestProductionCallback(int id) { m_ID = id ; }
-
-	bool isEqual(ProductionEventHandlerPlusData handler)
-	{
-		return handler.m_CallbackID == m_ID ;
-	}
-} ;
-
-class Agent::TestPrintCallback : public PrintEventMap::ValueTest
-{
-private:
-	int m_ID ;
-public:
-	TestPrintCallback(int id) { m_ID = id ; }
-
-	bool isEqual(PrintEventHandlerPlusData handler)
 	{
 		return handler.m_CallbackID == m_ID ;
 	}
@@ -278,6 +254,19 @@ public:
 	}
 } ;
 
+class Agent::TestProductionCallback : public ProductionEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestProductionCallback(int id) { m_ID = id ; }
+
+	bool isEqual(ProductionEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
 class Agent::TestProductionCallbackFull : public ProductionEventMap::ValueTest
 {
 private:
@@ -297,6 +286,19 @@ public:
 	}
 } ;
 
+class Agent::TestPrintCallback : public PrintEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestPrintCallback(int id) { m_ID = id ; }
+
+	bool isEqual(PrintEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
 class Agent::TestPrintCallbackFull : public PrintEventMap::ValueTest
 {
 private:
@@ -309,6 +311,38 @@ public:
 	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
 
 	bool isEqual(PrintEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
+class Agent::TestXMLCallback : public XMLEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestXMLCallback(int id) { m_ID = id ; }
+
+	bool isEqual(XMLEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+class Agent::TestXMLCallbackFull : public XMLEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	XMLEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestXMLCallbackFull(int id, XMLEventHandler handler, void* pUserData)
+	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(XMLEventHandlerPlusData handlerPlus)
 	{
 		return handlerPlus.m_EventID == m_EventID &&
 			   handlerPlus.m_Handler == m_Handler &&
@@ -531,6 +565,136 @@ bool Agent::UnregisterForPrintEvent(int callbackID)
 	if (m_PrintEventMap.getListSize(id) == 0)
 	{
 		GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
+	}
+
+	return true ;
+}
+
+/** @brief This handler is called with structured output print data.  Used to implement XML events */
+static void XMLEventImplementationHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
+{
+	unused(pUserData) ;
+
+	// Some basic error checking
+	if (!pMessage || !pAgent)
+		return ;
+
+	// We only use this handler to convert from XML as a string to XML as an object
+	assert(id == smlEVENT_STRUCTURED_OUTPUT) ;
+
+	// We may have been passed a series of XML messages (objects), not one single object
+	size_t startPos = 0 ;
+	size_t endPos   = 0 ;
+	size_t length = strlen(pMessage) ;
+
+	while (startPos < length)
+	{
+		ElementXML* pXML = ElementXML::ParseXMLFromStringSequence(pMessage, startPos, &endPos) ;
+
+		// If there was an error we're done
+		if (!pXML)
+			break ;
+
+		// Take message, parse it and then call each handler in turn
+		pAgent->SendXMLEvent(smlEVENT_XML_TRACE_OUTPUT, pXML) ;
+
+		// Start the next parse from the end of this parse.
+		startPos = endPos ;
+	}
+}
+
+/*************************************************************
+* @brief This function is called when an XML event needs to be
+*		 sent out.  It's route is a little unusual as it's called
+*		 from a Print event handler, not directly in response to
+*		 an event from the kernel (as are other events).
+*
+* @param pXMLMessage	The XML message we should distribute to our listeners.
+*						NOTE: We must delete this message when we're done.
+*************************************************************/
+void Agent::SendXMLEvent(smlXMLEventId id, ElementXML* pXMLMessage)
+{
+	// NOTE: This object needs to stay in scope for as long as we're calling clients
+	// and then when it is deleted it will delete the pXMLMessage.
+	ClientXML clientXML(pXMLMessage) ;
+
+	// Look up the handler(s) from the map
+	XMLEventMap::ValueList* pHandlers = m_XMLEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (XMLEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		XMLEventHandlerPlusData handlerPlus = *iter ;
+		XMLEventHandler handler = handlerPlus.m_Handler ;
+
+		void* pUserData = handlerPlus.m_UserData ;
+
+		// Call the handler
+		handler(id, pUserData, this, &clientXML) ;
+	}
+}
+
+int Agent::RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* pUserData, bool addToBack)
+{
+	// Start by checking if this id, handler, pUSerData combination has already been registered
+	TestXMLCallbackFull test(id, handler, pUserData) ;
+
+	// See if this handler is already registered
+	XMLEventHandlerPlusData plus(0,0,0,0) ;
+	bool found = m_XMLEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
+	// So far we only support the XML TRACE command and this is implemented
+	// by registering for the EVENT_STRUCTURED_OUTPUT print event, capturing
+	// that output, parsing it and passing that parsed data back to the caller.
+	// We use this implementation because currently the kernel is generating
+	// raw XML strings.  Later we'll hopefully convert over to the kernel
+	// creating ElementXML objects which will just be passed directly over to the client
+	// without the string-format & parsing step.
+	assert(id == smlEVENT_XML_TRACE_OUTPUT) ;
+
+	// If we have no handlers registered with the kernel, then we need
+	// to register for the print event (which we'll then parse to create XML objects).
+	// No need to do this multiple times.
+	if (m_XMLEventMap.getListSize(id) == 0)
+	{
+		m_XMLCallback = RegisterForPrintEvent(smlEVENT_STRUCTURED_OUTPUT, &XMLEventImplementationHandler, NULL) ;
+	}
+
+	// Record the handler
+	m_CallbackIDCounter++ ;
+
+	XMLEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
+	m_XMLEventMap.add(id, handlerPlus, addToBack) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
+}
+
+bool Agent::UnregisterForXMLEvent(int callbackID)
+{
+	// Build a test object for the callbackID we're interested in
+	TestXMLCallback test(callbackID) ;
+
+	// Find the event ID for this callbackID
+	smlXMLEventId id = m_XMLEventMap.findFirstKeyByTest(&test, (smlXMLEventId)-1) ;
+
+	if (id == -1)
+		return false ;
+
+	// Remove the handler from our map
+	m_XMLEventMap.removeAllByTest(&test) ;
+
+	// If we just removed the last handler, then unregister
+	// for the matching print event (that we use to implement XML)
+	if (m_XMLEventMap.getListSize(id) == 0)
+	{
+		UnregisterForPrintEvent(m_XMLCallback) ;
 	}
 
 	return true ;

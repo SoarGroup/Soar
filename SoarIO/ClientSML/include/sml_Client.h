@@ -18,5 +18,7 @@
 #include "sml_ClientFloatElement.h"
 #include "sml_ClientIdentifier.h"
 #include "sml_ClientEvents.h"
+#include "sml_ClientXML.h"
+#include "sml_ClientTraceXML.h"
 
 #endif //SML_CLIENT_SML_H

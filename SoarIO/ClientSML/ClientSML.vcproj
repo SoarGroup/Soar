@@ -121,10 +121,16 @@
 				RelativePath=".\src\sml_ClientStringElement.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_ClientTraceXML.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_ClientWMElement.cpp">
 			</File>
 			<File
 				RelativePath=".\src\sml_ClientWorkingMemory.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientXML.cpp">
 			</File>
 			<File
 				RelativePath=".\src\sml_DeltaList.cpp">
@@ -171,10 +177,16 @@
 				RelativePath=".\include\sml_ClientStringElement.h">
 			</File>
 			<File
+				RelativePath=".\include\sml_ClientTraceXML.h">
+			</File>
+			<File
 				RelativePath=".\include\sml_ClientWMElement.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_ClientWorkingMemory.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_ClientXML.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_DeltaList.h">

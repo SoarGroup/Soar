@@ -29,6 +29,9 @@ public class Application
 
 	public static class EventListener
 	{
+		// We'll test to make sure we can keep a ClientXML object that we're passed.
+		public ClientXML m_Keep = null ;
+
 		public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 		{
 			System.out.println("Received run event in Java") ;
@@ -55,16 +58,27 @@ public class Application
 			System.out.println("Received production event in Java") ;
 		}
 		
-		public void kernelEventHandler(int eventID, Object data, Kernel kernel)
+		public void systemEventHandler(int eventID, Object data, Kernel kernel)
 		{
-			System.out.println("Received kernel event in Java") ;
+			System.out.println("Received system event in Java") ;
 		}
 
 		public void printEventHandler(int eventID, Object data, Agent agent, String message)
 		{
 			System.out.println("Received print event in Java: " + message) ;
 		}
-		
+
+		public void xmlEventHandler(int eventID, Object data, Agent agent, ClientXML xml)
+		{
+			String xmlText = xml.GenerateXMLStringFast(true) ;
+			System.out.println("Received xml trace event in Java: " + xmlText) ;
+			
+			if (m_Keep != null)
+				m_Keep.delete() ;
+			
+			m_Keep = new ClientXML(xml) ;
+		}
+
 		public String testRhsHandler(int eventID, Object data, String agentName, String functionName, String argument)
 		{
 			System.out.println("Received rhs function event in Java for function: " + functionName + "(" + argument + ")") ;
@@ -162,8 +176,10 @@ public class Application
 		int jProdCallback   = pAgent.RegisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
 		int jPrintCallback  = pAgent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, listener, "printEventHandler", this) ;		
 		int jSystemCallback = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
+		int jSystemCallback2 = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, listener, "systemEventHandler", this) ;		
 		int jAgentCallback  = pKernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
-		int jRhsCallback    = pKernel.AddRhsFunction("test-rhs", listener, "testRhsHandler", this) ;		
+		int jRhsCallback    = pKernel.AddRhsFunction("test-rhs", listener, "testRhsHandler", this) ;
+		int jTraceCallback  = pAgent.RegisterForXMLEvent(smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, listener, "xmlEventHandler", this) ;		
 
 		// Trigger an agent event by doing init-soar
 		pAgent.InitSoar() ;
@@ -192,15 +208,25 @@ public class Application
 		
 		// Now stress things a little
 		// String traceLong = pAgent.Run(500) ;
+
+		if (listener.m_Keep == null)
+			throw new IllegalStateException("The xmlEventHandler wasn't called (so m_Keep is null)") ;
+
+		// Try to access m_Keep to make sure the underlying XML object's not been deleted
+		String testXML = listener.m_Keep.GenerateXMLStringFast(true) ;
+		System.out.println("Last trace message: " + testXML) ;
+		listener.m_Keep.delete() ;
 		
 		System.out.println("Unregister callbacks") ;
 		
 		// Unregister our callbacks
 		// (This isn't required, I'm just testing that it works)
+		pAgent.UnregisterForXMLEvent(jTraceCallback) ;
 		pAgent.UnregisterForRunEvent(jRunCallback) ;
 		pAgent.UnregisterForProductionEvent(jProdCallback) ;
 		pAgent.UnregisterForPrintEvent(jPrintCallback) ;
 		pKernel.UnregisterForSystemEvent(jSystemCallback) ;
+		pKernel.UnregisterForSystemEvent(jSystemCallback2) ;
 		pKernel.UnregisterForAgentEvent(jAgentCallback) ;
 		pKernel.RemoveRhsFunction(jRhsCallback) ;
 		

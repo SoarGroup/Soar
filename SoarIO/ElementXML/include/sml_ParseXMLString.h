@@ -75,7 +75,8 @@ protected:
 	}
 		
 public:
-	ParseXMLString(char const* pInputLine);
+	ParseXMLString(char const* pInputLine, size_t startPos);
+	size_t getEndPosition() { return m_Pos ; }
 	virtual ~ParseXMLString(void);
 };
 

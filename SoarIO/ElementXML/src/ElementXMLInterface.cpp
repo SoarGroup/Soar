@@ -492,8 +492,35 @@ ElementXML_Handle sml_ParseXMLFromString(char const* pString)
 	if (!pString)
 		return NULL ;
 
-	ParseXMLString parser(pString) ;
+	ParseXMLString parser(pString, 0) ;
 	ElementXMLImpl* pXML = parser.ParseElement() ;
+
+	if (!pXML)
+		s_LastParseErrorMessage = parser.GetErrorMessage() ;
+
+	return (ElementXML_Handle)pXML ;
+}
+
+/*************************************************************
+* @brief Parse an XML document from a (long) string and return an ElementXML object
+*		 for the document.  This version supports a sequence of XML strings which
+*		 need to be parsed in order (rather than all being part of one document).
+*
+* @param  pString	The XML document stored in a string.
+* @param  startPos  We'll start parsing the current XML document from this position (0 == beginning of the string)
+* @param  endPos    This value is filled in at the end of the parse and indicates where the parse ended. (if endPos == strlen(pString) we're done)
+* @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
+*************************************************************/
+ElementXML_Handle sml_ParseXMLFromStringSequence(char const* pString, size_t startPos, size_t* endPos)
+{
+	if (!pString || !endPos)
+		return NULL ;
+
+	ParseXMLString parser(pString, startPos) ;
+
+	ElementXMLImpl* pXML = parser.ParseElement() ;
+	
+	*endPos = parser.getEndPosition() ;
 
 	if (!pXML)
 		s_LastParseErrorMessage = parser.GetErrorMessage() ;

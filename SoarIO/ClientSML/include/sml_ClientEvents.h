@@ -55,6 +55,7 @@ namespace sml {
 // Forward declaration
 class Agent ;
 class Kernel ;
+class ClientXML ;
 
 typedef enum {
     smlEVENT_BEFORE_SHUTDOWN            = 1,
@@ -116,7 +117,7 @@ typedef enum {
     smlEVENT_LOG_WARNING,
     smlEVENT_LOG_INFO,
     smlEVENT_LOG_DEBUG,
-	smlEVENT_STRUCTURED_OUTPUT,
+	smlEVENT_STRUCTURED_OUTPUT,		// Better to register for smlEVENT_XML_TRACE_OUTPUT
     smlEVENT_PRINT,
 } smlPrintEventId ;
 
@@ -129,12 +130,16 @@ typedef enum {
 } smlRhsEventId ;
 
 typedef enum {
+	smlEVENT_XML_TRACE_OUTPUT = smlEVENT_RHS_USER_FUNCTION + 1,
+} smlXMLEventId ;
+
+typedef enum {
     // Used to indicate an error in some cases
     smlEVENT_INVALID_EVENT              = 0,
 
 	// Marker for end of sml event list
 	// Must always be at the end of the enum
-	smlEVENT_LAST = smlEVENT_RHS_USER_FUNCTION + 1
+	smlEVENT_LAST = smlEVENT_XML_TRACE_OUTPUT + 1
 } smlGenericEventId ;
 
 static inline bool IsSystemEventID(int id)
@@ -172,6 +177,11 @@ static inline bool IsRhsEventID(int id)
 	return (id >= smlEVENT_RHS_USER_FUNCTION && id <= smlEVENT_RHS_USER_FUNCTION) ;
 }
 
+static inline bool IsXMLEventID(int id)
+{
+	return (id == smlEVENT_XML_TRACE_OUTPUT) ;
+}
+
 typedef enum {
     sml_INPUT_PHASE,
     sml_PROPOSAL_PHASE,
@@ -202,6 +212,12 @@ typedef void (*ProductionEventHandler)(smlProductionEventId id, void* pUserData,
 
 // Handler for System events.
 typedef void (*SystemEventHandler)(smlSystemEventId id, void* pUserData, Kernel* pKernel) ;
+
+// Handler for XML events.  The data for the event is passed back in pXML.
+// NOTE: To keep a copy of the ClientXML* you are passed use ClientXML* pMyXML = new ClientXML(pXML) to create
+// a copy of the object.  This is very efficient and just adds a reference to the underlying XML message object.
+// You need to delete ClientXML objects you create and you should not delete the pXML object you are passed.
+typedef void (*XMLEventHandler)(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML) ;
 
 // Handler for RHS (right hand side) function firings
 // pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)

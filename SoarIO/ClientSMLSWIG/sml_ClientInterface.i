@@ -20,6 +20,7 @@
 %ignore sml::Agent::RegisterForProductionEvent(smlProductionEventId, ProductionEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::RegisterForRunEvent(smlRunEventId, RunEventHandler, void*, bool addToBack = true);
 %ignore sml::Agent::RegisterForPrintEvent(smlPrintEventId, PrintEventHandler, void*, bool addToBack = true);
+%ignore sml::Agent::RegisterForXMLEvent(smlXMLEventId, XMLEventHandler, void*, bool addToBack = true);
 %ignore sml::Kernel::RegisterForSystemEvent(smlSystemEventId, SystemEventHandler, void*, bool addToBack = true);
 %ignore sml::Kernel::RegisterForAgentEvent(smlAgentEventId, AgentEventHandler, void*, bool addToBack = true);
 %ignore sml::Kernel::AddRhsFunction(char const*, RhsEventHandler, void*, bool addToBack = true);
@@ -37,6 +38,8 @@
 #include "sml_ClientIdentifier.h"
 #include "sml_ClientKernel.h"
 #include "sml_ClientAgent.h"
+#include "sml_ClientXML.h"
+#include "sml_ClientTraceXML.h"
 %}
 
 %include "sml_Names.h"
@@ -51,5 +54,7 @@
 %include "sml_ClientIdentifier.h"
 %include "sml_ClientKernel.h"
 %include "sml_ClientAgent.h"
+%include "sml_ClientXML.h"
+%include "sml_ClientTraceXML.h"
 
 

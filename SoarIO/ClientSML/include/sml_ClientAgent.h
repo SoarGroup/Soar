@@ -27,6 +27,7 @@ class Kernel ;
 class Connection ;
 class AnalyzeXML ;
 class ElementXML ;
+class ClientXML ;
 
 class RunEventHandlerPlusData : public EventHandlerPlusData
 {
@@ -61,11 +62,21 @@ public:
 	}
 } ;
 
+class XMLEventHandlerPlusData : public EventHandlerPlusData
+{
+public:
+	XMLEventHandler m_Handler ;
+
+	XMLEventHandlerPlusData(int eventID, XMLEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
+	{
+		m_Handler = handler ;
+	}
+} ;
 
 class Agent : public ClientErrors
 {
-	// Don't want users creating and destroying agent objects without
-	// going through the kernel
+	// By using a lot of friends we can keep methods from being exposed
+	// to the client and yet allow access between our internal classes.
 	friend class Kernel ;
 	friend class WorkingMemory ;
 	friend class ObjectMap<Agent*> ;	// So can delete agent
@@ -80,6 +91,7 @@ protected:
 	typedef sml::ListMap<smlRunEventId, RunEventHandlerPlusData>				RunEventMap ;
 	typedef sml::ListMap<smlProductionEventId, ProductionEventHandlerPlusData>	ProductionEventMap ;
 	typedef sml::ListMap<smlPrintEventId, PrintEventHandlerPlusData>			PrintEventMap ;
+	typedef sml::ListMap<smlXMLEventId, XMLEventHandlerPlusData>				XMLEventMap ;
 
 protected:
 	// We maintain a local copy of working memory so we can just send changes
@@ -95,6 +107,7 @@ protected:
 	RunEventMap			m_RunEventMap ;
 	ProductionEventMap	m_ProductionEventMap ;
 	PrintEventMap		m_PrintEventMap ;
+	XMLEventMap			m_XMLEventMap ;
 
 	// These are little utility classes we define in the .cpp file to help with searching the event maps
 	class TestRunCallbackFull ;
@@ -103,9 +116,14 @@ protected:
 	class TestProductionCallback ;
 	class TestPrintCallbackFull ;
 	class TestPrintCallback ;
+	class TestXMLCallbackFull ;
+	class TestXMLCallback ;
 
 	// Used to generate unique IDs for callbacks
 	int		m_CallbackIDCounter ;
+
+	// Internally we register a print callback and store its id here.
+	int		m_XMLCallback ;
 
 protected:
 	Agent(Kernel* pKernel, char const* pAgentName);
@@ -137,6 +155,10 @@ protected:
 	void ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+
+public:
+	// This method is public but a client should never need to call it.
+	void SendXMLEvent(smlXMLEventId id, ElementXML* pXMLMessage) ;
 
 public:
 	/*************************************************************
@@ -320,7 +342,6 @@ public:
 	* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
 	*
 	* Current set is:
-	* // Agent manager
 	* smlEVENT_PRINT
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
@@ -330,7 +351,27 @@ public:
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	bool	UnregisterForPrintEvent(int callbackID) ;
+	bool UnregisterForPrintEvent(int callbackID) ;
+
+	/*************************************************************
+	* @brief Register for an "XMLEvent".
+	*		 Multiple handlers can be registered for the same event.
+	* @param smlEventId		The event we're interested in (see the list below for valid values)
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+	*
+	* Current set is:
+	* smlEVENT_PRINT
+	*
+	* @returns A unique ID for this callback (used to unregister the callback later) 
+	*************************************************************/
+	int	RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* pUserData, bool addToBack = true) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	*************************************************************/
+	bool UnregisterForXMLEvent(int callbackID) ;
 
 	/*==============================================================================
 	===

@@ -11,7 +11,8 @@
 %javaconstvalue("smlSystemEventId.smlEVENT_AFTER_RHS_FUNCTION_EXECUTED.swigValue() + 1") smlEVENT_BEFORE_SMALLEST_STEP;
 %javaconstvalue("smlProductionEventId.smlEVENT_BEFORE_PRODUCTION_RETRACTED.swigValue() + 1") smlEVENT_AFTER_AGENT_CREATED;
 %javaconstvalue("smlPrintEventId.smlEVENT_PRINT.swigValue() + 1") smlEVENT_RHS_USER_FUNCTION;
-%javaconstvalue("smlRhsEventId.smlEVENT_RHS_USER_FUNCTION.swigValue() + 1") smlEVENT_LAST;
+%javaconstvalue("smlRhsEventId.smlEVENT_RHS_USER_FUNCTION.swigValue() + 1") smlEVENT_XML_TRACE_OUTPUT;
+%javaconstvalue("smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT.swigValue() + 1") smlEVENT_LAST;
 %javaconstvalue("smlWorkingMemoryEventId.smlEVENT_OUTPUT_PHASE_CALLBACK.swigValue() + 1") smlEVENT_LOG_ERROR;
 %javaconstvalue("smlRunEventId.smlEVENT_AFTER_RUNNING.swigValue() + 1") smlEVENT_AFTER_PRODUCTION_ADDED;
 %javaconstvalue("smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue() + 1") smlEVENT_OUTPUT_PHASE_CALLBACK;
@@ -24,6 +25,7 @@
 %ignore sml::Agent::UnregisterForRunEvent(int);
 %ignore sml::Agent::UnregisterForProductionEvent(int);
 %ignore sml::Agent::UnregisterForPrintEvent(int);
+%ignore sml::Agent::UnregisterForXMLEvent(int);
 %ignore sml::Kernel::UnregisterForSystemEvent(int);
 %ignore sml::Kernel::UnregisterForAgentEvent(int);
 %ignore sml::Kernel::RemoveRhsFunction(int);
@@ -41,6 +43,7 @@
   public final static native int Agent_RegisterForRunEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForProductionEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForPrintEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
+  public final static native int Agent_RegisterForXMLEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_RegisterForSystemEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_RegisterForAgentEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_AddRhsFunction(long jarg1, String jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
@@ -48,6 +51,7 @@
   public final static native boolean Agent_UnregisterForRunEvent(long jarg1, int jarg2);
   public final static native boolean Agent_UnregisterForProductionEvent(long jarg1, int jarg2);
   public final static native boolean Agent_UnregisterForPrintEvent(long jarg1, int jarg2);
+  public final static native boolean Agent_UnregisterForXMLEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForSystemEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForAgentEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_RemoveRhsFunction(long jarg1, int jarg2);
@@ -62,6 +66,9 @@
 
   public int RegisterForPrintEvent(smlPrintEventId id, Object handlerObject, String handlerMethod, Object callbackData)
   { return smlJNI.Agent_RegisterForPrintEvent(swigCPtr, id.swigValue(), this, handlerObject, handlerMethod, callbackData) ; }
+
+  public int RegisterForXMLEvent(smlXMLEventId id, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Agent_RegisterForXMLEvent(swigCPtr, id.swigValue(), this, handlerObject, handlerMethod, callbackData) ; }
   
   public boolean UnregisterForRunEvent(int callbackReturnValue)
   { return smlJNI.Agent_UnregisterForRunEvent(swigCPtr, callbackReturnValue) ;}
@@ -71,6 +78,9 @@
 
   public boolean UnregisterForPrintEvent(int callbackReturnValue)
   { return smlJNI.Agent_UnregisterForPrintEvent(swigCPtr, callbackReturnValue) ;}
+
+  public boolean UnregisterForXMLEvent(int callbackReturnValue)
+  { return smlJNI.Agent_UnregisterForXMLEvent(swigCPtr, callbackReturnValue) ;}
 %}
 
 %typemap(javacode) sml::Kernel %{

@@ -199,7 +199,7 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	assert(gSKIEVENT_BEFORE_AGENT_REINITIALIZED == (egSKIAgentEventId)smlEVENT_BEFORE_AGENT_REINITIALIZED) ;	// Another middle one matches
 	assert(gSKIEVENT_PRINT == (egSKIPrintEventId)smlEVENT_PRINT); // What the heck, another one
 	assert(gSKIEVENT_RHS_USER_FUNCTION == (egSKIRhsEventId)smlEVENT_RHS_USER_FUNCTION) ;
-	assert(gSKIEVENT_LAST == (egSKIGenericEventId)smlEVENT_LAST) ;					// Last matches
+	assert(gSKIEVENT_LAST== (egSKIGenericEventId)smlEVENT_LAST) ;
 
 	// Get the parameters
 	char const* pEventName = pIncoming->GetArgValue(sml_Names::kParamEventID) ;
