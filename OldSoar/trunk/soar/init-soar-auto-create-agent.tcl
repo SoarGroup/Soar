@@ -51,4 +51,4 @@ if { [string match "on" $batchMode] } {
 
 }
 
-createNewAgent soar1 [pwd] ""
+createNewAgent "" [pwd] ""
