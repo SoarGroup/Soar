@@ -101,6 +101,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIStats]				= ParseStats;
 	m_CommandMap[Constants::kCLIStopSoar]			= ParseStopSoar;
 	m_CommandMap[Constants::kCLITime]				= ParseTime;
+	m_CommandMap[Constants::kCLIWarnings]			= ParseWarnings;
 	m_CommandMap[Constants::kCLIWatch]				= ParseWatch;
 }
 

@@ -217,6 +217,9 @@
 					RelativePath=".\src\cli_time.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_warnings.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_watch.cpp">
 				</File>
 			</Filter>

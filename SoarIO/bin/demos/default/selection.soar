@@ -493,8 +493,8 @@ sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
 ### augmentations that don't point to objects that have been
 ### duplicated. 
 
-# commented out by voigtjr
 #set warnings off
+warnings --off
 sp {evaluate-operator*elaborate*add-attribute-to-duplicate 
    :default
    (state <s> ^duplicates* <d> 
@@ -505,13 +505,13 @@ sp {evaluate-operator*elaborate*add-attribute-to-duplicate
    (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
    -->
    (<new-id> ^<sub-att> <sub-val>)}
-# commented out by voigtjr
 #set warnings on
+warnings --on
 
 ### Next copy augmentations that point to duplicated objects:
 
-# commented out by voigtjr
 #set warnings off
+warnings --off
 sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate 
    :default
    (state <s> ^duplicates* <d>
@@ -522,7 +522,7 @@ sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
    -->
    (<new-id> ^<sub-att> <new-val>)}
 # commented out by voigtjr
-#set warnings on
+warnings --on
 
 ### Added ^two-level-attributes <att>.  Previously, it
 ### would copy any attribute that happened to point to the same value as

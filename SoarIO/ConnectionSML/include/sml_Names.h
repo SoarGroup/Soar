@@ -103,6 +103,7 @@ public:
 	static char const* kParamLogSetting;
 	static char const* kParamDirectory;
 	static char const* kParamSeconds;
+	static char const* kParamWarningsSetting;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* kTrue ;

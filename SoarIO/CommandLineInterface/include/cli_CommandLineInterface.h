@@ -337,6 +337,15 @@ public:
 	bool DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoWarnings(gSKI::IAgent* pAgent, bool query, bool setting);
+
+	/*************************************************************
 	* @brief watch command, see usage.txt for details.
 	*************************************************************/
 	bool ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

@@ -407,6 +407,9 @@ Usage:	warnings [-ed]
   -e, --enable, --on
   -d, --disable, --off
 ~~~
+<result>
+  <arg name="warnings_setting" type="boolean">true_or_false</arg>
+</result>
 ***
 watch
 Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>] 

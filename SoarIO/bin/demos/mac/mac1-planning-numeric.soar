@@ -29,7 +29,7 @@
 ###
 
 
-learn -on
+learn --on
 pushd ../default
 source simple.soar
 source selection.soar

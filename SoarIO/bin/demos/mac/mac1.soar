@@ -29,7 +29,7 @@
 ###
 
 
-#learn -off
+learn --off
 
 ###
 ### MISSIONARIES-AND-CANNIBALS PROBLEM SPACE:

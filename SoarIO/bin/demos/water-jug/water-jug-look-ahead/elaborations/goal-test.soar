@@ -9,8 +9,8 @@ sp {water-jug*evaluate*state*success
 -->
    (<s> ^success <d>)}
 
-#commented out by voigtjr
 #set warnings off
+warnings --off
 sp {water-jug*evaluate*state*failure*duplicate
    (state <s1> ^name water-jug
                ^desired <d>
@@ -26,5 +26,5 @@ sp {water-jug*evaluate*state*failure*duplicate
   -(state <s3> ^superstate <s2>)
 -->
    (<s2> ^failure <d>)}
-#commented out by voigtjr
 #set warnings on
+warnings --on

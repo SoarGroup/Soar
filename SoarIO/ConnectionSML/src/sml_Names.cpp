@@ -98,6 +98,7 @@ char const* sml_Names::kParamLearnSetting		= "learn_setting";
 char const* sml_Names::kParamLogSetting			= "log_setting";
 char const* sml_Names::kParamDirectory			= "directory";
 char const* sml_Names::kParamSeconds			= "seconds";
+char const* sml_Names::kParamWarningsSetting	= "warnings_setting";
 
 // Values (these are not case sensitive unlike the rest)
 char const* sml_Names::kTrue	= "true" ;

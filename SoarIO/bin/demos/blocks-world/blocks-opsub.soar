@@ -10,7 +10,7 @@ set max_elaborations 10
 alias pref preferences
 
 ## Will not work correctly with chunking
-learn -off
+learn --off
 
 source ../default/simple.soar
 
