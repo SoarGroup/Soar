@@ -21,6 +21,7 @@ help man
 help ?
 init-soar init
 ls dir
+print p
 quit exit
 run 1 step
 run -d 1 d
