@@ -278,9 +278,9 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
 
 		if (registerForEvent)
-			pAgentSML->AddPrintListener(gSKIEVENT_PRINT, pConnection) ;
+			pAgentSML->AddPrintListener((egSKIPrintEventId)id, pConnection) ;
 		else
-			pAgentSML->RemovePrintListener(gSKIEVENT_PRINT, pConnection) ;
+			pAgentSML->RemovePrintListener((egSKIPrintEventId)id, pConnection) ;
 	} else if(id == (int)gSKIEVENT_OUTPUT_PHASE_CALLBACK) {
 
 		// Output event

@@ -34,10 +34,11 @@ class Connection ;
 class PrintListener : public gSKI::IPrintListener, public EventManager<egSKIPrintEventId>
 {
 protected:
+	const static int kNumberPrintEvents = gSKIEVENT_LAST_PRINT_EVENT - gSKIEVENT_FIRST_PRINT_EVENT + 1 ;
 	KernelSML*		m_pKernelSML ;
 	gSKI::IAgent*	m_pAgent ;
-	std::string		m_BufferedPrintOutput;
-	AgentOutputFlusher* m_pAgentOutputFlusher;
+	std::string		m_BufferedPrintOutput[kNumberPrintEvents];
+	AgentOutputFlusher* m_pAgentOutputFlusher[kNumberPrintEvents];
 
 	// When false we don't forward print callback events to the listeners.  (Useful when we're backdooring into the kernel)
 	bool			m_EnablePrintCallback ;
@@ -48,7 +49,9 @@ public:
 		m_pKernelSML = pKernelSML ;
 		m_pAgent	 = pAgent ;
 		m_EnablePrintCallback = true ;
-		m_pAgentOutputFlusher = 0;
+
+		for (int i = 0 ; i < kNumberPrintEvents ; i++)
+			m_pAgentOutputFlusher[i] = NULL ;
 	}
 
 	virtual ~PrintListener()
@@ -69,7 +72,7 @@ public:
 	void EnablePrintCallback(bool enable) { m_EnablePrintCallback = enable ; }
 
 	// Activate the print callback (flush output)
-	void FlushOutput();
+	void FlushOutput(egSKIPrintEventId eventID);
 
 } ;
 

@@ -218,18 +218,21 @@ typedef std::string (*RhsEventHandler)(smlRhsEventId id, void* pUserData, Agent*
 class EventHandlerPlusData
 {
 public:
-	void*			m_UserData ;
-	int				m_CallbackID ;
+	int				m_EventID ;		// E.g. smlEVENT_BEFORE_SHUTDOWN
+	void*			m_UserData ;	// Arbitrary data from the user which we pass back to them
+	int				m_CallbackID ;	// A unique identifier for this callback (used to unregister)
 
 public:
-	EventHandlerPlusData(void* pData, int callbackID)
+	EventHandlerPlusData(int eventID, void* pData, int callbackID)
 	{
-		m_UserData = pData ;
+		m_EventID    = eventID ;
+		m_UserData   = pData ;
 		m_CallbackID = callbackID ;
 	}
 
-	int		getCallbackID() { return m_CallbackID ; }
+	int		getEventID()	{ return m_EventID ; }
 	void*	getUserData()   { return m_UserData ; }
+	int		getCallbackID() { return m_CallbackID ; }
 } ;
 
 } ;	// End of namespace

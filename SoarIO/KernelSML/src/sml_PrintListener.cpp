@@ -25,9 +25,6 @@
 
 using namespace sml ;
 
-// Uncomment this symbol to disable print output buffering.
-// #define DISABLE_PRINT_OUTPUT_BUFFERING
-
 // Returns true if this is the first connection listening for this event
 bool PrintListener::AddListener(egSKIPrintEventId eventID, Connection* pConnection)
 {
@@ -35,10 +32,10 @@ bool PrintListener::AddListener(egSKIPrintEventId eventID, Connection* pConnecti
 
 	if (first)
 	{
-#ifndef DISABLE_PRINT_OUTPUT_BUFFERING
-		m_pAgentOutputFlusher = new AgentOutputFlusher(this, m_pAgent);
-#endif // DISABLE_PRINT_OUTPUT_BUFFERING
 		m_pAgent->AddPrintListener(eventID, this); 
+
+		// Register for specific events at which point we'll flush the buffer for this event
+		m_pAgentOutputFlusher[eventID-gSKIEVENT_FIRST_PRINT_EVENT] = new AgentOutputFlusher(this, m_pAgent, eventID);
 	}
 
 	return first ;
@@ -52,10 +49,10 @@ bool PrintListener::RemoveListener(egSKIPrintEventId eventID, Connection* pConne
 	if (last)
 	{
 		m_pAgent->RemovePrintListener(eventID, this); 
-#ifndef DISABLE_PRINT_OUTPUT_BUFFERING
-		delete m_pAgentOutputFlusher;
-		m_pAgentOutputFlusher = 0;
-#endif // DISABLE_PRINT_OUTPUT_BUFFERING
+
+		// Unregister for the events when we'll flush the buffer
+		delete m_pAgentOutputFlusher[eventID-gSKIEVENT_FIRST_PRINT_EVENT] ;
+		m_pAgentOutputFlusher[eventID-gSKIEVENT_FIRST_PRINT_EVENT] = NULL ;
 	}
 
 	return last ;
@@ -67,9 +64,6 @@ void PrintListener::HandleEvent(egSKIPrintEventId eventID, gSKI::IAgent* agentPt
 	unused(eventID);
 	unused(agentPtr);
 
-	// If we're getting anything but a print event here, that isn't right
-	assert(eventID == gSKIEVENT_PRINT);
-
 	// We're assuming this is correct in the flush output function, so we should check it here
 	assert(agentPtr == m_pAgent);
 
@@ -79,39 +73,41 @@ void PrintListener::HandleEvent(egSKIPrintEventId eventID, gSKI::IAgent* agentPt
 	if (!m_EnablePrintCallback)
 		return ;
 
-	// Buffer print output to be flushed later
-	m_BufferedPrintOutput += msg;
+	int nBuffer = eventID - gSKIEVENT_FIRST_PRINT_EVENT ;
+	assert(nBuffer >= 0 && nBuffer < kNumberPrintEvents) ;
 
-#ifdef DISABLE_PRINT_OUTPUT_BUFFERING
-	FlushOutput();
-#endif
+	// Buffer print output to be flushed later
+	m_BufferedPrintOutput[nBuffer] += msg;
 }
 
-void PrintListener::FlushOutput() 
+void PrintListener::FlushOutput(egSKIPrintEventId eventID) 
 {
-	if (!m_BufferedPrintOutput.size())
-		return;
+	int buffer = eventID - gSKIEVENT_FIRST_PRINT_EVENT ;
 
-	ConnectionListIter connectionIter = GetBegin(gSKIEVENT_PRINT);
+	// Nothing waiting to be sent, so we're done.
+	if (!m_BufferedPrintOutput[buffer].size())
+		return ;
+
+	ConnectionListIter connectionIter = GetBegin(eventID);
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.
-	if (connectionIter == GetEnd(gSKIEVENT_PRINT))
-		return;
+	if (connectionIter == GetEnd(eventID))
+		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
 	// we shouldn't have rolled these methods into Connection.
 	Connection* pConnection = *connectionIter;
 
 	// Convert eventID to a string
-	char const* event = m_pKernelSML->ConvertEventToString(gSKIEVENT_PRINT) ;
+	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Build the SML message we're going to send.
 	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event);
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, m_pAgent->GetName());
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event);
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamMessage, m_BufferedPrintOutput.c_str());
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamMessage, m_BufferedPrintOutput[buffer].c_str());
 
-	m_BufferedPrintOutput.clear();
+	m_BufferedPrintOutput[buffer].clear();
 
 #ifdef _DEBUG
 	// Generate a text form of the XML so we can look at it in the debugger.
@@ -120,7 +116,7 @@ void PrintListener::FlushOutput()
 #endif
 
 	// Send this message to all listeners
-	ConnectionListIter end = GetEnd(gSKIEVENT_PRINT);
+	ConnectionListIter end = GetEnd(eventID);
 
 	AnalyzeXML response;
 

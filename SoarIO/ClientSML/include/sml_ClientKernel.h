@@ -43,7 +43,7 @@ class SystemEventHandlerPlusData : public EventHandlerPlusData
 public:
 	SystemEventHandler  m_Handler ;
 
-	SystemEventHandlerPlusData(SystemEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
+	SystemEventHandlerPlusData(int eventID, SystemEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
 	}
@@ -54,7 +54,7 @@ class AgentEventHandlerPlusData : public EventHandlerPlusData
 public:
 	AgentEventHandler m_Handler ;
 
-	AgentEventHandlerPlusData(AgentEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
+	AgentEventHandlerPlusData(int eventID, AgentEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
 	}
@@ -64,10 +64,14 @@ class RhsEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
 	RhsEventHandler	m_Handler ;
+	std::string		m_FunctionName ;
 
-	RhsEventHandlerPlusData(RhsEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
+	RhsEventHandlerPlusData(int eventID, char const* pFunctionName, RhsEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
+
+		if (pFunctionName)
+			m_FunctionName = pFunctionName ;
 	}
 } ;
 
@@ -105,8 +109,11 @@ protected:
 	Events*				m_pEventMap ;
 
 	// Utility classes used to test for values in the event maps
+	class TestSystemCallbackFull ;
 	class TestSystemCallback ;
+	class TestAgentCallbackFull ;
 	class TestAgentCallback ;
+	class TestRhsCallbackFull ;
 	class TestRhsCallback ;
 
 	// This thread is used to check for incoming events when the client goes to sleep

@@ -33,7 +33,7 @@ class RunEventHandlerPlusData : public EventHandlerPlusData
 public:
 	RunEventHandler m_Handler ;
 
-	RunEventHandlerPlusData(RunEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
+	RunEventHandlerPlusData(int eventID, RunEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
 	}
@@ -44,7 +44,7 @@ class ProductionEventHandlerPlusData : public EventHandlerPlusData
 public:
 	ProductionEventHandler m_Handler ;
 
-	ProductionEventHandlerPlusData(ProductionEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
+	ProductionEventHandlerPlusData(int eventID, ProductionEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
 	}
@@ -55,7 +55,7 @@ class PrintEventHandlerPlusData : public EventHandlerPlusData
 public:
 	PrintEventHandler m_Handler ;
 
-	PrintEventHandlerPlusData(PrintEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(userData, callbackID)
+	PrintEventHandlerPlusData(int eventID, PrintEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
 	{
 		m_Handler = handler ;
 	}
@@ -97,8 +97,11 @@ protected:
 	PrintEventMap		m_PrintEventMap ;
 
 	// These are little utility classes we define in the .cpp file to help with searching the event maps
+	class TestRunCallbackFull ;
 	class TestRunCallback ;
+	class TestProductionCallbackFull ;
 	class TestProductionCallback ;
+	class TestPrintCallbackFull ;
 	class TestPrintCallback ;
 
 	// Used to generate unique IDs for callbacks

@@ -675,7 +675,6 @@ bool Kernel::DestroyAgent(Agent* pAgent)
 		return true ;
 	}
 
-	// BUGBUG? Should we delete the local object anyway even if destroy agent failed?
 	return false ;
 }
 
@@ -890,6 +889,104 @@ void Kernel::UnregisterForEventWithKernel(int id, char const* pAgentName)
 	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, pAgentName, sml_Names::kParamEventID, pEvent) ;
 }
 
+class Kernel::TestSystemCallback : public SystemEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestSystemCallback(int id) { m_ID = id ; }
+
+	bool isEqual(SystemEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+class Kernel::TestSystemCallbackFull : public SystemEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	SystemEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestSystemCallbackFull(int id, SystemEventHandler handler, void* pUserData)
+	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(SystemEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
+class Kernel::TestAgentCallback : public AgentEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestAgentCallback(int id) { m_ID = id ; }
+
+	bool isEqual(AgentEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+class Kernel::TestAgentCallbackFull : public AgentEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	AgentEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestAgentCallbackFull(int id, AgentEventHandler handler, void* pUserData)
+	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(AgentEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
+class Kernel::TestRhsCallback : public RhsEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestRhsCallback(int id) { m_ID = id ; }
+
+	bool isEqual(RhsEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+class Kernel::TestRhsCallbackFull : public RhsEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	std::string		m_FunctionName ;
+	RhsEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestRhsCallbackFull(int eventID, char const* functionName, RhsEventHandler handler, void* pUserData)
+	{ m_EventID = eventID ; m_FunctionName = functionName ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(RhsEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_FunctionName.compare(m_FunctionName) == 0 &&
+			   handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
 /*************************************************************
 * @brief Register for a "SystemEvent".
 *		 Multiple handlers can be registered for the same event.
@@ -914,6 +1011,16 @@ void Kernel::UnregisterForEventWithKernel(int id, char const* pAgentName)
 *************************************************************/
 int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData, bool addToBack)
 {
+	// Start by checking if this id, handler, pUSerData combination has already been registered
+	TestSystemCallbackFull test(id, handler, pUserData) ;
+
+	// See if this handler is already registered
+	SystemEventHandlerPlusData plus(0,0,0,0) ;
+	bool found = m_SystemEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
 	if (m_SystemEventMap.getListSize(id) == 0)
@@ -926,7 +1033,7 @@ int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handl
 	// everything as the objects are added and deleted.
 	m_CallbackIDCounter++ ;
 
-	SystemEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	SystemEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
 	m_SystemEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
@@ -952,6 +1059,16 @@ int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handl
 *************************************************************/
 int Kernel::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData, bool addToBack)
 {
+	// Start by checking if this id, handler, pUSerData combination has already been registered
+	TestAgentCallbackFull test(id, handler, pUserData) ;
+
+	// See if this handler is already registered
+	AgentEventHandlerPlusData plus(0,0,0,0) ;
+	bool found = m_AgentEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
 	if (m_AgentEventMap.getListSize(id) == 0)
@@ -961,51 +1078,12 @@ int Kernel::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler,
 
 	// Record the handler
 	m_CallbackIDCounter++ ;
-	AgentEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	AgentEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
 	m_AgentEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
 	return m_CallbackIDCounter ;
 }
-
-class Kernel::TestSystemCallback : public SystemEventMap::ValueTest
-{
-private:
-	int m_ID ;
-public:
-	TestSystemCallback(int id) { m_ID = id ; }
-
-	bool isEqual(SystemEventHandlerPlusData handler)
-	{
-		return handler.m_CallbackID == m_ID ;
-	}
-} ;
-
-class Kernel::TestAgentCallback : public AgentEventMap::ValueTest
-{
-private:
-	int m_ID ;
-public:
-	TestAgentCallback(int id) { m_ID = id ; }
-
-	bool isEqual(AgentEventHandlerPlusData handler)
-	{
-		return handler.m_CallbackID == m_ID ;
-	}
-} ;
-
-class Kernel::TestRhsCallback : public RhsEventMap::ValueTest
-{
-private:
-	int m_ID ;
-public:
-	TestRhsCallback(int id) { m_ID = id ; }
-
-	bool isEqual(RhsEventHandlerPlusData handler)
-	{
-		return handler.m_CallbackID == m_ID ;
-	}
-} ;
 
 /*************************************************************
 * @brief Register a handler for a RHS (right hand side) function.
@@ -1033,6 +1111,18 @@ public:
 *************************************************************/
 int	Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler, void* pUserData, bool addToBack)
 {
+	smlRhsEventId id = smlEVENT_RHS_USER_FUNCTION ;
+
+	// Start by checking if this functionName, handler, pUSerData combination has already been registered
+	TestRhsCallbackFull test(id, pRhsFunctionName, handler, pUserData) ;
+
+	// See if this handler is already registered
+	RhsEventHandlerPlusData plus(0,0,0,0,0) ;
+	bool found = m_RhsEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
 	if (m_RhsEventMap.getListSize(pRhsFunctionName) == 0)
@@ -1040,7 +1130,7 @@ int	Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler
 		AnalyzeXML response ;
 
 		// The event ID is always the same for RHS functions
-		char const* pEvent = m_pEventMap->ConvertToString(smlEVENT_RHS_USER_FUNCTION) ;
+		char const* pEvent = m_pEventMap->ConvertToString(id) ;
 
 		// Send the register command for this event and this function name
 		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, pEvent, sml_Names::kParamName, pRhsFunctionName) ;
@@ -1048,7 +1138,7 @@ int	Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler
 
 	// Record the handler
 	m_CallbackIDCounter++ ;
-	RhsEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	RhsEventHandlerPlusData handlerPlus(id, pRhsFunctionName, handler, pUserData, m_CallbackIDCounter) ;
 	m_RhsEventMap.add(pRhsFunctionName, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback

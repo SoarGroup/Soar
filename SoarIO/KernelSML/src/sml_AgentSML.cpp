@@ -160,9 +160,6 @@ bool AgentSML::SetStopOnOutput(bool state)
 	if (!m_pOutputListener)
 		return false ;
 
-	// TEMPTEMP BUGBUG: Test trigger of RHS function event
-	m_pKernelSML->GetKernel()->GetInstanceInformation() ;
-
 	m_pOutputListener->SetStopOnOutput(state) ;
 
 	return true ;

@@ -20,8 +20,9 @@ using namespace sml ;
 #define unused(x) (void)(x)
 #endif
 
-AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent) : m_pAgent(pAgent), m_pPrintListener(pPrintListener)
+AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent, egSKIPrintEventId eventID) : m_pAgent(pAgent), m_pPrintListener(pPrintListener)
 {
+	m_EventID = eventID ;
 	m_pAgent->AddRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
 	m_pAgent->AddRunListener(gSKIEVENT_AFTER_RUNNING, this);
 }
@@ -41,5 +42,5 @@ void AgentOutputFlusher::HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agen
 	unused(phase);
 
 	assert(m_pPrintListener);
-	m_pPrintListener->FlushOutput();
+	m_pPrintListener->FlushOutput(m_EventID);
 }

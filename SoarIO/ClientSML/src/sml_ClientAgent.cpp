@@ -218,53 +218,6 @@ bool Agent::LoadProductions(char const* pFilename)
 	return ok ;
 }
 
-/*************************************************************
-* @brief Register for a "RunEvent".
-*		 Multiple handlers can be registered for the same event.
-* @param smlEventId		The event we're interested in (see the list below for valid values)
-* @param handler		A function that will be called when the event happens
-* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
-* 
-* Current set is:
-* smlEVENT_BEFORE_SMALLEST_STEP,
-* smlEVENT_AFTER_SMALLEST_STEP,
-* smlEVENT_BEFORE_ELABORATION_CYCLE,
-* smlEVENT_AFTER_ELABORATION_CYCLE,
-* smlEVENT_BEFORE_PHASE_EXECUTED,
-* smlEVENT_AFTER_PHASE_EXECUTED,
-* smlEVENT_BEFORE_DECISION_CYCLE,
-* smlEVENT_AFTER_DECISION_CYCLE,
-* smlEVENT_AFTER_INTERRUPT,
-* smlEVENT_BEFORE_RUNNING,
-* smlEVENT_AFTER_RUNNING,
-*
-* @returns A unique ID for this callback (used to unregister the callback later) 
-*************************************************************/
-int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData, bool addToBack)
-{
-	// BUGBUG: I think we should do a better job of checking whether this handler has already been registered for this event and
-	// at least asserting.  That's a general issue for all events.  I'm not sure what happens -- I think two copies of the same handler
-	// will be registered and get called twice.
-
-	// If we have no handlers registered with the kernel, then we need
-	// to register for this event.  No need to do this multiple times.
-	if (m_RunEventMap.getListSize(id) == 0)
-	{
-		GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
-	}
-
-	// Record the handler
-	m_CallbackIDCounter++ ;
-
-	// We use a struct rather than a pointer to a struct, so there's no need to new/delete
-	// everything as the objects are added and deleted.
-	RunEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
-	m_RunEventMap.add(id, handlerPlus, addToBack) ;
-
-	// Return the ID.  We use this later to unregister the callback
-	return m_CallbackIDCounter ;
-}
 
 // These are little utility classes we define to help with searching the event maps
 class Agent::TestRunCallback : public RunEventMap::ValueTest
@@ -305,6 +258,117 @@ public:
 		return handler.m_CallbackID == m_ID ;
 	}
 } ;
+
+class Agent::TestRunCallbackFull : public RunEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	RunEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestRunCallbackFull(int id, RunEventHandler handler, void* pUserData)
+	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(RunEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
+class Agent::TestProductionCallbackFull : public ProductionEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	ProductionEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestProductionCallbackFull(int id, ProductionEventHandler handler, void* pUserData)
+	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(ProductionEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
+class Agent::TestPrintCallbackFull : public PrintEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	PrintEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestPrintCallbackFull(int id, PrintEventHandler handler, void* pUserData)
+	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(PrintEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
+/*************************************************************
+* @brief Register for a "RunEvent".
+*		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+* 
+* Current set is:
+* smlEVENT_BEFORE_SMALLEST_STEP,
+* smlEVENT_AFTER_SMALLEST_STEP,
+* smlEVENT_BEFORE_ELABORATION_CYCLE,
+* smlEVENT_AFTER_ELABORATION_CYCLE,
+* smlEVENT_BEFORE_PHASE_EXECUTED,
+* smlEVENT_AFTER_PHASE_EXECUTED,
+* smlEVENT_BEFORE_DECISION_CYCLE,
+* smlEVENT_AFTER_DECISION_CYCLE,
+* smlEVENT_AFTER_INTERRUPT,
+* smlEVENT_BEFORE_RUNNING,
+* smlEVENT_AFTER_RUNNING,
+*
+* @returns A unique ID for this callback (used to unregister the callback later) 
+*************************************************************/
+int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData, bool addToBack)
+{
+	// Start by checking if this id, handler, pUSerData combination has already been registered
+	TestRunCallbackFull test(id, handler, pUserData) ;
+
+	// See if this handler is already registered
+	RunEventHandlerPlusData plus(0,0,0,0) ;
+	bool found = m_RunEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_RunEventMap.getListSize(id) == 0)
+	{
+		GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
+	}
+
+	// Record the handler
+	m_CallbackIDCounter++ ;
+
+	// We use a struct rather than a pointer to a struct, so there's no need to new/delete
+	// everything as the objects are added and deleted.
+	RunEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
+	m_RunEventMap.add(id, handlerPlus, addToBack) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
+}
 
 /*************************************************************
 * @brief Unregister for a particular event
@@ -351,6 +415,16 @@ bool Agent::UnregisterForRunEvent(int callbackID)
 *************************************************************/
 int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData, bool addToBack)
 {
+	// Start by checking if this id, handler, pUSerData combination has already been registered
+	TestProductionCallbackFull test(id, handler, pUserData) ;
+
+	// See if this handler is already registered
+	ProductionEventHandlerPlusData plus(0,0,0,0) ;
+	bool found = m_ProductionEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
 	if (m_ProductionEventMap.getListSize(id) == 0)
@@ -360,7 +434,7 @@ int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHa
 
 	// Record the handler
 	m_CallbackIDCounter++ ;
-	ProductionEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	ProductionEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
 	m_ProductionEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
@@ -409,6 +483,16 @@ bool Agent::UnregisterForProductionEvent(int callbackID)
 *************************************************************/
 int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData, bool addToBack)
 {
+	// Start by checking if this id, handler, pUSerData combination has already been registered
+	TestPrintCallbackFull test(id, handler, pUserData) ;
+
+	// See if this handler is already registered
+	PrintEventHandlerPlusData plus(0,0,0,0) ;
+	bool found = m_PrintEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
 	if (m_PrintEventMap.getListSize(id) == 0)
@@ -419,7 +503,7 @@ int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, 
 	// Record the handler
 	m_CallbackIDCounter++ ;
 
-	PrintEventHandlerPlusData handlerPlus(handler, pUserData, m_CallbackIDCounter) ;
+	PrintEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
 	m_PrintEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback

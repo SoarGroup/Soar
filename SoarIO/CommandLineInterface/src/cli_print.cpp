@@ -132,6 +132,16 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, PrintBitset options, in
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
+	// Strip any surrounding "{"
+	/*
+	std::string local = *pArg ;
+	if (local.length() > 2)
+	{
+		if (local[0] == '{') local = local.substr(1) ;
+		if (local[local.length()-1] == '}') local = local.substr(0, local.length()-1) ;
+	}
+	*/
+
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 

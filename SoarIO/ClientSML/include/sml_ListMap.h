@@ -160,8 +160,38 @@ public:
 			}
 		}
 
-		// Return NULL if nothing matches
+		// Return the value we are passed as a "notFoundKey" if nothing matches
 		return notFoundKey ;
+	}
+
+	// Search all values to find the first value that matches this test.
+	bool findFirstValueByTest(ValueTest* pTest, ValueType* pReturnValue)
+	{
+		for (KeyMapIter mapIter = m_Map.begin() ; mapIter != m_Map.end() ; mapIter++)
+		{
+			KeyType key = mapIter->first ;
+			ValueList* pList = getList(key) ;
+
+			if (pList)
+			{
+				// Walk the list, removing items based on if they match the test
+				for (ValueListIter iter = pList->begin() ; iter != pList->end() ;)
+				{
+					ValueType value = *iter ;
+
+					if (pTest->isEqual(value))
+					{
+						*pReturnValue = value ;
+						return  true ;
+					}
+					else
+						iter++ ;
+				}
+			}
+		}
+
+		// Return NULL if nothing matches
+		return false ;
 	}
 
 

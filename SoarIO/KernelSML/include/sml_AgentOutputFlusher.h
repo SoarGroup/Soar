@@ -21,9 +21,10 @@ class AgentOutputFlusher : public gSKI::IRunListener
 protected:
 	gSKI::IAgent* m_pAgent;
 	PrintListener* m_pPrintListener;
+	egSKIPrintEventId m_EventID ;
 
 public:
-	AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent);
+	AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent, egSKIPrintEventId eventID);
 	virtual ~AgentOutputFlusher();
 
 	virtual void HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase);

@@ -235,6 +235,13 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 {
 	// Record a RHS function
 	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ; 
+	int callback_rhs_dup = pKernel->AddRhsFunction("test-rhs", &MyRhsFunctionHandler, 0) ;
+
+	if (callback_rhs_dup != callback_rhs1)
+	{
+		cout << "Error registering a duplicate RHS function.  This should be detected and be ignored" << endl ;
+		return false ;
+	}
 
 	Identifier* pInputLink = pAgent->GetInputLink() ;
 	if (!pInputLink)
@@ -326,7 +333,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	pKernel->UnregisterForSystemEvent(systemStop) ;
 
 	// Throw in a pattern as a test
-	std::string pattern = pAgent->ExecuteCommandLine("print -i {(s1 ^* *)}") ;
+	std::string pattern = pAgent->ExecuteCommandLine("print -i (s1 ^* *)") ;
 
 	std::string expand = pKernel->ExpandCommandLine("p s1") ;
 	bool isRunCommand = pKernel->IsRunCommand("d 3") ;
@@ -347,6 +354,13 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	int count ;
 	count = 0 ;
 	int callback1 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &count) ;
+	int callback_dup = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &count) ;
+
+	if (callback1 != callback_dup)
+	{
+		cout << "Error when registering the same function twice.  Should detect this and ignore the second registration" << endl ;
+		return false ;
+	}
 
 	// Register another handler for the same event, to make sure we can do that.
 	// Register this one ahead of the previous handler (so it will fire before MyRunEventHandler)
@@ -358,7 +372,9 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	// Run returns the result (succeeded, failed etc.)
 	// To catch the trace output we have to register a print event listener
 	std::string trace ;	// We'll pass this into the handler and build up the output in it
+	std::string structured ;	// Structured trace goes here
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+	int callbacks = pAgent->RegisterForPrintEvent(smlEVENT_STRUCTURED_OUTPUT, MyPrintEventHandler, &structured) ;
 
 	int beforeCount = 0 ;
 	int afterCount = 0 ;
@@ -374,10 +390,14 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		return false ;
 	}
 
+	pAgent->UnregisterForPrintEvent(callbacks) ;
 	pAgent->UnregisterForPrintEvent(callbackp) ;
 	pAgent->UnregisterForRunEvent(callback_before) ;
 	pAgent->UnregisterForRunEvent(callback_after) ;
+
+	// Print out the standard trace and the same thing as a structured XML trace
 	cout << trace << endl ;
+	cout << structured << endl ;
 
 	// Then add some tic tac toe stuff which should trigger output
 	Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;

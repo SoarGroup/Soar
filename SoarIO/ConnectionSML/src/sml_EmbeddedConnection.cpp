@@ -101,8 +101,6 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	return NULL ;
 }
 
-// BUGBUG: We still need to pass the port to listen on over to the other side
-// I'm waiting until the Linux code has settled down before doing this.
 bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimized, int portToListenOn)
 {
 	ClearError() ;
@@ -173,7 +171,8 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	}
 
 #else // _WIN32
-// BUGBUG: We'll need to do a dynamic Linux equivalent here.
+	// BUGBUG: We'll need to do a dynamic Linux equivalent here.
+	// Use dlopen and dlsym to dynamically load up the "smlDirect_XXX" methods.
 	m_pProcessMessageFunction = &sml_ProcessMessage;
 	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
 	
@@ -307,50 +306,6 @@ ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait
 	return pResult ;
 }
 
-/** 
-	Even though this is an asynch connection, send this message back synchronously.
-	This turns out to be important for the kernel.
-	Here's the situation: The kernel is loaded using an asynch connection by a process which creates an agent and then waits in a keyboard handler (say).
-	A remote client establishes a connection and runs the kernel.  Output is sent over the embeddedd connection to the process which is
-	now sitting in the keyboard handler, so it never sees the incoming message and the whole process hangs.
-	(Note this is not a problem if the embedded client issues the run because then it will be in a message processing loop waiting for the run to complete).
-	The fix for this problem is to send the output from the kernel directly to the client (which is perfectly fine to do) so it is processed
-	immediately and a response is created immediately (all on the kernel's receiver thread) allowing execution to continue.
-
-	We have to be careful only to send calls here, not responses or the message handling will get thrown off (the client may be waiting
-	for a response and it won't see it if we may a synchronous call for the response).
-
-	BUGBUG: I've decided this is unsafe.  We can get a hang by calling through here and then as a result the call
-	triggers the other side to call back to us etc.
-	I think we need a better fix for the original problem.  We may just have to drop the simple embedded model where the
-	client is allowed to block without periodically calling to check from incoming messages.  Or we may need
-	to start a second thread in that case to do that checking.  Perhaps that thread should run on the client, not the kernel?
-
-	Do we need a thread on the client side to match the kernel's receiver thread when running in asynch mode?
-	Then to issue a command on the client we'd add it to the messages to be sent by that client thread and it would
-	be checking steadily for incoming messages from the kernel.
-*/
-
-/*
-void EmbeddedConnectionAsynch::SendSynchMessage(ElementXML_Handle hSendMsg)
-{
-	// Make the call to the kernel, passing the message over and getting an immediate response since this is
-	// an embedded call.
-	ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_SYNCH) ;
-
-	// We cache the response
-	if (m_pLastResponse)
-	{
-		delete m_pLastResponse ;
-		m_pLastResponse = NULL ;
-	}
-
-	if (hResponse)
-	{
-		m_pLastResponse = new ElementXML(hResponse) ;
-	}
-}
-*/
 void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
 {
 	ClearError() ;
