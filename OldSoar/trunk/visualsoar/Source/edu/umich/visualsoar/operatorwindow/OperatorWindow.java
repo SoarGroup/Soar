@@ -754,6 +754,37 @@ public class OperatorWindow extends JTree {
 	}
 	
 	/**
+	 * Displays a find dialog to search the subtree of the currently selected
+     * node
+	 */
+    public void searchFiles()
+    {
+		 TreePath tp = getSelectionPath();
+		 OperatorNode selNode = (OperatorNode) tp.getLastPathComponent();
+         FindInProjectDialog theDialog =
+             new FindInProjectDialog(MainFrame.getMainFrame(),
+                                     this,
+                                     selNode);
+         theDialog.setVisible(true);
+	}
+	
+	/**
+	 * Displays a replace dialog to search the subtree of the currently selected
+     * node
+	 */
+    public void replaceFiles()
+    {
+		 TreePath tp = getSelectionPath();
+		 OperatorNode selNode = (OperatorNode) tp.getLastPathComponent();
+         ReplaceInProjectDialog theDialog =
+             new ReplaceInProjectDialog(MainFrame.getMainFrame(),
+                                        this,
+                                        selNode);
+         theDialog.setVisible(true);
+	}
+	
+
+	/**
 	 * Returns the SoarWorkingMemoryModel
    * @see SoarWorkingMemoryModel
 	 */
@@ -1481,12 +1512,15 @@ public class OperatorWindow extends JTree {
 	/**
 	 * Searches all files in the project for the specified string and returns a
 	 * Vector of FindInProjectListObjects of all instances
+     * @param opNode the operator subtree (which may be the whole project) to search
 	 * @param StringToFind the String to Find
+     * @param matchCase
 	 */
-	public void findInProject(String stringToFind, boolean matchCase) {
-		TreeModel model = getModel();
-		TreeNode root = (TreeNode)model.getRoot();
-		Enumeration bfe = root.breadthFirstEnumeration();
+	public void findInProject(OperatorNode opNode,
+                              String stringToFind,
+                              boolean matchCase)
+    {
+		Enumeration bfe = opNode.breadthFirstEnumeration();
 		Vector v = new Vector();
 		
 		if (! matchCase) {

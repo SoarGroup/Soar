@@ -31,58 +31,6 @@ public class FindDialog extends JDialog {
 	OperatorWindow		opWin = null;
 		
 	/**
-	 * The 'find in project' version
-	 * @param owner Frame which owns the dialog
-	 * @param operators a reference to the OperatorWindow
-	 */
-	public FindDialog(final Frame owner, OperatorWindow operators) {
-		super(owner, "Find", false);
-		
-		findPanel = new FindPanel(true);
-		buttonPanel = new FindButtonPanel(true);
-		opWin = operators;
-		setResizable(false);
-		Container contentPane = getContentPane();
-		GridBagLayout gridbag = new GridBagLayout();
-		GridBagConstraints c = new GridBagConstraints();
-		contentPane.setLayout(gridbag);
-		
-		// specifies component as last one on the row
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		          
-		contentPane.add(findPanel, c);
-		contentPane.add(buttonPanel, c);
-		pack();
-		getRootPane().setDefaultButton(buttonPanel.findButton);
-		
-		addWindowListener(new WindowAdapter() {
-			public void windowOpened(WindowEvent we) {
-				setLocationRelativeTo(owner);
-				findPanel.requestFocus();
-			}
-		});
-		
-		buttonPanel.cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-				
-		buttonPanel.findButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Object[] theData = findPanel.getData();
-				String toFind = (String)theData[0];
-				Boolean caseSensitive = (Boolean)theData[2];
-
-				findInProject(opWin, toFind, 
-								caseSensitive.booleanValue());
-				dispose();
-			}
-		});
-	}	
-	
-	/**
 	 * @param owner Frame which owns the dialog
 	 * @param ruleEditor the rule editor in which to search
 	 */
@@ -136,12 +84,6 @@ public class FindDialog extends JDialog {
 				}
 			}
 		});
-	}
-	
-	private void findInProject(OperatorWindow opWin, String toFind, 
-												boolean caseSensitive) {
-
-		opWin.findInProject(toFind, caseSensitive);
 	}
 	
 }

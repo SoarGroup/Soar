@@ -21,18 +21,6 @@ class FindOptionsPanel extends JPanel {
 	JCheckBox 		matchCase = new JCheckBox("Match Case", false);
 	JCheckBox 		wrap = new JCheckBox("Wrap",false);
 
-	/**
-	 * The 'find in project' version
-	 */
-	public FindOptionsPanel(boolean findInProject) {
-		matchCase.setMnemonic('m');	
-		setLayout(new FlowLayout(FlowLayout.LEFT));
-		add(matchCase);		
-	}	
-
-	/**
-	 * The default single-file find version
-	 */
 	public FindOptionsPanel() {
 		upButton.setMnemonic('u');
 		downButton.setMnemonic('d');

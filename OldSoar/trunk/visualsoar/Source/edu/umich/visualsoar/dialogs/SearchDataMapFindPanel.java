@@ -14,11 +14,11 @@ import javax.swing.border.*;
  */
 class SearchDataMapFindPanel extends JPanel {
 
-	JTextField 			findField = new JTextField(20);
-	FindOptionsPanel 	optionsPanel;
+	JTextField                findField = new JTextField(20);
+	FindInProjectOptionsPanel optionsPanel;
 
 	public SearchDataMapFindPanel() {
-		optionsPanel = new FindOptionsPanel(true);
+		optionsPanel = new FindInProjectOptionsPanel();
 		
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		add(findField);
@@ -39,12 +39,10 @@ class SearchDataMapFindPanel extends JPanel {
 	 * @return an array of objects representing the data
 	 */
 	public Object[] getData() {
-		Object[] findData = new Object[4];
+		Object[] findData = new Object[2];
 		
 		findData[0] = findField.getText();
-		findData[1] = optionsPanel.getDirection();
-		findData[2] = optionsPanel.getMatchCase();
-		findData[3] = optionsPanel.getWrap();
+		findData[1] = optionsPanel.getMatchCase();
 		
 		return findData;
 	}

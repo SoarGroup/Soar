@@ -18,28 +18,6 @@ class FindPanel extends JPanel {
 	JTextField 			findField = new JTextField(20);
 	FindOptionsPanel 	optionsPanel;
 
-	/**
-	 * The 'find in project' version
-	 */
-	public FindPanel(boolean findInProject) {
-		optionsPanel = new FindOptionsPanel(findInProject);
-		
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		add(findField);
-		add(optionsPanel);
-
-		setBorder(new CompoundBorder(
-			BorderFactory.createTitledBorder("Find"),
-			BorderFactory.createEmptyBorder(10,10,10,10)));
-			
-		// So that enter can affirmatively dismiss the dialog	
-		findField.getKeymap().removeKeyStrokeBinding(
-			KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
-	}	
-
-	/**
-	 * The default single-file find version
-	 */
 	public FindPanel() {
 		optionsPanel = new FindOptionsPanel();
 	

@@ -93,7 +93,7 @@ public class SearchDataMapDialog extends JDialog {
         Boolean[] theOptions = optionsPanel.getData();
 
         String toFind = (String) theData[0];
-        Boolean caseSensitive = (Boolean) theData[2];
+        Boolean caseSensitive = (Boolean) theData[1];
 
         if(!toFind.equals(lastSearch)) {
           initializeSearch();

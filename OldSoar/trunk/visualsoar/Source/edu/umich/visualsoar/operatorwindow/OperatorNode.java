@@ -40,6 +40,8 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 
 	static protected JMenuItem openRulesItem = new JMenuItem("Open Rules");
 	static protected JMenuItem openDataMapItem = new JMenuItem("Open DataMap");
+	static protected JMenuItem searchItem = new JMenuItem("Find...");
+	static protected JMenuItem replaceItem = new JMenuItem("Replace...");
 	static protected JMenuItem deleteItem = new JMenuItem("Delete");
 	static protected JMenuItem renameItem = new JMenuItem("Rename...");
 	static protected JMenuItem exportItem = new JMenuItem("Export");
@@ -113,7 +115,33 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 				ow.openDataMap();
 			}
 		});
+
+        contextMenu.addSeparator();
+        
+		contextMenu.add(searchItem);
+		searchItem.addActionListener(
+            new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    OperatorWindow ow = (OperatorWindow)contextMenu.getInvoker();
+                    ow.searchFiles();
+                }
+            });
 		
+		contextMenu.add(replaceItem);
+		replaceItem.addActionListener(
+            new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    OperatorWindow ow = (OperatorWindow)contextMenu.getInvoker();
+                    ow.replaceFiles();
+                }
+            });
+		
+        contextMenu.addSeparator();
+        
 		contextMenu.add(deleteItem);
 		deleteItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

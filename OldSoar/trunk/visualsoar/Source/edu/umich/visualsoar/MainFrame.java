@@ -2205,7 +2205,10 @@ public class MainFrame extends JFrame
          */  		
 		public void actionPerformed(ActionEvent e) 
         {
-			FindDialog theDialog = new FindDialog(MainFrame.this, operatorWindow);
+			FindInProjectDialog theDialog =
+                new FindInProjectDialog(MainFrame.this,
+                                        operatorWindow,
+                                        (OperatorNode)operatorWindow.getModel().getRoot());
 			theDialog.setVisible(true);
 		}
 	}
@@ -2228,7 +2231,10 @@ public class MainFrame extends JFrame
          */
         public void actionPerformed(ActionEvent e) 
         {
-            ReplaceInProjectDialog replaceDialog = new ReplaceInProjectDialog(MainFrame.this, operatorWindow);
+            ReplaceInProjectDialog replaceDialog =
+                new ReplaceInProjectDialog(MainFrame.this,
+                                           operatorWindow,
+                                           (OperatorNode)operatorWindow.getModel().getRoot());
             replaceDialog.setVisible(true);
         }
     }
