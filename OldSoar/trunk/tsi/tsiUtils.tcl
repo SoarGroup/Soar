@@ -1851,3 +1851,39 @@ proc unrequire-op {} {
   puts {end req}
 }
 
+proc askCallback { args } {
+	echo "\nPlease choose one of the following:\n"
+	set numargs [llength $args]
+
+	for {set i 0} {$i < $numargs} {incr i 1} {
+		echo "$i: [lindex $args $i]\n"
+	}
+	
+	echo "Or choose one of the following to change the user-select mode\n"
+	echo "to something else:  $numargs (first), [expr $numargs+1] (last), [expr $numargs+2] (random)\n"
+	
+	echo "Enter selection (1-[expr $numargs+2]): "
+	
+	#set choice [gets stdin]
+	set choice [uplevel {gets stdin}]
+	
+	echo "\nChoice was $choice"
+	}
+
+proc askCallback2 { args } {
+	puts "\nPlease choose one of the following:\n"
+	set numargs [llength $args]
+
+	for {set i 0} {$i < $numargs} {incr i 1} {
+		puts "$i: [lindex $args $i]\n"
+	}
+	
+	puts "Or choose one of the following to change the user-select mode\n"
+	puts "to something else:  $numargs (first), [expr $numargs+1] (last), [expr $numargs+2] (random)\n"
+	
+	puts "Enter selection (1-[expr $numargs+2]): "
+	
+	set choice [uplevel {gets stdin}]
+	
+	puts "\nChoice was $choice"
+}
