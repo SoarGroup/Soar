@@ -165,14 +165,14 @@ public class FeedbackList extends JList
     {
         private Border lineBorder = BorderFactory.createLineBorder(Color.red,2),
             emptyBorder = BorderFactory.createEmptyBorder(2,2,2,2);
-        private Color amber;
-        private Color green;
+        private Color textColor;
+        private Color floTextColor;
                        
         public FeedbackCellRenderer() 
         {
             setOpaque(true);
-            amber = Color.orange.darker();
-            green = Color.green.darker();
+            textColor = Color.blue.darker();
+            floTextColor = Color.green.darker();
             setFont(new Font("SansSerif",Font.PLAIN,12));
         }
         
@@ -193,14 +193,14 @@ public class FeedbackList extends JList
                 {
                     if(((FeedbackListObject)value).isGenerated()) 
                     {
-                        setForeground(green);
+                        setForeground(floTextColor);
                     }
                     else 
                     {
                         if(((FeedbackListObject)value).isError())
                         setForeground(Color.red);
                         else
-                        setForeground(amber);
+                        setForeground(textColor);
                     }
                 }
                 else
