@@ -5,3 +5,9 @@ SoarInterface.bsc
 Release
 libsoar8.5.0.pdb
 Debug
+Makefile
+config.cache
+config.log
+config.status
+soar8.5.0
+soartk8.5.0

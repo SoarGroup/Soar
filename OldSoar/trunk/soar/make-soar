@@ -1,21 +1,32 @@
-#!/bin/csh
+#!/bin/sh
+
 pushd kernel
 chmod u+x ./configure
 
-# a more verbose version, if everything isn't automatically found...
-#./configure --with-tcl-lib-dir=/usr/local/lib --with-tk-lib-dir=/usr/local/lib
-
 ./configure
+if [ $? == "1" ]; then
+  echo
+  echo "*** Couldn't configure kernel (check for error messages above)."
+  exit
+fi
 
 make
 popd
 pushd tcl-interface
 chmod u+x ./configure
 
-# a more verbose version, if everything isn't automatically found...
-#./configure --prefix=../.. --with-tcl-lib-dir=/usr/local/lib --with-tcl-doc-dir=/usr/tcl/man --with-tk-lib-dir=/usr/local/lib  --with-kernel=../kernel
+./configure --prefix=../.. --with-kernel=../kernel
+if [ $? == "1" ]; then
 
-./configure --with-preferred-tcl-version=8.3 --with-preferred-tk-version=8.3
+  ./configure --prefix=../.. --with-tcl-lib-dir=/usr/local/ActiveTcl/lib \
+  --with-tcl-doc-dir=/usr/local/ActiveTcl/man --with-tk-lib-dir=/usr/local/ActiveTcl/lib  \
+  --with-kernel=../kernel
+  if [ $? == "1" ]; then
+    echo
+    echo "*** Couldn't configure tcl-interface (check for error messages above)."
+    exit
+  fi
+fi
 
 make
 cp  libsoar8.5* ../library

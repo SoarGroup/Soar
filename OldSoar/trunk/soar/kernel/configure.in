@@ -34,52 +34,6 @@ AC_STRUCT_TM
 
 
 #--------------------------------------------------------------------
-#	Disable the creation of position-independent code if
-#	instructed to do so.
-#--------------------------------------------------------------------
-
-AC_ARG_ENABLE(pic, [  --disable-pic           disable generation of position-independent code],
-	[soar_ok=$enableval], [soar_ok=yes])
-
-if test "$soar_ok" = "yes"; then
-    AC_MSG_CHECKING("for tcl lib")
-
-    AC_ARG_WITH(tcl-lib-dir, [  --with-tcl-lib-dir=DIR  location of tclConfig.sh and libtcl],
-                TCL_LIB_DIR=$withval, TCL_LIB_DIR="NONE")
-
-    if test "$TCL_LIB_DIR" = "NONE"; then
-        dirs="../../../lib $exec_prefix/lib $prefix/lib /usr/lib /usr/local/lib /usr/tcl/lib"
-        for i in $dirs ; do
-            if test -r $i/tclConfig.sh; then
-                AC_MSG_RESULT($i)
-                TCL_LIB_DIR=$i
-                break
-            fi
-        done
-    fi
-
-    if test "$TCL_LIB_DIR" = "NONE"; then
-    AC_MSG_ERROR(Cannot find directory containing tclConfig.sh.  It should be in the same directory as libtcl)
-    fi
-
-    file=${TCL_LIB_DIR}/tclConfig.sh
-    . $file
-
-    #--------------------------------------------------------------------
-    #       Of course, if we're using GCC, all the above goes out the
-    #       window.
-    #--------------------------------------------------------------------
-
-    if test "$ac_cv_prog_gcc" = yes; then
-            TCL_SHLIB_CFLAGS="-fPIC"
-    fi
-
-else
-	TCL_SHLIB_CFLAGS=""
-fi
-
-
-#--------------------------------------------------------------------
 #	Figure out how to make the compiler compile ANSI code.
 #--------------------------------------------------------------------
 
