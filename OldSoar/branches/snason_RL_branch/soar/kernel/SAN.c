@@ -47,8 +47,8 @@ void pop_record(RL_record **r){
 	new_record = *r;
     free_list(new_record->pointer_list);
 	symbol_remove_ref(new_record->goal_level);
-//	if (new_record->op)
-//		symbol_remove_ref(new_record->op);
+	if (new_record->op)
+		symbol_remove_ref(new_record->op);
 	*r = new_record->next;
 	free(new_record);
 }
@@ -140,7 +140,7 @@ void record_for_RL()
 
 	  record = current_agent(records);
    	  record->op = w->value;
-	  // symbol_add_ref(record->op);       // SAN ??
+	  symbol_add_ref(record->op);       // SAN ??
 	  record->previous_Q = record->next_Q;
 
 	  for (pref = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
@@ -151,7 +151,7 @@ void record_for_RL()
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  if ((prod->times_applied % 10 == 9) && (current_agent(d_cycle_count) >= 0)){
+			  if ((prod->times_applied % 10 == 4) && (current_agent(d_cycle_count) > 0)){
 				  // prod->times_applied = 0;
 				  prod = specify_production(ist);
 				  if (prod){
@@ -191,15 +191,17 @@ production *specify_production(instantiation *ist){
 		for (i = 0 ; i < num; i++)
 			w = w->rete_next;
 		cond = make_simple_condition(w->id, w->attr, w->value);
+		// Check that the condition made from this wme is not already
+		// in the condition list of the production.
 		for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
 				if (conditions_are_equal(c, cond)){
-					deallocate_condition_list(cond);
+					free_with_pool(&current_agent(condition_pool), cond);
 					cond = NIL;
 					break;
 					}
 				}
 		if (!cond) continue;	
-		deallocate_condition_list(cond);
+		free_with_pool(&current_agent(condition_pool), cond);
 		trace_to_prod(w, tc_num, &cond_top);
 		for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
 		copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
@@ -248,7 +250,7 @@ void learn_RL_productions(int level){
 		//	prod->times_applied++;
 		}
 
-// 			symbol_remove_ref(record->op);
+ 			symbol_remove_ref(record->op);
 		 	record->op = NIL;
 			record->reward = 0.0;
 			record->step = 0;
@@ -359,26 +361,26 @@ action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Sy
 
     // id
 	temp = id_sym;
-//	symbol_add_ref(temp);
+	symbol_add_ref(temp);
 	variablize_symbol(&temp);
 	rhs->id = symbol_to_rhs_value(temp);
 
 
     // attribute
     temp = attr_sym;
-//	symbol_add_ref(temp);
+	symbol_add_ref(temp);
 	variablize_symbol(&temp);
 	rhs->attr = symbol_to_rhs_value(temp);
 
 	// value
 	temp = val_sym;
-//	symbol_add_ref (temp);
+	symbol_add_ref (temp);
 	variablize_symbol (&temp);
 	rhs->value = symbol_to_rhs_value (temp);
 
 	// referent
 	temp = ref_sym;
-//	symbol_add_ref(temp);
+	symbol_add_ref(temp);
 	variablize_symbol(&temp);
 	rhs->referent = symbol_to_rhs_value(temp);
 
@@ -407,8 +409,8 @@ condition *make_simple_condition(Symbol *id_sym,
         newcond->test_for_acceptable_preference = FALSE;
     }
 
-    newcond->data.tests.id_test = make_equality_test(id_sym);
-    newcond->data.tests.attr_test = make_equality_test(attr_sym);
+    newcond->data.tests.id_test = make_equality_test_without_adding_reference(id_sym);
+    newcond->data.tests.attr_test = make_equality_test_without_adding_reference(attr_sym);
 
     /*if (val_sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
@@ -417,7 +419,7 @@ condition *make_simple_condition(Symbol *id_sym,
         buf[1] = ''\0'';
         val_sym = generate_new_variable(buf);
     }*/
-    newcond->data.tests.value_test = make_equality_test(val_sym);
+    newcond->data.tests.value_test = make_equality_test_without_adding_reference(val_sym);
 
     return newcond;
 
@@ -447,17 +449,36 @@ void SAN_add_goal_or_impasse_tests(condition * all_conds)
     }
 }
 
-
+// Given a wme and the identifiers in the instantiated condition-list of a production
+// return a condition list linking wme->id to one in the list of identifiers
+// For now, these conditions will be positive conditions, using only equality tests.
 void trace_to_prod(wme * w, tc_number tc_prod, condition ** cond){
 	tc_number tc_seen = get_new_tc_number();
 	int i = 1;
+	condition *c;
 
 	while(!trace_to_prod_depth(w, tc_prod, tc_seen, cond, i)){
 		i++;
 		tc_seen = get_new_tc_number();
 	}
+
+	for (c = *cond ; c ; c = c->next){
+          symbol_add_ref(referent_of_equality_test(c->data.tests.id_test));
+          symbol_add_ref(referent_of_equality_test(c->data.tests.attr_test));
+          symbol_add_ref(referent_of_equality_test(c->data.tests.value_test));
+
+    }
 }
 
+// Given-
+// wme w
+// tc_prod: the identifiers in the instantiated condition-list of a production
+// depth d
+// cond: a condition list.
+// Find a list of wmes of length d that links w to an identifier in tc_prod.
+// If such a list exists, return TRUE and add the list to cond.
+// Else, return FALSE and cond should be unchanged.
+// In either case, no reference_counts should be changed.
 bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond, int depth){
 	Symbol * id = w->id;
 	Symbol * attr = w->attr;
@@ -469,7 +490,7 @@ bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, conditio
 	if (depth == 0) return FALSE;
 	// if(symbol_is_in_tc(id, tc_seen)) return FALSE;
 	new_cond = make_simple_condition(id, attr, value);
-	if (new_cond->test_for_acceptable_preference == w->acceptable)
+//	if (new_cond->test_for_acceptable_preference == w->acceptable)
 		insert_at_head_of_dll(*cond, new_cond, next, prev);
 	if (symbol_is_in_tc(id, tc_prod)){
 		return TRUE;

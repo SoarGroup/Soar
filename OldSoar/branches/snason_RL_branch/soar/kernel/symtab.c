@@ -529,8 +529,7 @@ void reset_variable_gensym_numbers(void)
 bool print_sym(void *item)
 {
     print_string(symbol_to_string(item, TRUE, NIL, 0));
-	print(" ref count is %d", ((Symbol *) item)->common.reference_count);
-	print_string("\n");
+    print_string("\n");
     return FALSE;
 }
 

@@ -2144,15 +2144,6 @@ void decide_non_context_slot(slot * s)
 
                 /* REW: end   09.15.96 */
 
-				/* MRJ 5/23/01 */
-	#ifdef SOAR_DECAY
-		if (current_agent(sysparams)[WME_DECAY_SYSPARAM])
-		{
-			decay_update_new_wme(w, s->num_changes);
-		}
-	#endif
-	/* end MRJ 5/23/01 */
-
                 add_wme_to_wm(w);
             }
         }

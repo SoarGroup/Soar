@@ -119,13 +119,6 @@ wme *make_wme(Symbol * id, Symbol * attr, Symbol * value, bool acceptable)
     w->gds = NIL;
 /* REW: end 09.15.96 */
 
-	/* MRJ 5/23/01 */
-#ifdef SOAR_DECAY
-     w->decay_element = NIL;
-     w->has_decay_element = FALSE;
-#endif
-/* end MRJ 5/23/01 */
-
     return w;
 }
 
@@ -258,18 +251,6 @@ void do_buffered_wm_changes(void)
         }
 #endif
 
-		/* MRJ 5/23/01 */
-#ifdef SOAR_DECAY
-	if (current_agent(sysparams)[WME_DECAY_SYSPARAM])
-    {
-        if(w->has_decay_element)
-        {
-            decay_deactivate_element(w);
-        }
-	}
-#endif //SOAR_DECAY
-/* end MRJ 5/23/01 */
-
         wme_remove_ref(w);
         free_cons(c);
         current_agent(wme_removal_count)++;
@@ -284,19 +265,6 @@ void deallocate_wme(wme * w)
     print_with_symbols("\nDeallocate wme: ");
     print_wme(w);
 #endif
-
-	/* MRJ 5/23/01 */
-#ifdef SOAR_DECAY
-  if (current_agent(sysparams)[WME_DECAY_SYSPARAM])
-  {
-      if(w->has_decay_element)
-      {
-          decay_remove_element(w);
-      }
-  }
-#endif //SOAR_DECAY
-/* end MRJ 5/23/01 */
-
     symbol_remove_ref(w->id);
     symbol_remove_ref(w->attr);
     symbol_remove_ref(w->value);

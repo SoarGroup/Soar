@@ -171,13 +171,6 @@ void init_soar_agent(void) {
   init_sysparams ();
   init_tracing ();
   init_explain();  /* AGR 564 */
-
-  /* MRJ 5/23/01 */
-#ifdef SOAR_DECAY
-    decay_init();
-#endif
-/* end MRJ 5/23/01 */
-
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
   init_real_time();
