@@ -1,9 +1,10 @@
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /********************************************************************
 * @file igski_conditionset.h 
-*********************************************************************
-* @remarks Copyright (C) 2002 Soar Technology, All rights reserved. 
-* The U.S. government has non-exclusive license to this software 
-* for government purposes. 
 *********************************************************************
 * created:	   6/19/2002   9:28
 *

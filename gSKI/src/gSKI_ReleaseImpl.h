@@ -1,9 +1,10 @@
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /********************************************************************
 * @file gSKI_ReleaseImpl.h 
-*********************************************************************
-* @remarks Copyright (C) 2004 Soar Technology, All rights reserved. 
-* The U.S. government has non-exclusive license to this software 
-* for government purposes. 
 *********************************************************************
 * created:	   4/21/2004
 *

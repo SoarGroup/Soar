@@ -5,10 +5,6 @@
 /********************************************************************
 * @file gski_symbolfactory.h 
 *********************************************************************
-* @remarks Copyright (C) 2002 Soar Technology, All rights reserved. 
-* The U.S. government has non-exclusive license to this software 
-* for government purposes. 
-*********************************************************************
 * created:	   7/11/2002   14:54
 *
 * purpose: 

@@ -1,10 +1,11 @@
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /********************************************************************
 * @file Win32LinuxDefines.h
 ****************************************************************************
-* @remarks Copyright (C) 2002 Soar Technology, All rights reserved. 
-* The U.S. government has non-exclusive license to this software 
-* for government purposes. 
-**************************************************************************** 
 * created: 6/7/2002   16:27
 *
 * purpose: This header file contains some of the necessary cross platform

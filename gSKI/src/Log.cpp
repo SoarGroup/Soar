@@ -2,6 +2,11 @@
 #include "config.h"
 #endif // HAVE_CONFIG_H
 
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /********************************************************************
 	created:	28:9:2001   16:26
 	filename:	chaoslog

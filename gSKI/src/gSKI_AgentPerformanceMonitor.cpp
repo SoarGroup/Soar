@@ -2,6 +2,11 @@
 #include "config.h"
 #endif // HAVE_CONFIG_H
 
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 #include "gSKI_AgentPerformanceMonitor.h"
 
 #include <sstream>

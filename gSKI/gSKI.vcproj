@@ -498,9 +498,6 @@
 				RelativePath="include\IgSKI_InstanceInfo.h">
 			</File>
 			<File
-				RelativePath="include\IgSKI_Instantiation.h">
-			</File>
-			<File
 				RelativePath="include\IgSKI_Iterator.h">
 			</File>
 			<File
@@ -556,12 +553,6 @@
 			</File>
 			<File
 				RelativePath="include\IgSKI_WME.h">
-			</File>
-			<File
-				RelativePath="include\IgSKI_WMEGraph.h">
-			</File>
-			<File
-				RelativePath="include\IgSKI_WMEManager.h">
 			</File>
 			<File
 				RelativePath="include\IgSKI_WMObject.h">

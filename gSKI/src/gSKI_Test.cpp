@@ -2,12 +2,13 @@
 #include "config.h"
 #endif // HAVE_CONFIG_H
 
+/*************************************************************************
+ * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ *************************************************************************/
+
 /********************************************************************
 * @file gski_test.cpp
-*********************************************************************
-* @remarks Copyright (C) 2002 Soar Technology, All rights reserved. 
-* The U.S. government has non-exclusive license to this software 
-* for government purposes. 
 *********************************************************************
 * created:	   6/27/2002   10:44
 *
