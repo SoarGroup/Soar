@@ -2,22 +2,31 @@
 //#include "sml_Connection.h"
 #include "sml_Client.h"
 
-#include "..\..\Profiler\include\simple_timer.h"
+#include "../../Profiler/include/simple_timer.h"
 
 // Define a sleep
 #ifdef _WIN32
-#define _WINSOCKAPI_
-#include <Windows.h>
-#define SLEEP Sleep
-#else
-#include <unistd.h>
-#define SLEEP usleep
-#endif
+
+#ifdef _MSC_VER
 
 // Use Visual C++'s memory checking functionality
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
 #include <crtdbg.h>
+
+#endif // _MSC_VER
+
+#define _WINSOCKAPI_
+#include <Windows.h>
+#define SLEEP Sleep
+
+#else // _WIN32
+
+#include <unistd.h>
+#define SLEEP usleep
+
+#endif // _WIN32
+
+#include <stdlib.h>
 #include <iostream>
 #include <string>
 
@@ -336,6 +345,7 @@ int main(int argc, char* argv[])
 	double time = timer.Elapsed() ;
 	cout << "Total run time: " << time << endl ;
 
+#ifdef _MSC_VER
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;
 
@@ -349,9 +359,10 @@ int main(int argc, char* argv[])
 	// If we allocate something in a DLL then this call won't see it because it works by overriding the
 	// local implementation of malloc.
 	_CrtDumpMemoryLeaks();
+#endif // _MSC_VER
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <return> to exit\n") ;
-	char line[100] ;
-	char* str = gets(line) ;
+	string line;
+	cin >> line;
 }

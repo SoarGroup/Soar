@@ -1,1 +1,5 @@
 Debug
+.deps
+.libs
+Makefile
+Makefile.in
