@@ -30,7 +30,6 @@ void emotion_clear_appraisal_list(appraisal_frame ** af);
 bool emotion_get_appraisal_frame(struct slot_struct * appraisal_variable_slot, appraisal_frame ** af);
 bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal_variable_info ** info);
 
-
 const int emotion_NUM_TYPES = 2;
 static const char * emotion_LABELS[] = {"desirability-agg","likelihood-agg"};
 static const float emotion_NO_VALUE_FLOAT = -100.0;
@@ -89,7 +88,7 @@ void emotion_update_emotion() {
     Symbol *wme_emotion_name_attr, *wme_emotion_name_value,
         *wme_emotion_intensity_attr, *wme_emotion_intensity_value;
 
-    float desirability, likelihood;
+    float desirability, likelihood, signedIntensity;
 
     desirability = current_agent(emotions)->aggs[DESIRABILITY];
     likelihood = current_agent(emotions)->aggs[LIKELIHOOD];
@@ -105,21 +104,30 @@ void emotion_update_emotion() {
     if(desirability != emotion_NO_VALUE_FLOAT &&
         likelihood != emotion_NO_VALUE_FLOAT) {
 
-        if(desirability >= 0 && likelihood < 1.0) {
-            wme_emotion_name_value = get_io_sym_constant ("hope");
-        } else if (desirability >= 0 && likelihood == 1.0) {
-            wme_emotion_name_value = get_io_sym_constant ("joy");
-        } else if (desirability < 0 && likelihood < 1.0) {
-            wme_emotion_name_value = get_io_sym_constant ("fear");
-        } else if (desirability < 0 && likelihood == 1.0) {
-            wme_emotion_name_value = get_io_sym_constant ("dismay");
+        signedIntensity = desirability*likelihood;
+
+        /* For now, ties are broken in favor of not being angry. this fixes the problem where the overall intensity is zero and there are no objects leading to anger */
+        /* If we wanted to break the tie in favor of anger, then we would need a flag which said that there are actually objects available to be angry at */
+        if(signedIntensity > 0 || soar_agent->emotions->average_object_frame_intensity <= soar_agent->emotions->average_no_object_frame_intensity) {
+
+            if(desirability >= 0 && likelihood < 1.0) {
+                wme_emotion_name_value = get_io_sym_constant ("hope");
+            } else if (desirability >= 0 && likelihood == 1.0) {
+                wme_emotion_name_value = get_io_sym_constant ("joy");
+            } else if (desirability < 0 && likelihood < 1.0) {
+                wme_emotion_name_value = get_io_sym_constant ("fear");
+            } else if (desirability < 0 && likelihood == 1.0) {
+                wme_emotion_name_value = get_io_sym_constant ("dismay");
+            }
+            else { return; }
+        } else {
+            wme_emotion_name_value = get_io_sym_constant ("anger");
         }
-        else { return; }
      
         wme_emotion_name_attr = get_io_sym_constant ("name");
         wme_emotion_intensity_attr = get_io_sym_constant ("intensity");
 
-        wme_emotion_intensity_value = get_io_float_constant((float)fabs(desirability)*likelihood);
+        wme_emotion_intensity_value = get_io_float_constant((float)fabs(signedIntensity));
 
         current_agent(emotions)->emotion_symbol = get_new_io_identifier('E');
         current_agent(emotions)->emotion_wme = add_input_wme (current_agent(io_header_emotion),
@@ -604,6 +612,7 @@ void emotion_aggregate_variables() {
         }
 
         /* calculate the averages from the sums.  Take the absolute values for the possibly negative intensities (intensity is always positive) */
+        /* if the count of something is 0, then its intensity is 0 */
         if(neg_no_obj_count > 0) {
             soar_agent->emotions->average_negative_no_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_negative_no_object_frame_intensity / (float)neg_no_obj_count);
         } else {
@@ -641,13 +650,12 @@ void emotion_aggregate_variables() {
         }
         
         /* take the absolute values of the possibily negative intensities (intensity is always positive) */
-        /* also take the max with 0 (no intensity can be less than 0, and the maxes are initialized to negative numbers) */
+        /* if the numbers are still at their defaults (i.e. there were no instances found), then set them to 0 */
         if(soar_agent->emotions->max_negative_no_object_frame_intensity == emotion_NO_VALUE_FLOAT) {
             soar_agent->emotions->max_negative_no_object_frame_intensity = 0;
         } else {
             soar_agent->emotions->max_negative_no_object_frame_intensity = (float)fabs(soar_agent->emotions->max_negative_no_object_frame_intensity);
         }
-
 
         if(soar_agent->emotions->max_negative_object_frame_intensity == emotion_NO_VALUE_FLOAT) {
             soar_agent->emotions->max_negative_object_frame_intensity = 0;
@@ -675,11 +683,13 @@ void emotion_aggregate_variables() {
             soar_agent->emotions->max_positive_object_frame_intensity = 0;
         }
 
+        /* take the absolute value to prevent negative intensities */
         soar_agent->emotions->sum_negative_no_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_negative_no_object_frame_intensity);
         soar_agent->emotions->sum_negative_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_negative_object_frame_intensity);
         soar_agent->emotions->sum_no_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_no_object_frame_intensity);
         soar_agent->emotions->sum_object_frame_intensity = (float)fabs(soar_agent->emotions->sum_object_frame_intensity);
-    } else {
+
+    } else { /* if there are no appraisals, then we don't want these appearing on the e-link */
         soar_agent->emotions->average_negative_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
         soar_agent->emotions->average_negative_object_frame_intensity = emotion_NO_VALUE_FLOAT;
         soar_agent->emotions->average_no_object_frame_intensity = emotion_NO_VALUE_FLOAT;
