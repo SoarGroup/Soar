@@ -252,18 +252,11 @@ proc Debugger::OpenHelpFile {whichHelp} {
       set docDir [file normalize [file join $soar_library .. doc]]
    }
    switch $whichHelp {
-      ReleaseNote {
-         ShowFile [file join $docDir .. Soar.Relnotes]
-         puts "ShowFile [file join $docDir Soar.Relnotes]"
-      }
-      Changes1 {
+      Changes {
          ShowFile [file join $docDir .. CHANGES]
       }
-      Changes2 {
-         ShowFile [file join $docDir .. changes.txt]
-      }
       License {
-         ShowFile [file join $docDir .. license.txt]
+         ShowFile [file join $docDir .. LICENSE]
       }
       ManPages {
          ShowManPage [file join $docDir cat] 0
@@ -459,16 +452,12 @@ proc Debugger::CreateDescMenu {} {
       }
      "&Help" all help 0 {
          {command "&About the TSI" {} "" {} -command {showAbout}}
-         {command "&Help -all" {} "" {} -command {tsiDisplayAndSendCommand {help -all}} }
          {separator}
          {cascad  "&Soar"  {} export 0 {
             {command "&Man Pages" {} "" {} -command {Debugger::OpenHelpFile ManPages} }
             {command "&List All Commands" {} "" {} -command {tsiDisplayAndSendCommand {help -all}} }
-            {command "&Release Notes" {} "" {} -command {Debugger::OpenHelpFile ReleaseNote} }
-            {command "&Changes" {} "" {} -command {Debugger::OpenHelpFile Changes1} }
-            {command "&Additional Changes" {} "" {} -command {Debugger::OpenHelpFile Changes2} }
+            {command "&Changes" {} "" {} -command {Debugger::OpenHelpFile Changes} }
             {command "L&icense" {} "" {} -command {Debugger::OpenHelpFile License} }
-            {command "&News" {} "" {} -command {tsiDisplayAndSendCommand soarnews} }
             {command "&Version" {} "" {} -command {tsiDisplayAndSendCommand version} }
          }}
          {cascad  "&Tcl/Tk"  {} export 0 {
