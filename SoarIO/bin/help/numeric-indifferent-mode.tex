@@ -1,0 +1,78 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Numeric-indifferent-mode - Soar Wiki}
+\begin{document}
+\section*{Numeric-indifferent-mode}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{numeric-indifferent-mode}
+ - Select method for combining numeric preferences. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+numeric-indifferent-mode [-as]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|c|c|}
+\hline 
+ -a, --avg, --average  & Use average mode (see Soar manual) (default).  \\
+ \hline 
+ -s, --sum  & Use sum mode (see Soar manual).  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ The numeric-indifferent-mode command is used to select the method for combining numeric preferences. This command is only meaningful in indifferent-selection --random  mode. 
+\section*{ Structured Output }
+\subsection*{ On Query }
+\begin{verbatim}
+<result>
+  <arg param="numericindifferentmode" type="int">2</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ Otherwise }
+\begin{verbatim}
+<result output="raw">true</result>
+
+\end{verbatim}
+\subsection*{ Notes }
+\begin{itemize}
+\item  The integer denoting the current mode corresponds to the gSKI enum values: 
+
+\end{itemize}
+\begin{verbatim}
+gSKI_NUMERIC_INDIFFERENT_MODE_AVG  = 1
+gSKI_NUMERIC_INDIFFERENT_MODE_SUM  = 0
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\subsection*{ During Execution }
+
+
+ kAgentRequired, kInvalidNumericIndifferentMode Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Numeric-indifferent-mode}``
+
+\end{document}

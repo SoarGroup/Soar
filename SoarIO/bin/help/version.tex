@@ -1,0 +1,53 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Version - Soar Wiki}
+\begin{document}
+\section*{Version}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{version}
+ -- Returns the version number of the Soar kernel. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+ version
+
+\end{verbatim}
+\section*{ Options }
+
+
+ No options 
+\section*{ Description }
+
+
+ This command gives version information about the current Soar kernel. It returns the version number itself, which can then be stored by the agent or the application. 
+\section*{ Structured Output }
+\subsection*{ On Success }
+\begin{verbatim}
+<result>
+  <arg name="versionmajor" type="int">major</arg>
+  <arg name="versionminor" type="int">minor</arg>
+  <arg name="versionmicro" type="int">micro</arg>
+</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ No errors, arguments ignored. 
+\subsection*{ During Execution }
+
+
+ No errors.  Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Version}``
+
+\end{document}

@@ -1,0 +1,85 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Indifferent-selection - Soar Wiki}
+\begin{document}
+\section*{Indifferent-selection}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{indifferent-selection}
+ - Controls indifferent preference arbitration. 
+
+
+ Priority: 4 ; Status: Complete\\ 
+--ask gets set but the actual asking does not work at all, I think it locks everything up--Jonathan 13:29, 23 Feb 2005 (EST) 
+\section*{ Synopsis }
+\begin{verbatim}
+indifferent-selection [-aflr]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|c|c|}
+\hline 
+ -a, --ask  & Ask the user to choose.  \\
+ \hline 
+ -f, --first  & Select the first indifferent object from Soar's internal list.  \\
+ \hline 
+ -l, --last  & Select the last indifferent object from Soar's internal list.  \\
+ \hline 
+ -r, --random  & Select randomly (default).  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ The indifferent-selection command allows the user to set which option should be used to select between operator proposals that are mutally indifferent in preference memory. 
+\section*{ Structured Output }
+\subsection*{ Successful Query }
+\begin{verbatim}
+<result>
+  <arg param="indifferentselectionmode" type="int">2</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ Otherwise }
+\begin{verbatim}
+<result output="raw">true</result>
+
+\end{verbatim}
+\subsection*{ Notes }
+\begin{itemize}
+\item  The integer denoting the current mode corresponds to the gSKI enum values: 
+
+\end{itemize}
+\begin{verbatim}
+gSKI_USER_SELECT_FIRST  = 0
+gSKI_USER_SELECT_LAST   = 3
+gSKI_USER_SELECT_ASK    = 1
+gSKI_USER_SELECT_RANDOM = 2
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\subsection*{ During Execution }
+
+
+ kAgentRequired, kInvalidIndifferentSelectionMode Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Indifferent-selection}``
+
+\end{document}

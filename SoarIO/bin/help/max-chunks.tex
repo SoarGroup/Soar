@@ -1,0 +1,66 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Max-chunks - Soar Wiki}
+\begin{document}
+\section*{Max-chunks}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{max-chunks}
+ - Limit the number of chunks created during a decision cycle. 
+
+
+ Priority: 3 ; Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+max-chunks [n]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|c|c|}
+\hline 
+ n  & Maximum number of chunks allowed during a decision cycle.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ The max-chunks command is used to limit the maximum number of chunks that may be created during a decision cycle. The initial value of this variable is 50; allowable settings are any integer greater than 0. 
+\section*{ Structured Output }
+\subsection*{ On Query }
+\begin{verbatim}
+<result>
+  <arg name="value" type="int">max_chunks</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ Otherwise }
+\begin{verbatim}
+<result output="raw">true</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooManyArgs, kIntegerMustBePositive
+\subsection*{ During Execution }
+
+
+ kAgentRequired Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Max-chunks}``
+
+\end{document}

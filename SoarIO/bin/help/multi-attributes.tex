@@ -1,0 +1,99 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Multi-attributes - Soar Wiki}
+\begin{document}
+\section*{Multi-attributes}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{multi-attributes}
+ - Declare a symbol to be multi-attributed. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+multi-attributes [symbol [\emph{n}
+]] 
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|c|c|}
+\hline 
+symbol & Any Soar attribute.  \\
+ \hline 
+\emph{n}
+ & Integer $>$ 1, estimate of degree of simultaneous values for attribute.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ This command declares the given symbol to be an attribute which can take on multiple values. The optional \emph{n}
+ is an integer ($>$1) indicating an upper limit on the number of expected values that will appear for an attribute. If \emph{n}
+ is not specified, the value 10 is used for each declared multi-attribute. More informed values will tend to result in greater efficiency. This command is used only to provide hints to the production condition reorderer so it can produce better condition orderings. Better orderings enable the rete network to run faster. This command has no effect on the actual contents of working memory and most users needn't use this at all. \begin{verbatim}
+Note that multi-attributes declarations must be made before productions 
+are loaded into soar or this command will have no effect.
+
+\end{verbatim}
+
+
+
+ \\ 
+
+\section*{ Examples }
+
+
+ \\ 
+
+\section*{ See Also }
+
+
+ \\ 
+
+\section*{ Structured Output }
+\subsection*{ On Query }
+\begin{verbatim}
+<result>
+  <arg name="count" type="int">number_of_multi_attributes</arg>
+  <arg name="value" type="int">value_of_multi_attribute_1</arg>
+  <arg name="name" type="string">name_of_multi_attribute_1</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ Otherwise }
+\begin{verbatim}
+<result output="raw">true</result>
+
+\end{verbatim}
+\subsection*{ Notes }
+\begin{itemize}
+\item  During query, there will be a count/value pair for each multi-attribute. 
+\item  The total number of multi-attributes will be included in count. 
+
+\end{itemize}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooManyArgs, kIntegerMustBeNonNegative
+\subsection*{ During Execution }
+
+
+ kMultiAttributeNotFound Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Multi-attributes}``
+
+\end{document}

@@ -1,0 +1,51 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Pwd - Soar Wiki}
+\begin{document}
+\section*{Pwd}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{pwd}
+ - Print the current working directory. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+pwd
+
+\end{verbatim}
+\section*{ Options }
+
+
+ No options. 
+\section*{ Description }
+
+
+ Prints the current working directory of Soar. 
+\section*{ Structured Output }
+\subsection*{ On Success }
+\begin{verbatim}
+<result>
+  <arg name="directory" type="string">directory_string</arg>
+</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooManyArgs
+\subsection*{ During Execution }
+
+
+ No errors.  Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Pwd}``
+
+\end{document}

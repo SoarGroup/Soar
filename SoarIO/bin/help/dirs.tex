@@ -1,0 +1,66 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Dirs - Soar Wiki}
+\begin{document}
+\section*{Dirs}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{dirs}
+ - List the directory stack 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+dirs
+
+\end{verbatim}
+\section*{ Options }
+
+
+ No options. 
+\section*{ Description }
+
+
+ This command lists the directory stack. Agents can move through a directory structure by pushing and popping directory names. The dirs command returns the stack. 
+
+
+ The command pushd places a new ``agent current directory'' on top of the directory stack and cd's to it. The command popd removes the directory at the top of the directory stack and cd's to the previous directory which now appears at the top of the stack. 
+\section*{ See Also }
+\begin{description}
+cd \textbf{dirs}
+ home ls pushd popd source topd
+
+\end{description}
+\section*{ Structured Output }
+\subsection*{ On Success }
+\begin{verbatim}
+<result>
+  <arg param="directory" type="string">directory_string</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ Notes }
+\begin{itemize}
+\item  Each directory on the stack will be returned as a separate arg. 
+\item  The current working directory will always be on the stack. 
+
+\end{itemize}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ No errors during parsing; all arguments are ignored. 
+\subsection*{ During Execution }
+
+
+ No errors.  Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Dirs}``
+
+\end{document}

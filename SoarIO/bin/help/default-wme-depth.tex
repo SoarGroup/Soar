@@ -1,0 +1,59 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Default-wme-depth - Soar Wiki}
+\begin{document}
+\section*{Default-wme-depth}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{default-wme-depth}
+ - Set the level of detail used to print WME\^a€™s. 
+
+
+ Priority: 3; Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+default-wme-depth [depth]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|c|c|}
+\hline 
+ depth  & A positive integer.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ Affects print and trace output. 
+\section*{ Structured Output }
+\subsection*{ On Success }
+
+
+ Returns the current default wme depth as a int value parameter on query. Returns true if setting is successful. 
+\subsection*{ Notes }
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooManyArgs, kIntegerMustBePositive
+\subsection*{ During Execution }
+
+
+ kAgentRequired Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Default-wme-depth}``
+
+\end{document}

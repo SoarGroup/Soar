@@ -1,0 +1,61 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Save-backtraces - Soar Wiki}
+\begin{document}
+\section*{Save-backtraces}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{save-backtraces}
+ - Save trace information to explain chunks and justifications. 
+
+
+ Priority: 3; Status: Complete, EvilBackDoor
+\section*{ Synopsis }
+\begin{verbatim}
+save-backtraces [-ed]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|c|c|}
+\hline 
+ -e, --enable, --on  & Turn explain sysparam on.  \\
+ \hline 
+ -d, --disable, --off  & Turn explain sysparam off.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+\section*{ Structured Output }
+\subsection*{ On Query }
+
+
+ Value parameter is returned of type boolean, true if sysparam is on, false if off. 
+\subsection*{ Otherwise }
+
+
+ True on success. 
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\subsection*{ During Execution }
+
+
+ No errors.  Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Save-backtraces}``
+
+\end{document}

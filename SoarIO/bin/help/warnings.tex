@@ -1,0 +1,66 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\setlength{\parskip}{1ex}
+\setlength{\parindent}{0ex}
+\title{Warnings - Soar Wiki}
+\begin{document}
+\section*{Warnings}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{warnings}
+ -- Enable or disable the printing of warning messages from the Soar kernel. 
+
+
+ Status: Complete, EvilBackDoor
+\section*{ Synopsis }
+\begin{verbatim}
+warnings -[e|d]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|c|c|}
+\hline 
+ -e, --enable, --on  & Default. Print all warning messages from the kernel.  \\
+ \hline 
+ -d, --disable, --off  & Disable all, except most critical, warning messages.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ Enables and disables the printing of warning messages. If an argument is specified, then the warnings are set to that state. If no argument is given, then the current warnings status is printed. At startup, warnings are initially enabled. If warnings are disabled using this command, then some warnings may still be printed, since some are considered too important to ignore. 
+\section*{ Examples }
+\section*{ See Also }
+
+
+ \\ 
+
+
+
+ \\ 
+
+\section*{ Structured Output }
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\subsection*{ During Execution }
+
+
+ kAgentRequired, kKernelRequired Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Warnings}``
+
+\end{document}
