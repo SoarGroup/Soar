@@ -168,10 +168,11 @@ void record_for_RL()
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-			  if ((prod->times_applied > 50) && prod->increasing){
+			  if ((fabs(prod->avg_update) < 0.01) && prod->increasing){
+			  // if (prod->firing_count < 0){
 				  new_prod = specify_production(ist);
 				  if (new_prod){
-					  prod->times_applied = 0;
+					  // prod->times_applied = 0;
 					  push(new_prod, record->pointer_list);
 					  record->num_prod++;
 				  }
@@ -374,9 +375,10 @@ void learn_RL_productions(int level){
 			prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
 			// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 			// a->referent = symbol_to_rhs_value(make_float_constant(Q));
-			temp = prod->avg_update;
-			prod->avg_update = fabs(Q) + prod->avg_update*current_agent(epsilon);
-			prod->increasing = (prod->avg_update > temp);
+			temp = prod->decay_abs_update;
+			prod->decay_abs_update = fabs(Q) + prod->decay_abs_update*current_agent(epsilon);
+			prod->increasing = (prod->decay_abs_update > temp ? 1 : 0);
+			prod->avg_update = ((prod->times_applied - 1)*prod->avg_update + Q) / prod->times_applied;
 		//	prod->times_applied++;
 		}
 
