@@ -56,7 +56,9 @@ char const* CommandLineInterface::CLIConstants::kCLIInitSoar	= "init-soar";
 char const* CommandLineInterface::CLIConstants::kCLILearn		= "learn";
 char const* CommandLineInterface::CLIConstants::kCLILS			= "ls";
 char const* CommandLineInterface::CLIConstants::kCLINewAgent	= "new-agent";
+char const* CommandLineInterface::CLIConstants::kCLIPopD		= "popd";
 char const* CommandLineInterface::CLIConstants::kCLIPrint		= "print";
+char const* CommandLineInterface::CLIConstants::kCLIPushD		= "pushd";
 char const* CommandLineInterface::CLIConstants::kCLIPWD			= "pwd";
 char const* CommandLineInterface::CLIConstants::kCLIQuit		= "quit";
 char const* CommandLineInterface::CLIConstants::kCLIRun			= "run";
@@ -80,8 +82,10 @@ char const* CommandLineInterface::CLIConstants::kCLIInitSoarUsage	= "Usage:\tini
 char const* CommandLineInterface::CLIConstants::kCLILearnUsage		= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
 char const* CommandLineInterface::CLIConstants::kCLILSUsage			= "Usage:\tls";
 char const* CommandLineInterface::CLIConstants::kCLINewAgentUsage	= "Usage:\tnew-agent [agent_name]";
+char const* CommandLineInterface::CLIConstants::kCLIPopDUsage		= "Usage:\tpopd";
 char const* CommandLineInterface::CLIConstants::kCLIPrintUsage		= "Usage:\tprint [-fFin] production_name\n\tprint -[a|c|D|j|u][fFin]\n\tprint [-i] \
 [-d <depth>] identifier|timetag|pattern\n\tprint -s[oS]";
+char const* CommandLineInterface::CLIConstants::kCLIPushDUsage		= "Usage:\tpushd directory";
 char const* CommandLineInterface::CLIConstants::kCLIPWDUsage		= "Usage:\tpwd";
 char const* CommandLineInterface::CLIConstants::kCLIRunUsage		= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
 char const* CommandLineInterface::CLIConstants::kCLISourceUsage		= "Usage:\tsource filename";
@@ -136,7 +140,9 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[CLIConstants::kCLILearn]		= CommandLineInterface::ParseLearn;
 	m_CommandMap[CLIConstants::kCLILS]			= CommandLineInterface::ParseLS;
 	m_CommandMap[CLIConstants::kCLINewAgent]	= CommandLineInterface::ParseNewAgent;
+	m_CommandMap[CLIConstants::kCLIPopD]		= CommandLineInterface::ParsePopD;
 	m_CommandMap[CLIConstants::kCLIPrint]		= CommandLineInterface::ParsePrint;
+	m_CommandMap[CLIConstants::kCLIPushD]		= CommandLineInterface::ParsePushD;
 	m_CommandMap[CLIConstants::kCLIPWD]			= CommandLineInterface::ParsePWD;
 	m_CommandMap[CLIConstants::kCLIQuit]		= CommandLineInterface::ParseQuit;
 	m_CommandMap[CLIConstants::kCLIRun]			= CommandLineInterface::ParseRun;
@@ -383,7 +389,7 @@ bool CommandLineInterface::ParseCD(int argc, char** argv) {
 	}
 
 	// Only takes one optional argument, the directory to change into
-	if (argc != 1) {
+	if (argc > 2) {
 		m_Result += CLIConstants::kCLISyntaxError;
 		m_Result += CLIConstants::kCLICDUsage;
 		return false;
@@ -766,6 +772,52 @@ bool CommandLineInterface::DoNewAgent(char const* agentName) {
 	return true;
 }
 
+// ____                     ____             ____
+//|  _ \ __ _ _ __ ___  ___|  _ \ ___  _ __ |  _ \
+//| |_) / _` | '__/ __|/ _ \ |_) / _ \| '_ \| | | |
+//|  __/ (_| | |  \__ \  __/  __/ (_) | |_) | |_| |
+//|_|   \__,_|_|  |___/\___|_|   \___/| .__/|____/
+//                                    |_|
+bool CommandLineInterface::ParsePopD(int argc, char** argv) {
+	if (CheckForHelp(argc, argv)) {
+		m_Result += CLIConstants::kCLIPopDUsage;
+		return true;
+	}
+
+	// No arguments
+	if (argc != 1) {
+		m_Result += CLIConstants::kCLISyntaxError;
+		m_Result += CLIConstants::kCLIPopDUsage;
+		return false;
+	}
+	return DoPopD();
+}
+
+// ____        ____             ____
+//|  _ \  ___ |  _ \ ___  _ __ |  _ \
+//| | | |/ _ \| |_) / _ \| '_ \| | | |
+//| |_| | (_) |  __/ (_) | |_) | |_| |
+//|____/ \___/|_|   \___/| .__/|____/
+//                       |_|
+bool CommandLineInterface::DoPopD() {
+
+	// There must be a directory on the stack to pop
+	if (m_DirectoryStack.empty()) {
+		m_Result += "Directory stack empty, no directory to change to.";
+		return false;
+	}
+
+	// Change to the directory
+	if (!DoCD(m_DirectoryStack.top().c_str())) {
+		// cd failed, error message added in cd function
+		return false;
+	}
+
+	// Pop the directory stack
+	m_DirectoryStack.pop();
+	return true;
+}
+
 // ____                     ____       _       _
 //|  _ \ __ _ _ __ ___  ___|  _ \ _ __(_)_ __ | |_
 //| |_) / _` | '__/ __|/ _ \ |_) | '__| | '_ \| __|
@@ -895,6 +947,54 @@ bool CommandLineInterface::DoPrint(const unsigned short options) {
 	return true;
 }
 
+// ____                     ____            _     ____
+//|  _ \ __ _ _ __ ___  ___|  _ \ _   _ ___| |__ |  _ \
+//| |_) / _` | '__/ __|/ _ \ |_) | | | / __| '_ \| | | |
+//|  __/ (_| | |  \__ \  __/  __/| |_| \__ \ | | | |_| |
+//|_|   \__,_|_|  |___/\___|_|    \__,_|___/_| |_|____/
+//
+bool CommandLineInterface::ParsePushD(int argc, char** argv) {
+	if (CheckForHelp(argc, argv)) {
+		m_Result += CLIConstants::kCLIPushDUsage;
+		return true;
+	}
+
+	// Only takes one argument, the directory to change into
+	if (argc != 2) {
+		m_Result += CLIConstants::kCLISyntaxError;
+		m_Result += CLIConstants::kCLIPushDUsage;
+		return false;
+	}
+	return DoPushD(argv[1]);
+}
+
+// ____        ____            _     ____
+//|  _ \  ___ |  _ \ _   _ ___| |__ |  _ \
+//| | | |/ _ \| |_) | | | / __| '_ \| | | |
+//| |_| | (_) |  __/| |_| \__ \ | | | |_| |
+//|____/ \___/|_|    \__,_|___/_| |_|____/
+//
+bool CommandLineInterface::DoPushD(const char* pDirectory) {
+	
+	// Target directory required, checked in DoCD call.
+
+	// Save the current (soon to be old) directory
+	string oldDirectory;
+	if (!GetCurrentWorkingDirectory(oldDirectory)) {
+		// Error message added in function
+		return false;
+	}
+
+	// Change to the new directory.
+	if (!DoCD(pDirectory)) {
+		return false;
+	}
+
+	// Directory change successful, store old directory and move on
+	m_DirectoryStack.push(oldDirectory);
+	return true;
+}
+
 // ____                     ______        ______
 //|  _ \ __ _ _ __ ___  ___|  _ \ \      / /  _ \
 //| |_) / _` | '__/ __|/ _ \ |_) \ \ /\ / /| | | |
@@ -924,19 +1024,13 @@ bool CommandLineInterface::ParsePWD(int argc, char** argv) {
 //
 bool CommandLineInterface::DoPWD() {
 
-	// Pull an arbitrary buffer size of 512 out of a hat and use it
-	char buf[512];
-	char* ret = getcwd(buf, 512); // since we have to specify something here
+	string directory;
+	bool ret = GetCurrentWorkingDirectory(directory);
 
-	// If getcwd returns 0, that is bad
-	if (!ret) {
-		m_Result += "Couldn't get working directory.";
-		return false;
-	}
+	// On success, working dir is in parameter, on failure it is empty so this statement has no effect
+	m_Result += directory;
 
-	// Add current working directory to result
-	m_Result += buf;
-	return true;
+	return ret;
 }
 
 // ____                      ___        _ _
@@ -1520,4 +1614,26 @@ void CommandLineInterface::AppendToResult(const char* pMessage) {
 //
 void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel) {
 	m_pKernel = pKernel;
+}
+
+//  ____      _    ____                          _ __        __         _    _             ____  _               _
+// / ___| ___| |_ / ___|   _ _ __ _ __ ___ _ __ | |\ \      / /__  _ __| | _(_)_ __   __ _|  _ \(_)_ __ ___  ___| |_ ___  _ __ _   _
+//| |  _ / _ \ __| |  | | | | '__| '__/ _ \ '_ \| __\ \ /\ / / _ \| '__| |/ / | '_ \ / _` | | | | | '__/ _ \/ __| __/ _ \| '__| | | |
+//| |_| |  __/ |_| |__| |_| | |  | | |  __/ | | | |_ \ V  V / (_) | |  |   <| | | | | (_| | |_| | | | |  __/ (__| || (_) | |  | |_| |
+// \____|\___|\__|\____\__,_|_|  |_|  \___|_| |_|\__| \_/\_/ \___/|_|  |_|\_\_|_| |_|\__, |____/|_|_|  \___|\___|\__\___/|_|   \__, |
+//                                                                                   |___/                                     |___/
+bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
+	// Pull an arbitrary buffer size of 1024 out of a hat and use it
+	char buf[1024];
+	char* ret = getcwd(buf, 1024);
+
+	// If getcwd returns 0, that is bad
+	if (!ret) {
+		m_Result += "Couldn't get working directory.";
+		return false;
+	}
+
+	// Store directory in output parameter and return success
+	directory = buf;
+	return true;
 }

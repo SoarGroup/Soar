@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <stack>
 
 // Local includes
 #include "commanddata.h"
@@ -56,6 +57,9 @@ typedef std::map<char const*, CommandFunction, strCompareCommand>	CommandMap;
 typedef CommandMap::iterator										CommandMapIter;
 typedef CommandMap::const_iterator									CommandMapConstIter;
 
+// Define the stack for pushd/popd
+typedef std::stack<std::string> StringStack;
+ 
 class CommandLineInterface
 {
 public:
@@ -73,7 +77,7 @@ public:
 	///*************************************************************
 	//* @brief 
 	//*************************************************************/
-	//bool Parse(int argc, char**& argv);
+	//bool Parse(int argc, char** argv);
 	///*************************************************************
 	//* @brief 
 	//*************************************************************/
@@ -154,6 +158,15 @@ public:
 	bool DoNewAgent(char const* agentName);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParsePopD(int argc, char** argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoPopD();
+
+	/*************************************************************
 	* @brief print command, see command line spec document for details
 	*************************************************************/
 	bool ParsePrint(int argc, char** argv);
@@ -161,6 +174,15 @@ public:
 	* @brief 
 	*************************************************************/
 	bool DoPrint(const unsigned short options);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParsePushD(int argc, char** argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoPushD(const char* directory);
 
 	/*************************************************************
 	* @brief pwd command, see command line spec document for details
@@ -252,7 +274,9 @@ protected:
 		static char const* kCLILearn;
 		static char const* kCLILS;
 		static char const* kCLINewAgent;
+		static char const* kCLIPopD;
 		static char const* kCLIPrint;
+		static char const* kCLIPushD;
 		static char const* kCLIPWD;
 		static char const* kCLIQuit;
 		static char const* kCLIRun;
@@ -270,7 +294,9 @@ protected:
 		static char const* kCLILearnUsage;
 		static char const* kCLILSUsage;
 		static char const* kCLINewAgentUsage;
+		static char const* kCLIPopDUsage;
 		static char const* kCLIPrintUsage;
+		static char const* kCLIPushDUsage;
 		static char const* kCLIPWDUsage;
 		static char const* kCLIQuitUsage;
 		static char const* kCLIRunUsage;
@@ -337,6 +363,11 @@ protected:
 	*************************************************************/
 	bool CheckForHelp(int argc, char** argv);
 
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool GetCurrentWorkingDirectory(std::string& directory);
+
 	GetOpt			m_GetOpt;			// Pointer to GetOpt utility class
 	CommandMap		m_CommandMap;		// Mapping of command names to function pointers
 	gSKI::IKernel*	m_pKernel;			// Pointer to the current gSKI kernel
@@ -346,6 +377,7 @@ protected:
 	std::string		m_HomeDirectory;	// The initial working directory, server side
 	PrintHandler	m_PrintHandler;		// The print callback handler, used for catching kernel/gSKI output
 	bool			m_QuitCalled;		// True after DoQuit is called
+	StringStack		m_DirectoryStack;	// Directory stack for pushd/popd
 };
 
 } // namespace cli
