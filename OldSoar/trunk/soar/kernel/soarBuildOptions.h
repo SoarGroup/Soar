@@ -720,7 +720,7 @@
  *     there's no instance to retract for a justification
  *
  */
-#define BUG_139_WORKAROUND_WARNING
+/*#define BUG_139_WORKAROUND_WARNING*/
 
 
 
