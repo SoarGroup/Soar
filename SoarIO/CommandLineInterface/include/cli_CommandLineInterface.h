@@ -147,7 +147,7 @@ public:
 	EXPORT bool DoAddWME(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const std::string& id, const std::string& attribute, const std::string& value, bool acceptable);
 
 	/*************************************************************
-	* @brief alias command, see also home command
+	* @brief alias command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param command The alias to enable or disable, pass 0 to list aliases
@@ -264,7 +264,7 @@ public:
 	EXPORT bool DoHelpEx(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string& command);
 
 	/*************************************************************
-	* @brief home command, loads aliases
+	* @brief home command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pDirectory The directory to change the cli's initial (home) directory 

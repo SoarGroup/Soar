@@ -99,7 +99,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIWatch]					= &cli::CommandLineInterface::ParseWatch;
 	m_CommandMap[Constants::kCLIWatchWMEs]				= &cli::CommandLineInterface::ParseWatchWMEs;
 
-	// Set up the current working directory and create aliases
+	// Set up the current working directory
     bool ret = DoHome();
 	assert(ret);
     unused(ret); // placate compiler warning in release build
