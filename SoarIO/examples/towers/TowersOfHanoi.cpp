@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <crtdbg.h>
 
 ////// Define the type of interface to Soar that you're using:
 #define GSKI_DIRECT
@@ -33,6 +34,7 @@ const int defaultNumTowers = 3;
 
 int main(int argc, char* argv[])
 {
+	//_crtBreakAlloc = 74;
 	bool doPrinting = true;
 	int numTowers = defaultNumTowers;
 	//int numdisks = defaultNumdisks;
@@ -72,8 +74,8 @@ int main(int argc, char* argv[])
 			hanoi.Print();
 
 	/*	while(!hanoi.AtGoalState())
-		{
-			hanoi.Run();
+		{*/
+			hanoi.Run();/*
 
 			if(doPrinting)
 				hanoi.Print();
@@ -82,6 +84,13 @@ int main(int argc, char* argv[])
 		hanoi.EndGameAction();*/
 	}
 
+#ifdef _DEBUG
+	_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
+	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
+
+	_CrtDbgReport(_CRT_WARN, NULL, NULL, "TowersOfHanoi", "Checking memory in TowersOfHanoi\n");
+	_CrtDumpMemoryLeaks();
+#endif
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <non-whitespace char> then enter to exit\n") ;

@@ -98,7 +98,7 @@ void SoarAgent::ProcessOutput(IWorkingMemory* wMemory, gSKI::IWMObject* moveIden
 
 void SoarAgent::MakeMove()
 {										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE
-	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT, 1);
+	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1);
 	assert(runResult != gSKI_RUN_ERROR);
 
 	//while(TgD::TgD::Update(false, debugger))

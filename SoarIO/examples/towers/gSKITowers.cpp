@@ -145,20 +145,23 @@ public:
 	*************************************************************/
 	void Update(IWorkingMemory* pWMemory, IWMObject* object)
 	{
+cout << "Update called on disk " << this->size->GetValue()->GetInt() << endl;
 		if(holdsNeedsToBeUpdated == false)
 			return;
 
 		// Get List of objects referencing this object with attribute "on"
-		tIWmeIterator* onItr = object->GetWMEs("on");
+		tIWmeIterator* onItr = object->GetWMEs(k_holdsOnString.c_str());
 		if(onItr->IsValid())
 		{
 			pWMemory->RemoveWme(peg);
-			peg = pWMemory->AddWmeObjectLink(object, "on", pegId);
+			//peg->Release();
+			peg = pWMemory->AddWmeObjectLink(object, k_holdsOnString.c_str(), pegId);
+
 			onItr->Release();
 		}
 		else
 			assert(false);
-		// Get List of objects referencing this object with attribute "above"
+/*		// Get List of objects referencing this object with attribute "above"
 		tIWmeIterator* aboveItr = object->GetWMEs("above");
 
 		if(aboveItr->IsValid())
@@ -178,7 +181,7 @@ public:
 		else
 			assert(false);
 		holdsNeedsToBeUpdated = false;
-	}
+*/	}
 
 private:
 
@@ -200,28 +203,55 @@ private:
 	{
 		//Release children of "disk"
 		if(name)
+		{
 			name->Release();
+			name = 0;
+		}
 		if(size)
+		{
 			size->Release();
+			size = 0;
+		}
 
 		//Don't own these so just set pointers to zero
-		diskBeneath = 0;
+		//diskBeneath = 0;
+		if(diskBeneath)
+		{
+//			diskBeneath->Release();
+			diskBeneath = 0;
+		}
 		pegId = 0;
 
 		//Release children of "holds"
 		if(holdsDiskBeneath)
+		{
 			holdsDiskBeneath->Release();
+			holdsDiskBeneath = 0;
+		}
 		if(peg)
+		{
+cout << "\tI had to release peg, which was at: " << peg << endl;
 			peg->Release();
+			peg = 0;
+		}
 		if(diskWme)
+		{
 			diskWme->Release();
+			diskWme = 0;
+		}
 
 		//Release identifiers
 		if(holdsIdentifier)
+		{
 			holdsIdentifier->Release();
+			holdsIdentifier = 0;
+		}
 
 		if(diskIdentifier)
+		{
 			diskIdentifier->Release();
+			diskIdentifier = 0;
+		}
 	}
 
 	friend class Disk;
@@ -255,40 +285,71 @@ public:
 	//if parent is null, parent should be the input link root object
 	IWme* AddWMObject(IWMObject* parent, const string& name)
 	{
-		IWMObject* parentToAttachTo;
+		IWMObject* parentToAttachTo = 0;
+		bool touchedInputLinkRootObject = false;
+
 		if(parent)
 			parentToAttachTo = parent;
 		else
+		{
 			m_pILink->GetRootObject(&parentToAttachTo);
+			touchedInputLinkRootObject = true;
+		}
 
-		return m_pWorkingMem->AddWmeNewObject(parentToAttachTo, name.c_str());
+		IWme* newWme = m_pWorkingMem->AddWmeNewObject(parentToAttachTo, name.c_str());
+
+		if(touchedInputLinkRootObject)
+			parentToAttachTo->Release();
+
+		return newWme;
 	}
 
 	IWme* AddIntWme(IWMObject* parent, const string& name, int value)
 	{
 		IWMObject* parentToAttachTo;
+		bool touchedInputLinkRootObject = false;
+
 		if(parent)
 			parentToAttachTo = parent;
 		else
+		{
 			m_pILink->GetRootObject(&parentToAttachTo);
+			touchedInputLinkRootObject = true;
+		}
 
-		return m_pWorkingMem->AddWmeInt(parentToAttachTo, name.c_str(), value);
+		IWme* newWme = m_pWorkingMem->AddWmeInt(parentToAttachTo, name.c_str(), value);
+
+		if(touchedInputLinkRootObject)
+			parentToAttachTo->Release();
+
+		return newWme;
 	}
 
 	IWme* AddStringWme(IWMObject* parent, const string& name, const string& value)
 	{
 		IWMObject* parentToAttachTo;
+		bool touchedInputLinkRootObject = false;
+
 		if(parent)
 			parentToAttachTo = parent;
 		else
+		{
 			m_pILink->GetRootObject(&parentToAttachTo);
+			touchedInputLinkRootObject = true;
+		}
 
-		return m_pWorkingMem->AddWmeString(parentToAttachTo, name.c_str(), value.c_str());
+		IWme* newWme = m_pWorkingMem->AddWmeString(parentToAttachTo, name.c_str(), value.c_str());
+
+		if(touchedInputLinkRootObject)
+			parentToAttachTo->Release();
+		return newWme;
 	}
 
 	IWme* AddIDWme(IWMObject* parent, const string& name, IWMObject* linkDestination)
 	{
 		IWMObject* parentToAttachTo;
+		bool touchedInputLinkRootObject = false;
+
 		if(parent)
 			parentToAttachTo = parent;
 		else
@@ -296,8 +357,19 @@ public:
 			IWMObject* pILinkRootObject;
 			m_pILink->GetRootObject(&pILinkRootObject);
 			parentToAttachTo = pILinkRootObject;
+			touchedInputLinkRootObject = true;
 		}
-		return m_pWorkingMem->AddWmeObjectLink(parentToAttachTo, name.c_str(), linkDestination);
+		IWme* newWme = m_pWorkingMem->AddWmeObjectLink(parentToAttachTo, name.c_str(), linkDestination);
+
+		if(touchedInputLinkRootObject)
+			parentToAttachTo->Release();
+		return newWme;
+	}
+
+	void RemoveWme(IWme* victimWme)
+	{	//These are equivalent
+		//victimWme->Release();
+		m_pWorkingMem->RemoveWme(victimWme);
 	}
 
 private:
@@ -373,7 +445,8 @@ Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) :
 void Disk::Detach()
 {
 	delete m_iLinkProfile;
-		pTower = 0;
+	pTower = 0;
+cout << "Disk " << m_size << " was detached" << endl;
 }
 
 
@@ -390,25 +463,25 @@ void Disk::Update(Disk* diskBeneath, Tower* tower)
 Tower::Tower(HanoiWorld* inWorld, char inName) : pWorld(inWorld), m_name(inName)
 {
 	m_iLinkProfile = new TowerInputLinkProfile();
-/*	IOManager* manager = pWorld->GetIOManager();
+	IOManager* manager = pWorld->GetIOManager();
 
 	m_iLinkProfile->m_pPegIdentifier = manager->AddWMObject(0, k_worldPegString);
 	string nameString;
 	nameString = m_name;
 	m_iLinkProfile->m_pPegName = manager->AddStringWme(m_iLinkProfile->GetTowerIdentifierObject(), k_nameString, nameString);
-*/}
+}
 
 Tower::~Tower()
 {
-/*	IWorkingMemory* pWorkingMem = m_pILink->GetInputLinkMemory();
-	pWorkingMem->RemoveWme(m_pPegIdentifier);*/
 	for(diskItr_t diskItr = m_disks.begin(); diskItr != m_disks.end(); ++diskItr)
 	{
 		(*diskItr)->Detach();
+		delete (*diskItr);
 	}
 	m_disks.clear();
 
 	delete m_iLinkProfile;
+	pWorld = 0;
 }
 
 
@@ -512,9 +585,12 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	IWMObject* pILinkRootObject;
 	pILink->GetRootObject(&pILinkRootObject);
 
-	Tower(this, 'A');
+/*	Tower tower(this, 'A');
+	
+	Disk disk(&tower, 2, 0);
 
-/*
+	disk.Detach();*/
+
 
 	//Name each tower and store for later
 	for(int towerNum = 0; towerNum < inNumTowers; ++towerNum)
@@ -571,19 +647,21 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 			m_towers.push_back(tower);
 		}
 	}//for
-	*/
+
 
 	delete commLine;
 	delete pError;
 	kFactory->Release();//   <--program actually doesn't leak (gski objs)if you don't do this
+	kFactory = 0;
 	pILinkRootObject->Release();
+	pILinkRootObject = 0;
 }
 
 
 HanoiWorld::~HanoiWorld()
 {
 	for(towerItr_t towerItr = m_towers.begin(); towerItr != m_towers.end(); ++towerItr)
-		(*towerItr)->~Tower();
+		delete *towerItr;
 	m_towers.clear();
 
 	delete ioManager;
