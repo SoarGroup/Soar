@@ -6,9 +6,13 @@
 %rename(SetCharacterDataConst) sml::ElementXML::SetCharacterData(char const* characterData);
 %rename(SetBinaryCharacterDataConst) sml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
 
-%newobject sml::Kernel::CreateEmbeddedConnection(char const*, bool, bool, int);
-%newobject sml::Kernel::CreateEmbeddedConnection(char const*, bool, bool);
-%newobject sml::Kernel::CreateEmbeddedConnection(char const*, bool);
+// These static function create a new Kernel object which should be destroyed later
+// We need to let SWIG know this
+%newobject sml::Kernel::CreateEmbeddedConnectionClientThread(char const*, bool, int);
+%newobject sml::Kernel::CreateEmbeddedConnectionClientThread(char const*, bool);
+%newobject sml::Kernel::CreateEmbeddedConnectionClientThread(char const*);
+%newobject sml::Kernel::CreateEmbeddedConnectionSoarThread(char const*, int);
+%newobject sml::Kernel::CreateEmbeddedConnectionSoarThread(char const*);
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*, int);
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
 

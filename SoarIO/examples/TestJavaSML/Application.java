@@ -198,7 +198,7 @@ public class Application
 	
 	        // Initialize the kernel
 			//m_Kernel = Kernel.CreateEmbeddedConnection("KernelSML", true, false, 0) ;
-			m_Kernel = Kernel.CreateEmbeddedConnectionClientThread("KernelSML", false, 12121) ;
+			m_Kernel = Kernel.CreateEmbeddedConnectionClientThread("KernelSML", false, 12345) ;
 	
 			Test() ;
 		}
