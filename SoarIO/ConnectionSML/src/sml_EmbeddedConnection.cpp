@@ -28,6 +28,9 @@
 #include "Windows.h"	// Needed for load library
 
 #undef SendMessage		// Windows defines this as a macro.  Yikes!
+#else
+#include <dlfcn.h>      // Needed for dlopen and dlsym
+#define GetProcAddress dlsym
 #endif // WIN32
 
 using namespace sml ;
@@ -122,7 +125,14 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 
 	// Now load the library itself.
 	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
+#else
+#ifdef LINUX_DIRECT
+    libraryName.append(".so");
+    void* hLibrary = dlsym(libraryName.c_str(), RTLD_LAZY);
+#endif
+#endif
 
+#if defined(LINUX_DIRECT) || defined(_WIN32)
 	if (!hLibrary)
 	{
 		SetError(Error::kLibraryNotFound) ;
@@ -170,13 +180,13 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 		return false ;
 	}
 
-#else // _WIN32
+#else // _WIN32 || LINUX_DIRECT
 	// BUGBUG: We'll need to do a dynamic Linux equivalent here.
 	// Use dlopen and dlsym to dynamically load up the "smlDirect_XXX" methods.
 	m_pProcessMessageFunction = &sml_ProcessMessage;
 	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
-	
-#endif // _WIN32
+
+#endif // _WIN32 || LINUX_DIRECT
 
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).
