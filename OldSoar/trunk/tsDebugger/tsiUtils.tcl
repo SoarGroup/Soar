@@ -568,7 +568,7 @@ For help, see the help menu.
 proc sourceSoarFile {} {
    set file [tk_getOpenFile -title {Source ...}]
    if {$file != {}} {
-      tsiDisplayAndSendCommand "source \"$file\""
+      tsiDisplayAndSendCommand "soarsource \"$file\""
    }
 }
 proc saveReteNet {} {

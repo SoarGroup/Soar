@@ -292,7 +292,21 @@ proc tsiInitInterpreter {} {
 	
       }
    }
-
+   
+   proc soarsource {args} {
+     if {$args == {}} {
+        source
+     } else {
+        if [file isfile $args] {
+           set dir [file dirname $args]
+           set filename [file tail $args]
+	   cd $dir
+  	   source $filename
+        } else {
+	   echo "invalid file"
+        }
+     }
+   }
 }
 
 
