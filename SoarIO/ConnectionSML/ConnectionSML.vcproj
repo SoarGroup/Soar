@@ -116,9 +116,6 @@
 				RelativePath=".\src\sml_EmbeddedConnection.cpp">
 			</File>
 			<File
-				RelativePath=".\src\sml_MessageGenerator.cpp">
-			</File>
-			<File
 				RelativePath=".\src\sml_MessageSML.cpp">
 			</File>
 			<File
@@ -173,9 +170,6 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_Handles.h">
-			</File>
-			<File
-				RelativePath=".\include\sml_MessageGenerator.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_MessageSML.h">

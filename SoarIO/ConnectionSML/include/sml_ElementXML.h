@@ -40,7 +40,7 @@
 
 namespace sml
 {
-class MessageGenerator ;
+class Connection ;
 
 /*************************************************************
 * @brief The ElementXML class represents an element in an XML stream.
@@ -48,8 +48,8 @@ class MessageGenerator ;
 *************************************************************/
 class ElementXML
 {
-	// Let MessageGenerator have access to Fast methods (which are protected because they take care to use correctly).
-	friend MessageGenerator ;
+	// Let Connection have access to Fast methods (which are protected because they take care to use correctly).
+	friend Connection ;
 
 protected:
 	ElementXML_Handle m_hXML ;	// Reference to the underlying object which is created from the ElementXML DLL.

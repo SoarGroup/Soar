@@ -93,13 +93,13 @@ static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 #endif
 }
 
-static ElementXML* AddErrorMsg(MessageGenerator* pConnection, ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1)
+static ElementXML* AddErrorMsg(Connection* pConnection, ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1)
 {
 	pConnection->AddErrorToSMLResponse(pResponse, pErrorMsg, errorCode) ;
 	return pResponse ;
 }
 
-static ElementXML* AddResultID(MessageGenerator* pConnection, ElementXML* pResponse, char const* pID)
+static ElementXML* AddResultID(Connection* pConnection, ElementXML* pResponse, char const* pID)
 {
 	pConnection->AddSimpleResultToSMLResponse(pResponse, pID) ;
 	return pResponse ;

@@ -95,9 +95,6 @@ protected:
 	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
 
 public:
-	typedef std::list<WMElement*>::iterator ChildrenIter ;
-	typedef std::list<WMElement*>::const_iterator ChildrenConstIter ;
-
 	virtual char const* GetValueType() const ;
 
 	// Returns a string form of the value stored here.
