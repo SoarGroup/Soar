@@ -12,6 +12,7 @@ libKernelSML_la_SOURCES = \
 KernelSMLInterface.cpp\
 KernelSMLdll.cpp\
 sml_AgentListener.cpp\
+sml_AgentOutputFlusher.cpp\
 sml_AgentSML.cpp\
 sml_ConnectionManager.cpp\
 sml_EventManager.cpp\

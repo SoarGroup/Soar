@@ -143,6 +143,9 @@
 				RelativePath=".\src\sml_AgentListener.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_AgentOutputFlusher.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_AgentSML.cpp">
 			</File>
 			<File
@@ -182,6 +185,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_AgentListener.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_AgentOutputFlusher.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_AgentSML.h">

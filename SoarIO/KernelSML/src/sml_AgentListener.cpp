@@ -48,6 +48,8 @@
 #include "IgSKI_Kernel.h"
 #include "sml_KernelSML.h"
 
+#include "assert.h"
+
 using namespace sml ;
 
 // Returns true if this is the first connection listening for this event
@@ -61,8 +63,11 @@ bool AgentListener::AddListener(egSKIEventId eventID, Connection* pConnection)
 			m_Agent->AddRunListener(eventID, this) ;
 		else if (IsProductionEvent(eventID))
 			m_Agent->GetProductionManager()->AddProductionListener(eventID, this) ;
-		else if (IsPrintEvent(eventID))					// added by voigtjr
+		else if (IsPrintEvent(eventID))	
+		{
+			m_pAgentOutputFlusher = new AgentOutputFlusher(this, m_Agent);
 			m_Agent->AddPrintListener(eventID, this); 
+		}
 	}
 
 	return first ;
@@ -79,8 +84,12 @@ bool AgentListener::RemoveListener(egSKIEventId eventID, Connection* pConnection
 			m_Agent->RemoveRunListener(eventID, this) ;
 		else if (IsProductionEvent(eventID))
 			m_Agent->GetProductionManager()->RemoveProductionListener(eventID, this) ;
-		else if (IsPrintEvent(eventID))					// added by voigtjr
+		else if (IsPrintEvent(eventID))
+		{
 			m_Agent->RemovePrintListener(eventID, this); 
+			delete m_pAgentOutputFlusher;
+			m_pAgentOutputFlusher = 0;
+		}
 	}
 
 	return last ;
@@ -193,19 +202,34 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, gS
 	delete pMsg ;
 }
 
-// Called when a "PrintEvent" occurs in the kernel (I think) (voigtjr)
-void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, const char* msg) {
+// Called when a "PrintEvent" occurs in the kernel
+void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, const char* msg) 
+{
+	// If we're getting anything but a print event here, that isn't right
+	assert(eventID == gSKIEVENT_PRINT);
+
+	// We're assuming this is correct in the flush output function, so we should check it here
+	assert(agentPtr == m_Agent);
 
 	// If the print callbacks have been disabled, then don't forward this message
 	// on to the clients.  This allows us to use the print callback within the kernel to
 	// retrieve information without it appearing in the trace.  (One day we won't need to do this enable/disable game).
-	if (eventID == gSKIEVENT_PRINT && !m_EnablePrintCallback)
+	if (!m_EnablePrintCallback)
 		return ;
 
-	ConnectionListIter connectionIter = GetBegin(eventID);
+	// Buffer print output to be flushed later
+	m_BufferedPrintOutput += msg;
+}
+
+void AgentListener::FlushOutput() 
+{
+	if (!m_BufferedPrintOutput.size())
+		return;
+
+	ConnectionListIter connectionIter = GetBegin(gSKIEVENT_PRINT);
 
 	// Nobody is listenening for this event.  That's an error as we should unregister from the kernel in that case.
-	if (connectionIter == GetEnd(eventID))
+	if (connectionIter == GetEnd(gSKIEVENT_PRINT))
 		return;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
@@ -214,13 +238,15 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, co
 
 	// Convert eventID to a string
 	char event[kMinBufferSize];
-	Int2String(eventID, event, sizeof(event));
+	Int2String(gSKIEVENT_PRINT, event, sizeof(event));
 
 	// Build the SML message we're going to send.
 	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event);
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, agentPtr->GetName());
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, m_Agent->GetName());
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event);
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamMessage, msg);
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamMessage, m_BufferedPrintOutput.c_str());
+
+	m_BufferedPrintOutput.clear();
 
 #ifdef _DEBUG
 	// Generate a text form of the XML so we can look at it in the debugger.
@@ -229,7 +255,7 @@ void AgentListener::HandleEvent(egSKIEventId eventID, gSKI::IAgent* agentPtr, co
 #endif
 
 	// Send this message to all listeners
-	ConnectionListIter end = GetEnd(eventID);
+	ConnectionListIter end = GetEnd(gSKIEVENT_PRINT);
 
 	AnalyzeXML response;
 

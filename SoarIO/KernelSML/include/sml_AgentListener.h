@@ -39,6 +39,7 @@
 #include "IgSKI_Agent.h"
 #include "IgSKI_Kernel.h"
 #include "sml_EventManager.h"
+#include "sml_AgentOutputFlusher.h"
 
 #include <map>
 
@@ -52,6 +53,8 @@ class AgentListener : public gSKI::IRunListener, public gSKI::IProductionListene
 protected:
 	KernelSML*		m_KernelSML ;
 	gSKI::IAgent*	m_Agent ;
+	std::string		m_BufferedPrintOutput;
+	AgentOutputFlusher* m_pAgentOutputFlusher;
 
 	// When false we don't forward print callback events to the listeners.  (Useful when we're backdooring into the kernel)
 	bool			m_EnablePrintCallback ;
@@ -115,6 +118,7 @@ public:
 		m_KernelSML = pKernelSML ;
 		m_Agent		= pAgent ;
 		m_EnablePrintCallback = true ;
+		m_pAgentOutputFlusher = 0;
 	}
 
 	virtual ~AgentListener()
@@ -134,11 +138,14 @@ public:
 	// Called when a "ProductionEvent" occurs in the kernel
 	virtual void HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) ;
 
-	// Called when a "PrintEvent" occurs in the kernel (I think) (voigtjr)
+	// Called when a "PrintEvent" occurs in the kernel
 	virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg);
 
 	// Allows us to temporarily stop forwarding print callback output from the kernel to the SML listeners
 	void EnablePrintCallback(bool enable) { m_EnablePrintCallback = enable ; }
+
+	// Activate the print callback (flush output)
+	void FlushOutput();
 
 } ;
 
