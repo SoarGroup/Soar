@@ -1,11 +1,10 @@
-
 multi-attributes disk 7
 multi-attributes peg 3
 multi-attributes holds 8
 multi-attributes upper-disk 2
 multi-attributes clear 2
 
-learn -off
+learn --off
 
 
 sp {towers-of-hanoi*object*disk*elaborate*state*upper-disk
