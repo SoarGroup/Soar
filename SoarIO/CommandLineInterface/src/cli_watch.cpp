@@ -125,6 +125,16 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'l'://level
 				{
+					// All of these are going to change
+					options = OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
+						| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
+						| OPTION_WATCH_PHASES | OPTION_WATCH_DECISIONS;
+
+					// Start with all off, turn on as appropriate
+					settings &= ~(OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
+						| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
+						| OPTION_WATCH_PHASES | OPTION_WATCH_DECISIONS);
+
 					switch (ParseLevelOptarg()) {
 						case 0:// none
 							options = OPTION_WATCH_ALL;
@@ -134,29 +144,21 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 							break;
 							
 						case 5:// preferences
-							options |= OPTION_WATCH_PREFERENCES;
 							settings |= OPTION_WATCH_PREFERENCES;
 							// falls through
 						case 4:// wmes
-							options |= OPTION_WATCH_WMES;
 							settings |= OPTION_WATCH_WMES;
 							// falls through
 						case 3:// productions (default, user, chunks, justifications)
-							options |= OPTION_WATCH_DEFAULT;
-							options |= OPTION_WATCH_USER;
-							options |= OPTION_WATCH_CHUNKS;
-							options |= OPTION_WATCH_JUSTIFICATIONS;
 							settings |= OPTION_WATCH_DEFAULT;
 							settings |= OPTION_WATCH_USER;
 							settings |= OPTION_WATCH_CHUNKS;
 							settings |= OPTION_WATCH_JUSTIFICATIONS;
 							// falls through
 						case 2:// phases
-							options |= OPTION_WATCH_PHASES;
 							settings |= OPTION_WATCH_PHASES;
 							// falls through
 						case 1:// decisions
-							options |= OPTION_WATCH_DECISIONS;
 							settings |= OPTION_WATCH_DECISIONS;
 							break;
 
@@ -342,13 +344,13 @@ bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const int options, cons
 			switch (pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]) {
 				default:
 					//falls through
-				case 0:
+				case NONE_WME_TRACE:
 					AppendToResult("nowmes (0)");
 					break;
-				case 1:
+				case TIMETAG_WME_TRACE:
 					AppendToResult("timetags (1)");
 					break;
-				case 2:
+				case FULL_WME_TRACE:
 					AppendToResult("fullwmes (2)");
 					break;
 			}
@@ -394,8 +396,9 @@ bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const int options, cons
 			AppendArgTag(Int2String(TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
+			// Subtract one here because the kernel constants (e.g. TIMETAG_WME_TRACE) are one plus the number we use
 			AppendArgTag(Int2String(TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeInt, 
-				Int2String(pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM], buf2, kMinBufferSize));
+				Int2String(pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]-1, buf2, kMinBufferSize));
 
 			AppendArgTag(Int2String(TRACE_WM_CHANGES_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_WM_CHANGES_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);

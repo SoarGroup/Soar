@@ -98,7 +98,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	if (!RequireKernel()) return false;
 
 	// TODO: Rather tricky options
-	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_OUTPUT) || (options & OPTION_RUN_STATE)) {
+	if ((options & OPTION_RUN_OPERATOR) || (options & OPTION_RUN_STATE)) {
 		return m_Error.SetError(CLIError::kOptionNotImplemented);
 	}
 
@@ -111,11 +111,21 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 	if (options & OPTION_RUN_ELABORATION) {
 		runType = gSKI_RUN_SMALLEST_STEP;
 
+	} else if (options & OPTION_RUN_PHASE) {
+		runType = gSKI_RUN_PHASE;
+
 	} else if (options & OPTION_RUN_DECISION) {
 		runType = gSKI_RUN_DECISION_CYCLE;
 
+	} else if (options & OPTION_RUN_OUTPUT) {
+		runType = gSKI_RUN_UNTIL_OUTPUT;
+
 	} else if (options & OPTION_RUN_FOREVER) {
 		runType = gSKI_RUN_FOREVER;	
+	}
+
+	if (!count && runType != gSKI_RUN_FOREVER) {
+		count = 1;
 	}
 
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
