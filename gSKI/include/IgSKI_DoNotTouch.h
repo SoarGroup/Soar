@@ -235,8 +235,12 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* KJC 3/01 limit number of cycles in run_til_output */
 #define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           31
 
+/* SAN (??) */
+//NUMERIC_INDIFFERENCE
+#define TRACE_INDIFFERENT_SYSPARAM               32
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  31
+#define HIGHEST_SYSPARAM_NUMBER                  32
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */

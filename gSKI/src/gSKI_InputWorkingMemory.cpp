@@ -127,6 +127,8 @@ namespace gSKI
       
       InputWMObject* iobj = GetOrCreateObjectFromSymbol(idSymbol);
       
+// BUGBUG: Shouldn't iobj be released after the AddWme call?
+
       return AddWme(iobj, attrSymbol, valSymbol);
    }
    
@@ -503,10 +505,44 @@ namespace gSKI
                                                 Error* err) const
    {
       ClearError(err);
-    
-      MegaAssert(false, "NOT IMPLEMENTED YET!");
 
-      object = 0;
+	  // Make sure we got enough of an id string to do the lookup
+	  if (!idstring || strlen(idstring) < 2)
+	  {
+		 SetErrorExtended(err, 
+			      gSKIERR_SYMBOL_NOT_OBJECT, 
+			      "Invalid id string passed to GetObjectById function!" );
+	      return ;
+	  }
+
+	  // Cast away our "const" for now (these calls should be in another, non-const method)
+	  InputWorkingMemory* pThis = (InputWorkingMemory*)this ;
+
+	  // Get the first letter in the identifier
+	  char letter = idstring[0] ;
+
+	  // Get the numeric part of the identifier (if this isn't a number we'll get back 0)
+	  unsigned long value = atol(&idstring[1]) ;
+
+	  // See if there's a symbol matching this in the kernel.
+	  Symbol* id = find_identifier(pThis->GetSoarAgent(), letter, value) ;
+
+	  if (!id)
+	  {
+		 SetErrorExtended(err, 
+			      gSKIERR_SYMBOL_NOT_OBJECT, 
+			      "Failed to find a matching identifier in GetObjectById function!" );
+	      return ;
+	  }
+
+	  // Create the WMObject
+	  InputWMObject* pWMObject = new InputWMObject(pThis, id) ;
+
+	 // This map goes from hash id for the symbol to a particular object
+	 // so registering here allows us to look the object up by symbol name in the future.
+	 pThis->m_wmobjectmap.insert(tWMObjMap::value_type( id->common.hash_id, pWMObject ));
+
+	  *object = pWMObject ;
    }
 
    /*
@@ -662,7 +698,6 @@ namespace gSKI
    {
       return obj->GetObjectsReferencedByAttribute(path);
    }
-  
 
    /*
     ===============================
@@ -670,9 +705,27 @@ namespace gSKI
    */
    InputWMObject* InputWorkingMemory::GetOrCreateObjectFromSymbol(const ISymbol* idsym)
    {
-      MegaAssert( false, "Not implemented yet!");
-      
-      return 0;
+//      MegaAssert( false, "Not implemented yet!");
+
+// BADBAD: For now, just create a new WM Object.  I think we should really
+// be doing a lookup in the m_wmobjectmap for the wm.
+
+	  // This code follows the logic of "GetRootInputObject"
+
+	  // This is just a cast to a gSymbol, which is a wrapper around a kernel Symbol*.
+	  gSymbol* gID = gSymbol::ConvertSymbol(idsym);
+
+	  // Get the underlying kernel object
+	  Symbol* id = gID->GetSoarSymbol() ;
+
+	  // Create the WMObject
+	  InputWMObject* pWMObject = new InputWMObject(this, id) ;
+
+	 // This map goes from hash id for the symbol to a particular object
+	 // so registering here allows us to look the object up by symbol name in the future.
+	 m_wmobjectmap.insert(tWMObjMap::value_type( id->common.hash_id, pWMObject ));
+
+	 return pWMObject;
    }
 
    /*

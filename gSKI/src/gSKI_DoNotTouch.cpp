@@ -1296,8 +1296,8 @@ __   ____ _ _ __  / _|_ __ ___  _ __ ___      ___| |_ _ __(_)_ __   __ _
          /*  what we really want is to require a match over the length of
          the shorter of the two strings, with positions being a minimum */
 
-         num = strlen(string1);
-         if (num > strlen(string2)) num = strlen(string2);
+         num = (int)strlen(string1);
+         if (num > (int)strlen(string2)) num = (int)strlen(string2);
          if (positions < num)  positions = num;
 
          for (i = 0; i < positions; i++)
