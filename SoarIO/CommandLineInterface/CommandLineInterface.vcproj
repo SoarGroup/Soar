@@ -161,6 +161,9 @@
 					RelativePath=".\src\cli_home.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_indifferentselection.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_initsoar.cpp">
 				</File>
 				<File

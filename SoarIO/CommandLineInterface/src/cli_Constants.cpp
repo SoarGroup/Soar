@@ -29,6 +29,7 @@ char const* Constants::kCLIGDSPrint					= "gds-print";
 char const* Constants::kCLIHelp						= "help";
 char const* Constants::kCLIHelpEx					= "helpex";
 char const* Constants::kCLIHome						= "home";
+char const* Constants::kCLIIndifferentSelection		= "indifferent-selection";
 char const* Constants::kCLIInitSoar					= "init-soar";
 char const* Constants::kCLILearn					= "learn";
 char const* Constants::kCLILog						= "log";

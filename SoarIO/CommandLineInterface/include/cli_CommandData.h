@@ -9,6 +9,11 @@ namespace cli {
 	const unsigned int OPTION_EXCISE_TASK		= 0x08;
 	const unsigned int OPTION_EXCISE_USER		= 0x10;
 
+	const unsigned int OPTION_INDIFFERENT_RANDOM = 0x1;
+	const unsigned int OPTION_INDIFFERENT_FIRST	 = 0x2;
+	const unsigned int OPTION_INDIFFERENT_LAST	 = 0x3;
+	const unsigned int OPTION_INDIFFERENT_ASK	 = 0x4;
+
 	const unsigned int OPTION_LEARN_ALL_LEVELS = 0x01;
 	const unsigned int OPTION_LEARN_BOTTOM_UP  = 0x02;
 	const unsigned int OPTION_LEARN_DISABLE    = 0x04;

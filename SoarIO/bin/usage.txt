@@ -185,7 +185,15 @@ On success:
 <result>true</result>
 ***
 indifferent-selection
-Usage:	indifferent-selection
+Usage:	indifferent-selection [-aflr]
+  -a, --ask	Ask the user to choose.
+  -f, --first	Select the first indifferent object from Soar's internal list.
+  -l, --last	Select the last indifferent object from Soar's internal list.
+  -r, --random	Select randomly (default).
+
+The indifferent-selection command allows the user to set which option should be 
+used to select between operator proposals that are mutally indifferent in 
+preference memory.
 ~~~
 ***
 init-soar

@@ -238,6 +238,15 @@ public:
 	bool DoHome(std::string* pDirectory = 0);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseIndifferentSelection(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned int mode);
+
+	/*************************************************************
 	* @brief init-soar command, see usage.txt for details.
 	*************************************************************/
 	bool ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
