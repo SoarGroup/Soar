@@ -3,6 +3,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.8  2004/07/14 14:45:27  toolshed
+### undid change
+###
 ### Revision 1.7  2004/07/14 14:42:43  toolshed
 ### commented out random map command from map menu in the tank control panel, as it is broken and i am in no position to fix it
 ###
@@ -196,7 +199,7 @@ proc makeETControlPanel { {hide 0} {x -20} {y 1} } {
    menu .menu.map.m
    .menu.map.m add command -label {Load Map} -command {mapLoader}
    #.menu.map.m add command -label {Restart Map} -command {restartMap}
-   #.menu.map.m add command -label {Random Map} -command {randomMap}
+   .menu.map.m add command -label {Random Map} -command {randomMap}
 
    pack .menu.map -side left -padx 5
 
