@@ -37,13 +37,15 @@
 #include "IgSKI_Production.h"
 #include "IgSKI_MultiAttribute.h"
 
+// BADBAD: I think we should be using an error class instead to work with error objects.
+#include "../../gSKI/src/gSKI_Error.h"
+
 // SML includes
-#include "sml_ElementXML.h"
-#include "sml_TagResult.h"
-#include "sml_TagError.h"
+#include "sml_Connection.h"
 
 using namespace std;
 using namespace cli;
+using namespace sml;
 
 //  ____                                          _ _     _            ___       _             __
 // / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)_ __   ___|_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
@@ -124,7 +126,7 @@ void CommandLineInterface::BuildCommandMap() {
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
 //
-bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError) {
+bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError) {
 
 	// Clear the result
 	m_Result.clear();
@@ -140,13 +142,35 @@ bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandL
 	// Reset source error flag
 	m_SourceError = false;
 
-	// Marshall the result text and return
-	sml::TagResult* pTag = new sml::TagResult();
-	pTag->SetCharacterData(m_Result.c_str());
-	pResponse->AddChild(pTag);
+	if (!m_CriticalError && ret)
+	{
+		// The command succeeded, so return the result
+		pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.c_str()) ;
+	}
+	else
+	{
+		// The command failed, so return an error message
+		std::string msg = m_Result ;
 
-	// Return true on success, false on error, so the opposite of m_CriticalError
-	return !m_CriticalError;
+		if (pError && isError(*pError))
+		{
+			msg += "gSKI error was: " ;
+			msg += pError->Text ;
+			msg += " details: " ;
+			msg += pError->ExtendedMsg ;
+		}
+
+		// Add the error message to the response
+		pConnection->AddErrorToSMLResponse(pResponse, msg.c_str(), -1) ;
+	}
+
+	// Marshall the result text and return
+//	sml::TagResult* pTag = new sml::TagResult();
+//	pTag->SetCharacterData(m_Result.c_str());
+//	pResponse->AddChild(pTag);
+
+	// Always returns true to indicate that we've generated any needed error message already
+	return true ;
 }
 
 // ____         ____                                          _ ___       _                        _

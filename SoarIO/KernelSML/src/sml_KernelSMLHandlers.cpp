@@ -428,6 +428,6 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 
 	// Make the call.
-	return m_CommandLineInterface.DoCommand(pAgent, pLine, pResponse, pError) ;
+	return m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse, pError) ;
 }
 
