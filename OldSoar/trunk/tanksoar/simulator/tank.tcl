@@ -661,6 +661,7 @@ global tank tankList map current agentsetup sensor map originalMap\
 		set cycle 1
 		set turn 0        
 		set worldCount 0
+		set scoreLimit 50
 	}
 	updateAvailableAgentColors
 	if {[winfo exists .siuWin]} {
