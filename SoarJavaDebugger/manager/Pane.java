@@ -46,8 +46,14 @@ public class Pane
 	public static final String	kXMLKey  = "XML" ;
 	public static final String  kTagName = "pane" ;
 	
+	/** Some windows can be vertically or horizontally oriented.  Others can just ignore this property */
+	protected boolean		m_HorizontalOrientation ;
+	
 	public Pane(Composite parent)
 	{
+		// Default to horizontal (for many views orientation is ignored anyway)
+		m_HorizontalOrientation = true ;
+		
 		// We provide a border around the pane so we can find the edges to drag
 		m_Pane = new Group(parent, SWT.SHADOW_ETCHED_IN) ;
 		m_Pane.setLayout(new FillLayout(SWT.VERTICAL)) ;
@@ -62,6 +68,8 @@ public class Pane
 	// I'm including a parent here to make sure folks don't use this by accident.
 	public Pane(boolean noParent)
 	{
+		// Default to horizontal (for many views orientation is ignored anyway)
+		m_HorizontalOrientation = true ;
 	}
 	
 	public Composite getWindow()
@@ -69,6 +77,10 @@ public class Pane
 		return m_Pane ;
 	}
 	
+	/** Some windows can be vertically or horizontally oriented.  Others can just ignore this property */
+	public boolean isHorizontalOrientation()			{ return m_HorizontalOrientation ; }
+	public void setHorizontalOrientation(boolean state)	{ m_HorizontalOrientation = state ; }
+
 	public void addView(AbstractView view)
 	{
 		m_Views.add(view) ;
@@ -106,6 +118,8 @@ public class Pane
 		if (getWindow() != null)
 			getWindow().setData(kXMLKey, element) ;
 		
+		element.addAttribute("orientation", Boolean.toString(m_HorizontalOrientation)) ;
+		
 		int n = m_Views.size() ;
 		for (int i = 0 ; i < n ; i++)
 		{
@@ -126,6 +140,8 @@ public class Pane
 	protected void loadFromXML(MainFrame frame, Document doc, Composite parent, ElementXML element) throws Exception
 	{
 		m_Views.clear() ;
+		
+		m_HorizontalOrientation = element.getAttributeBooleanThrows("orientation") ;
 		
 		for (int i = 0 ; i < element.getNumberChildren() ; i++)
 		{

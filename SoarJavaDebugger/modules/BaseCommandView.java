@@ -120,6 +120,17 @@ public abstract class BaseCommandView extends AbstractView
 		selectionObject.fillMenu(getDocument(), this, outputView, contextMenu, simple) ;
 	}
 
+	/********************************************************************************************
+	* 
+	* Return true if this view shouldn't be user resizable.  E.g. A text window would return false
+	* but a bar for buttons would return true.
+	* 
+	********************************************************************************************/
+	public boolean isFixedSizeView()
+	{
+		return false ;
+	}
+
 	/** Windows that do auto-updates can be usefully primed with an initial command (e.g. print --stack) when defining a default behavior */
 	public void setInitialCommand(String command)
 	{
@@ -153,6 +164,12 @@ public abstract class BaseCommandView extends AbstractView
 		m_Container.layout() ;
 	}
 	
+	/********************************************************************************************
+	* 
+	* Initialize this window and its children.
+	* Should call setValues() at the start to complete initialization of the abstract view.
+	* 
+	********************************************************************************************/
 	public void init(MainFrame frame, Document doc, Pane parentPane)
 	{
 		if (m_Inited)

@@ -97,13 +97,16 @@ public class Document
 		}
 		
 		// BUGBUG: The name and description should come from the classes.
+		// The list should come from scanning the drive for classes in the modules folder and pulling them in.
 		Module combo1 = new Module("Trace View", "Commands are entered at a prompt.  Output from the commands and trace output from runs is shown in a text window.", modules.TraceView.class) ;
 		Module combo2 = new Module("Auto Update View", "The user's command is automatically executed at the end of each run.", modules.UpdateCommandView.class) ;
 		Module combo3 = new Module("Keep View", "Commands are entered at a prompt and the results are displayed in a scrolling text window.  Trace output from runs is not shown.", modules.KeepCommandView.class) ;
+		Module combo4 = new Module("Button Bar", "A collection of user-customizable buttons", modules.ButtonView.class) ;
 
 		m_ModuleList.add(combo1) ;
 		m_ModuleList.add(combo2) ;
 		m_ModuleList.add(combo3) ;
+		m_ModuleList.add(combo4) ;
 	}
 	
 	/** Returns the single document instance for this debugger.  If possible pass a document pointer around instead of using this backdoor */

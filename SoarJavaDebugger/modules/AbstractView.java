@@ -69,37 +69,7 @@ public abstract class AbstractView implements AgentFocusListener
 
 	/** The window that owns this view */
 	public Pane getPane() 			{ return m_Pane ; }
-		
-	/** Close down this window, doing any necessary clean up */
-	public void close(boolean dispose)
-	{
-		unregisterName() ;
-		unregisterForAgentEvents(getAgentFocus()) ;
-
-		if (dispose)
-			m_Container.dispose() ;
-	}
 	
-	/** This method is called when we initialize the module. */
-	protected void setValues(MainFrame frame, Document doc, Pane parentPane)
-	{
-		m_Frame = frame ;
-		m_Document  = doc ;
-		m_Pane 	    = parentPane ;
-	}
-	
-	/** Generates a unique name for this window */
-	public void generateName(MainFrame frame)
-	{
-		// Use the frame that's passed in, in case our frame pointer is yet to be initialized
-		m_Name = frame.generateName(getModuleBaseName(), this) ;
-	}
-	
-	protected void unregisterName()
-	{
-		m_Frame.getNameRegister().unregisterName(getName()) ;		
-	}
-
 	/********************************************************************************************
 	 * 
 	 * Returns the agent that is associated with the main frame.
@@ -124,6 +94,14 @@ public abstract class AbstractView implements AgentFocusListener
 
 	/********************************************************************************************
 	* 
+	* Return true if this view shouldn't be user resizable.  E.g. A text window would return false
+	* but a bar for buttons would return true.
+	* 
+	********************************************************************************************/
+	public abstract boolean isFixedSizeView() ;
+
+	/********************************************************************************************
+	* 
 	* Change the font we use to display text items in this window.
 	* 
 	********************************************************************************************/
@@ -132,7 +110,7 @@ public abstract class AbstractView implements AgentFocusListener
 	/********************************************************************************************
 	* 
 	* Initialize this window and its children.
-	* Should call setValues() and generateName() at the start to complete initialization of the abstract view.
+	* Should call setValues() at the start to complete initialization of the abstract view.
 	* 
 	********************************************************************************************/
 	public abstract void init(MainFrame frame, Document doc, Pane parentPane) ;
@@ -180,7 +158,8 @@ public abstract class AbstractView implements AgentFocusListener
 	/************************************************************************
 	* 
 	* Set the focus to this window so the user can type commands easily.
-	* Return true if this window wants the focus.
+	* Return true if this window wants the focus (some don't have a sensible
+	* place to focus on).
 	* 
 	*************************************************************************/
 	public abstract boolean setFocus() ;
@@ -198,9 +177,47 @@ public abstract class AbstractView implements AgentFocusListener
 	*************************************************************************/
 	public abstract void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception ;
 	
-	protected abstract void registerForAgentEvents(Agent agent) ;
-	
+	/************************************************************************
+	* 
+	* Register and unregister for Soar events for this agent.
+	* (E.g. a trace window might register for the print event)
+	* 
+	*************************************************************************/
+	protected abstract void registerForAgentEvents(Agent agent) ;	
 	protected abstract void unregisterForAgentEvents(Agent agent) ;
+	
+	/** Close down this window, doing any necessary clean up */
+	public void close(boolean dispose)
+	{
+		unregisterName() ;
+		unregisterForAgentEvents(getAgentFocus()) ;
+
+		if (dispose)
+			m_Container.dispose() ;
+	}
+	
+	/** This method is called when we initialize the module. */
+	protected void setValues(MainFrame frame, Document doc, Pane parentPane)
+	{
+		m_Frame = frame ;
+		m_Document  = doc ;
+		m_Pane 	    = parentPane ;
+	}
+	
+	/** Generates a unique name for this window */
+	public void generateName(MainFrame frame)
+	{
+		if (m_Name != null)
+			throw new IllegalStateException("Should only call this once.  If we really want to allow this then if m_Name != null unregister this name before generating a new name.") ;
+		
+		// Use the frame that's passed in, in case our frame pointer is yet to be initialized
+		m_Name = frame.generateName(getModuleBaseName(), this) ;
+	}
+	
+	protected void unregisterName()
+	{
+		m_Frame.getNameRegister().unregisterName(getName()) ;		
+	}
 	
 	public void agentGettingFocus(AgentFocusEvent e)
 	{
@@ -227,10 +244,10 @@ public abstract class AbstractView implements AgentFocusListener
 	
 	public void fillWindowMenu(Menu menu)
 	{
-		addItem(menu, "Add window -- split right", "addview " + m_Frame.getName() + " " + this.getName() + " right") ;
-		addItem(menu, "Add window -- split left", "addview " + m_Frame.getName() + " " + this.getName() + " left") ;
-		addItem(menu, "Add window -- split top", "addview " + m_Frame.getName() + " " + this.getName() + " top") ;
-		addItem(menu, "Add window -- split bottom", "addview " + m_Frame.getName() + " " + this.getName() + " bottom") ;
+		addItem(menu, "Add window -- split right", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachRightValue) ;
+		addItem(menu, "Add window -- split left", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachLeftValue) ;
+		addItem(menu, "Add window -- split top", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachTopValue) ;
+		addItem(menu, "Add window -- split bottom", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachBottomValue) ;
 		new MenuItem(menu, SWT.SEPARATOR) ;
 		addItem(menu, "Remove window", "removeview " + m_Frame.getName() + " " + this.getName()) ;
 	}

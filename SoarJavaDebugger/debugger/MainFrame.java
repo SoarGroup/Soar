@@ -147,7 +147,7 @@ public class MainFrame
 		m_Parent = parent;
 
 		m_Document = doc;
-		
+				
 		// Add ourselves to the list of frames in use and
 		// get back a unique name to use
 		String name = doc.addFrame(this);

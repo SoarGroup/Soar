@@ -12,6 +12,7 @@
 package doc;
 
 import general.ElementXML;
+import manager.MainWindow;
 import manager.Pane;
 import modules.AbstractView;
 import modules.TraceView;
@@ -123,7 +124,7 @@ public class DebuggerCommands
 			return null ;
 		}
 
-		// Add a new view: addview <framename> <viewname> right|left|top|bottom
+		// Add a new view: addview <framename> <viewname> Right|Left|Top|Bottom
 		if (first.equals("addview"))
 		{
 			String frameName = tokens[1] ;
@@ -131,7 +132,7 @@ public class DebuggerCommands
 			String direction = tokens[3] ;
 						
 			// To the user we are adding a view, but internally we're adding a pane
-			// if we're adding a sash and then that pane will contain the view
+			// and then that pane will contain the view
 			MainFrame frame = m_Document.getFrameByName(frameName) ;
 			AbstractView view = frame.getNameRegister().getView(viewName) ;
 			Pane pane = view.getPane() ;
@@ -140,6 +141,17 @@ public class DebuggerCommands
 			Module module = NewWindowDialog.showDialog(frame, "Select new window", m_Document.getModuleList()) ;
 			if (module == null)
 				return null ;
+			
+			// Create an instance of the class.  This view won't be fully instantiated
+			// but we'll use it to create a name and generate XML etc.
+			AbstractView newView = module.createInstance() ;
+			
+			if (newView == null)
+				return null ;
+
+			// Fixed sized views are hosted in composite windows
+			// Variable sized views (the norm) are hosted in sash forms
+			boolean addSash = !newView.isFixedSizeView() ;
 
 			// The plan is to convert the current set of windows to XML
 			// then modify that tree structure and then load the XML back in.
@@ -162,22 +174,15 @@ public class DebuggerCommands
 				parent = parent.getParent() ;
 			}
 
-			// Create a new XML subtree
-			int orientation = (direction.equals("right") || direction.equals("left")) ? SWT.HORIZONTAL : SWT.VERTICAL ;
-			int[] weights = new int[] { 50, 50 } ;
-			ElementXML sashParent = frame.getMainWindow().convertSashToXML(orientation, weights, "sash") ;
-			
+			// If we're adding to the left side we assume the orientation is vertical
+			// If we're adding to the top we assume the orientation is horizontal
+			boolean horiz = ((direction.equals(MainWindow.kAttachTopValue) || direction.equals(MainWindow.kAttachBottomValue))) ;
+
 			// We create a new pane but with no parent window (so the pane object is not instantiated
 			// into SWT windows).  We just want to use it to generate the new XML.
 			Pane newPane = new Pane(true) ;
+			newPane.setHorizontalOrientation(horiz) ;
 			
-			// Create an instance of the class.  This view won't be fully instantiated
-			// but we'll use it to create a name and generate XML etc.
-			AbstractView newView = module.createInstance() ;
-			
-			if (newView == null)
-				return null ;
-
 			// Generate a name and make this view a child of the pane we're building
 			newView.generateName(frame) ;
 			newPane.addView(newView) ;
@@ -185,22 +190,41 @@ public class DebuggerCommands
 			// Create XML for the new sash form with appropriate children
 			ElementXML newChild1 = existingPane ;
 			ElementXML newChild2 = newPane.convertToXML(Pane.kTagName) ;
+
+			ElementXML newParent = null ;
 			
-			// The order to add the children depends on which side
-			// we're adding to.
-			if (direction.equals("right") || direction.equals("bottom"))
+			if (addSash)
 			{
-				sashParent.addChildElement(newChild1) ;
-				sashParent.addChildElement(newChild2) ;
+				// Create a new XML subtree for a new sash form
+				int orientation = (direction.equals(MainWindow.kAttachLeftValue) || direction.equals(MainWindow.kAttachRightValue)) ? SWT.HORIZONTAL : SWT.VERTICAL ;				
+				int[] weights = new int[] { 50, 50 } ;
+				newParent = frame.getMainWindow().buildXMLForSashForm(orientation, weights) ;
+
+				// The order to add the children depends on which side
+				// we're adding to.
+				if (direction.equals("right") || direction.equals("bottom"))
+				{
+					newParent.addChildElement(newChild1) ;
+					newParent.addChildElement(newChild2) ;
+				}
+				else
+				{
+					newParent.addChildElement(newChild2) ;
+					newParent.addChildElement(newChild1) ;				
+				}
 			}
 			else
 			{
-				sashParent.addChildElement(newChild2) ;
-				sashParent.addChildElement(newChild1) ;				
+				// Create a new XML subtree for a composite pair
+				newParent = frame.getMainWindow().buildXMLforComposite(direction) ;
+				
+				newParent.addChildElement(newChild1) ;
+				newParent.addChildElement(newChild2) ;
 			}
 			
+			
 			// Change the XML tree to insert this new sash form.			
-			boolean success = parent.replaceChild(existingPane, sashParent) ;
+			boolean success = parent.replaceChild(existingPane, newParent) ;
 			
 			if (!success)
 				throw new IllegalStateException("Error in replacing panes") ;

@@ -56,6 +56,17 @@ public class ButtonView extends AbstractView
 
 	/********************************************************************************************
 	* 
+	* Return true if this view shouldn't be user resizable.  E.g. A text window would return false
+	* but a bar for buttons would return true.
+	* 
+	********************************************************************************************/
+	public boolean isFixedSizeView()
+	{
+		return true ;
+	}
+
+	/********************************************************************************************
+	* 
 	* This "base name" is used to generate a unique name for the window.
 	* For example, returning a base name of "trace" would lead to windows named
 	* "trace1", "trace2" etc.
@@ -108,9 +119,24 @@ public class ButtonView extends AbstractView
 		m_LinkedViewName = viewName ;
 	}
 	
+	/********************************************************************************************
+	* 
+	* Initialize this window and its children.
+	* Should call setValues() at the start to complete initialization of the abstract view.
+	* 
+	********************************************************************************************/
 	public void init(MainFrame frame, Document doc, Pane parentPane)
 	{
 		setValues(frame, doc, parentPane) ;
+		
+		if (m_ButtonList.size() == 0)
+		{
+			// Add some default buttons if none have been specified so we
+			// can definitely see the window etc.
+			addButton("Run", "run") ;
+			addButton("Stop", "stop-soar") ;
+		}
+		
 		createButtonPanel(m_Pane.getWindow()) ;
 	}
 
@@ -120,14 +146,34 @@ public class ButtonView extends AbstractView
 		// within this window
 		m_Container	   = new Composite(parent, SWT.NULL) ;
 
+		if (getPane().isHorizontalOrientation())
+		{
+			RowLayout layout = new RowLayout(SWT.HORIZONTAL) ;
+//			layout.wrap = true ;
+			layout.fill = true ;
+			m_Container.setLayout(layout) ;				
+		}
+		else
+		{
+			RowLayout layout = new RowLayout(SWT.VERTICAL) ;
+			layout.fill = true ;
+			m_Container.setLayout(layout) ;		
+		}
+		
 		// BUGBUG: Need to figure out how to make the button pane resize itself
 		// to be multiple rows when needed.
 		// These are some efforts that have not succeeded.
-		RowLayout layout = new RowLayout() ;
-		layout.wrap = true ;
-		m_Container.setLayout(layout) ;		
-//		m_Container.addControlListener(new ControlAdapter() {
-//			public void controlResized(ControlEvent e) { parent.getParent().layout(true) ; } }) ;
+		/*
+		m_Container.addControlListener(new ControlAdapter() {
+			public void controlResized(ControlEvent e)
+			{
+				int height = m_Container.getBounds().height ;
+				int width = m_Container.getBounds().width ;
+				Point size = m_Container.computeSize(SWT.DEFAULT, height) ;
+				m_Container.setSize(size) ;
+				getPane().getWindow().getParent().layout(true) ;
+			} }) ;
+			*/
 		
 		// Create and add buttons for each button info structure
 		for (int i = 0 ; i < m_ButtonList.size() ; i++)

@@ -51,6 +51,9 @@ public class MainWindow
 	private Document	m_Document ;
 	public final static String kAttachKey = "Attach" ;
 	public final static String kAttachBottomValue = "Bottom" ;
+	public final static String kAttachTopValue    = "Top" ;
+	public final static String kAttachRightValue  = "Right" ;
+	public final static String kAttachLeftValue   = "Left" ;
 	
 	// The order of this list determines tab order
 	private ArrayList	m_PaneList = new ArrayList() ;
@@ -148,37 +151,70 @@ public class MainWindow
   		
   		return -1 ;
   	}
-  	
-  	/** Attaches the bottom pane to the top such that the bottom pane doesn't resize -- e.g. for button bars */
-  	protected void attachToBottom(Pane top, Pane bottom)
+  	  	
+  	/** Attaches the first and second pane together such that the second pane doesn't resize -- e.g. for button bars */
+  	protected void attachTogether(Composite first, Composite second, String attachType)
   	{
-  		if (top.getWindow().getParent() != bottom.getWindow().getParent())
+  		if (first.getParent() != second.getParent())
   			throw new IllegalStateException("To attach these two together they need to have the same parent") ;
   		
   		// Set the layout to be form layout (top's parent == bottom's parent so could use either)
-  		Composite parent = top.getWindow().getParent() ;
+  		Composite parent = first.getParent() ;
   		parent.setLayout(new FormLayout()) ;
   		
   		// Record how we are attaching these together (later we may offer other methods)
-  		parent.setData(kAttachKey, kAttachBottomValue) ;
+  		parent.setData(kAttachKey, attachType) ;
   		
   		// Layout logic for just the top and buttonPane windows
-  		FormData topData    = new FormData() ;
-  		FormData bottomData = new FormData() ;
+  		FormData firstData  = new FormData() ;
+  		FormData secondData = new FormData() ;
   		
-      	topData.left      = new FormAttachment(0);
-    	topData.right     = new FormAttachment(100);
-    	topData.top       = new FormAttachment(0);
-      	topData.bottom    = new FormAttachment(bottom.getWindow());
-      	
-      	bottomData.left   = new FormAttachment(0) ;
-      	bottomData.right  = new FormAttachment(100) ;
-      	// If we bind the button's top to the window it makes the top window very small and the buttons very large
-      	// buttonData.top    = new FormAttachment(top.getWindow()) ;
-      	bottomData.bottom = new FormAttachment(100) ;
-      	
-      	top.getWindow().setLayoutData(topData) ;
-      	bottom.getWindow().setLayoutData(bottomData) ;
+  		if (attachType.equals(kAttachBottomValue) || attachType.equals(kAttachTopValue))
+  		{
+	      	firstData.left    = new FormAttachment(0);
+	    	firstData.right   = new FormAttachment(100);
+	      	secondData.left   = new FormAttachment(0) ;
+	      	secondData.right  = new FormAttachment(100) ;
+
+	      	if (attachType.equals(kAttachBottomValue))
+	    	{
+		    	firstData.top       = new FormAttachment(0);
+		      	firstData.bottom    = new FormAttachment(second);
+
+		      	// If we bind the button's top to the window it makes the top window very small and the buttons very large
+		      	// buttonData.top    = new FormAttachment(top.getWindow()) ;
+		      	secondData.bottom = new FormAttachment(100) ;
+	    	}
+	    	else
+	    	{
+		    	firstData.top       = new FormAttachment(second);
+		      	firstData.bottom    = new FormAttachment(100);
+		      	secondData.top		= new FormAttachment(0) ;
+	    	}
+  		}
+  		else
+  		{
+	      	firstData.top     = new FormAttachment(0);
+	    	firstData.bottom  = new FormAttachment(100);
+	      	secondData.top    = new FormAttachment(0) ;
+	      	secondData.bottom = new FormAttachment(100) ;
+
+	      	if (attachType.equals(kAttachRightValue))
+	    	{
+		    	firstData.left   = new FormAttachment(0);
+		      	firstData.right  = new FormAttachment(second);
+		      	secondData.right = new FormAttachment(100) ;
+	    	}
+	    	else
+	    	{
+		    	firstData.left   = new FormAttachment(second);
+		      	firstData.right  = new FormAttachment(100);
+		      	secondData.left	 = new FormAttachment(0) ;
+	    	}
+  		}
+  		      	
+      	first.setLayoutData(firstData) ;
+      	second.setLayoutData(secondData) ;
    	}
   	
 	/** Close any existing windows and start fresh **/
@@ -237,8 +273,9 @@ public class MainWindow
   		Pane buttonsRightBottom = new Pane(pair2) ;
 
   		// Attach the button panes to a window as a single, resizable unit
-  		attachToBottom(top, buttonPane) ;
-  		attachToBottom(rightBottom, buttonsRightBottom) ;
+  		attachTogether(top.getWindow(), buttonPane.getWindow(), kAttachLeftValue) ;
+  		buttonPane.setHorizontalOrientation(false) ;
+  		attachTogether(rightBottom.getWindow(), buttonsRightBottom.getWindow(), kAttachTopValue) ;
       	
   		// Have to set the weights after we have added the panes, so that the size of the weights array
   		// matches the current list of controls
@@ -419,8 +456,9 @@ public class MainWindow
 	}
   		
 	/** Convert a sash form (without its children) to XML */
-	public ElementXML convertSashToXML(int sashOrientation, int[] weights, String tagName)
+	public ElementXML buildXMLForSashForm(int sashOrientation, int[] weights)
 	{
+		String tagName = "sash" ;
 		ElementXML element = new ElementXML(tagName) ;
 		
 		// Record the class and style of this composite so we can rebuild it later
@@ -441,12 +479,12 @@ public class MainWindow
 	}
 	
 	/** Convert a sash form (and its children) to XML */
-	protected ElementXML convertSashFormToXML(SashForm sash, String tagName)
+	protected ElementXML convertSashFormToXML(SashForm sash)
 	{
 		int style = sash.getOrientation() ;
 		int[] weights = sash.getWeights() ;
 
-		ElementXML element = convertSashToXML(style, weights, tagName) ;
+		ElementXML element = buildXMLForSashForm(style, weights) ;
 		
 		// Add the children
 		addChildrenToXML(element, sash) ;
@@ -479,36 +517,45 @@ public class MainWindow
 
 				if (comp instanceof SashForm)
 				{
-					element.addChildElement(convertSashFormToXML((SashForm)comp, "sash")) ;
+					element.addChildElement(convertSashFormToXML((SashForm)comp)) ;
 				}
 				else
 				{
-					element.addChildElement(convertCompositeToXML(comp, "composite")) ;					
+					element.addChildElement(convertCompositeToXML(comp)) ;					
 				}				
 			}
 		}
 	}
 	
-	/** Convert a simple composite to XML **/
-	protected ElementXML convertCompositeToXML(Composite composite, String tagName)
+	/** Constructs the XML for the composite window -- but not for its children */
+	public ElementXML buildXMLforComposite(String attachType)
 	{
+		String tagName = "composite" ;
 		ElementXML element = new ElementXML(tagName) ;
 		
 		// Record the class and style of this composite so we can rebuild it later
-		element.addAttribute(ElementXML.kClassAttribute, composite.getClass().toString()) ;
+		element.addAttribute(ElementXML.kClassAttribute, Composite.class.toString()) ;
 
-		int style = composite.getStyle() ;
-		style = 0 ;	// Override this for now until I figure out why I get back such a different value
+		//int style = composite.getStyle() ;
+		int style = 0 ;	// Override this for now until I figure out why I get back such a different value
 		element.addAttribute("style", Integer.toString(style)) ;
 		
-		// See how this composite's children are meant to be put together.
-		String attachType = (String)composite.getData(kAttachKey) ;
-
 		// All composites beneath the top currently have to have this key
 		// so we'll know how they were attached together and can rebuild it later
 		if (attachType == null)
 			throw new IllegalStateException("Composite window missing its required attach key.  When the layout was built did we connect up the windows without calling one of our attachX methods?") ;
 		element.addAttribute("attach", attachType) ;
+		
+		return element ;
+	}
+	
+	/** Convert a simple composite to XML **/
+	protected ElementXML convertCompositeToXML(Composite composite)
+	{
+		// See how this composite's children are meant to be put together.
+		String attachType = (String)composite.getData(kAttachKey) ;
+
+		ElementXML element = buildXMLforComposite(attachType) ;
 		
 		addChildrenToXML(element, composite) ;
 		
@@ -589,7 +636,7 @@ public class MainWindow
 			// fall back on even spacing as a default
 			if (weights.length != element.getNumberChildren())
 			{
-				System.out.println("Error: Number of weights didn't match number of children, so resetting them all to equal weight") ;
+				System.out.println("Error: Number of weights didn't match number of children, so resetting them all to equal weight.  (Acceptable if removing windows, not if loading layouts).") ;
 				weights = new int[element.getNumberChildren()] ;
 				
 				for (int w = 0 ; w < weights.length ; w++)
@@ -609,26 +656,17 @@ public class MainWindow
 			// Create the children so we have something to attach together below
 			loadChildrenFromXML(frame, doc, composite, element) ;
 			
-			if (attachType.equalsIgnoreCase(kAttachBottomValue))
-			{
-				Control[] children = composite.getChildren() ;
-				
-				if (children.length != 2)
-					throw new Exception("Trying to attach two windows together but found " + children.length + " instead") ;
-				
-				Pane top    = (Pane)children[0].getData(Pane.kPaneKey) ;
-				Pane bottom = (Pane)children[1].getData(Pane.kPaneKey) ;
-				
-				if (top == null || bottom == null)
-					throw new Exception("Expected child windows to be panes but they're not.") ;
-
-				// Finally now make the attachment
-				attachToBottom(top, bottom) ;
-			} else {
-				// Throw during development, but really we should just ignore this
-				// when reading XML (in case we add tags later and load this into an earlier version)
-				throw new Exception("Unknown attachment type: " + attachType) ;
-			}
+			Control[] children = composite.getChildren() ;
+			
+			if (children.length != 2)
+				throw new Exception("Trying to attach two windows together but found " + children.length + " instead") ;
+			
+			// The children must be composites -- either they are panes or other composites forming a tree of these pairs
+			Composite top    = (Composite)children[0] ;
+			Composite bottom = (Composite)children[1] ;
+			
+			// Finally now make the attachment
+			attachTogether(top, bottom, attachType) ;
 		}		
 	}
 	
