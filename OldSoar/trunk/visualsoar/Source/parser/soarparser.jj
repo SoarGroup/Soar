@@ -84,10 +84,10 @@ TOKEN:
      |<RBRACE:		"}">
 	 |<RPAREN:		")">
 	 |<TILDE:		"~">
-	 |<COLON:		":">
 	 |<LSQBRACET:   "[">
 	 |<RSQBRACET:   "]">
 	 |<QUOTE:		"\"">
+     |<PRODTYPE:  (":chunk"|":default"|":o-support"|":i-support"|":monitor"|":interrupt")>
 	 // I know the variable looks weird but it does appear to be correct
 	 |<VARIABLE: "<" (["a"-"z","A"-"Z","0"-"9","$","%","&","*","+","-","/",":","=","?","_"])+ ">" >
 	 |<INTEGER_CONST: (["+","-"])? (["0"-"9"])+ >
@@ -161,7 +161,7 @@ String productionType() :
 	Token t;
 }
 {
-	<COLON> t = <SYMBOLIC_CONST>{
+	t = <PRODTYPE>{
 		return t.image;
 	}
 }
