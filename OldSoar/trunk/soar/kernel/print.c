@@ -355,6 +355,11 @@ char *symbol_to_string(Symbol * sym, bool rereadable, char *dest, size_t dest_si
     bool has_angle_bracket;
 
     if (!sym) {
+		if (!dest) {
+			dest = current_agent(printed_output_string);
+			dest_size = PRINTED_OUTPUT_STRING_SIZE;
+		}
+
         strncpy(dest, "(NULL)", dest_size);
         dest[dest_size - 1] = 0;
         return dest;
@@ -362,8 +367,10 @@ char *symbol_to_string(Symbol * sym, bool rereadable, char *dest, size_t dest_si
 
     switch (sym->common.symbol_type) {
     case VARIABLE_SYMBOL_TYPE:
-        if (!dest)
+        if (!dest) {
             return sym->var.name;
+		}
+
         strncpy(dest, sym->var.name, dest_size);
         dest[dest_size - 1] = 0;
         return dest;
