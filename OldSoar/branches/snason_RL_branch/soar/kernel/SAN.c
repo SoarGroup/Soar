@@ -169,7 +169,7 @@ void record_for_RL()
 			  prod = ist->prod;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
-	//	  if (prod->times_updated < 0){
+		  // if (prod->times_updated < 0){
 			  if ((prod->times_updated > 50) && !prod->conv_value){
 			 // if (prod->conv_mean && !prod->conv_value){
 					  // excise_production(prod->child, TRUE);
@@ -399,6 +399,8 @@ void learn_RL_productions(int level){
 				c = c->rest;
 	//			prod->type = RL_PRODUCTION_TYPE;
 	
+				if (!prod) continue;
+
 				temp = rhs_value_to_symbol(prod->action_list->referent)->fc.value;
 				temp += increment;
 				
@@ -418,7 +420,8 @@ void learn_RL_productions(int level){
 				if (prod->times_updated > 15){
 					STDDEV(prod, 15);
 					// if (prod->std_dev > 0.01*fabs(record->previous_Q)){
-					if ((prod->std_dev > 0.01*fabs(record->previous_Q)) || (prod->std_dev > 0.1*fabs(temp))){					
+					 // if ((prod->std_dev > 0.01*fabs(record->previous_Q)) || (prod->std_dev > 0.1*fabs(temp))){					
+					if (prod->std_dev > 0.0001){
 					prod->conv_value = FALSE;
 					} else { prod->conv_value = TRUE; }
 				}
@@ -738,8 +741,10 @@ int list_length(list *L){
 	int k=0;
 	cons *c;
 
-	for (c = L; c ; c = c->rest)
-		k++;
+	for (c = L; c ; c = c->rest){
+		if (c->first)		
+			k++;
+	}
 
 	return k;
 }

@@ -1657,6 +1657,25 @@ void excise_production(production * prod, bool print_sharp_sign)
         print("#");
     if (prod->p_node)
         excise_production_from_rete(prod);
+	if (current_agent(sysparams)[RL_ON_SYSPARAM]){
+		RL_record *record;
+		cons *c;
+		production *p;
+
+		record = current_agent(records);
+		while(record){
+			if (record->op){
+				c = record->pointer_list;
+				while(c){
+					p = (production *) c->first;
+					if (prod == p) c->first = 0;
+					c = c->rest;
+				}
+			}
+			record = record->next;
+		}
+	}
+
     prod->name->sc.production = NIL;
     production_remove_ref(prod);
 }
