@@ -390,7 +390,14 @@ Notes:
 	When setting, simply returns true on success.
 ***
 numeric-indifferent-mode
-Usage:	numeric-indifferent-mode
+Usage:	numeric-indifferent-mode [-as]
+Options and arguments:
+  -a, --avg, --average	Use average mode (see Soar manual) (default).
+  -s, --sum		Use sum mode (see Soar manual).
+
+The numeric-indifferent-mode command is used to select the method for combining 
+numeric preferences. This command is only meaningful in indifferent-selection --
+random mode.
 ~~~
 ***
 o-support-mode
@@ -446,12 +453,31 @@ Options and arguments:
 production-find
 Usage:	production-find [-clnrs] pattern
 Options and arguments:
-  -c, --chunks
-  -l, --lhs
-  -n, --nochunks
-  -r, --rhs
-  -s, --show-bindings
-  pattern
+  -c, --chunks		Look only for chunks that match the pattern.
+  -l, --lhs		Match pattern only against the conditions (left-hand
+  			side) of productions (default).
+  -n, --nochunks	Disregard chunks when looking for the pattern.
+  -r, --rhs		Match pattern only against the actions (right-hand
+  			side) of productions.
+  -s, --show-bindings	Show the bindings associated with a wildcard pattern.
+  pattern		Any pattern that can appear in productions.
+
+The production-find command is used to find productions in production memory 
+that include conditions or actions that match a given pattern.  The pattern 
+given specifies one or more condition elements on the left hand side of 
+productions (or negated conditions), or one or more actions on the right-hand 
+side of productions.  Any pattern that can appear in productions can be used in 
+this command.  In addition, the asterisk symbol, *, can be used as a wildcard 
+for an attribute or value.  It is important to note that the whole pattern, 
+including the parenthesis, must be enclosed in curly braces for it to be parsed 
+properly.
+
+The variable names used in a call to production-find do not have to match the 
+variable names used in the productions being retrieved.
+
+The production-find command can also be restricted to apply to only certain 
+types of productions, or to look only at the conditions or only at the actions 
+of productions by using the flags.
 ~~~
 ***
 pushd

@@ -49,8 +49,10 @@ namespace cli {
 		static char const* kCLIMaxElaborations;
 		static char const* kCLIMemories;
 		static char const* kCLIMultiAttributes;
+		static char const* kCLINumericIndifferentMode;
 		static char const* kCLIPopD;
 		static char const* kCLIPrint;
+		static char const* kCLIProductionFind;
 		static char const* kCLIPushD;
 		static char const* kCLIPWD;
 		static char const* kCLIQuit;

@@ -341,7 +341,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoNumericIndifferentMode();
+	bool DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsigned int mode);
 
 	/*************************************************************
 	* @brief popd command, see usage.txt for details.
@@ -380,7 +380,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoProductionFind();
+	bool DoProductionFind(gSKI::IAgent* pAgent, unsigned int mode, std::string pattern);
 
 	/*************************************************************
 	* @brief pushd command, see usage.txt for details.

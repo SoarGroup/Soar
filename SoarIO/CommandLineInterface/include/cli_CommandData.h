@@ -27,6 +27,9 @@ namespace cli {
 	const unsigned int OPTION_MEMORIES_JUSTIFICATIONS = 0x4;
 	const unsigned int OPTION_MEMORIES_USER			  = 0x8;
 
+	const unsigned int OPTION_NUMERIC_INDIFFERENT_AVERAGE = 0x1;
+	const unsigned int OPTION_NUMERIC_INDIFFERENT_SUM	  = 0x2;
+
 	const unsigned int OPTION_PRINT_ALL					= 0x0001;
 	const unsigned int OPTION_PRINT_CHUNKS				= 0x0002;
 	const unsigned int OPTION_PRINT_DEPTH				= 0x0004;
@@ -40,6 +43,11 @@ namespace cli {
 	const unsigned int OPTION_PRINT_STACK				= 0x0400;
 	const unsigned int OPTION_PRINT_STATES				= 0x0800;
 	const unsigned int OPTION_PRINT_USER				= 0x1000;
+
+	const unsigned int OPTION_PRODUCTION_FIND_INCLUDE_LHS	 = 0x1;
+	const unsigned int OPTION_PRODUCTION_FIND_INCLUDE_RHS	 = 0x2;
+	const unsigned int OPTION_PRODUCTION_FIND_INCLUDE_CHUNKS = 0x4;
+	const unsigned int OPTION_PRODUCTION_FIND_SHOWBINDINGS	 = 0x8;
 
 	const unsigned int OPTION_RUN_DECISION     = 0x01;
 	const unsigned int OPTION_RUN_ELABORATION  = 0x02;
