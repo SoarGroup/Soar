@@ -4,15 +4,12 @@
 
 #include <iostream>
 
-#ifdef HAVE_CONIO_H
-#include <conio.h>
-#endif // HAVE_CONIO_H
-
 #ifdef HAVE_CURSES_H
 #include <curses.h>
 #endif // HAVE_CURSES_H
 
 #ifdef _MSC_VER
+#include <conio.h>
 #include <crtdbg.h>
 #endif 
 
@@ -40,7 +37,7 @@ int main(int argc, char** argv)
 
 	// Create an embedded connection to the kernel
 	sml::Kernel* pKernel;
-	pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML") ;
+	pKernel = sml::Kernel::CreateEmbeddedConnection("KernelSML", true) ;
 	cout << "Kernel created." << endl;
 
 	// NOTE: We don't delete the agent pointer.  It's owned by the kernel
