@@ -7,6 +7,7 @@
 #include <string>
 #include <functional>
 #include <cassert>
+#include <time.h>
 
 using std::string;
 using std::cout;
@@ -33,6 +34,8 @@ using namespace	gSKI;
 using namespace cli;
 
 TgD::TgD* debugger;
+time_t gSKITowersDAGTimer;
+#define GSKI_DAG_TOWERS_USE_TIMER
 
 //namespace gski_towers
 //{
@@ -603,6 +606,11 @@ void Tower::PrintDiskAtRow(int row) const
 
 HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : drawGraphics(graphicsOn)
 {
+	//Optional timer
+	#ifdef GSKIDAG_USE_TIMER
+		gSKITowersDAGTimer = 0;
+	#endif
+
 	// create kernel
 	IKernelFactory* kFactory = gSKI_CreateKernelFactory();
 	IKernel* kernel = kFactory->Create();
@@ -721,7 +729,15 @@ HanoiWorld::~HanoiWorld()
 
 void HanoiWorld::Run()
 {
+	#ifdef GSKI_DAG_TOWERS_USE_TIMER
+		clock_t startTicks = clock();
+	#endif
 	m_agent->MakeMove();
+	#ifdef GSKI_DAG_TOWERS_USE_TIMER
+		clock_t endTicks = clock();
+		clock_t totalTicks = endTicks - startTicks;
+		gSKITowersDAGTimer += totalTicks;
+	#endif
 }
 
 
@@ -741,7 +757,6 @@ bool HanoiWorld::MoveDisk(int sourceTower, int destinationTower)
 
 void HanoiWorld::Print()
 {
-
 	for(int row = maxNumDisks - 1; row >= 0; --row)
 	{
 		for(int towerCounter = 0; towerCounter < static_cast<int>(m_towers.size()); ++towerCounter)
@@ -765,6 +780,10 @@ bool HanoiWorld::AtGoalState()
 void  HanoiWorld::EndGameAction()
 {
 	Run();
+	#ifdef GSKI_DAG_TOWERS_USE_TIMER
+	cout.precision(6);
+	cout <<  "Total run time: " <<  gSKITowersDAGTimer / static_cast<double>(CLK_TCK) << endl;
+	#endif
 }
 
 //}//closes namespace
