@@ -233,6 +233,45 @@ static void ProductionEventHandler(sml::smlProductionEventId id, void* pUserData
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
+static void PrintEventHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage)
+{
+	// The user data is the class we declared above, where we store the Java data to use in the callback.
+	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
+
+	// Now try to call back to Java
+	JNIEnv *jenv = pJavaData->GetEnv() ;
+
+	// We start from the Java object whose method we wish to call.
+	jobject jobj = pJavaData->m_HandlerObject ;
+	jclass cls = jenv->GetObjectClass(jobj) ;
+
+	if (cls == 0)
+	{
+		printf("Failed to get Java class\n") ;
+		return ;
+	}
+
+	// Look up the Java method we want to call.
+	// The method name is passed in by the user (and needs to match exactly, including case).
+	// The method should be owned by the m_HandlerObject that the user also passed in.
+	// Any slip here and you get a NoSuchMethod exception and my Java VM shuts down.
+	jmethodID mid = jenv->GetMethodID(cls, pJavaData->m_HandlerMethod.c_str(), "(ILjava/lang/Object;Lsml/Agent;Ljava/lang/String;)V") ;
+
+	if (mid == 0)
+	{
+		printf("Failed to get Java method\n") ;
+		return ;
+	}
+
+	// Convert our C++ strings to Java strings
+	jstring message = pMessage != NULL ? jenv->NewStringUTF(pMessage) : 0 ;
+
+	// Make the method call.
+	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_AgentObject, message);
+}
+
+// This is the C++ handler which will be called by clientSML when the event fires.
+// Then from here we need to call back to Java to pass back the message.
 static void SystemEventHandler(sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
@@ -420,6 +459,43 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEn
 	delete pJavaData ;
 }
 
+// This is the hand-written JNI method for registering a callback.
+// I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.
+JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForPrintEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	sml::smlPrintEventId arg2 = (sml::smlPrintEventId)jarg2;
+
+	// Create the information we'll need to make a Java call back later
+	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
+	
+	// Register our handler.  When this is called we'll call back to the Java method.
+	pJavaData->m_CallbackID = arg1->RegisterForPrintEvent(arg2, &PrintEventHandler, pJavaData) ;
+
+	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
+	return (jint)pJavaData ;
+}
+
+JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForPrintEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jint jarg3)
+{
+    // jarg1 is the C++ Agent object
+	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	sml::smlPrintEventId arg2 = (sml::smlPrintEventId)jarg2;
+
+	// jarg3 is the callback data from the registration call
+	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
+
+	// Unregister our handler.
+	arg1->UnregisterForPrintEvent(arg2, pJavaData->m_CallbackID) ;
+
+	// Release the callback data
+	delete pJavaData ;
+}
 
 // This is the hand-written JNI method for registering a callback.
 // I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.

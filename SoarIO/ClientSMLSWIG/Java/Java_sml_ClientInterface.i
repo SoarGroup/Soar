@@ -27,11 +27,13 @@
   public final static native int Agent_RegisterForRunEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForAgentEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForProductionEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
+  public final static native int Agent_RegisterForPrintEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_RegisterForSystemEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
 
   public final static native void Agent_UnregisterForRunEvent(long jarg1, int jarg2, int jarg3);
   public final static native void Agent_UnregisterForAgentEvent(long jarg1, int jarg2, int jarg3);
   public final static native void Agent_UnregisterForProductionEvent(long jarg1, int jarg2, int jarg3);
+  public final static native void Agent_UnregisterForPrintEvent(long jarg1, int jarg2, int jarg3);
   public final static native void Kernel_UnregisterForSystemEvent(long jarg1, int jarg2, int jarg3);
 %}
 
@@ -44,6 +46,9 @@
 
   public int RegisterForProductionEvent(Agent agent, smlProductionEventId id, Object handlerObject, String handlerMethod, Object callbackData)
   { return smlJNI.Agent_RegisterForProductionEvent(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ; }
+
+  public int RegisterForPrintEvent(Agent agent, smlPrintEventId id, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Agent_RegisterForPrintEvent(swigCPtr, id.swigValue(), agent, handlerObject, handlerMethod, callbackData) ; }
   
   public void UnregisterForRunEvent(smlRunEventId id, int callbackReturnValue)
   { smlJNI.Agent_UnregisterForRunEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
@@ -53,6 +58,9 @@
 
   public void UnregisterForProductionEvent(smlProductionEventId id, int callbackReturnValue)
   { smlJNI.Agent_UnregisterForProductionEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
+
+  public void UnregisterForPrintEvent(smlPrintEventId id, int callbackReturnValue)
+  { smlJNI.Agent_UnregisterForPrintEvent(swigCPtr, id.swigValue(), callbackReturnValue) ;}
 %}
 
 %typemap(javacode) sml::Kernel %{
