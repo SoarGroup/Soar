@@ -5274,30 +5274,29 @@ void p_node_left_addition(rete_node * node, token * tok, wme * w)
 
                         if (prod_type == PE_PRODS) {
                             if (current_agent(o_support_calculation_type) != 3
-                                && current_agent(o_support_calculation_type != 4)) {
+                                && current_agent(o_support_calculation_type != 4)) 
                                 break;
-                            }
-                        } else if (op_elab == TRUE) {
+                            else if (op_elab == TRUE) {
 
                             /* warn user about mixed actions  */
 
-                            if (current_agent(o_support_calculation_type) == 3 &&
-                                current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
-                                print_with_symbols
-                                    ("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
-                                     node->b.p.prod->name);
-                                prod_type = PE_PRODS;
-                                break;
-                            } else if (current_agent(o_support_calculation_type) == 4 &&
-                                       current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
-                                print_with_symbols
-                                    ("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
-                                     node->b.p.prod->name);
-                                prod_type = IE_PRODS;
-                                break;
-                            }
-
-                        }
+							 if (current_agent(o_support_calculation_type) == 3 &&
+								    current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
+									print_with_symbols
+										("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
+										node->b.p.prod->name);
+									prod_type = PE_PRODS;
+									break;
+							 } else if (current_agent(o_support_calculation_type) == 4 &&
+								          current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
+									print_with_symbols
+										("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
+										node->b.p.prod->name);
+									prod_type = IE_PRODS;
+									break;
+							 }
+							}
+						}
                     }           /* end for pass =  */
                 }               /* end for loop checking all matches */
 
