@@ -90,5 +90,6 @@ cout << "Processing Output....." << endl;
 void SoarAgent::MakeMove()
 {
 	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1);
+	cout << "Run result is: " <<  runResult << endl;
 	assert(runResult != gSKI_RUN_ERROR);
 }

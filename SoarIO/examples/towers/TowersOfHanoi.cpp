@@ -8,6 +8,16 @@
 #include "TgD.h"
 #include "tcl.h"
 
+//TgDI directives
+#ifdef _WIN32
+#define _WINSOCKAPI_
+#include <Windows.h>
+#define TGD_SLEEP Sleep
+#else
+#include <unistd.h>
+#define TGD_SLEEP usleep
+#endif
+
 #ifdef USE_GSKI_DIRECT_NOT_SML
 	//gSKI directives
 	#include "IgSKI_KernelFactory.h"
@@ -135,19 +145,22 @@ int main(int argc, char* argv[])
 
 	//register the SoarAgent as the output processor
 	IOutputLink* oLink = agent->GetOutputLink();
-	oLink->AddOutputProcessor("move", &soarAgent); 
+	oLink->AddOutputProcessor("move-disk", &soarAgent); 
 
 	if(doPrinting)
 		hanoi.Print();
 
 	for(int foo = 1; foo < 60; ++foo)
 	{
-	cout << "hello.... " << endl;
+		cout << "hello.... " << endl;
 		soarAgent.MakeMove();
+		TgD::TgD::Update(false, debugger);
 	}
 
-		hanoi.Print();
+	hanoi.Print();
 
+	while(TgD::TgD::Update(false, debugger))
+		TGD_SLEEP(50);
 
 	// Wait for the user to press return to exit the program. (So window doesn't just vanish).
 	printf("\n\nPress <non-whitespace char> to exit\n") ;

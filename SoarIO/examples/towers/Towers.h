@@ -7,9 +7,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <vector>
+#include <string>
 #include <map>
 
 using std::cin;
+using std::string;
 using std::cout;
 using std::endl;
 using std::vector;
@@ -42,8 +44,28 @@ const int middleTowerNumber = 1;// towers are 0,1,2
 	using namespace sml;
 
 #endif
+/*
+string TowerNumToName(int towerNum)
+{
+	string tempString;
 
+	switch(towerNum)
+	{
 
+		case 0:
+			tempString = "A";
+			break;
+		case 1:
+			tempString = "B";
+			break;
+		case 2:
+			tempString = "C";
+			break;
+		default:
+			break;
+	}
+	return tempString;
+}*/
 
 class Disk : public IInputProducer
 {
@@ -76,9 +98,10 @@ public:
 		IWMObject* holdsParentObject = holdsParentSymbol->GetObject();
 		
 		//add holds wmes to parent object
-		m_pPeg = pWMemory->AddWmeInt(holdsParentObject, "on", m_towerNumber);
+		m_pPeg = pWMemory->AddWmeObjectLink(holdsParentObject, "on", m_pHoldsIdentifier->GetValue()->GetObject());
+
 		if(m_pDiskBeneath)
-			m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(holdsParentObject, "above", m_pDiskBeneath->GetOwningObject());
+			m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(holdsParentObject, "above", m_pDiskBeneath->GetValue()->GetObject());
 		else
 			m_pDiskBeneath = pWMemory->AddWmeString(holdsParentObject, "above", "none");
 	}
