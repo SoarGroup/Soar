@@ -145,7 +145,7 @@ void record_for_RL()
 			  record->num_prod++;
 			  prod->times_applied++;
 			  push(prod, record->pointer_list);
-			  if (prod->times_applied > 10){
+			  if (prod->times_applied > 1){
 				  list *identifiers = 0;
 				  cons *c;
 				  prod->times_applied = 0;
@@ -167,7 +167,7 @@ void record_for_RL()
 						  if (prod) break;
 						  for (w = t->wmes ; w ; w=w->next){
 							  prod = build_RL_production(ist->top_of_instantiated_conditions, 
-								  ist->bottom_of_instantiated_conditions, ist->nots, ist->preferences_generated, w);
+								 ist->bottom_of_instantiated_conditions, ist->nots, ist->preferences_generated, w);
 							  if (prod) break;
 						  }
 					  }
@@ -209,7 +209,7 @@ void learn_RL_productions(int level){
 
 			prod = (production *) c->first;
 			c = c->rest;
- 			prod->type = RL_PRODUCTION_TYPE;
+ //			prod->type = RL_PRODUCTION_TYPE;
 
 			increment = rhs_value_to_symbol(prod->action_list->referent)->fc.value;
 			increment += Q;
@@ -272,7 +272,7 @@ Symbol *equality_test_for_symbol_in_test(test t)
 
 production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref, wme *w)
 {
-	condition *new_cond;
+	condition *new_cond, *c;
 	action *a;
 	Symbol *prod_name;
 	production *prod;
@@ -280,6 +280,9 @@ production *build_RL_production(condition *top_cond, condition *bottom_cond, not
 
 	// Make condition list
 	new_cond = make_simple_condition(w->id, w->attr, w->value);
+    for (c = top_cond ; c ; c = c->next){
+		if (conditions_are_equal(c, new_cond)) return NIL;
+	}
 	bottom_cond->next = new_cond;
 	new_cond->prev = bottom_cond;
 	SAN_add_goal_or_impasse_tests(top_cond);
@@ -304,8 +307,9 @@ production *build_RL_production(condition *top_cond, condition *bottom_cond, not
 	current_agent(variablize_this_chunk) = chunk_var;
 	if (add_production_to_rete(prod, top_cond, 0, FALSE) == DUPLICATE_PRODUCTION){
 		   excise_production(prod, FALSE);
-		   return 0;
-	} else return prod;
+		   prod = NIL;
+	} 
+	return prod;
 }
 
 
