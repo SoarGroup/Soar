@@ -1,0 +1,648 @@
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+Learning On
+*******************Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (11: S2 ^quiescence t)
+=>WM: (10: S2 ^choices none)
+=>WM: (9: S2 ^impasse no-change)
+=>WM: (8: S2 ^attribute state)
+=>WM: (7: S2 ^superstate S1)
+=>WM: (6: S2 ^type state)
+
+     1:    ==>S: S2 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (17: S3 ^quiescence t)
+=>WM: (16: S3 ^choices none)
+=>WM: (15: S3 ^impasse no-change)
+=>WM: (14: S3 ^attribute state)
+=>WM: (13: S3 ^superstate S2)
+=>WM: (12: S3 ^type state)
+
+     2:       ==>S: S3 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (23: S4 ^quiescence t)
+=>WM: (22: S4 ^choices none)
+=>WM: (21: S4 ^impasse no-change)
+=>WM: (20: S4 ^attribute state)
+=>WM: (19: S4 ^superstate S3)
+=>WM: (18: S4 ^type state)
+
+     3:          ==>S: S4 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (29: S5 ^quiescence t)
+=>WM: (28: S5 ^choices none)
+=>WM: (27: S5 ^impasse no-change)
+=>WM: (26: S5 ^attribute state)
+=>WM: (25: S5 ^superstate S4)
+=>WM: (24: S5 ^type state)
+
+     4:             ==>S: S5 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (35: S6 ^quiescence t)
+=>WM: (34: S6 ^choices none)
+=>WM: (33: S6 ^impasse no-change)
+=>WM: (32: S6 ^attribute state)
+=>WM: (31: S6 ^superstate S5)
+=>WM: (30: S6 ^type state)
+
+     5:                ==>S: S6 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (41: S7 ^quiescence t)
+=>WM: (40: S7 ^choices none)
+=>WM: (39: S7 ^impasse no-change)
+=>WM: (38: S7 ^attribute state)
+=>WM: (37: S7 ^superstate S6)
+=>WM: (36: S7 ^type state)
+
+     6:                   ==>S: S7 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (47: S8 ^quiescence t)
+=>WM: (46: S8 ^choices none)
+=>WM: (45: S8 ^impasse no-change)
+=>WM: (44: S8 ^attribute state)
+=>WM: (43: S8 ^superstate S7)
+=>WM: (42: S8 ^type state)
+
+     7:                      ==>S: S8 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (53: S9 ^quiescence t)
+=>WM: (52: S9 ^choices none)
+=>WM: (51: S9 ^impasse no-change)
+=>WM: (50: S9 ^attribute state)
+=>WM: (49: S9 ^superstate S8)
+=>WM: (48: S9 ^type state)
+
+     8:                         ==>S: S9 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (59: S10 ^quiescence t)
+=>WM: (58: S10 ^choices none)
+=>WM: (57: S10 ^impasse no-change)
+=>WM: (56: S10 ^attribute state)
+=>WM: (55: S10 ^superstate S9)
+=>WM: (54: S10 ^type state)
+
+     9:                            ==>S: S10 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (65: S11 ^quiescence t)
+=>WM: (64: S11 ^choices none)
+=>WM: (63: S11 ^impasse no-change)
+=>WM: (62: S11 ^attribute state)
+=>WM: (61: S11 ^superstate S10)
+=>WM: (60: S11 ^type state)
+
+    10:                               ==>S: S11 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (71: S12 ^quiescence t)
+=>WM: (70: S12 ^choices none)
+=>WM: (69: S12 ^impasse no-change)
+=>WM: (68: S12 ^attribute state)
+=>WM: (67: S12 ^superstate S11)
+=>WM: (66: S12 ^type state)
+
+    11:                                  ==>S: S12 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (77: S13 ^quiescence t)
+=>WM: (76: S13 ^choices none)
+=>WM: (75: S13 ^impasse no-change)
+=>WM: (74: S13 ^attribute state)
+=>WM: (73: S13 ^superstate S12)
+=>WM: (72: S13 ^type state)
+
+    12:                                     ==>S: S13 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (83: S14 ^quiescence t)
+=>WM: (82: S14 ^choices none)
+=>WM: (81: S14 ^impasse no-change)
+=>WM: (80: S14 ^attribute state)
+=>WM: (79: S14 ^superstate S13)
+=>WM: (78: S14 ^type state)
+
+    13:                                        ==>S: S14 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (89: S15 ^quiescence t)
+=>WM: (88: S15 ^choices none)
+=>WM: (87: S15 ^impasse no-change)
+=>WM: (86: S15 ^attribute state)
+=>WM: (85: S15 ^superstate S14)
+=>WM: (84: S15 ^type state)
+
+    14:                                           ==>S: S15 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (95: S16 ^quiescence t)
+=>WM: (94: S16 ^choices none)
+=>WM: (93: S16 ^impasse no-change)
+=>WM: (92: S16 ^attribute state)
+=>WM: (91: S16 ^superstate S15)
+=>WM: (90: S16 ^type state)
+
+    15:                                              ==>S: S16 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (101: S17 ^quiescence t)
+=>WM: (100: S17 ^choices none)
+=>WM: (99: S17 ^impasse no-change)
+=>WM: (98: S17 ^attribute state)
+=>WM: (97: S17 ^superstate S16)
+=>WM: (96: S17 ^type state)
+
+    16:                                                 ==>S: S17 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (107: S18 ^quiescence t)
+=>WM: (106: S18 ^choices none)
+=>WM: (105: S18 ^impasse no-change)
+=>WM: (104: S18 ^attribute state)
+=>WM: (103: S18 ^superstate S17)
+=>WM: (102: S18 ^type state)
+
+    17:                                                    ==>S: S18 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (113: S19 ^quiescence t)
+=>WM: (112: S19 ^choices none)
+=>WM: (111: S19 ^impasse no-change)
+=>WM: (110: S19 ^attribute state)
+=>WM: (109: S19 ^superstate S18)
+=>WM: (108: S19 ^type state)
+
+    18:                                                       ==>S: S19 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (119: S20 ^quiescence t)
+=>WM: (118: S20 ^choices none)
+=>WM: (117: S20 ^impasse no-change)
+=>WM: (116: S20 ^attribute state)
+=>WM: (115: S20 ^superstate S19)
+=>WM: (114: S20 ^type state)
+
+    19:                                                          ==>S: S20 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (125: S21 ^quiescence t)
+=>WM: (124: S21 ^choices none)
+=>WM: (123: S21 ^impasse no-change)
+=>WM: (122: S21 ^attribute state)
+=>WM: (121: S21 ^superstate S20)
+=>WM: (120: S21 ^type state)
+
+    20:                                                             ==>S: S21 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (131: S22 ^quiescence t)
+=>WM: (130: S22 ^choices none)
+=>WM: (129: S22 ^impasse no-change)
+=>WM: (128: S22 ^attribute state)
+=>WM: (127: S22 ^superstate S21)
+=>WM: (126: S22 ^type state)
+
+    21:                                                                ==>S: S22 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (137: S23 ^quiescence t)
+=>WM: (136: S23 ^choices none)
+=>WM: (135: S23 ^impasse no-change)
+=>WM: (134: S23 ^attribute state)
+=>WM: (133: S23 ^superstate S22)
+=>WM: (132: S23 ^type state)
+
+    22:                                                                   ==>S: S23 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (143: S24 ^quiescence t)
+=>WM: (142: S24 ^choices none)
+=>WM: (141: S24 ^impasse no-change)
+=>WM: (140: S24 ^attribute state)
+=>WM: (139: S24 ^superstate S23)
+=>WM: (138: S24 ^type state)
+
+    23:                                                                      ==>S: S24 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (149: S25 ^quiescence t)
+=>WM: (148: S25 ^choices none)
+=>WM: (147: S25 ^impasse no-change)
+=>WM: (146: S25 ^attribute state)
+=>WM: (145: S25 ^superstate S24)
+=>WM: (144: S25 ^type state)
+
+    24:                                                                         ==>S: S25 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (155: S26 ^quiescence t)
+=>WM: (154: S26 ^choices none)
+=>WM: (153: S26 ^impasse no-change)
+=>WM: (152: S26 ^attribute state)
+=>WM: (151: S26 ^superstate S25)
+=>WM: (150: S26 ^type state)
+
+    25:                                                                            ==>S: S26 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (161: S27 ^quiescence t)
+=>WM: (160: S27 ^choices none)
+=>WM: (159: S27 ^impasse no-change)
+=>WM: (158: S27 ^attribute state)
+=>WM: (157: S27 ^superstate S26)
+=>WM: (156: S27 ^type state)
+
+    26:                                                                               ==>S: S27 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (167: S28 ^quiescence t)
+=>WM: (166: S28 ^choices none)
+=>WM: (165: S28 ^impasse no-change)
+=>WM: (164: S28 ^attribute state)
+=>WM: (163: S28 ^superstate S27)
+=>WM: (162: S28 ^type state)
+
+    27:                                                                                  ==>S: S28 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (173: S29 ^quiescence t)
+=>WM: (172: S29 ^choices none)
+=>WM: (171: S29 ^impasse no-change)
+=>WM: (170: S29 ^attribute state)
+=>WM: (169: S29 ^superstate S28)
+=>WM: (168: S29 ^type state)
+
+    28:                                                                                     ==>S: S29 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (179: S30 ^quiescence t)
+=>WM: (178: S30 ^choices none)
+=>WM: (177: S30 ^impasse no-change)
+=>WM: (176: S30 ^attribute state)
+=>WM: (175: S30 ^superstate S29)
+=>WM: (174: S30 ^type state)
+
+    29:                                                                                        ==>S: S30 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (185: S31 ^quiescence t)
+=>WM: (184: S31 ^choices none)
+=>WM: (183: S31 ^impasse no-change)
+=>WM: (182: S31 ^attribute state)
+=>WM: (181: S31 ^superstate S30)
+=>WM: (180: S31 ^type state)
+
+    30:                                                                                           ==>S: S31 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (191: S32 ^quiescence t)
+=>WM: (190: S32 ^choices none)
+=>WM: (189: S32 ^impasse no-change)
+=>WM: (188: S32 ^attribute state)
+=>WM: (187: S32 ^superstate S31)
+=>WM: (186: S32 ^type state)
+
+    31:                                                                                              ==>S: S32 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (197: S33 ^quiescence t)
+=>WM: (196: S33 ^choices none)
+=>WM: (195: S33 ^impasse no-change)
+=>WM: (194: S33 ^attribute state)
+=>WM: (193: S33 ^superstate S32)
+=>WM: (192: S33 ^type state)
+
+    32:                                                                                                 ==>S: S33 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (203: S34 ^quiescence t)
+=>WM: (202: S34 ^choices none)
+=>WM: (201: S34 ^impasse no-change)
+=>WM: (200: S34 ^attribute state)
+=>WM: (199: S34 ^superstate S33)
+=>WM: (198: S34 ^type state)
+
+    33:                                                                                                    ==>S: S34 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)

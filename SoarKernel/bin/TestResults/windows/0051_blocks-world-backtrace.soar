@@ -1,0 +1,2804 @@
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+*******************************************************************************Learning On
+*******************Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing default*top-state*elaborate*state*name*top-state*top-goal
+ 2 -->
+ (S1 ^name top-state +)
+ (S1 ^name top-goal +)
+	--- Change Working Memory (IE) ---
+=>WM: (7: S1 ^name top-goal)
+=>WM: (6: S1 ^name top-state)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*elaborate*initial-state
+ 7 -->
+
+Initial state has A on B and B and C on the table. (T1 ^type table +)
+ (T1 ^name table +)
+ (B3 ^type block +)
+ (B3 ^name |C| +)
+ (B2 ^type block +)
+ (B2 ^name |B| +)
+ (B1 ^type block +)
+ (B1 ^name |A| +)
+ (C3 ^object T1 +)
+ (C2 ^object B3 +)
+ (C1 ^object B1 +)
+ (O3 ^bottom-block T1 +)
+ (O3 ^top-block B3 +)
+ (O2 ^bottom-block T1 +)
+ (O2 ^top-block B2 +)
+ (O1 ^bottom-block B2 +)
+ (O1 ^top-block B1 +)
+ (S1 ^objects T1 +)
+ (S1 ^objects B3 +)
+ (S1 ^objects B2 +)
+ (S1 ^objects B1 +)
+ (S1 ^clear C3 +)
+ (S1 ^clear C2 +)
+ (S1 ^clear C1 +)
+ (S1 ^ontop O3 +)
+ (S1 ^ontop O2 +)
+ (S1 ^ontop O1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (34: T1 ^type table)
+=>WM: (33: T1 ^name table)
+=>WM: (32: B3 ^type block)
+=>WM: (31: B3 ^name |C|)
+=>WM: (30: B2 ^type block)
+=>WM: (29: B2 ^name |B|)
+=>WM: (28: B1 ^type block)
+=>WM: (27: B1 ^name |A|)
+=>WM: (26: C3 ^object T1)
+=>WM: (25: C2 ^object B3)
+=>WM: (24: C1 ^object B1)
+=>WM: (23: O3 ^bottom-block T1)
+=>WM: (22: O3 ^top-block B3)
+=>WM: (21: O2 ^bottom-block T1)
+=>WM: (20: O2 ^top-block B2)
+=>WM: (19: O1 ^bottom-block B2)
+=>WM: (18: O1 ^top-block B1)
+=>WM: (17: S1 ^objects B1)
+=>WM: (16: S1 ^objects B2)
+=>WM: (15: S1 ^objects B3)
+=>WM: (14: S1 ^objects T1)
+=>WM: (13: S1 ^clear C1)
+=>WM: (12: S1 ^clear C2)
+=>WM: (11: S1 ^clear C3)
+=>WM: (10: S1 ^ontop O1)
+=>WM: (9: S1 ^ontop O2)
+=>WM: (8: S1 ^ontop O3)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*operator*build-tower
+ 7 14 33 34 15 31 32 16 29 30 17 27 28 -->
+
+The goal is to get A on B on C on the table. (O7 ^bottom-block T1 +)
+ (O7 ^top-block B3 +)
+ (O6 ^bottom-block B3 +)
+ (O6 ^top-block B2 +)
+ (O5 ^bottom-block B2 +)
+ (O5 ^top-block B1 +)
+ (D1 ^ontop O7 +)
+ (D1 ^ontop O6 +)
+ (D1 ^ontop O5 +)
+ (O4 ^desired D1 +)
+ (O4 ^name build-tower +)
+ (S1 ^operator O4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (46: S1 ^operator O4 +)
+=>WM: (45: O7 ^bottom-block T1)
+=>WM: (44: O7 ^top-block B3)
+=>WM: (43: O6 ^bottom-block B3)
+=>WM: (42: O6 ^top-block B2)
+=>WM: (41: O5 ^bottom-block B2)
+=>WM: (40: O5 ^top-block B1)
+=>WM: (39: D1 ^ontop O5)
+=>WM: (38: D1 ^ontop O6)
+=>WM: (37: D1 ^ontop O7)
+=>WM: (36: O4 ^desired D1)
+=>WM: (35: O4 ^name build-tower)
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (47: S1 ^operator O4)
+
+     1:    O: O4 (build-tower)
+--- Decision Phase ---
+=>WM: (53: S2 ^quiescence t)
+=>WM: (52: S2 ^choices none)
+=>WM: (51: S2 ^impasse no-change)
+=>WM: (50: S2 ^attribute operator)
+=>WM: (49: S2 ^superstate S1)
+=>WM: (48: S2 ^type state)
+
+      :    ==>S: S2 (operator no-change)
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing build-tower*elaborate*state*desired-state
+ 51 50 49 47 35 36 -->
+ (S2 ^name build-tower +)
+ (S2 ^world-state S1 +)
+ (S2 ^desired D1 +)
+Firing default*elaborate*state*io
+ 51 49 3 -->
+ (S2 ^io I1 +)
+Firing elaborate*state*operator*name
+ 49 47 35 -->
+ (S2 ^name build-tower +)
+	--- Change Working Memory (IE) ---
+=>WM: (57: S2 ^name build-tower)
+=>WM: (56: S2 ^io I1)
+=>WM: (55: S2 ^world-state S1)
+=>WM: (54: S2 ^desired D1)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*monitor*world-state
+ 55 10 19 18 29 27 -->
+
+  ontop(A,B)
+Firing blocks-world*monitor*world-state
+ 55 9 21 20 33 29 -->
+
+  ontop(B,table)
+Firing blocks-world*monitor*world-state
+ 55 8 23 22 33 31 -->
+
+  ontop(C,table)
+Firing build-tower*propose*space*blocks-world
+ 57 -->
+ (P1 ^one-level-attributes last-operator +)
+ (P1 ^two-level-attributes world-state +)
+ (P1 ^default-state-copy yes +)
+ (P1 ^name blocks-world +)
+ (S2 ^problem-space P1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (62: P1 ^one-level-attributes last-operator)
+=>WM: (61: P1 ^two-level-attributes world-state)
+=>WM: (60: P1 ^default-state-copy yes)
+=>WM: (59: P1 ^name blocks-world)
+=>WM: (58: S2 ^problem-space P1)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*propose*operator*move-block
+ 58 59 55 13 24 12 25 32 -->
+ (O8 ^destination B1 +)
+ (O8 ^moving-block B3 +)
+ (O8 ^name move-block +)
+ (S2 ^operator O8 +)
+Firing blocks-world*propose*operator*move-block
+ 58 59 55 12 25 13 24 28 -->
+ (O9 ^destination B3 +)
+ (O9 ^moving-block B1 +)
+ (O9 ^name move-block +)
+ (S2 ^operator O9 +)
+Firing blocks-world*propose*operator*move-block
+ 58 59 55 11 26 13 24 28 -->
+ (O10 ^destination T1 +)
+ (O10 ^moving-block B1 +)
+ (O10 ^name move-block +)
+ (S2 ^operator O10 +)
+	--- Change Working Memory (IE) ---
+=>WM: (74: S2 ^operator O10 +)
+=>WM: (73: S2 ^operator O9 +)
+=>WM: (72: S2 ^operator O8 +)
+=>WM: (71: O10 ^destination T1)
+=>WM: (70: O10 ^moving-block B1)
+=>WM: (69: O10 ^name move-block)
+=>WM: (68: O9 ^destination B3)
+=>WM: (67: O9 ^moving-block B1)
+=>WM: (66: O9 ^name move-block)
+=>WM: (65: O8 ^destination B1)
+=>WM: (64: O8 ^moving-block B3)
+=>WM: (63: O8 ^name move-block)
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (83: S3 ^item O8)
+=>WM: (82: S3 ^item O9)
+=>WM: (81: S3 ^item O10)
+=>WM: (80: S3 ^quiescence t)
+=>WM: (79: S3 ^choices multiple)
+=>WM: (78: S3 ^impasse tie)
+=>WM: (77: S3 ^attribute operator)
+=>WM: (76: S3 ^superstate S2)
+=>WM: (75: S3 ^type state)
+
+     2:       ==>S: S3 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*monitor*tied-operators*move-block
+ 78 77 83 63 65 64 27 31 -->
+
+  O8: move-block(C,A)
+Firing blocks-world*monitor*tied-operators*move-block
+ 78 77 82 66 68 67 31 27 -->
+
+  O9: move-block(A,C)
+Firing blocks-world*monitor*tied-operators*move-block
+ 78 77 81 69 71 70 33 27 -->
+
+  O10: move-block(A,table)
+Firing default*selection*propose*space*selection
+ 79 -->
+ (P2 ^name selection +)
+ (S3 ^problem-space P2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (85: P2 ^name selection)
+=>WM: (84: S3 ^problem-space P2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 83 84 85 -->
+ (O11 ^object O8 +)
+ (O11 ^name evaluate-object +)
+ (O11 ^state S3 +)
+ (S3 ^operator O11 +)
+Firing default*selection*propose*evaluate-object
+ 82 84 85 -->
+ (O12 ^object O9 +)
+ (O12 ^name evaluate-object +)
+ (O12 ^state S3 +)
+ (S3 ^operator O12 +)
+Firing default*selection*propose*evaluate-object
+ 81 84 85 -->
+ (O13 ^object O10 +)
+ (O13 ^name evaluate-object +)
+ (O13 ^state S3 +)
+ (S3 ^operator O13 +)
+	--- Change Working Memory (IE) ---
+=>WM: (97: S3 ^operator O13 +)
+=>WM: (96: S3 ^operator O12 +)
+=>WM: (95: S3 ^operator O11 +)
+=>WM: (94: O13 ^object O10)
+=>WM: (93: O13 ^name evaluate-object)
+=>WM: (92: O13 ^state S3)
+=>WM: (91: O12 ^object O9)
+=>WM: (90: O12 ^name evaluate-object)
+=>WM: (89: O12 ^state S3)
+=>WM: (88: O11 ^object O8)
+=>WM: (87: O11 ^name evaluate-object)
+=>WM: (86: O11 ^state S3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 95 87 84 85 -->
+ (S3 ^operator O11 =)
+Firing default*selection*select*evaluate-object*indifferent
+ 96 90 84 85 -->
+ (S3 ^operator O12 =)
+Firing default*selection*select*evaluate-object*indifferent
+ 97 93 84 85 -->
+ (S3 ^operator O13 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 79 95 84 85 -->
+ (S3 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 79 96 84 85 -->
+ (S3 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 79 97 84 85 -->
+ (S3 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (98: S3 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (99: S3 ^operator O11)
+
+     3:          O: O11 (evaluate-object O8 (move-block))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 99 87 -->
+ (O11 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (100: O11 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 99 100 84 85 88 -->
+ (E1 ^object O8 +  :O )
+ (S3 ^evaluation E1 +  :O )
+ (O11 ^evaluation E1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 99 100 84 85 76 58 -->
+ (O11 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 99 100 84 85 76 -->
+ (O11 ^superstate S2 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 99 100 76 54 -->
+ (O11 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (106: O11 ^desired D1)
+=>WM: (105: O11 ^superstate S2)
+=>WM: (104: O11 ^superproblem-space P1)
+=>WM: (103: E1 ^object O8)
+=>WM: (102: S3 ^evaluation E1)
+=>WM: (101: O11 ^evaluation E1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 102 76 54 -->
+ (E1 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (107: E1 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 99 100 101 102 87 -->
+ (E1 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 99 100 104 -->
+ (O11 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 99 100 104 -->
+ (O11 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 99 100 104 60 -->
+ (O11 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (110: O11 ^default-state-copy yes)
+=>WM: (109: O11 ^default-operator-copy yes)
+=>WM: (108: E1 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (116: S4 ^quiescence t)
+=>WM: (115: S4 ^choices none)
+=>WM: (114: S4 ^impasse no-change)
+=>WM: (113: S4 ^attribute operator)
+=>WM: (112: S4 ^superstate S3)
+=>WM: (111: S4 ^type state)
+
+      :          ==>S: S4 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 114 113 112 99 100 106 -->
+ (S4 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 114 113 112 99 110 100 -->
+ (S4 ^duplicates* D2 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 114 113 112 99 100 104 -->
+ (S4 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 114 113 112 99 100 110 -->
+ (S4 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 114 113 112 99 100 109 -->
+ (S4 ^default-operator-copy yes +)
+Firing elaborate*state*operator*name
+ 112 99 87 -->
+ (S4 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (122: S4 ^name evaluate-object)
+=>WM: (121: S4 ^default-operator-copy yes)
+=>WM: (120: S4 ^default-state-copy yes)
+=>WM: (119: S4 ^problem-space P1)
+=>WM: (118: S4 ^duplicates* D2)
+=>WM: (117: S4 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 120 112 99 100 105 119 -->
+ (S4 ^duplicate-of* S2 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 112 99 109 100 104 59 119 59 88 -->
+ (C4 ^duplicate-of* O8 +)
+ (S4 ^look-ahead-operator C4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (125: C4 ^duplicate-of* O8)
+=>WM: (124: S4 ^look-ahead-operator C4)
+=>WM: (123: S4 ^duplicate-of* S2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 120 118 123 119 61 55 -->
+ (D2 ^S1 N1 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 118 124 125 65 -->
+ (C4 ^destination B1 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 118 124 125 64 -->
+ (C4 ^moving-block B3 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 118 124 125 63 -->
+ (C4 ^name move-block +)
+Firing default*evaluate-object*propose*look-ahead
+ 124 112 99 100 76 58 59 119 59 -->
+ (S4 ^operator C4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (130: S4 ^operator C4 +)
+=>WM: (129: C4 ^name move-block)
+=>WM: (128: C4 ^moving-block B3)
+=>WM: (127: C4 ^destination B1)
+=>WM: (126: D2 ^S1 N1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 120 118 123 119 61 55 126 -->
+ (S4 ^world-state N1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 3 -->
+ (N1 ^io I1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 1 -->
+ (N1 ^type state +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 2 -->
+ (N1 ^superstate nil +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 7 -->
+ (N1 ^name top-goal +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 6 -->
+ (N1 ^name top-state +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 17 -->
+ (N1 ^objects B1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 16 -->
+ (N1 ^objects B2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 15 -->
+ (N1 ^objects B3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 14 -->
+ (N1 ^objects T1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 13 -->
+ (N1 ^clear C1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 12 -->
+ (N1 ^clear C2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 11 -->
+ (N1 ^clear C3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 10 -->
+ (N1 ^ontop O1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 9 -->
+ (N1 ^ontop O2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 8 -->
+ (N1 ^ontop O3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 120 118 126 47 -->
+ (N1 ^operator O4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (147: N1 ^operator O4)
+=>WM: (146: N1 ^ontop O1)
+=>WM: (145: N1 ^ontop O2)
+=>WM: (144: N1 ^ontop O3)
+=>WM: (143: N1 ^clear C1)
+=>WM: (142: N1 ^clear C2)
+=>WM: (141: N1 ^clear C3)
+=>WM: (140: N1 ^objects B1)
+=>WM: (139: N1 ^objects B2)
+=>WM: (138: N1 ^objects B3)
+=>WM: (137: N1 ^objects T1)
+=>WM: (136: N1 ^name top-goal)
+=>WM: (135: N1 ^name top-state)
+=>WM: (134: N1 ^superstate nil)
+=>WM: (133: N1 ^type state)
+=>WM: (132: N1 ^io I1)
+=>WM: (131: S4 ^world-state N1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*propose*operator*move-block
+ 119 59 131 143 24 142 25 32 -->
+ (O14 ^destination B1 +)
+ (O14 ^moving-block B3 +)
+ (O14 ^name move-block +)
+ (S4 ^operator O14 +)
+Firing blocks-world*propose*operator*move-block
+ 119 59 131 142 25 143 24 28 -->
+ (O15 ^destination B3 +)
+ (O15 ^moving-block B1 +)
+ (O15 ^name move-block +)
+ (S4 ^operator O15 +)
+Firing blocks-world*propose*operator*move-block
+ 119 59 131 141 26 143 24 28 -->
+ (O16 ^destination T1 +)
+ (O16 ^moving-block B1 +)
+ (O16 ^name move-block +)
+ (S4 ^operator O16 +)
+Firing blocks-world*monitor*world-state
+ 131 146 19 18 29 27 -->
+
+  ontop(A,B)
+Firing blocks-world*monitor*world-state
+ 131 145 21 20 33 29 -->
+
+  ontop(B,table)
+Firing blocks-world*monitor*world-state
+ 131 144 23 22 33 31 -->
+
+  ontop(C,table)	--- Change Working Memory (IE) ---
+=>WM: (159: S4 ^operator O16 +)
+=>WM: (158: S4 ^operator O15 +)
+=>WM: (157: S4 ^operator O14 +)
+=>WM: (156: O16 ^destination T1)
+=>WM: (155: O16 ^moving-block B1)
+=>WM: (154: O16 ^name move-block)
+=>WM: (153: O15 ^destination B3)
+=>WM: (152: O15 ^moving-block B1)
+=>WM: (151: O15 ^name move-block)
+=>WM: (150: O14 ^destination B1)
+=>WM: (149: O14 ^moving-block B3)
+=>WM: (148: O14 ^name move-block)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 124 112 99 100 76 157 58 59 119 59 -->
+ (S4 ^operator O14 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 124 112 99 100 76 158 58 59 119 59 -->
+ (S4 ^operator O15 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 124 112 99 100 76 159 58 59 119 59 -->
+ (S4 ^operator O16 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (160: S4 ^operator C4)
+
+     5:             O: C4 (move-block)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*monitor*operator-application*move-block
+ 160 129 127 128 27 31 -->
+
+  APPLIED C4: move-block(C,A)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 121 112 99 100 104 119 88 160 125 -->
+ (S4 ^tried-tied-operator C4 +  :O )
+Firing blocks-world*apply*operator*move-block*remove-ontop
+ 131 160 127 128 144 22 -->
+ (N1 ^ontop O3 -  :O )
+Firing blocks-world*apply*operator*move-block*create-ontop
+ 131 160 127 128 -->
+ (O17 ^bottom-block B1 +  :O )
+ (O17 ^top-block B3 +  :O )
+ (N1 ^ontop O17 +  :O )
+Firing blocks-world*apply*operator*move-block*remove-clear
+ 131 160 127 143 24 -->
+ (N1 ^clear C1 -  :O )
+Firing blocks-world*apply*operator*remember*moved-block*a
+ 131 160 128 -->
+ (N1 ^last-moved-block B3 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (165: N1 ^last-moved-block B3)
+=>WM: (164: O17 ^bottom-block B1)
+=>WM: (163: O17 ^top-block B3)
+=>WM: (162: N1 ^ontop O17)
+=>WM: (161: S4 ^tried-tied-operator C4)
+<=WM: (144: N1 ^ontop O3)
+<=WM: (143: N1 ^clear C1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*propose*operator*move-block
+ 119 59 131 141 26 142 25 32 -->
+ (O18 ^destination T1 +)
+ (O18 ^moving-block B3 +)
+ (O18 ^name move-block +)
+ (S4 ^operator O18 +)
+Firing blocks-world*monitor*world-state
+ 131 162 164 163 27 31 -->
+
+  ontop(C,A)
+Firing blocks-world*reject*move-block*twice
+ 119 59 131 165 130 128 -->
+ (S4 ^operator C4 -)
+Firing blocks-world*reject*move-block*twice
+ 119 59 131 165 157 149 -->
+ (S4 ^operator O14 -)
+Retracting blocks-world*propose*operator*move-block
+ 119 59 131 141 26 143 24 28 --> (O16 ^destination T1 +)
+ (O16 ^moving-block B1 +)
+ (O16 ^name move-block +)
+ (S4 ^operator O16 +)
+Retracting blocks-world*propose*operator*move-block
+ 119 59 131 142 25 143 24 28 --> (O15 ^destination B3 +)
+ (O15 ^moving-block B1 +)
+ (O15 ^name move-block +)
+ (S4 ^operator O15 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 124 112 99 100 76 159 58 59 119 59 --> (S4 ^operator O16 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 124 112 99 100 76 158 58 59 119 59 --> (S4 ^operator O15 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 124 112 99 100 76 157 58 59 119 59 --> (S4 ^operator O14 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 124 112 99 100 76 58 59 119 59 --> (S4 ^operator C4 +)
+Retracting blocks-world*propose*operator*move-block
+ 119 59 131 143 24 142 25 32 --> (O14 ^destination B1 +)
+ (O14 ^moving-block B3 +)
+ (O14 ^name move-block +)
+ (S4 ^operator O14 +)
+	--- Change Working Memory (IE) ---
+=>WM: (169: S4 ^operator O18 +)
+=>WM: (168: O18 ^destination T1)
+=>WM: (167: O18 ^moving-block B3)
+=>WM: (166: O18 ^name move-block)
+<=WM: (130: S4 ^operator C4 +)
+<=WM: (160: S4 ^operator C4)
+<=WM: (157: S4 ^operator O14 +)
+<=WM: (158: S4 ^operator O15 +)
+<=WM: (159: S4 ^operator O16 +)
+<=WM: (156: O16 ^destination T1)
+<=WM: (155: O16 ^moving-block B1)
+<=WM: (154: O16 ^name move-block)
+<=WM: (153: O15 ^destination B3)
+<=WM: (152: O15 ^moving-block B1)
+<=WM: (151: O15 ^name move-block)
+<=WM: (150: O14 ^destination B1)
+<=WM: (149: O14 ^moving-block B3)
+<=WM: (148: O14 ^name move-block)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*reject*move-block*twice
+ 119 59 131 165 169 167 -->
+ (S4 ^operator O18 -)
+Retracting blocks-world*reject*move-block*twice
+ 119 59 131 165 157 149 --> (S4 ^operator O14 -)
+Retracting blocks-world*reject*move-block*twice
+ 119 59 131 165 130 128 --> (S4 ^operator C4 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (175: S5 ^quiescence t)
+=>WM: (174: S5 ^choices none)
+=>WM: (173: S5 ^impasse no-change)
+=>WM: (172: S5 ^attribute state)
+=>WM: (171: S5 ^superstate S4)
+=>WM: (170: S5 ^type state)
+
+     6:             ==>S: S5 (state no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*failure*no-move
+ 175 173 172 171 119 59 117 -->
+ (S4 ^failure D1 +)
+Building justification-1
+sp {justification-1
+    :justification ;# not reloadable
+    (state S4 ^desired D1 ^problem-space P1)
+    (P1 ^name blocks-world)
+    -->
+    (S4 ^failure D1 +)
+}
+Firing top-ps*propose*wait
+ 174 172 -->
+ (O19 ^name wait +)
+ (S5 ^operator O19 <)
+ (S5 ^operator O19 +)
+	--- Change Working Memory (IE) ---
+=>WM: (178: S5 ^operator O19 +)
+=>WM: (177: O19 ^name wait)
+=>WM: (176: S4 ^failure D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*evaluation*from-subgoal
+ 112 99 100 101 102 106 176 -->
+ (E1 ^symbolic-value failure +)
+Building justification-2
+sp {justification-2
+    :justification ;# not reloadable
+    (P1 ^name blocks-world)
+    (O11 ^superproblem-space P1 ^desired D1 ^evaluation E1 ^type evaluation
+          -^default-desired-copy yes)
+    (state S3 ^evaluation E1 ^operator O11)
+    -->
+    (E1 ^symbolic-value failure +)
+}
+Firing default*monitor*goal*failure
+ 2 117 122 176 -->
+
+  Goal evaluate-object failed. 	--- Change Working Memory (IE) ---
+=>WM: (179: E1 ^symbolic-value failure)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*failure-evaluation-becomes-reject-preference
+ 84 85 102 107 76 54 179 103 -->
+ (S2 ^operator O8 -)
+Building justification-3
+sp {justification-3
+    :justification ;# not reloadable
+    (P1 ^name blocks-world)
+    (state S2 ^problem-space P1 ^operator O8 + ^desired D1)
+    -->
+    (S2 ^operator O8 -)
+}
+Firing default*monitor*operator*evaluation
+ 2 99 100 101 88 63 179 -->
+
+  Evaluation of O8 (move-block) is failure
+Firing default*selection*elaborate*state*found-value-true
+ 79 84 85 102 179 -->
+ (S3 ^found-value true +)
+Firing default*selection*elaborate*evaluation*value
+ 102 179 -->
+ (E1 ^value t +)
+Retracting default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 79 95 84 85 --> (S3 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (181: E1 ^value t)
+=>WM: (180: S3 ^found-value true)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting default*selection*propose*evaluate-object
+ 83 84 85 --> (O11 ^object O8 +)
+ (O11 ^name evaluate-object +)
+ (O11 ^state S3 +)
+ (S3 ^operator O11 +)
+	--- Change Working Memory (IE) ---
+<=WM: (95: S3 ^operator O11 +)
+<=WM: (99: S3 ^operator O11)
+<=WM: (178: S5 ^operator O19 +)
+<=WM: (169: S4 ^operator O18 +)
+<=WM: (177: O19 ^name wait)
+<=WM: (176: S4 ^failure D1)
+<=WM: (166: O18 ^name move-block)
+<=WM: (167: O18 ^moving-block B3)
+<=WM: (168: O18 ^destination T1)
+<=WM: (165: N1 ^last-moved-block B3)
+<=WM: (145: N1 ^ontop O2)
+<=WM: (146: N1 ^ontop O1)
+<=WM: (162: N1 ^ontop O17)
+<=WM: (163: O17 ^top-block B3)
+<=WM: (164: O17 ^bottom-block B1)
+<=WM: (161: S4 ^tried-tied-operator C4)
+<=WM: (147: N1 ^operator O4)
+<=WM: (141: N1 ^clear C3)
+<=WM: (142: N1 ^clear C2)
+<=WM: (137: N1 ^objects T1)
+<=WM: (138: N1 ^objects B3)
+<=WM: (139: N1 ^objects B2)
+<=WM: (140: N1 ^objects B1)
+<=WM: (135: N1 ^name top-state)
+<=WM: (136: N1 ^name top-goal)
+<=WM: (134: N1 ^superstate nil)
+<=WM: (133: N1 ^type state)
+<=WM: (132: N1 ^io I1)
+<=WM: (131: S4 ^world-state N1)
+<=WM: (129: C4 ^name move-block)
+<=WM: (128: C4 ^moving-block B3)
+<=WM: (127: C4 ^destination B1)
+<=WM: (126: D2 ^S1 N1)
+<=WM: (124: S4 ^look-ahead-operator C4)
+<=WM: (125: C4 ^duplicate-of* O8)
+<=WM: (123: S4 ^duplicate-of* S2)
+<=WM: (122: S4 ^name evaluate-object)
+<=WM: (121: S4 ^default-operator-copy yes)
+<=WM: (120: S4 ^default-state-copy yes)
+<=WM: (119: S4 ^problem-space P1)
+<=WM: (118: S4 ^duplicates* D2)
+<=WM: (117: S4 ^desired D1)
+<=WM: (88: O11 ^object O8)
+<=WM: (111: S4 ^type state)
+<=WM: (112: S4 ^superstate S3)
+<=WM: (113: S4 ^attribute operator)
+<=WM: (114: S4 ^impasse no-change)
+<=WM: (115: S4 ^choices none)
+<=WM: (116: S4 ^quiescence t)
+<=WM: (170: S5 ^type state)
+<=WM: (171: S5 ^superstate S4)
+<=WM: (172: S5 ^attribute state)
+<=WM: (173: S5 ^impasse no-change)
+<=WM: (174: S5 ^choices none)
+<=WM: (175: S5 ^quiescence t)
+<=WM: (87: O11 ^name evaluate-object)
+<=WM: (86: O11 ^state S3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting default*selection*select*evaluate-object*indifferent
+ 95 87 84 85 --> (S3 ^operator O11 =)
+	--- Change Working Memory (IE) ---
+<=WM: (100: O11 ^type evaluation)
+<=WM: (106: O11 ^desired D1)
+<=WM: (105: O11 ^superstate S2)
+<=WM: (104: O11 ^superproblem-space P1)
+<=WM: (101: O11 ^evaluation E1)
+<=WM: (110: O11 ^default-state-copy yes)
+<=WM: (109: O11 ^default-operator-copy yes)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (182: S3 ^operator O12)
+<=WM: (83: S3 ^item O8)
+
+     7:          O: O12 (evaluate-object O9 (move-block))
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 182 90 -->
+ (O12 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (183: O12 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 182 183 84 85 91 -->
+ (E2 ^object O9 +  :O )
+ (S3 ^evaluation E2 +  :O )
+ (O12 ^evaluation E2 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 182 183 84 85 76 58 -->
+ (O12 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 182 183 84 85 76 -->
+ (O12 ^superstate S2 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 182 183 76 54 -->
+ (O12 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (189: O12 ^desired D1)
+=>WM: (188: O12 ^superstate S2)
+=>WM: (187: O12 ^superproblem-space P1)
+=>WM: (186: E2 ^object O9)
+=>WM: (185: S3 ^evaluation E2)
+=>WM: (184: O12 ^evaluation E2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 185 76 54 -->
+ (E2 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (190: E2 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 182 183 184 185 90 -->
+ (E2 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 182 183 187 -->
+ (O12 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 182 183 187 -->
+ (O12 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 182 183 187 60 -->
+ (O12 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (193: O12 ^default-state-copy yes)
+=>WM: (192: O12 ^default-operator-copy yes)
+=>WM: (191: E2 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (199: S6 ^quiescence t)
+=>WM: (198: S6 ^choices none)
+=>WM: (197: S6 ^impasse no-change)
+=>WM: (196: S6 ^attribute operator)
+=>WM: (195: S6 ^superstate S3)
+=>WM: (194: S6 ^type state)
+
+      :          ==>S: S6 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 197 196 195 182 183 189 -->
+ (S6 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 197 196 195 182 193 183 -->
+ (S6 ^duplicates* D3 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 197 196 195 182 183 187 -->
+ (S6 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 197 196 195 182 183 193 -->
+ (S6 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 197 196 195 182 183 192 -->
+ (S6 ^default-operator-copy yes +)
+Firing elaborate*state*operator*name
+ 195 182 90 -->
+ (S6 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (205: S6 ^name evaluate-object)
+=>WM: (204: S6 ^default-operator-copy yes)
+=>WM: (203: S6 ^default-state-copy yes)
+=>WM: (202: S6 ^problem-space P1)
+=>WM: (201: S6 ^duplicates* D3)
+=>WM: (200: S6 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 203 195 182 183 188 202 -->
+ (S6 ^duplicate-of* S2 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 195 182 192 183 187 59 202 59 91 -->
+ (C5 ^duplicate-of* O9 +)
+ (S6 ^look-ahead-operator C5 +)
+	--- Change Working Memory (IE) ---
+=>WM: (208: C5 ^duplicate-of* O9)
+=>WM: (207: S6 ^look-ahead-operator C5)
+=>WM: (206: S6 ^duplicate-of* S2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 203 201 206 202 61 55 -->
+ (D3 ^S1 N2 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 201 207 208 68 -->
+ (C5 ^destination B3 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 201 207 208 67 -->
+ (C5 ^moving-block B1 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 201 207 208 66 -->
+ (C5 ^name move-block +)
+Firing default*evaluate-object*propose*look-ahead
+ 207 195 182 183 76 58 59 202 59 -->
+ (S6 ^operator C5 +)
+	--- Change Working Memory (IE) ---
+=>WM: (213: S6 ^operator C5 +)
+=>WM: (212: C5 ^name move-block)
+=>WM: (211: C5 ^moving-block B1)
+=>WM: (210: C5 ^destination B3)
+=>WM: (209: D3 ^S1 N2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 203 201 206 202 61 55 209 -->
+ (S6 ^world-state N2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 3 -->
+ (N2 ^io I1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 1 -->
+ (N2 ^type state +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 2 -->
+ (N2 ^superstate nil +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 7 -->
+ (N2 ^name top-goal +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 6 -->
+ (N2 ^name top-state +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 17 -->
+ (N2 ^objects B1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 16 -->
+ (N2 ^objects B2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 15 -->
+ (N2 ^objects B3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 14 -->
+ (N2 ^objects T1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 13 -->
+ (N2 ^clear C1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 12 -->
+ (N2 ^clear C2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 11 -->
+ (N2 ^clear C3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 10 -->
+ (N2 ^ontop O1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 9 -->
+ (N2 ^ontop O2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 8 -->
+ (N2 ^ontop O3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 203 201 209 47 -->
+ (N2 ^operator O4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (230: N2 ^operator O4)
+=>WM: (229: N2 ^ontop O1)
+=>WM: (228: N2 ^ontop O2)
+=>WM: (227: N2 ^ontop O3)
+=>WM: (226: N2 ^clear C1)
+=>WM: (225: N2 ^clear C2)
+=>WM: (224: N2 ^clear C3)
+=>WM: (223: N2 ^objects B1)
+=>WM: (222: N2 ^objects B2)
+=>WM: (221: N2 ^objects B3)
+=>WM: (220: N2 ^objects T1)
+=>WM: (219: N2 ^name top-goal)
+=>WM: (218: N2 ^name top-state)
+=>WM: (217: N2 ^superstate nil)
+=>WM: (216: N2 ^type state)
+=>WM: (215: N2 ^io I1)
+=>WM: (214: S6 ^world-state N2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*propose*operator*move-block
+ 202 59 214 226 24 225 25 32 -->
+ (O20 ^destination B1 +)
+ (O20 ^moving-block B3 +)
+ (O20 ^name move-block +)
+ (S6 ^operator O20 +)
+Firing blocks-world*propose*operator*move-block
+ 202 59 214 225 25 226 24 28 -->
+ (O21 ^destination B3 +)
+ (O21 ^moving-block B1 +)
+ (O21 ^name move-block +)
+ (S6 ^operator O21 +)
+Firing blocks-world*propose*operator*move-block
+ 202 59 214 224 26 226 24 28 -->
+ (O22 ^destination T1 +)
+ (O22 ^moving-block B1 +)
+ (O22 ^name move-block +)
+ (S6 ^operator O22 +)
+Firing blocks-world*monitor*world-state
+ 214 229 19 18 29 27 -->
+
+  ontop(A,B)
+Firing blocks-world*monitor*world-state
+ 214 228 21 20 33 29 -->
+
+  ontop(B,table)
+Firing blocks-world*monitor*world-state
+ 214 227 23 22 33 31 -->
+
+  ontop(C,table)	--- Change Working Memory (IE) ---
+=>WM: (242: S6 ^operator O22 +)
+=>WM: (241: S6 ^operator O21 +)
+=>WM: (240: S6 ^operator O20 +)
+=>WM: (239: O22 ^destination T1)
+=>WM: (238: O22 ^moving-block B1)
+=>WM: (237: O22 ^name move-block)
+=>WM: (236: O21 ^destination B3)
+=>WM: (235: O21 ^moving-block B1)
+=>WM: (234: O21 ^name move-block)
+=>WM: (233: O20 ^destination B1)
+=>WM: (232: O20 ^moving-block B3)
+=>WM: (231: O20 ^name move-block)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 207 195 182 183 76 240 58 59 202 59 -->
+ (S6 ^operator O20 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 207 195 182 183 76 241 58 59 202 59 -->
+ (S6 ^operator O21 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 207 195 182 183 76 242 58 59 202 59 -->
+ (S6 ^operator O22 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (243: S6 ^operator C5)
+
+     9:             O: C5 (move-block)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*monitor*operator-application*move-block
+ 243 212 210 211 31 27 -->
+
+  APPLIED C5: move-block(A,C)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 204 195 182 183 187 202 91 243 208 -->
+ (S6 ^tried-tied-operator C5 +  :O )
+Firing blocks-world*apply*operator*move-block*remove-ontop
+ 214 243 210 211 229 18 -->
+ (N2 ^ontop O1 -  :O )
+Firing blocks-world*apply*operator*move-block*create-clear
+ 214 243 210 211 229 18 19 -->
+ (C6 ^object B2 +  :O )
+ (N2 ^clear C6 +  :O )
+Firing blocks-world*apply*operator*move-block*create-ontop
+ 214 243 210 211 -->
+ (O23 ^bottom-block B3 +  :O )
+ (O23 ^top-block B1 +  :O )
+ (N2 ^ontop O23 +  :O )
+Firing blocks-world*apply*operator*move-block*remove-clear
+ 214 243 210 225 25 -->
+ (N2 ^clear C2 -  :O )
+Firing blocks-world*apply*operator*remember*moved-block*a
+ 214 243 211 -->
+ (N2 ^last-moved-block B1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (250: N2 ^last-moved-block B1)
+=>WM: (249: O23 ^bottom-block B3)
+=>WM: (248: O23 ^top-block B1)
+=>WM: (247: N2 ^ontop O23)
+=>WM: (246: C6 ^object B2)
+=>WM: (245: N2 ^clear C6)
+=>WM: (244: S6 ^tried-tied-operator C5)
+<=WM: (229: N2 ^ontop O1)
+<=WM: (225: N2 ^clear C2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*propose*operator*move-block
+ 202 59 214 245 246 226 24 28 -->
+ (O24 ^destination B2 +)
+ (O24 ^moving-block B1 +)
+ (O24 ^name move-block +)
+ (S6 ^operator O24 +)
+Firing blocks-world*propose*operator*move-block
+ 202 59 214 226 24 245 246 30 -->
+ (O25 ^destination B1 +)
+ (O25 ^moving-block B2 +)
+ (O25 ^name move-block +)
+ (S6 ^operator O25 +)
+Firing blocks-world*monitor*world-state
+ 214 247 249 248 31 27 -->
+
+  ontop(A,C)
+Firing blocks-world*reject*move-block*twice
+ 202 59 214 250 213 211 -->
+ (S6 ^operator C5 -)
+Firing blocks-world*reject*move-block*twice
+ 202 59 214 250 242 238 -->
+ (S6 ^operator O22 -)
+Firing blocks-world*reject*move-block*twice
+ 202 59 214 250 241 235 -->
+ (S6 ^operator O21 -)
+Retracting blocks-world*propose*operator*move-block
+ 202 59 214 226 24 225 25 32 --> (O20 ^destination B1 +)
+ (O20 ^moving-block B3 +)
+ (O20 ^name move-block +)
+ (S6 ^operator O20 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 207 195 182 183 76 242 58 59 202 59 --> (S6 ^operator O22 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 207 195 182 183 76 241 58 59 202 59 --> (S6 ^operator O21 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 207 195 182 183 76 240 58 59 202 59 --> (S6 ^operator O20 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 207 195 182 183 76 58 59 202 59 --> (S6 ^operator C5 +)
+Retracting blocks-world*propose*operator*move-block
+ 202 59 214 225 25 226 24 28 --> (O21 ^destination B3 +)
+ (O21 ^moving-block B1 +)
+ (O21 ^name move-block +)
+ (S6 ^operator O21 +)
+	--- Change Working Memory (IE) ---
+=>WM: (258: S6 ^operator O25 +)
+=>WM: (257: S6 ^operator O24 +)
+=>WM: (256: O25 ^destination B1)
+=>WM: (255: O25 ^moving-block B2)
+=>WM: (254: O25 ^name move-block)
+=>WM: (253: O24 ^destination B2)
+=>WM: (252: O24 ^moving-block B1)
+=>WM: (251: O24 ^name move-block)
+<=WM: (213: S6 ^operator C5 +)
+<=WM: (243: S6 ^operator C5)
+<=WM: (240: S6 ^operator O20 +)
+<=WM: (241: S6 ^operator O21 +)
+<=WM: (233: O20 ^destination B1)
+<=WM: (232: O20 ^moving-block B3)
+<=WM: (231: O20 ^name move-block)
+<=WM: (236: O21 ^destination B3)
+<=WM: (235: O21 ^moving-block B1)
+<=WM: (234: O21 ^name move-block)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*reject*move-block*twice
+ 202 59 214 250 257 252 -->
+ (S6 ^operator O24 -)
+Retracting blocks-world*reject*move-block*twice
+ 202 59 214 250 241 235 --> (S6 ^operator O21 -)
+Retracting blocks-world*reject*move-block*twice
+ 202 59 214 250 213 211 --> (S6 ^operator C5 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (259: S6 ^operator O25)
+
+    10:             O: O25 (move-block)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*monitor*operator-application*move-block
+ 259 254 256 255 27 29 -->
+
+  APPLIED O25: move-block(B,A)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing blocks-world*apply*operator*forget*last-moved-block
+ 214 250 259 255 -->
+ (N2 ^last-moved-block B1 -  :O )
+Firing blocks-world*apply*operator*move-block*remove-ontop
+ 214 259 256 255 228 20 -->
+ (N2 ^ontop O2 -  :O )
+Firing blocks-world*apply*operator*move-block*create-ontop
+ 214 259 256 255 -->
+ (O26 ^bottom-block B1 +  :O )
+ (O26 ^top-block B2 +  :O )
+ (N2 ^ontop O26 +  :O )
+Firing blocks-world*apply*operator*move-block*remove-clear
+ 214 259 256 226 24 -->
+ (N2 ^clear C1 -  :O )
+Firing blocks-world*apply*operator*remember*moved-block*a
+ 214 259 255 -->
+ (N2 ^last-moved-block B2 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (263: N2 ^last-moved-block B2)
+=>WM: (262: O26 ^bottom-block B1)
+=>WM: (261: O26 ^top-block B2)
+=>WM: (260: N2 ^ontop O26)
+<=WM: (250: N2 ^last-moved-block B1)
+<=WM: (228: N2 ^ontop O2)
+<=WM: (226: N2 ^clear C1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*propose*operator*move-block
+ 202 59 214 224 26 245 246 30 -->
+ (O27 ^destination T1 +)
+ (O27 ^moving-block B2 +)
+ (O27 ^name move-block +)
+ (S6 ^operator O27 +)
+Firing blocks-world*monitor*world-state
+ 214 260 262 261 27 29 -->
+
+  ontop(B,A)
+Firing blocks-world*reject*move-block*twice
+ 202 59 214 263 258 255 -->
+ (S6 ^operator O25 -)
+Retracting blocks-world*propose*operator*move-block
+ 202 59 214 224 26 226 24 28 --> (O22 ^destination T1 +)
+ (O22 ^moving-block B1 +)
+ (O22 ^name move-block +)
+ (S6 ^operator O22 +)
+Retracting blocks-world*propose*operator*move-block
+ 202 59 214 245 246 226 24 28 --> (O24 ^destination B2 +)
+ (O24 ^moving-block B1 +)
+ (O24 ^name move-block +)
+ (S6 ^operator O24 +)
+Retracting blocks-world*reject*move-block*twice
+ 202 59 214 250 242 238 --> (S6 ^operator O22 -)
+Retracting blocks-world*reject*move-block*twice
+ 202 59 214 250 257 252 --> (S6 ^operator O24 -)
+Retracting blocks-world*propose*operator*move-block
+ 202 59 214 226 24 245 246 30 --> (O25 ^destination B1 +)
+ (O25 ^moving-block B2 +)
+ (O25 ^name move-block +)
+ (S6 ^operator O25 +)
+	--- Change Working Memory (IE) ---
+=>WM: (267: S6 ^operator O27 +)
+=>WM: (266: O27 ^destination T1)
+=>WM: (265: O27 ^moving-block B2)
+=>WM: (264: O27 ^name move-block)
+<=WM: (242: S6 ^operator O22 +)
+<=WM: (257: S6 ^operator O24 +)
+<=WM: (258: S6 ^operator O25 +)
+<=WM: (259: S6 ^operator O25)
+<=WM: (239: O22 ^destination T1)
+<=WM: (238: O22 ^moving-block B1)
+<=WM: (237: O22 ^name move-block)
+<=WM: (253: O24 ^destination B2)
+<=WM: (252: O24 ^moving-block B1)
+<=WM: (251: O24 ^name move-block)
+<=WM: (256: O25 ^destination B1)
+<=WM: (255: O25 ^moving-block B2)
+<=WM: (254: O25 ^name move-block)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*reject*move-block*twice
+ 202 59 214 263 267 265 -->
+ (S6 ^operator O27 -)
+Retracting blocks-world*reject*move-block*twice
+ 202 59 214 263 258 255 --> (S6 ^operator O25 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (273: S7 ^quiescence t)
+=>WM: (272: S7 ^choices none)
+=>WM: (271: S7 ^impasse no-change)
+=>WM: (270: S7 ^attribute state)
+=>WM: (269: S7 ^superstate S6)
+=>WM: (268: S7 ^type state)
+
+    11:             ==>S: S7 (state no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*failure*no-move
+ 273 271 270 269 202 59 200 -->
+ (S6 ^failure D1 +)
+Building justification-4
+sp {justification-4
+    :justification ;# not reloadable
+    (state S6 ^desired D1 ^problem-space P1)
+    (P1 ^name blocks-world)
+    -->
+    (S6 ^failure D1 +)
+}
+Firing top-ps*propose*wait
+ 272 270 -->
+ (O28 ^name wait +)
+ (S7 ^operator O28 <)
+ (S7 ^operator O28 +)
+	--- Change Working Memory (IE) ---
+=>WM: (276: S7 ^operator O28 +)
+=>WM: (275: O28 ^name wait)
+=>WM: (274: S6 ^failure D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*evaluation*from-subgoal
+ 195 182 183 184 185 189 274 -->
+ (E2 ^symbolic-value failure +)
+Building justification-5
+sp {justification-5
+    :justification ;# not reloadable
+    (P1 ^name blocks-world)
+    (O12 ^superproblem-space P1 ^desired D1 ^evaluation E2 ^type evaluation
+          -^default-desired-copy yes)
+    (state S3 ^evaluation E2 ^operator O12)
+    -->
+    (E2 ^symbolic-value failure +)
+}
+Firing default*monitor*goal*failure
+ 2 200 205 274 -->
+
+  Goal evaluate-object failed. 	--- Change Working Memory (IE) ---
+=>WM: (277: E2 ^symbolic-value failure)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*compare*same-symbolic-evaluations-are-indifferent
+ 185 191 102 108 190 107 277 179 76 54 84 85 186 103 -->
+ (S2 ^operator O8 = O9)
+Building justification-6
+sp {justification-6
+    :justification ;# not reloadable
+    (P1 ^name blocks-world)
+    (state S2 ^problem-space P1 ^operator O9 + ^operator O8 + ^desired D1)
+    -->
+    (S2 ^operator O8 = O9)
+}
+Firing default*selection*compare*same-symbolic-evaluations-are-indifferent
+ 102 108 185 191 107 190 179 277 76 54 84 85 103 186 -->
+ (S2 ^operator O9 = O8)
+Building justification-7
+sp {justification-7
+    :justification ;# not reloadable
+    (P1 ^name blocks-world)
+    (state S2 ^problem-space P1 ^operator O8 + ^operator O9 + ^desired D1)
+    -->
+    (S2 ^operator O9 = O8)
+}
+Firing default*selection*select*failure-evaluation-becomes-reject-preference
+ 84 85 185 190 76 54 277 186 -->
+ (S2 ^operator O9 -)
+Building justification-8
+sp {justification-8
+    :justification ;# not reloadable
+    (P1 ^name blocks-world)
+    (state S2 ^problem-space P1 ^operator O9 + ^desired D1)
+    -->
+    (S2 ^operator O9 -)
+}
+Firing default*monitor*operator*evaluation
+ 2 182 183 184 91 66 277 -->
+
+  Evaluation of O9 (move-block) is failure
+Firing default*selection*elaborate*state*found-value-true
+ 79 84 85 185 277 -->
+ (S3 ^found-value true +)
+Firing default*selection*elaborate*evaluation*value
+ 185 277 -->
+ (E2 ^value t +)
+Retracting default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 79 96 84 85 --> (S3 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (278: E2 ^value t)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting default*selection*propose*evaluate-object
+ 82 84 85 --> (O12 ^object O9 +)
+ (O12 ^name evaluate-object +)
+ (O12 ^state S3 +)
+ (S3 ^operator O12 +)
+	--- Change Working Memory (IE) ---
+<=WM: (96: S3 ^operator O12 +)
+<=WM: (182: S3 ^operator O12)
+<=WM: (276: S7 ^operator O28 +)
+<=WM: (267: S6 ^operator O27 +)
+<=WM: (275: O28 ^name wait)
+<=WM: (274: S6 ^failure D1)
+<=WM: (264: O27 ^name move-block)
+<=WM: (265: O27 ^moving-block B2)
+<=WM: (266: O27 ^destination T1)
+<=WM: (263: N2 ^last-moved-block B2)
+<=WM: (227: N2 ^ontop O3)
+<=WM: (247: N2 ^ontop O23)
+<=WM: (260: N2 ^ontop O26)
+<=WM: (261: O26 ^top-block B2)
+<=WM: (262: O26 ^bottom-block B1)
+<=WM: (248: O23 ^top-block B1)
+<=WM: (249: O23 ^bottom-block B3)
+<=WM: (224: N2 ^clear C3)
+<=WM: (245: N2 ^clear C6)
+<=WM: (246: C6 ^object B2)
+<=WM: (244: S6 ^tried-tied-operator C5)
+<=WM: (230: N2 ^operator O4)
+<=WM: (220: N2 ^objects T1)
+<=WM: (221: N2 ^objects B3)
+<=WM: (222: N2 ^objects B2)
+<=WM: (223: N2 ^objects B1)
+<=WM: (218: N2 ^name top-state)
+<=WM: (219: N2 ^name top-goal)
+<=WM: (217: N2 ^superstate nil)
+<=WM: (216: N2 ^type state)
+<=WM: (215: N2 ^io I1)
+<=WM: (214: S6 ^world-state N2)
+<=WM: (212: C5 ^name move-block)
+<=WM: (211: C5 ^moving-block B1)
+<=WM: (210: C5 ^destination B3)
+<=WM: (209: D3 ^S1 N2)
+<=WM: (207: S6 ^look-ahead-operator C5)
+<=WM: (208: C5 ^duplicate-of* O9)
+<=WM: (206: S6 ^duplicate-of* S2)
+<=WM: (205: S6 ^name evaluate-object)
+<=WM: (204: S6 ^default-operator-copy yes)
+<=WM: (203: S6 ^default-state-copy yes)
+<=WM: (202: S6 ^problem-space P1)
+<=WM: (201: S6 ^duplicates* D3)
+<=WM: (200: S6 ^desired D1)
+<=WM: (91: O12 ^object O9)
+<=WM: (194: S6 ^type state)
+<=WM: (195: S6 ^superstate S3)
+<=WM: (196: S6 ^attribute operator)
+<=WM: (197: S6 ^impasse no-change)
+<=WM: (198: S6 ^choices none)
+<=WM: (199: S6 ^quiescence t)
+<=WM: (268: S7 ^type state)
+<=WM: (269: S7 ^superstate S6)
+<=WM: (270: S7 ^attribute state)
+<=WM: (271: S7 ^impasse no-change)
+<=WM: (272: S7 ^choices none)
+<=WM: (273: S7 ^quiescence t)
+<=WM: (90: O12 ^name evaluate-object)
+<=WM: (89: O12 ^state S3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting default*selection*select*evaluate-object*indifferent
+ 96 90 84 85 --> (S3 ^operator O12 =)
+	--- Change Working Memory (IE) ---
+<=WM: (183: O12 ^type evaluation)
+<=WM: (189: O12 ^desired D1)
+<=WM: (188: O12 ^superstate S2)
+<=WM: (187: O12 ^superproblem-space P1)
+<=WM: (184: O12 ^evaluation E2)
+<=WM: (193: O12 ^default-state-copy yes)
+<=WM: (192: O12 ^default-operator-copy yes)
+
+--- Application Phase ---
+<=WM: (186: E2 ^object O9)
+<=WM: (190: E2 ^desired D1)
+<=WM: (191: E2 ^type evaluate-object)
+<=WM: (277: E2 ^symbolic-value failure)
+<=WM: (278: E2 ^value t)
+<=WM: (103: E1 ^object O8)
+<=WM: (107: E1 ^desired D1)
+<=WM: (108: E1 ^type evaluate-object)
+<=WM: (179: E1 ^symbolic-value failure)
+<=WM: (181: E1 ^value t)
+<=WM: (85: P2 ^name selection)
+<=WM: (84: S3 ^problem-space P2)
+<=WM: (98: S3 ^wait true)
+<=WM: (102: S3 ^evaluation E1)
+<=WM: (185: S3 ^evaluation E2)
+<=WM: (180: S3 ^found-value true)
+<=WM: (94: O13 ^object O10)
+<=WM: (93: O13 ^name evaluate-object)
+<=WM: (92: O13 ^state S3)
+<=WM: (97: S3 ^operator O13 +)
+<=WM: (75: S3 ^type state)
+<=WM: (76: S3 ^superstate S2)
+<=WM: (77: S3 ^attribute operator)
+<=WM: (78: S3 ^impasse tie)
+<=WM: (79: S3 ^choices multiple)
+<=WM: (80: S3 ^quiescence t)
+<=WM: (81: S3 ^item O10)
+<=WM: (82: S3 ^item O9)
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (279: S2 ^operator O10)
+
+    12:       O: O10 (move-block)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*monitor*operator-application*move-block
+ 279 69 71 70 33 27 -->
+
+  APPLIED O10: move-block(A,table)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing blocks-world*apply*operator*move-block*remove-ontop
+ 55 279 71 70 10 18 -->
+ (S1 ^ontop O1 -  :O )
+Building chunk-1*d12*opnochange*1
+sp {chunk-1*d12*opnochange*1
+    :chunk
+    (state <s1> ^operator <o1> ^clear <c1> ^ontop <o3> ^clear <c2>)
+    (<o1> ^name build-tower ^desired <d1>)
+    (<c1> ^object <o2>)
+    (<o3> -^bottom-block <o2> ^top-block { <t1> <> <o2> })
+   -{ (<s1> ^ontop <o4>)
+      (<o4> ^bottom-block <o2> ^top-block <t1>)}
+    (<t1> ^type block)
+    (<c2> ^object <t1>)
+    -->
+    (<s1> ^ontop <o3> -)
+}
+Firing blocks-world*apply*operator*move-block*create-clear
+ 55 279 71 70 10 18 19 -->
+ (C7 ^object B2 +  :O )
+ (S1 ^clear C7 +  :O )
+Building chunk-2*d12*opnochange*2
+sp {chunk-2*d12*opnochange*2
+    :chunk
+    (state <s1> ^operator <o1> ^clear <c1> ^clear <c2> ^ontop <o5>)
+    (<o1> ^name build-tower ^desired <d1>)
+    (<c1> ^object <o2>)
+    (<c2> ^object { <o3> <> <o2> })
+   -{ (<s1> ^ontop <o4>)
+      (<o4> ^bottom-block <o2> ^top-block <o3>)}
+    (<o3> ^type block)
+    (<o5> ^top-block <o3> ^bottom-block { <b1> <> <o2> })
+    (<b1> -^type table)
+    -->
+    (<s1> ^clear <c3> +)
+    (<c3> ^object <b1> +)
+}
+Firing blocks-world*apply*operator*move-block*create-ontop
+ 55 279 71 70 -->
+ (O29 ^bottom-block T1 +  :O )
+ (O29 ^top-block B1 +  :O )
+ (S1 ^ontop O29 +  :O )
+Building chunk-3*d12*opnochange*3
+sp {chunk-3*d12*opnochange*3
+    :chunk
+    (state <s1> ^operator <o1> ^clear <c1> ^clear <c2>)
+    (<o1> ^name build-tower ^desired <d1>)
+    (<c1> ^object <o2>)
+    (<c2> ^object { <o3> <> <o2> })
+   -{ (<s1> ^ontop <o4>)
+      (<o4> ^bottom-block <o2> ^top-block <o3>)}
+    (<o3> ^type block)
+    -->
+    (<s1> ^ontop <o5> +)
+    (<o5> ^top-block <o3> + ^bottom-block <o2> +)
+}
+Firing blocks-world*apply*operator*move-block*remove-clear
+ 55 279 71 11 26 -->
+ (S1 ^clear C3 -  :O )
+Building chunk-4*d12*opnochange*4
+sp {chunk-4*d12*opnochange*4
+    :chunk
+    (state <s1> ^operator <o1> ^clear <c1> ^clear <c2>)
+    (<o1> ^name build-tower ^desired <d1>)
+    (<c1> ^object <o2>)
+    (<c2> ^object { <o3> <> <o2> })
+   -{ (<s1> ^ontop <o4>)
+      (<o4> ^bottom-block <o2> ^top-block <o3>)}
+    (<o3> ^type block)
+    -->
+    (<s1> ^clear <c1> -)
+}
+Firing blocks-world*apply*operator*remember*moved-block*a
+ 55 279 70 -->
+ (S1 ^last-moved-block B1 +  :O )
+Building chunk-5*d12*opnochange*5
+sp {chunk-5*d12*opnochange*5
+    :chunk
+    (state <s1> ^operator <o1> ^clear <c1> ^clear <c2> -^last-moved-block <o3>)
+    (<o1> ^name build-tower ^desired <d1>)
+    (<c1> ^object <o2>)
+    (<c2> ^object { <o3> <> <o2> })
+   -{ (<s1> ^ontop <o4>)
+      (<o4> ^bottom-block <o2> ^top-block <o3>)}
+    (<o3> ^type block)
+    -->
+    (<s1> ^last-moved-block <o3> +)
+}
+	--- Change Working Memory (PE) ---
+=>WM: (285: S1 ^last-moved-block B1)
+=>WM: (284: O29 ^bottom-block T1)
+=>WM: (283: O29 ^top-block B1)
+=>WM: (282: S1 ^ontop O29)
+=>WM: (281: C7 ^object B2)
+=>WM: (280: S1 ^clear C7)
+<=WM: (26: C3 ^object T1)
+<=WM: (19: O1 ^bottom-block B2)
+<=WM: (18: O1 ^top-block B1)
+<=WM: (10: S1 ^ontop O1)
+<=WM: (11: S1 ^clear C3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing chunk-3*d12*opnochange*3
+ 47 35 36 280 281 13 24 28 -->
+ (O30 ^bottom-block B2 +  :O )
+ (O30 ^top-block B1 +  :O )
+ (S1 ^ontop O30 +  :O )
+Firing chunk-4*d12*opnochange*4
+ 47 35 36 280 281 13 24 28 -->
+ (S1 ^clear C7 -  :O )
+Firing chunk-1*d12*opnochange*1
+ 47 35 36 280 281 282 283 28 13 24 -->
+ (S1 ^ontop O29 -  :O )
+Firing chunk-1*d12*opnochange*1
+ 47 35 36 280 281 8 22 32 12 25 -->
+ (S1 ^ontop O3 -  :O )
+Firing chunk-3*d12*opnochange*3
+ 47 35 36 280 281 12 25 32 -->
+ (O31 ^bottom-block B2 +  :O )
+ (O31 ^top-block B3 +  :O )
+ (S1 ^ontop O31 +  :O )
+Firing chunk-4*d12*opnochange*4
+ 47 35 36 280 281 12 25 32 -->
+ (S1 ^clear C7 -  :O )
+Firing chunk-5*d12*opnochange*5
+ 47 35 36 280 281 12 25 32 -->
+ (S1 ^last-moved-block B3 +  :O )
+Firing chunk-3*d12*opnochange*3
+ 47 35 36 13 24 280 281 30 -->
+ (O32 ^bottom-block B1 +  :O )
+ (O32 ^top-block B2 +  :O )
+ (S1 ^ontop O32 +  :O )
+Firing chunk-4*d12*opnochange*4
+ 47 35 36 13 24 280 281 30 -->
+ (S1 ^clear C1 -  :O )
+Firing chunk-5*d12*opnochange*5
+ 47 35 36 13 24 280 281 30 -->
+ (S1 ^last-moved-block B2 +  :O )
+Firing chunk-3*d12*opnochange*3
+ 47 35 36 12 25 280 281 30 -->
+ (O33 ^bottom-block B3 +  :O )
+ (O33 ^top-block B2 +  :O )
+ (S1 ^ontop O33 +  :O )
+Firing chunk-4*d12*opnochange*4
+ 47 35 36 12 25 280 281 30 -->
+ (S1 ^clear C2 -  :O )
+Firing chunk-5*d12*opnochange*5
+ 47 35 36 12 25 280 281 30 -->
+ (S1 ^last-moved-block B2 +  :O )
+Firing chunk-1*d12*opnochange*1
+ 47 35 36 12 25 9 20 30 280 281 -->
+ (S1 ^ontop O2 -  :O )
+Firing chunk-1*d12*opnochange*1
+ 47 35 36 13 24 9 20 30 280 281 -->
+ (S1 ^ontop O2 -  :O )
+Firing chunk-1*d12*opnochange*1
+ 47 35 36 12 25 282 283 28 13 24 -->
+ (S1 ^ontop O29 -  :O )
+Firing chunk-5*d12*opnochange*5
+ 47 35 36 13 24 12 25 32 -->
+ (S1 ^last-moved-block B3 +  :O )
+Firing chunk-4*d12*opnochange*4
+ 47 35 36 13 24 12 25 32 -->
+ (S1 ^clear C1 -  :O )
+Firing chunk-4*d12*opnochange*4
+ 47 35 36 12 25 13 24 28 -->
+ (S1 ^clear C2 -  :O )
+Firing chunk-3*d12*opnochange*3
+ 47 35 36 13 24 12 25 32 -->
+ (O34 ^bottom-block B1 +  :O )
+ (O34 ^top-block B3 +  :O )
+ (S1 ^ontop O34 +  :O )
+Firing chunk-3*d12*opnochange*3
+ 47 35 36 12 25 13 24 28 -->
+ (O35 ^bottom-block B3 +  :O )
+ (O35 ^top-block B1 +  :O )
+ (S1 ^ontop O35 +  :O )
+Firing chunk-1*d12*opnochange*1
+ 47 35 36 13 24 8 22 32 12 25 -->
+ (S1 ^ontop O3 -  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (305: O35 ^bottom-block B3)
+=>WM: (304: O35 ^top-block B1)
+=>WM: (303: S1 ^ontop O30)
+=>WM: (302: S1 ^ontop O31)
+=>WM: (301: S1 ^ontop O32)
+=>WM: (300: S1 ^ontop O33)
+=>WM: (299: S1 ^ontop O34)
+=>WM: (298: S1 ^ontop O35)
+=>WM: (297: O34 ^bottom-block B1)
+=>WM: (296: O34 ^top-block B3)
+=>WM: (295: S1 ^last-moved-block B3)
+=>WM: (294: S1 ^last-moved-block B2)
+=>WM: (293: O33 ^bottom-block B3)
+=>WM: (292: O33 ^top-block B2)
+=>WM: (291: O32 ^bottom-block B1)
+=>WM: (290: O32 ^top-block B2)
+=>WM: (289: O31 ^bottom-block B2)
+=>WM: (288: O31 ^top-block B3)
+=>WM: (287: O30 ^bottom-block B2)
+=>WM: (286: O30 ^top-block B1)
+<=WM: (21: O2 ^bottom-block T1)
+<=WM: (20: O2 ^top-block B2)
+<=WM: (25: C2 ^object B3)
+<=WM: (24: C1 ^object B1)
+<=WM: (23: O3 ^bottom-block T1)
+<=WM: (22: O3 ^top-block B3)
+<=WM: (284: O29 ^bottom-block T1)
+<=WM: (283: O29 ^top-block B1)
+<=WM: (281: C7 ^object B2)
+<=WM: (8: S1 ^ontop O3)
+<=WM: (9: S1 ^ontop O2)
+<=WM: (282: S1 ^ontop O29)
+<=WM: (12: S1 ^clear C2)
+<=WM: (13: S1 ^clear C1)
+<=WM: (280: S1 ^clear C7)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*monitor*world-state
+ 55 303 287 286 29 27 -->
+
+  ontop(A,B)
+Firing blocks-world*monitor*world-state
+ 55 302 289 288 29 31 -->
+
+  ontop(C,B)
+Firing blocks-world*monitor*world-state
+ 55 301 291 290 27 29 -->
+
+  ontop(B,A)
+Firing blocks-world*monitor*world-state
+ 55 300 293 292 31 29 -->
+
+  ontop(B,C)
+Firing blocks-world*reject*move-block*twice
+ 58 59 55 295 72 64 -->
+ (S2 ^operator O8 -)
+Firing blocks-world*monitor*world-state
+ 55 299 297 296 27 31 -->
+
+  ontop(C,A)
+Firing blocks-world*monitor*world-state
+ 55 298 305 304 31 27 -->
+
+  ontop(A,C)
+Firing blocks-world*reject*move-block*twice
+ 58 59 55 285 74 70 -->
+ (S2 ^operator O10 -)
+Firing blocks-world*reject*move-block*twice
+ 58 59 55 285 73 67 -->
+ (S2 ^operator O9 -)
+Retracting blocks-world*propose*operator*move-block
+ 58 59 55 13 24 12 25 32 --> (O8 ^destination B1 +)
+ (O8 ^moving-block B3 +)
+ (O8 ^name move-block +)
+ (S2 ^operator O8 +)
+Retracting blocks-world*propose*operator*move-block
+ 58 59 55 12 25 13 24 28 --> (O9 ^destination B3 +)
+ (O9 ^moving-block B1 +)
+ (O9 ^name move-block +)
+ (S2 ^operator O9 +)
+Retracting blocks-world*propose*operator*move-block
+ 58 59 55 11 26 13 24 28 --> (O10 ^destination T1 +)
+ (O10 ^moving-block B1 +)
+ (O10 ^name move-block +)
+ (S2 ^operator O10 +)
+	--- Change Working Memory (IE) ---
+<=WM: (72: S2 ^operator O8 +)
+<=WM: (73: S2 ^operator O9 +)
+<=WM: (74: S2 ^operator O10 +)
+<=WM: (279: S2 ^operator O10)
+<=WM: (65: O8 ^destination B1)
+<=WM: (64: O8 ^moving-block B3)
+<=WM: (63: O8 ^name move-block)
+<=WM: (68: O9 ^destination B3)
+<=WM: (67: O9 ^moving-block B1)
+<=WM: (66: O9 ^name move-block)
+<=WM: (71: O10 ^destination T1)
+<=WM: (70: O10 ^moving-block B1)
+<=WM: (69: O10 ^name move-block)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting blocks-world*reject*move-block*twice
+ 58 59 55 285 74 70 --> (S2 ^operator O10 -)
+Retracting justification-8
+ 59 58 73 54 --> (S2 ^operator O9 -)
+Retracting blocks-world*reject*move-block*twice
+ 58 59 55 285 73 67 --> (S2 ^operator O9 -)
+Retracting justification-3
+ 59 58 72 54 --> (S2 ^operator O8 -)
+Retracting justification-7
+ 59 58 72 73 54 --> (S2 ^operator O9 = O8)
+Retracting justification-6
+ 59 58 73 72 54 --> (S2 ^operator O8 = O9)
+Retracting blocks-world*reject*move-block*twice
+ 58 59 55 295 72 64 --> (S2 ^operator O8 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (311: S8 ^quiescence t)
+=>WM: (310: S8 ^choices none)
+=>WM: (309: S8 ^impasse no-change)
+=>WM: (308: S8 ^attribute state)
+=>WM: (307: S8 ^superstate S2)
+=>WM: (306: S8 ^type state)
+
+    13:       ==>S: S8 (state no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing blocks-world*failure*no-move
+ 311 309 308 307 58 59 54 -->
+ (S2 ^failure D1 +)
+Building justification-9
+sp {justification-9
+    :justification ;# not reloadable
+    (state S2 ^desired D1 ^problem-space P1)
+    (P1 ^name blocks-world)
+    -->
+    (S2 ^failure D1 +)
+}
+Firing default*elaborate*state*io
+ 309 307 56 -->
+ (S8 ^io I1 +)
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O36 ^name wait +)
+ (S8 ^operator O36 <)
+ (S8 ^operator O36 +)
+	--- Change Working Memory (IE) ---
+=>WM: (315: S8 ^operator O36 +)
+=>WM: (314: O36 ^name wait)
+=>WM: (313: S8 ^io I1)
+=>WM: (312: S2 ^failure D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*monitor*goal*failure
+ 2 54 57 312 -->
+
+  Goal build-tower failed. 	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (316: S8 ^operator O36)
+
+    14:          O: O36 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O36 ^name wait +)
+ (S8 ^operator O36 <)
+ (S8 ^operator O36 +)
+	--- Change Working Memory (IE) ---
+<=WM: (315: S8 ^operator O36 +)
+<=WM: (316: S8 ^operator O36)
+<=WM: (314: O36 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O37 ^name wait +)
+ (S8 ^operator O37 <)
+ (S8 ^operator O37 +)
+	--- Change Working Memory (IE) ---
+=>WM: (318: S8 ^operator O37 +)
+=>WM: (317: O37 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (319: S8 ^operator O37)
+
+    15:          O: O37 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O37 ^name wait +)
+ (S8 ^operator O37 <)
+ (S8 ^operator O37 +)
+	--- Change Working Memory (IE) ---
+<=WM: (318: S8 ^operator O37 +)
+<=WM: (319: S8 ^operator O37)
+<=WM: (317: O37 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O38 ^name wait +)
+ (S8 ^operator O38 <)
+ (S8 ^operator O38 +)
+	--- Change Working Memory (IE) ---
+=>WM: (321: S8 ^operator O38 +)
+=>WM: (320: O38 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (322: S8 ^operator O38)
+
+    16:          O: O38 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O38 ^name wait +)
+ (S8 ^operator O38 <)
+ (S8 ^operator O38 +)
+	--- Change Working Memory (IE) ---
+<=WM: (321: S8 ^operator O38 +)
+<=WM: (322: S8 ^operator O38)
+<=WM: (320: O38 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O39 ^name wait +)
+ (S8 ^operator O39 <)
+ (S8 ^operator O39 +)
+	--- Change Working Memory (IE) ---
+=>WM: (324: S8 ^operator O39 +)
+=>WM: (323: O39 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (325: S8 ^operator O39)
+
+    17:          O: O39 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O39 ^name wait +)
+ (S8 ^operator O39 <)
+ (S8 ^operator O39 +)
+	--- Change Working Memory (IE) ---
+<=WM: (324: S8 ^operator O39 +)
+<=WM: (325: S8 ^operator O39)
+<=WM: (323: O39 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O40 ^name wait +)
+ (S8 ^operator O40 <)
+ (S8 ^operator O40 +)
+	--- Change Working Memory (IE) ---
+=>WM: (327: S8 ^operator O40 +)
+=>WM: (326: O40 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (328: S8 ^operator O40)
+
+    18:          O: O40 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O40 ^name wait +)
+ (S8 ^operator O40 <)
+ (S8 ^operator O40 +)
+	--- Change Working Memory (IE) ---
+<=WM: (327: S8 ^operator O40 +)
+<=WM: (328: S8 ^operator O40)
+<=WM: (326: O40 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O41 ^name wait +)
+ (S8 ^operator O41 <)
+ (S8 ^operator O41 +)
+	--- Change Working Memory (IE) ---
+=>WM: (330: S8 ^operator O41 +)
+=>WM: (329: O41 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (331: S8 ^operator O41)
+
+    19:          O: O41 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O41 ^name wait +)
+ (S8 ^operator O41 <)
+ (S8 ^operator O41 +)
+	--- Change Working Memory (IE) ---
+<=WM: (330: S8 ^operator O41 +)
+<=WM: (331: S8 ^operator O41)
+<=WM: (329: O41 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O42 ^name wait +)
+ (S8 ^operator O42 <)
+ (S8 ^operator O42 +)
+	--- Change Working Memory (IE) ---
+=>WM: (333: S8 ^operator O42 +)
+=>WM: (332: O42 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (334: S8 ^operator O42)
+
+    20:          O: O42 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O42 ^name wait +)
+ (S8 ^operator O42 <)
+ (S8 ^operator O42 +)
+	--- Change Working Memory (IE) ---
+<=WM: (333: S8 ^operator O42 +)
+<=WM: (334: S8 ^operator O42)
+<=WM: (332: O42 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O43 ^name wait +)
+ (S8 ^operator O43 <)
+ (S8 ^operator O43 +)
+	--- Change Working Memory (IE) ---
+=>WM: (336: S8 ^operator O43 +)
+=>WM: (335: O43 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (337: S8 ^operator O43)
+
+    21:          O: O43 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O43 ^name wait +)
+ (S8 ^operator O43 <)
+ (S8 ^operator O43 +)
+	--- Change Working Memory (IE) ---
+<=WM: (336: S8 ^operator O43 +)
+<=WM: (337: S8 ^operator O43)
+<=WM: (335: O43 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O44 ^name wait +)
+ (S8 ^operator O44 <)
+ (S8 ^operator O44 +)
+	--- Change Working Memory (IE) ---
+=>WM: (339: S8 ^operator O44 +)
+=>WM: (338: O44 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (340: S8 ^operator O44)
+
+    22:          O: O44 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O44 ^name wait +)
+ (S8 ^operator O44 <)
+ (S8 ^operator O44 +)
+	--- Change Working Memory (IE) ---
+<=WM: (339: S8 ^operator O44 +)
+<=WM: (340: S8 ^operator O44)
+<=WM: (338: O44 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O45 ^name wait +)
+ (S8 ^operator O45 <)
+ (S8 ^operator O45 +)
+	--- Change Working Memory (IE) ---
+=>WM: (342: S8 ^operator O45 +)
+=>WM: (341: O45 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (343: S8 ^operator O45)
+
+    23:          O: O45 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O45 ^name wait +)
+ (S8 ^operator O45 <)
+ (S8 ^operator O45 +)
+	--- Change Working Memory (IE) ---
+<=WM: (342: S8 ^operator O45 +)
+<=WM: (343: S8 ^operator O45)
+<=WM: (341: O45 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O46 ^name wait +)
+ (S8 ^operator O46 <)
+ (S8 ^operator O46 +)
+	--- Change Working Memory (IE) ---
+=>WM: (345: S8 ^operator O46 +)
+=>WM: (344: O46 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (346: S8 ^operator O46)
+
+    24:          O: O46 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O46 ^name wait +)
+ (S8 ^operator O46 <)
+ (S8 ^operator O46 +)
+	--- Change Working Memory (IE) ---
+<=WM: (345: S8 ^operator O46 +)
+<=WM: (346: S8 ^operator O46)
+<=WM: (344: O46 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O47 ^name wait +)
+ (S8 ^operator O47 <)
+ (S8 ^operator O47 +)
+	--- Change Working Memory (IE) ---
+=>WM: (348: S8 ^operator O47 +)
+=>WM: (347: O47 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (349: S8 ^operator O47)
+
+    25:          O: O47 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O47 ^name wait +)
+ (S8 ^operator O47 <)
+ (S8 ^operator O47 +)
+	--- Change Working Memory (IE) ---
+<=WM: (348: S8 ^operator O47 +)
+<=WM: (349: S8 ^operator O47)
+<=WM: (347: O47 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O48 ^name wait +)
+ (S8 ^operator O48 <)
+ (S8 ^operator O48 +)
+	--- Change Working Memory (IE) ---
+=>WM: (351: S8 ^operator O48 +)
+=>WM: (350: O48 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (352: S8 ^operator O48)
+
+    26:          O: O48 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O48 ^name wait +)
+ (S8 ^operator O48 <)
+ (S8 ^operator O48 +)
+	--- Change Working Memory (IE) ---
+<=WM: (351: S8 ^operator O48 +)
+<=WM: (352: S8 ^operator O48)
+<=WM: (350: O48 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O49 ^name wait +)
+ (S8 ^operator O49 <)
+ (S8 ^operator O49 +)
+	--- Change Working Memory (IE) ---
+=>WM: (354: S8 ^operator O49 +)
+=>WM: (353: O49 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (355: S8 ^operator O49)
+
+    27:          O: O49 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O49 ^name wait +)
+ (S8 ^operator O49 <)
+ (S8 ^operator O49 +)
+	--- Change Working Memory (IE) ---
+<=WM: (354: S8 ^operator O49 +)
+<=WM: (355: S8 ^operator O49)
+<=WM: (353: O49 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O50 ^name wait +)
+ (S8 ^operator O50 <)
+ (S8 ^operator O50 +)
+	--- Change Working Memory (IE) ---
+=>WM: (357: S8 ^operator O50 +)
+=>WM: (356: O50 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (358: S8 ^operator O50)
+
+    28:          O: O50 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O50 ^name wait +)
+ (S8 ^operator O50 <)
+ (S8 ^operator O50 +)
+	--- Change Working Memory (IE) ---
+<=WM: (357: S8 ^operator O50 +)
+<=WM: (358: S8 ^operator O50)
+<=WM: (356: O50 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O51 ^name wait +)
+ (S8 ^operator O51 <)
+ (S8 ^operator O51 +)
+	--- Change Working Memory (IE) ---
+=>WM: (360: S8 ^operator O51 +)
+=>WM: (359: O51 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (361: S8 ^operator O51)
+
+    29:          O: O51 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O51 ^name wait +)
+ (S8 ^operator O51 <)
+ (S8 ^operator O51 +)
+	--- Change Working Memory (IE) ---
+<=WM: (360: S8 ^operator O51 +)
+<=WM: (361: S8 ^operator O51)
+<=WM: (359: O51 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O52 ^name wait +)
+ (S8 ^operator O52 <)
+ (S8 ^operator O52 +)
+	--- Change Working Memory (IE) ---
+=>WM: (363: S8 ^operator O52 +)
+=>WM: (362: O52 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (364: S8 ^operator O52)
+
+    30:          O: O52 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O52 ^name wait +)
+ (S8 ^operator O52 <)
+ (S8 ^operator O52 +)
+	--- Change Working Memory (IE) ---
+<=WM: (363: S8 ^operator O52 +)
+<=WM: (364: S8 ^operator O52)
+<=WM: (362: O52 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O53 ^name wait +)
+ (S8 ^operator O53 <)
+ (S8 ^operator O53 +)
+	--- Change Working Memory (IE) ---
+=>WM: (366: S8 ^operator O53 +)
+=>WM: (365: O53 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (367: S8 ^operator O53)
+
+    31:          O: O53 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O53 ^name wait +)
+ (S8 ^operator O53 <)
+ (S8 ^operator O53 +)
+	--- Change Working Memory (IE) ---
+<=WM: (366: S8 ^operator O53 +)
+<=WM: (367: S8 ^operator O53)
+<=WM: (365: O53 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O54 ^name wait +)
+ (S8 ^operator O54 <)
+ (S8 ^operator O54 +)
+	--- Change Working Memory (IE) ---
+=>WM: (369: S8 ^operator O54 +)
+=>WM: (368: O54 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (370: S8 ^operator O54)
+
+    32:          O: O54 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O54 ^name wait +)
+ (S8 ^operator O54 <)
+ (S8 ^operator O54 +)
+	--- Change Working Memory (IE) ---
+<=WM: (369: S8 ^operator O54 +)
+<=WM: (370: S8 ^operator O54)
+<=WM: (368: O54 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O55 ^name wait +)
+ (S8 ^operator O55 <)
+ (S8 ^operator O55 +)
+	--- Change Working Memory (IE) ---
+=>WM: (372: S8 ^operator O55 +)
+=>WM: (371: O55 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (373: S8 ^operator O55)
+
+    33:          O: O55 (wait)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Retracting top-ps*propose*wait
+ 310 308 --> (O55 ^name wait +)
+ (S8 ^operator O55 <)
+ (S8 ^operator O55 +)
+	--- Change Working Memory (IE) ---
+<=WM: (372: S8 ^operator O55 +)
+<=WM: (373: S8 ^operator O55)
+<=WM: (371: O55 ^name wait)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing top-ps*propose*wait
+ 310 308 -->
+ (O56 ^name wait +)
+ (S8 ^operator O56 <)
+ (S8 ^operator O56 +)
+	--- Change Working Memory (IE) ---
+=>WM: (375: S8 ^operator O56 +)
+=>WM: (374: O56 ^name wait)
+
+--- Application Phase ---
+
+--- Output Phase ---
+(sp justification-1
+   (state S4 ^desired D1 ^problem-space P1)
+   (P1 ^name blocks-world)
+-->
+   (S4 ^failure D1 +))
+
+  1 :  (state S4 ^desired D1)           Ground : (S4 ^desired D1)
+  2 :  (P1 ^name blocks-world)          Ground : (P1 ^name blocks-world)
+  3 :  (S4 ^problem-space P1)           Ground : (S4 ^problem-space P1)
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+(sp chunk-1*d12*opnochange*1
+   (state <s1> ^operator <o1> ^clear <c2> ^ontop <o2> ^clear <c1>)
+   (<o1> ^name build-tower ^desired <d1>)
+   (<c2> ^object <t1>)
+   (<o2> -^bottom-block <t1> ^top-block { <> <t1> <b1> })
+  -{ (<s1> ^ontop <ontop>)
+     (<ontop> ^bottom-block <t1> ^top-block <b1>)}
+   (<b1> ^type block)
+   (<c1> ^object <b1>)
+-->
+   (<s2> ^ontop <o2> -))
+
+  1 :  (state <s1> ^operator <o1>)      Ground : (S1 ^operator O4)
+  2 :  (<o1> ^name build-tower)         Ground : (O4 ^name build-tower)
+  3 :  (<o1> ^desired <d1>)             Ground : (O4 ^desired D1)
+  4 :  (<s1> ^clear <c2>)               Ground : (S1 ^clear C3)
+  5 :  (<c2> ^object <t1>)              Ground : (C3 ^object T1)
+  6 :  (<s1> ^ontop <o2>)               Ground : (S1 ^ontop O1)
+  7 :  (<o2> -^bottom-block <t1>)       Ground : (O1 -^bottom-block T1)
+  8 :  (<o2> ^top-block { <> <t1> <b1> }) Ground : (O1 ^top-block B1)
+  9 : -{ (<s1> ^ontop <ontop>)
+   (<ontop> ^bottom-block <t1>)
+   (<ontop> ^top-block <b1>)}           Ground :-{ (S1 ^ontop <ontop>)
+   (<ontop> ^bottom-block T1)
+   (<ontop> ^top-block B1)}
+ 10 :  (<b1> ^type block)               Ground : (B1 ^type block)
+ 11 :  (<s1> ^clear <c1>)               Ground : (S1 ^clear C1)
+ 12 :  (<c1> ^object <b1>)              Ground : (C1 ^object B1)
+Could not find the chunk.  Maybe explain was not on when it was created.
+For Soar 7: set save_backtraces 1 before the chunk is created.
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)

@@ -1,0 +1,39 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelSource", "src\SoarKernelSource.vcproj", "{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelTest", "app_src\SoarKernelTest\SoarKernelTest.vcproj", "{0D357B42-7338-42AE-8BB5-025013B073B9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1} = {F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelUnitTests", "SoarKernelUnitTests\SoarKernelUnitTests.vcproj", "{A38C245D-D6FC-4294-B19D-73DB19767141}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1} = {F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}.Debug.ActiveCfg = Debug|Win32
+		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}.Debug.Build.0 = Debug|Win32
+		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}.Release.ActiveCfg = Release|Win32
+		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}.Release.Build.0 = Release|Win32
+		{0D357B42-7338-42AE-8BB5-025013B073B9}.Debug.ActiveCfg = Debug|Win32
+		{0D357B42-7338-42AE-8BB5-025013B073B9}.Debug.Build.0 = Debug|Win32
+		{0D357B42-7338-42AE-8BB5-025013B073B9}.Release.ActiveCfg = Release|Win32
+		{0D357B42-7338-42AE-8BB5-025013B073B9}.Release.Build.0 = Release|Win32
+		{A38C245D-D6FC-4294-B19D-73DB19767141}.Debug.ActiveCfg = Debug|Win32
+		{A38C245D-D6FC-4294-B19D-73DB19767141}.Debug.Build.0 = Debug|Win32
+		{A38C245D-D6FC-4294-B19D-73DB19767141}.Release.ActiveCfg = Release|Win32
+		{A38C245D-D6FC-4294-B19D-73DB19767141}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

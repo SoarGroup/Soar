@@ -1,0 +1,11 @@
+#multi-attributes jug 3
+
+#learn -on
+#echo "learning is on"
+
+sp { test*production
+   (state <s> ^superstate nil)
+   (<s> ^io.output-link <ol>)
+   -->
+   (<ol> ^junk 4)
+}

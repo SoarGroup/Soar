@@ -1,0 +1,3749 @@
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+
+Soar v.8.3 Build Information.
+ - CALLBACK_H_INCLUDED
+ - MAX_SIMULTANEOUS_AGENTS
+ - STD
+ - USE_STDARGS
+ - WIN32
+Learning On
+*****************************************************************************************************
+--- Input Phase --- 
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing top-level*elaborate*state*task*waterjug
+ 2 -->
+ (P1 ^one-level-attributes last-operator +)
+ (P1 ^two-level-attributes jug +)
+ (P1 ^default-state-copy yes +)
+ (P1 ^name waterjug +)
+ (S1 ^problem-space P1 +)
+ (S1 ^name waterjug +)
+Firing default*top-state*elaborate*state*name*top-state*top-goal
+ 2 -->
+ (S1 ^name top-state +)
+ (S1 ^name top-goal +)
+	--- Change Working Memory (IE) ---
+=>WM: (13: S1 ^name waterjug)
+=>WM: (12: S1 ^name top-goal)
+=>WM: (11: S1 ^name top-state)
+=>WM: (10: P1 ^one-level-attributes last-operator)
+=>WM: (9: P1 ^two-level-attributes jug)
+=>WM: (8: P1 ^default-state-copy yes)
+=>WM: (7: P1 ^name waterjug)
+=>WM: (6: S1 ^problem-space P1)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*elaborate*state*initial*desired-state
+ 13 6 7 -->
+ (K1 ^contents 1 +)
+ (K1 ^volume 3 +)
+ (J1 ^free 5 +)
+ (J1 ^contents 0 +)
+ (J1 ^volume 5 +)
+ (I4 ^free 3 +)
+ (I4 ^contents 0 +)
+ (I4 ^volume 3 +)
+ (S1 ^jug J1 +)
+ (S1 ^jug I4 +)
+ (D1 ^jug K1 +)
+ (S1 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (25: K1 ^contents 1)
+=>WM: (24: K1 ^volume 3)
+=>WM: (23: J1 ^free 5)
+=>WM: (22: J1 ^contents 0)
+=>WM: (21: J1 ^volume 5)
+=>WM: (20: I4 ^free 3)
+=>WM: (19: I4 ^contents 0)
+=>WM: (18: I4 ^volume 3)
+=>WM: (17: S1 ^jug I4)
+=>WM: (16: S1 ^jug J1)
+=>WM: (15: D1 ^jug K1)
+=>WM: (14: S1 ^desired D1)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*propose*fill
+ 16 22 -->
+ (O1 ^jug J1 +)
+ (O1 ^name fill +)
+ (S1 ^operator O1 +)
+Firing waterjug*monitor*state
+ 16 21 17 18 22 19 -->
+
+ 3:0 5:0
+Firing waterjug*propose*fill
+ 17 19 -->
+ (O2 ^jug I4 +)
+ (O2 ^name fill +)
+ (S1 ^operator O2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (31: S1 ^operator O2 +)
+=>WM: (30: S1 ^operator O1 +)
+=>WM: (29: O2 ^jug I4)
+=>WM: (28: O2 ^name fill)
+=>WM: (27: O1 ^jug J1)
+=>WM: (26: O1 ^name fill)
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (39: S2 ^item O1)
+=>WM: (38: S2 ^item O2)
+=>WM: (37: S2 ^quiescence t)
+=>WM: (36: S2 ^choices multiple)
+=>WM: (35: S2 ^impasse tie)
+=>WM: (34: S2 ^attribute operator)
+=>WM: (33: S2 ^superstate S1)
+=>WM: (32: S2 ^type state)
+
+     1:    ==>S: S2 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*fill
+ 35 34 39 26 27 22 21 -->
+
+  O1: fill(5:0)
+Firing waterjug*monitor*tied-operator*fill
+ 35 34 38 28 29 19 18 -->
+
+  O2: fill(3:0)
+Firing default*selection*propose*space*selection
+ 36 -->
+ (P2 ^name selection +)
+ (S2 ^problem-space P2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (41: P2 ^name selection)
+=>WM: (40: S2 ^problem-space P2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 39 40 41 -->
+ (O3 ^object O1 +)
+ (O3 ^name evaluate-object +)
+ (O3 ^state S2 +)
+ (S2 ^operator O3 +)
+Firing default*selection*propose*evaluate-object
+ 38 40 41 -->
+ (O4 ^object O2 +)
+ (O4 ^name evaluate-object +)
+ (O4 ^state S2 +)
+ (S2 ^operator O4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (49: S2 ^operator O4 +)
+=>WM: (48: S2 ^operator O3 +)
+=>WM: (47: O4 ^object O2)
+=>WM: (46: O4 ^name evaluate-object)
+=>WM: (45: O4 ^state S2)
+=>WM: (44: O3 ^object O1)
+=>WM: (43: O3 ^name evaluate-object)
+=>WM: (42: O3 ^state S2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 48 43 40 41 -->
+ (S2 ^operator O3 =)
+Firing default*selection*select*evaluate-object*indifferent
+ 49 46 40 41 -->
+ (S2 ^operator O4 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 36 48 40 41 -->
+ (S2 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 36 49 40 41 -->
+ (S2 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (50: S2 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (51: S2 ^operator O3)
+
+     2:       O: O3 (evaluate-object O1 (fill))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 51 43 -->
+ (O3 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (52: O3 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 51 52 40 41 44 -->
+ (E1 ^object O1 +  :O )
+ (S2 ^evaluation E1 +  :O )
+ (O3 ^evaluation E1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 51 52 40 41 33 6 -->
+ (O3 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 51 52 40 41 33 -->
+ (O3 ^superstate S1 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 51 52 33 14 -->
+ (O3 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (58: O3 ^desired D1)
+=>WM: (57: O3 ^superstate S1)
+=>WM: (56: O3 ^superproblem-space P1)
+=>WM: (55: E1 ^object O1)
+=>WM: (54: S2 ^evaluation E1)
+=>WM: (53: O3 ^evaluation E1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 54 33 14 -->
+ (E1 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (59: E1 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 51 52 53 54 43 -->
+ (E1 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 51 52 56 -->
+ (O3 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 51 52 56 -->
+ (O3 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 51 52 56 8 -->
+ (O3 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (62: O3 ^default-state-copy yes)
+=>WM: (61: O3 ^default-operator-copy yes)
+=>WM: (60: E1 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (68: S3 ^quiescence t)
+=>WM: (67: S3 ^choices none)
+=>WM: (66: S3 ^impasse no-change)
+=>WM: (65: S3 ^attribute operator)
+=>WM: (64: S3 ^superstate S2)
+=>WM: (63: S3 ^type state)
+
+      :       ==>S: S3 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 66 65 64 51 52 58 -->
+ (S3 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 66 65 64 51 52 56 -->
+ (S3 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 66 65 64 51 52 62 -->
+ (S3 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 66 65 64 51 52 61 -->
+ (S3 ^default-operator-copy yes +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 66 65 64 51 62 52 -->
+ (S3 ^duplicates* D2 +)
+Firing elaborate*state*operator*name
+ 64 51 43 -->
+ (S3 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (74: S3 ^name evaluate-object)
+=>WM: (73: S3 ^duplicates* D2)
+=>WM: (72: S3 ^default-operator-copy yes)
+=>WM: (71: S3 ^default-state-copy yes)
+=>WM: (70: S3 ^problem-space P1)
+=>WM: (69: S3 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 71 64 51 52 57 70 -->
+ (S3 ^duplicate-of* S1 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 64 51 61 52 56 7 70 7 44 -->
+ (C1 ^duplicate-of* O1 +)
+ (S3 ^look-ahead-operator C1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (77: C1 ^duplicate-of* O1)
+=>WM: (76: S3 ^look-ahead-operator C1)
+=>WM: (75: S3 ^duplicate-of* S1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 71 73 75 70 9 17 -->
+ (D2 ^I4 N1 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 71 73 75 70 9 16 -->
+ (D2 ^J1 N2 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 73 76 77 27 -->
+ (C1 ^jug J1 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 73 76 77 26 -->
+ (C1 ^name fill +)
+Firing default*evaluate-object*propose*look-ahead
+ 76 64 51 52 33 6 7 70 7 -->
+ (S3 ^operator C1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (82: S3 ^operator C1 +)
+=>WM: (81: C1 ^name fill)
+=>WM: (80: C1 ^jug J1)
+=>WM: (79: D2 ^J1 N2)
+=>WM: (78: D2 ^I4 N1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 71 73 75 70 9 17 78 -->
+ (S3 ^jug N1 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 71 73 78 20 -->
+ (N1 ^free 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 71 73 78 19 -->
+ (N1 ^contents 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 71 73 78 18 -->
+ (N1 ^volume 3 +)
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 71 73 75 70 9 16 79 -->
+ (S3 ^jug N2 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 73 76 77 27 79 -->
+ (C1 ^jug N2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 71 73 79 23 -->
+ (N2 ^free 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 71 73 79 22 -->
+ (N2 ^contents 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 71 73 79 21 -->
+ (N2 ^volume 5 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 73 76 77 27 --> (C1 ^jug J1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (91: N2 ^volume 5)
+=>WM: (90: N2 ^contents 0)
+=>WM: (89: N2 ^free 5)
+=>WM: (88: C1 ^jug N2)
+=>WM: (87: S3 ^jug N1)
+=>WM: (86: S3 ^jug N2)
+=>WM: (85: N1 ^volume 3)
+=>WM: (84: N1 ^contents 0)
+=>WM: (83: N1 ^free 3)
+<=WM: (80: C1 ^jug J1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*propose*fill
+ 87 84 -->
+ (O5 ^jug N1 +)
+ (O5 ^name fill +)
+ (S3 ^operator O5 +)
+Firing waterjug*monitor*state
+ 86 91 87 85 90 84 -->
+
+ 3:0 5:0
+Firing waterjug*propose*fill
+ 86 90 -->
+ (O6 ^jug N2 +)
+ (O6 ^name fill +)
+ (S3 ^operator O6 +)
+	--- Change Working Memory (IE) ---
+=>WM: (97: S3 ^operator O6 +)
+=>WM: (96: S3 ^operator O5 +)
+=>WM: (95: O6 ^jug N2)
+=>WM: (94: O6 ^name fill)
+=>WM: (93: O5 ^jug N1)
+=>WM: (92: O5 ^name fill)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 76 64 51 52 33 96 6 7 70 7 -->
+ (S3 ^operator O5 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 76 64 51 52 33 97 6 7 70 7 -->
+ (S3 ^operator O6 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (98: S3 ^operator C1)
+
+     4:          O: C1 (fill)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*fill
+ 98 81 88 90 91 -->
+
+  FILL(5:0)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 72 64 51 52 56 70 44 98 77 -->
+ (S3 ^tried-tied-operator C1 +  :O )
+Firing apply*fill
+ 86 90 89 91 98 81 88 -->
+ (N2 ^free 5 -  :O )
+ (N2 ^free 0 +  :O )
+ (N2 ^contents 0 -  :O )
+ (N2 ^contents 5 +  :O )
+Firing waterjug*save*operator*save*last-op
+ 98 81 88 -->
+ (O7 ^jug N2 +  :O )
+ (O7 ^name fill +  :O )
+ (S3 ^last-operator O7 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (104: O7 ^jug N2)
+=>WM: (103: O7 ^name fill)
+=>WM: (102: S3 ^last-operator O7)
+=>WM: (101: N2 ^free 0)
+=>WM: (100: N2 ^contents 5)
+=>WM: (99: S3 ^tried-tied-operator C1)
+<=WM: (89: N2 ^free 5)
+<=WM: (90: N2 ^contents 0)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*fill
+ 98 81 88 100 91 -->
+
+  FILL(5:5)
+Firing waterjug*monitor*state
+ 86 91 87 85 100 84 -->
+
+ 3:0 5:5
+Firing waterjug*propose*pour
+ 87 83 86 100 -->
+ (O8 ^into N1 +)
+ (O8 ^jug N2 +)
+ (O8 ^name pour +)
+ (S3 ^operator O8 +)
+Firing waterjug*propose*empty
+ 86 100 -->
+ (O9 ^jug N2 +)
+ (O9 ^name empty +)
+ (S3 ^operator O9 +)
+Retracting waterjug*propose*fill
+ 86 90 --> (O6 ^jug N2 +)
+ (O6 ^name fill +)
+ (S3 ^operator O6 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 76 64 51 52 33 97 6 7 70 7 --> (S3 ^operator O6 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 76 64 51 52 33 96 6 7 70 7 --> (S3 ^operator O5 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 76 64 51 52 33 6 7 70 7 --> (S3 ^operator C1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (111: S3 ^operator O9 +)
+=>WM: (110: S3 ^operator O8 +)
+=>WM: (109: O9 ^jug N2)
+=>WM: (108: O9 ^name empty)
+=>WM: (107: O8 ^into N1)
+=>WM: (106: O8 ^jug N2)
+=>WM: (105: O8 ^name pour)
+<=WM: (82: S3 ^operator C1 +)
+<=WM: (98: S3 ^operator C1)
+<=WM: (97: S3 ^operator O6 +)
+<=WM: (95: O6 ^jug N2)
+<=WM: (94: O6 ^name fill)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*inverse*empty*reject
+ 102 103 111 108 104 109 -->
+ (S3 ^reject O9 +)
+ (S3 ^operator O9 -)
+	--- Change Working Memory (IE) ---
+=>WM: (112: S3 ^reject O9)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (120: S4 ^item O8)
+=>WM: (119: S4 ^item O5)
+=>WM: (118: S4 ^quiescence t)
+=>WM: (117: S4 ^choices multiple)
+=>WM: (116: S4 ^impasse tie)
+=>WM: (115: S4 ^attribute operator)
+=>WM: (114: S4 ^superstate S3)
+=>WM: (113: S4 ^type state)
+
+     5:          ==>S: S4 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*pour
+ 116 115 120 105 107 84 85 106 100 91 -->
+
+  O8: pour(5:5,3:0)
+Firing waterjug*monitor*tied-operator*fill
+ 116 115 119 92 93 84 85 -->
+
+  O5: fill(3:0)
+Firing default*selection*propose*space*selection
+ 117 -->
+ (P3 ^name selection +)
+ (S4 ^problem-space P3 +)
+	--- Change Working Memory (IE) ---
+=>WM: (122: P3 ^name selection)
+=>WM: (121: S4 ^problem-space P3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 120 121 122 -->
+ (O10 ^object O8 +)
+ (O10 ^name evaluate-object +)
+ (O10 ^state S4 +)
+ (S4 ^operator O10 +)
+Firing default*selection*propose*evaluate-object
+ 119 121 122 -->
+ (O11 ^object O5 +)
+ (O11 ^name evaluate-object +)
+ (O11 ^state S4 +)
+ (S4 ^operator O11 +)
+	--- Change Working Memory (IE) ---
+=>WM: (130: S4 ^operator O11 +)
+=>WM: (129: S4 ^operator O10 +)
+=>WM: (128: O11 ^object O5)
+=>WM: (127: O11 ^name evaluate-object)
+=>WM: (126: O11 ^state S4)
+=>WM: (125: O10 ^object O8)
+=>WM: (124: O10 ^name evaluate-object)
+=>WM: (123: O10 ^state S4)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 129 124 121 122 -->
+ (S4 ^operator O10 =)
+Firing waterjug*evaluate-object*pour*better
+ 129 124 125 105 -->
+ (S4 ^operator O10 >)
+Firing default*selection*select*evaluate-object*indifferent
+ 130 127 121 122 -->
+ (S4 ^operator O11 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 117 129 121 122 -->
+ (S4 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 117 130 121 122 -->
+ (S4 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (131: S4 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (132: S4 ^operator O10)
+
+     6:             O: O10 (evaluate-object O8 (pour))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 132 124 -->
+ (O10 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (133: O10 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 132 133 121 122 125 -->
+ (E2 ^object O8 +  :O )
+ (S4 ^evaluation E2 +  :O )
+ (O10 ^evaluation E2 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 132 133 121 122 114 70 -->
+ (O10 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 132 133 121 122 114 -->
+ (O10 ^superstate S3 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 132 133 114 69 -->
+ (O10 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (139: O10 ^desired D1)
+=>WM: (138: O10 ^superstate S3)
+=>WM: (137: O10 ^superproblem-space P1)
+=>WM: (136: E2 ^object O8)
+=>WM: (135: S4 ^evaluation E2)
+=>WM: (134: O10 ^evaluation E2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 135 114 69 -->
+ (E2 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (140: E2 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 132 133 134 135 124 -->
+ (E2 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 132 133 137 -->
+ (O10 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 132 133 137 -->
+ (O10 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 132 133 137 8 -->
+ (O10 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (143: O10 ^default-state-copy yes)
+=>WM: (142: O10 ^default-operator-copy yes)
+=>WM: (141: E2 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (149: S5 ^quiescence t)
+=>WM: (148: S5 ^choices none)
+=>WM: (147: S5 ^impasse no-change)
+=>WM: (146: S5 ^attribute operator)
+=>WM: (145: S5 ^superstate S4)
+=>WM: (144: S5 ^type state)
+
+      :             ==>S: S5 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 147 146 145 132 133 139 -->
+ (S5 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 147 146 145 132 133 137 -->
+ (S5 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 147 146 145 132 133 143 -->
+ (S5 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 147 146 145 132 133 142 -->
+ (S5 ^default-operator-copy yes +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 147 146 145 132 143 133 -->
+ (S5 ^duplicates* D3 +)
+Firing elaborate*state*operator*name
+ 145 132 124 -->
+ (S5 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (155: S5 ^name evaluate-object)
+=>WM: (154: S5 ^duplicates* D3)
+=>WM: (153: S5 ^default-operator-copy yes)
+=>WM: (152: S5 ^default-state-copy yes)
+=>WM: (151: S5 ^problem-space P1)
+=>WM: (150: S5 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 152 145 132 133 138 151 -->
+ (S5 ^duplicate-of* S3 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 145 132 142 133 137 7 151 7 125 -->
+ (C2 ^duplicate-of* O8 +)
+ (S5 ^look-ahead-operator C2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (158: C2 ^duplicate-of* O8)
+=>WM: (157: S5 ^look-ahead-operator C2)
+=>WM: (156: S5 ^duplicate-of* S3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-one-level-attributes
+ 152 156 145 132 137 151 10 102 -->
+ (S5 ^last-operator O7 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 152 154 156 151 9 87 -->
+ (D3 ^N1 N3 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 152 154 156 151 9 86 -->
+ (D3 ^N2 N4 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 154 157 158 107 -->
+ (C2 ^into N1 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 154 157 158 106 -->
+ (C2 ^jug N2 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 154 157 158 105 -->
+ (C2 ^name pour +)
+Firing default*evaluate-object*propose*look-ahead
+ 157 145 132 133 114 70 7 151 7 -->
+ (S5 ^operator C2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (165: S5 ^operator C2 +)
+=>WM: (164: C2 ^name pour)
+=>WM: (163: C2 ^jug N2)
+=>WM: (162: C2 ^into N1)
+=>WM: (161: D3 ^N2 N4)
+=>WM: (160: D3 ^N1 N3)
+=>WM: (159: S5 ^last-operator O7)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 152 154 156 151 9 87 160 -->
+ (S5 ^jug N3 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 154 157 158 107 160 -->
+ (C2 ^into N3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 152 154 160 85 -->
+ (N3 ^volume 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 152 154 160 84 -->
+ (N3 ^contents 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 152 154 160 83 -->
+ (N3 ^free 3 +)
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 152 154 156 151 9 86 161 -->
+ (S5 ^jug N4 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 154 157 158 106 161 -->
+ (C2 ^jug N4 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 152 154 161 91 -->
+ (N4 ^volume 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 152 154 161 101 -->
+ (N4 ^free 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 152 154 161 100 -->
+ (N4 ^contents 5 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 154 157 158 107 --> (C2 ^into N1 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 154 157 158 106 --> (C2 ^jug N2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (175: N4 ^contents 5)
+=>WM: (174: N4 ^free 0)
+=>WM: (173: N4 ^volume 5)
+=>WM: (172: C2 ^jug N4)
+=>WM: (171: S5 ^jug N3)
+=>WM: (170: S5 ^jug N4)
+=>WM: (169: N3 ^free 3)
+=>WM: (168: N3 ^contents 0)
+=>WM: (167: N3 ^volume 3)
+=>WM: (166: C2 ^into N3)
+<=WM: (163: C2 ^jug N2)
+<=WM: (162: C2 ^into N1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*state
+ 170 173 171 167 175 168 -->
+
+ 3:0 5:5
+Firing waterjug*propose*fill
+ 171 168 -->
+ (O12 ^jug N3 +)
+ (O12 ^name fill +)
+ (S5 ^operator O12 +)
+Firing waterjug*propose*pour
+ 171 169 170 175 -->
+ (O13 ^into N3 +)
+ (O13 ^jug N4 +)
+ (O13 ^name pour +)
+ (S5 ^operator O13 +)
+Firing waterjug*propose*empty
+ 170 175 -->
+ (O14 ^jug N4 +)
+ (O14 ^name empty +)
+ (S5 ^operator O14 +)
+	--- Change Working Memory (IE) ---
+=>WM: (185: S5 ^operator O14 +)
+=>WM: (184: S5 ^operator O13 +)
+=>WM: (183: S5 ^operator O12 +)
+=>WM: (182: O14 ^jug N4)
+=>WM: (181: O14 ^name empty)
+=>WM: (180: O13 ^into N3)
+=>WM: (179: O13 ^jug N4)
+=>WM: (178: O13 ^name pour)
+=>WM: (177: O12 ^jug N3)
+=>WM: (176: O12 ^name fill)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 157 145 132 133 114 183 70 7 151 7 -->
+ (S5 ^operator O12 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 157 145 132 133 114 184 70 7 151 7 -->
+ (S5 ^operator O13 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 157 145 132 133 114 185 70 7 151 7 -->
+ (S5 ^operator O14 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (186: S5 ^operator C2)
+
+     8:                O: C2 (pour)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*pour
+ 186 164 166 168 167 172 175 173 -->
+
+  POUR(5:5,3:0)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing waterjug*save*operator*remove*last-op
+ 159 186 164 172 -->
+ (S5 ^last-operator O7 -  :O )
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 153 145 132 133 137 151 125 186 158 -->
+ (S5 ^tried-tied-operator C2 +  :O )
+Firing waterjug*save*operator*save*last-op
+ 186 164 172 -->
+ (O15 ^jug N4 +  :O )
+ (O15 ^name pour +  :O )
+ (S5 ^last-operator O15 +  :O )
+Firing apply*pour*source*contents*more
+ 186 164 166 171 169 168 167 172 170 174 175 175 173 -->
+ (N3 ^free 3 -  :O )
+ (N3 ^free 0 +  :O )
+ (N3 ^contents 0 -  :O )
+ (N3 ^contents 3 +  :O )
+ (N4 ^free 0 -  :O )
+ (N4 ^free 3 +  :O )
+ (N4 ^contents 5 -  :O )
+ (N4 ^contents 2 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (194: N3 ^free 0)
+=>WM: (193: N3 ^contents 3)
+=>WM: (192: N4 ^free 3)
+=>WM: (191: N4 ^contents 2)
+=>WM: (190: O15 ^jug N4)
+=>WM: (189: O15 ^name pour)
+=>WM: (188: S5 ^last-operator O15)
+=>WM: (187: S5 ^tried-tied-operator C2)
+<=WM: (169: N3 ^free 3)
+<=WM: (168: N3 ^contents 0)
+<=WM: (174: N4 ^free 0)
+<=WM: (175: N4 ^contents 5)
+<=WM: (159: S5 ^last-operator O7)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*pour
+ 186 164 166 193 167 172 191 173 -->
+
+  POUR(5:2,3:3)
+Firing waterjug*monitor*state
+ 170 173 171 167 191 193 -->
+
+ 3:3 5:2
+Firing waterjug*propose*empty
+ 170 191 -->
+ (O16 ^jug N4 +)
+ (O16 ^name empty +)
+ (S5 ^operator O16 +)
+Firing waterjug*propose*pour
+ 170 192 171 193 -->
+ (O17 ^into N4 +)
+ (O17 ^jug N3 +)
+ (O17 ^name pour +)
+ (S5 ^operator O17 +)
+Firing waterjug*propose*empty
+ 171 193 -->
+ (O18 ^jug N3 +)
+ (O18 ^name empty +)
+ (S5 ^operator O18 +)
+Retracting waterjug*propose*empty
+ 170 175 --> (O14 ^jug N4 +)
+ (O14 ^name empty +)
+ (S5 ^operator O14 +)
+Retracting waterjug*propose*fill
+ 171 168 --> (O12 ^jug N3 +)
+ (O12 ^name fill +)
+ (S5 ^operator O12 +)
+Retracting waterjug*propose*pour
+ 171 169 170 175 --> (O13 ^into N3 +)
+ (O13 ^jug N4 +)
+ (O13 ^name pour +)
+ (S5 ^operator O13 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 157 145 132 133 114 185 70 7 151 7 --> (S5 ^operator O14 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 157 145 132 133 114 184 70 7 151 7 --> (S5 ^operator O13 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 157 145 132 133 114 183 70 7 151 7 --> (S5 ^operator O12 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 157 145 132 133 114 70 7 151 7 --> (S5 ^operator C2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (204: S5 ^operator O18 +)
+=>WM: (203: S5 ^operator O17 +)
+=>WM: (202: S5 ^operator O16 +)
+=>WM: (201: O18 ^jug N3)
+=>WM: (200: O18 ^name empty)
+=>WM: (199: O17 ^into N4)
+=>WM: (198: O17 ^jug N3)
+=>WM: (197: O17 ^name pour)
+=>WM: (196: O16 ^jug N4)
+=>WM: (195: O16 ^name empty)
+<=WM: (165: S5 ^operator C2 +)
+<=WM: (186: S5 ^operator C2)
+<=WM: (183: S5 ^operator O12 +)
+<=WM: (184: S5 ^operator O13 +)
+<=WM: (185: S5 ^operator O14 +)
+<=WM: (182: O14 ^jug N4)
+<=WM: (181: O14 ^name empty)
+<=WM: (177: O12 ^jug N3)
+<=WM: (176: O12 ^name fill)
+<=WM: (180: O13 ^into N3)
+<=WM: (179: O13 ^jug N4)
+<=WM: (178: O13 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*inverse*pour*reject
+ 188 189 203 197 199 190 -->
+ (S5 ^reject O17 +)
+ (S5 ^operator O17 -)
+	--- Change Working Memory (IE) ---
+=>WM: (205: S5 ^reject O17)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (213: S6 ^item O16)
+=>WM: (212: S6 ^item O18)
+=>WM: (211: S6 ^quiescence t)
+=>WM: (210: S6 ^choices multiple)
+=>WM: (209: S6 ^impasse tie)
+=>WM: (208: S6 ^attribute operator)
+=>WM: (207: S6 ^superstate S5)
+=>WM: (206: S6 ^type state)
+
+     9:                ==>S: S6 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*empty
+ 209 208 213 195 196 191 173 -->
+
+  O16: empty(5:2)
+Firing waterjug*monitor*tied-operator*empty
+ 209 208 212 200 201 193 167 -->
+
+  O18: empty(3:3)
+Firing default*selection*propose*space*selection
+ 210 -->
+ (P4 ^name selection +)
+ (S6 ^problem-space P4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (215: P4 ^name selection)
+=>WM: (214: S6 ^problem-space P4)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 213 214 215 -->
+ (O19 ^object O16 +)
+ (O19 ^name evaluate-object +)
+ (O19 ^state S6 +)
+ (S6 ^operator O19 +)
+Firing default*selection*propose*evaluate-object
+ 212 214 215 -->
+ (O20 ^object O18 +)
+ (O20 ^name evaluate-object +)
+ (O20 ^state S6 +)
+ (S6 ^operator O20 +)
+	--- Change Working Memory (IE) ---
+=>WM: (223: S6 ^operator O20 +)
+=>WM: (222: S6 ^operator O19 +)
+=>WM: (221: O20 ^object O18)
+=>WM: (220: O20 ^name evaluate-object)
+=>WM: (219: O20 ^state S6)
+=>WM: (218: O19 ^object O16)
+=>WM: (217: O19 ^name evaluate-object)
+=>WM: (216: O19 ^state S6)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 222 217 214 215 -->
+ (S6 ^operator O19 =)
+Firing default*selection*select*evaluate-object*indifferent
+ 223 220 214 215 -->
+ (S6 ^operator O20 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 210 222 214 215 -->
+ (S6 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 210 223 214 215 -->
+ (S6 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (224: S6 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (225: S6 ^operator O19)
+
+    10:                   O: O19 (evaluate-object O16 (empty))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 225 217 -->
+ (O19 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (226: O19 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 225 226 214 215 218 -->
+ (E3 ^object O16 +  :O )
+ (S6 ^evaluation E3 +  :O )
+ (O19 ^evaluation E3 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 225 226 214 215 207 151 -->
+ (O19 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 225 226 214 215 207 -->
+ (O19 ^superstate S5 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 225 226 207 150 -->
+ (O19 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (232: O19 ^desired D1)
+=>WM: (231: O19 ^superstate S5)
+=>WM: (230: O19 ^superproblem-space P1)
+=>WM: (229: E3 ^object O16)
+=>WM: (228: S6 ^evaluation E3)
+=>WM: (227: O19 ^evaluation E3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 228 207 150 -->
+ (E3 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (233: E3 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 225 226 227 228 217 -->
+ (E3 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 225 226 230 -->
+ (O19 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 225 226 230 -->
+ (O19 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 225 226 230 8 -->
+ (O19 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (236: O19 ^default-state-copy yes)
+=>WM: (235: O19 ^default-operator-copy yes)
+=>WM: (234: E3 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (242: S7 ^quiescence t)
+=>WM: (241: S7 ^choices none)
+=>WM: (240: S7 ^impasse no-change)
+=>WM: (239: S7 ^attribute operator)
+=>WM: (238: S7 ^superstate S6)
+=>WM: (237: S7 ^type state)
+
+      :                   ==>S: S7 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 240 239 238 225 226 232 -->
+ (S7 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 240 239 238 225 226 230 -->
+ (S7 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 240 239 238 225 226 236 -->
+ (S7 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 240 239 238 225 226 235 -->
+ (S7 ^default-operator-copy yes +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 240 239 238 225 236 226 -->
+ (S7 ^duplicates* D4 +)
+Firing elaborate*state*operator*name
+ 238 225 217 -->
+ (S7 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (248: S7 ^name evaluate-object)
+=>WM: (247: S7 ^duplicates* D4)
+=>WM: (246: S7 ^default-operator-copy yes)
+=>WM: (245: S7 ^default-state-copy yes)
+=>WM: (244: S7 ^problem-space P1)
+=>WM: (243: S7 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 245 238 225 226 231 244 -->
+ (S7 ^duplicate-of* S5 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 238 225 235 226 230 7 244 7 218 -->
+ (C3 ^duplicate-of* O16 +)
+ (S7 ^look-ahead-operator C3 +)
+	--- Change Working Memory (IE) ---
+=>WM: (251: C3 ^duplicate-of* O16)
+=>WM: (250: S7 ^look-ahead-operator C3)
+=>WM: (249: S7 ^duplicate-of* S5)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-one-level-attributes
+ 245 249 238 225 230 244 10 188 -->
+ (S7 ^last-operator O15 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 245 247 249 244 9 171 -->
+ (D4 ^N3 N5 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 245 247 249 244 9 170 -->
+ (D4 ^N4 N6 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 247 250 251 196 -->
+ (C3 ^jug N4 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 247 250 251 195 -->
+ (C3 ^name empty +)
+Firing default*evaluate-object*propose*look-ahead
+ 250 238 225 226 207 151 7 244 7 -->
+ (S7 ^operator C3 +)
+	--- Change Working Memory (IE) ---
+=>WM: (257: S7 ^operator C3 +)
+=>WM: (256: C3 ^name empty)
+=>WM: (255: C3 ^jug N4)
+=>WM: (254: D4 ^N4 N6)
+=>WM: (253: D4 ^N3 N5)
+=>WM: (252: S7 ^last-operator O15)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 245 247 249 244 9 171 253 -->
+ (S7 ^jug N5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 245 247 253 167 -->
+ (N5 ^volume 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 245 247 253 194 -->
+ (N5 ^free 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 245 247 253 193 -->
+ (N5 ^contents 3 +)
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 245 247 249 244 9 170 254 -->
+ (S7 ^jug N6 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 247 250 251 196 254 -->
+ (C3 ^jug N6 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 245 247 254 173 -->
+ (N6 ^volume 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 245 247 254 192 -->
+ (N6 ^free 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 245 247 254 191 -->
+ (N6 ^contents 2 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 247 250 251 196 --> (C3 ^jug N4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (266: N6 ^contents 2)
+=>WM: (265: N6 ^free 3)
+=>WM: (264: N6 ^volume 5)
+=>WM: (263: C3 ^jug N6)
+=>WM: (262: S7 ^jug N5)
+=>WM: (261: S7 ^jug N6)
+=>WM: (260: N5 ^contents 3)
+=>WM: (259: N5 ^free 0)
+=>WM: (258: N5 ^volume 3)
+<=WM: (255: C3 ^jug N4)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*state
+ 261 264 262 258 266 260 -->
+
+ 3:3 5:2
+Firing waterjug*propose*pour
+ 261 265 262 260 -->
+ (O21 ^into N6 +)
+ (O21 ^jug N5 +)
+ (O21 ^name pour +)
+ (S7 ^operator O21 +)
+Firing waterjug*propose*empty
+ 262 260 -->
+ (O22 ^jug N5 +)
+ (O22 ^name empty +)
+ (S7 ^operator O22 +)
+Firing waterjug*propose*empty
+ 261 266 -->
+ (O23 ^jug N6 +)
+ (O23 ^name empty +)
+ (S7 ^operator O23 +)
+	--- Change Working Memory (IE) ---
+=>WM: (276: S7 ^operator O23 +)
+=>WM: (275: S7 ^operator O22 +)
+=>WM: (274: S7 ^operator O21 +)
+=>WM: (273: O23 ^jug N6)
+=>WM: (272: O23 ^name empty)
+=>WM: (271: O22 ^jug N5)
+=>WM: (270: O22 ^name empty)
+=>WM: (269: O21 ^into N6)
+=>WM: (268: O21 ^jug N5)
+=>WM: (267: O21 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 250 238 225 226 207 274 151 7 244 7 -->
+ (S7 ^operator O21 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 250 238 225 226 207 275 151 7 244 7 -->
+ (S7 ^operator O22 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 250 238 225 226 207 276 151 7 244 7 -->
+ (S7 ^operator O23 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (277: S7 ^operator C3)
+
+    12:                      O: C3 (empty)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*empty
+ 277 256 263 266 264 -->
+
+  EMPTY(5:2)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing waterjug*save*operator*remove*last-op
+ 252 277 256 263 -->
+ (S7 ^last-operator O15 -  :O )
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 246 238 225 226 230 244 218 277 251 -->
+ (S7 ^tried-tied-operator C3 +  :O )
+Firing waterjug*save*operator*save*last-op
+ 277 256 263 -->
+ (O24 ^jug N6 +  :O )
+ (O24 ^name empty +  :O )
+ (S7 ^last-operator O24 +  :O )
+Firing apply*empty
+ 277 256 263 261 265 266 264 -->
+ (N6 ^free 3 -  :O )
+ (N6 ^free 5 +  :O )
+ (N6 ^contents 2 -  :O )
+ (N6 ^contents 0 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (283: N6 ^free 5)
+=>WM: (282: N6 ^contents 0)
+=>WM: (281: O24 ^jug N6)
+=>WM: (280: O24 ^name empty)
+=>WM: (279: S7 ^last-operator O24)
+=>WM: (278: S7 ^tried-tied-operator C3)
+<=WM: (265: N6 ^free 3)
+<=WM: (266: N6 ^contents 2)
+<=WM: (252: S7 ^last-operator O15)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*propose*fill
+ 261 282 -->
+ (O25 ^jug N6 +)
+ (O25 ^name fill +)
+ (S7 ^operator O25 +)
+Firing waterjug*monitor*operator-application*empty
+ 277 256 263 282 264 -->
+
+  EMPTY(5:0)
+Firing waterjug*monitor*state
+ 261 264 262 258 282 260 -->
+
+ 3:3 5:0
+Firing waterjug*propose*pour
+ 261 283 262 260 -->
+ (O26 ^into N6 +)
+ (O26 ^jug N5 +)
+ (O26 ^name pour +)
+ (S7 ^operator O26 +)
+Retracting waterjug*propose*empty
+ 261 266 --> (O23 ^jug N6 +)
+ (O23 ^name empty +)
+ (S7 ^operator O23 +)
+Retracting waterjug*propose*pour
+ 261 265 262 260 --> (O21 ^into N6 +)
+ (O21 ^jug N5 +)
+ (O21 ^name pour +)
+ (S7 ^operator O21 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 250 238 225 226 207 276 151 7 244 7 --> (S7 ^operator O23 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 250 238 225 226 207 275 151 7 244 7 --> (S7 ^operator O22 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 250 238 225 226 207 274 151 7 244 7 --> (S7 ^operator O21 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 250 238 225 226 207 151 7 244 7 --> (S7 ^operator C3 +)
+	--- Change Working Memory (IE) ---
+=>WM: (290: S7 ^operator O26 +)
+=>WM: (289: S7 ^operator O25 +)
+=>WM: (288: O26 ^into N6)
+=>WM: (287: O26 ^jug N5)
+=>WM: (286: O26 ^name pour)
+=>WM: (285: O25 ^jug N6)
+=>WM: (284: O25 ^name fill)
+<=WM: (257: S7 ^operator C3 +)
+<=WM: (277: S7 ^operator C3)
+<=WM: (274: S7 ^operator O21 +)
+<=WM: (276: S7 ^operator O23 +)
+<=WM: (273: O23 ^jug N6)
+<=WM: (272: O23 ^name empty)
+<=WM: (269: O21 ^into N6)
+<=WM: (268: O21 ^jug N5)
+<=WM: (267: O21 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (299: S8 ^item O25)
+=>WM: (298: S8 ^item O26)
+=>WM: (297: S8 ^item O22)
+=>WM: (296: S8 ^quiescence t)
+=>WM: (295: S8 ^choices multiple)
+=>WM: (294: S8 ^impasse tie)
+=>WM: (293: S8 ^attribute operator)
+=>WM: (292: S8 ^superstate S7)
+=>WM: (291: S8 ^type state)
+
+    13:                      ==>S: S8 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*fill
+ 294 293 299 284 285 282 264 -->
+
+  O25: fill(5:0)
+Firing waterjug*monitor*tied-operator*pour
+ 294 293 298 286 288 282 264 287 260 258 -->
+
+  O26: pour(3:3,5:0)
+Firing waterjug*monitor*tied-operator*empty
+ 294 293 297 270 271 260 258 -->
+
+  O22: empty(3:3)
+Firing default*selection*propose*space*selection
+ 295 -->
+ (P5 ^name selection +)
+ (S8 ^problem-space P5 +)
+	--- Change Working Memory (IE) ---
+=>WM: (301: P5 ^name selection)
+=>WM: (300: S8 ^problem-space P5)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 299 300 301 -->
+ (O27 ^object O25 +)
+ (O27 ^name evaluate-object +)
+ (O27 ^state S8 +)
+ (S8 ^operator O27 +)
+Firing default*selection*propose*evaluate-object
+ 298 300 301 -->
+ (O28 ^object O26 +)
+ (O28 ^name evaluate-object +)
+ (O28 ^state S8 +)
+ (S8 ^operator O28 +)
+Firing default*selection*propose*evaluate-object
+ 297 300 301 -->
+ (O29 ^object O22 +)
+ (O29 ^name evaluate-object +)
+ (O29 ^state S8 +)
+ (S8 ^operator O29 +)
+	--- Change Working Memory (IE) ---
+=>WM: (313: S8 ^operator O29 +)
+=>WM: (312: S8 ^operator O28 +)
+=>WM: (311: S8 ^operator O27 +)
+=>WM: (310: O29 ^object O22)
+=>WM: (309: O29 ^name evaluate-object)
+=>WM: (308: O29 ^state S8)
+=>WM: (307: O28 ^object O26)
+=>WM: (306: O28 ^name evaluate-object)
+=>WM: (305: O28 ^state S8)
+=>WM: (304: O27 ^object O25)
+=>WM: (303: O27 ^name evaluate-object)
+=>WM: (302: O27 ^state S8)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 311 303 300 301 -->
+ (S8 ^operator O27 =)
+Firing default*selection*select*evaluate-object*indifferent
+ 312 306 300 301 -->
+ (S8 ^operator O28 =)
+Firing waterjug*evaluate-object*pour*better
+ 312 306 307 286 -->
+ (S8 ^operator O28 >)
+Firing default*selection*select*evaluate-object*indifferent
+ 313 309 300 301 -->
+ (S8 ^operator O29 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 295 311 300 301 -->
+ (S8 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 295 312 300 301 -->
+ (S8 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 295 313 300 301 -->
+ (S8 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (314: S8 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (315: S8 ^operator O28)
+
+    14:                         O: O28 (evaluate-object O26 (pour))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 315 306 -->
+ (O28 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (316: O28 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 315 316 300 301 307 -->
+ (E4 ^object O26 +  :O )
+ (S8 ^evaluation E4 +  :O )
+ (O28 ^evaluation E4 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 315 316 300 301 292 244 -->
+ (O28 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 315 316 300 301 292 -->
+ (O28 ^superstate S7 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 315 316 292 243 -->
+ (O28 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (322: O28 ^desired D1)
+=>WM: (321: O28 ^superstate S7)
+=>WM: (320: O28 ^superproblem-space P1)
+=>WM: (319: E4 ^object O26)
+=>WM: (318: S8 ^evaluation E4)
+=>WM: (317: O28 ^evaluation E4)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 318 292 243 -->
+ (E4 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (323: E4 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 315 316 317 318 306 -->
+ (E4 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 315 316 320 -->
+ (O28 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 315 316 320 -->
+ (O28 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 315 316 320 8 -->
+ (O28 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (326: O28 ^default-state-copy yes)
+=>WM: (325: O28 ^default-operator-copy yes)
+=>WM: (324: E4 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (332: S9 ^quiescence t)
+=>WM: (331: S9 ^choices none)
+=>WM: (330: S9 ^impasse no-change)
+=>WM: (329: S9 ^attribute operator)
+=>WM: (328: S9 ^superstate S8)
+=>WM: (327: S9 ^type state)
+
+      :                         ==>S: S9 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 330 329 328 315 316 322 -->
+ (S9 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 330 329 328 315 316 320 -->
+ (S9 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 330 329 328 315 316 326 -->
+ (S9 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 330 329 328 315 316 325 -->
+ (S9 ^default-operator-copy yes +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 330 329 328 315 326 316 -->
+ (S9 ^duplicates* D5 +)
+Firing elaborate*state*operator*name
+ 328 315 306 -->
+ (S9 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (338: S9 ^name evaluate-object)
+=>WM: (337: S9 ^duplicates* D5)
+=>WM: (336: S9 ^default-operator-copy yes)
+=>WM: (335: S9 ^default-state-copy yes)
+=>WM: (334: S9 ^problem-space P1)
+=>WM: (333: S9 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 335 328 315 316 321 334 -->
+ (S9 ^duplicate-of* S7 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 328 315 325 316 320 7 334 7 307 -->
+ (C4 ^duplicate-of* O26 +)
+ (S9 ^look-ahead-operator C4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (341: C4 ^duplicate-of* O26)
+=>WM: (340: S9 ^look-ahead-operator C4)
+=>WM: (339: S9 ^duplicate-of* S7)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-one-level-attributes
+ 335 339 328 315 320 334 10 279 -->
+ (S9 ^last-operator O24 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 335 337 339 334 9 262 -->
+ (D5 ^N5 N7 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 335 337 339 334 9 261 -->
+ (D5 ^N6 N8 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 337 340 341 288 -->
+ (C4 ^into N6 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 337 340 341 287 -->
+ (C4 ^jug N5 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 337 340 341 286 -->
+ (C4 ^name pour +)
+Firing default*evaluate-object*propose*look-ahead
+ 340 328 315 316 292 244 7 334 7 -->
+ (S9 ^operator C4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (348: S9 ^operator C4 +)
+=>WM: (347: C4 ^name pour)
+=>WM: (346: C4 ^jug N5)
+=>WM: (345: C4 ^into N6)
+=>WM: (344: D5 ^N6 N8)
+=>WM: (343: D5 ^N5 N7)
+=>WM: (342: S9 ^last-operator O24)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 335 337 339 334 9 262 343 -->
+ (S9 ^jug N7 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 337 340 341 287 343 -->
+ (C4 ^jug N7 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 335 337 343 260 -->
+ (N7 ^contents 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 335 337 343 259 -->
+ (N7 ^free 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 335 337 343 258 -->
+ (N7 ^volume 3 +)
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 335 337 339 334 9 261 344 -->
+ (S9 ^jug N8 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 337 340 341 288 344 -->
+ (C4 ^into N8 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 335 337 344 264 -->
+ (N8 ^volume 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 335 337 344 283 -->
+ (N8 ^free 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 335 337 344 282 -->
+ (N8 ^contents 0 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 337 340 341 287 --> (C4 ^jug N5 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 337 340 341 288 --> (C4 ^into N6 +)
+	--- Change Working Memory (IE) ---
+=>WM: (358: N8 ^contents 0)
+=>WM: (357: N8 ^free 5)
+=>WM: (356: N8 ^volume 5)
+=>WM: (355: C4 ^into N8)
+=>WM: (354: S9 ^jug N7)
+=>WM: (353: S9 ^jug N8)
+=>WM: (352: N7 ^volume 3)
+=>WM: (351: N7 ^free 0)
+=>WM: (350: N7 ^contents 3)
+=>WM: (349: C4 ^jug N7)
+<=WM: (345: C4 ^into N6)
+<=WM: (346: C4 ^jug N5)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*state
+ 353 356 354 352 358 350 -->
+
+ 3:3 5:0
+Firing waterjug*propose*pour
+ 353 357 354 350 -->
+ (O30 ^into N8 +)
+ (O30 ^jug N7 +)
+ (O30 ^name pour +)
+ (S9 ^operator O30 +)
+Firing waterjug*propose*empty
+ 354 350 -->
+ (O31 ^jug N7 +)
+ (O31 ^name empty +)
+ (S9 ^operator O31 +)
+Firing waterjug*propose*fill
+ 353 358 -->
+ (O32 ^jug N8 +)
+ (O32 ^name fill +)
+ (S9 ^operator O32 +)
+	--- Change Working Memory (IE) ---
+=>WM: (368: S9 ^operator O32 +)
+=>WM: (367: S9 ^operator O31 +)
+=>WM: (366: S9 ^operator O30 +)
+=>WM: (365: O32 ^jug N8)
+=>WM: (364: O32 ^name fill)
+=>WM: (363: O31 ^jug N7)
+=>WM: (362: O31 ^name empty)
+=>WM: (361: O30 ^into N8)
+=>WM: (360: O30 ^jug N7)
+=>WM: (359: O30 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 340 328 315 316 292 366 244 7 334 7 -->
+ (S9 ^operator O30 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 340 328 315 316 292 367 244 7 334 7 -->
+ (S9 ^operator O31 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 340 328 315 316 292 368 244 7 334 7 -->
+ (S9 ^operator O32 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (369: S9 ^operator C4)
+
+    16:                            O: C4 (pour)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*pour
+ 369 347 355 358 356 349 350 352 -->
+
+  POUR(3:3,5:0)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing waterjug*save*operator*remove*last-op
+ 342 369 347 349 -->
+ (S9 ^last-operator O24 -  :O )
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 336 328 315 316 320 334 307 369 341 -->
+ (S9 ^tried-tied-operator C4 +  :O )
+Firing waterjug*save*operator*save*last-op
+ 369 347 349 -->
+ (O33 ^jug N7 +  :O )
+ (O33 ^name pour +  :O )
+ (S9 ^last-operator O33 +  :O )
+Firing apply*pour*source*contents*less-or-equal
+ 369 347 355 353 357 358 356 349 354 351 350 350 352 -->
+ (N8 ^free 5 -  :O )
+ (N8 ^free 2 +  :O )
+ (N8 ^contents 0 -  :O )
+ (N8 ^contents 3 +  :O )
+ (N7 ^free 0 -  :O )
+ (N7 ^free 3 +  :O )
+ (N7 ^contents 3 -  :O )
+ (N7 ^contents 0 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (377: N8 ^free 2)
+=>WM: (376: N8 ^contents 3)
+=>WM: (375: N7 ^free 3)
+=>WM: (374: N7 ^contents 0)
+=>WM: (373: O33 ^jug N7)
+=>WM: (372: O33 ^name pour)
+=>WM: (371: S9 ^last-operator O33)
+=>WM: (370: S9 ^tried-tied-operator C4)
+<=WM: (357: N8 ^free 5)
+<=WM: (358: N8 ^contents 0)
+<=WM: (351: N7 ^free 0)
+<=WM: (350: N7 ^contents 3)
+<=WM: (342: S9 ^last-operator O24)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*propose*fill
+ 354 374 -->
+ (O34 ^jug N7 +)
+ (O34 ^name fill +)
+ (S9 ^operator O34 +)
+Firing waterjug*monitor*operator-application*pour
+ 369 347 355 376 356 349 374 352 -->
+
+  POUR(3:0,5:3)
+Firing waterjug*monitor*state
+ 353 356 354 352 376 374 -->
+
+ 3:0 5:3
+Firing waterjug*propose*pour
+ 354 375 353 376 -->
+ (O35 ^into N7 +)
+ (O35 ^jug N8 +)
+ (O35 ^name pour +)
+ (S9 ^operator O35 +)
+Firing waterjug*propose*empty
+ 353 376 -->
+ (O36 ^jug N8 +)
+ (O36 ^name empty +)
+ (S9 ^operator O36 +)
+Retracting waterjug*propose*empty
+ 354 350 --> (O31 ^jug N7 +)
+ (O31 ^name empty +)
+ (S9 ^operator O31 +)
+Retracting waterjug*propose*fill
+ 353 358 --> (O32 ^jug N8 +)
+ (O32 ^name fill +)
+ (S9 ^operator O32 +)
+Retracting waterjug*propose*pour
+ 353 357 354 350 --> (O30 ^into N8 +)
+ (O30 ^jug N7 +)
+ (O30 ^name pour +)
+ (S9 ^operator O30 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 340 328 315 316 292 368 244 7 334 7 --> (S9 ^operator O32 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 340 328 315 316 292 367 244 7 334 7 --> (S9 ^operator O31 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 340 328 315 316 292 366 244 7 334 7 --> (S9 ^operator O30 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 340 328 315 316 292 244 7 334 7 --> (S9 ^operator C4 +)
+	--- Change Working Memory (IE) ---
+=>WM: (387: S9 ^operator O36 +)
+=>WM: (386: S9 ^operator O35 +)
+=>WM: (385: S9 ^operator O34 +)
+=>WM: (384: O36 ^jug N8)
+=>WM: (383: O36 ^name empty)
+=>WM: (382: O35 ^into N7)
+=>WM: (381: O35 ^jug N8)
+=>WM: (380: O35 ^name pour)
+=>WM: (379: O34 ^jug N7)
+=>WM: (378: O34 ^name fill)
+<=WM: (348: S9 ^operator C4 +)
+<=WM: (369: S9 ^operator C4)
+<=WM: (366: S9 ^operator O30 +)
+<=WM: (367: S9 ^operator O31 +)
+<=WM: (368: S9 ^operator O32 +)
+<=WM: (363: O31 ^jug N7)
+<=WM: (362: O31 ^name empty)
+<=WM: (365: O32 ^jug N8)
+<=WM: (364: O32 ^name fill)
+<=WM: (361: O30 ^into N8)
+<=WM: (360: O30 ^jug N7)
+<=WM: (359: O30 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*inverse*pour*reject
+ 371 372 386 380 382 373 -->
+ (S9 ^reject O35 +)
+ (S9 ^operator O35 -)
+	--- Change Working Memory (IE) ---
+=>WM: (388: S9 ^reject O35)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (396: S10 ^item O34)
+=>WM: (395: S10 ^item O36)
+=>WM: (394: S10 ^quiescence t)
+=>WM: (393: S10 ^choices multiple)
+=>WM: (392: S10 ^impasse tie)
+=>WM: (391: S10 ^attribute operator)
+=>WM: (390: S10 ^superstate S9)
+=>WM: (389: S10 ^type state)
+
+    17:                            ==>S: S10 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*fill
+ 392 391 396 378 379 374 352 -->
+
+  O34: fill(3:0)
+Firing waterjug*monitor*tied-operator*empty
+ 392 391 395 383 384 376 356 -->
+
+  O36: empty(5:3)
+Firing default*selection*propose*space*selection
+ 393 -->
+ (P6 ^name selection +)
+ (S10 ^problem-space P6 +)
+	--- Change Working Memory (IE) ---
+=>WM: (398: P6 ^name selection)
+=>WM: (397: S10 ^problem-space P6)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 396 397 398 -->
+ (O37 ^object O34 +)
+ (O37 ^name evaluate-object +)
+ (O37 ^state S10 +)
+ (S10 ^operator O37 +)
+Firing default*selection*propose*evaluate-object
+ 395 397 398 -->
+ (O38 ^object O36 +)
+ (O38 ^name evaluate-object +)
+ (O38 ^state S10 +)
+ (S10 ^operator O38 +)
+	--- Change Working Memory (IE) ---
+=>WM: (406: S10 ^operator O38 +)
+=>WM: (405: S10 ^operator O37 +)
+=>WM: (404: O38 ^object O36)
+=>WM: (403: O38 ^name evaluate-object)
+=>WM: (402: O38 ^state S10)
+=>WM: (401: O37 ^object O34)
+=>WM: (400: O37 ^name evaluate-object)
+=>WM: (399: O37 ^state S10)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 405 400 397 398 -->
+ (S10 ^operator O37 =)
+Firing default*selection*select*evaluate-object*indifferent
+ 406 403 397 398 -->
+ (S10 ^operator O38 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 393 405 397 398 -->
+ (S10 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 393 406 397 398 -->
+ (S10 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (407: S10 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (408: S10 ^operator O38)
+
+    18:                               O: O38 (evaluate-object O36 (empty))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 408 403 -->
+ (O38 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (409: O38 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 408 409 397 398 404 -->
+ (E5 ^object O36 +  :O )
+ (S10 ^evaluation E5 +  :O )
+ (O38 ^evaluation E5 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 408 409 397 398 390 334 -->
+ (O38 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 408 409 397 398 390 -->
+ (O38 ^superstate S9 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 408 409 390 333 -->
+ (O38 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (415: O38 ^desired D1)
+=>WM: (414: O38 ^superstate S9)
+=>WM: (413: O38 ^superproblem-space P1)
+=>WM: (412: E5 ^object O36)
+=>WM: (411: S10 ^evaluation E5)
+=>WM: (410: O38 ^evaluation E5)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 411 390 333 -->
+ (E5 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (416: E5 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 408 409 410 411 403 -->
+ (E5 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 408 409 413 -->
+ (O38 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 408 409 413 -->
+ (O38 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 408 409 413 8 -->
+ (O38 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (419: O38 ^default-state-copy yes)
+=>WM: (418: O38 ^default-operator-copy yes)
+=>WM: (417: E5 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (425: S11 ^quiescence t)
+=>WM: (424: S11 ^choices none)
+=>WM: (423: S11 ^impasse no-change)
+=>WM: (422: S11 ^attribute operator)
+=>WM: (421: S11 ^superstate S10)
+=>WM: (420: S11 ^type state)
+
+      :                               ==>S: S11 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 423 422 421 408 409 415 -->
+ (S11 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 423 422 421 408 409 413 -->
+ (S11 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 423 422 421 408 409 419 -->
+ (S11 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 423 422 421 408 409 418 -->
+ (S11 ^default-operator-copy yes +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 423 422 421 408 419 409 -->
+ (S11 ^duplicates* D6 +)
+Firing elaborate*state*operator*name
+ 421 408 403 -->
+ (S11 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (431: S11 ^name evaluate-object)
+=>WM: (430: S11 ^duplicates* D6)
+=>WM: (429: S11 ^default-operator-copy yes)
+=>WM: (428: S11 ^default-state-copy yes)
+=>WM: (427: S11 ^problem-space P1)
+=>WM: (426: S11 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 428 421 408 409 414 427 -->
+ (S11 ^duplicate-of* S9 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 421 408 418 409 413 7 427 7 404 -->
+ (C5 ^duplicate-of* O36 +)
+ (S11 ^look-ahead-operator C5 +)
+	--- Change Working Memory (IE) ---
+=>WM: (434: C5 ^duplicate-of* O36)
+=>WM: (433: S11 ^look-ahead-operator C5)
+=>WM: (432: S11 ^duplicate-of* S9)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-one-level-attributes
+ 428 432 421 408 413 427 10 371 -->
+ (S11 ^last-operator O33 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 428 430 432 427 9 354 -->
+ (D6 ^N7 N9 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 428 430 432 427 9 353 -->
+ (D6 ^N8 N10 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 430 433 434 384 -->
+ (C5 ^jug N8 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 430 433 434 383 -->
+ (C5 ^name empty +)
+Firing default*evaluate-object*propose*look-ahead
+ 433 421 408 409 390 334 7 427 7 -->
+ (S11 ^operator C5 +)
+	--- Change Working Memory (IE) ---
+=>WM: (440: S11 ^operator C5 +)
+=>WM: (439: C5 ^name empty)
+=>WM: (438: C5 ^jug N8)
+=>WM: (437: D6 ^N8 N10)
+=>WM: (436: D6 ^N7 N9)
+=>WM: (435: S11 ^last-operator O33)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 428 430 432 427 9 354 436 -->
+ (S11 ^jug N9 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 428 430 436 352 -->
+ (N9 ^volume 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 428 430 436 375 -->
+ (N9 ^free 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 428 430 436 374 -->
+ (N9 ^contents 0 +)
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 428 430 432 427 9 353 437 -->
+ (S11 ^jug N10 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 430 433 434 384 437 -->
+ (C5 ^jug N10 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 428 430 437 356 -->
+ (N10 ^volume 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 428 430 437 377 -->
+ (N10 ^free 2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 428 430 437 376 -->
+ (N10 ^contents 3 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 430 433 434 384 --> (C5 ^jug N8 +)
+	--- Change Working Memory (IE) ---
+=>WM: (449: N10 ^contents 3)
+=>WM: (448: N10 ^free 2)
+=>WM: (447: N10 ^volume 5)
+=>WM: (446: C5 ^jug N10)
+=>WM: (445: S11 ^jug N9)
+=>WM: (444: S11 ^jug N10)
+=>WM: (443: N9 ^contents 0)
+=>WM: (442: N9 ^free 3)
+=>WM: (441: N9 ^volume 3)
+<=WM: (438: C5 ^jug N8)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*state
+ 444 447 445 441 449 443 -->
+
+ 3:0 5:3
+Firing waterjug*propose*pour
+ 445 442 444 449 -->
+ (O39 ^into N9 +)
+ (O39 ^jug N10 +)
+ (O39 ^name pour +)
+ (S11 ^operator O39 +)
+Firing waterjug*propose*fill
+ 445 443 -->
+ (O40 ^jug N9 +)
+ (O40 ^name fill +)
+ (S11 ^operator O40 +)
+Firing waterjug*propose*empty
+ 444 449 -->
+ (O41 ^jug N10 +)
+ (O41 ^name empty +)
+ (S11 ^operator O41 +)
+	--- Change Working Memory (IE) ---
+=>WM: (459: S11 ^operator O41 +)
+=>WM: (458: S11 ^operator O40 +)
+=>WM: (457: S11 ^operator O39 +)
+=>WM: (456: O41 ^jug N10)
+=>WM: (455: O41 ^name empty)
+=>WM: (454: O40 ^jug N9)
+=>WM: (453: O40 ^name fill)
+=>WM: (452: O39 ^into N9)
+=>WM: (451: O39 ^jug N10)
+=>WM: (450: O39 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 433 421 408 409 390 457 334 7 427 7 -->
+ (S11 ^operator O39 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 433 421 408 409 390 458 334 7 427 7 -->
+ (S11 ^operator O40 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 433 421 408 409 390 459 334 7 427 7 -->
+ (S11 ^operator O41 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (460: S11 ^operator C5)
+
+    20:                                  O: C5 (empty)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*empty
+ 460 439 446 449 447 -->
+
+  EMPTY(5:3)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing waterjug*save*operator*remove*last-op
+ 435 460 439 446 -->
+ (S11 ^last-operator O33 -  :O )
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 429 421 408 409 413 427 404 460 434 -->
+ (S11 ^tried-tied-operator C5 +  :O )
+Firing waterjug*save*operator*save*last-op
+ 460 439 446 -->
+ (O42 ^jug N10 +  :O )
+ (O42 ^name empty +  :O )
+ (S11 ^last-operator O42 +  :O )
+Firing apply*empty
+ 460 439 446 444 448 449 447 -->
+ (N10 ^free 2 -  :O )
+ (N10 ^free 5 +  :O )
+ (N10 ^contents 3 -  :O )
+ (N10 ^contents 0 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (466: N10 ^free 5)
+=>WM: (465: N10 ^contents 0)
+=>WM: (464: O42 ^jug N10)
+=>WM: (463: O42 ^name empty)
+=>WM: (462: S11 ^last-operator O42)
+=>WM: (461: S11 ^tried-tied-operator C5)
+<=WM: (448: N10 ^free 2)
+<=WM: (449: N10 ^contents 3)
+<=WM: (435: S11 ^last-operator O33)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*propose*fill
+ 444 465 -->
+ (O43 ^jug N10 +)
+ (O43 ^name fill +)
+ (S11 ^operator O43 +)
+Firing waterjug*monitor*operator-application*empty
+ 460 439 446 465 447 -->
+
+  EMPTY(5:0)
+Firing waterjug*monitor*state
+ 444 447 445 441 465 443 -->
+
+ 3:0 5:0
+Retracting waterjug*propose*empty
+ 444 449 --> (O41 ^jug N10 +)
+ (O41 ^name empty +)
+ (S11 ^operator O41 +)
+Retracting waterjug*propose*pour
+ 445 442 444 449 --> (O39 ^into N9 +)
+ (O39 ^jug N10 +)
+ (O39 ^name pour +)
+ (S11 ^operator O39 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 433 421 408 409 390 459 334 7 427 7 --> (S11 ^operator O41 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 433 421 408 409 390 458 334 7 427 7 --> (S11 ^operator O40 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 433 421 408 409 390 457 334 7 427 7 --> (S11 ^operator O39 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 433 421 408 409 390 334 7 427 7 --> (S11 ^operator C5 +)
+	--- Change Working Memory (IE) ---
+=>WM: (469: S11 ^operator O43 +)
+=>WM: (468: O43 ^jug N10)
+=>WM: (467: O43 ^name fill)
+<=WM: (440: S11 ^operator C5 +)
+<=WM: (460: S11 ^operator C5)
+<=WM: (457: S11 ^operator O39 +)
+<=WM: (459: S11 ^operator O41 +)
+<=WM: (456: O41 ^jug N10)
+<=WM: (455: O41 ^name empty)
+<=WM: (452: O39 ^into N9)
+<=WM: (451: O39 ^jug N10)
+<=WM: (450: O39 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (477: S12 ^item O43)
+=>WM: (476: S12 ^item O40)
+=>WM: (475: S12 ^quiescence t)
+=>WM: (474: S12 ^choices multiple)
+=>WM: (473: S12 ^impasse tie)
+=>WM: (472: S12 ^attribute operator)
+=>WM: (471: S12 ^superstate S11)
+=>WM: (470: S12 ^type state)
+
+    21:                                  ==>S: S12 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*fill
+ 473 472 477 467 468 465 447 -->
+
+  O43: fill(5:0)
+Firing waterjug*monitor*tied-operator*fill
+ 473 472 476 453 454 443 441 -->
+
+  O40: fill(3:0)
+Firing default*selection*propose*space*selection
+ 474 -->
+ (P7 ^name selection +)
+ (S12 ^problem-space P7 +)
+	--- Change Working Memory (IE) ---
+=>WM: (479: P7 ^name selection)
+=>WM: (478: S12 ^problem-space P7)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 477 478 479 -->
+ (O44 ^object O43 +)
+ (O44 ^name evaluate-object +)
+ (O44 ^state S12 +)
+ (S12 ^operator O44 +)
+Firing default*selection*propose*evaluate-object
+ 476 478 479 -->
+ (O45 ^object O40 +)
+ (O45 ^name evaluate-object +)
+ (O45 ^state S12 +)
+ (S12 ^operator O45 +)
+	--- Change Working Memory (IE) ---
+=>WM: (487: S12 ^operator O45 +)
+=>WM: (486: S12 ^operator O44 +)
+=>WM: (485: O45 ^object O40)
+=>WM: (484: O45 ^name evaluate-object)
+=>WM: (483: O45 ^state S12)
+=>WM: (482: O44 ^object O43)
+=>WM: (481: O44 ^name evaluate-object)
+=>WM: (480: O44 ^state S12)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 486 481 478 479 -->
+ (S12 ^operator O44 =)
+Firing default*selection*select*evaluate-object*indifferent
+ 487 484 478 479 -->
+ (S12 ^operator O45 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 474 486 478 479 -->
+ (S12 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 474 487 478 479 -->
+ (S12 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (488: S12 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (489: S12 ^operator O45)
+
+    22:                                     O: O45 (evaluate-object O40 (fill))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 489 484 -->
+ (O45 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (490: O45 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 489 490 478 479 485 -->
+ (E6 ^object O40 +  :O )
+ (S12 ^evaluation E6 +  :O )
+ (O45 ^evaluation E6 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 489 490 478 479 471 427 -->
+ (O45 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 489 490 478 479 471 -->
+ (O45 ^superstate S11 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 489 490 471 426 -->
+ (O45 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (496: O45 ^desired D1)
+=>WM: (495: O45 ^superstate S11)
+=>WM: (494: O45 ^superproblem-space P1)
+=>WM: (493: E6 ^object O40)
+=>WM: (492: S12 ^evaluation E6)
+=>WM: (491: O45 ^evaluation E6)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 492 471 426 -->
+ (E6 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (497: E6 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 489 490 491 492 484 -->
+ (E6 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 489 490 494 -->
+ (O45 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 489 490 494 -->
+ (O45 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 489 490 494 8 -->
+ (O45 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (500: O45 ^default-state-copy yes)
+=>WM: (499: O45 ^default-operator-copy yes)
+=>WM: (498: E6 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (506: S13 ^quiescence t)
+=>WM: (505: S13 ^choices none)
+=>WM: (504: S13 ^impasse no-change)
+=>WM: (503: S13 ^attribute operator)
+=>WM: (502: S13 ^superstate S12)
+=>WM: (501: S13 ^type state)
+
+      :                                     ==>S: S13 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 504 503 502 489 490 496 -->
+ (S13 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 504 503 502 489 490 494 -->
+ (S13 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 504 503 502 489 490 500 -->
+ (S13 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 504 503 502 489 490 499 -->
+ (S13 ^default-operator-copy yes +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 504 503 502 489 500 490 -->
+ (S13 ^duplicates* D7 +)
+Firing elaborate*state*operator*name
+ 502 489 484 -->
+ (S13 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (512: S13 ^name evaluate-object)
+=>WM: (511: S13 ^duplicates* D7)
+=>WM: (510: S13 ^default-operator-copy yes)
+=>WM: (509: S13 ^default-state-copy yes)
+=>WM: (508: S13 ^problem-space P1)
+=>WM: (507: S13 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 509 502 489 490 495 508 -->
+ (S13 ^duplicate-of* S11 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 502 489 499 490 494 7 508 7 485 -->
+ (C6 ^duplicate-of* O40 +)
+ (S13 ^look-ahead-operator C6 +)
+	--- Change Working Memory (IE) ---
+=>WM: (515: C6 ^duplicate-of* O40)
+=>WM: (514: S13 ^look-ahead-operator C6)
+=>WM: (513: S13 ^duplicate-of* S11)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-one-level-attributes
+ 509 513 502 489 494 508 10 462 -->
+ (S13 ^last-operator O42 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 509 511 513 508 9 445 -->
+ (D7 ^N9 N11 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 509 511 513 508 9 444 -->
+ (D7 ^N10 N12 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 511 514 515 454 -->
+ (C6 ^jug N9 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 511 514 515 453 -->
+ (C6 ^name fill +)
+Firing default*evaluate-object*propose*look-ahead
+ 514 502 489 490 471 427 7 508 7 -->
+ (S13 ^operator C6 +)
+	--- Change Working Memory (IE) ---
+=>WM: (521: S13 ^operator C6 +)
+=>WM: (520: C6 ^name fill)
+=>WM: (519: C6 ^jug N9)
+=>WM: (518: D7 ^N10 N12)
+=>WM: (517: D7 ^N9 N11)
+=>WM: (516: S13 ^last-operator O42)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 509 511 513 508 9 445 517 -->
+ (S13 ^jug N11 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 511 514 515 454 517 -->
+ (C6 ^jug N11 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 509 511 517 443 -->
+ (N11 ^contents 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 509 511 517 442 -->
+ (N11 ^free 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 509 511 517 441 -->
+ (N11 ^volume 3 +)
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 509 511 513 508 9 444 518 -->
+ (S13 ^jug N12 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 509 511 518 447 -->
+ (N12 ^volume 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 509 511 518 466 -->
+ (N12 ^free 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 509 511 518 465 -->
+ (N12 ^contents 0 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 511 514 515 454 --> (C6 ^jug N9 +)
+	--- Change Working Memory (IE) ---
+=>WM: (530: N12 ^contents 0)
+=>WM: (529: N12 ^free 5)
+=>WM: (528: N12 ^volume 5)
+=>WM: (527: S13 ^jug N11)
+=>WM: (526: S13 ^jug N12)
+=>WM: (525: N11 ^volume 3)
+=>WM: (524: N11 ^free 3)
+=>WM: (523: N11 ^contents 0)
+=>WM: (522: C6 ^jug N11)
+<=WM: (519: C6 ^jug N9)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*propose*fill
+ 527 523 -->
+ (O46 ^jug N11 +)
+ (O46 ^name fill +)
+ (S13 ^operator O46 +)
+Firing waterjug*monitor*state
+ 526 528 527 525 530 523 -->
+
+ 3:0 5:0
+Firing waterjug*propose*fill
+ 526 530 -->
+ (O47 ^jug N12 +)
+ (O47 ^name fill +)
+ (S13 ^operator O47 +)
+	--- Change Working Memory (IE) ---
+=>WM: (536: S13 ^operator O47 +)
+=>WM: (535: S13 ^operator O46 +)
+=>WM: (534: O47 ^jug N12)
+=>WM: (533: O47 ^name fill)
+=>WM: (532: O46 ^jug N11)
+=>WM: (531: O46 ^name fill)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 514 502 489 490 471 535 427 7 508 7 -->
+ (S13 ^operator O46 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 514 502 489 490 471 536 427 7 508 7 -->
+ (S13 ^operator O47 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (537: S13 ^operator C6)
+
+    24:                                        O: C6 (fill)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*fill
+ 537 520 522 523 525 -->
+
+  FILL(3:0)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing waterjug*save*operator*remove*last-op
+ 516 537 520 522 -->
+ (S13 ^last-operator O42 -  :O )
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 510 502 489 490 494 508 485 537 515 -->
+ (S13 ^tried-tied-operator C6 +  :O )
+Firing apply*fill
+ 527 523 524 525 537 520 522 -->
+ (N11 ^free 3 -  :O )
+ (N11 ^free 0 +  :O )
+ (N11 ^contents 0 -  :O )
+ (N11 ^contents 3 +  :O )
+Firing waterjug*save*operator*save*last-op
+ 537 520 522 -->
+ (O48 ^jug N11 +  :O )
+ (O48 ^name fill +  :O )
+ (S13 ^last-operator O48 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (543: O48 ^jug N11)
+=>WM: (542: O48 ^name fill)
+=>WM: (541: S13 ^last-operator O48)
+=>WM: (540: N11 ^free 0)
+=>WM: (539: N11 ^contents 3)
+=>WM: (538: S13 ^tried-tied-operator C6)
+<=WM: (516: S13 ^last-operator O42)
+<=WM: (524: N11 ^free 3)
+<=WM: (523: N11 ^contents 0)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*fill
+ 537 520 522 539 525 -->
+
+  FILL(3:3)
+Firing waterjug*monitor*state
+ 526 528 527 525 530 539 -->
+
+ 3:3 5:0
+Firing waterjug*propose*pour
+ 526 529 527 539 -->
+ (O49 ^into N12 +)
+ (O49 ^jug N11 +)
+ (O49 ^name pour +)
+ (S13 ^operator O49 +)
+Firing waterjug*propose*empty
+ 527 539 -->
+ (O50 ^jug N11 +)
+ (O50 ^name empty +)
+ (S13 ^operator O50 +)
+Retracting waterjug*propose*fill
+ 527 523 --> (O46 ^jug N11 +)
+ (O46 ^name fill +)
+ (S13 ^operator O46 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 514 502 489 490 471 536 427 7 508 7 --> (S13 ^operator O47 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 514 502 489 490 471 535 427 7 508 7 --> (S13 ^operator O46 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 514 502 489 490 471 427 7 508 7 --> (S13 ^operator C6 +)
+	--- Change Working Memory (IE) ---
+=>WM: (550: S13 ^operator O50 +)
+=>WM: (549: S13 ^operator O49 +)
+=>WM: (548: O50 ^jug N11)
+=>WM: (547: O50 ^name empty)
+=>WM: (546: O49 ^into N12)
+=>WM: (545: O49 ^jug N11)
+=>WM: (544: O49 ^name pour)
+<=WM: (521: S13 ^operator C6 +)
+<=WM: (537: S13 ^operator C6)
+<=WM: (535: S13 ^operator O46 +)
+<=WM: (532: O46 ^jug N11)
+<=WM: (531: O46 ^name fill)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*inverse*empty*reject
+ 541 542 550 547 543 548 -->
+ (S13 ^reject O50 +)
+ (S13 ^operator O50 -)
+	--- Change Working Memory (IE) ---
+=>WM: (551: S13 ^reject O50)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (559: S14 ^item O49)
+=>WM: (558: S14 ^item O47)
+=>WM: (557: S14 ^quiescence t)
+=>WM: (556: S14 ^choices multiple)
+=>WM: (555: S14 ^impasse tie)
+=>WM: (554: S14 ^attribute operator)
+=>WM: (553: S14 ^superstate S13)
+=>WM: (552: S14 ^type state)
+
+    25:                                        ==>S: S14 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*pour
+ 555 554 559 544 546 530 528 545 539 525 -->
+
+  O49: pour(3:3,5:0)
+Firing waterjug*monitor*tied-operator*fill
+ 555 554 558 533 534 530 528 -->
+
+  O47: fill(5:0)
+Firing default*selection*propose*space*selection
+ 556 -->
+ (P8 ^name selection +)
+ (S14 ^problem-space P8 +)
+	--- Change Working Memory (IE) ---
+=>WM: (561: P8 ^name selection)
+=>WM: (560: S14 ^problem-space P8)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 559 560 561 -->
+ (O51 ^object O49 +)
+ (O51 ^name evaluate-object +)
+ (O51 ^state S14 +)
+ (S14 ^operator O51 +)
+Firing default*selection*propose*evaluate-object
+ 558 560 561 -->
+ (O52 ^object O47 +)
+ (O52 ^name evaluate-object +)
+ (O52 ^state S14 +)
+ (S14 ^operator O52 +)
+	--- Change Working Memory (IE) ---
+=>WM: (569: S14 ^operator O52 +)
+=>WM: (568: S14 ^operator O51 +)
+=>WM: (567: O52 ^object O47)
+=>WM: (566: O52 ^name evaluate-object)
+=>WM: (565: O52 ^state S14)
+=>WM: (564: O51 ^object O49)
+=>WM: (563: O51 ^name evaluate-object)
+=>WM: (562: O51 ^state S14)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 568 563 560 561 -->
+ (S14 ^operator O51 =)
+Firing waterjug*evaluate-object*pour*better
+ 568 563 564 544 -->
+ (S14 ^operator O51 >)
+Firing default*selection*select*evaluate-object*indifferent
+ 569 566 560 561 -->
+ (S14 ^operator O52 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 556 568 560 561 -->
+ (S14 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 556 569 560 561 -->
+ (S14 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (570: S14 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (571: S14 ^operator O51)
+
+    26:                                           O: O51 (evaluate-object O49 (pour))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 571 563 -->
+ (O51 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (572: O51 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 571 572 560 561 564 -->
+ (E7 ^object O49 +  :O )
+ (S14 ^evaluation E7 +  :O )
+ (O51 ^evaluation E7 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 571 572 560 561 553 508 -->
+ (O51 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 571 572 560 561 553 -->
+ (O51 ^superstate S13 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 571 572 553 507 -->
+ (O51 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (578: O51 ^desired D1)
+=>WM: (577: O51 ^superstate S13)
+=>WM: (576: O51 ^superproblem-space P1)
+=>WM: (575: E7 ^object O49)
+=>WM: (574: S14 ^evaluation E7)
+=>WM: (573: O51 ^evaluation E7)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 574 553 507 -->
+ (E7 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (579: E7 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 571 572 573 574 563 -->
+ (E7 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 571 572 576 -->
+ (O51 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 571 572 576 -->
+ (O51 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 571 572 576 8 -->
+ (O51 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (582: O51 ^default-state-copy yes)
+=>WM: (581: O51 ^default-operator-copy yes)
+=>WM: (580: E7 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (588: S15 ^quiescence t)
+=>WM: (587: S15 ^choices none)
+=>WM: (586: S15 ^impasse no-change)
+=>WM: (585: S15 ^attribute operator)
+=>WM: (584: S15 ^superstate S14)
+=>WM: (583: S15 ^type state)
+
+      :                                           ==>S: S15 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 586 585 584 571 572 578 -->
+ (S15 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 586 585 584 571 572 576 -->
+ (S15 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 586 585 584 571 572 582 -->
+ (S15 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 586 585 584 571 572 581 -->
+ (S15 ^default-operator-copy yes +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 586 585 584 571 582 572 -->
+ (S15 ^duplicates* D8 +)
+Firing elaborate*state*operator*name
+ 584 571 563 -->
+ (S15 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (594: S15 ^name evaluate-object)
+=>WM: (593: S15 ^duplicates* D8)
+=>WM: (592: S15 ^default-operator-copy yes)
+=>WM: (591: S15 ^default-state-copy yes)
+=>WM: (590: S15 ^problem-space P1)
+=>WM: (589: S15 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 591 584 571 572 577 590 -->
+ (S15 ^duplicate-of* S13 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 584 571 581 572 576 7 590 7 564 -->
+ (C7 ^duplicate-of* O49 +)
+ (S15 ^look-ahead-operator C7 +)
+	--- Change Working Memory (IE) ---
+=>WM: (597: C7 ^duplicate-of* O49)
+=>WM: (596: S15 ^look-ahead-operator C7)
+=>WM: (595: S15 ^duplicate-of* S13)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-one-level-attributes
+ 591 595 584 571 576 590 10 541 -->
+ (S15 ^last-operator O48 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 591 593 595 590 9 527 -->
+ (D8 ^N11 N13 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 591 593 595 590 9 526 -->
+ (D8 ^N12 N14 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 593 596 597 546 -->
+ (C7 ^into N12 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 593 596 597 545 -->
+ (C7 ^jug N11 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 593 596 597 544 -->
+ (C7 ^name pour +)
+Firing default*evaluate-object*propose*look-ahead
+ 596 584 571 572 553 508 7 590 7 -->
+ (S15 ^operator C7 +)
+	--- Change Working Memory (IE) ---
+=>WM: (604: S15 ^operator C7 +)
+=>WM: (603: C7 ^name pour)
+=>WM: (602: C7 ^jug N11)
+=>WM: (601: C7 ^into N12)
+=>WM: (600: D8 ^N12 N14)
+=>WM: (599: D8 ^N11 N13)
+=>WM: (598: S15 ^last-operator O48)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 591 593 595 590 9 527 599 -->
+ (S15 ^jug N13 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 593 596 597 545 599 -->
+ (C7 ^jug N13 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 591 593 599 525 -->
+ (N13 ^volume 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 591 593 599 540 -->
+ (N13 ^free 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 591 593 599 539 -->
+ (N13 ^contents 3 +)
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 591 593 595 590 9 526 600 -->
+ (S15 ^jug N14 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 593 596 597 546 600 -->
+ (C7 ^into N14 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 591 593 600 530 -->
+ (N14 ^contents 0 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 591 593 600 529 -->
+ (N14 ^free 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 591 593 600 528 -->
+ (N14 ^volume 5 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 593 596 597 545 --> (C7 ^jug N11 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 593 596 597 546 --> (C7 ^into N12 +)
+	--- Change Working Memory (IE) ---
+=>WM: (614: N14 ^volume 5)
+=>WM: (613: N14 ^free 5)
+=>WM: (612: N14 ^contents 0)
+=>WM: (611: C7 ^into N14)
+=>WM: (610: S15 ^jug N13)
+=>WM: (609: S15 ^jug N14)
+=>WM: (608: N13 ^contents 3)
+=>WM: (607: N13 ^free 0)
+=>WM: (606: N13 ^volume 3)
+=>WM: (605: C7 ^jug N13)
+<=WM: (601: C7 ^into N12)
+<=WM: (602: C7 ^jug N11)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*state
+ 609 614 610 606 612 608 -->
+
+ 3:3 5:0
+Firing waterjug*propose*pour
+ 609 613 610 608 -->
+ (O53 ^into N14 +)
+ (O53 ^jug N13 +)
+ (O53 ^name pour +)
+ (S15 ^operator O53 +)
+Firing waterjug*propose*empty
+ 610 608 -->
+ (O54 ^jug N13 +)
+ (O54 ^name empty +)
+ (S15 ^operator O54 +)
+Firing waterjug*propose*fill
+ 609 612 -->
+ (O55 ^jug N14 +)
+ (O55 ^name fill +)
+ (S15 ^operator O55 +)
+	--- Change Working Memory (IE) ---
+=>WM: (624: S15 ^operator O55 +)
+=>WM: (623: S15 ^operator O54 +)
+=>WM: (622: S15 ^operator O53 +)
+=>WM: (621: O55 ^jug N14)
+=>WM: (620: O55 ^name fill)
+=>WM: (619: O54 ^jug N13)
+=>WM: (618: O54 ^name empty)
+=>WM: (617: O53 ^into N14)
+=>WM: (616: O53 ^jug N13)
+=>WM: (615: O53 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 596 584 571 572 553 622 508 7 590 7 -->
+ (S15 ^operator O53 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 596 584 571 572 553 623 508 7 590 7 -->
+ (S15 ^operator O54 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 596 584 571 572 553 624 508 7 590 7 -->
+ (S15 ^operator O55 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (625: S15 ^operator C7)
+
+    28:                                              O: C7 (pour)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*pour
+ 625 603 611 612 614 605 608 606 -->
+
+  POUR(3:3,5:0)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing waterjug*save*operator*remove*last-op
+ 598 625 603 605 -->
+ (S15 ^last-operator O48 -  :O )
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 592 584 571 572 576 590 564 625 597 -->
+ (S15 ^tried-tied-operator C7 +  :O )
+Firing waterjug*save*operator*save*last-op
+ 625 603 605 -->
+ (O56 ^jug N13 +  :O )
+ (O56 ^name pour +  :O )
+ (S15 ^last-operator O56 +  :O )
+Firing apply*pour*source*contents*less-or-equal
+ 625 603 611 609 613 612 614 605 610 607 608 608 606 -->
+ (N14 ^free 5 -  :O )
+ (N14 ^free 2 +  :O )
+ (N14 ^contents 0 -  :O )
+ (N14 ^contents 3 +  :O )
+ (N13 ^free 0 -  :O )
+ (N13 ^free 3 +  :O )
+ (N13 ^contents 3 -  :O )
+ (N13 ^contents 0 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (633: N14 ^free 2)
+=>WM: (632: N14 ^contents 3)
+=>WM: (631: N13 ^free 3)
+=>WM: (630: N13 ^contents 0)
+=>WM: (629: O56 ^jug N13)
+=>WM: (628: O56 ^name pour)
+=>WM: (627: S15 ^last-operator O56)
+=>WM: (626: S15 ^tried-tied-operator C7)
+<=WM: (613: N14 ^free 5)
+<=WM: (612: N14 ^contents 0)
+<=WM: (607: N13 ^free 0)
+<=WM: (608: N13 ^contents 3)
+<=WM: (598: S15 ^last-operator O48)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*propose*fill
+ 610 630 -->
+ (O57 ^jug N13 +)
+ (O57 ^name fill +)
+ (S15 ^operator O57 +)
+Firing waterjug*monitor*operator-application*pour
+ 625 603 611 632 614 605 630 606 -->
+
+  POUR(3:0,5:3)
+Firing waterjug*monitor*state
+ 609 614 610 606 632 630 -->
+
+ 3:0 5:3
+Firing waterjug*propose*pour
+ 610 631 609 632 -->
+ (O58 ^into N13 +)
+ (O58 ^jug N14 +)
+ (O58 ^name pour +)
+ (S15 ^operator O58 +)
+Firing waterjug*propose*empty
+ 609 632 -->
+ (O59 ^jug N14 +)
+ (O59 ^name empty +)
+ (S15 ^operator O59 +)
+Retracting waterjug*propose*empty
+ 610 608 --> (O54 ^jug N13 +)
+ (O54 ^name empty +)
+ (S15 ^operator O54 +)
+Retracting waterjug*propose*fill
+ 609 612 --> (O55 ^jug N14 +)
+ (O55 ^name fill +)
+ (S15 ^operator O55 +)
+Retracting waterjug*propose*pour
+ 609 613 610 608 --> (O53 ^into N14 +)
+ (O53 ^jug N13 +)
+ (O53 ^name pour +)
+ (S15 ^operator O53 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 596 584 571 572 553 624 508 7 590 7 --> (S15 ^operator O55 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 596 584 571 572 553 623 508 7 590 7 --> (S15 ^operator O54 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 596 584 571 572 553 622 508 7 590 7 --> (S15 ^operator O53 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 596 584 571 572 553 508 7 590 7 --> (S15 ^operator C7 +)
+	--- Change Working Memory (IE) ---
+=>WM: (643: S15 ^operator O59 +)
+=>WM: (642: S15 ^operator O58 +)
+=>WM: (641: S15 ^operator O57 +)
+=>WM: (640: O59 ^jug N14)
+=>WM: (639: O59 ^name empty)
+=>WM: (638: O58 ^into N13)
+=>WM: (637: O58 ^jug N14)
+=>WM: (636: O58 ^name pour)
+=>WM: (635: O57 ^jug N13)
+=>WM: (634: O57 ^name fill)
+<=WM: (604: S15 ^operator C7 +)
+<=WM: (625: S15 ^operator C7)
+<=WM: (622: S15 ^operator O53 +)
+<=WM: (623: S15 ^operator O54 +)
+<=WM: (624: S15 ^operator O55 +)
+<=WM: (619: O54 ^jug N13)
+<=WM: (618: O54 ^name empty)
+<=WM: (621: O55 ^jug N14)
+<=WM: (620: O55 ^name fill)
+<=WM: (617: O53 ^into N14)
+<=WM: (616: O53 ^jug N13)
+<=WM: (615: O53 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*inverse*pour*reject
+ 627 628 642 636 638 629 -->
+ (S15 ^reject O58 +)
+ (S15 ^operator O58 -)
+	--- Change Working Memory (IE) ---
+=>WM: (644: S15 ^reject O58)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (652: S16 ^item O57)
+=>WM: (651: S16 ^item O59)
+=>WM: (650: S16 ^quiescence t)
+=>WM: (649: S16 ^choices multiple)
+=>WM: (648: S16 ^impasse tie)
+=>WM: (647: S16 ^attribute operator)
+=>WM: (646: S16 ^superstate S15)
+=>WM: (645: S16 ^type state)
+
+    29:                                              ==>S: S16 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*fill
+ 648 647 652 634 635 630 606 -->
+
+  O57: fill(3:0)
+Firing waterjug*monitor*tied-operator*empty
+ 648 647 651 639 640 632 614 -->
+
+  O59: empty(5:3)
+Firing default*selection*propose*space*selection
+ 649 -->
+ (P9 ^name selection +)
+ (S16 ^problem-space P9 +)
+	--- Change Working Memory (IE) ---
+=>WM: (654: P9 ^name selection)
+=>WM: (653: S16 ^problem-space P9)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 652 653 654 -->
+ (O60 ^object O57 +)
+ (O60 ^name evaluate-object +)
+ (O60 ^state S16 +)
+ (S16 ^operator O60 +)
+Firing default*selection*propose*evaluate-object
+ 651 653 654 -->
+ (O61 ^object O59 +)
+ (O61 ^name evaluate-object +)
+ (O61 ^state S16 +)
+ (S16 ^operator O61 +)
+	--- Change Working Memory (IE) ---
+=>WM: (662: S16 ^operator O61 +)
+=>WM: (661: S16 ^operator O60 +)
+=>WM: (660: O61 ^object O59)
+=>WM: (659: O61 ^name evaluate-object)
+=>WM: (658: O61 ^state S16)
+=>WM: (657: O60 ^object O57)
+=>WM: (656: O60 ^name evaluate-object)
+=>WM: (655: O60 ^state S16)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 661 656 653 654 -->
+ (S16 ^operator O60 =)
+Firing default*selection*select*evaluate-object*indifferent
+ 662 659 653 654 -->
+ (S16 ^operator O61 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 649 661 653 654 -->
+ (S16 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 649 662 653 654 -->
+ (S16 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (663: S16 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (664: S16 ^operator O60)
+
+    30:                                                 O: O60 (evaluate-object O57 (fill))
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*operator*evaluate-object*type-evaluation
+ 664 656 -->
+ (O60 ^type evaluation +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (665: O60 ^type evaluation)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*state*evaluation
+ 664 665 653 654 657 -->
+ (E8 ^object O57 +  :O )
+ (S16 ^evaluation E8 +  :O )
+ (O60 ^evaluation E8 +  :O )
+Firing default*selection*elaborate*evaluate-object*superproblem-space
+ 664 665 653 654 646 590 -->
+ (O60 ^superproblem-space P1 +  :O )
+Firing default*selection*elaborate*evaluate-object*superstate
+ 664 665 653 654 646 -->
+ (O60 ^superstate S15 +  :O )
+Firing default*selection*elaborate*evaluate-object*desired
+ 664 665 646 589 -->
+ (O60 ^desired D1 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (671: O60 ^desired D1)
+=>WM: (670: O60 ^superstate S15)
+=>WM: (669: O60 ^superproblem-space P1)
+=>WM: (668: E8 ^object O57)
+=>WM: (667: S16 ^evaluation E8)
+=>WM: (666: O60 ^evaluation E8)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*elaborate*evaluation*desired
+ 667 646 589 -->
+ (E8 ^desired D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (672: E8 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing default*selection*elaborate*evaluation*type
+ 664 665 666 667 656 -->
+ (E8 ^type evaluate-object +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-for-default-state-copy-is-yes
+ 664 665 669 -->
+ (O60 ^default-state-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*default-operator-copy-is-yes
+ 664 665 669 -->
+ (O60 ^default-operator-copy yes +  :O )
+Firing default*evaluate-object*elaborate*operator*type-evaluation*default-state-copy-from-problem-space
+ 664 665 669 8 -->
+ (O60 ^default-state-copy yes +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (675: O60 ^default-state-copy yes)
+=>WM: (674: O60 ^default-operator-copy yes)
+=>WM: (673: E8 ^type evaluate-object)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (681: S17 ^quiescence t)
+=>WM: (680: S17 ^choices none)
+=>WM: (679: S17 ^impasse no-change)
+=>WM: (678: S17 ^attribute operator)
+=>WM: (677: S17 ^superstate S16)
+=>WM: (676: S17 ^type state)
+
+      :                                                 ==>S: S17 (operator no-change)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*desired
+ 679 678 677 664 665 671 -->
+ (S17 ^desired D1 +)
+Firing default*evaluate-object*elaborate*state*problem-space
+ 679 678 677 664 665 669 -->
+ (S17 ^problem-space P1 +)
+Firing default*evaluate-object*elaborate*state*default-state-copy-from-type-evaluation-operator
+ 679 678 677 664 665 675 -->
+ (S17 ^default-state-copy yes +)
+Firing default*evaluate-object*elaborate*state*copy-default-operator-copy-from-type-evaluation-operator
+ 679 678 677 664 665 674 -->
+ (S17 ^default-operator-copy yes +)
+Firing default*evaluate-object*elaborate*state*create-duplicates-table
+ 679 678 677 664 675 665 -->
+ (S17 ^duplicates* D9 +)
+Firing elaborate*state*operator*name
+ 677 664 656 -->
+ (S17 ^name evaluate-object +)
+	--- Change Working Memory (IE) ---
+=>WM: (687: S17 ^name evaluate-object)
+=>WM: (686: S17 ^duplicates* D9)
+=>WM: (685: S17 ^default-operator-copy yes)
+=>WM: (684: S17 ^default-state-copy yes)
+=>WM: (683: S17 ^problem-space P1)
+=>WM: (682: S17 ^desired D1)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*duplicate-of
+ 684 677 664 665 670 683 -->
+ (S17 ^duplicate-of* S15 +)
+Firing default*evaluate-object*elaborate*state*look-ahead-operator*copy
+ 677 664 674 665 669 7 683 7 657 -->
+ (C8 ^duplicate-of* O57 +)
+ (S17 ^look-ahead-operator C8 +)
+	--- Change Working Memory (IE) ---
+=>WM: (690: C8 ^duplicate-of* O57)
+=>WM: (689: S17 ^look-ahead-operator C8)
+=>WM: (688: S17 ^duplicate-of* S15)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-one-level-attributes
+ 684 688 677 664 669 683 10 627 -->
+ (S17 ^last-operator O56 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 684 686 688 683 9 610 -->
+ (D9 ^N13 N15 +)
+Firing default*evaluate-object*elaborate*state*duplicate-id-for-attribute
+ 684 686 688 683 9 609 -->
+ (D9 ^N14 N16 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 686 689 690 635 -->
+ (C8 ^jug N13 +)
+Firing default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 686 689 690 634 -->
+ (C8 ^name fill +)
+Firing default*evaluate-object*propose*look-ahead
+ 689 677 664 665 646 590 7 683 7 -->
+ (S17 ^operator C8 +)
+	--- Change Working Memory (IE) ---
+=>WM: (696: S17 ^operator C8 +)
+=>WM: (695: C8 ^name fill)
+=>WM: (694: C8 ^jug N13)
+=>WM: (693: D9 ^N14 N16)
+=>WM: (692: D9 ^N13 N15)
+=>WM: (691: S17 ^last-operator O56)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 684 686 688 683 9 610 692 -->
+ (S17 ^jug N15 +)
+Firing default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+ 686 689 690 635 692 -->
+ (C8 ^jug N15 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 684 686 692 606 -->
+ (N15 ^volume 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 684 686 692 631 -->
+ (N15 ^free 3 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 684 686 692 630 -->
+ (N15 ^contents 0 +)
+Firing default*evaluate-object*elaborate*state*add-duplicate-to-state
+ 684 686 688 683 9 609 693 -->
+ (S17 ^jug N16 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 684 686 693 614 -->
+ (N16 ^volume 5 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 684 686 693 633 -->
+ (N16 ^free 2 +)
+Firing default*evaluate-object*elaborate*add-attribute-to-duplicate
+ 684 686 693 632 -->
+ (N16 ^contents 3 +)
+Retracting default*evaluate-object*elaborate*operator*add-attribute-to-duplicate-operator
+ 686 689 690 635 --> (C8 ^jug N13 +)
+	--- Change Working Memory (IE) ---
+=>WM: (705: N16 ^contents 3)
+=>WM: (704: N16 ^free 2)
+=>WM: (703: N16 ^volume 5)
+=>WM: (702: S17 ^jug N15)
+=>WM: (701: S17 ^jug N16)
+=>WM: (700: N15 ^contents 0)
+=>WM: (699: N15 ^free 3)
+=>WM: (698: N15 ^volume 3)
+=>WM: (697: C8 ^jug N15)
+<=WM: (694: C8 ^jug N13)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*state
+ 701 703 702 698 705 700 -->
+
+ 3:0 5:3
+Firing waterjug*propose*pour
+ 702 699 701 705 -->
+ (O62 ^into N15 +)
+ (O62 ^jug N16 +)
+ (O62 ^name pour +)
+ (S17 ^operator O62 +)
+Firing waterjug*propose*fill
+ 702 700 -->
+ (O63 ^jug N15 +)
+ (O63 ^name fill +)
+ (S17 ^operator O63 +)
+Firing waterjug*propose*empty
+ 701 705 -->
+ (O64 ^jug N16 +)
+ (O64 ^name empty +)
+ (S17 ^operator O64 +)
+	--- Change Working Memory (IE) ---
+=>WM: (715: S17 ^operator O64 +)
+=>WM: (714: S17 ^operator O63 +)
+=>WM: (713: S17 ^operator O62 +)
+=>WM: (712: O64 ^jug N16)
+=>WM: (711: O64 ^name empty)
+=>WM: (710: O63 ^jug N15)
+=>WM: (709: O63 ^name fill)
+=>WM: (708: O62 ^into N15)
+=>WM: (707: O62 ^jug N16)
+=>WM: (706: O62 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 689 677 664 665 646 713 590 7 683 7 -->
+ (S17 ^operator O62 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 689 677 664 665 646 714 590 7 683 7 -->
+ (S17 ^operator O63 -)
+Firing default*evaluate-object*propose*look-ahead*reject-all-others
+ 689 677 664 665 646 715 590 7 683 7 -->
+ (S17 ^operator O64 -)
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (716: S17 ^operator C8)
+
+    32:                                                    O: C8 (fill)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*fill
+ 716 695 697 700 698 -->
+
+  FILL(3:0)	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing waterjug*save*operator*remove*last-op
+ 691 716 695 697 -->
+ (S17 ^last-operator O56 -  :O )
+Firing default*evaluate-object*elaborate*state*tried-tied-operator*copy
+ 685 677 664 665 669 683 657 716 690 -->
+ (S17 ^tried-tied-operator C8 +  :O )
+Firing apply*fill
+ 702 700 699 698 716 695 697 -->
+ (N15 ^free 3 -  :O )
+ (N15 ^free 0 +  :O )
+ (N15 ^contents 0 -  :O )
+ (N15 ^contents 3 +  :O )
+Firing waterjug*save*operator*save*last-op
+ 716 695 697 -->
+ (O65 ^jug N15 +  :O )
+ (O65 ^name fill +  :O )
+ (S17 ^last-operator O65 +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (722: O65 ^jug N15)
+=>WM: (721: O65 ^name fill)
+=>WM: (720: S17 ^last-operator O65)
+=>WM: (719: N15 ^free 0)
+=>WM: (718: N15 ^contents 3)
+=>WM: (717: S17 ^tried-tied-operator C8)
+<=WM: (691: S17 ^last-operator O56)
+<=WM: (699: N15 ^free 3)
+<=WM: (700: N15 ^contents 0)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*operator-application*fill
+ 716 695 697 718 698 -->
+
+  FILL(3:3)
+Firing waterjug*monitor*state
+ 701 703 702 698 705 718 -->
+
+ 3:3 5:3
+Firing waterjug*propose*pour
+ 701 704 702 718 -->
+ (O66 ^into N16 +)
+ (O66 ^jug N15 +)
+ (O66 ^name pour +)
+ (S17 ^operator O66 +)
+Firing waterjug*propose*empty
+ 702 718 -->
+ (O67 ^jug N15 +)
+ (O67 ^name empty +)
+ (S17 ^operator O67 +)
+Retracting waterjug*propose*fill
+ 702 700 --> (O63 ^jug N15 +)
+ (O63 ^name fill +)
+ (S17 ^operator O63 +)
+Retracting waterjug*propose*pour
+ 702 699 701 705 --> (O62 ^into N15 +)
+ (O62 ^jug N16 +)
+ (O62 ^name pour +)
+ (S17 ^operator O62 +)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 689 677 664 665 646 715 590 7 683 7 --> (S17 ^operator O64 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 689 677 664 665 646 714 590 7 683 7 --> (S17 ^operator O63 -)
+Retracting default*evaluate-object*propose*look-ahead*reject-all-others
+ 689 677 664 665 646 713 590 7 683 7 --> (S17 ^operator O62 -)
+Retracting default*evaluate-object*propose*look-ahead
+ 689 677 664 665 646 590 7 683 7 --> (S17 ^operator C8 +)
+	--- Change Working Memory (IE) ---
+=>WM: (729: S17 ^operator O67 +)
+=>WM: (728: S17 ^operator O66 +)
+=>WM: (727: O67 ^jug N15)
+=>WM: (726: O67 ^name empty)
+=>WM: (725: O66 ^into N16)
+=>WM: (724: O66 ^jug N15)
+=>WM: (723: O66 ^name pour)
+<=WM: (696: S17 ^operator C8 +)
+<=WM: (716: S17 ^operator C8)
+<=WM: (713: S17 ^operator O62 +)
+<=WM: (714: S17 ^operator O63 +)
+<=WM: (710: O63 ^jug N15)
+<=WM: (709: O63 ^name fill)
+<=WM: (708: O62 ^into N15)
+<=WM: (707: O62 ^jug N16)
+<=WM: (706: O62 ^name pour)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*inverse*empty*reject
+ 720 721 729 726 722 727 -->
+ (S17 ^reject O67 +)
+ (S17 ^operator O67 -)
+	--- Change Working Memory (IE) ---
+=>WM: (730: S17 ^reject O67)
+
+--- Application Phase ---
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (738: S18 ^item O66)
+=>WM: (737: S18 ^item O64)
+=>WM: (736: S18 ^quiescence t)
+=>WM: (735: S18 ^choices multiple)
+=>WM: (734: S18 ^impasse tie)
+=>WM: (733: S18 ^attribute operator)
+=>WM: (732: S18 ^superstate S17)
+=>WM: (731: S18 ^type state)
+
+    33:                                                    ==>S: S18 (operator tie)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing waterjug*monitor*tied-operator*pour
+ 734 733 738 723 725 705 703 724 718 698 -->
+
+  O66: pour(3:3,5:3)
+Firing waterjug*monitor*tied-operator*empty
+ 734 733 737 711 712 705 703 -->
+
+  O64: empty(5:3)
+Firing default*selection*propose*space*selection
+ 735 -->
+ (P10 ^name selection +)
+ (S18 ^problem-space P10 +)
+	--- Change Working Memory (IE) ---
+=>WM: (740: P10 ^name selection)
+=>WM: (739: S18 ^problem-space P10)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*propose*evaluate-object
+ 738 739 740 -->
+ (O68 ^object O66 +)
+ (O68 ^name evaluate-object +)
+ (O68 ^state S18 +)
+ (S18 ^operator O68 +)
+Firing default*selection*propose*evaluate-object
+ 737 739 740 -->
+ (O69 ^object O64 +)
+ (O69 ^name evaluate-object +)
+ (O69 ^state S18 +)
+ (S18 ^operator O69 +)
+	--- Change Working Memory (IE) ---
+=>WM: (748: S18 ^operator O69 +)
+=>WM: (747: S18 ^operator O68 +)
+=>WM: (746: O69 ^object O64)
+=>WM: (745: O69 ^name evaluate-object)
+=>WM: (744: O69 ^state S18)
+=>WM: (743: O68 ^object O66)
+=>WM: (742: O68 ^name evaluate-object)
+=>WM: (741: O68 ^state S18)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing default*selection*select*evaluate-object*indifferent
+ 747 742 739 740 -->
+ (S18 ^operator O68 =)
+Firing waterjug*evaluate-object*pour*better
+ 747 742 743 723 -->
+ (S18 ^operator O68 >)
+Firing default*selection*select*evaluate-object*indifferent
+ 748 745 739 740 -->
+ (S18 ^operator O69 =)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 735 747 739 740 -->
+ (S18 ^wait true +)
+Firing default*selection*elaborate*state*wait-true-not-all-objects-evaluated
+ 735 748 739 740 -->
+ (S18 ^wait true +)
+	--- Change Working Memory (IE) ---
+=>WM: (749: S18 ^wait true)
+
+--- Application Phase ---
+
+--- Output Phase ---

@@ -1,0 +1,894 @@
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+Learning On
+*****************************************************************************************************
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-level*elaborate*state*task*waterjug
+ 2 -->
+ (P1 ^one-level-attributes last-operator +)
+ (P1 ^two-level-attributes jug +)
+ (P1 ^default-state-copy yes +)
+ (P1 ^name waterjug +)
+ (S1 ^problem-space P1 +)
+ (S1 ^name waterjug +)
+Firing default*top-state*elaborate*state*name*top-state*top-goal
+ 2 -->
+ (S1 ^name top-state +)
+ (S1 ^name top-goal +)
+
+--- Working Memory Phase ---
+=>WM: (18: I4 ^item waterjug)
+=>WM: (17: I4 ^item top-goal)
+=>WM: (16: I4 ^item top-state)
+=>WM: (15: I4 ^choices multiple)
+=>WM: (14: I4 ^impasse tie)
+=>WM: (13: I4 ^attribute name)
+=>WM: (12: I4 ^object S1)
+=>WM: (11: I4 ^type impasse)
+=>WM: (10: P1 ^one-level-attributes last-operator)
+=>WM: (9: P1 ^two-level-attributes jug)
+=>WM: (8: P1 ^default-state-copy yes)
+=>WM: (7: P1 ^name waterjug)
+=>WM: (6: S1 ^problem-space P1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (24: S2 ^quiescence t)
+=>WM: (23: S2 ^choices none)
+=>WM: (22: S2 ^impasse no-change)
+=>WM: (21: S2 ^attribute state)
+=>WM: (20: S2 ^superstate S1)
+=>WM: (19: S2 ^type state)
+
+     1:    ==>S: S2 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 22 20 3 -->
+ (S2 ^io I1 +)
+Firing top-ps*propose*wait
+ 23 21 -->
+ (O1 ^name wait +  :O )
+ (S2 ^operator O1 <)
+ (S2 ^operator O1 +)
+
+--- Working Memory Phase ---
+=>WM: (27: S2 ^operator O1 +)
+=>WM: (26: O1 ^name wait)
+=>WM: (25: S2 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (28: S2 ^operator O1)
+
+     2:       O: O1 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 28 26 -->
+ (O1 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 23 21 --> (S2 ^operator O1 <)
+ (S2 ^operator O1 +)
+
+--- Working Memory Phase ---
+=>WM: (29: O1 ^random elaboration)
+<=WM: (27: S2 ^operator O1 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (35: S3 ^quiescence t)
+=>WM: (34: S3 ^choices none)
+=>WM: (33: S3 ^impasse no-change)
+=>WM: (32: S3 ^attribute operator)
+=>WM: (31: S3 ^superstate S2)
+=>WM: (30: S3 ^type state)
+
+     3:       ==>S: S3 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 33 31 25 -->
+ (S3 ^io I1 +)
+Firing elaborate*state*operator*name
+ 31 28 26 -->
+ (S3 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (37: S3 ^name wait)
+=>WM: (36: S3 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (43: S4 ^quiescence t)
+=>WM: (42: S4 ^choices none)
+=>WM: (41: S4 ^impasse no-change)
+=>WM: (40: S4 ^attribute state)
+=>WM: (39: S4 ^superstate S3)
+=>WM: (38: S4 ^type state)
+
+     4:          ==>S: S4 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 41 39 36 -->
+ (S4 ^io I1 +)
+Firing top-ps*propose*wait
+ 42 40 -->
+ (O2 ^name wait +  :O )
+ (S4 ^operator O2 <)
+ (S4 ^operator O2 +)
+
+--- Working Memory Phase ---
+=>WM: (46: S4 ^operator O2 +)
+=>WM: (45: O2 ^name wait)
+=>WM: (44: S4 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (47: S4 ^operator O2)
+
+     5:             O: O2 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 47 45 -->
+ (O2 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 42 40 --> (S4 ^operator O2 <)
+ (S4 ^operator O2 +)
+
+--- Working Memory Phase ---
+=>WM: (48: O2 ^random elaboration)
+<=WM: (46: S4 ^operator O2 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (54: S5 ^quiescence t)
+=>WM: (53: S5 ^choices none)
+=>WM: (52: S5 ^impasse no-change)
+=>WM: (51: S5 ^attribute operator)
+=>WM: (50: S5 ^superstate S4)
+=>WM: (49: S5 ^type state)
+
+     6:             ==>S: S5 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 52 50 44 -->
+ (S5 ^io I1 +)
+Firing elaborate*state*operator*name
+ 50 47 45 -->
+ (S5 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (56: S5 ^name wait)
+=>WM: (55: S5 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (62: S6 ^quiescence t)
+=>WM: (61: S6 ^choices none)
+=>WM: (60: S6 ^impasse no-change)
+=>WM: (59: S6 ^attribute state)
+=>WM: (58: S6 ^superstate S5)
+=>WM: (57: S6 ^type state)
+
+     7:                ==>S: S6 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 60 58 55 -->
+ (S6 ^io I1 +)
+Firing top-ps*propose*wait
+ 61 59 -->
+ (O3 ^name wait +  :O )
+ (S6 ^operator O3 <)
+ (S6 ^operator O3 +)
+
+--- Working Memory Phase ---
+=>WM: (65: S6 ^operator O3 +)
+=>WM: (64: O3 ^name wait)
+=>WM: (63: S6 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (66: S6 ^operator O3)
+
+     8:                   O: O3 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 66 64 -->
+ (O3 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 61 59 --> (S6 ^operator O3 <)
+ (S6 ^operator O3 +)
+
+--- Working Memory Phase ---
+=>WM: (67: O3 ^random elaboration)
+<=WM: (65: S6 ^operator O3 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (73: S7 ^quiescence t)
+=>WM: (72: S7 ^choices none)
+=>WM: (71: S7 ^impasse no-change)
+=>WM: (70: S7 ^attribute operator)
+=>WM: (69: S7 ^superstate S6)
+=>WM: (68: S7 ^type state)
+
+     9:                   ==>S: S7 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 71 69 63 -->
+ (S7 ^io I1 +)
+Firing elaborate*state*operator*name
+ 69 66 64 -->
+ (S7 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (75: S7 ^name wait)
+=>WM: (74: S7 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (81: S8 ^quiescence t)
+=>WM: (80: S8 ^choices none)
+=>WM: (79: S8 ^impasse no-change)
+=>WM: (78: S8 ^attribute state)
+=>WM: (77: S8 ^superstate S7)
+=>WM: (76: S8 ^type state)
+
+    10:                      ==>S: S8 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 79 77 74 -->
+ (S8 ^io I1 +)
+Firing top-ps*propose*wait
+ 80 78 -->
+ (O4 ^name wait +  :O )
+ (S8 ^operator O4 <)
+ (S8 ^operator O4 +)
+
+--- Working Memory Phase ---
+=>WM: (84: S8 ^operator O4 +)
+=>WM: (83: O4 ^name wait)
+=>WM: (82: S8 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (85: S8 ^operator O4)
+
+    11:                         O: O4 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 85 83 -->
+ (O4 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 80 78 --> (S8 ^operator O4 <)
+ (S8 ^operator O4 +)
+
+--- Working Memory Phase ---
+=>WM: (86: O4 ^random elaboration)
+<=WM: (84: S8 ^operator O4 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (92: S9 ^quiescence t)
+=>WM: (91: S9 ^choices none)
+=>WM: (90: S9 ^impasse no-change)
+=>WM: (89: S9 ^attribute operator)
+=>WM: (88: S9 ^superstate S8)
+=>WM: (87: S9 ^type state)
+
+    12:                         ==>S: S9 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 90 88 82 -->
+ (S9 ^io I1 +)
+Firing elaborate*state*operator*name
+ 88 85 83 -->
+ (S9 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (94: S9 ^name wait)
+=>WM: (93: S9 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (100: S10 ^quiescence t)
+=>WM: (99: S10 ^choices none)
+=>WM: (98: S10 ^impasse no-change)
+=>WM: (97: S10 ^attribute state)
+=>WM: (96: S10 ^superstate S9)
+=>WM: (95: S10 ^type state)
+
+    13:                            ==>S: S10 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 98 96 93 -->
+ (S10 ^io I1 +)
+Firing top-ps*propose*wait
+ 99 97 -->
+ (O5 ^name wait +  :O )
+ (S10 ^operator O5 <)
+ (S10 ^operator O5 +)
+
+--- Working Memory Phase ---
+=>WM: (103: S10 ^operator O5 +)
+=>WM: (102: O5 ^name wait)
+=>WM: (101: S10 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (104: S10 ^operator O5)
+
+    14:                               O: O5 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 104 102 -->
+ (O5 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 99 97 --> (S10 ^operator O5 <)
+ (S10 ^operator O5 +)
+
+--- Working Memory Phase ---
+=>WM: (105: O5 ^random elaboration)
+<=WM: (103: S10 ^operator O5 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (111: S11 ^quiescence t)
+=>WM: (110: S11 ^choices none)
+=>WM: (109: S11 ^impasse no-change)
+=>WM: (108: S11 ^attribute operator)
+=>WM: (107: S11 ^superstate S10)
+=>WM: (106: S11 ^type state)
+
+    15:                               ==>S: S11 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 109 107 101 -->
+ (S11 ^io I1 +)
+Firing elaborate*state*operator*name
+ 107 104 102 -->
+ (S11 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (113: S11 ^name wait)
+=>WM: (112: S11 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (119: S12 ^quiescence t)
+=>WM: (118: S12 ^choices none)
+=>WM: (117: S12 ^impasse no-change)
+=>WM: (116: S12 ^attribute state)
+=>WM: (115: S12 ^superstate S11)
+=>WM: (114: S12 ^type state)
+
+    16:                                  ==>S: S12 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 117 115 112 -->
+ (S12 ^io I1 +)
+Firing top-ps*propose*wait
+ 118 116 -->
+ (O6 ^name wait +  :O )
+ (S12 ^operator O6 <)
+ (S12 ^operator O6 +)
+
+--- Working Memory Phase ---
+=>WM: (122: S12 ^operator O6 +)
+=>WM: (121: O6 ^name wait)
+=>WM: (120: S12 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (123: S12 ^operator O6)
+
+    17:                                     O: O6 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 123 121 -->
+ (O6 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 118 116 --> (S12 ^operator O6 <)
+ (S12 ^operator O6 +)
+
+--- Working Memory Phase ---
+=>WM: (124: O6 ^random elaboration)
+<=WM: (122: S12 ^operator O6 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (130: S13 ^quiescence t)
+=>WM: (129: S13 ^choices none)
+=>WM: (128: S13 ^impasse no-change)
+=>WM: (127: S13 ^attribute operator)
+=>WM: (126: S13 ^superstate S12)
+=>WM: (125: S13 ^type state)
+
+    18:                                     ==>S: S13 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 128 126 120 -->
+ (S13 ^io I1 +)
+Firing elaborate*state*operator*name
+ 126 123 121 -->
+ (S13 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (132: S13 ^name wait)
+=>WM: (131: S13 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (138: S14 ^quiescence t)
+=>WM: (137: S14 ^choices none)
+=>WM: (136: S14 ^impasse no-change)
+=>WM: (135: S14 ^attribute state)
+=>WM: (134: S14 ^superstate S13)
+=>WM: (133: S14 ^type state)
+
+    19:                                        ==>S: S14 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 136 134 131 -->
+ (S14 ^io I1 +)
+Firing top-ps*propose*wait
+ 137 135 -->
+ (O7 ^name wait +  :O )
+ (S14 ^operator O7 <)
+ (S14 ^operator O7 +)
+
+--- Working Memory Phase ---
+=>WM: (141: S14 ^operator O7 +)
+=>WM: (140: O7 ^name wait)
+=>WM: (139: S14 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (142: S14 ^operator O7)
+
+    20:                                           O: O7 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 142 140 -->
+ (O7 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 137 135 --> (S14 ^operator O7 <)
+ (S14 ^operator O7 +)
+
+--- Working Memory Phase ---
+=>WM: (143: O7 ^random elaboration)
+<=WM: (141: S14 ^operator O7 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (149: S15 ^quiescence t)
+=>WM: (148: S15 ^choices none)
+=>WM: (147: S15 ^impasse no-change)
+=>WM: (146: S15 ^attribute operator)
+=>WM: (145: S15 ^superstate S14)
+=>WM: (144: S15 ^type state)
+
+    21:                                           ==>S: S15 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 147 145 139 -->
+ (S15 ^io I1 +)
+Firing elaborate*state*operator*name
+ 145 142 140 -->
+ (S15 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (151: S15 ^name wait)
+=>WM: (150: S15 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (157: S16 ^quiescence t)
+=>WM: (156: S16 ^choices none)
+=>WM: (155: S16 ^impasse no-change)
+=>WM: (154: S16 ^attribute state)
+=>WM: (153: S16 ^superstate S15)
+=>WM: (152: S16 ^type state)
+
+    22:                                              ==>S: S16 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 155 153 150 -->
+ (S16 ^io I1 +)
+Firing top-ps*propose*wait
+ 156 154 -->
+ (O8 ^name wait +  :O )
+ (S16 ^operator O8 <)
+ (S16 ^operator O8 +)
+
+--- Working Memory Phase ---
+=>WM: (160: S16 ^operator O8 +)
+=>WM: (159: O8 ^name wait)
+=>WM: (158: S16 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (161: S16 ^operator O8)
+
+    23:                                                 O: O8 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 161 159 -->
+ (O8 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 156 154 --> (S16 ^operator O8 <)
+ (S16 ^operator O8 +)
+
+--- Working Memory Phase ---
+=>WM: (162: O8 ^random elaboration)
+<=WM: (160: S16 ^operator O8 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (168: S17 ^quiescence t)
+=>WM: (167: S17 ^choices none)
+=>WM: (166: S17 ^impasse no-change)
+=>WM: (165: S17 ^attribute operator)
+=>WM: (164: S17 ^superstate S16)
+=>WM: (163: S17 ^type state)
+
+    24:                                                 ==>S: S17 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 166 164 158 -->
+ (S17 ^io I1 +)
+Firing elaborate*state*operator*name
+ 164 161 159 -->
+ (S17 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (170: S17 ^name wait)
+=>WM: (169: S17 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (176: S18 ^quiescence t)
+=>WM: (175: S18 ^choices none)
+=>WM: (174: S18 ^impasse no-change)
+=>WM: (173: S18 ^attribute state)
+=>WM: (172: S18 ^superstate S17)
+=>WM: (171: S18 ^type state)
+
+    25:                                                    ==>S: S18 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 174 172 169 -->
+ (S18 ^io I1 +)
+Firing top-ps*propose*wait
+ 175 173 -->
+ (O9 ^name wait +  :O )
+ (S18 ^operator O9 <)
+ (S18 ^operator O9 +)
+
+--- Working Memory Phase ---
+=>WM: (179: S18 ^operator O9 +)
+=>WM: (178: O9 ^name wait)
+=>WM: (177: S18 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (180: S18 ^operator O9)
+
+    26:                                                       O: O9 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 180 178 -->
+ (O9 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 175 173 --> (S18 ^operator O9 <)
+ (S18 ^operator O9 +)
+
+--- Working Memory Phase ---
+=>WM: (181: O9 ^random elaboration)
+<=WM: (179: S18 ^operator O9 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (187: S19 ^quiescence t)
+=>WM: (186: S19 ^choices none)
+=>WM: (185: S19 ^impasse no-change)
+=>WM: (184: S19 ^attribute operator)
+=>WM: (183: S19 ^superstate S18)
+=>WM: (182: S19 ^type state)
+
+    27:                                                       ==>S: S19 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 185 183 177 -->
+ (S19 ^io I1 +)
+Firing elaborate*state*operator*name
+ 183 180 178 -->
+ (S19 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (189: S19 ^name wait)
+=>WM: (188: S19 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (195: S20 ^quiescence t)
+=>WM: (194: S20 ^choices none)
+=>WM: (193: S20 ^impasse no-change)
+=>WM: (192: S20 ^attribute state)
+=>WM: (191: S20 ^superstate S19)
+=>WM: (190: S20 ^type state)
+
+    28:                                                          ==>S: S20 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 193 191 188 -->
+ (S20 ^io I1 +)
+Firing top-ps*propose*wait
+ 194 192 -->
+ (O10 ^name wait +  :O )
+ (S20 ^operator O10 <)
+ (S20 ^operator O10 +)
+
+--- Working Memory Phase ---
+=>WM: (198: S20 ^operator O10 +)
+=>WM: (197: O10 ^name wait)
+=>WM: (196: S20 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (199: S20 ^operator O10)
+
+    29:                                                             O: O10 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 199 197 -->
+ (O10 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 194 192 --> (S20 ^operator O10 <)
+ (S20 ^operator O10 +)
+
+--- Working Memory Phase ---
+=>WM: (200: O10 ^random elaboration)
+<=WM: (198: S20 ^operator O10 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (206: S21 ^quiescence t)
+=>WM: (205: S21 ^choices none)
+=>WM: (204: S21 ^impasse no-change)
+=>WM: (203: S21 ^attribute operator)
+=>WM: (202: S21 ^superstate S20)
+=>WM: (201: S21 ^type state)
+
+    30:                                                             ==>S: S21 (operator no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 204 202 196 -->
+ (S21 ^io I1 +)
+Firing elaborate*state*operator*name
+ 202 199 197 -->
+ (S21 ^name wait +)
+
+--- Working Memory Phase ---
+=>WM: (208: S21 ^name wait)
+=>WM: (207: S21 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (214: S22 ^quiescence t)
+=>WM: (213: S22 ^choices none)
+=>WM: (212: S22 ^impasse no-change)
+=>WM: (211: S22 ^attribute state)
+=>WM: (210: S22 ^superstate S21)
+=>WM: (209: S22 ^type state)
+
+    31:                                                                ==>S: S22 (state no-change)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing default*elaborate*state*io
+ 212 210 207 -->
+ (S22 ^io I1 +)
+Firing top-ps*propose*wait
+ 213 211 -->
+ (O11 ^name wait +  :O )
+ (S22 ^operator O11 <)
+ (S22 ^operator O11 +)
+
+--- Working Memory Phase ---
+=>WM: (217: S22 ^operator O11 +)
+=>WM: (216: O11 ^name wait)
+=>WM: (215: S22 ^io I1)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (218: S22 ^operator O11)
+
+    32:                                                                   O: O11 (wait)
+--- Input Phase --- 
+
+--- Preference Phase ---
+Firing top-ps*apply*wait*random
+ 218 216 -->
+ (O11 ^random elaboration +  :O )
+Retracting top-ps*propose*wait
+ 213 211 --> (S22 ^operator O11 <)
+ (S22 ^operator O11 +)
+
+--- Working Memory Phase ---
+=>WM: (219: O11 ^random elaboration)
+<=WM: (217: S22 ^operator O11 +)
+
+--- Output Phase ---
+
+--- Input Phase --- 
+
+--- Decision Phase ---
+=>WM: (225: S23 ^quiescence t)
+=>WM: (224: S23 ^choices none)
+=>WM: (223: S23 ^impasse no-change)
+=>WM: (222: S23 ^attribute operator)
+=>WM: (221: S23 ^superstate S22)
+=>WM: (220: S23 ^type state)
+
+    33:                                                                   ==>S: S23 (operator no-change)

@@ -1,0 +1,40 @@
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+
+Soar v.8.3 Build Information.
+ - CALLBACK_H_INCLUDED
+ - MAX_SIMULTANEOUS_AGENTS
+ - STD
+ - USE_STDARGS
+ - WIN32
+Learning On
+*****************************************************************************************************
+--- Input Phase --- 
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing top-level*elaborate*state*task*waterjug
+ 2 -->
+ (P1 ^one-level-attributes last-operator +)
+ (P1 ^two-level-attributes jug +)
+ (P1 ^default-state-copy yes +)
+ (P1 ^name waterjug +)
+ (S1 ^problem-space P1 +)
+ (S1 ^name waterjug +)
+Firing default*top-state*elaborate*state*name*top-state*top-goal
+ 2 -->
+ (S1 ^name top-state +)
+ (S1 ^name top-goal +)
+	--- Change Working Memory (IE) ---
+=>WM: (13: S1 ^name waterjug)
+=>WM: (12: S1 ^name top-goal)
+=>WM: (11: S1 ^name top-state)
+=>WM: (10: P1 ^one-level-attributes last-operator)
+=>WM: (9: P1 ^two-level-attributes jug)
+=>WM: (8: P1 ^default-state-copy yes)
+=>WM: (7: P1 ^name waterjug)
+=>WM: (6: S1 ^problem-space P1)

@@ -1,0 +1,1270 @@
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+Learning Off
+******************
+--- Input Phase --- 
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing top-goal*elaborate*goal*tower-of-hanoi
+ 2 -->
+ (S1 ^name tower-of-hanoi +)
+	--- Change Working Memory (IE) ---
+=>WM: (6: S1 ^name tower-of-hanoi)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*propose*state*initial-and-desired-states
+ 6 -->
+ (D22 ^on P3 +)
+ (D22 ^above none +)
+ (D22 ^disk D11 +)
+ (D21 ^on P3 +)
+ (D21 ^above D11 +)
+ (D21 ^disk D10 +)
+ (D20 ^on P3 +)
+ (D20 ^above D10 +)
+ (D20 ^disk D9 +)
+ (D19 ^on P3 +)
+ (D19 ^above D9 +)
+ (D19 ^disk D8 +)
+ (D18 ^on P3 +)
+ (D18 ^above D8 +)
+ (D18 ^disk D7 +)
+ (D17 ^on P3 +)
+ (D17 ^above D7 +)
+ (D17 ^disk D6 +)
+ (D16 ^on P3 +)
+ (D16 ^above D6 +)
+ (D16 ^disk D5 +)
+ (D15 ^on P3 +)
+ (D15 ^above D5 +)
+ (D15 ^disk D4 +)
+ (D14 ^on P3 +)
+ (D14 ^above D4 +)
+ (D14 ^disk D3 +)
+ (D13 ^on P3 +)
+ (D13 ^above D3 +)
+ (D13 ^disk D2 +)
+ (D12 ^on P3 +)
+ (D12 ^above D2 +)
+ (D12 ^disk D1 +)
+ (S1 ^desired D22 +)
+ (S1 ^desired D21 +)
+ (S1 ^desired D20 +)
+ (S1 ^desired D19 +)
+ (S1 ^desired D18 +)
+ (S1 ^desired D17 +)
+ (S1 ^desired D16 +)
+ (S1 ^desired D15 +)
+ (S1 ^desired D14 +)
+ (S1 ^desired D13 +)
+ (S1 ^desired D12 +)
+ (P3 ^name |C| +)
+ (P2 ^name |B| +)
+ (P1 ^name |A| +)
+ (D11 ^size 11 +)
+ (D11 ^name 11 +)
+ (D10 ^size 10 +)
+ (D10 ^name 10 +)
+ (D9 ^size 9 +)
+ (D9 ^name 9 +)
+ (D8 ^size 8 +)
+ (D8 ^name 8 +)
+ (D7 ^size 7 +)
+ (D7 ^name 7 +)
+ (D6 ^size 6 +)
+ (D6 ^name 6 +)
+ (D5 ^size 5 +)
+ (D5 ^name 5 +)
+ (D4 ^size 4 +)
+ (D4 ^name 4 +)
+ (D3 ^size 3 +)
+ (D3 ^name 3 +)
+ (D2 ^size 2 +)
+ (D2 ^name 2 +)
+ (D1 ^size 1 +)
+ (D1 ^name 1 +)
+ (H11 ^on P1 +)
+ (H11 ^above none +)
+ (H11 ^disk D11 +)
+ (H10 ^on P1 +)
+ (H10 ^above D11 +)
+ (H10 ^disk D10 +)
+ (H9 ^on P1 +)
+ (H9 ^above D10 +)
+ (H9 ^disk D9 +)
+ (H8 ^on P1 +)
+ (H8 ^above D9 +)
+ (H8 ^disk D8 +)
+ (H7 ^on P1 +)
+ (H7 ^above D8 +)
+ (H7 ^disk D7 +)
+ (H6 ^on P1 +)
+ (H6 ^above D7 +)
+ (H6 ^disk D6 +)
+ (H5 ^on P1 +)
+ (H5 ^above D6 +)
+ (H5 ^disk D5 +)
+ (H4 ^on P1 +)
+ (H4 ^above D5 +)
+ (H4 ^disk D4 +)
+ (H3 ^on P1 +)
+ (H3 ^above D4 +)
+ (H3 ^disk D3 +)
+ (H2 ^on P1 +)
+ (H2 ^above D3 +)
+ (H2 ^disk D2 +)
+ (H1 ^on P1 +)
+ (H1 ^above D2 +)
+ (H1 ^disk D1 +)
+ (S1 ^last-disk-moved D2 +)
+ (S1 ^last-disk1-peg P2 +)
+ (S1 ^holds H11 +)
+ (S1 ^holds H10 +)
+ (S1 ^holds H9 +)
+ (S1 ^holds H8 +)
+ (S1 ^holds H7 +)
+ (S1 ^holds H6 +)
+ (S1 ^holds H5 +)
+ (S1 ^holds H4 +)
+ (S1 ^holds H3 +)
+ (S1 ^holds H2 +)
+ (S1 ^holds H1 +)
+ (S1 ^peg P3 +)
+ (S1 ^peg P2 +)
+ (S1 ^peg P1 +)
+ (S1 ^disk D11 +)
+ (S1 ^disk D10 +)
+ (S1 ^disk D9 +)
+ (S1 ^disk D8 +)
+ (S1 ^disk D7 +)
+ (S1 ^disk D6 +)
+ (S1 ^disk D5 +)
+ (S1 ^disk D4 +)
+ (S1 ^disk D3 +)
+ (S1 ^disk D2 +)
+ (S1 ^disk D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (135: D22 ^on P3)
+=>WM: (134: D22 ^above none)
+=>WM: (133: D22 ^disk D11)
+=>WM: (132: D21 ^on P3)
+=>WM: (131: D21 ^above D11)
+=>WM: (130: D21 ^disk D10)
+=>WM: (129: D20 ^on P3)
+=>WM: (128: D20 ^above D10)
+=>WM: (127: D20 ^disk D9)
+=>WM: (126: D19 ^on P3)
+=>WM: (125: D19 ^above D9)
+=>WM: (124: D19 ^disk D8)
+=>WM: (123: D18 ^on P3)
+=>WM: (122: D18 ^above D8)
+=>WM: (121: D18 ^disk D7)
+=>WM: (120: D17 ^on P3)
+=>WM: (119: D17 ^above D7)
+=>WM: (118: D17 ^disk D6)
+=>WM: (117: D16 ^on P3)
+=>WM: (116: D16 ^above D6)
+=>WM: (115: D16 ^disk D5)
+=>WM: (114: D15 ^on P3)
+=>WM: (113: D15 ^above D5)
+=>WM: (112: D15 ^disk D4)
+=>WM: (111: D14 ^on P3)
+=>WM: (110: D14 ^above D4)
+=>WM: (109: D14 ^disk D3)
+=>WM: (108: D13 ^on P3)
+=>WM: (107: D13 ^above D3)
+=>WM: (106: D13 ^disk D2)
+=>WM: (105: D12 ^on P3)
+=>WM: (104: D12 ^above D2)
+=>WM: (103: D12 ^disk D1)
+=>WM: (102: S1 ^desired D12)
+=>WM: (101: S1 ^desired D13)
+=>WM: (100: S1 ^desired D14)
+=>WM: (99: S1 ^desired D15)
+=>WM: (98: S1 ^desired D16)
+=>WM: (97: S1 ^desired D17)
+=>WM: (96: S1 ^desired D18)
+=>WM: (95: S1 ^desired D19)
+=>WM: (94: S1 ^desired D20)
+=>WM: (93: S1 ^desired D21)
+=>WM: (92: S1 ^desired D22)
+=>WM: (91: P3 ^name |C|)
+=>WM: (90: P2 ^name |B|)
+=>WM: (89: P1 ^name |A|)
+=>WM: (88: D11 ^size 11)
+=>WM: (87: D11 ^name 11)
+=>WM: (86: D10 ^size 10)
+=>WM: (85: D10 ^name 10)
+=>WM: (84: D9 ^size 9)
+=>WM: (83: D9 ^name 9)
+=>WM: (82: D8 ^size 8)
+=>WM: (81: D8 ^name 8)
+=>WM: (80: D7 ^size 7)
+=>WM: (79: D7 ^name 7)
+=>WM: (78: D6 ^size 6)
+=>WM: (77: D6 ^name 6)
+=>WM: (76: D5 ^size 5)
+=>WM: (75: D5 ^name 5)
+=>WM: (74: D4 ^size 4)
+=>WM: (73: D4 ^name 4)
+=>WM: (72: D3 ^size 3)
+=>WM: (71: D3 ^name 3)
+=>WM: (70: D2 ^size 2)
+=>WM: (69: D2 ^name 2)
+=>WM: (68: D1 ^size 1)
+=>WM: (67: D1 ^name 1)
+=>WM: (66: H11 ^on P1)
+=>WM: (65: H11 ^above none)
+=>WM: (64: H11 ^disk D11)
+=>WM: (63: H10 ^on P1)
+=>WM: (62: H10 ^above D11)
+=>WM: (61: H10 ^disk D10)
+=>WM: (60: H9 ^on P1)
+=>WM: (59: H9 ^above D10)
+=>WM: (58: H9 ^disk D9)
+=>WM: (57: H8 ^on P1)
+=>WM: (56: H8 ^above D9)
+=>WM: (55: H8 ^disk D8)
+=>WM: (54: H7 ^on P1)
+=>WM: (53: H7 ^above D8)
+=>WM: (52: H7 ^disk D7)
+=>WM: (51: H6 ^on P1)
+=>WM: (50: H6 ^above D7)
+=>WM: (49: H6 ^disk D6)
+=>WM: (48: H5 ^on P1)
+=>WM: (47: H5 ^above D6)
+=>WM: (46: H5 ^disk D5)
+=>WM: (45: H4 ^on P1)
+=>WM: (44: H4 ^above D5)
+=>WM: (43: H4 ^disk D4)
+=>WM: (42: H3 ^on P1)
+=>WM: (41: H3 ^above D4)
+=>WM: (40: H3 ^disk D3)
+=>WM: (39: H2 ^on P1)
+=>WM: (38: H2 ^above D3)
+=>WM: (37: H2 ^disk D2)
+=>WM: (36: H1 ^on P1)
+=>WM: (35: H1 ^above D2)
+=>WM: (34: H1 ^disk D1)
+=>WM: (33: S1 ^last-disk-moved D2)
+=>WM: (32: S1 ^last-disk1-peg P2)
+=>WM: (31: S1 ^holds H1)
+=>WM: (30: S1 ^holds H2)
+=>WM: (29: S1 ^holds H3)
+=>WM: (28: S1 ^holds H4)
+=>WM: (27: S1 ^holds H5)
+=>WM: (26: S1 ^holds H6)
+=>WM: (25: S1 ^holds H7)
+=>WM: (24: S1 ^holds H8)
+=>WM: (23: S1 ^holds H9)
+=>WM: (22: S1 ^holds H10)
+=>WM: (21: S1 ^holds H11)
+=>WM: (20: S1 ^peg P1)
+=>WM: (19: S1 ^peg P2)
+=>WM: (18: S1 ^peg P3)
+=>WM: (17: S1 ^disk D1)
+=>WM: (16: S1 ^disk D2)
+=>WM: (15: S1 ^disk D3)
+=>WM: (14: S1 ^disk D4)
+=>WM: (13: S1 ^disk D5)
+=>WM: (12: S1 ^disk D6)
+=>WM: (11: S1 ^disk D7)
+=>WM: (10: S1 ^disk D8)
+=>WM: (9: S1 ^disk D9)
+=>WM: (8: S1 ^disk D10)
+=>WM: (7: S1 ^disk D11)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 17 68 -->
+ (D11 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 16 70 -->
+ (D11 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 15 72 -->
+ (D11 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 14 74 -->
+ (D11 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 13 76 -->
+ (D11 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 12 78 -->
+ (D11 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 11 80 -->
+ (D11 ^larger D7 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 10 82 -->
+ (D11 ^larger D8 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 9 84 -->
+ (D11 ^larger D9 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 8 86 -->
+ (D11 ^larger D10 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 17 68 -->
+ (D10 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 16 70 -->
+ (D10 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 15 72 -->
+ (D10 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 14 74 -->
+ (D10 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 13 76 -->
+ (D10 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 12 78 -->
+ (D10 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 11 80 -->
+ (D10 ^larger D7 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 10 82 -->
+ (D10 ^larger D8 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 9 84 -->
+ (D10 ^larger D9 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 17 68 -->
+ (D9 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 16 70 -->
+ (D9 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 15 72 -->
+ (D9 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 14 74 -->
+ (D9 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 13 76 -->
+ (D9 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 12 78 -->
+ (D9 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 11 80 -->
+ (D9 ^larger D7 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 10 82 -->
+ (D9 ^larger D8 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 17 68 -->
+ (D8 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 16 70 -->
+ (D8 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 15 72 -->
+ (D8 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 14 74 -->
+ (D8 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 13 76 -->
+ (D8 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 12 78 -->
+ (D8 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 11 80 -->
+ (D8 ^larger D7 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 17 68 -->
+ (D7 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 16 70 -->
+ (D7 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 15 72 -->
+ (D7 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 14 74 -->
+ (D7 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 13 76 -->
+ (D7 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 12 78 -->
+ (D7 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 17 68 -->
+ (D6 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 16 70 -->
+ (D6 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 15 72 -->
+ (D6 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 14 74 -->
+ (D6 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 13 76 -->
+ (D6 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 13 76 76 17 68 -->
+ (D5 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 13 76 76 16 70 -->
+ (D5 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 13 76 76 15 72 -->
+ (D5 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 13 76 76 14 74 -->
+ (D5 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 14 74 74 17 68 -->
+ (D4 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 14 74 74 16 70 -->
+ (D4 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 14 74 74 15 72 -->
+ (D4 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 15 72 72 17 68 -->
+ (D3 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 15 72 72 16 70 -->
+ (D3 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 16 70 70 17 68 -->
+ (D2 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*upper-disk
+ 6 17 -->
+ (S1 ^upper-disk D1 +)
+Firing tower-of-hanoi*object*peg*elaborate*state*clear
+ 6 18 -->
+ (S1 ^clear P3 +)
+Firing tower-of-hanoi*object*peg*elaborate*state*clear
+ 6 19 -->
+ (S1 ^clear P2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (193: S1 ^clear P3)
+=>WM: (192: S1 ^clear P2)
+=>WM: (191: S1 ^upper-disk D1)
+=>WM: (190: D2 ^larger D1)
+=>WM: (189: D3 ^larger D1)
+=>WM: (188: D3 ^larger D2)
+=>WM: (187: D4 ^larger D1)
+=>WM: (186: D4 ^larger D2)
+=>WM: (185: D4 ^larger D3)
+=>WM: (184: D5 ^larger D1)
+=>WM: (183: D5 ^larger D2)
+=>WM: (182: D5 ^larger D3)
+=>WM: (181: D5 ^larger D4)
+=>WM: (180: D6 ^larger D1)
+=>WM: (179: D6 ^larger D2)
+=>WM: (178: D6 ^larger D3)
+=>WM: (177: D6 ^larger D4)
+=>WM: (176: D6 ^larger D5)
+=>WM: (175: D7 ^larger D1)
+=>WM: (174: D7 ^larger D2)
+=>WM: (173: D7 ^larger D3)
+=>WM: (172: D7 ^larger D4)
+=>WM: (171: D7 ^larger D5)
+=>WM: (170: D7 ^larger D6)
+=>WM: (169: D8 ^larger D1)
+=>WM: (168: D8 ^larger D2)
+=>WM: (167: D8 ^larger D3)
+=>WM: (166: D8 ^larger D4)
+=>WM: (165: D8 ^larger D5)
+=>WM: (164: D8 ^larger D6)
+=>WM: (163: D8 ^larger D7)
+=>WM: (162: D9 ^larger D1)
+=>WM: (161: D9 ^larger D2)
+=>WM: (160: D9 ^larger D3)
+=>WM: (159: D9 ^larger D4)
+=>WM: (158: D9 ^larger D5)
+=>WM: (157: D9 ^larger D6)
+=>WM: (156: D9 ^larger D7)
+=>WM: (155: D9 ^larger D8)
+=>WM: (154: D10 ^larger D1)
+=>WM: (153: D10 ^larger D2)
+=>WM: (152: D10 ^larger D3)
+=>WM: (151: D10 ^larger D4)
+=>WM: (150: D10 ^larger D5)
+=>WM: (149: D10 ^larger D6)
+=>WM: (148: D10 ^larger D7)
+=>WM: (147: D10 ^larger D8)
+=>WM: (146: D10 ^larger D9)
+=>WM: (145: D11 ^larger D1)
+=>WM: (144: D11 ^larger D2)
+=>WM: (143: D11 ^larger D3)
+=>WM: (142: D11 ^larger D4)
+=>WM: (141: D11 ^larger D5)
+=>WM: (140: D11 ^larger D6)
+=>WM: (139: D11 ^larger D7)
+=>WM: (138: D11 ^larger D8)
+=>WM: (137: D11 ^larger D9)
+=>WM: (136: D11 ^larger D10)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*propose*move-disk*disk-to-move*onto
+ 6 33 32 193 69 191 67 31 34 36 -->
+ (O1 ^to P3 +)
+ (O1 ^from P1 +)
+ (O1 ^disk D1 +)
+ (O1 ^name move-disk +)
+ (S1 ^operator O1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (198: S1 ^operator O1 +)
+=>WM: (197: O1 ^to P3)
+=>WM: (196: O1 ^from P1)
+=>WM: (195: O1 ^disk D1)
+=>WM: (194: O1 ^name move-disk)
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (199: S1 ^operator O1)
+
+     1:    O: O1 (move-disk)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*monitor*operator-execution*move-disk
+ 199 194 197 91 195 68 -->
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing apply*move-disk*source-not-clear*target-clear
+ 199 194 197 193 196 195 31 36 34 35 -->
+ (H1 ^on P1 -  :O )
+ (H1 ^on P3 +  :O )
+ (H1 ^above D2 -  :O )
+ (H1 ^above none +  :O )
+Firing apply*move-disk*record*last-disk-moved
+ 199 194 195 -->
+ (S1 ^last-disk-moved D1 +  :O )
+Firing apply*move-disk*record*last-disk1-peg
+ 199 194 196 195 67 -->
+ (S1 ^last-disk1-peg P1 +  :O )
+Firing apply*move-disk*remove*last-disk1-peg
+ 199 194 196 32 195 67 -->
+ (S1 ^last-disk1-peg P2 -  :O )
+Firing apply*move-disk*remove*last-disk-moved
+ 199 194 33 195 -->
+ (S1 ^last-disk-moved D2 -  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (203: S1 ^last-disk1-peg P1)
+=>WM: (202: S1 ^last-disk-moved D1)
+=>WM: (201: H1 ^on P3)
+=>WM: (200: H1 ^above none)
+<=WM: (32: S1 ^last-disk1-peg P2)
+<=WM: (33: S1 ^last-disk-moved D2)
+<=WM: (36: H1 ^on P1)
+<=WM: (35: H1 ^above D2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*object*disk*elaborate*state*upper-disk
+ 6 16 -->
+ (S1 ^upper-disk D2 +)
+Retracting tower-of-hanoi*propose*move-disk*disk-to-move*onto
+ 6 33 32 193 69 191 67 31 34 36 --> (O1 ^to P3 +)
+ (O1 ^from P1 +)
+ (O1 ^disk D1 +)
+ (O1 ^name move-disk +)
+ (S1 ^operator O1 +)
+Retracting tower-of-hanoi*object*peg*elaborate*state*clear
+ 6 18 --> (S1 ^clear P3 +)
+	--- Change Working Memory (IE) ---
+=>WM: (204: S1 ^upper-disk D2)
+<=WM: (198: S1 ^operator O1 +)
+<=WM: (199: S1 ^operator O1)
+<=WM: (197: O1 ^to P3)
+<=WM: (196: O1 ^from P1)
+<=WM: (195: O1 ^disk D1)
+<=WM: (194: O1 ^name move-disk)
+<=WM: (193: S1 ^clear P3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*propose*move-disk*disk-to-move*onto2
+ 6 202 67 204 69 192 30 37 39 -->
+ (O2 ^to P2 +)
+ (O2 ^from P1 +)
+ (O2 ^disk D2 +)
+ (O2 ^name move-disk +)
+ (S1 ^operator O2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (209: S1 ^operator O2 +)
+=>WM: (208: O2 ^to P2)
+=>WM: (207: O2 ^from P1)
+=>WM: (206: O2 ^disk D2)
+=>WM: (205: O2 ^name move-disk)
+
+--- Application Phase ---
+
+--- Output Phase ---
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+##################=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (11: S2 ^quiescence t)
+=>WM: (10: S2 ^choices none)
+=>WM: (9: S2 ^impasse no-change)
+=>WM: (8: S2 ^attribute state)
+=>WM: (7: S2 ^superstate S1)
+=>WM: (6: S2 ^type state)
+
+     1:    ==>S: S2 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+
+--- Input Phase --- 
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing top-goal*elaborate*goal*tower-of-hanoi
+ 2 -->
+ (S1 ^name tower-of-hanoi +)
+	--- Change Working Memory (IE) ---
+=>WM: (6: S1 ^name tower-of-hanoi)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*propose*state*initial-and-desired-states
+ 6 -->
+ (D22 ^on P3 +)
+ (D22 ^above none +)
+ (D22 ^disk D11 +)
+ (D21 ^on P3 +)
+ (D21 ^above D11 +)
+ (D21 ^disk D10 +)
+ (D20 ^on P3 +)
+ (D20 ^above D10 +)
+ (D20 ^disk D9 +)
+ (D19 ^on P3 +)
+ (D19 ^above D9 +)
+ (D19 ^disk D8 +)
+ (D18 ^on P3 +)
+ (D18 ^above D8 +)
+ (D18 ^disk D7 +)
+ (D17 ^on P3 +)
+ (D17 ^above D7 +)
+ (D17 ^disk D6 +)
+ (D16 ^on P3 +)
+ (D16 ^above D6 +)
+ (D16 ^disk D5 +)
+ (D15 ^on P3 +)
+ (D15 ^above D5 +)
+ (D15 ^disk D4 +)
+ (D14 ^on P3 +)
+ (D14 ^above D4 +)
+ (D14 ^disk D3 +)
+ (D13 ^on P3 +)
+ (D13 ^above D3 +)
+ (D13 ^disk D2 +)
+ (D12 ^on P3 +)
+ (D12 ^above D2 +)
+ (D12 ^disk D1 +)
+ (S1 ^desired D22 +)
+ (S1 ^desired D21 +)
+ (S1 ^desired D20 +)
+ (S1 ^desired D19 +)
+ (S1 ^desired D18 +)
+ (S1 ^desired D17 +)
+ (S1 ^desired D16 +)
+ (S1 ^desired D15 +)
+ (S1 ^desired D14 +)
+ (S1 ^desired D13 +)
+ (S1 ^desired D12 +)
+ (P3 ^name |C| +)
+ (P2 ^name |B| +)
+ (P1 ^name |A| +)
+ (D11 ^size 11 +)
+ (D11 ^name 11 +)
+ (D10 ^size 10 +)
+ (D10 ^name 10 +)
+ (D9 ^size 9 +)
+ (D9 ^name 9 +)
+ (D8 ^size 8 +)
+ (D8 ^name 8 +)
+ (D7 ^size 7 +)
+ (D7 ^name 7 +)
+ (D6 ^size 6 +)
+ (D6 ^name 6 +)
+ (D5 ^size 5 +)
+ (D5 ^name 5 +)
+ (D4 ^size 4 +)
+ (D4 ^name 4 +)
+ (D3 ^size 3 +)
+ (D3 ^name 3 +)
+ (D2 ^size 2 +)
+ (D2 ^name 2 +)
+ (D1 ^size 1 +)
+ (D1 ^name 1 +)
+ (H11 ^on P1 +)
+ (H11 ^above none +)
+ (H11 ^disk D11 +)
+ (H10 ^on P1 +)
+ (H10 ^above D11 +)
+ (H10 ^disk D10 +)
+ (H9 ^on P1 +)
+ (H9 ^above D10 +)
+ (H9 ^disk D9 +)
+ (H8 ^on P1 +)
+ (H8 ^above D9 +)
+ (H8 ^disk D8 +)
+ (H7 ^on P1 +)
+ (H7 ^above D8 +)
+ (H7 ^disk D7 +)
+ (H6 ^on P1 +)
+ (H6 ^above D7 +)
+ (H6 ^disk D6 +)
+ (H5 ^on P1 +)
+ (H5 ^above D6 +)
+ (H5 ^disk D5 +)
+ (H4 ^on P1 +)
+ (H4 ^above D5 +)
+ (H4 ^disk D4 +)
+ (H3 ^on P1 +)
+ (H3 ^above D4 +)
+ (H3 ^disk D3 +)
+ (H2 ^on P1 +)
+ (H2 ^above D3 +)
+ (H2 ^disk D2 +)
+ (H1 ^on P1 +)
+ (H1 ^above D2 +)
+ (H1 ^disk D1 +)
+ (S1 ^last-disk-moved D2 +)
+ (S1 ^last-disk1-peg P2 +)
+ (S1 ^holds H11 +)
+ (S1 ^holds H10 +)
+ (S1 ^holds H9 +)
+ (S1 ^holds H8 +)
+ (S1 ^holds H7 +)
+ (S1 ^holds H6 +)
+ (S1 ^holds H5 +)
+ (S1 ^holds H4 +)
+ (S1 ^holds H3 +)
+ (S1 ^holds H2 +)
+ (S1 ^holds H1 +)
+ (S1 ^peg P3 +)
+ (S1 ^peg P2 +)
+ (S1 ^peg P1 +)
+ (S1 ^disk D11 +)
+ (S1 ^disk D10 +)
+ (S1 ^disk D9 +)
+ (S1 ^disk D8 +)
+ (S1 ^disk D7 +)
+ (S1 ^disk D6 +)
+ (S1 ^disk D5 +)
+ (S1 ^disk D4 +)
+ (S1 ^disk D3 +)
+ (S1 ^disk D2 +)
+ (S1 ^disk D1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (135: D22 ^on P3)
+=>WM: (134: D22 ^above none)
+=>WM: (133: D22 ^disk D11)
+=>WM: (132: D21 ^on P3)
+=>WM: (131: D21 ^above D11)
+=>WM: (130: D21 ^disk D10)
+=>WM: (129: D20 ^on P3)
+=>WM: (128: D20 ^above D10)
+=>WM: (127: D20 ^disk D9)
+=>WM: (126: D19 ^on P3)
+=>WM: (125: D19 ^above D9)
+=>WM: (124: D19 ^disk D8)
+=>WM: (123: D18 ^on P3)
+=>WM: (122: D18 ^above D8)
+=>WM: (121: D18 ^disk D7)
+=>WM: (120: D17 ^on P3)
+=>WM: (119: D17 ^above D7)
+=>WM: (118: D17 ^disk D6)
+=>WM: (117: D16 ^on P3)
+=>WM: (116: D16 ^above D6)
+=>WM: (115: D16 ^disk D5)
+=>WM: (114: D15 ^on P3)
+=>WM: (113: D15 ^above D5)
+=>WM: (112: D15 ^disk D4)
+=>WM: (111: D14 ^on P3)
+=>WM: (110: D14 ^above D4)
+=>WM: (109: D14 ^disk D3)
+=>WM: (108: D13 ^on P3)
+=>WM: (107: D13 ^above D3)
+=>WM: (106: D13 ^disk D2)
+=>WM: (105: D12 ^on P3)
+=>WM: (104: D12 ^above D2)
+=>WM: (103: D12 ^disk D1)
+=>WM: (102: S1 ^desired D12)
+=>WM: (101: S1 ^desired D13)
+=>WM: (100: S1 ^desired D14)
+=>WM: (99: S1 ^desired D15)
+=>WM: (98: S1 ^desired D16)
+=>WM: (97: S1 ^desired D17)
+=>WM: (96: S1 ^desired D18)
+=>WM: (95: S1 ^desired D19)
+=>WM: (94: S1 ^desired D20)
+=>WM: (93: S1 ^desired D21)
+=>WM: (92: S1 ^desired D22)
+=>WM: (91: P3 ^name |C|)
+=>WM: (90: P2 ^name |B|)
+=>WM: (89: P1 ^name |A|)
+=>WM: (88: D11 ^size 11)
+=>WM: (87: D11 ^name 11)
+=>WM: (86: D10 ^size 10)
+=>WM: (85: D10 ^name 10)
+=>WM: (84: D9 ^size 9)
+=>WM: (83: D9 ^name 9)
+=>WM: (82: D8 ^size 8)
+=>WM: (81: D8 ^name 8)
+=>WM: (80: D7 ^size 7)
+=>WM: (79: D7 ^name 7)
+=>WM: (78: D6 ^size 6)
+=>WM: (77: D6 ^name 6)
+=>WM: (76: D5 ^size 5)
+=>WM: (75: D5 ^name 5)
+=>WM: (74: D4 ^size 4)
+=>WM: (73: D4 ^name 4)
+=>WM: (72: D3 ^size 3)
+=>WM: (71: D3 ^name 3)
+=>WM: (70: D2 ^size 2)
+=>WM: (69: D2 ^name 2)
+=>WM: (68: D1 ^size 1)
+=>WM: (67: D1 ^name 1)
+=>WM: (66: H11 ^on P1)
+=>WM: (65: H11 ^above none)
+=>WM: (64: H11 ^disk D11)
+=>WM: (63: H10 ^on P1)
+=>WM: (62: H10 ^above D11)
+=>WM: (61: H10 ^disk D10)
+=>WM: (60: H9 ^on P1)
+=>WM: (59: H9 ^above D10)
+=>WM: (58: H9 ^disk D9)
+=>WM: (57: H8 ^on P1)
+=>WM: (56: H8 ^above D9)
+=>WM: (55: H8 ^disk D8)
+=>WM: (54: H7 ^on P1)
+=>WM: (53: H7 ^above D8)
+=>WM: (52: H7 ^disk D7)
+=>WM: (51: H6 ^on P1)
+=>WM: (50: H6 ^above D7)
+=>WM: (49: H6 ^disk D6)
+=>WM: (48: H5 ^on P1)
+=>WM: (47: H5 ^above D6)
+=>WM: (46: H5 ^disk D5)
+=>WM: (45: H4 ^on P1)
+=>WM: (44: H4 ^above D5)
+=>WM: (43: H4 ^disk D4)
+=>WM: (42: H3 ^on P1)
+=>WM: (41: H3 ^above D4)
+=>WM: (40: H3 ^disk D3)
+=>WM: (39: H2 ^on P1)
+=>WM: (38: H2 ^above D3)
+=>WM: (37: H2 ^disk D2)
+=>WM: (36: H1 ^on P1)
+=>WM: (35: H1 ^above D2)
+=>WM: (34: H1 ^disk D1)
+=>WM: (33: S1 ^last-disk-moved D2)
+=>WM: (32: S1 ^last-disk1-peg P2)
+=>WM: (31: S1 ^holds H1)
+=>WM: (30: S1 ^holds H2)
+=>WM: (29: S1 ^holds H3)
+=>WM: (28: S1 ^holds H4)
+=>WM: (27: S1 ^holds H5)
+=>WM: (26: S1 ^holds H6)
+=>WM: (25: S1 ^holds H7)
+=>WM: (24: S1 ^holds H8)
+=>WM: (23: S1 ^holds H9)
+=>WM: (22: S1 ^holds H10)
+=>WM: (21: S1 ^holds H11)
+=>WM: (20: S1 ^peg P1)
+=>WM: (19: S1 ^peg P2)
+=>WM: (18: S1 ^peg P3)
+=>WM: (17: S1 ^disk D1)
+=>WM: (16: S1 ^disk D2)
+=>WM: (15: S1 ^disk D3)
+=>WM: (14: S1 ^disk D4)
+=>WM: (13: S1 ^disk D5)
+=>WM: (12: S1 ^disk D6)
+=>WM: (11: S1 ^disk D7)
+=>WM: (10: S1 ^disk D8)
+=>WM: (9: S1 ^disk D9)
+=>WM: (8: S1 ^disk D10)
+=>WM: (7: S1 ^disk D11)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 17 68 -->
+ (D11 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 16 70 -->
+ (D11 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 15 72 -->
+ (D11 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 14 74 -->
+ (D11 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 13 76 -->
+ (D11 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 12 78 -->
+ (D11 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 11 80 -->
+ (D11 ^larger D7 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 10 82 -->
+ (D11 ^larger D8 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 9 84 -->
+ (D11 ^larger D9 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 7 88 88 8 86 -->
+ (D11 ^larger D10 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 17 68 -->
+ (D10 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 16 70 -->
+ (D10 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 15 72 -->
+ (D10 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 14 74 -->
+ (D10 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 13 76 -->
+ (D10 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 12 78 -->
+ (D10 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 11 80 -->
+ (D10 ^larger D7 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 10 82 -->
+ (D10 ^larger D8 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 8 86 86 9 84 -->
+ (D10 ^larger D9 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 17 68 -->
+ (D9 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 16 70 -->
+ (D9 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 15 72 -->
+ (D9 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 14 74 -->
+ (D9 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 13 76 -->
+ (D9 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 12 78 -->
+ (D9 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 11 80 -->
+ (D9 ^larger D7 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 9 84 84 10 82 -->
+ (D9 ^larger D8 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 17 68 -->
+ (D8 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 16 70 -->
+ (D8 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 15 72 -->
+ (D8 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 14 74 -->
+ (D8 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 13 76 -->
+ (D8 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 12 78 -->
+ (D8 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 10 82 82 11 80 -->
+ (D8 ^larger D7 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 17 68 -->
+ (D7 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 16 70 -->
+ (D7 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 15 72 -->
+ (D7 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 14 74 -->
+ (D7 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 13 76 -->
+ (D7 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 11 80 80 12 78 -->
+ (D7 ^larger D6 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 17 68 -->
+ (D6 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 16 70 -->
+ (D6 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 15 72 -->
+ (D6 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 14 74 -->
+ (D6 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 12 78 78 13 76 -->
+ (D6 ^larger D5 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 13 76 76 17 68 -->
+ (D5 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 13 76 76 16 70 -->
+ (D5 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 13 76 76 15 72 -->
+ (D5 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 13 76 76 14 74 -->
+ (D5 ^larger D4 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 14 74 74 17 68 -->
+ (D4 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 14 74 74 16 70 -->
+ (D4 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 14 74 74 15 72 -->
+ (D4 ^larger D3 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 15 72 72 17 68 -->
+ (D3 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 15 72 72 16 70 -->
+ (D3 ^larger D2 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*larger
+ 6 16 70 70 17 68 -->
+ (D2 ^larger D1 +)
+Firing tower-of-hanoi*object*disk*elaborate*state*upper-disk
+ 6 17 -->
+ (S1 ^upper-disk D1 +)
+Firing tower-of-hanoi*object*peg*elaborate*state*clear
+ 6 18 -->
+ (S1 ^clear P3 +)
+Firing tower-of-hanoi*object*peg*elaborate*state*clear
+ 6 19 -->
+ (S1 ^clear P2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (193: S1 ^clear P3)
+=>WM: (192: S1 ^clear P2)
+=>WM: (191: S1 ^upper-disk D1)
+=>WM: (190: D2 ^larger D1)
+=>WM: (189: D3 ^larger D1)
+=>WM: (188: D3 ^larger D2)
+=>WM: (187: D4 ^larger D1)
+=>WM: (186: D4 ^larger D2)
+=>WM: (185: D4 ^larger D3)
+=>WM: (184: D5 ^larger D1)
+=>WM: (183: D5 ^larger D2)
+=>WM: (182: D5 ^larger D3)
+=>WM: (181: D5 ^larger D4)
+=>WM: (180: D6 ^larger D1)
+=>WM: (179: D6 ^larger D2)
+=>WM: (178: D6 ^larger D3)
+=>WM: (177: D6 ^larger D4)
+=>WM: (176: D6 ^larger D5)
+=>WM: (175: D7 ^larger D1)
+=>WM: (174: D7 ^larger D2)
+=>WM: (173: D7 ^larger D3)
+=>WM: (172: D7 ^larger D4)
+=>WM: (171: D7 ^larger D5)
+=>WM: (170: D7 ^larger D6)
+=>WM: (169: D8 ^larger D1)
+=>WM: (168: D8 ^larger D2)
+=>WM: (167: D8 ^larger D3)
+=>WM: (166: D8 ^larger D4)
+=>WM: (165: D8 ^larger D5)
+=>WM: (164: D8 ^larger D6)
+=>WM: (163: D8 ^larger D7)
+=>WM: (162: D9 ^larger D1)
+=>WM: (161: D9 ^larger D2)
+=>WM: (160: D9 ^larger D3)
+=>WM: (159: D9 ^larger D4)
+=>WM: (158: D9 ^larger D5)
+=>WM: (157: D9 ^larger D6)
+=>WM: (156: D9 ^larger D7)
+=>WM: (155: D9 ^larger D8)
+=>WM: (154: D10 ^larger D1)
+=>WM: (153: D10 ^larger D2)
+=>WM: (152: D10 ^larger D3)
+=>WM: (151: D10 ^larger D4)
+=>WM: (150: D10 ^larger D5)
+=>WM: (149: D10 ^larger D6)
+=>WM: (148: D10 ^larger D7)
+=>WM: (147: D10 ^larger D8)
+=>WM: (146: D10 ^larger D9)
+=>WM: (145: D11 ^larger D1)
+=>WM: (144: D11 ^larger D2)
+=>WM: (143: D11 ^larger D3)
+=>WM: (142: D11 ^larger D4)
+=>WM: (141: D11 ^larger D5)
+=>WM: (140: D11 ^larger D6)
+=>WM: (139: D11 ^larger D7)
+=>WM: (138: D11 ^larger D8)
+=>WM: (137: D11 ^larger D9)
+=>WM: (136: D11 ^larger D10)
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*propose*move-disk*disk-to-move*onto
+ 6 33 32 193 69 191 67 31 34 36 -->
+ (O1 ^to P3 +)
+ (O1 ^from P1 +)
+ (O1 ^disk D1 +)
+ (O1 ^name move-disk +)
+ (S1 ^operator O1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (198: S1 ^operator O1 +)
+=>WM: (197: O1 ^to P3)
+=>WM: (196: O1 ^from P1)
+=>WM: (195: O1 ^disk D1)
+=>WM: (194: O1 ^name move-disk)
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (199: S1 ^operator O1)
+
+     1:    O: O1 (move-disk)
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*monitor*operator-execution*move-disk
+ 199 194 197 91 195 68 -->
+	--- Change Working Memory (IE) ---
+
+--- Application Phase ---
+	--- Firing Productions (PE) ---
+Firing apply*move-disk*remove*last-disk-moved
+ 199 194 33 195 -->
+ (S1 ^last-disk-moved D2 -  :O )
+Firing apply*move-disk*remove*last-disk1-peg
+ 199 194 196 32 195 67 -->
+ (S1 ^last-disk1-peg P2 -  :O )
+Firing apply*move-disk*record*last-disk1-peg
+ 199 194 196 195 67 -->
+ (S1 ^last-disk1-peg P1 +  :O )
+Firing apply*move-disk*record*last-disk-moved
+ 199 194 195 -->
+ (S1 ^last-disk-moved D1 +  :O )
+Firing apply*move-disk*source-not-clear*target-clear
+ 199 194 197 193 196 195 31 36 34 35 -->
+ (H1 ^on P1 -  :O )
+ (H1 ^on P3 +  :O )
+ (H1 ^above D2 -  :O )
+ (H1 ^above none +  :O )
+	--- Change Working Memory (PE) ---
+=>WM: (203: H1 ^on P3)
+=>WM: (202: H1 ^above none)
+=>WM: (201: S1 ^last-disk-moved D1)
+=>WM: (200: S1 ^last-disk1-peg P1)
+<=WM: (36: H1 ^on P1)
+<=WM: (35: H1 ^above D2)
+<=WM: (33: S1 ^last-disk-moved D2)
+<=WM: (32: S1 ^last-disk1-peg P2)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*object*disk*elaborate*state*upper-disk
+ 6 16 -->
+ (S1 ^upper-disk D2 +)
+Retracting tower-of-hanoi*propose*move-disk*disk-to-move*onto
+ 6 33 32 193 69 191 67 31 34 36 --> (O1 ^to P3 +)
+ (O1 ^from P1 +)
+ (O1 ^disk D1 +)
+ (O1 ^name move-disk +)
+ (S1 ^operator O1 +)
+Retracting tower-of-hanoi*object*peg*elaborate*state*clear
+ 6 18 --> (S1 ^clear P3 +)
+	--- Change Working Memory (IE) ---
+=>WM: (204: S1 ^upper-disk D2)
+<=WM: (198: S1 ^operator O1 +)
+<=WM: (199: S1 ^operator O1)
+<=WM: (197: O1 ^to P3)
+<=WM: (196: O1 ^from P1)
+<=WM: (195: O1 ^disk D1)
+<=WM: (194: O1 ^name move-disk)
+<=WM: (193: S1 ^clear P3)
+
+--- Application Phase ---
+	--- Firing Productions (IE) ---
+Firing tower-of-hanoi*propose*move-disk*disk-to-move*onto2
+ 6 201 67 204 69 192 30 37 39 -->
+ (O2 ^to P2 +)
+ (O2 ^from P1 +)
+ (O2 ^disk D2 +)
+ (O2 ^name move-disk +)
+ (S1 ^operator O2 +)
+	--- Change Working Memory (IE) ---
+=>WM: (209: S1 ^operator O2 +)
+=>WM: (208: O2 ^to P2)
+=>WM: (207: O2 ^from P1)
+=>WM: (206: O2 ^disk D2)
+=>WM: (205: O2 ^name move-disk)
+
+--- Application Phase ---
+
+--- Output Phase ---

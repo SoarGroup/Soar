@@ -1,0 +1,217 @@
+=>WM: (2: S1 ^superstate nil)
+=>WM: (1: S1 ^type state)
+
+     0: ==>S: S1 =>WM: (5: I1 ^output-link I3)
+=>WM: (4: I1 ^input-link I2)
+=>WM: (3: S1 ^io I1)
+
+Soar v.8.3 Build Information.
+ - CALLBACK_H_INCLUDED
+ - MAX_SIMULTANEOUS_AGENTS
+ - STD
+ - USE_STDARGS
+ - WIN32
+Learning On
+**************No Production named 
+--- Input Phase --- 
+
+--- Proposal Phase ---
+	--- Firing Productions (IE) ---
+Firing apply*add-times-10-and-2
+ 2 -->
+
+ Multiplying Input 10 and Input 2 = R1. (R1 ^value 20 +)
+ (R1 ^type times +)
+ (S1 ^times_result R1 +)
+Firing apply*sqrt
+ 2 -->
+
+ RESULT: sqrt(100) = R2
+ (R2 ^value 10. +)
+ (R2 ^type sqrt +)
+ (S1 ^sqrt_result R2 +)
+Firing apply*sin
+ 2 -->
+
+ RESULT: sin(1.5708) = R3
+ (R3 ^value 1. +)
+ (R3 ^type sin +)
+ (S1 ^sin_result R3 +)
+Firing apply*mod
+ 2 -->
+
+ RESULT: mod(10 3) = R4
+ (R4 ^value 1 +)
+ (R4 ^type mod +)
+ (S1 ^mod_result R4 +)
+Firing apply*int
+ 2 -->
+
+ RESULT: int(10.1) = R5
+ (R5 ^value 10 +)
+ (R5 ^type int +)
+ (S1 ^int_result R5 +)
+Firing apply*div
+ 2 -->
+
+ RESULT: div (10 3) = R6
+ (R6 ^value 3 +)
+ (R6 ^type div +)
+ (S1 ^div_result R6 +)
+Firing apply*fp_divide
+ 2 -->
+
+ RESULT: fp_divide (10 3) = R7
+ (R7 ^value 3.33333 +)
+ (R7 ^type fp_divide +)
+ (S1 ^fp_div_result R7 +)
+Firing apply*float
+ 2 -->
+
+ RESULT: float (10) = R8
+ (R8 ^value 10. +)
+ (R8 ^type float +)
+ (S1 ^float_result R8 +)
+Firing apply*cos
+ 2 -->
+
+ RESULT: cos (6.28318) = R9
+ (R9 ^value 1. +)
+ (R9 ^type cos +)
+ (S1 ^cos_result R9 +)
+Firing apply*minus-inputs-10-and-20
+ 2 -->
+
+ Subtracting Input 10 and Input 20 = R10. (R10 ^value -10 +)
+ (R10 ^type minus +)
+ (S1 ^minus_result R10 +)
+Firing apply*add-inputs-10-and-20
+ 2 -->
+
+ Adding Input 10 and Input 20 = R11. (R11 ^value 30 +)
+ (R11 ^type addition +)
+ (S1 ^add_result R11 +)
+Firing apply*atan2
+ 2 -->
+
+ RESULT: atan2 (-90 2) = R12
+ (R12 ^value -1.54858 +)
+ (R12 ^type atan2 +)
+ (S1 ^atan2_result R12 +)
+Firing apply*abs
+ 2 -->
+
+ RESULT: Abs (-20) = R13
+ (R13 ^value 20 +)
+ (R13 ^type abs +)
+ (S1 ^abs_result R13 +)
+Firing elaborate-state*top-state-pointer*init
+ 2 -->
+ (S1 ^top-state S1 +)
+	--- Change Working Memory (IE) ---
+=>WM: (45: S1 ^top-state S1)
+=>WM: (44: R13 ^value 20)
+=>WM: (43: R13 ^type abs)
+=>WM: (42: S1 ^abs_result R13)
+=>WM: (41: R12 ^value -1.54858)
+=>WM: (40: R12 ^type atan2)
+=>WM: (39: S1 ^atan2_result R12)
+=>WM: (38: R11 ^value 30)
+=>WM: (37: R11 ^type addition)
+=>WM: (36: S1 ^add_result R11)
+=>WM: (35: R10 ^value -10)
+=>WM: (34: R10 ^type minus)
+=>WM: (33: S1 ^minus_result R10)
+=>WM: (32: R9 ^value 1.)
+=>WM: (31: R9 ^type cos)
+=>WM: (30: S1 ^cos_result R9)
+=>WM: (29: R8 ^value 10.)
+=>WM: (28: R8 ^type float)
+=>WM: (27: S1 ^float_result R8)
+=>WM: (26: R7 ^value 3.33333)
+=>WM: (25: R7 ^type fp_divide)
+=>WM: (24: S1 ^fp_div_result R7)
+=>WM: (23: R6 ^value 3)
+=>WM: (22: R6 ^type div)
+=>WM: (21: S1 ^div_result R6)
+=>WM: (20: R5 ^value 10)
+=>WM: (19: R5 ^type int)
+=>WM: (18: S1 ^int_result R5)
+=>WM: (17: R4 ^value 1)
+=>WM: (16: R4 ^type mod)
+=>WM: (15: S1 ^mod_result R4)
+=>WM: (14: R3 ^value 1.)
+=>WM: (13: R3 ^type sin)
+=>WM: (12: S1 ^sin_result R3)
+=>WM: (11: R2 ^value 10.)
+=>WM: (10: R2 ^type sqrt)
+=>WM: (9: S1 ^sqrt_result R2)
+=>WM: (8: R1 ^value 20)
+=>WM: (7: R1 ^type times)
+=>WM: (6: S1 ^times_result R1)
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (51: S2 ^quiescence t)
+=>WM: (50: S2 ^choices none)
+=>WM: (49: S2 ^impasse no-change)
+=>WM: (48: S2 ^attribute state)
+=>WM: (47: S2 ^superstate S1)
+=>WM: (46: S2 ^type state)
+
+     1:    ==>S: S2 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+No Production named 
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (57: S3 ^quiescence t)
+=>WM: (56: S3 ^choices none)
+=>WM: (55: S3 ^impasse no-change)
+=>WM: (54: S3 ^attribute state)
+=>WM: (53: S3 ^superstate S2)
+=>WM: (52: S3 ^type state)
+
+     2:       ==>S: S3 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+No Production named default*evaluate-object*elaborate*state*desired
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (63: S4 ^quiescence t)
+=>WM: (62: S4 ^choices none)
+=>WM: (61: S4 ^impasse no-change)
+=>WM: (60: S4 ^attribute state)
+=>WM: (59: S4 ^superstate S3)
+=>WM: (58: S4 ^type state)
+
+     3:          ==>S: S4 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
+No Production named default*evaluate-object*elaborate*state*desired
+--- Input Phase --- 
+
+--- Proposal Phase ---
+
+--- Decision Phase ---
+=>WM: (69: S5 ^quiescence t)
+=>WM: (68: S5 ^choices none)
+=>WM: (67: S5 ^impasse no-change)
+=>WM: (66: S5 ^attribute state)
+=>WM: (65: S5 ^superstate S4)
+=>WM: (64: S5 ^type state)
+
+     4:             ==>S: S5 (state no-change)
+--- Application Phase ---
+
+--- Output Phase ---
