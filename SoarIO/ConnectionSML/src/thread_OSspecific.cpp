@@ -13,15 +13,15 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 
-#ifdef HAVE_PTHREAD_H
+#ifndef HAVE_PTHREAD_H
 #error "missing required pthread.h header"
 #endif // HAVE_PTHREAD_H
 
-#ifdef HAVE_SYS_TYPES_H
+#ifndef HAVE_SYS_TYPES_H
 #error "missing required sys/types.h header"
 #endif // HAVE_SYS_TYPES_H
 
-#ifdef HAVE_UNISTD_H
+#ifndef HAVE_UNISTD_H
 #error "missing required unistd.h header"
 #endif // HAVE_UNISTD_H
 
