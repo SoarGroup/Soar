@@ -127,8 +127,7 @@ Bug Fixes
 Known Issues
 ------------  
 188  Selecting Map->Random Map causes error message when agent present on
-	current map  
-151  Can't use run <n> command in TankSoar  
+	current map
 
 Documentation
 =============
