@@ -32,7 +32,7 @@ void printWMEs(WMElement const* pRoot)
 		cout << "Top Identifier " << pRoot->GetValueAsString() << endl ;
 	else
 	{
-		cout << "(" << pRoot->GetParent()->GetValueAsString() << " ^" << pRoot->GetAttribute() << " " << pRoot->GetValueAsString() << ")" << endl ;
+		cout << "(" << pRoot->GetParent()->GetIdentifierSymbol() << " ^" << pRoot->GetAttribute() << " " << pRoot->GetValueAsString() << ")" << endl ;
 	}
 
 	if (pRoot->IsIdentifier())
@@ -94,7 +94,16 @@ int main(int argc, char* argv[])
 		// Change the speed to 300
 		pAgent->Update(pWME2, 300) ;
 
+		// Create a new WME that shares the same id as plane
+		Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
+
 		ok = pAgent->Commit() ;
+
+		pAgent->Run(2) ;
+
+		// Delete one of the shared WMEs to make sure that's ok
+		pAgent->DestroyWME(pID) ;
+		pAgent->Commit() ;
 
 		// Nothing should match here
 		pAgent->Run(2) ;
@@ -119,6 +128,41 @@ int main(int argc, char* argv[])
 
 			// Now update the output link with "status complete"
 			Identifier* pMove = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("move", 0) ;
+
+			// We add an "alternative" to check that we handle shared WMEs correctly.
+			// Look it up here.
+			Identifier* pAlt = (Identifier*)pAgent->GetOutputLink()->FindByAttribute("alternative", 0) ;
+
+			if (pAlt)
+			{
+				cout << "Found alternative " << pAlt->GetValueAsString() << endl ;
+			}
+	
+			// Should also be able to get the command through the "GetCommands" route which tests
+			// whether we've flagged the right wmes as "just added" or not.
+			int numberCommands = pAgent->GetNumberCommands() ;
+
+			// Get the first two commands (move and alternate)
+			Identifier* pCommand1 = pAgent->GetCommand(0) ;
+			Identifier* pCommand2 = pAgent->GetCommand(1) ;
+
+			if (numberCommands == 2 && (strcmp(pCommand1->GetCommandName(), "move") == 0 || (strcmp(pCommand2->GetCommandName(), "move") == 0)))
+			{
+				cout << "Found move command" << endl ;
+			}
+			else
+			{
+				cout << "*** ERROR: Failed to find the move command" << endl ;
+			}
+
+			pAgent->ClearOutputLinkChanges() ;
+
+			int clearedNumberCommands = pAgent->GetNumberCommands() ;
+
+			if (clearedNumberCommands != 0)
+			{
+				cout << "*** ERROR: Clearing the list of output link changes failed" << endl ;
+			}
 
 			if (pMove)
 			{
@@ -151,7 +195,7 @@ int main(int argc, char* argv[])
 
 		cout << endl << "If this test worked should see something like this (above here):" << endl ;
 		cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;
-		cout << "(M1 ^col 1)" << endl ;
+		cout << "(M1 ^col 1)" << endl << "(I3 ^alternative M1)" << endl ;
 		cout << "And then after the command is marked as completed (during the test):" << endl ;
 		cout << "Top Identifier I3" << endl ;
 

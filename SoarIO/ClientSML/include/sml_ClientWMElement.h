@@ -18,6 +18,7 @@ namespace sml {
 
 class Agent ;
 class Identifier ;
+class IdentifierSymbol ;
 class WorkingMemory ;
 class RemoveDelta ;
 class WMDelta ;
@@ -27,8 +28,9 @@ class WMElement
 	// Making most methods protected, so users don't use them directly by accident.
 	// But allow working memory to work with them directly.
 	friend WorkingMemory ;
-	friend WMDelta ;		// Allow it to destroy WMEs
-	friend Identifier ;		// Allow it to destroy WMEs
+	friend Identifier ;				// Access to just added information
+	friend WMDelta ;				// Allow it to destroy WMEs
+	friend IdentifierSymbol ;		// Allow it to destroy WMEs
 
 protected:
 	// The agent which owns this WME.
@@ -39,7 +41,7 @@ protected:
 	long	m_TimeTag ;
 
 	// The id for this wme (can be NULL if we're at the top of the tree)
-	Identifier*	m_ID ;
+	IdentifierSymbol*	m_ID ;
 
 	// The attribute name for this wme (the value is owned by the derived class)
 	std::string m_AttributeName ;
@@ -53,8 +55,8 @@ public:
 	bool	IsJustAdded() { return m_JustAdded ; }
 
 	// Two accessors for the ID as people think about it in different ways
-	Identifier*		GetParent()	const		{ return m_ID ; }
-	Identifier*		GetIdentifier()	 const	{ return m_ID ; }
+	IdentifierSymbol*		GetParent()		const	{ return m_ID ; }
+	IdentifierSymbol*		GetIdentifier()	const	{ return m_ID ; }
 
 	char const*	GetAttribute() const	{ return m_AttributeName.c_str() ; }
 

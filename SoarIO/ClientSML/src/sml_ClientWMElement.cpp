@@ -10,6 +10,7 @@
 
 #include "sml_ClientWMElement.h"
 #include "sml_ClientAgent.h"
+#include "sml_ClientIdentifier.h"
 
 using namespace sml ;
 
@@ -24,7 +25,10 @@ WMElement::WMElement(Agent* pAgent, Identifier* pID, char const* pAttributeName,
 	if (pAttributeName)
 		m_AttributeName = pAttributeName ;
 
-	m_ID			= pID ;
+	m_ID = NULL ;
+
+	if (pID)
+		m_ID = pID->GetSymbol() ;
 }
 
 WMElement::~WMElement(void)

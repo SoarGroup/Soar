@@ -63,8 +63,12 @@ public:
 	char const*		GetAgentName() const ;
 	Connection*		GetConnection()	const ;
 
+	void			ClearOutputLinkChanges() ;
+
+	OutputDeltaList* GetOutputLinkChanges() { return &m_OutputDeltaList ; }
+
 	// Searches for an identifier object that matches this id.
-	Identifier*		FindIdentifier(char const* pID, bool searchInput, bool searchOutput) ;
+	Identifier*		FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index = 0) ;
 
 	// Create a new WME of the appropriate type based on this information.
 	WMElement*		CreateWME(Identifier* pParent, char const* pAttribute, char const* pValue, char const* pType, long timeTag) ;
@@ -75,7 +79,9 @@ public:
 	StringElement*	CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
 	IntElement*		CreateIntWME(Identifier* parent, char const* pAttribute, int value) ;
 	FloatElement*	CreateFloatWME(Identifier* parent, char const* pAttribute, double value) ;
+
 	Identifier*		CreateIdWME(Identifier* parent, char const* pAttribute) ;
+	Identifier*		CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue) ;
 
 	void			UpdateString(StringElement* pWME, char const* pValue) ;
 	void			UpdateInt(IntElement* pWME, int value) ;

@@ -86,6 +86,18 @@ public:
 	Identifier* GetOutputLink() ;
 
 	/*************************************************************
+	* @brief Searches for a WME that has the given identifier value.
+	*		 There can be multiple WMEs that share the same identifier value.
+	*		 (You can use the index to find a specific one).
+	*
+	* @param pId			The id to look for (e.g. "O4" -- kernel side or "p3" -- client side)
+	* @param searchInput	If true, searches from input-link down
+	* @param searchOutput	If true, searches from output-link down
+	* @param index			If non-zero, finds the n-th match
+	*************************************************************/
+	Identifier*		FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index = 0) ;
+
+	/*************************************************************
 	* @brief Builds a new WME that has a string value and schedules
 	*		 it for addition to Soar's input link.
 	*
@@ -117,6 +129,13 @@ public:
 	*		 The kernel will keep a map for translating back and forth.
 	*************************************************************/
 	Identifier*		CreateIdWME(Identifier* parent, char const* pAttribute) ;
+
+	/*************************************************************
+	* @brief Creates a new WME that has an identifier as its value.
+	*		 The value in this case is the same as an existing identifier.
+	*		 This allows us to create a graph rather than a tree.
+	*************************************************************/
+	Identifier*		CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue) ;
 
 	/*************************************************************
 	* @brief Update the value of an existing WME.
@@ -193,6 +212,28 @@ public:
 	*		 You should call this after processing the list of changes.
 	*************************************************************/
 	void	ClearOutputLinkChanges() ;
+
+	/*************************************************************
+	* @brief Get the number of "commands".  A command in this context
+	*		 is an identifier wme that have been added to the top level of
+	*		 the output-link since the last call to "ClearOutputLinkChanges".
+	*
+	*		 NOTE: This function may involve searching a list so it's
+	*		 best to not call it repeatedly.
+	*		 
+	*************************************************************/
+	int		GetNumberCommands() ;
+
+	/*************************************************************
+	* @brief Get the n-th "command".  A command in this context
+	*		 is an identifier wme that have been added to the top level of
+	*		 the output-link since the last call to "ClearOutputLinkChanges".
+	*
+	*		 Returns NULL if index is out of range.
+	*
+	* @param index	The 0-based index for which command to get.
+	*************************************************************/
+	Identifier* GetCommand(int index) ;
 
 	/*************************************************************
 	* @brief Send the most recent list of changes to working memory

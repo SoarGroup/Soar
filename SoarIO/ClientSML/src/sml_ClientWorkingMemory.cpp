@@ -56,7 +56,7 @@ char const* WorkingMemory::GetAgentName() const
 }
 
 // Searches for an identifier object that matches this id.
-Identifier*	WorkingMemory::FindIdentifier(char const* pID, bool searchInput, bool searchOutput)
+Identifier*	WorkingMemory::FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index)
 {
 	// BADBAD: For better speed we could keep a map of identifiers in use and just look this up.
 	Identifier* pMatch = NULL ;
@@ -121,6 +121,29 @@ void WorkingMemory::RecordDeletion(WMElement* pWME)
 	m_OutputDeltaList.RemoveWME(pWME) ;
 }
 
+// Clear the delta list and also reset all state flags.
+void WorkingMemory::ClearOutputLinkChanges()
+{
+	// Clear the list, deleting any WMEs that it owns
+	m_OutputDeltaList.Clear(true) ;
+
+	if (m_InputLink)
+	{
+		// Reset the information about how the input link just changed.
+		// (Not sure we're updating this information anyway as the client controls it).
+		m_InputLink->ClearJustAdded() ;
+		m_InputLink->ClearChildrenModified() ;
+	}
+
+	if (m_OutputLink)
+	{
+		// Reset the information about how the output link just changed.
+		// This is definitely being maintained.
+		m_OutputLink->ClearJustAdded() ;
+		m_OutputLink->ClearChildrenModified() ;
+	}
+}
+
 /*************************************************************
 * @brief This function is called when output is received
 *		 from the Soar kernel.
@@ -182,6 +205,9 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 			long timeTag = atoi(pTimeTag) ;
 
 			// Find the parent wme that we're adding this new wme to
+			// (Actually, there can be multiple WMEs that have this identifier
+			//  as its value, but any one will do because the true parent is the
+			//  identifier symbol which is the same for any identifiers).
 			Identifier* pParent = FindIdentifier(pID, false, true) ;
 
 			if (pParent)
@@ -458,6 +484,28 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 }
 
 /*************************************************************
+* @brief Creates a new WME that has an identifier as its value.
+*		 The value in this case is the same as an existing identifier.
+*		 This allows us to create a graph rather than a tree.
+*************************************************************/
+Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue)
+{
+	// Look up the id from the existing identifier
+	std::string id = pSharedValue->GetValueAsString() ;
+
+	// Create the new WME with the same value
+	Identifier* pWME = new Identifier(GetAgent(), parent, pAttribute, id.c_str(), GenerateTimeTag()) ;
+
+	// Record that the identifer owns this new WME
+	parent->AddChild(pWME) ;
+
+	// Add it to our list of changes that need to be sent to Soar.
+	m_DeltaList.AddWME(pWME) ;
+
+	return pWME ;
+}
+
+/*************************************************************
 * @brief Schedules a WME from deletion from the input link and removes
 *		 it from the client's model of working memory.
 *
@@ -468,7 +516,7 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 *************************************************************/
 bool WorkingMemory::DestroyWME(WMElement* pWME)
 {
-	Identifier* parent = pWME->GetIdentifier() ;
+	IdentifierSymbol* parent = pWME->GetIdentifier() ;
 
 	// We can't delete top level WMEs (e.g. the WME that represents the input-link's ID)
 	// Those are architecturally created.

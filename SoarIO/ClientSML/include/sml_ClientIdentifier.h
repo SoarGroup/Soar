@@ -1,10 +1,15 @@
 /////////////////////////////////////////////////////////////////
-// SoarId class
+// Identifier class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : Sept 2004
 //
 // Working memory element that has an ID as its value.
+//
+// Also contains "IdentifierSymbol".  This represents the value.
+//
+// So for (I6 ^name N1) the triplet is the WME (Identifier class)
+// and "N1" is the IdentifierSymbol.
 //
 /////////////////////////////////////////////////////////////////
 
@@ -20,33 +25,83 @@ namespace sml {
 
 class StringElement ;
 class WorkingMemory ;
+class Identifier ;
+
+// Two identifiers (two wmes) can have the same value because this is a graph not a tree
+// so we need to represent that separately.
+class IdentifierSymbol
+{
+	friend Identifier ;	// Provide direct access to children.
+
+protected:
+	// The value for this id, which is a string identifier (e.g. I3)
+	// We'll use upper case for Soar IDs and lower case for client IDs
+	// (sometimes the client has to generate these before they are assigned by the kernel)
+	std::string	m_Symbol ;
+
+	// The list of WMEs owned by this identifier.
+	// (When we delete this identifier we'll delete all these automatically)
+	std::list<WMElement*>		m_Children ;
+
+	// The list of WMEs that are using this symbol as their identifier
+	// (Usually just one value in this list)
+	std::list<Identifier*>		m_UsedBy ;
+
+	// This is true if the list of children of this identifier was changed.  The client chooses when to clear these flags.
+	bool m_AreChildrenModified ;
+
+public:
+	IdentifierSymbol(Identifier* pIdentifier) { m_UsedBy.push_back(pIdentifier) ; }
+	~IdentifierSymbol() ;
+
+	char const* GetIdentifierSymbol()			{ return m_Symbol.c_str() ; }
+	void SetIdentifierSymbol(char const* pID)   { m_Symbol = pID ; }
+
+	bool AreChildrenModified()				{ return m_AreChildrenModified ; }
+	void SetAreChildrenModified(bool state) { m_AreChildrenModified = true ; }
+
+	// Indicates that an identifier is no longer using this as its value
+	void NoLongerUsedBy(Identifier* pIdentifier)  { m_UsedBy.remove(pIdentifier) ; }
+
+	int  GetNumberUsing()						{ return (int)m_UsedBy.size() ; }
+
+	// Have this identifier take ownership of this WME.  So when the identifier is deleted
+	// it will delete the WME.
+	void AddChild(WMElement* pWME) ;
+
+	void RemoveChild(WMElement* pWME) ;
+} ;
 
 class Identifier : public WMElement
 {
 	// Make the members all protected, so users dont' access them by accident.
 	// Instead, only open them up to the working memory class to use.
 	friend WorkingMemory ;
+	friend WMElement ;
+	friend Agent ;
 
-protected:
-	// The value for this id, which is a string identifier (e.g. I3)
-	// We'll use upper case for Soar IDs and lower case for client IDs
-	// (sometimes the client has to generate these before they are assigned by the kernel)
-	std::string	m_Identifier ;
-
-	// The list of WMEs owned by this identifier.
-	// (When we delete this identifier we'll delete all these automatically)
-	std::list<WMElement*>		m_Children ;
+public:
 	typedef std::list<WMElement*>::iterator ChildrenIter ;
 	typedef std::list<WMElement*>::const_iterator ChildrenConstIter ;
 
-	// This is true if the list of children of this identifier was changed.  The client chooses when to clear these flags.
-	bool m_AreChildrenModified ;
+protected:
+	// Two identifiers (i.e. two wmes) can share the same identifier value
+	// So each identifier has a pointer to a symbol object, but two could share the same object.
+	IdentifierSymbol* m_pSymbol ;
+
+	IdentifierSymbol* GetSymbol() { return m_pSymbol ; }
+
+	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
+	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
 
 public:
+	typedef std::list<WMElement*>::iterator ChildrenIter ;
+	typedef std::list<WMElement*>::const_iterator ChildrenConstIter ;
+
 	virtual char const* GetValueType() const ;
 
 	// Returns a string form of the value stored here.
-	virtual char const* GetValueAsString() const { return m_Identifier.c_str() ; }
+	virtual char const* GetValueAsString() const { return m_pSymbol->GetIdentifierSymbol() ; }
 
 	// The Identifier class overrides this to return true.  (The poor man's RTTI).
 	virtual bool IsIdentifier() const { return true ; }
@@ -56,9 +111,12 @@ public:
 	*		 its value (and is itself an identifier).
 	*		 (The search is recursive over all children).
 	*
-	* @param pIncoming	The id to look for (e.g. "O4" -- kernel side or "p3" -- client side)
+	*		 There can be multiple WMEs that share the same identifier value.
+	*
+	* @param pId	The id to look for (e.g. "O4" -- kernel side or "p3" -- client side)
+	* @param index	If non-zero, finds the n-th match
 	*************************************************************/
-	Identifier* FindIdentifier(char const* pID) const ;
+	Identifier* FindIdentifier(char const* pID, int index = 0) const ;
 
 	/*************************************************************
 	* @brief Searches for a child of this identifier that has the given
@@ -95,9 +153,24 @@ public:
 	char const* GetCommandName() const { return this->GetAttribute() ; }
 
 	/*************************************************************
+	* @brief Adds "^status complete" as a child of this identifier.
+	*************************************************************/
+	void AddStatusComplete() ;
+
+	/*************************************************************
+	* @brief Adds "^status error" as a child of this identifier.
+	*************************************************************/
+	void AddStatusError() ;
+
+	/*************************************************************
+	* @brief Adds "^error-code <code>" as a child of this identifier.
+	*************************************************************/
+	void AddErrorCode(int errorCode) ;
+
+	/*************************************************************
 	* @brief Returns the number of children
 	*************************************************************/
-	int		GetNumberChildren() { return (int)m_Children.size() ; }
+	int		GetNumberChildren() { return (int)m_pSymbol->m_Children.size() ; }
 
 	/*************************************************************
 	* @brief Gets the n-th child.
@@ -112,7 +185,7 @@ public:
 	* @brief This is true if the list of children of this identifier has changed.
 	*		 The client chooses when to clear these flags.
 	*************************************************************/
-	bool AreChildrenModified() { return m_AreChildrenModified ; }
+	bool AreChildrenModified() { return m_pSymbol->AreChildrenModified() ; }
 
 protected:
 	/*************************************************************
@@ -133,11 +206,9 @@ protected:
 
 	virtual ~Identifier(void);
 
-	// Have this identifier take ownership of this WME.  So when the identifier is deleted
-	// it will delete the WME.
-	void AddChild(WMElement* pWME) ;
+	void AddChild(WMElement* pWME) { m_pSymbol->AddChild(pWME) ; }
 
-	void RemoveChild(WMElement* pWME) ;
+	void RemoveChild(WMElement* pWME) { m_pSymbol->RemoveChild(pWME) ; }
 };
 
 }	// namespace

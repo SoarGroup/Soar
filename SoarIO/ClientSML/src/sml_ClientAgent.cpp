@@ -13,6 +13,7 @@
 #include "sml_ClientKernel.h"
 #include "sml_Connection.h"
 #include "sml_ClientIdentifier.h"
+#include "sml_OutputDeltaList.h"
 
 #include <iostream>     
 #include <sstream>     
@@ -85,6 +86,124 @@ Identifier* Agent::GetOutputLink()
 }
 
 /*************************************************************
+* @brief Get number of changes to output link.
+*        (This is since last call to "ClearOuputLinkChanges").
+*************************************************************/
+int	Agent::GetNumberOutputLinkChanges()
+{
+	OutputDeltaList* pDeltas = GetWM()->GetOutputLinkChanges() ;
+	return pDeltas->GetSize() ;
+}
+
+/*************************************************************
+* @brief Get the n-th wme added or deleted to output link
+*        (This is since last call to "ClearOuputLinkChanges").
+*************************************************************/
+WMElement* Agent::GetOutputLinkChange(int index)
+{
+	OutputDeltaList* pDeltas = GetWM()->GetOutputLinkChanges() ;
+	WMDelta* pDelta = pDeltas->GetDeltaWME(index) ;
+
+	if (!pDelta)
+		return NULL ;
+
+	WMElement* pWME = pDelta->getWME() ;
+	
+	return pWME ;
+}
+
+/*************************************************************
+* @brief Returns true if the n-th wme change to the output-link
+*		 was a wme being added.  (false => it was a wme being deleted).
+*        (This is since last call to "ClearOuputLinkChanges").
+*************************************************************/
+bool Agent::IsOutputLinkChangeAdd(int index)
+{
+	OutputDeltaList* pDeltas = GetWM()->GetOutputLinkChanges() ;
+	WMDelta* pDelta = pDeltas->GetDeltaWME(index) ;
+
+	if (!pDelta)
+		return NULL ;
+
+	bool isAddition = (pDelta->getChangeType() == WMDelta::kAdded) ;
+
+	return isAddition ;
+}
+
+/*************************************************************
+* @brief Clear the current list of changes to the output-link.
+*		 You should call this after processing the list of changes.
+*************************************************************/
+void Agent::ClearOutputLinkChanges()
+{
+	GetWM()->ClearOutputLinkChanges() ;
+}
+
+/*************************************************************
+* @brief Get the number of "commands".  A command in this context
+*		 is an identifier wme that have been added to the top level of
+*		 the output-link since the last call to "ClearOutputLinkChanges".
+*
+*		 NOTE: This function may involve searching a list so it's
+*		 best to not call it repeatedly.
+*		 
+*************************************************************/
+int	Agent::GetNumberCommands()
+{
+	// Method is to search all top level output link wmes and see which have
+	// just been added and are identifiers.
+	int count = 0 ;
+
+	Identifier* pOutputLink = GetOutputLink() ;
+
+	if (!pOutputLink)
+		return 0 ;
+
+	for (Identifier::ChildrenIter iter = pOutputLink->GetChildrenBegin() ; iter != pOutputLink->GetChildrenEnd() ; iter++)
+	{
+		WMElement *pWME = *iter ;
+
+		if (pWME->IsIdentifier() && pWME->IsJustAdded())
+			count++ ;
+	}
+
+	return count ;
+}
+
+/*************************************************************
+* @brief Get the n-th "command".  A command in this context
+*		 is an identifier wme that have been added to the top level of
+*		 the output-link since the last call to "ClearOutputLinkChanges".
+*
+*		 Returns NULL if index is out of range.
+*
+* @param index	The 0-based index for which command to get.
+*************************************************************/
+Identifier* Agent::GetCommand(int index)
+{
+	// Method is to search all top level output link wmes and see which have
+	// just been added and are identifiers.
+	Identifier* pOutputLink = GetOutputLink() ;
+
+	if (!pOutputLink)
+		return NULL ;
+
+	for (Identifier::ChildrenIter iter = pOutputLink->GetChildrenBegin() ; iter != pOutputLink->GetChildrenEnd() ; iter++)
+	{
+		WMElement *pWME = *iter ;
+
+		if (pWME->IsIdentifier() && pWME->IsJustAdded())
+		{
+			if (index == 0)
+				return (Identifier*)pWME ;
+			index-- ;
+		}
+	}
+
+	return NULL ;
+}
+
+/*************************************************************
 * @brief Builds a new WME that has a string value and schedules
 *		 it for addition to Soar's input link.
 *
@@ -119,6 +238,19 @@ Identifier* Agent::CreateIdWME(Identifier* parent, char const* pAttribute)
 }
 
 /*************************************************************
+* @brief Creates a new WME that has an identifier as its value.
+*		 The value in this case is the same as an existing identifier.
+*		 This allows us to create a graph rather than a tree.
+*************************************************************/
+Identifier*	Agent::CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue)
+{
+	if (!parent || !pSharedValue)
+		return NULL ;
+
+	return GetWM()->CreateSharedIdWME(parent, pAttribute, pSharedValue) ;
+}
+
+/*************************************************************
 * @brief Same as CreateStringWME but for a new WME that has
 *		 an int as its value.
 *************************************************************/
@@ -150,6 +282,21 @@ FloatElement* Agent::CreateFloatWME(Identifier* parent, char const* pAttribute, 
 void Agent::Update(StringElement* pWME, char const* pValue) { GetWM()->UpdateString(pWME, pValue) ; }
 void Agent::Update(IntElement* pWME, int value)				{ GetWM()->UpdateInt(pWME, value) ; }
 void Agent::Update(FloatElement* pWME, double value)		{ GetWM()->UpdateFloat(pWME, value) ; }
+
+/*************************************************************
+* @brief Searches for a WME that has the given identifier value.
+*		 There can be multiple WMEs that share the same identifier value.
+*		 (You can use the index to find a specific one).
+*
+* @param pId			The id to look for (e.g. "O4" -- kernel side or "p3" -- client side)
+* @param searchInput	If true, searches from input-link down
+* @param searchOutput	If true, searches from output-link down
+* @param index			If non-zero, finds the n-th match
+*************************************************************/
+Identifier*	Agent::FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index)
+{
+	return GetWM()->FindIdentifier(pID, searchInput, searchOutput, index) ;
+}
 
 /*************************************************************
 * @brief Schedules a WME from deletion from the input link and removes

@@ -44,7 +44,7 @@ void DeltaList::AddWME(WMElement* pWME)
 	TagWme* pTag = new TagWme() ;
 
 	// For adds we send everything
-	pTag->SetIdentifier(pWME->GetIdentifier()->GetValueAsString()) ;
+	pTag->SetIdentifier(pWME->GetIdentifier()->GetIdentifierSymbol()) ;
 	pTag->SetAttribute(pWME->GetAttribute()) ;
 	pTag->SetValue(pWME->GetValueAsString(), pWME->GetValueType()) ;
 	pTag->SetTimeTag(pWME->GetTimeTag()) ;
