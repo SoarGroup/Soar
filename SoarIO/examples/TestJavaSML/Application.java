@@ -33,7 +33,6 @@ public class Application
 		{
 			System.out.println("Received run event in Java") ;
 			Application me = (Application)data ;
-			int x = 1 ;
 		}
 
 		public void agentEventHandler(int eventID, Object data, Agent agent)
@@ -49,6 +48,11 @@ public class Application
 		public void kernelEventHandler(int eventID, Object data, Kernel kernel)
 		{
 			System.out.println("Received kernel event in Java") ;
+		}
+
+		public void printEventHandler(int eventID, Object data, Agent agent, String message)
+		{
+			System.out.println("Received print event in Java: " + message) ;
 		}
 	}
 	
@@ -101,11 +105,22 @@ public class Application
 		pAgent.Update(pEmpty, "EMPTY") ;
 		ok = pAgent.Commit() ;
 		
+		/*******************************************************
 		// Register some event handlers
+		// Each call takes an object from a class that implements a handler method
+		// (E.g. listener has "runEventHandler").
+		// The type for that method is fixed by SML (there are examples above for each)
+		// I'm using one listener class for all events but each could be in its own class or they
+		// could be methods in "this" class.
+		// The last parameter is an arbitrary data object which will be passed back to us in the callback.
+		// I'm just passing in "this" but it could be anything.
+		// The integer we get back is only required when we unregister the handler.
+		********************************************************/
 		EventListener listener = new EventListener() ;
 		int jRunCallback   = pAgent.RegisterForRunEvent(pAgent, smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, "runEventHandler", this) ;		
 		int jAgentCallback = pAgent.RegisterForAgentEvent(pAgent, smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
 		int jProdCallback   = pAgent.RegisterForProductionEvent(pAgent, smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
+		int jPrintCallback = pAgent.RegisterForPrintEvent(pAgent, smlPrintEventId.smlEVENT_PRINT, listener, "printEventHandler", this) ;		
 		int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlSystemEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
 
 		// Trigger an agent event by doing init-soar
@@ -116,21 +131,23 @@ public class Application
 
 		System.out.println(trace) ;
 
+		// Trigger an agent event by doing init-soar
+		pAgent.InitSoar() ;
+
+		// Having rolled everything back we should be able to run forward again
+		// This tests that initSoar really works.
 		String trace1 = pAgent.RunTilOutput(20) ;
 
 		System.out.println(trace1) ;
 		
-		// Trigger an agent event by doing init-soar
-		//pAgent.InitSoar() ;
-
 		System.out.println("Unregister callbacks") ;
 		
 		// Unregister our callbacks
 		// (This isn't required, I'm just testing that it works)
-		
 		pAgent.UnregisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, jRunCallback) ;
 		pAgent.UnregisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, jAgentCallback) ;
 		pAgent.UnregisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, jProdCallback) ;
+		pAgent.UnregisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, jPrintCallback) ;
 		pKernel.UnregisterForSystemEvent(smlSystemEventId.smlEVENT_AFTER_RESTART, jSystemCallback) ;
 		
 		String trace2 = pAgent.RunTilOutput(20) ;
@@ -198,8 +215,14 @@ public class Application
 	
 	        // Initialize the kernel
 			m_Kernel = Kernel.CreateKernelInCurrentThread("KernelSML", false, 12345) ;
-			//m_Kernel = Kernel.CreateKernelInNewThread("KernelSML", 12345) ;
 	
+			Test() ;
+			
+			// Now repeat the tests but with a kernel that's running in a different thread
+			System.out.println("###################################") ;
+			
+			m_Kernel = Kernel.CreateKernelInNewThread("KernelSML", 13131) ;
+
 			Test() ;
 		}
 		catch (Exception e)
