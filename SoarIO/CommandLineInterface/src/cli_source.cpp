@@ -25,6 +25,25 @@ bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoSource(pAgent, argv[1]);
 }
 
+void trim(std::string& line) {
+	// trim whitespace and comments from line
+	if (!line.size()) return; // nothing on the line
+	
+	// remove leading whitespace
+	std::string::size_type datapos = line.find_first_not_of(" \t");
+	if (datapos != std::string::npos) {
+		line = line.substr(datapos);
+	}
+
+	if (!line.size()) return; // nothing else on the line
+
+	// remove comments
+	std::string::size_type commentpos = line.find_first_of('#');
+	if (commentpos != std::string::npos) {
+		line = line.substr(0, commentpos);
+	}
+}
+
 bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
@@ -61,11 +80,11 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 		return SetError(CLIError::kOpenFileFail);
 	}
 
-	std::string line;					// Each line removed from the file
-	std::string command;					// The command, sometimes spanning multiple lines
-	std::string::size_type pos;			// Used to find braces on a line (triggering multiple line spanning commands)
+	std::string line;				// Each line removed from the file
+	std::string command;			// The command, sometimes spanning multiple lines
+	std::string::size_type pos;		// Used to find braces on a line (triggering multiple line spanning commands)
 	int braces = 0;					// Brace nest level (hopefully all braces are supposed to be closed)
-	std::string::iterator iter;			// Iterator when parsing for braces and pounds
+	std::string::iterator iter;		// Iterator when parsing for braces and pounds
 	int lineCount = 0;				// Count the lines per file
 	int lineCountCache = 0;			// Used to save a line number
 
@@ -84,31 +103,10 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 		// Clear out the old command
 		command.clear();
 
-		// Remove leading whitespace
-		iter = line.begin();
-		while (isspace(*iter)) {
-			line.erase(iter);
+		// Trim whitespace and comments
+		trim(line);
 
-			if (!line.length()) {
-				// Nothing but space left, next line
-				continue;
-			}
-			
-			// Next character
-			iter = line.begin();
-		}
-
-		// Was it actually trailing whitespace?
-		if (!line.length()) {
-			// Nothing left to do
-			continue;
-		}
-
-		// Is the first character a comment?
-		if (*iter == '#') {
-			// Yes, ignore
-			continue;
-		}
+		if (!line.length()) continue; // Nothing on line, skip it
 
 		// If there is a brace on the line, concatenate lines until the closing brace
 		pos = line.find('{');
@@ -120,34 +118,33 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 
 			// While we are inside braces, stay in special parsing mode
 			do {
+				if (lineCountCache != lineCount) trim(line); // Trim whitespace and comments on additional lines
+
+				// nothing on line or just whitespace and comments
+				if (!line.size()) continue;
+
 				// Enter special parsing mode
 				iter = line.begin();
 				while (iter != line.end()) {
 					// Go through each of the characters, counting brace nesting level
-					if (*iter == '{') {
-						++braces;
-					}
-					if (*iter == '}') {
-						--braces;
-					}
+					if (*iter == '{') ++braces;
+					else if (*iter == '}') --braces;
+
 					// Next character
 					++iter;
 				}
-
-				// We finished that line, add it to the command, and put the newline back on it (getline eats the newline)
-				command += line + '\n';
+				
+				// We finished that line, add it to the command
+				command += line;
 
 				// Did we close all of the braces?
-				if (!braces) {
-					// Yes, break out of special parsing mode
-					break;
-				}
+				if (!braces) break; // Yes, break out of special parsing mode
 
 				// Did we go negative?
-				if (braces < 0) {
-					// Yes, break out on error
-					break;
-				}
+				if (braces < 0) break; // Yes, break out on error
+
+				// Put the newline back on it (getline eats the newline)
+				command += '\n';
 
 				// We're getting another line, increment count now
 				++lineCount;
@@ -194,11 +191,8 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 
 	// if we're returing to the user and there is stuff on the source dir stack, print warning (?)
 	if (!m_SourceDepth) {
-		
 		// Print working directory if source dir depth !=  0
-		if (m_SourceDirDepth != 0) {
-			DoPWD();	// Ignore error
-		}
+		if (m_SourceDirDepth != 0) DoPWD();	// Ignore error
 		m_SourceDirDepth = 0;
 	}
 
