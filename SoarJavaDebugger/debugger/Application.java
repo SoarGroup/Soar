@@ -113,6 +113,9 @@ public class Application {
 			String extension = ".dll" ;		
 			Install(new String[] { "KernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
 
+			// Step 3: Install alias and usage files (installing them allows them to be updated locally by the user)
+			Install(new String[] { "aliases.txt", "usage.txt" } , "", alwaysInstallLibs) ;
+
 			// Start the SWT version of the application (we used to have a Swing version too)
 			SWTApplication swtApp = new SWTApplication() ;
 			
