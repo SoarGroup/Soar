@@ -214,8 +214,19 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 		runType = gSKI_RUN_FOREVER;	
 	}
 
-	m_pRun = new RunThread(count, runType, (options & OPTION_RUN_SELF) ? true : false, m_pKernel, pAgent, m_pError);
-	m_pRun->Start();
+	if (count) {
+		if (options & OPTION_RUN_SELF) {
+			pAgent->RunInClientThread(runType, count, m_pError);
+		} else {
+			// Running all agents
+			m_pKernel->GetAgentManager()->ClearAllInterrupts();
+			m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
+			m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
+		}
+	} else {
+		m_pRun = new RunThread(count, runType, (options & OPTION_RUN_SELF) ? true : false, m_pKernel, pAgent, m_pError);
+		m_pRun->Start();
+	}
 	return true;
 }
 
