@@ -27,16 +27,19 @@ class AboutImagePanel extends JPanel {
 				new JLabel("Further Visual Soar improvements by:");
   JLabel authorLabel5 =
 				new JLabel("    Brian Harleton");
+  JLabel authorLabel6 =
+				new JLabel("    Andrew Nuxoll");
 
 	public AboutImagePanel() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
 		setBorder(new EmptyBorder(10,10,10,10));
 		add(authorLabel);
-	  add(authorLabel1);
+        add(authorLabel1);
 		add(authorLabel2);
 		add(authorLabel3);
 		add(authorLabel4);
-    add(authorLabel5);
+        add(authorLabel5);
+        add(authorLabel6);
 	}
 }
