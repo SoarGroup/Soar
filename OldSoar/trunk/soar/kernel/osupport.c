@@ -403,8 +403,8 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
 				   (rhs_value_to_symbol(act->id) == w->value)) {
 				 op_elab = TRUE;
 			       } else if ( (rhs_value_is_reteloc(act->id)) &&
-												 w->value == get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up( act->id ),
-																													 rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )) {
+								 w->value == get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up( act->id ),
+								 (byte)rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )) {
 							 op_elab = TRUE;
 							 
 

@@ -74,6 +74,7 @@
 #endif
 
 extern void gds_invalid_so_remove_goal( wme *w );
+void calculate_output_link_tc_info (output_link *ol);
 
 /* ====================================================================
                             Input Routines

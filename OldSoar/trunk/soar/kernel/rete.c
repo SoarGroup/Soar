@@ -5246,16 +5246,13 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 									 
 									 (rhs_value_to_symbol(act->id) == temp_tok->w->value)) {
 								 
-								 print( " + OP Elab detected from symbol.\n" );
 								 op_elab = TRUE;
 								 
 							 } else if ( (rhs_value_is_reteloc(act->id)) &&
 													 (temp_tok->w->value == 
 														get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up(act->id),
-																											rhs_value_to_reteloc_field_num(act->id),
-																											tok, w ))) {
+                            													  (byte)rhs_value_to_reteloc_field_num(act->id), tok, w ))) {
 									 
-								 print( " * OP Elab detected from reteloc.\n" );
 								 op_elab = TRUE;
 								 
 							 } else {
