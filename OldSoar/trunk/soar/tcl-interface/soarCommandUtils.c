@@ -91,6 +91,8 @@ void install_tcl_soar_cmd(agent * the_agent, char *cmd_name, Tcl_ObjCmdProc * cm
  *
  * The quick fix is to use the following function to convert the objv to
  * an argv that they can pass directly to the kernel.
+ *
+ * Update: argv[argc] == NULL must be true
  *----------------------------------------------------------------------
  */
 void create_argv_from_objv(int objc, Tcl_Obj * const *objv, char ***argv)
@@ -104,7 +106,7 @@ void create_argv_from_objv(int objc, Tcl_Obj * const *objv, char ***argv)
         return;
     }
 
-    *argv = (char **) malloc(objc * sizeof(char *));
+    *argv = (char **) malloc((objc + 1) * sizeof(char *));
 
     for (i = 0; i < objc; i++) {
         str = Tcl_GetStringFromObj(objv[i], &len);
@@ -112,6 +114,7 @@ void create_argv_from_objv(int objc, Tcl_Obj * const *objv, char ***argv)
         strncpy((*argv)[i], str, len);
         (*argv)[i][len] = '\0';
     }
+	(*argv)[i] = NULL;
 }
 
 void free_argv(int objc, char **argv)

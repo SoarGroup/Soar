@@ -1086,24 +1086,33 @@ int WatchCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * con
        rest to Soar 
      */
 
-    newArgc = 0;
-    newArgv = malloc(objc * sizeof(char *));
-    for (i = 0; i < objc; i++) {
-        if (argv[i] != NULL) {
+	/* Count remaining arguments: */
+	newArgc = 0;
+	for (i = 0; i < objc; i++) {
+		if (argv[i] != NULL) {
+			newArgc++;
+		}
+	}
 
-            newArgc++;
-            newArgv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char));
-            strcpy(newArgv[i], argv[i]);        /* this is a safe copy since the correct amount of memory is allocated on the previous line */
-
-        }
-    }
-
+	/* Did we do everything? */
     if (newArgc == 1 && objc != 1) {
         /* Then we did all that was necessary, so return */
         free_argv(objc, argv);
         return TCL_OK;
     }
 
+	/* Create new argv */
+    newArgv = (char **) malloc((newArgc + 1) * sizeof(char *));
+    for (i = 0; i < newArgc; i++) {
+		if (argv[i] != NULL) {
+			newArgv[i] = (char *) malloc((strlen(argv[i]) + 1) * sizeof(char));
+            strcpy(newArgv[i], argv[i]);        /* this is a safe copy since the correct amount of memory is allocated on the previous line */
+			newArgv[i][strlen(argv[i])] = '\0';
+		}
+    }
+	newArgv[i] = NULL;
+
+	/* Hand new argv over to kernel */
     result = soar_Watch(newArgc, newArgv, &res);
 
     /* In the case of newArgc == 1, we are printing watch settings.
@@ -1114,12 +1123,13 @@ int WatchCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * con
         print("  Alias printing: %s\n", (a = Tcl_GetVar(interp, "print_alias_switch", 0)) ? a : "(null)");
     }
 
-    /* Free the argument block */
+    /* Free the new argv */
     for (i = 0; i < newArgc; i++) {
         free(newArgv[i]);
     }
     free(newArgv);
 
+	/* Free the original argv */
     free_argv(objc, argv);
 
     if (result == SOAR_OK)

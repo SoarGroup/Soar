@@ -2582,27 +2582,37 @@ int soar_Watch(int argc, const char *argv[], soarResult * res)
                     else if ((string_match("-all", argv[i + 1])) || (string_match("-a", argv[i + 1]))) {
                         i++;
                         t = i + 1;
-                        set_watch_prod_group_setting(0, argv[i], argv[t], res);
+                        if (set_watch_prod_group_setting(0, argv[i], argv[t], res)) {
+                            return SOAR_ERROR;
+						}
                         i++;
                     } else if ((string_match("-chunks", argv[i + 1])) || (string_match("-c", argv[i + 1]))) {
                         i++;
                         t = i + 1;
-                        set_watch_prod_group_setting(1, argv[i], argv[t], res);
+                        if (set_watch_prod_group_setting(1, argv[i], argv[t], res)) {
+                            return SOAR_ERROR;
+						}
                         i++;
                     } else if ((string_match("-defaults", argv[i + 1])) || (string_match("-d", argv[i + 1]))) {
                         i++;
                         t = i + 1;
-                        set_watch_prod_group_setting(2, argv[i], argv[t], res);
+                        if (set_watch_prod_group_setting(2, argv[i], argv[t], res)) {
+                            return SOAR_ERROR;
+						}
                         i++;
                     } else if ((string_match("-justifications", argv[i + 1])) || (string_match("-j", argv[i + 1]))) {
                         i++;
                         t = i + 1;
-                        set_watch_prod_group_setting(3, argv[i], argv[t], res);
+                        if (set_watch_prod_group_setting(3, argv[i], argv[t], res)) {
+                            return SOAR_ERROR;
+						}
                         i++;
                     } else if ((string_match("-user", argv[i + 1])) || (string_match("-u", argv[i + 1]))) {
                         i++;
                         t = i + 1;
-                        set_watch_prod_group_setting(4, argv[i], argv[t], res);
+                        if (set_watch_prod_group_setting(4, argv[i], argv[t], res)) {
+                            return SOAR_ERROR;
+						}
                         i++;
                     }
 
@@ -2741,23 +2751,33 @@ watch wmes syntax:\n\
                 }
             } else if ((string_match("-all", argv[i])) || (string_match("-a", argv[i]))) {
                 int t = i + 1;
-                set_watch_prod_group_setting(0, argv[i], argv[t], res);
+                if(set_watch_prod_group_setting(0, argv[i], argv[t], res)) {
+					return SOAR_ERROR;
+				}
                 i++;
             } else if ((string_match("-chunks", argv[i])) || (string_match("-c", argv[i]))) {
                 int t = i + 1;
-                set_watch_prod_group_setting(1, argv[i], argv[t], res);
+                if(set_watch_prod_group_setting(1, argv[i], argv[t], res)) {
+					return SOAR_ERROR;
+				}
                 i++;
             } else if ((string_match("-defaults", argv[i])) || (string_match("-d", argv[i]))) {
                 int t = i + 1;
-                set_watch_prod_group_setting(2, argv[i], argv[t], res);
+                if(set_watch_prod_group_setting(2, argv[i], argv[t], res)) {
+					return SOAR_ERROR;
+				}
                 i++;
             } else if ((string_match("-justifications", argv[i])) || (string_match("-j", argv[i]))) {
                 int t = i + 1;
-                set_watch_prod_group_setting(3, argv[i], argv[t], res);
+                if(set_watch_prod_group_setting(3, argv[i], argv[t], res)) {
+					return SOAR_ERROR;
+				}
                 i++;
             } else if ((string_match("-user", argv[i])) || (string_match("-u", argv[i]))) {
                 int t = i + 1;
-                set_watch_prod_group_setting(4, argv[i], argv[t], res);
+                if(set_watch_prod_group_setting(4, argv[i], argv[t], res)) {
+					return SOAR_ERROR;
+				}
                 i++;
             } else if (string_match_up_to("-nowmes", argv[i], 4)) {
                 set_sysparam(TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
