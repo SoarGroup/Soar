@@ -2790,351 +2790,392 @@ void uniquely_add_to_head_of_dll(instantiation * inst)
 #endif
 }
 
-void elaborate_gds()
-{
+void elaborate_gds () {
 
-    wme *wme_matching_this_cond;
-    goal_stack_level wme_goal_level;
-    preference *pref_for_this_wme, *pref;
-    condition *cond;
-    parent_inst *curr_pi, *temp_pi;
-    slot *s;
-    instantiation *inst;
+wme *wme_matching_this_cond;
+goal_stack_level  wme_goal_level;
+preference *pref_for_this_wme, *pref;
+condition *cond;
+parent_inst *curr_pi, *temp_pi;
+slot *s;
+instantiation *inst;
 
-    for (curr_pi = current_agent(parent_list_head); curr_pi; curr_pi = temp_pi) {
+  for (curr_pi=current_agent(parent_list_head); curr_pi; curr_pi=temp_pi) {
 
-        inst = curr_pi->inst;
+     inst = curr_pi->inst;
 
-#ifdef DEBUG_GDS
-        print_with_symbols("\n      EXPLORING INSTANTIATION: %y\n", curr_pi->inst->prod->name);
-        print("      ");
-        print_instantiation_with_wmes(curr_pi->inst, TIMETAG_WME_TRACE);
-#endif
+     #ifdef DEBUG_GDS
+          print_with_symbols("\n      EXPLORING INSTANTIATION: %y\n",curr_pi->inst->prod->name);
+          print("      ");
+	  print_instantiation_with_wmes( curr_pi->inst , TIMETAG_WME_TRACE);
+     #endif
 
-        for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next) {
+     for (cond=inst->top_of_instantiated_conditions;
+	  cond!=NIL;
+	  cond=cond->next) {
 
-            if (cond->type != POSITIVE_CONDITION)
-                continue;
-            /* We'll deal with negative instantiations after we get the
-             * positive ones figured out */
+	if (cond->type != POSITIVE_CONDITION) continue;
+	/* We'll deal with negative instantiations after we get the
+	 * positive ones figured out */
 
-            wme_matching_this_cond = cond->bt.wme;
-            wme_goal_level = cond->bt.level;
-            pref_for_this_wme = wme_matching_this_cond->preference;
+	wme_matching_this_cond = cond->bt.wme;
+	wme_goal_level         = cond->bt.level;
+	pref_for_this_wme      = wme_matching_this_cond->preference;
 
-#ifdef DEBUG_GDS
-            print("\n       wme_matching_this_cond at goal_level = %d : ", wme_goal_level);
-            print_wme(wme_matching_this_cond);
+        #ifdef DEBUG_GDS
+	 print("\n       wme_matching_this_cond at goal_level = %d : ",
+	       wme_goal_level);
+	 print_wme(wme_matching_this_cond); 
 
-            if (pref_for_this_wme) {
-                print("       pref_for_this_wme                        : ");
-                print_preference(pref_for_this_wme);
-            }
-#endif
-
-            /* WME is in a supergoal or is arch-supported WME
-             *  (except for fake instantiations, which do have prefs, so
-             *  they get handled under "wme is local and i-supported")
-             */
-            if ((pref_for_this_wme == NIL) || (wme_goal_level < inst->match_goal_level)) {
-
-#ifdef DEBUG_GDS
-                if (pref_for_this_wme == NIL) {
-                    print("         this wme has no preferences (it's an arch-created wme)\n");
-                } else if (wme_goal_level < inst->match_goal_level) {
-                    print("         this wme is in the supergoal\n");
-                }
-                print_with_symbols("inst->match_goal [%y]\n", inst->match_goal);
-#endif
-
-                if (wme_matching_this_cond->gds != NIL) {
-                    /* Then we want to check and see if the old GDS value
-                     * should be changed */
-                    if (wme_matching_this_cond->gds->goal == NIL) {
-                        /* The goal is NIL: meaning that the goal for the GDS
-                         * is no longer around */
-                        fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds,
-                                             wme_matching_this_cond, wme, gds_next, gds_prev);
-
-                        /* We have to check for GDS removal anytime we take a
-                         * WME off the GDS wme list, not just when a WME is
-                         * removed from memory. */
-                        if (!wme_matching_this_cond->gds->wmes_in_gds) {
-                            free_memory(wme_matching_this_cond->gds, MISCELLANEOUS_MEM_USAGE);
-#ifdef DEBUG_GDS
-                            print("\n  REMOVING GDS FROM MEMORY.");
-#endif
-                        }
-                        wme_matching_this_cond->gds = inst->match_goal->id.gds;
-                        insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
-                                              wme_matching_this_cond, gds_next, gds_prev);
-#ifdef DEBUG_GDS
-                        print("\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
-#endif
-
-                    } else if (wme_matching_this_cond->gds->goal->id.level > inst->match_goal_level) {
-                        /* if the WME currently belongs to the GDS of a goal below
-                         * the current one */
-                        /* 1. Take WME off old (current) GDS list 
-                         * 2. Check to see if old GDS WME list is empty.  If so,
-                         *         remove(free) it.
-                         * 3. Add WME to new GDS list
-                         * 4. Update WME pointer to new GDS list
-                         */
-                        if (inst->match_goal_level == 1)
-                            print("\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
-
-                        fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds,
-                                             wme_matching_this_cond, wme, gds_next, gds_prev);
-                        if (!wme_matching_this_cond->gds->wmes_in_gds) {
-                            free_memory(wme_matching_this_cond->gds, MISCELLANEOUS_MEM_USAGE);
-#ifdef DEBUG_GDS
-                            print("\n  REMOVING GDS FROM MEMORY.");
-#endif
-                        }
-                        wme_matching_this_cond->gds = inst->match_goal->id.gds;
-                        insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
-                                              wme_matching_this_cond, gds_next, gds_prev);
-#ifdef DEBUG_GDS
-                        print("\n       ....switching from old to new GDS list....\n");
-#endif
-                        wme_matching_this_cond->gds = inst->match_goal->id.gds;
-                    }
-                } else {
-                    /* We know that the WME should be in the GDS of the current
-                     * goal if the WME's GDS does not already exist.
-                     * (i.e., if NIL GDS) */
-                    wme_matching_this_cond->gds = inst->match_goal->id.gds;
-
-                    insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
-                                          wme_matching_this_cond, gds_next, gds_prev);
-                    if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
-                        print("\nDEBUG DEBUG : The new header should never have a prev value.\n");
-#ifdef DEBUG_GDS
-                    print_with_symbols("\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n",
-                                       wme_matching_this_cond->gds->goal);
-#endif
-                }               /* end else clause for "if wme_matching_this_cond->gds != NIL" */
-
-#ifdef DEBUG_GDS
-                print("            Added WME to GDS for goal = %d", wme_matching_this_cond->gds->goal->id.level);
-                print_with_symbols(" [%y]\n", wme_matching_this_cond->gds->goal);
-#endif
-            }
-            /* end "wme in supergoal or arch-supported" */
-            else {
-                /* wme must be local */
-
-                /* if wme's pref is o-supported, then just ignore it and
-                 * move to next condition */
-                if (pref_for_this_wme->o_supported == TRUE) {
-#ifdef DEBUG_GDS
-                    print("         this wme is local and o-supported\n");
-#endif
-                    continue;
-                }
-
-                else {
-                    /* wme's pref is i-supported, so remember it's instantiation
-                     * for later examination */
-
-                    /* this test avoids "backtracing" through the top state */
-                    if (inst->match_goal_level == 1) {
-#ifdef DEBUG_GDS
-                        print("         don't back up through top state\n");
-                        if (inst->prod)
-                            if (inst->prod->name)
-                                print_with_symbols("         don't back up through top state for instantiation %y\n",
-                                                   inst->prod->name);
-#endif
-                        continue;
-                    }
-
-                    else {      /* (inst->match_goal_level != 1) */
-#ifdef DEBUG_GDS
-                        print("         this wme is local and i-supported\n");
-#endif
-                        s = find_slot(pref_for_this_wme->id, pref_for_this_wme->attr);
-                        if (s == NIL) {
-                            /* this must be an arch-wme from a fake instantiation */
-
-#ifdef DEBUG_GDS
-                            print("here's the wme with no slot:\t");
-                            print_wme(pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme);
-#endif
-
-                            /* this is the same code as above, just using the 
-                             * differently-named pointer.  it probably should
-                             * be a subroutine */
-                            {
-                                wme *fake_inst_wme_cond;
-
-                                fake_inst_wme_cond = pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme;
-                                if (fake_inst_wme_cond->gds != NIL) {
-                                    /* Then we want to check and see if the old GDS
-                                     * value should be changed */
-                                    if (fake_inst_wme_cond->gds->goal == NIL) {
-                                        /* The goal is NIL: meaning that the goal for
-                                         * the GDS is no longer around */
-
-                                        fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                                             fake_inst_wme_cond, wme, gds_next, gds_prev);
-
-                                        /* We have to check for GDS removal anytime we take
-                                         * a WME off the GDS wme list, not just when a WME
-                                         *is removed from memory. */
-                                        if (!fake_inst_wme_cond->gds->wmes_in_gds) {
-                                            free_memory(fake_inst_wme_cond->gds, MISCELLANEOUS_MEM_USAGE);
-#ifdef DEBUG_GDS
-                                            print("\n  REMOVING GDS FROM MEMORY.");
-#endif
-                                        }
-
-                                        fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-                                        insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                                              fake_inst_wme_cond, gds_next, gds_prev);
-#ifdef DEBUG_GDS
-                                        print
-                                            ("\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
-#endif
-                                    } else if (fake_inst_wme_cond->gds->goal->id.level > inst->match_goal_level) {
-                                        /* if the WME currently belongs to the GDS of a
-                                         *goal below the current one */
-                                        /* 1. Take WME off old (current) GDS list 
-                                         * 2. Check to see if old GDS WME list is empty.
-                                         *    If so, remove(free) it.
-                                         * 3. Add WME to new GDS list
-                                         * 4. Update WME pointer to new GDS list
-                                         */
-                                        if (inst->match_goal_level == 1)
-                                            print("\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
-
-                                        fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                                             fake_inst_wme_cond, wme, gds_next, gds_prev);
-                                        if (!fake_inst_wme_cond->gds->wmes_in_gds) {
-                                            free_memory(fake_inst_wme_cond->gds, MISCELLANEOUS_MEM_USAGE);
-#ifdef DEBUG_GDS
-                                            print("\n  REMOVING GDS FROM MEMORY.");
-#endif
-                                        }
-
-                                        fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-                                        insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                                              fake_inst_wme_cond, gds_next, gds_prev);
-#ifdef DEBUG_GDS
-                                        print("\n       .....switching from old to new GDS list....\n");
-#endif
-                                        fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-                                    }
-                                } else {
-                                    /* We know that the WME should be in the GDS of
-                                     * the current goal if the WME's GDS does not
-                                     * already exist. (i.e., if NIL GDS) */
-                                    fake_inst_wme_cond->gds = inst->match_goal->id.gds;
-
-                                    insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
-                                                          fake_inst_wme_cond, gds_next, gds_prev);
-                                    if (fake_inst_wme_cond->gds->wmes_in_gds->gds_prev)
-                                        print("\nDEBUG DEBUG : The new header should never have a prev value.\n");
-#ifdef DEBUG_GDS
-                                    print_with_symbols
-                                        ("\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n",
-                                         fake_inst_wme_cond->gds->goal);
-#endif
-                                }
-#ifdef DEBUG_GDS
-                                print("            Added WME to GDS for goal = %d",
-                                      fake_inst_wme_cond->gds->goal->id.level);
-                                print_with_symbols(" [%y]\n", fake_inst_wme_cond->gds->goal);
-#endif
-                            }   /* matches { wme *fake_inst_wme_cond  */
-                        } else {
-
-						    /* this was the original "local & i-supported" action */
-
-						    for (pref=s->preferences[ACCEPTABLE_PREFERENCE_TYPE];
-							     pref;
-							     pref=pref->next) {
-
-#ifdef DEBUG_GDS
-							     print("           looking at pref for the wme: ");
-							     print_preference(pref);
-#endif
-
-							if (pref->inst->GDS_evaluated_already == FALSE) {
-#ifdef DEBUG_GDS
-								print_with_symbols("\n           adding inst that produced the pref to GDS: %y\n",pref->inst->prod->name);
-#endif
+	 if (pref_for_this_wme) {
+	   print("       pref_for_this_wme                        : ");
+	   print_preference(pref_for_this_wme);
+	 } 
+        #endif
 
 
-								/* REW: 2003-12-07 */
-								/* If the preference comes from a lower level inst, then ignore it. */
-								/* Preferences from lower levels must come from result instantiations;
-								we just want to use the justification/chunk instantiations at the 
-								match goal level*/
-						        if (pref->inst->match_goal_level <= inst->match_goal_level) {
-									uniquely_add_to_head_of_dll(pref->inst); 
-							        pref->inst->GDS_evaluated_already = TRUE;
-								} else {
-#ifdef DEBUG_GDS 
-									print_with_symbols("\n           ignoring inst %y because it is at a lower level than the GDS\n",pref->inst->prod->name);
-#endif
+        /* WME is in a supergoal or is arch-supported WME
+	 *  (except for fake instantiations, which do have prefs, so
+	 *  they get handled under "wme is local and i-supported")
+	 */
+	if ((pref_for_this_wme == NIL) ||
+	    (wme_goal_level < inst->match_goal_level)) {
 
-						}
-						/* REW: 2003-12-07 */
+          #ifdef DEBUG_GDS
+	    if (pref_for_this_wme == NIL) {
+	       print("         this wme has no preferences (it's an arch-created wme)\n");
+	    }
+	    else if (wme_goal_level < inst->match_goal_level) {
+	       print("         this wme is in the supergoal\n");
+	    }
+	    print_with_symbols("inst->match_goal [%y]\n" , inst->match_goal);  
+          #endif
+
+	  if (wme_matching_this_cond->gds != NIL){
+	    /* Then we want to check and see if the old GDS value
+	     * should be changed */
+	    if (wme_matching_this_cond->gds->goal == NIL) {
+	      /* The goal is NIL: meaning that the goal for the GDS
+	       * is no longer around */
+	       fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
+                                    wme_matching_this_cond, wme,
+				    gds_next, gds_prev);
+
+	       /* We have to check for GDS removal anytime we take a
+		* WME off the GDS wme list, not just when a WME is
+		* removed from memory. */
+               if (!wme_matching_this_cond->gds->wmes_in_gds) {
+		 free_memory(wme_matching_this_cond->gds,
+			     MISCELLANEOUS_MEM_USAGE);
+                 #ifdef DEBUG_GDS
+                   print("\n  REMOVING GDS FROM MEMORY.");
+                 #endif
+	       }
+               wme_matching_this_cond->gds = inst->match_goal->id.gds;
+               insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds, 
+                                     wme_matching_this_cond, gds_next,
+				     gds_prev);
+               #ifdef DEBUG_GDS
+	         print("\n       .....GDS' goal is NIL so switching from old to new GDS list....\n"); 
+               #endif
+	    
+	    } else if (wme_matching_this_cond->gds->goal->id.level >
+		       inst->match_goal_level) {
+	      /* if the WME currently belongs to the GDS of a goal below
+	       * the current one */
+	       /* 1. Take WME off old (current) GDS list 
+                * 2. Check to see if old GDS WME list is empty.  If so,
+		*         remove(free) it.
+		* 3. Add WME to new GDS list
+		* 4. Update WME pointer to new GDS list
+		*/
+	       if (inst->match_goal_level == 1) 
+		 print("\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+
+	       fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
+                                    wme_matching_this_cond, wme,
+				    gds_next, gds_prev);
+               if (!wme_matching_this_cond->gds->wmes_in_gds) {
+		 free_memory(wme_matching_this_cond->gds,
+			     MISCELLANEOUS_MEM_USAGE);
+                 #ifdef DEBUG_GDS
+                   print("\n  REMOVING GDS FROM MEMORY.");
+                 #endif
+	       } 
+               wme_matching_this_cond->gds = inst->match_goal->id.gds;
+               insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
+				     wme_matching_this_cond, gds_next,
+				     gds_prev);
+               #ifdef DEBUG_GDS
+	        print("\n       ....switching from old to new GDS list....\n");
+               #endif
+	       wme_matching_this_cond->gds = inst->match_goal->id.gds;
+	    }
+	  } else {
+	    /* We know that the WME should be in the GDS of the current
+	     * goal if the WME's GDS does not already exist.
+	     * (i.e., if NIL GDS) */
+	    wme_matching_this_cond->gds = inst->match_goal->id.gds;
+
+	    insert_at_head_of_dll(wme_matching_this_cond->gds->wmes_in_gds,
+				  wme_matching_this_cond, gds_next, gds_prev);
+	    if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
+	      print("\nDEBUG DEBUG : The new header should never have a prev value.\n");
+            #ifdef DEBUG_GDS
+              print_with_symbols("\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal); 
+            #endif
+	  } /* end else clause for "if wme_matching_this_cond->gds != NIL" */
 
 
-							} else {
-#ifdef DEBUG_GDS
-								print("           the inst producing this pref was already explored; skipping it\n");
-#endif
-    }
+          #ifdef DEBUG_GDS
+	    print("            Added WME to GDS for goal = %d",
+		  wme_matching_this_cond->gds->goal->id.level);
+	    print_with_symbols(" [%y]\n", wme_matching_this_cond->gds->goal);  
+          #endif
+        } /* end "wme in supergoal or arch-supported" */
 
-                            }   /* for pref = s->pref[ACCEPTABLE_PREF ... */
-                        }
-                    }
-                }
-            }
+	else {
+	  /* wme must be local */
 
-        }                       /* for (cond = inst->top_of_instantiated_cond ...  */
+	  /* if wme's pref is o-supported, then just ignore it and
+	   * move to next condition */
+	  if (pref_for_this_wme->o_supported == TRUE) {
+             #ifdef DEBUG_GDS
+	      print("         this wme is local and o-supported\n");
+             #endif
+             continue;
+	  }
 
-        /* remove just used instantiation from list */
+	  else {
+	    /* wme's pref is i-supported, so remember it's instantiation
+	     * for later examination */
 
-#ifdef DEBUG_GDS
-        print_with_symbols("\n      removing instantiation: %y\n", curr_pi->inst->prod->name);
-#endif
+	      /* this test avoids "backtracing" through the top state */
+	      if (inst->match_goal_level == 1) {
+                #ifdef DEBUG_GDS
+		  print("         don't back up through top state\n");  
+		  if (inst->prod)
+		    if (inst->prod->name)
+		       print_with_symbols("         don't back up through top state for instantiation %y\n", inst->prod->name);
+                #endif
+		continue;
+	      }
 
-        if (curr_pi->next != NIL)
-            curr_pi->next->prev = curr_pi->prev;
-        if (curr_pi->prev != NIL)
-            curr_pi->prev->next = curr_pi->next;
+	      else { /* (inst->match_goal_level != 1) */
+                #ifdef DEBUG_GDS
+		 print("         this wme is local and i-supported\n"); 
+		 print_with_symbols("    ID: %y   ATTR: %y     \n", pref_for_this_wme->id, pref_for_this_wme->attr);
+                #endif
+                s = find_slot (pref_for_this_wme->id, pref_for_this_wme->attr);
+		if (s == NIL) {
+		   /* this must be an arch-wme from a fake instantiation */
+		   
+                   #ifdef DEBUG_GDS
+		     print("here's the wme with no slot:\t");
+		     print_wme(pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme);
+                   #endif
 
-        if (current_agent(parent_list_head) == curr_pi)
-            current_agent(parent_list_head) = curr_pi->next;
+		   /* this is the same code as above, just using the 
+		    * differently-named pointer.  it probably should
+		    * be a subroutine */
+		   {
+		     wme *fake_inst_wme_cond;
 
-        temp_pi = curr_pi->next;
-        free(curr_pi);
+		     fake_inst_wme_cond =
+		       pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme;
+		     if (fake_inst_wme_cond->gds != NIL){
+		       /* Then we want to check and see if the old GDS
+			* value should be changed */
+		       if (fake_inst_wme_cond->gds->goal == NIL) {
+			 /* The goal is NIL: meaning that the goal for
+			  * the GDS is no longer around */
 
-    }                           /* end of "for (curr_pi = current_agent(parent_list_head) ... */
+			 fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+					      fake_inst_wme_cond, wme,
+					      gds_next, gds_prev);
 
-    if (current_agent(parent_list_head) != NIL) {
-#ifdef DEBUG_GDS
-        print("\n    RECURSING using these parents:\n");
-        for (curr_pi = current_agent(parent_list_head); curr_pi; curr_pi = curr_pi->next) {
-            print_with_symbols("      %y\n", curr_pi->inst->prod->name);
+			 /* We have to check for GDS removal anytime we take
+			  * a WME off the GDS wme list, not just when a WME
+			  *is removed from memory. */
+			 if (!fake_inst_wme_cond->gds->wmes_in_gds) {
+			   free_memory(fake_inst_wme_cond->gds,
+				       MISCELLANEOUS_MEM_USAGE);
+                           #ifdef DEBUG_GDS
+			     print("\n  REMOVING GDS FROM MEMORY.");
+                           #endif
+			 }
+	       
+			 fake_inst_wme_cond->gds = inst->match_goal->id.gds;
+			 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds, 
+					       fake_inst_wme_cond, gds_next, gds_prev);
+                         #ifdef DEBUG_GDS
+			 print("\n       .....GDS' goal is NIL so switching from old to new GDS list....\n"); 
+                         #endif
+		       } else if (fake_inst_wme_cond->gds->goal->id.level >
+				  inst->match_goal_level) {
+			 /* if the WME currently belongs to the GDS of a
+			  *goal below the current one */
+			 /* 1. Take WME off old (current) GDS list 
+			  * 2. Check to see if old GDS WME list is empty.
+			  *    If so, remove(free) it.
+			  * 3. Add WME to new GDS list
+			  * 4. Update WME pointer to new GDS list
+			  */
+			 if (inst->match_goal_level == 1) 
+			   print("\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+
+			 fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
+					      fake_inst_wme_cond, wme,
+					      gds_next, gds_prev);
+			 if (!fake_inst_wme_cond->gds->wmes_in_gds) {
+			   free_memory(fake_inst_wme_cond->gds,
+				       MISCELLANEOUS_MEM_USAGE);
+                           #ifdef DEBUG_GDS
+ 			    print("\n  REMOVING GDS FROM MEMORY.");
+                           #endif
+			 }
+	       
+			 fake_inst_wme_cond->gds = inst->match_goal->id.gds;
+			 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
+					       fake_inst_wme_cond, gds_next,
+					       gds_prev);
+                         #ifdef DEBUG_GDS
+			   print("\n       .....switching from old to new GDS list....\n");
+                         #endif
+			   fake_inst_wme_cond->gds = inst->match_goal->id.gds;
+		       }
+		     } else {
+		       /* We know that the WME should be in the GDS of
+			* the current goal if the WME's GDS does not
+			* already exist. (i.e., if NIL GDS) */
+		       fake_inst_wme_cond->gds = inst->match_goal->id.gds;
+
+		       insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
+					     fake_inst_wme_cond,
+					     gds_next, gds_prev);
+		       if (fake_inst_wme_cond->gds->wmes_in_gds->gds_prev)
+			 print("\nDEBUG DEBUG : The new header should never have a prev value.\n");
+                       #ifdef DEBUG_GDS
+ 		         print_with_symbols("\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal); 
+                       #endif
+		     }
+                     #ifdef DEBUG_GDS
+		       print("            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id.level);
+		       print_with_symbols(" [%y]\n",
+					  fake_inst_wme_cond->gds->goal);  
+                     #endif
+		   }  /* matches { wme *fake_inst_wme_cond  */
+		} else {
+		  /* this was the original "local & i-supported" action */
+	     
+		  for (pref=s->preferences[ACCEPTABLE_PREFERENCE_TYPE];
+		       pref;
+		       pref=pref->next) {
+
+                #ifdef DEBUG_GDS
+		       print("           looking at pref for the wme: ");
+		       print_preference(pref); 
+
+				print_wme(wme_matching_this_cond);
+			   print_with_symbols (" pref->value %y    wme->value %y \n", pref->value, wme_matching_this_cond->value);
+                 #endif
+			
+			 /* REW: 2004-05-27: Bug fix
+                    We must check that the value with acceptable pref for the slot 
+				    is the same as the value for the wme in the condition, since
+				    operators can have acceptable preferences for values other than
+				    the WME value.  We dont want to backtrack thru acceptable prefs
+					for other operators */
+	
+            if (pref->value == wme_matching_this_cond->value) {
+				     
+			/* REW BUG: may have to go over all insts regardless
+		      of this visited_already flag... */
+
+				if (pref->inst->GDS_evaluated_already == FALSE) {
+	
+                       #ifdef DEBUG_GDS	      
+		         print_with_symbols("\n           adding inst that produced the pref to GDS: %y\n",pref->inst->prod->name); 
+                       #endif
+
+			/* REW: 2003-12-07 */
+			/* If the preference comes from a lower level, then ignore it. */
+			/* Preferences from lower levels must come from result instantiations,
+				 we just want to use the justification/chunk instantiations */
+				 if (pref->inst->match_goal_level <= inst->match_goal_level) {
+		       uniquely_add_to_head_of_dll(pref->inst);	
+		       pref->inst->GDS_evaluated_already = TRUE;
+				 } else {
+                      #ifdef DEBUG_GDS	      
+		         print_with_symbols("\n           ignoring inst %y because it is at a lower level than the GDS\n",pref->inst->prod->name); 
+                       #endif
+
+				 /* Dont set the flag to TRUE in case there is a local result as well */
+	                 /* pref->inst->GDS_evaluated_already = TRUE; */
+				 }
+                    
+
+			} else {
+                      #ifdef DEBUG_GDS
+		        print("           the inst producing this pref was already explored; skipping it\n"); 
+                      #endif
+		    }
+			} else { /* pref->value != wme->value REW: 2004-05-27 */
+				#ifdef DEBUG_GDS
+		        print("           this inst is for a pref with a different value than the condition WME; skipping it\n"); 
+                #endif
+            } /* pref->value != wme->value REW: 2004-05-27 */
+		  }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/
+		}
+	      }
+	  }
         }
-#endif
+	
+     }  /* for (cond = inst->top_of_instantiated_cond ...  *;'/
 
-        /* recursively explore the parents of all the instantiations */
 
-        elaborate_gds();
+    /* remove just used instantiation from list */
 
-        /* free the parent instantiation list.  technically, the list
-         * should be empty at this point ??? */
-        free_parent_list();
-    }
+    #ifdef DEBUG_GDS
+     print_with_symbols("\n      removing instantiation: %y\n",
+			curr_pi->inst->prod->name); 
+    #endif
+  
+    if (curr_pi->next != NIL) curr_pi->next->prev = curr_pi->prev;
+    if (curr_pi->prev != NIL) curr_pi->prev->next = curr_pi->next;
 
-}                               /* end of elaborate_gds   */
+    if (current_agent(parent_list_head) == curr_pi)
+      current_agent(parent_list_head) = curr_pi->next;
+ 
+    temp_pi = curr_pi->next;
+    free(curr_pi);
+
+  } /* end of "for (curr_pi = current_agent(parent_list_head) ... */
+
+
+  if (current_agent(parent_list_head) != NIL) {
+    #ifdef DEBUG_GDS
+     print("\n    RECURSING using these parents:\n");
+     for (curr_pi = current_agent(parent_list_head);
+	  curr_pi;
+	  curr_pi = curr_pi->next) {
+       print_with_symbols("      %y\n",curr_pi->inst->prod->name);
+     } 
+    #endif
+
+     /* recursively explore the parents of all the instantiations */
+
+     elaborate_gds();
+
+     /* free the parent instantiation list.  technically, the list
+      * should be empty at this point ??? */
+     free_parent_list(); 
+  }
+
+} /* end of elaborate_gds   */
+
+
+
 
 /* REW BUG: this needs to be smarter to deal with wmes that get support from
 multiple instantiations.  for example ^enemy-out-there could be made by 50
