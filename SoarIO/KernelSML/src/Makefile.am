@@ -6,7 +6,6 @@ libKernelSML_la_LIBADD = \
 ../../../SoarKernel/src/libSoarKernel.la\
 ../../../gSKI/src/libgSKI.la\
 ../../CommandLineInterface/src/libCommandLineInterface.la\
-../../ClientSML/src/libClientSML.la\
 ../../ClientSML/src/libClientSML.la
 
 libKernelSML_la_SOURCES = \
