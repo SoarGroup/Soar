@@ -1,12 +1,9 @@
 #ifndef _EMOTION_H_
 #define _EMOTION_H_
 
+// this structure is pretty useless
 typedef struct appraisal_variable_value {
     float value;
-    struct appraisal_variable_value *next, *prev;
-    /*struct wme_struct * source;
-    bool new_value;
-    tc_number tc_num;*/
 } appraisal_variable_value;
 
 typedef struct appraisal_frame_struct {
@@ -16,9 +13,6 @@ typedef struct appraisal_frame_struct {
 } appraisal_frame;
 
 typedef struct emotions_struct {
-
-    /* lists which store all of the values for each variable */
-    struct appraisal_variable_value * variables[2];
 
     /* list which stores all of the appraisals */
     appraisal_frame * appraisal_frames;

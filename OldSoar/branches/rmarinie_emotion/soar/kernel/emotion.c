@@ -22,18 +22,14 @@ void emotion_aggregate_variables();
 void emotion_update_emotion();
 
 void emotion_add_appraisal_to_list(appraisal_frame ** af_list, appraisal_frame * af);
-void emotion_add_value_to_list(struct appraisal_variable_value ** avv, 
-                               appraisal_variable_info * info);
 
 void emotion_clear_appraisal_list(appraisal_frame ** af);
-void emotion_clear_list(struct appraisal_variable_value ** avv);
 
 bool emotion_get_appraisal_frame(struct slot_struct * appraisal_variable_slot, appraisal_frame ** af);
 bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal_variable_info ** info);
 
 
-/*const int emotion_NUM_TYPES = 2;*/
-#define emotion_NUM_TYPES 2
+const int emotion_NUM_TYPES = 2;
 static const char * emotion_LABELS[] = {"desirability-agg","likelihood-agg"};
 static const float emotion_NO_VALUE_FLOAT = -100.0;
 
@@ -50,7 +46,6 @@ void emotion_update() {
            to be recomputed)
         */
         update_emotion = emotion_appraisals_have_changed();
-        /*update_emotion = TRUE;*/
 
         if(update_emotion) {
             /* get the appraisals */
@@ -142,12 +137,10 @@ void emotion_update_emotion() {
 //TODO: check for correct substructure
 void emotion_get_appraisals() {
 
-    /*struct wme_struct * appraisal_variable_wme;*/
     union symbol_union * e_link;
     struct slot_struct * appraisal_variable_slot;
     struct slot_struct * appraisal_frame_slot;
-    /*appraisal_variable_info * info;*/
-    appraisal_variable_type i;
+    wme * appraisal_frame_wme;
     appraisal_frame * cur_appraisal_frame;
     unsigned long num_appraisals;
 
@@ -160,17 +153,10 @@ void emotion_get_appraisals() {
     /* get the emotions link */
     e_link = current_agent(io_header_emotion);
 
-    //appraisal_variable_slot = current_agent(io_header_emotion)->id.slots;
     appraisal_frame_slot = current_agent(io_header_emotion)->id.slots;
 
     /* we'll allocate this once and reuse it several times */
-    /*info = allocate_memory_and_zerofill (sizeof(appraisal_variable_info), 0);*/
     cur_appraisal_frame = allocate_memory_and_zerofill (sizeof(appraisal_frame), 0);
-
-    /* clear the existing lists */
-    for(i = 0; i < emotion_NUM_TYPES; i++) {
-        emotion_clear_list(&current_agent(emotions)->variables[i]);
-    }
 
     emotion_clear_appraisal_list(&current_agent(emotions)->appraisal_frames);
 
@@ -178,17 +164,23 @@ void emotion_get_appraisals() {
 
         bool valid;
 
-        if(appraisal_frame_slot->wmes && !strcmp(appraisal_frame_slot->attr->sc.name, "appraisal")) {
+        appraisal_frame_wme = appraisal_frame_slot->wmes;
 
-            appraisal_variable_slot = appraisal_frame_slot->wmes->value->id.slots;
+        if(appraisal_frame_wme && !strcmp(appraisal_frame_slot->attr->sc.name, "appraisal")) {
 
-            valid = emotion_get_appraisal_frame(appraisal_variable_slot, &cur_appraisal_frame);
+            while(appraisal_frame_wme) {
+                appraisal_variable_slot = appraisal_frame_wme->value->id.slots;
 
-            if(valid) {
-                emotion_add_appraisal_to_list(&current_agent(emotions)->appraisal_frames, cur_appraisal_frame);
-                num_appraisals++;
+                valid = emotion_get_appraisal_frame(appraisal_variable_slot, &cur_appraisal_frame);
 
-                /* TODO: should update timetag here, but then will need to store timetag in appraisal_frame or create appraisal_frame info type */
+                if(valid) {
+                    emotion_add_appraisal_to_list(&current_agent(emotions)->appraisal_frames, cur_appraisal_frame);
+                    num_appraisals++;
+
+                    /* TODO: should update timetag here, but then will need to store timetag in appraisal_frame or create appraisal_frame info type */
+                }
+
+                appraisal_frame_wme = appraisal_frame_wme->next;
             }
         }
 
@@ -198,13 +190,12 @@ void emotion_get_appraisals() {
     current_agent(emotions)->num_appraisals = num_appraisals;
 }
 
-
+//TODO: should really just call get appraisals again and have it return a list which we can check; the timetags can be in the list
 bool emotion_appraisals_have_changed() {
 
-    /*struct wme_struct * appraisal_variable_wme;*/
     union symbol_union * e_link;
-    /*struct slot_struct * appraisal_variable_slot;*/
     struct slot_struct * appraisal_frame_slot;
+    wme * appraisal_frame_wme;
     bool changed;
     unsigned long num_appraisals;
 
@@ -220,29 +211,18 @@ bool emotion_appraisals_have_changed() {
 
     appraisal_frame_slot = current_agent(io_header_emotion)->id.slots;
 
-    /* BUGBUG: if a rule is written which modifies an existing appraisal, this may not detect that */
     while(appraisal_frame_slot) {
 
-        bool valid;
-        unsigned long timetag;
+        appraisal_frame_wme = appraisal_frame_slot->wmes;
 
-        valid = emotion_get_appraisal_frame_timetag(appraisal_frame_slot, &timetag);
+        while(appraisal_frame_wme) {
 
-        if(valid) {
-            num_appraisals++;
-            if(timetag > current_agent(emotions)->latest_timetag) {
-                changed = TRUE;
-                break;
-            }
-        }
-
-        /*
-        appraisal_variable_wme = appraisal_frame_slot->wmes;
-
-        while(appraisal_variable_wme) {
             bool valid;
             unsigned long timetag;
-            valid = emotion_get_appraisal_frame_timetag(appraisal_variable_wme, &timetag);
+
+            
+            valid = emotion_get_appraisal_frame_timetag(appraisal_frame_wme->value->id.slots, &timetag);
+
             if(valid) {
                 num_appraisals++;
                 if(timetag > current_agent(emotions)->latest_timetag) {
@@ -250,9 +230,8 @@ bool emotion_appraisals_have_changed() {
                     break;
                 }
             }
-
-            appraisal_variable_wme = appraisal_variable_wme->next;
-        }*/
+            appraisal_frame_wme = appraisal_frame_wme->next;
+        }
 
         if(changed) { break; }
 
@@ -290,7 +269,6 @@ bool emotion_get_appraisal_frame(struct slot_struct * appraisal_variable_slot, a
 
             valid = emotion_get_appraisal_variable_info(appraisal_variable_wme, &info);
             if(valid) {
-                emotion_add_value_to_list(&current_agent(emotions)->variables[info->type], info);
                 (*af)->variables[info->type] = info->value;
 
                 /* update the latest timetag */
@@ -378,18 +356,23 @@ bool emotion_get_appraisal_frame_timetag(slot * appraisal_frame_slot, unsigned l
     wme * appraisal_variable_wme;
     unsigned long cur_timetag;
     unsigned long max_timetag;
+    bool valid_frame;
 
+    valid_frame = FALSE;
     max_timetag = 0;
 
     appraisal_variable_wme = appraisal_frame_slot->wmes;
 
     while(appraisal_variable_wme) {
-        bool valid;
+        bool valid_variable;
 
-        valid = emotion_get_appraisal_variable_timetag(appraisal_variable_wme, &cur_timetag);
+        valid_variable = emotion_get_appraisal_variable_timetag(appraisal_variable_wme, &cur_timetag);
         
-        if(valid && cur_timetag > max_timetag) {
-            max_timetag = cur_timetag;
+        if(valid_variable) {
+            valid_frame = TRUE;
+            if(cur_timetag > max_timetag) {
+                max_timetag = cur_timetag;
+            }
         }
 
         appraisal_variable_wme = appraisal_variable_wme->next;
@@ -397,8 +380,8 @@ bool emotion_get_appraisal_frame_timetag(slot * appraisal_frame_slot, unsigned l
 
     (*timetag) = max_timetag;
 
-    // TODO: check for actual valid appraisal frame (i.e. both variables were set; need new array of bools to check? -- maybe it can be in the appraisal frame info type)
-    return TRUE;
+    // TODO: check for actual valid appraisal frame (i.e. all required variables were set; need new array of bools to check? -- maybe it can be in the appraisal frame info type)
+    return valid_frame;
 }
 
 bool emotion_get_appraisal_variable_timetag(wme * appraisal_variable_wme, unsigned long * timetag) {
@@ -479,43 +462,27 @@ void emotion_add_appraisal_to_list(appraisal_frame ** af_list, appraisal_frame *
     }
 }
 
-void emotion_add_value_to_list(struct appraisal_variable_value ** avv, 
-                               appraisal_variable_info * info) {
-
-    appraisal_variable_value * new_value;
-
-    new_value = allocate_memory_and_zerofill (sizeof(appraisal_variable_value), 0);
-    new_value->value = info->value;
-    
-    /*if this is the first item in the list, initialize the list*/
-    if(*avv == NIL) {
-        (*avv) = new_value;
-    } else {
-        insert_at_head_of_dll(*avv,new_value,next,prev);
-    }
-}
-
 
 void emotion_aggregate_variables() {
 
     int type;
 
-    /*for(type=0; type < emotion_NUM_TYPES; type++) {
+    for(type=0; type < emotion_NUM_TYPES; type++) {
 
-        struct appraisal_variable_value * avv;
+        appraisal_frame * af;
         float total;
         int count;
 
         total = 0.0;
         count = 0;
 
-        avv = current_agent(emotions)->variables[type];
+        af = current_agent(emotions)->appraisal_frames;
 
-        if(avv) {
-            while(avv) {
-                total += avv->value;
+        if(af) {
+            while(af) {
+                total += af->variables[type];
                 count++;
-                avv = avv->next;
+                af = af->next;
             }
 
             current_agent(emotions)->aggs[type] = total/(float)count;
@@ -524,41 +491,7 @@ void emotion_aggregate_variables() {
         }
         
         emotion_update_aggregate(type);
-    }*/
-
-    float sums[emotion_NUM_TYPES];
-    int count;
-    appraisal_frame * af;
-    
-    af = current_agent(emotions)->appraisal_frames;
-
-    for(type=0; type < emotion_NUM_TYPES; type++) {
-        sums[type] = 0;
     }
-    
-    count = 0;
-
-    if(af) {
-        while(af) {
-
-            for(type=0; type < emotion_NUM_TYPES; type++) {
-                sums[type] += af->variables[type];
-            }
-
-            count++;
-            af = af->next;
-        }
-
-        for(type=0; type < emotion_NUM_TYPES; type++) {
-            current_agent(emotions)->aggs[type] = sums[type]/(float)count;
-        }
-
-    } else {
-        for(type=0; type < emotion_NUM_TYPES; type++) {
-            current_agent(emotions)->aggs[type] = emotion_NO_VALUE_FLOAT;
-        }
-    }
-
 }
 
 void emotion_clear_appraisal_list(appraisal_frame ** af) {
@@ -569,17 +502,6 @@ void emotion_clear_appraisal_list(appraisal_frame ** af) {
 
         fast_remove_from_dll(*af,*af,appraisal_frame,next,prev);
         free_memory(af_to_delete,0);
-    }
-}
-
-void emotion_clear_list(struct appraisal_variable_value ** avv) {
-    struct appraisal_variable_value * val_to_delete;
-
-    while(*avv) {
-        val_to_delete = *avv;
-
-        fast_remove_from_dll(*avv,*avv,appraisal_variable_value,next,prev);
-        free_memory(val_to_delete,0);
     }
 }
 
@@ -606,9 +528,10 @@ void emotion_destructor() {
            BUG: program crashes if we call remove_input_wme, so these wmes may not be getting cleaned up properly
         */
         current_agent(emotions)->agg_wmes[type] = NIL;
-        /* clear lists */
-        emotion_clear_list(&(current_agent(emotions)->variables[type]));
     }
+
+    /* clear lists */
+    emotion_clear_appraisal_list(&current_agent(emotions)->appraisal_frames);
 
     /* free any allocated emotion symbols, WMEs */
     if(current_agent(emotions)->emotion_wme) {
