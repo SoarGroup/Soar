@@ -60,7 +60,7 @@ set speed [time {set result [$kernel ExecuteCommandLine "run" Soar1]}]
 cd ../..
 puts "\n$speed"
 
-#set result [$kernel ExecuteCommandLine "init-soar" Soar1]
+set result [$kernel ExecuteCommandLine "init-soar" Soar1]
 
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted
 set result [$kernel -acquire]
