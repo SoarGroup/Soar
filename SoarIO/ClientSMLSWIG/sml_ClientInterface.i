@@ -17,8 +17,11 @@
 %newobject sml::Kernel::CreateKernelInNewThread(char const*);
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*, int);
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
-// This function also creates a new object
-%newobject sml::ClientXML::GenerateXMLStringFast(bool includeChildren) const ;
+// This function also creates a new object, but we need to tell SWIG how to delete it
+%typemap(newfree) char* GenerateXMLStringFast {
+    sml::ClientXML::DeleteString($1);
+}
+%newobject sml::ClientXML::GenerateXMLStringFast(bool) const ;
 
 // don't wrap the code for registering callbacks because we need to provide some custom code to make it work
 %ignore sml::Agent::RegisterForProductionEvent(smlProductionEventId, ProductionEventHandler, void*, bool addToBack = true);
