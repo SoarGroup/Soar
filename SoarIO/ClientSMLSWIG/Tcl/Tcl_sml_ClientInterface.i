@@ -37,7 +37,16 @@
 		// we can ignore the agent parameter because it's already in the script (from when we registered it)
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-		Tcl_AppendStringsToObj(script, " \"", pProdName, "\" \"", pInstantiation, "\"", NULL);
+		Tcl_AppendStringsToObj(script, " \"", pProdName, "\"", NULL);
+		
+		// we need to check if pInstantiation is null, because if it is it will prematurely end the appending
+		//  and we will lose the closing double quote, resulting in a syntax error
+		if(pInstantiation) {
+			Tcl_AppendStringsToObj(script, " \"", pInstantiation, "\"", NULL);
+		} else {
+			Tcl_AppendStringsToObj(script, " \"\"", NULL);
+		}
+		
 		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	

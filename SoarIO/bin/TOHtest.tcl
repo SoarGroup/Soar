@@ -3,15 +3,15 @@ proc PrintCallback {id userData agent message} {
 }
 
 proc ProductionExcisedCallback {id userData agent prodName instantiation} {
-   puts "removing $prodName"
+	puts "removing $prodName"
 }
 
 proc PhaseExecutedCallback {id userData agent phase} {
 	puts "phase $phase executed"
 }
 
-proc AgentDestroyedCallback {id userData agent} {
-	puts "[$agent GetAgentName] destroyed"
+proc AgentReinitializedCallback {id userData agent} {
+	puts "[$agent GetAgentName] reinitialized"
 }
 
 #load the sml stuff
@@ -27,9 +27,11 @@ set result [$agent RegisterForPrintEvent $smlEVENT_PRINT PrintCallback "" ""]
 if { [expr [string length $result] != 0] } { puts $result }
 set result [$agent RegisterForProductionEvent $smlEVENT_BEFORE_PRODUCTION_REMOVED ProductionExcisedCallback "" ""]
 if { [expr [string length $result] != 0] } { puts $result }
+#set result [$agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionExcisedCallback "" ""]
+#if { [expr [string length $result] != 0] } { puts $result }
 #set result [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback "" ""]
 #if { [expr [string length $result] != 0] } { puts $result }
-set result [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback "" ""]
+set result [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback "" ""]
 if { [expr [string length $result] != 0] } { puts $result }
 
 cd demos/towers-of-hanoi
@@ -44,6 +46,8 @@ set result [$kernel ExecuteCommandLine "excise towers-of-hanoi*monitor*operator-
 set speed [time {set result [$kernel ExecuteCommandLine "run 2048" Soar1]}]
 cd ../..
 puts "\n$speed"
+
+#set result [$kernel ExecuteCommandLine "init-soar" Soar1]}]
 
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted
 set result [$kernel -acquire]
