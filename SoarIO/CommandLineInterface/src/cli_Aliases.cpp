@@ -39,6 +39,8 @@ std::string Aliases::List() {
 		}
 		result += '\n';
 	}	
+	// remove trailing newline
+	result = result.substr(0, result.size()-1);
 	return result;
 }
 

@@ -376,7 +376,6 @@ bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const int options, cons
 			AppendToResult(pSysparams[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off");
 			AppendToResult("\n  Indifferent selection:  ");
 			AppendToResult(pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off");
-			AppendToResult("\n");
 		} else {
 			AppendArgTag(Int2String(TRACE_CONTEXT_DECISIONS_SYSPARAM, buf, kMinBufferSize), sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);

@@ -107,12 +107,12 @@ bool CommandLineInterface::DoLearn(gSKI::IAgent* pAgent, const unsigned int opti
 		if (options & OPTION_LEARN_LIST) {
 			std::string output;
 			if (m_RawOutput) {
-				AppendToResult("\nforce-learn states (when learn 'only'):\n");
+				AppendToResult("\nforce-learn states (when learn 'only'):");
 				pKernelHack->GetForceLearnStates(pAgent, output);
-				AppendToResult(output);
-				AppendToResult("\ndont-learn states (when learn 'except'):\n");
+				if (output.size()) AppendToResult('\n' + output);
+				AppendToResult("\ndont-learn states (when learn 'except'):");
 				pKernelHack->GetDontLearnStates(pAgent, output);
-				AppendToResult(output);
+				if (output.size()) AppendToResult('\n' + output);
 			} else {
 				pKernelHack->GetForceLearnStates(pAgent, output);
 				AppendArgTag(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.c_str());

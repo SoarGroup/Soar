@@ -119,6 +119,11 @@ bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::string* pPr
 			AppendArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(j->second, buf, 1024));
 		}
 	}
+
+	if (m_RawOutput) {
+		// strip last newline
+		m_Result = m_Result.substr(0, m_Result.size()-1);
+	}
 	return true;
 }
 

@@ -70,6 +70,7 @@ bool CommandLineInterface::DoLS() {
 	// Read the files
 	errno = 0;
 	while ((entry = readdir(directoryPointer)) != 0) {
+		AppendToResult('\n');
 		PrintFilename(entry->d_name, entry->d_type == DT_DIR);
 	}
 
@@ -93,7 +94,6 @@ void CommandLineInterface::PrintFilename(const std::string& name, bool isDirecto
 		if (isDirectory) {
 			AppendToResult(']');
 		}
-		AppendToResult('\n');
 	} else {
 		if (isDirectory) {
 			AppendArgTag(sml_Names::kParamDirectory, sml_Names::kTypeString, name.c_str());
