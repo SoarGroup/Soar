@@ -39,29 +39,24 @@ extern wme ** get_augs_of_id( Symbol *id, tc_number tc, int *num_attr );
    num_wmes_changed - number of wmes in the current list that must be
                       different from the previous list to trigger
                       a new memory.
-   num_cue_wmes - If using an activation-based cue, this value indicates
-                  how many wmes (i.e.., the n most active) will be used
-                  to construct the cue.
+   childlist_init_size - starting size for the children array in a wmetree node
+   wmelist_init_size   - starting size for a wmelist array
+   memories_init_size  - starting size for the g_memories array
+   memory_match_wait   - How long to wait before memories can be recalled.  This
+                         value is expressed in the number of newer memories that
+                         must exist before this one is retrievable.
+                      
 
-   %%%TODO:  Made the above values command line configurable
+   %%%TODO:  Made these values command line configurable
 
-   These tree constants define apply production types for a memory
-   EPMEM_ADD    - 
-   EPMEM_CHANGE 5
-   EPMEM_REMOVE 6
 */
 
 #define num_active_wmes 1
 #define num_wmes_changed 1
 #define childlist_init_size 8
-#define wmelist_init_size 128   // Initial size for a wmelist array
-#define memories_init_size 512  // Initial size for the global memories array
-#define memory_match_wait 10    // How long to wait before memories can be recalled
-
-#define EPMEM_ADD 4
-#define EPMEM_CHANGE 5
-#define EPMEM_REMOVE 6
-
+#define wmelist_init_size 128
+#define memories_init_size 512
+#define memory_match_wait 1     // %%%TODO: no longer needed?
 
 /*======================================================================
  * Data structures
@@ -106,7 +101,7 @@ typedef struct wmetree_struct
     struct wmetree_struct **children;
     int cap_children;
     int num_children;
-    struct wmetree_struct *parent; // %%%make this an array later?
+    struct wmetree_struct *parent; // %%%TODO: make this an array later?
     bool in_mem;
     struct wme_struct *assoc_wme;
 } wmetree;
@@ -152,6 +147,7 @@ typedef struct wmelist_struct
    g_epmem_header         - The symbol that ^epmem is attached to
    g_epmem_query          - The symbold that ^query is attached to
    g_epmem_retrieved      - The symbold that ^retrieved is attached to
+   g_last_tag             - The timetag of the last command on the output-link
                             
 */
 
@@ -166,6 +162,7 @@ int g_curr_memory;
 Symbol *g_epmem_header;
 Symbol * g_epmem_query;
 Symbol * g_epmem_retrieved;
+unsigned long g_last_tag = 0; 
 
 
 
@@ -474,7 +471,7 @@ int wme_equals_node(wme *w, wmetree *node)
    
    Created: 09 Nov 2002
    =================================================================== */
-void print_wmetree(wmetree *node, int indent, bool recurse)
+void print_wmetree(wmetree *node, int indent, int depth)
 {
     int i;
     
@@ -488,7 +485,7 @@ void print_wmetree(wmetree *node, int indent, bool recurse)
     {
         if (indent)
         {
-            print("%*s+---", indent, "");
+            print("%*s+--", indent, "");
         }
         print("%s",node->attr);
         switch(node->val_type)
@@ -506,16 +503,181 @@ void print_wmetree(wmetree *node, int indent, bool recurse)
                 break;
         }//switch
     }//else
+    print("\n");
 
-    if (recurse)
+    if (depth > 0)
     {
-        print("\n");
         for(i = 0; i < node->num_children; i++)
         {
-            print_wmetree(node->children[i], indent + 4, TRUE);
+            print_wmetree(node->children[i], indent + 3, depth - 1);
         }
     }
 }//print_wmetree
+
+/* ===================================================================
+   epmem_find_wmelist_member
+
+   Finds a descendent wme a given wmelist that has a particular
+   id and attribute.  If the given parent &g_wmetree then it is assumed
+   to be a wildcard match (i.e., any wme in the wmelist can match).
+
+   Returns NULL if not found.
+
+   Created: 20 Feb 2004
+   =================================================================== */
+wmetree *epmem_find_wmelist_member(wmelist *wl, wmetree *id, char *s)
+{
+    int i;
+
+    if (wl == NULL) return NULL;
+    
+    for(i = 0; i < wl->num_nodes; i++)
+    {
+        wmetree *node = wl->nodes[i];
+        if ( (id == &g_wmetree) || (id == node->parent) )
+        { 
+            if (strcmp(node->attr, s) == 0)
+            {
+                return node;
+            }
+        }
+    }//for
+
+    return NULL;
+    
+}//epmem_find_wmelist_member
+
+/* ===================================================================
+   print_wmelist
+
+   
+   Created: 01 Mar 2004
+   =================================================================== */
+void print_wmelist(wmelist *wl, wmetree *node, int indent, int depth)
+{
+    int i;
+
+    if (wl == NULL) return;
+    if (node == NULL) return;
+
+    if (node->parent == NULL) // check for root
+    {
+        print("\n\nROOT\n");
+    }
+    else
+    {
+        int bFound = FALSE;
+        
+        //Find out if this node is in the wmelist
+        for(i = 0; i < wl->num_nodes; i++)
+        {
+            if (wl->nodes[i] == node) bFound = TRUE;
+        }
+        if (!bFound) return;
+    
+        
+        if (indent)
+        {
+            print("%*s+--", indent, "");
+        }
+        print("%s",node->attr);
+        switch(node->val_type)
+        {
+            case SYM_CONSTANT_SYMBOL_TYPE:
+                print(" %s", node->val.strval);
+                break;
+            case INT_CONSTANT_SYMBOL_TYPE:
+                print(" %ld", node->val.intval);
+                break;
+            case FLOAT_CONSTANT_SYMBOL_TYPE:
+                print(" %f", node->val.floatval);
+                break;
+            default:
+                break;
+        }//switch
+    }//else
+    print("\n");
+
+    if (depth > 0)
+    {
+        for(i = 0; i < node->num_children; i++)
+        {
+            print_wmelist(wl, node->children[i], indent + 3, depth - 1);
+        }
+    }
+    
+}//print_wmelist
+
+/* ===================================================================
+   print_wmelist_graphically
+
+   
+   Created: 01 Mar 2004
+   =================================================================== */
+void print_wmelist_graphically(wmelist *wl)
+{
+    wmetree *ol            = NULL;
+    wmetree *il            = NULL;
+    wmetree *move          = NULL;
+    wmetree *direction     = NULL;
+    wmetree *eater         = NULL;
+    wmetree *score         = NULL;
+    wmetree *my_location   = NULL;
+    wmetree *north         = NULL;
+    wmetree *south         = NULL;
+    wmetree *east          = NULL;
+    wmetree *west          = NULL;
+    wmetree *n_content     = NULL;
+    wmetree *s_content     = NULL;
+    wmetree *e_content     = NULL;
+    wmetree *w_content     = NULL;
+    char n_char = '?';
+    char s_char = '?';
+    char e_char = '?';
+    char w_char = '?';
+    char dir_char = '?';
+
+    //Find the direction of movement
+    ol = epmem_find_wmelist_member(wl, &g_wmetree, "output-link");
+    move = epmem_find_wmelist_member(wl, ol, "move");
+    direction = epmem_find_wmelist_member(wl, move, "direction");
+
+    //Find the current score
+    il = epmem_find_wmelist_member(wl, &g_wmetree, "input-link");
+    eater = epmem_find_wmelist_member(wl, il, "eater");
+    score = epmem_find_wmelist_member(wl, eater, "score");
+    
+    //Find the contents of each surrounding cell
+    my_location = epmem_find_wmelist_member(wl, il, "my-location");
+    north = epmem_find_wmelist_member(wl, my_location, "north");
+    south = epmem_find_wmelist_member(wl, my_location, "south");
+    east = epmem_find_wmelist_member(wl, my_location, "east");
+    west = epmem_find_wmelist_member(wl, my_location, "west");
+    n_content = epmem_find_wmelist_member(wl, north, "content");
+    s_content = epmem_find_wmelist_member(wl, south, "content");
+    e_content = epmem_find_wmelist_member(wl, east, "content");
+    w_content = epmem_find_wmelist_member(wl, west, "content");
+
+    if (n_content != NULL) n_char   = n_content->val.strval[0];
+    if (s_content != NULL) s_char   = s_content->val.strval[0];
+    if (e_content != NULL) e_char   = e_content->val.strval[0];
+    if (w_content != NULL) w_char   = w_content->val.strval[0];
+    if (direction != NULL) dir_char = direction->val.strval[0];
+
+    print("\n         %c", n_char);
+    print("\n        %c%c%c",w_char, dir_char, e_char);
+    print("\n         %c", s_char);
+
+    if (score != NULL)
+    {
+        print("\n  score=%d.", score->val.intval);
+    }
+    else
+    {
+        print("\n  score=NOT AVAILABLE");
+    }
+    
+}//print_wmelist_graphically
 
 
 /* ===================================================================
@@ -638,7 +800,85 @@ void add_node_to_wmelist(wmelist *wl, wmetree *node)
 
 
 /* ===================================================================
-   update_wmetree          *RECURSIVE*
+   update_wmetree
+
+   Updates the wmetree given a pointer to a corresponding wme in working
+   memory.  The wmetree node is assumed to be initialized and empty.
+   Each wme that is discovered by this algorithm is also added to a given
+   wmelist.
+
+   If this function finds a ^superstate WME it does not traverse that link.
+   Instead, it records the find and returns it to the caller.  The caller
+   can then call update_wmetree again if desired.
+   
+   This function requires a tc number.
+
+   Created: 09 Jan 2004
+   Updated: 23 Feb 2004 - made breadth first and non-recursive
+   =================================================================== */
+Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
+{
+    wme **wmes;
+    wmetree *childnode;
+    int len = 0;
+    int i;
+    Symbol *ss = NULL;
+    wmelist *syms = make_wmelist(); // NOTE:  I'm cheating and using this
+                                         // to store a linked list of Symbols
+    int pos = 0;
+
+    do
+    {
+        wmes = get_augs_of_id( sym, tc, &len );
+        if (wmes != NULL)
+        {
+            for(i = 0; i < len; i++)
+            {
+                childnode = find_child_node(node, wmes[i]);
+                if (childnode == NULL)
+                {
+                    childnode = make_wmetree_node(wmes[i]);
+                    add_child_to_wmetree(node, childnode);
+                }
+
+                //Check for special case: "superstate" 
+                if (wme_has_value(wmes[i], "superstate", NULL))
+                {
+                    if ( (ss == NULL)
+                         && (wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) )
+                    {
+                        ss = wmes[i]->value;
+                    }
+                    continue;
+                }
+
+                //insert childnode into the wmelist
+                add_node_to_wmelist(wl, childnode);
+                add_node_to_wmelist(syms, (wmetree *)wmes[i]->value);
+            }//for
+        }//if
+        
+        node = wl->nodes[pos];
+        sym = (Symbol *)syms->nodes[pos];
+        pos++;
+
+    } while(pos < wl->num_nodes);
+    
+    //Sort the wmelist
+    qsort( (void *)wl->nodes,
+           (size_t)wl->num_nodes,
+           sizeof( wmetree * ),
+           compare_ptr );
+
+    //Deallocate the symbol list
+    destroy_wmelist(syms);
+
+    return ss;
+    
+}//update_wmetree
+
+/* ===================================================================
+   old_update_wmetree          *RECURSIVE*
 
    Updates the wmetree given a pointer to a corresponding wme in working
    memory.  The wmetree node is assumed to have been initialized already.
@@ -652,7 +892,7 @@ void add_node_to_wmelist(wmelist *wl, wmetree *node)
 
    Created: 09 Jan 2004
    =================================================================== */
-Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
+Symbol *old_update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
 {
     wme **wmes;
     wmetree *childnode;
@@ -676,11 +916,6 @@ Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
         //Save the childnode away for recursive update below
         add_node_to_wmelist(childnodes, childnode);
 
-        //%%%DEBUGGING
-//          print("\t\t\tRECORDING:  ");
-//          print_wme(wmes[i]);
-
-        
         //Check for special case: "superstate" 
         if (wme_has_value(wmes[i], "superstate", NULL))
         {
@@ -720,7 +955,7 @@ Symbol *update_wmetree(wmetree *node, Symbol *sym, wmelist *wl, tc_number tc)
     
     return ss;
     
-}//update_wmetree
+}//old_update_wmetree
 
 /* ===================================================================
    add_wmelist_to_memories
@@ -781,8 +1016,8 @@ void record_epmem( )
     //state as a list of wmelist structs
     sym = current_agent(bottom_goal);
     
-    //%%%Do only top-state for now
-    sym = current_agent(top_goal);  //%%%remove this later
+    //Do only top-state for now
+    sym = current_agent(top_goal);  //%%%TODO: remove this later
     
     curr_state = NULL;
     next_state = NULL;
@@ -800,10 +1035,9 @@ void record_epmem( )
     add_wmelist_to_memories(curr_state);
     
 
-    //%%%UNCOMMENT TO DEBUG:
-    //print_wmetree(&(g_wmetree), 0, TRUE);
-
-
+//      //%%%DEBUGGING
+//      print("\nRECORDED MEMORY %d:\n", g_num_memories - 1);
+//      print_wmelist_graphically(g_memories[g_num_memories - 1]);
     
 }//record_epmem
 
@@ -1030,7 +1264,6 @@ int get_most_activated_wmes(wme **active_wmes, int n, int nonleaf_threshold)
      */
     if (pos < n)
     {
-        //%%%print("\nNot Enough WMEs in working memory!\n");
         for(i = pos; i < n; i++)
         {
             active_wmes[i] = NULL;
@@ -1043,15 +1276,54 @@ int get_most_activated_wmes(wme **active_wmes, int n, int nonleaf_threshold)
 
 
 /* ===================================================================
-   consider_new_epmem() 
+   consider_new_epmem_via_output() 
+
+   This routine determines whether a new command has been placed on
+   the output link.  If so, record_epmem() is called.
+
+   Created: 01 Mar 2004
+   =================================================================== */
+
+void consider_new_epmem_via_output()
+{
+    slot *s;
+    wme *w;
+    Symbol *ol = current_agent(io_header_output);
+    int bNewMemory = FALSE;
+    
+    //Examine all the commands on the output link for any that have
+    //appeared since the last memory was recorded
+    for (s = ol->id.slots; s != NIL; s = s->next)
+    {
+        for (w = s->wmes; w != NIL; w = w->next)
+        {
+            if (w->timetag > g_last_tag)
+            {
+                bNewMemory = TRUE;
+                g_last_tag = w->timetag;
+            }
+        }
+    }
+
+    //If there's a new command record a new memory
+    if (bNewMemory)
+    {
+        record_epmem();         // The big one
+    }
+
+}//consider_new_epmem_via_output
+
+/* ===================================================================
+   consider_new_epmem_via_activation() 
 
    This routine decides whether the current state is worthy of being
-   remembered as an episodic memory.  If so, record_epmem() is called.
+   remembered as an episodic memory based upon recent changes in the
+   top N most activated WMEs.  If so, record_epmem() is called.
 
    Created: 06 Nov 2002
    =================================================================== */
 
-void consider_new_epmem()
+void consider_new_epmem_via_activation()
 {
     int i;
 
@@ -1078,26 +1350,39 @@ void consider_new_epmem()
         record_epmem();         // The big one
 
     }
-    //%%%UNCOMMENT TO DEBUG
-    else
-    {
-        //print("\nEpmem not recorded due to lack of change in WM.\n");
-    }
 
     
-}//consider_new_epmem
+}//consider_new_epmem_via_activation
 
 /* ===================================================================
    epmem_clear_mem               *RECURSIVE*
 
    This routine removes all the epmem WMEs from working memory that
-   are associated with a given wmetree (via ->assoc_wme).
+   are associated with a given wmetree (via ->assoc_wme).  This
+   function assumes that it will initially be called with an argument
+   of &g_wmetree.
 
    Created: 16 Feb 2004
    =================================================================== */
 void epmem_clear_mem(wmetree *node)
 {
     int i;
+
+    //Check for "no-retrieval" wme
+    if (g_wmetree.assoc_wme != NULL)
+    {
+        remove_input_wme(g_wmetree.assoc_wme);
+        wme_remove_ref(g_wmetree.assoc_wme);
+        g_wmetree.assoc_wme = NULL;
+
+        return;
+    }
+
+    //Check for trivial case
+    if (g_curr_memory == -1)
+    {
+        return;
+    }
 
     //Find all the wmes attached to the given node
     for(i = 0; i < node->num_children; i++)
@@ -1107,17 +1392,13 @@ void epmem_clear_mem(wmetree *node)
         if (node->children[i]->assoc_wme == NULL)
         {
             print("\nERROR: WME should be in memory for: ");
-            print_wmetree(node->children[i], 0, FALSE);
+            print_wmetree(node->children[i], 0, 0);
             continue;
         }
 
         //Recursive call.  Do this first so leaf WMEs are
         //deallocated first.
         epmem_clear_mem(node->children[i]);
-
-        //%%%REMOVE THIS
-//          print("\t\t\tREMOVING:  ");
-//          print_wme(node->children[i]->assoc_wme);
 
         //Remove from WM
         remove_input_wme(node->children[i]->assoc_wme);
@@ -1167,16 +1448,117 @@ int compare_wmelist(wmelist *w1, wmelist *w2)
 }//compare_wmelist
 
 /* ===================================================================
+   compare_wmelist_leaf_only
+
+   Compares two wmelists and returns the number of *leaf* WMEs they
+   have in common.  Obviously both lists should reference the same
+   wmetree for this comparison to be useful.
+   
+   Created: 23 Feb 2004
+   =================================================================== */
+int compare_wmelist_leaf_only(wmelist *w1, wmelist *w2)
+{
+    int count = 0;
+    int pos1 = 0;
+    int pos2 = 0;
+
+    while((pos1 < w1->num_nodes) && (pos2 < w2->num_nodes))
+    {
+        if (w1->nodes[pos1]->val_type == IDENTIFIER_SYMBOL_TYPE)
+        {
+            pos1++;
+            continue;
+        }
+        
+        if (w2->nodes[pos2]->val_type == IDENTIFIER_SYMBOL_TYPE)
+        {
+            pos2++;
+            continue;
+        }
+        
+        if (w1->nodes[pos1] == w2->nodes[pos2])
+        {
+            count++;
+            pos1++;
+            pos2++;
+        }
+        else if (w1->nodes[pos1] < w2->nodes[pos2])
+        {
+            pos1++;
+        }
+        else
+        {
+            pos2++;
+        }
+    }//while
+
+    return count;
+}//compare_wmelist_leaf_only
+
+/* ===================================================================
+   compare_wmelist_ideal               *EATERS ONLY*
+
+   Compares two wmelists and returns the number of ideals wmes that
+   match.  I've handcoded ideal wmes to be the contents of cells
+   immediately adjacent to the eater and the direction the eater is
+   headed.
+  
+   Created: 23 Feb 2004
+   =================================================================== */
+int compare_wmelist_ideal(wmelist *w1, wmelist *w2)
+{
+    wmetree *node1;
+    wmetree *node2;
+    wmetree *tmp1;
+    wmetree *tmp2;
+    char *direction = NULL;
+
+    //Compare the direction eater is travelling
+    node1 = epmem_find_wmelist_member(w1, &g_wmetree, "output-link");
+    node1 = epmem_find_wmelist_member(w1, node1, "move");
+    node1 = epmem_find_wmelist_member(w1, node1, "direction");
+    node2 = epmem_find_wmelist_member(w2, &g_wmetree, "output-link");
+    node2 = epmem_find_wmelist_member(w2, node2, "move");
+    node2 = epmem_find_wmelist_member(w2, node2, "direction");
+    if ( (node1 != NULL) && (node1 == node2) )
+    {
+        direction = node1->val.strval;
+    }
+    else
+    {
+        //Wrong direction
+        return 0;
+    }
+
+    //Find the eater's cell
+    node1 = epmem_find_wmelist_member(w1, &g_wmetree, "input-link");
+    node1 = epmem_find_wmelist_member(w1, node1, "my-location");
+    node2 = epmem_find_wmelist_member(w2, &g_wmetree, "input-link");
+    node2 = epmem_find_wmelist_member(w2, node2, "my-location");
+
+    //Compare destination cell content
+    tmp1 = epmem_find_wmelist_member(w1, node1, direction);
+    tmp1 = epmem_find_wmelist_member(w1, tmp1, "content");
+    tmp2 = epmem_find_wmelist_member(w2, node2, direction);
+    tmp2 = epmem_find_wmelist_member(w2, tmp2, "content");
+    if ( (tmp1 != NULL) && (tmp1 == tmp2) ) return 2;
+
+
+    return 0;
+
+}//compare_wmelist_ideal
+
+
+
+/* ===================================================================
    match_wmelist
 
-   Finds the wmelist in g_memories that most closely matches the
-   one given.  If no match is found, a NULL value is returned.
-   If the next boolean is set, the memory returned is the one
-   that occurs *after* the closest match (in temporal order).
+   Finds the index of the wmelist in g_memories that most closely
+   matches the wmelist given to the function.
 
    Created:  19 Jan 2004
    =================================================================== */
-wmelist *match_wmelist(wmelist *w, bool next)
+int match_wmelist(wmelist *w)
 {
     int best_match = 0;
     int best_index = 0;
@@ -1187,13 +1569,12 @@ wmelist *match_wmelist(wmelist *w, bool next)
     //the first one
     if (g_num_memories <= memory_match_wait)
     {
-        return g_memories[0];
+        return 0;
     }
     
     for(i = 0; i < g_num_memories - memory_match_wait; i++)
     {
-        n = compare_wmelist(g_memories[i], w);
-        print("\nMATCH: epmem %d with str %d", i, n);
+        n = compare_wmelist_ideal(g_memories[i], w);
         if (n >= best_match)
         {
             best_index = i;
@@ -1201,12 +1582,10 @@ wmelist *match_wmelist(wmelist *w, bool next)
         }
     }
 
-    if ( (next) && (best_index + 1 < g_num_memories) )
-    {
-        return g_memories[best_index + 1];
-    }
+    //Check for no match found
+    if (best_match == 0) return -1;
 
-    return g_memories[best_index];
+    return best_index;
 }//match_wmelist
 
 /* ===================================================================
@@ -1230,7 +1609,7 @@ void iwiw_helper(Symbol *id, wmetree *node)
         if (strcmp(node->children[i]->attr, "epmem") == 0) continue;
         if (node->children[i]->assoc_wme != NULL)
         {
-            //%%%I think this is an error.  What do I do about it?
+            //%%%TODO: I think this is an error.  What do I do about it?
         }
         
         attr = make_sym_constant(node->children[i]->attr);
@@ -1256,11 +1635,6 @@ void iwiw_helper(Symbol *id, wmetree *node)
         node->children[i]->assoc_wme = add_input_wme(id, attr, val);
         wme_add_ref(node->children[i]->assoc_wme);
 
-        //%%%REMOVE THIS
-//          print("\t\t\tADDING:  ");
-//          print_wme(node->children[i]->assoc_wme);
-
-        
         //Recursively create wmes for children's children
         iwiw_helper(val, node->children[i]);
 
@@ -1304,43 +1678,53 @@ void install_wmelist_in_wm(Symbol *sym, wmelist *wl)
 
    query - the query
    retrieved - where to install the retrieved result
-   next - whether to install the best fit or the next memory
 
    Created: 19 Jan 2004
    =================================================================== */
-wmelist *respond_to_query(Symbol *query, Symbol *retrieved, bool next)
+wmelist *respond_to_query(Symbol *query, Symbol *retrieved)
 {
     wmelist *wl_query;
     wmelist *wl_retrieved;
     tc_number tc;
-    wme *w;
+
+    //Verify that there is at least one memory to retrieve
+    if (g_num_memories < 1) return NULL;
+    
+    //Remove the old retrieved memory
+    epmem_clear_mem(&g_wmetree);
+    g_curr_memory = -1;
 
     //Create a wmelist representing the current query
     wl_query = make_wmelist();
     tc = query->id.tc_num + 1;
     update_wmetree(&g_wmetree, query, wl_query, tc);
 
-    //Remove the old retrieved memory
-    epmem_clear_mem(&g_wmetree);
-
     //If the query is empty then we're done
-    if (wl_query->num_nodes == 0) return NULL;
+    if (wl_query->num_nodes == 0)
+    {
+        destroy_wmelist(wl_query);
+        return NULL;
+    }
 
     //Match query to current memories list
-    wl_retrieved = match_wmelist(wl_query, next);
+    g_curr_memory = match_wmelist(wl_query);
+    destroy_wmelist(wl_query);
 
     //Place the best fit on the retrieved link
-    if (wl_retrieved != NULL)
+    if (g_curr_memory > -1)
     {
+        wl_retrieved = g_memories[g_curr_memory];
         install_wmelist_in_wm(retrieved, wl_retrieved);
     }
     else
     {
+        wl_retrieved = NULL;
+
         //Notify the user of failed retrieval
-        w = add_input_wme(retrieved,
-                          make_sym_constant("no-retrieval"),
-                          make_sym_constant("true"));
-        wme_add_ref(w);
+        g_wmetree.assoc_wme = add_input_wme(retrieved,
+                                             make_sym_constant("no-retrieval"),
+                                             make_sym_constant("true"));
+        wme_add_ref(g_wmetree.assoc_wme);
     }
 
     return wl_retrieved;
@@ -1455,19 +1839,55 @@ void increment_retrieval_count(long inc_amt)
    =================================================================== */
 void respond_to_command(char *cmd)
 {
-    wmelist *wl;
-    
     if (strcmp(cmd, "next") == 0)
     {
-        wl = respond_to_query(g_epmem_retrieved, g_epmem_retrieved, TRUE);
-        if (wl != NULL)
+        //Remove the old retrieved memory
+        epmem_clear_mem(&g_wmetree);
+
+        //Check that there is a next memory available
+        if ( (g_curr_memory > -1)
+             && (g_curr_memory < g_num_memories - memory_match_wait) )
         {
-            increment_retrieval_count(1);
+            //Install the new memory
+            g_curr_memory++;
+            install_wmelist_in_wm(g_epmem_retrieved,
+                                  g_memories[g_curr_memory]);
         }
+        else
+        {
+            //Notify the user of failed retrieval
+            g_wmetree.assoc_wme = add_input_wme(g_epmem_retrieved,
+                                                make_sym_constant("no-retrieval"),
+                                                make_sym_constant("true"));
+            wme_add_ref(g_wmetree.assoc_wme);
+        }
+        
+        increment_retrieval_count(1);
     }
     
 }//respond_to_command
 
+
+/* ===================================================================
+   epmem_print_curr_memory()           *DEBUGGING*
+
+   Prints information about what's currently on the ^epmem link.
+
+   Created: 20 Feb 2004
+   =================================================================== */
+void epmem_print_curr_memory()
+{
+    if (g_curr_memory < 0)
+    {
+        print("\nCURRENT MEMORY:  None.\n");
+        return;
+    }
+    
+    //Print the current memory
+    print("\nCURRENT MEMORY:  %d of %d\t\t", g_curr_memory, g_num_memories);
+    print_wmelist_graphically(g_memories[g_curr_memory]);
+
+}//epmem_print_curr_memory
 
 
 /* ===================================================================
@@ -1485,7 +1905,7 @@ void epmem_update()
     wmelist *wl = NULL;
 
     //Consider recording a new epmem
-    consider_new_epmem();
+    consider_new_epmem_via_output();
 
     //Update the ^retrieved link as necessary
     cmd = epmem_retrieve_command();
@@ -1495,7 +1915,7 @@ void epmem_update()
     }
     else
     {
-        wl = respond_to_query(g_epmem_query, g_epmem_retrieved, FALSE);
+        wl = respond_to_query(g_epmem_query, g_epmem_retrieved);
         if (wl != NULL)
         {
             //New retrieval:  reset count to zero
@@ -1507,6 +1927,9 @@ void epmem_update()
             increment_retrieval_count(-1);
         }
     }
+
+    //%%%DEBUGGING
+    epmem_print_curr_memory();
 
 }//epmem_update
 
@@ -1562,6 +1985,7 @@ void init_epmem(void)
     g_wmetree.cap_children = 0;
     g_wmetree.num_children = 0;
     g_wmetree.parent = NULL;
+    g_wmetree.assoc_wme = NULL;
 
     //Initialize the memories array
     g_memories = (wmelist **)allocate_memory_and_zerofill(memories_init_size * sizeof(wmelist *),
