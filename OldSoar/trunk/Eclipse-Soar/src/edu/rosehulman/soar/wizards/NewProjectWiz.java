@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 
+import edu.rosehulman.soar.natures.*;
 import edu.rosehulman.soar.sourcing.*;
 
 /**
@@ -107,7 +108,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 				String[] natures = description.getNatureIds();
 				String[] newNatures = new String[natures.length + 1];
 				System.arraycopy(natures, 0, newNatures, 0, natures.length);
-				newNatures[natures.length] = "edu.rosehulman.soar.natures.SoarProjectNature";
+				newNatures[natures.length] = SoarProjectNature.NATURE_ID;
 				description.setNatureIds(newNatures);
 				
 				newProject.setDescription(description, IResource.FORCE ,monitor);

@@ -30,7 +30,7 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 	private SoarEditor _editor;
 	private DataMap _dm = null;
 	
-	private char[] _propActivate = {'.', '^'};
+	private char[] _propActivate = new char[65];
 	private char[] _infoActivate = null;
 	
 	private String _errorMsg;
@@ -42,6 +42,24 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 	 */
 	public SoarContentAssistProcessor(SoarEditor editor) {
 		_editor = editor;
+		
+		_propActivate[0] = '^';
+		_propActivate[1] = '.';
+		_propActivate[2] = '-';
+		
+		int index = 3;
+		for (char num='0'; num<'9'; num++) {
+			_propActivate[index] = num;
+			index++;
+		}
+		for (char lcase='a'; lcase<'z'; lcase++) {
+			_propActivate[index] = lcase;
+			index++;
+		}
+		for (char ucase='A'; ucase<'A'; ucase++) {
+			_propActivate[index] = ucase;
+			index++;
+		}
 	}
 	
 	
@@ -51,17 +69,20 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 		
 		DataMap dm = getDataMap();
 		
+		
 		if (dm == null) {
 			System.out.println("Datamap not found.");
 			return null;
+		}
+		
+		String docText = viewer.getDocument().get();
+		char activator = docText.charAt(documentOffset-1);
 			
-		} else {
+		if (activator == '^' || activator == '.') {
 			
-			// Fetch the text of this file, then parse.
-			String docText = viewer.getDocument().get();
 			ArrayList suggestions;
 			
-			if (docText.charAt(documentOffset-1) == '^' ) {
+			if (activator == '^' ) {
 				suggestions = dm.getRoot().getChildren();
 			} else {
 			
@@ -106,8 +127,76 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 			} else {
 				return ret;
 			} // else
+		
+		
+		
+		//Handle partial completion
+		} else {
 			
-		} // else
+			ArrayList suggestions;
+			
+		
+			ArrayList names = getNames(docText, documentOffset-1);
+			
+			/*for (int i=0; i<names.size(); i++) {
+				System.out.println( "\"" + names.get(i) + "\"");
+			}*/
+			
+			//This is the beginning of the attribute the user is looking for.
+			String partial = (String) names.get(names.size()-1);
+			
+			names.remove(names.size()-1);
+			
+			//Go through the DataMap for our suggestions
+			suggestions = getSuggestions(dm.getRoot(), names, 0);
+			
+			/*System.out.println("**suggestions before");
+			for (int i=0; i<suggestions.size(); i++) {
+				System.out.println(suggestions.get(i));
+			}*/
+			
+			//get rid of any suggestions that do not start with partial
+			for (int i=0; i<suggestions.size(); ++i) {
+				String name = ((DMItem) suggestions.get(i)).getName();
+				if (! name.startsWith(partial)) {
+					suggestions.remove(i);
+					--i;
+				}
+			}
+
+			/*System.out.println("**suggestions after");
+			for (int i=0; i<suggestions.size(); i++) {
+				System.out.println(suggestions.get(i));
+			}*/
+			
+			CompletionProposal[] ret = new CompletionProposal[suggestions.size()];
+			
+			//Build the completion proposal
+			for (int i=0; i<ret.length; i++) {
+				DMItem sugg = (DMItem) suggestions.get(i);
+				
+				//System.out.println(sugg);
+				
+				String replacement = sugg.getName().substring(partial.length());
+				
+				ret[i] = new CompletionProposal(
+					replacement,
+					documentOffset,
+					0,
+					replacement.length(),
+					ItemImages.getImage(sugg),
+					sugg.toString(),
+					null,
+					"");
+				
+			} // for i
+		
+			if (ret.length == 0) {
+				return null;
+			} else {
+				return ret;
+			} // else	
+		}
 	} // ICompletionProposal[] computeCompletionProposals( ... )
 	
 	
@@ -158,7 +247,7 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 			
 			return ret;
 		} // else
-	} //ArrayList getSuggestions(DataMap dm, ArrayList names)
+	} //ArrayList getSuggestions( ... )
 	
 	
 	

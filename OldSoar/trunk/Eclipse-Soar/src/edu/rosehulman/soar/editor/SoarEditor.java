@@ -11,9 +11,10 @@ package edu.rosehulman.soar.editor;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.rules.*;
 
 import edu.rosehulman.soar.*;
-import edu.rosehulman.soar.editor.soar.SoarCodeScanner;
+import edu.rosehulman.soar.editor.soar.*;
 import edu.rosehulman.soar.editor.autocomplete.*;
 
 /**
@@ -23,7 +24,8 @@ import edu.rosehulman.soar.editor.autocomplete.*;
  */
 public class SoarEditor extends AbstractTextEditor
 {
-	private static SoarCodeScanner _soarCodeScanner;
+	//private static SoarCodeScanner _soarCodeScanner;
+	private static ITokenScanner _soarCodeScanner;
 
 	/**
 	 * Instantiates the Soar Editor
@@ -34,6 +36,7 @@ public class SoarEditor extends AbstractTextEditor
 		setDocumentProvider(new SoarEditorDocumentProvider());
 		setSourceViewerConfiguration(new SoarEditorSourceViewerConfiguration(this));
 		_soarCodeScanner = new SoarCodeScanner();
+		//_soarCodeScanner = new SoarRulesScanner();
 		setRangeIndicator(new DefaultRangeIndicator());
 	}
 	
@@ -87,7 +90,11 @@ public class SoarEditor extends AbstractTextEditor
 	 * Gets a Soar Code Scanner.
 	 * @return SoarCodeScanner
 	 */
-	public static SoarCodeScanner getSoarCodeScanner()
+	/*public static SoarCodeScanner getSoarCodeScanner()
+	{
+		return _soarCodeScanner;
+	}*/
+	public static ITokenScanner getSoarCodeScanner()
 	{
 		return _soarCodeScanner;
 	}

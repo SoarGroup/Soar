@@ -15,6 +15,18 @@
    </requires>
 
 
+	<!-- Soar Perspective -->
+	<extension
+		point="org.eclipse.ui.perspectives">
+		<perspective
+			name="Soar Perspective"
+			icon="icons/soar.gif"
+			class="edu.rosehulman.soar.perspective.SoarPerspectiveFactory"
+			id="edu.rosehulman.soar.perspective.SoarPerspectiveFactory">
+		</perspective>
+	</extension>
+
+
    <!-- Soar Project Nature -->
    
    <extension
@@ -61,6 +73,21 @@
 				<parameter name="optimize" value="true" />
 			</run>
 		</builder>
+	</extension>
+
+
+	<!-- Navigator -->
+	
+	<extension point="org.eclipse.ui.views">
+		<category 
+			id="edu.rosehulman.soar.views"
+			name="Soar" />
+		<view 
+			id="edu.rosehulman.soar.navigator.SoarNavigator"
+			name="Soar Navigator"
+			icon="icons/soar.gif"
+			category="edu.rosehulman.soar.views"
+			class="edu.rosehulman.soar.navigator.SoarNavigator" />
 	</extension>
 
 

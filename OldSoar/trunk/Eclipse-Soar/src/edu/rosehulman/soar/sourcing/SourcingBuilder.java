@@ -28,7 +28,7 @@ public class SourcingBuilder extends IncrementalProjectBuilder {
 		
 		
 		IProject proj = getProject();
-		SourcingFile.createSourcingFile(proj);
+		SourcingFile.createSourcingFile(proj, monitor);
 		
 		if (monitor != null) {
 			monitor.worked(1);

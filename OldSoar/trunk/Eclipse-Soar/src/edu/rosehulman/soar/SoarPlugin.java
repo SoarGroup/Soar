@@ -15,11 +15,16 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import edu.rosehulman.soar.editor.util.ColorProvider;
 import edu.rosehulman.soar.sourcing.*;
 
+
 /**
  * The main plugin class to be used in the desktop.
  */
 public class SoarPlugin extends AbstractUIPlugin
 {
+	
+	public static final String ID_NAVIGATOR = "edu.rosehulman.soar.navigator.SoarNavigator";
+	
+	
 	// The shared instance.
 	private static SoarPlugin _plugin;
 	
@@ -27,6 +32,8 @@ public class SoarPlugin extends AbstractUIPlugin
 	private ResourceBundle _resourceBundle;
 	
 	private ColorProvider _colorProvider;
+	
+	
 	
 	/**
 	 * The constructor.
@@ -56,11 +63,7 @@ public class SoarPlugin extends AbstractUIPlugin
 		//	around just in case I need it later.
 		IResourceChangeListener listener = new SoarChangeListener();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(listener,
-			IResourceChangeEvent.PRE_CLOSE
-			| IResourceChangeEvent.PRE_DELETE
-			| IResourceChangeEvent.PRE_AUTO_BUILD
-			| IResourceChangeEvent.POST_AUTO_BUILD
-			| IResourceChangeEvent.POST_CHANGE);
+			IResourceChangeEvent.PRE_AUTO_BUILD);
 	}
 
 	/**

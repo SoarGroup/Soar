@@ -37,7 +37,7 @@ public class InvokeGenerateSourcingFile implements IActionDelegate
 
 	public void run(IAction action)
 	{
-		SourcingFile.createSourcingFile(project);
+		SourcingFile.createSourcingFile(project, null);
 	}
 
 	public IWorkbench getWorkbench()

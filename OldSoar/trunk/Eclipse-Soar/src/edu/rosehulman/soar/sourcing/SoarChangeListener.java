@@ -33,16 +33,21 @@ public class SoarChangeListener implements IResourceChangeListener {
 			
 			
 			switch (delta.getKind()) {
+				
+				case IResourceDelta.MOVED_TO:
+				case IResourceDelta.MOVED_FROM:
 				case IResourceDelta.ADDED:
 				case IResourceDelta.REMOVED:
 				
-					IProject proj = delta.getResource().getProject();
+					IResource res = delta.getResource();
+					IProject proj = res.getProject();
 					try {
 						if (proj != null &&
 							proj.hasNature(SoarProjectNature.NATURE_ID)) {
 							
 							//SourcingFile.createSourcingFile(proj);
-							proj.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, null);
+							SourcingFile.createSourcingFile(res.getParent(), null);
+							//proj.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, null);
 						} // if
 					} catch (Exception e) {
 						e.printStackTrace();

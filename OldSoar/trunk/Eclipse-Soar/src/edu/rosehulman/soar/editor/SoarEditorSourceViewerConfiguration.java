@@ -12,7 +12,7 @@ import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.IFormattingStrategy;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
-import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
+import org.eclipse.jface.text.rules.*;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
@@ -71,7 +71,7 @@ public class SoarEditorSourceViewerConfiguration
 	public IPresentationReconciler getPresentationReconciler(
 		ISourceViewer sourceViewer)
 	{
-		ColorProvider provider = 
+		/*ColorProvider provider = 
 			SoarPlugin.getDefault().getColorProvider();
  
 		PresentationReconciler reconciler = new PresentationReconciler();
@@ -83,6 +83,32 @@ public class SoarEditorSourceViewerConfiguration
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
 		dr = new SoarDamagerRepairer(
+				new SingleTokenScanner(
+					new TextAttribute(provider.getColor(ColorProvider.COMMENT))));
+		reconciler.setDamager(dr, SoarPartitionScanner.SOAR_COMMENT);
+		reconciler.setRepairer(dr, SoarPartitionScanner.SOAR_COMMENT);
+
+		return reconciler; */
+		
+		ColorProvider provider = 
+			SoarPlugin.getDefault().getColorProvider();
+ 
+		PresentationReconciler reconciler = new PresentationReconciler();
+
+		// Rule for default text
+		/*DefaultDamagerRepairer dr = 
+			new DefaultDamagerRepairer(SoarEditor.getSoarCodeScanner());
+		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
+		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE); */
+
+
+		DefaultDamagerRepairer dr = 
+			new DefaultDamagerRepairer(SoarEditor.getSoarCodeScanner());
+		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
+		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
+		
+
+		dr = new DefaultDamagerRepairer(
 				new SingleTokenScanner(
 					new TextAttribute(provider.getColor(ColorProvider.COMMENT))));
 		reconciler.setDamager(dr, SoarPartitionScanner.SOAR_COMMENT);

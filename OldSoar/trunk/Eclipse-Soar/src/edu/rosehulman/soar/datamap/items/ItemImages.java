@@ -21,11 +21,11 @@ import java.net.*;
  * @author Tim Jasko
  */
 public class ItemImages {
-	public static String ITEM_ENUM = "ITEM_ENUM";
-	public static String ITEM_FLOAT = "ITEM_FLOAT"; 
-	public static String ITEM_IDENTIFIER = "ITEM_IDENTIFIER";
-	public static String ITEM_INT = "ITEM_INT";
-	public static String ITEM_STRING = "ITEM_STRING";
+	public static final String ITEM_ENUM = "ITEM_ENUM";
+	public static final String ITEM_FLOAT = "ITEM_FLOAT"; 
+	public static final String ITEM_IDENTIFIER = "ITEM_IDENTIFIER";
+	public static final String ITEM_INT = "ITEM_INT";
+	public static final String ITEM_STRING = "ITEM_STRING";
 	
 	/**
 	 * Loads the required images into the image registry

@@ -27,6 +27,8 @@ public class ColorProvider
 
 	public static final RGB COMMENT = new RGB(0, 127, 85);
 	
+	public static final RGB ATTRIBUTE = new RGB(255, 128, 0);
+	public static final RGB VARIABLE = new RGB(0, 128, 255);
 	public static final RGB DEFAULT = new RGB(0, 0, 0);
 	public static final RGB NAME = new RGB(255, 128, 0);
 	public static final RGB NUMBER = new RGB(200, 0, 100);

@@ -22,27 +22,167 @@ public class SourcingFile {
 	public static void createSourcingFile(IProject project, IProgressMonitor monitor) {
 		
 		try {
-			System.out.println("Building sourcing file");
-			String contents = doFolder(project, 0);
-		
-			IFile agentFile = project.getFile("Agent.soar");
-		
+			String sourcingName = SourcingFile.getSourcingFileName(project);
+			
+			System.out.println("Rebuilding sourcing for project " + project.getName());
+			
+			//Get the top level files and folders.
+			IResource kids[] = project.members();
+			ArrayList files = new ArrayList();
+			ArrayList folders = new ArrayList();
+			
+			String contents = "";
+			
+			for (int i=0; i<kids.length; i++) {
+				IResource kid = kids[i];
+				
+				
+				//Split this list into files and folders, for readability's sake 
+				if (kid instanceof IFile) {
+					
+					if (kid.getFileExtension().equals("soar")
+						&& ! kid.getName().equals(sourcingName)) {
+						
+						files.add(kid);
+					}
+					
+				} else if (kid instanceof IFolder) {
+					folders.add(kid);
+				} // else
+			} // for members
+			
+			
+			//Deal with the files
+			for (int i=0; i<files.size(); i++) {
+				IFile file = (IFile) files.get(i);
+				
+				contents += "source " + file.getName() + "\n";
+				
+			} // for files
+			
+			for (int i=0; i<folders.size(); i++) {
+				IFolder folder = (IFolder) folders.get(i);
+				
+				contents += "pushd " + folder.getName() + "\n";
+				contents += "\t source " + folder.getName() + "_source.soar\n";
+				contents += "popd\n";
+				
+				createSourcingFile(folder, monitor, true);
+				
+			} // for folders
+			
+			
 			ByteArrayInputStream is = new ByteArrayInputStream(contents.getBytes());
+		
+			IFile agentFile = project.getFile(sourcingName);
 		
 			if (agentFile.exists()) {
 				agentFile.setContents(is, true, false, monitor);
 			} else {
 				agentFile.create(is, true, monitor);
 			}
+			
+
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-	
 	}
 	
+	public static void createSourcingFile(IContainer tehFolder, IProgressMonitor monitor) {
+		createSourcingFile(tehFolder, monitor, false);
+	}
+	
+	
+	public static void createSourcingFile(IContainer tehFolder,
+		IProgressMonitor monitor, boolean recurse) {
+			
+		try {
+			String sourcingName = SourcingFile.getSourcingFileName(tehFolder); 
+			
+			System.out.println("Building sourcing file for: " + tehFolder.getName());
+		
+			
+			//Get the top level files and folders.
+			IResource kids[] = tehFolder.members();
+			ArrayList files = new ArrayList();
+			ArrayList folders = new ArrayList();
+			
+			String contents = "";
+			
+			for (int i=0; i<kids.length; i++) {
+				IResource kid = kids[i];
+				
+				
+				//Split this list into files and folders, for readability's sake 
+				if (kid instanceof IFile) {
+					
+					if (kid.getFileExtension().equals("soar")
+						&& ! kid.getName().equals(sourcingName)) {
+						
+						files.add(kid);
+					}
+					
+				} else if (kid instanceof IFolder) {
+					folders.add(kid);
+				} // else
+			} // for members
+			
+			
+			//Deal with the files
+			for (int i=0; i<files.size(); i++) {
+				IFile file = (IFile) files.get(i);
+				
+				contents += "source " + file.getName() + "\n";
+				
+			} // for files
+			
+			for (int i=0; i<folders.size(); i++) {
+				IFolder folder = (IFolder) folders.get(i);
+				
+				contents += "pushd " + folder.getName() + "\n";
+				contents += "\t source " + folder.getName() + "_source.soar\n";
+				contents += "popd\n";
+				
+				if (recurse) {
+					createSourcingFile(folder, monitor);
+				}
+				
+			} // for folders
+			
+			
+			ByteArrayInputStream is = new ByteArrayInputStream(contents.getBytes());
+		
+			IFile agentFile = tehFolder.getFile(new Path(sourcingName));
+			
+			if (agentFile.exists()) {
+				agentFile.setContents(is, true, false, monitor);
+			} else {
+				agentFile.create(is, true, monitor);
+			}
+			
+
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static String getSourcingFileName(IContainer container) { 
+		if (container instanceof IProject) {
+			return container.getName() + ".soar";
+		} else {
+			return container.getName() + "_source.soar";	
+		}
+	}
+	
+	
+	
+	
+	/*
 	public static void createSourcingFile(IProject project) {
 		
 		try {
+
+			
 			System.out.println("Building sourcing file");
 			String contents = doFolder(project, 0);
 			
@@ -117,6 +257,6 @@ public class SourcingFile {
 		}
 		
 		return ret;
-	}
+	} */
 
 }

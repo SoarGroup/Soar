@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 
 public class SoarProjectNature implements IProjectNature {
 
-	static public String NATURE_ID = "edu.rosehulman.soar.natures.SoarProjectNature"; 
+	static public final String NATURE_ID = "edu.rosehulman.soar.natures.SoarProjectNature"; 
 	private IProject project;
 
 	public void configure() throws CoreException {
