@@ -18,6 +18,7 @@ $(BASEDIR_PREFIX)../gSKI/src/libgSKI.la\
 $(BASEDIR_PREFIX)../SoarKernel/src/libSoarKernel.la
 INCLUDES = \
 -I$(BASEDIR_PREFIX)../TgDI/include \
+-I$(BASEDIR_PREFIX)ConnectionSML/include \
 -I$(BASEDIR_PREFIX)CommandLineInterface/include \
 -I$(BASEDIR_PREFIX)../gSKI/src \
 -I$(BASEDIR_PREFIX)../gSKI/include
