@@ -303,6 +303,45 @@ bool emotion_get_appraisal_frame(struct slot_struct * appraisal_variable_slot, a
 
 bool emotion_get_appraisal_variable_info(wme * appraisal_variable_wme, appraisal_variable_info ** info) {
 
+    appraisal_variable_type type;
+    float value;
+    bool object;
+
+    /* initialize these to placate the compiler */
+    type = 0;
+    object = FALSE;
+    value = emotion_NO_VALUE_FLOAT;
+
+    /* check for correct variable type */
+    if( !strcmp(appraisal_variable_wme->attr->var.name,"desirability") ){
+        type = DESIRABILITY;
+    } else if( !strcmp(appraisal_variable_wme->attr->var.name,"likelihood") ) {
+        type = LIKELIHOOD;
+    } else if( !strcmp(appraisal_variable_wme->attr->var.name,"object") ) {
+        object = TRUE;
+    } else {
+        return FALSE;
+    }
+
+    /* check for legal value type */
+    if(appraisal_variable_wme->value->var.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
+        value = (float)appraisal_variable_wme->value->ic.value;
+    } else if(appraisal_variable_wme->value->var.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
+        value = appraisal_variable_wme->value->fc.value;
+    } else if(!object) { /* if the variable type is object, then we can skip this check */
+        return FALSE;
+    }
+
+    (*info)->type = type;
+    (*info)->value = value;
+    (*info)->timetag = appraisal_variable_wme->timetag;
+    (*info)->object = object;
+
+    return TRUE;
+}
+
+bool emotion_get_appraisal_variable_infoOLD(wme * appraisal_variable_wme, appraisal_variable_info ** info) {
+
     wme * value_wme;
     appraisal_variable_type type;
     variable appraisal_variable_wme_attr_var;
