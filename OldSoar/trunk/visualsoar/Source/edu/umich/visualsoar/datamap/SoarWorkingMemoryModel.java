@@ -42,13 +42,16 @@ public class SoarWorkingMemoryModel
             addProperty("IO",createNewSoarId());
             addProperty("INPUTLINK",createNewSoarId());
             addProperty("OUTPUTLINK",createNewSoarId());
+            addProperty("INITIALIZE-" + name, createNewSoarId());
             addTriple(getProperty("TOPSTATE"),"type",createNewEnumeration("state"));
             addTriple(getProperty("TOPSTATE"),"superstate",createNewEnumeration("nil"));
             addTriple(getProperty("TOPSTATE"),"top-state",getProperty("TOPSTATE"));
             addTriple(getProperty("TOPSTATE"),"name",createNewEnumeration(name));
             addTriple(getProperty("TOPSTATE"),"io",getProperty("IO"));
+            addTriple(getProperty("TOPSTATE"),"operator",getProperty("INITIALIZE-" + name));
             addTriple(getProperty("IO"),"input-link",getProperty("INPUTLINK"));
             addTriple(getProperty("IO"),"output-link",getProperty("OUTPUTLINK"));
+            addTriple(getProperty("INITIALIZE-" + name),"name",createNewEnumeration("initialize-" + name));
         }
     }
 
