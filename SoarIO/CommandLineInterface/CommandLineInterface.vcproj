@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\..\gSKI\include&quot;;include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;include"
 				PreprocessorDefinitions="WIN32;_DEBUG;__GW32C__"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"

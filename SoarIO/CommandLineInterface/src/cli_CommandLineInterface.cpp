@@ -175,6 +175,33 @@ bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAge
 	return true ;
 }
 
+// ____         ____                                          _
+//|  _ \  ___  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |
+//| | | |/ _ \| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` |
+//| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
+//|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
+//
+bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError) {
+	// This function is for processing a command without the SML layer
+	// Clear the result
+	m_Result.clear();
+	m_CriticalError = false;
+
+	// Save the pointers
+	m_pAgent = pAgent;
+	m_pError = pError;
+
+	// Process the command, ignoring its result (irrelevant at this level)
+	bool ret = DoCommandInternal(pCommandLine);
+
+	// Reset source error flag
+	m_SourceError = false;
+
+	pResponse = m_Result.c_str();
+
+	return ret;
+}
+
 // ____         ____                                          _ ___       _                        _
 //|  _ \  ___  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |_ _|_ __ | |_ ___ _ __ _ __   __ _| |
 //| | | |/ _ \| |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` || || '_ \| __/ _ \ '__| '_ \ / _` | |

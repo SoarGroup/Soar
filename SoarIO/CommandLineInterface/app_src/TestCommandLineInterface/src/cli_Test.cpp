@@ -36,9 +36,13 @@ int main(int argc, char** argv)
 		}
 	}
 
-	CommandLineInterface* cli;
+	//CommandLineInterface* cli;
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
+
+	//gSKI::
+	//gSKI::IKernel* pgKernel;
+	//gSKI::IAgent* pgAgent;
 
 	if (useSML) {
 
@@ -51,10 +55,11 @@ int main(int argc, char** argv)
 		cout << "Agent 'test' created." << endl;
 
 	} else {
-		cli = new CommandLineInterface();
+		//cli = new CommandLineInterface();
+		//pgKernel = 
+		//cli->SetKernel(pgKernel);
 	}
 
-	// Simple command line client that just uses CommandLineInterface directly
 	string cmdline;
 	string output ;
 	char input;
@@ -130,14 +135,11 @@ int main(int argc, char** argv)
 			}
 
 		} else {
+			//char const* pOutput;
+			//cli->DoCommand(pAgent, cmdline.c_str(), pOutput, pError);
+		 //   cout << output << endl;
 
-			cout << "Not implemented." << endl;
-			break;
-			//previousResult = cli->DoCommandInternal(cmdline.c_str());
-			//cli->GetLastResult(&result);
-			//cout << result << endl;
-
-			//if (cli->QuitCalled()) {
+			//if (std::string(pOutput) == "Goodbye.") {
 			//	break;
 			//}
 		}
@@ -146,8 +148,8 @@ int main(int argc, char** argv)
 	if (useSML) {
 		delete pKernel ;
 
-	} else {
-		delete cli;
+	//} else {
+	//	delete cli;
 	}
 
 	exit (0);

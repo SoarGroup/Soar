@@ -69,6 +69,12 @@ public:
 	*************************************************************/
 	bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
 
+	/*************************************************************
+	* @brief Process a command.  Give it a command line and it will parse
+	*		 and execute the command using gSKI or system calls.
+	*************************************************************/
+	bool DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, char const* pResponse, gSKI::Error* pError);
+
 	// Template for new commands:
 	///*************************************************************
 	//* @brief 
