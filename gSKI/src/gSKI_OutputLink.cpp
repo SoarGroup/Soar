@@ -49,6 +49,8 @@ namespace gSKI
     m_memory(agent),
     m_autoupdate(true)
    {
+	  // DJP: The id for this callback seems to be important but I haven't figured out why yet.
+	  // However, if I change it from "output-link" to anything else I don't get a callback any more.
       soar_add_callback( m_agent->GetSoarAgent(),
 			 static_cast<void*>(m_agent->GetSoarAgent()),
 			 OUTPUT_PHASE_CALLBACK,
@@ -70,7 +72,7 @@ namespace gSKI
       soar_remove_callback( m_agent->GetSoarAgent(),
 			    static_cast<void*>(m_agent->GetSoarAgent()),
 			    OUTPUT_PHASE_CALLBACK,
-			    "static_output_callback" );
+				"output-link");
    }
 
    /*

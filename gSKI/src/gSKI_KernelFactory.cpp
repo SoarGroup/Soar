@@ -278,6 +278,15 @@ namespace gSKI {
    {
       m_instances.erase(std::find(m_instances.begin(), m_instances.end(), krnl->GetInstanceInformation()));
       m_kernels.erase(std::find(m_kernels.begin(), m_kernels.end(), krnl));
+
+	  // These two vectors are statics so they tend to leak memory on shutdown
+	  // even if we erased all objects because the vectors are still reversing extra space.
+	  // An explicit clear call helps make sure they aren't reported as leaking.
+	  if (m_instances.size() == 0)
+		  m_instances.clear() ;
+	  if (m_kernels.size() == 0)
+		  m_kernels.clear() ;
+
       delete(krnl);
    }
 
