@@ -2,8 +2,11 @@
 ### $Id$
 ###
 ### $Log$
-### Revision 1.1  2003/06/16 13:48:36  swallace
-### Initial revision
+### Revision 1.2  2003/10/21 18:24:55  snason
+### uncommented the restart map button
+###
+### Revision 1.1.1.1  2003/06/16 13:48:36  swallace
+### eaters initial cvs version (3.0.5)
 ###
 ### Revision 1.6  1998/10/26 15:48:50  swallace
 ### Prior to Release for 494
@@ -185,7 +188,7 @@ proc makeETControlPanel { {hide 0} {x -20} {y 1} } {
    
    menu .menu.map.m
    .menu.map.m add command -label {Load Map} -command {mapLoader}
-   #.menu.map.m add command -label {Restart Map} -command {restartMap}
+   .menu.map.m add command -label {Restart Map} -command {restartMap}
    .menu.map.m add command -label {Random Map} -command {randomMap}
    
    pack .menu.map -side left -padx 5
