@@ -88,7 +88,7 @@ typedef xmlAttributeMap::const_iterator									xmlAttributeMapConstIter ;
 class ElementXMLImpl
 {
 	// Let MessageGenerator have access to Fast methods (which are protected because they take care to use correctly).
-	friend MessageGenerator ;
+	friend class MessageGenerator ;
 
 protected:
 	ErrorCode		m_ErrorCode ;		// Used to report any errors.

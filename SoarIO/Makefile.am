@@ -1,2 +1,2 @@
 AUTOMAKE_OPTIONS = gnu
-SUBDIRS = ConnectionSML
+SUBDIRS = ConnectionSML ElementXML
