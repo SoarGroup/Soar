@@ -393,10 +393,10 @@ HanoiWorld::HanoiWorld(bool remoteConnection, bool graphicsOn, int inNumTowers, 
 	if (!remoteConnection)
 	{
 		// Fastest method, but need to call "GetIncomingCommands" from time to time.
-		kernel = Kernel::CreateEmbeddedConnectionClientThread("KernelSML", true) ;
+		kernel = Kernel::CreateKernelInCurrentThread("KernelSML", true) ;
 
 		// Slightly slower, but polls for incoming remote commands automatically
-		// kernel = Kernel::CreateEmbeddedConnectionSoarThread("KernelSML") ;
+		// kernel = Kernel::CreateKernelInNewThread("KernelSML") ;
 
 		// SGIO equivalent
 		// soar = new APISoar();

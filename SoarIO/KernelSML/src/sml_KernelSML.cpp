@@ -111,7 +111,7 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 
 	// We'll use this to make sure only one connection is executing commands
 	// in the kernel at a time.
-	m_pMutex = new soar_thread::Mutex() ;
+	m_pKernelMutex = new soar_thread::Mutex() ;
 }
 
 KernelSML::~KernelSML()
@@ -146,7 +146,7 @@ KernelSML::~KernelSML()
 
 	delete m_pConnectionManager ;
 
-	delete m_pMutex ;
+	delete m_pKernelMutex ;
 }
 
 /*************************************************************
@@ -424,9 +424,10 @@ ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, ElementXML* p
 		return NULL ;
 
 	// Make sure only one thread is executing commands in the kernel at a time.
-	// This allows us to have a separate thread for managing remote connections
-	// and yet not need the kernel itself to support multi-threaded access.
-	soar_thread::Lock lock(m_pMutex) ;
+	// This is really just an insurance policy as I don't think we'll ever execute
+	// commands on different threads within kernelSML because we
+	// only allow one embedded connection to the kernel, but it's nice to be sure.
+	soar_thread::Lock lock(m_pKernelMutex) ;
 
 #ifdef DEBUG
 	// For debugging, it's helpful to be able to look at the incoming message as an XML string

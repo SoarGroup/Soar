@@ -82,7 +82,7 @@ public:
 	void AddToIncomingMessageQueue(ElementXML* pMsg)
 	{
 		// Make sure only one thread modifies the message queue at a time.
-		soar_thread::Lock lock(&m_Mutex) ;
+		soar_thread::Lock lock(&m_IncomingMutex) ;
 		m_IncomingMessageQueue.push(pMsg) ;
 	}
 

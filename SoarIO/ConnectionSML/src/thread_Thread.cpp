@@ -44,6 +44,7 @@ Thread::Thread()
 {
 	m_QuitNow = false ;
 	m_Stopped = true ;
+	m_Started = false ;
 }
 
 Thread::~Thread() 
@@ -58,7 +59,13 @@ void Thread::Sleep(long milliseconds)
 
 void Thread::Start()
 {
+	// If we've already been started ignore subsequent attempts
+	// to start this thread.
+	if (m_Started)
+		return ;
+
 	m_Stopped = false;
+	m_Started = true ;
 	// This creates a new thread and calls our static start function which in
 	// turn calls back to the "Run" method of this class, so the user of the thread
 	// has a nice object wrapped in a class to work with for their thread.
@@ -71,6 +78,10 @@ void Thread::Stop(bool waitTillStopped)
 	// We don't currently offer a "force thread to stop" method as that's
 	// generally not a very safe thing to do.  If you feel you need it, add a "ForceStop" method.
 	m_QuitNow = true ;
+
+	// If the thread was never started or is already stopped we're done.
+	if (!m_Started || IsStopped())
+		return ;
 
 	int maxTries = 1000 ;
 

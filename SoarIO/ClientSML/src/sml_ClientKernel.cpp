@@ -18,6 +18,7 @@
 #include "sml_Connection.h"
 #include "sml_Errors.h"
 #include "sml_StringOps.h"
+#include "sml_EventThread.h"
 
 #include "sock_SocketLib.h"
 #include "thread_Thread.h"	// To get to sleep
@@ -35,6 +36,18 @@ Kernel::Kernel(Connection* pConnection)
 	m_SocketLibrary  = NULL ;
 	m_LastError		 = Error::kNoError ;
 	m_CallbackIDCounter = 0 ;
+	m_pEventThread	= 0 ;
+
+	if (pConnection)
+	{
+		m_pEventThread = new EventThread(pConnection) ;
+
+		// We start the event thread for asynch connections (remote and embedded on a new thread).
+		// Synchronous ones don't need it as the kernel can simply call right over to the client directly
+		// for those.
+		if (pConnection->IsAsynchronous())
+			m_pEventThread->Start() ;
+	}
 
 #ifdef LINUX_STATIC_LINK
 	// On Linux the linker only makes a single pass through the libraries
@@ -64,10 +77,64 @@ Kernel::~Kernel(void)
 	if (m_Connection)
 		m_Connection->CloseConnection() ;
 
+	// Must stop the event thread before deleting the connection
+	// as it has a pointer to the connection.
+	if (m_pEventThread)
+		m_pEventThread->Stop(true) ;
+
+	delete m_pEventThread ;
+
 	delete m_Connection ;
 
 	// Deleting this shuts down the socket library if we were using it.
 	delete m_SocketLibrary ;
+}
+
+/*************************************************************
+* @brief Start the event thread.
+*
+* This thread can be used to make sure the client remains responsive
+* if it registers for some events and then goes to sleep.
+* (E.g. in a keyboard input handler or a GUI message loop).
+*
+* This thread is started by default for remote connections
+* and embedded connections in a new thread.  A client could
+* reasonably choose to turn it off so we'll expose the methods
+* for starting and stopping.
+*************************************************************/
+bool Kernel::StartEventThread()
+{
+	// This thread is used to listen for events from the kernel
+	// when the client is sleeping
+	if (!m_pEventThread)
+		return false ;
+
+	m_pEventThread->Start() ;
+
+	return true ;
+}
+
+/*************************************************************
+* @brief Stop the event thread.
+*
+* This thread can be used to make sure the client remains responsive
+* if it registers for some events and then goes to sleep.
+* (E.g. in a keyboard input handler or a GUI message loop).
+*
+* This thread is started by default for remote connections
+* and embedded connections in a new thread.  A client could
+* reasonably choose to turn it off so we'll expose the methods
+* for starting and stopping.
+*************************************************************/
+bool Kernel::StopEventThread()
+{
+	// Shut down the event thread
+	if (!m_pEventThread)
+		return false ;
+
+	m_pEventThread->Stop(true) ;
+
+	return true ;
 }
 
 /*************************************************************
@@ -193,34 +260,29 @@ void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, Ele
 * @brief Creates a connection to the Soar kernel that is embedded
 *        within the same process as the caller.
 *
-*		 Creating in "client thread" will produce maximum performance but requires a little more work for the developer
-*		 (you need to call CheckForIncomingCommands() periodically).
+*		 Creating in "current thread" will produce maximum performance but requires a little more work for the developer
+*		 (you need to call CheckForIncomingCommands() periodically and you should not register for events and then go to sleep).
 *
-*		 Creating in "soar thread" is simpler for the developer but will be slower (around a factor 2).
+*		 Creating in "new thread" is simpler for the developer but will be slower (around a factor 2).
 *		 (It's simpler because there's no need to call CheckForIncomingCommands() periodically as this happens in a separate
-*		  thread running inside the kernel).
+*		  thread running inside the kernel and incoming events are handled by another thread in the client).
 *
 * @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
 *						This library will be dynamically loaded and connected to.
-* @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
-*						kernel to check for incoming messages on remote sockets.
-*						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
-*						However, this kernel thread model requires a context switch whenever commands are sent to/from the kernel.
-*						(This parameter has been folded into the name of the method instead)
-* @param Optimized		If this is a client thread connection, we can short-circuit parts of the messaging system for sending input and
+* @param Optimized		If this is a current thread connection, we can short-circuit parts of the messaging system for sending input and
 *						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
-*						you may wish to disable this option (so everything goes through the standard paths).  Has no affect if not running on client thread.
+*						you may wish to disable this option (so everything goes through the standard paths).  Not available if running in a new thread.
 * @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 *
 * @returns A new kernel object which is used to communicate with the kernel.
 *		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 *************************************************************/
-Kernel* Kernel::CreateEmbeddedConnectionClientThread(char const* pLibraryName, bool optimized, int portToListenOn)
+Kernel* Kernel::CreateKernelInCurrentThread(char const* pLibraryName, bool optimized, int portToListenOn)
 {
 	return CreateEmbeddedConnection(pLibraryName, true, optimized, portToListenOn) ;
 }
 
-Kernel* Kernel::CreateEmbeddedConnectionSoarThread(char const* pLibraryName, int portToListenOn)
+Kernel* Kernel::CreateKernelInNewThread(char const* pLibraryName, int portToListenOn)
 {
 	return CreateEmbeddedConnection(pLibraryName, false, false, portToListenOn) ;
 }

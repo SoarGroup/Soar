@@ -441,6 +441,11 @@ ElementXML* Connection::InvokeCallbacks(ElementXML *pIncomingMsg)
 *************************************************************/
 bool Connection::SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg)
 {
+	// Make sure only one thread is sending messages at a time
+	// (This allows us to run a separate thread in clients polling for events even
+	//  when the client is sleeping, but we don't want them both to be sending/receiving at the same time).
+	soar_thread::Lock lock(&m_ClientMutex) ;
+
 	// Send the command over.
 	SendMessage(pMsg);
 
@@ -993,7 +998,7 @@ ElementXML* Connection::PopIncomingMessageQueue()
 {
 	// Ensure only one thread is changing the message queue at a time
 	// This lock is released when we exit this function.
-	soar_thread::Lock lock(&m_Mutex) ;
+	soar_thread::Lock lock(&m_IncomingMutex) ;
 
 	if (m_IncomingMessageQueue.size() == 0)
 		return NULL ;

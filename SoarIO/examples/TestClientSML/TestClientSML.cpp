@@ -95,7 +95,7 @@ void SimpleRemoteConnection()
 bool SimpleListener(int life)
 {
 	// Create the kernel instance
-	sml::Kernel* pKernel = sml::Kernel::CreateEmbeddedConnectionSoarThread("KernelSML") ;
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("KernelSML") ;
 
 	if (pKernel->HadError())
 	{
@@ -164,8 +164,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Create the appropriate type of connection
 		sml::Kernel* pKernel = embedded ?
-			(useClientThread ? sml::Kernel::CreateEmbeddedConnectionClientThread("KernelSML", fullyOptimized, 14444)
-							 : sml::Kernel::CreateEmbeddedConnectionSoarThread("KernelSML", 14456))
+			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("KernelSML", fullyOptimized, 14444)
+							 : sml::Kernel::CreateKernelInNewThread("KernelSML", 14456))
 			: sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
 		if (pKernel->HadError())
@@ -187,11 +187,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 		sml::Agent* pAgent = pKernel->CreateAgent(name) ;
-
-		// TEMP for testing
-//pKernel->DestroyAgent(pAgent) ;
-//delete pKernel ;
-//return true ;
 
 		double time = timer.Elapsed() ;
 		cout << "Time to initialize kernel and create agent: " << time << endl ;

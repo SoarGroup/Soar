@@ -78,12 +78,7 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		return pResponse ;
 	}
 
-	// BADBAD: I don't think we can timeout on this, because what if we run Soar
-	// for a long time.
-	// We may need a way to shutdown what we have.
-
 	int sleepTime = 0 ;			// How long we sleep in milliseconds each pass through
-//	int maxRetries = 4000 ;		// This times sleepTime gives the timeout period e.g. (4000 * 5 == 20 secs)
 
 	// If we don't already have this response cached,
 	// then read any pending messages.
@@ -110,17 +105,6 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 			// Check if the connection has been closed
 			if (IsClosed())
 				return NULL ;
-
-			/* Removing this time-out logic
-			maxRetries-- ;
-
-			// Eventually time out
-			if (maxRetries == 0)
-			{
-				SetError(Error::kConnectionTimedOut) ;			
-				wait = false ;
-			}
-			*/
 		}
 
 	} while (wait) ;
@@ -133,6 +117,11 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 
 bool RemoteConnection::ReceiveMessages(bool allMessages)
 {
+	// Make sure only one thread is sending messages at a time
+	// (This allows us to run a separate thread in clients polling for events even
+	//  when the client is sleeping, but we don't want them both to be sending/receiving at the same time).
+	soar_thread::Lock lock(&m_ClientMutex) ;
+
 	std::string xmlString ;
 	bool receivedMessage = false ;
 	bool ok = true ;

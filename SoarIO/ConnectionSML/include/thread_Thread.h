@@ -22,6 +22,7 @@ class Thread
 {
 protected:
 	volatile bool	m_QuitNow ;
+	bool	m_Started ;
 	bool	m_Stopped ;
 	Event	m_Pause ;	// We use this to support suspend/resume
 
@@ -49,6 +50,9 @@ public:
 	// This returns true once the thread has actually stopped running
 	// which may be a little after the request to stop.
 	bool IsStopped() { return m_Stopped ; }
+
+	// True if this thread has been started
+	bool IsStarted() { return m_Started ; }
 
 	// Cause this thread to sleep until "Resume" is called
 	void Suspend() { m_Pause.WaitForEventForever() ; }

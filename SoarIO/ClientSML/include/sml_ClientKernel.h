@@ -35,6 +35,7 @@ class Agent ;
 class Connection ;
 class AnalyzeXML ;
 class ElementXML ;
+class EventThread ;
 
 struct SystemEventHandlerPlusData
 {
@@ -75,6 +76,11 @@ protected:
 
 	SystemEventMap		m_SystemEventMap ;
 
+	// This thread is used to check for incoming events when the client goes to sleep
+	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
+	// responsive).
+	EventThread*		m_pEventThread ;
+
 	// To create a kernel object, use one of the static methods, e.g. Kernel::CreateEmbeddedConnection().
 	Kernel(Connection* pConnection);
 
@@ -105,30 +111,25 @@ public:
 	* @brief Creates a connection to the Soar kernel that is embedded
 	*        within the same process as the caller.
 	*
-	*		 Creating in "client thread" will produce maximum performance but requires a little more work for the developer
-	*		 (you need to call CheckForIncomingCommands() periodically).
+	*		 Creating in "current thread" will produce maximum performance but requires a little more work for the developer
+	*		 (you need to call CheckForIncomingCommands() periodically and you should not register for events and then go to sleep).
 	*
-	*		 Creating in "soar thread" is simpler for the developer but will be slower (around a factor 2).
+	*		 Creating in "new thread" is simpler for the developer but will be slower (around a factor 2).
 	*		 (It's simpler because there's no need to call CheckForIncomingCommands() periodically as this happens in a separate
-	*		  thread running inside the kernel).
+	*		  thread running inside the kernel and incoming events are handled by another thread in the client).
 	*
 	* @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
 	*						This library will be dynamically loaded and connected to.
-	* @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
-	*						kernel to check for incoming messages on remote sockets.
-	*						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
-	*						However, this kernel thread model requires a context switch whenever commands are sent to/from the kernel.
-	*						(This parameter has been folded into the name of the method instead)
-	* @param Optimized		If this is a client thread connection, we can short-circuit parts of the messaging system for sending input and
+	* @param Optimized		If this is a current thread connection, we can short-circuit parts of the messaging system for sending input and
 	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
-	*						you may wish to disable this option (so everything goes through the standard paths).  Has no affect if not running on client thread.
+	*						you may wish to disable this option (so everything goes through the standard paths).  Not available if running in a new thread.
 	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
 	*
 	* @returns A new kernel object which is used to communicate with the kernel.
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateEmbeddedConnectionClientThread(char const* pLibraryName, bool optimized = true, int portToListenOn = kDefaultSMLPort) ;
-	static Kernel* CreateEmbeddedConnectionSoarThread(char const* pLibraryName, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateKernelInCurrentThread(char const* pLibraryName, bool optimized = true, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateKernelInNewThread(char const* pLibraryName, int portToListenOn = kDefaultSMLPort) ;
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -244,6 +245,23 @@ public:
 	*		 having to call this).
 	*************************************************************/
 	bool CheckForIncomingCommands() ;
+
+	/*************************************************************
+	* @brief Start/stop the event thread.
+	*
+	* This thread can be used to make sure the client remains responsive
+	* if it registers for some events and then goes to sleep.
+	* (E.g. in a keyboard input handler or a GUI message loop).
+	*
+	* This thread is started by default for remote connections
+	* and embedded connections in a new thread.  A client could
+	* reasonably choose to turn it off so we'll expose the methods
+	* for starting and stopping.
+	*
+	* (Once stopped you can't currently start it again).
+	*************************************************************/
+	bool StartEventThread() ;
+	bool StopEventThread() ;
 
 	/*************************************************************
 	* @brief This is a utility wrapper to let us sleep the entire client process

@@ -486,6 +486,11 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 
 bool EmbeddedConnectionAsynch::ReceiveMessages(bool allMessages)
 {
+	// Make sure only one thread is sending messages at a time
+	// (This allows us to run a separate thread in clients polling for events even
+	//  when the client is sleeping, but we don't want them both to be sending/receiving at the same time).
+	soar_thread::Lock lock(&m_ClientMutex) ;
+
 	bool receivedMessage = false ;
 
 	ElementXML* pIncomingMsg = PopIncomingMessageQueue() ;

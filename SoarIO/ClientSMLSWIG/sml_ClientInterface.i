@@ -8,11 +8,11 @@
 
 // These static function create a new Kernel object which should be destroyed later
 // We need to let SWIG know this
-%newobject sml::Kernel::CreateEmbeddedConnectionClientThread(char const*, bool, int);
-%newobject sml::Kernel::CreateEmbeddedConnectionClientThread(char const*, bool);
-%newobject sml::Kernel::CreateEmbeddedConnectionClientThread(char const*);
-%newobject sml::Kernel::CreateEmbeddedConnectionSoarThread(char const*, int);
-%newobject sml::Kernel::CreateEmbeddedConnectionSoarThread(char const*);
+%newobject sml::Kernel::CreateKernelInCurrentThread(char const*, bool, int);
+%newobject sml::Kernel::CreateKernelInCurrentThread(char const*, bool);
+%newobject sml::Kernel::CreateKernelInCurrentThread(char const*);
+%newobject sml::Kernel::CreateKernelInNewThread(char const*, int);
+%newobject sml::Kernel::CreateKernelInNewThread(char const*);
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*, int);
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
 

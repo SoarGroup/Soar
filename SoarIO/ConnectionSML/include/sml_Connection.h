@@ -147,18 +147,19 @@ protected:
 	// This queue may not be in use for a given type of connection
 	MessageQueue	m_IncomingMessageQueue ;
 
-	// A list of messages that are waiting to be returned to the original caller
-	// This queue may not be in use for a given type of connection
-	MessageQueue	m_OutgoingMessageQueue ;
-
-	// We can use this mutex to serialize acccess to the message queues
-	soar_thread::Mutex	m_Mutex ;
+	// We use this mutex to serialize acccess to the incoming message queue (for certain types of connections)
+	soar_thread::Mutex	m_IncomingMutex ;
 
 	// True if we can make direct calls to gSKI to optimize I/O
 	bool m_bIsDirectConnection ;
 
 	// True if we want to dump debug info about messages sent and received.
 	bool m_bTraceCommunications ;
+
+	// A client needs to get this mutex before sending and receiving messages.
+	// This allows us to use a separate thread in the client to keep connections
+	// alive even when the client itself goes to sleep.
+	soar_thread::Mutex	m_ClientMutex ;
 
 public:
 	Connection() ;

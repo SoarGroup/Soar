@@ -114,9 +114,11 @@ protected:
 	// A listener socket and the list of connections to the kernel
 	ConnectionManager* m_pConnectionManager ;
 
-	// We'll use a mutex to serialize execution of commands within the kernel when we have
-	// multiple connections, some of which may run in different threads.
-	soar_thread::Mutex*	m_pMutex ;
+	// We'll use a mutex to serialize execution of commands within the kernel.
+	// This is really just an insurance policy as I don't think we'll ever execute
+	// commands on different threads within kernelSML because we
+	// only allow one embedded connection to the kernel, but it's nice to be sure.
+	soar_thread::Mutex*	m_pKernelMutex ;
 
 	// Used to listen for kernel events that are kernel based (not for a specific agent)
 	KernelListener	m_KernelListener ;
