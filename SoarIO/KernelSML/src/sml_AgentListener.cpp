@@ -73,8 +73,7 @@ void AgentListener::HandleEvent(egSKIAgentEventId eventID, gSKI::IAgent* agentPt
 	Connection* pConnection = *connectionIter ;
 
 	// Convert eventID to a string
-	char event[kMinBufferSize] ;
-	Int2String(eventID, event, sizeof(event)) ;
+	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Build the SML message we're doing to send.
 	// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel

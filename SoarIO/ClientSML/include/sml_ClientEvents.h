@@ -33,10 +33,16 @@
 //    that the mapping has not been thrown off somehow, but we basically
 //    need to be careful when changing either.
 //
+// Fourth, when you add a new event you need to add a string form for it
+//		   to the sml::Events class (defined in ConnectionSML\sml_Events.cpp)
+//
 /////////////////////////////////////////////////////////////////
 
-#ifndef SML_EVENT_ID_H
-#define SML_EVENT_ID_H
+#ifndef SML_CLIENT_EVENT_ID_H
+#define SML_CLIENT_EVENT_ID_H
+
+#include <map>
+#include <string>
 
 namespace sml {
 

@@ -103,8 +103,7 @@ void PrintListener::FlushOutput()
 	Connection* pConnection = *connectionIter;
 
 	// Convert eventID to a string
-	char event[kMinBufferSize];
-	Int2String(gSKIEVENT_PRINT, event, sizeof(event));
+	char const* event = m_pKernelSML->ConvertEventToString(gSKIEVENT_PRINT) ;
 
 	// Build the SML message we're going to send.
 	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event);

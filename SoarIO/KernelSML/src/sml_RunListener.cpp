@@ -78,8 +78,7 @@ void RunListener::HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* agentPtr, e
 	Connection* pConnection = *connectionIter ;
 
 	// Convert eventID to a string
-	char event[kMinBufferSize] ;
-	Int2String(eventID, event, sizeof(event)) ;
+	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Convert phase to a string
 	char phaseStr[kMinBufferSize] ;

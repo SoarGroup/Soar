@@ -60,6 +60,7 @@ class KernelSML ;
 class OutputListener ;
 class AgentSML; 
 class ConnectionManager ;
+class Events ;
 
 // Define the CommandFunction which we'll call to process commands
 typedef bool (KernelSML::*CommandFunction)(gSKI::IAgent*, char const*, Connection*, AnalyzeXML*, ElementXML*, gSKI::Error*);
@@ -120,6 +121,9 @@ protected:
 	// commands on different threads within kernelSML because we
 	// only allow one embedded connection to the kernel, but it's nice to be sure.
 	soar_thread::Mutex*	m_pKernelMutex ;
+
+	// Used to map event IDs to and from strings
+	Events*			m_pEventMap ;
 
 	// Used to listen for kernel events that are kernel based (not for a specific agent)
 	SystemListener	m_SystemListener;
@@ -200,6 +204,18 @@ public:
 	*************************************************************/
 	void AddRhsListener(char const* pFunctionName, Connection* pConnection)	   { m_RhsListener.AddRhsListener(pFunctionName, pConnection) ; }
 	void RemoveRhsListener(char const* pFunctionName, Connection* pConnection) { m_RhsListener.RemoveRhsListener(pFunctionName, pConnection) ; }
+
+	/*************************************************************
+	* @brief Convert from a string version of an event to the int (enum) version.
+	*		 Returns smlEVENT_INVALID_EVENT (== 0) if the string is not recognized.
+	*************************************************************/
+	int ConvertStringToEvent(char const* pStr) ;
+
+	/*************************************************************
+	* @brief Convert from int version of an event to the string form.
+	*		 Returns NULL if the id is not recognized.
+	*************************************************************/
+	char const* ConvertEventToString(int id) ;
 
 	/*************************************************************
 	* @brief	Remove any events that this connection was listening to.

@@ -16,8 +16,8 @@
 
 #include "sml_ObjectMap.h"
 #include "sml_ClientErrors.h"
-#include "sml_ListMap.h"
 #include "sml_ClientEvents.h"
+#include "sml_ListMap.h"
 
 // Forward declaratiokn for ElementXML_Handle.
 struct ElementXML_InterfaceStructTag ;
@@ -36,6 +36,7 @@ class Connection ;
 class AnalyzeXML ;
 class ElementXML ;
 class EventThread ;
+class Events ;
 
 class SystemEventHandlerPlusData : public EventHandlerPlusData
 {
@@ -99,6 +100,9 @@ protected:
 	SystemEventMap		m_SystemEventMap ;
 	AgentEventMap		m_AgentEventMap ;
 	RhsEventMap			m_RhsEventMap ;
+
+	// Class used to map events ids to and from strings
+	Events*				m_pEventMap ;
 
 	// Utility classes used to test for values in the event maps
 	class TestSystemCallback ;

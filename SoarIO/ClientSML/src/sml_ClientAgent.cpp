@@ -19,6 +19,7 @@
 #include "sml_ClientIdentifier.h"
 #include "sml_OutputDeltaList.h"
 #include "sml_StringOps.h"
+#include "sml_Events.h"
 
 #include "sml_ClientDirect.h"
 #include "sml_EmbeddedConnection.h"	// For access to direct methods
@@ -63,7 +64,16 @@ void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 
 void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
-	int id  = pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
+	char const* pEventName = pIncoming->GetArgValue(sml_Names::kParamEventID) ;
+
+	// This event had no event id field
+	if (!pEventName)
+	{
+		return ;
+	}
+
+	// Go from the string form of the event back to the integer ID
+	int id = GetKernel()->m_pEventMap->ConvertToEvent(pEventName) ;
 
 	if (IsRunEventID(id))
 	{

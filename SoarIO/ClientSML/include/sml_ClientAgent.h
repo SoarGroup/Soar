@@ -12,9 +12,9 @@
 #define SML_AGENT_H
 
 #include "sml_ClientWorkingMemory.h"
-#include "sml_ClientEvents.h"
 #include "sml_ClientErrors.h"
 #include "sml_ListMap.h"
+#include "sml_ClientEvents.h"
 
 #include <string>
 #include <map>

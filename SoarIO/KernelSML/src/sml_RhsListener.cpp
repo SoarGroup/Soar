@@ -143,8 +143,7 @@ bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, boo
 	Connection* pConnection = *connectionIter ;
 
 	// Convert eventID to a string
-	char event[kMinBufferSize] ;
-	Int2String(eventID, event, sizeof(event)) ;
+	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Also convert the length to a string
 	char length[kMinBufferSize] ;

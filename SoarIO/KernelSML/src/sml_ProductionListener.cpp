@@ -77,8 +77,7 @@ void ProductionListener::HandleEvent(egSKIProductionEventId eventID, gSKI::IAgen
 	Connection* pConnection = *connectionIter ;
 
 	// Convert eventID to a string
-	char event[kMinBufferSize] ;
-	Int2String(eventID, event, sizeof(event)) ;
+	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Build the SML message we're doing to send.
 	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;

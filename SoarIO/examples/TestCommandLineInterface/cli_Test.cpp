@@ -19,8 +19,7 @@
 #include "sml_Client.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_ElementXML.h"
-#include "sml_ClientEvents.h"
-//#include "sml_ClientAgent.h"
+#include "sml_Events.h"
 
 #include "thread_Lock.h"
 #include "thread_Event.h"

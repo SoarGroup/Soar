@@ -21,6 +21,7 @@
 #include "sml_StringOps.h"
 #include "sml_OutputListener.h"
 #include "sml_ConnectionManager.h"
+#include "sml_Events.h"
 #include "KernelSMLDirect.h"
 
 #include "thread_Lock.h"
@@ -90,6 +91,9 @@ KernelSML* KernelSML::GetKernelSML()
 
 KernelSML::KernelSML(unsigned short portToListenOn)
 {
+	// Initalize the event map
+	m_pEventMap = new Events() ;
+
 	// Create a Kernel Factory
 	m_pKernelFactory = gSKI_CreateKernelFactory();
    
@@ -152,6 +156,8 @@ KernelSML::~KernelSML()
 	delete m_pConnectionManager ;
 
 	delete m_pKernelMutex ;
+
+	delete m_pEventMap ;
 }
 
 /*************************************************************
@@ -161,6 +167,24 @@ KernelSML::~KernelSML()
 void KernelSML::Shutdown()
 {
 	m_pConnectionManager->Shutdown() ;
+}
+
+/*************************************************************
+* @brief Convert from a string version of an event to the int (enum) version.
+*		 Returns smlEVENT_INVALID_EVENT (== 0) if the string is not recognized.
+*************************************************************/
+int KernelSML::ConvertStringToEvent(char const* pStr)
+{
+	return m_pEventMap->ConvertToEvent(pStr) ;
+}
+
+/*************************************************************
+* @brief Convert from int version of an event to the string form.
+*		 Returns NULL if the id is not recognized.
+*************************************************************/
+char const* KernelSML::ConvertEventToString(int id)
+{
+	return m_pEventMap->ConvertToString(id) ;
 }
 
 /*************************************************************

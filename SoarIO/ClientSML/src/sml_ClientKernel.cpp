@@ -19,6 +19,7 @@
 #include "sml_Errors.h"
 #include "sml_StringOps.h"
 #include "sml_EventThread.h"
+#include "sml_Events.h"
 
 #include "sock_SocketLib.h"
 #include "thread_Thread.h"	// To get to sleep
@@ -37,6 +38,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_LastError		 = Error::kNoError ;
 	m_CallbackIDCounter = 0 ;
 	m_pEventThread	= 0 ;
+	m_pEventMap		= new Events() ;
 
 	if (pConnection)
 	{
@@ -106,6 +108,8 @@ Kernel::~Kernel(void)
 
 	// Deleting this shuts down the socket library if we were using it.
 	delete m_SocketLibrary ;
+
+	delete m_pEventMap ;
 }
 
 /*************************************************************
@@ -235,7 +239,16 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 
 void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
-	int id  = pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
+	char const* pEventName = pIncoming->GetArgValue(sml_Names::kParamEventID) ;
+
+	// This event had no event id field
+	if (!pEventName)
+	{
+		return ;
+	}
+
+	// Convert from the string to an event ID
+	int id = m_pEventMap->ConvertToEvent(pEventName) ;
 
 	if (IsSystemEventID(id))
 	{
@@ -775,6 +788,28 @@ bool Kernel::IsRunCommand(char const* pCommandLine)
 	if (line.substr(0, runCommand.size()).compare(runCommand) == 0)
 		return true ;
 
+	// We also have a few compound commands ("e.g. time x") which will also cause Soar to run.
+	// These may be harder to handle correctly.  For now I'll handle them here but if they become
+	// complex we should expose support for recognizing these from inside the command line module
+	// in the kernel (much like the way ExpandCommandLine works) as the command line has all of this logic built in.
+	std::string compounds[] = { "time", "command-to-file" } ;
+	std::string spaceRunCommand = " run" ;	// Leading space
+
+	for (int i = 0 ; i < 2 ; i++)
+	{
+		if (line.size() < compounds[i].size() + spaceRunCommand.size())
+			continue ;
+
+		// If starts with the compound command
+		if (line.substr(0, compounds[i].size()).compare(compounds[i]) == 0)
+		{
+			// Look for " run" anywhere in the remaining command
+			// to simplify the problems caused by other arguments and white space may cause
+			if (line.find(spaceRunCommand) != std::string.npos)
+				return true ;
+		}
+	}
+
 	return false ;
 }
 
@@ -825,11 +860,10 @@ void Kernel::RegisterForEventWithKernel(int id, char const* pAgentName)
 {
 	AnalyzeXML response ;
 
-	char buffer[kMinBufferSize] ;
-	Int2String(id, buffer, sizeof(buffer)) ;
+	char const* pEvent = m_pEventMap->ConvertToString(id) ;
 
 	// Send the register command
-	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, pAgentName, sml_Names::kParamEventID, buffer) ;
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, pAgentName, sml_Names::kParamEventID, pEvent) ;
 }
 
 /*************************************************************
@@ -839,11 +873,10 @@ void Kernel::UnregisterForEventWithKernel(int id, char const* pAgentName)
 {
 	AnalyzeXML response ;
 
-	char buffer[kMinBufferSize] ;
-	Int2String(id, buffer, sizeof(buffer)) ;
+	char const* pEvent = m_pEventMap->ConvertToString(id) ;
 
 	// Send the unregister command
-	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, pAgentName, sml_Names::kParamEventID, buffer) ;
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, pAgentName, sml_Names::kParamEventID, pEvent) ;
 }
 
 /*************************************************************
@@ -996,11 +1029,10 @@ int	Kernel::AddRhsFunction(char const* pRhsFunctionName, RhsEventHandler handler
 		AnalyzeXML response ;
 
 		// The event ID is always the same for RHS functions
-		char buffer[kMinBufferSize] ;
-		Int2String(smlEVENT_RHS_USER_FUNCTION, buffer, sizeof(buffer)) ;
+		char const* pEvent = m_pEventMap->ConvertToString(smlEVENT_RHS_USER_FUNCTION) ;
 
 		// Send the register command for this event and this function name
-		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, buffer, sml_Names::kParamName, pRhsFunctionName) ;
+		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_RegisterForEvent, NULL, sml_Names::kParamEventID, pEvent, sml_Names::kParamName, pRhsFunctionName) ;
 	}
 
 	// Record the handler
@@ -1035,11 +1067,10 @@ bool Kernel::RemoveRhsFunction(int callbackID)
 		AnalyzeXML response ;
 
 		// The event ID is always RHS_USER_FUNCTION in this case
-		char buffer[kMinBufferSize] ;
-		Int2String(smlEVENT_RHS_USER_FUNCTION, buffer, sizeof(buffer)) ;
+		char const* pEvent = m_pEventMap->ConvertToString(smlEVENT_RHS_USER_FUNCTION) ;
 
 		// Send the unregister command
-		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, buffer, sml_Names::kParamName, functionName.c_str()) ;
+		GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_UnregisterForEvent, NULL, sml_Names::kParamEventID, pEvent, sml_Names::kParamName, functionName.c_str()) ;
 	}
 
 	return true ;

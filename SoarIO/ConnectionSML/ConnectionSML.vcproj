@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\ElementXML\include"
+				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ClientSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -61,7 +61,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				AdditionalIncludeDirectories="include;..\ElementXML\include"
+				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ClientSML\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -116,6 +116,9 @@
 			</File>
 			<File
 				RelativePath=".\src\sml_EmbeddedConnection.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sml_Events.cpp">
 			</File>
 			<File
 				RelativePath=".\src\sml_EventThread.cpp">
@@ -208,6 +211,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_Errors.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_Events.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_EventThread.h">

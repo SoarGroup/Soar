@@ -27,6 +27,7 @@
 #include "sml_TagResult.h"
 #include "sml_TagName.h"
 #include "sml_ClientEvents.h"
+#include "sml_Events.h"
 
 #include "gSKI.h"
 #include <iostream>
@@ -199,13 +200,15 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	assert(gSKIEVENT_LAST == (egSKIGenericEventId)smlEVENT_LAST) ;					// Last matches
 
 	// Get the parameters
-	//egSKIEventId id = (egSKIEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, gSKIEVENT_INVALID_EVENT) ;
-	int id = pIncoming->GetArgInt(sml_Names::kParamEventID, gSKIEVENT_INVALID_EVENT) ;
+	char const* pEventName = pIncoming->GetArgValue(sml_Names::kParamEventID) ;
 
-	if (id == (int)gSKIEVENT_INVALID_EVENT)
+	if (!pEventName)
 	{
 		return InvalidArg(pConnection, pResponse, pCommandName, "Event id is missing") ;
 	}
+
+	// Convert from the event name to the id value
+	int id = ConvertStringToEvent(pEventName) ;
 
 	// Decide what type of event this is and where to register/unregister it
 	// gSKI uses a different class for each type of event.  We collect those together
