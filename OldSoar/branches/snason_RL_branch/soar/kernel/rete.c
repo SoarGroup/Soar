@@ -3087,9 +3087,10 @@ byte add_production_to_rete(production * p,
 		increment += rhs_value_to_symbol(temp_prod->action_list->referent)->fc.value;
 		temp_prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
 		/* Compute new avg of abs(update) */
-		increment = (temp_prod->avg_update*temp_prod->times_applied) + p->avg_update; 
+		temp_prod->avg_update = p->avg_update + 0.8*temp_prod->avg_update;
+		/* increment = (temp_prod->avg_update*temp_prod->times_applied) + p->avg_update; 
 		temp_prod->times_applied++;
-		temp_prod->avg_update = increment / temp_prod->times_applied;
+		temp_prod->avg_update = increment / temp_prod->times_applied; */
 	}
     else if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */
