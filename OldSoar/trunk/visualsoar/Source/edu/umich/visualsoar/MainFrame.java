@@ -2363,7 +2363,11 @@ public class MainFrame extends JFrame
                     saveAllFilesAction.perform();     // Save all open Rule Editors to the new project directory
                     exportAgentAction.perform();
                     saveDataMapAndProjectAction.perform();    // Save DataMap and Project file (.vsa)
-				}
+
+                    //Set the title bar to include the project name
+                    setTitle(newName);
+                    
+                }
 				else 
                 {
 					JOptionPane.showMessageDialog(MainFrame.this,
