@@ -95,18 +95,21 @@ public:
 
 	void Detach()
 	{
-		//Release everything hanging off of "disk" parent wme
-		const gSKI::ISymbol* parentSymbol = m_pDiskIdentifier->GetValue();
-		IWMObject* parentObject = parentSymbol->GetObject();
-		m_pWMemory->RemoveObject(parentObject);
-
-		//Release everything hanging off of "holds" parent wme
-		parentSymbol = m_pHoldsIdentifier->GetValue();
-		parentObject = parentSymbol->GetObject();
-		m_pWMemory->RemoveObject(parentObject);
-
+		//Release everything this is touching that doesn't belong to us
 		m_pDiskBeneath->Release();
 		m_pPegId->Release();
+
+
+		//Remove wmes that do belong to this
+		m_pWMemory->RemoveWme(m_pDiskIdentifier);//parent wme
+		m_pWMemory->RemoveWme(m_pName);
+		m_pWMemory->RemoveWme(m_pSize);
+
+		//"holds" wmes
+		m_pWMemory->RemoveWme(m_pHoldsIdentifier);//parent wme
+		m_pWMemory->RemoveWme(m_pHoldsDiskBeneath);
+		m_pWMemory->RemoveWme(m_pPeg);
+		m_pWMemory->RemoveWme(m_pDiskWme);
 	}
 
 	//Replace the "on" and "above" wmes for the corresponding 
@@ -121,9 +124,7 @@ public:
 		if(onItr->IsValid())
 		{
 			pWMemory->RemoveWme(m_pPeg);
-
 			m_pPeg = pWMemory->AddWmeObjectLink(object, "on", m_pPegId);
-			//m_pPeg = pWMemory->AddWmeObjectLink(object, "on", pegParentObject);
 		}
 		// Get List of objects referencing this object with attribute "above"
 		tIWmeIterator* aboveItr = object->GetWMEs("above");
