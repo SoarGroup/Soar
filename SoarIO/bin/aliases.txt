@@ -22,6 +22,7 @@ help ?
 init-soar init
 ls dir
 print p
+pwd topd
 quit exit
 run 1 step
 run -d 1 d
