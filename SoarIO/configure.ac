@@ -261,6 +261,7 @@ done
 
 if test "$JAVAINC" = "" ; then
   AC_MSG_RESULT(not found)
+  AC_MSG_ERROR([Cannot find jni.h, this is critical, consider --with-javaincl flag], 1)
 else
   # now look for <arch>/jni_md.h
   AC_MSG_CHECKING(for java include file jni_md.h)
@@ -336,6 +337,7 @@ AC_OUTPUT(Makefile
 		  CommandLineInterface/src/Makefile 
 		  ClientSML/Makefile 
 		  ClientSML/src/Makefile
+		  ClientSMLSWIG/Makefile
 		  KernelSML/Makefile
 		  KernelSML/src/Makefile
 		  examples/Makefile

@@ -20,6 +20,11 @@ ISRCS      = $(IWRAP:.i=.c)
 ICXXSRCS   = $(IWRAP:.i=.cxx)
 IOBJS      = $(IWRAP:.i=.@OBJEXT@)
 
+# Targets
+all: java
+
+clean: java_clean
+
 ##################################################################
 # Dynamic loading for C++
 # If you are going to be building dynamic loadable modules in C++,
@@ -47,6 +52,7 @@ CXXSHARED=      @CXXSHARED@
 
 OBJS      = $(SRCS:.c=.@OBJEXT@) $(CXXSRCS:.cxx=.@OBJEXT@)
 
+
 ##################################################################
 #####                       JAVA                            ######
 ##################################################################
@@ -64,23 +70,26 @@ JAVALDSHARED = @JAVALDSHARED@
 JAVACXXSHARED = @JAVACXXSHARED@
 JAVACFLAGS = @JAVACFLAGS@
 
-# ----------------------------------------------------------------
-# Build a java dynamically loadable module (C)
-# ----------------------------------------------------------------
+# For ClientSMLSWIG/Java
+JAVA_SUBDIR = Java/
+CXXSRCS    = Java_sml_ClientInterface.cxx
+TARGET     = Java_sml_ClientInterface
+INTERFACE  = Java_sml_ClientInterface.i
+INCLUDES   = -I../ClientSML/include -I../ElementXML/include -I../ConnectionSML/include 
+SWIGOPT    = -Wall -package sml
+## end ClientSMLSWIG/Java
 
-java: $(SRCS)
-	$(SWIG) -java $(SWIGOPT) $(INTERFACE)
-	$(CC) -c $(CCSHARED) $(CFLAGS) $(JAVACFLAGS) $(SRCS) $(ISRCS) $(INCLUDES) $(JAVA_INCLUDE)
-	$(JAVALDSHARED) $(OBJS) $(IOBJS) $(JAVA_DLNK) $(LIBS) -o $(JAVA_LIBPREFIX)$(TARGET)$(JAVASO)
+java: java_cpp
 
 # ----------------------------------------------------------------
 # Build a java dynamically loadable module (C++)
 # ----------------------------------------------------------------
 
 java_cpp: $(SRCS)
-	$(SWIG) -java -c++ $(SWIGOPT) $(INTERFACE)
-	$(CXX) -c $(CCSHARED) $(CFLAGS) $(JAVACFLAGS) $(SRCS) $(CXXSRCS) $(ICXXSRCS) $(INCLUDES) $(JAVA_INCLUDE)
-	$(JAVACXXSHARED) $(OBJS) $(IOBJS) $(JAVA_DLNK) $(LIBS) $(CPP_DLLIBS) -o $(JAVA_LIBPREFIX)$(TARGET)$(JAVASO)
+	$(SWIG) -java -c++ $(SWIGOPT) $(JAVA_SUBDIR)$(INTERFACE)
+	$(CXX) -c $(CCSHARED) $(CFLAGS) $(JAVACFLAGS) $(SRCS) $(JAVA_SUBDIR)$(ICXXSRCS) $(INCLUDES) $(JAVA_INCLUDE) -o $(JAVA_SUBDIR)$(IOBJS)
+	$(JAVACXXSHARED) $(JAVA_SUBDIR)$(IOBJS) $(JAVA_DLNK) $(LIBS) $(CPP_DLLIBS) -o $(JAVA_SUBDIR)$(JAVA_LIBPREFIX)$(TARGET)$(JAVASO)
+	$(JAVAC) $(JAVA_SUBDIR)*.java
 
 # -----------------------------------------------------------------
 # Cleaning the java examples
