@@ -1,0 +1,119 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: kernel - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP2A8.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "USE_TCL" /D "REAL_TIME_BEHAVIOR" /Fp".\Release/Kernel.pch" /YX /Fo".\Release/" /Fd".\Release/" /FD /c 
+"E:\sgio\soar\soar-8.3.5\kernel\agent.c"
+"E:\sgio\soar\soar-8.3.5\kernel\backtrace.c"
+"E:\sgio\soar\soar-8.3.5\kernel\callback.c"
+"E:\sgio\soar\soar-8.3.5\kernel\chunk.c"
+"E:\sgio\soar\soar-8.3.5\kernel\consistency.c"
+"E:\sgio\soar\soar-8.3.5\kernel\decide.c"
+"E:\sgio\soar\soar-8.3.5\kernel\explain.c"
+"E:\sgio\soar\soar-8.3.5\kernel\init_soar.c"
+"E:\sgio\soar\soar-8.3.5\kernel\interface.c"
+"E:\sgio\soar\soar-8.3.5\kernel\io.c"
+"E:\sgio\soar\soar-8.3.5\kernel\lexer.c"
+"E:\sgio\soar\soar-8.3.5\kernel\ma_interface.c"
+"E:\sgio\soar\soar-8.3.5\kernel\main.c"
+"E:\sgio\soar\soar-8.3.5\kernel\mem.c"
+"E:\sgio\soar\soar-8.3.5\kernel\osupport.c"
+"E:\sgio\soar\soar-8.3.5\kernel\parser.c"
+"E:\sgio\soar\soar-8.3.5\kernel\prefmem.c"
+"E:\sgio\soar\soar-8.3.5\kernel\print.c"
+"E:\sgio\soar\soar-8.3.5\kernel\production.c"
+"E:\sgio\soar\soar-8.3.5\kernel\recmem.c"
+"E:\sgio\soar\soar-8.3.5\kernel\reorder.c"
+"E:\sgio\soar\soar-8.3.5\kernel\rete.c"
+"E:\sgio\soar\soar-8.3.5\kernel\rhsfun.c"
+"E:\sgio\soar\soar-8.3.5\kernel\rhsfun_math.c"
+"E:\sgio\soar\soar-8.3.5\kernel\scheduler.c"
+"E:\sgio\soar\soar-8.3.5\kernel\symtab.c"
+"E:\sgio\soar\soar-8.3.5\kernel\tempmem.c"
+"E:\sgio\soar\soar-8.3.5\kernel\tilde.c"
+"E:\sgio\soar\soar-8.3.5\kernel\trace.c"
+"E:\sgio\soar\soar-8.3.5\kernel\wmem.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP2A8.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP2A9.tmp" with contents
+[
+/nologo /out:".\soarkernel.lib" 
+".\Release\agent.obj"
+".\Release\backtrace.obj"
+".\Release\callback.obj"
+".\Release\chunk.obj"
+".\Release\consistency.obj"
+".\Release\decide.obj"
+".\Release\explain.obj"
+".\Release\init_soar.obj"
+".\Release\interface.obj"
+".\Release\io.obj"
+".\Release\lexer.obj"
+".\Release\ma_interface.obj"
+".\Release\main.obj"
+".\Release\mem.obj"
+".\Release\osupport.obj"
+".\Release\parser.obj"
+".\Release\prefmem.obj"
+".\Release\print.obj"
+".\Release\production.obj"
+".\Release\recmem.obj"
+".\Release\reorder.obj"
+".\Release\rete.obj"
+".\Release\rhsfun.obj"
+".\Release\rhsfun_math.obj"
+".\Release\scheduler.obj"
+".\Release\symtab.obj"
+".\Release\tempmem.obj"
+".\Release\tilde.obj"
+".\Release\trace.obj"
+".\Release\wmem.obj"
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP2A9.tmp"
+<h3>Output Window</h3>
+Compiling...
+agent.c
+backtrace.c
+callback.c
+chunk.c
+consistency.c
+decide.c
+explain.c
+init_soar.c
+interface.c
+io.c
+lexer.c
+ma_interface.c
+main.c
+mem.c
+osupport.c
+parser.c
+prefmem.c
+print.c
+production.c
+recmem.c
+reorder.c
+rete.c
+rhsfun.c
+rhsfun_math.c
+scheduler.c
+symtab.c
+tempmem.c
+tilde.c
+trace.c
+wmem.c
+Creating library...
+
+
+
+<h3>Results</h3>
+soarkernel.lib - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

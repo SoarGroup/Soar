@@ -1,0 +1,130 @@
+Instructions for installing and running Soar 8.2 on Windows 95/NT.
+------------------------------------------------------------------
+
+Requirements:  
+
+1.  The Soar distribution, winzip'd from 
+
+    http://ai.eecs.umich.edu/soar/Soar83.html
+
+2.  Tcl 8.0.4 binaries for Windows, available from 
+   
+    ftp://ftp.scriptics.com/pub/tcl/tcl8_0/tcl804.exe
+
+3.  Winzip 6.2 or greater.
+
+
+This file contains the full source release of Soar-8.3, already
+precompiled to run on Windows 95/98 and Windows NT/2000.
+
+
+1.  Download Soar83.EXE and extract the files by dbl-clicking
+    on it.  If you don't have winzip, you'll need to install that first.
+    By default, it will create a folder on your C:\ drive called
+    Soar-8.3.  
+
+2.  If you do NOT have Tcl 8.0 installed on your system (and
+    the version does matter), you will need to install it now.  If you
+    do have it, skip to step 3.
+  
+    You can check whether or not you have these packages installed by
+    looking in "C:\Program Files\TCL"  If in the "bin" folder you 
+    already have "tclsh80.exe" and "wish80.exe" and in the "lib" folder,
+    "Tcl8.0" and "Tk8.0" then you can go to step 4.  Otherwise, 
+    download and install the Tcl8.0 binaries from the above-mentioned
+    web site.   By default the installer should try to create 
+    "C:\Program Files\TCL" to install the binaries.  If you allow it
+    to install in the default location, Soar-83 should run without any
+    modifications.  If you desire to install Tcl/Tk somewhere else,
+    you will need to edit the SoarWin shortcut file (see step 3).
+
+    If you did not find Tcl in the standard location, you might try
+    to "Find" it somewhere else on your system.  If it is installed
+    in some other directory, you don't need to re-install it, just
+    edit the "SoarWin" shortcut as in step 3.
+
+
+3.  Open the Soar-8.3 folder.  If you installed Soar-8.3 in
+    and Tcl/Tk in "C:\Program Files\TCL" then you can go to step 4.  
+
+    If you installed Tcl/Tk in some location other than 
+    "C:Program Files\TCL", then you will need to edit the "SoarWin"
+    shortcut properties.  With the mouse over the "SoarWin" icon
+    (a feather, for now) press the right mouse button and activate
+    "properties" (bottom entry on the popup menu).  Select the
+    "ShortCut" tab near the top.  On the line that says "Target"
+    change "C:\Program Files\TCL\bin\wish80.exe" to be the
+    full path location of your installation of Wish8.0.  Save the
+    shortcut properties by clicking on "OK."
+
+4.  Verify that the "properties" of the SoarWin shortcut are
+    correct for your installation:  The "target" should point
+    to your installed wish80 shell, and the "start in" folder
+    should be set to the Soar-8.3 folder, wherever you installed it.
+
+5.  In the Soar-8.3 folder, start Soar by dbl-clicking on the "SoarWin"
+    icon.  This invokes Wish and loads the file start-soar.tcl, which
+    defines libraries and such and invokes the TSI (Tcl-Soar Interface).
+    A window will pop up in the upper right corner of the screen --
+    this is the Agent Control Panel of the TSI.
+   
+    In the Agent Control Panel, enter an agent name (in the text entry
+    area) and press return or use the mouse to activate the "Create Agent"
+    button to create a Soar agent.  Another window will pop up!  This
+    is the agent window.  It has pulldown menus for issueing many
+    Soar commands and also allows you to run demos and invoke help.
+
+
+If you haven't been able to get this far, please send email to
+soar-request@umich.edu describing the results of each step above.
+I'll try to respond within a few hours.
+
+If you would like to create a Soar application folder, separate from
+the Soar-8.3 folder you just installed, you only need to copy two
+things to your new folder to run Soar:  the "SoarWin" shortcut
+and the "start-soar.tcl" file.  You will need to edit start-soar.tcl
+to point to the fixed location of your Soar-8.3/library folder.
+You can also edit start-soar.tcl to not start the TSI, or start
+your own application instead.  If you know how to edit the shortcut
+properties on Windows to change the command to be invoked, you can
+change the "SoarWin" shortcut to read some file other than
+start-soar.tcl, if you like.  Please read start-soar.tcl carefully
+to understand which lines must be part of any startup script in
+order to run Soar.  Note that is you would like your application
+folder to access "help" pages and the demos, then you wiil need to
+copy these folders to your new application folder as well.
+
+"SoarWin" is not any magic incantation for Soar.  It is simply a
+Windows Shortcut, with properties assigned to have Wish autoload
+start-soar.tcl.  You can achieve almost the same results with vanilla
+Wish8.0 by simply starting Wish, then cd'ing to the Soar-8.3 folder and
+"source"ing the start-soar.tcl file.  This method leaves you with a
+"Wish Console" window, which may give helpful diagnostic information,
+especially if you are having trouble with your Tcl scripts.
+
+
+
+Instructions for building Soar 8.3 on Windows 95/98/NT/2000.
+-----------------------------------------------------------
+
+Requirements:
+
+        1.  Soar-8.2 distribution for windows
+
+            http://ai.eecs.umich.edu/soar/Soar83.html
+
+        2.  The Tcl/Tk Source distribution
+
+            ftp://ftp.scriptics.com/pub/tcl/tcl8_0/tcl804.zip
+
+	3.  MicroSoft Visual C++, v6.0+
+
+(soar can probably also be built with Code Warrior, we just haven't
+done that yet.)
+
+1.  Go to the Kernel folder and open the Kernel.dsw project file.
+2.  Build soarkernel.lib
+3.  Open the Interface.dsw project file in the Interface folder.
+4.  Build libsoar83.dll
+5.  Confirm that the new libsoar83.dll file has been copied to the
+    library folder in Soar83.
