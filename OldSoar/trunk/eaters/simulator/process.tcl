@@ -1,6 +1,9 @@
 #
 # $Id$
 # $Log$
+# Revision 1.3  2004/07/12 15:25:56  rmarinie
+# fixed bugzilla bug 391
+#
 # Revision 1.2  2003/10/21 18:26:42  snason
 #  hopefully eliminated error message after init-soar
 #
@@ -988,7 +991,9 @@ proc startEater {x y dir path name color} {
 #   $newname eval {.tsw.frame.step configure \
 #                         -command {tsiDisplayAndSendCommand step}}
  	if $ETCPConfig(afterDecision) { 
-	   $newname eval monitor -add after-decision-phase-cycle \"stop-soar -self \{\}\" dp1
+#          $newname eval monitor -add after-decision-phase-cycle \"stop-soar -self \{\}\" dp1
+#          changed to fix bugzilla bug 391
+	   $newname eval monitor -add after-decision-phase-cycle \"stop-soar -self" dp1
   	}
 
    if [catch {$newname eval \

@@ -2,6 +2,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.4  2004/07/12 15:25:56  rmarinie
+### fixed bugzilla bug 391
+###
 ### Revision 1.3  2004/07/12 14:45:30  toolshed
 ### fixed erroneous stop after decision cycle monitor command
 ###
@@ -222,6 +225,7 @@ proc makeETControlPanel { {hide 0} {x -20} {y 1} } {
    
 proc stopAfterDecision {} {
 #    sendAllAgents {monitor -add after-decision-phase-cycle "stop-soar -self {}" dp1}
+#   changed to fix bugzilla bug 391
     sendAllAgents {monitor -add after-decision-phase-cycle "stop-soar -self" dp1}
 }
 proc dontStopAfterDecision {} {
