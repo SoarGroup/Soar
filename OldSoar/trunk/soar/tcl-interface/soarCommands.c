@@ -269,7 +269,7 @@ int FiringCountsCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Ob
     free_argv(objc, argv);
 
     if (ret == SOAR_OK) {
-        Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
+        /*Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));*/
         return TCL_OK;
     } else {
         Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
@@ -822,7 +822,7 @@ int StatsCmd(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * con
     free_argv(objc, argv);
 
     if (ret == SOAR_OK) {
-        Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
+        /*Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));*/
         return TCL_OK;
     } else {
         Tcl_SetObjResult(interp, Tcl_NewStringObj(res.result, -1));
