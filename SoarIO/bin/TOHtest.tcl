@@ -14,6 +14,10 @@ proc PhaseExecutedCallback {id userData agent phase} {
 	puts "phase $phase executed"
 }
 
+proc AgentCreatedCallback {id userData agent} {
+	puts "[$agent GetAgentName] created"
+}
+
 proc AgentReinitializedCallback {id userData agent} {
 	puts "[$agent GetAgentName] reinitialized"
 }
@@ -32,6 +36,12 @@ package require tcl_sml_clientinterface
 
 #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
 set kernel [Kernel_CreateKernelInCurrentThread KernelSML]
+
+set agentCallbackId0 [$kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATED AgentCreatedCallback ""]
+set agentCallbackId1 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
+set agentCallbackId2 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback ""]
+set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
+
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
 
@@ -39,9 +49,6 @@ set printCallbackId [$agent RegisterForPrintEvent $smlEVENT_PRINT PrintCallback 
 #set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_BEFORE_PRODUCTION_REMOVED ProductionExcisedCallback ""]
 set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionFiredCallback ""]
 set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback ""]
-set agentCallbackId1 [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
-set agentCallbackId2 [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback ""]
-set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
 
 #load the TOH productions
 cd demos/towers-of-hanoi
@@ -67,7 +74,6 @@ cd ../..
 puts "\n$speed"
 
 set result [$kernel ExecuteCommandLine "init-soar" Soar1]
-
 $kernel DestroyAgent $agent
 
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted

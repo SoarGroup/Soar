@@ -23,8 +23,8 @@
 
 	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
 	{
-		// we can ignore the agent parameter because it's already in the script (from when we registered it)
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+	    Tcl_AppendObjToObj(tud->script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
 	}
 	
@@ -89,7 +89,7 @@
 	    return tud;
 	}
 	
-	TclUserData* CreateTclSystemUserData(sml::Kernel* self, sml::smlSystemEventId id, char* proc, char* userData, Tcl_Interp* interp) {
+	TclUserData* CreateTclSystemUserData(sml::Kernel* self, int id, char* proc, char* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
 	    
 	    tud->interp = interp;
@@ -103,15 +103,25 @@
 	    
 	    return tud;
 	}
+	
+	TclUserData* CreateTclUserData(int id, char* proc, char* userData, Tcl_Interp* interp) {
+		TclUserData* tud = new TclUserData();
+	    
+	    tud->interp = interp;
+	    // put all of the arguments together so we can just execute this as a single script later
+	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
+	    tud->script = Tcl_NewObj();
+	    Tcl_AppendStringsToObj(tud->script, proc, " ", NULL);
+	    Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(id));
+	    Tcl_AppendStringsToObj(tud->script, " \"", userData, "\" ", NULL);
+	    
+	    return tud;
+	}
 %}
 
 %include "../sml_ClientInterface.i"
 
 %extend sml::Agent {
-	int RegisterForAgentEvent(Tcl_Interp* interp, sml::smlAgentEventId id, char* proc, char* userData, bool addToBack = true) {
-	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
-	    return self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
-    };
 
     int RegisterForProductionEvent(Tcl_Interp* interp, sml::smlProductionEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
@@ -122,7 +132,6 @@
         TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    return self->RegisterForRunEvent(id, TclRunEventCallback, (void*)tud, addToBack);
     }
-    
 
     int RegisterForPrintEvent(Tcl_Interp* interp, sml::smlPrintEventId id, char* proc, char* userData, bool addToBack = true) {	    
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
@@ -134,5 +143,10 @@
     int RegisterForSystemEvent(Tcl_Interp* interp, sml::smlSystemEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    return self->RegisterForSystemEvent(id, TclSystemEventCallback, (void*)tud, addToBack);
+    };
+    
+    int RegisterForAgentEvent(Tcl_Interp* interp, sml::smlAgentEventId id, char* proc, char* userData, bool addToBack = true) {
+	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
+	    return self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
     };
 }
