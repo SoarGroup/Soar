@@ -865,6 +865,9 @@ int VerboseCmd (ClientData clientData,
   soarResult res;
 
   init_soarResult(res);
+
+  Soar_SelectGlobalInterpByInterp(interp);
+
   if ( soar_Verbose( argc, argv, &res ) == SOAR_OK ) {
     interp->result = res.result;
     return TCL_OK;
