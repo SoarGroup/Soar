@@ -76,7 +76,8 @@ public class DebuggerCommands
 		// (We do this because SWT requires us to rebuild all of the windows from
 		//  the point of the change down, so we may as well rebuild everything since we
 		//  already have all of that code and it's both fairly complex and heavily used).
-		ElementXML xml = frame.getMainWindow().convertToXML() ;
+		boolean storeContent = true ;	// Capture existing output and redisplay it
+		ElementXML xml = frame.getMainWindow().convertToXML(storeContent) ;
 		
 		// Find the XML element for the pane we're modifying
 		ElementXML existingPane = pane.getElementXML() ;
@@ -107,7 +108,7 @@ public class DebuggerCommands
 
 		// Create XML for the new sash form with appropriate children
 		ElementXML newChild1 = existingPane ;
-		ElementXML newChild2 = newPane.convertToXML(Pane.kTagName) ;
+		ElementXML newChild2 = newPane.convertToXML(Pane.kTagName, false) ;
 
 		ElementXML newParent = null ;
 		
@@ -175,7 +176,8 @@ public class DebuggerCommands
 		Pane pane = view.getPane() ;
 
 		// Convert everything to XML
-		ElementXML xml = frame.getMainWindow().convertToXML() ;
+		boolean storeContent = true ;	// Capture existing output and redisplay it
+		ElementXML xml = frame.getMainWindow().convertToXML(storeContent) ;
 
 		// Find the XML element for the pane we're removing
 		ElementXML removePane = pane.getElementXML() ;

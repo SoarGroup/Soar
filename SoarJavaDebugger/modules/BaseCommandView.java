@@ -54,6 +54,12 @@ public abstract class BaseCommandView extends AbstractView
 	
 	/** If true, run the current command again whenever Soar stops running */
 	protected boolean	m_UpdateOnStop = true ;
+
+	/** If > 0 run the current command at the end of every n'th decision */
+	protected int	    m_UpdateEveryNthDecision = 0 ;
+	
+	/** Count the number of decisions we've seen (if we're updating every n decisions) */
+	protected int		m_DecisionCounter = 0 ;
 	
 	/** If true, will display output from "run" commands */
 	protected boolean	m_ShowTraceOutput = false ;
@@ -71,11 +77,15 @@ public abstract class BaseCommandView extends AbstractView
 	
 	protected int m_StopCallback ;
 	protected int m_PrintCallback ;
+	protected int m_DecisionCallback ;
 		
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
 	public BaseCommandView()
 	{
+		m_StopCallback = -1 ;
+		m_PrintCallback = -1 ;
+		m_DecisionCallback = -1 ;
 	}
 	
 	protected ParseSelectedText.SelectedObject getCurrentSelection()
@@ -347,7 +357,7 @@ public abstract class BaseCommandView extends AbstractView
 	* Converts this object into an XML representation.
 	* 
 	*************************************************************************/
-	public general.ElementXML convertToXML(String title)
+	public general.ElementXML convertToXML(String title, boolean storeContent)
 	{
 		ElementXML element = new ElementXML(title) ;
 		
@@ -366,7 +376,18 @@ public abstract class BaseCommandView extends AbstractView
 		element.addAttribute("ClearComboEachCommand", Boolean.toString(this.m_ClearComboEachCommand)) ;
 		element.addAttribute("ComboAtTop", Boolean.toString(this.m_ComboAtTop)) ;
 		element.addAttribute("ShowTraceOutput", Boolean.toString(m_ShowTraceOutput)) ;
+		element.addAttribute("UpdateEveryNthDecision", Integer.toString(m_UpdateEveryNthDecision)) ;
 		
+		if (storeContent && m_Text.getText() != null)
+			element.addContents(m_Text.getText()) ;
+
+		if (this.m_CommandCombo != null)
+		{
+			String command = m_CommandCombo.getText() ;
+			if (command != null && command.length() != 0)
+				this.m_CommandHistory.UpdateHistoryList(command, true) ;
+		}
+
 		element.addChildElement(this.m_CommandHistory.ConvertToXML("History")) ;
 		
 		return element ;
@@ -392,7 +413,10 @@ public abstract class BaseCommandView extends AbstractView
 		m_ClearComboEachCommand = element.getAttributeBooleanThrows("ClearComboEachCommand") ;
 		m_ComboAtTop	   = element.getAttributeBooleanThrows("ComboAtTop") ;
 		m_ShowTraceOutput  = element.getAttributeBooleanThrows("ShowTraceOutput") ;
+		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
 
+		String text = element.getContents() ;
+		
 		ElementXML history = element.findChildByName("History") ;
 		if (history != null)
 			this.m_CommandHistory.LoadFromXML(doc, history) ;
@@ -405,13 +429,37 @@ public abstract class BaseCommandView extends AbstractView
 
 		// Reset the combo box to match the history list we just loaded	
 		makeComboBoxMatchHistory(!m_ClearComboEachCommand) ;
+		
+		// Fill in any text we stored (we may not have done so)
+		// and move the cursor to the bottom
+		if (text != null)
+		{
+			m_Text.setText(text) ;
+			m_Text.setSelection(text.length()) ;
+		}
 	}
 	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 	{
-		if (this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUN_ENDS.swigValue())
+		boolean updateNow = false ;
+		
+		if (eventID == smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE.swigValue())
 		{
-			//System.out.println("Received run event") ;
+			m_DecisionCounter++ ;
+			
+			if (this.m_UpdateEveryNthDecision > 0 && (m_DecisionCounter % m_UpdateEveryNthDecision) == 0)
+				updateNow = true; 
+		}
+
+		// BUGBUG: I think we might want to register for SYSTEM_STOP instead of AFTER_RUN
+		// otherwise we may get a lot of updates during "RunTilOutput" cycles.
+		if (this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUN_ENDS.swigValue())
+			updateNow = true ;
+		
+
+		if (updateNow)
+		{
+			//System.out.println("Updating window's contents") ;
 			
 			// Retrieve the current command in the combo box
 			// (this call is thread safe and switches to the UI thread if necessary)
@@ -537,10 +585,24 @@ public abstract class BaseCommandView extends AbstractView
 		if (agent == null)
 			return ;
 		
-		m_StopCallback  = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_RUN_ENDS, this, "runEventHandler", this) ;
+		if (m_StopCallback == -1)
+			m_StopCallback  = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_RUN_ENDS, this, "runEventHandler", this) ;
 		
-		if (m_ShowTraceOutput)
-			m_PrintCallback = agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this, "printEventHandler", this) ;		
+		if (m_ShowTraceOutput && m_PrintCallback == -1)
+			m_PrintCallback = agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this, "printEventHandler", this) ;
+		
+		if (m_UpdateEveryNthDecision > 0 && m_DecisionCallback == -1)
+			m_DecisionCallback = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, this, "runEventHandler", this) ;
+		else if (m_UpdateEveryNthDecision <= 0 && m_DecisionCallback != -1)
+		{
+			// This is a bit naughty, but it's helpful to unregister for the decision event
+			// if we no longer are interested in updates every n decisions.
+			// This allows us to just call "registerForAgentEvents" again after updating the properties
+			// and get the right result.  We don't currently worry about the other events in the same way as
+			// they won't generate as much traffic.
+			agent.UnregisterForRunEvent(m_DecisionCallback) ;
+			m_DecisionCallback = -1 ;
+		}
 	}
 	
 	protected void unregisterForAgentEvents(Agent agent)
@@ -548,13 +610,20 @@ public abstract class BaseCommandView extends AbstractView
 		if (agent == null)
 			return ;
 	
-		boolean ok = agent.UnregisterForRunEvent(m_StopCallback) ;
+		boolean ok = true ;
 
-		if (m_ShowTraceOutput)
-		{
-			//System.out.println("Unregister print event for " + agent.GetAgentName()) ;
+		if (m_StopCallback != -1)
+			ok = agent.UnregisterForRunEvent(m_StopCallback) && ok ;
+
+		if (m_PrintCallback != -1)
 			ok = agent.UnregisterForPrintEvent(m_PrintCallback) && ok ;
-		}
+		
+		if (m_DecisionCallback != -1)
+			ok = agent.UnregisterForRunEvent(m_DecisionCallback) && ok ;
+		
+		m_StopCallback = -1 ;
+		m_PrintCallback = -1 ;
+		m_DecisionCallback = -1 ;
 		
 		if (!ok)
 			throw new IllegalStateException("Problem unregistering for events") ;

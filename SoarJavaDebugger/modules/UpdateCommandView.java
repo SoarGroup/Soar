@@ -39,14 +39,26 @@ public class UpdateCommandView extends BaseCommandView
 	
 	public void showProperties()
 	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[2] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
+
+		boolean decisionUpdating = (m_UpdateEveryNthDecision > 0) ;
 		
 		properties[0] = new PropertiesDialog.BooleanProperty("Update automatically on stop", m_UpdateOnStop) ;
 		properties[1] = new PropertiesDialog.BooleanProperty("Clear display before each command", m_ClearEachCommand) ;
-		
-		PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+		properties[2] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
 
-		m_UpdateOnStop = ((PropertiesDialog.BooleanProperty)properties[0]).getValue() ;
-		m_ClearEachCommand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;
+		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+
+		if (ok)
+		{
+			m_UpdateOnStop = ((PropertiesDialog.BooleanProperty)properties[0]).getValue() ;
+			m_ClearEachCommand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;		
+			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[2]).getValue() ;
+	
+			if (this.getAgentFocus() != null)
+			{
+				this.registerForAgentEvents(this.getAgentFocus()) ;
+			}
+		}
 	}
 }

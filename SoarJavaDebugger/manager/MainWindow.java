@@ -439,7 +439,8 @@ public class MainWindow
   	
 	public boolean saveLayoutToFile(String filename)
 	{
-		ElementXML root = convertToXML() ;
+		// Convert to XML but without storing all of the current text in the trace etc.
+		ElementXML root = convertToXML(false) ;
 
 		try
 		{
@@ -482,7 +483,7 @@ public class MainWindow
 	}
 	
 	/** Convert a sash form (and its children) to XML */
-	protected ElementXML convertSashFormToXML(SashForm sash)
+	protected ElementXML convertSashFormToXML(SashForm sash, boolean storeContent)
 	{
 		int style = sash.getOrientation() ;
 		int[] weights = sash.getWeights() ;
@@ -490,13 +491,13 @@ public class MainWindow
 		ElementXML element = buildXMLForSashForm(style, weights) ;
 		
 		// Add the children
-		addChildrenToXML(element, sash) ;
+		addChildrenToXML(element, sash, storeContent) ;
 		
 		return element ;
 	}
 
 	/** Add all of the children of this composite as children of the XML element **/
-	protected void addChildrenToXML(ElementXML element, Composite composite)
+	protected void addChildrenToXML(ElementXML element, Composite composite, boolean storeContent)
 	{
 		Control[] controls = composite.getChildren() ;
 		
@@ -508,7 +509,7 @@ public class MainWindow
 
 			if (pane != null)
 			{
-				element.addChildElement(pane.convertToXML(Pane.kTagName)) ;				
+				element.addChildElement(pane.convertToXML(Pane.kTagName, storeContent)) ;				
 				continue ;
 			}
 			
@@ -520,11 +521,11 @@ public class MainWindow
 
 				if (comp instanceof SashForm)
 				{
-					element.addChildElement(convertSashFormToXML((SashForm)comp)) ;
+					element.addChildElement(convertSashFormToXML((SashForm)comp, storeContent)) ;
 				}
 				else
 				{
-					element.addChildElement(convertCompositeToXML(comp)) ;					
+					element.addChildElement(convertCompositeToXML(comp, storeContent)) ;					
 				}				
 			}
 		}
@@ -553,19 +554,21 @@ public class MainWindow
 	}
 	
 	/** Convert a simple composite to XML **/
-	protected ElementXML convertCompositeToXML(Composite composite)
+	protected ElementXML convertCompositeToXML(Composite composite, boolean storeContent)
 	{
 		// See how this composite's children are meant to be put together.
 		String attachType = (String)composite.getData(kAttachKey) ;
 
 		ElementXML element = buildXMLforComposite(attachType) ;
 		
-		addChildrenToXML(element, composite) ;
+		addChildrenToXML(element, composite, storeContent) ;
 		
 		return element ;
 	}
 	
-	public ElementXML convertToXML()
+	// Convert the layout to XML, optionally recording content (e.g. text in a trace window).
+	// If in doubt, you usually do NOT want the content--it could add enormously to the size of the XML.
+	public ElementXML convertToXML(boolean storeContent)
 	{
 		ElementXML root = new ElementXML("Debugger") ;
 
@@ -577,7 +580,7 @@ public class MainWindow
 		// with a collection of SashForms and Composite windows that are used to lay them out.
 		// We navigate down through the windows until we reach the panes, recording information as we go.
 		// Once we reach the pane we switch to logic that's module specific about how to save that pane.
-		addChildrenToXML(root, m_Window) ;
+		addChildrenToXML(root, m_Window, storeContent) ;
 		
 		return root ;
 	}

@@ -82,7 +82,8 @@ public class TraceView extends BaseCommandView
 		if (comboMoving)
 		{
 			// Convert everything to XML (using the new setting we just changed)
-			ElementXML xml = m_Frame.getMainWindow().convertToXML() ;
+			boolean storeContent = true ;
+			ElementXML xml = m_Frame.getMainWindow().convertToXML(storeContent) ;
 
 			// Rebuild the entire layout from the new XML structure.
 			m_Frame.getMainWindow().loadFromXMLNoThrow(xml) ;

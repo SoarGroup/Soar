@@ -120,8 +120,11 @@ public abstract class AbstractView implements AgentFocusListener
 	* 
 	* Converts this object into an XML representation.
 	* 
+	* @param tagName		The tag name to use for the top XML element created by this view
+	* @param storeContent	If true, record the content from the display (e.g. the text from a trace window)
+	* 
 	*************************************************************************/
-	public abstract general.ElementXML convertToXML(String tagName) ;
+	public abstract general.ElementXML convertToXML(String tagName, boolean storeContent) ;
 
 	/************************************************************************
 	* 

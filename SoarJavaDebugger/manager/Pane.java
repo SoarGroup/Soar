@@ -108,7 +108,7 @@ public class Pane
 		return m_Views.get(index) ;
 	}
 	
-	public ElementXML convertToXML(String tagName)
+	public ElementXML convertToXML(String tagName, boolean storeContent)
 	{
 		ElementXML element = new ElementXML(tagName) ;
 
@@ -124,7 +124,7 @@ public class Pane
 		for (int i = 0 ; i < n ; i++)
 		{
 			AbstractView view = getView(i) ;
-			ElementXML child = view.convertToXML("view") ;
+			ElementXML child = view.convertToXML("view", storeContent) ;
 			element.addChildElement(child) ;
 		}
 		
