@@ -5,7 +5,8 @@
 multi-attributes ontop 3
 multi-attributes clear 3
 multi-attributes objects 4
-#learn -off 
+
+learn -on
 
 pushd "../../default"
 source selection.soar
