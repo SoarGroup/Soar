@@ -9,7 +9,7 @@ sp {water-jug*monitor*tied-operator*empty
    (write (crlf) |  | <item> |: empty(| <volume> |)|)}
 
 sp {water-jug*monitor*tied-operator*fill
-   (state <s> ^impasse tie ^impasse tie
+   (state <s> ^impasse tie
               ^attribute operator
               ^item <item>)
    (<item> ^name fill
