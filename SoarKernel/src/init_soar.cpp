@@ -48,6 +48,7 @@
 #include <signal.h>         /* used for control-c handler */
 #include <assert.h>
 #include <time.h>
+#include <windows.h>
 
 /* JC ADDED: Used for gski callbacks */
 #include "gski_event_system_functions.h"
@@ -219,7 +220,7 @@ void reset_timer (struct timeval *tv_to_reset) {
   tv_to_reset->tv_usec = 0;
 }
 
-#if defined(WIN32)
+#if defined(WIN32) && !defined(FAST_TIME)
 
 /* A fake implementation of rusage for WIN32. Taken from cygwin. */
 #define RUSAGE_SELF 0
@@ -267,8 +268,9 @@ int getrusage(int who, struct rusage* r)
    return 0;
 }
 
-#endif /* WIN32 */
+#endif /* WIN32 && !FAST_TIME*/
 
+#if !defined(FAST_TIME) || !defined(WIN32)
 void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
   dest_tv->tv_sec = r->ru_utime.tv_sec + r->ru_stime.tv_sec;
   dest_tv->tv_usec = r->ru_utime.tv_usec + r->ru_stime.tv_usec;
@@ -277,6 +279,27 @@ void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
     dest_tv->tv_sec++;
   }
 }
+#endif
+
+static void totimeval (timeval *dst, LARGE_INTEGER src)
+{
+    LARGE_INTEGER freq;
+    QueryPerformanceFrequency(&freq);
+    long time_s = (long)(src.QuadPart / freq.QuadPart);
+    long time_u = (long)(((src.QuadPart / (double)freq.QuadPart) - time_s) * 1000000);
+
+    dst->tv_sec = time_s;
+    dst->tv_usec = time_u;
+}
+
+#if defined(WIN32) && defined(FAST_TIME)
+void start_timer (struct timeval *tv_for_recording_start_time) {
+
+    LARGE_INTEGER time;
+    BOOL ok = QueryPerformanceCounter(&time);
+    totimeval(tv_for_recording_start_time, time);
+}
+#else
 
 void start_timer (struct timeval *tv_for_recording_start_time) {
   struct rusage temp_rusage;
@@ -284,16 +307,24 @@ void start_timer (struct timeval *tv_for_recording_start_time) {
   getrusage (RUSAGE_SELF, &temp_rusage);
   get_cputime_from_rusage (&temp_rusage, tv_for_recording_start_time);
 }
-
+#endif
 void stop_timer (struct timeval *tv_with_recorded_start_time,
                  struct timeval *tv_with_accumulated_time) {
+
+#if defined(WIN32) && defined(FAST_TIME)
+    struct timeval end_tv;
+    long delta_sec, delta_usec;
+    LARGE_INTEGER time;
+    QueryPerformanceCounter(&time);
+    totimeval(&end_tv, time);
+#else
   struct rusage end_rusage;
   struct timeval end_tv;
   long delta_sec, delta_usec;
   
   getrusage (RUSAGE_SELF, &end_rusage);
   get_cputime_from_rusage (&end_rusage, &end_tv);
-
+#endif
   delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
   delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
   if (delta_usec < 0) {
