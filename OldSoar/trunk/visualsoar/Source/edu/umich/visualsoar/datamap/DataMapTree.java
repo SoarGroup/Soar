@@ -6,6 +6,10 @@ import edu.umich.visualsoar.dialogs.*;
 import edu.umich.visualsoar.util.*;
 import edu.umich.visualsoar.misc.*;
 import edu.umich.visualsoar.operatorwindow.*;
+import edu.umich.visualsoar.parser.ParseException;
+import edu.umich.visualsoar.parser.TokenMgrError;
+import edu.umich.visualsoar.parser.SoarProduction;
+import edu.umich.visualsoar.parser.Triple;
 import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
@@ -47,6 +51,9 @@ public class DataMapTree extends JTree implements ClipboardOwner
     private static JMenuItem AddStringItem = new JMenuItem("Add String...");
 
     private static JMenuItem SearchForItem = new JMenuItem("Search For...");
+    private static JMenuItem FindUsingProdsItem = new JMenuItem("Find Productions that Create or Test this WME");
+    private static JMenuItem FindTestingProdsItem = new JMenuItem("Find Productions that Test this WME");
+    private static JMenuItem FindCreatingProdsItem = new JMenuItem("Find Productions that Create this WME");
 
     private static JMenuItem RemoveAttributeItem = new JMenuItem("Delete Attribute...");
     private static JMenuItem RenameAttributeItem = new JMenuItem("Rename Attribute...");
@@ -76,6 +83,9 @@ public class DataMapTree extends JTree implements ClipboardOwner
 
         contextMenu.addSeparator();
         contextMenu.add(SearchForItem);
+        contextMenu.add(FindUsingProdsItem);
+        contextMenu.add(FindTestingProdsItem);
+        contextMenu.add(FindCreatingProdsItem);
         contextMenu.addSeparator();
 
         contextMenu.add(ChangeTypeSubMenu);
@@ -210,6 +220,36 @@ public class DataMapTree extends JTree implements ClipboardOwner
                     }
             });
 
+
+        FindUsingProdsItem.addActionListener(
+            new ActionListener() 
+            {
+                public void actionPerformed(ActionEvent e) 
+                {
+                    DataMapTree dmt = (DataMapTree)contextMenu.getInvoker();
+                    dmt.findProds(true, true);
+                }
+            });
+
+        FindTestingProdsItem.addActionListener(
+            new ActionListener() 
+            {
+                public void actionPerformed(ActionEvent e) 
+                {
+                    DataMapTree dmt = (DataMapTree)contextMenu.getInvoker();
+                    dmt.findProds(true, false);
+                }
+            });
+
+        FindCreatingProdsItem.addActionListener(
+            new ActionListener() 
+            {
+                public void actionPerformed(ActionEvent e) 
+                {
+                    DataMapTree dmt = (DataMapTree)contextMenu.getInvoker();
+                    dmt.findProds(false, true);
+                }
+            });
 
         RemoveAttributeItem.addActionListener(
             new ActionListener() 
@@ -434,22 +474,24 @@ public class DataMapTree extends JTree implements ClipboardOwner
                 AddIntegerItem.setEnabled(true);
                 AddFloatItem.setEnabled(true);
                 AddStringItem.setEnabled(true);
-                SearchForItem.setEnabled(true);
             }
-            else { // can't add any edges
+            else
+            {
+                // can't add any edges
                 AddIdentifierItem.setEnabled(false);
                 AddEnumerationItem.setEnabled(false);
                 AddIntegerItem.setEnabled(false);
                 AddFloatItem.setEnabled(false);
                 AddStringItem.setEnabled(false);
-                SearchForItem.setEnabled(false);
             }
 
             if (theVertex.isEditable()) 
             {
                 EditValueItem.setEnabled(true);
             }
-            else { // uneditable item
+            else
+            {
+                // uneditable item
                 EditValueItem.setEnabled(false);
             }
 
@@ -675,7 +717,86 @@ public class DataMapTree extends JTree implements ClipboardOwner
         searchDialog.setVisible(true);
     }
 
+    /**
+     *  Finds all productions that test or create the currently selected
+     *  vertex in the tree.
+     *
+     *  @param bTest   if this boolean is set to false, this function will
+     *                 ignore matches that test the WME
+     *  @param bCreate if this boolean is set to false, this function will
+     *                 ignore matches that create the WME
+     *  
+     */
+    public void findProds(boolean bTest, boolean bCreate)
+    {
+        TreePath thePath = getSelectionPath();
+        Vector vecErrors = new Vector();
 
+        OperatorWindow operatorWindow = MainFrame.getMainFrame().getOperatorWindow();
+        Enumeration bfe = operatorWindow.breadthFirstEnumeration();
+        while(bfe.hasMoreElements())
+        {
+            OperatorNode opNode = (OperatorNode)bfe.nextElement();
+            Vector parsedProds = null;
+            try
+            {
+                parsedProds = opNode.parseProductions();
+            }
+            catch(ParseException pe)
+            {
+                String parseError = pe.toString();
+                int i = parseError.lastIndexOf("line ");
+                String lineNum = parseError.substring(i + 5);
+                i = lineNum.indexOf(',');
+                lineNum = "(" + lineNum.substring(0, i) + "): ";
+                String errString = opNode.getFileName() + lineNum + "Unable to search productions due to parse error";
+                vecErrors.add(errString);
+            }
+            catch(TokenMgrError tme) 
+            {
+                tme.printStackTrace();
+            }
+            catch(IOException ioe) 
+            {
+                ioe.printStackTrace();
+            }
+
+            if (parsedProds == null)  continue;
+                       
+
+            Enumeration enumProds = parsedProds.elements();
+            while(enumProds.hasMoreElements()) 
+            {
+                SoarProduction sp = (SoarProduction)enumProds.nextElement();
+                Vector vecMatches =
+                    DataMapMatcher.pathMatchesProduction(thePath, sp);
+                Enumeration enumMatches = vecMatches.elements();
+                while(enumMatches.hasMoreElements())
+                {
+                    Triple trip = (Triple)enumMatches.nextElement();
+
+                    //Make sure the caller has requested this match
+                    if ( ((bTest) && (trip.isCondition()))
+                         || ((bCreate) && (!trip.isCondition())) )
+                    {
+                        vecErrors.add(new FeedbackListObject(opNode,
+                                                             trip.getLine(),
+                                                             trip.toString()));
+                    }
+                }//while
+            }//while
+        }//while
+
+        if (vecErrors.size() == 0)
+        {
+            vecErrors.add("No matches found.");
+        }
+
+        MainFrame.getMainFrame().setFeedbackListData(vecErrors);
+
+        
+    }//findProds
+    
     /**
      *    Function changeTypeTo() changes the selected DataMap item to
      *    another type with the same name.

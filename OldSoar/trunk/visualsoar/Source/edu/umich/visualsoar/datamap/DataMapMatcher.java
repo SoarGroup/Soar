@@ -4,6 +4,7 @@ import edu.umich.visualsoar.graph.*;
 import edu.umich.visualsoar.util.EnumerationIteratorWrapper;
 import edu.umich.visualsoar.operatorwindow.*;
 import javax.swing.*;
+import javax.swing.tree.*;
 import java.util.*;
 import java.io.*;
 
@@ -671,5 +672,191 @@ public class DataMapMatcher
         return null;
     }
 
+
+    /*
+     * This function scans a list of triples for all the triples whose
+     * variable (id) is a state variable.  All such triples are
+     * returned in a second vector.
+     *
+     * @param te the triples from the production to match
+     * 
+     * @see pmpHelper
+     */
+    private static Vector findStateTriples(TriplesExtractor te)
+    {
+        Iterator iterTriples = te.triples();
+        Vector vecStateTriples = new Vector();
+        Triple trip = null;
+
+        //Find the ones that have state
+        while(iterTriples.hasNext())
+        {
+            trip = (Triple)iterTriples.next();
+                
+            if (trip.hasState())
+            {
+                vecStateTriples.add(trip);
+            }
+        }//while
+
+        //Find the ones that that use a state variable as their id
+        iterTriples = te.triples();
+        while(iterTriples.hasNext())
+        {
+            trip = (Triple)iterTriples.next();
+            if (vecStateTriples.contains(trip)) continue;
+            
+            Enumeration enumStateTriples = vecStateTriples.elements();
+            while(enumStateTriples.hasMoreElements())
+            {
+                Triple trip2 = (Triple)enumStateTriples.nextElement();
+                String s1 = trip.getVariable().getString();
+                String s2 = trip2.getVariable().getString();
+
+                if (s1.equals(s2))
+                {
+                    vecStateTriples.add(trip);
+                    break;
+                }
+            }//while
+        }//while
+
+        return vecStateTriples;
+        
+    }//findStateTriples
+    
+    /*
+     * This *recursive* helper function is used to actually find a path
+     * match for pathMatchesProduction()
+     *
+     * @param vecEdges vector of all the edges to be matched in
+     *                  the order that they are to be matched.
+     * @param nEdgePos starting position in vecEdges (the original caller
+     *             should pass in zero)
+     * @param te the triples from the production to match
+     * @param vecUsedTriples the triples that have already been
+     *                       matched (and cannot be reused)
+     * @param vecStateTriples the triples that are headed by a state
+     *                        variable.  If this parameter is null
+     *                        them pmphelper generates it automatically.
+     * @param id the id of any triple that matches the current named
+     *           edge must equals() this one.  If this is null then
+     *           the id must be a state variable.
+     * @param vecMatches return value for pathMatchesProduction (see below)
+     * 
+     * @see pathMatchesProduction
+     */
+    private static void pmpHelper(Vector vecEdges,
+                                  int nEdgePos,
+                                  TriplesExtractor te,
+                                  Vector vecUsedTriples,
+                                  Vector vecStateTriples,
+                                  Pair id,
+                                  Vector vecMatches)
+    {
+        //Trivial case  %%%Is this needed?
+        if (vecEdges.size() <= nEdgePos)
+        {
+            return;
+        }
+        
+        Iterator iterTriples = null;
+        Triple trip = null;
+        
+        //Find all the triples headed by a state variable
+        if (vecStateTriples == null)
+        {
+            vecStateTriples = findStateTriples(te);
+        }//if
+        
+        iterTriples = te.triples();
+        NamedEdge ne = (NamedEdge)vecEdges.get(nEdgePos);
+        while(iterTriples.hasNext())
+        {
+            trip = (Triple)iterTriples.next();
+            if ( (ne.satisfies(trip))
+                 && (!vecUsedTriples.contains(trip)) )
+            {
+                if ( ((id == null) && (vecStateTriples.contains(trip)))
+                     || ((id != null) && (id.equals(trip.getVariable()))) )
+                {
+                    if (vecEdges.size() == nEdgePos + 1)
+                    {
+                        if (!vecMatches.contains(trip))
+                        {
+                            vecMatches.add(trip);
+                        }
+                    }
+                    else
+                    {
+                        vecUsedTriples.add(trip);
+                        pmpHelper(vecEdges,
+                                  nEdgePos + 1,
+                                  te,
+                                  vecUsedTriples,
+                                  vecStateTriples,
+                                  trip.getValue(),
+                                  vecMatches);
+                        vecUsedTriples.remove(trip);
+                    }//else
+                }//if
+            }//if
+        }//while
+        
+    }//pmpHelper
+                                  
+                                  
+    
+    /*
+     *  Determines whether a given datamap TreePath matches a given
+     *  SoarProduction.  This function returns a vector of all the the
+     *  Triples that match the last node in the path for each complete
+     *  match that is found.  For example, if the path is:
+     *          "<s> ^foo.bar.baz.qux <q>"
+     *  then this function will return all the Triples in SoarProduction
+     *  that match "<0> ^qux <q>" *and* are part of unique set of
+     *  Triples that matches the entire path.  Note that this means
+     *  that this function can be fooled in unusual circumstances.  If a
+     *  production looks like the following then it will generate a false match
+     *  because all the WMEs are present and they are in the right order:
+     *      sp {tricky
+     *         (state <s> ^foo.bar <s>
+     *                    ^baz.qux <qux>)
+     *      -->
+     *         etc...
+     *      
+     *  If the production does not satisfy the path then the vector returned
+     *  will be empty.
+     *
+     * @param thePath the path to match
+     * @param SoarProduction the production to match
+     *
+     * @see pmphelper
+     */
+    public static Vector pathMatchesProduction(TreePath thePath,
+                                               SoarProduction sp)
+    {
+        
+        Vector vecEdges = new Vector();
+        for (int i = 0; i < thePath.getPathCount(); i++) 
+        {
+            FakeTreeNode ftn = (FakeTreeNode)thePath.getPathComponent(i);
+            NamedEdge ne = ftn.getEdge();
+            if (ne != null)
+            {
+                vecEdges.add(ne);
+            }
+        }//for
+
+        TriplesExtractor te = new TriplesExtractor(sp);
+        Vector vecMatches = new Vector();
+        
+        pmpHelper(vecEdges, 0, te, new Vector(), null, null, vecMatches);
+
+        return vecMatches;
+        
+    }//pathMatchesProduction
+
+    
 }//class DataMapMatcher
 
