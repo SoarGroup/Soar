@@ -79,7 +79,7 @@ char * preference_name[] = {
   "better",
   "worse"
 };
-
+
 
 int getInt( const char *string, int *i ) {
 
@@ -103,13 +103,13 @@ int getInt( const char *string, int *i ) {
 
 
 
-
+
 Symbol * space_to_remove_from_cfps;
 
 bool cfps_removal_test_function (cons *c) {
   return (c->first == space_to_remove_from_cfps);
 }
-
+
 
 void do_print_for_production_name (const char *prod_name, bool internal,
 				   bool print_filename, bool full_prod) 
@@ -133,7 +133,7 @@ void do_print_for_production_name (const char *prod_name, bool internal,
     print_location_of_most_recent_lexeme();
   }
 }
-
+
 void do_print_for_wme (wme *w, int depth, bool internal) {
   tc_number tc;
   
@@ -145,7 +145,7 @@ void do_print_for_wme (wme *w, int depth, bool internal) {
     print_augs_of_id (w->id, depth, internal, 0, tc);
   }
 }
-
+
 void execute_go_selection (agent * the_agent,
 			   long go_number, 
 			   enum go_type_enum go_type,
@@ -178,7 +178,7 @@ void execute_go_selection (agent * the_agent,
       break;
     }
 }
-
+
 /* ===================================================================
                        Get Context Var Info
 
@@ -199,12 +199,12 @@ void execute_go_selection (agent * the_agent,
  * be rewritten to take a string argument and added to the Soar kernel
  * interface file (whatever that will be).
  */
-
 
-
 
-
-/*
+
+
+
+/*
  *----------------------------------------------------------------------
  *
  * print_current_learn_settings --
@@ -234,8 +234,8 @@ void print_current_learn_settings(void)
   print ("   %s\n", current_agent(sysparams)[LEARNING_ALL_GOALS_SYSPARAM] ? "-all-levels" : "-bottom-up");
   
 }
-
-
+
+
 /*
  *----------------------------------------------------------------------
  *
@@ -268,8 +268,8 @@ void print_multi_attribute_symbols(void)
   }
   print("\n");
 }
-
-
+
+
 /* kjh (CUSP-B7):  Add to soarCommandUtils.c after procedure
    "read_id_or_context_var_from_string" */
 
@@ -316,7 +316,7 @@ int read_pref_detail_from_string (const char *the_lexeme,
   return SOAR_OK;
 }
 
-
+
 /* ===================================================================
                 Read Pattern And Get Matching Wmes
 
@@ -428,7 +428,7 @@ list *read_pattern_and_get_matching_wmes (void) {
   }
   return wmes;  
 }
-
+
 void cb_appendToSoarResultResult( agent *the_agent,
 				  soar_callback_data data,
 				  soar_call_data call_data ) {
@@ -439,7 +439,7 @@ void cb_appendToSoarResultResult( agent *the_agent,
 }
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -870,7 +870,7 @@ void read_rhs_pattern_and_get_matching_productions (list **current_pf_list, bool
   if (bindings) free_binding_list(bindings); /* DJP 4/3/96 -- To catch the last production */
 }
 
-
+
 
 /*
 Soar_TextWidgetPrintData *
@@ -887,7 +887,7 @@ Soar_MakeTextWidgetPrintData (Tcl_Interp * interp, char * widget_name)
 }
 
 */
-
+
 
 /*
 extern void Soar_FreeTextWidgetPrintData (Soar_TextWidgetPrintData * data)
@@ -900,7 +900,7 @@ extern void Soar_FreeTextWidgetPrintData (Soar_TextWidgetPrintData * data)
 /* kjh(CUSP-B2) begin */
 extern Symbol *make_symbol_for_current_lexeme (void);
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1026,7 +1026,7 @@ int set_watch_setting ( int dest_sysparam_number, const char * param,
 
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1118,7 +1118,7 @@ int set_watch_prod_group_setting (int  prodgroup,
   return SOAR_OK;
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1380,7 +1380,7 @@ int parse_go_command (int argc, char * argv[],
 
   return SOAR_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1569,7 +1569,7 @@ int parse_memory_stats (int argc, const char * argv[], soarResult *res)
 
   return SOAR_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1642,7 +1642,7 @@ int parse_rete_stats ( int argc, const char * argv[], soarResult *res)
     }
   return SOAR_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

@@ -110,7 +110,7 @@ char * soar_callback_names[] = {    /* Must match order of       */
 };
 
 
-
+
 void soar_init_callbacks (soar_callback_agent the_agent)
 {
   SOAR_CALLBACK_TYPE ct;
@@ -121,7 +121,7 @@ void soar_init_callbacks (soar_callback_agent the_agent)
     }
   ((agent *)the_agent)->callback_error = 0;
 }
-
+
 
 void soar_init_global_callbacks (void) {
   SOAR_GLOBAL_CALLBACK_TYPE gct;
@@ -131,12 +131,12 @@ void soar_init_global_callbacks (void) {
   }
 }
 
-
+
 void soar_callback_data_free_string (soar_callback_data data)
 {
   free((char *) data);
 }
-
+
 char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i, 
 				   bool monitorable_only)
 {
@@ -157,8 +157,8 @@ char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i,
     }
   return NULL;
 }
-
-
+
+
 bool soar_exists_callback(soar_callback_agent the_agent,
 			  SOAR_CALLBACK_TYPE callback_type)
 {
@@ -175,7 +175,7 @@ bool soar_exists_callback(soar_callback_agent the_agent,
 
   return TRUE;
 }
-
+
 soar_callback * soar_exists_callback_id (soar_callback_agent the_agent,
 					 SOAR_CALLBACK_TYPE callback_type,
 					 soar_callback_id id)
@@ -200,7 +200,7 @@ soar_callback * soar_exists_callback_id (soar_callback_agent the_agent,
 
   return NULL;
 }
-
+
 void soar_destroy_callback(soar_callback * cb)
 {
   if (cb->id)
@@ -213,7 +213,7 @@ void soar_destroy_callback(soar_callback * cb)
     }
   free((void *) cb);
 }
-
+
 void soar_invoke_callbacks (soar_callback_agent the_agent, 
 			    SOAR_CALLBACK_TYPE callback_type, 
 			    soar_call_data call_data)
@@ -365,7 +365,7 @@ void soar_invoke_callbacks (soar_callback_agent the_agent,
 /* REW: end 28.07.96 */
 
 }
-
+
 void soar_invoke_first_callback (soar_callback_agent the_agent, 
 				 SOAR_CALLBACK_TYPE callback_type, 
 				 soar_call_data call_data)
@@ -502,7 +502,7 @@ void soar_invoke_first_callback (soar_callback_agent the_agent,
 /* REW: end 28.07.96 */
 
 }
-
+
 
 
 

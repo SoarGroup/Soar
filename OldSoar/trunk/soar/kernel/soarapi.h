@@ -89,7 +89,7 @@
 
 
 
-
+
 /**
  *     soar_ReInitSoar --      
  *
@@ -127,7 +127,7 @@
 extern int soar_ReInitSoar( int argc, const char *argv[], soarResult *res );
 
 
-
+
 /**
  *
  *
@@ -900,7 +900,7 @@ extern int soar_WaitSNC ( int argc, const char *argv[], soarResult *res);
 
 
 
-
+
 /**
  *
  *

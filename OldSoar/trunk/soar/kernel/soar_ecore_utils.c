@@ -348,7 +348,7 @@ int read_attribute_from_string (Symbol *id, const char * the_lexeme, Symbol * * 
     return SOAR_ERROR;
 }
 
-
+
 
 /*
  *----------------------------------------------------------------------
@@ -385,4 +385,4 @@ void print_preference_and_source (preference *pref,
 }
 
     
-
+

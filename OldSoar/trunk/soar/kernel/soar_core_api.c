@@ -2112,7 +2112,7 @@ void soar_cListAllCallbacks (soar_callback_agent the_agent,
       print("\n");
     }
 }
-
+
 void soar_cListAllCallbacksForEvent (soar_callback_agent the_agent,
 					SOAR_CALLBACK_TYPE ct)
 {
@@ -2129,10 +2129,10 @@ void soar_cListAllCallbacksForEvent (soar_callback_agent the_agent,
       print("%s ", cb->id);
     }
 }
-
 
-
-
+
+
+
 void soar_cRemoveAllMonitorableCallbacks (soar_callback_agent the_agent)
 {
   SOAR_CALLBACK_TYPE ct;
@@ -2142,7 +2142,7 @@ void soar_cRemoveAllMonitorableCallbacks (soar_callback_agent the_agent)
       soar_cRemoveAllCallbacksForEvent (the_agent, ct);
     }
 }
-
+
 void soar_cRemoveAllCallbacksForEvent (soar_callback_agent the_agent,
 					  SOAR_CALLBACK_TYPE ct)
 {
@@ -2164,9 +2164,9 @@ void soar_cRemoveAllCallbacksForEvent (soar_callback_agent the_agent,
 
   ((agent *)the_agent)->soar_callbacks[ct] = NIL;
 }
-
 
-
+
+
 
 void soar_cTestAllMonitorableCallbacks(soar_callback_agent the_agent)
 {

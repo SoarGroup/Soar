@@ -82,7 +82,7 @@ int read_id_or_context_var_from_string (const char * the_lexeme,
 
   return SOAR_ERROR;
 }
-
+
 
 /*
  *  This function should be replaced by the one above and added to the
@@ -168,7 +168,7 @@ void do_print_for_identifier (Symbol *id, int depth, bool internal) {
   tc = get_new_tc_number();
   print_augs_of_id (id, depth, internal, 0, tc);
 }
-
+
 
 
 
@@ -239,7 +239,7 @@ void get_lexeme_from_string (const char * the_lexeme)
     }
 }
 
-
+
 
 
 
@@ -316,7 +316,7 @@ void get_context_var_info_from_string ( char *str,
   }
 }
 
-
+
 wme ** get_augs_of_id( Symbol *id, tc_number tc, int *num_attr ) {
  slot *s;
   wme *w;
@@ -484,7 +484,7 @@ void neatly_print_wme_augmentation_of_id (wme *w, int indentation) {
 }
 
 
-
+
 
 
 
@@ -518,7 +518,7 @@ bool string_match (const char * string1, const char * string2)
     return FALSE;
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -558,7 +558,7 @@ bool string_match_up_to (const char * string1, const char * string2, int positio
 }
 
 
-
+
 
 
 
