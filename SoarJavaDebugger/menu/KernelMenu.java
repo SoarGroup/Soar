@@ -25,7 +25,7 @@ import doc.Document;
  * (on another PC or already running in another process)
  * 
  ************************************************************************/
-public class RemoteMenu
+public class KernelMenu
 {
 	private BaseMenu	m_Menu ;
 	
@@ -38,9 +38,9 @@ public class RemoteMenu
 	private AbstractAction m_RemoteDisconnect = new AbstractAction("Disconnect from remote Soar") 	{ public void actionPerformed(ActionEvent e) { remoteDisconnectPerformed(e) ; } } ;
 
 	/** Create this menu */
-	public static RemoteMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
+	public static KernelMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
 	{
-		RemoteMenu menu = new RemoteMenu() ;
+		KernelMenu menu = new KernelMenu() ;
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		

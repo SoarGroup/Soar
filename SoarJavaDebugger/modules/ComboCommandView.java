@@ -297,12 +297,14 @@ public class ComboCommandView extends AbstractView
 	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 	{
-		// TEMPTEMP: Removed for now - buggy
+		// TEMPTEMP: Removed for now - buggy (getting multiple events from a simple "run 1")
 		if (false && this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUNNING.swigValue())
 		{
 			System.out.println("Received run event") ;
 			
 			// Retrieve the current command in the combo box
+			
+			// BUGBUG: Not sure how to make this thread safe yet.
 			final String command = getCommandText() ;
 
 			// We don't want to execute "run" commands when Soar stops--or we'll get into an

@@ -13,6 +13,7 @@ public final class smlPrintEventId {
   public final static smlPrintEventId smlEVENT_LOG_WARNING = new smlPrintEventId("smlEVENT_LOG_WARNING");
   public final static smlPrintEventId smlEVENT_LOG_INFO = new smlPrintEventId("smlEVENT_LOG_INFO");
   public final static smlPrintEventId smlEVENT_LOG_DEBUG = new smlPrintEventId("smlEVENT_LOG_DEBUG");
+  public final static smlPrintEventId smlEVENT_STRUCTURED_OUTPUT = new smlPrintEventId("smlEVENT_STRUCTURED_OUTPUT");
   public final static smlPrintEventId smlEVENT_PRINT = new smlPrintEventId("smlEVENT_PRINT");
 
   public final int swigValue() {
@@ -43,7 +44,7 @@ public final class smlPrintEventId {
     swigNext = swigValue+1;
   }
 
-  private static smlPrintEventId[] swigValues = { smlEVENT_LOG_ERROR, smlEVENT_LOG_WARNING, smlEVENT_LOG_INFO, smlEVENT_LOG_DEBUG, smlEVENT_PRINT };
+  private static smlPrintEventId[] swigValues = { smlEVENT_LOG_ERROR, smlEVENT_LOG_WARNING, smlEVENT_LOG_INFO, smlEVENT_LOG_DEBUG, smlEVENT_STRUCTURED_OUTPUT, smlEVENT_PRINT };
   private static int swigNext = 0;
   private final int swigValue;
   private final String swigName;

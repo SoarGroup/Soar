@@ -409,6 +409,198 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kParamChunkLongFormat();
   }
 
+  public static String getKParamStatsProductionCountDefault() {
+    return smlJNI.get_sml_Names_kParamStatsProductionCountDefault();
+  }
+
+  public static String getKParamStatsProductionCountUser() {
+    return smlJNI.get_sml_Names_kParamStatsProductionCountUser();
+  }
+
+  public static String getKParamStatsProductionCountChunk() {
+    return smlJNI.get_sml_Names_kParamStatsProductionCountChunk();
+  }
+
+  public static String getKParamStatsProductionCountJustification() {
+    return smlJNI.get_sml_Names_kParamStatsProductionCountJustification();
+  }
+
+  public static String getKParamStatsCycleCountDecision() {
+    return smlJNI.get_sml_Names_kParamStatsCycleCountDecision();
+  }
+
+  public static String getKParamStatsCycleCountElaboration() {
+    return smlJNI.get_sml_Names_kParamStatsCycleCountElaboration();
+  }
+
+  public static String getKParamStatsProductionFiringCount() {
+    return smlJNI.get_sml_Names_kParamStatsProductionFiringCount();
+  }
+
+  public static String getKParamStatsWmeCountAddition() {
+    return smlJNI.get_sml_Names_kParamStatsWmeCountAddition();
+  }
+
+  public static String getKParamStatsWmeCountRemoval() {
+    return smlJNI.get_sml_Names_kParamStatsWmeCountRemoval();
+  }
+
+  public static String getKParamStatsWmeCount() {
+    return smlJNI.get_sml_Names_kParamStatsWmeCount();
+  }
+
+  public static String getKParamStatsWmeCountAverage() {
+    return smlJNI.get_sml_Names_kParamStatsWmeCountAverage();
+  }
+
+  public static String getKParamStatsWmeCountMax() {
+    return smlJNI.get_sml_Names_kParamStatsWmeCountMax();
+  }
+
+  public static String getKParamStatsKernelTimeTotal() {
+    return smlJNI.get_sml_Names_kParamStatsKernelTimeTotal();
+  }
+
+  public static String getKParamStatsMatchTimeInputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMatchTimeInputPhase();
+  }
+
+  public static String getKParamStatsMatchTimeDetermineLevelPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMatchTimeDetermineLevelPhase();
+  }
+
+  public static String getKParamStatsMatchTimePreferencePhase() {
+    return smlJNI.get_sml_Names_kParamStatsMatchTimePreferencePhase();
+  }
+
+  public static String getKParamStatsMatchTimeWorkingMemoryPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMatchTimeWorkingMemoryPhase();
+  }
+
+  public static String getKParamStatsMatchTimeOutputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMatchTimeOutputPhase();
+  }
+
+  public static String getKParamStatsMatchTimeDecisionPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMatchTimeDecisionPhase();
+  }
+
+  public static String getKParamStatsOwnershipTimeInputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeInputPhase();
+  }
+
+  public static String getKParamStatsOwnershipTimeDetermineLevelPhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeDetermineLevelPhase();
+  }
+
+  public static String getKParamStatsOwnershipTimePreferencePhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimePreferencePhase();
+  }
+
+  public static String getKParamStatsOwnershipTimeWorkingMemoryPhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeWorkingMemoryPhase();
+  }
+
+  public static String getKParamStatsOwnershipTimeOutputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeOutputPhase();
+  }
+
+  public static String getKParamStatsOwnershipTimeDecisionPhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeDecisionPhase();
+  }
+
+  public static String getKParamStatsChunkingTimeInputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimeInputPhase();
+  }
+
+  public static String getKParamStatsChunkingTimeDetermineLevelPhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimeDetermineLevelPhase();
+  }
+
+  public static String getKParamStatsChunkingTimePreferencePhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimePreferencePhase();
+  }
+
+  public static String getKParamStatsChunkingTimeWorkingMemoryPhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimeWorkingMemoryPhase();
+  }
+
+  public static String getKParamStatsChunkingTimeOutputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimeOutputPhase();
+  }
+
+  public static String getKParamStatsChunkingTimeDecisionPhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimeDecisionPhase();
+  }
+
+  public static String getKParamStatsMemoryUsageMiscellaneous() {
+    return smlJNI.get_sml_Names_kParamStatsMemoryUsageMiscellaneous();
+  }
+
+  public static String getKParamStatsMemoryUsageHash() {
+    return smlJNI.get_sml_Names_kParamStatsMemoryUsageHash();
+  }
+
+  public static String getKParamStatsMemoryUsageString() {
+    return smlJNI.get_sml_Names_kParamStatsMemoryUsageString();
+  }
+
+  public static String getKParamStatsMemoryUsagePool() {
+    return smlJNI.get_sml_Names_kParamStatsMemoryUsagePool();
+  }
+
+  public static String getKParamStatsMemoryUsageStatsOverhead() {
+    return smlJNI.get_sml_Names_kParamStatsMemoryUsageStatsOverhead();
+  }
+
+  public static String getKParamWatchDecisions() {
+    return smlJNI.get_sml_Names_kParamWatchDecisions();
+  }
+
+  public static String getKParamWatchPhases() {
+    return smlJNI.get_sml_Names_kParamWatchPhases();
+  }
+
+  public static String getKParamWatchProductionDefault() {
+    return smlJNI.get_sml_Names_kParamWatchProductionDefault();
+  }
+
+  public static String getKParamWatchProductionUser() {
+    return smlJNI.get_sml_Names_kParamWatchProductionUser();
+  }
+
+  public static String getKParamWatchProductionChunks() {
+    return smlJNI.get_sml_Names_kParamWatchProductionChunks();
+  }
+
+  public static String getKParamWatchProductionJustifications() {
+    return smlJNI.get_sml_Names_kParamWatchProductionJustifications();
+  }
+
+  public static String getKParamWatchWMEDetail() {
+    return smlJNI.get_sml_Names_kParamWatchWMEDetail();
+  }
+
+  public static String getKParamWatchWorkingMemoryChanges() {
+    return smlJNI.get_sml_Names_kParamWatchWorkingMemoryChanges();
+  }
+
+  public static String getKParamWatchPreferences() {
+    return smlJNI.get_sml_Names_kParamWatchPreferences();
+  }
+
+  public static String getKParamWatchLearning() {
+    return smlJNI.get_sml_Names_kParamWatchLearning();
+  }
+
+  public static String getKParamWatchBacktracing() {
+    return smlJNI.get_sml_Names_kParamWatchBacktracing();
+  }
+
+  public static String getKParamWatchIndifferentSelection() {
+    return smlJNI.get_sml_Names_kParamWatchIndifferentSelection();
+  }
+
   public static String getKTrue() {
     return smlJNI.get_sml_Names_kTrue();
   }

@@ -71,7 +71,7 @@ public class MainFrame
 	/** The menus in the menu bar */
 	private FileMenu 	m_FileMenu = null ;
 	private EditMenu 	m_EditMenu = null ;
-	private RemoteMenu 	m_RemoteMenu = null ;
+	private KernelMenu 	m_RemoteMenu = null ;
 	private AgentMenu	m_AgentMenu = null ;
 	
 	/** The main document object -- represents the Soar process.  There is only one of these ever in the debugger. */
@@ -421,7 +421,7 @@ public class MainFrame
 		//jMenuBar1.add(m_AgentMenu.getJMenu()) ;
 
 		// Add the remote connection menu
-		m_RemoteMenu = RemoteMenu.createMenu(this, getDocument(), "Remote", 'R') ;
+		m_RemoteMenu = KernelMenu.createMenu(this, getDocument(), "Remote", 'R') ;
 		//jMenuBar1.add(m_RemoteMenu.getJMenu()) ;
 				
 		// Look up the name of the default window layout
