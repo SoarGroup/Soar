@@ -3,6 +3,7 @@
 #ifdef _MSC_VER
 #pragma warning(disable : 4115)
 #endif
+ 
 
 /*************************************************************************
  *
@@ -186,7 +187,7 @@ extern char *soar_news_string;
 /* ------------------------------ */
 
 typedef unsigned char byte;
-#ifndef HAVE_BOOL
+#ifndef __BOOL_DEFINED
 typedef char bool;
 #endif
 

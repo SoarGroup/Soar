@@ -7662,7 +7662,7 @@ void print_partial_match_information(rete_node * p_node, wme_trace_type wtt)
     long n;
     token *tokens, *t;
 
-    p_node_to_conditions_and_nots(p_node, NIL, NIL, &top_cond, &bottom_cond, NIL, NIL);
+   p_node_to_conditions_and_nots(p_node, NIL, NIL, &top_cond, &bottom_cond, NIL, NIL);
     n = ppmi_aux(p_node->parent, current_agent(dummy_top_node), bottom_cond, wtt, 0);
     print("\n%d complete matches.\n", n);
     if (n && (wtt != NONE_WME_TRACE)) {
