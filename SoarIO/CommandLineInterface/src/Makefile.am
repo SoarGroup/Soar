@@ -13,6 +13,7 @@ cli_GetOpt.cpp\
 cli_cd.cpp\
 cli_echo.cpp\
 cli_excise.cpp\
+cli_firingcounts.cpp\
 cli_help.cpp\
 cli_helpex.cpp\
 cli_home.cpp\
