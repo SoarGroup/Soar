@@ -6,6 +6,8 @@ import edu.umich.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.visualsoar.parser.ParseException;
 import edu.umich.visualsoar.dialogs.*;
 import edu.umich.visualsoar.misc.*;
+import edu.umich.visualsoar.util.*;
+import edu.umich.visualsoar.parser.*;                           
 
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
@@ -47,6 +49,7 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 	static protected JMenuItem exportItem = new JMenuItem("Export");
 	static protected JMenuItem importItem = new JMenuItem("Import...");
 	static protected JMenuItem checkChildrenAgainstDataMapItem = new JMenuItem("Check Children Against DataMap");
+	static protected JMenuItem generateDataMapItem = new JMenuItem("Generate DataMap Entries for this File");
 
 	static {
 		contextMenu.add(addSuboperatorItem);
@@ -172,6 +175,23 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 				OperatorWindow ow = (OperatorWindow)contextMenu.getInvoker();
 				ow.importFunc();
 			}
+		});
+		
+		contextMenu.add(generateDataMapItem);
+		generateDataMapItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae)
+            {
+                java.util.List parseErrors = new LinkedList();
+                Vector vecGenerations = new Vector();
+
+                //Generate the new entries
+				OperatorWindow ow = (OperatorWindow)contextMenu.getInvoker();
+				ow.generateDataMap(null, parseErrors, vecGenerations);
+
+                //Report the results
+                MainFrame.getMainFrame().setFeedbackListData(vecGenerations);
+
+			}//actionPerformed
 		});
 		
 		contextMenu.add(checkChildrenAgainstDataMapItem);
@@ -567,14 +587,7 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
 		System.err.println("openDataMap: This should never get called");
 	}
 
-  /**
-   * Overloaded operation
-   */
-	public void checkChildrenAgainstDataMap(SoarWorkingMemoryModel swmm) {
-		System.err.println("checkChildrenAgainstDataMap: This should never get called");
-	}
 
-	
 	/**
 	 * If the node supports this operation it should be overloaded in the subclass
 	 * if this function gets called it means that the node did not properly overload

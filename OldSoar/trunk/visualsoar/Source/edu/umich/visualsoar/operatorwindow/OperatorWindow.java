@@ -755,11 +755,11 @@ public class OperatorWindow extends JTree
 
 
     /**
-     * Given the associated Operator Node, a vector of parsed soar productions, and a list to put the errors
-     * this function will check the productions consistency across the datamap.
+     * Given the associated Operator Node, a vector of parsed soar productions,
+     * and a list to put the errors this function will check the productions
+     * consistency across the datamap.
      * @see SoarProduction
-     * @see SoarWorkingMemoryModel#checkProduction(SoarIdentifierVertex, SoarProduction)
-     */
+     * @see SoarWorkingMemoryModel#checkProduction(SoarIdentifierVertex, SoarProduction) */
     public void checkProductions(OperatorNode on,
                                  Vector productions,
                                  java.util.List errors)
@@ -978,6 +978,102 @@ public class OperatorWindow extends JTree
         vecErrors.add("No errors detected in children.");
         MainFrame.getMainFrame().setFeedbackListData(vecErrors);
     }
+
+  /**
+   * This function compares all productions in the file associated
+   * with the currently selected node to the project datamap and
+   * 'fixes' any discrepencies by adding missing entries to the
+   * datamap.  Results and errors are returned to the caller.
+   *
+   * @param opNode the operator node to geneate a datamap for.  If null is
+   *               passed in then the currently selected node will be used.
+   * @param parseErrors parse errors discovered during generation
+   * @param vecgenerations new datamap entries that were generated provided as a
+   *                       list of FeedbackListObjects for easy reporting
+   */
+	public void generateDataMap(OperatorNode opNode,
+                                java.util.List parseErrors,
+                                Vector vecGenerations)
+    {
+        if (opNode == null)
+        {
+            TreePath tp = getSelectionPath();
+            opNode = (OperatorNode)tp.getLastPathComponent();
+        }
+
+        //Parse all the productions in the file
+        Vector parsedProds = null;
+        try 
+        {
+            parsedProds = opNode.parseProductions();
+        }
+        catch(ParseException pe) 
+        {
+            String errString;
+            String parseError = pe.toString();
+            int i = parseError.lastIndexOf("line ");
+            String lineNum = parseError.substring(i + 5);
+            i = lineNum.indexOf(',');
+            lineNum = "(" + lineNum.substring(0, i) + "): ";
+            errString = opNode.getFileName() + lineNum + "Unable to generate datamap due to parse error";
+            parseErrors.add(errString);
+        }
+        catch(TokenMgrError tme) 
+        {
+            tme.printStackTrace();
+        }
+        catch(IOException ioe) 
+        {
+            ioe.printStackTrace();
+        }
+
+        //Do not continue if there were parse errors
+        if (parsedProds == null)  
+        {
+            return;
+        }
+
+        // Find the datamap that these productions should be checked against
+        OperatorNode parentNode = (OperatorNode)opNode.getParent();
+        SoarIdentifierVertex siv = parentNode.getStateIdVertex();
+        if(siv == null)
+        siv = WorkingMemory.getTopstate();
+
+        //Generate the new datamap entries
+        java.util.List generations = new LinkedList();
+        Enumeration e = parsedProds.elements();
+        while(e.hasMoreElements())
+        {
+            SoarProduction sp = (SoarProduction)e.nextElement();
+            generations.addAll(WorkingMemory.checkGenerateProduction(siv,sp,opNode));
+        }
+
+        //Verify our changes worked
+        checkProductions(parentNode, parsedProds, parseErrors);
+
+        //Generate a report that can be posted to the feedback list
+        e = new EnumerationIteratorWrapper(generations.iterator());
+        while(e.hasMoreElements()) 
+        {
+            try 
+            {
+                String errorString = e.nextElement().toString();
+                String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
+                vecGenerations.add(
+                    new FeedbackListObject(opNode,
+                                           Integer.parseInt(numberString),
+                                           errorString,
+                                           true,
+                                           true,
+                                           true));
+            }
+            catch(NumberFormatException nfe) 
+            {
+                System.out.println("OperatorWindow.generateDataMap: This should never happen");
+            }
+        }
+
+	}//generateDataMap
     
     /**
      * Opens up an existing operator hierarchy

@@ -2154,79 +2154,26 @@ public class MainFrame extends JFrame
 						
 			public void checkNodes() 
             {
-				try 
+                do 
                 {
-                    do 
+                    repCount++;
+                    errors.clear();
+                    bfe = operatorWindow.breadthFirstEnumeration();
+
+                    while(bfe.hasMoreElements()) 
                     {
-                        repCount++;
-                        errors.clear();
-                        bfe = operatorWindow.breadthFirstEnumeration();
+                        current = (OperatorNode)bfe.nextElement();
 
-                      checkingNodes: while(bfe.hasMoreElements()) 
-                      {
-                          current = (OperatorNode)bfe.nextElement();
-                          generations.clear();
-                          // If the node has a rule editor open, get the rules from the
-                          // window, otherwise, open the associated file
+                        operatorWindow.generateDataMap(current, errors, vecErrors);
 
-                          // is this how to get the rule editor?
-
-                          try 
-                          {
-                              parsedProds = current.parseProductions();
-                          }
-                          catch(ParseException pe) 
-                          {
-                              String errString;
-                              String parseError = pe.toString();
-                              int i = parseError.lastIndexOf("line ");
-                              String lineNum = parseError.substring(i + 5);
-                              i = lineNum.indexOf(',');
-                              lineNum = "(" + lineNum.substring(0, i) + "): ";
-                              errString = current.getFileName() + lineNum + "Unable to generate datamap due to parse error";
-                              errors.add(errString);
-                          }
-                          catch(TokenMgrError tme) 
-                          {
-                              tme.printStackTrace();
-                          }
-
-                          if (parsedProds!= null)  
-                          {
-							  operatorWindow.generateProductions((OperatorNode)current.getParent(), parsedProds, generations, current);
-                              operatorWindow.checkProductions((OperatorNode)current.getParent(), parsedProds, errors);
-                          }
-
-                          Enumeration e = new EnumerationIteratorWrapper(generations.iterator());
-                          while(e.hasMoreElements()) 
-                          {
-                              try 
-                              {
-                                  String errorString = e.nextElement().toString();
-                                  String numberString = errorString.substring(errorString.indexOf("(")+1,errorString.indexOf(")"));
-                                  vecErrors.add(
-                                      new FeedbackListObject(current,Integer.parseInt(numberString),errorString,true,true, true));
-                              }
-                              catch(NumberFormatException nfe) 
-                              {
-                                  System.out.println("Never happen");
-                              }
-                          }
-                          setFeedbackListData(vecErrors);
-                          value = progressBar.getValue() + 1;
-                          updateProgressBar(value);
-                          //if(errors.isEmpty())
-                          //  updateProgressBar(progressBar.getMaximum());
-                          SwingUtilities.invokeLater(update);
-                      } // while parsing operator nodes
+                        setFeedbackListData(vecErrors);
+                        value = progressBar.getValue() + 1;
+                        updateProgressBar(value);
+                        SwingUtilities.invokeLater(update);
+                    } // while parsing operator nodes
           
-                    } while(!(errors.isEmpty()) && repCount < 5);
+                } while(!(errors.isEmpty()) && repCount < 5);
 
-				}   // end of try
-				catch (IOException ioe) 
-                {
-					ioe.printStackTrace();
-				}
 
                 //Instruct all open datamap windows to display
                 //the newly generated nodes
