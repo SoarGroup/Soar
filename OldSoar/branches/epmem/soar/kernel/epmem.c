@@ -2349,18 +2349,33 @@ char *epmem_retrieve_command(Symbol *sym)
    =================================================================== */
 void increment_retrieval_count(epmem_header *h, long inc_amt)
 {
+    wme **wmes;
+    int len = 0;
+    int i;
+    tc_number tc;
     long current_count = 0;
     wme *w;
 
     //Find the (epmem ^retreival-count n) WME, save the value,
     //and remove the WME from WM
-    w = get_aug_of_id(h->epmem, "retrieval-count", NULL);
-    if ((w != NULL)
-        && (w->value->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) )
+    //%%%If I use get_aug_of_id() to do this part the agents slows 
+    //%%%way down.  WHY??
+    tc = h->epmem->id.tc_num + 1;
+    wmes = get_augs_of_id( h->epmem, tc, &len );
+    h->epmem->id.tc_num = tc - 1;
+    
+    if (wmes == NULL) return;
+    for(i = 0; i < len; i++)
     {
-        current_count = w->value->ic.value;
-        remove_input_wme(w);
+        if ( (wme_has_value(wmes[i], "retrieval-count", NULL))
+             && (wmes[i]->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) )
+        {
+            current_count = wmes[i]->value->ic.value;
+            remove_input_wme(wmes[i]);
+            break;
+        }
     }
+    free_memory(wmes, MISCELLANEOUS_MEM_USAGE);
 
     //Check for remove only
     if (inc_amt < 0)
@@ -2383,6 +2398,7 @@ void increment_retrieval_count(epmem_header *h, long inc_amt)
     w->preference = make_fake_preference_for_epmem_wme(h->state, w);
 
 }//increment_retrieval_count
+
 
 /* ===================================================================
    respond_to_command() 
