@@ -3,7 +3,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KernelSML", "KernelSML\Kern
 	ProjectSection(ProjectDependencies) = postProject
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374} = {6B2CBC5A-4A7A-46BB-9274-6C91262E9374}
 		{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36} = {161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}
-		{0F4205EE-35EA-4421-8F74-513603FF003F} = {0F4205EE-35EA-4421-8F74-513603FF003F}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConnectionSML", "ConnectionSML\ConnectionSML.vcproj", "{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
@@ -17,11 +16,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommandLineInterface", "CommandLineInterface\CommandLineInterface.vcproj", "{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0F4205EE-35EA-4421-8F74-513603FF003F} = {0F4205EE-35EA-4421-8F74-513603FF003F}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gSKI", "..\gSKI\gSKI.vcproj", "{0F4205EE-35EA-4421-8F74-513603FF003F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2} = {A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelSource", "..\SoarKernel\src\SoarKernelSource.vcproj", "{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
@@ -38,10 +32,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSML", "ClientSML\Clie
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Towers", "examples\towers\Towers.vcproj", "{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCommandLineInterface", "examples\TestCommandLineInterface\TestCommandLineInterface.vcproj", "{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -55,6 +45,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "examples\T
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "examples\TestConnectionSML\TestConnectionSML.vcproj", "{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gSKI-static", "..\gSKI\gSKI-static.vcproj", "{0F4205EE-35EA-4421-8F74-513603FF003F}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -93,12 +87,6 @@ Global
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Debug.Build.0 = Debug|Win32
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Release.ActiveCfg = Release|Win32
 		{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}.Release.Build.0 = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Ansi Release.ActiveCfg = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Ansi Release.Build.0 = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.ActiveCfg = Debug|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.Build.0 = Debug|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.ActiveCfg = Release|Win32
-		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.Build.0 = Release|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Ansi Release.ActiveCfg = Release|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Ansi Release.Build.0 = Release|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.ActiveCfg = Debug|Win32
@@ -117,12 +105,6 @@ Global
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Debug.Build.0 = Debug|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Release.ActiveCfg = Release|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Release.Build.0 = Release|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Ansi Release.ActiveCfg = Release|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Ansi Release.Build.0 = Release|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Debug.ActiveCfg = Debug|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Debug.Build.0 = Debug|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Release.ActiveCfg = Release|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Release.Build.0 = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Ansi Release.ActiveCfg = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Ansi Release.Build.0 = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.ActiveCfg = Debug|Win32
@@ -147,6 +129,12 @@ Global
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Debug.Build.0 = Debug|Win32
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Release.ActiveCfg = Release|Win32
 		{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}.Release.Build.0 = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Ansi Release.ActiveCfg = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Ansi Release.Build.0 = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.ActiveCfg = Debug|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.Build.0 = Debug|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.ActiveCfg = Release|Win32
+		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Ansi Release.ActiveCfg = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Ansi Release.Build.0 = Release|Win32
 		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
