@@ -1595,6 +1595,7 @@ int soar_ProductionFind(int argc, const char *argv[], soarResult * res)
 
     bool lhs = TRUE;
     bool rhs = FALSE;
+	bool nonzero = FALSE;
     bool show_bindings = FALSE;
     bool just_chunks = FALSE;
     bool no_chunks = FALSE;

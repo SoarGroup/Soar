@@ -1586,7 +1586,7 @@ int parse_system_stats(int argc, const char *argv[], soarResult * res)
 		else if (!strcmp("-all-productions-count", argv[2])) {
             setSoarResultResult(res, "%lu", current_agent(num_productions_of_type)[DEFAULT_PRODUCTION_TYPE]
                                 + current_agent(num_productions_of_type)[USER_PRODUCTION_TYPE]
-                                + current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE])
+                                + current_agent(num_productions_of_type)[CHUNK_PRODUCTION_TYPE]
 								+ current_agent(num_productions_of_type)[RL_PRODUCTION_TYPE]);        // SAN;
 
         } else if (!strcmp("-dc-count", argv[2])) {
