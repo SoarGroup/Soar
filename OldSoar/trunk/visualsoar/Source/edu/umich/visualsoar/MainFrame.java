@@ -1850,7 +1850,8 @@ public class MainFrame extends JFrame
                 }
                 catch(TokenMgrError tme) 
                 {
-                    tme.printStackTrace();
+                    vecErrors.add(opNode.parseTokenMgrError(tme));
+                    return true;
                 }
 
                 return false;

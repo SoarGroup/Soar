@@ -336,7 +336,6 @@ public class SoarDocument extends DefaultStyledDocument
             case SoarParserConstants.PLUS:
             case SoarParserConstants.QMARK:
             case SoarParserConstants.TILDE:
-            case SoarParserConstants.COLON:
             case SoarParserConstants.LSQBRACET:
             case SoarParserConstants.RSQBRACET:
             case SoarParserConstants.EXPONENT:

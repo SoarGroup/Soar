@@ -269,6 +269,35 @@ public abstract class OperatorNode extends TreeNode implements java.io.Serializa
         return new FeedbackListObject(this, lineNum, errString);
     }
 
+    /**
+     * Given a lexical error discovered in this node, this function converts
+     * it into a FeedbackListObject that can be placed in the feedback window.
+     * @param tme the TokeMgrError to parse
+     * @return the generated FeedbackListObject
+     */
+    public FeedbackListObject parseTokenMgrError(TokenMgrError tme)
+    {
+        String parseError = tme.toString();
+
+        //Extract the line number
+        int i = parseError.lastIndexOf("line ");
+        String lineNumStr = parseError.substring(i + 5);
+        i = lineNumStr.indexOf(',');
+        int lineNum = Integer.parseInt(lineNumStr.substring(0, i));
+        lineNumStr = "(" + lineNumStr.substring(0, i) + "): ";
+
+        //Extract the offending characters
+        i = parseError.lastIndexOf("Encountered: \"");
+        String tokenString = parseError.substring(i + 14);
+        i = tokenString.indexOf('\"');
+        tokenString = tokenString.substring(0, i);
+
+        //Build the full error string
+        String errString = getFileName() + lineNumStr + parseError;
+
+        return new FeedbackListObject(this, lineNum, errString, tokenString);
+    }
+
     
 
 

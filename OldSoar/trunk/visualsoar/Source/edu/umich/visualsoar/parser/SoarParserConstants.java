@@ -30,10 +30,10 @@ public interface SoarParserConstants {
   int RBRACE = 36;
   int RPAREN = 37;
   int TILDE = 38;
-  int COLON = 39;
-  int LSQBRACET = 40;
-  int RSQBRACET = 41;
-  int QUOTE = 42;
+  int LSQBRACET = 39;
+  int RSQBRACET = 40;
+  int QUOTE = 41;
+  int PRODTYPE = 42;
   int VARIABLE = 43;
   int INTEGER_CONST = 44;
   int SYMBOLIC_CONST = 45;
@@ -84,10 +84,10 @@ public interface SoarParserConstants {
     "\"}\"",
     "\")\"",
     "\"~\"",
-    "\":\"",
     "\"[\"",
     "\"]\"",
     "\"\\\"\"",
+    "<PRODTYPE>",
     "<VARIABLE>",
     "<INTEGER_CONST>",
     "<SYMBOLIC_CONST>",
