@@ -16,7 +16,7 @@ public class SoarDocument extends DefaultStyledDocument
     AbstractElement root = (AbstractElement)getDefaultRootElement();
     SyntaxColor[]   colorTable;
     Preferences     prefs = Preferences.getInstance();
-    int             braceDepth = 0;  //Keep track nested braces (i.e., '{' & '}')
+    boolean         inRHS = false; // Are we in the RHS of a production?
     
     public SoarDocument()
     {
@@ -192,6 +192,7 @@ public class SoarDocument extends DefaultStyledDocument
                 begin = startOffset + currToken.beginColumn;
                 length = 3;
                 colorRange(begin, length, currToken.kind);
+                inRHS = true;
                 break;
                 
             case SoarParserConstants.SP :
@@ -297,6 +298,7 @@ public class SoarDocument extends DefaultStyledDocument
                 {
                     currToken.kind = SoarParserConstants.SP;
                     colorRange(begin, 2, currToken.kind);
+                    inRHS = false;
                 }
                 else
                 {
@@ -305,20 +307,16 @@ public class SoarDocument extends DefaultStyledDocument
                 }
                 break;
 
-            case SoarParserConstants.LBRACE :
-                braceDepth++;
-                break;
-
             case SoarParserConstants.RBRACE :
-                braceDepth--;
-                if (braceDepth == 0)
+                if (inRHS)
                 {
-                    //The last closing brace indicates we've finished
+                    //A closing brace in the RHS indicates we've finished
                     //a Soar production and should be back in the
                     //DEFAULT lexical state.  The parser does not do
                     //this for us because we're using it strictly as
                     //a tokenizer right now.
                     mgr.SwitchTo(SoarParserConstants.DEFAULT);
+                    inRHS = false;
                 }
                 break;
                 
@@ -373,7 +371,6 @@ public class SoarDocument extends DefaultStyledDocument
             
             currLineNum = currToken.beginLine;
             currElem = root.getElement(currLineNum);
-            braceDepth = 0;
                             
             while (currToken.kind != SoarParserConstants.EOF)
             {
@@ -580,7 +577,6 @@ public class SoarDocument extends DefaultStyledDocument
         SoarParserTokenManager  mgr = guessLexicalState(r, currToken);
         
         currLineNum = startLineNum + currToken.beginLine;
-        braceDepth = 0;
                    
         // init all the text to black
         //colorRange(startPos, totalLength, SoarParserConstants.DEFAULT);
