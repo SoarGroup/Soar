@@ -1,3 +1,4 @@
+#include "soarkernel.h"
 #include "soar_ecore_utils.h"
 
 extern Symbol *make_symbol_for_current_lexeme (void);

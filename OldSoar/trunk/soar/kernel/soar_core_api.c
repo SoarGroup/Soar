@@ -40,9 +40,9 @@
  *
  */
 
+#include "soarkernel.h"
 #include <stdlib.h>
 
-#include "soarkernel.h"
 #include "soar_core_api.h"
 #include "soar_core_utils.h"
 #include "scheduler.h"

@@ -47,8 +47,8 @@
              O Support calculation routines.
    ========================================================================= */
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 
 extern list *collect_root_variables(condition *, tc_number, bool);
 

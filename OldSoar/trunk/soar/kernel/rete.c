@@ -111,8 +111,8 @@
 
 ====================================================================== */
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 #include "rete.h"
 
 /* ----------- basic functionality switches ----------- */

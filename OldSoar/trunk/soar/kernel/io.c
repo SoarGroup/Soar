@@ -64,9 +64,9 @@
    See comments in soarkernel.h for more information.
    ================================================================== */
  
+#include "soarkernel.h"
 #include <ctype.h>
 #include <errno.h>
-#include "soarkernel.h"
 #include "soarapiUtils.h"
 
 #ifdef _AIX          /* excludeFromBuildInfo */

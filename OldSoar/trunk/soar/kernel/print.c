@@ -47,9 +47,9 @@
                  Printing Utility Routines for Soar 6
    ================================================================= */
 
+#include "soarkernel.h"
 #include <stdio.h>
 #include <ctype.h>
-#include "soarkernel.h"
 
 #ifdef USE_STDARGS
 #include <stdarg.h>

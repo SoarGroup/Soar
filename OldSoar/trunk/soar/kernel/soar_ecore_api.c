@@ -39,9 +39,9 @@
  *
  */
 
+#include "soarkernel.h"
 #include "soar_ecore_api.h"
 #include "soar_ecore_utils.h"
-#include "soarkernel.h"
 #include "rete.h"
 #include "sysdep.h"
 

@@ -8,12 +8,11 @@ are modified versions of the routines taken from TacAir-Soar.
 *************************************************************/
 
 
+#include "soarkernel.h"
 #include <math.h>
 #include <time.h>
 #include <ctype.h>
 #include <string.h>
-
-#include "soarkernel.h"
 
 #include "rhsfun.h"
 #include "rhsfun_examples.h"

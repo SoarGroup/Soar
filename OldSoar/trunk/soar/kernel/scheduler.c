@@ -40,8 +40,8 @@
  */
 
 
-#include "scheduler.h"
 #include "soarkernel.h"
+#include "scheduler.h"
 
 
 void run_all_agents (long go_number,

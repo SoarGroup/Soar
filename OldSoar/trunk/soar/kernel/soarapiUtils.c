@@ -41,6 +41,7 @@
  */
 
 
+#include "soarkernel.h" 
 #include <ctype.h>
 #include <errno.h>
 
@@ -51,7 +52,6 @@
 
 #include "soarapi.h"
 #include "soarapiUtils.h"
-#include "soarkernel.h" 
 
 #define MAXPATHLEN 1024
 

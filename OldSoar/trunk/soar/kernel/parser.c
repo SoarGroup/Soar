@@ -45,8 +45,8 @@
  */
 
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 
 /* =================================================================
                    Placeholder (Dummy) Variables

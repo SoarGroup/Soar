@@ -45,8 +45,8 @@
  */
 
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 
 /* comment out the following line to supress compile-time o-support
    calculations */

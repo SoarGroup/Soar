@@ -1,3 +1,4 @@
+#include "soarkernel.h"
 #include "debugutil.h"
 
 extern void detailed_print_wme (wme *w );

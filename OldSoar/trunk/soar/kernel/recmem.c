@@ -51,8 +51,8 @@
  */
 
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 
 #ifdef __hpux
 #ifndef _INCLUDE_POSIX_SOURCE

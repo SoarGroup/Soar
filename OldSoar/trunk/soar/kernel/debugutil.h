@@ -1,4 +1,3 @@
-#include "soarkernel.h"
 
 
 extern void examine_memory_pool( memory_pool *p );

@@ -1,3 +1,4 @@
+#include "soarkernel.h"
 #include "soarapi_datatypes.h"
 
 #ifdef USE_STDARGS

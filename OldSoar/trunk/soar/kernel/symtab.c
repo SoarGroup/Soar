@@ -53,8 +53,8 @@
 /* Uncomment the following line to get symbol debugging printouts */
 /* #define DEBUG_SYMBOLS */
 
-#include <ctype.h>
 #include "soarkernel.h"
+#include <ctype.h>
 
 /* -------------------------------------------------------------------
                            Hash Functions
