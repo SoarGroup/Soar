@@ -540,6 +540,22 @@ namespace gSKI {
       virtual void SetMaxElaborations(int maxElabs, Error* err = 0) = 0;
 
       /**
+         @brief Returns the current max-nil-output-cycles setting for the agent
+
+         @param err Receives error information if non-null
+         @returns The max-nil-output-cycles value
+      */
+      virtual int GetMaxNilOutputCycles(Error* err = 0) = 0;
+
+      /**
+         @brief Set the current max-nil-output-cycles setting for the agent
+
+         @param maxNils The new value
+         @param err Receives error information if non-null
+      */
+      virtual void SetMaxNilOutputCycles(int maxNils, Error* err = 0) = 0;
+
+      /**
        * @brief An accessor method for querying the current "Wait on state
        *        no change" setting.
        *

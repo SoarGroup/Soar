@@ -92,6 +92,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIMatches]				= &cli::CommandLineInterface::ParseMatches;
 	m_CommandMap[Constants::kCLIMaxChunks]				= &cli::CommandLineInterface::ParseMaxChunks;
 	m_CommandMap[Constants::kCLIMaxElaborations]		= &cli::CommandLineInterface::ParseMaxElaborations;
+	m_CommandMap[Constants::kCLIMaxNilOutputCycles]		= &cli::CommandLineInterface::ParseMaxNilOutputCycles;
 	m_CommandMap[Constants::kCLIMemories]				= &cli::CommandLineInterface::ParseMemories;
 	m_CommandMap[Constants::kCLIMultiAttributes]		= &cli::CommandLineInterface::ParseMultiAttributes;
 	m_CommandMap[Constants::kCLINumericIndifferentMode]	= &cli::CommandLineInterface::ParseNumericIndifferentMode;

@@ -776,6 +776,17 @@ namespace gSKI
       m_agent->sysparams[MAX_ELABORATIONS_SYSPARAM] = maxElabs;
    }
 
+   int Agent::GetMaxNilOutputCycles(Error* err /*= 0*/)
+   {
+      ClearError(err);
+      return m_agent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM];
+   }
+   void Agent::SetMaxNilOutputCycles(int maxNils, Error* err /*= 0*/)
+   {
+      ClearError(err);
+      m_agent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM] = maxNils;
+   }
+
    bool Agent::IsWaitingOnStateNoChange(Error* err)
    {
       ClearError(err);
