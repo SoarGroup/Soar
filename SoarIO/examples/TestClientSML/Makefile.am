@@ -9,7 +9,6 @@ $(BASEDIR_PREFIX)ConnectionSML/src/libConnectionSML.la \
 $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la \
 $(BASEDIR_PREFIX)../gSKI/src/libgSKI.la\
 $(BASEDIR_PREFIX)../SoarKernel/src/libSoarKernel.la
-#$(BASEDIR_PREFIX)../gSKI/lib/libgSKI.so
 INCLUDES = \
 -I$(BASEDIR_PREFIX)ClientSML/include \
 -I$(BASEDIR_PREFIX)ConnectionSML/include \
