@@ -334,87 +334,87 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 // Main program
 int main(int argc, char** argv)
 {
-	//_crtBreakAlloc = 58;
-
-	if (argc > 2) {
-		cout << "Too many args." << endl;
-		exit(1);
-	}
-
-	string scriptFile;
-	if (argc > 1) {
-		scriptFile = "source ";
-		scriptFile += argv[1];
-		scriptFile += '\n';
-	}
-	string::iterator scriptIter = scriptFile.begin();
-
-	// Create an embedded connection to the kernel
-	// Passing false here so we don't execute Soar in our thread
-	// which means we can handle incoming remote connections automatically.
-	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("KernelSML") ;
-	assert(pKernel);
-
-	// Create agent
-	// NOTE: We don't delete the agent pointer.  It's owned by the kernel
-	sml::Agent* pAgent;
-	pAgent = pKernel->CreateAgent(AGENT_NAME) ;
-	assert(pAgent);
-
-	assert(!g_pInputQueue);
-	g_pInputQueue = new queue<char>;
-
-	// Create command processor
-	assert(!g_pCommandProcessor);	// singleton
-	g_pCommandProcessor = new CommandProcessor(pKernel);
-
-	// Set up synchronization stuff
-	g_pInputQueueMutex = new soar_thread::Mutex();
-	g_pInputQueueWriteEvent = new soar_thread::Event();
-	g_pWaitForInput = new soar_thread::Event();
-
-	cout << "Use the meta-commands 'raw' and 'structured' to switch output style" << endl;
-
-	// Register for necessary callbacks
-	int callbackID1 = pAgent->RegisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, RunCallbackHandler, 0);
-	int callbackID2 = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
-
-	// Do script if any
-	bool good = true;
-	if (scriptFile.size()) {
-		while (good && (scriptIter != scriptFile.end())) {
-			good = g_pCommandProcessor->ProcessCharacter(*scriptIter);
-			++scriptIter;
+	//_crtBreakAlloc = 71;
+	{ // create local scope to prevent scriptFile from being reported as a memory leak (occurs when script passed in as arg)
+		if (argc > 2) {
+			cout << "Too many args." << endl;
+			exit(1);
 		}
-	}
 
-	if (good) {
-		// Create and start input thread
-		g_pInputThread = new InputThread();
-		g_pInputThread->Start();
+		string scriptFile;
+		if (argc > 1) {
+			scriptFile = "source ";
+			scriptFile += argv[1];
+			scriptFile += '\n';
+		}
+		string::iterator scriptIter = scriptFile.begin();
 
-		// Main command loop
-		g_pCommandProcessor->DisplayPrompt(true);
-		while (g_pCommandProcessor->ProcessCharacter(getKey(true))) {}
-	}
+		// Create an embedded connection to the kernel
+		// Passing false here so we don't execute Soar in our thread
+		// which means we can handle incoming remote connections automatically.
+		sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("KernelSML") ;
+		assert(pKernel);
 
-	pAgent->UnregisterForPrintEvent(callbackID2);
-	pAgent->UnregisterForRunEvent(callbackID1);
+		// Create agent
+		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
+		sml::Agent* pAgent;
+		pAgent = pKernel->CreateAgent(AGENT_NAME) ;
+		assert(pAgent);
 
-	// Don't delete agent, owned by kernel
-	delete pKernel ;
+		assert(!g_pInputQueue);
+		g_pInputQueue = new queue<char>;
 
-	// Delete input thread
-	delete g_pInputThread;
+		// Create command processor
+		assert(!g_pCommandProcessor);	// singleton
+		g_pCommandProcessor = new CommandProcessor(pKernel);
 
-	// Delete synchronization stuff
-	delete g_pWaitForInput;
-	delete g_pInputQueueWriteEvent;
-	delete g_pInputQueueMutex;
+		// Set up synchronization stuff
+		g_pInputQueueMutex = new soar_thread::Mutex();
+		g_pInputQueueWriteEvent = new soar_thread::Event();
+		g_pWaitForInput = new soar_thread::Event();
 
-	delete g_pCommandProcessor;
-	delete g_pInputQueue;
+		cout << "Use the meta-commands 'raw' and 'structured' to switch output style" << endl;
 
+		// Register for necessary callbacks
+		int callbackID1 = pAgent->RegisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, RunCallbackHandler, 0);
+		int callbackID2 = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
+
+		// Do script if any
+		bool good = true;
+		if (scriptFile.size()) {
+			while (good && (scriptIter != scriptFile.end())) {
+				good = g_pCommandProcessor->ProcessCharacter(*scriptIter);
+				++scriptIter;
+			}
+		}
+
+		if (good) {
+			// Create and start input thread
+			g_pInputThread = new InputThread();
+			g_pInputThread->Start();
+
+			// Main command loop
+			g_pCommandProcessor->DisplayPrompt(true);
+			while (g_pCommandProcessor->ProcessCharacter(getKey(true))) {}
+		}
+
+		pAgent->UnregisterForPrintEvent(callbackID2);
+		pAgent->UnregisterForRunEvent(callbackID1);
+
+		// Don't delete agent, owned by kernel
+		delete pKernel ;
+
+		// Delete input thread
+		delete g_pInputThread;
+
+		// Delete synchronization stuff
+		delete g_pWaitForInput;
+		delete g_pInputQueueWriteEvent;
+		delete g_pInputQueueMutex;
+
+		delete g_pCommandProcessor;
+		delete g_pInputQueue;
+	} // end local scope
 #ifdef _MSC_VER
 //	A deliberate memory leak which I can use to test the memory checking code is working.
 //	char* pTest = new char[10] ;
