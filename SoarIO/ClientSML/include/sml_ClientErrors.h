@@ -51,6 +51,11 @@ public:
 	* @brief Returns a description of the error that occurred in the last call.
 	*************************************************************/
 	virtual char const* GetLastErrorDescription() ;
+	
+	/*************************************************************
+	* @brief Classes with virtual functions need a virtual destructor (gcc warning).
+	*************************************************************/
+	virtual ~ClientErrors() {}	
 } ;
 
 } ;	// End of namespace
