@@ -39,7 +39,7 @@ import helpers.*;
 * of those commands is stored.
 * 
 ********************************************************************************************/
-public class ComboCommandView extends AbstractView
+public abstract class BaseCommandView extends AbstractView
 {
 	/** Everything lives inside this container so we can control the layout */
 	private Composite m_Container ;
@@ -80,7 +80,7 @@ public class ComboCommandView extends AbstractView
 		
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
-	public ComboCommandView()
+	public BaseCommandView()
 	{
 	}
 
@@ -295,9 +295,15 @@ public class ComboCommandView extends AbstractView
 	
 	private void makeComboBoxMatchHistory()
 	{
+		// Changing the list of items clears the text entry field
+		// which we may not wish to do, so we'll keep it and manually
+		// reset it.
+		String text = m_CommandCombo.getText() ;
+
 		String[] history = m_CommandHistory.getHistory() ;
+		this.m_CommandCombo.setItems(history) ;	
 		
-		this.m_CommandCombo.setItems(history) ;		
+		m_CommandCombo.setText(text) ;
 	}
 	
 	private void commandEntered(String command, boolean updateHistory)
@@ -355,17 +361,6 @@ public class ComboCommandView extends AbstractView
 		
 		return element ;
 	}
-
-	/************************************************************************
-	* 
-	* Create an instance of the class.  It does not have to be fully initialized
-	* (it's the caller's responsibility to finish the initilization).
-	* 
-	*************************************************************************/
-	public static ComboCommandView createInstance()
-	{
-		return new ComboCommandView() ;
-	}
 	
 	/************************************************************************
 	* 
@@ -398,6 +393,8 @@ public class ComboCommandView extends AbstractView
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 	{
 		// TEMPTEMP: Removed for now - buggy (getting multiple events from a simple "run 1")
+		// Turns out gSKI is currently generating one of these events per phase if we run with "run 1" rather than "run --self 1".  Lovely.
+		// Have to wait to fix it in gSKI.
 		if (false && this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUNNING.swigValue())
 		{
 			System.out.println("Received run event") ;
@@ -486,26 +483,7 @@ public class ComboCommandView extends AbstractView
             }
          }) ;
 	}
-/*
-	private void setText(final String text)
-	{
-		// If Soar is running in the UI thread we can make
-		// the update directly.
-		if (!Document.kDocInOwnThread)
-		{
-			m_Text.setText(text) ;
-			return ;
-		}
 
-		// Have to make update in the UI thread.
-		// Callback comes in the document thread.
-        Display.getDefault().asyncExec(new Runnable() {
-            public void run() {
-            	m_Text.setText(text) ;
-            }
-         }) ;
-	}
-*/
 	private String getCommandText()
 	{
 		if (!Document.kDocInOwnThread)
@@ -527,10 +505,7 @@ public class ComboCommandView extends AbstractView
 	{
 		if (m_Text.isDisposed())
 		{
-			if (eventID == smlPrintEventId.smlEVENT_PRINT.swigValue())
-				System.out.println("Naughty -- we're still registered for the print event although our window has been closed: agent " + agent.GetAgentName()) ;
-			else
-				System.out.println("Naughty -- got another print event although our window has been closed: agent " + agent.GetAgentName()) ;
+			System.out.println("Naughty -- we're still registered for the print event although our window has been closed: agent " + agent.GetAgentName()) ;
 			return ;
 		}
 		
@@ -554,13 +529,11 @@ public class ComboCommandView extends AbstractView
 		if (agent == null)
 			return ;
 	
-		System.out.println("Unregister events for " + agent.GetAgentName()) ;
-		
 		boolean ok = agent.UnregisterForRunEvent(m_StopCallback) ;
 
 		if (m_ShowTraceOutput)
 		{
-			System.out.println("Unregister print event for " + agent.GetAgentName()) ;
+			//System.out.println("Unregister print event for " + agent.GetAgentName()) ;
 			ok = agent.UnregisterForPrintEvent(m_PrintCallback) && ok ;
 		}
 		

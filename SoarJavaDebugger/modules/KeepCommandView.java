@@ -16,14 +16,15 @@ import doc.* ;
 
 /********************************************************************************************
 * 
-* This version of the ComboCommandWindow does not erase the output window after each command,
+* This version of the BaseCommandView does not erase the output window after each command,
 * but instead keeps a full trace.
 * 
 ********************************************************************************************/
-public class ComboCommandViewKeep extends ComboCommandView
+public class KeepCommandView extends BaseCommandView
 {
-	public ComboCommandViewKeep()
+	public KeepCommandView()
 	{
+		m_ClearComboEachCommand = false ;
 		m_ClearEachCommand = false ;
 		m_UpdateOnStop = false ;
 	}
