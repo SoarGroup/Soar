@@ -81,61 +81,16 @@ extern "C"
 */
 #ifdef __hpux 
 #define getrusage(a, b) syscall(SYS_GETRUSAGE, a, b)
-#endif
+#endif /* __hpux */ 
 
-#ifdef USE_MACROS
-#define getwd(arg) getcwd(arg, (size_t) 9999)
-#else
-
-inline char * getwd(char * arg)
-{
-#ifdef WIN32
-	return _getcwd(arg, (size_t) 9999);
-#else
-        return getcwd(arg, (size_t) 9999);
-#endif
-}
-
-#endif /* USE_MACROS */
-
-#endif /* __hpux */
-
-#if defined(WIN32)
-#include <direct.h>
-
-#ifdef USE_MACROS
-#define getwd(arg) _getcwd(arg, (size_t) 9999)
-#else
-
-inline char * getwd(char * arg)
-{
-	return _getcwd(arg, (size_t) 9999);
-}
-
-#endif /* USE_MACROS */
-
-#endif /* WIN32 */
-
-#if defined(MACINTOSH)
-
-#ifdef USE_MACROS
-#define getwd(arg) getcwd(arg, (size_t) 9999)
-#else
-
-inline char * getwd(char * arg)
-{
-	return getcwd(arg, (size_t) 9999);
-}
-
-#endif /* USE_MACROS */
-
-#endif /* MACINTOSH */
+#endif /* if defined(__hpux) || defined(UNIX) */
 
 typedef char Bool;
 typedef struct agent_struct agent;
 typedef struct kernel_struct Kernel;
 
 #ifdef WIN32
+#include <direct.h>
 typedef struct _iobuf FILE;
 #endif
 
