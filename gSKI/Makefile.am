@@ -1,0 +1,3 @@
+AUTOMAKE_OPTIONS = gnu
+SUBDIRS = src
+export CUSTOM_CXXFLAGS = -Wall
