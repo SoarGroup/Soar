@@ -31,6 +31,7 @@ namespace gSKI {
 }
 namespace sml {
 	class ElementXML;
+	class KernelSML;
 }
 
 namespace cli {
@@ -66,7 +67,7 @@ public:
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
 	*************************************************************/
-	bool DoCommand(gSKI::IAgent* pAgent, gSKI::IKernel* pKernel, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
+	bool DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
 
 	// Template for new commands:
 	///*************************************************************
@@ -294,7 +295,13 @@ protected:
 		CommandLineInterface*	m_pCLI;	// pointer to command line interface
 	};
 
-	friend class PrintHandler; // Allows calling of AppendToResult
+	friend class PrintHandler;	// Allows calling of AppendToResult
+	friend class sml::KernelSML;		// Allows calling of SetKernel
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	void SetKernel(gSKI::IKernel* pKernel);
 
 	/*************************************************************
 	* @brief Currently used as an output hack, the print handler calls 

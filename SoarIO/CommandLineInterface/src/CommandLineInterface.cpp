@@ -1,3 +1,10 @@
+/////////////////////////////////////////////////////////////////
+// CommandLineInterface class
+//
+// Author: Jonathan Voigt
+// Date  : Sept 2004
+//
+/////////////////////////////////////////////////////////////////
 #include "commandLineInterface.h"
 
 #include <string>
@@ -6,11 +13,16 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#ifdef WIN32
 #include <windows.h>
 #include <winbase.h>
+#include <direct.h>
+#endif
 
+// Not the real getopt, as that one has crazy side effects with windows libraries
 #include "getopt.h"
 
+// gSKI includes
 #include "gSKI_Structures.h"
 #include "IgSKI_ProductionManager.h"
 #include "IgSKI_Agent.h"
@@ -18,6 +30,7 @@
 #include "IgSKI_Kernel.h"
 #include "IgSKI_DoNotTouch.h"
 
+// SML includes
 #include "sml_ElementXML.h"
 #include "sml_TagResult.h"
 #include "sml_TagError.h"
@@ -25,30 +38,28 @@
 using namespace std;
 using namespace cli;
 
-#include <direct.h>
-
 //  ____ _     ___ ____                _              _
 // / ___| |   |_ _/ ___|___  _ __  ___| |_ __ _ _ __ | |_ ___
 //| |   | |    | | |   / _ \| '_ \/ __| __/ _` | '_ \| __/ __|
 //| |___| |___ | | |__| (_) | | | \__ \ || (_| | | | | |_\__ \
 // \____|_____|___\____\___/|_| |_|___/\__\__,_|_| |_|\__|___/
 //
-char const* CommandLineInterface::CLIConstants::kCLIAddWME	= "add-wme";
-char const* CommandLineInterface::CLIConstants::kCLICD		= "cd";
-char const* CommandLineInterface::CLIConstants::kCLIDir		= "ls";
+char const* CommandLineInterface::CLIConstants::kCLIAddWME		= "add-wme";
+char const* CommandLineInterface::CLIConstants::kCLICD			= "cd";			// alias for ls
+char const* CommandLineInterface::CLIConstants::kCLIDir			= "ls";
 char const* CommandLineInterface::CLIConstants::kCLIEcho		= "echo";
-char const* CommandLineInterface::CLIConstants::kCLIExcise	= "excise";
-char const* CommandLineInterface::CLIConstants::kCLIExit		= "exit";
+char const* CommandLineInterface::CLIConstants::kCLIExcise		= "excise";
+char const* CommandLineInterface::CLIConstants::kCLIExit		= "exit";		// alias for quit
 char const* CommandLineInterface::CLIConstants::kCLIInitSoar	= "init-soar";
 char const* CommandLineInterface::CLIConstants::kCLILearn		= "learn";
-char const* CommandLineInterface::CLIConstants::kCLILS		= "ls";
+char const* CommandLineInterface::CLIConstants::kCLILS			= "ls";
 char const* CommandLineInterface::CLIConstants::kCLINewAgent	= "new-agent";
 char const* CommandLineInterface::CLIConstants::kCLIPrint		= "print";
-char const* CommandLineInterface::CLIConstants::kCLIPWD		= "pwd";
+char const* CommandLineInterface::CLIConstants::kCLIPWD			= "pwd";
 char const* CommandLineInterface::CLIConstants::kCLIQuit		= "quit";
-char const* CommandLineInterface::CLIConstants::kCLIRun		= "run";
-char const* CommandLineInterface::CLIConstants::kCLISource	= "source";
-char const* CommandLineInterface::CLIConstants::kCLISP		= "sp";
+char const* CommandLineInterface::CLIConstants::kCLIRun			= "run";
+char const* CommandLineInterface::CLIConstants::kCLISource		= "source";
+char const* CommandLineInterface::CLIConstants::kCLISP			= "sp";
 char const* CommandLineInterface::CLIConstants::kCLIStopSoar	= "stop-soar";
 char const* CommandLineInterface::CLIConstants::kCLIWatch		= "watch";
 char const* CommandLineInterface::CLIConstants::kCLIWatchWMEs	= "watch-wmes";
@@ -61,19 +72,19 @@ char const* CommandLineInterface::CLIConstants::kCLIWatchWMEs	= "watch-wmes";
 //                 |___/
 char const* CommandLineInterface::CLIConstants::kCLIAddWMEUsage		= "Usage:\tadd-wme";
 char const* CommandLineInterface::CLIConstants::kCLICDUsage			= "Usage:\tcd [directory]";
-char const* CommandLineInterface::CLIConstants::kCLIEchoUsage			= "Usage:\techo [string]";
+char const* CommandLineInterface::CLIConstants::kCLIEchoUsage		= "Usage:\techo [string]";
 char const* CommandLineInterface::CLIConstants::kCLIExciseUsage		= "Usage:\texcise production_name\n\texcise -[acdtu]";
-char const* CommandLineInterface::CLIConstants::kCLIInitSoarUsage		= "Usage:\tinit-soar";
+char const* CommandLineInterface::CLIConstants::kCLIInitSoarUsage	= "Usage:\tinit-soar";
 char const* CommandLineInterface::CLIConstants::kCLILearnUsage		= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
 char const* CommandLineInterface::CLIConstants::kCLILSUsage			= "Usage:\tls";
-char const* CommandLineInterface::CLIConstants::kCLINewAgentUsage		= "Usage:\tnew-agent [agent_name]";
+char const* CommandLineInterface::CLIConstants::kCLINewAgentUsage	= "Usage:\tnew-agent [agent_name]";
 char const* CommandLineInterface::CLIConstants::kCLIPrintUsage		= "Usage:\tprint [-fFin] production_name\n\tprint -[a|c|D|j|u][fFin]\n\tprint [-i] \
 [-d <depth>] identifier|timetag|pattern\n\tprint -s[oS]";
-char const* CommandLineInterface::CLIConstants::kCLIPWDUsage			= "Usage:\tpwd";
-char const* CommandLineInterface::CLIConstants::kCLIRunUsage			= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
+char const* CommandLineInterface::CLIConstants::kCLIPWDUsage		= "Usage:\tpwd";
+char const* CommandLineInterface::CLIConstants::kCLIRunUsage		= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
 char const* CommandLineInterface::CLIConstants::kCLISourceUsage		= "Usage:\tsource filename";
 char const* CommandLineInterface::CLIConstants::kCLISPUsage			= "Usage:\tsp { production }";
-char const* CommandLineInterface::CLIConstants::kCLIStopSoarUsage		= "Usage:\tstop-soar [-s] [reason_string]";
+char const* CommandLineInterface::CLIConstants::kCLIStopSoarUsage	= "Usage:\tstop-soar [-s] [reason_string]";
 char const* CommandLineInterface::CLIConstants::kCLIWatchUsage		= "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
 [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>] [-p <switch>] \
 [-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W <detail>]";
@@ -86,14 +97,22 @@ char const* CommandLineInterface::CLIConstants::kCLIWatchWMEsUsage	= "Usage:\twa
 // \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|_____|_|_| |_|\___|___|_| |_|\__\___|_|  |_|  \__,_|\___\___|
 //
 CommandLineInterface::CommandLineInterface() {
+
+	// Map command names to processing function pointers
 	BuildCommandMap();
 
+	// Store current working directory as 'home' dir
 	char buf[512];
 	getcwd(buf, 512);
 	m_HomeDirectory = buf;
 
+	// Give print handler a reference to us
 	m_PrintHandler.SetCLI(this);
+
+	// Initialize other members
 	m_QuitCalled = false;
+	m_pKernel = 0;
+	m_pAgent = 0;
 }
 
 // ____         ____                                          _
@@ -102,19 +121,19 @@ CommandLineInterface::CommandLineInterface() {
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
 //
-bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, gSKI::IKernel* pKernel, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError) {
+bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError) {
 
 	// Save the pointers
-	m_pKernel = pKernel;
 	m_pAgent = pAgent;
 	m_pError = pError;
 
+	// Process the command
 	bool ret = DoCommandInternal(pCommandLine);
 
+	// Marshall the result text and return
 	sml::TagResult* pTag = new sml::TagResult() ;
 	pTag->SetCharacterData(m_Result.c_str()) ;
 	pResponse->AddChild(pTag) ;
-
 	return ret;
 }
 
@@ -128,60 +147,62 @@ bool CommandLineInterface::DoCommandInternal(const char* commandLine) {
 
 	vector<string> argumentVector;
 
-	// clear the result
+	// Clear the result
 	m_Result.clear();
 
-	// parse command:
+	// Parse command:
 	int argc = Tokenize(commandLine, argumentVector);
 	if (!argc) {
-		// nothing on the command line, so consider it processed OK
-		return true;
+		return true;	// Nothing on the command line, so consider it processed OK
 	} else if (argc == -1) {
-		// parsing failed, error in result
-		return false;
+		return false;	// Parsing failed, error in result
 	}
 
-	// marshall arg{c/v}:
+	// Marshall arg{c/v} for getopt:
+	// TODO: since we're not using gnu getopt anymore, we should lose
+	// this step of using char* and just stick to the vector
 	char** argv = new char*[argc + 1]; // leave space for extra null
 	int arglen;
 
-	// for each arg
+	// For each arg
 	for (int i = 0; i < argc; ++i) {
-		// save its length
+		// Save its length
 		arglen = argumentVector[i].length();
 
-		// leave space for null
+		// Leave space for null
 		argv[i] = new char[ arglen + 1 ];
 
-		// copy the string
+		// Copy the string
 		strncpy(argv[i], argumentVector[i].data(), arglen);
 
-		// set final index to null
+		// Set final index to null
 		argv[i][ arglen ] = 0;
 	}
-	// set final index to null
+	// Set final index to null
 	argv[argc] = 0;
 
-	// process command:
+	// Process command:
 	// TODO: shouldn't this be a const passing since we don't want processCommand to mess with it?
 	CommandFunction pFunction = m_CommandMap[argv[0]];
 
+	// Is the command implemented
 	if (!pFunction) {
-		// command not found or implemented
 		m_Result += "Command '";
 		m_Result += argv[0];
 		m_Result += "' not found or implemented.";
 		return false;
 	}
-
+	
+	// Make the call
 	bool ret = (this->*pFunction)(argc, argv);
 
-	// free memory
+	// Free memory from argv
 	for (int j = 0; j < argc; ++j) {
 		delete [] argv[j];
 	}
 	delete [] argv;
 
+	// Return what the Do function returned
 	return ret;
 }
 
@@ -201,41 +222,42 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 
 	for (;;) {
 
-		// is there anything to work with?
+		// Is there anything to work with?
 		if(cmdline.empty()) {
 			break;
 		}
 
-		// remove leading whitespace
+		// Remove leading whitespace
 		iter = cmdline.begin();
 		while (isspace(*iter)) {
 			cmdline.erase(iter);
 
 			if (!cmdline.length()) {
-				//nothing but space left
+				//Nothing but space left
 				break;
 			}
-
+			
+			// Next character
 			iter = cmdline.begin();
 		}
 
-		// was it actually trailing whitespace?
+		// Was it actually trailing whitespace?
 		if (!cmdline.length()) {
-			// nothing left to do
+			// Nothing left to do
 			break;
 		}
 
-		// we have an argument
+		// We have an argument
 		++argc;
 		arg.clear();
-		// use space as a delimiter unless inside quotes or brackets (nestable)
+		// Use space as a delimiter unless inside quotes or brackets (nestable)
 		while (!isspace(*iter) || quotes || brackets) {
-			// eat quotes but leave brackets
+			// Eat quotes but leave brackets
 			if (*iter == '"') {
-				// flip the quotes flag
+				// Flip the quotes flag
 				quotes = !quotes;
 
-				// eat quotes (not adding them to arg)
+				// Eat quotes (not adding them to arg)
 
 			} else {
 				if (*iter == '{') {
@@ -248,7 +270,7 @@ int CommandLineInterface::Tokenize(const char* commandLine, vector<string>& argu
 					}
 				}
 
-				// add to argument
+				// Add to argument
 				arg += (*iter);
 			}
 
@@ -1408,4 +1430,14 @@ bool CommandLineInterface::CheckForHelp(int argc, char**& argv) {
 //        |_|   |_|
 void CommandLineInterface::AppendToResult(const char* pMessage) {
 	m_Result += pMessage;
+}
+
+// ____       _   _  __                    _
+/// ___|  ___| |_| |/ /___ _ __ _ __   ___| |
+//\___ \ / _ \ __| ' // _ \ '__| '_ \ / _ \ |
+// ___) |  __/ |_| . \  __/ |  | | | |  __/ |
+//|____/ \___|\__|_|\_\___|_|  |_| |_|\___|_|
+//
+void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel) {
+	m_pKernel = pKernel;
 }

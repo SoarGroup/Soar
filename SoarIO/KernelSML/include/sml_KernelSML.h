@@ -111,8 +111,8 @@ protected:
 	TgD::TgD* m_Debugger ;
 #endif
 
-   // Command line interface module
-   cli::CommandLineInterface m_CommandLineInterface ;
+	// Command line interface module
+	cli::CommandLineInterface m_CommandLineInterface ;
 
 	// The singleton kernel object
 	static KernelSML*	s_pKernel ;
