@@ -170,7 +170,7 @@ public:
 
 	//Iterate through all disks passed in, store those with matching tower number,
 	//then find one with smallest size - that must be the top disk
-	IWme* operator()(Disk* disk)
+	void operator()(Disk* disk)
 	{
 		if(disk->GetTowerNumber() == m_targetTower)
 		{
@@ -202,8 +202,6 @@ class CollectTowerDisks
 {
 public:
 	CollectTowerDisks(int towerNumber) : m_towerNumber(towerNumber)	{}
-
-	CollectTowerDisks(){}
 
 	~CollectTowerDisks()
 	{
@@ -347,18 +345,6 @@ public:
 		movingDisk->SetTowerInfo(destinationTower, destinationTowerTopDisk);
 	}
 
-/*
-This was from Tower::Print
-	void Print(int row) const // would be best if we passed the stream in, but maybe the lazy assumption is ok
-	{
-		if(m_disks.size() <= static_cast<unsigned>(row))
-			cout << "--";
-		else
-			cout<< m_disks[row];//no endl
-	}
-
-
-};*/
 
 	void Print()
 	{ 
