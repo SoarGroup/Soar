@@ -42,11 +42,14 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Build Java files"
 				CommandLine="echo on
-%JAVA_BIN%\javac $(InputDir)*.java
-"/>
+%JAVA_BIN%\javac $(InputDir)*.java"/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCPreBuildEventTool"
+				Description="Remove previous Java files"
+				CommandLine="echo del *.java
+echo del *.class"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -159,7 +162,7 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -Wallkw -c++ -java &quot;$(InputPath)&quot;
+$(SWIG)\swig.exe -Wall -c++ -java &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
