@@ -1586,6 +1586,7 @@ production *make_production(byte type,
     p->filename = NIL;
     p->firing_count = 0;
 	p->times_applied = 0;
+	p->avg_update = 0;
     p->reference_count = 1;
     insert_at_head_of_dll(current_agent(all_productions_of_type)[type], p, next, prev);
     current_agent(num_productions_of_type)[type]++;

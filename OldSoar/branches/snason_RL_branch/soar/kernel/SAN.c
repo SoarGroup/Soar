@@ -12,6 +12,7 @@ void variablize_condition_list(condition * cond);
 void variablize_nots_and_insert_into_conditions(not * nots, condition * conds);
 action *copy_and_variablize_result_list(preference * pref);
 void variablize_symbol(Symbol ** sym);
+void SAN_add_goal_or_impasse_tests(condition * all_conds);
 
 
 // The following three functions manage the stack of RL_records.
@@ -281,10 +282,8 @@ production *build_RL_production(condition *top_cond, condition *bottom_cond, not
 	new_cond = make_simple_condition(w->id, w->attr, w->value);
 	bottom_cond->next = new_cond;
 	new_cond->prev = bottom_cond;
- 
-	// Make action list
-	a = make_simple_action(pref->id, pref->attr, pref->value, make_float_constant(0));
-	a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+	SAN_add_goal_or_impasse_tests(top_cond);
+ 	
 
 	// Variablize
 	chunk_var = current_agent(variablize_this_chunk);
@@ -293,7 +292,11 @@ production *build_RL_production(condition *top_cond, condition *bottom_cond, not
 	current_agent(variablization_tc) = get_new_tc_number();
 	variablize_condition_list(top_cond);
 	variablize_nots_and_insert_into_conditions(nots, top_cond);
-//	rhs = copy_and_variablize_result_list(a);
+
+	// Make action list
+	a = make_simple_action(pref->id, pref->attr, pref->value, make_float_constant(0));
+	a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+	
 
 	// Make production
 	prod_name = generate_new_sym_constant("RL-", &current_agent(RL_count));
@@ -382,3 +385,26 @@ condition *make_simple_condition(Symbol *id_sym,
 
 }//make_simple_condition
 
+void SAN_add_goal_or_impasse_tests(condition * all_conds)
+{
+    condition *cond;
+    tc_number tc;               /* mark each id as we add a test for it, so we don't add
+                                   a test for the same id in two different places */
+    Symbol *id;
+    test t;
+    complex_test *ct;
+
+    tc = get_new_tc_number();
+    for (cond = all_conds; cond != NIL; cond = cond->next) {
+        if (cond->type != POSITIVE_CONDITION)
+            continue;
+        id = referent_of_equality_test(cond->data.tests.id_test);
+        if ((id->id.isa_goal || id->id.isa_impasse) && (id->id.tc_num != tc)) {
+            allocate_with_pool(&current_agent(complex_test_pool), &ct);
+            ct->type = (char) ((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST);
+            t = make_test_from_complex_test(ct);
+            add_new_test_to_test(&(cond->data.tests.id_test), t);
+            id->id.tc_num = tc;
+        }
+    }
+}
