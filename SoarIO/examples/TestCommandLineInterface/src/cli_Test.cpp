@@ -4,12 +4,7 @@
 
 #include <iostream>
 
-#ifdef HAVE_CURSES_H
-#include <curses.h>
-#endif // HAVE_CURSES_H
-
 #ifdef _MSC_VER
-#include <conio.h>
 #include <crtdbg.h>
 #endif 
 
@@ -56,6 +51,7 @@ int main(int argc, char** argv)
 	const int HISTORY_SIZE = 10;
 	string history[HISTORY_SIZE];
 	bool raw = true;
+	bool cinFail = false;
 	sml::AnalyzeXML* pStructuredResponse;
 	
 	string scriptFile;
@@ -86,7 +82,10 @@ int main(int argc, char** argv)
 				input = *sfIter;
 				++sfIter;
 			} else {
-				input = getch();
+				if (!cin.get(input)) {
+					cinFail = true;
+					break;
+				}
 			}
 
 			switch (input) {
@@ -106,7 +105,12 @@ int main(int argc, char** argv)
 					break;
 
 				case -32:
-					switch (getch()) {
+					if (!cin.get(input)) {
+						cinFail = true;
+						process = true;
+						break;
+					}
+					switch (input) {
 						case 72:
 							// Up arrow
 							while (cmdline.size()) {
@@ -132,13 +136,18 @@ int main(int argc, char** argv)
 					break;
 
 				default:
-					cout << input;
+					//cout << input;
 					cmdline += input;
 					break;
 			}
 			if (process) break;
 		}
-		cout << endl;
+
+		if (cinFail) {
+			break;
+		}
+
+		//cout << endl;
 
 		if (!cmdline.size()) {
 			continue;
