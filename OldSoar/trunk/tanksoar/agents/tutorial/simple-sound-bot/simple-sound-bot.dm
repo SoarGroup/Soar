@@ -106,13 +106,12 @@ ENUMERATION 103 4 east north south west
 ENUMERATION 104 4 attack chase retreat wander
 SOAR_ID 105
 ENUMERATION 106 1 remove-sound
-155
+150
 0 attribute 55
 0 choices 56
 0 direction-map 101
 0 impasse 57
 0 io 3
-0 item 2
 0 missiles-energy 74
 0 name 4
 0 name 104
@@ -128,7 +127,6 @@ ENUMERATION 106 1 remove-sound
 0 superstate 0
 0 top-state 0
 0 type 5
-2 actions 42
 2 name 88
 3 input-link 7
 3 output-link 42
@@ -240,11 +238,8 @@ ENUMERATION 106 1 remove-sound
 68 name 69
 71 actions 42
 71 name 72
-82 actions 42
 82 name 87
-83 actions 42
 83 name 86
-84 actions 42
 84 name 85
 89 name 90
 89 random 91

@@ -2,6 +2,9 @@ source _firstload.soar
 pushd all
 source all_source.soar
 popd
+pushd elaborations
+source elaborations_source.soar
+popd
 source attack.soar
 pushd attack
 source attack_source.soar
@@ -9,9 +12,6 @@ popd
 source chase.soar
 pushd chase
 source chase_source.soar
-popd
-pushd elaborations
-source elaborations_source.soar
 popd
 source retreat.soar
 pushd retreat

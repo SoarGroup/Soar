@@ -7,11 +7,11 @@ echo "\nLoading retreat/elaborations.soar"
 sp {elaborate*retreat*sound*direction
    (state <s> ^name retreat
               ^superstate <ss>)
-   (<ss> ^direction-map.<direction>.<rel-sound> <abs-sound>
+   (<ss> ^direction-map.<direction>.<rel-direction> <abs-sound>
          ^io.input-link.direction <direction>
          ^sound.absolute-direction <abs-sound>)
 -->
-   (<s> ^direction <direction>)}
+   (<s> ^direction <rel-direction>)}
 
 sp {elaborate*retreat*radar*front
    (state <s> ^name retreat
