@@ -9,4 +9,4 @@
 # "ALL" or "DEFAULT" can be used in place of the regular expression.
 #
 # For example:
-#ALL mail -s "CVS notification" %s
+ALL /usr/sbin/sendmail  %s
