@@ -196,13 +196,13 @@ soar_callback_to_tcl (soar_callback_agent the_agent,
 {
   int code;
 
-  code = Tcl_GlobalEval( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
-			(char *) data);
+  code = Tcl_EvalEx( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
+			(char *) data,-1,TCL_EVAL_GLOBAL);
   if (code != TCL_OK)
     {
       print("Error: Failed callback attempt to globally eval: %s\n",
 	     (char *) data);
-      print("Reason: %s\n", tcl_soar_agent_interpreters[((agent *)the_agent)->id]->result);
+      print("Reason: %s\n", Tcl_GetObjResult(tcl_soar_agent_interpreters[((agent *)the_agent)->id]));
       control_c_handler(0);
     }
 }
@@ -257,14 +257,14 @@ soar_input_callback_to_tcl (soar_callback_agent the_agent,
   Tcl_DStringAppend(&command, data, strlen(data));
   Tcl_DStringAppendElement(&command, mode_name);
 
-  code = Tcl_GlobalEval( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
-			(char *) Tcl_DStringValue(&command));
+  code = Tcl_EvalEx( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
+			(char *) Tcl_DStringValue(&command),-1,TCL_EVAL_GLOBAL);
  
   if (code != TCL_OK)
     {
       print("Error: Failed callback attempt to globally eval: %s\n",
 	     (char *) Tcl_DStringValue(&command));
-      print("Reason: %s\n", tcl_soar_agent_interpreters[((agent *)the_agent)->id]->result);
+      print("Reason: %s\n", Tcl_GetObjResult(tcl_soar_agent_interpreters[((agent *)the_agent)->id]));
       Tcl_DStringFree(&command);
       control_c_handler(0);
     }
@@ -351,14 +351,14 @@ soar_output_callback_to_tcl (soar_callback_agent the_agent,
 
   Tcl_DStringAppend(&command, " }", 2);
 
-  code = Tcl_GlobalEval( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
-			(char *) Tcl_DStringValue(&command));
+  code = Tcl_EvalEx( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
+			(char *) Tcl_DStringValue(&command),-1,TCL_EVAL_GLOBAL);
  
   if (code != TCL_OK)
     {
       print("Error: Failed callback attempt to globally eval: %s\n",
 	     (char *) Tcl_DStringValue(&command));
-      print("Reason: %s\n", tcl_soar_agent_interpreters[((agent *)the_agent)->id]->result);
+      print("Reason: %s\n", Tcl_GetObjResult(tcl_soar_agent_interpreters[((agent *)the_agent)->id]));
       Tcl_DStringFree(&command);
       control_c_handler(0);
     }
@@ -400,11 +400,16 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
   Tcl_DStringAppend(&command, " }", 2);
 
 
-  code = Tcl_GlobalEval( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
-			(char *) Tcl_DStringValue(&command));
+  code = Tcl_EvalEx( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
+			(char *) Tcl_DStringValue(&command),-1,TCL_EVAL_GLOBAL);
 
   if (code == TCL_OK) {
-	result = atoi( tcl_soar_agent_interpreters[((agent *)the_agent)->id]->result );
+	/*result = atoi( tcl_soar_agent_interpreters[((agent *)the_agent)->id]->result );*/
+	  
+	  Tcl_GetIntFromObj(tcl_soar_agent_interpreters[((agent *)the_agent)->id],
+		  Tcl_GetObjResult(tcl_soar_agent_interpreters[((agent *)the_agent)->id]),
+		  &result );
+
 	if ( result < 0 || result >= num_candidates ) {
 	  print( "Error: ask callback returned a value out of bounds: %d (0-%d)\n",
 			 result, num_candidates-1);
@@ -415,7 +420,7 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
   else {
 	print("Error: Failed callback attempt to globally eval: %s\n",
 		  (char *) Tcl_DStringValue(&command));
-	print("Reason: %s\n", tcl_soar_agent_interpreters[((agent *)the_agent)->id]->result);
+	print("Reason: %s\n", Tcl_GetObjResult(tcl_soar_agent_interpreters[((agent *)the_agent)->id]));
 	Tcl_DStringFree(&command);
 	result = 0;
 	control_c_handler(0);

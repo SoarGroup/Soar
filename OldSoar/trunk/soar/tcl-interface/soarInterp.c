@@ -117,7 +117,7 @@ if {[info exists env(SOAR_LIBRARY)]} {\n\
 static int
 Soar_SetSoarLibrary(Tcl_Interp *interp)
 {
-	return Tcl_GlobalEval(interp, setSoarLibraryCommand);
+	return Tcl_EvalEx(interp, setSoarLibraryCommand,-1,TCL_EVAL_GLOBAL);
 }
 
 
@@ -156,7 +156,7 @@ static char readInitScriptCommand[] =
 static int
 Soar_ReadInitScript(Tcl_Interp *interp)
 {
-	return Tcl_GlobalEval(interp, readInitScriptCommand);
+	return Tcl_EvalEx(interp, readInitScriptCommand,-1,TCL_EVAL_GLOBAL);
 }
 
 

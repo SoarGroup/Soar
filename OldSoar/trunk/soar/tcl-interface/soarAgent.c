@@ -93,14 +93,14 @@ Symbol *tcl_rhs_function_code (list *args) {
                              symbol_to_string (arg, FALSE, NIL,0));
     }
 
-  result = Tcl_GlobalEval(tcl_soar_agent_interpreters[current_agent(id)], 
-			  text_of_growable_string(script_to_run));
+  result = Tcl_EvalEx(tcl_soar_agent_interpreters[current_agent(id)], 
+			  text_of_growable_string(script_to_run),-1,TCL_EVAL_GLOBAL);
 
   if (result != TCL_OK)
     {
       print("Error: Failed RHS Tcl evaluation of \"%s\"\n", 
 	    text_of_growable_string(script_to_run));
-      print("Reason: %s\n", tcl_soar_agent_interpreters[current_agent(id)]->result);
+      print("Reason: %s\n", Tcl_GetObjResult(tcl_soar_agent_interpreters[current_agent(id)]));
       control_c_handler(0);
       free_growable_string(script_to_run);
       return NIL;
@@ -108,5 +108,5 @@ Symbol *tcl_rhs_function_code (list *args) {
 
   free_growable_string(script_to_run);
   
-  return make_sym_constant(tcl_soar_agent_interpreters[current_agent(id)]->result);
+  return make_sym_constant(Tcl_GetString(Tcl_GetObjResult(tcl_soar_agent_interpreters[current_agent(id)])));
 }
