@@ -112,10 +112,13 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\src\CommandLineInterface.cpp">
+				RelativePath=".\src\cli_CommandLineInterface.cpp">
 			</File>
 			<File
-				RelativePath=".\src\GetOpt.cpp">
+				RelativePath=".\src\cli_Constants.cpp">
+			</File>
+			<File
+				RelativePath=".\src\cli_GetOpt.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -123,13 +126,16 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath=".\include\CommandData.h">
+				RelativePath=".\include\cli_CommandData.h">
 			</File>
 			<File
-				RelativePath=".\include\CommandLineInterface.h">
+				RelativePath=".\include\cli_CommandLineInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\GetOpt.h">
+				RelativePath=".\include\cli_Constants.h">
+			</File>
+			<File
+				RelativePath=".\include\cli_GetOpt.h">
 			</File>
 		</Filter>
 		<Filter

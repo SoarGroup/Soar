@@ -18,8 +18,8 @@
 #include <stack>
 
 // Local includes
-#include "commanddata.h"
-#include "getopt.h"
+#include "cli_CommandData.h"
+#include "cli_GetOpt.h"
 
 // gSKI includes
 #include "gSKI_Events.h"
@@ -53,10 +53,12 @@ struct strCompareCommand
 // Define the CommandFunction which we'll call to process commands
 typedef bool (CommandLineInterface::*CommandFunction)(int argc, char** argv);
 
+typedef std::pair<CommandFunction, const char*> CommandFunctionAndUsage;
+
 // Used to store a map from command name to function handler for that command
-typedef std::map<char const*, CommandFunction, strCompareCommand>	CommandMap;
-typedef CommandMap::iterator										CommandMapIter;
-typedef CommandMap::const_iterator									CommandMapConstIter;
+typedef std::map<char const*, CommandFunctionAndUsage, strCompareCommand>	CommandMap;
+typedef CommandMap::iterator												CommandMapIter;
+typedef CommandMap::const_iterator											CommandMapConstIter;
 
 // Define the stack for pushd/popd
 typedef std::stack<std::string> StringStack;
@@ -147,6 +149,15 @@ public:
 	*		 settings.
 	*************************************************************/
 	bool DoLearn(const unsigned short options = 0);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseLog(int argc, char** argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoLog(bool close, const char* filename = 0);
 
 	/*************************************************************
 	* @brief ls/dir command, see command line spec document for details
@@ -279,63 +290,11 @@ public:
 
 protected:
 
-	// A class containing the constants used by CommandLineInterface
-	class CLIConstants
-	{
-	public:
-		static char const* kCLISyntaxError;
-
-		static char const* kCLIAddWME;
-		static char const* kCLICD;
-		static char const* kCLIDir;
-		static char const* kCLIEcho;
-		static char const* kCLIExcise;
-		static char const* kCLIExit;
-		static char const* kCLIInitSoar;
-		static char const* kCLILearn;
-		static char const* kCLILS;
-		static char const* kCLIMultiAttributes;
-		static char const* kCLIPopD;
-		static char const* kCLIPrint;
-		static char const* kCLIPushD;
-		static char const* kCLIPWD;
-		static char const* kCLIQuit;
-		static char const* kCLIRun;
-		static char const* kCLISource;
-		static char const* kCLISP;
-		static char const* kCLIStopSoar;
-		static char const* kCLITime;
-		static char const* kCLIWatch;
-		static char const* kCLIWatchWMEs;
-
-		static char const* kCLIAddWMEUsage;
-		static char const* kCLICDUsage;
-		static char const* kCLIEchoUsage;
-		static char const* kCLIExciseUsage;
-		static char const* kCLIInitSoarUsage;
-		static char const* kCLILearnUsage;
-		static char const* kCLILSUsage;
-		static char const* kCLIMultiAttributesUsage;
-		static char const* kCLIPopDUsage;
-		static char const* kCLIPrintUsage;
-		static char const* kCLIPushDUsage;
-		static char const* kCLIPWDUsage;
-		static char const* kCLIQuitUsage;
-		static char const* kCLIRunUsage;
-		static char const* kCLISourceUsage;
-		static char const* kCLISPUsage;
-		static char const* kCLIStopSoarUsage;
-		static char const* kCLITimeUsage;
-		static char const* kCLIWatchUsage;
-		static char const* kCLIWatchWMEsUsage;
-
-	};
-
 	// Print handler for gSKI print callbacks
 	class PrintHandler : public gSKI::IPrintListener
 	{
 	public:
-		PrintHandler() {}
+		PrintHandler() { m_pCLI = 0; }
 
 		void SetCLI(CommandLineInterface* pCLI) { m_pCLI = pCLI; }
 		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg) {
@@ -344,6 +303,22 @@ protected:
 		}
 	protected:
 		CommandLineInterface*	m_pCLI;	// pointer to command line interface
+	};
+
+	// Handler for logging to a file
+	class LogHandler : public gSKI::IPrintListener
+	{
+	public:
+		LogHandler();
+
+		bool IsLogging();
+		bool StartLogging(const char* pFilename);
+		void EndLogging();
+
+		virtual void HandleEvent(egSKIEventId, gSKI::IAgent*, const char* msg);
+
+	protected:
+		std::ofstream*	m_pFile;	// pointer to file
 	};
 
 	friend class PrintHandler;	// Allows calling of AppendToResult
@@ -399,12 +374,27 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void SourceError(int errorLine, const char* filename);
+	void HandleSourceError(int errorLine, const char* filename);
 
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool IsInteger(const std::string& s);
+	bool IsInteger(const char* s);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool HandleSyntaxError(const char* usage, const char* details = 0);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool RequireAgent();
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool HandleGetOptError(char option);
 
 	GetOpt			m_GetOpt;			// Pointer to GetOpt utility class
 	CommandMap		m_CommandMap;		// Mapping of command names to function pointers
@@ -417,6 +407,8 @@ protected:
 	bool			m_QuitCalled;		// True after DoQuit is called
 	StringStack		m_DirectoryStack;	// Directory stack for pushd/popd
 	bool			m_SourceError;		// Used to control debug printing for source command errors
+	int				m_SourceDepth;		// Depth of source command calls.
+	int				m_SourceDirDepth;	// Depth of directory stack since source command.
 };
 
 } // namespace cli

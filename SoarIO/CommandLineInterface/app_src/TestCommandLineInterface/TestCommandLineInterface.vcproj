@@ -13,7 +13,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="bin"
+			OutputDirectory="../../bin"
 			IntermediateDirectory="lib"
 			ConfigurationType="1"
 			CharacterSet="2"
@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ClientSML\include;..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include"
+				AdditionalIncludeDirectories="..\..\..\ClientSML\include;..\..\..\ElementXML\include;..\..\..\ConnectionSML\include;..\..\..\..\gSKI\include;..\..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -38,7 +38,7 @@
 				AdditionalDependencies="soar-cli.lib ConnectionSML.lib ElementXML.lib ClientSML.lib"
 				OutputFile="bin\cli-test.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\ClientSML\lib;..\ConnectionSML\lib;..\..\gSKI\lib;lib\;..\ElementXML\lib"
+				AdditionalLibraryDirectories="..\..\..\ClientSML\lib;..\..\..\ConnectionSML\lib;..\..\..\..\gSKI\lib;..\..\lib\;..\..\..\ElementXML\lib"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="0"
 				SubSystem="1"
@@ -67,14 +67,14 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="bin"
+			OutputDirectory="../../bin"
 			IntermediateDirectory="lib"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\ClientSML\include;..\ElementXML\include;..\ConnectionSML\include;..\..\gSKI\include;.\include"
+				AdditionalIncludeDirectories="..\..\..\ClientSML\include;..\..\..\ElementXML\include;..\..\..\ConnectionSML\include;..\..\..\..\gSKI\include;..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -87,7 +87,7 @@
 				AdditionalDependencies="soar-cli.lib ConnectionSML.lib ElementXML.lib ClientSML.lib"
 				OutputFile="bin\cli-test.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\ClientSML\lib;..\ConnectionSML\lib;..\..\gSKI\lib;lib\;..\ElementXML\lib"
+				AdditionalLibraryDirectories="..\..\..\ClientSML\lib;..\..\..\ConnectionSML\lib;..\..\..\..\gSKI\lib;..\..\lib\;..\..\..\ElementXML\lib"
 				GenerateDebugInformation="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -119,19 +119,13 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\src\cli-test.cpp">
+				RelativePath=".\src\cli_Test.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
-			<File
-				RelativePath=".\include\CommandData.h">
-			</File>
-			<File
-				RelativePath=".\include\CommandLineInterface.h">
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

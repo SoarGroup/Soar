@@ -4,7 +4,7 @@
 #include "sml_Connection.h"
 #include "sml_Client.h"
 
-#include "commandLineInterface.h"
+#include "cli_CommandLineInterface.h"
 
 using namespace std;
 using namespace cli;

@@ -1,0 +1,5 @@
+# unmatched pushd/popd
+
+pushd ..
+pushd ..
+popd
