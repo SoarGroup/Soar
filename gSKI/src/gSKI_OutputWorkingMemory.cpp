@@ -100,8 +100,22 @@ namespace gSKI
                                     Error* err)
    {
       ClearError(err);
-      MegaAssert(false, "NOT IMPLEMENTED YET!");
-      return 0;
+
+      if ( wmObject == 0 || attr == 0 ) 
+      {
+         SetErrorExtended(err,
+                           gSKIERR_INVALID_PTR,
+                           "Null pointer passed to AddWmeInt function!");
+         return 0;
+      }      
+         
+      ISymbol* attribute = new gSymbol(m_agent->GetSoarAgent(), attr);
+      ISymbol* value = new gSymbol(m_agent->GetSoarAgent(), intValue);
+      
+      IWme* pWme = AddWme(wmObject, attribute, value);
+      attribute->Release();
+      value->Release();
+      return pWme;
    }
 
    IWme* OutputWorkingMemory::AddWmeDouble(IWMObject* wmObject,
@@ -110,8 +124,22 @@ namespace gSKI
                                        Error* err)
    {
       ClearError(err);
-      MegaAssert(false, "NOT IMPLEMENTED YET!");
-      return 0;
+
+      if ( wmObject == 0 || attr == 0 ) 
+      {
+         SetErrorExtended(err,
+                           gSKIERR_INVALID_PTR,
+                           "Null pointer passed to AddWmeDouble function!");
+         return 0;
+      }      
+         
+      ISymbol* attribute = new gSymbol(m_agent->GetSoarAgent(), attr);
+      ISymbol* value = new gSymbol(m_agent->GetSoarAgent(), dValue);
+      
+      IWme* pWme = AddWme(wmObject, attribute, value);
+      attribute->Release();
+      value->Release();
+      return pWme;
    }
 
    IWme* OutputWorkingMemory::AddWmeString(IWMObject* wmObject,
