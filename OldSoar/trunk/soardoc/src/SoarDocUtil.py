@@ -54,6 +54,20 @@ def ObjectStrCmp(a, b):
    return 0
 
 ##
+# Compare two objects alphabetically using their string (__str__)
+# representations. The comparison is case-insensitive
+#
+# a < b -> -1
+# a = b -> 0
+# a > b -> 1
+def ObjectStrICmp(a, b):
+   a = str(a).lower()
+   b = str(b).lower()
+   if a < b: return -1
+   elif a > b: return 1
+   return 0
+
+##
 # Returns a sorted COPY of a list
 #
 # @param a List to sort

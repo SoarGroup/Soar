@@ -71,7 +71,7 @@ class Collector(DocBlock.DocBlockVisitor):
 
       # Let's collect everybody together into lists sorted by name
       sort = SoarDocUtil.SortList
-      cmp = SoarDocUtil.ObjectStrCmp
+      cmp = SoarDocUtil.ObjectStrICmp
       self.Files = sort(self.FileTab.values(), cmp)
       self.Prods = sort(self.ProdTab.values(), cmp)
       self.ProblemSpaces = sort(self.ProblemSpaceTab.values(), cmp)
