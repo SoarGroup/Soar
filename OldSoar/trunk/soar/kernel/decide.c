@@ -3363,6 +3363,10 @@ preference *probabilistically_select(slot *s, preference *candidates)
 					 else if ( pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) {
 						 cand->sum_of_probability += pref->referent->ic.value;
 					 }
+					 else
+					 {
+						 cand->sum_of_probability += default_ni;
+					 }
 				 }
 			 }
 		 }
