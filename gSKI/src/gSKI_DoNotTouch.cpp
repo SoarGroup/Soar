@@ -1826,7 +1826,7 @@ namespace gSKI
 			return true;
 		}
 
-		unsigned long TgDWorkArounds::AddWme(IAgent* pIAgent, const char* pIdString, const char* pAttrString, const char* pValueString, bool acceptable) {
+		long TgDWorkArounds::AddWme(IAgent* pIAgent, const char* pIdString, const char* pAttrString, const char* pValueString, bool acceptable) {
 
 			Agent* pAgent = (Agent*)(pIAgent);
 			agent* pSoarAgent = pAgent->GetSoarAgent();
@@ -1991,7 +1991,7 @@ namespace gSKI
 			/* REW: end 28.07.96 */
 
 			//*new_wme = (psoar_wme) pWme; // new_wme declared in parameter list in soar_cAddWme 8.5.2
-			return pWme->timetag;
+			return static_cast<long>(pWme->timetag);
 		}
 
 		int RemoveWme(agent* pSoarAgent, wme* pWme)
