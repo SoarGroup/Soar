@@ -63,44 +63,20 @@ void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 
 void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
-	smlEventId id  = (smlEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
+	int id  = pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
 
-	switch (id)
+	if (IsRunEventID(id))
 	{
-	// Agent listener events
-	case smlEVENT_BEFORE_SMALLEST_STEP:
-	case smlEVENT_AFTER_SMALLEST_STEP:
-	case smlEVENT_BEFORE_ELABORATION_CYCLE:
-	case smlEVENT_AFTER_ELABORATION_CYCLE:
-	case smlEVENT_BEFORE_PHASE_EXECUTED:
-	case smlEVENT_AFTER_PHASE_EXECUTED:
-	case smlEVENT_BEFORE_DECISION_CYCLE:
-	case smlEVENT_AFTER_DECISION_CYCLE:
-	case smlEVENT_AFTER_INTERRUPT:
-	case smlEVENT_BEFORE_RUNNING:
-	case smlEVENT_AFTER_RUNNING:
-		ReceivedRunEvent(id, pIncoming, pResponse) ;
-		break ;
-
-	// Production Manager events too
-	case smlEVENT_AFTER_PRODUCTION_ADDED:
-	case smlEVENT_BEFORE_PRODUCTION_REMOVED:
-	case smlEVENT_AFTER_PRODUCTION_FIRED:
-	case smlEVENT_BEFORE_PRODUCTION_RETRACTED:
-		ReceivedProductionEvent(id, pIncoming, pResponse) ;
-		break;
-
-	// Agent manager events too
-	case smlEVENT_AFTER_AGENT_CREATED:
-	case smlEVENT_BEFORE_AGENT_DESTROYED:
-	case smlEVENT_BEFORE_AGENT_REINITIALIZED:
-	case smlEVENT_AFTER_AGENT_REINITIALIZED:
-		ReceivedAgentEvent(id, pIncoming, pResponse) ;
-		break;
-
-	case smlEVENT_PRINT:
-		ReceivedPrintEvent(id, pIncoming, pResponse) ;
-		break ;
+		ReceivedRunEvent((smlRunEventId)id, pIncoming, pResponse) ;
+	} else if (IsProductionEventID(id))
+	{
+		ReceivedProductionEvent((smlProductionEventId)id, pIncoming, pResponse) ;
+	} else if (IsAgentEventID(id))
+	{
+		ReceivedAgentEvent((smlAgentEventId)id, pIncoming, pResponse) ;
+	} else if (IsPrintEventID(id))
+	{
+		ReceivedPrintEvent((smlPrintEventId)id, pIncoming, pResponse) ;
 	}
 }
 
@@ -111,7 +87,7 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Agent::ReceivedRunEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	unused(pResponse) ;
 
@@ -143,7 +119,7 @@ void Agent::ReceivedRunEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* p
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Agent::ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	unused(pResponse) ;
 	unused(pIncoming) ;
@@ -173,7 +149,7 @@ void Agent::ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML*
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Agent::ReceivedPrintEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	unused(pResponse) ;
 
@@ -205,7 +181,7 @@ void Agent::ReceivedPrintEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML*
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Agent::ReceivedProductionEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	unused(pResponse) ;
 
@@ -268,7 +244,7 @@ bool Agent::LoadProductions(char const* pFilename)
 /*************************************************************
 * @brief Register for a particular event at the kernel
 *************************************************************/
-void Agent::RegisterForEvent(smlEventId id)
+void Agent::RegisterForEvent(int id)
 {
 	AnalyzeXML response ;
 
@@ -282,7 +258,7 @@ void Agent::RegisterForEvent(smlEventId id)
 /*************************************************************
 * @brief Unregister for a particular event at the kernel
 *************************************************************/
-void Agent::UnregisterForEvent(smlEventId id)
+void Agent::UnregisterForEvent(int id)
 {
 	AnalyzeXML response ;
 
@@ -309,7 +285,7 @@ void Agent::UnregisterForEvent(smlEventId id)
 * smlEVENT_BEFORE_RUNNING,
 * smlEVENT_AFTER_RUNNING,
 *************************************************************/
-int Agent::RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData)
+int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -357,7 +333,7 @@ static bool TestPrintCallback(PrintEventHandlerPlusData handler)
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForRunEvent(smlEventId id, int callbackID)
+void Agent::UnregisterForRunEvent(smlRunEventId id, int callbackID)
 {
 	// Remove the handler from our map
 	s_CallbackID = callbackID ;
@@ -381,7 +357,7 @@ void Agent::UnregisterForRunEvent(smlEventId id, int callbackID)
 * smlEVENT_AFTER_PRODUCTION_FIRED,
 * smlEVENT_BEFORE_PRODUCTION_RETRACTED,
 *************************************************************/
-int Agent::RegisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData)
+int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -402,7 +378,7 @@ int Agent::RegisterForProductionEvent(smlEventId id, ProductionEventHandler hand
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForProductionEvent(smlEventId id, int callbackID)
+void Agent::UnregisterForProductionEvent(smlProductionEventId id, int callbackID)
 {
 	// Remove the handler from our map
 	s_CallbackID = callbackID ;
@@ -426,7 +402,7 @@ void Agent::UnregisterForProductionEvent(smlEventId id, int callbackID)
 * smlEVENT_BEFORE_AGENT_REINITIALIZED,
 * smlEVENT_AFTER_AGENT_REINITIALIZED,
 *************************************************************/
-int Agent::RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData)
+int Agent::RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -447,7 +423,7 @@ int Agent::RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void*
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForAgentEvent(smlEventId id, int callbackID)
+void Agent::UnregisterForAgentEvent(smlAgentEventId id, int callbackID)
 {
 	// Remove the handler from our map
 	s_CallbackID = callbackID ;
@@ -468,7 +444,7 @@ void Agent::UnregisterForAgentEvent(smlEventId id, int callbackID)
 * // Agent manager
 * smlEVENT_PRINT
 *************************************************************/
-int Agent::RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData)
+int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -490,7 +466,7 @@ int Agent::RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void*
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Agent::UnregisterForPrintEvent(smlEventId id, int callbackID)
+void Agent::UnregisterForPrintEvent(smlPrintEventId id, int callbackID)
 {
 	// Remove the handler from our map
 	s_CallbackID = callbackID ;

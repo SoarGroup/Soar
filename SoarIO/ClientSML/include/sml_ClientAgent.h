@@ -101,10 +101,10 @@ class Agent : public ClientErrors
 
 protected:
 	// The mapping from event number to a list of handlers to call when that event fires
-	typedef sml::ListMap<smlEventId, RunEventHandlerPlusData>			RunEventMap ;
-	typedef sml::ListMap<smlEventId, ProductionEventHandlerPlusData>	ProductionEventMap ;
-	typedef sml::ListMap<smlEventId, AgentEventHandlerPlusData>			AgentEventMap ;
-	typedef sml::ListMap<smlEventId, PrintEventHandlerPlusData>			PrintEventMap ;
+	typedef sml::ListMap<smlRunEventId, RunEventHandlerPlusData>				RunEventMap ;
+	typedef sml::ListMap<smlProductionEventId, ProductionEventHandlerPlusData>	ProductionEventMap ;
+	typedef sml::ListMap<smlAgentEventId, AgentEventHandlerPlusData>			AgentEventMap ;
+	typedef sml::ListMap<smlPrintEventId, PrintEventHandlerPlusData>			PrintEventMap ;
 
 protected:
 	// We maintain a local copy of working memory so we can just send changes
@@ -152,24 +152,24 @@ protected:
 	* @param pResponse	The reply (no real need to fill anything in here currently)
 	*************************************************************/
 	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedRunEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedProductionEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedAgentEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedPrintEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 	/*************************************************************
 	* @brief Register for a particular event with the kernel.
 	*		 (This is a primitive function, should call one of the
 	*		  higher level methods which will call here if needed)
 	*************************************************************/
-	void	RegisterForEvent(smlEventId id) ;
+	void	RegisterForEvent(int id) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event with the kernel.
 	*		 (This is a primitive function, should call one of the
 	*		  higher level methods which will call here if needed)
 	*************************************************************/
-	void	UnregisterForEvent(smlEventId id) ;
+	void	UnregisterForEvent(int id) ;
 
 public:
 	/*************************************************************
@@ -325,12 +325,12 @@ public:
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	int	RegisterForRunEvent(smlEventId id, RunEventHandler handler, void* pUserData) ;
+	int	RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForRunEvent(smlEventId id, int callbackID) ;
+	void	UnregisterForRunEvent(smlRunEventId id, int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for a "ProductionEvent".
@@ -348,12 +348,12 @@ public:
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	int	RegisterForProductionEvent(smlEventId id, ProductionEventHandler handler, void* pUserData) ;
+	int	RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForProductionEvent(smlEventId id, int callbackID) ;
+	void	UnregisterForProductionEvent(smlProductionEventId id, int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for an "AgentEvent".
@@ -371,12 +371,12 @@ public:
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	int	RegisterForAgentEvent(smlEventId id, AgentEventHandler handler, void* pUserData) ;
+	int	RegisterForAgentEvent(smlAgentEventId id, AgentEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForAgentEvent(smlEventId id, int callbackID) ;
+	void	UnregisterForAgentEvent(smlAgentEventId id, int callbackID) ;
 
 	/*************************************************************
 	* @brief Register for an "PrintEvent".
@@ -391,12 +391,12 @@ public:
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
-	int	RegisterForPrintEvent(smlEventId id, PrintEventHandler handler, void* pUserData) ;
+	int	RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForPrintEvent(smlEventId id, int callbackID) ;
+	void	UnregisterForPrintEvent(smlPrintEventId id, int callbackID) ;
 
 	/*==============================================================================
 	===

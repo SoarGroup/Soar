@@ -65,7 +65,7 @@ protected:
 	int			m_CallbackIDCounter ;	// Used to generate unique callback IDs
 
 	// The mapping from event number to a list of handlers to call when that event fires
-	typedef sml::ListMap<smlEventId, SystemEventHandlerPlusData>		SystemEventMap ;
+	typedef sml::ListMap<smlSystemEventId, SystemEventHandlerPlusData>		SystemEventMap ;
 
 	Connection*			m_Connection ;
 	ObjectMap<Agent*>	m_AgentMap ;
@@ -98,7 +98,7 @@ protected:
 	* @param pResponse	The reply (no real need to fill anything in here currently)
 	*************************************************************/
 	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedSystemEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 public:
 	/*************************************************************
@@ -255,12 +255,12 @@ public:
 	*
 	* @returns Unique ID for this callback.  Required when unregistering this callback.
 	*************************************************************/
-	int	RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData) ;
+	int	RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData) ;
 
 	/*************************************************************
 	* @brief Unregister for a particular event
 	*************************************************************/
-	void	UnregisterForSystemEvent(smlEventId id, int callbackID) ;
+	void	UnregisterForSystemEvent(smlSystemEventId id, int callbackID) ;
 
 protected:
 	/*************************************************************

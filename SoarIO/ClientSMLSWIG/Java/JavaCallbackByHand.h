@@ -144,7 +144,7 @@ public:
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void RunEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase)
+static void RunEventHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -180,7 +180,7 @@ static void RunEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAg
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void AgentEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent)
+static void AgentEventHandler(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -216,7 +216,7 @@ static void AgentEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* p
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void ProductionEventHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
+static void ProductionEventHandler(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -256,7 +256,7 @@ static void ProductionEventHandler(sml::smlEventId id, void* pUserData, sml::Age
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void SystemEventHandler(sml::smlEventId id, void* pUserData, sml::Kernel* pKernel)
+static void SystemEventHandler(sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
@@ -323,7 +323,7 @@ JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEvent(JNIEnv *jenv, 
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
 	// jarg2 is the event ID we're registering for
-	sml::smlEventId arg2 = (sml::smlEventId)jarg2;
+	sml::smlRunEventId arg2 = (sml::smlRunEventId)jarg2;
 
 	// Create the information we'll need to make a Java call back later
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
@@ -341,7 +341,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
 	// jarg2 is the event ID we're registering for
-	sml::smlEventId arg2 = (sml::smlEventId)jarg2;
+	sml::smlRunEventId arg2 = (sml::smlRunEventId)jarg2;
 
 	// jarg3 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
@@ -361,7 +361,7 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForAgentEvent(JNIEnv *jenv,
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
 	// jarg2 is the event ID we're registering for
-	sml::smlEventId arg2 = (sml::smlEventId)jarg2;
+	sml::smlAgentEventId arg2 = (sml::smlAgentEventId)jarg2;
 
 	// Create the information we'll need to make a Java call back later
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
@@ -379,7 +379,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForAgentEvent(JNIEnv *je
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
 	// jarg2 is the event ID we're registering for
-	sml::smlEventId arg2 = (sml::smlEventId)jarg2;
+	sml::smlAgentEventId arg2 = (sml::smlAgentEventId)jarg2;
 
 	// jarg3 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
@@ -399,7 +399,7 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEvent(JNIEnv *
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
 	// jarg2 is the event ID we're registering for
-	sml::smlEventId arg2 = (sml::smlEventId)jarg2;
+	sml::smlProductionEventId arg2 = (sml::smlProductionEventId)jarg2;
 
 	// Create the information we'll need to make a Java call back later
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
@@ -417,7 +417,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEn
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
 	// jarg2 is the event ID we're registering for
-	sml::smlEventId arg2 = (sml::smlEventId)jarg2;
+	sml::smlProductionEventId arg2 = (sml::smlProductionEventId)jarg2;
 
 	// jarg3 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;
@@ -437,7 +437,7 @@ JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEvent(JNIEnv *jen
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
 
 	// jarg2 is the event ID we're registering for
-	sml::smlEventId arg2 = (sml::smlEventId)jarg2;
+	sml::smlSystemEventId arg2 = (sml::smlSystemEventId)jarg2;
 
 	// Create the information we'll need to make a Java call back later
 	JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
@@ -455,7 +455,7 @@ JNIEXPORT void JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
 
 	// jarg2 is the event ID we're registering for
-	sml::smlEventId arg2 = (sml::smlEventId)jarg2;
+	sml::smlSystemEventId arg2 = (sml::smlSystemEventId)jarg2;
 
 	// jarg3 is the callback data from the registration call
 	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg3 ;

@@ -150,23 +150,11 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 
 void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
-	smlEventId id  = (smlEventId)pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
+	int id  = pIncoming->GetArgInt(sml_Names::kParamEventID, smlEVENT_INVALID_EVENT) ;
 
-	switch (id)
+	if (IsSystemEventID(id))
 	{
-	// System listener events
-	case smlEVENT_BEFORE_SHUTDOWN:
-	case smlEVENT_AFTER_CONNECTION_LOST:
-	case smlEVENT_BEFORE_RESTART:
-	case smlEVENT_AFTER_RESTART:
-	case smlEVENT_BEFORE_RHS_FUNCTION_ADDED:
-	case smlEVENT_AFTER_RHS_FUNCTION_ADDED:
-	case smlEVENT_BEFORE_RHS_FUNCTION_REMOVED:
-	case smlEVENT_AFTER_RHS_FUNCTION_REMOVED:
-	case smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED:
-	case smlEVENT_AFTER_RHS_FUNCTION_EXECUTED:
-		ReceivedSystemEvent(id, pIncoming, pResponse) ;
-		break ;
+		ReceivedSystemEvent((smlSystemEventId)id, pIncoming, pResponse) ;
 	}
 }
 
@@ -177,7 +165,7 @@ void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Kernel::ReceivedSystemEvent(smlEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	unused(pResponse) ;
 	unused(pIncoming) ;
@@ -361,7 +349,7 @@ Agent* Kernel::GetAgentByIndex(int index)
 * @brief Called when an init-soar event happens so we know
 *		 to refresh the input/output links.
 *************************************************************/
-static void InitSoarHandler(smlEventId id, void* pUserData, Agent* pAgent)
+static void InitSoarHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 {
 	unused(pUserData) ;
 	unused(id) ;
@@ -372,9 +360,11 @@ static void InitSoarHandler(smlEventId id, void* pUserData, Agent* pAgent)
 // This handler should never get called.  Output "events" are handled
 // specially with an "output" message that we capture in the kernel.
 // Perhaps this is wrong and we should just handle it like other events?
-static void OutputHandler(smlEventId, void*, Agent*)
+/*
+static void OutputHandler(smlWorkingMemoryEventId, void*, Agent*)
 {
 }
+*/
 
 /*************************************************************
 * @brief Creates a new Soar agent with the given name.
@@ -412,7 +402,8 @@ Agent* Kernel::CreateAgent(char const* pAgentName)
 
 		// Register to get output link events.  These won't come back as standard events.
 		// Instead we'll get "output" messages which are handled in a special manner.
-		agent->RegisterForAgentEvent(smlEVENT_OUTPUT_PHASE_CALLBACK, &OutputHandler, NULL) ;
+		agent->RegisterForEvent(smlEVENT_OUTPUT_PHASE_CALLBACK) ;
+//		agent->RegisterForAgentEvent(smlEVENT_OUTPUT_PHASE_CALLBACK, &OutputHandler, NULL) ;
 	}
 
 	// Set our error state based on what happened during this call.
@@ -554,7 +545,7 @@ void Kernel::Sleep(long milliseconds)
 * smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
 * smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
 *************************************************************/
-int Kernel::RegisterForSystemEvent(smlEventId id, SystemEventHandler handler, void* pUserData)
+int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handler, void* pUserData)
 {
 	// If we have no handlers registered with the kernel, then we need
 	// to register for this event.  No need to do this multiple times.
@@ -593,7 +584,7 @@ static bool TestSystemCallback(SystemEventHandlerPlusData handler)
 /*************************************************************
 * @brief Unregister for a particular event
 *************************************************************/
-void Kernel::UnregisterForSystemEvent(smlEventId id, int callbackID)
+void Kernel::UnregisterForSystemEvent(smlSystemEventId id, int callbackID)
 {
 	// Remove the handler from our map
 	s_CallbackID = callbackID ;

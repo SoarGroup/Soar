@@ -19,7 +19,7 @@
 
 using namespace std;
 
-void PrintCallbackHandler(sml::smlEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {
+void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {
 	cout << pMessage;
 }
 
