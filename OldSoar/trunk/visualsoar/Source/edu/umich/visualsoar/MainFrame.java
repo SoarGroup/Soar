@@ -2203,17 +2203,30 @@ public class MainFrame extends JFrame
           
                     } while(!(errors.isEmpty()) && repCount < 5);
 
-
-                    SwingUtilities.invokeLater(finish);
 				}   // end of try
 				catch (IOException ioe) 
                 {
 					ioe.printStackTrace();
 				}
-			}
 
-		}
-	}    // End of class GenerateDataMapAction
+                //Instruct all open datamap windows to display
+                //the newly generated nodes
+                JInternalFrame[] jif = DesktopPane.getAllFrames();
+                for(int i = 0; i < jif.length; ++i) 
+                {
+                    if(jif[i] instanceof DataMap) 
+                    {
+                        DataMap dm = (DataMap)jif[i];
+                        dm.displayGeneratedNodes();
+                    }
+                }
+
+                SwingUtilities.invokeLater(finish);
+                
+			}//checkNodes
+
+		}//class UpdateThread
+	}//class GenerateDataMapAction
 
 
 	class FindInProjectAction extends AbstractAction 

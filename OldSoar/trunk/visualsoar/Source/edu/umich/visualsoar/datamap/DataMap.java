@@ -143,6 +143,11 @@ public class DataMap extends CustomInternalFrame
         return dataMapTree.searchNoTestNoCreateDataMap(in_siv, dataMapName);
     }
 
+    public void displayGeneratedNodes() 
+    {
+        dataMapTree.displayGeneratedNodes();
+    }
+
     /**
      *  Selects (highlights and centers) the requested edge within the datamap.
      *  @param edge the requested NamedEdge to select
@@ -185,8 +190,6 @@ public class DataMap extends CustomInternalFrame
      */
     private class DataMapTreeRenderer extends DefaultTreeCellRenderer 
     {
-
-
         public DataMapTreeRenderer() 
         {
         }
