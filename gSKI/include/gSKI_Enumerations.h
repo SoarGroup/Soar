@@ -153,12 +153,19 @@
  		id <= gSKIEVENT_LAST_RHS_EVENT) ;
     }
 
+	 typedef enum { 
+ 	 // Currently not directly implemented in gSKI.  Used in client to convert structured output strings into xml.
+	 // This event currently relies on gSKI_EVENT_STRUCTURED_OUTPUT.
+ 	 gSKIEVENT_XML_TRACE_OUTPUT = gSKIEVENT_LAST_RHS_EVENT + 1,   
+	 gSKIEVENT_LAST_XML_EVENT = gSKIEVENT_XML_TRACE_OUTPUT,
+    } egSKIXMLEventId;
+
     typedef enum {
        // Used to indicate an error in some cases
        gSKIEVENT_INVALID_EVENT              = 0,
        // Marker for end of gSKI event list
        // Must always be at the end of the enum
-       gSKIEVENT_LAST = gSKIEVENT_LAST_RHS_EVENT + 1
+       gSKIEVENT_LAST = gSKIEVENT_LAST_XML_EVENT + 1
     } egSKIGenericEventId;
 
    /** End of Event Id enumerations.  **/
