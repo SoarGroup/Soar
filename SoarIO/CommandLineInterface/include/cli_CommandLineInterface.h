@@ -151,7 +151,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param command The alias to enable or disable, pass 0 to list aliases
-	* @param pSubstitution Pass a pointer to a vector strings to enable a new alias, pass 0 to disable a current alias
+	* @param pSubstitution Pass a pointer to a vector strings to enable a new 
+	*        alias, pass 0 to disable a current alias
 	*************************************************************/
 	EXPORT bool DoAlias(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string* pCommand = 0, const std::vector<std::string>* pSubstitution = 0);
 
@@ -159,7 +160,8 @@ public:
 	* @brief cd command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
-	* @param pDirectory Pointer to the directory to pass in to. Pass null to return to the initial (home) directory. 
+	* @param pDirectory Pointer to the directory to pass in to. Pass null to return 
+	*        to the initial (home) directory. 
 	*************************************************************/
 	EXPORT bool DoCD(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string* pDirectory = 0);
 
@@ -168,9 +170,11 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param pLongFormat Pointer to the new format type, true for long format, false for short format, 0 (null) for query or no change
+	* @param pLongFormat Pointer to the new format type, true for long format, false 
+	*        for short format, 0 (null) for query or no change
 	* @param pCount Pointer to the new counter, non negative integer, 0 (null) for query
-	* @param pPrefix Pointer to the new prefix, must not contain '*' character, null for query
+	* @param pPrefix Pointer to the new prefix, must not contain '*' character, 
+	*        null for query
 	*************************************************************/
 	EXPORT bool DoChunkNameFormat(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
 
@@ -179,7 +183,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param pDepth The pointer to the new wme depth, a positive integer.  Pass 0 (null) pointer for query.
+	* @param pDepth The pointer to the new wme depth, a positive integer.  
+	*        Pass 0 (null) pointer for query.
 	*************************************************************/
 	EXPORT bool DoDefaultWMEDepth(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const int* pDepth);
 
@@ -203,7 +208,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param options The various options set on the command line, see cli_CommandData.h
+	* @param options The various options set on the command line, see 
+	*        cli_CommandData.h
 	* @param pProduction A production to excise, optional
 	*************************************************************/
 	EXPORT bool DoExcise(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction = 0);
@@ -213,8 +219,10 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param pProduction Pointer to involved production. Pass 0 (null) for query
-	* @param condition A number representing the condition number to explain, 0 for production name, -1 for full, 
+	* @param pProduction Pointer to involved production. Pass 0 (null) for 
+	*        query
+	* @param condition A number representing the condition number to explain, 
+	*        0 for production name, -1 for full, 
 	*        this argument ignored if pProduction is 0 (null)
 	*************************************************************/
 	EXPORT bool DoExplainBacktraces(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const std::string* pProduction = 0, const int condition = 0);
@@ -224,8 +232,10 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param numberToList The number of top-firing productions to list.  Use 0 to list those that haven't fired. -1 lists all
-	* @param pProduction The specific production to list, pass 0 (null) to list multiple productions
+	* @param numberToList The number of top-firing productions to list.  
+	*        Use 0 to list those that haven't fired. -1 lists all
+	* @param pProduction The specific production to list, pass 0 (null) to list 
+	*        multiple productions
 	*************************************************************/
 	EXPORT bool DoFiringCounts(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const int numberToList = -1, const std::string* pProduction = 0);
 
@@ -257,7 +267,8 @@ public:
 	* @brief home command, loads aliases
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
-	* @param pDirectory The directory to change the cli's initial (home) directory to, pass 0 (null) for current directory
+	* @param pDirectory The directory to change the cli's initial (home) directory 
+	*        to, pass 0 (null) for current directory
 	*************************************************************/
 	EXPORT bool DoHome(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string* pDirectory = 0);
 
@@ -266,7 +277,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param mode What mode to set indifferent selection to, or query.  See eIndifferentMode
+	* @param mode What mode to set indifferent selection to, or query.  
+	*        See eIndifferentMode
 	*************************************************************/
 	EXPORT bool DoIndifferentSelection(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, eIndifferentMode mode);
 
@@ -291,7 +303,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param options The various options set on the command line, see cli_CommandData.h
+	* @param options The various options set on the command line, 
+	*        see cli_CommandData.h
 	*************************************************************/
 	EXPORT bool DoLearn(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const LearnBitset& options);
 
@@ -358,7 +371,8 @@ public:
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param options Options for the memories flag, see cli_CommandData.h
 	* @param n number of productions to print sorted by most memory use, use 0 for all
-	* @param pProduction specific production to print, ignored if any options are set, pass 0 (null) if not applicable
+	* @param pProduction specific production to print, ignored if any 
+	*        options are set, pass 0 (null) if not applicable
 	*************************************************************/
 	EXPORT bool DoMemories(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
 
@@ -368,7 +382,8 @@ public:
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param pAttribute The attribute, pass 0 (null) for query
-	* @param n The count, pass 0 (null) for query if pAttribute is also null, otherwise this will default to 10
+	* @param n The count, pass 0 (null) for query if pAttribute is also null, 
+	*        otherwise this will default to 10
 	*************************************************************/
 	EXPORT bool DoMultiAttributes(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const std::string* pAttribute = 0, int n = 0);
 
@@ -415,7 +430,8 @@ public:
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param options The options to the print command, see cli_CommandData.h
 	* @param depth WME depth
-	* @param pArg The identifier/timetag/pattern/production name to print, or 0 (null) if not applicable
+	* @param pArg The identifier/timetag/pattern/production name to print, 
+	*        or 0 (null) if not applicable
 	*************************************************************/
 	EXPORT bool DoPrint(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const PrintBitset& options, int depth, const std::string* pArg = 0);
 
@@ -443,7 +459,8 @@ public:
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param query Pass true to query, all other args ignored
-	* @param pProduction The production to watch or stop watching, pass 0 (null) to disable watching of all productions (setting ignored)
+	* @param pProduction The production to watch or stop watching, pass 0 (null) 
+	*        to disable watching of all productions (setting ignored)
 	* @param setting True to watch the pProduction, false to stop watching it
 	*************************************************************/
 	EXPORT bool DoPWatch(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool query = true, const std::string* pProduction = 0, bool setting = false);
@@ -566,7 +583,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param pSetting The timers setting, true to turn on, false to turn off, pass 0 (null) to query
+	* @param pSetting The timers setting, true to turn on, false to turn off, 
+	*        pass 0 (null) to query
 	*************************************************************/
 	EXPORT bool DoTimers(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool* pSetting = 0);
 
@@ -575,7 +593,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param pSetting The verbose setting, true to turn on, false to turn off, pass 0 (null) to query
+	* @param pSetting The verbose setting, true to turn on, false to turn off, 
+	*        pass 0 (null) to query
 	*************************************************************/
 	EXPORT bool DoVerbose(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool* pSetting = 0);
 
@@ -591,7 +610,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param pSetting The waitsnc setting, true to turn on, false to turn off, pass 0 (null) to query
+	* @param pSetting The waitsnc setting, true to turn on, false to turn off, 
+	*        pass 0 (null) to query
 	*************************************************************/
 	EXPORT bool DoWaitSNC(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool* pSetting = 0);
 
@@ -600,7 +620,8 @@ public:
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
-	* @param pSetting The warnings setting, true to turn on, false to turn off, pass 0 (null) to query
+	* @param pSetting The warnings setting, true to turn on, false to turn off, 
+	*        pass 0 (null) to query
 	*************************************************************/
 	EXPORT bool DoWarnings(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool* pSetting = 0);
 
@@ -610,7 +631,8 @@ public:
 	* @param pResponse Pointer to XML response
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param options Options for the watch command, see cli_CommandData.h
-	* @param settings Settings for the watch command, if a flag (option) is set, its setting is set using this (true/on or false/off)
+	* @param settings Settings for the watch command, if a flag (option) is set, its 
+	*        setting is set using this (true/on or false/off)
 	* @param wmeSetting Setting for wme detail, not binary so it has its own arg
 	* @param learnSetting Setting for learn level, not binary so it has its own arg
 	*************************************************************/
