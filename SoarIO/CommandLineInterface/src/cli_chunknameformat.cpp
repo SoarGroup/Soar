@@ -71,28 +71,33 @@ bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vecto
 
 	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
-	return DoChunkNameFormat(pAgent, changeFormat, longFormat, countFlag ? &count : 0, patternFlag ? &pattern : 0);
+	return DoChunkNameFormat(pAgent, changeFormat ? &longFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
 }
 
-EXPORT bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFormat, bool longFormat, int* pCount, std::string* pPrefix) {
+/*************************************************************
+* @brief chunk-name-format command
+* @param pAgent The pointer to the gSKI agent interface
+* @param pLongFormat Pointer to the new format type, true for long format, false for short format, 0 (null) for query or no change
+* @param pCount Pointer to the new counter, non negative integer, 0 (null) for query
+* @param pPrefix Pointer to the new prefix, must not contain '*' character, null for query
+*************************************************************/
+EXPORT bool CommandLineInterface::DoChunkNameFormat(gSKI::IAgent* pAgent, const bool* pLongFormat, const int* pCount, const std::string* pPrefix) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (!changeFormat && !pCount && !pPrefix) {
+	if (!pLongFormat && !pCount && !pPrefix) {
 		if (m_RawOutput) {
-			m_Result << (pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? "Long" : "Short") << "format.";
+			m_Result << "Using " << (pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? "long" : "short") << " chunk format.";
 		} else {
 			AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(pAgent, USE_LONG_CHUNK_NAMES) ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
 
-	if (changeFormat) {
-		pKernelHack->SetSysparam(pAgent, USE_LONG_CHUNK_NAMES, longFormat);
-	}
+	if (pLongFormat) pKernelHack->SetSysparam(pAgent, USE_LONG_CHUNK_NAMES, *pLongFormat);
 
 	if (pCount) {
 		if (*pCount >= 0) {

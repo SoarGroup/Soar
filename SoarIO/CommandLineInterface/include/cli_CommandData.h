@@ -3,11 +3,14 @@
 
 namespace cli {
 
-	const unsigned int OPTION_EXCISE_ALL		= 0x01;
-	const unsigned int OPTION_EXCISE_CHUNKS		= 0x02;
-	const unsigned int OPTION_EXCISE_DEFAULT	= 0x04;
-	const unsigned int OPTION_EXCISE_TASK		= 0x08;
-	const unsigned int OPTION_EXCISE_USER		= 0x10;
+	enum eExciseOptions {
+		EXCISE_ALL,
+		EXCISE_CHUNKS,
+		EXCISE_DEFAULT,
+		EXCISE_TASK,
+		EXCISE_USER,
+		EXCISE_NUM_OPTIONS,
+	};
 
 	const unsigned int OPTION_INDIFFERENT_RANDOM = 0x1;
 	const unsigned int OPTION_INDIFFERENT_FIRST	 = 0x2;

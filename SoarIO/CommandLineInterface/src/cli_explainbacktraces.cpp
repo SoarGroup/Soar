@@ -27,7 +27,6 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 		{0, 0, 0, 0}
 	};
 
-	bool full = false;
 	int condition = 0;
 
 	for (;;) {
@@ -36,12 +35,10 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 
 		switch (option) {
 			case 'f':
-				condition = 0;
-				full = true;
+				condition = -1;
 				break;
 
 			case 'c':
-				full = false;
 				if (!IsInteger(m_pGetOpt->GetOptArg())) return SetError(CLIError::kIntegerExpected);
 				condition = atoi(m_pGetOpt->GetOptArg());
 				if (condition <= 0) return SetError(CLIError::kIntegerMustBePositive);
@@ -56,41 +53,46 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 		}
 	}
 
+	// never more than one arg
 	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 
-	if (full || condition) {
-		if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
-	}
+	// we need a production if full or condition given
+	if (condition) if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
 
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoExplainBacktraces(pAgent, &argv[m_pGetOpt->GetOptind()], full, condition);;
+	// we have a production
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoExplainBacktraces(pAgent, &argv[m_pGetOpt->GetOptind()], condition);
 	
+	// query
 	return DoExplainBacktraces(pAgent);
 }
 
-EXPORT bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, std::string* pProduction, bool full, int condition) {
-
+/*************************************************************
+* @brief explain-backtraces command
+* @param pAgent The pointer to the gSKI agent interface
+* @param pProduction Pointer to involved production. Pass 0 (null) for query
+* @param condition A number representing the condition number to explain, 0 for production name, -1 for full, 
+*        this argument ignored if pProduction is 0 (null)
+*************************************************************/
+EXPORT bool CommandLineInterface::DoExplainBacktraces(gSKI::IAgent* pAgent, const std::string* pProduction, const int condition) {
 	if (!RequireAgent(pAgent)) return false;
 
-	if (condition < 0) return SetError(CLIError::kInvalidConditionNumber);
+	// quick sanity check
+	if (condition < -1) return SetError(CLIError::kInvalidConditionNumber);
 
 	// Attain the evil back door of doom, even though we aren't the TgD
 	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
 
-	if (!full && !condition && (!pProduction || !pProduction->size())) {
-		// query
+	if (!pProduction) {
+		// no production means query, ignore other args
 		AddListenerAndDisableCallbacks(pAgent);
 		pKernelHack->ExplainListChunks(pAgent);
 		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
 
-	if (!pProduction || !pProduction->size()) return SetError(CLIError::kProductionRequired);
-	if (full) condition = -1;
-
 	AddListenerAndDisableCallbacks(pAgent);
 	pKernelHack->ExplainChunks(pAgent, pProduction->c_str(), condition);
 	RemoveListenerAndEnableCallbacks(pAgent);
-
 	return true;
 }
 

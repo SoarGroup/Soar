@@ -15,10 +15,13 @@ using namespace sml;
 
 bool CommandLineInterface::ParseGDSPrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(argv);
-
 	return DoGDSPrint(pAgent);
 }
 
+/*************************************************************
+* @brief gds-print command
+* @param pAgent The pointer to the gSKI agent interface
+*************************************************************/
 EXPORT bool CommandLineInterface::DoGDSPrint(gSKI::IAgent* pAgent) {
 
 	// Need agent pointer for function calls

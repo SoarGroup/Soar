@@ -27,7 +27,7 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 		{0, 0, 0, 0}
 	};
 
-	unsigned int options = 0;
+	ExciseBitset options(0);
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "acdtu", longOptions, 0);
@@ -35,19 +35,19 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 
 		switch (option) {
 			case 'a':
-				options |= OPTION_EXCISE_ALL;
+				options.set(EXCISE_ALL);
 				break;
 			case 'c':
-				options |= OPTION_EXCISE_CHUNKS;
+				options.set(EXCISE_CHUNKS);
 				break;
 			case 'd':
-				options |= OPTION_EXCISE_DEFAULT;
+				options.set(EXCISE_DEFAULT);
 				break;
 			case 't':
-				options |= OPTION_EXCISE_TASK;
+				options.set(EXCISE_TASK);
 				break;
 			case 'u':
-				options |= OPTION_EXCISE_USER;
+				options.set(EXCISE_USER);
 				break;
 			case '?':
 				return SetError(CLIError::kUnrecognizedOption);
@@ -57,7 +57,7 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 	}
 
 	// If there are options, no additional argument.
-	if (options) {
+	if (options.any()) {
 		if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 		return DoExcise(pAgent, options);
 	}
@@ -70,36 +70,40 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoExcise(pAgent, options, &(argv[m_pGetOpt->GetOptind()]));
 }
 
-EXPORT bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction) {
+/*************************************************************
+* @brief excise command
+* @param pAgent The pointer to the gSKI agent interface
+* @param options The various options set on the command line, see cli_CommandData.h
+* @param pProduction A production to excise, optional
+*************************************************************/
+EXPORT bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const ExciseBitset options, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
 	// Acquire production manager
 	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
-	if (!pProductionManager) {
-		return SetError(CLIError::kgSKIError);
-	}
+	if (!pProductionManager) return SetError(CLIError::kgSKIError);
 
 	int exciseCount = 0;
 
 	// Process the general options
-	if (options & OPTION_EXCISE_ALL) {
+	if (options.test(EXCISE_ALL)) {
 		ExciseInternal(pProductionManager->GetAllProductions(), exciseCount);
 		if (exciseCount) this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
 	}
-	if (options & OPTION_EXCISE_CHUNKS) {
+	if (options.test(EXCISE_CHUNKS)) {
 		ExciseInternal(pProductionManager->GetChunks(), exciseCount);
 		ExciseInternal(pProductionManager->GetJustifications(), exciseCount);
 	}
-	if (options & OPTION_EXCISE_DEFAULT) {
+	if (options.test(EXCISE_DEFAULT)) {
 		ExciseInternal(pProductionManager->GetDefaultProductions(), exciseCount);
 	}
-	if (options & OPTION_EXCISE_TASK) {
+	if (options.test(EXCISE_TASK)) {
 		ExciseInternal(pProductionManager->GetChunks(), exciseCount);
 		ExciseInternal(pProductionManager->GetJustifications(), exciseCount);
 		ExciseInternal(pProductionManager->GetUserProductions(), exciseCount);
 		if (exciseCount) this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
 	}
-	if (options & OPTION_EXCISE_USER) {
+	if (options.test(EXCISE_USER)) {
 		ExciseInternal(pProductionManager->GetUserProductions(), exciseCount);
 	}
 

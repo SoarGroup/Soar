@@ -18,21 +18,25 @@ bool CommandLineInterface::ParseDirs(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoDirs();
 }
 
+/*************************************************************
+* @brief dirs command
+*************************************************************/
 EXPORT bool CommandLineInterface::DoDirs() {
 	
 	StringStack tempStack;
 
 	std::string cwd;
-	GetCurrentWorkingDirectory(cwd);
+	if (!GetCurrentWorkingDirectory(cwd)) return false;
 
+	// cwd is top of stack
 	if (m_RawOutput) {
 		m_Result << cwd;
 	} else {
 		AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, cwd.c_str());
 	}
 
+	// print rest of stack making a new one
 	while (m_DirectoryStack.size()) {
-
 		if (m_RawOutput) {
 			m_Result << ' ' << m_DirectoryStack.top();
 		} else {
@@ -43,6 +47,7 @@ EXPORT bool CommandLineInterface::DoDirs() {
 		m_DirectoryStack.pop();
 	}
 
+	// put the old stack back together
 	while (tempStack.size()) {
 		m_DirectoryStack.push(tempStack.top());
 		tempStack.pop();

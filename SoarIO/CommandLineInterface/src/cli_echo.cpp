@@ -16,7 +16,11 @@ bool CommandLineInterface::ParseEcho(gSKI::IAgent* pAgent, std::vector<std::stri
 	return DoEcho(argv);
 }
 
-EXPORT bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
+/*************************************************************
+* @brief echo command
+* @param argv The args to echo
+*************************************************************/
+EXPORT bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv) {
 
 	std::string message;
 
@@ -26,6 +30,7 @@ EXPORT bool CommandLineInterface::DoEcho(std::vector<std::string>& argv) {
 		message += ' ';
 	}
 
+	// remove trailing space
 	message = message.substr(0, message.length() - 1);
 
 	if (m_RawOutput) {

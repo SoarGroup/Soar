@@ -36,31 +36,34 @@ bool CommandLineInterface::ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<s
 	// Production defaults to no production
 	std::string* pProduction = 0;
 
+	// no more than 1 arg
+	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
+
 	if (argv.size() == 2) {
-		// one argument, figure out if it is a non-negative integer
-		if (argv[1][0] == '-') {
-			return SetError(CLIError::kIntegerMustBeNonNegative);
-		}
-		if (isdigit(argv[1][0])) {
-			// integer argument, set numberToList
+		// one argument, figure out if it is a non-negative integer or a production
+		if (!IsInteger(argv[1])) {
 			numberToList = atoi(argv[1].c_str());
-			if (numberToList < 0) {
-				return SetError(CLIError::kIntegerMustBeNonNegative);
-			}
+			if (numberToList < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
+
 		} else {
 			// non-integer argument, hopfully a production
 			pProduction = &(argv[1]);
 		}
-	} else if (argv.size() > 2) {
-		return SetError(CLIError::kTooManyArgs);
 	}
 
-	return DoFiringCounts(pAgent, pProduction, numberToList);
+	return DoFiringCounts(pAgent, numberToList, pProduction);
 }
 
-EXPORT bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::string* pProduction, int numberToList) {
+/*************************************************************
+* @brief firing-counts command
+* @param pAgent The pointer to the gSKI agent interface
+* @param numberToList The number of top-firing productions to list.  Use 0 to list those that haven't fired. -1 lists all
+* @param pProduction The specific production to list, pass 0 (null) to list multiple productions
+*************************************************************/
+EXPORT bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, const int numberToList, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
 
+	// get the production stuff
 	gSKI::IProductionManager* pProductionManager = pAgent->GetProductionManager();
 	gSKI::tIProductionIterator* pIter = 0;
 	gSKI::IProduction* pProd = 0;
@@ -68,20 +71,23 @@ EXPORT bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::stri
 
 	bool foundProduction = false;
 
+	// if we have a production, just get that one, otherwise get them all
 	if (pProduction) {
 		pIter = pProductionManager->GetProduction(pProduction->c_str());
 	} else {
 		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
 	}
-
 	if (!pIter) return SetError(CLIError::kgSKIError);
 
+	// walk with the iter and 
 	for(; pIter->IsValid(); pIter->Next()) {
 
 		pProd = pIter->GetVal();
 
+		// if numberToList is 0, only list those who haven't fired
 		if (!numberToList) {
 			if (pProd->GetFiringCount()) {
+				// this one has fired, skip it
 				pProd->Release();
 				continue;
 			}
@@ -89,6 +95,7 @@ EXPORT bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::stri
 
 		foundProduction = true;
 
+		// store the name and count
 		std::pair< std::string, unsigned long > firing;
 		firing.first = pProd->GetName();
 		firing.second = pProd->GetFiringCount();
@@ -102,8 +109,11 @@ EXPORT bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, std::stri
 
 	if (!foundProduction) return SetError(CLIError::kProductionNotFound);
 
+	// Sort the list
 	FiringsSort s;
 	sort(firings.begin(), firings.end(), s);
+
+	// print the list
 	char buf[1024];
 	int i = 0;
 	for (std::vector< std::pair< std::string, unsigned long > >::reverse_iterator j = firings.rbegin(); 

@@ -14,7 +14,7 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	// n defaults to 0 (print current value)
+	// n defaults to 0 (query)
 	int n = 0;
 
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
@@ -25,14 +25,18 @@ bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vecto
 		if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
 	}
 
-	return DoDefaultWMEDepth(pAgent, n);
+	return DoDefaultWMEDepth(pAgent, n ? &n : 0);
 }
 
-EXPORT bool CommandLineInterface::DoDefaultWMEDepth(gSKI::IAgent* pAgent, int n) {
+/*************************************************************
+* @brief default-wme-depth command
+* @param pAgent The pointer to the gSKI agent interface
+* @param pDepth The pointer to the new wme depth, a positive integer.  Pass 0 (null) pointer for query.
+*************************************************************/
+EXPORT bool CommandLineInterface::DoDefaultWMEDepth(gSKI::IAgent* pAgent, const int* pDepth) {
 	if (!RequireAgent(pAgent)) return false;
 
-	if (!n) {
-
+	if (!pDepth) {
 		if (m_RawOutput) {
 			m_Result << pAgent->GetDefaultWMEDepth();
 		} else {
@@ -42,7 +46,7 @@ EXPORT bool CommandLineInterface::DoDefaultWMEDepth(gSKI::IAgent* pAgent, int n)
 		return true;
 	}
 
-	pAgent->SetDefaultWMEDepth(n);
+	pAgent->SetDefaultWMEDepth(*pDepth);
 	return true;
 }
 

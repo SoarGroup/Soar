@@ -25,15 +25,17 @@ bool CommandLineInterface::ParseCD(gSKI::IAgent* pAgent, std::vector<std::string
 	return DoCD();
 }
 
+/*************************************************************
+* @brief cd command
+* @param pDirectory Pointer to the directory to pass in to.  
+*        Pass null to return to the initial (home) directory. 
+*        Quotes, if present, are stripped.
+*************************************************************/
 EXPORT bool CommandLineInterface::DoCD(std::string* pDirectory) {
 
-	// If cd is typed by itself, return to original (home) directory
+	// if directory 0, return to original (home) directory
 	if (!pDirectory) {
-
-		// Home dir set in constructor
-		if (chdir(m_HomeDirectory.c_str())) {
-			return SetError(CLIError::kchdirFail);
-		}
+		if (chdir(m_HomeDirectory.c_str())) return SetError(CLIError::kchdirFail);
 		return true;
 	}
 
@@ -42,10 +44,8 @@ EXPORT bool CommandLineInterface::DoCD(std::string* pDirectory) {
 		*pDirectory = pDirectory->substr(1, pDirectory->length() - 2);
 	}
 
-	// Change to passed directory
-	if (chdir(pDirectory->c_str())) {
-		return SetError(CLIError::kchdirFail);
-	}
+	// Change to directory
+	if (chdir(pDirectory->c_str())) return SetError(CLIError::kchdirFail);
 	return true;
 }
 

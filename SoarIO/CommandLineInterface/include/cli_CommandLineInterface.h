@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <bitset>
 #ifdef _MSC_VER
 #pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
 #endif
@@ -83,6 +84,9 @@ typedef std::stack<std::string> StringStack;
 typedef std::list<sml::ElementXML*> ElementXMLList;
 typedef ElementXMLList::iterator ElementXMLListIter;
 
+// Define bitsets for various commands
+typedef std::bitset<EXCISE_NUM_OPTIONS> ExciseBitset;
+
 // Log command enum
 enum OPTION_LOG { 
 	OPTION_LOG_NEW,
@@ -141,305 +145,298 @@ public:
 	/*************************************************************
 	* @brief alias command
 	* @param command The alias to enable or disable, pass 0 to list aliases
-	* @param pSubstitution Pass a pointer to a vector strings to enable a new alias, pass 0 to disable a current alias 
+	* @param pSubstitution Pass a pointer to a vector strings to enable a new alias, pass 0 to disable a current alias
 	*************************************************************/
 	EXPORT bool DoAlias(const std::string* pCommand = 0, const std::vector<std::string>* pSubstitution = 0);
 
 	/*************************************************************
-	* @brief Change the current working directory.  If a null pointer passed,
-	*		 the current working directory is changed to the home directory.
-	*		 The home directory is defined as the initial working directory.
+	* @brief cd command
+	* @param pDirectory Pointer to the directory to pass in to.  
+	*        Pass null to return to the initial (home) directory. 
+	*        Quotes, if present, are stripped.
 	*************************************************************/
 	EXPORT bool DoCD(std::string* pDirectory = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief chunk-name-format command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param pLongFormat Pointer to the new format type, true for long format, false for short format, 0 (null) for query or no change
+	* @param pCount Pointer to the new counter, non negative integer, 0 (null) for query
+	* @param pPrefix Pointer to the new prefix, must not contain '*' character, null for query
 	*************************************************************/
-	EXPORT bool DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFormat = false, bool longFormat = true, int* pCount = 0, std::string* pPrefix = 0);
+	EXPORT bool DoChunkNameFormat(gSKI::IAgent* pAgent, const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief default-wme-depth command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param pDepth The pointer to the new wme depth, a positive integer.  Pass 0 (null) pointer for query.
 	*************************************************************/
-	EXPORT bool DoDefaultWMEDepth(gSKI::IAgent* pAgent, int n);
+	EXPORT bool DoDefaultWMEDepth(gSKI::IAgent* pAgent, const int* pDepth);
 
 	/*************************************************************
-	* @brief 
+	* @brief dirs command
 	*************************************************************/
 	EXPORT bool DoDirs();
 
 	/*************************************************************
-	* @brief Simply concatenates all arguments, adding them to the result.
+	* @brief echo command
+	* @param argv The args to echo
 	*************************************************************/
-	EXPORT bool DoEcho(std::vector<std::string>& argv);
+	EXPORT bool DoEcho(const std::vector<std::string>& argv);
 
 	/*************************************************************
-	* @brief See CommandData.h for the list of flags for the options
-	*		 parameter.  If there is a specific production to excise,
-	*		 it is passed, otherwise, pProduction is null.
+	* @brief excise command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param options The various options set on the command line, see cli_CommandData.h
+	* @param pProduction A production to excise, optional
 	*************************************************************/
-	EXPORT bool DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction = 0);
+	EXPORT bool DoExcise(gSKI::IAgent* pAgent, const ExciseBitset options, const std::string* pProduction = 0);
 
 	/*************************************************************
+	* @brief explain-backtraces command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param pProduction Pointer to involved production. Pass 0 (null) for query
+	* @param condition A number representing the condition number to explain, 0 for production name, -1 for full, 
+	*        this argument ignored if pProduction is 0 (null)
 	*************************************************************/
-	EXPORT bool DoExplainBacktraces(gSKI::IAgent* pAgent, std::string* pProduction = 0, bool full = false, int condition = false);
+	EXPORT bool DoExplainBacktraces(gSKI::IAgent* pAgent, const std::string* pProduction = 0, const int condition = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief firing-counts command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param numberToList The number of top-firing productions to list.  Use 0 to list those that haven't fired. -1 lists all
+	* @param pProduction The specific production to list, pass 0 (null) to list multiple productions
 	*************************************************************/
-	EXPORT bool DoFiringCounts(gSKI::IAgent* pAgent, std::string* pProduction, int numberToList);
+	EXPORT bool DoFiringCounts(gSKI::IAgent* pAgent, const int numberToList = -1, const std::string* pProduction = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief gds-print command
+	* @param pAgent The pointer to the gSKI agent interface
 	*************************************************************/
 	EXPORT bool DoGDSPrint(gSKI::IAgent* pAgent);
 
 	/*************************************************************
-	* @brief Generate a help string for the passed command if it exists.
-	*		 Passing null generates a general help string that lists the
-	*		 available commands along with some other help.
+	* @brief help command
 	*************************************************************/
 	EXPORT bool DoHelp(std::string* pCommand = 0);
 
 	/*************************************************************
-	* @brief Generate the extended help string for the passed command
-	*		 if it exists.
+	* @brief helpex command
 	*************************************************************/
 	EXPORT bool DoHelpEx(const std::string& command);
 
 	/*************************************************************
-	* @brief If passed directory is null, get the current directory and change
-	*        to it.  Otherwise, set the home directory to pDirectory.
+	* @brief home command
 	*************************************************************/
 	EXPORT bool DoHome(std::string* pDirectory = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief indifferent-selection command
 	*************************************************************/
 	EXPORT bool DoIndifferentSelection(gSKI::IAgent* pAgent, unsigned int mode);
 
 	/*************************************************************
-	* @brief Reinitializes the current agent.  No arguments necessary.
+	* @brief init-soar command
 	*************************************************************/
 	EXPORT bool DoInitSoar(gSKI::IAgent* pAgent);
 
 	/*************************************************************
+	* @brief internal-symbols command
 	*************************************************************/
 	EXPORT bool DoInternalSymbols(gSKI::IAgent* pAgent);
 
 	/*************************************************************
-	* @brief 
+	* @brief io command
 	*************************************************************/
 	EXPORT bool DoIO();
 
 	/*************************************************************
-	* @brief See CommandData.h for the list of flags used in the options
-	*		 parameter.  Passing no options simply prints current learn
-	*		 settings.
+	* @brief learn command
 	*************************************************************/
 	EXPORT bool DoLearn(gSKI::IAgent* pAgent, const unsigned int options = 0);
 
 	/*************************************************************
-	* @brief Presence of filename opens a file for logging.  If option is
-	*		 true, then the logging is appended to the end of the file.
-	*		 If the filename is null and the option is true, the log file is
-	*		 closed.  If the filename is null and the option false, 
-	*		 the current logging status is queried.
+	* @brief log command
 	*************************************************************/
 	EXPORT bool DoLog(gSKI::IAgent* pAgent, OPTION_LOG operation, const std::string& filename, const std::string& toAdd);
 
 	/*************************************************************
-	* @brief Lists current working directory, no arguments necessary.
+	* @brief ls command
 	*************************************************************/
 	EXPORT bool DoLS();
 
 	/*************************************************************
-	* @brief 
+	* @brief matches command
 	*************************************************************/
 	EXPORT bool DoMatches(gSKI::IAgent* pAgent, unsigned int matches, int wmeDetail, const std::string& production);
 
 	/*************************************************************
-	* @brief 
+	* @brief max-chunks command
 	*************************************************************/
 	EXPORT bool DoMaxChunks(gSKI::IAgent* pAgent, int n);
 
 	/*************************************************************
-	* @brief 
+	* @brief max-elaborations command
 	*************************************************************/
 	EXPORT bool DoMaxElaborations(gSKI::IAgent* pAgent, int n);
 
 	/*************************************************************
-	* @brief 
+	* @brief max-nil-output-cycles command
 	*************************************************************/
 	EXPORT bool DoMaxNilOutputCycles(gSKI::IAgent* pAgent, int n);
 
 	/*************************************************************
-	* @brief 
+	* @brief memories command
 	*************************************************************/
 	EXPORT bool DoMemories(gSKI::IAgent* pAgent, unsigned int productionType, int n, std::string production);
 
 	/*************************************************************
-	* @brief Two optional arguments, attribute and n.  If no arguments,
-	*		 prints current settings.
+	* @brief multi-attributes command
 	*************************************************************/
 	EXPORT bool DoMultiAttributes(gSKI::IAgent* pAgent, std::string* pAttribute = 0, int n = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief numeric-indifferent mode command
 	*************************************************************/
 	EXPORT bool DoNumericIndifferentMode(gSKI::IAgent* pAgent, unsigned int mode);
 
 	/*************************************************************
-	* @brief 
+	* @brief o-support-mode command
 	*************************************************************/
 	EXPORT bool DoOSupportMode(gSKI::IAgent* pAgent, int mode);
 
 	/*************************************************************
-	* @brief No arguments, pops a directory off the directory stack
-	*		 and changes to it.
+	* @brief popd command
 	*************************************************************/
 	EXPORT bool DoPopD();
 
 	/*************************************************************
-	* @brief 
+	* @brief preferences command
 	*************************************************************/
 	EXPORT bool DoPreferences(gSKI::IAgent* pAgent, int detail, std::string* pId = 0, std::string* pAttribute = 0);
 
 	/*************************************************************
-	* @brief Issues a print command to the kernel depending on the options
-	*		 (see commanddata.h), depth argument, and optional string
-	*		 argument.
+	* @brief print command
 	*************************************************************/
 	EXPORT bool DoPrint(gSKI::IAgent* pAgent, const unsigned int options, int depth, std::string* pArg = 0);
 
 	/*************************************************************
-	* @brief 
+	* @brief production-find command
 	*************************************************************/
 	EXPORT bool DoProductionFind(gSKI::IAgent* pAgent, unsigned int mode, std::string pattern);
 
 	/*************************************************************
-	* @brief Pushes a directory on to the directory stack.  Operates
-	*		 like the unix command of the same name.  Used with popd.
+	* @brief pushd command
 	*************************************************************/
 	EXPORT bool DoPushD(std::string& directory);
 
 	/*************************************************************
+	* @brief pwatch command
 	*************************************************************/
 	EXPORT bool DoPWatch(gSKI::IAgent* pAgent, bool query = true, std::string* pProduction = 0, bool setting = false);
 
 	/*************************************************************
-	* @brief Prints the current working directory.
+	* @brief pwd command
 	*************************************************************/
 	EXPORT bool DoPWD();
 
 	/*************************************************************
-	* @brief 
+	* @brief quit command
 	*************************************************************/
 	EXPORT bool DoQuit();
 
 	/*************************************************************
-	* @brief 
+	* @brief remove-wme command
 	*************************************************************/
 	EXPORT bool DoRemoveWME(gSKI::IAgent*, int timetag);
 
 	/*************************************************************
-	* @brief 
+	* @brief rete-net command
 	*************************************************************/
 	EXPORT bool DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename);
 
 	/*************************************************************
-	* @brief Starts execution of the Soar kernel.  The options decide
-	*		 the length and size of steps, the count determines the
-	*		 number of steps to execute.  Returns when the count is achieved
-	*		 or until execution is interrupted by an interrupt or an
-	*		 error.
+	* @brief run command
 	*************************************************************/
 	EXPORT bool DoRun(gSKI::IAgent* pAgent, const unsigned int options, int count);
 
 	/*************************************************************
-	* @brief 
+	* @brief save-backtraces command
 	*************************************************************/
 	EXPORT bool DoSaveBacktraces(gSKI::IAgent* pAgent, bool query, bool setting);
 
 	/*************************************************************
-	* @brief 
+	* @brief soar8 command
 	*************************************************************/
 	EXPORT bool DoSoar8(bool query, bool soar8);
 
 	/*************************************************************
-	* @brief 
+	* @brief soarnews command
 	*************************************************************/
 	EXPORT bool DoSoarNews();
 
 	/*************************************************************
-	* @brief Sources a file.  Basically executes the lines of the file
-	*		 through DoCommandInternal() ignoring comments (lines starting
-	*		 with '#').
+	* @brief source command
 	*************************************************************/
 	EXPORT bool DoSource(gSKI::IAgent* pAgent, std::string filename);
 
 	/*************************************************************
-	* @brief Soar production command, takes a production and loads it
-	*		 into production memory.  The production argument should be
-	*		 in the form accepted by gSKI, that is with the sp and 
-	*		 braces removed.
+	* @brief sp command
 	*************************************************************/
 	EXPORT bool DoSP(gSKI::IAgent* pAgent, const std::string& production);
 
 	/*************************************************************
-	* @brief Assembles a string representing the Soar kernel stats
-	*		 generated by the kernel.
+	* @brief stats command
 	*************************************************************/
 	EXPORT bool DoStats(gSKI::IAgent* pAgent, const int options);
 
 	/*************************************************************
-	* @brief 
+	* @brief stop-soar command
 	*************************************************************/
 	EXPORT bool DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string& reasonForStopping);
 
 	/*************************************************************
-	* @brief Executes the arguments as a command and times how long it
-	*		 takes for the DoCommandInternal function to return.
+	* @brief time command
 	*************************************************************/
 	EXPORT bool DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
-	* @brief If print is true, returns the current setting of the
-	*		 stats timers. If setting is true, enables stats timers.  
-	*        False disables stats timers.
+	* @brief timers command
 	*************************************************************/
 	EXPORT bool DoTimers(gSKI::IAgent* pAgent, bool print, bool setting);
 
 	/*************************************************************
+	* @brief topd command
 	*************************************************************/
 	EXPORT bool DoTopD();
 
 	/*************************************************************
-	* @brief 
+	* @brief verbose command
 	*************************************************************/
 	EXPORT bool DoVerbose(gSKI::IAgent* pAgent, bool query, bool setting);
 
 	/*************************************************************
-	* @brief 
+	* @brief version command
 	*************************************************************/
 	EXPORT bool DoVersion();
 
 	/*************************************************************
-	* @brief 
+	* @brief waitsnc command
 	*************************************************************/
 	EXPORT bool DoWaitSNC(gSKI::IAgent* pAgent, bool query, bool enable);
 
 	/*************************************************************
-	* @brief 
+	* @brief warnings command
 	*************************************************************/
 	EXPORT bool DoWarnings(gSKI::IAgent* pAgent, bool query, bool setting);
 
 	/*************************************************************
-	* @brief Set watch settings.  The options flag contains the changed
-	*		 flags and the values flag contains their new values.
+	* @brief watch command
 	*************************************************************/
 	EXPORT bool DoWatch(gSKI::IAgent* pAgent, const int options, const int settings, const int wmeSetting, const int learnSetting);
 
 	/*************************************************************
+	* @brief watch-wmes command
 	*************************************************************/
 	EXPORT bool DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, bool adds, bool removes, std::string* pIdString = 0, std::string* pAttributeString = 0, std::string* pValueString = 0);
 
