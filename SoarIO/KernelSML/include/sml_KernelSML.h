@@ -18,11 +18,6 @@
 #include <crtdbg.h>
 #endif
 
-// This define allows us to pull in and out the Tcl debugger.
-// We need this during the early SML days because the Tcl debugger
-// needs local access to the gSKI kernel and that only happens here.
-//#define USE_TCL_DEBUGGER
-
 // Forward declarations
 namespace gSKI {
 	class IKernelFactory ;
@@ -37,14 +32,6 @@ namespace gSKI {
 
 #include <map>
 #include <list>
-
-#ifdef USE_TCL_DEBUGGER
-// Forward declaration for the debugger.
-namespace TgD
-{
-	class TgD ;
-}
-#endif
 
 #include "cli_CommandLineInterface.h"
 #include "sml_KernelListener.h"
@@ -122,11 +109,6 @@ protected:
 
 	// Used to listen for kernel events that are kernel based (not for a specific agent)
 	KernelListener	m_KernelListener ;
-
-#ifdef USE_TCL_DEBUGGER
-	// A hack to allow us access to the Tcl debugger until we have a real one available.
-	TgD::TgD* m_Debugger ;
-#endif
 
 public:
 	/*************************************************************

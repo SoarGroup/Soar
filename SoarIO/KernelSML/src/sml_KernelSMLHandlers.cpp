@@ -53,24 +53,6 @@
 #include "IgSKI_Symbol.h"
 #include "IgSKI_Wme.h"
 
-#ifdef USE_TCL_DEBUGGER
-//debugger #includes
-//BADBAD: These should come out when we pull out the TgD debugger hack.
-#include "TgD.h"
-#include "tcl.h"
-
-//TgDI directives
-#ifdef _WIN32
-#define _WINSOCKAPI_
-#include <Windows.h>
-#define TGD_SLEEP Sleep
-#else
-#include <unistd.h>
-#define TGD_SLEEP usleep
-#endif
-
-#endif // USE_TCL_DEBUGGER
-
 using namespace sml ;
 using namespace gSKI ;
 
@@ -190,15 +172,6 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgentPtr, char const* pCommandN
 		pAgent->GetInputLink()->AddInputProducer(pRoot, pInputProducer) ;
 		pRoot->Release() ;
 	}
-
-#ifdef USE_TCL_DEBUGGER
-	// BADBAD: Now create the Tcl debugger.  This is a complete hack and can come out once we have some way to debug this stuff.
-	if (m_Debugger == NULL && pAgent)
-	{
-		m_Debugger = CreateTgD(pAgent, GetKernel(), GetKernelFactory()->GetKernelVersion(), TgD::TSI40, "") ;
-		m_Debugger->Init() ;
-	}	
-#endif
 
 	// Return true if we got an agent constructed.
 	// If not, pError should contain the error and returning false
@@ -412,14 +385,6 @@ bool KernelSML::HandleCheckForIncomingCommands(gSKI::IAgent* pAgent, char const*
 	// Need to return false if we're not using the debugger, which looks
 	// the same to the caller as if we had the debugger up and the user has quit from it.
 	bool keepGoing = false ;
-
-#ifdef USE_TCL_DEBUGGER
-	if (m_Debugger)
-	{
-		// The update function returns false if the user exits the debugger.
-		keepGoing = TgD::TgD::Update(false, m_Debugger) ;
-	}
-#endif
 
 	// Also check for any incoming calls from remote sockets
 	if (m_pConnectionManager)
