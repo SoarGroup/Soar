@@ -897,7 +897,7 @@ int soar_Operand2(int argc, const char *argv[], soarResult * res)
         print("%s\n", buffer);
         return SOAR_OK;
     }
-    setSoarResultResult(res, "Failed to set Operand2 Mode");
+    setSoarResultResult(res, "Cannot change Soar8 mode after productions have been loaded.  Excise all productions first.");
     return SOAR_ERROR;
 
 #else
