@@ -48,10 +48,10 @@
 
 /* REW: begin 09.15.96 */
 /* For low-level, detailed information on the processing of the GDS */
-/* #define DEBUG_GDS */
+ #define DEBUG_GDS 
 /* For high-level information on the instantiations that created an
  * o-supported element and lead to the elaboration of the GDS */
-/* #define DEBUG_GDS_HIGH */
+ #define DEBUG_GDS_HIGH 
 /* REW: end   09.15.96 */
 
 #include "soarkernel.h"
@@ -3051,35 +3051,50 @@ void elaborate_gds()
 #endif
                             }   /* matches { wme *fake_inst_wme_cond  */
                         } else {
-                            /* this was the original "local & i-supported" action */
 
-                            for (pref = s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; pref; pref = pref->next) {
+						    /* this was the original "local & i-supported" action */
 
-#ifdef DEBUG_GDS
-                                print("           looking at pref for the wme: ");
-                                print_preference(pref);
-#endif
-
-                                /* REW BUG: may have to go over all insts regardless
-                                 * of this visited_already flag... */
-
-                                if (pref->inst->GDS_evaluated_already == FALSE) {
+						    for (pref=s->preferences[ACCEPTABLE_PREFERENCE_TYPE];
+							     pref;
+							     pref=pref->next) {
 
 #ifdef DEBUG_GDS
-                                    print_with_symbols("\n           adding inst that produced the pref to GDS: %y\n",
-                                                       pref->inst->prod->name);
+							     print("           looking at pref for the wme: ");
+							     print_preference(pref);
 #endif
 
-                                    uniquely_add_to_head_of_dll(pref->inst);
-                                    pref->inst->GDS_evaluated_already = TRUE;
-                                }
+						    /* REW BUG: may have to go over all insts regardless
+							 * of this visited_already flag... */
 
-                                else {
+							if (pref->inst->GDS_evaluated_already == FALSE) {
 #ifdef DEBUG_GDS
-                                    print
-                                        ("           the inst producing this pref was already explored; skipping it\n");
+								print_with_symbols("\n           adding inst that produced the pref to GDS: %y\n",pref->inst->prod->name);
 #endif
-                                }
+
+
+								/* REW: 2003-12-07 */
+								/* If the preference comes from a lower level inst, then ignore it. */
+								/* Preferences from lower levels must come from result instantiations;
+								we just want to use the justification/chunk instantiations at the 
+								match goal level*/
+						        if (pref->inst->match_goal_level <= inst->match_goal_level) {
+									uniquely_add_to_head_of_dll(pref->inst); 
+							        pref->inst->GDS_evaluated_already = TRUE;
+								} else {
+#ifdef DEBUG_GDS 
+									print_with_symbols("\n           ignoring inst %y because it is at a lower level than the GDS\n",pref->inst->prod->name);
+#endif
+
+									pref->inst->GDS_evaluated_already = TRUE;
+						}
+						/* REW: 2003-12-07 */
+
+
+							} else {
+#ifdef DEBUG_GDS
+								print("           the inst producing this pref was already explored; skipping it\n");
+#endif
+    }
 
                             }   /* for pref = s->pref[ACCEPTABLE_PREF ... */
                         }
