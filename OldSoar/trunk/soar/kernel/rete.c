@@ -5280,12 +5280,11 @@ void p_node_left_addition(rete_node * node, token * tok, wme * w)
                             temp_tok = temp_tok->parent;
                         }       /* end while (temp_tok != NIL) */
 
-                        if (prod_type == PE_PRODS) {
+                        if (prod_type == PE_PRODS)
                             if (current_agent(o_support_calculation_type) != 3
                                 && current_agent(o_support_calculation_type != 4)) {
                                 break;
-                            }
-                        } else if (op_elab == TRUE) {
+                            } else if (op_elab == TRUE) {
 
                             /* warn user about mixed actions  */
 
