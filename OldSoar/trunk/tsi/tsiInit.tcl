@@ -222,6 +222,7 @@ proc tsiInitAgent {} {
    
    rename watch tsiInternalWatch
    rename help tsiInternalHelp
+   rename learn tsiInternalLearn
     
    if $tsiConfig(debug) {puts "\n\nPrinting watch\n\n"}
    if $tsiConfig(debug) {puts [tsiInternalWatch]}

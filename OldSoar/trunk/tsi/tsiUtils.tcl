@@ -1004,6 +1004,28 @@ proc watch {args} {
    }
    return $x
 }
+
+### The original Soar "learn" command is renamed in tsiInitAgent
+proc learn {args} {
+   
+   variable Debugger::learnSettings
+   
+   if {[string trim $args]==""} {
+     tsiInternalLearn
+   } else {
+     tsiInternalLearn $args
+   }
+   
+   output-strings-destination -push -append-to-result
+
+   set ls [split [tsiInternalLearn] "\n"]
+   set ls2 [lrange $ls 1 [llength $ls]]
+   set learnSettings "Learn:"
+   foreach s $ls2 {
+      set learnSettings "$learnSettings [removeFirstChar [string trim $s]] "
+   }
+   output-strings-destination -pop
+}
  
 
 proc tsiDetermineWatchSettings {} {
