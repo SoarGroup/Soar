@@ -9,7 +9,7 @@
  *  slots, and the garbage collection of disconnected WMEs.
  * =======================================================================
  *
- * Copyright 1995-2003 Carnegie Mellon University,
+ * Copyright 1995-2004 Carnegie Mellon University,
  *										 University of Michigan,
  *										 University of Southern California/Information
  *										 Sciences Institute. All rights reserved.

@@ -51,7 +51,7 @@
  *
  * =======================================================================
  *
- * Copyright 1995-2003 Carnegie Mellon University,
+ * Copyright 1995-2004 Carnegie Mellon University,
  *										 University of Michigan,
  *										 University of Southern California/Information
  *										 Sciences Institute. All rights reserved.
@@ -5175,8 +5175,11 @@ void p_node_left_addition(rete_node * node, token * tok, wme * w)
                 for (OPERAND_curr_tok = node->a.np.tokens;
                      OPERAND_curr_tok != NIL; OPERAND_curr_tok = OPERAND_curr_tok->next_of_node) {
 
+
+					/* begin fix for bugzilla bug 357  6/3/2004 */
                     w = OPERAND_curr_tok->w;
                     tok = OPERAND_curr_tok->parent;
+					/* end fix for bugzilla bug 357  6/3/2004 */
 
                     /*
 

@@ -8,7 +8,7 @@
  *  the core routines for "running" Soar (do_one_top_level_phase, etc.)
  * =======================================================================
  *
- * Copyright 1995-2003 Carnegie Mellon University,
+ * Copyright 1995-2004 Carnegie Mellon University,
  *										 University of Michigan,
  *										 University of Southern California/Information
  *										 Sciences Institute. All rights reserved.
