@@ -12,7 +12,6 @@
 #
 add-wme
 Usage:	add-wme id [^]attribute value [+]
-Options and arguments:
   id		Must be an existing identifier.
   ^		Leading ^ on attribute is optional.
   attribute	Attribute can by any Soar symbol.  Use * to have Soar create
@@ -37,7 +36,6 @@ alias
 Usage:	alias name cmd [args..]
 	alias -d name
 	alias
-Options and arguments:
   -d, --disable, --off	Remove the named alias.
   name			The name of the alias, i.e. the new command.
   cmd			The command that the alias will be replacing.
@@ -52,7 +50,6 @@ Usage:	capture-input
 ***
 cd
 Usage:	cd [directory]
-Options and arguments:
   directory 		The directory to change in to, can be relative or full
   			path.
 
@@ -68,7 +65,6 @@ On success:
 chunk-name-format
 Usage:	chunk-name-format [-sl] -p [<prefix>]
 	chunk-name-format [-sl] -c [<count>]
-Options and arguments:
   -c, --count
   count
   -l, --long
@@ -79,13 +75,11 @@ Options and arguments:
 ***
 default-wme-depth
 Usage:	default-wme-depth [depth]
-Options and arguments:
   depth
 ~~~
 ***
 echo
 Usage:	echo [-n] string
-Options and arguments:
   -n, --nonewline	Default is to insert a newline at end of string. This
   			disables it.
   string		The string to print back.
@@ -98,7 +92,6 @@ On success:
 excise
 Usage:	excise production_name
 	excise -[acdtu]
-Options and arguments:
   -a, --all		Excise everything.
   -c, --chunks		Excise chunks and justifications
   -d, --default		Excise default productions.
@@ -125,7 +118,6 @@ Usage:	explain-backtraces
 firing-counts
 Usage:	firing-counts [n]
 	firing-counts production_name
-Options and arguments:
   n                 Number of the top firing productions to list, or 0.
   production_name   Production to list firing counts for
 
@@ -144,7 +136,6 @@ Note that firing counts are reset by a call to init-soar.
 format-watch
 Usage:	format-watch -a[so] restriction format [restriction format]...
 	format-watch -r[so] restriction format [restriction format]...
-Options and arguments:
   -a, --add
   -o, --object
   -r, --remove
@@ -162,7 +153,6 @@ Set (GDS) for each goal in the stack. See the Soar manual for details.
 ***
 help
 Usage:	help [command_name]
-Options and arguments:
   command_name		Print online help for this command.
 ~~~
 On success:
@@ -170,7 +160,6 @@ On success:
 ***
 helpex
 Usage:	helpex command_name
-Options and arguments:
   command_name		Print extended help for this command.
 ~~~
 On success:
@@ -178,7 +167,6 @@ On success:
 ***
 home
 Usage:	home [home_directory]
-Options and arguments:
   home_directory	Optional home directory to set as home.  Otherwise uses
 			current directory.
 
@@ -224,7 +212,6 @@ Usage:	io
 learn
 Usage:	learn [-l]
 	learn -[d|e|E|o][ab]
-Options and arguments:
   -a, --all-levels      Build productions whenever a subgoal returns a result
   -b, --bottom-up       Build productions only for subgoals that have not yet
                         had any subgoals with chunks built
@@ -256,7 +243,6 @@ log
 Usage:	log [-Ae] filename
 	log -a string
 	log [-cdoq]
-Options and arguments:
   -A, -e, --append	Append to the end of the specified file.
   -a, --add		Add the given string to the log.
   -c, -d, -o, --close, 	Stop logging and close the current log.
@@ -293,7 +279,6 @@ Note:
 matches
 Usage:	matches [-[a|r]12cntw]
 	matches [-012cntw] production_name
-Options and arguments:
   -a, --assertions	Print match set information only about assertions.
   -r, --retractions	Print match set information only about retractions.
   -0, -n, -c, --names	For the match set, print only the names of the 
@@ -317,7 +302,6 @@ Usage:	max-chunks
 ***
 max-elaborations
 Usage:	max-elaborations [n]
-Options and arguments:
   n	Maximum allowed elaboration cycles, must be a positive integer.
 
 The max-elaborations command is used to limit the maximum number of elaboration 
@@ -336,7 +320,6 @@ Usage:	max-nil-output-cycles
 memories
 Usage:	memories [-cdju] [n]
 	memories production_name
-Options and arguments:
   -c, --chunks		Print memory usage of chunks.
   -d, --default		Print memory usage of default productions.
   -j, --justifications	Print memory usage of justifications.
@@ -363,7 +346,6 @@ productions using the command options.
 ***
 multi-attributes
 Usage:	multi-attributes [symbol [n]]
-Options and arguments:
   symbol	Any Soar attribute.
   n		Integer > 1, estimate of degree of simultaneous values for 
   		attribute.
@@ -391,7 +373,6 @@ Notes:
 ***
 numeric-indifferent-mode
 Usage:	numeric-indifferent-mode [-as]
-Options and arguments:
   -a, --avg, --average	Use average mode (see Soar manual) (default).
   -s, --sum		Use sum mode (see Soar manual).
 
@@ -415,7 +396,6 @@ On success:
 ***
 preferences
 Usage:	preferences [-0123nNtw] [id] [attribute]
-Options and arguments:
   -0, -n, --none
   -1, -N, --names
   -2, -t, --timetags
@@ -429,7 +409,6 @@ Usage:	print [-fFin] production_name
 	print -[a|c|D|j|u][fFin]
 	print [-fFin] [-d <depth>] identifier|timetag|pattern
 	print -s[oS]
-Options and arguments:
   -a, --all
   -c, --chunks
   -d, --depth
@@ -452,7 +431,6 @@ Options and arguments:
 ***
 production-find
 Usage:	production-find [-clnrs] pattern
-Options and arguments:
   -c, --chunks		Look only for chunks that match the pattern.
   -l, --lhs		Match pattern only against the conditions (left-hand
   			side) of productions (default).
@@ -493,7 +471,6 @@ On success:
 ***
 pwatch
 Usage:	pwatch [-d|e] [production name]
-Options and arguments:
   -d, --disable, --off
   -e, --enable, --on
   production_name
@@ -518,7 +495,6 @@ On success:
 ***
 remove-wme
 Usage:	remove-wme timetag
-Options and arguments:
   timetag	A positive integer matching the timetag of an existing working
   		memory element.
 
@@ -536,14 +512,24 @@ Usage:	replay-input
 ~~~
 ***
 rete-net
-Usage:	rete-net
+Usage:	rete-net -s filename
+	rete-net -l filename
+  -s, --save			Save the Rete net in the named file.
+  -l, -r, --load, --restore	Load the named file into the Rete network.
+  filename			The file name to save, usually with a .rete 
+  				extension.
+
+The rete-net command saves the current Rete net to a file or restores a Rete net 
+previously saved.  The Rete net is Soar's internal representation of production 
+memory; the conditions of productions are reordered and common substructures are 
+shared across different productions.  This command provides a fast method of 
+saving and loading productions since a binary format is used.
 ~~~
 ***
 run
 Usage:	run [count]
 	run -[d|e|p][fS] [count]
 	run -[s|o|O][fS] [count]
-Options and arguments:
   -d, --decision	Run Soar for count decision cycles.
   -e, --elaboration	Run Soar for count elaboration cycles.
   -f, --forever		Run until halted by problem-solving completion or 
@@ -611,7 +597,6 @@ stats
 Usage:	stats
 #Todo:
 #Usage:	stats [-s <stat>] [-m <resource>] [-r <rtype_qualifier>]
-#Options and arguments:
 #  -m, --memory
 #  -r, --rete
 #  -s, --system
@@ -624,14 +609,12 @@ On success:
 ***
 stop-soar
 Usage:	stop-soar [-s] [reason_string]
-Options and arguments:
   -s, --self
   reason_string
 ~~~
 ***
 time
 Usage:	time command [arguments]
-Options and arguments:
   command
   arguments
 ~~~
@@ -641,7 +624,6 @@ Options and arguments:
 ***
 timers
 Usage:	timers [-ed]
-Options and arguments:
   -d, --disable, --off   Disable all timers.
   -e, --enable, --on     Enable timers as compiled.
 
@@ -664,7 +646,6 @@ Usage:	waitsnc
 ***
 warnings
 Usage:	warnings [-ed]
-Options and arguments:
   -e, --enable, --on		Enable printing of warning messages from the
   				kernel (the default).
   -d, --disable, --off		Turn printing of warning messages off.
@@ -680,7 +661,6 @@ Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>]
 	[-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] 
 	[-L <switch>] [-p <switch>] [-P <switch>] [-r <switch>] 
 	[-u <switch>] [-w <switch>] [-W <detail>]
-Options and arguments:
   -b, --backtracing		Print backtracing infromation when a chunk
   				is created.
   -c, --chunks			Trace firings of chunks.
@@ -740,7 +720,6 @@ Notes:
 watch-wmes
 Usage:	watch-wmes -[a|r] -t <type> pattern
 	watch-wmes -[l|R] [-t <type>]
-Options and arguments:
   -a, --add-filter
   -l, --list-filter
   -r, --remove-filter

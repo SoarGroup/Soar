@@ -32,9 +32,7 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "012acnrtw", longOptions, 0);
-		if (option == -1) {
-			break;
-		}
+		if (option == -1) break;
 
 		switch (option) {
 			case '0':

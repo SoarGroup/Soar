@@ -57,6 +57,7 @@ namespace cli {
 		static char const* kCLIPWD;
 		static char const* kCLIQuit;
 		static char const* kCLIRemoveWME;
+		static char const* kCLIReteNet;
 		static char const* kCLIRun;
 		static char const* kCLISoar8;
 		static char const* kCLISource;

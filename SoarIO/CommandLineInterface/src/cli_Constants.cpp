@@ -44,6 +44,7 @@ char const* Constants::kCLIPushD					= "pushd";
 char const* Constants::kCLIPWD						= "pwd";
 char const* Constants::kCLIQuit						= "quit";
 char const* Constants::kCLIRemoveWME				= "remove-wme";
+char const* Constants::kCLIReteNet					= "rete-net";
 char const* Constants::kCLIRun						= "run";
 char const* Constants::kCLISoar8					= "soar8";
 char const* Constants::kCLISource					= "source";

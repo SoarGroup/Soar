@@ -426,7 +426,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoReteNet();
+	bool DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename);
 
 	/*************************************************************
 	* @brief run command, see usage.txt for details.

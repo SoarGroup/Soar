@@ -34,9 +34,7 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "acdtu", longOptions, 0);
-		if (option == -1) {
-			break;
-		}
+		if (option == -1) break;
 
 		switch (option) {
 			case 'a':

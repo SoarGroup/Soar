@@ -42,9 +42,7 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "cdju", longOptions, 0);
-		if (option == -1) {
-			break;
-		}
+		if (option == -1) break;
 
 		switch (option) {
 			case 'c':

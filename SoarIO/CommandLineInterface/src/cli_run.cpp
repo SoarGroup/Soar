@@ -33,9 +33,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "defoOpsS", longOptions, 0);
-		if (option == -1) {
-			break;
-		}
+		if (option == -1) break;
 
 		switch (option) {
 			case 'd':

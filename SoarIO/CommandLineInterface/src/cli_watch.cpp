@@ -47,9 +47,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 	for (;;) {
 		int option = m_pGetOpt->GetOpt_Long(argv, "a:b:c:d:D:i:j:l:L:np:P:r:u:w:W:", longOptions, 0);
-		if (option == -1) {
-			break;
-		}
+		if (option == -1) break;
 
 		switch (option) {
 			case 'b':
