@@ -92,7 +92,9 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIPushD]				= &cli::CommandLineInterface::ParsePushD;
 	m_CommandMap[Constants::kCLIPWD]				= &cli::CommandLineInterface::ParsePWD;
 	m_CommandMap[Constants::kCLIQuit]				= &cli::CommandLineInterface::ParseQuit;
+	m_CommandMap[Constants::kCLIRemoveWME]			= &cli::CommandLineInterface::ParseRemoveWME;
 	m_CommandMap[Constants::kCLIRun]				= &cli::CommandLineInterface::ParseRun;
+	m_CommandMap[Constants::kCLISoar8]				= &cli::CommandLineInterface::ParseSoar8;
 	m_CommandMap[Constants::kCLISource]				= &cli::CommandLineInterface::ParseSource;
 	m_CommandMap[Constants::kCLISP]					= &cli::CommandLineInterface::ParseSP;
 	m_CommandMap[Constants::kCLIStats]				= &cli::CommandLineInterface::ParseStats;

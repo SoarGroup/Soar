@@ -4,18 +4,57 @@
 
 #include "cli_CommandLineInterface.h"
 
+#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 using namespace cli;
 
 bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
-	unused(argv);
 
-	return DoSoar8();
+	static struct GetOpt::option longOptions[] = {
+		{"on",		0, 0, 'e'},
+		{"enable",	0, 0, 'e'},
+		{"off",		0, 0, 'd'},
+		{"disable", 0, 0, 'd'},
+		{0, 0, 0, 0}
+	};
+
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
+
+	bool query = true;
+	bool soar8 = true;
+
+	for (;;) {
+		int option = m_pGetOpt->GetOpt_Long(argv, "de", longOptions, 0);
+		if (option == -1) break;
+
+		switch (option) {
+			case 'd':
+				query = false;
+				soar8 = false;
+				break;
+			case 'e':
+				query = false;
+				soar8 = true;
+				break;
+			case '?':
+				return HandleSyntaxError(Constants::kCLISoar8, Constants::kCLIUnrecognizedOption);
+			default:
+				return HandleGetOptError((char)option);
+		}
+	}
+
+	// No non-option arguments
+	if ((unsigned)GetOpt::optind != argv.size()) return HandleSyntaxError(Constants::kCLISoar8, Constants::kCLITooManyArgs);
+
+	return DoSoar8(query, soar8);
 }
 
-bool CommandLineInterface::DoSoar8() {
+bool CommandLineInterface::DoSoar8(bool query, bool soar8) {
+	unused(query);
+	unused(soar8);
 
 	return false;
 }

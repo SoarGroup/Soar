@@ -9,13 +9,19 @@
 using namespace cli;
 
 bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-	unused(argv);
+	// Exactly one argument
+	if (argv.size() < 2) return HandleSyntaxError(Constants::kCLIRemoveWME, Constants::kCLITooFewArgs);
+	if (argv.size() > 2) return HandleSyntaxError(Constants::kCLIRemoveWME, Constants::kCLITooManyArgs);
 
-	return DoRemoveWME();
+	int timetag = atoi(argv[1].c_str());
+	if (!timetag) return HandleSyntaxError(Constants::kCLIRemoveWME, "Positive integer expected");
+
+	return DoRemoveWME(pAgent, timetag);
 }
 
-bool CommandLineInterface::DoRemoveWME() {
+bool CommandLineInterface::DoRemoveWME(gSKI::IAgent* pAgent, int timetag) {
+	unused(pAgent);
+	unused(timetag);
 
 	return false;
 }

@@ -477,7 +477,18 @@ On success:
 <result>Goodbye.</result>
 ***
 remove-wme
-Usage:	remove-wme
+Usage:	remove-wme timetag
+Options and arguments:
+  timetag	A positive integer matching the timetag of an existing working
+  		memory element.
+
+The remove-wme command removes the working memory element with the given
+timetag.  This command is provided primarily for use in Soar input functions;
+although there is no programming enforcement, add-wme should only be called
+from registered input functions to create working memory elements on Soar's 
+input link.
+
+Beware of weird side effects, including system crashes.
 ~~~
 ***
 replay-input
@@ -515,7 +526,7 @@ which specified the number of cycles to run Soar.  If count is unspecified and
 no units are given, then Soar is run until halted by problem-solving completion 
 or an external interrupt.  If count is specified, but no units are specified, 
 then soar is run by decision cycles.  If units are specified, but count is 
-unpecified, then count defaultts to '1'.  The unit argument indicates the unit 
+unpecified, then count defaults to '1'.  The unit argument indicates the unit 
 of measure to be used in counting Soar run cycles.
 ~~~
 ***
@@ -524,7 +535,14 @@ Usage:	set-default-depth
 ~~~
 ***
 soar8
-Usage:	soar8
+Usage:	soar8 [-ed]
+  -e, --enable, --on	Use Soar 8 methodology. (Default)
+  -d, --disable, --off	Use Soar 7 methodology.
+
+The soar8 command allows users to revert to Soar 7 methodology in order to run 
+older Soar programs.  Both production memory and working memory must be empty to 
+toggle between Soar 7 and Soar 8 mode.  The soar8 command with no arguments 
+returns the current mode, the default is Soar 8.
 ~~~
 ***
 source
