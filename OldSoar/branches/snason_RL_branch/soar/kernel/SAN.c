@@ -25,7 +25,7 @@ void push_record(RL_record **r, Symbol *level_sym){
 		new_record->step = 0;
 	    new_record->op = NIL;
 		new_record->goal_level = level_sym;
-		symbol_add_ref(new_record->goal_level);		
+		symbol_add_ref(new_record->goal_level);
 		new_record->level = level_sym->id.level;
 	 	new_record->next = *r;
 		*r = new_record;
@@ -62,7 +62,7 @@ void reset_RL(){
 
 	while(current_agent(records))
  		pop_record(&current_agent(records));
-	
+
 }
 /*******/
 void add_goal_tests( condition *cond ){
@@ -103,28 +103,29 @@ void learn_RL_productions(int level){
 	slot* s;
 	cons *c;
 	int i;
-	
+
 	record = current_agent(records);
-	
+
 	do{
 
 	if (record->level < level)
 		return;
 
 	// s = goal->id.operator_slot;
-	
+
 	if (record->op){
-     
+
 		Q = compute_Q_value(record);
+
 		// BUG BUG divide up Q value
 		current_agent(making_binary) = TRUE; // I think this setting allows duplicate productions.
 			// probably there is a better place to put this
 
 		c = record->pointer_list;
 		while(c){
-			
-			
-		
+
+
+
 			RL_top = (condition *) c->first;
 			c = c->rest;
 			RL_bottom = (condition *) c->first;
@@ -132,7 +133,7 @@ void learn_RL_productions(int level){
 			nots = (not *) c->first;
 			c = c->rest;
 
-		
+
 			// print_condition_list(s->RL_top, 2, TRUE);
 			add_goal_tests( RL_top );
 			current_agent(variablize_this_chunk) = 1;
@@ -141,43 +142,43 @@ void learn_RL_productions(int level){
 			variablize_condition_list(RL_top);
 			//		print_with_symbols("\nOp %y ", s->op);
 			//		print("whatever with reference count %d\n", s->op->common.reference_count);
-			variablize_nots_and_insert_into_conditions(nots, RL_top);   
+			variablize_nots_and_insert_into_conditions(nots, RL_top);
 			//print_with_symbols("\nOp %y ", s->op);
 			//print("before make_simple_action with reference count %d\n", s->op->common.reference_count);
 			a = make_simple_action(record->goal_level, current_agent(operator_symbol), record->op);
 			//	print_with_symbols("\nOp %y ", s->op);
 			//	print("after make_simple_action with reference count %d\n", s->op->common.reference_count);
-	
+
 			// print_condition_list(record->RL_top, 2, TRUE);
-	
-			
- 
-	
+
+
+
+
 			prod_type = RL_PRODUCTION_TYPE;    // temporary, perhaps will have new type one day
 			// build LHS
-			
+
 			prod_name = generate_new_sym_constant("RL-" , &current_agent(RL_count));
-  
+
  			// build RHS
-	
-	
-			a->preference_type = BINARY_INDIFFERENT_PREFERENCE_TYPE;
+
+
+			a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 			a->referent = symbol_to_rhs_value(make_float_constant(Q));
-	
+
 			// print_action_list(a, 2, TRUE);
-	
+
 			prod = make_production (prod_type, prod_name, &RL_top, &RL_bottom, &a, FALSE);
 			prod->avg_update = fabs(Q);
 			prod->times_applied = 1;
 			// print("\n Printing action to go on prod.");
 			// print_action_list(prod->action_list, 2, TRUE);
 			rete_add_result = add_production_to_rete(prod, RL_top, NULL, TRUE);
-    	
+
 			if (rete_add_result == DUPLICATE_PRODUCTION){
 				excise_production (prod, FALSE);
 				current_agent(RL_count)--;
 			}
-	
+
 			deallocate_condition_list(RL_top);
 			// record->RL_top = NULL;
 			// record->RL_bottom = NULL;
@@ -201,7 +202,7 @@ void learn_RL_productions(int level){
 		// symbol_add_ref(record->goal_level);
 //		print_with_symbols("\nOp %y ", s->op);
 //		print("at start learn_RL_productions with reference count %d\n", s->op->common.reference_count);
-	 
+
 	}
 
 	if (record->level > level){
@@ -218,9 +219,9 @@ void learn_RL_productions(int level){
 float compute_Q_value(RL_record* r){
 	float Q;
 
-	
+
 	// print_with_symbols("\n Q value for %y\n", r->op);
-	
+
 	Q = r->reward;
 
     // print("\n Q after reward is %f\n" , Q);
@@ -232,11 +233,13 @@ float compute_Q_value(RL_record* r){
 	Q *= current_agent(alpha);
 	// print("Q after alpha %f\n", Q);
 
-    if (r->num_prod > 0) 
+
+
+    if (r->num_prod > 0)
 		Q = Q / r->num_prod;
 
 	return Q;
-	
+
 }
 
 /******/
@@ -262,7 +265,7 @@ float tabulate_reward_value(){
 				reward = reward + w->value->fc.value;
 		else if (w->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 				reward = reward + w->value->ic.value;
-	
+
 	}
 	return reward;
 }
@@ -277,7 +280,7 @@ wme* find_operator(){
 	if (s->wmes)
 		return (s->wmes);
 	else
-		return 0; 
+		return 0;
 }*/
 
 /* ===================================================================
@@ -300,15 +303,15 @@ action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym){
     allocate_with_pool (&current_agent(action_pool),  &rhs);
     rhs->next = NULL;
     rhs->type = MAKE_ACTION;
-    
-    // id 
+
+    // id
 	temp = id_sym;
 	symbol_add_ref(temp);
 	variablize_symbol(&temp);
 	rhs->id = symbol_to_rhs_value(temp);
-    
 
-    // attribute 
+
+    // attribute
     temp = attr_sym;
 	symbol_add_ref(temp);
 	variablize_symbol(&temp);
@@ -319,7 +322,7 @@ action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym){
 	symbol_add_ref (temp);
 	variablize_symbol (&temp);
 	rhs->value = symbol_to_rhs_value (temp);
-    
+
     return rhs;
 
 }//make_simple_action
@@ -402,7 +405,7 @@ void copy_nots(instantiation *inst, not **dest_top){
 action *copy_and_variablize_result (preference *pref) {
   action *a;
   Symbol *temp;
-  
+
   if (!pref) return NIL;
   allocate_with_pool (&current_agent(action_pool), &a);
   a->type = MAKE_ACTION;
@@ -430,9 +433,9 @@ action *copy_and_variablize_result (preference *pref) {
     variablize_symbol (&temp);
     a->referent = symbol_to_rhs_value (temp);
   }
-  
+
   a->next = NIL;
-  return a;  
+  return a;
 }*/
 
 
@@ -443,7 +446,7 @@ condition *RL_copy_condition (condition *cond) {
   if (!cond) return NIL;
   allocate_with_pool (&current_agent(condition_pool), &new);
   new->type = cond->type;
-  
+
   switch (cond->type) {
   case POSITIVE_CONDITION:
     /* ... and fall through to next case */
@@ -480,7 +483,7 @@ void RL_copy_condition_list (condition *top_cond,
 	newc->prev = *dest_bottom;
 	newc->next = NIL;
 	*dest_bottom = newc;
-	 
+
     top_cond = top_cond->next;
   }
   *dest_top = temp;
@@ -494,7 +497,7 @@ condition *make_simple_condition(Symbol *id_sym,
                                  Symbol *val_sym)
 {
     condition *newcond;
-    
+
     allocate_with_pool (&current_agent(condition_pool),  &newcond);
     newcond->type = POSITIVE_CONDITION;
     newcond->next = NULL;
@@ -522,14 +525,14 @@ condition *make_simple_condition(Symbol *id_sym,
     newcond->data.tests.value_test = make_equality_test(val_sym);
 
     return newcond;
-    
+
 }//make_simple_condition
 
 /*
 void add_goal_or_impasse_test (condition *cond) {
   condition *c;
   tc_number tc;   /* mark each id as we add a test for it, so we don't add
-                     a test for the same id in two different places 
+                     a test for the same id in two different places
   Symbol *id;
   test t;
   complex_test *ct;
@@ -579,12 +582,12 @@ void record_for_RL(){
 	condition *RL_top, *RL_bottom;
 	not *nots;
 	RL_record *record;
- 
+
   // SAN - catch operator ID here
   s = current_agent(bottom_goal)->id.operator_slot;
   chosenOp = s->wmes;
   if (chosenOp){
-	  
+
 	  // print_wme(chosenOp);
 
 	  record = current_agent(records);
@@ -592,7 +595,7 @@ void record_for_RL(){
 	  symbol_add_ref(record->op);       // SAN ??
 	  record->previous_Q = current_agent(next_Q);
 
-	  for (pref = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
+	  for (pref = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
 		  if (record->op == pref->value){
 		  ist = pref->inst;
 			  if (ist->prod->type == USER_PRODUCTION_TYPE){
@@ -613,24 +616,24 @@ void record_for_RL(){
 
 
 
-	 
-	  
+
+
 	  //print_with_symbols("\n Chosen op - %y \n" , chosenOp);
-   
+
 
 	// print("\n Printing condition list. \n");
 	// print_condition_list(current_agent(RL_top), 1, 0);
 	 // print("\n Printing action list. \n");
 	// print_action_list(current_agent(prev_op), 1, 0);
-	
+
 
 	// print("\n Printing conditions before.");
 	// print_condition_list(current_agent(RL_top), 2, TRUE);
 	//if (current_agent(prev_op))
 	//	learn_RL_production();
 
- 	
-	// print_condition_list(current_agent(RL_top), 2, TRUE);	
+
+	// print_condition_list(current_agent(RL_top), 2, TRUE);
 	// print("\n Printing operator conditions. ");
 	// print_condition_list(chosenOp->preference->inst->top_of_instantiated_conditions, 2, TRUE);
 
@@ -640,16 +643,16 @@ void record_for_RL(){
 //print("after setting in slot with reference count %d\n", s->op->common.reference_count);
 	// symbol_add_ref(chosenOp->value);             // ref covered by conditions?
 
-	
-	  
+
+
     /* RL_copy_condition_list (ist->top_of_instantiated_conditions, &(record->RL_top),
                                  &(record->RL_bottom)); // collect conditions in operator proposal */
 
- 
 
- 
 
-	
+
+
+
   	// add condition testing for acceptable operator on state, to top of condition list
 	// current_agent(RL_top)->prev = make_simple_condition(chosenOp->id, chosenOp->attr, chosenOp->value);
 	// current_agent(RL_top)->prev->next = current_agent(RL_top);
@@ -660,21 +663,21 @@ void record_for_RL(){
 
 	// current_agent(prev_op) = chosenOp->value;
 	// current_agent(RL_state) = chosenOp->id;
-	
+
 	// s = chosenOp->value->id.slots;
-    	
+
     // add conditions off of operator
 	// build_op_tree(s, &current_agent(RL_bottom));
- 
+
 	// add test for state on state condition (is it safe to assume this is at the top?)
 
-	
+
    // variablize_nots_and_insert_into_conditions (nots, current_agent(RL_top));
-		
+
 	// print("\n Printing conditions after.");
 	// print_condition_list(current_agent(RL_top), 2, TRUE);
 
-	/*for (condition = condition_list->top_of_instantiated_conditions; condition ; condition = condition->next){ 
+	/*for (condition = condition_list->top_of_instantiated_conditions; condition ; condition = condition->next){
 		if (condition->type == POSITIVE_CONDITION){
 			RL_top = copy_condition(condition);
 			RL_bottom = RL_top;
@@ -694,7 +697,7 @@ void record_for_RL(){
     // call add_wme_to_wm to add these wmes in the second "do_buffered_wm_etc." call
   // SAN - end
 
- 
+
 /*
 void collect_RL_conditions(){
 	// after firing new productions in do_preference_phase
@@ -724,4 +727,34 @@ void collect_RL_conditions(){
 	}
   	return;
 }
+*/
+/*
+void ftn(){
+	condition *cond;
+
+	allocate_with_pool(&current_agent(condition_pool), &cond);
+	if (real_parent_node(node) == cutoff) {
+	} else {
+		ftn();
+		cond->prev->next = cond;
+	}
+
+	cond->next = NIL;
+	*dest_bottom_cond = cond;
+
+	if (node->node_type == CN_BNODE) {
+        cond->type = CONJUNCTIVE_NEGATION_CONDITION;
+        rete_node_to_conditions(node->b.cn.partner->parent,
+                                nvn ? nvn->data.bottom_of_subconditions : NIL,
+                                node->parent, NIL, NIL, cond->prev, &(cond->data.ncc.top), &(cond->data.ncc.bottom));
+        cond->data.ncc.top->prev = NIL;
+    } else {
+		 if (bnode_is_positive(node->node_type))
+            cond->type = POSITIVE_CONDITION;
+        else
+            cond->type = NEGATIVE_CONDITION;
+	
+		if (nvn->data.fields.id_varnames is relational) make cond id test with variable
+			else make test with instantiated condition 
+
 */

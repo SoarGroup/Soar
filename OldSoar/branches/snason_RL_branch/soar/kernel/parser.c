@@ -16,15 +16,15 @@
  *										 University of Michigan,
  *										 University of Southern California/Information
  *										 Sciences Institute. All rights reserved.
- *										
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
  * 1.	Redistributions of source code must retain the above copyright notice,
- *		this list of conditions and the following disclaimer. 
+ *		this list of conditions and the following disclaimer.
  * 2.	Redistributions in binary form must reproduce the above copyright notice,
  *		this list of conditions and the following disclaimer in the documentation
- *		and/or other materials provided with the distribution. 
+ *		and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE SOAR CONSORTIUM ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -49,14 +49,14 @@
 
 /* =================================================================
                    Placeholder (Dummy) Variables
-   
+
    In attribute paths (and some other places) we need to create dummy
    variables.  But we need to make sure these dummy variables don't
    accidently have the same names as variables that occur later in
    the user's production.  So, we create "placeholder" variables, whose
    names have funky characters in them so they couldn't possibly occur
    in user-written code.  When we're all done parsing the production, we
-   go back and replace the placeholder variables with "real" variables 
+   go back and replace the placeholder variables with "real" variables
    (names without funky characters), making sure the real variables
    don't occur anywhere else in the production.
 ================================================================= */
@@ -72,7 +72,7 @@ void reset_placeholder_variable_generator(void)
 
 /* -----------------------------------------------------------------
                Make Placeholder (Dummy) Equality Test
-   
+
    Creates and returns a test for equality with a newly generated
    placeholder variable.
 ----------------------------------------------------------------- */
@@ -102,7 +102,7 @@ test make_placeholder_test(char first_letter)
 
 /* -----------------------------------------------------------------
             Substituting Real Variables for Placeholders
-   
+
    When done parsing the production, we go back and substitute "real"
    variables for all the placeholders.  This is done by walking all the
    LHS conditions and destructively modifying any tests involving
@@ -310,7 +310,7 @@ Symbol *make_symbol_for_current_lexeme(void)
 
 /* -----------------------------------------------------------------
                       Parse Relational Test
-                      
+
    <relational_test> ::= [<relation>] <single_test>
    <relation> ::= <> | < | > | <= | >= | = | <=>
    <single_test> ::= variable | <constant>
@@ -397,7 +397,7 @@ test parse_relational_test(void)
 
 /* -----------------------------------------------------------------
                       Parse Disjunction Test
-                      
+
    <disjunction_test> ::= << <constant>* >>
    <constant> ::= sym_constant | int_constant | float_constant
 ----------------------------------------------------------------- */
@@ -441,7 +441,7 @@ test parse_disjunction_test(void)
 
 /* -----------------------------------------------------------------
                         Parse Simple Test
-                      
+
    <simple_test> ::= <disjunction_test> | <relational_test>
 ----------------------------------------------------------------- */
 
@@ -454,7 +454,7 @@ test parse_simple_test(void)
 
 /* -----------------------------------------------------------------
                             Parse Test
-                      
+
     <test> ::= <conjunctive_test> | <simple_test>
     <conjunctive_test> ::= { <simple_test>+ }
 ----------------------------------------------------------------- */
@@ -586,7 +586,7 @@ void fill_in_attr_tests(condition * conds, test t)
 
 /* -----------------------------------------------------------------
                      Negate Condition List
-   
+
    Returns the negation of the given condition list.  If the given
    list is a single positive or negative condition, it just toggles
    the type.  If the given list is a single ncc, it strips off the ncc
@@ -626,7 +626,7 @@ condition *negate_condition_list(condition * conds)
 
 /* -----------------------------------------------------------------
                         Parse Value Test Star
-                      
+
    <value_test> ::= <test> [+] | <conds_for_one_id> [+]
 
    (This routine parses <value_test>*, given as input the id_test and
@@ -704,11 +704,11 @@ condition *parse_value_test_star(char first_letter)
 
 /* -----------------------------------------------------------------
                       Parse Attr Value Tests
-                      
+
    <attr_value_tests> ::= [-] ^ <attr_test> [.<attr_test>]* <value_test>*
    <attr_test> ::= <test>
 
-   (This routine parses <attr_value_tests>, given as input the id_test 
+   (This routine parses <attr_value_tests>, given as input the id_test
    already read.)
 ----------------------------------------------------------------- */
 
@@ -807,7 +807,7 @@ condition *parse_attr_value_tests(void)
 
 /* -----------------------------------------------------------------
                     Parse Head Of Conds For One Id
-                      
+
    <conds_for_one_id> ::= ( [state|impasse] [<id_test>] <attr_value_tests>* )
    <id_test> ::= <test>
 
@@ -885,7 +885,7 @@ test parse_head_of_conds_for_one_id(char first_letter_if_no_id_given)
 
 /* -----------------------------------------------------------------
                     Parse Tail Of Conds For One Id
-                      
+
    <conds_for_one_id> ::= ( [state|impasse] [<id_test>] <attr_value_tests>* )
    <id_test> ::= <test>
 
@@ -938,7 +938,7 @@ condition *parse_tail_of_conds_for_one_id(void)
 
 /* -----------------------------------------------------------------
                       Parse Conds For One Id
-                      
+
    <conds_for_one_id> ::= ( [state|impasse] [<id_test>] <attr_value_tests>* )
    <id_test> ::= <test>
 
@@ -987,7 +987,7 @@ condition *parse_conds_for_one_id(char first_letter_if_no_id_given, test * dest_
 
 /* -----------------------------------------------------------------
                             Parse Cond
-                      
+
    <cond> ::= <positive_cond> | - <positive_cond>
    <positive_cond> ::= <conds_for_one_id> | { <cond>+ }
 ----------------------------------------------------------------- */
@@ -1036,7 +1036,7 @@ condition *parse_cond(void)
 
 /* -----------------------------------------------------------------
                             Parse Cond Plus
-                      
+
    (Parses <cond>+ and builds a condition list.)
 ----------------------------------------------------------------- */
 
@@ -1066,7 +1066,7 @@ condition *parse_cond_plus(void)
 
 /* -----------------------------------------------------------------
                             Parse LHS
-                      
+
    (Parses <lhs> and builds a condition list.)
 
    <lhs> ::= <cond>+
@@ -1107,16 +1107,16 @@ condition *parse_lhs(void)
    <attr_value_make> ::= ^ <rhs_value> <value_make>+
    <value_make> ::= <rhs_value> <preferences>
 
-   <preferences> ::= [,] | <preference_specifier>+   
+   <preferences> ::= [,] | <preference_specifier>+
    <preference-specifier> ::= <naturally-unary-preference> [,]
                             | <forced-unary-preference>
                             | <binary-preference> <rhs_value> [,]
    <naturally-unary-preference> ::= + | - | ! | ~ | @
    <binary-preference> ::= > | = | < | &
    <any-preference> ::= <naturally-unary-preference> | <binary-preference>
-   <forced-unary-preference> ::= <binary-preference> 
-                                 {<any-preference> | , | ) | ^}  
-     ;but the parser shouldn't consume the <any-preference>, ")" or "^" 
+   <forced-unary-preference> ::= <binary-preference>
+                                 {<any-preference> | , | ) | ^}
+     ;but the parser shouldn't consume the <any-preference>, ")" or "^"
       lexeme here
 ===================================================================== */
 
@@ -1303,7 +1303,7 @@ bool is_preference_lexeme(enum lexer_token_type test_lexeme)
 /* -----------------------------------------------------------------
                Parse Preference Specifier Without Referent
 
-   Parses a <preference-specifier>.  Returns the appropriate 
+   Parses a <preference-specifier>.  Returns the appropriate
    xxx_PREFERENCE_TYPE (see soarkernel.h).
 
    Note:  in addition to the grammar below, if there is no preference
@@ -1317,9 +1317,9 @@ bool is_preference_lexeme(enum lexer_token_type test_lexeme)
    <naturally-unary-preference> ::= + | - | ! | ~ | @
    <binary-preference> ::= > | = | < | &
    <any-preference> ::= <naturally-unary-preference> | <binary-preference>
-   <forced-unary-preference> ::= <binary-preference> 
-                                 {<any-preference> | , | ) | ^}  
-     ;but the parser shouldn't consume the <any-preference>, ")" or "^" 
+   <forced-unary-preference> ::= <binary-preference>
+                                 {<any-preference> | , | ) | ^}
+     ;but the parser shouldn't consume the <any-preference>, ")" or "^"
       lexeme here
 ----------------------------------------------------------------- */
 
@@ -1358,8 +1358,8 @@ byte parse_preference_specifier_without_referent(void)
         return RECONSIDER_PREFERENCE_TYPE;
 
 /****************************************************************************
- * [Soar-Bugs #55] <forced-unary-preference> ::= <binary-preference> 
- *                                             {<any-preference> | , | ) | ^} 
+ * [Soar-Bugs #55] <forced-unary-preference> ::= <binary-preference>
+ *                                             {<any-preference> | , | ) | ^}
  *
  *   Forced unary preferences can now occur when a binary preference is
  *   followed by a ",", ")", "^" or any preference specifier
@@ -1380,8 +1380,12 @@ byte parse_preference_specifier_without_referent(void)
         get_lexeme();
         if ((current_agent(lexeme).type != COMMA_LEXEME) &&
             (current_agent(lexeme).type != R_PAREN_LEXEME) &&
-            (current_agent(lexeme).type != UP_ARROW_LEXEME) && (!is_preference_lexeme(current_agent(lexeme).type)))
-            return BINARY_INDIFFERENT_PREFERENCE_TYPE;
+            (current_agent(lexeme).type != UP_ARROW_LEXEME) && (!is_preference_lexeme(current_agent(lexeme).type))){
+			if ((current_agent(lexeme).type == INT_CONSTANT_LEXEME) || (current_agent(lexeme).type == FLOAT_CONSTANT_LEXEME))
+				return NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+			else
+				return BINARY_INDIFFERENT_PREFERENCE_TYPE;
+		}
         /* --- forced unary preference --- */
         if (current_agent(lexeme).type == COMMA_LEXEME)
             get_lexeme();
@@ -1424,7 +1428,7 @@ byte parse_preference_specifier_without_referent(void)
    any error occurred.
 
    <value_make> ::= <rhs_value> <preferences>
-   <preferences> ::= [,] | <preference_specifier>+   
+   <preferences> ::= [,] | <preference_specifier>+
    <preference-specifier> ::= <naturally-unary-preference> [,]
                             | <forced-unary-preference>
                             | <binary-preference> <rhs_value> [,]
@@ -1502,16 +1506,16 @@ action *parse_preferences(Symbol * id, rhs_value attr, rhs_value value)
    parses zero or more <preference-specifier>'s.  If preferences
    other than reject and acceptable are specified, it prints
    a warning message that they are being ignored.  It builds an
-   action list for creating an ACCEPTABLE preference.  If binary 
-   preferences are encountered, a warning message is printed and 
-   the production is ignored (returns NIL).  It returns NIL if any 
+   action list for creating an ACCEPTABLE preference.  If binary
+   preferences are encountered, a warning message is printed and
+   the production is ignored (returns NIL).  It returns NIL if any
    other error occurred.  This works in conjunction with the code
    that supports attribute_preferences_mode == 2.  Anywhere that
    attribute_preferences_mode == 2 is tested, the code now tests
    for operand2_mode == TRUE.
 
    <value_make> ::= <rhs_value> <preferences>
-   <preferences> ::= [,] | <preference_specifier>+   
+   <preferences> ::= [,] | <preference_specifier>+
    <preference-specifier> ::= <naturally-unary-preference> [,]
                             | <forced-unary-preference>
                             | <binary-preference> <rhs_value> [,]
@@ -1900,6 +1904,11 @@ production *parse_production(void)
             get_lexeme();
             continue;
         }
+        if (!strcmp(current_agent(lexeme).string, ":rl")) {
+			prod_type = RL_PRODUCTION_TYPE;
+			get_lexeme();
+			continue;
+		}
         if (!strcmp(current_agent(lexeme).string, ":interrupt")) {
 #ifdef MATCHTIME_INTERRUPT
             interrupt_on_match = TRUE;
@@ -2007,7 +2016,7 @@ production *parse_production(void)
    set up the help screens for the LHS and RHS grammars.
 ================================================================= */
 
-/* 
+/*
   This is not longer used.
 
 void init_parser (void) {

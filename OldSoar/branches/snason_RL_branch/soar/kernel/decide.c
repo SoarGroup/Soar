@@ -1100,10 +1100,10 @@ byte run_preference_semantics(slot * s, preference ** result_candidates)
      the second pref is really an int representing a probability value.
      So we identify these preferences here.
   */
-  for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-    if((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) || 
+  for (p=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
+    /*if((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) || 
 	   (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
-       
+      */ 
       p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
   
   /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
@@ -1512,10 +1512,10 @@ byte run_preference_semantics_for_consistency_check (slot *s, preference **resul
      So we identify these preferences here.
 	 -- want to guarantee decision is not interrupted by a new indiff pref
   */
-  for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-     if( (p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
+  for (p=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
+     /*if( (p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
 				(p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
-       
+       */
       p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
   /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
 #endif
@@ -2521,7 +2521,7 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 		/* SAN - compute Q-value when winner decided by symbolic preferences */
 		// if (!candidates->value->common.decider_flag){
 			  current_agent(next_Q) = 0;   // DEFAULT_INDIFFERENT_VALUE;
-		 	for (temp=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; temp!=NIL; temp=temp->next){
+		 	for (temp=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; temp!=NIL; temp=temp->next){
 				if (candidates->value == temp->value){
 					  if (temp->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 						current_agent(next_Q) += temp->referent->ic.value;
@@ -3375,14 +3375,16 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 	initialize_indifferent_candidates_for_probability_selection(candidates);
 	numCandidates = count_candidates(candidates);
 
-	for (pref=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next){
+	for (pref=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next){
 	   float value;
 	   if (pref->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
            value = pref->referent->fc.value;
 	   } else if (pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
 		   value = (float) pref->referent->ic.value;
-	   } else
+	   } else {
+		   print("ERROR: Numeric preference should be number.");
 		   continue;
+	   }
 	   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
 		if (cand->value == pref->value) {
 			cand->total_preferences_for_candidate += 1;
@@ -3482,15 +3484,17 @@ preference *probabilistically_select(slot *s, preference *candidates)
       someday.
    */
 
-   for (pref=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next)
+   for (pref=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next)
    {
 	   float value;
 	   if (pref->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
            value = pref->referent->fc.value;
 	   } else if (pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
 		   value = (float) pref->referent->ic.value;
-	   } else
+	   } else { 
+		   print("ERROR: Numeric preference should be number.");
 		   continue;
+	   }
 	   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
 		if (cand->value == pref->value) {
 			cand->total_preferences_for_candidate += 1;

@@ -1028,6 +1028,8 @@ char preference_type_indicator(byte type)
         return '<';
     case WORSE_PREFERENCE_TYPE:
         return '<';
+	case NUMERIC_INDIFFERENT_PREFERENCE_TYPE:
+		return '=';
     default:
         {
             char msg[MESSAGE_SIZE];

@@ -70,7 +70,8 @@ char *preference_name[] = {
     "binary indifferent",
     "binary parallel",
     "better",
-    "worse"
+    "worse",
+	"numeric"
 };
 
 int getInt(const char *string, int *i)
