@@ -8,7 +8,11 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
-puts "dir = $dir"
+set soar_library [lindex [array get env SOAR_LIBRARY] 1]
+if {[string compare "$soar_library" ""] == 0} {
+	set soar_library $dir
+}
+
 package ifneeded Soar 8.5.2 [list
 	# First, check to see if Soar is already loaded into the
 	# current interpreter. If so, then don't load it again.
@@ -28,6 +32,9 @@ package ifneeded Soar 8.5.2 [list
 		
 		if {"$name" == "Soar"} {
 			load $file $name
+			if [file exists [file join $soar_library soar.tcl]] {
+				source [file join $soar_library soar.tcl]
+			}
 			return
 		}
 	}
@@ -35,4 +42,8 @@ package ifneeded Soar 8.5.2 [list
 	# Otherwise, issue the platform-specific "load" command
 	set lib "libsoar8.5.2[info sharedlibext]"
 	load [file join $dir $lib]
+
+	if [file exists [file join $soar_library soar.tcl]] {
+		source [file join $soar_library soar.tcl]
+	}
 ]
