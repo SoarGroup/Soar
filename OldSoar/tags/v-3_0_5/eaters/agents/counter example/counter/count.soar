@@ -1,0 +1,15 @@
+sp {counter*propose*count
+   (state <s> ^name counter)
+   -->
+   (<s> ^operator <o> + =, <)
+   (<o> ^name count)
+}
+
+sp {apply*count
+   (state <s> ^operator <o1>
+              ^count <c>)
+   (<o1> ^name count)
+   -->
+   (<s> ^count <c> -
+               (+ <c> 1))
+}
