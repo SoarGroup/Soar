@@ -1748,7 +1748,7 @@ typedef struct production_struct {
   list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
   struct instantiation_struct *instantiations; /* dll of inst's in MS */
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
-	bool interrupt;                         /* SW: 7.31.03 */
+	byte interrupt;                         /* SW: 7.31.03 */
 
 } production;
 
@@ -3586,7 +3586,7 @@ typedef struct agent_struct {
   
   /* --- to interrupt at the end of the current phase, set stop_soar to TRUE
      and reason_for_stopping to some appropriate string --- */
-  bool                stop_soar;
+  byte                stop_soar;
   const char        * reason_for_stopping;
   
   /* --- the RHS action (halt) sets this TRUE --- */
