@@ -47,15 +47,11 @@ private:
 	  std::string functionName = pArguments->GetVal()->GetString() ;
 	  pArguments->Next() ;
 
-	  bool first = true ;
-
-	  // Get the argument string (the sum of all arguments on the line with space separators)
+	  // Get the argument string.
+	  // We've decided for "exec" to just concatenate all arguments together without inserting
+	  // spaces.  This allows for powerful operations (such as constructing an argument out of pieces).
       for(;pArguments->IsValid(); pArguments->Next())
 	  {
-		  // Insert spaces between the arguments
-		  if (first) first = false ;
-		  else ostr << " " ;
-
          appendSymbolToStream(ostr, pArguments->GetVal());
       }
 
@@ -74,7 +70,13 @@ private:
 	  {
          std::cerr << "No client responded to the rhs user function " << functionName << " with a value"
                    << std::endl;
-	     return NULL ;
+
+		 // Returning NULL will generate an assertion -- so instead we'll return an explicit error string
+		 // which will then appear inside the agent.
+		 // return NULL ;
+		 std::string errorMsg = "Error executing " ;
+		 errorMsg += functionName ;
+		 return pSymbolFactory->CreateStringSymbol(errorMsg.c_str());
 	  }
 
 	  // Create a new string symbol for the result.

@@ -62,15 +62,17 @@ namespace {
       {
          case gSKI_INT:
             return make_int_constant(thisAgent, sym->GetInt());
-            break;
          case gSKI_DOUBLE:
             return make_float_constant(thisAgent, static_cast<float>(sym->GetDouble()));
-            break;
          case gSKI_STRING:
-            // Gotta create a temp buffer because make_sym_constant takes a non-const pointer
-            std::vector<char> tmpBuffer(sym->GetString(), sym->GetString() + strlen(sym->GetString()) + 1);
-            return make_sym_constant(thisAgent, &tmpBuffer[0]);
-            break;
+			 {
+				// Gotta create a temp buffer because make_sym_constant takes a non-const pointer
+				std::vector<char> tmpBuffer(sym->GetString(), sym->GetString() + strlen(sym->GetString()) + 1);
+				return make_sym_constant(thisAgent, &tmpBuffer[0]);
+			 }
+		 default:
+			MegaAssert(sym->GetType() != gSKI_INT && sym->GetType() != gSKI_DOUBLE && sym->GetType() != gSKI_STRING, "Unsupported type returned from RHS function.") ;
+			break ;
       }
       return NIL;
    }
