@@ -4,11 +4,7 @@
 
 #include "cli_Constants.h"
 
-#include <iostream>
-#include <fstream>
-
 using namespace cli;
-using namespace std;
 
 char const* Constants::kCLIAddWME					= "add-wme";			
 char const* Constants::kCLIAlias					= "alias";			
@@ -64,107 +60,3 @@ char const* Constants::kCLIWaitSNC					= "waitsnc";
 char const* Constants::kCLIWarnings					= "warnings";
 char const* Constants::kCLIWatch					= "watch";
 char const* Constants::kCLIWatchWMEs				= "watch-wmes";
-
-Constants::Constants() {
-	ifstream usageFile("usage.txt");
-
-	m_UsageFileAvailable = usageFile ? true : false;
-
-	if (m_UsageFileAvailable) {
-		LoadUsage(usageFile);
-	}
-	usageFile.close();
-}
-
-std::list<std::string> Constants::GetCommandList() {
-	UsageMapConstIter iter = m_UsageMap.begin();
-	std::list<std::string> result;
-	while (iter != m_UsageMap.end()) {
-		result.push_back(iter->first);
-		++iter;
-	}
-	return result;
-}
-
-bool Constants::GetUsageFor(const std::string& command, std::string& output) {
-	if (m_UsageFileAvailable) {
-		if (m_UsageMap.find(command) == m_UsageMap.end()) {
-			return false;
-		}
-		//output = m_UsageMap[command];
-		// FIXME: update for release
-		output = "Usage file depricated until release, please see\n\t http://winter.eecs.umich.edu/soarwiki/Soar_Command_Line_Interface \nfor help on the command line.";
-		return true;
-	}
-	return false;
-}
-
-bool Constants::GetExtendedUsageFor(const std::string& command, std::string& output) {
-	if (m_UsageFileAvailable) {
-		if (m_ExtendedUsageMap.find(command) == m_ExtendedUsageMap.end()) {
-			return false;
-		}
-		//output = m_ExtendedUsageMap[command];
-		// FIXME: update for release
-		output = "Usage file depricated until release, please see\n\t http://winter.eecs.umich.edu/soarwiki/Soar_Command_Line_Interface \nfor help on the command line.";
-		return true;
-	}
-	return false;
-}
-
-bool Constants::IsUsageFileAvailable() {
-	return m_UsageFileAvailable;
-}
-
-void Constants::LoadUsage(ifstream& usageFile) {
-
-	string line;
-	while (getline(usageFile, line)) {
-		if (!line.length() || (line[0] == '#')) {
-			continue;
-		}
-
-		if (line.length()) {
-			m_UsageMap[line] = GetUsage(usageFile);
-			m_ExtendedUsageMap[line] = GetExtendedUsage(usageFile);
-		}
-	}
-}
-
-string Constants::GetUsage(ifstream& usageFile) {
-	string line, usage;
-	while (getline(usageFile, line)) {
-
-		if (line.length()) {
-			if (line[0] == '#') {
-				continue;
-			}
-			if (line[0] == '~') {
-				break;
-			}
-		}
-		usage += line;
-		usage += '\n';
-	}
-	// TODO: remove extra newline on end?
-	return usage;
-}
-
-string Constants::GetExtendedUsage(ifstream& usageFile) {
-	string line, usage;
-	while (getline(usageFile, line)) {
-
-		if (line.length()) {
-			if (line[0] == '#') {
-				continue;
-			}
-			if (line[0] == '*') {
-				break;
-			}
-		}
-		usage += line;
-		usage += '\n';
-	}
-	// TODO: remove extra newline on end?
-	return usage;
-}

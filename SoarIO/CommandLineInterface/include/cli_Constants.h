@@ -1,34 +1,10 @@
 #ifndef CLI_CONSTANTS_H
 #define CLI_CONSTANTS_H
 
-#include <string>
-#ifdef _MSC_VER
-#pragma warning (disable : 4702)  // warning C4702: unreachable code, need to disable for VS.NET 2003 due to STL "bug" in certain cases
-#endif
-#include <map>
-#include <list>
-#ifdef _MSC_VER
-#pragma warning (default : 4702)
-#endif
-
 namespace cli {
-
-	typedef std::map<std::string, std::string> UsageMap;
-	typedef std::map<std::string, std::string>::iterator UsageMapIter;
-	typedef std::map<std::string, std::string>::const_iterator UsageMapConstIter;
-
 	// A class containing the constants used by CommandLineInterface
-	class Constants
-	{
+	class Constants {
 	public:
-
-		Constants();
-		
-		std::list<std::string> GetCommandList();
-		bool GetUsageFor(const std::string& command, std::string& output);
-		bool GetExtendedUsageFor(const std::string& command, std::string& output);
-		bool IsUsageFileAvailable();
-
 		static char const* kCLIAddWME;
 		static char const* kCLIAlias;
 		static char const* kCLICD;
@@ -83,17 +59,7 @@ namespace cli {
 		static char const* kCLIWarnings;
 		static char const* kCLIWatch;
 		static char const* kCLIWatchWMEs;
-
-	private:
-		void LoadUsage(std::ifstream& usageFile);
-		std::string GetUsage(std::ifstream& usageFile);
-		std::string GetExtendedUsage(std::ifstream& usageFile);
-
-		bool m_UsageFileAvailable;
-		UsageMap m_UsageMap;
-		UsageMap m_ExtendedUsageMap;
-	};
-
+	}; // class
 } // namespace cli
 
 #endif // CLI_CONSTANTS_H

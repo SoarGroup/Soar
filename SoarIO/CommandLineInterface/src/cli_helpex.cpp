@@ -19,12 +19,15 @@ bool CommandLineInterface::ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::st
 }
 
 bool CommandLineInterface::DoHelpEx(const std::string& command) {
-	std::string output;
+	unused(command);
+	AppendToResult("Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki");
+	return SetError(CLIError::kNoUsageFile);
+	//std::string output;
 
-	if (!m_pConstants->IsUsageFileAvailable()) return SetError(CLIError::kNoUsageFile);
-	if (!m_pConstants->GetExtendedUsageFor(command, output)) return SetError(CLIError::kNoUsageInfo);
+	//if (!m_pConstants->IsUsageFileAvailable()) return SetError(CLIError::kNoUsageFile);
+	//if (!m_pConstants->GetExtendedUsageFor(command, output)) return SetError(CLIError::kNoUsageInfo);
 
-	AppendToResult(output);
-	return true;
+	//AppendToResult(output);
+	//return true;
 }
 

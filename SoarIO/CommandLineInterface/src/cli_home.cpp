@@ -95,10 +95,6 @@ bool CommandLineInterface::DoHome(std::string* pDirectory) {
 			}
 		}
 	}
-
-	// Reload constants
-	if (m_pConstants) delete m_pConstants;
-	m_pConstants = new Constants();
 	return true;
 }
 

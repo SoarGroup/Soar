@@ -28,7 +28,6 @@
 
 // Local includes
 #include "cli_CommandData.h"
-//#include "cli_Constants.h"
 #include "cli_Aliases.h"
 #include "cli_CLIError.h"
 
@@ -67,7 +66,6 @@ namespace cli {
 // Forward declarations
 class CommandLineInterface;
 class GetOpt;
-class Constants;
 
 // Define the CommandFunction which we'll call to process commands
 typedef bool (CommandLineInterface::*CommandFunction)(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -834,7 +832,6 @@ protected:
 	bool SetError(cli::ErrorCode code);				// always returns false
 	bool SetErrorDetail(const std::string detail);	// always returns false
   	 
-	Constants*			m_pConstants;			// Constants management object
 	Aliases				m_Aliases;				// Alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
 

@@ -16,6 +16,8 @@
 #include <direct.h>
 #endif // WIN32
 
+#include <assert.h>
+
 #include "cli_GetOpt.h"
 #include "cli_Constants.h"
 #include "cli_Aliases.h"
@@ -42,12 +44,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	// Map command names to processing function pointers
 	BuildCommandMap();
 
-	// Set up the current working directory, create usage and aliases
-	m_pConstants = 0;
-	if (!DoHome()) {
-		// TODO: figure out what to do here!
-		// ignore for now!
-	}
+	// Set up the current working directory and create aliases
+	assert(DoHome());
 
 	// Give print handlers a reference to us
 	m_ResultPrintHandler.SetCLI(this);
@@ -197,8 +195,12 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 		// The command failed, add the error message
 		string errorDescription = CLIError::GetErrorDescription(m_LastError);
 		if (m_LastErrorDetail.size()) {
-			errorDescription += "\n";
+			errorDescription += "\nError detail: ";
 			errorDescription += m_LastErrorDetail;
+		}
+		if (m_Result.size()) {
+			errorDescription += "\nResult before error happened:\n";
+			errorDescription += m_Result;
 		}
 		if (m_pgSKIError && (m_pgSKIError->Id != gSKI::gSKIERR_NONE)) {
 			errorDescription += "\ngSKI Error code: ";
@@ -298,19 +300,15 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 
 	// Check for help flags
 	if (CheckForHelp(argv)) {
-		// Help flags found, add help to line, return true
-		string output;
-		if (!m_pConstants->IsUsageFileAvailable()) return SetError(CLIError::kNoUsageFile);
-		if (!m_pConstants->GetUsageFor(argv[0], output)) return SetError(CLIError::kNoUsageInfo);
-		AppendToResult(output);
-		return true;
+		AppendToResult("Help deprecated until release, please see\n\thttp://winter.eecs.umich.edu/soarwiki");
+		return SetError(CLIError::kNoUsageFile);
 	}
 
 	// Process command
 	CommandFunction pFunction = m_CommandMap[argv[0]];
 
 	// Just in case...
-	if (!pFunction) return SetError(CLIError::kNoCommandPointer); // Very odd, should be set in BuildCommandMap
+	assert(pFunction);
 	
 	// Initialize GetOpt
 	m_pGetOpt->Initialize();

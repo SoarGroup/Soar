@@ -15,7 +15,7 @@ namespace cli {
 			kCommandNotFound					= 4,
 			kProductionNotFound					= 5,
 			kMultiAttributeNotFound				= 6,
-			kNoCommandPointer					= 7,
+			//kNoCommandPointer					= 7,
 			kNotImplemented						= 8,
 			kOptionNotImplemented				= 9,
 			kExtraClosingParen					= 10,
@@ -34,7 +34,7 @@ namespace cli {
 			kAliasNotFound						= 23,
 			kAliasExists						= 24,
 			//kAliasError						= 25,
-			kNoUsageInfo						= 26,
+			//kNoUsageInfo						= 26,
 			kNoUsageFile						= 27,
 			kIntegerExpected					= 28,
 			kIntegerMustBePositive				= 29,
@@ -91,7 +91,7 @@ namespace cli {
 				case kCommandNotFound:					return "Command not found.";
 				case kProductionNotFound:				return "Production not found.";
 				case kMultiAttributeNotFound:			return "Multi-attribute not found.";
-				case kNoCommandPointer:					return "Command found but function pointer is NULL.";
+				//case kNoCommandPointer:					return "Command found but function pointer is NULL.";
 				case kNotImplemented:					return "Not implemented.";
 				case kOptionNotImplemented:				return "Option not implemented.";
 				case kExtraClosingParen:				return "Closing bracket found without opening counterpart.";
@@ -110,8 +110,8 @@ namespace cli {
 				case kAliasNotFound:					return "Alias not found.";
 				case kAliasExists:						return "Alias exists, remove to overwrite.";
 				//case kAliasError:						return "Error adding alias.";
-				case kNoUsageInfo:						return "Usage information not found for the command.";
-				case kNoUsageFile:						return "Usage file not available (error opening file).";
+				//case kNoUsageInfo:						return "Usage information not found for the command.";
+				case kNoUsageFile:						return "Usage file not available.";
 				case kIntegerExpected:					return "Integer argument expected.";
 				case kIntegerMustBePositive:			return "Integer argument must be positive.";
 				case kIntegerMustBeNonNegative:			return "Integer argument must be non-negative.";
