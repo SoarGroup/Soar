@@ -1151,7 +1151,7 @@ void run_for_n_decision_cycles(long n)
             break;
         do_one_top_level_phase();
     }
-    current_agent(stop_soar) = TRUE; /* fix for bugzilla bug #353 */
+
 #ifndef NO_TIMING_STUFF
     stop_timer(&current_agent(start_total_tv), &current_agent(total_cpu_time));
     stop_timer(&current_agent(start_kernel_tv), &current_agent(total_kernel_time));

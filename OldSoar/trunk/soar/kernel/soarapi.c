@@ -167,6 +167,7 @@ int soar_Run(int argc, const char *argv[], soarResult * res)
         if ((self_only) || (single_agent)) {
 
             run_current_agent(go_number, go_type, go_slot_attr, go_slot_level);
+            current_agent(stop_soar) = TRUE; /* fix for bugzilla bug #353 */
         } else {                /* run all agents */
 
             /* set the params for all agents...
@@ -174,6 +175,13 @@ int soar_Run(int argc, const char *argv[], soarResult * res)
              */
 
             run_all_agents(go_number, go_type, go_slot_attr, go_slot_level);
+
+            /* fix for bugzilla bug #353 */
+            for (c = all_soar_agents; c != NIL; c = c->rest) {
+                the_agent = (agent *) c->first;
+                the_agent->stop_soar = TRUE;
+            }
+
         }
         executing = FALSE;
         clearSoarResultResult(res);
