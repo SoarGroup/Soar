@@ -136,8 +136,13 @@ FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAtt
 *************************************************************/
 void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 {
-	if (!pWME)
+	if (!pWME || !pValue)
 		return ;
+
+	// If the value hasn't changed, don't do anything
+	if (strcmp(pValue, pWME->GetValueAsString()) == 0)
+		return ;
+
 	// Changing the value logically is a remove and then an add
 
 	// Get the tag of the value to remove
@@ -157,6 +162,10 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 	if (!pWME)
 		return ;
 
+	// If the value hasn't changed, don't do anything
+	if (pWME->GetValue() == value)
+		return ;
+
 	// Changing the value logically is a remove and then an add
 
 	// Get the tag of the value to remove
@@ -174,6 +183,10 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 {
 	if (!pWME)
+		return ;
+
+	// If the value hasn't changed, don't do anything
+	if (pWME->GetValue() == value)
 		return ;
 
 	// Changing the value logically is a remove and then an add

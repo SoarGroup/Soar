@@ -39,6 +39,8 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() ;
 
+	int GetValue() { return m_Value ; }
+
 protected:
 	IntElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, int value) ;
 	virtual ~IntElement(void);

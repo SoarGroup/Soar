@@ -39,6 +39,9 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() ;
 
+	// Returns the current value
+	double GetValue() { return m_Value ; }
+
 protected:
 	FloatElement(Agent* pAgent, Identifier* pID, char const* pAttributeName, double value) ;
 	virtual ~FloatElement(void);
