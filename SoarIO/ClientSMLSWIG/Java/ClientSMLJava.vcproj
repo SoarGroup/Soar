@@ -44,12 +44,14 @@
 				Name="VCPostBuildEventTool"
 				Description="Build Java files"
 				CommandLine="echo on
-%JAVA_BIN%\javac $(InputDir)*.java"/>
+%JAVA_BIN%\javac $(InputDir)*.java
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove previous Java files"
 				CommandLine="echo del *.java
-echo del *.class"/>
+echo del *.class
+"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -74,7 +76,7 @@ echo del *.class"/>
 			ManagedExtensions="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;"
+				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -175,7 +177,7 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -Wallkw -c++ -java &quot;$(InputPath)&quot;
+$(SWIG)\swig.exe -Wall -c++ -java &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>

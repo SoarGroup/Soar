@@ -65,11 +65,12 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			CharacterSet="2"
-			ManagedExtensions="TRUE">
+			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;$(TCL_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
@@ -79,8 +80,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
+				AdditionalDependencies="ClientSML.lib ElementXML.lib ConnectionSML.lib tcl84.lib"
+				OutputFile="Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="../../ClientSML/lib;../../ElementXML/lib;../../ConnectionSML/lib;&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -149,9 +152,10 @@ $(SWIG)\swig.exe -Wall -c++ -tcl &quot;$(InputPath)&quot;
 					Name="VCCustomBuildTool"
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
 echo TCL_INCLUDE: %TCL_INCLUDE%
+echo TCL_LIB: %TCL_LIB%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -Wallkw -c++ -Tcl &quot;$(InputPath)&quot;
+$(SWIG)\swig.exe -Wall -c++ -tcl &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
