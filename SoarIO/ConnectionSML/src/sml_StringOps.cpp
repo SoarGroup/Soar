@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 /////////////////////////////////////////////////////////////////
 // StringOps
 //
@@ -9,19 +13,6 @@
 // in the way we expect.
 //
 /////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-
-#ifndef HAVE_STRINGS_H
-#error "missing required strings.h header"
-#endif // HAVE_STRINGS_H
-
-#ifndef HAVE_STRCASECMP
-#error "missing required strcasecmp function"
-#endif // HAVE_STRCASECMP
-
-#endif // HAVE_CONFIG_H
 
 #ifdef HAVE_STRINGS_H
 #include <strings.h>  // strcasecmp

@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 /////////////////////////////////////////////////////////////////
 // KernelSMLdll.cpp : Defines the entry point for the DLL application.
 //
@@ -13,15 +17,6 @@
 // and passed directly to this library (this latter version improves efficiency and is only possible when the kernel is
 // embedded in the client application).
 /////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-
-#ifndef HAVE_STDLIB_H
-#error "missing required stdlib.h header"
-#endif // HAVE_STDLIB_H
-
-#endif // HAVE_CONFIG_H
 
 #include "KernelSMLdll.h"
 #include "sml_KernelSML.h"

@@ -540,6 +540,11 @@ protected:
 	*************************************************************/
 	void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
 
+	/************************************************************* 	 
+	* @brief This is a utility function used by DoLS 	 
+	*************************************************************/ 	 
+	void PrintFilename(const std::string& name, bool isDirectory); 	 
+  	 
 	Constants*			m_pConstants;			// Constants management object
 	Aliases*			m_pAliases;				// Alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class

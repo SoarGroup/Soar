@@ -23,19 +23,6 @@
 #ifndef CT_SOCKET_H
 #define CT_SOCKET_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-
-#ifndef HAVE_SYS_SOCKET_H
-#error "missing required sys/socket.h header"
-#endif
-
-#ifndef HAVE_SYS_TYPES_H
-#error "missing required sys/types.h header"
-#endif // HAVE_SYS_TYPES_H
-
-#endif // HAVE_CONFIG_H
-
 #include <string>
 
 // Define the SOCKET type without pulling in "sock_SocketHeader.h" which would

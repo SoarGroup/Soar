@@ -1,3 +1,7 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 /////////////////////////////////////////////////////////////////
 // ElementXMLdll: Defines the entry point for this DLL.
 //
@@ -13,15 +17,6 @@
 // This class will not support the full capabilities of XML which is now a complex language.
 // It will support just the subset that is necessary for SML (Soar Markup Language) which is intended to be its primary customer.
 /////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-
-#ifndef HAVE_STDLIB_H
-#error "missing required stdlib.h header"
-#endif // HAVE_STDLIB_H
-
-#endif // HAVE_CONFIG_H
 
 #include "ElementXMLdll.h"
 

@@ -12,13 +12,13 @@ AC_DISABLE_SHARED
 AC_DEFINE([LINUX_STATIC_LINK], [1], [Defined when statically linking in Linux])
 AC_PROG_LIBTOOL
 AC_PROG_CXX
-AC_PROG_RANLIB
 
 # Checks for libraries.
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h],,
+	[AC_MSG_ERROR([*** Cannot find required header!  See previous line.])])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -33,7 +33,8 @@ AC_CHECK_LIB(tcl, Tcl_DeleteInterp)
 AC_CHECK_LIB(tk, Tk_Init)
 AC_FUNC_MALLOC
 AC_FUNC_SELECT_ARGTYPES
-AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset pow select socket sqrt strcasecmp strdup])
+AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset pow select socket sqrt strcasecmp strdup],,
+	[AC_MSG_ERROR([*** Cannot find required function!  See previous line.])])
 
 SOAR_CXXFLAGS="-Wall -g"
 AC_SUBST(SOAR_CXXFLAGS)
