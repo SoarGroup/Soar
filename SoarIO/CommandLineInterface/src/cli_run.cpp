@@ -52,7 +52,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 			case 'p':
 				options |= OPTION_RUN_PHASE;
 				break;
-			case 'sS':
+			case 's':
 				options |= OPTION_RUN_SELF;
 				break;
 			case '?':

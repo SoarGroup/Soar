@@ -40,6 +40,10 @@
 
 #endif
 
+// helps quell warnings
+#ifndef unused
+#define unused(x) (void)(x)
+#endif
 
 using std::cout; using std::cin; using std::endl;
 using std::string;
@@ -172,6 +176,7 @@ int main(int argc, char* argv[])
 		printf("\n\nPress <return> to exit\n") ;
 		char line[100] ;
 		char* str = gets(line) ;
+		unused(str);
 	}
 
 	return 0;

@@ -1061,7 +1061,7 @@ char* ElementXMLImpl::CopyString(char const* original)
 	//}
 	//
 	//// Make sure it's null terminated.
-	//*q = NUL ;
+	// *q = NUL ;
 
 	//return str ;
 }

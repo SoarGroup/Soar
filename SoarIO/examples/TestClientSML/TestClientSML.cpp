@@ -17,6 +17,11 @@
 #define SLEEP usleep
 #endif
 
+// helps quell warnings
+#ifndef unused
+#define unused(x) (void)(x)
+#endif
+
 // Use Visual C++'s memory checking functionality
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -120,7 +125,8 @@ bool SimpleListener(int life)
 	}
 
 	// Register here so we can test the order that RHS functions are called
-	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &ListenerRhsFunctionHandler, 0) ; 
+	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &ListenerRhsFunctionHandler, 0) ;
+	unused(callback_rhs1);
 
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
@@ -136,8 +142,10 @@ bool SimpleListener(int life)
 		// Don't need to check for incoming as we're using the NewThread model.
 		// (If we switch to Client we'd need to cut this sleep down a lot to
 		//  get any kind of responsiveness).
-		if (useCurrentThread)
+		if (useCurrentThread) {
 			bool check = pKernel->CheckForIncomingCommands() ;
+			unused(check);
+		}
 
 		SLEEP(pause) ;
 	}
@@ -230,6 +238,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		pKernel->RegisterForSystemEvent(smlEVENT_AFTER_RESTART, MySystemEventHandler, NULL) ;
 
 		int callback5 = pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_CREATED, &MyCreationHandler, 0) ;
+		unused(callback5);
 
 		char const* name = "test-client-sml" ;
 
@@ -278,6 +287,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		}
 
 		bool load = pAgent->LoadProductions("testsml.soar") ;
+		unused(load);
 
 		if (pAgent->HadError())
 		{
@@ -297,12 +307,14 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Some simple tests
 		StringElement* pWME = pAgent->CreateStringWME(pInputLink, "my-att", "my-value") ;
+		unused(pWME);
 		Identifier* pID = pAgent->CreateIdWME(pInputLink, "plane") ;
 
 		ok = pAgent->Commit() ;
 		pAgent->InitSoar() ;
 
 		StringElement* pWME1 = pAgent->CreateStringWME(pID, "type", "Boeing747") ;
+		unused(pWME1);
 		IntElement* pWME2    = pAgent->CreateIntWME(pID, "speed", 200) ;
 		FloatElement* pWME3  = pAgent->CreateFloatWME(pID, "direction", 50.5) ;
 
@@ -346,6 +358,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		bool addToBack = true ;
 		int testData = 25 ;
 		int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &testData, !addToBack) ;
+		unused(callback2);
 
 		// Nothing should match here
 		trace = pAgent->Run(2) ;
@@ -354,7 +367,9 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;
 		StringElement* pEmpty = pAgent->CreateStringWME(pSquare, "content", "RANDOM") ;
 		IntElement* pRow = pAgent->CreateIntWME(pSquare, "row", 1) ;
+		unused(pRow);
 		IntElement* pCol = pAgent->CreateIntWME(pSquare, "col", 2) ;
+		unused(pCol);
 
 		ok = pAgent->Commit() ;
 
@@ -365,6 +380,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		int myCount = 0 ;
 		int callback_run_count = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &myCount) ;
+		unused(callback_run_count);
 
 		//cout << "About to do first run-til-output" << endl ;
 
@@ -446,6 +462,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			{
 				cout << "Marking command as completed." << endl ;
 				StringElement* pCompleted = pAgent->CreateStringWME(pMove, "status", "complete") ;
+				unused(pCompleted);
 				ioOK = true ;
 			}
 
@@ -483,6 +500,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		std::string stats = pAgent->ExecuteCommandLine("stats") ;
 		size_t pos = stats.find("1 decision cycles") ;
+		unused(pos);
 /*
 		if (pos == std::string.npos)
 		{
@@ -499,6 +517,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		}
 
 		bool unregRhs = pKernel->RemoveRhsFunction(callback_rhs1) ;
+		unused(unregRhs);
 
 		if (!unreg)
 		{
@@ -530,6 +549,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		// Interestingly, we don't explicitly unregister this callback because the agent has already been destroyed so
 		// that's another test, that this callback is cleaned up correctly (and automatically).
 		int callback4 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_DESTROYED, &MyDeletionHandler, 0) ;
+		unused(callback4);
 
 		// Explicitly destroy our agent as a test, before we delete the kernel itself.
 		// (Actually, if this is a remote connection we need to do this or the agent
@@ -685,5 +705,6 @@ int main(int argc, char* argv[])
 		printf("\n\nPress <return> to exit\n") ;
 		char line[100] ;
 		char* str = gets(line) ;
+		unused(str);
 	}
 }

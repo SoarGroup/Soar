@@ -20,7 +20,7 @@ using namespace sml ;
 #define unused(x) (void)(x)
 #endif
 
-AgentOutputFlusher::AgentOutputFlusher(AgentListener* pAgentListener, gSKI::IAgent* pAgent) : m_AgentListener(pAgentListener), m_Agent(pAgent)
+AgentOutputFlusher::AgentOutputFlusher(AgentListener* pAgentListener, gSKI::IAgent* pAgent) : m_Agent(pAgent), m_AgentListener(pAgentListener)
 {
 	m_Agent->AddRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
 	m_Agent->AddRunListener(gSKIEVENT_AFTER_RUNNING, this);

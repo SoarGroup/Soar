@@ -13,6 +13,11 @@
 
 #include <vector>
 
+// helps quell warnings
+#ifndef unused
+#define unused(x) (void)(x)
+#endif
+
 //Because of how the Towers of Hanoi productions are written, there will exactly 11 disks
 const int maxNumDisks = 11;
 
@@ -75,6 +80,18 @@ protected:
 	Tower* pTower;
 
 	friend class HanoiWorld;
+private:
+	void dummy() {
+		unused(k_diskIdentifierString);
+		unused(k_diskSizeString);
+		unused(k_holdsIdentifierString);
+		unused(k_holdsOnString);
+		unused(k_holdsAboveString);
+		unused(k_noneString);
+		unused(k_worldPegString);
+		unused(k_nameString);
+
+	}
 };
 
 typedef std::vector<Disk*> diskContainer_t;

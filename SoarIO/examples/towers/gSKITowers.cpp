@@ -32,6 +32,11 @@ using std::endl;
 #include "IgSKI_Agent.h"
 #include "gSKI_Stub.h"
 
+// helps quell warnings
+#ifndef unused
+#define unused(x) (void)(x)
+#endif
+
 using namespace	gSKI;
 
 //commandline directives
@@ -464,7 +469,7 @@ private:
 //============ Disk Function Definitions ===============
 
 Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) : 
-		pTower(tower), m_size(inSize)
+		m_size(inSize), pTower(tower)
 {
 	m_iLinkProfile = new DiskInputLinkProfile();
 	assert(m_iLinkProfile);
@@ -532,7 +537,7 @@ void Disk::Update(Disk* diskBeneath, Tower* tower)
 //======================================================
 //============ Tower Function Definitions ==============
 
-Tower::Tower(HanoiWorld* inWorld, char inName) : pWorld(inWorld), m_name(inName)
+Tower::Tower(HanoiWorld* inWorld, char inName) : m_name(inName), pWorld(inWorld)
 {
 	m_iLinkProfile = new TowerInputLinkProfile();
 	IOManager* manager = pWorld->GetIOManager();
@@ -660,6 +665,7 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 
 	//create Towers
 	IWorkingMemory* pWMemory = pILink->GetInputLinkMemory();
+	unused(pWMemory);
 	IWMObject* pILinkRootObject;
 	pILink->GetRootObject(&pILinkRootObject);
 

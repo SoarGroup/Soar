@@ -19,6 +19,11 @@ using std::string;
 #include "IgSKI_Symbol.h"
 #include "IgSKI_WorkingMemory.h"
 
+// helps quell warnings
+#ifndef unused
+#define unused(x) (void)(x)
+#endif
+
 using namespace gSKI;
 
 //extern TgD::TgD* debugger;
@@ -27,6 +32,7 @@ SoarAgent::SoarAgent(IAgent* inAgent, HanoiWorld* inWorld) : m_Agent(inAgent), m
 {
 	// get input link
 	IInputLink* pILink = m_Agent->GetInputLink();
+	unused(pILink);
 	m_Agent->GetOutputLink()->SetAutomaticUpdate(true);
 }
 

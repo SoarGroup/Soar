@@ -290,7 +290,7 @@ private:
 //======================================================
 //============ Disk Function Definitions ===============
 
-Disk::Disk(Tower* inTower, int inSize, Disk* inDiskBeneath) : pTower(inTower), m_size(inSize)
+Disk::Disk(Tower* inTower, int inSize, Disk* inDiskBeneath) : m_size(inSize), pTower(inTower)
 {
 	assert(pTower->GetWorld());
 	assert(pTower->GetWorld()->GetIOManager());
@@ -315,7 +315,7 @@ void Disk::Update(Disk* diskBeneathMe, Tower* tower)
 //======================================================
 //============ Tower Function Definitions ==============
 
-Tower::Tower(HanoiWorld* world, char name) : pWorld(world), m_name(name)
+Tower::Tower(HanoiWorld* world, char name) : m_name(name), pWorld(world)
 {
 	m_iLinkProfile = new TowerInputLinkProfile(world->GetIOManager()->GetWorkingMemory(), m_name);
 	assert(m_iLinkProfile);
