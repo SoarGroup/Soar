@@ -1159,9 +1159,7 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
       /* ** intentiaonal fall through here... ** */
     }
     case USER_SELECT_RANDOM: {
-      int num_candidates, chosen_num;
-      num_candidates = 0;
-			
+ 			
 #ifdef NUMERIC_INDIFFERENCE
 			/* REW: 2003-01-02 Behavior Variability Kernel Experiments */
 			cand = probabilistically_select(s, candidates);
@@ -1172,6 +1170,9 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
 			*result_candidates = cand;
 			break;
 #else
+      int num_candidates, chosen_num;
+      num_candidates = 0;
+
       for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
         num_candidates++;
 
@@ -3308,7 +3309,6 @@ preference *probabilistically_select(slot *s, preference *candidates)
    double         currentSumOfValues=0;
    static int     initialized_rand = 0;
    unsigned long        rn=0;
-   char           mesg[256];
  
    assert(s != 0);
    assert(candidates != 0);
@@ -3336,19 +3336,20 @@ preference *probabilistically_select(slot *s, preference *candidates)
 	 for (pref=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE];
 				pref!=NIL; pref=pref->next)
 		 {
-			 print_with_symbols("\nPreference for %y", pref->value);
+			/* print_with_symbols("\nPreference for %y", pref->value); */
 			 
 			 for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-				 print_with_symbols("\nConsidering candidate %y", cand->value);
+				 /* print_with_symbols("\nConsidering candidate %y", cand->value); */
 				 
 				 if (cand->value == pref->value) {
 					 cand->total_preferences_for_candidate += 1;
 					 cand->sum_of_probability += DEFAULT_INDIFFERENCE_VALUE;
 					 
+                     /*
 					 print_with_symbols("\nFound unary preference: \n Incrementing candidate %y by default value", cand->value); 
 					 
 					 print("\nValues: total_preferences %d   sum_of_probability %f", cand->total_preferences_for_candidate, cand->sum_of_probability);
-					 
+					 */
 				 }
 			 }
 		 }
@@ -3363,18 +3364,18 @@ preference *probabilistically_select(slot *s, preference *candidates)
    for (pref=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE];
 				pref!=NIL; pref=pref->next)
 		 {
-			 print_with_symbols("\nPreference for %y", pref->value);
+			 /*print_with_symbols("\nPreference for %y", pref->value); */
 
 			 for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-				 print_with_symbols("\nConsidering candidate %y", cand->value);
+				 /*print_with_symbols("\nConsidering candidate %y", cand->value); */
 
 				 if (cand->value == pref->value) {
-					 print_with_symbols("\nFound unary preference: \n Incrementing candidate %y by %f", pref->referent->fc.value); 
+					 /*print_with_symbols("\nFound unary preference: \n Incrementing candidate %y by %f", pref->referent->fc.value); */
 					 cand->total_preferences_for_candidate += 1;
-					 cand->confidence += abs(pref->referent->fc.value); 
+					 cand->confidence += (int)fabs(pref->referent->fc.value); 
 					 cand->sum_of_probability += pref->referent->fc.value;
 
-					 print("\nValues: total_preferences %d   sum_of_probability %f", cand->total_preferences_for_candidate, cand->sum_of_probability);
+					 /*print("\nValues: total_preferences %d   sum_of_probability %f", cand->total_preferences_for_candidate, cand->sum_of_probability); */
 
 				 }
 			 }
@@ -3408,17 +3409,16 @@ preference *probabilistically_select(slot *s, preference *candidates)
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
      
 	
-     print_with_symbols("\n Candidate %y ", cand->value);
+     /*print_with_symbols("\n Candidate %y ", cand->value); */
      /* Sum the total probabilities */
      total_probability += cand->sum_of_probability;
-		 print("\n   Total Probability = %f", total_probability );
+		 /*print("\n   Total Probability = %f", total_probability );*/
    }
 
 	 /* Now select the candidate */ 
 
    rn = rand();
    selectedProbability = ((double)rn / (double)RAND_MAX) * total_probability;
-	 print("\n   Selected Probability = %f", selectedProbability );
    currentSumOfValues = 0;
 
    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
@@ -3426,7 +3426,7 @@ preference *probabilistically_select(slot *s, preference *candidates)
      currentSumOfValues += cand->sum_of_probability;
 
      if (selectedProbability <= currentSumOfValues) {
-       print_with_symbols("\n    Returning candidate %y", cand->value); 
+       /*print_with_symbols("\n    Returning candidate %y", cand->value); */
        return cand;
      }
    }
