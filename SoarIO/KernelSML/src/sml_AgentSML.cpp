@@ -12,7 +12,7 @@
 #include "sml_AgentSML.h"
 #include "sml_OutputListener.h"
 
-#include "IgSKI_WME.h"
+#include "IgSKI_Wme.h"
 #include "IgSKI_Agent.h"
 #include "IgSKI_InputProducer.h"
 

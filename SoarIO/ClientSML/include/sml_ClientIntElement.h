@@ -23,7 +23,7 @@ class Identifier ;
 class IntElement : public WMElement
 {
 	// Allow working memory to create these objects directly (user must use agent class to do this)
-	friend WorkingMemory ;
+	friend class WorkingMemory ;
 
 protected:
 	// The value for this wme is an int

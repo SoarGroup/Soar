@@ -12,6 +12,7 @@
 #include "sml_ClientStringElement.h"
 #include "sml_Connection.h"
 #include "sml_ClientAgent.h"
+#include "sml_StringOps.h"
 #include <assert.h>
 
 using namespace sml ;
@@ -87,7 +88,7 @@ WMElement* Identifier::FindByAttribute(char const* pAttribute, int index) const
 	{
 		WMElement* pWME = *iter ;
 
-		if (strcmpi(pWME->GetAttribute(), pAttribute) == 0)
+		if (IsStringEqualIgnoreCase(pWME->GetAttribute(), pAttribute))
 		{
 			if (index == 0)
 				return pWME ;

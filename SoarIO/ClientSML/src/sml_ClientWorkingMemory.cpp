@@ -226,7 +226,7 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 			else
 			{
 				// We should only fail to find the parent when we're adding the output link itself.
-				if (strcmpi(pAttribute, sml_Names::kOutputLinkName) == 0)
+				if (IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
 				{
 					m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
 				}

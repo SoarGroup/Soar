@@ -43,7 +43,7 @@
 #include "IgSKI_OutputProcessor.h"
 #include "IgSKI_InputProducer.h"
 #include "IgSKI_Symbol.h"
-#include "IgSKI_WME.h"
+#include "IgSKI_Wme.h"
 
 using namespace sml ;
 using namespace gSKI ;

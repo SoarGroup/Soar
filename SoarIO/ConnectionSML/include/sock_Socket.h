@@ -60,8 +60,8 @@ class ClientSocket ;
 class Socket  
 {
 	// Allow these classes access to our constructor
-	friend ListenerSocket ;
-	friend ClientSocket ;
+	friend class ListenerSocket ;
+	friend class ClientSocket ;
 
 protected:
 	SOCKET	m_hSocket ;

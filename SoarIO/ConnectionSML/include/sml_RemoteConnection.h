@@ -26,7 +26,7 @@ namespace sml
 class RemoteConnection : public Connection
 {
 	// Allow the connection class to create instances of this class
-	friend Connection ;
+	friend class Connection ;
 
 protected:
 	// Clients should not use this.  Use Connection::CreateRemoteConnection instead.

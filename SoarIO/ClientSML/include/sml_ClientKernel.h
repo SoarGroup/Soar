@@ -36,7 +36,7 @@ class ElementXML ;
 class Kernel
 {
 	// Allow the agent to call to get the connection from the kernel.
-	friend Agent ;
+	friend class Agent ;
 
 public:
 	enum { kDefaultSMLPort = 12121 } ;

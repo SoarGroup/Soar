@@ -1,6 +1,5 @@
 Debug
 .deps
-.libs
 Makefile
 Makefile.in
-*.lo
+configure.scan

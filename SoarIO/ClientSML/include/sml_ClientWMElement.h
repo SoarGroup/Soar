@@ -27,10 +27,10 @@ class WMElement
 {
 	// Making most methods protected, so users don't use them directly by accident.
 	// But allow working memory to work with them directly.
-	friend WorkingMemory ;
-	friend Identifier ;				// Access to just added information
-	friend WMDelta ;				// Allow it to destroy WMEs
-	friend IdentifierSymbol ;		// Allow it to destroy WMEs
+	friend class WorkingMemory ;
+	friend class Identifier ;				// Access to just added information
+	friend class WMDelta ;				// Allow it to destroy WMEs
+	friend class IdentifierSymbol ;		// Allow it to destroy WMEs
 
 protected:
 	// The agent which owns this WME.

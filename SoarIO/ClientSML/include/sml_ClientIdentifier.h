@@ -31,7 +31,7 @@ class Identifier ;
 // so we need to represent that separately.
 class IdentifierSymbol
 {
-	friend Identifier ;	// Provide direct access to children.
+	friend class Identifier ;	// Provide direct access to children.
 
 protected:
 	// The value for this id, which is a string identifier (e.g. I3)
@@ -76,9 +76,9 @@ class Identifier : public WMElement
 {
 	// Make the members all protected, so users dont' access them by accident.
 	// Instead, only open them up to the working memory class to use.
-	friend WorkingMemory ;
-	friend WMElement ;
-	friend Agent ;
+	friend class WorkingMemory ;
+	friend class WMElement ;
+	friend class Agent ;
 
 public:
 	typedef std::list<WMElement*>::iterator ChildrenIter ;

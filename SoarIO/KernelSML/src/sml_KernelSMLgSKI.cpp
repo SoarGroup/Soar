@@ -35,7 +35,7 @@
 #include "IgSKI_OutputProcessor.h"
 #include "IgSKI_InputProducer.h"
 #include "IgSKI_Symbol.h"
-#include "IgSKI_WME.h"
+#include "IgSKI_Wme.h"
 
 //debugger #includes
 //BADBAD: These should come out when we pull out the TgD debugger hack.
@@ -930,46 +930,46 @@ bool KernelSMLgSKI::CreateKernelFactory(void* pThis, char const* pCommandName, C
 
 void KernelSMLgSKI::BuildCommandMap()
 {
-	m_CommandMap[sml_Names::kgSKI_IAgent_RunInClientThread]	= KernelSMLgSKI::IAgent_RunInClientThread ;
+	m_CommandMap[sml_Names::kgSKI_IAgent_RunInClientThread]	= &sml::KernelSMLgSKI::IAgent_RunInClientThread ;
 
-	m_CommandMap[sml_Names::kgSKI_IWMObject_GetWMEs]			= KernelSMLgSKI::IWMObject_GetWMEs ;
+	m_CommandMap[sml_Names::kgSKI_IWMObject_GetWMEs]			= &sml::KernelSMLgSKI::IWMObject_GetWMEs ;
 
-	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_IsValid]= KernelSMLgSKI::IIterator_Pointer_IsValid ;
-	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_GetVal] = KernelSMLgSKI::IIterator_Pointer_GetVal ;
-	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_Next]	= KernelSMLgSKI::IIterator_Pointer_Next ;
+	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_IsValid]= &sml::KernelSMLgSKI::IIterator_Pointer_IsValid ;
+	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_GetVal] = &sml::KernelSMLgSKI::IIterator_Pointer_GetVal ;
+	m_CommandMap[sml_Names::kgSKI_IIterator_Pointer_Next]	= &sml::KernelSMLgSKI::IIterator_Pointer_Next ;
 
-	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_ReplaceStringWme]= KernelSMLgSKI::IWorkingMemory_ReplaceStringWme ;
-	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeNewObject]= KernelSMLgSKI::IWorkingMemory_AddWmeNewObject ;
-	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeString]	= KernelSMLgSKI::IWorkingMemory_AddWmeString ;
-	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeInt]		= KernelSMLgSKI::IWorkingMemory_AddWmeInt ;
-	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_RemoveObject]	= KernelSMLgSKI::IWorkingMemory_RemoveObject ;
-	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_GetAgent]		= KernelSMLgSKI::IWorkingMemory_GetAgent ;
-	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeObjectLink]	= KernelSMLgSKI::IWorkingMemory_AddWmeObjectLink ;
+	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_ReplaceStringWme]= &sml::KernelSMLgSKI::IWorkingMemory_ReplaceStringWme ;
+	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeNewObject]= &sml::KernelSMLgSKI::IWorkingMemory_AddWmeNewObject ;
+	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeString]	= &sml::KernelSMLgSKI::IWorkingMemory_AddWmeString ;
+	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeInt]		= &sml::KernelSMLgSKI::IWorkingMemory_AddWmeInt ;
+	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_RemoveObject]	= &sml::KernelSMLgSKI::IWorkingMemory_RemoveObject ;
+	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_GetAgent]		= &sml::KernelSMLgSKI::IWorkingMemory_GetAgent ;
+	m_CommandMap[sml_Names::kgSKI_IWorkingMemory_AddWmeObjectLink]	= &sml::KernelSMLgSKI::IWorkingMemory_AddWmeObjectLink ;
 
-	m_CommandMap[sml_Names::kgSKI_ISymbol_GetObject]	 = KernelSMLgSKI::ISymbol_GetObject ;
-	m_CommandMap[sml_Names::kgSKI_ISymbol_GetString]	 = KernelSMLgSKI::ISymbol_GetString ;
-	m_CommandMap[sml_Names::kgSKI_ISymbol_GetInt]		 = KernelSMLgSKI::ISymbol_GetInt ;
+	m_CommandMap[sml_Names::kgSKI_ISymbol_GetObject]	 = &sml::KernelSMLgSKI::ISymbol_GetObject ;
+	m_CommandMap[sml_Names::kgSKI_ISymbol_GetString]	 = &sml::KernelSMLgSKI::ISymbol_GetString ;
+	m_CommandMap[sml_Names::kgSKI_ISymbol_GetInt]		 = &sml::KernelSMLgSKI::ISymbol_GetInt ;
 
-	m_CommandMap[sml_Names::kgSKI_IWme_GetValue]		 = KernelSMLgSKI::IWme_GetValue ;
+	m_CommandMap[sml_Names::kgSKI_IWme_GetValue]		 = &sml::KernelSMLgSKI::IWme_GetValue ;
 
-	m_CommandMap[sml_Names::kgSKI_IInputLink_GetInputLinkMemory]= KernelSMLgSKI::IInputLink_GetInputLinkMemory ;
-	m_CommandMap[sml_Names::kgSKI_IInputLink_GetRootObject]		= KernelSMLgSKI::IInputLink_GetRootObject ;
-	m_CommandMap[sml_Names::kgSKI_IInputLink_AddInputProducer]	= KernelSMLgSKI::IInputLink_AddInputProducer ;
+	m_CommandMap[sml_Names::kgSKI_IInputLink_GetInputLinkMemory]= &sml::KernelSMLgSKI::IInputLink_GetInputLinkMemory ;
+	m_CommandMap[sml_Names::kgSKI_IInputLink_GetRootObject]		= &sml::KernelSMLgSKI::IInputLink_GetRootObject ;
+	m_CommandMap[sml_Names::kgSKI_IInputLink_AddInputProducer]	= &sml::KernelSMLgSKI::IInputLink_AddInputProducer ;
 
-	m_CommandMap[sml_Names::kgSKI_IAgentManager_AddAgent]		= KernelSMLgSKI::IAgentManager_AddAgent ;
-	m_CommandMap[sml_Names::kgSKI_IAgentManager_RemoveAgent]	= KernelSMLgSKI::IAgentManager_RemoveAgent ;
-	m_CommandMap[sml_Names::kgSKI_IAgent_GetInputLink]			= KernelSMLgSKI::IAgent_GetInputLink ;
-	m_CommandMap[sml_Names::kgSKI_IKernel_GetAgentManager]		= KernelSMLgSKI::IKernel_GetAgentManager ;
-	m_CommandMap[sml_Names::kgSKI_CreateKernelFactory]			= KernelSMLgSKI::CreateKernelFactory ;
-	m_CommandMap[sml_Names::kgSKI_IKernelFactory_Create]		= KernelSMLgSKI::IKernelFactory_Create ;
-	m_CommandMap[sml_Names::kgSKI_IKernelFactory_DestroyKernel] = KernelSMLgSKI::IKernelFactory_DestroyKernel ;
-	m_CommandMap[sml_Names::kgSKI_IRelease_Release]				= KernelSMLgSKI::IRelease_Release ;
+	m_CommandMap[sml_Names::kgSKI_IAgentManager_AddAgent]		= &sml::KernelSMLgSKI::IAgentManager_AddAgent ;
+	m_CommandMap[sml_Names::kgSKI_IAgentManager_RemoveAgent]	= &sml::KernelSMLgSKI::IAgentManager_RemoveAgent ;
+	m_CommandMap[sml_Names::kgSKI_IAgent_GetInputLink]			= &sml::KernelSMLgSKI::IAgent_GetInputLink ;
+	m_CommandMap[sml_Names::kgSKI_IKernel_GetAgentManager]		= &sml::KernelSMLgSKI::IKernel_GetAgentManager ;
+	m_CommandMap[sml_Names::kgSKI_CreateKernelFactory]			= &sml::KernelSMLgSKI::CreateKernelFactory ;
+	m_CommandMap[sml_Names::kgSKI_IKernelFactory_Create]		= &sml::KernelSMLgSKI::IKernelFactory_Create ;
+	m_CommandMap[sml_Names::kgSKI_IKernelFactory_DestroyKernel] = &sml::KernelSMLgSKI::IKernelFactory_DestroyKernel ;
+	m_CommandMap[sml_Names::kgSKI_IRelease_Release]				= &sml::KernelSMLgSKI::IRelease_Release ;
 
-	m_CommandMap[sml_Names::kgSKI_IAgent_GetOutputLink]			  = KernelSMLgSKI::IAgent_GetOutputLink ;
-	m_CommandMap[sml_Names::kgSKI_IOutputLink_AddOutputProcessor] = KernelSMLgSKI::IOutputLink_AddOutputProcessor ;
-	m_CommandMap[sml_Names::kgSKI_IOutputLink_GetOutputLinkMemory]= KernelSMLgSKI::IOutputLink_GetOutputLinkMemory ;
-	m_CommandMap[sml_Names::kgSKI_IOutputLink_SetAutomaticUpdate] = KernelSMLgSKI::IOutputLink_SetAutomaticUpdate ;
-	m_CommandMap[sml_Names::kgSKI_IOutputLink_GetRootObject]	  = KernelSMLgSKI::IOutputLink_GetRootObject ;
+	m_CommandMap[sml_Names::kgSKI_IAgent_GetOutputLink]			  = &sml::KernelSMLgSKI::IAgent_GetOutputLink ;
+	m_CommandMap[sml_Names::kgSKI_IOutputLink_AddOutputProcessor] = &sml::KernelSMLgSKI::IOutputLink_AddOutputProcessor ;
+	m_CommandMap[sml_Names::kgSKI_IOutputLink_GetOutputLinkMemory]= &sml::KernelSMLgSKI::IOutputLink_GetOutputLinkMemory ;
+	m_CommandMap[sml_Names::kgSKI_IOutputLink_SetAutomaticUpdate] = &sml::KernelSMLgSKI::IOutputLink_SetAutomaticUpdate ;
+	m_CommandMap[sml_Names::kgSKI_IOutputLink_GetRootObject]	  = &sml::KernelSMLgSKI::IOutputLink_GetRootObject ;
 }
 
 /*************************************************************
@@ -1178,7 +1178,7 @@ bool KernelSMLgSKI::ProcessCommand(char const* pCommandName, Connection* pConnec
 	}
 
 	// Special case for the only static gSKI function
-	bool staticFunction = (pFunction == KernelSMLgSKI::CreateKernelFactory) ;
+	bool staticFunction = (pFunction == &sml::KernelSMLgSKI::CreateKernelFactory) ;
 	void* pThis = NULL ;
 
 	if (!staticFunction)

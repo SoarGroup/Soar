@@ -53,8 +53,8 @@ class OSSpecificMutex ;
 // other unexcepted exit out of a function) causing a deadlock.
 class Mutex
 {
-	friend Lock ;
-	friend ConditionalLock ;
+	friend class Lock ;
+	friend class ConditionalLock ;
 
 protected:
 	// OS specific implementation
@@ -125,4 +125,4 @@ public:
 
 } // Namespace
 
-#endif THREAD_LOCK_H
+#endif // THREAD_LOCK_H

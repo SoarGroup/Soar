@@ -12,7 +12,7 @@
 #include "sml_OutputListener.h"
 #include "sml_Connection.h"
 #include "sml_TagWme.h"
-#include "IgSKI_WME.h"
+#include "IgSKI_Wme.h"
 #include "IgSKI_Symbol.h"
 #include "IgSKI_WMObject.h"
 
@@ -150,7 +150,13 @@ void OutputListener::HandleEvent(egSKIEventId eventId, gSKI::IAgent* agentPtr, e
 
 		// Delete the entry from the time tag map
 		// The returned value points to the next item in the list
-		iter = m_TimeTags.erase(iter) ;
+
+		// voigtjr: this is not legal in gcc (nor defined in the sgi stl standard)
+		//iter = m_TimeTags.erase(iter) ;
+		// TODO: inefficient, fix:
+		m_TimeTags.erase(iter);
+		iter = m_TimeTags.begin();
+
 	}
 
 	// This is important.  We are working with a subpart of pMsg.

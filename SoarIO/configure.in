@@ -8,6 +8,7 @@ AC_CONFIG_SRCDIR([ConnectionSML/src/sml_AnalyzeXML.cpp])
 AM_CONFIG_HEADER(config.h)
 
 # Checks for programs.
+AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
 AC_PROG_CXX
 
@@ -15,7 +16,7 @@ AC_PROG_CXX
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stdlib.h string.h strings.h])
+AC_CHECK_HEADERS([conio.h curses.h stdlib.h string.h strings.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -25,4 +26,17 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_CHECK_FUNCS([getcwd memset])
-AC_OUTPUT(Makefile ConnectionSML/Makefile ConnectionSML/src/Makefile ElementXML/Makefile ElementXML/src/Makefile CommandLineInterface/Makefile CommandLineInterface/src/Makefile)
+AC_OUTPUT(Makefile
+		  ConnectionSML/Makefile 
+		  ConnectionSML/src/Makefile 
+		  ElementXML/Makefile 
+		  ElementXML/src/Makefile 
+		  CommandLineInterface/Makefile 
+		  CommandLineInterface/src/Makefile 
+		  ClientSML/Makefile 
+		  ClientSML/src/Makefile
+		  KernelSML/Makefile
+		  KernelSML/src/Makefile
+		  examples/Makefile
+		  examples/TestCommandLineInterface/Makefile
+		  examples/TestCommandLineInterface/src/Makefile)

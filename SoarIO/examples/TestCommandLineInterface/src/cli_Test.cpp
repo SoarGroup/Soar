@@ -1,6 +1,20 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 #include <iostream>
+
+#ifdef HAVE_CONIO_H
 #include <conio.h>
+#endif // HAVE_CONIO_H
+
+#ifdef HAVE_CURSES_H
+#include <curses.h>
+#endif // HAVE_CURSES_H
+
+#ifdef _MSC_VER
 #include <crtdbg.h>
+#endif 
 
 #include "sml_Connection.h"
 #include "sml_Client.h"

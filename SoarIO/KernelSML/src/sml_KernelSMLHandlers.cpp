@@ -47,7 +47,7 @@
 #include "IgSKI_OutputLink.h"
 #include "IgSKI_InputProducer.h"
 #include "IgSKI_Symbol.h"
-#include "IgSKI_WME.h"
+#include "IgSKI_Wme.h"
 
 #ifdef USE_TCL_DEBUGGER
 //debugger #includes
@@ -128,17 +128,17 @@ private:
 
 void KernelSML::BuildCommandMap()
 {
-	m_CommandMap[sml_Names::kCommand_CreateAgent]		= KernelSML::HandleCreateAgent ;
-	m_CommandMap[sml_Names::kCommand_DestroyAgent]		= KernelSML::HandleDestroyAgent ;
-	m_CommandMap[sml_Names::kCommand_LoadProductions]	= KernelSML::HandleLoadProductions ;
-	m_CommandMap[sml_Names::kCommand_GetInputLink]		= KernelSML::HandleGetInputLink ;
-	m_CommandMap[sml_Names::kCommand_Input]				= KernelSML::HandleInput ;
-	m_CommandMap[sml_Names::kCommand_StopOnOutput]		= KernelSML::HandleStopOnOutput ;
-	m_CommandMap[sml_Names::kCommand_CommandLine]		= KernelSML::HandleCommandLine ;
-	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = KernelSML::HandleCheckForIncomingCommands ;
-	m_CommandMap[sml_Names::kCommand_GetAgentList]		= KernelSML::HandleGetAgentList ;
-	m_CommandMap[sml_Names::kCommand_RegisterForEvent]	= KernelSML::HandleRegisterForEvent ;
-	m_CommandMap[sml_Names::kCommand_UnregisterForEvent]= KernelSML::HandleRegisterForEvent ;	// Note -- both register and unregister go to same handler
+	m_CommandMap[sml_Names::kCommand_CreateAgent]		= &sml::KernelSML::HandleCreateAgent ;
+	m_CommandMap[sml_Names::kCommand_DestroyAgent]		= &sml::KernelSML::HandleDestroyAgent ;
+	m_CommandMap[sml_Names::kCommand_LoadProductions]	= &sml::KernelSML::HandleLoadProductions ;
+	m_CommandMap[sml_Names::kCommand_GetInputLink]		= &sml::KernelSML::HandleGetInputLink ;
+	m_CommandMap[sml_Names::kCommand_Input]				= &sml::KernelSML::HandleInput ;
+	m_CommandMap[sml_Names::kCommand_StopOnOutput]		= &sml::KernelSML::HandleStopOnOutput ;
+	m_CommandMap[sml_Names::kCommand_CommandLine]		= &sml::KernelSML::HandleCommandLine ;
+	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = &sml::KernelSML::HandleCheckForIncomingCommands ;
+	m_CommandMap[sml_Names::kCommand_GetAgentList]		= &sml::KernelSML::HandleGetAgentList ;
+	m_CommandMap[sml_Names::kCommand_RegisterForEvent]	= &sml::KernelSML::HandleRegisterForEvent ;
+	m_CommandMap[sml_Names::kCommand_UnregisterForEvent]= &sml::KernelSML::HandleRegisterForEvent ;	// Note -- both register and unregister go to same handler
 }
 
 /*************************************************************

@@ -82,7 +82,7 @@ public:
 			if (std::find(pKeepList->begin(), pKeepList->end(), pObject) != pKeepList->end())
 				mapIter++ ;
 			else
-				mapIter = m_Map.erase(mapIter) ;
+				m_Map.erase(mapIter++) ; // changed by voigtjr
 		}
 	}
 
