@@ -1828,7 +1828,6 @@ production *parse_production (void) {
     if (!strcmp(current_agent(lexeme).string,":interrupt")) {
 #ifdef MATCHTIME_INTERRUPT
       interrupt_on_match = TRUE;
-			/* print ("\nRead interrupt\n"); */
 #else
 			print( "WARNING :interrupt is not supported with the current build options..." );
 #endif
