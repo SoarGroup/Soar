@@ -767,9 +767,10 @@ char const* Agent::InitSoar()
 *************************************************************/
 char const* Agent::Stop(bool stopAllAgents)
 {
-	// BUGBUG: Not sure how to handle the stopAllAgents option yet.
+	std::string cmd = "stop-soar" ;
 
-	std::string cmd = "stop" ;
+	if (!stopAllAgents)
+		cmd += " -self" ;
 
 	// Execute the command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;

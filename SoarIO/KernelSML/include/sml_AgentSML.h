@@ -81,11 +81,16 @@ protected:
 	gSKI::IWMObject*	m_InputLinkRoot ;
 	gSKI::IWMObject*	m_OutputLinkRoot ;
 
+	// Used to listen for a before removed event
+	class AgentBeforeDestroyedListener ;
+	AgentBeforeDestroyedListener*	m_pBeforeDestroyedListener ;
+
 public:
 	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : m_AgentListener(pKernelSML, pAgent)
 	{
 		m_pKernelSML = pKernelSML ; m_pIAgent = pAgent ; m_pOutputListener = NULL ; m_pInputProducer = NULL ;
 		m_InputLinkRoot = NULL ; m_OutputLinkRoot = NULL ;
+		m_pBeforeDestroyedListener = NULL ;
 	}
 
 	~AgentSML() ;
@@ -93,6 +98,8 @@ public:
 	// Release any objects or other data we are keeping.  We do this just
 	// prior to deleting AgentSML, but before the underlying gSKI agent has been deleted
 	void Clear() ;
+
+	void RegisterForBeforeAgentDestroyedEvent() ;
 
 	// Release all of the WMEs that we currently have references to
 	// It's a little less severe than clear() which releases everything we own, not just wmes.

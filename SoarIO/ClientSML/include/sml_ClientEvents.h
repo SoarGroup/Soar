@@ -57,7 +57,7 @@ typedef enum {
 	smlEVENT_AFTER_RHS_FUNCTION_EXECUTED
 } smlSystemEventId ;
 
-static bool IsSystemEventID(int id)
+static inline bool IsSystemEventID(int id)
 {
 	return (id >= smlEVENT_BEFORE_SHUTDOWN && id <= smlEVENT_AFTER_RHS_FUNCTION_EXECUTED) ;
 }
@@ -76,7 +76,7 @@ typedef enum {
     smlEVENT_AFTER_RUNNING,
 } smlRunEventId ;
 
-static bool IsRunEventID(int id)
+static inline bool IsRunEventID(int id)
 {
 	return (id >= smlEVENT_BEFORE_SMALLEST_STEP && id <= smlEVENT_AFTER_RUNNING) ;
 }
@@ -90,7 +90,7 @@ typedef enum {
     smlEVENT_BEFORE_PRODUCTION_RETRACTED,
 } smlProductionEventId ;
 
-static bool IsProductionEventID(int id)
+static inline bool IsProductionEventID(int id)
 {
 	return (id >= smlEVENT_AFTER_PRODUCTION_ADDED && id <= smlEVENT_BEFORE_PRODUCTION_RETRACTED) ;
 }
@@ -103,7 +103,7 @@ typedef enum {
     smlEVENT_AFTER_AGENT_REINITIALIZED,
 } smlAgentEventId ;
 
-static bool IsAgentEventID(int id)
+static inline bool IsAgentEventID(int id)
 {
 	return (id >= smlEVENT_AFTER_AGENT_CREATED && id <= smlEVENT_AFTER_AGENT_REINITIALIZED) ;
 }
@@ -113,7 +113,7 @@ typedef enum {
 	smlEVENT_OUTPUT_PHASE_CALLBACK = smlEVENT_AFTER_AGENT_REINITIALIZED + 1,
 } smlWorkingMemoryEventId ;
 
-static bool IsWorkingMemoryEventID(int id)
+static inline bool IsWorkingMemoryEventID(int id)
 {
 	return (id >= smlEVENT_OUTPUT_PHASE_CALLBACK && id <= smlEVENT_OUTPUT_PHASE_CALLBACK) ;
 }
@@ -127,7 +127,7 @@ typedef enum {
     smlEVENT_PRINT,
 } smlPrintEventId ;
 
-static bool IsPrintEventID(int id)
+static inline bool IsPrintEventID(int id)
 {
 	return (id >= smlEVENT_LOG_ERROR && id <= smlEVENT_PRINT) ;
 }

@@ -16,12 +16,16 @@
 #include "sml_AgentSML.h"
 #include "sml_OutputListener.h"
 #include "sml_StringOps.h"
+#include "sml_KernelSML.h"
 
+#include "gSKI_Events.h"
 #include "IgSKI_Wme.h"
 #include "IgSKI_Agent.h"
 #include "IgSKI_InputProducer.h"
 #include "IgSKI_WMObject.h"
 #include "IgSKI_Symbol.h"
+#include "IgSKI_AgentManager.h"
+#include "IgSKI_Kernel.h"
 
 #include <assert.h>
 
@@ -80,6 +84,43 @@ void AgentSML::RemoveAllListeners(Connection* pConnection)
 {
 	m_AgentListener.RemoveAllListeners(pConnection) ;
 	m_pOutputListener->RemoveAllListeners(pConnection) ; 
+}
+
+class AgentSML::AgentBeforeDestroyedListener: public gSKI::IAgentListener
+{
+public:
+	// This handler is called right before the agent is actually deleted
+	// inside gSKI.  We need to clean up any object we own now.
+	virtual void HandleEvent(egSKIEventId, gSKI::IAgent* pAgent)
+	{
+		KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
+
+		// Release any wmes or other objects we're keeping
+		AgentSML* pAgentSML = pKernelSML->GetAgentSML(pAgent) ;
+		pAgentSML->Clear() ;
+
+		// Remove the listeners that KernelSML uses for this agent.
+		// This is important.  Otherwise if we create a new agent using the same kernel object
+		// the listener will still exist inside gSKI and will crash when an agent event is next generated.
+		pAgentSML->GetOutputListener()->UnRegisterForKernelSMLEvents() ;
+
+		// Then delete our matching agent sml information
+		pKernelSML->DeleteAgentSML(pAgent) ;
+
+		// Do self clean-up of this object as it's just called
+		// prior to deleting the AgentSML structure.
+		delete this ;
+	}
+};
+
+void AgentSML::RegisterForBeforeAgentDestroyedEvent()
+{
+	// We should do this immediately before we delete the agent.
+	// We shouldn't do it earlier or we can't be sure it'll be last on the list of listeners which is where we
+	// need it to be (so that we clear our information about the gSKI agent *after* we've notified any of our listeners
+	// about this event).
+	m_pBeforeDestroyedListener = new AgentBeforeDestroyedListener() ;
+	m_pKernelSML->GetKernel()->GetAgentManager()->AddAgentListener(gSKIEVENT_BEFORE_AGENT_DESTROYED, m_pBeforeDestroyedListener) ;
 }
 
 /*************************************************************

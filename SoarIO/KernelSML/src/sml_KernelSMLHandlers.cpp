@@ -339,20 +339,20 @@ bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandNam
 	if (!pAgent)
 		return false ;
 
-	// Release any wmes or other objects we're keeping
-	AgentSML* pAgentSML = GetAgentSML(pAgent) ;
-	pAgentSML->Clear() ;
-
-	// Remove the listeners that KernelSML uses for this agent.
-	// This is important.  Otherwise if we create a new agent using the same kernel object
-	// the listener will still exist inside gSKI and will crash when an agent event is next generated.
-	pAgentSML->GetOutputListener()->UnRegisterForKernelSMLEvents() ;
+	// gSKI's RemoveAgent call isn't guaranteed to complete immediately.
+	// Instead it's a request (if the agent is running we have to stop it first and wait for that to happen
+	// before the delete it honored).  So we register for this notification that the agent is actually about
+	// to be deleted and then we release the data we have on this agent.
+	// It's also important that we register this listener now so that it's added to the *end* of the list of listeners.
+	// That's required as we want to send out calls to our clients for this before_agent_destroyed event and then
+	// clean up our agent information.  This will only work if our clean up comes last, which it will be because
+	// we're adding it immediately prior to the notification (although if the listener implementation is changed to not use push_back
+	// this will break).
+	GetAgentSML(pAgent)->RegisterForBeforeAgentDestroyedEvent() ;
 
 	// Make the call to actually delete the agent
+	// This will trigger a call to our m_pBeforeDestroyedListener
 	GetKernel()->GetAgentManager()->RemoveAgent(pAgent, pError) ;
-
-	// Then delete our matching agent sml information
-	DeleteAgentSML(pAgent) ;
 
 	return true ;
 }

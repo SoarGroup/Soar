@@ -169,6 +169,14 @@ public:
 
 	/*************************************************************
 	* @brief Destroys an agent in the kernel (and locally).
+	*
+	*		 This call is not guaranteed to delete the agent immediately.
+	*		 If the agent is running it will be asked to halt and
+	*		 once it does it will be deleted.
+	*
+	*		 If you need to know precisely when the agent is deleted
+	*		 you can register for the smlEVENT_BEFORE_AGENT_DESTROYED
+	*		 event which is called immediately before the deletion occurs.
 	*************************************************************/
 	bool DestroyAgent(Agent* pAgent) ;
 

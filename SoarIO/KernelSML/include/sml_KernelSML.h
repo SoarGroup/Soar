@@ -247,15 +247,17 @@ public:
 	*************************************************************/
 	AgentSML*	GetAgentSML(gSKI::IAgent* pAgent) ;
 
+	/*************************************************************
+	* @brief	Delete the agent sml object for this agent.
+	*			This object stores the data SML uses when working
+	*			with the underlying gSKI agent.
+	*************************************************************/	
+	bool DeleteAgentSML(gSKI::IAgent* pAgent) ;
+
 protected:
 	KernelSML(void);
 
 protected:
-	/*************************************************************
-	* @brief	Delete the agent sml object for this agent.
-	*************************************************************/	
-	bool DeleteAgentSML(gSKI::IAgent* pAgent) ;
-
 	/*************************************************************
 	* @brief	Get the kernel factory object.
 	*************************************************************/

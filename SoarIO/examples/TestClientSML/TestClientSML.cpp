@@ -143,6 +143,11 @@ void MySystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
 	cout << "Received kernel event" << endl ;
 }
 
+void MyDeletionHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
+{
+	cout << "Received notification before agent was deleted" << endl ;
+}
+
 bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
@@ -363,7 +368,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 		// interrupts Soar immediately after a decision cycle.
 		// Removed the test part for now.  Stop's not working yet and
 		// stats doesn't report anything.
-/*
 		int callback3 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyInterruptHandler, 0) ;
 
 		pAgent->InitSoar() ;
@@ -371,14 +375,15 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		std::string stats = pAgent->ExecuteCommandLine("stats") ;
 		size_t pos = stats.find("1 decision cycles") ;
-
+/*
 		if (pos == std::string.npos)
 		{
 			cout << "*** ERROR: Failed to interrupt Soar during a run." << endl ;
 			return false ;
 		}
-		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, callback3) ;
 */
+		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, callback3) ;
+
 		cout << endl << "If this test worked should see something like this (above here):" << endl ;
 		cout << "Top Identifier I3" << endl << "(I3 ^move M1)" << endl << "(M1 ^row 1)" << endl ;
 		cout << "(M1 ^col 1)" << endl << "(I3 ^alternative M1)" << endl ;
@@ -396,8 +401,14 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized)
 
 		cout << "Destroy the agent now" << endl ;
 
-//		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
 		pAgent->UnregisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, callback1) ;
+
+		// The Before_Agent_Destroyed callback is a tricky one so we'll register for it to test it.
+		// We need to get this callback just before the agentSML data is deleted (otherwise there'll be no way to send/receive the callback)
+		// and then continue on to delete the agent after we've responded to the callback.
+		// Interestingly, we don't explicitly unregister this callback because the agent has already been destroyed so
+		// that's another test, that this callback is cleaned up correctly (and automatically).
+		int callback4 = pAgent->RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_DESTROYED, &MyDeletionHandler, 0) ;
 
 		// Explicitly destroy our agent as a test, before we delete the kernel itself.
 		// (Actually, if this is a remote connection we need to do this or the agent
