@@ -168,6 +168,7 @@ $(SWIG)\swig.exe -Wall -c++ -tcl &quot;$(InputPath)&quot;
 					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
 echo TCL_INCLUDE: %TCL_INCLUDE%
 echo TCL_LIB: %TCL_LIB%
+echo TCL_BIN: %TCL_BIN%
 echo SWIG: %SWIG%
 echo on
 $(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 1.0  &quot;$(InputPath)&quot;

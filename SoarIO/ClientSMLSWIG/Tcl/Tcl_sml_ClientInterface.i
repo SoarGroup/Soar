@@ -25,14 +25,14 @@
 		Tcl_Obj* script;
 	};
 
-	void TclAgentEventCallBack(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
+	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
 	{
 		// we can ignore the agent parameter because it's already in the script (from when we registered it)
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
 	}
 	
-	void TclProductionEventCallBack(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
+	void TclProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
 	{
 		// we can ignore the agent parameter because it's already in the script (from when we registered it)
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
@@ -50,7 +50,7 @@
 		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	
-	void TclRunEventCallBack(sml::smlRunEventId id, void* pUserData, sml::Agent* agent, sml::smlPhase phase)
+	void TclRunEventCallback(sml::smlRunEventId id, void* pUserData, sml::Agent* agent, sml::smlPhase phase)
 	{
 		// we can ignore the agent parameter because it's already in the script (from when we registered it)
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
@@ -61,7 +61,7 @@
 		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	
-	void TclPrintEventCallBack(sml::smlPrintEventId id, void* pUserData, sml::Agent* agent, char const* pMessage)
+	void TclPrintEventCallback(sml::smlPrintEventId id, void* pUserData, sml::Agent* agent, char const* pMessage)
 	{
 		// we can ignore the agent parameter because it's already in the script (from when we registered it)
 		// but we still need to append the message (wrapped in quotes in case it has spaces)
@@ -71,7 +71,14 @@
 		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	
-	TclUserData* CreateTclUserData(sml::Agent* self, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
+	void TclSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* kernel)
+	{
+		// we can ignore the agent parameter because it's already in the script (from when we registered it)
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_EvalObjEx(tud->interp, tud->script, 0);
+	}
+	
+	TclUserData* CreateTclAgentUserData(sml::Agent* self, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
 	    
 	    tud->interp = interp;
@@ -87,57 +94,102 @@
 	    
 	    return tud;
 	}
+	
+	TclUserData* CreateTclSystemUserData(sml::Kernel* self, Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
+		TclUserData* tud = new TclUserData();
+	    
+	    tud->interp = interp;
+	    // put all of the arguments together so we can just execute this as a single script later
+	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
+	    tud->script = proc;
+	    Tcl_AppendStringsToObj(tud->script, " ", NULL);
+	    Tcl_AppendObjToObj(tud->script, id);
+	    Tcl_AppendStringsToObj(tud->script, " \"", NULL);
+	    Tcl_AppendObjToObj(tud->script, userData);
+	    Tcl_AppendStringsToObj(tud->script, "\" ", NULL);
+	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Kernel,0));
+	    
+	    return tud;
+	}
 %}
 
 %include "../sml_ClientInterface.i"
 
 %extend sml::Agent {
-	void RegisterForAgentEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
-	    TclUserData* tud = CreateTclUserData(self, id, proc, userData, interp);
+	int RegisterForAgentEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
+	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    self->RegisterForAgentEvent(sml::smlAgentEventId(lid), TclAgentEventCallBack, (void*)tud);
+	    return self->RegisterForAgentEvent(sml::smlAgentEventId(lid), TclAgentEventCallback, (void*)tud);
     };
     
     void UnregisterForAgentEvent(Tcl_Obj* id, Tcl_Obj* callbackID, Tcl_Interp* interp) {
-    
+        long lid, lcallbackid;
+        Tcl_GetLongFromObj(interp, id, &lid);
+        Tcl_GetLongFromObj(interp, callbackID, &lcallbackid);
+        self->UnregisterForAgentEvent(sml::smlAgentEventId(lid), lcallbackid);
     }
     
-    void RegisterForProductionEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
-	    TclUserData* tud = CreateTclUserData(self, id, proc, userData, interp);
+    int RegisterForProductionEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
+	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    self->RegisterForProductionEvent(sml::smlProductionEventId(lid), TclProductionEventCallBack, (void*)tud);
+	    return self->RegisterForProductionEvent(sml::smlProductionEventId(lid), TclProductionEventCallback, (void*)tud);
     }
     
     void UnregisterForProductionEvent(Tcl_Obj* id, Tcl_Obj* callbackID, Tcl_Interp* interp) {
-    
+        long lid, lcallbackid;
+        Tcl_GetLongFromObj(interp, id, &lid);
+        Tcl_GetLongFromObj(interp, callbackID, &lcallbackid);
+        self->UnregisterForProductionEvent(sml::smlProductionEventId(lid), lcallbackid);
     }
     
-    void RegisterForRunEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
-        TclUserData* tud = CreateTclUserData(self, id, proc, userData, interp);
+    int RegisterForRunEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
+        TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    self->RegisterForRunEvent(sml::smlRunEventId(lid), TclRunEventCallBack, (void*)tud);
+	    return self->RegisterForRunEvent(sml::smlRunEventId(lid), TclRunEventCallback, (void*)tud);
     }
     
     void UnregisterForRunEvent(Tcl_Obj* id, Tcl_Obj* callbackID, Tcl_Interp* interp) {
-    
+        long lid, lcallbackid;
+        Tcl_GetLongFromObj(interp, id, &lid);
+        Tcl_GetLongFromObj(interp, callbackID, &lcallbackid);
+        self->UnregisterForRunEvent(sml::smlRunEventId(lid), lcallbackid);
     }
 
-    void RegisterForPrintEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {	    
-	    TclUserData* tud = CreateTclUserData(self, id, proc, userData, interp);
+    int RegisterForPrintEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {	    
+	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    
 	    long lid;
 	    Tcl_GetLongFromObj(interp, id, &lid);
-	    self->RegisterForPrintEvent(sml::smlPrintEventId(lid), TclPrintEventCallBack, (void*)tud);
+	    return self->RegisterForPrintEvent(sml::smlPrintEventId(lid), TclPrintEventCallback, (void*)tud);
     }
 
     void UnregisterForPrintEvent(Tcl_Obj* id, Tcl_Obj* callbackID, Tcl_Interp* interp) {
-    
+        long lid, lcallbackid;
+        Tcl_GetLongFromObj(interp, id, &lid);
+        Tcl_GetLongFromObj(interp, callbackID, &lcallbackid);
+        self->UnregisterForPrintEvent(sml::smlPrintEventId(lid), lcallbackid);
     }
+}
+
+%extend sml::Kernel {
+    int RegisterForSystemEvent(Tcl_Obj* id, Tcl_Obj* proc, Tcl_Obj* userData, Tcl_Interp* interp) {
+	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
+	    
+	    long lid;
+	    Tcl_GetLongFromObj(interp, id, &lid);
+	    return self->RegisterForSystemEvent(sml::smlSystemEventId(lid), TclSystemEventCallback, (void*)tud);
+    };
     
+    void UnregisterForSystemEvent(Tcl_Obj* id, Tcl_Obj* callbackID, Tcl_Interp* interp) {
+        long lid, lcallbackid;
+        Tcl_GetLongFromObj(interp, id, &lid);
+        Tcl_GetLongFromObj(interp, callbackID, &lcallbackid);
+        self->UnregisterForSystemEvent(sml::smlSystemEventId(lid), lcallbackid);
+    }
 }
