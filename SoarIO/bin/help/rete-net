@@ -78,4 +78,3 @@ During Execution
    kAgentRequired, kCantSaveReteWithJustifications,
    kCantLoadReteWithProductions, kReteSaveOperationFail,
    kReteLoadOperationFail
-   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Rete-net"

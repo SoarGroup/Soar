@@ -1,7 +1,5 @@
 \documentclass[10pt]{article}
 \usepackage{fullpage, graphicx, url}
-\setlength{\parskip}{1ex}
-\setlength{\parindent}{0ex}
 \title{Stop-soar - Soar Wiki}
 \begin{document}
 \section*{Stop-soar}
@@ -26,7 +24,7 @@ stop-soar [-s] [reason string]
 \section*{ Options }
 
 
-\begin{tabular}{|c|c|}
+\begin{tabular}{|p{1in}|p{5in}|}
 \hline 
  -s, --self  & Stop only the soar agent where the command is issued. All other agents continue running as previously specified.  \\
  \hline 
@@ -74,6 +72,6 @@ monitor -add {stop-soar --self "after decision phase"} after-decision-phase-cycl
 \subsection*{ During Execution }
 
 
- kAgentReqruied, kKernelRequired Retrieved from ``\url{http://winter.eecs.umich.edu/soarwiki/Stop-soar}``
+ kAgentReqruied, kKernelRequired
 
 \end{document}
