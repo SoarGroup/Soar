@@ -9,6 +9,7 @@ sp {waterjug*evaluate*state*success
 -->
    (<s> ^success <d>)}
 
+# this rule will cause a warning during loading in Soar; that warning can be ignored
 sp {waterjug*evaluate*state*failure*duplicate
    (state <s1> ^desired <d>
                ^jug <j1>
