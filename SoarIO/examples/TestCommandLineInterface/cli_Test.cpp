@@ -271,7 +271,8 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 	} 
 
 	if (g_pInputThread) {
-		if ((commandLine == "quit") || (commandLine == "exit")) {
+		string expandedCommandLine = pKernel->ExpandCommandLine(commandLine.c_str());
+		if (expandedCommandLine == "quit") {
 			g_pInputThread->Stop(false);
 		}
 		g_pWaitForInput->TriggerEvent();
