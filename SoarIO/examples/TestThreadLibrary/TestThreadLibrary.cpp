@@ -49,11 +49,9 @@ public:
 	ThreadBusy() { }
 
 	void Run() {
-		while (!this->m_QuitNow) {
-			cout << ".";
-			cout.flush();
-			Sleep(1000);
-		}
+		cout << "*";
+		cout.flush();
+		while (!this->m_QuitNow) {}
 	}
 };
 
@@ -78,6 +76,9 @@ public:
 				delete p_Lock;
 				cout << "R";
 				cout.flush();
+				if (rand() & 2) {
+					Sleep(rand() % 1000);
+				}
 				g_pWriteEvent->WaitForEventForever();
 				p_Lock = new Lock(g_pMutex);
 			}
@@ -88,9 +89,6 @@ public:
 			cout << bufSize;
 			cout.flush();
 			delete p_Lock;
-			if (rand() & 2) {
-				Sleep(rand() % 1000);
-			}
 		}
 	}
 };
@@ -107,6 +105,9 @@ public:
 				delete p_Lock;
 				cout << "W";
 				cout.flush();
+				if (rand() & 2) {
+					Sleep(rand() % 1000);
+				}
 				g_pReadEvent->WaitForEventForever();
 				p_Lock = new Lock(g_pMutex);
 			}
@@ -118,9 +119,6 @@ public:
 			cout << bufSize;
 			cout.flush();
 			delete p_Lock;
-			if (rand() & 2) {
-				Sleep(rand() % 1000);
-			}
 		}
 	}
 };
@@ -128,11 +126,11 @@ public:
 class TestThread_1 : public Test
 {
 public:
-	TestThread_1() : Test("'busy thread with wait for stop'") { }
+	TestThread_1() : Test("'busy thread (wait for stop)'") { }
 
 	bool Run()
 	{
-		cout << "Starting busy thread";
+		cout << "Starting " << m_pTestName << "...";
 		ThreadBusy thread;
 		thread.Start();
 		sleep(5);
@@ -144,12 +142,12 @@ public:
 class TestThread_2 : public Test
 {
 public:
-	TestThread_2() : Test("'busy thread with stop then sleep then check'") { }
+	TestThread_2() : Test("'busy thread (stop, sleep, check)'") { }
 
 	bool Run()
 	{
 		ThreadBusy thread;
-		cout << "Starting busy thread 2";
+		cout << "Starting " << m_pTestName << "...";
 		thread.Start();
 		sleep(5);
 		thread.Stop(false);
@@ -171,9 +169,10 @@ public:
 		
 		ThreadReader threadR;
 		ThreadWriter threadW;
-		cout << "Starting buffer reader/writer";
-		threadR.Start();
+		cout << "Starting " << m_pTestName << "... ";
 		threadW.Start();
+		sleep(1);
+		threadR.Start();
 		sleep(5);
 		threadR.Stop(false);
 		threadW.Stop(false);
@@ -190,22 +189,22 @@ public:
 class TestThread_4 : public Test
 {
 public:
-	TestThread_4() : Test("'simple deadlock'") { }
+	TestThread_4() : Test("'recursive locking'") { }
 
 	bool Run()
 	{
 		g_pMutex = new Mutex();
 		
-		cout << "Starting deadlock test... ";
-		Lock* pLock1 = new Lock(g_pMutex);
-		cout << "About to lock again, this should be deadlock (control-c to quit)" << endl;
+		cout << "Starting " << m_pTestName << "... ";
+		Lock* pLock1 = new Lock(g_pMutex); 
+		cout << "About to lock again, this may deadlock if not implemented correctly (control-c to quit)" << endl;
 		Lock* pLock2 = new Lock(g_pMutex);
 		
 		delete pLock1;
 		delete pLock2;
 		delete g_pMutex;
 		
-		return Result(false) ;
+		return Result(true) ;
 	}
 };
 
@@ -252,6 +251,7 @@ int main(int argc, char* argv[])
 	printf("\n\nPress <return> to exit\n") ;
 	char line[100] ;
 	char* str = gets(line) ;
+	str = 0;
 
 	return 0;
 }
