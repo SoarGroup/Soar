@@ -3,7 +3,7 @@
 
 float compute_Q_value();
 Symbol *equality_test_for_symbol_in_test(test t);
-condition *make_simple_condition(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym);
+condition *make_simple_condition(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, bool acceptable);
 action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym);
 production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref, wme *w);
 void learn_RL_productions(int level);
@@ -190,7 +190,7 @@ production *specify_production(instantiation *ist){
 		w = current_agent(all_wmes_in_rete);
 		for (i = 0 ; i < num; i++)
 			w = w->rete_next;
-		cond = make_simple_condition(w->id, w->attr, w->value);
+		cond = make_simple_condition(w->id, w->attr, w->value, w->acceptable);
 		// Check that the condition made from this wme is not already
 		// in the condition list of the production.
 		for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
@@ -391,7 +391,8 @@ action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Sy
 
 condition *make_simple_condition(Symbol *id_sym,
                                  Symbol *attr_sym,
-                                 Symbol *val_sym)
+                                 Symbol *val_sym,
+								 bool acceptable)
 {
     condition *newcond;
 
@@ -399,7 +400,10 @@ condition *make_simple_condition(Symbol *id_sym,
     newcond->type = POSITIVE_CONDITION;
     newcond->next = NULL;
     newcond->prev = NULL;
+	newcond->test_for_acceptable_preference = acceptable;
 
+
+	/*
     if (strcmp(attr_sym->sc.name, "operator") == 0)
     {
         newcond->test_for_acceptable_preference = TRUE;
@@ -407,7 +411,7 @@ condition *make_simple_condition(Symbol *id_sym,
     else
     {
         newcond->test_for_acceptable_preference = FALSE;
-    }
+    }*/
 
     newcond->data.tests.id_test = make_equality_test_without_adding_reference(id_sym);
     newcond->data.tests.attr_test = make_equality_test_without_adding_reference(attr_sym);
@@ -489,9 +493,9 @@ bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, conditio
 
 	if (depth == 0) return FALSE;
 	// if(symbol_is_in_tc(id, tc_seen)) return FALSE;
-	new_cond = make_simple_condition(id, attr, value);
+	new_cond = make_simple_condition(id, attr, value, w->acceptable);
 //	if (new_cond->test_for_acceptable_preference == w->acceptable)
-		insert_at_head_of_dll(*cond, new_cond, next, prev);
+	insert_at_head_of_dll(*cond, new_cond, next, prev);
 	if (symbol_is_in_tc(id, tc_prod)){
 		return TRUE;
 	} else {
