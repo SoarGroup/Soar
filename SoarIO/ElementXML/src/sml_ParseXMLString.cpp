@@ -45,23 +45,3 @@ void ParseXMLString::ReadLine()
 		return ;
 	}
 }
-
-/************************************************************************
-* 
-* Read the next character from the input file.
-*
-*************************************************************************/
-void ParseXMLString::GetNextChar()
-{
-	// When we're at the end of file, we're done.
-	if (IsError() || IsEOF())
-		return ;
-
-	// Move the pointer along to the next char in the current input line
-	m_Pos++ ;
-	
-	// If we moved off the end of the current line, move to the next input line.
-	if (m_Pos >= m_LineLength)
-		ReadLine() ;
-}
-

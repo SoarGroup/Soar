@@ -89,6 +89,10 @@ static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 	_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
 
 	_CrtDbgReport(_CRT_WARN, pFilename, line, "KernelSMLgSKI", pMsg);
+#else
+	unused(pFilename) ;
+	unused(line) ;
+	unused(pMsg) ;
 #endif
 #endif
 }

@@ -43,7 +43,25 @@ protected:
 	// Number of chars in the current line buffer (when pos reaches this, read another line)
 	size_t		m_LineLength ;
 
-	virtual void GetNextChar() ;
+	/************************************************************************
+	* 
+	* Read the next character from the input string.
+	*
+	*************************************************************************/
+	virtual inline void GetNextChar()
+	{
+		// When we're at the end of file, we're done.
+		if (IsError() || IsEOF())
+			return ;
+
+		// Move the pointer along to the next char in the current input line
+		m_Pos++ ;
+		
+		// If we moved off the end of the current line, move to the next input line.
+		if (m_Pos >= m_LineLength)
+			ReadLine() ;
+	}
+
 	virtual void ReadLine() ;
 
 	/************************************************************************
@@ -51,7 +69,7 @@ protected:
 	* Returns the current character from the input stream.
 	* 
 	*************************************************************************/
-	virtual char GetCurrentChar()
+	virtual inline char GetCurrentChar()
 	{
 		return m_pInputLine[m_Pos] ;
 	}

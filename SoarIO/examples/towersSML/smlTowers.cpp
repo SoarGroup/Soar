@@ -390,8 +390,9 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers, int inNumDisks) : drawG
 	#ifdef SML_EMBEDDED_MODE
 		// Fastest method, but need to call "GetIncomingCommands" from time to time.
 		kernel = Kernel::CreateEmbeddedConnection("KernelSML", true, true) ;
+
 		// Slightly slower, but polls for incoming remote commands automatically
-		// kernel = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
+//		kernel = Kernel::CreateEmbeddedConnection("KernelSML", false, false) ;
 
 		// SGIO equivalent
 //		soar = new APISoar();

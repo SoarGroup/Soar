@@ -4,8 +4,8 @@
 #include "Towers.h"
 
 
-//select which type of sgio interface to use	
+//select which type of sml interface to use
+//by commenting this value in and out
 #define SML_EMBEDDED_MODE
-//#define SML_REMOTE_MODE
 
 #endif //SGIO_TOWERS_HANOI

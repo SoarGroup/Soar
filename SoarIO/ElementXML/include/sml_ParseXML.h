@@ -74,7 +74,7 @@ protected:
 	void		SetInCharData(bool state)		{ m_InCharData = state ; }
 
 	void		RecordError(std::string pStr)	{ if (!m_Error) m_ErrorMsg = pStr ; m_Error = true ; }
-	bool		IsError()						{ return m_Error ; }
+	inline bool	IsError()						{ return m_Error ; }
 	char		GetEscapeChar() ;
 
 	/************************************************************************
@@ -92,7 +92,7 @@ protected:
 	* Returns true if we're at the end of the file.
 	* 
 	*************************************************************************/
-	bool IsEOF()
+	inline bool IsEOF()
 	{
 		return m_IsEOF ;
 	}
@@ -244,24 +244,20 @@ protected:
 	* for identifiers).
 	* If it does not match, throws an exception.
 	* 
-	* @param type			The type to test (e.g. kSymbol)
-	* 
-	* @return The value of the current token (if matches type).
+	* @param type		The type to test (e.g. kSymbol)
+	* @param value		Iss et to the value of the current token (if matches type).
 	* 
 	*************************************************************************/
-	// BADBAD: We need this to be more careful about how it returns the value.
-	ParseString MustBe(TokenType type)
+	void MustBe(TokenType type, ParseString& value)
 	{
 		if (GetTokenType() != type)
 		{
 			RecordError("Found incorrect type when parsing token '" + GetTokenValue() + "'") ;
 		}
 		
-		ParseString result = GetTokenValue() ;
+		value = GetTokenValue() ;
 		
 		GetNextToken() ;
-		
-		return result ;
 	}
 	
 	/************************************************************************

@@ -124,6 +124,8 @@ void EmbeddedConnection()
 		}
 		else
 		{
+			// If we remove the destroyAgent call at the bottom of this test,
+			// run with a remote connection and then run again, we'll end up in this branch.
 			pAgent->InitSoar() ;
 		}
 

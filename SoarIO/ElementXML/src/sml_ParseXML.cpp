@@ -113,6 +113,9 @@ char ParseXML::GetEscapeChar()
 *************************************************************************/
 void ParseXML::GetNextToken()
 {
+	// Used to store current char
+	char ch = 0 ;
+
 	// If we're already reported an error, stop parsing.
 	if (IsError())
 		return ;
@@ -160,10 +163,9 @@ void ParseXML::GetNextToken()
 	{
 		// Char data
 		std::string data ;
-		while (!IsEOF() && !IsEndOfCharData(GetCurrentChar()) )
+		ch = GetCurrentChar() ;
+		while (!IsEOF() && !IsEndOfCharData(ch) )
 		{
-			char ch = GetCurrentChar() ;
-
 			if (ch == kEscapeChar)
 			{
 				ch = GetEscapeChar() ;
@@ -171,6 +173,8 @@ void ParseXML::GetNextToken()
 
 			data += ch;
 			GetNextChar() ;
+
+			ch = GetCurrentChar() ;
 		}
 		
 		SetCurrentToken(data, kCharData) ;
@@ -186,10 +190,10 @@ void ParseXML::GetNextToken()
 		// Consume the opening quote.
 		GetNextChar() ;
 		
-		while (!IsEOF() && !IsQuote(GetCurrentChar()))
-		{
-			char ch = GetCurrentChar() ;
+		ch = GetCurrentChar() ;
 
+		while (!IsEOF() && !IsQuote(ch))
+		{
 			if (ch == kEscapeChar)
 			{
 				ch = GetEscapeChar() ;
@@ -198,6 +202,8 @@ void ParseXML::GetNextToken()
 			// Add everything up to the next quote.
 			quoted += ch ;
 			GetNextChar() ;
+
+			ch = GetCurrentChar() ;
 		}
 		
 		// Consume the closing quote.
@@ -209,10 +215,14 @@ void ParseXML::GetNextToken()
 
 	// Identifier
 	std::string identifier ;
-	while (!IsEOF() && !IsWhiteSpace(GetCurrentChar()) && !IsSymbol(GetCurrentChar()) && !IsQuote(GetCurrentChar()))
+
+	ch = GetCurrentChar() ;
+	while (!IsEOF() && !IsWhiteSpace(ch) && !IsSymbol(ch) && !IsQuote(ch))
 	{
-		identifier += (GetCurrentChar()) ;
+		identifier += ch ;
 		GetNextChar() ;
+
+		ch = GetCurrentChar() ;
 	}
 	
 	SetCurrentToken(identifier, kIdentifier) ;
@@ -248,7 +258,9 @@ ElementXMLImpl* ParseXML::ParseElement()
 	ElementXMLImpl* pElement = new ElementXMLImpl() ;
 
 	// Get the tag name
-	ParseString tagName = MustBe(kIdentifier) ;	
+	ParseString tagName ;
+	MustBe(kIdentifier, tagName) ;
+
 	pElement->SetTagName(tagName.c_str()) ;
 	
 	// Used to record whether data is encoded binary
@@ -266,7 +278,8 @@ ElementXMLImpl* ParseXML::ParseElement()
 		MustBe(kEqualsChar) ;
 		
 		// Then must be followed by a string containing the value
-		ParseString value = MustBe(kQuotedString) ;
+		ParseString value ;
+		MustBe(kQuotedString, value) ;
 		
 		// Check for our special "encoding" attribute which is a flag to
 		// say that the data is really encoded binary (not just a character string)
@@ -348,7 +361,7 @@ ElementXMLImpl* ParseXML::ParseElement()
 	if (!IsError())
 	{
 		// Once we reach the end marker "</" we just need to finish up the stream.
-		tagName = MustBe(kIdentifier) ;
+		MustBe(kIdentifier, tagName) ;
 		
 		if (tagName.compare(pElement->GetTagName()) != 0)
 			RecordError("The closing tag for " + std::string(pElement->GetTagName()) + " doesn't match the opening tag") ;
