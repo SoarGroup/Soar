@@ -370,6 +370,7 @@ soar_output_callback_to_tcl (soar_callback_agent the_agent,
 
 
 #define CANDID_SIZE 56
+#define SOAR_CDEFAULTASKCALLBACK_TEMP_SIZE 50
 void
 soar_ask_callback_to_tcl (soar_callback_agent the_agent, 
 						  soar_callback_data data,
@@ -403,7 +404,7 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
   code = Tcl_EvalEx( tcl_soar_agent_interpreters[((agent *)the_agent)->id], 
 			(char *) Tcl_DStringValue(&command),-1,TCL_EVAL_GLOBAL);
 
-  numCandidates += 3; /* add 3 because first, last, random are always choices */
+  num_candidates += 3; /* add 3 because first, last, random are always choices */
   
   if (code == TCL_OK) {
 	/*result = atoi( tcl_soar_agent_interpreters[((agent *)the_agent)->id]->result );*/
@@ -428,13 +429,51 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
 	control_c_handler(0);
   }
 
-
-  cand = ((soar_apiAskCallbackData *)call_data)->candidates;
-  while( result > 0 ) { 
-	cand = cand->next_candidate;
-	result--;
+  if (current_agent(logging_to_file)) {
+    char temp[SOAR_CDEFAULTASKCALLBACK_TEMP_SIZE];
+	snprintf (temp, SOAR_CDEFAULTASKCALLBACK_TEMP_SIZE, "%d\n", result);
+	temp[SOAR_CDEFAULTASKCALLBACK_TEMP_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+    print_string_to_log_file_only (temp);
   }
-  *((soar_apiAskCallbackData *)call_data)->selection = cand;
+
+  switch (num_candidates - result) {
+
+
+  case 2:
+    set_sysparam (USER_SELECT_MODE_SYSPARAM, USER_SELECT_FIRST);
+    print ("User-select mode changed to:  first\n");
+    *((soar_apiAskCallbackData *)call_data)->selection = 
+      ((soar_apiAskCallbackData *)call_data)->candidates;
+    break;
+
+
+  case 1:
+    set_sysparam (USER_SELECT_MODE_SYSPARAM, USER_SELECT_LAST);
+    print ("User-select mode changed to:  last\n");
+    for (cand = ((soar_apiAskCallbackData *)call_data)->candidates;
+	 cand->next_candidate != NIL; cand = cand->next_candidate);
+
+    *((soar_apiAskCallbackData *)call_data)->selection = cand;
+    break;
+
+
+  case 0:
+    set_sysparam (USER_SELECT_MODE_SYSPARAM, USER_SELECT_RANDOM);
+    print ("User-select mode changed to:  random\n");
+    
+    result = sys_random() % (num_candidates-3);
+    
+    cand =  ((soar_apiAskCallbackData *)call_data)->candidates;
+    while (result) { cand=cand->next_candidate; result--; }
+    *((soar_apiAskCallbackData *)call_data)->selection = cand;
+    break;
+
+
+  default:
+    cand =  ((soar_apiAskCallbackData *)call_data)->candidates;
+    while (result>1) { cand=cand->next_candidate; result--; }
+    *((soar_apiAskCallbackData *)call_data)->selection = cand;
+  }
  
  Tcl_DStringFree(&command);
 }
