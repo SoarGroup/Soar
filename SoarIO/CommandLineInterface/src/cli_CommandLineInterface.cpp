@@ -110,6 +110,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIReteNet]				= &cli::CommandLineInterface::ParseReteNet;
 	m_CommandMap[Constants::kCLIRun]					= &cli::CommandLineInterface::ParseRun;
 	m_CommandMap[Constants::kCLISoar8]					= &cli::CommandLineInterface::ParseSoar8;
+	m_CommandMap[Constants::kCLISoarNews]				= &cli::CommandLineInterface::ParseSoarNews;
 	m_CommandMap[Constants::kCLISource]					= &cli::CommandLineInterface::ParseSource;
 	m_CommandMap[Constants::kCLISP]						= &cli::CommandLineInterface::ParseSP;
 	m_CommandMap[Constants::kCLIStats]					= &cli::CommandLineInterface::ParseStats;

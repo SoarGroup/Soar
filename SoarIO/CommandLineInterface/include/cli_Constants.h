@@ -66,6 +66,7 @@ namespace cli {
 		static char const* kCLIReteNet;
 		static char const* kCLIRun;
 		static char const* kCLISoar8;
+		static char const* kCLISoarNews;
 		static char const* kCLISource;
 		static char const* kCLISP;
 		static char const* kCLIStats;

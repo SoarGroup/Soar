@@ -507,6 +507,15 @@ public:
 	bool DoSoar8(bool query, bool soar8);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoSoarNews();
+
+	/*************************************************************
 	* @brief source command, see usage.txt for details.
 	*************************************************************/
 	bool ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

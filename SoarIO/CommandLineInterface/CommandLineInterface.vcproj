@@ -243,6 +243,9 @@
 					RelativePath=".\src\cli_soar8.cpp">
 				</File>
 				<File
+					RelativePath=".\src\cli_soarnews.cpp">
+				</File>
+				<File
 					RelativePath=".\src\cli_source.cpp">
 				</File>
 				<File
