@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4100 4701 at top of file!")
-#pragma warning(disable : 4100 4701)
+#pragma message("Disabling compiler warning 4100 at top of file!")
+#pragma warning(disable : 4100)
 #endif
 
 /*************************************************************************
@@ -813,7 +813,7 @@ void reorder_simplified_conditions (condition **top_of_conds,
   condition *first_cond, *last_cond;
   condition *cond, *next_cond;
   condition *min_cost_conds, *chosen;
-  long cost, min_cost;
+  long cost = 0, min_cost;
   list *new_vars;
 
   remaining_conds = *top_of_conds;

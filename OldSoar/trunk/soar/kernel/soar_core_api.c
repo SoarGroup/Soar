@@ -1,7 +1,7 @@
 /* This block of code needs to be removed and the warnings dealt with */
 #ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4100 4706 4701 at top of file!")
-#pragma warning(disable : 4100 4706 4701)
+#pragma message("Disabling compiler warnings 4100 4701 at top of file!")
+#pragma warning(disable : 4100 4701)
 #endif
 
 /**
@@ -719,17 +719,18 @@ int soar_cLoadReteNet( const char *filename ) {
       || (!(strcmp((char *) (filename + strlen(filename) - 2), ".z"))))
     {
 
-      /* The popen can succeed if given an non-existant file   */
+      /* The popen can succeed if given an non-existant file   
+         creating an unusable pipe.  So we check to see if the 
+         file exists first, on a load action.                  */
 
-      /* creating an unusable pipe.  So we check to see if the */
-      /* file exists first, on a load action.                  */
-      if (!(f = fopen(filename, "rb"))) {
+      f = fopen(filename, "rb");
 
+      if (!f) {
 	/* --- error when opening the file --- */    
 	print ("Internal error: Error opening file.\n");
 	return SOAR_ERROR;
-      }
-      else {
+
+      } else {
 	fclose(f);
       }
 	
@@ -1330,7 +1331,8 @@ void soar_cExciseAllProductionsOfType ( byte type ) {
 int soar_cExciseProductionByName ( const char *name ) {
   production *p;
   
-  if (  (p = name_to_production( name ))  ) {
+  p = name_to_production(name);
+  if (p) {
       excise_production( p, (bool)(TRUE &&
 			   current_agent(sysparams)[TRACE_LOADING_SYSPARAM])); 
     return 0;

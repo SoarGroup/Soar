@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warning 4706 at top of file!")
-#pragma warning(disable : 4706)
-#endif
-
 /**
  * \file soar_ecore_api.c
  *   
@@ -93,7 +87,9 @@ int soar_ecOpenLog( const char *filename, char *mode ) {
 
   FILE * f;
 
-  if ( !(f = fopen(filename, mode)) ) { return -1; }
+  f = fopen(filename, mode);
+
+  if ( !f ) { return -1; }
 
   /* Install callback */
   soar_cPushCallback( soar_agent,
@@ -1580,8 +1576,9 @@ int soar_ecBeginTracingProductions( int n, const char **names ) {
   production *prod;
 
   for( i = 0; i < n; i++ ) {
-    
-    if ( (prod = name_to_production( names[i] )) ) {
+
+    prod = name_to_production( names[i] );
+    if ( prod ) {
       add_pwatch( prod );
     }
     else {
@@ -1600,8 +1597,9 @@ int soar_ecStopTracingProductions( int n, const char **names ) {
 
 
   for( i = 0; i < n; i++ ) {
-    
-    if ( (prod = name_to_production( names[i] )) ) {
+
+    prod = name_to_production( names[i] );
+    if ( prod ) {
       remove_pwatch( prod );
     }
     else {

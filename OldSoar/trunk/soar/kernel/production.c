@@ -1,9 +1,3 @@
-/* This block of code needs to be removed and the warnings dealt with */
-#ifdef _MSC_VER
-#pragma message("Disabling compiler warnings 4701 4100 4131 at top of file!")
-#pragma warning(disable : 4701 4100 4131 )
-#endif
-
 /*************************************************************************
  *
  *  file:  production.c
@@ -335,7 +329,7 @@ void deallocate_test (test t) {
 ---------------------------------------------------------------- */
 
 void add_new_test_to_test (test *t, test add_me) {
-  complex_test *ct;
+  complex_test *ct = NULL;
   cons *c;
   bool already_a_conjunctive_test;
 
