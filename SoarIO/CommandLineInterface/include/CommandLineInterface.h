@@ -149,6 +149,15 @@ public:
 	bool DoLS();
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseMultiAttributes(int argc, char** argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoMultiAttributes();
+
+	/*************************************************************
 	* @brief new-agent command, see command line spec document for details
 	*************************************************************/
 	bool ParseNewAgent(int argc, char** argv);
@@ -273,6 +282,7 @@ protected:
 		static char const* kCLIInitSoar;
 		static char const* kCLILearn;
 		static char const* kCLILS;
+		static char const* kCLIMultiAttributes;
 		static char const* kCLINewAgent;
 		static char const* kCLIPopD;
 		static char const* kCLIPrint;
@@ -293,6 +303,7 @@ protected:
 		static char const* kCLIInitSoarUsage;
 		static char const* kCLILearnUsage;
 		static char const* kCLILSUsage;
+		static char const* kCLIMultiAttributesUsage;
 		static char const* kCLINewAgentUsage;
 		static char const* kCLIPopDUsage;
 		static char const* kCLIPrintUsage;

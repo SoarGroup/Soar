@@ -12,6 +12,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <fstream>
 
 #ifdef WIN32
 #include <windows.h>
@@ -44,29 +45,30 @@ using namespace cli;
 //| |___| |___ | | |__| (_) | | | \__ \ || (_| | | | | |_\__ \
 // \____|_____|___\____\___/|_| |_|___/\__\__,_|_| |_|\__|___/
 //
-char const* CommandLineInterface::CLIConstants::kCLISyntaxError = "Syntax error.\n";
+char const* CommandLineInterface::CLIConstants::kCLISyntaxError		= "Syntax error.\n";
 
-char const* CommandLineInterface::CLIConstants::kCLIAddWME		= "add-wme";
-char const* CommandLineInterface::CLIConstants::kCLICD			= "cd";			// alias for ls
-char const* CommandLineInterface::CLIConstants::kCLIDir			= "ls";
-char const* CommandLineInterface::CLIConstants::kCLIEcho		= "echo";
-char const* CommandLineInterface::CLIConstants::kCLIExcise		= "excise";
-char const* CommandLineInterface::CLIConstants::kCLIExit		= "exit";		// alias for quit
-char const* CommandLineInterface::CLIConstants::kCLIInitSoar	= "init-soar";
-char const* CommandLineInterface::CLIConstants::kCLILearn		= "learn";
-char const* CommandLineInterface::CLIConstants::kCLILS			= "ls";
-char const* CommandLineInterface::CLIConstants::kCLINewAgent	= "new-agent";
-char const* CommandLineInterface::CLIConstants::kCLIPopD		= "popd";
-char const* CommandLineInterface::CLIConstants::kCLIPrint		= "print";
-char const* CommandLineInterface::CLIConstants::kCLIPushD		= "pushd";
-char const* CommandLineInterface::CLIConstants::kCLIPWD			= "pwd";
-char const* CommandLineInterface::CLIConstants::kCLIQuit		= "quit";
-char const* CommandLineInterface::CLIConstants::kCLIRun			= "run";
-char const* CommandLineInterface::CLIConstants::kCLISource		= "source";
-char const* CommandLineInterface::CLIConstants::kCLISP			= "sp";
-char const* CommandLineInterface::CLIConstants::kCLIStopSoar	= "stop-soar";
-char const* CommandLineInterface::CLIConstants::kCLIWatch		= "watch";
-char const* CommandLineInterface::CLIConstants::kCLIWatchWMEs	= "watch-wmes";
+char const* CommandLineInterface::CLIConstants::kCLIAddWME			= "add-wme";
+char const* CommandLineInterface::CLIConstants::kCLICD				= "cd";			// alias for ls
+char const* CommandLineInterface::CLIConstants::kCLIDir				= "ls";
+char const* CommandLineInterface::CLIConstants::kCLIEcho			= "echo";
+char const* CommandLineInterface::CLIConstants::kCLIExcise			= "excise";
+char const* CommandLineInterface::CLIConstants::kCLIExit			= "exit";		// alias for quit
+char const* CommandLineInterface::CLIConstants::kCLIInitSoar		= "init-soar";
+char const* CommandLineInterface::CLIConstants::kCLILearn			= "learn";
+char const* CommandLineInterface::CLIConstants::kCLILS				= "ls";
+char const* CommandLineInterface::CLIConstants::kCLIMultiAttributes	= "multi-attributes";
+char const* CommandLineInterface::CLIConstants::kCLINewAgent		= "new-agent";
+char const* CommandLineInterface::CLIConstants::kCLIPopD			= "popd";
+char const* CommandLineInterface::CLIConstants::kCLIPrint			= "print";
+char const* CommandLineInterface::CLIConstants::kCLIPushD			= "pushd";
+char const* CommandLineInterface::CLIConstants::kCLIPWD				= "pwd";
+char const* CommandLineInterface::CLIConstants::kCLIQuit			= "quit";
+char const* CommandLineInterface::CLIConstants::kCLIRun				= "run";
+char const* CommandLineInterface::CLIConstants::kCLISource			= "source";
+char const* CommandLineInterface::CLIConstants::kCLISP				= "sp";
+char const* CommandLineInterface::CLIConstants::kCLIStopSoar		= "stop-soar";
+char const* CommandLineInterface::CLIConstants::kCLIWatch			= "watch";
+char const* CommandLineInterface::CLIConstants::kCLIWatchWMEs		= "watch-wmes";
 
 // _   _                         ____                _              _
 //| | | |___  __ _  __ _  ___   / ___|___  _ __  ___| |_ __ _ _ __ | |_ ___
@@ -74,27 +76,28 @@ char const* CommandLineInterface::CLIConstants::kCLIWatchWMEs	= "watch-wmes";
 //| |_| \__ \ (_| | (_| |  __/ | |__| (_) | | | \__ \ || (_| | | | | |_\__ \
 // \___/|___/\__,_|\__, |\___|  \____\___/|_| |_|___/\__\__,_|_| |_|\__|___/
 //                 |___/
-char const* CommandLineInterface::CLIConstants::kCLIAddWMEUsage		= "Usage:\tadd-wme";
-char const* CommandLineInterface::CLIConstants::kCLICDUsage			= "Usage:\tcd [directory]";
-char const* CommandLineInterface::CLIConstants::kCLIEchoUsage		= "Usage:\techo [string]";
-char const* CommandLineInterface::CLIConstants::kCLIExciseUsage		= "Usage:\texcise production_name\n\texcise -[acdtu]";
-char const* CommandLineInterface::CLIConstants::kCLIInitSoarUsage	= "Usage:\tinit-soar";
-char const* CommandLineInterface::CLIConstants::kCLILearnUsage		= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
-char const* CommandLineInterface::CLIConstants::kCLILSUsage			= "Usage:\tls";
-char const* CommandLineInterface::CLIConstants::kCLINewAgentUsage	= "Usage:\tnew-agent [agent_name]";
-char const* CommandLineInterface::CLIConstants::kCLIPopDUsage		= "Usage:\tpopd";
-char const* CommandLineInterface::CLIConstants::kCLIPrintUsage		= "Usage:\tprint [-fFin] production_name\n\tprint -[a|c|D|j|u][fFin]\n\tprint [-i] \
+char const* CommandLineInterface::CLIConstants::kCLIAddWMEUsage				= "Usage:\tadd-wme";
+char const* CommandLineInterface::CLIConstants::kCLICDUsage					= "Usage:\tcd [directory]";
+char const* CommandLineInterface::CLIConstants::kCLIEchoUsage				= "Usage:\techo [string]";
+char const* CommandLineInterface::CLIConstants::kCLIExciseUsage				= "Usage:\texcise production_name\n\texcise -[acdtu]";
+char const* CommandLineInterface::CLIConstants::kCLIInitSoarUsage			= "Usage:\tinit-soar";
+char const* CommandLineInterface::CLIConstants::kCLILearnUsage				= "Usage:\tlearn [-l]\n\tlearn -[d|e|E|o][ab]";
+char const* CommandLineInterface::CLIConstants::kCLILSUsage					= "Usage:\tls";
+char const* CommandLineInterface::CLIConstants::kCLIMultiAttributesUsage	= "Usage:\tmulti-attributes";
+char const* CommandLineInterface::CLIConstants::kCLINewAgentUsage			= "Usage:\tnew-agent [agent_name]";
+char const* CommandLineInterface::CLIConstants::kCLIPopDUsage				= "Usage:\tpopd";
+char const* CommandLineInterface::CLIConstants::kCLIPrintUsage				= "Usage:\tprint [-fFin] production_name\n\tprint -[a|c|D|j|u][fFin]\n\tprint [-i] \
 [-d <depth>] identifier|timetag|pattern\n\tprint -s[oS]";
-char const* CommandLineInterface::CLIConstants::kCLIPushDUsage		= "Usage:\tpushd directory";
-char const* CommandLineInterface::CLIConstants::kCLIPWDUsage		= "Usage:\tpwd";
-char const* CommandLineInterface::CLIConstants::kCLIRunUsage		= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
-char const* CommandLineInterface::CLIConstants::kCLISourceUsage		= "Usage:\tsource filename";
-char const* CommandLineInterface::CLIConstants::kCLISPUsage			= "Usage:\tsp { production }";
-char const* CommandLineInterface::CLIConstants::kCLIStopSoarUsage	= "Usage:\tstop-soar [-s] [reason_string]";
-char const* CommandLineInterface::CLIConstants::kCLIWatchUsage		= "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
+char const* CommandLineInterface::CLIConstants::kCLIPushDUsage				= "Usage:\tpushd directory";
+char const* CommandLineInterface::CLIConstants::kCLIPWDUsage				= "Usage:\tpwd";
+char const* CommandLineInterface::CLIConstants::kCLIRunUsage				= "Usage:\trun [count]\n\trun -[d|e|p][fs] [count]\n\trun -[S|o|O][fs] [count]";
+char const* CommandLineInterface::CLIConstants::kCLISourceUsage				= "Usage:\tsource filename";
+char const* CommandLineInterface::CLIConstants::kCLISPUsage					= "Usage:\tsp { production }";
+char const* CommandLineInterface::CLIConstants::kCLIStopSoarUsage			= "Usage:\tstop-soar [-s] [reason_string]";
+char const* CommandLineInterface::CLIConstants::kCLIWatchUsage				= "Usage:\twatch [level] [-n] [-a <switch>] [-b <switch>] [-c <switch>] [-d <switch>] \
 [-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] [-L <switch>] [-p <switch>] \
 [-P <switch>] [-r <switch>] [-u <switch>] [-w <switch>] [-W <detail>]";
-char const* CommandLineInterface::CLIConstants::kCLIWatchWMEsUsage	= "Usage:\twatch-wmes –[a|r] –t <type> pattern\n\twatch-wmes –[l|R] [–t <type>]";
+char const* CommandLineInterface::CLIConstants::kCLIWatchWMEsUsage			= "Usage:\twatch-wmes –[a|r] –t <type> pattern\n\twatch-wmes –[l|R] [–t <type>]";
 
 //  ____                                          _ _     _            ___       _             __
 // / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| | |   (_)_ __   ___|_ _|_ __ | |_ ___ _ __ / _| __ _  ___ ___
@@ -130,27 +133,28 @@ CommandLineInterface::CommandLineInterface() {
 void CommandLineInterface::BuildCommandMap() {
 
 	// Set the command map up mapping strings to function pointers
-	m_CommandMap[CLIConstants::kCLIAddWME]		= CommandLineInterface::ParseAddWME;
-	m_CommandMap[CLIConstants::kCLICD]			= CommandLineInterface::ParseCD;
-	m_CommandMap[CLIConstants::kCLIDir]			= CommandLineInterface::ParseLS;		// dir->ls
-	m_CommandMap[CLIConstants::kCLIEcho]		= CommandLineInterface::ParseEcho;
-	m_CommandMap[CLIConstants::kCLIExcise]		= CommandLineInterface::ParseExcise;
-	m_CommandMap[CLIConstants::kCLIExit]		= CommandLineInterface::ParseQuit;		// exit->quit
-	m_CommandMap[CLIConstants::kCLIInitSoar]	= CommandLineInterface::ParseInitSoar;
-	m_CommandMap[CLIConstants::kCLILearn]		= CommandLineInterface::ParseLearn;
-	m_CommandMap[CLIConstants::kCLILS]			= CommandLineInterface::ParseLS;
-	m_CommandMap[CLIConstants::kCLINewAgent]	= CommandLineInterface::ParseNewAgent;
-	m_CommandMap[CLIConstants::kCLIPopD]		= CommandLineInterface::ParsePopD;
-	m_CommandMap[CLIConstants::kCLIPrint]		= CommandLineInterface::ParsePrint;
-	m_CommandMap[CLIConstants::kCLIPushD]		= CommandLineInterface::ParsePushD;
-	m_CommandMap[CLIConstants::kCLIPWD]			= CommandLineInterface::ParsePWD;
-	m_CommandMap[CLIConstants::kCLIQuit]		= CommandLineInterface::ParseQuit;
-	m_CommandMap[CLIConstants::kCLIRun]			= CommandLineInterface::ParseRun;
-	m_CommandMap[CLIConstants::kCLISource]		= CommandLineInterface::ParseSource;
-	m_CommandMap[CLIConstants::kCLISP]			= CommandLineInterface::ParseSP;
-	m_CommandMap[CLIConstants::kCLIStopSoar]	= CommandLineInterface::ParseStopSoar;
-	m_CommandMap[CLIConstants::kCLIWatch]		= CommandLineInterface::ParseWatch;
-	m_CommandMap[CLIConstants::kCLIWatchWMEs]	= CommandLineInterface::ParseWatchWMEs;
+	m_CommandMap[CLIConstants::kCLIAddWME]			= CommandLineInterface::ParseAddWME;
+	m_CommandMap[CLIConstants::kCLICD]				= CommandLineInterface::ParseCD;
+	m_CommandMap[CLIConstants::kCLIDir]				= CommandLineInterface::ParseLS;		// dir->ls
+	m_CommandMap[CLIConstants::kCLIEcho]			= CommandLineInterface::ParseEcho;
+	m_CommandMap[CLIConstants::kCLIExcise]			= CommandLineInterface::ParseExcise;
+	m_CommandMap[CLIConstants::kCLIExit]			= CommandLineInterface::ParseQuit;		// exit->quit
+	m_CommandMap[CLIConstants::kCLIInitSoar]		= CommandLineInterface::ParseInitSoar;
+	m_CommandMap[CLIConstants::kCLILearn]			= CommandLineInterface::ParseLearn;
+	m_CommandMap[CLIConstants::kCLILS]				= CommandLineInterface::ParseLS;
+	m_CommandMap[CLIConstants::kCLIMultiAttributes]	= CommandLineInterface::ParseMultiAttributes;
+	m_CommandMap[CLIConstants::kCLINewAgent]		= CommandLineInterface::ParseNewAgent;
+	m_CommandMap[CLIConstants::kCLIPopD]			= CommandLineInterface::ParsePopD;
+	m_CommandMap[CLIConstants::kCLIPrint]			= CommandLineInterface::ParsePrint;
+	m_CommandMap[CLIConstants::kCLIPushD]			= CommandLineInterface::ParsePushD;
+	m_CommandMap[CLIConstants::kCLIPWD]				= CommandLineInterface::ParsePWD;
+	m_CommandMap[CLIConstants::kCLIQuit]			= CommandLineInterface::ParseQuit;
+	m_CommandMap[CLIConstants::kCLIRun]				= CommandLineInterface::ParseRun;
+	m_CommandMap[CLIConstants::kCLISource]			= CommandLineInterface::ParseSource;
+	m_CommandMap[CLIConstants::kCLISP]				= CommandLineInterface::ParseSP;
+	m_CommandMap[CLIConstants::kCLIStopSoar]		= CommandLineInterface::ParseStopSoar;
+	m_CommandMap[CLIConstants::kCLIWatch]			= CommandLineInterface::ParseWatch;
+	m_CommandMap[CLIConstants::kCLIWatchWMEs]		= CommandLineInterface::ParseWatchWMEs;
 }
 
 // ____         ____                                          _
@@ -160,6 +164,9 @@ void CommandLineInterface::BuildCommandMap() {
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
 //
 bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError) {
+
+	// Clear the result
+	m_Result.clear();
 
 	// Save the pointers
 	m_pAgent = pAgent;
@@ -184,9 +191,6 @@ bool CommandLineInterface::DoCommand(gSKI::IAgent* pAgent, const char* pCommandL
 bool CommandLineInterface::DoCommandInternal(const char* commandLine) {
 
 	vector<string> argumentVector;
-
-	// Clear the result
-	m_Result.clear();
 
 	// Parse command:
 	int argc = Tokenize(commandLine, argumentVector);
@@ -594,73 +598,77 @@ bool CommandLineInterface::ParseLearn(int argc, char** argv) {
 		return true;
 	}
 
-	static struct GetOpt::option longOptions[] = {
-		{"all-levels",		0, 0, 'a'},
-		{"bottom-up",		0, 0, 'b'},
-		{"disable",			0, 0, 'd'},
-		{"off",				0, 0, 'd'},
-		{"enable",			0, 0, 'e'},
-		{"on",				0, 0, 'e'},
-		{"except",			0, 0, 'E'},
-		{"list",			   0, 0, 'l'},
-		{"only",			   0, 0, 'o'},
-		{0, 0, 0, 0}
-	};
+	// Just return true for debugging of source command
+	// TODO: Update towers of hanoi or something for the new syntax
+	return DoLearn(0);
 
-	GetOpt::optind = 0;
-	GetOpt::opterr = 0;
+	//static struct GetOpt::option longOptions[] = {
+	//	{"all-levels",		0, 0, 'a'},
+	//	{"bottom-up",		0, 0, 'b'},
+	//	{"disable",			0, 0, 'd'},
+	//	{"off",				0, 0, 'd'},
+	//	{"enable",			0, 0, 'e'},
+	//	{"on",				0, 0, 'e'},
+	//	{"except",			0, 0, 'E'},
+	//	{"list",			   0, 0, 'l'},
+	//	{"only",			   0, 0, 'o'},
+	//	{0, 0, 0, 0}
+	//};
 
-	int option;
-	unsigned short options = 0;
+	//GetOpt::optind = 0;
+	//GetOpt::opterr = 0;
 
-	for (;;) {
-		option = m_GetOpt.GetOpt_Long (argc, argv, "abdeElo", longOptions, 0);
-		if (option == -1) {
-			break;
-		}
+	//int option;
+	//unsigned short options = 0;
 
-		switch (option) {
-			case 'a':
-				options |= OPTION_LEARN_ALL_LEVELS;
-				break;
-			case 'b':
-				options |= OPTION_LEARN_BOTTOM_UP;
-				break;
-			case 'd':
-				options |= OPTION_LEARN_DISABLE;
-				break;
-			case 'e':
-				options |= OPTION_LEARN_ENABLE;
-				break;
-			case 'E':
-				options |= OPTION_LEARN_EXCEPT;
-				break;
-			case 'l':
-				options |= OPTION_LEARN_LIST;
-				break;
-			case 'o':
-				options |= OPTION_LEARN_ONLY;
-				break;
-			case '?':
-				m_Result += "Unrecognized option.\n";
-				m_Result += CLIConstants::kCLILearnUsage;
-				return false;
-			default:
-				m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
-				m_Result += option;
-				m_Result += "'!";
-				return false;
-		}
-	}
+	//for (;;) {
+	//	option = m_GetOpt.GetOpt_Long (argc, argv, "abdeElo", longOptions, 0);
+	//	if (option == -1) {
+	//		break;
+	//	}
 
-	// No non-option arguments
-	if (GetOpt::optind != argc) {
-		m_Result += CLIConstants::kCLISyntaxError;
-		m_Result += CLIConstants::kCLILearnUsage;
-		return false;
-	}
+	//	switch (option) {
+	//		case 'a':
+	//			options |= OPTION_LEARN_ALL_LEVELS;
+	//			break;
+	//		case 'b':
+	//			options |= OPTION_LEARN_BOTTOM_UP;
+	//			break;
+	//		case 'd':
+	//			options |= OPTION_LEARN_DISABLE;
+	//			break;
+	//		case 'e':
+	//			options |= OPTION_LEARN_ENABLE;
+	//			break;
+	//		case 'E':
+	//			options |= OPTION_LEARN_EXCEPT;
+	//			break;
+	//		case 'l':
+	//			options |= OPTION_LEARN_LIST;
+	//			break;
+	//		case 'o':
+	//			options |= OPTION_LEARN_ONLY;
+	//			break;
+	//		case '?':
+	//			m_Result += "Unrecognized option.\n";
+	//			m_Result += CLIConstants::kCLILearnUsage;
+	//			return false;
+	//		default:
+	//			m_Result += "Internal error: m_GetOpt.GetOpt_Long returned '";
+	//			m_Result += option;
+	//			m_Result += "'!";
+	//			return false;
+	//	}
+	//}
 
-	return DoLearn(options);
+	//// No non-option arguments
+	//if (GetOpt::optind != argc) {
+	//	m_Result += CLIConstants::kCLISyntaxError;
+	//	m_Result += CLIConstants::kCLILearnUsage;
+	//	return false;
+	//}
+
+	//return DoLearn(options);
 }
 
 // ____        _
@@ -735,6 +743,31 @@ bool CommandLineInterface::DoLS() {
 	m_Result += "TODO: ls on non-windows platforms";
 #endif // WIN32
 
+	return true;
+}
+
+// ____                     __  __       _ _   _    _   _   _        _ _           _
+//|  _ \ __ _ _ __ ___  ___|  \/  |_   _| | |_(_)  / \ | |_| |_ _ __(_) |__  _   _| |_ ___  ___
+//| |_) / _` | '__/ __|/ _ \ |\/| | | | | | __| | / _ \| __| __| '__| | '_ \| | | | __/ _ \/ __|
+//|  __/ (_| | |  \__ \  __/ |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
+//|_|   \__,_|_|  |___/\___|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
+//
+bool CommandLineInterface::ParseMultiAttributes(int argc, char** argv) {
+	if (CheckForHelp(argc, argv)) {
+		m_Result += CLIConstants::kCLIMultiAttributesUsage;
+		return true;
+	}
+	return DoMultiAttributes();
+}
+
+// ____        __  __       _ _   _    _   _   _        _ _           _
+//|  _ \  ___ |  \/  |_   _| | |_(_)  / \ | |_| |_ _ __(_) |__  _   _| |_ ___  ___
+//| | | |/ _ \| |\/| | | | | | __| | / _ \| __| __| '__| | '_ \| | | | __/ _ \/ __|
+//| |_| | (_) | |  | | |_| | | |_| |/ ___ \ |_| |_| |  | | |_) | |_| | ||  __/\__ \
+//|____/ \___/|_|  |_|\__,_|_|\__|_/_/   \_\__|\__|_|  |_|_.__/ \__,_|\__\___||___/
+//
+bool CommandLineInterface::DoMultiAttributes() {
+	m_Result += "TODO: multi-attributes";
 	return true;
 }
 
@@ -1164,8 +1197,8 @@ bool CommandLineInterface::DoRun(const unsigned short options, int count) {
 		return false;
 	}
 
-	// Determine run unit, mutually exclusive so give smaller steps precedence, default to forever
-	egSKIRunType runType = gSKI_RUN_FOREVER;
+	// Determine run unit, mutually exclusive so give smaller steps precedence, default to gSKI_RUN_DECISION_CYCLE
+	egSKIRunType runType = gSKI_RUN_DECISION_CYCLE;
 	if (options & OPTION_RUN_ELABORATION) {
 		runType = gSKI_RUN_SMALLEST_STEP;
 
@@ -1271,25 +1304,129 @@ bool CommandLineInterface::DoSource(const char* filename) {
 		return false;
 	}
 
-	// TODO: This needs to be reimplemented, since there are commands in with the soar
-	// productions and I'm not sure what the gSKI LoadSoarFile does with those commands
-	// (such as 'learn -on' 'pushd' etc.
-
-	// Acquire the production manager
-	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
-
-	// Load the file
-	pProductionManager->LoadSoarFile(filename, m_pError);
-
-	if(m_pError->Id != gSKI::gSKIERR_NONE) {
-		m_Result += "Unable to source the file: ";
+	// Open the file
+	ifstream soarFile;
+	soarFile.open(filename);
+	if (!soarFile.is_open()) {
+		m_Result += "Failed to open file '";
 		m_Result += filename;
+		m_Result += "' for reading.";
 		return false;
 	}
 
-	// TODO: Print one * per loaded production, this will be easy if we parse it here.
-	m_Result += "File sourced successfully.";
+	string line;					// Each line removed from the file
+	string command;					// The command, sometimes spanning multiple lines
+	string::size_type pos;			// Used to find braces on a line (triggering multiple line spanning commands)
+	int braces = 0;					// Brace nest level (hopefully all braces are supposed to be closed)
+	string::iterator iter;			// Iterator when parsing for braces and pounds
+
+	// Go through each line of the file (Yay! C++ file parsing!)
+	while (getline(soarFile, line)) {
+
+		// Clear out the old command
+		command.clear();
+
+		// Remove leading whitespace
+		iter = line.begin();
+		while (isspace(*iter)) {
+			line.erase(iter);
+
+			if (!line.length()) {
+				// Nothing but space left, next line
+				continue;
+			}
+			
+			// Next character
+			iter = line.begin();
+		}
+
+		// Was it actually trailing whitespace?
+		if (!line.length()) {
+			// Nothing left to do
+			continue;
+		}
+
+		// Is the first character a comment?
+		if (*iter == '#') {
+			// Yes, ignore
+			continue;
+		}
+
+		// If there is a brace on the line, concatenate lines until the closing brace
+		pos = line.find('{');
+
+		if (pos != string::npos) {
+			// While we are inside braces, stay in special parsing mode
+			do {
+				// Enter special parsing mode
+				iter = line.begin();
+				while (iter != line.end()) {
+					// Go through each of the characters, counting brace nesting level
+					if (*iter == '{') {
+						++braces;
+					}
+					if (*iter == '}') {
+						--braces;
+					}
+					// Next character
+					++iter;
+				}
+
+				// We finished that line, add it to the command, and put the newline back on it (getline eats the newline)
+				command += line + '\n';
+
+				// Did we close all of the braces?
+				if (!braces) {
+					// Yes, break out of special parsing mode
+					break;
+				}
+
+				// Get the next line from the file and repeat
+			} while (getline(soarFile, line));
+
+			// Did we break out because of closed braces or EOF?
+			if (braces) {
+				// EOF while still nested
+				m_Result += "Unexpected end of file. Did you close all of your braces?";
+				return false;
+			}
+
+			// We're good to go
+
+		} else {
+			// No braces on line, set command to line
+			command = line;
+		}
+
+		// Fire off the command
+		if (!DoCommandInternal(command.c_str())) {
+			// Command failed, error in result
+			return false;
+		}	
+	}
+
+	soarFile.close();
 	return true;
+
+	//// Old gSKI LoadSourceFile implementation:
+	////////////////////////////////////////////
+
+	//// TODO: This needs to be reimplemented, since there are commands in with the soar
+	//// productions and I'm not sure what the gSKI LoadSoarFile does with those commands
+	//// (such as 'learn -on' 'pushd' etc.
+
+	//// Load the file
+	//pProductionManager->LoadSoarFile(filename, m_pError);
+
+	//if(m_pError->Id != gSKI::gSKIERR_NONE) {
+	//	m_Result += "Unable to source the file: ";
+	//	m_Result += filename;
+	//	return false;
+	//}
+
+	//// TODO: Print one * per loaded production, this will be easy if we parse it here.
+	//m_Result += "File sourced successfully.";
+	//return true;
 }
 
 // ____                     ____  ____
