@@ -21,7 +21,6 @@ import java.awt.*;
  */
 public class FileNode extends OperatorNode implements java.io.Serializable 
 {
-
 ///////////////////////////////////////////////////////////////////
 // Data Members
 ///////////////////////////////////////////////////////////////////
@@ -43,7 +42,6 @@ public class FileNode extends OperatorNode implements java.io.Serializable
 ///////////////////////////////////////////////////////////////////
     public FileNode(String inName,int inId,String inFile) 
     {
-
         super(inName,inId);
         fileAssociation = inFile;
     }
@@ -57,7 +55,6 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public String getFileName() 
     {
-
         OperatorNode parent = (OperatorNode)getParent();
         return parent.getFullPathName() + File.separator + fileAssociation;
     }
@@ -70,13 +67,11 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public void addFile(OperatorWindow operatorWindow, String newFileName) throws IOException 
     {
-
         File file = new File(getFullPathName() + File.separator + newFileName + ".soar");
 
         // Check to make sure file does not exist
         if (! okayToCreateReplace(file)) 
         {
-
             return;
         }
     
@@ -90,20 +85,17 @@ public class FileNode extends OperatorNode implements java.io.Serializable
 
     public void setTransferFullPath() 
     {
-
         fullTransferFileName = getFileName();
         transferTreePath = new TreePath(getPath());
     }
     
     public javax.swing.tree.TreePath getTransferTreePath() 
     {
-
         return transferTreePath;
     }
     
     public void moveAssociations() 
     {
-
         File file = new File(fullTransferFileName);
         file.renameTo(new File(getFileName()));
     }
@@ -116,11 +108,9 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     protected void renameFile(String newFileName) 
     {
-
         File file = new File(fileAssociation);
         if (file.renameTo(new File(newFileName))) 
         {
-
             fileAssociation = newFileName; 
             if (ruleEditor != null)
             ruleEditor.fileRenamed(newFileName);
@@ -132,13 +122,11 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public void clearRuleEditor() 
     {
-
         ruleEditor = null;
     }
     
     public void setRuleEditor(RuleEditor re) 
     {
-
         ruleEditor = re;
     }
 
@@ -150,7 +138,6 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public void notifyChildrenOfRename(String oldFilePath, String newFilePath) 
     {
-
         int uniqueToThisNode = oldFilePath.length();
         String newFileName = newFilePath + fileAssociation.substring(uniqueToThisNode,fileAssociation.length());
         fileAssociation = newFileName;
@@ -166,25 +153,21 @@ public class FileNode extends OperatorNode implements java.io.Serializable
     public void rename(OperatorWindow operatorWindow,
                        String newName) throws IOException 
     {
-
         DefaultTreeModel model = (DefaultTreeModel)operatorWindow.getModel();
         File oldFile = new File(getFileName());
         File newFile = new File(oldFile.getParent() + File.separator + newName + ".soar");
 
         if (! okayToCreate(newFile)) 
         {
-
             return;
         }
 
         if (!oldFile.renameTo(newFile)) 
         {
-
             throw new IOException();
         }
         else 
         {
-
             name = newName;
             fileAssociation = newFile.getName();
             if (ruleEditor != null)
@@ -201,7 +184,6 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public void write(Writer w) throws IOException 
     {
-
         w.write("FILE " + name + " " + fileAssociation + " " + id);     
     }
     
@@ -213,13 +195,11 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */ 
     public void exportDesc(Writer w) throws IOException 
     {
-
         w.write("FILE " + name);
     }
     
     public void exportType(Writer w) throws IOException 
     {
-
         w.write("IMPORT_TYPE " + VSEImporter.FILE + "\n");
     }
     
@@ -231,11 +211,9 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public void exportFile(Writer w,int id) throws IOException 
     {
-
         w.write("RULE_FILE " + id + " ");
         if(ruleEditor == null) 
         {
-
             StringWriter sw = new StringWriter();
             LineNumberReader lnr =
                 new LineNumberReader(new FileReader(getFileName()));
@@ -243,7 +221,6 @@ public class FileNode extends OperatorNode implements java.io.Serializable
             String s = lnr.readLine();
             while(s != null) 
             {
-
                 ++lines;
                 sw.write(s + "\n");
                 s = lnr.readLine();
@@ -253,7 +230,6 @@ public class FileNode extends OperatorNode implements java.io.Serializable
         }
         else 
         {
-
             w.write("" + ruleEditor.getNumberOfLines() + "\n");
             w.write(ruleEditor.getAllText() + "\n");
         }
@@ -270,10 +246,8 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public void showContextMenu(Component c,int x, int y) 
     {
-
         if (name.equals("elaborations") ) 
         {
-
             addSuboperatorItem.setEnabled(false);
             addFileItem.setEnabled(false);
             openRulesItem.setEnabled(true);
@@ -286,7 +260,6 @@ public class FileNode extends OperatorNode implements java.io.Serializable
         }
         else 
         {
-
             addSuboperatorItem.setEnabled(false);
             addFileItem.setEnabled(false);
             openRulesItem.setEnabled(true);
@@ -305,12 +278,10 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */ 
     public void delete(OperatorWindow operatorWindow) 
     {
-
         OperatorNode parent = (OperatorNode)getParent();
 
         if (name.equals("elaborations") ) 
         {
-
             JOptionPane.showMessageDialog(MainFrame.getMainFrame(),
                                           "The elaborations file may not be deleted", 
                                           "Delete Error",
@@ -333,12 +304,10 @@ public class FileNode extends OperatorNode implements java.io.Serializable
     
     public Vector parseProductions() throws ParseException, java.io.IOException 
     {
-
         if(name.startsWith("_")) return null;
         
         if(ruleEditor == null) 
         {
-
             java.io.Reader r = new java.io.FileReader(getFileName());
             SoarParser aParser = new SoarParser(r);
             Vector v = aParser.VisualSoarFile();
@@ -423,30 +392,30 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public void openRules(MainFrame pw) 
     {
-
         if (ruleEditor == null || ruleEditor.isClosed()) 
         {
-
             try 
             {
-
                 ruleEditor = new RuleEditor(new java.io.File(getFileName()),
                                             this);
                 ruleEditor.setVisible(true);
-                pw.addRuleEditor(ruleEditor);           
+                pw.addRuleEditor(ruleEditor);
+                ruleEditor.setSelected(true);
             }
             catch(IOException ioe) 
             {
-
                 JOptionPane.showMessageDialog(pw,
                                               "There was an error reading file: " +  fileAssociation,
                                               "I/O Error",
                                               JOptionPane.ERROR_MESSAGE); 
             }
+            catch(java.beans.PropertyVetoException pve)
+            {
+                //No sweat. This just means the new window failed to get focus.
+            }
         } 
         else 
         {
-
             pw.showRuleEditor(ruleEditor);
         }
     }
@@ -459,7 +428,6 @@ public class FileNode extends OperatorNode implements java.io.Serializable
      */
     public void openRules(MainFrame pw, int line) 
     {
-
         openRules(pw);
         ruleEditor.setLine(line);
     }
@@ -479,19 +447,16 @@ public class FileNode extends OperatorNode implements java.io.Serializable
     
     protected String getFullPathName() 
     {
-
         return null;
     }   
     
     public void exportDataMap(Writer w) throws IOException 
     {
-
         w.write("NODATAMAP\n");
     }
     
     public void copyStructures(File folderToWriteTo) throws IOException 
     {
-
         File copyOfFile = new File(folderToWriteTo.getPath() + File.separator + fileAssociation);
         Writer w = new FileWriter(copyOfFile);
         Reader r = new FileReader(getFileName());
@@ -502,14 +467,12 @@ public class FileNode extends OperatorNode implements java.io.Serializable
     
     public void source(Writer w) throws IOException 
     {
-
         String LINE = System.getProperty("line.separator");
         w.write("source " + fileAssociation + LINE);
     }
     
     public boolean needsToSourceChildren() 
     {
-
         return false;
     }
     

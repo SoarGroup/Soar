@@ -193,8 +193,7 @@ public class RuleEditor extends CustomInternalFrame
             });
 
         adjustKeymap();
-
-    }//EditorPane ctor
+    }//RuleEditor ctor
 
     /**
      * Constructs a new JInternalFrame, sets its size and
@@ -242,7 +241,8 @@ public class RuleEditor extends CustomInternalFrame
                     }
             });
         adjustKeymap();
-    }     // end of constructor
+
+    }//RuleEditor ctor
 
 
     private void registerDocumentListeners() 

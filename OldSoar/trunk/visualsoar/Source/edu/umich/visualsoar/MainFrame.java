@@ -538,6 +538,7 @@ public class MainFrame extends JFrame
             RuleEditor ruleEditor = new RuleEditor(file);
             ruleEditor.setVisible(true);
             addRuleEditor(ruleEditor);
+            ruleEditor.setSelected(true);
             Preferences.getInstance().setHighlightingEnabled(oldPref);  // Turn it back to what it was
         }
         catch(IOException IOE) 
@@ -545,6 +546,10 @@ public class MainFrame extends JFrame
 
             JOptionPane.showMessageDialog(MainFrame.this, "There was an error reading file: " +
                                           file.getName(), "I/O Error", JOptionPane.ERROR_MESSAGE);
+        }
+        catch(java.beans.PropertyVetoException pve)
+        {
+            //No sweat. This just means the new window failed to get focus.
         }
     }//OpenFile()
 
