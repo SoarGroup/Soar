@@ -121,13 +121,14 @@ TankSoar 3.0.8
 
 Bug Fixes
 ---------
+188  Selecting Map->Random Map causes error message when agent present on
+	current map
 392  garbage printed to debugger output when Stop After Decision Phase is on
 393  command 'run 1' generates 'invalid command step' error
 
 Known Issues
 ------------  
-188  Selecting Map->Random Map causes error message when agent present on
-	current map
+399  can't use reset tank command in tank control panel tanks menu
 
 Documentation
 =============
