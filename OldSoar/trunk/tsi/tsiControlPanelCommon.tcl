@@ -62,6 +62,8 @@ proc createNewAgent {name {filepath ""} {filename ""}} {
    global auto_path tsi_library soar_library soar_doc_dir tsiConfig \
        localAgents tsiAgentInfo tsiSuppressMenus
 
+		puts "CreateNewAgent --> $name $filepath $filename"
+
    if {$filename == "**NO FILES**.soar"} {
       tk_dialog .error {No File Specified} "Please specify an agent name." \
                 error 0 Dismiss
@@ -203,23 +205,30 @@ proc tsiLoadAgentSource {name} {
     global tsiAgentInfo
     
     if { [string compare $tsiAgentInfo($name,sourceDir) ""] != 0 } {
-	set initialPath "[pwd]"
-	if [catch {cd "$tsiAgentInfo($name,sourceDir)"} msg] {
-	    error "Could not change to directory '$tsiAgentInfo($name,sourceDir)'"
-	    return
-	}
-	if [catch "$name eval [list uplevel #0 source $tsiAgentInfo($name,sourceFile)]" msg] {
-	    
-    	    tk_dialog .error Warning \
-		    "Couldn't load agent code for $name from file '$tsiAgentInfo($name,sourceFile): $msg" warning 0 Ok
-	}
-	
-	if [catch {cd "$initialPath"} msg] {
-	    error "Could not change to directory '$initialPath'"
-	    return
-	}
-    }
+				set initialPath "[pwd]"
+				if [catch {cd "$tsiAgentInfo($name,sourceDir)"} msg] {
+						error "Could not change to directory '$tsiAgentInfo($name,sourceDir)'"
+						return
+				}
+				if { [string last ".rete" $tsiAgentInfo($name,sourceFile)] != -1 } {
+						
+						puts "Sending command 'rete-net -load $tsiAgentInfo($name,sourceFile)'"
+						tsiSendAgent $name "rete-net -load $tsiAgentInfo($name,sourceFile)"
 
+				} else {
+						if [catch "$name eval [list uplevel #0 source $tsiAgentInfo($name,sourceFile)]" msg] {
+						
+								tk_dialog .error Warning \
+										"Couldn't load agent code for $name from file '$tsiAgentInfo($name,sourceFile): $msg" warning 0 Ok
+						}
+				}
+				
+				if [catch {cd "$initialPath"} msg] {
+						error "Could not change to directory '$initialPath'"
+						return
+				}
+    }
+		
     $name eval addTSIProductionMenu .tsw
 }
     
