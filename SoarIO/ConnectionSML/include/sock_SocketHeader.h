@@ -68,7 +68,15 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <unistd.h>
+
 #include <netinet/in.h>
+
+// For some reason, Darwin (MacOSX) doesn't have this
+// It should be defined in netinet/in.h
+#ifndef IPPORT_ECHO
+#define IPPORT_ECHO 7
+#endif // IPPORT_ECHO
+
 #include <limits.h>
 #include <netdb.h>
 #include <arpa/inet.h>
