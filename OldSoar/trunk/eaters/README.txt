@@ -1,8 +1,8 @@
 $Id$
 
-Eaters 3.0.6 is an example environment for the Soar architecture and is used for 
+Eaters 3.0.8 is an example environment for the Soar architecture and is used for 
 research and to help teach the basics of Soar in the Soar tutorial.  Eaters 
-3.0.6 is installed as a component of the Soar-Suite package.  For more 
+3.0.8 is installed as a component of the Soar-Suite package.  For more 
 information, please see the website:
 
 	http://sitemaker.umich.edu/soar/
@@ -20,4 +20,4 @@ simulator/       - The Eaters Tcl/Tk source code.
 
 --
 
-Updated for the Eaters 3.0.6 release by Jonathan Voigt (voigtjr@umich.edu).
+Updated for the Eaters 3.0.8 release by Jonathan Voigt (voigtjr@gmail.com).

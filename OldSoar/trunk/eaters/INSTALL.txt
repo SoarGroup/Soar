@@ -1,17 +1,17 @@
 $Id$
 _______________________
-Installing Eaters-3.0.6
+Installing Eaters-3.0.8
 -----------------------
 
-Eaters 3.0.6 is part of the Soar-Suite package and is installed as a component of 
+Eaters 3.0.8 is part of the Soar-Suite package and is installed as a component of 
 that package.  Installation instructions for Soar-Suite are located in the INSTALL 
-file in the soar-8.5.0 directory of the Soar-Suite package and on the Soar 
+file in the soar-8.5.8 directory of the Soar-Suite package and on the Soar 
 website:
 
 	http://sitemaker.umich.edu/soar/
 	
 ________________________________
-Running Eaters-3.0.6 on Windows:
+Running Eaters-3.0.8 on Windows:
 --------------------------------
 
 Simply double-click the start-eaters.bat file.  
@@ -20,7 +20,7 @@ This .bat file will run init-eaters.tcl using the version of Tcl/Tk distributed
 with Soar-Suite 8.5.0.
 
 _____________________________
-Running Eaters-3.0.6 on Unix:
+Running Eaters-3.0.8 on Unix:
 -----------------------------
 
 On Unix, type this command to run Eaters:
@@ -34,4 +34,4 @@ when you installed Soar, you would change that first line to:
 
 
 --
-Updated for the Eaters 3.0.6 release by Jonathan Voigt (voigtjr@umich.edu).
+Updated for the Eaters 3.0.8 release by Jonathan Voigt (voigtjr@gmail.com).

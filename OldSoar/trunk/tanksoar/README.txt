@@ -1,8 +1,8 @@
 $Id$
 
-TankSoar 3.0.6 is an example environment for the Soar architecture and is used 
+TankSoar 3.0.8 is an example environment for the Soar architecture and is used 
 for research and to help teach basic and intermediate techniques of Soar in the 
-Soar tutorial.  TankSoar 3.0.6 is installed as a component of the Soar-Suite 
+Soar tutorial.  TankSoar 3.0.8 is installed as a component of the Soar-Suite 
 package.  For more information, please see the website:
 
 	http://sitemaker.umich.edu/soar/
@@ -26,5 +26,5 @@ Known Issues:
 
 --
 
-Updated for the TankSoar release version 3.0.6 by Jonathan Voigt 
-(voigtjr@umich.edu).
+Updated for the TankSoar release version 3.0.8 by Jonathan Voigt 
+(voigtjr@gmail.com).
