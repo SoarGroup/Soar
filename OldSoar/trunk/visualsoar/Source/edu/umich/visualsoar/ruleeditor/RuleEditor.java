@@ -17,10 +17,15 @@ import javax.swing.event.*;
 import java.beans.*;
 import javax.swing.undo.*;
 import java.util.*;
+
+//QUESTION: Why aren't we importing edu.umich.visualsoar.parser.*??
+//ANSWER:   It creates compile ambiguities between parser.Action and
+//          javax.swing.Action
 import edu.umich.visualsoar.parser.SoarParser;
 import edu.umich.visualsoar.parser.SoarProduction;
 import edu.umich.visualsoar.parser.ParseException;
 import edu.umich.visualsoar.parser.SoarParserConstants;
+import edu.umich.visualsoar.parser.TokenMgrError;
 
 // 3P
 import threepenny.*;
@@ -1327,9 +1332,14 @@ public class RuleEditor extends CustomInternalFrame {
 				}
 				MainFrame.getMainFrame().setFeedbackListData(vecErrors);
 			}
-			catch(ParseException pe) {
+			catch(ParseException pe)
+            {
 				JOptionPane.showMessageDialog(MainFrame.getMainFrame(), pe.getMessage(), "Parse Error", JOptionPane.ERROR_MESSAGE);
 			}
+            catch(TokenMgrError tme)
+            {
+				JOptionPane.showMessageDialog(MainFrame.getMainFrame(), tme.getMessage(), "Parse Error", JOptionPane.ERROR_MESSAGE);
+            }
 		}
 	}
 	
