@@ -15,11 +15,12 @@ import org.eclipse.jface.text.*;
  * @author Paul Oppenheim
  * 
  */
-public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
+public class SoarAutoIndentStrategy implements IAutoEditStrategy { //IAutoIndentStrategy {
 	
 	public void customizeDocumentCommand(IDocument doc, DocumentCommand comm) {
 		try {
-			//TODO: tear this all up, find the bug
+			//TODO: tear this all up, find the bug:
+			//I believe that the current implementation misinterprets DocumentCommand.
 			String prevCodeLine = getPrevCodeLine(doc, comm.offset);
 			
 			//this is the first line; we have nothing to do
@@ -49,14 +50,14 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 			int numSpaces = 0;
 			String indentString = "";
 			
-			/*System.out.println("*************************************");
-			 System.out.println("text: '" + comm.text + "'");
-			 System.out.println("prevCodeLine: '" + prevCodeLine + "'");
-			 System.out.println("prevLastChar: '" + prevLastChar + "'");
-			 System.out.println("currLine: '" + currLine + "'");
-			 System.out.println("currLineNumber: '" + currLineNumber + "'");
-			 System.out.println("currLineOffset: '" + currLineOffset + "'");
-			 System.out.println("newCurrLine: '" + newCurrLine + "'"); */
+			System.out.println("*************************************");
+			System.out.println("text: '" + comm.text + "'");
+			System.out.println("prevCodeLine: '" + prevCodeLine + "'");
+			System.out.println("prevLastChar: '" + prevLastChar + "'");
+			System.out.println("currLine: '" + currLine + "'");
+			System.out.println("currLineNumber: '" + currLineNumber + "'");
+			System.out.println("currLineOffset: '" + currLineOffset + "'");
+			System.out.println("newCurrLine: '" + newCurrLine + "'");
 			
 			//If there's nothing here, there's nothing to do
 			if ((newCurrLine.length() == 0)) {
