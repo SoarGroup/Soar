@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir ".\Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /D "_DEBUG" /D "WIN32" /D "USE_TCL" /D "WINDOWS" /FR /YX /FD /c
+# ADD CPP /nologo /MTd /W4 /GX /Z7 /Od /D "_DEBUG" /D "WIN32" /D "USE_TCL" /D "WINDOWS" /FR /YX /FD /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
