@@ -51,7 +51,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 		switch (option) {
 			case 'b'://backtracing
 				options |= OPTION_WATCH_BACKTRACING;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_BACKTRACING;
 				} else {
@@ -61,7 +61,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'c'://chunks
 				options |= OPTION_WATCH_CHUNKS;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_CHUNKS;
 				} else {
@@ -71,7 +71,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'd'://decisions
 				options |= OPTION_WATCH_DECISIONS;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_DECISIONS;
 				} else {
@@ -81,7 +81,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'D'://default-productions
 				options |= OPTION_WATCH_DEFAULT;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_DEFAULT;
 				} else {
@@ -96,7 +96,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'i'://indifferent-selection
 				options |= OPTION_WATCH_INDIFFERENT;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_INDIFFERENT;
 				} else {
@@ -106,7 +106,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'j'://justifications
 				options |= OPTION_WATCH_JUSTIFICATIONS;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_JUSTIFICATIONS;
 				} else {
@@ -138,7 +138,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'p'://phases
 				options |= OPTION_WATCH_PHASES;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_PHASES;
 				} else {
@@ -151,7 +151,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				options |= OPTION_WATCH_USER;
 				options |= OPTION_WATCH_CHUNKS;
 				options |= OPTION_WATCH_JUSTIFICATIONS;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_DEFAULT;
 					settings &= ~OPTION_WATCH_USER;
@@ -167,7 +167,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'r'://preferences
 				options |= OPTION_WATCH_PREFERENCES;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_PREFERENCES;
 				} else {
@@ -182,7 +182,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'u'://user-productions
 				options |= OPTION_WATCH_USER;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_USER;
 				} else {
@@ -191,7 +191,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				break;
 			case 'w'://wmes
 				options |= OPTION_WATCH_WMES;
-				if (GetOpt::optarg) {
+				if (m_pGetOpt->GetOptArg()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings &= ~OPTION_WATCH_WMES;
 				} else {
@@ -207,16 +207,15 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 		}
 	}
 
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+
 	// Allow watch level by itself
-	if ((unsigned)GetOpt::optind == (argv.size() - 1)) {
-		if (!IsInteger(argv[GetOpt::optind])) {
-			m_Error.SetError(CLIError::kIntegerExpected);
-			return false;
-		}
-		if (!ProcessWatchLevelSettings(atoi(argv[GetOpt::optind].c_str()), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
-	} else if ((unsigned)GetOpt::optind != argv.size()) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
+		int optind = m_pGetOpt->GetOptind();
+		if (!IsInteger(argv[optind])) return m_Error.SetError(CLIError::kIntegerExpected);
+		if (!ProcessWatchLevelSettings(atoi(argv[optind].c_str()), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
 	}
+
 	return DoWatch(pAgent, options, settings, wmeSetting, learnSetting);
 }
 
@@ -265,7 +264,7 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, int& optio
 	return true;
 }
 int CommandLineInterface::ParseLevelOptarg() {
-	std::string optarg(GetOpt::optarg);
+	std::string optarg(m_pGetOpt->GetOptArg());
 	if (!IsInteger(optarg)) {
 		m_Error.SetError(CLIError::kIntegerExpected);
 		return -1;
@@ -274,7 +273,7 @@ int CommandLineInterface::ParseLevelOptarg() {
 }
 
 int CommandLineInterface::ParseLearningOptarg() {
-	std::string optarg(GetOpt::optarg);
+	std::string optarg(m_pGetOpt->GetOptArg());
 	if (optarg == "noprint" || optarg == "0") {
 		return 0;
 	}
@@ -289,7 +288,7 @@ int CommandLineInterface::ParseLearningOptarg() {
 }
 
 bool CommandLineInterface::CheckOptargRemoveOrZero() {
-	std::string optarg(GetOpt::optarg);
+	std::string optarg(m_pGetOpt->GetOptArg());
 	if (optarg == "remove" || optarg == "0") return true;
 	return m_Error.SetError(CLIError::kRemoveOrZeroExpected);
 }

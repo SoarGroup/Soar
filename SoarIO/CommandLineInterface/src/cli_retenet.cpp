@@ -34,12 +34,12 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 			case 'r':
 				load = true;
 				save = false;
-				filename = GetOpt::optarg;
+				filename = m_pGetOpt->GetOptArg();
 				break;
 			case 's':
 				save = true;
 				load = false;
-				filename = GetOpt::optarg;
+				filename = m_pGetOpt->GetOptArg();
 				break;
 			case ':':
 				return m_Error.SetError(CLIError::kMissingOptionArg);
@@ -51,8 +51,10 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 	}
 
 	// Must have a save or load operation
+	// TODO: these errors are misleading
 	if (!save && !load) return m_Error.SetError(CLIError::kTooFewArgs);
-	if ((unsigned)GetOpt::optind != argv.size()) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+
 	return DoReteNet(pAgent, save, filename);
 }
 

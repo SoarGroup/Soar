@@ -29,8 +29,8 @@ char const* CLIError::GetErrorDescription() {
 		case kExtraClosingBrace:				return "Closing brace found without opening counterpart.";
 		case kUnmatchedBrace:					return "Unexpected end of file. Unmatched opening brace.";
 
-		case kTooManyArgs:						return "Too many non-option arguments, check syntax.";
-		case kTooFewArgs:						return "Too few non-option arguments, check syntax.";
+		case kTooManyArgs:						return "Too many arguments for the specified (or unspecified) options, check syntax.";
+		case kTooFewArgs:						return "Too few arguments for the specified (or unspecified) options, check syntax.";
 		case kUnrecognizedOption:				return "Unrecognized option.";
 		case kMissingOptionArg:					return "Missing option argument.";
 
@@ -93,6 +93,7 @@ char const* CLIError::GetErrorDescription() {
 		case kFilterExpected:					return "ID/Attribute/Value filter expected, one or more missing.";
 		case kDuplicateWMEFilter:				return "That WME filter already exists.";
 		case kInvalidMode:						return "Invalid mode.";
+		case kTypeRequired:						return "A type (-t adds/removes/both) is required for this command.";
 
 		default:								return "Unknown error code.";
 	}

@@ -65,20 +65,21 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 	}
 
 	// Max one additional argument
-	if ((argv.size() - GetOpt::optind) > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 	// It is either a production or a number
 	std::string production;
 	int n = 0;
-	if ((argv.size() - GetOpt::optind) == 1) {
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
 
 		// explicitly check for 0 since that's atoi's error value
-		if (argv[GetOpt::optind][0] == '0') return m_Error.SetError(CLIError::kIntegerMustBePositive);
+		int optind = m_pGetOpt->GetOptind();
+		if (argv[optind][0] == '0') return m_Error.SetError(CLIError::kIntegerMustBePositive);
 
-		n = atoi(argv[GetOpt::optind].c_str());
+		n = atoi(argv[optind].c_str());
 		if (!n) {
 			if (productionType) return m_Error.SetError(CLIError::kNoProdTypeWhenProdName);
-			production = argv[GetOpt::optind];
+			production = argv[optind];
 		}
 	}
 

@@ -56,12 +56,12 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 		}
 	}
 
-	if (argv.size() == (unsigned)GetOpt::optind) return m_Error.SetError(CLIError::kTooFewArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooFewArgs);
 
 	if (!mode) mode = OPTION_PRODUCTION_FIND_INCLUDE_LHS;
 
 	std::string pattern;
-	for (unsigned i = GetOpt::optind; i < argv.size(); ++i) {
+	for (unsigned i = m_pGetOpt->GetOptind(); i < argv.size(); ++i) {
 		pattern += argv[i];
 		pattern += ' ';
 	}

@@ -50,10 +50,10 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 				break;
 			case 'd':
 				options |= OPTION_PRINT_DEPTH;
-				if (!IsInteger(GetOpt::optarg)) {
+				if (!IsInteger(m_pGetOpt->GetOptArg())) {
 					return m_Error.SetError(CLIError::kIntegerExpected);
 				}
-				depth = atoi(GetOpt::optarg);
+				depth = atoi(m_pGetOpt->GetOptArg());
 				if (depth < 0) {
 					return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
 				}
@@ -98,11 +98,9 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	}
 
 	// One additional optional argument
-	if ((argv.size() - GetOpt::optind) > 1) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
-	} else if ((argv.size() - GetOpt::optind) == 1) {
-		return DoPrint(pAgent, options, depth, &(argv[GetOpt::optind]));
-	}
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoPrint(pAgent, options, depth, &(argv[m_pGetOpt->GetOptind()]));
 	return DoPrint(pAgent, options, depth);
 }
 

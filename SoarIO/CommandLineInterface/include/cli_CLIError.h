@@ -90,6 +90,7 @@ namespace cli {
 			kFilterExpected = 60,
 			kDuplicateWMEFilter = 61, 
 			kInvalidMode = 62,
+			kTypeRequired = 63,
 		};
 
 		CLIError() : m_Code(0) {}

@@ -50,7 +50,7 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 				break;
 			case 't':
 				{
-					std::string typeString = GetOpt::optarg;
+					std::string typeString = m_pGetOpt->GetOptArg();
 					if (typeString == "adds") {
 						adds = true;
 					} else if (typeString == "removes") {
@@ -72,20 +72,22 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 
 	if (mode == 0) return m_Error.SetError(CLIError::kTooFewArgs);
 	
-	std::string id, attribute, value;
-	if (mode == OPTION_WATCH_WMES_MODE_LIST || mode == OPTION_WATCH_WMES_MODE_RESET) {
-		// no additional arguments
-		if (static_cast<unsigned>(GetOpt::optind) != argv.size()) return m_Error.SetError(CLIError::kTooManyArgs);
-
-	} else {
+	if (mode == OPTION_WATCH_WMES_MODE_ADD || mode == OPTION_WATCH_WMES_MODE_REMOVE) {
 		// type required
-		if (!adds && !removes) return m_Error.SetError(CLIError::kTooFewArgs);
+		if (!adds && !removes) return m_Error.SetError(CLIError::kTypeRequired);
+	
+		// check for too few/many args
+		if (m_pGetOpt->GetAdditionalArgCount() > 3) return m_Error.SetError(CLIError::kTooManyArgs);
+		if (m_pGetOpt->GetAdditionalArgCount() < 3) return m_Error.SetError(CLIError::kTooFewArgs);
 
-		// do pattern args
-		
+		int optind = m_pGetOpt->GetOptind();
+		return DoWatchWMEs(pAgent, mode, adds, removes, &argv[optind], &argv[optind + 1], &argv[optind + 2]);
 	}
 
-	return DoWatchWMEs(pAgent, mode, adds, removes, 0, 0, 0);
+	// no additional arguments
+	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
+
+	return DoWatchWMEs(pAgent, mode, adds, removes);
 }
 
 bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, bool adds, bool removes, std::string* pIdString, std::string* pAttributeString, std::string* pValueString) {

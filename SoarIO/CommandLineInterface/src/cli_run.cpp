@@ -59,23 +59,17 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		}
 	}
 
+	// Only one non-option argument allowed, count
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+
 	// Count defaults to 0
 	int count = 0;
-
-	// Only one non-option argument allowed, count
-	if ((unsigned)GetOpt::optind == argv.size() - 1) {
-
-		if (!IsInteger(argv[GetOpt::optind])) {
-			return m_Error.SetError(CLIError::kIntegerExpected);
-		}
-		count = atoi(argv[GetOpt::optind].c_str());
-		if (count <= 0) {
-			return m_Error.SetError(CLIError::kIntegerMustBePositive);
-		}
-
-	} else if ((unsigned)GetOpt::optind < argv.size()) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
-	}
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
+		int optind = m_pGetOpt->GetOptind();
+		if (!IsInteger(argv[optind])) return m_Error.SetError(CLIError::kIntegerExpected);
+		count = atoi(argv[optind].c_str());
+		if (count <= 0) return m_Error.SetError(CLIError::kIntegerMustBePositive);
+	} 
 
 	return DoRun(pAgent, options, count);
 }

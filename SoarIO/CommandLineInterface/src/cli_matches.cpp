@@ -62,12 +62,12 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 	}
 
 	// Max one additional argument and it is a production
-	if ((argv.size() - GetOpt::optind) > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 	std::string production;
-	if ((argv.size() - GetOpt::optind) == 1) {
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
 		matches = OPTION_MATCHES_PRODUCTION;
-		production = argv[GetOpt::optind];
+		production = argv[m_pGetOpt->GetOptind()];
 	}
 
 	return DoMatches(pAgent, matches, wmeDetail, production);

@@ -51,7 +51,7 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 	}
 
 	// No additional arguments
-	if (argv.size() != (unsigned)GetOpt::optind) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 
 	return DoIndifferentSelection(pAgent, mode);

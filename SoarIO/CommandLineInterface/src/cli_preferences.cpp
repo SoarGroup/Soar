@@ -54,16 +54,17 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 	}
 
 	// Up to two non-option arguments allowed, id/attribute
-	if (argv.size() > static_cast<unsigned>(GetOpt::optind) + 2) {
+	if (m_pGetOpt->GetAdditionalArgCount() > 2) {
 		return m_Error.SetError(CLIError::kTooManyArgs);
 	}
-	if (argv.size() == static_cast<unsigned>(GetOpt::optind) + 2) {
+	int optind = m_pGetOpt->GetOptind();
+	if (m_pGetOpt->GetAdditionalArgCount() == 2) {
 		// id & attribute
-		return DoPreferences(pAgent, detail, &argv[GetOpt::optind], &argv[GetOpt::optind + 1]);
+		return DoPreferences(pAgent, detail, &argv[optind], &argv[optind + 1]);
 	}
-	if (argv.size() == static_cast<unsigned>(GetOpt::optind) + 1) {
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
 		// id
-		return DoPreferences(pAgent, detail, &argv[GetOpt::optind]);
+		return DoPreferences(pAgent, detail, &argv[optind]);
 	}
 
 	return DoPreferences(pAgent, detail);

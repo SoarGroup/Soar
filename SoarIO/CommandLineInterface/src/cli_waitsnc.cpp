@@ -46,7 +46,7 @@ bool CommandLineInterface::ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::s
 	}
 
 	// No additional arguments
-	if (argv.size() != (unsigned)GetOpt::optind) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 	return DoWaitSNC(pAgent, query, enable);
 }

@@ -24,6 +24,18 @@ void GetOpt::Initialize() {
 	opterr = 0;
 }
 
+int GetOpt::GetAdditionalArgCount() {
+	return argc - optind;
+}
+
+int GetOpt::GetOptind() {
+	return optind;
+}
+
+const char* GetOpt::GetOptArg() {
+	return optarg;
+}
+
 char* GetOpt::my_index (const char *str, int chr)
 {
 	while (*str)

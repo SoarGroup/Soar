@@ -38,11 +38,9 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 
 	// Concatinate remaining args for 'reason'
 	std::string reasonForStopping;
-	if ((unsigned)GetOpt::optind < argv.size()) {
-		while ((unsigned)GetOpt::optind < argv.size()) {
-			reasonForStopping += argv[GetOpt::optind++] + ' ';
-		}
-	}
+	unsigned int optind = m_pGetOpt->GetOptind();
+	while (optind < argv.size()) reasonForStopping += argv[optind++] + ' ';
+
 	return DoStopSoar(pAgent, self, reasonForStopping);
 }
 

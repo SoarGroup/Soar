@@ -48,10 +48,7 @@ bool CommandLineInterface::ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::s
 		}
 	}
 
-	// Up to two non-option arguments allowed, id/attribute
-	if (argv.size() != static_cast<unsigned>(GetOpt::optind)) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
-	}
+	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	return DoVerbose(pAgent, query, setting);
 }

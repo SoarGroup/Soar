@@ -31,7 +31,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 		switch (option) {
 			case 'd':
 				disable = true;
-				command = GetOpt::optarg;
+				command = m_pGetOpt->GetOptArg();
 				break;
 			case ':':
 				return m_Error.SetError(CLIError::kMissingOptionArg);
@@ -44,15 +44,15 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 
 	// If disabling, no additional argument.
 	if (disable) {
-		if (argv.size() != (unsigned)GetOpt::optind) return m_Error.SetError(CLIError::kTooManyArgs);
+		if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
 		return DoAlias(disable, command, 0);
 	}
 	
 	// If not disabling and no arguments, list aliases
-	if ((argv.size() - GetOpt::optind) == 0) return DoAlias(disable, command, 0);
+	if (m_pGetOpt->GetAdditionalArgCount() == 0) return DoAlias(disable, command, 0);
 
 	// If not disabling and not listing, there must be at least two additional arguments
-	if ((argv.size() - GetOpt::optind) < 2) return m_Error.SetError(CLIError::kTooFewArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() < 2) return m_Error.SetError(CLIError::kTooFewArgs);		
 
 	std::vector<std::string> substitution;
 	std::vector<std::string>::iterator iter = argv.begin();

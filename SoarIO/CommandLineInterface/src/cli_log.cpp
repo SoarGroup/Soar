@@ -65,10 +65,10 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 	switch (operation) {
 		case OPTION_LOG_ADD:
 			// no less than one argument
-			if ((argv.size() - GetOpt::optind) < 1) return m_Error.SetError(CLIError::kTooFewArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() < 1) return m_Error.SetError(CLIError::kTooFewArgs);
 
 			// combine all args
-			for (int i = 0; i < GetOpt::optind; ++i) {
+			for (int i = 0; i < m_pGetOpt->GetOptind(); ++i) {
 				++iter;
 			}
 			while (iter != argv.end()) {
@@ -80,20 +80,21 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 
 		case OPTION_LOG_NEW:
 			// no more than one argument
-			if ((argv.size() - GetOpt::optind) > 1) return m_Error.SetError(CLIError::kTooManyArgs);
-			if ((argv.size() - GetOpt::optind) == 1) filename = argv[1];
+			if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() == 1) filename = argv[1];
 			break;
 
 		case OPTION_LOG_NEWAPPEND:
 			// exactly one argument
-			if ((argv.size() - GetOpt::optind) != 1) return m_Error.SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() < 1) return m_Error.SetError(CLIError::kTooFewArgs);
 			filename = argv[2];
 			break;
 
 		case OPTION_LOG_CLOSE:
 		case OPTION_LOG_QUERY:
 			// no arguments
-			if (argv.size() - GetOpt::optind) return m_Error.SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
 			break;
 
 		default:

@@ -27,12 +27,16 @@ public:
 
 	void Initialize();
 
+	int GetAdditionalArgCount();
+	int GetOptind();
+	const char* GetOptArg();
+
+private:
+
 	static char *optarg;
 	static int optind;
 	static int opterr;
 	static int optopt;
-
-private:
 
 	enum { REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER };
 	static int ordering;

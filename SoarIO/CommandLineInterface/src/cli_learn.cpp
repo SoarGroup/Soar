@@ -66,9 +66,7 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 	}
 
 	// No non-option arguments
-	if ((unsigned)GetOpt::optind != argv.size()) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
-	}
+	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	return DoLearn(pAgent, options);
 }

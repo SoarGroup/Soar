@@ -49,9 +49,7 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 	}
 
 	// No non-option arguments
-	if ((unsigned)GetOpt::optind != argv.size()) {
-		return m_Error.SetError(CLIError::kTooManyArgs);
-	}
+	if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
 
 	return DoTimers(pAgent, print, setting);
 }

@@ -50,12 +50,9 @@ bool CommandLineInterface::ParsePWatch(gSKI::IAgent* pAgent, std::vector<std::st
 				return m_Error.SetError(CLIError::kGetOptError);
 		}
 	}
-	if (argv.size() > static_cast<unsigned>(GetOpt::optind) + 1) return m_Error.SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);
 
-	if (argv.size() == static_cast<unsigned>(GetOpt::optind) + 1) {
-		return DoPWatch(pAgent, false, &argv[GetOpt::optind], setting);
-	}
-
+	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoPWatch(pAgent, false, &argv[m_pGetOpt->GetOptind()], setting);
 	return DoPWatch(pAgent, query, 0);
 }
 

@@ -58,16 +58,16 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 
 	// If there are options, no additional argument.
 	if (options) {
-		if (argv.size() != (unsigned)GetOpt::optind) return m_Error.SetError(CLIError::kTooManyArgs);
+		if (m_pGetOpt->GetAdditionalArgCount()) return m_Error.SetError(CLIError::kTooManyArgs);
 		return DoExcise(pAgent, options);
 	}
 
 	// If there are no options, there must be only one production name argument
-	if (argv.size() == (unsigned)GetOpt::optind) return m_Error.SetError(CLIError::kTooFewArgs);		
-	if ((argv.size() - GetOpt::optind) > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() < 1) return m_Error.SetError(CLIError::kTooFewArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) return m_Error.SetError(CLIError::kTooManyArgs);		
 
 	// Pass the production to the DoExcise function
-	return DoExcise(pAgent, options, &(argv[GetOpt::optind]));
+	return DoExcise(pAgent, options, &(argv[m_pGetOpt->GetOptind()]));
 }
 
 bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const unsigned int options, std::string* pProduction) {
