@@ -491,7 +491,8 @@ global runningSimulation
 		set n 1
 		scan $args %d n
 		for {set i 1} {$i <= $n} {incr i} {
-			environmentStep #changed from step to fix bugzilla bug 393
+#                       changed next line from step to fix bugzilla bug 393
+			environmentStep
 		}
 		return
 	}
