@@ -37,7 +37,7 @@
 ##
 # Main dmgen program
 
-set dmGenVersion "0.9.0"
+set dmGenVersion "1.0"
 
 ##
 # Generate a datamap and bring up the datamap window

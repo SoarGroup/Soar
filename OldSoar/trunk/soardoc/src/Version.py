@@ -37,7 +37,7 @@
 ##
 # SoarDoc version constants.
 
-Version = '0.9.1'
-VersionDate = '10/22/2003'
-VersionTag = 'SOARDOC_RELEASE_0.9.1'
+Version = '0.9.2'
+VersionDate = '05/18/2004'
+VersionTag = 'SOARDOC_RELEASE_0.9.2'
 
