@@ -275,9 +275,23 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   if (prev_c) prev_c->rest = NIL; else arglist = NIL;
 
   /* --- if all args were ok, call the function --- */
-  if (!nil_arg_found)
+
+  if (!nil_arg_found) {
+	// stop the kernel timer while doing RHS funcalls  KJC 11/04
+	// the total_cpu timer needs to be updated in case RHS fun is statsCmd
+    #ifndef NO_TIMING_STUFF
+    stop_timer (&thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+	stop_timer (&thisAgent->start_total_tv, &thisAgent->total_cpu_time);
+    start_timer (&thisAgent->start_total_tv);
+    #endif
+
     result = (*(rf->f))(thisAgent, arglist, rf->user_data);
-  else
+
+	#ifndef NO_TIMING_STUFF  // restart the kernel timer
+ 	start_timer (&thisAgent->start_kernel_tv);
+    #endif
+
+  } else
     result = NIL;
 
   /* --- scan through arglist, dereference symbols and deallocate conses --- */
