@@ -114,6 +114,10 @@ public:
 		JNIEnv* penv ;
 		int result = m_JavaVM->AttachCurrentThread((void**)&penv, 0) ;
 
+		// Error attaching to the VM
+		if (result < 0)
+			return 0 ;
+
 		return penv ;
 	}
 

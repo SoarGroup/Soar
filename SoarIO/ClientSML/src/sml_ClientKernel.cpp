@@ -357,20 +357,21 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 
 	// Go through the list of event handlers calling each in turn...except
 	// we only execute the first handler (registering multipler handlers for the same RHS function is not supported)
-	bool firstOnly = true ;
-	for (RhsEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() && !firstOnly ; iter++)
-	{
-		RhsEventHandlerPlusData handlerWithData = *iter ;
+	RhsEventMap::ValueListIter iter = pHandlers->begin() ;
 
-		RhsEventHandler handler = handlerWithData.m_Handler ;
-		void* pUserData = handlerWithData.getUserData() ;
+	if (iter == pHandlers->end())
+		return ;
 
-		// Call the handler
-		std::string result = handler(id, pUserData, pAgent, pFunctionName, pArgument) ;
+	RhsEventHandlerPlusData handlerWithData = *iter ;
 
-		// If we got back a result then fill in the value in the response message.
-		GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
-	}
+	RhsEventHandler handler = handlerWithData.m_Handler ;
+	void* pUserData = handlerWithData.getUserData() ;
+
+	// Call the handler
+	std::string result = handler(id, pUserData, pAgent, pFunctionName, pArgument) ;
+
+	// If we got back a result then fill in the value in the response message.
+	GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
 }
 
 /*************************************************************
@@ -756,12 +757,14 @@ bool Kernel::IsRunCommand(char const* pCommandLine)
 
 	// We might have a list of these one day but after alias expansion right
 	// now it's just one command that should start "run xxx"
-	std::string runCommand = "run " ;
+	std::string runCommand = "run" ;
 
 	if (line.size() < runCommand.size())
 		return false ;
 
-	// Check if the expanded command line starts with "run " or not.
+	// Check if the expanded command line starts with "run" or not.
+	// (Technically this could be wrong if we added a runxxx command but that's not the case now and
+	//  not likely in the future).
 	if (line.substr(0, runCommand.size()).compare(runCommand) == 0)
 		return true ;
 
