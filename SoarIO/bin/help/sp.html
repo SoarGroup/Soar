@@ -1,0 +1,36 @@
+<html dir="ltr" lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head><title>Sp - Soar Wiki</title></head><body class="ns-0"><div id="globalWrapper"><div id="column-content"><div id="content"><a id="contentTop" name="top"></a><h1 class="firstHeading">Sp</h1><div id="bodyContent"><h3 id="siteSub">From Soar Wiki</h3><div id="contentSub"></div><p>This is part of the <a href="/soarwiki/Soar_Command_Line_Interface" title="Soar Command Line Interface">Soar Command Line Interface</a>. <a name="Name"></a><h1> Name </h1><p><strong>sp</strong> - Define a Soar production. <p>Status: <a href="/soarwiki/Complete" title="Complete">Complete</a><a name="Synopsis"></a><h1> Synopsis </h1><pre><code>
+sp {<u>production_body</u>}
+</code>
+</pre><a name="Options"></a><h1> Options </h1><table border=1 cellpadding=2><tr><td> production_body </td><td> A Soar production. </td></tr></table><p><br><a name="Description"></a><h1> Description </h1><p>This command defines a new Soar production. rule is a single argument parsed by the Soar kernel, so it should be enclosed in curly braces to avoid being parsed by other scripting languages that might be in the same proces. The overall syntax of a rule is as follows: <pre>  name 
+      [&quot;documentation-string&quot;] 
+      [FLAG*]
+      LHS
+      --&gt;
+      RHS
+</pre><p>The first element of a rule is its name. Conventions for names are given in the Soar Users Manual. If given, the documentation-string must be enclosed in double quotes. Optional flags define the type of rule and the form of support its right-hand side assertions will receive. The specific flags are listed in a separate section below. The LHS defines the left-hand side of the production and specifies the conditions under which the rule can be fired. Its syntax is given in detail in a subsequent section. The --&gt; symbol serves to separate the LHS and RHS portions. The RHS defines the right-hand side of the production and specifies the assertions to be made and the actions to be performed when the rule fires. The syntax of the allowable right-hand side actions are given in a later section. The Soar Users Manual gives an elaborate discussion of the design and coding of productions. Please see that reference for tutorial information about productions. <p> More complex productions can be formed by surrounding the rule with double quotes instead of curly braces. This enables variable and command result substitutions in productions. If another production with the same name already exists, it is excised, and the new production is loaded. <p><u><b>RULE FLAGS</b></u><br><p>The optional FLAGs are given below. Note that these switches are preceeded by a colon instead of a dash -- this is a Soar parser convention. <pre>:o-support      specifies that all the RHS actions are to be given
+                o-support when the production fires 
+</pre> <pre>:no-support     specifies that all the RHS actions are only to be given
+                i-support when the production fires 
+</pre> <pre>:default        specifies that this production is a default production 
+                (this matters for excise -task and watch task) 
+</pre> <pre>:chunk          specifies that this production is a chunk 
+                (this matters for learn trace)
+</pre><a name="Examples"></a><h1> Examples </h1><p>There are many examples in the Soar Users Manual and the demos subdirectory. Here is a simple production to create a problem space. It comes from the critter-world demo (see the file critter.tcl): <pre>sp {critter*create*space*critter
+   &quot;Formulate the initial problem space&quot;
+   (state &lt;state&gt; ^superstate nil)
+   --&gt;
+   (&lt;state&gt; ^name move-around ^problem-space &lt;p1&gt;)
+   (&lt;p1&gt; ^name critter)}
+</pre><p>The production above has the name critter*create*space*critter. It has a documentation string that is surrounded by double quotes. The LHS is (state &lt;state&gt; ^superstate nil) and indicates that this rule will match whenever there is a state object that has the attribute-value pair ^superstate nil. The --&gt; arrow separates the left and right-hand sides. The RHS consists of two lines. The first asserts that the state object is to be augmented with the name move-around and a problem space should be created. The second line of the RHS indicates that this problem space should be named critter. <p> New for Soar 8, is right-hand-side dot notation. So this production could also be written: <pre>sp {critter*create*space*critter
+   &quot;Formulate the initial problem space&quot;
+   (state &lt;state&gt; ^superstate nil)
+   --&gt;
+   (&lt;state&gt; ^name move-around ^problem-space.name critter)}
+</pre><p>Here is a variant of the above example using double quotes instead of curly braces. Double quotes are needed in order to imbed the value of the Tcl variable soar_agent_name in the production. The value of this variable is used to name the problem-space created. <pre>sp &quot;critter*create*space*critter
+   (state &lt;state&gt; ^superstate nil)
+  --&gt;
+  (&lt;state&gt; ^name move-around ^problem-space &lt;p1&gt;)
+  (&lt;p1&gt; ^name $soar_agent_name)&quot;
+</pre><p><b> the rest of this may no longer apply, depending on parsing...</b><br> The primary change in the rule is the last clause of the RHS. In that clause, the scripting (Tcl) variable soar_agent_name is expanded. If this rule is given in an interpreter which has the variable soar_agent_name set to fred, then the RHS would expand to the following before being sent to the Soar kernel to be parsed: <pre> (&lt;p1&gt; ^name fred)
+</pre><p>Please be aware that when using double quotes, both the dollar sign (variable expansion) and square brackets (command result substitution) could be interpreted by a scripting language such as Tcl, if loaded into the process that is running Soar. If these characters ($, [, and ]) are to be passed to the Soar production parser, they must be escaped (using a backslash) to avoid interpretation by the scripting language. <a name="See_Also"></a><h1> See Also </h1><p><a href="/soarwiki/Excise" title="Excise">excise</a> <a href="/soarwiki/Learn" title="Learn">learn</a> <a href="/soarwiki/Watch" title="Watch">watch</a><p><br><a name="Structured_Output"></a><h1> Structured Output </h1><a name="On_Success"></a><h2> On Success </h2><pre>&lt;result output=&quot;raw&quot;&gt;true&lt;/result&gt;
+</pre><a name="Error_Values"></a><h1> Error Values </h1><a name="During_Parsing"></a><h2> During Parsing </h2><p><a href="/soarwiki/KTooFewArgs" title="KTooFewArgs">kTooFewArgs</a>, <a href="/soarwiki/KTooManyArgs" title="KTooManyArgs">kTooManyArgs</a>, <a class="new" href="/soarwiki?title=KInvalidProduction&amp;action=edit" title="KInvalidProduction">kInvalidProduction</a><a name="During_Execution"></a><h2> During Execution </h2><p><a href="/soarwiki/KAgentRequired" title="KAgentRequired">kAgentRequired</a>, <a href="/soarwiki/KgSKIError" title="KgSKIError">kgSKIError</a><div class="printfooter"> Retrieved from &quot;<a href="http://winter.eecs.umich.edu/soarwiki/Sp">http://winter.eecs.umich.edu/soarwiki/Sp</a>&quot;</div><div class="visualClear"></div></div></div></div><div class="visualClear"></div></div></body></html>

@@ -10,7 +10,7 @@ $tb->ignore_unknown(1);
 $tb->implicit_tags(1);
 $tb->warn(1);
 
-my $html = $tb->parse_file("Add-wme");
+my $html = $tb->parse_file($ARGV[0]);
 
 while (my $element = $html->find("style")) {
   #print "SERVED a style\n";

@@ -1,10 +1,8 @@
-
                                       Popd
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -50,4 +48,4 @@ During Parsing
 During Execution
 
    kDirectoryStackEmpty
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Popd"

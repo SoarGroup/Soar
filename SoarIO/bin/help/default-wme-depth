@@ -1,14 +1,12 @@
-
                                Default-wme-depth
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
 
-
                                       Name
 
-   default-wme-depth - Set the level of detail used to print WME's.
+   default-wme-depth - Set the level of detail used to print WMEaEUR(TM)s.
 
    Priority: 3; Status: Complete
 
@@ -44,4 +42,4 @@ During Parsing
 During Execution
 
    kAgentRequired
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Default-wme-depth"

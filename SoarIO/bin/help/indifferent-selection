@@ -1,10 +1,8 @@
-
                              Indifferent-selection
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -69,45 +67,5 @@ During Parsing
 During Execution
 
    kAgentRequired, kInvalidIndifferentSelectionMode
-
    Retrieved from
    "http://winter.eecs.umich.edu/soarwiki/Indifferent-selection"
-
-      Views
-
-     * Article
-     * Discussion
-     * Edit
-     * History
-
-      Personal tools
-
-     * Create an account or log in
-
-      Navigation
-
-     * Main Page
-     * Community portal
-     * Current events
-     * Recent changes
-     * Random page
-     * Help
-
-      Search
-
-   _____________________ [ Go ]   [ Search ]
-
-      Toolbox
-
-     * What links here
-     * Related changes
-     * Special pages
-
-   MediaWiki
-   GNU Free Documentation License 1.2
-
-     * This page was last modified 18:29, 23 Feb 2005.
-     * This page has been accessed 29 times.
-     * Content is available under GNU Free Documentation License 1.2.
-     * About Soar Wiki
-     * Disclaimers

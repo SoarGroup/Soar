@@ -8,7 +8,7 @@ my @links = <LINKS>;
 open NAMES, "command-names" or die "Could not open command-names: $!";
 my @names = <NAMES>;
 
-open POSTPROCESSFILE, "help-text-post-process.pl" or die "Could not find required file help-text-post-process.pl: $!";
+open POSTPROCESSFILE, "html-process.pl" or die "Could not find required file html-process.pl: $!";
 close POSTPROCESSFILE;
 
 if ($#links != $#names) {
@@ -25,9 +25,11 @@ if (!mkdir "help") {
 for (my $i = 0; $i < $#links; $i++) {
   chomp @names[$i];
   print "Processing @names[$i]\n";
-  `elinks -dump -no-numbering -no-references "@links[$i]" > help/@names[$i]`;
-
-  `./help-text-post-process.pl < help/@names[$i] > help/@names[$i].new`;
-  unlink "help/@names[$i]" or die "Could not remove help/@names[$i]: $!";
-  rename "help/@names[$i].new", "help/@names[$i]" or die "Could not rename help/@names[$i].new: $!";
+  
+  `wget -q -O help/@names[$i].wiki.html @links[$i]`;
+  
+  `./html-process.pl help/@names[$i].wiki.html > help/@names[$i].html`;
+  unlink "help/@names[$i].wiki.html" or die "Could not remove help/@names[$i].wiki.html: $!";
+  
+  `elinks -dump -no-numbering -no-references help/@names[$i].html > help/@names[$i]`;
 }

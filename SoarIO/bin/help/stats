@@ -1,14 +1,12 @@
-
                                      Stats
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
 
-
                                       Name
 
-   stats - Print information on Soar's runtime statistics.
+   stats - Print information on SoaraEUR(TM)s runtime statistics.
 
    Priority: 1; Status: Incomplete
    Memory pool and rete stats not implemented with structured
@@ -131,4 +129,4 @@ During Parsing
 During Execution
 
    kAgentRequired, kgSKIError
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Stats"

@@ -1,10 +1,8 @@
-
                                       Log
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -14,9 +12,9 @@
 
                                     Synopsis
 
- log -Ae filename
- log -a  string
- log [-cdoq]
+ log aEUR"Ae filename
+ log aEUR"a  string
+ log [aEUR"cdoq]
 
                                     Options
 
@@ -56,6 +54,7 @@
 
  log -off
 
+
                                     See Also
 
                                Structured Output
@@ -71,8 +70,8 @@ Notes
 
      * setting is true (log file open) or false (closed).
      * log_filename is only included if the log is open.
-     * currently prompts and input are not logged because "log" simply
-       registers on the gSKI print callback. Need to implement fully.
+     * currently prompts and input are not logged because aEURoelogaEUR&#157;
+       simply registers on the gSKI print callback. Need to implement fully.
 
                                   Error Values
 
@@ -84,4 +83,4 @@ During Parsing
 During Execution
 
    kLogAlreadyOpen, kLogOpenFailure, kLogNotOpen, kInvalidOperation
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Log"

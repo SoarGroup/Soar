@@ -1,10 +1,8 @@
-
                                        Cd
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -34,6 +32,7 @@
 
  cd ../home/soar/agents
 
+
                                     See Also
 
            dirs home ls pushd popd source topd
@@ -55,4 +54,4 @@ During Parsing
 During Execution
 
    kchdirFail
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Cd"

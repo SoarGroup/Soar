@@ -1,10 +1,8 @@
-
                                     Memories
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -86,4 +84,4 @@ During Parsing
 During Execution
 
    kAgentRequired, kgSKIError, kInvalidProductionType, kProductionNotFound
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Memories"

@@ -1,10 +1,8 @@
-
                                    Stop-soar
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -47,6 +45,7 @@
 
  monitor -add {stop-soar --self "after decision phase"} after-decision-phase-cycle
 
+
                                     See Also
 
    run monitor matches
@@ -72,4 +71,4 @@ During Parsing
 During Execution
 
    kAgentReqruied, kKernelRequired
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Stop-soar"

@@ -1,10 +1,8 @@
-
                                     Rete-net
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -15,6 +13,7 @@
                                     Synopsis
 
  rete-net -s|l filename
+
 
                                     Options
 
@@ -79,3 +78,4 @@ During Execution
    kAgentRequired, kCantSaveReteWithJustifications,
    kCantLoadReteWithProductions, kReteSaveOperationFail,
    kReteLoadOperationFail
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Rete-net"

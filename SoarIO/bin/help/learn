@@ -1,14 +1,12 @@
-
                                      Learn
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
 
-
                                       Name
 
-   learn - Set the parameters for chunking, Soar's learning mechanism.
+   learn - Set the parameters for chunking, SoaraEUR(TM)s learning mechanism.
 
    Status: Complete, EvilBackDoor
 
@@ -111,4 +109,4 @@ During Parsing
 During Execution
 
    kAgentRequired
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Learn"

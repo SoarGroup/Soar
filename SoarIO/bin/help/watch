@@ -1,10 +1,8 @@
-
                                      Watch
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -112,7 +110,7 @@ Watch Levels
    Use of the --level (-l) flag is optional but recommended.
 
    +------------------------------------------------------------------------+
-   |0|watch nothing; equivalent to -N                                       |
+   |0|watch nothing; equivalent to aEUR"N                                   |
    |-+----------------------------------------------------------------------|
    |1|watch decisions; equivalent to -d                                     |
    |-+----------------------------------------------------------------------|
@@ -291,4 +289,4 @@ During Parsing
 During Execution
 
    kAgentRequired, kKernelRequired
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Watch"

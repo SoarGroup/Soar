@@ -1,14 +1,12 @@
-
                                       Run
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
 
-
                                       Name
 
-   run - Begin Soar's execution cycle.
+   run - Begin SoaraEUR(TM)s execution cycle.
 
    Status: Complete
    Complete, except --output may work incorrectly due to gSKI--Jonathan
@@ -95,4 +93,4 @@ During Parsing
 During Execution
 
    kAgentRequired, kKernelRequired, kgSKIError
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Run"

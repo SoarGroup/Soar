@@ -1,10 +1,8 @@
-
                                    Gds-print
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -55,4 +53,4 @@ During Parsing
 During Execution
 
    kAgentRequired, kKernelRequired
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Gds-print"

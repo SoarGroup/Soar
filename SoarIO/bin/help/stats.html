@@ -1,0 +1,40 @@
+<html dir="ltr" lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head><title>Stats - Soar Wiki</title></head><body class="ns-0"><div id="globalWrapper"><div id="column-content"><div id="content"><a id="contentTop" name="top"></a><h1 class="firstHeading">Stats</h1><div id="bodyContent"><h3 id="siteSub">From Soar Wiki</h3><div id="contentSub"></div><p>This is part of the <a href="/soarwiki/Soar_Command_Line_Interface" title="Soar Command Line Interface">Soar Command Line Interface</a>. <a name="Name"></a><h1> Name </h1><p><strong>stats</strong> - Print information on Soar&acirc;&#128;&#153;s runtime statistics. <p>Priority: <a href="/soarwiki/1" title=1>1</a>; Status: <a href="/soarwiki/Incomplete" title="Incomplete">Incomplete</a><br>Memory pool and rete stats not implemented with structured output.--<a class="new" href="/soarwiki?title=User:Voigtjr&amp;action=edit" title="User:Voigtjr">Jonathan</a> 16:04, 8 Mar 2005 (EST) <br>stats -r (raw output) looks like trash output.--<a class="new" href="/soarwiki?title=User:Voigtjr&amp;action=edit" title="User:Voigtjr">Jonathan</a> 16:01, 8 Mar 2005 (EST) <a name="Synopsis"></a><h1> Synopsis </h1><a name="Structured_Output"></a><h2> Structured Output </h2><pre>stats
+</pre><a name="Raw_Output"></a><h2> Raw Output </h2><pre>stats [-s|-m|-r]
+</pre><a name="Options"></a><h1> Options </h1><table border=1 cellpadding=2><tr><td> -m, --memory </td><td> report usage for Soar's memory pools </td></tr><tr><td> -r, --rete </td><td> report statistics about the rete structure </td></tr><tr><td> -s, --system </td><td> report the system (agent) statistics. This is the default if no args are specified. </td></tr></table><p><br><a name="Description"></a><h1> Description </h1><p>This command prints Soar internal statistics. The module indicates the component of interest. If specified, module must be one of --system, --memory, or --rete. All statistics are listed for that module. <a name="Examples"></a><h1> Examples </h1><p>This prints all statistics in the --system module: <pre>stats --system
+</pre><a name="See_Also"></a><h1> See Also </h1><p><a href="/soarwiki/Timers" title="Timers">timers</a><p><br><a name="A_Note_on_Timers"></a><h1> A Note on Timers </h1><p>The current implementation of Soar uses a number of timers to provide time-based statistics for use in the stats command calculations. These timers are: <br> total CPU time total kernel time phase kernel time (per phase) phase callbacks time (per phase) input function time output function time <br> Total CPU time is calculated from the time a decision cycle (or number of decision cycles) is initiated until stopped. Kernel time is the time spent in core Soar functions. In this case, kernel time is defined as the all functions other than the execution of callbacks and the input and output functions. The total kernel timer is only stopped for these functions. The phase timers (for the kernel and callbacks) track the execution time for individual phases of the decision cycle (i.e., input phase, preference phase, working memory phase, output phase, and decision phase). Because there is overhead associated with turning these timers on and off, the actual kernel time will always be greater than the derived kernel time (i.e., the sum of all the phase kernel timers). Similarly, the total CPU time will always be greater than the derived total (the sum of the other timers) because the overhead of turning these timers on and off is included in the total CPU time. In general, the times reported by the single timers should always be greater than than the corresponding derived time. Additionally, as execution time increases, the difference between these two values will also increase. For those concerned about the performance cost of the timers, all the run time timing calculations can be compiled out of the code by defining NO_TIMING_STUFF (in soarkernel.h) before compilation. <p><br><a name="Structured_Output_2"></a><h1> Structured Output </h1><p>The following arg parameters are returned: <pre>kParamStatsProductionCountDefault, kTypeInt
+kParamStatsProductionCountUser, kTypeInt
+kParamStatsProductionCountChunk, kTypeInt
+kParamStatsProductionCountJustification, kTypeInt
+kParamStatsCycleCountDecision, kTypeInt
+kParamStatsCycleCountElaboration, kTypeInt
+kParamStatsProductionFiringCount, kTypeInt
+kParamStatsWmeCountAddition, kTypeInt
+kParamStatsWmeCountRemoval, kTypeInt
+kParamStatsWmeCount, kTypeInt
+kParamStatsWmeCountAverage, kTypeDouble
+kParamStatsWmeCountMax, kTypeInt
+kParamStatsKernelTimeTotal, kTypeDouble
+kParamStatsMatchTimeInputPhase, kTypeDouble
+kParamStatsMatchTimeDetermineLevelPhase, kTypeDouble
+kParamStatsMatchTimePreferencePhase, kTypeDouble
+kParamStatsMatchTimeWorkingMemoryPhase, kTypeDouble
+kParamStatsMatchTimeOutputPhase, kTypeDouble
+kParamStatsMatchTimeDecisionPhase, kTypeDouble
+kParamStatsOwnershipTimeInputPhase, kTypeDouble
+kParamStatsOwnershipTimeDetermineLevelPhase, kTypeDouble
+kParamStatsOwnershipTimePreferencePhase, kTypeDouble
+kParamStatsOwnershipTimeWorkingMemoryPhase, kTypeDouble
+kParamStatsOwnershipTimeOutputPhase, kTypeDouble
+kParamStatsOwnershipTimeDecisionPhase, kTypeDouble
+kParamStatsChunkingTimeInputPhase, kTypeDouble
+kParamStatsChunkingTimeDetermineLevelPhase, kTypeDouble
+kParamStatsChunkingTimePreferencePhase, kTypeDouble
+kParamStatsChunkingTimeWorkingMemoryPhase, kTypeDouble
+kParamStatsChunkingTimeOutputPhase, kTypeDouble
+kParamStatsChunkingTimeDecisionPhase, kTypeDouble
+kParamStatsMemoryUsageMiscellaneous, kTypeInt
+kParamStatsMemoryUsageHash, kTypeInt
+kParamStatsMemoryUsageString, kTypeInt
+kParamStatsMemoryUsagePool, kTypeInt
+kParamStatsMemoryUsageStatsOverhead, kTypeInt
+</pre><a name="Error_Values"></a><h1> Error Values </h1><a name="During_Parsing"></a><h2> During Parsing </h2><p><a href="/soarwiki/KTooManyArgs" title="KTooManyArgs">kTooManyArgs</a>, <a href="/soarwiki/KUnrecognizedOption" title="KUnrecognizedOption">kUnrecognizedOption</a>, <a href="/soarwiki/KGetOptError" title="KGetOptError">kGetOptError</a><a name="During_Execution"></a><h2> During Execution </h2><p><a href="/soarwiki/KAgentRequired" title="KAgentRequired">kAgentRequired</a>, <a href="/soarwiki/KgSKIError" title="KgSKIError">kgSKIError</a><div class="printfooter"> Retrieved from &quot;<a href="http://winter.eecs.umich.edu/soarwiki/Stats">http://winter.eecs.umich.edu/soarwiki/Stats</a>&quot;</div><div class="visualClear"></div></div></div></div><div class="visualClear"></div></div></body></html>

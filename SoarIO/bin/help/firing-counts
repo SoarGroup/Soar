@@ -1,10 +1,8 @@
-
                                  Firing-counts
 
   From Soar Wiki
 
    This is part of the Soar Command Line Interface.
-
 
                                       Name
 
@@ -54,6 +52,7 @@
 
  firing-counts my*first*production my*second*production
 
+
                                     Warnings
 
    firing-counts are reset to zero after an init-soar.
@@ -85,4 +84,4 @@ During Parsing
 During Execution
 
    kAgentRequired, kgSKIError, kProductionNotFound
-
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Firing-counts"
