@@ -134,7 +134,7 @@ void CommandLineInterface::BuildCommandMap() {
 //| |_| | (_) | |__| (_) | | | | | | | | | | | (_| | | | | (_| |
 //|____/ \___/ \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|
 //
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError) {
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, bool rawOutput, gSKI::Error* pError) {
 
 	// Clear the result
 	m_Result.clear();
@@ -143,6 +143,16 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	// Save the pointers
 	m_pAgent = pAgent;
 	m_pError = pError;
+
+	// Save the raw output flag
+	m_RawOutput = rawOutput;
+
+	// DEBUG: echo rawOutput variable
+	if (m_RawOutput) {
+		m_Result += "debug: CommandLineInterface::DoCommand: rawOutput true\n";
+	} else {
+		m_Result += "debug: CommandLineInterface::DoCommand: rawOutput false\n";
+	}
 
 	// Process the command, ignoring its result (irrelevant at this level)
 	bool ret = DoCommandInternal(pCommandLine);

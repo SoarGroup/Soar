@@ -487,6 +487,8 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
+	bool rawOutput = false;
+	const char* pCommandOutput = pIncoming->GetArgValue(sml_Names::kCommandOutput);
 
 	if (!pLine)
 	{
@@ -494,6 +496,6 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 
 	// Make the call.
-	return m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse, pError) ;
+	return m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse, rawOutput, pError) ;
 }
 

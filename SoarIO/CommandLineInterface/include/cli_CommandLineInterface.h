@@ -82,7 +82,7 @@ public:
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
 	*************************************************************/
-	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
+	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, bool rawOutput, gSKI::Error* pError);
 
 	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
@@ -438,6 +438,7 @@ protected:
 	std::string			m_LogFilename;			// Used for logging to a file.
 	std::ofstream*		m_pLogFile;				// The log file stream
 	bool				m_CriticalError;		// True if DoCommand should return false.
+	bool				m_RawOutput;			// True if we want string output.
 };
 
 } // namespace cli

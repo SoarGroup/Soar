@@ -4,6 +4,7 @@
 
 #include "sml_Connection.h"
 #include "sml_Client.h"
+#include "sml_AnalyzeXML.h"
 
 using namespace std;
 
@@ -42,6 +43,8 @@ int main(int argc, char** argv)
 	int temporaryHistoryIndex = 0;
 	const int HISTORY_SIZE = 10;
 	string history[HISTORY_SIZE];
+	bool raw = true;
+	sml::AnalyzeXML* pStructuredResponse;
 	
 	string scriptFile;
 	if (argc > 1) {
@@ -52,7 +55,11 @@ int main(int argc, char** argv)
 	string::iterator sfIter = scriptFile.begin();
 
 	for (;;) {
-		cout << previousResult << " " << AGENT_NAME << "> ";
+		cout << previousResult;
+		if (raw) {
+			cout << " raw";
+		}
+		cout << " " << AGENT_NAME << "> ";
 		cout.flush();
 		cmdline.clear();
 		temporaryHistoryIndex = historyIndex;
@@ -67,7 +74,13 @@ int main(int argc, char** argv)
 				input = getch();
 			}
 
-			switch (input) {					
+			switch (input) {
+				case '`':
+					raw = !raw;
+					cmdline.clear();
+					input = '\n';
+					// falls through
+
 				case '\n':
 				case '\r':
 					process = true;
@@ -115,11 +128,19 @@ int main(int argc, char** argv)
 		history[historyIndex++] = cmdline;
 		historyIndex %= HISTORY_SIZE;
 
-		output = pKernel->ExecuteCommandLine(cmdline.c_str(), AGENT_NAME);
-		previousResult = pKernel->GetLastCommandLineResult() ;
+		if (raw) {
+			output = pKernel->ExecuteCommandLine(cmdline.c_str(), AGENT_NAME);
+			previousResult = pKernel->GetLastCommandLineResult() ;
+		} else {
+			pStructuredResponse = new sml::AnalyzeXML();
+			previousResult = pKernel->ExecuteCommandLineXML(cmdline.c_str(), AGENT_NAME, pStructuredResponse);
+			output = pStructuredResponse->GetResultString();
+			delete pStructuredResponse;
+		}
+
 		cout << output << endl;
 
-		if (output == "Goodbye.") {
+		if (output.find("Goodbye.") != std::string::npos) {
 			break;
 		}
 	}
