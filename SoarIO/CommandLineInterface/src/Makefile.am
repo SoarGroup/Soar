@@ -15,6 +15,7 @@ cli_echo.cpp\
 cli_excise.cpp\
 cli_help.cpp\
 cli_helpex.cpp\
+cli_home.cpp\
 cli_initsoar.cpp\
 cli_learn.cpp\
 cli_log.cpp\
