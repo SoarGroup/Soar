@@ -39,6 +39,7 @@
  */
 
 #include "soarkernel.h"
+#include "soarapi_datatypes.h"
 #include "soarapi.h"
 #include "soarapiUtils.h"
 #include "soarapiCallbacks.h"

@@ -1158,7 +1158,7 @@ int soar_ecPrintAllProductionsOfType(int type, bool internal, bool print_fname, 
     return 0;
 }
 
-void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_InterruptSetting interrupt_setting) {
+void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_apiInterruptSetting interrupt_setting) {
     production *prod;
 
     /* we'll step through the list backwards, so chunks and justifications

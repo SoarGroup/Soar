@@ -43,6 +43,7 @@
 #define _SOAR_ECORE_API_
 
 #include "soarkernel.h"
+#include "soarapi_datatypes.h"
 #include "soar_ecore_utils.h"
 #include "soar_core_api.h"
 
@@ -708,7 +709,7 @@ extern int soar_ecWatchLevel(int level);
  *                                (INTERRUPT_PRINT will never match)
  *
  */
-extern void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_InterruptSetting interrupt_setting);
+extern void soar_ecPrintAllProductionsWithInterruptSetting(enum soar_apiInterruptSetting interrupt_setting);
 
 /*@}*/
 #endif                          /* _SOAR_ECORE_API_ */

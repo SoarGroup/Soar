@@ -142,6 +142,16 @@ enum soar_apiSlotType {
     SUPERSUPEROPERATOR_SLOT
 };
 
+/*
+ * \brief The interrupt setting
+ *
+ */
+enum soar_apiInterruptSetting {
+    INTERRUPT_OFF,
+    INTERRUPT_ON,
+    INTERRUPT_PRINT
+};
+
 /**
  *  The ASK Callback sends the following datastructure
  *  to the function which is registered with the Soar kernel
@@ -159,15 +169,5 @@ typedef struct sapiwme_st {
     const char *value;
     long timetag;
 } soarapi_wme;
-
-/*
- * \brief The interrupt setting
- *
- */
-enum soar_apiInterruptSetting {
-    INTERRUPT_OFF,
-    INTERRUPT_ON,
-    INTERRUPT_PRINT
-};
 
 #endif
