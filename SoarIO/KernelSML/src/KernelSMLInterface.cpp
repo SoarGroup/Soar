@@ -58,9 +58,6 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
 	pConnection->SetUserData(pKernelSML) ;
 
-	// Record this as one of the active connections
-	pKernelSML->AddConnection(pConnection) ;
-
 	// If this is a synchronous connection then commands will execute on the embedded client's thread
 	// and we don't use the receiver thread.  (Why not?  If we allowed it to run then we'd have to (a)
 	// sychronize execution between the two threads and (b) sometimes Soar would be running in the client's thread and
@@ -69,6 +66,9 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	// remote debugger).
 	if (!pConnection->IsAsynchronous())
 		pKernelSML->StopReceiverThread() ;
+
+	// Record this as one of the active connections
+	pKernelSML->AddConnection(pConnection) ;
 
 	// Register for "calls" from the client.
 	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
