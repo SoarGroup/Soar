@@ -210,12 +210,16 @@ public class Preferences
                 setDefaultPreferences();
                 return;
             }
+            //One thing that can cause the following exceptions is if the token
+            //number constants have changed in the parser.  This usually occurs
+            //when you change the soarparser.jj file. -:AMN: 07 Nov 03
             catch (NullPointerException npe)
             {
-                //One thing that can cause NPEs is if the token
-                //number constants have changed in the parser.  This
-                //usually occurs when you change the soarparser.jj file.
-                //                         -:AMN: 07 Nov 03
+                setDefaultPreferences();
+                return;
+            }
+            catch (ArrayIndexOutOfBoundsException abe)
+            {
                 setDefaultPreferences();
                 return;
             }
