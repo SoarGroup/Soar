@@ -141,6 +141,7 @@ public class SoarEditor extends AbstractTextEditor
 		}
 	}
 	
+	
 	public void gotoLine(int line) {
 		IDocument doc = this.getSourceViewer().getDocument();
 		try {

@@ -73,6 +73,13 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 		
 		DataMap dm = getDataMap();
 		
+		IFile source =
+			((FileEditorInput) _editor.getEditorInput()).getFile();
+				
+		DMItem start = _dm.getAssociatedVertex(source);
+		
+		System.out.println( "start: " + start);
+		
 		try {
 			if (dm == null) {
 				System.out.println("Datamap not found.");
@@ -87,7 +94,8 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 				ArrayList suggestions;
 				
 				if (activator == '^' ) {
-					suggestions = dm.getRoot().getChildren();
+					
+					suggestions = start.getChildren();
 				} else {
 				
 					ArrayList names = getNames(docText, documentOffset-2);
@@ -97,7 +105,8 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 					} */
 					
 					//Go through the DataMap for our suggestions
-					suggestions = getSuggestions(dm.getRoot(), names, 0);
+					//suggestions = getSuggestions((DMIdentifier) start, names, 0);
+					suggestions = _dm.find(names, start);
 					
 					/*for (int i=0; i<suggestions.size(); i++) {
 						System.out.println(suggestions.get(i));
@@ -152,7 +161,8 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 				names.remove(names.size()-1);
 				
 				//Go through the DataMap for our suggestions
-				suggestions = getSuggestions(dm.getRoot(), names, 0);
+				suggestions = _dm.find(names, start);
+				//suggestions = getSuggestions((DMIdentifier) start, names, 0);
 				
 				/*System.out.println("**suggestions before");
 				for (int i=0; i<suggestions.size(); i++) {

@@ -122,6 +122,8 @@ public class AddFileWiz extends Wizard implements INewWizard {
 			
 			Utility.markResource(file, "file");
 			
+			Utility.associateID(file, Utility.getAssociatedID(container) );
+			
 			stream.close();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -43,14 +43,29 @@ public class DataMap {
 		= new QualifiedName("edu.rosehulman.soar", "vertexID");
 	
 	
+	/**
+	 * Gets a unique id to be assigned to a new node.
+	 *  If the id is given to a node, this should be followed by a
+	 *  call to <code>incrementCurrentID()</code>.
+	 * @return The id.
+	 */
 	public int getCurrentID() {
 		return _currID;
 	}
 	
+	/**
+	 * Increments the id. Should be called after using the value
+	 *  given by <code>getCurrentID()</code>.
+	 */
 	public void incrementCurrentID() {
 		++_currID;
 	}
 	
+	/**
+	 * Returns a unique id to be assigned to new nodes, then automatically
+	 *  increments it.
+	 * @return The id to use.
+	 */
 	public int getAndIncrementID() {
 		return _currID++;
 	}
@@ -134,8 +149,24 @@ public class DataMap {
 		return getItem(new Integer(id));
 	}
 	
+	
+	/**
+	 * Gets the node with the given id. Not guaranteed to be up to date.
+	 * @param id The id.
+	 * @return The node with that id.
+	 */
 	public DMItem getItem(Integer id) {
 		return (DMItem) _ids.get(id);
+	}
+	
+	
+	/**
+	 * Tells the datamap to associate this item with its id, enabling you
+	 *  to later retrieve it by its id.
+	 * @param newItem
+	 */
+	public void register(DMItem newItem) {
+		_ids.put(new Integer(newItem.getID()), newItem);
 	}
 	
 	
@@ -191,6 +222,20 @@ public class DataMap {
 		return find( getRoot(), names, 0);
 	}
 	
+	
+	/**
+	 * Finds all attributes matching the given path, relative to
+	 *  the starting attribute provided.
+	 *  
+	 * @param names An ArrayList of Strings representing the path to the node.
+	 * @param start The starting DMItem.
+	 * @return An ArrayList of DMItems that match the given path.
+	 */
+	public ArrayList find(ArrayList names, DMItem start) {
+		return find( start, names, 0);
+	}
+	
+	
 	/**
 	 * Does the actual work for find.
 	 *  Should be called with the DataMap root node and an index of 0. 
@@ -200,7 +245,7 @@ public class DataMap {
 	 * @param index For recursion purposes. Use 0 here.
 	 * @return An ArrayList of all DMItems that match the given path.
 	 */
-	private ArrayList find(DMIdentifier node, ArrayList names, int index) {
+	private ArrayList find(DMItem node, ArrayList names, int index) {
 	
 		ArrayList kids = node.getChildren();
 		
@@ -237,7 +282,7 @@ public class DataMap {
 				DMItem kid = (DMItem) kids.get(i);
 
 				if (kid.getName().equals(name) && kid instanceof DMIdentifier) {
-					ret.addAll( find((DMIdentifier)kid, names, index+1));
+					ret.addAll( find(kid, names, index+1));
 				} // if
 			} // for
 		
@@ -833,6 +878,7 @@ public class DataMap {
 		}
 	}
 	
+	
 	private DMItem getAssociatedVertex(IContainer folder) {
 		if (folder instanceof IProject) return getRoot();
 		
@@ -857,7 +903,11 @@ public class DataMap {
 	}
 	
 	
-	
+	/**
+	 * Gets the id of the vertex this resource is associated with.
+	 * @param res
+	 * @return
+	 */
 	public static int getAssociatedVertexID(IResource res) {
 		if (res instanceof IContainer) {
 			return getAssociatedVertexID( (IContainer) res);

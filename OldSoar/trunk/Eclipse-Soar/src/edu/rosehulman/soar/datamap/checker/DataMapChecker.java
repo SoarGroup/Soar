@@ -79,7 +79,7 @@ public class DataMapChecker {
 	 */
 	public static void matches(IFile source, Vector productions, DataMap dm) {
 		try {
-			
+			DMItem start = dm.getAssociatedVertex(source);
 			
 			source.deleteMarkers(DataMapChecker.PROBLEM_MARKER, false, 0);
 			
@@ -89,25 +89,14 @@ public class DataMapChecker {
 				ArrayList names = new ArrayList();
 				
 				SoarProduction sp = (SoarProduction) enum.nextElement();
-					
-				//System.out.println();
-				//System.out.println(sp.getName() + ":" +  sp.getProductionType());
-					
-					
+				
 				TriplesExtractor te = new TriplesExtractor(sp);
-					
-				//System.out.println(te.getStateVariableCount());
-				//System.out.println(te.stateVariable().getString());
-					
-					
+				
 				Enumeration e = new EnumerationIteratorWrapper(te.triples());
 					
 					
 				while(e.hasMoreElements()) {
 					Triple currentTriple = (Triple)e.nextElement();
-					//System.out.println("attribute: " + currentTriple.getAttribute().getString());
-					//System.out.println("val: " + currentTriple.getValue().getString());
-					//System.out.println("var: " + currentTriple.getVariable().getString());
 					
 					String val = currentTriple.getValue().getString();	
 					
@@ -121,7 +110,7 @@ public class DataMapChecker {
 							
 					} else {
 
-						ArrayList nodes = dm.find(names);
+						ArrayList nodes = dm.find(names, start);
 						
 						if (nodes.size() == 0) {
 							// It doesn't exist! The horror!

@@ -57,10 +57,10 @@ public class SoarSourceChecker {
 				
 			} catch (CoreException e2) {
 				e2.printStackTrace();
-			}
+			} // catch
 				
-		}
+		} // catch
 		
 	}
 
-}
+} // class

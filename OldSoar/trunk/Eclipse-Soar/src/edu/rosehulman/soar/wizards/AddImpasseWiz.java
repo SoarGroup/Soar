@@ -119,6 +119,8 @@ public class AddImpasseWiz extends Wizard implements INewWizard {
 			
 			Utility.markResource(file, "impasse");
 			
+			Utility.associateID(file, Utility.getAssociatedID(container) );
+			
 			stream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
