@@ -235,10 +235,10 @@ bool AgentPerformanceMonitor::parse_system_stats(int argc, char *argv[])
         m_result = "Too many arguments, should be: stats -system [<type>]";
         return false;
     }
-
+#ifndef NO_TIMING_STUFF
     total_kernel_time = timer_value(&a->total_kernel_time);
     total_kernel_msec = total_kernel_time * 1000.0;
-
+#endif
     if (argc <= 2)  /* Invoked as stats or stats -system */
     {
         soar_ecPrintSystemStatistics();
@@ -1109,8 +1109,9 @@ void AgentPerformanceMonitor::printTimingInfo()
 #endif
 
     double min, max, min_nz;
-
+#ifndef NO_TIMING_STUFF
     min_nz = soar_cDetermineTimerResolution(&min, &max);
+#endif
 
 #ifdef PII_TIMERS
     print(a, "Using Pentium II Time Stamp -- Assuming %d MHZ Processor...\n", MHZ);
@@ -1142,7 +1143,9 @@ void AgentPerformanceMonitor::printTimingInfo()
     sys_sleep(3);
     stop_timer(&start, &stop);
     print(a, "Sleep interval  -->   3 seconds\n");
+#ifndef NO_TIMING_STUFF
     print(a, "Timers report   -->  %8.5f seconds\n", timer_value(&stop));
+#endif
     print(a, "---------------------------------------------------------------\n");
 
 }
