@@ -13,6 +13,8 @@
 package modules;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import general.ElementXML;
 import helpers.CommandHistory;
@@ -41,8 +43,21 @@ public class TreeTraceView extends ComboCommandBase
 	
 	/** The last root (top level item) added to the tree.  We add new sub items under this */
 	protected TreeItem m_LastRoot ;
+	protected TreeItem m_DummyChild ;
+	
+	/** Controls whether we cache strings that are due to be subtree nodes and only add the nodes when the user clicks--or not */
+	protected final static boolean kCacheSubText = true ;
 
 	protected static final String[] kPadSpaces = { "", " ", "  ", "   ", "    ", "     " } ;
+	
+	/** We use this structure if we're caching sub nodes in the tree for expansion only when the user clicks */
+	protected static class TreeData
+	{
+		protected ArrayList m_Lines = new ArrayList() ;
+		
+		public void addLine(String text) 	{ m_Lines.add(text) ; }
+		public Iterator getLinesIterator() 	{ return m_Lines.iterator() ; }
+	}
 	
 	public TreeTraceView()
 	{
@@ -57,6 +72,55 @@ public class TreeTraceView extends ComboCommandBase
 	/** This window can be the main display window */
 	public boolean canBePrimeWindow() { return true ; }
 
+	protected static class ExpandListener implements Listener
+	{
+		public void handleEvent (final Event event) {
+			final TreeItem root = (TreeItem) event.item;
+			
+			// We will have exactly one dummy child item
+			// if there's cached data here.  This allows us to quickly
+			// screen out most "already been expanded before" cases.
+			if (root.getItemCount() != 1)
+				return ;
+			
+			TreeItem[] items = root.getItems() ;
+			
+			TreeData treeData = (TreeData)items[0].getData() ;
+			
+			// If there's no cached data here then once again we are done
+			// (either we're not using a cache or its already been expanded)
+			if (treeData == null)
+				return ;
+			
+			// Stop updating while we add
+			// (We may want a smarter way to do this if we're expanding the entire tree
+			//  so the redraw is turned off for the entire expansion).
+			root.getParent().setRedraw(false) ;
+			
+			// Get rid of the dummy item
+			items[0].dispose() ;
+			
+			for (Iterator iter = treeData.getLinesIterator() ; iter.hasNext() ;)
+			{
+				String text = (String)iter.next() ;
+
+				String[] lines = text.split(getLineSeparator()) ;
+				
+				for (int i = 0 ; i < lines.length ; i++)
+				{	
+					if (lines[i].length() == 0)
+						continue ;
+					
+					TreeItem node = new TreeItem (root, 0);
+					node.setText (lines[i]);
+				}				
+			}
+						
+			// Start updating again.
+			root.getParent().setRedraw(true) ;
+		}
+	}
+	
 	/********************************************************************************************
 	* 
 	* Create the window that will display the output
@@ -66,9 +130,14 @@ public class TreeTraceView extends ComboCommandBase
 	{
 		m_Tree = new Tree(parent, SWT.BORDER) ;
 		m_LastRoot = null ;
+		m_DummyChild = null ;
 		
 		createContextMenu(m_Tree) ;
 
+		// When the user expands a node in the tree we may unpack some cached data
+		m_Tree.addListener (SWT.Expand, new ExpandListener()) ;
+
+		
 		/*
 		 * Test code
 		Tree tree = m_Tree ;
@@ -127,13 +196,13 @@ public class TreeTraceView extends ComboCommandBase
 	* Add the text to the view in a thread safe way (switches to UI thread)
 	* 
 	*************************************************************************/
-	protected void appendSubTextSafely(final String text)
+	protected void appendSubTextSafely(final String text, final boolean redrawTree)
 	{
 		// If Soar is running in the UI thread we can make
 		// the update directly.
 		if (!Document.kDocInOwnThread)
 		{
-			appendSubText(text) ;
+			appendSubText(text, redrawTree) ;
 			return ;
 		}
 
@@ -141,7 +210,7 @@ public class TreeTraceView extends ComboCommandBase
 		// Callback comes in the document thread.
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
-            	appendSubText(text) ;
+            	appendSubText(text, redrawTree) ;
             }
          }) ;
 	}
@@ -151,21 +220,42 @@ public class TreeTraceView extends ComboCommandBase
 	* Add the text to the view (this method assumes always called from UI thread)
 	* 
 	*************************************************************************/
-	protected void appendSubText(String text)
+	protected void appendSubText(String text, boolean redrawTree)
 	{
-		String[] lines = text.split(getLineSeparator()) ;
-
 		// Add the sub items under the last root in the tree
 		if (m_LastRoot == null)
 		{
 			m_LastRoot = new TreeItem(m_Tree, 0) ;
 		}
 
+		// Creating nodes in the tree is expensive.  A more efficient
+		// model is to create a dummy child node and store the text inside that node.
+		// When the user clicks on the parent we quickly create the tree they expect to see.
+		if (this.kCacheSubText)
+		{
+			if (m_LastRoot.getItemCount() == 0)
+			{
+				m_DummyChild = new TreeItem(m_LastRoot, 0) ;
+				m_DummyChild.setData(new TreeData()) ;
+			}
+
+			// The dummy child should always exist (unless somehow we already expanded the tree, which is possible)
+			if (m_DummyChild != null)
+			{
+				TreeData currentData = (TreeData)m_DummyChild.getData() ;
+				currentData.addLine(text) ;
+				return ;
+			}
+		}
+		
 		TreeItem lastItem = m_LastRoot ;
 		
 		// Stop updating the tree while we add to it
-		m_Tree.setRedraw(false) ;
+		if (redrawTree)
+			m_Tree.setRedraw(false) ;
 
+		String[] lines = text.split(getLineSeparator()) ;
+		
 		for (int i = 0 ; i < lines.length ; i++)
 		{	
 			if (lines[i].length() == 0)
@@ -173,8 +263,6 @@ public class TreeTraceView extends ComboCommandBase
 			
 			TreeItem node = new TreeItem (lastItem, 0);
 			node.setText (lines[i]);
-			node.setData (null);	// No additional watch data to attach here (for later expansion)
-			//new TreeItem (root, 0);
 		}
 
 		// Scroll to the bottom -- not doing this for sub items to save speed
@@ -183,7 +271,8 @@ public class TreeTraceView extends ComboCommandBase
 		//	m_Tree.showItem(lastItem) ;
 
 		// Redraw the updated tree
-		m_Tree.setRedraw(true) ;		
+		if (redrawTree)
+			m_Tree.setRedraw(redrawTree) ;		
 	}
 	
 	/************************************************************************
@@ -199,6 +288,7 @@ public class TreeTraceView extends ComboCommandBase
 		
 		// Stop updating the tree while we add to it
 		m_Tree.setRedraw(false) ;
+
 		for (int i = 0 ; i < lines.length ; i++)
 		{	
 			if (lines[i].length() == 0)
@@ -252,6 +342,9 @@ public class TreeTraceView extends ComboCommandBase
 	********************************************************************************************/
 	protected void displayXmlTraceEvent(Agent agent, ClientXML xmlParent)
 	{
+		// Stop updating the tree control while we work on it
+		m_Tree.setRedraw(false) ;
+		
 		int nChildren = xmlParent.GetNumberChildren() ;
 		
 		for (int childIndex = 0 ; childIndex < nChildren ; childIndex++)
@@ -275,11 +368,11 @@ public class TreeTraceView extends ComboCommandBase
 				
 				if (xmlTrace.GetImpasseObject() != null)
 				{
-					text.append(" [") ;
+					text.append(" (") ;
 					text.append(xmlTrace.GetImpasseObject()) ;
 					text.append(" ") ;
 					text.append(xmlTrace.GetImpasseType()) ;
-					text.append("]") ;
+					text.append(")") ;
 				}
 				
 				if (text.length() != 0)
@@ -293,9 +386,9 @@ public class TreeTraceView extends ComboCommandBase
 				
 				if (xmlTrace.GetOperatorName() != null)
 				{
-					text.append(" [") ;
+					text.append(" (") ;
 					text.append(xmlTrace.GetOperatorName()) ;
-					text.append("]") ;
+					text.append(")") ;
 				}
 	
 				if (text.length() != 0)
@@ -312,7 +405,7 @@ public class TreeTraceView extends ComboCommandBase
 				text.append("---") ;
 				
 				if (text.length() != 0)
-					this.appendSubText(text.toString()) ;
+					this.appendSubText(text.toString(), false) ;
 			}
 			else if (xmlTrace.IsTagAddWme() || xmlTrace.IsTagRemoveWme())
 			{
@@ -339,7 +432,7 @@ public class TreeTraceView extends ComboCommandBase
 				}
 				
 				if (text.length() != 0)
-					this.appendSubText(text.toString()) ;	
+					this.appendSubText(text.toString(), false) ;	
 
 			} else if (xmlTrace.IsTagPreference())
 			{
@@ -351,8 +444,8 @@ public class TreeTraceView extends ComboCommandBase
 				text.append(xmlTrace.GetPreferenceValue()) ;
 				text.append(" + )") ;	// BUGBUG: + hard-coded for now -- PreferenceType present but empty
 
-								if (text.length() != 0)
-					this.appendSubText(text.toString()) ;
+				if (text.length() != 0)
+					this.appendSubText(text.toString(), false) ;
 				
 			} 
 			else if (xmlTrace.IsTagFiringProduction() || xmlTrace.IsTagRetractingProduction())
@@ -375,7 +468,7 @@ public class TreeTraceView extends ComboCommandBase
 				}
 
 				if (text.length() != 0)
-					this.appendSubText(text.toString()) ;			
+					this.appendSubText(text.toString(), false) ;			
 	
 			}
 			else
@@ -386,8 +479,7 @@ public class TreeTraceView extends ComboCommandBase
 			}
 
 			// Manually clean up the child too
-			System.out.print('x') ;
-			xmlTrace.delete() ;		
+			xmlTrace.delete() ;	
 		}
 		
 		// Technically this will happen when the object is garbage collected (and finalized)
@@ -395,6 +487,9 @@ public class TreeTraceView extends ComboCommandBase
 		// (b) even if it runs not all objects will be reclaimed and (c) finalize isn't guaranteed before we exit
 		// so all in all, let's just call it ourselves here :)
 		xmlParent.delete() ;
+		
+		// Redraw the tree to show our changes
+		m_Tree.setRedraw(true) ;
 	}
 	
 	public static class RunWrapper implements Runnable
