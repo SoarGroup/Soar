@@ -125,7 +125,7 @@
 				RelativePath=".\src\ElementXMLInterface.cpp">
 			</File>
 			<File
-				RelativePath=".\src\sml_ElementXMLClass.cpp">
+				RelativePath=".\src\sml_ElementXMLImp.cpp">
 			</File>
 			<File
 				RelativePath=".\src\sml_ParseXML.cpp">
@@ -151,7 +151,7 @@
 				RelativePath=".\include\ElementXMLInterface.h">
 			</File>
 			<File
-				RelativePath=".\include\sml_ElementXMLClass.h">
+				RelativePath=".\include\sml_ElementXMLImpl.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_ParseXML.h">

@@ -21,7 +21,7 @@
 //  is the only one that really access the data in the class).
 /////////////////////////////////////////////////////////////////
 
-#include "sml_ElementXMLClass.h"
+#include "sml_ElementXMLImpl.h"
 
 using namespace sml ;
 

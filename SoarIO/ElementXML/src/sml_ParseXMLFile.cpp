@@ -12,7 +12,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_ParseXMLFile.h"
-#include "sml_ElementXMLClass.h"
+#include "sml_ElementXMLImpl.h"
 
 using namespace sml ;
 

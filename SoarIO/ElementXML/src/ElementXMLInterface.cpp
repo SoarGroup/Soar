@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "ElementXMLInterface.h"
-#include "sml_ElementXMLClass.h"
+#include "sml_ElementXMLImpl.h"
 #include "sml_ParseXMLFile.h"
 #include "sml_ParseXMLString.h"
 
