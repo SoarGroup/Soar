@@ -738,7 +738,7 @@ Usage:	stop-soar [-s] [reason_string]
   -s, --self
   reason_string
 ~~~
-sp: structured output on success:
+stop-soar: structured output on success:
   <result output="raw">true</result>
 
 Todo: reason for stopping
