@@ -1274,6 +1274,7 @@ void add_wme_to_rete(wme * w)
         add_wme_to_aht(current_agent(alpha_hash_tables)[6], xor(0, ha, hv), w);
         add_wme_to_aht(current_agent(alpha_hash_tables)[7], xor(hi, ha, hv), w);
     }
+
 }
 
 /* --- Removes a WME from the Rete. --- */
@@ -1340,6 +1341,7 @@ void remove_wme_from_rete(wme * w)
             remove_token_and_subtree(w->tokens);
         }
     }
+
 }
 
 /* --- Decrements reference count, deallocates alpha memory if unused. --- */
@@ -5147,13 +5149,19 @@ void p_node_left_addition(rete_node * node, token * tok, wme * w)
             operator_proposal = FALSE;
 
             for (act = node->b.p.prod->action_list; act != NIL; act = act->next) {
-
                 if ((act->type == MAKE_ACTION) && (rhs_value_is_symbol(act->attr))) {
-                    if ((strcmp(rhs_value_to_string(act->attr, action_attr, ACTION_ATTR_SIZE),
-                                "operator") == NIL) && (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-                        operator_proposal = TRUE;
-                        prod_type = !PE_PRODS;
-                        break;
+                    if ((strcmp(rhs_value_to_string(act->attr, action_attr, ACTION_ATTR_SIZE), "operator") == NIL)
+                        && (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
+                        Symbol *sym = get_symbol_from_rete_loc((byte)rhs_value_to_reteloc_levels_up(act->id),
+                                                               (byte)rhs_value_to_reteloc_field_num(act->id),
+                                                               tok,
+                                                               w);
+                        if (sym->id.isa_goal)
+                        {
+                            operator_proposal = TRUE;
+                            prod_type = !PE_PRODS;
+                            break;
+                        }
                     }
                 }
             }
@@ -5274,29 +5282,30 @@ void p_node_left_addition(rete_node * node, token * tok, wme * w)
 
                         if (prod_type == PE_PRODS) {
                             if (current_agent(o_support_calculation_type) != 3
-                                && current_agent(o_support_calculation_type != 4)) 
+                                && current_agent(o_support_calculation_type != 4)) {
                                 break;
-                            else if (op_elab == TRUE) {
+                            }
+                        } else if (op_elab == TRUE) {
 
                             /* warn user about mixed actions  */
 
-							 if (current_agent(o_support_calculation_type) == 3 &&
-								    current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
-									print_with_symbols
-										("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
-										node->b.p.prod->name);
-									prod_type = PE_PRODS;
-									break;
-							 } else if (current_agent(o_support_calculation_type) == 4 &&
-								          current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
-									print_with_symbols
-										("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
-										node->b.p.prod->name);
-									prod_type = IE_PRODS;
-									break;
-							 }
-							}
-						}
+                            if (current_agent(o_support_calculation_type) == 3 &&
+                                current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
+                                print_with_symbols
+                                    ("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
+                                     node->b.p.prod->name);
+                                prod_type = PE_PRODS;
+                                break;
+                            } else if (current_agent(o_support_calculation_type) == 4 &&
+                                       current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM]) {
+                                print_with_symbols
+                                    ("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
+                                     node->b.p.prod->name);
+                                prod_type = IE_PRODS;
+                                break;
+                            }
+
+                        }
                     }           /* end for pass =  */
                 }               /* end for loop checking all matches */
 
