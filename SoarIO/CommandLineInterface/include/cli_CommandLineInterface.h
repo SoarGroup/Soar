@@ -179,7 +179,7 @@ public:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	bool DoChunkNameFormat();
+	bool DoChunkNameFormat(gSKI::IAgent* pAgent, bool changeFormat = false, bool longFormat = true, int* pCount = 0, std::string* pPrefix = 0);
 
 	/*************************************************************
 	* @brief 

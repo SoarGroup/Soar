@@ -95,6 +95,10 @@ namespace cli {
 
 			kProductionRequired = 65,
 			kInvalidConditionNumber = 66,
+
+			kInvalidPrefix = 67,
+			kCountGreaterThanMaxChunks = 68,
+			kCountLessThanChunks = 69,
 		};
 
 		CLIError() : m_Code(0) {}

@@ -32,6 +32,7 @@ namespace cli {
 		static char const* kCLIAddWME;
 		static char const* kCLIAlias;
 		static char const* kCLICD;
+		static char const* kCLIChunkNameFormat;
 		static char const* kCLIDefaultWMEDepth;
 		static char const* kCLIDirs;
 		static char const* kCLIEcho;

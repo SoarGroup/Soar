@@ -99,6 +99,10 @@ char const* CLIError::GetErrorDescription() {
 		case kProductionRequired:				return "A production is required.";
 		case kInvalidConditionNumber:			return "Condition number must be a non-negative integer.";
 
+		case kInvalidPrefix:					return "Failed to set prefix (does it contain a '*'?).";
+		case kCountGreaterThanMaxChunks:		return "Cannot set count greater than the max-chunks sysparam.";
+		case kCountLessThanChunks:				return "Cannot set chunk count less than the current number of chunks.";
+
 		default:								return "Unknown error code.";
 	}
 }

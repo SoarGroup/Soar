@@ -2395,5 +2395,41 @@ namespace gSKI
 			}
 			return true;
 		}
-	}
-}
+
+		const char* TgDWorkArounds::GetChunkNamePrefix(IAgent* pIAgent)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			return pSoarAgent->chunk_name_prefix;
+		}
+
+		bool TgDWorkArounds::SetChunkNamePrefix(IAgent* pIAgent, const char* pPrefix)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			if (strchr(pPrefix, '*')) return false;
+
+			// TODO: change to strncpy
+			strcpy(pSoarAgent->chunk_name_prefix, pPrefix);
+			return true;
+		}
+
+		unsigned long TgDWorkArounds::GetChunkCount(IAgent* pIAgent)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			return pSoarAgent->chunk_count;
+		}
+
+		void TgDWorkArounds::SetChunkCount(IAgent* pIAgent, unsigned long count)
+		{
+			Agent* pAgent = (Agent*)(pIAgent);
+			agent* pSoarAgent = pAgent->GetSoarAgent();
+
+			pSoarAgent->chunk_count = count;
+		}
+	}// class
+}// namespace

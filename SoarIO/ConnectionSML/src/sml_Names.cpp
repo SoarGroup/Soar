@@ -125,6 +125,9 @@ char const* const sml_Names::kParamVersionMajor		= "versionmajor";
 char const* const sml_Names::kParamVersionMinor		= "versionminor";
 char const* const sml_Names::kParamWaitSNC			= "waitsnc";
 char const* const sml_Names::kParamFunction			= "function" ;
+char const* const sml_Names::kParamChunkNamePrefix	= "chunknameprefix" ;
+char const* const sml_Names::kParamChunkCount		= "chunkcount" ;
+char const* const sml_Names::kParamChunkLongFormat	= "chunklongformat" ;
 
 // Values (these are not case sensitive unlike the rest)
 char const* const sml_Names::kTrue	= "true" ;

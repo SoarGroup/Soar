@@ -126,6 +126,9 @@ public:
 	static char const* const kParamVersionMinor;
 	static char const* const kParamWaitSNC;
 	static char const* const kParamFunction ;
+	static char const* const kParamChunkNamePrefix;
+	static char const* const kParamChunkCount;
+	static char const* const kParamChunkLongFormat;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* const kTrue ;

@@ -100,6 +100,12 @@ namespace gSKI
 
 		 void ExplainListChunks(IAgent* pIAgent);
 		 bool ExplainChunks(IAgent* pIAgent, const char* pProduction, int mode);
+
+		 const char* GetChunkNamePrefix(IAgent* pIAgent);
+		 bool SetChunkNamePrefix(IAgent* pIAgent, const char* pPrefix);
+
+		 unsigned long GetChunkCount(IAgent* pIAgent);
+		 void SetChunkCount(IAgent* pIAgent, unsigned long count);
 	  };
    }
 }
