@@ -50,8 +50,7 @@ egSKIRunResult Agent::RunInClientThread(egSKIRunType runLength, unsigned long co
 	// Build up the run command.
 	// NOTE: Don't copy this pattern for building a command -- it's very unusual
 	// because this one takes int parameters.
-	ElementXML* pMsg = GetConnection()->CreateSMLCommand(NULL, 
-		sml_Names::kgSKI_IAgent_RunInClientThread);
+	ElementXML* pMsg = GetConnection()->CreateSMLCommand(sml_Names::kgSKI_IAgent_RunInClientThread);
 
 	//add the 'this' pointer parameter
 	GetConnection()->AddParameterToSMLCommand(pMsg, sml_Names::kParamThis, GetId());

@@ -93,6 +93,7 @@ static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 #endif
 }
 
+
 static ElementXML* AddErrorMsg(Connection* pConnection, ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1)
 {
 	pConnection->AddErrorToSMLResponse(pResponse, pErrorMsg, errorCode) ;

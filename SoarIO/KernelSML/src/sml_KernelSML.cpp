@@ -54,6 +54,7 @@ using namespace gSKI ;
 // Singleton instance of the kernel object
 KernelSML* KernelSML::s_pKernel = NULL ;
 
+/*
 static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 {
 #ifdef _WIN32
@@ -65,11 +66,93 @@ static void DebugPrint(char const* pFilename, int line, char const* pMsg)
 #endif
 #endif
 }
+*/
 
 static ElementXML* AddErrorMsg(Connection* pConnection, ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1)
 {
 	pConnection->AddErrorToSMLResponse(pResponse, pErrorMsg, errorCode) ;
 	return pResponse ;
+}
+
+AgentSML::~AgentSML()
+{
+	// If we have an output listener object, delete it now.
+	// NOTE: At this point we're assuming AgentSML objects live as long as the underlying gSKI IAgent object.
+	// If not, we need to unregister this listener, but we shouldn't do that here as the IAgent object may
+	// be invalid by the time this destructor is called.
+	delete m_pOutputListener ;
+}
+
+/*************************************************************
+* @brief	Converts an id from a client side value to a kernel side value.
+*			We need to be able to do this because the client is adding a collection
+*			of wmes at once, so it makes up the ids for those objects.
+*			But the kernel will assign them a different value when the
+*			wme is actually added in the kernel.
+*************************************************************/
+bool AgentSML::ConvertID(char const* pClientID, std::string* pKernelID)
+{
+	if (pClientID == NULL)
+		return false ;
+
+	IdentifierMapIter iter = m_IdentifierMap.find(pClientID) ;
+
+	if (iter == m_IdentifierMap.end())
+	{
+		// If the client id is not in the map, then we may have been
+		// passed a kernel id (this will happen at times).
+		// So return the value we were passed
+		*pKernelID = pClientID ;
+		return false ;
+	}
+	else
+	{
+		// If we found a mapping, return the mapped value
+		*pKernelID = iter->second ;
+		return true ;
+	}
+}
+
+void AgentSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
+{
+	m_IdentifierMap[pClientID] = pKernelID ;
+}
+
+/*************************************************************
+* @brief	Converts a time tag from a client side value to
+*			a kernel side object
+*************************************************************/
+IWme* AgentSML::ConvertTimeTag(char const* pTimeTag)
+{
+	if (pTimeTag == NULL)
+		return NULL ;
+
+	TimeTagMapIter iter = m_TimeTagMap.find(pTimeTag) ;
+
+	if (iter == m_TimeTagMap.end())
+	{
+		return NULL ;
+	}
+	else
+	{
+		// If we found a mapping, return the mapped value
+		IWme* result = iter->second ;
+		return result ;
+	}
+}
+
+/*************************************************************
+* @brief	Converts a time tag from a client side value to
+*			a kernel side object.
+*************************************************************/
+void AgentSML::RecordTimeTag(char const* pTimeTag, IWme* pWME)
+{
+	m_TimeTagMap[pTimeTag] = pWME ;
+}
+
+void AgentSML::RemoveTimeTag(char const* pTimeTag)
+{
+	m_TimeTagMap.erase(pTimeTag) ;
 }
 
 /*************************************************************
@@ -107,11 +190,48 @@ KernelSML::~KernelSML()
 	if (m_pKernelFactory && m_pIKernel)
 		m_pKernelFactory->DestroyKernel(m_pIKernel);
 
-	// Delete the list of output listeners
-	for (OutputListenerListIter_t iter = m_OutputListeners.begin() ; iter != m_OutputListeners.end() ; iter++)
+	// Clean up any agent specific data we still own.
+	for (AgentMapIter iter = m_AgentMap.begin() ; iter != m_AgentMap.end() ; iter++)
 	{
-		delete *iter ;
+		AgentSML* pAgentSML = iter->second ;
+		delete pAgentSML ;
 	}
+}
+
+/*************************************************************
+* @brief	Look up our additional SML information for a specific agent.
+*
+*			This will always return an AgentSML object.
+*			If the IAgent* is new, this call will record a new AgentSML
+*			object in the m_AgentMap and return a pointer to it.
+*			We do this, so we can easily support connecting up to
+*			agents that were created before a connection is established
+*			through SML to the kernel (e.g. when attaching a debugger).
+*	
+*************************************************************/
+AgentSML* KernelSML::GetAgentSML(gSKI::IAgent* pAgent)
+{
+	if (!pAgent)
+		return NULL ;
+
+	AgentSML* pResult = NULL ;
+
+	// See if we already have an object in our map
+	AgentMapIter iter = m_AgentMap.find(pAgent) ;
+
+	if (iter == m_AgentMap.end())
+	{
+		// If not in the map, add it.
+		pResult = new AgentSML(pAgent) ;
+		m_AgentMap[pAgent] = pResult ;
+	}
+	else
+	{
+		// If in the map, return it.
+		pResult = iter->second ;
+	}
+
+	return pResult ;
 }
 
 /*************************************************************
@@ -303,74 +423,3 @@ ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, ElementXML* p
 	return pResponse ;
 }
 
-/*************************************************************
-* @brief	Converts an id from a client side value to a kernel side value.
-*			We need to be able to do this because the client is adding a collection
-*			of wmes at once, so it makes up the ids for those objects.
-*			But the kernel will assign them a different value when the
-*			wme is actually added in the kernel.
-*************************************************************/
-bool KernelSML::ConvertID(char const* pClientID, std::string* pKernelID)
-{
-	if (pClientID == NULL)
-		return false ;
-
-	IdentifierMapIter iter = m_IdentifierMap.find(pClientID) ;
-
-	if (iter == m_IdentifierMap.end())
-	{
-		// If the client id is not in the map, then we may have been
-		// passed a kernel id (this will happen at times).
-		// So return the value we were passed
-		*pKernelID = pClientID ;
-		return false ;
-	}
-	else
-	{
-		// If we found a mapping, return the mapped value
-		*pKernelID = iter->second ;
-		return true ;
-	}
-}
-
-void KernelSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
-{
-	m_IdentifierMap[pClientID] = pKernelID ;
-}
-
-/*************************************************************
-* @brief	Converts a time tag from a client side value to
-*			a kernel side object
-*************************************************************/
-IWme* KernelSML::ConvertTimeTag(char const* pTimeTag)
-{
-	if (pTimeTag == NULL)
-		return NULL ;
-
-	TimeTagMapIter iter = m_TimeTagMap.find(pTimeTag) ;
-
-	if (iter == m_TimeTagMap.end())
-	{
-		return NULL ;
-	}
-	else
-	{
-		// If we found a mapping, return the mapped value
-		IWme* result = iter->second ;
-		return result ;
-	}
-}
-
-/*************************************************************
-* @brief	Converts a time tag from a client side value to
-*			a kernel side object.
-*************************************************************/
-void KernelSML::RecordTimeTag(char const* pTimeTag, IWme* pWME)
-{
-	m_TimeTagMap[pTimeTag] = pWME ;
-}
-
-void KernelSML::RemoveTimeTag(char const* pTimeTag)
-{
-	m_TimeTagMap.erase(pTimeTag) ;
-}

@@ -126,7 +126,11 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgent, char const* pCommandName
 	{
 		// Create a listener for the callback
 		OutputListener* pListener = new OutputListener(this, pConnection) ;
-		m_OutputListeners.push_back(pListener) ;
+
+		// We store additional, agent specific information required for SML in the AgentSML object.
+		// NOTE: This call to GetAgentSML() will create the object if necessary...which it will be in this case.
+		AgentSML* pAgentSML = GetAgentSML(pResult) ;
+		pAgentSML->SetOutputListener(pListener) ;
 
 		// Listen for output callback events
 		pResult->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, pListener, pError) ;
@@ -234,6 +238,9 @@ bool KernelSML::HandleGetInputLink(gSKI::IAgent* pAgent, char const* pCommandNam
 
 bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, char const* pTimeTag, gSKI::Error* pError)
 {
+	// We store additional information for SML in the AgentSML structure, so look that up.
+	AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+
 	IWorkingMemory* pInputWM = pAgent->GetInputLink()->GetInputLinkMemory(pError) ;
 
 	// First get the object which will own this new wme
@@ -269,7 +276,7 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 
 		// Convert the value (itself an identifier) from client to kernel
 		std::string value ;
-		ConvertID(pValue, &value) ;
+		pAgentSML->ConvertID(pValue, &value) ;
 
 		// See if we can find an object with this id (if so we're not adding a new identifier)
 		IWMObject* pLinkObject = NULL ;
@@ -291,7 +298,7 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 				// We need to record the id that the kernel assigned to this object and match it against the id the
 				// client is using, so that in future we can map the client's id to the kernel's.
 				char const* pKernelID = pWME->GetValue()->GetString() ;
-				RecordIDMapping(pValue, pKernelID) ;
+				pAgentSML->RecordIDMapping(pValue, pKernelID) ;
 			}
 		}
 	}
@@ -319,7 +326,7 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 	// So where we had planned to map from client time tag to kernel time tag, we'll instead
 	// map from client time tag to IWme*.
 	// That means we need to be careful to delete the IWme* objects later.
-	RecordTimeTag(pTimeTag, pWME) ;
+	pAgentSML->RecordTimeTag(pTimeTag, pWME) ;
 
 	// We'll release this when the table of time tags is eventually destroyed or
 	// when the wme is deleted.
@@ -332,17 +339,20 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 
 bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI::Error* pError)
 {
+	// We store additional information for SML in the AgentSML structure, so look that up.
+	AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+
 	IWorkingMemory* pInputWM = pAgent->GetInputLink()->GetInputLinkMemory(pError) ;
 
 	// Get the wme that matches this time tag
-	IWme* pWME = ConvertTimeTag(pTimeTag) ;
+	IWme* pWME = pAgentSML->ConvertTimeTag(pTimeTag) ;
 
 	// Failed to find the wme--that shouldn't happen.
 	if (!pWME)
 		return false ;
 
 	// Remove the object from the time tag table
-	RemoveTimeTag(pTimeTag) ;
+	pAgentSML->RemoveTimeTag(pTimeTag) ;
 
 	// If this is an identifier, need to remove it from the ID mapping table too.
 	if (pWME->GetValue()->GetType() == gSKI_OBJECT)
@@ -414,7 +424,7 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 
 			// Map the ID from client side to kernel side (if the id is already a kernel side id it's returned unchanged)
 			std::string id ;
-			ConvertID(pID, &id) ;
+			GetAgentSML(pAgent)->ConvertID(pID, &id) ;
 
 			// Add the wme
 			ok = AddInputWME(pAgent, id.c_str(), pAttribute, pValue, pType, pTimeTag, pError) && ok ;

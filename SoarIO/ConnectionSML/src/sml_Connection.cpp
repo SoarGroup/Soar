@@ -93,6 +93,40 @@ Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, Error
 }
 
 /*************************************************************
+* @brief Creates a connection to a receiver that is in a different
+*        process.  The process can be on the same machine or a different machine.
+*
+* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
+*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
+* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
+* @param pError		Pass in a pointer to an int and receive back an error code if there is a problem.  (Can pass NULL).
+*
+* @returns A RemoteConnection instance.
+*************************************************************/
+Connection* Connection::CreateRemoteConnection(char const* pIPaddress, int port, ErrorCode* pError)
+{
+	return NULL ;
+}
+
+/*************************************************************
+* @brief Starts listening for incoming connections on a particular port.
+*        The callback function passed in is called once a connection has been made.
+*
+* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
+*                   Pass "127.0.0.1" to create a connection between two processes on the same machine.
+* @param port		The port number to connect to.  The default port for SML is 35353 (picked at random).
+* @param callback	This function will be called when the connection is made and is passed the new connection and the user data
+* @param pUserData	This data is passed to the callback.  It allows the callback to have some context to work in.  Can be NULL.
+* @param pError		Pass in a pointer to an int and receive back an error code if there is a problem.  (Can pass NULL).
+*
+* @returns A ListenerConnection instance.
+*************************************************************/
+ListenerConnection* Connection::CreateListener(int port, ListenerCallback callback, void* pUserData, ErrorCode* pError)
+{
+	return NULL ;
+}
+
+/*************************************************************
 * @brief Retrieve the response to the last call message sent.
 *
 *		 In an embedded situation, this result is always immediately available and the "wait" parameter is ignored.
@@ -173,10 +207,18 @@ void Connection::RegisterCallback(IncomingCallback callback, void* pUserData, ch
 	// Create the callback object to be stored in the map
 	Callback* pCallback = new Callback(this, callback, pUserData) ;
 
-	// See if we have a list of callbacks for this type yet
-	CallbackList* pList = m_CallbackMap[pType] ;
+	CallbackList* pList = NULL ;
+//	CallbackList* pList = m_CallbackMap[pType] ;
 
-	if (!pList)
+	// See if we have a list of callbacks for this type yet
+	CallbackMapIter iter = m_CallbackMap.find(pType) ;
+
+	if (iter != m_CallbackMap.end())
+	{
+		// If the list already exists, just grab it
+		pList = iter->second ;
+	}
+	else
 	{
 		// Need to create the list
 		pList = new CallbackList() ;
@@ -732,6 +774,8 @@ ElementXML_Handle Connection::AddParameterToSMLCommand(ElementXML* pMsg, char co
 		SetError(Error::kSMLHasNoCommand) ;
 		return NULL ;
 	}
+#else
+	unused(found) ;
 #endif
 
 	// Create the arg tag

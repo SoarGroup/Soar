@@ -103,18 +103,9 @@ public:
 typedef std::list<Callback*>	CallbackList ;
 typedef CallbackList::iterator	CallbackListIter ;
 
-// We need a comparator to make the map we're about to define work with char*
-struct strCompareConnection
-{
-  bool operator()(const char* s1, const char* s2) const
-  {
-    return std::strcmp(s1, s2) < 0;
-  }
-};
-
 // Used to store a map from type (a string) to list of callbacks
-typedef std::map<char const*, CallbackList*, strCompareConnection>	CallbackMap ;
-typedef CallbackMap::iterator										CallbackMapIter ;
+typedef std::map<std::string, CallbackList*>	CallbackMap ;
+typedef CallbackMap::iterator					CallbackMapIter ;
 
 /*************************************************************
 * @brief The Connection class represents a logical link
