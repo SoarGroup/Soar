@@ -1,5 +1,6 @@
 source _all.soar
 source monitor.soar
 source output.soar
+source reward.soar
 source shields.soar
 source top-state.soar

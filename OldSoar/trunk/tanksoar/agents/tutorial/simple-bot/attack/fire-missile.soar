@@ -6,11 +6,11 @@ echo "\nLoading attack/fire-missile.soar "
 
 sp {attack*propose*fire-missile
    (state <s> ^name attack
-              ^io.input-link <il>)
-   (<il> ^radar.tank.position center
-         ^missiles > 0)
+              ^io.input-link.missiles > 0)
+ #  (<il> ^radar.tank.position center
+  #       ^missiles > 0)
    -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + =)
    (<o> ^name fire-missile
         ^actions.fire.weapon missile)}
 
