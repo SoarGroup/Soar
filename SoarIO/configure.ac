@@ -19,7 +19,7 @@ AC_PROG_MAKE_SET
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h],,
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h math.h netdb.h netinet/in.h pthread.h stdlib.h string.h strings.h sys/socket.h sys/time.h sys/types.h unistd.h],,
 	[AC_MSG_ERROR([*** Cannot find required header!  See previous line.])])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -31,11 +31,11 @@ AC_C_VOLATILE
 
 # Checks for library functions.
 AC_CHECK_LIB(pthread, pthread_create)
-AC_CHECK_LIB(tcl, Tcl_DeleteInterp)
-AC_CHECK_LIB(tk, Tk_Init)
+#AC_CHECK_LIB(tcl, Tcl_DeleteInterp)
+#AC_CHECK_LIB(tk, Tk_Init)
 AC_FUNC_MALLOC
 AC_FUNC_SELECT_ARGTYPES
-AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset pow select socket sqrt strcasecmp strdup],,
+AC_CHECK_FUNCS([getcwd gethostbyname gethostname inet_ntoa memset select socket strcasecmp strdup],,
 	[AC_MSG_ERROR([*** Cannot find required function!  See previous line.])])
 
 SOAR_CXXFLAGS="-Wall -g"

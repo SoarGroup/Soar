@@ -15,7 +15,7 @@ libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp
 JAVAINC= @JAVAINC@
 JAVAC= @JAVAC@
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include $(JAVAINC)
-CXXFLAGS = $(SOAR_CXXFLAGS)
+CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 CLEANFILES = *.java *.class Java_sml_ClientInterface_wrap.cpp
 
 SWIG       = swig@swig_suffix@
