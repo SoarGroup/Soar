@@ -22,7 +22,7 @@ set env(SOAR_LIBRARY) $soar_library
 
 ### The next line sets the location of the Tcl-Soar Interface library.
 ### If you are not using the TSI, you can comment this line.
-set tsi_library  [file join [file join [pwd] ..] tsi-3.2.0]
+set tsi_library  [file join [file join [pwd] ..] tsi-3.2.1]
 
 #### This line tells Tcl where it can find the Soar sharable library.
 #### It also indicates where the TSI is, you can leave $tsi_library off
