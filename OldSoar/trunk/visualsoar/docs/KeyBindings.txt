@@ -54,3 +54,11 @@ Datamap:
     Drag & Drop        | Move a subtree to a new location
     Ctrl + D&D         | Link a subtree to a new location
     Ctrl + Shift + D&D | Copy a subtree to a new location
+
+==>What is "Drag and Drop"?
+It's a common method for manipulating objects under a graphical user
+interface. The user moves the mouse pointer over an icon (or other
+object) and presses a mouse button. The user holds the button down
+while moving the pointer ("dragging" the object) to another place.
+The meaning of this action can often be modified by holding certain
+keys on the keyboard at the same time.
