@@ -135,7 +135,8 @@ class SoarOperatorNode extends FileNode
 
     /*
      * This represents the set of actions that should be preformed when an
-     * operator becomes a high-level operator
+     * operator becomes a high-level operator.  This function is overridden
+     * in FileOperatorNode since it does not represent a Soar state.
      */
     public void firstTimeAdd(OperatorWindow operatorWindow,
                              SoarWorkingMemoryModel swmm) throws IOException 

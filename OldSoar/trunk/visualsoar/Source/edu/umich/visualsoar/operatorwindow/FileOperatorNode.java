@@ -76,16 +76,18 @@ class FileOperatorNode extends SoarOperatorNode {
 	 * @param y the vertical position on the screen where the context menu should
 	 * be displayed
 	 */
-	public void showContextMenu(Component c, int x, int y) {
-		if(isHighLevel) {
+	public void showContextMenu(Component c, int x, int y)
+    {
+		if(isHighLevel)
+        {
 			addSuboperatorItem.setEnabled(true);
 			addFileItem.setEnabled(true);
 			openRulesItem.setEnabled(true);
-			openDataMapItem.setEnabled(true);
+			openDataMapItem.setEnabled(false);
 			deleteItem.setEnabled(true);
 			renameItem.setEnabled(true);
 			exportItem.setEnabled(true);
-      impasseSubMenu.setEnabled(true);
+            impasseSubMenu.setEnabled(true);
 			checkChildrenAgainstDataMapItem.setEnabled(true);
 		}
 		else {
@@ -96,13 +98,47 @@ class FileOperatorNode extends SoarOperatorNode {
 			deleteItem.setEnabled(true);
 			renameItem.setEnabled(true);
 			exportItem.setEnabled(true);
-      impasseSubMenu.setEnabled(true);
+            impasseSubMenu.setEnabled(true);
 			checkChildrenAgainstDataMapItem.setEnabled(false);
 		}
 		contextMenu.show(c,x,y);
 	}
 
-	
+
+    /*
+     * This represents the set of actions that should be preformed when an
+     * operator becomes a high-level operator
+     */
+    public void firstTimeAdd(OperatorWindow operatorWindow,
+                             SoarWorkingMemoryModel swmm) throws IOException 
+    {
+        OperatorNode parent = (OperatorNode)getParent();
+        
+        // Create the Folder
+        File folder = new File(parent.getFullPathName() + File.separator + name);
+        if (!okayToCreate(folder, true))
+        return;
+        if (!folder.mkdir()) throw new IOException();
+
+        // Determine the datamap id
+        if (parent instanceof SoarOperatorNode)
+        {
+            dataMapId = (parent).getStateIdVertex();
+        }
+        else
+        {
+            dataMapId = swmm.getTopstate();
+        }
+        dataMapIdNumber = dataMapId.getValue();
+
+        // Make this node highlevel
+        isHighLevel = true;
+
+        //Add the folder
+        folderName = folder.getName();
+    }
+
+    
 	/**
 	 * Given a Writer this writes out a description of the soar operator node
 	 * that can be read back in later
