@@ -10,6 +10,10 @@
 
 #include "thread_OSspecific.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 using namespace soar_thread ;
 
 #ifdef _WIN32
@@ -77,6 +81,18 @@ OSSpecificEvent* soar_thread::MakeEvent()
 // Linux Versions -- untested
 //////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif // HAVE_PTHREAD_H
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif // HAVE_SYS_TYPES_H
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif // HAVE_UNISTD_H
+
 struct ThreadArgs {
     ThreadFuncPtr threadFuncPtr;
     void* param;
@@ -120,12 +136,12 @@ protected:
 	pthread_mutex_t mutex;
 
 public:
-	LinuxMutex()			{ pthread_mutex_init(&mutex,null); }
+	LinuxMutex()			{ pthread_mutex_init(&mutex,0); }
 	virtual ~LinuxMutex()	{ pthread_mutex_destroy(&mutex); }
 
 	void Lock()			{ pthread_mutex_lock(&mutex); }
 	void Unlock()		{ pthread_mutex_unlock(&mutex); }
-	bool TryToLock()	{ Needs to be written with pthread_mutex_trylock(&mutex) ; }
+	bool TryToLock()	{ /* TODO: Needs to be written with pthread_mutex_trylock(&mutex) ; */ return false; }
 } ;
 
 OSSpecificMutex* soar_thread::MakeMutex()
@@ -144,7 +160,7 @@ public:
 	LinuxEvent()					{ m_signaled = false ; pthread_cond_init(&m_cond, NULL); pthread_mutex_init(&m_mutex, NULL); }
 	virtual ~LinuxEvent()			{ pthread_cond_destroy(&m_cond); pthread_mutex_destroy(&m_mutex); }
 	void WaitForEventForever()		{ pthread_mutex_lock(&m_mutex); while(!m_signaled) { pthread_cond_wait(&m_cond,&m_mutex); } m_signaled = false; pthread_mutex_unlock(&m_mutex); }
-	bool WaitForEvent(long milli)	{ Stil Needs to be implemented using -- pthread_cond_timedwait(cond,mutex, abstime ) ; }
+	bool WaitForEvent(long milli)	{ /* Still Needs to be implemented using -- pthread_cond_timedwait(cond,mutex, abstime ) ; */ return false; }
 	void TriggerEvent()				{ pthread_mutex_lock(&m_mutex); m_signaled = true; pthread_mutex_unlock(&m_mutex); pthread_cond_signal(&m_cond); }
 } ;
 

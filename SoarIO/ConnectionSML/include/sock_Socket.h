@@ -23,15 +23,21 @@
 #ifndef CT_SOCKET_H
 #define CT_SOCKET_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
 #include <string>
 
 // Define the SOCKET type without pulling in "sock_SocketHeader.h" which would
 // pull in all of the Windows headers...that's a lot of work for one typedef.
 #ifdef _WIN32
 typedef	unsigned int	SOCKET ;
-#else
+#else // _WIN32
+#ifndef SOCKET	 // voigtjr: SOCKET seems to be already defined on linux
 typedef int				SOCKET ;
-#endif
+#endif  // SOCKET
+#endif // _WIN32
 
 #ifdef _WIN32
 // Bring in the windows socket library.
@@ -39,6 +45,14 @@ typedef int				SOCKET ;
 // as an explicit dependency.  When it includes this header, it gets the winsock library linked in.
 #pragma comment (lib, "ws2_32.lib")
 #endif
+
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif // HAVE_SYS_SOCKET_H
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif // HAVE_SYS_TYPES_H
 
 namespace sock {
 

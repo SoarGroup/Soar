@@ -68,9 +68,12 @@ bool sock::SleepMillisecs(long msecs)
 //////////////////////////////////////////////////////////////////////
 // Linux Versions
 //////////////////////////////////////////////////////////////////////
-#include "OSspecific.h"
-#include "SocketHeader.h"
+#include "sock_OSspecific.h"
+#include "sock_SocketHeader.h"
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>			// For sleep
+#endif
 
 // Nothing needs to be initialized on Linux
 bool sock::InitializeOperatingSystemSocketLibrary()
