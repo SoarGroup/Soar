@@ -119,9 +119,6 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{0F4205EE-35EA-4421-8F74-513603FF003F}"
 			Name="gSKI"/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}"
-			Name="TGDI"/>
 	</References>
 	<Files>
 		<Filter

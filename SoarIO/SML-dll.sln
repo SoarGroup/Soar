@@ -28,17 +28,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelSource", "..\Soar
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TGDI", "..\TgDI\TgDI.vcproj", "{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}"
-	ProjectSection(ProjectDependencies) = postProject
-		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2} = {A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}
-		{0F4205EE-35EA-4421-8F74-513603FF003F} = {0F4205EE-35EA-4421-8F74-513603FF003F}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSML", "ClientSML\ClientSML.vcproj", "{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Towers", "examples\towers\Towers.vcproj", "{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -105,24 +95,12 @@ Global
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.Build.0 = Debug|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.ActiveCfg = Release|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.Build.0 = Release|Win32
-		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Ansi Release.ActiveCfg = Release|Win32
-		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Ansi Release.Build.0 = Release|Win32
-		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Debug.ActiveCfg = Debug|Win32
-		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Debug.Build.0 = Debug|Win32
-		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Release.ActiveCfg = Release|Win32
-		{4BA2ADFE-F98E-45F6-99CF-9BF4557BA033}.Release.Build.0 = Release|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Ansi Release.ActiveCfg = Release|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Ansi Release.Build.0 = Release|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Debug.ActiveCfg = Debug|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Debug.Build.0 = Debug|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Release.ActiveCfg = Release|Win32
 		{3EDBED11-A1B3-4E00-8B6E-652523D482F0}.Release.Build.0 = Release|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Ansi Release.ActiveCfg = Release|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Ansi Release.Build.0 = Release|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Debug.ActiveCfg = Debug|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Debug.Build.0 = Debug|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Release.ActiveCfg = Release|Win32
-		{C1062C47-660D-41D0-A22A-1A5F7D15B7DD}.Release.Build.0 = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Ansi Release.ActiveCfg = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Ansi Release.Build.0 = Release|Win32
 		{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}.Debug.ActiveCfg = Debug|Win32
