@@ -23,6 +23,35 @@ import org.eclipse.swt.layout.*;
  ************************************************************************/
 public class FormDataHelper
 {
+	static protected FormAttachment copyFormAttachment(FormAttachment src)
+	{
+		if (src == null)
+			return null ;
+		
+		FormAttachment copy = new FormAttachment(0, 0) ;
+		copy.alignment 	 = src.alignment ;
+		copy.control 	 = src.control ;
+		copy.denominator = src.denominator ;
+		copy.numerator 	 = src.numerator ;
+		copy.offset 	 = src.offset ;
+		return copy ;
+	}
+	
+	static public FormData copyFormData(FormData src)
+	{
+		if (src == null)
+			return null ;
+		
+		FormData data = new FormData() ;
+		
+		data.left   = copyFormAttachment(src.left) ;
+		data.right  = copyFormAttachment(src.right) ;
+		data.bottom = copyFormAttachment(src.bottom) ;
+		data.top 	= copyFormAttachment(src.top) ;
+		
+		return data ;
+	}
+	
 	// Anchor to all sides
 	static public FormData anchorFull(int offset)
 	{

@@ -45,6 +45,7 @@ public class ButtonView extends AbstractView
 	
 	/** A list of ButtonInfo objects */
 	protected ArrayList m_ButtonList = new ArrayList() ;
+	protected AbstractView m_LinkedView ;
 	
 	public ButtonView()
 	{
@@ -53,17 +54,6 @@ public class ButtonView extends AbstractView
 	public void setTextFont(Font f)
 	{
 		// We ignore this as our window doesn't display text.
-	}
-
-	/**
-	 * @see modules.AbstractView#registerContextMenuMouseListener(MouseListener)
-	 */
-	public void registerContextMenuMouseListener(MouseListener listener)
-	{
-		// We only add it to the parent window, not to each button.
-		// This (a) seems more logical from the user perspective since the menu is about the panel (not the buttons)
-		// and  (b) means we don't have to store and re-add this listener as the list of buttons changes.
-		// SWT: this.getControl().addMouseListener(listener) ;
 	}
 
 	/********************************************************************************************
@@ -103,6 +93,17 @@ public class ButtonView extends AbstractView
 	public void addButton(String name, String command)
 	{
 		addButton(name, command, null) ;
+	}
+	
+	 /*******************************************************************************************
+	 * 
+	 * The button pane can be linked to a specific view -- in which case commands are executed there.
+	 * If it is not linked it defaults to using the prime view for output.
+	 * 
+	 ********************************************************************************************/
+	public void setLinkedView(AbstractView view)
+	{
+		m_LinkedView = view ;
 	}
 	
 	public void Init(MainFrame frame, Document doc, Pane parentPane)
@@ -145,7 +146,7 @@ public class ButtonView extends AbstractView
 			}) ;
 		}
 	}
-
+	
 	protected void buttonPressed(SelectionEvent e, int pos)
 	{
 		ButtonInfo button = (ButtonInfo)m_ButtonList.get(pos) ;
@@ -153,7 +154,12 @@ public class ButtonView extends AbstractView
 
 		// Execute the command in the prime view for the debugger
 		if (command != null)
-			m_MainFrame.executeCommandPrimeView(command, true) ;
+		{
+			if (m_LinkedView != null)
+				m_LinkedView.executeAgentCommand(command, true) ;
+			else
+				m_MainFrame.executeCommandPrimeView(command, true) ;
+		}
 	}
 
 	public String executeAgentCommand(String command, boolean echoCommand)

@@ -32,7 +32,7 @@ import doc.Document;
  * Getting closer to a real command line window.
  * 
  ************************************************************************/
-public class TraceView extends ComboCommandView
+public class TraceView extends BaseCommandView
 {
 	public TraceView()
 	{

@@ -228,13 +228,18 @@ public class MainWindow
   		// and moves as one with it.  To make this happen we'll create this pair.
   		Composite pair	  = new Composite(vertSashLeft, 0) ;
   		pair.setLayout(new FormLayout()) ;
+  		
+  		// Adding a 2nd button bar with more print commands
+  		Composite pair2 = new Composite(vertSashRight, 0) ;
+  		pair2.setLayout(new FormLayout()) ;
 
   		// These panes contain a SWT Window and a module/view that provides specific debugging content
-  		Pane top  		  = new Pane(pair) ;
-  		Pane buttonPane   = new Pane(pair) ;
-  		Pane bottom       = new Pane(vertSashLeft) ;
-  		Pane rightTop     = new Pane(vertSashRight) ;
-  		Pane rightBottom  = new Pane(vertSashRight) ;
+  		Pane top  		  	 = new Pane(pair) ;
+  		Pane buttonPane   	 = new Pane(pair) ;
+  		Pane bottom       	 = new Pane(vertSashLeft) ;
+  		Pane rightTop     	 = new Pane(pair2) ;
+  		Pane buttonsRightTop = new Pane(pair2) ;
+  		Pane rightBottom  	 = new Pane(vertSashRight) ;
 
   		// Layout logic for just the top and buttonPane windows
   		FormData topData  = new FormData() ;
@@ -251,8 +256,17 @@ public class MainWindow
       	// buttonData.top    = new FormAttachment(top.getWindow()) ;
       	buttonData.bottom = new FormAttachment(100) ;
       	
+      	// You're not allowed to re-use these objects so we'll make a copy since
+      	// they have the same relationships
+      	FormData topCopy    = FormDataHelper.copyFormData(topData) ;
+      	topCopy.bottom    = new FormAttachment(buttonsRightTop.getWindow());
+      	FormData buttonCopy = FormDataHelper.copyFormData(buttonData) ;
+      	
       	top.getWindow().setLayoutData(topData) ;
       	buttonPane.getWindow().setLayoutData(buttonData) ;
+      	
+      	rightTop.getWindow().setLayoutData(topCopy) ;
+      	buttonsRightTop.getWindow().setLayoutData(buttonCopy) ;
 
   		// Have to set the weights after we have added the panes, so that the size of the weights array
   		// matches the current list of controls
@@ -265,6 +279,7 @@ public class MainWindow
   		m_PaneList.add(buttonPane) ;
   		m_PaneList.add(bottom) ;
   		m_PaneList.add(rightTop) ;
+  		m_PaneList.add(buttonsRightTop) ;
   		m_PaneList.add(rightBottom) ;
 		
 		// Now connect up a specific type of view with these panes
@@ -282,19 +297,30 @@ public class MainWindow
 		buttons.addButton("Matches", "matches") ;
 		buttons.addButton("Print <s>", "print <s>") ;
 		buttons.addButton("Towers of Hanoi", null, new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_MainFrame.loadDemo(new java.io.File("towers-of-hanoi", "towers-of-hanoi.soar")) ; } }) ;
-		buttons.Init(m_MainFrame, m_Document, buttonPane) ;		
-		
+		buttons.Init(m_MainFrame, m_Document, buttonPane) ;
+
 		// Create another trace window at the bottom for now
-		AbstractView keep = new ComboCommandViewKeep() ;
+		AbstractView keep = new KeepCommandView() ;
 		keep.Init(m_MainFrame, m_Document, bottom) ;
 		
 		// Start with the focus on the top trace window
 		trace.setFocus() ;
 		
-		AbstractView update1 = new ComboCommandView() ;
+		// Command view for top right
+		AbstractView update1 = new KeepCommandView() ;
 		update1.Init(m_MainFrame, m_Document, rightTop) ;
 
-		AbstractView update2 = new ComboCommandView() ;
+		// Button bar for right top
+		buttons = new ButtonView() ;
+		buttons.addButton("Matches", "matches") ;
+		buttons.addButton("Print state", "print <s>") ;
+		buttons.addButton("Print op", "print <o>") ;
+		buttons.addButton("Print stack", "print --stack") ;
+		buttons.Init(m_MainFrame, m_Document, buttonsRightTop) ;
+		buttons.setLinkedView(update1) ;
+
+		// Command view for bottom right
+		AbstractView update2 = new UpdateCommandView() ;
 		update2.Init(m_MainFrame, m_Document, rightBottom) ;
 
   		// Reset the default text font (once all windows have been created)

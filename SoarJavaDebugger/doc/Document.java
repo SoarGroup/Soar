@@ -96,8 +96,8 @@ public class Document
 			m_DocumentThread.start() ;
 		}
 		
-		Module combo1 = new Module("Auto Update Window", "Commands are entered in a combo box, the output from just the last command is shown in the text window", modules.ComboCommandView.class) ;
-		Module combo2 = new Module("Combo Box Command Window", "Commands are entered in a combo box, the text window shows the complete trace of executing all commands", modules.ComboCommandViewKeep.class) ;
+		Module combo1 = new Module("Auto Update Window", "Commands are entered in a combo box, the output from just the last command is shown in the text window", modules.BaseCommandView.class) ;
+		Module combo2 = new Module("Combo Box Command Window", "Commands are entered in a combo box, the text window shows the complete trace of executing all commands", modules.KeepCommandView.class) ;
 		Module combo3 = new Module("Command Line Window (Combo Box)", "A form of simple command line interface, but using a combo box for the input (not typing at a normal prompt)", TraceView.class) ;
 
 		m_ModuleList.add(combo1) ;
