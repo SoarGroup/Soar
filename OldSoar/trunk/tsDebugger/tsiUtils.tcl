@@ -1393,7 +1393,7 @@ proc tsiUpdateDemoMenu {w} {
 		-font $tsiConfig(boldFont)
 	$w.menubar.demo.m add command -label {Eight Puzzle} \
 		-command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.tcl}
-	$w.menubar.demo.m add cascade -label {Waterjug} \
+	$w.menubar.demo.m add cascade -label {Water jug} \
 		-menu $w.menubar.demo.m.wjgui
 
 	$w.menubar.demo.m add separator
@@ -1410,7 +1410,7 @@ proc tsiUpdateDemoMenu {w} {
 		-menu $w.menubar.demo.m.mac
 	$w.menubar.demo.m add cascade -label {Towers of Hanoi} \
 		-menu $w.menubar.demo.m.toh
-	$w.menubar.demo.m add cascade -label {Waterjug} \
+	$w.menubar.demo.m add cascade -label {Water jug} \
 		-menu $w.menubar.demo.m.wj
 	
 	## allow users to source default rules too
@@ -1471,22 +1471,22 @@ proc tsiUpdateDemoMenu {w} {
 	$w.menubar.demo.m.wj add command -label {Readme} \
 		-font $tsiConfig(boldFont) \
 		-command {ShowFile \
-		"[file join $soar_library .. demos waterjug readme]" 0}
-	$w.menubar.demo.m.wj add command -label {load Waterjug} \
-		-command {tsiLoadSoar8Demo waterjug waterjug.soar}
-	$w.menubar.demo.m.wj add command -label {load Waterjug Look Ahead} \
-		-command {tsiLoadSoar8Demo waterjug waterjug-look-ahead.soar}
+		"[file join $soar_library .. demos water-jug readme]" 0}
+	$w.menubar.demo.m.wj add command -label {load Water jug} \
+		-command {tsiLoadSoar8Demo water-jug water-jug.soar}
+	$w.menubar.demo.m.wj add command -label {load Water jug Look Ahead} \
+		-command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.soar}
 	
 	if [winfo exists $w.menubar.demo.m.wjgui] {destroy $w.menubar.demo.m.wjgui}
 	menu $w.menubar.demo.m.wjgui -tearoff 0
 	$w.menubar.demo.m.wjgui add command -label {Readme} \
 		-font $tsiConfig(boldFont) \
 		-command {ShowFile \
-		"[file join $soar_library .. demos waterjug readme]" 0}
-	$w.menubar.demo.m.wjgui add command -label {load Waterjug} \
-		-command {tsiLoadSoar8Demo waterjug waterjug.tcl}
-	$w.menubar.demo.m.wjgui add command -label {load Waterjug Look Ahead} \
-		-command {tsiLoadSoar8Demo waterjug waterjug-look-ahead.tcl}
+		"[file join $soar_library .. demos water-jug readme]" 0}
+	$w.menubar.demo.m.wjgui add command -label {load Water Jug} \
+		-command {tsiLoadSoar8Demo water-jug water-jug.tcl}
+	$w.menubar.demo.m.wjgui add command -label {load Water Jug Look Ahead} \
+		-command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.tcl}
 
 	
     } else {
@@ -1545,7 +1545,7 @@ proc tsiUpdateDemoMenu {w} {
 	$w.menubar.demo.m.nogui add cascade -label {Towers of Hanoi} \
 		-menu $w.menubar.demo.m.nogui.toh
 	$w.menubar.demo.m.nogui add command -label {Water Jug} \
-		-command {RunNonGUIDemo waterjug}
+		-command {RunNonGUIDemo water-jug}
     
 	 menu $w.menubar.demo.m.nogui.sts -tearoff 0
 	 $w.menubar.demo.m.nogui.sts add command -label {Initial Problem} \

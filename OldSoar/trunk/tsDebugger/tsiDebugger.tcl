@@ -346,10 +346,10 @@ proc Debugger::CreateDescMenu {} {
       "&Demo" all demo 0 {
          {command "GUI Demos" {} "" {} -command {} }
          {command "Eight Puzzle" {} "" {} -command {tsiLoadSoar8Demo eight-puzzle eight-puzzle.tcl} }
-         {cascad  "Waterjug"  {} export 0 {
-            {command "Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos waterjug readme]" 0} }
-            {command "Load Waterjug" {} "" {} -command {tsiLoadSoar8Demo waterjug waterjug.tcl} }
-            {command "Load Waterjug Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo waterjug waterjug-look-ahead.tcl} }
+         {cascad  "Water Jug"  {} export 0 {
+            {command "Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos water-jug readme]" 0} }
+            {command "Load Water Jug" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug.tcl} }
+            {command "Load Water Jug Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.tcl} }
          }}
          {separator}
          {command "Non-GUI Demo" {} "" {} -command {} }
@@ -371,10 +371,10 @@ proc Debugger::CreateDescMenu {} {
             {command "Load Towers of Hanoi" {} "" {} -command {tsiLoadSoar8Demo towers-of-hanoi towers-of-hanoi.soar} }
             {command "Load Towers of Hanoi Recursive" {} "" {} -command {tsiLoadSoar8Demo towers-of-hanoi towers-of-hanoi-recursive.soar} }
          }}
-         {cascad  "Waterjug"  {} export 0 {
-            {command "Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos waterjug readme]" 0} }
-            {command "Load Waterjug" {} "" {} -command {tsiLoadSoar8Demo waterjug waterjug.soar} }
-            {command "Load Waterjug Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo waterjug waterjug-look-ahead.soar} }
+         {cascad  "Water Jug"  {} export 0 {
+            {command "Readme" {} "" {} -command {ShowFile "[file join $soar_library .. demos water-jug readme]" 0} }
+            {command "Load Water Jug" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug.soar} }
+            {command "Load Water Jug Look-Ahead" {} "" {} -command {tsiLoadSoar8Demo water-jug water-jug-look-ahead.soar} }
          }}
          {separator}
          {cascad  "Default Rules"  {} export 0 {
