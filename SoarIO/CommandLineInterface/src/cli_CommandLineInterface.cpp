@@ -161,7 +161,8 @@ bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAge
 		}
 
 		// Add the error message to the response
-		pConnection->AddErrorToSMLResponse(pResponse, msg.c_str(), -1) ;
+		int errorCode = -1 ;	// -1 reserved for "no error code defined"
+		pConnection->AddErrorToSMLResponse(pResponse, msg.c_str(), errorCode) ;
 	}
 
 	// Always returns true to indicate that we've generated any needed error message already
