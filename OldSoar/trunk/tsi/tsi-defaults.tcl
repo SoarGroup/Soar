@@ -20,18 +20,18 @@ set tsiConfig(expertise) 1
 
 if {$tcl_version >= 8.0} {
 	 if {$tcl_platform(platform) == {unix}} {
-		  set tsiConfig(normalFont) {courier 11 normal}
-		  set tsiConfig(boldFont)   {courier 11 bold}
-		  set tsiConfig(italicFont) {courier 11 italic}
-		  set tsiConfig(helpFont)   {courier 11 bold}
-		  set tsiConfig(searchTextFont) {courier 11 normal}
-		  set tsiConfig(searchButtonsFont) {system 11}
-        set tsiConfig(tsiFont) {courier 11 normal}
-        set tsiConfig(buttonFont) {courier 11 normal}
-        set tsiConfig(menuFont) {courier 11 normal}
-        set tsiConfig(dialogFont) {system 11}
-        set tsiConfig(dialogDefaultTextFont) {system 11}
-        set tsiConfig(smallFont) {fixed 10}
+		  set tsiConfig(normalFont) {courier 12 normal}
+		  set tsiConfig(boldFont)   {courier 12 bold}
+		  set tsiConfig(italicFont) {courier 12 italic}
+		  set tsiConfig(helpFont)   {courier 12 bold}
+		  set tsiConfig(searchTextFont) {courier 12 normal}
+		  set tsiConfig(searchButtonsFont) {system 12}
+        set tsiConfig(tsiFont) {courier 12 normal}
+        set tsiConfig(buttonFont) {courier 12 normal}
+        set tsiConfig(menuFont) {courier 12 normal}
+        set tsiConfig(dialogFont) {system 12}
+        set tsiConfig(dialogDefaultTextFont) {system 12}
+        set tsiConfig(smallFont) {fixed 12}
 	 } else {
 		  set tsiConfig(normalFont) {courier 10 normal}
 		  set tsiConfig(boldFont)   {courier 10 bold}
