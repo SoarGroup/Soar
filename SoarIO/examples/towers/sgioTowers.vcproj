@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside&quot;;&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\shared&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\sgio-1.1.2\simside&quot;;&quot;..\..\..\sgio-1.1.2\shared&quot;;..\..\..\TgDI\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -70,10 +70,10 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside&quot;;&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\shared&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\sgio-1.1.2\simside&quot;;&quot;..\..\..\sgio-1.1.2\shared&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="0"
-				UsePrecompiledHeader="3"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
@@ -127,7 +127,7 @@
 				RelativePath=".\sgioTowersSoarAgent.cpp">
 			</File>
 			<File
-				RelativePath=".\towerMain.cpp">
+				RelativePath=".\TowersOfHanoi.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -139,6 +139,9 @@
 			</File>
 			<File
 				RelativePath=".\sgioTowersSoarAgent.h">
+			</File>
+			<File
+				RelativePath=".\Towers.h">
 			</File>
 		</Filter>
 		<Filter

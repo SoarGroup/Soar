@@ -1,27 +1,30 @@
 #ifndef SGIO_HANOI_SOAR_AGENT
 #define SGIO_HANOI_SOAR_AGENT
 
-#include "sgioTowers.h"
-
+class HanoiWorld;
 #include "sgio_agent.h"
 
-class SGIOTowersSoarAgent
+//namespace sgio_towers
+//{
+
+class SoarAgent
 {
 public:
-	SGIOTowersSoarAgent(sgio::Agent* inAgent, HanoiWorld* inWorld);
+	SoarAgent(sgio::Agent* inAgent, HanoiWorld* inWorld);
 
-	~SGIOTowersSoarAgent();
-
-	void ProcessOutput(/*IWorkingMemory* wmemory, IWMObject* object*/);
+	~SoarAgent();
 
 	void MakeMove();
 
 private:
-	//IAgent* m_Agent;
+	sgio::Agent* m_Agent;
 	HanoiWorld* m_World;
-	SGIOTowersSoarAgent(const SGIOTowersSoarAgent&);
-	SGIOTowersSoarAgent operator=(const SGIOTowersSoarAgent&);
-	SGIOTowersSoarAgent();
+	SoarAgent(const SoarAgent&);
+	SoarAgent operator=(const SoarAgent&);
+	SoarAgent();
 };
+
+
+//}// closes namesapce
 
 #endif //SGIO_HANOI_SOAR_AGENT

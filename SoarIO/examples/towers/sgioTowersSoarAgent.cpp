@@ -1,33 +1,28 @@
 #include "sgioTowersSoarAgent.h"
 
 using sgio::Agent;
+//using sgio_towers::SoarAgent;
+//namespace sgio_towers
+//{
 
-SGIOTowersSoarAgent::SGIOTowersSoarAgent(Agent* inAgent, HanoiWorld* inWorld)
+SoarAgent::SoarAgent(Agent* inAgent, HanoiWorld* inWorld)
 {
 
 
 }
 
-SGIOTowersSoarAgent::~SGIOTowersSoarAgent()
+SoarAgent::~SoarAgent()
 {
-
-
-
-}
-
-void SGIOTowersSoarAgent::ProcessOutput(/*IWorkingMemory* wmemory, IWMObject* object*/)
-{
+	//m_Agent->
 
 
 }
 
 
 
-
-void SGIOTowersSoarAgent::MakeMove()
+void SoarAgent::MakeMove()
 {
-
-
-
-
+	m_Agent->RunTilOutput();
 }
+
+//}//closes namespace
