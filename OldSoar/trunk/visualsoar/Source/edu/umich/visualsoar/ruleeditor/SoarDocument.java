@@ -13,11 +13,9 @@ import javax.swing.*;
 public class SoarDocument extends DefaultStyledDocument
 {
 
-    AbstractElement         root = (AbstractElement)getDefaultRootElement();
-
-    SyntaxColor[]           colorTable;
-    
-    Preferences             prefs = Preferences.getInstance();
+    AbstractElement root = (AbstractElement)getDefaultRootElement();
+    SyntaxColor[]   colorTable;
+    Preferences     prefs = Preferences.getInstance();
     
     public SoarDocument()
     {
@@ -160,6 +158,22 @@ public class SoarDocument extends DefaultStyledDocument
         setCharacterAttributes(begPos, length, attrib, false);
     }
 
+    //If the parser barfs on the input we want to casually just keep reading the
+    //file.  So we catch the thrown error and and substitute a dummy token.
+    //:AMN: 31 Oct '03  (Boo!)
+    Token carefullyGetNextToken(SoarParserTokenManager mgr)
+    {
+        try
+        {
+            return mgr.getNextToken();
+        }
+        catch(TokenMgrError tme)
+        {
+            return new Token();
+        }
+                
+    }
+
     void evaluateToken(Token currToken,
                        int startOffset,
                        SoarParserTokenManager mgr)
@@ -187,7 +201,7 @@ public class SoarDocument extends DefaultStyledDocument
             case SoarParserConstants.CARET : // followed by a STRING
                 begin = 1+ startOffset + currToken.beginColumn;
                 
-                currToken = mgr.getNextToken();
+                currToken = carefullyGetNextToken(mgr);
                 if ((currToken.kind == SoarParserConstants.SYMBOLIC_CONST)
                     || (currToken.kind == SoarParserConstants.INTEGER_CONST)
                     || (currToken.kind == SoarParserConstants.FLOATING_POINT_CONST))
@@ -195,13 +209,13 @@ public class SoarDocument extends DefaultStyledDocument
                  
                     length = currToken.image.length();
                     colorRange(begin, length, SoarParserConstants.CARET);                    
-                    
-                    currToken = mgr.getNextToken();
+
+                    currToken = carefullyGetNextToken(mgr);
                     while (currToken.kind == SoarParserConstants.PERIOD)
                     {
                         begin += length + 1; // don't color period
                     
-                        currToken = mgr.getNextToken();
+                        currToken = carefullyGetNextToken(mgr);
                         length = currToken.image.length();
                         
                         if ((currToken.kind == SoarParserConstants.SYMBOLIC_CONST)
@@ -216,7 +230,7 @@ public class SoarDocument extends DefaultStyledDocument
                             colorRange(begin, length, SoarParserConstants.VARIABLE);
                         }
                         
-                        currToken = mgr.getNextToken();
+                        currToken = carefullyGetNextToken(mgr);
                     }
                                     
                 }
@@ -226,12 +240,12 @@ public class SoarDocument extends DefaultStyledDocument
                     length = currToken.image.length();
                     colorRange(begin, length, SoarParserConstants.VARIABLE);                     
                     
-                    currToken = mgr.getNextToken();
+                    currToken = carefullyGetNextToken(mgr);
                     while (currToken.kind == SoarParserConstants.PERIOD)
                     {
                         begin += length + 1; // don't color period
                     
-                        currToken = mgr.getNextToken();
+                        currToken = carefullyGetNextToken(mgr);
                         length = currToken.image.length();
                         
                         if ((currToken.kind == SoarParserConstants.SYMBOLIC_CONST)
@@ -246,7 +260,7 @@ public class SoarDocument extends DefaultStyledDocument
                             colorRange(begin, length, SoarParserConstants.VARIABLE);
                         }
                         
-                        currToken = mgr.getNextToken();
+                        currToken = carefullyGetNextToken(mgr);
                     }
                                     
                 }
@@ -315,7 +329,7 @@ public class SoarDocument extends DefaultStyledDocument
                     
             try
             {
-                currToken = mgr.getNextToken();
+                currToken = carefullyGetNextToken(mgr);
             } catch (TokenMgrError tme)
             {
                 /* this just means the syntax wasn't valid at
@@ -350,7 +364,7 @@ public class SoarDocument extends DefaultStyledDocument
                 
                 try
                 {
-                    currToken = mgr.getNextToken();
+                    currToken = carefullyGetNextToken(mgr);
                 } catch (TokenMgrError tme)
                 {
                     // see init of currToken...
@@ -376,7 +390,7 @@ public class SoarDocument extends DefaultStyledDocument
         
         try
         {
-            currToken = mgr.getNextToken();
+            currToken = carefullyGetNextToken(mgr);
         } catch (TokenMgrError tme)
         {
             /* this just means the syntax wasn't valid at
@@ -396,7 +410,7 @@ public class SoarDocument extends DefaultStyledDocument
             
             try
             {
-                currToken = mgr.getNextToken();
+                currToken = carefullyGetNextToken(mgr);
             } catch (TokenMgrError tme)
             {
                 // see init of currToken...
@@ -430,7 +444,7 @@ public class SoarDocument extends DefaultStyledDocument
                 
         try
         {
-            currToken = mgr.getNextToken();
+            currToken = carefullyGetNextToken(mgr);
         }
         catch (TokenMgrError tme)
         {
@@ -463,7 +477,7 @@ public class SoarDocument extends DefaultStyledDocument
             
             try
             {
-                currToken = mgr.getNextToken();
+                currToken = carefullyGetNextToken(mgr);
             } catch (TokenMgrError tme)
             {
                 // see init of currToken...
