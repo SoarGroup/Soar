@@ -73,6 +73,7 @@ proc replaceSensor {whichAgent sensorValue soarObjectName sensorField link} {
 }
 
 proc setUpInputLink {whichAgent io_id inID outID} {
+	# Called during top_state_just_created input cycle
 	global tank tankList sensor topstate_id healthcharge energycharge turn wmeRecord agentsetup2 cycle errorInfo
 
 	if {[info exists tank($whichAgent,inputlink)]} {
@@ -173,11 +174,13 @@ proc setUpInputLink {whichAgent io_id inID outID} {
 	initSensor $whichAgent yes resurrect resurrect inputlink
 	initSensor $whichAgent [expr rand()] random random inputlink
 	initSensor $whichAgent $cycle clock clock inputlink
+	initSensor $whichAgent $tank($whichAgent,score) score score inputlink
 	set agentsetup2($whichAgent) done
 	   
 }
 
 proc setupConstants {whichAgent} {
+	# Called during setupInputLink
 	global tank
 	
 	# Removed disarmErrorRate disarmCost minesIncrease
@@ -194,7 +197,7 @@ proc updateInputLink {whichAgent} {
 #>-=>
 # This function updates a couple of the generic things on the input-link:
 # - the random #, the clock, and lastmove
-#>-=>
+#>-=> Called during normal_input_cycle 
 	global tank agentsetup agentsetup2 sensor cycle wmeRecord
 	
 	if {$agentsetup($whichAgent) != "done"} {
@@ -213,6 +216,8 @@ proc updateInputLink {whichAgent} {
 }
 
 proc sensorsToInputLink {whichAgent} {
+	# Called from updateSensors in tankworld_update.tcl
+	# Changes input link to match sensor values
 	global tank agentsetup sensor healthcharge energycharge turn sensor wmeRecord actionTaken cycle
 	
 	if {$agentsetup($whichAgent) != "done"} {
@@ -233,6 +238,7 @@ proc sensorsToInputLink {whichAgent} {
 
 	checkSensor $whichAgent [expr rand()] random random inputlink
  	checkSensor $whichAgent $cycle clock clock inputlink
+ 	checkSensor $whichAgent $tank($whichAgent,score) score score inputlink
    if {$tank($whichAgent,lastmove) == "resurrect-transport"} {
     	checkSensor $whichAgent yes resurrect resurrect inputlink
    } else {
@@ -305,6 +311,7 @@ proc sensorsToInputLink {whichAgent} {
 }
 
 proc radarItemToInputLink {whichAgent radarItem objectDetected {coloredObject ""} {coloredObject2 ""}} {
+	# Helps radarToInputLink below
 	global tank wmeRecord
 	
 	set doorinput [$whichAgent eval "add-wme $tank($whichAgent,radarLink) $objectDetected *"]
@@ -328,6 +335,8 @@ proc radarItemToInputLink {whichAgent radarItem objectDetected {coloredObject ""
 }
 
 proc radarToInputLink {whichAgent} {
+	# Called from setupInputLink and from sensorsToInputLink
+	# Puts items on radar onto input link
 	global sensor tank wmeRecord
 	
 	set wmeRecord($whichAgent,radarwme) [list]
@@ -469,6 +478,7 @@ proc checkBlockedIncoming {whichAgent direction} {
 }
 
 proc clearAllAgentSensors {} {
+   # Called in updateWorld and RefreshWorld
    global tank
    
    foreach {a1 a2} [array get tank *,RWaves*] {
@@ -483,6 +493,7 @@ proc clearAllAgentSensors {} {
 }
 
 proc updateAgentSensors {whichAgent} {
+# Called from updateState
 global tank map gridSize sounddist randomorder actionTaken
 	#>-=>
 	# This function examines the environment data and sets the sensor-stuff

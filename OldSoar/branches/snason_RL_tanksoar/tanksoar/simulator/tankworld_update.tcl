@@ -22,6 +22,10 @@ global actionRequest
 }
 
 proc changeState {whichAgent} {
+	# Called by updateWorld
+	# Do tank actions, and calculate tank standing
+	# on health or whether radar
+	# must be turned off due to lack of energy
 	global tank current healthIncrease energyIncrease \
 		maxHealth maxEnergy healthTax shieldCost actionRequest map radarOn \
 		disarmCost powerUpList gameType mapdim
@@ -142,6 +146,8 @@ proc changeState {whichAgent} {
 	drawTank $whichAgent
 }
 proc updateSensors {whichAgent} {
+   # Called from updateworld & refreshworld
+   # Write the sensors out to the input link
    global tank current agentsetup2
 	if {($tank($whichAgent,agenttype) == "soar") && ($tank($whichAgent,running) == "yes") && \
 		($agentsetup2($whichAgent) == "done")} {
@@ -153,6 +159,8 @@ proc updateSensors {whichAgent} {
 }   
 
 proc updateState {whichAgent} {
+	# Called from updateworld & refreshWorld
+	# Called before updateSensors, sets the internal sensor arrays
 	global tank
 	
 	if {$tank($whichAgent,health) <= 0} {
@@ -165,6 +173,7 @@ proc updateState {whichAgent} {
 }
 
 proc updateworld {} {
+	# Called from tickSimulation in environment.tcl
 	global tankList tank cycle decisions_per_update randomorder \
 		 current turn shieldCost agentsetup2 regenerateFreq actionTaken \
 		 winningTank
@@ -181,8 +190,9 @@ proc updateworld {} {
 		foreach t $randnames {
 			if {$tank($t,status) == "active"} {
 				set tank($t,lastmove) none
-				changeState $t
-			}
+				# Do tanks actions
+				changeState $t   
+				}
 		}
    	
 		if {[expr $cycle%$regenerateFreq] == 0} {
@@ -198,12 +208,14 @@ proc updateworld {} {
       clearAllAgentSensors
 		foreach t $randnames {
 			if {$tank($t,status) == "active"} {
-				updateState $t
+				# update internal sensor array
+				updateState $t   
 			}
 		}
 		foreach t $randnames {
 			if {$tank($t,status) == "active"} {
-				updateSensors $t
+				# write sensor changes to input link
+				updateSensors $t	
 			}
 		}
 
@@ -256,6 +268,7 @@ proc manualUpdate {whichAgent} {
 }
 
 proc refreshWorld {} {
+	# Called when tank created or destroyed	
 	global tankList tank agentsetup2
 
 	clearAllAgentSensors

@@ -1,4 +1,5 @@
 proc calcScore {whichAgent} {
+	# Called by updateWorld in tankworld_update.tcl
     global tank Pts_Kill_Bonus Pts_Death_Penalty Pts_Flag_Bonus Pts_Flag_Secured gameType projectileDamage Pts_Hit_Bonus Pts_Hit_Penalty
  
    if {$gameType == "flag"} {
@@ -240,6 +241,7 @@ proc restartMap {} {
 }
 
 proc tickSimulation {w} {
+	# Called from runSimulation
 	global globalTick ticksPerMove ticksPerTankCycle tankList tank
 			  
 	if [info exists globalTick] {
@@ -518,6 +520,7 @@ global runningSimulation
 }
 
 proc runSimulation {w} {
+# Called from environmentRun or environmentStep
 global runningSimulation tickDelay soarTimePerTick soarTimeUnit tankList \
 	 worldCount worldCountLimit winningTank scoreLimit tank skipSimTick tsiConfig
 
