@@ -3548,7 +3548,7 @@ typedef struct agent_struct {
     Symbol *ts_context_variable;
     Symbol *type_symbol;
     Symbol *wait_symbol;        /* REW:  10.24.97 */
-    Symbol            * RL_symbol;      // SAN
+    Symbol * RL_symbol;      // SAN
     /* ----------------------- Symbol table stuff -------------------------- */
 
     unsigned long current_symbol_hash_id;

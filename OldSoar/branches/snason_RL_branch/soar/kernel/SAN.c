@@ -3,6 +3,15 @@
 
 float compute_Q_value();
 Symbol *equality_test_for_symbol_in_test(test t);
+condition *make_simple_condition(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym);
+action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym);
+production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref, wme *w);
+void learn_RL_productions(int level);
+void record_for_RL();
+void variablize_condition_list(condition * cond);
+void variablize_nots_and_insert_into_conditions(not * nots, condition * conds);
+action *copy_and_variablize_result_list(preference * pref);
+void variablize_symbol(Symbol ** sym);
 
 
 // The following three functions manage the stack of RL_records.
@@ -105,7 +114,8 @@ float tabulate_reward_value(){
 // If an operator has been selected, go through binary indifferent preferences that fired for it
 // For each preference, store a pointer to the production that generated it.
 
-void record_for_RL(){
+void record_for_RL()
+{
 	wme *chosenOp, *w;
 	slot *s, *t;
 	instantiation *ist;
@@ -148,12 +158,22 @@ void record_for_RL(){
 						  if (sym) identifiers = add_if_not_member(sym, identifiers);
 					  }
 				  }
+				  prod = 0;
 				  for (c = identifiers; c ; c=c->rest){
+					  if (prod) break;
 					  sym = (Symbol *) c->first;
 					  for (t = sym->id.slots ; t ; t=t->next){
+						  if (prod) break;
 						  for (w = t->wmes ; w ; w=w->next){
+							  prod = build_RL_production(ist->top_of_instantiated_conditions, 
+								  ist->bottom_of_instantiated_conditions, ist->nots, ist->preferences_generated, w);
+							  if (prod) break;
 						  }
 					  }
+				  }
+				  if (prod){
+					  push(prod, record->pointer_list);
+					  record->num_prod++;
 				  }
 				  free_list(identifiers);
 			  }
@@ -248,3 +268,117 @@ Symbol *equality_test_for_symbol_in_test(test t)
     }
     return 0;
 }
+
+production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref, wme *w)
+{
+	condition *new_cond;
+	action *a;
+	Symbol *prod_name;
+	production *prod;
+	bool chunk_var;
+
+	// Make condition list
+	new_cond = make_simple_condition(w->id, w->attr, w->value);
+	bottom_cond->next = new_cond;
+	new_cond->prev = bottom_cond;
+ 
+	// Make action list
+	a = make_simple_action(pref->id, pref->attr, pref->value, make_float_constant(0));
+	a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+
+	// Variablize
+	chunk_var = current_agent(variablize_this_chunk);
+	current_agent(variablize_this_chunk) = TRUE;
+	reset_variable_generator(top_cond, NIL);
+	current_agent(variablization_tc) = get_new_tc_number();
+	variablize_condition_list(top_cond);
+	variablize_nots_and_insert_into_conditions(nots, top_cond);
+//	rhs = copy_and_variablize_result_list(a);
+
+	// Make production
+	prod_name = generate_new_sym_constant("RL-", &current_agent(RL_count));
+	prod = make_production(RL_PRODUCTION_TYPE, prod_name, &top_cond, &new_cond, &a, FALSE);
+	current_agent(variablize_this_chunk) = chunk_var;
+	if (add_production_to_rete(prod, top_cond, 0, FALSE) == DUPLICATE_PRODUCTION){
+		   excise_production(prod, FALSE);
+		   return 0;
+	} else return prod;
+}
+
+
+/*************/
+action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym)
+{
+    action *rhs;
+    Symbol *temp;
+
+    allocate_with_pool (&current_agent(action_pool),  &rhs);
+    rhs->next = NULL;
+    rhs->type = MAKE_ACTION;
+
+    // id
+	temp = id_sym;
+	symbol_add_ref(temp);
+	variablize_symbol(&temp);
+	rhs->id = symbol_to_rhs_value(temp);
+
+
+    // attribute
+    temp = attr_sym;
+	symbol_add_ref(temp);
+	variablize_symbol(&temp);
+	rhs->attr = symbol_to_rhs_value(temp);
+
+	// value
+	temp = val_sym;
+	symbol_add_ref (temp);
+	variablize_symbol (&temp);
+	rhs->value = symbol_to_rhs_value (temp);
+
+	// referent
+	temp = ref_sym;
+	symbol_add_ref(temp);
+	variablize_symbol(&temp);
+	rhs->referent = symbol_to_rhs_value(temp);
+
+    return rhs;
+
+}//make_simple_action
+
+
+condition *make_simple_condition(Symbol *id_sym,
+                                 Symbol *attr_sym,
+                                 Symbol *val_sym)
+{
+    condition *newcond;
+
+    allocate_with_pool (&current_agent(condition_pool),  &newcond);
+    newcond->type = POSITIVE_CONDITION;
+    newcond->next = NULL;
+    newcond->prev = NULL;
+
+    if (strcmp(attr_sym->var.name, "operator") == 0)
+    {
+        newcond->test_for_acceptable_preference = TRUE;
+    }
+    else
+    {
+        newcond->test_for_acceptable_preference = FALSE;
+    }
+
+    newcond->data.tests.id_test = make_equality_test(id_sym);
+    newcond->data.tests.attr_test = make_equality_test(attr_sym);
+
+    /*if (val_sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        char buf[100];
+        buf[0] = val_sym->id.name_letter;
+        buf[1] = ''\0'';
+        val_sym = generate_new_variable(buf);
+    }*/
+    newcond->data.tests.value_test = make_equality_test(val_sym);
+
+    return newcond;
+
+}//make_simple_condition
+

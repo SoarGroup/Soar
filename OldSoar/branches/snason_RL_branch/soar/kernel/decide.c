@@ -67,9 +67,9 @@ preference *probabilistically_select(slot *s, preference *candidates);
 preference *explore_exploit_select(slot *s, preference *candidates);
  
 // SAN
-//extern void learn_RL_productions();
-//extern float tabulate_reward_value();
-//extern void record_for_RL();
+extern void learn_RL_productions(int);
+extern float tabulate_reward_value();
+extern void record_for_RL();
 extern void push_record();
 
  
