@@ -58,17 +58,12 @@
 #include "soarkernel.h"
 #include "soarapi_datatypes.h"
 #include <assert.h>
+#include <math.h>
 
 #ifdef NUMERIC_INDIFFERENCE
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
 preference *probabilistically_select(slot *s, preference *candidates);
 
-
-/*
- * The numeric indifference value used when none is supplied 
- * (this should not be zero)
- */
-#define DEFAULT_INDIFFERENCE_VALUE 50
 
 
 
@@ -3273,6 +3268,12 @@ unsigned int count_candidates(slot *s, preference *candidates)
 
 
 
+/* Below is the Temperature, used to keep summed indifferent
+   preferences within a reasonable range, since they will be used as
+	 an exponent to the number 10, and must be stored in a 64 bit double
+*/
+#define TEMPERATURE 25.0
+
 
 
 preference *probabilistically_select(slot *s, preference *candidates)
@@ -3287,7 +3288,8 @@ preference *probabilistically_select(slot *s, preference *candidates)
    double         currentSumOfValues=0;
    static int     initialized_rand = 0;
    unsigned long        rn=0;
- 
+	 int  default_ni;
+
    assert(s != 0);
    assert(candidates != 0);
 
@@ -3310,18 +3312,28 @@ preference *probabilistically_select(slot *s, preference *candidates)
 	 print_candidates(candidates); 
    */
 
-	 
+	 switch (current_agent(numeric_indifferent_mode)) {
+	 case NUMERIC_INDIFFERENT_MODE_AVG:
+		 default_ni = 50;
+		 break;
+		 
+	 case NUMERIC_INDIFFERENT_MODE_SUM:
+	 default:
+		 default_ni = 0;
+		 break;
+	 }
+
 	 for (pref=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE];
 				pref!=NIL; pref=pref->next)
 		 {
-			/* print_with_symbols("\nPreference for %y", pref->value); */
+			 /*  print_with_symbols("\nPreference for %y", pref->value);  */
 			 
 			 for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-				 /* print_with_symbols("\nConsidering candidate %y", cand->value); */
+				 /*  print_with_symbols("\nConsidering candidate %y", cand->value);  */
 				 
 				 if (cand->value == pref->value) {
 					 cand->total_preferences_for_candidate += 1;
-					 cand->sum_of_probability += DEFAULT_INDIFFERENCE_VALUE;
+					 cand->sum_of_probability += default_ni;
 					 
 				 }
 			 }
@@ -3356,31 +3368,84 @@ preference *probabilistically_select(slot *s, preference *candidates)
 		 }
 	 
 
-   total_probability = 0.0;
-   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-     
-	
-     /* print_with_symbols("\n Candidate %y ", cand->value); */
-     /* Sum the total probabilities */
-     total_probability += cand->sum_of_probability;
-		 /*print("\n   Total Probability = %f", total_probability );*/
-   }
+	 if (current_agent(numeric_indifferent_mode) == NUMERIC_INDIFFERENT_MODE_SUM){
 
-	 /* Now select the candidate */ 
+		 total_probability = 0.0;
+		 for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+			 
+			 
+			 /* print_with_symbols("\n Candidate %y ", cand->value);  */
+			 /*  Total Probability represents the range of values, we expect
+				*  the use of negative valued preferences, so its possible the
+				*  sum is negative, here that means a fractional probability
+				*/
+			 total_probability += exp(cand->sum_of_probability / TEMPERATURE);
+			 /* print("\n   Total (Sum) Probability = %f", total_probability ); */
+		 }
+		 
+		 /* Now select the candidate */ 
+		 
+		 rn = rand();
+		 selectedProbability = ((double)rn / (double)RAND_MAX) * total_probability;
+		 currentSumOfValues = 0;
+		 
+		 for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+			 
+			 currentSumOfValues += exp(cand->sum_of_probability / TEMPERATURE);
+			 
+			 if (selectedProbability <= currentSumOfValues) {
+			 /* 
+				print_with_symbols("\n    Returning (Sum) candidate %y", cand->value); 
+			 */
+				 
+				 return cand;
+			 }
+		 }
 
-   rn = rand();
-   selectedProbability = ((double)rn / (double)RAND_MAX) * total_probability;
-   currentSumOfValues = 0;
+	 }
+	 else if (current_agent(numeric_indifferent_mode) == NUMERIC_INDIFFERENT_MODE_AVG ){
 
-   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-     
-     currentSumOfValues += cand->sum_of_probability;
+		 total_probability = 0.0;
+		 for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+			 
+			 
+			 /* print_with_symbols("\n Candidate %y ", cand->value);  */
 
-     if (selectedProbability <= currentSumOfValues) {
-       /*print_with_symbols("\n    Returning candidate %y", cand->value); */
-       return cand;
-     }
-   }
+			 /* Total probability represents the range of values that
+				* we'll map into for selection.  Here we don't expect the use
+				* of negative values, so we'll warn when we see one.
+				*/
+
+			 total_probability += fabs(cand->sum_of_probability / cand->total_preferences_for_candidate);
+			 
+			 if ( cand->sum_of_probability < 0.0 ) {
+				 print_with_symbols ( "WARNING: Candidate %y has a negative value, which is unexpected with 'numeric-indifferent-mode -avg'", cand->value );
+			 }
+			 /* print("\n   Total (Avg) Probability = %f", total_probability );*/
+		 }
+		 
+		 /* Now select the candidate */ 
+		 
+		 rn = rand();
+		 selectedProbability = ((double)rn / (double)RAND_MAX) * total_probability;
+		 currentSumOfValues = 0;
+		 
+		 for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+			 
+			 currentSumOfValues += fabs(cand->sum_of_probability /  cand->total_preferences_for_candidate);
+			 
+			 if (selectedProbability <= currentSumOfValues) {
+				 /*
+				print_with_symbols("\n    Returning (Avg) candidate %y", cand->value); 
+				 */
+
+				 return cand;
+			 }
+		 }
+
+	 } else {
+		 print ("\nERROR: Invalid Numeric Indifferent Mode!\n" );
+	 }
 
    print("\nERROR: Probability Selection failed. This should never happen.\n");
    return NIL;

@@ -1268,6 +1268,53 @@ int soar_MultiAttributes (int argc, const char *argv[], soarResult *res)
 }
  
 
+/*
+ *----------------------------------------------------------------------
+ *
+ * soar_NumericIndifferentMode --
+ *
+ *----------------------------------------------------------------------
+ */
+
+int soar_NumericIndifferentMode (int argc, const char *argv[], soarResult *res)
+{
+
+  if (argc > 2)
+    {
+      setSoarResultResult( res, 
+        "Too many arguments.\nUsage: numeric-indifferent-mode -sum | -avg");
+      return SOAR_ERROR;
+    }
+
+  if (argc == 2) {
+    if ( string_match_up_to("-sum", argv[1], 2)) {
+      current_agent(numeric_indifferent_mode) = NUMERIC_INDIFFERENT_MODE_SUM;
+    } else if ( string_match_up_to( "-avg", argv[1], 2)) {
+      current_agent(numeric_indifferent_mode) = NUMERIC_INDIFFERENT_MODE_AVG;
+    } else {
+      setSoarResultResult( res, 
+	      "Unrecognized argument to %s: %s.  either '-avg' or '-sum' was expected.",
+	      argv[0], argv[1]);
+      return SOAR_ERROR;
+    }
+  }
+
+	switch ( current_agent(numeric_indifferent_mode) ) {
+	case NUMERIC_INDIFFERENT_MODE_SUM:		
+		setSoarResultResult( res, "-sum" );
+		break;
+	case NUMERIC_INDIFFERENT_MODE_AVG:		
+		setSoarResultResult( res, "-avg" );
+		break;
+	default:		
+		setSoarResultResult( res, "???" );
+		break;
+	}
+
+  return SOAR_OK;
+}
+
+
 
 /*
  *----------------------------------------------------------------------

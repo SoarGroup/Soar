@@ -523,6 +523,26 @@ int MultiAttrCmd (ClientData clientData,
 
 }
 
+int NumericIndifferentCmd (ClientData clientData, 
+		     Tcl_Interp * interp,
+		     int argc, const char *argv[])
+{
+  soarResult res;
+
+  init_soarResult(res);
+  Soar_SelectGlobalInterpByInterp(interp);
+
+
+  if ( soar_NumericIndifferentMode( argc, argv, &res ) == SOAR_OK ) {
+    interp->result = res.result;
+    return TCL_OK;
+  }
+  else {
+    interp->result = res.result;
+    return TCL_ERROR;
+  }
+
+}
 
 int OSupportModeCmd (ClientData clientData, 
 		     Tcl_Interp * interp,
@@ -2299,6 +2319,7 @@ void Soar_InstallCommands (agent * the_agent)
   install_tcl_soar_cmd(the_agent, "memories",            MemoriesCmd);
   install_tcl_soar_cmd(the_agent, "monitor",             MonitorCmd);
   install_tcl_soar_cmd(the_agent, "multi-attributes",     MultiAttrCmd);
+  install_tcl_soar_cmd(the_agent, "numeric-indifferent-mode",NumericIndifferentCmd      );
   install_tcl_soar_cmd(the_agent, "o-support-mode",      OSupportModeCmd);
   install_tcl_soar_cmd(the_agent, "output-strings-destination", OutputStringsDestCmd);
   install_tcl_soar_cmd(the_agent, "production-find",     ProductionFindCmd);

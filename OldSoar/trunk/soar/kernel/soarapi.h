@@ -984,6 +984,49 @@ extern int soar_InputPeriod ( int argc, const char *argv[], soarResult *res);
 extern int soar_MultiAttributes (int argc, const char *argv[], soarResult *res);
 
 
+/**
+ *
+ *
+ * soar_NumericIndifferentMode --
+ *
+ * \brief  This is the command procedure for the "numeric-indifferent-mode" , 
+ *         command which controls the way o-support calculations are done
+ *         (for the current agent).  
+ * 
+ *         It takes a single string argument: 
+ * \arg \c -avg  - do numeric indiffernce by averaging all values asserted 
+ *                   by the rules.  Indifferent preferrences with no explicit
+ *                   value are assigned the numeric weight of 50.
+ * \arg \c -sum  - do numeric indifference by summing all values asserted by
+ *                   the rules.  Indifferent prefferences with no explicit
+ *                   value are assigned the numeric weight of 0.
+ *
+ * \param  "-> argc" The number of arguments is the \c argv block
+ * \param  "-> argv" An array of strings, each of which is a word in the
+ *                   argument list to this function
+ * \param  "<- res"  A SoarResult structure which will be filled in by the 
+ *
+ * \par    Syntax:
+   \verbatim
+           numeric-indifferent-mode arg*
+					    arg ::=   -avg | -sum
+   \endverbatim
+ *
+ * \return Returns a Soar completion code.
+ *
+ * \par    SoarResult:
+ *           \arg On \c SOAR_ERROR:  Contains details about error.
+ *           \arg On \c SOAR_OK:     Contains the current o-support mode.
+ *              
+ *
+ * \par    Side effects:
+ *	     Sets current_agent(numeric_indifferent_mode).
+ *
+ *
+ */
+extern int soar_NumericIndifferentMode (int argc, const char *argv[], soarResult *res);
+
+
 
 /**
  *

@@ -193,8 +193,11 @@ enum agent_id_state {
   ALLOCATED
 };
 
- 
-
+/* Possible modes for numeric indifference */
+enum ni_mode {
+	NUMERIC_INDIFFERENT_MODE_AVG,
+	NUMERIC_INDIFFERENT_MODE_SUM,
+};
 
 
 /* ---------------------------------------------------------------------
@@ -1328,6 +1331,7 @@ typedef struct preference_struct {
   Symbol *match_goal;                   /* Symbol, or NIL if none */
   goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
 #endif
+
 
 #ifdef NUMERIC_INDIFFERENCE
   /* REW: 2003-01-08 Behavior Variability Kernel Experiements
@@ -3967,7 +3971,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* ------------------- Experimental features ---------------------- */
   int                 o_support_calculation_type;
   int                 attribute_preferences_mode;
-
+  
   /* ------------------- Info about the agent itself ---------------------- */
   
   char              * name;  /* name of this Soar agent */
@@ -4030,6 +4034,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool       waitsnc;
   bool       waitsnc_detect; 
   /* REW: end   10.24.97 */
+
+	enum ni_mode  numeric_indifferent_mode; /* SW 08.19.2003 */
 
 #ifdef COUNT_KERNEL_TIMER_STOPS
   long       kernelTimerStops;
