@@ -7,6 +7,7 @@ package edu.rosehulman.soar.datamap.editor;
 
 
 import edu.rosehulman.soar.*;
+import edu.rosehulman.soar.datamap.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
@@ -23,10 +24,16 @@ import org.eclipse.ui.IPersistableElement;
 public class DatamapEditorInput implements IFileEditorInput {
 	private IFile _file;
 	private int _rootID;
+	private String _rootName;
 	
 	public DatamapEditorInput(IFile file, int rootID) {
 		_file = file;
 		_rootID = rootID;
+		
+		DataMap dm = DataMap.getAssociatedDatamap(_file);
+		if (dm != null) {
+			_rootName = dm.getItem(_rootID).toString();
+		}
 	}
 
 	public IFile getFile() {
@@ -71,7 +78,7 @@ public class DatamapEditorInput implements IFileEditorInput {
 
 
 	public String getName() {
-		return _file.getName();
+		return _rootName;
 	}
 
 
@@ -81,7 +88,7 @@ public class DatamapEditorInput implements IFileEditorInput {
 
 
 	public String getToolTipText() {
-		return _file.getFullPath().toString();
+		return _file.getFullPath().toString() + " (" + _rootName + ")";
 	}
 
 

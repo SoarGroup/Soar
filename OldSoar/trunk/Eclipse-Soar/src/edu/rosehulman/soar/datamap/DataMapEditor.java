@@ -47,9 +47,29 @@ public class DataMapEditor extends EditorPart {
 		
 		monitor.done();
 		
-		_isDirty = false;
+		//_isDirty = false;
 		
-		firePropertyChange(EditorPart.PROP_DIRTY); // all is well once more!
+		//firePropertyChange(EditorPart.PROP_DIRTY); // all is well once more!
+		
+		IWorkbenchPage pages[] =
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getPages();
+		
+		IProject proj = this.getFile().getProject();
+		
+		for (int i=0; i<pages.length; ++i) {
+			IEditorPart editors[] = pages[i].getDirtyEditors();
+			
+			for (int i2=0; i2<editors.length; ++i2) {
+				if (editors[i2] instanceof DataMapEditor) {
+					DataMapEditor editor = (DataMapEditor) editors[i2];
+					
+					if (proj.equals( editor.getFile().getProject() )) {
+						editor.cleanse();
+					}
+					
+				}
+			}
+		}
 	}
 
 	public void doSaveAs() {
@@ -75,7 +95,7 @@ public class DataMapEditor extends EditorPart {
 			setSite(site);
 			setInput(input);
 			
-			setTitle(_fileInput.getFile().getProject().getName() + " DataMap");
+			setTitle(_fileInput.getName());
 			
 		} catch (Exception e) {
 			throw new PartInitException(e.getMessage());
@@ -230,6 +250,11 @@ public class DataMapEditor extends EditorPart {
 	public void defecateUpon() {
 		_isDirty = true;
 		firePropertyChange(EditorPart.PROP_DIRTY); //Alert the troops!
+	}
+	
+	public void cleanse() {
+		_isDirty = false;
+		firePropertyChange(EditorPart.PROP_DIRTY); //All is well once more!
 	}
 	
 	

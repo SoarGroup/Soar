@@ -40,15 +40,15 @@ public class DataMapContentProvider implements ITreeContentProvider {
 	
 	
 	public DataMapContentProvider(DataMapEditor parent, IProject project,
-		IFileEditorInput file) {
+		IFileEditorInput fileInput) {
 		
 		_parent = parent;
 		_project = project;
-		_fileInput = (DatamapEditorInput) file;
-		_file = file.getFile();
+		_fileInput = (DatamapEditorInput) fileInput;
+		_file = fileInput.getFile();
 		
 		try {
-			_dm = new DataMap(_file);
+			_dm = DataMap.getAssociatedDatamap(_file);
 			
 			resetRoot();
 			
@@ -145,7 +145,6 @@ public class DataMapContentProvider implements ITreeContentProvider {
 				
 				if (par != _root && par instanceof DMIdentifier
 					&& par.getName().equals("operator")) {
-					
 					ArrayList children = par.getChildren();
 					
 					for (int i=0; i<children.size(); ++i) {

@@ -59,6 +59,7 @@ public class AddItem extends Action {
 			
 			temp.setID(dm.getCurrentID());
 			dm.incrementCurrentID();
+			dm.register(temp);
 			
 			mTarget.addChild(temp);
 			mParent.getViewer().refresh();

@@ -130,27 +130,51 @@ public class AddSuboperatorWiz extends Wizard implements INewWizard {
 		
 		//Adds this guy to the parent's datamap
 		try {
-			IContainer folderParent;
-			if (container instanceof IProject) {
-				folderParent = container;
-			} else { 
-				folderParent = container.getParent();
-			}
 			
-			DataMap dm = DataMap.getAssociatedDatamap(folderParent);
-			DMItem dmRoot = dm.getAssociatedVertex(folderParent);
+			DataMap dm = DataMap.getAssociatedDatamap(container);
+			DMItem dmRoot = dm.getAssociatedVertex(container);
 			
-			
+			// operator
 			DMSpecial newOp = new DMSpecial( "operator" );
 			newOp.setID( dm.getAndIncrementID() );
 			
+			// name
 			DMEnumeration newEnum = new DMEnumeration("name");
 			newEnum.getEnums().add( file.getName().split("\\.")[0] );
 			newEnum.setID( dm.getAndIncrementID() );
 
 			newOp.addChild(newEnum);
+			dm.register(newEnum);
+			
+			// type
+			DMEnumeration enumType = new DMEnumeration("type");
+			enumType.getEnums().add( "state" );
+			enumType.setID( dm.getAndIncrementID() );
+
+			newOp.addChild(enumType);
+			dm.register(enumType);
+			
+			// superstate
+			
+			DMPointer superstate = new DMPointer("superstate");
+			superstate.setTarget( dmRoot );
+			superstate.setID( dm.getAndIncrementID() );
+			
+			newOp.addChild(superstate);
+			dm.register(superstate);
+			
+			// top-state
+			DMPointer topstate = new DMPointer("top-state");
+			topstate.setTarget( dm.getRoot() );
+			topstate.setID( dm.getAndIncrementID() );
+			
+			newOp.addChild(topstate);
+			dm.register(topstate);
+			
+			// add the whole lot of them to the datamap
 			
 			dmRoot.addChild(newOp);
+			dm.register(newOp);
 			
 			
 			Utility.associateID(file, newOp.getID());
@@ -163,7 +187,7 @@ public class AddSuboperatorWiz extends Wizard implements INewWizard {
 		
 		
 		
-		try {
+		/*try {
 			if (! (container instanceof IProject)) {
 				
 				IFile dmFile = container.getFile(new Path("datamap.xdm"));
@@ -187,7 +211,7 @@ public class AddSuboperatorWiz extends Wizard implements INewWizard {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} // catch
+		} // catch */
 		
 		
 		

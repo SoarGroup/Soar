@@ -11,7 +11,8 @@ import edu.rosehulman.soar.datamap.*;
 import org.eclipse.core.resources.*;
 
 /**
- *
+ * OBSOLETE: NOTHING SHOULD USE THIS CLASS.
+ *  I plan to kill it.
  * Links to another DataMap file and loads its children from there.
  * 
  * @author Tim Jasko 

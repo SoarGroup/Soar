@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import edu.rosehulman.soar.*;
 import edu.rosehulman.soar.editor.outline.*;
 import edu.rosehulman.soar.editor.soar.*;
-import edu.rosehulman.soar.editor.autocomplete.*;
 import edu.rosehulman.soar.errorchecking.*;
 
 
@@ -108,12 +107,11 @@ public class SoarEditor extends AbstractTextEditor
 	}
 	
 	public void setFocus() {
-		SoarContentAssistProcessor sacp =
+		/*SoarContentAssistProcessor sacp =
 			(SoarContentAssistProcessor)
 			getSourceViewerConfiguration().getContentAssistant(null).
-			getContentAssistProcessor(IDocument.DEFAULT_CONTENT_TYPE);
+			getContentAssistProcessor(IDocument.DEFAULT_CONTENT_TYPE); */
 		
-		sacp.refreshDatamap();
 	}
 	
 	

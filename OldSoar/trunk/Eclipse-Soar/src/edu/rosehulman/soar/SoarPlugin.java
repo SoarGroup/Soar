@@ -5,8 +5,7 @@
  */
 package edu.rosehulman.soar;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
@@ -36,6 +35,7 @@ public class SoarPlugin extends AbstractUIPlugin
 	
 	private static DataMapClipboard _datamapClipboard;
 	
+	private static Map _dataMapRegistry = new HashMap(1);
 	
 	
 	/**
@@ -136,9 +136,68 @@ public class SoarPlugin extends AbstractUIPlugin
 	}
 	
 	
-	
+	/**
+	 * Returns the DataMapClipboard.
+	 * @return
+	 */
 	public static DataMapClipboard getDataMapClipboard() {
 		return _datamapClipboard;
+	}
+	
+	
+	/**
+	 * Returns the DataMap associated with the given resource's project.
+	 *  SoarPlugin maintains a HashMap of DataMaps keyed by their project.
+	 *  This allows all datamap editors for a project to be working
+	 *  with the same data, thus avoiding them from over-writing
+	 *  each other when saving. It also saves memory.
+	 * @param res
+	 * @return
+	 */
+	public static DataMap getDataMap(IResource res) {
+		IProject proj = res.getProject();
+		
+		DataMap ret = (DataMap) _dataMapRegistry.get(proj);
+		
+		if (ret == null) {
+			//System.out.println("datamap not found, constructing");
+			
+			try {
+				IFile dmFile = proj.getFile(new Path("datamap.xdm"));
+				
+				if (dmFile.exists()) {
+					ret = new DataMap(dmFile);
+				
+					_dataMapRegistry.put(proj, ret);
+					return ret;
+					
+				} else {
+					return null;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				
+				return null;
+			}
+		}
+		
+		//System.out.println("datamap found");
+		return ret;
+	}
+	
+	/**
+	 * Removes the DataMap that has been associated with the given
+	 *  resource's project. It will be reloaded when asked for again.
+	 *  Use this function when a project is deleted. That way,
+	 *  if a new project is during the same session with the same name,
+	 *  it won't be associated with the DataMap for the now-defunct
+	 *  project.
+	 * @param res
+	 */
+	public static void removeDataMap(IResource res) {
+		IProject proj = res.getProject();
+		
+		_dataMapRegistry.remove(proj);
 	}
 
 }

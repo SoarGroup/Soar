@@ -12,7 +12,6 @@ import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.core.resources.*;
 import org.eclipse.ui.part.*;
-import org.eclipse.core.runtime.*;
 
 import java.util.*;
 
@@ -34,7 +33,7 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 	private SoarEditor _editor;
 	private DataMap _dm = null;
 	
-	private char[] _propActivate = new char[65];
+	private char[] _propActivate;
 	private char[] _infoActivate = null;
 	
 	private String _errorMsg=null;
@@ -46,8 +45,27 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 	 */
 	public SoarContentAssistProcessor(SoarEditor editor) {
 		_editor = editor;
+
 		
-		_propActivate[0] = '^';
+		ArrayList temp = new ArrayList(70);
+		temp.add(new Character('^'));
+		temp.add(new Character('.'));
+		temp.add(new Character('-'));
+		
+		
+		
+		for (char num='0'; num<'9'; num++) {
+			temp.add(new Character(num));
+		}
+		for (char lcase='a'; lcase<'z'; lcase++) {
+			temp.add(new Character( lcase));
+		}
+		for (char ucase='A'; ucase<'A'; ucase++) {
+			temp.add(new Character( ucase ));
+		}
+
+		
+		/*_propActivate[0] = '^';
 		_propActivate[1] = '.';
 		_propActivate[2] = '-';
 		
@@ -63,6 +81,11 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 		for (char ucase='A'; ucase<'A'; ucase++) {
 			_propActivate[index] = ucase;
 			index++;
+		}*/
+		
+		_propActivate = new char[temp.size()];
+		for (int i=0; i<temp.size(); ++i) {
+			_propActivate[i] = ((Character)temp.get(i)).charValue();
 		}
 	}
 	
@@ -78,7 +101,7 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 				
 		DMItem start = _dm.getAssociatedVertex(source);
 		
-		System.out.println( "start: " + start);
+		//System.out.println( "start: " + start);
 		
 		try {
 			if (dm == null) {
@@ -91,6 +114,7 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 				
 			if (activator == '^' || activator == '.') {
 				
+				
 				ArrayList suggestions;
 				
 				if (activator == '^' ) {
@@ -100,15 +124,17 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 				
 					ArrayList names = getNames(docText, documentOffset-2);
 					
-					/*for (int i=0; i<names.size(); i++) {
+					/*System.out.println("names:");
+					for (int i=0; i<names.size(); i++) {
 						System.out.println( "\"" + names.get(i) + "\"");
-					} */
+					}*/
 					
 					//Go through the DataMap for our suggestions
-					//suggestions = getSuggestions((DMIdentifier) start, names, 0);
-					suggestions = _dm.find(names, start);
+					suggestions = getSuggestions(start, names);
+					//suggestions = _dm.find(names, start);
 					
-					/*for (int i=0; i<suggestions.size(); i++) {
+					/*System.out.println("suggestions");
+					for (int i=0; i<suggestions.size(); i++) {
 						System.out.println(suggestions.get(i));
 					} */
 				} // else
@@ -162,7 +188,7 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 				
 				//Go through the DataMap for our suggestions
 				suggestions = _dm.find(names, start);
-				//suggestions = getSuggestions((DMIdentifier) start, names, 0);
+				//suggestions = getSuggestions(start, names);
 				
 				/*System.out.println("**suggestions before");
 				for (int i=0; i<suggestions.size(); i++) {
@@ -219,55 +245,20 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 
 	} // ICompletionProposal[] computeCompletionProposals( ... )
 	
-	
-	/**
-	 * Retrieves completion suggestions.
-	 *  Should be called with the DataMap root node and an index of 0. 
-	 * 
-	 * @param node The node to search. Use the DataMap root.
-	 * @param names A list of the names to seek through in the DataMap
-	 * @param index For recursion purposes. Use 0 here.
-	 * @return An ArrayList of all possible suggestions.
-	 */
-	private ArrayList getSuggestions(DMIdentifier node, ArrayList names, int index) {
+
+	private ArrayList getSuggestions(DMItem start, ArrayList names) {
+		ArrayList ret = new ArrayList();
+		ArrayList results = _dm.find(names, start);
 		
-		ArrayList kids = node.getChildren();
-		String name = (String) names.get(index);
+		//System.out.println("**find results:");
+		for (int i=0; i<results.size(); ++i) {
+			DMItem result = (DMItem) results.get(i);
+			//System.out.println(result);
+			ret.addAll(result.getChildren());
+		}
 		
-		//System.out.println(node + ": " + index);
-		
-		//This is the final item! Yipee!
-		if (index == names.size()-1) {
-			
-			
-			ArrayList ret = new ArrayList();
-			
-			for (int i=0; i<kids.size(); i++) {
-				DMItem kid = (DMItem) kids.get(i);
-				
-				if (kid.getName().equals(name)) {
-					ret.addAll(kid.getChildren());
-				} // if
-			} // for
-			
-			return ret;
-		
-		//Not the final item. There's some recursing to be doing.
-		// I would like to point out that this would be prettier in Scheme.
-		} else {
-			ArrayList ret = new ArrayList();
-			
-			for (int i=0; i<kids.size(); i++) {
-				DMItem kid = (DMItem) kids.get(i);
-	
-				if (kid.getName().equals(name) && kid instanceof DMIdentifier) {
-					ret.addAll( getSuggestions((DMIdentifier)kid, names, index+1));
-				} // if
-			} // for
-			
-			return ret;
-		} // else
-	} //ArrayList getSuggestions( ... )
+		return ret;
+	}
 	
 	
 	
@@ -319,7 +310,7 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 	 *  the latest changes to the datamap.
 	 *
 	 */
-	public void refreshDatamap() {
+	/*public void refreshDatamap() {
 		FileEditorInput input = (FileEditorInput) _editor.getEditorInput();
 		IContainer folder = input.getFile().getParent();
 		
@@ -345,20 +336,20 @@ public class SoarContentAssistProcessor implements IContentAssistProcessor {
 			
 			_dm = null;
 		}
-	} // void refreshDatamap()
+	} // void refreshDatamap() */
 	
 	
 	/**
-	 * Retrieves the DataMap we need to look at. First it checks the file's
-	 *  folder for datamap.xdm; if that does not exist, it looks in that folder's
-	 *  parent folder. If there is still no DataMap found,
-	 *  <code>null</code> is returned.<p>
+	 * Retrieves the DataMap we need to look at.
 	 * 
 	 * @return The DataMap to for this file, or <code>null</code> if one could not be found.
 	 */
 	private DataMap getDataMap() {
+		_dm = DataMap.getAssociatedDatamap( 
+			((FileEditorInput) _editor.getEditorInput()).getFile());
+
 		return _dm;
-	} // DataMap getDataMap(ITextViewer viewer)
+	} // DataMap getDataMap()
 
 
 	public IContextInformation[] computeContextInformation(

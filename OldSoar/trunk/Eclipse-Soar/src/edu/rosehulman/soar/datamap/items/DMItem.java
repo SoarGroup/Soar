@@ -68,7 +68,7 @@ public abstract class DMItem {
 	 * @return An ArrayList of the item's children.
 	 */
 	public ArrayList getChildren() {
-		return null;
+		return new ArrayList(0);
 	}
 	
 	
@@ -135,7 +135,6 @@ public abstract class DMItem {
 	
 	/**
 	 * Tells whether the item has any children or not.
-	 * Currently, only {@link DMIdentifier} can have children.
 	 * 
 	 * @return true if the item has children, false otherwise
 	 */
@@ -145,7 +144,10 @@ public abstract class DMItem {
 	
 	/**
 	 * Indicates whether the item can have children.
-	 * Currently, only {@link DMIdentifier} can have children.
+	 *  When this was all first designed, only DMIdentifier could have
+	 *  children. However, the recently added DMPointer may or may not
+	 *  support children. Good thing I left this open for expansion, eh?
+	 *  I'm such a genius.
 	 * 
 	 * @return true if the item supports children, false if it doesn't
 	 */

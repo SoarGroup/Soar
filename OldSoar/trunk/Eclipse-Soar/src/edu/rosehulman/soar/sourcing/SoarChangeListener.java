@@ -5,6 +5,7 @@
  */
 package edu.rosehulman.soar.sourcing;
 
+import edu.rosehulman.soar.*;
 import edu.rosehulman.soar.natures.*;
 
 import org.eclipse.core.resources.*;
@@ -33,10 +34,22 @@ public class SoarChangeListener implements IResourceChangeListener {
 			
 			switch (delta.getKind()) {
 				
+				
+				case IResourceDelta.REMOVED:
+					// Deregister the datamap if we delete a project
+					// Otherwise, if we create a new project during this 
+					//  session with the same name, it will show up as having
+					//  this project's datamap.
+					IResource dRes = delta.getResource();
+					
+					if (dRes.equals(dRes.getProject())) {
+						SoarPlugin.removeDataMap(dRes);
+					}
+				
+					//fall through
 				case IResourceDelta.MOVED_TO:
 				case IResourceDelta.MOVED_FROM:
 				case IResourceDelta.ADDED:
-				case IResourceDelta.REMOVED:
 				
 					IResource res = delta.getResource();
 					IProject proj = res.getProject();

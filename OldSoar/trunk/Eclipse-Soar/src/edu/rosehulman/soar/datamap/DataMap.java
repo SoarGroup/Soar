@@ -7,6 +7,7 @@
 package edu.rosehulman.soar.datamap;
 
 
+import edu.rosehulman.soar.*;
 import edu.rosehulman.soar.datamap.items.*;
 
 import org.eclipse.core.runtime.*;
@@ -68,6 +69,15 @@ public class DataMap {
 	 */
 	public int getAndIncrementID() {
 		return _currID++;
+	}
+	
+	/**
+	 * Tells the datamap to associate this item with its id, enabling you
+	 *  to later retrieve it by its id.
+	 * @param newItem
+	 */
+	public void register(DMItem newItem) {
+		_ids.put(new Integer(newItem.getID()), newItem);
 	}
 	
 	/**
@@ -160,14 +170,7 @@ public class DataMap {
 	}
 	
 	
-	/**
-	 * Tells the datamap to associate this item with its id, enabling you
-	 *  to later retrieve it by its id.
-	 * @param newItem
-	 */
-	public void register(DMItem newItem) {
-		_ids.put(new Integer(newItem.getID()), newItem);
-	}
+
 	
 	
 	/**
@@ -219,7 +222,7 @@ public class DataMap {
 	 * @return An ArrayList of DMItems that match the given path.
 	 */
 	public ArrayList find(ArrayList names) {
-		return find( getRoot(), names, 0);
+		return (ArrayList) find( getRoot(), names, 0).clone();
 	}
 	
 	
@@ -232,7 +235,7 @@ public class DataMap {
 	 * @return An ArrayList of DMItems that match the given path.
 	 */
 	public ArrayList find(ArrayList names, DMItem start) {
-		return find( start, names, 0);
+		return (ArrayList) find( start, names, 0).clone();
 	}
 	
 	
@@ -281,7 +284,7 @@ public class DataMap {
 			for (int i=0; i<kids.size(); i++) {
 				DMItem kid = (DMItem) kids.get(i);
 
-				if (kid.getName().equals(name) && kid instanceof DMIdentifier) {
+				if (kid.getName().equals(name) && kid.hasChildren()) {
 					ret.addAll( find(kid, names, index+1));
 				} // if
 			} // for
@@ -843,6 +846,9 @@ public class DataMap {
 	 * @return The datamap for this file.
 	 */
 	public static DataMap getAssociatedDatamap(IResource res) {
+		return SoarPlugin.getDataMap(res);
+		
+		/*
 		IProject proj = res.getProject();
 		
 		try {
@@ -860,7 +866,7 @@ public class DataMap {
 			e.printStackTrace();
 			
 			return null;
-		}
+		} */
 	}
 	
 	
