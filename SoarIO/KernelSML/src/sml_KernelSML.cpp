@@ -670,14 +670,14 @@ EXPORT Direct_WMObject_Handle sml_DirectGetRoot(char const* pAgentName, bool inp
 	return (Direct_WMObject_Handle)pRoot ;
 }
 
-EXPORT void sml_DirectRunTilOutput(char const* pAgentName)
+EXPORT void sml_DirectRun(char const* pAgentName, int decisions)
 {
 	IAgent* pAgent = KernelSML::GetKernelSML()->GetKernel()->GetAgentManager()->GetAgent(pAgentName) ;
 
 	if (!pAgent)
 		return ;
 
-	pAgent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT) ;
+	pAgent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, decisions) ;
 }
 
 EXPORT void sml_DirectReleaseWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)

@@ -147,7 +147,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 
 	m_pDirectGetRootFunction =			(DirectGetRootFunction)GetProcAddress(hLibrary, "sml_DirectGetRoot") ;
 	m_pDirectGetWorkingMemoryFunction = (DirectGetWorkingMemoryFunction)GetProcAddress(hLibrary, "sml_DirectGetWorkingMemory") ;
-	m_pDirectRunTilOutputFunction =		(DirectRunTilOutputFunction)GetProcAddress(hLibrary, "sml_DirectRunTilOutput") ;
+	m_pDirectRunFunction =			    (DirectRunFunction)GetProcAddress(hLibrary, "sml_DirectRun") ;
 	
 	m_pDirectReleaseWMEFunction =		(DirectReleaseWMEFunction)GetProcAddress(hLibrary, "sml_DirectReleaseWME") ;
 	m_pDirectReleaseWMObjectFunction =	(DirectReleaseWMObjectFunction)GetProcAddress(hLibrary, "sml_DirectReleaseWMObject") ;
@@ -156,7 +156,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	if (m_pDirectAddWMEStringFunction && m_pDirectAddWMEIntFunction && m_pDirectAddWMEDoubleFunction &&
 		m_pDirectRemoveWMEFunction    && m_pDirectAddIDFunction     && m_pDirectLinkIDFunction &&
 		m_pDirectGetThisWMObjectFunction && m_pDirectGetRootFunction && m_pDirectGetWorkingMemoryFunction &&
-		m_pDirectReleaseWMEFunction && m_pDirectReleaseWMObjectFunction && m_pDirectRunTilOutputFunction)
+		m_pDirectReleaseWMEFunction && m_pDirectReleaseWMObjectFunction && m_pDirectRunFunction)
 	{
 		// We only enable direct connections if we found all of the methods, this is a synchronous connection (i.e. we execute
 		// on the client's thread) and the client says it's ok to use these optimizations.

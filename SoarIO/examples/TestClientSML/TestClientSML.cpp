@@ -150,8 +150,9 @@ bool SimpleListener(int life)
 void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
 {
 	int* pInt = (int*)pUserData ;
-	if (*pInt != 25)
-		cout << "***ERROR*** getting user data from callback" << endl ;
+
+	// Increase the count
+	*pInt = *pInt + 1 ;
 
 	cout << "Received an event callback" << endl ;
 }
@@ -331,13 +332,15 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		pAgent->InitSoar() ;
 
 		// Test that we get a callback after the decision cycle runs
-		int userData = 25 ;
-		int callback1 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &userData) ;
+		// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
+		int count = 0 ;
+		int callback1 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &count) ;
 
 		// Register another handler for the same event, to make sure we can do that.
 		// Register this one ahead of the previous handler (so it will fire before MyRunEventHandler)
 		bool addToBack = true ;
-		int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &userData, !addToBack) ;
+		int testData = 25 ;
+		int callback2 = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyDuplicateRunEventHandler, &testData, !addToBack) ;
 
 		// Nothing should match here
 		trace = pAgent->Run(2) ;
@@ -355,9 +358,24 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		pAgent->Update(pEmpty, "EMPTY") ;
 		ok = pAgent->Commit() ;
 
+		int myCount = 0 ;
+		int callback_run_count = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &myCount) ;
+
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 //		trace = pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
 		trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+
+		// We should stop quickly (after a decision or two)
+		if (myCount > 10)
+		{
+			cout << "Error in RunTilOutput -- it didn't stop on the output" << endl ;
+			return false ;
+		}
+		if (myCount == 0)
+		{
+			cout << "Error in callback handler for MyRunEventHandler -- failed to update count" << endl ;
+			return false ;
+		}
 
 		// Reset the agent and repeat the process to check whether init-soar works.
 		pAgent->InitSoar() ;

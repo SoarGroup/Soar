@@ -66,7 +66,7 @@ protected:
 
 	DirectGetRootFunction				m_pDirectGetRootFunction ;
 	DirectGetWorkingMemoryFunction		m_pDirectGetWorkingMemoryFunction ;
-	DirectRunTilOutputFunction			m_pDirectRunTilOutputFunction ;
+	DirectRunFunction					m_pDirectRunFunction ;
 
 	DirectReleaseWMEFunction			m_pDirectReleaseWMEFunction ;
 	DirectReleaseWMObjectFunction		m_pDirectReleaseWMObjectFunction ;
@@ -144,9 +144,9 @@ public:
 	{
 		return m_pDirectGetRootFunction(pAgentName, input) ;
 	}
-	void						DirectRunTilOutput(char const* pAgentName)
+	void						DirectRun(char const* pAgentName, int decisions)
 	{
-		m_pDirectRunTilOutputFunction(pAgentName) ;
+		m_pDirectRunFunction(pAgentName, decisions) ;
 	}
 
 	void						DirectReleaseWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)

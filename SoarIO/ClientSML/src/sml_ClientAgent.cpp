@@ -793,7 +793,8 @@ char const* Agent::RunTilOutput(unsigned long maxDecisions)
 #ifdef SML_DIRECT
 	if (GetConnection()->IsDirectConnection())
 	{
-		((EmbeddedConnection*)GetConnection())->DirectRunTilOutput(GetAgentName()) ;
+		SetStopOnOutput(true) ;
+		((EmbeddedConnection*)GetConnection())->DirectRun(GetAgentName(), maxDecisions) ;
 		return "DirectCall -- no output" ;
 	}
 #endif
