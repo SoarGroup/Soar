@@ -1,7 +1,16 @@
 /* File : sml_ClientInterface.i */
 %module sml
 
-//%javaconst(1); // strongly recommended by SWIG manual section 19.3.5.1
+%javaconst(1); // strongly recommended by SWIG manual section 19.3.5.1
+// the previous line causes problems for some enum values, so we have to set them manually here
+// the problem only affects those enums whose values are calculated (as opposed to being constant)
+// hopefully this problem will go away in the future if/when we switch to Java 1.5, which has proper enum support
+%javaconstvalue("smlSystemEventId.smlEVENT_AFTER_RHS_FUNCTION_EXECUTED.swigValue() + 1") smlEVENT_BEFORE_SMALLEST_STEP;
+%javaconstvalue("smlProductionEventId.smlEVENT_BEFORE_PRODUCTION_RETRACTED.swigValue() + 1") smlEVENT_AFTER_AGENT_CREATED;
+%javaconstvalue("smlPrintEventId.smlEVENT_PRINT.swigValue() + 1") smlEVENT_LAST;
+%javaconstvalue("smlWorkingMemoryEventId.smlEVENT_OUTPUT_PHASE_CALLBACK.swigValue() + 1") smlEVENT_LOG_ERROR;
+%javaconstvalue("smlRunEventId.smlEVENT_AFTER_RUNNING.swigValue() + 1") smlEVENT_AFTER_PRODUCTION_ADDED;
+%javaconstvalue("smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue() + 1") smlEVENT_OUTPUT_PHASE_CALLBACK;
 
 //
 // Doug's custom Java code for registering/unregistering callbacks

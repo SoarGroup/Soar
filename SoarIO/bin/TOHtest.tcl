@@ -37,7 +37,6 @@ set productionCallbackId [$agent RegisterForProductionEvent $smlEVENT_AFTER_PROD
 set runCallbackId [$agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback "" ""]
 set agentCallbackId [$agent RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback "" ""]
 set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback "" ""]
-puts "system callback id $systemCallbackId"
 cd demos/towers-of-hanoi
 #load the TOH productions
 set result [$agent LoadProductions towers-of-hanoi.soar]
@@ -60,6 +59,8 @@ set result [$kernel ExecuteCommandLine "excise towers-of-hanoi*monitor*operator-
 set speed [time {set result [$kernel ExecuteCommandLine "run" Soar1]}]
 cd ../..
 puts "\n$speed"
+
+set result [$kernel ExecuteCommandLine "init-soar" Soar1]
 
 #give Tcl object ownership of underlying C++ object so when we delete the Tcl object they both get deleted
 set result [$kernel -acquire]
