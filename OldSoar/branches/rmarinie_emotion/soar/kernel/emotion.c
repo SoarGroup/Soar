@@ -785,7 +785,7 @@ void emotion_aggregate_variables() {
     }
 
     /* update aggregates on e-link */
-    
+    /*
     emotion_update_test_aggregate(&soar_agent->emotions->average_negative_no_object_frame_intensity_wme, soar_agent->emotions->average_negative_no_object_frame_intensity, "average_negative_no_object_frame_intensity");
     emotion_update_test_aggregate(&soar_agent->emotions->average_negative_object_frame_intensity_wme, soar_agent->emotions->average_negative_object_frame_intensity, "average_negative_object_frame_intensity");
     emotion_update_test_aggregate(&soar_agent->emotions->average_no_object_frame_intensity_wme, soar_agent->emotions->average_no_object_frame_intensity, "average_no_object_frame_intensity");
@@ -806,7 +806,7 @@ void emotion_aggregate_variables() {
     emotion_update_test_aggregate(&soar_agent->emotions->sum_object_frame_intensity_wme, soar_agent->emotions->sum_object_frame_intensity, "sum_object_frame_intensity");
     emotion_update_test_aggregate(&soar_agent->emotions->sum_positive_no_object_frame_intensity_wme, soar_agent->emotions->sum_positive_no_object_frame_intensity, "sum_positive_no_object_frame_intensity");
     emotion_update_test_aggregate(&soar_agent->emotions->sum_positive_object_frame_intensity_wme, soar_agent->emotions->sum_positive_object_frame_intensity, "sum_positive_object_frame_intensity");
-
+    */
 }
 
 void emotion_update_test_aggregate(wme ** agg_wme, float value, char * label) {
@@ -871,7 +871,7 @@ void emotion_destructor() {
     emotion_clear_appraisal_list(&current_agent(emotions)->appraisal_frames);
 
     /* free any allocated emotion symbols, WMEs */
-    emotion_free_current_aggregate_wmes();
+    //emotion_free_current_aggregate_wmes();
 
     success = remove_input_wme(soar_agent->emotions->emotion_wme);
     soar_agent->emotions->emotion_wme = NIL;
