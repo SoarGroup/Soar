@@ -1,10 +1,129 @@
 $Id$
 
+              Summary of changes between Soar 8.5.0 and Soar 8.5.1
+                            Bob Marinier
+                            June, 2004
+
+The change from Soar 8.5.0 to Soar 8.5.1 introduces one new feature and several
+bug fixes -- all known crash bugs are fixed. Some default settings were also
+changed.
+
+========================
+Learning Off by Default:
+========================
+
+	In previous versions of Soar, learning was turned on by default. This
+could be a source of confusion and frustration since most users do not intend to
+have learning on. Thus, starting with Soar 8.5.1, learning is turned off.
+
+====================================
+O Support Mode 4 is now the Default:
+====================================
+
+	O Support Mode 4 was introduced in Soar 8.5.0, and starting with Soar
+8.5.1 it is now the default mode. Those requiring other modes (i.e. for
+compatibility) can switch to them using the o-support-mode command.
+	O Support Mode 3 (the default mode in Soar 8.3 - 8.5.0) is meant to
+give I-Support to elaborations of the operator.  At certain times,
+these elaborations were not detected as such, and received O-Support.
+Soar 8.5's O Support Mode 4 can overcome these problems by detecting
+more operator elaborations.  However, it also makes the following change
+from O-Support Mode 3:
+	mixed productions (i.e. operator applications + operator elaborations)
+now receive i-support instead of o-support.  Running with 'warnings -on'
+will print messages when any such productions fire.  You should try
+to be careful not to build any such mixed productions when using
+o-support mode 4
+	While O Support Mode 3 remains the default for this release, this is
+for backwards compatibility only.  It is recommended that O Support Mode 4 is
+used from now on; in a future release, O Support Mode 4 will be the default.
+
+======================
+New Interrupt Command:
+======================
+
+	Soar 8.5.1 now allows matchtime interrupts to be turned on and off at
+runtime. Matchtime interrupts were introduced in Soar 8.5.0 (see immediately
+below for details). The syntax for the interrupt command is:
+	
+	interrupt [-on|-off] [production name]
+
+	If the -on or -off switch is used without a production name, then the
+list of all productions with interrupts turned on or off is given. If the
+production name is used without the -on or -off switch, then the interrupt
+status of the production is given.
+
+	Soar 8.5.0 introducted support for interrupting execution at production
+match-time in addition to interrupts when a production matches.  This new
+capability makes it possible to examine Soar's state before the production
+fires, and even makes it possible to excise the production that matches before
+its effects are realized.  To use the matchtime interrupt feature, productions
+must add the ':interrupt' directive as in the following example production:
+
+	sp { interrupt*on*application
+			 :interrupt
+	   (state <s> ^operator.name stop)
+	-->
+           (write (crlf) |I've already Halted|)}
+
+Note that supporting this feature adds a small amount of computational overhead
+to the match phase.  If you desire a maximally streamlined version of Soar,
+recompile /without/ the MATCHTIME_INTERRUPT flag in soarBuildOptions.h 
+
+====================================================================
+                            Details
+====================================================================
+
+Below is a fairly complete list of enhancements, changes, bug fixes, and known
+issues, with bug numbers for reference. For more information and up to date list
+of what's been fixed please visit the Soar bugzilla server at:
+
+    https://winter.eecs.umich.edu/soar-bugzilla/.
+
+New bug submissions and enhancement requests are welcome!
+
+Soar-8.5.1
+==========
+
+Enhancements
+------------
+186  New interrupt command
+
+Changes
+-------
+338  turn off learning by default
+339  default o-support-mode changed from 3 to 4
+351  some demos need to be updated
+
+Bug Fixes
+---------
+139  Soar crashes when it spends some time in a state no-change substate
+204  Soar crashes when multiple agents are running and one of them halts or
+	reaches an interrupt
+213  GDS crashes when backtracing through result WMEs
+214  fixed behavior of "monitor -delete" command
+274  operator treated as keyword even when not attached to a state
+154  Print message explaining that can't save RETE when justifications are
+	present.
+311  extra newline in Soar output
+278  o-support mode 3 & 4 do not correctly identify mixed
+	elaboration-application productions
+194  warnings when running demos in O Support Mode 4
+357  o-support determination fails to recognize operator elaboration
+355  New GDS bug
+
+Known Issues
+------------
+312  agent structure isn't cleaned up properly
+353  stats command keeps recording between runs
+356  All matches get same support as last processed match
+
+________________________________________________________________________________
+
               Summary of changes between Soar 8.4.5 and Soar 8.5.
                             Scott Wallace
                             August, 2003
-
-
+			    
 The change from Soar8.4.5 to Soar8.5 introduces some new features, and
 bug fixes. Below is a brief summary of the salient changes (all
 modifications have been verified with the soar-8.5-test-suite which is
