@@ -14,8 +14,13 @@
 #include "sml_Client.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_ElementXML.h"
+#include "sml_ClientEvents.h"
 
 using namespace std;
+
+void PrintCallbackHandler(sml::smlEventId id, void* pUserData, sml::Kernel* pKernel) {
+	cout << "PrintCallbackHandler called." << endl;
+}
 
 void backspace(string& cmdline) {
 	if (cmdline.size()) {
@@ -43,6 +48,9 @@ int main(int argc, char** argv)
 	// Comment this in or out to enable tracing of remote SML messages as they come in and out
 	// pKernel->SetTraceCommunications(true) ;
 #endif
+
+	// Register for print callbacks
+	pKernel->RegisterForSystemEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 
 	// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 	sml::Agent* pAgent;
