@@ -20,11 +20,11 @@ SOURCEDIR = $(ROOTDIR)/src
 DOCDIR = $(ROOTDIR)/Documentation
 
 # Soar library directory (the location of libsoarkernel.a)
-SOARLIBROOTDIR = $(ROOTDIR)/lib_src/SKx
+SOARLIBROOTDIR = $(ROOTDIR)/../SoarKernel
 SOARLIBDIR = $(SOARLIBROOTDIR)/lib
 
 # Soar header file location
-SOARHEADERDIR = $(ROOTDIR)/lib_src/SKx/include
+SOARHEADERDIR = $(ROOTDIR)/../SoarKernel/include
 BOOSTHEADERDIR = $(ROOTDIR)/boost
 
 # External lib location

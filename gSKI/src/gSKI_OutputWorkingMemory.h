@@ -48,7 +48,7 @@ namespace gSKI {
     */
   class OutputWorkingMemory: public IWorkingMemory {
   public:
-	  friend OutputLink ;	// Needs access to GetOutputWme
+	  friend class OutputLink ;	// Needs access to GetOutputWme
 
     /**
      * @brief Constructor
