@@ -19,7 +19,7 @@ help ?
 ls dir
 quit exit
 run 1 step
-run -d d
-run -e e
+run -d 1 d
+run -e 1 e
 stop-soar stop
 watch w

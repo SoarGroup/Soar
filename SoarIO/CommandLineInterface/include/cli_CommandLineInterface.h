@@ -84,13 +84,15 @@ typedef ElementXMLList::iterator ElementXMLListIter;
 class RunThread : public soar_thread::Thread {
 public:
 
-	RunThread(int count, bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError);
+	RunThread(int count, egSKIRunType runType, bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError);
 
 protected:
 
 	void Run();
-	bool m_bSelf;
+
 	int m_Count;
+	egSKIRunType m_RunType;
+	bool m_bSelf;
 	gSKI::IKernel* m_pKernel;
 	gSKI::IAgent* m_pAgent;
 	gSKI::Error* m_pError;

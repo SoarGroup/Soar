@@ -13,7 +13,7 @@
 
 using namespace cli;
 
-RunThread::RunThread(int count, bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError) {
+RunThread::RunThread(int count, egSKIRunType runType, bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError) {
 	// if count comes in as zero, set to negative (run forever)
 	if (count) {
 		m_Count = count;
@@ -21,6 +21,7 @@ RunThread::RunThread(int count, bool self, gSKI::IKernel* pKernel, gSKI::IAgent*
 		m_Count = -1;
 	}
 	m_bSelf = self;
+	m_RunType = runType;
 	m_pKernel = pKernel;
 	m_pAgent = pAgent;
 	m_pError = pError;
@@ -44,7 +45,7 @@ void RunThread::Run() {
 	while (!m_QuitNow) {
 		if (m_bSelf) {
 			// Running self, run a cycle
-			runResult = m_pAgent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1, m_pError);
+			runResult = m_pAgent->RunInClientThread(m_RunType, 1, m_pError);
 			runState = m_pAgent->GetRunState();
 
 			// Check if we're halted or interrupted
@@ -56,7 +57,7 @@ void RunThread::Run() {
 			// Running all agents, run a cycle
 			m_pKernel->GetAgentManager()->ClearAllInterrupts();
 			m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
-			runResult = m_pKernel->GetAgentManager()->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
+			runResult = m_pKernel->GetAgentManager()->RunInClientThread(m_RunType, 1, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
 
 			// Walk list of agents and stop if any are halted/interrupted
 			gSKI::tIAgentIterator* iter = m_pKernel->GetAgentManager()->GetAgentIterator(m_pError);
@@ -213,7 +214,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 		runType = gSKI_RUN_FOREVER;	
 	}
 
-	m_pRun = new RunThread(count, (options & OPTION_RUN_SELF) ? true : false, m_pKernel, pAgent, m_pError);
+	m_pRun = new RunThread(count, runType, (options & OPTION_RUN_SELF) ? true : false, m_pKernel, pAgent, m_pError);
 	m_pRun->Start();
 	return true;
 }
