@@ -73,6 +73,7 @@ public class MainFrame
 	private EditMenu 	m_EditMenu = null ;
 	private KernelMenu 	m_KernelMenu = null ;
 	private AgentMenu	m_AgentMenu = null ;
+	private DemoMenu	m_DemoMenu  = null ;
 	
 	/** The main document object -- represents the Soar process.  There is only one of these ever in the debugger. */
 	private Document	m_Document = null ;
@@ -457,21 +458,12 @@ public class MainFrame
 
 		m_MenuBar.setVisible(true);
 
-		// Add the file menu
+		// Add the menus
 		m_FileMenu = FileMenu.createMenu(this, getDocument(), "File", 'F') ;
-		//jMenuBar1.add(m_FileMenu.getJMenu()) ;
-		
-		// Add the edit menu
 		m_EditMenu = menu.EditMenu.createMenu(this, getDocument(), "Edit", 'E') ;
-		//jMenuBar1.add(m_EditMenu.getJMenu()) ;
-		
-		// Add the agent menu
+		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "Demos", 'D') ;
 		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "Agent", 'A') ;
-		//jMenuBar1.add(m_AgentMenu.getJMenu()) ;
-
-		// Add the remote connection menu
 		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "Kernel", 'k') ;
-		//jMenuBar1.add(m_RemoteMenu.getJMenu()) ;
 				
 		// Look up the name of the default window layout
 		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile) ;
@@ -634,6 +626,54 @@ public class MainFrame
   	public Point getLocationOnScreen()
   	{
   		return m_MainWindow.getLocationOnScreen() ;
+  	}
+  	
+  	/** Load the productions for a specific demo.  Filename should be folder/demo.soar -- the path to the demos folder is stored in m_DemoMenu itself */
+  	public void loadDemo(File file)
+  	{
+  		this.m_DemoMenu.loadDemo(file) ;
+  	}
+  	
+  	/** The prime view is generally the trace window.  More specifically it's the first view that reports it can be a prime view */
+  	public AbstractView getPrimeView()
+  	{
+  		return m_MainWindow.getPrimeView() ;
+  	}
+  	
+  	/** Executes a command in the prime view (if there is one).  If there is none, just executes it directly and eats the output */
+  	public void executeCommandPrimeView(String commandLine, boolean echoCommand)
+  	{
+  		AbstractView prime = getPrimeView() ;
+  		
+  		if (prime != null)
+  		{
+  			// Send the command to the view so that the output (if any) has a place to be displayed
+  			prime.executeAgentCommand(commandLine, echoCommand) ;
+  		}
+  		else
+  		{
+  			// Just execute the command directly.  It may return a result but there's no where to display it.
+  			if (getAgentFocus() != null)
+  				m_Document.sendAgentCommand(getAgentFocus(), commandLine) ;
+  		}
+  	}
+  	
+	/************************************************************************
+	* 
+	* Display the given text in this view (if possible).
+	* 
+	* This method is used to programmatically insert text that Soar doesn't generate
+	* into the output window.
+	* 
+	*************************************************************************/
+  	public void displayTextInPrimeView(String text)
+  	{
+  		AbstractView prime = getPrimeView() ;
+  		
+  		if (prime == null)
+  			return ;
+  		
+  		prime.displayText(text) ;
   	}
 		
 	protected void RecordWindowPositions()

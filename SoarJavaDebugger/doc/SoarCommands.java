@@ -28,6 +28,11 @@ public class SoarCommands
 	private int m_BuildVersion ;		// Soar 8.6.0 -- this is the 0
 	private Document m_Document ;
 	
+	public String getSourceCommand()
+	{
+		return "source" ;
+	}
+	
 	public SoarCommands(Document doc, int major, int minor, int build)
 	{
 		m_Document = doc ;

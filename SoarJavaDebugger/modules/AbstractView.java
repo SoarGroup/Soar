@@ -117,10 +117,33 @@ public abstract class AbstractView implements AgentFocusListener
 	* Execute a command (send it to Soar) and display the output in a manner
 	* appropriate to this view.
 	* 
+	* @param Command		The command line to execute
+	* @param echoCommand	If true, display the command in the output window as well.
+	* 
 	* The result (if any) is also returned to the caller.
 	* 
 	*************************************************************************/
-	public abstract String executeAgentCommand(String command) ;
+	public abstract String executeAgentCommand(String command, boolean echoCommand) ;
+
+	/************************************************************************
+	* 
+	* Display the given text in this view (if possible).
+	* 
+	* This method is used to programmatically insert text that Soar doesn't generate
+	* into the output window.
+	* 
+	*************************************************************************/
+	public abstract void displayText(String text) ;
+
+	/************************************************************************
+	* 
+	* Return true from a subclass if the window is a trace window.  We'll send
+	* menu commands (like "source file") to this window and display the results of
+	* the command here.  Multiple windows can return true in which case the first is
+	* selected (currently).
+	* 
+	*************************************************************************/
+	public boolean canBePrimeWindow() { return false ; }
 	
 	/************************************************************************
 	* 

@@ -49,4 +49,7 @@ public class TraceView extends ComboCommandView
 		return getMainFrame().m_White ;
 	}
 	
+	public boolean canBePrimeWindow() { return true ; }
+	
+	
 }

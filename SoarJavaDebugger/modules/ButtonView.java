@@ -35,12 +35,12 @@ import doc.Document;
 public class ButtonView extends AbstractView
 {
 	protected Composite	m_Container ;
-	protected AbstractView m_LinkedView ;	// Connect the button view to a window to display output from its commands.
 	
 	protected static class ButtonInfo
 	{
-		protected String	m_Name ;
-		protected String	m_Command ;
+		protected String			m_Name ;
+		protected String			m_Command ;
+		protected SelectionListener m_Listener ;
 	}
 	
 	/** A list of ButtonInfo objects */
@@ -75,15 +75,36 @@ public class ButtonView extends AbstractView
 	{
 	}
 	
-	public void addButton(String name, String command)
+	/********************************************************************************************
+	* 
+	* Create a new button with visible text of "name" that issues command "command" when the
+	* user presses the button.  (A null command is valid and does nothing).
+	* 
+	* The caller can also (optionally) register a listener which will be called when the button
+	* is pressed, to perform additional actions.
+	* 
+	********************************************************************************************/
+	public void addButton(String name, String command, SelectionListener listener)
 	{
 		ButtonInfo button = new ButtonInfo() ;
 		button.m_Name    = name ;
 		button.m_Command = command ;
+		button.m_Listener = listener ;
 		
 		m_ButtonList.add(button) ;
 	}
 
+	/********************************************************************************************
+	* 
+	* Create a new button with visible text of "name" that issues command "command" when the
+	* user presses the button.  (A null command is valid and does nothing).
+	* 
+	********************************************************************************************/
+	public void addButton(String name, String command)
+	{
+		addButton(name, command, null) ;
+	}
+	
 	public void Init(MainFrame frame, Document doc, Pane parentPane)
 	{
 		m_MainFrame = frame ;
@@ -93,29 +114,35 @@ public class ButtonView extends AbstractView
 		createButtonPanel(m_Pane.getWindow()) ;
 	}
 
-	// This view is used to display output from the commands issued by the buttons.
-	// If it's null, we don't show the output anywhere.
-	public void setLinkedView(AbstractView linkedView)
-	{
-		m_LinkedView = linkedView ;		
-	}
-
-	protected void createButtonPanel(Composite parent)
+	protected void createButtonPanel(final Composite parent)
 	{
 		// The container lets us control the layout of the controls
 		// within this window
 		m_Container	   = new Composite(parent, SWT.NULL) ;
-		m_Container.setLayout(new RowLayout()) ;
+
+		// BUGBUG: Need to figure out how to make the button pane resize itself
+		// to be multiple rows when needed.
+		// These are some efforts that have not succeeded.
+		RowLayout layout = new RowLayout() ;
+		layout.wrap = true ;
+		m_Container.setLayout(layout) ;		
+//		m_Container.addControlListener(new ControlAdapter() {
+//			public void controlResized(ControlEvent e) { parent.getParent().layout(true) ; } }) ;
 		
 		// Create and add buttons for each button info structure
 		for (int i = 0 ; i < m_ButtonList.size() ; i++)
 		{
-			ButtonInfo info = (ButtonInfo)m_ButtonList.get(i) ;
+			final ButtonInfo info = (ButtonInfo)m_ButtonList.get(i) ;
 			
 			final int pos = i ;
 			Button button = new Button(m_Container, SWT.PUSH) ;
 			button.setText(info.m_Name) ;
-			button.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { buttonPressed(e, pos) ; } ; }) ;
+			
+			// When the user presses the button we call our default handler and
+			// optionally a handler registered with the button (to do a custom action)
+			button.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) { buttonPressed(e, pos) ; if (info.m_Listener != null) info.m_Listener.widgetSelected(e); } ;
+			}) ;
 		}
 	}
 
@@ -124,21 +151,23 @@ public class ButtonView extends AbstractView
 		ButtonInfo button = (ButtonInfo)m_ButtonList.get(pos) ;
 		String command = button.m_Command ;
 
-		// If we have a linked view, have it execute the command (so we can see the output).
-		// If not, we execute the command and eat the output.
-		if (m_LinkedView != null)
-			m_LinkedView.executeAgentCommand(command) ;
-		else
-			executeAgentCommand(command) ;
+		// Execute the command in the prime view for the debugger
+		if (command != null)
+			m_MainFrame.executeCommandPrimeView(command, true) ;
 	}
 
-	public String executeAgentCommand(String command)
+	public String executeAgentCommand(String command, boolean echoCommand)
 	{		
 		// Send the command to Soar but there's no where to display the output
 		// so we just eat it.
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
 		
 		return result ;
+	}
+	
+	public void displayText(String text)
+	{
+		// Nowhere to display it so eat it.
 	}
 	
 	/************************************************************************

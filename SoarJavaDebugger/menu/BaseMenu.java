@@ -37,8 +37,10 @@ public class BaseMenu
 		m_Header.setText(title) ;
 		
 		m_Menu = new Menu(bar.getShell(), SWT.DROP_DOWN) ;
-		m_Header.setMenu(m_Menu) ;		
-		m_Header.setAccelerator(SWT.CTRL + mnemonicChar) ;
+		m_Header.setMenu(m_Menu) ;
+		
+		if (mnemonicChar != 0)
+			m_Header.setAccelerator(SWT.CTRL + mnemonicChar) ;
 		
 		// This uses the rather less flexible Swing style model to enable/disable items.
 		// We should probably move that logic into the action objects as a method and have
@@ -58,6 +60,24 @@ public class BaseMenu
 	}
 	
 	public Menu getMenu() { return m_Menu ; }
+	
+	public void addSeparator()
+	{
+		// Don't know how yet in SWT
+	}
+	
+	public BaseMenu addSubmenu(String name)
+	{
+	   BaseMenu subMenu = new BaseMenu(m_Menu, name, (char)0) ;
+	   /*
+	   MenuItem subMenuItem = new MenuItem(m_Menu, SWT.CASCADE);
+	   subMenuItem.setText(name);
+
+	   Menu subMenu = new Menu(m_Menu.getShell(), SWT.DROP_DOWN);
+	   subMenuItem.setMenu(subMenu);
+	   */
+	   return subMenu ;
+	}
 	
 	public MenuItem add(final AbstractAction action)
 	{

@@ -101,6 +101,25 @@ public class MainWindow
   			}
   		}
   	}
+
+  	/** Returns the first view that reports it can be a "prime" view (a trace window usually) **/
+  	public AbstractView getPrimeView()
+  	{
+  		for (int i = 0 ; i < m_PaneList.size() ; i++)
+  		{
+  			Pane pane = (Pane)m_PaneList.get(i) ;
+  			
+  			for (int j = 0 ; j < pane.getNumberViews() ; j++)
+  			{
+  				AbstractView view = pane.getView(j) ;
+  				
+  				if (view.canBePrimeWindow())
+  					return view ;
+  			}
+  		}
+  		
+  		return null ;
+  	}
   	
   	/** Returns the view that currently has focus */
   	public AbstractView getFocusView()
@@ -247,65 +266,6 @@ public class MainWindow
   		m_PaneList.add(bottom) ;
   		m_PaneList.add(rightTop) ;
   		m_PaneList.add(rightBottom) ;
-  		  		
-  		/*
-  		Sash divider1 = new Sash(m_Window, SWT.HORIZONTAL) ;
-  		Sash divider2 = new Sash(m_Window, SWT.VERTICAL) ;
-  		Sash divider3 = new Sash(m_Window, SWT.HORIZONTAL) ;
-
-  		// Layout the three windows with a sash between them
-    	FormData topData    = new FormData();
-    	FormData buttonData = new FormData() ;
-    	FormData bottomData = new FormData();
-    	FormData rightTopData = new FormData() ;
-    	FormData rightBottomData = new FormData() ;
-    	
-      	topData.left      = new FormAttachment(0);
-    	topData.right     = new FormAttachment(divider2);
-    	topData.top       = new FormAttachment(0);
-      	topData.bottom    = new FormAttachment(buttonPane.getWindow());
-      	
-      	buttonData.left   = new FormAttachment(0) ;
-      	buttonData.right  = new FormAttachment(divider2) ;
-      	// If we bind the button's top to the window it makes the top window very small and the buttons very large
-      	// buttonData.top    = new FormAttachment(top.getWindow()) ;
-      	buttonData.bottom = new FormAttachment(divider1) ;
-      	
-      	bottomData.left   = new FormAttachment(0);
-    	bottomData.right  = new FormAttachment(100);
-    	bottomData.top    = new FormAttachment(divider1);
-    	bottomData.bottom = new FormAttachment(100);   
-    	
-    	rightTopData.top  = new FormAttachment(0) ;
-    	rightTopData.bottom = new FormAttachment(divider3) ;
-    	rightTopData.left = new FormAttachment(divider2) ;
-    	rightTopData.right = new FormAttachment(100) ;
-    	
-    	rightBottomData.top  = new FormAttachment(divider3) ;
-    	rightBottomData.bottom = new FormAttachment(100) ;
-    	rightBottomData.left = new FormAttachment(divider2) ;
-    	rightBottomData.right = new FormAttachment(100) ;
- 	
-    	top.getWindow().setLayoutData(topData) ;
-    	buttonPane.getWindow().setLayoutData(buttonData) ;
-    	bottom.getWindow().setLayoutData(bottomData) ;
-    	rightTop.getWindow().setLayoutData(rightTopData) ;
-    	rightBottom.getWindow().setLayoutData(rightBottomData) ;
-    	
-		SelectionListener sashListener = new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				onDragSash(e);
-			}
-		};
-		
-		divider1.addSelectionListener(sashListener) ;
-		divider2.addSelectionListener(sashListener) ;
-		divider3.addSelectionListener(sashListener) ;
-		
-		layoutControls(divider1, 0.8) ;
-		layoutControls(divider2, 0.7) ;
-		layoutControls(divider3, 0.5) ;
-		*/
 		
 		// Now connect up a specific type of view with these panes
 		AbstractView trace = new TraceView() ;
@@ -314,11 +274,12 @@ public class MainWindow
 		// Create the button view
 		ButtonView buttons = new ButtonView() ;
 		buttons.addButton("Init-soar", "init-soar") ;
+		buttons.addButton("Excise all", "excise --all") ;
 		buttons.addButton("Excise chunks", "excise --chunks") ;
 		buttons.addButton("Run 5", "run 5") ;
 		buttons.addButton("Run", "run") ;
 		buttons.addButton("Stop", "stop-soar") ;
-		buttons.setLinkedView(trace) ;	// Use the trace window for output from the buttons
+		buttons.addButton("Towers of Hanoi", null, new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_MainFrame.loadDemo(new java.io.File("towers-of-hanoi", "towers-of-hanoi.soar")) ; } }) ;
 		buttons.Init(m_MainFrame, m_Document, buttonPane) ;		
 		
 		// Create another trace window at the bottom for now

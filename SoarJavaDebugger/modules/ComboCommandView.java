@@ -43,6 +43,8 @@ public class ComboCommandView extends AbstractView
 	private Text m_Text ;
 	
 	private Combo m_CommandCombo ;
+
+	protected Menu m_ContextMenu ;
 	
 	private boolean		m_Inited = false ;
 		
@@ -67,11 +69,11 @@ public class ComboCommandView extends AbstractView
 	protected SoarChangeListener m_ChangeListener ;
 	
 	/** The history of commands for this window */
-	private CommandHistory m_CommandHistory = new CommandHistory() ;
+	protected CommandHistory m_CommandHistory = new CommandHistory() ;
 	
-	private int	m_StopCallback ;
-	private int m_PrintCallback ;
-	
+	protected int m_StopCallback ;
+	protected int m_PrintCallback ;
+		
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
 	public ComboCommandView()
@@ -155,6 +157,46 @@ public class ComboCommandView extends AbstractView
 		
 		// We want to know when the frame focuses on particular agents
 		m_MainFrame.addAgentFocusListener(this) ;
+		
+		// Create a custom context menu for the text area
+		final Menu menu = new Menu (m_Text.getShell(), SWT.POP_UP);
+		menu.addMenuListener(new MenuListener() {
+			public void menuShown(MenuEvent e)
+			{
+				// We'll build the menu dynamically based on the text the user selects etc.
+				fillInContextMenu(menu) ;
+			}
+			public void menuHidden(MenuEvent e)
+			{
+			}
+		
+		}) ;
+		m_ContextMenu = menu ;
+		m_Text.setMenu (menu);
+	}
+	
+	protected String getCurrentSelection()
+	{
+		String selected = m_Text.getSelectionText() ;
+		
+		return selected ;
+	}
+	
+	// This method can be overridden by derived classes
+	protected void fillInContextMenu(Menu contextMenu)
+	{
+		// Get the current selected text
+		String selection = getCurrentSelection() ;
+
+		// Clear any existing items from the menu and then create new items
+		while (contextMenu.getItemCount() > 0)
+		{
+			MenuItem child = contextMenu.getItem(0) ;
+			child.dispose() ;
+		}
+		
+		MenuItem item = new MenuItem (contextMenu, SWT.PUSH);
+		item.setText ("Selection is " + selection);	
 	}
 	
 	public Color getBackgroundColor()
@@ -228,7 +270,7 @@ public class ComboCommandView extends AbstractView
 			this.m_CommandCombo.setText("") ;
 
 		// Send the command to Soar
-		executeAgentCommand(command) ;
+		executeAgentCommand(command, false) ;
 	}
 	
 	public void setTextFont(Font f)
@@ -341,11 +383,17 @@ public class ComboCommandView extends AbstractView
 	* Execute a command (send it to Soar) and display the output in a manner
 	* appropriate to this view.
 	* 
+	* @param Command		The command line to execute
+	* @param echoCommand	If true, display the command in the output window as well.
+	* 
 	* The result (if any) is also returned to the caller.
 	* 
 	*************************************************************************/
-	public String executeAgentCommand(String command)
+	public String executeAgentCommand(String command, boolean echoCommand)
 	{
+		if (echoCommand)
+			appendText("\n" + command) ;
+		
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
 
 		// Output from Soar doesn't include newlines and assumes that we insert
@@ -356,6 +404,19 @@ public class ComboCommandView extends AbstractView
 		return result ;
 	}
 	
+	/************************************************************************
+	* 
+	* Display the given text in this view (if possible).
+	* 
+	* This method is used to programmatically insert text that Soar doesn't generate
+	* into the output window.
+	* 
+	*************************************************************************/
+	public void displayText(String text)
+	{
+		appendText(text) ;
+	}
+
 	private void appendText(final String text)
 	{
 		// If Soar is running in the UI thread we can make
