@@ -57,6 +57,8 @@ int main(int argc, char** argv)
 		for (;;) {
 			if (scriptFile.is_open()) {
 				if (!scriptFile.get(input)) {
+					scriptFile.close();
+					input = '\n';
 					break;
 				}
 			} else {
