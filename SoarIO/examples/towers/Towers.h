@@ -92,7 +92,6 @@ cout <<"I'm adding 'on' to holds...." << endl;
 			m_pHoldsDiskBeneath = m_pWMemory->AddWmeString(holdsParentObject, "above", "none");
 
 		m_holdsNeedsToBeUpdated = false;
-
 	}
 
 
@@ -113,12 +112,8 @@ cout <<"I'm adding 'on' to holds...." << endl;
 	//holds wme regardless of whether they have changed
 	void Update(IWorkingMemory* pWMemory, IWMObject* object)
 	{
-cout << "Update called...." << endl;
 		if(m_holdsNeedsToBeUpdated == false)
-		{
-cout << "Update returning early because no update is needed..."	<< endl;
 			return;
-		}
 
 		// Get List of objects referencing this object with attribute "on"
 		tIWmeIterator* onItr = object->GetWMEs("on");
@@ -128,15 +123,12 @@ cout << "Update returning early because no update is needed..."	<< endl;
 			IWme* oldTowerLink = onItr->GetVal();
 
 			// Replace the wme attribute "on" with the new value
-			const gSKI::ISymbol* pegParentSymbol = m_pPeg->GetValue();
-			assert(pegParentSymbol);
-			IWMObject* pegParentObject = pegParentSymbol->GetObject();
+	//		const gSKI::ISymbol* pegParentSymbol = m_pPeg->GetValue();
+	//		assert(pegParentSymbol);
+	//		IWMObject* pegParentObject = pegParentSymbol->GetObject();
 
 			m_pPeg->Release();
-			//m_pPeg = pWMemory->AddWmeObjectLink(object, "on", pegParentObject);
-			m_pPeg = pWMemory->AddWmeObjectLink(object, "on", m_actualPegWME->GetValue()->GetObject());
-			
-cout << "I'm also adding 'on' to holds....." << endl;
+			m_pPeg = pWMemory->AddWmeObjectLink(object, "on", m_pPegId);
 		}
 		// Get List of objects referencing this object with attribute "above"
 		tIWmeIterator* aboveItr = object->GetWMEs("above");
@@ -151,7 +143,6 @@ cout << "I'm also adding 'on' to holds....." << endl;
 				assert(aboveParentSymbol);
 				IWMObject* aboveParentObject = aboveParentSymbol->GetObject();
 
-				//pWMemory->RemoveObject(m_pHoldsDiskBeneath->GetValue()->GetObject());
 				m_pHoldsDiskBeneath->Release();
 				m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", aboveParentObject);
 			}
@@ -165,13 +156,13 @@ cout << "I'm also adding 'on' to holds....." << endl;
 	}
 
 
-	 IWme* const GetIdentifierWME() const {return m_pDiskIdentifier;}
+	IWme* const GetIdentifierWME() const {return m_pDiskIdentifier;}
 
-	 IWme* const GetHoldsIdentifierWME() const {return m_pHoldsIdentifier;}
+	IWme* const GetHoldsIdentifierWME() const {return m_pHoldsIdentifier;}
 
-	 int GetSize() const {return m_size;}
+	int GetSize() const {return m_size;}
 
-	 void SetDiskBeneath(Disk* diskBeneath, IWme* pegWME)
+	void SetDiskBeneath(Disk* diskBeneath, IWMObject* pegObject)
 	 {
 		//TODO //FIXME @TODO release ref to wme of old disk beneath (if it's not zero)  ????
 
@@ -180,7 +171,7 @@ cout << "I'm also adding 'on' to holds....." << endl;
 		else
 			m_pDiskBeneath = 0;
 
-		m_actualPegWME = pegWME;
+		m_pPegId = pegObject;
 		m_holdsNeedsToBeUpdated = true;
 	 }
 
@@ -195,19 +186,18 @@ private:
 
 	int m_size;//a convenience for other classes
 
+	//"disk" wmes
 	IWme* m_pDiskIdentifier;
 		IWme* m_pName;
 		IWme* m_pSize;
 
 	IWme* m_pDiskBeneath;	//wme of actual disk beneath
+	IWMObject* m_pPegId;	//object of wme of actual ped
 
 	//"holds" wmes
-	IWme* m_actualPegWME; //wme of actual peg
-	IWMObject* m_pPegId;			//peg wme that appears on the holds structure on input link
-
 	IWme* m_pHoldsIdentifier;
-		IWme* m_pHoldsDiskBeneath;//disk wme that appears on the holds structure on the input link
-		IWme* m_pPeg;
+		IWme* m_pHoldsDiskBeneath;	//disk wme that appears on the holds structure on the input link
+		IWme* m_pPeg;				//peg wme that appears on the holds structure on input link
 		IWme* m_pDiskWme;
 };
 
@@ -245,9 +235,9 @@ public:
 		if(!justCreated)
 		{
 			if(!m_disks.empty())
-				newDisk->SetDiskBeneath(m_disks.back(), m_pPegIdentifier);
+				newDisk->SetDiskBeneath(m_disks.back(), m_pPegIdentifier->GetValue()->GetObject());
 			else
-				newDisk->SetDiskBeneath(0, m_pPegIdentifier);
+				newDisk->SetDiskBeneath(0, m_pPegIdentifier->GetValue()->GetObject());
 		}
 
 		m_disks.push_back(newDisk);
