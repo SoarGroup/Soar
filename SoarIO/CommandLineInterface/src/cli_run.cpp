@@ -17,11 +17,12 @@ RunThread::RunThread(int count, egSKIRunType runType, bool self, gSKI::IKernel* 
 	// if count comes in as zero, set to negative (run forever)
 	if (count) {
 		m_Count = count;
+		m_RunType = runType;
 	} else {
 		m_Count = -1;
+		m_RunType = gSKI_RUN_DECISION_CYCLE;
 	}
 	m_bSelf = self;
-	m_RunType = runType;
 	m_pKernel = pKernel;
 	m_pAgent = pAgent;
 	m_pError = pError;
