@@ -96,7 +96,7 @@ soar-bugs@umich.edu for help.
 	   "Additional arguments to tsi must be defined with flags and values."
     }
 
-    set tsiConfig(ControlPanelVersion) 4.0.0
+    set tsiConfig(ControlPanelVersion) 4.0.1
     set controlPanelProc makeTSIDefaultControlPanel
     set x $tsiConfig(ControlPanelX)
     set y $tsiConfig(ControlPanelY)
