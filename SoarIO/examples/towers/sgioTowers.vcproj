@@ -32,10 +32,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="sgio_shared.lib simside.lib ws2_32.lib"
+				AdditionalDependencies="sgio_shared.lib simside.lib ws2_32.lib soarkernel.lib"
 				OutputFile="$(OutDir)/sgioTowers.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\shared&quot;;&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\shared&quot;;  &quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside&quot;;  &quot;C:\Program Files\Soar\Soar-Suite-8.5.2\soar-8.5.2\kernel&quot;"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/sgioTowers.pdb"
@@ -84,7 +84,7 @@
 				AdditionalDependencies="sgio_shared.lib simside.lib ws2_32.lib"
 				OutputFile="$(OutDir)/sgioTowers.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\shared&quot;;&quot;C:\Program Files\Soar\Soar-Suite-8.5.2\sgio-1.1.2\simside&quot;"
+				AdditionalLibraryDirectories="..\..\..\sgio-1.2.2\shared;  ..\..\..\sgio-1.1.2\simside"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
