@@ -313,32 +313,11 @@ bool WorkingMemory::Commit()
 	for (int i = 0 ; i < deltas ; i++)
 	{
 		// Get the next change
-		Delta* pDelta = m_DeltaList.GetDelta(i) ;
+		TagWme* pDelta = m_DeltaList.GetDelta(i) ;
 
-		// Create the wme tag
-		TagWme* pWme = new TagWme() ;
-
-		if (pDelta->isAdd())
-		{
-			WMElement* pElement = ((AddDelta*)pDelta)->GetWME() ;
-
-			// For adds we send everything
-			pWme->SetIdentifier(pElement->GetIdentifier()->GetValueAsString()) ;
-			pWme->SetAttribute(pElement->GetAttribute()) ;
-			pWme->SetValue(pElement->GetValueAsString(), pElement->GetValueType()) ;
-			pWme->SetTimeTag(pElement->GetTimeTag()) ;
-			pWme->SetActionAdd() ;
-		}
-		else
-		{
-			long timeTag = ((RemoveDelta*)pDelta)->GetTimeTag() ;
-
-			// For removes, we just use the time tag
-			pWme->SetTimeTag(timeTag) ;
-			pWme->SetActionRemove() ;
-		}
-
-		command.AddChild(pWme) ;
+		// Add it as a child of the command tag
+		// (the command takes ownership of the delta)
+		command.AddChild(pDelta) ;
 	}
 
 	// This is important.  We are working with a subpart of pMsg.
@@ -346,9 +325,9 @@ bool WorkingMemory::Commit()
 	// it will release the handle...deleting part of our message.
 	command.Detach() ;
 
-	// Now that the message contains the list of WMEs to add/delete
-	// we can clear out the delta list.
-	m_DeltaList.Clear() ;
+	// We have transfered the list of deltas over to pMsg
+	// so we need to clear the list, but not delete the tags that it contains.
+	m_DeltaList.Clear(false) ;
 
 #ifdef _DEBUG
 	// Generate a text form of the XML so we can look at it in the debugger.

@@ -38,6 +38,12 @@ protected:
 	std::list<WMElement*>		m_Children ;
 	typedef std::list<WMElement*>::iterator ChildrenIter ;
 
+public:
+	virtual char const* GetValueType() ;
+
+	// Returns a string form of the value stored here.
+	virtual char const* GetValueAsString() { return m_Identifier.c_str() ; }
+
 protected:
 	// This version is only needed at the top of the tree (e.g. the input link)
 	Identifier(Agent* pAgent, char const* pIdentifier);
@@ -52,12 +58,6 @@ protected:
 	void AddChild(WMElement* pWME) ;
 
 	void RemoveChild(WMElement* pWME) ;
-
-	virtual char const* GetValueType() ;
-
-	// Returns a string form of the value stored here.
-	virtual char const* GetValueAsString() { return m_Identifier.c_str() ; }
-
 };
 
 }	// namespace
