@@ -6,7 +6,7 @@
 %rename(SetCharacterDataConst) sml::ElementXML::SetCharacterData(char const* characterData);
 %rename(SetBinaryCharacterDataConst) sml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
 
-%newobject CreateEmbeddedConnection(char const*, bool) ;
+%newobject sml::Kernel::CreateEmbeddedConnection(char const*, bool, bool, int);
 
 %{
 #include "sml_ClientErrors.h"
