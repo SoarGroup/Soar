@@ -233,6 +233,21 @@ void init_sysparams (void) {
   current_agent(sysparams)[EXPLAIN_SYSPARAM] = FALSE; /* KJC 7/96 */
   current_agent(sysparams)[USE_LONG_CHUNK_NAMES] = TRUE;  /* kjh(B14) */
   current_agent(sysparams)[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
+
+       /* MRJ 5/23/01 */   
+ #ifdef SOAR_DECAY   
+   //Decay system toggle   
+   current_agent(sysparams)[WME_DECAY_SYSPARAM] = TRUE;   
+    
+   //These default values are specified in soarkernel.h   
+   current_agent(sysparams)[WME_DECAY_EXPONENT_SYSPARAM] = -800;   
+   current_agent(sysparams)[WME_DECAY_WME_CRITERIA_SYSPARAM] = DECAY_DEFAULT_WME_CRITERIA;   
+   current_agent(sysparams)[WME_DECAY_ALLOW_FORGETTING_SYSPARAM] = DECAY_DEFAULT_ALLOW_FORGETTING;   
+   current_agent(sysparams)[WME_DECAY_I_SUPPORT_MODE_SYSPARAM] = DECAY_DEFAULT_I_SUPPORT_MODE;   
+   current_agent(sysparams)[WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM] = DECAY_DEFAULT_PERSISTENT_ACTIVATION;   
+    
+ #endif   
+ /* end MRJ 5/23/01 */ 
 }
 
 /* ===================================================================
@@ -370,6 +385,13 @@ void reset_statistics (void) {
     reset_timer(&current_agent(gds_cpu_time[OUTPUT_PHASE]));
     reset_timer(&current_agent(gds_cpu_time[DECISION_PHASE]));
 /* REW: end   11.25.96 */
+
+	     /* MRJ 5/23/01 */   
+ #ifdef SOAR_DECAY   
+   reset_timer (&current_agent(total_decay_time));   
+ #endif   
+ /* end MRJ 5/23/01 */ 
+
 #endif
 #endif
 #ifdef DC_HISTOGRAM
@@ -845,6 +867,15 @@ void do_one_top_level_phase (void) {
        */
       increment_current_agent_d_cycle_count;
 
+           /* MRJ 5/23/01 */   
+ #ifdef SOAR_DECAY   
+             if (current_agent(sysparams)[WME_DECAY_SYSPARAM])   
+             {   
+                 decay_move_and_remove_wmes();   
+             }   
+ #endif   
+ /* end MRJ 5/23/01 */ 
+
       /* timers stopped KJC 10-04-98 */
      #ifndef NO_TIMING_STUFF
      #ifndef KERNEL_TIME_ONLY
@@ -901,6 +932,16 @@ void do_one_top_level_phase (void) {
       * current_agent(d_cycle_count)++;
       */
       increment_current_agent_d_cycle_count;
+   
+            /* MRJ 5/23/01 */   
+ #ifdef SOAR_DECAY   
+             if (current_agent(sysparams)[WME_DECAY_SYSPARAM])   
+             {   
+                 decay_move_and_remove_wmes();   
+             }   
+ #endif   
+ /* end MRJ 5/23/01 */ 
+
    }
 #endif
 

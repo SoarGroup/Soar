@@ -743,7 +743,7 @@ extern int soar_cSetChunkNamePrefix(const char *prefix);
  *
  */
 extern void soar_cSetLearning(enum soar_apiLearningSetting setting);
-
+extern void soar_cSetDecay( enum soar_apiDecaySetting setting, long exp );
 /**
  *
  *

@@ -176,6 +176,10 @@ extern char *soar_news_string;
 #define OPERAND2_MODE_NAME "Operand2/Waterfall"
 /* REW: end   05.05.97 */
 
+ //WME activation and decay functionality is activated by this #define   
+ // MRJ  05.16.2001   
+ #define SOAR_DECAY 
+
 /* --------------------------------------------------------- */
 /* Line width of terminal (used for neatly formatted output) */
 /* --------------------------------------------------------- */
@@ -1181,6 +1185,13 @@ typedef struct wme_struct {
     struct wme_struct *gds_next, *gds_prev;     /* used for dll of wmes in gds */
     /* REW: end   09.15.96 */
 
+         #ifdef SOAR_DECAY   
+     /* MRJ 5/23/01 */   
+     struct wme_decay_element_struct *decay_element;   
+     bool has_decay_element;   
+     /* MRJ end */   
+         #endif 
+
 } wme;
 
 /* REW: begin 09.15.96 */
@@ -1446,6 +1457,12 @@ typedef struct slot_struct {
     dl_cons *acceptable_preference_changed;     /* for context slots: either zero,
                                                    or points to dl_cons if the slot
                                                    has changed + or ! pref's */
+
+         /* MRJ 5/23/01 */   
+ #ifdef SOAR_DECAY   
+     int num_changes;   
+ #endif   
+ /* end MRJ 5/23/01 */ 
 
 } slot;
 
@@ -2038,12 +2055,28 @@ typedef byte wme_trace_type;    /* must be one of the above constants */
 /* SAN */
 #define TRACE_INDIFFERENT_SYSPARAM               33
 
- 
+ #ifdef SOAR_DECAY   
+    
+ /* MRJ 5/23/01 */   
+ #define WME_DECAY_SYSPARAM                       34   
+ #define WME_DECAY_EXPONENT_SYSPARAM              35   
+ #define WME_DECAY_WME_CRITERIA_SYSPARAM          36   
+ #define WME_DECAY_ALLOW_FORGETTING_SYSPARAM      37   
+ #define WME_DECAY_I_SUPPORT_MODE_SYSPARAM        38   
+ #define WME_DECAY_PERSISTENT_ACTIVATION_SYSPARAM 39   
+ #define WME_DECAY_PRECISION_SYSPARAM             40   
+ #define WME_DECAY_LOGGING_SYSPARAM               41   
+    
+ #define HIGHEST_SYSPARAM_NUMBER                  41   
+    
+ #else 
+
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
  
 #define HIGHEST_SYSPARAM_NUMBER                  33
 
- 
+#endif
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()
@@ -3448,6 +3481,232 @@ typedef struct ms_change_struct {
 } ms_change;
 /* REW: end 08.20.97 */
 
+/* MRJ 5/23/01 */   
+ #ifdef SOAR_DECAY   
+ /* =======================================================================   
+                              activate.c   
+    
+    This file implements the WME activation and decay mechanism for Soar.   
+    
+    decay_init() must be called once before execution to init execution.   
+                 Currently it is called by init_soar_agent(void) in agent.c   
+    decay_update_new_wme() - Adds a decay element to an existing WME so that it   
+                             becomes an activated WME   
+    remove_decay_structure(() - Removes a decay element from an existing WME so   
+                                that it is no longer activated.   
+    activate_wmes_in_pref() - Given a preference, this routine increments the   
+                              reference count of all its WMEs (as necessary).   
+    activate_wmes_in_inst() - Given a production instantiation, this routine   
+                              increments the reference count of all the WMEs   
+                              in its condition list.   
+    decay_update_wmes_in_retracted_inst() - Given a production instantiation,   
+                                            decrements the reference count of all   
+                                            the WMEs in its condition list.   
+    decay_update_wmes_tested_in_prods() - Increments the reference count of all   
+                                          WMEs that have been referenced this   
+                                          cycle   
+    decay_move_and_remove_wmes()        - This routine performs WME activation   
+                                          and forgetting at the end of each cycle.   
+    
+    
+    See activate.c for more information.   
+    ======================================================================= */   
+    
+ void decay_init(void);   
+ void decay_update_new_wme(wme *w, int num_refs);   
+ void activate_wmes_in_pref(preference *pref);   
+ void activate_wmes_in_inst(instantiation *inst);   
+ void decay_update_wmes_tested_in_prods();   
+ void decay_update_wmes_in_retracted_inst(instantiation *inst);   
+ void decay_move_and_remove_wmes(void);   
+ void decay_deactivate_element(wme *w);   
+ void decay_remove_element(wme *w);   
+    
+ /*   
+  * Decay constants   
+  *   
+  * MAX_DECAY          - These constants define the size of the decay   
+  * & DECAY_ARRAY_SIZE   timelist array   
+  *   
+  * DECAY_HISTORY_SIZE - This is the size of the boost history (how much a WME   
+  *                      was boosted on each of the last n cycles...where this   
+  *                      constant defines n.)  this might be larger since we can   
+  *                      have multiple updates on the same cycle, as opposed to   
+  *                      Ron Chong's code which only allows one per cycle.   
+  *                      Default value = 10.   
+  *   
+  * DECAY_POWER_ARRAY_SIZE - The decay system uses a dynamic program algorithm   
+  *                          to calculate integer powers of numbers and avoid   
+  *                          calls to pow() after initialization.  This   
+  *                          constant defines the size of the array where the   
+  *                          values are stored.  this size should be bigger than   
+  *                          the largest time interval possible to be seen in the   
+  *                          decay history.  One estimate is:   
+  *                          (DECAY_HISTORY_SIZE * time_for_a_single_decay) + (sum_of_ints_from_1_to_DECAY_HISTORY_SIZE)   
+  *                          = (DECAY_HISTORY_SIZE * time_for_a_single_decay) + (((DECAY_HISTORY_SIZE + 1) * DECAY_HISTORY_SIZE) / 2)   
+  *   
+  * DECAY_ACTIVATION_CUTOFF - If a WME's activation falls below this level it   
+  *                           will be removed from working memory.   
+  *   
+  * DECAY_EXPONENT_DIVISOR - The user can specify the exponent on the command   
+  *                          line using an integer.  The integer is divided   
+  *                          by this constant in order to calculate an real   
+  *                          valued exponent.   
+  *   
+  * DECAY_DEFAULT_EXPONENT - Default value (-800) for the WME_DECAY_EXPONENT_SYSPARAM   
+  *                          which specifies the rate at which WMEs decay.  Note   
+  *                          that since sysparams must be integers the value is   
+  *                          specified as a number to be divided by the   
+  *                          DECAY_EXPONENT_DIVISOR (above).  Thus the default   
+  *                          exponent is actually -0.8.   
+  *   
+  * DECAY_DEFAULT_WME_CRITERIA - Default value for the   
+  *                              WME_DECAY_DEFAULT_WME_CRITERIA sysparam which   
+  *                              specifies what WMEs will have decay values.   
+  *                              Currently there are two modes:   
+  *     DECAY_WME_CRITERIA_O_SUPPORT_ONLY - only o-supported WMEs created by   
+  *                                         the agent (i.e., they have a   
+  *                                         supporting preference)   
+  *     DECAY_WME_CRITERIA_O_ARCH         - All o-supported WMEs including   
+  *                                         architecture created WMEs like   
+  *                                         ^superstate and ^input-link WMEs.   
+  *     DECAY_WME_CRITERIA_ALL            - All wmes are activated   
+  *   
+  * DECAY_DEFAULT_ALLOW_FORGETTING - Default value (TRUE) for the   
+  *                                  WME_DEFAULT_ALLOW_FORGETTING sysparam.   
+  *   
+  * DECAY_DEFAULT_I_SUPPORT_MODE   - Default value for the   
+  *                                  WME_DEFAULT_I_SUPPORT_MODE sysparam whic   
+  *                                  specifies the mode in which i-supported WMEs   
+  *                                  affect activation levels.  Currently there are   
+  *                                  two supported modes:   
+  *     DECAY_I_SUPPORT_MODE_NONE        - i-supported WMEs do not affect   
+  *                                        activation levels   
+  *     DECAY_I_SUPPORT_MODE_NO_CREATE   - i-supported WMEs boost the activation   
+  *                                        levels of all o-supported WMEs in the   
+  *                                        instantiations that test them.  Each   
+  *                                        WME receives and equal boost   
+  *                                        regardless of "distance" (in the   
+  *                                        backtrace) from the tested WME.   
+  *     DECAY_I_SUPPORT_MODE_UNIFORM     - i-supported WMEs boost the activation   
+  *                                        levels of all o-supported WMEs in the   
+  *                                        instantiations that created or test   
+  *                                        them.  Each   
+  *                                        WME receives and equal boost   
+  *                                        regardless of "distance" (in the   
+  *                                        backtrace) from the tested WME.   
+  *   
+  * DECAY_DEFAULT PERSISTENT_ACTIVATION - Default value (FALSE) for the   
+  *                                       WME_DECAY_PERSISTENT_ACTIVATION   
+  *                                       sysparam which specifies whether or   
+  *                                       not an instantiation activates   
+  *                                       WMEs just once, or every cycle until   
+  *                                       it is retracted.   
+  *   
+  */   
+ #define MAX_DECAY 200   
+ #define DECAY_ARRAY_SIZE (MAX_DECAY + 1)   
+ #define DECAY_HISTORY_SIZE 10   
+ #define DECAY_POWER_ARRAY_SIZE 270   
+ #define DECAY_ACTIVATION_CUTOFF -1.6   
+ #define DECAY_EXPONENT_DIVISOR 1000.0   
+ #define DECAY_DEFAULT_EXPONENT -800   
+ #define DECAY_ACTIVATION_LOG_SIZE 10   
+    
+ #define DECAY_WME_CRITERIA_O_SUPPORT_ONLY       0   
+ #define DECAY_WME_CRITERIA_O_ARCH               1   
+ #define DECAY_WME_CRITERIA_ALL                  2   
+ #define DECAY_DEFAULT_WME_CRITERIA              DECAY_WME_CRITERIA_O_SUPPORT_ONLY   
+    
+ #define DECAY_DEFAULT_ALLOW_FORGETTING          1   
+    
+ #define DECAY_I_SUPPORT_MODE_NONE               0   
+ #define DECAY_I_SUPPORT_MODE_NO_CREATE          1   
+ #define DECAY_I_SUPPORT_MODE_UNIFORM            2   
+ #define DECAY_DEFAULT_I_SUPPORT_MODE            DECAY_I_SUPPORT_MODE_NONE   
+    
+ #define DECAY_DEFAULT_PERSISTENT_ACTIVATION         0   
+    
+ #define DECAY_PRECISION_HIGH                    0   
+ #define DECAY_PRECISION_LOW                     1   
+ #define DECAY_DEFAULT_PRECISION                 DECAY_PRECISION_HIGH   
+    
+ #define DECAY_DEFAULT_LOGGING                   0   
+    
+ /*   
+  * Decay Data Structures   
+  *   
+  * wme_decay_element - this struct is attached to o-supported WMEs to keep track   
+  *                     of its activation.   
+  *    Fields:   
+  *    next/previous - each entry in the decay timelist contains a   
+  *                    linked list of these elements.  So these pointers   
+  *                    are needed for that list.   
+  *    this_wme      - the wme that this element goes with   
+  *    time_spot     - a pointer to decay timelist array entry this struct   
+  *                    is attached to.   
+  *    just_created  - when an element is first created additional initialization   
+  *                    needs to be performed at move/decay time.   
+  *    just_removed  - when a WME is removed from working memory, the data   
+  *                    structure is not necessarily deallocated right away   
+  *                    because its reference count has not fallen to zero.   
+  *                    This flag indicates that the WME is in this "limbo" state.   
+  *                    NOTE:  Should this flag be moved to the wme struct?   
+  *    num_references- how many times this wme has been referenced so far   
+  *                    this cycle   
+  *    boost_history - when and how often this wme has been referenced in recent   
+  *                    history.  For example, if a WME has been referenced twice   
+  *                    in cycle 2, once in cycle 3, zero times in cycle 4 and   
+  *                    three times in cycle 5 the array will contain:   
+  *                     [2|2|3|5|5|5|?|?|?|?] where '?' is an unknown value   
+  *    history_count - how many references were matching on this wme at the end of   
+  *                    last cycle.   
+  *   
+  *   
+  * decay_timelist_element - An array of these structures is used to keep track   
+  *                          of what WMEs are at each activation level.   
+  *    Fields:   
+  *    time                     - the cycle when the associated decay element was   
+  *                               created   
+  *    position                 - index of this element in  the decay timelist   
+  *                               array   
+  *    wme_decay_element_struct - pointer to the associated decay element   
+  *   
+  */   
+    
+ typedef struct decay_log_struct   
+ {   
+     float                                   *act_log;   
+     int                                      size;   
+     int                                      start;   
+ } decay_log;   
+    
+ typedef struct wme_decay_element_struct   
+ {   
+         struct wme_decay_element_struct                 *next;   
+         struct wme_decay_element_struct                 *previous;   
+         struct wme_struct                                               *this_wme;   
+         struct decay_timelist_element_struct    *time_spot;   
+     bool                                     just_created;   
+     bool                                     just_removed;   
+     int                                      num_references;   
+     unsigned long                            boost_history[DECAY_HISTORY_SIZE];   
+     int                                      history_count;   
+     decay_log                               *log;   
+ } wme_decay_element;   
+    
+    
+ typedef struct decay_timelist_element_struct   
+ {   
+         long int                                                        time;   
+         int                                                                     position;   
+         struct wme_decay_element_struct         *first_decay_element;   
+ } decay_timelist_element;   
+    
+    
+ #endif  //SOAR_DECAY   
+ /* MRJ end */   
+
 /* !!!!!!!!!!!!!!!!  here's the agent structure !!!!!!!!!!!!!!!!!!!!!!!!*/
 /*----------------------------------------------------------------------*/
 /*                                                                      */
@@ -3488,6 +3747,42 @@ typedef struct agent_struct {
     memory_pool alpha_mem_pool;
     memory_pool ms_change_pool;
     memory_pool node_varnames_pool;
+
+	     /* MRJ 5/23/01 */   
+ #ifdef SOAR_DECAY   
+   memory_pool         decay_element_pool;   
+    
+   struct decay_timelist_element_struct decay_timelist[DECAY_ARRAY_SIZE];   
+   struct decay_timelist_element_struct *current_decay_timelist_element;   
+    
+   TIMER_VALUE      decay_tv;   
+   TIMER_VALUE      total_decay_time;   
+    
+   TIMER_VALUE      decay_new_wme_tv;   
+   TIMER_VALUE      total_decay_new_wme_time;   
+    
+   TIMER_VALUE      decay_move_remove_tv;   
+   TIMER_VALUE      total_decay_move_remove_time;   
+    
+   TIMER_VALUE      decay_rhs_tv;   
+   TIMER_VALUE      total_decay_rhs_time;   
+    
+   TIMER_VALUE      decay_lhs_tv;   
+   TIMER_VALUE      total_decay_lhs_time;   
+    
+   TIMER_VALUE      decay_deallocate_tv;   
+   TIMER_VALUE      total_decay_deallocate_time;   
+    
+   TIMER_VALUE      decay_deallocate_tv_2;   
+   TIMER_VALUE      total_decay_deallocate_time_2;   
+    
+   // this is the array to hold precomputed power calculations   
+   float decay_power_array[DECAY_POWER_ARRAY_SIZE];   
+   //This is used to store the amount of boost received in low precision mode   
+   int decay_quick_boost[DECAY_HISTORY_SIZE];   
+    
+ #endif //SOAR_DECAY   
+ /* MRJ end */ 
 
     /* Dummy nodes and tokens */
     struct rete_node_struct *dummy_top_node;
