@@ -63,7 +63,6 @@ int main(int argc, char** argv)
 	char input;
 	bool previousResult = true;
 	bool process;
-	bool backslash;
 
 	for (;;) {
 		cout << '\n' << previousResult << " " << AGENT_NAME << "> ";

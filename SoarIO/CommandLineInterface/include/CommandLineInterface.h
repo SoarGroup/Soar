@@ -81,7 +81,7 @@ public:
 	bool DoNewAgent(char const* agentName);
 
 	bool ParsePrint(int argc, char**& argv);
-	bool DoPrint();
+	bool DoPrint(const unsigned short options);
 
 	bool ParsePWD(int argc, char**& argv);
 	bool DoPWD();

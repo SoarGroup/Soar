@@ -16,6 +16,7 @@
 #include "IgSKI_Agent.h"
 #include "IgSKI_AgentManager.h"
 #include "IgSKI_Kernel.h"
+#include "IgSKI_DoNotTouch.h"
 
 #include "sml_ElementXML.h"
 #include "sml_TagResult.h"
@@ -28,7 +29,7 @@ using namespace cli;
 
 char const* CLIConstants::kCLIAddWME	= "add-wme";
 char const* CLIConstants::kCLICD		= "cd";
-char const* CLIConstants::kCLIDir		= "cd";
+char const* CLIConstants::kCLIDir		= "ls";
 char const* CLIConstants::kCLIEcho		= "echo";
 char const* CLIConstants::kCLIExcise	= "excise";
 char const* CLIConstants::kCLIExit		= "exit";
@@ -789,7 +790,7 @@ bool CommandLineInterface::ParsePrint(int argc, char**& argv) {
 		}
 	}
 
-	return DoPrint();
+	return DoPrint(options);
 }
 
 // ____        ____       _       _
@@ -798,8 +799,25 @@ bool CommandLineInterface::ParsePrint(int argc, char**& argv) {
 //| |_| | (_) |  __/| |  | | | | | |_
 //|____/ \___/|_|   |_|  |_|_| |_|\__|
 //
-bool CommandLineInterface::DoPrint() {
-	m_Result += "TODO: print";
+bool CommandLineInterface::DoPrint(const unsigned short options) {
+
+	if (!m_pKernel) {
+		m_Result += "No kernel pointer.";
+		return false;
+	}
+
+	if (!m_pAgent) {
+		m_Result += "No agent pointer.";
+		return false;
+	}
+
+	gSKI::EvilBackDoor::ITgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+
+	if (options & OPTION_PRINT_STACK) {
+		pKernelHack->PrintStackTrace(m_pAgent, options & OPTION_PRINT_STATES ? true : false, options & OPTION_PRINT_OPERATORS ? true : false);
+
+	}
+
 	return true;
 }
 
