@@ -107,7 +107,7 @@ int initKTHistogramCmd (ClientData clientData,
 
 int AddWmeCmd (ClientData clientData, 
 	       Tcl_Interp * interp,
-	       int argc, const char *argv[])
+	       int argc, const char * argv[])
 {
     soarResult res;
 
@@ -2410,79 +2410,79 @@ int ReteNetCmd (ClientData clientData,
 
 void Soar_InstallCommands (agent * the_agent)
 {
-  install_tcl_soar_cmd(the_agent, "add-wme",             AddWmeCmd);
-  install_tcl_soar_cmd(the_agent, "ask",                 AskCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "add-wme",                AddWmeCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "ask",                    AskCmd);
   #ifdef ATTENTION_LAPSE  /* RMJ */
-  install_tcl_soar_cmd(the_agent, "attention-lapse",     AttentionLapseCmd);
-  install_tcl_soar_cmd(the_agent, "start-attention-lapse", StartAttentionLapseCmd);
-  install_tcl_soar_cmd(the_agent, "wake-from-attention-lapse", WakeFromAttentionLapseCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "attention-lapse",        AttentionLapseCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "start-attention-lapse",  StartAttentionLapseCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "wake-from-attention-lapse", WakeFromAttentionLapseCmd);
   #endif  /* ATTENTION_LAPSE */
 
-  install_tcl_soar_cmd(the_agent, "attribute-preferences-mode", AttributePreferencesModeCmd);
-  install_tcl_soar_cmd(the_agent, "chunk-name-format",   ChunkNameFormatCmd); /* kjh(CUSP-B14) */
-  install_tcl_soar_cmd(the_agent, "default-wme-depth",   DefWmeDepthCmd);
-  install_tcl_soar_cmd(the_agent, "echo",                EchoCmd);
-  install_tcl_soar_cmd(the_agent, "excise",              ExciseCmd);
-  install_tcl_soar_cmd(the_agent, "explain-backtraces",  ExplainBacktracesCmd);
-  install_tcl_soar_cmd(the_agent, "firing-counts",       FiringCountsCmd);
-  install_tcl_soar_cmd(the_agent, "format-watch",        FormatWatchCmd); 
-  install_tcl_soar_cmd(the_agent, "indifferent-selection", IndifferentSelectionCmd);
-  install_tcl_soar_cmd(the_agent, "init-soar",           InitSoarCmd);
-  install_tcl_soar_cmd(the_agent, "input-period",        InputPeriodCmd);
-  install_tcl_soar_cmd(the_agent, "internal-symbols",    InternalSymbolsCmd);  
-  install_tcl_soar_cmd(the_agent, "io",                  IOCmd);
-  install_tcl_soar_cmd(the_agent, "learn",               LearnCmd);
-  install_tcl_soar_cmd(the_agent, "log",                 LogCmd);
-  install_tcl_soar_cmd(the_agent, "matches",             MatchesCmd);
-  install_tcl_soar_cmd(the_agent, "max-chunks",          MaxChunksCmd);
-  install_tcl_soar_cmd(the_agent, "max-elaborations",    MaxElaborationsCmd);
-  install_tcl_soar_cmd(the_agent, "memories",            MemoriesCmd);
-  install_tcl_soar_cmd(the_agent, "monitor",             MonitorCmd);
-  install_tcl_soar_cmd(the_agent, "multi-attributes",     MultiAttrCmd);
-  install_tcl_soar_cmd(the_agent, "numeric-indifferent-mode",NumericIndifferentCmd      );
-  install_tcl_soar_cmd(the_agent, "o-support-mode",      OSupportModeCmd);
-  install_tcl_soar_cmd(the_agent, "output-strings-destination", OutputStringsDestCmd);
-  install_tcl_soar_cmd(the_agent, "production-find",     ProductionFindCmd);
-  install_tcl_soar_cmd(the_agent, "preferences",         PreferencesCmd);
-  install_tcl_soar_cmd(the_agent, "print",               PrintCmd);
-  install_tcl_soar_cmd(the_agent, "pwatch",              PwatchCmd);
-  install_tcl_soar_cmd(the_agent, "quit",                QuitCmd);  
-/*  install_tcl_soar_cmd(the_agent, "record",              RecordCmd);  /* kjh(CUSP-B10) */
-/*  install_tcl_soar_cmd(the_agent, "replay",              ReplayCmd);  /* kjh(CUSP-B10) */
-  install_tcl_soar_cmd(the_agent, "remove-wme",          RemoveWmeCmd);
-  install_tcl_soar_cmd(the_agent, "rete-net",            ReteNetCmd);
-  install_tcl_soar_cmd(the_agent, "run",                 RunCmd);
-  install_tcl_soar_cmd(the_agent, "sp",                  SpCmd);
-  install_tcl_soar_cmd(the_agent, "stats",               StatsCmd);
-  install_tcl_soar_cmd(the_agent, "stop-soar",           StopSoarCmd);
-  install_tcl_soar_cmd(the_agent, "warnings",            WarningsCmd);
-  install_tcl_soar_cmd(the_agent, "watch",               WatchCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "attribute-preferences-mode", AttributePreferencesModeCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "chunk-name-format",      ChunkNameFormatCmd); /* kjh(CUSP-B14) */
+  install_tcl_soar_cmd_deprecated(the_agent, "default-wme-depth",      DefWmeDepthCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "echo",                   EchoCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "excise",                 ExciseCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "explain-backtraces",     ExplainBacktracesCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "firing-counts",          FiringCountsCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "format-watch",           FormatWatchCmd); 
+  install_tcl_soar_cmd_deprecated(the_agent, "indifferent-selection",  IndifferentSelectionCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "init-soar",              InitSoarCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "input-period",           InputPeriodCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "internal-symbols",       InternalSymbolsCmd);  
+  install_tcl_soar_cmd_deprecated(the_agent, "io",                     IOCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "learn",                  LearnCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "log",                    LogCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "matches",                MatchesCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "max-chunks",             MaxChunksCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "max-elaborations",       MaxElaborationsCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "memories",               MemoriesCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "monitor",                MonitorCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "multi-attributes",       MultiAttrCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "numeric-indifferent-mode",NumericIndifferentCmd      );
+  install_tcl_soar_cmd_deprecated(the_agent, "o-support-mode",         OSupportModeCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "output-strings-destination", OutputStringsDestCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "production-find",        ProductionFindCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "preferences",            PreferencesCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "print",                  PrintCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "pwatch",                 PwatchCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "quit",                   QuitCmd);  
+/*  install_tcl_soar_cmd_deprecated(the_agent, "record",              RecordCmd);  /* kjh(CUSP-B10) */
+/*  install_tcl_soar_cmd_deprecated(the_agent, "replay",              ReplayCmd);  /* kjh(CUSP-B10) */
+  install_tcl_soar_cmd_deprecated(the_agent, "remove-wme",             RemoveWmeCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "rete-net",               ReteNetCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "run",                    RunCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "sp",                     SpCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "stats",                  StatsCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "stop-soar",              StopSoarCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "warnings",               WarningsCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "watch",                  WatchCmd);
 /* REW: begin 09.15.96 */
-  install_tcl_soar_cmd(the_agent, "gds_print",           GDS_PrintCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "gds_print",              GDS_PrintCmd);
   /* REW: 7.1/waterfall:soarAppInit.c  merge */
-  install_tcl_soar_cmd(the_agent, "verbose",            VerboseCmd);
-  install_tcl_soar_cmd(the_agent, "soar8",              Operand2Cmd);
-  install_tcl_soar_cmd(the_agent, "waitsnc",            WaitSNCCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "verbose",                VerboseCmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "soar8",                  Operand2Cmd);
+  install_tcl_soar_cmd_deprecated(the_agent, "waitsnc",                WaitSNCCmd);
 /* REW: end   09.15.96 */
 
 #ifdef USE_DEBUG_UTILS
-  install_tcl_soar_cmd( the_agent, "pool",   PrintPoolCmd);
+  install_tcl_soar_cmd_deprecated( the_agent, "pool",                  PrintPoolCmd);
 
 
 #endif
-  install_tcl_soar_cmd( the_agent, "build-info", SoarBuildInfoCmd);
-  install_tcl_soar_cmd( the_agent, "ex-build-info", SoarExcludedBuildInfoCmd);
+  install_tcl_soar_cmd_deprecated( the_agent, "build-info",            SoarBuildInfoCmd);
+  install_tcl_soar_cmd_deprecated( the_agent, "ex-build-info",         SoarExcludedBuildInfoCmd);
 
 #ifdef USE_CAPTURE_REPLAY
- install_tcl_soar_cmd(the_agent, "capture-input",             CaptureInputCmd);
- install_tcl_soar_cmd(the_agent, "replay-input",        ReplayInputCmd);
+ install_tcl_soar_cmd_deprecated(the_agent, "capture-input",           CaptureInputCmd);
+ install_tcl_soar_cmd_deprecated(the_agent, "replay-input",            ReplayInputCmd);
 #endif
 
 #ifdef KT_HISTOGRAM
- install_tcl_soar_cmd(the_agent, "init-kt",        initKTHistogramCmd);
+ install_tcl_soar_cmd_deprecated(the_agent, "init-kt",                 initKTHistogramCmd);
 #endif
 #ifdef DC_HISTOGRAM
- install_tcl_soar_cmd(the_agent, "init-dc",        initDCHistogramCmd);
+ install_tcl_soar_cmd_deprecated(the_agent, "init-dc",                 initDCHistogramCmd);
 #endif
 
 }

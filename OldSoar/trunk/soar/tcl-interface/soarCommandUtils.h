@@ -72,7 +72,8 @@ extern void get_context_var_info (Symbol **dest_goal,
 				  Symbol **dest_attr_of_slot,
 				  Symbol **dest_current_value);
 extern void get_lexeme_from_string (const char * the_lexeme);
-extern void install_tcl_soar_cmd (agent *, char *, Tcl_CmdProc *);
+extern void install_tcl_soar_cmd (agent *, char *, Tcl_ObjCmdProc *);
+extern void install_tcl_soar_cmd_deprecated (agent *, char *, Tcl_CmdProc *);
 extern bool is_production_name (char *);
 extern production * name_to_production (const char * string_to_test);
 extern void neatly_print_wme_augmentation_of_id (wme *w, int indentation);

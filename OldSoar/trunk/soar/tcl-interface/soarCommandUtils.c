@@ -81,11 +81,26 @@ extern Tcl_Interp *tcl_soar_agent_interpreters[MAX_SIMULTANEOUS_AGENTS];
 void
 install_tcl_soar_cmd (agent * the_agent, 
 		      char * cmd_name, 
+		      Tcl_ObjCmdProc * cmd_proc)
+{
+  Tcl_CreateObjCommand( tcl_soar_agent_interpreters[the_agent->id], cmd_name, cmd_proc, the_agent, NULL);
+}
+
+/*
+ *----------------------------------------------------------------------
+ * This is the old way of doing install_tcl_soar_cmd, here to provide
+ * a way to do incremental updating of the functions to use 
+ * Tcl_CreateObjCommand() instead of Tcl_CreateCommand()
+ * (voigtjr)
+ *----------------------------------------------------------------------
+ */
+void
+install_tcl_soar_cmd_deprecated (agent * the_agent, 
+		      char * cmd_name, 
 		      Tcl_CmdProc * cmd_proc)
 {
   Tcl_CreateCommand( tcl_soar_agent_interpreters[the_agent->id], 
-		    cmd_name, cmd_proc, 
-		    (ClientData) the_agent, NULL);
+		    cmd_name, cmd_proc, (ClientData) the_agent, NULL);
 }
 
 

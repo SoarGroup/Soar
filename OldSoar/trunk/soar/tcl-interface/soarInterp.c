@@ -332,7 +332,7 @@ Soar_DestroyRegisterEntry (riPtrToRemove)
 
 int SoarnewsCmd (ClientData clientData, 
 		 Tcl_Interp * interp,
-		 int argc, const char *argv[])
+		 int argc, Tcl_Obj * const argv[])
 {
   /* BUGBUG update soarnews printout on successive versions */
 
@@ -364,17 +364,14 @@ int SoarnewsCmd (ClientData clientData,
  */
 int VersionCmd (ClientData clientData, 
 		Tcl_Interp * interp,
-		int argc, const char *argv[])
+		int argc, Tcl_Obj * const argv[])
 {
   if (argc > 1)
     {
-      /*interp->result = "Too many arguments, should be: version"; voigtjr, deprecated*/
       Tcl_SetObjResult( interp, Tcl_NewStringObj( "Too many arguments, should be: version", -1 ) );
       return TCL_ERROR;
     }
 
-  /*snprintf(interp->result, TCL_RESULT_SIZE, "%s", soar_version_string); voigtjr, deprecated*/
-  /*interp->result[TCL_RESULT_SIZE-1]=0; voigtjr*/ /* snprintf doesn't set last char to null if output is truncated */
   Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), soar_version_string, (char *) NULL );
   return TCL_OK;
 }
@@ -491,8 +488,8 @@ Soar_Init(Tcl_Interp* interp)
 
 	/* Install the Soar commands */
 	Soar_InstallCommands(new_agent);
-	Tcl_CreateCommand(interp, "soarnews", SoarnewsCmd, NULL, NULL);
-	Tcl_CreateCommand(interp, "version", VersionCmd, NULL, NULL);
+	Tcl_CreateObjCommand(interp, "soarnews", SoarnewsCmd, NULL, NULL);
+	Tcl_CreateObjCommand(interp, "version", VersionCmd, NULL, NULL);
 
 	Soar_LinkInterpVars2Agent(interp, new_agent);
 
