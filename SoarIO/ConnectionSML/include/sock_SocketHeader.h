@@ -1,3 +1,24 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+
+#ifndef HAVE_STDLIB_H
+#error "missing required stdlib.h header"
+#endif // HAVE_STDLIB_H
+
+#ifndef HAVE_SYS_SOCKET_H
+#error "missing required sys/socket.h header"
+#endif // HAVE_SYS_SOCKET_H
+
+#ifndef HAVE_SYS_TYPES_H
+#error "missing required sys/types.h header"
+#endif // HAVE_SYS_TYPES_H
+
+#ifndef HAVE_UNISTD_H
+#error "missing required unistd.h header"
+#endif // HAVE_UNISTD_H
+
+#endif // HAVE_CONFIG_H
+
 // OS specific header files
 
 // True when running the Windows compiler
@@ -52,7 +73,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
-#include <unistd.h>
+#include <unistd.h> // FIXME: redundant?  see up about 6 lines
 #include <fcntl.h>
 
 #define NET_CLOSESOCKET		close

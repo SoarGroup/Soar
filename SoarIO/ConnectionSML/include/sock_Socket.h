@@ -25,6 +25,15 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+
+#ifndef HAVE_SYS_SOCKET_H
+#error "missing required sys/socket.h header"
+#endif
+
+#ifndef HAVE_SYS_TYPES_H
+#error "missing required sys/types.h header"
+#endif // HAVE_SYS_TYPES_H
+
 #endif // HAVE_CONFIG_H
 
 #include <string>
@@ -46,13 +55,9 @@ typedef int				SOCKET ;
 #pragma comment (lib, "ws2_32.lib")
 #endif
 
-#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
-#endif // HAVE_SYS_SOCKET_H
 
-#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
-#endif // HAVE_SYS_TYPES_H
 
 namespace sock {
 

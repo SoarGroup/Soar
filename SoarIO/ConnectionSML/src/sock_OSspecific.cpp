@@ -8,6 +8,15 @@
 // 
 /////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+
+#ifndef HAVE_UNISTD_H
+#error "missing required unistd.h header"
+#endif // HAVE_UNISTD_H
+
+#endif // HAVE_CONFIG_H
+
 #ifdef _WIN32
 //////////////////////////////////////////////////////////////////////
 // Windows Versions
@@ -71,9 +80,7 @@ bool sock::SleepMillisecs(long msecs)
 #include "sock_OSspecific.h"
 #include "sock_SocketHeader.h"
 
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>			// For sleep
-#endif
 
 // Nothing needs to be initialized on Linux
 bool sock::InitializeOperatingSystemSocketLibrary()
