@@ -32,17 +32,52 @@ bool CommandLineInterface::DoOSupportMode(gSKI::IAgent* pAgent, int mode) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (mode < 0) {
-		egSKIOSupportMode m = pAgent->GetOSupportMode();
+		switch (pAgent->GetOSupportMode()) {
+			case gSKI_O_SUPPORT_MODE_0:
+				mode = 0;
+				break;
+			case gSKI_O_SUPPORT_MODE_2:
+				mode = 2;
+				break;
+			case gSKI_O_SUPPORT_MODE_3:
+				mode = 3;
+				break;
+			case gSKI_O_SUPPORT_MODE_4:
+				mode = 4;
+				break;
+			default:
+				return m_Error.SetError(CLIError::kInvalidOSupportMode);
+		}
+
 		char buf[kMinBufferSize];
-		Int2String((int)m, buf, kMinBufferSize);
+		Int2String(mode, buf, kMinBufferSize);
 		if (m_RawOutput) {
 			AppendToResult(buf);
 		} else {
 			AppendArgTag(sml_Names::kParamValue, sml_Names::kTypeInt, buf);
 		}
-		return true;
+	} else {
+
+		egSKIOSupportMode oSupportMode = gSKI_O_SUPPORT_MODE_3;
+		switch (mode) {
+			case 0:
+				oSupportMode = gSKI_O_SUPPORT_MODE_0;
+				break;
+			case 2:
+				oSupportMode = gSKI_O_SUPPORT_MODE_2;
+				break;
+			case 3:
+				oSupportMode = gSKI_O_SUPPORT_MODE_3;
+				break;
+			case 4:
+				oSupportMode = gSKI_O_SUPPORT_MODE_4;
+				break;
+			default:
+				return m_Error.SetError(CLIError::kInvalidOSupportMode);
+		}
+		pAgent->SetOSupportMode(oSupportMode);
 	}
 
-	return m_Error.SetError(CLIError::kOptionNotImplemented);
+	return true;
 }
 

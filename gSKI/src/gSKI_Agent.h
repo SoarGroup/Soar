@@ -575,6 +575,7 @@ namespace gSKI
        */
       /* TODO: O-Support mode investigations */
       egSKIOSupportMode GetOSupportMode(Error* err = 0);
+      virtual void SetOSupportMode(egSKIOSupportMode mode, Error* err = 0);
 
       virtual egSKIUserSelectType GetIndifferentSelection(Error* err = 0);
       virtual void SetIndifferentSelection(egSKIUserSelectType t, Error* err = 0);

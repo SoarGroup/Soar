@@ -606,6 +606,7 @@ namespace gSKI {
        */
       /* TODO: O-Support mode investigations */
       virtual egSKIOSupportMode GetOSupportMode(Error* err = 0) = 0;
+      virtual void SetOSupportMode(egSKIOSupportMode mode, Error* err = 0) =0;
 
        /**
          @brief Returns the indifferent selection setting for the agent

@@ -87,6 +87,8 @@ char const* CLIError::GetErrorDescription() {
 
 		case kRemoveWMEFailed:					return "Remove WME failed.";
 
+		case kInvalidOSupportMode:				return "Invalid O-Support mode, use 0-4.";
+
 		default:								return "Unknown error code.";
 	}
 }

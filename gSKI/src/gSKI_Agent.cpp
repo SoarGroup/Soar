@@ -831,6 +831,28 @@ namespace gSKI
       return m;
    }
 
+   void Agent::SetOSupportMode(egSKIOSupportMode mode, Error* err) 
+   {
+      ClearError(err);
+	  switch (mode) 
+	  {
+		  case gSKI_O_SUPPORT_MODE_0:
+			  m_agent->o_support_calculation_type = 0;
+			  break;
+		  case gSKI_O_SUPPORT_MODE_2:
+			  m_agent->o_support_calculation_type = 2;
+			  break;
+		  case gSKI_O_SUPPORT_MODE_3:
+			  m_agent->o_support_calculation_type = 3;
+			  break;
+		  case gSKI_O_SUPPORT_MODE_4:
+			  m_agent->o_support_calculation_type = 4;
+			  break;
+		  default:
+			  MegaAssert(false, "Invalid o-support-mode");
+	  }
+   }
+
    egSKIUserSelectType Agent::GetIndifferentSelection(Error* err /*= 0*/)
    {
       int us = m_agent->sysparams[USER_SELECT_MODE_SYSPARAM];

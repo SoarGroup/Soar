@@ -83,6 +83,8 @@ namespace cli {
 			kInvalidValue = 56,
 
 			kRemoveWMEFailed = 57,
+
+			kInvalidOSupportMode = 58,
 		};
 
 		CLIError() : m_Code(0) {}
