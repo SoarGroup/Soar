@@ -10,6 +10,7 @@
 #else // WIN32
 #include <sys/types.h>
 #include <dirent.h>
+#include <errno.h>
 #endif // WIN32
 
 #include "cli_Constants.h"
@@ -61,13 +62,10 @@ bool CommandLineInterface::DoLS() {
 
 	// Get the current working directory and store in dir
 	std::string dir;
-	if (!GetCurrentWorkingDirectory(dir)) {
-		return false;
-	}
+	if (!GetCurrentWorkingDirectory(dir)) return false;
 
 	// Open the directory for reading
 	if ((directoryPointer = opendir(dir.c_str())) == 0) return m_Error.SetError(CLIError::kDirectoryOpenFailure);
-	}
 
 	// Read the files
 	errno = 0;
