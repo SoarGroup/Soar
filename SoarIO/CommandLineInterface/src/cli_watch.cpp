@@ -124,49 +124,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				break;
 
 			case 'l'://level
-				{
-					// All of these are going to change
-					options = OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
-						| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
-						| OPTION_WATCH_PHASES | OPTION_WATCH_DECISIONS;
-
-					// Start with all off, turn on as appropriate
-					settings &= ~(OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
-						| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
-						| OPTION_WATCH_PHASES | OPTION_WATCH_DECISIONS);
-
-					switch (ParseLevelOptarg()) {
-						case 0:// none
-							options = OPTION_WATCH_ALL;
-							settings = 0;
-							learnSetting = 0;
-							wmeSetting = 0;
-							break;
-							
-						case 5:// preferences
-							settings |= OPTION_WATCH_PREFERENCES;
-							// falls through
-						case 4:// wmes
-							settings |= OPTION_WATCH_WMES;
-							// falls through
-						case 3:// productions (default, user, chunks, justifications)
-							settings |= OPTION_WATCH_DEFAULT;
-							settings |= OPTION_WATCH_USER;
-							settings |= OPTION_WATCH_CHUNKS;
-							settings |= OPTION_WATCH_JUSTIFICATIONS;
-							// falls through
-						case 2:// phases
-							settings |= OPTION_WATCH_PHASES;
-							// falls through
-						case 1:// decisions
-							settings |= OPTION_WATCH_DECISIONS;
-							break;
-
-						default:
-							return false; //error, code set in ParseLevelOptarg
-
-					}
-				}
+				if (!ProcessWatchLevelSettings(ParseLevelOptarg(), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
 				break;
 
 			case 'N'://none
@@ -252,11 +210,63 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 		}
 	}
 
-	// No non-option arguments allowed
-	if ((unsigned)GetOpt::optind != argv.size()) return m_Error.SetError(CLIError::kTooManyArgs);
+	// Allow watch level by itself
+	if ((unsigned)GetOpt::optind == (argv.size() - 1)) {
+		if (!IsInteger(argv[GetOpt::optind])) {
+			m_Error.SetError(CLIError::kIntegerExpected);
+			return false;
+		}
+		if (!ProcessWatchLevelSettings(atoi(argv[GetOpt::optind].c_str()), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
+	} else if ((unsigned)GetOpt::optind != argv.size()) {
+		return m_Error.SetError(CLIError::kTooManyArgs);
+	}
 	return DoWatch(pAgent, options, settings, wmeSetting, learnSetting);
 }
 
+bool CommandLineInterface::ProcessWatchLevelSettings(const int level, int& options, int& settings, int& wmeSetting, int& learnSetting) {
+
+	// All of these are going to change
+	options = OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
+		| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
+		| OPTION_WATCH_PHASES | OPTION_WATCH_DECISIONS;
+
+	// Start with all off, turn on as appropriate
+	settings &= ~(OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
+		| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
+		| OPTION_WATCH_PHASES | OPTION_WATCH_DECISIONS);
+
+	switch (level) {
+		case 0:// none
+			options = OPTION_WATCH_ALL;
+			settings = 0;
+			learnSetting = 0;
+			wmeSetting = 0;
+			break;
+			
+		case 5:// preferences
+			settings |= OPTION_WATCH_PREFERENCES;
+			// falls through
+		case 4:// wmes
+			settings |= OPTION_WATCH_WMES;
+			// falls through
+		case 3:// productions (default, user, chunks, justifications)
+			settings |= OPTION_WATCH_DEFAULT;
+			settings |= OPTION_WATCH_USER;
+			settings |= OPTION_WATCH_CHUNKS;
+			settings |= OPTION_WATCH_JUSTIFICATIONS;
+			// falls through
+		case 2:// phases
+			settings |= OPTION_WATCH_PHASES;
+			// falls through
+		case 1:// decisions
+			settings |= OPTION_WATCH_DECISIONS;
+			break;
+
+		default:
+			return false; //error, code set in ParseLevelOptarg
+	}
+	return true;
+}
 int CommandLineInterface::ParseLevelOptarg() {
 	std::string optarg(GetOpt::optarg);
 	if (!IsInteger(optarg)) {

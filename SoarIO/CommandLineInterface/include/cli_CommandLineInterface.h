@@ -689,6 +689,7 @@ protected:
 	int ParseLevelOptarg();
 	int ParseLearningOptarg();
 	bool CheckOptargRemoveOrZero();
+	bool ProcessWatchLevelSettings(const int level, int& options, int& settings, int& wmeSetting, int& learnSetting);
 
 	/*************************************************************
 	* @brief 
