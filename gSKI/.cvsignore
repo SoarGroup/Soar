@@ -14,3 +14,4 @@ configure
 libtool
 stamp-h1
 gSKI.ncb
+ltmain.sh

@@ -1,5 +1,7 @@
 AUTOMAKE_OPTIONS = gnu
-lib_LTLIBRARIES = libSoarKernel.la
+
+noinst_LTLIBRARIES = libSoarKernel.la
+
 libSoarKernel_la_SOURCES = \
 agent.cpp\
 backtrace.cpp\
@@ -31,6 +33,7 @@ symtab.cpp\
 tempmem.cpp\
 tilde.cpp\
 trace.cpp\
+utilities.cpp\
 wmem.cpp
 
 INCLUDES = -I.. -I../include
