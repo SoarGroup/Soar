@@ -256,23 +256,6 @@ public:
 	EXPORT bool DoHelp(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string* pCommand = 0);
 
 	/*************************************************************
-	* @brief helpex command
-	* @param pConnection Pointer to connection
-	* @param pResponse Pointer to XML response
-	* @param command The command to get extended help on
-	*************************************************************/
-	EXPORT bool DoHelpEx(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string& command);
-
-	/*************************************************************
-	* @brief home command
-	* @param pConnection Pointer to connection
-	* @param pResponse Pointer to XML response
-	* @param pDirectory The directory to change the cli's initial (home) directory 
-	*        to, pass 0 (null) for current directory
-	*************************************************************/
-	EXPORT bool DoHome(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string* pDirectory = 0);
-
-	/*************************************************************
 	* @brief indifferent-selection command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
@@ -678,8 +661,6 @@ protected:
 	bool ParseFiringCounts(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseGDSPrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseHelp(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseHelpEx(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseHome(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseIndifferentSelection(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseInitSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseInternalSymbols(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -734,8 +715,6 @@ protected:
 	bool DoFiringCounts(gSKI::IAgent* pAgent, const int numberToList = -1, const std::string* pProduction = 0);
 	bool DoGDSPrint(gSKI::IAgent* pAgent);
 	bool DoHelp(const std::string* pCommand = 0);
-	bool DoHelpEx(const std::string& command);
-	bool DoHome(const std::string* pDirectory = 0);
 	bool DoIndifferentSelection(gSKI::IAgent* pAgent, eIndifferentMode mode);
 	bool DoInitSoar(gSKI::IAgent* pAgent);
 	bool DoInternalSymbols(gSKI::IAgent* pAgent);

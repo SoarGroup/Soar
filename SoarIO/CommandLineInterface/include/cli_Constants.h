@@ -17,8 +17,6 @@ namespace cli {
 		static char const* kCLIFiringCounts;
 		static char const* kCLIGDSPrint;
 		static char const* kCLIHelp;
-		static char const* kCLIHelpEx;
-		static char const* kCLIHome;
 		static char const* kCLIIndifferentSelection;
 		static char const* kCLIInitSoar;
 		static char const* kCLIInternalSymbols;

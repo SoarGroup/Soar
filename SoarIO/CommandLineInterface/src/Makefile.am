@@ -20,8 +20,6 @@ cli_explainbacktraces.cpp\
 cli_firingcounts.cpp\
 cli_gdsprint.cpp\
 cli_help.cpp\
-cli_helpex.cpp\
-cli_home.cpp\
 cli_indifferentselection.cpp\
 cli_initsoar.cpp\
 cli_internalsymbols.cpp\

@@ -78,18 +78,6 @@ EXPORT bool CommandLineInterface::DoHelp(sml::Connection* pConnection, sml::Elem
 	return ret;
 }
 
-EXPORT bool CommandLineInterface::DoHelpEx(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string& command) {
-	bool ret = DoHelpEx(command);
-	GetLastResultSML(pConnection, pResponse);
-	return ret;
-}
-
-EXPORT bool CommandLineInterface::DoHome(sml::Connection* pConnection, sml::ElementXML* pResponse, const std::string* pDirectory) {
-	bool ret = DoHome(pDirectory);
-	GetLastResultSML(pConnection, pResponse);
-	return ret;
-}
-
 EXPORT bool CommandLineInterface::DoIndifferentSelection(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, eIndifferentMode mode) {
 	bool ret = DoIndifferentSelection(pAgent, mode);
 	GetLastResultSML(pConnection, pResponse);

@@ -168,12 +168,6 @@
 					RelativePath=".\src\cli_help.cpp">
 				</File>
 				<File
-					RelativePath=".\src\cli_helpex.cpp">
-				</File>
-				<File
-					RelativePath=".\src\cli_home.cpp">
-				</File>
-				<File
 					RelativePath=".\src\cli_indifferentselection.cpp">
 				</File>
 				<File

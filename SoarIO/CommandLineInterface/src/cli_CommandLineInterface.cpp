@@ -56,8 +56,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIFiringCounts]			= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Constants::kCLIGDSPrint]				= &cli::CommandLineInterface::ParseGDSPrint;
 	m_CommandMap[Constants::kCLIHelp]					= &cli::CommandLineInterface::ParseHelp;
-	m_CommandMap[Constants::kCLIHelpEx]					= &cli::CommandLineInterface::ParseHelpEx;
-	m_CommandMap[Constants::kCLIHome]					= &cli::CommandLineInterface::ParseHome;
 	m_CommandMap[Constants::kCLIIndifferentSelection]	= &cli::CommandLineInterface::ParseIndifferentSelection;
 	m_CommandMap[Constants::kCLIInitSoar]				= &cli::CommandLineInterface::ParseInitSoar;
 	m_CommandMap[Constants::kCLIInternalSymbols]		= &cli::CommandLineInterface::ParseInternalSymbols;
@@ -99,10 +97,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIWatch]					= &cli::CommandLineInterface::ParseWatch;
 	m_CommandMap[Constants::kCLIWatchWMEs]				= &cli::CommandLineInterface::ParseWatchWMEs;
 
-	// Set up the current working directory
-    bool ret = DoHome();
-	assert(ret);
-    unused(ret); // placate compiler warning in release build
+	// Set Home to current directory
+	GetCurrentWorkingDirectory(m_HomeDirectory);
 
 	// Initialize other members
 	m_pKernel = 0;
