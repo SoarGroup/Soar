@@ -73,6 +73,7 @@ static ElementXML* AddErrorMsg(MessageGenerator* pConnection, ElementXML* pRespo
   SML output processor
   ==================================
 */
+/*
 class sml_OutputProcessor: public IOutputProcessor
 {
 public:
@@ -108,10 +109,10 @@ public:
    }
 
 private:
-	sml::KernelSMLgSKI*	 m_KernelSML ;
-	sml::Connection*	 m_Connection ;
+	sml::KernelSML*		m_KernelSML ;
+	sml::Connection*	m_Connection ;
 };
-
+*/
 /*************************************************************
 * @brief	Returns the singleton kernel object.
 *************************************************************/
