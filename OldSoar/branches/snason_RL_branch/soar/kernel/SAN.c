@@ -13,6 +13,8 @@ void variablize_nots_and_insert_into_conditions(not * nots, condition * conds);
 action *copy_and_variablize_result_list(preference * pref);
 void variablize_symbol(Symbol ** sym);
 void SAN_add_goal_or_impasse_tests(condition * all_conds);
+void trace_to_state(wme * w, tc_number tc_num, condition ** cond);
+bool symbol_is_in_tc(Symbol * sym, tc_number tc);
 
 
 // The following three functions manage the stack of RL_records.
@@ -125,6 +127,7 @@ void record_for_RL()
 	condition *cond;
 	RL_record *record;
 	Symbol *sym;
+	tc_number tc_num;
 
   // SAN - catch operator ID here
   s = current_agent(bottom_goal)->id.operator_slot;
@@ -149,7 +152,8 @@ void record_for_RL()
 				  list *identifiers = 0;
 				  cons *c;
 				  prod->times_applied = 0;
-				  for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
+				  tc_num = get_new_tc_number();
+				  /*for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
 					  if (cond->type == POSITIVE_CONDITION){
 						  sym = equality_test_for_symbol_in_test(cond->data.tests.id_test);
 						  if (sym) identifiers = add_if_not_member(sym, identifiers);
@@ -158,9 +162,20 @@ void record_for_RL()
 						  sym = equality_test_for_symbol_in_test(cond->data.tests.value_test);
 						  if (sym) identifiers = add_if_not_member(sym, identifiers);
 					  }
+				  }*/
+				  for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
+					  if (cond->type == POSITIVE_CONDITION){
+						  sym = equality_test_for_symbol_in_test(cond->data.tests.id_test);
+						  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
+						  sym = equality_test_for_symbol_in_test(cond->data.tests.attr_test);
+						  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
+						  sym = equality_test_for_symbol_in_test(cond->data.tests.value_test);
+						  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
+					}
 				  }
 				  prod = 0;
-				  for (c = identifiers; c ; c=c->rest){
+				  cond = 0;
+				  /*for (c = identifiers; c ; c=c->rest){
 					  if (prod) break;
 					  sym = (Symbol *) c->first;
 					  for (t = sym->id.slots ; t ; t=t->next){
@@ -170,6 +185,20 @@ void record_for_RL()
 							  if (prod) break;
 						  }
 					  }
+				  }
+				  */
+				  for (w = current_agent(all_wmes_in_rete) ; w ; w = w->rete_next){
+					  	condition *c, *new_cond = make_simple_condition(w->id, w->attr, w->value);
+							for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
+								if (conditions_are_equal(c, new_cond)){
+									deallocate_condition_list(new_cond);
+									new_cond = NIL;
+									break;
+								}
+							}
+						if (!new_cond) continue;	
+						deallocate_condition_list(new_cond);
+						trace_to_state(w, tc_num, &cond);
 				  }
 				  if (prod){
 					  push(prod, record->pointer_list);
@@ -419,3 +448,21 @@ void SAN_add_goal_or_impasse_tests(condition * all_conds)
     }
 }
 
+void trace_to_state(wme * w, tc_number tc_num, condition ** cond){
+	Symbol * sym = w->id;
+	condition *new_cond;
+	wme * z;
+	dl_cons *dc;
+
+	new_cond = make_simple_condition(w->id, w->attr, w->value);
+	if (new_cond->test_for_acceptable_preference == w->acceptable)
+		insert_at_head_of_dll(*cond, new_cond, next, prev);
+	if (!symbol_is_in_tc(sym, tc_num)){
+		for (dc = sym->id.parents ; dc ; dc = dc->next){
+			z = dc->item;
+		 	trace_to_state(z, tc_num, cond);
+		}
+	}
+}
+
+	
