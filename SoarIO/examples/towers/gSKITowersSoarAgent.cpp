@@ -96,6 +96,6 @@ void SoarAgent::MakeMove()
 	assert(runResult != gSKI_RUN_ERROR);
 
 
-	while(TgD::TgD::Update(false, debugger))
-		TGD_SLEEP(50);
+	//while(TgD::TgD::Update(false, debugger))
+	//	TGD_SLEEP(50);
 }

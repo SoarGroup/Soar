@@ -620,9 +620,9 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	assert(agent);
 
 	//create debugger
-	TgD::TSI_VERSION tsiVersion = TgD::TSI40;
-	debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
-	debugger->Init();
+	//TgD::TSI_VERSION tsiVersion = TgD::TSI40;
+	//debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
+	//debugger->Init();
 
 	//Source the agent's productions
 	CommandLineInterface* commLine = new CommandLineInterface();

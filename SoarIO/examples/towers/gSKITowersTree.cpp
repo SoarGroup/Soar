@@ -134,12 +134,11 @@ public:
 	void SetDiskBeneath(Disk* inDisk, Tower* inTower)
 	{
 		if(inDisk)
-			diskBeneath = inDisk->GetDiskInputLinkProfile()->GetDiskIdentifier();
+			diskBeneathSize = inDisk->GetSize();
 		else
-			diskBeneath = 0;
+			diskBeneathSize = 0;
 
-		//fixfix: should probably update peg here (not pegID)
-		//pegId = inTower->GetInputLinkProfile()->GetTowerIdentifierObject();
+		pegName = inTower->GetName();
 		holdsNeedsToBeUpdated = true;
 	}
 
@@ -164,17 +163,12 @@ public:
 		tIWmeIterator* onItr = object->GetWMEs(k_holdsOnString.c_str());
 		if(onItr->IsValid())
 		{
-			//peg->Release(); //BADBAD - this plugs the leak, but we should not be using this peg ptr
-							//again having just called Release on it (according to the gSKI doc) //fixme
-			//pWMemory->RemoveWme(peg);
-			//fixfix: this should update the ^on attrib with the peg name string, not id
-			//peg = pWMemory->AddWmeObjectLink(object, k_holdsOnString.c_str(), pegId);
-			string newTowerName = peg->GetValue()->GetString();
+			string newTowerName;
+			newTowerName = pegName;
 			peg = pWMemory->ReplaceStringWme(peg, newTowerName.c_str());
 		}
-		//fixfix: replace this assert when above fix is done
-		//else
-		//	assert(false);
+		else
+			assert(false);
 		onItr->Release();
 
 		// Get List of objects referencing this object with attribute "above"
@@ -183,13 +177,9 @@ public:
 		if(aboveItr->IsValid())
 		{	//Get the old "above" value
 
-			if(diskBeneath)
+			if(diskBeneathSize != 0)
 			{
-				holdsDiskBeneath->Release();//BADBAD - this plugs the leak, but we should not be using this peg ptr
-				//again having just called Release on it (according to the gSKI doc) //fixme
-				pWMemory->RemoveWme(holdsDiskBeneath);
-				//fixfix: this should update the ^above attrib with an int wme, not id
-				//holdsDiskBeneath = pWMemory->AddWmeObjectLink(object, "above", diskBeneath->GetValue()->GetObject());
+				holdsDiskBeneath = pWMemory->ReplaceIntWme(holdsDiskBeneath, diskBeneathSize);
 			}
 			else
 			{
@@ -199,9 +189,8 @@ public:
 				oldDiskBeneath->Release();
 			}
 		}
-		//fixfix: replace this assert when above fix is done
-		//else
-		//	assert(false);
+		else
+			assert(false);
 		aboveItr->Release();
 
 		holdsNeedsToBeUpdated = false;
@@ -218,8 +207,9 @@ private:
 	{
 		diskIdentifier = 0;
 
-		diskBeneath = 0;
-		//pegId = 0;
+		diskBeneathSize = 0;
+		pegName;
+
 		holdsIdentifier = 0;
 		holdsDiskBeneath = 0;
 		peg = 0;
@@ -237,16 +227,6 @@ private:
 		//This object doesn't own these, so just set pointers to zero
 		//These copies of wmes/wmobjs did not increase the reference count, so we shouldn't
 		//decrease the count by calling Release()
-		if(diskBeneath)
-		{
-			//diskBeneath->Release();  //don't do it!
-			diskBeneath = 0;
-		}
-		/*if(pegId)
-		{
-			//pegId->Release();		  //don't do it!
-			pegId = 0;
-		}*///============================================
 
 		//Release children of "holds"
 		if(holdsDiskBeneath)
@@ -281,13 +261,11 @@ private:
 
 	friend class Disk;
 
+	int diskBeneathSize;	//size of disk beneath
+	char pegName;			//name of peg disk is on
+
 	//"disk" wmes
 	IWme* diskIdentifier;
-//		IWme* name;
-//		IWme* size;
-
-	IWme* diskBeneath;	//wme of actual disk beneath
-	//IWMObject* pegId;	//object of wme of actual peg
 
 	//"holds" wmes
 	IWme* holdsIdentifier;
@@ -458,19 +436,13 @@ Disk::Disk(Tower* tower, int inSize, Disk* diskBeneath) :
 {
 	m_iLinkProfile = new DiskInputLinkProfile();
 	assert(m_iLinkProfile);
-	//m_iLinkProfile->pegId = tower->GetInputLinkProfile()->GetTowerIdentifierObject();
+
 	if(diskBeneath)
-	{
-		m_iLinkProfile->diskBeneath = diskBeneath->m_iLinkProfile->diskIdentifier;
-		//fixfix: Do we even need the diskBeneath IWme* anymore?
-cout<<"This disk of size "<<inSize<<"has a diskBeneath"<<endl;
-cout<<"It's size is: "<<diskBeneath->GetSize()<<endl;
-	}
+		m_iLinkProfile->diskBeneathSize = diskBeneath->GetSize();
 	else
-	{
-		m_iLinkProfile->diskBeneath = 0;
-cout<<"This disk of size "<<inSize<<"has NO diskBeneath"<<endl;
-	}
+		m_iLinkProfile->diskBeneathSize = 0;
+
+	m_iLinkProfile->pegName = tower->GetName();
 
 	//============================
 	// Initialize "disk" wmes
@@ -480,14 +452,9 @@ cout<<"This disk of size "<<inSize<<"has NO diskBeneath"<<endl;
 	//Add the disk identifier to the input link
 	IOManager* manager = pTower->GetWorld()->GetIOManager();
 	assert(manager);
-	//****** Change this to initialize an int wme ******//
 	//m_iLinkProfile->diskIdentifier = manager->AddWMObject(0, k_diskIdentifierString);
 	m_iLinkProfile->diskIdentifier = manager->AddIntWme(0, k_diskIdentifierString, inSize);
 
-	//IWMObject* parentObject = m_iLinkProfile->diskIdentifier->GetValue()->GetObject();
-	//attach subordinate wmes to disk identifier;
-//	m_iLinkProfile->name = manager->AddIntWme(parentObject, k_nameString, m_size);
-//	m_iLinkProfile->size = manager->AddIntWme(parentObject, k_diskSizeString, m_size);
 
 	//============================
 	// Initialize "holds" wmes
@@ -499,27 +466,16 @@ cout<<"This disk of size "<<inSize<<"has NO diskBeneath"<<endl;
 	//add holds wmes to parent object
 
 	//the "on" wme points to the peg that this disk is on
-	//fixedfixed: this should be a string wme, peg name
-	//m_iLinkProfile->peg = manager->AddIDWme(holdsParentObject, k_holdsOnString, m_iLinkProfile->pegId);
 	string newTowerName;
-	newTowerName = pTower->GetName();
+	newTowerName = m_iLinkProfile->pegName;
 	m_iLinkProfile->peg = manager->AddStringWme(holdsParentObject, k_holdsOnString, newTowerName);
 
 	//the "disk" wme points back to its corresponding disk
-	//fixedfixed: this should be an int wme
-	//m_iLinkProfile->diskWme = manager->AddIDWme(holdsParentObject, k_diskIdentifierString, parentObject);
 	m_iLinkProfile->diskWme = manager->AddIntWme(holdsParentObject, k_diskIdentifierString, inSize);
 
 	//the "above" wme points to the disk beneath this one, else "none"
-	if(diskBeneath)
-	{
-		m_iLinkProfile->diskBeneath = diskBeneath->GetDiskInputLinkProfile()->GetDiskIdentifier();
-		//fixfix: this should add an int wme, not ID
-		//bugbug: why doesn't this intwme show up??
-		//IWMObject* pDiskBeneathIdentifier = diskBeneath->GetDiskInputLinkProfile()->GetDiskIdentifierObject();
-		//m_iLinkProfile->holdsDiskBeneath = manager->AddIDWme(holdsParentObject, k_holdsAboveString, pDiskBeneathIdentifier);
-		m_iLinkProfile->holdsDiskBeneath = manager->AddIntWme(holdsParentObject, k_holdsAboveString, diskBeneath->GetSize());
-	}
+	if(m_iLinkProfile->diskBeneathSize != 0)
+		m_iLinkProfile->holdsDiskBeneath = manager->AddIntWme(holdsParentObject, k_holdsAboveString, m_iLinkProfile->diskBeneathSize);
 	else
 		m_iLinkProfile->holdsDiskBeneath = manager->AddStringWme(holdsParentObject, k_holdsAboveString, k_noneString);
 }
@@ -546,14 +502,9 @@ Tower::Tower(HanoiWorld* inWorld, char inName) : pWorld(inWorld), m_name(inName)
 	m_iLinkProfile = new TowerInputLinkProfile();
 	IOManager* manager = pWorld->GetIOManager();
 
-	//****** Change this to init to a string wme *******//
-	//m_iLinkProfile->m_pPegIdentifier = manager->AddWMObject(0, k_worldPegString);
 	string towerName;
 	towerName = inName;
 	m_iLinkProfile->m_pPegIdentifier = manager->AddStringWme(0, k_worldPegString, towerName);
-	//string nameString;
-	//nameString = m_name;
-	//m_iLinkProfile->m_pPegName = manager->AddStringWme(m_iLinkProfile->GetTowerIdentifierObject(), k_nameString, nameString);
 }
 
 
@@ -632,9 +583,9 @@ HanoiWorld::HanoiWorld(bool graphicsOn, int inNumTowers,  int inNumDisks) : draw
 	assert(agent);
 
 	//create debugger
-	TgD::TSI_VERSION tsiVersion = TgD::TSI40;
-	debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
-	debugger->Init();
+	//TgD::TSI_VERSION tsiVersion = TgD::TSI40;
+	//debugger = CreateTgD(agent, kernel, kFactory->GetKernelVersion(), tsiVersion, "Towers.exe");
+	//debugger->Init();
 
 	//Source the agent's productions
 	CommandLineInterface* commLine = new CommandLineInterface();
