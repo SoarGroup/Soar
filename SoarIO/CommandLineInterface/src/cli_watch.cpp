@@ -225,6 +225,9 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 bool CommandLineInterface::ProcessWatchLevelSettings(const int level, int& options, int& settings, int& wmeSetting, int& learnSetting) {
 
+	if (level < 0) return m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
+	if (level > 5) return m_Error.SetError(CLIError::kIntegerOutOfRange);
+
 	// All of these are going to change
 	options = OPTION_WATCH_PREFERENCES | OPTION_WATCH_WMES | OPTION_WATCH_DEFAULT 
 		| OPTION_WATCH_USER | OPTION_WATCH_CHUNKS | OPTION_WATCH_JUSTIFICATIONS
@@ -261,9 +264,6 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, int& optio
 		case 1:// decisions
 			settings |= OPTION_WATCH_DECISIONS;
 			break;
-
-		default:
-			return false; //error, code set in ParseLevelOptarg
 	}
 	return true;
 }
@@ -273,16 +273,7 @@ int CommandLineInterface::ParseLevelOptarg() {
 		m_Error.SetError(CLIError::kIntegerExpected);
 		return -1;
 	}
-	int level = atoi(optarg.c_str());
-	if (level < 0) {
-		m_Error.SetError(CLIError::kIntegerMustBeNonNegative);
-		return -1;
-	}
-	if (level > 5) {
-		m_Error.SetError(CLIError::kIntegerOutOfRange);
-		return -1;
-	}
-	return level;
+	return atoi(optarg.c_str());
 }
 
 int CommandLineInterface::ParseLearningOptarg() {
