@@ -505,7 +505,6 @@ void decay_reference_wme(wme *w)
  
 void decay_update_new_wme(wme *w, int num_refs)
 {
-    int i;
     wme_decay_element *temp_el;
     int bActivate;      // should this be an activated wme?
 
@@ -577,23 +576,11 @@ void decay_update_new_wme(wme *w, int num_refs)
      * Step 2:  Allocate and initialize a new decay element for the WME
      */
     allocate_with_pool(&current_agent(decay_element_pool), &temp_el);
-    temp_el->num_references = num_refs;
     temp_el->just_created = TRUE;
     temp_el->just_removed = FALSE;
-
-    // This is ok, because decay_move_and_remove_wmes() handles
-    //just created wmes specially.  So this value sets it for
-    //subsequent cycles.
-    temp_el->history_count = num_refs;
-
-
-    for(i=0;i<num_refs;i++)
-    {
-        temp_el->boost_history[i] = current_agent(d_cycle_count);
-    }
-
+    temp_el->history_count = 0;
     temp_el->this_wme = w;
-
+    temp_el->num_references = num_refs;
 
     //Initialize the activation log
     if (current_agent(sysparams)[WME_DECAY_LOGGING_SYSPARAM])
@@ -1110,95 +1097,68 @@ void decay_log_boost(wme_decay_element *el, float act, int cycle)
     
 }//decay_log_boost
 
-
 /* ============================================================================
-   decay_boost_new_wme()
+   decay_add_refs_to_history
 
-   This function calculates the position in the decay timelist to place a wme
-   that has just been created.  This could be done by decay_boost_wme() but
-   implementing the special case separately improves system performance.
-   Specifically, since the WME was just created, it has a boost_history already,
-   so all we have to do is place it in the proper spot.
+   This function adds N refs at the previous cycle to the boost history
+   of a given decay element.
 
-   Return Value:  The new position for this wme in the decay timelist array
+   CAVEAT: Why previous cycle instead of current?  It's a kludge.
+   This function is only called by decay_boost_wme() which is called
+   at the end of the cycle but after the cycle count has been
+   incremented.  So I compensate here.
+   
+   NOTE: that this code will allow multiple boosts for the same cycle
+   (Ron Chong's code only allows one boost per cycle)
 
-   Created:  05 August 2003
+   Arguments:
+       el       - decay element to fill in the boost history of
+       num_refs - how many references to add
+
+   Created:  11 Mar 2004
    ========================================================================= */
-long decay_boost_new_wme(wme_decay_element *cur_decay_el)
+void decay_add_refs_to_history(wme_decay_element *el, int num_refs)
 {
-    long decay_spot;
-    long time_iter;
-    float sum, activation_level;
-    int num_refs;
-
-    time_iter = cur_decay_el->time_spot->time;
-    num_refs = cur_decay_el->num_references;
-
-    // If the prod which created this wme has already been
-    // retracted, give the wme boost for a single reference
-    if(num_refs == 0)
+    int i;
+    int move_by;
+    
+    if (num_refs > DECAY_HISTORY_SIZE)
     {
-        num_refs = 1;
+        num_refs = DECAY_HISTORY_SIZE;
     }
-
-    if (current_agent(sysparams)[WME_DECAY_PRECISION_SYSPARAM]
-        == DECAY_PRECISION_LOW)
+    
+    if ((el->history_count + num_refs) > DECAY_HISTORY_SIZE)
     {
-        time_iter += current_agent(decay_quick_boost)[cur_decay_el->history_count];
-        time_iter += cur_decay_el->num_references * 2;
+        //Shift some references out of the array to make room for the new ones.
+        move_by = el->history_count + num_refs - DECAY_HISTORY_SIZE;
 
-        //%%%Log activation.  How??
-    }
-    else
-    {
-        //Calculate the decay spot (using activation)
-        do
+        for (i = 0; i < (DECAY_HISTORY_SIZE - num_refs); i++)
         {
-            // since all references are from the same time, just multiply...
-            sum = ((float) num_refs) * (current_agent(decay_power_array)[time_iter - cur_decay_el->boost_history[0] + 1]);
+            el->boost_history[i] = el->boost_history[i + move_by];
+        }
         
-            activation_level = (float) log((double) sum);
+        for(i=(DECAY_HISTORY_SIZE - num_refs);
+            i < DECAY_HISTORY_SIZE;
+            i++)
+        {
+            el->boost_history[i] = current_agent(d_cycle_count) - 1;
+        }
+        
+        el->history_count = DECAY_HISTORY_SIZE;
 
-            //Log the starting activation
-            if (current_agent(sysparams)[WME_DECAY_LOGGING_SYSPARAM])
-            {
-                decay_log_boost(cur_decay_el, activation_level, time_iter);
-            }
-        
-            time_iter++;
-        } while(activation_level > DECAY_ACTIVATION_CUTOFF);
-    }
-    
-    //time_iter is the cycle when the wme will be below the
-    //decay threshold so remove the wme at the end of the cycle
-    //just before that.
-    decay_spot = time_iter - 1;
-    
-    // calculate what position it should go to
-    if(decay_spot > (current_agent(current_decay_timelist_element)->time + MAX_DECAY))
-    {
-        decay_spot = (current_agent(current_decay_timelist_element)->position + MAX_DECAY) % DECAY_ARRAY_SIZE;
     }
     else
     {
-        decay_spot = decay_spot % DECAY_ARRAY_SIZE;
+        for(i=(el->history_count);
+            i < (el->history_count + num_refs);
+            i++)
+        {
+            el->boost_history[i] = current_agent(d_cycle_count) - 1;
+        }
+        el->history_count += num_refs;
     }
     
-    cur_decay_el->just_created = FALSE;
-
-    /* AMN: 25 May 2003
-       WMEs that are architectural (e.g., input-link, ^superstate nil) need to
-       have their num_references value reset.  Otherwise the system will behave
-       as if the WMEs have been referenced at every cycle.
-    */
-    if (cur_decay_el->this_wme->preference == NULL)
-    {
-        cur_decay_el->num_references = 0;
-    }
-
-    return decay_spot;
-    
-}//decay_boost_new_wme()
+}//decay_add_refs_to_history
 
 /* ============================================================================
    decay_boost_wme()
@@ -1215,56 +1175,19 @@ long decay_boost_wme(wme_decay_element *cur_decay_el)
     long decay_spot;
     long time_iter;
     float sum, activation_level;
-    int history_iter, num_refs, move_by;
-    int i;
+    int history_iter;
 
     /*
      * Step 1: Update the boost history
+     *
      */
-    
-    // this is the code to update the boost history for a wme... note that it
-    //remove_wme_from_wm()will allow multiple boosts for the same cycle (Ron
-    //Chong's code only allows one boost per cycle)
-    if(cur_decay_el->num_references > DECAY_HISTORY_SIZE)
+    //For new WMEs, we need to make sure the ref count is nonzero.
+    if ( (cur_decay_el->just_created) && (cur_decay_el->num_references < 1) )
     {
-        num_refs = DECAY_HISTORY_SIZE;
+        cur_decay_el->num_references = 1;
     }
-    else
-    {
-        num_refs = cur_decay_el->num_references;
-    }
-    
-    
-    if ((cur_decay_el->history_count + num_refs) > DECAY_HISTORY_SIZE)
-    {
-        //Shift some references out of the array to make room for the new ones.
-        move_by = cur_decay_el->history_count + num_refs - DECAY_HISTORY_SIZE;
 
-        for (i = 0; i < (DECAY_HISTORY_SIZE - num_refs); i++)
-        {
-            cur_decay_el->boost_history[i] = cur_decay_el->boost_history[i + move_by];
-        }
-        
-        for(i=(DECAY_HISTORY_SIZE - num_refs);
-            i < DECAY_HISTORY_SIZE;
-            i++)
-        {
-            cur_decay_el->boost_history[i] = current_agent(d_cycle_count);
-        }
-        
-        cur_decay_el->history_count = DECAY_HISTORY_SIZE;
-
-    }
-    else
-    {
-        for(i=(cur_decay_el->history_count);
-            i < (cur_decay_el->history_count + num_refs);
-            i++)
-        {
-            cur_decay_el->boost_history[i] = current_agent(d_cycle_count);
-        }
-        cur_decay_el->history_count += num_refs;
-    }
+    decay_add_refs_to_history(cur_decay_el, cur_decay_el->num_references);
 
     /*
      * Step 2:  Calculate the new position in the decay timelist
@@ -1322,12 +1245,30 @@ long decay_boost_wme(wme_decay_element *cur_decay_el)
         decay_spot = decay_spot % DECAY_ARRAY_SIZE;
     }
 
+    /*
+     * Step 0 revisited:  More special handling for just created WMEs
+     */
+    if (cur_decay_el->just_created)
+    {
+        cur_decay_el->just_created = FALSE;
+
+        /* AMN: 25 May 2003 WMEs that are architectural (e.g., input-link,
+           ^superstate nil) need to have their num_references value reset.
+           Otherwise the system will behave as if the WMEs have been referenced
+           at every cycle.
+         */
+        if (cur_decay_el->this_wme->preference == NULL)
+        {
+            cur_decay_el->num_references = 0;
+        }
+    }//if
+    
     return decay_spot;
 
 }//decay_boost_wme
 
 /* ===================================================================
-   print_most_activated_wmes   %%%DEBUGGING
+   print_most_activated_wmes   *DEBUGGING*
 
    This function prints the most activated WMEs in working memory.
    The user specifies how many tiers of activated WMEs to print.
@@ -1446,15 +1387,7 @@ void decay_move_and_remove_wmes(void)
 
             if((cur_decay_el->num_references > 0) || (cur_decay_el->just_created))
             {
-                if(cur_decay_el->just_created)
-                {
-                    decay_spot = decay_boost_new_wme(cur_decay_el);
-                }
-                else
-                {
-                    decay_spot = decay_boost_wme(cur_decay_el);
-                }
-
+                decay_spot = decay_boost_wme(cur_decay_el);
                 decay_reposition_wme(cur_decay_el, decay_spot);
 
                 //If we are *not* using persistent activation then the reference
