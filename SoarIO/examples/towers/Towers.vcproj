@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\TgDI\include;..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
+				AdditionalIncludeDirectories="../../ConnectionSML/include;..\..\..\TgDI\include;..\..\CommandLineInterface\include;..\..\..\gSKI\src;..\..\..\gSKI\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"

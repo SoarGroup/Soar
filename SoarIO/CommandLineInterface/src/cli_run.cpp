@@ -13,6 +13,26 @@
 
 using namespace cli;
 
+RunForeverThread::RunForeverThread(bool self, gSKI::IKernel* pKernel, gSKI::IAgent* pAgent, gSKI::Error* pError) {
+	m_bSelf = self;
+	m_pKernel = pKernel;
+	m_pAgent = pAgent;
+	m_pError = pError;
+}
+
+void RunForeverThread::Run() {
+	while (!m_QuitNow) {
+		egSKIRunResult runResult;
+		if (m_bSelf) {
+			runResult = m_pAgent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1, m_pError);
+		} else {
+			m_pKernel->GetAgentManager()->ClearAllInterrupts();
+			m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
+			runResult = m_pKernel->GetAgentManager()->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1, gSKI_INTERLEAVE_SMALLEST_STEP, m_pError);
+		}
+	}
+}
+
 bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	static struct GetOpt::option longOptions[] = {
 		{"decision",	0, 0, 'd'},
@@ -102,8 +122,13 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 		return HandleError("Options { o, O, S } not implemented yet.");
 	}
 
-	// Determine run unit, mutually exclusive so give smaller steps precedence, default to gSKI_RUN_DECISION_CYCLE
-	egSKIRunType runType = gSKI_RUN_DECISION_CYCLE;
+	// Can't run if already running
+	if (m_pRunForever) {
+		return HandleError("Already running!");
+	}
+
+	// Determine run unit, mutually exclusive so give smaller steps precedence, default to gSKI_RUN_FOREVER
+	egSKIRunType runType = gSKI_RUN_FOREVER;
 	if (options & OPTION_RUN_ELABORATION) {
 		runType = gSKI_RUN_SMALLEST_STEP;
 
@@ -111,10 +136,13 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const unsigned int option
 		runType = gSKI_RUN_DECISION_CYCLE;
 
 	} else if (options & OPTION_RUN_FOREVER) {
-		// TODO: Forever is going to hang unless a lucky halt is achieved until we implement 
-		// a way to interrupt it, so lets just avoid it with an error
-		//runType = gSKI_RUN_FOREVER;	
-		return HandleError("Forever option is not implemented yet.");
+		runType = gSKI_RUN_FOREVER;	
+	}
+
+	if (runType == gSKI_RUN_FOREVER) {
+		m_pRunForever = new RunForeverThread(options & OPTION_RUN_SELF, m_pKernel, pAgent, m_pError);
+		m_pRunForever->Start();
+		return true;
 	}
 
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
