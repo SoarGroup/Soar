@@ -9,8 +9,8 @@
 @set svlib=%lib%
 
 @rem Check if a version was provided
-@IF "%1" == "" goto Help1
-@set ver=%1%
+@rem @IF "%1" == "" goto Help1
+@rem @set ver=%1%
 
 @rem Set up the ROOT, VC6 and JDK env vars if needed
 call windows-env.bat
@@ -45,7 +45,7 @@ set INCLUDE=%include%;%TCL%\include
 @rem msdev "STI\STI.dsw" /MAKE "TestMaster - Win32 %config%" /REBUILD /out "%OUTPUT%\STIBuild.txt"
 msdev "STI\STI.dsw" /MAKE "TestMaster - Win32 %config%" /REBUILD /out STIBuild.txt"
 
-@echo Build Soar-8.3
+@rem @echo Build Soar-8.3
 @rem msdev "%soarver%\interface\SoarInterface.dsw" /MAKE "dll - Win32 %config%" /REBUILD /out "%OUTPUT%\SoarBuild.txt"
 
 @echo Build VisualSoar
@@ -55,7 +55,7 @@ msdev "STI\STI.dsw" /MAKE "TestMaster - Win32 %config%" /REBUILD /out STIBuild.t
 javac edu\umich\visualsoar\VisualSoar.java
 
 @echo Build VisualSoar jar file
-@del visualsoar.jar
+@del ..\visualsoar.jar
 @rem *** BADBAD -- This collects too much at the moment ***
 @rem jar cvfm VisualSoar.jar meta-inf\manifest.mf -C . * > ..\..\%OUTPUT%\VSBuild.txt
 jar cvfm VisualSoar.jar meta-inf\manifest.mf -C . * > ..\VSBuild.txt
@@ -88,9 +88,9 @@ jar cvfm VisualSoar.jar meta-inf\manifest.mf -C . * > ..\VSBuild.txt
 
 @goto done
 
-:help1
-@echo Syntax is "make-all-windows <version> where e.g. <version> = 020
-goto done
+@rem :help1
+@rem @echo Syntax is "make-all-windows <version> where e.g. <version> = 020
+@rem goto done
 
 :help2
 @echo Need to set VC6, JDK, TCL and RELEASES in windows-env.bat
