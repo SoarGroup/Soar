@@ -1,7 +1,7 @@
 proc drawstat {whichAgent} {
 	global wglobal_y1 wglobal_y2 wglobal_y3 wglobal_y4 wglobal_infowidth tankList \
 		tank maxHealth maxEnergy wglobal_onestat_h realWidth \
-		drawstat_x1 drawstat_x4 drawstat_x4_x1 gameType
+		drawstat_x1 drawstat_x4 drawstat_x4_x1 gameType tsiConfig
 	
 	set tank_num [lsearch $tankList $whichAgent]
 	if {$tank_num == -1} {
@@ -84,8 +84,12 @@ global buttonBackgroundColor
 proc drawsensor {sensor_canvas sensor_text sensor_tag whichAgent tag_color tag_dir \
 	upbox rightbox downbox leftbox} {
 	global draw_sense_text draw_sense_x1 draw_sense_x2 draw_sense_x3 draw_sense_x4 \
-			draw_sense_y1 draw_sense_y2 draw_sense_y3 draw_sense_y4
+			draw_sense_y1 draw_sense_y2 draw_sense_y3 draw_sense_y4 tsiConfig
 	
+		if { $tsiConfig(autorun) != 0 } {
+				return 
+		}
+
 
 	$sensor_canvas create text $draw_sense_text 9 -text $sensor_text \
 		-justify center -tags $sensor_tag
@@ -121,7 +125,12 @@ proc drawscore {} {
 }
 
 proc drawRadarSensor {whichAgent} {
-    global map tank gridSize mapdim current radar_box i_tank_small current
+    global map tank gridSize mapdim current radar_box i_tank_small current tsiConfig
+
+		if { $tsiConfig(autorun) != 0 } {
+				return 
+		}
+
 
     if {($whichAgent != $current) || 
     	($tank($whichAgent,radarOn) == 0) || 
@@ -254,7 +263,11 @@ global gridSize
 }
 
 proc drawRadarSensorWaves {whichAgent} {
-global map mapdim tank
+global map mapdim tank tsiConfig
+
+		if { $tsiConfig(autorun) != 0 } { 
+				return
+		}
 	
 	if {$tank($whichAgent,radarOn) == 0} {
 		return
@@ -371,7 +384,11 @@ proc eraseAgentInfo {} {
 
 proc drawAgentInfo {whichAgent} {
     global tank maxHealth maxRadar maxEnergy maxsmell \
-    	gridSize  
+    	gridSize  tsiConfig
+
+		if { $tsiConfig(autorun) != 0 } {
+				return 
+		}
 
     eraseAgentInfo
     
@@ -410,8 +427,12 @@ proc drawAgentInfo {whichAgent} {
 }
 
 proc drawmap {} {
-  global map mapdim
+  global map mapdim tsiConfig
  
+		if { $tsiConfig(autorun) != 0 } {
+				return 
+		}
+
   set i 0
   while {$i < $mapdim} {
     set j 0

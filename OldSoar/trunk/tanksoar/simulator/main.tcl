@@ -105,7 +105,10 @@ if { $tsiConfig(autorun) != 0  } {
 				
 				# Make the path relative to the tanksoar top-level directory, not
 				# to the simulator directory.
-				createTank -1 -1 [file join .. [file dirname $a]] [file tail $a] [lindex $names $i]
+				set aname [lindex $names $i]
+
+				createTank -1 -1 [file join .. [file dirname $a]] [file tail $a] $aname
+				tsiSendAgent $aname "watch 0"
 				incr i
 		}
 		environmentRun
