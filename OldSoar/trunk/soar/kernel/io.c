@@ -364,6 +364,30 @@ void update_for_top_state_wme_addition (wme *w) {
   ol->cb = cb;
   /* --- make wme point to the structure --- */
   w->output_link = ol;
+
+	/* SW 07 10 2003
+		 previously, this wouldn't be done until the first OUTPUT phase.
+		 However, if we add an output command in the 1st decision cycle,
+		 Soar seems to ignore it.
+
+		 There may be two things going on, the first having to do with the tc 
+		 calculation, which may get done too late, in such a way that the
+		 initial calculation includes the command.  The other thing appears
+		 to be that some datastructures are not iniailized until the first 
+		 output phase.  Namely, id->associated_output_links does not seem
+		 reflect the current output links until the first output-phase.
+
+		 To get past these issues, I call calculate_output_link_tc_info
+		 here on the new ol.  This ensures that the first tc calculation 
+		 includes only the output link structure itself.  So as soon as
+		 a command is added, its tc number will change (hopefully guarenteeing
+		 that the command is observed by Soar).  In addition, calling this
+		 fn now creates the id->associated_output_links structures so that 
+		 they exist for the first output phase. */
+		 
+
+	calculate_output_link_tc_info( ol ); 
+
 }
 
 void update_for_top_state_wme_removal (wme *w) {
@@ -395,17 +419,30 @@ void inform_output_module_of_wm_changes (list *wmes_being_added,
   cons *c;
   wme *w;
 
+
   /* if wmes are added, set flag so can stop when running til output */
   for (c=wmes_being_added; c!=NIL; c=c->rest) {
     w = c->first;
+
     if (w->id==current_agent(io_header)) {
-		update_for_top_state_wme_addition (w);
-		current_agent(output_link_changed) = TRUE; /* KJC 11/23/98 */
-	}
+			update_for_top_state_wme_addition (w);			
+			current_agent(output_link_changed) = TRUE; /* KJC 11/23/98 */
+		}
     if (w->id->id.associated_output_links) {
-		update_for_io_wme_change (w);
- 		current_agent(output_link_changed) = TRUE; /* KJC 11/23/98 */
-	}
+			update_for_io_wme_change (w);			
+			current_agent(output_link_changed) = TRUE; /* KJC 11/23/98 */
+		} 
+#if DEBUG_RTO
+		else {
+			char id[100];
+			
+			symbol_to_string( w->id, FALSE, id );
+			if ( !strcmp( id, "I3" ) ) {
+				print( "--> Added to I3, but doesn't register as an OL change!" );
+			}		
+		}
+#endif
+
   }
   for (c=wmes_being_removed; c!=NIL; c=c->rest) {
     w = c->first;
@@ -429,6 +466,7 @@ void inform_output_module_of_wm_changes (list *wmes_being_added,
 void remove_output_link_tc_info (output_link *ol) {
   cons *c, *prev_c;
   Symbol *id;
+
 
   while (ol->ids_in_tc) {  /* for each id in the old TC... */
     c = ol->ids_in_tc;
@@ -469,7 +507,7 @@ void add_id_to_output_link_tc (Symbol *id) {
   
   /* --- add output_link to id's list --- */
   push (current_agent(output_link_for_tc), id->id.associated_output_links);
-  
+
   /* --- do TC through working memory --- */
   /* --- scan through all wmes for all slots for this id --- */
   for (w=id->id.input_wmes; w!=NIL; w=w->next)
