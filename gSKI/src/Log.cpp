@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /********************************************************************
 	created:	28:9:2001   16:26
 	filename:	chaoslog

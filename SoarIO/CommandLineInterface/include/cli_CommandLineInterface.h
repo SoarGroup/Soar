@@ -351,6 +351,17 @@ public:
 	bool DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 
 	/*************************************************************
+	* @brief timers command, see usage.txt for details.
+	*************************************************************/
+	bool ParseTimers(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief If print is true, returns the current setting of the
+	*		 stats timers. If setting is true, enables stats timers.  
+	*        False disables stats timers.
+	*************************************************************/
+	bool DoTimers(gSKI::IAgent* pAgent, bool print, bool setting);
+
+	/*************************************************************
 	* @brief 
 	*************************************************************/
 	bool ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -528,11 +539,6 @@ protected:
 	* @brief 
 	*************************************************************/
 	void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
-
-	/*************************************************************
-	* @brief This is a utility function used by DoLS
-	*************************************************************/
-	void PrintFilename(const std::string& name, bool isDirectory);
 
 	Constants*			m_pConstants;			// Constants management object
 	Aliases*			m_pAliases;				// Alias management object

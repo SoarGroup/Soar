@@ -1,15 +1,8 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 #include "cli_CommandLineInterface.h"
 
 #ifdef WIN32
 #include <windows.h>
 #include <winbase.h>
-#else // WIN32
-#include <sys/types.h>
-#include <dirent.h>
 #endif // WIN32
 
 #include "cli_Constants.h"
@@ -47,7 +40,23 @@ bool CommandLineInterface::DoLS() {
 
 	// At least one file found, concatinate additional ones with newlines
 	do {
-		PrintFilename(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? true : false);
+		if (m_RawOutput) {
+			// TODO: Columns and stats
+			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				AppendToResult('[');
+			}
+			AppendToResult(FindFileData.cFileName);
+			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				AppendToResult(']');
+			}
+			AppendToResult('\n');
+		} else {
+			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, FindFileData.cFileName);
+			} else {
+				AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, FindFileData.cFileName);
+			}
+		}
 
 	} while (FindNextFile(hFind, &FindFileData));
 
@@ -56,54 +65,7 @@ bool CommandLineInterface::DoLS() {
 	return true;
 
 #else // WIN32
-	DIR* directoryPointer;
-	struct dirent* entry;
-
-	// Get the current working directory and store in dir
-	std::string dir;
-	if (!GetCurrentWorkingDirectory(dir)) {
-		return false;
-	}
-
-	// Open the directory for reading
-	if ((directoryPointer = opendir(dir.c_str())) == 0) {
-		return HandleError(dir + ": cannot open for reading: " + std::string(strerror(errno)));
-	}
-
-	// Read the files
-	errno = 0;
-	while ((entry = readdir(directoryPointer)) != 0) {
-		PrintFilename(entry->d_name, entry->d_type == DT_DIR);
-	}
-
-	// Check for error
-	if (errno != 0) {
-		return HandleError(dir + ": error reading directory entries: " + std::string(strerror(errno)));
-	}
-
-	// Ignoring close error
-	closedir(directoryPointer);
-
-	return true;
+	return HandleError("TODO: ls on non-windows platforms");
 #endif // WIN32
 }
 
-void CommandLineInterface::PrintFilename(const std::string& name, bool isDirectory) {
-	if (m_RawOutput) {
-		// TODO: Columns and stats
-		if (isDirectory) {
-			AppendToResult('[');
-		}
-		AppendToResult(name);
-		if (isDirectory) {
-			AppendToResult(']');
-		}
-		AppendToResult('\n');
-	} else {
-		if (isDirectory) {
-			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, name.c_str());
-		} else {
-			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, name.c_str());
-		}
-	}
-}

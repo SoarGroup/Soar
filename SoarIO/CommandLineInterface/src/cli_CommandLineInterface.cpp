@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /////////////////////////////////////////////////////////////////
 // CommandLineInterface class
 //
@@ -9,6 +5,14 @@
 // Date  : Sept 2004
 //
 /////////////////////////////////////////////////////////////////
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+
+#ifndef HAVE_GETCWD
+#error "CommandLineInterface::GetCurrentWorkingDirectory requires missing getcwd"
+#endif // HAVE_GETCWD
+
+#endif // HAVE_CONFIG_H
 
 #include "cli_CommandLineInterface.h"
 
@@ -93,6 +97,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIStats]				= &cli::CommandLineInterface::ParseStats;
 	m_CommandMap[Constants::kCLIStopSoar]			= &cli::CommandLineInterface::ParseStopSoar;
 	m_CommandMap[Constants::kCLITime]				= &cli::CommandLineInterface::ParseTime;
+	m_CommandMap[Constants::kCLITimers]				= &cli::CommandLineInterface::ParseTimers;
 	m_CommandMap[Constants::kCLIWarnings]			= &cli::CommandLineInterface::ParseWarnings;
 	m_CommandMap[Constants::kCLIWatch]				= &cli::CommandLineInterface::ParseWatch;
 }

@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /////////////////////////////////////////////////////////////////
 // Kernel class
 //
@@ -13,6 +9,9 @@
 // one of these and then creating agents through it etc.
 //
 /////////////////////////////////////////////////////////////////
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "sml_ClientKernel.h"
 #include "sml_ClientAgent.h"

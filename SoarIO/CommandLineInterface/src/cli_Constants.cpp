@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 #include "cli_Constants.h"
 
 #include <iostream>
@@ -40,6 +36,7 @@ char const* Constants::kCLISP				= "sp";
 char const* Constants::kCLIStats			= "stats";
 char const* Constants::kCLIStopSoar			= "stop-soar";
 char const* Constants::kCLITime				= "time";
+char const* Constants::kCLITimers			= "timers";
 char const* Constants::kCLIWarnings			= "warnings";
 char const* Constants::kCLIWatch			= "watch";
 

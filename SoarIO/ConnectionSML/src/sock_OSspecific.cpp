@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /////////////////////////////////////////////////////////////////
 // OSSpecific class
 //
@@ -11,6 +7,15 @@
 // The parts of the socket code that are specific to the operating system.
 // 
 /////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+
+#ifndef HAVE_UNISTD_H
+#error "missing required unistd.h header"
+#endif // HAVE_UNISTD_H
+
+#endif // HAVE_CONFIG_H
 
 #ifdef _WIN32
 //////////////////////////////////////////////////////////////////////

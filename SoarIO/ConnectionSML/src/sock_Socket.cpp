@@ -1,7 +1,3 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif // HAVE_CONFIG_H
-
 /////////////////////////////////////////////////////////////////
 // Socket class
 //
@@ -23,6 +19,30 @@
 // on the listener socket.
 // 
 /////////////////////////////////////////////////////////////////
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+
+#ifndef HAVE_GETHOSTNAME
+#error "missing required gethostname function"
+#endif // HAVE_GETHOSTNAME
+
+#ifndef HAVE_GETHOSTBYNAME
+#error "missing required gethostbyname function"
+#endif // HAVE_GETHOSTBYNAME
+
+#ifndef HAVE_INET_NTOA
+#error "missing required inet_ntoa function"
+#endif // HAVE_INET_NTOA
+
+#ifndef HAVE_SELECT
+#error "missing required select function"
+#endif // HAVE_SELECT
+
+#ifndef HAVE_SOCKET
+#error "missing required socket function"
+#endif // HAVE_SOCKET
+
+#endif // HAVE_CONFIG_H
 
 #include <stdio.h>
 #include "sock_SocketHeader.h"

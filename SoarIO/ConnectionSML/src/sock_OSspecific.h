@@ -13,6 +13,11 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+
+#ifndef HAVE_STRCASECMP
+#error "missing required strcasecmp function"
+#endif // HAVE_STRCASECMP
+
 #endif // HAVE_CONFIG_H
 
 #include "sock_SocketHeader.h"	// For SOCKET definition
