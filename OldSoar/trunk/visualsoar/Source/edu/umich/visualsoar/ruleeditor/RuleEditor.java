@@ -480,6 +480,68 @@ public class RuleEditor extends CustomInternalFrame {
 	// This method returns the production name that the cursor is currently over.
 	// null is returned if a production cannot be found underneath the current
 	// cursor position.
+	public String getProductionNameNearCaret() {
+		// Get the current position of the cursor in the editor pane
+		int caretPos = editorPane.getCaretPosition();
+		
+		// Get the text in the editor
+		String text = editorPane.getText();
+      
+      int preSpPos = text.lastIndexOf("sp ", caretPos);
+      int postSpPos = text.indexOf("sp ", caretPos);
+      int nProductionStartPos = 0;
+      if(preSpPos != -1 && (postSpPos == -1 || caretPos - preSpPos < postSpPos - caretPos)){
+         nProductionStartPos = preSpPos;
+      } else if(postSpPos != -1 && (preSpPos == -1 || caretPos - preSpPos >= postSpPos - caretPos)){
+         nProductionStartPos = postSpPos;
+      } else {
+         return null;
+      }
+		
+		// Now search for the first opening brace for this production
+		int nFirstOpenBrace=text.indexOf('{', nProductionStartPos);
+		if (nFirstOpenBrace == -1)
+		{
+			return null;
+		}
+		
+		// Get the start of the name position
+		int nStartPos=nFirstOpenBrace+1;
+		if (nStartPos >= text.length())
+		{
+			return null;
+		}
+		
+		// Now go through the editor text trying to find the end
+		// of the name.  Right now we currently define the end
+		// to be a space, newline, or '('.
+		//
+		// TODO: Is this the correct way to find the name?
+		int nCurrentSearchIndex=nFirstOpenBrace+1;
+		while (nCurrentSearchIndex < text.length())
+		{
+			// See if we have found a character which ends the name
+			if (text.charAt(nCurrentSearchIndex) == ' ' ||
+				text.charAt(nCurrentSearchIndex) == '\n' ||
+				text.charAt(nCurrentSearchIndex) == '(')
+			{
+				break;
+			}
+			
+			// Go to the next character
+			nCurrentSearchIndex++;
+		}
+		
+		// Last character in the name
+		int nEndPos=nCurrentSearchIndex;
+		
+		// Return the name to the caller
+		return text.substring(nStartPos, nEndPos);
+	}
+	// 3P
+	// This method returns the production name that the cursor is currently over.
+	// null is returned if a production cannot be found underneath the current
+	// cursor position.
 	public String GetProductionNameUnderCaret() {
 		// Get the current position of the cursor in the editor pane
 		int caretPos = editorPane.getCaretPosition();
@@ -534,8 +596,7 @@ public class RuleEditor extends CustomInternalFrame {
 		
 		// Return the name to the caller
 		return text.substring(nStartPos, nEndPos);
-	}
-	
+	}	
 	/**
 	 * Looks for the passed string in the document, if it is searching
 	 * forward, then it searches for and instance of the string after the caret and selects it,
@@ -934,20 +995,43 @@ public class RuleEditor extends CustomInternalFrame {
 		///////////////////////////////////////
 		// Insert Template menu
 		JMenu templates = new JMenu("Insert Template");
-		Iterator i = MainFrame.getMainFrame().getTemplateManager().getTemplateNames();
-		while(i.hasNext()) {
-			String templateName = (String)i.next();
-			JMenuItem currentTemplateItem = new JMenuItem(templateName);
-			currentTemplateItem.addActionListener(new InsertTemplateAction(templateName));
-			templates.add(currentTemplateItem);
-		}
-				
+      initTemplatesMenu(MainFrame.getMainFrame().getTemplateManager().getRootTemplate(), templates);
+
 		soarMenu.setMnemonic(KeyEvent.VK_O);
 		
 		menuBar.add(soarMenu);
 		menuBar.add(templates);
 	}
-	 
+   private void initTemplatesMenu(Template parentTemplate, JMenu parentMenu){
+      
+      if(parentTemplate == null){
+         JMenuItem item = new JMenuItem("No templates found.");
+         item.setEnabled(false);
+         parentMenu.add(item);
+         return;
+      }
+      
+      Iterator i;
+      Template t;
+      
+      // Add plain old templates...
+      i = parentTemplate.getChildTemplates();
+      while(i.hasNext()) {
+         t = (Template) i.next();
+			JMenuItem currentTemplateItem = new JMenuItem(t.getName());
+			currentTemplateItem.addActionListener(new InsertTemplateAction(t));
+			parentMenu.add(currentTemplateItem);         
+      }      
+      
+      // Add sub template directories
+      i = parentTemplate.getChildDirectories();
+      while(i.hasNext()) {
+         t = (Template) i.next();
+         JMenu mnu = new JMenu(t.getName());
+         initTemplatesMenu(t, mnu);
+         parentMenu.add(mnu);
+      }
+   }
 	// 3P
 	// Initializes the "Runtime" menu item and adds it to the given menubar
 	private void initSoarRuntimeMenu(JMenuBar menuBar)
@@ -1253,24 +1337,28 @@ public class RuleEditor extends CustomInternalFrame {
 	 * This class puts the instantiated template in the text area.
 	 */
 	class InsertTemplateAction extends AbstractAction {
-		private String d_templateName;
+      private Template template;
 	
 		// NOT IMPLEMENTED
 		private InsertTemplateAction() {}
 	
 	
-		public InsertTemplateAction(String templateName) {
-			super(templateName);
-			d_templateName = templateName;
+		public InsertTemplateAction(Template t) {
+			super(t.getName());
+			template = t;
 		}
 	
 		public void actionPerformed(ActionEvent e) {
 			try {
-				TemplateManager tm = MainFrame.getMainFrame().getTemplateManager();
-				editorPane.insert(tm.instantiate(d_templateName,associatedNode),editorPane.getCaret().getDot());
+            String s = template.instantiate(RuleEditor.this);
+            int pos = editorPane.getCaretPosition();
+				editorPane.insert(s, pos);
+            editorPane.setCaretPosition(pos + template.getCaretOffset());
 			}	
 			catch(TemplateInstantiationException tie) {
-				JOptionPane.showMessageDialog(RuleEditor.this,tie.getMessage(),"Template Error",JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(RuleEditor.this, tie.getMessage(),
+                                          "Template Error",
+                                          JOptionPane.ERROR_MESSAGE);
 			}		
 		}
 	}
