@@ -15,7 +15,6 @@ watch 0
 run 2048
 print
 pwd
-time stats
 timers
 warnings
 quit
