@@ -487,8 +487,9 @@ void fill_in_new_instantiation_stuff (instantiation *inst,
   }
   inst->backtrace_number = 0;
 
-  if (current_agent(o_support_calculation_type) == 0 ||
-      (current_agent(o_support_calculation_type) == 3)) {
+  if ( current_agent(o_support_calculation_type) == 0 ||
+			 current_agent(o_support_calculation_type) == 3 ||
+			 current_agent(o_support_calculation_type) == 4 ) {
     /* --- do calc's the normal Soar 6 way --- */  
     if (need_to_do_support_calculations)
       calculate_support_for_instantiation_preferences (inst);

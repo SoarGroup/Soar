@@ -1018,7 +1018,8 @@ void do_one_top_level_phase (void) {
           
       } else
 
-#endif // AGRESSIVE_ONC				
+// end AGRESSIVE_ONC				
+#endif 
 
 				{
 	/* print("\nSetting next phase to APPLY following a decision...."); */

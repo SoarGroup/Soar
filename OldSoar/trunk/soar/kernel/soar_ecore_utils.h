@@ -30,12 +30,12 @@ typedef struct replayed_id_map_struct {
 } replayed_id_map;
 
 
-void cb_soar_PrintToFile( agent * a, soar_callback_data d, soar_call_data c );
+void cb_soar_PrintToFile( soar_callback_agent a, soar_callback_data d, soar_call_data c );
 
 #ifdef USE_CAPTURE_REPLAY
 extern void capture_input_wme( enum captured_action_type action, 
 			       soarapi_wme *sw, wme *w );
-extern void replay_input_wme(agent * agent, soar_callback_data dummy, 
+extern void replay_input_wme(soar_callback_agent agent, soar_callback_data dummy, 
 			     soar_call_data mode);
 #endif
 

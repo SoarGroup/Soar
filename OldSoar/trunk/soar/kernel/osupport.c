@@ -390,7 +390,8 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
 			   (w->acceptable == FALSE) &&
 			   (w->id == lowest_goal_wme->id)) {
 
-			 if (current_agent(o_support_calculation_type) == 3) {
+			 if (current_agent(o_support_calculation_type) == 3 || 
+					 current_agent(o_support_calculation_type) == 4 ) {
 
 			   /* iff RHS has only operator elaborations 
 			      then it's IE_PROD, otherwise PE_PROD, so
@@ -402,9 +403,10 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
 			       if ((rhs_value_is_symbol(act->id)) &&
 				   (rhs_value_to_symbol(act->id) == w->value)) {
 				 op_elab = TRUE;
-			       } else if ( (rhs_value_is_reteloc(act->id)) &&
-								 w->value == get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up( act->id ),
-								 (byte)rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )) {
+			       } else if ( current_agent(o_support_calculation_type) == 4 &&
+												 (rhs_value_is_reteloc(act->id)) &&
+												 w->value == get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up( act->id ),
+																													 rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )) {
 							 op_elab = TRUE;
 							 
 
@@ -427,14 +429,26 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
      }
 
      /* KJC 01/00: Warn if operator elabs mixed w/ applications */
-     if ( (current_agent(o_support_calculation_type) == 3) && 
+     if ( (current_agent(o_support_calculation_type) == 3 ||
+					 current_agent(o_support_calculation_type) == 4 ) && 
 					(o_support == TRUE)) {
 			 
-       if (op_elab == TRUE) 
-				 /* warn user about mixed actions --> o_support */
-				 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
+       if (op_elab == TRUE ) { 
+
+					 /* warn user about mixed actions */
+				 if ( current_agent(o_support_calculation_type) == 3 ) {
+
+					 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
 														inst->prod->name);
-			 o_support = FALSE;
+					 o_support = TRUE;
+				 }
+				 else if ( current_agent(o_support_calculation_type) == 4 ) {
+					 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
+														inst->prod->name);
+					 o_support = FALSE;
+				 }
+			 }
+					 
      }
      /*
      assign every preference the correct support

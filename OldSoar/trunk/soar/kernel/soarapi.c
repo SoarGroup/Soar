@@ -1296,6 +1296,8 @@ int soar_OSupportMode (int argc, const char *argv[], soarResult *res)
       current_agent(o_support_calculation_type) = 2;
     } else if (! strcmp(argv[1], "3")) {
       current_agent(o_support_calculation_type) = 3;
+    } else if (! strcmp(argv[1], "4")) {
+      current_agent(o_support_calculation_type) = 4;
     } else {
       setSoarResultResult( res, 
 	      "Unrecognized argument to %s: %s.  Integer 0, 1, 2, or 3 expected.",

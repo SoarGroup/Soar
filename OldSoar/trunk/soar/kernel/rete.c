@@ -5221,7 +5221,8 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 		       (temp_tok->w->acceptable == FALSE) &&
 		       (temp_tok->w->id == lowest_goal_wme->id)) {
 		     
-		     if (current_agent(o_support_calculation_type) == 3) {
+		     if (current_agent(o_support_calculation_type) == 3 ||
+						 current_agent(o_support_calculation_type) == 4 ) {
 		       
 		       /*
 						* iff RHS has only operator elaborations 
@@ -5248,7 +5249,8 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 								 
 								 op_elab = TRUE;
 								 
-							 } else if ( (rhs_value_is_reteloc(act->id)) &&
+							 } else if ( current_agent(o_support_calculation_type) == 4 &&
+													 (rhs_value_is_reteloc(act->id)) &&
 													 (temp_tok->w->value == 
 														get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up(act->id),
                             													  (byte)rhs_value_to_reteloc_field_num(act->id), tok, w ))) {
@@ -5273,14 +5275,25 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 	       } /* end while (temp_tok != NIL) */
 
 	       if (prod_type == PE_PRODS)
-		 if (current_agent(o_support_calculation_type) != 3) break;
+		 if (current_agent(o_support_calculation_type) != 3 &&
+				 current_agent(o_support_calculation_type != 4 ) ) break;
 		 else if (op_elab == TRUE) {
 
-		   /* warn user about mixed actions --> i_support */
-		   print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
-				      node->b.p.prod->name);
-			 prod_type = IE_PRODS;
-		   break;
+		   /* warn user about mixed actions  */
+			 
+			 if ( current_agent(o_support_calculation_type) == 3 ) {
+				 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
+														node->b.p.prod->name);
+				 prod_type = PE_PRODS;
+				 break;
+			 }
+			 else if ( current_agent(o_support_calculation_type) == 4 ) {
+				 print_with_symbols("\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
+														node->b.p.prod->name);
+				 prod_type = IE_PRODS;
+				 break;
+			 }
+				 
 		 }
 	     }  /* end for pass =  */
 	   }	/* end for loop checking all matches */

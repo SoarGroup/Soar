@@ -2,7 +2,7 @@
 
 extern Symbol *make_symbol_for_current_lexeme (void);
 
-void cb_soar_PrintToFile (agent *the_agent, soar_callback_data data,
+void cb_soar_PrintToFile (soar_callback_agent the_agent, soar_callback_data data,
 		       soar_call_data call_data) {
   FILE * f = (FILE *) data;
   fputs((char *) call_data, f);
@@ -99,7 +99,7 @@ void capture_input_wme( enum captured_action_type action,
 
 
 
-void replay_input_wme(agent * agent, soar_callback_data dummy, 
+void replay_input_wme(soar_callback_agent agent, soar_callback_data dummy, 
 		      soar_call_data mode) {
 
   /* this routine is registered as a callback when user issues a
