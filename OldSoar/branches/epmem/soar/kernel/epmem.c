@@ -110,6 +110,9 @@ typedef struct arraylist_struct
              next/prev - dll of all nodes in the tree to allow iterative
                          implementation of several algorithms
              in_mem - whether this "wme" is in the current memory
+             assoc_memories - this is a list of pointers to all the episodic
+                              memories that use this WME.  As such it is
+                              effectively an arraylist of arraylists.
                       
 */
 
@@ -130,6 +133,7 @@ typedef struct wmetree_struct
     struct wmetree_struct *parent; // %%%TODO: make this an array later?
     bool in_mem;
     struct wme_struct *assoc_wme;
+    arraylist *assoc_memories;
 } wmetree;
 
 
@@ -144,6 +148,25 @@ typedef struct actwme_struct
     wmetree *node;
     int activation;
 } actwme;
+
+
+/*
+ * episodic_memory - This data structure contains a single episodic memory.
+ *
+ *         content     - a list of actwme structs.
+ *         index       - this memory's index in the g_memories arraylist
+ *         last_usage  - the number of the last retrieval that partially
+ *                       matched this memory
+ *         match_score - the total match score from the last partial match
+ *
+ */
+typedef struct episodic_memory_struct
+{
+    arraylist *content;
+    int index;
+    int last_usage;
+    int match_score;
+} episodic_memory;
 
 
 /*======================================================================
@@ -161,12 +184,15 @@ typedef struct actwme_struct
                             in effect, the episodic store of the agent.
    g_memories             - This is an array of all the memories that the
                             agent has.  Each memory is an index into g_wmetree
-   g_curr_memory          - Index of the memory currently in the retrieved link
+   g_curr_memory          - Pointer to the memory currently in the retrieved link
    g_epmem_header         - The symbol that ^epmem is attached to
    g_epmem_query          - The symbold that ^query is attached to
    g_epmem_retrieved      - The symbold that ^retrieved is attached to
    g_last_tag             - The timetag of the last command on the output-link
-                            
+   g_last_ret_id          - This value gets incremeted at each retrieval. It's
+                            currently used by the matcher to keep track of the
+                            best match for this retrieval in wmetree->last_usage
+   
 */
 
 //%%%FIXME:  move these globals to current_agent()
@@ -174,12 +200,12 @@ wme **g_current_active_wmes;
 wme **g_previous_active_wmes;
 wmetree g_wmetree;
 arraylist *g_memories;
-int g_curr_memory;
+episodic_memory *g_curr_memory = NULL;
 Symbol *g_epmem_header;
 Symbol * g_epmem_query;
 Symbol * g_epmem_retrieved;
-unsigned long g_last_tag = 0; 
-
+unsigned long g_last_tag = 0;
+long g_last_ret_id = 0;
 
 
 /* EpMem macros
@@ -283,115 +309,6 @@ unsigned long hash_wme(wme *w, short num_bits)
     
 }//hash_wme
 
-
-
-/* ===================================================================
-   make_wmetree_node
-
-   Creates a new wmetree node based upon a given wme.  If no WME is
-   given (w == NULL) then an empty node is allocated.  The caller is
-   responsible for setting the parent pointer.
-   
-   Created: 09 Jan 2004
-   =================================================================== */
-wmetree *make_wmetree_node(wme *w)
-{
-    wmetree *node;
-
-    node = allocate_memory(sizeof(wmetree), MISCELLANEOUS_MEM_USAGE);
-    node->next = NULL;
-    node->attr = NULL;
-    node->val.intval = 0;
-    node->val_type = IDENTIFIER_SYMBOL_TYPE;
-    node->children = make_hash_table(0, hash_wmetree);
-    node->parent = NULL;
-    node->in_mem = FALSE;
-    node->assoc_wme = NULL;
-
-    if (w == NULL) return node;
-    
-    node->attr = allocate_memory(sizeof(char)*strlen(w->attr->sc.name) + 1,
-                                MISCELLANEOUS_MEM_USAGE);
-    strcpy(node->attr, w->attr->sc.name);
-    
-    switch(w->value->common.symbol_type)
-    {
-        case SYM_CONSTANT_SYMBOL_TYPE:
-            node->val_type = SYM_CONSTANT_SYMBOL_TYPE;
-            node->val.strval =
-                allocate_memory(sizeof(char)*strlen(w->value->sc.name) + 1,
-                                MISCELLANEOUS_MEM_USAGE);
-            strcpy(node->val.strval, w->value->sc.name);
-            break;
-
-        case INT_CONSTANT_SYMBOL_TYPE:
-            node->val_type = INT_CONSTANT_SYMBOL_TYPE;
-            node->val.intval = w->value->ic.value;
-            break;
-
-        case FLOAT_CONSTANT_SYMBOL_TYPE:
-            node->val_type = FLOAT_CONSTANT_SYMBOL_TYPE;
-            node->val.floatval = w->value->fc.value;
-            break;
-
-        default:
-            node->val_type = IDENTIFIER_SYMBOL_TYPE;
-            node->val.intval = 0;
-            break;
-    }
-
-    return node;
-}//make_wmetree_node
-
-/* ===================================================================
-   destroy_wmetree (+ dw_helper)       *RECURSIVE*
-
-   Deallocate an entire wmetree.
-
-   Created 10 Nov 2002
-   =================================================================== */
-void dw_helper(wmetree *tree)
-{
-    unsigned long hash_value;
-    wmetree *child;
-
-    if (tree->attr != NULL)
-    {
-        free_memory(tree->attr, MISCELLANEOUS_MEM_USAGE);
-    }
-    
-    if (tree->val_type == SYM_CONSTANT_SYMBOL_TYPE)
-    {
-        free_memory(tree->val.strval, MISCELLANEOUS_MEM_USAGE);
-    }
-    
-    if (tree->children->count == 0)
-    {
-        return;
-    }
-
-
-    //Recursively destroy all the children before the parent
-    for (hash_value = 0; hash_value < tree->children->size; hash_value++)
-    {
-        child = (wmetree *) (*(tree->children->buckets + hash_value));
-        for (; child != NIL; child = child->next)
-        {
-            dw_helper(child);
-            free_memory(child, MISCELLANEOUS_MEM_USAGE);
-        }
-    }
-
-    free_memory(tree->children, HASH_TABLE_MEM_USAGE);
-}//dw_helper
-
-void destroy_wmetree(wmetree *tree)
-{
-    dw_helper(tree);
-
-    free_memory(tree, MISCELLANEOUS_MEM_USAGE);
-}//destroy_wmetree
-
 /* ===================================================================
    make_arraylist
 
@@ -479,6 +396,116 @@ void append_entry_to_arraylist(arraylist *al, void *new_entry)
     al->size++;
     
 }//append_entry_to_arraylist
+
+
+
+/* ===================================================================
+   make_wmetree_node
+
+   Creates a new wmetree node based upon a given wme.  If no WME is
+   given (w == NULL) then an empty node is allocated.  The caller is
+   responsible for setting the parent pointer.
+   
+   Created: 09 Jan 2004
+   =================================================================== */
+wmetree *make_wmetree_node(wme *w)
+{
+    wmetree *node;
+
+    node = allocate_memory(sizeof(wmetree), MISCELLANEOUS_MEM_USAGE);
+    node->next = NULL;
+    node->attr = NULL;
+    node->val.intval = 0;
+    node->val_type = IDENTIFIER_SYMBOL_TYPE;
+    node->children = make_hash_table(0, hash_wmetree);
+    node->parent = NULL;
+    node->in_mem = FALSE;
+    node->assoc_wme = NULL;
+    node->assoc_memories = make_arraylist(16);
+
+    if (w == NULL) return node;
+    
+    node->attr = allocate_memory(sizeof(char)*strlen(w->attr->sc.name) + 1,
+                                MISCELLANEOUS_MEM_USAGE);
+    strcpy(node->attr, w->attr->sc.name);
+    
+    switch(w->value->common.symbol_type)
+    {
+        case SYM_CONSTANT_SYMBOL_TYPE:
+            node->val_type = SYM_CONSTANT_SYMBOL_TYPE;
+            node->val.strval =
+                allocate_memory(sizeof(char)*strlen(w->value->sc.name) + 1,
+                                MISCELLANEOUS_MEM_USAGE);
+            strcpy(node->val.strval, w->value->sc.name);
+            break;
+
+        case INT_CONSTANT_SYMBOL_TYPE:
+            node->val_type = INT_CONSTANT_SYMBOL_TYPE;
+            node->val.intval = w->value->ic.value;
+            break;
+
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+            node->val_type = FLOAT_CONSTANT_SYMBOL_TYPE;
+            node->val.floatval = w->value->fc.value;
+            break;
+
+        default:
+            node->val_type = IDENTIFIER_SYMBOL_TYPE;
+            node->val.intval = 0;
+            break;
+    }
+
+    return node;
+}//make_wmetree_node
+
+/* ===================================================================
+   destroy_wmetree (+ dw_helper)       *RECURSIVE*
+
+   Deallocate an entire wmetree.
+
+   Created 10 Nov 2002
+   =================================================================== */
+void dw_helper(wmetree *tree)
+{
+    unsigned long hash_value;
+    wmetree *child;
+
+    if (tree->attr != NULL)
+    {
+        free_memory(tree->attr, MISCELLANEOUS_MEM_USAGE);
+    }
+    
+    if (tree->val_type == SYM_CONSTANT_SYMBOL_TYPE)
+    {
+        free_memory(tree->val.strval, MISCELLANEOUS_MEM_USAGE);
+    }
+    
+    if (tree->children->count == 0)
+    {
+        return;
+    }
+
+
+    //Recursively destroy all the children before the parent
+    for (hash_value = 0; hash_value < tree->children->size; hash_value++)
+    {
+        child = (wmetree *) (*(tree->children->buckets + hash_value));
+        for (; child != NIL; child = child->next)
+        {
+            dw_helper(child);
+            free_memory(child, MISCELLANEOUS_MEM_USAGE);
+        }
+    }
+
+    free_memory(tree->children, HASH_TABLE_MEM_USAGE);
+}//dw_helper
+
+void destroy_wmetree(wmetree *tree)
+{
+    dw_helper(tree);
+
+    free_memory(tree, MISCELLANEOUS_MEM_USAGE);
+}//destroy_wmetree
 
 
 /* ===================================================================
@@ -913,8 +940,13 @@ void add_node_to_memory(arraylist *epmem, wmetree *node, int activation)
    If this function finds a ^superstate WME it does not traverse that link.
    Instead, it records the find and returns it to the caller.  The caller
    can then call update_wmetree again if desired.
-   
-   This function requires a tc number.
+
+   node - the root of the WME tree to be updated
+   sym - the room of the tree in working memory to update it with
+   epmem - this function generates an arraylist of actwme structs
+           representing all the nodes in the wmetree that are
+           referenced by the working memory tree rooted by sym.
+   tc - a transitive closure number for avoiding loops in working mem
 
    Created: 09 Jan 2004
    Updated: 23 Feb 2004 - made breadth first and non-recursive
@@ -960,6 +992,7 @@ Symbol *update_wmetree(wmetree *node,
                 //insert childnode into the arraylist
                 add_node_to_memory(epmem, childnode, decay_activation_level(wmes[i]));
                 append_entry_to_arraylist(syms, (void *)wmes[i]->value);
+
             }//for
         }//if
 
@@ -999,6 +1032,14 @@ void record_epmem( )
     Symbol *sym;
     arraylist *curr_state;
     arraylist *next_state;
+    int i;
+    episodic_memory *new_epmem;
+
+    //Allocate and initialize the new memory
+    new_epmem = (episodic_memory *)allocate_memory(sizeof(episodic_memory),
+                                                   MISCELLANEOUS_MEM_USAGE);
+    new_epmem->last_usage = -1;
+    new_epmem->match_score = 0;
 
     //Starting with bottom_goal and moving toward top_goal, add all
     //the current states to the wmetree and record the full WM
@@ -1018,14 +1059,23 @@ void record_epmem( )
 
         tc = sym->id.tc_num + 1;
         sym = update_wmetree(&g_wmetree, sym, curr_state, tc);
+
+        //Update the assoc_memories link on each wmetree node in curr_state
+        for(i = 0; i < curr_state->size; i++)
+        {
+            wmetree *node = ((actwme *)(curr_state->array[i]))->node;
+            append_entry_to_arraylist(node->assoc_memories, (void *)new_epmem);
+        }
     }
 
     //Store the recorded memory
-    append_entry_to_arraylist(g_memories, (void *)curr_state);
+    new_epmem->content = curr_state;
+    new_epmem->index = g_memories->size;
+    append_entry_to_arraylist(g_memories, (void *)new_epmem);
 
 //      //%%%DEBUGGING
 //      print("\nRECORDED MEMORY %d:\n", g_memories->size - 1);
-//      print_memory_graphically(g_memories->array[g_memories->size - 1]);
+//      print_memory_graphically(((episodic_memory *)g_memories->array[g_memories->size - 1])->content);
     
 }//record_epmem
 
@@ -1368,7 +1418,7 @@ void epmem_clear_mem(wmetree *node)
     }
 
     //Check for trivial case
-    if (g_curr_memory == -1)
+    if (g_curr_memory == NULL)
     {
         return;
     }
@@ -1569,14 +1619,14 @@ int compare_memories_act_indiv_mem(arraylist *epmem1, arraylist *epmem2)
 
 
 /* ===================================================================
-   find_best_match
+   old_find_best_match
 
    Finds the index of the episodic memory in g_memories that most closely
    matches the cue given to the function.
 
    Created:  19 Jan 2004
    =================================================================== */
-int find_best_match(arraylist *cue)
+int old_find_best_match(arraylist *cue)
 {
     int best_match = 0;
     int best_index = 0;
@@ -1605,6 +1655,64 @@ int find_best_match(arraylist *cue)
     if (best_match == 0) return -1;
 
     return best_index;
+}//old_find_best_match
+
+
+/* ===================================================================
+   find_best_match
+
+   Finds the index of the episodic memory in g_memories that most closely
+   matches the cue given to the function.
+
+   Created:  19 Jan 2004
+   =================================================================== */
+episodic_memory *find_best_match(arraylist *cue)
+{
+    int best_score = 0;
+    episodic_memory *best_mem = NULL;
+    int i;
+    int j;
+
+    //If there aren't enough memories to examine just return
+    //the first one
+    if (g_memories->size <= memory_match_wait)
+    {
+        return 0;
+    }
+
+    //Give this match a unique id
+    g_last_ret_id++;
+
+    //Every memory gets a match score boost if it contains a memory
+    //that's in the cue.  So we need to loop over the assoc_memories
+    //list for each wmetree node in the cue
+    for(i = 0; i < cue->size; i++)
+    {
+        actwme *aw = (actwme *)cue->array[i];
+        for(j = 0; j < aw->node->assoc_memories->size; j++)
+        {
+            episodic_memory *epmem =
+                (episodic_memory *)aw->node->assoc_memories->array[j];
+
+            if (epmem->last_usage != g_last_ret_id)
+            {
+                epmem->last_usage = g_last_ret_id;
+                epmem->match_score = aw->activation;
+            }
+            else
+            {
+                epmem->match_score += aw->activation;
+            }
+
+            if (epmem->match_score > best_score)
+            {
+                best_score = epmem->match_score;
+                best_mem = epmem;
+            }
+        }//for
+    }//for
+
+    return best_mem;
 }//find_best_match
 
 /* ===================================================================
@@ -1716,7 +1824,7 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
     
     //Remove the old retrieved memory
     epmem_clear_mem(&g_wmetree);
-    g_curr_memory = -1;
+    g_curr_memory = NULL;
 
     //Create an arraylist representing the current query
     al_query = make_arraylist(32);
@@ -1735,9 +1843,9 @@ arraylist *respond_to_query(Symbol *query, Symbol *retrieved)
     destroy_arraylist(al_query);
 
     //Place the best fit on the retrieved link
-    if (g_curr_memory > -1)
+    if (g_curr_memory != NULL)
     {
-        al_retrieved = (arraylist *)g_memories->array[g_curr_memory];
+        al_retrieved = g_curr_memory->content;
         install_epmem_in_wm(retrieved, al_retrieved);
     }
     else
@@ -1869,13 +1977,15 @@ void respond_to_command(char *cmd)
         epmem_clear_mem(&g_wmetree);
 
         //Check that there is a next memory available
-        if ( (g_curr_memory > -1)
-             && (g_curr_memory < g_memories->size - memory_match_wait) )
+        if ( (g_curr_memory != NULL)
+             && (g_curr_memory->index < g_memories->size - memory_match_wait) )
         {
+            //Update the current memory pointer to point to the next epmem
+            g_curr_memory =
+                (episodic_memory *)g_memories->array[g_curr_memory->index + 1];
+            
             //Install the new memory
-            g_curr_memory++;
-            install_epmem_in_wm(g_epmem_retrieved,
-                                (arraylist *)g_memories->array[g_curr_memory]);
+            install_epmem_in_wm(g_epmem_retrieved, g_curr_memory->content);
         }
         else
         {
@@ -1901,15 +2011,15 @@ void respond_to_command(char *cmd)
    =================================================================== */
 void epmem_print_curr_memory()
 {
-    if (g_curr_memory < 0)
+    if (g_curr_memory == NULL)
     {
         print("\nCURRENT MEMORY:  None.\n");
         return;
     }
     
     //Print the current memory
-    print("\nCURRENT MEMORY:  %d of %d\t\t", g_curr_memory, g_memories->size);
-    print_memory_graphically((arraylist *)g_memories->array[g_curr_memory]);
+    //%%%print("\nCURRENT MEMORY:  %d of %d\t\t", g_curr_memory, g_memories->size);
+    print_memory_graphically(g_curr_memory->content);
 
 }//epmem_print_curr_memory
 
@@ -2015,7 +2125,7 @@ void init_epmem(void)
 
     //Initialize the memories array
     g_memories = make_arraylist(512);
-    g_curr_memory = -1;
+    g_curr_memory = NULL;
 
     
 }/*init_epmem*/
