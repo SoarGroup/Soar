@@ -17,84 +17,84 @@ Aliases::Aliases() {
 		std::vector<std::string> substitution;
 		substitution.push_back(string("alias"));
 		substitution.push_back(string("-d"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// cd chdir
 	{
 		string commandToSubstitute("chdir");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("cd"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// default-wme-depth set-default-depth
 	{
 		string commandToSubstitute("set-default-depth");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("default-wme-depth"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// firing-counts fc
 	{
 		string commandToSubstitute("fc");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("firing-counts"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// gds-print gds_print
 	{
 		string commandToSubstitute("gds_print");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("gds-print"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// help man
 	{
 		string commandToSubstitute("man");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("help"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// help ?
 	{
 		string commandToSubstitute("?");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("help"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// init-soar init
 	{
 		string commandToSubstitute("init");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("init-soar"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// ls dir
 	{
 		string commandToSubstitute("dir");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("ls"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// print p
 	{
 		string commandToSubstitute("p");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("print"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// pwd topd
 	{
 		string commandToSubstitute("topd");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("pwd"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// quit exit
 	{
 		string commandToSubstitute("exit");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("quit"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// run -d step
 	{
@@ -102,7 +102,7 @@ Aliases::Aliases() {
 		std::vector<std::string> substitution;
 		substitution.push_back(string("run"));
 		substitution.push_back(string("-d"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// run -d d
 	{
@@ -110,7 +110,7 @@ Aliases::Aliases() {
 		std::vector<std::string> substitution;
 		substitution.push_back(string("run"));
 		substitution.push_back(string("-d"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// run -e e
 	{
@@ -118,28 +118,28 @@ Aliases::Aliases() {
 		std::vector<std::string> substitution;
 		substitution.push_back(string("run"));
 		substitution.push_back(string("-e"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// stop-soar stop
 	{
 		string commandToSubstitute("stop");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("stop-soar"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// stop-soar interrupt
 	{
 		string commandToSubstitute("interrupt");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("stop-soar"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// watch w
 	{
 		string commandToSubstitute("w");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("watch"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 	// print -i wmes
 	{
@@ -147,7 +147,7 @@ Aliases::Aliases() {
 		std::vector<std::string> substitution;
 		substitution.push_back(string("print"));
 		substitution.push_back(string("-i"));
-		assert(NewAlias(substitution, commandToSubstitute));
+		NewAlias(substitution, commandToSubstitute);
 	}
 }
 
