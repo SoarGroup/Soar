@@ -118,9 +118,11 @@ bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, int detail, std::
 	bool ret = pKernelHack->Preferences(pAgent, argc, argv);
 	RemoveListenerAndEnableCallbacks(pAgent);
 
+	if (!ret) return m_Error.SetError(CLIError::kgSKIError);
+
 	if (!m_RawOutput) {
 		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.c_str());
 		m_Result.clear();
 	}
-	return ret;
+	return true;
 }
