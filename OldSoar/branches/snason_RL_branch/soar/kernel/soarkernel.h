@@ -69,6 +69,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stddef.h>
+#include <math.h>
 
 
 #include "soarBuildOptions.h"
@@ -1328,6 +1329,17 @@ typedef struct preference_struct {
   goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
 #endif
 
+  /* REW: 2003-01-08 Behavior Variability Kernel Experiements
+                     See decide.c for more information
+		     This is just a hack until we determine
+		     what we really want from these changes.
+  */
+
+  int total_preferences_for_candidate;
+  double sum_of_probability;
+  double confidence;
+
+  /* END: REW: 2003-01-08 */
 
 } preference;
 
@@ -1412,7 +1424,43 @@ typedef struct slot_struct {
   dl_cons *acceptable_preference_changed; /* for context slots: either zero,
                                              or points to dl_cons if the slot
                                              has changed + or ! pref's */
+  /* These items exist only for context slots. SAN
+    Putting these on every slot seems inefficient. */
+  /* struct not_struct *RL_nots;
+  struct condition_struct *RL_top;
+  struct condition_struct *RL_bottom;
+  float previous_Q;
+  float reward;
+  int step;
+  Symbol *op; */
+
 } slot;
+
+
+/*-------------------------
+  RL record struct
+  SAN
+  -------------------------*/
+
+typedef struct RL_record_struct{
+ /* These items exist only for context slots. SAN
+    Putting these on every slot seems inefficient. */
+  struct not_struct *RL_nots;
+  struct condition_struct *RL_top;
+  struct condition_struct *RL_bottom;
+  float previous_Q;
+  float reward;
+  int step;
+  Symbol *op;
+  int level;
+  struct RL_record_struct *next;
+} RL_record;
+
+extern void reset_RL(void);
+
+
+
+
 
 /* -------------------------------------------------------------------
                               Tests
@@ -1956,8 +2004,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* RMJ */
 #define ATTENTION_LAPSE_ON_SYSPARAM              30
 
+/* SAN Turn RL on/off */
+#define RL_ON_SYSPARAM                          31
+ 
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  30
+#define HIGHEST_SYSPARAM_NUMBER                  31
 
 
 /* -----------------------------------------
@@ -3786,6 +3837,17 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool                quiescence_t_flag;
   char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
   
+  /*------------------------- SAN - RL stuff ---------------------------------*/
+  
+  Symbol *reward_header;
+  float next_Q;
+  float alpha;
+  float gamma;
+  float Temp;
+  unsigned long RL_count;
+  bool making_binary;
+  RL_record *records;
+
   /* ----------------------- Misc. top-level stuff -------------------------- */
   
   memory_pool         action_pool;

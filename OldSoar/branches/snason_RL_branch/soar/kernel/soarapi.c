@@ -884,7 +884,11 @@ int soar_Learn (int argc, const char *argv[], soarResult *res)
 	 soar_cSetLearning( ALL_LEVELS );
        else if ( string_match_up_to("-bottom-up", argv[i], 2))
 	 soar_cSetLearning( BOTTOM_UP );
-       else if ( string_match_up_to("-list", argv[i], 2))
+       else if (string_match("-RLon", argv[i]))
+		   soar_cSetLearning(RL_ON);
+	   else if (string_match("-RLoff", argv[i]))
+		   soar_cSetLearning(RL_OFF);
+	   else if ( string_match_up_to("-list", argv[i], 2))
 	 {
 	   cons * c;
 	   char buff[1024];

@@ -210,10 +210,12 @@ void do_input_cycle (void) {
     release_io_symbol (current_agent(io_header));
     release_io_symbol (current_agent(io_header_input));
     release_io_symbol (current_agent(io_header_output));
-    current_agent(io_header) = NIL;       /* RBD added 3/25/95 */
+    release_io_symbol (current_agent(reward_header)); // SAN
+	current_agent(io_header) = NIL;       /* RBD added 3/25/95 */
     current_agent(io_header_input) = NIL;       /* RBD added 3/25/95 */
     current_agent(io_header_output) = NIL;       /* KJC added 3/3/99 */
     current_agent(io_header_link) = NIL;  /* KJC added 3/3/99 */
+	current_agent(reward_header) = NIL; // SAN
     soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, 
 			 (soar_call_data) TOP_STATE_JUST_REMOVED);
   } else if ((!current_agent(prev_top_state)) && current_agent(top_state)) {
@@ -225,19 +227,20 @@ void do_input_cycle (void) {
                                          current_agent(io_header));
     current_agent(io_header_input) = get_new_io_identifier ('I');
     current_agent(io_header_output) = get_new_io_identifier ('I');
-    w = add_input_wme (current_agent(io_header),
+    current_agent(reward_header) = get_new_io_identifier('I'); // SAN
+	w = add_input_wme (current_agent(io_header),
 		       make_sym_constant("input-link"),
 		       current_agent(io_header_input));
-
-    w = add_input_wme (current_agent(io_header),
+	w = add_input_wme (current_agent(io_header),
 		       make_sym_constant("output-link"),
 		       current_agent(io_header_output));
-
+	w = add_input_wme(current_agent(io_header),    // SAN
+		make_sym_constant("reward"),
+		current_agent(reward_header));
     /* --- add top state io link before calling input phase callback so
      * --- code can use "wmem" command.
      */
     do_buffered_wm_and_ownership_changes();
-
     soar_invoke_callbacks(soar_agent, INPUT_PHASE_CALLBACK, 
 			 (soar_call_data) TOP_STATE_JUST_CREATED);
   }

@@ -3,7 +3,19 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "kernel"=".\Kernel.dsp" - Package Owner=<4>
+Project: "dll"="..\tcl-interface\SoarInterface.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "kernel"=.\Kernel.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

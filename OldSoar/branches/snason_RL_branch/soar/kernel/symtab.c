@@ -457,7 +457,9 @@ void reset_id_counters (void) {
     print ("Internal warning:  wanted to reset identifier generator numbers, but\n");
     print ("there are still some identifiers allocated.  (Probably a memory leak.)\n");
     print ("(Leaving identifier numbers alone.)\n");
-    return;
+	print ("Num symbols is %d\n", current_agent(identifier_hash_table)->count);
+	// soar_ecPrintInternalSymbols(); SAN debugging
+	return;
   }
   for (i=0; i<26; i++) current_agent(id_counter)[i]=1;  
 }

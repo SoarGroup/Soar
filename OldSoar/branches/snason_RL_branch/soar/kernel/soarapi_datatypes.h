@@ -139,7 +139,9 @@ enum soar_apiLearningSetting {
   EXCEPT,
   ONLY,
   ALL_LEVELS,
-  BOTTOM_UP
+  BOTTOM_UP,
+  RL_ON,
+  RL_OFF
 };
 
 

@@ -1270,6 +1270,7 @@ void do_preference_phase (void) {
   }
 
 /* REW: end   08.20.97 */
+//  print_with_symbols("\nAt end of preference phase, bottom goal is %y\n", current_agent(bottom_goal));
 
 }
 

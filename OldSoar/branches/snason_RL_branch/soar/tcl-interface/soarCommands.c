@@ -109,11 +109,16 @@ int AddWmeCmd (ClientData clientData,
 	       Tcl_Interp * interp,
 	       int argc, const char *argv[])
 {
-  soarResult res;
+  int i;
+	soarResult res;
 
   init_soarResult(res);
 
   Soar_SelectGlobalInterpByInterp(interp);
+
+  // SAN
+//  for (i = 0; i < argc; i++)
+//	  print("%s\n", argv[i]); 
 
   if( soar_AddWme( argc, argv, &res ) == SOAR_OK ) {
     sprintf( interp->result, "%s", res.result);

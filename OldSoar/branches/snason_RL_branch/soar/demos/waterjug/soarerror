@@ -1,2 +1,2 @@
-Internal error: can't find existing instantiation to retract
+decide.c: Error: bad value of user_select_mode: 2
 Soar cannot recover from this error.  Aborting...

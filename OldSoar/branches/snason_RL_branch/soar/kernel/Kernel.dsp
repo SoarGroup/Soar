@@ -181,6 +181,10 @@ SOURCE=.\rhsfun_math.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\SAN.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\scheduler.c
 # End Source File
 # Begin Source File

@@ -57,6 +57,40 @@
 
 #include "soarkernel.h"
 #include "soarapi_datatypes.h"
+#include <assert.h>
+
+
+/* REW: 2003-01-02 Behavior Variability Kernel Experiments */
+preference *ProbSelect(slot *s, preference *candidates);
+void EnableProbIndifferentSelection();
+void DisableProbIndifferentSelection();
+// SAN
+extern void learn_RL_productions();
+extern float tabulate_reward_value();
+extern void record_for_RL();
+extern void push_record();
+
+unsigned char useProbIndifferentSelection=1;
+
+/* ProbSelect specific values */
+ #define DEFAULT_INDIFFERENT_VALUE 0
+/* REW: 2003-01-06 A temporary helper function */
+
+void PrintCandidates(preference *candidates) {
+   preference*    cand=0; 
+   int max_count=0;
+
+   for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+   {
+     max_count++;
+     print("\n Candidate %d", cand);
+     print_with_symbols ("\n    %y %y %y", cand->id, cand->attr, cand->value); 
+     if (max_count > 10) break;
+   }
+}
+
+
+/* END: 2003-01-02 Behavior Variability Kernel Experiments */
 
 extern void soar_ecGDSPrint();
 
@@ -120,6 +154,10 @@ extern void remove_operator_if_necessary(slot *s, wme *w);
 #define UNARY_INDIFFERENT_DECIDER_FLAG 6
 #define ALREADY_EXISTING_WME_DECIDER_FLAG 7
 #define UNARY_PARALLEL_DECIDER_FLAG 8
+/* REW: 2003-01-02 Behavior Variability Kernel Experiments 
+   A new preference type: unary indifferent + constant (probability) value
+*/
+#define UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG 9
 
 /* ======================================================================
 
@@ -1018,12 +1056,28 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
     cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
   for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
+
+    /* REW: 2003-01-02 Behavior Variability Kernel Experiments
+     We want to treat some binary indifferent prefs as unary indifferents,
+     the second pref is really an int representing a probability value.
+     So we identify these preferences here.
+  */
+  for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
+    if((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) || 
+	   (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
+       
+      p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+  
+  /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
+  
   not_all_indifferent = FALSE;
   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
     /* --- if cand is unary indifferent, it's fine --- */
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
       continue;
-    /* --- check whether cand is binary indifferent to each other one --- */
+    else if ( (useProbIndifferentSelection) && (cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) )
+      continue;
+	/* --- check whether cand is binary indifferent to each other one --- */
     for (p=candidates; p!=NIL; p=p->next_candidate) {
       if (p==cand) continue;
       match_found = FALSE;
@@ -1093,25 +1147,42 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
     case USER_SELECT_RANDOM: {
       int num_candidates, chosen_num;
       num_candidates = 0;
-      for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+      
+	  /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
+      /* If useProbIndifferentSelection is 1, then we choose the
+	 the new method for choosing candidates 
+      */ 
+	
+      if(useProbIndifferentSelection){
+	   // SAN - mucking about
+          cand = ProbSelect(s, candidates);
+	      if (!cand){
+		     *result_candidates = candidates;
+		     return TIE_IMPASSE_TYPE;
+		}
+	  }
+	  else{ 
+	  	  for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
         num_candidates++;
 
       chosen_num = sys_random() % num_candidates;
 
       cand = candidates;
       while (chosen_num) { cand=cand->next_candidate; chosen_num--; }
-      *result_candidates = cand;
-      break;
-    }
+      
+     }
+	  *result_candidates = cand;  
+	  break;
+							 }
     default:
       { char msg[128];
-      sprintf(msg, "decide.c: Error: bad value of user_select_mode: %ld\n",
+	  sprintf(msg, "decide.c: Error: bad value of user_select_mode: %ld\n",
 	      current_agent(sysparams)[USER_SELECT_MODE_SYSPARAM]);
       abort_with_fatal_error(msg);
       }
     }
     (*result_candidates)->next_candidate = NIL;
-    return NONE_IMPASSE_TYPE;
+  	return NONE_IMPASSE_TYPE;
   }
   
   /* --- items not all indifferent; for context slots this gives a tie --- */
@@ -1385,11 +1456,26 @@ byte run_preference_semantics_for_consistency_check (slot *s, preference **resul
     cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
   for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
+  /* REW: 2003-01-26 Behavior Variability Kernel Experiments
+     We want to treat some binary indifferent prefs as unary indifferents,
+     the second pref is really an int representing a probability value.
+     So we identify these preferences here.
+	 -- want to guarantee decision is not interrupted by a new indiff pref
+  */
+  for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
+    if(p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+       
+      p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+  /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
   not_all_indifferent = FALSE;
   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
     /* --- if cand is unary indifferent, it's fine --- */
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
+		continue;
+	else if ( (useProbIndifferentSelection) && (cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ) {
+      /* print("\n Ignoring this candidate because it has a constant value for the second pref"); */
       continue;
+	}
     /* --- check whether cand is binary indifferent to each other one --- */
     for (p=candidates; p!=NIL; p=p->next_candidate) {
       if (p==cand) continue;
@@ -2072,6 +2158,7 @@ bool context_slot_is_decidable (slot *s) {
 void remove_wmes_for_context_slot (slot *s) {
   wme *w;
   
+ 
   if (!s->wmes) return;
   /* Note that we only need to handle one wme--context slots never have
      more than one wme in them */
@@ -2091,6 +2178,7 @@ void remove_wmes_for_context_slot (slot *s) {
 
 void remove_existing_context_and_descendents (Symbol *goal) {
   preference *p;
+  slot *s;   // SAN
 
   ms_change *head, *tail;  /* REW:   08.20.97 */
 
@@ -2135,7 +2223,10 @@ void remove_existing_context_and_descendents (Symbol *goal) {
   }
   
   /* --- remove wmes for this goal, and garbage collect --- */
-  remove_wmes_for_context_slot (goal->id.operator_slot);
+  s = goal->id.operator_slot;         // SAN
+  remove_wmes_for_context_slot (s);
+  // deallocate_condition_list(s->RL_top);
+  // deallocate_list_of_nots(s->RL_nots);
   update_impasse_items (goal, NIL); /* causes items & fake pref's to go away */
   remove_wme_list_from_wm (goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;
@@ -2230,6 +2321,16 @@ void create_new_context (Symbol *attr_of_impasse, byte impasse_type) {
   id->id.operator_slot = make_slot (id, current_agent(operator_symbol));
   id->id.allow_bottom_up_chunks = TRUE;
 
+  /* SAN */
+  if (current_agent(sysparams)[RL_ON_SYSPARAM])
+	push_record(&current_agent(records), id->id.level);
+  /*id->id.operator_slot->reward = 0;
+  id->id.operator_slot->op = NIL;
+  id->id.operator_slot->RL_bottom = NIL;
+  id->id.operator_slot->RL_top = NIL;
+  id->id.operator_slot->RL_nots = NIL;
+  id->id.operator_slot->step = 0;
+  */
 
 #ifndef FEW_CALLBACKS
 
@@ -2330,7 +2431,7 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 
   /* --- mark the slot as not changed --- */
   s->changed = NIL;
-
+ 
   /* --- determine the attribute of the impasse (if there is no impasse,
    * this doesn't matter) --- */
   if (impasse_type==NO_CHANGE_IMPASSE_TYPE) {
@@ -2343,22 +2444,37 @@ bool decide_context_slot (Symbol *goal, slot *s) {
     /* --- for all other kinds of impasses --- */
     attribute_of_impasse = s->attr;
   }
-  
-  /* --- remove wme's for lower slots of this context --- */
-  if (attribute_of_impasse==current_agent(state_symbol)) {
+    /* --- remove wme's for lower slots of this context --- */
+  if (attribute_of_impasse==current_agent(state_symbol)) 
     remove_wmes_for_context_slot (goal->id.operator_slot);
-  }
 
 
   /* --- if we have a winner, remove any existing impasse and install the
      new value for the current slot --- */
   if (impasse_type==NONE_IMPASSE_TYPE) {
+	  if (current_agent(sysparams)[RL_ON_SYSPARAM]){
+		/* SAN - compute Q-value when winner decided by symbolic preferences */
+		// if (!candidates->value->common.decider_flag){
+			  current_agent(next_Q) = DEFAULT_INDIFFERENT_VALUE;
+		 	for (temp=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; temp!=NIL; temp=temp->next){
+				if (candidates->value == temp->value){
+					  if (temp->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						current_agent(next_Q) += temp->referent->ic.value;
+					if (temp->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						  current_agent(next_Q) += temp->referent->fc.value;
+				}
+			}
+ 
+	 	  learn_RL_productions(goal->id.level);
+		 
+	  }
+	/* end SAN */
     for(temp = candidates; temp; temp = temp->next_candidate)
       preference_add_ref(temp);
     if (goal->id.lower_goal)
       remove_existing_context_and_descendents (goal->id.lower_goal);
     w = make_wme (s->id, s->attr, candidates->value, FALSE);
-    insert_at_head_of_dll (s->wmes, w, next, prev);
+	insert_at_head_of_dll (s->wmes, w, next, prev);
     w->preference = candidates;
     preference_add_ref (w->preference);
     add_wme_to_wm (w);
@@ -2366,7 +2482,7 @@ bool decide_context_slot (Symbol *goal, slot *s) {
       preference_remove_ref(temp);
     return TRUE;
   } 
-    
+   
   /* --- no winner; if an impasse of the right type already existed, just
      update the ^item set on it --- */
   if ((impasse_type == type_of_existing_impasse(goal)) &&
@@ -2418,9 +2534,32 @@ bool decide_context_slot (Symbol *goal, slot *s) {
 
 void decide_context_slots (void) {
   Symbol *goal;
+  RL_record *record;
   slot *s;
+  float r;           // SAN
 
+   // catch rewards SAN - make sure not double counted
+   if (current_agent(sysparams)[RL_ON_SYSPARAM]){
+	  
 
+  
+		r = tabulate_reward_value();  
+	 
+		record = current_agent(records);
+
+		while(record){
+			
+			if (record->op){
+// print_with_symbols("\nOp %y ", s->op);
+// print(" at decide_context_slots with reference count %d\n",s->op->common.reference_count);
+				record->reward += (r*pow(current_agent(gamma), record->step));  // Fix for discounting
+		    	(record->step)++;
+			}
+			// print_with_symbols("\nDuring reward goal is %y\n", goal);
+			record = record->next;
+		}
+  }
+  
   if (current_agent(highest_goal_whose_context_changed)) {
     goal = current_agent(highest_goal_whose_context_changed);
   }
@@ -2450,6 +2589,7 @@ void decide_context_slots (void) {
     if (decide_context_slot (goal, s)) break;
 
   } /* end of while (TRUE) loop down context stack */
+   
   current_agent(highest_goal_whose_context_changed) = NIL;
 }
 
@@ -2514,8 +2654,11 @@ void do_working_memory_phase (void) {
 
 #endif
 
+//  print_with_symbols("\nAt beginning of wmphase, bottom goal is %y\n", current_agent(bottom_goal));
   decide_non_context_slots();
+//    print_with_symbols("\nAfter decide_non_context_slots, bottom goal is %y\n", current_agent(bottom_goal));
   do_buffered_wm_and_ownership_changes();
+//    print_with_symbols("\nAfter do ownership changes, bottom goal is %y\n", current_agent(bottom_goal));
 }
 
 void do_decision_phase (void) {
@@ -2529,6 +2672,12 @@ void do_decision_phase (void) {
 
   decide_context_slots ();
   do_buffered_wm_and_ownership_changes();
+
+  /* SAN - collect conditions for current operator */
+  if (current_agent(sysparams)[RL_ON_SYSPARAM])
+	  record_for_RL();
+	 
+
   /*
    * Bob provided a solution to fix WME's hanging around unsupported
    * for an elaboration cycle.
@@ -3074,7 +3223,7 @@ void gds_invalid_so_remove_goal (wme *w) {
      print_wme(w);
    }
 #endif
-
+ 
    remove_existing_context_and_descendents(w->gds->goal);
    /* BUG: Need to reset highest_goal here ???*/
 
@@ -3119,6 +3268,274 @@ void create_gds_for_goal( Symbol *goal){
 }
 
 
+/* Behavior variability */
+/*
+===========================================
+
+===========================================
+*/
+void EnableProbIndifferentSelection()
+{
+   useProbIndifferentSelection=1;
+}
+/*
+===========================================
+
+===========================================
+*/
+void DisableProbIndifferentSelection()
+{
+   useProbIndifferentSelection=0;
+}
+
+
+/*
+===========================================
+
+===========================================
+*/
+/* REW: 2003-01-06 */
+/* This a helper function that sets the decider flag to candidate for
+   all the items on the candidate list and initializes the counters 
+   that will track the total probability distributions to zero.
+
+   It's okay to muck with the 
+   decider flags here because this will be called after the decision
+   has been determined to be a choice among indifferent candidates.
+
+   Note: the slot is only needed for debugging/data verification
+*/
+
+void initialize_indifferent_candidates_for_probability_selection(slot *s, preference *candidates)
+{
+   preference*    cand=0;
+
+   for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+   {
+     /* print_with_symbols("\nInitializing candidate %y",cand->value); 
+      */
+      cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+      cand->total_preferences_for_candidate=0;
+      cand->sum_of_probability=DEFAULT_INDIFFERENT_VALUE;
+	  cand->confidence = 0;
+   }
+
+
+   /*    
+   for (cand=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
+   {
+     print_with_symbols ("\n  Candidate (unary indifferent preference)  %y %y %y", cand->id, cand->attr, cand->value);
+     print("\n Candidate decider flag : %d ", cand->value->common.decider_flag);
+   }
+
+   for (cand=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
+     {     
+         print_with_symbols ("\n  Candidate (binary indifferent preference)  %y %y %y", cand->id, cand->attr, cand->value);
+     print("\n Candidate decider flag : %d ", cand->value->common.decider_flag);
+     
+   }
+   */
+  
+
+}
+
+/*
+===========================================
+
+===========================================
+*/
+
+
+/*
+===========================================
+
+===========================================
+*/
+unsigned int getNumCandidates(slot *s, preference *candidates)
+{
+   unsigned int   numCandidates = 0;
+   preference*    cand=0;
+
+   /*
+   // Count up the number of candidates
+      REW: 2003-01-06
+      I'm assuming that all of the candidates have unary or 
+      unary+value (binary) indifferent preferences at this point.
+      So we loop over the candidates list and count the number of
+      elements in the list.
+   */
+   
+
+   for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+   {
+      numCandidates++;
+   }
+
+ 
+   /* REW: 2003-01-06
+      Commented this original implementation.  It does not work because 
+      there can be unnary and binary preferences for slot values
+      that have been filtered from the candiates list.  
+      Eg, a worst preference for a slot value with a unary indifferent
+
+   for (cand=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
+   {
+      numCandidates++;
+   }
+
+   for (cand=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next)
+   {
+      numCandidates++;
+   }
+   */
+
+   return numCandidates;
+}
+
+
+
+
+
+preference *ProbSelect(slot *s, preference *candidates)
+{
+   preference*    cand=0; 
+   preference*    pref=0; 
+   float        total_probability=0;
+   preference*    selectedCandidate=0;
+   unsigned int   numCandidates = 0;
+   unsigned int   currentCandidate=0;
+   float         selectedProbability=0;
+   float         currentSumOfValues=0;
+   static int     initialized_rand = 0;
+   unsigned long        rn=0;
+   char           mesg[256];
+ 
+   assert(s != 0);
+   assert(candidates != 0);
+
+   if(!initialized_rand)
+   {
+      srand( (unsigned)time( NULL ) );
+      initialized_rand = 1;
+   }
+   
+    // print("\nCandidates at top of ProbSelect");
+      // PrintCandidates(candidates); 
+   
+   initialize_indifferent_candidates_for_probability_selection(s, candidates);
+   numCandidates = getNumCandidates(s,candidates);
+   /* print("\n numCandidates = %d", numCandidates);
+    */
+
+
+   /* print("\nCandidates before unary indifferent loop");
+      PrintCandidates(candidates); 
+   */
+   /*for (pref=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next)
+   {
+     print_with_symbols("\nPreference for %y", pref->value);
+     
+     for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+     print_with_symbols("\nConsidering candidate %y", cand->value);
+	
+       if (cand->value == pref->value) {
+	 cand->total_preferences_for_candidate += 1;
+	 cand->sum_of_probability += DEFAULT_INDIFFERENT_VALUE;
+	  print_with_symbols("\nFound unary preference: \n Incrementing candidate %y by default value", cand->value); 
+	 print("\nValues: total_preferences %d   sum_of_probability %f", cand->total_preferences_for_candidate, cand->sum_of_probability);
+	 
+       }
+     }
+   }*/
+
+   /* BUGBUGBUG 
+      Next some error checking here to ensure that the binary preference
+      is indeed really an indifferent+value preference....
+      someday.
+   */
+
+   for (pref=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next)
+   {
+     for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+       if (cand->value == pref->value) {
+	 cand->total_preferences_for_candidate += 1;
+	  // print_with_symbols("\nFound binary preference: \n Incrementing candidate %y ", cand->value);
+	    // print(" by %f", pref->referent->fc.value); 
+	 cand->confidence += abs(pref->referent->fc.value); 
+	 cand->sum_of_probability += pref->referent->fc.value;
+       }
+     }
+   }
+
+
+   /* for (cand=candidates; cand!=NIL; cand=cand->next_candidate){
+	   if (cand->total_preferences_for_candidate < 1)
+		   return NIL;
+	   else
+		   cand->confidence /= cand->total_preferences_for_candidate;
+   }
+
+   for (cand=candidates; cand!=NIL; cand=cand->next_candidate){
+	   for(pref=cand->next_candidate; pref!=NIL; pref=pref->next_candidate){
+		   if (cand->sum_of_probability >= pref->sum_of_probability){
+			   if ((cand->sum_of_probability - cand->confidence) > (pref->sum_of_probability + pref->confidence))
+				   return NIL;
+		   }
+		   else if ((cand->sum_of_probability + cand->confidence) > (pref->sum_of_probability - pref->confidence))
+			   return NIL;
+	   }
+   }*/
+
+	// now sum_of_probability should be the Q-value
+   print("\n");
+   total_probability = 0.0;
+   // current_agent(max_Q) = (*candidates)->sum_of_probability; // SAN
+   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+     /* UNTESTED */
+     /* Uncomment this line for averaging vs sum of individual probabilities */
+     // cand->sum_of_probability = (cand->sum_of_probability)/((double)cand->total_preferences_for_candidate);
+     
+	
+     print_with_symbols("\n Candidate %y ", cand->value);
+     /* Sum the total probabilities */
+     total_probability += exp(cand->sum_of_probability / current_agent(Temp));
+     print(" Q-value %f weighted value %f", cand->sum_of_probability, exp(cand->sum_of_probability / current_agent(Temp)));
+
+	 /* SAN - record max Q-value for Q-value update */
+	 /* try Sarsa
+	 current_agent(max_Q) = max( current_agent(max_Q) , cand->sum_of_probability );
+	*/
+   }
+
+   
+   
+   /* Now select the candidate */ 
+
+   rn = rand();
+   selectedProbability = ((double)rn / (double)RAND_MAX) * total_probability;
+
+   
+   // print("\n   Total probability of all candidates %f\n   Selected probability %f\n",total_probability,  selectedProbability);
+
+   currentSumOfValues = 0;
+
+   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+     
+     currentSumOfValues += exp(cand->sum_of_probability / current_agent(Temp));
+     // print("   Sum... %f", currentSumOfValues ); 
+
+     if (selectedProbability <= currentSumOfValues) {
+       print_with_symbols("\n    Returning candidate %y", cand->value); 
+	  // current_agent(next_Q) = cand->sum_of_probability;
+		
+       return cand;
+     }
+   }
+
+   print("\nERROR ERROR ERROR\nProbability Selection failed.  Choosing indifferent preferences the former way.  But will crash if all are binary+value preferences.");
+   return 0;
+
+}
 
 
 

@@ -225,6 +225,7 @@ void init_sysparams (void) {
   current_agent(sysparams)[LEARNING_ONLY_SYSPARAM] = FALSE;  /* AGR MVL1 */
   current_agent(sysparams)[LEARNING_EXCEPT_SYSPARAM] = FALSE;  /* KJC 8/96 */
   current_agent(sysparams)[LEARNING_ALL_GOALS_SYSPARAM] = TRUE;
+  current_agent(sysparams)[RL_ON_SYSPARAM] = TRUE;               // SAN
   current_agent(sysparams)[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_RANDOM;
   current_agent(sysparams)[PRINT_WARNINGS_SYSPARAM] = TRUE;
   current_agent(sysparams)[PRINT_ALIAS_SYSPARAM] = TRUE;  /* AGR 627 */

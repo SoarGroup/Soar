@@ -3150,7 +3150,12 @@ byte add_production_to_rete (production *p,
   for (p_node=bottom_node->first_child; p_node!=NIL;
        p_node=p_node->next_sibling) {
     if (p_node->node_type != P_BNODE) continue;
-    if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
+	if (current_agent(making_binary)){ // SAN
+		float increment = rhs_value_to_symbol(p->action_list->referent)->fc.value;  // SAN - bug?, check for int value too
+		increment += rhs_value_to_symbol(p_node->b.p.prod->action_list->referent)->fc.value;
+		p_node->b.p.prod->action_list->referent = symbol_to_rhs_value(make_float_constant(increment));
+	}
+    else if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */
     if (warn_on_duplicates)
       print_with_symbols ("\nIgnoring %y because it is a duplicate of %y ",

@@ -51,7 +51,7 @@
  */
 
 /* For information on the consistency check routines */
-/* #define DEBUG_CONSISTENCY_CHECK    */
+/* #define DEBUG_CONSISTENCY_CHECK */   
 
 /* For information on aspects of determining the active level */
 /* #define DEBUG_DETERMINE_LEVEL_PHASE   */

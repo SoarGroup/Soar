@@ -265,6 +265,7 @@ int soar_cReInitSoar (void) {
   do_preference_phase ();   /* allow all instantiations to retract */
 #endif
 
+  reset_RL();           // SAN
   reset_explain();
   reset_id_counters ();
   reset_wme_timetags ();
@@ -314,7 +315,6 @@ int soar_cReInitSoar (void) {
 #ifdef WARN_IF_TIMERS_REPORT_ZERO
     current_agent(warn_on_zero_timers)        = TRUE;
 #endif
-
 
   return 0;
 }
@@ -1252,6 +1252,7 @@ void soar_cExciseAllProductions (void) {
   soar_cExciseAllProductionsOfType( CHUNK_PRODUCTION_TYPE );
   soar_cExciseAllProductionsOfType( JUSTIFICATION_PRODUCTION_TYPE );
   soar_cExciseAllProductionsOfType( USER_PRODUCTION_TYPE );
+  current_agent(RL_count) = 0;       // SAN
   soar_cReInitSoar();
 }
 
@@ -1271,6 +1272,7 @@ void soar_cExciseAllTaskProductions (void) {
   soar_cExciseAllProductionsOfType( CHUNK_PRODUCTION_TYPE );
   soar_cExciseAllProductionsOfType( JUSTIFICATION_PRODUCTION_TYPE );
   soar_cExciseAllProductionsOfType( USER_PRODUCTION_TYPE );
+  current_agent(RL_count) = 0;     // SAN
   soar_cReInitSoar();
 }
 
@@ -1557,7 +1559,10 @@ void soar_cSetLearning( enum soar_apiLearningSetting setting ) {
   case BOTTOM_UP:
     set_sysparam (LEARNING_ALL_GOALS_SYSPARAM, FALSE);
     break;
-   
+  case RL_ON:
+	  set_sysparam (RL_ON_SYSPARAM, TRUE);
+  case RL_OFF:
+	  set_sysparam (RL_ON_SYSPARAM, FALSE);
 
   }
 
