@@ -77,7 +77,8 @@ EXPORT bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, con
 	// check for query
 	if (query) {
 		// list all productions currently being traced
-		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
+		pIter = pProductionManager->GetAllProductions(&m_gSKIError);
+		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 		if (!pIter) return SetError(CLIError::kgSKIError);
 
 		int productionCount = 0;
@@ -113,7 +114,8 @@ EXPORT bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, con
 	// we are not querying
 	if (!pProduction) {
 		// disable tracing of all productions
-		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
+		pIter = pProductionManager->GetAllProductions(&m_gSKIError);
+		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 		if (!pIter) return SetError(CLIError::kgSKIError);
 
 		for(; pIter->IsValid(); pIter->Next()) {

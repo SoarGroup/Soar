@@ -35,6 +35,7 @@
 
 // gSKI includes
 #include "gSKI_Events.h"
+#include "../../gSKI/src/gSKI_Error.h"	// this is rediculous
 #include "IgSKI_KernelFactory.h"
 
 #ifdef _WIN32
@@ -55,7 +56,6 @@
 namespace gSKI {
 	class IAgent;
 	class IKernel;
-	struct Error;
 }
 namespace sml {
 	class ElementXML;
@@ -110,16 +110,20 @@ public:
 	EXPORT void SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML = 0);
 
 	/*************************************************************
+	* @brief Set the output style to raw or structured.
+	* @param rawOutput Set true for raw (string) output, false for structured output
+	*************************************************************/
+	EXPORT void SetRawOutput(bool rawOutput) { m_RawOutput = rawOutput; }
+
+	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using gSKI or system calls.
 	* @param pConnection The connection, for communication to the client
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param pCommandLine The command line string, arguments separated by spaces
 	* @param pResponse Pointer to XML response object
-	* @param rawOutput Set to true for human-readable raw output string, set to false for XML structured output
-	* @param pError Pointer to the client-owned gSKI error object
 	*************************************************************/
-	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse, bool rawOutput, gSKI::Error* pError);
+	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse);
 
 	/*************************************************************
 	* @brief Takes a command line and expands any aliases and returns
@@ -127,9 +131,8 @@ public:
 	* @param pConnection The connection, for communication to the client
 	* @param pCommandLine The command line string, arguments separated by spaces
 	* @param pResponse Pointer to XML response object
-	* @param pError Pointer to the client-owned gSKI error object
 	*************************************************************/
-	EXPORT bool ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError);
+	EXPORT bool ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse);
 
 	/*************************************************************
 	* @brief add-wme command
@@ -670,35 +673,28 @@ protected:
 
 	void ResultToArgTag(); // clears result
 
-	static std::ostringstream m_Result;	// Raw output from the command
-
-	Aliases				m_Aliases;				// Alias management object
-	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
-
-	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
-
-	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
-	sml::KernelSML*		m_pKernelSML;
-	gSKI::Version		m_KernelVersion;		// Kernel version number
-
+	static std::ostringstream m_Result;			// Raw output from the command
 	bool				m_RawOutput;			// True if we want string output.
-	std::string			m_HomeDirectory;		// The initial working directory, server side
-	bool				m_QuitCalled;			// True after DoQuit is called
-	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
 	ElementXMLList		m_ResponseTags;			// List of tags for the response.
-
 	bool				m_SourceError;			// Used to control debug printing for source command errors
 	std::string			m_SourceErrorDetail;	// Used for detailed source error output
 	int					m_SourceDepth;			// Depth of source command calls.
 	int					m_SourceDirDepth;		// Depth of directory stack since source command, used to return to the dir that source was issued in.
-
 	cli::ErrorCode		m_LastError;			// Last error code (see cli_CLIError.h)
 	std::string			m_LastErrorDetail;		// Additional detail concerning the last error
-	gSKI::Error*		m_pgSKIError;			// gSKI error output from calls made to process the command
+	gSKI::Error			m_gSKIError;			// gSKI error output from calls made to process the command
 
+	Aliases				m_Aliases;				// Alias management object
+	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
+	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
+	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
+	sml::KernelSML*		m_pKernelSML;
+	gSKI::Version		m_KernelVersion;		// Kernel version number
+	std::string			m_HomeDirectory;		// The initial working directory, server side
+	bool				m_QuitCalled;			// True after DoQuit is called
+	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
 	std::string			m_LogFilename;			// Used for logging to a file.
 	std::ofstream*		m_pLogFile;				// The log file stream
-
 };
 
 } // namespace cli

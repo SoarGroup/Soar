@@ -127,25 +127,21 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 * @param pAgent The pointer to the gSKI agent interface
 * @param pCommandLine The command line string, arguments separated by spaces
 * @param pResponse Pointer to XML response object
-* @param rawOutput Set to true for human-readable raw output string, set to false for XML structured output
-* @param pError Pointer to the client-owned gSKI error object
 *************************************************************/
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, ElementXML* pResponse, bool rawOutput, gSKI::Error* pError) {
-
-	// Clear the result
-	m_Result.str("");
-	m_ResponseTags.clear();
-	m_LastError = CLIError::kNoError;
-	m_LastErrorDetail.clear();
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, ElementXML* pResponse) {
 
 	// Fail if quit has been called
 	if (m_QuitCalled) return false;
 
-	// Save the pointers
-	m_pgSKIError = pError;
+	// No way to return data
+	if (!pConnection) return false;
 
-	// Save the raw output flag
-	m_RawOutput = rawOutput;
+	// reset data
+	m_Result.str("");
+	m_ResponseTags.clear();
+	m_LastError = CLIError::kNoError;
+	m_LastErrorDetail.clear();
+	gSKI::ClearError(&m_gSKIError);
 
 	// Log input
 	if (m_pLogFile) {
@@ -206,15 +202,15 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 			errorDescription += "\nResult before error happened:\n";
 			errorDescription += m_Result.str();
 		}
-		if (m_pgSKIError && (m_pgSKIError->Id != gSKI::gSKIERR_NONE)) {
+		if (gSKI::isError(m_gSKIError)) {
 			errorDescription += "\ngSKI Error code: ";
 			char buf[kMinBufferSize];
-			Int2String((int)m_pgSKIError->Id, buf, kMinBufferSize);
+			Int2String(m_gSKIError.Id, buf, kMinBufferSize);
 			errorDescription += buf;
 			errorDescription += "\ngSKI Error text: ";
-			errorDescription += m_pgSKIError->Text;
+			errorDescription += m_gSKIError.Text;
 			errorDescription += "\ngSKI Error details: ";
-			errorDescription += m_pgSKIError->ExtendedMsg;
+			errorDescription += m_gSKIError.ExtendedMsg;
 		}
 		pConnection->AddErrorToSMLResponse(pResponse, errorDescription.c_str(), m_LastError);
 	}
@@ -229,12 +225,9 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 * @param pConnection The connection, for communication to the client
 * @param pCommandLine The command line string, arguments separated by spaces
 * @param pResponse Pointer to XML response object
-* @param pError Pointer to the client-owned gSKI error object
 *************************************************************/
-EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse, gSKI::Error* pError)
+EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse)
 {
-	unused(pError) ;
-
 	SetError(CLIError::kNoError);
 
 	std::string result ;

@@ -41,9 +41,8 @@ EXPORT bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& 
 	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
 
 	// Load the production
-	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), m_pgSKIError);
-
-	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) return SetError(CLIError::kgSKIError);
+	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), &m_gSKIError);
+	if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 
 	if (m_RawOutput) {
 		m_Result << '*';

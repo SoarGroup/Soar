@@ -88,12 +88,14 @@ EXPORT bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, con
 	pIter->Release();
 
 	if (save) {
-		pProductionManager->SaveRete(filename.c_str(), m_pgSKIError);
+		pProductionManager->SaveRete(filename.c_str(), &m_gSKIError);
+		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 	} else {
-		pProductionManager->LoadRete(filename.c_str(), m_pgSKIError);
+		pProductionManager->LoadRete(filename.c_str(), &m_gSKIError);
+		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 	}
 
-	if(m_pgSKIError->Id != gSKI::gSKIERR_NONE) return SetError(save ? CLIError::kReteSaveOperationFail : CLIError::kReteLoadOperationFail);	
+	if (gSKI::isError(m_gSKIError)) return SetError(save ? CLIError::kReteSaveOperationFail : CLIError::kReteLoadOperationFail);
 	return true;
 }
 

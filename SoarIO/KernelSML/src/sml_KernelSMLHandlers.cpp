@@ -713,6 +713,7 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
 	unused(pCommandName) ;
+	unused(pError);
 
    if (!pAgent)
       return false ;
@@ -736,7 +737,8 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	}
 
 	// Make the call.
-	return m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse, rawOutput, pError) ;
+	m_CommandLineInterface.SetRawOutput(rawOutput);
+	return m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse) ;
 }
 
 // Expands a command line's aliases and returns it without executing it.
@@ -744,6 +746,7 @@ bool KernelSML::HandleExpandCommandLine(gSKI::IAgent* pAgent, char const* pComma
 {
 	unused(pCommandName) ;
 	unused(pAgent) ; 	// Agent should be NULL
+	unused(pError);
 
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
@@ -754,5 +757,5 @@ bool KernelSML::HandleExpandCommandLine(gSKI::IAgent* pAgent, char const* pComma
 	}
 
 	// Make the call.
-	return m_CommandLineInterface.ExpandCommand(pConnection, pLine, pResponse, pError) ;
+	return m_CommandLineInterface.ExpandCommand(pConnection, pLine, pResponse) ;
 }

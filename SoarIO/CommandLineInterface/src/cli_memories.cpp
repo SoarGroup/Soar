@@ -110,7 +110,8 @@ EXPORT bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, const Memorie
 		if (!pProduction) return SetError(CLIError::kProductionRequired);
 		pIter = pProductionManager->GetProduction(pProduction->c_str());
 	} else {
-		pIter = pProductionManager->GetAllProductions(m_pgSKIError);
+		pIter = pProductionManager->GetAllProductions(&m_gSKIError);
+		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 	}
 	if (!pIter) return SetError(CLIError::kgSKIError);
 
