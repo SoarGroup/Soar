@@ -12,6 +12,16 @@
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*, int);
 %newobject sml::Kernel::CreateRemoteConnection(bool, char const*);
 
+%ignore sml::Agent::RegisterForAgentEvent(smlEventId, AgentEventHandler, void*);
+%ignore sml::Agent::UnregisterForAgentEvent(smlEventId, AgentEventHandler, void*);
+%ignore sml::Agent::RegisterForProductionEvent(smlEventId, ProductionEventHandler, void*);
+%ignore sml::Agent::UnregisterForProductionEvent(smlEventId, ProductionEventHandler, void*);
+%ignore sml::Agent::RegisterForRunEvent(smlEventId, RunEventHandler, void*);
+%ignore sml::Agent::UnregisterForRunEvent(smlEventId, RunEventHandler, void*);
+%ignore sml::Kernel::RegisterForSystemEvent(smlEventId, SystemEventHandler, void*);
+%ignore sml::Kernel::UnregisterForSystemEvent(smlEventId, SystemEventHandler, void*);
+
+
 
 %{
 #include "sml_ElementXML.h"

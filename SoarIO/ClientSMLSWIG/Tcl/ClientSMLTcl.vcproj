@@ -157,7 +157,7 @@ echo TCL_INCLUDE: %TCL_INCLUDE%
 echo TCL_LIB: %TCL_LIB%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -tcl &quot;$(InputPath)&quot;
+$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 1.0  &quot;$(InputPath)&quot;
 "
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
