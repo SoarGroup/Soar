@@ -58,7 +58,7 @@ Building Soar (optional):
      
 1.9  Build soarkernel.lib.
 
-1.10 Open the Interface.dsw project file in the Interface folder.
+1.10 Open the SoarInterface.dsw project file in the Interface folder.
 
 1.11 Build libsoar8.4.5.dll.  This must be built *after* the kernel since there
      is static linking going on.  If you rebuild the kernel, you must rebuild
