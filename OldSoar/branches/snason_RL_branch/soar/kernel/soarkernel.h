@@ -1452,6 +1452,7 @@ typedef struct RL_record_struct{
   float reward;
   int step;
   Symbol *op;
+  Symbol *goal_level;
   int level;
   struct RL_record_struct *next;
 } RL_record;

@@ -13,7 +13,7 @@ rhs_value compute_Q_value();
 void add_goal_tests (condition *cond);
 action *make_simple_action( Symbol *, Symbol *, Symbol *);
 
-void push_record(RL_record **r, int level){
+void push_record(RL_record **r, Symbol *level_sym){
 	RL_record *new_record;
 
 	new_record = malloc(sizeof(RL_record));
@@ -21,11 +21,12 @@ void push_record(RL_record **r, int level){
 		new_record->reward = 0;
 	    new_record->previous_Q = 0;
 		new_record->op = NIL;
+		new_record->goal_level = level_sym;
 	    new_record->RL_bottom = NIL;
 		new_record->RL_top = NIL;
 		new_record->RL_nots = NIL;
 		new_record->step = 0;
-		new_record->level = level;
+		new_record->level = level_sym->id.level;
 		new_record->next = *r;
 		*r = new_record;
 	}
@@ -97,6 +98,7 @@ void learn_RL_productions(int level){
 	if (record->op){
      
 		symbol_add_ref(record->op);
+		symbol_add_ref(record->goal_level);
 //		print_with_symbols("\nOp %y ", s->op);
 //		print("at start learn_RL_productions with reference count %d\n", s->op->common.reference_count);
 	{
@@ -117,7 +119,7 @@ void learn_RL_productions(int level){
 	variablize_nots_and_insert_into_conditions(nots, record->RL_top);   
 //print_with_symbols("\nOp %y ", s->op);
 //print("before make_simple_action with reference count %d\n", s->op->common.reference_count);
-	a = make_simple_action(current_agent(bottom_goal), current_agent(operator_symbol), record->op);
+	a = make_simple_action(record->goal_level, current_agent(operator_symbol), record->op);
 //	print_with_symbols("\nOp %y ", s->op);
 //	print("after make_simple_action with reference count %d\n", s->op->common.reference_count);
 	
@@ -155,6 +157,7 @@ void learn_RL_productions(int level){
  	deallocate_list_of_nots(record->RL_nots);
 	record->RL_nots = NULL;
 	symbol_remove_ref(record->op);
+	symbol_remove_ref(record->goal_level);
 	record->op = NIL;
 	// current_agent(RL_count)++;
 	record->reward = 0.0;

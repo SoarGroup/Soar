@@ -2323,7 +2323,7 @@ void create_new_context (Symbol *attr_of_impasse, byte impasse_type) {
 
   /* SAN */
   if (current_agent(sysparams)[RL_ON_SYSPARAM])
-	push_record(&current_agent(records), id->id.level);
+	push_record(&current_agent(records), id);
   /*id->id.operator_slot->reward = 0;
   id->id.operator_slot->op = NIL;
   id->id.operator_slot->RL_bottom = NIL;
