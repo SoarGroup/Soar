@@ -643,7 +643,7 @@ public:
 	bool ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	/*************************************************************
 	*************************************************************/
-	bool DoWatchWMEs(gSKI::IAgent* pAgent);
+	bool DoWatchWMEs(gSKI::IAgent* pAgent, unsigned int mode, bool adds, bool removes, std::string* pIdString, std::string* pAttributeString, std::string* pValueString);
 
 
 protected:

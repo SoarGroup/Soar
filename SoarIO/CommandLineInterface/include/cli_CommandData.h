@@ -79,10 +79,6 @@ namespace cli {
 	const unsigned int OPTION_WATCH_INDIFFERENT		= 0x800;
 	const unsigned int OPTION_WATCH_ALL				= 0xfff;
 
-	const unsigned int OPTION_WATCH_WMES_TYPE_ADDS		= 0x1;
-	const unsigned int OPTION_WATCH_WMES_TYPE_REMOVES	= 0x2;
-	const unsigned int OPTION_WATCH_WMES_TYPE_BOTH		= 0x3;
-
 	const unsigned int OPTION_WATCH_WMES_MODE_ADD		= 0x1;
 	const unsigned int OPTION_WATCH_WMES_MODE_REMOVE	= 0x2;
 	const unsigned int OPTION_WATCH_WMES_MODE_LIST		= 0x3;

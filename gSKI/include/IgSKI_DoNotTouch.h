@@ -137,6 +137,8 @@ namespace gSKI
 		virtual int RemoveWmeByTimetag(IAgent* pIAgent, int num) = 0;
 
         virtual void PrintInternalSymbols(IAgent* pIAgent) = 0;
+		 
+		virtual int AddWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes) = 0;
 	  };
    }
 }

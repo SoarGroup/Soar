@@ -85,6 +85,11 @@ namespace cli {
 			kRemoveWMEFailed = 57,
 
 			kInvalidOSupportMode = 58,
+
+			kInvalidWMEFilterType = 59,
+			kFilterExpected = 60,
+			kDuplicateWMEFilter = 61, 
+			kInvalidMode = 62,
 		};
 
 		CLIError() : m_Code(0) {}

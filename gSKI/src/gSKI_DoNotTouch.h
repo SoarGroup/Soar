@@ -92,7 +92,9 @@ namespace gSKI
 		 int RemoveWmeByTimetag(IAgent* pIAgent, int num);
 
 		 void PrintInternalSymbols(IAgent* pIAgent);
-      };
+
+		 int AddWMEFilter(IAgent* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes);
+	  };
    }
 }
 #endif

@@ -89,6 +89,11 @@ char const* CLIError::GetErrorDescription() {
 
 		case kInvalidOSupportMode:				return "Invalid O-Support mode, use 0-4.";
 
+		case kInvalidWMEFilterType:				return "Invalid WME filter type, expected 'adds' 'removes' or 'both'.";
+		case kFilterExpected:					return "ID/Attribute/Value filter expected, one or more missing.";
+		case kDuplicateWMEFilter:				return "That WME filter already exists.";
+		case kInvalidMode:						return "Invalid mode.";
+
 		default:								return "Unknown error code.";
 	}
 }

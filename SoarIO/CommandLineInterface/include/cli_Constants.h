@@ -79,6 +79,7 @@ namespace cli {
 		static char const* kCLIWaitSNC;
 		static char const* kCLIWarnings;
 		static char const* kCLIWatch;
+		static char const* kCLIWatchWMEs;
 
 	private:
 		void LoadUsage(std::ifstream& usageFile);
