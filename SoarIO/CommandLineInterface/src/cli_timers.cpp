@@ -51,7 +51,7 @@ bool CommandLineInterface::ParseTimers(gSKI::IAgent* pAgent, std::vector<std::st
 	// No non-option arguments
 	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
-	return DoTimers(pAgent, print ? &setting : 0);
+	return DoTimers(pAgent, print ? 0 : &setting);
 }
 
 bool CommandLineInterface::DoTimers(gSKI::IAgent* pAgent, bool* pSetting) {

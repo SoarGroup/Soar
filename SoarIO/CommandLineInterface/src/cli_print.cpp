@@ -97,6 +97,11 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 		}
 	}
 
+	// STATES and OPERATORS are sub-options of STACK
+	if (options.test(PRINT_OPERATORS) || options.test(PRINT_STATES)) {
+		if (!options.test(PRINT_STACK)) return SetError(CLIError::kPrintSubOptionsOfStack);
+	}
+
 	// One additional optional argument
 	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 
@@ -104,7 +109,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 	return DoPrint(pAgent, options, depth);
 }
 
-bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const PrintBitset& options, int depth, const std::string* pArg) {
+bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, PrintBitset& options, int depth, const std::string* pArg) {
 	// Need agent pointer for function calls
 	if (!RequireAgent(pAgent)) return false;
 
@@ -113,6 +118,13 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, const PrintBitset& opti
 
 	// Check for stack print
 	if (options.test(PRINT_STACK)) {
+
+		// if neither states option nor operators option are set, set them both
+		if (!options.test(PRINT_STATES) && !options.test(PRINT_OPERATORS)) {
+			options.set(PRINT_STATES);
+			options.set(PRINT_OPERATORS);
+		}
+
 		AddListenerAndDisableCallbacks(pAgent);
 		pKernelHack->PrintStackTrace(pAgent, (options.test(PRINT_STATES)) ? true : false, (options.test(PRINT_OPERATORS)) ? true : false);
 		RemoveListenerAndEnableCallbacks(pAgent);

@@ -75,6 +75,7 @@ namespace cli {
 			kAcceptableOrNothingExpected		= 70,
 			kSourceError						= 71,
 			kMustSaveOrLoad						= 72,
+			kPrintSubOptionsOfStack				= 73,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -146,6 +147,7 @@ namespace cli {
 				case kAcceptableOrNothingExpected:		return "Expected acceptable preference (+) or nothing, check syntax.";
 				case kSourceError:						return "Source command error.";
 				case kMustSaveOrLoad:					return "Must save or load, check command syntax.";
+				case kPrintSubOptionsOfStack:			return "Options --operators (-o) and --states (-S) are only valid when printing the stack.";
 				default:								return "Unknown error code.";
 			}
 		}
