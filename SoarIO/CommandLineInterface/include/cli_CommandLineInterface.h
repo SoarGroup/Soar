@@ -257,6 +257,15 @@ public:
 	bool DoSP(const std::string& production);
 
 	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool ParseStats(std::vector<std::string>& argv);
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	bool DoStats(const unsigned short options);
+
+	/*************************************************************
 	* @brief stop-soar command, see command line spec document for details
 	*************************************************************/
 	bool ParseStopSoar(std::vector<std::string>& argv);

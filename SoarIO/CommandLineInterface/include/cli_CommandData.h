@@ -63,6 +63,17 @@ namespace cli {
 	const unsigned short OPTION_RUN_SELF         = 0x40;
 	const unsigned short OPTION_RUN_STATE        = 0x80;
 
+	//     _        _
+	// ___| |_ __ _| |_ ___
+	/// __| __/ _` | __/ __|
+	//\__ \ || (_| | |_\__ \
+	//|___/\__\__,_|\__|___/
+	//
+	const unsigned short OPTION_STATS_MEMORY	= 0x01;
+	const unsigned short OPTION_STATS_RETE		= 0x02;
+	const unsigned short OPTION_STATS_STATS		= 0x04;
+	const unsigned short OPTION_STATS_SYSTEM	= 0x08;
+
 	//               _       _
 	//__      ____ _| |_ ___| |__
 	//\ \ /\ / / _` | __/ __| '_ \

@@ -36,6 +36,7 @@
 #include "IgSKI_Iterator.h"
 #include "IgSKI_Production.h"
 #include "IgSKI_MultiAttribute.h"
+#include "IgSKI_AgentPerformanceMonitor.h"
 
 // BADBAD: I think we should be using an error class instead to work with error objects.
 #include "../../gSKI/src/gSKI_Error.h"
@@ -121,6 +122,7 @@ void CommandLineInterface::BuildCommandMap() {
 	m_CommandMap[Constants::kCLIRun]				= ParseRun;
 	m_CommandMap[Constants::kCLISource]				= ParseSource;
 	m_CommandMap[Constants::kCLISP]					= ParseSP;
+	m_CommandMap[Constants::kCLIStats]				= ParseStats;
 	m_CommandMap[Constants::kCLIStopSoar]			= ParseStopSoar;
 	m_CommandMap[Constants::kCLITime]				= ParseTime;
 	m_CommandMap[Constants::kCLIWatch]				= ParseWatch;
@@ -684,6 +686,11 @@ bool CommandLineInterface::ParseInitSoar(std::vector<std::string>& argv) {
 //|____/ \___/___|_| |_|_|\__|____/ \___/ \__,_|_|
 //
 bool CommandLineInterface::DoInitSoar() {
+	// Need agent pointer for function calls
+	if (!RequireAgent()) {
+		return false;
+	}
+
 	// Simply call reinitialize
 	m_pAgent->Reinitialize();
 	m_Result += "Agent reinitialized.";
@@ -770,7 +777,6 @@ bool CommandLineInterface::DoLearn(const unsigned short options) {
 	if (!RequireAgent()) {
 		return false;
 	}
-
 
 	// No options means print current settings
 	if (!options) {
@@ -1856,6 +1862,118 @@ bool CommandLineInterface::DoSP(const string& production) {
 	m_Result += '*';
 
 	return true;
+}
+
+// ____                     ____  _        _
+//|  _ \ __ _ _ __ ___  ___/ ___|| |_ __ _| |_ ___
+//| |_) / _` | '__/ __|/ _ \___ \| __/ _` | __/ __|
+//|  __/ (_| | |  \__ \  __/___) | || (_| | |_\__ \
+//|_|   \__,_|_|  |___/\___|____/ \__\__,_|\__|___/
+//
+bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
+	static struct GetOpt::option longOptions[] = {
+		{"memory",		0, 0, 'm'},
+		{"rete",		0, 0, 'r'},
+		{"stats",		0, 0, 's'},
+		{"system",		0, 0, 'S'},
+		{0, 0, 0, 0}
+	};
+
+	GetOpt::optind = 0;
+	GetOpt::opterr = 0;
+
+	int option;
+	unsigned short options = 0;
+
+	for (;;) {
+		option = m_pGetOpt->GetOpt_Long(argv, "mrsS", longOptions, 0);
+		if (option == -1) {
+			break;
+		}
+
+		switch (option) {
+			case 'm':
+				options |= OPTION_STATS_MEMORY;
+				break;
+			case 'r':
+				options |= OPTION_STATS_RETE;
+				break;
+			case 's':
+				options |= OPTION_STATS_STATS;
+				break;
+			case 'S':
+				options |= OPTION_STATS_SYSTEM;
+				break;
+			case '?':
+				return HandleSyntaxError(Constants::kCLIStats, "Unrecognized option.");
+			default:
+				return HandleGetOptError(option);
+		}
+	}
+
+	// No non-option arguments
+	if (GetOpt::optind != argv.size()) {
+		return HandleSyntaxError(Constants::kCLIStats);
+	}
+
+	return DoStats(options);
+}
+
+// ____       ____  _        _
+//|  _ \  ___/ ___|| |_ __ _| |_ ___
+//| | | |/ _ \___ \| __/ _` | __/ __|
+//| |_| | (_) |__) | || (_| | |_\__ \
+//|____/ \___/____/ \__\__,_|\__|___/
+//
+bool CommandLineInterface::DoStats(const unsigned short options) {
+	// Need agent pointer for function calls
+	if (!RequireAgent()) {
+		return false;
+	}
+
+	gSKI::IAgentPerformanceMonitor* pPerfMon = m_pAgent->GetPerformanceMonitor();
+
+	// This next block needs to be redone pending a rewrite on the gSKI side.
+	int argc = 1;
+	char* argv[3];
+	argv[0] = new char[6];
+	memset(argv[0], 0, 6);
+	strncpy(argv[0], "stats", 5);
+
+	if (options & OPTION_STATS_MEMORY) {
+		argv[1] = new char[8];
+		memset(argv[1], 0, 8);
+		strncpy(argv[1], "-memory", 7);
+
+	} else if (options & OPTION_STATS_RETE) {
+		argv[1] = new char[6];
+		memset(argv[1], 0, 6);
+		strncpy(argv[1], "-rete", 5);
+
+
+	} else if (options & OPTION_STATS_SYSTEM) {
+		argv[1] = new char[8];
+		memset(argv[1], 0, 8);
+		strncpy(argv[1], "-system", 7);
+
+
+	} else /*if (options & OPTION_STATS_STATS) { // DEFAULT */ {
+		argv[1] = new char[7];
+		memset(argv[1], 0, 7);
+		strncpy(argv[1], "-stats", 6);
+	}
+	argv[2] = 0;
+
+	const char* pResult = 0;
+
+	bool ret = pPerfMon->GetStatsString(argc, argv, &pResult);
+
+	if(strlen(pResult) > 0) {
+		m_Result += pResult;
+	}
+	delete [] argv[0];
+	delete [] argv[1];
+	return ret;
 }
 
 // ____                     ____  _             ____

@@ -43,6 +43,7 @@ namespace cli {
 		static char const* kCLIRun;
 		static char const* kCLISource;
 		static char const* kCLISP;
+		static char const* kCLIStats;
 		static char const* kCLIStopSoar;
 		static char const* kCLITime;
 		static char const* kCLIWatch;

@@ -27,6 +27,7 @@ char const* Constants::kCLIQuit				= "quit";
 char const* Constants::kCLIRun				= "run";
 char const* Constants::kCLISource			= "source";
 char const* Constants::kCLISP				= "sp";
+char const* Constants::kCLIStats			= "stats";
 char const* Constants::kCLIStopSoar			= "stop-soar";
 char const* Constants::kCLITime				= "time";
 char const* Constants::kCLIWatch			= "watch";
