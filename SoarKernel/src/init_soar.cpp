@@ -1294,8 +1294,6 @@ void do_one_top_level_phase (agent* thisAgent)
      gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_APPLY_PHASE, 0);
 
 	  break;  /* end DECISION phase */
-  default:
-	  break; // quell gcc warning
 	  
   }  /* end switch stmt for current_phase */
   
