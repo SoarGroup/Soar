@@ -147,11 +147,11 @@ proc makeTSIDefaultControlPanel { {hide 0}  {x -20} {y 1} } {
     wm deiconify .
   }
   
-  # This funky block of code that follows tests to see if the TSI should 
+  # This tests to see if the TSI should 
   # automatically create an agent or not.  To disable this, simply set
   # a global variable named "disableAutoCreate" to 1
   set autoCreate 1
-  catch { if $disableAutoCreate { set autoCreate 0 } }
+  if { [info exists disableAutoCreate] } { set autoCreate 0 }
   
   if $autoCreate {
     createNewAgent ""
