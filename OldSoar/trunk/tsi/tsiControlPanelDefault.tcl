@@ -19,7 +19,7 @@
 source [file join $tsi_library tsiControlPanelCommon.tcl]
 
 proc makeTSIDefaultControlPanel { {hide 0}  {x -20} {y 1} } {
-  global tsi_library tsiConfig tcl_platform agentCount
+  global tsi_library tsiConfig tcl_platform agentCount disableAutoCreate
 
     set tsiConfig(ControlPanel) TSIDefaultControlPanel
     set tsiConfig(ControlPanelVersion) 3.2.0
@@ -147,8 +147,15 @@ proc makeTSIDefaultControlPanel { {hide 0}  {x -20} {y 1} } {
     wm deiconify .
   }
   
-  createNewAgent ""
-
+  # This funky block of code that follows tests to see if the TSI should 
+  # automatically create an agent or not.  To disable this, simply set
+  # a global variable named "disableAutoCreate" to 1
+  set autoCreate 1
+  catch { if $disableAutoCreate { set autoCreate 0 } }
+  
+  if $autoCreate {
+    createNewAgent ""
+  }
 }   ;### end of proc makeTSIDefaultControlPanel
 
 
