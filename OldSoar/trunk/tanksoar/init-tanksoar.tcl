@@ -1,5 +1,18 @@
 #!/usr/bin/wish
 
+# If you are not on a Unix system, you can ignore this block of comments.
+#
+# The first line of this file invokes wish on unix systems.  If you 
+# are running Soar on a Unix system, you must edit the above line to 
+# reflect the full pathname of your Wish executable if it is not in 
+# the default location /usr/bin.
+#
+# If you installed ActiveTcl to its default location, the first line 
+# of this file should change to:
+#!/usr/local/ActiveTcl/bin/wish
+
+# $Id$
+
 #>-=>
 # Source library facilities
 #>-=>
