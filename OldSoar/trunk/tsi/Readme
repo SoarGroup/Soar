@@ -1,42 +1,30 @@
-	     The Tcl/Tk Soar Interface (TSI) Version 2.5
-	     -------------------------------------------
+$Id$
 
-The TSI provides a graphical user interface for interacting with Soar.
-It is based on ideas from Frank Ritter's DSI, and the SCA2 work done
-by Doug Pearson.  The Soar Command Line Interface window is
-essentially the one produced by Randy Jones as a development of Karl
-Schwamb's original GUI for Soar.
+	     The Tcl/Tk Soar Interface (TSI) Version 3.2.0
+	     ---------------------------------------------
 
-Still some known bugs, but things appear to be getting into shape.
-Almost all development was done under Tcl 7.6 and Tk 4.2, so the
-TSI does not yet take advantage of new features in Tcl 8.
+The TSI provides a graphical user interface for interacting with Soar. It is 
+based on ideas from Frank Ritter's DSI, and the SCA2 work done by Doug Pearson. 
+The Soar Command Line Interface window is essentially the one produced by Randy 
+Jones as a development of Karl Schwamb's original GUI for Soar.  There are still 
+some known bugs, but things appear to be getting into shape.
 
-Tony Hirst has implemented several tools that may prove quite useful
-when integrated with the TSI.  Users are encouraged to experiment
-with them and submit necessary changes to integrate them into the TSI.
-See http://ai.eecs.umich.edu/soar/tsi.html
-    http://ai.eecs.umich.edu/soar/projects.html
-    http://www.dcs.port.ac.uk/~hirsta/tcltools.htm
+Comments, questions, suggestions and discussions relevant to the TSI should be 
+sent to soar-tsi@umich.edu.
 
-Comments, questions, suggestions and discussions relevant to the
-TSI should be sent to soar-tsi@umich.edu.
+==============================================================================
 
-======================================================================
-
-
-The TSI is normally found in the $soar_library directory (folder),
-but can be moved anywhere, provided the global variable, tsi_library,
-is properly and accurately defined when running Wish.  However, if
-the TSI is moved, it's possible (likely) that it will not be able to
-find the Soar help files or Soar demo files.  Users should become 
-quite familiar with the TSI code before trying to move it to another
-location.  In $tsi_library  is the main "tcl library" of code that
-implements the TSI.  All tsi commands will be autoloaded from this
-directory or folder (assuming your tcl interpreter knows where this
-directory or folder is).  See the file "start-soar.tcl" in the
-top-level directory of the Soar distribution for more information
-on what needs to be defined when starting Soar.
-
+The TSI is normally found in the $soar_library directory (folder), but can be 
+moved anywhere, provided the global variable, tsi_library, is properly and 
+accurately defined when running Wish.  However, if the TSI is moved, it's 
+possible (likely) that it will not be able to find the Soar help files or Soar 
+demo files.  Users should become quite familiar with the TSI code before trying 
+to move it to another location.  In $tsi_library  is the main "tcl library" of 
+code that implements the TSI.  All tsi commands will be autoloaded from this 
+directory or folder (assuming your tcl interpreter knows where this directory or 
+folder is).  See the file "init-soar.tcl" in the top-level directory of the Soar 
+distribution for more information on what needs to be defined when starting 
+Soar.
 
 The TSI consists of a number of files:
 
@@ -87,20 +75,7 @@ tsi/demos subdirectory or subfolder:
 			somewhere else, or rename it, the menus for selecting 
 			these demo programs will probably fail to function.
 
-         analogy.s7     TSI Demo programs
-analogy.topspace.s7
-  analogy.toptwo.s7
-         default.s7
-              ht.s7
-             ht2.s7
-
-	../../demos	The Soar distribution demos that get loaded into
-			the TSI "Demos" pulldownMenu when in Soar8 mode.
-
-  ../../demos_soar7	The Soar distribution demos that get loaded into
-			the TSI "Demos" pulldownMenu when in Soar7 mode.
-
-****************************************************************
+******************************************************************************
 
 The TSI consists of a set of optional windows that include:
 
@@ -121,9 +96,8 @@ The TSI consists of a set of optional windows that include:
    middle mouse button once an object has been selected.)
 
 
-Associated with each window are a set of menus, to facilitate use by
-less experienced users.  More advanced users are supported by
-keystroke shortcuts.
+Associated with each window are a set of menus, to facilitate use by less 
+experienced users.  More advanced users are supported by keystroke shortcuts.
 
 Also included in the package are a set of "standard" dialogs which
 support:
@@ -134,46 +108,40 @@ support:
 
 3. The return of a single value.
 
-****************************************************************
+******************************************************************************
+
 LOADING THE TSI 
 
-Since Soar version 7.2, the TSI has been packaged with the Soar distribution.
-It will be invoked if Soar is started using the "start-soar.tcl" script
-found in the top-level directory (folder) of the Soar distribution.
-The "start-soar.tcl" script defines the $tsi_library variable and adds
-it to the auto_path so that the TSI commands are automatically available
-in Soar.
+Since Soar version 7.2, the TSI has been packaged with the Soar distribution. It 
+will be invoked if Soar is started using the "init-soar.tcl" script found in the 
+top-level directory (folder) of the Soar distribution. The "init-soar.tcl" 
+script defines the $tsi_library variable and adds it to the auto_path so that 
+the TSI commands are automatically available in Soar.
 
-If creating a separate application directory and starting Soar
-by some method other than by invoking "start-soar.tcl" (or the WinSoar 
-or MacSoar icons) you will need to set the tcl variable "tsi_library"
-and invoke the TSI from the main Tcl interpreter by typing "tsi" or
-including the "tsi" command in your new startup script.  Note that this
-must be done _before_ the Soar package is loaded into the Tcl interpreter,
-or an error will occur.  See the "start-soar.tcl" file in the Soar
-distribution for more information on what is required to start Soar.
+If creating a separate application directory and starting Soar by some method 
+other than by invoking "init-soar.tcl" you will need to set the tcl variable 
+"tsi_library" and invoke the TSI from the main Tcl interpreter by typing "tsi" 
+or including the "tsi" command in your new startup script.  Note that this must 
+be done _before_ the Soar package is loaded into the Tcl interpreter, or an 
+error will occur.  See the "init-soar.tcl" file in the Soar distribution for 
+more information on what is required to start Soar.
 
-If you wish to modify the TSI, it is recommended that you create a
-new folder or subdirectory in the $soar_library folder, and copy
-the TSI files into the new folder, and then redefine your $tsi_library
-variable.  That way you always have a distribution copy of the TSI,
-and there will be less confusion if you send your modified TSI to
-other Soar users or TSI developers.  If you move your working copy
-of the TSI out of the $soar_library location, the TSI will not be
-able to find the Soar help pages or the Soar demos, unless you
-specifically modify the TSI to look in the proper locations.
+If you wish to modify the TSI, it is recommended that you create a new folder or 
+subdirectory in the $soar_library folder, and copy the TSI files into the new 
+folder, and then redefine your $tsi_library variable.  That way you always have 
+a distribution copy of the TSI, and there will be less confusion if you send 
+your modified TSI to other Soar users or TSI developers.  If you move your 
+working copy of the TSI out of the $soar_library location, the TSI will not be 
+able to find the Soar help pages or the Soar demos, unless you specifically 
+modify the TSI to look in the proper locations.
 
 --
 
-Please feel free to send any suggestions, comments etc. you may
-have regarding this package to soar-tsi@umich.edu.
+Please feel free to send any suggestions, comments etc. you may have regarding 
+this package to soar-tsi@umich.edu.
 
-Gordon Baxter
-gdb@psyc.nott.ac.uk
+This file edited for the TSI version 2.5 release with Soar 7.3 and 8.2 by Karen 
+Coulter, kcoulter@umich.edu
 
-Randolph Jones
-rjones@eecs.umich.edu
-
-
-this file editted for the TSI version 2.5 release with Soar 7.3 and 8.2
-by Karen Coulter, kcoulter@umich.edu
+This file edited for the TSI version 3.2.0 release with Soar 8.5 by Jonathan 
+Voigt (voigtjr@umich.edu)
