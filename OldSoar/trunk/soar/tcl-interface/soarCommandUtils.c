@@ -61,91 +61,6 @@
 extern Tcl_Interp *tcl_soar_agent_interpreters[MAX_SIMULTANEOUS_AGENTS];
 
 
-
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#if 0
-
-  FILE *f;
-  bool eof, readnext, wme_added;
-  int  cycle, numargs;
-  unsigned long new_timetag, old_timetag;
-  long loc;
-  char id[256], attr[256], value[256];
-  char input[1024], cmd[1024], result[1024];
-
-  /* print("\nin replay_input_wme\n"); */
-  f= current_agent(replay_fileID);
-  eof = FALSE;
-  readnext = TRUE;
-  loc = ftell(f);
-  /* really should switch on mode...ignore for now */
-
-
-  while ((!feof(f)) && (readnext)) { 
-    numargs = fscanf(f,"%i : %i :", &cycle, &old_timetag);
-    /* print("\n\t numargs = %d \t cycle = %d \t timetag = %d\n",
-       numargs,cycle,old_timetag); */
-    if (cycle <= current_agent(d_cycle_count)) {
-      fgets(input,1024,f);
-      /* if this is a remove-wme, we need to use the old timetag */
-      if (strstr(input,"remove-wme")) {
-		sprintf(cmd,"remove-wme %d\n",
-				current_agent(replay_timetags)[old_timetag]);
-		
-		
-      } else {
-		if (strstr(input,"add-wme")) wme_added = TRUE;
-		/* add-wme or other can just be copied to be eval'd */
-		sprintf(cmd,"%s\n",input);
-      }
-
-      Tcl_Eval(  tcl_soar_agent_interpreters[current_agent(id)],cmd);
-      strcpy(result,  tcl_soar_agent_interpreters[current_agent(id)]->result);
-	  /*      print("\nfrom replay file: %s\n", input); */
-      /* if cmd was add-wme, need to compare and index the timetags */
-      if (wme_added) {
-		numargs = sscanf(result,"%d: ", &new_timetag);
-		/*	print("wme_added: numargs = %d\n",numargs); */
-		current_agent(replay_timetags)[old_timetag] = new_timetag;
-		if (old_timetag != new_timetag && !current_agent(timetag_mismatch)) 
-		  print("\n\nWARNING: timetags from replay file differ from current run!!");
-		current_agent(timetag_mismatch) = TRUE;
-		/*print("          result: %s\n", result);*/
-      }
-      loc = ftell(f);
-    } else {
-      fseek(f,loc,SEEK_SET);
-      readnext = FALSE;
-    }
-  } 
-  if (feof(f)) {
-    /* warn user; turn off replay;  close file */
-    strcpy(cmd,"echo WARNING!!!  Replay end of file reached.  Closing file.\n");
-    Tcl_Eval( tcl_soar_agent_interpreters[current_agent(id)], cmd);
-    strcpy(cmd,"replay-input -close\n");
-    Tcl_Eval(  tcl_soar_agent_interpreters[current_agent(id)], cmd);
-  }
-}
-
-#endif
-
-
 /* DJP 4/3/96 */
 /*----------------------------------------------------------------------
  *
@@ -294,6 +209,8 @@ soar_input_callback_to_tcl (soar_callback_agent the_agent,
  *----------------------------------------------------------------------
  */
 
+#define SOAR_OUTPUT_CALLBACK_STRING_SIZE 1000
+
 void
 soar_output_callback_to_tcl (soar_callback_agent the_agent, 
 			     soar_callback_data data,
@@ -336,16 +253,18 @@ soar_output_callback_to_tcl (soar_callback_agent the_agent,
   /* Build output list */
   for (wme = outputs; wme != NIL; wme = wme->next)
     {
-      char wme_string[1000];
-      char obj_string[1000];
-      char attr_string[1000];
-      char value_string[1000];
+      char wme_string[SOAR_OUTPUT_CALLBACK_STRING_SIZE];
+      char obj_string[SOAR_OUTPUT_CALLBACK_STRING_SIZE];
+      char attr_string[SOAR_OUTPUT_CALLBACK_STRING_SIZE];
+      char value_string[SOAR_OUTPUT_CALLBACK_STRING_SIZE];
 
-      symbol_to_string(wme->id,    FALSE, obj_string);
-      symbol_to_string(wme->attr,  FALSE, attr_string);
-      symbol_to_string(wme->value, FALSE, value_string);
+	  /* BUGZILLA BUG #1: symbol_to_string doesn't guarantee these are safe */
+      symbol_to_string(wme->id,    FALSE, obj_string, SOAR_OUTPUT_CALLBACK_STRING_SIZE);
+      symbol_to_string(wme->attr,  FALSE, attr_string, SOAR_OUTPUT_CALLBACK_STRING_SIZE);
+      symbol_to_string(wme->value, FALSE, value_string, SOAR_OUTPUT_CALLBACK_STRING_SIZE);
 
-      sprintf(wme_string, "%s %s %s", obj_string, attr_string, value_string);
+	  snprintf(wme_string, SOAR_OUTPUT_CALLBACK_STRING_SIZE, "%s %s %s", obj_string, attr_string, value_string);
+	  wme_string[SOAR_OUTPUT_CALLBACK_STRING_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 
       Tcl_DStringAppendElement(&command, wme_string);
     }
@@ -370,7 +289,7 @@ soar_output_callback_to_tcl (soar_callback_agent the_agent,
 
 
 
-
+#define CANDID_SIZE 56
 void
 soar_ask_callback_to_tcl (soar_callback_agent the_agent, 
 						  soar_callback_data data,
@@ -391,9 +310,9 @@ soar_ask_callback_to_tcl (soar_callback_agent the_agent,
   for ( cand = ((soar_apiAskCallbackData *)call_data)->candidates;
 		cand != NIL; cand = cand->next_candidate ) {
 
-	char candId[56];		
+	char candId[CANDID_SIZE];		
 
-	symbol_to_string(cand->value, FALSE, candId);	
+	symbol_to_string(cand->value, FALSE, candId, CANDID_SIZE);	
 	Tcl_DStringAppendElement(&command, candId);
 	num_candidates++;
   }

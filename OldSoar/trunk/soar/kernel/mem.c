@@ -66,13 +66,15 @@ void *allocate_memory (unsigned long size, int usage_code) {
   
   p = (char *) malloc (size);
   if (p==NULL) {
-    char msg[128];
-    sprintf(msg, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", size);
+    char msg[MESSAGE_SIZE];
+	snprintf(msg, MESSAGE_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", size);
+	msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     abort_with_fatal_error (msg);
   }
   if (((unsigned long)p) & 3) {
-    char msg[128];
-    strcpy (msg,"\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg,"\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
 
@@ -137,7 +139,8 @@ char *make_memory_block_for_string (const char *s) {
 
   size = strlen(s)+1; /* plus one for trailing null character */
   p = allocate_memory (size, STRING_MEM_USAGE);
-  strcpy(p,s);
+  strncpy(p,s,size);
+  p[size-1]=0;
   return p;
 }
 
@@ -257,10 +260,13 @@ void init_memory_pool (memory_pool *p, long item_size, char *name) {
   current_agent(memory_pools_in_use) = p;
   if (strlen(name) > MAX_POOL_NAME_LENGTH) {
     char msg[2*MAX_POOL_NAME_LENGTH];
-    sprintf(msg,"mem.c: Internal error: memory pool name too long: %s\n",name);
+	snprintf(msg,2*MAX_POOL_NAME_LENGTH,"mem.c: Internal error: memory pool name too long: %s\n",name);
+	msg[2*MAX_POOL_NAME_LENGTH-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     abort_with_fatal_error(msg);
   }
-  strcpy(p->name,name);
+  strncpy(p->name,name,MAX_POOL_NAME_LENGTH);
+  p->name[MAX_POOL_NAME_LENGTH-1]=0;
+
 }
 
 /* ====================================================================

@@ -513,8 +513,9 @@ Symbol * highest_active_goal_propose() {
 #endif
    if (current_agent(nil_goal_retractions)) return NIL;
    {
-   char msg[128];
-   strcpy(msg, "\n consistency.c: Error: Unable to find an active goal when not at quiescence.\n");
+   char msg[MESSAGE_SIZE];
+   strncpy(msg, "\n consistency.c: Error: Unable to find an active goal when not at quiescence.\n", MESSAGE_SIZE);
+   msg[MESSAGE_SIZE-1]=0;
    abort_with_fatal_error(msg);
    }
    return NIL;  /* unneeded, but avoids gcc -Wall warning */ 
@@ -549,8 +550,9 @@ Symbol * highest_active_goal_apply() {
    print("WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
    if (current_agent(nil_goal_retractions)) return NIL;
-   { char msg[128];
-   strcpy(msg, "\nconsistency.c: Error: Unable to find an active goal when not at quiescence.\n");
+   { char msg[MESSAGE_SIZE];
+   strncpy(msg, "\nconsistency.c: Error: Unable to find an active goal when not at quiescence.\n", MESSAGE_SIZE);
+   msg[MESSAGE_SIZE-1]=0;
    abort_with_fatal_error(msg);
    }
    return NIL;  /* unneeded, but avoids gcc -Wall warning */ 
@@ -879,7 +881,11 @@ void determine_highest_active_production_level_in_stack_propose() {
   print("\n(Propose) Determining the highest active level in the stack....\n"); 
 #endif
 
-  if (minor_quiescence_at_goal(current_agent(bottom_goal))) {
+  /* We are only checking for i_assertions, not o_assertions, since we don't
+     want operators to fire in the proposal phase
+  */
+  if ( !( current_agent(ms_retractions) || current_agent(ms_i_assertions ) ) ) {
+  /* if (minor_quiescence_at_goal(current_agent(bottom_goal))) { */
     /* This is minor quiescence */
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
         print("\n Propose Phase Quiescence has been reached...going to decision\n");

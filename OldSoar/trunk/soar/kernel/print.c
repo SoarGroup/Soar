@@ -164,7 +164,7 @@ void print_string (char *s) {
     else
       current_agent(printer_output_column)++;
     /* BUGBUG doesn't handle tabs correctly */
-#ifdef __SC__
+#ifdef __SC__ /* Symantec C++ compiler? A Macintosh thing? */
 	if (current_agent(printer_output_column) >= 80)
 	{
 		current_agent(printer_output_column) = 1;
@@ -201,7 +201,7 @@ void print_string (char *s) {
     fputs (s, current_agent(redirection_file));
   } else {
     if (current_agent(using_output_string)) 
-      strcat(current_agent(output_string),s);
+      strcat(current_agent(output_string),s); /* this code is never executed since using_output_string is never true */
     else {
 
       /* 
@@ -234,7 +234,7 @@ void print_string (char *s) {
 --------------------------------------------------------------- */
 
 /* --- size of output buffer for a single call to one of these routines --- */
-#define PRINT_BUFSIZE 5000   /* This better be large enough!! */
+#define PRINT_BUFSIZE 4096   /* This better be large enough!! */
 
 #ifdef USE_STDARGS
 void print (char *format, ...) {
@@ -251,7 +251,7 @@ void print (va_alist) va_dcl {
   va_start (args);
   format = va_arg(args, char *);
 #endif
-  vsprintf (buf, format, args);
+  vsnprintf (buf, PRINT_BUFSIZE, format, args);
   va_end (args);
   print_string (buf);
 }
@@ -273,19 +273,29 @@ void print_with_symbols (va_alist) va_dcl {
   format = va_arg(args, char *);
 #endif
   ch = buf;
+  
   while (TRUE) {
-    /* --- copy anything up to the first "%" --- */
-    while ((*format != '%') && (*format != 0)) *(ch++) = *(format++);
-    if (*format == 0) break;
-    /* --- handle the %-thingy --- */
-    if (*(format+1)=='y') {
-      symbol_to_string (va_arg(args, Symbol *), TRUE, ch);
-      while (*ch) ch++;
-    } else {
-      *(ch++) = '%';
-    }
-    format += 2;
+      /* --- copy anything up to the first "%" --- */
+	  while ((*format != '%') && (*format != 0)) *(ch++) = *(format++);
+
+      if (*format == 0) break;
+  
+      /* --- handle the %-thingy --- */
+	  if (*(format+1)=='y') {
+		  /* the size of the remaining buffer (after ch) is
+		     the difference between the address of ch and
+		     the address of the beginning of the buffer
+		  */
+		  symbol_to_string (va_arg(args, Symbol *), TRUE, ch, PRINT_BUFSIZE-(ch-buf));
+		  while (*ch) ch++;
+	  
+	  } else {
+		  *(ch++) = '%';
+	  }
+	  
+	  format += 2;
   }
+
   va_end (args);
 
   *ch = 0;
@@ -293,12 +303,19 @@ void print_with_symbols (va_alist) va_dcl {
 }
 
 void print_spaces (int n) {
-  char *ch;
-  char buf[PRINT_BUFSIZE];
-
+  /*char *ch;
   ch = buf;
   while (n) { *(ch++)=' '; n--; }
-  *ch=0;
+  *ch=0;*/
+
+  char buf[PRINT_BUFSIZE];
+
+  if(n>=PRINT_BUFSIZE) { n=PRINT_BUFSIZE-1; }
+
+  memset(buf,' ',n);
+
+  buf[n] = 0;
+
   print_string (buf);
 }
 
@@ -346,35 +363,49 @@ char *string_to_escaped_string (char *s, char first_and_last_char,
   return dest;
 }
 
-char *symbol_to_string (Symbol *sym, bool rereadable, char *dest) {
+char *symbol_to_string (Symbol *sym, bool rereadable, char *dest, size_t dest_size) {
   bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
   bool is_rereadable;
   bool has_angle_bracket;
 
   if ( !sym ) {
-    strcpy( dest, "(NULL)" );
+	strncpy( dest, "(NULL)", dest_size );
+	dest[dest_size-1]=0;
     return dest;
   }
 
   switch(sym->common.symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
     if (!dest) return sym->var.name;
-    strcpy (dest, sym->var.name);
+	strncpy (dest, sym->var.name, dest_size);
+	dest[dest_size-1]=0;
     return dest;
 
   case IDENTIFIER_SYMBOL_TYPE:
-    if (!dest) dest=current_agent(printed_output_string);
-    sprintf (dest, "%c%lu", sym->id.name_letter, sym->id.name_number);
+	if (!dest) {
+	  dest=current_agent(printed_output_string);
+	  dest_size = PRINTED_OUTPUT_STRING_SIZE;
+	}
+	snprintf (dest, dest_size, "%c%lu", sym->id.name_letter, sym->id.name_number);
+	dest[dest_size-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     return dest;
 
   case INT_CONSTANT_SYMBOL_TYPE:
-    if (!dest) dest=current_agent(printed_output_string);
-    sprintf (dest, "%ld", sym->ic.value);
+	if (!dest) {
+	  dest=current_agent(printed_output_string);
+	  dest_size = PRINTED_OUTPUT_STRING_SIZE;
+	}
+	snprintf (dest, dest_size,"%ld", sym->ic.value);
+	dest[dest_size-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     return dest;
     
   case FLOAT_CONSTANT_SYMBOL_TYPE:
-    if (!dest) dest=current_agent(printed_output_string);
-    sprintf (dest, "%#g", sym->fc.value);
+	if (!dest) {
+	  dest=current_agent(printed_output_string);
+	  dest_size = PRINTED_OUTPUT_STRING_SIZE;
+	}
+	snprintf (dest, dest_size, "%#g", sym->fc.value);
+	dest[dest_size-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     { /* --- strip off trailing zeros --- */
       char *start_of_exponent;
       char *end_of_mantissa;
@@ -392,7 +423,8 @@ char *symbol_to_string (Symbol *sym, bool rereadable, char *dest) {
   case SYM_CONSTANT_SYMBOL_TYPE:
     if (!rereadable) {
       if (!dest) return sym->sc.name;
-      strcpy (dest, sym->sc.name);
+	  strncpy (dest, sym->sc.name, dest_size);
+	  dest[dest_size-1]=0;
       return dest;
     }
     determine_possible_symbol_types_for_string (sym->sc.name,
@@ -415,32 +447,35 @@ char *symbol_to_string (Symbol *sym, bool rereadable, char *dest) {
       return string_to_escaped_string (sym->sc.name, '|', dest);
     }
     if (!dest) return sym->sc.name;
-    strcpy (dest, sym->sc.name);
+	strncpy (dest, sym->sc.name, dest_size);
+	dest[dest_size-1]=0;
     return dest;
     
   default:
-    { char msg[128];
-    strcpy(msg,
-	   "Internal Soar Error:  symbol_to_string called on bad symbol\n");
+    { char msg[MESSAGE_SIZE];
+	strncpy(msg, "Internal Soar Error:  symbol_to_string called on bad symbol\n", MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
+
     abort_with_fatal_error(msg);
     }
   }
   return NIL; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-char *test_to_string (test t, char *dest) {
+char *test_to_string (test t, char *dest, size_t dest_size) {
   cons *c;
   complex_test *ct;
   char *ch;
 
   if (test_is_blank_test(t)) {
     if (!dest) dest=current_agent(printed_output_string);
-    sprintf (dest, "[BLANK TEST]");  /* this should never get executed */
+	snprintf (dest, dest_size, "[BLANK TEST]");  /* this should never get executed */
+	dest[dest_size-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     return dest;
   }
 
   if (test_is_blank_or_equality_test(t)) {
-    return symbol_to_string (referent_of_equality_test(t), TRUE, dest);
+    return symbol_to_string (referent_of_equality_test(t), TRUE, dest, dest_size);
   }
 
   if (!dest) dest=current_agent(printed_output_string);
@@ -449,69 +484,90 @@ char *test_to_string (test t, char *dest) {
   
   switch (ct->type) {
   case NOT_EQUAL_TEST:
-    strcpy (ch, "<> "); while (*ch) ch++;
-    symbol_to_string (ct->data.referent, TRUE, ch);
+	strncpy (ch, "<> ", dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
+    symbol_to_string (ct->data.referent, TRUE, ch, dest_size-(ch-dest));
     break;
   case LESS_TEST:
-    strcpy (ch, "< "); while (*ch) ch++;
-    symbol_to_string (ct->data.referent, TRUE, ch);
+	strncpy (ch, "< ", dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
+    symbol_to_string (ct->data.referent, TRUE, ch, dest_size-(ch-dest));
     break;
   case GREATER_TEST:
-    strcpy (ch, "> "); while (*ch) ch++;
-    symbol_to_string (ct->data.referent, TRUE, ch);
+	strncpy (ch, "> ", dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
+    symbol_to_string (ct->data.referent, TRUE, ch, dest_size-(ch-dest));
     break;
   case LESS_OR_EQUAL_TEST:
-    strcpy (ch, "<= "); while (*ch) ch++;
-    symbol_to_string (ct->data.referent, TRUE, ch);
+	strncpy (ch, "<= ", dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
+    symbol_to_string (ct->data.referent, TRUE, ch, dest_size-(ch-dest));
     break;
   case GREATER_OR_EQUAL_TEST:
-    strcpy (ch, ">= "); while (*ch) ch++;
-    symbol_to_string (ct->data.referent, TRUE, ch);
+	strncpy (ch, ">= ", dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
+    symbol_to_string (ct->data.referent, TRUE, ch, dest_size-(ch-dest));
     break;
   case SAME_TYPE_TEST:
-    strcpy (ch, "<=> "); while (*ch) ch++;
-    symbol_to_string (ct->data.referent, TRUE, ch);
+    strncpy (ch, "<=> ",dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
+    symbol_to_string (ct->data.referent, TRUE, ch, dest_size-(ch-dest));
     break;
   case DISJUNCTION_TEST:
-    strcpy (ch, "<< "); while (*ch) ch++;
+	strncpy (ch, "<< ",dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
     for (c=ct->data.disjunction_list; c!=NIL; c=c->rest) {
-      symbol_to_string (c->first, TRUE, ch); while (*ch) ch++;
+      symbol_to_string (c->first, TRUE, ch, dest_size-(ch-dest)); while (*ch) ch++;
       *(ch++) = ' ';
     }
-    strcpy (ch, ">>");
+	strncpy (ch, ">>",dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
     break;
   case CONJUNCTIVE_TEST:
-    strcpy (ch, "{ "); while (*ch) ch++;
+	strncpy (ch, "{ ",dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
-      test_to_string (c->first, ch); while (*ch) ch++;
+      test_to_string (c->first, ch, dest_size-(ch-dest)); while (*ch) ch++;
       *(ch++) = ' ';
     }
-    strcpy (ch, "}");
+	strncpy (ch, "}", dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
     break;
   case GOAL_ID_TEST:
-    strcpy (dest, "[GOAL ID TEST]"); /* this should never get executed */
+	strncpy (dest, "[GOAL ID TEST]", dest_size); /* this should never get executed */
+	dest[dest_size-1]=0;
     break;
   case IMPASSE_ID_TEST:
-    strcpy (dest, "[IMPASSE ID TEST]"); /* this should never get executed */
+	strncpy (dest, "[IMPASSE ID TEST]",dest_size); /* this should never get executed */
+	dest[dest_size-1]=0;
     break;
   }
   return dest;
 }
 
-char *rhs_value_to_string (rhs_value rv, char *dest) {
+char *rhs_value_to_string (rhs_value rv, char *dest, size_t dest_size) {
   cons *c;
   list *fl;
   rhs_function *rf;  
   char *ch;
 
   if (rhs_value_is_reteloc(rv)) {
-    char msg[128];
-    strcpy (msg, "Internal error: rhs_value_to_string called on reteloc.\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg, "Internal error: rhs_value_to_string called on reteloc.\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
   
   if (rhs_value_is_symbol(rv)) {
-    return symbol_to_string (rhs_value_to_symbol(rv), TRUE, dest);
+    return symbol_to_string (rhs_value_to_symbol(rv), TRUE, dest, dest_size);
   }
 
   fl = rhs_value_to_funcall_list(rv);
@@ -520,16 +576,29 @@ char *rhs_value_to_string (rhs_value rv, char *dest) {
   if (!dest) dest=current_agent(printed_output_string);
   ch = dest;
 
-  strcpy (ch, "("); while (*ch) ch++;
-  if (!strcmp(rf->name->sc.name,"+")) strcpy (ch, "+");
-    else if (!strcmp(rf->name->sc.name,"-")) strcpy (ch, "-");
-    else symbol_to_string (rf->name, TRUE, ch);
+  strncpy (ch, "(",dest_size-(ch-dest));
+  ch[dest_size-(ch-dest)-1]=0;
+  while (*ch) ch++;
+  
+  if (!strcmp(rf->name->sc.name,"+")) {
+	  strncpy (ch, "(",dest_size-(ch-dest));
+	  ch[dest_size-(ch-dest)-1]=0;
+  } else if (!strcmp(rf->name->sc.name,"-")) {
+	  strncpy (ch, "-",dest_size-(ch-dest));
+	  ch[dest_size-(ch-dest)-1]=0;
+  } else {
+	  symbol_to_string (rf->name, TRUE, ch, dest_size-(ch-dest));
+  }
+
   while (*ch) ch++;
   for (c=fl->rest; c!=NIL; c=c->rest) {
-    strcpy (ch, " "); while (*ch) ch++;
-    rhs_value_to_string (c->first, ch); while (*ch) ch++;
+	strncpy (ch, " ", dest_size-(ch-dest));
+	ch[dest_size-(ch-dest)-1]=0;
+	while (*ch) ch++;
+    rhs_value_to_string (c->first, ch, dest_size-(ch-dest)); while (*ch) ch++;
   }
-  strcpy (ch, ")");
+  strncpy (ch, ")", dest_size-(ch-dest));
+  ch[dest_size-(ch-dest)-1]=0;
   return dest;
 }
 
@@ -554,6 +623,7 @@ bool pick_conds_with_matching_id_test (dl_cons *dc) {
   return tests_are_equal (id_test_to_match, cond->data.tests.id_test);
 }
 
+#define PRINT_CONDITION_LIST_TEMP_SIZE 10000
 void print_condition_list (condition *conds, int indent, bool internal) {
   bool did_one_line_already;
   dl_list *conds_not_yet_printed, *tail_of_conds_not_yet_printed;
@@ -622,7 +692,7 @@ void print_condition_list (condition *conds, int indent, bool internal) {
     print_string (" (");
     if (removed_goal_test) print_string ("state ");
     if (removed_impasse_test) print_string ("impasse ");
-    print_string (test_to_string (id_test, NULL));
+    print_string (test_to_string (id_test, NULL, 0));
     deallocate_test (id_test_to_match);
     deallocate_test (id_test);
     while (conds_for_this_id) {
@@ -632,18 +702,30 @@ void print_condition_list (condition *conds, int indent, bool internal) {
       free_with_pool (&current_agent(dl_cons_pool), dc);
 
       { /* --- build and print attr/value test for condition c --- */
-        char temp[10000], *ch;
+        char temp[PRINT_CONDITION_LIST_TEMP_SIZE], *ch;
 
         ch = temp;
-        strcpy (ch, " ");
-        if (c->type==NEGATIVE_CONDITION) strcat (ch, "-");
-        strcat (ch, "^"); while (*ch) ch++;
-        test_to_string (c->data.tests.attr_test, ch); while (*ch) ch++;
+        
+		strncpy (ch, " ",PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp));
+		ch[PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp)-1]=0;
+        if (c->type==NEGATIVE_CONDITION) {
+			strncat (ch, "-",PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp));
+			ch[PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp)-1]=0;
+			while (*ch) ch++;
+		}
+
+		strncat (ch, "^",PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp));
+		ch[PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp)-1]=0;
+		while (*ch) ch++;
+
+        test_to_string (c->data.tests.attr_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp)); while (*ch) ch++;
         if (! test_is_blank_test(c->data.tests.value_test)) {
           *(ch++) = ' ';
-          test_to_string (c->data.tests.value_test, ch); while (*ch) ch++;
+          test_to_string (c->data.tests.value_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp)); while (*ch) ch++;
           if (c->test_for_acceptable_preference) {
-            strcpy (ch, " +"); while (*ch) ch++;
+			strncpy (ch, " +", PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp));
+			ch[PRINT_CONDITION_LIST_TEMP_SIZE-(ch-temp)-1]=0;
+			while (*ch) ch++;
           }
         }
         *ch = 0;
@@ -681,6 +763,7 @@ bool pick_actions_with_matching_id (dl_cons *dc) {
   return (rhs_value_to_symbol(a->id) == action_id_to_match);
 }
 
+#define PRINT_ACTION_LIST_TEMP_SIZE 10000
 void print_action_list (action *actions, int indent, bool internal) {
   bool did_one_line_already;
   dl_list *actions_not_yet_printed, *tail_of_actions_not_yet_printed;
@@ -718,7 +801,7 @@ void print_action_list (action *actions, int indent, bool internal) {
     a = dc->item;
     if (a->type==FUNCALL_ACTION) {
       free_with_pool (&current_agent(dl_cons_pool), dc);
-      print_string (rhs_value_to_string (a->value, NULL));
+      print_string (rhs_value_to_string (a->value, NULL, 0));
       continue;
     }
 
@@ -743,18 +826,20 @@ void print_action_list (action *actions, int indent, bool internal) {
       free_with_pool (&current_agent(dl_cons_pool), dc);
 
       { /* --- build and print attr/value test for action a --- */
-        char temp[10000], *ch;
+        char temp[PRINT_ACTION_LIST_TEMP_SIZE], *ch;
 
         ch = temp;
-        strcpy (ch, " ^"); while (*ch) ch++;
-        rhs_value_to_string (a->attr, ch); while (*ch) ch++;
+		strncpy (ch, " ^", PRINT_ACTION_LIST_TEMP_SIZE-(ch-temp));
+		ch[PRINT_ACTION_LIST_TEMP_SIZE-(ch-temp)-1]=0;
+		while (*ch) ch++;
+        rhs_value_to_string (a->attr, ch, PRINT_ACTION_LIST_TEMP_SIZE-(ch-temp)); while (*ch) ch++;
         *(ch++) = ' ';
-        rhs_value_to_string (a->value, ch); while (*ch) ch++;
+        rhs_value_to_string (a->value, ch, PRINT_ACTION_LIST_TEMP_SIZE-(ch-temp)); while (*ch) ch++;
         *(ch++) = ' ';
         *(ch++) = preference_type_indicator (a->preference_type);
         if (preference_is_binary (a->preference_type)) {
           *(ch++) = ' ';
-          rhs_value_to_string (a->referent, ch); while (*ch) ch++;
+          rhs_value_to_string (a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE-(ch-temp)); while (*ch) ch++;
         }
         *ch = 0;
         if (current_agent(printer_output_column) + (ch - temp) >=
@@ -874,9 +959,9 @@ char preference_type_indicator (byte type) {
   case WORST_PREFERENCE_TYPE: return '<';
   case WORSE_PREFERENCE_TYPE: return '<';
   default:
-    { char msg[128];
-    strcpy(msg,
-	   "print.c: Error: bad type passed to preference_type_indicator\n");
+    { char msg[MESSAGE_SIZE];
+	strncpy(msg,"print.c: Error: bad type passed to preference_type_indicator\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
     }
   }

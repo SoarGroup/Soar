@@ -372,7 +372,8 @@ int VersionCmd (ClientData clientData,
       return TCL_ERROR;
     }
 
-  sprintf(interp->result, "%s", soar_version_string); 
+  snprintf(interp->result, TCL_RESULT_SIZE, "%s", soar_version_string);
+  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   return TCL_OK;
 }
 
@@ -434,6 +435,7 @@ Soar_InterpDeleteProc(ClientData clientData, Tcl_Interp *interp)
 
 
 
+#define NAME_SIZE 32
 
 #if defined(WIN32)
 __declspec(dllexport)
@@ -442,7 +444,7 @@ int
 Soar_Init(Tcl_Interp* interp)
 {
   /* char szBuffer[] = "tk_messageBox -type ok -message \"Soar_Init called\" -icon info";  */
-	char name[32];
+	char name[NAME_SIZE];
 	agent *new_agent;
 
 
@@ -474,7 +476,8 @@ Soar_Init(Tcl_Interp* interp)
 
 
 	/* Create an agent for the interpreter */
-	sprintf(name, "[Agent:0x%lx]", interp);
+	snprintf(name, NAME_SIZE, "[Agent:0x%lx]", interp);
+	name[NAME_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 
 	soar_cCreateAgent (name);
 	new_agent = (agent *) soar_cGetAgentByName (name);
@@ -534,7 +537,7 @@ void askCallback( soar_callback_agent a, soar_callback_data d,
 	  
 	  num_candidates++;
 	  print( "\n%d --> %s", num_candidates,
-			 symbol_to_string( cand->value, TRUE, NULL ) );
+			 symbol_to_string( cand->value, TRUE, NULL, 0 ) );
 	}
 	
 	printf( "Waiting for variable\n" );
@@ -551,7 +554,7 @@ void askCallback( soar_callback_agent a, soar_callback_data d,
 	  cand = cand->next_candidate;
 	  intval--;
 	}
-	printf( "Your selection is: %s\n", symbol_to_string(cand->value, TRUE, NULL ) );
+	printf( "Your selection is: %s\n", symbol_to_string(cand->value, TRUE, NULL, 0 ) );
 	
 	*((soar_apiAskCallbackData *)call_data)->selection = cand;
 	  	

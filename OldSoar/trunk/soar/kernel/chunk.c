@@ -625,8 +625,9 @@ void variablize_nots_and_insert_into_conditions (not *nots,
       }
     }
     if (!added_it) {
-      char msg[128];
-      strcpy (msg,"chunk.c: Internal error: couldn't add Not test to chunk\n");
+      char msg[MESSAGE_SIZE];
+	  strncpy (msg,"chunk.c: Internal error: couldn't add Not test to chunk\n", MESSAGE_SIZE);
+	  msg[MESSAGE_SIZE-1]=0;
       abort_with_fatal_error(msg);
     }
   } /* end of for n=nots */
@@ -786,9 +787,11 @@ Symbol *find_impasse_wme_value(Symbol *id, Symbol *attr) {
   return NIL;
 }
 
+#define NAME_SIZE 512
+#define IMPASS_NAME_SIZE 32
 Symbol *generate_chunk_name_sym_constant (instantiation *inst) {
-  char name[512];
-  char impass_name[32];
+  char name[NAME_SIZE];
+  char impass_name[IMPASS_NAME_SIZE];
   Symbol *generated_name;  
   Symbol *goal;
   byte impasse_type;
@@ -808,19 +811,26 @@ Symbol *generate_chunk_name_sym_constant (instantiation *inst) {
 
   if (goal) {
     impasse_type = type_of_existing_impasse (goal);
+
+	/* Note that in this switch statement we set the impasse_name variable "safely" using strncpy.
+	   strncpy automatically null terminates the copy unless it was truncated.  To be safe, then,
+	   we always put a NULL character at the end of the array. In this case, we can do this after
+	   the if/else statements instead of right after every strncpy since the result of every
+	   strncpy gets funneled past there.
+	*/
     switch (impasse_type) {
       case NONE_IMPASSE_TYPE:
         print ("Internal error: impasse_type is NONE_IMPASSE_TYPE during chunk creation.\n");
-        strcpy(impass_name,"unknownimpasse");
+		strncpy(impass_name,"unknownimpasse",IMPASS_NAME_SIZE);
         break;
       case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-        strcpy(impass_name,"cfailure");
+		strncpy(impass_name,"cfailure",IMPASS_NAME_SIZE);
         break;
       case CONFLICT_IMPASSE_TYPE:
-        strcpy(impass_name,"conflict");
+		strncpy(impass_name,"conflict",IMPASS_NAME_SIZE);
         break;
       case TIE_IMPASSE_TYPE:
-        strcpy(impass_name,"tie");
+		strncpy(impass_name,"tie",IMPASS_NAME_SIZE);
         break;
       case NO_CHANGE_IMPASSE_TYPE:
         {           
@@ -831,36 +841,38 @@ Symbol *generate_chunk_name_sym_constant (instantiation *inst) {
             print ("Internal error: Failed to find ^attribute impasse wme.\n");
             do_print_for_identifier(goal->id.lower_goal, 1, 0);
 	    #endif
-            strcpy(impass_name,"unknownimpasse");
+			strncpy(impass_name,"unknownimpasse",IMPASS_NAME_SIZE);
           } else if (sym == current_agent(operator_symbol)) {
-            strcpy(impass_name,"opnochange");
+			strncpy(impass_name,"opnochange",IMPASS_NAME_SIZE);
           } else if (sym == current_agent(state_symbol)) {
-            strcpy(impass_name,"snochange");
+			strncpy(impass_name,"snochange",IMPASS_NAME_SIZE);
           } else {
 	    #ifdef DEBUG_CHUNK_NAMES
             print ("Internal error: ^attribute impasse wme has unexpected value.\n");
 	    #endif
-            strcpy(impass_name,"unknownimpasse");
+			strncpy(impass_name,"unknownimpasse",IMPASS_NAME_SIZE);
           }
         }
         break;
       default:
         print ("Internal error: encountered unknown impasse_type: %d.\n", impasse_type);
-        strcpy(impass_name,"unknownimpasse");
+		strncpy(impass_name,"unknownimpasse",IMPASS_NAME_SIZE);
         break;
     }
   } else {
-    print ("Internal error: Failed to determine impasse type.\n");
-    strcpy(impass_name,"unknownimpasse");
+    print ("Internal error: Failed to determine impasse type.\n");    
+	strncpy(impass_name,"unknownimpasse",IMPASS_NAME_SIZE);
   }
+  impass_name[IMPASS_NAME_SIZE-1]=0;
 
-  sprintf (name, "%s-%lu*d%lu*%s*%lu", 
+  snprintf (name, NAME_SIZE, "%s-%lu*d%lu*%s*%lu", 
           current_agent(chunk_name_prefix),
           current_agent(chunk_count++),
           current_agent(d_cycle_count),
           impass_name,
           current_agent(chunks_this_d_cycle)
           );
+  name[NAME_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
  
   /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
   if (find_sym_constant (name)) {
@@ -869,7 +881,7 @@ Symbol *generate_chunk_name_sym_constant (instantiation *inst) {
     collision_count = 1;
     print ("Warning: generated chunk name already exists.  Will find unique name.\n");
     do {
-      sprintf (name, "%s-%lu*d%lu*%s*%lu*%lu", 
+	    snprintf (name, NAME_SIZE, "%s-%lu*d%lu*%s*%lu*%lu", 
               current_agent(chunk_name_prefix),
               current_agent(chunk_count++),
               current_agent(d_cycle_count),
@@ -877,6 +889,7 @@ Symbol *generate_chunk_name_sym_constant (instantiation *inst) {
               current_agent(chunks_this_d_cycle),
               collision_count++
               );
+		name[NAME_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     } while (find_sym_constant (name));
   }
 
@@ -1559,7 +1572,8 @@ void chunk_instantiation (instantiation *inst, bool allow_variablization) {
     if ((rete_addition_result != DUPLICATE_PRODUCTION) &&
 	((prod_type != JUSTIFICATION_PRODUCTION_TYPE) ||
 	 (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH) )) {
-      strcpy(temp_explain_chunk.name,prod_name->sc.name);
+	  strncpy(temp_explain_chunk.name,prod_name->sc.name, PROD_NAME_SIZE);
+	  temp_explain_chunk.name[PROD_NAME_SIZE-1]=0;
       explain_add_temp_to_chunk_list (&temp_explain_chunk);
     } else {
       /* RBD 4/6/95 if excised the chunk, discard previously-copied stuff */

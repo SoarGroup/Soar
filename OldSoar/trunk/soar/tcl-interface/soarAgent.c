@@ -90,7 +90,7 @@ Symbol *tcl_rhs_function_code (list *args) {
     /* --- Note use of FALSE here--print the symbol itself, not a rereadable
        version of it --- */
       add_to_growable_string(&script_to_run,
-                             symbol_to_string (arg, FALSE, NIL));
+                             symbol_to_string (arg, FALSE, NIL,0));
     }
 
   result = Tcl_GlobalEval(tcl_soar_agent_interpreters[current_agent(id)], 

@@ -180,7 +180,8 @@ backtrace_str *back;
   back->trace_cond = copy_condition(temp->trace_cond);
   if (back->trace_cond != NULL)
     back->trace_cond->next = NULL;
-  strcpy(back->prod_name,temp->prod_name);
+  strncpy(back->prod_name,temp->prod_name,PROD_NAME_SIZE);
+  back->prod_name[PROD_NAME_SIZE-1]=0;
 
   back->grounds    = copy_conds_from_list(grounds);
   back->potentials = copy_conds_from_list(pots);
@@ -211,7 +212,8 @@ explain_chunk_str *chunk;
   chunk = (explain_chunk_str *)malloc(sizeof (explain_chunk_str));
   chunk->conds   = temp->conds;
   chunk->actions = temp->actions;
-  strcpy(chunk->name,temp->name);
+  strncpy(chunk->name,temp->name,PROD_NAME_SIZE);
+  chunk->name[PROD_NAME_SIZE-1]=0;
 
   chunk->backtrace = current_agent(explain_backtrace_list);
   current_agent(explain_backtrace_list) = NULL;

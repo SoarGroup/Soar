@@ -45,7 +45,6 @@
 extern Tcl_Interp *tcl_soar_agent_interpreters[MAX_SIMULTANEOUS_AGENTS];
 
 #define BUF_SIZE 4096
-char buf[BUF_SIZE];
 
 void
 Soar_Print (the_agent, str)
@@ -101,12 +100,14 @@ Soar_PrintToTextWidget (the_agent, data, call_data)
 {
 	Soar_TextWidgetPrintData * print_data = (Soar_TextWidgetPrintData *) data;
 
-	char buf[1024];
-	sprintf(buf, "%s insert end \"%s\" ", print_data->text_widget, (char*) call_data);
+	char buf[BUF_SIZE];
+	snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
+	buf[BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], buf);
 
-        /* RMJ 7-1-97 */
-        sprintf(buf, "%s see end", print_data->text_widget);
+    /* RMJ 7-1-97 */
+	snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
+	buf[BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], buf);
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], "update");
 }
@@ -123,15 +124,11 @@ Soar_PrintToTclProc (the_agent, data, call_data)
      soar_callback_data data;
      soar_call_data call_data;
 {
+	char buf[BUF_SIZE];
 	Soar_TextWidgetPrintData * print_data = (Soar_TextWidgetPrintData *) data;
 
-#ifdef WIN32
-	_snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
-#else
 	snprintf(buf, BUF_SIZE, "%s {%s} ", print_data->text_widget, (char*) call_data);
-#endif
-
-	/*sprintf(buf, "%s {%s} ", print_data->text_widget, (char*) call_data);*/
+	buf[BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], buf);
 	Tcl_Eval(tcl_soar_agent_interpreters[the_agent->id], "update");
@@ -152,9 +149,9 @@ Soar_AppendResult (the_agent, data, call_data)
      soar_callback_data data;
      soar_call_data call_data;
 {
-  Tcl_AppendResult(tcl_soar_agent_interpreters[the_agent->id], 
-	           (char *) call_data, 
-	           (char *) NULL);
+  Tcl_AppendStringsToObj(Tcl_GetObjResult(tcl_soar_agent_interpreters[the_agent->id]),
+	  (char *) call_data, 
+	  (char *) NULL);
 }
 
 void

@@ -514,7 +514,7 @@ Symbol *int_rhs_function_code (list *args) {
     long int_val;
 
     errno = 0;
-    int_val = strtol(symbol_to_string (sym, FALSE, NIL), NULL, 10);
+    int_val = strtol(symbol_to_string (sym, FALSE, NIL,0), NULL, 10);
     if (errno) {
       print ("Error: bad integer (%y) given to 'int' RHS function\n",
 	     sym);
@@ -569,7 +569,7 @@ Symbol *float_rhs_function_code (list *args) {
     double float_val;
 
     errno = 0;
-    float_val = my_strtod(symbol_to_string (sym, FALSE, NIL), NULL, 10);
+    float_val = my_strtod(symbol_to_string (sym, FALSE, NIL,0), NULL, 10);
     if (errno) {
       print ("Error: bad float (%y) given to 'float' RHS function\n",
 	     sym);

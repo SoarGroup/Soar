@@ -256,7 +256,7 @@ void print_multi_attribute_symbols(void)
   } else {
     print("Value\tSymbol\n");
     while(m) {
-      print("%ld\t%s\n", m->value, symbol_to_string(m->symbol, TRUE, NIL));
+      print("%ld\t%s\n", m->value, symbol_to_string(m->symbol, TRUE, NIL,0));
       m = m->next;
     }
   }

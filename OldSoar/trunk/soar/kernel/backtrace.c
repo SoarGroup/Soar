@@ -210,10 +210,12 @@ void backtrace_through_instantiation (instantiation *inst,
     temp_explain_backtrace.locals     = NIL;
     temp_explain_backtrace.negated    = NIL;
 
-    if (inst->prod)
-      strcpy(temp_explain_backtrace.prod_name,inst->prod->name->sc.name);
-    else
-      strcpy(temp_explain_backtrace.prod_name,"Dummy production");
+    if (inst->prod) {
+	  strncpy(temp_explain_backtrace.prod_name,inst->prod->name->sc.name, PROD_NAME_SIZE);
+	} else {      
+	  strncpy(temp_explain_backtrace.prod_name,"Dummy production", PROD_NAME_SIZE);
+	}
+	temp_explain_backtrace.prod_name[PROD_NAME_SIZE-1]=0; /* in case the strncpy truncated the string */
 
     temp_explain_backtrace.next_backtrace = NULL;
   }

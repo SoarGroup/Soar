@@ -41,6 +41,8 @@
 
 #include "soar.h"
 
+#define OLDVAL_SIZE 10
+
 /* forward declarations of prototypes */
 
 char *PositiveIntegerCheck(ClientData clientdata, Tcl_Interp *interp,
@@ -192,7 +194,7 @@ Soar_LinkInterpVars2Agent(new_interp, new_agent)
  *
  *----------------------------------------------------------------------
  */
- 
+
 char *
 PositiveIntegerCheck(ClientData clientData, Tcl_Interp *interp,
 			   const char *name1, const char *name2, int flags)
@@ -200,13 +202,14 @@ PositiveIntegerCheck(ClientData clientData, Tcl_Interp *interp,
   int n;
   const char *value;
   long *correct = clientData;
-  char oldval[10];
+  char oldval[OLDVAL_SIZE];
 
   value = Tcl_GetVar(interp, name1, flags & TCL_GLOBAL_ONLY);
   Tcl_GetInt(interp, value, &n);
 
   if (n < 0) {
-    sprintf(oldval,"%ld",*correct);
+	snprintf(oldval,OLDVAL_SIZE,"%ld",*correct);
+	oldval[OLDVAL_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     Tcl_SetVar(interp, name1, oldval, flags & TCL_GLOBAL_ONLY);
     return "variable must be a positive integer, value unchanged";
   } else {
@@ -235,13 +238,14 @@ Mode_0_1_2_3_Check(ClientData clientData, Tcl_Interp *interp,
   int n;
   const char *value;
   long *correct = clientData;
-  char oldval[10];
+  char oldval[OLDVAL_SIZE];
 
   value = Tcl_GetVar(interp, name1, flags & TCL_GLOBAL_ONLY);
   Tcl_GetInt(interp, value, &n);
 
   if ((n < 0)||(n > 3)) {
-    sprintf(oldval,"%ld",*correct);
+	snprintf(oldval, OLDVAL_SIZE, "%ld",*correct);
+	oldval[OLDVAL_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     Tcl_SetVar(interp, name1, oldval, flags & TCL_GLOBAL_ONLY);
     return "variable must be 0, 1, 2, or 3; value unchanged";
   } else {
@@ -271,7 +275,7 @@ soar8Mode_Attr_Check(ClientData clientData, Tcl_Interp *interp,
   int n;
   const char *value;
   long *correct = clientData;
-  char oldval[10];
+  char oldval[OLDVAL_SIZE];
 
   value = Tcl_GetVar(interp, name1, flags & TCL_GLOBAL_ONLY);
   Tcl_GetInt(interp, value, &n);
@@ -280,7 +284,8 @@ soar8Mode_Attr_Check(ClientData clientData, Tcl_Interp *interp,
   if (current_agent(operand2_mode) == TRUE) {
 	  print ("attr_pref_mode = %ld\n",n);
 	  if (n != 2) {
-		  sprintf(oldval,"%ld",*correct);
+		  snprintf(oldval, OLDVAL_SIZE, "%ld",*correct);
+		  oldval[OLDVAL_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 		  Tcl_SetVar(interp, name1, oldval, flags & TCL_GLOBAL_ONLY);
 		  return "In soar8 mode, attr_pref_mode is obsolete.\nThe code automatically uses the value 2.";
 	  } else {
@@ -288,7 +293,8 @@ soar8Mode_Attr_Check(ClientData clientData, Tcl_Interp *interp,
 	  }
   } else {
 	  if ((n < 0)||(n > 2)) {
-		  sprintf(oldval,"%ld",*correct);
+		  snprintf(oldval,OLDVAL_SIZE, "%ld",*correct);
+		  oldval[OLDVAL_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 		  Tcl_SetVar(interp, name1, oldval, flags & TCL_GLOBAL_ONLY);
 		  return "variable must be 0, 1, or 2; value unchanged";
 		  

@@ -285,7 +285,7 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
   action    *act;
   bool      o_support, op_elab;
   bool      operator_proposal;
-  char      action_attr[50];
+  char      action_attr[ACTION_ATTR_SIZE];
   int       pass;
   wme       *lowest_goal_wme;
 
@@ -326,7 +326,7 @@ void calculate_support_for_instantiation_preferences (instantiation *inst) {
         for (act = inst->prod->action_list; act != NIL ; act = act->next) {
            if ((act->type == MAKE_ACTION)  &&
 	       (rhs_value_is_symbol(act->attr))) {
-	      if ((strcmp(rhs_value_to_string (act->attr, action_attr),
+	      if ((strcmp(rhs_value_to_string (act->attr, action_attr, ACTION_ATTR_SIZE),
 			  "operator") == NIL) &&
 		  (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
 		/* REW: 09.30.96.  Bug fix (next line was

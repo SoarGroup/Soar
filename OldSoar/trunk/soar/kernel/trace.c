@@ -567,8 +567,9 @@ void print_trace_format_list (trace_format *tf) {
     case NEWLINE_TFT: print_string ("%nl"); break;
 
     default:
-      { char msg[128];
-      strcpy (msg, "Internal error: bad trace format type\n");
+      { char msg[MESSAGE_SIZE];
+	  strncpy (msg, "Internal error: bad trace format type\n",MESSAGE_SIZE);
+	  msg[MESSAGE_SIZE-1]=0;
       abort_with_fatal_error(msg);
       }
     }
@@ -862,7 +863,7 @@ void add_values_of_attribute_path (Symbol *object,
       add_to_growable_string (result, text_of_growable_string(gs));
       free_growable_string (gs);
     } else {
-      ch = symbol_to_string (object, TRUE, NULL);
+      ch = symbol_to_string (object, TRUE, NULL,0);
       add_to_growable_string (result, ch);
     }
     (*count)++;
@@ -908,7 +909,7 @@ void add_trace_for_wme (growable_string *result,
   add_to_growable_string (result, " ");
   if (print_attribute) {
     add_to_growable_string (result, "^");
-    ch = symbol_to_string (w->attr, TRUE, NULL);
+    ch = symbol_to_string (w->attr, TRUE, NULL,0);
     add_to_growable_string (result, ch);
     add_to_growable_string (result, " ");
   }
@@ -917,7 +918,7 @@ void add_trace_for_wme (growable_string *result,
     add_to_growable_string (result, text_of_growable_string(gs));
     free_growable_string (gs);
   } else {
-    ch = symbol_to_string (w->value, TRUE, NULL);
+    ch = symbol_to_string (w->value, TRUE, NULL,0);
     add_to_growable_string (result, ch);
   }
 }
@@ -972,7 +973,7 @@ void add_trace_for_attribute_path (Symbol *object,
   if (print_attributes) {
     add_to_growable_string (result, "^");
     for (c=path; c!=NIL; c=c->rest) {
-      ch = symbol_to_string (c->first, TRUE, NULL);
+      ch = symbol_to_string (c->first, TRUE, NULL,0);
       add_to_growable_string (result, ch);
       if (c->rest) add_to_growable_string (result, ".");
     }
@@ -989,8 +990,9 @@ void add_trace_for_attribute_path (Symbol *object,
    object being printed).
 ---------------------------------------------------------------- */
 
+#define TRACE_FORMAT_LIST_TO_STRING_BUF_SIZE 50
 growable_string trace_format_list_to_string (trace_format *tf, Symbol *object){
-  char buf[50], *ch;
+  char buf[TRACE_FORMAT_LIST_TO_STRING_BUF_SIZE], *ch;
   growable_string result, temp_gs;
   int i;
 
@@ -1049,7 +1051,8 @@ growable_string trace_format_list_to_string (trace_format *tf, Symbol *object){
 
     case DECISION_CYCLE_COUNT_TFT:
       if (tparams.allow_cycle_counts) {
-        sprintf (buf, "%lu", current_agent(d_cycle_count));
+		snprintf (buf, TRACE_FORMAT_LIST_TO_STRING_BUF_SIZE, "%lu", current_agent(d_cycle_count));
+		buf[TRACE_FORMAT_LIST_TO_STRING_BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
         add_to_growable_string (&result, buf);
       } else {
         found_undefined = TRUE;
@@ -1057,7 +1060,8 @@ growable_string trace_format_list_to_string (trace_format *tf, Symbol *object){
       break;
     case ELABORATION_CYCLE_COUNT_TFT:
       if (tparams.allow_cycle_counts) {
-        sprintf (buf, "%lu", current_agent(e_cycle_count));
+		snprintf (buf, TRACE_FORMAT_LIST_TO_STRING_BUF_SIZE, "%lu", current_agent(e_cycle_count));
+		buf[TRACE_FORMAT_LIST_TO_STRING_BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
         add_to_growable_string (&result, buf);
       } else {
         found_undefined = TRUE;
@@ -1065,7 +1069,7 @@ growable_string trace_format_list_to_string (trace_format *tf, Symbol *object){
       break;
 
     case IDENTIFIER_TFT:
-      ch = symbol_to_string (object, TRUE, NULL);
+      ch = symbol_to_string (object, TRUE, NULL,0);
       add_to_growable_string (&result, ch);
       break;
 
@@ -1099,7 +1103,8 @@ growable_string trace_format_list_to_string (trace_format *tf, Symbol *object){
 
     case SUBGOAL_DEPTH_TFT:
       if (tparams.current_s) {
-        sprintf (buf, "%u", tparams.current_s->id.level - 1);
+		snprintf (buf, TRACE_FORMAT_LIST_TO_STRING_BUF_SIZE, "%u", tparams.current_s->id.level - 1);
+		buf[TRACE_FORMAT_LIST_TO_STRING_BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
         add_to_growable_string (&result, buf);
       } else {
         found_undefined = TRUE;
@@ -1122,8 +1127,9 @@ growable_string trace_format_list_to_string (trace_format *tf, Symbol *object){
       break;
 
     default:
-      { char msg[128];
-      strcpy (msg,"Internal error: bad trace format type\n");
+      { char msg[MESSAGE_SIZE];
+	  strncpy (msg,"Internal error: bad trace format type\n",MESSAGE_SIZE);
+	  msg[MESSAGE_SIZE-1]=0;
       abort_with_fatal_error(msg);
       }
     }
@@ -1188,7 +1194,7 @@ growable_string object_to_trace_string (Symbol *object) {
   if ((object->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) ||
       (object->id.tc_num == current_agent(tf_printing_tc))) {
     gs = make_blank_growable_string ();
-    add_to_growable_string (&gs, symbol_to_string (object, TRUE, NIL));
+    add_to_growable_string (&gs, symbol_to_string (object, TRUE, NIL,0));
     return gs;
   }
 
@@ -1215,7 +1221,7 @@ growable_string object_to_trace_string (Symbol *object) {
   } else {
     /* --- no applicable trace format, so just print the object itself --- */
     gs = make_blank_growable_string ();
-    add_to_growable_string (&gs, symbol_to_string (object, TRUE, NIL));
+    add_to_growable_string (&gs, symbol_to_string (object, TRUE, NIL,0));
   }
   
   object->id.tc_num = 0;  /* unmark it now that we're done */  

@@ -782,10 +782,11 @@ Symbol *find_goal_for_match_set_change_assertion(ms_change *msc) {
 #endif
        return lowest_goal_wme->id;
   }
-  { char msg[128];
+  { char msg[MESSAGE_SIZE];
   print_with_symbols("\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
-  sprintf(msg,"\nError: Did not find goal for ms_change assertion: %s\n",
-	 symbol_to_string(msc->p_node->b.p.prod->name,TRUE,NIL));
+  snprintf(msg,MESSAGE_SIZE,"\nError: Did not find goal for ms_change assertion: %s\n",
+	 symbol_to_string(msc->p_node->b.p.prod->name,TRUE,NIL,0));
+  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   abort_with_fatal_error(msg);
   }
   return 0;
@@ -931,8 +932,9 @@ bool get_next_assertion (production **prod,
        
        if ((current_agent(ms_i_assertions)) ||
 	   (current_agent(ms_o_assertions))) {
-	 char msg[128];
-	 strcpy(msg,"\nrete.c: Error: No active goal, but assertions are on the assertion list.");
+	 char msg[MESSAGE_SIZE];
+	 strncpy(msg,"\nrete.c: Error: No active goal, but assertions are on the assertion list.",MESSAGE_SIZE);
+	 msg[MESSAGE_SIZE-1]=0;
 	 abort_with_fatal_error(msg);
 
        }   
@@ -1470,8 +1472,9 @@ void update_node_with_matches_from_above (rete_node *child) {
   token *tok;
   
   if (bnode_is_bottom_of_split_mp(child->node_type)) {
-    char msg[128];
-    strcpy (msg, "\nrete.c: Internal error: update_node_with_matches_from_above called on split node");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg, "\nrete.c: Internal error: update_node_with_matches_from_above called on split node",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error (msg);
   }
   
@@ -1681,8 +1684,9 @@ rete_node *merge_into_mp_node (rete_node *mem_node) {
 
   /* --- sanity check: Mem node must have exactly one child --- */
   if ((! pos_node) || pos_node->next_sibling) {
-    char msg[128];
-    strcpy (msg, "\nrete.c: Internal error: tried to merge_into_mp_node, but <>1 child\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg, "\nrete.c: Internal error: tried to merge_into_mp_node, but <>1 child\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
  
@@ -1913,8 +1917,9 @@ void deallocate_rete_node (rete_node *node) {
 
   /* --- sanity check --- */
   if (node->node_type==P_BNODE) {
-    char msg[128];
-    strcpy (msg, "Internal error: deallocate_rete_node() called on p-node.\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg, "Internal error: deallocate_rete_node() called on p-node.\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
 
@@ -2457,11 +2462,12 @@ void add_rete_tests_for_test (test t,
 
     /* --- variable: if binding is for current field, do nothing --- */
     if (! find_var_location (referent, current_depth, &where)) {
-      char msg[128];
+      char msg[MESSAGE_SIZE];
       print_with_symbols ("Error: Rete build found test of unbound var: %y\n",
                           referent);
-      sprintf (msg, "Error: Rete build found test of unbound var: %s\n",
-                          symbol_to_string(referent,TRUE, NIL));
+	  snprintf (msg, MESSAGE_SIZE, "Error: Rete build found test of unbound var: %s\n",
+                          symbol_to_string(referent,TRUE, NIL,0));
+	  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       abort_with_fatal_error(msg);
     }
     if ((where.levels_up==0) && (where.field_num==field_num)) return;
@@ -2500,11 +2506,12 @@ void add_rete_tests_for_test (test t,
     }
     /* --- else make variable test --- */   
     if (! find_var_location (ct->data.referent, current_depth, &where)) {
-      char msg[128];
+      char msg[MESSAGE_SIZE];
       print_with_symbols ("Error: Rete build found test of unbound var: %y\n",
                           ct->data.referent);
-      sprintf ("Error: Rete build found test of unbound var: %s\n",
-                          symbol_to_string(ct->data.referent,TRUE, NIL));
+	  snprintf (msg, MESSAGE_SIZE, "Error: Rete build found test of unbound var: %s\n",
+                          symbol_to_string(ct->data.referent,TRUE, NIL,0));
+	  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       abort_with_fatal_error(msg);
     }
     allocate_with_pool (&current_agent(rete_test_pool),  &new_rt);
@@ -2550,9 +2557,10 @@ void add_rete_tests_for_test (test t,
     return;
     
   default:
-    { char msg[128];
-    sprintf (msg,"Error: found bad test type %d while building rete\n",
+    { char msg[MESSAGE_SIZE];
+	snprintf (msg,MESSAGE_SIZE,"Error: found bad test type %d while building rete\n",
            ct->type);
+	msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     abort_with_fatal_error(msg);
     }
   } /* end of switch statement */
@@ -2606,8 +2614,9 @@ bool single_rete_tests_are_identical (rete_test *rt1, rete_test *rt2) {
     if (c1==c2) return TRUE;
     return FALSE;
   }
-  { char msg[128];
-  strcpy(msg,"Internal error: bad rete test type in single_rete_tests_are_identical\n");
+  { char msg[MESSAGE_SIZE];
+  strncpy(msg,"Internal error: bad rete test type in single_rete_tests_are_identical\n",MESSAGE_SIZE);
+  msg[MESSAGE_SIZE-1]=0;
   abort_with_fatal_error(msg);
   }
   return FALSE; /* unreachable, but without it, gcc -Wall warns here */
@@ -3449,8 +3458,9 @@ Symbol *var_bound_in_reconstructed_conds (condition *cond, /* current cond */
   }
 
   abort_var_bound_in_reconstructed_conds:
-  { char msg[128];
-  strcpy (msg, "Internal error in var_bound_in_reconstructed_conds\n");
+  { char msg[MESSAGE_SIZE];
+  strncpy (msg, "Internal error in var_bound_in_reconstructed_conds\n",MESSAGE_SIZE);
+  msg[MESSAGE_SIZE-1];
   abort_with_fatal_error(msg);
   }
   return 0; /* unreachable, but without it, gcc -Wall warns here */
@@ -3538,8 +3548,9 @@ void add_rete_test_list_to_tests (condition *cond, /* current cond */
         new_ct->data.referent = referent;
       }
     } else {
-      char msg[128];
-      strcpy (msg, "Error: bad test_type in add_rete_test_to_test\n");
+      char msg[MESSAGE_SIZE];
+	  strncpy (msg, "Error: bad test_type in add_rete_test_to_test\n",MESSAGE_SIZE);
+	  msg[MESSAGE_SIZE-1]=0;
       abort_with_fatal_error(msg);
       new = NIL; /* unreachable, but without it gcc -Wall warns here */
     }
@@ -3997,8 +4008,9 @@ bool ( (*(rete_test_routines[256]))
    an integer and the other is a floating point number */
 
 bool error_rete_test_routine (rete_test *rt, token *left, wme *w) {
-  char msg[128];
-  strcpy (msg, "Internal error: bad rete test type, hit error_rete_test_routine\n");
+  char msg[MESSAGE_SIZE];
+  strncpy (msg, "Internal error: bad rete test type, hit error_rete_test_routine\n",MESSAGE_SIZE);
+  msg[MESSAGE_SIZE-1]=0;
   abort_with_fatal_error(msg);
   return FALSE; /* unreachable, but without it, gcc -Wall warns here */
 }
@@ -4230,16 +4242,18 @@ void positive_node_left_addition (rete_node *node, token *new,
 void unhashed_positive_node_left_addition (rete_node *node, token *new);
 
 void rete_error_left (rete_node *node, token *t, wme *w) {
-  char msg[128];
-  sprintf (msg, "Rete net error:  tried to left-activate node of type %d\n",
+  char msg[MESSAGE_SIZE];
+  snprintf (msg, MESSAGE_SIZE,"Rete net error:  tried to left-activate node of type %d\n",
          node->node_type);
+  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   abort_with_fatal_error(msg);
 }
 
 void rete_error_right (rete_node *node, wme *w) {
-  char msg[128];
-  sprintf (msg, "Rete net error:  tried to right-activate node of type %d\n",
+  char msg[MESSAGE_SIZE];
+  snprintf (msg, MESSAGE_SIZE, "Rete net error:  tried to right-activate node of type %d\n",
          node->node_type);
+  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   abort_with_fatal_error(msg);
 }
 
@@ -5012,7 +5026,7 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 
   action    *act;
   bool      operator_proposal,op_elab;
-  char      action_attr[50];
+  char      action_attr[ACTION_ATTR_SIZE];
 
   int pass;
   wme *lowest_goal_wme;
@@ -5147,7 +5161,7 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
         for (act = node->b.p.prod->action_list; act != NIL ; act = act->next) {
 
 					if ((act->type == MAKE_ACTION) && (rhs_value_is_symbol(act->attr))) {
-						if ((strcmp(rhs_value_to_string (act->attr, action_attr),
+						if ((strcmp(rhs_value_to_string (act->attr, action_attr, ACTION_ATTR_SIZE),
 												"operator") == NIL) &&
 								(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
 							operator_proposal = TRUE;
@@ -5381,12 +5395,14 @@ void p_node_left_addition (rete_node *node, token *tok, wme *w) {
 					 on the assertion list, Soar will still halt, but the production
 					 named will be inaccurate.
 				 */
-				 strcpy (current_agent(interrupt_source), "*** Interrupt (probably) from production ");
+				 strncpy (current_agent(interrupt_source), "*** Interrupt (probably) from production ",INTERRUPT_SOURCE_SIZE);
+				 current_agent(interrupt_source)[INTERRUPT_SOURCE_SIZE-1]=0;
 				 ch = current_agent(interrupt_source);
 				 while (*ch) ch++;
-				 symbol_to_string (node->b.p.prod->name, TRUE, ch); 
+				 symbol_to_string (node->b.p.prod->name, TRUE, ch, INTERRUPT_SOURCE_SIZE-(ch-current_agent(interrupt_source))); 
 				 while (*ch) ch++;
-				 strcpy (ch, " ***");
+				 strncpy (ch, " ***", INTERRUPT_SOURCE_SIZE-(ch-current_agent(interrupt_source)));
+				 ch[INTERRUPT_SOURCE_SIZE-(ch-current_agent(interrupt_source))-1]=0;
 				 current_agent(reason_for_stopping) = current_agent(interrupt_source);
 
 			 }
@@ -5612,9 +5628,9 @@ void p_node_left_removal (rete_node *node, token *tok, wme *w) {
    */
       print( "Warning: can't find an existing inst to retract\n" );
   {     
-    char msg[128];
-    strcpy (msg,
-	    "Internal error: can't find existing instantiation to retract\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg,"Internal error: can't find existing instantiation to retract\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
 #endif
@@ -5727,10 +5743,11 @@ void remove_token_and_subtree (token *root) {
       }
 
     } else {
-      char msg[128];
-      sprintf (msg,
+      char msg[MESSAGE_SIZE];
+	  snprintf (msg, MESSAGE_SIZE,
 	      "Internal error: bad node type %d in remove_token_and_subtree\n",
 	      node->node_type);
+	  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       abort_with_fatal_error(msg);
     }
     
@@ -5936,7 +5953,7 @@ bool retesave_symbol_and_assign_index (void *item) {
   sym = item;
   current_retesave_symindex++;
   sym->common.a.retesave_symindex = current_retesave_symindex;
-  retesave_string (symbol_to_string (sym, FALSE, NIL));
+  retesave_string (symbol_to_string (sym, FALSE, NIL,0));
   return FALSE;
 }
 
@@ -6005,8 +6022,9 @@ Symbol *reteload_symbol_from_index (void) {
   if (index==0) return NIL;
   index--;
   if (index >= reteload_num_syms) {
-    char msg[128];
-    strcpy (msg, "Internal error (file corrupted?): symbol count too small\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg, "Internal error (file corrupted?): symbol count too small\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
   return *(reteload_symbol_table+index);
@@ -6096,9 +6114,9 @@ alpha_mem *reteload_am_from_index (void) {
 
   amindex = reteload_four_bytes() - 1;
   if (amindex >= reteload_num_ams) {
-    char msg[128];
-    strcpy (msg,
-	    "Internal error (file corrupted?): alpha mem count too small\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg,"Internal error (file corrupted?): alpha mem count too small\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
   return *(reteload_am_table+amindex);
@@ -6274,9 +6292,10 @@ rhs_value reteload_rhs_value (void) {
     symbol_add_ref (sym);
     rf = lookup_rhs_function (sym);
     if (!rf) {
-      char msg[128];
+      char msg[MESSAGE_SIZE];
       print_with_symbols ("Error: can't load this file because it uses an undefined RHS function %y\n", sym);
-      sprintf (msg, "Error: can't load this file because it uses an undefined RHS function %s\n", symbol_to_string(sym,TRUE,NIL));
+	  snprintf (msg, MESSAGE_SIZE,"Error: can't load this file because it uses an undefined RHS function %s\n", symbol_to_string(sym,TRUE,NIL,0));
+	  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       abort_with_fatal_error(msg);
     }
     push (rf, funcall_list);
@@ -6299,8 +6318,9 @@ rhs_value reteload_rhs_value (void) {
     rv = unboundvar_to_rhs_value (i);
     break;
   default:
-    { char msg[128];
-    strcpy (msg, "Internal error (file corrupted?): bad rhs_value type\n");
+    { char msg[MESSAGE_SIZE];
+	strncpy (msg, "Internal error (file corrupted?): bad rhs_value type\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
     }
     rv = NIL;  /* unreachable, but without it gcc -Wall warns */
@@ -6618,9 +6638,10 @@ void retesave_rete_node_and_children (rete_node *node) {
     break;
 
   default:
-    {char msg[128];
-    sprintf (msg,
+    {char msg[MESSAGE_SIZE];
+	snprintf (msg, MESSAGE_SIZE,
 	   "Internal error: fastsave found node type %d\n", node->node_type);
+	msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     abort_with_fatal_error(msg);
     }
   } /* end of switch statement */
@@ -6756,8 +6777,9 @@ void reteload_node_and_children (rete_node *parent) {
     break;
 
   default:
-    { char msg[128];
-    sprintf (msg,"Internal error: fastload found node type %d\n", type);
+    { char msg[MESSAGE_SIZE];
+	snprintf (msg,MESSAGE_SIZE,"Internal error: fastload found node type %d\n", type);
+	msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     abort_with_fatal_error(msg);
     new = NIL; /* unreachable, but without it gcc -Wall warns here */
     }
@@ -7150,6 +7172,7 @@ void print_whole_token (token *t, wme_trace_type wtt) {
 
 /* --- Print stuff for given node and higher, up to but not including the
        cutoff node.  Return number of matches at the given node/cond. --- */
+#define MATCH_COUNT_STRING_SIZE 20
 long ppmi_aux (rete_node *node,    /* current node */
                rete_node *cutoff,  /* don't print cutoff node or any higher */
                condition *cond,    /* cond for current node */
@@ -7159,7 +7182,7 @@ long ppmi_aux (rete_node *node,    /* current node */
   right_mem *rm;
   long matches_one_level_up;
   long matches_at_this_level;
-  char match_count_string[20];
+  char match_count_string[MATCH_COUNT_STRING_SIZE];
   rete_node *parent;
 
   /* --- find the number of matches for this condition --- */
@@ -7178,12 +7201,16 @@ long ppmi_aux (rete_node *node,    /* current node */
 
   /* --- Form string for current match count:  If an earlier cond had no
      matches, just leave it blank; if this is the first 0, use ">>>>" --- */
-  if (! matches_one_level_up)
-    strcpy (match_count_string, "    ");
-  else if (! matches_at_this_level)
-    strcpy (match_count_string, ">>>>");
-  else
-    sprintf (match_count_string, "%4ld", matches_at_this_level);
+  if (! matches_one_level_up) {
+	strncpy (match_count_string, "    ",MATCH_COUNT_STRING_SIZE);
+    match_count_string[MATCH_COUNT_STRING_SIZE-1]=0;
+  } else if (! matches_at_this_level) {
+	strncpy (match_count_string, ">>>>",MATCH_COUNT_STRING_SIZE);
+    match_count_string[MATCH_COUNT_STRING_SIZE-1]=0;
+  } else {
+	snprintf (match_count_string, MATCH_COUNT_STRING_SIZE, "%4ld", matches_at_this_level);
+    match_count_string[MATCH_COUNT_STRING_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+  }
 
   /* --- print extra indentation spaces --- */
   print_spaces (indent);

@@ -128,24 +128,28 @@ extern void gds_invalid_so_remove_goal( wme *w );
  *
  *----------------------------------------------------------------------
  */
+
+#define SOAR_CINITIALIZESOAR_BUFFER_SIZE 1000
 void soar_cInitializeSoar (void)
 {
-  char buffer[1000];
+  char buffer[SOAR_CINITIALIZESOAR_BUFFER_SIZE];
   int i;
 
 
   if ( MICRO_VERSION_NUMBER > 0 ) {
-    sprintf( buffer, 
-	     "%d.%d.%d", 
+	snprintf( buffer, SOAR_CINITIALIZESOAR_BUFFER_SIZE,
+	     "%d.%d.%d",
 	     MAJOR_VERSION_NUMBER, 
 	     MINOR_VERSION_NUMBER, 
 	     MICRO_VERSION_NUMBER);
+	buffer[SOAR_CINITIALIZESOAR_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 
   } else {
-    sprintf(buffer,
+	snprintf(buffer, SOAR_CINITIALIZESOAR_BUFFER_SIZE,
 	    "%d.%d",
 	    MAJOR_VERSION_NUMBER, 
 	    MINOR_VERSION_NUMBER);
+	buffer[SOAR_CINITIALIZESOAR_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   }
   soar_version_string = savestring(buffer);
 
@@ -721,12 +725,12 @@ int soar_cLoadReteNet( const char *filename ) {
 				      strlen( filename ) + 1,
 				      STRING_MEM_USAGE );
       
-      strcpy( command_line, pipe_command );
+      strcpy( command_line, pipe_command ); /* this is relatively safe since the memory is allocated on the previous line */
       
       append_loc = command_line;
       while( *append_loc ) append_loc++;
       
-      strcpy( append_loc, filename );
+      strcpy( append_loc, filename ); /* this is relatively safe since sufficient memory is allocated earlier */
 
       f = (FILE *) popen( command_line, "rb");
       free_memory( command_line, STRING_MEM_USAGE );
@@ -795,12 +799,12 @@ int soar_cSaveReteNet( const char *filename ) {
 				      strlen( filename ) + 1,
 				      STRING_MEM_USAGE );
       
-      strcpy( command_line, pipe_command );
+      strcpy( command_line, pipe_command ); /* this is relatively safe since the memory is allocated on the previous line */
       
       append_loc = command_line;
       while( *append_loc ) append_loc++;
       
-      strcpy( append_loc, filename );
+      strcpy( append_loc, filename ); /* this is relatively safe since the memory is allocated earlier */
 
       f = (FILE *) popen( command_line , "wb");
       free_memory( command_line, STRING_MEM_USAGE );
@@ -1512,7 +1516,8 @@ int soar_cSetChunkNamePrefix( const char *prefix ) {
   if ( strchr( prefix, '*' ) ) {
     return -1;
   }
-  strcpy(current_agent(chunk_name_prefix), prefix);
+  strncpy(current_agent(chunk_name_prefix), prefix, kChunkNamePrefixMaxLength);
+  current_agent(chunk_name_prefix)[kChunkNamePrefixMaxLength-1]=0;
   return 0;
 
 }
@@ -2229,42 +2234,42 @@ SOAR_CALLBACK_TYPE soar_cCallbackNameToEnum (const char * name,
  * untold things could happen.  Thus here, I opt for the potentially
  * slower, but safer, accessor function.
  */
-char *soar_cGetWmeId( psoar_wme w, char *buff) {
+char *soar_cGetWmeId( psoar_wme w, char *buff, size_t buff_size) {
   char *temp;
   char *ret;
 
-  temp = symbol_to_string( ((wme *)w)->id, TRUE, buff );
+  temp = symbol_to_string( ((wme *)w)->id, TRUE, buff, buff_size );
   if ( buff ) return buff;
 
   ret = (char *) malloc( (strlen(temp) + 1) * sizeof(char) );
-  strcpy( ret, temp );
+  strcpy( ret, temp ); /* this is relatively safe since the memory is allocated on the previous line */
 
   return ret;  
 }
 
-char *soar_cGetWmeAttr( psoar_wme w, char *buff) {
+char *soar_cGetWmeAttr( psoar_wme w, char *buff, size_t buff_size) {
   char *temp;
   char *ret;
 
-  temp = symbol_to_string( ((wme *)w)->attr, TRUE, buff );
+  temp = symbol_to_string( ((wme *)w)->attr, TRUE, buff, buff_size );
   if ( buff ) return buff;
 
   ret = (char *) malloc( (strlen(temp) + 1) * sizeof(char) );
-  strcpy( ret, temp );
+  strcpy( ret, temp ); /* this is relatively safe since the memory is allocated on the previous line */
 
   return ret;  
  
 }
 
-char *soar_cGetWmeValue( psoar_wme w, char *buff ) {
+char *soar_cGetWmeValue( psoar_wme w, char *buff, size_t buff_size ) {
   char *temp;
   char *ret;
 
-  temp = symbol_to_string( ((wme *)w)->value, TRUE, buff );
+  temp = symbol_to_string( ((wme *)w)->value, TRUE, buff, buff_size );
   if ( buff ) return buff;
 
   ret = (char *) malloc( (strlen(temp) + 1) * sizeof(char) );
-  strcpy( ret, temp );
+  strcpy( ret, temp ); /* this is relatively safe since the memory is allocated on the previous line */
 
   return ret;  
 
@@ -2275,21 +2280,24 @@ unsigned long soar_cGetWmeTimetag( psoar_wme w ) {
   return ((wme *)w)->timetag;
 }
   
-
+#define SOAR_CADDINTWME_TEMP_SIZE 128
 unsigned long soar_cAddIntWme( char *szId, char *szAttr, int value,
 			       bool acceptable, psoar_wme *w ) {
-  char temp[128];
+  char temp[SOAR_CADDINTWME_TEMP_SIZE];
   
-  sprintf( temp, "%d", value );
+  snprintf( temp, SOAR_CADDINTWME_TEMP_SIZE, "%d", value );
+  temp[SOAR_CADDINTWME_TEMP_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   
   return soar_cAddWme( szId, szAttr, temp, acceptable, w );
 }
 
+#define SOAR_CADDFLOATWME_TEMP_SIZE 128
 unsigned long soar_cAddFloatWme( char *szId, char *szAttr, float value,
 				 bool acceptable, psoar_wme *w ) {
-  char temp[128];
+  char temp[SOAR_CADDFLOATWME_TEMP_SIZE];
   
-  sprintf( temp, "%f", value );
+  snprintf( temp, SOAR_CADDFLOATWME_TEMP_SIZE,"%f", value );
+  temp[SOAR_CADDFLOATWME_TEMP_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   
   return soar_cAddWme( szId, szAttr, temp, acceptable, w );
 }
@@ -2393,7 +2401,7 @@ psoar_agent soar_cGetCurrentAgent() {
  * slower, but safer, accessor function.
  */
 
-char *soar_cGetAgentInputLinkId( psoar_agent a, char *buff ) {
+char *soar_cGetAgentInputLinkId( psoar_agent a, char *buff, size_t buff_size ) {
   char *temp;
   char *ret;
 
@@ -2402,17 +2410,17 @@ char *soar_cGetAgentInputLinkId( psoar_agent a, char *buff ) {
 	return "";
   }
 
-  temp = symbol_to_string(  ((agent *)a)->io_header_input, TRUE, buff );
+  temp = symbol_to_string(  ((agent *)a)->io_header_input, TRUE, buff, buff_size );
   if ( buff ) return buff;
 
   ret = (char *) malloc( (strlen(temp) + 1) * sizeof(char) );
-  strcpy( ret, temp );
+  strcpy( ret, temp ); /* this is relatively safe since the memory is allocated on the previous line */
 
   return ret;  
 }
 
 
-char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff ) {
+char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff, size_t buff_size ) {
   char *temp;
   char *ret;
 
@@ -2422,11 +2430,11 @@ char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff ) {
 	return "";
   }
 
-  temp = symbol_to_string( ((agent *)a)->io_header_output, TRUE, buff );
+  temp = symbol_to_string( ((agent *)a)->io_header_output, TRUE, buff, buff_size );
   if ( buff ) return buff;
 
   ret = (char *) malloc( (strlen(temp) + 1) * sizeof(char) );
-  strcpy( ret, temp );
+  strcpy( ret, temp ); /* this is relatively safe since the memory is allocated on the previous line */
 
   return ret;  
 }
@@ -2446,7 +2454,7 @@ void soar_cTestCallback (soar_callback_agent the_agent,
 }
 
 
-
+#define SOAR_CDEFAULTASKCALLBACK_TEMP_SIZE 50
 void soar_cDefaultAskCallback( soar_callback_agent the_agent,
 			       soar_callback_data data,
 			       soar_call_data call_data ) {
@@ -2494,8 +2502,9 @@ void soar_cDefaultAskCallback( soar_callback_agent the_agent,
     print ("You must enter a number between 1 and %d\n", num_candidates);
   }
   if (current_agent(logging_to_file)) {
-    char temp[50];
-    sprintf (temp, "%d\n", chosen_num);
+    char temp[SOAR_CDEFAULTASKCALLBACK_TEMP_SIZE];
+	snprintf (temp, SOAR_CDEFAULTASKCALLBACK_TEMP_SIZE, "%d\n", chosen_num);
+	temp[SOAR_CDEFAULTASKCALLBACK_TEMP_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     print_string_to_log_file_only (temp);
   }
   /* AGR 615 begin */

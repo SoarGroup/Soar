@@ -76,8 +76,9 @@ void reset_placeholder_variable_generator (void) {
    placeholder variable.
 ----------------------------------------------------------------- */
 
+#define NAMEBUF_SIZE 30
 test make_placeholder_test (char first_letter) {
-  char namebuf[30];
+  char namebuf[NAMEBUF_SIZE];
   Symbol *new_var;
 
   if (isalpha(first_letter)) {
@@ -87,8 +88,9 @@ test make_placeholder_test (char first_letter) {
   }
   /* --- create variable with "#" in its name:  this couldn't possibly be a
      variable in the user's code, since the lexer doesn't handle "#" --- */
-  sprintf (namebuf, "<#%c*%lu>", first_letter,
+  snprintf (namebuf, NAMEBUF_SIZE, "<#%c*%lu>", first_letter,
            placeholder_counter[first_letter-'a']++);
+  namebuf[NAMEBUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   new_var = make_variable (namebuf);
   /* --- indicate that there is no corresponding "real" variable yet --- */
   new_var->var.current_binding_value = NIL; 
@@ -261,14 +263,18 @@ Symbol *make_symbol_for_current_lexeme (void) {
   case FLOAT_CONSTANT_LEXEME:  return make_float_constant (current_agent(lexeme).float_val);
 
   case IDENTIFIER_LEXEME:
-    { char msg[128];
-    strcpy(msg, "parser.c: Internal error:  ID found in make_symbol_for_current_lexeme\n");
-    abort_with_fatal_error(msg);
+    {
+		char msg[MESSAGE_SIZE];
+		strncpy(msg, "parser.c: Internal error:  ID found in make_symbol_for_current_lexeme\n", MESSAGE_SIZE);
+		msg[MESSAGE_SIZE-1]=0; /* strncpy doesn't set last char to null if output is truncated */
+		abort_with_fatal_error(msg);
     }
   default:
-    { char msg[128];
-    sprintf(msg, "parser.c: Internal error:  bad lexeme type in make_symbol_for_current_lexeme\n, current_agent(lexeme).string=%s\n", current_agent(lexeme).string);
-    abort_with_fatal_error(msg);
+    {
+		char msg[MESSAGE_SIZE];
+		snprintf(msg, MESSAGE_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_current_lexeme\n, current_agent(lexeme).string=%s\n", current_agent(lexeme).string);
+		msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+		abort_with_fatal_error(msg);
     }
   }
   return NIL; /* unreachable, but without it, gcc -Wall warns here */
@@ -1554,7 +1560,7 @@ action *parse_attr_value_make (Symbol *id) {
   rhs_value attr, value;
   action *all_actions, *new_actions, *last;
   Symbol *old_id, *new_var;
-  char    namebuf[30],first_letter;
+  char    namebuf[NAMEBUF_SIZE],first_letter;
   
   if (current_agent(lexeme).type!=UP_ARROW_LEXEME) {
     print ("Expected ^ in RHS make action\n");
@@ -1578,8 +1584,9 @@ action *parse_attr_value_make (Symbol *id) {
        variable in the user's code, since the lexer doesn't handle "#" --- */
     /* KJC used same format so could steal code... */
     first_letter = first_letter_from_rhs_value (attr);
-    sprintf (namebuf, "<#%c*%lu>", first_letter,
+	snprintf (namebuf, NAMEBUF_SIZE,"<#%c*%lu>", first_letter,
 	     placeholder_counter[first_letter-'a']++);
+	namebuf[NAMEBUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     new_var = make_variable (namebuf);
     /* --- indicate that there is no corresponding "real" variable yet --- */
     new_var->var.current_binding_value = NIL; 
@@ -1592,7 +1599,7 @@ action *parse_attr_value_make (Symbol *id) {
 #else
     if (
 #endif
-	 (strcmp(rhs_value_to_string(attr,NULL),"operator") != 0) ) {
+	 (strcmp(rhs_value_to_string(attr,NULL,0),"operator") != 0) ) {
       new_actions = parse_preferences_soar8_non_operator (id, attr, symbol_to_rhs_value(new_var));
     } else {
       new_actions = parse_preferences (id, attr, symbol_to_rhs_value(new_var));
@@ -1622,7 +1629,7 @@ action *parse_attr_value_make (Symbol *id) {
 #else
     if (
 #endif
-	 (strcmp(rhs_value_to_string(attr,NULL),"operator") != 0) ) {
+	 (strcmp(rhs_value_to_string(attr,NULL,0),"operator") != 0) ) {
       new_actions = parse_preferences_soar8_non_operator (id, attr, value);
     } else {
       new_actions = parse_preferences (id, attr, value);

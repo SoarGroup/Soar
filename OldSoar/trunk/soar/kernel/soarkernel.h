@@ -102,6 +102,15 @@
 extern int tolower(int);
 #endif
 
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+#endif
+
+/* this is the size of the buffers used to print out error messages, etc */
+#define MESSAGE_SIZE 512
+/* size of the action attribute; used in rete.c, osupport.c */
+#define ACTION_ATTR_SIZE 50
 
 #include "sysdep.h"
 
@@ -427,7 +436,7 @@ extern void free_memory (void *mem, int usage_code);
 /* string utilities */
 /* ---------------- */
 
-#define savestring(x) (char *) strcpy ( (char *)malloc (strlen (x) + 1), (x))
+#define savestring(x) (char *) strcpy ( (char *)malloc (strlen (x) + 1), (x)) /* this is relatively safe since the proper amount of memory is allocated */
 
 extern char *make_memory_block_for_string (const char *s);
 extern void free_memory_block_for_string (char *p);
@@ -2530,9 +2539,9 @@ extern void print_spaces (int n);
 
 extern char *string_to_escaped_string (char *s, char first_and_last_char,
                                        char *dest);
-extern char *symbol_to_string (Symbol *sym, bool rereadable, char *dest);
-extern char *test_to_string (test t, char *dest);
-extern char *rhs_value_to_string (rhs_value rv, char *dest);
+extern char *symbol_to_string (Symbol *sym, bool rereadable, char *dest, size_t dest_size);
+extern char *test_to_string (test t, char *dest, size_t dest_size);
+extern char *rhs_value_to_string (rhs_value rv, char *dest, size_t dest_size);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production
@@ -3365,10 +3374,11 @@ extern Symbol *get_next_io_symbol_from_text_input_line (char **text_read_positio
    initial positioning.
 */
 
+#define PROD_NAME_SIZE 256
 typedef struct backtrace_struct {
    int result;                    /* 1 when this is a result of the chunk */
    condition *trace_cond;         /* The (local) condition being traced */
-   char   prod_name[256];         /* The production's name */
+   char   prod_name[PROD_NAME_SIZE];         /* The production's name */
    condition *grounds;            /* The list of conds for the LHS of chunk */
    condition *potentials;         /* The list of conds which aren't linked */
    condition *locals;             /* Conds in the subgoal -- need to BT */
@@ -3383,8 +3393,9 @@ typedef struct backtrace_struct {
    tested as the chunk was formed.
 */
 
+
 typedef struct explain_chunk_struct {
-   char name[256];                      /* Name of this chunk/justification */
+   char name[PROD_NAME_SIZE];                      /* Name of this chunk/justification */
    condition *conds;                    /* Variablized list of conditions */
    action *actions;                     /* Variablized list of actions */
    struct backtrace_struct *backtrace;  /* List of back traced productions */
@@ -3893,10 +3904,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* ------------------ Printing utilities stuff --------------------- */
 
+#define PRINTED_OUTPUT_STRING_SIZE MAX_LEXEME_LENGTH*2+10
   FILE              * log_file;
   char              * log_file_name;
   bool                logging_to_file;
-  char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
+  char                printed_output_string[PRINTED_OUTPUT_STRING_SIZE];
   int                 printer_output_column;
   bool                redirecting_to_file;
   FILE              * redirection_file;
@@ -3933,7 +3945,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* ----------------------- RHS Function Stuff -------------------------- */
   
   /* --- "interrupt" fun. uses this to build "reason_for_stopping" msg. --- */
-  char                interrupt_source[2*MAX_LEXEME_LENGTH+100];
+#define INTERRUPT_SOURCE_SIZE 2*MAX_LEXEME_LENGTH+100
+  char                interrupt_source[INTERRUPT_SOURCE_SIZE];
   
   /* --- "make-constant-symbol" counter --- */
   unsigned long       mcs_counter;

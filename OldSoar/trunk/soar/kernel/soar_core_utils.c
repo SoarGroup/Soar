@@ -430,17 +430,19 @@ void print_augs_of_id (Symbol *id, int depth, bool internal,
    otherwise we get compiler warnings at the qsort lines about the 4th
    argument being an incompatible pointer type.  */
 
+#define S1_SIZE MAX_LEXEME_LENGTH*2+20
+#define S2_SIZE MAX_LEXEME_LENGTH*2+20
 int compare_attr (const void * e1, const void * e2)
 {
   wme **p1, **p2;
 
-  char s1[MAX_LEXEME_LENGTH*2+20], s2[MAX_LEXEME_LENGTH*2+20];
+  char s1[S1_SIZE], s2[S2_SIZE];
 
   p1 = (wme **) e1;
   p2 = (wme **) e2;
 
-  symbol_to_string ((*p1)->attr, TRUE, s1);
-  symbol_to_string ((*p2)->attr, TRUE, s2);
+  symbol_to_string ((*p1)->attr, TRUE, s1, S1_SIZE);
+  symbol_to_string ((*p2)->attr, TRUE, s2, S2_SIZE);
 
   return (strcmp (s1, s2));
 }
@@ -448,16 +450,25 @@ int compare_attr (const void * e1, const void * e2)
 
 
 /* This should probably be in the Soar kernel interface. */
+#define NEATLY_PRINT_BUF_SIZE 10000
 void neatly_print_wme_augmentation_of_id (wme *w, int indentation) {
-  char buf[10000], *ch;
+  char buf[NEATLY_PRINT_BUF_SIZE], *ch;
 
-  strcpy (buf, " ^");
+  strncpy (buf, " ^",NEATLY_PRINT_BUF_SIZE);
+  buf[NEATLY_PRINT_BUF_SIZE-1]=0;
   ch = buf;
   while (*ch) ch++;
-  symbol_to_string (w->attr, TRUE, ch); while (*ch) ch++;
+  symbol_to_string (w->attr, TRUE, ch, NEATLY_PRINT_BUF_SIZE-(ch-buf));
+  while (*ch) ch++;
   *(ch++) = ' ';
-  symbol_to_string (w->value, TRUE, ch); while (*ch) ch++;
-  if (w->acceptable) { strcpy (ch, " +"); while (*ch) ch++; }
+  symbol_to_string (w->value, TRUE, ch, NEATLY_PRINT_BUF_SIZE-(ch-buf));
+  while (*ch) ch++;
+  
+  if (w->acceptable) {
+	  strncpy (ch, " +",NEATLY_PRINT_BUF_SIZE-(ch-buf));
+	  ch[NEATLY_PRINT_BUF_SIZE-(ch-buf)-1]=0;
+	  while (*ch) ch++;
+  }
 
   if (get_printer_output_column() + (ch - buf) >= 80) {
     print ("\n");
@@ -591,7 +602,8 @@ void soar_default_create_agent_procedure (const char * agent_name) {
   current_agent(chunk_count)                        = 1;
   current_agent(chunk_free_problem_spaces)          = NIL;
   current_agent(chunky_problem_spaces)              = NIL;  /* AGR MVL1 */
-  strcpy(current_agent(chunk_name_prefix),"chunk");	/* kjh (B14) */
+  strncpy(current_agent(chunk_name_prefix),"chunk",kChunkNamePrefixMaxLength);	/* kjh (B14) */
+  current_agent(chunk_name_prefix)[kChunkNamePrefixMaxLength-1]=0;
   current_agent(context_slots_with_changed_acceptable_preferences) = NIL;
   current_agent(current_file)                       = NIL;
   current_agent(current_phase)                      = INPUT_PHASE;
@@ -686,7 +698,8 @@ void soar_default_create_agent_procedure (const char * agent_name) {
   
   current_agent(top_dir_stack)->next = NIL;   /* AGR 568 */
   
-  strcpy(current_agent(top_dir_stack)->directory, cur_path);   /* AGR 568 */
+  strncpy(current_agent(top_dir_stack)->directory, cur_path, MAXPATHLEN);   /* AGR 568 */
+  current_agent(top_dir_stack)->directory[MAXPATHLEN-1]=0;
 
   for (i=0; i<NUM_PRODUCTION_TYPES; i++) {  
     current_agent(all_productions_of_type)[i] = NIL;
@@ -785,8 +798,9 @@ void soar_default_destroy_agent_procedure (psoar_agent delete_agent)
   remove_bot_rhs_functions (soar_agent);
 
   if ( already_deleted ) {
-    char msg[128];
-    sprintf( msg, "Tried to delete invalid agent (%p).\n", soar_agent );
+    char msg[MESSAGE_SIZE];
+	snprintf( msg, MESSAGE_SIZE, "Tried to delete invalid agent (%p).\n", soar_agent );
+	msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     abort_with_fatal_error( msg );
   }
   

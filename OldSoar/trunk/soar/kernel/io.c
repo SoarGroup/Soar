@@ -342,13 +342,14 @@ void do_input_cycle(void) {
    The TC info doesn't get updated until do_output_cycle() is called.
 -------------------------------------------------------------------- */
 
+#define LINK_NAME_SIZE 1024
 void update_for_top_state_wme_addition (wme *w) {
   output_link *ol;
   soar_callback *cb;
-  char link_name[1000];
+  char link_name[LINK_NAME_SIZE];
 
   /* --- check whether the attribute is an output function --- */
-  symbol_to_string(w->attr, FALSE, link_name);
+  symbol_to_string(w->attr, FALSE, link_name, LINK_NAME_SIZE);
 
   cb = soar_exists_callback_id(soar_agent, OUTPUT_PHASE_CALLBACK, link_name);
 
@@ -482,8 +483,9 @@ void remove_output_link_tc_info (output_link *ol) {
     for (c=id->id.associated_output_links; c!=NIL; prev_c=c, c=c->rest)
       if (c->first == ol) break;
     if (!c) {
-      char msg[128];
-      strcpy(msg,"io.c: Internal error: can't find output link in id's list\n");
+      char msg[MESSAGE_SIZE];
+	  strncpy(msg,"io.c: Internal error: can't find output link in id's list\n",MESSAGE_SIZE);
+	  msg[MESSAGE_SIZE-1]=0;
       abort_with_fatal_error(msg);
     }
     if (prev_c) prev_c->rest = c->rest;

@@ -112,7 +112,7 @@ void print_all_identifiers_in_block( long b, bool p_free ) {
 					     i, b, p_free );
     
     if( s ) {
-        print( symbol_to_string( s, TRUE, NIL ) );
+        print( symbol_to_string( s, TRUE, NIL, 0 ) );
 	print( "   reference count: %d\n", s->common.reference_count );
 
     }

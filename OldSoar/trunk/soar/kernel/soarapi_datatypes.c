@@ -18,7 +18,8 @@ void setSoarResultResult (va_alist) va_dcl {
   format = va_arg(args, char *);
 #endif
   
-  vsprintf( res->result, format, args );
+  vsnprintf( res->result, SOARRESULT_RESULT_LENGTH, format, args );
+  res->result[SOARRESULT_RESULT_LENGTH-1]=0; /* vsnprintf doesn't set last char to null if output is truncated */
 }
 
 
@@ -43,8 +44,8 @@ void appendSoarResultResult (va_alist) va_dcl {
   i = 0;
   while( res->result[i] ) i++;
   
-
-  vsprintf( &res->result[i], format, args );
+  vsnprintf( &res->result[i], SOARRESULT_RESULT_LENGTH-i, format, args );
+  res->result[SOARRESULT_RESULT_LENGTH-1]=0; /* vsnprintf doesn't set last char to null if output is truncated */
 
 
 }
@@ -82,7 +83,7 @@ void appendSymbolsToSoarResultResult (va_alist) va_dcl {
     
     if (*(format+1) == 'y') {
       /* Bug: Hope we have enough room! */
-      symbol_to_string (va_arg(args, Symbol *), TRUE, r );
+      symbol_to_string (va_arg(args, Symbol *), TRUE, r, SOARRESULT_RESULT_LENGTH-(r-res->result) );
       while (*r) r++;
     }
     else {

@@ -190,7 +190,7 @@ Symbol *write_rhs_function_code (list *args) {
     arg = args->first;
     /* --- Note use of FALSE here--print the symbol itself, not a rereadable
        version of it --- */
-    string = symbol_to_string (arg, FALSE, NIL);
+    string = symbol_to_string (arg, FALSE, NIL,0);
     print_string (string);
   }
   return NIL;
@@ -241,12 +241,14 @@ Symbol *interrupt_rhs_function_code (list *args) {
     the_agent->reason_for_stopping =  RHS_interrupt_msg;
   }
 
-  strcpy (current_agent(interrupt_source), "*** Interrupt from production ");
+  strncpy (current_agent(interrupt_source), "*** Interrupt from production ",INTERRUPT_SOURCE_SIZE);
+  current_agent(interrupt_source)[INTERRUPT_SOURCE_SIZE-1]=0;
   ch = current_agent(interrupt_source);
   while (*ch) ch++;
-  symbol_to_string (current_agent(production_being_fired)->name, TRUE, ch); 
+  symbol_to_string (current_agent(production_being_fired)->name, TRUE, ch, INTERRUPT_SOURCE_SIZE-(ch-current_agent(interrupt_source))); 
   while (*ch) ch++;
-  strcpy (ch, " ***");
+  strncpy (ch, " ***",INTERRUPT_SOURCE_SIZE-(ch-current_agent(interrupt_source)));
+  ch[INTERRUPT_SOURCE_SIZE-(ch-current_agent(interrupt_source))-1]=0;
   current_agent(reason_for_stopping) = current_agent(interrupt_source);
   return NIL;
 }
@@ -260,18 +262,21 @@ Symbol *interrupt_rhs_function_code (list *args) {
    concatenation of those arguments.
 -------------------------------------------------------------------- */
 
+#define MAKE_CONSTANT_SYMBOL_BUF_SIZE 1024
 Symbol *make_constant_symbol_rhs_function_code (list *args) {
-  char buf[1000]; /* that ought to be long enough */
+  char buf[MAKE_CONSTANT_SYMBOL_BUF_SIZE]; /* that ought to be long enough */
   char *string;
   cons *c;
 
   if (!args) {
-    strcpy (buf, "constant");
+	strncpy (buf, "constant",MAKE_CONSTANT_SYMBOL_BUF_SIZE);
+	buf[MAKE_CONSTANT_SYMBOL_BUF_SIZE-1]=0;
   } else {
     buf[0] = 0;
     for (c=args; c!=NIL; c=c->rest) {
-      string = symbol_to_string (c->first, FALSE, NIL);
-      strcat (buf, string);
+      string = symbol_to_string (c->first, FALSE, NIL,0);
+	  strncat (buf, string,MAKE_CONSTANT_SYMBOL_BUF_SIZE);
+	  buf[MAKE_CONSTANT_SYMBOL_BUF_SIZE-1]=0;
     }
   }
   if ((!args) && (!find_sym_constant (buf))) return make_sym_constant (buf);
@@ -286,10 +291,11 @@ Symbol *make_constant_symbol_rhs_function_code (list *args) {
    of the current local time.
 -------------------------------------------------------------------- */
 
+#define TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE 100
 Symbol *timestamp_rhs_function_code (list *args) {
   long now;
   struct tm *temp;
-  char buf[100];
+  char buf[TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE];
 
   now = time(NULL);
 #ifdef THINK_C
@@ -309,9 +315,10 @@ Symbol *timestamp_rhs_function_code (list *args) {
 #endif
 #endif
 #endif
-  sprintf (buf, "%d/%d/%d-%02d:%02d:%02d",
+  snprintf (buf, TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE,"%d/%d/%d-%02d:%02d:%02d",
            temp->tm_mon + 1, temp->tm_mday, temp->tm_year,
            temp->tm_hour, temp->tm_min, temp->tm_sec);
+  buf[TIMESTAMP_RHS_FUNCTION_CODE_BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
   return make_sym_constant (buf);
 }
 
@@ -371,7 +378,7 @@ capitalize_symbol_rhs_function_code (list *args)
     return NIL;
   }
 
-  symbol_to_capitalize = symbol_to_string(sym, FALSE, NIL);
+  symbol_to_capitalize = symbol_to_string(sym, FALSE, NIL, 0);
   symbol_to_capitalize = savestring(symbol_to_capitalize);
   *symbol_to_capitalize = toupper(*symbol_to_capitalize);
   return make_sym_constant(symbol_to_capitalize);
@@ -481,7 +488,7 @@ Symbol *strlen_rhs_function_code (list *args) {
 
   /* --- Note use of FALSE here--print the symbol itself, not a rereadable
      version of it --- */
-  string = symbol_to_string (arg, FALSE, NIL);
+  string = symbol_to_string (arg, FALSE, NIL, 0);
 
   return make_int_constant (strlen(string));
 }

@@ -36,7 +36,7 @@ typedef struct soarResult_struct {
 
 #define clearSoarResultResult(r) (*((r)->result)) = '\0';
 
-#define setSoarResultResultStdError(r) (strcpy( ((r)->result),  "Error"));
+#define setSoarResultResultStdError(r) {strncpy( ((r)->result),  "Error", SOARRESULT_RESULT_LENGTH); (r)->result[SOARRESULT_RESULT_LENGTH-1]=0;}
 
 #ifdef USE_STDARGS
 extern void setSoarResultResult ( soarResult *res, const char *format, ...);

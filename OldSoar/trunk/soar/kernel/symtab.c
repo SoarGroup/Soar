@@ -419,8 +419,9 @@ void deallocate_symbol (Symbol *sym) {
     free_with_pool (&current_agent(float_constant_pool), sym);
     break;
   default:
-    { char msg[128];
-    strcpy (msg, "Internal error: called deallocate_symbol on non-symbol.\n");
+    { char msg[MESSAGE_SIZE];
+	strncpy (msg, "Internal error: called deallocate_symbol on non-symbol.\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
     }
   }
@@ -489,18 +490,19 @@ void reset_variable_gensym_numbers (void) {
 }
 
 bool print_sym (void *item) {
-  print_string (symbol_to_string (item, TRUE, NIL));
+  print_string (symbol_to_string (item, TRUE, NIL,0));
   print_string ("\n");
   return FALSE;
 }
 
-
+#define GENERATE_NEW_SYM_CONSTANT_NAME_SIZE 2048
 Symbol *generate_new_sym_constant (char *prefix, unsigned long *counter) {
-  char name[2000];  /* that ought to be long enough! */
+  char name[GENERATE_NEW_SYM_CONSTANT_NAME_SIZE];  /* that ought to be long enough! */
   Symbol *new;
 
   while (TRUE) {
-    sprintf (name, "%s%lu", prefix, (*counter)++);
+	  snprintf (name, GENERATE_NEW_SYM_CONSTANT_NAME_SIZE, "%s%lu", prefix, (*counter)++);
+	  name[GENERATE_NEW_SYM_CONSTANT_NAME_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     if (! find_sym_constant (name)) break;
   }
   new = make_sym_constant (name);

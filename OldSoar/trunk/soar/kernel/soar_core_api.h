@@ -612,13 +612,17 @@ extern int soar_cExciseProductionByName ( const char *name );
  */
 extern void soar_cSetSystemParameter( int param, long value );
 
-#define soar_cGetInputPeriod() (soar_agent->input_period)
+/*#define soar_cGetInputPeriod() (soar_agent->input_period)*/
+#define soar_cGetInputPeriod() (current_agent(input_period))
 
-#define soar_cSetInputPeriod(p) ((p >= 0)?(soar_agent->input_period = p) : -1)
+/*#define soar_cSetInputPeriod(p) ((p >= 0)?(soar_agent->input_period = p) : -1)*/
+#define soar_cSetInputPeriod(p) ((p >= 0)?(current_agent(input_period) = p) : -1)
 
-#define soar_cGetVerbosity() (soar_agent->soar_verbose_flag)
+/*#define soar_cGetVerbosity() (soar_agent->soar_verbose_flag)*/
+#define soar_cGetVerbosity() (current_agent(soar_verbose_flag))
 
-#define soar_cSetVerbosity(x) ((soar_agent->soar_verbose_flag) = (x))
+/*#define soar_cSetVerbosity(x) ((soar_agent->soar_verbose_flag) = (x))*/
+#define soar_cSetVerbosity(x) ((current_agent(soar_verbose_flag)) = (x))
 
 
 #ifndef NO_TIMING_STUFF 
@@ -1370,7 +1374,7 @@ extern void soar_cDefaultAskCallback( soar_callback_agent the_agent,
  * \see    soar_cWmeGetValue
  *
  */
-extern char *soar_cGetWmeId( psoar_wme w, char *buff );
+extern char *soar_cGetWmeId( psoar_wme w, char *buff, size_t buff_size );
 
 
 
@@ -1402,7 +1406,7 @@ extern char *soar_cGetWmeId( psoar_wme w, char *buff );
  * \see    soar_cWmeGetValue
  *
  */
- extern char *soar_cGetWmeAttr( psoar_wme w, char *buff );
+ extern char *soar_cGetWmeAttr( psoar_wme w, char *buff, size_t buff_size );
 
 
 
@@ -1435,7 +1439,7 @@ extern char *soar_cGetWmeId( psoar_wme w, char *buff );
  * \see    soar_cWmeGetAttr
  *
  */
- extern char *soar_cGetWmeValue( psoar_wme w, char *buff );
+ extern char *soar_cGetWmeValue( psoar_wme w, char *buff, size_t buff_size );
 
 
 
@@ -1696,7 +1700,7 @@ psoar_agent soar_cGetCurrentAgent( );
  *           caller when its use is accomplished.
  *
  */
-char *soar_cGetAgentInputLinkId( psoar_agent a, char *buff );
+char *soar_cGetAgentInputLinkId( psoar_agent a, char *buff, size_t buff_size );
 
 
 
@@ -1725,7 +1729,7 @@ char *soar_cGetAgentInputLinkId( psoar_agent a, char *buff );
  *           caller when its use is accomplished.
  *
  */
-char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff );
+char *soar_cGetAgentOutputLinkId( psoar_agent a, char *buff, size_t buff_size );
   
 
 /**

@@ -472,8 +472,9 @@ unsigned long hash_test (test t) {
   case SAME_TYPE_TEST:
     return (ct->type << 24) + ct->data.referent->common.hash_id;
   default:
-    { char msg[128];
-    strcpy (msg, "production.c: Error: bad test type in hash_test\n");
+    { char msg[MESSAGE_SIZE];
+	strncpy (msg, "production.c: Error: bad test type in hash_test\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
     }
   }
@@ -676,10 +677,11 @@ bool test_includes_goal_or_impasse_id_test (test t,
 test copy_of_equality_test_found_in_test (test t) {
   complex_test *ct;
   cons *c;
-  char msg[128];
+  char msg[MESSAGE_SIZE];
 
   if (test_is_blank_test(t)) {
-    strcpy (msg, "Internal error: can't find equality test in test\n");
+	strncpy (msg, "Internal error: can't find equality test in test\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
   if (test_is_blank_or_equality_test(t)) return copy_test (t);
@@ -690,7 +692,8 @@ test copy_of_equality_test_found_in_test (test t) {
            (test_is_blank_or_equality_test ((test)(c->first))) )
         return copy_test (c->first);
   }
-  strcpy (msg, "Internal error: can't find equality test in test\n");
+  strncpy (msg, "Internal error: can't find equality test in test\n",MESSAGE_SIZE);
+  msg[MESSAGE_SIZE-1]=0;
   abort_with_fatal_error(msg);
   return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
@@ -842,8 +845,9 @@ unsigned long hash_condition (condition *cond) {
     }
     break;
   default:
-    { char msg[128];
-    strcpy (msg, "Internal error: bad cond type in hash_condition\n");
+    { char msg[MESSAGE_SIZE];
+	strncpy (msg, "Internal error: bad cond type in hash_condition\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
     }
     result = 0; /* unreachable, but gcc -Wall warns without it */
@@ -1415,8 +1419,9 @@ void reset_variable_generator (condition *conds_with_vars_to_avoid,
   free_list (var_list);
 }
 
+#define NAME_BUF_SIZE 200
 Symbol *generate_new_variable (char *prefix) {
-  char name[200];  /* that ought to be long enough! */
+  char name[NAME_BUF_SIZE];  /* that ought to be long enough! */
   Symbol *new;
   char first_letter;
 
@@ -1428,8 +1433,9 @@ Symbol *generate_new_variable (char *prefix) {
   }
 
   while (TRUE) {
-    sprintf (name, "<%s%lu>", prefix,
+	snprintf (name, NAME_BUF_SIZE, "<%s%lu>", prefix,
              current_agent(gensymed_variable_count)[first_letter-'a']++);
+	name[NAME_BUF_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     new = make_variable (name);
     if (new->var.gensym_number != current_agent(current_variable_gensym_number)) break;
     symbol_remove_ref (new);
@@ -1530,8 +1536,9 @@ production *make_production (byte type,
 
 void deallocate_production (production *prod) {
   if (prod->instantiations) {
-    char msg[128];
-    strcpy (msg, "Internal error: deallocating prod. that still has inst's\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg, "Internal error: deallocating prod. that still has inst's\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
 #ifdef WATCH_PRODUCTIONS

@@ -858,6 +858,7 @@ int soar_ChunkNameFormat (int argc, const char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
+#define SOAR_LEARN_BUFF_SIZE 1024
 int soar_Learn (int argc, const char *argv[], soarResult *res)
 {
 
@@ -887,7 +888,7 @@ int soar_Learn (int argc, const char *argv[], soarResult *res)
        else if ( string_match_up_to("-list", argv[i], 2))
 	 {
 	   cons * c;
-	   char buff[1024];
+	   char buff[SOAR_LEARN_BUFF_SIZE];
 
 	   print_current_learn_settings();
 	   setSoarResultResult( res, 
@@ -896,7 +897,7 @@ int soar_Learn (int argc, const char *argv[], soarResult *res)
 		c != NIL; 
 		c = c->rest)
 	     {
-	       symbol_to_string((Symbol *) (c->first), TRUE, buff);
+	       symbol_to_string((Symbol *) (c->first), TRUE, buff, SOAR_LEARN_BUFF_SIZE);
 	       appendSoarResultResult( res, buff ); 
 	     }
 	   appendSoarResultResult( res, 
@@ -905,7 +906,7 @@ int soar_Learn (int argc, const char *argv[], soarResult *res)
 		c != NIL; 
 		c = c->rest)
 	     {
-	       symbol_to_string((Symbol *) (c->first), TRUE, buff);
+	       symbol_to_string((Symbol *) (c->first), TRUE, buff, SOAR_LEARN_BUFF_SIZE);
 	       appendSoarResultResult( res, buff );
 	     }
 	   return SOAR_OK;
@@ -1013,12 +1014,12 @@ int soar_MaxChunks (int argc, const char *argv[], soarResult *res)
  *----------------------------------------------------------------------
  */
 
-
+#define SOAR_OPERAND2_BUFFER_SIZE 1024
 int soar_Operand2 ( int argc, const char *argv[], soarResult *res)
 {
 
 #ifndef SOAR_8_ONLY
-  char buffer[1000];
+  char buffer[SOAR_OPERAND2_BUFFER_SIZE];
   bool turnOn;
 
   if (argc == 1)
@@ -1047,33 +1048,37 @@ int soar_Operand2 ( int argc, const char *argv[], soarResult *res)
     
     if ( turnOn ) {
       if (MICRO_VERSION_NUMBER > 0) {
-	sprintf(buffer,
+	  snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
 		"Soar%d.%d.%d %s on : reinitializing Soar",
 		MAJOR_VERSION_NUMBER, 
 		MINOR_VERSION_NUMBER, 
 		MICRO_VERSION_NUMBER,
 		OPERAND2_MODE_NAME);
+	  buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       } else {
-	sprintf(buffer,
+	  snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
 		"Soar%d.%d %s on : reinitializing Soar",
 		MAJOR_VERSION_NUMBER, 
 		MINOR_VERSION_NUMBER,
 		OPERAND2_MODE_NAME);
+	  buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       }
     }
     else {
       
       if ( MICRO_VERSION_NUMBER > 0 ) {
-	sprintf(buffer,
+	snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
 		"Soar%d.%d.%d - running in Soar7 mode:  reinitializing Soar",
 		MAJOR_VERSION_NUMBER, 
 		MINOR_VERSION_NUMBER, 
 		MICRO_VERSION_NUMBER);
+	buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       } else {
-	sprintf(buffer,
+	  snprintf(buffer, SOAR_OPERAND2_BUFFER_SIZE,
 		"Soar%d.%d - running in Soar7 mode: reinitializing Soar",
 		MAJOR_VERSION_NUMBER, 
 		MINOR_VERSION_NUMBER);
+	  buffer[SOAR_OPERAND2_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       }
     } 
     print("%s\n",buffer); 
@@ -2036,6 +2041,7 @@ int soar_ProductionFind (int argc, const char *argv[], soarResult *res )
  */
 
 /* kjh (CUSP-B7): Replace samed named procedure in soarCommands.c */
+#define SOAR_PREFERENCES_BUFF_SIZE 128
 int soar_Preferences ( int argc, const char *argv[], soarResult *res)
 {
 /* kjh (CUSP-B7) begin */
@@ -2045,8 +2051,8 @@ int soar_Preferences ( int argc, const char *argv[], soarResult *res)
   Symbol *id, *id_tmp, *attr, *attr_tmp;
   bool print_productions;
   wme_trace_type wtt;
-  char buff1[128];
-  char buff2[128];
+  char buff1[SOAR_PREFERENCES_BUFF_SIZE];
+  char buff2[SOAR_PREFERENCES_BUFF_SIZE];
 
   /* Establish argument defaults: */
   id                = current_agent(bottom_goal);
@@ -2128,8 +2134,8 @@ int soar_Preferences ( int argc, const char *argv[], soarResult *res)
    * so we can pass them to the ecore function.  Making
    * the symbols only serves to determine which arguments were supplied
    */
-  symbol_to_string( id, TRUE, buff1 );
-  symbol_to_string( attr, TRUE, buff2 );
+  symbol_to_string( id, TRUE, buff1, SOAR_PREFERENCES_BUFF_SIZE );
+  symbol_to_string( attr, TRUE, buff2, SOAR_PREFERENCES_BUFF_SIZE );
   if ( soar_ecPrintPreferences( buff1, buff2, print_productions, wtt ) ) {
 	setSoarResultResult( res, "An Error occured trying to print the prefs.");
     return SOAR_ERROR;

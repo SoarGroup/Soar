@@ -116,7 +116,8 @@ int AddWmeCmd (ClientData clientData,
   Soar_SelectGlobalInterpByInterp(interp);
 
   if( soar_AddWme( argc, argv, &res ) == SOAR_OK ) {
-    sprintf( interp->result, "%s", res.result);
+	snprintf( interp->result, TCL_RESULT_SIZE, "%s", res.result);
+	interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     return TCL_OK;
   } else {
     interp->result = res.result;
@@ -943,12 +944,12 @@ int LogCmd (ClientData clientData,
       if ( tildeFlag ) {
 	c = Tcl_TildeSubst( interp, argv[i], &buffer );
 	newArgv[i] = malloc( (strlen( c ) + 1) * sizeof(char) );
-	strcpy( newArgv[i], c );
+	strcpy( newArgv[i], c ); /* this is a safe copy since the correct amount of memory is allocated on the previous line */
 	printf( "Substituting '%s' for '%s'\n", argv[i], c );
       }
       else {
 	newArgv[i] = malloc( (strlen( argv[i] ) + 1) * sizeof(char) );
-	strcpy( newArgv[i], argv[i] );
+	strcpy( newArgv[i], argv[i] ); /* this is a safe copy since the correct amount of memory is allocated on the previous line */
       }
     }
   }
@@ -1058,8 +1059,8 @@ int WatchCmd (ClientData clientData,
 	break;
       }
       else {
-	sprintf( interp->result, "Unrecognized argument to watch alias : %s",
-		 argv[i+1] );
+	snprintf( interp->result, TCL_RESULT_SIZE, "Unrecognized argument to watch alias : %s", argv[i+1] );
+	interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	return TCL_ERROR;
       }
     }
@@ -1078,7 +1079,7 @@ int WatchCmd (ClientData clientData,
       
       newArgc++;
       newArgv[i] = malloc( (strlen( argv[i] ) + 1)*sizeof( char) );
-      strcpy( newArgv[i], argv[i] );
+      strcpy( newArgv[i], argv[i] ); /* this is a safe copy since the correct amount of memory is allocated on the previous line */
 
     }
   }
@@ -1306,6 +1307,8 @@ int AskCmd (ClientData clientData,
  *----------------------------------------------------------------------
  */
 
+#define SOAR_COMMANDS_BUFFER_SIZE 10 /* What size is good here? */
+
 static int io_proc_counter = 1;
 
 int IOCmd (ClientData clientData, 
@@ -1315,7 +1318,7 @@ int IOCmd (ClientData clientData,
   static char * too_few_args_string = "Too few arguments, should be: io [-add -input script [id]] | [-add -output script id] | [-delete [-input|-output] id] | [-list [-input|-output]";
   static char * too_many_args_string = "Too many arguments, should be: io [-add -input script [id]] | [-add -output script id] | [-delete [-input|-output] id] | [-list [-input|-output]";
   const char * io_id;
-  char   buff[10];          /* What size is good here? */
+  char   buff[SOAR_COMMANDS_BUFFER_SIZE];
 
   Soar_SelectGlobalInterpByInterp(interp);
 
@@ -1344,7 +1347,8 @@ int IOCmd (ClientData clientData,
 	}
       else
 	{
-	  sprintf(buff, "m%d", io_proc_counter++);
+	  snprintf(buff, SOAR_COMMANDS_BUFFER_SIZE, "m%d", io_proc_counter++);
+	  buff[SOAR_COMMANDS_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	  io_id = buff;
 	}
 
@@ -1374,10 +1378,10 @@ int IOCmd (ClientData clientData,
 	  }
 	else
 	  {
-	    sprintf(interp->result,
-		    "%s: Unrecognized IO type: %s %s",
-		    argv[0], argv[1], argv[2]);
-	    return TCL_ERROR;
+		snprintf(interp->result, TCL_RESULT_SIZE, "%s: Unrecognized IO type: %s %s", argv[0], argv[1], argv[2]);
+		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+	    
+		return TCL_ERROR;
 	  }
 
 	interp->result = (char*)io_id;
@@ -1403,9 +1407,9 @@ int IOCmd (ClientData clientData,
 	      }
 	    else
 	      {
-		sprintf(interp->result,
-			"Attempt to delete unrecognized io type: %s",
-			argv[2]);
+		snprintf(interp->result, TCL_RESULT_SIZE, "Attempt to delete unrecognized io type: %s",argv[2]);
+		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+
 		return TCL_ERROR;
 	      }
 	  }
@@ -1435,9 +1439,8 @@ int IOCmd (ClientData clientData,
 	    }
 	  else
 	    {
-	      sprintf(interp->result,
-		      "Attempt to list unrecognized io type: %s",
-		      argv[2]);
+		  snprintf(interp->result, TCL_RESULT_SIZE, "Attempt to list unrecognized io type: %s",argv[2]);
+		  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	      return TCL_ERROR;
 	    }
 
@@ -1477,8 +1480,8 @@ int IOCmd (ClientData clientData,
     }
   else
     {
-      sprintf(interp->result, 
-	      "Unrecognized option to io command: %s", argv[1]);
+	  snprintf(interp->result, TCL_RESULT_SIZE, "Unrecognized option to io command: %s", argv[1]);
+	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       return TCL_ERROR;
     }
   return TCL_OK;
@@ -1541,9 +1544,9 @@ int AttentionLapseCmd (ClientData clientData,
 	 }
        else
 	 {
-	   sprintf(interp->result,
-		   "Unrecognized argument to attention-lapse command: %s",
-		   argv[i]);
+	   snprintf(interp->result, TCL_RESULT_SIZE, "Unrecognized argument to attention-lapse command: %s",argv[i]);
+	   interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+
 	   return TCL_ERROR;
 	 }
      }
@@ -1645,9 +1648,9 @@ int StartAttentionLapseCmd (ClientData clientData,
     }
   else
     {
-      sprintf(interp->result, 
-	      "Expected integer for attention lapse duration: %s", 
-	      argv[1]);
+	  snprintf(interp->result, TCL_RESULT_SIZE, "Expected integer for attention lapse duration: %s", argv[1]);
+	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
+
       return TCL_ERROR;
     }
 
@@ -1697,7 +1700,7 @@ int MonitorCmd (ClientData clientData,
   static char * too_few_args_string = "Too few arguments, should be: monitor [-add event script [id]] | [-delete event [id]] | [-list [event] | clear]";
   static char * too_many_args_string = "Too many arguments, should be: monitor [-add event script [id]] | [-delete event [id]] | [-list [event] | -clear]";
   const char * monitor_id;
-  char   buff[10];          /* What size is good here? */
+  char   buff[SOAR_COMMANDS_BUFFER_SIZE];          /* What size is good here? */
 
   Soar_SelectGlobalInterpByInterp(interp);
 
@@ -1727,7 +1730,8 @@ int MonitorCmd (ClientData clientData,
 	}
       else
 	{
-	  sprintf(buff, "m%d", monitor_counter++);
+	  snprintf(buff, SOAR_COMMANDS_BUFFER_SIZE, "m%d", monitor_counter++);
+	  buff[SOAR_COMMANDS_BUFFER_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	  monitor_id = buff;
 	}
 
@@ -1748,9 +1752,8 @@ int MonitorCmd (ClientData clientData,
 	  }
 	else
 	  {
-	    sprintf(interp->result,
-		    "Attempt to add unrecognized callback event: %s",
-		    argv[2]);
+		snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to add unrecognized callback event: %s",argv[2]);
+		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	    return TCL_ERROR;
 	  }
       }
@@ -1772,9 +1775,8 @@ int MonitorCmd (ClientData clientData,
 	      }
 	    else
 	      {
-		sprintf(interp->result,
-			"Attempt to delete unrecognized callback event: %s",
-			argv[2]);
+		snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to delete unrecognized callback event: %s",argv[2]);
+		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 		return TCL_ERROR;
 	      }
 	  }
@@ -1790,9 +1792,8 @@ int MonitorCmd (ClientData clientData,
 	      }
 	    else
 	      {
-		sprintf(interp->result,
-			"Attempt to delete unrecognized callback event: %s",
-			argv[2]);
+		snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to delete unrecognized callback event: %s",argv[2]);
+		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 		return TCL_ERROR;
 	      }
 	  }
@@ -1847,9 +1848,8 @@ int MonitorCmd (ClientData clientData,
 
 	  }
 	  else {
-	    sprintf(interp->result,
-		    "Attempt to list unrecognized callback event: %s",
-		    argv[2]);
+		snprintf(interp->result,TCL_RESULT_SIZE,"Attempt to list unrecognized callback event: %s",argv[2]);
+		interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	    return TCL_ERROR;
 	  }
 	}
@@ -1871,9 +1871,8 @@ int MonitorCmd (ClientData clientData,
     }
   else
     {
-      sprintf(interp->result,
-	      "Unrecognized option to monitor command: %s",
-	      argv[1]);
+	  snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized option to monitor command: %s",argv[1]);
+	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       return TCL_ERROR;
 
     }
@@ -1999,7 +1998,8 @@ int OutputStringsDestCmd (ClientData clientData,
 
 		if ((channel = Tcl_GetChannel(interp, argv[3], &mode)) == NULL
 		||  ! (mode & TCL_WRITABLE)) {
-			sprintf(interp->result, "%s is not a valid channel for writing.", argv[3]);
+			snprintf(interp->result, TCL_RESULT_SIZE, "%s is not a valid channel for writing.", argv[3]);
+			interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 			return TCL_ERROR;
 		}
 
@@ -2028,9 +2028,8 @@ int OutputStringsDestCmd (ClientData clientData,
 	}
       else
 	{
-	  sprintf(interp->result,
-		  "Unrecognized argument to %s %s: %s",
-		  argv[0], argv[1], argv[2]);
+	  snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized argument to %s %s: %s",argv[0], argv[1], argv[2]);
+	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 	  return TCL_ERROR;      
 	}
     }
@@ -2041,9 +2040,8 @@ int OutputStringsDestCmd (ClientData clientData,
     }
   else
     {
-      sprintf(interp->result,
-	      "Unrecognized argument to %s: %s",
-	      argv[0], argv[1]);
+	  snprintf(interp->result,TCL_RESULT_SIZE,"Unrecognized argument to %s: %s",argv[0], argv[1]);
+	  interp->result[TCL_RESULT_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       return TCL_ERROR;      
     }
 
@@ -2102,13 +2100,13 @@ int CaptureInputCmd (ClientData clientData,
     new_argv = (char **) malloc( argc * sizeof( char *) );
     for( i = 0; i < 2; i++ ) {
       new_argv[i] = (char *) malloc( sizeof(char) * (strlen( argv[i] ) + 1) );
-      strcpy( (char*)new_argv[i], argv[i] );
+      strcpy( (char*)new_argv[i], argv[i] ); /* this is a safe copy since the correct amount of memory is allocated on the previous line */
     }
     for( i = 2; i < argc; i++ ) {
       /* Hopefully, there will just be 1 iteration through here.... */
       buffer = Tcl_TildeSubst(interp, argv[i], &temp);
       new_argv[i] = (char *) malloc( sizeof(char) * (strlen( buffer ) + 1) );
-      strcpy( (char*)new_argv[i], buffer );
+      strcpy( (char*)new_argv[i], buffer ); /* this is a safe copy since the correct amount of memory is allocated on the previous line */
     }
   }
   else {
@@ -2184,13 +2182,13 @@ int ReplayInputCmd (ClientData clientData,
     new_argv = (char **) malloc( argc * sizeof( char *) );
     for( i = 0; i < 2; i++ ) {
       new_argv[i] = (char *) malloc( sizeof(char) * (strlen( argv[i] ) + 1) );
-      strcpy( (char*)new_argv[i], argv[i] );
+      strcpy( (char*)new_argv[i], argv[i] ); /* this is a safe copy since the correct amount of memory is allocated on the previous line */
     }
     for( i = 2; i < argc; i++ ) {
       /* Hopefully, there will just be 1 iteration through here.... */
       buffer = Tcl_TildeSubst(interp, argv[i], &temp);
       new_argv[i] = (char *) malloc( sizeof(char) * (strlen( buffer ) + 1) );
-      strcpy( (char*)new_argv[i], buffer );
+      strcpy( (char*)new_argv[i], buffer ); /* this is a safe copy since the correct amount of memory is allocated on the previous line */
     }
   }
   else {

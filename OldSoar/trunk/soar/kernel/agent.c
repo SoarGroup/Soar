@@ -64,8 +64,6 @@ char * soar_version_string;
 extern int soar_agent_ids[];
 
 
-
-
 /*
   Try to assign a unique and previously unassigned id.  If none are
    available, assign a unique, but previously assigned id.
@@ -86,8 +84,9 @@ int next_available_agent_id() {
     }
   }
   {
-    char msg[128];
-    sprintf( msg, "agent.c: Error: Too many simultaneous agents (> %d\n", MAX_SIMULTANEOUS_AGENTS );
+    char msg[MESSAGE_SIZE];
+	  snprintf( msg, MESSAGE_SIZE, "agent.c: Error: Too many simultaneous agents (> %d\n", MAX_SIMULTANEOUS_AGENTS );
+	  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 
   abort_with_fatal_error( msg );
   }

@@ -88,6 +88,7 @@
 #include <stdlib.h>
 #include "soarkernel.h"
 
+
 bool constituent_char[256];   /* is the character a symbol constituent? */
 bool whitespace[256];         /* is the character whitespace? */
 bool number_starters[256];    /* could the character initiate a number? */
@@ -211,10 +212,11 @@ void get_next_char (void) {
       (current_agent(current_file)->buffer[BUFSIZE-2] != '\n') &&
       (current_agent(current_file)->buffer[BUFSIZE-2] != EOF_AS_CHAR)) {
     char msg[512];
-    sprintf (msg,
+	snprintf (msg, MESSAGE_SIZE,
 	     "lexer.c: Error:  line too long (max allowed is %d chars)\nFile %s, line %lu\n",
 	     MAX_LEXER_LINE_LENGTH, current_agent(current_file)->filename,
 	     current_agent(current_file)->current_line);
+	msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
     abort_with_fatal_error(msg);
   }
 

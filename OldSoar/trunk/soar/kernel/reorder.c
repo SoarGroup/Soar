@@ -217,7 +217,7 @@ typedef struct saved_test_struct {
 
 void print_saved_test (saved_test *st) {
   print_with_symbols ("  Symbol: %y  Test: ", st->var);
-  print_string (test_to_string (st->the_test, NULL));
+  print_string (test_to_string (st->the_test, NULL, 0));
 }
 
 void print_saved_test_list (saved_test *st) {
@@ -332,9 +332,9 @@ byte reverse_direction_of_relational_test (byte type) {
     case GREATER_OR_EQUAL_TEST: return LESS_OR_EQUAL_TEST;
     case SAME_TYPE_TEST: return SAME_TYPE_TEST;
     default:
-      { char msg[128];
-      strcpy (msg,
-	      "Internal error: arg to reverse_direction_of_relational_test\n");
+      { char msg[MESSAGE_SIZE];
+	  strncpy (msg,"Internal error: arg to reverse_direction_of_relational_test\n",MESSAGE_SIZE);
+	  msg[MESSAGE_SIZE-1]=0;
       abort_with_fatal_error(msg);
       }
   }

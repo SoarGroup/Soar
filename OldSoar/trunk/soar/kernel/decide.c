@@ -368,8 +368,9 @@ void promote_id_and_tc (Symbol *id, goal_stack_level new_level) {
 
   /* --- sanity check --- */
   if (id->id.isa_goal || id->id.isa_impasse) {
-    char msg[128];
-    strcpy (msg, "decide.c: Internal error: tried to promote a goal or impasse id\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg, "decide.c: Internal error: tried to promote a goal or impasse id\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
     /* Note--since we can't promote a goal, we don't have to worry about
        slot->acceptable_preference_wmes below */
@@ -1175,9 +1176,10 @@ byte run_preference_semantics (slot *s, preference **result_candidates) {
 #endif
     }
     default:
-      { char msg[128];
-      sprintf(msg, "decide.c: Error: bad value of user_select_mode: %ld\n",
+      { char msg[MESSAGE_SIZE];
+	  snprintf(msg, MESSAGE_SIZE, "decide.c: Error: bad value of user_select_mode: %ld\n",
 	      current_agent(sysparams)[USER_SELECT_MODE_SYSPARAM]);
+	  msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
       abort_with_fatal_error(msg);
       }
     }
@@ -1735,9 +1737,9 @@ preference *make_fake_preference_for_goal_item (Symbol *goal,
   for (ap_wme=s->acceptable_preference_wmes; ap_wme!=NIL; ap_wme=ap_wme->next)
     if (ap_wme->value==cand->value) break;
   if (!ap_wme) {
-    char msg[128];
-    strcpy (msg,
-	    "decide.c: Internal error: couldn't find acceptable pref wme\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg,"decide.c: Internal error: couldn't find acceptable pref wme\n",MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
   /* --- make the fake preference --- */
@@ -2001,13 +2003,15 @@ void decide_non_context_slot (slot *s) {
                 * leak). 
 		*/
 	       } else {
-		 char msg[256];
+		 char msg[MESSAGE_SIZE];
 		 print_wme( w );
 		 print_preference( w->preference );
 #ifdef NO_TOP_JUST
-		 sprintf(msg,"**** (NO_TOP_JUST) Wanted to create a GDS for a WME level (%d) different from the instantiation level (%d).....Big problems....exiting....(instantiation = %p, inst->match_goal_level = %d)****\n\n", w->preference->id->id.level, w->preference->match_goal_level, w->preference->inst, w->preference->inst->match_goal_level );
+		 snprintf(msg,MESSAGE_SIZE,"**** (NO_TOP_JUST) Wanted to create a GDS for a WME level (%d) different from the instantiation level (%d).....Big problems....exiting....(instantiation = %p, inst->match_goal_level = %d)****\n\n", w->preference->id->id.level, w->preference->match_goal_level, w->preference->inst, w->preference->inst->match_goal_level );
+		 msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 #else
-		 sprintf(msg,"**** Wanted to create a GDS for a WME level (%d) different from the instantiation level (%d).....Big problems....exiting....****\n\n", w->preference->id->id.level, w->preference->inst->match_goal_level );
+		 snprintf(msg,MESSAGE_SIZE,"**** Wanted to create a GDS for a WME level (%d) different from the instantiation level (%d).....Big problems....exiting....****\n\n", w->preference->id->id.level, w->preference->inst->match_goal_level );
+		 msg[MESSAGE_SIZE-1]=0; /* snprintf doesn't set last char to null if output is truncated */
 #endif
 		 abort_with_fatal_error(msg);
 	       }
@@ -2346,7 +2350,7 @@ void create_new_context (Symbol *attr_of_impasse, byte impasse_type) {
 
 byte type_of_existing_impasse (Symbol *goal) {
   wme *w;
-  char msg[128];
+  char msg[MESSAGE_SIZE];
 
   if (! goal->id.lower_goal) return NONE_IMPASSE_TYPE;
   for (w=goal->id.lower_goal->id.impasse_wmes; w!=NIL; w=w->next)
@@ -2361,10 +2365,12 @@ byte type_of_existing_impasse (Symbol *goal) {
 	return CONFLICT_IMPASSE_TYPE;
       if (w->value==current_agent(none_symbol))
 	return NONE_IMPASSE_TYPE;
-      strcpy (msg,"decide.c: Internal error: bad type of existing impasse.\n");
+	  strncpy (msg,"decide.c: Internal error: bad type of existing impasse.\n",MESSAGE_SIZE);
+	  msg[MESSAGE_SIZE-1]=0;
       abort_with_fatal_error(msg);
     }
-  strcpy (msg,"decide.c: Internal error: couldn't find type of existing impasse.\n");
+  strncpy (msg,"decide.c: Internal error: couldn't find type of existing impasse.\n",MESSAGE_SIZE);
+  msg[MESSAGE_SIZE-1]=0;
   abort_with_fatal_error(msg);
   return 0; /* unreachable, but without it, gcc -Wall warns here */
 }
@@ -2375,8 +2381,9 @@ Symbol *attribute_of_existing_impasse (Symbol *goal) {
   if (! goal->id.lower_goal) return NIL;
   for (w=goal->id.lower_goal->id.impasse_wmes; w!=NIL; w=w->next)
     if (w->attr==current_agent(attribute_symbol)) return w->value;
-  { char msg[128];
-  strcpy (msg, "decide.c: Internal error: couldn't find attribute of existing impasse.\n");
+  { char msg[MESSAGE_SIZE];
+  strncpy (msg, "decide.c: Internal error: couldn't find attribute of existing impasse.\n",MESSAGE_SIZE);
+  msg[MESSAGE_SIZE-1]=0;
   abort_with_fatal_error(msg);
   }
   return NIL; /* unreachable, but without it, gcc -Wall warns here */
@@ -2415,8 +2422,9 @@ bool decide_context_slot (Symbol *goal, slot *s) {
         impasse_type = NO_CHANGE_IMPASSE_TYPE;
       } else if (candidates->next_candidate) {
         /* --- more than one winner ==> internal error --- */
-	char msg[128];
-        strcpy (msg,"decide.c: Internal error: more than one winner for context slot\n");
+	char msg[MESSAGE_SIZE];
+		strncpy (msg,"decide.c: Internal error: more than one winner for context slot\n",MESSAGE_SIZE);
+		msg[MESSAGE_SIZE-1]=0;
         abort_with_fatal_error(msg);
       }
     }

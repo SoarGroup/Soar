@@ -101,8 +101,9 @@ void deallocate_preference (preference *pref) {
   print ("\nDeallocating preference at 0x%8x: ",(unsigned long)pref);
   print_preference (pref);
   if (pref->reference_count != 0) {   /* --- sanity check --- */
-    char msg[128];
-    strcpy (msg, "prefmem.c: Internal Error: Deallocating preference with ref. count != 0\n");
+    char msg[MESSAGE_SIZE];
+	strncpy (msg, "prefmem.c: Internal Error: Deallocating preference with ref. count != 0\n", MESSAGE_SIZE);
+	msg[MESSAGE_SIZE-1]=0;
     abort_with_fatal_error(msg);
   }
 #endif

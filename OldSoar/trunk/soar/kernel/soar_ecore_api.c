@@ -682,8 +682,10 @@ void soar_ecPrintSystemStatistics( void ) {
 
 
 
-  if (sys_gethostname (hostname, MAX_LEXEME_LENGTH)) 
-    strcpy (hostname, "[host name unknown]");
+  if (sys_gethostname (hostname, MAX_LEXEME_LENGTH)) {
+	strncpy (hostname, "[host name unknown]",MAX_LEXEME_LENGTH+1);
+	hostname[MAX_LEXEME_LENGTH]=0;
+  }
 
   current_time = time(NULL);
 
