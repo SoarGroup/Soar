@@ -14,6 +14,7 @@
 #include "sml_Connection.h"
 #include "sock_SocketLib.h"
 #include "thread_Thread.h"	// To get to sleep
+#include "EmbeddedSMLInterface.h" // for static reference
 
 #include <assert.h>
 
@@ -26,6 +27,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_IdCounter      = 0 ;
 	m_SocketLibrary  = NULL ;
 	m_LastError		 = Error::kNoError ;
+	sml_ProcessMessage(0,0,0); // for static link
 }
 
 Kernel::~Kernel(void)
