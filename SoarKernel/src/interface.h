@@ -133,7 +133,7 @@ inline char * getwd(char * arg)
 #endif /* MACINTOSH */
 
 typedef char Bool;
-////typedef struct agent_struct agent;
+typedef struct agent_struct agent;
 typedef struct kernel_struct Kernel;
 
 #ifdef WIN32

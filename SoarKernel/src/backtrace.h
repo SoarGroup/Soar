@@ -29,8 +29,7 @@ typedef char Bool;
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef signed short goal_stack_level;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 
 #define BUFFER_PROD_NAME_SIZE 256
 typedef struct backtrace_struct {

@@ -242,7 +242,7 @@ typedef signed short goal_stack_level;
 typedef char Bool;
 typedef unsigned long tc_number;
 typedef unsigned char byte;
-////typedef struct agent_struct agent;
+typedef struct agent_struct agent;
 
 /*typedef char bool;
 #ifndef __cplusplus

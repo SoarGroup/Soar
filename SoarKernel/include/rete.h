@@ -73,8 +73,7 @@ typedef struct condition_struct condition;
 typedef struct action_struct action;
 typedef struct wme_struct wme;
 typedef struct rete_node_struct rete_node;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 typedef struct kernel_struct Kernel;
 typedef union symbol_union Symbol;
 

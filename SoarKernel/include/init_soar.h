@@ -18,8 +18,7 @@ extern "C"
 typedef char Bool;
 typedef signed short goal_stack_level;
 typedef union symbol_union Symbol;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 typedef struct kernel_struct Kernel;
 
 /* added this prototype -ajc (5/3/02) */

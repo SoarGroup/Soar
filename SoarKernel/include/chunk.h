@@ -47,8 +47,7 @@ typedef struct chunk_cond_set_struct {
   chunk_cond *table[CHUNK_COND_HASH_TABLE_SIZE];  /* hash table buckets */
 } chunk_cond_set;
 
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 
 extern void init_chunker (agent* thisAgent);
 extern void chunk_instantiation (agent* thisAgent, 

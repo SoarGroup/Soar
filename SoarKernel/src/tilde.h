@@ -13,8 +13,7 @@ extern "C"
 {
 #endif*/
 
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 
 typedef int Function ();
 #if !defined (NULL)

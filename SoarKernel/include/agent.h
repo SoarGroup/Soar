@@ -120,7 +120,7 @@ typedef struct alpha_mem_struct alpha_mem;
 typedef struct token_struct token;
 typedef char * test;
 
-struct agent {
+typedef struct agent_struct {
 
   /* ----------------------- Rete stuff -------------------------- */
   
@@ -746,7 +746,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */
 #endif
 
-};
+} agent;
 /*************** end of agent struct *****/
 
 extern char * soar_version_string;

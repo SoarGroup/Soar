@@ -25,8 +25,7 @@ typedef struct action_struct action;
 typedef struct backtrace_struct backtrace_str;
 typedef struct cons_struct cons;
 typedef struct wme_struct wme;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 typedef union symbol_union Symbol;
 
 /*

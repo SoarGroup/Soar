@@ -87,10 +87,10 @@ inline void gSKI_MakeAgentCallback(unsigned long eventId,
 /**
  * @brief Special function for more complex WMObject added method.
  */
-inline void gSKI_MakeAgentCallbackWMObjectAdded(struct agent* soarAgent,
-                                                Symbol*       new_object,
-                                                Symbol*       ref_attr,
-                                                Symbol*       ref_object)
+inline void gSKI_MakeAgentCallbackWMObjectAdded(struct agent_struct* soarAgent,
+                                                Symbol*              new_object,
+                                                Symbol*              ref_attr,
+                                                Symbol*              ref_object)
 {
    gSKI_K_WMObjectCallbackData wmobject_data;
 
@@ -105,10 +105,10 @@ inline void gSKI_MakeAgentCallbackWMObjectAdded(struct agent* soarAgent,
 /**
  * @brief Special function to handle the phase and decision cycle callbacks
  */
-inline void gSKI_MakeAgentCallbackPhase(struct agent*    soarAgent,
-                                        egSKIAgentEvents event_type,
-                                        egSKIPhases      phase_type,
-                                        unsigned char    eventOccured)
+inline void gSKI_MakeAgentCallbackPhase(struct agent_struct* soarAgent,
+                                        egSKIAgentEvents     event_type,
+                                        egSKIPhases          phase_type,
+                                        unsigned char        eventOccured)
 {
    gSKI_K_PhaseCallbackData phase_data;
 

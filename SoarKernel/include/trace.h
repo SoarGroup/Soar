@@ -50,8 +50,7 @@ extern "C"
 #define FOR_OPERATORS_TF 2         /* format applies only to operators */
 
 typedef char Bool;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 typedef union symbol_union Symbol;
 
 extern void init_tracing (agent* thisAgent);

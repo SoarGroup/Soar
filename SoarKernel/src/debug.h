@@ -15,7 +15,7 @@
 typedef union symbol_union Symbol;
 typedef struct wme_struct wme;
 typedef struct slot_struct slot;
-////typedef struct agent_struct agent;
+typedef struct agent_struct agent;
 
 bool isSymbolValid(Symbol* sym);
 bool isWmeValid(wme* w);

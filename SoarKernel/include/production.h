@@ -85,8 +85,7 @@ typedef unsigned long tc_number;
 typedef struct action_struct action;
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 typedef cons list;
 typedef union symbol_union Symbol;
 

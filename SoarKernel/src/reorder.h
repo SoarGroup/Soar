@@ -19,8 +19,7 @@ extern "C"
 typedef char Bool;
 typedef unsigned long tc_number;
 typedef struct cons_struct cons;
-//typedef struct agent_struct agent;
-struct agent;
+typedef struct agent_struct agent;
 typedef struct action_struct action;
 typedef struct condition_struct condition;
 typedef cons list;
