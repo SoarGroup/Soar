@@ -1189,14 +1189,14 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
   if (action == PRINTING) {
 	  generate_tagged_output(thisAgent, "<production prodname=\"");
   } else if (action == FIRING) {
-	  generate_tagged_output(thisAgent, "<firing_production> <production prodname=\"");
+	  generate_tagged_output(thisAgent, "<firing_production><production prodname=\"");
   } else if (action == RETRACTING) {
-	  generate_tagged_output(thisAgent, "<retracting_production> <production prodname=\"");
+	  generate_tagged_output(thisAgent, "<retracting_production><production prodname=\"");
   }
 
   if (inst->prod) {
     print_with_symbols  (thisAgent, "%y", inst->prod->name);
-    tagged_output_with_symbols (thisAgent, "%y", inst->prod->name);
+    tagged_output_with_symbols (thisAgent, "%y\"", inst->prod->name);
   } else {
     print (thisAgent, "[dummy production]");
 	  generate_tagged_output(thisAgent, "<production prodname=\"[dummy_production]");
@@ -1206,11 +1206,11 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 
   if (wtt==NONE_WME_TRACE) {
 	  if (action == PRINTING) {
-		  generate_tagged_output(thisAgent, "</production>");
+		  generate_tagged_output(thisAgent, "></production>");
 	  } else if (action == FIRING) {
-		  generate_tagged_output(thisAgent, "</production></firing_production>");
+		  generate_tagged_output(thisAgent, "></production></firing_production>");
 	  } else if (action == RETRACTING) {
-		  generate_tagged_output(thisAgent, "</production></retracting_production>");
+		  generate_tagged_output(thisAgent, "></production></retracting_production>");
 	  }
 	  return;
   }
@@ -1278,42 +1278,42 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
     if (thisAgent->operand2_mode == TRUE) {
       switch (thisAgent->FIRING_TYPE) {
       case PE_PRODS:
-	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"PE\"></phase> ");
+	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"PE\"></phase>");
 	return;
       case IE_PRODS:
-	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"IE\"></phase> ");
+	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"IE\"></phase>");
 	return;
       }
     }
     else
-      generate_tagged_output(thisAgent, "workingmemory\"></phase> ");
+      generate_tagged_output(thisAgent, "workingmemory\"></phase>");
     return;
   case DECISION_PHASE:
-    generate_tagged_output(thisAgent, "decision\"></phase> ");
+    generate_tagged_output(thisAgent, "decision\"></phase>");
     return;
   case OUTPUT_PHASE:
-    generate_tagged_output(thisAgent, "output\"></phase> ");
+    generate_tagged_output(thisAgent, "output\"></phase>");
     return;
   case PROPOSE_PHASE:
-    generate_tagged_output(thisAgent, "propose\"></phase> ");
+    generate_tagged_output(thisAgent, "propose\"></phase>");
     return;
   case APPLY_PHASE:
     if (thisAgent->operand2_mode == TRUE) 
       {
 	switch (thisAgent->FIRING_TYPE) {
 	case PE_PRODS:
-	  generate_tagged_output(thisAgent, "apply\" firing_type=\"PE\"></phase> ");
+	  generate_tagged_output(thisAgent, "apply\" firing_type=\"PE\"></phase>");
 	  return;
 	case IE_PRODS:
-	  generate_tagged_output(thisAgent, "apply\" firing_type=\"IE\"></phase> ");
+	  generate_tagged_output(thisAgent, "apply\" firing_type=\"IE\"></phase>");
 	  return;
 	}
       }
     else
-      generate_tagged_output(thisAgent, "apply\"></phase> ");
+      generate_tagged_output(thisAgent, "apply\"></phase>");
     return;
   default:
-    generate_tagged_output(thisAgent, "unknown\"></phase> ");
+    generate_tagged_output(thisAgent, "unknown\"></phase>");
     return;
   }
   return;
@@ -1353,7 +1353,7 @@ Added for Release 8.6
 void generate_tagged_output (agent * thisAgent, char * str)
 {
    gSKI_MakeAgentCallback(gSKI_K_EVENT_STRUCTURED_OUTPUT, 0, thisAgent, static_cast<void*>(str));
-   //gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
+   // DJP: gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
 }
 /*
 ===========================
