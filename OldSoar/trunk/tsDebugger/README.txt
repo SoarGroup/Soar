@@ -1,6 +1,6 @@
 $Id$
 
-	     The Tcl/Tk Soar Interface (TSI) Version 3.2.0
+	     The Tcl/Tk Soar Interface (TSI) Version 4.0.1
 	     ---------------------------------------------
 
 The TSI provides a graphical user interface for interacting with Soar. It is 
@@ -10,7 +10,7 @@ Jones as a development of Karl Schwamb's original GUI for Soar.  There are still
 some known bugs, but things appear to be getting into shape.
 
 Comments, questions, suggestions and discussions relevant to the TSI should be 
-sent to soar-tsi@umich.edu.
+sent to soar-group@lists.sourceforge.net.
 
 ==============================================================================
 
@@ -29,7 +29,7 @@ Soar.
 The TSI consists of a number of files:
 
 
-             README	This file
+         README.txt	This file
 
    tsi-defaults.tcl	This specifies some default values for the
 			configuration of the TSI.  To override the defaults,
@@ -143,5 +143,5 @@ this package to soar-tsi@umich.edu.
 This file edited for the TSI version 2.5 release with Soar 7.3 and 8.2 by Karen 
 Coulter, kcoulter@umich.edu
 
-This file edited for the TSI version 3.2.0 release with Soar 8.5 by Jonathan 
-Voigt (voigtjr@umich.edu)
+This file edited for the TSI version 4.0.1 release with Soar 8.5.2 by Jonathan 
+Voigt (voigtjr@gmail.com)
