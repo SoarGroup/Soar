@@ -198,7 +198,7 @@ private:
 	Identifier* m_pHoldsIdentifier;
 		StringElement* m_pPeg;					//name of peg that the disk is on
 		IntElement* m_pDisk;					//size and name of disk
-		IntElement* m_pDiskBeneathAsInteger;	// size/name of disk beneath this on
+		IntElement* m_pDiskBeneathAsInteger;	// size/name of disk beneath this one
 		StringElement* m_pDiskBeneathAsString;	// will be "none" when this disk has nothing beneath it
 
 	IntElement* m_pDiskIdentifier;				//size and name of disk
