@@ -132,11 +132,11 @@ void io_output_fn( agent *a, soar_callback_data data,
        *  See the documentation in soar_core_api.h for details.
        *  
        */
-      buff = soar_cGetWmeAttr( o_wme, NULL );
+      buff = soar_cGetWmeAttr( o_wme, NULL, 0 );
       if ( !strcmp( buff, "number")) {
 	
 	free( buff );
-	buff = soar_cGetWmeValue( o_wme, NULL );
+	buff = soar_cGetWmeValue( o_wme, NULL, 0 );
 	number_received = atoi( buff );
 	free( buff );
  

@@ -1,3 +1,5 @@
+$Id$
+
 This directory contains the files that must be present in the Soar
 Library directory. When this folder is located in the Soar source tree,
 it is called "library."  When the Soar Library directory is located in

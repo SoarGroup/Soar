@@ -135,17 +135,15 @@ drawscreen .water
 ### OPERATORS
 ###
 
-sp {waterjug*monitor*state 
+sp {waterjug*monitor*state*picture 
     (state <s> ^jug <i> <j>)
     (<i> ^volume 3 ^contents <icon>)
     (<j> ^volume 5 ^contents <jcon>)
     --> 
     (tcl |picture | <icon> | | <jcon> | state|)
-    (write (crlf)
-           | 3:| <icon> 
-           | 5:| <jcon> )}
+}
 
-sp {waterjug*monitor*operator-application*empty
+sp {waterjug*monitor*operator-application*empty*picture
     (state <s> ^operator <o>)
     (<o> ^name empty
     	 ^jug <i>)
@@ -158,12 +156,9 @@ sp {waterjug*monitor*operator-application*empty
 
     -->
     (tcl | picture | <xcon> | | <ycon> | dump| <volume>)
-    (write (crlf) 
-    	   |  EMPTY(| <volume> 
-    	   |:| <contents> 
-    	   |)|)}
+}
 
-sp {waterjug*monitor*operator-application*fill
+sp {waterjug*monitor*operator-application*fill*picture
     (state <s> ^operator <o>)
     (<o> ^name fill 
     	 ^jug <i>)
@@ -174,12 +169,9 @@ sp {waterjug*monitor*operator-application*fill
     (<y> ^volume 5 ^contents <ycon>)
     -->
     (tcl | picture | <xcon> | | <ycon> | fill| <volume>)
-    (write (crlf) 
-    	   |  FILL(| <volume> 
-    	   |:| <contents> 
-    	   |)|)}
+}
 
-sp {waterjug*monitor*operator-application*pour
+sp {waterjug*monitor*operator-application*pour*picture
     (state <s> ^operator <o>)
     (<o> ^name pour 
     	 ^jug <i>
@@ -192,14 +184,9 @@ sp {waterjug*monitor*operator-application*pour
     (<y> ^volume 5 ^contents <ycon>)
     -->
     (tcl | picture | <xcon> | | <ycon> | | <ivol> |pour| <jvol>)
-    (write (crlf) 
-    	   |  POUR(| <ivol> 
-    	   |:| <icon> 
-    	   |,| <jvol>
-    	   |:| <jcon>
-    	   |)|)}
+}
 
-sp {waterjug*monitor*tied-operator*empty
+sp {waterjug*monitor*tied-operator*empty*picture
     (state <s> ^impasse tie 
                ^attribute operator 
                ^item <item>)
@@ -212,13 +199,9 @@ sp {waterjug*monitor*tied-operator*empty
 
     -->
     (tcl | picture | <xcon> | | <ycon> | dump| <volume>)
-    (write (crlf) 
-    	   |  | <item> 
-    	   |: empty(| <volume> 
-    	   |:| <contents> 
-    	   |)|)}
+}
 
-sp {waterjug*monitor*tied-operator*fill
+sp {waterjug*monitor*tied-operator*fill*picture
     (state <s> ^impasse tie 
                ^attribute operator 
                ^item <item>)
@@ -230,13 +213,9 @@ sp {waterjug*monitor*tied-operator*fill
     (<y> ^volume 5 ^contents <ycon>)
     -->
     (tcl | picture | <xcon> | | <ycon> | fill| <volume>)
-    (write (crlf) 
-    	   |  | <item> 
-    	   |: fill(| <volume> 
-    	   |:| <contents> 
-    	   |)|)}
+}
 
-sp {waterjug*monitor*tied-operator*pour
+sp {waterjug*monitor*tied-operator*pour*picture
     (state <s> ^impasse tie 
                ^attribute operator 
                ^item <item>)
@@ -249,12 +228,6 @@ sp {waterjug*monitor*tied-operator*pour
     (<y> ^volume 5 ^contents <ycon>)
     -->
     (tcl | picture | <xcon> | | <ycon> | | <ivol> |pour| <jvol>)
-    (write (crlf) 
-    	   |  | <item> 
-    	   |: pour(| <ivol> 
-    	   |:| <icon> 
-    	   |,| <jvol>
-    	   |:| <jcon>
-    	   |)|)}
+}
 
 ### eof of waterjug.soar (Version Type: Soar8)

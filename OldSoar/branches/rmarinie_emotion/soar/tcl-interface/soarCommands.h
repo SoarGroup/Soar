@@ -50,4 +50,4 @@
 
 #include <soarkernel.h>
 
-extern void soar_install_commands (agent * the_agent);
+extern void soar_install_commands(agent * the_agent);

@@ -84,17 +84,17 @@ void toh_output_fn( agent *a, soar_callback_data data,
 	  
 	  if ( o_wme == NULL )  return;
 	  
-	  soar_cGetWmeValue( o_wme, g->moveId );
+	  soar_cGetWmeValue( o_wme, g->moveId, 5 );
 	  
 	  o_wme = get_output_wme( "size", 
 							  ((output_call_info *)call_data)->outputs );
-	  soar_cGetWmeValue( o_wme, buff );
+	  soar_cGetWmeValue( o_wme, buff, 20 );
 	  g->cMoveDisk = atoi( buff );
 	  
 	  
 	  o_wme = get_output_wme( "to", 
 							  ((output_call_info *)call_data)->outputs );
-	  soar_cGetWmeValue( o_wme, buff );
+	  soar_cGetWmeValue( o_wme, buff, 20 );
 
 	
 	  if ( buff[0] == '|' && buff[2] == '|' ) {
@@ -123,7 +123,7 @@ io_wme *get_output_wme( char *attribute, io_wme *head ) {
      */
   while ( head != NULL ) {
 
-	buff = soar_cGetWmeAttr( head, NULL );
+	buff = soar_cGetWmeAttr( head, NULL, 0 );
 	if ( !strcmp( buff, attribute ) ) {
 	  free( buff );
 	  return head;
@@ -288,7 +288,7 @@ void toh_initialize( int n ) {
     else sprintf( g->disks[i].above, "%d", 0 );
 
     soar_cAddWme( "I2", "^disk", "*", FALSE, &wme );
-    soar_cGetWmeValue( wme, g->disks[i].wmeID );
+    soar_cGetWmeValue( wme, g->disks[i].wmeID, 6 );
     
     g->disks[i].onTT = 
       soar_cAddWme( g->disks[i].wmeID, "^on", g->disks[i].on, FALSE, &wme);

@@ -93,12 +93,12 @@ int interface_pushd( int argc, const char **argv, soarResult *res ) {
   
   c = (cons *) malloc( sizeof( cons ) );
   cdir = (char *) malloc( 1024 * sizeof( char ) );
-  getcwd( cdir, 1024 );
+  sys_getwd( cdir, 1024 );
   c->first = cdir;
   c->rest = gDirectoryStack;
   gDirectoryStack = c;
   
-  chdir( argv[1] );
+  sys_chdir( argv[1] );
   print( "Changing Directory to '%s'\n", argv[1] );
   
   return SOAR_OK;
@@ -124,7 +124,7 @@ int interface_popd ( int argc, const char **argv, soarResult *res ) {
     print ( "Directory Stack is empty!\n" );
     return SOAR_ERROR;
   }
-  chdir( (char *)(gDirectoryStack->first) );
+  sys_chdir( (char *)(gDirectoryStack->first) );
   c = gDirectoryStack;
   gDirectoryStack = gDirectoryStack->rest;
   
