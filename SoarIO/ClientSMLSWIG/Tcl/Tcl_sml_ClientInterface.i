@@ -1,8 +1,16 @@
 /* File : Tcl_sml_ClientInterface.i */
 %module Tcl_sml_ClientInterface
 
+%typemap(in) Tcl_Obj* {
+	$1 = Tcl_DuplicateObj($input);
+}
+
+%typemap(in) Tcl_Interp* {
+	$1 = interp;
+}
+
 %include "../sml_ClientInterface.i"
-/*
+
 %{
 struct TclUserData {
 	Tcl_Interp* interp;
@@ -31,32 +39,23 @@ void TclAgentEventCallBack(sml::smlEventId id, void* pUserData, sml::Agent* pAge
     // objv[2] : smlEventId (int)
     // obvj[3] : Tcl proc (string)
     // obvj[4] : user data (string?)
-        
-	int TclRegisterForAgentEvent(ClientData clientData, Tcl_Interp * interp, int objc, Tcl_Obj * const objv[]) {
+    
+    void TclRegisterForAgentEvent(Tcl_Interp* interp, sml::smlEventId eventId, Tcl_Obj* proc, Tcl_Obj* userData) {
+		TclUserData* tud = new TclUserData();
 	    
-	    TclUserData* tud = new TclUserData();
 	    tud->interp = interp;
-	    tud->script = objv[3];
-	    
-	    int eventId;
-	    
-	    if (Tcl_GetIntFromObj(interp, objv[2], &eventId) == TCL_ERROR) {
-            return TCL_ERROR;
-        }
-        
-        sml::Agent *agent = (sml::Agent *) 0 ;
-	    if ((SWIG_ConvertPtr(objv[1], (void **) &agent, SWIGTYPE_p_sml__Agent,SWIG_POINTER_EXCEPTION | 0) != TCL_OK)) SWIG_fail;
 	    
 	    //create script
 	    //form is: procname AgentPtr smlEventId userdata
+	    tud->script = proc;
+	    /*
 	    Tcl_AppendStringsToObj(tud->script, " ", (char *)NULL);
-	    Tcl_AppendObjToObj(objv[1]);
+	    Tcl_AppendObjToObj(self);
 	    Tcl_AppendStringsToObj(tud->script, " ", (char *)NULL);
-	    Tcl_AppendObjToObj(tud->script, objv[2]);
+	    Tcl_AppendObjToObj(tud->script, proc);
 	    Tcl_AppendStringsToObj(tud->script, " ", (char *)NULL);
-	    Tcl_AppendObjToObj(tud->script, objv[4]);
-	    
-	    (agent)->RegisterForAgentEvent((sml::smlEventId )eventId, TclAgentEventCallBack, tud);
-	};
+	    Tcl_AppendObjToObj(tud->script, userData);
+	    */
+	    self->RegisterForAgentEvent((sml::smlEventId )eventId, TclAgentEventCallBack, tud);
+    };
 }
-*/
