@@ -1,3 +1,9 @@
+/* This block of code needs to be removed and the warnings dealt with */
+#ifdef _MSC_VER
+#pragma message("Disabling compiler warnings 4115 4244 4100 4701 4127 at top of file!")
+#pragma warning(disable : 4115 4244 4100 4701 4127)
+#endif
+
 /*************************************************************************
  *
  *  file:  rete.c

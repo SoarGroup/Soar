@@ -1,3 +1,9 @@
+/* This block of code needs to be removed and the warnings dealt with */
+#ifdef _MSC_VER
+#pragma message("Disabling compiler warnings 4115 4100 4244 at top of file!")
+#pragma warning(disable : 4115 4100 4244)
+#endif
+
 #include "soar_ecore_utils.h"
 
 extern Symbol *make_symbol_for_current_lexeme (void);

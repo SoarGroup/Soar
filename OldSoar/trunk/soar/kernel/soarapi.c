@@ -1,3 +1,9 @@
+/* This block of code needs to be removed and the warnings dealt with */
+#ifdef _MSC_VER
+#pragma message("Disabling compiler warnings 4115 4100 4127 4701 4706 4702 at top of file!")
+#pragma warning(disable : 4115 4100 4127 4701 4706 4702)
+#endif
+
 /**
  * \file soarapi.c
  *                      The High Level Interface to Soar
