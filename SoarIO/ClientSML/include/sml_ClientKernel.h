@@ -165,8 +165,11 @@ public:
 	* @brief Creates a connection to the Soar kernel that is embedded
 	*        within the same process as the caller.
 	*
+	*		 If you're not sure which method to use, you generally want "InNewThread".
+	*		 That extra thread usually makes your life easier.
+	*
 	*		 Creating in "current thread" will produce maximum performance but requires a little more work for the developer
-	*		 (you need to call CheckForIncomingCommands() periodically and you should not register for events and then go to sleep).
+	*		 (you must call CheckForIncomingCommands() periodically and you should not register for events and then go to sleep).
 	*
 	*		 Creating in "new thread" is simpler for the developer but will be slower (around a factor 2).
 	*		 (It's simpler because there's no need to call CheckForIncomingCommands() periodically as this happens in a separate

@@ -355,9 +355,10 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 	// Look up the agent
 	Agent* pAgent = GetAgent(pAgentName) ;
 
-	// Go through the list of event handlers calling each in turn
-	// (Registering multiple handlers for a RHS function actually makes no sense--we'll just return the first).
-	for (RhsEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	// Go through the list of event handlers calling each in turn...except
+	// we only execute the first handler (registering multipler handlers for the same RHS function is not supported)
+	bool firstOnly = true ;
+	for (RhsEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() && !firstOnly ; iter++)
 	{
 		RhsEventHandlerPlusData handlerWithData = *iter ;
 
@@ -369,9 +370,6 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 
 		// If we got back a result then fill in the value in the response message.
 		GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
-
-		// We only execute the first handler (registering multipler handlers for the same RHS function is not supported)
-		break ;
 	}
 }
 

@@ -113,9 +113,9 @@ protected:
 		case gSKIEVENT_BEFORE_RHS_FUNCTION_EXECUTED:
 		case gSKIEVENT_AFTER_RHS_FUNCTION_EXECUTED:
 			return true ;
+		default:
+			return false ;
 		}
-
-		return false ;
 	}
 
 	bool IsAgentEvent(egSKIEventId id)
@@ -128,9 +128,8 @@ protected:
 			case gSKIEVENT_AFTER_AGENT_REINITIALIZED:
 				return true ;
 			default:
-				break;
+				return false ;
 		}
-		return false ;
 	}
 } ;
 
