@@ -77,7 +77,12 @@ void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* 
 }
 
 void RunCallbackHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase) {
-	g_pCommandProcessor->ProcessCharacter(getKey(false));
+	char c = getKey(false);
+
+	while (c) {
+		g_pCommandProcessor->ProcessCharacter(c);
+		c = getKey(false);
+	}
 }
 
 char getKey(bool block) {
