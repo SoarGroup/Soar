@@ -30,6 +30,8 @@
 #include "IgSKI_AgentManager.h"
 #include "IgSKI_Kernel.h"
 #include "IgSKI_DoNotTouch.h"
+#include "IgSKI_Iterator.h"
+#include "IgSKI_Production.h"
 
 // SML includes
 #include "sml_ElementXML.h"
@@ -548,9 +550,67 @@ bool CommandLineInterface::ParseExcise(int argc, char** argv) {
 //|____/ \___/|_____/_/\_\___|_|___/\___|
 //
 bool CommandLineInterface::DoExcise(unsigned short options, int productionCount, char** productions) {
-	m_Result += "TODO: do excise";
+	// Must have agent to excise from
+	if (!m_pAgent) {
+		m_Result += "No agent pointer.";
+		return false;
+	}
+
+	// Acquire production manager
+	gSKI::IProductionManager *pProductionManager = m_pAgent->GetProductionManager();
+
+	// Process the general options
+	if (options & OPTION_EXCISE_ALL) {
+		ExciseInternal(pProductionManager->GetAllProductions());
+	}
+	if (options & OPTION_EXCISE_CHUNKS) {
+		ExciseInternal(pProductionManager->GetChunks());
+		ExciseInternal(pProductionManager->GetJustifications());
+	}
+	if (options & OPTION_EXCISE_DEFAULT) {
+		ExciseInternal(pProductionManager->GetDefaultProductions());
+	}
+	if (options & OPTION_EXCISE_TASK) {
+		ExciseInternal(pProductionManager->GetChunks());
+		ExciseInternal(pProductionManager->GetJustifications());
+		ExciseInternal(pProductionManager->GetUserProductions());
+	}
+	if (options & OPTION_EXCISE_USER) {
+		ExciseInternal(pProductionManager->GetUserProductions());
+	}
+
+	// Excise specific productions
+	gSKI::tIProductionIterator* pProdIter;
+	for (int i = 0; i < productionCount; ++i) {
+		pProdIter = pProductionManager->GetProduction(productions[i]);
+		if (pProdIter->GetNumElements()) {
+			ExciseInternal(pProdIter);
+		} else {
+			m_Result += "Production not found: ";
+			m_Result += productions[i];
+			return false;
+		}
+	}
 	return true;
 }
+
+// _____          _          ___       _                        _
+//| ____|_  _____(_)___  ___|_ _|_ __ | |_ ___ _ __ _ __   __ _| |
+//|  _| \ \/ / __| / __|/ _ \| || '_ \| __/ _ \ '__| '_ \ / _` | |
+//| |___ >  < (__| \__ \  __/| || | | | ||  __/ |  | | | | (_| | |
+//|_____/_/\_\___|_|___/\___|___|_| |_|\__\___|_|  |_| |_|\__,_|_|
+//
+void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter) {
+	while(pProdIter->IsValid()) {
+		gSKI::IProduction* ip = pProdIter->GetVal();
+		ip->Excise();
+		ip->Release();
+		pProdIter->Next();
+		m_Result += '#';
+	}
+	pProdIter->Release();
+}
+
 
 // ____                     ___       _ _   ____
 //|  _ \ __ _ _ __ ___  ___|_ _|_ __ (_) |_/ ___|  ___   __ _ _ __
@@ -1467,26 +1527,6 @@ bool CommandLineInterface::DoSource(const char* filename) {
 
 	soarFile.close();
 	return true;
-
-	//// Old gSKI LoadSourceFile implementation:
-	////////////////////////////////////////////
-
-	//// TODO: This needs to be reimplemented, since there are commands in with the soar
-	//// productions and I'm not sure what the gSKI LoadSoarFile does with those commands
-	//// (such as 'learn -on' 'pushd' etc.
-
-	//// Load the file
-	//pProductionManager->LoadSoarFile(filename, m_pError);
-
-	//if(m_pError->Id != gSKI::gSKIERR_NONE) {
-	//	m_Result += "Unable to source the file: ";
-	//	m_Result += filename;
-	//	return false;
-	//}
-
-	//// TODO: Print one * per loaded production, this will be easy if we parse it here.
-	//m_Result += "File sourced successfully.";
-	//return true;
 }
 
 // ____                     ____  ____

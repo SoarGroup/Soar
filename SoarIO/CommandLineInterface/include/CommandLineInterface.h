@@ -23,6 +23,7 @@
 
 // gSKI includes
 #include "gSKI_Events.h"
+#include "IgSKI_Iterator.h"
 
 // Forward Declarations
 namespace gSKI {
@@ -378,6 +379,11 @@ protected:
 	* @brief 
 	*************************************************************/
 	bool GetCurrentWorkingDirectory(std::string& directory);
+
+	/*************************************************************
+	* @brief 
+	*************************************************************/
+	void ExciseInternal(gSKI::tIProductionIterator* pProdIter);
 
 	GetOpt			m_GetOpt;			// Pointer to GetOpt utility class
 	CommandMap		m_CommandMap;		// Mapping of command names to function pointers
