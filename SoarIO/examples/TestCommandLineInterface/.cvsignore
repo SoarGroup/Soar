@@ -4,3 +4,4 @@ Makefile.in
 .libs
 testcli
 gski_unreleased.txt
+Debug

@@ -14,7 +14,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)\bin"
-			IntermediateDirectory="src\Debug"
+			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="FALSE">
@@ -67,7 +67,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)\bin"
-			IntermediateDirectory="src\Release"
+			IntermediateDirectory="Release"
 			ConfigurationType="1"
 			CharacterSet="2"
 			ManagedExtensions="TRUE">
