@@ -50,11 +50,11 @@ cout << "Processing Output....." << endl;
 		// Get the row value
 		wmeValue = sourceWMEIterator->GetVal();
 		sourceTowerString = wmeValue->GetValue()->GetString();
-
+cout << "\tSource tower is: " << sourceTowerString << endl;
 		// Get the col value
 		wmeValue = destinationWMEIterator->GetVal();
 		destinationTowerString = wmeValue->GetValue()->GetString();
-
+cout << "\tDestination tower is: " << destinationTowerString << endl;
 		if(destinationTowerString == "A")
 		{
 			destinationTowerNum = 0;
@@ -88,8 +88,8 @@ cout << "Processing Output....." << endl;
 }
 
 void SoarAgent::MakeMove()
-{
-	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_DECISION_CYCLE, 1);
+{										//gSKI_RUN_UNTIL_OUTPUT		//gSKI_RUN_DECISION_CYCLE
+	egSKIRunResult runResult = m_Agent->RunInClientThread(gSKI_RUN_UNTIL_OUTPUT, 1);
 	cout << "Run result is: " <<  runResult << endl;
 	assert(runResult != gSKI_RUN_ERROR);
 }

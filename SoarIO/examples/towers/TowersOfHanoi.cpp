@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 			numTowers = 3;
 	}
 
-	//It would be flexible to read in the number of disks, but the productions are hardcoded to 11
+	//It would be flexible to read in the number of disks, but the productions are hard-coded to 11
 	//if(argc > 3)
 	//{
 	//	numdisks = atoi(argv[3]);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 	// create kernel
 	IKernel* kernel = kFactory->Create();
 	IAgentManager* manager = kernel->GetAgentManager();
-	gSKI::IAgent* agent = manager->AddAgent("towersAgent", "towers-of-hanoi-86.soar");
+	gSKI::IAgent* agent = manager->AddAgent("towersAgent", "C:\\Documents and Settings\\stokesd\\Desktop\\SML\\SoarIO\\bin\\towers-of-hanoi-86.soar");
 
 
 	//=============================================================================
@@ -150,9 +150,8 @@ int main(int argc, char* argv[])
 	if(doPrinting)
 		hanoi.Print();
 
-	for(int foo = 1; foo < 60; ++foo)
+	while(!hanoi.AtGoalState())
 	{
-		cout << "hello.... " << endl;
 		soarAgent.MakeMove();
 		TgD::TgD::Update(false, debugger);
 	}

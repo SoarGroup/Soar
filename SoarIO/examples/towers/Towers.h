@@ -44,14 +44,13 @@ const int middleTowerNumber = 1;// towers are 0,1,2
 	using namespace sml;
 
 #endif
-/*
-string TowerNumToName(int towerNum)
+
+/*string TowerNumToName(int towerNum)
 {
 	string tempString;
 
 	switch(towerNum)
 	{
-
 		case 0:
 			tempString = "A";
 			break;
@@ -71,8 +70,8 @@ class Disk : public IInputProducer
 {
 public:
 
-	Disk(IInputLink* pILink, int inSize, int inTowerNum, IWme* inPegWme, IWme* diskBeneath) : 
-		m_size(inSize), m_towerNumber(inTowerNum), m_pPeg(inPegWme), m_pDiskBeneath(diskBeneath)
+	Disk(IInputLink* pILink, int inSize, int inTowerNum, IWme* inPegWme , IWme* diskBeneath) : 
+		/*m_pInputLink(pILink),*/ m_size(inSize), m_towerNumber(inTowerNum), m_pPeg(inPegWme) , m_pDiskBeneath(diskBeneath)
 	{
 		//============================
 		// Initialize "disk" wmes
@@ -92,18 +91,27 @@ public:
 		//============================
 		// Initialize "holds" wmes
 		//============================
-		//add the holds identifer
+		//add the holds identifier
 		m_pHoldsIdentifier = pWMemory->AddWmeNewObject(pILinkRootObject, "holds");
 		const gSKI::ISymbol* holdsParentSymbol = m_pHoldsIdentifier->GetValue();
 		IWMObject* holdsParentObject = holdsParentSymbol->GetObject();
 		
 		//add holds wmes to parent object
-		m_pPeg = pWMemory->AddWmeObjectLink(holdsParentObject, "on", m_pHoldsIdentifier->GetValue()->GetObject());
+		const gSKI::ISymbol* pegParentSymbol = m_pPeg->GetValue();
+		IWMObject* pegParentObject = pegParentSymbol->GetObject();
+		m_pPeg = pWMemory->AddWmeObjectLink(holdsParentObject, "on", pegParentObject);
+
+		//the holds wme points back to its corresponding disk
+		m_pDiskWme = pWMemory->AddWmeObjectLink(holdsParentObject, "disk", parentObject);
 
 		if(m_pDiskBeneath)
-			m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(holdsParentObject, "above", m_pDiskBeneath->GetValue()->GetObject());
+		{
+			IWMObject* pDiskBeneathIdentifier = m_pDiskBeneath->GetValue()->GetObject();
+			m_pHoldsDiskBeneath = pWMemory->AddWmeObjectLink(holdsParentObject, "above", pDiskBeneathIdentifier);
+		}
 		else
-			m_pDiskBeneath = pWMemory->AddWmeString(holdsParentObject, "above", "none");
+			m_pHoldsDiskBeneath = pWMemory->AddWmeString(holdsParentObject, "above", "none");
+	
 	}
 
 
@@ -142,10 +150,19 @@ public:
 		{	//Get the old "above" value
 			IWme* oldDiskBeneath = aboveItr->GetVal();
 
+			const gSKI::ISymbol* aboveParentSymbol = m_pHoldsDiskBeneath->GetValue();
+			IWMObject* aboveParentObject = aboveParentSymbol->GetObject();
+
 			if(m_pDiskBeneath)
 			{
-				m_pHoldsDiskBeneath = pWMemory->ReplaceIntWme(oldDiskBeneath, m_pDiskBeneath->GetValue()->GetInt());
+			//	m_pHoldsDiskBeneath = pWMemory->ReplaceIntWme(oldDiskBeneath, m_pDiskBeneath->GetValue()->GetInt());
+				m_pHoldsDiskBeneath = pWMemory->ReplaceWmeObjectLink(oldDiskBeneath, aboveParentObject);
 			}
+			else
+			{
+				m_pHoldsDiskBeneath = pWMemory->ReplaceStringWme(oldDiskBeneath, "none");
+			}
+
 			//in the else case, there should already be a string "none" for this wme, so there's no need to change it
 		}
 	}
@@ -160,14 +177,19 @@ public:
 	 void SetTowerInfo(int newTowerNumber, Disk* diskBeneath)
 	 {
 		m_towerNumber = newTowerNumber;
+
 		//TODO //FIXME @TODO release ref to wme of old disk beneath (if it's not zero)  ????
-		m_pDiskBeneath = diskBeneath->GetIdentifierWME();
+		if(diskBeneath)
+			m_pDiskBeneath = diskBeneath->GetIdentifierWME();
+
 	 }
 
 private:
 	Disk();
 	Disk(const Disk&);
 	Disk operator=(const Disk&);
+
+	//IInputLink* m_pInputLink;
 
 	int m_towerNumber;
 	int m_size;//a convenience for other classes
@@ -177,11 +199,15 @@ private:
 
 	IWme* m_pDiskBeneath;
 
-	//from "holds" class
+	//"holds" wmes
 	IWme* m_pHoldsIdentifier;
 	IWme* m_pHoldsDiskBeneath;
 	IWme* m_pPeg;
+	IWme* m_pDiskWme;
 };
+
+typedef vector<Disk*> diskContainer_t;
+typedef diskContainer_t::iterator diskItr_t;
 
 
 //Function object for finding the top disk on a tower
@@ -197,17 +223,24 @@ public:
 	{
 		if(disk->GetTowerNumber() == m_targetTower)
 		{
+cout << "\t\tLooking at disk of size: " << disk->GetSize() << " on tower " << m_targetTower << endl;
 			int size = disk->GetSize();
+
 			if(size < m_smallestDiskSize)
 			{
-				size = m_smallestDiskSize;
+cout << "\t\t\t and it became the smallest so far... " <<endl;
+				m_smallestDiskSize = size;
 				m_pTopDisk = disk;
 			}
 			//TODO @TODO //FIXME, release this ref?
 		}
 	}
 
-	Disk* GetTopDisk() const { return m_pTopDisk; }
+	Disk* GetTopDisk() const
+	{ 
+		cout << "When getting the top disk for tower " << m_targetTower << ", the top size was " << m_smallestDiskSize << endl;	
+		return m_pTopDisk;
+	}
 
 private:
 	int m_targetTower;
@@ -230,6 +263,7 @@ public:
 	{
 		//TODO @TODO //FIXME release refs?
 		m_disks.clear();
+		diskSizes.clear();
 	}
 
 	void operator() (Disk* inDisk)
@@ -239,10 +273,11 @@ public:
 			//Since no small disks can be under big disks, iterating through the map in one 
 			//direction will always give you increasing/decreasing disks by size
 			m_disks[inDisk->GetSize()] = inDisk;
+			diskSizes.insert(diskSizes.begin(), inDisk->GetSize());
 		}
 	}
 
-	void operator() (Disk* inDisk, int towerNumber)
+	/*void operator() (Disk* inDisk, int towerNumber)
 	{
 		m_towerNumber = towerNumber;
 
@@ -252,25 +287,32 @@ public:
 			//direction will always give you increasing/decreasing disks by size
 			m_disks[inDisk->GetSize()] = inDisk;
 		}
-	}
+	}*/
 
 	void PrintDisksAtRow(int row)
 	{
-		if(static_cast<int>(m_disks.size()) <= row)
+		if(static_cast<int>(/*m_disks.size()*/ diskSizes.size()) <= row)
 			cout<<"--";
 		else
 		{
-			map<int, Disk*, std::less<int> >::iterator diskItr = m_disks.begin();
+			/*map<int, Disk*, std::less<int> >::iterator diskItr = m_disks.begin();
 			for(int counter = 0; counter <= row; ++counter, ++diskItr)
 			{
 				if(counter == row)
 					cout << ((*diskItr).second)->GetSize();
-			}
+			}*/
+			cout << diskSizes[row];
 		}
+	}
+
+	int GetNumDisks()
+	{
+		return static_cast<int>(diskSizes.size());
 	}
 private:
 	int m_towerNumber;
 	map<int, Disk*, std::less<int> > m_disks;
+	vector<int> diskSizes;
 };
 
 class HanoiWorld
@@ -285,7 +327,6 @@ public:
 		IWMObject* pILinkRootObject;
 		pILink->GetRootObject(&pILinkRootObject);
 
-
 		//Name each tower and store for later
 		for(int towerNum = 0; towerNum < inNumTowers; ++towerNum)
 		{
@@ -298,36 +339,33 @@ public:
 			//"Left" tower
 			//==============
 			if(towerNum == 0)
+			{
 				pWMemory->AddWmeString(parentObject, "name", "A");
 
+				IWme* diskBeneathWME = 0;
+				//Create disks
+				for(int currentDiskSize = maxNumDisks; currentDiskSize > 0; --currentDiskSize)
+				{
+					//The disk currently at the back of the container is the "top" disk.  New, smaller, disks 
+					//are inserted in front
+
+					if(!m_disks.empty())
+						diskBeneathWME = m_disks.front()->GetIdentifierWME();
+
+					//create disks as belonging to left tower, above "none"
+					Disk* disk = new Disk(pILink, currentDiskSize, towerNum, towerWME , diskBeneathWME);
+
+					m_disks.insert(m_disks.begin(), disk);
+					//m_disks.push_back()
+				}
+
+			}
 			//==============
 			//Middle tower
 			//==============
 			else if(towerNum == 1)
 			{
 				pWMemory->AddWmeString(parentObject, "name", "B");
-
-				IWme* diskBeneathWME = 0;
-				//Create disks
-				for(int currentDiskSize = 1; currentDiskSize <= maxNumDisks; ++currentDiskSize)
-				{
-					//The disk currently at the back of the container is the "top" disk, and will be beneath
-					//the newly created one
-					if(!m_disks.empty())
-						diskBeneathWME = m_disks.back()->GetIdentifierWME();
-
-					//create disks as belonging to middle tower
-					Disk* disk = new Disk(pILink, currentDiskSize, towerNum, towerWME, diskBeneathWME);
-
-					IWme* diskUnderneathWME = 0;
-					if(m_disks.size() != 0)
-					{
-						diskUnderneathWME = (m_disks.back())->GetIdentifierWME();
-					}
-
-					m_disks.push_back(disk);
-				}
-
 			}
 
 			//===============
@@ -337,6 +375,9 @@ public:
 				pWMemory->AddWmeString(parentObject, "name", "C");
 
 		}
+
+cout << "World initialized.  This is what I look like:" << endl;
+Print();
 	}
 
 
@@ -359,8 +400,15 @@ public:
 		TopDiskOnTower topDiskOnSourceTower(sourceTower);
 		TopDiskOnTower topDiskonDestinationTower(destinationTower);
 
-		for_each(m_disks.begin(), m_disks.end(), topDiskOnSourceTower);
-		for_each(m_disks.begin(), m_disks.end(), topDiskonDestinationTower);
+		topDiskOnSourceTower = for_each(m_disks.begin(), m_disks.end(), topDiskOnSourceTower);
+cout << "Tower " << sourceTower << " has been initialized" <<endl;
+topDiskOnSourceTower.GetTopDisk();
+cout << "Tower " << destinationTower << " has been initialized" <<endl;
+topDiskonDestinationTower.GetTopDisk();
+cout << endl;
+
+
+		topDiskonDestinationTower = for_each(m_disks.begin(), m_disks.end(), topDiskonDestinationTower);
 
 		Disk* movingDisk = topDiskOnSourceTower.GetTopDisk();
 		Disk* destinationTowerTopDisk = topDiskonDestinationTower.GetTopDisk();
@@ -379,10 +427,10 @@ public:
 		towerB = for_each(m_disks.begin(), m_disks.end(), towerB);
 		towerC = for_each(m_disks.begin(), m_disks.end(), towerC);
 
-		for(int row = maxNumDisks - 1; row >= 0; row--)
+		for(int row = 1; row <= maxNumDisks; ++row)
 		{
 			cout<<"(";
-			towerA.PrintDisksAtRow(row);
+			towerA.PrintDisksAtRow(maxNumDisks -  row);
 			cout<<")   (";
 			towerB.PrintDisksAtRow(row);
 			cout<<")   (";
@@ -392,18 +440,74 @@ public:
 		cout<<"======================"<<endl;
 	}
 
+	bool AtGoalState()
+	{
+		CollectTowerDisks towerB(1);
+		towerB = for_each(m_disks.begin(), m_disks.end(), towerB);
+		if(towerB.GetNumDisks() == maxNumDisks)
+			return true;
+		return false;
+	}
+
 private:
 	typedef vector<IWme*> towerContainer_t;
 	typedef towerContainer_t::iterator towerItr_t;
 	towerContainer_t m_towers;
 
-	typedef vector<Disk*> diskContainer_t;
-	typedef diskContainer_t::iterator diskItr_t;
 	diskContainer_t m_disks;
 
 	IInputLink* m_pILink;
 	bool drawGraphics;
 };
+
+class Tower
+{
+public:
+	Tower(IInputLink* pILink, string name) : m_pILink(pILink)
+	{
+		IWorkingMemory* pWMemory = m_pILink->GetInputLinkMemory();
+		IWMObject* pILinkRootObject;
+		m_pILink->GetRootObject(&pILinkRootObject);
+		m_pPegIdentifier = pWMemory->AddWmeNewObject(pILinkRootObject, "peg");
+
+		m_pPegName = pWMemory->AddWmeString(GetTowerIdentifierObject(), "name", name.c_str());
+	}
+
+	void AddDisk(Disk* newDisk)
+	{
+
+	}
+
+	void RemoveTopDisk()
+	{
+
+
+	}
+
+	Disk* GetTopDisk()
+	{
+		//fixme
+		return 0;
+	}
+
+	IWMObject* GetTowerIdentifierObject() const
+	{
+		const gSKI::ISymbol* parentSymbol = m_pPegIdentifier->GetValue();
+		IWMObject* parentObject = parentSymbol->GetObject();
+		return parentObject;
+	}
+
+private:
+	std::vector<Disk*> m_disks;
+	char m_name;
+	int m_number;
+
+	IInputLink* m_pILink;
+
+	IWme* m_pPegIdentifier;
+		IWme* m_pPegName;
+};
+
 
 #endif //TOWERS_HANOI_H
 
