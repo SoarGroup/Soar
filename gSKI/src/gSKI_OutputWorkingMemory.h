@@ -27,6 +27,7 @@ namespace gSKI {
   class OutputWMObject;
   class OutputWme;
   class gSymbol;
+  class OutputLink ;
 
    /** 
     * @brief The main interface for access to the various aspects of the
@@ -39,6 +40,7 @@ namespace gSKI {
     */
   class OutputWorkingMemory: public IWorkingMemory {
   public:
+	  friend OutputLink ;	// Needs access to GetOutputWme
 
     /**
      * @brief Constructor

@@ -17,7 +17,9 @@
 #include "gSKI_Agent.h"
 #include "gSKI_Symbol.h"
 #include "gSKI_WMObject.h"
+#include "gSKI_OutputWme.h"
 #include "MegaAssert.h"
+#include "IgSKI_Iterator.h"
 
 #include "gSKI_OutputWMObject.h"
 
@@ -163,23 +165,85 @@ namespace gSKI
       OutputLink* olink = (OutputLink*)(callbackdata);
       output_call_info* oinfo = static_cast<output_call_info*>(calldata);
       int callbacktype = oinfo->mode;
+	  egSKIWorkingMemoryChange change = gSKI_ADDED_OUTPUT_COMMAND ;
 
       //std::cout << "Normal output link update cycle!" << std::endl;
 
       switch (callbacktype) {
       case ADDED_OUTPUT_COMMAND:
          olink->InitialUpdate(oinfo->outputs);
+		 change = gSKI_ADDED_OUTPUT_COMMAND ;
          break;
       case MODIFIED_OUTPUT_COMMAND:
          olink->Update(oinfo->outputs);
+		 change = gSKI_MODIFIED_OUTPUT_COMMAND ;
          break;
       case REMOVED_OUTPUT_COMMAND:
          olink->FinalUpdate(oinfo->outputs);
+		 change = gSKI_REMOVED_OUTPUT_COMMAND ;
          break;
       default:
          MegaAssert(false, "The static output callback is of unknown type!");
          break;
       }
+
+	  // Notify any listeners about this event
+	  if (olink->m_workingMemoryListeners.GetNumListeners(gSKIEVENT_OUTPUT_PHASE_CALLBACK) != 0)
+	  {
+	     // We have a list of kernel wme objects and we need a list of gSKI objects.
+		 // I'm not sure how to convert from one to the other, but here's my best guess.
+	     std::vector<IWme*> outputWmes;
+
+		// Walk through the list of wmes from the kernel
+         for (io_wme* cur = oinfo->outputs; cur != 0; cur = cur->next)
+		 {
+		    // Get the kernel wme that corresponds to the io_wme (which is just a simple triplet of symbols)
+			wme* wme = olink->m_memory.GetOutputWme(cur->id, cur->attr, cur->value);
+
+			// DJP: Do we need to check the slot wmes too?  If this assert fails, we may need to add that slot code.
+			MegaAssert( wme != 0, "IO wme not found in kernel!");
+
+			 // Convert from kernel wme to gSKI wme here
+			 IWme* pWme = new OutputWme(&olink->m_memory, wme) ;
+			 outputWmes.push_back(pWme) ;
+		 }
+    
+		 // I think this will release the wmes when the iterator is destroyed
+         tWmeIter wmelist(outputWmes);
+
+		 // Fire the event
+         WorkingMemoryNotifier wmn(olink->m_agent, change, &wmelist);
+	     olink->m_workingMemoryListeners.Notify(gSKIEVENT_OUTPUT_PHASE_CALLBACK, wmn);
+	  }
+   }
+
+    /**
+    * @brief Listen for changes to wmes attached to the output link.
+    *
+	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	* @param listener	The handler to call when event is fired
+    */
+   void OutputLink::AddWorkingMemoryListener(egSKIEventId eventId, 
+							     IWorkingMemoryListener* listener, 
+								 Error*               err)
+   {
+      ClearError(err);
+      m_workingMemoryListeners.AddListener(eventId, listener);
+
+   }
+
+    /**
+    * @brief Remove an existing listener
+    *
+	* @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	* @param listener	The handler to call when event is fired
+    */
+   void OutputLink::RemoveWorkingMemoryListener(egSKIEventId eventId, 
+							     IWorkingMemoryListener* listener, 
+								 Error*               err)
+   {
+      ClearError(err);
+      m_workingMemoryListeners.RemoveListener(eventId, listener);
    }
 
    /*

@@ -14,6 +14,7 @@
 #define IGSKI_EVENTS_HEADER
 
 #include "gSKI_Enumerations.h"
+#include "IgSKI_Iterator.h"
 
 namespace gSKI {
 
@@ -59,6 +60,31 @@ namespace gSKI {
       * @param msg      Pointer to c-style string containing the print text
       */
       virtual void HandleEvent(egSKIEventId eventId, IAgent* agentPtr, const char* msg) = 0;
+   };
+
+   /** 
+   * @brief Working memory callback listener
+   *
+   * Called when events occur that change working memory.
+   *
+   */
+   class IWorkingMemoryListener
+   {
+   public:
+      /** Virtual destructor */
+      virtual ~IWorkingMemoryListener() {}
+
+      /** 
+      * @brief Event callback function
+      *
+      * This method recieves callbacks when a working memory event occurs for an agent.
+      *
+      * @param eventId  Id of the event that occured
+      * @param agentPtr Pointer to the agent that fired the event
+	  * @param change	The type of change that just occured
+      * @param wmelist  Pointer to list of wmes that are affected by this event
+      */
+      virtual void HandleEvent(egSKIEventId eventId, IAgent* agentPtr, egSKIWorkingMemoryChange change, tIWmeIterator* wmelist) = 0;
    };
 
    /** 

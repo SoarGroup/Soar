@@ -16,6 +16,15 @@
 #include "gSKI_Error.h"
 
 #include "gSKI_OutputWorkingMemory.h"
+#include "gSKI_Enumerations.h"
+#include "gSKI_Events.h"
+
+#include "IgSKI_Wme.h"
+#include "IterUtils.h"
+#include "gSKI_Iterator.h"
+#include "gSKI_ReleaseImpl.h"
+
+#include "EventManagementTemplates.h"
 
 #include <string>
 //#include <multimap>
@@ -202,6 +211,26 @@ namespace gSKI {
        */
       void InvokeOutputProcessors(Error* err = 0);
 
+      /**
+       * @brief Listen for changes to wmes attached to the output link.
+       *
+	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	   * @param listener	The handler to call when event is fired
+       */
+	  virtual void AddWorkingMemoryListener(egSKIEventId            eventId, 
+									IWorkingMemoryListener* listener, 
+									Error*                  err = 0) ;
+
+	  /**
+       * @brief Remove an existing listener
+       *
+	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	   * @param listener	The handler to call when event is fired
+       */
+	  virtual void RemoveWorkingMemoryListener(egSKIEventId            eventId, 
+									IWorkingMemoryListener* listener, 
+									Error*                  err = 0) ;
+
    private:
       /**
        * @brief Static callback function that handles dispatching raw kernel
@@ -250,6 +279,48 @@ namespace gSKI {
        *   from an output phase callback
        */
       void ProcessIOWmes(io_wme* wmelist);
+
+      ///////////////// LISTENER MANAGEMENT STUFF ////////////////////////////
+      /** 
+       * @brief Event notifier for working memory events
+       */
+      class WorkingMemoryNotifier {
+      public:
+         /**
+          * @brief 
+          */
+         WorkingMemoryNotifier(IAgent* a, egSKIWorkingMemoryChange c, tIWmeIterator* w) : 
+                                                                    m_agent(a), 
+                                                                    m_change(c), 
+                                                                    m_wmelist(w) 
+         {
+         
+         }
+
+         /**
+          * @brief 
+          */
+         void operator()(egSKIEventId eventId, IWorkingMemoryListener* listener)
+         {
+            listener->HandleEvent(eventId, m_agent, m_change, m_wmelist);
+         }
+      private:
+         IAgent*					m_agent;
+         egSKIWorkingMemoryChange   m_change;
+         tIWmeIterator*				m_wmelist ;
+      };
+      
+      /** 
+       * @brief Listener manager definitions 
+       */
+      //{
+      typedef ListenerManager<IWorkingMemoryListener, WorkingMemoryNotifier>   tWorkingMemoryListenerManager;
+      //}
+
+	  tWorkingMemoryListenerManager m_workingMemoryListeners ;
+
+	  typedef FwdContainerType< std::vector<IWme*> >  tWmeVec;
+	  typedef IteratorWithRelease<tWmeVec::V, tWmeVec::t>  tWmeIter;
 
       Agent* m_agent;  /**< The agent that owns this output link. */
       OutputWorkingMemory m_memory; /**< Stores outputlink's wme's/objects */

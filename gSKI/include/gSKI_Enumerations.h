@@ -58,6 +58,9 @@
       gSKIEVENT_BEFORE_AGENT_REINITIALIZED,
       gSKIEVENT_AFTER_AGENT_REINITIALIZED,
 
+	  // Working memory changes
+	  gSKIEVENT_OUTPUT_PHASE_CALLBACK,
+
       // Error and print callbacks
       gSKIEVENT_LOG_ERROR,
       gSKIEVENT_LOG_WARNING,
@@ -74,6 +77,17 @@
       gSKI_SINGLE_THREAD, 
       gSKI_MULTI_THREAD 
    } egSKIThreadingModel;
+
+   /** Types of working memory changes
+	   @li ADDED_OUTPUT_COMMAND		A new wme is added to the top level of the output link
+	   @li MODIFIED_OUTPUT_COMMAND	A wme within the transitive closure of the output link is added or removed
+	   @li REMOVED_OUTPUT_COMMAND	A wme is removed from the top level of the output link
+   */
+   typedef enum {
+	  gSKI_ADDED_OUTPUT_COMMAND,
+	  gSKI_MODIFIED_OUTPUT_COMMAND,
+	  gSKI_REMOVED_OUTPUT_COMMAND
+   } egSKIWorkingMemoryChange ;
 
    /**
       Types of processes in which the kernel can be housed.  

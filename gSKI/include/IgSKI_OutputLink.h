@@ -12,11 +12,14 @@
 #ifndef IGSKI_OUTPUTLINK_H
 #define IGSKI_OUTPUTLINK_H
 
+#include "gSKI_Enumerations.h"
+
 namespace gSKI {
 
    class IOutputProcessor;
    class IWMObject;
    class IWorkingMemory;
+   class IWorkingMemoryListener ;
    struct Error;
    
    /**
@@ -160,6 +163,27 @@ namespace gSKI {
        * This is useful for systems that only except input during callback events.
        */
       virtual void InvokeOutputProcessors(Error* err = 0) = 0;
+
+      /**
+       * @brief Listen for changes to wmes attached to the output link.
+       *
+	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	   * @param listener	The handler to call when event is fired
+       */
+	  virtual void AddWorkingMemoryListener(egSKIEventId            eventId, 
+											IWorkingMemoryListener* listener, 
+											Error*                  err = 0) = 0 ;
+
+	  /**
+       * @brief Remove an existing listener
+       *
+	   * @param eventId		The event to listen to.  Can only be gSKIEVENT_OUTPUT_PHASE_CALLBACK currently.
+	   * @param listener	The handler to call when event is fired
+       */
+	  virtual void RemoveWorkingMemoryListener(egSKIEventId            eventId, 
+											   IWorkingMemoryListener* listener, 
+											   Error*                  err = 0) = 0 ;
+
    };
 }
 

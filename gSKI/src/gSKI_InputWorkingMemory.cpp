@@ -535,12 +535,27 @@ namespace gSKI
 	      return ;
 	  }
 
-	  // Create the WMObject
-	  InputWMObject* pWMObject = new InputWMObject(pThis, id) ;
+	  // See if this object already exists
+	  InputWMObject* pWMObject = NULL ;
+	  tWMObjMap::iterator iter = pThis->m_wmobjectmap.find(id->common.hash_id) ;
 
-	 // This map goes from hash id for the symbol to a particular object
-	 // so registering here allows us to look the object up by symbol name in the future.
-	 pThis->m_wmobjectmap.insert(tWMObjMap::value_type( id->common.hash_id, pWMObject ));
+	  if (iter != pThis->m_wmobjectmap.end())
+		  pWMObject = iter->second ;
+	  else
+	  {
+		// Let's obey the semantics for this function and not do anything if the object doesn't exist.
+		// Create the WMObject
+		//InputWMObject* pWMObject = new InputWMObject(pThis, id) ;
+
+		// This map goes from hash id for the symbol to a particular object
+		// so registering here allows us to look the object up by symbol name in the future.
+		//pThis->m_wmobjectmap.insert(tWMObjMap::value_type( id->common.hash_id, pWMObject ));
+	  }
+
+	  // We need to add a reference to this object because the caller
+	  // should release it when they're finished with it.
+	  if (pWMObject)
+		  pWMObject->AddRef() ;
 
 	  *object = pWMObject ;
    }
