@@ -20,7 +20,11 @@ import java.util.*;
 
 /**
  *
- * Provides autocompletion support for Soar.
+ * Provides autocompletion support for Soar. Be careful with this bugger.
+ *  If it throws an exception, Eclipse complains when you try to save the file.
+ *  Currently, I just catch the offending exceptions, but somebody should really
+ *  go over this code and prevent them sometime. It's not too high a priority,
+ *  though, as this still produces the desired behavior just fine.
  * 
  * @author Tim Jasko
  * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor

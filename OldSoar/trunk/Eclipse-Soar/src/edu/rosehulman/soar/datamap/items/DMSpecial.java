@@ -36,8 +36,7 @@ public class DMSpecial extends DMIdentifier {
 
 		ret += tabs;
 
-		ret += "<" + getTypeName() + " name=\"" + getName() + "\""
-			+ " comment=\"" + getComment() + "\"" 
+		ret += "<" + getTypeName() + getSharedXML()
 			+ " >\n";
 		
 		for (int i=0; i<getChildren().size(); i++) {

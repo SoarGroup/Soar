@@ -26,7 +26,6 @@ public class InvokeParseFile implements IActionDelegate {
 		DataMap dm = DataMap.getAssociatedDatamap(_target);
 		
 		DataMapChecker.matches(_target, dm);
-		System.out.println("done");
 
 	}
 

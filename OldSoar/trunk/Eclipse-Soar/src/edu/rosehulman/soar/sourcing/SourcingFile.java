@@ -24,7 +24,7 @@ public class SourcingFile {
 		try {
 			String sourcingName = SourcingFile.getSourcingFileName(project);
 			
-			System.out.println("Rebuilding sourcing for project " + project.getName());
+			//System.out.println("Rebuilding sourcing for project " + project.getName());
 			
 			//Get the top level files and folders.
 			IResource kids[] = project.members();
@@ -84,7 +84,12 @@ public class SourcingFile {
 			
 
 		} catch (CoreException e) {
-			e.printStackTrace();
+			// Don't print this out. This will throw a whole lot of a exceptions
+			//  when you create a new project, because it will try to access the
+			//  new resources before it can. Just ignore them; it will succeed in
+			//  the end and build your precious sourcing file.
+			
+			//e.printStackTrace();
 		}
 	}
 	
@@ -99,7 +104,7 @@ public class SourcingFile {
 		try {
 			String sourcingName = SourcingFile.getSourcingFileName(tehFolder); 
 			
-			System.out.println("Building sourcing file for: " + tehFolder.getName());
+			//System.out.println("Building sourcing file for: " + tehFolder.getName());
 		
 			
 			//Get the top level files and folders.

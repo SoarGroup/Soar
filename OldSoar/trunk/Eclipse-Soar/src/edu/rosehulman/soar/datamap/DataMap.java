@@ -32,7 +32,43 @@ import org.w3c.dom.*;
 public class DataMap {
 	private DMSpecial _root;
 	private IFile _file;
+	private HashMap _ids;
 	
+	public static final QualifiedName NODE_NUMBER_ID
+		= new QualifiedName("edu.rosehulman.soar", "DMNumber");
+	
+	
+	public static int getCurrentID(IResource res) {
+		try {
+			String id = res.getProject().getPersistentProperty(NODE_NUMBER_ID);
+			
+			return Integer.parseInt(id);
+		
+		} catch (CoreException e) {
+			return 0;
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+	}
+	
+	public static void incrementCurrentID(IResource res) {
+		Integer newID = new Integer( getCurrentID(res) + 1);
+		
+		try {
+			res.getProject().setPersistentProperty(NODE_NUMBER_ID, newID.toString());
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public int getCurrentID() {
+		return DataMap.getCurrentID(_file);
+	}
+	
+	public void incrementCurrentID() {
+		DataMap.incrementCurrentID(_file);
+	}
 	
 	/**
 	 * Constructs the DataMap from the file.
@@ -104,6 +140,10 @@ public class DataMap {
 	} // void setRoot(DMItem newRoot)
 	
 	
+	public DMItem getItem(int id) {
+		return (DMItem) _ids.get(new Integer(id));
+	}
+	
 	
 	/**
 	 * Finds all attributes matching the given path. Since names
@@ -126,44 +166,49 @@ public class DataMap {
 	 * @return An ArrayList of all DMItems that match the given path.
 	 */
 	private ArrayList find(DMIdentifier node, ArrayList names, int index) {
-		
-			ArrayList kids = node.getChildren();
-			String name = (String) names.get(index);
-		
-			//System.out.println(node + ": " + index);
-		
-			//This is the final item! Yipee!
-			if (index == names.size()-1) {
-			
-			
-				ArrayList ret = new ArrayList();
-			
-				for (int i=0; i<kids.size(); i++) {
-					DMItem kid = (DMItem) kids.get(i);
-				
-					if (kid.getName().equals(name)) {
-						ret.add(kid);
-					} // if
-				} // for
-			
-				return ret;
-		
-			//Not the final item. There's some recursing to be done.
-			// I would like to point out that this would be prettier in Scheme.
-			} else {
-				ArrayList ret = new ArrayList();
-			
-				for (int i=0; i<kids.size(); i++) {
-					DMItem kid = (DMItem) kids.get(i);
 	
-					if (kid.getName().equals(name) && kid instanceof DMIdentifier) {
-						ret.addAll( find((DMIdentifier)kid, names, index+1));
-					} // if
-				} // for
+		ArrayList kids = node.getChildren();
+		
+		if (names.size() == 0) {
+			return kids;
+		}
+		
+		String name = (String) names.get(index);
+	
+		//System.out.println(node + ": " + index);
+	
+		//This is the final item! Yipee!
+		if (index == names.size()-1) {
+		
+		
+			ArrayList ret = new ArrayList();
+		
+			for (int i=0; i<kids.size(); i++) {
+				DMItem kid = (DMItem) kids.get(i);
 			
-				return ret;
-			} // else
-		} //ArrayList getSuggestions( ... )
+				if (kid.getName().equals(name)) {
+					ret.add(kid);
+				} // if
+			} // for
+		
+			return ret;
+	
+		//Not the final item. There's some recursing to be done.
+		// I would like to point out that this would be prettier in Scheme.
+		} else {
+			ArrayList ret = new ArrayList();
+		
+			for (int i=0; i<kids.size(); i++) {
+				DMItem kid = (DMItem) kids.get(i);
+
+				if (kid.getName().equals(name) && kid instanceof DMIdentifier) {
+					ret.addAll( find((DMIdentifier)kid, names, index+1));
+				} // if
+			} // for
+		
+			return ret;
+		} // else
+	} //ArrayList getSuggestions( ... )
 	
 	
 	/**
@@ -215,6 +260,7 @@ public class DataMap {
 	 * @throws Exception Any exception encountered in loading the DataMap.
 	 */
 	public void loadXML(IFile file) throws Exception {
+		_ids = new HashMap();
 		_file = file;
 		
 		try {
@@ -243,6 +289,7 @@ public class DataMap {
 	 * @param rootNode The root node of the datamap.
 	 */
 	private void parseRoot(Element rootNode) {
+		ArrayList pointers = new ArrayList();
 		_root = new DMSpecial();
 		
 		String name = rootNode.getAttribute("name");
@@ -256,12 +303,21 @@ public class DataMap {
 		for (int i=0; i<kids.getLength(); i++) {
 			
 			if (kids.item(i).getNodeType() == Node.ELEMENT_NODE) {
-				DMItem temp = parseNode((Element) kids.item(i));
+				DMItem temp = parseNode((Element) kids.item(i), pointers);
 				if (temp != null) {
 					_root.addChild(temp);
 				}
 			} // if
 		} // for i
+		
+		for (int i=0; i<pointers.size(); ++i) {
+			DMPointer pointer = (DMPointer) pointers.get(i);
+			
+			if (pointer.getTargetFile().equals(this.getFile())) {
+				pointer.setTarget( getItem(pointer.getTargetID()) );
+			}
+		}
+		
 	} // void parseRoot(Element rootNode)
 	
 	
@@ -271,7 +327,7 @@ public class DataMap {
 	 * @param node The Element to parse
 	 * @return A DMItem representing the Element that was parsed.
 	 */
-	private DMItem parseNode(Element node) {
+	private DMItem parseNode(Element node, ArrayList pointers) {
 		DMItem ret = new DMIdentifier();
 		
 		String type = node.getNodeName();
@@ -326,7 +382,7 @@ public class DataMap {
 			//traverse the Identifier's children and add them
 			for (int i=0; i<kids.getLength(); i++) {
 				if (kids.item(i).getNodeType() == Node.ELEMENT_NODE) {
-					DMItem kid = parseNode((Element) kids.item(i));
+					DMItem kid = parseNode((Element) kids.item(i), pointers);
 					if (kid != null) {
 						temp.addChild(kid);
 					}
@@ -357,7 +413,7 @@ public class DataMap {
 			//traverse the Identifier's children and add them
 			for (int i=0; i<kids.getLength(); i++) {
 				if (kids.item(i).getNodeType() == Node.ELEMENT_NODE) {
-					DMItem kid = parseNode((Element) kids.item(i));
+					DMItem kid = parseNode((Element) kids.item(i), pointers);
 					if (kid != null) {
 						temp.addChild(kid);
 					}
@@ -393,6 +449,23 @@ public class DataMap {
 			temp.setFile(file);
 		
 			ret = temp;
+			
+		//*****************************************
+		//               Pointer
+		} else if (type.equals("Pointer")) {
+			DMPointer temp = new DMPointer();
+		
+			IPath filePath = new Path(node.getAttribute("targetFile"));
+			IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(filePath);
+			
+			temp.setTargetFile(file);
+			
+			temp.setTargetID( Integer.parseInt(node.getAttribute("targetID")) );
+			
+	
+			ret = temp;
+			
+			pointers.add(temp);
 		
 		//*****************************************
 		//             Bad value
@@ -401,12 +474,26 @@ public class DataMap {
 			return null;
 		}
 		
+		
+		//*****************************************
 		//Every node has these properties
 		String name = node.getAttribute("name");
 		String comment = node.getAttribute("comment");
+		Integer id = new Integer(0);
+		try {
+			id = new Integer(node.getAttribute("id"));
+		} catch (NumberFormatException e) {
+			System.out.println("name: " + node.getAttribute("name"));
+			System.out.println("id: " + node.getAttribute("id"));
+		}
 		
 		ret.setName(name);
 		ret.setComment(comment);
+		ret.setID(id.intValue());
+		
+		
+		// put this in the HashMap
+		_ids.put(id, ret);
 		
 		return ret;
 	} // public DMItem parseNode(Element node)

@@ -8,7 +8,9 @@ package edu.rosehulman.soar.datamap.items;
 
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.dialogs.*;
+import org.eclipse.core.resources.*;
 
+import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.datamap.validators.*;
 
 /**
@@ -65,8 +67,13 @@ public class DMString extends DMItem {
 		return 0;
 	}
 	
-	public DMItem createNew() {
-		return new DMString();
+	public DMItem createNew(IFile file) {
+		DMItem ret = new DMString();
+		
+		ret._id = DataMap.getCurrentID(file);
+		DataMap.incrementCurrentID(file);
+		
+		return ret;
 	}
 	
 	public String getXML(int depth) {
@@ -79,8 +86,8 @@ public class DMString extends DMItem {
 		
 		ret += tabs;
 		
-		ret += "<" + getTypeName() + " name=\"" + getName() + "\""
-			+ " comment=\"" + getComment() + "\" />\n";
+		ret += "<" + getTypeName() + getSharedXML() 
+			+ " />\n";
 		
 		
 		return ret;

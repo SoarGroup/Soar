@@ -26,6 +26,7 @@ public class ItemImages {
 	public static final String ITEM_IDENTIFIER = "ITEM_IDENTIFIER";
 	public static final String ITEM_INT = "ITEM_INT";
 	public static final String ITEM_STRING = "ITEM_STRING";
+	public static final String ITEM_POINTER = "ITEM_POINTER";
 	
 	/**
 	 * Loads the required images into the image registry
@@ -38,6 +39,7 @@ public class ItemImages {
 		imageReg.put(ItemImages.ITEM_IDENTIFIER, getImageDescriptor("id.gif"));
 		imageReg.put(ItemImages.ITEM_INT, getImageDescriptor("int.gif"));
 		imageReg.put(ItemImages.ITEM_STRING, getImageDescriptor("string.gif"));
+		imageReg.put(ItemImages.ITEM_POINTER, getImageDescriptor("pointer.gif"));
 	}
 	
 	/**
@@ -58,6 +60,8 @@ public class ItemImages {
 			return ir.get(ItemImages.ITEM_INT);
 		} else if (obj instanceof DMString) {
 			return ir.get(ItemImages.ITEM_STRING);
+		} else if (obj instanceof DMPointer) {
+			return ir.get(ItemImages.ITEM_POINTER);
 		} else {
 			return PlatformUI.getWorkbench().
 				getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);		
@@ -82,6 +86,8 @@ public class ItemImages {
 			return ir.getDescriptor(ItemImages.ITEM_INT);
 		} else if (obj instanceof DMString) {
 			return ir.getDescriptor(ItemImages.ITEM_STRING);
+		} else if (obj instanceof DMPointer) {
+			return ir.getDescriptor(ItemImages.ITEM_POINTER);
 		} else {
 			return PlatformUI.getWorkbench().
 				getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJ_ELEMENT);		

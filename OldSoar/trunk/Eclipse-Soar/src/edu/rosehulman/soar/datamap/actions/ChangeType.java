@@ -49,7 +49,7 @@ public class ChangeType extends Action {
 	 * Change the target's type.
 	 */
 	public void run() {
-		DMItem temp = _itemType.createNew();
+		DMItem temp = _itemType.createNew(_parent.getFile());
 	
 		temp.setName(_target.getName());
 		

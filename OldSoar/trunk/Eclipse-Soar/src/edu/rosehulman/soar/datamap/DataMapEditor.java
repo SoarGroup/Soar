@@ -6,8 +6,7 @@
  */
 package edu.rosehulman.soar.datamap;
 
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
@@ -29,11 +28,13 @@ import edu.rosehulman.soar.datamap.actions.*;
  * @see DataMap
  */
 public class DataMapEditor extends EditorPart {
-	private FileEditorInput _file;
+	private IFileEditorInput _fileInput;
 	private boolean _isDirty = false;
 	
 	private TreeViewer viewer;
 	private DataMapContentProvider _content;
+	
+	public static final String ID = "edu.rosehulman.soar.datamap.DataMapEditor";
 	
 
 	public DataMapEditor() {
@@ -62,11 +63,11 @@ public class DataMapEditor extends EditorPart {
 	public void init(IEditorSite site, IEditorInput input)
 		throws PartInitException {
 		
-		if (! (input instanceof FileEditorInput)) {
+		if (! (input instanceof IFileEditorInput)) {
 			throw new PartInitException("Invalid Input");
 		} // if
 		
-		_file = (FileEditorInput) input;
+		_fileInput = (IFileEditorInput) input;
 		
 		
 		try {
@@ -74,7 +75,7 @@ public class DataMapEditor extends EditorPart {
 			setSite(site);
 			setInput(input);
 			
-			setTitle(_file.getFile().getProject().getName() + " DataMap");
+			setTitle(_fileInput.getFile().getProject().getName() + " DataMap");
 			
 		} catch (Exception e) {
 			throw new PartInitException(e.getMessage());
@@ -95,7 +96,7 @@ public class DataMapEditor extends EditorPart {
 
 	public void createPartControl(Composite parent) {
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		_content = new DataMapContentProvider(this, _file.getFile().getProject(), _file);
+		_content = new DataMapContentProvider(this, _fileInput.getFile().getProject(), _fileInput);
 		
 		viewer.setContentProvider(_content);
 		viewer.setLabelProvider(new DataMapLabelProvider());
@@ -195,6 +196,11 @@ public class DataMapEditor extends EditorPart {
 	//*******************************************
 	//         Special methods I made up
 	//*******************************************
+	
+	
+	public IFile getFile() {
+		return _fileInput.getFile();
+	}
 	
 	/**
 	 * Gets the viewer being used by this editor.

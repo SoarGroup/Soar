@@ -12,6 +12,7 @@ import edu.umich.visualsoar.parser.*;
 import java.util.*;
 
 import org.eclipse.ui.part.*;
+import org.eclipse.core.resources.*;
 
 
 /**
@@ -26,6 +27,7 @@ public abstract class DMItem {
 	protected String _name;
 	protected String _comment = "";
 	protected DMItem _parent;
+	protected int _id;
 	
 	/**
 	 * The default constructor
@@ -40,6 +42,22 @@ public abstract class DMItem {
 	 */
 	public DMItem(String name) {
 		_name = name;
+	}
+	
+	/**
+	 * Sets the item's ID number, which should be unique to the project.
+	 * @param id
+	 */
+	public void setID(int id) {
+		_id = id;
+	}
+	
+	/**
+	 * Get the item's ID number, which should be unique to the project.
+	 * @return
+	 */
+	public int getID() {
+		return _id;
 	}
 	
 	
@@ -207,11 +225,11 @@ public abstract class DMItem {
 	}
 	
 	/**
-	 * Creates a new instance of this class of item
+	 * Creates a new instance of this class of item.
 	 * 
 	 * @return A new descendent of DMItem
 	 */
-	public abstract DMItem createNew();
+	public abstract DMItem createNew(IFile dmFile);
 	
 	/**
 	 * Returns a string indicating the type of this Item.
@@ -255,6 +273,14 @@ public abstract class DMItem {
 	 */
 	public abstract String getXML(int depth);
 	
+	
+	protected String getSharedXML() {
+		String ret = " name=\"" + getName() + "\""
+			+ " comment=\"" + getComment() + "\""
+			+ " id=\"" + getID() + "\"";
+			
+		return ret;
+	}
 	
 	/**
 	 * Creates a copy/clone of this node. If the node has children, copies of

@@ -28,10 +28,10 @@ public class SoarPerspectiveFactory implements IPerspectiveFactory {
 		topLeft.addView(SoarPlugin.ID_NAVIGATOR);
 
 		// Bottom left: Outline view and Property Sheet view
-		/*IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, 0.50f,
+		IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, 0.70f,
 			"topLeft");
 		bottomLeft.addView(IPageLayout.ID_OUTLINE);
-		bottomLeft.addView(IPageLayout.ID_PROP_SHEET); */
+		//bottomLeft.addView(IPageLayout.ID_PROP_SHEET);
 
 		// Bottom right: Task List view
 		layout.addView(IPageLayout.ID_TASK_LIST, IPageLayout.BOTTOM, 0.75f, editorArea);

@@ -49,7 +49,7 @@ public class AddItem extends Action {
 	 * user, then adds it to the target if OK was pressed. 
 	 */
 	public void run() {
-		DMItem temp = mItemType.createNew();
+		DMItem temp = mItemType.createNew(mParent.getFile());
 	
 		int res = temp.initValuesDialog(mParent);
 		

@@ -6,11 +6,13 @@
  */
 package edu.rosehulman.soar.datamap.items;
 
+import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.datamap.items.dialogs.*;
 import edu.rosehulman.soar.datamap.validators.*;
 
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.dialogs.*;
+import org.eclipse.core.resources.*;
 
 /**
  * Represents an Integer on the datamap.
@@ -118,8 +120,13 @@ public class DMInteger extends DMNumericItem {
 		return false;
 	}
 	
-	public DMItem createNew() {
-		return new DMInteger();
+	public DMItem createNew(IFile file) {
+		DMItem ret = new DMInteger();
+		
+		ret._id = DataMap.getCurrentID(file);
+		DataMap.incrementCurrentID(file);
+		
+		return ret;
 	}
 	
 	public String getXML(int depth) {
@@ -132,8 +139,7 @@ public class DMInteger extends DMNumericItem {
 	
 		ret += tabs;
 	
-		ret += "<" + getTypeName() + " name=\"" + getName() + "\""
-			+ " comment=\"" + getComment() + "\"" 
+		ret += "<" + getTypeName() + getSharedXML() 
 			+ " lower=\"" + getLowerBound() + "\""
 			+ " upper=\"" + getUpperBound() + "\"" + " />\n";
 	

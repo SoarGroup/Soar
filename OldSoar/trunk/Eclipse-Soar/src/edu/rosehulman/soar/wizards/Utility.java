@@ -28,6 +28,9 @@ import org.eclipse.core.resources.*;
  */
 public class Utility {
 	
+	public static final QualifiedName SOAR_TYPE
+		= new QualifiedName("edu.rosehulman.soar", "SoarType");
+	
 
 	/**
 	 * Initializes file contents with a template. 
@@ -116,14 +119,17 @@ public class Utility {
 	 * @param mark What to mark this resource as.
 	 */
 	public static void markResource(IResource res, String mark) {
+		
 		try {
-			IMarker marker = res.createMarker(
+			/*IMarker marker = res.createMarker(
 				"edu.rosehulman.soar.natures.SoarFile");
 				
-			marker.setAttribute("type", "file");
+			marker.setAttribute("type", "file"); */
+			
+			res.setPersistentProperty(SOAR_TYPE, mark);
 		} catch (CoreException e) {
 			e.printStackTrace();
-		} // catch
+		} // catch 
 	}
 	
 	

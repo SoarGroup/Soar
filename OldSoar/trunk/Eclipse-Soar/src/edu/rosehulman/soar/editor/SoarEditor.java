@@ -9,13 +9,15 @@ package edu.rosehulman.soar.editor;
 
 
 import org.eclipse.ui.part.*;
+import org.eclipse.ui.views.contentoutline.*;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
-import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import edu.rosehulman.soar.*;
+import edu.rosehulman.soar.editor.outline.*;
 import edu.rosehulman.soar.editor.soar.*;
 import edu.rosehulman.soar.editor.autocomplete.*;
 import edu.rosehulman.soar.errorchecking.*;
@@ -28,6 +30,8 @@ import edu.rosehulman.soar.errorchecking.*;
  */
 public class SoarEditor extends AbstractTextEditor
 {
+	private SoarContentOutlinePage _outlinePage;
+	
 	//private static SoarCodeScanner _soarCodeScanner;
 	private static ITokenScanner _soarCodeScanner;
 
@@ -119,6 +123,29 @@ public class SoarEditor extends AbstractTextEditor
 		SoarSourceChecker.checkSource(
 			((FileEditorInput) this.getEditorInput()).getFile() );
 		
+		_outlinePage.update();
+		
 		this.getVerticalRuler().update();
+	}
+	
+	
+	public Object getAdapter(Class adapter) {
+		if (adapter.equals(IContentOutlinePage.class)) {
+			
+			_outlinePage = new SoarContentOutlinePage( this,
+				((FileEditorInput) this.getEditorInput()).getFile());
+			return _outlinePage;
+			
+		} else {
+			return super.getAdapter(adapter);
+		}
+	}
+	
+	public void gotoLine(int line) {
+		IDocument doc = this.getSourceViewer().getDocument();
+		try {
+			this.selectAndReveal( doc.getLineOffset(line), doc.getLineLength(line) );
+		} catch (BadLocationException e) {
+		}
 	}
 }

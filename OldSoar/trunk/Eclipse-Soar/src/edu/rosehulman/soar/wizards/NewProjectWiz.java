@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 
+import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.natures.*;
 import edu.rosehulman.soar.sourcing.*;
 
@@ -112,6 +113,9 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 				description.setNatureIds(newNatures);
 				
 				newProject.setDescription(description, IResource.FORCE ,monitor);
+				
+				
+				newProject.setPersistentProperty(DataMap.NODE_NUMBER_ID, "10");
 			} catch (CoreException e) {
 				e.printStackTrace();
 			} // catch
@@ -138,6 +142,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 			  Utility.getFileTemplate(file_firstload, "_firstload.soar"),
 			  true, monitor);
 		} // if
+		Utility.markResource(file_firstload, "file");
 		
 		IFile filedatamap = newProject.getFile("datamap.xdm");
 		if (!filedatamap.exists()) {
@@ -155,6 +160,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 			  Utility.getFileTemplate(file_all, "_all.soar"),
 			  true, monitor);
 		} // if
+		Utility.markResource(file_all, "file");
 		
 		IFile filetopstate = folderElaborations.getFile("top-state.soar");
 		if (!filetopstate.exists()) {
@@ -162,6 +168,7 @@ public class NewProjectWiz extends Wizard implements INewWizard {
 			  Utility.getFileTemplate(filetopstate, "top-state.soar"),
 			  true, monitor);
 		} // if
+		Utility.markResource(filetopstate, "file");
 		
 		SourcingFile.createSourcingFile(newProject, monitor);
 		

@@ -10,7 +10,9 @@ import java.util.*;
 
 import org.eclipse.jface.dialogs.*;
 import org.eclipse.ui.part.*;
+import org.eclipse.core.resources.*;
 
+import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.datamap.validators.*;
 
 
@@ -103,8 +105,13 @@ public class DMIdentifier extends DMItem {
 		return true;
 	}
 	
-	public DMItem createNew() {
-		return new DMIdentifier();
+	public DMItem createNew(IFile file) {
+		DMItem ret = new DMIdentifier();
+		
+		ret._id = DataMap.getCurrentID(file);
+		DataMap.incrementCurrentID(file);
+		
+		return ret;
 	}
 	
 	public String getXML(int depth) {
@@ -117,8 +124,7 @@ public class DMIdentifier extends DMItem {
 
 		ret += tabs;
 
-		ret += "<" + getTypeName() + " name=\"" + getName() + "\""
-			+ " comment=\"" + getComment() + "\"" 
+		ret += "<" + getTypeName() + getSharedXML() 
 			+ " >\n";
 		
 		for (int i=0; i<getChildren().size(); i++) {

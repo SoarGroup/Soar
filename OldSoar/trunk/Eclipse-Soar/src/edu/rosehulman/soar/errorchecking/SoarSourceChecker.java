@@ -37,7 +37,7 @@ public class SoarSourceChecker {
 			
 		} catch (ParseException e) {
 			
-			System.out.println("parsing error!");
+			//System.out.println("parsing error!");
 			
 			try {
 				IMarker err = file.createMarker(IMarker.PROBLEM);

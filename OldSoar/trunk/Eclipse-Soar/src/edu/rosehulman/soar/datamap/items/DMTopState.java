@@ -35,8 +35,7 @@ public class DMTopState extends DMSpecial {
 
 		ret += tabs;
 
-		ret += "<" + getTypeName() + " name=\"" + getName() + "\""
-			+ " comment=\"" + getComment() + "\"" 
+		ret += "<" + getTypeName() + getSharedXML()
 			+ " />\n";
 
 

@@ -6,11 +6,13 @@
  */
 package edu.rosehulman.soar.datamap.items;
 
+import edu.rosehulman.soar.datamap.*;
 import edu.rosehulman.soar.datamap.items.dialogs.*;
 import edu.rosehulman.soar.datamap.validators.*;
 
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.dialogs.*;
+import org.eclipse.core.resources.*;
 
 /**
  *
@@ -120,8 +122,13 @@ public class DMFloat extends DMNumericItem {
 		return false;
 	}
 	
-	public DMItem createNew() {
-		return new DMFloat();
+	public DMItem createNew(IFile file) {
+		DMItem ret = new DMFloat();
+		
+		ret._id = DataMap.getCurrentID(file);
+		DataMap.incrementCurrentID(file);
+		
+		return ret;
 	}
 
 	public String getXML(int depth) {
@@ -134,8 +141,7 @@ public class DMFloat extends DMNumericItem {
 
 		ret += tabs;
 
-		ret += "<" + getTypeName() + " name=\"" + getName() + "\""
-			+ " comment=\"" + getComment() + "\"";
+		ret += "<" + getTypeName() + getSharedXML();
 		
 		if (getLowerBound().doubleValue() == Double.MIN_VALUE) {
 			ret += " lower=\"-infinity\"";

@@ -79,6 +79,8 @@ public class DataMapChecker {
 	 */
 	public static void matches(IFile source, Vector productions, DataMap dm) {
 		try {
+			
+			
 			source.deleteMarkers(DataMapChecker.PROBLEM_MARKER, false, 0);
 			
 			Enumeration enum = productions.elements();
@@ -88,14 +90,14 @@ public class DataMapChecker {
 				
 				SoarProduction sp = (SoarProduction) enum.nextElement();
 					
-				System.out.println();
-				System.out.println(sp.getName() + ":" +  sp.getProductionType());
+				//System.out.println();
+				//System.out.println(sp.getName() + ":" +  sp.getProductionType());
 					
 					
 				TriplesExtractor te = new TriplesExtractor(sp);
 					
-				System.out.println(te.getStateVariableCount());
-				System.out.println(te.stateVariable().getString());
+				//System.out.println(te.getStateVariableCount());
+				//System.out.println(te.stateVariable().getString());
 					
 					
 				Enumeration e = new EnumerationIteratorWrapper(te.triples());

@@ -22,7 +22,7 @@ public class SoarChangeListener implements IResourceChangeListener {
 				event.getDelta().accept(new SoarDeltaVisitor());
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 		} // if
 	} // void resourceChanged( ... )
@@ -49,7 +49,7 @@ public class SoarChangeListener implements IResourceChangeListener {
 							//proj.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, null);
 						} // if
 					} catch (Exception e) {
-						e.printStackTrace();
+						//e.printStackTrace();
 					} // catch
 					
 					break;

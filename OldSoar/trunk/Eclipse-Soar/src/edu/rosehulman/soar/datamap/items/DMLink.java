@@ -100,8 +100,7 @@ public class DMLink extends DMSpecial {
 
 		ret += tabs;
 
-		ret += "<" + getTypeName() + " name=\"" + getName() + "\""
-			+ " comment=\"" + getComment() + "\""
+		ret += "<" + getTypeName() + getSharedXML()
 			+ " path=\"" + getFile().getFullPath() + "\""
 			+ " />\n";
 

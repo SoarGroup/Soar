@@ -202,12 +202,12 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 
 
 			if (! newCurrLine.equals(currLine)) { // not already justified
-				System.out.println();
-				System.out.println("*currLine: '" + currLine + "'");
+				//System.out.println();
+				//System.out.println("*currLine: '" + currLine + "'");
 				
-				System.out.println("replacing: '" +
-					doc.get(currLineOffset, doc.getLineLength(currLineNumber)) + "'");
-				System.out.println("with: '" + newCurrLine + "'");
+				//System.out.println("replacing: '" +
+				//	doc.get(currLineOffset, doc.getLineLength(currLineNumber)) + "'");
+				//System.out.println("with: '" + newCurrLine + "'");
 				
 				int lineLength = doc.getLineLength(currLineNumber); 
 				if (doc.getLineDelimiter(currLineNumber) != null) {
@@ -222,10 +222,10 @@ public class SoarAutoIndentStrategy implements IAutoIndentStrategy {
 				comm.offset -= startingSpaces(currLine);
 				
 				if (Character.isWhitespace(comm.text.charAt(comm.text.length()-1))) {
-					System.out.println("is whitespace");
+					//System.out.println("is whitespace");
 					doc.replace(currLineOffset + newCurrLine.length(), 0, comm.text);
 				} else {
-					System.out.println("not whitespace");
+					//System.out.println("not whitespace");
 				}
 				
 				comm.offset += comm.text.length();

@@ -1,19 +1,26 @@
 <?xml version="1.0"?>
-<Special name="${project}" comment="">
-	<Special name="io" comment="">
-		<Special name="input-link" comment="">
+<Special name="${project}" comment="" id="0">
+	<Special name="io" comment="" id="1">
+		<Special name="input-link" comment="" id="2">
 		</Special>
-		<Identifier name="output-link" comment="">
+		<Identifier name="output-link" comment="" id="3">
 		</Identifier>
 	</Special>
-	<Enumeration name="name" comment="">
+	<Enumeration name="name" comment="" id="4">
 		<enum value="${project}" />
 	</Enumeration>
-	<Enumeration name="superstate" comment="">
+	<Enumeration name="superstate" comment="" id="5">
 		<enum value="nil" />
 	</Enumeration>
-	<TopState name="top-state"  comment=""/>
-	<Enumeration name="type" comment="">
+	<TopState name="top-state"  comment="" id="6"/>
+	<Enumeration name="type" comment="" id="7">
 		<enum value="state" />
 	</Enumeration>
+	<Identifier name="operator" comment="" id="8">
+		<Enumeration name="name" comment="" id="9">
+			<enum value="pie" />
+		</Enumeration>
+		<Identifier name="someid" comment="Am I visible?" id="10">
+		</Identifier>
+	</Identifier>
 </Special>

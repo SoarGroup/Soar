@@ -48,6 +48,11 @@
 		</image>
 	</extension>
 	
+	<extension point="org.eclipse.ui.elementFactories">
+		<factory id="edu.rosehulman.soar.datamap.editor.DatamapInputFactory"
+			class="edu.rosehulman.soar.datamap.editor.DatamapInputFactory" /> 
+	</extension>
+	
 	
 	<!-- Soar File Marker -->
 	
@@ -105,7 +110,6 @@
          point="org.eclipse.ui.editors">
       <editor
             name="DataMap Editor"
-            extensions="xdm"
             filenames="datamap.xml"
             icon="icons/soar.gif"
             class="edu.rosehulman.soar.datamap.DataMapEditor"
@@ -237,6 +241,9 @@
   
   <!-- Add the top-level menu items to files -->
   
+  
+
+  
 
 	<!-- Parse the file -->
 	<extension point="org.eclipse.ui.popupMenus">
@@ -320,6 +327,28 @@
   </extension>
 
   <!-- We have to add the menu to folders, too -->
+  
+	<extension point="org.eclipse.ui.popupMenus">
+		<objectContribution
+			id="edu.rosehulman.soar.datamap.invoker"
+			objectClass="org.eclipse.core.resources.IContainer">
+			<filter
+				name="projectNature"
+				value="edu.rosehulman.soar.natures.SoarProjectNature">
+			</filter>
+			<action
+				id="edu.rosehulman.soar.datamap.DataMapInvoker"
+				label="Open Datamap"
+				icon="icons/soar.gif"
+				menubarPath="datamap"
+				class="edu.rosehulman.soar.datamap.DataMapInvoker"
+				enablesFor="1">
+			</action>
+		</objectContribution>
+	</extension>
+  
+  
+  
   <extension point="org.eclipse.ui.popupMenus">
 	  <objectContribution
 		  id="edu.rosehulman.soar.wizards.addsuboperatormenu.folder"

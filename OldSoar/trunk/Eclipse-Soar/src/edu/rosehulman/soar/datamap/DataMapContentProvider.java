@@ -6,6 +6,7 @@
  */
 package edu.rosehulman.soar.datamap;
 
+import edu.rosehulman.soar.datamap.editor.*;
 import edu.rosehulman.soar.datamap.items.*;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -13,9 +14,9 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.resources.*;
-import org.eclipse.ui.part.*;
+import org.eclipse.ui.*;
 
-
+import java.util.*;
 
 /**
  *
@@ -29,19 +30,21 @@ import org.eclipse.ui.part.*;
  */
 public class DataMapContentProvider implements ITreeContentProvider {
 	IProject _project;
+	DatamapEditorInput _fileInput;
 	IFile _file;
 	DataMapEditor _parent;
-	DMItem root;
+	DMItem _root;
 	DataMap _dm;
 	
 	Object[] rootArray = new Object[1];
 	
 	
 	public DataMapContentProvider(DataMapEditor parent, IProject project,
-		FileEditorInput file) {
+		IFileEditorInput file) {
 		
 		_parent = parent;
 		_project = project;
+		_fileInput = (DatamapEditorInput) file;
 		_file = file.getFile();
 		
 		try {
@@ -78,14 +81,57 @@ public class DataMapContentProvider implements ITreeContentProvider {
 	}
 	
 	protected void resetRoot() {
-		root = _dm.getRoot();
-		rootArray[0] = root;
+		DMItem root;
+		
+		ArrayList path = _fileInput.getPath();
+		
+		if (path.size() == 0) {
+			root = findOpNode(path, _fileInput.getName());
+			
+			if (root == null) {
+				root = _dm.getRoot();
+			}
+
+		
+		} else {
+		
+			root = _dm.getRoot();
+			
+		
+		}
+		
+		_root = root;
+		rootArray[0] = _root;
+		
 		_parent.getViewer().refresh();
 	}
 	
+	private DMItem findOpNode(ArrayList path, String name) {
+		if (! name.equals("")) {
+			ArrayList ops = _dm.find(path);
+				
+			for (int i=0; i<ops.size(); ++i) {
+				DMItem op = (DMItem) ops.get(i);
+					
+				if (op.acceptsChildren()) {
+					ArrayList children = op.getChildren();
+					for (int i2=0; i2<children.size(); i2++) {
+						DMItem kid = (DMItem) children.get(i2); 
+						if (kid instanceof DMEnumeration && kid.getName().equals("name")
+							&& ((DMEnumeration) kid).getEnums().get(0).equals(name) ) {
+							
+							return op;
+						}
+					} // for i2
+				}
+			} // for i
+		}
+		
+		return null;
+	}
 	
 	public DMItem getRoot() {
-		return root;
+		return _root;
 	}
 
 	
@@ -101,6 +147,24 @@ public class DataMapContentProvider implements ITreeContentProvider {
 			
 			if (par.acceptsChildren()) {
 				//System.out.println(par.getChildren().toArray());
+				
+				if (par != _root && par instanceof DMIdentifier
+					&& par.getName().equals("operator")) {
+					
+					ArrayList children = par.getChildren();
+					
+					for (int i=0; i<children.size(); ++i) {
+						if ( ((DMItem)children.get(i)).getName().equals("name") ) {
+							Object[] ret = new Object[1];
+							ret[0] = children.get(i);
+							
+							return ret;
+						}
+					}
+					
+					return null;
+				}
+				
 				return par.getChildren().toArray();
 			} else {
 				return null;
