@@ -203,12 +203,19 @@ ________________________________________________________________________________
 Other changes for Soar 8.5 made after the above document was written:
 
 - Removal of many depricated Tcl/Tk functions, upgrading them to Tcl/Tk 8.4.4
-- Various stability enhancements
-- Minor crash fixes in TankSoar
-- 'init-soar' crash fix in both Eaters and TankSoar
-- Fixed some broken commands
-- Fixed some broken internal behavior
-  - Decision cycle bug
+- Various stability enhancements, including:
+  - Kernel now uses snprintf() instead of sprintf() whenever possible.
+  - Kernel now uses strncpy() instead of strcpy() whenever possible.
+  - Kernel now uses strncat() instead of strcat() whenever possible.
+- 'verbose' command bug fix, it was not working as documented when 
+  multiple agents were active.
+- 'init-soar' kernel crash fixed in both Eaters and TankSoar.
+- MSVC and GCC warning levels moved to maximum, all warnings silenced.
+- Fixed bug so saving rete is possible when justifications active.
+- Logging bug fixed, did not work properly with multiple active 
+  agents.
+- 'indifferent-selection -ask' command fixed.
+- Decision cycle bug fix.
 - All demos are in VisualSoar format now
 
 _________________________________________________________________________________
