@@ -3,10 +3,10 @@
 #include <crtdbg.h>
 
 ////// Define the type of interface to Soar that you're using:
-#define GSKI_DIRECT
+//#define GSKI_DIRECT
 //#define SML_THROUGH_GSKI
 //#define SML_SGIO_HYBRID
-//#define SGIO_DIRECT
+#define SGIO_DIRECT
 
 #ifdef SGIO_DIRECT
 	//select which type of sgio interface to use	
