@@ -83,7 +83,7 @@ public class RuleEditor extends CustomInternalFrame
     private Action redoAction = new RedoAction();
     private Action cutAction = new DefaultEditorKit.CutAction();
     private Action copyAction = new DefaultEditorKit.CopyAction();
-    private Action pasteAction = new DefaultEditorKit.PasteAction();
+    private Action pasteAction = new PasteAction();
     private Action insertTextFromFileAction = new InsertTextFromFileAction();
 
     private Action commentOutAction = new CommentOutAction();
@@ -1679,6 +1679,20 @@ public class RuleEditor extends CustomInternalFrame
         }
     }
 
+    class PasteAction extends DefaultEditorKit.PasteAction
+    {
+        public PasteAction() 
+        {
+            super();
+        }
+
+        public void actionPerformed(ActionEvent e) 
+        {
+            super.actionPerformed(e);
+            editorPane.colorSyntax();
+        }
+    }
+    
     class FindAction extends AbstractAction 
     {
         public FindAction() 

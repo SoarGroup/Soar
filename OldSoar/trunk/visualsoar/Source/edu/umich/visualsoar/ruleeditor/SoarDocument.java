@@ -202,9 +202,11 @@ public class SoarDocument extends DefaultStyledDocument
                 break;
                                     
             case SoarParserConstants.CARET : // followed by a STRING
-                begin = 1+ startOffset + currToken.beginColumn;
-                
+                begin = startOffset + currToken.beginColumn;
+                colorRange(begin, 1, SoarParserConstants.DEFAULT);
+
                 currToken = carefullyGetNextToken(mgr);
+                begin += 1;
                 if ((currToken.kind == SoarParserConstants.SYMBOLIC_CONST)
                     || (currToken.kind == SoarParserConstants.INTEGER_CONST)
                     || (currToken.kind == SoarParserConstants.FLOATING_POINT_CONST))
@@ -319,6 +321,38 @@ public class SoarDocument extends DefaultStyledDocument
                     inRHS = false;
                 }
                 break;
+
+            case SoarParserConstants.LPAREN:
+            case SoarParserConstants.RPAREN:
+            case SoarParserConstants.AMPERSAND:
+            case SoarParserConstants.ATSIGN:
+            case SoarParserConstants.COMMA:
+            case SoarParserConstants.EQUAL:
+            case SoarParserConstants.EMARK:
+            case SoarParserConstants.GREATER:
+            case SoarParserConstants.HYPHEN:
+            case SoarParserConstants.LESS:
+            case SoarParserConstants.PERIOD:
+            case SoarParserConstants.PLUS:
+            case SoarParserConstants.QMARK:
+            case SoarParserConstants.TILDE:
+            case SoarParserConstants.COLON:
+            case SoarParserConstants.LSQBRACET:
+            case SoarParserConstants.RSQBRACET:
+            case SoarParserConstants.EXPONENT:
+                begin = startOffset + currToken.beginColumn;
+                colorRange(begin, 1, SoarParserConstants.DEFAULT);
+                break;
+                
+            case SoarParserConstants.LDISJUNCT:
+            case SoarParserConstants.RDISJUNCT:
+            case SoarParserConstants.GEQUAL:
+            case SoarParserConstants.LEQUAL:
+            case SoarParserConstants.NEQUAL:
+                begin = startOffset + currToken.beginColumn;
+                colorRange(begin, 2, SoarParserConstants.DEFAULT);
+                break;
+
                 
             default:
                 break;
