@@ -19,6 +19,11 @@
 #include "sock_Check.h"
 #include "sock_OSspecific.h"
 
+// helps quell warnings
+#ifndef unused
+#define unused(x) (void)(x)
+#endif
+
 static FILE* pTraceFile = 0 ;
 
 // Defined below
@@ -160,6 +165,8 @@ void PrintDebugSimple(char const* pStr)
 		fprintf(pTraceFile, "%s\n", pStr) ;
 		fflush(pTraceFile) ;
 	}
+#else
+	unused(pTraceFile); // quells gcc warning when _DEBUG isn't defined
 #endif
 
 	OutputDebugString(pStr) ;
