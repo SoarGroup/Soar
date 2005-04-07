@@ -659,7 +659,7 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 
 	// Flag to control printing debug information about the input link
 #ifdef _DEBUG
-	bool kDebugInput = true ;
+	bool kDebugInput = false ;
 #else
 	bool kDebugInput = false ;
 #endif
