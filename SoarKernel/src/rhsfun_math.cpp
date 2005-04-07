@@ -13,7 +13,7 @@
  *
  * =======================================================================
  *  Support routines for doing math in the RHS of productions.
- *  BUGBUG more comments here.  Nothing in soarkernel.h either.
+ *  Need more comments here.  Nothing in soarkernel.h either.
  *  
  *  
  * =======================================================================

@@ -197,7 +197,7 @@ extern void print_instantiation_with_wmes (agent* thisAgent,
                                            wme_trace_type wtt,
 										   int action);
 
-extern void print_list_of_conditions(agent* thisAgent, condition *cond); /* BUGBUG comments */
+extern void print_list_of_conditions(agent* thisAgent, condition *cond); 
 
 #ifdef __cplusplus
 }

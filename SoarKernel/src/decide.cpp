@@ -486,6 +486,7 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
    preference *pref, *next_pref;
    
    /* JC ADDED: Tell gSKI that an object is being removed from memory */
+   /* KJC:  Do we really want this here?  This is garbage collection, not WM operations */
    gSKI_MakeAgentCallback(gSKI_K_EVENT_WMOBJECT_REMOVED, 0, thisAgent, static_cast<void*>(id));
 
 #ifdef DEBUG_LINKS  
@@ -1760,7 +1761,7 @@ void remove_existing_attribute_impasse_for_slot (agent* thisAgent, slot *s) {
    Make_fake_preference_for_goal_item() builds such a fake preference
    and instantiation, given a pointer to the supergoal and the
    acceptable/require preference for the value, and returns a pointer
-   to the fake preference.  *** for Soar 7.3, we changed the fake
+   to the fake preference.  *** for Soar 8.3, we changed the fake
    preference to be ACCEPTABLE instead of REQUIRE.  This could
    potentially break some code, but it avoids the BUGBUG condition
    that can occur when you have a REQUIRE lower in the stack than an
@@ -2231,9 +2232,6 @@ void remove_wmes_for_context_slot (agent* thisAgent, slot *s) {
 void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   preference *p;
 
-  /* JC ADDED: Tell gSKI that we have removed a subgoal */
-  gSKI_MakeAgentCallback(gSKI_K_EVENT_SUBSTATE_DESTROYED, 0, thisAgent, static_cast<void*>(goal));
-
   ms_change *head, *tail;  /* REW:   08.20.97 */
 
   /* --- remove descendents of this goal --- */
@@ -2246,6 +2244,9 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
                        POP_CONTEXT_STACK_CALLBACK, 
                        (soar_call_data) goal);
 #endif
+
+  /* JC ADDED: Tell gSKI that we have removed a subgoal */
+  gSKI_MakeAgentCallback(gSKI_K_EVENT_SUBSTATE_DESTROYED, 0, thisAgent, static_cast<void*>(goal));
 
   /* --- disconnect this goal from the goal stack --- */
   if (goal == thisAgent->top_goal) {

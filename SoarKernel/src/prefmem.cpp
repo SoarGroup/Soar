@@ -12,7 +12,7 @@
  *  file:  prefmem.cpp
  *
  * =======================================================================
- *  BUGBUG  need some comments here
+ *  NOTE:  need some comments here
  * =======================================================================
  */
 
@@ -34,6 +34,7 @@
 #include "tempmem.h"
 #include "decide.h"
 #include "prefmem.h"
+#include "print.h"
 
 /* JC ADDED: For telling gski about events */
 #include "gski_event_system_functions.h"
@@ -101,7 +102,7 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
   p->prev_clone = NIL;
 
 #ifdef DEBUG_PREFS
-  print ("\nAllocating preference at 0x%8x: ", (unsigned long)p);
+  print (thisAgent, "\nAllocating preference at 0x%8x: ", (unsigned long)p);
   print_preference (thisAgent, p);
 #endif
 
@@ -118,7 +119,7 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
 void deallocate_preference (agent* thisAgent, preference *pref) {
 
 #ifdef DEBUG_PREFS  
-  print ("\nDeallocating preference at 0x%8x: ",(unsigned long)pref);
+  print (thisAgent, "\nDeallocating preference at 0x%8x: ",(unsigned long)pref);
   print_preference (thisAgent, pref);
   if (pref->reference_count != 0) {   /* --- sanity check --- */
     char msg[BUFFER_MSG_SIZE];
@@ -224,7 +225,7 @@ void add_preference_to_tm (agent* thisAgent, preference *pref)
    preference *p2;
 
 #ifdef DEBUG_PREFS
-   print ("\nAdd preference at 0x%8x:  ",(unsigned long)pref);
+   print (thisAgent, "\nAdd preference at 0x%8x:  ",(unsigned long)pref);
    print_preference (thisAgent, pref);
 #endif
    
@@ -321,7 +322,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
   s = pref->slot;
 
 #ifdef DEBUG_PREFS
-  print ("\nRemove preference at 0x%8x:  ",(unsigned long)pref);
+  print (thisAgent, "\nRemove preference at 0x%8x:  ",(unsigned long)pref);
   print_preference (thisAgent, pref);
 #endif
 
@@ -332,7 +333,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
 
   /* --- other miscellaneous stuff --- */    
   pref->in_tm = FALSE;
-  pref->slot = NIL;      /* BUGBUG use pref->slot in place of pref->in_tm? */
+  pref->slot = NIL;      /* BUG shouldn't we use pref->slot in place of pref->in_tm? */
   mark_slot_as_changed (thisAgent, s);
     
   /* --- if acceptable/require pref for context slot, we may need to remove
@@ -373,7 +374,7 @@ void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_reje
                                    a clone of some other pref we're about to
                                    remove */
 #ifdef DEBUG_PREFS
-  print ("\nO-reject posted at 0x%8x:  ",(unsigned long)pref);
+  print (thisAgent, "\nO-reject posted at 0x%8x:  ",(unsigned long)pref);
   print_preference (thisAgent, pref);
 #endif
   }

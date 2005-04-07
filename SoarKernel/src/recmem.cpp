@@ -195,7 +195,7 @@ void find_match_goal (instantiation *inst) {
    rhs_value, or NIL if an error occurs.  It takes a new_id_level
    argument indicating what goal_stack_level a new id is to be created
    at, in case a gensym is needed for the instantiation of a variable.
-   (BUGBUG I'm not sure this is really needed.)
+   (although I'm not sure this is really needed.)
 
    As rhs unbound variables are encountered, they are instantiated with
    new gensyms.  These gensyms are then stored in the rhs_variable_bindings
@@ -205,7 +205,7 @@ void find_match_goal (instantiation *inst) {
 
 
 Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, 
-							   goal_stack_level new_id_level,
+			       goal_stack_level new_id_level,
                                char new_id_letter,
                                struct token_struct *tok, wme *w) {
   list *fl;
@@ -791,7 +791,7 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst) {
   free_with_pool (&thisAgent->instantiation_pool, inst);
 }
 
-/*
+/*  Moved to recmem.h
   #ifndef USE_MACROS
   inline void possibly_deallocate_instantiation(instantiation * inst)
   {

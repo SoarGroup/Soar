@@ -43,7 +43,7 @@ typedef struct backtrace_struct {
    struct backtrace_struct *next_backtrace; /* Pointer to next in this list */
 } backtrace_str;
 
-/* RBD BUGBUG more comments here */
+/* RBD Note: more comments here */
 extern void trace_locals (agent* thisAgent, goal_stack_level grounds_level);
 extern void trace_grounded_potentials (agent* thisAgent);
 extern Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level);
