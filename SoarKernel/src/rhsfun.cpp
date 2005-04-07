@@ -196,13 +196,16 @@ Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* user_data) 
   Symbol *arg;
   char *string;
   
+  generate_tagged_output(thisAgent, "<rhs_write string=\"");
   for ( ; args!=NIL; args=args->rest) {
     arg = static_cast<symbol_union *>(args->first);
     /* --- Note use of FALSE here--print the symbol itself, not a rereadable
        version of it --- */
     string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
     print_string (thisAgent, string);
+	generate_tagged_output(thisAgent, string);
   }
+  generate_tagged_output(thisAgent, "\"></rhs_write>");
   return NIL;
 }
 
