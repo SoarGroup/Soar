@@ -32,7 +32,8 @@ clean:
 
 install-data-hook:
 if SWIGTCL
-	$(TCLSH) makeTclSMLPackage.tcl
+	$(TCLSH) ../../bin/makeTclSMLPackage.tcl
+	rm -rf $(LIBDIR)/Tcl_sml_ClientInterface
 	mkdir $(LIBDIR)/Tcl_sml_ClientInterface
 	mv .libs/pkgIndex.tcl $(LIBDIR)/Tcl_sml_ClientInterface
 	ln -s $(LIBDIR)/libTcl_sml_ClientInterface.so $(LIBDIR)/Tcl_sml_ClientInterface/libTcl_sml_ClientInterface.so
