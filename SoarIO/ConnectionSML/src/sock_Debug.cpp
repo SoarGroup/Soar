@@ -19,6 +19,8 @@
 #include "sock_Check.h"
 #include "sock_OSspecific.h"
 
+static FILE* pTraceFile = 0 ;
+
 // Defined below
 void PrintDebugSimple(char const* pStr) ;
 
@@ -61,7 +63,7 @@ void PrintDebugFormat(char const* pFormat, ...)
 	va_list args;
 	va_start(args, pFormat);
 
-	char szBuffer[4000];
+	char szBuffer[10000];
 
 	int nBuf = VSNSPRINTF(szBuffer, sizeof(szBuffer), pFormat, args);
 
@@ -90,12 +92,14 @@ void PrintDebug(char const* pStr)
 #endif
 }
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 #include <windows.h>
 void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
 {
-	if (!CTDebugEnterMethod::IsOutputIndented())
-		indent = 0 ;
+	indent = 0 ;
+
+//	if (!CTDebugEnterMethod::IsOutputIndented())
+//		indent = 0 ;
 
 	// We want PrintDebug to be able to output to the test
 	// application as well as the debug stream.
@@ -144,6 +148,20 @@ void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
 
 void PrintDebugSimple(char const* pStr)
 {
+#ifdef _DEBUG
+	if (!pTraceFile)
+	{
+		pTraceFile = fopen("smltrace.txt", "w") ;
+	}
+
+	if (pTraceFile)
+	{
+		// Dump to trace file and flush immediately (so if we crash we'll be up to date)
+		fprintf(pTraceFile, "%s\n", pStr) ;
+		fflush(pTraceFile) ;
+	}
+#endif
+
 	OutputDebugString(pStr) ;
 	OutputDebugString("\n") ;
 }

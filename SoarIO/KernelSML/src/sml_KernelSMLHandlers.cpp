@@ -29,6 +29,8 @@
 #include "sml_ClientEvents.h"
 #include "sml_Events.h"
 
+#include "sock_Debug.h"	// For PrintDebugFormat
+
 #include "gSKI.h"
 #include <iostream>
 #include <fstream>
@@ -655,6 +657,13 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 {
 	unused(pCommandName) ; unused(pResponse) ; unused(pConnection) ;
 
+	// Flag to control printing debug information about the input link
+#ifdef _DEBUG
+	bool kDebugInput = true ;
+#else
+	bool kDebugInput = false ;
+#endif
+
 	if (!pAgent)
 		return false ;
 
@@ -667,6 +676,9 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 	ElementXML* pWmeXML = &wmeXML ;
 
 	bool ok = true ;
+
+	if (kDebugInput)
+		PrintDebugFormat("--------- %s starting input ----------", pAgent->GetName()) ;
 
 	for (int i = 0 ; i < nChildren ; i++)
 	{
@@ -705,6 +717,11 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 			std::string id ;
 			GetAgentSML(pAgent)->ConvertID(pID, &id) ;
 
+			if (kDebugInput)
+			{
+				PrintDebugFormat("%s Add %s ^%s %s (type %s tag %s)", pAgent->GetName(), id.c_str(), pAttribute, pValue, pType, pTimeTag) ;
+			}
+
 			// Add the wme
 			ok = AddInputWME(pAgent, id.c_str(), pAttribute, pValue, pType, pTimeTag, pError) && ok ;
 		}
@@ -712,10 +729,18 @@ bool KernelSML::HandleInput(gSKI::IAgent* pAgent, char const* pCommandName, Conn
 		{
 			char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// May be (will be?) a client side time tag (e.g. -3 not +3)
 
+			if (kDebugInput)
+			{
+				PrintDebugFormat("%s Remove tag %s", pAgent->GetName(), pTimeTag) ;
+			}
+
 			// Remove the wme
 			ok = RemoveInputWME(pAgent, pTimeTag, pError) && ok ;
 		}
 	}
+
+	if (kDebugInput)
+		PrintDebugFormat("--------- %s ending input ----------", pAgent->GetName()) ;
 
 	// Returns false if any of the adds/removes fails
 	return ok ;
