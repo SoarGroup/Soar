@@ -317,9 +317,9 @@ bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const WatchBitset& opti
 			&& !pSysparams[TRACE_JUSTIFICATIONS_SYSPARAM]) 
 		{
 			learning = 0;
-		} else if (!pSysparams[TRACE_CHUNK_NAMES_SYSPARAM] 
+		} else if (pSysparams[TRACE_CHUNK_NAMES_SYSPARAM] 
 			&& !pSysparams[TRACE_CHUNKS_SYSPARAM] 
-			&& !pSysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] 
+			&& pSysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] 
 			&& !pSysparams[TRACE_JUSTIFICATIONS_SYSPARAM])
 		{
 			learning = 1;
