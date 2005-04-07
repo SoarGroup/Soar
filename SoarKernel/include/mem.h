@@ -302,16 +302,31 @@ extern "C"
 
 }
 
+//
+// This function was overtemplated.  The P type is unnecessary -- it's always memory_pool*
+//
 template <typename P, typename T>
 inline void allocate_with_pool(agent* thisAgent, P p, T** dest_item_pointer)
 {
-   
+  
+  // if there's no memory blocks left in the pool, then allocate a new one
   if (! (p)->free_list) add_block_to_memory_pool(thisAgent, p);
+  // take the beginning of the next free block and give it to the T pointer
   *(dest_item_pointer) = static_cast< T* > ((p)->free_list);
+  // we think this line increments free_list to the next available memory block
+  // we thought it took advantage of the fact that free_list is the first
+  //  member of memory_pool, but I tried changing that and it still works, so now I'm at a loss
+  // if it helps, we think this line is equivalent to the following
+  //  (at least, everything appears to work properly if you swap these lines):
+  // (p)->free_list = (*reinterpret_cast<P*>(dest_item_pointer))->free_list;
   (p)->free_list =  *(void * *)(*(dest_item_pointer));
+
   fill_with_garbage (*(dest_item_pointer), (p)->item_size);
   increment_used_count(p);
  
+   // this is for debugging -- it disables the memory pool usage and just allocates
+   //  new memory every time.  If you want to use it, be sure to make the corresponding
+   //  change to free_with_pool below
    //*dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
 }
 
@@ -324,6 +339,9 @@ inline void free_with_pool(P p, T * item)
   (p)->free_list = (void *)(item);
   decrement_used_count(p); 
  
+   // this is for debugging -- it disables the memory pool usage and just deallocates
+   //  the memory every time.  If you want to use it, be sure to make the corresponding
+   //  change to allocate_with_pool above
    //free(item);
 }
 
