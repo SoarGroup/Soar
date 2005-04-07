@@ -18,6 +18,7 @@ $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la
 
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include
 
+SWIG=@SWIG@
 CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 
 SWIGOPT    = -tcl -Wall -pkgversion 1.0 $(INCLUDES)
