@@ -57,6 +57,9 @@ public:
 	static char const* const kValueDelta ;
 	static char const* const kValueFull ;
 
+	//for RHS output
+	static char const* const kTagRHS_write ;
+	static char const* const kRHS_String ;
 
 	// Tags defined for Trace output at each watch level:
 	// <trace> contains the rest.
@@ -70,10 +73,11 @@ public:
 	static char const* const kState_DecisionCycleCt;
 	static char const* const kState_ImpasseObject;
 	static char const* const kState_ImpasseType;
-	// should we really have a separate string for these?
+	static char const* const kState_StackLevel ;
 	static char const* const kOperator_ID;
 	static char const* const kOperator_Name;
 	static char const* const kOperator_DecisionCycleCt;
+	static char const* const kOperator_StackLevel ;
  
 	// <phase> tag identifiers for Watch level 2
 	static char const* const kTagPhase ;

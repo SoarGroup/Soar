@@ -56,23 +56,28 @@ char const* const sml_Names::kTagResult		= "result" ;
 char const* const sml_Names::kValueDelta	= "delta" ;
 char const* const sml_Names::kValueFull		= "full" ;
 
+//for RHS output
+char const* const sml_Names::kTagRHS_write	= "rhs_write" ;
+char const* const sml_Names::kRHS_String	= "string" ;
+
 // Tags defined for Trace output at each watch level:
 
 // <trace> contains the rest.
 char const* const sml_Names::kTagTrace		= "trace" ;
 
 // <context> tag identifiers for Watch level 1
-char const* const sml_Names::kTagState		= "state" ;
-char const* const sml_Names::kTagOperator	= "operator" ;
-char const* const sml_Names::kState_ID		= "current_state_id" ;
-char const* const sml_Names::kState_Name	= "name" ;
+char const* const sml_Names::kTagState				= "state" ;
+char const* const sml_Names::kTagOperator			= "operator" ;
+char const* const sml_Names::kState_ID				= "current_state_id" ;
+char const* const sml_Names::kState_Name			= "name" ;
 char const* const sml_Names::kState_DecisionCycleCt	= "decision_cycle_count" ;
 char const* const sml_Names::kState_ImpasseObject	= "impasse_object" ;
 char const* const sml_Names::kState_ImpasseType		= "impasse_type" ;
-char const* const sml_Names::kOperator_ID	= "current_operator_id" ;
-// should we really have a separate string for these?
-char const* const sml_Names::kOperator_Name	= "name" ;
+char const* const sml_Names::kState_StackLevel		= "stack_level" ;
+char const* const sml_Names::kOperator_ID			= "current_operator_id" ;
+char const* const sml_Names::kOperator_Name			= "name" ;
 char const* const sml_Names::kOperator_DecisionCycleCt = "decision_cycle_count" ;
+char const* const sml_Names::kOperator_StackLevel	= "stack_level" ;
 
 // <phase> tag identifiers for Watch level 2
 char const* const sml_Names::kTagPhase  	= "phase" ;

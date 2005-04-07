@@ -20,12 +20,18 @@ using namespace sml ;
 // Trace tag contains everything else
 bool ClientTraceXML::IsTagTrace() const						{ return IsTag(sml_Names::kTagTrace) ; } 
 
+// Write commands on right hand side of productions generate output
+// which are collected here.
+bool ClientTraceXML::IsTagRhsWrite() const					{ return IsTag(sml_Names::kTagRHS_write) ; }
+char const* ClientTraceXML::GetString() const				{ return GetAttribute(sml_Names::kRHS_String) ; }
+
 // State tag attributes
 bool ClientTraceXML::IsTagState() const						{ return IsTag(sml_Names::kTagState) ; }
 char const* ClientTraceXML::GetDecisionCycleCount() const	{ return GetAttribute(sml_Names::kState_DecisionCycleCt) ; }
 char const* ClientTraceXML::GetStateID() const				{ return GetAttribute(sml_Names::kState_ID) ; }
 char const* ClientTraceXML::GetImpasseObject() const		{ return GetAttribute(sml_Names::kState_ImpasseObject) ; }
 char const* ClientTraceXML::GetImpasseType() const 			{ return GetAttribute(sml_Names::kState_ImpasseType) ; }
+char const* ClientTraceXML::GetStackLevel() const			{ return GetAttribute(sml_Names::kState_StackLevel) ; }
 
 // Operator tag attributes
 bool ClientTraceXML::IsTagOperator() const					{ return IsTag(sml_Names::kTagOperator) ; }

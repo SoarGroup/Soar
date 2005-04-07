@@ -25,12 +25,18 @@ public:
 	// Trace tag contains everything else
 	bool IsTagTrace() const	; 
 
+	// Write commands on right hand side of productions generate output
+	// which are collected here.
+	bool IsTagRhsWrite() const ;
+	char const* GetString() const ;
+
 	// State tag attributes
 	bool IsTagState() const ;
 	char const* GetDecisionCycleCount() const ;
 	char const* GetStateID() const ;
 	char const* GetImpasseObject() const ;
 	char const* GetImpasseType() const ;
+	char const* GetStackLevel() const ;
 
 	// Operator tag attributes
 	bool IsTagOperator() const ;
