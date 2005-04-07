@@ -20,6 +20,7 @@ INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../Connec
 
 SWIG=@SWIG@
 CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
+LIBDIR=@libdir@
 
 SWIGOPT    = -tcl -Wall -pkgversion 1.0 $(INCLUDES)
 
@@ -31,6 +32,8 @@ clean:
 
 install-data-hook:
 if SWIGTCL
-	$(TCLSH) ../../bin/makeTclSMLPackage.tcl
-	mv .libs/pkgIndex.tcl @libdir@
+	$(TCLSH) makeTclSMLPackage.tcl
+	mkdir $(LIBDIR)/Tcl_sml_ClientInterface
+	mv .libs/pkgIndex.tcl $(LIBDIR)/Tcl_sml_ClientInterface
+	ln -s $(LIBDIR)/libTcl_sml_ClientInterface.so $(LIBDIR)/Tcl_sml_ClientInterface/libTcl_sml_ClientInterface.so
 endif

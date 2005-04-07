@@ -41,6 +41,8 @@ proc StructuredTraceCallback {id userData agent pXML} {
 
 #load the sml stuff
 lappend auto_path .
+#this next line for tests on winter
+lappend auto_path ~/sandbox/lib
 package require tcl_sml_clientinterface
 
 #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
