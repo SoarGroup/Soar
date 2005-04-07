@@ -483,8 +483,7 @@ static void XMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* 
 	// If a Java user wishes to keep pXML it will have to make a copy, just like in C++.
 	// NOTE: Java long == C++ (long long) (i.e. 64-bit)
 	// Trying to cast from a pointer to long long in a way that doesn't offend gcc.
-	int pointer = (int)pXML ;
-	long long javaPointer = (long long)pointer ;
+	long long javaPointer = reinterpret_cast<long long>(pXML) ;
 	jobject jNewObject = jenv->NewObject(jsmlClass, cons, javaPointer, false) ;
 
 	if (!jNewObject)
