@@ -1,3 +1,22 @@
+#
+# This is a test script which tests several aspects of the Tcl SML interface
+#  including kernel and agent creation, running, registering and unregistering
+#  several kinds of callbacks, inreinitializing, agent destruction, and kernel
+#  destruction (and maybe some other things, too).
+#
+# In order for this to work, the Tcl_sml_ClientInterface package must be located
+#  in auto_path (i.e. the directory which contains the Tcl_sml_ClientInterface must
+#  be lappend'ed to auto_path).  On Windows, assuming this file is located in
+#  SoarIO/bin, this means appending the current directory.  Other platforms may
+#  require some other directory to be there.  Modify the line below appropriately.
+#
+
+#load the sml stuff
+lappend auto_path .
+#this next line for tests on winter
+lappend auto_path ~/sandbox/lib
+package require tcl_sml_clientinterface
+
 proc PrintCallback {id userData agent message} {
 	puts -nonewline $message
 }
@@ -38,12 +57,6 @@ proc RhsFunctionTest {id userData agent functionName argument} {
 proc StructuredTraceCallback {id userData agent pXML} {
 	puts "structured data: [$pXML GenerateXMLString 1]"
 }
-
-#load the sml stuff
-lappend auto_path .
-#this next line for tests on winter
-lappend auto_path ~/sandbox/lib
-package require tcl_sml_clientinterface
 
 #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
 set kernel [Kernel_CreateKernelInCurrentThread KernelSML]
