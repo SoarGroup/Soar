@@ -284,14 +284,7 @@ public abstract class ComboCommandBase extends AbstractView
 		else
 			m_CommandCombo.setText(text) ;
 	}
-	
-	/************************************************************************
-	* 
-	* Clear the display control.
-	* 
-	*************************************************************************/
-	protected abstract void clearDisplay() ;
-	
+		
 	private void commandEntered(String command, boolean updateHistory)
 	{
 		// Clear the text area if this window is configured that way.
@@ -478,6 +471,12 @@ public abstract class ComboCommandBase extends AbstractView
 	*************************************************************************/
 	public String executeAgentCommand(String command, boolean echoCommand)
 	{
+		// Check to see if this is a local command (handled directly by the debugger not Soar)
+		if (m_Frame.isDebuggerCommand(command))
+		{
+			return (String)m_Frame.executeDebuggerCommand(this, command, echoCommand) ;
+		}
+		
 		if (echoCommand)
 			appendTextSafely(getLineSeparator() + command) ;
 		

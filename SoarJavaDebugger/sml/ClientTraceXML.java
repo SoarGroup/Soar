@@ -37,6 +37,14 @@ public class ClientTraceXML extends ClientXML {
     return smlJNI.ClientTraceXML_IsTagTrace(swigCPtr);
   }
 
+  public boolean IsTagRhsWrite() {
+    return smlJNI.ClientTraceXML_IsTagRhsWrite(swigCPtr);
+  }
+
+  public String GetString() {
+    return smlJNI.ClientTraceXML_GetString(swigCPtr);
+  }
+
   public boolean IsTagState() {
     return smlJNI.ClientTraceXML_IsTagState(swigCPtr);
   }
@@ -55,6 +63,10 @@ public class ClientTraceXML extends ClientXML {
 
   public String GetImpasseType() {
     return smlJNI.ClientTraceXML_GetImpasseType(swigCPtr);
+  }
+
+  public String GetStackLevel() {
+    return smlJNI.ClientTraceXML_GetStackLevel(swigCPtr);
   }
 
   public boolean IsTagOperator() {

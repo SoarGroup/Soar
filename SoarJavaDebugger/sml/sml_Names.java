@@ -137,6 +137,14 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kValueFull();
   }
 
+  public static String getKTagRHS_write() {
+    return smlJNI.get_sml_Names_kTagRHS_write();
+  }
+
+  public static String getKRHS_String() {
+    return smlJNI.get_sml_Names_kRHS_String();
+  }
+
   public static String getKTagTrace() {
     return smlJNI.get_sml_Names_kTagTrace();
   }
@@ -169,6 +177,10 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kState_ImpasseType();
   }
 
+  public static String getKState_StackLevel() {
+    return smlJNI.get_sml_Names_kState_StackLevel();
+  }
+
   public static String getKOperator_ID() {
     return smlJNI.get_sml_Names_kOperator_ID();
   }
@@ -179,6 +191,10 @@ public class sml_Names {
 
   public static String getKOperator_DecisionCycleCt() {
     return smlJNI.get_sml_Names_kOperator_DecisionCycleCt();
+  }
+
+  public static String getKOperator_StackLevel() {
+    return smlJNI.get_sml_Names_kOperator_StackLevel();
   }
 
   public static String getKTagPhase() {
@@ -811,6 +827,10 @@ public class sml_Names {
 
   public static String getKCommand_CheckForIncomingCommands() {
     return smlJNI.get_sml_Names_kCommand_CheckForIncomingCommands();
+  }
+
+  public static String getKCommand_SetInterruptCheckRate() {
+    return smlJNI.get_sml_Names_kCommand_SetInterruptCheckRate();
   }
 
   public static String getKCommand_CommandLine() {

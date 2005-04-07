@@ -61,6 +61,8 @@ class smlJNI {
   public final static native String get_sml_Names_kTagResult();
   public final static native String get_sml_Names_kValueDelta();
   public final static native String get_sml_Names_kValueFull();
+  public final static native String get_sml_Names_kTagRHS_write();
+  public final static native String get_sml_Names_kRHS_String();
   public final static native String get_sml_Names_kTagTrace();
   public final static native String get_sml_Names_kTagState();
   public final static native String get_sml_Names_kTagOperator();
@@ -69,9 +71,11 @@ class smlJNI {
   public final static native String get_sml_Names_kState_DecisionCycleCt();
   public final static native String get_sml_Names_kState_ImpasseObject();
   public final static native String get_sml_Names_kState_ImpasseType();
+  public final static native String get_sml_Names_kState_StackLevel();
   public final static native String get_sml_Names_kOperator_ID();
   public final static native String get_sml_Names_kOperator_Name();
   public final static native String get_sml_Names_kOperator_DecisionCycleCt();
+  public final static native String get_sml_Names_kOperator_StackLevel();
   public final static native String get_sml_Names_kTagPhase();
   public final static native String get_sml_Names_kPhase_Name();
   public final static native String get_sml_Names_kPhase_Status();
@@ -230,6 +234,7 @@ class smlJNI {
   public final static native String get_sml_Names_kCommand_SuppressSystemStart();
   public final static native String get_sml_Names_kCommand_SuppressSystemStop();
   public final static native String get_sml_Names_kCommand_CheckForIncomingCommands();
+  public final static native String get_sml_Names_kCommand_SetInterruptCheckRate();
   public final static native String get_sml_Names_kCommand_CommandLine();
   public final static native String get_sml_Names_kCommand_ExpandCommandLine();
   public final static native long new_sml_Names();
@@ -410,6 +415,7 @@ class smlJNI {
   public final static native boolean Kernel_StartEventThread(long jarg1);
   public final static native boolean Kernel_StopEventThread(long jarg1);
   public final static native void Kernel_Sleep(long jarg1, int jarg2);
+  public final static native boolean Kernel_SetInterruptCheckRate(long jarg1, int jarg2);
   public final static native void set_RunEventHandlerPlusData_m_Handler(long jarg1, long jarg2);
   public final static native long get_RunEventHandlerPlusData_m_Handler(long jarg1);
   public final static native long new_RunEventHandlerPlusData(int jarg1, long jarg2, long jarg3, int jarg4);
@@ -488,11 +494,14 @@ class smlJNI {
   public final static native String ClientXML_CopyString(String jarg1);
   public final static native String ClientXML_CopyBuffer(String jarg1, int jarg2);
   public final static native boolean ClientTraceXML_IsTagTrace(long jarg1);
+  public final static native boolean ClientTraceXML_IsTagRhsWrite(long jarg1);
+  public final static native String ClientTraceXML_GetString(long jarg1);
   public final static native boolean ClientTraceXML_IsTagState(long jarg1);
   public final static native String ClientTraceXML_GetDecisionCycleCount(long jarg1);
   public final static native String ClientTraceXML_GetStateID(long jarg1);
   public final static native String ClientTraceXML_GetImpasseObject(long jarg1);
   public final static native String ClientTraceXML_GetImpasseType(long jarg1);
+  public final static native String ClientTraceXML_GetStackLevel(long jarg1);
   public final static native boolean ClientTraceXML_IsTagOperator(long jarg1);
   public final static native String ClientTraceXML_GetOperatorID(long jarg1);
   public final static native String ClientTraceXML_GetOperatorName(long jarg1);

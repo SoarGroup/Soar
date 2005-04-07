@@ -123,7 +123,9 @@ public class DocumentThread extends Thread
 		while ( (command = popNextCommand()) != null )
 		{
 			m_IsExecutingCommand = true ;
+			System.out.println("Exec " + command.m_Command) ;
 			String result = command.m_Agent.ExecuteCommandLine(command.m_Command) ;
+			System.out.println("Done " + command.m_Command) ;
 			recordCommandResult(command, result) ;
 		}
 		

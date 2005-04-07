@@ -83,7 +83,10 @@ public class MainFrame
 	private Document m_Document = null;
 
 	/** Used to script the debugger itself */
-	private DebuggerCommands m_DebuggerCommands = null;
+	private ScriptCommands m_ScriptCommands = null ;
+	
+	/** Extended commands set that the user could type at the command line (might fold this into scripts or vice versa one day--not sure) */
+	private DebuggerCommands m_DebuggerCommands = null ;
 	
 	/** Map of module names that are currently in use in this frame */
 	private NameRegister m_NameMap = new NameRegister() ;
@@ -154,7 +157,8 @@ public class MainFrame
 		
 		m_Name = name ;
  
-		m_DebuggerCommands = new DebuggerCommands(this, doc);
+		m_ScriptCommands   = new ScriptCommands(this, doc);
+		m_DebuggerCommands = new DebuggerCommands(this, doc) ;
 
 		m_White = new Color(getDisplay(), 255, 255, 255);
 		m_Colors.add(m_White); // So we dispose of it when MainFrame is killed
@@ -669,11 +673,33 @@ public class MainFrame
 	 * Executes a command that affects the debugger itself, using some form of
 	 * scripting language we define
 	 */
-	public void executeDebuggerCommand(String commandLine, boolean echoCommand)
+	public void executeScriptCommand(AbstractView view, String commandLine, boolean echoCommand)
 	{
-		m_DebuggerCommands.executeCommand(commandLine, echoCommand);
+		// We can use "thisframe" and "thisview" as reference values.  This function binds them to specific names.
+		commandLine = m_ScriptCommands.replaceVariables(this, view, commandLine) ;
+		
+		// Now execute the command
+		m_ScriptCommands.executeCommand(commandLine, echoCommand);
 	}
 
+	/********************************************************************************************
+	 * 
+	 * Debugger commands are like scripting commands, but they could potentially be typed by the user
+	 * at the command line.
+	 * 
+	 * @param commandLine
+	 * @return	True if is a command we recognize
+	********************************************************************************************/
+	public boolean isDebuggerCommand(String commandLine)
+	{
+		return m_DebuggerCommands.isCommand(commandLine) ;
+	}
+	
+	public Object executeDebuggerCommand(AbstractView view, String commandLine, boolean echoCommand)
+	{
+		return m_DebuggerCommands.executeCommand(view, commandLine, echoCommand) ;
+	}
+	
 	/***************************************************************************
 	 * 
 	 * Display the given text in this view (if possible).

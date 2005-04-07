@@ -48,7 +48,20 @@ public class TreeTraceView extends ComboCommandBase
 	/** Controls whether we cache strings that are due to be subtree nodes and only add the nodes when the user clicks--or not */
 	protected final static boolean kCacheSubText = true ;
 
-	protected static final String[] kPadSpaces = { "", " ", "  ", "   ", "    ", "     " } ;
+	protected static final int kCachedSpaces = 100 ;
+	protected static final String[] kPadSpaces = new String[kCachedSpaces] ;
+	
+	static
+	{
+		// Fill in the kPadSpaces array
+		StringBuffer buffer = new StringBuffer() ;
+		
+		for (int i = 0 ; i < kCachedSpaces ; i++)
+		{
+			kPadSpaces[i] = buffer.toString() ;
+			buffer.append(" ") ;
+		}
+	}
 	
 	/** We use this structure if we're caching sub nodes in the tree for expansion only when the user clicks */
 	protected static class TreeData
@@ -261,9 +274,7 @@ public class TreeTraceView extends ComboCommandBase
 			
 			TreeItem root = new TreeItem (m_Tree, 0);
 			root.setText (lines[i]);
-			root.setData (null);	// No additional watch data to attach here (for later expansion)
 			lastItem = root ;
-			//new TreeItem (root, 0);
 		}
 
 		// Scroll to the bottom -- horribly slow
@@ -282,9 +293,33 @@ public class TreeTraceView extends ComboCommandBase
 	* Clear the display control.
 	* 
 	*************************************************************************/
-	protected void clearDisplay()
+	public void clearDisplay()
 	{
+		m_Tree.removeAll() ;
+	}
+	
+	/** Returns a string of spaces of the given length (>= 0).  This is an efficient calculation */
+	protected String getSpaces(int length)
+	{
+		if (length <= 0)
+			return "" ;
 		
+		// We use a lookup from a table if the length is reasonable (< 100 right now)
+		if (length < kPadSpaces.length)
+			return kPadSpaces[length] ;
+		
+		// Otherwise we have to generate it which is slow
+		StringBuffer buffer = new StringBuffer() ;
+		buffer.append(kPadSpaces[kPadSpaces.length - 1]) ;
+		
+		// If we use this a lot we could speed it up by using a binary addition process
+		// but I hope to never use it (except in a run-away stack situation).
+		for (int i = 0 ; i < length - kPadSpaces.length ; i++)
+		{
+			buffer.append(" ") ;
+		}
+		
+		return buffer.toString() ;
 	}
 	
 	/** Add spaces to the length until reaches minLength */
@@ -292,10 +327,22 @@ public class TreeTraceView extends ComboCommandBase
 	{
 		if (orig.length() >= minLength)
 			return orig ;
+				
+		// Add the appropriate number of spaces.
+		return getSpaces(minLength - orig.length()) + orig ;
+	}
+	
+	/** Returns a string to indent to a certain stack depth (depth stored as a string) */
+	protected String indent(String depthStr)
+	{
+		if (depthStr == null)
+			return "" ;
 		
-		// Add the appropriate number of spaces.  If this throws
-		// we need to increase the size of the kPadSpaces array.
-		return kPadSpaces[minLength - orig.length()] + orig ;
+		int depth = Integer.parseInt(depthStr) - 1 ;
+		
+		int indentSize = depth * 3 ;
+		
+		return getSpaces(indentSize) ;
 	}
 	
 	/********************************************************************************************
@@ -328,7 +375,9 @@ public class TreeTraceView extends ComboCommandBase
 			{
 				// 3:    ==>S: S2 (operator no-change)
 				text.append(padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
-				text.append(": ==>S: ") ;
+				text.append(": ") ;
+				text.append(indent(xmlTrace.GetStackLevel())) ;
+				text.append("==>S: ") ;
 				text.append(xmlTrace.GetStateID()) ;
 				
 				if (xmlTrace.GetImpasseObject() != null)
@@ -346,7 +395,9 @@ public class TreeTraceView extends ComboCommandBase
 			{
 				 //2:    O: O8 (move-block)
 				text.append(padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
-				text.append(":    O: ") ;
+				text.append(": ") ;
+				text.append(indent(xmlTrace.GetStackLevel())) ;
+				text.append("   O: ") ;
 				text.append(xmlTrace.GetOperatorID()) ;
 				
 				if (xmlTrace.GetOperatorName() != null)
@@ -358,6 +409,12 @@ public class TreeTraceView extends ComboCommandBase
 	
 				if (text.length() != 0)
 					this.appendText(text.toString()) ;
+			} else if (xmlTrace.IsTagRhsWrite())
+			{
+				text.append(xmlTrace.GetString()) ;
+				
+				if (text.length() != 0)
+					this.appendText(text.toString()) ;				
 				
 			} else if (xmlTrace.IsTagPhase())
 			{

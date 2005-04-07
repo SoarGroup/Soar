@@ -15,6 +15,7 @@ public final class smlSystemEventId {
   public final static smlSystemEventId smlEVENT_AFTER_RESTART = new smlSystemEventId("smlEVENT_AFTER_RESTART");
   public final static smlSystemEventId smlEVENT_SYSTEM_START = new smlSystemEventId("smlEVENT_SYSTEM_START");
   public final static smlSystemEventId smlEVENT_SYSTEM_STOP = new smlSystemEventId("smlEVENT_SYSTEM_STOP");
+  public final static smlSystemEventId smlEVENT_INTERRUPT_CHECK = new smlSystemEventId("smlEVENT_INTERRUPT_CHECK");
   public final static smlSystemEventId smlEVENT_BEFORE_RHS_FUNCTION_ADDED = new smlSystemEventId("smlEVENT_BEFORE_RHS_FUNCTION_ADDED");
   public final static smlSystemEventId smlEVENT_AFTER_RHS_FUNCTION_ADDED = new smlSystemEventId("smlEVENT_AFTER_RHS_FUNCTION_ADDED");
   public final static smlSystemEventId smlEVENT_BEFORE_RHS_FUNCTION_REMOVED = new smlSystemEventId("smlEVENT_BEFORE_RHS_FUNCTION_REMOVED");
@@ -50,7 +51,7 @@ public final class smlSystemEventId {
     swigNext = swigValue+1;
   }
 
-  private static smlSystemEventId[] swigValues = { smlEVENT_BEFORE_SHUTDOWN, smlEVENT_AFTER_CONNECTION_LOST, smlEVENT_BEFORE_RESTART, smlEVENT_AFTER_RESTART, smlEVENT_SYSTEM_START, smlEVENT_SYSTEM_STOP, smlEVENT_BEFORE_RHS_FUNCTION_ADDED, smlEVENT_AFTER_RHS_FUNCTION_ADDED, smlEVENT_BEFORE_RHS_FUNCTION_REMOVED, smlEVENT_AFTER_RHS_FUNCTION_REMOVED, smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED, smlEVENT_AFTER_RHS_FUNCTION_EXECUTED };
+  private static smlSystemEventId[] swigValues = { smlEVENT_BEFORE_SHUTDOWN, smlEVENT_AFTER_CONNECTION_LOST, smlEVENT_BEFORE_RESTART, smlEVENT_AFTER_RESTART, smlEVENT_SYSTEM_START, smlEVENT_SYSTEM_STOP, smlEVENT_INTERRUPT_CHECK, smlEVENT_BEFORE_RHS_FUNCTION_ADDED, smlEVENT_AFTER_RHS_FUNCTION_ADDED, smlEVENT_BEFORE_RHS_FUNCTION_REMOVED, smlEVENT_AFTER_RHS_FUNCTION_REMOVED, smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED, smlEVENT_AFTER_RHS_FUNCTION_EXECUTED };
   private static int swigNext = 0;
   private final int swigValue;
   private final String swigName;

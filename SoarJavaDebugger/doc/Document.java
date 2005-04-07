@@ -254,9 +254,8 @@ public class Document
 		
 		// Register for an event that happens once each time agents are run a step to give me a chance to check for interruptions
 		// and pump the UI thread along a bit.
-		// BUGBUG: If we're using a separate thread there must be a better solution for interruptions than this.
-		// We need a way for the UI to support these sorts of updates without having to register for this really low level event.
-		int jAgentsRunningCallback = m_Kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENTS_RUN_STEP, this, "agentEventHandler", this) ;
+		int jInterruptCallback = m_Kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_INTERRUPT_CHECK, this, "systemEventHandler", this) ;
+		m_Kernel.SetInterruptCheckRate(50) ;
 	}
 	
 	/********************************************************************************************
@@ -464,14 +463,7 @@ public class Document
 
 	public void systemEventHandler(int eventID, Object data, Kernel kernel)
 	{
-		System.out.println("Received system event") ;
-	}
-	
-	public void agentEventHandler(int eventID, Object data, String agentName)
-	{
-		Agent agent = getAgent(agentName) ;
-
-		if (eventID == smlAgentEventId.smlEVENT_BEFORE_AGENTS_RUN_STEP.swigValue())
+		if (eventID == smlSystemEventId.smlEVENT_INTERRUPT_CHECK.swigValue())
 		{
 			if (!kDocInOwnThread)
 			{
@@ -488,10 +480,12 @@ public class Document
 				
 			return ;
 		}
+	}
+	
+	public void agentEventHandler(int eventID, Object data, String agentName)
+	{
+		Agent agent = getAgent(agentName) ;
 		
-		if (agent == null)
-			throw new IllegalStateException("Error in agent event handler -- got event for agent that hasn't been created yet in ClientSML") ;
-
 		if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_CREATED.swigValue())
 			this.fireAgentAdded(agent) ;
 		if (eventID == smlAgentEventId.smlEVENT_BEFORE_AGENT_DESTROYED.swigValue())

@@ -61,6 +61,7 @@ public class ButtonView extends AbstractView
 		addButton("Run 1 -e", "run 1 --elaboration") ;
 		addButton("Run", "run") ;
 		addButton("Stop", "stop-soar") ;
+		addButton("Clear", "clear") ;
 		addButton("Matches", "matches") ;
 		addButton("Print <s>", "print <s>") ;
 		addButton("Print <ts>", "print <ts>") ;
@@ -68,6 +69,7 @@ public class ButtonView extends AbstractView
 		
 		// This button uses an internally scripted command to drive the debugger itself to load a demo
 		addButton("Towers of Hanoi", null, "demo towers-of-hanoi towers-of-hanoi.soar") ;
+		addButton("Water Jug", null, "demo water-jug water-jug-look-ahead.soar") ;
 	}
 	
 	public void setTextFont(Font f)
@@ -292,6 +294,21 @@ public class ButtonView extends AbstractView
 		m_Frame.ShowMessageBox("No properties yet for the button view -- coming soon.") ;
 	}
 
+	/************************************************************************
+	* 
+	* Clear the display (the text part if any)
+	* 
+	*************************************************************************/
+	public void clearDisplay() { }
+	
+	/************************************************************************
+	* 
+	* Override and return false if it doesn't make sense to clear this
+	* type of view.
+	* 
+	*************************************************************************/	
+	public boolean offerClearDisplay() { return false ; }	
+	
 	protected void createButtonPanel(final Composite parent)
 	{
 		// Allow us to recreate the panel by calling this multiple times
@@ -399,12 +416,12 @@ public class ButtonView extends AbstractView
 		
 		if (button.m_InternalCommand != null)
 		{
-			m_Frame.executeDebuggerCommand(button.m_InternalCommand, true) ;
+			m_Frame.executeScriptCommand(this, button.m_InternalCommand, true) ;
 		}
 	}
 
 	public String executeAgentCommand(String command, boolean echoCommand)
-	{		
+	{
 		// Send the command to Soar but there's no where to display the output
 		// so we just eat it.
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;

@@ -57,7 +57,7 @@ public abstract class BaseCommandView extends ComboCommandBase
 	* Clear the display control.
 	* 
 	*************************************************************************/
-	protected void clearDisplay()
+	public void clearDisplay()
 	{
 		m_Text.setText("") ;
 	}

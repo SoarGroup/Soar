@@ -37,6 +37,7 @@ public class DemoMenu
 
 	private AbstractAction m_TOH       		= new AbstractAction("Towers of Hanoi") 					{ public void actionPerformed(ActionEvent e) { toh(e) ; } } ;
 	private AbstractAction m_TOH_Recursive 	= new AbstractAction("Towers of Hanoi Recursive") 			{ public void actionPerformed(ActionEvent e) { tohRecursive(e) ; } } ;
+	private AbstractAction m_Waterjug_Lookahead = new AbstractAction("Water Jug Lookahead")				{ public void actionPerformed(ActionEvent e) { waterjugLookahead(e) ; } } ;
 	private AbstractAction m_DemoPathItem  	= new AbstractAction("Set the path to the demos folder...")	{ public void actionPerformed(ActionEvent e) { setDemoPath(e) ; } } ;
 
 	/** Create this menu */
@@ -87,6 +88,8 @@ public class DemoMenu
 		BaseMenu toh = menu.addSubmenu("Towers of hanoi") ;
 		toh.add(m_TOH) ;
 		toh.add(m_TOH_Recursive) ;
+		BaseMenu water = menu.addSubmenu("Water Jug") ;
+		water.add(m_Waterjug_Lookahead) ;
 		menu.addSeparator() ;
 		menu.add(m_DemoPathItem) ;
 
@@ -131,6 +134,11 @@ public class DemoMenu
 	private void tohRecursive(ActionEvent e)
 	{
 		loadDemo(new File("towers-of-hanoi","towers-of-hanoi-recursive.soar")) ;
+	}
+	
+	private void waterjugLookahead(ActionEvent e)
+	{
+		loadDemo(new File("water-jug", "water-jug-look-ahead.soar")) ;
 	}
 
 	private void setDemoPath(ActionEvent e)

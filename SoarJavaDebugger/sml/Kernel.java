@@ -166,6 +166,10 @@ public class Kernel extends ClientErrors {
     smlJNI.Kernel_Sleep(swigCPtr, milliseconds);
   }
 
+  public boolean SetInterruptCheckRate(int newRate) {
+    return smlJNI.Kernel_SetInterruptCheckRate(swigCPtr, newRate);
+  }
+
   public final static int kDefaultSMLPort = 12121;
 
 }

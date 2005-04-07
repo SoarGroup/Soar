@@ -299,7 +299,7 @@ public class MainWindow
 
 		// Create the button view
 		ButtonView buttons = new ButtonView() ;
-		buttons.addDefaultCommands() ;
+		buttons.addDefaultCommands() ;	// We have a default set of commands to show on a button bar
 		buttons.init(m_Frame, m_Document, buttonPane) ;
 		buttons.generateName(m_Frame) ;
 		buttonPane.addView(buttons) ;
