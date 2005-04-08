@@ -161,7 +161,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 
 	// Handle source error output
 	if (m_SourceError) {
-		SetError(CLIError::kSourceError);
+		//SetError(CLIError::kSourceError);
 		SetErrorDetail(m_SourceErrorDetail);
 		m_SourceError = false;
 	}

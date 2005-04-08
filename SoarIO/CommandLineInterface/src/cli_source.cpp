@@ -203,17 +203,8 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 
 void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename) {
 	if (!m_SourceError) {
-		// PopD to original source directory
-		while (m_SourceDirDepth) {
-			DoPopD(); // Ignore error here since it will be rare and a message confusing
-			--m_SourceDirDepth;
-		}
 
-		// Reset depths to zero
-		m_SourceDepth = 0;
-		m_SourceDirDepth = 0; // redundant
-
-		m_SourceError = true;
+		// Output error message
 		m_SourceErrorDetail.clear();
 		m_SourceErrorDetail += "\nSource command error on line ";
 
@@ -226,6 +217,17 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		GetCurrentWorkingDirectory(directory); // Again, ignore error here
 
 		m_SourceErrorDetail += filename + " (" + directory + ")";
+
+		// PopD to original source directory
+		while (m_SourceDirDepth) {
+			DoPopD(); // Ignore error here since it will be rare and a message confusing
+			--m_SourceDirDepth;
+		}
+
+		// Reset depth to zero
+		m_SourceDepth = 0;
+
+		m_SourceError = true;
 
 	} else {
 		m_SourceErrorDetail += "\n\t--> Sourced by: " + filename;

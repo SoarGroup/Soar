@@ -334,7 +334,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 // Main program
 int main(int argc, char** argv)
 {
-	//_crtBreakAlloc = 71;
+	//_crtBreakAlloc = 57;
 	{ // create local scope to prevent scriptFile from being reported as a memory leak (occurs when script passed in as arg)
 		if (argc > 2) {
 			cout << "Too many args." << endl;
