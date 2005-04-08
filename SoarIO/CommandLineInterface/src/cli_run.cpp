@@ -125,32 +125,28 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	}
 
 	char buf[kMinBufferSize];
-	if (m_RawOutput) m_Result << "\nRun successful: ";
+	if (m_RawOutput) m_Result << "\nRun stopped ";
 	switch (runResult) {
 		case gSKI_RUN_EXECUTING:
 			if (m_RawOutput) {
-				m_Result << "(gSKI_RUN_EXECUTING)";						// the run is still executing
+				// NOTE: I don't think this is currently possible
+				m_Result << "(still executing).";
 			} else {
 				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
 			break;
+		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
+			// falls through
 		case gSKI_RUN_INTERRUPTED:
 			if (m_RawOutput) {
-				m_Result << "(gSKI_RUN_INTERRUPTED)";					// the run was interrupted
+				m_Result << "(interrupted).";
 			} else {
 				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
 			break;
 		case gSKI_RUN_COMPLETED:
 			if (m_RawOutput) {
-				m_Result << "(gSKI_RUN_COMPLETED)";						// the run completed normally
-			} else {
-				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
-			}
-			break;
-		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
-			if (m_RawOutput) {
-				m_Result << "(gSKI_RUN_COMPLETED_AND_INTERRUPTED)";
+				m_Result << "(completed).";
 			} else {
 				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
