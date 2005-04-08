@@ -284,7 +284,13 @@
 					RelativePath="src\AgentRunManager.h">
 				</File>
 				<File
+					RelativePath=".\src\CmdRhsFunction.h">
+				</File>
+				<File
 					RelativePath="src\ConcatRhsFunction.h">
+				</File>
+				<File
+					RelativePath=".\src\ExecRhsFunction.h">
 				</File>
 				<File
 					RelativePath="src\gSKI_Agent.cpp">
