@@ -73,7 +73,6 @@ namespace cli {
 			kCountGreaterThanMaxChunks			= 68,
 			kCountLessThanChunks				= 69,
 			kAcceptableOrNothingExpected		= 70,
-			kSourceError						= 71,
 			kMustSaveOrLoad						= 72,
 			kPrintSubOptionsOfStack				= 73,
 			kHelpFileError						= 74,
@@ -103,7 +102,7 @@ namespace cli {
 				case kKernelRequired:					return "A kernel is required for this command.";
 				case kAliasNotFound:					return "Alias not found.";
 				case kAliasExists:						return "Alias exists, remove to overwrite.";
-				case kNoHelpFile:						return "Could not find help files at the library location.  You can view and set the location through the set-library-location command.";
+				case kNoHelpFile:						return "Could not find help files.  Check the library location using the 'set-library-location' command.  The library location should be set to the folder containing the help/ subfolder.";
 				case kIntegerExpected:					return "Integer argument expected.";
 				case kIntegerMustBePositive:			return "Integer argument must be positive.";
 				case kIntegerMustBeNonNegative:			return "Integer argument must be non-negative.";
@@ -146,10 +145,9 @@ namespace cli {
 				case kCountGreaterThanMaxChunks:		return "Cannot set count greater than the max-chunks sysparam.";
 				case kCountLessThanChunks:				return "Cannot set chunk count less than the current number of chunks.";
 				case kAcceptableOrNothingExpected:		return "Expected acceptable preference (+) or nothing, check syntax.";
-				case kSourceError:						return "Source command error.";
 				case kMustSaveOrLoad:					return "Must save or load, check command syntax.";
 				case kPrintSubOptionsOfStack:			return "Options --operators (-o) and --states (-S) are only valid when printing the stack.";
-				case kHelpFileError:					return "Error reading help file.";
+				case kHelpFileError:					return "Error reading help file, check the library location (see the set-library-location command).";
 				default:								return "Unknown error code.";
 			}
 		}
