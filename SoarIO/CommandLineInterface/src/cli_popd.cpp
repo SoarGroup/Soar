@@ -26,6 +26,9 @@ bool CommandLineInterface::DoPopD() {
 	// Change to the directory
 	if (!DoCD(&(m_DirectoryStack.top()))) return false;	// error handled in DoCD
 
+	// If we're sourcing, this will be non-negative
+	if (m_SourceDirDepth >= 0) --m_SourceDirDepth; // And if it is, decrement it for each dir removed from the stack
+
 	// Pop the directory stack
 	m_DirectoryStack.pop();
 	return true;

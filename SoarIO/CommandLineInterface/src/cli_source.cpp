@@ -178,7 +178,18 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 		}
 
 		// Fire off the command
-		if (!DoCommandInternal(pAgent, command)) {
+		unsigned oldResultSize = m_Result.str().size();
+		if (DoCommandInternal(pAgent, command)) {
+			// Add trailing newline if result changed size
+			unsigned newResultSize = m_Result.str().size();
+			if (oldResultSize != newResultSize) {
+				// but don't add after sp's
+				if (m_Result.str()[m_Result.str().size()-1] != '*') {
+					m_Result << '\n';
+				}
+			}
+
+		} else {
 			// Command failed, error in result
 			HandleSourceError(lineCountCache, filename);
 			if (path.length()) DoPopD();
@@ -189,11 +200,15 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 	// Completion
 	--m_SourceDepth;
 
-	// if we're returing to the user and there is stuff on the source dir stack, print warning (?)
+	// if we're returing to the user
 	if (!m_SourceDepth) {
 		// Print working directory if source dir depth !=  0
 		if (m_SourceDirDepth != 0) DoPWD();	// Ignore error
 		m_SourceDirDepth = 0;
+
+		// Add finished message
+		if (m_Result.str()[m_Result.str().size()-1] != '\n') m_Result << '\n';
+		m_Result << "Source finished.";
 	}
 
 	soarFile.close();
@@ -220,8 +235,8 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 
 		// PopD to original source directory
 		while (m_SourceDirDepth) {
+			if (m_SourceDirDepth < 0) m_SourceDirDepth = 0; // don't loop forever
 			DoPopD(); // Ignore error here since it will be rare and a message confusing
-			--m_SourceDirDepth;
 		}
 
 		// Reset depth to zero
