@@ -14,12 +14,9 @@
         <javaElement handleIdentifier="=SoarJavaDebugger/&lt;general"/>
         <file path="/SoarJavaDebugger/JarDescription.jardesc"/>
         <file path="/SoarJavaDebugger/KernelSML.dll"/>
-        <file path="/SoarJavaDebugger/swt.jar"/>
         <file path="/SoarJavaDebugger/Java_sml_ClientInterface.dll"/>
         <javaElement handleIdentifier="=SoarJavaDebugger/&lt;manager"/>
         <javaElement handleIdentifier="=SoarJavaDebugger/&lt;doc"/>
-        <file path="/SoarJavaDebugger/usage.txt"/>
-        <file path="/SoarJavaDebugger/aliases.txt"/>
         <file path="/SoarJavaDebugger/copySWT.bat"/>
         <file path="/SoarJavaDebugger/copySML.bat"/>
         <javaElement handleIdentifier="=SoarJavaDebugger/&lt;helpers"/>
@@ -35,5 +32,7 @@
         <file path="/SoarJavaDebugger/debugger.html"/>
         <file path="/SoarJavaDebugger/How to build debugger.txt"/>
         <javaElement handleIdentifier="=SoarJavaDebugger/&lt;doc.events"/>
+        <file path="/SoarJavaDebugger/swt.jar"/>
+        <file path="/SoarJavaDebugger/default-layout.xml"/>
     </selectedElements>
 </jardesc>
