@@ -69,6 +69,8 @@ public class FileMenu
 			boolean ok = m_Frame.loadLayoutFile(filename, true) ;
 
 			// If we fail to load the layout file go back to a default layout
+			// That in turn will try to load a layout file.  If that fails we go
+			// back to an internal layout (in code) which cannot fail.
 			if (!ok)
 			{
 				m_Frame.useDefaultLayout() ;

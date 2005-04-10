@@ -42,7 +42,7 @@ import helpers.*;
 ********************************************************************************************/
 public abstract class ComboCommandBase extends AbstractView
 {
-	private Combo m_CommandCombo ;
+	protected Combo m_CommandCombo ;
 			
 	/** If true, clear the text window each time we execute a command. */
 	protected boolean	m_ClearEachCommand = true ;
@@ -147,6 +147,14 @@ public abstract class ComboCommandBase extends AbstractView
 		makeComboBoxMatchHistory(!m_ClearComboEachCommand) ;
 	}
 	
+	/** Separate out the laying out of the combo box as we might want to put controls next to it */
+	protected void layoutComboBar(boolean top)
+	{
+		FormData comboData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
+		m_CommandCombo.setLayoutData(comboData) ;
+	}
+	
+	/** Layout the combo box and the main display window */
 	protected void layoutControls()
 	{
 		// I'll use forms everywhere for consistency and so it's easier
@@ -159,7 +167,7 @@ public abstract class ComboCommandBase extends AbstractView
 			attachBottom.bottom = new FormAttachment(m_CommandCombo) ;
 			
 			getDisplayControl().setLayoutData(attachBottom) ;
-			m_CommandCombo.setLayoutData(FormDataHelper.anchorBottom(0)) ;
+			layoutComboBar(m_ComboAtTop) ;
 		}
 		else
 		{
@@ -167,7 +175,7 @@ public abstract class ComboCommandBase extends AbstractView
 			attachTop.top = new FormAttachment(m_CommandCombo) ;
 			
 			getDisplayControl().setLayoutData(attachTop) ;
-			m_CommandCombo.setLayoutData(FormDataHelper.anchorTop(0)) ;			
+			layoutComboBar(m_ComboAtTop) ;
 		}
 		
 		m_Container.layout() ;

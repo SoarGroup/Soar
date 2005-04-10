@@ -176,6 +176,9 @@ public class ButtonView extends AbstractView
 		
 		// Recreate the button panel
 		createButtonPanel(m_Container.getParent()) ;
+		
+		// Save the new layout, so a debugger crash (when working on a new layout) doesn't lose the work.
+		m_Frame.saveCurrentLayoutFile() ;
 	}
 	
 	protected void editButton(Button button)
@@ -196,6 +199,9 @@ public class ButtonView extends AbstractView
 		
 		// Update the label
 		button.setText(info.m_Name) ;
+		
+		// Save the new layout, so a debugger crash (when working on a new layout) doesn't lose the work.
+		m_Frame.saveCurrentLayoutFile() ;
 	}
 
 	protected void addButton()
@@ -221,7 +227,10 @@ public class ButtonView extends AbstractView
 			addButton(info.m_Name, info.m_Command, info.m_InternalCommand) ;
 			
 			// Recreate the button panel
-			createButtonPanel(m_Container.getParent()) ;			
+			createButtonPanel(m_Container.getParent()) ;
+			
+			// Save the new layout, so a debugger crash (when working on a new layout) doesn't lose the work.
+			m_Frame.saveCurrentLayoutFile() ;
 		}
 	}
 

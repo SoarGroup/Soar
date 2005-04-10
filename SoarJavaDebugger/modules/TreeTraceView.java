@@ -18,15 +18,18 @@ import java.util.Iterator;
 
 import general.ElementXML;
 import helpers.CommandHistory;
+import helpers.FormDataHelper;
 import manager.Pane;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.*;
 
 import sml.*;
 import debugger.MainFrame;
+import dialogs.PropertiesDialog;
 import doc.Document;
 
 /************************************************************************
@@ -41,9 +44,17 @@ public class TreeTraceView extends ComboCommandBase
 	
 	protected int m_xmlCallback = -1 ;
 	
+	/** How many spaces we indent for a subgoal */
+	protected int m_IndentSize = 3 ;
+	
+	/** When true, expand the tree automatically as it's created */
+	protected boolean m_AutoExpand = false ;
+	
 	/** The last root (top level item) added to the tree.  We add new sub items under this */
 	protected TreeItem m_LastRoot ;
 	protected TreeItem m_DummyChild ;
+	
+	protected Button m_ExpandAllButton ;
 	
 	/** Controls whether we cache strings that are due to be subtree nodes and only add the nodes when the user clicks--or not */
 	protected final static boolean kCacheSubText = true ;
@@ -85,52 +96,12 @@ public class TreeTraceView extends ComboCommandBase
 	/** This window can be the main display window */
 	public boolean canBePrimeWindow() { return true ; }
 
-	protected static class ExpandListener implements Listener
+	protected class ExpandListener implements Listener
 	{
 		public void handleEvent (final Event event) {
-			final TreeItem root = (TreeItem) event.item;
+			TreeItem root = (TreeItem) event.item;
 			
-			// We will have exactly one dummy child item
-			// if there's cached data here.  This allows us to quickly
-			// screen out most "already been expanded before" cases.
-			if (root.getItemCount() != 1)
-				return ;
-			
-			TreeItem[] items = root.getItems() ;
-			
-			TreeData treeData = (TreeData)items[0].getData() ;
-			
-			// If there's no cached data here then once again we are done
-			// (either we're not using a cache or its already been expanded)
-			if (treeData == null)
-				return ;
-			
-			// Stop updating while we add
-			// (We may want a smarter way to do this if we're expanding the entire tree
-			//  so the redraw is turned off for the entire expansion).
-			root.getParent().setRedraw(false) ;
-			
-			// Get rid of the dummy item
-			items[0].dispose() ;
-			
-			for (Iterator iter = treeData.getLinesIterator() ; iter.hasNext() ;)
-			{
-				String text = (String)iter.next() ;
-
-				String[] lines = text.split(getLineSeparator()) ;
-				
-				for (int i = 0 ; i < lines.length ; i++)
-				{	
-					if (lines[i].length() == 0)
-						continue ;
-					
-					TreeItem node = new TreeItem (root, 0);
-					node.setText (lines[i]);
-				}				
-			}
-						
-			// Start updating again.
-			root.getParent().setRedraw(true) ;
+			expandRoot(root, true) ;
 		}
 	}
 	
@@ -149,6 +120,96 @@ public class TreeTraceView extends ComboCommandBase
 
 		// When the user expands a node in the tree we may unpack some cached data
 		m_Tree.addListener (SWT.Expand, new ExpandListener()) ;
+		
+		// Add a button that offers an expand/collapse option instantly
+		m_ExpandAllButton = new Button(parent, SWT.PUSH) ;
+		m_ExpandAllButton.setText(m_AutoExpand ? "Collapse all" : " Expand all ") ;
+		m_ExpandAllButton.setData("expanded", m_AutoExpand ? Boolean.TRUE : Boolean.FALSE) ;	// When this flag is false pressing the button expands
+		
+		m_ExpandAllButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
+			{ boolean expand = (e.widget.getData("expanded") == Boolean.FALSE) ;
+			  expandAll(expand) ; } } ) ;
+	}
+
+	protected void expandAll(boolean state)
+	{
+		m_ExpandAllButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
+		m_ExpandAllButton.setText(state ? "Collapse all" : " Expand all ") ;
+		
+		// Stop redrawing while we expand/collapse everything then turn it back on
+		m_Tree.setRedraw(false) ;
+		
+		TreeItem[] roots = m_Tree.getItems() ;
+		for (int i = 0 ; i < roots.length ; i++)
+		{	
+			// In SWT the programmatic call to expand an item does not
+			// generate an expand event, so we have to explicitly handle the expansion
+			// (i.e. unpack our cached text)
+			if (state)
+				expandRoot(roots[i], false) ;
+
+			roots[i].setExpanded(state) ;
+		}
+		
+		m_Tree.setRedraw(true) ;
+	}
+	
+	protected void expandRoot(TreeItem root, boolean redraw)
+	{
+		// We will have exactly one dummy child item
+		// if there's cached data here.  This allows us to quickly
+		// screen out most "already been expanded before" cases.
+		if (root.getItemCount() != 1)
+			return ;
+		
+		TreeItem[] items = root.getItems() ;
+		
+		TreeData treeData = (TreeData)items[0].getData() ;
+		
+		// If there's no cached data here then once again we are done
+		// (either we're not using a cache or its already been expanded)
+		if (treeData == null)
+			return ;
+		
+		// Stop updating while we add
+		// (We may want a smarter way to do this if we're expanding the entire tree
+		//  so the redraw is turned off for the entire expansion).
+		if (redraw)
+			root.getParent().setRedraw(false) ;
+		
+		// Get rid of the dummy item
+		items[0].dispose() ;
+		
+		for (Iterator iter = treeData.getLinesIterator() ; iter.hasNext() ;)
+		{
+			String text = (String)iter.next() ;
+
+			String[] lines = text.split(getLineSeparator()) ;
+			
+			for (int i = 0 ; i < lines.length ; i++)
+			{	
+				if (lines[i].length() == 0)
+					continue ;
+				
+				TreeItem node = new TreeItem (root, 0);
+				node.setText (lines[i]);
+			}				
+		}
+					
+		// Start updating again.
+		if (redraw)
+			root.getParent().setRedraw(true) ;
+	}
+	
+	protected void layoutComboBar(boolean top)
+	{
+		FormData comboData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
+		comboData.right = new FormAttachment(m_ExpandAllButton) ;
+		m_CommandCombo.setLayoutData(comboData) ;
+		
+		FormData buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
+		buttonData.left = null ;
+		m_ExpandAllButton.setLayoutData(buttonData) ;
 	}
 
 	/********************************************************************************************
@@ -209,7 +270,7 @@ public class TreeTraceView extends ComboCommandBase
 		// Creating nodes in the tree is expensive.  A more efficient
 		// model is to create a dummy child node and store the text inside that node.
 		// When the user clicks on the parent we quickly create the tree they expect to see.
-		if (this.kCacheSubText)
+		if (this.kCacheSubText && !m_AutoExpand)
 		{
 			if (m_LastRoot.getItemCount() == 0)
 			{
@@ -241,6 +302,11 @@ public class TreeTraceView extends ComboCommandBase
 			
 			TreeItem node = new TreeItem (lastItem, 0);
 			node.setText (lines[i]);
+			
+			if (m_AutoExpand && !lastItem.getExpanded())
+			{
+				lastItem.setExpanded(true) ;
+			}
 		}
 
 		// Scroll to the bottom -- not doing this for sub items to save speed
@@ -333,14 +399,14 @@ public class TreeTraceView extends ComboCommandBase
 	}
 	
 	/** Returns a string to indent to a certain stack depth (depth stored as a string) */
-	protected String indent(String depthStr)
+	protected String indent(String depthStr, int modifier)
 	{
 		if (depthStr == null)
 			return "" ;
 		
-		int depth = Integer.parseInt(depthStr) - 1 ;
+		int depth = Integer.parseInt(depthStr) + modifier ;
 		
-		int indentSize = depth * 3 ;
+		int indentSize = depth * m_IndentSize ;
 		
 		return getSpaces(indentSize) ;
 	}
@@ -356,6 +422,9 @@ public class TreeTraceView extends ComboCommandBase
 	{
 		// Stop updating the tree control while we work on it
 		m_Tree.setRedraw(false) ;
+		
+		// For debugging
+		String message = xmlParent.GenerateXMLString(true) ;
 		
 		int nChildren = xmlParent.GetNumberChildren() ;
 		
@@ -376,8 +445,22 @@ public class TreeTraceView extends ComboCommandBase
 				// 3:    ==>S: S2 (operator no-change)
 				text.append(padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
 				text.append(": ") ;
-				text.append(indent(xmlTrace.GetStackLevel())) ;
-				text.append("==>S: ") ;
+				text.append(indent(xmlTrace.GetStackLevel(), -1)) ;
+
+				// Add an appropriate subgoal marker to match the indent size
+				if (m_IndentSize == 3)
+					text.append("==>") ;
+				else if (m_IndentSize == 2)
+					text.append("=>") ;
+				else if (m_IndentSize == 1)
+					text.append(">") ;
+				else if (m_IndentSize > 3)
+				{
+					text.append(getSpaces(m_IndentSize - 3)) ;
+					text.append("==>") ;
+				}
+				
+				text.append("S: ") ;
 				text.append(xmlTrace.GetStateID()) ;
 				
 				if (xmlTrace.GetImpasseObject() != null)
@@ -396,8 +479,8 @@ public class TreeTraceView extends ComboCommandBase
 				 //2:    O: O8 (move-block)
 				text.append(padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
 				text.append(": ") ;
-				text.append(indent(xmlTrace.GetStackLevel())) ;
-				text.append("   O: ") ;
+				text.append(indent(xmlTrace.GetStackLevel(), 0)) ;
+				text.append("O: ") ;
 				text.append(xmlTrace.GetOperatorID()) ;
 				
 				if (xmlTrace.GetOperatorName() != null)
@@ -616,5 +699,52 @@ public class TreeTraceView extends ComboCommandBase
 	********************************************************************************************/
 	public void showProperties()
 	{
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[2] ;
+
+		// Providing a range for indent so we can be sure we don't get back a negative value
+		properties[0] = new PropertiesDialog.IntProperty("Indent per subgoal", m_IndentSize, 0, 10) ;
+		properties[1] = new PropertiesDialog.BooleanProperty("Expand trace as it is created", m_AutoExpand) ;
+
+		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+
+		if (ok)
+		{
+			m_IndentSize = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
+			m_AutoExpand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;
+		}		
 	}
+	
+	/************************************************************************
+	* 
+	* Converts this object into an XML representation.
+	* 
+	* @param tagName		The tag name to use for the top XML element created by this view
+	* @param storeContent	If true, record the content from the display (e.g. the text from a trace window)
+	* 
+	*************************************************************************/
+	public general.ElementXML convertToXML(String tagName, boolean storeContent)
+	{
+		ElementXML element = super.convertToXML(tagName, storeContent) ;
+		element.addAttribute("indent", Integer.toString(m_IndentSize)) ;
+		element.addAttribute("auto-expand", Boolean.toString(m_AutoExpand)) ;
+		return element ;
+	}
+
+	/************************************************************************
+	* 
+	* Rebuild the object from an XML representation.
+	* 
+	* @param frame			The top level window that owns this window
+	* @param doc			The document we're rebuilding
+	* @param parent			The pane window that owns this view
+	* @param element		The XML representation of this command
+	* 
+	*************************************************************************/
+	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception
+	{
+		m_IndentSize = element.getAttributeIntThrows("indent") ;
+		m_AutoExpand = element.getAttributeBooleanDefault("auto-expand", false) ;
+		super.loadFromXML(frame, doc, parent, element) ;		
+	}
+
 }
