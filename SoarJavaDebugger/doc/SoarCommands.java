@@ -28,6 +28,8 @@ public class SoarCommands
 	private int m_BuildVersion ;		// Soar 8.6.0 -- this is the 0
 	private Document m_Document ;
 	
+	/** At this point we just the command.  But in later versions of the debugger we might use the version
+	 *  of Soar to decide what to return (note the "version" command line command returns the Soar version in use) */
 	public String getSourceCommand(String arg) 					{ return "source " + arg ; }
 	public String getPrintCommand(String arg)  					{ return "print " + arg ; }
 	public String getPrintDepthCommand(String arg, int depth)  	{ return "print --depth " + depth + " " + arg ; }
@@ -38,6 +40,7 @@ public class SoarCommands
 	public String getPreferencesNameCommand(String arg)			{ return "preferences " + arg + " --names" ; }
 	public String getMatchesCommand(String arg)					{ return "matches " + arg ; }
 	public String getMatchesWmesCommand(String arg)				{ return "matches " + arg + " --wmes"; }
+	public String getInitSoarCommand()							{ return "init-soar" ; }
 	
 	public SoarCommands(Document doc, int major, int minor, int build)
 	{

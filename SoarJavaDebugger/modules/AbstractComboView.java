@@ -40,7 +40,7 @@ import helpers.*;
 * Another derived class handles the display of those commands which may be in text or something else.
 * 
 ********************************************************************************************/
-public abstract class ComboCommandBase extends AbstractView
+public abstract class AbstractComboView extends AbstractView
 {
 	protected Combo m_CommandCombo ;
 			
@@ -74,10 +74,10 @@ public abstract class ComboCommandBase extends AbstractView
 	protected int m_StopCallback ;
 	protected int m_PrintCallback ;
 	protected int m_DecisionCallback ;
-		
+			
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
-	public ComboCommandBase()
+	public AbstractComboView()
 	{
 		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;
@@ -228,16 +228,12 @@ public abstract class ComboCommandBase extends AbstractView
 		// Create the control that will display output from the commands
 		createDisplayControl(m_Container) ;
 		
-		if (getBackgroundColor() != null)
-			getDisplayControl().setBackground(getBackgroundColor()) ;
+		getDisplayControl().setBackground(getBackgroundColor()) ;
 		
 		layoutControls() ;
 	}
 	
-	public Color getBackgroundColor()
-	{
-		return null ;
-	}
+	public abstract Color getBackgroundColor() ;
 	
 	// We need to remove listeners that we registered for within the debugger here.
 	// Agent listeners (from Soar) are handled separately.

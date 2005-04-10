@@ -23,7 +23,7 @@ import manager.Pane;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 
@@ -38,7 +38,7 @@ import doc.Document;
  * at one level of detail and display a lesser amount of detail.
  * 
  ************************************************************************/
-public class TreeTraceView extends ComboCommandBase
+public class TreeTraceView extends AbstractComboView
 {
 	protected Tree m_Tree ;
 	
@@ -96,6 +96,8 @@ public class TreeTraceView extends ComboCommandBase
 	/** This window can be the main display window */
 	public boolean canBePrimeWindow() { return true ; }
 
+	public Color getBackgroundColor() { return m_Frame.m_White ; }
+	
 	protected class ExpandListener implements Listener
 	{
 		public void handleEvent (final Event event) {

@@ -33,13 +33,13 @@ import doc.Document;
 * and a text window to display the output.
  * 
  ************************************************************************/
-public abstract class BaseCommandView extends ComboCommandBase
+public abstract class AbstractCommandView extends AbstractComboView
 {
 	private Text m_Text ;
 
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
-	public BaseCommandView()
+	public AbstractCommandView()
 	{
 		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;
@@ -135,7 +135,7 @@ public abstract class BaseCommandView extends ComboCommandBase
 	/********************************************************************************************
 	 * @param element
 	 * 
-	 * @see modules.ComboCommandBase#storeContent(general.ElementXML)
+	 * @see modules.AbstractComboView#storeContent(general.ElementXML)
 	 ********************************************************************************************/
 	protected void storeContent(ElementXML element)
 	{
@@ -146,7 +146,7 @@ public abstract class BaseCommandView extends ComboCommandBase
 	/********************************************************************************************
 	 * @param element
 	 * 
-	 * @see modules.ComboCommandBase#restoreContent(general.ElementXML)
+	 * @see modules.AbstractComboView#restoreContent(general.ElementXML)
 	 ********************************************************************************************/
 	protected void restoreContent(ElementXML element)
 	{
@@ -178,7 +178,7 @@ public abstract class BaseCommandView extends ComboCommandBase
 	/********************************************************************************************
 	 * @param text
 	 * 
-	 * @see modules.ComboCommandBase#appendText(java.lang.String)
+	 * @see modules.AbstractComboView#appendText(java.lang.String)
 	 ********************************************************************************************/
 	protected void appendText(final String text)
 	{

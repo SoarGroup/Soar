@@ -13,6 +13,8 @@ package modules;
 
 import java.util.ArrayList;
 
+import org.eclipse.swt.graphics.Color;
+
 import debugger.MainFrame;
 import dialogs.PropertiesDialog;
 import doc.* ;
@@ -23,7 +25,7 @@ import doc.* ;
 * but instead keeps a full trace.
 * 
 ********************************************************************************************/
-public class KeepCommandView extends BaseCommandView
+public class KeepCommandView extends AbstractSingleCommandView
 {
 	public KeepCommandView()
 	{
@@ -41,29 +43,4 @@ public class KeepCommandView extends BaseCommandView
 	********************************************************************************************/
 	public String getModuleBaseName() { return "keep" ; }
 
-	public void showProperties()
-	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
-
-		boolean decisionUpdating = (m_UpdateEveryNthDecision > 0) ;
-		
-		properties[0] = new PropertiesDialog.BooleanProperty("Update automatically on stop", m_UpdateOnStop) ;
-		properties[1] = new PropertiesDialog.BooleanProperty("Clear display before each command", m_ClearEachCommand) ;
-		properties[2] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
-
-		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
-
-		if (ok)
-		{
-			m_UpdateOnStop = ((PropertiesDialog.BooleanProperty)properties[0]).getValue() ;
-			m_ClearEachCommand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;		
-			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[2]).getValue() ;
-	
-			if (this.getAgentFocus() != null)
-			{
-				// Make sure we're getting the events to match the new settings
-				this.registerForAgentEvents(this.getAgentFocus()) ;
-			}
-		}
-	}
 }

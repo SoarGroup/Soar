@@ -117,6 +117,10 @@ public class DemoMenu
 		String exciseLine = m_Document.getSoarCommands().getExciseAllCommand() ;
 		m_Frame.executeCommandPrimeView(exciseLine, false) ;
 		
+		// Then do an init-soar
+		String initSoar = m_Document.getSoarCommands().getInitSoarCommand() ;
+		m_Frame.executeCommandPrimeView(initSoar, false) ;
+		
 		File filePath = new File(m_DemoPath, filename.getPath()) ;
 		String commandLine = m_Document.getSoarCommands().getSourceCommand(filePath.getPath()) ;
 

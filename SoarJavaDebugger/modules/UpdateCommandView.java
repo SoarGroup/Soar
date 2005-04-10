@@ -11,6 +11,8 @@
 ********************************************************************************************/
 package modules;
 
+import org.eclipse.swt.graphics.Color;
+
 import dialogs.PropertiesDialog;
 
 /************************************************************************
@@ -19,7 +21,7 @@ import dialogs.PropertiesDialog;
 * and clears each time a command is issued.
  * 
  ************************************************************************/
-public class UpdateCommandView extends BaseCommandView
+public class UpdateCommandView extends AbstractSingleCommandView
 {
 	public UpdateCommandView()
 	{
@@ -36,29 +38,4 @@ public class UpdateCommandView extends BaseCommandView
 	* 
 	********************************************************************************************/
 	public String getModuleBaseName() { return "update" ; }
-	
-	public void showProperties()
-	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
-
-		boolean decisionUpdating = (m_UpdateEveryNthDecision > 0) ;
-		
-		properties[0] = new PropertiesDialog.BooleanProperty("Update automatically on stop", m_UpdateOnStop) ;
-		properties[1] = new PropertiesDialog.BooleanProperty("Clear display before each command", m_ClearEachCommand) ;
-		properties[2] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
-
-		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
-
-		if (ok)
-		{
-			m_UpdateOnStop = ((PropertiesDialog.BooleanProperty)properties[0]).getValue() ;
-			m_ClearEachCommand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;		
-			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[2]).getValue() ;
-	
-			if (this.getAgentFocus() != null)
-			{
-				this.registerForAgentEvents(this.getAgentFocus()) ;
-			}
-		}
-	}
 }
