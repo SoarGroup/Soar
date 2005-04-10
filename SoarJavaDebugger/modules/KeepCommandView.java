@@ -61,6 +61,7 @@ public class KeepCommandView extends BaseCommandView
 	
 			if (this.getAgentFocus() != null)
 			{
+				// Make sure we're getting the events to match the new settings
 				this.registerForAgentEvents(this.getAgentFocus()) ;
 			}
 		}

@@ -334,11 +334,16 @@ public abstract class AbstractView implements AgentFocusListener
 		addItem(menu, "Add window to top ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachTopValue) ;
 		addItem(menu, "Add window to bottom ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachBottomValue) ;
 		
-		// Only offer rename if we're showing tabs (so names are visible)
+		// Some commands are only if we're showing tabs (so names are visible)
 		if (!getPane().isSingleView())
 		{
 			new MenuItem(menu, SWT.SEPARATOR) ;
 			addItem(menu, "Rename window ...", "renameview " + m_Frame.getName() + " " + this.getName()) ;
+			
+			if (getPane().isTabAtTop())
+				addItem(menu, "Move tabs to bottom", "movetabs " + m_Frame.getName() + " " + this.getName() + " bottom") ;
+			else
+				addItem(menu, "Move tabs to top", "movetabs " + m_Frame.getName() + " " + this.getName() + " top");
 		}
 		new MenuItem(menu, SWT.SEPARATOR) ;
 		addItem(menu, "Replace window ...", "replaceview " + m_Frame.getName() + " " + this.getName()) ;

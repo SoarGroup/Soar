@@ -89,11 +89,8 @@ public class Application {
 			// BUGBUG: Should choose the extension to match the platform we're on
 			String extension = ".dll" ;		
 			Install(new String[] { "KernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
-
-			// Step 3: Install alias and usage files (installing them allows them to be updated locally by the user)
-			Install(new String[] { "aliases.txt", "usage.txt" } , "", alwaysInstallLibs) ;
 			
-			// Step 4: Insall the default layout file
+			// Step 3: Insall the default layout file
 			Install(new String[] { "default-layout.xml" } , "", false) ;
 
 			// Start the SWT version of the application (we used to have a Swing version too)

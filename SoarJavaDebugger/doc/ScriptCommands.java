@@ -340,6 +340,45 @@ public class ScriptCommands
 		return null ;
 	}
 	
+	// Move tabs in a tabbed view: movetabs <framename> <viewname> <top | bottom>
+	protected Object executeMoveTabs(String[] tokens)
+	{
+		String frameName = tokens[1] ;
+		String viewName  = tokens[2] ;
+		String direction = tokens[3] ;
+		
+		// To the user we are adding a view, but internally we're adding a pane
+		// and then that pane will contain the view
+		MainFrame frame = m_Document.getFrameByName(frameName) ;
+		AbstractView view = frame.getView(viewName) ;
+		Pane pane = view.getPane() ;
+		
+		boolean storeContent = true ;	// Capture existing output and redisplay it
+		ElementXML xml = frame.getMainWindow().convertToXML(storeContent) ;
+		
+		// Find the XML element for the pane we're modifying
+		ElementXML existingPane = pane.getElementXML() ;
+		
+		// Set the tab at top value appropriately
+		boolean top = (direction.equalsIgnoreCase("top")) ;
+		existingPane.addAttribute(Pane.kAttributeTabAtTop, Boolean.toString(top)) ;
+
+		try
+		{
+			// Rebuild the entire layout from the new XML structure.
+			frame.getMainWindow().loadFromXML(xml) ;
+			
+			// Save immediately, so if the debugger crashes the changes are kept
+			frame.saveCurrentLayoutFile() ;		
+			
+		} catch (Exception e)
+		{
+			// Fatal error
+			e.printStackTrace();
+		}
+				
+		return null ;
+	}
 	
 	// Remove an existing view: removeview <framename> <viewname>
 	protected Object executeRemoveView(String[] tokens)
@@ -483,13 +522,13 @@ public class ScriptCommands
 			{
 				char ch = name.charAt(i) ;
 				
-				if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || (ch == '_' || ch == '-')))
+				if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || (ch == '_' || ch == '-' || ch == '<' || ch == '>')))
 					valid = false ;
 			}
 			
 			if (!valid)
 			{
-				frame.ShowMessageBox("Invalid characters in name", "Window names are limited to letters, numbers and '_' and '-'") ;
+				frame.ShowMessageBox("Invalid characters in name", "Window names are limited to letters, numbers and '_', '-', '<', '>'") ;
 				continue ;
 			}
 			
@@ -505,6 +544,9 @@ public class ScriptCommands
 			done = true ;
 		}
 		
+		// Save immediately, so if the debugger crashes the changes are kept
+		frame.saveCurrentLayoutFile() ;		
+
 		return null ;
 	}
 	
@@ -579,6 +621,11 @@ public class ScriptCommands
 		if (first.equals("clear"))
 		{
 			return executeClearView(tokens) ;
+		}
+		
+		if (first.equals("movetabs"))
+		{
+			return executeMoveTabs(tokens) ;
 		}
 		
 		// properties <frame> <view>

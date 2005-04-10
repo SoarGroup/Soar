@@ -510,7 +510,6 @@ public class MainFrame
 	
 	public void registerViewName(String name, AbstractView view)
 	{
-		System.out.println("Name in use " + name) ;
 		m_NameMap.registerName(name, view) ;
 	}
 	

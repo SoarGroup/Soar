@@ -52,9 +52,9 @@ public class Pane
 	public static final String kAttributeView		= "view" ;	
 	
 	/** Some windows can be vertically or horizontally oriented.  Others can just ignore this property */
-	protected boolean		m_HorizontalOrientation ;
-	protected boolean		m_SingleView ;
-	protected boolean		m_TabAtTop ;
+	protected boolean		m_HorizontalOrientation = true ;
+	protected boolean		m_SingleView = true ;
+	protected boolean		m_TabAtTop = false ;
 	
 	/********************************************************************************************
 	 * 
@@ -111,8 +111,6 @@ public class Pane
 	// I'm including a String "noParent" parameter here to make sure folks don't use this by accident.
 	public Pane(String noParent)
 	{
-		// Default to horizontal (for many views orientation is ignored anyway)
-		m_HorizontalOrientation = true ;
 	}
 	
 	public Composite getWindow()
@@ -223,7 +221,8 @@ public class Pane
 			ElementXML child = view.convertToXML(AbstractView.kTagView, storeContent) ;
 
 			// Provide an easy way to go from the view to the XML
-			view.getWindow().setData(kXMLKey, child) ;
+			if (view.getWindow() != null)
+				view.getWindow().setData(kXMLKey, child) ;
 			
 			element.addChildElement(child) ;
 		}
