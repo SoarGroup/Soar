@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<Debugger Version="1.0">
+  <sash weight0="548" Class="class org.eclipse.swt.custom.SashForm" weight1="451" weights="2" style="256">
+    <sash weight0="1000" Class="class org.eclipse.swt.custom.SashForm" weights="1" style="512">
+      <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
+        <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
+          <pane singleView="true" horiz="true">
+            <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.TreeTraceView" ShowTraceOutput="false" Name="treetrace1" ClearEachCommand="false" UpdateOnStop="false">
+              <History Item0="<Type commands here>" Size="1" Class="helpers.CommandHistory"></History>
+            </view>
+          </pane>
+          <pane singleView="true" horiz="true">
+            <view ButtonCount="9" Class="modules.ButtonView" Name="buttons3">
+              <Button Command="step" Name="Step"></Button>
+              <Button Command="run" Name="Run"></Button>
+              <Button Command="run 1 --elaboration" Name="Run 1 -e"></Button>
+              <Button Command="stop-soar" Name="Stop"></Button>
+              <Button Command="matches" Name="Matches"></Button>
+              <Button Command="print <s>" Name="Print <s>"></Button>
+              <Button Command="print <ts>" Name="Print <ts>"></Button>
+              <Button Command="print <o>" Name="Print <o>"></Button>
+              <Button Command="clear" Name="Clear"></Button>
+            </view>
+          </pane>
+        </composite>
+        <pane singleView="true" horiz="true">
+          <view ButtonCount="5" Class="modules.ButtonView" Name="buttons1">
+            <Button Command="init-soar" Name="Init-soar"></Button>
+            <Button InternalCommand="" Command="" Name="Source"></Button>
+            <Button InternalCommand="" Command="excise -a" Name="Excise All"></Button>
+            <Button InternalCommand="demo towers-of-hanoi towers-of-hanoi.soar" Name="Towers of Hanoi"></Button>
+            <Button InternalCommand="demo water-jug water-jug-look-ahead.soar" Command="" Name="Water Jug Look-Ahead"></Button>
+          </view>
+        </pane>
+      </composite>
+    </sash>
+    <sash weight0="505" Class="class org.eclipse.swt.custom.SashForm" weight1="494" weights="2" style="512">
+      <pane singleView="true" horiz="true">
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="update1" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="print <s>" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+      </pane>
+      <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Top">
+        <pane singleView="true" horiz="true">
+          <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.KeepCommandView" ShowTraceOutput="false" Name="keep2" ClearEachCommand="false" UpdateOnStop="false">
+            <History Size="0" Class="helpers.CommandHistory"></History>
+          </view>
+        </pane>
+        <pane singleView="true" horiz="true">
+          <view ButtonCount="4" Class="modules.ButtonView" Name="buttons2" LinkedView="keep2">
+            <Button Command="matches" Name="Matches"></Button>
+            <Button Command="print <s>" Name="Print state"></Button>
+            <Button Command="print <o>" Name="Print op"></Button>
+            <Button Command="print --stack" Name="Print stack"></Button>
+          </view>
+        </pane>
+      </composite>
+    </sash>
+  </sash>
+</Debugger>
