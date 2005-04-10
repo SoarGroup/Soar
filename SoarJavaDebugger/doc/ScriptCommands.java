@@ -49,7 +49,7 @@ public class ScriptCommands
 		String viewName  = tokens[2] ;
 
 		MainFrame frame = m_Document.getFrameByName(frameName) ;
-		AbstractView view = frame.getNameRegister().getView(viewName) ;
+		AbstractView view = frame.getView(viewName) ;
 
 		view.clearDisplay() ;
 		
@@ -66,7 +66,7 @@ public class ScriptCommands
 		// To the user we are adding a view, but internally we're adding a pane
 		// and then that pane will contain the view
 		MainFrame frame = m_Document.getFrameByName(frameName) ;
-		AbstractView view = frame.getNameRegister().getView(viewName) ;
+		AbstractView view = frame.getView(viewName) ;
 		Pane pane = view.getPane() ;
 
 		// Ask for the type of window to add
@@ -113,7 +113,7 @@ public class ScriptCommands
 
 		// We create a new pane but with no parent window (so the pane object is not instantiated
 		// into SWT windows).  We just want to use it to generate the new XML.
-		Pane newPane = new Pane(true) ;
+		Pane newPane = new Pane("no parent") ;
 		newPane.setHorizontalOrientation(horiz) ;
 		
 		// Generate a name and make this view a child of the pane we're building
@@ -179,6 +179,84 @@ public class ScriptCommands
 		return null ;		
 	}
 
+	// Add a new tab to a pane: addtab <framename> <viewname>
+	protected Object executeAddTab(String[] tokens)
+	{
+		String frameName = tokens[1] ;
+		String viewName  = tokens[2] ;
+					
+		// To the user we are adding a view, but internally we're adding a pane
+		// and then that pane will contain the view
+		MainFrame frame = m_Document.getFrameByName(frameName) ;
+		AbstractView view = frame.getView(viewName) ;
+		Pane pane = view.getPane() ;
+
+		// Ask for the type of window to add
+		Module module = NewWindowDialog.showDialog(frame, "Select new window", m_Document.getModuleList()) ;
+		if (module == null)
+			return null ;
+		
+		// Create an instance of the class.  This view won't be fully instantiated
+		// but we'll use it to create a name and generate XML etc.
+		AbstractView newView = module.createInstance() ;
+		newView.generateName(frame) ;
+		
+		if (newView == null)
+			return null ;
+		
+		if (!view.isFixedSizeView() && newView.isFixedSizeView())
+		{
+			frame.ShowMessageBox("I'm sorry.  You can't add a fixed size window (like a button bar) to a window containing a variable sized one (like a text window)") ;
+			return null ;
+		}
+
+		if (view.isFixedSizeView() && !newView.isFixedSizeView())
+		{
+			frame.ShowMessageBox("I'm sorry.  You can't add a variable sized window (like a text window) to a window containing a fixed sized one (like a button bar)") ;
+			return null ;
+		}
+		
+		// The plan is to build the XML for the current set of windows.
+		// Then add in the XML for the new window into the appropriate pane
+		// and then rebuild everything from the modified XML.
+		// We do this dance because SWT doesn't generally allow the parent of a window
+		// to be changed after it was created.
+		
+		boolean storeContent = true ;	// Capture existing output so we can redisplay it
+		ElementXML xml = frame.getMainWindow().convertToXML(storeContent) ;
+		
+		// Find the XML element for the pane we're modifying
+		ElementXML existingPane = pane.getElementXML() ;
+		ElementXML parentXML = existingPane.getParent() ;
+
+		// Force the pane to be a multi-view
+		existingPane.addAttribute(Pane.kAttributeSingleView, "false") ;
+		
+		// Make the new view visible
+		existingPane.addAttribute(Pane.kAttributeView, newView.getName()) ;
+
+		// Add the new view as a child of this pane
+		ElementXML newViewXML = newView.convertToXML(AbstractView.kTagView, false) ;
+		existingPane.addChildElement(newViewXML) ;
+				
+		try
+		{
+			// Rebuild the entire layout from the new XML structure.
+			frame.getMainWindow().loadFromXML(xml) ;
+			
+			// Save immediately, so if the debugger crashes the changes are kept
+			frame.saveCurrentLayoutFile() ;		
+			
+		} catch (Exception e)
+		{
+			// Fatal error
+			e.printStackTrace();
+		}
+				
+		return null ;
+
+	}
+	
 	// Replace an existing view: replaceview <framename> <viewname>
 	protected Object executeReplaceView(String[] tokens)
 	{
@@ -188,7 +266,7 @@ public class ScriptCommands
 		// To the user we are adding a view, but internally we're adding a pane
 		// and then that pane will contain the view
 		MainFrame frame = m_Document.getFrameByName(frameName) ;
-		AbstractView view = frame.getNameRegister().getView(viewName) ;
+		AbstractView view = frame.getView(viewName) ;
 		Pane pane = view.getPane() ;
 
 		// Ask for the type of window to add
@@ -203,6 +281,18 @@ public class ScriptCommands
 		if (newView == null)
 			return null ;
 		
+		if (view.isFixedSizeView() && !newView.isFixedSizeView())
+		{
+			frame.ShowMessageBox("I'm sorry.  You can't replace a fixed size window (like a button bar) with a variable sized one (like a text window)") ;
+			return null ;
+		}
+
+		if (!view.isFixedSizeView() && newView.isFixedSizeView())
+		{
+			frame.ShowMessageBox("I'm sorry.  You can't replace a variable sized window (like a text window) with a fixed sized one (like a button bar)") ;
+			return null ;
+		}
+
 		// The plan is to build the XML for the current set of windows.
 		// Then swap the part of the XML for the current pane with a new pane
 		// based on the new window and then rebuild everything from the modified XML.
@@ -217,7 +307,11 @@ public class ScriptCommands
 		ElementXML parentXML = existingPane.getParent() ;
 		
 		// Generate a name and make this view a child of the pane we're building
-		Pane newPane = new Pane(true) ;
+		Pane newPane = new Pane("no parent") ;
+		
+		// Make the orientation match (some will ignore this)
+		newPane.setHorizontalOrientation(pane.isHorizontalOrientation()) ;
+		
 		newView.generateName(frame) ;
 		newPane.addView(newView) ;
 		
@@ -254,7 +348,7 @@ public class ScriptCommands
 		String viewName  = tokens[2] ;
 
 		MainFrame frame = m_Document.getFrameByName(frameName) ;
-		AbstractView view = frame.getNameRegister().getView(viewName) ;
+		AbstractView view = frame.getView(viewName) ;
 		Pane pane = view.getPane() ;
 
 		// Convert everything to XML
@@ -263,68 +357,85 @@ public class ScriptCommands
 
 		// Find the XML element for the pane we're removing
 		ElementXML removePane = pane.getElementXML() ;
-		
-		// If we're removing a fixed size view we want to just remove the parent
-		// composite to leave just the other pane in the pair.
-		// If we're removing a variable size view and its part of a composite
-		// we delete the other (fixed size) pane as well which can lead to a chain.
-		boolean removingFixedSize = view.isFixedSizeView() ;
-		
-		if (removingFixedSize)
+				
+		// If the pane contains multiple views we just need to delete our view
+		if (!pane.isSingleView())
 		{
-			// With a fixed size window we just promote the other side of the pair
-			// up a level in the hierarchy.
-			ElementXML parent = removePane.getParent() ;
+			removePane.removeChild(view.getElementXML()) ;
 			
-			if (parent.getNumberChildren() != 2)
-				throw new IllegalStateException("The parent of a fixed size window should be a composite pair") ;
-			
-			// Find the other pane of the pair
-			ElementXML otherPane = parent.getChild(0) ;
-			if (otherPane == removePane)
-				otherPane = parent.getChild(1) ;
-			
-			// Promote the other pane to the position of the current parent
-			ElementXML superParent = parent.getParent() ;
-			superParent.replaceChild(parent, otherPane) ;
+			// If this takes us down to one child we need to mark the pane
+			// as a single view
+			if (removePane.getNumberChildren() == 1)
+			{
+				removePane.addAttribute(Pane.kAttributeSingleView, "true") ;
+			}
 		}
 		else
 		{
-			// With a variable sized window, if we're removing it from a pair
-			// (with a fixed sized window) we need to remove the pair.
-			// This can lead to a chain reaction up the hierarchy.
-			boolean done = false ;
-
-			while (!done)
+			// At this point we're removing the entire pane
+			
+			// If we're removing a fixed size view we want to just remove the parent
+			// composite to leave just the other pane in the pair.
+			// If we're removing a variable size view and its part of a composite
+			// we delete the other (fixed size) pane as well which can lead to a chain.
+			boolean removingFixedSize = view.isFixedSizeView() ;
+			
+			if (removingFixedSize)
 			{
+				// With a fixed size window we just promote the other side of the pair
+				// up a level in the hierarchy.
 				ElementXML parent = removePane.getParent() ;
 				
-				// Can't remove the children of the top window as the top
-				// window is just a container that hosts everything else
-				// (i.e. it only has one child)
-				if (parent == null)
-				{
-					frame.ShowMessageBox("Can't remove the last window") ;
-					return null ;
-				}
+				if (parent.getNumberChildren() != 2)
+					throw new IllegalStateException("The parent of a fixed size window should be a composite pair") ;
 				
-				parent.removeChild(removePane) ;
-
-				// If the parent is a composite, remove it and its twin for now
-				if (parent.getTagName().equals("composite"))
+				// Find the other pane of the pair
+				ElementXML otherPane = parent.getChild(0) ;
+				if (otherPane == removePane)
+					otherPane = parent.getChild(1) ;
+				
+				// Promote the other pane to the position of the current parent
+				ElementXML superParent = parent.getParent() ;
+				superParent.replaceChild(parent, otherPane) ;
+			}
+			else
+			{
+				// With a variable sized window, if we're removing it from a pair
+				// (with a fixed sized window) we need to remove the pair.
+				// This can lead to a chain reaction up the hierarchy.
+				boolean done = false ;
+	
+				while (!done)
 				{
+					ElementXML parent = removePane.getParent() ;
+					
+					// Can't remove the children of the top window as the top
+					// window is just a container that hosts everything else
+					// (i.e. it only has one child)
+					if (parent == null)
+					{
+						frame.ShowMessageBox("Can't remove the last window") ;
+						return null ;
+					}
+					
+					parent.removeChild(removePane) ;
+	
+					// If the parent is a composite, remove it and its twin for now
+					if (parent.getTagName().equals("composite"))
+					{
+						removePane = parent ;
+					}
+					else if (parent.getNumberChildren() > 0)
+					{
+						// Note: For sashform's this actually leaves the XML in an invalid state with
+						// incorrect weight information (to match the wrong number of children).
+						// Fixed that by allowing the load logic to recover from that state and just
+						// default to equal weights and the result seems fine.
+						done = true ;
+					}
+					
 					removePane = parent ;
 				}
-				else if (parent.getNumberChildren() > 0)
-				{
-					// Note: For sashform's this actually leaves the XML in an invalid state with
-					// incorrect weight information (to match the wrong number of children).
-					// Fixed that by allowing the load logic to recover from that state and just
-					// default to equal weights and the result seems fine.
-					done = true ;
-				}
-				
-				removePane = parent ;
 			}
 		}
 		
@@ -344,6 +455,59 @@ public class ScriptCommands
 
 		return null ;		
 	}
+	
+	// Remove an existing view: renameview <framename> <viewname>
+	protected Object executeRenameView(String[] tokens)
+	{
+		String frameName = tokens[1] ;
+		String viewName  = tokens[2] ;
+
+		MainFrame frame = m_Document.getFrameByName(frameName) ;
+		AbstractView view = frame.getView(viewName) ;
+		Pane pane = view.getPane() ;
+
+		boolean done = false ;
+		
+		while (!done)
+		{
+			String name = frame.ShowInputDialog("Rename window", "Enter the new name:", view.getName()) ;
+	
+			// Check if user cancelled
+			if (name == null || name.length() == 0 || name.equals(view.getName()))
+				return null ;
+
+			// We can't allow spaces (throws off our script passing) or special characters (might throw off XML load/save)
+			// If we really cared about these we could relax all of these limits, but it doesn't seem that critical.
+			boolean valid = true ;
+			for (int i = 0 ; i < name.length() ; i++)
+			{
+				char ch = name.charAt(i) ;
+				
+				if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || (ch == '_' || ch == '-')))
+					valid = false ;
+			}
+			
+			if (!valid)
+			{
+				frame.ShowMessageBox("Invalid characters in name", "Window names are limited to letters, numbers and '_' and '-'") ;
+				continue ;
+			}
+			
+			if (frame.isViewNameInUse(name))
+			{
+				frame.ShowMessageBox("Name in use", "The window name has to be unique and " + name + " is already in use.") ;
+				continue ;
+			}
+			
+			// Change the name of this view
+			view.changeName(name) ;
+			pane.updateTabs() ;
+			done = true ;
+		}
+		
+		return null ;
+	}
+	
 	
 	/** We allow the variables [thisframe] and [thisview] in the command.  Here we bind those variables */
 	public String replaceVariables(MainFrame frame, AbstractView view, String command)
@@ -402,6 +566,16 @@ public class ScriptCommands
 			return executeAddView(tokens) ;
 		}
 		
+		if (first.equals("addtab"))
+		{
+			return executeAddTab(tokens) ;
+		}
+		
+		if (first.equals("renameview"))
+		{
+			return executeRenameView(tokens) ;
+		}
+		
 		if (first.equals("clear"))
 		{
 			return executeClearView(tokens) ;
@@ -414,7 +588,7 @@ public class ScriptCommands
 			String viewName  = tokens[2] ;
 
 			MainFrame frame = m_Document.getFrameByName(frameName) ;
-			AbstractView view = frame.getNameRegister().getView(viewName) ;
+			AbstractView view = frame.getView(viewName) ;
 			
 			view.showProperties() ;
 		}

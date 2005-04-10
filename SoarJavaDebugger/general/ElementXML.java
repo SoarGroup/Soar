@@ -666,6 +666,28 @@ public class ElementXML
 	* 
 	* Returns the value of a named attribute, interpreting it as an boolean.
 	* If the attribute is missing or cannot be parsed as a bool, this function
+	* returns the default value without throwing.
+	* 
+	*************************************************************************/
+	public boolean getAttributeBooleanDefault(String name, boolean defaultValue)
+	{
+		String val = getAttribute(name) ;
+		
+		if (val == null)
+			return defaultValue ;
+		
+		if (val.equalsIgnoreCase("true"))
+			return true ;
+		if (val.equalsIgnoreCase("false"))
+			return false ;
+		
+		return defaultValue ;
+	}
+
+	/************************************************************************
+	* 
+	* Returns the value of a named attribute, interpreting it as an boolean.
+	* If the attribute is missing or cannot be parsed as a bool, this function
 	* throws an exception.
 	* 
 	*************************************************************************/

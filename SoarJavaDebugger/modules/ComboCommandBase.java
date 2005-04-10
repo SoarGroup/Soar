@@ -344,8 +344,6 @@ public abstract class ComboCommandBase extends AbstractView
 		element.addAttribute("ShowTraceOutput", Boolean.toString(m_ShowTraceOutput)) ;
 		element.addAttribute("UpdateEveryNthDecision", Integer.toString(m_UpdateEveryNthDecision)) ;
 		
-//		if (storeContent && m_Text.getText() != null)
-//			element.addContents(m_Text.getText()) ;
 		if (storeContent)
 			storeContent(element) ;
 
@@ -388,7 +386,7 @@ public abstract class ComboCommandBase extends AbstractView
 			this.m_CommandHistory.LoadFromXML(doc, history) ;
 		
 		// Register that this module's name is in use
-		frame.getNameRegister().registerName(m_Name, this) ;
+		frame.registerViewName(m_Name, this) ;
 		
 		// Actually create the window
 		init(frame, doc, parent) ;

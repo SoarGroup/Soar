@@ -572,7 +572,7 @@ public class TreeTraceView extends ComboCommandBase
 		// going to use an asynch call, which won't execute until after this function has
 		// completed and xml goes out of scope.
 		ClientXML pKeep = new ClientXML(xml) ;
-        Display.getDefault().asyncExec(new RunWrapper(this, agent, pKeep)) ;
+        Display.getDefault().syncExec(new RunWrapper(this, agent, pKeep)) ;
 	}
 
 	/********************************************************************************************

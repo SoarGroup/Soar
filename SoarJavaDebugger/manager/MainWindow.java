@@ -49,11 +49,19 @@ public class MainWindow
 	private Composite 	m_Window ;
 	private MainFrame	m_Frame ;
 	private Document	m_Document ;
-	public final static String kAttachKey = "Attach" ;
+	public final static String kAttachKey 		  = "Attach" ;
 	public final static String kAttachBottomValue = "Bottom" ;
 	public final static String kAttachTopValue    = "Top" ;
 	public final static String kAttachRightValue  = "Right" ;
 	public final static String kAttachLeftValue   = "Left" ;
+	
+	// We'll store information inside the SWT windows to tell us how they fit together
+	// in our window hierarchy.  This is mostly to support debugging.
+	public final static String kWindowType		  = "WindowType" ;
+	public final static String kTypeModule		  = "TypeModule" ;	// The top of a module itself
+	public final static String kTypePane		  = "TypePane" ;	// A window that contains modules
+	public final static String kTypePair		  = "TypePair" ;	// Contains one fixed size window and a variable size one (creating a single unit)
+	public final static String kTypeSash		  = "TypeSash" ;	// Contains two variable sized windows joined with a sash control
 	
 	// The order of this list determines tab order
 	private ArrayList	m_PaneList = new ArrayList() ;
@@ -232,7 +240,7 @@ public class MainWindow
 		m_Frame.setAgentFocus(null) ;
 		
 		// Unregister all names that were in use with this frame
-		m_Frame.getNameRegister().clear() ;
+		m_Frame.clearNameRegistry() ;
 		
 		// Now delete everything
 		m_Window.dispose() ;
@@ -242,8 +250,9 @@ public class MainWindow
 		m_Window.setLayout(new FormLayout()) ;
   	}
   	
-  	/** Create the windows for the default layout */
-  	protected void createDefaultLayout()
+  	/** Create the windows for the default layout.
+  	 *  We're keeping this as a fallback, but now load the default layout from a file usually. */
+  	protected void createInternalDefaultLayout()
   	{
   		if (m_Window.getChildren().length != 0)
   			throw new IllegalStateException("Need to start with a blank base window") ;
@@ -264,13 +273,13 @@ public class MainWindow
   		// and moves as one with it.  To make this happen we'll create this pair.  		
   		// These panes contain a SWT Window and a module/view that provides specific debugging content
   		Composite pair	  		= new Composite(vertSashLeft, 0) ;
-  		Pane top  		  	 	= new Pane(pair) ;
-  		Pane buttonPane   	 	= new Pane(pair) ;
-  		Pane bottom       	 	= new Pane(vertSashLeft) ;
-  		Pane rightTop  	 		= new Pane(vertSashRight) ;
+  		Pane top  		  	 	= new Pane(pair, true, true) ;
+  		Pane buttonPane   	 	= new Pane(pair, true, true) ;
+  		Pane bottom       	 	= new Pane(vertSashLeft, true, true) ;
+  		Pane rightTop  	 		= new Pane(vertSashRight, true, true) ;
   		Composite pair2 		= new Composite(vertSashRight, 0) ;
-  		Pane rightBottom     	= new Pane(pair2) ;
-  		Pane buttonsRightBottom = new Pane(pair2) ;
+  		Pane rightBottom     	= new Pane(pair2, true, true) ;
+  		Pane buttonsRightBottom = new Pane(pair2, true, true) ;
 
   		// Attach the button panes to a window as a single, resizable unit
   		attachTogether(top.getWindow(), buttonPane.getWindow(), kAttachLeftValue) ;
@@ -349,21 +358,29 @@ public class MainWindow
   	********************************************************************************************/
   	public void useDefaultLayout()
   	{
-  		Agent currentAgentFocus = m_Frame.getAgentFocus() ;
-  		
-  		// Dispose of all existing windows
-  		clearLayout() ;
-  		
-  		// Build the new windows
-  		createDefaultLayout() ;
-  		
-		// Note: Must update the parent because we've changed its children here.
-		// Without this the new windows don't appear on screen at all.
-       	m_Window.getParent().layout(true) ;
-       	
-       	// We reset the agent focus (if it existed before).
-       	// This allows the new windows to all register for events with this agent.
-       	m_Frame.setAgentFocus(currentAgentFocus) ;
+  		// We load the default layout as a file now.
+  		boolean ok = m_Frame.loadLayoutFile("default-layout.xml", false) ;
+
+  		// If for some reason this fails (really shouldn't happen)
+  		// then we'll use an internal layout as a fall back.
+  		if (!ok)
+  		{
+	  		Agent currentAgentFocus = m_Frame.getAgentFocus() ;
+	  		
+	  		// Dispose of all existing windows
+	  		clearLayout() ;
+	  		
+	  		// Build the new windows
+	  		createInternalDefaultLayout() ;
+	  		
+			// Note: Must update the parent because we've changed its children here.
+			// Without this the new windows don't appear on screen at all.
+	       	m_Window.getParent().layout(true) ;
+	       	
+	       	// We reset the agent focus (if it existed before).
+	       	// This allows the new windows to all register for events with this agent.
+	       	m_Frame.setAgentFocus(currentAgentFocus) ;
+  		}
   	}
 
   	public void loadFromXMLNoThrow(ElementXML root)
@@ -425,7 +442,7 @@ public class MainWindow
 		}
 		catch (Exception e)
 		{
-			String msg = e.getMessage();
+			String msg = e.toString() ;
 
 			// Report any errors to the user.
 			if (showErrors)
@@ -503,6 +520,11 @@ public class MainWindow
 		
 		for (int i = 0 ; i < controls.length ; i++)
 		{
+			// Look up the logical type of window this is (we store this when the window is created).
+			// This helps with debugging.
+			String type = (String)controls[i].getData(kWindowType) ;
+			// System.out.println("Saving " + type) ;
+			
 			// When we reach a pane we're at a leaf in the layout logic and need
 			// to switch to storing the pane information.
 			Pane pane = (Pane)controls[i].getData(Pane.kPaneKey) ;
@@ -606,10 +628,8 @@ public class MainWindow
 	
 	protected void loadPaneFromXML(MainFrame frame, Document doc, Composite parent, ElementXML element) throws Exception
 	{
-		Pane pane = new Pane(parent) ;
+  		Pane pane = Pane.loadFromXML(frame, doc, parent, element) ;	
   		m_PaneList.add(pane) ;
-  		
-  		pane.loadFromXML(frame, doc, parent, element) ;		
 	}
 	
 	protected void loadSwtFromXML(MainFrame frame, Document doc, Composite parent, ElementXML element) throws Exception
@@ -625,6 +645,7 @@ public class MainWindow
 			// Create the new form
 			SashForm sash = new SashForm(parent, style) ;
 	  		sash.setLayoutData(FormDataHelper.anchorFull(0)) ;
+			sash.setData(MainWindow.kWindowType, MainWindow.kTypeSash) ;
 			
 			// Have to create all of the children *before* we can set the weights
 			// (this is an oddity of SashForm)
@@ -655,7 +676,8 @@ public class MainWindow
 		else if (tag.equalsIgnoreCase("composite"))
 		{
 			Composite composite = new Composite(parent, style) ;
-			
+			composite.setData(MainWindow.kWindowType, MainWindow.kTypePair) ;
+
 			// See how this composite's children are meant to be put together.
 			String attachType = element.getAttributeThrows("attach") ;
 			

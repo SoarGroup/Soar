@@ -262,6 +262,12 @@ public class ButtonView extends AbstractView
 			item.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) { addButton() ; } } ) ;
 
+			item = addButtonViewItem(contextMenu, "Edit/remove button...") ;
+
+			// BADBAD: Later we might have a dialog to handle multiple changes, but for now we'll point them to the real stuff.
+			item.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) { m_Frame.ShowMessageBox("Edit/remove buttons", "To edit or remove a button, right click on that button and select an option") ; } } ) ;
+
 			new MenuItem(contextMenu, SWT.SEPARATOR) ;
 
 			// In background container
@@ -396,7 +402,7 @@ public class ButtonView extends AbstractView
 
 		// Even when we have a name it's possible that the view it referred to
 		// is no longer around, so this can still return null.
-		return m_Frame.getNameRegister().getView(m_LinkedViewName) ;
+		return m_Frame.getView(m_LinkedViewName) ;
 	}
 	
 	protected void buttonPressed(SelectionEvent e, int pos)
@@ -537,7 +543,7 @@ public class ButtonView extends AbstractView
 		}
 		
 		// Register that this module's name is in use
-		frame.getNameRegister().registerName(m_Name, this) ;
+		frame.registerViewName(m_Name, this) ;
 
 		// Actually create the window
 		init(frame, doc, parent) ;

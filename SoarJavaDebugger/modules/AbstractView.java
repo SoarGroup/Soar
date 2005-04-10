@@ -11,6 +11,7 @@
 ********************************************************************************************/
 package modules;
 
+import general.ElementXML;
 import manager.MainWindow;
 import manager.Pane;
 
@@ -51,6 +52,7 @@ public abstract class AbstractView implements AgentFocusListener
 	protected Composite		m_Container ;
 	
 	public static String getLineSeparator() { return "\n" ; }
+	public static final String kTagView = "view" ;
 	
 	/********************************************************
 	 * All AbstractView's need to have a default constructor
@@ -73,6 +75,9 @@ public abstract class AbstractView implements AgentFocusListener
 	/** The window that owns this view */
 	public Pane getPane() 			{ return m_Pane ; }
 	
+	/** The SWT window that contains everything within this module */
+	public Composite getWindow()	{ return m_Container ; }
+	
 	protected void initContainer(MainFrame frame, Document doc, Pane parentPane)
 	{
 		setValues(frame, doc, parentPane) ;
@@ -81,6 +86,7 @@ public abstract class AbstractView implements AgentFocusListener
 		// The container lets us control the layout of the controls
 		// within this window
 		m_Container	   = new Composite(parent, SWT.NULL) ;
+		m_Container.setData(MainWindow.kWindowType, MainWindow.kTypeModule) ;
 	}
 	
 	/********************************************************************************************
@@ -244,9 +250,16 @@ public abstract class AbstractView implements AgentFocusListener
 		m_Name = frame.generateName(getModuleBaseName(), this) ;
 	}
 	
+	public void changeName(String newName)
+	{
+		unregisterName() ;
+		m_Name = newName ;
+		m_Frame.registerViewName(newName, this) ;
+	}
+	
 	protected void unregisterName()
 	{
-		m_Frame.getNameRegister().unregisterName(getName()) ;		
+		m_Frame.unregisterViewName(getName()) ;		
 	}
 	
 	public void agentGettingFocus(AgentFocusEvent e)
@@ -313,12 +326,20 @@ public abstract class AbstractView implements AgentFocusListener
 		if (offerClearDisplay())
 			addItem(menu, "Clear window", "clear " + m_Frame.getName() + " " + this.getName()) ;
 
-		addItem(menu, "Properties...", "properties " + m_Frame.getName() + " " + this.getName()) ;
+		addItem(menu, "Properties ...", "properties " + m_Frame.getName() + " " + this.getName()) ;
 		new MenuItem(menu, SWT.SEPARATOR) ;
+		addItem(menu, "Add tab ...", "addtab " + m_Frame.getName() + " " + this.getName()) ;		
 		addItem(menu, "Add window to right ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachRightValue) ;
 		addItem(menu, "Add window to left ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachLeftValue) ;
 		addItem(menu, "Add window to top ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachTopValue) ;
 		addItem(menu, "Add window to bottom ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachBottomValue) ;
+		
+		// Only offer rename if we're showing tabs (so names are visible)
+		if (!getPane().isSingleView())
+		{
+			new MenuItem(menu, SWT.SEPARATOR) ;
+			addItem(menu, "Rename window ...", "renameview " + m_Frame.getName() + " " + this.getName()) ;
+		}
 		new MenuItem(menu, SWT.SEPARATOR) ;
 		addItem(menu, "Replace window ...", "replaceview " + m_Frame.getName() + " " + this.getName()) ;
 		addItem(menu, "Remove window", "removeview " + m_Frame.getName() + " " + this.getName()) ;
@@ -348,6 +369,12 @@ public abstract class AbstractView implements AgentFocusListener
 		}) ;
 		control.setMenu (menu);
 		return menu ;
+	}
+	
+	/** Look up the node in the XML tree that matches this pane.  Need to have called "convertToXML" for everything before calling this */
+	public ElementXML getElementXML()
+	{
+		return (ElementXML)getWindow().getData(Pane.kXMLKey) ;
 	}
 	
 }

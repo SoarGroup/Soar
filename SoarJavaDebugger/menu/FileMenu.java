@@ -65,7 +65,15 @@ public class FileMenu
 		String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(), new String[] { "*.xml" }, new String[] { "Debugger Layout file (*.xml)" } , m_Frame.getAppProperties(), "SaveFile", "LoadFile") ;
 		
 		if (filename != null)
-			m_Frame.loadLayoutFile(filename, true) ;
+		{
+			boolean ok = m_Frame.loadLayoutFile(filename, true) ;
+
+			// If we fail to load the layout file go back to a default layout
+			if (!ok)
+			{
+				m_Frame.useDefaultLayout() ;
+			}
+		}
 	}
 
 	/** Save the current window layout */

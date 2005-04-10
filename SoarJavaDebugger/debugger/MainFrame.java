@@ -500,9 +500,34 @@ public class MainFrame
 		
 		throw new IllegalStateException("Could not generate a unique name for basename " + baseName) ;
 	}
+
+	/** Look up the view based on its name **/
+	public AbstractView getView(String viewName)
+	{
+		AbstractView view = m_NameMap.getView(viewName) ;
+		return view ;
+	}
 	
-	/** The map used to register module names as being "in use" */
-	public NameRegister getNameRegister() { return m_NameMap ; }
+	public void registerViewName(String name, AbstractView view)
+	{
+		System.out.println("Name in use " + name) ;
+		m_NameMap.registerName(name, view) ;
+	}
+	
+	public void unregisterViewName(String name)
+	{
+		m_NameMap.unregisterName(name) ;
+	}
+	
+	public boolean isViewNameInUse(String name)
+	{
+		return m_NameMap.isNameInUse(name) ;
+	}
+	
+	public void clearNameRegistry()
+	{
+		m_NameMap.clear() ;
+	}
 	
 	/***************************************************************************
 	 * 
