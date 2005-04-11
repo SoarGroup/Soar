@@ -769,7 +769,10 @@ protected:
 	// Print callback events go here
 	virtual void HandleEvent(egSKIPrintEventId, gSKI::IAgent*, const char* msg) {
 		// Simply append to message result
-		CommandLineInterface::m_Result << msg;
+		if (m_PrintEventToResult) {
+			CommandLineInterface::m_Result << msg;
+		}
+		if (m_pLogFile) (*m_pLogFile) << msg;
 	}
 
 	/*************************************************************
@@ -866,6 +869,7 @@ protected:
 	cli::ErrorCode		m_LastError;			// Last error code (see cli_CLIError.h)
 	std::string			m_LastErrorDetail;		// Additional detail concerning the last error
 	gSKI::Error			m_gSKIError;			// gSKI error output from calls made to process the command
+	bool				m_PrintEventToResult;	// True when print events should append message to result
 
 	Aliases				m_Aliases;				// Alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class

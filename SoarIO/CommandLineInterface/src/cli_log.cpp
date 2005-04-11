@@ -122,6 +122,7 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, cons
 			m_pLogFile = new std::ofstream(pFilename->c_str(), openmode);
 			if (!m_pLogFile) return SetError(CLIError::kLogOpenFailure);
 			m_LogFilename = *pFilename;
+			if (pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
 			break;
 
 		case LOG_ADD:
@@ -134,6 +135,7 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, cons
 	
 			(*m_pLogFile) << "Log file closed." << std::endl;
 
+			if (pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, this);
 			delete m_pLogFile;
 			m_pLogFile = 0;
 			m_LogFilename.clear();

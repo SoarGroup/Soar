@@ -114,6 +114,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_LastError = CLIError::kNoError;
 	gSKI::ClearError(&m_gSKIError);
 	m_Initialized = true;
+	m_PrintEventToResult = false;
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
@@ -488,11 +489,13 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
 
 void CommandLineInterface::AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent) {
 	if (m_pKernelSML) m_pKernelSML->DisablePrintCallback(pAgent);
-	if (pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
+	m_PrintEventToResult = true;
+	if (!m_pLogFile && pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
 }
 
 void CommandLineInterface::RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent) {
-	if (pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, this);
+	if (!m_pLogFile && pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, this);
+	m_PrintEventToResult = false;
 	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
 }
 

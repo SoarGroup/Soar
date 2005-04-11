@@ -25,6 +25,7 @@ bool CommandLineInterface::DoQuit() {
 	if (m_pLogFile) {
 		(*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
 		delete m_pLogFile;
+		m_pLogFile = 0;
 	}
 
 	if (m_RawOutput) {
