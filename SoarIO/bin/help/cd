@@ -1,9 +1,5 @@
                                        Cd
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    cd - Change directory.
@@ -35,7 +31,7 @@
 
                                     See Also
 
-           dirs home ls pushd popd source topd
+   dirs home ls pushd popd source topd
 
                                Structured Output
 

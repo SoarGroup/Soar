@@ -1,9 +1,5 @@
                                      Learn
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    learn - Set the parameters for chunking, SoaraEUR(TM)s learning mechanism.
@@ -61,7 +57,7 @@
 
                                     See Also
 
-           watch, explain-backtraces, save-backtraces
+   watch, explain-backtraces, save-backtraces
 
                                Structured Output
 

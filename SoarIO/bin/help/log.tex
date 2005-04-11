@@ -1,31 +1,16 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Log - Soar Wiki}
-\begin{document}
-\section*{Log}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{log}
- - Record all user-interface input and output to a file. 
-
-
+\subsection{\soarb{log}}
+\label{log}
+\index{log}
+Record all user-interface input and output to a file. 
  Status: Complete
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 log ‚ÄìAe filename
 log ‚Äìa  string
 log [‚Äìcdoq]
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  filename  & Open filename and begin logging.  \\
  \hline 
@@ -39,73 +24,36 @@ if logging is not active.  \\
  \hline 
  -A, --append, -e, --existing  & Opens existing log file named filename and logging is added at the end of the file.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  Invoked log with no arguments (or with -q) to query the current logging status. Pass a filename to start logging to that file (relative to the command line interface's home directory (see the home command)). Use the close option to stop logging. 
-
-
- \\ 
-
-\section*{ Examples }
-
-
+\subsubsection*{Examples}
  To initiate logging and places the record in foo.log: \begin{verbatim}
-log -new foo.log
-
+log foo.log
 \end{verbatim}
-
-
-
  To append log data to an existing foo.log file: \begin{verbatim}
-log -existing foo.log
-
+log -A foo.log
 \end{verbatim}
-
-
-
- To terminate logging and closes the open log file: \begin{verbatim}
-log -off
-
-
+ To terminate logging and close the open log file: \begin{verbatim}
+log -c
 \end{verbatim}
-
-\section*{ See Also }
-
-
- \\ 
-
-\section*{ Structured Output }
-\subsection*{ On Success }
+\subsubsection*{See Also}
+\subsubsection*{Structured Output:}
+\paragraph*{On Success}
 \begin{verbatim}
 <result>
   <arg param="log_setting" type="boolean">setting</arg>
   <arg param="filename" type="string">log_filename</arg>
 </result>
-
 \end{verbatim}
-\subsection*{ Notes }
+\paragraph*{Notes}
 \begin{itemize}
 \item  setting is true (log file open) or false (closed). 
 \item  log\_filename is only included if the log is open. 
 \item  currently prompts and input are not logged because \^aÄúlog\^aÄù simply registers on the gSKI print callback. Need to implement fully. 
-
 \end{itemize}
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kUnrecognizedOption, kGetOptError, kTooFewArgs, kTooManyArgs, kInvalidOperation
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kLogAlreadyOpen, kLogOpenFailure, kLogNotOpen, kInvalidOperation
-
-\end{document}

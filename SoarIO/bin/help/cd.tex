@@ -1,73 +1,35 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Cd - Soar Wiki}
-\begin{document}
-\section*{Cd}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{cd}
- - Change directory. 
-
-
+\subsection{\soarb{cd}}
+\label{cd}
+\index{cd}
+Change directory. 
  Status: Complete
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 cd [directory]
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  directory  & The directory to change to, can be relative or full path.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  Change the current working directory. If run with no arguments, returns to the directory that the command line interface was started in, often referred to as the \emph{home}
  directory. 
-\section*{ Examples }
-
-
+\subsubsection*{Examples}
  To move to the relative directory named ../home/soar/agents \begin{verbatim}
 cd ../home/soar/agents
-
-
 \end{verbatim}
-
-\section*{ See Also }
-\begin{description}
-dirs home ls pushd popd source topd
-
-\end{description}
-\section*{ Structured Output }
-\subsection*{ On Success }
+\subsubsection*{See Also}
+ dirs home ls pushd popd source topd
+\subsubsection*{Structured Output:}
+\paragraph*{On Success}
 \begin{verbatim}
 <result output="raw">true</result>
-
 \end{verbatim}
-\subsection*{ Notes }
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\paragraph*{Notes}
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kTooManyArgs
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kchdirFail
-
-\end{document}

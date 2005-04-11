@@ -1,49 +1,25 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Pwd - Soar Wiki}
-\begin{document}
-\section*{Pwd}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{pwd}
- - Print the current working directory. 
-
-
+\subsection{\soarb{pwd}}
+\label{pwd}
+\index{pwd}
+Print the current working directory. 
  Status: Complete
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 pwd
-
 \end{verbatim}
-\section*{ Options }
-
-
+\subsubsection*{Options}
  No options. 
-\section*{ Description }
-
-
+\subsubsection*{Description}
  Prints the current working directory of Soar. 
-\section*{ Structured Output }
-\subsection*{ On Success }
+\subsubsection*{Structured Output:}
+\paragraph*{On Success}
 \begin{verbatim}
 <result>
   <arg name="directory" type="string">directory_string</arg>
 </result>
-
 \end{verbatim}
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kTooManyArgs
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  No errors. 
-
-\end{document}

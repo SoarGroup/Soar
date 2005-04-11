@@ -1,9 +1,5 @@
                                       Popd
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    popd - Pop the current working directory off the stack and change to the
@@ -31,7 +27,7 @@
 
                                     See Also
 
-           cd dirs home ls pushd popd source topd
+   cd dirs home ls pushd popd source topd
 
                                Structured Output
 

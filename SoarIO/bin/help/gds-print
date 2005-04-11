@@ -1,9 +1,5 @@
                                    Gds-print
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    gds-print - Print the WMEs in the goal dependency set for each goal.

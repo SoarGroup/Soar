@@ -1,9 +1,5 @@
                                      Excise
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    excise - Delete Soar productions from production memory.
@@ -54,7 +50,7 @@
 
                                     See Also
 
-           init-soar
+   init-soar
 
                                Structured Output
 

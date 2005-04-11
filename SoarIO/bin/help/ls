@@ -1,9 +1,5 @@
                                        Ls
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    ls - List the contents of the current working directory.
@@ -26,7 +22,7 @@
 
                                     See Also
 
-           cd dirs home ls pushd popd source topd
+   cd dirs home ls pushd popd source topd
 
                                Structured Output
 

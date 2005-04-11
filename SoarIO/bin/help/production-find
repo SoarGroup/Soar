@@ -1,9 +1,5 @@
                                 Production-find
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    production-find -
@@ -76,7 +72,7 @@
 
                                     See Also
 
- sp
+   sp
 
                                Structured Output
 

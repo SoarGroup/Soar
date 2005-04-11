@@ -1,9 +1,5 @@
                                      Source
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    source - Load and evaluate the contents of a file.
@@ -29,7 +25,7 @@
 
                                     See Also
 
-           cd dirs home ls pushd popd source topd
+   cd dirs home ls pushd popd source topd
 
                                Structured Output
 

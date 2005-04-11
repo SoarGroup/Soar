@@ -1,9 +1,5 @@
                                      Print
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    print - Print items in working memory or production memory.
@@ -115,7 +111,7 @@
 
                                     See Also
 
-   default-wme-depth predefined-aliases
+   default-wme-depth, predefined-aliases
 
                                Structured Output
 

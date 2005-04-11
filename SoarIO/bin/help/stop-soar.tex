@@ -1,77 +1,38 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Stop-soar - Soar Wiki}
-\begin{document}
-\section*{Stop-soar}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{stop-soar}
- - Pause Soar. 
-
-
+\subsection{\soarb{stop-soar}}
+\label{stop-soar}
+\index{stop-soar}
+Pause Soar. 
  Status: Complete\\ 
 Reason for stopping currently ignored, not sure what this is for/why this is here.--Jonathan 13:59, 4 Feb 2005 (EST) 
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 stop-soar [-s] [reason string]
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  -s, --self  & Stop only the soar agent where the command is issued. All other agents continue running as previously specified.  \\
  \hline 
  reason\_string  & An optional string which will be printed when Soar is stopped, to indicate why it was stopped. If left blank, no message will be printed when Soar is stopped.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  This command is usually not issued at the command line prompt. A more common use of this command is as a side-effect of pressing a button on a Graphical User Interface (GUI), or as a monitor to be executed at a specific Soar Event. For example, a user may wish to examine an agent's ``matches'' after the Soar Decision Phase. In order to do this in Soar 8, the user must register a monitor, or callback, to issue the ``stop-soar -self'' command for the event, after-decision-phase-cycle. 
-\section*{ Examples }
-
-
+\subsubsection*{Examples}
  This example shows how to stop Soar8 after this decision phase using stop-soar -self in a monitor to stop after the decision phase so that memory can be examined. \begin{verbatim}
 monitor -add {stop-soar --self "after decision phase"} after-decision-phase-cycle
-
-
 \end{verbatim}
-
-\section*{ See Also }
-
-
+\subsubsection*{See Also}
  run monitor matches
-\section*{ Warnings }
-
-
+\subsubsection*{Warnings}
  If the graphical interface doesn't periodically do an ``update'' of flush the pending I/O, then it may not be possible to interrupt a Soar agent from the command line. 
-\section*{ Structured Output }
-\subsection*{ On Success }
+\subsubsection*{Structured Output:}
+\paragraph*{On Success}
 \begin{verbatim}
 <result output="raw">true</result>
-
 \end{verbatim}
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kUnrecognizedOption, kGetOptError
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kAgentReqruied, kKernelRequired
-
-\end{document}

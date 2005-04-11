@@ -1,9 +1,5 @@
                                     Version
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    version -- Returns the version number of the Soar kernel.

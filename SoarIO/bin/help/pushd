@@ -1,9 +1,5 @@
                                      Pushd
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    pushd - Push a directory onto the directory stack, changing to it.
@@ -28,7 +24,7 @@
 
                                     See Also
 
-           cd dirs home ls pushd popd source topd
+   cd dirs home ls pushd popd source topd
 
                                Structured Output
 

@@ -1,9 +1,5 @@
                               Set-library-location
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    set-library-location - Set the top level directory containing

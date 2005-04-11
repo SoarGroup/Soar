@@ -1,9 +1,5 @@
                                       Dirs
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    dirs - List the directory stack
@@ -31,7 +27,7 @@
 
                                     See Also
 
-           cd dirs home ls pushd popd source topd
+   cd dirs home ls pushd popd source topd
 
                                Structured Output
 

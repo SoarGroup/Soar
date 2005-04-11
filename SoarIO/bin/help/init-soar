@@ -1,9 +1,5 @@
                                    Init-soar
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    init-soar - empties working memory and resets run-time statistics.
@@ -34,7 +30,7 @@
 
                                     See Also
 
-           excise
+   excise
 
                                Structured Output
 

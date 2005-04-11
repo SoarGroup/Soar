@@ -1,9 +1,5 @@
                                  Firing-counts
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    firing-counts - Print the number of times each production has fired.
@@ -60,7 +56,7 @@
 
                                     See Also
 
- init-soar
+   init-soar
 
                                Structured Output
 

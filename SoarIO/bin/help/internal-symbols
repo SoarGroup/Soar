@@ -1,9 +1,5 @@
                                 Internal-symbols
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    internal-symbols - Print information about the Soar symbol table.

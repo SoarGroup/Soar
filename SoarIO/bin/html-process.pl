@@ -37,6 +37,11 @@ while (my $element = $html->find("script")) {
   $element->delete();
 }
 
+while (my $element = $html->look_down("id","siteSub")) {
+  #print "SERVED siteSub\n";
+  $element->delete();
+}
+
 while (my $element = $html->look_down("id","column-one")) {
   #print "SERVED column-one\n";
   $element->delete();

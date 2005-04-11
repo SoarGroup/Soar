@@ -1,64 +1,32 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Set-library-location - Soar Wiki}
-\begin{document}
-\section*{Set-library-location}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{set-library-location}
- - Set the top level directory containing demos/help/etc.\\ 
+\subsection{\soarb{set-library-location}}
+\label{set-library-location}
+\index{set-library-location}
+Set the top level directory containing demos/help/etc.\\ 
  Status: Complete
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 set-library-location [directory] 
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  directory  & The new desired library location.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  Invoke with no arguments to query what the current library location is. The library location should contain at least the help/ subdirectory and the command-names file for help to work. 
-\section*{ Examples }
+\subsubsection*{Examples}
 \begin{verbatim}
 directory "c:\Documents and Settings\User\My Documents\Soar\SoarIO\bin"
 directory /usr/local/share/soar/library
-
 \end{verbatim}
-\section*{ See Also }
-
-
+\subsubsection*{See Also}
  help
-\section*{ Structured Output }
-\subsection*{ On Success }
-
-
+\subsubsection*{Structured Output:}
+\paragraph*{On Success}
  Returns true on success, or kParamDirectory, kTypeString element with the directory on query. 
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kTooManyArgs
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  No errors. 
-
-\end{document}

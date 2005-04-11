@@ -1,9 +1,5 @@
                                     Memories
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    memories - Print memory usage for partial matches.
@@ -59,7 +55,7 @@
 
                                     See Also
 
-           matches
+   matches
 
                                Structured Output
 

@@ -1,9 +1,5 @@
                                    Max-chunks
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    max-chunks - Limit the number of chunks created during a decision cycle.

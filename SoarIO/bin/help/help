@@ -1,9 +1,5 @@
                                       Help
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    help - Provide formatted usage information about Soar commands.
@@ -38,7 +34,7 @@
 
                                     See Also
 
-           helpex
+   helpex
 
                                Structured Output
 

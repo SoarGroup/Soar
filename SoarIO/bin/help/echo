@@ -1,9 +1,5 @@
                                       Echo
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    echo - Print a string to the current output device.
@@ -36,7 +32,7 @@
 
                                     See Also
 
-           log
+   log
 
                                Structured Output
 

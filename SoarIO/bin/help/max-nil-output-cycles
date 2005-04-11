@@ -1,9 +1,5 @@
                              Max-nil-output-cycles
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    max-nil-output-cycles - Limit the maximum number of decision cycles that

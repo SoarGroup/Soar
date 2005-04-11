@@ -1,9 +1,5 @@
                                       Log
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    log - Record all user-interface input and output to a file.
@@ -44,16 +40,15 @@
 
    To initiate logging and places the record in foo.log:
 
- log -new foo.log
+ log foo.log
 
    To append log data to an existing foo.log file:
 
- log -existing foo.log
+ log -A foo.log
 
-   To terminate logging and closes the open log file:
+   To terminate logging and close the open log file:
 
- log -off
-
+ log -c
 
                                     See Also
 

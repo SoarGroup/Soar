@@ -1,9 +1,5 @@
                                     Waitsnc
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    waitsnc -- Generate a wait state rather than a state-no-change impasse.

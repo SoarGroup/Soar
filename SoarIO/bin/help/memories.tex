@@ -1,31 +1,16 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Memories - Soar Wiki}
-\begin{document}
-\section*{Memories}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{memories}
- - Print memory usage for partial matches. 
-
-
+\subsection{\soarb{memories}}
+\label{memories}
+\index{memories}
+Print memory usage for partial matches. 
  Status: Complete
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 memories [-cdju] [\emph{n}
 ]
 memories production_name 
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  -c, --chunks  & Print memory usage of chunks.  \\
  \hline 
@@ -40,75 +25,36 @@ production\_name & Print memory usage for a specific production.  \\
 \emph{n}
  & Number of productions to print, sorted by those that use the most memory.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  The memories command prints out the internal memory usage for full and partial matches of production instantiations, with the productions using the most memory printed first. 
-
-
  Memory usage is recorded according to the tokens that are allocated in the rete network for the given production(s). 
-
-
  With no arguments, the memories command prints memory usage for all productions. If a production\_name is specified, memory usage will be printed only for that production. If a positive integer \emph{n}
  is given, only \emph{n}
  productions will be printed: the \emph{n}
  productions that use the most memory. 
-
-
  Output may be restricted to print memory usage for particular types of productions using the command options. 
-\section*{ Examples }
-
-
+\subsubsection*{Examples}
  To show how to use the command in context, do this: \begin{verbatim}
 command --option arg
-
 \end{verbatim}
-
-
-
  and possibly explain the results. 
-\section*{ See Also }
-\begin{description}
-matches
-
-\end{description}
-
-
- \\ 
-
-
-
- \\ 
-
-\section*{ Structured Output }
-\subsection*{ On Success }
+\subsubsection*{See Also}
+ matches
+\subsubsection*{Structured Output:}
+\paragraph*{On Success}
 \begin{verbatim}
 <result>
   <arg param="name" type="string">production_name</arg>
   <arg param="count" type="int">rete_tokens</arg>
 </result>
-
 \end{verbatim}
-\subsection*{ Notes }
+\paragraph*{Notes}
 \begin{itemize}
 \item  Each production listed will have a name/count arg pair. 
-
 \end{itemize}
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kUnrecognizedOption, kGetOptError, kTooManyArgs, kIntegerMustBePositive, kNoProdTypeWhenProdName
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kAgentRequired, kgSKIError, kInvalidProductionType, kProductionNotFound
-
-\end{document}

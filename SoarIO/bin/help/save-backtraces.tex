@@ -1,59 +1,28 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Save-backtraces - Soar Wiki}
-\begin{document}
-\section*{Save-backtraces}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{save-backtraces}
- - Save trace information to explain chunks and justifications. 
-
-
+\subsection{\soarb{save-backtraces}}
+\label{save-backtraces}
+\index{save-backtraces}
+Save trace information to explain chunks and justifications. 
  Priority: 3; Status: Complete, EvilBackDoor
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 save-backtraces [-ed]
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  -e, --enable, --on  & Turn explain sysparam on.  \\
  \hline 
  -d, --disable, --off  & Turn explain sysparam off.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-\section*{ Structured Output }
-\subsection*{ On Query }
-
-
+\subsubsection*{Description}
+\subsubsection*{Structured Output:}
+\paragraph*{On Query}
  Value parameter is returned of type boolean, true if sysparam is on, false if off. 
-\subsection*{ Otherwise }
-
-
+\paragraph*{Otherwise}
  True on success. 
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kUnrecognizedOption, kGetOptError, kTooManyArgs
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  No errors. 
-
-\end{document}

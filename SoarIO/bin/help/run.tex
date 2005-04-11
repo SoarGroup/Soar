@@ -1,31 +1,16 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Run - Soar Wiki}
-\begin{document}
-\section*{Run}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{run}
- - Begin Soar\^a€™s execution cycle. 
-
-
+\subsection{\soarb{run}}
+\label{run}
+\index{run}
+Begin Soar\^a€™s execution cycle. 
  Status: Complete\\ 
 Complete, except --output may work incorrectly due to gSKI--Jonathan 14:07, 18 Feb 2005 (EST) 
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 run [count]
 run -[d|e|p|o][fs] [count]
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  -d, --decision  & Run Soar for count decision cycles.  \\
  \hline 
@@ -41,67 +26,38 @@ run -[d|e|p|o][fs] [count]
  \hline 
  count  & A single integer which specifies the number of cycles to run Soar.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\subsection*{ Deprecated Options }
-
-
+\paragraph*{Deprecated Options}
  These may be reimplemented in the future. 
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\begin{tabular}{|l|l|}
 \hline 
  --operator  & Run Soar until the nth time an operator is selected.  \\
  \hline 
  --state  & Run Soar until the nth time a state is selected.  \\
  \hline 
-
 \end{tabular}
-
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  This command runs the Soar agents. If the --self flag is issued, only the agent receiving the run command will run. The count argument is a single integer which specified the number of cycles to run Soar. If count is unspecified and no units are given, then Soar is run until halted by problem-solving completion or an external interrupt. If count is specified, but no units are specified, then soar is run by decision cycles. If units are specified, but count is unpecified, then count defaults to '1'. The unit argument indicates the unit of measure to be used in counting Soar run cycles. 
-\section*{ Structured Output }
-
-
+\subsubsection*{Structured Output:}
  Most output is handled through a callback, but there is a return value after the run is done. 
-\subsection*{ On Success }
+\paragraph*{On Success}
 \begin{verbatim}
 <result>
   <arg name="runresult" type="int">run_result</arg>
 </result>
-
 \end{verbatim}
-\subsection*{ Notes }
+\paragraph*{Notes}
 \begin{itemize}
 \item  The run result is as following: 
-
 \end{itemize}
 \begin{verbatim}
 gSKI_RUN_EXECUTING                 = 1;
 gSKI_RUN_INTERRUPTED               = 2;
 gSKI_RUN_COMPLETED                 = 3;
 gSKI_RUN_COMPLETED_AND_INTERRUPTED = 4;
-
 \end{verbatim}
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kUnrecognizedOption, kGetOptError, kIntegerExpected, kIntegerMustBePositive, kTooManyArgs
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kAgentRequired, kKernelRequired, kgSKIError
-
-\end{document}

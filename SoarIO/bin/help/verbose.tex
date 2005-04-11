@@ -1,65 +1,33 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Verbose - Soar Wiki}
-\begin{document}
-\section*{Verbose}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{verbose}
- - Control detailed information printed as Soar runs. 
-
-
+\subsection{\soarb{verbose}}
+\label{verbose}
+\index{verbose}
+Control detailed information printed as Soar runs. 
  Priority: 3; Status: Complete, EvilBackDoor
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 verbose [-ed]
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  -d, --disable, --off  & Turn verbosity off.  \\
  \hline 
  -e, --enable, --on  & Turn verbosity on.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  Invoke with no arguments to query. 
-\section*{ Structured Output }
-\subsection*{ On Query }
+\subsubsection*{Structured Output:}
+\paragraph*{On Query}
 \begin{verbatim}
 <result>
   <arg param="value" type="boolean">true_or_false</arg>
 </result>
-
 \end{verbatim}
-\subsection*{ On success }
-
-
+\paragraph*{On success}
  Returns true. 
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kUnrecognizedOption, kGetOptError, kTooManyArgs
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kAgentRequired, kKernelRequired
-
-\end{document}

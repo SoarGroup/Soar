@@ -1,9 +1,5 @@
                                     Rete-net
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    rete-net - Save the current Rete net, or restore a previous one.
@@ -58,7 +54,7 @@
 
                                     See Also
 
- excise init-soar
+   excise init-soar
 
                                Structured Output
 

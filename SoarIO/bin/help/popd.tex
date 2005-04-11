@@ -1,59 +1,26 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Popd - Soar Wiki}
-\begin{document}
-\section*{Popd}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{popd}
- - Pop the current working directory off the stack and change to the next directory on the stack. Can be relative pathname or fully specified path. 
-
-
+\subsection{\soarb{popd}}
+\label{popd}
+\index{popd}
+Pop the current working directory off the stack and change to the next directory on the stack. Can be relative pathname or fully specified path. 
  Status: Complete
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 popd
-
 \end{verbatim}
-\section*{ Options }
-
-
+\subsubsection*{Options}
  No options. 
-\section*{ Description }
+\subsubsection*{Description}
 \section*{ Soar8.3 Description }
-
-
  This command pops a directory off of the directory stack and cd's to it. See the dirs command for an explanation of the directory stack. 
-\section*{ Examples }
-
-
- \\ 
-
-\section*{ See Also }
-\begin{description}
-cd dirs home ls pushd \textbf{popd}
- source topd
-
-\end{description}
-\section*{ Structured Output }
-\subsection*{ On Success }
+\subsubsection*{Examples}
+\subsubsection*{See Also}
+\subsubsection*{Structured Output:}
+\paragraph*{On Success}
 \begin{verbatim}
 <result output="raw">true</result>
-
 \end{verbatim}
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kTooManyArgs
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kDirectoryStackEmpty
-
-\end{document}

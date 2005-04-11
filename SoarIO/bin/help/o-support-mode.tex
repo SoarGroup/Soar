@@ -1,29 +1,14 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{O-support-mode - Soar Wiki}
-\begin{document}
-\section*{O-support-mode}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{o-support-mode}
- - Choose experimental variations of o-support. 
-
-
+\subsection{\soarb{o-support-mode}}
+\label{o-support-mode}
+\index{o-support-mode}
+Choose experimental variations of o-support. 
  Priority: 3; Status: Complete
-\section*{ Synopsis }
+\subsubsection*{Synopsis}
 \begin{verbatim}
 o-support-mode [0|1|2|3|4]
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  0  & Mode 0 is the base mode. O-support is calculated based on the structure of working memory that is tested and modified. Testing an operator or operator acceptable preference results in state or operator augmentations being o-supported. The support computation is very complex (see soar manual).  \\
  \hline 
@@ -35,37 +20,20 @@ o-support-mode [0|1|2|3|4]
  \hline 
  4  & Mode 4 is the default.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  Running o-support-mode with no arguments prints out the current o-support-mode. 
-\section*{ Structured Output }
-\subsection*{ On Query }
+\subsubsection*{Structured Output:}
+\paragraph*{On Query}
 \begin{verbatim}
 <result>
   <arg param="value" type="int">mode</arg>
 </result>
-
 \end{verbatim}
-\subsection*{ Otherwise }
-
-
+\paragraph*{Otherwise}
  When setting o-support, if successful, true is returned. 
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kTooManyArgs, kIntegerOutOfRange
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kAgentRequired, kInvalidOSupportMode
-
-\end{document}

@@ -1,37 +1,21 @@
-\documentclass[10pt]{article}
-\usepackage{fullpage, graphicx, url}
-\title{Stats - Soar Wiki}
-\begin{document}
-\section*{Stats}
-\subsubsection*{From Soar Wiki}
-
-
- This is part of the Soar Command Line Interface. 
-\section*{ Name }
-
-
- \textbf{stats}
- - Print information on Soar\^a€™s runtime statistics. 
-
-
+\subsection{\soarb{stats}}
+\label{stats}
+\index{stats}
+Print information on Soar\^a€™s runtime statistics. 
  Priority: 1; Status: Incomplete\\ 
 Memory pool and rete stats not implemented with structured output.--Jonathan 16:04, 8 Mar 2005 (EST) \\ 
 stats -r (raw output) looks like trash output.--Jonathan 16:01, 8 Mar 2005 (EST) 
-\section*{ Synopsis }
-\subsection*{ Structured Output }
+\subsubsection*{Synopsis}
+\paragraph*{Structured Output}
 \begin{verbatim}
 stats
-
 \end{verbatim}
-\subsection*{ Raw Output }
+\paragraph*{Raw Output}
 \begin{verbatim}
 stats [-s|-m|-r]
-
 \end{verbatim}
-\section*{ Options }
-
-
-\begin{tabular}{|p{1in}|p{5in}|}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
 \hline 
  -m, --memory  & report usage for Soar's memory pools  \\
  \hline 
@@ -39,46 +23,20 @@ stats [-s|-m|-r]
  \hline 
  -s, --system  & report the system (agent) statistics. This is the default if no args are specified.  \\
  \hline 
-
 \end{tabular}
-
-
-
- \\ 
-
-\section*{ Description }
-
-
+\subsubsection*{Description}
  This command prints Soar internal statistics. The module indicates the component of interest. If specified, module must be one of --system, --memory, or --rete. All statistics are listed for that module. 
-\section*{ Examples }
-
-
+\subsubsection*{Examples}
  This prints all statistics in the --system module: \begin{verbatim}
 stats --system
-
 \end{verbatim}
-
-\section*{ See Also }
-
-
+\subsubsection*{See Also}
  timers
-
-
- \\ 
-
-\section*{ A Note on Timers }
-
-
+\subsubsection*{A Note on Timers}
  The current implementation of Soar uses a number of timers to provide time-based statistics for use in the stats command calculations. These timers are: \\ 
  total CPU time total kernel time phase kernel time (per phase) phase callbacks time (per phase) input function time output function time \\ 
  Total CPU time is calculated from the time a decision cycle (or number of decision cycles) is initiated until stopped. Kernel time is the time spent in core Soar functions. In this case, kernel time is defined as the all functions other than the execution of callbacks and the input and output functions. The total kernel timer is only stopped for these functions. The phase timers (for the kernel and callbacks) track the execution time for individual phases of the decision cycle (i.e., input phase, preference phase, working memory phase, output phase, and decision phase). Because there is overhead associated with turning these timers on and off, the actual kernel time will always be greater than the derived kernel time (i.e., the sum of all the phase kernel timers). Similarly, the total CPU time will always be greater than the derived total (the sum of the other timers) because the overhead of turning these timers on and off is included in the total CPU time. In general, the times reported by the single timers should always be greater than than the corresponding derived time. Additionally, as execution time increases, the difference between these two values will also increase. For those concerned about the performance cost of the timers, all the run time timing calculations can be compiled out of the code by defining NO\_TIMING\_STUFF (in soarkernel.h) before compilation. 
-
-
- \\ 
-
-\section*{ Structured Output }
-
-
+\subsubsection*{Structured Output:}
  The following arg parameters are returned: \begin{verbatim}
 kParamStatsProductionCountDefault, kTypeInt
 kParamStatsProductionCountUser, kTypeInt
@@ -116,17 +74,9 @@ kParamStatsMemoryUsageHash, kTypeInt
 kParamStatsMemoryUsageString, kTypeInt
 kParamStatsMemoryUsagePool, kTypeInt
 kParamStatsMemoryUsageStatsOverhead, kTypeInt
-
 \end{verbatim}
-
-\section*{ Error Values }
-\subsection*{ During Parsing }
-
-
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
  kTooManyArgs, kUnrecognizedOption, kGetOptError
-\subsection*{ During Execution }
-
-
+\paragraph*{During Execution}
  kAgentRequired, kgSKIError
-
-\end{document}

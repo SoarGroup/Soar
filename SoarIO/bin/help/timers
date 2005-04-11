@@ -1,9 +1,5 @@
                                      Timers
 
-  From Soar Wiki
-
-   This is part of the Soar Command Line Interface.
-
                                       Name
 
    timers - Toggle on or off the internal timers used to profile Soar.
@@ -42,7 +38,7 @@
 
                                     See Also
 
- stats
+   stats
 
                                Structured Output
 
