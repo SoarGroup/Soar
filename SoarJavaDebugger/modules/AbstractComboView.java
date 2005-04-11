@@ -578,6 +578,7 @@ public abstract class AbstractComboView extends AbstractView
 	 ********************************************************************************************/
 	protected abstract void registerForViewAgentEvents(Agent agent) ;
 	protected abstract boolean unregisterForViewAgentEvents(Agent agent) ;
+	protected abstract void clearViewAgentEvents() ;
 	
 	protected void registerForAgentEvents(Agent agent)
 	{
@@ -604,6 +605,15 @@ public abstract class AbstractComboView extends AbstractView
 		}
 		
 		registerForViewAgentEvents(agent) ;
+	}
+	
+	/** Agent gone, so clear any callback references we have (we can't unregister because agent object already destroyed) */
+	protected void clearAgentEvents()
+	{
+		m_StopCallback = -1 ;
+		m_PrintCallback = -1 ;
+		m_DecisionCallback = -1 ;
+		clearViewAgentEvents() ;
 	}
 	
 	protected void unregisterForAgentEvents(Agent agent)

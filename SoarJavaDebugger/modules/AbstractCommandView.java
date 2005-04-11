@@ -170,6 +170,10 @@ public abstract class AbstractCommandView extends AbstractComboView
 	{
 	}
 
+	protected void clearViewAgentEvents()
+	{
+	}
+
 	protected boolean unregisterForViewAgentEvents(Agent agent)
 	{
 		return true ;

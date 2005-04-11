@@ -221,6 +221,7 @@ public abstract class AbstractView implements AgentFocusListener
 	*************************************************************************/
 	protected abstract void registerForAgentEvents(Agent agent) ;	
 	protected abstract void unregisterForAgentEvents(Agent agent) ;
+	protected abstract void clearAgentEvents() ;
 	
 	/** Close down this window, doing any necessary clean up */
 	public void close(boolean dispose)
@@ -274,6 +275,11 @@ public abstract class AbstractView implements AgentFocusListener
 		// agent is no longer valid to access (e.g. we shutdown the kernel).
 		// We still get a notification in case we need to do any other clean-up.
 		unregisterForAgentEvents(e.getAgent()) ;
+	}
+	
+	public void agentGone(AgentFocusEvent e)
+	{
+		clearAgentEvents() ;
 	}
 	
 	protected void addItem(Menu menu, String text, final String command)

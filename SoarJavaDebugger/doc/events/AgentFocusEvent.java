@@ -22,6 +22,7 @@ public class AgentFocusEvent extends java.util.EventObject
 {
 	public static final int kGettingFocus = 1 ;
 	public static final int kLosingFocus  = 2 ;
+	public static final int kGone   	  = 3 ;	// Agent has been deleted (usually because kernel is gone)
 	
 	private int m_Event ;
 	private Agent m_Agent ;
@@ -36,5 +37,6 @@ public class AgentFocusEvent extends java.util.EventObject
 	
 	public boolean isGettingFocus() { return m_Event == kGettingFocus ; }
 	public boolean isLosingFocus()  { return m_Event == kLosingFocus ; }
+	public boolean isAgentGone()	{ return m_Event == kGone ; }	// Agent will be null
 	public Agent   getAgent()		{ return m_Agent ; }
 }

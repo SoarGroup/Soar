@@ -76,6 +76,14 @@ public class AnalyzeXML {
     return smlJNI.AnalyzeXML_GetResultBool(swigCPtr, defaultValue);
   }
 
+  public String GenerateXMLString(boolean includeChildren) {
+    return smlJNI.AnalyzeXML_GenerateXMLString(swigCPtr, includeChildren);
+  }
+
+  public static void DeleteString(String pString) {
+    smlJNI.AnalyzeXML_DeleteString(pString);
+  }
+
   public String GetArgValue(String pArgName) {
     return smlJNI.AnalyzeXML_GetArgValue(swigCPtr, pArgName);
   }

@@ -55,4 +55,15 @@ public class AgentFocusGenerator
 		}
 	}
 
+	public synchronized void fireAgentGone(Object source)
+	{
+		AgentFocusEvent event = new AgentFocusEvent(source, AgentFocusEvent.kGone, null) ;
+		
+		for (Iterator iter = m_Listeners.iterator() ; iter.hasNext() ;)
+		{
+			AgentFocusListener listener = (AgentFocusListener) iter.next();
+			listener.agentGone(event) ;
+		}
+	}
+
 }

@@ -23,5 +23,7 @@ public interface AgentFocusListener
 
 	/** Fired when a frame is switching away from an existing agent.  Listeners may wish to unregister for events from this agent */
 	public void agentLosingFocus(AgentFocusEvent e) ;
-	
+
+	/** Fired when a frame is switching away from an existing agent and the agent has been deleted already.  Listeners may wish to clear events they had registered with the agent */
+	public void agentGone(AgentFocusEvent e) ;
 }

@@ -14,6 +14,7 @@ package doc;
 import java.util.ArrayList;
 
 import sml.Agent;
+import sml.AnalyzeXML;
 
 /************************************************************************
  * 
@@ -30,20 +31,23 @@ import sml.Agent;
 public class DocumentThread extends Thread
 {
 	// BUGBUG: There's a chance that the agent object is invalid
-	// by the time we go to execute the command.  We need a way to detect that
+	// by the time we go to execute the command (if it's been deleted while this command was pending to execute).
+	// We need a way to detect that
 	// the C++ object is no good before we try to run the command.
 	public static class Command
 	{
 		private Agent m_Agent ;
 		private String m_Command ;
 		private String m_Result ;
+		private AnalyzeXML m_Response ;
 		private boolean m_Executed ;
 		
-		public Command(Agent agent, String command)
+		public Command(Agent agent, String command, AnalyzeXML response)
 		{
 			m_Agent = agent ;
 			m_Command = command ;
 			m_Executed = false ;
+			m_Response = response ;
 		}
 	}
 	
@@ -75,10 +79,10 @@ public class DocumentThread extends Thread
 		return m_IsExecutingCommand || m_ToExecuteQueue.size() > 0 ;
 	}
 	
-	/** Schedule a command to execute later */
-	public synchronized Command scheduleCommandToExecute(Agent agent, String commandLine)
+	/** Schedule a command to execute later (response can be null) */
+	public synchronized Command scheduleCommandToExecute(Agent agent, String commandLine, AnalyzeXML response)
 	{
-		Command command = new Command(agent, commandLine) ;
+		Command command = new Command(agent, commandLine, response) ;
 		m_ToExecuteQueue.add(command) ;
 		
 		return command ;
@@ -123,10 +127,19 @@ public class DocumentThread extends Thread
 		while ( (command = popNextCommand()) != null )
 		{
 			m_IsExecutingCommand = true ;
-			//System.out.println("Exec " + command.m_Command) ;
-			String result = command.m_Agent.ExecuteCommandLine(command.m_Command) ;
-			//System.out.println("Done " + command.m_Command) ;
-			recordCommandResult(command, result) ;
+			
+			if (command.m_Response == null)
+			{
+				// If there's no XML object to receive the response we just execute and get the string form.
+				String result = command.m_Agent.ExecuteCommandLine(command.m_Command) ;
+				recordCommandResult(command, result) ;
+			}
+			else
+			{
+				// If we were provided an XML object for the response, record the result in that object
+				boolean success = command.m_Agent.ExecuteCommandLineXML(command.m_Command, command.m_Response) ;
+				recordCommandResult(command, success ? "true" : "false") ;
+			}
 		}
 		
 		m_IsExecutingCommand = false ;

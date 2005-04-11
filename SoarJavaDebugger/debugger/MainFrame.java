@@ -368,8 +368,13 @@ public class MainFrame
 			return;
 
 		/** First let everyone know that focus is going away from one agent */
-		if (m_AgentFocus != null && m_Document.isAgentValid(m_AgentFocus))
-			m_AgentFocusGenerator.fireAgentLosingFocus(this, m_AgentFocus);
+		if (m_AgentFocus != null)
+		{
+			if (m_Document.isAgentValid(m_AgentFocus))
+				m_AgentFocusGenerator.fireAgentLosingFocus(this, m_AgentFocus);
+			else
+				m_AgentFocusGenerator.fireAgentGone(this) ;
+		}
 
 		/** Now let everyone know that focus has gone to the new agent */
 		m_AgentFocus = agent;
@@ -675,22 +680,63 @@ public class MainFrame
 	 * Executes a command in the prime view (if there is one). If there is none,
 	 * just executes it directly and eats the output
 	 */
-	public void executeCommandPrimeView(String commandLine, boolean echoCommand)
+	public String executeCommandPrimeView(String commandLine, boolean echoCommand)
 	{
 		AbstractView prime = getPrimeView();
+		
+		String result = null ;
 
 		if (prime != null)
 		{
 			// Send the command to the view so that the output (if any) has a
 			// place to be displayed
-			prime.executeAgentCommand(commandLine, echoCommand);
+			result = prime.executeAgentCommand(commandLine, echoCommand);
 		} else
 		{
 			// Just execute the command directly. It may return a result but
 			// there's no where to display it.
 			if (getAgentFocus() != null)
-				m_Document.sendAgentCommand(getAgentFocus(), commandLine);
+				result = m_Document.sendAgentCommand(getAgentFocus(), commandLine);
 		}
+		
+		return result ;
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * Execute a command and return the XML form of the output.
+	 * 
+	 * This is used to evaluate a command which we wish to parse within the debugger
+	 * e.g. "set-library-location" (with no args) returns the path to the library.
+	 * We ask for the XML form and parse that, making us robust against changes to the string
+	 * form shown to the user.
+	 * 
+	 * NOTE: You should do explicit clean up of the 'response' object we can check for memory leaks
+	 * when the debugger exits.  If we don't do this explicitly, the memory will eventually
+	 * get cleaned up, but only once the gc runs...could be a while and may not happen
+	 * before we exit (not required by Java to do so) so it looks like a leak.
+	 * 
+	 * So the caller should follow this pattern:
+	 * AnalyzeXML response = new AnalyzeXML() ;
+	 * bool ok = executeCommandXML(commandLine, response) ;
+	 * ... process response ...
+	 * response.delete() ;
+	 * 
+	 * @param commandLine	The command to execute (e.g. "watch")
+	 * @param response		An XML object which is filled in by Soar
+	 * @return
+	********************************************************************************************/
+	public boolean executeCommandXML(String commandLine, AnalyzeXML response)
+	{
+		if (response == null)
+			throw new IllegalArgumentException("Must allocate the response and pass it in.  The contents will be filled in during the call.") ;
+		
+		boolean result = false ;
+		
+		if (getAgentFocus() != null)
+			result = m_Document.sendAgentCommandXML(getAgentFocus(), commandLine, response);
+		
+		return result ;
 	}
 
 	/**

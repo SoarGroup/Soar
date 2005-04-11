@@ -15,9 +15,12 @@ import java.io.File;
 
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.widgets.Dialog;
+import org.eclipse.swt.*;
 
 import sml.Agent;
+import sml.AnalyzeXML;
 import sml.Kernel;
+import sml.sml_Names;
 
 import debugger.MainFrame;
 import doc.Document;
@@ -33,12 +36,35 @@ public class DemoMenu
 	
 	private Document  m_Document = null ;
 	private MainFrame m_Frame	= null ;
-	private File	  m_DemoPath ;
 
-	private AbstractAction m_TOH       		= new AbstractAction("Towers of Hanoi") 					{ public void actionPerformed(ActionEvent e) { toh(e) ; } } ;
-	private AbstractAction m_TOH_Recursive 	= new AbstractAction("Towers of Hanoi Recursive") 			{ public void actionPerformed(ActionEvent e) { tohRecursive(e) ; } } ;
-	private AbstractAction m_Waterjug_Lookahead = new AbstractAction("Water Jug Lookahead")				{ public void actionPerformed(ActionEvent e) { waterjugLookahead(e) ; } } ;
-	private AbstractAction m_DemoPathItem  	= new AbstractAction("Set the path to the demos folder...")	{ public void actionPerformed(ActionEvent e) { setDemoPath(e) ; } } ;
+	private AbstractAction m_TOH       		= new AbstractAction("Towers of Hanoi")
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("towers-of-hanoi","towers-of-hanoi.soar")) ; } } ;
+	private AbstractAction m_TOH_Recursive  = new AbstractAction("Towers of Hanoi Recursive")
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("towers-of-hanoi","towers-of-hanoi-recursive.soar")) ; } } ;
+
+	private AbstractAction m_Waterjug_Lookahead = new AbstractAction("Water Jug Lookahead")	
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("water-jug","water-jug-look-ahead.soar")) ; } } ;
+	private AbstractAction m_Waterjug = new AbstractAction("Water Jug")	
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("water-jug","water-jug.soar")) ; } } ;
+
+	private AbstractAction m_BlocksWorld    = new AbstractAction("Blocks World") 
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("blocks-world", "blocks-world.soar")) ; } } ;
+	private AbstractAction m_BlocksWorldOpSub = new AbstractAction("Blocks World Operator Subgoaling") 
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("blocks-world", "blocks-world-operator-subgoaling.soar")) ; } } ;
+	private AbstractAction m_BlocksWorldLookahead = new AbstractAction("Blocks World Lookahead") 
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("blocks-world", "blocks-world-look-ahead.soar")) ; } } ;
+
+	private AbstractAction m_EightPuzzle    = new AbstractAction("Eight puzzle") 
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("eight-puzzle", "eight-puzzle.soar")) ; } } ;
+	private AbstractAction m_FifteenPuzzle = new AbstractAction("Fifteen puzzle") 
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("eight-puzzle", "fifteen-puzzle.soar")) ; } } ;
+
+	private AbstractAction m_Mac    = new AbstractAction("Missionaries and Cannibals") 
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("mac", "mac.soar")) ; } } ;
+	private AbstractAction m_MacPlanning = new AbstractAction("Missionaries Planning") 
+				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("mac", "mac-planning.soar")) ; } } ;
+			
+    private AbstractAction m_DemoPathItem  	= new AbstractAction("Set the library path (contains the demos)...")	{ public void actionPerformed(ActionEvent e) { setLibraryPath() ; } } ;
 
 	/** Create this menu */
 	public static DemoMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
@@ -57,38 +83,27 @@ public class DemoMenu
 		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
 		
 		// Look up the user's saved value (if there is one)
-		String savedPath = m_Frame.getAppStringProperty("DemoMenu.DemoPath") ;
-		File path = null ;
-
-		if (savedPath != null)
-		{
-			path = new File(savedPath) ;
-		}
-		else
-		{
-			// Default path is "..\SoarIO\bin\demos"
-			path = new File("..") ;
-			path = new File(path, "SoarIO") ;
-			path = new File(path, "bin") ;
-			path = new File(path, "demos") ;
-		}
- 		
-		try
-		{
-			// Canonical path produces an absolute path but also removes
-			// my ".." above, making the result cleaner.
-			// (It can throw because the canonical process can fail)
-			m_DemoPath = new File(path.getCanonicalPath()) ;
-		}
-		catch (java.io.IOException e)
-		{
-			m_DemoPath = new File(".") ;
-		}
+		//String savedPath = m_Frame.getAppStringProperty("DemoMenu.Library") ;
+		
+		BaseMenu blocks = menu.addSubmenu("Blocks World") ;
+		blocks.add(m_BlocksWorld) ;
+		blocks.add(m_BlocksWorldOpSub) ;
+		blocks.add(m_BlocksWorldLookahead) ;
+		
+		BaseMenu eight = menu.addSubmenu("Eight puzzle") ;
+		eight.add(m_EightPuzzle) ;
+		eight.add(m_FifteenPuzzle) ;
+		
+		BaseMenu mac = menu.addSubmenu("Missionaries") ;
+		mac.add(m_Mac) ;
+		mac.add(m_MacPlanning) ;
 		
 		BaseMenu toh = menu.addSubmenu("Towers of hanoi") ;
 		toh.add(m_TOH) ;
 		toh.add(m_TOH_Recursive) ;
+
 		BaseMenu water = menu.addSubmenu("Water Jug") ;
+		water.add(m_Waterjug) ;
 		water.add(m_Waterjug_Lookahead) ;
 		menu.addSeparator() ;
 		menu.add(m_DemoPathItem) ;
@@ -121,7 +136,39 @@ public class DemoMenu
 		String initSoar = m_Document.getSoarCommands().getInitSoarCommand() ;
 		m_Frame.executeCommandPrimeView(initSoar, false) ;
 		
-		File filePath = new File(m_DemoPath, filename.getPath()) ;
+		boolean done = false ;
+		File filePath = null ;
+		
+		while (!done)
+		{
+			String libraryPath = getLibraryLocation() ;
+			File demoPath = new File(libraryPath, "demos") ;
+			filePath = new File(demoPath, filename.getPath()) ;
+	
+			if (!filePath.exists())
+			{
+				int reply = m_Frame.ShowMessageBox("Failed to find demo", "Could not find the file " + filePath + "\nWould you like to set the library path (which contains the demos folder) now?", SWT.YES | SWT.NO ) ;
+				if (reply == SWT.YES)
+				{
+					boolean ok = setLibraryPath() ;
+					
+					// If user cancelled, bail out
+					if (!ok)
+						return ;
+				}
+				else
+				{
+					// User didn't want to try to find the demo
+					return ;
+				}
+			}
+			else
+			{
+				// If the path to the demo exists, we can try to load it.
+				done = true ;
+			}
+		}
+		
 		String commandLine = m_Document.getSoarCommands().getSourceCommand(filePath.getPath()) ;
 
 		m_Frame.executeCommandPrimeView(commandLine, echoCommand) ;
@@ -130,38 +177,69 @@ public class DemoMenu
 			m_Frame.displayTextInPrimeView("\nType 'run' to execute the demo.") ;
 	}
 
-	private void toh(ActionEvent e)
+	public String getLibraryLocation()
 	{
-		loadDemo(new File("towers-of-hanoi","towers-of-hanoi.soar")) ;
-	}
+		if (!m_Document.isConnected())
+			return "" ;
+		
+		String getLocation = m_Document.getSoarCommands().getLibraryLocationCommand() ;
+		
+		AnalyzeXML response = new AnalyzeXML() ;
+		boolean ok = m_Frame.executeCommandXML(getLocation, response) ;
 
-	private void tohRecursive(ActionEvent e)
-	{
-		loadDemo(new File("towers-of-hanoi","towers-of-hanoi-recursive.soar")) ;
+		// Check if the command failed
+		if (!ok)
+		{
+			response.delete() ;
+			return "" ;
+		}
+		
+		// Debug code to look at the result of the command in XML
+		//String check = response.GenerateXMLString(true) ;
+		String location = response.GetArgValue(sml_Names.getKParamDirectory()) ;
+		
+		// BADBAD: Need to strip quotes - they shouldn't really be added
+		if (location != null && location.length() > 2 && location.charAt(0) == '"')
+		{
+			// Chop leading and trailing quote
+			location = location.substring(1, location.length() - 1) ;
+		}
+
+		// We do explicit clean up so we can check for memory leaks when debugger exits.
+		// (See executeCommandXMLcomment for more).
+		response.delete() ;
+		
+		return location ;
 	}
 	
-	private void waterjugLookahead(ActionEvent e)
+	private boolean setLibraryPath()
 	{
-		loadDemo(new File("water-jug", "water-jug-look-ahead.soar")) ;
-	}
-
-	private void setDemoPath(ActionEvent e)
-	{
+		if (!m_Document.isConnected())
+		{
+			m_Frame.ShowMessageBox("No kernel running", "Need to have Soar running before changing the library path (its stored inside the kernel)") ;
+			return false ;
+		}
+		
+		String currentLocation = getLibraryLocation() ;
+		
 		DirectoryDialog folderDialog = new DirectoryDialog(m_Frame.getShell(), 0) ;
-		folderDialog.setText("Set Demos path") ;
-		folderDialog.setMessage("Select the root of the demos folder") ;
-		folderDialog.setFilterPath(m_DemoPath.getPath() + File.separator) ;
+		folderDialog.setText("Set library path") ;
+		folderDialog.setMessage("Select the library folder (it should contain a 'demos' folder and a 'help' folder among others)") ;
+		folderDialog.setFilterPath(currentLocation + File.separator) ;
 
 		// Display the dialog
 		String filePath = folderDialog.open() ;
 	
 		// Check if the user cancelled
 		if (filePath == null)
-			return ;
+			return false ;
 		
 		// Record the new path
-		m_DemoPath = new File(filePath) ;
-		m_Frame.setAppProperty("DemoMenu.DemoPath", m_DemoPath.getPath()) ;
+		String setLocation = m_Document.getSoarCommands().setLibraryLocationCommand(filePath) ;
+		m_Frame.executeCommandPrimeView(setLocation, true) ;
+//		m_Frame.setAppProperty("DemoMenu.Library", setLocation) ;
+		
+		return true ;
 	}
 
 }

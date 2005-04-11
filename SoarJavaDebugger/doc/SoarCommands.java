@@ -41,6 +41,8 @@ public class SoarCommands
 	public String getMatchesCommand(String arg)					{ return "matches " + arg ; }
 	public String getMatchesWmesCommand(String arg)				{ return "matches " + arg + " --wmes"; }
 	public String getInitSoarCommand()							{ return "init-soar" ; }
+	public String setLibraryLocationCommand(String arg)			{ return "set-library-location \"" + arg + "\"" ; }
+	public String getLibraryLocationCommand()					{ return "set-library-location" ; }	// No args => get
 	
 	public SoarCommands(Document doc, int major, int minor, int build)
 	{

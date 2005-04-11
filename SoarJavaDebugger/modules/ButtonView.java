@@ -563,6 +563,11 @@ public class ButtonView extends AbstractView
 	{
 	}
 	
+	/** Agent deleted, so clear any callback references we have. */
+	protected void clearAgentEvents()
+	{
+	}
+	
 	protected void unregisterForAgentEvents(Agent agent)
 	{
 	}

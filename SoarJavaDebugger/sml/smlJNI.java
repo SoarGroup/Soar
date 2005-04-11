@@ -298,6 +298,8 @@ class smlJNI {
   public final static native String AnalyzeXML_GetResultString(long jarg1);
   public final static native int AnalyzeXML_GetResultInt(long jarg1, int jarg2);
   public final static native boolean AnalyzeXML_GetResultBool(long jarg1, boolean jarg2);
+  public final static native String AnalyzeXML_GenerateXMLString(long jarg1, boolean jarg2);
+  public final static native void AnalyzeXML_DeleteString(String jarg1);
   public final static native String AnalyzeXML_GetArgValue(long jarg1, String jarg2);
   public final static native boolean AnalyzeXML_GetArgBool(long jarg1, String jarg2, boolean jarg3);
   public final static native int AnalyzeXML_GetArgInt(long jarg1, String jarg2, int jarg3);

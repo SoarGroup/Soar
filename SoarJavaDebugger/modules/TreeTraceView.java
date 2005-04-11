@@ -670,6 +670,11 @@ public class TreeTraceView extends AbstractComboView
 		m_xmlCallback = agent.RegisterForXMLEvent(smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, this, "xmlEventHandler", null) ;
 	}
 
+	protected void clearViewAgentEvents()
+	{
+		m_xmlCallback = -1 ;
+	}
+
 	protected boolean unregisterForViewAgentEvents(Agent agent)
 	{
 		boolean ok = true ;

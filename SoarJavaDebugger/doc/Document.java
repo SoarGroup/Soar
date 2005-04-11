@@ -533,6 +533,34 @@ public class Document
 
 	public String sendAgentCommand(Agent agent, String commandLine)
 	{
+		return sendAgentCommandGeneral(agent, commandLine, null) ;
+	}
+
+	public boolean sendAgentCommandXML(Agent agent, String commandLine, AnalyzeXML response)
+	{
+		if (response == null)
+			throw new IllegalArgumentException("Must provide an XML object to receive the response") ;
+		
+		String result = sendAgentCommandGeneral(agent, commandLine, response) ;
+
+		boolean res = (result != null && result.equals("true")) ;
+		return res ;
+	}
+	
+	 /*******************************************************************************************
+	 * 
+	 * If response is null we execute the command and return the string form.
+	 * If response is provided we execute the command and return the XML (and the string
+	 * return value is either "true" or "false")
+	 * 
+	 * @param agent
+	 * @param commandLine
+	 * @param response
+	 * @return
+	*******************************************************************************************
+	 */
+	protected String sendAgentCommandGeneral(Agent agent, String commandLine, AnalyzeXML response)
+	{
 		if (agent == null)
 			return "Error: Agent is missing.  Need to create one before executing commands" ;
 
@@ -543,7 +571,7 @@ public class Document
 			// when really it's asynchronous.
 			// We also need to pump the document thread in response to an "agents_run_step" event to allow interruptions
 			// so that a Soar "run" command can be interrupted.
-			DocumentThread.Command command = m_DocumentThread.scheduleCommandToExecute(agent, commandLine) ;
+			DocumentThread.Command command = m_DocumentThread.scheduleCommandToExecute(agent, commandLine, response) ;
 			
 			while (!m_DocumentThread.isExecutedCommand(command))
 			{
@@ -562,8 +590,8 @@ public class Document
 			// If we're running commands in the UI thread we can just execute it.
 			// If it's a run we need to pump messages in response to an "agents_run_step" event
 			// to keep the UI alive and allow folks to interrupt Soar.
-			String response = agent.ExecuteCommandLine(commandLine) ;			
-			return response ;
+			String result = agent.ExecuteCommandLine(commandLine) ;			
+			return result ;
 		}
 	}
 }
