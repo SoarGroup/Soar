@@ -25,9 +25,9 @@ bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::st
 	return DoSource(pAgent, argv[1]);
 }
 
-void trim(std::string& line) {
+bool CommandLineInterface::Trim(std::string& line) {
 	// trim whitespace and comments from line
-	if (!line.size()) return; // nothing on the line
+	if (!line.size()) return true; // nothing on the line
 	
 	// remove leading whitespace
 	std::string::size_type datapos = line.find_first_not_of(" \t");
@@ -35,13 +35,48 @@ void trim(std::string& line) {
 		line = line.substr(datapos);
 	}
 
-	if (!line.size()) return; // nothing else on the line
+	if (!line.size()) return true; // nothing else on the line
 
-	// remove comments
-	std::string::size_type commentpos = line.find_first_of('#');
-	if (commentpos != std::string::npos) {
-		line = line.substr(0, commentpos);
+	// if there is a pipe on the line, we need to parse more carefully
+	if (line.find_first_of('|') != std::string::npos) {
+		
+		bool pipe = false;
+
+		for (unsigned pos = 0; pos < line.size(); ++pos) {
+			if (!pipe) {
+				// normal parsing
+				switch (line[pos]) {
+					case '|':	// enter pipe mode
+						pipe = true;
+						break;
+					case '#':	// trim comments, done
+						line = line.substr(pos, line.size() - pos);
+						pos = line.size();
+						break;
+					default:	// keep going
+						break;
+				}
+			} else {
+				switch (line[pos]) {
+					case '|':	// exit pipe mode
+						pipe = false;
+						break;
+					default:	// keep going
+						break;
+				}
+			}
+		}
+		// if in pipe mode, newline inside pipes
+		if (pipe) return SetError(CLIError::kNewlineBeforePipe);
+
+	} else {
+		// no pipe, simply remove comments
+		std::string::size_type commentpos = line.find_first_of('#');
+		if (commentpos != std::string::npos) {
+			line = line.substr(0, commentpos);
+		}
 	}
+	return true;
 }
 
 bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
@@ -104,7 +139,7 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 		command.clear();
 
 		// Trim whitespace and comments
-		trim(line);
+		if (!Trim(line)) return false;
 
 		if (!line.length()) continue; // Nothing on line, skip it
 
@@ -118,7 +153,9 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 
 			// While we are inside braces, stay in special parsing mode
 			do {
-				if (lineCountCache != lineCount) trim(line); // Trim whitespace and comments on additional lines
+				if (lineCountCache != lineCount) {
+					if (!Trim(line)) return false; // Trim whitespace and comments on additional lines
+				}
 
 				// nothing on line or just whitespace and comments
 				if (!line.size()) continue;

@@ -311,6 +311,9 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 	int brackets = 0;
 	int parens = 0;
 
+	// Trim leading whitespace and comments from line
+	if (!Trim(cmdline)) return -1;
+
 	for (;;) {
 
 		// Is there anything to work with?

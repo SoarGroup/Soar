@@ -76,6 +76,7 @@ namespace cli {
 			kMustSaveOrLoad						= 72,
 			kPrintSubOptionsOfStack				= 73,
 			kHelpFileError						= 74,
+			kNewlineBeforePipe					= 75,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -148,6 +149,7 @@ namespace cli {
 				case kMustSaveOrLoad:					return "Must save or load, check command syntax.";
 				case kPrintSubOptionsOfStack:			return "Options --operators (-o) and --states (-S) are only valid when printing the stack.";
 				case kHelpFileError:					return "Error reading help file, check the library location (see the set-library-location command).";
+				case kNewlineBeforePipe:				return "Newline reached before closing pipe ('|') character.";
 				default:								return "Unknown error code.";
 			}
 		}
