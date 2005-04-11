@@ -49,6 +49,17 @@ AnalyzeXML::~AnalyzeXML(void)
 	delete m_pError ;
 }
 
+// Returns the string form of the XML.  Must be released with the static DeleteString method
+char* AnalyzeXML::GenerateXMLString(bool includeChildren) const
+{
+	return ::sml_GenerateXMLString(m_hRootObject, includeChildren) ;
+}
+
+void AnalyzeXML::DeleteString(char* pString)
+{
+	return ::sml_DeleteString(pString) ;
+}
+
 char const* AnalyzeXML::GetCommandName() const
 {
 	if (m_pCommand) return m_pCommand->GetAttribute(sml_Names::kCommandName) ;
@@ -195,22 +206,25 @@ void AnalyzeXML::Analyze(ElementXML const* pRootXML)
 			{
 				// Record the result tag
 				this->m_pResult = new ElementXML(pChild->Detach()) ;
+
+				// Also find any arguments for the results (just like the command)
+				AnalyzeArgs(m_pResult) ;
 			}
 		}
 	}
 }
 
-void AnalyzeXML::AnalyzeArgs(ElementXML const* pCommand)
+void AnalyzeXML::AnalyzeArgs(ElementXML const* pParent)
 {
 	ElementXML child(NULL) ;
 	ElementXML* pChild = &child ;
 
 	// Examine the children of the Command tag
-	int nChildren = pCommand->GetNumberChildren() ;
+	int nChildren = pParent->GetNumberChildren() ;
 	for (int i = 0 ; i < nChildren ; i++)
 	{
 		// Get each child in turn
-		pCommand->GetChild(pChild, i) ;
+		pParent->GetChild(pChild, i) ;
 
 		if (pChild->IsTag(sml_Names::kTagArg))
 		{

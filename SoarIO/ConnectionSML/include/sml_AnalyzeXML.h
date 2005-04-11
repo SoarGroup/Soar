@@ -66,6 +66,10 @@ public:
 	// Returns the result as a bool
 	bool GetResultBool(bool defaultValue) const ;
 
+	// Returns the string form of the XML.  Must be released with the static DeleteString method
+	char* GenerateXMLString(bool includeChildren) const ;
+	static void DeleteString(char* pString) ;
+
 	/*************************************************************
 	* @brief Look up an argument by name.  Returns NULL if not found.
 	*************************************************************/
