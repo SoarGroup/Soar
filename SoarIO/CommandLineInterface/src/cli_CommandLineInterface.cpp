@@ -279,12 +279,16 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	// Translate aliases
 	m_Aliases.Translate(argv);
 
-	// Is the command implemented?
-	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) return SetError(CLIError::kCommandNotFound);
-
 	// Check for help flags
 	if (CheckForHelp(argv)) {
-		return DoHelp(&argv[0]);
+		std::string helpFile = m_LibraryDirectory + "/help/" + argv[0];
+		return GetHelpString(helpFile);
+	}
+
+	// Is the command implemented?
+	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
+		SetErrorDetail("(No such command: " + argv[0] + ")");
+		return SetError(CLIError::kCommandNotImplemented);
 	}
 
 	// Process command

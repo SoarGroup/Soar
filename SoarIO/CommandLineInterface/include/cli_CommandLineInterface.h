@@ -779,6 +779,12 @@ protected:
 	bool CheckForHelp(std::vector<std::string>& argv);
 
 	/*************************************************************
+	* @brief Add the contents of the helpFile file to m_Result.  
+	*        Return true if successful, set error and return false if not.
+	*************************************************************/
+	bool GetHelpString(const std::string& helpFile);
+
+	/*************************************************************
 	* @brief 
 	*************************************************************/
 	bool GetCurrentWorkingDirectory(std::string& directory);

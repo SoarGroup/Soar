@@ -11,7 +11,7 @@ namespace cli {
 			kNoError							= 0,
 			kgSKIError							= 2,
 			kGetOptError						= 3,
-			kCommandNotFound					= 4,
+			kCommandNotImplemented				= 4,
 			kProductionNotFound					= 5,
 			kMultiAttributeNotFound				= 6,
 			kNotImplemented						= 8,
@@ -83,7 +83,7 @@ namespace cli {
 				case kNoError:							return "No Error.";
 				case kgSKIError:						return "gSKI error.";
 				case kGetOptError:						return "GetOpt returned with an error.";
-				case kCommandNotFound:					return "Command not found.";
+				case kCommandNotImplemented:			return "Command not implemented.";
 				case kProductionNotFound:				return "Production not found.";
 				case kMultiAttributeNotFound:			return "Multi-attribute not found.";
 				case kNotImplemented:					return "Not implemented.";

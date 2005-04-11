@@ -42,14 +42,22 @@ bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 		helpFile = m_LibraryDirectory + "/help/" + *pCommand;
 	}
 
+	if (!GetHelpString(helpFile)) return false;
+	return true;
+}
+
+bool CommandLineInterface::GetHelpString(const std::string& helpFile) {
+
 	std::ifstream helpFileStream(helpFile.c_str());
-	if (!helpFileStream) return SetError(CLIError::kNoHelpFile);
+	if (!helpFileStream) {
+		SetErrorDetail("Error opening help file: " + helpFile);
+		return SetError(CLIError::kNoHelpFile);
+	}
 
 	char ch;
 	while(helpFileStream.get(ch)) m_Result.put(ch);
 
 	if (!helpFileStream.eof() || !m_Result) return SetError(CLIError::kHelpFileError);
-
 	return true;
 }
 
