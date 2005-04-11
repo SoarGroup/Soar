@@ -165,8 +165,6 @@ void PrintDebugSimple(char const* pStr)
 		fprintf(pTraceFile, "%s\n", pStr) ;
 		fflush(pTraceFile) ;
 	}
-#else
-	unused(pTraceFile); // quells gcc warning when _DEBUG isn't defined
 #endif
 
 	OutputDebugString(pStr) ;
@@ -186,6 +184,7 @@ void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
 
 void PrintDebugSimple(char const* pStr)
 {
+	unused(pTraceFile); // quells gcc warning when _DEBUG isn't defined
 	fprintf(stderr, pStr) ;
 	fprintf(stderr, "\n") ;
 }
