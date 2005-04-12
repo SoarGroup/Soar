@@ -1,4 +1,5 @@
 #include "ilspec.h"
+#include "ilobject.h"
 #include <fstream>
 
 /******************************************************************************
@@ -7,6 +8,25 @@
  *
  ******************************************************************************
  */
+
+/* Default Constructor
+ *
+ * Creates an InputLinkSpec object.  Not necessary yet. 
+ */
+InputLinkSpec::InputLinkSpec()
+{
+	//necessary yet?
+}
+
+/* Deconstructaur
+ *
+ * Cleans up an InputLinkSpec object.  Not necessary yet.  
+ */
+InputLinkSpec::~InputLinkSpec()
+{
+	//necessary yet?
+}
+
 
 /* ImportDM
  *
@@ -19,7 +39,7 @@ bool InputLinkSpec::ImportDM(string filename)
 	fstream file;
 	file.open(filename.c_str());
 
-
+	//this should create InputLinkObjects to hold each line of data read
 
 	file.close();
 	return true;

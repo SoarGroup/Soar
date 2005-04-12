@@ -1,10 +1,19 @@
-#ifndef ILINK_ABSTRACTION_SPEC_MODULE
-#define ILINK_ABSTRACTION_SPEC_MODULE
+#ifndef IL_SPEC_H
+#define IL_SPEC_H
 
 #include <string>
 
 using namespace std;
 
+class InputLinkObject;
+
+/************************************************************************
+ * InputLinkSpec
+ * 
+ * This class contains the necessary data and methods for encapsulating
+ * an input link specification as given to the IMP program.
+ *************************************************************************
+ */
 class InputLinkSpec
 {
 private:
@@ -22,9 +31,12 @@ private:
 	};
 
 public:
+
+	InputLinkSpec();
+	~InputLinkSpec();
+
 	bool ImportIL(string filename);
 	bool ImportDM(string filename);
-
 
 };
 
@@ -34,4 +46,4 @@ public:
 
 
 
-#endif ILINK_ABSTRACTION_SPEC_MODULE
+#endif //IL_SPEC_H
