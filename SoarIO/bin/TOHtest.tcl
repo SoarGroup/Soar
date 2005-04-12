@@ -59,7 +59,7 @@ proc StructuredTraceCallback {id userData agent pXML} {
 }
 
 #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
-set kernel [Kernel_CreateKernelInCurrentThread KernelSML]
+set kernel [Kernel_CreateKernelInCurrentThread SoarKernelSML]
 
 set agentCallbackId0 [$kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATED AgentCreatedCallback ""]
 set agentCallbackId1 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
