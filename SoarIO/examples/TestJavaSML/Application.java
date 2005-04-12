@@ -205,7 +205,7 @@ public class Application
 		//pAgent.ExecuteCommandLine("watch 5") ;
 		
 		// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
-		String trace = pAgent.RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+		String trace = pAgent.RunSelfTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 		System.out.println(trace) ;
 
@@ -214,7 +214,7 @@ public class Application
 
 		// Having rolled everything back we should be able to run forward again
 		// This tests that initSoar really works.
-		String trace1 = pAgent.RunTilOutput(20) ;
+		String trace1 = pAgent.RunSelfTilOutput(20) ;
 
 		System.out.println(trace1) ;
 
@@ -250,7 +250,7 @@ public class Application
 		pKernel.UnregisterForAgentEvent(jAgentCallback) ;
 		pKernel.RemoveRhsFunction(jRhsCallback) ;
 		
-		String trace2 = pAgent.RunTilOutput(20) ;
+		String trace2 = pAgent.RunSelfTilOutput(20) ;
 		System.out.println(trace2) ;
 		
 		//pAgent.InitSoar() ;

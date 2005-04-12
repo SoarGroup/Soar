@@ -1014,23 +1014,10 @@ char const* Agent::InitSoar()
 * The request to Stop may not be honored immediately.
 * Soar will stop at the next point it is considered safe to do so.
 *
-* @param stopAllAgents	If false, stops just this agent.
-* @param stopSystem		If true, fires a SystemStop event after stopping Soar.
-*						(This overrides the SuppressSystemStop call below).
-*						If false, fires a SystemStop event after stopping Soar if
-*						the event has not been suppressed by a SuppressSystemStop call.
 *************************************************************/
-char const* Agent::Stop(bool stopAllAgents, bool stopSystem)
+char const*	Agent::StopSelf()
 {
-	// If we want to fire a system stop event make sure its not
-	// been suppressed.
-	if (stopSystem)
-		SetSuppressSystemStop(false) ;
-
-	std::string cmd = "stop-soar" ;
-
-	if (!stopAllAgents)
-		cmd += " -self" ;
+	std::string cmd = "stop-soar --self" ;
 
 	// Execute the command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
@@ -1040,14 +1027,14 @@ char const* Agent::Stop(bool stopAllAgents, bool stopSystem)
 /*************************************************************
 * @brief Run Soar for the specified number of decisions
 *************************************************************/
-char const* Agent::Run(unsigned long decisions)
+char const* Agent::RunSelf(unsigned long decisions)
 {
 	// Convert int to a string
 	std::ostringstream ostr ;
 	ostr << decisions ;
 
 	// Create the command line for the run command
-	std::string cmd = "run -d " + ostr.str() ;
+	std::string cmd = "run --self -d " + ostr.str() ;
 
 	// Execute the run command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
@@ -1055,59 +1042,12 @@ char const* Agent::Run(unsigned long decisions)
 }
 
 /*************************************************************
-* @brief   Controls whether Soar will issue a "SystemStart" when
-*		   Soar is next run.  This event is sent by default and
-*		   each run resets the flag so it needs to be suppressed for
-*		   each run if a client wishes to prevent the system from
-*		   starting.
-*
-*		   This command allows a client to run Soar without running
-*		   an associated simulation (which should listen for the SystemStart
-*		   event and only start running when it sees that event).
-*
-* @param state	If true, causes Soar to not send system start.
-*               If false, Soar will send system start as usual.
-*************************************************************/
-bool Agent::SetSuppressSystemStart(bool state)
-{
-	AnalyzeXML response ;
-
-	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SuppressSystemStart, NULL, sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
-	return ok ;
-}
-
-/*************************************************************
-* @brief   Controls whether Soar will issue a "SystemStop" when
-*		   Soar next completes a "run".  This event is sent by default and
-*		   each run resets the flag so it needs to be suppressed for
-*		   each run if a client wishes to prevent the system from
-*		   stopping.
-*
-*		   This command allows a client to run Soar through a series
-*		   of small steps (e.g. repeated "RunTilOutput" calls) that
-*		   are seen by the user as a single continuous run.
-*		   When the user actively presses a "stop" button to stop Soar
-*		   or the simulation, then the client calls the "Stop" method with
-*		   systemStop set to true, triggering an event.
-*
-* @param state	If true, causes Soar to not send system stop.
-*               If false, Soar will send system stop as usual when Soar next stops.
-*************************************************************/
-bool Agent::SetSuppressSystemStop(bool state)
-{
-	AnalyzeXML response ;
-
-	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SuppressSystemStop, NULL, sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
-	return ok ;
-}
-
-/*************************************************************
-* @brief   Controls whether Soar will break when it next generates
+* @brief   Controls whether this agent will break when it next generates
 *		   output while running.
 *
 * @param state	If true, causes Soar to break on output.  If false, Soar will not break.
 *************************************************************/
-bool Agent::SetStopOnOutput(bool state)
+bool Agent::SetStopSelfOnOutput(bool state)
 {
 	AnalyzeXML response ;
 
@@ -1130,28 +1070,15 @@ bool Agent::SetStopOnOutput(bool state)
 * @param maxDecisions	If Soar runs for this many decisions without generating output, stop.
 *						15 was used in SGIO.
 *************************************************************/
-char const* Agent::RunTilOutput(unsigned long maxDecisions)
+char const* Agent::RunSelfTilOutput(unsigned long maxDecisions)
 {
 	ClearOutputLinkChanges() ;
 
 	// Send any pending input link changes to Soar
 	Commit() ;
 
-#ifdef SML_DIRECT
-	if (GetConnection()->IsDirectConnection())
-	{
-		// We have to call clearInterrupts before the run.
-		// This clears any interrupt flags set by a previous interrupt, such as from a previous setStopOnOutput call.
-		bool clearInterrupts = true ;
-
-		SetStopOnOutput(true) ;
-		((EmbeddedConnection*)GetConnection())->DirectRun(GetAgentName(), maxDecisions, clearInterrupts) ;
-		return "DirectCall -- no output" ;
-	}
-#endif
-
-	SetStopOnOutput(true) ;
-	return Run(maxDecisions) ;
+	SetStopSelfOnOutput(true) ;
+	return RunSelf(maxDecisions) ;
 }
 
 /*************************************************************

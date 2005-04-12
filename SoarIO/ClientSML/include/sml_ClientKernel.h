@@ -289,7 +289,7 @@ public:
 	*        as a string.
 	*
 	* @param pCommandLine Command line string to process.
-	* @param pAgentName Agent name to apply the command line to.
+	* @param pAgentName Agent name to apply the command line to (can be NULL)
 	* @returns The string form of output from the command.
 	*************************************************************/
 	char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName) ;
@@ -305,6 +305,88 @@ public:
 	* @returns True if the command succeeds.
 	*************************************************************/
 	bool ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentName, AnalyzeXML* pResponse) ;
+
+	/*************************************************************
+	* @brief   Run Soar for the specified number of decisions
+	*
+	* This command will currently run all agents.
+	*
+	* @returns The result of executing the run command.
+	*		   The output from during the run is sent to a different callback.
+	*************************************************************/
+	char const* RunAllAgents(unsigned long decisions) ;
+
+	/*************************************************************
+	* @brief   Run Soar until either output is generated or
+	*		   the maximum number of decisions is reached.  This is done
+	*		   on an agent by agent basis, so the entire system stops only
+	*		   after each agent has generated output (or has reached the decision limit).
+	*
+	* This function also calls "ClearOutputLinkChanges" so methods
+	* like "IsJustAdded" will refer to the changes that occur as a result of
+	* this run.
+	*
+	* We don't generally want Soar to just run until it generates
+	* output without any limit as an error in the AI logic might cause
+	* it to never return control to the environment.
+	*
+	* @param maxDecisions	If Soar runs for this many decisions without generating output, stop.
+	*						15 was used in SGIO.
+	*************************************************************/
+	char const* RunAllTilOutput(unsigned long maxDecisions) ;
+
+	/*************************************************************
+	* @brief Interrupt the currently running Soar agent.
+	*
+	* Call this after calling "Run" in order to stop all Soar agents.
+	* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
+	* and in that event handler decide if the user wishes to stop soar.
+	* If so, call to this method inside that handler.
+	*
+	* The request to Stop may not be honored immediately.
+	* Soar will stop at the next point it is considered safe to do so.
+	*
+	* @param stopSystem		If true, fires a SystemStop event after stopping Soar.
+	*						(This overrides the SuppressSystemStop call below).
+	*						If false, fires a SystemStop event after stopping Soar if
+	*						the event has not been suppressed by a SuppressSystemStop call.
+	*************************************************************/
+	char const* StopAllAgents(bool stopSystem = true) ;
+
+	/*************************************************************
+	* @brief   Controls whether Soar will issue a "SystemStart" when
+	*		   Soar is next run.  This event is sent by default and
+	*		   each run resets the flag so it needs to be suppressed for
+	*		   each run if a client wishes to prevent the system from
+	*		   starting.
+	*
+	*		   This command allows a client to run Soar without running
+	*		   an associated simulation (which should listen for the SystemStart
+	*		   event and only start running when it sees that event).
+	*
+	* @param state	If true, causes Soar to not send system start.
+	*               If false, Soar will send system start as usual.
+	*************************************************************/
+	bool SetSuppressSystemStart(bool state) ;
+
+	/*************************************************************
+	* @brief   Controls whether Soar will issue a "SystemStop" when
+	*		   Soar next completes a "run".  This event is sent by default and
+	*		   each run resets the flag so it needs to be suppressed for
+	*		   each run if a client wishes to prevent the system from
+	*		   stopping.
+	*
+	*		   This command allows a client to run Soar through a series
+	*		   of small steps (e.g. repeated "RunTilOutput" calls) that
+	*		   are seen by the user as a single continuous run.
+	*		   When the user actively presses a "stop" button to stop Soar
+	*		   or the simulation, then the client calls the "Stop" method with
+	*		   systemStop set to true, triggering an event.
+	*
+	* @param state	If true, causes Soar to not send system stop.
+	*               If false, Soar will send system stop as usual when Soar next stops.
+	*************************************************************/
+	bool SetSuppressSystemStop(bool state) ;
 
 	/*************************************************************
 	* @brief Takes a command line and expands all the aliases within

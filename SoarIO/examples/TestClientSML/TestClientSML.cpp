@@ -177,7 +177,7 @@ void MyDuplicateRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent
 
 void MyInterruptHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
 {
-	pAgent->Stop() ;
+	pAgent->GetKernel()->StopAllAgents() ;
 }
 
 void MySystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
@@ -339,7 +339,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	// Test the kernel level "are agents running" event.
 	int temp1 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENTS_RUN_STEP, &MyAgentEventHandler, 0) ;
 
-	std::string result = pAgent->Run(2) ;
+	std::string result = pAgent->RunSelf(2) ;
 
 	if (countStarts != countStops || countStarts != 1)
 	{
@@ -348,14 +348,14 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	}
 
 	// Now try a run with suppressed events
-	pAgent->SetSuppressSystemStart(true) ;
-	pAgent->Run(2) ;
+	pKernel->SetSuppressSystemStart(true) ;
+	pAgent->RunSelf(2) ;
 
 	// Run it again -- should get a start this time
-	pAgent->Run(2) ;
+	pAgent->RunSelf(2) ;
 
-	pAgent->SetSuppressSystemStop(true) ;
-	pAgent->Run(2) ;
+	pKernel->SetSuppressSystemStop(true) ;
+	pAgent->RunSelf(2) ;
 
 	if (countStarts != 3 || countStops != 3)
 	{
@@ -428,7 +428,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	*/
 
 	// Nothing should match here
-	result = pAgent->Run(4) ;
+	result = pAgent->RunSelf(4) ;
 
 	if (beforeCount != 1 || afterCount != 1)
 	{
@@ -486,8 +486,8 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	//cout << "About to do first run-til-output" << endl ;
 
 	// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
-//		trace = pAgent->Run(2) ; // Have to run 2 decisions as we may not be stopped at the right phase for input->decision->output it seems
-	trace = pAgent->RunTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
+	// We'll use RunAll just to test it out.  Could use RunSelf and get same result (presumably)
+	trace = pKernel->RunAllTilOutput(20) ;	// Should just cause Soar to run a decision or two (this is a test that run til output works stops at output)
 
 	// We should stop quickly (after a decision or two)
 	if (myCount > 10)
@@ -506,7 +506,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	if (doInitSoars)
 	{
 		pAgent->InitSoar() ;
-		trace = pAgent->RunTilOutput(20) ;
+		trace = pAgent->RunSelfTilOutput(20) ;
 	}
 
 	bool ioOK = false ;
@@ -580,7 +580,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	// The move command should be deleted in response to the
 	// the status complete getting added
-	trace = pAgent->Run(2) ;
+	trace = pAgent->RunSelf(2) ;
 
 	// Dump out the output link again.
 	if (pAgent->GetOutputLink())
@@ -602,7 +602,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	if (doInitSoars)
 		pAgent->InitSoar() ;
 
-	pAgent->Run(20) ;
+	pAgent->RunSelf(20) ;
 
 	std::string stats = pAgent->ExecuteCommandLine("stats") ;
 	size_t pos = stats.find("1 decision cycles") ;

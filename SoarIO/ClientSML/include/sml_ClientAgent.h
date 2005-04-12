@@ -467,15 +467,12 @@ public:
 	bool Commit() ;
 
 	/*************************************************************
-	* @brief   Run Soar for the specified number of decisions
+	* @brief   Run one Soar agent for the specified number of decisions
 	*
-	* This command will currently run all agents, even though it's part of the
-	* Agent class here.
-	*
-	* @returns The result of executing the start of the run command.
+	* @returns The result of executing the run command.
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
-	char const* Run(unsigned long decisions) ;
+	char const* RunSelf(unsigned long decisions) ;
 
 	/*************************************************************
 	* @brief Interrupt the currently running Soar agent.
@@ -488,13 +485,8 @@ public:
 	* The request to Stop may not be honored immediately.
 	* Soar will stop at the next point it is considered safe to do so.
 	*
-	* @param stopAllAgents	If false, stops just this agent.
-	* @param stopSystem		If true, fires a SystemStop event after stopping Soar.
-	*						(This overrides the SuppressSystemStop call below).
-	*						If false, fires a SystemStop event after stopping Soar if
-	*						the event has not been suppressed by a SuppressSystemStop call.
 	*************************************************************/
-	char const*	Stop(bool stopAllAgents = true, bool stopSystem = true) ;
+	char const*	StopSelf() ;
 
 	/*************************************************************
 	* @brief   Controls whether Soar will break when it next generates
@@ -502,7 +494,7 @@ public:
 	*
 	* @param state	If true, causes Soar to break on output.  If false, Soar will not break.
 	*************************************************************/
-	bool SetStopOnOutput(bool state) ;
+	bool SetStopSelfOnOutput(bool state) ;
 
 	/*************************************************************
 	* @brief   Run Soar until either output is generated or
@@ -522,42 +514,7 @@ public:
 	* @param maxDecisions	If Soar runs for this many decisions without generating output, stop.
 	*						15 was used in SGIO.
 	*************************************************************/
-	char const* RunTilOutput(unsigned long maxDecisions) ;
-
-	/*************************************************************
-	* @brief   Controls whether Soar will issue a "SystemStart" when
-	*		   Soar is next run.  This event is sent by default and
-	*		   each run resets the flag so it needs to be suppressed for
-	*		   each run if a client wishes to prevent the system from
-	*		   starting.
-	*
-	*		   This command allows a client to run Soar without running
-	*		   an associated simulation (which should listen for the SystemStart
-	*		   event and only start running when it sees that event).
-	*
-	* @param state	If true, causes Soar to not send system start.
-	*               If false, Soar will send system start as usual.
-	*************************************************************/
-	bool SetSuppressSystemStart(bool state) ;
-
-	/*************************************************************
-	* @brief   Controls whether Soar will issue a "SystemStop" when
-	*		   Soar next completes a "run".  This event is sent by default and
-	*		   each run resets the flag so it needs to be suppressed for
-	*		   each run if a client wishes to prevent the system from
-	*		   stopping.
-	*
-	*		   This command allows a client to run Soar through a series
-	*		   of small steps (e.g. repeated "RunTilOutput" calls) that
-	*		   are seen by the user as a single continuous run.
-	*		   When the user actively presses a "stop" button to stop Soar
-	*		   or the simulation, then the client calls the "Stop" method with
-	*		   systemStop set to true, triggering an event.
-	*
-	* @param state	If true, causes Soar to not send system stop.
-	*               If false, Soar will send system stop as usual when Soar next stops.
-	*************************************************************/
-	bool SetSuppressSystemStop(bool state) ;
+	char const* RunSelfTilOutput(unsigned long maxDecisions) ;
 
 	/*************************************************************
 	* @brief Resend the complete input link to the kernel

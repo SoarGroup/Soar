@@ -752,9 +752,6 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	unused(pCommandName) ;
 	unused(pError);
 
-   if (!pAgent)
-      return false ;
-
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
 
