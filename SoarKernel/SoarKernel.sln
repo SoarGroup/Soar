@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelSource", "src\SoarKernelSource.vcproj", "{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelSource", "SoarKernelSource.vcproj", "{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -9,10 +9,10 @@ Global
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
-		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}.Debug.ActiveCfg = Debug|Win32
-		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}.Debug.Build.0 = Debug|Win32
-		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}.Release.ActiveCfg = Release|Win32
-		{F96A4D9A-61F5-45F9-8E56-2D06DEB295F1}.Release.Build.0 = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.ActiveCfg = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.Build.0 = Debug|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.ActiveCfg = Release|Win32
+		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

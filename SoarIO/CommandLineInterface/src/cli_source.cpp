@@ -50,7 +50,7 @@ bool CommandLineInterface::Trim(std::string& line) {
 						pipe = true;
 						break;
 					case '#':	// trim comments, done
-						line = line.substr(pos, line.size() - pos);
+						line = line.substr(0, pos);
 						pos = line.size();
 						break;
 					default:	// keep going

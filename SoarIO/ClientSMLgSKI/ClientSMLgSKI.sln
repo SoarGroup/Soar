@@ -19,7 +19,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClientSML", "app_src\Te
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "..\ConnectionSML\app_src\TestConnectionSML\TestConnectionSML.vcproj", "{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestConnectionSML", "..\examples\TestConnectionSML\TestConnectionSML.vcproj", "{3AA3B75A-7A98-4538-AE12-E8CE7F2FFF92}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
