@@ -2,7 +2,7 @@
 # John Laird
 # May 25, 2004
 # 
-# Classic AI problems implemented for Soar 8 (8.5.1)
+# Classic AI problems implemented for Soar 8 (8.6.0)
 #
 # Blocks-World: Stack blocks
 #    Demonstrates means-ends analysis and operator-subgoaling.
