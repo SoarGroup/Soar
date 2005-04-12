@@ -62,12 +62,12 @@ public abstract class AbstractCommandView extends AbstractComboView
 		m_Text.setText("") ;
 	}
 
-	protected ParseSelectedText.SelectedObject getCurrentSelection()
+	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
 	{
 		if (m_Text.getCaretPosition() == -1)
 			return null ;
 		
-		ParseSelectedText selection = new ParseSelectedText(m_Text.getText(), m_Text.getCaretPosition(), 0) ;
+		ParseSelectedText selection = new ParseSelectedText(m_Text.getText(), m_Text.getCaretPosition()) ;
 		
 		return selection.getParsedObject() ;
 	}

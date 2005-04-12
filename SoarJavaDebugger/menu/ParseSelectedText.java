@@ -100,7 +100,7 @@ public class ParseSelectedText
 			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(m_Name)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getPrintDepthCommand(m_Name, 2)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getPrintInternalCommand(m_Name)) ;
-			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand("{(* ^* " + m_Name + ")}")) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand("(* ^* " + m_Name + ")")) ;
 			
 			addWindowSubMenu(owningView, menu) ;
 		}
@@ -127,6 +127,8 @@ public class ParseSelectedText
 			addItem(outputView, menu, doc.getSoarCommands().getPreferencesNameCommand(m_ID + " " + m_Att)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(m_ID)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(m_Value)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand("(* " + m_Att + " " + m_Value + " )")) ;
+			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand("(* " + m_Att + " *)")) ;
 			
 			addWindowSubMenu(owningView, menu) ;
 		}
@@ -163,13 +165,11 @@ public class ParseSelectedText
 	// The raw values
 	protected String 	m_FullText ;
 	protected int	   	m_SelectionStart ;
-	protected int	   	m_SelectionEnd ;
 	
-	public ParseSelectedText(String content, int selectionStart, int selectionEnd)
+	public ParseSelectedText(String content, int selectionStart)
 	{
 		m_FullText 		 = content ;
 		m_SelectionStart = selectionStart ;
-		m_SelectionEnd   = selectionEnd ;
 		
 		if (m_FullText != null && m_FullText.length() > 0)
 			parseTokens() ;
@@ -334,16 +334,26 @@ public class ParseSelectedText
 
 		// Move to the space at the end of the current token
 		int fore1 = indexOfSet(m_FullText, kWhiteSpaceChars, startPos) ;
-		
+
 		// Move to the space at the end of the next token
 		int fore2 = indexOfSet(m_FullText, kWhiteSpaceChars, fore1 + 1) ;
-		
+
+		// Handle the end correctly
+		if (fore1 == -1)
+		{
+			fore1 = m_FullText.length() ;
+		}
+		if (fore2 == -1)
+		{
+			fore2 = m_FullText.length() ;
+		}
+
 		// Extract the three tokens
-		if (back1 != -1 && back2 != -1)
+		if (back1 != -1)
 			m_Tokens[kPrevToken] = m_FullText.substring(back2+1, back1) ;
-		if (fore1 != -1 && fore2 != -1)
+		if (fore2 != -1 && fore1 < fore2)
 			m_Tokens[kNextToken] = m_FullText.substring(fore1+1, fore2) ;
-		if (back1 != -1 && fore1 != -1)
+		if (fore1 != -1)
 			m_Tokens[kCurrToken] = m_FullText.substring(back1+1, fore1) ;
 		
 		System.out.println(toString()) ;

@@ -211,7 +211,7 @@ public abstract class AbstractView implements AgentFocusListener
 	* be attached to a specific control.
 	* 
 	*************************************************************************/
-	protected abstract void fillInContextMenu(Menu contextMenu, Control control) ;
+	protected abstract void fillInContextMenu(Menu contextMenu, Control control, int mouseX, int mouseY) ;
 	
 	/************************************************************************
 	* 
@@ -371,7 +371,8 @@ public abstract class AbstractView implements AgentFocusListener
 				}
 
 				// We'll build the menu dynamically based on the text the user selects etc.
-				fillInContextMenu(menu, control) ;
+				Point mouse = control.getDisplay().getCursorLocation() ;
+				fillInContextMenu(menu, control, mouse.x, mouse.y) ;
 			}
 			public void menuHidden(MenuEvent e)
 			{

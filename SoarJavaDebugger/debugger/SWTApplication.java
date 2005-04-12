@@ -64,6 +64,7 @@ public class SWTApplication
 		coolItem.setMinimumSize(minWidth, coolSize.y);
 		coolItem.setPreferredSize(coolSize);
 		coolItem.setSize(coolSize);
+		/*
 		coolItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				if (event.detail == SWT.ARROW) {
@@ -82,17 +83,17 @@ public class SWTApplication
 						toolBounds.x = pt.x;
 						toolBounds.y = pt.y;
 						
-						/* Figure out the visible portion of the tool by looking at the
-						 * intersection of the tool bounds with the cool item bounds. */
+						// Figure out the visible portion of the tool by looking at the
+						// intersection of the tool bounds with the cool item bounds.
 				  		Rectangle intersection = itemBounds.intersection (toolBounds);
 				  		
-						/* If the tool is not completely within the cool item bounds, then it
-						 * is partially hidden, and all remaining tools are completely hidden. */
+						// If the tool is not completely within the cool item bounds, then it
+						// is partially hidden, and all remaining tools are completely hidden.
 				  		if (!intersection.equals (toolBounds)) break;
 				  		i++;
 					}
 					
-					/* Create a menu with items for each of the completely hidden buttons. */
+					// Create a menu with items for each of the completely hidden buttons.
 					if (chevronMenu != null) chevronMenu.dispose();
 					chevronMenu = new Menu (coolBar);
 					for (int j = i; j < tools.length; j++) {
@@ -100,14 +101,14 @@ public class SWTApplication
 						menuItem.setText (tools[j].getText());
 					}
 					
-					/* Drop down the menu below the chevron, with the left edges aligned. */
+					// Drop down the menu below the chevron, with the left edges aligned.
 					pt = coolBar.toDisplay(new Point(event.x, event.y));
 					chevronMenu.setLocation (pt.x, pt.y);
 					chevronMenu.setVisible (true);
 				}
 			}
 		});
-		
+		*/
 		shell.pack();
 		shell.open ();
 		while (!shell.isDisposed ()) {

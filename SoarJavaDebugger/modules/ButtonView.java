@@ -246,7 +246,7 @@ public class ButtonView extends AbstractView
 	* be attached to a specific control.
 	* 
 	*************************************************************************/
-	protected void fillInContextMenu(Menu contextMenu, final Control control)
+	protected void fillInContextMenu(Menu contextMenu, final Control control, int mouseX, int mouseY)
 	{
 		if (control instanceof Button)
 		{

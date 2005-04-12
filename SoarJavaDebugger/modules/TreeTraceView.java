@@ -20,6 +20,7 @@ import general.ElementXML;
 import helpers.CommandHistory;
 import helpers.FormDataHelper;
 import manager.Pane;
+import menu.ParseSelectedText;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -54,8 +55,11 @@ public class TreeTraceView extends AbstractComboView
 	protected TreeItem m_LastRoot ;
 	protected TreeItem m_DummyChild ;
 	
-	protected Combo m_ExpandAllButton ;
-	protected Combo m_ExpandPageButton ;
+	protected Composite	m_Buttons ;
+
+	protected Button m_ExpandPageButton ;
+	protected Button m_ExpandPageArrow ;
+	protected Menu   m_ExpandPageMenu ;
 	
 	/** Controls whether we cache strings that are due to be subtree nodes and only add the nodes when the user clicks--or not */
 	protected final static boolean kCacheSubText = true ;
@@ -115,7 +119,7 @@ public class TreeTraceView extends AbstractComboView
 	********************************************************************************************/
 	protected void createDisplayControl(Composite parent)
 	{
-		m_Tree = new Tree(parent, SWT.BORDER) ;
+		m_Tree = new Tree(parent, SWT.MULTI | SWT.BORDER) ;
 		m_LastRoot = null ;
 		m_DummyChild = null ;
 		
@@ -123,49 +127,160 @@ public class TreeTraceView extends AbstractComboView
 
 		// When the user expands a node in the tree we may unpack some cached data
 		m_Tree.addListener (SWT.Expand, new ExpandListener()) ;
-		
-		// Add a button that offers an expand/collapse option instantly
-		m_ExpandAllButton = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN) ;
-		m_ExpandAllButton.add("Expand all") ;
-		m_ExpandAllButton.add("Collapse all") ;
-		m_ExpandAllButton.select(m_AutoExpand ? 1 : 0) ;
-//		m_ExpandAllButton.setText(m_AutoExpand ? "Collapse all" : " Expand all ") ;
-//		m_ExpandAllButton.setData("expanded", m_AutoExpand ? Boolean.TRUE : Boolean.FALSE) ;	// When this flag is false pressing the button expands
-		
-		m_ExpandAllButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
-			{ boolean expand = (e.widget.getData("expanded") == Boolean.FALSE) ;
-			  expandAll(expand) ; } } ) ;
 
-		// Add a button that offers an expand/collapse option instantly (for just one page)
-		m_ExpandPageButton = new Combo(parent, SWT.READ_ONLY) ;
-		m_ExpandPageButton.setText(m_AutoExpand ? "Collapse page" : " Expand page ") ;
-		m_ExpandPageButton.setData("expanded", m_AutoExpand ? Boolean.TRUE : Boolean.FALSE) ;	// When this flag is false pressing the button expands
+		m_Buttons = new Composite(parent, 0) ;
+		m_Buttons.setLayout(new RowLayout()) ;
+		Composite owner = m_Buttons ;
 		
+		// Add a button that offers an expand/collapse option instantly (for just one page)
+		m_ExpandPageButton = new Button(owner, SWT.PUSH);
+		m_ExpandPageButton.setText("Expand page") ;
+		m_ExpandPageButton.setData("expanded", m_AutoExpand ? Boolean.TRUE : Boolean.FALSE) ;	// When this flag is false pressing the button expands
+
 		m_ExpandPageButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
-			{ boolean expand = (e.widget.getData("expanded") == Boolean.FALSE) ;
-			  expandPage(expand) ; } } ) ;
+		{ boolean expand = (e.widget.getData("expanded") == Boolean.FALSE) ;
+		  expandPage(expand) ; } } ) ;
+		
+		m_ExpandPageArrow = new Button(owner, SWT.ARROW | SWT.DOWN) ;
+		m_ExpandPageMenu  = new Menu(owner) ;
+
+		m_ExpandPageArrow.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent event)
+		{ 	Point pt = m_ExpandPageArrow.toDisplay(new Point(event.x, event.y)) ;
+			m_ExpandPageMenu.setLocation(pt.x, pt.y) ;
+			m_ExpandPageMenu.setVisible(true) ;
+		} }) ;
+
+		MenuItem menuItem = new MenuItem (m_ExpandPageMenu, SWT.PUSH);
+		menuItem.setText ("Expand page");
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandPage(true) ; } } ) ;
+
+//		menuItem = new MenuItem (m_ExpandPageMenu, SWT.PUSH);
+//		menuItem.setText ("Collapse page");		
+//		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandPage(false) ; } } ) ;
+
+		menuItem = new MenuItem (m_ExpandPageMenu, SWT.PUSH);
+		menuItem.setText ("Expand all");		
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandAll(true) ; } } ) ;
+
+		menuItem = new MenuItem (m_ExpandPageMenu, SWT.PUSH);
+		menuItem.setText ("Collapse all");		
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandAll(false) ; } } ) ;
+	}
+	
+	/************************************************************************
+	* 
+	* Go from current selection (where right click occured) to the object
+	* selected by the user (e.g. a production name).
+	* 
+	*************************************************************************/
+	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
+	{
+		// Figure out which item the user clicked on
+		Point pt = m_Tree.toControl(mouseX, mouseY) ;
+		TreeItem item = m_Tree.getItem(pt) ;
+		
+		if (item == null)
+		{
+			System.out.println("no item selected") ;
+			return null ;
+		}
+		
+		// We want to know how far into the item the mouse click was
+		Rectangle bounds = item.getBounds() ;
+		int offsetX = pt.x - bounds.x ;
+
+		// Now we have a location inside the item, but what we need to know
+		// is which character they clicked on.  The only way to compute this I can think of
+		// is to generate each substring in turn and check its length against the point.
+		// When we reach the correct length of string we've found the character.
+		// This is slow and a bit clumsy, but since it's just on a right-click I think it's ok.
+		GC gc = new GC(m_Tree) ;
+		
+		int selectionPoint = -1 ;
+		String text = item.getText() ;
+		for (int i = 0 ; i < text.length() ; i++)
+		{
+			Point extent = gc.textExtent(text.substring(0, i)) ;
+			if (extent.x > offsetX)
+			{
+				selectionPoint = (i == 0) ? 0 : i-1 ;
+				break ;
+			}
+		}
+
+		gc.dispose() ;
+		
+		if (selectionPoint == -1)
+			return null ;
+
+		// One final issue is that we sometimes need to search back up the trace
+		// to find values (e.g. looking for the identifier from a print) which could
+		// be several lines up.  So we need to collect the text from the previous <n> lines,
+		// join it together (with spaces between the lines) and adjust the selection point
+		// to account for all this.
+		
+		// Now take the text and the position and run our regular parse to figure out
+		// what type of thing the user clicked on (e.g. a production/wme etc.)
+		ParseSelectedText selection = new ParseSelectedText(text, selectionPoint) ;
+		
+		return selection.getParsedObject() ;
 	}
 
+	protected void rightButtonPressed(MouseEvent event)
+	{
+		/*
+		m_Tree.addListener (SWT.MouseDown, new Listener () {
+			public void handleEvent (Event event) {
+				Rectangle clientArea = table.getClientArea ();
+				Point pt = new Point (event.x, event.y);
+				int index = table.getTopIndex ();
+				while (index < table.getItemCount ()) {
+					boolean visible = false;
+					final TableItem item = table.getItem (index);
+					for (int i=0; i<table.getColumnCount (); i++) {
+						Rectangle rect = item.getBounds (i);
+						if (rect.contains (pt)) {
+						*/
+		
+	}
+	
 	protected void expandPage(boolean state)
 	{
-		m_ExpandPageButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
-		m_ExpandPageButton.setText(state ? "Collapse page" : " Expand page ") ;
-
-		m_ExpandAllButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
-		m_ExpandAllButton.setText(state ? "Collapse all" : " Expand all ") ;
-
+		if (m_Tree.getItemCount() == 0)
+			return ;
+		
 		// Stop redrawing while we expand/collapse everything then turn it back on
 		m_Tree.setRedraw(false) ;
 		
 		TreeItem[] roots = m_Tree.getItems() ;
-
-		// For now we'll approximate a page as 50 nodes in the tree.
-		// The key is that it should be enough to fill a page but not so much
-		// as to take forever to do.
-		int start = roots.length - 50 ;
-		if (start < 0) start = 0 ;
 		
-		for (int i = start ; i < roots.length ; i++)
+		// Find the root item on this page
+		TreeItem top = m_Tree.getTopItem() ;
+		while (top.getParentItem() != null)
+			top = top.getParentItem() ;
+
+		int start = -1 ;
+		for (int i = 0 ; i < roots.length ; i++)
+		{
+			if (top == roots[i])
+			{
+				start = i ;
+				break ;
+			}
+		}
+		
+		if (start == -1)
+			throw new IllegalStateException("Error finding top of the tree") ;
+		
+		int pageSize = 50 ;
+		// For now we'll approximate a page as <n> nodes in the tree.
+		// The key is that it should be enough to fill a page but not so much
+		// as to take forever to do.  I don't see a method to determine which item
+		// is at the bottom of the page which would make this precise.
+		int end = start + pageSize ;
+		if (end > roots.length) end = roots.length ;
+		
+		for (int i = start ; i < end ; i++)
 		{	
 			// In SWT the programmatic call to expand an item does not
 			// generate an expand event, so we have to explicitly handle the expansion
@@ -176,17 +291,14 @@ public class TreeTraceView extends AbstractComboView
 			roots[i].setExpanded(state) ;
 		}
 		
+		// Scroll to have the top (now expanded) visible
+		m_Tree.showItem(top) ;
+		
 		m_Tree.setRedraw(true) ;		
 	}
 	
 	protected void expandAll(boolean state)
 	{
-		m_ExpandPageButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
-		m_ExpandPageButton.setText(state ? "Collapse page" : " Expand page ") ;
-
-		m_ExpandAllButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
-		m_ExpandAllButton.setText(state ? "Collapse all" : " Expand all ") ;
-		
 		// Stop redrawing while we expand/collapse everything then turn it back on
 		m_Tree.setRedraw(false) ;
 		
@@ -255,17 +367,24 @@ public class TreeTraceView extends AbstractComboView
 	protected void layoutComboBar(boolean top)
 	{
 		FormData comboData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
-		comboData.right = new FormAttachment(m_ExpandPageButton) ;
+//		comboData.right = new FormAttachment(this.m_ExpandPageButton) ;
+		comboData.right = new FormAttachment(m_Buttons) ;
 		m_CommandCombo.setLayoutData(comboData) ;
-		
+
 		FormData buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
 		buttonData.left = null ;
-		m_ExpandAllButton.setLayoutData(buttonData) ;
-
-		buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
+		m_Buttons.setLayoutData(buttonData) ;
+		
+/*		
+		FormData buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
 		buttonData.left = null ;
 		buttonData.right = new FormAttachment(m_ExpandAllButton) ;
 		m_ExpandPageButton.setLayoutData(buttonData) ;
+
+		buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
+		buttonData.left = null ;
+		m_ExpandAllButton.setLayoutData(buttonData) ;
+*/
 	}
 
 	/********************************************************************************************

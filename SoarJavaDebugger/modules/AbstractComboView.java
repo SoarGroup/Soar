@@ -93,7 +93,7 @@ public abstract class AbstractComboView extends AbstractView
 	* selected by the user (e.g. a production name).
 	* 
 	*************************************************************************/
-	protected ParseSelectedText.SelectedObject getCurrentSelection()
+	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
 	{
 		return null ;
 	}
@@ -110,10 +110,10 @@ public abstract class AbstractComboView extends AbstractView
 	* be attached to a specific control.
 	* 
 	*************************************************************************/
-	protected void fillInContextMenu(Menu contextMenu, Control control)
+	protected void fillInContextMenu(Menu contextMenu, Control control, int mouseX, int mouseY)
 	{
 		// Get the current selected text
-		ParseSelectedText.SelectedObject selectionObject = getCurrentSelection() ;
+		ParseSelectedText.SelectedObject selectionObject = getCurrentSelection(mouseX, mouseY) ;
 
 		if (selectionObject == null)
 			selectionObject = new ParseSelectedText.SelectedUnknown(null) ;
