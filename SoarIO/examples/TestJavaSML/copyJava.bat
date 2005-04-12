@@ -8,6 +8,6 @@ xcopy %SOARIO%\ClientSMLSWIG\java\*.java sml\*.java /y
 xcopy %SOARIO%\ClientSMLSWIG\java\*.dll *.dll /y
 
 @REM We also need libraries that Java_sml_ClientInterface.dll is dependent on.
-xcopy %SOARIO%\bin\KernelSML.dll *.dll /y
+xcopy %SOARIO%\bin\SoarKernelSML.dll *.dll /y
 xcopy %SOARIO%\bin\ElementXML.dll *.dll /y
 

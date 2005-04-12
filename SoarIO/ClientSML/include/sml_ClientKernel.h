@@ -186,7 +186,7 @@ public:
 	*		 (It's simpler because there's no need to call CheckForIncomingCommands() periodically as this happens in a separate
 	*		  thread running inside the kernel and incoming events are handled by another thread in the client).
 	*
-	* @param pLibraryName	The name of the library to load, without an extension (e.g. "KernelSML").  Case-sensitive (to support Linux).
+	* @param pLibraryName	The name of the library to load, without an extension (e.g. "SoarKernelSML").  Case-sensitive (to support Linux).
 	*						This library will be dynamically loaded and connected to.
 	* @param Optimized		If this is a current thread connection, we can short-circuit parts of the messaging system for sending input and
 	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries

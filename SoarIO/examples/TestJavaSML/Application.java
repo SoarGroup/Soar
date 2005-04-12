@@ -309,7 +309,7 @@ public class Application
 		// (for this part we'll use the default port)
 		System.out.println("############ Listener Test ############") ;
 
-		m_Kernel = Kernel.CreateKernelInCurrentThread("KernelSML", false, Kernel.GetDefaultPort()) ;
+		m_Kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", false, Kernel.GetDefaultPort()) ;
 		//m_Kernel.SetTraceCommunications(true) ;
 		
 		for (int i = 0 ; i < 200 ; i++)
@@ -364,14 +364,14 @@ public class Application
 				System.out.println("############ Current Thread ############") ;
 
 				// Initialize the kernel
-				m_Kernel = Kernel.CreateKernelInCurrentThread("KernelSML", false, 12345) ;
+				m_Kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", false, 12345) ;
 		
 				Test() ;
 				
 				// Now repeat the tests but with a kernel that's running in a different thread
 				System.out.println("############ New Thread ############") ;
 				
-				m_Kernel = Kernel.CreateKernelInNewThread("KernelSML", 13131) ;
+				m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", 13131) ;
 
 				Test() ;
 			}

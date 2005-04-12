@@ -477,7 +477,7 @@ public:
 		bool ok = true ;
 
 		// Create an embedded connection to the kernel.
-		Connection* pConnection1 = Connection::CreateEmbeddedConnection("KernelSML", &error) ;
+		Connection* pConnection1 = Connection::CreateEmbeddedConnection("SoarKernelSML", &error) ;
 
 		ok = ok && Check(error == Error::kNoError, Error::GetErrorDescription(error)) ;
 
@@ -528,7 +528,7 @@ public:
 		bool ok = true ;
 
 		// Create an embedded connection to the kernel.
-		Connection* pConnection1 = Connection::CreateEmbeddedConnection("KernelSML", &error) ;
+		Connection* pConnection1 = Connection::CreateEmbeddedConnection("SoarKernelSML", &error) ;
 
 		ok = ok && Check(error == Error::kNoError, Error::GetErrorDescription(error)) ;
 
@@ -598,7 +598,7 @@ public:
 		bool ok = true ;
 
 		// Create an embedded connection to the kernel.
-		Connection* pConnection1 = Connection::CreateEmbeddedConnection("KernelSML", &error) ;
+		Connection* pConnection1 = Connection::CreateEmbeddedConnection("SoarKernelSML", &error) ;
 
 		ok = ok && Check(error == Error::kNoError, Error::GetErrorDescription(error)) ;
 

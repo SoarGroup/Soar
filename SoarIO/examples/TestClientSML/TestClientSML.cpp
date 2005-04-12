@@ -115,8 +115,8 @@ bool SimpleListener(int life)
 	bool useCurrentThread = false ;
 
 	// Create the kernel instance
-	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread("KernelSML") :
-											  sml::Kernel::CreateKernelInNewThread("KernelSML") ;
+	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML") :
+											  sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
 
 	if (pKernel->HadError())
 	{
@@ -668,8 +668,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Create the appropriate type of connection
 		sml::Kernel* pKernel = embedded ?
-			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("KernelSML", fullyOptimized, Kernel::GetDefaultPort())
-			: sml::Kernel::CreateKernelInNewThread("KernelSML", Kernel::GetDefaultPort()))
+			(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML", fullyOptimized, Kernel::GetDefaultPort())
+			: sml::Kernel::CreateKernelInNewThread("SoarKernelSML", Kernel::GetDefaultPort()))
 			: sml::Kernel::CreateRemoteConnection(true, NULL) ;
 
 		if (pKernel->HadError())

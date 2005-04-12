@@ -178,36 +178,20 @@ public class Agent extends ClientErrors {
     return smlJNI.Agent_Commit(swigCPtr);
   }
 
-  public String Run(long decisions) {
-    return smlJNI.Agent_Run(swigCPtr, decisions);
+  public String RunSelf(long decisions) {
+    return smlJNI.Agent_RunSelf(swigCPtr, decisions);
   }
 
-  public String Stop(boolean stopAllAgents, boolean stopSystem) {
-    return smlJNI.Agent_Stop__SWIG_0(swigCPtr, stopAllAgents, stopSystem);
+  public String StopSelf() {
+    return smlJNI.Agent_StopSelf(swigCPtr);
   }
 
-  public String Stop(boolean stopAllAgents) {
-    return smlJNI.Agent_Stop__SWIG_1(swigCPtr, stopAllAgents);
+  public boolean SetStopSelfOnOutput(boolean state) {
+    return smlJNI.Agent_SetStopSelfOnOutput(swigCPtr, state);
   }
 
-  public String Stop() {
-    return smlJNI.Agent_Stop__SWIG_2(swigCPtr);
-  }
-
-  public boolean SetStopOnOutput(boolean state) {
-    return smlJNI.Agent_SetStopOnOutput(swigCPtr, state);
-  }
-
-  public String RunTilOutput(long maxDecisions) {
-    return smlJNI.Agent_RunTilOutput(swigCPtr, maxDecisions);
-  }
-
-  public boolean SetSuppressSystemStart(boolean state) {
-    return smlJNI.Agent_SetSuppressSystemStart(swigCPtr, state);
-  }
-
-  public boolean SetSuppressSystemStop(boolean state) {
-    return smlJNI.Agent_SetSuppressSystemStop(swigCPtr, state);
+  public String RunSelfTilOutput(long maxDecisions) {
+    return smlJNI.Agent_RunSelfTilOutput(swigCPtr, maxDecisions);
   }
 
   public void Refresh() {

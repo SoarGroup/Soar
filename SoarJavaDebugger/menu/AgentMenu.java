@@ -110,11 +110,12 @@ public class AgentMenu
 	
 	private void createAgent(ActionEvent e, boolean newWindow)
 	{
-		// Retrieve the last name we used and default to that
-		String lastName = m_Frame.getAppStringProperty("AgentMenu.Name") ;
+		// Generate a default name for the agent
+		int nAgents = m_Document.getNumberAgents() ;
+		String generatedName = "soar" + (nAgents+1) ;
 		
 		// Ask for the name of this agent
-		String name = m_Frame.ShowInputDialog("Create Agent", "Enter new agent name", lastName) ;
+		String name = m_Frame.ShowInputDialog("Create Agent", "Enter new agent name", generatedName) ;
 		
 		// Check if cancelled
 		if (name == null || name == "")
@@ -127,9 +128,6 @@ public class AgentMenu
 		}
 		
 		Agent newAgent = m_Document.createAgent(name) ;
-		
-		// Record the last name the user provided
-		m_Frame.setAppProperty("AgentMenu.Name", name) ;
 		
 		if (newWindow)
 		{

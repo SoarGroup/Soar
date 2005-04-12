@@ -54,7 +54,8 @@ public class TreeTraceView extends AbstractComboView
 	protected TreeItem m_LastRoot ;
 	protected TreeItem m_DummyChild ;
 	
-	protected Button m_ExpandAllButton ;
+	protected Combo m_ExpandAllButton ;
+	protected Combo m_ExpandPageButton ;
 	
 	/** Controls whether we cache strings that are due to be subtree nodes and only add the nodes when the user clicks--or not */
 	protected final static boolean kCacheSubText = true ;
@@ -124,17 +125,65 @@ public class TreeTraceView extends AbstractComboView
 		m_Tree.addListener (SWT.Expand, new ExpandListener()) ;
 		
 		// Add a button that offers an expand/collapse option instantly
-		m_ExpandAllButton = new Button(parent, SWT.PUSH) ;
-		m_ExpandAllButton.setText(m_AutoExpand ? "Collapse all" : " Expand all ") ;
-		m_ExpandAllButton.setData("expanded", m_AutoExpand ? Boolean.TRUE : Boolean.FALSE) ;	// When this flag is false pressing the button expands
+		m_ExpandAllButton = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN) ;
+		m_ExpandAllButton.add("Expand all") ;
+		m_ExpandAllButton.add("Collapse all") ;
+		m_ExpandAllButton.select(m_AutoExpand ? 1 : 0) ;
+//		m_ExpandAllButton.setText(m_AutoExpand ? "Collapse all" : " Expand all ") ;
+//		m_ExpandAllButton.setData("expanded", m_AutoExpand ? Boolean.TRUE : Boolean.FALSE) ;	// When this flag is false pressing the button expands
 		
 		m_ExpandAllButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
 			{ boolean expand = (e.widget.getData("expanded") == Boolean.FALSE) ;
 			  expandAll(expand) ; } } ) ;
+
+		// Add a button that offers an expand/collapse option instantly (for just one page)
+		m_ExpandPageButton = new Combo(parent, SWT.READ_ONLY) ;
+		m_ExpandPageButton.setText(m_AutoExpand ? "Collapse page" : " Expand page ") ;
+		m_ExpandPageButton.setData("expanded", m_AutoExpand ? Boolean.TRUE : Boolean.FALSE) ;	// When this flag is false pressing the button expands
+		
+		m_ExpandPageButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
+			{ boolean expand = (e.widget.getData("expanded") == Boolean.FALSE) ;
+			  expandPage(expand) ; } } ) ;
 	}
 
+	protected void expandPage(boolean state)
+	{
+		m_ExpandPageButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
+		m_ExpandPageButton.setText(state ? "Collapse page" : " Expand page ") ;
+
+		m_ExpandAllButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
+		m_ExpandAllButton.setText(state ? "Collapse all" : " Expand all ") ;
+
+		// Stop redrawing while we expand/collapse everything then turn it back on
+		m_Tree.setRedraw(false) ;
+		
+		TreeItem[] roots = m_Tree.getItems() ;
+
+		// For now we'll approximate a page as 50 nodes in the tree.
+		// The key is that it should be enough to fill a page but not so much
+		// as to take forever to do.
+		int start = roots.length - 50 ;
+		if (start < 0) start = 0 ;
+		
+		for (int i = start ; i < roots.length ; i++)
+		{	
+			// In SWT the programmatic call to expand an item does not
+			// generate an expand event, so we have to explicitly handle the expansion
+			// (i.e. unpack our cached text)
+			if (state)
+				expandRoot(roots[i], false) ;
+
+			roots[i].setExpanded(state) ;
+		}
+		
+		m_Tree.setRedraw(true) ;		
+	}
+	
 	protected void expandAll(boolean state)
 	{
+		m_ExpandPageButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
+		m_ExpandPageButton.setText(state ? "Collapse page" : " Expand page ") ;
+
 		m_ExpandAllButton.setData("expanded", state ? Boolean.TRUE : Boolean.FALSE) ;
 		m_ExpandAllButton.setText(state ? "Collapse all" : " Expand all ") ;
 		
@@ -206,12 +255,17 @@ public class TreeTraceView extends AbstractComboView
 	protected void layoutComboBar(boolean top)
 	{
 		FormData comboData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
-		comboData.right = new FormAttachment(m_ExpandAllButton) ;
+		comboData.right = new FormAttachment(m_ExpandPageButton) ;
 		m_CommandCombo.setLayoutData(comboData) ;
 		
 		FormData buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
 		buttonData.left = null ;
 		m_ExpandAllButton.setLayoutData(buttonData) ;
+
+		buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
+		buttonData.left = null ;
+		buttonData.right = new FormAttachment(m_ExpandAllButton) ;
+		m_ExpandPageButton.setLayoutData(buttonData) ;
 	}
 
 	/********************************************************************************************

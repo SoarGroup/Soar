@@ -138,6 +138,30 @@ public class Kernel extends ClientErrors {
     return smlJNI.Kernel_ExecuteCommandLineXML(swigCPtr, pCommandLine, pAgentName, AnalyzeXML.getCPtr(pResponse));
   }
 
+  public String RunAllAgents(long decisions) {
+    return smlJNI.Kernel_RunAllAgents(swigCPtr, decisions);
+  }
+
+  public String RunAllTilOutput(long maxDecisions) {
+    return smlJNI.Kernel_RunAllTilOutput(swigCPtr, maxDecisions);
+  }
+
+  public String StopAllAgents(boolean stopSystem) {
+    return smlJNI.Kernel_StopAllAgents__SWIG_0(swigCPtr, stopSystem);
+  }
+
+  public String StopAllAgents() {
+    return smlJNI.Kernel_StopAllAgents__SWIG_1(swigCPtr);
+  }
+
+  public boolean SetSuppressSystemStart(boolean state) {
+    return smlJNI.Kernel_SetSuppressSystemStart(swigCPtr, state);
+  }
+
+  public boolean SetSuppressSystemStop(boolean state) {
+    return smlJNI.Kernel_SetSuppressSystemStop(swigCPtr, state);
+  }
+
   public String ExpandCommandLine(String pCommandLine) {
     return smlJNI.Kernel_ExpandCommandLine(swigCPtr, pCommandLine);
   }

@@ -7,11 +7,8 @@ xcopy %SOARIO%\ClientSMLSWIG\java\*.java sml\*.java /y
 xcopy %SOARIO%\ClientSMLSWIG\java\*.dll *.dll /y
 
 @REM We also need libraries that Java_sml_ClientInterface.dll is dependent on.
-xcopy %SOARIO%\bin\KernelSML.dll *.dll /y
+xcopy %SOARIO%\bin\SoarKernelSML.dll *.dll /y
 xcopy %SOARIO%\bin\ElementXML.dll *.dll /y
 
-@REM Bring over the alias files and help file so that they are found when the libs are loaded
-xcopy %SOARIO%\bin\aliases.txt *.txt /y
-xcopy %SOARIO%\bin\usage.txt *.txt /y
 
 

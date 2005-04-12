@@ -88,7 +88,7 @@ public class Application {
 			// Step 2: Install the SML (Soar) libraries
 			// BUGBUG: Should choose the extension to match the platform we're on
 			String extension = ".dll" ;		
-			Install(new String[] { "KernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
+			Install(new String[] { "SoarKernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
 			
 			// Step 3: Insall the default layout file
 			Install(new String[] { "default-layout.xml" } , "", false) ;
@@ -111,7 +111,6 @@ public class Application {
 	* 
 	*************************************************************************/
 	static public void main(String[] args) {
-		System.out.println("Start") ;
 		new Application(false);
 	}
 	

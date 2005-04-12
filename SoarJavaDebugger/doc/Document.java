@@ -276,7 +276,7 @@ public class Document
 		// We're use "InNewThread" so environments can remotely connect to the debugger and run
 		// inside us if they wish (and without us having to do work to support that by calling
 		// GetIncomingCommands() and pumping for incoming events).
-		m_Kernel = Kernel.CreateKernelInNewThread("KernelSML", portToListenOn) ;
+		m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", portToListenOn) ;
 
 		// This is a local kernel
 		m_IsRemote = false ;
@@ -298,7 +298,7 @@ public class Document
 		registerStandardKernelEvents() ;
 		
 		// Start with an agent...without this a kernel's not much use.
-		Agent agent = createAgent("debug-agent") ;
+		Agent agent = createAgent("soar1") ;
 		
 		return agent ;
 	}
