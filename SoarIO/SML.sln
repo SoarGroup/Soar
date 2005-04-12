@@ -42,10 +42,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gSKI-static", "..\gSKI\gSKI
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestThreadLibrary", "examples\TestThreadLibrary\TestThreadLibrary.vcproj", "{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelSource", "..\SoarKernel\SoarKernelSource.vcproj", "{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -117,12 +113,6 @@ Global
 		{0F4205EE-35EA-4421-8F74-513603FF003F}.Debug.Build.0 = Debug|Win32
 		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.ActiveCfg = Release|Win32
 		{0F4205EE-35EA-4421-8F74-513603FF003F}.Release.Build.0 = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Ansi Release.ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Ansi Release.Build.0 = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.ActiveCfg = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Debug.Build.0 = Debug|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.ActiveCfg = Release|Win32
-		{A42713E1-1933-4AD4-8C7C-6A428B3C44E2}.Release.Build.0 = Release|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Ansi Release.ActiveCfg = Release|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Ansi Release.Build.0 = Release|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.ActiveCfg = Debug|Win32
