@@ -1,6 +1,7 @@
 #include "ilspec.h"
 #include "ilobject.h"
 #include <fstream>
+#include <iostream>
 
 /******************************************************************************
  * InputLinkSpec Class Function Definitions
@@ -39,7 +40,39 @@ bool InputLinkSpec::ImportDM(string filename)
 	fstream file;
 	file.open(filename.c_str());
 
+	if(!file.is_open())
+	{
+		cout<<"Error: unable to open file "<<filename<<endl;
+		return false;
+	}
+
+	int lineNumber = 1;
+
 	//this should create InputLinkObjects to hold each line of data read
+	while(!file.eof())
+	{
+		//Probably don't want to get a whole line at once
+		/*char line[MAX_LINE_LENGTH];
+
+		file.getline(line, MAX_LINE_LENGTH+1);
+
+		//ensure that the line wasn't too long
+		if(file.gcount() == MAX_LINE_LENGTH+1)
+		{
+			cout<<"Error: line "<<lineNumber<<" too long"<<endl;
+			return false;
+		}*/
+
+		//should first get parent id name
+
+		//then get attribute name
+
+		//then get value type 
+
+		//then optional and conditional args.
+
+		++lineNumber;
+	}
 
 	file.close();
 	return true;
@@ -55,6 +88,11 @@ bool InputLinkSpec::ImportIL(string filename)
 	fstream file;
 	file.open(filename.c_str());
 
+	if(!file.is_open())
+	{
+		cout<<"Error: unable to open file "<<filename<<endl;
+		return false;
+	}
 
 
 	file.close();

@@ -3,6 +3,8 @@
 
 #include <string>
 
+#define MAX_LINE_LENGTH 1024
+
 using namespace std;
 
 class InputLinkObject;
