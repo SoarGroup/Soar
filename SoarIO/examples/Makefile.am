@@ -1,4 +1,4 @@
-AUTOMAKE_OPTIONS = gnu
+AUTOMAKE_OPTIONS = foreign
 SUBDIRS = \
 TestCommandLineInterface \
 TestClientSML \
