@@ -1,7 +1,5 @@
 gSKId.dll
 gSKI.dll
-ElementXMLd.dll
-SoarKernelSMLd.dll
 towersSML.exe
 TestClientSML.exe
 TestCommandLineInterface.exe
@@ -14,3 +12,5 @@ TestConnectionSMLd.exe
 towersSMLd.exe
 testclientsml-success.txt
 towers-sml-success.txt
+gski_unreleased.txt
+smltrace.txt
