@@ -1,0 +1,47 @@
+                                    Warnings
+
+                                      Name
+
+   warnings -- Enable or disable the printing of warning messages from the
+   Soar kernel.
+
+   Status: Complete, EvilBackDoor
+
+                                    Synopsis
+
+ warnings -[e|d]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-e, --enable, --on  |Default. Print all warning messages from the       |
+   |                    |kernel.                                            |
+   |--------------------+---------------------------------------------------|
+   |-d, --disable, --off|Disable all, except most critical, warning         |
+   |                    |messages.                                          |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   Enables and disables the printing of warning messages. If an argument is
+   specified, then the warnings are set to that state. If no argument is
+   given, then the current warnings status is printed. At startup, warnings
+   are initially enabled. If warnings are disabled using this command, then
+   some warnings may still be printed, since some are considered too
+   important to ignore.
+
+                                    Examples
+
+                                    See Also
+
+                               Structured Output
+
+                                  Error Values
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+During Execution
+
+   kAgentRequired, kKernelRequired

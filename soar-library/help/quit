@@ -1,0 +1,38 @@
+                                      Quit
+
+                                      Name
+
+   quit - Close log file, terminate Soar, and return user to the operating
+   system.
+
+   Status: Complete
+
+                                    Synopsis
+
+ quit
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   This command stops the run, quits the log and closes Soar.
+
+                               Structured Output
+
+On Success
+
+ <result>
+   <arg name="message" type="string">Goodbye.</arg>
+ </result>
+
+                                  Error Values
+
+During Parsing
+
+   No errors.
+
+During Execution
+
+   No errors.

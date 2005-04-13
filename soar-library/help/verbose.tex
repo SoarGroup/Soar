@@ -1,0 +1,33 @@
+\subsection{\soarb{verbose}}
+\label{verbose}
+\index{verbose}
+Control detailed information printed as Soar runs. 
+ Priority: 3; Status: Complete, EvilBackDoor
+\subsubsection*{Synopsis}
+\begin{verbatim}
+verbose [-ed]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -d, --disable, --off  & Turn verbosity off.  \\
+ \hline 
+ -e, --enable, --on  & Turn verbosity on.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Invoke with no arguments to query. 
+\subsubsection*{Structured Output:}
+\paragraph*{On Query}
+\begin{verbatim}
+<result>
+  <arg param="value" type="boolean">true_or_false</arg>
+</result>
+\end{verbatim}
+\paragraph*{On success}
+ Returns true. 
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\paragraph*{During Execution}
+ kAgentRequired, kKernelRequired

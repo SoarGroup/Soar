@@ -1,0 +1,4 @@
+learn --on
+pushd ../../default
+source selection.soar
+popd

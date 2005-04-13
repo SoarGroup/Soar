@@ -1,0 +1,69 @@
+                                   Stop-soar
+
+                                      Name
+
+   stop-soar - Pause Soar.
+
+   Status: Complete
+   Reason for stopping currently ignored, not sure what this is for/why this
+   is here.--Jonathan 13:59, 4 Feb 2005 (EST)
+
+                                    Synopsis
+
+ stop-soar [-s] [reason string]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-s, --self   |Stop only the soar agent where the command is issued. All |
+   |             |other agents continue running as previously specified.    |
+   |-------------+----------------------------------------------------------|
+   |             |An optional string which will be printed when Soar is     |
+   |reason_string|stopped, to indicate why it was stopped. If left blank, no|
+   |             |message will be printed when Soar is stopped.             |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   This command is usually not issued at the command line prompt. A more
+   common use of this command is as a side-effect of pressing a button on a
+   Graphical User Interface (GUI), or as a monitor to be executed at a
+   specific Soar Event. For example, a user may wish to examine an agent's
+   "matches" after the Soar Decision Phase. In order to do this in Soar 8,
+   the user must register a monitor, or callback, to issue the "stop-soar
+   -self" command for the event, after-decision-phase-cycle.
+
+                                    Examples
+
+   This example shows how to stop Soar8 after this decision phase using
+   stop-soar -self in a monitor to stop after the decision phase so that
+   memory can be examined.
+
+ monitor -add {stop-soar --self "after decision phase"} after-decision-phase-cycle
+
+
+                                    See Also
+
+   run monitor matches
+
+                                    Warnings
+
+   If the graphical interface doesn't periodically do an "update" of flush
+   the pending I/O, then it may not be possible to interrupt a Soar agent
+   from the command line.
+
+                               Structured Output
+
+On Success
+
+ <result output="raw">true</result>
+
+                                  Error Values
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError
+
+During Execution
+
+   kAgentReqruied, kKernelRequired

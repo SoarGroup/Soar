@@ -1,0 +1,32 @@
+\subsection{\soarb{source}}
+\label{source}
+\index{source}
+Load and evaluate the contents of a file. 
+ Status: Complete
+\subsubsection*{Synopsis}
+\begin{verbatim}
+source filename
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+filename & The file of Soar productions and commands to load.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ Load and evaluate the contents of a file. The \emph{filename}
+\subsubsection*{See Also}
+\subsubsection*{Structured Output:}
+\paragraph*{On Success}
+\begin{verbatim}
+ <result output="raw">true</result>
+\end{verbatim}
+\paragraph*{Notes}
+\begin{itemize}
+\item  source executes the 'pwd' command if the pushd's and popd's don't match up after parsing the file. Type 'helpex pwd' for details. 
+\end{itemize}
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
+ kTooFewArgs, kSourceOnlyOneFile
+\paragraph*{During Execution}
+ kAgentRequired, kOpenFileFail, kUnmatchedBrace, kExtraClosingBrace

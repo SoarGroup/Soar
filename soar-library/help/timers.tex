@@ -1,0 +1,42 @@
+\subsection{\soarb{timers}}
+\label{timers}
+\index{timers}
+Toggle on or off the internal timers used to profile Soar. 
+ Status: Complete, EvilBackDoor
+\subsubsection*{Synopsis}
+\begin{verbatim}
+timers [-ed]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -d, --disable, --off  & Disable all timers.  \\
+ \hline 
+ -e, --enable, --on  & Enable timers as compiled.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command is used to control the timers that collect internal profiling information while Soar is running. With no arguments, this command prints out the current timer status. Timers are ENABLED by default. The default compilation flags for soar enable the basic timers and disable the detailed timers. The timers command can only enable or disable timers that have already been enabled with compiler directives. See the stats command for more info on the Soar timing system. 
+\subsubsection*{Examples}
+ To show how to use the command in context, do this: \begin{verbatim}
+command --option arg
+\end{verbatim}
+ and possibly explain the results. 
+\subsubsection*{See Also}
+ stats
+\subsubsection*{Structured Output:}
+\paragraph*{On Query}
+\begin{verbatim}
+<result>
+  <arg name="timers" type="boolean">setting</arg>
+</result>
+\end{verbatim}
+\paragraph*{Otherwise}
+\begin{verbatim}
+<result output="raw">true</result>
+\end{verbatim}
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\paragraph*{During Execution}
+ kAgentRequired, kKernelRequired

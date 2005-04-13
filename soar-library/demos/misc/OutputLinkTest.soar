@@ -1,0 +1,30 @@
+sp {apply*outputlinktest
+   (state <s> ^type state
+              ^io.output-link <ol> 
+              ^io.input-link.cycle-count <count> )
+-->
+   (<ol> ^count <c1>)
+   (<c1> ^nest  <nested-value>)
+   (<nested-value> ^value (tcl |expr 1+1|))
+}
+
+sp {apply*outputlinktest2
+   (state <s> ^type state
+              ^io.output-link <ol> 
+              ^io.input-link.cycle-count <count> )
+-->
+   (<ol> ^count <c1>)
+   (<c1> ^nest  <nested-value>)
+   (tcl |set mytestvar 456|)
+}
+
+sp {apply*outputlinktest3
+   (state <s> ^type state
+              ^io.output-link <ol> 
+              ^io.input-link.cycle-count 5)
+-->
+   (tcl |puts "This is a test"|)
+   (interrupt)
+   (tcl |puts "This is after the interrupt!"|)
+}
+

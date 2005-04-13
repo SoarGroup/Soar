@@ -1,0 +1,54 @@
+                               Chunk-name-format
+
+                                      Name
+
+   chunk-name-format - Specify format of the name to use for new chunks.
+
+   Priority: 4; Status: Complete, EvilBackDoor
+
+                                    Synopsis
+
+ chunk-name-format [-sl] -p [<prefix>]
+ chunk-name-format [-sl] -c [<count>]
+
+                                    Options
+
+   +-------------+
+   |-c, --count ||
+   |------------+|
+   |count       ||
+   |------------+|
+   |-l, --long  ||
+   |------------+|
+   |-p, --prefix||
+   |------------+|
+   |prefix      ||
+   |------------+|
+   |-s, --short ||
+   +-------------+
+
+                                  Description
+
+                               Structured Output
+
+On Query
+
+     * kParamChunkLongFormat, kTypeBoolean, true if using long format, false
+       for short format.
+     * kParamChunkCount, kTypeInt, integer representing current chunk count.
+     * kParamChunkNamePrefix, kTypeString, the current chunk prefix.
+
+On Success
+
+Notes
+
+                                  Error Values
+
+During Parsing
+
+   kIntegerExpected, kIntegerMustBeNonNegative, kMissingOptionArg,
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+During Execution
+
+   kCountGreaterThanMaxChunks, kCountLessThanChunks, kInvalidPrefix

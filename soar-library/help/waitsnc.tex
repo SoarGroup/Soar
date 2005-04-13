@@ -1,0 +1,24 @@
+\subsection{\soarb{waitsnc}}
+\label{waitsnc}
+\index{waitsnc}
+ Priority: 3 ; Status: Complete
+\subsubsection*{Synopsis}
+\begin{verbatim}
+wait -[e|d]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -e, --enable, --on  & Turns a state-no-change into a \emph{wait}
+ state.  \\
+ \hline 
+ -d, --disable, --off  & Default. A state-no-change generates an impasse.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+\subsubsection*{Structured Output:}
+\subsubsection*{Error Values:}
+\paragraph*{During Parsing}
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\paragraph*{During Execution}
+ kAgentRequired

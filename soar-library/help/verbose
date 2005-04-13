@@ -1,0 +1,45 @@
+                                    Verbose
+
+                                      Name
+
+   verbose - Control detailed information printed as Soar runs.
+
+   Priority: 3; Status: Complete, EvilBackDoor
+
+                                    Synopsis
+
+ verbose [-ed]
+
+                                    Options
+
+   +----------------------------------------+
+   |-d, --disable, --off|Turn verbosity off.|
+   |--------------------+-------------------|
+   |-e, --enable, --on  |Turn verbosity on. |
+   +----------------------------------------+
+
+                                  Description
+
+   Invoke with no arguments to query.
+
+                               Structured Output
+
+On Query
+
+ <result>
+   <arg param="value" type="boolean">true_or_false</arg>
+ </result>
+
+On success
+
+   Returns true.
+
+                                  Error Values
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+During Execution
+
+   kAgentRequired, kKernelRequired

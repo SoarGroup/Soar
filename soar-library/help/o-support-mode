@@ -1,0 +1,60 @@
+                                 O-support-mode
+
+                                      Name
+
+   o-support-mode - Choose experimental variations of o-support.
+
+   Priority: 3; Status: Complete
+
+                                    Synopsis
+
+ o-support-mode [0|1|2|3|4]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   | |Mode 0 is the base mode. O-support is calculated based on the         |
+   | |structure of working memory that is tested and modified. Testing an   |
+   |0|operator or operator acceptable preference results in state or        |
+   | |operator augmentations being o-supported. The support computation is  |
+   | |very complex (see soar manual).                                       |
+   |-+----------------------------------------------------------------------|
+   |1|Not available through gSKI.                                           |
+   |-+----------------------------------------------------------------------|
+   | |Mode 2 is the same as mode 0 except that all support is calculated the|
+   |2|production structure, not from working memory structure. Augmentations|
+   | |of operators are still o-supported.                                   |
+   |-+----------------------------------------------------------------------|
+   | |Mode 3 is the same as mode 2 except that operator elaborations (adding|
+   |3|attributes to operators) now get i-support even though you have to    |
+   | |test the operator to elaborate an operator.                           |
+   |-+----------------------------------------------------------------------|
+   |4|Mode 4 is the default.                                                |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   Running o-support-mode with no arguments prints out the current
+   o-support-mode.
+
+                               Structured Output
+
+On Query
+
+ <result>
+   <arg param="value" type="int">mode</arg>
+ </result>
+
+Otherwise
+
+   When setting o-support, if successful, true is returned.
+
+                                  Error Values
+
+During Parsing
+
+   kTooManyArgs, kIntegerOutOfRange
+
+During Execution
+
+   kAgentRequired, kInvalidOSupportMode

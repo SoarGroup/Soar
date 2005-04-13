@@ -1,0 +1,71 @@
+                                Max-elaborations
+
+                                      Name
+
+   max-elaborations - Limit the maximum number of elaboration cycles in a
+   given phase. Print a warning message if the limit is reached during a run.
+
+   Status: Complete
+
+                                    Synopsis
+
+ max-elaborations [n]
+
+                                    Options
+
+   +-----------------------------------------------------------------+
+   |n|Maximum allowed elaboration cycles, must be a positive integer.|
+   +-----------------------------------------------------------------+
+
+                                  Description
+
+   This command sets and prints the maximum number of elaboration cycles
+   allowed. If n is given, it must be a positive integer and is used to reset
+   the number of allowed elaboration cycles. The default value is 100.
+   max-elaborations with no arguments prints the current value.
+
+   max-elaborations controls the maximum number of elaborations allowed in a
+   single decision cycle. The elaboration phase will end after
+   max-elaboration cycles have completed, even if there are more productions
+   eligible to fire or retract; and Soar will proceed to the next phase after
+   a warning message is printed to notify the user.
+
+   In Soar8, max-elaborations is checked during both the Propose Phase and
+   the Apply Phase. If Soar8 runs more than the max-elaborations limit in
+   either of these phases, Soar8 proceeds to the next phase (either Decision
+   or Output) even if quiescence has not been reached.
+
+                                    Examples
+
+   The command issued with no arguments, returns the max elaborations
+   allowed:
+
+ max-elaborations
+
+   to set the maximum number of elaborations in one phase to 50:
+
+ max-elaborations 50
+
+                                    See Also
+
+                               Structured Output
+
+On Query
+
+ <result>
+   <arg name="value" type="int">max_elaborations</arg>
+ </result>
+
+Otherwise
+
+ <result output="raw">true</result>
+
+                                  Error Values
+
+During Parsing
+
+   kTooManyArgs, kIntegerMustBePositive
+
+During Execution
+
+   kAgentRequired
