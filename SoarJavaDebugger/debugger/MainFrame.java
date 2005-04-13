@@ -77,6 +77,7 @@ public class MainFrame
 	private DemoMenu 		m_DemoMenu = null;
 	private CommandsMenu 	m_CommandsMenu = null ;
 	private DebugLevelMenu 	m_DebugLevelMenu = null ;
+	private PrintMenu		m_PrintMenu = null ;
 
 	/**
 	 * The main document object -- represents the Soar process. There is only
@@ -535,6 +536,11 @@ public class MainFrame
 		m_NameMap.clear() ;
 	}
 	
+	public void loadSource()
+	{
+		m_FileMenu.loadSource() ;
+	}
+	
 	/***************************************************************************
 	 * 
 	 * Initializes the frame and all of its children.
@@ -547,6 +553,7 @@ public class MainFrame
 		// Add the menus
 		m_FileMenu = FileMenu.createMenu(this, getDocument(), "File", 'F');
 		m_EditMenu = menu.EditMenu.createMenu(this, getDocument(), "Edit", 'E');
+		m_PrintMenu    = PrintMenu.createMenu(this, getDocument(), "Print", 'P') ;
 		m_CommandsMenu = CommandsMenu.createMenu(this, getDocument(), "Commands", 'C');
 		m_DebugLevelMenu = DebugLevelMenu.createMenu(this, getDocument(), "Debug Level", 'L');
 		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "Demos", 'D');

@@ -42,8 +42,9 @@ import helpers.*;
 ********************************************************************************************/
 public abstract class AbstractComboView extends AbstractView
 {
-	protected Combo m_CommandCombo ;
-			
+	protected Composite	m_ComboContainer ;
+	protected Combo 	m_CommandCombo ;
+				
 	/** If true, clear the text window each time we execute a command. */
 	protected boolean	m_ClearEachCommand = true ;
 	
@@ -150,8 +151,9 @@ public abstract class AbstractComboView extends AbstractView
 	/** Separate out the laying out of the combo box as we might want to put controls next to it */
 	protected void layoutComboBar(boolean top)
 	{
+		m_ComboContainer.setLayout(new FillLayout()) ;
 		FormData comboData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
-		m_CommandCombo.setLayoutData(comboData) ;
+		m_ComboContainer.setLayoutData(comboData) ;
 	}
 	
 	/** Layout the combo box and the main display window */
@@ -160,11 +162,11 @@ public abstract class AbstractComboView extends AbstractView
 		// I'll use forms everywhere for consistency and so it's easier
 		// to extend them later if we wish to add something.
 		m_Container.setLayout(new FormLayout()) ;
-
+		
 		if (!this.m_ComboAtTop)
 		{
 			FormData attachBottom = FormDataHelper.anchorFull(0) ;
-			attachBottom.bottom = new FormAttachment(m_CommandCombo) ;
+			attachBottom.bottom = new FormAttachment(m_ComboContainer) ;
 			
 			getDisplayControl().setLayoutData(attachBottom) ;
 			layoutComboBar(m_ComboAtTop) ;
@@ -172,13 +174,14 @@ public abstract class AbstractComboView extends AbstractView
 		else
 		{
 			FormData attachTop = FormDataHelper.anchorFull(0) ;
-			attachTop.top = new FormAttachment(m_CommandCombo) ;
+			attachTop.top = new FormAttachment(m_ComboContainer) ;
 			
 			getDisplayControl().setLayoutData(attachTop) ;
 			layoutComboBar(m_ComboAtTop) ;
 		}
 		
 		m_Container.layout() ;
+		m_ComboContainer.layout() ;
 		
 		// Create a context menu for m_Text.
 		// It will be filled in via a call to fillInContextMenu when the menu is popped up
@@ -208,7 +211,8 @@ public abstract class AbstractComboView extends AbstractView
 		// within this window
 		m_Container	   = new Composite(parent, SWT.NULL) ;
 		
-		m_CommandCombo = new Combo(m_Container, 0) ;
+		m_ComboContainer = new Composite(m_Container, 0) ;
+		m_CommandCombo = new Combo(m_ComboContainer, 0) ;
 		
 		if (m_PromptForCommands != null)
 			m_CommandCombo.setText(m_PromptForCommands) ;

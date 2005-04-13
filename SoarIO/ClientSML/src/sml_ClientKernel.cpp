@@ -701,7 +701,7 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
 	{
 		// Get the result as a string
 		char const *pResult = response.GetResultString();
-		m_CommandLineResult = (pResult == NULL)? "<null>" : pResult ;
+		m_CommandLineResult = (pResult == NULL)? "" : pResult ;
 	}
 	else
 	{

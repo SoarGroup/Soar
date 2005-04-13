@@ -128,7 +128,7 @@ public class TreeTraceView extends AbstractComboView
 		// When the user expands a node in the tree we may unpack some cached data
 		m_Tree.addListener (SWT.Expand, new ExpandListener()) ;
 
-		m_Buttons = new Composite(parent, 0) ;
+		m_Buttons = new Composite(m_ComboContainer, 0) ;
 		m_Buttons.setLayout(new RowLayout()) ;
 		Composite owner = m_Buttons ;
 		
@@ -351,25 +351,18 @@ public class TreeTraceView extends AbstractComboView
 	
 	protected void layoutComboBar(boolean top)
 	{
-		FormData comboData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
-//		comboData.right = new FormAttachment(this.m_ExpandPageButton) ;
+		m_ComboContainer.setLayout(new FormLayout()) ;
+
+		FormData containerData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
+		m_ComboContainer.setLayoutData(containerData) ;
+
+		FormData comboData = FormDataHelper.anchorTopLeft(0) ;
 		comboData.right = new FormAttachment(m_Buttons) ;
 		m_CommandCombo.setLayoutData(comboData) ;
 
-		FormData buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
+		FormData buttonData = FormDataHelper.anchorTop(0) ;
 		buttonData.left = null ;
 		m_Buttons.setLayoutData(buttonData) ;
-		
-/*		
-		FormData buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
-		buttonData.left = null ;
-		buttonData.right = new FormAttachment(m_ExpandAllButton) ;
-		m_ExpandPageButton.setLayoutData(buttonData) ;
-
-		buttonData = top ? FormDataHelper.anchorTop(0) : FormDataHelper.anchorBottom(0) ;
-		buttonData.left = null ;
-		m_ExpandAllButton.setLayoutData(buttonData) ;
-*/
 	}
 
 	/********************************************************************************************
@@ -584,7 +577,8 @@ public class TreeTraceView extends AbstractComboView
 		m_Tree.setRedraw(false) ;
 		
 		// For debugging
-		String message = xmlParent.GenerateXMLString(true) ;
+		//String message = xmlParent.GenerateXMLString(true) ;
+		//System.out.println(message) ;
 		
 		int nChildren = xmlParent.GetNumberChildren() ;
 		

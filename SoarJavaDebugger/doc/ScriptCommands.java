@@ -41,7 +41,7 @@ public class ScriptCommands
 		m_Frame = frame ;
 		m_Document = doc ;
 	}
-	
+		
 	// Remove an existing view: clear <framename> <viewname>
 	protected Object executeClearView(String[] tokens)
 	{
@@ -590,6 +590,12 @@ public class ScriptCommands
 		if (first.equals("demo"))
 		{
 			m_Frame.loadDemo(new java.io.File(tokens[1], tokens[2]), echoCommand) ;
+			return null ;
+		}
+		
+		if (first.equals("loadsource"))
+		{
+			m_Frame.loadSource() ;
 			return null ;
 		}
 		

@@ -34,11 +34,21 @@ public class SoarCommands
 	public String getPrintCommand(String arg)  					{ return "print " + arg ; }
 	public String getPrintDepthCommand(String arg, int depth)  	{ return "print --depth " + depth + " " + arg ; }
 	public String getPrintInternalCommand(String arg)  			{ return "print --internal " + arg ; }
+	public String getPrintProductionsCommand()					{ return "print --all" ; }
+	public String getPrintChunksCommand()						{ return "print --chunks" ; }
+	public String getPrintJustificationsCommand()				{ return "print --justifications" ; }
+	public String getPrintStackCommand()						{ return "print --stack" ; }
+	public String getPrintStateCommand()						{ return "print <s>" ; }
+	public String getPrintOperatorCommand()						{ return "print <o>" ; }
+	public String getPrintTopStateCommand()						{ return "print <ts>" ; }
+	public String getPrintSuperStateCommand()					{ return "print <ss>" ; }
+	
 	public String getExciseCommand(String arg) 					{ return "excise " + arg ; }
 	public String getExciseAllCommand()							{ return "excise --all" ; }
 	public String getExciseChunksCommand()						{ return "excise --chunks" ; }
 	public String getExciseTaskCommand()						{ return "excise --task" ; }
 	public String getExciseUserCommand()						{ return "excise --user" ; }
+	
 	public String getPreferencesCommand(String arg) 			{ return "preferences " + arg ; }
 	public String getPreferencesNameCommand(String arg)			{ return "preferences " + arg + " --names" ; }
 	public String getMatchesCommand(String arg)					{ return "matches " + arg ; }
@@ -52,6 +62,7 @@ public class SoarCommands
 	public String getLogAppendCommand(String arg)				{ return "log --append \"" + arg + "\"" ; }
 	public String getLogCloseCommand()							{ return "log --close" ; }
 	public String getLogStatusCommand()							{ return "log --query" ; }
+	
 	public String getWatchStatusCommand()						{ return "watch" ; }
 	public String getWatchDecisionsCommand(boolean state)		{ return "watch --decisions" + (state ? "" : " remove") ; }
 	public String getWatchPhasesCommand(boolean state)			{ return "watch --phases" + (state ? "" : " remove") ; }

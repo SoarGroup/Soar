@@ -29,7 +29,7 @@ public class FileMenu
 	private MainFrame m_Frame = null ;
 	private Document  m_Document = null ;
 	
-	private AbstractAction m_LoadSource = new AbstractAction("Load source file...") { public void actionPerformed(ActionEvent e) { loadSource(e) ; } } ;
+	private AbstractAction m_LoadSource = new AbstractAction("Load source file...") { public void actionPerformed(ActionEvent e) { loadSource() ; } } ;
 	private AbstractAction m_LoadRete = new AbstractAction("Load production memory (rete)...") { public void actionPerformed(ActionEvent e) { loadRete(e) ; } } ;
 	private AbstractAction m_SaveRete = new AbstractAction("Save production memory (rete)...") { public void actionPerformed(ActionEvent e) { saveRete(e) ; } } ;
 	private AbstractAction m_LogNewFile 	 = new AbstractAction("Log output to new file...") { public void actionPerformed(ActionEvent e) { logNewFile(e) ; } } ;
@@ -77,7 +77,7 @@ public class FileMenu
 	}
 	
 	/** Load a source file */
-	private void loadSource(ActionEvent e)
+	public void loadSource()
 	{
 		String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(), new String[] { "*.soar" }, new String[] { "Soar source file (*.soar)" } , m_Frame.getAppProperties(), "SourceSave", "SourceLoad") ;
 		
