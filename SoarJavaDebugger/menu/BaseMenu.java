@@ -93,4 +93,31 @@ public class BaseMenu
 		
 		return item ;
 	}
+
+	public MenuItem addCheckedItem(final AbstractAction action, boolean checkedInitially)
+	{
+		action.setChecked(checkedInitially, false) ;
+		
+		final MenuItem item = new MenuItem(m_Menu, SWT.CHECK) ;
+		item.setText(action.getLabel()) ;
+		item.setData(action) ;
+		item.setSelection(checkedInitially) ;
+		
+		action.setMenuItem(item) ;
+		
+		// When the SWT selection occurs we fire that through the
+		// actionPerformed method of the action object
+		// (This provides a generic way to call this sort of action
+		//  so we could also add the actions to a toolbar and not
+		//  repeat all of the logic)
+		item.addSelectionListener(new SelectionAdapter () {
+			public void widgetSelected(SelectionEvent e) {
+				action.setChecked(!action.isChecked(), false) ;
+				item.setSelection(action.isChecked()) ;
+				action.actionPerformed(null) ;
+			}
+		});
+		
+		return item ;
+	}
 }

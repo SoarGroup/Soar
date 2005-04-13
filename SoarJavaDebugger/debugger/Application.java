@@ -81,14 +81,14 @@ public class Application {
 	public Application(boolean alwaysInstallLibs) {
 		try {
 			// Step 1: Install the SWT (UI) libraries
-			// BUGBUG: SWT uses platform specific libraries so we need to decide which platform we're on before
+			// SWT uses platform specific libraries so we need to decide which platform we're on before
 			// choosing which libraries to load.
-			Install(new String[] { "swt.jar", "javaw.exe.manifest", "swt-awt-win32-3062.dll", "swt-win32-3062.dll"} , "", alwaysInstallLibs) ;
+			//Install(new String[] { "swt.jar", "javaw.exe.manifest", "swt-awt-win32-3062.dll", "swt-win32-3062.dll"} , "", alwaysInstallLibs) ;
 			
 			// Step 2: Install the SML (Soar) libraries
-			// BUGBUG: Should choose the extension to match the platform we're on
-			String extension = ".dll" ;		
-			Install(new String[] { "SoarKernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
+			// NOTE: Should choose the extension to match the platform we're on
+			//String extension = ".dll" ;		
+			//Install(new String[] { "SoarKernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
 			
 			// Step 3: Insall the default layout file
 			Install(new String[] { "default-layout.xml" } , "", false) ;

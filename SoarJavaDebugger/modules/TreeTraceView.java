@@ -218,30 +218,15 @@ public class TreeTraceView extends AbstractComboView
 		// be several lines up.  So we need to collect the text from the previous <n> lines,
 		// join it together (with spaces between the lines) and adjust the selection point
 		// to account for all this.
+		// For simplicity we'll just search up for the last <n> items from this one and collect
+		// the text together.
+		// BUGBUG: Still need to implement this.
 		
 		// Now take the text and the position and run our regular parse to figure out
 		// what type of thing the user clicked on (e.g. a production/wme etc.)
 		ParseSelectedText selection = new ParseSelectedText(text, selectionPoint) ;
 		
 		return selection.getParsedObject() ;
-	}
-
-	protected void rightButtonPressed(MouseEvent event)
-	{
-		/*
-		m_Tree.addListener (SWT.MouseDown, new Listener () {
-			public void handleEvent (Event event) {
-				Rectangle clientArea = table.getClientArea ();
-				Point pt = new Point (event.x, event.y);
-				int index = table.getTopIndex ();
-				while (index < table.getItemCount ()) {
-					boolean visible = false;
-					final TableItem item = table.getItem (index);
-					for (int i=0; i<table.getColumnCount (); i++) {
-						Rectangle rect = item.getBounds (i);
-						if (rect.contains (pt)) {
-						*/
-		
 	}
 	
 	protected void expandPage(boolean state)
