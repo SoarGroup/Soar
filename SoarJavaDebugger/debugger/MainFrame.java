@@ -542,7 +542,8 @@ public class MainFrame
 		m_FileMenu.loadSource() ;
 	}
 	
-	public FileMenu getFileMenu() { return m_FileMenu ; }
+	public FileMenu   getFileMenu() { return m_FileMenu ; }
+	public KernelMenu getKernelMenu() { return m_KernelMenu ; }
 	
 	/***************************************************************************
 	 * 

@@ -18,6 +18,7 @@ import sml.Agent;
 import sml.Kernel;
 
 import debugger.MainFrame;
+import dialogs.KernelLocationDialog;
 import dialogs.RemoteDialog;
 import doc.Document;
 
@@ -34,10 +35,11 @@ public class KernelMenu
 	private Document m_Document = null ;
 	private MainFrame m_Frame	= null ;
 
-	private AbstractAction m_StartKernel      = new AbstractAction("Create new local Soar Kernel instance")		{ public void actionPerformed(ActionEvent e) { startKernelPerformed(e) ; } } ;
-	private AbstractAction m_StopKernel       = new AbstractAction("Delete local Soar Kernel instance") 			{ public void actionPerformed(ActionEvent e) { stopKernelPerformed(e) ; } } ;
-	private AbstractAction m_RemoteConnect 	  = new AbstractAction("Connect to remote Soar...") 		{ public void actionPerformed(ActionEvent e) { remoteConnectPerformed(e) ; } } ;
-	private AbstractAction m_RemoteDisconnect = new AbstractAction("Disconnect from remote Soar") 		{ public void actionPerformed(ActionEvent e) { remoteDisconnectPerformed(e) ; } } ;
+	private AbstractAction m_StartKernel      = new AbstractAction("Create new local Soar Kernel instance")	{ public void actionPerformed(ActionEvent e) { startKernelPerformed(e) ; } } ;
+	private AbstractAction m_StopKernel       = new AbstractAction("Delete local Soar Kernel instance") 	{ public void actionPerformed(ActionEvent e) { stopKernelPerformed(e) ; } } ;
+	private AbstractAction m_RemoteConnect 	  = new AbstractAction("Connect to remote Soar...") 			{ public void actionPerformed(ActionEvent e) { remoteConnectPerformed(e) ; } } ;
+	private AbstractAction m_RemoteDisconnect = new AbstractAction("Disconnect from remote Soar") 			{ public void actionPerformed(ActionEvent e) { remoteDisconnectPerformed(e) ; } } ;
+	private AbstractAction m_KernelLocation   = new AbstractAction("Set the path to the Kernel...") 			{ public void actionPerformed(ActionEvent e) { setKernelLocation() ; } } ;
 
 	/** Create this menu */
 	public static KernelMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
@@ -60,6 +62,8 @@ public class KernelMenu
 		menu.addSeparator() ;
 		menu.add(m_StartKernel) ;
 		menu.add(m_StopKernel) ;
+		menu.addSeparator() ;
+		menu.add(m_KernelLocation) ;
 
 		updateMenu() ;
 		
@@ -75,6 +79,12 @@ public class KernelMenu
 		m_RemoteDisconnect.setEnabled(m_Document.isConnected() && m_Document.isRemote()) ;
 	}
 
+	public String setKernelLocation()
+	{
+		String path = KernelLocationDialog.showDialog(m_Frame, "Set the path to the Soar kernel") ;
+		return path ;
+	}
+	
 	private void startKernelPerformed(ActionEvent e)
 	{
 		// Start a kernel and create a first agent

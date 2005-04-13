@@ -64,7 +64,7 @@ public class DemoMenu
 	private AbstractAction m_MacPlanning = new AbstractAction("Missionaries Planning") 
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("mac", "mac-planning.soar")) ; } } ;
 			
-    private AbstractAction m_DemoPathItem  	= new AbstractAction("Set the library path (contains the demos)...")	{ public void actionPerformed(ActionEvent e) { setLibraryPath() ; } } ;
+//    private AbstractAction m_DemoPathItem  	= new AbstractAction("Set the library path (contains the demos)...")	{ public void actionPerformed(ActionEvent e) { setLibraryPath() ; } } ;
 
 	/** Create this menu */
 	public static DemoMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
@@ -105,8 +105,6 @@ public class DemoMenu
 		BaseMenu water = menu.addSubmenu("Water Jug") ;
 		water.add(m_Waterjug) ;
 		water.add(m_Waterjug_Lookahead) ;
-		menu.addSeparator() ;
-		menu.add(m_DemoPathItem) ;
 
 		updateMenu() ;
 		
@@ -138,7 +136,12 @@ public class DemoMenu
 		
 		boolean done = false ;
 		File filePath = null ;
-		
+
+		String libraryPath = getLibraryLocation() ;
+		File demoPath = new File(libraryPath, "demos") ;
+		filePath = new File(demoPath, filename.getPath()) ;
+
+		/*
 		while (!done)
 		{
 			String libraryPath = getLibraryLocation() ;
@@ -147,7 +150,7 @@ public class DemoMenu
 	
 			if (!filePath.exists())
 			{
-				int reply = m_Frame.ShowMessageBox("Failed to find demo", "Could not find the file " + filePath + "\nWould you like to set the library path (which contains the demos folder) now?", SWT.YES | SWT.NO ) ;
+				int reply = m_Frame.ShowMessageBox("Failed to find demo", "Could not find the file " + filePath + "\nWould you like to set the library path (which should contain the demos folder) now?", SWT.YES | SWT.NO ) ;
 				if (reply == SWT.YES)
 				{
 					boolean ok = setLibraryPath() ;
@@ -168,6 +171,7 @@ public class DemoMenu
 				done = true ;
 			}
 		}
+		*/
 		
 		String commandLine = m_Document.getSoarCommands().getSourceCommand(filePath.getPath()) ;
 
@@ -219,7 +223,25 @@ public class DemoMenu
 			m_Frame.ShowMessageBox("No kernel running", "Need to have Soar running before changing the library path (its stored inside the kernel)") ;
 			return false ;
 		}
+
+		String newPath = m_Frame.getKernelMenu().setKernelLocation() ;
+		if (newPath == null)
+			return false ;
+
+		// The library path is the parent of the kernel DLL (at least with our current structure)
+		File path = new File(newPath) ;
+		String libPath = path.getParent() ;
+
+		if (libPath == null)
+			return false ;
+
+		String setLocation = m_Document.getSoarCommands().setLibraryLocationCommand(libPath) ;
+		m_Frame.executeCommandPrimeView(setLocation, true) ;
 		
+		return true ;
+
+
+		/*
 		String currentLocation = getLibraryLocation() ;
 		
 		DirectoryDialog folderDialog = new DirectoryDialog(m_Frame.getShell(), 0) ;
@@ -240,6 +262,7 @@ public class DemoMenu
 //		m_Frame.setAppProperty("DemoMenu.Library", setLocation) ;
 		
 		return true ;
+		*/
 	}
 
 }

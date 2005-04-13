@@ -19,6 +19,7 @@ import manager.* ;
 import modules.TraceView;
 import modules.TreeTraceView;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -272,11 +273,31 @@ public class Document
 			throw new IllegalStateException("We've already started the kernel") ;
 		}
 
+		MainFrame frame = getFirstFrame() ;
+		String kernelSML = "SoarKernelSML" ;
+		String libPath = null ;
+
+		if (frame != null)
+		{
+			// Look up the name of the DLL to use if the user has set it (via a dialog)
+			String path = frame.getAppStringProperty("Kernel.Location") ;
+
+			if (path != null)
+			{
+				// Adopt this as the DLL to load
+				kernelSML = path ;
+				
+				// Extract the path to the DLL and use that as the set-library-location path
+				File filePath = new File(path) ;
+				libPath = filePath.getParent() ;
+			}
+		}
+		
 		// Create the kernel
 		// We're use "InNewThread" so environments can remotely connect to the debugger and run
 		// inside us if they wish (and without us having to do work to support that by calling
 		// GetIncomingCommands() and pumping for incoming events).
-		m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", portToListenOn) ;
+		m_Kernel = Kernel.CreateKernelInNewThread(kernelSML, portToListenOn) ;
 
 		// This is a local kernel
 		m_IsRemote = false ;
@@ -284,11 +305,15 @@ public class Document
 		if (m_Kernel.HadError())
 		{
 			// Get the error and then kill off this kernel instance
-			String errorMsg = m_Kernel.GetLastErrorDescription() ;
+			String errorMsg = "Tried to load Soar kernel from " + kernelSML + "\n\nError message: " + m_Kernel.GetLastErrorDescription() ;
 			m_Kernel.delete() ;
 			m_Kernel = null ;
 			
-			throw new IllegalStateException("Error initializing kernel " + errorMsg) ;
+			if (frame != null)
+			{
+				frame.ShowMessageBox("Error loading local Soar kernel", errorMsg) ;
+				return null ;
+			}
 		}
 
 		// Let our listeners know about the new kernel
@@ -299,6 +324,22 @@ public class Document
 		
 		// Start with an agent...without this a kernel's not much use.
 		Agent agent = createAgent("soar1") ;
+		
+		if (frame != null && libPath != null)
+		{
+			final MainFrame mainFrame = frame ;
+			final String libraryPath = libPath ;
+			
+			// We need to wait until the display has had a chance to hear the agent
+			// being added.  I think executing this asynchronously will let that happen.
+			frame.getDisplay().asyncExec(new Runnable()
+			{
+				public void run()
+				{
+					mainFrame.executeCommandPrimeView(getSoarCommands().setLibraryLocationCommand(libraryPath), true) ;
+				}
+			}) ;
+		}
 		
 		return agent ;
 	}
@@ -561,6 +602,9 @@ public class Document
 	 */
 	protected String sendAgentCommandGeneral(Agent agent, String commandLine, AnalyzeXML response)
 	{
+		if (!isConnected())
+			return "Error: No Soar kernel is running.  Need to start one before executing commands." ;
+		
 		if (agent == null)
 			return "Error: Agent is missing.  Need to create one before executing commands" ;
 
