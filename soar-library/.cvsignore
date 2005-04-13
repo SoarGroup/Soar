@@ -8,3 +8,9 @@ TestCommandLineInterface.exe
 TestConnectionSML.exe
 SoarKernelSML.dll
 ElementXML.dll
+TestClientSMLd.exe
+TestCommandLineInterfaced.exe
+TestConnectionSMLd.exe
+towersSMLd.exe
+testclientsml-success.txt
+towers-sml-success.txt
