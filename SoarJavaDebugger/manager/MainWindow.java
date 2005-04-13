@@ -359,7 +359,7 @@ public class MainWindow
   	public void useDefaultLayout()
   	{
   		// We load the default layout as a file now.
-  		boolean ok = m_Frame.loadLayoutFile("default-layout.xml", false) ;
+  		boolean ok = m_Frame.loadLayoutFile("default-layout.dlf", false) ;
 
   		// If for some reason this fails (really shouldn't happen)
   		// then we'll use an internal layout as a fall back.

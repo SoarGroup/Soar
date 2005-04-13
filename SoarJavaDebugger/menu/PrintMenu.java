@@ -32,7 +32,7 @@ public class PrintMenu
 	private AbstractAction m_PrintProductions = new AbstractAction("Print all productions")  { public void actionPerformed(ActionEvent e) { printProductions(e) ; } } ;
 	private AbstractAction m_PrintChunks      = new AbstractAction("Print all chunks")  { public void actionPerformed(ActionEvent e) { printChunks(e) ; } } ;
 	private AbstractAction m_PrintJustifications = new AbstractAction("Print all justifications")  { public void actionPerformed(ActionEvent e) { printJustifications(e) ; } } ;
-	private AbstractAction m_PrintStack = new AbstractAction("Print state (goal) stack")  { public void actionPerformed(ActionEvent e) { printStack(e) ; } } ;
+	private AbstractAction m_PrintStack = new AbstractAction("Print goal/state stack")  { public void actionPerformed(ActionEvent e) { printStack(e) ; } } ;
 	private AbstractAction m_PrintState = new AbstractAction("Print state")  { public void actionPerformed(ActionEvent e) { printState(e) ; } } ;
 	private AbstractAction m_PrintOperator = new AbstractAction("Print operator")  { public void actionPerformed(ActionEvent e) { printOperator(e) ; } } ;
 	private AbstractAction m_PrintTopState = new AbstractAction("Print top state")  { public void actionPerformed(ActionEvent e) { printTopState(e) ; } } ;

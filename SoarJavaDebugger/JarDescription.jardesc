@@ -22,6 +22,7 @@
         <file path="/SoarJavaDebugger/ElementXML.dll"/>
         <file path="/SoarJavaDebugger/swt-awt-win32-3062.dll"/>
         <file path="/SoarJavaDebugger/javaw.exe.manifest"/>
+        <file path="/SoarJavaDebugger/default-layout.dlf"/>
         <javaElement handleIdentifier="=SoarJavaDebugger/&lt;sml"/>
         <javaElement handleIdentifier="=SoarJavaDebugger/&lt;modules"/>
         <file path="/SoarJavaDebugger/swt-win32-3062.dll"/>
@@ -33,6 +34,5 @@
         <javaElement handleIdentifier="=SoarJavaDebugger/&lt;doc.events"/>
         <file path="/SoarJavaDebugger/SoarKernelSML.dll"/>
         <file path="/SoarJavaDebugger/swt.jar"/>
-        <file path="/SoarJavaDebugger/default-layout.xml"/>
     </selectedElements>
 </jardesc>

@@ -36,9 +36,8 @@ public class FileMenu
 	private AbstractAction m_LogExistingFile = new AbstractAction("Append log output to existing file...") { public void actionPerformed(ActionEvent e) { logAppendFile(e) ; } } ;
 	private AbstractAction m_LogClose = new AbstractAction("Turn off logging") { public void actionPerformed(ActionEvent e) { logClose(e) ; } } ;
 	private AbstractAction m_LogStatus = new AbstractAction("Logging status")   { public void actionPerformed(ActionEvent e) { logStatus(e) ; } } ;
-	private AbstractAction m_Load 	 = new AbstractAction("Load layout...") { public void actionPerformed(ActionEvent e) { loadPerformed(e) ; } } ;
-	private AbstractAction m_Save  	 = new AbstractAction("Save layout...") { public void actionPerformed(ActionEvent e) { savePerformed(e) ; } } ;
-	private AbstractAction m_Default = new AbstractAction("Use Default layout") { public void actionPerformed(ActionEvent e) { useDefaultPerformed(e) ; } } ;
+	private AbstractAction m_Load 	 = new AbstractAction("Load window layout...") { public void actionPerformed(ActionEvent e) { loadPerformed(e) ; } } ;
+	private AbstractAction m_Save  	 = new AbstractAction("Save window layout...") { public void actionPerformed(ActionEvent e) { savePerformed(e) ; } } ;
 	private AbstractAction m_Exit 	 = new AbstractAction("Exit") 			{ public void actionPerformed(ActionEvent e) { exitPerformed(e) ; } } ;
 
 	/** Create this menu */
@@ -69,7 +68,6 @@ public class FileMenu
 		menu.addSeparator() ;
 		menu.add(m_Load) ;
 		menu.add(m_Save) ;
-		menu.add(m_Default) ;
 		menu.addSeparator() ;
 		menu.add(m_Exit) ;
 		
@@ -157,9 +155,9 @@ public class FileMenu
 	}
 
 	/** Load a new window layout */
-	private void loadPerformed(ActionEvent e)
+	public void loadPerformed(ActionEvent e)
 	{
-		String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(), new String[] { "*.xml" }, new String[] { "Debugger Layout file (*.xml)" } , m_Frame.getAppProperties(), "SaveFile", "LoadFile") ;
+		String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(), new String[] { "*.dlf" }, new String[] { "Debugger Layout file (*.dlf)" } , m_Frame.getAppProperties(), "SaveFile", "LoadFile") ;
 		
 		if (filename != null)
 		{
@@ -176,20 +174,12 @@ public class FileMenu
 	}
 
 	/** Save the current window layout */
-	private void savePerformed(ActionEvent e)
+	public void savePerformed(ActionEvent e)
 	{
-		String filename = SaveLoad.SaveFileDialog(m_Frame.getWindow(), new String[] { "*.xml" }, new String[] { "Debugger Layout file (*.xml)" }, m_Frame.getAppProperties(), "SaveFile", "LoadFile") ;
+		String filename = SaveLoad.SaveFileDialog(m_Frame.getWindow(), new String[] { "*.dlf" }, new String[] { "Debugger Layout file (*.dlf)" }, m_Frame.getAppProperties(), "SaveFile", "LoadFile") ;
 
 		if (filename != null)
 			m_Frame.saveLayoutFile(filename) ;
-	}
-
-	/** Change the window layout back to the default */
-	private void useDefaultPerformed(ActionEvent e)
-	{
-		MainFrame frame = m_Frame ;
-		
-		frame.useDefaultLayout() ;
 	}
 
 	/** Change the window layout back to the default */

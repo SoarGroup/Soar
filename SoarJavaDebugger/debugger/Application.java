@@ -91,7 +91,7 @@ public class Application {
 			//Install(new String[] { "SoarKernelSML", "ElementXML", "Java_sml_ClientInterface" }, extension, alwaysInstallLibs) ;
 			
 			// Step 3: Insall the default layout file
-			Install(new String[] { "default-layout.xml" } , "", false) ;
+			Install(new String[] { "default-layout.dlf", "default-text.dlf" } , "", false) ;
 
 			// Start the SWT version of the application (we used to have a Swing version too)
 			SWTApplication swtApp = new SWTApplication() ;

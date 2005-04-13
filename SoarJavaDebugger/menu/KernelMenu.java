@@ -34,8 +34,8 @@ public class KernelMenu
 	private Document m_Document = null ;
 	private MainFrame m_Frame	= null ;
 
-	private AbstractAction m_StartKernel      = new AbstractAction("Create new local Soar Kernel")		{ public void actionPerformed(ActionEvent e) { startKernelPerformed(e) ; } } ;
-	private AbstractAction m_StopKernel       = new AbstractAction("Delete local Soar Kernel") 			{ public void actionPerformed(ActionEvent e) { stopKernelPerformed(e) ; } } ;
+	private AbstractAction m_StartKernel      = new AbstractAction("Create new local Soar Kernel instance")		{ public void actionPerformed(ActionEvent e) { startKernelPerformed(e) ; } } ;
+	private AbstractAction m_StopKernel       = new AbstractAction("Delete local Soar Kernel instance") 			{ public void actionPerformed(ActionEvent e) { stopKernelPerformed(e) ; } } ;
 	private AbstractAction m_RemoteConnect 	  = new AbstractAction("Connect to remote Soar...") 		{ public void actionPerformed(ActionEvent e) { remoteConnectPerformed(e) ; } } ;
 	private AbstractAction m_RemoteDisconnect = new AbstractAction("Disconnect from remote Soar") 		{ public void actionPerformed(ActionEvent e) { remoteDisconnectPerformed(e) ; } } ;
 
@@ -93,7 +93,7 @@ public class KernelMenu
 	{
 		if (m_Document.isConnected())
 		{
-			int result = m_Frame.ShowMessageBox("Kernel running", "You need are currently running a local Soar kernel.\nThis needs to be shutdown before connecting to a remote Soar.\nWould you like to shutdown the local kernel now?", SWT.ICON_WARNING | SWT.OK | SWT.CANCEL) ;
+			int result = m_Frame.ShowMessageBox("Kernel running", "You need are currently running a local Soar kernel.\nThis needs to be shutdown before connecting to a remote Soar.\n\nWould you like to shutdown the local kernel now?", SWT.ICON_WARNING | SWT.OK | SWT.CANCEL) ;
 			
 			if (result == SWT.CANCEL)
 				return ;

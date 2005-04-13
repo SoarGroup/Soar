@@ -59,7 +59,7 @@ public class MainFrame
 	public static final FontData kDefaultFontData = new FontData("Courier New", 8, SWT.NORMAL) ;
 
 	private static final String kNoAgent = "<no agent>";
-	private static String m_WindowLayoutFile = "SoarDebuggerWindows.xml";
+	private static String m_WindowLayoutFile = "SoarDebuggerWindows.dlf";
 
 	private Composite m_Parent = null;
 
@@ -78,6 +78,7 @@ public class MainFrame
 	private CommandsMenu 	m_CommandsMenu = null ;
 	private DebugLevelMenu 	m_DebugLevelMenu = null ;
 	private PrintMenu		m_PrintMenu = null ;
+	private LayoutMenu		m_LayoutMenu = null ;
 
 	/**
 	 * The main document object -- represents the Soar process. There is only
@@ -541,6 +542,8 @@ public class MainFrame
 		m_FileMenu.loadSource() ;
 	}
 	
+	public FileMenu getFileMenu() { return m_FileMenu ; }
+	
 	/***************************************************************************
 	 * 
 	 * Initializes the frame and all of its children.
@@ -555,8 +558,9 @@ public class MainFrame
 		m_EditMenu = menu.EditMenu.createMenu(this, getDocument(), "Edit", 'E');
 		m_PrintMenu    = PrintMenu.createMenu(this, getDocument(), "Print", 'P') ;
 		m_CommandsMenu = CommandsMenu.createMenu(this, getDocument(), "Commands", 'C');
-		m_DebugLevelMenu = DebugLevelMenu.createMenu(this, getDocument(), "Debug Level", 'L');
-		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "Demos", 'D');
+		m_DebugLevelMenu = DebugLevelMenu.createMenu(this, getDocument(), "Debug Level", 'D');
+		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "Demos", 'M');
+		m_LayoutMenu = LayoutMenu.createMenu(this, getDocument(), "Layout", 'L') ;
 		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "Agents", 'A');
 		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "Kernel", 'K');
 
