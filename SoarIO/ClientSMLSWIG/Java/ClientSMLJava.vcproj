@@ -44,7 +44,7 @@
 				Name="VCPostBuildEventTool"
 				Description="Build Java files as a sanity check, copy dll to release point"
 				CommandLine="echo on
-%JAVA_BIN%/javac $(InputDir)*.java
+&quot;%JAVA_BIN%/javac&quot; *.java
 copy Java_sml_ClientInterface.dll ..\..\bin /Y
 "/>
 			<Tool
@@ -101,7 +101,7 @@ del *.class
 				Name="VCPostBuildEventTool"
 				Description="Build Java files as a sanity check, copy dll to release point"
 				CommandLine="echo on
-%JAVA_BIN%/javac $(InputDir)*.java
+&quot;%JAVA_BIN%/javac&quot; *.java
 copy Java_sml_ClientInterface.dll ..\..\bin /Y
 "/>
 			<Tool

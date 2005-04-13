@@ -45,7 +45,7 @@
 				Description="Copy to release point, make Tcl package"
 				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\bin /Y
 cd ..\..\bin
-%TCL_BIN%\tclsh makeTclSMLPackage.tcl
+&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
 move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
 move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
