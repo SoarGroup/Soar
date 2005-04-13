@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Debug"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
@@ -25,6 +25,8 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"/>
@@ -32,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\bin\TestClientSML.exe"
+				OutputFile="$(OutDir)\$(ProjectName)d.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/TestClientSML.pdb"
@@ -41,7 +43,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy build\*.exe ..\..\..\soar-library"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -61,8 +64,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Release"
 			ConfigurationType="1"
 			CharacterSet="2">
 			<Tool
@@ -71,6 +74,8 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
@@ -78,7 +83,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\bin\TestClientSML.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
 				SubSystem="1"
@@ -88,7 +93,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy build\*.exe ..\..\..\soar-library"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

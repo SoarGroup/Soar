@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\bin"
-			IntermediateDirectory="src\Debug"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Debug"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -26,6 +26,8 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="4"/>
@@ -33,17 +35,18 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\bin\ElementXML.dll"
+				OutputFile="$(OutDir)\$(ProjectName)d.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/ElementXML.pdb"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
 				SubSystem="2"
-				ImportLibrary="lib/$(TargetName).lib"
+				ImportLibrary="$(OutDir)\$(ProjectName)d.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy build\*.dll ..\..\soar-library"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -63,8 +66,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\bin"
-			IntermediateDirectory="src\Release"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Release"
 			ConfigurationType="2"
 			CharacterSet="2">
 			<Tool
@@ -73,6 +76,8 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
@@ -80,20 +85,21 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\bin\ElementXML.dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
-				GenerateDebugInformation="TRUE"
+				GenerateDebugInformation="FALSE"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="lib/$(TargetName).lib"
+				ImportLibrary="$(OutDir)\$(ProjectName).lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy build\*.dll ..\..\soar-library"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

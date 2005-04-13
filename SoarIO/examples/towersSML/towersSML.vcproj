@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Debug"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -26,12 +26,12 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Debug/towersSGIO.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
-				BrowseInformation="1"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=""
+				AssemblerListingLocation="$(IntDir)/"
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="TRUE"
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib"
-				OutputFile="..\..\bin\towersSML.exe"
+				OutputFile="$(OutDir)\$(ProjectName)d.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -55,7 +55,8 @@
 				TypeLibraryName=".\Debug/towersSGIO.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy build\*.exe ..\..\..\soar-library"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -77,8 +78,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Release"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -92,11 +93,11 @@
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderFile=".\Release/towersSGIO.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=""
+				AssemblerListingLocation="$(IntDir)/"
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -106,7 +107,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="odbc32.lib odbccp32.lib"
-				OutputFile="$(SolutionDir)\bin\towersSML.exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
@@ -120,7 +121,8 @@
 				TypeLibraryName=".\Release/towersSGIO.tlb"
 				HeaderFileName=""/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="copy build\*.exe ..\..\..\soar-library"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

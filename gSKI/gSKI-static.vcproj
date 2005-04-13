@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="bin"
-			IntermediateDirectory="bin/Debug"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)/Debug-static"
 			ConfigurationType="4"
 			UseOfMFC="1"
 			CharacterSet="2">
@@ -23,7 +23,7 @@
 				AdditionalOptions="
 "
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)include&quot;;&quot;$(ProjectDir)lib_src\pcre-4.5&quot;;&quot;$(ProjectDir)..\SoarKernel\include&quot;"
+				AdditionalIncludeDirectories="include;&quot;lib_src\pcre-4.5&quot;;..\SoarKernel\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;GSKI;NO_MEGA_UNIT_TESTS;GSKI_DEBUG_RELEASE_IMPL"
 				GeneratePreprocessedFile="0"
 				KeepComments="FALSE"
@@ -33,7 +33,9 @@
 				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(IntDir)/$(ProjectName).pdb"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="4"
@@ -42,12 +44,12 @@
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCLibrarianTool"
+				OutputFile="$(OutDir)\$(ProjectName)d.lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\$(TargetFileName) ..\SoarIO\bin"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -66,8 +68,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="bin"
-			IntermediateDirectory="$(OutDir)/Release"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)/Release-static"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			CharacterSet="2">
@@ -76,7 +78,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="TRUE"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)include&quot;;&quot;$(ProjectDir)lib_src\pcre-4.5&quot;;&quot;$(ProjectDir)..\SoarKernel\include&quot;"
+				AdditionalIncludeDirectories="include;&quot;lib_src\pcre-4.5&quot;;..\SoarKernel\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;GSKI;NO_MEGA_UNIT_TESTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -84,19 +86,21 @@
 				ForceConformanceInForLoopScope="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="0"
-				ProgramDataBaseFileName="$(IntDir)/$(ProjectName).pdb"
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="FALSE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCLibrarianTool"
+				OutputFile="$(OutDir)\$(ProjectName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\$(TargetFileName) ..\SoarIO\bin"/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

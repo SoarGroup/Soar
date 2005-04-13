@@ -14,7 +14,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="lib"
+			OutputDirectory="build"
 			IntermediateDirectory="$(OutDir)/Release"
 			ConfigurationType="4"
 			UseOfMFC="0"
@@ -27,13 +27,14 @@
 				AdditionalIncludeDirectories="include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;USE_TCL"
 				StringPooling="TRUE"
+				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile=".\Release/SoarKernelSource.pch"
-				AssemblerListingLocation="$(OutDir)/Release"
-				ObjectFile="$(OutDir)/Release"
-				ProgramDataBaseFileName="$(OutDir)/Release"
+				PrecompiledHeaderFile=""
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -41,7 +42,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\SoarKernelSource.lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -66,7 +67,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="lib"
+			OutputDirectory="build"
 			IntermediateDirectory="$(OutDir)/Debug"
 			ConfigurationType="4"
 			UseOfMFC="0"
@@ -78,15 +79,16 @@
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_TCL"
+				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough=""
-				PrecompiledHeaderFile=".\Debug/SoarKernelSource.pch"
-				AssemblerListingLocation="$(OutDir)/Debug"
-				ObjectFile="$(OutDir)/Debug"
-				ProgramDataBaseFileName="$(OutDir)/Debug/SoarKernelSource.pdb"
-				BrowseInformation="1"
+				PrecompiledHeaderFile=""
+				AssemblerListingLocation="$(IntDir)\"
+				ObjectFile="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\"
+				BrowseInformation="0"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="FALSE"
@@ -96,7 +98,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\SoarKernelSource_md.lib"
+				OutputFile="$(OutDir)\$(ProjectName)d.lib"
 				AdditionalLibraryDirectories=""
 				SuppressStartupBanner="TRUE"/>
 			<Tool
@@ -125,96 +127,8 @@
 	</References>
 	<Files>
 		<Filter
-			Name="ExternHeaders"
-			Filter="">
-			<File
-				RelativePath="..\include\agent.h">
-			</File>
-			<File
-				RelativePath="..\include\callback.h">
-			</File>
-			<File
-				RelativePath="..\include\chunk.h">
-			</File>
-			<File
-				RelativePath="..\include\decide.h">
-			</File>
-			<File
-				RelativePath="..\include\explain.h">
-			</File>
-			<File
-				RelativePath="..\include\gdatastructs.h">
-			</File>
-			<File
-				RelativePath="..\include\gski_event_system_data.h">
-			</File>
-			<File
-				RelativePath="..\include\gski_event_system_functions.h">
-			</File>
-			<File
-				RelativePath="..\include\gsysparam.h">
-			</File>
-			<File
-				RelativePath="..\include\init_soar.h">
-			</File>
-			<File
-				RelativePath="..\include\instantiations.h">
-			</File>
-			<File
-				RelativePath="..\include\io.h">
-			</File>
-			<File
-				RelativePath="..\include\kernel.h">
-			</File>
-			<File
-				RelativePath="..\include\lexer.h">
-			</File>
-			<File
-				RelativePath="..\include\mem.h">
-			</File>
-			<File
-				RelativePath="..\include\parser.h">
-			</File>
-			<File
-				RelativePath="..\include\print.h">
-			</File>
-			<File
-				RelativePath="..\include\production.h">
-			</File>
-			<File
-				RelativePath="..\include\recmem.h">
-			</File>
-			<File
-				RelativePath="..\include\rete.h">
-			</File>
-			<File
-				RelativePath="..\include\rhsfun.h">
-			</File>
-			<File
-				RelativePath="..\include\rhsfun_math.h">
-			</File>
-			<File
-				RelativePath="..\include\scheduler.h">
-			</File>
-			<File
-				RelativePath="..\include\soarkernel.h">
-			</File>
-			<File
-				RelativePath="..\include\symtab.h">
-			</File>
-			<File
-				RelativePath="..\include\tempmem.h">
-			</File>
-			<File
-				RelativePath="..\include\trace.h">
-			</File>
-			<File
-				RelativePath="..\include\wmem.h">
-			</File>
-		</Filter>
-		<Filter
 			Name="Source files"
-			Filter="">
+			Filter=".cpp">
 			<File
 				RelativePath=".\src\agent.cpp">
 				<FileConfiguration
@@ -439,9 +353,6 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)/$(InputName)1.obj"/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\src\osupport.h">
 			</File>
 			<File
 				RelativePath=".\src\parser.cpp">
@@ -686,7 +597,7 @@
 		</Filter>
 		<Filter
 			Name="Header files"
-			Filter="">
+			Filter=".h">
 			<File
 				RelativePath=".\include\agent.h">
 			</File>
@@ -746,6 +657,9 @@
 			</File>
 			<File
 				RelativePath=".\include\mem.h">
+			</File>
+			<File
+				RelativePath=".\src\osupport.h">
 			</File>
 			<File
 				RelativePath=".\include\parser.h">
