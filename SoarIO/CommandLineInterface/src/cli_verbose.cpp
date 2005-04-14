@@ -42,6 +42,7 @@ bool CommandLineInterface::ParseVerbose(gSKI::IAgent* pAgent, std::vector<std::s
 				query = false;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);

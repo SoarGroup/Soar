@@ -39,6 +39,7 @@ bool CommandLineInterface::ParseWaitSNC(gSKI::IAgent* pAgent, std::vector<std::s
 				enable = true;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);

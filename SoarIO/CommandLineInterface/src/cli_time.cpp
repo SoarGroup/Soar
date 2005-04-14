@@ -25,6 +25,7 @@ using namespace sml;
 bool CommandLineInterface::ParseTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// There must at least be a command
 	if (argv.size() < 2) {
+		SetErrorDetail("Please supply a command to time.");
 		return SetError(CLIError::kTooFewArgs);
 	}
 

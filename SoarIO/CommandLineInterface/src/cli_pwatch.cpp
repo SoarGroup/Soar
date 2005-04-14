@@ -45,6 +45,7 @@ bool CommandLineInterface::ParsePWatch(gSKI::IAgent* pAgent, std::vector<std::st
 				setting = true;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -71,7 +72,10 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, const std:
 	if (query) {
 		// list all productions currently being traced
 		pIter = pProductionManager->GetAllProductions(&m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (gSKI::isError(m_gSKIError)) {
+			SetErrorDetail("Error getting all productions.");
+			return SetError(CLIError::kgSKIError);
+		}
 		if (!pIter) return SetError(CLIError::kgSKIError);
 
 		int productionCount = 0;
@@ -108,7 +112,10 @@ bool CommandLineInterface::DoPWatch(gSKI::IAgent* pAgent, bool query, const std:
 	if (!pProduction) {
 		// disable tracing of all productions
 		pIter = pProductionManager->GetAllProductions(&m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (gSKI::isError(m_gSKIError)) {
+			SetErrorDetail("Error getting all productions.");
+			return SetError(CLIError::kgSKIError);
+		}
 		if (!pIter) return SetError(CLIError::kgSKIError);
 
 		for(; pIter->IsValid(); pIter->Next()) {

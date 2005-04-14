@@ -89,8 +89,10 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 				options.set(PRINT_USER);
 				break;
 			case ':':
+				SetErrorDetail("Option '" + m_pGetOpt->GetOptOpt() + "' needs an argument.");
 				return SetError(CLIError::kMissingOptionArg);
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -117,6 +119,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 				|| options.test(PRINT_USER) 
 				|| options.test(PRINT_STACK)) 
 			{
+				SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/user/stack.");
 				return SetError(CLIError::kTooManyArgs);
 			}
 			return DoPrint(pAgent, options, depth, &(argv[m_pGetOpt->GetOptind()]));

@@ -68,12 +68,21 @@ bool CommandLineInterface::DoFiringCounts(gSKI::IAgent* pAgent, const int number
 	// if we have a production, just get that one, otherwise get them all
 	if (pProduction) {
 		pIter = pProductionManager->GetProduction(pProduction->c_str());
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (gSKI::isError(m_gSKIError)) {
+			SetErrorDetail("Unable to get production: " + *pProduction);
+			return SetError(CLIError::kgSKIError);
+		}
 	} else {
 		pIter = pProductionManager->GetAllProductions(&m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (gSKI::isError(m_gSKIError)) {
+			SetErrorDetail("Unable to get all productions.");
+			return SetError(CLIError::kgSKIError);
+		}
 	}
-	if (!pIter) return SetError(CLIError::kgSKIError);
+	if (!pIter) {
+		SetErrorDetail("Unable to get production(s).");
+		return SetError(CLIError::kgSKIError);
+	}
 
 	// walk with the iter and 
 	for(; pIter->IsValid(); pIter->Next()) {

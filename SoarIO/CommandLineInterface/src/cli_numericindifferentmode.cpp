@@ -37,6 +37,7 @@ bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std
 				mode = NUMERIC_INDIFFERENT_SUM;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);

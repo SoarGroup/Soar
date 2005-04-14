@@ -45,8 +45,10 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 				break;
 
 			case ':':
+				SetErrorDetail("Option '" + m_pGetOpt->GetOptOpt() + "' needs an argument.");
 				return SetError(CLIError::kMissingOptionArg);
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -57,7 +59,10 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vec
 	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
 
 	// we need a production if full or condition given
-	if (condition) if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
+	if (condition) if (m_pGetOpt->GetAdditionalArgCount() < 1) {
+		SetErrorDetail("Production name required for that option.");
+		return SetError(CLIError::kTooFewArgs);
+	}
 
 	// we have a production
 	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoExplainBacktraces(pAgent, &argv[m_pGetOpt->GetOptind()], condition);

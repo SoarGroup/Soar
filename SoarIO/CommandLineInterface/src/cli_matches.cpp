@@ -57,6 +57,7 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 				mode = MATCHES_RETRACTIONS;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -64,7 +65,10 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 	}
 
 	// Max one additional argument and it is a production
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+		SetErrorDetail("Expected production name or nothing.");
+		return SetError(CLIError::kTooManyArgs);		
+	}
 
 	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
 		if (mode != MATCHES_ASSERTIONS_RETRACTIONS) return SetError(CLIError::kTooManyArgs);
@@ -99,7 +103,10 @@ bool CommandLineInterface::DoMatches(gSKI::IAgent* pAgent, const eMatchesMode mo
 	if (mode == MATCHES_PRODUCTION) {
 		if (!pProduction) return SetError(CLIError::kProductionRequired);
 		rete_node* prod = pKernelHack->NameToProduction(pAgent, const_cast<char*>(pProduction->c_str()));
-		if (!prod) return SetError(CLIError::kProductionNotFound);
+		if (!prod) {
+			SetErrorDetail("Production " + *pProduction);
+			return SetError(CLIError::kProductionNotFound);
+		}
 
 		AddListenerAndDisableCallbacks(pAgent);		
 		pKernelHack->PrintPartialMatchInformation(pAgent, prod, wtt);

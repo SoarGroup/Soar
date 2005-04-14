@@ -34,8 +34,10 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 				command = m_pGetOpt->GetOptArg();
 				break;
 			case ':':
+				SetErrorDetail("Option '" + m_pGetOpt->GetOptOpt() + "' needs an argument.");
 				return SetError(CLIError::kMissingOptionArg);
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -44,7 +46,10 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 
 	// If disabling, no additional argument.
 	if (disable) {
-		if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
+		if (m_pGetOpt->GetAdditionalArgCount()) {
+			SetErrorDetail("When disabling, no additional arguments are required.");
+			return SetError(CLIError::kTooManyArgs);
+		}
 		return DoAlias(&command);
 	}
 	
@@ -68,7 +73,10 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 		// list aliases
 		if (m_RawOutput) {
 			std::string result = m_Aliases.List();
-			if (!result.size()) return SetError(CLIError::kAliasNotFound);
+			if (!result.size()) {
+				SetErrorDetail("No aliases in alias database.");
+				return SetError(CLIError::kAliasNotFound);
+			}
 			m_Result << result;
 			return true;
 
@@ -91,20 +99,51 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 	}
 
 	// command needs to have a size
-	if (!pCommand || !pCommand->size()) return SetError(CLIError::kAliasNotFound);
+	if (!pCommand || !pCommand->size()) {
+		SetErrorDetail("No alias parameter received.");
+		return SetError(CLIError::kAliasNotFound);
+	}
 
 	if (!pSubstitution) {
 		// no substitution, remove
-		if (!m_Aliases.RemoveAlias(*pCommand)) return SetError(CLIError::kAliasNotFound);
+		if (!m_Aliases.RemoveAlias(*pCommand)) {
+			SetErrorDetail("Didn't find '" + *pCommand + "' in alias database.");
+			return SetError(CLIError::kAliasNotFound);
+		}
 		return true;
 	} 
 
 	// if substitution is empty, list only that alias
 	if (!pSubstitution->size()) {
-		// FIXME structured output
-		std::string result = m_Aliases.List(pCommand);
-		if (!result.size()) return SetError(CLIError::kAliasNotFound);
-		m_Result << result;
+		if (m_RawOutput) {
+			std::string result = m_Aliases.List(pCommand);
+			if (!result.size()) {
+				SetErrorDetail("Didn't find '" + *pCommand + "' in alias database.");
+				return SetError(CLIError::kAliasNotFound);
+			}
+			m_Result << result;
+		} else {
+			AliasMap::const_iterator citer = m_Aliases.GetAliasMapBegin();
+			while (citer != m_Aliases.GetAliasMapEnd()) {
+				if (citer->first == *pCommand) {
+					AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first.c_str());
+
+					std::string aliasedCommand;
+					for (std::vector<std::string>::const_iterator iter = citer->second.begin(); iter != citer->second.end(); ++iter) {
+						aliasedCommand += *iter;
+						aliasedCommand += ' ';
+					}
+					aliasedCommand = aliasedCommand.substr(0, aliasedCommand.length() - 1);
+					AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand.c_str());
+					break;
+				}
+				++citer;
+			}
+			if (citer == m_Aliases.GetAliasMapEnd()) {
+				SetErrorDetail("Didn't find '" + *pCommand + "' in alias database.");
+				return SetError(CLIError::kAliasNotFound);
+			}
+		}
 		return true;
 	}
 

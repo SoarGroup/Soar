@@ -54,6 +54,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 				mode = LOG_QUERY;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -65,7 +66,10 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 			{
 				std::string toAdd;
 				// no less than one non-option argument
-				if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
+				if (m_pGetOpt->GetAdditionalArgCount() < 1) {
+					SetErrorDetail("Provide a string to add.");
+					return SetError(CLIError::kTooFewArgs);
+				}
 
 				// move to the first non-option arg
 				std::vector<std::string>::iterator iter = argv.begin();
@@ -82,20 +86,33 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 
 		case LOG_NEW:
 			// no more than one argument, no filename == query
-			if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+				SetErrorDetail("Filename or nothing expected, enclose filename in quotes if there are spaces in the path.");
+				return SetError(CLIError::kTooManyArgs);
+			}
 			if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoLog(pAgent, mode, &argv[1]);
 			break; // no args case handled below
 
 		case LOG_NEWAPPEND:
 			// exactly one argument
-			if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
-			if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);
+			if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+				SetErrorDetail("Filename expected, enclose filename in quotes if there are spaces in the path.");
+				return SetError(CLIError::kTooManyArgs);
+			}
+
+			if (m_pGetOpt->GetAdditionalArgCount() < 1) {
+				SetErrorDetail("Please provide a filename.");
+				return SetError(CLIError::kTooFewArgs);
+			}
 			return DoLog(pAgent, mode, &argv[1]);
 
 		case LOG_CLOSE:
 		case LOG_QUERY:
 			// no arguments
-			if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
+			if (m_pGetOpt->GetAdditionalArgCount()) {
+				SetErrorDetail("No arguments when querying log status.");
+				return SetError(CLIError::kTooManyArgs);
+			}
 			break; // no args case handled below
 
 		default:
@@ -118,9 +135,18 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, cons
 
 		case LOG_NEW:
 			if (!pFilename) break; // handle as just a query
-			if (m_pLogFile) return SetError(CLIError::kLogAlreadyOpen);
+
+			if (m_pLogFile) {
+				SetErrorDetail("Currently logging to " + m_LogFilename);
+				return SetError(CLIError::kLogAlreadyOpen);
+			}
+
 			m_pLogFile = new std::ofstream(pFilename->c_str(), openmode);
-			if (!m_pLogFile) return SetError(CLIError::kLogOpenFailure);
+			if (!m_pLogFile) {
+				SetErrorDetail("Failed to open " + *pFilename);
+				return SetError(CLIError::kLogOpenFailure);
+			}
+
 			m_LogFilename = *pFilename;
 			if (pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
 			break;

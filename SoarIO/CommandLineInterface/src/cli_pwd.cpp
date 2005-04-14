@@ -15,6 +15,7 @@ bool CommandLineInterface::ParsePWD(gSKI::IAgent* pAgent, std::vector<std::strin
 
 	// No arguments to print working directory
 	if (argv.size() != 1) {
+		SetErrorDetail("pwd takes no arguments.");
 		return SetError(CLIError::kTooManyArgs);
 	}
 	return DoPWD();

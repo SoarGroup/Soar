@@ -50,13 +50,17 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 				options.set(PRODUCTION_FIND_SHOWBINDINGS);
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooFewArgs);
+	if (m_pGetOpt->GetAdditionalArgCount()) {
+		SetErrorDetail("Pattern required.");
+		return SetError(CLIError::kTooFewArgs);
+	}
 
 	if (options.none()) options.set(PRODUCTION_FIND_INCLUDE_LHS);
 

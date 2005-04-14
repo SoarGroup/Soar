@@ -36,6 +36,12 @@ const char* GetOpt::GetOptArg() {
 	return optarg;
 }
 
+std::string GetOpt::GetOptOpt() {
+	std::string optoptString;
+	optoptString = static_cast<char>(optopt);
+	return optoptString;
+}
+
 char* GetOpt::my_index (const char *str, int chr)
 {
 	while (*str)

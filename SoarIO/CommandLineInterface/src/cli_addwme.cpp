@@ -27,7 +27,10 @@ bool CommandLineInterface::ParseAddWME(gSKI::IAgent* pAgent, std::vector<std::st
 
 	bool acceptable = false;
 	if (argv.size() > (attributeIndex + 2)) {
-		if (argv[attributeIndex + 2] != "+") return SetError(CLIError::kAcceptableOrNothingExpected);
+		if (argv[attributeIndex + 2] != "+") {
+			SetErrorDetail("Got: " + argv[attributeIndex + 2]);
+			return SetError(CLIError::kAcceptableOrNothingExpected);
+		}
 		acceptable = true;
 	}
 
@@ -46,10 +49,13 @@ bool CommandLineInterface::DoAddWME(gSKI::IAgent* pAgent, const std::string& id,
 		switch (timetag) {
 			default:
 			case -1:
+				SetErrorDetail("Got: " + id);
 				return SetError(CLIError::kInvalidID);
 			case -2:
+				SetErrorDetail("Got: " + attribute);
 				return SetError(CLIError::kInvalidAttribute);
 			case -3:
+				SetErrorDetail("Got: " + value);
 				return SetError(CLIError::kInvalidValue);
 		}
 	}

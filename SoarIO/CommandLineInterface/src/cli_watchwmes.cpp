@@ -58,11 +58,13 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 						type.set(WATCH_WMES_TYPE_ADDS);
 						type.set(WATCH_WMES_TYPE_REMOVES);
 					} else {
+						SetErrorDetail("Got: " + typeString);
 						return SetError(CLIError::kInvalidWMEFilterType);
 					}
 				}
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -100,18 +102,36 @@ bool CommandLineInterface::DoWatchWMEs(gSKI::IAgent* pAgent, const eWatchWMEsMod
 		case WATCH_WMES_ADD:
 			if (!pIdString || !pAttributeString || !pValueString) return SetError(CLIError::kFilterExpected);
 			ret = pKernelHack->AddWMEFilter(pAgent, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
-			if (ret == -1) return SetError(CLIError::kInvalidID);
-			if (ret == -2) return SetError(CLIError::kInvalidAttribute);
-			if (ret == -3) return SetError(CLIError::kInvalidValue);
+			if (ret == -1) {
+				SetErrorDetail("Got: " + *pIdString);
+				return SetError(CLIError::kInvalidID);
+			}
+			if (ret == -2) {
+				SetErrorDetail("Got: " + *pAttributeString);
+				return SetError(CLIError::kInvalidAttribute);
+			}
+			if (ret == -3) {
+				SetErrorDetail("Got: " + *pValueString);
+				return SetError(CLIError::kInvalidValue);
+			}
 			if (ret == -4) return SetError(CLIError::kDuplicateWMEFilter);
 			break;
 
 		case WATCH_WMES_REMOVE:
 			if (!pIdString || !pAttributeString || !pValueString) return SetError(CLIError::kFilterExpected);
 			ret = pKernelHack->RemoveWMEFilter(pAgent, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
-			if (ret == -1) return SetError(CLIError::kInvalidID);
-			if (ret == -2) return SetError(CLIError::kInvalidAttribute);
-			if (ret == -3) return SetError(CLIError::kInvalidValue);
+			if (ret == -1) {
+				SetErrorDetail("Got: " + *pIdString);
+				return SetError(CLIError::kInvalidID);
+			}
+			if (ret == -2) {
+				SetErrorDetail("Got: " + *pAttributeString);
+				return SetError(CLIError::kInvalidAttribute);
+			}
+			if (ret == -3) {
+				SetErrorDetail("Got: " + *pValueString);
+				return SetError(CLIError::kInvalidValue);
+			}
 			if (ret == -4) return SetError(CLIError::kWMEFilterNotFound);
 			break;
 

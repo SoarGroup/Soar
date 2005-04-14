@@ -42,8 +42,10 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 				filename = m_pGetOpt->GetOptArg();
 				break;
 			case ':':
+				SetErrorDetail("Option '" + m_pGetOpt->GetOptOpt() + "' needs an argument.");
 				return SetError(CLIError::kMissingOptionArg);
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -52,7 +54,7 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 
 	// Must have a save or load operation
 	if (!save && !load) return SetError(CLIError::kMustSaveOrLoad);
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kMissingOptionArg);
+	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
 
 	return DoReteNet(pAgent, save, filename);
 }
@@ -82,10 +84,16 @@ bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, const std:
 
 	if (save) {
 		pProductionManager->SaveRete(filename.c_str(), &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (gSKI::isError(m_gSKIError)) {
+			SetErrorDetail("Error saving rete: " + filename);
+			return SetError(CLIError::kgSKIError);
+		}
 	} else {
 		pProductionManager->LoadRete(filename.c_str(), &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (gSKI::isError(m_gSKIError)) {
+			SetErrorDetail("Error loading rete: " + filename);
+			return SetError(CLIError::kgSKIError);
+		}
 	}
 
 	if (gSKI::isError(m_gSKIError)) return SetError(save ? CLIError::kReteSaveOperationFail : CLIError::kReteLoadOperationFail);

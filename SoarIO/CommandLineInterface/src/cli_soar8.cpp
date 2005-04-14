@@ -37,6 +37,7 @@ bool CommandLineInterface::ParseSoar8(gSKI::IAgent* pAgent, std::vector<std::str
 				soar8 = true;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);

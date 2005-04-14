@@ -19,9 +19,15 @@ bool CommandLineInterface::ParseOSupportMode(gSKI::IAgent* pAgent, std::vector<s
 
 	int mode = -1;
 	if (argv.size() == 2) {
-		if (!isdigit(argv[1][0])) return SetError(CLIError::kIntegerOutOfRange);
+		if (!isdigit(argv[1][0])) {
+			SetErrorDetail("Expected an integer from 0 to 4.");
+			return SetError(CLIError::kIntegerOutOfRange);
+		}
 		mode = atoi(argv[1].c_str());
-		if (mode < 0 || mode > 4) return SetError(CLIError::kIntegerOutOfRange);
+		if (mode < 0 || mode > 4) {
+			SetErrorDetail("Expected an integer from 0 to 4.");
+			return SetError(CLIError::kIntegerOutOfRange);
+		}
 	}
 
 	return DoOSupportMode(pAgent, mode);

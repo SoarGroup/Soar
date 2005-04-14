@@ -44,6 +44,7 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 				mode = INDIFFERENT_RANDOM;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);

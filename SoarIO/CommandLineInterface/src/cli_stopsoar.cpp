@@ -30,6 +30,7 @@ bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::
 				self = true;
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -52,12 +53,18 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 
 	if (self) {
 		if (!RequireAgent(pAgent)) return false;
-		if (!pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, &m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (!pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, &m_gSKIError)) {
+			SetErrorDetail("Error interrupting agent.");
+			return SetError(CLIError::kgSKIError);
+		}
 		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 		return true;
 	} else {
 		if (!RequireKernel()) return false;
-		if (!m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, &m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (!m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, &m_gSKIError)) {
+			SetErrorDetail("Error interrupting all agents.");
+			return SetError(CLIError::kgSKIError);
+		}
 		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
 		return true;
 	}

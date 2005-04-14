@@ -61,8 +61,10 @@ bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vecto
 				longFormat = false;
 				break;
 			case ':':
+				SetErrorDetail("Option '" + m_pGetOpt->GetOptOpt() + "' needs an argument.");
 				return SetError(CLIError::kMissingOptionArg);
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);

@@ -13,7 +13,10 @@ using namespace sml;
 bool CommandLineInterface::ParseSetLibraryLocation(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
-	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() > 2) {
+		SetErrorDetail("Expected a path, please enclose in quotes if there are spaces in the path.");
+		return SetError(CLIError::kTooManyArgs);
+	}
 	if (argv.size() == 2) return DoSetLibraryLocation(&(argv[1]));
 	return DoSetLibraryLocation();
 }

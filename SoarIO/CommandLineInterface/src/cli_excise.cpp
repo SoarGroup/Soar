@@ -50,6 +50,7 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 				options.set(EXCISE_USER);
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -63,8 +64,14 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 	}
 
 	// If there are no options, there must be only one production name argument
-	if (m_pGetOpt->GetAdditionalArgCount() < 1) return SetError(CLIError::kTooFewArgs);		
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() < 1) {
+		SetErrorDetail("Production name is required.");
+		return SetError(CLIError::kTooFewArgs);		
+	}
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+		SetErrorDetail("Only one production name allowed, call excise multiple times to excise more than one specific production.");
+		return SetError(CLIError::kTooManyArgs);		
+	}
 
 	// Pass the production to the DoExcise function
 	return DoExcise(pAgent, options, &(argv[m_pGetOpt->GetOptind()]));
@@ -75,7 +82,10 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& op
 
 	// Acquire production manager
 	gSKI::IProductionManager *pProductionManager = pAgent->GetProductionManager();
-	if (!pProductionManager) return SetError(CLIError::kgSKIError);
+	if (!pProductionManager) {
+		SetErrorDetail("Failed to get production manager.");
+		return SetError(CLIError::kgSKIError);
+	}
 
 	int exciseCount = 0;
 
@@ -106,6 +116,7 @@ bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& op
 		// Check for the production
 		gSKI::tIProductionIterator* pProdIter = pProductionManager->GetProduction((*pProduction).c_str());
 		if (!pProdIter->GetNumElements()) {
+			SetErrorDetail("Production: " + *pProduction);
 			return SetError(CLIError::kProductionNotFound);
 		}
 

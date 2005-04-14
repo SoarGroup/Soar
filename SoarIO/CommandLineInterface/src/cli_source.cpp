@@ -14,7 +14,7 @@ using namespace sml;
 
 bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	if (argv.size() < 2) {
-		// Source requires a filename
+		SetErrorDetail("Please supply one file to source. If there are spaces in the path, please enclose in quotes.");
 		return SetError(CLIError::kTooFewArgs);
 
 	} else if (argv.size() > 2) {

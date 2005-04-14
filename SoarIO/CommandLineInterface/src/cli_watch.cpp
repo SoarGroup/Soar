@@ -200,15 +200,20 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				}
 				break;
 			case ':':
+				SetErrorDetail("Option '" + m_pGetOpt->GetOptOpt() + "' needs an argument.");
 				return SetError(CLIError::kMissingOptionArg);
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+		SetErrorDetail("Only non option argument allowed is watch level.");
+		return SetError(CLIError::kTooManyArgs);
+	}
 
 	// Allow watch level by itself
 	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
@@ -222,8 +227,14 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting) {
 
-	if (level < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
-	if (level > 5) return SetError(CLIError::kIntegerOutOfRange);
+	if (level < 0)  {
+		SetErrorDetail("Expected watch level from 0 to 5.");
+		return SetError(CLIError::kIntegerMustBeNonNegative);
+	}
+	if (level > 5) {
+		SetErrorDetail("Expected watch level from 0 to 5.");
+		return SetError(CLIError::kIntegerOutOfRange);
+	}
 
 	// All of these are going to change
 	options.set(WATCH_PREFERENCES);
@@ -290,6 +301,7 @@ int CommandLineInterface::ParseLearningOptarg() {
 	if (optarg == "print"     || optarg == "1") return 1;
 	if (optarg == "fullprint" || optarg == "2") return 2;
 
+	SetErrorDetail("Got: " + optarg);
 	SetError(CLIError::kInvalidLearnSetting);
 	return -1;
 }
@@ -297,6 +309,7 @@ int CommandLineInterface::ParseLearningOptarg() {
 bool CommandLineInterface::CheckOptargRemoveOrZero() {
 	std::string optarg(m_pGetOpt->GetOptArg());
 	if (optarg == "remove" || optarg == "0") return true;
+	SetErrorDetail("Got: " + optarg);
 	return SetError(CLIError::kRemoveOrZeroExpected);
 }
 

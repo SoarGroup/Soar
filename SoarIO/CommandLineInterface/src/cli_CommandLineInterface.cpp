@@ -348,6 +348,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 				} else if (*iter == '}') {
 					--brackets;
 					if (brackets < 0) {
+						SetErrorDetail("An extra '}' was found.");
 						SetError(CLIError::kExtraClosingParen);
 						return -1;
 					}
@@ -357,6 +358,7 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 				} else if (*iter == ')') {
 					--parens;
 					if (parens < 0) {
+						SetErrorDetail("An extra ')' was found.");
 						SetError(CLIError::kExtraClosingParen);
 						return -1;
 					}
@@ -375,6 +377,11 @@ int CommandLineInterface::Tokenize(string cmdline, vector<string>& argumentVecto
 
 				// Did they close their quotes or brackets?
 				if (quotes || brackets || parens) {
+					std::string errorDetail = "These quoting characters were not closed: ";
+					if (quotes) errorDetail += "\"";
+					if (brackets) errorDetail += "{";
+					if (parens) errorDetail += "(";
+					SetErrorDetail(errorDetail);
 					SetError(CLIError::kUnmatchedBracketOrQuote);
 					return -1;
 				}

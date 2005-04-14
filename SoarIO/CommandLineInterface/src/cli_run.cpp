@@ -53,6 +53,7 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 				options.set(RUN_SELF);
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -108,7 +109,10 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	if (options.test(RUN_SELF)) {
 		m_pKernel->GetAgentManager()->RemoveAllAgentsFromRunList() ;
 		m_pKernel->GetAgentManager()->AddAgentToRunList(pAgent, &m_gSKIError) ;
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (gSKI::isError(m_gSKIError)) {
+			SetErrorDetail("Error adding agent to run list.");
+			return SetError(CLIError::kgSKIError);
+		}
 	} else {
         m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
 	}
@@ -116,7 +120,10 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	// Do the run
     m_pKernel->GetAgentManager()->ClearAllInterrupts();
 	egSKIRunResult runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, &m_gSKIError);
-	if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+	if (gSKI::isError(m_gSKIError)) {
+		SetErrorDetail("Error running agent.");
+		return SetError(CLIError::kgSKIError);
+	}
 
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {

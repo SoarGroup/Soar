@@ -12,7 +12,12 @@ bool CommandLineInterface::ParsePushD(gSKI::IAgent* pAgent, std::vector<std::str
 	unused(pAgent);
 
 	// Only takes one argument, the directory to change into
-	if (argv.size() != 2) {
+	if (argv.size() < 2) {
+		SetErrorDetail("Expected directory to change to.");
+		return SetError(CLIError::kTooFewArgs);
+	}
+	if (argv.size() > 2) {
+		SetErrorDetail("Expected directory to change to, enclose in quotes if there are spaces in the path.");
 		return SetError(CLIError::kTooManyArgs);
 	}
 	return DoPushD(argv[1]);

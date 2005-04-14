@@ -43,6 +43,7 @@ bool CommandLineInterface::ParseStats(gSKI::IAgent* pAgent, std::vector<std::str
 				options.set(STATS_SYSTEM);
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -87,7 +88,10 @@ bool CommandLineInterface::DoStats(gSKI::IAgent* pAgent, const StatsBitset& opti
 		bool ret = pPerfMon->GetStatsString(argc, argv, &pResult);
 		this->RemoveListenerAndEnableCallbacks(pAgent);
 
-		if (!ret) return SetError(CLIError::kgSKIError);
+		if (!ret) {
+			SetErrorDetail("Error getting stats string.");
+			return SetError(CLIError::kgSKIError);
+		}
 
 		// Ideally all stats options would be put in pResult, but that is a lot of work
 		// so only -system does

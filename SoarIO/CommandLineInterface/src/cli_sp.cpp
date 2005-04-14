@@ -14,7 +14,10 @@ using namespace cli;
 bool CommandLineInterface::ParseSP(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// One argument (in brackets)
 	if (argv.size() < 2) return SetError(CLIError::kTooFewArgs);
-	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() > 2) {
+		SetErrorDetail("Expected one argument (the production) enclosed in braces.");
+		return SetError(CLIError::kTooManyArgs);
+	}
 
 	// Remove first and last characters (the braces)
 	std::string production = argv[1];
@@ -38,7 +41,10 @@ bool CommandLineInterface::DoSP(gSKI::IAgent* pAgent, const std::string& product
 	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), &m_gSKIError);
 	this->RemoveListenerAndEnableCallbacks(pAgent);
 
-	if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+	if (gSKI::isError(m_gSKIError)) {
+		SetErrorDetail("Error adding production.");
+		return SetError(CLIError::kgSKIError);
+	}
 
 	if (m_RawOutput) {
 		m_Result << '*';

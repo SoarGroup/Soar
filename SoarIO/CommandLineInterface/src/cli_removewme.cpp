@@ -19,8 +19,14 @@ using namespace sml;
 
 bool CommandLineInterface::ParseRemoveWME(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	// Exactly one argument
-	if (argv.size() < 2) return SetError(CLIError::kTooFewArgs);
-	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() < 2) {
+		SetErrorDetail("Please supply a timetag.");
+		return SetError(CLIError::kTooFewArgs);
+	}
+	if (argv.size() > 2) {
+		SetErrorDetail("Please supply only one timetag.");
+		return SetError(CLIError::kTooManyArgs);
+	}
 
 	int timetag = atoi(argv[1].c_str());
 	if (!timetag) return SetError(CLIError::kIntegerMustBePositive);

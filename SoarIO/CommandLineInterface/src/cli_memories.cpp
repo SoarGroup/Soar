@@ -58,6 +58,7 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 				options.set(MEMORIES_USER);
 				break;
 			case '?':
+				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
@@ -65,7 +66,10 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 	}
 
 	// Max one additional argument
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);		
+	if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+		SetErrorDetail("Expected at most one additional argument, either a production or a number.");
+		return SetError(CLIError::kTooManyArgs);		
+	}
 
 	// It is either a production or a number
 	int n = 0;
@@ -104,7 +108,10 @@ bool CommandLineInterface::DoMemories(gSKI::IAgent* pAgent, const MemoriesBitset
 		pIter = pProductionManager->GetProduction(pProduction->c_str());
 	} else {
 		pIter = pProductionManager->GetAllProductions(&m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
+		if (gSKI::isError(m_gSKIError)) {
+			SetErrorDetail("Unable to get all productions.");
+			return SetError(CLIError::kgSKIError);
+		}
 	}
 	if (!pIter) return SetError(CLIError::kgSKIError);
 
