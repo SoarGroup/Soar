@@ -5,7 +5,7 @@
 //#include "sml_Connection.h"
 #include "sml_Client.h"
 
-#include "../../Profiler/include/simple_timer.h"
+//#include "../../Profiler/include/simple_timer.h"
 
 // Define a sleep
 #ifdef _WIN32
@@ -664,7 +664,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 	// We'll do the test in a block, so everything should have been
 	// deleted when we test for memory leaks.
 	{
-		SimpleTimer timer ;
+		//SimpleTimer timer ;
 
 		// Create the appropriate type of connection
 		sml::Kernel* pKernel = embedded ?
@@ -707,8 +707,8 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			// NOTE: We don't delete the agent pointer.  It's owned by the kernel
 			sml::Agent* pAgent = pKernel->CreateAgent(name.c_str()) ;
 
-			double time = timer.Elapsed() ;
-			cout << "Time to initialize kernel and create agent: " << time << endl ;
+			//double time = timer.Elapsed() ;
+			//cout << "Time to initialize kernel and create agent: " << time << endl ;
 
 			if (pKernel->HadError())
 			{
@@ -874,7 +874,7 @@ int main(int argc, char* argv[])
 	// when that allocation occurs.
 	//_crtBreakAlloc = 389 ;
 
-	SimpleTimer timer ;
+	//SimpleTimer timer ;
 
 	bool stopAtEnd = true ;
 	bool remote    = false ;
@@ -921,8 +921,8 @@ int main(int argc, char* argv[])
 
 		ReportResult(remote ? "testclientsml-remote" : "testclientsml", success) ;
 
-		double time = timer.Elapsed() ;
-		cout << "Total run time: " << time << endl ;
+		//double time = timer.Elapsed() ;
+		//cout << "Total run time: " << time << endl ;
 	}
 
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
