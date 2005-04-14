@@ -252,7 +252,7 @@ private:
 		assert(pAgent);
 
 		//Load agent's productions
-		pAgent->LoadProductions("towers-of-hanoi-SML.soar");
+		pAgent->LoadProductions("tests/towers-of-hanoi-SML.soar");
 
 		// SML uses a more explicit error model, so we can get details about what failed.
 		if (pAgent->HadError())

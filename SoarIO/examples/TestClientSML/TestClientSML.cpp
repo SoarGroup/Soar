@@ -740,7 +740,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 				return ok;
 			}
 
-			bool load = pAgent->LoadProductions("testsml.soar") ;
+			bool load = pAgent->LoadProductions("tests/testsml.soar") ;
 			unused(load);
 
 			if (pAgent->HadError())
