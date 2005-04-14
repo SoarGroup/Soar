@@ -116,6 +116,10 @@ protected:
 	class TestRhsCallbackFull ;
 	class TestRhsCallback ;
 
+	// Keep a local copy of this flag so we can report
+	// information directly about what the client is sending/receiving
+	bool m_bTracingCommunications ;
+
 	// This thread is used to check for incoming events when the client goes to sleep
 	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
 	// responsive).
@@ -223,9 +227,10 @@ public:
 
 	/*************************************************************
 	* @brief Turning this on means we'll start dumping output about messages
-	*		 being sent and received.  Currently this only applies to remote connections.
+	*		 being sent and received.
 	*************************************************************/
 	void SetTraceCommunications(bool state) ;
+	bool IsTracingCommunications() ;
 
 	virtual ~Kernel();
 

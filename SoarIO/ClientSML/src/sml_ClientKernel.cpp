@@ -43,6 +43,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_CallbackIDCounter = 0 ;
 	m_pEventThread	= 0 ;
 	m_pEventMap		= new Events() ;
+	m_bTracingCommunications = false ;
 
 	if (pConnection)
 	{
@@ -165,12 +166,21 @@ bool Kernel::StopEventThread()
 
 /*************************************************************
 * @brief Turning this on means we'll start dumping output about messages
-*		 being sent and received.  Currently this only applies to remote connections.
+*		 being sent and received.
 *************************************************************/
 void Kernel::SetTraceCommunications(bool state)
 {
 	if (m_Connection)
 		m_Connection->SetTraceCommunications(state) ;
+
+	// We keep a local copy of this value so we can check it without
+	// calling anywhere.
+	m_bTracingCommunications = state ;
+}
+
+bool Kernel::IsTracingCommunications()
+{
+	return m_bTracingCommunications ;
 }
 
 /*************************************************************

@@ -35,7 +35,7 @@
 				AdditionalDependencies="ClientSML.lib ElementXML.lib ConnectionSML.lib"
 				OutputFile="Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="../../ClientSML/lib;../../ElementXML/lib;../../ConnectionSML/lib"
+				AdditionalLibraryDirectories="../../ClientSML/build;../../ElementXML/build;../../ConnectionSML/build"
 				GenerateDebugInformation="TRUE"
 				AssemblyDebug="1"/>
 			<Tool
@@ -45,7 +45,7 @@
 				Description="Build Java files as a sanity check, copy dll to release point"
 				CommandLine="echo on
 &quot;%JAVA_BIN%/javac&quot; *.java
-copy Java_sml_ClientInterface.dll ..\..\bin /Y
+copy Java_sml_ClientInterface.dll ..\..\..\soar-library /Y
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -102,7 +102,7 @@ del *.class
 				Description="Build Java files as a sanity check, copy dll to release point"
 				CommandLine="echo on
 &quot;%JAVA_BIN%/javac&quot; *.java
-copy Java_sml_ClientInterface.dll ..\..\bin /Y
+copy Java_sml_ClientInterface.dll ..\..\..\soar-library /Y
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"

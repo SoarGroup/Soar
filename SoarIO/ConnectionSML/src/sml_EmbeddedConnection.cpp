@@ -399,7 +399,7 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 #ifdef _DEBUG
 //	if (IsTracingCommunications())
 //	{
-//		PrintDebugFormat("Waiting for response to %s\n", pID) ;
+//		PrintDebugFormat("Waiting for response to %s", pID) ;
 //	}
 #endif
 
@@ -431,13 +431,15 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 			}
 			else
 			{
+				/*
 #ifdef _DEBUG
 				if (IsTracingCommunications())
 				{
 					char const* pMsgID = m_pLastResponse == NULL ? NULL : m_pLastResponse->GetAttribute(sml_Names::kAck) ;
-					PrintDebugFormat("Looking for %s found %s so ignoring it\n", pID, pMsgID == NULL ? "null" : pMsgID) ;
+					PrintDebugFormat("Looking for %s found %s so ignoring it", pID, pMsgID == NULL ? "null" : pMsgID) ;
 				}
 #endif
+				*/
 			}
 		}
 

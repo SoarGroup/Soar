@@ -39,6 +39,8 @@
 #include "sml_ClientDirect.h"
 #include <assert.h>
 
+#include "sock_Debug.h"
+
 using namespace sml ;
 
 WorkingMemory::WorkingMemory()
@@ -200,8 +202,7 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	unused(pResponse) ;	// No need to reply
 
 #ifdef _DEBUG
-	char * pMsg = pIncoming->GetCommandTag()->GenerateXMLString(true) ;
-	ElementXML::DeleteString(pMsg) ;
+	char * pMsgText = pIncoming->GetCommandTag()->GenerateXMLString(true) ;
 #endif
 
 	// Get the command tag which contains the list of wmes
@@ -218,6 +219,8 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	// We'll use this to store output wmes that have no parent identifier yet
 	// (this is rare but can happen if the kernel generates wmes in an unusual order)
 	m_OutputOrphans.clear() ;
+
+	bool tracing = this->GetAgent()->GetKernel()->IsTracingCommunications() ;
 
 	for (int i = 0 ; i < nChildren ; i++)
 	{
@@ -253,6 +256,11 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 			if (!pID || !pAttribute || !pValue || !pTimeTag)
 				continue ;
 
+			if (tracing)
+			{
+				PrintDebugFormat("Received output wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
+			}
+
 			long timeTag = atoi(pTimeTag) ;
 
 			// Find the parent wme that we're adding this new wme to
@@ -276,6 +284,7 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 				}
 				else
 				{
+					PrintDebugFormat("Unable to create an output wme -- type was not recognized") ;
 					GetAgent()->SetDetailedError(Error::kOutputError, "Unable to create an output wme -- type was not recognized") ;
 				}
 			}
@@ -291,6 +300,9 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 					// so there's no parent to connect it to.  We'll create the wme, keep it on a special list of orphans
 					// and try to reconnect it later.
 					pAddWme = CreateWME(NULL, pID, pAttribute, pValue, pType, timeTag) ;
+
+					if (tracing)
+						PrintDebugFormat("Received output wme (orphaned): %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
 
 					if (pAddWme)
 						m_OutputOrphans.push_back(pAddWme) ;
@@ -309,6 +321,9 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 				{
 					pWme->SetParent(pPossibleParent) ;
 					pPossibleParent->AddChild(pWme) ;
+
+					if (tracing)
+						PrintDebugFormat("Adding orphaned child to this ID: %s ^%s %s (time tag %d)", pWme->GetIdentifierName(), pWme->GetAttribute(), pWme->GetValueAsString(), pWme->GetTimeTag()) ;
 
 					// Make a record that this wme was added so we can alert the client to this change.
 					RecordAddition(pWme) ;
@@ -335,11 +350,19 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 			// Delete the WME
 			if (pWME && pWME->GetParent())
 			{
+				if (tracing)
+					PrintDebugFormat("Removing output wme: time tag %s", pTimeTag) ;
+
 				pWME->GetParent()->RemoveChild(pWME) ;
 
 				// Make a record that this wme was removed, so we can tell the client about it.
 				// This recording will also involve deleting the wme.
 				RecordDeletion(pWME) ;
+			}
+			else
+			{
+				if (tracing)
+					PrintDebugFormat("Remove output wme request (seems to already be gone): time tag %s", pTimeTag) ;
 			}
 		}
 	}
@@ -347,9 +370,17 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	if (!m_OutputOrphans.empty())
 	{
 		ok = false ;
-		GetAgent()->SetDetailedError(Error::kOutputError, "Some output WMEs have no matching parent IDs -- they are ophans") ;
+
+		if (tracing)
+			PrintDebugFormat("Some output WMEs have no matching parent IDs -- they are ophans.  This is bad.") ;
+
+		GetAgent()->SetDetailedError(Error::kOutputError, "Some output WMEs have no matching parent IDs -- they are ophans.  This is bad.") ;
 		m_OutputOrphans.clear() ;	// Have to discard them.
 	}
+
+#ifdef _DEBUG
+		ElementXML::DeleteString(pMsgText) ;
+#endif
 
 	// Returns false if any of the adds/removes fails
 	return ok ;

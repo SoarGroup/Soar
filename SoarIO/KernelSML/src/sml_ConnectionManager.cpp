@@ -115,7 +115,7 @@ void ReceiverThread::Run()
 		if (clock() - report > CLOCKS_PER_SEC * 3)
 		{
 			report = clock() ;
-			PrintDebugFormat("ReceiverThread::Run alive\n") ;
+			PrintDebugFormat("ReceiverThread::Run alive") ;
 		}
 		*/
 #endif
