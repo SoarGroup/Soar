@@ -30,7 +30,7 @@ public:
 	int GetAdditionalArgCount();
 	int GetOptind();
 	const char* GetOptArg();
-	std::string GetOptOpt();
+	int GetOptOpt();
 
 private:
 

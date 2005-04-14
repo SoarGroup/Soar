@@ -34,10 +34,22 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 				command = m_pGetOpt->GetOptArg();
 				break;
 			case ':':
-				SetErrorDetail("Option '" + m_pGetOpt->GetOptOpt() + "' needs an argument.");
+				{
+					std::string detail;
+					detail = static_cast<char>(m_pGetOpt->GetOptOpt());
+					SetErrorDetail("Option '" + detail + "' needs an argument.");
+				}
 				return SetError(CLIError::kMissingOptionArg);
 			case '?':
-				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
+				{
+					std::string detail;
+					if (m_pGetOpt->GetOptOpt()) {
+						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
+					} else {
+						detail = argv[m_pGetOpt->GetOptind() - 1];
+					}
+					SetErrorDetail("Bad option '" + detail + "'.");
+				}
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);

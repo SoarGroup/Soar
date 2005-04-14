@@ -36,10 +36,8 @@ const char* GetOpt::GetOptArg() {
 	return optarg;
 }
 
-std::string GetOpt::GetOptOpt() {
-	std::string optoptString;
-	optoptString = static_cast<char>(optopt);
-	return optoptString;
+int GetOpt::GetOptOpt() {
+	return optopt;
 }
 
 char* GetOpt::my_index (const char *str, int chr)
@@ -339,6 +337,16 @@ int GetOpt::_getopt_internal (int argc, char *const *argv, const char *optstring
 							nextchar += strlen (nextchar);
 							optopt = pfound->val;
 							return optstring[0] == ':' ? ':' : '?';
+						}
+					} else if (pfound->has_arg == 2)
+					{
+						// This is a hack to allow things like watch --decisions remove
+						if (optind < argc)
+						{
+							if (argv[optind][0] && argv[optind][0] != '-')
+							{
+								optarg = argv[optind++];
+							}
 						}
 					}
 					nextchar += strlen (nextchar);

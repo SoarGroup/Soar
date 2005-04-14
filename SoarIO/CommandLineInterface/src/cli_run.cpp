@@ -53,7 +53,15 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 				options.set(RUN_SELF);
 				break;
 			case '?':
-				SetErrorDetail("Bad option '" + m_pGetOpt->GetOptOpt() + "'.");
+				{
+					std::string detail;
+					if (m_pGetOpt->GetOptOpt()) {
+						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
+					} else {
+						detail = argv[m_pGetOpt->GetOptind() - 1];
+					}
+					SetErrorDetail("Bad option '" + detail + "'.");
+				}
 				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
