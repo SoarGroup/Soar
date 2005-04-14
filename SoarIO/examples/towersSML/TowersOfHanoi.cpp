@@ -16,7 +16,7 @@
 //#include <crtdbg.h>
 
 // Quick addition so we can time this easily.
-#include "../../Profiler/include/simple_timer.h"
+//#include "../../Profiler/include/simple_timer.h"
 
 ////// Define the type of interface to Soar that you're using:
 //#define GSKI_DIRECT
@@ -126,17 +126,17 @@ int main(int argc, char* argv[])
 	//=============================================================================
 	//=============================================================================
 	{
-		SimpleTimer timer ;
-		SimpleTimer total ;
+		//SimpleTimer timer ;
+		//SimpleTimer total ;
 
 		if(doPrinting)
 			cout << "***Welcome to Towers of Hanoi***" << endl << endl;
 
 		HanoiWorld hanoi(remoteConnection, doPrinting, numTowers);
 
-		double time = timer.Elapsed() ;
-		cout << "Time to initialize: " << time << endl ;
-		timer.Start() ;
+		//double time = timer.Elapsed() ;
+		//cout << "Time to initialize: " << time << endl ;
+		//timer.Start() ;
 
 		if(doPrinting)
 			hanoi.Print();
@@ -156,10 +156,10 @@ int main(int argc, char* argv[])
 		// if something goes wrong, so I think if we get here it's a success.
 		ReportResult(remoteConnection ? "towers-sml-remote" : "towers-sml", true) ;
 
-		time = timer.Elapsed() ;
-		cout << "Time after initialization to complete: " << time << endl ;
-		time = total.Elapsed() ;
-		cout << "Total run time: " << time << endl ;
+		//time = timer.Elapsed() ;
+		//cout << "Time after initialization to complete: " << time << endl ;
+		//time = total.Elapsed() ;
+		//cout << "Total run time: " << time << endl ;
 	}
 
 //#ifdef _DEBUG
