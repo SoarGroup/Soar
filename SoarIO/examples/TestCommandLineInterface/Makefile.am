@@ -7,7 +7,7 @@ bin_PROGRAMS = testcli
 testcli_SOURCES = cli_Test.cpp
 
 testcli_LDADD = \
-$(BASEDIR_PREFIX)KernelSML/src/libKernelSML.la \
+$(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
 $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la
 
 INCLUDES = \

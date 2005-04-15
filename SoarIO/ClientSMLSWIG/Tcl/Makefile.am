@@ -13,7 +13,7 @@ endif
 libTcl_sml_ClientInterface_la_SOURCES = Tcl_sml_ClientInterface_wrap.cpp 
 
 libTcl_sml_ClientInterface_la_LIBADD = \
-$(BASEDIR_PREFIX)KernelSML/src/libKernelSML.la \
+$(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
 $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la
 
 INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include

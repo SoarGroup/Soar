@@ -1,14 +1,14 @@
 AUTOMAKE_OPTIONS = foreign
 
-lib_LTLIBRARIES = libKernelSML.la 
+lib_LTLIBRARIES = libSoarKernelSML.la 
 
-libKernelSML_la_LIBADD = \
+libSoarKernelSML_la_LIBADD = \
 ../../../SoarKernel/src/libSoarKernel.la\
 ../../../gSKI/src/libgSKI.la\
 ../../CommandLineInterface/src/libCommandLineInterface.la\
 ../../ClientSML/src/libClientSML.la
 
-libKernelSML_la_SOURCES = \
+libSoarKernelSML_la_SOURCES = \
 KernelSMLInterface.cpp\
 KernelSMLdll.cpp\
 sml_AgentListener.cpp\

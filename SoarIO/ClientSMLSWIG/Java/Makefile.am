@@ -11,10 +11,13 @@ lib_LTLIBRARIES =
 endif
 
 libJava_sml_ClientInterface_la_LIBADD = \
-$(BASEDIR_PREFIX)KernelSML/src/libKernelSML.la \
+$(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
 $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la 
 
 libJava_sml_ClientInterface_la_SOURCES = Java_sml_ClientInterface_wrap.cpp 
+
+JAVASO = @JAVASO@
+libJava_sml_ClientInterface_la_LDFLAGS = -shrext $(JAVASO)
 
 SWIG=@SWIG@
 JAVAINC= @JAVAINC@
