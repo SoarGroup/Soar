@@ -34,12 +34,9 @@ bool CommandLineInterface::DoCD(const std::string* pDirectory) {
 		}
 		return true;
 	}
-
-	// Chop of quotes if they are there, chdir doesn't like them
-	std::string dir = *pDirectory;
-	if ((pDirectory->length() > 2) && ((*pDirectory)[0] == '\"') && ((*pDirectory)[pDirectory->length() - 1] == '\"')) {
-		dir = pDirectory->substr(1, pDirectory->length() - 2);
-	}
+   
+    std::string dir = *pDirectory;
+    StripQuotes(dir);
 
 	// Change to directory
 	if (chdir(dir.c_str())) {

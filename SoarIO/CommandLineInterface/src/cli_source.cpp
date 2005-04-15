@@ -82,12 +82,9 @@ bool CommandLineInterface::Trim(std::string& line) {
 bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
-	// Chop of quotes if they are there, open doesn't like them
-	if ((filename.length() > 2) && (filename[0] == '\"') && (filename[filename.length() - 1] == '\"')) {
-		filename = filename.substr(1, filename.length() - 2);
-	}
+    StripQuotes(filename);
 
-	// Separate the path out of the filename if any
+    // Separate the path out of the filename if any
 	std::string path;
 	unsigned int separator1 = filename.rfind('/');
 	if (separator1 != std::string::npos) {

@@ -216,7 +216,7 @@ EXPORT bool CommandLineInterface::DoRemoveWME(sml::Connection* pConnection, sml:
 	return ret;
 }
 
-EXPORT bool CommandLineInterface::DoReteNet(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool save, const std::string& filename) {
+EXPORT bool CommandLineInterface::DoReteNet(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool save, std::string filename) {
 	bool ret = DoReteNet(pAgent, save, filename);
 	GetLastResultSML(pConnection, pResponse);
 	return ret;

@@ -71,7 +71,7 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 	return DoReteNet(pAgent, save, filename);
 }
 
-bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, const std::string& filename) {
+bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
 	if (!filename.size()) return SetError(CLIError::kMissingFilenameArg);
@@ -93,6 +93,8 @@ bool CommandLineInterface::DoReteNet(gSKI::IAgent* pAgent, bool save, const std:
 		return SetError(save ? CLIError::kCantSaveReteWithJustifications : CLIError::kCantLoadReteWithProductions);
 	}
 	pIter->Release();
+
+	StripQuotes(filename);
 
 	if (save) {
 		pProductionManager->SaveRete(filename.c_str(), &m_gSKIError);

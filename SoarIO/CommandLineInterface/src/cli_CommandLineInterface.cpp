@@ -522,3 +522,11 @@ void CommandLineInterface::ResultToArgTag() {
 	AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
 	m_Result.str("");
 }
+
+bool CommandLineInterface::StripQuotes(std::string& str) {
+    if ((str.size() >= 2) && (str[0] == '"') && (str[str.length() - 1] == '"')) {
+        str = str.substr(1, str.length() - 2);
+        return true;
+    }
+    return false;
+}

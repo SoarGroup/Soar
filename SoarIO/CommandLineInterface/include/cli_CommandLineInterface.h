@@ -480,7 +480,7 @@ public:
 	* @param save true to save, false to load
 	* @param filename the rete-net file
 	*************************************************************/
-	EXPORT bool DoReteNet(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool save, const std::string& filename);
+	EXPORT bool DoReteNet(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool save, std::string filename);
 
 	/*************************************************************
 	* @brief run command
@@ -747,7 +747,7 @@ protected:
 	bool DoPWD();
 	bool DoQuit();
 	bool DoRemoveWME(gSKI::IAgent*, int timetag);
-	bool DoReteNet(gSKI::IAgent* pAgent, bool save, const std::string& filename);
+	bool DoReteNet(gSKI::IAgent* pAgent, bool save, std::string filename);
 	bool DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count = 0);
 	bool DoSaveBacktraces(gSKI::IAgent* pAgent, bool* pSetting = 0);
 	bool DoSetLibraryLocation(const std::string* pLocation = 0);
@@ -854,6 +854,13 @@ protected:
 	* @brief This is a utility function used by DoLS 	 
 	*************************************************************/ 	 
 	void PrintFilename(const std::string& name, bool isDirectory); 	 
+
+	/************************************************************* 	 
+	* @brief Strip quotes off of a string.  Must start and end with
+    *        a '"' character.
+    * @return True if quotes were removed from the string.
+	*************************************************************/ 	 
+	bool StripQuotes(std::string& str); 	 
 
 	void AddListenerAndDisableCallbacks(gSKI::IAgent* pAgent);
 	void RemoveListenerAndEnableCallbacks(gSKI::IAgent* pAgent);
