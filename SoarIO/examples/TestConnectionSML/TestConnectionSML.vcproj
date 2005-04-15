@@ -46,7 +46,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy build\*.exe ..\..\..\soar-library"/>
+				CommandLine="xcopy build\*.exe ..\..\..\soar-library /y"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -99,7 +99,7 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy build\*.exe ..\..\..\soar-library"/>
+				CommandLine="xcopy build\*.exe ..\..\..\soar-library /y"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
