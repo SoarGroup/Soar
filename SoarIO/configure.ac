@@ -382,6 +382,4 @@ AC_OUTPUT(Makefile
 		  examples/Makefile
 		  examples/TestCommandLineInterface/Makefile
 		  examples/towersSML/Makefile
-		  examples/towers/Makefile
-		  examples/TestClientSML/Makefile
-		  examples/TestThreadLibrary/Makefile)
+		  examples/TestClientSML/Makefile)
