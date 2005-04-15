@@ -2,8 +2,9 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = \
 TestCommandLineInterface \
 TestClientSML \
-towersSML \
-TestThreadLibrary
+towersSML 
+#this directory was removed???
+#TestThreadLibrary
 
 #can't get this next one to link
 #TestConnectionSML 
