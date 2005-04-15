@@ -147,7 +147,7 @@ public class Application
 			throw new IllegalStateException("Error creating agent: " + m_Kernel.GetLastErrorDescription()) ;
 		
 		// Load some productions
-		boolean load = agent.LoadProductions("testsml.soar") ;
+		boolean load = agent.LoadProductions("tests/testjavasml.soar") ;
 
 		if (!load || agent.HadError())
 			throw new IllegalStateException("Error loading productions from testsml.soar: " + agent.GetLastErrorDescription()) ;

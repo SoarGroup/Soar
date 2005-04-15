@@ -16,3 +16,8 @@ gski_unreleased.txt
 smltrace.txt
 Java_sml_ClientInterface.dll
 Tcl_sml_ClientInterface
+Application$EventListener.class
+Application.class
+testjavasml-failure.txt
+TestJavaSML.jar
+testjavasml-success.txt
