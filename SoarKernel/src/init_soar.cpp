@@ -393,10 +393,10 @@ void init_sysparams (agent* thisAgent) {
   
   /* --- set all params to zero, except the following: --- */
   thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM] = TRUE;
-  thisAgent->sysparams[TRACE_FIRINGS_OF_CHUNKS_SYSPARAM] = TRUE;
-  thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = NONE_WME_TRACE;
-  thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] = TRUE;
-  thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] = TRUE;
+  thisAgent->sysparams[TRACE_FIRINGS_OF_CHUNKS_SYSPARAM] = FALSE;
+  thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = TIMETAG_WME_TRACE;
+  thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] = FALSE;
+  thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] = FALSE;
   thisAgent->sysparams[TRACE_LOADING_SYSPARAM] = TRUE; /* KJC 8/96 */
   thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM] = 100;
   thisAgent->sysparams[MAX_CHUNKS_SYSPARAM] = 50;
