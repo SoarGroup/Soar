@@ -7,3 +7,4 @@ Makefile.in
 Makefile
 Java_sml_ClientInterface_wrap.cpp
 libJava_sml_ClientInterface.la
+Java_sml_ClientInterface_wrap.cxx
