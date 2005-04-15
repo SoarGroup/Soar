@@ -35,7 +35,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="Tcl_sml_ClientInterface.dll"
+				OutputFile="$(OutDir)\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="TRUE"
@@ -92,7 +92,7 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="tcl84.lib"
-				OutputFile="Tcl_sml_ClientInterface.dll"
+				OutputFile="$(OutDir)\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
 				GenerateDebugInformation="FALSE"

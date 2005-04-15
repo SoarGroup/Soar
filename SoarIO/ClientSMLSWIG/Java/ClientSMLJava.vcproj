@@ -34,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Java_sml_ClientInterface.dll"
+				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -93,9 +93,9 @@ del *.class
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Java_sml_ClientInterface.dll"
+				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="../../ClientSML/lib;../../ElementXML/lib;../../ConnectionSML/lib"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="FALSE"
 				ImportLibrary="$(OutDir)\$(ProjectName).lib"/>
 			<Tool
