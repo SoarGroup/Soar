@@ -79,7 +79,7 @@ set structuredCallbackId [$agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT 
 #load the TOH productions
 set result [$agent LoadProductions demos/towers-of-hanoi/towers-of-hanoi.soar]
 #loads a function to test the user-defined RHS function stuff
-set result [$agent LoadProductions TOHtest.soar]
+set result [$agent LoadProductions tests/TOHtest.soar]
 
 $kernel ExecuteCommandLine "run 2 -e" Soar1
 
