@@ -224,8 +224,10 @@ namespace gSKI
    {
       // Only works for single threaded apps.  Stop a reentrant call
       //  from a run callback handler.
-      if(m_groupRunning)
+       if(m_groupRunning) {
+         SetError(err, gSKIERR_AGENT_RUNNING);
          return  gSKI_RUN_ERROR;
+       }
 
       m_groupRunning = true;
 
