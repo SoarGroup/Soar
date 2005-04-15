@@ -105,10 +105,7 @@ typedef struct production_struct {
   struct instantiation_struct *instantiations; /* dll of inst's in MS */
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
   byte interrupt;						  /* SW: 7.31.03 */
-#ifdef BUG_139_WORKAROUND
   bool already_fired;         /* RPM test workaround for bug #139 */
-#endif
-
 } production;
 
 /* ========================================================================
