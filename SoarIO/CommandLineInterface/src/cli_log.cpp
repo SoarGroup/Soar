@@ -136,7 +136,7 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, cons
 
 	std::ios_base::openmode openmode = std::ios_base::out;
 
-	switch (mode) {
+ 	switch (mode) {
 		case LOG_NEWAPPEND:
 			openmode |= std::ios_base::app;
 			// falls through
@@ -149,13 +149,19 @@ bool CommandLineInterface::DoLog(gSKI::IAgent* pAgent, const eLogMode mode, cons
 				return SetError(CLIError::kLogAlreadyOpen);
 			}
 
-			m_pLogFile = new std::ofstream(pFilename->c_str(), openmode);
-			if (!m_pLogFile) {
-				SetErrorDetail("Failed to open " + *pFilename);
-				return SetError(CLIError::kLogOpenFailure);
-			}
+            {
+                std::string filename = *pFilename;
+                StripQuotes(filename);
 
-			m_LogFilename = *pFilename;
+			    m_pLogFile = new std::ofstream(filename.c_str(), openmode);
+			    if (!m_pLogFile) {
+				    SetErrorDetail("Failed to open " + filename);
+				    return SetError(CLIError::kLogOpenFailure);
+			    }
+
+			    m_LogFilename = filename;
+            }
+
 			if (pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
 			break;
 

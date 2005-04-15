@@ -147,9 +147,6 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 	// Process the command, ignoring its result (errors detected with m_LastError)
 	DoCommandInternal(pAgent, pCommandLine);
 
-	// Log output
-	if (m_pLogFile) (*m_pLogFile) << m_Result.str() << endl;
-
 	GetLastResultSML(pConnection, pResponse);
 
 	// Always returns true to indicate that we've generated any needed error message already
@@ -168,7 +165,10 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 	}
 
 	if (m_LastError == CLIError::kNoError) {
-		// The command succeeded, so return the result if raw output
+        // Log output
+        if (m_pLogFile) (*m_pLogFile) << m_Result.str() << endl;
+
+        // The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
 			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
 
@@ -218,6 +218,9 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 			errorDescription += m_gSKIError.ExtendedMsg;
 		}
 		pConnection->AddErrorToSMLResponse(pResponse, errorDescription.c_str(), m_LastError);
+
+        // Log error
+        if (m_pLogFile) (*m_pLogFile) << errorDescription << endl;
 	}
 
 	// reset state
