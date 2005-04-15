@@ -128,15 +128,15 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	// Do the run
     m_pKernel->GetAgentManager()->ClearAllInterrupts();
 	egSKIRunResult runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, &m_gSKIError);
-	if (gSKI::isError(m_gSKIError)) {
-		SetErrorDetail("Error running agent.");
-		return SetError(CLIError::kgSKIError);
-	}
 
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {
-		m_Result << "Run failed.";
-		return false;	// Hopefully details are in gSKI error message
+        if (m_gSKIError.Id == gSKI::gSKIERR_AGENT_RUNNING) {
+            return SetError(CLIError::kAlreadyRunning);
+        } else if (gSKI::isError(m_gSKIError)) {
+		    return SetError(CLIError::kgSKIError);
+	    }
+        return SetError(CLIError::kRunFailed);
 	}
 
 	char buf[kMinBufferSize];

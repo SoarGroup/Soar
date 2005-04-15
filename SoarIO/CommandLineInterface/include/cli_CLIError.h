@@ -77,6 +77,8 @@ namespace cli {
 			kPrintSubOptionsOfStack				= 73,
 			kHelpFileError						= 74,
 			kNewlineBeforePipe					= 75,
+            kAlreadyRunning                     = 76,
+            kRunFailed                          = 77,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -150,6 +152,8 @@ namespace cli {
 				case kPrintSubOptionsOfStack:			return "Options --operators (-o) and --states (-S) are only valid when printing the stack.";
 				case kHelpFileError:					return "Error reading help file, check the library location (see the set-library-location command).";
 				case kNewlineBeforePipe:				return "Newline reached before closing pipe ('|') character.";
+                case kAlreadyRunning:                   return "Agent is already running.";
+                case kRunFailed:                        return "Run failed.";
 				default:								return "Unknown error code.";
 			}
 		}
