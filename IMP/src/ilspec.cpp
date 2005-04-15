@@ -46,34 +46,6 @@ bool InputLinkSpec::ImportDM(string filename)
 		return false;
 	}
 
-	int lineNumber = 1;
-
-	//this should create InputLinkObjects to hold each line of data read
-	while(!file.eof())
-	{
-		//Probably don't want to get a whole line at once
-		/*char line[MAX_LINE_LENGTH];
-
-		file.getline(line, MAX_LINE_LENGTH+1);
-
-		//ensure that the line wasn't too long
-		if(file.gcount() == MAX_LINE_LENGTH+1)
-		{
-			cout<<"Error: line "<<lineNumber<<" too long"<<endl;
-			return false;
-		}*/
-
-		//should first get parent id name
-
-		//then get attribute name
-
-		//then get value type 
-
-		//then optional and conditional args.
-
-		++lineNumber;
-	}
-
 	file.close();
 	return true;
 }
@@ -94,6 +66,42 @@ bool InputLinkSpec::ImportIL(string filename)
 		return false;
 	}
 
+	int lineNumber = 1;
+
+	//this should create InputLinkObjects to hold each line of data read
+	while(!file.eof())
+	{
+		//Probably don't want to get a whole line at once
+		/*char line[MAX_LINE_LENGTH];
+
+		file.getline(line, MAX_LINE_LENGTH+1);
+
+		//ensure that the line wasn't too long
+		if(file.gcount() == MAX_LINE_LENGTH+1)
+		{
+		cout<<"Error: line "<<lineNumber<<" too long"<<endl;
+		return false;
+		}*/
+
+		char buf[MAX_LINE_LENGTH];
+
+		//this should probably use Devvan's enum thinger.
+
+		//check if this line is a -for loop  (ignore for now)
+
+		//should first get parent id name
+		file.get(buf, ' ');
+
+		cout<<buf<<endl;
+
+		//then get attribute name
+
+		//then get value type 
+
+		//then optional and conditional args.
+
+		++lineNumber;
+	}
 
 	file.close();
 	return true;
