@@ -140,31 +140,28 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	}
 
 	char buf[kMinBufferSize];
-	if (m_RawOutput) m_Result << "\nRun stopped ";
 	switch (runResult) {
 		case gSKI_RUN_EXECUTING:
 			if (m_RawOutput) {
 				// NOTE: I don't think this is currently possible
-				m_Result << "(still executing).";
+				m_Result << "\nRun stopped (still executing).";
 			} else {
 				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
 			break;
+
 		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
 			// falls through
 		case gSKI_RUN_INTERRUPTED:
 			if (m_RawOutput) {
-				m_Result << "(interrupted).";
+				m_Result << "\nRun stopped (interrupted).";
 			} else {
 				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
 			}
 			break;
+
 		case gSKI_RUN_COMPLETED:
-			if (m_RawOutput) {
-				m_Result << "(completed).";
-			} else {
-				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
-			}
+            // Do not print anything
 			break;
 		default:
 			return SetError(CLIError::kgSKIError);
