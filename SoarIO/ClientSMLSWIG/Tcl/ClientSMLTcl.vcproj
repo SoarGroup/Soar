@@ -46,8 +46,9 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy to release point, make Tcl package"
-				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\..\soar-library /Y
-cd ..\..\..\soar-library
+				CommandLine="cd build
+copy Tcl_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
+cd ..\..\..\..\soar-library
 &quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
 move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
@@ -102,8 +103,9 @@ move /Y pkgIndex.tcl .\Tcl_sml_ClientInterface\
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy to release point, make Tcl package"
-				CommandLine="copy Tcl_sml_ClientInterface.dll ..\..\..\soar-library /Y
-cd ..\..\..\soar-library
+				CommandLine="cd build
+copy Tcl_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
+cd ..\..\..\..\soar-library
 &quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl
 mkdir Tcl_sml_ClientInterface
 move /Y Tcl_sml_ClientInterface.dll .\Tcl_sml_ClientInterface\
@@ -172,8 +174,9 @@ echo TCL_LIB: %TCL_LIB%
 echo TCL_BIN: %TCL_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include &quot;$(InputPath)&quot;
-"
+cd build
+$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.0  -I../../../ClientSML/include -I../../../ElementXML/include -I../../../ConnectionSML/include &quot;$(InputPath)&quot;
+cd .."
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -186,8 +189,9 @@ echo TCL_LIB: %TCL_LIB%
 echo TCL_BIN: %TCL_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 1.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include &quot;$(InputPath)&quot;
-"
+cd build
+$(SWIG)\swig.exe -Wall -c++ -tcl -pkgversion 8.6.0  -I../../../ClientSML/include -I../../../ElementXML/include -I../../../ConnectionSML/include &quot;$(InputPath)&quot;
+cd .."
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 		</File>

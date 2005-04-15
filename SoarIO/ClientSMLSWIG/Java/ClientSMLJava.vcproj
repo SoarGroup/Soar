@@ -46,16 +46,18 @@
 				Name="VCPostBuildEventTool"
 				Description="Build Java files as a sanity check, copy dll to release point"
 				CommandLine="echo on
+cd build
 &quot;%JAVA_BIN%/javac&quot; *.java
-copy Java_sml_ClientInterface.dll ..\..\..\soar-library /Y
-"/>
+copy Java_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
+cd .."/>
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove previous Java files"
 				CommandLine="echo on
+cd build
 del *.java
 del *.class
-"
+cd .."
 				ExcludedFromBuild="TRUE"/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
@@ -104,16 +106,18 @@ del *.class
 				Name="VCPostBuildEventTool"
 				Description="Build Java files as a sanity check, copy dll to release point"
 				CommandLine="echo on
+cd build
 &quot;%JAVA_BIN%/javac&quot; *.java
-copy Java_sml_ClientInterface.dll ..\..\..\soar-library /Y
-"/>
+copy Java_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
+cd .."/>
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Remove previous Java files"
 				CommandLine="echo on
+cd build
 del *.java
 del *.class
-"/>
+cd .."/>
 			<Tool
 				Name="VCPreLinkEventTool"/>
 			<Tool
@@ -183,8 +187,9 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java &quot;$(InputPath)&quot;
-"
+cd build
+$(SWIG)\swig.exe -Wall -c++ -package sml -I../../../ClientSML/include -I../../../ElementXML/include -I../../../ConnectionSML/include -java &quot;$(InputPath)&quot;
+cd .."
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 			<FileConfiguration
@@ -197,8 +202,9 @@ echo JAVA_INCLUDE: %JAVA_INCLUDE%
 echo JAVA_BIN: %JAVA_BIN%
 echo SWIG: %SWIG%
 echo on
-$(SWIG)\swig.exe -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java &quot;$(InputPath)&quot;
-"
+cd build
+$(SWIG)\swig.exe -Wall -c++ -package sml -I../../../ClientSML/include -I../../../ElementXML/include -I../../../ConnectionSML/include -java &quot;$(InputPath)&quot;
+cd .."
 					Outputs="$(InputName)_wrap.cxx"/>
 			</FileConfiguration>
 		</File>
