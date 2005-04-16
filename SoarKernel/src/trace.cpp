@@ -895,9 +895,9 @@ inline void set_tagged_trace_formats(agent* thisAgent){
  /* --- add tagged stack trace formats --- */
 
   add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL, 
-	                "<state goal_level=\"%sd\" decision_cycle_count=\"%dc\" current_state_id=\"%cs>");
+	                "<state stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_state_id=\"%cs>");
   add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
-                    "<operator goal_level=\"%sd\" decision_cycle_count=\"%dc\" current_operator_id=\"%co>");
+                    "<operator stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_operator_id=\"%co>");
 }
 
 
