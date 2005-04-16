@@ -501,6 +501,12 @@ namespace gSKI {
 	  virtual int GetInterruptCheckRate() const	= 0 ;
 	  virtual void SetInterruptCheckRate(int newRate) = 0 ;
 
+	  /**
+	  * @brief Notify listeners to start or stop the entire system (the simulation)
+	  **/
+	  virtual void FireSystemStart() = 0 ;
+	  virtual void FireSystemStop() = 0 ;
+
       private:
          //
          // We are adding an interface here to allow for some workarounds

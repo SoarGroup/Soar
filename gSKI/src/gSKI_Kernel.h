@@ -463,11 +463,13 @@ namespace gSKI
 	  int GetInterruptCheckRate() const	;
 	  void SetInterruptCheckRate(int newRate) ;
 
-      public:
+	  /**
+	  * @brief Notify listeners to start or stop the entire system (the simulation)
+	  **/
+	  void FireSystemStart() ;
+	  void FireSystemStop() ;
 
-		 // Notify listeners to start or stop the entire system (the simulation)
-		 void FireSystemStart() ;
-		 void FireSystemStop() ;
+      public:
 
 		 /** Notify listeners that Soar is running and give them a chance to interrupt it (without having to start up separate threads etc.) */
 		 void FireInterruptCheckEvent() ;
