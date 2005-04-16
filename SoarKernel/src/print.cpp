@@ -1230,11 +1230,11 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
     }
 	
 	if (action == PRINTING) {
-		generate_tagged_output(thisAgent, "</production>");
+		generate_tagged_output(thisAgent, "></production>");
 	} else if (action == FIRING) {
-		generate_tagged_output(thisAgent, "</production></firing_production>");
+		generate_tagged_output(thisAgent, "></production></firing_production>");
 	} else if (action == RETRACTING) {
-		generate_tagged_output(thisAgent, "</production></retracting_production>");
+		generate_tagged_output(thisAgent, "></production></retracting_production>");
 	}
 }
 
