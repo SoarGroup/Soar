@@ -1027,14 +1027,25 @@ char const*	Agent::StopSelf()
 /*************************************************************
 * @brief Run Soar for the specified number of decisions
 *************************************************************/
-char const* Agent::RunSelf(unsigned long decisions)
+char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 {
 	// Convert int to a string
 	std::ostringstream ostr ;
-	ostr << decisions ;
+	ostr << numberSteps ;
 
 	// Create the command line for the run command
-	std::string cmd = "run --self -d " + ostr.str() ;
+	std::string step = (stepSize == sml_DECISION) ? "-d" : (stepSize == sml_PHASE) ? "-p" : "-e" ;
+	std::string cmd = "run " + step + " " + ostr.str() ;
+
+	// Execute the run command.
+	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
+	return pResult ;
+}
+
+char const* Agent::RunSelfForever()
+{
+	// Create the command line for the run command
+	std::string cmd = "run --self" ;
 
 	// Execute the run command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;

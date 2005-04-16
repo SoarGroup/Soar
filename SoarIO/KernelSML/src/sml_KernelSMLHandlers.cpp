@@ -129,8 +129,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_GetAgentList]		= &sml::KernelSML::HandleGetAgentList ;
 	m_CommandMap[sml_Names::kCommand_RegisterForEvent]	= &sml::KernelSML::HandleRegisterForEvent ;
 	m_CommandMap[sml_Names::kCommand_UnregisterForEvent]= &sml::KernelSML::HandleRegisterForEvent ;	// Note -- both register and unregister go to same handler
-	m_CommandMap[sml_Names::kCommand_SuppressSystemStart] = &sml::KernelSML::HandleSuppressSystemEvents ;
-	m_CommandMap[sml_Names::kCommand_SuppressSystemStop]  = &sml::KernelSML::HandleSuppressSystemEvents ; // Note -- both stop/start go to same handler
+	m_CommandMap[sml_Names::kCommand_FireEvent]			= &sml::KernelSML::HandleFireEvent ;
 	m_CommandMap[sml_Names::kCommand_SetInterruptCheckRate] = &sml::KernelSML::HandleSetInterruptCheckRate ;
 }
 
@@ -399,19 +398,27 @@ bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandNam
 	return ok ;
 }
 
-bool KernelSML::HandleSuppressSystemEvents(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+// Fire a particular event at the request of the client.
+bool KernelSML::HandleFireEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
 	unused(pResponse) ; unused(pConnection) ; unused(pError) ; unused(pAgent) ;
 
 	// Get the parameters
-	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, true) ;
-	bool stop  = strcmp(sml_Names::kCommand_SuppressSystemStop, pCommandName) == 0 ;
+	char const* pEventName = pIncoming->GetArgValue(sml_Names::kParamEventID) ;
+
+	if (!pEventName)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Event id is missing") ;
+	}
+
+	// Convert from the event name to the id value
+	int id = ConvertStringToEvent(pEventName) ;
 
 	// Make the call.
-	if (stop)
-		SetSuppressSystemStop(state) ;
-	else
-		SetSuppressSystemStart(state) ;
+	if (id == smlEVENT_SYSTEM_START)
+		GetKernel()->FireSystemStart() ;
+	else if (id == smlEVENT_SYSTEM_STOP)
+		GetKernel()->FireSystemStop() ;
 
 	return true ;
 }

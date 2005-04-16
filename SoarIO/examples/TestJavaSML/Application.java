@@ -146,11 +146,15 @@ public class Application
 		if (m_Kernel.HadError())
 			throw new IllegalStateException("Error creating agent: " + m_Kernel.GetLastErrorDescription()) ;
 		
+		String cwd = agent.ExecuteCommandLine("pwd") ;
+		String path = pKernel.GetLibraryLocation() ;
+		path += "/tests/testjavasml.soar" ;
+		
 		// Load some productions
-		boolean load = agent.LoadProductions("tests/testjavasml.soar") ;
+		boolean load = agent.LoadProductions(path) ;
 
 		if (!load || agent.HadError())
-			throw new IllegalStateException("Error loading productions from testsml.soar: " + agent.GetLastErrorDescription()) ;
+			throw new IllegalStateException("Error loading productions from testjavasml.soar: " + agent.GetLastErrorDescription()) ;
 
 		Identifier pInputLink = agent.GetInputLink() ;
 

@@ -756,14 +756,31 @@ bool Kernel::ExecuteCommandLineXML(char const* pCommandLine, char const* pAgentN
 * @returns The result of executing the run command.
 *		   The output from during the run is sent to a different callback.
 *************************************************************/
-char const* Kernel::RunAllAgents(unsigned long decisions)
+char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize)
 {
 	// Convert int to a string
 	std::ostringstream ostr ;
-	ostr << decisions ;
+	ostr << numberSteps ;
 
 	// Create the command line for the run command
-	std::string cmd = "run -d " + ostr.str() ;
+	std::string step = (stepSize == sml_DECISION) ? "-d" : (stepSize == sml_PHASE) ? "-p" : "-e" ;
+	std::string cmd = "run " + step + " " + ostr.str() ;
+
+	// The command line currently requires an agent in order
+	// to execute a run command, so we provide one (which one should make no difference).
+	if (GetNumberAgents() == 0)
+		return "There are no agents to run" ;
+
+	Agent* pFirstAgent = GetAgentByIndex(0) ;
+
+	// Execute the run command.
+	char const* pResult = ExecuteCommandLine(cmd.c_str(), pFirstAgent->GetAgentName()) ;
+	return pResult ;
+}
+
+char const* Kernel::RunAllAgentsForever()
+{
+	std::string cmd = "run" ;
 
 	// The command line currently requires an agent in order
 	// to execute a run command, so we provide one (which one should make no difference).
@@ -823,19 +840,9 @@ char const* Kernel::RunAllTilOutput(unsigned long maxDecisions)
 *
 * The request to Stop may not be honored immediately.
 * Soar will stop at the next point it is considered safe to do so.
-*
-* @param stopSystem		If true, fires a SystemStop event after stopping Soar.
-*						(This overrides the SuppressSystemStop call below).
-*						If false, fires a SystemStop event after stopping Soar if
-*						the event has not been suppressed by a SuppressSystemStop call.
 *************************************************************/
-char const* Kernel::StopAllAgents(bool stopSystem)
+char const* Kernel::StopAllAgents()
 {
-	// If we want to fire a system stop event make sure its not
-	// been suppressed.
-	if (stopSystem)
-		SetSuppressSystemStop(false) ;
-
 	std::string cmd = "stop-soar" ;
 
 	// The command line currently requires an agent in order
@@ -851,49 +858,40 @@ char const* Kernel::StopAllAgents(bool stopSystem)
 }
 
 /*************************************************************
-* @brief   Controls whether Soar will issue a "SystemStart" when
-*		   Soar is next run.  This event is sent by default and
-*		   each run resets the flag so it needs to be suppressed for
-*		   each run if a client wishes to prevent the system from
-*		   starting.
+* @brief   Causes the kernel to issue a SYSTEM_START event.
 *
-*		   This command allows a client to run Soar without running
-*		   an associated simulation (which should listen for the SystemStart
-*		   event and only start running when it sees that event).
+*		   The expectation is that a simulation will be listening
+*		   for this event and on receiving this event it will start
+*		   running the Soar agents.
 *
-* @param state	If true, causes Soar to not send system start.
-*               If false, Soar will send system start as usual.
+*		   Thus calling this method will generally lead to Soar running
+*		   but indirectly through a simulation.
 *************************************************************/
-bool Kernel::SetSuppressSystemStart(bool state)
+bool Kernel::FireStartSimulationEvent()
 {
 	AnalyzeXML response ;
 
-	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SuppressSystemStart, NULL, sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_FireEvent, NULL, sml_Names::kParamEventID, m_pEventMap->ConvertToString(smlEVENT_SYSTEM_START)) ;
 	return ok ;
 }
 
 /*************************************************************
-* @brief   Controls whether Soar will issue a "SystemStop" when
-*		   Soar next completes a "run".  This event is sent by default and
-*		   each run resets the flag so it needs to be suppressed for
-*		   each run if a client wishes to prevent the system from
-*		   stopping.
+* @brief   Causes the kernel to issue a SYSTEM_STOP event.
 *
-*		   This command allows a client to run Soar through a series
-*		   of small steps (e.g. repeated "RunTilOutput" calls) that
-*		   are seen by the user as a single continuous run.
-*		   When the user actively presses a "stop" button to stop Soar
-*		   or the simulation, then the client calls the "Stop" method with
-*		   systemStop set to true, triggering an event.
+*		   A running simulation should listen for this event
+*		   and stop running Soar when this event is fired.
 *
-* @param state	If true, causes Soar to not send system stop.
-*               If false, Soar will send system stop as usual when Soar next stops.
+*		   NOTE: Calling "StopAllAgents()" also fires this
+*		   event, so it's not clear there's ever a need to fire
+*		   this event independently.  It's included in the API
+*		   for completeness in case we find a use or change the
+*		   semantics for "stop-soar".
 *************************************************************/
-bool Kernel::SetSuppressSystemStop(bool state)
+bool Kernel::FireStopSimulationEvent()
 {
 	AnalyzeXML response ;
 
-	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SuppressSystemStop, NULL, sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_FireEvent, NULL, sml_Names::kParamEventID, m_pEventMap->ConvertToString(smlEVENT_SYSTEM_STOP)) ;
 	return ok ;
 }
 
@@ -994,6 +992,27 @@ bool Kernel::IsRunCommand(char const* pCommandLine)
 bool Kernel::GetLastCommandLineResult()
 {
 	return m_CommandLineSucceeded ;
+}
+
+/*************************************************************
+* @brief Get the current value of the "set-library-location" path variable.
+*
+* This points to the location where the kernelSML library was loaded
+* (unless it has been changed since the load).
+*************************************************************/
+std::string Kernel::GetLibraryLocation()
+{
+	AnalyzeXML response ;
+
+	std::string cmd = "set-library-location" ;	// Without params this does a get
+
+	bool ok = ExecuteCommandLineXML(cmd.c_str(), NULL, &response) ;
+
+	if (!ok)
+		return "" ;
+
+	std::string path = response.GetArgValue(sml_Names::kParamDirectory) ;
+	return path ;
 }
 
 /*************************************************************

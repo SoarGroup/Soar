@@ -328,45 +328,6 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	if (doInitSoars)
 		pAgent->InitSoar() ;
 
-	//cout << "About to do first run" << endl ;
-
-	int countStarts, countStops ;
-	countStarts = 0 ;
-	countStops = 0 ;
-	int systemStart = pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_START, &MySystemHandler, &countStarts) ;
-	int systemStop = pKernel->RegisterForSystemEvent(smlEVENT_SYSTEM_STOP, &MySystemHandler, &countStops) ;
-
-	// Test the kernel level "are agents running" event.
-	int temp1 = pKernel->RegisterForAgentEvent(smlEVENT_BEFORE_AGENTS_RUN_STEP, &MyAgentEventHandler, 0) ;
-
-	std::string result = pAgent->RunSelf(2) ;
-
-	if (countStarts != countStops || countStarts != 1)
-	{
-		cout << "Erorr with system start/stop events" << endl ;
-		return false ;
-	}
-
-	// Now try a run with suppressed events
-	pKernel->SetSuppressSystemStart(true) ;
-	pAgent->RunSelf(2) ;
-
-	// Run it again -- should get a start this time
-	pAgent->RunSelf(2) ;
-
-	pKernel->SetSuppressSystemStop(true) ;
-	pAgent->RunSelf(2) ;
-
-	if (countStarts != 3 || countStops != 3)
-	{
-		cout << "Erorr with suppressing system start/stop events" << endl ;
-		return false ;
-	}
-
-	pKernel->UnregisterForAgentEvent(temp1) ;
-	pKernel->UnregisterForSystemEvent(systemStart) ;
-	pKernel->UnregisterForSystemEvent(systemStop) ;
-
 	// Throw in a pattern as a test
 	std::string pattern = pAgent->ExecuteCommandLine("print -i (s1 ^* *)") ;
 
@@ -428,7 +389,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	*/
 
 	// Nothing should match here
-	result = pAgent->RunSelf(4) ;
+	std::string result = pAgent->RunSelf(4) ;
 
 	if (beforeCount != 1 || afterCount != 1)
 	{
@@ -740,7 +701,10 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 				return ok;
 			}
 
-			bool load = pAgent->LoadProductions("tests/testsml.soar") ;
+			std::string path = pKernel->GetLibraryLocation() ;
+			path += "/tests/testsml.soar" ;
+
+			bool load = pAgent->LoadProductions(path.c_str()) ;
 			unused(load);
 
 			if (pAgent->HadError())

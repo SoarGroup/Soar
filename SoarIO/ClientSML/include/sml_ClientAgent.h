@@ -472,7 +472,8 @@ public:
 	* @returns The result of executing the run command.
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
-	char const* RunSelf(unsigned long decisions) ;
+	char const* RunSelf(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
+	char const* RunSelfForever() ;
 
 	/*************************************************************
 	* @brief Interrupt the currently running Soar agent.
@@ -514,7 +515,7 @@ public:
 	* @param maxDecisions	If Soar runs for this many decisions without generating output, stop.
 	*						15 was used in SGIO.
 	*************************************************************/
-	char const* RunSelfTilOutput(unsigned long maxDecisions) ;
+	char const* RunSelfTilOutput(unsigned long maxDecisions = 15) ;
 
 	/*************************************************************
 	* @brief Resend the complete input link to the kernel

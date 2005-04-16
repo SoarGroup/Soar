@@ -192,6 +192,13 @@ typedef enum {
     sml_DECISION_PHASE,
 } smlPhase;
 
+typedef enum
+{
+	sml_ELABORATION,
+	sml_PHASE,
+	sml_DECISION,
+} smlRunStepSize ;
+
 // These typedefs all define types of functions.
 // For example: typedef void (*X)(type1 arg1, type2 arg2) means we're defining function "X" to take (type1 arg1, type2 arg2) and return void.
 // To provide such a handler define a function with this type and pass its address in to the registration function for the event.
