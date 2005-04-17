@@ -555,15 +555,15 @@ public class MainFrame
 	public void initComponents()
 	{
 		// Add the menus
-		m_FileMenu = FileMenu.createMenu(this, getDocument(), "File", 'F');
-		m_EditMenu = menu.EditMenu.createMenu(this, getDocument(), "Edit", 'E');
-		m_PrintMenu    = PrintMenu.createMenu(this, getDocument(), "Print", 'P') ;
-		m_CommandsMenu = CommandsMenu.createMenu(this, getDocument(), "Commands", 'C');
-		m_DebugLevelMenu = DebugLevelMenu.createMenu(this, getDocument(), "Debug Level", 'D');
-		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "Demos", 'M');
-		m_LayoutMenu = LayoutMenu.createMenu(this, getDocument(), "Layout", 'L') ;
-		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "Agents", 'A');
-		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "Kernel", 'K');
+		m_FileMenu = FileMenu.createMenu(this, getDocument(), "&File");
+		m_EditMenu = menu.EditMenu.createMenu(this, getDocument(), "&Edit");
+		m_PrintMenu    = PrintMenu.createMenu(this, getDocument(), "&Print") ;
+		m_CommandsMenu = CommandsMenu.createMenu(this, getDocument(), "&Commands");
+		m_DebugLevelMenu = DebugLevelMenu.createMenu(this, getDocument(), "&Debug Level");
+		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "De&mos");
+		m_LayoutMenu = LayoutMenu.createMenu(this, getDocument(), "&Layout") ;
+		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "&Agents");
+		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "&Kernel");
 
 		getShell().setMenuBar(m_MenuBar);
 

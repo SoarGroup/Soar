@@ -100,8 +100,8 @@ public class Document
 		
 		// BUGBUG: The name and description should come from the classes.
 		// The list should come from scanning the drive for classes in the modules folder and pulling them in.
-		Module combo1 = new Module("Trace Window", "Commands are entered at a prompt.  Output from the commands and trace output from runs is shown in a text window.", modules.TraceView.class) ;
-		Module tree   = new Module("Tree View", "Commands are entered at a prompt and output is displayed in a tree, providing a hierarchical view of the output", TreeTraceView.class) ;
+		Module combo1 = new Module("Text Trace Window", "Commands are entered at a prompt.  Output from the commands and trace output from runs is shown in a text window.", modules.TraceView.class) ;
+		Module tree   = new Module("Tree Trace Window", "Commands are entered at a prompt and output is displayed in a tree, providing a hierarchical view of the output", TreeTraceView.class) ;
 		Module combo2 = new Module("Auto Update Window", "The user's command is automatically executed at the end of each run.", modules.UpdateCommandView.class) ;
 		Module combo3 = new Module("Keep Window", "Commands are entered at a prompt and the results are displayed in a scrolling text window.  Trace output from runs is not shown.", modules.KeepCommandView.class) ;
 		Module combo4 = new Module("Button Bar", "A collection of user-customizable buttons", modules.ButtonView.class) ;

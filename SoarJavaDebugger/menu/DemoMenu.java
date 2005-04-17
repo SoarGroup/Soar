@@ -67,23 +67,20 @@ public class DemoMenu
 //    private AbstractAction m_DemoPathItem  	= new AbstractAction("Set the library path (contains the demos)...")	{ public void actionPerformed(ActionEvent e) { setLibraryPath() ; } } ;
 
 	/** Create this menu */
-	public static DemoMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
+	public static DemoMenu createMenu(MainFrame frame, Document doc, String title)
 	{
 		DemoMenu menu = new DemoMenu() ;
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title, mnemonicChar) ;
+		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}
 	
-	private BaseMenu makeMenu(Menu parent, String title, char mnemonicChar)
+	private BaseMenu makeMenu(Menu parent, String title)
 	{
-		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
-		
-		// Look up the user's saved value (if there is one)
-		//String savedPath = m_Frame.getAppStringProperty("DemoMenu.Library") ;
+		BaseMenu menu = new BaseMenu(parent, title) ;
 		
 		BaseMenu blocks = menu.addSubmenu("Blocks World") ;
 		blocks.add(m_BlocksWorld) ;

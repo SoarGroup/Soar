@@ -17,6 +17,9 @@ import doc.* ;
 
 import org.eclipse.swt.widgets.Menu;
 
+import sml.AnalyzeXML;
+import sml.sml_Names;
+
 /********************************************************************************************
 * 
 * The file menu
@@ -29,34 +32,36 @@ public class FileMenu
 	private MainFrame m_Frame = null ;
 	private Document  m_Document = null ;
 	
-	private AbstractAction m_LoadSource = new AbstractAction("Load source file...") { public void actionPerformed(ActionEvent e) { loadSource() ; } } ;
-	private AbstractAction m_LoadRete = new AbstractAction("Load production memory (rete)...") { public void actionPerformed(ActionEvent e) { loadRete(e) ; } } ;
-	private AbstractAction m_SaveRete = new AbstractAction("Save production memory (rete)...") { public void actionPerformed(ActionEvent e) { saveRete(e) ; } } ;
-	private AbstractAction m_LogNewFile 	 = new AbstractAction("Log output to new file...") { public void actionPerformed(ActionEvent e) { logNewFile(e) ; } } ;
-	private AbstractAction m_LogExistingFile = new AbstractAction("Append log output to existing file...") { public void actionPerformed(ActionEvent e) { logAppendFile(e) ; } } ;
-	private AbstractAction m_LogClose = new AbstractAction("Turn off logging") { public void actionPerformed(ActionEvent e) { logClose(e) ; } } ;
-	private AbstractAction m_LogStatus = new AbstractAction("Logging status")   { public void actionPerformed(ActionEvent e) { logStatus(e) ; } } ;
-	private AbstractAction m_Load 	 = new AbstractAction("Load window layout...") { public void actionPerformed(ActionEvent e) { loadPerformed(e) ; } } ;
-	private AbstractAction m_Save  	 = new AbstractAction("Save window layout...") { public void actionPerformed(ActionEvent e) { savePerformed(e) ; } } ;
-	private AbstractAction m_Exit 	 = new AbstractAction("Exit") 			{ public void actionPerformed(ActionEvent e) { exitPerformed(e) ; } } ;
+	private AbstractAction m_LoadSource = new AbstractAction("Load &source file...") { public void actionPerformed(ActionEvent e) { loadSource() ; } } ;
+	private AbstractAction m_ChangeDirectory = new AbstractAction("&Change current folder...") { public void actionPerformed(ActionEvent e) { changeDirectory() ; } } ;
+	private AbstractAction m_LoadRete = new AbstractAction("&Load production memory (rete)...") { public void actionPerformed(ActionEvent e) { loadRete(e) ; } } ;
+	private AbstractAction m_SaveRete = new AbstractAction("Save production memory (&rete)...") { public void actionPerformed(ActionEvent e) { saveRete(e) ; } } ;
+	private AbstractAction m_LogNewFile 	 = new AbstractAction("Log output to &new file...") { public void actionPerformed(ActionEvent e) { logNewFile(e) ; } } ;
+	private AbstractAction m_LogExistingFile = new AbstractAction("&Append log output to existing file...") { public void actionPerformed(ActionEvent e) { logAppendFile(e) ; } } ;
+	private AbstractAction m_LogClose = new AbstractAction("Turn &off logging") { public void actionPerformed(ActionEvent e) { logClose(e) ; } } ;
+	private AbstractAction m_LogStatus = new AbstractAction("Logging &status")   { public void actionPerformed(ActionEvent e) { logStatus(e) ; } } ;
+	private AbstractAction m_Load 	 = new AbstractAction("Load &window layout...") { public void actionPerformed(ActionEvent e) { loadPerformed(e) ; } } ;
+	private AbstractAction m_Save  	 = new AbstractAction("Save w&indow layout...") { public void actionPerformed(ActionEvent e) { savePerformed(e) ; } } ;
+	private AbstractAction m_Exit 	 = new AbstractAction("E&xit") 			{ public void actionPerformed(ActionEvent e) { exitPerformed(e) ; } } ;
 
 	/** Create this menu */
-	public static FileMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
+	public static FileMenu createMenu(MainFrame frame, Document doc, String title)
 	{
 		FileMenu menu = new FileMenu() ;
 		menu.m_Document = doc ;
 		menu.m_Frame    = frame ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title, mnemonicChar) ;
+		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}
 	
-	private BaseMenu makeMenu(Menu parent, String title, char mnemonicChar)
+	private BaseMenu makeMenu(Menu parent, String title)
 	{
-		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
+		BaseMenu menu = new BaseMenu(parent, title) ;
 		
 		menu.add(m_LoadSource) ;
+		menu.add(m_ChangeDirectory) ;
 		menu.addSeparator() ;
 		menu.add(m_LoadRete) ;
 		menu.add(m_SaveRete) ;
@@ -73,7 +78,56 @@ public class FileMenu
 		
 		return menu ;
 	}
+
+	public String getCurrentDirectory()
+	{
+		if (!m_Document.isConnected())
+			return null ;
+		
+		String pwd = m_Document.getSoarCommands().getWorkingDirectoryCommand() ;
+		
+		AnalyzeXML response = new AnalyzeXML() ;
+		boolean ok = m_Frame.executeCommandXML(pwd, response) ;
+
+		// Check if the command failed
+		if (!ok)
+		{
+			response.delete() ;
+			return "" ;
+		}
+		
+		// Debug code to look at the result of the command in XML
+		//String check = response.GenerateXMLString(true) ;
+		String location = response.GetArgValue(sml_Names.getKParamDirectory()) ;
+		
+		// BADBAD: Need to strip quotes - they shouldn't really be added
+		if (location != null && location.length() > 2 && location.charAt(0) == '"')
+		{
+			// Chop leading and trailing quote
+			location = location.substring(1, location.length() - 1) ;
+		}
+
+		// We do explicit clean up so we can check for memory leaks when debugger exits.
+		// (See executeCommandXMLcomment for more).
+		response.delete() ;
+		
+		return location ;
+	}
 	
+	/** Dialog to select user select a new current working directory */
+	public void changeDirectory()
+	{
+		String cwd = getCurrentDirectory() ;
+		
+		String newPath = SaveLoad.SelectFolderDialog(m_Frame.getWindow(), cwd, null, "Select the current working directory") ;
+		
+		if (newPath != null)
+		{
+			String sourceLine = m_Document.getSoarCommands().getChangeDirectoryCommand(newPath) ;
+			m_Frame.executeCommandPrimeView(sourceLine, true) ;
+		}
+	}
+
 	/** Load a source file */
 	public void loadSource()
 	{

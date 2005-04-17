@@ -151,4 +151,19 @@ public class SaveLoad
 
 	    return filePath ;
 	}
+	
+	public static String SelectFolderDialog(Composite parent, String initialFolder, String title, String message)
+	{
+		DirectoryDialog dialog = new DirectoryDialog(parent.getShell()) ;
+		
+		if (title != null)
+			dialog.setText(title) ;
+		if (message != null)
+			dialog.setMessage(message) ;
+		if (initialFolder != null)
+			dialog.setFilterPath(initialFolder) ;
+		
+		String path = dialog.open() ;
+		return path ;
+	}
 }

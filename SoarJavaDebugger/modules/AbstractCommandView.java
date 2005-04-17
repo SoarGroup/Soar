@@ -19,6 +19,7 @@ import menu.ParseSelectedText;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.custom.*;
 
@@ -62,6 +63,76 @@ public abstract class AbstractCommandView extends AbstractComboView
 		m_Text.setText("") ;
 	}
 
+	/************************************************************************
+	* 
+	* Search for the next occurance of 'text' in this view and place the selection
+	* at that point.
+	* 
+	* @param text			The string to search for
+	* @param searchDown		If true search from top to bottom
+	* @param matchCase		If true treat the text as case-sensitive
+	* @param wrap			If true after reaching the bottom, continue search from the top
+	* @param searchHidden	If true and this view has hidden text (e.g. unexpanded tree nodes) search that text
+	* 
+	*************************************************************************/
+	public boolean find(String text, boolean searchDown, boolean matchCase, boolean wrap, boolean searchHiddenText)
+	{
+		String windowText = m_Text.getText() ;
+		
+		// If we're case insensitive shift all to lower case
+		if (!matchCase)
+		{
+			windowText = windowText.toLowerCase() ;
+			text = text.toLowerCase() ;
+		}
+		
+		// Find out where we're starting from
+		Point selectionPoint = m_Text.getSelection() ;
+		int selectionStart = selectionPoint.x ;
+		
+		int start = -1 ;
+		boolean done ;
+		do
+		{
+			// Assume we're done after this pass unless told otherwise
+			done = true ;
+			
+			if (searchDown)
+			{
+				start = windowText.indexOf(text, selectionStart + 1) ;
+			}
+			else
+			{
+				start = windowText.lastIndexOf(text, selectionStart - 1) ;
+			}
+			
+			if (start == -1)
+			{
+				if (wrap)
+				{
+					// If fail to find text with the basic search repeat it here
+					// which produces a wrap effect.
+					done = false ;
+					wrap = false ;	// Only do it once
+					selectionStart = searchDown ? -1 : windowText.length() ;
+				}
+				else
+				{
+					// If we're not wrapping (or already did the wrap) return false
+					// to signal we failed to find anything.
+					return false ;
+				}
+			}
+		} while (!done) ;
+		
+		int end = start + text.length() ;
+		
+		// Set the newly found text to be selected
+		m_Text.setSelection(start, end) ;
+		
+		return true ;
+	}
+	
 	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
 	{
 		if (m_Text.getCaretPosition() == -1)

@@ -215,6 +215,20 @@ public abstract class AbstractView implements AgentFocusListener
 	
 	/************************************************************************
 	* 
+	* Search for the next occurance of 'text' in this view and place the selection
+	* at that point.
+	* 
+	* @param text			The string to search for
+	* @param searchDown		If true search from top to bottom
+	* @param matchCase		If true treat the text as case-sensitive
+	* @param wrap			If true after reaching the bottom, continue search from the top
+	* @param searchHidden	If true and this view has hidden text (e.g. unexpanded tree nodes) search that text
+	* 
+	*************************************************************************/
+	public abstract boolean find(String text, boolean searchDown, boolean matchCase, boolean wrap, boolean searchHiddenText) ;
+    
+	/************************************************************************
+	* 
 	* Register and unregister for Soar events for this agent.
 	* (E.g. a trace window might register for the print event)
 	* 

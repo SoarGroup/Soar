@@ -29,30 +29,30 @@ public class PrintMenu
 	private MainFrame m_Frame = null ;
 	private Document  m_Document = null ;
 	
-	private AbstractAction m_PrintProductions = new AbstractAction("Print all productions")  { public void actionPerformed(ActionEvent e) { printProductions(e) ; } } ;
-	private AbstractAction m_PrintChunks      = new AbstractAction("Print all chunks")  { public void actionPerformed(ActionEvent e) { printChunks(e) ; } } ;
-	private AbstractAction m_PrintJustifications = new AbstractAction("Print all justifications")  { public void actionPerformed(ActionEvent e) { printJustifications(e) ; } } ;
-	private AbstractAction m_PrintStack = new AbstractAction("Print goal/state stack")  { public void actionPerformed(ActionEvent e) { printStack(e) ; } } ;
-	private AbstractAction m_PrintState = new AbstractAction("Print state")  { public void actionPerformed(ActionEvent e) { printState(e) ; } } ;
-	private AbstractAction m_PrintOperator = new AbstractAction("Print operator")  { public void actionPerformed(ActionEvent e) { printOperator(e) ; } } ;
-	private AbstractAction m_PrintTopState = new AbstractAction("Print top state")  { public void actionPerformed(ActionEvent e) { printTopState(e) ; } } ;
-	private AbstractAction m_PrintSuperState = new AbstractAction("Print super state")  { public void actionPerformed(ActionEvent e) { printSuperState(e) ; } } ;
+	private AbstractAction m_PrintProductions = new AbstractAction("Print all &productions")  { public void actionPerformed(ActionEvent e) { printProductions(e) ; } } ;
+	private AbstractAction m_PrintChunks      = new AbstractAction("Print all &chunks")  { public void actionPerformed(ActionEvent e) { printChunks(e) ; } } ;
+	private AbstractAction m_PrintJustifications = new AbstractAction("Print all &justifications")  { public void actionPerformed(ActionEvent e) { printJustifications(e) ; } } ;
+	private AbstractAction m_PrintStack = new AbstractAction("Print &goal/state stack")  { public void actionPerformed(ActionEvent e) { printStack(e) ; } } ;
+	private AbstractAction m_PrintState = new AbstractAction("Print &state")  { public void actionPerformed(ActionEvent e) { printState(e) ; } } ;
+	private AbstractAction m_PrintOperator = new AbstractAction("Print &operator")  { public void actionPerformed(ActionEvent e) { printOperator(e) ; } } ;
+	private AbstractAction m_PrintTopState = new AbstractAction("Print &top state")  { public void actionPerformed(ActionEvent e) { printTopState(e) ; } } ;
+	private AbstractAction m_PrintSuperState = new AbstractAction("Print s&uper state")  { public void actionPerformed(ActionEvent e) { printSuperState(e) ; } } ;
 
 	/** Create this menu */
-	public static PrintMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
+	public static PrintMenu createMenu(MainFrame frame, Document doc, String title)
 	{
 		PrintMenu menu = new PrintMenu() ;
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title, mnemonicChar) ;
+		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}
 	
-	private BaseMenu makeMenu(Menu parent, String title, char mnemonicChar)
+	private BaseMenu makeMenu(Menu parent, String title)
 	{
-		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
+		BaseMenu menu = new BaseMenu(parent, title) ;
 		
 		menu.add(m_PrintStack) ;
 		menu.add(m_PrintState) ;

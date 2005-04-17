@@ -35,27 +35,27 @@ public class KernelMenu
 	private Document m_Document = null ;
 	private MainFrame m_Frame	= null ;
 
-	private AbstractAction m_StartKernel      = new AbstractAction("Create new local Soar Kernel instance")	{ public void actionPerformed(ActionEvent e) { startKernelPerformed(e) ; } } ;
-	private AbstractAction m_StopKernel       = new AbstractAction("Delete local Soar Kernel instance") 	{ public void actionPerformed(ActionEvent e) { stopKernelPerformed(e) ; } } ;
-	private AbstractAction m_RemoteConnect 	  = new AbstractAction("Connect to remote Soar...") 			{ public void actionPerformed(ActionEvent e) { remoteConnectPerformed(e) ; } } ;
-	private AbstractAction m_RemoteDisconnect = new AbstractAction("Disconnect from remote Soar") 			{ public void actionPerformed(ActionEvent e) { remoteDisconnectPerformed(e) ; } } ;
-	private AbstractAction m_KernelLocation   = new AbstractAction("Set the path to the Kernel...") 			{ public void actionPerformed(ActionEvent e) { setKernelLocation() ; } } ;
+	private AbstractAction m_StartKernel      = new AbstractAction("Create new &local Soar Kernel instance")	{ public void actionPerformed(ActionEvent e) { startKernelPerformed(e) ; } } ;
+	private AbstractAction m_StopKernel       = new AbstractAction("Delete local &Soar Kernel instance") 	{ public void actionPerformed(ActionEvent e) { stopKernelPerformed(e) ; } } ;
+	private AbstractAction m_RemoteConnect 	  = new AbstractAction("Connect to &remote Soar...") 			{ public void actionPerformed(ActionEvent e) { remoteConnectPerformed(e) ; } } ;
+	private AbstractAction m_RemoteDisconnect = new AbstractAction("&Disconnect from remote Soar") 			{ public void actionPerformed(ActionEvent e) { remoteDisconnectPerformed(e) ; } } ;
+	private AbstractAction m_KernelLocation   = new AbstractAction("Set the &path to the Kernel...") 			{ public void actionPerformed(ActionEvent e) { setKernelLocation() ; } } ;
 
 	/** Create this menu */
-	public static KernelMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
+	public static KernelMenu createMenu(MainFrame frame, Document doc, String title)
 	{
 		KernelMenu menu = new KernelMenu() ;
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title, mnemonicChar) ;
+		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}
 	
-	private BaseMenu makeMenu(Menu parent, String title, char mnemonicChar)
+	private BaseMenu makeMenu(Menu parent, String title)
 	{
-		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
+		BaseMenu menu = new BaseMenu(parent, title) ;
 		
 		menu.add(m_RemoteConnect) ;
 		menu.add(m_RemoteDisconnect) ;

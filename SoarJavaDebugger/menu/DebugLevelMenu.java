@@ -29,7 +29,7 @@ public class DebugLevelMenu
 	private MainFrame m_Frame = null ;
 	private Document  m_Document = null ;
 	
-	private AbstractAction m_WatchStatus 	= new AbstractAction("Show current watch status")  { public void actionPerformed(ActionEvent e) { watchStatus(e) ; } } ;
+	private AbstractAction m_WatchStatus 	= new AbstractAction("Show current &watch status")  { public void actionPerformed(ActionEvent e) { watchStatus(e) ; } } ;
 	private AbstractAction m_WatchDecisions = new AbstractAction("1. Decisions")  { public void actionPerformed(ActionEvent e) { watchDecisions(e) ; } } ;
 	private AbstractAction m_WatchPhases    = new AbstractAction("2. Phases")  { public void actionPerformed(ActionEvent e) { watchPhases(e) ; } } ;
 	private AbstractAction m_WatchAllProductions  	= new AbstractAction("3. All productions")  { public void actionPerformed(ActionEvent e) { watchAllProductions(e) ; } } ;
@@ -40,12 +40,12 @@ public class DebugLevelMenu
 	private AbstractAction m_WatchWmes   			= new AbstractAction("4. Wmes")  		{ public void actionPerformed(ActionEvent e) { watchWmes(e) ; } } ;
 	private AbstractAction m_WatchPreferences   	= new AbstractAction("5. Preferences")  { public void actionPerformed(ActionEvent e) { watchPreferences(e) ; } } ;
 
-	private AbstractAction m_WatchNone   			= new AbstractAction("Watch nothing")  		{ public void actionPerformed(ActionEvent e) { watchNone(e) ; } } ;
-	private AbstractAction m_WatchOne   			= new AbstractAction("Watch level 1 only")  { public void actionPerformed(ActionEvent e) { watchOne(e) ; } } ;
-	private AbstractAction m_WatchTwo   			= new AbstractAction("Watch level 1-2 only")  { public void actionPerformed(ActionEvent e) { watchTwo(e) ; } } ;
-	private AbstractAction m_WatchThree   			= new AbstractAction("Watch level 1-3 only")  { public void actionPerformed(ActionEvent e) { watchThree(e) ; } } ;
-	private AbstractAction m_WatchFour   			= new AbstractAction("Watch level 1-4 only")  { public void actionPerformed(ActionEvent e) { watchFour(e) ; } } ;
-	private AbstractAction m_WatchFive   			= new AbstractAction("Watch level 1-5")  { public void actionPerformed(ActionEvent e) { watchFive(e) ; } } ;
+	private AbstractAction m_WatchNone   			= new AbstractAction("Watch &nothing")  		{ public void actionPerformed(ActionEvent e) { watchNone(e) ; } } ;
+	private AbstractAction m_WatchOne   			= new AbstractAction("Watch level &1 only")  { public void actionPerformed(ActionEvent e) { watchOne(e) ; } } ;
+	private AbstractAction m_WatchTwo   			= new AbstractAction("Watch level 1-&2 only")  { public void actionPerformed(ActionEvent e) { watchTwo(e) ; } } ;
+	private AbstractAction m_WatchThree   			= new AbstractAction("Watch level 1-&3 only")  { public void actionPerformed(ActionEvent e) { watchThree(e) ; } } ;
+	private AbstractAction m_WatchFour   			= new AbstractAction("Watch level 1-&4 only")  { public void actionPerformed(ActionEvent e) { watchFour(e) ; } } ;
+	private AbstractAction m_WatchFive   			= new AbstractAction("Watch level 1-&5")  { public void actionPerformed(ActionEvent e) { watchFive(e) ; } } ;
 
 	private AbstractAction m_WmesNone   			= new AbstractAction("Production wme detail - none")  		{ public void actionPerformed(ActionEvent e) { wmesNone(e) ; } } ;
 	private AbstractAction m_WmesTimeTags   		= new AbstractAction("Production wme detail - time tags")  { public void actionPerformed(ActionEvent e) { wmesTimeTags(e) ; } } ;
@@ -57,20 +57,20 @@ public class DebugLevelMenu
 	private AbstractAction m_WatchBacktracing   	= new AbstractAction("Watch backtracing as chunks created")  		{ public void actionPerformed(ActionEvent e) { watchBacktracing(e) ; } } ;
 
 	/** Create this menu */
-	public static DebugLevelMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
+	public static DebugLevelMenu createMenu(MainFrame frame, Document doc, String title)
 	{
 		DebugLevelMenu menu = new DebugLevelMenu() ;
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title, mnemonicChar) ;
+		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}
 	
-	private BaseMenu makeMenu(Menu parent, String title, char mnemonicChar)
+	private BaseMenu makeMenu(Menu parent, String title)
 	{
-		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
+		BaseMenu menu = new BaseMenu(parent, title) ;
 		
 		menu.add(m_WatchStatus) ;
 		menu.addSeparator() ;
@@ -95,8 +95,8 @@ public class DebugLevelMenu
 		menu.addCheckedItem(m_WmesTimeTags, false) ;
 		menu.addCheckedItem(m_WmesFull, false) ;
 		menu.addSeparator() ;
-		menu.addCheckedItem(m_WatchAliases, false) ;
-		menu.addCheckedItem(m_WatchProductionLoading, true) ;
+//		menu.addCheckedItem(m_WatchAliases, false) ;
+//		menu.addCheckedItem(m_WatchProductionLoading, true) ;
 		menu.addCheckedItem(m_WatchLearnPrint, false) ;
 		menu.addCheckedItem(m_WatchBacktracing, false) ;
 

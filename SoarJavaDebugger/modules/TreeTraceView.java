@@ -23,6 +23,9 @@ import manager.Pane;
 import menu.ParseSelectedText;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ControlEditor;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
@@ -66,6 +69,10 @@ public class TreeTraceView extends AbstractComboView
 
 	protected static final int kCachedSpaces = 100 ;
 	protected static final String[] kPadSpaces = new String[kCachedSpaces] ;
+	
+	protected final static String kNextKey = "next" ;
+	protected final static String kPrevKey = "prev" ;
+	protected final static String kLazyKey = "lazy" ;
 	
 	static
 	{
@@ -119,7 +126,7 @@ public class TreeTraceView extends AbstractComboView
 	********************************************************************************************/
 	protected void createDisplayControl(Composite parent)
 	{
-		m_Tree = new Tree(parent, SWT.MULTI | SWT.BORDER) ;
+		m_Tree = new Tree(parent, SWT.SINGLE | SWT.BORDER) ;
 		m_LastRoot = null ;
 		m_DummyChild = null ;
 		
@@ -128,6 +135,8 @@ public class TreeTraceView extends AbstractComboView
 		// When the user expands a node in the tree we may unpack some cached data
 		m_Tree.addListener (SWT.Expand, new ExpandListener()) ;
 
+		m_Tree.addMouseListener(new MouseAdapter() { public void mouseDown(MouseEvent e) { if (e.button == 1) leftMouseDown(e.x, e.y) ; } } ) ;
+		
 		m_Buttons = new Composite(m_ComboContainer, 0) ;
 		m_Buttons.setLayout(new RowLayout()) ;
 		Composite owner = m_Buttons ;
@@ -167,6 +176,345 @@ public class TreeTraceView extends AbstractComboView
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandAll(false) ; } } ) ;
 	}
 	
+	/********************************************************************************************
+	 * 
+	 * Returns the next item in the tree after the given item.
+	 * 
+	 * The 'next' algorithm traverses parents before their children.
+	 * 
+	 * If "includeCollapsed" is true we search inside collapsed nodes (which may also
+	 * require lazy expansion as we cache data within the tree without expanding it).
+	 * 
+	 * @param current
+	 * @param includeCollapsed
+	 * @return
+	********************************************************************************************/
+	protected TreeItem getNextItemInternal(TreeItem current, boolean includeCollapsed)
+	{
+		// If the current item has children, return the first child
+		if (current.getItemCount() > 0 && (current.getExpanded() || includeCollapsed))
+		{
+			return current.getItems()[0] ;
+		}
+		
+		while (current != null)
+		{
+			// Look up the next sibling item in the tree
+			// To make this efficient we link the nodes together when they
+			// are created with next and prev key items.
+			TreeItem next = (TreeItem)current.getData(kNextKey) ;
+			
+			if (next != null)
+				return next ;
+			
+			// If we're at the end of the list of siblings, move to the parent and
+			// the try to move to the next parent (by looping through here again).
+			TreeItem parent = current.getParentItem() ;
+			current = parent ;
+		}
+		
+		return null ;
+	}
+
+	/********************************************************************************************
+	 * 
+	 * Returns the next item in the tree after the given item.
+	 * 
+	 * The 'next' algorithm traverses parents before their children.
+	 * 
+	 * If "includeCollapsed" is true we search inside collapsed nodes (which may also
+	 * require lazy expansion as we cache data within the tree without expanding it).
+	 * 
+	 * @param current
+	 * @param includeCollapsed
+	 * @return
+	********************************************************************************************/
+	protected TreeItem getNextItem(TreeItem current, boolean includeCollapsed)
+	{
+		TreeItem next = getNextItemInternal(current, includeCollapsed) ;
+		
+		// If we've been asked to search hidden text we
+		// need to expand the contents of nodes we land on that have lazy (cached) data
+		if (includeCollapsed && next != null && next.getExpanded() == false && next.getParentItem() == null)
+			expandRoot(next, false) ;
+		
+		return next ;
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * Returns the previous item in the tree after the given item.
+	 * 
+	 * The 'prev' algorithm traverses children before their parents.
+	 * 
+	 * If "includeCollapsed" is true we search inside collapsed nodes (which may also
+	 * require lazy expansion as we cache data within the tree without expanding it).
+	 * 
+	 * @param current
+	 * @param includeCollapsed
+	 * @return
+	********************************************************************************************/
+	protected TreeItem getPrevItem(TreeItem current, boolean includeCollapsed)
+	{
+		TreeItem prev = (TreeItem)current.getData(kPrevKey) ;
+		
+		if (prev == null)
+			return current.getParentItem() ;
+		
+		// If we've moved back to a node that has children
+		// we want to the last descendant in that tree.
+		current = prev ;
+		while (current.getItemCount() > 0 && (current.getExpanded() || includeCollapsed))
+		{
+			// If we're searching inside collapsed nodes we may need to expand text that
+			// has been cached within a tree node and is yet to be expanded.
+			if (includeCollapsed && current.getParentItem() == null && current.getItemCount() == 1)
+				expandRoot(current, false) ;
+			
+			current = current.getItems()[current.getItemCount()-1] ;
+		}
+			
+		return current ;
+	}
+
+	/********************************************************************************************
+	 * 
+	 * Returns the first item in the tree (the first root)
+	 * 
+	********************************************************************************************/
+	protected TreeItem getFirstTreeItem()
+	{
+		return m_Tree.getItems()[0] ;
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * Returns the last item in the tree (the last descendant of the last root in the tree).
+	 * 
+	 * @param includeCollapsed - Includes nodes that are currently collapsed in the calculation
+	 * 
+	********************************************************************************************/
+	protected TreeItem getLastTreeItem(boolean includeCollapsed)
+	{
+		TreeItem last = m_Tree.getItems()[m_Tree.getItemCount() - 1] ;
+		
+		while (last.getItemCount() > 0 && (includeCollapsed || last.getExpanded()))
+		{
+			if (includeCollapsed && last.getParentItem() == null && last.getItemCount() == 1)
+				expandRoot(last, false) ;
+			
+			last = last.getItems()[last.getItemCount()-1] ;
+		}
+		
+		return last ;
+	}
+	
+	/************************************************************************
+	* 
+	* Search for the next occurance of 'text' in this view and place the selection
+	* at that point.
+	* 
+	* @param text			The string to search for
+	* @param searchDown		If true search from top to bottom
+	* @param matchCase		If true treat the text as case-sensitive
+	* @param wrap			If true after reaching the bottom, continue search from the top
+	* @param searchHidden	If true and this view has hidden text (e.g. unexpanded tree nodes) search that text
+	* 
+	*************************************************************************/
+	public boolean find(String text, boolean searchDown, boolean matchCase, boolean wrap, boolean searchHiddenText)
+	{
+		if (m_Tree.getItemCount() == 0)
+			return false ;
+		
+		// Show the wait cursor as the hidden search could take a while
+		Cursor wait = new Cursor(getWindow().getDisplay(), SWT.CURSOR_WAIT) ;
+		getWindow().getShell().setCursor(wait) ;
+		
+		// Turn off redrawing while we're working with the tree
+		// (searching hidden text could involve creating nodes)
+		m_Tree.setRedraw(false) ;
+
+		// If this is a search where we don't care about case we shift everything
+		// to lower case and match that way.
+		if (!matchCase)
+			text = text.toLowerCase() ;
+		
+		// Get the current selection
+		TreeItem[] selections = m_Tree.getSelection() ;
+		
+		// Default to the top of the entire tree if nothing is selected
+		TreeItem selection = searchDown ? getFirstTreeItem() : getLastTreeItem(searchHiddenText) ;
+
+		// Record where we started from.  If we get back to here we're done
+		TreeItem originalSelection = selection ;
+		
+		// If we have an existing selection, start searching from the next line after this one
+		if (selections.length > 0)
+		{
+			TreeItem start = searchDown ? getNextItem(selections[0], searchHiddenText) : getPrevItem(selections[0], searchHiddenText) ;
+			if (start != null)
+			{
+				// Set the original selection to be the line before 'start' so if we get back to this line we're done.
+				// (So if you find one match and seach for another with wrap you get a 'not found' rather than hitting this again)
+				originalSelection = selections[0] ;
+				selection = start ;
+			}
+		}
+		
+		boolean done = false ;
+		boolean found = false ;
+		
+		while (!done)
+		{
+			// Get the text for the current item and check for a match
+			String windowText = (matchCase) ? selection.getText() : selection.getText().toLowerCase() ;
+			
+			int match = windowText.indexOf(text) ;
+			if (match != -1)
+			{
+				m_Tree.setSelection(new TreeItem[] { selection }) ;
+				done = true ;
+				found = true ;
+				break ;
+			}
+			
+			// Move on to the next item in the tree
+			TreeItem next = searchDown ? getNextItem(selection, searchHiddenText) : getPrevItem(selection, searchHiddenText) ;
+
+//			if (next != null)
+//				System.out.println("Next after " + selection.getText() + " is " + next.getText()) ;
+
+			selection = next ;
+			
+			if (selection == null)
+			{
+				if (wrap)
+				{
+					// Only wrap once
+					wrap = false ;
+					
+					// Move the selection to the top/bottom as necessary to do the wrap
+					selection = searchDown ? getFirstTreeItem() : getLastTreeItem(searchHiddenText) ;
+				}
+				else
+				{
+					done = true ;
+				}
+			}
+			
+			// If we get back to the start of the search we're done
+			if (originalSelection == selection)
+				done = true ;
+		}
+		
+		m_Tree.setRedraw(true) ;
+		
+		getWindow().getShell().setCursor(null) ;
+		wait.dispose() ;
+		return found ;
+	}
+	
+	/*********************************************************************************************
+	 * 
+	 * We want to allow people to copy text out of the tree view.
+	 * That's not easy.
+	 * 
+	 * In order to do it when they click we create a text control on the line
+	 * where they clicked and allow them to copy text from it.
+	 * This is the same method that editable tables use to let you edit them.
+	 * 
+	 * @param e
+	*******************************************************************************************
+	 */
+	protected void leftMouseDown(int mouseX, int mouseY)
+	{
+		// Figure out which item the user clicked on
+		Point pt = new Point(mouseX, mouseY) ;
+		TreeItem item = m_Tree.getItem(pt) ;
+		
+		if (item == null)
+		{
+			//System.out.println("No item clicked") ;
+			return ;
+		}
+
+		ControlEditor editor = new ControlEditor (m_Tree);		
+		editor.grabHorizontal = true;
+
+		final Text text = new Text (m_Tree, SWT.READ_ONLY);
+		Listener textListener = new Listener () {
+			public void handleEvent (final Event e) {
+				switch (e.type) {
+					case SWT.FocusOut:
+						//System.out.println("Focus lost") ;
+						text.dispose ();
+						break;
+					case SWT.Traverse:
+						switch (e.detail) {
+							case SWT.TRAVERSE_RETURN:
+								//FALL THROUGH
+							case SWT.TRAVERSE_ESCAPE:
+								//System.out.println("Traverse event") ;
+								text.dispose ();
+								e.doit = false;
+						}
+						break;
+				}
+			}
+		};
+		text.addListener (SWT.FocusOut, textListener);
+		text.addListener (SWT.Traverse, textListener);
+		text.setText (item.getText());
+		text.setFont(m_Tree.getFont()) ;
+		
+		editor.setEditor(text) ;
+
+		text.setBounds(item.getBounds()) ;
+
+		// Replace the standard right click menu with ours
+		createContextMenu(text) ;
+
+		text.setFocus ();
+		text.setVisible(true) ;
+
+		// This attempt to set the selection isn't working...don't know why
+		int x = item.getBounds().x ;
+		int y = item.getBounds().y ;
+		int offsetX = mouseX - x ;
+		int selectionPoint = getSelectionPoint(offsetX, item) ;
+		
+		text.setSelection(offsetX, offsetX + 1) ;
+//		text.selectAll ();
+		
+		//System.out.println("Set selection " + selectionPoint) ;
+	}
+	
+	protected int getSelectionPoint(int x, TreeItem item)
+	{
+		// Now we have a location inside the item, but what we need to know
+		// is which character they clicked on.  The only way to compute this I can think of
+		// is to generate each substring in turn and check its length against the point.
+		// When we reach the correct length of string we've found the character.
+		// This is slow and a bit clumsy, but since it's just on a right-click I think it's ok.
+		GC gc = new GC(m_Tree) ;
+		
+		int selectionPoint = -1 ;
+		String text = item.getText() ;
+		for (int i = 0 ; i < text.length() ; i++)
+		{
+			Point extent = gc.textExtent(text.substring(0, i)) ;
+			if (extent.x > x)
+			{
+				selectionPoint = (i == 0) ? 0 : i-1 ;
+				break ;
+			}
+		}
+
+		gc.dispose() ;
+		
+		return selectionPoint ;
+	}
+	
 	/************************************************************************
 	* 
 	* Go from current selection (where right click occured) to the object
@@ -181,7 +529,6 @@ public class TreeTraceView extends AbstractComboView
 		
 		if (item == null)
 		{
-			System.out.println("no item selected") ;
 			return null ;
 		}
 		
@@ -194,24 +541,12 @@ public class TreeTraceView extends AbstractComboView
 		// is to generate each substring in turn and check its length against the point.
 		// When we reach the correct length of string we've found the character.
 		// This is slow and a bit clumsy, but since it's just on a right-click I think it's ok.
-		GC gc = new GC(m_Tree) ;
-		
-		int selectionPoint = -1 ;
-		String text = item.getText() ;
-		for (int i = 0 ; i < text.length() ; i++)
-		{
-			Point extent = gc.textExtent(text.substring(0, i)) ;
-			if (extent.x > offsetX)
-			{
-				selectionPoint = (i == 0) ? 0 : i-1 ;
-				break ;
-			}
-		}
-
-		gc.dispose() ;
+		int selectionPoint = getSelectionPoint(offsetX, item) ;
 		
 		if (selectionPoint == -1)
 			return null ;
+
+		String text = item.getText() ;
 
 		// One final issue is that we sometimes need to search back up the trace
 		// to find values (e.g. looking for the identifier from a print) which could
@@ -312,7 +647,7 @@ public class TreeTraceView extends AbstractComboView
 		
 		TreeItem[] items = root.getItems() ;
 		
-		TreeData treeData = (TreeData)items[0].getData() ;
+		TreeData treeData = (TreeData)items[0].getData(kLazyKey) ;
 		
 		// If there's no cached data here then once again we are done
 		// (either we're not using a cache or its already been expanded)
@@ -328,6 +663,8 @@ public class TreeTraceView extends AbstractComboView
 		// Get rid of the dummy item
 		items[0].dispose() ;
 		
+		TreeItem prev = null ;
+		
 		for (Iterator iter = treeData.getLinesIterator() ; iter.hasNext() ;)
 		{
 			String text = (String)iter.next() ;
@@ -341,6 +678,13 @@ public class TreeTraceView extends AbstractComboView
 				
 				TreeItem node = new TreeItem (root, 0);
 				node.setText (lines[i]);
+				
+				// Link the nodes together to make navigating from one node to the next
+				// more efficient later
+				if (prev != null)
+					prev.setData(kNextKey, node) ;
+				node.setData(kPrevKey, prev) ;
+				prev = node ;
 			}				
 		}
 					
@@ -428,13 +772,13 @@ public class TreeTraceView extends AbstractComboView
 			if (m_LastRoot.getItemCount() == 0)
 			{
 				m_DummyChild = new TreeItem(m_LastRoot, 0) ;
-				m_DummyChild.setData(new TreeData()) ;
+				m_DummyChild.setData(kLazyKey, new TreeData()) ;
 			}
 
 			// The dummy child should always exist (unless somehow we already expanded the tree, which is possible)
 			if (m_DummyChild != null)
 			{
-				TreeData currentData = (TreeData)m_DummyChild.getData() ;
+				TreeData currentData = (TreeData)m_DummyChild.getData(kLazyKey) ;
 				currentData.addLine(text) ;
 				return ;
 			}
@@ -447,6 +791,12 @@ public class TreeTraceView extends AbstractComboView
 			m_Tree.setRedraw(false) ;
 
 		String[] lines = text.split(getLineSeparator()) ;
+
+		TreeItem prev = null ;
+
+		// Get the previous item added to this root (if there is one)
+		if (m_LastRoot.getItemCount() > 0)
+			prev = m_LastRoot.getItems()[m_LastRoot.getItemCount()-1] ;
 		
 		for (int i = 0 ; i < lines.length ; i++)
 		{	
@@ -456,6 +806,13 @@ public class TreeTraceView extends AbstractComboView
 			TreeItem node = new TreeItem (lastItem, 0);
 			node.setText (lines[i]);
 			
+			// Link the nodes together to make navigating from one node to the next
+			// more efficient later
+			if (prev != null)
+				prev.setData(kNextKey, node) ;
+			node.setData(kPrevKey, prev) ;
+			prev = node ;
+
 			if (m_AutoExpand && !lastItem.getExpanded())
 			{
 				lastItem.setExpanded(true) ;
@@ -481,7 +838,7 @@ public class TreeTraceView extends AbstractComboView
 	{
 		String[] lines = text.split(getLineSeparator()) ;
 
-		TreeItem lastItem = null ;
+		TreeItem lastItem = m_LastRoot ;
 		
 		// Stop updating the tree while we add to it
 		m_Tree.setRedraw(false) ;
@@ -493,11 +850,17 @@ public class TreeTraceView extends AbstractComboView
 			
 			TreeItem root = new TreeItem (m_Tree, 0);
 			root.setText (lines[i]);
+			
+			// Link the nodes together with prev and next keys to make
+			// searching more efficient.
+			if (lastItem != null)
+				lastItem.setData(kNextKey, root) ;
+			root.setData(kPrevKey, lastItem) ;
 			lastItem = root ;
 		}
 
 		// Scroll to the bottom -- horribly slow
-		if (lastItem != null)
+		if (lastItem != m_LastRoot)
 		{
 			m_Tree.showItem(lastItem) ;
 			m_LastRoot = lastItem ;
@@ -515,6 +878,11 @@ public class TreeTraceView extends AbstractComboView
 	public void clearDisplay()
 	{
 		m_Tree.removeAll() ;
+		m_LastRoot = null ;
+		
+		if (m_DummyChild != null && !m_DummyChild.isDisposed())
+			m_DummyChild.dispose() ;
+		m_DummyChild = null ;
 	}
 	
 	/** Returns a string of spaces of the given length (>= 0).  This is an efficient calculation */
@@ -655,15 +1023,20 @@ public class TreeTraceView extends AbstractComboView
 				
 			} else if (xmlTrace.IsTagPhase())
 			{
+				String status = xmlTrace.GetPhaseStatus() ;
+				
 				text.append("--- ") ;
 				text.append(xmlTrace.GetPhaseName()) ;
 				text.append(" ") ;
 				text.append("phase ") ;
-				if (xmlTrace.GetPhaseStatus() != null)
-					text.append(xmlTrace.GetPhaseStatus()) ;
+				if (status != null)
+					text.append(status) ;
 				text.append("---") ;
 				
-				if (text.length() != 0)
+				// Don't show end of phase messages
+				boolean endOfPhase = (status != null && status.equalsIgnoreCase("end")) ;
+				
+				if (text.length() != 0 && !endOfPhase)
 					this.appendSubText(text.toString(), false) ;
 			}
 			else if (xmlTrace.IsTagAddWme() || xmlTrace.IsTagRemoveWme())

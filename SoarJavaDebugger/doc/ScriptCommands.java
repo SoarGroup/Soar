@@ -599,6 +599,12 @@ public class ScriptCommands
 			return null ;
 		}
 		
+		if (first.equals("askcd"))
+		{
+			m_Frame.getFileMenu().changeDirectory() ;
+			return null ;
+		}
+		
 		if (first.equals("removeview"))
 		{
 			return executeRemoveView(tokens) ;

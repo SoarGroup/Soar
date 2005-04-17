@@ -40,20 +40,20 @@ public class AgentMenu
 	private AbstractAction m_DestroyAgent 	  = new AbstractAction("Destroy Agent") 				{ public void actionPerformed(ActionEvent e) { destroyAgent(e) ; } } ;
 
 	/** Create this menu */
-	public static AgentMenu createMenu(MainFrame frame, Document doc, String title, char mnemonicChar)
+	public static AgentMenu createMenu(MainFrame frame, Document doc, String title)
 	{
 		AgentMenu menu = new AgentMenu() ;
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title, mnemonicChar) ;
+		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}
 	
-	private BaseMenu makeMenu(Menu parent, String title, char mnemonicChar)
+	private BaseMenu makeMenu(Menu parent, String title)
 	{
-		BaseMenu menu = new BaseMenu(parent, title, mnemonicChar) ;
+		BaseMenu menu = new BaseMenu(parent, title) ;
 		
 		menu.add(m_SelectAgent) ;
 		menu.addSeparator() ;

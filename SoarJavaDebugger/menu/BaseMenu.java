@@ -31,17 +31,14 @@ public class BaseMenu
 	private Menu m_Menu ;
 	private MenuItem m_Header ;
 
-	public BaseMenu(Menu bar, String title, char mnemonicChar)
+	public BaseMenu(Menu bar, String title)
 	{
 		m_Header = new MenuItem(bar, SWT.CASCADE) ;
 		m_Header.setText(title) ;
 		
 		m_Menu = new Menu(bar.getShell(), SWT.DROP_DOWN) ;
 		m_Header.setMenu(m_Menu) ;
-		
-		if (mnemonicChar != 0)
-			m_Header.setAccelerator(SWT.CTRL + mnemonicChar) ;
-		
+				
 		// This uses the rather less flexible Swing style model to enable/disable items.
 		// We should probably move that logic into the action objects as a method and have
 		// each report whether it should be enabled or not based on the current state of the system.
@@ -70,7 +67,7 @@ public class BaseMenu
 	
 	public BaseMenu addSubmenu(String name)
 	{
-	   BaseMenu subMenu = new BaseMenu(m_Menu, name, (char)0) ;
+	   BaseMenu subMenu = new BaseMenu(m_Menu, name) ;
 	   return subMenu ;
 	}
 	
@@ -91,6 +88,13 @@ public class BaseMenu
 			}
 		});
 		
+		return item ;
+	}
+	
+	public MenuItem add(AbstractAction action, int accelerator)
+	{
+		MenuItem item = add(action) ;
+		item.setAccelerator(accelerator) ;
 		return item ;
 	}
 

@@ -15,6 +15,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.custom.*;
+import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.program.*;
 import org.eclipse.swt.graphics.*;
@@ -42,74 +43,73 @@ public class SWTApplication
 	// This is just a little place for me to easily test SWT concepts
 	public void startTest() throws Exception
 	{
-		display = new Display ();
-		shell = new Shell (display);
-		shell.setLayout(new GridLayout());
-		coolBar = new CoolBar(shell, SWT.FLAT | SWT.BORDER);
-		coolBar.setLayoutData(new GridData(GridData.FILL_BOTH));
-		ToolBar toolBar = new ToolBar(coolBar, SWT.FLAT | SWT.WRAP);
-		int minWidth = 0;
-		for (int j = 0; j < 5; j++) {
-			int width = 0;
-			ToolItem item = new ToolItem(toolBar, SWT.PUSH);
-			item.setText("B" + j);
-			width = item.getWidth();
-			/* find the width of the widest tool */
-			if (width > minWidth) minWidth = width;
+		Display display = new Display ();
+		Shell shell = new Shell (display);
+		shell.setLayout (new FillLayout ());
+		final Table table = new Table(shell, SWT.BORDER | SWT.MULTI);
+		table.setLinesVisible (true);
+		for (int i=0; i<3; i++) {
+			TableColumn column = new TableColumn (table, SWT.NONE);
+			column.setWidth(100);
 		}
-		CoolItem coolItem = new CoolItem(coolBar, SWT.DROP_DOWN);
-		coolItem.setControl(toolBar);
-		Point size = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-		Point coolSize = coolItem.computeSize (size.x, size.y);
-		coolItem.setMinimumSize(minWidth, coolSize.y);
-		coolItem.setPreferredSize(coolSize);
-		coolItem.setSize(coolSize);
-		/*
-		coolItem.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				if (event.detail == SWT.ARROW) {
-					CoolItem item = (CoolItem) event.widget;
-					Rectangle itemBounds = item.getBounds ();
-					Point pt = coolBar.toDisplay(new Point(itemBounds.x, itemBounds.y));
-					itemBounds.x = pt.x;
-					itemBounds.y = pt.y;
-					ToolBar toolBar = (ToolBar) item.getControl ();
-					ToolItem[] tools = toolBar.getItems ();
-					
-					int i = 0;
-					while (i < tools.length) {
-						Rectangle toolBounds = tools[i].getBounds ();
-						pt = toolBar.toDisplay(new Point(toolBounds.x, toolBounds.y));
-						toolBounds.x = pt.x;
-						toolBounds.y = pt.y;
-						
-						// Figure out the visible portion of the tool by looking at the
-						// intersection of the tool bounds with the cool item bounds.
-				  		Rectangle intersection = itemBounds.intersection (toolBounds);
-				  		
-						// If the tool is not completely within the cool item bounds, then it
-						// is partially hidden, and all remaining tools are completely hidden.
-				  		if (!intersection.equals (toolBounds)) break;
-				  		i++;
+		for (int i=0; i<3; i++) {
+			TableItem item = new TableItem (table, SWT.NONE);
+			item.setText(new String [] {"" + i, "" + i , "" + i});
+		}
+		final TableEditor editor = new TableEditor (table);
+		editor.horizontalAlignment = SWT.LEFT;
+		editor.grabHorizontal = true;
+		table.addListener (SWT.MouseDown, new Listener () {
+			public void handleEvent (Event event) {
+				Rectangle clientArea = table.getClientArea ();
+				Point pt = new Point (event.x, event.y);
+				int index = table.getTopIndex ();
+				while (index < table.getItemCount ()) {
+					boolean visible = false;
+					final TableItem item = table.getItem (index);
+					for (int i=0; i<table.getColumnCount (); i++) {
+						Rectangle rect = item.getBounds (i);
+						if (rect.contains (pt)) {
+							final int column = i;
+							final Text text = new Text (table, SWT.NONE);
+							Listener textListener = new Listener () {
+								public void handleEvent (final Event e) {
+									switch (e.type) {
+										case SWT.FocusOut:
+											item.setText (column, text.getText ());
+											text.dispose ();
+											break;
+										case SWT.Traverse:
+											switch (e.detail) {
+												case SWT.TRAVERSE_RETURN:
+													item.setText (column, text.getText ());
+													//FALL THROUGH
+												case SWT.TRAVERSE_ESCAPE:
+													text.dispose ();
+													e.doit = false;
+											}
+											break;
+									}
+								}
+							};
+							text.addListener (SWT.FocusOut, textListener);
+							text.addListener (SWT.Traverse, textListener);
+							editor.setEditor (text, item, i);
+							text.setText (item.getText (i));
+							text.selectAll ();
+							text.setFocus ();
+							return;
+						}
+						if (!visible && rect.intersects (clientArea)) {
+							visible = true;
+						}
 					}
-					
-					// Create a menu with items for each of the completely hidden buttons.
-					if (chevronMenu != null) chevronMenu.dispose();
-					chevronMenu = new Menu (coolBar);
-					for (int j = i; j < tools.length; j++) {
-						MenuItem menuItem = new MenuItem (chevronMenu, SWT.PUSH);
-						menuItem.setText (tools[j].getText());
-					}
-					
-					// Drop down the menu below the chevron, with the left edges aligned.
-					pt = coolBar.toDisplay(new Point(event.x, event.y));
-					chevronMenu.setLocation (pt.x, pt.y);
-					chevronMenu.setVisible (true);
+					if (!visible) return;
+					index++;
 				}
 			}
 		});
-		*/
-		shell.pack();
+		shell.pack ();
 		shell.open ();
 		while (!shell.isDisposed ()) {
 			if (!display.readAndDispatch ()) display.sleep ();
@@ -121,6 +121,16 @@ public class SWTApplication
 	{
 		Display display = new Display() ;
 		Shell shell = new Shell(display) ;
+		
+		// We default to showing the contents of the clipboard in the search dialog
+		// so clear it when the app launches, so we don't get random junk in there.
+		// Once the app is going, whatever the user is copying around is a reasonable
+		// thing to start from, but things from before are presumably unrelated.
+	 	Clipboard clipboard = new Clipboard(display);
+		String textData = "";	// Copying an empty string to the clipboard to erase it
+		TextTransfer textTransfer = TextTransfer.getInstance();
+		clipboard.setContents(new Object[]{textData}, new Transfer[]{textTransfer});
+		clipboard.dispose();
 		
 		// The document manages the Soar process
 		m_Document = new Document() ;

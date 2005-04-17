@@ -6,7 +6,7 @@
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
           <pane view="treetrace1" tabAtTop="false" singleView="true" horiz="true">
             <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.TreeTraceView" auto-expand="false" ShowTraceOutput="false" indent="3" Name="treetrace1" ClearEachCommand="false" UpdateOnStop="false">
-              <History Item0="<Type commands here>" Item7="pref" Item11="ru n10" Item10="run 2" Class="helpers.CommandHistory" Item1="run 10" Item12="watch 5" Item6="preferences <s> operator" Item2="watch 3" Item5="preferences <s> operator -names" Size="13" Item9="run 3" Item4="init-soar" Item3="preferences <s> operator --names" Item8="pref <s> operator -names"></History>
+              <History Item0="<Type commands here>" Item7="watch 3" Item11="pref" Item10="preferences <s> operator" Item15="ru n10" Class="helpers.CommandHistory" Item1="pwd" Item12="pref <s> operator -names" Item6="run" Item16="watch 5" Item2="run 5" Item13="run 3" Item5="run 20" Size="17" Item9="preferences <s> operator -names" Item14="run 2" Item4="run 10" Item3="init-soar" Item8="preferences <s> operator --names"></History>
             </view>
           </pane>
           <pane view="buttons3" tabAtTop="false" singleView="true" horiz="true">
@@ -27,9 +27,10 @@
           </pane>
         </composite>
         <pane view="buttons1" tabAtTop="false" singleView="true" horiz="true">
-          <view ButtonCount="5" Class="modules.ButtonView" Name="buttons1">
+          <view ButtonCount="6" Class="modules.ButtonView" Name="buttons1">
             <Button Command="init-soar" Name="Init-soar"></Button>
             <Button InternalCommand="" Command="" Name="Source"></Button>
+            <Button InternalCommand="askcd" Command="" Name="cd"></Button>
             <Button InternalCommand="" Command="excise -a" Name="Excise All"></Button>
             <Button InternalCommand="demo towers-of-hanoi towers-of-hanoi.soar" Name="Towers of Hanoi"></Button>
             <Button InternalCommand="demo water-jug water-jug-look-ahead.soar" Command="" Name="Water Jug Look-Ahead"></Button>
@@ -53,6 +54,9 @@
         </view>
         <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="op_pref" ClearEachCommand="true" UpdateOnStop="true">
           <History Item0="preferences <s> operator --names" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="stats" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="stats" Size="1" Class="helpers.CommandHistory"></History>
         </view>
       </pane>
       <sash weight0="392" Class="class org.eclipse.swt.custom.SashForm" weight1="607" weights="2" style="512">

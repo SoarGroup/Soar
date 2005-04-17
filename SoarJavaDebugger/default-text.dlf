@@ -27,9 +27,10 @@
           </pane>
         </composite>
         <pane view="buttons1" tabAtTop="false" singleView="true" horiz="true">
-          <view ButtonCount="5" Class="modules.ButtonView" Name="buttons1">
+          <view ButtonCount="6" Class="modules.ButtonView" Name="buttons1">
             <Button Command="init-soar" Name="Init-soar"></Button>
             <Button InternalCommand="" Command="" Name="Source"></Button>
+            <Button InternalCommand="askcd" Command="" Name="cd"></Button>
             <Button InternalCommand="" Command="excise -a" Name="Excise All"></Button>
             <Button InternalCommand="demo towers-of-hanoi towers-of-hanoi.soar" Name="Towers of Hanoi"></Button>
             <Button InternalCommand="demo water-jug water-jug-look-ahead.soar" Command="" Name="Water Jug Look-Ahead"></Button>
@@ -53,6 +54,9 @@
         </view>
         <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="op_pref" ClearEachCommand="true" UpdateOnStop="true">
           <History Item0="preferences <s> operator --names" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="stats" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="stats" Size="1" Class="helpers.CommandHistory"></History>
         </view>
       </pane>
       <sash weight0="392" Class="class org.eclipse.swt.custom.SashForm" weight1="607" weights="2" style="512">
