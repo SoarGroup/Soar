@@ -56,7 +56,7 @@ extern "C"
 {
 #endif
 
-/* RBD BUGBUG more comments here, or should this stuff be here at all? */
+/* RBD Need more comments here, or should this stuff be here at all? */
 
 #define UPDATE_LINKS_NORMALLY 0
 #define UPDATE_DISCONNECTED_IDS_LIST 1

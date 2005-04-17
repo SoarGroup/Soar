@@ -30,6 +30,8 @@
 #include "decide.h"
 #include "explain.h"
 
+#include "../../SoarIO/ConnectionSML/include/sock_Debug.h"
+
 extern Bool print_sym (agent* thisAgent, void *item, FILE* f);
 
 namespace gSKI 
@@ -2111,6 +2113,7 @@ namespace gSKI
 
 			wme *pWme;
 
+			PrintDebugFormat("in gSKI::RemoveWmeByTimetag %d", num) ;
 			for (pWme = pSoarAgent->all_wmes_in_rete; pWme != NIL; pWme = pWme->rete_next)
 				if (pWme->timetag == (unsigned long) num)
 					break;

@@ -359,7 +359,7 @@
    * @li PROPOSAL_PHASE: Phase during which operators are proposed and
    *       state elaborations occur. This phase consists of one or more
    *       elaboration phases during which all rules that match fire.
-   * @li SELECTION_PHASE: Phase during which an operator is selected for
+   * @li DECISION_PHASE: Phase during which an operator is selected for
    *       application.  During this phase, if the system cannot choose
    *       a unique and new operator, it will drop into a sub-state.
    * @li APPLY_PHASE: Phase during which an operator is applied.  This
@@ -375,10 +375,9 @@
    typedef enum {
       gSKI_INPUT_PHASE,
       gSKI_PROPOSAL_PHASE,
-      gSKI_SELECTION_PHASE,
+      gSKI_DECISION_PHASE,
       gSKI_APPLY_PHASE,
       gSKI_OUTPUT_PHASE,
-      gSKI_DECISION_PHASE,
    } egSKIPhaseType;
 
    /**
@@ -397,7 +396,7 @@
    *                             production firings)
    * @li RUN_PHASE:             Run a single decision phase.  A decision phase is one of
    *                             the following phase types: gSKI_INPUT_PHASE, gSKI_PROPOSAL_PHASE,
-   *                             gSKI_SELECTION_PHASE, gSKI_APPLY_PHASE, and gSKI_OUTPUT_PHASE.
+   *                             gSKI_DECISION_PHASE, gSKI_APPLY_PHASE, and gSKI_OUTPUT_PHASE.
    * @li RUN_DECISION_CYCLE:    Run a single decision cycle.  A decision cycle is a single iteration
    *                             of all decision phases in sequence.
    * @li RUN_UNTIL_OUTPUT:      Run as many decision cycles as necessary until the agent produces something
@@ -428,10 +427,10 @@
    *      decision phase.  For PROPOSAL and APPLY phases, the smallest
    *      step in the elaboration phase (a single pass of parallel rule
    *      firings).
-   * @li INTERLEAVE_DECISION_PHASE: Run each agent one decision phase before
+   * @li INTERLEAVE_PHASE: Run each agent one decision phase before
    *      moving to the next agent.  A decision phase is one of
    *      the following phase types: gSKI_INPUT_PHASE, gSKI_PROPOSAL_PHASE,
-   *      gSKI_SELECTION_PHASE, gSKI_APPLY_PHASE, and gSKI_OUTPUT_PHASE.
+   *      gSKI_DECISION_PHASE, gSKI_APPLY_PHASE, and gSKI_OUTPUT_PHASE.
    * @li INTERLEAVE_DECISION_CYCLE: Run each agent a full decision cycle
    *      before transfering processing to the next agent.
    * @li INTERLEAVE_OUTPUT: Run each agent until it produces output on the

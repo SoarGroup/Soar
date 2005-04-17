@@ -20,7 +20,7 @@ typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef union symbol_union Symbol;
 
-/* RBD BUGBUG more comments here */
+/* RBD Need more comments here */
 #define CHUNK_COND_HASH_TABLE_SIZE 1024
 #define LOG_2_CHUNK_COND_HASH_TABLE_SIZE 10
 

@@ -2666,37 +2666,44 @@ void do_buffered_wm_and_ownership_changes (agent* thisAgent)
 }
 
 void do_working_memory_phase (agent* thisAgent) {
-   
-   if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) 
-   {
-      if (thisAgent->operand2_mode == TRUE) 
-      {
-         switch (thisAgent->FIRING_TYPE) {
-         case PE_PRODS:
-	   print_phase (thisAgent, "\t--- Change Working Memory (PE) ---\n",0);
-            break;
-         case IE_PRODS:
-	   print_phase (thisAgent, "\t--- Change Working Memory (IE) ---\n",0);
-            break;
-         }
+ 
+   if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
+      if (thisAgent->operand2_mode == TRUE) {		  
+		  if (thisAgent->current_phase == APPLY_PHASE) {  /* it's always IE for PROPOSE */
+			  switch (thisAgent->FIRING_TYPE) {
+                  case PE_PRODS:
+					  print_phase (thisAgent, "\t--- Change Working Memory (PE) ---\n",0);           
+					  break;      
+				  case IE_PRODS:	
+					  print_phase (thisAgent, "\t--- Change Working Memory (IE) ---\n",0);          
+					  break;
+       
+			  }
+		  }
       }
       else
-	print_phase (thisAgent, "\n--- Working Memory Phase ---\n",0);
+		  print_phase (thisAgent, "\n--- Working Memory Phase ---\n",0);
    }
    
    decide_non_context_slots(thisAgent);
    do_buffered_wm_and_ownership_changes(thisAgent);
+
+   if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
+     if (! thisAgent->operand2_mode) {
+ 	  print_phase (thisAgent, "\n--- END Working Memory Phase ---\n",1);
+	 }
+  }
+
 }
 
 void do_decision_phase (agent* thisAgent) 
 {
-   if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-     print_phase (thisAgent, "\n--- Decision Phase ---\n",0);
+   /* phase printing moved to init_soar: do_one_top_level_phase */
 
    decide_context_slots (thisAgent);
    do_buffered_wm_and_ownership_changes(thisAgent);
 
-   /*
+  /*
    * Bob provided a solution to fix WME's hanging around unsupported
    * for an elaboration cycle.
    */

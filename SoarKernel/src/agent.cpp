@@ -92,7 +92,7 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
 
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
-  init_real_time();
+  init_real_time(thisAgent);
 #endif
 
 

@@ -1056,7 +1056,7 @@ Bool reorder_lhs (agent* thisAgent, condition **lhs_top,
   if (!roots) {
     print (thisAgent, "Error:  in production %s,\n", thisAgent->name_of_production_being_reordered);
     print (thisAgent, "        The LHS has no roots.\n");
-    /* BUGBUG most people aren't going to understand this error message */
+    /* hmmm... most people aren't going to understand this error message */
     return FALSE;
   }
 

@@ -77,7 +77,9 @@ namespace gSKI
 
       // Phase remappings (some phases cannot use simple remappings)
       PhaseTypeEnumMapping[INPUT_PHASE]         = gSKI_INPUT_PHASE;
+      PhaseTypeEnumMapping[PROPOSE_PHASE]       = gSKI_PROPOSAL_PHASE;
       PhaseTypeEnumMapping[DECISION_PHASE]      = gSKI_DECISION_PHASE;
+      PhaseTypeEnumMapping[APPLY_PHASE]         = gSKI_APPLY_PHASE;
       PhaseTypeEnumMapping[OUTPUT_PHASE]        = gSKI_OUTPUT_PHASE;
 
       // Event mappings

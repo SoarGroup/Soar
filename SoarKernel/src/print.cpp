@@ -1257,7 +1257,7 @@ void print_list_of_conditions(agent* thisAgent, condition *cond) {
 void print_phase (agent* thisAgent, char * s, bool end_of_phase)
 {
   // should be more consistent with creating string, but for now, for
-  // consistency with previous versions, we'll let existing code set string.
+  // consistency with previous versions, we'll let calling code set string.
   print (thisAgent, s);
 
   // the rest is all for tagged output events
@@ -1277,9 +1277,9 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
   case WM_PHASE:
     if (thisAgent->operand2_mode == TRUE) {
       switch (thisAgent->FIRING_TYPE) {
-      case PE_PRODS:
-	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"PE\"></phase>");
-	return;
+      case PE_PRODS:  /* no longer needed;  Soar8 has PROPOSE/APPLY */
+	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"PE\"></phase> ");
+ 	return;
       case IE_PRODS:
 	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"IE\"></phase>");
 	return;
@@ -1353,8 +1353,9 @@ Added for Release 8.6
 void generate_tagged_output (agent * thisAgent, char * str)
 {
    gSKI_MakeAgentCallback(gSKI_K_EVENT_STRUCTURED_OUTPUT, 0, thisAgent, static_cast<void*>(str));
-   // DJP: gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
-}
+   //uncomment next line to see all tagged output printed in CLI...
+   gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
+ }
 /*
 ===========================
 

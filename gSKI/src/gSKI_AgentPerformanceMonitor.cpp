@@ -437,7 +437,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     /* REW: begin 28.07.96 */
 #ifndef NO_TIMING_STUFF
     double total_kernel_time, total_kernel_msec, derived_kernel_time, monitors_sum, input_function_time, input_phase_total_time, output_function_time, output_phase_total_time, determine_level_phase_total_time,       /* REW: end   05.05.97 */
-     preference_phase_total_time, wm_phase_total_time, decision_phase_total_time, derived_total_cpu_time;
+     propose_phase_total_time, apply_phase_total_time, preference_phase_total_time, wm_phase_total_time, decision_phase_total_time, derived_total_cpu_time;
 
 #ifdef DETAILED_TIMING_STATS
     double match_time, match_msec;
@@ -477,7 +477,8 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 
 #ifndef KERNEL_TIME_ONLY
     derived_kernel_time = timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE]))
-        + timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE]))
+        + timer_value(&current_agent(decision_cycle_phase_timers[PROPOSE_PHASE]))
+        + timer_value(&current_agent(decision_cycle_phase_timers[APPLY_PHASE]))
         + timer_value(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE]))
         + timer_value(&current_agent(decision_cycle_phase_timers[WM_PHASE]))
         + timer_value(&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE]))
@@ -489,7 +490,8 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 
     /* Total of the time spent in callback routines. */
     monitors_sum = timer_value(&current_agent(monitors_cpu_time[INPUT_PHASE]))
-        + timer_value(&current_agent(monitors_cpu_time[DETERMINE_LEVEL_PHASE]))
+        + timer_value(&current_agent(monitors_cpu_time[PROPOSE_PHASE]))
+        + timer_value(&current_agent(monitors_cpu_time[APPLY_PHASE]))
         + timer_value(&current_agent(monitors_cpu_time[PREFERENCE_PHASE]))
         + timer_value(&current_agent(monitors_cpu_time[WM_PHASE]))
         + timer_value(&current_agent(monitors_cpu_time[OUTPUT_PHASE]))
@@ -502,9 +504,11 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
         + timer_value(&current_agent(monitors_cpu_time[INPUT_PHASE]))
         + timer_value(&current_agent(input_function_cpu_time));
 
+
     /* REW: begin 10.30.97 */
-    determine_level_phase_total_time = timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE]))
-        + timer_value(&current_agent(monitors_cpu_time[DETERMINE_LEVEL_PHASE]));
+    //determine_level_phase_total_time = timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE]))
+    //    + timer_value(&current_agent(monitors_cpu_time[DETERMINE_LEVEL_PHASE]));
+	determine_level_phase_total_time = 0;
     /* REW: end   10.30.97 */
 
     /* Total time spent in the preference phase */
@@ -515,6 +519,14 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     wm_phase_total_time = timer_value(&current_agent(decision_cycle_phase_timers[WM_PHASE]))
         + timer_value(&current_agent(monitors_cpu_time[WM_PHASE]));
 
+	    /* Total time spent in the propose phase */
+    propose_phase_total_time = timer_value(&current_agent(decision_cycle_phase_timers[PROPOSE_PHASE]))
+        + timer_value(&current_agent(monitors_cpu_time[PROPOSE_PHASE]));
+
+    /* Total time spent in the apply phase */
+    apply_phase_total_time = timer_value(&current_agent(decision_cycle_phase_timers[APPLY_PHASE]))
+        + timer_value(&current_agent(monitors_cpu_time[APPLY_PHASE]));
+
     /* Total time spent in the output phase */
     output_phase_total_time = timer_value(&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE]))
         + timer_value(&current_agent(monitors_cpu_time[OUTPUT_PHASE]))
@@ -524,14 +536,17 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     decision_phase_total_time = timer_value(&current_agent(decision_cycle_phase_timers[DECISION_PHASE]))
         + timer_value(&current_agent(monitors_cpu_time[DECISION_PHASE]));
 
-    /* The sum of these six phase timers is exactly equal to the 
+    /* The sum of these phase timers is exactly equal to the 
      * derived_total_cpu_time
      */
 
 #ifdef DETAILED_TIMING_STATS
 
+	// KJC removed DETERMINE_LEVEL_PHASE.  Using Propose and Apply  04.05
+
     match_time = timer_value(&current_agent(match_cpu_time[INPUT_PHASE]))
-        + timer_value(&current_agent(match_cpu_time[DETERMINE_LEVEL_PHASE]))
+        + timer_value(&current_agent(match_cpu_time[PROPOSE_PHASE]))
+        + timer_value(&current_agent(match_cpu_time[APPLY_LEVEL_PHASE]))
         + timer_value(&current_agent(match_cpu_time[PREFERENCE_PHASE]))
         + timer_value(&current_agent(match_cpu_time[WM_PHASE]))
         + timer_value(&current_agent(match_cpu_time[OUTPUT_PHASE]))
@@ -540,14 +555,16 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     match_msec = 1000 * match_time;
 
     ownership_time = timer_value(&current_agent(ownership_cpu_time[INPUT_PHASE]))
-        + timer_value(&current_agent(ownership_cpu_time[DETERMINE_LEVEL_PHASE]))
+        + timer_value(&current_agent(ownership_cpu_time[PROPOSE_PHASE]))
+        + timer_value(&current_agent(ownership_cpu_time[APPLY_LEVEL_PHASE]))
         + timer_value(&current_agent(ownership_cpu_time[PREFERENCE_PHASE]))
         + timer_value(&current_agent(ownership_cpu_time[WM_PHASE]))
         + timer_value(&current_agent(ownership_cpu_time[OUTPUT_PHASE]))
         + timer_value(&current_agent(ownership_cpu_time[DECISION_PHASE]));
 
     chunking_time = timer_value(&current_agent(chunking_cpu_time[INPUT_PHASE]))
-        + timer_value(&current_agent(chunking_cpu_time[DETERMINE_LEVEL_PHASE]))
+        + timer_value(&current_agent(chunking_cpu_time[PROPOSE_PHASE]))
+        + timer_value(&current_agent(chunking_cpu_time[APPLY_PHASE]))
         + timer_value(&current_agent(chunking_cpu_time[PREFERENCE_PHASE]))
         + timer_value(&current_agent(chunking_cpu_time[WM_PHASE]))
         + timer_value(&current_agent(chunking_cpu_time[OUTPUT_PHASE]))
@@ -567,11 +584,24 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
         - timer_value(&current_agent(ownership_cpu_time[INPUT_PHASE]))
         - timer_value(&current_agent(chunking_cpu_time[INPUT_PHASE]));
 
-    other_phase_kernel_time[DETERMINE_LEVEL_PHASE] =
-        timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE]))
-        - timer_value(&current_agent(match_cpu_time[DETERMINE_LEVEL_PHASE]))
-        - timer_value(&current_agent(ownership_cpu_time[DETERMINE_LEVEL_PHASE]))
-        - timer_value(&current_agent(chunking_cpu_time[DETERMINE_LEVEL_PHASE]));
+	/* Removed 04.05 for Soar 8.6.0
+     * other_phase_kernel_time[DETERMINE_LEVEL_PHASE] =
+     *    timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE]))
+     *   - timer_value(&current_agent(match_cpu_time[DETERMINE_LEVEL_PHASE]))
+     *   - timer_value(&current_agent(ownership_cpu_time[DETERMINE_LEVEL_PHASE]))
+     *   - timer_value(&current_agent(chunking_cpu_time[DETERMINE_LEVEL_PHASE]));
+     */
+    other_phase_kernel_time[PROPOSE_PHASE] =
+        timer_value(&current_agent(decision_cycle_phase_timers[PROPOSE_PHASE]))
+        - timer_value(&current_agent(match_cpu_time[PROPOSE_PHASE]))
+        - timer_value(&current_agent(ownership_cpu_time[PROPOSE_PHASE]))
+        - timer_value(&current_agent(chunking_cpu_time[PROPOSE_PHASE]));
+
+    other_phase_kernel_time[APPLY_PHASE] =
+        timer_value(&current_agent(decision_cycle_phase_timers[APPLY_PHASE]))
+        - timer_value(&current_agent(match_cpu_time[APPLY_PHASE]))
+        - timer_value(&current_agent(ownership_cpu_time[APPLY_PHASE]))
+        - timer_value(&current_agent(chunking_cpu_time[APPLY_PHASE]));
 
     other_phase_kernel_time[PREFERENCE_PHASE] =
         timer_value(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE]))
@@ -595,7 +625,8 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
         - timer_value(&current_agent(chunking_cpu_time[DECISION_PHASE]));
 
     other_total_kernel_time = other_phase_kernel_time[INPUT_PHASE]
-        + other_phase_kernel_time[DETERMINE_LEVEL_PHASE]
+        + other_phase_kernel_time[PROPOSE_PHASE]
+        + other_phase_kernel_time[APPLY_PHASE]
         + other_phase_kernel_time[PREFERENCE_PHASE]
         + other_phase_kernel_time[WM_PHASE]
         + other_phase_kernel_time[OUTPUT_PHASE]
@@ -640,31 +671,40 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
        2 hours. :) */
 
 #ifndef KERNEL_TIME_ONLY
-    //print(a, "                                                                |    Derived\n");
-	safeSprintf(buf, 127, "                                                                |    Derived\n");
- 	m_result += buf;
-   //print(a, "Phases:      Input      DLP     Pref      W/M   Output Decision |     Totals\n");
-	safeSprintf(buf, 127, "Phases:      Input      DLP     Pref      W/M   Output Decision |     Totals\n");
- 	m_result += buf;
-   //print(a, "================================================================|===========\n");
-	safeSprintf(buf, 127, "================================================================|===========\n");
-	m_result += buf;
+	if (current_agent(operand2_mode)) {
+    	safeSprintf(buf, 127, "                                                        |   Computed\n");
+    	m_result += buf;
+ 		safeSprintf(buf, 127, "Phases:      Input   Propose   Decide   Apply    Output |     Totals\n");
+		m_result += buf;
+ 		safeSprintf(buf, 127, "========================================================|===========\n");
+		m_result += buf;
 
-    //print(a, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
-    //      timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE])),
-    //      timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE])),
-    //      timer_value(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE])),
-    //      timer_value(&current_agent(decision_cycle_phase_timers[WM_PHASE])),
-    //      timer_value(&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE])),
-    //      timer_value(&current_agent(decision_cycle_phase_timers[DECISION_PHASE])), derived_kernel_time);
-	safeSprintf(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+		safeSprintf(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE])),
-          timer_value(&current_agent(decision_cycle_phase_timers[DETERMINE_LEVEL_PHASE])),
+          timer_value(&current_agent(decision_cycle_phase_timers[PROPOSE_PHASE])),
+          timer_value(&current_agent(decision_cycle_phase_timers[DECISION_PHASE])),
+          timer_value(&current_agent(decision_cycle_phase_timers[APPLY_PHASE])),
+          timer_value(&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE])), derived_kernel_time);
+		m_result += buf;
+	} else { 
+		//print(a, "                                                                |    Derived\n");
+		safeSprintf(buf, 127, "                                                        |   Computed\n");
+		//print(a, "Phases:      Input      DLP     Pref      W/M   Output Decision |     Totals\n");
+		safeSprintf(buf, 127, "Phases:      Input      Pref      W/M   Output Decision |     Totals\n");
+		m_result += buf;
+		//print(a, "================================================================|===========\n");
+		safeSprintf(buf, 127, "========================================================|===========\n");
+		m_result += buf;
+
+		safeSprintf(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+          timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[WM_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[OUTPUT_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[DECISION_PHASE])), derived_kernel_time);
-	m_result += buf;
+		m_result += buf;
+
+	}
 
 #ifdef DETAILED_TIMING_STATS
 
@@ -768,26 +808,26 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 #endif  // DETAILED_TIMING_STATS
 
     //print(a, "================================================================|===========\n");
-	safeSprintf(buf, 127, "================================================================|===========\n");
+	safeSprintf(buf, 127, "========================================================|===========\n");
 	m_result += buf;
 
     //print(a, "Input fn: %8.3f                                              | %10.3f\n",
     //      input_function_time, input_function_time);
-	safeSprintf(buf, 127, "Input fn: %8.3f                                              | %10.3f\n",
+	safeSprintf(buf, 127, "Input fn: %8.3f                                      | %10.3f\n",
           input_function_time, input_function_time);
 	m_result += buf;
 
     //print(a, "================================================================|===========\n");
-	safeSprintf(buf, 127, "================================================================|===========\n");
+	safeSprintf(buf, 127, "========================================================|===========\n");
     //print(a, "Outpt fn:                                     %8.3f          | %10.3f\n",
     //      output_function_time, output_function_time);
 	m_result += buf;
-	safeSprintf(buf, 127, "Outpt fn:                                     %8.3f          | %10.3f\n",
+	safeSprintf(buf, 127, "Outpt fn:                                     %8.3f  | %10.3f\n",
           output_function_time, output_function_time);
 	m_result += buf;
 
     //print(a, "================================================================|===========\n");
-	safeSprintf(buf, 127, "================================================================|===========\n");
+	safeSprintf(buf, 127, "========================================================|===========\n");
 	m_result += buf;
 
 	//print(a, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
@@ -797,31 +837,30 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
  //         timer_value(&current_agent(monitors_cpu_time[WM_PHASE])),
  //         timer_value(&current_agent(monitors_cpu_time[OUTPUT_PHASE])),
  //         timer_value(&current_agent(monitors_cpu_time[DECISION_PHASE])), monitors_sum);
-	safeSprintf(buf, 127, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+	safeSprintf(buf, 127, "Callbcks: %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n",
           timer_value(&current_agent(monitors_cpu_time[INPUT_PHASE])),
-          timer_value(&current_agent(monitors_cpu_time[DETERMINE_LEVEL_PHASE])),
-          timer_value(&current_agent(monitors_cpu_time[PREFERENCE_PHASE])),
-          timer_value(&current_agent(monitors_cpu_time[WM_PHASE])),
-          timer_value(&current_agent(monitors_cpu_time[OUTPUT_PHASE])),
-          timer_value(&current_agent(monitors_cpu_time[DECISION_PHASE])), monitors_sum);
+          timer_value(&current_agent(monitors_cpu_time[PROPOSE_PHASE])),
+          timer_value(&current_agent(monitors_cpu_time[DECISION_PHASE])),
+          timer_value(&current_agent(monitors_cpu_time[APPLY_PHASE])),
+          timer_value(&current_agent(monitors_cpu_time[OUTPUT_PHASE])), monitors_sum);
 	m_result += buf;
 
     //print(a, "================================================================|===========\n");
-	safeSprintf(buf, 127, "================================================================|===========\n");
+	safeSprintf(buf, 127, "========================================================|===========\n");
  	m_result += buf;
    //print(a, "Derived---------------------------------------------------------+-----------\n");
-	safeSprintf(buf, 127, "Derived---------------------------------------------------------+-----------\n");
+	safeSprintf(buf, 127, "Computed------------------------------------------------+-----------\n");
 	m_result += buf;
     //print(a, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n\n",
     //      input_phase_total_time,
     //      determine_level_phase_total_time,
     //      preference_phase_total_time,
     //      wm_phase_total_time, output_phase_total_time, decision_phase_total_time, derived_total_cpu_time);
-	safeSprintf(buf, 127, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n\n",
+	safeSprintf(buf, 127, "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n\n",
           input_phase_total_time,
-          determine_level_phase_total_time,
-          preference_phase_total_time,
-          wm_phase_total_time, output_phase_total_time, decision_phase_total_time, derived_total_cpu_time);
+          propose_phase_total_time,
+          decision_phase_total_time,
+          apply_phase_total_time, output_phase_total_time, derived_total_cpu_time);
 	m_result += buf;
 
     //print(a, "Values from single timers:\n");
@@ -951,16 +990,26 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 	safeSprintf(buf, 127, "\n");
 	m_result += buf;
     //print(a, "    *** Time/<x> statistics use the total kernel time from a ***\n");
-	safeSprintf(buf, 127, "    *** Time/<x> statistics use the total kernel time from a ***\n");
+	safeSprintf(buf, 127, "    *** Time/<x> statistics use the total kernel time from a    ***\n");
 	m_result += buf;
     //print(a, "    *** single kernel timer.  Differences between this value ***\n");
-	safeSprintf(buf, 127, "    *** single kernel timer.  Differences between this value ***\n");
+	safeSprintf(buf, 127, "    *** single kernel timer.  Differences between this value    ***\n");
 	m_result += buf;
     //print(a, "    *** and the derived total kernel time  are expected. See ***\n");
-	safeSprintf(buf, 127, "    *** and the derived total kernel time  are expected. See ***\n");
+	safeSprintf(buf, 127, "    *** and the computed total kernel time  are expected. See   ***\n");
 	m_result += buf;
     //print(a, "    *** help  for the  stats command  for more  information. ***\n");
-	safeSprintf(buf, 127, "    *** help  for the  stats command  for more  information. ***\n");
+	safeSprintf(buf, 127, "    *** help  for the  stats command  for more  information.    ***\n");
+	m_result += buf;
+	safeSprintf(buf, 127, "    *** help  for the  stats command  for more  information.    ***\n");
+	m_result += buf;
+	safeSprintf(buf, 127, "    *** The format fields for the timers are 8.3f, limiting     ***\n");
+	m_result += buf;
+	safeSprintf(buf, 127, "    *** printable values to a maximum of approximately 2.5 hrs. ***\n");
+	m_result += buf;
+	safeSprintf(buf, 127, "    *** See gSKI_AgentPerformanceMonitor.cpp to change the      ***\n");
+	m_result += buf;
+	safeSprintf(buf, 127, "    *** fieldwidths of the timers for runtime data > 2 hrs      ***\n");
 	m_result += buf;
 #endif
     /* REW: end 28.07.96 */
@@ -1350,19 +1399,22 @@ void AgentPerformanceMonitor::GetStats(AgentPerformanceData* pStats)
 	pStats->wmeCountMax = a->max_wm_size;
 	pStats->kernelTimeTotal = timer_value(&a->total_kernel_time);
 	pStats->matchTimeInputPhase = timer_value(&a->match_cpu_time[INPUT_PHASE]);
-	pStats->matchTimeDetermineLevelPhase = timer_value(&a->match_cpu_time[DETERMINE_LEVEL_PHASE]);
+//	pStats->matchTimeDetermineLevelPhase = timer_value(&a->match_cpu_time[DETERMINE_LEVEL_PHASE]);
+	pStats->matchTimeDetermineLevelPhase = 0;
 	pStats->matchTimePreferencePhase = timer_value(&a->match_cpu_time[PREFERENCE_PHASE]);
 	pStats->matchTimeWorkingMemoryPhase = timer_value(&a->match_cpu_time[WM_PHASE]);
 	pStats->matchTimeOutputPhase = timer_value(&a->match_cpu_time[OUTPUT_PHASE]);
 	pStats->matchTimeDecisionPhase = timer_value(&a->match_cpu_time[DECISION_PHASE]);
 	pStats->ownershipTimeInputPhase = timer_value(&a->match_cpu_time[INPUT_PHASE]);
-	pStats->ownershipTimeDetermineLevelPhase = timer_value(&a->match_cpu_time[DETERMINE_LEVEL_PHASE]);
+//	pStats->ownershipTimeDetermineLevelPhase = timer_value(&a->match_cpu_time[DETERMINE_LEVEL_PHASE]);
+	pStats->ownershipTimeDetermineLevelPhase = 0;
 	pStats->ownershipTimePreferencePhase = timer_value(&a->match_cpu_time[PREFERENCE_PHASE]);
 	pStats->ownershipTimeWorkingMemoryPhase = timer_value(&a->match_cpu_time[WM_PHASE]);
 	pStats->ownershipTimeOutputPhase = timer_value(&a->match_cpu_time[OUTPUT_PHASE]);
 	pStats->ownershipTimeDecisionPhase = timer_value(&a->match_cpu_time[DECISION_PHASE]);
 	pStats->chunkingTimeInputPhase = timer_value(&a->chunking_cpu_time[INPUT_PHASE]);
-	pStats->chunkingTimeDetermineLevelPhase = timer_value(&a->chunking_cpu_time[DETERMINE_LEVEL_PHASE]);
+//	pStats->chunkingTimeDetermineLevelPhase = timer_value(&a->chunking_cpu_time[DETERMINE_LEVEL_PHASE]);
+	pStats->chunkingTimeDetermineLevelPhase = 0;
 	pStats->chunkingTimePreferencePhase = timer_value(&a->chunking_cpu_time[PREFERENCE_PHASE]);
 	pStats->chunkingTimeWorkingMemoryPhase = timer_value(&a->chunking_cpu_time[WM_PHASE]);
 	pStats->chunkingTimeOutputPhase = timer_value(&a->chunking_cpu_time[OUTPUT_PHASE]);

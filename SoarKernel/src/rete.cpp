@@ -4101,7 +4101,7 @@ void add_hash_info_to_id_test (agent* thisAgent,
    procedure.
 ---------------------------------------------------------------------- */
 
-/* BUGBUG clean this procedure up somehow? */
+/* NOTE: clean this procedure up somehow? */
 
 void rete_node_to_conditions (agent* thisAgent, 
                                                           rete_node *node,
