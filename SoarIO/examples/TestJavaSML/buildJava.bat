@@ -14,5 +14,5 @@ javac Application.java
 @REM FIXME better way to jar this?
 jar cvfm TestJavaSML.jar JarManifest *.class sml/*.class
 
-xcopy *.class %SOARLIB% /y
+xcopy *.jar %SOARLIB% /y
 
