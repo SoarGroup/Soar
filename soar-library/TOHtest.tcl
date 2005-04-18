@@ -81,12 +81,12 @@ set result [$agent LoadProductions demos/towers-of-hanoi/towers-of-hanoi.soar]
 #loads a function to test the user-defined RHS function stuff
 set result [$agent LoadProductions tests/TOHtest.soar]
 
-$kernel ExecuteCommandLine "run 2 -e" Soar1
+$agent RunSelf 2 $sml_ELABORATION
 
 $agent UnregisterForProductionEvent $productionCallbackId
 $agent UnregisterForRunEvent $runCallbackId
 
-$kernel ExecuteCommandLine "run 3" Soar1
+$agent RunSelf 3 $sml_DECISION
 
 puts ""
 
@@ -96,7 +96,7 @@ set result [$kernel ExecuteCommandLine "watch 0" Soar1]
 set result [$kernel ExecuteCommandLine "excise towers-of-hanoi*monitor*operator-execution*move-disk" Soar1]
 
 #run TOH the rest of the way and time it using Tcl's built-in timer
-set speed [time {set result [$kernel ExecuteCommandLine "run" Soar1]}]
+set speed [time {set result [$agent RunSelfForever]}]
 puts "\n$speed"
 
 #the output of "print s1" should contain "^rhstest success"
