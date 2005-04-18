@@ -118,6 +118,9 @@ protected:
 #ifdef SML_DIRECT
 	void SetWMEHandle(Direct_WME_Handle wme)	{ m_WME = wme ; }
 	Direct_WME_Handle GetWMEHandle()			{ return m_WME ; }
+
+	void ClearAllWMObjectHandles()				{ m_WME = 0 ; }
+
 	virtual Direct_WME_Handle DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject) = 0 ;
 #endif
 

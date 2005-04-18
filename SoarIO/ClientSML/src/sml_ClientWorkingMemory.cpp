@@ -724,7 +724,7 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 	std::string id = pSharedValue->GetValueAsString() ;
 
 	// Create the new WME with the same value
-	Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, id.c_str(), GenerateTimeTag()) ;
+	Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pSharedValue, GenerateTimeTag()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -890,6 +890,8 @@ void WorkingMemory::Refresh()
 			// Get the current input link object ids
 			if (GetConnection()->IsDirectConnection())
 			{
+				m_InputLink->ClearAllWMObjectHandles() ;
+
 				Direct_WorkingMemory_Handle wm = ((EmbeddedConnection*)GetConnection())->DirectGetWorkingMemory(GetAgent()->GetAgentName(), true) ;
 				Direct_WMObject_Handle wmobject = ((EmbeddedConnection*)GetConnection())->DirectGetRoot(GetAgent()->GetAgentName(), true) ;
 				m_InputLink->SetWorkingMemoryHandle(wm) ;

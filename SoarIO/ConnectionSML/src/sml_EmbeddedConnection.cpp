@@ -188,8 +188,9 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	}
 
 #else // _WIN32 || LINUX_DIRECT
-	// BUGBUG: We'll need to do a dynamic Linux equivalent here.
-	// Use dlopen and dlsym to dynamically load up the "smlDirect_XXX" methods.
+	// If we're not in Windows and we can't dynamically load methods we'll just get
+	// by with the two we really need.  This just means we can't get maximum optimization on
+	// this particular platform.
 	m_pProcessMessageFunction = &sml_ProcessMessage;
 	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
 

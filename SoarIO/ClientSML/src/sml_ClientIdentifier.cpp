@@ -87,6 +87,21 @@ Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char
 #endif
 }
 
+// Creating one identifier to have the same value as another
+Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
+{
+	m_pSymbol = pLinkedIdentifier->m_pSymbol ;
+	m_pSymbol->UsedBy(this) ;
+
+#ifdef SML_DIRECT
+	// Pass along with working memory object.  (Note: If you pass id's from input-link to output-link this just breaks gSKI all over the place, so please don't).
+	if (pParent)
+		m_pSymbol->m_WM = pParent->GetSymbol()->m_WM ;
+	else
+		m_pSymbol->m_WM = NULL ;
+#endif
+}
+
 Identifier::~Identifier(void)
 {
 	// Indicate this identifier is no longer using the identifier symbol
@@ -302,18 +317,52 @@ void Identifier::Refresh()
 	if (GetAgent()->GetInputLink() != this)
 		WMElement::Refresh() ;
 
-	for (ChildrenIter iter = m_pSymbol->m_Children.begin() ; iter != m_pSymbol->m_Children.end() ; iter++)
+	// If this symbol appears as the value for several identifier objects we only
+	// want to add the child WMEs once.
+	if (m_pSymbol->IsFirstUser(this))
 	{
-		WMElement* pWME = *iter ;
-		pWME->Refresh() ;
+		for (ChildrenIter iter = m_pSymbol->m_Children.begin() ; iter != m_pSymbol->m_Children.end() ; iter++)
+		{
+			WMElement* pWME = *iter ;
+			pWME->Refresh() ;
+		}
 	}
 }
 
 #ifdef SML_DIRECT
+void Identifier::ClearAllWMObjectHandles()
+{
+	SetWMObjectHandle(0) ;
+
+	for (ChildrenIter iter = m_pSymbol->m_Children.begin() ; iter != m_pSymbol->m_Children.end() ; iter++)
+	{
+		WMElement* pWME = *iter ;
+		pWME->ClearAllWMObjectHandles() ;
+	}
+}
+
 Direct_WME_Handle Identifier::DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject)
 {
-	// BUGBUG: We can't just call "Add" here because shared id's won't be handled correctly.
-	Direct_WME_Handle wme = ((EmbeddedConnection*)GetAgent()->GetConnection())->DirectAddID(wm, wmobject, GetAttribute()) ;
+	// If this identifier is sharing ID values with other identifiers, we add the first object
+	// and then link all subsequent ones together.
+	Direct_WME_Handle wme = 0 ;
+	if (m_pSymbol->IsFirstUser(this))
+	{
+		wme = ((EmbeddedConnection*)GetAgent()->GetConnection())->DirectAddID(wm, wmobject, GetAttribute()) ;
+	}
+	else
+	{
+		Identifier* pSharedID = m_pSymbol->GetFirstUser() ;
+		Direct_WMObject_Handle sharedWMObject = pSharedID->GetWMObjectHandle() ;
+
+		// Fatal error during init-soar for direct connection
+		// This wmobject value should have already been created through an add call
+		// when the first user of the symbol was called.
+		assert(sharedWMObject != 0) ;
+
+		wme = ((EmbeddedConnection*)GetAgent()->GetConnection())->DirectLinkID(wm, wmobject, GetAttribute(), sharedWMObject) ;
+	}
+
 	Direct_WMObject_Handle newwmobject = ((EmbeddedConnection*)GetAgent()->GetConnection())->DirectGetThisWMObject(wm, wme) ;
 	SetWMObjectHandle(newwmobject) ;
 	return wme ;

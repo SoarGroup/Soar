@@ -313,15 +313,18 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	pAgent->Update(pWME2, 300) ;
 
 	// Create a new WME that shares the same id as plane
-	//Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
+	Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
 
 	ok = pAgent->Commit() ;
 
+	/*
+	printWMEs(pAgent->GetInputLink()) ;
+	std::string printInput1 = pAgent->ExecuteCommandLine("print --depth 2 I2") ;
+	cout << printInput1 << endl ;
+	cout << endl << "Now work with the input link" << endl ;
+	*/
+
 	// Delete one of the shared WMEs to make sure that's ok
-	// BUGBUG: Turns out in the current gSKI implementation this can cause a crash, if we do proper cleanup
-	// If we release the children of pID here (as we should) then if there is a shared WME (like pID2)
-	// it is left with a reference to children that have been deleted.  I'm pretty sure it's a ref counting bug in gSKI's AddWmeObjectLink method.
-	// The fix I'm using here is to not create the shared WME (pID2) above here.
 	pAgent->DestroyWME(pID) ;
 	pAgent->Commit() ;
 
@@ -341,9 +344,6 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		cout << "Error expanding run command aliases" << endl ;
 		return false ;
 	}
-
-	if (doInitSoars)
-		pAgent->InitSoar() ;
 
 	// Test that we get a callback after the decision cycle runs
 	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
@@ -378,7 +378,8 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	int callback_before = pAgent->RegisterForRunEvent(smlEVENT_BEFORE_RUN_STARTS, MyRunEventHandler, &beforeCount) ;
 	int callback_after = pAgent->RegisterForRunEvent(smlEVENT_AFTER_RUN_ENDS, MyRunEventHandler, &afterCount) ;
 
-	/* Some temp code to generate more complex watch traces.  Not usually part of the test
+	//Some temp code to generate more complex watch traces.  Not usually part of the test
+	/*
 	Identifier* pSquare1 = pAgent->CreateIdWME(pInputLink, "square") ;
 	StringElement* pEmpty1 = pAgent->CreateStringWME(pSquare1, "content", "RANDOM") ;
 	IntElement* pRow1 = pAgent->CreateIntWME(pSquare1, "row", 1) ;
@@ -424,6 +425,12 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	// Print out the standard trace and the same thing as a structured XML trace
 	cout << trace << endl ;
 	cout << structured << endl ;
+
+	/*
+	printWMEs(pAgent->GetInputLink()) ;
+	std::string printInput = pAgent->ExecuteCommandLine("print --depth 2 I2") ;
+	cout << printInput << endl ;
+	*/
 
 	// Then add some tic tac toe stuff which should trigger output
 	Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;

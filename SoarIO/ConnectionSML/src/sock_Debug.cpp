@@ -167,8 +167,10 @@ void PrintDebugSimple(char const* pStr)
 	}
 #endif
 
-	OutputDebugString(pStr) ;
-	OutputDebugString("\n") ;
+	fprintf(stderr, pStr) ;
+	fprintf(stderr, "\n") ;
+//	OutputDebugString(pStr) ;
+//	OutputDebugString("\n") ;
 }
 
 #else	// _WINDOWS

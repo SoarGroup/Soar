@@ -80,6 +80,18 @@ public:
 
 	// Indicates that an identifier is no longer using this as its value
 	void NoLongerUsedBy(Identifier* pIdentifier)  { m_UsedBy.remove(pIdentifier) ; }
+	void UsedBy(Identifier* pIdentifier)		  { m_UsedBy.push_back(pIdentifier) ; }
+
+	bool IsFirstUser(Identifier* pIdentifier)
+	{
+		if (m_UsedBy.size() == 0)
+			return false ;
+
+		Identifier* front = m_UsedBy.front() ;
+		return (front == pIdentifier) ;
+	}
+
+	Identifier* GetFirstUser() { return m_UsedBy.front() ; }
 
 	int  GetNumberUsing()						{ return (int)m_UsedBy.size() ; }
 
@@ -223,6 +235,9 @@ protected:
 	// The normal case (where there is a parent id)
 	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) ;
 
+	// The shared id case (where there is a parent id and value is an identifier that already exists)
+	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long timeTag) ;
+
 	virtual ~Identifier(void);
 
 	void AddChild(WMElement* pWME) { m_pSymbol->AddChild(pWME) ; }
@@ -235,6 +250,9 @@ protected:
 
 	Direct_WorkingMemory_Handle GetWorkingMemoryHandle()		{ return m_pSymbol->m_WM ; }
 	Direct_WMObject_Handle		GetWMObjectHandle()				{ return m_pSymbol->m_WMObject ; }
+
+	// Reset all handles to 0
+	void ClearAllWMObjectHandles() ;
 
 	virtual Direct_WME_Handle DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject) ;
 #endif
