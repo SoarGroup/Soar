@@ -59,33 +59,14 @@ Deprecated Options
    defaults to '1'. The unit argument indicates the unit of measure to be
    used in counting Soar run cycles.
 
-                               Structured Output
+                                Default Aliases
 
-   Most output is handled through a callback, but there is a return value
-   after the run is done.
-
-On Success
-
- <result>
-   <arg name="runresult" type="int">run_result</arg>
- </result>
-
-Notes
-
-     * The run result is as following:
-
- gSKI_RUN_EXECUTING                 = 1;
- gSKI_RUN_INTERRUPTED               = 2;
- gSKI_RUN_COMPLETED                 = 3;
- gSKI_RUN_COMPLETED_AND_INTERRUPTED = 4;
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kIntegerExpected,
-   kIntegerMustBePositive, kTooManyArgs
-
-During Execution
-
-   kAgentRequired, kKernelRequired, kgSKIError
+   +--------------+
+   |Alias|Maps to |
+   |-----+--------|
+   |d    |run -d 1|
+   |-----+--------|
+   |e    |run -e 1|
+   |-----+--------|
+   |step |run 1   |
+   +--------------+

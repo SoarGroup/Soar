@@ -25,19 +25,3 @@
                                     See Also
 
    cd dirs home ls pushd popd source topd
-
-                               Structured Output
-
-On Success
-
- <result output="raw">true</result>
-
-                                  Error Values
-
-During Parsing
-
-   kTooManyArgs
-
-During Execution
-
-   see cd

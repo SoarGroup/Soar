@@ -16,13 +16,5 @@ save-backtraces [-ed]
  \hline 
 \end{tabular}
 \subsubsection*{Description}
-\subsubsection*{Structured Output:}
-\paragraph*{On Query}
- Value parameter is returned of type boolean, true if sysparam is on, false if off. 
-\paragraph*{Otherwise}
- True on success. 
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kUnrecognizedOption, kGetOptError, kTooManyArgs
-\paragraph*{During Execution}
- No errors. 
+ The save-backtraces variable is a toggle that controls whether or not backtracing information (from chunks and justifications) is saved. 
+ When save-backtraces is set to off, backtracing information is not saved and explanations of the chunks and justifications that are formed can not be retrieved. When save-backtraces is set to on, backtracing information can be retrieved by using the explain-backtraces command. Saving backtracing information may slow down the execution of your Soar program, but it can be a very useful tool in understanding how chunks are formed. 

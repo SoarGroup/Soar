@@ -53,26 +53,3 @@
   preferences -n
 
                                     See Also
-
-                               Structured Output
-
-   preferences returns formatted output in a string, this needs to be
-   re-done.--Jonathan 15:44, 18 Feb 2005 (EST)
-
-On Success
-
- <result>
-   <arg param="message" type="string">output_string</arg>
- </result>
-
-Notes
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-During Execution
-
-   kAgentRequired, kKernelRequired, kgSKIError

@@ -17,18 +17,32 @@
 
                                   Description
 
-                               Structured Output
+   The internal-symbols command prints information about the Soar symbol
+   table. Such information is typically only useful for users attempting to
+   debug Soar by locating memory leaks or examining I/O structure.
 
-On Success
+                                    Example
 
-   Returns the output from the kernel in a string message.
-
-Notes
-
-                                  Error Values
-
-   No errors.
-
-During Parsing
-
-During Execution
+  soar> internal-symbols
+  --- Symbolic Constants: ---
+  operator
+  accept
+  evaluate-object
+  problem-space
+  sqrt
+  interrupt
+  mod
+  goal
+  io
+  (...additional symbols deleted for brevity...)
+  --- Integer Constants: ---
+  --- Floating-Point Constants: ---
+  --- Identifiers: ---
+  --- Variables: ---
+  <o>
+  <sso>
+  <to>
+  <ss>
+  <ts>
+  <so>
+  <sss>

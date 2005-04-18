@@ -10,17 +10,38 @@ default-wme-depth [depth]
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
 \hline 
- depth  & A positive integer.  \\
+ depth  & A non-negative integer.  \\
  \hline 
 \end{tabular}
 \subsubsection*{Description}
- Affects print and trace output. 
-\subsubsection*{Structured Output:}
-\paragraph*{On Success}
- Returns the current default wme depth as a int value parameter on query. Returns true if setting is successful. 
-\paragraph*{Notes}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kTooManyArgs, kIntegerMustBePositive
-\paragraph*{During Execution}
- kAgentRequired
+ command or \textbf{wmes}
+ sets the default depth to the specified value. This default depth can be overridden on any particular call to the \textbf{print}
+ or \textbf{wmes}
+ command by explicitly using the \textbf{--depth}
+ flag, e.g.,\textbf{print --depth 10 \emph{args}
+}
+. 
+ Recall that by default, the \textbf{print}
+ command prints \emph{objects}
+ in working memory, not just the individual working memory element. To limit the output to individual working memory elements, the \textbf{--internal}
+ flag must also be specified in the \textbf{print}
+ command. Thus when the print depth is \textbf{0}
+, by default Soar prints the entire object, which is the same behavior as when the print depth is \textbf{1}
+. But if \textbf{--internal}
+ is also specified, then a depth of \textbf{0}
+ prints just the individual WME, while a depth of \textbf{1}
+ prints all WMEs which share that same identifier. This is true when printing timetags, identifiers or WME patterns. 
+ When the depth is greater than \textbf{1}
+, the identifier links from the specified WME's will be followed, so that additional substructure is printed. For example, a depth of \textbf{2}
+ means that the object specified by the identifier, wme-pattern, or timetag will be printed, along with all other objects whose identifiers appear as values of the first object. This may result in multiple copies of the same object being printed out. If \textbf{--internal}
+ is also specified, then individuals WMEs and their timetags will be printed instead of the full objects. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ set-default-depth  & default-wme-depth  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+ print

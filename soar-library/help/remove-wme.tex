@@ -22,10 +22,3 @@ remove-wme \emph{timetag}
 \subsubsection*{Warnings}
  remove-wme should never be called from the RHS: if you try to match a wme on the LHS of a production, and then remove the matched wme on the RHS, Soar will crash. 
  If used other than by input and output functions interfaced with Soar, this command may have weird side effects (possibly even including system crashes). Removing input wmes or context/impasse wmes may have unexpected side effects. You've been warned. 
-\subsubsection*{Structured Output:}
- Returns true on success 
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kTooFewArgs, kTooManyArgs, kIntegerMustBePositive
-\paragraph*{During Execution}
- kAgentRequired, kKernelRequired, kRemoveWMEFailed

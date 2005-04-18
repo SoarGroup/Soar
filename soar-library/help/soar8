@@ -38,13 +38,3 @@
 
    Production memory and working memory must be empty to switch between
    modes.
-
-                               Structured Output
-
-                                  Error Values
-
-During Parsing
-
-   kNotImplemented
-
-During Execution

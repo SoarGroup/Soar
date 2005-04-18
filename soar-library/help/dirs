@@ -27,27 +27,4 @@
 
                                     See Also
 
-   cd dirs home ls pushd popd source topd
-
-                               Structured Output
-
-On Success
-
- <result>
-   <arg param="directory" type="string">directory_string</arg>
- </result>
-
-Notes
-
-     * Each directory on the stack will be returned as a separate arg.
-     * The current working directory will always be on the stack.
-
-                                  Error Values
-
-During Parsing
-
-   No errors during parsing; all arguments are ignored.
-
-During Execution
-
-   No errors.
+   cd home ls pushd popd source topd

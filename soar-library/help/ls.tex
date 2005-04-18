@@ -12,17 +12,13 @@ ls
  No options. 
 \subsubsection*{Description}
  List the contents of the working directory. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ dir  & ls  \\
+ \hline 
+\end{tabular}
 \subsubsection*{See Also}
-\subsubsection*{Structured Output:}
-\paragraph*{Files or Directories Found}
-\begin{verbatim}
-<result>
-  <arg name="filename" type="string">filename</arg>
-  <arg name="directory" type="string">directory</arg>
-</result>
-\end{verbatim}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kTooManyArgs
-\paragraph*{During Execution}
- kDirectoryOpenFailure, kDirectoryEntryReadFailure
+ cd dirs home pushd popd source topd

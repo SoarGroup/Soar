@@ -24,33 +24,3 @@
    The numeric-indifferent-mode command is used to select the method for
    combining numeric preferences. This command is only meaningful in
    indifferent-selection --random mode.
-
-                               Structured Output
-
-On Query
-
- <result>
-   <arg param="numericindifferentmode" type="int">2</arg>
- </result>
-
-Otherwise
-
- <result output="raw">true</result>
-
-Notes
-
-     * The integer denoting the current mode corresponds to the gSKI enum
-       values:
-
- gSKI_NUMERIC_INDIFFERENT_MODE_AVG  = 1
- gSKI_NUMERIC_INDIFFERENT_MODE_SUM  = 0
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-During Execution
-
-   kAgentRequired, kInvalidNumericIndifferentMode

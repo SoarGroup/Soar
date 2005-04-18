@@ -16,50 +16,53 @@
                                     Options
 
    +------------------------------------------------------------------------+
+   |(no args)      |List all productions that can be "explained"            |
+   |---------------+--------------------------------------------------------|
    |prod_name      |List all conditions and grounds for the chunk or        |
    |               |justification.                                          |
    |---------------+--------------------------------------------------------|
    |-c, --condition|Explain why condition number n is in the chunk or       |
    |               |justification.                                          |
    |---------------+--------------------------------------------------------|
-   |-f, --full     | ?                                                      |
+   |-f, --full     |Print the full backtrace for the named production       |
    +------------------------------------------------------------------------+
 
                                   Description
 
    This command provides some interpretation of backtraces generated during
-   chunking. If no option is given, then a list of all chunks and
-   justifications is printed.
+   chunking.
 
    The two most useful variants are:
 
  explain-backtraces prodname
- explain-backtraces name n
+ explain-backtraces -c n prodname
 
-   The first variant lists all of the conditions for the named chunk or
-   justification, and the ground which resulted in inclusion in the
-   chunk/justification. A ground is a working memory element (WME) which was
-   tested in the supergoal. Just knowing which WME was tested may be enough
-   to explain why the chunk/justification exists. If not, the conditions can
-   be listed with an integer value. This value can be used in
-   explain-backtraces name n to obtain a list of the productions which fired
-   to obtain this condition in the chunk/justification (and the crucial WMEs
-   tested along the way). Why use an integer value to specify the condition?
-   To save a big parsing job.
+   The first variant prints a numbered list of all the conditions for the
+   named chunk or justification, and the ground which resulted in inclusion
+   in the chunk/justification. A ground is a working memory element (WME)
+   which was tested in the supergoal. Just knowing which WME was tested may
+   be enough to explain why the chunk/justification exists. If not, the
+   second variant, . This value can be used in explain-backtraces prodname n
+   to obtain a list of the productions which fired to obtain this condition
+   in the chunk/justification (and the crucial WMEs tested along the way).
 
    save_backtraces mode must be on when a chunk or justification is created
-   or no explanation will be available.
+   or no explanation will be available. Calling explain-backtraces with no
+   argument prints a list of all chunks and justifications for which
+   backtracing information is available.
 
-                               Structured Output
+                                    Examples
 
-On Success
+   (fix this)
 
-Notes
+   Could someone generate an example output from
 
-                                  Error Values
+   explain-backtraces prodname
 
-During Parsing
+   and
 
-   kNotImplemented
+   explain-backtraces prodname n?
 
-During Execution
+                                    See Also
+
+   save-backtraces

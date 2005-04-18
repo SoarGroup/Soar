@@ -20,22 +20,3 @@
    +-------------------------------------+
 
                                   Description
-
-                               Structured Output
-
-On Success
-
- <result>
-   <arg name="seconds" type="float">proc_time_elapsed</arg>
-   <arg name="seconds" type="float">real_time_elapsed</arg>
- </result>
-
-                                  Error Values
-
-During Parsing
-
-   kTooFewArgs
-
-During Execution
-
-   kgettimeofdayFail

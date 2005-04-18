@@ -13,42 +13,41 @@
 
                                     Options
 
-   +-------------+
-   |-c, --count ||
-   |------------+|
-   |count       ||
-   |------------+|
-   |-l, --long  ||
-   |------------+|
-   |-p, --prefix||
-   |------------+|
-   |prefix      ||
-   |------------+|
-   |-s, --short ||
-   +-------------+
+   +------------------------------------------------------------------------+
+   |-s, --short            |Use the short format for naming chunks          |
+   |-----------------------+------------------------------------------------|
+   |-l, --long             |Use the long format for naming chunks (default) |
+   |-----------------------+------------------------------------------------|
+   |                       |If <prefix> is given, use <prefix> as the prefix|
+   |-p, --prefix [<prefix>]|for naming chunks. Otherwise, return the current|
+   |                       |prefix. (defaults to "chunk")                   |
+   |-----------------------+------------------------------------------------|
+   |                       |If <count> is given, set the chunk counter for  |
+   |-c, --count [<count>]  |naming chunks to <count>. Otherwise, return the |
+   |                       |current value of the chunk counter.             |
+   +------------------------------------------------------------------------+
 
                                   Description
 
-                               Structured Output
+   The short format for naming newly-created chunks is:
 
-On Query
+   prefixChunknum
 
-     * kParamChunkLongFormat, kTypeBoolean, true if using long format, false
-       for short format.
-     * kParamChunkCount, kTypeInt, integer representing current chunk count.
-     * kParamChunkNamePrefix, kTypeString, the current chunk prefix.
+   The long (default) format for naming chunks is:
 
-On Success
+   prefix-Chunknum*ddc*impassetype*dcChunknum
 
-Notes
+   where:
 
-                                  Error Values
+   prefix is a user-definable prefix string; prefix defaults to "chunk" when
+   unspecified by the user. It many not contain the character *,
 
-During Parsing
+   Chunknum is <count> for the first chunk created, <count>+1 for the second
+   chunk created, etc.
 
-   kIntegerExpected, kIntegerMustBeNonNegative, kMissingOptionArg,
-   kUnrecognizedOption, kGetOptError, kTooManyArgs
+   dc is the number of the decision cycle in which the chunk was formed,
 
-During Execution
+   impassetype is one of [tie | conflict | cfailure | snochange |
+   opnochange],
 
-   kCountGreaterThanMaxChunks, kCountLessThanChunks, kInvalidPrefix
+   dcChunknum is the number of the chunk within that specific decision cycle.

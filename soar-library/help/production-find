@@ -73,24 +73,3 @@
                                     See Also
 
    sp
-
-                               Structured Output
-
-   production-find returns a formatted string, this needs to be
-   re-done.--Jonathan 12:15, 7 Feb 2005 (EST)
-
-On Success
-
- <result>
-   <arg param="message" type="string">output_string</arg>
- </result>
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooFewArgs
-
-During Execution
-
-   kAgentRequired, kKernelRequired

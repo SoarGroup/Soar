@@ -32,18 +32,16 @@
 
  help
 
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   | ?   |help   |
+   |-----+-------|
+   |man  |help   |
+   +-------------+
+
                                     See Also
 
    helpex
-
-                               Structured Output
-
-On Success
-
-Notes
-
-                                  Error Values
-
-During Parsing
-
-During Execution

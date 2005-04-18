@@ -56,27 +56,3 @@
                                     See Also
 
    matches
-
-                               Structured Output
-
-On Success
-
- <result>
-   <arg param="name" type="string">production_name</arg>
-   <arg param="count" type="int">rete_tokens</arg>
- </result>
-
-Notes
-
-     * Each production listed will have a name/count arg pair.
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooManyArgs, kIntegerMustBePositive,
-   kNoProdTypeWhenProdName
-
-During Execution
-
-   kAgentRequired, kgSKIError, kInvalidProductionType, kProductionNotFound

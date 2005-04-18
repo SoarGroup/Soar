@@ -25,7 +25,9 @@ production\_name & Remove the specific production with this name.  \\
  \hline 
 \end{tabular}
 \subsubsection*{Description}
- This command removes productions from Soar's memory. The command must be called with either a specific production name or with a flag that indicates a particular group of productions to be removed. Using the flag -a or --all also causes an init-soar. 
+ This command removes productions from Soar's memory. The command must be called with either a specific production name or with a flag that indicates a particular group of productions to be removed. Using the flag \textbf{-a}
+ or \textbf{--all}
+ also causes an init-soar. 
 \subsubsection*{Examples}
  This command removes the production my*first*production and all chunks: \begin{verbatim}
 excise my*first*production --chunks
@@ -35,20 +37,3 @@ excise --all
 \end{verbatim}
 \subsubsection*{See Also}
  init-soar
-\subsubsection*{Structured Output:}
-\paragraph*{On Success}
-\begin{verbatim}
-<result>
-  <arg param="count" type="int">number_of_productions_excised</arg>
-  <arg param="name" type="string">production_name</arg>
-</result>
-\end{verbatim}
-\paragraph*{Notes}
-\begin{itemize}
-\item  Each excised production will have its name returned in a separate arg. 
-\end{itemize}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kUnrecognizedOption, kGetOptError, kTooManyArgs, kTooFewArgs
-\paragraph*{During Execution}
- kAgentRequired, kgSKIError, kProductionNotFound

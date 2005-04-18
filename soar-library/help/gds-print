@@ -17,35 +17,26 @@
 
                                   Description
 
-   The gds-print command is a debugging command for examining the Goal
-   Dependency Set (GDS) for each goal in the stack. See the Soar manual for
-   details.
+   The Goal Dependency Set (GDS) is described in an appendix of the Soar
+   manual. This command is a debugging command for examining the GDS for each
+   goal in the stack. First it steps through all the working memory elements
+   in the rete, looking for any that are included in any goal dependency set,
+   and prints each one. Then it also lists each goal in the stack and prints
+   the wmes in the goal dependency set for that particular goal. This command
+   is useful when trying to determine why subgoals are disappearing
+   unexpectedly: often something has changed in the goal dependency set,
+   causing a subgoal to be regenerated prior to producing a result.
 
                                     Warnings
 
-   gds-print horribly inefficient and should not generally be used except
+   gds-print is horribly inefficient and should not generally be used except
    when something is going wrong and you need to examine the Goal Dependency
    Set.
 
-                               Structured Output
+                                Default Aliases
 
-   gds-print simply returns the gds info in a formatted string, this needs to
-   be re-done.--Jonathan 12:02, 7 Feb 2005 (EST)
-
-On Success
-
- <result>
-   <arg param="message" type="string">output_string</arg>
- </result>
-
-Notes
-
-                                  Error Values
-
-During Parsing
-
-   No errors, all arguments ignored.
-
-During Execution
-
-   kAgentRequired, kKernelRequired
+   +-------------------+
+   |Alias    |Maps to  |
+   |---------+---------|
+   |gds_print|gds-print|
+   +-------------------+

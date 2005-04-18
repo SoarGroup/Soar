@@ -109,30 +109,16 @@
 
  print -u
 
+                                Default Aliases
+
+   +--------------+
+   |Alias|Maps to |
+   |-----+--------|
+   |p    |print   |
+   |-----+--------|
+   |wmes |print -i|
+   +--------------+
+
                                     See Also
 
    default-wme-depth, predefined-aliases
-
-                               Structured Output
-
-   print returns formatted output in a string, this needs to be
-   re-done.--Jonathan 14:26, 3 Feb 2005 (EST)
-
-On Success
-
- <result>
-   <arg param="message" type="string">output_string</arg>
- </result>
-
-Notes
-
-                                  Error Values
-
-During Parsing
-
-   kIntegerExpected, kIntegerMustBeNonNegative, kMissingOptionArg,
-   kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-During Execution
-
-   kAgentRequired, kKernelRequired

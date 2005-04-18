@@ -39,25 +39,3 @@
                                     See Also
 
    stats
-
-                               Structured Output
-
-On Query
-
- <result>
-   <arg name="timers" type="boolean">setting</arg>
- </result>
-
-Otherwise
-
- <result output="raw">true</result>
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-During Execution
-
-   kAgentRequired, kKernelRequired

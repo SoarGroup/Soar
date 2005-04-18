@@ -20,26 +20,5 @@
 
                                   Description
 
-   Invoke with no arguments to query.
-
-                               Structured Output
-
-On Query
-
- <result>
-   <arg param="value" type="boolean">true_or_false</arg>
- </result>
-
-On success
-
-   Returns true.
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-During Execution
-
-   kAgentRequired, kKernelRequired
+   Invoke with no arguments to query. (fix this) - More about what this
+   command does?

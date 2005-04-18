@@ -36,25 +36,3 @@
 
    Running o-support-mode with no arguments prints out the current
    o-support-mode.
-
-                               Structured Output
-
-On Query
-
- <result>
-   <arg param="value" type="int">mode</arg>
- </result>
-
-Otherwise
-
-   When setting o-support, if successful, true is returned.
-
-                                  Error Values
-
-During Parsing
-
-   kTooManyArgs, kIntegerOutOfRange
-
-During Execution
-
-   kAgentRequired, kInvalidOSupportMode

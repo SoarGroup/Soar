@@ -41,20 +41,3 @@ command --option arg
  and possibly explain the results. 
 \subsubsection*{See Also}
  matches
-\subsubsection*{Structured Output:}
-\paragraph*{On Success}
-\begin{verbatim}
-<result>
-  <arg param="name" type="string">production_name</arg>
-  <arg param="count" type="int">rete_tokens</arg>
-</result>
-\end{verbatim}
-\paragraph*{Notes}
-\begin{itemize}
-\item  Each production listed will have a name/count arg pair. 
-\end{itemize}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kUnrecognizedOption, kGetOptError, kTooManyArgs, kIntegerMustBePositive, kNoProdTypeWhenProdName
-\paragraph*{During Execution}
- kAgentRequired, kgSKIError, kInvalidProductionType, kProductionNotFound

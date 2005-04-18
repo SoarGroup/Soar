@@ -47,15 +47,3 @@
                                     See Also
 
    run
-
-                               Structured Output
-
-                                  Error Values
-
-During Parsing
-
-   kTooManyArgs, kIntegerMustBePositive
-
-During Execution
-
-   kAgentRequired, kKernelRequired

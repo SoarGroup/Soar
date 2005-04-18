@@ -30,18 +30,16 @@
    some warnings may still be printed, since some are considered too
    important to ignore.
 
+   The warnings that are printed apply to the syntax of the productions, to
+   notify the user when they are not in the correct syntax. When a lefthand
+   side error is discovered (such as conditions that are not linked to a
+   common state or impasse object), the production is generally loaded into
+   production memory anyway, although this production may never match or may
+   seriously slow down the matching process. Righthand side errors, such as
+   preferences that are not linked to the state, usually result in the
+   production not being loaded. (fix this - In second paragraph, what would
+   be reported as a warning?)
+
                                     Examples
 
                                     See Also
-
-                               Structured Output
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-During Execution
-
-   kAgentRequired, kKernelRequired

@@ -43,17 +43,3 @@
 
    Note that pwatch now only takes one production per command. Use multiple
    times to watch multiple functions.
-
-                               Structured Output
-
-   Returns true on success. Query not implemented.
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooManyArgs
-
-During Execution
-
-   kgSKIError, kProductionNotFound

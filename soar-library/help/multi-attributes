@@ -38,33 +38,3 @@
                                     Examples
 
                                     See Also
-
-                               Structured Output
-
-On Query
-
- <result>
-   <arg name="count" type="int">number_of_multi_attributes</arg>
-   <arg name="value" type="int">value_of_multi_attribute_1</arg>
-   <arg name="name" type="string">name_of_multi_attribute_1</arg>
- </result>
-
-Otherwise
-
- <result output="raw">true</result>
-
-Notes
-
-     * During query, there will be a count/value pair for each
-       multi-attribute.
-     * The total number of multi-attributes will be included in count.
-
-                                  Error Values
-
-During Parsing
-
-   kTooManyArgs, kIntegerMustBeNonNegative
-
-During Execution
-
-   kMultiAttributeNotFound

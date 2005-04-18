@@ -24,19 +24,3 @@ command --option arg
  and possibly explain the results. 
 \subsubsection*{See Also}
  stats
-\subsubsection*{Structured Output:}
-\paragraph*{On Query}
-\begin{verbatim}
-<result>
-  <arg name="timers" type="boolean">setting</arg>
-</result>
-\end{verbatim}
-\paragraph*{Otherwise}
-\begin{verbatim}
-<result output="raw">true</result>
-\end{verbatim}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kUnrecognizedOption, kGetOptError, kTooManyArgs
-\paragraph*{During Execution}
- kAgentRequired, kKernelRequired

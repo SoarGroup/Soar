@@ -19,20 +19,10 @@
 
    This command stops the run, quits the log and closes Soar.
 
-                               Structured Output
+                                Default Aliases
 
-On Success
-
- <result>
-   <arg name="message" type="string">Goodbye.</arg>
- </result>
-
-                                  Error Values
-
-During Parsing
-
-   No errors.
-
-During Execution
-
-   No errors.
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |exit |quit   |
+   +-------------+

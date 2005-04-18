@@ -26,26 +26,3 @@ are loaded into soar or this command will have no effect.
 \end{verbatim}
 \subsubsection*{Examples}
 \subsubsection*{See Also}
-\subsubsection*{Structured Output:}
-\paragraph*{On Query}
-\begin{verbatim}
-<result>
-  <arg name="count" type="int">number_of_multi_attributes</arg>
-  <arg name="value" type="int">value_of_multi_attribute_1</arg>
-  <arg name="name" type="string">name_of_multi_attribute_1</arg>
-</result>
-\end{verbatim}
-\paragraph*{Otherwise}
-\begin{verbatim}
-<result output="raw">true</result>
-\end{verbatim}
-\paragraph*{Notes}
-\begin{itemize}
-\item  During query, there will be a count/value pair for each multi-attribute. 
-\item  The total number of multi-attributes will be included in count. 
-\end{itemize}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kTooManyArgs, kIntegerMustBeNonNegative
-\paragraph*{During Execution}
- kMultiAttributeNotFound

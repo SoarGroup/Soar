@@ -33,21 +33,3 @@
                                     See Also
 
    log
-
-                               Structured Output
-
-On Success
-
- <result>
-   <arg param="message" type="string">message</arg>
- </result>
-
-Notes
-
-                                  Error Values
-
-During Parsing
-
-During Execution
-
-   No errors.

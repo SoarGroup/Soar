@@ -20,25 +20,14 @@
 
    List the contents of the working directory.
 
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |dir  |ls     |
+   +-------------+
+
                                     See Also
 
-   cd dirs home ls pushd popd source topd
-
-                               Structured Output
-
-Files or Directories Found
-
- <result>
-   <arg name="filename" type="string">filename</arg>
-   <arg name="directory" type="string">directory</arg>
- </result>
-
-                                  Error Values
-
-During Parsing
-
-   kTooManyArgs
-
-During Execution
-
-   kDirectoryOpenFailure, kDirectoryEntryReadFailure
+   cd dirs home pushd popd source topd

@@ -38,26 +38,15 @@ run -[d|e|p|o][fs] [count]
 \end{tabular}
 \subsubsection*{Description}
  This command runs the Soar agents. If the --self flag is issued, only the agent receiving the run command will run. The count argument is a single integer which specified the number of cycles to run Soar. If count is unspecified and no units are given, then Soar is run until halted by problem-solving completion or an external interrupt. If count is specified, but no units are specified, then soar is run by decision cycles. If units are specified, but count is unpecified, then count defaults to '1'. The unit argument indicates the unit of measure to be used in counting Soar run cycles. 
-\subsubsection*{Structured Output:}
- Most output is handled through a callback, but there is a return value after the run is done. 
-\paragraph*{On Success}
-\begin{verbatim}
-<result>
-  <arg name="runresult" type="int">run_result</arg>
-</result>
-\end{verbatim}
-\paragraph*{Notes}
-\begin{itemize}
-\item  The run result is as following: 
-\end{itemize}
-\begin{verbatim}
-gSKI_RUN_EXECUTING                 = 1;
-gSKI_RUN_INTERRUPTED               = 2;
-gSKI_RUN_COMPLETED                 = 3;
-gSKI_RUN_COMPLETED_AND_INTERRUPTED = 4;
-\end{verbatim}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kUnrecognizedOption, kGetOptError, kIntegerExpected, kIntegerMustBePositive, kTooManyArgs
-\paragraph*{During Execution}
- kAgentRequired, kKernelRequired, kgSKIError
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ d  & run -d 1  \\
+ \hline 
+ e  & run -e 1  \\
+ \hline 
+ step  & run 1  \\
+ \hline 
+\end{tabular}

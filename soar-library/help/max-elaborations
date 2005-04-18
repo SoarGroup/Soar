@@ -47,25 +47,3 @@
  max-elaborations 50
 
                                     See Also
-
-                               Structured Output
-
-On Query
-
- <result>
-   <arg name="value" type="int">max_elaborations</arg>
- </result>
-
-Otherwise
-
- <result output="raw">true</result>
-
-                                  Error Values
-
-During Parsing
-
-   kTooManyArgs, kIntegerMustBePositive
-
-During Execution
-
-   kAgentRequired

@@ -51,26 +51,3 @@
                                     See Also
 
    init-soar
-
-                               Structured Output
-
-On Success
-
- <result>
-   <arg param="count" type="int">number_of_productions_excised</arg>
-   <arg param="name" type="string">production_name</arg>
- </result>
-
-Notes
-
-     * Each excised production will have its name returned in a separate arg.
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError, kTooManyArgs, kTooFewArgs
-
-During Execution
-
-   kAgentRequired, kgSKIError, kProductionNotFound

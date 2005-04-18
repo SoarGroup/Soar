@@ -23,17 +23,3 @@ o-support-mode [0|1|2|3|4]
 \end{tabular}
 \subsubsection*{Description}
  Running o-support-mode with no arguments prints out the current o-support-mode. 
-\subsubsection*{Structured Output:}
-\paragraph*{On Query}
-\begin{verbatim}
-<result>
-  <arg param="value" type="int">mode</arg>
-</result>
-\end{verbatim}
-\paragraph*{Otherwise}
- When setting o-support, if successful, true is returned. 
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kTooManyArgs, kIntegerOutOfRange
-\paragraph*{During Execution}
- kAgentRequired, kInvalidOSupportMode

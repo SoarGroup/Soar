@@ -18,14 +18,15 @@ firing-counts \emph{production_names}
  productions. If \emph{n}
  is 0, only the productions which haven't fired are listed  \\
  \hline 
- production\_name  & For each production in production-names, print how many times the production has fired  \\
+ production\_name  & For each production in production\_names, print how many times the production has fired  \\
  \hline 
 \end{tabular}
 \subsubsection*{Description}
- The firing-counts command prints the number of times each production has fired; production names are given from most requently fired to least frequently fired. With no arguments, it lists all productions. If an integer argument, n, is given, only the top \emph{n}
- productions are listed. If \emph{n}
+, is given, only the top \emph{n}
+ productions are listed. If \textbf{n}
  is zero (0), only the productions that haven't fired at all are listed. If one or more production names are given as arguments, only firing counts for these productions are printed. 
- Note that firing counts are reset by a call to init-soar. 
+ Note that firing counts are reset by a call to \textbf{init-soar}
+. 
 \subsubsection*{Examples}
  This example prints the 10 productions which have fired the most times along with their firing counts: \begin{verbatim}
 firing-counts 10
@@ -34,24 +35,15 @@ firing-counts 10
 firing-counts my*first*production my*second*production
 \end{verbatim}
 \subsubsection*{Warnings}
- firing-counts are reset to zero after an init-soar. \\ 
+ Firing-counts are reset to zero after an init-soar. \\ 
  NB: This command is slow, because the sorting takes time O(n*log n) 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ fc  & firing-counts  \\
+ \hline 
+\end{tabular}
 \subsubsection*{See Also}
  init-soar
-\subsubsection*{Structured Output:}
-\paragraph*{On Success}
-\begin{verbatim}
-<result>
-  <arg param="name" type="string">production_name</arg>
-  <arg param="count" type="int">firing_count</arg>
-</result>
-\end{verbatim}
-\paragraph*{Notes}
-\begin{itemize}
-\item  Each production listed will have a name/count arg pair. 
-\end{itemize}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kIntegerMustBeNonNegative, kTooManyArgs
-\paragraph*{During Execution}
- kAgentRequired, kgSKIError, kProductionNotFound

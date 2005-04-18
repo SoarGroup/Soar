@@ -10,18 +10,16 @@ init-soar
 \subsubsection*{Options}
  No options. 
 \subsubsection*{Description}
- The init-soar command initializes Soar. It removes all elements from working memory, wiping out the goal stack, and resets all runtime statistics. The firing counts for all productions is reset to zero. The init-soar command allows a Soar program that has been halted to be reset and start its execution from the beginning. 
- init-soar does not remove any productions from production memory; to do this, use the excise command. Note however, that all justifications will be removed because they will no longer be supported. 
+ command allows a Soar program that has been halted to be reset and start its execution from the beginning. 
+ command. Note however, that all justifications will be removed because they will no longer be supported. 
 \subsubsection*{Examples}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ init  & init-soar  \\
+ \hline 
+\end{tabular}
 \subsubsection*{See Also}
  excise
-\subsubsection*{Structured Output:}
-\paragraph*{On Success}
-\begin{verbatim}
-<result output="raw">true</result>
-\end{verbatim}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- No errors, all arguments ignored. 
-\paragraph*{During Execution}
- kAgentRequired

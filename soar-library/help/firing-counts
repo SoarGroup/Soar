@@ -20,7 +20,7 @@
    |n              |List the top n productions. If n is 0, only the         |
    |               |productions which haven't fired are listed              |
    |---------------+--------------------------------------------------------|
-   |production_name|For each production in production-names, print how many |
+   |production_name|For each production in production_names, print how many |
    |               |times the production has fired                          |
    +------------------------------------------------------------------------+
 
@@ -51,32 +51,17 @@
 
                                     Warnings
 
-   firing-counts are reset to zero after an init-soar.
+   Firing-counts are reset to zero after an init-soar.
    NB: This command is slow, because the sorting takes time O(n*log n)
+
+                                Default Aliases
+
+   +-------------------+
+   |Alias|Maps to      |
+   |-----+-------------|
+   |fc   |firing-counts|
+   +-------------------+
 
                                     See Also
 
    init-soar
-
-                               Structured Output
-
-On Success
-
- <result>
-   <arg param="name" type="string">production_name</arg>
-   <arg param="count" type="int">firing_count</arg>
- </result>
-
-Notes
-
-     * Each production listed will have a name/count arg pair.
-
-                                  Error Values
-
-During Parsing
-
-   kIntegerMustBeNonNegative, kTooManyArgs
-
-During Execution
-
-   kAgentRequired, kgSKIError, kProductionNotFound

@@ -83,19 +83,15 @@ print -if prodname
  Print the names of all user productions currently loaded: \begin{verbatim}
 print -u
 \end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ p  & print  \\
+ \hline 
+ wmes  & print -i  \\
+ \hline 
+\end{tabular}
 \subsubsection*{See Also}
  default-wme-depth, predefined-aliases
-\subsubsection*{Structured Output:}
- print returns formatted output in a string, this needs to be re-done.--Jonathan 14:26, 3 Feb 2005 (EST) 
-\paragraph*{On Success}
-\begin{verbatim}
-<result>
-  <arg param="message" type="string">output_string</arg>
-</result>
-\end{verbatim}
-\paragraph*{Notes}
-\subsubsection*{Error Values:}
-\paragraph*{During Parsing}
- kIntegerExpected, kIntegerMustBeNonNegative, kMissingOptionArg, kUnrecognizedOption, kGetOptError, kTooManyArgs
-\paragraph*{During Execution}
- kAgentRequired, kKernelRequired

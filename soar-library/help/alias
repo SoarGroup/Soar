@@ -33,7 +33,7 @@
    given name. The new procedure can then take an arbitrary number of
    arguments which are post-pended to the given definition and then that
    entire string is executed as a command. The definition must be a single
-   command,multiple commands are not allowed. The alias procedure checks to
+   command, multiple commands are not allowed. The alias procedure checks to
    see if the name already exists, and does not destroy existing procedures
    or aliases by the same name. Existing aliases can be removed by using the
    -d flag. With no arguments, alias returns the list of defined aliases.
@@ -57,35 +57,14 @@
 
  alias wmes
 
+                                Default Aliases
+
+   +----------------+
+   |Alias  |Maps to |
+   |-------+--------|
+   |unalias|alias -d|
+   +----------------+
+
                                     See Also
 
    unalias
-
-                               Structured Output
-
-On Success
-
- <result>
-   <arg name="alias" type="string">alias</arg>
-   <arg name="aliasedcommand" type="string">aliased_command</arg>
- </result>
-
-Notes
-
-     * When listing the current alias database, each alias will have the
-       alias/aliased command pair returned.
-     * An example pair for step (run -s 1) would be:
-
- <arg name="alias" type="string">step</arg>
- <arg name="aliasedcommand" type="string">run -s 1</arg>
-
-                                  Error Values
-
-During Parsing
-
-   kMissingOptionArg, kUnrecognizedOption, kGetOptError, kTooManyArgs,
-   kTooFewArgs
-
-During Execution
-
-   kAliasNotFound, kAliasExists

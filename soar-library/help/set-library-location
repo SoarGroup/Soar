@@ -30,20 +30,3 @@
                                     See Also
 
    help
-
-                               Structured Output
-
-On Success
-
-   Returns true on success, or kParamDirectory, kTypeString element with the
-   directory on query.
-
-                                  Error Values
-
-During Parsing
-
-   kTooManyArgs
-
-During Execution
-
-   No errors.

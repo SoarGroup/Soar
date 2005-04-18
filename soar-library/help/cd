@@ -28,25 +28,14 @@
 
  cd ../home/soar/agents
 
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |chdir|cd     |
+   +-------------+
 
                                     See Also
 
    dirs home ls pushd popd source topd
-
-                               Structured Output
-
-On Success
-
- <result output="raw">true</result>
-
-Notes
-
-                                  Error Values
-
-During Parsing
-
-   kTooManyArgs
-
-During Execution
-
-   kchdirFail

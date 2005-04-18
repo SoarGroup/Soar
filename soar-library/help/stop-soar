@@ -35,12 +35,15 @@
 
                                     Examples
 
-   This example shows how to stop Soar8 after this decision phase using
-   stop-soar -self in a monitor to stop after the decision phase so that
-   memory can be examined.
+                                Default Aliases
 
- monitor -add {stop-soar --self "after decision phase"} after-decision-phase-cycle
-
+   +-------------------+
+   |Alias    |Maps to  |
+   |---------+---------|
+   |stop     |stop-soar|
+   |---------+---------|
+   |interrupt|stop-soar|
+   +-------------------+
 
                                     See Also
 
@@ -51,19 +54,3 @@
    If the graphical interface doesn't periodically do an "update" of flush
    the pending I/O, then it may not be possible to interrupt a Soar agent
    from the command line.
-
-                               Structured Output
-
-On Success
-
- <result output="raw">true</result>
-
-                                  Error Values
-
-During Parsing
-
-   kUnrecognizedOption, kGetOptError
-
-During Execution
-
-   kAgentReqruied, kKernelRequired
