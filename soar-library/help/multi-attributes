@@ -32,9 +32,14 @@
    effect on the actual contents of working memory and most users needn't use
    this at all.
 
- Note that multi-attributes declarations must be made before productions
- are loaded into soar or this command will have no effect.
+   Note that multi-attributes declarations must be made before productions
+   are loaded into soar or this command will have no effect.
 
                                     Examples
+
+   Declare the symbol "thing" to be an attribute likely to take more than 1
+   but no more than 4 values:
+
+  multi-attributes thing 4
 
                                     See Also

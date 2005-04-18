@@ -27,13 +27,12 @@ production\_name & Print memory usage for a specific production.  \\
  \hline 
 \end{tabular}
 \subsubsection*{Description}
- The memories command prints out the internal memory usage for full and partial matches of production instantiations, with the productions using the most memory printed first. 
- Memory usage is recorded according to the tokens that are allocated in the rete network for the given production(s). 
- With no arguments, the memories command prints memory usage for all productions. If a production\_name is specified, memory usage will be printed only for that production. If a positive integer \emph{n}
  is given, only \emph{n}
  productions will be printed: the \emph{n}
- productions that use the most memory. 
- Output may be restricted to print memory usage for particular types of productions using the command options. 
+ productions that use the most memory. Output may be restricted to print memory usage for particular types of productions using the command options. 
+ Memory usage is recorded according to the tokens that are allocated in the rete network for the given production(s). This number is a function of the number of elements in working memory that match each production. Therefore, this command will not provide useful information at the beginning of a Soar run (when working memory is empty) and should be called in the middle (or at the end) of a Soar run. 
+ As a rule of thumb, numbers less than 100 mean that the production is using a small amount of memory, numbers above 1000 mean that the production is using a large amount of memory, and numbers above 10,000 mean that the production is using a \emph{very}
+ large amount of memory. 
 \subsubsection*{Examples}
  To show how to use the command in context, do this: \begin{verbatim}
 command --option arg

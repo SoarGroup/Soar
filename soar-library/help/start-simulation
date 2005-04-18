@@ -1,12 +1,15 @@
-                                Start-simulation
+                                  Start-system
+
+   (Redirected from Start-simulation)
 
                                       Name
 
-   start-simulation - Status: Complete
+   start-system - Signals an external simulation to start running.
+   Status: Complete
 
                                     Synopsis
 
- start-simulation
+ start-system
 
                                     Options
 
@@ -14,13 +17,17 @@
 
                                   Description
 
-   Extended description and explanations.
+   Signals an external simulation that it should start executing, which
+   typically causes it to start running Soar agents. It's analogous to
+   pressing a "run" or "go" in the simulation itself and allows a simulation
+   to be started from any command line prompt. If there is no external
+   simulation this command will have no effect.
 
                                     Examples
 
    To show how to use the command in context, do this:
 
- start-simulation
+ start-system
 
                                     See Also
 
