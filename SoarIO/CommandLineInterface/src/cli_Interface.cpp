@@ -258,6 +258,12 @@ EXPORT bool CommandLineInterface::DoSP(sml::Connection* pConnection, sml::Elemen
 	return ret;
 }
 
+EXPORT bool CommandLineInterface::DoStartSimulation(sml::Connection* pConnection, sml::ElementXML* pResponse) {
+	bool ret = DoStartSimulation();
+	GetLastResultSML(pConnection, pResponse);
+	return ret;
+}
+
 EXPORT bool CommandLineInterface::DoStats(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const StatsBitset& options) {
 	bool ret = DoStats(pAgent, options);
 	GetLastResultSML(pConnection, pResponse);
