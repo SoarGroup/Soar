@@ -69,6 +69,7 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 		return true;
 	} else {
 		if (!RequireKernel()) return false;
+		m_pKernel->FireSystemStop();
 		if (!m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, &m_gSKIError)) {
 			SetErrorDetail("Error interrupting all agents.");
 			return SetError(CLIError::kgSKIError);
