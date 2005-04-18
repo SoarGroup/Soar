@@ -542,11 +542,11 @@ public:
 	EXPORT bool DoSP(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const std::string& production);
 
 	/*************************************************************
-	* @brief start-simulation command
+	* @brief start-system command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
 	*************************************************************/
-	EXPORT bool DoStartSimulation(sml::Connection* pConnection, sml::ElementXML* pResponse);
+	EXPORT bool DoStartSystem(sml::Connection* pConnection, sml::ElementXML* pResponse);
 
 	/*************************************************************
 	* @brief stats command
@@ -707,7 +707,7 @@ protected:
 	bool ParseSoarNews(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSource(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseSP(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseStartSimulation(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseStartSystem(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseStats(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -763,7 +763,7 @@ protected:
 	bool DoSoarNews();
 	bool DoSource(gSKI::IAgent* pAgent, std::string filename);
 	bool DoSP(gSKI::IAgent* pAgent, const std::string& production);
-	bool DoStartSimulation();
+	bool DoStartSystem();
 	bool DoStats(gSKI::IAgent* pAgent, const StatsBitset& options);
 	bool DoStopSoar(gSKI::IAgent* pAgent, bool self, const std::string* reasonForStopping = 0);
 	bool DoTime(gSKI::IAgent* pAgent, std::vector<std::string>& argv);

@@ -120,6 +120,13 @@ Aliases::Aliases() {
 		substitution.push_back(string("-e"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// start-system start
+	{
+		string commandToSubstitute("start");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("start-system"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// stop-soar stop
 	{
 		string commandToSubstitute("stop");

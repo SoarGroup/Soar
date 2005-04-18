@@ -10,13 +10,13 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseStartSimulation(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseStartSystem(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 	unused(argv);
-	return DoStartSimulation();
+	return DoStartSystem();
 }
 
-bool CommandLineInterface::DoStartSimulation() {
+bool CommandLineInterface::DoStartSystem() {
 	m_pKernel->FireSystemStart();
 	return true;
 }

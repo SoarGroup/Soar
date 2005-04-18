@@ -267,7 +267,7 @@
 					RelativePath=".\src\cli_sp.cpp">
 				</File>
 				<File
-					RelativePath=".\src\cli_startsimulation.cpp">
+					RelativePath=".\src\cli_startsystem.cpp">
 				</File>
 				<File
 					RelativePath=".\src\cli_stats.cpp">
