@@ -29,8 +29,9 @@ public class DebuggerCommands
 	
 	public final static String kClear = "clear" ;
 	public final static String kQuit  = "quit" ;
+	public final static String kExit  = "exit" ;
 	
-	protected String[] kCommands = new String[] { kClear, kQuit } ;
+	protected String[] kCommands = new String[] { kClear, kQuit, kExit } ;
 	
 	public DebuggerCommands(MainFrame frame, Document doc)
 	{
@@ -38,6 +39,10 @@ public class DebuggerCommands
 		m_Document = doc ;
 	}
 
+	// Providing a method for expanding the command line (so we can support aliases)
+	// but I'm not sure (a) that it's always safe (esp. for auto-update windows) and this is the day before release and
+	// (b) that it won't introduce a significant overhead (because we call here for all commands right now, not just user typed ones).
+	// So for now, not doing the expansion.
 	public String getExpandedCommand(String command)
 	{
 		return command ;
@@ -65,7 +70,7 @@ public class DebuggerCommands
 			return null ;
 		}
 		
-		if (kQuit.equalsIgnoreCase(command))
+		if (kQuit.equalsIgnoreCase(command) || kExit.equalsIgnoreCase(command))
 		{
 			m_Frame.close() ;
 		}
