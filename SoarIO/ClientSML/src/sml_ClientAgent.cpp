@@ -573,6 +573,7 @@ bool Agent::UnregisterForPrintEvent(int callbackID)
 /** @brief This handler is called with structured output print data.  Used to implement XML events */
 static void XMLEventImplementationHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
 {
+	unused(id);
 	unused(pUserData) ;
 
 	// Some basic error checking
