@@ -817,12 +817,8 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kCommand_Event();
   }
 
-  public static String getKCommand_SuppressSystemStart() {
-    return smlJNI.get_sml_Names_kCommand_SuppressSystemStart();
-  }
-
-  public static String getKCommand_SuppressSystemStop() {
-    return smlJNI.get_sml_Names_kCommand_SuppressSystemStop();
+  public static String getKCommand_FireEvent() {
+    return smlJNI.get_sml_Names_kCommand_FireEvent();
   }
 
   public static String getKCommand_CheckForIncomingCommands() {

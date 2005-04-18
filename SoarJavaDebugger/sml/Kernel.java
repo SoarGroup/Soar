@@ -99,6 +99,10 @@ public class Kernel extends ClientErrors {
     smlJNI.Kernel_SetTraceCommunications(swigCPtr, state);
   }
 
+  public boolean IsTracingCommunications() {
+    return smlJNI.Kernel_IsTracingCommunications(swigCPtr);
+  }
+
   public Agent CreateAgent(String pAgentName) {
     long cPtr = smlJNI.Kernel_CreateAgent(swigCPtr, pAgentName);
     return (cPtr == 0) ? null : new Agent(cPtr, false);
@@ -138,28 +142,36 @@ public class Kernel extends ClientErrors {
     return smlJNI.Kernel_ExecuteCommandLineXML(swigCPtr, pCommandLine, pAgentName, AnalyzeXML.getCPtr(pResponse));
   }
 
-  public String RunAllAgents(long decisions) {
-    return smlJNI.Kernel_RunAllAgents(swigCPtr, decisions);
+  public String RunAllAgents(long numberSteps, smlRunStepSize stepSize) {
+    return smlJNI.Kernel_RunAllAgents__SWIG_0(swigCPtr, numberSteps, stepSize.swigValue());
+  }
+
+  public String RunAllAgents(long numberSteps) {
+    return smlJNI.Kernel_RunAllAgents__SWIG_1(swigCPtr, numberSteps);
+  }
+
+  public String RunAllAgentsForever() {
+    return smlJNI.Kernel_RunAllAgentsForever(swigCPtr);
   }
 
   public String RunAllTilOutput(long maxDecisions) {
-    return smlJNI.Kernel_RunAllTilOutput(swigCPtr, maxDecisions);
+    return smlJNI.Kernel_RunAllTilOutput__SWIG_0(swigCPtr, maxDecisions);
   }
 
-  public String StopAllAgents(boolean stopSystem) {
-    return smlJNI.Kernel_StopAllAgents__SWIG_0(swigCPtr, stopSystem);
+  public String RunAllTilOutput() {
+    return smlJNI.Kernel_RunAllTilOutput__SWIG_1(swigCPtr);
   }
 
   public String StopAllAgents() {
-    return smlJNI.Kernel_StopAllAgents__SWIG_1(swigCPtr);
+    return smlJNI.Kernel_StopAllAgents(swigCPtr);
   }
 
-  public boolean SetSuppressSystemStart(boolean state) {
-    return smlJNI.Kernel_SetSuppressSystemStart(swigCPtr, state);
+  public boolean FireStartSimulationEvent() {
+    return smlJNI.Kernel_FireStartSimulationEvent(swigCPtr);
   }
 
-  public boolean SetSuppressSystemStop(boolean state) {
-    return smlJNI.Kernel_SetSuppressSystemStop(swigCPtr, state);
+  public boolean FireStopSimulationEvent() {
+    return smlJNI.Kernel_FireStopSimulationEvent(swigCPtr);
   }
 
   public String ExpandCommandLine(String pCommandLine) {
@@ -192,6 +204,10 @@ public class Kernel extends ClientErrors {
 
   public boolean SetInterruptCheckRate(int newRate) {
     return smlJNI.Kernel_SetInterruptCheckRate(swigCPtr, newRate);
+  }
+
+  public String GetLibraryLocation() {
+    return smlJNI.Kernel_GetLibraryLocation(swigCPtr);
   }
 
   public final static int kDefaultSMLPort = 12121;

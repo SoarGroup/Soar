@@ -178,8 +178,16 @@ public class Agent extends ClientErrors {
     return smlJNI.Agent_Commit(swigCPtr);
   }
 
-  public String RunSelf(long decisions) {
-    return smlJNI.Agent_RunSelf(swigCPtr, decisions);
+  public String RunSelf(long numberSteps, smlRunStepSize stepSize) {
+    return smlJNI.Agent_RunSelf__SWIG_0(swigCPtr, numberSteps, stepSize.swigValue());
+  }
+
+  public String RunSelf(long numberSteps) {
+    return smlJNI.Agent_RunSelf__SWIG_1(swigCPtr, numberSteps);
+  }
+
+  public String RunSelfForever() {
+    return smlJNI.Agent_RunSelfForever(swigCPtr);
   }
 
   public String StopSelf() {
@@ -191,7 +199,11 @@ public class Agent extends ClientErrors {
   }
 
   public String RunSelfTilOutput(long maxDecisions) {
-    return smlJNI.Agent_RunSelfTilOutput(swigCPtr, maxDecisions);
+    return smlJNI.Agent_RunSelfTilOutput__SWIG_0(swigCPtr, maxDecisions);
+  }
+
+  public String RunSelfTilOutput() {
+    return smlJNI.Agent_RunSelfTilOutput__SWIG_1(swigCPtr);
   }
 
   public void Refresh() {
