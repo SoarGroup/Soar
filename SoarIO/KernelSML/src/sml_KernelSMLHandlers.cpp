@@ -590,13 +590,6 @@ bool KernelSML::AddInputWME(gSKI::IAgent* pAgent, char const* pID, char const* p
 		return false ;
 	}
 
-	// BUGBUG: TEMP code while there's a ref counting problem in gSKI on the output link side
-	// so for now, don't store this reference in our table
-	if (!addingToInputLink)
-	{
-		pWME = NULL ;
-	}
-
 	// Well here's a surprise.  The kernel doesn't support a direct lookup from timeTag to wme.
 	// So we need to maintain our own map out here so we can find the WME's quickly for removal.
 	// So where we had planned to map from client time tag to kernel time tag, we'll instead
