@@ -40,7 +40,8 @@ public class DebuggerCommands
 
 	public String getExpandedCommand(String command)
 	{
-		return m_Document.getExpandedCommandLine(command) ;
+		return command ;
+//		return m_Document.getExpandedCommandLine(command) ;
 	}
 	
 	public boolean isCommand(String command)
