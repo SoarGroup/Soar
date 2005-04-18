@@ -6,7 +6,7 @@
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
           <pane view="trace1" tabAtTop="false" singleView="true" horiz="true">
             <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.TraceView" ShowTraceOutput="true" Name="trace1" ClearEachCommand="false" UpdateOnStop="false">
-              <History Item0="<Type commands here>" Size="1" Class="helpers.CommandHistory"></History>
+              <History Item2="<Type commands here>" Item0="run 10" Size="3" Class="helpers.CommandHistory" Item1="watch 5"></History>
             </view>
           </pane>
           <pane view="buttons3" tabAtTop="false" singleView="true" horiz="true">
@@ -29,7 +29,7 @@
         <pane view="buttons1" tabAtTop="false" singleView="true" horiz="true">
           <view ButtonCount="6" Class="modules.ButtonView" Name="buttons1">
             <Button Command="init-soar" Name="Init-soar"></Button>
-            <Button InternalCommand="" Command="" Name="Source"></Button>
+            <Button InternalCommand="loadsource" Command="" Name="Source"></Button>
             <Button InternalCommand="askcd" Command="" Name="cd"></Button>
             <Button InternalCommand="" Command="excise -a" Name="Excise All"></Button>
             <Button InternalCommand="demo towers-of-hanoi towers-of-hanoi.soar" Name="Towers of Hanoi"></Button>

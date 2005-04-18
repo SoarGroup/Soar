@@ -29,7 +29,7 @@
         <pane view="buttons1" tabAtTop="false" singleView="true" horiz="true">
           <view ButtonCount="6" Class="modules.ButtonView" Name="buttons1">
             <Button Command="init-soar" Name="Init-soar"></Button>
-            <Button InternalCommand="" Command="" Name="Source"></Button>
+            <Button InternalCommand="loadsource" Command="" Name="Source"></Button>
             <Button InternalCommand="askcd" Command="" Name="cd"></Button>
             <Button InternalCommand="" Command="excise -a" Name="Excise All"></Button>
             <Button InternalCommand="demo towers-of-hanoi towers-of-hanoi.soar" Name="Towers of Hanoi"></Button>
