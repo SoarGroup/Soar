@@ -13,58 +13,67 @@ $tb->warn(1);
 my $html = $tb->parse_file($ARGV[0]);
 
 while (my $element = $html->find("style")) {
-  #print "SERVED a style\n";
   $element->delete();
 }
 
 while (my $element = $html->find("img")) {
-  #print "SERVED an img\n";
   $element->delete();
 }
 
 while (my $element = $html->find("meta")) {
-  #print "SERVED a meta\n";
   $element->delete();
 }
 
 while (my $element = $html->find("link")) {
-  #print "SERVED a link\n";
   $element->delete();
 }
 
 while (my $element = $html->find("script")) {
-  #print "SERVED a script\n";
   $element->delete();
 }
 
 while (my $element = $html->look_down("id","siteSub")) {
-  #print "SERVED siteSub\n";
   $element->delete();
 }
 
 while (my $element = $html->look_down("id","column-one")) {
-  #print "SERVED column-one\n";
   $element->delete();
 }
 
 while (my $element = $html->look_down("id","footer")) {
-  #print "SERVED footer\n";
   $element->delete();
 }
 
 while (my $element = $html->look_down("class","printfooter")) {
-  #print "SERVED printfooter\n";
   $element->delete();
 }
 
 while (my $element = $html->look_down("id","toc")) {
-  #print "SERVED toc\n";
   $element->delete();
 }
 
 while (my $element = $html->look_down("class","editsection")) {
-  #print "SERVED editsection\n";
   $element->delete();
+}
+
+while (my $element = $html->look_down("name","Structured_Output")) {
+  my $parent = $element->parent();
+  my @contents = $parent->content_list();
+  my $foundit = 0;
+  
+  foreach (@contents) {
+    my @attrs = $_->all_external_attr();
+    if (@attrs) {
+      if ($attrs[0] eq "name") {
+        if ($attrs[1] eq "Structured_Output") {
+	  $foundit = 1;
+	}
+      }
+    }
+    if ($foundit == 1) {
+      $_->delete();
+    }
+  }
 }
 
 print $html->as_HTML;
