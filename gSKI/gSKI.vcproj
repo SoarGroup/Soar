@@ -44,7 +44,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName)d.dll"
+				OutputFile="..\soar-library\$(ProjectName).dll"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
 				MapLines="TRUE"
@@ -101,7 +101,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).dll"
+				OutputFile="..\soar-library\$(ProjectName).dll"
 				ImportLibrary="$(OutDir)\$(ProjectName).lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
