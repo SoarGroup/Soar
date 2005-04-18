@@ -180,6 +180,14 @@ public class Document
 		return m_Kernel.IsRunCommand(command) ;
 	}
 	
+	public String getExpandedCommandLine(String commandLine)
+	{
+		if (m_Kernel == null)
+			return commandLine ;
+		
+		return m_Kernel.ExpandCommandLine(commandLine) ;
+	}
+	
 	/********************************************************************************************
 	 * 
 	 * We maintain a list of MainFrames in the debugger.  A MainFrame has a menu bar and children.

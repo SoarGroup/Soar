@@ -35,6 +35,7 @@ public class CommandsMenu
 	private AbstractAction m_ExciseChunks = new AbstractAction("Excise &chunks")  { public void actionPerformed(ActionEvent e) { exciseChunks(e) ; } } ;
 	private AbstractAction m_ExciseTask = new AbstractAction("Excise &task productions")  { public void actionPerformed(ActionEvent e) { exciseTask(e) ; } } ;
 	private AbstractAction m_ExciseUser = new AbstractAction("Excise &user productions")  { public void actionPerformed(ActionEvent e) { exciseUser(e) ; } } ;
+	private AbstractAction m_ExciseDefault = new AbstractAction("Excise &default productions")  { public void actionPerformed(ActionEvent e) { exciseDefault(e) ; } } ;
 
 	/** Create this menu */
 	public static CommandsMenu createMenu(MainFrame frame, Document doc, String title)
@@ -60,6 +61,7 @@ public class CommandsMenu
 		menu.add(m_ExciseChunks) ;
 		menu.add(m_ExciseTask) ;
 		menu.add(m_ExciseUser) ;
+		menu.add(m_ExciseDefault) ;
 
 		return menu ;
 	}
@@ -93,5 +95,11 @@ public class CommandsMenu
 		String sourceLine = m_Document.getSoarCommands().getExciseUserCommand();
 		m_Frame.executeCommandPrimeView(sourceLine, true) ;
 	}
-	
+
+	private void exciseDefault(ActionEvent e)
+	{
+		String sourceLine = m_Document.getSoarCommands().getExciseDefaultCommand();
+		m_Frame.executeCommandPrimeView(sourceLine, true) ;
+	}
+
 }

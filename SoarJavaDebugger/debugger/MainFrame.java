@@ -781,6 +781,11 @@ public class MainFrame
 		return m_DebuggerCommands.isCommand(commandLine) ;
 	}
 	
+	public String getExpandedCommand(String commandLine)
+	{
+		return m_DebuggerCommands.getExpandedCommand(commandLine) ;
+	}
+	
 	public Object executeDebuggerCommand(AbstractView view, String commandLine, boolean echoCommand)
 	{
 		return m_DebuggerCommands.executeCommand(view, commandLine, echoCommand) ;

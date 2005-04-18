@@ -487,9 +487,11 @@ public abstract class AbstractComboView extends AbstractView
 	public String executeAgentCommand(String command, boolean echoCommand)
 	{
 		// Check to see if this is a local command (handled directly by the debugger not Soar)
-		if (m_Frame.isDebuggerCommand(command))
+		// We now allow for command line expansion of this too, so we can support aliases
+		String expanded = m_Frame.getExpandedCommand(command) ;
+		if (m_Frame.isDebuggerCommand(expanded))
 		{
-			return (String)m_Frame.executeDebuggerCommand(this, command, echoCommand) ;
+			return (String)m_Frame.executeDebuggerCommand(this, expanded, echoCommand) ;
 		}
 		
 		if (echoCommand)

@@ -51,6 +51,7 @@ public class SoarCommands
 	public String getExciseChunksCommand()						{ return "excise --chunks" ; }
 	public String getExciseTaskCommand()						{ return "excise --task" ; }
 	public String getExciseUserCommand()						{ return "excise --user" ; }
+	public String getExciseDefaultCommand()						{ return "excise --default" ; }
 	
 	public String getPreferencesCommand(String arg) 			{ return "preferences " + arg ; }
 	public String getPreferencesNameCommand(String arg)			{ return "preferences " + arg + " --names" ; }

@@ -28,13 +28,19 @@ public class DebuggerCommands
 	protected Document  m_Document ;
 	
 	public final static String kClear = "clear" ;
+	public final static String kQuit  = "quit" ;
 	
-	protected String[] kCommands = new String[] { kClear } ;
+	protected String[] kCommands = new String[] { kClear, kQuit } ;
 	
 	public DebuggerCommands(MainFrame frame, Document doc)
 	{
 		m_Frame = frame ;
 		m_Document = doc ;
+	}
+
+	public String getExpandedCommand(String command)
+	{
+		return m_Document.getExpandedCommandLine(command) ;
 	}
 	
 	public boolean isCommand(String command)
@@ -50,10 +56,17 @@ public class DebuggerCommands
 	
 	public Object executeCommand(AbstractView view, String command, boolean echoCommand)
 	{
+		String expanded = m_Document.getExpandedCommandLine(command) ;
+
 		if (kClear.equalsIgnoreCase(command))
 		{
 			view.clearDisplay() ;
 			return null ;
+		}
+		
+		if (kQuit.equalsIgnoreCase(command))
+		{
+			m_Frame.close() ;
 		}
 		
 		return null ;
