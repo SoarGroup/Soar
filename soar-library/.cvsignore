@@ -21,3 +21,6 @@ Application.class
 testjavasml-failure.txt
 TestJavaSML.jar
 testjavasml-success.txt
+TestConnectionSML.ilk
+SoarKernelSML.ilk
+TestClientSML.ilk
