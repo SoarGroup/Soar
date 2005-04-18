@@ -5,11 +5,11 @@ set SOARIO=..\soario
 set SOARLIB=..\soar-library
 
 xcopy %SOARIO%\ClientSMLSWIG\java\build\*.java sml\*.java /y
-xcopy %SOARIO%\ClientSMLSWIG\java\build\*.dll *.dll /y
+@REM xcopy %SOARIO%\ClientSMLSWIG\java\build\*.dll *.dll /y
 
 @REM We also need libraries that Java_sml_ClientInterface.dll is dependent on.
-xcopy %SOARLIB%\SoarKernelSML.dll *.dll /y
-xcopy %SOARLIB%\ElementXML.dll *.dll /y
+@REM xcopy %SOARLIB%\SoarKernelSML.dll *.dll /y
+@REM xcopy %SOARLIB%\ElementXML.dll *.dll /y
 
 
 

@@ -24,3 +24,6 @@ testjavasml-success.txt
 TestConnectionSML.ilk
 SoarKernelSML.ilk
 TestClientSML.ilk
+default-text.dlf
+SoarJavaDebugger.jar
+default-layout.dlf

@@ -31,18 +31,13 @@ JDK directly
 
 2) Creating JAR file:
    From the SoarJavaDebugger folder:
-   "jar.exe cvfm ..\SoarJavaDebugger.jar JarManifest ."
+   "jar.exe cvfm ..\soar-library\SoarJavaDebugger.jar JarManifest ."
    (watch the trailing ".")
 
-3) Copy JAR files and supporting files to release point:
-   From the SoarJavaDebugger folder:
-   "xcopy swt.jar ..\soar-library /Y"
-   "xcopy swt*.dll ..\soar-library /Y"
-   "xcopy ..\SoarJavaDebugger.jar ..\soar-library /Y"
-
-4) Run the JAR file with
+3) Run the JAR file with
    "cd ..\soar-library" (to where the SoarJavaDebugger.jar is located)
    "java.exe -jar SoarJavaDebugger.jar"
+   (Or double click the file in explorer)
 
 B) Linux/MacOS Instructions
 ***************************
