@@ -128,6 +128,9 @@
 	</Configurations>
 	<References>
 		<ProjectReference
+			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+			Name="ConnectionSML"/>
+		<ProjectReference
 			ReferencedProjectIdentifier="{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}"
 			Name="SoarKernelSource"/>
 	</References>
