@@ -37,7 +37,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="FALSE"
-				OutputFile="..\..\soar-library\$(ProjectName).exe"
+				OutputFile="..\..\..\soar-library\$(ProjectName).exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
