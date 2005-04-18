@@ -80,7 +80,15 @@ namespace gSKI
       OutputWme* wme = new OutputWme(this, iobj, attr, val);
       m_wmemap.insert(tWmeMap::value_type(wme->GetTimeTag(), wme));
       iobj->AddReferencedWme(wme);
-         
+
+	  // DJP -- it appears that the ref-counting between input wmes and output wmes differs in some manner.
+	  // I've not figured out exactly how, but without adding an additional reference to this wme we will
+	  // get a crash if we (a) store the returned wme, (b) have the agent delete the wme during a run and then
+	  // (c) issue an init-soar to reinitialize at which point we try to release our copy of this wme and find it
+	  // already gone.  We don't have this problem on the input link so I believe the issue is that we're somehow
+	  // off by one on the ref-counting over here.
+	  wme->AddRef() ;
+
       return wme;
    }
 
