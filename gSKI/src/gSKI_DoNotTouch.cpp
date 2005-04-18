@@ -2113,7 +2113,6 @@ namespace gSKI
 
 			wme *pWme;
 
-			PrintDebugFormat("in gSKI::RemoveWmeByTimetag %d", num) ;
 			for (pWme = pSoarAgent->all_wmes_in_rete; pWme != NIL; pWme = pWme->rete_next)
 				if (pWme->timetag == (unsigned long) num)
 					break;
