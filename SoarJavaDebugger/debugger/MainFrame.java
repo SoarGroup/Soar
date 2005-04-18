@@ -285,7 +285,7 @@ public class MainFrame
 
 		// Select our current font as the initial font
 		if (m_TextFont != null)
-			dialog.setFontData(m_TextFont.getFontData()[0]) ;
+			dialog.setFontList(m_TextFont.getFontData()) ;
 
 		FontData data = dialog.open();
 
