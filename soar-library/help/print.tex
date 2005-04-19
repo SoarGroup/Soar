@@ -15,14 +15,12 @@ print [-i] [-d <depth>] \emph{identifier}
 print -s[oS]
 \end{verbatim}
 \subsubsection*{Options}
+\subsection*{Printing items in production memory}
 \begin{tabular}{|l|l|}
 \hline 
  -a, --all  & print the names of all productions currently loaded  \\
  \hline 
  -c, --chunks  & print the names of all chunks currently loaded  \\
- \hline 
- -d, --depth \emph{n}
- & This option overrides the default printing depth (see the default-wme-depth command for more detail).  \\
  \hline 
  -D, --defaults  & print the names of all default productions currently loaded  \\
  \hline 
@@ -30,21 +28,24 @@ print -s[oS]
  \hline 
  -F, --filename  & also prints the name of the file that contains the production.  \\
  \hline 
- -i, --internal  & items should be printed in their internal form. For productions, this means leaving conditions in their reordered (rete net) form. For working memory, this means printing the individual elements with their timetags, rather than the objects.  \\
+ -i, --internal  & items should be printed in their internal form. For productions, this means leaving conditions in their reordered (rete net) form.  \\
  \hline 
  -j, --justifications  & print the names of all justifications currently loaded.  \\
  \hline 
- -n, --name  & When printing productions, print only the name and not the whole production. This is the default when printing any catorgory of productions, as opposed to a named production.  \\
- \hline 
- -o, --operators  & When printing the stack, print only \textbf{operators}
-.  \\
- \hline 
- -s, --stack  & Specifies that the Soar goal stack should be printed. By default this includes both states and operators.  \\
- \hline 
- -S, --states  & When printing the stack, print only \textbf{states}
-.  \\
+ -n, --name  & When printing productions, print only the name and not the whole production. This is the default when printing any category of productions, as opposed to a named production.  \\
  \hline 
  -u, --user  & print the names of all user productions currently loaded  \\
+ \hline 
+production\_name & print the production named production-name \\
+ \hline 
+\end{tabular}
+\subsection*{Printing items in working memory}
+\begin{tabular}{|l|l|}
+\hline 
+ -d, --depth \emph{n}
+ & This option overrides the default printing depth (see the default-wme-depth command for more detail).  \\
+ \hline 
+ -i, --internal  & items should be printed in their internal form. For working memory, this means printing the individual elements with their timetags, rather than the objects.  \\
  \hline 
 \emph{identifier}
  & print the object \emph{identifier}
@@ -54,10 +55,20 @@ print -s[oS]
 \emph{pattern}
  & print the object whose working memory elements matching the given pattern. See Description for more information on printing objects matching a specific pattern.  \\
  \hline 
-production\_name & print the production named production-name \\
- \hline 
 \emph{timetag}
  & print the object in working memory with the given \emph{timetag}
+ \hline 
+\end{tabular}
+\subsection*{Printing the current subgoal stack}
+\begin{tabular}{|l|l|}
+\hline 
+ -o, --operators  & When printing the stack, print only \textbf{operators}
+.  \\
+ \hline 
+ -s, --stack  & Specifies that the Soar goal stack should be printed. By default this includes both states and operators.  \\
+ \hline 
+ -S, --states  & When printing the stack, print only \textbf{states}
+.  \\
  \hline 
 \end{tabular}
 \subsubsection*{Description}
@@ -94,4 +105,4 @@ print -u
  \hline 
 \end{tabular}
 \subsubsection*{See Also}
- default-wme-depth, predefined-aliases
+\hyperref[default-wme-depth]{default-wme-depth} \hyperref[predefined-aliases]{predefined-aliases} 

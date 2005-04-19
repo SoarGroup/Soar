@@ -43,3 +43,7 @@
 
    Note that pwatch now only takes one production per command. Use multiple
    times to watch multiple functions.
+
+                                    See Also
+
+   watch

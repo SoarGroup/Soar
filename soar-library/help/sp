@@ -1,0 +1,132 @@
+                                       Sp
+
+                                      Name
+
+   sp - Define a Soar production.
+
+   Status: Complete
+
+                                    Synopsis
+
+ sp {production_body}
+
+
+                                    Options
+
+   +----------------------------------+
+   |production_body|A Soar production.|
+   +----------------------------------+
+
+                                  Description
+
+   This command defines a new Soar production. rule is a single argument
+   parsed by the Soar kernel, so it should be enclosed in curly braces to
+   avoid being parsed by other scripting languages that might be in the same
+   proces. The overall syntax of a rule is as follows:
+
+   name
+       ["documentation-string"]
+       [FLAG*]
+       LHS
+       -->
+       RHS
+
+   The first element of a rule is its name. Conventions for names are given
+   in the Soar Users Manual. If given, the documentation-string must be
+   enclosed in double quotes. Optional flags define the type of rule and the
+   form of support its right-hand side assertions will receive. The specific
+   flags are listed in a separate section below. The LHS defines the
+   left-hand side of the production and specifies the conditions under which
+   the rule can be fired. Its syntax is given in detail in a subsequent
+   section. The --> symbol serves to separate the LHS and RHS portions. The
+   RHS defines the right-hand side of the production and specifies the
+   assertions to be made and the actions to be performed when the rule fires.
+   The syntax of the allowable right-hand side actions are given in a later
+   section. The Soar Users Manual gives an elaborate discussion of the design
+   and coding of productions. Please see that reference for tutorial
+   information about productions.
+
+   More complex productions can be formed by surrounding the rule with double
+   quotes instead of curly braces. This enables variable and command result
+   substitutions in productions. If another production with the same name
+   already exists, it is excised, and the new production is loaded.
+
+   RULE FLAGS
+
+   The optional FLAGs are given below. Note that these switches are preceeded
+   by a colon instead of a dash -- this is a Soar parser convention.
+
+ :o-support      specifies that all the RHS actions are to be given
+                 o-support when the production fires
+
+ :no-support     specifies that all the RHS actions are only to be given
+                 i-support when the production fires
+
+ :default        specifies that this production is a default production
+                 (this matters for excise -task and watch task)
+
+ :chunk          specifies that this production is a chunk
+                 (this matters for learn trace)
+
+                                    Examples
+
+   There are many examples in the Soar Users Manual and the demos
+   subdirectory. Here is a simple production to create a problem space. It
+   comes from the critter-world demo (see the file critter.tcl):
+
+ sp {critter*create*space*critter
+    "Formulate the initial problem space"
+    (state <state> ^superstate nil)
+    -->
+    (<state> ^name move-around ^problem-space <p1>)
+    (<p1> ^name critter)}
+
+   The production above has the name critter*create*space*critter. It has a
+   documentation string that is surrounded by double quotes. The LHS is
+   (state <state> ^superstate nil) and indicates that this rule will match
+   whenever there is a state object that has the attribute-value pair
+   ^superstate nil. The --> arrow separates the left and right-hand sides.
+   The RHS consists of two lines. The first asserts that the state object is
+   to be augmented with the name move-around and a problem space should be
+   created. The second line of the RHS indicates that this problem space
+   should be named critter.
+
+   New for Soar 8, is right-hand-side dot notation. So this production could
+   also be written:
+
+ sp {critter*create*space*critter
+    "Formulate the initial problem space"
+    (state <state> ^superstate nil)
+    -->
+    (<state> ^name move-around ^problem-space.name critter)}
+
+   Here is a variant of the above example using double quotes instead of
+   curly braces. Double quotes are needed in order to imbed the value of the
+   Tcl variable soar_agent_name in the production. The value of this variable
+   is used to name the problem-space created.
+
+ sp "critter*create*space*critter
+    (state <state> ^superstate nil)
+   -->
+   (<state> ^name move-around ^problem-space <p1>)
+   (<p1> ^name $soar_agent_name)"
+
+   the rest of this may no longer apply, depending on parsing...
+   The primary change in the rule is the last clause of the RHS. In that
+   clause, the scripting (Tcl) variable soar_agent_name is expanded. If this
+   rule is given in an interpreter which has the variable soar_agent_name set
+   to fred, then the RHS would expand to the following before being sent to
+   the Soar kernel to be parsed:
+
+  (<p1> ^name fred)
+
+   Please be aware that when using double quotes, both the dollar sign
+   (variable expansion) and square brackets (command result substitution)
+   could be interpreted by a scripting language such as Tcl, if loaded into
+   the process that is running Soar. If these characters ($, [, and ]) are to
+   be passed to the Soar production parser, they must be escaped (using a
+   backslash) to avoid interpretation by the scripting language.
+
+                                    See Also
+
+   excise learn watch

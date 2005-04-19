@@ -18,14 +18,12 @@
 
                                     Options
 
+Printing items in production memory
+
    +------------------------------------------------------------------------+
    |-a, --all           |print the names of all productions currently loaded|
    |--------------------+---------------------------------------------------|
    |-c, --chunks        |print the names of all chunks currently loaded     |
-   |--------------------+---------------------------------------------------|
-   |                    |This option overrides the default printing depth   |
-   |-d, --depth n       |(see the default-wme-depth command for more        |
-   |                    |detail).                                           |
    |--------------------+---------------------------------------------------|
    |-D, --defaults      |print the names of all default productions         |
    |                    |currently loaded                                   |
@@ -38,42 +36,52 @@
    |                    |production.                                        |
    |--------------------+---------------------------------------------------|
    |                    |items should be printed in their internal form. For|
-   |                    |productions, this means leaving conditions in their|
-   |-i, --internal      |reordered (rete net) form. For working memory, this|
-   |                    |means printing the individual elements with their  |
-   |                    |timetags, rather than the objects.                 |
+   |-i, --internal      |productions, this means leaving conditions in their|
+   |                    |reordered (rete net) form.                         |
    |--------------------+---------------------------------------------------|
    |-j, --justifications|print the names of all justifications currently    |
    |                    |loaded.                                            |
    |--------------------+---------------------------------------------------|
    |                    |When printing productions, print only the name and |
    |-n, --name          |not the whole production. This is the default when |
-   |                    |printing any catorgory of productions, as opposed  |
-   |                    |to a named production.                             |
-   |--------------------+---------------------------------------------------|
-   |-o, --operators     |When printing the stack, print only operators.     |
-   |--------------------+---------------------------------------------------|
-   |                    |Specifies that the Soar goal stack should be       |
-   |-s, --stack         |printed. By default this includes both states and  |
-   |                    |operators.                                         |
-   |--------------------+---------------------------------------------------|
-   |-S, --states        |When printing the stack, print only states.        |
+   |                    |printing any category of productions, as opposed to|
+   |                    |a named production.                                |
    |--------------------+---------------------------------------------------|
    |-u, --user          |print the names of all user productions currently  |
    |                    |loaded                                             |
    |--------------------+---------------------------------------------------|
-   |identifier          |print the object identifier. identifier must be a  |
-   |                    |valid Soar symbol such as S1                       |
-   |--------------------+---------------------------------------------------|
-   |                    |print the object whose working memory elements     |
-   |pattern             |matching the given pattern. See Description for    |
-   |                    |more information on printing objects matching a    |
-   |                    |specific pattern.                                  |
-   |--------------------+---------------------------------------------------|
    |production_name     |print the production named production-name         |
-   |--------------------+---------------------------------------------------|
-   |timetag             |print the object in working memory with the given  |
-   |                    |timetag                                            |
+   +------------------------------------------------------------------------+
+
+Printing items in working memory
+
+   +------------------------------------------------------------------------+
+   |-d, --depth n |This option overrides the default printing depth (see the|
+   |              |default-wme-depth command for more detail).              |
+   |--------------+---------------------------------------------------------|
+   |              |items should be printed in their internal form. For      |
+   |-i, --internal|working memory, this means printing the individual       |
+   |              |elements with their timetags, rather than the objects.   |
+   |--------------+---------------------------------------------------------|
+   |identifier    |print the object identifier. identifier must be a valid  |
+   |              |Soar symbol such as S1                                   |
+   |--------------+---------------------------------------------------------|
+   |              |print the object whose working memory elements matching  |
+   |pattern       |the given pattern. See Description for more information  |
+   |              |on printing objects matching a specific pattern.         |
+   |--------------+---------------------------------------------------------|
+   |timetag       |print the object in working memory with the given timetag|
+   +------------------------------------------------------------------------+
+
+Printing the current subgoal stack
+
+   +------------------------------------------------------------------------+
+   |-o, --operators|When printing the stack, print only operators.          |
+   |---------------+--------------------------------------------------------|
+   |-s, --stack    |Specifies that the Soar goal stack should be printed. By|
+   |               |default this includes both states and operators.        |
+   |---------------+--------------------------------------------------------|
+   |-S, --states   |When printing the stack, print only states.             |
    +------------------------------------------------------------------------+
 
                                   Description

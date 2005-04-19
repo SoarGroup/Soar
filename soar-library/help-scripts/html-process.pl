@@ -58,6 +58,8 @@ while (my $element = $html->look_down("class","editsection")) {
 
 while (my $element = $html->look_down("name","Structured_Output")) {
   my $parent = $element->parent();
+  #$parent->dump();
+  #exit;
   my @contents = $parent->content_list();
   my $foundit = 0;
   
