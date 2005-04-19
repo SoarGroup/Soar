@@ -69,6 +69,9 @@ while (<>) {
       if (/[Ee]rror [Vv]alues/) {
         $_ = "Error Values:";
       }
+      if (/[Ss]ee [Aa]lso/) {
+	$state = "seealso";
+      }
       print "\\subsubsection\*\{$_\}\n";
       next;
     }
@@ -96,8 +99,25 @@ while (<>) {
     next;
   }
   
+  # remove whitespace
   if (/^\s$/) {
     next;
   }
+
+  if ($state eq "seealso") {
+    if (/[A-Za-z]+/) {
+      my @seealsos = split /[\, ]/, $_;
+      foreach (@seealsos) {
+        my $element = $_;
+	chomp $element;
+	if ($element) {
+          print "\\hyperref[$element]{$element}" . " ";
+	}
+      }
+    }
+    $state = "body";
+    next;
+  }
+
   print $_;
 }
