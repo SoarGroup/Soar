@@ -197,25 +197,52 @@ char const* const sml_Names::kParamStatsWmeCountRemoval						= "statswmecountrem
 char const* const sml_Names::kParamStatsWmeCount							= "statswmecount" ;
 char const* const sml_Names::kParamStatsWmeCountAverage						= "statswmecountsverage" ;
 char const* const sml_Names::kParamStatsWmeCountMax							= "statswecountmax" ;
-char const* const sml_Names::kParamStatsKernelTimeTotal						= "statskerneltimetotal" ;
+char const* const sml_Names::kParamStatsKernelCPUTime						= "statskernelcputime" ;
+char const* const sml_Names::kParamStatsTotalCPUTime						= "statstotalcputime" ;
+
+char const* const sml_Names::kParamStatsPhaseTimeInputPhase 				= "statsphasetimeinputphase" ; 
+char const* const sml_Names::kParamStatsPhaseTimeProposePhase 				= "statsphasetimeproposephase" ; 
+char const* const sml_Names::kParamStatsPhaseTimeDecisionPhase 				= "statsphasetimedecisionphase" ; 
+char const* const sml_Names::kParamStatsPhaseTimeApplyPhase 				= "statsphasetimeapplyphase" ; 
+char const* const sml_Names::kParamStatsPhaseTimeOutputPhase				= "statsphasetimeoutputphase" ; 
+char const* const sml_Names::kParamStatsPhaseTimePreferencePhase 			= "statsphasetimepreferencephase" ; 
+char const* const sml_Names::kParamStatsPhaseTimeWorkingMemoryPhase 		= "statsphasetimeworkingmemoryphase" ; 
+
+char const* const sml_Names::kParamStatsMonitorTimeInputPhase 				= "statsmonitortimeinputphase" ; 
+char const* const sml_Names::kParamStatsMonitorTimeProposePhase 			= "statsmonitortimeproposephase" ; 
+char const* const sml_Names::kParamStatsMonitorTimeDecisionPhase			= "statsmonitortimedecisionphase" ; 
+char const* const sml_Names::kParamStatsMonitorTimeApplyPhase				= "statsmonitortimeapplyphase" ; 
+char const* const sml_Names::kParamStatsMonitorTimeOutputPhase 				= "statsmonitortimeoutputphase" ; 
+char const* const sml_Names::kParamStatsMonitorTimePreferencePhase 			= "statsmonitortimepreferencephase" ;
+char const* const sml_Names::kParamStatsMonitorTimeWorkingMemoryPhase 		= "statsmonitortimeworkingmemoryphase" ; 
+
+char const* const sml_Names::kParamStatsInputFunctionTime 					= "statsinputfunctiontime" ;
+char const* const sml_Names::kParamStatsOutputFunctionTime 					= "statsoutputfunctiontime" ;
+
 char const* const sml_Names::kParamStatsMatchTimeInputPhase					= "statsmatchtimeinputphase" ;
-char const* const sml_Names::kParamStatsMatchTimeDetermineLevelPhase		= "statsmatchtimedeterminelevelphase" ;
 char const* const sml_Names::kParamStatsMatchTimePreferencePhase			= "statsmatchtimepreferencephase" ;
 char const* const sml_Names::kParamStatsMatchTimeWorkingMemoryPhase			= "statsmatchtimeworkingmemoryphase" ;
 char const* const sml_Names::kParamStatsMatchTimeOutputPhase				= "statsmatchtimeoutputphase" ;
 char const* const sml_Names::kParamStatsMatchTimeDecisionPhase				= "statsmatchtimedecisionphase" ;
+char const* const sml_Names::kParamStatsMatchTimeProposePhase				= "statsmatchtimedecisionphase" ;
+char const* const sml_Names::kParamStatsMatchTimeApplyPhase				= "statsmatchtimedecisionphase" ;
+
 char const* const sml_Names::kParamStatsOwnershipTimeInputPhase				= "statsownershiptimeinputphase" ;
-char const* const sml_Names::kParamStatsOwnershipTimeDetermineLevelPhase	= "statsownershiptimedetermineLevelphase" ;
 char const* const sml_Names::kParamStatsOwnershipTimePreferencePhase		= "statsownershiptimepreferencephase" ;
 char const* const sml_Names::kParamStatsOwnershipTimeWorkingMemoryPhase		= "statsownershiptimeworkingmemoryphase" ;
 char const* const sml_Names::kParamStatsOwnershipTimeOutputPhase			= "statsownershiptimeoutputphase" ;
 char const* const sml_Names::kParamStatsOwnershipTimeDecisionPhase			= "statsownershiptimedecisionphase" ;
+char const* const sml_Names::kParamStatsOwnershipTimeProposePhase			= "statsownershiptimedecisionphase" ;
+char const* const sml_Names::kParamStatsOwnershipTimeApplyPhase			= "statsownershiptimedecisionphase" ;
+
 char const* const sml_Names::kParamStatsChunkingTimeInputPhase				= "statschunkingtimeinputphase" ;
-char const* const sml_Names::kParamStatsChunkingTimeDetermineLevelPhase		= "statschunkingtimedetermineLevelphase" ;
 char const* const sml_Names::kParamStatsChunkingTimePreferencePhase			= "statschunkingtimepreferencephase" ;
 char const* const sml_Names::kParamStatsChunkingTimeWorkingMemoryPhase		= "statschunkingtimeworkingmemoryphase" ;
 char const* const sml_Names::kParamStatsChunkingTimeOutputPhase				= "statschunkingtimeoutputphase" ;
 char const* const sml_Names::kParamStatsChunkingTimeDecisionPhase			= "statschunkingtimedecisionphase" ;
+char const* const sml_Names::kParamStatsChunkingTimeProposePhase			= "statschunkingtimedecisionphase" ;
+char const* const sml_Names::kParamStatsChunkingTimeApplyPhase			= "statschunkingtimedecisionphase" ;
+
 char const* const sml_Names::kParamStatsMemoryUsageMiscellaneous			= "statsmemoryusagemiscellaneous" ;
 char const* const sml_Names::kParamStatsMemoryUsageHash						= "statsmemoryusagehash" ;
 char const* const sml_Names::kParamStatsMemoryUsageString					= "statsmemoryusagestring" ;
