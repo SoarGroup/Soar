@@ -298,10 +298,6 @@ public abstract class AbstractComboView extends AbstractView
 		
 	private void commandEntered(String command, boolean updateHistory)
 	{
-		// Clear the text area if this window is configured that way.
-		if (this.m_ClearEachCommand)
-			clearDisplay() ;
-		
 		// Update the combo box history list
 		if (updateHistory)
 		{
@@ -494,11 +490,15 @@ public abstract class AbstractComboView extends AbstractView
 			return (String)m_Frame.executeDebuggerCommand(this, expanded, echoCommand) ;
 		}
 		
-		if (echoCommand)
+		if (echoCommand && !m_ClearEachCommand)
 			appendTextSafely(getLineSeparator() + command) ;
 		
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
 
+		// Clear the text area if this window is configured that way.
+		if (this.m_ClearEachCommand)
+			clearDisplay() ;
+		
 		// Output from Soar doesn't include newlines and assumes that we insert
 		// a newline before the result of the command is displayed.
 		if (result != null && result.length() > 0)
