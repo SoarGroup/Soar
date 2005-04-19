@@ -913,11 +913,13 @@ void do_one_top_level_phase (agent* thisAgent)
       start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
 
+#if (0)
 	  #ifndef NO_CALLBACKS  /* change callback to PROPOSE_CALLBACK */
 	  soar_invoke_callbacks(thisAgent, thisAgent, 
 		   BEFORE_PREFERENCE_PHASE_CALLBACK,
            (soar_call_data) NULL);
       #endif
+#endif
 
       /* 'Prime the decision for a new round of production firings at the end of
        * REW:   05.05.97   */  /*  KJC 04.05 moved here from INPUT_PHASE for 8.6.0 */
@@ -941,12 +943,13 @@ void do_one_top_level_phase (agent* thisAgent)
           gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_ELABORATION_CYCLE, 
                                   (thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE, 1);
 	  }
-      
+#if (0)
 	  #ifndef NO_CALLBACKS  /* TODO:  change callback to PROPOSE_CALLBACK */
 	  soar_invoke_callbacks(thisAgent, thisAgent, 
 		   AFTER_PREFERENCE_PHASE_CALLBACK,
            (soar_call_data) NULL);
       #endif
+#endif
 
 	  #ifndef NO_TIMING_STUFF
 	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
@@ -1054,11 +1057,13 @@ void do_one_top_level_phase (agent* thisAgent)
       start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
 
+#if (0)
       #ifndef NO_CALLBACKS  /* change callback to APPLY_CALLBACK */
 	  soar_invoke_callbacks(thisAgent, thisAgent, 
 		   BEFORE_PREFERENCE_PHASE_CALLBACK,
                    (soar_call_data) NULL);
       #endif
+#endif
 
       /* 'prime' the cycle for a new round of production firings 
        * in the APPLY (pref/wm) phase *//* KJC 04.05 moved here from end of DECISION */
@@ -1088,11 +1093,13 @@ void do_one_top_level_phase (agent* thisAgent)
 				      (thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE, 1);
       }
 
+#if (0)
       #ifndef NO_CALLBACKS  /* TODO:  change callback to APPLY_CALLBACK */
 	  soar_invoke_callbacks(thisAgent, thisAgent, 
 				AFTER_PREFERENCE_PHASE_CALLBACK,
 				(soar_call_data) NULL);
       #endif
+#endif
 
 	  #ifndef NO_TIMING_STUFF
 	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 

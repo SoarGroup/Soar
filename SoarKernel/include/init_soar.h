@@ -173,13 +173,12 @@ extern void do_one_top_level_phase (agent* thisAgent);
 /* Added new DETERMINE_LEVEL_PHASE here and in the timers */
 
 enum top_level_phase { INPUT_PHASE = 0, 
-                       /* DETERMINE_LEVEL_PHASE, */
+		               PROPOSE_PHASE,
+                       DECISION_PHASE,
+		               APPLY_PHASE,
+                       OUTPUT_PHASE, 
                        PREFERENCE_PHASE, 
                        WM_PHASE,
-                       OUTPUT_PHASE, 
-                       DECISION_PHASE,
-		               PROPOSE_PHASE,
-		               APPLY_PHASE,
                        NUM_PHASE_TYPES
                      };
 
