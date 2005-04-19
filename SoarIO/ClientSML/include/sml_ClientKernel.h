@@ -364,7 +364,7 @@ public:
 	*		   Thus calling this method will generally lead to Soar running
 	*		   but indirectly through a simulation.
 	*************************************************************/
-	bool FireStartSimulationEvent() ;
+	bool FireStartSystemEvent() ;
 
 	/*************************************************************
 	* @brief   Causes the kernel to issue a SYSTEM_STOP event.
@@ -378,7 +378,7 @@ public:
 	*		   for completeness in case we find a use or change the
 	*		   semantics for "stop-soar".
 	*************************************************************/
-	bool FireStopSimulationEvent() ;
+	bool FireStopSystemEvent() ;
 
 	/*************************************************************
 	* @brief Takes a command line and expands all the aliases within

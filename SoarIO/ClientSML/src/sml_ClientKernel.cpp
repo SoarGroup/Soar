@@ -867,7 +867,7 @@ char const* Kernel::StopAllAgents()
 *		   Thus calling this method will generally lead to Soar running
 *		   but indirectly through a simulation.
 *************************************************************/
-bool Kernel::FireStartSimulationEvent()
+bool Kernel::FireStartSystemEvent()
 {
 	AnalyzeXML response ;
 
@@ -887,7 +887,7 @@ bool Kernel::FireStartSimulationEvent()
 *		   for completeness in case we find a use or change the
 *		   semantics for "stop-soar".
 *************************************************************/
-bool Kernel::FireStopSimulationEvent()
+bool Kernel::FireStopSystemEvent()
 {
 	AnalyzeXML response ;
 
