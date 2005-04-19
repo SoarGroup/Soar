@@ -30,28 +30,51 @@ namespace gSKI {
 		double        wmeCountAverage;
 		unsigned long wmeCountMax;
 
-		double        kernelTimeTotal;
+		double        kernelCPUTime;
+		double        totalCPUTime;
+
+		double		  inputFunctionTime;
+		double        outputFunctionTime;
+
+		double        phaseTimeInputPhase;
+		double        phaseTimePreferencePhase;
+		double        phaseTimeWorkingMemoryPhase;
+		double        phaseTimeOutputPhase;
+		double        phaseTimeDecisionPhase;
+		double        phaseTimeProposePhase;
+		double        phaseTimeApplyPhase;
+
+		double        monitorTimeInputPhase;
+		double        monitorTimePreferencePhase;
+		double        monitorTimeWorkingMemoryPhase;
+		double        monitorTimeOutputPhase;
+		double        monitorTimeDecisionPhase;
+		double        monitorTimeProposePhase;
+		double        monitorTimeApplyPhase;
 
 		double        matchTimeInputPhase;
-		double        matchTimeDetermineLevelPhase;
 		double        matchTimePreferencePhase;
 		double        matchTimeWorkingMemoryPhase;
 		double        matchTimeOutputPhase;
 		double        matchTimeDecisionPhase;
+		double        matchTimeProposePhase;
+		double        matchTimeApplyPhase;
 
 		double        ownershipTimeInputPhase;
-		double        ownershipTimeDetermineLevelPhase;
 		double        ownershipTimePreferencePhase;
 		double        ownershipTimeWorkingMemoryPhase;
 		double        ownershipTimeOutputPhase;
 		double        ownershipTimeDecisionPhase;
+		double        ownershipTimeProposePhase;
+		double        ownershipTimeApplyPhase;
 
 		double        chunkingTimeInputPhase;
-		double        chunkingTimeDetermineLevelPhase;
 		double        chunkingTimePreferencePhase;
 		double        chunkingTimeWorkingMemoryPhase;
 		double        chunkingTimeOutputPhase;
 		double        chunkingTimeDecisionPhase;
+		double        chunkingTimeProposePhase;
+		double        chunkingTimeApplyPhase;
 
 		unsigned long memoryUsageMiscellaneous;
 		unsigned long memoryUsageHash;

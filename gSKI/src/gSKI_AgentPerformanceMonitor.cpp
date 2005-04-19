@@ -1397,24 +1397,50 @@ void AgentPerformanceMonitor::GetStats(AgentPerformanceData* pStats)
 	pStats->wmeCount = a->num_wmes_in_rete;
 	pStats->wmeCountAverage = a->num_wm_sizes_accumulated ? (a->cumulative_wm_size / a->num_wm_sizes_accumulated) : 0.0;
 	pStats->wmeCountMax = a->max_wm_size;
-	pStats->kernelTimeTotal = timer_value(&a->total_kernel_time);
+
+	pStats->kernelCPUTime = timer_value(&a->total_kernel_time);
+	pStats->totalCPUTime = timer_value(&a->total_cpu_time);
+
+    pStats->phaseTimeInputPhase = timer_value(&a->decision_cycle_phase_timers[INPUT_PHASE]);
+    pStats->phaseTimeProposePhase = timer_value(&a->decision_cycle_phase_timers[PROPOSE_PHASE]);
+    pStats->phaseTimeDecisionPhase = timer_value(&a->decision_cycle_phase_timers[DECISION_PHASE]);
+    pStats->phaseTimeApplyPhase = timer_value(&a->decision_cycle_phase_timers[APPLY_PHASE]);
+    pStats->phaseTimeOutputPhase = timer_value(&a->decision_cycle_phase_timers[OUTPUT_PHASE]);
+    pStats->phaseTimePreferencePhase = timer_value(&a->decision_cycle_phase_timers[PREFERENCE_PHASE]);
+    pStats->phaseTimeWorkingMemoryPhase = timer_value(&a->decision_cycle_phase_timers[WM_PHASE]);
+
+    pStats->monitorTimeInputPhase = timer_value(&a->monitors_cpu_time[INPUT_PHASE]);
+    pStats->monitorTimeProposePhase = timer_value(&a->monitors_cpu_time[PROPOSE_PHASE]);
+    pStats->monitorTimeDecisionPhase = timer_value(&a->monitors_cpu_time[DECISION_PHASE]);
+    pStats->monitorTimeApplyPhase = timer_value(&a->monitors_cpu_time[APPLY_PHASE]);
+    pStats->monitorTimeOutputPhase = timer_value(&a->monitors_cpu_time[OUTPUT_PHASE]);
+    pStats->monitorTimePreferencePhase = timer_value(&a->monitors_cpu_time[PREFERENCE_PHASE]);
+    pStats->monitorTimeWorkingMemoryPhase = timer_value(&a->monitors_cpu_time[WM_PHASE]);
+ 
+    pStats->inputFunctionTime = timer_value(&a->input_function_cpu_time) ;
+    pStats->outputFunctionTime = timer_value(&a->output_function_cpu_time) ;
+ 
+  // Match_cpu_time, ownership, and chunking are only calculated when
+  // DETAILED_TIMING_STATS is defined.
 	pStats->matchTimeInputPhase = timer_value(&a->match_cpu_time[INPUT_PHASE]);
-//	pStats->matchTimeDetermineLevelPhase = timer_value(&a->match_cpu_time[DETERMINE_LEVEL_PHASE]);
-	pStats->matchTimeDetermineLevelPhase = 0;
+	pStats->matchTimeProposePhase = timer_value(&a->match_cpu_time[PROPOSE_PHASE]);
+	pStats->matchTimeApplyPhase = timer_value(&a->match_cpu_time[APPLY_PHASE]);
 	pStats->matchTimePreferencePhase = timer_value(&a->match_cpu_time[PREFERENCE_PHASE]);
 	pStats->matchTimeWorkingMemoryPhase = timer_value(&a->match_cpu_time[WM_PHASE]);
 	pStats->matchTimeOutputPhase = timer_value(&a->match_cpu_time[OUTPUT_PHASE]);
 	pStats->matchTimeDecisionPhase = timer_value(&a->match_cpu_time[DECISION_PHASE]);
-	pStats->ownershipTimeInputPhase = timer_value(&a->match_cpu_time[INPUT_PHASE]);
-//	pStats->ownershipTimeDetermineLevelPhase = timer_value(&a->match_cpu_time[DETERMINE_LEVEL_PHASE]);
-	pStats->ownershipTimeDetermineLevelPhase = 0;
-	pStats->ownershipTimePreferencePhase = timer_value(&a->match_cpu_time[PREFERENCE_PHASE]);
-	pStats->ownershipTimeWorkingMemoryPhase = timer_value(&a->match_cpu_time[WM_PHASE]);
-	pStats->ownershipTimeOutputPhase = timer_value(&a->match_cpu_time[OUTPUT_PHASE]);
-	pStats->ownershipTimeDecisionPhase = timer_value(&a->match_cpu_time[DECISION_PHASE]);
+
+	pStats->ownershipTimeInputPhase = timer_value(&a->ownership_cpu_time[INPUT_PHASE]);
+	pStats->ownershipTimeProposePhase = timer_value(&a->ownership_cpu_time[PROPOSE_PHASE]);
+	pStats->ownershipTimeApplyPhase = timer_value(&a->ownership_cpu_time[APPLY_PHASE]);
+	pStats->ownershipTimePreferencePhase = timer_value(&a->ownership_cpu_time[PREFERENCE_PHASE]);
+	pStats->ownershipTimeWorkingMemoryPhase = timer_value(&a->ownership_cpu_time[WM_PHASE]);
+	pStats->ownershipTimeOutputPhase = timer_value(&a->ownership_cpu_time[OUTPUT_PHASE]);
+	pStats->ownershipTimeDecisionPhase = timer_value(&a->ownership_cpu_time[DECISION_PHASE]);
+
 	pStats->chunkingTimeInputPhase = timer_value(&a->chunking_cpu_time[INPUT_PHASE]);
-//	pStats->chunkingTimeDetermineLevelPhase = timer_value(&a->chunking_cpu_time[DETERMINE_LEVEL_PHASE]);
-	pStats->chunkingTimeDetermineLevelPhase = 0;
+	pStats->chunkingTimeProposePhase = timer_value(&a->chunking_cpu_time[PROPOSE_PHASE]);
+	pStats->chunkingTimeApplyPhase = timer_value(&a->chunking_cpu_time[APPLY_PHASE]);
 	pStats->chunkingTimePreferencePhase = timer_value(&a->chunking_cpu_time[PREFERENCE_PHASE]);
 	pStats->chunkingTimeWorkingMemoryPhase = timer_value(&a->chunking_cpu_time[WM_PHASE]);
 	pStats->chunkingTimeOutputPhase = timer_value(&a->chunking_cpu_time[OUTPUT_PHASE]);
