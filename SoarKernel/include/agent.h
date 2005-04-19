@@ -441,8 +441,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   struct timeval      start_kernel_tv, start_phase_tv;
   struct timeval      total_kernel_time;
 
-  struct timeval      decision_cycle_phase_timers[6];
-  struct timeval      monitors_cpu_time[6]; 
+  struct timeval      decision_cycle_phase_timers[NUM_PHASE_TYPES];
+  struct timeval      monitors_cpu_time[NUM_PHASE_TYPES]; 
   struct timeval      input_function_cpu_time; 
   struct timeval      output_function_cpu_time; 
 /* REW: end 28.07.96 */
@@ -450,12 +450,12 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 /* REW: begin 28.07.96 */  
   /* accumulated cpu time spent in various parts of the system */
 ////#ifdef DETAILED_TIMING_STATS
-  struct timeval      ownership_cpu_time[6];
-  struct timeval      chunking_cpu_time[6];
-  struct timeval      match_cpu_time[6];
+  struct timeval      ownership_cpu_time[NUM_PHASE_TYPES];
+  struct timeval      chunking_cpu_time[NUM_PHASE_TYPES];
+  struct timeval      match_cpu_time[NUM_PHASE_TYPES];
 /* REW: begin 11.25.96 */ 
   struct timeval      start_gds_tv, total_gds_time; 
-  struct timeval      gds_cpu_time[6];
+  struct timeval      gds_cpu_time[NUM_PHASE_TYPES];
 /* REW: end   11.25.96 */  
 /* REW: end 28.07.96 */
 ////#endif
