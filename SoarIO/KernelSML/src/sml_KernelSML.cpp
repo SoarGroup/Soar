@@ -622,7 +622,7 @@ EXPORT void sml_DirectRemoveWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handl
 	((IWorkingMemory*)wm)->RemoveWme((IWme*)wme) ;
 
 	// Release the object so the client doesn't have to call back in and do that.
-	((IWme*)wme)->Release() ;
+//	((IWme*)wme)->Release() ;
 }
 
 /*************************************************************

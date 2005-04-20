@@ -648,7 +648,7 @@ bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI:
 
 	// Remove the object from the time tag table
 	// We only do this removal if we're releasing the wme in the line above.
-	//pAgentSML->RemoveTimeTag(pTimeTag) ;
+	pAgentSML->RemoveTimeTag(pTimeTag) ;
 
 	// If we have an error object, check that it hasn't been set by an earlier call.
 	if (pError)

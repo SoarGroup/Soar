@@ -194,8 +194,15 @@ namespace gSKI
             {
                m_owningobject->RemoveReferencedWme(this);
             }
-	 m_owningobject->RemoveReferencedWme(this);
-	 SetOwningObject(0);
+	//	 m_owningobject->RemoveReferencedWme(this);
+		SetOwningObject(0);
+
+		// After the wme is really removed, we release ourselves.  We do it this way
+		// because a client calling "RemoveWme()" has no way to know when the gSKI Wme object
+		// can be released, because the removal of the kernel wme won't occur until the next
+		// input phase after RemoveWme is called.  Thus "RemoveWme" now includes a reference decrement
+		// as part of its actions, providing the client a good way to do clean up.
+		this->Release() ;
        }
      }
   }

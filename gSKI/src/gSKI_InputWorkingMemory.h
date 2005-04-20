@@ -455,6 +455,10 @@ namespace gSKI {
        *
        * Removing a Wme that references a WMObject, may cause that WMObject
        * to be invalidated if the Wme is the last reference to it.
+	   *
+	   * Calling RemoveWme() implicitly decrements the reference count of the wme
+	   * being removed, so a caller should not call Release() on the wme after calling
+	   * RemoveWme().
        *
        * @param wme a pointer to the Wme to be removed
        * @param err Pointer to client-owned error structure.  If the pointer
