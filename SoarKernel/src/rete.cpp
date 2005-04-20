@@ -5759,11 +5759,15 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 								if ((thisAgent->o_support_calculation_type == 3) && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 									print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
 																												node->b.p.prod->name);
+									tagged_output_with_symbols(thisAgent, "<warning string=\"WARNING:  operator elaborations mixed with operator applications get o_support in prod %y\"></warning>",
+																												node->b.p.prod->name);
 									prod_type = PE_PRODS;
 									break;
 								}
 								else if ((thisAgent->o_support_calculation_type == 4)  && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 									print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
+																												node->b.p.prod->name);
+									tagged_output_with_symbols(thisAgent, "<warning string=\"WARNING:  operator elaborations mixed with operator applications get i_support in prod %y\"></warning>",
 																												node->b.p.prod->name);
 									prod_type = IE_PRODS;
 									break;

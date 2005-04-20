@@ -121,6 +121,9 @@ public:
 	static char const* const kTagPreference ;
 	static char const* const kPreference_Type ;
 
+	// for warnings controlled by WARNINGS_SYSPARAM
+	static char const* const sml_Names::kTagWarning ;
+
 	// end of tags for Trace output
 
 	// Types

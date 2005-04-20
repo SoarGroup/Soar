@@ -1180,8 +1180,10 @@ void do_one_top_level_phase (agent* thisAgent)
       /* MVP 6-8-94 */
       if (thisAgent->e_cycles_this_d_cycle >=
 		  (unsigned long)(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM])) {
-		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
-			  print (thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
+			  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {			
+				  print (thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
+				  generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-elaborations; proceeding to decision phase.\"></warning>");
+			  }
 		  thisAgent->current_phase = DECISION_PHASE;
 	  } else
 		  thisAgent->current_phase = INPUT_PHASE;

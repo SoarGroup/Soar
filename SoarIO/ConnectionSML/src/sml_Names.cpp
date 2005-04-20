@@ -122,6 +122,9 @@ char const* const sml_Names::kTagWMEAdd 	= "adding_wme" ;
 char const* const sml_Names::kTagPreference		= "preference" ;
 char const* const sml_Names::kPreference_Type	= "pref_type" ;
 
+char const* const sml_Names::kTagWarning		= "warning" ;
+// Tag warning has attribute kTypeString
+
 // Types
 char const* const sml_Names::kTypeString	= "string" ;
 char const* const sml_Names::kTypeInt		= "int" ;

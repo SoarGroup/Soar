@@ -1118,16 +1118,20 @@ void chunk_instantiation (agent* thisAgent,
   
   /* --- if there aren't any grounds, exit --- */
   if (! top_cc) {
-	  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+	  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
+		  generate_tagged_output(thisAgent, "<warning string=\" Warning: chunk has no grounds, ignoring it.\"></warning>");
+	  }
 	  goto chunking_done;
   }
   
   /* MVP 6-8-94 */
   if (thisAgent->chunks_this_d_cycle >
       (unsigned long) thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) {
-	  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
+		  generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-chunks! Halting system.\"></warning>");
+		  }
 	  thisAgent->max_chunks_reached = TRUE;
 	  goto chunking_done;
   }

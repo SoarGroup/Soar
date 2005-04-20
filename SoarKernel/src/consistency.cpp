@@ -628,8 +628,10 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
    if (thisAgent->e_cycles_this_d_cycle >= 
       (unsigned long) (thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM])) 
    {
-      if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+	   if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
          print(thisAgent, "\nWarning: reached max-elaborations; proceeding to output phase.");
+		 generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-elaborations; proceeding to output phase.\"></warning>");
+	   }
       thisAgent->current_phase = OUTPUT_PHASE;
       return;
    }
@@ -853,8 +855,10 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
    
    if (thisAgent->e_cycles_this_d_cycle >= 
       (unsigned long) (thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM])) {
-      if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
-         print(thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
+		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
+              print(thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
+			  generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-elaborations; proceeding to decision phase.\"></warning>");
+		  }
       thisAgent->current_phase = DECISION_PHASE;
       return;
    }

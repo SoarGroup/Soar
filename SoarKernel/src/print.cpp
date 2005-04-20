@@ -1358,7 +1358,7 @@ void generate_tagged_output (agent * thisAgent, char * str)
 {
    gSKI_MakeAgentCallback(gSKI_K_EVENT_STRUCTURED_OUTPUT, 0, thisAgent, static_cast<void*>(str));
    //uncomment next line to see all tagged output printed in CLI...
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
+   //gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
  }
 
 void generate_tagged_wme_timetag (agent * thisAgent, wme * w) {
