@@ -27,15 +27,15 @@
    particular call to the print or wmes command by explicitly using the
    --depth flag, e.g.,print --depth 10 args.
 
-   Recall that by default, the print command prints objects in working
-   memory, not just the individual working memory element. To limit the
-   output to individual working memory elements, the --internal flag must
-   also be specified in the print command. Thus when the print depth is 0, by
-   default Soar prints the entire object, which is the same behavior as when
-   the print depth is 1. But if --internal is also specified, then a depth of
-   0 prints just the individual WME, while a depth of 1 prints all WMEs which
-   share that same identifier. This is true when printing timetags,
-   identifiers or WME patterns.
+   By default, the print command prints objects in working memory, not just
+   the individual working memory element. To limit the output to individual
+   working memory elements, the --internal flag must also be specified in the
+   print command. Thus when the print depth is 0, by default Soar prints the
+   entire object, which is the same behavior as when the print depth is 1.
+   But if --internal is also specified, then a depth of 0 prints just the
+   individual WME, while a depth of 1 prints all WMEs which share that same
+   identifier. This is true when printing timetags, identifiers or WME
+   patterns.
 
    When the depth is greater than 1, the identifier links from the specified
    WME's will be followed, so that additional substructure is printed. For

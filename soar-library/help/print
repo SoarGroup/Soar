@@ -76,10 +76,10 @@ Printing items in working memory
 Printing the current subgoal stack
 
    +------------------------------------------------------------------------+
-   |-o, --operators|When printing the stack, print only operators.          |
-   |---------------+--------------------------------------------------------|
    |-s, --stack    |Specifies that the Soar goal stack should be printed. By|
    |               |default this includes both states and operators.        |
+   |---------------+--------------------------------------------------------|
+   |-o, --operators|When printing the stack, print only operators.          |
    |---------------+--------------------------------------------------------|
    |-S, --states   |When printing the stack, print only states.             |
    +------------------------------------------------------------------------+

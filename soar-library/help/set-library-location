@@ -22,11 +22,6 @@
    The library location should contain at least the help/ subdirectory and
    the command-names file for help to work.
 
-                                    Examples
-
- directory "c:\Documents and Settings\User\My Documents\Soar\SoarIO\bin"
- directory /usr/local/share/soar/library
-
                                     See Also
 
    help

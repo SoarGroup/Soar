@@ -44,14 +44,6 @@
    Compressed files may not be portable to another platform if that platform
    does not support the same uncompress utility.
 
-                                    Examples
-
-   To show how to use the command in context, do this:
-
- command --option arg
-
-   and possibly explain the results.
-
                                     See Also
 
    excise init-soar

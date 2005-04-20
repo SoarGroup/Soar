@@ -33,10 +33,5 @@ production\_name & Print memory usage for a specific production.  \\
  Memory usage is recorded according to the tokens that are allocated in the rete network for the given production(s). This number is a function of the number of elements in working memory that match each production. Therefore, this command will not provide useful information at the beginning of a Soar run (when working memory is empty) and should be called in the middle (or at the end) of a Soar run. 
  As a rule of thumb, numbers less than 100 mean that the production is using a small amount of memory, numbers above 1000 mean that the production is using a large amount of memory, and numbers above 10,000 mean that the production is using a \emph{very}
  large amount of memory. 
-\subsubsection*{Examples}
- To show how to use the command in context, do this: \begin{verbatim}
-command --option arg
-\end{verbatim}
- and possibly explain the results. 
 \subsubsection*{See Also}
 \hyperref[matches]{matches} 

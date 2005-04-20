@@ -28,14 +28,6 @@
    have already been enabled with compiler directives. See the stats command
    for more info on the Soar timing system.
 
-                                    Examples
-
-   To show how to use the command in context, do this:
-
- command --option arg
-
-   and possibly explain the results.
-
                                     See Also
 
    stats

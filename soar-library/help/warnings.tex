@@ -16,6 +16,5 @@ warnings -[e|d]
 \end{tabular}
 \subsubsection*{Description}
  Enables and disables the printing of warning messages. If an argument is specified, then the warnings are set to that state. If no argument is given, then the current warnings status is printed. At startup, warnings are initially enabled. If warnings are disabled using this command, then some warnings may still be printed, since some are considered too important to ignore. 
- The warnings that are printed apply to the syntax of the productions, to notify the user when they are not in the correct syntax. When a lefthand side error is discovered (such as conditions that are not linked to a common state or impasse object), the production is generally loaded into production memory anyway, although this production may never match or may seriously slow down the matching process. Righthand side errors, such as preferences that are not linked to the state, usually result in the production not being loaded. (fix this - In second paragraph, what would be reported as a warning?) 
 \subsubsection*{Examples}
 \subsubsection*{See Also}

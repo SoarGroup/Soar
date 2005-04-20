@@ -35,10 +35,28 @@ attribute & Must be an existing \emph{\^{}attribute}
  For the time being, \textbf{numeric-indifferent}
  preferences are listed under the heading ``binary indifferents:''. 
 \subsubsection*{Examples}
- This example prints the preferences on the (S1 \^{}operator) and the production names which created the preferences: \begin{verbatim}
-preferences S1 operator --names
+ This example prints the preferences on (S1 \^{}operator) and the production names which created the preferences: \begin{verbatim}
+soar> preferences S1 operator -names
+Preferences for S1 ^operator:
+acceptables:
+ O2 (fill) +
+   From waterjug*propose*fill
+ O3 (fill) +
+   From waterjug*propose*fill
+unary indifferents:
+ O2 (fill) =
+   From waterjug*propose*fill
+ O3 (fill) =
+   From waterjug*propose*fill
 \end{verbatim}
- if the current state is S1, then the above syntax is equivalent to: \begin{verbatim}
+ If the current state is S1, then the above syntax is equivalent to: \begin{verbatim}
  preferences -n
+\end{verbatim}
+ This example shows the support for the WMEs with the \^{}jug attribute: \begin{verbatim}
+soar> preferences s1 jug
+Preferences for S1 ^jug:
+acceptables:
+ I5  + :O 
+ J1  + :O 
 \end{verbatim}
 \subsubsection*{See Also}

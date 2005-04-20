@@ -30,3 +30,7 @@
    can be retrieved by using the explain-backtraces command. Saving
    backtracing information may slow down the execution of your Soar program,
    but it can be a very useful tool in understanding how chunks are formed.
+
+                                    See Also
+
+   explain-backtraces

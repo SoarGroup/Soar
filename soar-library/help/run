@@ -49,15 +49,31 @@ Deprecated Options
 
                                   Description
 
-   This command runs the Soar agents. If the --self flag is issued, only the
-   agent receiving the run command will run. The count argument is a single
-   integer which specified the number of cycles to run Soar. If count is
-   unspecified and no units are given, then Soar is run until halted by
-   problem-solving completion or an external interrupt. If count is
-   specified, but no units are specified, then soar is run by decision
-   cycles. If units are specified, but count is unpecified, then count
-   defaults to '1'. The unit argument indicates the unit of measure to be
-   used in counting Soar run cycles.
+   The run command starts the Soar execution cycle or continues any execution
+   that was temporarily stopped. The default behavior of run, with no
+   arguments, is to cause Soar to execute until it is halted or interrupted
+   by an action of a production, or until an external interrupt is issued by
+   the user. The run command can also specify that Soar should run only for a
+   specific number of Soar cycles or phases (which may also be prematurely
+   stopped by a production action or a control-C). This is helpful for
+   debugging sessions, where users may want to pay careful attention to the
+   specific productions that are firing and retracting.
+
+   The run command takes two optional arguments: an integer, count, which
+   specifies how many units to run; and a units flag indicating what steps or
+   increments to use. If count is specified, but no units are specified, then
+   Soar is run by decision cycles. If units are specified, but count is
+   unpecified, then count defaults to '1'.
+
+   If there are multiple Soar agents that exist in the same Soar process,
+   then issuing a run command in any agent will cause all agents to run with
+   the same set of parameters, unless the flag --self is specified, in which
+   case only that agent will execute.
+
+Note
+
+   If Soar has been stopped due to a halt action, an init-soar command must
+   be issued before Soar can be restarted with the run command.
 
                                 Default Aliases
 

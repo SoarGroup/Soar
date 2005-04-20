@@ -176,10 +176,17 @@ Watching other Functions
 
                                   Description
 
-   The watch command controls run-time tracing of Soar. With no arguments,
-   this command prints out the current watch status. The various levels are
-   used to modify the current watch settings. Each level can be indicated
-   with either a number or a series of flags as follows:
+   The watch command controls the amount of information that is printed out
+   as Soar runs. The basic functionality of this command is to trace various
+   levels of information about Soar's internal workings. The higher the
+   level, the more information is printed as Soar runs. At the lowest
+   setting, 0 | --none, nothing is printed. The levels are cumulative, so
+   that each successive level prints the information from the previous level
+   as well as some additional information. The default setting for the watch
+   level is 1, (or --decisions).
+
+   Each level can be indicated with either a number or a series of flags as
+   follows:
 
  0 or --none
  1 or --decisions
@@ -195,6 +202,9 @@ Watching other Functions
    Numerical arguments are provided for shorthand convenience. For more
    detailed control over the watch settings, the named arguments should be
    used.
+
+   With no arguments, this command prints information about the current watch
+   status, i.e., the values of each parameter.
 
    For the named arguments, including the named argument turns on only that
    setting. To turn off a specific setting, follow the named argument with

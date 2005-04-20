@@ -35,10 +35,11 @@
    side error is discovered (such as conditions that are not linked to a
    common state or impasse object), the production is generally loaded into
    production memory anyway, although this production may never match or may
-   seriously slow down the matching process. Righthand side errors, such as
+   seriously slow down the matching process. In this case, a warning would be
+   printed only if warnings were --on. Righthand side errors, such as
    preferences that are not linked to the state, usually result in the
-   production not being loaded. (fix this - In second paragraph, what would
-   be reported as a warning?)
+   production not being loaded, and a warning regardless of the warnings
+   setting.
 
                                     Examples
 

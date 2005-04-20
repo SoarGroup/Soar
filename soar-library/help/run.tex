@@ -37,7 +37,17 @@ run -[d|e|p|o][fs] [count]
  \hline 
 \end{tabular}
 \subsubsection*{Description}
- This command runs the Soar agents. If the --self flag is issued, only the agent receiving the run command will run. The count argument is a single integer which specified the number of cycles to run Soar. If count is unspecified and no units are given, then Soar is run until halted by problem-solving completion or an external interrupt. If count is specified, but no units are specified, then soar is run by decision cycles. If units are specified, but count is unpecified, then count defaults to '1'. The unit argument indicates the unit of measure to be used in counting Soar run cycles. 
+, which specifies how many units to run; and a \emph{units}
+ flag indicating what steps or increments to use. If \emph{count}
+ is specified, but no \emph{units}
+ are specified, then Soar is run by decision cycles. If \emph{units}
+ are specified, but \emph{count}
+ is unpecified, then \emph{count}
+ defaults to '1'. 
+ is specified, in which case only that agent will execute. 
+\paragraph*{Note}
+ If Soar has been stopped due to a \textbf{halt}
+ action, an \textbf{init-soar}
 \subsubsection*{Default Aliases}
 \begin{tabular}{|l|l|}
 \hline 

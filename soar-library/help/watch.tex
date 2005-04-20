@@ -12,7 +12,10 @@ watch -[dpPwrDujcbi] [<remove>] -[n|t|f]
 watch --learning [<print|noprint|fullprint>]
 \end{verbatim}
 \subsubsection*{Options}
- When appropriate, a specific option may be turned off using the remove argument. This argument has a numeric alias; you can use 0 for remove. A mix of formats is acceptable, even in the same command line. 
+ When appropriate, a specific option may be turned off using the \textbf{remove}
+ argument. This argument has a numeric alias; you can use \textbf{0}
+ for \textbf{remove}
+. A mix of formats is acceptable, even in the same command line. 
 \paragraph*{Basic Watch Settings}
 \begin{tabular}{|l|l|l|}
 \hline 
@@ -37,7 +40,9 @@ watch --learning [<print|noprint|fullprint>]
  \hline 
 \end{tabular}
 \subsubsection*{ Watch Levels }
- Use of the --level (-l) flag is optional but recommended. 
+ Use of the \textbf{--level}
+ (\textbf{-l}
+) flag is optional but recommended. 
 \begin{tabular}{|l|l|}
 \hline 
  0  & watch nothing; equivalent to \^a€“N  \\
@@ -55,7 +60,7 @@ watch --learning [<print|noprint|fullprint>]
 \end{tabular}
  It is important to note that watch level 0 turns off ALL watch options, including backtracing, indifferent selection and learning. However, the other watch levels do not change these settings. That is, if any of these settings is changed from its default, it will retain its new setting until it is either explicitly changed again or the watch level is set to 0. 
 \paragraph*{Watching Productions}
- By default, the names of the productions are printed as each production fires and retracts (at watch levels 3 and higher). However, it may be more helpful to watch only a specific \emph{type}
+ and higher). However, it may be more helpful to watch only a specific \emph{type}
  of production. The tracing of firings and retractions of productions can be limited to only certain types by the use of the following flags: 
 \begin{tabular}{|l|l|l|}
 \hline 
@@ -73,7 +78,8 @@ watch --learning [<print|noprint|fullprint>]
  \hline 
 \end{tabular}
 \textbf{Note:}
- The pwatch command is used to watch individual productions specified by name rather than watch a type of productions, such as --user. 
+ The pwatch command is used to watch individual productions specified by name rather than watch a type of productions, such as \textbf{--user}
+. 
  Additionally, when watching productions, users may set the level of detail to be displayed for WMEs that are added or retracted as productions fire and retract. Note that detailed information about WMEs will be printed only for productions that are being watched. 
 \begin{tabular}{|l|l|l|}
 \hline 
@@ -98,7 +104,7 @@ watch --learning [<print|noprint|fullprint>]
  -L, --learning  & noprint, print, or fullprint (see table below)  & Controls the printing of chunks/justifications as they are created  \\
  \hline 
 \end{tabular}
- As Soar is running, it may create justifications and chunks which are added to production memory. The watch command allows users to monitor when chunks and justifications are created by specifying one of the following arguments to the watch --learning command: 
+ command: 
 \begin{tabular}{|l|l|l|}
 \hline 
 \emph{Argument}
@@ -125,7 +131,14 @@ watch --learning [<print|noprint|fullprint>]
  \hline 
 \end{tabular}
 \subsubsection*{Description}
- The watch command controls run-time tracing of Soar. With no arguments, this command prints out the current watch status. The various levels are used to modify the current watch settings. Each level can be indicated with either a number or a series of flags as follows: \begin{verbatim}
+ of information about Soar's internal workings. The higher the \emph{level}
+, the more information is printed as Soar runs. At the lowest setting, \textbf{0 | --none}
+, nothing is printed. The levels are cumulative, so that each successive level prints the information from the previous level as well as some additional information. The default setting for the \textbf{watch \emph{level}
+}
+ is \textbf{1}
+, (or \textbf{--decisions}
+). 
+ Each level can be indicated with either a number or a series of flags as follows: \begin{verbatim}
 0 or --none
 1 or --decisions
 2 or --decisions --phases
@@ -138,14 +151,20 @@ watch --learning [<print|noprint|fullprint>]
  For the named arguments, including the named argument turns on only that setting. To turn off a specific setting, follow the named argument with \emph{remove}
  or \emph{0}
 . 
- The named argument --productions is shorthand for the four arguments --default, --user, --justifications, and --chunks. 
+ The named argument \textbf{--productions}
+ is shorthand for the four arguments \textbf{--default}
+, \textbf{--user}
+, \textbf{--justifications}
+, and \textbf{--chunks}
+. 
 \subsubsection*{Examples}
  The most common uses of watch are by using the numeric arguments which indicate watch levels. To turn off all printing of Soar internals, do any one of the following (not all possibilities listed): \begin{verbatim}
 watch --level 0
 watch -l 0
 watch -N
 \end{verbatim}
- Although the --level flag is optional, its use is recommended: \begin{verbatim}
+ Although the \textbf{--level}
+ flag is optional, its use is recommended: \begin{verbatim}
 watch --level 5 \emph{... OK}
 watch 5         \emph{... OK, but try to avoid}
 \end{verbatim}

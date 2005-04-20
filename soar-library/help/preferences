@@ -52,13 +52,32 @@ Note
 
                                     Examples
 
-   This example prints the preferences on the (S1 ^operator) and the
-   production names which created the preferences:
+   This example prints the preferences on (S1 ^operator) and the production
+   names which created the preferences:
 
- preferences S1 operator --names
+ soar> preferences S1 operator -names
+ Preferences for S1 ^operator:
+ acceptables:
+  O2 (fill) +
+    From waterjug*propose*fill
+  O3 (fill) +
+    From waterjug*propose*fill
+ unary indifferents:
+  O2 (fill) =
+    From waterjug*propose*fill
+  O3 (fill) =
+    From waterjug*propose*fill
 
-   if the current state is S1, then the above syntax is equivalent to:
+   If the current state is S1, then the above syntax is equivalent to:
 
   preferences -n
+
+   This example shows the support for the WMEs with the ^jug attribute:
+
+ soar> preferences s1 jug
+ Preferences for S1 ^jug:
+ acceptables:
+  I5  + :O
+  J1  + :O
 
                                     See Also
