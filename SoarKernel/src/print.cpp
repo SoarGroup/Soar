@@ -1160,9 +1160,9 @@ void print_wme (agent* thisAgent, wme *w) {
 
   // KJC: added Mar 05 for structured output support
   // Might move later
-  // <wme timetag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
+  // <wme tag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
   generate_tagged_output(thisAgent, "<wme ");
-//  generate_tagged_output(thisAgent, w->timetag);
+  generate_tagged_wme_timetag(thisAgent, w);
   tagged_output_with_symbols (thisAgent, "id=\"%y\" attr=\"%y\" value=\"%y\" ", w->id, w->attr, w->value);
   if (w->acceptable) generate_tagged_output (thisAgent, " preference=\"+\"");
   generate_tagged_output(thisAgent, "></wme>\n"); 
@@ -1220,7 +1220,11 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
       switch (wtt) {
       case TIMETAG_WME_TRACE:
         print (thisAgent, " %lu", cond->bt.wme_->timetag);
-		//KJC need to add the tagged output here.
+		generate_tagged_output(thisAgent, "><wme ");
+		//generate_tagged_output(thisAgent, "><timetag ");
+		generate_tagged_wme_timetag(thisAgent, cond->bt.wme_); 
+		generate_tagged_output(thisAgent, "></wme>\n"); 
+		//generate_tagged_output(thisAgent, "></timetag>\n"); 
         break;
       case FULL_WME_TRACE:
         print (thisAgent, " ");
@@ -1230,11 +1234,11 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
     }
 	
 	if (action == PRINTING) {
-		generate_tagged_output(thisAgent, "></production>");
+		generate_tagged_output(thisAgent, "</production>");
 	} else if (action == FIRING) {
-		generate_tagged_output(thisAgent, "></production></firing_production>");
+		generate_tagged_output(thisAgent, "</production></firing_production>");
 	} else if (action == RETRACTING) {
-		generate_tagged_output(thisAgent, "></production></retracting_production>");
+		generate_tagged_output(thisAgent, "</production></retracting_production>");
 	}
 }
 
@@ -1354,8 +1358,23 @@ void generate_tagged_output (agent * thisAgent, char * str)
 {
    gSKI_MakeAgentCallback(gSKI_K_EVENT_STRUCTURED_OUTPUT, 0, thisAgent, static_cast<void*>(str));
    //uncomment next line to see all tagged output printed in CLI...
-   //gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
+   gSKI_MakeAgentCallback(gSKI_K_EVENT_PRINT_CALLBACK, 0, thisAgent, static_cast<void*>(str));
  }
+
+void generate_tagged_wme_timetag (agent * thisAgent, wme * w) {
+	char * dest;
+	size_t dest_size;
+
+    // don't have a generic way to format tagged output, 
+	// so put timetag in print buffer first...
+    dest=thisAgent->printed_output_string;
+    dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
+    snprintf (dest, dest_size, "tag=\"%lu\" ", w->timetag);
+//  snprintf (dest, dest_size, "<wmetimetag tag=\"%lu\"></wmetimetag>", w->timetag);
+    dest[dest_size - 1] = 0; /* ensure null termination */
+    generate_tagged_output(thisAgent, dest);
+}
+
 /*
 ===========================
 

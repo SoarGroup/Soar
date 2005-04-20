@@ -86,6 +86,7 @@ extern void stop_redirection_to_file (agent* thisAgent);
 extern void print_string (agent* thisAgent, char *s);
 extern void print_phase  (agent* thisAgent, char *s, bool end_phase);
 extern void generate_tagged_output (agent* thisAgent, char *s);
+extern void generate_tagged_wme_timetag (agent * thisAgent, wme * w);
 
 #ifdef USE_STDARGS
 extern void print (agent* thisAgent, char *format, ... );

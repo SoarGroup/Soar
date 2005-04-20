@@ -819,13 +819,14 @@ void do_one_top_level_phase (agent* thisAgent)
      start_timer (thisAgent, &thisAgent->start_phase_tv);
      #endif
 
+     /* JC ADDED: Tell gski about input phase starting */
+     gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_INPUT_PHASE, 0);
+
 	  /* we check e_cycle_count because Soar 7 runs multiple input cycles per decision */
 	  /* always true for Soar 8 */
 	 if (thisAgent->e_cycles_this_d_cycle==0) {
 	   /* JC ADDED: Tell gski about decision cycle starting */
        gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_DECISION_CYCLE, gSKI_K_INPUT_PHASE, 0);
-       /* JC ADDED: Tell gski about input phase starting */
-       gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_INPUT_PHASE, 0);
        #ifndef NO_CALLBACKS /* kjc 1/00 */
 	   soar_invoke_callbacks(thisAgent, thisAgent, 
 			     BEFORE_DECISION_CYCLE_CALLBACK,
