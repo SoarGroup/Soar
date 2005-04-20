@@ -473,14 +473,24 @@ namespace gSKI
 
     }
 
+	InputWme* next = (m_vwmes.empty() ? NULL : *m_vwmes.begin()) ;
+
     // Now updating all the input wmes of this object
+	// DJP: We have to be careful walking this list because the "Update()" call can
+	// cause m_vwmes to erase this wme from the list (if we're deleting the wme).
+	// Doing that invalidates the iterator, so we'll maintain an explicit "next" pointer which
+	// keeps the iterator valid (because it's moved on before the erasure occurs).
     for ( std::set<InputWme*>::iterator it = m_vwmes.begin();
 	  it != m_vwmes.end();
-	  ++it ) {
-      
+	  ) {
+
+	  // Moving carefully through the list so 'it' never becomes invalid
+      InputWme* iwme = next ;
+	  ++it ;
+	  next = (it != m_vwmes.end()) ? (*it) : NULL ;
+
       // Updating these wmes ( which creates raw kernel wmes from gSKI InputWmes
       // if they haven't already been created )
-      InputWme* iwme = (*it);
       if ( iwme != 0 ) {
 	iwme->Update();
       } else {
