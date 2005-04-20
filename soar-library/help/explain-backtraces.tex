@@ -33,6 +33,8 @@ explain-backtraces -c n prodname
 , where \emph{n}
  is the condition of interest, can be used to obtain a list of the productions which fired to obtain this condition in the chunk/justification (and the crucial WMEs tested along the way). 
  \textbf{save-backtraces}
+ mode must be on when a chunk or justification is created or no explanation will be available. Calling \textbf{explain-backtraces}
+ with no argument prints a list of all chunks and justifications for which backtracing information is available. 
 \subsubsection*{Examples}
  Examining the chunk \textbf{chunk-65*d13*tie*2}
  generated in a water-jug task:  \begin{verbatim}

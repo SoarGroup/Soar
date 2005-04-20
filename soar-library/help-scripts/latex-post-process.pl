@@ -3,6 +3,7 @@
 use strict;
 
 my $state = "header";
+my $removed_dash = "no";
 
 my $command;
 
@@ -86,13 +87,16 @@ while (<>) {
     }
     
     if (/\\textbf\{$command\}/) {
-      $state = "remove-dash";
-      next;
+      if ($removed_dash eq "no") {
+        $state = "remove-dash";
+        next;
+      }
     }
   }
 
   if ($state eq "remove-dash") {
     $state = "body";
+    $removed_dash = "yes";
     if (/ \- (.+)/) {
       print $+ . "\n";
     }

@@ -60,6 +60,8 @@ watch --learning [<print|noprint|fullprint>]
 \end{tabular}
  It is important to note that watch level 0 turns off ALL watch options, including backtracing, indifferent selection and learning. However, the other watch levels do not change these settings. That is, if any of these settings is changed from its default, it will retain its new setting until it is either explicitly changed again or the watch level is set to 0. 
 \paragraph*{Watching Productions}
+ By default, the names of the productions are printed as each production fires and retracts (at \textbf{watch}
+ levels \textbf{3}
  and higher). However, it may be more helpful to watch only a specific \emph{type}
  of production. The tracing of firings and retractions of productions can be limited to only certain types by the use of the following flags: 
 \begin{tabular}{|l|l|l|}
@@ -104,6 +106,8 @@ watch --learning [<print|noprint|fullprint>]
  -L, --learning  & noprint, print, or fullprint (see table below)  & Controls the printing of chunks/justifications as they are created  \\
  \hline 
 \end{tabular}
+ As Soar is running, it may create justifications and chunks which are added to production memory. The \textbf{watch}
+ command allows users to monitor when chunks and justifications are created by specifying one of the following arguments to the \textbf{watch --learning}
  command: 
 \begin{tabular}{|l|l|l|}
 \hline 
@@ -131,6 +135,8 @@ watch --learning [<print|noprint|fullprint>]
  \hline 
 \end{tabular}
 \subsubsection*{Description}
+ The \textbf{watch}
+ command controls the amount of information that is printed out as Soar runs. The basic functionality of this command is to trace various \emph{levels}
  of information about Soar's internal workings. The higher the \emph{level}
 , the more information is printed as Soar runs. At the lowest setting, \textbf{0 | --none}
 , nothing is printed. The levels are cumulative, so that each successive level prints the information from the previous level as well as some additional information. The default setting for the \textbf{watch \emph{level}
@@ -148,6 +154,8 @@ watch --learning [<print|noprint|fullprint>]
 \end{verbatim}
  The numerical arguments \emph{inclusively}
  turn on all levels up to the number specified. To use numerical arguments to turn off a level, specify a number which is less than the level to be turned off. For instance, to turn off watching of productions, specify ``watch --level 2'' (or 1 or 0). Numerical arguments are provided for shorthand convenience. For more detailed control over the watch settings, the named arguments should be used. 
+ With no arguments, this command prints information about the current \textbf{watch}
+ status, i.e., the values of each parameter. 
  For the named arguments, including the named argument turns on only that setting. To turn off a specific setting, follow the named argument with \emph{remove}
  or \emph{0}
 . 

@@ -23,6 +23,10 @@ alias
  \hline 
 \end{tabular}
 \subsubsection*{Description}
+ This command defines new aliases by creating Soar procedures with the given name. The new procedure can then take an arbitrary number of arguments which are post-pended to the given definition and then that entire string is executed as a command. The definition must be a single command, multiple commands are not allowed. The \textbf{alias}
+ procedure checks to see if the name already exists, and does not destroy existing procedures or aliases by the same name. Existing aliases can be removed by using the \textbf{-d}
+ flag. With no arguments, \textbf{alias}
+ returns the list of defined aliases. With only the name given, \textbf{alias}
  returns the current definition. 
 \subsubsection*{Examples}
  The alias \emph{wmes}

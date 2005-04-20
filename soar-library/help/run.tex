@@ -37,6 +37,12 @@ run -[d|e|p|o][fs] [count]
  \hline 
 \end{tabular}
 \subsubsection*{Description}
+ The \textbf{run}
+ command starts the Soar execution cycle or continues any execution that was temporarily stopped. The default behavior of \textbf{run}
+, with no arguments, is to cause Soar to execute until it is halted or interrupted by an action of a production, or until an external interrupt is issued by the user. The \textbf{run}
+ command can also specify that Soar should run only for a specific number of Soar cycles or phases (which may also be prematurely stopped by a production action or a control-C). This is helpful for debugging sessions, where users may want to pay careful attention to the specific productions that are firing and retracting. 
+ The \textbf{run}
+ command takes two optional arguments: an integer, \emph{count}
 , which specifies how many units to run; and a \emph{units}
  flag indicating what steps or increments to use. If \emph{count}
  is specified, but no \emph{units}
@@ -44,10 +50,14 @@ run -[d|e|p|o][fs] [count]
  are specified, but \emph{count}
  is unpecified, then \emph{count}
  defaults to '1'. 
+ If there are multiple Soar agents that exist in the same Soar process, then issuing a \textbf{run}
+ command in any agent will cause all agents to run with the same set of parameters, unless the flag \textbf{--self}
  is specified, in which case only that agent will execute. 
 \paragraph*{Note}
  If Soar has been stopped due to a \textbf{halt}
  action, an \textbf{init-soar}
+ command must be issued before Soar can be restarted with the \textbf{run}
+ command. 
 \subsubsection*{Default Aliases}
 \begin{tabular}{|l|l|}
 \hline 

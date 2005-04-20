@@ -22,8 +22,11 @@ if (!mkdir "../help") {
   }
 }
 
-for (my $i = 0; $i < $#links; $i++) {
+#print "total: " . $#links . "\n";
+for (my $i = 0; $i <= $#links; $i++) {
   chomp @names[$i];
+  #print @names[$i] . ": " . $i . "\n";
+  #next;
   print "Processing @names[$i]\n";
   
   `wget -q -O ../help/@names[$i].wiki.html @links[$i]`;
