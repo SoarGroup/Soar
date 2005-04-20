@@ -621,8 +621,10 @@ EXPORT void sml_DirectRemoveWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handl
 	// Remove the wme from working memory
 	((IWorkingMemory*)wm)->RemoveWme((IWme*)wme) ;
 
-	// Release the object so the client doesn't have to call back in and do that.
-//	((IWme*)wme)->Release() ;
+	// We used to release after the call to RemoveWme, but we've clarified the definition
+	// of remove wme so that it release the wme after it is actually deleted (which won't occur
+	// until the next input phase).  This makes our clean up safer and easier.
+    //	((IWme*)wme)->Release() ;
 }
 
 /*************************************************************

@@ -638,16 +638,14 @@ bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI:
 	// Remove the wme from working memory
 	pInputWM->RemoveWme(pWME, pError) ;
 
-	// I'm not sure if we should release pWME here or not after
-	// calling RemoveWme() just above on it.
-	// It turns out this is currently not allowed because we are holding
-	// the last reference to the object, so it is deleted here...but the removeWme
-	// call may buffer the deletion to the next input phase, at which point it accesses
-	// the now deleted wme and boom.
+	// The semantics of calling RemoveWme have now been clarified
+	// to where the wme is released internally (by gSKI) once the kernel wme
+	// is actually removed, which is in the next input phase.
+	// So we no longer need to explicitly release it here.
 	//pWME->Release() ;
 
-	// Remove the object from the time tag table
-	// We only do this removal if we're releasing the wme in the line above.
+	// Remove the object from the time tag table because
+	// we no longer own it.
 	pAgentSML->RemoveTimeTag(pTimeTag) ;
 
 	// If we have an error object, check that it hasn't been set by an earlier call.
