@@ -294,22 +294,14 @@ namespace gSKI
                   runResult = curData->a->RunInClientThread(
                      (egSKIRunType)(runInterleave), 1, err);               
                   
-                  // TODO: It may be more consistent to return INTERRUPTED
-                  // for RUN_COMPLETED_AND_INTERRUPTED unless it is the 
-                  // last agent in the run list
-
-                  // If an error or interrupted occured, we exit
+                  // We only stop everyone running if we've received
+				  // an error from one agent.  Interrupting one agent
+				  // does not stop the others from continuing to run.
                   if(runResult == gSKI_RUN_ERROR)
                   {
                      m_groupRunning = false;
                      return gSKI_RUN_ERROR;
-                  } else if (runResult == gSKI_RUN_INTERRUPTED) {
-                     m_groupRunning = false;
-                     return gSKI_RUN_INTERRUPTED;
-                  } else if (runResult == gSKI_RUN_COMPLETED_AND_INTERRUPTED) {
-                     m_groupRunning = false;
-                     return gSKI_RUN_COMPLETED_AND_INTERRUPTED;
-                  }
+                  } 
                }
             }
 
