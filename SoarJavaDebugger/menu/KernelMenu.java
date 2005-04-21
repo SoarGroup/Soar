@@ -103,7 +103,7 @@ public class KernelMenu
 	{
 		if (m_Document.isConnected())
 		{
-			int result = m_Frame.ShowMessageBox("Kernel running", "You need are currently running a local Soar kernel.\nThis needs to be shutdown before connecting to a remote Soar.\n\nWould you like to shutdown the local kernel now?", SWT.ICON_WARNING | SWT.OK | SWT.CANCEL) ;
+			int result = m_Frame.ShowMessageBox("Kernel running", "You are currently running a local Soar kernel.\nThis needs to be shutdown before connecting to a remote Soar.\n\nWould you like to shutdown the local kernel now?", SWT.ICON_WARNING | SWT.OK | SWT.CANCEL) ;
 			
 			if (result == SWT.CANCEL)
 				return ;
