@@ -421,8 +421,6 @@ bool KernelSML::HandleFireEvent(gSKI::IAgent* pAgent, char const* pCommandName, 
 		GetKernel()->FireSystemStart() ;
 	else if (id == smlEVENT_SYSTEM_STOP)
 		GetKernel()->FireSystemStop() ;
-	else if (id == smlEVENT_AFTER_RUN_ENDS && pAgent)
-		pAgent->FireRunEndsEvent() ;
 
 	return true ;
 }
