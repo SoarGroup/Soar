@@ -130,6 +130,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_RegisterForEvent]	= &sml::KernelSML::HandleRegisterForEvent ;
 	m_CommandMap[sml_Names::kCommand_UnregisterForEvent]= &sml::KernelSML::HandleRegisterForEvent ;	// Note -- both register and unregister go to same handler
 	m_CommandMap[sml_Names::kCommand_FireEvent]			= &sml::KernelSML::HandleFireEvent ;
+	m_CommandMap[sml_Names::kCommand_SuppressEvent]		= &sml::KernelSML::HandleSuppressEvent ;
 	m_CommandMap[sml_Names::kCommand_SetInterruptCheckRate] = &sml::KernelSML::HandleSetInterruptCheckRate ;
 }
 
@@ -401,7 +402,7 @@ bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandNam
 // Fire a particular event at the request of the client.
 bool KernelSML::HandleFireEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
-	unused(pResponse) ; unused(pConnection) ; unused(pError) ; unused(pAgent) ;
+	unused(pResponse) ; unused(pConnection) ; unused(pError) ; 
 
 	// Get the parameters
 	char const* pEventName = pIncoming->GetArgValue(sml_Names::kParamEventID) ;
@@ -414,11 +415,40 @@ bool KernelSML::HandleFireEvent(gSKI::IAgent* pAgent, char const* pCommandName, 
 	// Convert from the event name to the id value
 	int id = ConvertStringToEvent(pEventName) ;
 
-	// Make the call.
+	// Make the call.  These are the only events which we allow
+	// explicit client control over to date.
 	if (id == smlEVENT_SYSTEM_START)
 		GetKernel()->FireSystemStart() ;
 	else if (id == smlEVENT_SYSTEM_STOP)
 		GetKernel()->FireSystemStop() ;
+	else if (id == smlEVENT_AFTER_RUN_ENDS && pAgent)
+		pAgent->FireRunEndsEvent() ;
+
+	return true ;
+}
+
+// Prevent a particular event from firing when it next would normally do so
+bool KernelSML::HandleSuppressEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pResponse) ; unused(pConnection) ; unused(pError) ; unused(pAgent) ;
+
+	// Get the parameters
+	char const* pEventName = pIncoming->GetArgValue(sml_Names::kParamEventID) ;
+	bool state = pIncoming->GetArgBool(sml_Names::kParamValue, true) ;
+
+	if (!pEventName)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Event id is missing") ;
+	}
+
+	// Convert from the event name to the id value
+	int id = ConvertStringToEvent(pEventName) ;
+
+	// Make the call.
+	if (id == smlEVENT_SYSTEM_STOP)
+	{
+		SetSuppressSystemStop(state) ;
+	}
 
 	return true ;
 }

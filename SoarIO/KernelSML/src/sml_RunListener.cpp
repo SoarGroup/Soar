@@ -33,6 +33,7 @@
 #include "IgSKI_ProductionManager.h"
 #include "IgSKI_Kernel.h"
 #include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
 
 #include "assert.h"
 

@@ -278,6 +278,7 @@ public:
 	static char const* const kCommand_UnregisterForEvent ;
 	static char const* const kCommand_Event ;			// Just passes event id
 	static char const* const kCommand_FireEvent ;
+	static char const* const kCommand_SuppressEvent ;
 	static char const* const kCommand_CheckForIncomingCommands ;
 	static char const* const kCommand_SetInterruptCheckRate ;
 

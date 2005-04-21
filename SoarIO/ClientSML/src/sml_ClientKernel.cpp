@@ -825,6 +825,10 @@ char const* Kernel::RunAllTilOutput(unsigned long maxDecisions)
 
 		// Ask each agent to stop when they generate output
 		pAgent->SetStopSelfOnOutput(true) ;
+
+		// Don't have the agent trigger a system stop event while
+		// the simulation is presumed to still be running (through these calls).
+		SuppressSystemStop(true) ;
 	}
 
 	return RunAllAgents(maxDecisions) ;
@@ -892,6 +896,27 @@ bool Kernel::FireStopSystemEvent()
 	AnalyzeXML response ;
 
 	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_FireEvent, NULL, sml_Names::kParamEventID, m_pEventMap->ConvertToString(smlEVENT_SYSTEM_STOP)) ;
+	return ok ;
+}
+
+/*************************************************************
+* @brief   Prevents the kernel from sending an smlEVENT_SYSTEM_STOP
+*		   event at the of a run.
+*
+*		   A simulation may issue a series of short run commands to
+*		   Soar that to the user looks like a single continues run.
+*		   In that case, they should suppress the system stop event
+*		   to prevent other tools from thinking the entire system
+*		   has terminated.
+*
+*		   When the simulation's run completes, it can then manually
+*		   request that the kernel fire the event.
+*************************************************************/
+bool Kernel::SuppressSystemStop(bool state)
+{
+	AnalyzeXML response ;
+
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SuppressEvent, NULL, sml_Names::kParamEventID, m_pEventMap->ConvertToString(smlEVENT_SYSTEM_STOP), sml_Names::kParamValue, state ? sml_Names::kTrue : sml_Names::kFalse) ;
 	return ok ;
 }
 

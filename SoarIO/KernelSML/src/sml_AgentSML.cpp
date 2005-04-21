@@ -38,6 +38,7 @@ AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : /*m_AgentListe
 	m_pInputProducer = NULL ;
 	m_InputLinkRoot = NULL ;
 	m_OutputLinkRoot = NULL ;
+	m_SuppressRunEndsEvent = false ;
 
 	m_pBeforeDestroyedListener = NULL ;
 

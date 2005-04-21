@@ -91,6 +91,8 @@ protected:
 	class AgentBeforeDestroyedListener ;
 	AgentBeforeDestroyedListener*	m_pBeforeDestroyedListener ;
 
+	bool m_SuppressRunEndsEvent ;
+
 public:
 	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) ;
 
@@ -120,6 +122,9 @@ public:
 	void SetInputProducer(gSKI::IInputProducer* pInputProducer)	{ m_pInputProducer = pInputProducer ; }
 
 	bool SetStopOnOutput(bool state) ;
+
+	void SetSuppressRunEndsEvent(bool state) { m_SuppressRunEndsEvent = state ; }
+	bool GetSuppressRunEndsEvent()			 { return m_SuppressRunEndsEvent ; }
 
 	void AddProductionListener(egSKIProductionEventId eventID, Connection* pConnection)	{ m_ProductionListener.AddListener(eventID, pConnection) ; }
 	void RemoveProductionListener(egSKIProductionEventId eventID, Connection* pConnection) { m_ProductionListener.RemoveListener(eventID, pConnection) ; }	

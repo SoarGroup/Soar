@@ -1090,6 +1090,11 @@ char const* Agent::RunSelfTilOutput(unsigned long maxDecisions)
 	Commit() ;
 
 	SetStopSelfOnOutput(true) ;
+	
+	// Don't have the agent trigger a system stop event while
+	// the simulation is presumed to still be running (through these calls).
+	GetKernel()->SuppressSystemStop(true) ;
+
 	return RunSelf(maxDecisions) ;
 }
 

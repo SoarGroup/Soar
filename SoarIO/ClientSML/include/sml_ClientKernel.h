@@ -381,6 +381,21 @@ public:
 	bool FireStopSystemEvent() ;
 
 	/*************************************************************
+	* @brief   Prevents the kernel from sending an smlEVENT_SYSTEM_STOP
+	*		   event at the of a run.
+	*
+	*		   A simulation may issue a series of short run commands to
+	*		   Soar that to the user looks like a single continues run.
+	*		   In that case, they should suppress the system stop event
+	*		   to prevent other tools from thinking the entire system
+	*		   has terminated.
+	*
+	*		   When the simulation's run completes, it can then manually
+	*		   request that the kernel fire the event.
+	*************************************************************/
+	bool SuppressSystemStop(bool state) ;
+
+	/*************************************************************
 	* @brief Takes a command line and expands all the aliases within
 	*		 it without executing it.
 	*

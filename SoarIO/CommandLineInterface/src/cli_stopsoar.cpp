@@ -10,6 +10,7 @@
 #include "IgSKI_Agent.h"
 #include "IgSKI_AgentManager.h"
 #include "IgSKI_Kernel.h"
+#include "sml_KernelSML.h"
 
 using namespace cli;
 
@@ -69,6 +70,10 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 		return true;
 	} else {
 		if (!RequireKernel()) return false;
+
+		// Make sure the system stop event has not been suppressed
+		m_pKernelSML->SetSuppressSystemStop(false) ;
+
 		m_pKernel->FireSystemStop();
 		if (!m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, &m_gSKIError)) {
 			SetErrorDetail("Error interrupting all agents.");
