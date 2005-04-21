@@ -19,9 +19,10 @@ class InputLinkObject;
 class InputLinkSpec
 {
 private:
-
-	enum parseStage {
+	//The ordering here is important
+	enum eParseStage {
 		READING_CONTROL_STRUCTURE,
+		READING_BEGIN_STAGE = READING_CONTROL_STRUCTURE,
 		READING_IDENTIFIER,
 		READING_ATTRIBUTE,
 		READING_VALUE_TYPE,
@@ -30,6 +31,7 @@ private:
 		READING_CREATE_ON,
 		READING_DELETE_ON,
 		READING_COMPLETED,
+		READING_FINAL_STAGE = READING_COMPLETED
 	};
 
 public:

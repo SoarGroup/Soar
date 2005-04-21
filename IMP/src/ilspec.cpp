@@ -50,6 +50,11 @@ bool InputLinkSpec::ImportDM(string filename)
 	return true;
 }
 
+void InputLinkSpec::ReadControlStructure()
+{
+
+}
+
 /* ImportIL
  *
  * This function creates an input link specification from the IL file passed.
@@ -82,10 +87,33 @@ bool InputLinkSpec::ImportIL(string filename)
 		cout<<"Error: line "<<lineNumber<<" too long"<<endl;
 		return false;
 		}*/
+//dev's notes
 
 		char buf[MAX_LINE_LENGTH];
 
 		//this should probably use Devvan's enum thinger.
+		eParseStage parseStage = READING_BEGIN_STAGE;
+		switch(parseStage)
+		{
+		case READING_CONTROL_STRUCTURE:
+			break;
+		case READING_IDENTIFIER:
+			break;
+		case READING_ATTRIBUTE:
+			break;
+		case READING_VALUE_TYPE:
+			break;
+		case READING_START_VALUE:
+			break;
+		case READING_UPDATE:
+			break;
+		case READING_CREATE_ON:
+			break;
+		case READING_DELETE_ON:
+			break;
+		case READING_COMPLETED;
+		}
+
 
 		//check if this line is a -for loop  (ignore for now)
 
