@@ -28,56 +28,91 @@ bool CommandLineInterface::ParseSource(gSKI::IAgent* pAgent, std::vector<std::st
 bool CommandLineInterface::Trim(std::string& line) {
 	// trim whitespace and comments from line
 	if (!line.size()) return true; // nothing on the line
-	
+
 	// remove leading whitespace
-	std::string::size_type datapos = line.find_first_not_of(" \t");
-	if (datapos != std::string::npos) {
-		line = line.substr(datapos);
-	}
+	std::string::size_type pos = line.find_first_not_of(" \t");
+	if (pos != std::string::npos) line = line.substr(pos);
 
-	if (!line.size()) return true; // nothing else on the line
+	bool pipe = false;
+	std::string::size_type searchpos = 0;
 
-	// if there is a pipe on the line, we need to parse more carefully
-	if (line.find_first_of('|') != std::string::npos) {
-		
-		bool pipe = false;
+	for (pos = line.find_first_of("\\#|", searchpos); pos != std::string::npos; pos = line.find_first_of("\\#|", searchpos)) {
+		switch (line[pos]) {
+			case '\\':
+				searchpos = pos + 2;
+				break;
 
-		for (unsigned pos = 0; pos < line.size(); ++pos) {
-			if (!pipe) {
-				// normal parsing
-				switch (line[pos]) {
-					case '|':	// enter pipe mode
-						pipe = true;
-						break;
-					case '#':	// trim comments, done
-						line = line.substr(0, pos);
-						pos = line.size();
-						break;
-					default:	// keep going
-						break;
+			case '#':
+				if (pipe) {
+					searchpos = pos + 1;
+				} else {
+					line = line.substr(0, pos);
 				}
-			} else {
-				switch (line[pos]) {
-					case '|':	// exit pipe mode
-						pipe = false;
-						break;
-					default:	// keep going
-						break;
-				}
-			}
-		}
-		// if in pipe mode, newline inside pipes
-		if (pipe) return SetError(CLIError::kNewlineBeforePipe);
+				break;
 
-	} else {
-		// no pipe, simply remove comments
-		std::string::size_type commentpos = line.find_first_of('#');
-		if (commentpos != std::string::npos) {
-			line = line.substr(0, commentpos);
+			case '|':
+				pipe = !pipe;
+				searchpos = pos + 1;
+				break;
 		}
 	}
+	if (pipe) return SetError(CLIError::kNewlineBeforePipe);
 	return true;
 }
+
+//bool CommandLineInterface::Trim(std::string& line) {
+//	// trim whitespace and comments from line
+//	if (!line.size()) return true; // nothing on the line
+//	
+//	// remove leading whitespace
+//	std::string::size_type datapos = line.find_first_not_of(" \t");
+//	if (datapos != std::string::npos) {
+//		line = line.substr(datapos);
+//	}
+//
+//	if (!line.size()) return true; // nothing else on the line
+//
+//	// if there is a pipe on the line, we need to parse more carefully
+//	if (line.find_first_of('|') != std::string::npos) {
+//		
+//		bool pipe = false;
+//
+//		for (unsigned pos = 0; pos < line.size(); ++pos) {
+//			if (!pipe) {
+//				// normal parsing
+//				switch (line[pos]) {
+//					case '|':	// enter pipe mode
+//						pipe = true;
+//						break;
+//					case '#':	// trim comments, done
+//						line = line.substr(0, pos);
+//						pos = line.size();
+//						break;
+//					default:	// keep going
+//						break;
+//				}
+//			} else {
+//				switch (line[pos]) {
+//					case '|':	// exit pipe mode
+//						pipe = false;
+//						break;
+//					default:	// keep going
+//						break;
+//				}
+//			}
+//		}
+//		// if in pipe mode, newline inside pipes
+//		if (pipe) return SetError(CLIError::kNewlineBeforePipe);
+//
+//	} else {
+//		// no pipe, simply remove comments
+//		std::string::size_type commentpos = line.find_first_of('#');
+//		if (commentpos != std::string::npos) {
+//			line = line.substr(0, commentpos);
+//		}
+//	}
+//	return true;
+//}
 
 bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
