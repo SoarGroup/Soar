@@ -402,6 +402,7 @@ bool KernelSML::HandleStopOnOutput(gSKI::IAgent* pAgent, char const* pCommandNam
 // Fire a particular event at the request of the client.
 bool KernelSML::HandleFireEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
+    unused(pAgent);
 	unused(pResponse) ; unused(pConnection) ; unused(pError) ; 
 
 	// Get the parameters
