@@ -254,10 +254,6 @@ namespace gSKI
          return gSKI_RUN_ERROR;
       }
 
-	  // Fire one event to indicate the entire system (simulation) should start.
-	  // (Above gSKI we can choose to suppress this event in some situations)
-	  ((Kernel*)getKernel())->FireSystemStart() ;
-
 	  // Send event for each agent to signal its about to start running
 	  FireBeforeRunStartsEvents() ;
 
