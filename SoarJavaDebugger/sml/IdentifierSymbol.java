@@ -61,6 +61,19 @@ public class IdentifierSymbol {
     smlJNI.IdentifierSymbol_NoLongerUsedBy(swigCPtr, Identifier.getCPtr(pIdentifier));
   }
 
+  public void UsedBy(Identifier pIdentifier) {
+    smlJNI.IdentifierSymbol_UsedBy(swigCPtr, Identifier.getCPtr(pIdentifier));
+  }
+
+  public boolean IsFirstUser(Identifier pIdentifier) {
+    return smlJNI.IdentifierSymbol_IsFirstUser(swigCPtr, Identifier.getCPtr(pIdentifier));
+  }
+
+  public Identifier GetFirstUser() {
+    long cPtr = smlJNI.IdentifierSymbol_GetFirstUser(swigCPtr);
+    return (cPtr == 0) ? null : new Identifier(cPtr, false);
+  }
+
   public int GetNumberUsing() {
     return smlJNI.IdentifierSymbol_GetNumberUsing(swigCPtr);
   }

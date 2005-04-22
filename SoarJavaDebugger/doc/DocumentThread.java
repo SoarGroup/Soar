@@ -62,6 +62,9 @@ public class DocumentThread extends Thread
 	
 	private boolean	  m_IsExecutingCommand = false ;
 	
+	/** True when connected to a kernel (i.e. able to execute commands */
+	private boolean   m_IsConnected = false ;
+	
 	public DocumentThread(Document doc)
 	{
 		m_Document = doc ;
@@ -99,6 +102,10 @@ public class DocumentThread extends Thread
 
 		return command ;
 	}
+
+	/** Indicates whether currently connected to a Soar kernel (so can execute commands) */
+	public boolean isConnected() 				{ return m_IsConnected ; }
+	public void setConnected(boolean state)		{ m_IsConnected = state ; }
 	
 	public synchronized boolean isExecutedCommand(Command command)
 	{
@@ -127,6 +134,12 @@ public class DocumentThread extends Thread
 		while ( (command = popNextCommand()) != null )
 		{
 			m_IsExecutingCommand = true ;
+			
+			if (!isConnected())
+			{
+				recordCommandResult(command, "disconnected") ;
+				continue ;
+			}
 			
 			if (command.m_Response == null)
 			{

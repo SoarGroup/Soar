@@ -613,16 +613,80 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kParamStatsWmeCountMax();
   }
 
-  public static String getKParamStatsKernelTimeTotal() {
-    return smlJNI.get_sml_Names_kParamStatsKernelTimeTotal();
+  public static String getKParamStatsKernelCPUTime() {
+    return smlJNI.get_sml_Names_kParamStatsKernelCPUTime();
+  }
+
+  public static String getKParamStatsTotalCPUTime() {
+    return smlJNI.get_sml_Names_kParamStatsTotalCPUTime();
+  }
+
+  public static String getKParamStatsPhaseTimeInputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsPhaseTimeInputPhase();
+  }
+
+  public static String getKParamStatsPhaseTimeProposePhase() {
+    return smlJNI.get_sml_Names_kParamStatsPhaseTimeProposePhase();
+  }
+
+  public static String getKParamStatsPhaseTimeDecisionPhase() {
+    return smlJNI.get_sml_Names_kParamStatsPhaseTimeDecisionPhase();
+  }
+
+  public static String getKParamStatsPhaseTimeApplyPhase() {
+    return smlJNI.get_sml_Names_kParamStatsPhaseTimeApplyPhase();
+  }
+
+  public static String getKParamStatsPhaseTimeOutputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsPhaseTimeOutputPhase();
+  }
+
+  public static String getKParamStatsPhaseTimePreferencePhase() {
+    return smlJNI.get_sml_Names_kParamStatsPhaseTimePreferencePhase();
+  }
+
+  public static String getKParamStatsPhaseTimeWorkingMemoryPhase() {
+    return smlJNI.get_sml_Names_kParamStatsPhaseTimeWorkingMemoryPhase();
+  }
+
+  public static String getKParamStatsMonitorTimeInputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMonitorTimeInputPhase();
+  }
+
+  public static String getKParamStatsMonitorTimeProposePhase() {
+    return smlJNI.get_sml_Names_kParamStatsMonitorTimeProposePhase();
+  }
+
+  public static String getKParamStatsMonitorTimeDecisionPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMonitorTimeDecisionPhase();
+  }
+
+  public static String getKParamStatsMonitorTimeApplyPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMonitorTimeApplyPhase();
+  }
+
+  public static String getKParamStatsMonitorTimeOutputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMonitorTimeOutputPhase();
+  }
+
+  public static String getKParamStatsMonitorTimePreferencePhase() {
+    return smlJNI.get_sml_Names_kParamStatsMonitorTimePreferencePhase();
+  }
+
+  public static String getKParamStatsMonitorTimeWorkingMemoryPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMonitorTimeWorkingMemoryPhase();
+  }
+
+  public static String getKParamStatsInputFunctionTime() {
+    return smlJNI.get_sml_Names_kParamStatsInputFunctionTime();
+  }
+
+  public static String getKParamStatsOutputFunctionTime() {
+    return smlJNI.get_sml_Names_kParamStatsOutputFunctionTime();
   }
 
   public static String getKParamStatsMatchTimeInputPhase() {
     return smlJNI.get_sml_Names_kParamStatsMatchTimeInputPhase();
-  }
-
-  public static String getKParamStatsMatchTimeDetermineLevelPhase() {
-    return smlJNI.get_sml_Names_kParamStatsMatchTimeDetermineLevelPhase();
   }
 
   public static String getKParamStatsMatchTimePreferencePhase() {
@@ -641,12 +705,16 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kParamStatsMatchTimeDecisionPhase();
   }
 
-  public static String getKParamStatsOwnershipTimeInputPhase() {
-    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeInputPhase();
+  public static String getKParamStatsMatchTimeProposePhase() {
+    return smlJNI.get_sml_Names_kParamStatsMatchTimeProposePhase();
   }
 
-  public static String getKParamStatsOwnershipTimeDetermineLevelPhase() {
-    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeDetermineLevelPhase();
+  public static String getKParamStatsMatchTimeApplyPhase() {
+    return smlJNI.get_sml_Names_kParamStatsMatchTimeApplyPhase();
+  }
+
+  public static String getKParamStatsOwnershipTimeInputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeInputPhase();
   }
 
   public static String getKParamStatsOwnershipTimePreferencePhase() {
@@ -665,12 +733,16 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kParamStatsOwnershipTimeDecisionPhase();
   }
 
-  public static String getKParamStatsChunkingTimeInputPhase() {
-    return smlJNI.get_sml_Names_kParamStatsChunkingTimeInputPhase();
+  public static String getKParamStatsOwnershipTimeProposePhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeProposePhase();
   }
 
-  public static String getKParamStatsChunkingTimeDetermineLevelPhase() {
-    return smlJNI.get_sml_Names_kParamStatsChunkingTimeDetermineLevelPhase();
+  public static String getKParamStatsOwnershipTimeApplyPhase() {
+    return smlJNI.get_sml_Names_kParamStatsOwnershipTimeApplyPhase();
+  }
+
+  public static String getKParamStatsChunkingTimeInputPhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimeInputPhase();
   }
 
   public static String getKParamStatsChunkingTimePreferencePhase() {
@@ -687,6 +759,14 @@ public class sml_Names {
 
   public static String getKParamStatsChunkingTimeDecisionPhase() {
     return smlJNI.get_sml_Names_kParamStatsChunkingTimeDecisionPhase();
+  }
+
+  public static String getKParamStatsChunkingTimeProposePhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimeProposePhase();
+  }
+
+  public static String getKParamStatsChunkingTimeApplyPhase() {
+    return smlJNI.get_sml_Names_kParamStatsChunkingTimeApplyPhase();
   }
 
   public static String getKParamStatsMemoryUsageMiscellaneous() {
@@ -819,6 +899,10 @@ public class sml_Names {
 
   public static String getKCommand_FireEvent() {
     return smlJNI.get_sml_Names_kCommand_FireEvent();
+  }
+
+  public static String getKCommand_SuppressEvent() {
+    return smlJNI.get_sml_Names_kCommand_SuppressEvent();
   }
 
   public static String getKCommand_CheckForIncomingCommands() {

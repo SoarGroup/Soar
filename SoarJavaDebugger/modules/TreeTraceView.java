@@ -56,7 +56,6 @@ public class TreeTraceView extends AbstractComboView
 	
 	/** The last root (top level item) added to the tree.  We add new sub items under this */
 	protected TreeItem m_LastRoot ;
-	protected TreeItem m_DummyChild ;
 	
 	protected Composite	m_Buttons ;
 
@@ -128,7 +127,6 @@ public class TreeTraceView extends AbstractComboView
 	{
 		m_Tree = new Tree(parent, SWT.SINGLE | SWT.BORDER) ;
 		m_LastRoot = null ;
-		m_DummyChild = null ;
 		
 		createContextMenu(m_Tree) ;
 
@@ -769,18 +767,29 @@ public class TreeTraceView extends AbstractComboView
 		// When the user clicks on the parent we quickly create the tree they expect to see.
 		if (this.kCacheSubText && !m_AutoExpand)
 		{
+			// If the last root has no children we'll add a dummy
 			if (m_LastRoot.getItemCount() == 0)
 			{
-				m_DummyChild = new TreeItem(m_LastRoot, 0) ;
-				m_DummyChild.setData(kLazyKey, new TreeData()) ;
+				TreeItem dummy = new TreeItem(m_LastRoot, 0) ;
+				dummy.setData(kLazyKey, new TreeData()) ;
 			}
-
-			// The dummy child should always exist (unless somehow we already expanded the tree, which is possible)
-			if (m_DummyChild != null)
+			
+			// If we have exactly one child we may be an unexpanded
+			// dummy node, in which case add the text to this item
+			if (m_LastRoot.getItemCount() == 1)
 			{
-				TreeData currentData = (TreeData)m_DummyChild.getData(kLazyKey) ;
-				currentData.addLine(text) ;
-				return ;
+				TreeItem dummy = m_LastRoot.getItems()[0] ;
+				TreeData currentData = (TreeData)dummy.getData(kLazyKey) ;
+				
+				// It's possible this is a node that's already been expanded
+				// and only contained one line of text, so currentData could
+				// be null when we reach here.  If not, add the text into
+				// the lazy cache and we're done.
+				if (currentData != null)
+				{
+					currentData.addLine(text) ;
+					return ;
+				}
 			}
 		}
 		
@@ -878,11 +887,7 @@ public class TreeTraceView extends AbstractComboView
 	public void clearDisplay()
 	{
 		m_Tree.removeAll() ;
-		m_LastRoot = null ;
-		
-		if (m_DummyChild != null && !m_DummyChild.isDisposed())
-			m_DummyChild.dispose() ;
-		m_DummyChild = null ;
+		m_LastRoot = null ;		
 	}
 	
 	/** Returns a string of spaces of the given length (>= 0).  This is an efficient calculation */

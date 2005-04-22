@@ -184,7 +184,7 @@ public class Document
 	{
 		if (m_Kernel == null)
 			return commandLine ;
-		
+				
 		return m_Kernel.ExpandCommandLine(commandLine) ;
 	}
 	
@@ -324,6 +324,8 @@ public class Document
 			}
 		}
 
+		m_DocumentThread.setConnected(true) ;
+
 		// Let our listeners know about the new kernel
 		fireSoarConnectionChanged() ;
 		
@@ -426,6 +428,8 @@ public class Document
 			throw new Exception("Error initializing kernel " + errorMsg) ;
 		}
 
+		m_DocumentThread.setConnected(true) ;
+
 		// If we want to debug the communications this is helpful
 		// m_Kernel.SetTraceCommunications(true) ;
 
@@ -471,6 +475,8 @@ public class Document
 		if (m_Kernel == null)
 			return false ;
 
+		m_DocumentThread.setConnected(false) ;
+ 		
 		// NOTE: We don't check whether Soar is still running before allowing a remote disconnect
 		// (unlike in the localStop call).  This is because setting an agent running and then disconnecting
 		// should be OK.  We may need to handle some error conditions that occur when we do this
@@ -552,9 +558,17 @@ public class Document
 		
 		while (getNumberFrames() > 0)
 		{
-			if (!m_Display.readAndDispatch())
+			try
 			{
-				m_Display.sleep() ;
+				if (!m_Display.readAndDispatch())
+				{
+					m_Display.sleep() ;
+				}
+			}
+			catch (Throwable t)
+			{
+				System.out.println(t.toString()) ;
+				t.printStackTrace() ;
 			}
 		}
 	}

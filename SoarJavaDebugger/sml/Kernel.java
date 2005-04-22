@@ -166,12 +166,16 @@ public class Kernel extends ClientErrors {
     return smlJNI.Kernel_StopAllAgents(swigCPtr);
   }
 
-  public boolean FireStartSimulationEvent() {
-    return smlJNI.Kernel_FireStartSimulationEvent(swigCPtr);
+  public boolean FireStartSystemEvent() {
+    return smlJNI.Kernel_FireStartSystemEvent(swigCPtr);
   }
 
-  public boolean FireStopSimulationEvent() {
-    return smlJNI.Kernel_FireStopSimulationEvent(swigCPtr);
+  public boolean FireStopSystemEvent() {
+    return smlJNI.Kernel_FireStopSystemEvent(swigCPtr);
+  }
+
+  public boolean SuppressSystemStop(boolean state) {
+    return smlJNI.Kernel_SuppressSystemStop(swigCPtr, state);
   }
 
   public String ExpandCommandLine(String pCommandLine) {

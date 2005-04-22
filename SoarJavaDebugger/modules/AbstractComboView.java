@@ -69,6 +69,8 @@ public abstract class AbstractComboView extends AbstractView
 	
 	/** If true, the combo box is at the top of the window (otherwise at the bottom) */
 	protected boolean	m_ComboAtTop = true ;
+	
+	protected boolean   m_Updating = false ;
 			
 	/** The history of commands for this window */
 	protected CommandHistory m_CommandHistory = new CommandHistory() ;
@@ -86,6 +88,7 @@ public abstract class AbstractComboView extends AbstractView
 		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;
 		m_DecisionCallback = -1 ;
+		m_Updating = false ;
 	}
 	
 	/** The control we're using to display the output in this case **/
@@ -231,6 +234,8 @@ public abstract class AbstractComboView extends AbstractView
 		
 		// We want to know when the frame focuses on particular agents
 		m_Frame.addAgentFocusListener(this) ;
+		
+		m_Updating = false ;
 		
 		// Create the control that will display output from the commands
 		createDisplayControl(m_Container) ;
@@ -407,6 +412,11 @@ public abstract class AbstractComboView extends AbstractView
 	
 	protected void updateNow()
 	{
+		if (m_Updating)
+			return ;
+		
+		m_Updating = true ;
+		
 		//System.out.println("Updating window's contents") ;
 		
 		// Retrieve the current command in the combo box
@@ -504,6 +514,8 @@ public abstract class AbstractComboView extends AbstractView
 		if (result != null && result.length() > 0)
 			appendTextSafely(getLineSeparator() + result) ;
 
+		m_Updating = false ;
+		
 		return result ;
 	}
 	
