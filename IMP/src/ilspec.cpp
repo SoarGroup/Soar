@@ -2,6 +2,13 @@
 #include "ilobject.h"
 #include <fstream>
 #include <iostream>
+#include <stdio.h>
+#include <string>
+
+using std::string;
+using std::endl;
+using std::cout; using std::cin;
+using std::fstream;
 
 /******************************************************************************
  * InputLinkSpec Class Function Definitions
@@ -17,9 +24,12 @@
 InputLinkSpec::InputLinkSpec()
 {
 	//necessary yet?
+	//Cory, this can probably read in the filename string, 
+	//and then based on that , call the appropriate import function.
+	//At least, that's one way this could go down
 }
 
-/* Deconstructaur
+/* Destructor
  *
  * Cleans up an InputLinkSpec object.  Not necessary yet.  
  */
@@ -35,7 +45,7 @@ InputLinkSpec::~InputLinkSpec()
  * contained within "filename"
  * Returns true on success, false on failure.
  */
-bool InputLinkSpec::ImportDM(string filename)
+bool InputLinkSpec::ImportDM(string& filename)
 {
 	fstream file;
 	file.open(filename.c_str());
@@ -60,22 +70,40 @@ void InputLinkSpec::ReadControlStructure()
  * This function creates an input link specification from the IL file passed.
  * Returns true on success, false on failure.
  */
-bool InputLinkSpec::ImportIL(string filename)
+bool InputLinkSpec::ImportIL(string& filename)
 {
 	fstream file;
+	FILE* devFile = fopen(filename.c_str(), "r");
+
 	file.open(filename.c_str());
 
-	if(!file.is_open())
+	if(!file.is_open() || devFile == NULL)
 	{
 		cout<<"Error: unable to open file "<<filename<<endl;
 		return false;
 	}
 
 	int lineNumber = 1;
-
+	
+	//test block to read in "for loop"
+{
+	int curChunk;
+	string currentLine;
+	for(curChunk = fgetc(devFile); curChunk!= EOF && strcmp("\n", (static_cast<unsigned char>(curChunk))&);) 
+	{
+	  currentLine += static_cast<char>(curChunk);
+	}
+	cout >> "The result string is: " << currentLine << endl;
+	string foo;
+	cin >> foo;
+	return;
+}
 	//this should create InputLinkObjects to hold each line of data read
 	while(!file.eof())
 	{
+
+	
+	
 		//Probably don't want to get a whole line at once
 		/*char line[MAX_LINE_LENGTH];
 
@@ -89,7 +117,7 @@ bool InputLinkSpec::ImportIL(string filename)
 		}*/
 //dev's notes
 
-		char buf[MAX_LINE_LENGTH];
+		char buf[MAX_IMP_LINE_LENGTH];
 
 		//this should probably use Devvan's enum thinger.
 		eParseStage parseStage = READING_BEGIN_STAGE;
@@ -111,7 +139,10 @@ bool InputLinkSpec::ImportIL(string filename)
 			break;
 		case READING_DELETE_ON:
 			break;
-		case READING_COMPLETED;
+		case READING_COMPLETED:
+			break;
+		default:
+			break;
 		}
 
 

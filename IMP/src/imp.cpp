@@ -29,12 +29,12 @@ int main(int argc, char* argv[])
 
 
 	//determine file type
-	if( (int)inFileName.find(dmSuffix.c_str(), inFileName.length() - dmSuffix.length() ) != -1)
+	if( static_cast<int>(inFileName.find(dmSuffix.c_str(), inFileName.length() - dmSuffix.length() ) != -1))
 	{
 		cout<<"Reading DM file..."<<endl;
 		parsed = ilspec.ImportDM(inFileName);
 	}
-	else if( (int)inFileName.find(ilSuffix.c_str(), inFileName.length() - ilSuffix.length() ) != -1)
+	else if( static_cast<int>(inFileName.find(ilSuffix.c_str(), inFileName.length() - ilSuffix.length() ) != -1))
 	{
 		cout<<"Reading IL file..."<<endl;
 		parsed = ilspec.ImportIL(inFileName);

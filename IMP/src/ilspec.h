@@ -3,9 +3,7 @@
 
 #include <string>
 
-#define MAX_LINE_LENGTH 1024
-
-using namespace std;
+#define MAX_IMP_LINE_LENGTH 1024
 
 class InputLinkObject;
 
@@ -21,8 +19,9 @@ class InputLinkSpec
 private:
 	//The ordering here is important
 	enum eParseStage {
-		READING_CONTROL_STRUCTURE,
-		READING_BEGIN_STAGE = READING_CONTROL_STRUCTURE,
+	  READING_ERROR,
+	  READING_BEGIN_STAGE, 
+		READING_CONTROL_STRUCTURE = READING_BEGIN_STAGE,		
 		READING_IDENTIFIER,
 		READING_ATTRIBUTE,
 		READING_VALUE_TYPE,
@@ -39,9 +38,9 @@ public:
 	InputLinkSpec();
 	~InputLinkSpec();
 
-	bool ImportIL(string filename);
-	bool ImportDM(string filename);
-
+	bool ImportIL(std::string& filename);
+	bool ImportDM(std::string& filename);
+	void ReadControlStructure();
 };
 
 
