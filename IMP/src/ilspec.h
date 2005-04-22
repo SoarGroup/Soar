@@ -3,9 +3,26 @@
 
 #include <string>
 
-#define MAX_IMP_LINE_LENGTH 1024
+#define MAX_IMP_LINE_LENGTH 4096
 
 class InputLinkObject;
+
+//The ordering here is important
+enum eParseStage
+{
+	READING_PRE_BEGIN,
+	READING_ERROR,
+	READING_BEGIN_STAGE, 
+	READING_CONTROL_STRUCTURE = READING_BEGIN_STAGE,		
+	READING_IDENTIFIER,
+	READING_ATTRIBUTE,
+	READING_VALUE_TYPE,
+	READING_START_VALUE,
+	READING_UPDATE,
+	READING_CREATE_ON,
+	READING_DELETE_ON,
+	READING_FINAL_STAGE = READING_DELETE_ON
+};
 
 /************************************************************************
  * InputLinkSpec
@@ -17,21 +34,7 @@ class InputLinkObject;
 class InputLinkSpec
 {
 private:
-	//The ordering here is important
-	enum eParseStage {
-	  READING_ERROR,
-	  READING_BEGIN_STAGE, 
-		READING_CONTROL_STRUCTURE = READING_BEGIN_STAGE,		
-		READING_IDENTIFIER,
-		READING_ATTRIBUTE,
-		READING_VALUE_TYPE,
-		READING_START_VALUE,
-		READING_UPDATE,
-		READING_CREATE_ON,
-		READING_DELETE_ON,
-		READING_COMPLETED,
-		READING_FINAL_STAGE = READING_COMPLETED
-	};
+
 
 public:
 

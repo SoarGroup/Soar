@@ -8,7 +8,7 @@
 using std::string;
 using std::endl;
 using std::cout; using std::cin;
-using std::fstream;
+using std::fstream; using std::ostream;
 
 /******************************************************************************
  * InputLinkSpec Class Function Definitions
@@ -65,6 +65,47 @@ void InputLinkSpec::ReadControlStructure()
 
 }
 
+//This is not quite cool.  The utility will remain the same, 
+//but this may need to be a member
+void printStage(eParseStage stage, ostream& stream)
+{
+	switch(stage)
+	{
+		case READING_PRE_BEGIN:
+			stream << "Before reading";
+			break;
+		case READING_CONTROL_STRUCTURE:
+			stream << "Reading control structure";
+			break;
+		case READING_IDENTIFIER:
+			stream << "Reading identifier";
+			break;
+		case READING_ATTRIBUTE:
+			stream << "Reading attribute";
+			break;
+		case READING_VALUE_TYPE:
+			stream << "Reading value type";
+			break;
+		case READING_START_VALUE:
+			stream << "Reading start value";
+			break;
+		case READING_UPDATE:
+			stream << "Reading update";
+			break;
+		case READING_CREATE_ON:
+			stream << "Reading 'create on' condition";
+			break;
+		case READING_DELETE_ON:
+			stream << "Reading 'delete on' condition";
+			break;
+		case READING_ERROR:
+			stream << "Error in parse";
+			break;
+		default:
+			break;
+	}
+}
+
 /* ImportIL
  *
  * This function creates an input link specification from the IL file passed.
@@ -73,11 +114,9 @@ void InputLinkSpec::ReadControlStructure()
 bool InputLinkSpec::ImportIL(string& filename)
 {
 	fstream file;
-	FILE* devFile = fopen(filename.c_str(), "r");
-
 	file.open(filename.c_str());
 
-	if(!file.is_open() || devFile == NULL)
+	if(!file.is_open())
 	{
 		cout<<"Error: unable to open file "<<filename<<endl;
 		return false;
@@ -85,19 +124,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 	int lineNumber = 1;
 	
-	//test block to read in "for loop"
-{
-	int curChunk;
-	string currentLine;
-	for(curChunk = fgetc(devFile); curChunk!= EOF && strcmp("\n", (static_cast<unsigned char>(curChunk))&);) 
-	{
-	  currentLine += static_cast<char>(curChunk);
-	}
-	cout >> "The result string is: " << currentLine << endl;
-	string foo;
-	cin >> foo;
-	return;
-}
+
 	//this should create InputLinkObjects to hold each line of data read
 	while(!file.eof())
 	{
@@ -115,34 +142,35 @@ bool InputLinkSpec::ImportIL(string& filename)
 		cout<<"Error: line "<<lineNumber<<" too long"<<endl;
 		return false;
 		}*/
-//dev's notes
+
 
 		char buf[MAX_IMP_LINE_LENGTH];
 
 		//this should probably use Devvan's enum thinger.
 		eParseStage parseStage = READING_BEGIN_STAGE;
+		eParseStage lastCompletedState = READING_PRE_BEGIN;
 		switch(parseStage)
 		{
-		case READING_CONTROL_STRUCTURE:
-			break;
-		case READING_IDENTIFIER:
-			break;
-		case READING_ATTRIBUTE:
-			break;
-		case READING_VALUE_TYPE:
-			break;
-		case READING_START_VALUE:
-			break;
-		case READING_UPDATE:
-			break;
-		case READING_CREATE_ON:
-			break;
-		case READING_DELETE_ON:
-			break;
-		case READING_COMPLETED:
-			break;
-		default:
-			break;
+			case READING_CONTROL_STRUCTURE:
+				break;
+			case READING_IDENTIFIER:
+				break;
+			case READING_ATTRIBUTE:
+				break;
+			case READING_VALUE_TYPE:
+				break;
+			case READING_START_VALUE:
+				break;
+			case READING_UPDATE:
+				break;
+			case READING_CREATE_ON:
+				break;
+			case READING_DELETE_ON:
+				break;
+			case READING_ERROR:
+				break;
+			default:
+				break;
 		}
 
 
