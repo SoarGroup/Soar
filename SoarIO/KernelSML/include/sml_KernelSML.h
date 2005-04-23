@@ -135,6 +135,11 @@ protected:
 	bool			m_SuppressSystemStart ;
 	bool			m_SuppressSystemStop ;
 
+	// When we really issue a stop command we have to be sure we'll send the event
+	// so this overrides any suppression setting.  (Use a different flag so it can't
+	// be overridden by another call to suppress system stop).
+	bool			m_RequireSystemStop ;
+
 public:
 	/*************************************************************
 	* @brief	Returns the singleton kernel object.
@@ -229,8 +234,10 @@ public:
 	void SetSuppressSystemStart(bool state) { m_SuppressSystemStart = state ; }	
 	void SetSuppressSystemStop(bool state)  { m_SuppressSystemStop = state ; }	
 
+	void RequireSystemStop(bool state)		{ m_RequireSystemStop = state ; }
+
 	bool IsSystemStartSuppressed() { return m_SuppressSystemStart ; }
-	bool IsSystemStopSuppressed()  { return m_SuppressSystemStop ; }
+	bool IsSystemStopSuppressed()  { return m_SuppressSystemStop && !m_RequireSystemStop ; }
 
 	/*************************************************************
 	* @brief	Remove any events that this connection was listening to.

@@ -120,6 +120,7 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 
 	m_SuppressSystemStart = false ;
 	m_SuppressSystemStop  = false ;
+	m_RequireSystemStop   = false ;
 }
 
 KernelSML::~KernelSML()

@@ -80,8 +80,6 @@ void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::IKernel* kern
 
 		// The flag is reset forcing the client to repeatedly suppress the system
 		// start event each time they wish to run Soar and not generate this event.
-		// (This approach makes normal "run" commands advance the system without that
-		//  command having to do special actions).
 		m_pKernelSML->SetSuppressSystemStart(false) ;
 
 		if (suppress)
@@ -93,6 +91,8 @@ void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::IKernel* kern
 	{
 		bool suppress = m_pKernelSML->IsSystemStopSuppressed() ;
 
+		// Clear our flags that control this event
+		m_pKernelSML->RequireSystemStop(false) ;
 		m_pKernelSML->SetSuppressSystemStop(false) ;
 
 		if (suppress)
