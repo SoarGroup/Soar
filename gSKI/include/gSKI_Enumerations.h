@@ -525,11 +525,11 @@
    *  @li STOP_NEXT_DECISION_CYCLE: Stop at the end of the next decision cycle.
    */
    typedef enum {
-      gSKI_STOP_ON_CALLBACK_RETURN,
-      gSKI_STOP_AFTER_ALL_CALLBACKS_RETURN,
-      gSKI_STOP_AFTER_SMALLEST_STEP,
-      gSKI_STOP_AFTER_PHASE,
-      gSKI_STOP_AFTER_DECISION_CYCLE
+      gSKI_STOP_ON_CALLBACK_RETURN			= 1 << 0,
+      gSKI_STOP_AFTER_ALL_CALLBACKS_RETURN	= 1 << 1,
+      gSKI_STOP_AFTER_SMALLEST_STEP			= 1 << 2,
+      gSKI_STOP_AFTER_PHASE					= 1 << 3,
+      gSKI_STOP_AFTER_DECISION_CYCLE		= 1 << 4
    } egSKIStopLocation;
 
    /** 

@@ -1562,11 +1562,6 @@ namespace gSKI
       // Increment smallest step
       ++m_smallestStepCount;
 
-// BUGBUG: DJP - I just noticed that these tests are all based around the m_interruptFlags being a bit field
-// but in fact it's just an enum.  This means you can't use (x & y) as the test -- we need to change the enum
-// values to be 1, 2, 4, 8 etc.  I'm not going to just make that change however as I don't understand what it will affect.
-// (i.e. folks may be relying on this buggy behavior).
-
       // Check an interrupt
       if(m_interruptFlags & gSKI_STOP_AFTER_SMALLEST_STEP)
          interrupted = true;
