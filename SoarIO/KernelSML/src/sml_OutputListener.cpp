@@ -123,7 +123,7 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent
 	{
 		// If we've been asked to interrupt Soar when we receive output, then do so now.
 		// I'm not really clear on the correct parameters for stopping Soar here and what impact the choices will have.
-		agentPtr->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING) ;
+		agentPtr->Interrupt(gSKI_STOP_AFTER_DECISION_CYCLE, gSKI_STOP_BY_RETURNING) ;
 
 		// Clear the flag, so we don't keep trying to stop.  The caller can reset it before the next run if they wish.
 		m_StopOnOutput = false ;

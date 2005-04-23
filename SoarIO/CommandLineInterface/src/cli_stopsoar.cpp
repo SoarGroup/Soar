@@ -62,7 +62,7 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 
 	if (self) {
 		if (!RequireAgent(pAgent)) return false;
-		if (!pAgent->Interrupt(gSKI_STOP_AFTER_SMALLEST_STEP, gSKI_STOP_BY_RETURNING, &m_gSKIError)) {
+		if (!pAgent->Interrupt(gSKI_STOP_AFTER_DECISION_CYCLE, gSKI_STOP_BY_RETURNING, &m_gSKIError)) {
 			SetErrorDetail("Error interrupting agent.");
 			return SetError(CLIError::kgSKIError);
 		}
@@ -78,7 +78,7 @@ bool CommandLineInterface::DoStopSoar(gSKI::IAgent* pAgent, bool self, const std
 		// So instead we set a flag and allow system stop to fire at the end of the run.
 		m_pKernelSML->RequireSystemStop(true) ;
 
-		if (!m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, &m_gSKIError)) {
+		if (!m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_DECISION_CYCLE, &m_gSKIError)) {
 			SetErrorDetail("Error interrupting all agents.");
 			return SetError(CLIError::kgSKIError);
 		}
