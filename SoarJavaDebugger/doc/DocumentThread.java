@@ -65,6 +65,9 @@ public class DocumentThread extends Thread
 	/** True when connected to a kernel (i.e. able to execute commands */
 	private boolean   m_IsConnected = false ;
 	
+	/** If true, print trace information as each command is scheduled and executed */
+	private static boolean kTraceCommands = false ;
+	
 	public DocumentThread(Document doc)
 	{
 		m_Document = doc ;
@@ -85,6 +88,9 @@ public class DocumentThread extends Thread
 	/** Schedule a command to execute later (response can be null) */
 	public synchronized Command scheduleCommandToExecute(Agent agent, String commandLine, AnalyzeXML response)
 	{
+		if (kTraceCommands)
+			System.out.println("Scheduling " + commandLine) ;
+		
 		Command command = new Command(agent, commandLine, response) ;
 		m_ToExecuteQueue.add(command) ;
 		
@@ -128,7 +134,7 @@ public class DocumentThread extends Thread
 
 	// This function pulls waiting commands off the queue and executes them in Soar.
 	// We expose this so that we can call it during the execution of a run to check for "stop-soar" commands.
-	public void executePending()
+	public void executePending(String source)
 	{
 		Command command ;
 		while ( (command = popNextCommand()) != null )
@@ -140,6 +146,9 @@ public class DocumentThread extends Thread
 				recordCommandResult(command, "disconnected") ;
 				continue ;
 			}
+			
+			if (kTraceCommands)
+				System.out.println("About to execute " + command.m_Command + " from " + source) ;
 			
 			if (command.m_Response == null)
 			{
@@ -153,6 +162,9 @@ public class DocumentThread extends Thread
 				boolean success = command.m_Agent.ExecuteCommandLineXML(command.m_Command, command.m_Response) ;
 				recordCommandResult(command, success ? "true" : "false") ;
 			}
+
+			if (kTraceCommands)
+				System.out.println("Finished " + command.m_Command) ;
 		}
 		
 		m_IsExecutingCommand = false ;
@@ -162,7 +174,7 @@ public class DocumentThread extends Thread
 	{
 		while (!m_AskedToStop)
 		{
-			executePending() ;
+			executePending("main") ;
 			
 			// The pause as we sleep here is just how quickly we respond to incoming commands from the user.
 			// It won't affect the speed Soar executes.

@@ -527,7 +527,8 @@ public class Document
 			{
 				// If we're running Soar in its own thread, we need to check for interruption messages (stop-soar)
 				// while Soar is running, otherwise the call to "run" blocks forever and we can't stop it.
-				m_DocumentThread.executePending() ;
+				if (m_DocumentThread.isBusy())
+					m_DocumentThread.executePending("Interrupt check") ;
 			}
 				
 			return ;
