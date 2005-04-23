@@ -15,10 +15,10 @@
               <Button Command="run" Name="Run"></Button>
               <Button Command="run 1 --elaboration" Name="Run 1 -e"></Button>
               <Button Command="stop-soar" Name="Stop"></Button>
+              <Button InternalCommand="" Command="start-system" Name="Start"></Button>
               <Button Command="matches" Name="Matches"></Button>
               <Button Command="print <s>" Name="Print <s>"></Button>
               <Button Command="print <ts>" Name="Print <ts>"></Button>
-              <Button Command="print <o>" Name="Print <o>"></Button>
               <Button Command="clear" Name="Clear"></Button>
               <Button InternalCommand="" Command="watch 1" Name="Watch 1"></Button>
               <Button InternalCommand="" Command="watch 3" Name="Watch 3"></Button>
