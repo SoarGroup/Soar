@@ -32,7 +32,7 @@
 
 
 ### These declaration help Soar reorder the conditions of the rules
-set max_elaborations 50000
+max-elaborations 50000
 multi-attributes on 3
 multi-attributes peg 4
 multi-attributes holds 10

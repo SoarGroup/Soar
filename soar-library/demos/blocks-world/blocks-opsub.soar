@@ -1,13 +1,12 @@
 ### 
 ### FILE               : blocks-opsub.soar
-### AUTHOR(1)          : John.E.Laird [ Soar 8.2 ]
+### AUTHOR(1)          : John.E.Laird [ Soar 8.6 ]
 ### CREATED(1)         : December 12, 1998
-### Last modified      : May 27, 2004
+### Last modified      : April 24, 2005
 ###
 ### Uses operator subgoaling to solve blocks-world
 
-set max_elaborations 10
-alias pref preferences
+max-elaborations 10
 
 ## Will not work correctly with chunking
 learn --off
@@ -241,7 +240,8 @@ sp {top-ps*monitor*goal
               ^bottom-block <table>)
   -->
   (write (crlf) |*** ACHIEVED GOAL ***|)
-  (<s> ^success *yes*)}
+  (<s> ^success *yes*)
+  (halt)}
 
 
 ###
