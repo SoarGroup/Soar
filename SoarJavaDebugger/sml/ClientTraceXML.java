@@ -93,6 +93,10 @@ public class ClientTraceXML extends ClientXML {
     return smlJNI.ClientTraceXML_GetPhaseStatus(swigCPtr);
   }
 
+  public String GetFiringType() {
+    return smlJNI.ClientTraceXML_GetFiringType(swigCPtr);
+  }
+
   public boolean IsTagFiringProduction() {
     return smlJNI.ClientTraceXML_IsTagFiringProduction(swigCPtr);
   }

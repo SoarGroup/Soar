@@ -437,7 +437,7 @@ public class ButtonView extends AbstractView
 		String command = button.m_Command ;
 
 		// Execute the command in the prime view for the debugger
-		if (command != null)
+		if (command != null && command.length() > 0)
 		{
 			AbstractView linkedView = getLinkedView() ;
 			if (linkedView != null)

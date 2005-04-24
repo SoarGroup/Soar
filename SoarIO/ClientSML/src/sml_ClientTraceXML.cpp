@@ -42,6 +42,7 @@ char const* ClientTraceXML::GetOperatorName() const			{ return GetAttribute(sml_
 bool ClientTraceXML::IsTagPhase() const						{ return IsTag(sml_Names::kTagPhase) ; }
 char const* ClientTraceXML::GetPhaseName() const			{ return GetAttribute(sml_Names::kPhase_Name) ; }
 char const* ClientTraceXML::GetPhaseStatus() const			{ return GetAttribute(sml_Names::kPhase_Status) ; }
+char const* ClientTraceXML::GetFiringType() const			{ return GetAttribute(sml_Names::kPhase_FiringType) ; }
 
 // Firing-production tag, contains production
 bool ClientTraceXML::IsTagFiringProduction() const			{ return IsTag(sml_Names::kTagProduction_Firing) ; }

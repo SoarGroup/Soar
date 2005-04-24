@@ -190,6 +190,10 @@ public class Kernel extends ClientErrors {
     return smlJNI.Kernel_IsRunCommand(swigCPtr, pCommandLine);
   }
 
+  public boolean IsStopCommand(String pCommandLine) {
+    return smlJNI.Kernel_IsStopCommand(swigCPtr, pCommandLine);
+  }
+
   public boolean CheckForIncomingCommands() {
     return smlJNI.Kernel_CheckForIncomingCommands(swigCPtr);
   }

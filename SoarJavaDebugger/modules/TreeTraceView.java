@@ -1029,6 +1029,7 @@ public class TreeTraceView extends AbstractComboView
 			} else if (xmlTrace.IsTagPhase())
 			{
 				String status = xmlTrace.GetPhaseStatus() ;
+				String firingType = xmlTrace.GetFiringType() ;
 				
 				text.append("--- ") ;
 				text.append(xmlTrace.GetPhaseName()) ;
@@ -1036,6 +1037,12 @@ public class TreeTraceView extends AbstractComboView
 				text.append("phase ") ;
 				if (status != null)
 					text.append(status) ;
+				if (firingType != null)
+				{
+					text.append("(") ;
+					text.append(firingType) ;
+					text.append(") ") ;
+				}
 				text.append("---") ;
 				
 				// Don't show end of phase messages

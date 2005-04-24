@@ -446,6 +446,7 @@ class smlJNI {
   public final static native String Kernel_ExpandCommandLine(long jarg1, String jarg2);
   public final static native boolean Kernel_GetLastCommandLineResult(long jarg1);
   public final static native boolean Kernel_IsRunCommand(long jarg1, String jarg2);
+  public final static native boolean Kernel_IsStopCommand(long jarg1, String jarg2);
   public final static native boolean Kernel_CheckForIncomingCommands(long jarg1);
   public final static native boolean Kernel_StartEventThread(long jarg1);
   public final static native boolean Kernel_StopEventThread(long jarg1);
@@ -543,6 +544,7 @@ class smlJNI {
   public final static native boolean ClientTraceXML_IsTagPhase(long jarg1);
   public final static native String ClientTraceXML_GetPhaseName(long jarg1);
   public final static native String ClientTraceXML_GetPhaseStatus(long jarg1);
+  public final static native String ClientTraceXML_GetFiringType(long jarg1);
   public final static native boolean ClientTraceXML_IsTagFiringProduction(long jarg1);
   public final static native boolean ClientTraceXML_IsTagRetractingProduction(long jarg1);
   public final static native boolean ClientTraceXML_IsTagProduction(long jarg1);

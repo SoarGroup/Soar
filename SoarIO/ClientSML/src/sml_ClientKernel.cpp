@@ -963,7 +963,7 @@ char const* Kernel::ExpandCommandLine(char const* pCommandLine)
 *************************************************************/
 bool Kernel::IsRunCommand(char const* pCommandLine)
 {
-	// Expand any aliases (this is the tricky part)
+	// Expand any aliases
 	char const* pExpandedLine = ExpandCommandLine(pCommandLine) ;
 
 	if (!pExpandedLine)
@@ -1005,6 +1005,33 @@ bool Kernel::IsRunCommand(char const* pCommandLine)
 				return true ;
 		}
 	}
+
+	return false ;
+}
+
+/*************************************************************
+* @brief Returns true if this command line is a stop command
+*************************************************************/
+bool Kernel::IsStopCommand(char const* pCommandLine)
+{
+	// Expand any aliases
+	char const* pExpandedLine = ExpandCommandLine(pCommandLine) ;
+
+	if (!pExpandedLine)
+		return false ;
+
+	std::string line = pExpandedLine ;
+
+	// We might have a list of these one day but after alias expansion right
+	// now it's just one command that should start "stop-soar xxx"
+	std::string stopCommand = "stop-soar" ;
+
+	if (line.size() < stopCommand.size())
+		return false ;
+
+	// Check if the expanded command line starts with "stop-soar" or not.
+	if (line.substr(0, stopCommand.size()).compare(stopCommand) == 0)
+		return true ;
 
 	return false ;
 }

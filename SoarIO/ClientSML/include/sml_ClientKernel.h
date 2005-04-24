@@ -421,6 +421,11 @@ public:
 	bool IsRunCommand(char const* pCommandLine) ;
 
 	/*************************************************************
+	* @brief Returns true if this command line is a stop command
+	*************************************************************/
+	bool IsStopCommand(char const* pCommandLine) ;
+
+	/*************************************************************
 	* @brief If this is an embedded connection using "synchronous execution"
 	*		 then we need to call this periodically to look for commands
 	*		 coming in from remote sockets.

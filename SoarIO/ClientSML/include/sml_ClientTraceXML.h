@@ -49,6 +49,7 @@ public:
 	bool IsTagPhase() const ;
 	char const* GetPhaseName() const ;
 	char const* GetPhaseStatus() const ;
+	char const* GetFiringType() const ;
 
 	// Firing-production tag, contains production
 	bool IsTagFiringProduction() const ;

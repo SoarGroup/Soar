@@ -125,11 +125,11 @@ public class DemoMenu
 	{
 		// Start by excising any existing productions
 		String exciseLine = m_Document.getSoarCommands().getExciseAllCommand() ;
-		m_Frame.executeCommandPrimeView(exciseLine, false) ;
+		m_Frame.executeCommandPrimeView(exciseLine, true) ;
 		
 		// Then do an init-soar
 		String initSoar = m_Document.getSoarCommands().getInitSoarCommand() ;
-		m_Frame.executeCommandPrimeView(initSoar, false) ;
+		m_Frame.executeCommandPrimeView(initSoar, true) ;
 		
 		boolean done = false ;
 		File filePath = null ;
@@ -137,38 +137,6 @@ public class DemoMenu
 		String libraryPath = getLibraryLocation() ;
 		File demoPath = new File(libraryPath, "demos") ;
 		filePath = new File(demoPath, filename.getPath()) ;
-
-		/*
-		while (!done)
-		{
-			String libraryPath = getLibraryLocation() ;
-			File demoPath = new File(libraryPath, "demos") ;
-			filePath = new File(demoPath, filename.getPath()) ;
-	
-			if (!filePath.exists())
-			{
-				int reply = m_Frame.ShowMessageBox("Failed to find demo", "Could not find the file " + filePath + "\nWould you like to set the library path (which should contain the demos folder) now?", SWT.YES | SWT.NO ) ;
-				if (reply == SWT.YES)
-				{
-					boolean ok = setLibraryPath() ;
-					
-					// If user cancelled, bail out
-					if (!ok)
-						return ;
-				}
-				else
-				{
-					// User didn't want to try to find the demo
-					return ;
-				}
-			}
-			else
-			{
-				// If the path to the demo exists, we can try to load it.
-				done = true ;
-			}
-		}
-		*/
 		
 		String commandLine = m_Document.getSoarCommands().getSourceCommand(filePath.getPath()) ;
 
