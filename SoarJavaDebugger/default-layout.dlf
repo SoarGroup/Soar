@@ -13,7 +13,7 @@
             <view ButtonCount="12" Class="modules.ButtonView" Name="buttons3">
               <Button Command="step" Name="Step"></Button>
               <Button Command="run" Name="Run"></Button>
-              <Button Command="run 1 --elaboration" Name="Run 1 -e"></Button>
+              <Button InternalCommand="" Command="run 1 --phase" Name="Run 1 -p"></Button>
               <Button Command="stop-soar" Name="Stop"></Button>
               <Button InternalCommand="" Command="start-system" Name="Start"></Button>
               <Button Command="matches" Name="Matches"></Button>

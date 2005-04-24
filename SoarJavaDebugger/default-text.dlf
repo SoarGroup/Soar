@@ -6,14 +6,14 @@
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
           <pane view="trace1" tabAtTop="false" singleView="true" horiz="true">
             <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.TraceView" ShowTraceOutput="true" Name="trace1" ClearEachCommand="false" UpdateOnStop="false">
-              <History Item2="<Type commands here>" Item0="run 10" Size="3" Class="helpers.CommandHistory" Item1="watch 5"></History>
+              <History Item2="watch 5" Item0="<Type commands here>" Size="3" Class="helpers.CommandHistory" Item1="run 10"></History>
             </view>
           </pane>
           <pane view="buttons3" tabAtTop="false" singleView="true" horiz="true">
             <view ButtonCount="12" Class="modules.ButtonView" Name="buttons3">
               <Button Command="step" Name="Step"></Button>
               <Button Command="run" Name="Run"></Button>
-              <Button Command="run 1 --elaboration" Name="Run 1 -e"></Button>
+              <Button InternalCommand="" Command="run 1 --phase" Name="Run 1 -p"></Button>
               <Button Command="stop-soar" Name="Stop"></Button>
               <Button InternalCommand="" Command="start-system" Name="Start"></Button>
               <Button Command="matches" Name="Matches"></Button>
