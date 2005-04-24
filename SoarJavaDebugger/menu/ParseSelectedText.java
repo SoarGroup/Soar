@@ -356,7 +356,7 @@ public class ParseSelectedText
 		if (fore1 != -1)
 			m_Tokens[kCurrToken] = m_FullText.substring(back1+1, fore1) ;
 		
-		System.out.println(toString()) ;
+		//System.out.println(toString()) ;
 	}
 }
 
