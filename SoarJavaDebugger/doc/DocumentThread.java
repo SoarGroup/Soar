@@ -134,6 +134,8 @@ public class DocumentThread extends Thread
 
 	// This function pulls waiting commands off the queue and executes them in Soar.
 	// We expose this so that we can call it during the execution of a run to check for "stop-soar" commands.
+	// It's not synchronized because we may be in here executing a "run" and then call back into the same
+	// method to issue "stop-soar".  Instead the methods to work with the queue (e.g. popNextCommand) are synchronized.
 	public void executePending(String source)
 	{
 		Command command ;
