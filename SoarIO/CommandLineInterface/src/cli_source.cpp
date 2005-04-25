@@ -60,60 +60,6 @@ bool CommandLineInterface::Trim(std::string& line) {
 	return true;
 }
 
-//bool CommandLineInterface::Trim(std::string& line) {
-//	// trim whitespace and comments from line
-//	if (!line.size()) return true; // nothing on the line
-//	
-//	// remove leading whitespace
-//	std::string::size_type datapos = line.find_first_not_of(" \t");
-//	if (datapos != std::string::npos) {
-//		line = line.substr(datapos);
-//	}
-//
-//	if (!line.size()) return true; // nothing else on the line
-//
-//	// if there is a pipe on the line, we need to parse more carefully
-//	if (line.find_first_of('|') != std::string::npos) {
-//		
-//		bool pipe = false;
-//
-//		for (unsigned pos = 0; pos < line.size(); ++pos) {
-//			if (!pipe) {
-//				// normal parsing
-//				switch (line[pos]) {
-//					case '|':	// enter pipe mode
-//						pipe = true;
-//						break;
-//					case '#':	// trim comments, done
-//						line = line.substr(0, pos);
-//						pos = line.size();
-//						break;
-//					default:	// keep going
-//						break;
-//				}
-//			} else {
-//				switch (line[pos]) {
-//					case '|':	// exit pipe mode
-//						pipe = false;
-//						break;
-//					default:	// keep going
-//						break;
-//				}
-//			}
-//		}
-//		// if in pipe mode, newline inside pipes
-//		if (pipe) return SetError(CLIError::kNewlineBeforePipe);
-//
-//	} else {
-//		// no pipe, simply remove comments
-//		std::string::size_type commentpos = line.find_first_of('#');
-//		if (commentpos != std::string::npos) {
-//			line = line.substr(0, commentpos);
-//		}
-//	}
-//	return true;
-//}
-
 bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) {
 	if (!RequireAgent(pAgent)) return false;
 
@@ -155,7 +101,7 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 	int lineCount = 0;				// Count the lines per file
 	int lineCountCache = 0;			// Used to save a line number
 
-	// Set dir depth to zero on first call to source, even though it should be zero anyway
+	// Set directory depth to zero on first call to source, even though it should be zero anyway
 	if (m_SourceDepth == 0) {
 		m_SourceDirDepth = 0;
 	}
@@ -171,7 +117,11 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 		command.clear();
 
 		// Trim whitespace and comments
-		if (!Trim(line)) return false;
+		if (!Trim(line)) {
+			HandleSourceError(lineCount, filename);
+			if (path.length()) DoPopD();
+			return false;
+		}
 
 		if (!line.length()) continue; // Nothing on line, skip it
 
@@ -186,7 +136,11 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 			// While we are inside braces, stay in special parsing mode
 			do {
 				if (lineCountCache != lineCount) {
-					if (!Trim(line)) return false; // Trim whitespace and comments on additional lines
+					if (!Trim(line)) { // Trim whitespace and comments on additional lines
+						HandleSourceError(lineCount, filename);
+						if (path.length()) DoPopD();
+						return false; 
+					}
 				}
 
 				// nothing on line or just whitespace and comments
@@ -269,9 +223,9 @@ bool CommandLineInterface::DoSource(gSKI::IAgent* pAgent, std::string filename) 
 	// Completion
 	--m_SourceDepth;
 
-	// if we're returing to the user
+	// if we're returning to the user
 	if (!m_SourceDepth) {
-		// Print working directory if source dir depth !=  0
+		// Print working directory if source directory depth !=  0
 		if (m_SourceDirDepth != 0) DoPWD();	// Ignore error
 		m_SourceDirDepth = 0;
 
@@ -290,7 +244,7 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 
 		// Output error message
 		m_SourceErrorDetail.clear();
-		m_SourceErrorDetail += "\nSource command error on line ";
+		m_SourceErrorDetail += "\nSource command error on (or near) line ";
 
 		char buf[kMinBufferSize];
 		m_SourceErrorDetail += Int2String(errorLine, buf, kMinBufferSize);
@@ -314,7 +268,8 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		m_SourceError = true;
 
 	} else {
-		m_SourceErrorDetail += "\n\t--> Sourced by: " + filename;
+		char buf[kMinBufferSize];
+		m_SourceErrorDetail += "\n\t--> Sourced by: " + filename + " (line " + Int2String(errorLine, buf, kMinBufferSize) + ")";
 	}
 }
 
