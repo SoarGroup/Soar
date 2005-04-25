@@ -22,7 +22,6 @@
 #include "cli_Constants.h"
 #include "cli_Aliases.h"
 
-// BADBAD: I think we should be using an error class instead to work with error objects.
 #include "../../gSKI/src/gSKI_Error.h"
 #include "IgSKI_Agent.h"
 
