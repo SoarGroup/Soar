@@ -47,6 +47,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIAlias]					= &cli::CommandLineInterface::ParseAlias;
 	m_CommandMap[Constants::kCLICD]						= &cli::CommandLineInterface::ParseCD;
 	m_CommandMap[Constants::kCLIChunkNameFormat]		= &cli::CommandLineInterface::ParseChunkNameFormat;
+	m_CommandMap[Constants::kCLICreep]					= &cli::CommandLineInterface::ParseCreep;
 	m_CommandMap[Constants::kCLIDefaultWMEDepth]		= &cli::CommandLineInterface::ParseDefaultWMEDepth;
 	m_CommandMap[Constants::kCLIDirs]					= &cli::CommandLineInterface::ParseDirs;
 	m_CommandMap[Constants::kCLIEcho]					= &cli::CommandLineInterface::ParseEcho;

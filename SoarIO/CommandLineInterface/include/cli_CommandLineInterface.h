@@ -180,6 +180,14 @@ public:
 	EXPORT bool DoChunkNameFormat(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
 
 	/*************************************************************
+	* @brief chunk-name-format command
+	* @param pConnection Pointer to connection
+	* @param pResponse Pointer to XML response
+	* @param pAgent The pointer to the gSKI agent interface
+	*************************************************************/
+	EXPORT bool DoCreep(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent);
+
+	/*************************************************************
 	* @brief default-wme-depth command
 	* @param pConnection Pointer to connection
 	* @param pResponse Pointer to XML response
@@ -668,6 +676,7 @@ protected:
 	bool ParseAlias(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
+	bool ParseCreep(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
@@ -724,6 +733,7 @@ protected:
 	bool DoAlias(const std::string* pCommand = 0, const std::vector<std::string>* pSubstitution = 0);
 	bool DoCD(const std::string* pDirectory = 0);
 	bool DoChunkNameFormat(gSKI::IAgent* pAgent, const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
+	bool DoCreep(gSKI::IAgent* pAgent);
 	bool DoDefaultWMEDepth(gSKI::IAgent* pAgent, const int* pDepth);
 	bool DoDirs();
 	bool DoEcho(const std::vector<std::string>& argv);
