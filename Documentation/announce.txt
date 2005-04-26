@@ -21,6 +21,8 @@ Limitations in this release
 * Soar7 mode (i.e. soar8 --off) does not work yet.
 * The tutorial needs to be updated so it is not included.
 * Eaters and TankSoar are not included.
+* The Java components have only been tested on Java 1.4.2. There may be problems
+  if used with Java 1.5.
 
 We anticipate an 8.6.1 release before the Soar workshop which should include
 Linux and Mac releases, support for Soar7 mode, and will possibly address some
