@@ -73,7 +73,10 @@ void PrintDebugFormat(char const* pFormat, ...)
 	int nBuf = VSNSPRINTF(szBuffer, sizeof(szBuffer), pFormat, args);
 
 	// was there an error? was the expanded string too long?
-	CHECK(nBuf >= 0) ;
+	if (nBuf < 0)
+	{
+		strcpy(szBuffer, "** Debug message too long for PrintDebugFormat's buffer **") ;
+	}
 
 #ifdef DEBUG_CALLS
 	CTDebugEnterMethod::PrintStackTrace() ;
