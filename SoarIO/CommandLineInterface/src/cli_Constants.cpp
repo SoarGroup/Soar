@@ -10,7 +10,6 @@ char const* Constants::kCLIAddWME					= "add-wme";
 char const* Constants::kCLIAlias					= "alias";			
 char const* Constants::kCLICD						= "cd";			
 char const* Constants::kCLIChunkNameFormat			= "chunk-name-format";			
-char const* Constants::kCLICreep					= "creep";			
 char const* Constants::kCLIDefaultWMEDepth			= "default-wme-depth";
 char const* Constants::kCLIDirs						= "dirs";
 char const* Constants::kCLIEcho						= "echo";

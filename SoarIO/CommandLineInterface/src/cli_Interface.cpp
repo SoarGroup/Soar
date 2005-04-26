@@ -30,12 +30,6 @@ EXPORT bool CommandLineInterface::DoChunkNameFormat(sml::Connection* pConnection
 	return ret;
 }
 
-EXPORT bool CommandLineInterface::DoCreep(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent) {
-	bool ret = DoCreep(pAgent);
-	GetLastResultSML(pConnection, pResponse);
-	return ret;
-}
-
 EXPORT bool CommandLineInterface::DoDefaultWMEDepth(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, const int* pDepth) {
 	bool ret = DoDefaultWMEDepth(pAgent, pDepth);
 	GetLastResultSML(pConnection, pResponse);
