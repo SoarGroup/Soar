@@ -73,6 +73,9 @@ faster) than our 8.5.2 interfaces
 
 * includes gSKI in the main Soar Consortium kernel for the first time
 
+* follows the SGIO interface model in many ways, making converting existing
+simulations easier
+
 Through these changes, the kernel itself has been largely unchanged so sets of
 productions from 8.5.2 should run identically in 8.6 although some command line
 arguments (e.g. "learning -off") have changed slightly so they will require
@@ -88,6 +91,8 @@ This new debugger:
 * can be dynamically attached to and detached from remote Soar instances
 * is designed to be highly customizable by each user
 * employs a plug-in architecture to allow for modular extensions in the future
+
+At this point the debugger should be considered a beta version.
 
 Command Line Changes
 ====================
@@ -127,3 +132,6 @@ These common commands have NOT changed:
 * pushd
 * popd
 * sp
+
+To learn more about SML, the debugger or how to build a simulation using the new
+interface please see the documentation included with the release.
