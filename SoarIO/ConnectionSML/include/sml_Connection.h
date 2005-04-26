@@ -36,7 +36,9 @@
 #ifdef _MSC_VER
 #pragma warning (default : 4702)
 #endif
+
 #include <queue>
+#include <list>
 
 #ifndef unused
 #define unused(x) (void)(x)
@@ -123,6 +125,9 @@ typedef CallbackMap::iterator					CallbackMapIter ;
 
 // Used to store a queue of messages
 typedef std::queue< ElementXML* >	MessageQueue ;
+
+typedef std::list< ElementXML* >	MessageList ;
+typedef MessageList::iterator		MessageListIter ;
 
 /*************************************************************
 * @brief The Connection class represents a logical link

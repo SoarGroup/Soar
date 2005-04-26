@@ -783,6 +783,12 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	unused(pCommandName) ;
 	unused(pError);
 
+#ifdef _DEBUG
+	bool kDebugCommandLine = false ;
+#else
+	bool kDebugCommandLine = false ;
+#endif
+
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
 
@@ -801,9 +807,17 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 		return InvalidArg(pConnection, pResponse, pCommandName, "Command line missing") ;
 	}
 
+	if (kDebugCommandLine)
+		PrintDebugFormat("Executing %s", pLine) ;
+
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);
-	return m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse) ;
+	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse) ;
+
+	if (kDebugCommandLine)
+		PrintDebugFormat("Completed %s", pLine) ;
+
+	return result ;
 }
 
 // Expands a command line's aliases and returns it without executing it.

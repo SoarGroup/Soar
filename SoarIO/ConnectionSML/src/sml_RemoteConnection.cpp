@@ -31,6 +31,94 @@ RemoteConnection::~RemoteConnection()
 {
 	delete m_pLastResponse ;
 	delete m_Socket ;
+
+	for (MessageListIter iter = m_ReceivedMessageList.begin() ; iter != m_ReceivedMessageList.end() ; iter++)
+	{
+		ElementXML* xml = (*iter) ;
+		delete xml ;
+	}
+}
+
+/** Adds the message to the queue, taking ownership of it at the same time */
+void RemoteConnection::AddResponseToList(ElementXML* pResponse)
+{
+	if (pResponse == NULL)
+		return ;
+
+	// If this message isn't a response to a command we don't need to keep it
+	// because we will never need to retrieve it.
+	const char* pAckID = pResponse->GetAttribute(sml_Names::kAck) ;
+
+	if (!pAckID)
+	{
+		delete pResponse ;
+		return ;
+	}
+
+	soar_thread::Lock lock(&m_ListMutex) ;
+
+	m_ReceivedMessageList.push_front(pResponse) ;
+
+	if (m_bTraceCommunications)
+		PrintDebugFormat("!! Adding ack for id %s to the pending message list", pAckID) ;
+
+	// We keep the received message list from growing indefinitely.  This is because
+	// a client may send a command and choose not to listen for the response.
+	// (I don't believe this happens today, but it is allowed by the API).
+	// In that case the message would remain on this list forever and if we allowed it
+	// to grow over time we could be searching an ever increasingly large list of dead messages
+	// that will never be retrieved.  I believe (but haven't conclusively proved to my satisfaction yet)
+	// that we will never have more messages pending here, for which the client is interested in the
+	// response, than there are threads sending commands, so a small max list size should be fine.
+	while (m_ReceivedMessageList.size() > kMaxListSize)
+	{
+		if (m_bTraceCommunications)
+			PrintDebugFormat("!! Had to clean a message from the pending message list") ;
+
+		ElementXML* pLast = m_ReceivedMessageList.back() ;
+		delete pLast ;
+		m_ReceivedMessageList.pop_back() ;
+	}
+}
+
+ElementXML* RemoteConnection::IsResponseInList(char const* pID)
+{
+	soar_thread::Lock lock(&m_ListMutex) ;
+
+	for (MessageListIter iter = m_ReceivedMessageList.begin() ; iter != m_ReceivedMessageList.end() ; iter++)
+	{
+		ElementXML* pXML = (*iter) ;
+		if (DoesResponseMatch(pXML, pID))
+		{
+			if (m_bTraceCommunications)
+				PrintDebugFormat("!! Found match for %s in pending message list", pID) ;
+
+			m_ReceivedMessageList.erase(iter) ;
+			return pXML ;
+		}
+	}
+
+	return NULL ;
+}
+
+bool RemoteConnection::DoesResponseMatch(ElementXML* pResponse, char const* pID)
+{
+	if (!pResponse || !pID)
+		return false ;
+
+	char const* pMsgID = pResponse->GetAttribute(sml_Names::kAck) ;
+	
+	if (!pMsgID)
+		return false ;
+
+	// Spelling this test out so we can put break points in if we wish.
+	if (strcmp(pMsgID, pID) == 0)
+		return true ;
+
+	if (m_bTraceCommunications)
+		PrintDebugFormat("!! Received ack for message %s while looking for %s", pMsgID, pID) ;
+
+	return false ;
 }
 
 void RemoteConnection::SendMessage(ElementXML* pMsg)
@@ -56,23 +144,6 @@ void RemoteConnection::SendMessage(ElementXML* pMsg)
 	pMsg->DeleteString(pXMLString) ;
 }
 
-static bool DoesResponseMatch(ElementXML* pResponse, char const* pID)
-{
-	if (!pResponse || !pID)
-		return false ;
-
-	char const* pMsgID = pResponse->GetAttribute(sml_Names::kAck) ;
-	
-	if (!pMsgID)
-		return false ;
-
-	// Spelling this test out so we can put break points in if we wish.
-	if (strcmp(pMsgID, pID) == 0)
-		return true ;
-	else
-		return false ;
-}
-
 ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 {
 	ElementXML* pResponse = NULL ;
@@ -82,6 +153,15 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 	{
 		pResponse = m_pLastResponse ;
 		m_pLastResponse = NULL ;
+		return pResponse ;
+	}
+
+	// Also check the list of responses we've stored
+	// (This list will always be empty if we're only executing commands
+	//  on one thread, but if we are using multiple threads it can come into play).
+	pResponse = IsResponseInList(pID) ;
+	if (pResponse)
+	{
 		return pResponse ;
 	}
 
@@ -100,25 +180,36 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 				pResponse = m_pLastResponse ;
 				m_pLastResponse = NULL ;
 				return pResponse ;
+			} else
+			{
+				AddResponseToList(m_pLastResponse) ;
+				m_pLastResponse = NULL ;
 			}
 		}
 
-		// At this point we didn't find the message sitting on the socket
-		// so we need to decide if we should wait or not.
-		if (wait)
+		// Check to see if the message has been added to the list of
+		// waiting messages.  This could have happened on a different
+		// thread while we were in here waiting.
+		ElementXML* pResponse = IsResponseInList(pID) ;
+		if (pResponse != NULL)
 		{
-			soar_thread::Thread::SleepStatic(sleepTime) ;
-
-			// Check if the connection has been closed
-			if (IsClosed())
-				return NULL ;
+			return pResponse ;
 		}
+
+		// Allow other threads the chance to update
+		// (by calling with 0 for sleep time we don't give away cycles if
+		//  no other thread is waiting to execute).
+		soar_thread::Thread::SleepStatic(sleepTime) ;
+
+		// Check if the connection has been closed
+		if (IsClosed())
+			return NULL ;
 
 	} while (wait) ;
 
 	// If we get here we didn't find the response.
-	// Either it's not come in yet (and we didn't choose to wait for it)
-	// or we've timed out waiting for it.
+	// (If we're waiting we'll wait forever, so we'll only get here if
+	//  we chose not to wait).
 	return NULL ;
 }
 

@@ -47,6 +47,20 @@ protected:
 	/** We need to cache the responses to calls **/
 	ElementXML* m_pLastResponse ;
 
+	/** A list of messages we've received that have "ack" fields but have yet to match up to the commands which triggered them */
+	MessageList		m_ReceivedMessageList ;
+
+	enum 			{ kMaxListSize = 10 } ;
+
+	/** Ensures only one thread accesses the response list at a time **/
+	soar_thread::Mutex	m_ListMutex ;
+
+	/** Adds the message to the queue, taking ownership of it at the same time */
+	void AddResponseToList(ElementXML* pResponse) ;
+	ElementXML* IsResponseInList(char const* pID) ;
+
+	bool DoesResponseMatch(ElementXML* pResponse, char const* pID) ;
+
 public:
 	virtual ~RemoteConnection();
 
