@@ -85,6 +85,11 @@ public class DocumentThread extends Thread
 		return m_IsExecutingCommand || m_ToExecuteQueue.size() > 0 ;
 	}
 	
+	public synchronized void setExecuting(boolean state)
+	{
+		m_IsExecutingCommand = state ;
+	}
+	
 	/** Schedule a command to execute later (response can be null) */
 	public synchronized Command scheduleCommandToExecute(Agent agent, String commandLine, AnalyzeXML response)
 	{
@@ -141,7 +146,7 @@ public class DocumentThread extends Thread
 		Command command ;
 		while ( (command = popNextCommand()) != null )
 		{
-			m_IsExecutingCommand = true ;
+			setExecuting(true) ;
 			
 			if (!isConnected())
 			{
@@ -166,10 +171,12 @@ public class DocumentThread extends Thread
 			}
 
 			if (kTraceCommands)
-				System.out.println("Finished " + command.m_Command) ;
+			{
+				System.out.println("Finished " + command.m_Command + " from " + source) ;
+			}
 		}
 		
-		m_IsExecutingCommand = false ;
+		setExecuting(false) ;
 	}
 	
 	public void run()
