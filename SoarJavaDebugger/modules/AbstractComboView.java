@@ -318,7 +318,8 @@ public abstract class AbstractComboView extends AbstractView
 			this.m_CommandCombo.setText("") ;
 
 		// Send the command to Soar and echo into the trace
-		executeAgentCommand(command, true) ;
+		if (command.length() > 0)
+			executeAgentCommand(command, true) ;
 	}
 	
 	public void setTextFont(Font f)
