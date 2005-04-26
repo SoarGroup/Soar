@@ -150,9 +150,6 @@
 					RelativePath=".\src\cli_chunknameformat.cpp">
 				</File>
 				<File
-					RelativePath=".\src\cli_creep.cpp">
-				</File>
-				<File
 					RelativePath=".\src\cli_defaultwmedepth.cpp">
 				</File>
 				<File

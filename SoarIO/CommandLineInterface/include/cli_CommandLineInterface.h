@@ -676,7 +676,6 @@ protected:
 	bool ParseAlias(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseCD(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
-	bool ParseCreep(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDefaultWMEDepth(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseDirs(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
 	bool ParseEcho(gSKI::IAgent* pAgent, std::vector<std::string>& argv);
