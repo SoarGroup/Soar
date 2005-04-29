@@ -172,6 +172,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
             }
         }
         dpy.dispose();
+        me.detachSoar();
     }
     
     
@@ -185,6 +186,9 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     }
     
     private void stopPressed() {
+        if (!me.isRunning())
+            return;
+        
         me.stopSystem();
         
         startButton.setEnabled(!me.isAtGoalState());
@@ -201,7 +205,8 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     }
     
     private void resetPressed() {
-        me.stopSystem();
+        if (me.isRunning())
+            me.stopSystem();
         me.reset();
         
         startButton.setEnabled(true);

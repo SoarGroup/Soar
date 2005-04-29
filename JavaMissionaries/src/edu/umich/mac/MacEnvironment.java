@@ -116,6 +116,13 @@ public class MacEnvironment implements Runnable {
     }
     
     /**
+     * @return <code>true</code> if there is a thread continuously running Soar
+     */
+    public boolean isRunning() {
+        return (runThread != null);
+    }
+    
+    /**
      * Runs one Soar decision cycle, and performs any commands that are put on
      * the output link.
      */
@@ -249,6 +256,14 @@ public class MacEnvironment implements Runnable {
      */
     public void removeEnvironmentListener(MacEnvironmentListener l) {
         environmentListeners.remove(l);
+    }
+    
+    /**
+     * Destroys the Soar kernel and agent associated with this environment.
+     */
+    public void detachSoar() {
+        kernel.DestroyAgent(agent);
+        kernel.delete();
     }
     
     /**
