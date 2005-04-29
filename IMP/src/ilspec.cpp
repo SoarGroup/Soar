@@ -83,7 +83,7 @@ void printStage(eParseStage stage, ostream& stream)
 		case READING_CONTROL_STRUCTURE:
 			stream << "'Reading control structure'" << endl;
 			break;
-		case READING_IDENTIFIER:
+		case READING_PARENT_IDENTIFIER:
 			stream << "'Reading identifier'" << endl;
 			break;
 		case READING_ATTRIBUTE:
@@ -223,10 +223,10 @@ bool InputLinkSpec::ImportIL(string& filename)
 			//for the identifier information
 			writeFileLineToString(file, line);
 			lastCompletedState = READING_CONTROL_STRUCTURE;
-			parseStage = READING_IDENTIFIER;			
+			parseStage = READING_PARENT_IDENTIFIER;			
 		}
 		else
-			parseStage = READING_IDENTIFIER;
+			parseStage = READING_PARENT_IDENTIFIER;
 
 		string curWord;
 		InputLinkObject ilObj;
@@ -249,7 +249,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 				case READING_CONTROL_STRUCTURE:
 					break;
-				case READING_IDENTIFIER:
+				case READING_PARENT_IDENTIFIER:
 
 					//The least amount of entries for an il description are 4 strings
 					//numCharsRead = sscanf(curLine, "%s %s %s %s, , , , );
@@ -257,7 +257,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 					curWord = readAndTrimOneWord(line);
 					cout << "ParentIdName is >" << curWord << "<" << endl;
 					ilObj.setParentId(curWord);
-					lastCompletedState = READING_IDENTIFIER;
+					lastCompletedState = READING_PARENT_IDENTIFIER;
 					parseStage = READING_ATTRIBUTE;
 					break;
 				case READING_ATTRIBUTE:
@@ -289,25 +289,34 @@ bool InputLinkSpec::ImportIL(string& filename)
 						readingFirstType = false;
 						int pos = curWord.find(k_typesCloseToken.c_str());
 						if(pos == curWord.npos)
-						{
-cout << "\t\tdidn't find the end token on: " << curWord << endl;
 							moreTypesLeft = true;
-						}
 						else
 						{
-cout << "\t\tfound the end token on: " << curWord << endl;
 							moreTypesLeft = false;
 							//trim off the '>' token
 							curWord.erase(pos);
 						}
 						cout << "Read value type as " << curWord << endl;
-						ilObj.addElementType(stringToType(curWord));							
+						ilObj.addElementType(stringToType(curWord));
+						//TODO tough error checking to do here---v
+						//if the type is an ID, it should be listed alone
+						if(curWord == k_idString)
+						{
+							lastCompletedState = READING_VALUE_TYPE;
+							parseStage = READING_IDENTIFIER_UNIQUE_NAME;
+							break;
+						}						
 					}
 					while(moreTypesLeft);
 
 					lastCompletedState = READING_VALUE_TYPE;
 					parseStage = READING_START_VALUE;
 					break;
+				case READING_IDENTIFIER_UNIQUE_NAME:
+					
+					lastCompletedState = READING_IDENTIFIER_UNIQUE_NAME;
+					parseStage = READING_FINAL_STAGE;
+					break;					
 				case READING_START_VALUE:
 					
 					lastCompletedState = READING_START_VALUE;
@@ -336,6 +345,7 @@ cout << "\t\tfound the end token on: " << curWord << endl;
 			}//end switch
 		}// end control loop
 
+		ilObjects.push_back(ilObj);
 //		loopBegin = defaultLoopBegin;
 //		loopEnd = defaultLoopEnd;
 
@@ -348,6 +358,7 @@ cout << "\t\tfound the end token on: " << curWord << endl;
 	}//while there are still lines to read
 
 	cout << "Read " << lineNumber << " lines." << endl;
+	cout << "Number of input link entries " << ilObjects.size() << endl;
 	file.close();
 	return true;
 }
