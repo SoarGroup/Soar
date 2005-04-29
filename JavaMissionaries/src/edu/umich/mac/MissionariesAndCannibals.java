@@ -43,10 +43,14 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     private Button stepButton;
     private Button resetButton;
     
-    private static Image landImg = new Image(dpy, "mac/land.gif");
-    private static Image boatImg = new Image(dpy, "mac/boat.gif");
-    private static Image missionaryImg = new Image(dpy, "mac/missionary.gif");
-    private static Image cannibalImg = new Image(dpy, "mac/cannibal.gif");
+    private static Image landImg = new Image(dpy,
+            ClassLoader.getSystemResourceAsStream("mac/land.gif"));
+    private static Image boatImg = new Image(dpy,
+            ClassLoader.getSystemResourceAsStream("mac/boat.gif"));
+    private static Image missionaryImg = new Image(dpy,
+            ClassLoader.getSystemResourceAsStream("mac/missionary.gif"));
+    private static Image cannibalImg = new Image(dpy,
+            ClassLoader.getSystemResourceAsStream("mac/cannibal.gif"));
     
     private static final int[] BOAT_X;
     private static final int BOAT_Y = 400;
