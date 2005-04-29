@@ -174,6 +174,9 @@ bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::IAgent* pAgent, boo
 		// Only call to embedded connections
 		bool embeddedPhase = (phase == 0) ;
 
+		// Reset the iterator to the beginning of the list
+		connectionIter = pList->begin();
+
 		// Keep looping until we get a result
 		while (connectionIter != pList->end() && !result)
 		{
