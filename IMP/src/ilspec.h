@@ -2,11 +2,13 @@
 #define IL_SPEC_H
 
 #include <string>
+#include <vector>
 
 #define MAX_IMP_LINE_LENGTH 4096
 
 class InputLinkObject;
 
+//TODO mark the ones that are optional
 //The ordering here is important
 enum eParseStage
 {
@@ -24,6 +26,12 @@ enum eParseStage
 	READING_FINAL_STAGE = READING_DELETE_ON
 };
 
+const std::string k_forDelimiter		= "-for";
+const std::string k_typesOpenToken	= "<";
+const std::string k_typesCloseToken	= ">";
+
+typedef std::vector<InputLinkObject> ilObjVector_t;
+
 /************************************************************************
  * InputLinkSpec
  * 
@@ -34,20 +42,19 @@ enum eParseStage
 class InputLinkSpec
 {
 private:
-
-
+	ilObjVector_t ilObjects;
+	void ReadControlStructure();
 public:
 
 	InputLinkSpec();
 	~InputLinkSpec();
-
+	//The import functions parse out pieces of the input 
+	//link and store them in objects so that the actual input link
+	//code can be generated
 	bool ImportIL(std::string& filename);
 	bool ImportDM(std::string& filename);
-	void ReadControlStructure();
+
 };
-
-
-
 
 
 
