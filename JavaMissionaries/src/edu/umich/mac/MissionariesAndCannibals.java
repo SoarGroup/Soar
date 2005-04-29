@@ -2,7 +2,7 @@
 // edu.umich.mac.MissionariesAndCannibals
 // Author: Trevor McCulloch
 // Date Created: 24 March 2005
-//-----------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 package edu.umich.mac;
 
@@ -21,8 +21,8 @@ import org.eclipse.swt.widgets.Shell;
 
 /**
  * This class provides an interface for the Missionaries & Cannibals problem,
- * allowing the user to watch the decisions Soar makes in an attempt to solve the
- * problem.
+ * allowing the user to watch the decisions Soar makes in an attempt to solve
+ * the problem.
  * 
  * @author Trevor McCulloch, University of Michigan
  * @version 1.0
@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Shell;
 public class MissionariesAndCannibals
 implements Runnable, PaintListener, MacEnvironmentListener {
     private MacEnvironment me;
-    private MacRunner runner;
     
     private static Display dpy = new Display();
     private Shell shell;
@@ -39,7 +38,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     private Image bufImg;
     private GC bufGC;
     
-    private Button runButton;
+    private Button startButton;
     private Button stopButton;
     private Button stepButton;
     private Button resetButton;
@@ -94,9 +93,9 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     }
     
     /**
-     * Creates a new <code>MissionariesAndCannibals</code> object, which creates the
-     * user interface and the environment Soar run in, and coordinates communication
-     * between Soar's environment and the UI.
+     * Creates a new <code>MissionariesAndCannibals</code> object, which creates
+     * the user interface and the environment Soar run in, and coordinates
+     * communication between Soar's environment and the UI.
      */
     public MissionariesAndCannibals() {
         me = new MacEnvironment();
@@ -116,9 +115,9 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         bufGC = new GC(bufImg);
         
         // create the button controls
-        runButton = new Button(shell, SWT.PUSH);
-        runButton.setText("Run");
-        runButton.setBounds(2, 482, 78, 32);
+        startButton = new Button(shell, SWT.PUSH);
+        startButton.setText("Start");
+        startButton.setBounds(2, 482, 78, 32);
         stopButton = new Button(shell, SWT.PUSH);
         stopButton.setText("Stop");
         stopButton.setEnabled(false);
@@ -132,58 +131,33 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         resetButton.setBounds(221, 482, 78, 32);
         
         // add actions to all of the buttons
-        runButton.addSelectionListener(new SelectionAdapter() {
+        startButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                runButton.setEnabled(false);
-                stopButton.setEnabled(true);
-                stepButton.setEnabled(false);
-                resetButton.setEnabled(false);
-                
-                // set up another thread that continuously steps through the actions
-                runner = new MacRunner();
-                runner.start();
+                startPressed();
             }
         });
         stopButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                // stop the runner thread
-                runner.halt();
-                runner = null;
-                
-                runButton.setEnabled(true);
-                stopButton.setEnabled(false);
-                stepButton.setEnabled(true);
-                resetButton.setEnabled(true);
+                stopPressed();
             }
         });
         stepButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                // run the environment through a decision cycle
-                me.run();
-                
-                resetButton.setEnabled(true);
+                stepPressed();
             }
         });
         resetButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                // reset game to original state, re-initialize Soar
-                if (runner != null)
-                    runner.halt();
-                
-                me.reset();
-                
-                runButton.setEnabled(true);
-                stepButton.setEnabled(true);
-                resetButton.setEnabled(false);
+                resetPressed();
             }
         });
         
-        shell.setDefaultButton(runButton);
+        shell.setDefaultButton(startButton);
     }
 
     /**
-     * Open's the user interface's main window. This method blocks until the window
-     * is closed.
+     * Open's the user interface's main window. This method blocks until the
+     * window is closed.
      */
     public void run() {
         shell.pack();
@@ -196,49 +170,39 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         dpy.dispose();
     }
     
-    /**
-     * This class runs the enclosing class' <code>MacEnvironment</code> in a
-     * separate thread. It also provides a method to allow other threads to stop this
-     * thread in a thread-safe manner. It exists to allow Soar decisions to be run
-     * continuously without blocking the UI thread.
-     * 
-     * @author Trevor McCulloch, University of Michigan
-     * @version 1.0
-     */
-    private class MacRunner extends Thread {
-        /**
-         * Runs the enclosing class' <code>MacEnvironment</code> until it is at the
-         * goal state or until <code>halt</code> is called.
-         */
-        public void run() {
-            while (!halt) {
-                me.run();
-                
-                if (me.isAtGoalState()) {
-                    dpy.syncExec(new Runnable() {
-                        public void run() {
-                            runButton.setEnabled(false);
-                            stopButton.setEnabled(false);
-                            stepButton.setEnabled(false);
-                            resetButton.setEnabled(true);
-                        }
-                    });
-                    
-                    break;
-                }
-            }
-            
-            halt = false;
-        }
+    
+    private void startPressed() {
+        startButton.setEnabled(false);
+        stopButton.setEnabled(true);
+        stepButton.setEnabled(false);
+        resetButton.setEnabled(false);
         
-        /**
-         * Halts this <code>MacRunner</code> thread if it is running.
-         */
-        public void halt() {
-            halt = true;
-        }
+        me.startSystem();
+    }
+    
+    private void stopPressed() {
+        me.stopSystem();
         
-        private boolean halt = false;
+        startButton.setEnabled(!me.isAtGoalState());
+        stopButton.setEnabled(false);
+        stepButton.setEnabled(!me.isAtGoalState());
+        resetButton.setEnabled(true);
+    }
+    
+    private void stepPressed() {
+        // run the environment through a decision cycle
+        me.step();
+        
+        resetButton.setEnabled(true);
+    }
+    
+    private void resetPressed() {
+        me.stopSystem();
+        me.reset();
+        
+        startButton.setEnabled(true);
+        stepButton.setEnabled(true);
+        resetButton.setEnabled(false);
     }
 
     public void paintControl(PaintEvent e) {
@@ -250,14 +214,15 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     }
     
     /**
-     * Paints the double buffer with background, the positions of the boat and all of
-     * the missionaries and cannibals.
+     * Paints the double buffer with background, the positions of the boat and
+     * all of the missionaries and cannibals.
      */
     private void paintBuffer() {
         bufGC.drawImage(landImg, 0, 0);
         
         // draw the boat
-        bufGC.drawImage(boatImg, BOAT_X[me.getRightBank().getBoatCount()], BOAT_Y);
+        bufGC.drawImage(boatImg,
+                BOAT_X[me.getRightBank().getBoatCount()], BOAT_Y);
         
         // draw the cannibals on both sides of the river
         for (int i = 0; i < me.getLeftBank().getCannibalCount(); ++i)
@@ -273,8 +238,31 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     }
 
     /**
-     * Notes the new positions of the boat and all of the missonaries and cannibals,
-     * and arranges for the screen to be redrawn in the appropriate places.
+     * Modify the UI so that it appears the "start" button has just been pressed.
+     */
+    public void systemStarted(MacEnvironment e) {
+        dpy.syncExec(new Runnable() {
+            public void run() {
+                startPressed();
+            }
+        });
+    }
+
+    /**
+     * Modify the UI so that it appears the "stop" button has just been pressed.
+     */
+    public void systemStopped(MacEnvironment e) {
+        dpy.syncExec(new Runnable() {
+            public void run() {
+                stopPressed();
+            }
+        });
+    }
+    
+    /**
+     * Notes the new positions of the boat and all of the missonaries and
+     * cannibals, and arranges for the screen to be redrawn in the appropriate
+     * places.
      */
     public void boatMoved(final MacEnvironment e, final RiverBank fromBank,
             final int missionaries, final int cannibals, final int boats) {
@@ -283,14 +271,16 @@ implements Runnable, PaintListener, MacEnvironmentListener {
             public void run() {
                 // redraw the two boat positions
                 Rectangle rect = boatImg.getBounds();
-                macCanvas.redraw(BOAT_X[0], BOAT_Y, rect.width, rect.height, true);
-                macCanvas.redraw(BOAT_X[1], BOAT_Y, rect.width, rect.height, true);
+                macCanvas.redraw(BOAT_X[0], BOAT_Y, rect.width, rect.height,
+                        true);
+                macCanvas.redraw(BOAT_X[1], BOAT_Y, rect.width, rect.height,
+                        true);
                 
                 // redraw the cannibals right-most positions on each bank
                 rect = cannibalImg.getBounds();
                 for (int i = 0; i < cannibals; ++i) {
                     int fb = i + fromBank.getCannibalCount();
-                    int tb = fromBank.getOppositeBank().getCannibalCount() - i - 1;
+                    int tb = fromBank.getOppositeBank().getCannibalCount()-i-1;
                     if (fromBank == e.getLeftBank())
                         tb += 3;
                     else
@@ -306,7 +296,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
                 rect = missionaryImg.getBounds();
                 for (int i = 0; i < missionaries; ++i) {
                     int fb = i + fromBank.getMissionaryCount();
-                    int tb = fromBank.getOppositeBank().getMissionaryCount() - i - 1;
+                    int tb = fromBank.getOppositeBank().getMissionaryCount()-i-1;
                     if (fromBank == e.getLeftBank())
                         tb += 3;
                     else

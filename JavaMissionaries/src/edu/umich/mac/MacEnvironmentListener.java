@@ -11,9 +11,21 @@ package edu.umich.mac;
  * state of a <code>MacEnvironment</code> is changed by Soar.
  * 
  * @author Trevor McCulloch, University of Michigan
- * @version 1.0
+ * @version 1.1
  */
 public interface MacEnvironmentListener {
+    /**
+     * Sent when the Soar kernel sends the <code>SYSTEM_STARTED</code> event.
+     * 
+     * @param e - environment that started.
+     */
+    public void systemStarted(MacEnvironment e);
+    /**
+     * Sent when the Soar kernel sends the <code>SYSTEM_STOPPED</code> event.
+     * 
+     * @param e - the environment that stopped.
+     */
+    public void systemStopped(MacEnvironment e);
     /**
      * Sent when a boat is moved from one bank to another.
      * 

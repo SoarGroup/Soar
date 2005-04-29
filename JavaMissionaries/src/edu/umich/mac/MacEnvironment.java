@@ -12,16 +12,17 @@ import java.util.List;
 
 import sml.Agent;
 import sml.Identifier;
+import sml.IntElement;
 import sml.Kernel;
 import sml.WMElement;
-import sml.smlPrintEventId;
+import sml.smlSystemEventId;
 
 /**
- * Creates a representation of the problem space for the Missionaries & Cannibals
- * problem, and interfaces it to Soar, allowing Soar to solve the problem. The
- * representation includes a "left" river bank and a "right" river bank, with 
- * 3 missionaries, 3 cannibals, and a boat on the left bank. The goal is for all of
- * the missionaries and cannibals to make it to the right bank.
+ * Creates a representation of the problem space for the Missionaries &
+ * Cannibals problem, and interfaces it to Soar, allowing Soar to solve the
+ * problem. The representation includes a "left" river bank and a "right" river
+ * bank, with 3 missionaries, 3 cannibals, and a boat on the left bank. The goal
+ * is for all of the missionaries and cannibals to make it to the right bank.
  * 
  * @author Trevor McCulloch, University of Michigan
  * @version 1.0
@@ -32,6 +33,8 @@ public class MacEnvironment implements Runnable {
     
     private RiverBank leftBank;
     private RiverBank rightBank;
+    
+    private Thread runThread;
     
     private List environmentListeners = new LinkedList();
     
@@ -46,10 +49,10 @@ public class MacEnvironment implements Runnable {
      * Creates the representation of the environment and links it to Soar.
      */
     public MacEnvironment() {
-        try {
-            kernel = Kernel.CreateKernelInNewThread("SoarKernelSML");
-        } catch (Exception e) {
-            System.out.println("Error creating kernel: " + e.getMessage());
+        kernel = Kernel.CreateKernelInNewThread("SoarKernelSML");
+        if (kernel.HadError()) {
+            System.out.println("Error creating kernel: "
+                    + kernel.GetLastErrorDescription());
             System.exit(1);
         }
         
@@ -60,6 +63,11 @@ public class MacEnvironment implements Runnable {
                     + agent.GetLastErrorDescription());
         }
         
+        kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START,
+                this, "fireSystemStarted", null);
+        kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP,
+                this, "fireSystemStopped", null);
+        
         leftBank = new RiverBank(agent, "left", 3, 3, 1);
         rightBank = new RiverBank(agent, "right", 0, 0, 0);
         
@@ -69,60 +77,107 @@ public class MacEnvironment implements Runnable {
         agent.Commit();
         
         // TODO make a debug flag turn this on
-        agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this,
-                "printEventHandler", null);
+//        agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this,
+//                "printEventHandler", null);
     }
     
-    private void printEventHandler(int eventID, Object data,
-            Agent agent, String message) {
-        System.out.print(message);
+//    private void printEventHandler(int eventID, Object data,
+//            Agent agent, String message) {
+//        System.out.print(message);
+//    }
+    
+    /**
+     * Starts a thread that runs Soar continuously until the goal state has been
+     * reached.
+     * 
+     * @return <code>true</code> if run thread started successfully.
+     */
+    public boolean startSystem() {
+        runThread = new Thread(this);
+        if (runThread == null)
+            return false;
+        
+        runThread.start();
+        return true;
     }
     
     /**
-     * Runs one Soar decision cycle and performs any commands that Soar may issue to
-     * modify the environment.
+     * If there is a thread running Soar continuously created by
+     * <code>startSystem</code>, this method stops it.
+     * 
+     * @return <code>true</code> if thread existed and was stopped successfully.
      */
-    public void run() {
-        if (!isAtGoalState())
-            agent.RunSelfTilOutput(15);
-        else
+    public boolean stopSystem() {
+        if (runThread == null)
+            return false;
+        
+        runThread = null;
+        return true;
+    }
+    
+    /**
+     * Runs one Soar decision cycle, and performs any commands that are put on
+     * the output link.
+     */
+    public void step() {
+        if (isAtGoalState())
             return;
         
-        // perform the command on the output link
-        if (!agent.Commands())
-            throw new IllegalStateException("No Command provided on OutputLink");
-        
-        Identifier command = agent.GetCommand(0);
-        if (!command.GetCommandName().equals(MOVE_BOAT)) {
-            throw new IllegalStateException("Unknown Command: "
-                    + command.GetCommandName());
+        if (agent.Commands()) {
+            for (int i = 0; i < agent.GetNumberCommands(); ++i) {
+                Identifier cmd = agent.GetCommand(i);
+                
+                if (!cmd.GetCommandName().equals(MOVE_BOAT)) {
+                    throw new IllegalStateException("Unknown Command: "
+                            + cmd.GetCommandName());
+                }
+                
+                WMElement wme;
+                IntElement ie;
+                
+                wme = cmd.FindByAttribute(MISSIONARIES, 0);
+                ie  = (wme != null ? wme.ConvertToIntElement() : null);
+                int missionaries = (ie != null ? ie.GetValue() : 0);
+                wme = cmd.FindByAttribute(CANNIBALS, 0);
+                ie  = (wme != null ? wme.ConvertToIntElement() : null);
+                int cannibals = (ie != null ? ie.GetValue() : 0);
+                wme = cmd.FindByAttribute(BOAT, 0);
+                ie  = (wme != null ? wme.ConvertToIntElement() : null);
+                int boats = (ie != null ? ie.GetValue() : 0);
+                
+                // whichever bank has the boat is the from bank
+                RiverBank fromBank = (leftBank.getBoatCount() > 0 ?
+                        leftBank : rightBank);
+                RiverBank toBank = fromBank.getOppositeBank();
+                
+                // make the move
+                fromBank.modifyCounts(-missionaries, -cannibals, -boats);
+                toBank.modifyCounts(missionaries, cannibals, boats);
+                cmd.AddStatusComplete();
+                agent.Commit();
+                fireBoatMoved(fromBank, missionaries, cannibals, boats);
+                
+                if (isAtGoalState())
+                    fireAtGoalState();
+            }
         }
         
-        WMElement wme = command.FindByAttribute(MISSIONARIES, 0);
-        int missionaries = (wme != null ? wme.ConvertToIntElement().GetValue() : 0);
-        wme = command.FindByAttribute(CANNIBALS, 0);
-        int cannibals = (wme != null ? wme.ConvertToIntElement().GetValue() : 0);
-        wme = command.FindByAttribute(BOAT, 0);
-        int boats = (wme != null ? wme.ConvertToIntElement().GetValue() : 0);
+        // FIXME with this configuration, step does nothing for the first two
+        // calls: the first simply does initialize-mac, and the second causes
+        // output, but the environment does not pick it up until the next call
+        // do we want to fix this???
         
-        // whichever bank has the boat is the from bank
-        RiverBank fromBank = (leftBank.getBoatCount() > 0 ? leftBank : rightBank);
-        RiverBank toBank = fromBank.getOppositeBank();
-        
-        // make the move
-        fromBank.modifyCounts(-missionaries, -cannibals, -boats);
-        toBank.modifyCounts(missionaries, cannibals, boats);
-        command.AddStatusComplete();
-        agent.Commit();
-        fireBoatMoved(fromBank, missionaries, cannibals, boats);
-        
-        if (isAtGoalState())
-            fireAtGoalState();
+        // recommended simulation commands from the SML Quick Start
+        // modified SuppressSystemStop call: should only suppress system stop
+        // if we are running (i.e. runThread != null)
+        kernel.SuppressSystemStop(runThread != null);
+        agent.ClearOutputLinkChanges();
+        agent.RunSelf(1);
     }
     
     /**
-     * Resets the environment to its initial state, with 3 missionaries, 3 cannibals,
-     * and a boat on the left bank. Also re-initializes Soar.
+     * Resets the environment to its initial state, with 3 missionaries,
+     * 3 cannibals, and a boat on the left bank. Also re-initializes Soar.
      */
     public void reset() {
         int missionaries = rightBank.getMissionaryCount();
@@ -137,15 +192,26 @@ public class MacEnvironment implements Runnable {
     }
     
     /**
+     * Main loop for the run thread. Calls <code>step</code> repeatedly until
+     * either the goal state is reached or someone kills the thread.
+     */
+    public void run() {
+        while (Thread.currentThread() == runThread && !isAtGoalState())
+            step();
+        kernel.FireStopSystemEvent();
+    }
+    
+    /**
      * Checks to see if 3 missionaries, 3 cannibals, and the boat are all on the
      * right bank.
      * 
-     * @return <code>true</code> if all of the missionaries and cannibals are on the
-     *         right bank, <code>false</code> otherwise.
+     * @return <code>true</code> if all of the missionaries and cannibals are on
+     *         the right bank, <code>false</code> otherwise.
      */
     public boolean isAtGoalState() {
         return (rightBank.getMissionaryCount() == 3 &&
-                rightBank.getCannibalCount() == 3 && rightBank.getBoatCount() == 1);
+                rightBank.getCannibalCount() == 3 &&
+                rightBank.getBoatCount() == 1);
     }
     
     /**
@@ -166,9 +232,9 @@ public class MacEnvironment implements Runnable {
     }
     
     /**
-     * Adds the listener to the set of listeners that will be notified whenever the
-     * the boat is moved or when this environment reaches its goal state by calling
-     * methods from the <code>MacEnvironmentListener</code> interface.
+     * Adds the listener to the set of listeners that will be notified whenever
+     * the boat is moved or when this environment reaches its goal state by
+     * calling methods from the <code>MacEnvironmentListener</code> interface.
      * 
      * @param l - the listener to add to the set.
      */
@@ -176,8 +242,8 @@ public class MacEnvironment implements Runnable {
         environmentListeners.add(l);
     }
     /**
-     * Removes the listener from the set of listeners that will be notified whenever
-     * the boat is moved or when the environment reaches its goal state.
+     * Removes the listener from the set of listeners that will be notified
+     * whenever the boat is moved or when the environment reaches its goal state.
      * 
      * @param l - the listener to remove from the set.
      */
@@ -186,8 +252,34 @@ public class MacEnvironment implements Runnable {
     }
     
     /**
-     * Calls the <code>boatMoved</code> method for each listener with the arguments
-     * <code>this, fromBank, m, c, b</code>.
+     * Calls the <code>systemStarted</code> method for each listener with the
+     * argument <code>this</code>.
+     * 
+     * @param eventID - superfluous data from kernel callback
+     * @param data    - superfluous data from kernel callback
+     * @param kernel  - superfluous data from kernel callback
+     */
+    private void fireSystemStarted(int eventID, Object data, Kernel kernel) {
+        Iterator i = environmentListeners.iterator();
+        while (i.hasNext())
+            ((MacEnvironmentListener)i.next()).systemStarted(this);
+    }
+    /**
+     * Calls the <code>systemStopped</code> method for each listener with the
+     * argument <code>this</code>.
+     * 
+     * @param eventID - superfluous data from kernel callback
+     * @param data    - superfluous data from kernel callback
+     * @param kernel  - superfluous data from kernel callback
+     */
+    private void fireSystemStopped(int eventID, Object data, Kernel kernel) {
+        Iterator i = environmentListeners.iterator();
+        while (i.hasNext())
+            ((MacEnvironmentListener)i.next()).systemStopped(this);
+    }
+    /**
+     * Calls the <code>boatMoved</code> method for each listener with the
+     * arguments <code>this, fromBank, m, c, b</code>.
      * 
      * @param fromBank - bank the boats and people moved from.
      * @param m        - number of missionaries moving from <code>fromBank</code>. 
@@ -197,7 +289,7 @@ public class MacEnvironment implements Runnable {
     private void fireBoatMoved(RiverBank fromBank, int m, int c, int b) {
         Iterator i = environmentListeners.iterator();
         while (i.hasNext())
-            ((MacEnvironmentListener)i.next()).boatMoved(this, fromBank, m, c, b);
+            ((MacEnvironmentListener)i.next()).boatMoved(this,fromBank,m,c,b);
     }
     /**
      * Calls the <code>atGoalState</code> method for each listener with
