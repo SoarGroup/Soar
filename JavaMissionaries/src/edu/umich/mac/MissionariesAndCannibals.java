@@ -182,7 +182,8 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         stepButton.setEnabled(false);
         resetButton.setEnabled(false);
         
-        me.startSystem();
+        if (!me.isRunning())
+            me.startSystem();
     }
     
     private void stopPressed() {
