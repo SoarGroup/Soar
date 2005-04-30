@@ -3,7 +3,7 @@
 #endif // HAVE_CONFIG_H
 
 /////////////////////////////////////////////////////////////////
-// EmbeddedConnectionSynch class
+// EmbeddedConnection class
 //
 // Author: Douglas Pearson, www.threepenny.net
 // Date  : August 2004
@@ -15,6 +15,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_EmbeddedConnection.h"
+#include "sml_EmbeddedConnectionAsynch.h"
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"
 #include "thread_Thread.h"
@@ -49,11 +50,45 @@ EmbeddedConnection::~EmbeddedConnection()
 	delete m_pLastResponse ;
 }
 
+/*************************************************************
+* @brief Simple function that does the casting from the handle
+*		 (which we passed to the other side of the connection)
+*		 back to its original object.
+*************************************************************/
 EmbeddedConnection* GetConnectionFromHandle(Connection_Receiver_Handle hConnection)
 {
 	return (EmbeddedConnection*)hConnection ;
 }
 
+/*************************************************************
+* @brief	This is the raw function which will be called by the other
+*			side of the embeddded connection to pass a message.
+*			In some sense, all message passing starts here.
+*
+*	The parameters are defined as "handles".  That it, they are opaque
+*	pointers.
+*
+*	The connection handle is our "EmbeddedConnection" object
+*	which we pass to the other side of the embedded connection and it
+*	passes back to us in each call.
+*
+*	The incoming message is a handle to an ElementXML object which is
+*	allocated and owned by the ElementXML library.  Again it's opaque.
+*	To work with it you need to pass this handle back to the DLL.
+*
+*	The reason for all this "opacity" is that it ensures we don't
+*	accidentally bind the two processes too tightly together.
+*	For example, if we allocated a C++ object for the incoming message
+*	passed it to the other side of the connection and then accessed the
+*	members directly we would get a crash if the headers used to build one
+*	side of the connection didn't match those on the other side.
+*	This happens if you build one side with one compiler and the other
+*	with a different compiler, or change the definition of the object and
+*	only rebuild one side of the connection.  In any case, the rule of
+*	"he who creates is the only one who accesses and deletes" ensures no
+*	such problems and that's the model we're using here.
+*	
+*************************************************************/
 ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnection, ElementXML_Handle hIncomingMsg, int action)
 {
 	// This is the connection object we created in this class, passed to the kernel and have
@@ -72,11 +107,14 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 		return NULL ;
 	}
 
+	// Synch connections are all happening within a single thread
 	if (action == SML_MESSAGE_ACTION_SYNCH)
 	{
 		// Create an object to wrap this message.
 		ElementXML incomingMsg(hIncomingMsg) ;
 
+		// For a synchronous connection, immediately execute the incoming message, generating a response
+		// which is immediately passed back to the caller.
 		ElementXML* pResponse = pConnection->InvokeCallbacks(&incomingMsg) ;
 
 		if (!pResponse)
@@ -87,12 +125,14 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 		return hResponse ;
 	}
 
+	// Asynch connections involve a thread switch.  The message comes in on
+	// one thread, is dropped in a message queue and picked up by a second thread.
 	if (action == SML_MESSAGE_ACTION_ASYNCH)
 	{
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
 		ElementXML* pIncomingMsg = new ElementXML(hIncomingMsg) ;
 
-		pConnection->AddToIncomingMessageQueue(pIncomingMsg) ;
+		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(pIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.
 		// The response will be sent back to the caller as another asynch message later, once the command has been executed.
@@ -105,6 +145,28 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	return NULL ;
 }
 
+/*************************************************************
+* @brief Loads a library and creates an embedded connection to it.
+*
+*		 The library at a minimum needs to export 2 methods:
+*		 sml_CreateEmbeddedConnection (for initialization) and
+*		 sml_ProcessMessage (for sending messages)
+*
+*		 If KERNEL_SML_DIRECT is defined we also see if the
+*		 the library exports a series of "Direct" methods.  These
+*		 allow us to short circuit the message passing and call directly
+*		 into gSKI for maximum performance on some I/O calls.
+*
+*		 If the library doesn't export these functions
+*		 or if the caller doesn't pass "true" for optimized
+*		 or if this is an asychronous (out of thread) connection
+*		 then the "m_bIsDirectConnection" will be false and we'll
+*		 just fall back on our normal message passing model.
+*		 To date, it's not clear there's much value in supporting these
+*		 direct methods, but they do allow a client that is really
+*		 time critical to use SML with almost no performance hit over
+*		 using gSKI directly.
+*************************************************************/
 bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimized, int portToListenOn)
 {
 	ClearError() ;
@@ -212,7 +274,14 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	return true ;
 }
 
-// Link two embedded connections together.
+/*************************************************************
+* @brief Each side of the communication (client and kernel) will
+*		 have an EmbeddedConnection object.
+*
+*		 This function is used to link the two together
+*		 (e.g. this tells the client which object in the kernel to
+*		  use when sending a command to the kernel).
+*************************************************************/
 void EmbeddedConnection::AttachConnectionInternal(Connection_Receiver_Handle hConnection, ProcessMessageFunction pProcessMessage)
 {
 	ClearError() ;
@@ -229,6 +298,10 @@ bool EmbeddedConnection::IsClosed()
 	return (m_hConnection == NULL) ;
 }
 
+/*************************************************************
+* @brief Shut down the connection.  In this case we release
+*		 our connection handle.
+*************************************************************/
 void EmbeddedConnection::CloseConnection()
 {
 	ClearError() ;
@@ -243,6 +316,10 @@ void EmbeddedConnection::CloseConnection()
 	m_hConnection = NULL ;
 }
 
+/*************************************************************
+* @brief Setting this to true prints out lots of debug
+*		 information to stderr and a trace file.
+*************************************************************/
 void EmbeddedConnection::SetTraceCommunications(bool state)
 {
 	ClearError() ;
@@ -255,250 +332,4 @@ void EmbeddedConnection::SetTraceCommunications(bool state)
 		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, (ElementXML_Handle)NULL, state ? SML_MESSAGE_ACTION_TRACE_ON : SML_MESSAGE_ACTION_TRACE_OFF) ;
 		unused(hResponse) ;
 	}
-}
-
-void EmbeddedConnectionSynch::SendMessage(ElementXML* pMsg)
-{
-	ClearError() ;
-
-	// Check that we have somebody to send this message to.
-	assert(m_hConnection);
-	if (m_hConnection == NULL)
-	{
-		SetError(Error::kNoEmbeddedLink) ;
-		return ;
-	}
-
-#ifdef _DEBUG
-	if (IsTracingCommunications())
-	{
-		char* pStr = pMsg->GenerateXMLString(true) ;
-		PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
-		pMsg->DeleteString(pStr) ;
-	}
-#endif
-
-	ElementXML_Handle hResponse = NULL ;
-
-	// Add a reference to this object, which will then be released by the receiver of this message when
-	// they are done with it.
-	pMsg->AddRefOnHandle() ;
-	ElementXML_Handle hSendMsg = pMsg->GetXMLHandle() ;
-
-	// Make the call to the kernel, passing the message over and getting an immediate response since this is
-	// an embedded call.
-	hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_SYNCH) ;
-
-	// We cache the response
-	m_pLastResponse->Attach(hResponse) ;
-}
-
-ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait)
-{
-	// For the embedded connection there's no ambiguity over what was the "last" call.
-	unused(pID) ;
-
-	// There's also no need to wait, we always have the result on hand.
-	unused(wait) ;
-	
-	ClearError() ;
-
-	ElementXML_Handle hResponse = m_pLastResponse->Detach() ;
-
-	if (!hResponse)
-		return NULL ;
-
-	// We create a new wrapper object and return that.
-	// (If we returned a pointer to m_LastResponse it could change when new messages come in).
-	ElementXML* pResult = new ElementXML(hResponse) ;
-
-#ifdef _DEBUG
-	if (IsTracingCommunications())
-	{
-		char* pStr = pResult->GenerateXMLString(true) ;
-		PrintDebugFormat("%s Received %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
-		pResult->DeleteString(pStr) ;
-	}
-#endif
-
-	return pResult ;
-}
-
-void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
-{
-	ClearError() ;
-
-	// Check that we have somebody to send this message to.
-	if (m_hConnection == NULL)
-	{
-		SetError(Error::kNoEmbeddedLink) ;
-		return ;
-	}
-
-	// Add a reference to this object, which will then be released by the receiver of this message when
-	// they are done with it.
-	pMsg->AddRefOnHandle() ;
-	ElementXML_Handle hSendMsg = pMsg->GetXMLHandle() ;
-
-#ifdef _DEBUG
-	if (IsTracingCommunications())
-	{
-		char* pStr = pMsg->GenerateXMLString(true) ;
-		PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
-		pMsg->DeleteString(pStr) ;
-	}
-#endif
-
-/* I think this synch message stuff is unsafe.
-   Need to find a better solution
-if (m_UseSynchCalls && ((MessageSML*)pMsg)->IsCall())
-	{
-		SendSynchMessage(hSendMsg) ;
-	}
-	else
-*/
-	{
-		// Make the call to the kernel, passing the message over with the ASYNCH flag, which means there
-		// will be no immediate response.
-		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_ASYNCH) ;
-
-		if (hResponse != NULL)
-		{
-			SetError(Error::kInvalidResponse) ;
-		}
-	}
-}
-
-static bool DoesResponseMatch(ElementXML* pResponse, char const* pID)
-{
-	if (!pResponse || !pID)
-		return false ;
-
-	char const* pMsgID = pResponse->GetAttribute(sml_Names::kAck) ;
-	
-	if (!pMsgID)
-		return false ;
-
-	if (strcmp(pMsgID, pID) == 0)
-		return true ;
-	else
-		return false ;
-}
-
-ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wait)
-{
-	ElementXML* pResponse = NULL ;
-
-	// Check if we already have this response cached
-	if (DoesResponseMatch(m_pLastResponse, pID))
-	{
-		pResponse = m_pLastResponse ;
-		m_pLastResponse = NULL ;
-		return pResponse ;
-	}
-
-#ifdef _DEBUG
-//	if (IsTracingCommunications())
-//	{
-//		PrintDebugFormat("Waiting for response to %s", pID) ;
-//	}
-#endif
-
-	int sleepTime = 0 ;			// How long we sleep in milliseconds each pass through
-
-	// If we don't already have this response cached,
-	// then read any pending messages.
-	do
-	{
-		// Loop until there are no more messages waiting for us
-		while (ReceiveMessages(false))
-		{
-			// Check each message to see if it's a match
-			if (DoesResponseMatch(m_pLastResponse, pID))
-			{
-				pResponse = m_pLastResponse ;
-				m_pLastResponse = NULL ;
-
-#ifdef _DEBUG
-				if (IsTracingCommunications())
-				{
-					char* pStr = pResponse->GenerateXMLString(true) ;
-					PrintDebugFormat("%s Received %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
-					pResponse->DeleteString(pStr) ;
-				}
-#endif
-
-				return pResponse ;
-			}
-			else
-			{
-				/*
-#ifdef _DEBUG
-				if (IsTracingCommunications())
-				{
-					char const* pMsgID = m_pLastResponse == NULL ? NULL : m_pLastResponse->GetAttribute(sml_Names::kAck) ;
-					PrintDebugFormat("Looking for %s found %s so ignoring it", pID, pMsgID == NULL ? "null" : pMsgID) ;
-				}
-#endif
-				*/
-			}
-		}
-
-		// At this point we didn't find the message sitting on the incoming connection
-		// so we need to decide if we should wait or not.
-		if (wait)
-		{
-			soar_thread::Thread::SleepStatic(sleepTime) ;
-		}
-
-	} while (wait) ;
-
-	// If we get here we didn't find the response.
-	// Either it's not come in yet (and we didn't choose to wait for it)
-	// or we've timed out waiting for it.
-	return NULL ;
-}
-
-bool EmbeddedConnectionAsynch::ReceiveMessages(bool allMessages)
-{
-	// Make sure only one thread is sending messages at a time
-	// (This allows us to run a separate thread in clients polling for events even
-	//  when the client is sleeping, but we don't want them both to be sending/receiving at the same time).
-	soar_thread::Lock lock(&m_ClientMutex) ;
-
-	bool receivedMessage = false ;
-
-	ElementXML* pIncomingMsg = PopIncomingMessageQueue() ;
-
-	// While we have messages waiting to come in keep reading them
-	while (pIncomingMsg)
-	{
-		// Record that we got at least one message
-		receivedMessage = true ;
-
-		// Pass this message back to the client and possibly get their response
-		ElementXML* pResponse = this->InvokeCallbacks(pIncomingMsg) ;
-
-		// If we got a response to the incoming message, send that response back.
-		if (pResponse)
-		{
-			SendMessage(pResponse) ;		
-		}
-
-		// We're done with the response
-		delete pResponse ;
-
-		// Record the last incoming message
-		delete m_pLastResponse ;
-		m_pLastResponse = pIncomingMsg ;
-
-		// If we're only asked to read one message, we're done.
-		if (!allMessages)
-			break ;
-
-		// Get the next message from the queue
-		pIncomingMsg = PopIncomingMessageQueue() ;
-	}
-
-	return receivedMessage ;
 }

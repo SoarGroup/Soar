@@ -78,14 +78,6 @@ protected:
 public:
 	virtual ~EmbeddedConnection() ;
 
-	// We only use this queue when using Asynch embedded connections
-	void AddToIncomingMessageQueue(ElementXML* pMsg)
-	{
-		// Make sure only one thread modifies the message queue at a time.
-		soar_thread::Lock lock(&m_IncomingMutex) ;
-		m_IncomingMessageQueue.push(pMsg) ;
-	}
-
 	// Link two embedded connections together
 	virtual void AttachConnectionInternal(Connection_Receiver_Handle hConnection, ProcessMessageFunction pProcessMessage) ;
 	virtual bool AttachConnection(char const* pLibraryName, bool optimized, int portToListenOn) ;
@@ -159,62 +151,6 @@ public:
 	}
 #endif
 } ;
-
-// This version makes synchronous calls, which means for example that a "run" command
-// will be executed on the client's thread.
-class EmbeddedConnectionSynch : public EmbeddedConnection
-{
-public:
-	// Clients should not use this.  Use Connection::CreateEmbeddedConnection instead which creates
-	// a two-way connection.  This just creates a one-way object.
-	static EmbeddedConnection* CreateEmbeddedConnectionSynch() { return new EmbeddedConnectionSynch() ; }
-
-protected:
-	// Clients should not use this.  Use Connection::CreateEmbeddedConnection instead.
-	// Making it protected so you can't accidentally create one like this.
-	EmbeddedConnectionSynch() { } 
-
-public:
-	virtual ~EmbeddedConnectionSynch() { } 
-
-	virtual bool IsAsynchronous() { return false ; }
-	virtual void SendMessage(ElementXML* pMsg) ;
-	virtual ElementXML* GetResponseForID(char const* pID, bool wait) ;
-	virtual bool ReceiveMessages(bool allMessages)		{ unused(allMessages) ; ClearError() ; return false ; } 
-};
-
-// This version makes asynchronous calls, which means commands are stored
-// in a queue and are actually executed on a different thread in the server (kernel).
-
-class EmbeddedConnectionAsynch : public EmbeddedConnection
-{
-public:
-	static EmbeddedConnection* CreateEmbeddedConnectionAsynch(bool useSynchCalls = false) { return new EmbeddedConnectionAsynch(useSynchCalls) ; }
-
-protected:
-	// Clients should not use this.  Use Connection::CreateEmbeddedConnection instead.
-	// Making it protected so you can't accidentally create one like this.
-	EmbeddedConnectionAsynch(bool useSynchCalls) { m_UseSynchCalls = useSynchCalls ; } 
-
-	// The kernel can send 'call' messages back to the client directly without
-	// placing them in a queue.  In fact, it has to do this in situations
-	// where it's sending event information back and the client may not be
-	// waiting to receive an incoming message.  Thus the kernel can set this
-	// flag and send messages back directly.
-	bool	m_UseSynchCalls ;
-
-public:
-	virtual ~EmbeddedConnectionAsynch() { } 
-
-	virtual bool IsAsynchronous() { return true ; }
-	virtual void SendMessage(ElementXML* pMsg) ;
-	virtual ElementXML* GetResponseForID(char const* pID, bool wait) ;
-	virtual bool ReceiveMessages(bool allMessages) ;
-
-	// Even though this is an asynch connection, send this message synchronously.
-	//void SendSynchMessage(ElementXML_Handle hSendMsg) ;
-} ;
-
 
 } // End of namespace
 

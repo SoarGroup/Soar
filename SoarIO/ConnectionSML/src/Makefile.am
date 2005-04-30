@@ -8,6 +8,8 @@ sml_ArgMap.cpp\
 sml_Connection.cpp\
 sml_ElementXML.cpp\
 sml_EmbeddedConnection.cpp\
+sml_EmbeddedConnectionAsynch.cpp\
+sml_EmbeddedConnectionSynch.cpp\
 sml_Events.cpp\
 sml_EventThread.cpp\
 sml_MessageSML.cpp\

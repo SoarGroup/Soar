@@ -27,7 +27,7 @@ char const* const sml_Names::kDocType_Notify	= "notify" ;
 char const* const sml_Names::kSoarVersion		= "soarversion" ;
 char const* const sml_Names::kSMLVersion		= "smlversion" ;
 char const* const sml_Names::kSMLVersionValue	= "1.0" ;
-char const* const sml_Names::kSoarVersionValue	= "8.6.0" ;
+char const* const sml_Names::kSoarVersionValue	= "8.6.1" ;			// Hard-coding this rather than asking kernel boosts performance
 char const* const sml_Names::kOutputLinkName	= "output-link" ;
 
 // <command> tag identifiers

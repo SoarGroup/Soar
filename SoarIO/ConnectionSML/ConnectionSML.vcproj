@@ -122,6 +122,12 @@
 				RelativePath=".\src\sml_EmbeddedConnection.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_EmbeddedConnectionAsynch.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sml_EmbeddedConnectionSynch.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_Events.cpp">
 			</File>
 			<File
@@ -212,6 +218,12 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_EmbeddedConnection.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_EmbeddedConnectionAsynch.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_EmbeddedConnectionSynch.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_Errors.h">

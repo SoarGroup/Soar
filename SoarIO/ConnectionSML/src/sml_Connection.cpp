@@ -25,6 +25,8 @@
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"
 #include "sml_EmbeddedConnection.h"
+#include "sml_EmbeddedConnectionAsynch.h"
+#include "sml_EmbeddedConnectionSynch.h"
 #include "sml_RemoteConnection.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_TagCommand.h"

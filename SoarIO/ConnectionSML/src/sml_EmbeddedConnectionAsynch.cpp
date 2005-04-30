@@ -3,43 +3,86 @@
 #endif // HAVE_CONFIG_H
 
 /////////////////////////////////////////////////////////////////
-// RemoteConnection class
+// EmbeddedConnectionAsynch class
 //
 // Author: Douglas Pearson, www.threepenny.net
-// Date  : October 2004
+// Date  : August 2004
 //
-// This class represents a logical connection between two entities that are communicating via SML over a socket.
-// For example, an environment (the client) and the Soar kernel.
+// This class represents a logical connection between two entities that are communicating
+// via SML (a form of XML).  In the embedded case that this class represents, both entities
+// are within the same process.  For the "Asynch" variant, the two entities execute in
+// different threads.
 //
-// NOTE: This class is VERY similar to the EmbeddedConnectionAsynch class.  In fact we should
+// NOTE: This class is VERY similar to the RemoteConnection class.  In fact we should
 // probably fold them together at some point with a common base class.  But for now, be aware
 // that if you're changing something here you should probably also be changing it there.
 //
 /////////////////////////////////////////////////////////////////
 
-#include "sml_RemoteConnection.h"
-#include "sock_Socket.h"
-#include "sock_Debug.h"
+#include "sml_EmbeddedConnectionAsynch.h"
+#include "sml_ElementXML.h"
+#include "sml_MessageSML.h"
 #include "thread_Thread.h"
+#include "sock_Debug.h"
+
+#include <string>
+#include <iostream>
+#include <assert.h>
 
 using namespace sml ;
 
-RemoteConnection::RemoteConnection(bool sharedFileSystem, sock::Socket* pSocket)
+EmbeddedConnectionAsynch::~EmbeddedConnectionAsynch()
 {
-	m_SharedFileSystem = sharedFileSystem ;
-	m_Socket = pSocket ;
-	m_pLastResponse = NULL ;
-}
-
-RemoteConnection::~RemoteConnection()
-{
-	delete m_pLastResponse ;
-	delete m_Socket ;
-
 	for (MessageListIter iter = m_ReceivedMessageList.begin() ; iter != m_ReceivedMessageList.end() ; iter++)
 	{
 		ElementXML* xml = (*iter) ;
 		delete xml ;
+	}
+}
+
+/*************************************************************
+* @brief Send a message to the other side of this connection.
+*
+* For an asynchronous connection this is done by adding
+* the message to a queue owned by the receiver.
+*
+* There is no immediate response because we have to wait for
+* a context switch and another thread to run to actually execute
+* this command.  To get a response call GetResponseForID()
+* and wait for the response to occur.
+*************************************************************/
+void EmbeddedConnectionAsynch::SendMessage(ElementXML* pMsg)
+{
+	ClearError() ;
+
+	// Check that we have somebody to send this message to.
+	if (m_hConnection == NULL)
+	{
+		SetError(Error::kNoEmbeddedLink) ;
+		return ;
+	}
+
+	// Add a reference to this object, which will then be released by the receiver of this message when
+	// they are done with it.
+	pMsg->AddRefOnHandle() ;
+	ElementXML_Handle hSendMsg = pMsg->GetXMLHandle() ;
+
+#ifdef _DEBUG
+	if (IsTracingCommunications())
+	{
+		char* pStr = pMsg->GenerateXMLString(true) ;
+		PrintDebugFormat("%s Sending %s\n", IsKernelSide() ? "Kernel" : "Client", pStr) ;
+		pMsg->DeleteString(pStr) ;
+	}
+#endif
+
+	// Make the call to the kernel, passing the message over with the ASYNCH flag, which means there
+	// will be no immediate response.
+	ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, hSendMsg, SML_MESSAGE_ACTION_ASYNCH) ;
+
+	if (hResponse != NULL)
+	{
+		SetError(Error::kInvalidResponse) ;
 	}
 }
 
@@ -55,7 +98,7 @@ RemoteConnection::~RemoteConnection()
 *		 expected order.  This can only happen when multiple threads
 *		 submit commands.
 *************************************************************/
-void RemoteConnection::AddResponseToList(ElementXML* pResponse)
+void EmbeddedConnectionAsynch::AddResponseToList(ElementXML* pResponse)
 {
 	if (pResponse == NULL)
 		return ;
@@ -104,7 +147,7 @@ void RemoteConnection::AddResponseToList(ElementXML* pResponse)
 * a constant time operation.  If the client is only issuing
 * calls on a single thread, the list will always be empty.
 *************************************************************/
-ElementXML* RemoteConnection::IsResponseInList(char const* pID)
+ElementXML* EmbeddedConnectionAsynch::IsResponseInList(char const* pID)
 {
 	soar_thread::Lock lock(&m_ListMutex) ;
 
@@ -128,7 +171,7 @@ ElementXML* RemoteConnection::IsResponseInList(char const* pID)
 * @brief	Returns true if the given response message is
 *			an acknowledgement for a message with the given ID.
 *************************************************************/
-bool RemoteConnection::DoesResponseMatch(ElementXML* pResponse, char const* pID)
+bool EmbeddedConnectionAsynch::DoesResponseMatch(ElementXML* pResponse, char const* pID)
 {
 	if (!pResponse || !pID)
 		return false ;
@@ -138,10 +181,9 @@ bool RemoteConnection::DoesResponseMatch(ElementXML* pResponse, char const* pID)
 	if (!pMsgID)
 		return false ;
 
-	// Spelling this test out so we can put break points in if we wish.
 	if (strcmp(pMsgID, pID) == 0)
 		return true ;
-
+	
 	if (m_bTraceCommunications)
 		PrintDebugFormat("Received ack for message %s while looking for %s", pMsgID, pID) ;
 
@@ -149,44 +191,10 @@ bool RemoteConnection::DoesResponseMatch(ElementXML* pResponse, char const* pID)
 }
 
 /*************************************************************
-* @brief Send a message to the other side of this connection.
-*
-* For an remote connection this is done by sending the command
-* over a socket as an actual XML string.
-*
-* There is no immediate response because we have to wait for
-* the other side to read from the socket and execute the command.
-* To get a response call GetResponseForID()
-* and wait for the response to occur.
-*************************************************************/
-void RemoteConnection::SendMessage(ElementXML* pMsg)
-{
-	ClearError() ;
-
-	// Convert the message to an XML string
-	char* pXMLString = pMsg->GenerateXMLString(true) ;
-
-	// Send it
-	m_Socket->SendString(pXMLString) ;
-
-	// Dump the message if we're tracing
-	if (m_bTraceCommunications)
-	{
-		if (IsKernelSide())
-			PrintDebugFormat("Kernel remote send: %s\n", pXMLString) ;
-		else
-			PrintDebugFormat("Client remote send: %s\n", pXMLString) ;
-	}
-
-	// Release the XML string
-	pMsg->DeleteString(pXMLString) ;
-}
-
-/*************************************************************
 * @brief	Look for a response to the given message (based on its ID).
 *			Optionally, wait for that response to come in.
 *************************************************************/
-ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
+ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wait)
 {
 	ElementXML* pResponse = NULL ;
 
@@ -207,13 +215,16 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		return pResponse ;
 	}
 
-	int sleepTime = 0 ;			// How long we sleep in milliseconds each pass through
+	// How long we sleep in milliseconds each pass through
+	// (0 means we only sleep if another thread is scheduled to run --
+	//  it ensures maximum performance otherwise).
+	int sleepTime = 0 ;
 
 	// If we don't already have this response cached,
 	// then read any pending messages.
 	do
 	{
-		// Loop until there are no more messages waiting on the socket
+		// Loop until there are no more messages waiting for us
 		while (ReceiveMessages(false))
 		{
 			// Check each message to see if it's a match
@@ -259,53 +270,20 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 *
 *			Returns true if at least one message has been read.
 *************************************************************/
-bool RemoteConnection::ReceiveMessages(bool allMessages)
+bool EmbeddedConnectionAsynch::ReceiveMessages(bool allMessages)
 {
 	// Make sure only one thread is sending messages at a time
 	// (This allows us to run a separate thread in clients polling for events even
 	//  when the client is sleeping, but we don't want them both to be sending/receiving at the same time).
 	soar_thread::Lock lock(&m_ClientMutex) ;
 
-	std::string xmlString ;
 	bool receivedMessage = false ;
-	bool ok = true ;
+
+	ElementXML* pIncomingMsg = PopIncomingMessageQueue() ;
 
 	// While we have messages waiting to come in keep reading them
-	while (m_Socket->IsReadDataAvailable())
+	while (pIncomingMsg)
 	{
-		// 	Read the first message that's waiting
-		ok = m_Socket->ReceiveString(&xmlString) ;
-
-		if (!ok)
-		{
-			this->SetError(Error::kSocketError) ;
-			return receivedMessage ;
-		}
-
-		// Dump the message if we're tracing
-		if (m_bTraceCommunications)
-		{
-			if (IsKernelSide())
-				PrintDebugFormat("Kernel remote receive: %s\n", xmlString.c_str()) ;
-			else
-				PrintDebugFormat("Client remote receive: %s\n", xmlString.c_str()) ;
-		}
-
-		// Get an XML message from the incoming string
-		ElementXML* pIncomingMsg = ElementXML::ParseXMLFromString(xmlString.c_str()) ;
-
-		if (!pIncomingMsg)
-		{
-			this->SetError(Error::kParsingXMLError) ;
-			return receivedMessage ;
-		}
-
-#ifdef _DEBUG
-		// Check that the parse worked
-		//char* pMsgText = pIncomingMsg->GenerateXMLString(true) ;
-		//pIncomingMsg->DeleteString(pMsgText) ;
-#endif
-
 		// Record that we got at least one message
 		receivedMessage = true ;
 
@@ -328,24 +306,10 @@ bool RemoteConnection::ReceiveMessages(bool allMessages)
 		// If we're only asked to read one message, we're done.
 		if (!allMessages)
 			break ;
+
+		// Get the next message from the queue
+		pIncomingMsg = PopIncomingMessageQueue() ;
 	}
 
 	return receivedMessage ;
 }
-
-void RemoteConnection::SetTraceCommunications(bool state)
-{
-	m_bTraceCommunications = state ;
-	if (m_Socket) m_Socket->SetTraceCommunications(state) ;
-}
-
-void RemoteConnection::CloseConnection()
-{
-	m_Socket->CloseSocket() ;
-}
-
-bool RemoteConnection::IsClosed()
-{
-	return !m_Socket->IsAlive() ;
-}
-
