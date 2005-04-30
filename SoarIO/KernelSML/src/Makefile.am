@@ -15,6 +15,8 @@ sml_AgentListener.cpp\
 sml_AgentOutputFlusher.cpp\
 sml_AgentSML.cpp\
 sml_ConnectionManager.cpp\
+sml_ListenerThread.cpp\
+sml_ReceiverThread.cpp\
 sml_KernelSML.cpp\
 sml_KernelSMLHandlers.cpp\
 sml_OutputListener.cpp\

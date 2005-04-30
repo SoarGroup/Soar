@@ -22,6 +22,8 @@
 #include "EmbeddedSMLInterface.h"
 #include "sml_Connection.h"
 #include "sml_EmbeddedConnection.h"
+#include "sml_EmbeddedConnectionASynch.h"
+#include "sml_EmbeddedConnectionSynch.h"
 #include "sml_ElementXML.h"
 #include "sml_Names.h"
 #include "sml_KernelSML.h"
@@ -50,7 +52,7 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	// Create a connection object which we'll use to talk back to this sender
 	EmbeddedConnection* pConnection = synch ?
 						EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
-						EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch(true) ;
+						EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch() ;
 
 	// For debugging, record that this connection object is from kernel to client.
 	// The client will also have a Connection object which will not have this flag set.
@@ -138,7 +140,7 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
 		ElementXML* pIncomingMsg = new ElementXML(hIncomingMsg) ;
 
-		pConnection->AddToIncomingMessageQueue(pIncomingMsg) ;
+		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(pIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.
 		// The response will be sent back to the caller as another asynch message later, once the command has been executed.

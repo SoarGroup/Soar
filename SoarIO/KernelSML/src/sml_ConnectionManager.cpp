@@ -15,6 +15,8 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_ConnectionManager.h"
+#include "sml_ListenerThread.h"
+#include "sml_ReceiverThread.h"
 #include "sml_KernelSML.h"
 #include "sock_Debug.h"
 
@@ -23,129 +25,11 @@
 using namespace sml ;
 using namespace sock ;
 
-// From KernelSMLInterface (which handles embedded connections)
-extern ElementXML* ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData) ;
-
-void ListenerManager::Run()
-{
-	// Create the listener
-	PrintDebugFormat("Listening on port %d", m_Port) ;
-	bool ok = m_ListenerSocket.CreateListener(m_Port) ;
-	
-	if (!ok)
-	{
-		PrintDebug("Failed to create the listener socket.  Shutting down thread.") ;
-		return ;
-	}
-
-	while (!m_QuitNow)
-	{
-		//PrintDebug("Check for incoming connection") ;
-
-		// Check for an incoming client connection
-		// This doesn't block.
-		Socket* pSocket = m_ListenerSocket.CheckForClientConnection() ;
-
-		if (pSocket)
-		{
-			PrintDebug("Got new connection") ;
-
-			// Create a new connection object for this socket
-			Connection* pConnection = Connection::CreateRemoteConnection(pSocket) ;
-
-			// Record our kernel object with this connection.  I think we only want one kernel
-			// object even if there are many connections (because there's only one kernel) so for now
-			// that's how things are set up.
-			pConnection->SetUserData(KernelSML::GetKernelSML()) ;
-
-			// For debugging record that this is on the kernel side
-			pConnection->SetIsKernelSide(true) ;
-
-			// Register for "calls" from the client.
-			pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
-
-			// Set up our tracing state to match the user's preference
-			pConnection->SetTraceCommunications(KernelSML::GetKernelSML()->IsTracingCommunications()) ;
-
-			// Record the new connection in our list of connections
-			m_Parent->AddConnection(pConnection) ;
-		}
-
-		// Sleep for a little before checking for a new connection
-		// New connections will come in very infrequently so this doesn't
-		// have to be very rapid.
-		Sleep(50) ;
-	}
-
-	// Shut down our listener socket
-	m_ListenerSocket.CloseSocket() ;
-}
-
-void ReceiverThread::Run()
-{
-	// While this thread is alive, keep checking for incoming messages
-	// and executing them.  These messages could be coming in from a remote socket
-	// or from an embedded connection.  If we're executing on the client thread
-	// for an embedded connection (the "sycnhronous" model) then this thread is shut down
-	// and it's the client's responsibility to check for incoming messages by calling
-	// "GetIncomingCommands" periodically.
-
-	// Record the time of the last message we received and keep polling
-	// for a little after at a high speed, before sleeping.
-	// The reason we track this is because calling "Sleep(0)" gives us maximum
-	// performance (on towers-of-hanoi calling Sleep(1) instead slows execution down
-	// by a factor of 80!), but calling "Sleep(0)" means we're stuck in a tight loop checking
-	// messages continually.  If we're using Soar through a command line interface (for instance)
-	// then the CPU would be 100% loaded all of the time, even if the user wasn't typing anything.
-	// This method of switching between Sleep(0) and a true sleep means we get maximum performance
-	// during a run (when messages are flying back and forth) but when the user stops doing anything
-	// the CPU quickly drops off to 0% usage as we sleep a lot.
-	clock_t last = 0 ;
-
-	// How long to wait before sleeping (currently 1 sec)
-	clock_t delay = CLOCKS_PER_SEC ;
-
-//	clock_t report = 0 ;
-
-	while (!m_QuitNow)
-	{
-#ifdef _DEBUG
-		/*
-		// Every so often report that we're alive
-		if (clock() - report > CLOCKS_PER_SEC * 3)
-		{
-			report = clock() ;
-			PrintDebugFormat("ReceiverThread::Run alive") ;
-		}
-		*/
-#endif
-		// Receive any incoming commands and execute them
-		bool receivedMessage = m_ConnectionManager->ReceiveAllMessages() ;
-
-		if (receivedMessage)
-		{
-			// Record the time of the last incoming message
-			last = clock() ;
-		}
-
-		clock_t current = clock() ;
-
-		// If it's been a while since the last incoming message
-		// then start sleeping a reasonable amount.
-		// Sleep(0) just allows other threads to run before we continue
-		// to execute.
-		if (current - last > delay)
-			Sleep(5) ;
-		else
-			Sleep(0) ;
-	}
-}
-
 ConnectionManager::ConnectionManager(unsigned short port)
 {
 	// Start the thread that wraps the listener socket running.
-	m_ListenerManager = new ListenerManager(this, port) ;
-	m_ListenerManager->Start() ;
+	m_ListenerThread = new ListenerThread(this, port) ;
+	m_ListenerThread->Start() ;
 
 	// Start the thread that checks for incoming messages on the remote connections
 	// (once the listener has been used to create them).
@@ -161,7 +45,7 @@ ConnectionManager::~ConnectionManager()
 	// main process is executing, other threads may already have been forced to exit
 	// so this shutdown won't be as clean.  Nothing should crash, but we could cause
 	// timeouts etc.
-	if (m_ListenerManager)
+	if (m_ListenerThread)
 		Shutdown() ;
 }
 
@@ -199,13 +83,13 @@ void ConnectionManager::Shutdown()
 //	PrintDebug("Shutting down connection manager") ;
 
 	// Stop the thread (and wait until it has stopped)
-	if (m_ListenerManager)
+	if (m_ListenerThread)
 	{
-		m_ListenerManager->Stop(true) ;
+		m_ListenerThread->Stop(true) ;
 
 		// Remove the listener
-		delete m_ListenerManager ;
-		m_ListenerManager = NULL ;
+		delete m_ListenerThread ;
+		m_ListenerThread = NULL ;
 	}
 
 //	PrintDebug("Listener stopped") ;

@@ -163,6 +163,9 @@
 				RelativePath=".\src\sml_KernelSMLHandlers.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_ListenerThread.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_OutputListener.cpp">
 			</File>
 			<File
@@ -170,6 +173,9 @@
 			</File>
 			<File
 				RelativePath=".\src\sml_ProductionListener.cpp">
+			</File>
+			<File
+				RelativePath=".\src\sml_ReceiverThread.cpp">
 			</File>
 			<File
 				RelativePath=".\src\sml_RhsListener.cpp">
@@ -222,6 +228,9 @@
 				RelativePath=".\include\sml_KernelSML.h">
 			</File>
 			<File
+				RelativePath=".\include\sml_ListenerThread.h">
+			</File>
+			<File
 				RelativePath="..\ConnectionSML\include\sml_Names.h">
 			</File>
 			<File
@@ -232,6 +241,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_ProductionListener.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_ReceiverThread.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_RhsListener.h">

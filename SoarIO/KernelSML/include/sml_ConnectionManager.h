@@ -15,7 +15,6 @@
 
 #include "thread_Thread.h"
 #include "thread_Lock.h"
-#include "sock_ListenerSocket.h"
 #include "sock_SocketLib.h"
 #include "sml_Connection.h"
 
@@ -24,34 +23,9 @@
 namespace sml {
 
 // Forward declarations
-class ConnectionManager ;
 class KernelSML ;
-
-// A listener socket wrapped in a thread
-class ListenerManager : public soar_thread::Thread
-{
-protected:
-	unsigned short				m_Port ;
-	ConnectionManager*			m_Parent ;
-	sock::ListenerSocket		m_ListenerSocket ;
-
-	void Run() ;
-
-public:
-	ListenerManager(ConnectionManager* parent, unsigned short port) { m_Parent = parent ; m_Port = port ; }
-} ;
-
-class ReceiverThread : public soar_thread::Thread
-{
-protected:
-	ConnectionManager*		m_ConnectionManager ;
-
-	// This method is executed in the different thread
-	void Run() ;
-
-public:
-	ReceiverThread(ConnectionManager* pManager) { m_ConnectionManager = pManager ; }
-} ;
+class ListenerThread ;
+class ReceiverThread ;
 
 class ConnectionManager
 {
@@ -61,7 +35,7 @@ protected:
 	sock::SocketLib				m_SocketLib ;
 
 	// The listener socket, wrapped in a thread
-	ListenerManager*			m_ListenerManager ;
+	ListenerThread*				m_ListenerThread ;
 
 	// Used to check for incoming messages and execute them.
 	ReceiverThread*				m_ReceiverThread ;
