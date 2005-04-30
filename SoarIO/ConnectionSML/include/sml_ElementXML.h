@@ -50,6 +50,7 @@ class ElementXML
 {
 	// Let Connection have access to Fast methods (which are protected because they take care to use correctly).
 	friend class Connection ;
+	friend class XMLTrace ;
 
 protected:
 	ElementXML_Handle m_hXML ;	// Reference to the underlying object which is created from the ElementXML DLL.
@@ -211,7 +212,7 @@ public:
 	*
     * @param  pChild	The child to add.  Will be released when the parent is destroyed.
 	*************************************************************/
-	void AddChild(ElementXML* pChild) ;
+	ElementXML_Handle AddChild(ElementXML* pChild) ;
 
     /*************************************************************
     * @brief Returns the number of children of this element.
@@ -231,6 +232,15 @@ public:
 	* @returns false if index is out of range.
 	*************************************************************/
 	bool GetChild(ElementXML* pChild, int index) const ;
+
+    /*************************************************************
+    * @brief Returns the parent of this element by placing it in pParent.
+	*
+	* The caller must delete the parent when it is finished with it.
+	*
+	* @returns false if has no parent.
+	*************************************************************/
+	bool GetParent(ElementXML* pParent) const ;
 
 	////////////////////////////////////////////////////////////////
 	//

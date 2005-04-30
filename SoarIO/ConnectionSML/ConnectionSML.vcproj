@@ -164,6 +164,9 @@
 				RelativePath=".\src\sml_TagWme.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_XMLTrace.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sock_ClientSocket.cpp">
 			</File>
 			<File
@@ -266,6 +269,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_TagWme.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_XMLTrace.h">
 			</File>
 			<File
 				RelativePath=".\src\sock_Check.h">

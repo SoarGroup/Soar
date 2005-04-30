@@ -158,6 +158,19 @@ ElementXML_Handle const sml_GetChild(ElementXML_Handle const hXML, int index)
 	return (ElementXML_Handle)GetElementFromHandle(hXML)->GetChild(index) ;
 }
 
+/*************************************************************
+* @brief Returns the parent of this element.
+*
+* The caller should *not* call releaseRef() on this parent.
+* If you wish to keep it, you can call addRef() (and then later releaseRef()).
+*
+* @returns NULL if has no parent.
+*************************************************************/
+ElementXML_Handle const sml_GetParent(ElementXML_Handle const hXML)
+{
+	return (ElementXML_Handle)GetElementFromHandle(hXML)->GetParent() ;
+}
+
 ////////////////////////////////////////////////////////////////
 //
 // Attribute functions (e.g an attribute in <name first="doug">...</name> is first="doug")

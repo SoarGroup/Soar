@@ -5,8 +5,11 @@
 #include "sml_ElementXML.h"
 #include "sml_MessageSML.h"
 #include "sml_EmbeddedConnection.h"
+#include "sml_EmbeddedConnectionAsynch.h"
+#include "sml_EmbeddedConnectionSynch.h"
 #include "sml_AnalyzeXML.h"
 #include "EmbeddedSMLInterface.h"
+#include "sml_XMLTrace.h"
 
 #include <stdlib.h>
 #include <iostream>
@@ -323,6 +326,73 @@ public:
 		ElementXML::DeleteString(pStr) ;
 		delete pTop ;
 		delete pParsedXML ;
+
+		return Result(ok) ;
+	}
+} ;
+
+
+class TestTraceXML_1 : public Test
+{
+public:
+	TestTraceXML_1() : Test("TraceXML_1") { }
+
+	bool Run()
+	{
+		XMLTrace* pXML = new XMLTrace() ;
+
+		pXML->BeginTag("test") ;
+		pXML->AddAttribute("att1", "val1") ;
+		pXML->AddAttribute("att2", "val2") ;
+		pXML->EndTag("test") ;
+
+		pXML->BeginTag("test2") ;
+		pXML->AddAttribute("att3", "val3") ;
+		pXML->AddAttribute("att4", "val4") ;
+
+		pXML->BeginTag("test3") ;
+		pXML->AddAttribute("att-sub1", "val-sub1") ;
+		pXML->AddAttribute("att-sub2", "val-sub2") ;
+		pXML->EndTag("test3") ;
+
+		pXML->EndTag("test2") ;
+
+		bool ok = true ;
+
+		ElementXML* pDetach1 = new ElementXML(pXML->Detach()) ;
+		char* pStr1 = pDetach1->GenerateXMLString(true) ;
+
+		// Check that we can reuse this object
+		pXML->Reset() ;
+
+		pXML->BeginTag("test") ;
+		pXML->AddAttribute("att1", "val1") ;
+		pXML->AddAttribute("att2", "val2") ;
+		pXML->EndTag("test") ;
+
+		pXML->BeginTag("test2") ;
+		pXML->AddAttribute("att3", "val3") ;
+		pXML->AddAttribute("att4", "val4") ;
+
+		pXML->BeginTag("test3") ;
+		pXML->AddAttribute("att-sub1", "val-sub1") ;
+		pXML->AddAttribute("att-sub2", "val-sub2") ;
+		pXML->EndTag("test3") ;
+
+		pXML->EndTag("test2") ;
+
+		ElementXML* pDetach2 = new ElementXML(pXML->Detach()) ;
+		char* pStr2 = pDetach2->GenerateXMLString(true) ;
+
+		// Check that the two strings match
+		ok = ok && (strcmp(pStr1, pStr2) == 0) ;
+
+		ElementXML::DeleteString(pStr1) ;
+		ElementXML::DeleteString(pStr2) ;
+
+		delete pXML ;
+		delete pDetach1 ;
+		delete pDetach2 ;
 
 		return Result(ok) ;
 	}
@@ -687,6 +757,7 @@ int main(/*int argc, char* argv[]*/)
 	TestElementXML_3 test2b ;
 	TestElementXML_4 test2c ;
 	TestConnection_1 test3 ;
+	TestTraceXML_1 testTrace1 ;
 	//TestConnection_2 test4 ;
 	//TestConnection_3 test5 ;
 	//TestKernel_1	 test6 ;
@@ -698,6 +769,7 @@ int main(/*int argc, char* argv[]*/)
 	ok = ok && test2b.Run() ;
 	ok = ok && test2c.Run() ;
 	ok = ok && test3.Run() ;
+	ok = ok && testTrace1.Run() ;
 	//ok = ok && test4.Run() ;
 	//ok = ok && test5.Run() ;
 	//ok = ok && test6.Run() ;

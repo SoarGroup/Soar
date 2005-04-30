@@ -104,6 +104,7 @@ protected:
 	volatile int	m_RefCount ;		// Reference count.  Set to 1 on initialization.  When reaches 0 the object is deleted.
 	bool			m_DataIsBinary ;	// If true, then the character data is treated as a binary buffer (can contain embedded nulls) and the binary length is needed
 	int				m_BinaryDataLength ;// Gives the length of the character data buffer, when it's being treated as a binary buffer.  (only valid if m_IsDataBinary is true).
+	ElementXMLImpl*	m_pParent ;			// The parent of this object (can be NULL)
 
 	xmlStringList	m_StringsToDelete ;	// List of strings we now own and should delete when we are destroyed.
 
@@ -228,6 +229,16 @@ public:
 	* @param index	The 0-based index of the child to return.
 	*************************************************************/
 	ElementXMLImpl const* GetChild(int index) const ;
+
+	/*************************************************************
+	* @brief Returns the parent of this element.
+	*
+	* The caller should *not* call releaseRef() on this parent.
+	* If you wish to keep it, you can call addRef() (and then later releaseRef()).
+	*
+	* @returns NULL if has no parent.
+	*************************************************************/
+	ElementXMLImpl const* GetParent() const ;
 
 	////////////////////////////////////////////////////////////////
 	//

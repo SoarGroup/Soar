@@ -256,6 +256,7 @@ ElementXMLImpl::ElementXMLImpl(void)
 	m_TagName = NULL ;
 	m_CharacterData = NULL ;
 	m_ErrorCode = 0 ;
+	m_pParent = NULL ;
 
 	// Creation of the object creates an initial reference.
 	m_RefCount = 1 ;
@@ -439,6 +440,7 @@ void ElementXMLImpl::AddChild(ElementXMLImpl* pChild)
 	if (pChild == NULL)
 		return ;
 
+	pChild->m_pParent = this ;
 	this->m_Children.push_back(pChild) ;
 }
 
@@ -464,6 +466,19 @@ ElementXMLImpl const* ElementXMLImpl::GetChild(int index) const
 		return NULL ;
 
 	return m_Children[index] ;
+}
+
+/*************************************************************
+* @brief Returns the parent of this element.
+*
+* The caller should *not* call releaseRef() on this parent.
+* If you wish to keep it, you can call addRef() (and then later releaseRef()).
+*
+* @returns NULL if has no parent.
+*************************************************************/
+ElementXMLImpl const* ElementXMLImpl::GetParent() const
+{
+	return m_pParent ;
 }
 
 ////////////////////////////////////////////////////////////////

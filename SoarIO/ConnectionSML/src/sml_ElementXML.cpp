@@ -271,12 +271,13 @@ bool ElementXML::IsTag(char const* pTagName) const
 *
 * @param  pChild	The child to add.  Will be released when the parent is destroyed.
 *************************************************************/
-void ElementXML::AddChild(ElementXML* pChild)
+ElementXML_Handle ElementXML::AddChild(ElementXML* pChild)
 {
 	ElementXML_Handle hChild = pChild->Detach() ;
 	delete pChild ;
 	
 	::sml_AddChild(m_hXML, hChild) ;
+	return hChild ;
 }
 
 /*************************************************************
@@ -308,6 +309,26 @@ bool ElementXML::GetChild(ElementXML* pChild, int index) const
 
 	pChild->Attach(hChild) ;
 	pChild->AddRefOnHandle() ;
+
+	return true ;
+}
+
+/*************************************************************
+* @brief Returns the parent of this element by placing it in pParent.
+*
+* The caller must delete the parent when it is finished with it.
+*
+* @returns false if has no parent.
+*************************************************************/
+bool ElementXML::GetParent(ElementXML* pParent) const
+{
+	ElementXML_Handle hParent = ::sml_GetParent(m_hXML) ;
+
+	if (!hParent)
+		return false ;
+
+	pParent->Attach(hParent) ;
+	pParent->AddRefOnHandle() ;
 
 	return true ;
 }

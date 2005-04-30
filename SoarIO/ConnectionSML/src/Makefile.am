@@ -16,6 +16,7 @@ sml_MessageSML.cpp\
 sml_Names.cpp\
 sml_RemoteConnection.cpp\
 sml_StringOps.cpp\
+sml_XMLTrace.cpp\
 sml_TagArg.cpp\
 sml_TagCommand.cpp\
 sml_TagError.cpp\
