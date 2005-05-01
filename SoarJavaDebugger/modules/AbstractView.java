@@ -343,10 +343,11 @@ public abstract class AbstractView implements AgentFocusListener
 			menu = windowMenu ;
 		}
 		
+		addItem(menu, "Properties ...", "properties " + m_Frame.getName() + " " + this.getName()) ;
+
 		if (offerClearDisplay())
 			addItem(menu, "Clear window", "clear " + m_Frame.getName() + " " + this.getName()) ;
 
-		addItem(menu, "Properties ...", "properties " + m_Frame.getName() + " " + this.getName()) ;
 		new MenuItem(menu, SWT.SEPARATOR) ;
 		addItem(menu, "Add tab ...", "addtab " + m_Frame.getName() + " " + this.getName()) ;		
 		addItem(menu, "Add window to right ...", "addview " + m_Frame.getName() + " " + this.getName() + " " + MainWindow.kAttachRightValue) ;

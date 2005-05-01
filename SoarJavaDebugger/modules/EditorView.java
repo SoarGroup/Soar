@@ -361,6 +361,7 @@ public class EditorView extends AbstractView
 
 	public void showProperties()
 	{
+		m_Frame.ShowMessageBox("Properties", "There are currently no properties for this view") ;
 	}
 
 	public void clearDisplay()

@@ -320,6 +320,8 @@ public abstract class AbstractComboView extends AbstractView
 		// Send the command to Soar and echo into the trace
 		if (command.length() > 0)
 			executeAgentCommand(command, true) ;
+		else
+			m_Updating = false ;
 	}
 	
 	public void setTextFont(Font f)
@@ -415,9 +417,7 @@ public abstract class AbstractComboView extends AbstractView
 	{
 		if (m_Updating)
 			return ;
-		
-		m_Updating = true ;
-		
+				
 		//System.out.println("Updating window's contents") ;
 		
 		// Retrieve the current command in the combo box
@@ -428,6 +428,8 @@ public abstract class AbstractComboView extends AbstractView
 		// infinite loop.
 		if (!getDocument().getSoarCommands().isRunCommand(command))
 		{
+			m_Updating = true ;
+
 			// If Soar is running in the UI thread we can make
 			// the update directly.
 			if (!Document.kDocInOwnThread)
@@ -459,25 +461,13 @@ public abstract class AbstractComboView extends AbstractView
 	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 	{
-		boolean updateNow = false ;
-		
 		if (eventID == smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE.swigValue())
 		{
 			m_DecisionCounter++ ;
 			
 			if (this.m_UpdateEveryNthDecision > 0 && (m_DecisionCounter % m_UpdateEveryNthDecision) == 0)
-				updateNow = true; 
-		}
-
-		// BUGBUG: I think we might want to register for SYSTEM_STOP instead of AFTER_RUN
-		// otherwise we may get a lot of updates during "RunTilOutput" cycles.
-//		if (this.m_UpdateOnStop && eventID == smlRunEventId.smlEVENT_AFTER_RUN_ENDS.swigValue())
-//			updateNow = true ;
-		
-		if (updateNow)
-		{
-			updateNow() ;
-		}
+				updateNow() ;
+		}		
 	}
 
 	/************************************************************************
