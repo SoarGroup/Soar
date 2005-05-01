@@ -6,7 +6,7 @@
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
           <pane view="treetrace1" tabAtTop="false" singleView="true" horiz="true">
             <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.TreeTraceView" auto-expand="false" ShowTraceOutput="false" indent="3" Name="treetrace1" ClearEachCommand="false" UpdateOnStop="false">
-              <History Item0="<Type commands here>" Item7="p s1" Item11="start" Item10="p i1" Item15="p o114" Class="helpers.CommandHistory" Item1="run" Item12="stop" Item6="p h1" Item16="run 3" Item2="run 10" Item19="watch 3" Item18="run 20" Item13="start-system" Item5="p h4" Size="20" Item9="run 5" Item17="pwd" Item14="p s2" Item4="init-soar" Item3="run 2" Item8="exit"></History>
+              <History Item0="<Type commands here>" Item7="p h4" Item11="run 5" Item10="exit" Item15="p s2" Class="helpers.CommandHistory" Item1="p i1" Item12="start" Item6="init-soar" Item16="p o114" Item2="print" Item19="run 20" Item18="pwd" Item13="stop" Item5="run 2" Size="20" Item9="p s1" Item17="run 3" Item14="start-system" Item4="run 10" Item3="run" Item8="p h1"></History>
             </view>
           </pane>
           <pane view="buttons3" tabAtTop="false" singleView="true" horiz="true">
@@ -58,6 +58,12 @@
         <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="stats" ClearEachCommand="true" UpdateOnStop="true">
           <History Item0="stats" Size="1" Class="helpers.CommandHistory"></History>
         </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="input" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="print --depth 2 i2" Size="2" Class="helpers.CommandHistory" Item1="print -depth 2 i2"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="output" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="print --depth 2 i3" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
       </pane>
       <sash weight0="392" Class="class org.eclipse.swt.custom.SashForm" weight1="607" weights="2" style="512">
         <pane view="update2" tabAtTop="true" singleView="true" horiz="true">
@@ -66,9 +72,12 @@
           </view>
         </pane>
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Top">
-          <pane view="keep2" tabAtTop="false" singleView="true" horiz="true">
-            <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.KeepCommandView" ShowTraceOutput="false" Name="keep2" ClearEachCommand="false" UpdateOnStop="false">
+          <pane view="edit_production" tabAtTop="false" singleView="false" horiz="true">
+            <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.KeepCommandView" ShowTraceOutput="false" Name="scratch_pad" ClearEachCommand="false" UpdateOnStop="false">
               <History Size="0" Class="helpers.CommandHistory"></History>
+            </view>
+            <view ComboAtTop="true" Class="modules.EditorView" Name="edit_production">
+              <History Item0="apply*move-disk*remove*last-disk1-peg" Size="1" Class="helpers.CommandHistory"></History>
             </view>
           </pane>
           <pane view="buttons2" tabAtTop="false" singleView="true" horiz="true">

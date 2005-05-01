@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.*;
 
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 
 /********************************************************************************************
 * 
@@ -34,6 +35,8 @@ import org.eclipse.swt.widgets.Display;
 ********************************************************************************************/
 public class Document
 {
+	public static final String kCreateNewWindowProperty = "Agent.CreateNewWindow" ;
+	
 	/** The properties for this application (holds user preferences) */
 	protected AppProperties m_AppProperties = new AppProperties("SoarDebugger.ini", "Soar Debugger Settings") ;
 
@@ -57,9 +60,10 @@ public class Document
 	/** We have to pump messages on this display to keep the app alive */
 	private Display				m_Display = null ;
 	
-	/** There is only one document in the debugger.  If you want to work with another Soar process, start another debugger */
-	//private static Document		s_Document ;
-	
+	/** The user can choose to create a new window whenever an agent is created.  This makes life complicated for us so we can suppress it temporarily in the code when
+	 *  we are making the new agents.  (It's really to support other folks, like the environment creating a new agent).  This variable is the name of the agent. */
+	private String 			m_SuppressNewWindowCreation ;
+
 	/**
 	 * We have to decide how to keep the UI thread responsive while Soar is running (possibly for a long time).
 	 * There are 2 approaches.
@@ -78,8 +82,6 @@ public class Document
 	
 	public Document()
 	{
-		//Document.s_Document = this ;
-		
 		// Load the user's preferences from the properties file.
 		// If we change the version number, it will cause all existing preferences
 		// in the field to be ignored--useful if there might be a conflict from old settings.
@@ -105,12 +107,14 @@ public class Document
 		Module combo2 = new Module("Auto Update Window", "The user's command is automatically executed at the end of each run.", modules.UpdateCommandView.class) ;
 		Module combo3 = new Module("Keep Window", "Commands are entered at a prompt and the results are displayed in a scrolling text window.  Trace output from runs is not shown.", modules.KeepCommandView.class) ;
 		Module combo4 = new Module("Button Bar", "A collection of user-customizable buttons", modules.ButtonView.class) ;
+		Module edit = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
 
 		m_ModuleList.add(combo1) ;
 		m_ModuleList.add(tree) ;
 		m_ModuleList.add(combo2) ;
 		m_ModuleList.add(combo3) ;
 		m_ModuleList.add(combo4) ;
+		m_ModuleList.add(edit) ;
 	}
 		
 	/** Gives us a frame to work with */
@@ -333,8 +337,10 @@ public class Document
 		registerStandardKernelEvents() ;
 		
 		// Start with an agent...without this a kernel's not much use.
-		Agent agent = createAgent("soar1") ;
+		Agent agent = createAgentNoNewWindow("soar1") ;
 		
+		// BUGBUG: This needs to happen as a result of the agent creation event or not at all.
+		/*
 		if (frame != null && libPath != null)
 		{
 			final MainFrame mainFrame = frame ;
@@ -350,6 +356,7 @@ public class Document
 				}
 			}) ;
 		}
+		*/
 		
 		return agent ;
 	}
@@ -364,6 +371,13 @@ public class Document
 			throw new IllegalStateException("Error initializing agent " + m_Kernel.GetLastErrorDescription()) ;
 		
 		return agent ;
+	}
+	
+	/** Creates an agent and supresses automatic window creation (if the user has that enabled) */
+	public Agent createAgentNoNewWindow(String agentName)
+	{
+		m_SuppressNewWindowCreation = agentName ;
+		return createAgent(agentName) ;
 	}
 	
 	public void destroyAgent(Agent agent)
@@ -382,15 +396,12 @@ public class Document
 			return false ;
 
 		// Make sure we're stopped
-		if (this.kDocInOwnThread)
+		if (m_DocumentThread.isBusy())
 		{
-			if (m_DocumentThread.isBusy())
-			{
-				if (this.getFirstFrame() != null)
-					this.getFirstFrame().ShowMessageBox("Soar is currently executing.  Need to stop it first before deleting the kernel.") ;
+			if (this.getFirstFrame() != null)
+				this.getFirstFrame().ShowMessageBox("Soar is currently executing.  Need to stop it first before deleting the kernel.") ;
 
-				return false ;
-			}
+			return false ;
 		}
 		
 		m_Kernel.delete() ;
@@ -425,7 +436,10 @@ public class Document
 			m_Kernel.delete() ;
 			m_Kernel = null ;
 			
-			throw new Exception("Error initializing kernel " + errorMsg) ;
+			if (ipAddress == null)
+				ipAddress = "<local-machine>" ;
+			
+			throw new Exception("Error initializing kernel with ip address " + ipAddress + " port " + portNumber + "\n" + errorMsg) ;
 		}
 
 		m_DocumentThread.setConnected(true) ;
@@ -537,10 +551,38 @@ public class Document
 	
 	public void agentEventHandler(int eventID, Object data, String agentName)
 	{
-		Agent agent = getAgent(agentName) ;
+		final Agent agent = getAgent(agentName) ;
 		
 		if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_CREATED.swigValue())
-			this.fireAgentAdded(agent) ;
+		{
+			// Create a window if the user has set this mode AND we're not suppressing it.
+			// (We suppress it if we're programmatically creating the agent so that the logic is simpler)
+			boolean createWindow = getAppProperties().getAppBooleanProperty(kCreateNewWindowProperty, true) ;
+			createWindow = createWindow && !agentName.equals(m_SuppressNewWindowCreation) ;
+
+			// Only suppress window creation for the agent once.
+			if (agentName.equals(m_SuppressNewWindowCreation))
+				m_SuppressNewWindowCreation = null ;
+			
+			if (createWindow)
+			{
+				// Create a new window for this agent
+				Display display = getFirstFrame().getDisplay() ;
+				final Document doc = this ;
+				
+				display.asyncExec(new Runnable() { public void run()
+				{
+					MainFrame frame = MainFrame.createNewFrame(getFirstFrame().getDisplay(), doc) ;			
+					frame.setAgentFocus(agent) ;
+					doc.fireAgentAdded(agent) ;
+				} } ) ;
+			}
+			else
+			{
+				this.fireAgentAdded(agent) ;			
+			}
+		}
+		
 		if (eventID == smlAgentEventId.smlEVENT_BEFORE_AGENT_DESTROYED.swigValue())
 			this.fireAgentRemoved(agent) ;
 	}

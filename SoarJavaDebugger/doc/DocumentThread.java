@@ -66,7 +66,7 @@ public class DocumentThread extends Thread
 	private boolean   m_IsConnected = false ;
 	
 	/** If true, print trace information as each command is scheduled and executed */
-	private static boolean kTraceCommands = false ;
+	private static boolean kTraceCommands = true ;
 	
 	public DocumentThread(Document doc)
 	{

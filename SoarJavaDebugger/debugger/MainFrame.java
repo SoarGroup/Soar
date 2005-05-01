@@ -198,6 +198,19 @@ public class MainFrame
 		getDocument().addSoarChangeListener(m_SoarChangeListener);
 	}
 
+	public static MainFrame createNewFrame(Display display, Document doc)
+	{
+		// Create a new window for this agent
+		Shell shell = new Shell(display) ;
+		
+		MainFrame frame = new MainFrame(shell, doc) ;
+		frame.initComponents() ;
+
+		shell.open() ;
+		
+		return frame ;
+	}
+	
 	public String getName()
 	{
 		return m_Name ;
@@ -423,14 +436,16 @@ public class MainFrame
 			return;
 
 		final String agentName = (m_AgentFocus == null ? kNoAgent : m_AgentFocus.GetAgentName());
-
+		boolean remote = m_Document.isConnected() && m_Document.isRemote() ;
+		final String remoteString = remote ? "remote " : "" ;
+		
 		// Need to make sure we make this change in the SWT thread as the event
 		// may come to us
 		// in a different thread
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run()
 			{
-				getShell().setText("Soar Debugger in Java - " + agentName);
+				getShell().setText("Soar Debugger in Java - " + remoteString + agentName);
 			}
 		});
 	}

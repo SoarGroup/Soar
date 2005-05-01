@@ -32,11 +32,12 @@ public class AgentMenu
 	
 	private Document m_Document = null ;
 	private MainFrame m_Frame	= null ;
-
+	
 	private AbstractAction m_SelectAgent      = new AbstractAction("Select Current Agent")			{ public void actionPerformed(ActionEvent e) { selectAgent(e) ; } } ;
 	private AbstractAction m_CreateAgentSame  = new AbstractAction("Create Agent - Same Window") 	{ public void actionPerformed(ActionEvent e) { createAgent(e, false) ; } } ;
 	private AbstractAction m_CreateAgentNew   = new AbstractAction("Create Agent - New Window") 	{ public void actionPerformed(ActionEvent e) { createAgent(e, true) ; } } ;
 	private AbstractAction m_CreateNewWindow  = new AbstractAction("Create Window - No New Agent") 	{ public void actionPerformed(ActionEvent e) { createWindow(e) ; } } ;
+	private AbstractAction m_CreateNewOnAgent  = new AbstractAction("Create New Window on Agent Creation") 	{ public void actionPerformed(ActionEvent e) { createNewOnAgent(e) ; } } ;
 	private AbstractAction m_DestroyAgent 	  = new AbstractAction("Destroy Agent") 				{ public void actionPerformed(ActionEvent e) { destroyAgent(e) ; } } ;
 
 	/** Create this menu */
@@ -61,6 +62,8 @@ public class AgentMenu
 		menu.add(m_CreateAgentSame) ;
 		menu.add(m_CreateNewWindow) ;
 		menu.addSeparator() ;
+		menu.addCheckedItem(m_CreateNewOnAgent, isCreateNewWindowForNewAgent()) ;
+		menu.addSeparator() ;
 		menu.add(m_DestroyAgent) ;
 
 		updateMenu() ;
@@ -76,6 +79,20 @@ public class AgentMenu
 		m_CreateAgentSame.setEnabled(m_Document.isConnected()) ;
 		m_CreateAgentNew.setEnabled(m_Document.isConnected()) ;
 		m_DestroyAgent.setEnabled(m_Document.isConnected() && m_Frame.getAgentFocus() != null) ;
+		
+		// Make all menus match
+		if (!m_CreateNewOnAgent.getMenuItem().isDisposed())
+			m_CreateNewOnAgent.setChecked(isCreateNewWindowForNewAgent(), false) ;
+	}
+
+	public boolean isCreateNewWindowForNewAgent()
+	{
+		return m_Document.getAppProperties().getAppBooleanProperty(Document.kCreateNewWindowProperty, true) ;
+	}
+	
+	private void createNewOnAgent(ActionEvent e)
+	{
+		m_Document.getAppProperties().setAppProperty(Document.kCreateNewWindowProperty, m_CreateNewOnAgent.isChecked()) ;
 	}
 
 	private void selectAgent(ActionEvent e)
@@ -127,18 +144,11 @@ public class AgentMenu
 			return ;
 		}
 		
-		Agent newAgent = m_Document.createAgent(name) ;
+		Agent newAgent = m_Document.createAgentNoNewWindow(name) ;
 		
 		if (newWindow)
 		{
-			// Create a new window for this agent
-			Shell shell = new Shell(m_Frame.getDisplay()) ;
-			
-			MainFrame frame = new MainFrame(shell, m_Document) ;
-			frame.initComponents() ;
-
-			shell.open() ;
-		
+			MainFrame frame = MainFrame.createNewFrame(m_Frame.getDisplay(), m_Document) ;		
 			frame.setAgentFocus(newAgent) ;
 		}
 		else
