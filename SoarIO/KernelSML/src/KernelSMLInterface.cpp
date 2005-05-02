@@ -22,7 +22,7 @@
 #include "EmbeddedSMLInterface.h"
 #include "sml_Connection.h"
 #include "sml_EmbeddedConnection.h"
-#include "sml_EmbeddedConnectionASynch.h"
+#include "sml_EmbeddedConnectionAsynch.h"
 #include "sml_EmbeddedConnectionSynch.h"
 #include "sml_ElementXML.h"
 #include "sml_Names.h"
