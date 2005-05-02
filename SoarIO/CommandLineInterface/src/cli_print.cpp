@@ -170,9 +170,11 @@ bool CommandLineInterface::DoPrint(gSKI::IAgent* pAgent, PrintBitset options, in
 		}
 
 		// Structured output through structured output callback
-		if (m_RawOutput) AddListenerAndDisableCallbacks(pAgent);
+		//if (m_RawOutput) AddListenerAndDisableCallbacks(pAgent);
+		AddListenerAndDisableCallbacks(pAgent);
 		pKernelHack->PrintStackTrace(pAgent, (options.test(PRINT_STATES)) ? true : false, (options.test(PRINT_OPERATORS)) ? true : false);
-		if (m_RawOutput) RemoveListenerAndEnableCallbacks(pAgent);
+		RemoveListenerAndEnableCallbacks(pAgent);
+		//if (m_RawOutput) RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
 
