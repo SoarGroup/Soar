@@ -14,6 +14,7 @@
 
 #ifdef WIN32
 #include <direct.h>
+#include <Windows.h>
 #endif // WIN32
 
 #include <assert.h>
@@ -98,9 +99,15 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIWatch]					= &cli::CommandLineInterface::ParseWatch;
 	m_CommandMap[Constants::kCLIWatchWMEs]				= &cli::CommandLineInterface::ParseWatchWMEs;
 
-	// Set home to current directory
+	// Set home directory
+//#ifdef WIN32
+//	char dllpath[256];
+//	GetModuleFileName(NULL, dllpath, 256);
+//	m_HomeDirectory = dllpath;
+//#else // WIN32
 	GetCurrentWorkingDirectory(m_HomeDirectory);
-
+//#endif
+	
 	// Set library directory to home directory
 	m_LibraryDirectory = m_HomeDirectory;
 
