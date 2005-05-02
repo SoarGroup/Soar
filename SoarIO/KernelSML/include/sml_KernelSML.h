@@ -98,6 +98,9 @@ protected:
 	// The singleton kernel object
 	static KernelSML*	s_pKernel ;
 
+	// On Windows this is set to the DLL's hModule handle.
+	static void*		s_hModule ;
+
 protected:	
 	// Map from command name to function to handle it
 	CommandMap	m_CommandMap ;
@@ -163,6 +166,13 @@ public:
 
 		s_pKernel = 0 ;
 	}
+
+	/*************************************************************
+	* @brief	The module handle (only set on Windows) can be
+	*			used to determine the path to this DLL.
+	*************************************************************/
+	static void SetModuleHandle(void* hModule)	{ s_hModule = hModule ; }
+	static void* GetModuleHandle()				{ return s_hModule ; }
 
 	/*************************************************************
 	* @brief	Handy utility function for dumping output to the

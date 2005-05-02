@@ -60,6 +60,9 @@ using namespace gSKI ;
 // Singleton instance of the kernel object
 KernelSML* KernelSML::s_pKernel = NULL ;
 
+// On Windows this is set to the DLL's hModule handle.
+void* KernelSML::s_hModule = NULL ;
+
 static ElementXML* AddErrorMsg(Connection* pConnection, ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1)
 {
 	pConnection->AddErrorToSMLResponse(pResponse, pErrorMsg, errorCode) ;
