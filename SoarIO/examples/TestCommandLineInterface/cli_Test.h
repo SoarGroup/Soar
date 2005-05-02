@@ -32,6 +32,8 @@ public:
 	// returns false on error or exit
 	bool ProcessCharacter(int c);
 
+	bool IsRaw() { return raw; }
+
 protected:
 
 	void Backspace();
