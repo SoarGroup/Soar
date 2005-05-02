@@ -2,11 +2,11 @@ AUTOMAKE_OPTIONS = foreign
 
 BASEDIR_PREFIX = ../../
 
-bin_PROGRAMS = testcli
+bin_PROGRAMS = TestCommandLineInterface
 
-testcli_SOURCES = cli_Test.cpp
+TestCommandLineInterface_SOURCES= cli_Test.cpp
 
-testcli_LDADD = \
+TestCommandLineInterface_LDADD = \
 $(BASEDIR_PREFIX)KernelSML/src/libSoarKernelSML.la \
 $(BASEDIR_PREFIX)ElementXML/src/libElementXML.la
 

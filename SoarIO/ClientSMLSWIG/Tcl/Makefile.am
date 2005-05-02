@@ -32,7 +32,7 @@ clean:
 
 install-data-hook:
 if SWIGTCL
-	$(TCLSH) ../../bin/makeTclSMLPackage.tcl
+	$(TCLSH) ../../../soar-library/makeTclSMLPackage.tcl
 	rm -rf $(LIBDIR)/Tcl_sml_ClientInterface
 	mkdir $(LIBDIR)/Tcl_sml_ClientInterface
 	mv .libs/pkgIndex.tcl $(LIBDIR)/Tcl_sml_ClientInterface

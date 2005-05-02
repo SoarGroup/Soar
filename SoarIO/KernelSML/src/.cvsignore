@@ -6,3 +6,4 @@ Makefile.in
 .libs
 libKernelSML.la
 Release
+libSoarKernelSML.la
