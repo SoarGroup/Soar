@@ -33,23 +33,36 @@ enum eUpdateFrequency
   UPDATE_EVERY_CYCLE
 };
 
+union WMEValue
+{
+	int* i;
+	double* f;
+	std::string* s;
+	std::string* id;
+};
+
 class InputLinkObject
 {
 
 public:
+	InputLinkObject();
 	//InputLinkObject(std::string& inParent, std::string& inName, std::vector<eElementType>& inTypes, std::string& inValue);
 	~InputLinkObject();
-	void addElementType(eElementType inType){m_elementTypes.push_back(inType);}
+	//TODO prolly should make this take in a string as well
+	void addElementType(std::string& inType){m_elementTypes.push_back(stringToType(inType));}
 	void setParentId(std::string& inParent){m_parentId = inParent;}
 	void setAttribName(std::string& inName){m_attribName = inName;}
-	void setStartValue(std::string& inValue){m_startingValue = inValue;}
+	void setStartValue(std::string& inValue);
+	void setUpdateValue(std::string& inValue);
+	void setType(std::string& inValue);
+	void setUpdateFrequency();
 private:
 	std::string m_parentId;
 	std::string m_attribName;
 	std::vector <eElementType> m_elementTypes;
-	std::string m_startingValue;
-	//std::string updateValue;
-	
+	eElementType m_curType;
+	WMEValue m_value;
+	std::string m_updateValue;
 };
 
 

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <assert.h>
 
 using std::string;
 using std::endl;
@@ -64,17 +65,12 @@ bool InputLinkSpec::ImportDM(string& filename)
 	return true;
 }
 
-void InputLinkSpec::ReadControlStructure()
-{
-
-}
-
-
 
 //This is not quite cool.  The utility will remain the same, 
 //but this may need to be a member
 void printStage(eParseStage stage, ostream& stream)
 {
+	stream << "<+> ";
 	switch(stage)
 	{
 		case READING_PRE_BEGIN:
@@ -105,7 +101,7 @@ void printStage(eParseStage stage, ostream& stream)
 			stream << "'Reading \"delete on\" condition'" << endl;
 			break;
 		case READING_ERROR:
-			stream << "'Error in parse'" << endl;
+			stream << "***Error in parse***" << endl;
 			break;
 		default:
 			break;
@@ -117,31 +113,44 @@ string readOneWord(const string& source)
 {
 	string retVal;
 	string::const_iterator sItr = source.begin();
-	int pos = source.find_first_of(" ");
+	
+	//the next word may be trailed by a space, a newline, or EOF
+	int pos = source.find_first_of(" \n");
+
+	//TODO...handle the EOF case
+	if(pos == source.npos)
+		return source;
+
 	for(int counter = 0; counter < pos; ++counter, ++sItr)
 		retVal += *sItr;
   return retVal;
 }
 
 //Erase all characters up to and including the first encountered space.
+//TODO make this trim ALL leading spaces
 void trimOneWord(string& source)
 {
 	int pos = source.find_first_of(" ");
-	source.erase(0, pos + 1);	
+	if(pos != source.npos)
+		source.erase(0, pos + 1);	
 }
 //TODO comment
-string readAndTrimOneWord(string& source)
+string readAndTrimOneWord(string& source, bool echo = false)
 {
 	string returnVal = readOneWord(source);
 	trimOneWord(source);
+	if(echo)
+		cout << "read >" << returnVal << "< and trimmed it out." << endl;
 	return returnVal;
 }
 
-void writeFileLineToString(fstream& source, string& dest)
+void writeFileLineToString(fstream& source, string& dest, bool echo = false)
 {
 	char intermediate[MAX_IMP_LINE_LENGTH + 1];
 	source.getline(intermediate, MAX_IMP_LINE_LENGTH + 1);//what is this + 1 for? looks like it might overflow
 	dest = intermediate;
+	if(echo)
+		cout << "Entire line from file is:>" << dest << "<" << endl;
 }
 
 /* ImportIL
@@ -173,7 +182,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 		int loopEnd = 1;
 
 		string line;
-		writeFileLineToString(file, line);
+		writeFileLineToString(file, line, true);
 
 		string firstWord = readOneWord(line);	 
 		//cout << "first word is >" << firstWord << "<" << endl;
@@ -191,7 +200,7 @@ bool InputLinkSpec::ImportIL(string& filename)
     //improperly formated.  The captured word will either be a control structure
     //or an identifier name
 
-		if(firstWord == k_forDelimiter)
+		if(firstWord == k_forToken)
 		{
 			int controlStartVal, controlEndVal = 0;
 
@@ -209,19 +218,19 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 			controlEndVal = atoi(line.c_str());
 			//cout << "control end val is >" << controlEndVal << "<" << endl;
-			
-			cout << "After all the control nonsense, the values are " << controlName << " "
+
+			cout << "After all the control nonsense, the values are: " << controlName << " "
 				<< controlStartVal << " " << controlEndVal << endl;
-			
+
 			//set ACTUAL loop start and stop delimiters			
 			loopBegin = controlStartVal;
 			loopEnd = controlEndVal;
 
 			//TODO (if doing nested control loops, add an entry to the control queue)
-			
+
 			//since we just consumed the first line, read in the next one 
 			//for the identifier information
-			writeFileLineToString(file, line);
+			writeFileLineToString(file, line, true);
 			lastCompletedState = READING_CONTROL_STRUCTURE;
 			parseStage = READING_PARENT_IDENTIFIER;			
 		}
@@ -230,18 +239,13 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 		string curWord;
 		InputLinkObject ilObj;
-// ALGORITHM **********************
-//if there's a control structure
-  //repeat the specified pattern, store each
-//otherwise
-	//read the specified pattern and store
 
 		//Begin parsing based on stage
 		//while(parseStage != READING_FINAL_STAGE)
 		//{
 		for(; loopBegin < loopEnd; ++loopBegin)
 		{
-//			printStage(parseStage, cout);
+			printStage(parseStage, cout);
 			bool readingFirstType = true, moreTypesLeft = true;
 
 			switch(parseStage)
@@ -251,9 +255,6 @@ bool InputLinkSpec::ImportIL(string& filename)
 					break;
 				case READING_PARENT_IDENTIFIER:
 
-					//The least amount of entries for an il description are 4 strings
-					//numCharsRead = sscanf(curLine, "%s %s %s %s, , , , );
-					//TODO more error checking
 					curWord = readAndTrimOneWord(line);
 					cout << "ParentIdName is >" << curWord << "<" << endl;
 					ilObj.setParentId(curWord);
@@ -280,49 +281,89 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 					//trim off the '<' token
 					curWord.replace(0,1, "");
+
 					do//TODO this may work better as a 'for' loop
 					{
 						//if it IS the first type listed, we already have a string to parse
 						if(!readingFirstType)
 							curWord = readAndTrimOneWord(line);
+						else
+							cout << "\tReading first type for this wme, which is >" << curWord << "<." << endl;
 
 						readingFirstType = false;
 						int pos = curWord.find(k_typesCloseToken.c_str());
 						if(pos == curWord.npos)
 							moreTypesLeft = true;
 						else
-						{
+						{ //TODO make sure any whitespace leading the '>' is taken care of...
 							moreTypesLeft = false;
 							//trim off the '>' token
 							curWord.erase(pos);
 						}
 						cout << "Read value type as " << curWord << endl;
-						ilObj.addElementType(stringToType(curWord));
+						ilObj.addElementType(curWord);
+
 						//TODO tough error checking to do here---v
 						//if the type is an ID, it should be listed alone
-						if(curWord == k_idString)
+							parseStage = READING_START_VALUE;
+						if(!stricmp(curWord.c_str(), k_idString.c_str()))
 						{
 							lastCompletedState = READING_VALUE_TYPE;
-							parseStage = READING_IDENTIFIER_UNIQUE_NAME;
+							//parseStage = READING_IDENTIFIER_UNIQUE_NAME;
 							break;
-						}						
+						}
+
 					}
 					while(moreTypesLeft);
 
 					lastCompletedState = READING_VALUE_TYPE;
-					parseStage = READING_START_VALUE;
 					break;
-				case READING_IDENTIFIER_UNIQUE_NAME:
-					
+				/*case READING_IDENTIFIER_UNIQUE_NAME:
+				cout << "\t\tWe have an identifier, so reading the unique name." << endl;
+				cout << "before next read and trim, line is:>" << line << "<" << endl;
+					curWord = readAndTrimOneWord(line);//TODO error checking
+				cout << "trying to set the start value"
+					ilObj.setStartValue(curWord);
 					lastCompletedState = READING_IDENTIFIER_UNIQUE_NAME;
-					parseStage = READING_FINAL_STAGE;
-					break;					
+					parseStage = READING_FINAL_STAGE;//IDs never get updated
+					break;*/		
 				case READING_START_VALUE:
-					
+//cout << "Top of Reading start value label...." << endl;
+//cout << "before next read and trim, line is:>" << line << "<" << endl;
+					curWord = readAndTrimOneWord(line, true);
+
+//cout << "\tshould have just trimmed of start token here: " << curWord << endl;
+//cout << "\tand left behind:" << line << endl;
+					if(curWord != k_startToken)
+					{
+						parseStage = READING_ERROR;
+						break;
+					}
+//cout << "\tnow should have just the start value left on this line..."	<< line << endl;
+					//now that the token is out of the way, get the actual start value
+					curWord = readAndTrimOneWord(line, true);
+
+					ilObj.setStartValue(curWord);
 					lastCompletedState = READING_START_VALUE;
 					parseStage = READING_UPDATE;
 					break;
 				case READING_UPDATE:
+					//this is optional.  if there is no -update token, bug out.
+					//TODO make a note that this is not a literal string, but rather the
+					//name of the variable whose value will be used for the update
+					curWord	= readAndTrimOneWord(line);
+					if(curWord == k_updateToken)
+						curWord = readAndTrimOneWord(line);
+					else
+					{
+						parseStage = READING_ERROR;
+						break;
+					}
+					if(curWord == "\n" || curWord == "" )
+					{
+						ilObj.setUpdateValue(line);
+						parseStage = READING_CREATE_ON;
+					}
 					lastCompletedState = READING_UPDATE;
 					parseStage = READING_CREATE_ON;
 					break;
@@ -341,18 +382,16 @@ bool InputLinkSpec::ImportIL(string& filename)
 					exit(-1);
 					break;
 				default:
+					cout << "What? ended up in the default case...." << endl;
+					assert(false);
 					break;
 			}//end switch
 		}// end control loop
-
+cout << "\toutside of for loop, will read another line soon....." << endl;
 		ilObjects.push_back(ilObj);
 //		loopBegin = defaultLoopBegin;
 //		loopEnd = defaultLoopEnd;
 
-		//should first get parent id name
-		//then get attribute name
-		//then get value type
-		//then optional and conditional args.
 		++lineNumber;
 //     cout << "just read line " << lineNumber << endl;
 	}//while there are still lines to read

@@ -27,9 +27,11 @@ enum eParseStage
 	READING_FINAL_STAGE //= READING_DELETE_ON
 };
 
-const std::string k_forDelimiter		= "-for";
+const std::string k_forToken				= "-for";
 const std::string k_typesOpenToken	= "<";
 const std::string k_typesCloseToken	= ">";
+const std::string k_startToken			= "-start";
+const std::string k_updateToken			= "-update";
 
 typedef std::vector<InputLinkObject> ilObjVector_t;
 
