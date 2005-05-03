@@ -267,39 +267,6 @@ arraylist *g_header_stack;
 #define IS_LEAF_WME(w) ((w)->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
 
 
-FILE *g_fMem;
-char tmp_buf[1024];
-
-//  #define REPORT_ALLOC(ptr, type, size) \
-//       g_fMem = fopen("c:\\temp\\epmem_ram.log", "aw"); \
-//       fprintf(g_fMem, "ALLOC:   %.8x\t%20s\t%u bytes\n", ptr, type, size); \
-//       fclose(g_fMem)
-
-//  #define REPORT_ALLOC_WITH_NOTE(ptr, type, size, note) \
-//       g_fMem = fopen("c:\\temp\\epmem_ram.log", "aw"); \
-//       fprintf(g_fMem, "ALLOC:   %.8x\t%20s\t%u bytes\t%s\n", ptr, type, size, note); \
-//       fclose(g_fMem)
-
-//  #define REPORT_ALLOC_WITH_INT(ptr, type, size, n) \
-//       g_fMem = fopen("c:\\temp\\epmem_ram.log", "aw"); \
-//       fprintf(g_fMem, "ALLOC:   %.8x\t%20s\t%u bytes\t%d\n", ptr, type, size, n); \
-//       fclose(g_fMem)
-
-//  #define REPORT_DEALLOC(ptr, type) \
-//       g_fMem = fopen("c:\\temp\\epmem_ram.log", "aw"); \
-//       fprintf(g_fMem, "DEALLOC: %.8x\t%20s\n", ptr, type); \
-//       fclose(g_fMem);
-     
-#define REPORT_ALLOC(ptr, type, size)
-#define REPORT_ALLOC_WITH_NOTE(ptr, type, size, note)
-#define REPORT_ALLOC_WITH_INT(ptr, type, size, n)
-#define REPORT_DEALLOC(ptr, type)
-     
-
-
-
-
-
 /* ===================================================================
    compare_ptr
 
@@ -435,10 +402,8 @@ arraylist *make_arraylist(int init_cap)
     
     al = (arraylist *)allocate_memory(sizeof(arraylist),
                                       MISCELLANEOUS_MEM_USAGE);
-    REPORT_ALLOC(al, "arraylist", sizeof(arraylist));
     al->array = (void **)allocate_memory(sizeof(void*) * init_cap,
                                          MISCELLANEOUS_MEM_USAGE);
-    REPORT_ALLOC(al->array, "void**", sizeof(void*)*init_cap);
     al->capacity = init_cap;
     al->size = 0;
     al->next = NULL;
@@ -464,10 +429,8 @@ void destroy_arraylist(arraylist *al)
     
     if ( (al->capacity > 0) && (al->array != NULL) )
     {
-        REPORT_DEALLOC(al->array, "void**");
         free_memory(al->array, MISCELLANEOUS_MEM_USAGE);
     }
-    REPORT_DEALLOC(al, "arraylist");
     free_memory(al, MISCELLANEOUS_MEM_USAGE);
 }//destroy_arraylist
 
@@ -499,7 +462,6 @@ void grow_arraylist(arraylist *al, int desired_capacity)
     //Grow the array (can't use realloc b/c of Soar's memory routines)
     new_array = (void **)allocate_memory_and_zerofill(new_capacity * sizeof(void*),
                                                       MISCELLANEOUS_MEM_USAGE);
-    REPORT_ALLOC(new_array, "void**", new_capacity * sizeof(void*));
     for(i = 0; i < al->size; i++)
     {
         new_array[i] = al->array[i];
@@ -507,7 +469,6 @@ void grow_arraylist(arraylist *al, int desired_capacity)
 
     if (al->array != NULL)
     {
-        REPORT_DEALLOC(al->array, "void**");
         free_memory(al->array, MISCELLANEOUS_MEM_USAGE);
     }
 
@@ -627,13 +588,11 @@ wmetree *make_wmetree_node(wme *w)
     wmetree *node;
 
     node = allocate_memory(sizeof(wmetree), MISCELLANEOUS_MEM_USAGE);
-    REPORT_ALLOC(node, "wmetree", sizeof(wmetree));
     node->next = NULL;
     node->attr = NULL;
     node->val.intval = 0;
     node->val_type = IDENTIFIER_SYMBOL_TYPE;
     node->children = make_hash_table(0, hash_wmetree);
-    REPORT_ALLOC(node->children, "hash_table", sizeof(hash_table));
     node->parent = NULL;
     node->depth = -1;
     node->assoc_wmes = make_arraylist(20);
@@ -645,7 +604,6 @@ wmetree *make_wmetree_node(wme *w)
     
     node->attr = allocate_memory(sizeof(char)*strlen(w->attr->sc.name) + 1,
                                 MISCELLANEOUS_MEM_USAGE);
-    REPORT_ALLOC(node->attr, "char*", sizeof(char)*strlen(w->attr->sc.name) + 1);
     strcpy(node->attr, w->attr->sc.name);
     
     switch(w->value->common.symbol_type)
@@ -655,9 +613,6 @@ wmetree *make_wmetree_node(wme *w)
             node->val.strval =
                 allocate_memory(sizeof(char)*strlen(w->value->sc.name) + 1,
                                 MISCELLANEOUS_MEM_USAGE);
-            REPORT_ALLOC_WITH_NOTE(node->val.strval, "char*",
-                                   sizeof(char)*strlen(w->value->sc.name) + 1,
-                                   w->value->sc.name);
             strcpy(node->val.strval, w->value->sc.name);
             break;
 
@@ -694,13 +649,11 @@ void dw_helper(wmetree *tree)
 
     if (tree->attr != NULL)
     {
-        REPORT_DEALLOC(tree->attr, "char*");
         free_memory(tree->attr, MISCELLANEOUS_MEM_USAGE);
     }
     
     if (tree->val_type == SYM_CONSTANT_SYMBOL_TYPE)
     {
-        REPORT_DEALLOC(tree->val_type, "char*");
         free_memory(tree->val.strval, MISCELLANEOUS_MEM_USAGE);
     }
     
@@ -717,12 +670,10 @@ void dw_helper(wmetree *tree)
         for (; child != NIL; child = child->next)
         {
             dw_helper(child);
-            REPORT_DEALLOC(child, "wmetree");
             free_memory(child, MISCELLANEOUS_MEM_USAGE);
         }
     }
 
-    REPORT_DEALLOC(tree->children, "hash_table");
     free_memory(tree->children, HASH_TABLE_MEM_USAGE);
 }//dw_helper
 
@@ -730,7 +681,6 @@ void destroy_wmetree(wmetree *tree)
 {
     dw_helper(tree);
 
-    REPORT_DEALLOC(tree, "wmetree");
     free_memory(tree, MISCELLANEOUS_MEM_USAGE);
 }//destroy_wmetree
 
@@ -797,7 +747,6 @@ wme *get_aug_of_id(Symbol *sym, char *attr_name, char *value_name)
     
     tc = sym->id.tc_num + 1;
     wmes = get_augs_of_id(sym, tc, &len);
-    REPORT_ALLOC(wmes, "wme*", sizeof(wme*)*len);
     sym->id.tc_num = tc - 1;
     if (wmes == NULL) return NULL;
 
@@ -810,7 +759,6 @@ wme *get_aug_of_id(Symbol *sym, char *attr_name, char *value_name)
         }
     }
 
-    REPORT_DEALLOC(wmes, "wme*");
     free_memory(wmes, MISCELLANEOUS_MEM_USAGE);
     return ret_wme;
 }//get_aug_of_id
@@ -858,7 +806,6 @@ preference *make_fake_preference_for_epmem_wme(epmem_header *h, Symbol *goal, wm
      * make the fake instantiation
      */
     allocate_with_pool(&current_agent(instantiation_pool), &inst);
-    REPORT_ALLOC(inst, "instantiation", sizeof(instantiation));
     pref->inst = inst;
     pref->inst_next = pref->inst_prev = NIL;
     inst->preferences_generated = pref;
@@ -879,7 +826,6 @@ preference *make_fake_preference_for_epmem_wme(epmem_header *h, Symbol *goal, wm
      *       the ^superstate WME and whose action is the given WME
      */
     allocate_with_pool(&current_agent(condition_pool), &cond);
-    REPORT_ALLOC(cond, "condition", sizeof(condition));
     cond->type = POSITIVE_CONDITION;
     cond->next = cond->prev = NIL;
     inst->top_of_instantiated_conditions = cond;
@@ -909,9 +855,9 @@ preference *make_fake_preference_for_epmem_wme(epmem_header *h, Symbol *goal, wm
    =================================================================== */
 void remove_fake_preference_for_epmem_wme(wme *w)
 {
-    REPORT_DEALLOC(w->preference->inst->top_of_instantiated_conditions, "condition");
-    REPORT_DEALLOC(w->preference->inst, "instantiation");
+
     preference_remove_ref(w->preference);
+    
 
 }//remove_fake_preference_for_epmem_wme
 
@@ -932,7 +878,6 @@ epmem_header *make_epmem_header(Symbol *s)
     epmem_header *h;
 
     h = allocate_memory(sizeof(epmem_header), MISCELLANEOUS_MEM_USAGE);
-    REPORT_ALLOC(h, "epmem_header", sizeof(epmem_header));
     h->index = -42; //A bogus value to help with debugging
     h->state = s;
     h->curr_memory = NULL;
@@ -1006,7 +951,6 @@ void destroy_epmem_header(epmem_header *h)
     symbol_remove_ref(h->retrieved);
 
     //Free the struct
-    REPORT_DEALLOC(h, "epmem_header");
     free_memory(h, MISCELLANEOUS_MEM_USAGE);
     
 }//destroy_epmem_header
@@ -1406,7 +1350,6 @@ void add_node_to_memory(arraylist *epmem, wmetree *node, int activation)
     //Allocate and init a new actwme
     actwme *aw = (actwme *)allocate_memory(sizeof(actwme),
                                            MISCELLANEOUS_MEM_USAGE);
-    REPORT_ALLOC(aw, "actwme", sizeof(actwme));
     aw->node = node;
     aw->activation = activation;
     
@@ -1432,8 +1375,6 @@ void add_node_to_memory(arraylist *epmem, wmetree *node, int activation)
    epmem - this function generates an arraylist of actwme structs
            representing all the nodes in the wmetree that are
            referenced by the working memory tree rooted by sym.
-           CAVEAT:  Caller is responsible for deallocating this
-                    list and all the actwme structs it contains!
    tc - a transitive closure number for avoiding loops in working mem
 
    Created: 09 Jan 2004
@@ -1452,7 +1393,6 @@ Symbol *update_wmetree(wmetree *node,
     arraylist *syms = make_arraylist(32);
     int pos = 0;
 
-    
     start_timer(&current_agent(epmem_updatewmetree_start_time));
 
     
@@ -1460,7 +1400,6 @@ Symbol *update_wmetree(wmetree *node,
     {
         start_timer(&current_agent(epmem_getaugs_start_time));
         wmes = get_augs_of_id( sym, tc, &len );
-        REPORT_ALLOC(wmes, "wme*", sizeof(wme*)*len);
         stop_timer(&current_agent(epmem_getaugs_start_time), &current_agent(epmem_getaugs_total_time));
 
         if (wmes != NULL)
@@ -1512,7 +1451,6 @@ Symbol *update_wmetree(wmetree *node,
         //Deallocate the last wmes list
         if (wmes != NULL)
         {
-            REPORT_DEALLOC(wmes, "wme*");
             free_memory(wmes, MISCELLANEOUS_MEM_USAGE);
         }
         
@@ -1586,7 +1524,6 @@ void record_epmem( )
     //Allocate and initialize the new memory
     new_epmem = (episodic_memory *)allocate_memory(sizeof(episodic_memory),
                                                    MISCELLANEOUS_MEM_USAGE);
-    REPORT_ALLOC(new_epmem, "episodic_memory", sizeof(episodic_memory));
     new_epmem->last_usage = -1;
     new_epmem->match_score = 0;
 
@@ -1628,7 +1565,7 @@ void record_epmem( )
                 
                 //Test to see if the new arraylist has too many entries.
                 //If so, this node has become too ubiquitous and will no
-                //longer be used in matching
+                //longer be used in mat ching
                 if (g_memories->size > ubiquitous_max)
                 {
                     float ubiquity =
@@ -2023,14 +1960,6 @@ void epmem_clear_curr_mem(epmem_header *h)
         //Remove from WM
         w = get_arraylist_entry(node->assoc_wmes,h->index);
         remove_fake_preference_for_epmem_wme(w);
-        symbol_remove_ref(w->attr);
-        //Determine the WME's value
-        if ( (node->val_type == SYM_CONSTANT_SYMBOL_TYPE)
-             || (node->val_type == INT_CONSTANT_SYMBOL_TYPE)
-             || (node->val_type == FLOAT_CONSTANT_SYMBOL_TYPE) )
-        {
-                symbol_remove_ref(w->value);
-        }//if
         remove_input_wme(w);
         wme_remove_ref(w);
 
@@ -2363,7 +2292,6 @@ void install_epmem_in_wm(epmem_header *h, arraylist *epmem)
         }//switch
 
         new_wme = add_input_wme(id, attr, val);
-        new_wme->foo = 42;
         set_arraylist_entry(node->assoc_wmes,h->index, new_wme);
         wme_add_ref(new_wme);
         new_wme->preference = make_fake_preference_for_epmem_wme(h, h->state, new_wme);
@@ -2393,7 +2321,6 @@ arraylist *respond_to_query(epmem_header *h)
     arraylist *al_retrieved;
     tc_number tc;
     wme *new_wme;
-    int i;
 
     //Remove the old retrieved memory
     start_timer(&current_agent(epmem_clearmem_start_time));
@@ -2409,13 +2336,6 @@ arraylist *respond_to_query(epmem_header *h)
     //If the query is empty then we're done
     if (al_query->size == 0)
     {
-        for(i = 0; i < al_query->size; i++)
-        {
-            actwme *aw = (actwme *)get_arraylist_entry(al_query, i);
-            REPORT_DEALLOC(aw, "actwme");
-            free_memory(aw, MISCELLANEOUS_MEM_USAGE);
-        }
-
         destroy_arraylist(al_query);
         return NULL;
     }
@@ -2425,14 +2345,6 @@ arraylist *respond_to_query(epmem_header *h)
 
     //Match query to current memories list
     h->curr_memory = find_best_match(al_query);
-
-    //Cleanup the cue
-    for(i = 0; i < al_query->size; i++)
-    {
-        actwme *aw = (actwme *)get_arraylist_entry(al_query, i);
-        REPORT_DEALLOC(aw, "actwme");
-        free_memory(aw, MISCELLANEOUS_MEM_USAGE);
-    }
     destroy_arraylist(al_query);
 
     //Place the best fit on the retrieved link
@@ -2510,7 +2422,6 @@ void increment_retrieval_count(epmem_header *h, long inc_amt)
     //%%%way down.  WHY??
     tc = h->epmem->id.tc_num + 1;
     wmes = get_augs_of_id( h->epmem, tc, &len );
-    REPORT_ALLOC(wmes, "wme*", sizeof(wme*)*len);
     h->epmem->id.tc_num = tc - 1;
     
     if (wmes == NULL) return;
@@ -2524,7 +2435,6 @@ void increment_retrieval_count(epmem_header *h, long inc_amt)
             break;
         }
     }
-    REPORT_DEALLOC(wmes, "wme*");
     free_memory(wmes, MISCELLANEOUS_MEM_USAGE);
 
     //Check for remove only
@@ -2620,7 +2530,6 @@ Symbol *find_superstate(Symbol *sym)
 
     start_timer(&current_agent(epmem_getaugs_start_time));
     wmes = get_augs_of_id( sym, tc, &len );
-    REPORT_ALLOC(wmes, "wme*", sizeof(wme*)*len);
     stop_timer(&current_agent(epmem_getaugs_start_time), &current_agent(epmem_getaugs_total_time));
 
     if (wmes != NULL)
@@ -2637,7 +2546,6 @@ Symbol *find_superstate(Symbol *sym)
             }
         }
 
-        REPORT_DEALLOC(wmes, "wme*");
         free_memory(wmes, MISCELLANEOUS_MEM_USAGE);
     }//if
 
@@ -2662,6 +2570,7 @@ void epmem_update_header_stack()
     epmem_header *h;
     arraylist *new_states = make_arraylist(20);
     int bFound = FALSE;
+
 
     /*
      * Find the lowest state in g_header_stack that has an analog
@@ -2714,9 +2623,6 @@ void epmem_update_header_stack()
         h->index = g_header_stack->size;
         append_entry_to_arraylist(g_header_stack, (void *)h);
     }
-
-    //cleanup
-    destroy_arraylist(new_states);
 
 //      //%%%DEBUGGING:  Print the current header stack
 //      print("\nEpMem Header Stack: ");
@@ -2921,39 +2827,24 @@ void epmem_print_mem_usage()
     int total_strlen = 0;
     int num_epmems = g_memories->size;
     int num_actwmes = 0;
-    int i,j;
+    int i;
     episodic_memory *epmem;
-    actwme *aw;
 
     while(parent != NULL)
     {
-        REPORT_DEALLOC(parent->children, "hash_table");
-        
         for (hash_value = 0; hash_value < parent->children->size; hash_value++)
         {
             child = (wmetree *) (*(parent->children->buckets + hash_value));
             for (; child != NIL; child = child->next)
             {
-                num_strings++;
-                total_strlen += strlen(child->attr);
-                REPORT_DEALLOC(child->attr, "char*");
-                
                 if (child->val_type == SYM_CONSTANT_SYMBOL_TYPE)
                 {
-                    REPORT_DEALLOC(child->val_type, "char*");
-                    
                     num_strings++;
                     total_strlen += strlen(child->val.strval);
                 }
 
-                REPORT_DEALLOC(child->assoc_memories->array, "void**");
-                REPORT_DEALLOC(child->assoc_memories, "arraylist");
                 num_am_ptrs += child->assoc_memories->size;
-
-                REPORT_DEALLOC(child->assoc_wmes->array, "void**");
-                REPORT_DEALLOC(child->assoc_wmes, "arraylist");
                 
-                REPORT_DEALLOC(child, "wmetree");
                 num_wmetrees++;
 
                 //If this WME has children add it to the queue for future
@@ -2961,10 +2852,6 @@ void epmem_print_mem_usage()
                 if (child->children->count > 0)
                 {
                     append_entry_to_arraylist(queue, child);
-                }
-                else
-                {
-                    REPORT_DEALLOC(child->children, "hash_table");
                 }
 
             }//for
@@ -2977,17 +2864,10 @@ void epmem_print_mem_usage()
 
     destroy_arraylist(queue);
 
-    for(i = 0; i < g_memories->size; i++)
+    for(i = 1; i < g_memories->size; i++)
     {
         epmem = (episodic_memory *)get_arraylist_entry(g_memories, i);
-        REPORT_DEALLOC(epmem, "episodic_memory");
-
         num_actwmes += epmem->content->size;
-        for(j=0; j < epmem->content->size; j++)
-        {
-            aw = (actwme *)get_arraylist_entry(epmem->content, j);
-            REPORT_DEALLOC(aw, "actwme");
-        }
     }
     
     print("\n");
@@ -3242,7 +3122,7 @@ void epmem_update()
     
     
     //%%%DEBUGGING
-    if (count % 100 == 0)
+    if (count % 500 == 0)
     {
         epmem_print_mem_usage();
 //        epmem_print_cpu_usage();
