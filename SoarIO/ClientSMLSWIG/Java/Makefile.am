@@ -34,5 +34,5 @@ Java_sml_ClientInterface_wrap.cpp: Java_sml_ClientInterface.i
 
 clean:
 	rm -f Java_sml_ClientInterface_wrap.cpp
-	rm -l build/*.java
+	rm -f build/*.java
 	rm -f build/*.class
