@@ -34,6 +34,7 @@ const std::string k_startToken			= "-start";
 const std::string k_updateToken			= "-update";
 
 typedef std::vector<InputLinkObject> ilObjVector_t;
+typedef ilObjVector_t::iterator ilObjItr;
 
 /************************************************************************
  * InputLinkSpec

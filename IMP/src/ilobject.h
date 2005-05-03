@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 /************************************************************************
 * ILObject
 * 
@@ -23,6 +24,7 @@ const std::string k_intString("int");
 const std::string k_stringString("str");
 const std::string k_floatString("flt");
 const std::string k_idString("id");
+const std::string k_onChangeString("onchange");
 
 eElementType stringToType(std::string& source);
 
@@ -41,6 +43,9 @@ union WMEValue
 	std::string* id;
 };
 
+typedef std::vector<eElementType> typesContainter;
+typedef typesContainter::iterator typesIterator;
+
 class InputLinkObject
 {
 
@@ -55,14 +60,18 @@ public:
 	void setStartValue(std::string& inValue);
 	void setUpdateValue(std::string& inValue);
 	void setType(std::string& inValue);
-	void setUpdateFrequency();
+	void print(std::ostream&);
+	void setUpdateFrequency(std::string& inValue);
 private:
-	std::string m_parentId;
-	std::string m_attribName;
-	std::vector <eElementType> m_elementTypes;
-	eElementType m_curType;
-	WMEValue m_value;
-	std::string m_updateValue;
+	std::ostream& printType(std::ostream&, eElementType);
+	std::ostream& printValue(std::ostream&);
+	std::string				m_parentId;
+	std::string				m_attribName;
+	typesContainter		m_elementTypes;
+	eElementType			m_curType;
+	WMEValue					m_value;
+	std::string				m_updateValue;
+	eUpdateFrequency	m_updateFrequency;
 };
 
 

@@ -25,8 +25,7 @@ int main(int argc, char* argv[])
 	InputLinkSpec ilspec;
 	
 	cout << "Hajimeteimas..." << endl;
-	cout << "Number of args is " << argc << endl;
-	//pause();
+	//cout << "Number of args is " << argc << endl;
 
 	//should have at least 1 argument - the filename for the input link spec	
 	if(argc != 2) 

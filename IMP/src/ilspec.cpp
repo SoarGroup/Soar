@@ -43,6 +43,8 @@ InputLinkSpec::~InputLinkSpec()
 extern void pause();
 const int defaultLoopBegin = 0;
 const int defaultLoopEnd = 1;
+//counts number of lines successfully imported from the file
+int lineNumber = 0;
 
 /* ImportDM
  *
@@ -76,7 +78,7 @@ void printStage(eParseStage stage, ostream& stream)
 		case READING_PRE_BEGIN:
 			stream << "'Before Reading'" << endl;
 			break;
-		case READING_CONTROL_STRUCTURE:
+		case READING_CONTROL_STRUCTURE: //this is also READING_BEGIN_STAGE
 			stream << "'Reading control structure'" << endl;
 			break;
 		case READING_PARENT_IDENTIFIER:
@@ -87,6 +89,9 @@ void printStage(eParseStage stage, ostream& stream)
 			break;
 		case READING_VALUE_TYPE:
 			stream << "'Reading value type'" << endl;
+			break;
+		case READING_IDENTIFIER_UNIQUE_NAME:
+			stream << "'Reading unique name for id'" << endl;
 			break;
 		case READING_START_VALUE:
 			stream << "'Reading start value'" << endl;
@@ -103,6 +108,8 @@ void printStage(eParseStage stage, ostream& stream)
 		case READING_ERROR:
 			stream << "***Error in parse***" << endl;
 			break;
+		case READING_FINAL_STAGE:
+			stream << "'Reading final stage'" << endl;
 		default:
 			break;
 	}
@@ -146,11 +153,21 @@ string readAndTrimOneWord(string& source, bool echo = false)
 
 void writeFileLineToString(fstream& source, string& dest, bool echo = false)
 {
-	char intermediate[MAX_IMP_LINE_LENGTH + 1];
+	char intermediate[MAX_IMP_LINE_LENGTH + 1];//TODO check these bounds
 	source.getline(intermediate, MAX_IMP_LINE_LENGTH + 1);//what is this + 1 for? looks like it might overflow
+	
+	//ensure that the line wasn't too long //TODO confirm that this is correct
+	if(source.gcount() >= MAX_IMP_LINE_LENGTH+1)
+	{
+		cout<<"Error: line "<<lineNumber<<" too long"<<endl;
+		return;
+	}
+	
 	dest = intermediate;
 	if(echo)
-		cout << "Entire line from file is:>" << dest << "<" << endl;
+		cout << "Entire file line:>" << dest << "<" << endl;
+	lineNumber++;
+	//cout << "just read line " << lineNumber << endl;
 }
 
 /* ImportIL
@@ -170,93 +187,65 @@ bool InputLinkSpec::ImportIL(string& filename)
 		return false;
 	}
 
-	//counts number of lines successfully imported from the file
-	int lineNumber = 0;
-	
+
 	//this should create InputLinkObjects to hold each line of data read
 	while(!file.eof())
 	{
 		eParseStage parseStage = READING_BEGIN_STAGE;
 		eParseStage lastCompletedState = READING_PRE_BEGIN;
-		int loopBegin = 0;//FIXME TODO shouldn't these be defaults?
-		int loopEnd = 1;
+		int loopIteration = defaultLoopBegin;
+		int loopEnd = defaultLoopEnd;
 
 		string line;
 		writeFileLineToString(file, line, true);
 
-		string firstWord = readOneWord(line);	 
-		//cout << "first word is >" << firstWord << "<" << endl;
-		
-		//ensure that the line wasn't too long
-		if(file.gcount() >= MAX_IMP_LINE_LENGTH+1)
-		{
-			cout<<"Error: line "<<lineNumber<<" too long"<<endl;
-			return false;
-		}
+		//peek at the first word, but don't remove it from the stream
+		string firstWord = readOneWord(line);
 
-		//numCharsRead = sscanf(curLine, "%s", curWord);
-//TODO fix these comments
-    //the first read should always be a string, so if this fails, the input was
-    //improperly formated.  The captured word will either be a control structure
-    //or an identifier name
-
+    //The captured word will either be a control structure or an identifier name
 		if(firstWord == k_forToken)
-		{
-			int controlStartVal, controlEndVal = 0;
-
-			cout << "'for' control structure recognized." << endl;
-
-			//clear everything up to and including the first space
-			trimOneWord(line);
-
-			//read control variable name
-			string controlName = readAndTrimOneWord(line);
-			//cout << "control variable name is >" << controlName << "<" << endl;
-
-			controlStartVal = atoi(readAndTrimOneWord(line).c_str());
-			//cout << "control start val is >" << controlStartVal << "<" << endl;
-
-			controlEndVal = atoi(line.c_str());
-			//cout << "control end val is >" << controlEndVal << "<" << endl;
-
-			cout << "After all the control nonsense, the values are: " << controlName << " "
-				<< controlStartVal << " " << controlEndVal << endl;
-
-			//set ACTUAL loop start and stop delimiters			
-			loopBegin = controlStartVal;
-			loopEnd = controlEndVal;
-
-			//TODO (if doing nested control loops, add an entry to the control queue)
-
-			//since we just consumed the first line, read in the next one 
-			//for the identifier information
-			writeFileLineToString(file, line, true);
-			lastCompletedState = READING_CONTROL_STRUCTURE;
-			parseStage = READING_PARENT_IDENTIFIER;			
-		}
+			parseStage = READING_CONTROL_STRUCTURE;		
 		else
 			parseStage = READING_PARENT_IDENTIFIER;
 
-		string curWord;
 		InputLinkObject ilObj;
-
 		//Begin parsing based on stage
-		//while(parseStage != READING_FINAL_STAGE)
-		//{
-		for(; loopBegin < loopEnd; ++loopBegin)
+		while(parseStage != READING_FINAL_STAGE)
+		//for(; loopIteration < loopEnd; ++loopIteration)
 		{
 			printStage(parseStage, cout);
-			bool readingFirstType = true, moreTypesLeft = true;
+			bool readingFirstType = true, moreTypesLeft = true, hasStartValue = false;
+			string controlName, curWord = "";
+			int controlStartVal, controlEndVal = 0;
 
 			switch(parseStage)
 			{
-
 				case READING_CONTROL_STRUCTURE:
+					//clear off the token
+					trimOneWord(line);
+
+					//read control variable name
+					controlName = readAndTrimOneWord(line);
+					controlStartVal = atoi(readAndTrimOneWord(line).c_str());
+					controlEndVal = atoi(line.c_str());
+					cout << "After all the control nonsense, the values are: " << controlName << " "
+						<< controlStartVal << " " << controlEndVal << endl;
+
+					//set ACTUAL loop start and stop delimiters			
+					loopIteration = controlStartVal;
+					loopEnd = controlEndVal;
+
+					//TODO (if doing nested control loops, add an entry to the control queue)
+
+					//since we just consumed the first line, read in the next one 
+					//for the identifier information
+					writeFileLineToString(file, line, true);
+					lastCompletedState = READING_CONTROL_STRUCTURE;
+					parseStage = READING_PARENT_IDENTIFIER;
 					break;
 				case READING_PARENT_IDENTIFIER:
 
 					curWord = readAndTrimOneWord(line);
-					cout << "ParentIdName is >" << curWord << "<" << endl;
 					ilObj.setParentId(curWord);
 					lastCompletedState = READING_PARENT_IDENTIFIER;
 					parseStage = READING_ATTRIBUTE;
@@ -305,44 +294,48 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 						//TODO tough error checking to do here---v
 						//if the type is an ID, it should be listed alone
-							parseStage = READING_START_VALUE;
 						if(!stricmp(curWord.c_str(), k_idString.c_str()))
 						{
-							lastCompletedState = READING_VALUE_TYPE;
-							//parseStage = READING_IDENTIFIER_UNIQUE_NAME;
+							//lastCompletedState = READING_VALUE_TYPE;
+							parseStage = READING_IDENTIFIER_UNIQUE_NAME;
 							break;
 						}
-
+						else//will execute more times than necessary, but is not incorrect
+							parseStage = READING_START_VALUE;
 					}
 					while(moreTypesLeft);
 
 					lastCompletedState = READING_VALUE_TYPE;
 					break;
-				/*case READING_IDENTIFIER_UNIQUE_NAME:
-				cout << "\t\tWe have an identifier, so reading the unique name." << endl;
-				cout << "before next read and trim, line is:>" << line << "<" << endl;
+				//This case is really just a special case of READING_START_VALUE	
+				case READING_IDENTIFIER_UNIQUE_NAME:
+
+					//get the actual ID unique name now
 					curWord = readAndTrimOneWord(line);//TODO error checking
-				cout << "trying to set the start value"
+
 					ilObj.setStartValue(curWord);
 					lastCompletedState = READING_IDENTIFIER_UNIQUE_NAME;
 					parseStage = READING_FINAL_STAGE;//IDs never get updated
-					break;*/		
+					break;
 				case READING_START_VALUE:
-//cout << "Top of Reading start value label...." << endl;
-//cout << "before next read and trim, line is:>" << line << "<" << endl;
-					curWord = readAndTrimOneWord(line, true);
-
-//cout << "\tshould have just trimmed of start token here: " << curWord << endl;
-//cout << "\tand left behind:" << line << endl;
+					//The start value of a WME is optional, so peek and see if it's there
+					curWord = readOneWord(line);	
 					if(curWord != k_startToken)
 					{
-						parseStage = READING_ERROR;
+						//no start value.  Perhaps there is an optional update value
+						parseStage = READING_UPDATE;
 						break;
 					}
-//cout << "\tnow should have just the start value left on this line..."	<< line << endl;
+					else//token really was there.  Clear it
+						trimOneWord(line);
+						
 					//now that the token is out of the way, get the actual start value
 					curWord = readAndTrimOneWord(line, true);
 
+					//NOTE there are cases where this will be giving an int/float wme 
+					//a literal string value (which will end up as zero). This
+					//happens when the value is the name of a control loop variable.  
+					//this value is set correctly later on
 					ilObj.setStartValue(curWord);
 					lastCompletedState = READING_START_VALUE;
 					parseStage = READING_UPDATE;
@@ -351,14 +344,32 @@ bool InputLinkSpec::ImportIL(string& filename)
 					//this is optional.  if there is no -update token, bug out.
 					//TODO make a note that this is not a literal string, but rather the
 					//name of the variable whose value will be used for the update
-					curWord	= readAndTrimOneWord(line);
+					
+					//peek and see if the token is there
+					curWord	= readOneWord(line);
 					if(curWord == k_updateToken)
-						curWord = readAndTrimOneWord(line);
+					{	//token is there, so clear it off
+						trimOneWord(line);
+					}
 					else
+					{	//nothing else should be on this line. If there is, ignore it
+						parseStage = READING_FINAL_STAGE;
+						break;
+					}
+					//the -update token will be followed by 1 or 2 strings if done correctly
+					
+					//read off the frequency
+					curWord = readAndTrimOneWord(line, true);
+					if(curWord == "")
 					{
+						cout << "***Was expecting a frequency for the update, but found none..." << endl;
 						parseStage = READING_ERROR;
 						break;
 					}
+					else //FIXME TODO pick up work here too
+						ilObj.setUpdateFrequency(curWord);
+					
+					
 					if(curWord == "\n" || curWord == "" )
 					{
 						ilObj.setUpdateValue(line);
@@ -381,23 +392,35 @@ bool InputLinkSpec::ImportIL(string& filename)
 					pause();
 					exit(-1);
 					break;
+				case READING_FINAL_STAGE:
+					break;
 				default:
-					cout << "What? ended up in the default case...." << endl;
+					cout << "What? ended up in the default case, with value: " << parseStage << endl;
 					assert(false);
 					break;
 			}//end switch
 		}// end control loop
-cout << "\toutside of for loop, will read another line soon....." << endl;
-		ilObjects.push_back(ilObj);
-//		loopBegin = defaultLoopBegin;
-//		loopEnd = defaultLoopEnd;
 
-		++lineNumber;
-//     cout << "just read line " << lineNumber << endl;
+
+		//now we've read a WME pattern. If it should be duplicated, do that now
+		for(int counter = loopIteration; counter < loopEnd; ++counter)
+		{
+			//the parts of a WME pattern that might have a field equal to the control
+			//variable name are the optional "update"/"start fields
+			//
+		}
+
+		ilObjects.push_back(ilObj);
+
+
 	}//while there are still lines to read
 
 	cout << "Read " << lineNumber << " lines." << endl;
 	cout << "Number of input link entries " << ilObjects.size() << endl;
+	for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
+	{
+		objItr->print(cout);
+	}
 	file.close();
 	return true;
 }
