@@ -15,7 +15,7 @@ import general.ElementXML;
 import manager.MainWindow;
 import manager.Pane;
 import modules.AbstractView;
-import modules.TraceView;
+import modules.TextTraceView;
 import debugger.MainFrame;
 import dialogs.NewWindowDialog;
 

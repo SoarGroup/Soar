@@ -21,7 +21,7 @@ import dialogs.PropertiesDialog;
 * and clears each time a command is issued.
  * 
  ************************************************************************/
-public class UpdateCommandView extends AbstractSingleCommandView
+public class UpdateCommandView extends AbstractSingleTextView
 {
 	public UpdateCommandView()
 	{

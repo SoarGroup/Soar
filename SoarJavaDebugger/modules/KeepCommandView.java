@@ -25,7 +25,7 @@ import doc.* ;
 * but instead keeps a full trace.
 * 
 ********************************************************************************************/
-public class KeepCommandView extends AbstractSingleCommandView
+public class KeepCommandView extends AbstractSingleTextView
 {
 	public KeepCommandView()
 	{

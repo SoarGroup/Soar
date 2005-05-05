@@ -66,13 +66,16 @@ public class TreeTraceView extends AbstractComboView
 	/** Controls whether we cache strings that are due to be subtree nodes and only add the nodes when the user clicks--or not */
 	protected final static boolean kCacheSubText = true ;
 
+	/** We cache a series of strings made up of just spaces up to a certain size, so we can do rapid indenting through a lookup */
 	protected static final int kCachedSpaces = 100 ;
 	protected static final String[] kPadSpaces = new String[kCachedSpaces] ;
-	
+
+	/** We use these keys to link the nodes of the tree together, so we can search it rapidly */
 	protected final static String kNextKey = "next" ;
 	protected final static String kPrevKey = "prev" ;
 	protected final static String kLazyKey = "lazy" ;
 	
+	/** This is a class constructor -- it runs once, the first time the class is used.  Don't mistake it for a normal, instance constructor */
 	static
 	{
 		// Fill in the kPadSpaces array

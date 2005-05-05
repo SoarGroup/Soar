@@ -94,6 +94,15 @@ public abstract class AbstractComboView extends AbstractView
 	/** The control we're using to display the output in this case **/
 	protected abstract Control getDisplayControl() ;
 	
+	/** 
+	 * Returns the entire window, within which the display control lies.
+	 * 
+	 * Usually the display control is all there is, but this method allows us to define
+	 * a container that surrounds the display control and includes other supporting controls.
+	 * In which case this method should be overriden.
+	 */
+	protected Control getDisplayWindow() { return getDisplayControl() ; }
+	
 	/************************************************************************
 	* 
 	* Go from current selection (where right click occured) to the object
@@ -174,7 +183,7 @@ public abstract class AbstractComboView extends AbstractView
 			FormData attachBottom = FormDataHelper.anchorFull(0) ;
 			attachBottom.bottom = new FormAttachment(m_ComboContainer) ;
 			
-			getDisplayControl().setLayoutData(attachBottom) ;
+			getDisplayWindow().setLayoutData(attachBottom) ;
 			layoutComboBar(m_ComboAtTop) ;
 		}
 		else
@@ -182,7 +191,7 @@ public abstract class AbstractComboView extends AbstractView
 			FormData attachTop = FormDataHelper.anchorFull(0) ;
 			attachTop.top = new FormAttachment(m_ComboContainer) ;
 			
-			getDisplayControl().setLayoutData(attachTop) ;
+			getDisplayWindow().setLayoutData(attachTop) ;
 			layoutComboBar(m_ComboAtTop) ;
 		}
 		

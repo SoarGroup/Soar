@@ -34,13 +34,13 @@ import doc.Document;
 * and a text window to display the output.
  * 
  ************************************************************************/
-public abstract class AbstractCommandView extends AbstractComboView
+public abstract class AbstractTextView extends AbstractComboView
 {
 	private Text m_Text ;
 
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
-	public AbstractCommandView()
+	public AbstractTextView()
 	{
 		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;

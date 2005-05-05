@@ -33,9 +33,9 @@ import doc.Document;
  * Getting closer to a real command line window.
  * 
  ************************************************************************/
-public class TraceView extends AbstractCommandView
+public class TextTraceView extends AbstractTextView
 {
-	public TraceView()
+	public TextTraceView()
 	{
 		m_ClearEachCommand = false ;
 		m_UpdateOnStop = false ;

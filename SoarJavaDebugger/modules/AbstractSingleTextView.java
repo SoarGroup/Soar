@@ -22,7 +22,7 @@ import dialogs.PropertiesDialog;
  * from a complete run.
  * 
  ************************************************************************/
-public abstract class AbstractSingleCommandView extends AbstractCommandView
+public abstract class AbstractSingleTextView extends AbstractTextView
 {
 	public Color getBackgroundColor()
 	{

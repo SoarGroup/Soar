@@ -77,6 +77,30 @@ public class FormDataHelper
 		return data ;
 	}
 
+	// Anchor to the left of the form
+	static public FormData anchorLeft(int offset)
+	{
+		FormData data = new FormData() ;
+		
+		data.left = new FormAttachment(0, offset) ;
+		data.top = new FormAttachment(0, -offset) ;
+		data.bottom = new FormAttachment(100, -offset) ;
+		
+		return data ;
+	}
+
+	// Anchor to the right of the form
+	static public FormData anchorRight(int offset)
+	{
+		FormData data = new FormData() ;
+		
+		data.right = new FormAttachment(100, offset) ;
+		data.top = new FormAttachment(0, -offset) ;
+		data.bottom = new FormAttachment(100, -offset) ;
+		
+		return data ;
+	}
+
 	// Anchor to the top of the form
 	static public FormData anchorTop(int offset)
 	{
