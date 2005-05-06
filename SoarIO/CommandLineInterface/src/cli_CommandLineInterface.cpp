@@ -99,14 +99,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIWatch]					= &cli::CommandLineInterface::ParseWatch;
 	m_CommandMap[Constants::kCLIWatchWMEs]				= &cli::CommandLineInterface::ParseWatchWMEs;
 
-	// Set home directory
-//#ifdef WIN32
-//	char dllpath[256];
-//	GetModuleFileName(NULL, dllpath, 256);
-//	m_HomeDirectory = dllpath;
-//#else // WIN32
-	GetCurrentWorkingDirectory(m_HomeDirectory);
-//#endif
+	// Set home directory to a sane default value
+	m_HomeDirectory = ".";
 	
 	// Set library directory to home directory
 	m_LibraryDirectory = m_HomeDirectory;
@@ -419,16 +413,20 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 	return false;
 }
 
-/*************************************************************
-* @brief Set the kernel this command line module is interfacing with.
-* @param pKernel The pointer to the gSKI kernel interface
-* @param kernelVersion The gSKI version, available from the KernelFactory
-* @param pKernelSML The pointer to the KernelSML object, optional, used to disable print callbacks
-*************************************************************/
 EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML) {
 	m_pKernel = pKernel;
 	m_KernelVersion = kernelVersion;
 	m_pKernelSML = pKernelSML;
+
+	// Now that we have the kernel, set the home directory to the location of SoarKernelSML
+#ifdef WIN32
+	char dllpath[256];
+	GetModuleFileName(static_cast<HMODULE>(m_pKernelSML->GetModuleHandle()), dllpath, 256);
+	m_HomeDirectory = dllpath;
+	m_HomeDirectory = m_HomeDirectory.substr(0, m_HomeDirectory.find_last_of("\\"));
+#else // WIN32
+	GetCurrentWorkingDirectory(m_HomeDirectory);
+#endif
 }
 
 bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {

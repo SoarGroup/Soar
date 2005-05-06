@@ -103,6 +103,9 @@ public:
 
 	/*************************************************************
 	* @brief Set the kernel this command line module is interfacing with.
+	*		 Also has the side effect of setting the home directory to
+	*		 the location of SoarKernelSML, because the kernel is required
+	*		 to get that directory.
 	* @param pKernel The pointer to the gSKI kernel interface
 	* @param kernelVersion The gSKI version, available from the KernelFactory
 	* @param pKernelSML The pointer to the KernelSML object, optional, used to disable print callbacks
