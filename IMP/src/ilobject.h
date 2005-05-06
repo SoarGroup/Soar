@@ -30,7 +30,7 @@ const std::string k_cycleString("cycle");
 const std::string k_TBD("To Be Determined at runtime");
 
 eElementType	stringToType(const std::string& source);
-std::string		typeToString(eElementType type);
+const std::string		typeToString(eElementType type);
 
 enum eUpdateFrequency
 {
@@ -67,13 +67,15 @@ public:
 	void				setType(const std::string& inValue);
 	int					getNumTypes() const {return m_elementTypes.size();}
 	eElementType	getFirstType() /*const*/ {return m_elementTypes[0];}
-	
-	void print(std::ostream&);//TODO make this an operator overload instead
+
 	void setUpdateFrequency(std::string& inValue);
 	void setUpdateCondition(std::string& inValue);
+	
+	friend std::ostream& operator << (std::ostream& stream, InputLinkObject& obj);
+	
 private:
-	std::ostream& printType(std::ostream&, eElementType);
-	std::ostream& printValue(std::ostream&);
+	//std::ostream& printType(std::ostream&, eElementType);
+	//std::ostream& printValue(std::ostream&);
 	std::string				m_parentId;
 	std::string				m_attribName;
 	typesContainter		m_elementTypes;

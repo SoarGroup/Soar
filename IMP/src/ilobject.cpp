@@ -15,12 +15,6 @@ extern void pause();
 ******************************************************************************
 */
 
-/*InputLinkObject::InputLinkObject(string inParent, string inName, vector<eElementType>& inTypes, string inValue)
-		: m_parentId(inParent), m_attribName(inName), m_elementTypes(inTypes), m_startingValue(inValue)
-{
-	
-}*/
-
 InputLinkObject::InputLinkObject()
 {
 	m_value.f		= NULL;
@@ -33,8 +27,18 @@ InputLinkObject::InputLinkObject()
  *
  */  //TODO find out why this doesn't work correctly.  seems so simple
 InputLinkObject::~InputLinkObject()
-{/*
-	m_elementTypes.clear();
+{
+/*	cout << "printing some values in the destructor" << endl;
+	if(m_value.i != NULL)
+		cout << "\tvalue as int: " << *(m_value.i) << endl;
+	if(m_value.s != NULL)
+		cout << "\tvalue as string: " << *(m_value.s) << endl;
+	if(m_value.f != NULL)
+		cout << "\tvalue as float: " << *(m_value.f) << endl;
+	if(m_value.id != NULL)
+		cout << "\tvalue as identifier: " << *(m_value.id) << endl;
+*/		
+	m_elementTypes.clear();/*
 	switch(m_curType)
 	{
 		case ELEMENT_FLOAT:
@@ -56,7 +60,67 @@ InputLinkObject::~InputLinkObject()
 	}*/
 }
 
-//TODO comment
+std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
+{
+	stream << "Insertion operator printing an input link object..." << endl;
+	stream << "\tParent: \t" << obj.m_parentId << endl;
+	stream << "\tAttribute: \t" << obj.m_attribName << endl;
+	for(typesIterator tItr = obj.m_elementTypes.begin(); tItr != obj.m_elementTypes.end(); ++tItr)
+	{
+		stream << "\tType: \t\t";
+		//stream << obj.printType(stream, *tItr) << endl;
+		switch(*tItr)
+		{
+		case ELEMENT_FLOAT:
+			stream << "float element";
+			break;
+		case ELEMENT_INT:
+			stream << "int element";
+			break;
+		case ELEMENT_ID:
+			stream << "identifier";
+			break;
+		case ELEMENT_STRING:
+			stream << "string element";
+			break;
+		default:
+			stream << "BAAAAD things have happened";
+			assert(false);
+			break;
+		}
+		stream << endl;
+	}
+	stream << "\tValue: \t\t";
+	//stream << obj.printValue(stream) << endl;
+	switch(obj.m_curType)
+	{
+	case ELEMENT_STRING:
+		assert(obj.m_value.s);
+		stream << *(obj.m_value.s);
+		break;
+	case ELEMENT_FLOAT:
+		assert (obj.m_value.f);
+		stream << *(obj.m_value.f);
+		break;
+	case ELEMENT_ID:
+		assert(obj.m_value.id);
+		stream << *(obj.m_value.id);
+		break;
+	case ELEMENT_INT:
+		assert(obj.m_value.i);
+		stream << *(obj.m_value.i);
+		break;
+	default:
+		stream << "Wow...how did this happen?" << endl;
+		assert(false);
+		break;
+	}
+	stream << endl << endl;
+	return stream;
+}
+
+/*
+//TODO comment  //TODO consider printing the const values instead of these
 ostream& InputLinkObject::printType(ostream& stream, eElementType type)
 {
 	switch(type)
@@ -80,23 +144,23 @@ ostream& InputLinkObject::printType(ostream& stream, eElementType type)
 	}
 
 	return stream;
-}
+}*/
 
-string typeToString(eElementType type)
+const string typeToString(eElementType type)
 {
 	switch(type)
 	{
 		case ELEMENT_FLOAT:
-			return "float element";
+			return k_floatString;
 			break;
 		case ELEMENT_INT:
-			return "int element";
+			return k_intString;
 			break;
 		case ELEMENT_ID:
-			return "identifier";
+			return k_idString;
 			break;
 		case ELEMENT_STRING:
-			return "string element";
+			return k_stringString;
 			break;
 		default:
 			return "BAAAAD things have happened";
@@ -105,7 +169,7 @@ string typeToString(eElementType type)
 	}
 }
 //TODO comment
-ostream& InputLinkObject::printValue(ostream& stream)
+/*ostream& InputLinkObject::printValue(ostream& stream)
 {
 	switch(m_curType)
 	{
@@ -131,21 +195,8 @@ ostream& InputLinkObject::printValue(ostream& stream)
 			break;
 	}
 	return stream;
-}
-//TODO comment
-void InputLinkObject::print(ostream& stream)
-{
-	stream << "Printing an input link object..." << endl;
-	stream << "\tParent: \t" << m_parentId << endl;
-	stream << "\tAttribute: \t" << m_attribName << endl;
-	for(typesIterator tItr = m_elementTypes.begin(); tItr != m_elementTypes.end(); ++tItr)
-	{
-		stream << "\tType: \t";
-		stream << printType(stream, *tItr) << endl;
-	}
-	stream << "\tValue: \t";
-	stream << printValue(stream) << endl;
-}
+}*/
+
 
 //TODO comment
 void InputLinkObject::setType(string& inValue)

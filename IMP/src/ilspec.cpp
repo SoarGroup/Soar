@@ -484,16 +484,16 @@ cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << en
 
 		ilObjects.push_back(ilObj);
 
-
 	}//while there are still lines to read
 
 	cout << "Read " << lineNumber << " lines." << endl;
 	cout << "Number of input link entries " << ilObjects.size() << endl;
 	for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
 	{
-		objItr->print(cout);
+		cout << *objItr;
 	}
 	file.close();
+ilObjects.clear();//causes everything to destruct - just for testing TODO - remove
 	return true;
 }
 
