@@ -7,3 +7,4 @@ Makefile.in
 .libs
 libSoarKernel.la
 release
+*.o
