@@ -161,12 +161,12 @@ namespace gSKI
       {
          // If the current value has been accessed, then it's the client's
          // responsibility to release it. Skip it.
-         if(m_gotValue && m_it != m_con.end())
+         if(m_gotValue && tBase::m_it != tBase::m_con.end())
          {
-            ++m_it;
+            ++tBase::m_it;
          }
          // Release the remaining, unaccessed elements.
-         for(typename Tcon::iterator it = m_it; it != m_con.end(); ++it)
+         for(typename Tcon::iterator it = tBase::m_it; it != tBase::m_con.end(); ++it)
          {
             (*it)->Release();
          }
@@ -184,9 +184,9 @@ namespace gSKI
       {
          // If they didn't call GetVal() on this element, then release it before
          // moving on to the next one.
-         if(!m_gotValue && m_it != m_con.end())
+         if(!m_gotValue && tBase::m_it != tBase::m_con.end())
          {
-            (*m_it)->Release(err);
+            (*tBase::m_it)->Release(err);
          }
          m_gotValue = false;
          tBase::Next(err);

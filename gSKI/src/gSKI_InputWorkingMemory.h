@@ -16,6 +16,7 @@
 #include "IgSKI_WorkingMemory.h"
 #include "gSKI_WorkingMemoryView.h"
 #include "gSKI_Symbol.h"
+#include "gSKI_Agent.h"
 
 #include <map>
 #include <string>
