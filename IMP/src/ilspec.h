@@ -21,7 +21,8 @@ enum eParseStage
 	READING_ATTRIBUTE,
 	READING_VALUE_TYPE,
 	READING_START_VALUE,
-	READING_UPDATE,
+	READING_UPDATE_VALUE,
+	READING_UPDATE_FREQUENCY,
 	READING_CREATE_ON,
 	READING_DELETE_ON,
 	READING_FINAL_STAGE //= READING_DELETE_ON
@@ -32,6 +33,7 @@ const std::string k_typesOpenToken	= "<";
 const std::string k_typesCloseToken	= ">";
 const std::string k_startToken			= "-start";
 const std::string k_updateToken			= "-update";
+const std::string k_frequencyToken	= "-freq";
 
 typedef std::vector<InputLinkObject> ilObjVector_t;
 typedef ilObjVector_t::iterator ilObjItr;

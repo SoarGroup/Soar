@@ -23,22 +23,37 @@ extern void pause();
 
 InputLinkObject::InputLinkObject()
 {
+	m_value.f		= NULL;
 	m_value.i		= NULL;
 	m_value.id	= NULL;
 	m_value.s		= NULL;
-	m_value.f		= NULL;
 }
 
 /* Destructor
  *
  */  //TODO find out why this doesn't work correctly.  seems so simple
 InputLinkObject::~InputLinkObject()
-{
+{/*
 	m_elementTypes.clear();
-//	if(m_value.i	!= NULL) delete m_value.i;
-//	if(m_value.id != NULL) delete m_value.id;
-//	if(m_value.s	!= NULL) delete m_value.id;
-//	if(m_value.f	!= NULL) delete m_value.id;
+	switch(m_curType)
+	{
+		case ELEMENT_FLOAT:
+			delete m_value.f;
+			break;
+		case ELEMENT_ID:
+			delete m_value.id;
+			break;
+		case ELEMENT_INT:
+			delete m_value.i;
+			break;
+		case ELEMENT_STRING:
+			delete m_value.s;
+			break;
+		default:
+			cout << "Bad type found in destructor. Shouldn't be possible..." << endl;
+			assert(false);
+			break;
+	}*/
 }
 
 //TODO comment
@@ -67,28 +82,54 @@ ostream& InputLinkObject::printType(ostream& stream, eElementType type)
 	return stream;
 }
 
+string typeToString(eElementType type)
+{
+	switch(type)
+	{
+		case ELEMENT_FLOAT:
+			return "float element";
+			break;
+		case ELEMENT_INT:
+			return "int element";
+			break;
+		case ELEMENT_ID:
+			return "identifier";
+			break;
+		case ELEMENT_STRING:
+			return "string element";
+			break;
+		default:
+			return "BAAAAD things have happened";
+			assert(false);
+			break;
+	}
+}
 //TODO comment
 ostream& InputLinkObject::printValue(ostream& stream)
 {
-/*	switch(m_curType)
+	switch(m_curType)
 	{
 		case ELEMENT_STRING:
-			stream << *m_value.s;
+			assert(m_value.s);
+			stream << *(m_value.s);
 			break;
 		case ELEMENT_FLOAT:
-			stream << *m_value.f;
+			assert (m_value.f);
+			stream << *(m_value.f);
 			break;
 		case ELEMENT_ID:
-			stream << *m_value.id;
+			assert(m_value.id);
+			stream << *(m_value.id);
 			break;
 		case ELEMENT_INT:
-			stream << *m_value.i;
+			assert(m_value.i);
+			stream << *(m_value.i);
 			break;
 		default:
 			stream << "Wow...how did this happen?" << endl;
 			assert(false);
 			break;
-	}*/
+	}
 	return stream;
 }
 //TODO comment
@@ -99,13 +140,20 @@ void InputLinkObject::print(ostream& stream)
 	stream << "\tAttribute: \t" << m_attribName << endl;
 	for(typesIterator tItr = m_elementTypes.begin(); tItr != m_elementTypes.end(); ++tItr)
 	{
-		stream << "\tType: \t" << printType(stream, *tItr) << endl;
+		stream << "\tType: \t";
+		stream << printType(stream, *tItr) << endl;
 	}
-	stream << "\tValue: \t" << printValue(stream) << endl;
+	stream << "\tValue: \t";
+	stream << printValue(stream) << endl;
 }
 
 //TODO comment
 void InputLinkObject::setType(string& inValue)
+{
+	m_curType = stringToType(inValue);
+}
+
+void InputLinkObject::setType(const std::string& inValue)
 {
 	m_curType = stringToType(inValue);
 }
@@ -162,11 +210,19 @@ void InputLinkObject::setUpdateValue(std::string& inValue)
 void InputLinkObject::setUpdateFrequency(string& inValue)
 {
 	if(inValue == k_onChangeString)
-		{}//FIXME TODO pick up here
+		m_updateFrequency = UPDATE_ON_CHANGE;
+	else if(inValue == k_conditionString)
+		m_updateFrequency = UPDATE_ON_CONDITION;
+	else if(inValue == k_cycleString)
+		m_updateFrequency = UPDATE_EVERY_CYCLE;
+	else
+		cout << "Got some unexpected freqency:>" << inValue << "<" << endl;
 }
 
+void InputLinkObject::setUpdateCondition(string& inValue){	m_updateCondition = inValue;} 
+
 //does a case-insensitive string comparison, mapping strings to enums
-eElementType stringToType(string& source)
+eElementType stringToType(const string& source)
 {
 	if(!stricmp(source.c_str(), k_intString.c_str()))
 		return ELEMENT_INT;

@@ -11,6 +11,7 @@ using std::string;
 using std::endl;
 using std::cout; using std::cin;
 using std::fstream; using std::ostream;
+using std::ios;
 
 /******************************************************************************
  * InputLinkSpec Class Function Definitions
@@ -68,6 +69,7 @@ bool InputLinkSpec::ImportDM(string& filename)
 }
 
 
+
 //This is not quite cool.  The utility will remain the same, 
 //but this may need to be a member
 void printStage(eParseStage stage, ostream& stream)
@@ -96,8 +98,11 @@ void printStage(eParseStage stage, ostream& stream)
 		case READING_START_VALUE:
 			stream << "'Reading start value'" << endl;
 			break;
-		case READING_UPDATE:
-			stream << "'Reading update'" << endl;
+		case READING_UPDATE_VALUE:
+			stream << "'Reading update value'" << endl;
+			break;
+		case READING_UPDATE_FREQUENCY:
+			stream << "'Reading update frequency'" << endl;
 			break;
 		case READING_CREATE_ON:
 			stream << "'Reading 'create on' condition'" << endl;
@@ -151,6 +156,11 @@ string readAndTrimOneWord(string& source, bool echo = false)
 	return returnVal;
 }
 
+bool tokenPresent(const string& token, const string& source)
+{
+	return source.find(token.c_str(), 0, token.size()) != string.npos;
+}
+
 void writeFileLineToString(fstream& source, string& dest, bool echo = false)
 {
 	char intermediate[MAX_IMP_LINE_LENGTH + 1];//TODO check these bounds
@@ -195,16 +205,35 @@ bool InputLinkSpec::ImportIL(string& filename)
 		eParseStage lastCompletedState = READING_PRE_BEGIN;
 		int loopIteration = defaultLoopBegin;
 		int loopEnd = defaultLoopEnd;
+		bool quitCondition = false;
 
 		string line;
 		writeFileLineToString(file, line, true);
+		//If we have a blank line. Check if that's because we're at EOF, and also check if the
+		//next read is EOF
+		if(line == "")
+		{
+			if(file.eof())
+				break;
+			int test = file.peek();
+			if(file.eof())
+			{
+				file.clear();
+				cout << "end of file was reached..." << endl;
+				break;
+			}
+			//otherwise, there is more of the file to read, and we are probably just 
+			//looking at a blank line - get another one.
+			continue;
+		}
 
 		//peek at the first word, but don't remove it from the stream
-		string firstWord = readOneWord(line);
+
 
     //The captured word will either be a control structure or an identifier name
-		if(firstWord == k_forToken)
-			parseStage = READING_CONTROL_STRUCTURE;		
+		if(tokenPresent(k_forToken, line))
+			parseStage = READING_CONTROL_STRUCTURE;
+
 		else
 			parseStage = READING_PARENT_IDENTIFIER;
 
@@ -244,14 +273,14 @@ bool InputLinkSpec::ImportIL(string& filename)
 					parseStage = READING_PARENT_IDENTIFIER;
 					break;
 				case READING_PARENT_IDENTIFIER:
-
-					curWord = readAndTrimOneWord(line);
+					//TODO error checking
+					curWord = readAndTrimOneWord(line, true);
 					ilObj.setParentId(curWord);
 					lastCompletedState = READING_PARENT_IDENTIFIER;
 					parseStage = READING_ATTRIBUTE;
 					break;
 				case READING_ATTRIBUTE:
-					curWord = readAndTrimOneWord(line);
+					curWord = readAndTrimOneWord(line, true); // TODO error checking
 					//trim off the attrib token
 					curWord.replace(0, 1, "");
 					ilObj.setAttribName(curWord);
@@ -261,9 +290,12 @@ bool InputLinkSpec::ImportIL(string& filename)
 				case READING_VALUE_TYPE:
 					curWord = readAndTrimOneWord(line);
 					//if the first token hasn't been read, and there isn't one here, that's a problem
-					if(curWord.find_first_of(k_typesOpenToken.c_str(),0, curWord.size()) == curWord.npos)
+					//this token is harder to strip of than the others because it may be touching the word
+					//that follows it. NOTE that if the token is missing, and is actually used later on
+					//the same line of the WME specification, weird results will occur
+					if(!tokenPresent(k_typesOpenToken, curWord))
 					{
-						cout << "didn't find open token:>" << curWord << "<" << endl;
+						cout << "didn't find open token in:_" << curWord << "_" << endl;
 						parseStage = READING_ERROR;
 						break;
 					}
@@ -275,19 +307,24 @@ bool InputLinkSpec::ImportIL(string& filename)
 					{
 						//if it IS the first type listed, we already have a string to parse
 						if(!readingFirstType)
-							curWord = readAndTrimOneWord(line);
+							curWord = readAndTrimOneWord(line, true);
 						else
+						{
 							cout << "\tReading first type for this wme, which is >" << curWord << "<." << endl;
+							readingFirstType = false;
+						}
+/*cout << "\t\tTrim time.  String is:_" << curWord << endl <<
+ "_.  size is: " << curWord.size();
+cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << endl;*/
 
-						readingFirstType = false;
-						int pos = curWord.find(k_typesCloseToken.c_str());
-						if(pos == curWord.npos)
+						if(!tokenPresent(k_typesCloseToken, curWord))
 							moreTypesLeft = true;
+
 						else
 						{ //TODO make sure any whitespace leading the '>' is taken care of...
 							moreTypesLeft = false;
 							//trim off the '>' token
-							curWord.erase(pos);
+							curWord.erase(curWord.size() - 1);
 						}
 						cout << "Read value type as " << curWord << endl;
 						ilObj.addElementType(curWord);
@@ -296,7 +333,6 @@ bool InputLinkSpec::ImportIL(string& filename)
 						//if the type is an ID, it should be listed alone
 						if(!stricmp(curWord.c_str(), k_idString.c_str()))
 						{
-							//lastCompletedState = READING_VALUE_TYPE;
 							parseStage = READING_IDENTIFIER_UNIQUE_NAME;
 							break;
 						}
@@ -305,13 +341,21 @@ bool InputLinkSpec::ImportIL(string& filename)
 					}
 					while(moreTypesLeft);
 
+					//set the type here.  If multiple types. mark it TBD
+					if(ilObj.getNumTypes() > 1)
+					{
+						ilObj.setType(k_TBD);
+					}
+					else //TODO would be much cleaner to do this internally in 
+						ilObj.setType(typeToString(ilObj.getFirstType()));
+
 					lastCompletedState = READING_VALUE_TYPE;
 					break;
 				//This case is really just a special case of READING_START_VALUE	
 				case READING_IDENTIFIER_UNIQUE_NAME:
 
 					//get the actual ID unique name now
-					curWord = readAndTrimOneWord(line);//TODO error checking
+					curWord = readAndTrimOneWord(line, true);//TODO error checking
 
 					ilObj.setStartValue(curWord);
 					lastCompletedState = READING_IDENTIFIER_UNIQUE_NAME;
@@ -319,11 +363,11 @@ bool InputLinkSpec::ImportIL(string& filename)
 					break;
 				case READING_START_VALUE:
 					//The start value of a WME is optional, so peek and see if it's there
-					curWord = readOneWord(line);	
-					if(curWord != k_startToken)
+					if(!tokenPresent(k_startToken, line))
 					{
 						//no start value.  Perhaps there is an optional update value
-						parseStage = READING_UPDATE;
+						//no update of last stage completed, because nothing was done here
+						parseStage = READING_UPDATE_VALUE;
 						break;
 					}
 					else//token really was there.  Clear it
@@ -338,45 +382,73 @@ bool InputLinkSpec::ImportIL(string& filename)
 					//this value is set correctly later on
 					ilObj.setStartValue(curWord);
 					lastCompletedState = READING_START_VALUE;
-					parseStage = READING_UPDATE;
+					parseStage = READING_UPDATE_VALUE;
 					break;
-				case READING_UPDATE:
+				case READING_UPDATE_VALUE:
 					//this is optional.  if there is no -update token, bug out.
-					//TODO make a note that this is not a literal string, but rather the
-					//name of the variable whose value will be used for the update
-					
+
 					//peek and see if the token is there
-					curWord	= readOneWord(line);
-					if(curWord == k_updateToken)
-					{	//token is there, so clear it off
-						trimOneWord(line);
-					}
-					else
-					{	//nothing else should be on this line. If there is, ignore it
-						parseStage = READING_FINAL_STAGE;
+					if(!tokenPresent(k_updateToken, line))
+					{
+						//don't update the last completed stage, because we did nothing here...
+						parseStage = READING_UPDATE_FREQUENCY;
 						break;
 					}
-					//the -update token will be followed by 1 or 2 strings if done correctly
-					
-					//read off the frequency
-					curWord = readAndTrimOneWord(line, true);
-					if(curWord == "")
+
+					//token is there, so clear it off
+					trimOneWord(line);
+
+					//read the update value
+					curWord = readAndTrimOneWord(line);
+					if(curWord != "")
 					{
-						cout << "***Was expecting a frequency for the update, but found none..." << endl;
+						ilObj.setUpdateValue(curWord);
+						lastCompletedState = READING_UPDATE_VALUE;
+						parseStage = READING_UPDATE_FREQUENCY;
+					}
+					else
+					{	//error - token without a value following
 						parseStage = READING_ERROR;
 						break;
 					}
-					else //FIXME TODO pick up work here too
-						ilObj.setUpdateFrequency(curWord);
-					
-					
-					if(curWord == "\n" || curWord == "" )
-					{
-						ilObj.setUpdateValue(line);
-						parseStage = READING_CREATE_ON;
+					lastCompletedState = READING_UPDATE_VALUE;
+					break;
+				case READING_UPDATE_FREQUENCY:
+					//peek and see if the token is there
+					if(!tokenPresent(k_frequencyToken, line))
+					{	//no token present. ignore any garbage that may remain on this line
+						//did no work here, so don't set last parse stage
+						parseStage = READING_FINAL_STAGE;
+						break;
 					}
-					lastCompletedState = READING_UPDATE;
-					parseStage = READING_CREATE_ON;
+
+					//read off the frequency
+					curWord = readOneWord(line);
+					if(curWord == "")
+					{	//error - token without a value following
+						parseStage = READING_ERROR;
+						break;
+					}
+					
+					//read of the value for the frequency
+					ilObj.setUpdateFrequency(curWord);	
+
+					//if this is a conditional frequency, read off the condition string
+					if(curWord == k_conditionString)
+					{
+					  curWord = readAndTrimOneWord(line);
+						if(curWord == "")
+						{
+							//token without a value following
+							parseStage = READING_ERROR;
+							break;
+						}
+
+						ilObj.setUpdateCondition(curWord);
+						lastCompletedState = READING_UPDATE_FREQUENCY;
+						parseStage = READING_FINAL_STAGE;
+					}
+
 					break;
 				case READING_CREATE_ON:
 					lastCompletedState = READING_CREATE_ON;
