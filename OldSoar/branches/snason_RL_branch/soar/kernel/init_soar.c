@@ -938,17 +938,18 @@ void do_one_top_level_phase (void) {
       */
       increment_current_agent_d_cycle_count;
    
-            /* MRJ 5/23/01 */   
- #ifdef SOAR_DECAY   
+    }
+#endif
+
+           /* MRJ 5/23/01 */
+// moved from line 941
+#ifdef SOAR_DECAY   
              if (current_agent(sysparams)[WME_DECAY_SYSPARAM])   
              {   
                  decay_move_and_remove_wmes();   
              }   
  #endif   
  /* end MRJ 5/23/01 */ 
-
-   }
-#endif
 
 /* AGR REW1 begin */
     if (!current_agent(input_period)) current_agent(input_cycle_flag) = TRUE;

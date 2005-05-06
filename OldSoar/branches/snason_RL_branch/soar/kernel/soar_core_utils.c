@@ -554,6 +554,14 @@ void soar_default_create_agent_procedure(const char *agent_name)
  
     current_agent(RL_count)                           = 1;  // SAN
     current_agent(making_binary)                      = FALSE;  // SAN
+	current_agent(prev_exploit)                       = TRUE;   // SAN
+	current_agent(new_exploit)                            = TRUE; // SAN
+	current_agent(decided_sym)                       = TRUE;
+	current_agent(prev_diff) =                       0;
+	current_agent(new_diff) =                        0;
+	for (i = 0; i < 15; i++) 
+        current_agent(updates_list)[i] = 0;
+	current_agent(updates_position)                   = 0;
 //    current_agent(next_Q)                             = 0;  // SAN
 	current_agent(alpha)                              = 0.2;  // SAN
 	current_agent(gamma)                              = 0.9;  // SAN

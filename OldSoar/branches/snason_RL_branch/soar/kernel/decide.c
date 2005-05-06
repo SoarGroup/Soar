@@ -861,6 +861,7 @@ byte require_preference_semantics(slot * s, preference ** result_candidates)
             return CONSTRAINT_FAILURE_IMPASSE_TYPE;
 
     /* --- the lone require is the winner --- */
+	RL_update_symbolically_chosen(s, candidates);
     return NONE_IMPASSE_TYPE;
 }
 
@@ -921,6 +922,7 @@ byte run_preference_semantics(slot * s, preference ** result_candidates)
     /* === If there are only 0 or 1 candidates, we're done === */
     if ((!candidates) || (!candidates->next_candidate)) {
         *result_candidates = candidates;
+		RL_update_symbolically_chosen(s, candidates);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1086,6 +1088,7 @@ byte run_preference_semantics(slot * s, preference ** result_candidates)
     /* === If there are only 0 or 1 candidates, we're done === */
     if ((!candidates) || (!candidates->next_candidate)) {
         *result_candidates = candidates;
+		RL_update_symbolically_chosen(s, candidates);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -2527,27 +2530,6 @@ bool decide_context_slot (Symbol *goal, slot *s) {
    /* --- if we have a winner, remove any existing impasse and install the
      new value for the current slot --- */
   if (impasse_type==NONE_IMPASSE_TYPE) {
-	  if (current_agent(sysparams)[RL_ON_SYSPARAM]){
-		/* SAN - compute Q-value when winner decided by symbolic preferences */
-		// if (!candidates->value->common.decider_flag){
-			  double temp_Q = 0;   // DEFAULT_INDIFFERENT_VALUE;
-			  RL_record *rec;
-		 	for (temp=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; temp!=NIL; temp=temp->next){
-				if (candidates->value == temp->value){
-					  if (temp->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-						temp_Q += temp->referent->ic.value;
-					if (temp->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
-						  temp_Q += temp->referent->fc.value;
-				}
-			}
-			print("Operator value is %f\n", temp_Q);
-          for (rec = current_agent(records) ; rec->level > goal->id.level; rec = rec->next)
-			  rec->next_Q = 0;
-		  rec->next_Q = temp_Q;
-	 	  learn_RL_productions(goal->id.level);
-		 
-	  }
-	/* end SAN */
     for(temp = candidates; temp; temp = temp->next_candidate)
       preference_add_ref(temp);
 	if (goal->id.lower_goal)
@@ -3381,6 +3363,10 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 	int numCandidates;
 	preference *pref;
 	preference *cand;
+	preference *top_cand;
+	double top_value, second_value;
+	int num_max_cand = 0;
+	RL_record *rec;
 
 	
 	assert(s != 0);
@@ -3389,6 +3375,7 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 	initialize_indifferent_candidates_for_probability_selection(candidates);
 	numCandidates = count_candidates(candidates);
 
+	/* Add up preferences for each possible operator. */
 	for (pref=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref!=NIL; pref=pref->next){
 	   float value;
 	   if (pref->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
@@ -3409,6 +3396,7 @@ preference *explore_exploit_select(slot *s, preference *candidates){
      }
    }
 
+	/* Give default values to operators with no numeric preferences. */
 	for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
 	   if (cand->total_preferences_for_candidate == 0) {
 		   cand->sum_of_probability = default_ni;
@@ -3424,6 +3412,30 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 		  
 		}  
 
+	   
+	   top_value = candidates->sum_of_probability;
+
+	   for (cand=candidates; cand!=NIL; cand=cand->next_candidate){
+		   if (cand->sum_of_probability > top_value)
+			   top_value = cand->sum_of_probability;
+	   }
+
+	  for (rec = current_agent(records) ; rec->level > s->id->id.level; rec = rec->next);
+	  rec->next_Q = top_value;
+
+	  learn_RL_productions(s->id->id.level);
+
+	   top_cand = candidates;
+	   top_value = candidates->sum_of_probability;
+
+	   for (cand=candidates; cand!=NIL; cand=cand->next_candidate){
+		   if (cand->sum_of_probability > top_value) {
+			   top_value = cand->sum_of_probability;
+			   top_cand = cand;
+			   num_max_cand = 1;
+		   } else if (cand->sum_of_probability == top_value) num_max_cand++;
+	   }
+
 	explore = explore_exploit(candidates);
 
 	if (explore) { 
@@ -3433,32 +3445,39 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 		cand = candidates;
 		while (chosen_num) { cand=cand->next_candidate; chosen_num--; }
       
+		current_agent(new_exploit) = FALSE;
+		current_agent(new_diff) = fabs(top_value - cand->sum_of_probability);
+
 		return cand;
  
 	} else {
-		   double max_value = (double)candidates->sum_of_probability;
-		   int num_max_cand = 0;
-		   preference *max_cand = candidates;
+		   
 		   // current_agent(max_Q) = (*candidates)->sum_of_probability; // SAN
- 
-			for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-			  if (cand->sum_of_probability > max_value){
-				 max_value = cand->sum_of_probability;
-				 max_cand = cand;
-				 num_max_cand = 1;
-			  } else if (cand->sum_of_probability == max_value) num_max_cand++;
-		  }
-		  if (num_max_cand == 1) return max_cand;
+		  current_agent(new_exploit) = TRUE;
+
+			 
+			if (num_max_cand == 1){
+				if (top_cand == candidates) {
+					second_value = candidates->next_candidate->sum_of_probability;
+				} else { second_value = candidates->sum_of_probability; }
+				for (cand = candidates; cand != NIL; cand=cand->next_candidate){
+					if ((cand->sum_of_probability > second_value) && (cand->sum_of_probability < top_value))
+						second_value = cand->sum_of_probability;
+				}
+				current_agent(new_diff) = fabs(second_value - top_value);
+				return top_cand;
+			}
 		  else {
 			  int chosen_num;
 			  chosen_num = sys_random() % num_max_cand;
 			  cand = candidates;
-			  while (cand->sum_of_probability != max_value) cand = cand->next_candidate;
+			  while (cand->sum_of_probability != top_value) cand = cand->next_candidate;
 			  while (chosen_num) {
 				  cand=cand->next_candidate;
 				  chosen_num--;
-				  while (cand->sum_of_probability != max_value) cand = cand->next_candidate;
+				  while (cand->sum_of_probability != top_value) cand = cand->next_candidate;
 			  }
+			  current_agent(new_diff) = 0;
 		  return cand;
 		  }
 }

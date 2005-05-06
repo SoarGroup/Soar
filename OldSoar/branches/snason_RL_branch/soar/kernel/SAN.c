@@ -1,11 +1,11 @@
 #include "soarkernel.h"
- 
 
-float compute_Q_value();
+
+float compute_temp_diff(RL_record *);
 Symbol *equality_test_for_symbol_in_test(test t);
 condition *make_simple_condition(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, bool acceptable);
 action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym);
-production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref, wme *w);
+production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref);
 void learn_RL_productions(int level);
 void record_for_RL();
 void variablize_condition_list(condition * cond);
@@ -18,7 +18,7 @@ production *specify_production(instantiation *ist);
 void trace_to_prod(wme * w, tc_number tc_prod, condition ** cond);
 bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, condition ** cond, int depth);
 int list_length(list *);
-void STDDEV(production *p, int n);
+void STDDEV(double values[], int n, double *mean_pointer, double *std_dev_pointer);
 
 
 // The following three functions manage the stack of RL_records.
@@ -44,7 +44,7 @@ void push_record(RL_record **r, Symbol *level_sym){
 
 void pop_record(RL_record **r){
 	RL_record *new_record;
- 	
+
 	new_record = *r;
     free_list(new_record->pointer_list);
 	symbol_remove_ref(new_record->goal_level);
@@ -55,9 +55,15 @@ void pop_record(RL_record **r){
 }
 
 void reset_RL(){
+	int i;
 
 	while(current_agent(records))
  		pop_record(&current_agent(records));
+
+	for (i = 0; i < 15; i++)
+		current_agent(updates_list)[i] = 0;
+
+	current_agent(updates_position) = 0;
 
 	// current_agent(next_Q) = 0.0;
 }
@@ -81,7 +87,7 @@ void copy_nots(not * top_not, not ** dest_not)
 }
 
 
-float compute_Q_value(RL_record* r){
+float compute_temp_diff(RL_record* r){
 	float Q;
 
 	// print_with_symbols("\n Q value for %y\n", r->op);
@@ -150,7 +156,7 @@ void record_for_RL()
 	preference *pref;
  	RL_record *record;
 	cons *c;
- 
+
   // SAN - catch operator ID here
   s = current_agent(bottom_goal)->id.operator_slot;
   w = s->wmes;
@@ -164,14 +170,17 @@ void record_for_RL()
 	  record->previous_Q = record->next_Q;
 
 	  for (pref = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
-		  if (record->op == pref->value){
+		  if (record->op == pref->value)
+			/* This is one scheme - where the format of an RL rule is never changed but a rule may be specialized. */
+			 {
 			  ist = pref->inst;
 			  prod = ist->prod;
 			  push(prod, record->pointer_list);
 			  // Potentially build new RL-production
+
 		   if (prod->times_updated < 0){
 		//	  if ((prod->times_updated > 50) && !prod->conv_value){
-			 // if (prod->conv_mean && !prod->conv_value){
+ 			 // if (prod->conv_mean && !prod->conv_value){
 					  // excise_production(prod->child, TRUE);
 					  // extract_list_element(record->pointer_list, prod->child); // bug - need to do for stack of records
 					  // prod->child = NIL;
@@ -189,6 +198,26 @@ void record_for_RL()
 			 }
 		  }
 	  }
+	  /* This is the other scheme - where new RL rules are made by filling out rule templates. */
+		/*  {
+			  ist = pref->inst;
+			  prod = ist->prod;
+			  if (prod->type == RL_PRODUCTION_TYPE) {
+				  push(prod, record->pointer_list);
+			  } else {
+				  condition *cond_top, *cond_bottom;
+				  not *nots;
+
+				  copy_condition_list(ist->top_of_instantiated_conditions, &cond_top, &cond_bottom);
+				  copy_nots(ist->nots, &nots);
+				  new_prod = build_RL_production(cond_top, cond_bottom, nots, ist->preferences_generated);
+				  deallocate_condition_list(cond_top);
+				  deallocate_list_of_nots(nots);
+				  if (new_prod) push(new_prod, record->pointer_list);
+			  }
+		  }
+	  }*/
+
 	  // Did any production fire while its child did not?
 	  // for (c = record->pointer_list ; c ; c = c->rest){
 	  // prod = (production *) c->first;
@@ -208,12 +237,12 @@ in WM and trying to add it to the old production's condition list. The WME
 is rejected if it is already matched in the production's instantiation.
 Otherwise, the function traces through WM, from the id of the prospective
 WME until it hits an identifier in the production's instantiation. All WMEs
-in this trace are also added as conditions to the new production. 
+in this trace are also added as conditions to the new production.
 In this implementation, WMEs are tried in order of decreasing activation.
 ------------------------------------------------------------- */
 
 production *specify_production(instantiation *ist){
-	tc_number tc_num = get_new_tc_number(); 
+	tc_number tc_num = get_new_tc_number();
 	Symbol *sym;
 	condition *cond, *c;
 	wme *w;
@@ -224,7 +253,7 @@ production *specify_production(instantiation *ist){
 	wme_decay_element *decay_element;
     list *identifiers = 0;
     cons *cons;
-	
+
 
 	// Make a list of identifiers in the old production instantiation.
 	for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
@@ -242,7 +271,7 @@ production *specify_production(instantiation *ist){
 	  for (cons = identifiers; cons ; cons=cons->rest){
 			sym = (Symbol *) cons->first;
 			add_symbol_to_tc(sym, tc_num, NIL, NIL);
-	  } 
+	  }
 
 	 /* for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
 		if (cond->type == POSITIVE_CONDITION){
@@ -254,10 +283,10 @@ production *specify_production(instantiation *ist){
 			  if (sym) add_symbol_to_tc(sym, tc_num, NIL, NIL);
 		}
 	 }*/
-	
+
 	 decay_list = current_agent(decay_timelist);
 	 decay_pos = current_agent(current_decay_timelist_element)->position;
-	 
+
 		// get wmes in order of activation
 	 for (i = 0; i < DECAY_ARRAY_SIZE ; i++){
 		 decay_pos = decay_pos > 0 ? decay_pos - 1 : MAX_DECAY - 1;
@@ -274,7 +303,7 @@ production *specify_production(instantiation *ist){
 					 decay_element = decay_element->next;
 					 continue;
 				 }
-							 
+
 				 // Check that our new condition not already in production conditions
 				 for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
 					 if (c->type != POSITIVE_CONDITION)
@@ -288,7 +317,7 @@ production *specify_production(instantiation *ist){
 					 w = NIL;
 					 break;
 				 }
-				 
+
 				 // Check that the condition made from this wme is not already
 				 // in the condition list of the production.
 				 /*for (c = ist->top_of_instantiated_conditions ; c ; c = c->next){
@@ -313,7 +342,7 @@ production *specify_production(instantiation *ist){
 				 // place a Not between their values.
 				 for (c = cond_top ; c ; c = c->next){
 					 for (cond = ist->top_of_instantiated_conditions; cond ; cond = cond->next){
-					 
+
 					 if (c->type != POSITIVE_CONDITION)
 						 continue;
 					 if (!tests_are_equal(c->data.tests.id_test, cond->data.tests.id_test))
@@ -331,7 +360,7 @@ production *specify_production(instantiation *ist){
 						}
 					}
 				 }
-				 
+
 				 // Make new condition list, consisting of both new and old conditions.
 				 copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
 				 for (cond_bottom = cond_top ; cond_bottom->next; cond_bottom = cond_bottom->next);
@@ -344,7 +373,7 @@ production *specify_production(instantiation *ist){
 				 	 nots_last->next = new_not;
 				 } else { nots = new_not; }
 
-				 prod = build_RL_production(new_top, cond_bottom, nots , ist->preferences_generated, w);
+				 prod = build_RL_production(new_top, cond_bottom, nots , ist->preferences_generated);
 				 deallocate_condition_list(new_top);
 			 	 deallocate_list_of_nots(nots);
 				 if (!prod){
@@ -374,36 +403,89 @@ void learn_RL_productions(int level){
 	float increment;
 	preference *pref;
 	int num_prods;
-	
+	wme *w;
+	condition *cond;
+
 	record = current_agent(records);
 
 	do{
 
 	if (record->level < level)
 		return;
-	 
+
 	if (record->op){
+
+		update = compute_temp_diff(record);
+
+		/*
+		if ((current_agent(prev_diff) == 0) && (fabs(update) > 0)){
+			// current_agent(stop_soar) = TRUE;
+			// print("!!!!!!!!!!!!! Look to previous WM\n");
+			build_RL_production(record->WM_record, , nil, record->pref_record);
+		} else if (current_agent(prev_exploit) && (update < 0) && (fabs(update) > 0.1*current_agent(prev_diff))){
+			// current_agent(stop_soar) = TRUE;
+			// print("!!!!!!!!!!!!! Look to previous WM\n");
+			build_RL_production(record->WM_record, , nil, record->pref_record);
+		} else if (!current_agent(prev_exploit) && (update > 0) && (fabs(update) > 0.1*current_agent(prev_diff))) {
+			// current_agent(stop_soar) = TRUE;
+			// print("!!!!!!!!!!!!! Look to previous WM\n");
+			build_RL_production(record->WM_record, , nil, record->pref_record);
+		}
+
+			deallocate_condition_list(record->WM_record);
+			deallocate_preference(record->pref_record);
+			record->WM_record = NIL;
+			for (w = current_agent(all_wmes_in_rete) ; w ; w = w->rete_next){
+				cond = make_simple_condition(w->id, w->attr, w->value, w->acceptable);
+				cond->next = record->WM_record;
+				record->WM_record = cond;
+			}
+			reset_variable_generator(nil,nil);
+			current_agent(variablization_tc) = get_new_tc_num();
+			variablize_condition_list(current_agent(WM_record));
+			record->pref_record = make_preference(NUMERIC_PREFERENCE_TYPE, variablize_symbol(current_agent(top_state)), current_agent(operator_symbol), variablize_symbol(record->op), nil);
+		    */
+
+		//for (w = current_agent(all_wmes_in_rete) ; w ; w = w->rete_next)
+		//			print_wme(w);
+
+		/*temp = fabs(update - current_agent(updates_mean));
+
+		if (current_agent(prev_exploit) && (temp > current_agent(updates_stddev))){
+			current_agent(stop_soar) = TRUE;
+			print("!!!!!!!!!!!!! Look to previous WM\n");
+		} else if (!current_agent(prev_exploit) && (update > 0) && (temp > (0.5*current_agent(updates_stddev)))){
+			current_agent(stop_soar) = TRUE;
+			print("!!!!!!!!!!!!!! Look to previous WM\n");
+		}
+
+
+
+
+		current_agent(updates_list)[current_agent(updates_position)] = update;
+		current_agent(updates_position) = (current_agent(updates_position) + 1) % 15;
+		STDDEV(current_agent(updates_list), 15, &current_agent(updates_mean), &current_agent(updates_stddev));*/
 
 		num_prods = list_length(record->pointer_list);
 		if (num_prods > 0){
 
-			update = compute_Q_value(record);
 			increment = update / num_prods;
-		
+
+
 			c = record->pointer_list;
-		
+
 			while(c){
 
 
 				prod = (production *) c->first;
 				c = c->rest;
 	//			prod->type = RL_PRODUCTION_TYPE;
-	
+
 				if (!prod) continue;
 
 				temp = rhs_value_to_symbol(prod->action_list->referent)->fc.value;
 				temp += increment;
-				
+
 				prod->action_list->referent = symbol_to_rhs_value(make_float_constant(temp));
 				for (inst = prod->instantiations ; inst ; inst = inst->next){
 					for (pref = inst->preferences_generated ; pref ; pref = pref->inst_next)
@@ -414,27 +496,28 @@ void learn_RL_productions(int level){
 				// a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 				// a->referent = symbol_to_rhs_value(make_float_constant(Q));
 				prod->times_updated++;
-				prod->value_list[prod->value_position] = temp;
-				prod->value_position = (prod->value_position + 1) % 15;
+				// prod->value_list[prod->value_position] = temp;
+				// prod->value_position = (prod->value_position + 1) % 15;
 
-				if (prod->times_updated > 15){
+			/*	if (prod->times_updated > 15){
 					STDDEV(prod, 15);
 					// if (prod->std_dev > 0.01*fabs(record->previous_Q)){
-					 // if ((prod->std_dev > 0.01*fabs(record->previous_Q)) || (prod->std_dev > 0.1*fabs(temp))){					
+					 // if ((prod->std_dev > 0.01*fabs(record->previous_Q)) || (prod->std_dev > 0.1*fabs(temp))){
 					if (prod->std_dev > 0.0001){
 					prod->conv_value = FALSE;
 					} else { prod->conv_value = TRUE; }
-				}
+				} */
 
 				prod->update = update;
 				// old_avg = prod->avg_update;
-				old_avg = prod->mean;
-				// prod->avg_update = ((prod->times_updated - 1)*old_avg + update) / prod->times_updated;
-				prod->mean = ((prod->times_updated - 1)*old_avg + temp) / prod->times_updated;
-				
+ 				// old_avg = prod->avg_value;
+				// prod->avg_update = ((prod->times_updated - 1)*old_avg + abs(update)) / prod->times_updated;
+				// prod->avg_value = ((prod->times_updated - 1)*old_avg + temp) / prod->times_updated;
+
+
 				// old_avg_avg = prod->avg_avg;
 				// prod->avg_avg = ((prod->times_updated - 1)*old_avg_avg + prod->avg_value) / prod->times_updated;
-				
+
 				// old_var = prod->var;
 				// prod->var = (((old_var + pow(old_avg,2))*(prod->times_updated - 1) + pow(temp,2)) / prod->times_updated) - pow(prod->avg_value,2);
 
@@ -455,24 +538,29 @@ void learn_RL_productions(int level){
 				// prod->decay_abs_update = fabs(update);
 
 				/*if (fabs(prod->avg_var) < 0.02) {
-					prod->conv_mean = TRUE; 
+					prod->conv_mean = TRUE;
 				} else prod->conv_mean = FALSE; }*/
 
 
-				
+
 				print_with_symbols("\n%y  ", prod->name);
-	    		print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
-				print("Mean %f ", prod->mean);
-				print("Std dev %f ", prod->std_dev);
-				print("Update %f ", prod->update);
-				print("firings %d\n", prod->times_updated);
-				// print("Variance in value %f ", prod->var);
-//				print("Update %f ", fabs(update));
+ 				print("Cycle %d ", current_agent(d_cycle_count));
+				print("Update %f\n", update);
+	    		//print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
+				//print("Mean %f ", prod->mean);
+				//print("Std dev %f ", prod->std_dev);
+				//print("firings %d\n", prod->times_updated);
+ 				// print("Variance in value %f ", prod->var);
+				// print("Update %f ", update);
+				// print("%s\n", (current_agent(new_exploit) ? "Exploit" : "Explore"));
+				// print("Difference %f\n", current_agent(prev_diff));
+				// print("Average update %f ", current_agent(updates_mean));
+				// print("Update stddev %f\n", current_agent(updates_stddev));
 //				print("Decayed average %f ", (prod->decay_abs_update / prod->decay_normalization));
-				// print("Average value %f ", prod->avg_value); 
+				// print("Average value %f ", prod->avg_value);
 				// print("Var in average value %f ", prod->avg_var);
 				// print("firings %d\n", prod->times_updated);
-			
+
 			//	prod->times_applied++;
 			}
 		}
@@ -494,6 +582,12 @@ void learn_RL_productions(int level){
 
 
 	} while(record);
+
+	/*for (prod = current_agent(all_productions_of_type[RL_PRODUCTION_TYPE]) ; prod ; prod = prod->next){
+		print_with_symbols("\n%y  ", prod->name);
+		print_with_symbols("value %y ", rhs_value_to_symbol(prod->action_list->referent));
+	}*/
+
 }
 
 // Modified from function test_includes_equality_test_for_symbol
@@ -525,29 +619,16 @@ Symbol *equality_test_for_symbol_in_test(test t)
     return 0;
 }
 
-production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref, wme *w)
+production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref)
 {
- 
+
 	action *a;
 	Symbol *prod_name;
 	production *prod;
 	bool chunk_var;
 
-	
-	// Make condition list
-	/*new_cond = make_simple_condition(w->id, w->attr, w->value);
-    for (c = top_cond ; c ; c = c->next){
-		if (conditions_are_equal(c, new_cond)){
-			deallocate_condition_list(new_cond);
-			return NIL;
-		}
-	}
-	copy_condition_list(top_cond, &new_top, &new_bottom);
-	new_bottom->next = new_cond;
-	new_cond->prev = new_bottom;
-	*/
 	SAN_add_goal_or_impasse_tests(top_cond);
- 	
+
 
 	// Variablize
 	chunk_var = current_agent(variablize_this_chunk);
@@ -560,7 +641,7 @@ production *build_RL_production(condition *top_cond, condition *bottom_cond, not
 	// Make action list
 	a = make_simple_action(pref->id, pref->attr, pref->value, make_float_constant(0));
 	a->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
-	
+
 
 	// Make production
 	prod_name = generate_new_sym_constant("RL-", &current_agent(RL_count));
@@ -570,7 +651,7 @@ production *build_RL_production(condition *top_cond, condition *bottom_cond, not
 		   excise_production(prod, FALSE);
 		   current_agent(RL_count)--;
 		   prod = NIL;
-	} 
+	}
 	// deallocate_condition_list(new_top);
 	return prod;
 }
@@ -743,28 +824,59 @@ int list_length(list *L){
 	cons *c;
 
 	for (c = L; c ; c = c->rest){
-		if (c->first)		
+		if (c->first)
 			k++;
 	}
 
 	return k;
 }
 
-void STDDEV(production *prod, int n){
+void STDDEV(double values[], int n, double *mean_pointer, double *std_dev_pointer){
 	double mean = 0, std_dev = 0;
 	int i;
 
 	for (i = 0; i < n ; i++)
-		mean += prod->value_list[i];
+		mean += values[i];
 
 	mean = mean / n;
-	// prod->mean = mean;
+	*mean_pointer = mean;
+
 
 	for (i = 0; i < n ; i++)
-       std_dev += pow((mean - prod->value_list[i]), 2);
+       std_dev += pow((mean - values[i]), 2);
 
-	std_dev = std_dev / n;
+	std_dev = std_dev / (n - 1);
 	std_dev = pow(std_dev , .5);
 
-	prod->std_dev = std_dev;
+	*std_dev_pointer = std_dev;
+}
+
+void RL_update_symbolically_chosen(slot *s, preference *candidates){
+	if (!candidates) return;
+	if (current_agent(sysparams)[RL_ON_SYSPARAM]){
+		  preference *temp;
+		  double temp_Q = 0;   // DEFAULT_INDIFFERENT_VALUE;
+		  RL_record *rec;
+		  int goal_level = s->id->id.level;
+		  for (rec = current_agent(records) ; rec->level > goal_level; rec = rec->next)
+			  rec->next_Q = 0;
+		/* SAN - compute Q-value when winner decided by symbolic preferences */
+		// if (!candidates->value->common.decider_flag){
+
+		 	for (temp=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; temp!=NIL; temp=temp->next){
+				if (candidates->value == temp->value){
+					  if (temp->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+						temp_Q += temp->referent->ic.value;
+					if (temp->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
+						  temp_Q += temp->referent->fc.value;
+				}
+			}
+			print("Operator value is %f\n", temp_Q);
+			print("%s\n", (current_agent(new_exploit) ? "Exploit" : "Explore"));
+         	rec->next_Q = temp_Q;
+			learn_RL_productions(goal_level);
+			// current_agent(prev_exploit) = current_agent(new_exploit);
+			// current_agent(prev_diff) = current_agent(new_diff);
+
+	  }
 }

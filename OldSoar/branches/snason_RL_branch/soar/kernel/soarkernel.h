@@ -1474,6 +1474,8 @@ typedef struct slot_struct {
 
 typedef struct RL_record_struct{
   list *pointer_list;
+//  cond *WM_record;
+//  pref *pref_record;
   // struct not_struct *RL_nots;
   // struct condition_struct *RL_top;
   // struct condition_struct *RL_bottom;
@@ -4129,7 +4131,16 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   double epsilon;
   unsigned long RL_count;
   bool making_binary;
+  bool prev_exploit;
+  bool new_exploit;
+  double prev_diff;
+  double new_diff;
+  bool decided_sym;
   RL_record *records;
+  double updates_list[15];
+  int updates_position;
+  double updates_mean;
+  double updates_stddev;
 	
 	/* ----------------------- Misc. top-level stuff -------------------------- */
 

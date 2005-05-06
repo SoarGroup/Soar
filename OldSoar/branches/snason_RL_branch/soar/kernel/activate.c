@@ -1603,7 +1603,7 @@ void decay_move_and_remove_wmes(void)
         &(current_agent(decay_timelist[(current_agent(current_decay_timelist_element)->position + 1) % DECAY_ARRAY_SIZE]));
 
     //%%%UNCOMMENT TO DEBUG
-    //decay_print_most_activated_wmes(MAX_DECAY);
+    // decay_print_most_activated_wmes(MAX_DECAY);
     
     stop_timer(&current_agent(decay_tv), &current_agent(total_decay_time));
     stop_timer(&current_agent(decay_move_remove_tv), &current_agent(total_decay_move_remove_time));
