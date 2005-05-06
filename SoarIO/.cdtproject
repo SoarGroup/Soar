@@ -21,6 +21,18 @@
 <stopOnError>false</stopOnError>
 <useDefaultCommand>true</useDefaultCommand>
 </target>
+<target name="clean" targetID="org.eclipse.cdt.make.MakeTargetBuilder" path="">
+<buildCommand>make</buildCommand>
+<buildTarget>clean</buildTarget>
+<stopOnError>false</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+</target>
+<target name="install" targetID="org.eclipse.cdt.make.MakeTargetBuilder" path="">
+<buildCommand>make</buildCommand>
+<buildTarget>install</buildTarget>
+<stopOnError>false</stopOnError>
+<useDefaultCommand>true</useDefaultCommand>
+</target>
 </buildTargets>
 </item>
 </data>
