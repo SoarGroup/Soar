@@ -749,6 +749,55 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 } agent;
 /*************** end of agent struct *****/
 
+#ifdef USE_MACROS
+
+#define allocate_cons(dest_cons_pointer) \
+  allocate_with_pool (soar_agent, &current_agent(cons_cell_pool), (dest_cons_pointer))
+
+#define free_cons(c) free_with_pool (&current_agent(cons_cell_pool), (c))
+
+#define push(item,list_header) { \
+  cons *push_cons_xy298; \
+  allocate_cons (&push_cons_xy298); \
+  push_cons_xy298->first = (item); \
+  push_cons_xy298->rest = (list_header); \
+  (list_header) = push_cons_xy298; }
+
+#else
+
+#ifdef __cplusplus
+}
+#endif
+
+template <typename T>
+inline void allocate_cons(agent* thisAgent, T * dest_cons_pointer)
+{
+  allocate_with_pool (thisAgent, &thisAgent->cons_cell_pool, (dest_cons_pointer));
+}
+
+template <typename T>
+inline void free_cons(agent* thisAgent, T * c)
+{
+  free_with_pool (&thisAgent->cons_cell_pool, (c));
+}
+
+template <typename P, typename T>
+inline void push(agent* thisAgent, P item, T * & list_header)
+{
+  cons *push_cons_xy298;
+  allocate_cons (thisAgent, &push_cons_xy298);
+  push_cons_xy298->first = (item);
+  push_cons_xy298->rest = (list_header);
+  (list_header) = push_cons_xy298;
+}
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#endif /* USE_MACROS */
+
 extern char * soar_version_string;
 
 //extern agent * soar_agent;
