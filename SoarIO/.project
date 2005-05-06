@@ -3,8 +3,9 @@
 	<name>SoarIO</name>
 	<comment></comment>
 	<projects>
-		<project>SoarKernel</project>
 		<project>gSKI</project>
+		<project>SoarKernel</project>
+		<project>soar-library</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
