@@ -14,6 +14,5 @@ config.status
 configure
 libtool
 stamp-h1
-ltmain.sh
 SML-dll.ncb
 SML-dll.suo
