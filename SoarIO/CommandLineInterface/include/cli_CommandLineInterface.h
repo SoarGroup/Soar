@@ -901,7 +901,6 @@ protected:
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
 	sml::KernelSML*		m_pKernelSML;
 	gSKI::Version		m_KernelVersion;		// Kernel version number
-	std::string			m_HomeDirectory;		// The initial working directory, server side, see CD command
 	std::string			m_LibraryDirectory;		// The library directory, server side, see help command
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
 	std::string			m_LogFilename;			// Used for logging to a file.

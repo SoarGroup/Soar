@@ -99,11 +99,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIWatch]					= &cli::CommandLineInterface::ParseWatch;
 	m_CommandMap[Constants::kCLIWatchWMEs]				= &cli::CommandLineInterface::ParseWatchWMEs;
 
-	// Set home directory to a sane default value
-	m_HomeDirectory = ".";
-	
-	// Set library directory to home directory
-	m_LibraryDirectory = m_HomeDirectory;
+	// Set library directory to sane default value
+	GetCurrentWorkingDirectory(m_LibraryDirectory);
 
 	// Initialize other members
 	m_pKernel = 0;
@@ -422,10 +419,10 @@ EXPORT void CommandLineInterface::SetKernel(gSKI::IKernel* pKernel, gSKI::Versio
 #ifdef WIN32
 	char dllpath[256];
 	GetModuleFileName(static_cast<HMODULE>(m_pKernelSML->GetModuleHandle()), dllpath, 256);
-	m_HomeDirectory = dllpath;
-	m_HomeDirectory = m_HomeDirectory.substr(0, m_HomeDirectory.find_last_of("\\"));
+	m_LibraryDirectory = dllpath;
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("\\"));
 #else // WIN32
-	GetCurrentWorkingDirectory(m_HomeDirectory);
+	GetCurrentWorkingDirectory(m_LibraryDirectory);
 #endif
 }
 

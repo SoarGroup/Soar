@@ -28,8 +28,8 @@ bool CommandLineInterface::DoCD(const std::string* pDirectory) {
 
 	// if directory 0, return to original (home) directory
 	if (!pDirectory) {
-		if (chdir(m_HomeDirectory.c_str())) {
-			SetErrorDetail("Error changing to " + m_HomeDirectory);
+		if (chdir(m_LibraryDirectory.c_str())) {
+			SetErrorDetail("Error changing to " + m_LibraryDirectory);
 			return SetError(CLIError::kchdirFail);
 		}
 		return true;
