@@ -409,10 +409,18 @@ public class FoldingText
 
 		int line = (e.y / lineHeight) + topLine ;
 		
-		Block block = m_FoldingDoc.getBlockStartsAtLineNumber(line) ;
+		// By using the "getBlockByLineNumber" method we get either the start
+		// of a block or the block that encloses this line.
+		// This means that clicking on the line beneath an expanded block will
+		// cause it to collapse.  I think that's a nice feature, but if we'd rather
+		// not have that happen switch this to getBlockStartsAtLineNumber() and
+		// only clicks right on the icon will cause behavior.
+		int blockIndex = m_FoldingDoc.getBlockByLineNumber(line) ;
 		
-		if (block == null)
+		if (blockIndex == -1)
 			return ;
+		
+		Block block = m_FoldingDoc.getBlock(blockIndex) ;
 		
 		m_FoldingDoc.expandBlock(block, !block.isExpanded()) ;
 		m_IconBar.redraw() ;
