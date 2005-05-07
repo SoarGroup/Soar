@@ -16,9 +16,7 @@ import sml.* ;
 import debugger.* ;
 import general.AppProperties;
 import manager.* ;
-import modules.FoldingTextView;
-import modules.TextTraceView;
-import modules.TreeTraceView;
+import modules.*;
 
 import java.io.File;
 import java.io.IOException;

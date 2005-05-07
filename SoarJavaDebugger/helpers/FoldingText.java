@@ -50,9 +50,27 @@ public class FoldingText
 			m_FoldingText = text ;
 		}
 		
+		public void clear()
+		{
+			m_TextBlocks.clear() ;
+			m_LastBlock = null ;
+		}
+		
+		public String toString()
+		{
+			StringBuffer buffer = new StringBuffer() ;
+			
+			buffer.append(m_TextBlocks.toString()) ;
+			
+			return buffer.toString() ;
+		}
+		
 		public void addBlock(Block block)
 		{
 			block.setIndex(m_TextBlocks.size()) ;
+			int start = m_LastBlock != null ? m_LastBlock.getStart() + m_LastBlock.getVisibleSize() : 0 ;
+			block.setStart(start) ;
+			
 			m_TextBlocks.add(block) ;
 			m_LastBlock = block ;
 		}
@@ -169,7 +187,7 @@ public class FoldingText
 		protected ArrayList m_Lines = new ArrayList() ;
 		protected StringBuffer m_All = new StringBuffer() ;
 		
-		public Block(boolean canExpand) { m_CanExpand = canExpand ; }
+		public Block(boolean canExpand) { m_CanExpand = canExpand ; m_IsExpanded = false ; }
 		
 		public void setIndex(int index)	{ m_Index = index ; }
 		public int getIndex()			{ return m_Index ; }
@@ -179,17 +197,45 @@ public class FoldingText
 		public void setCanExpand(boolean state)	{ m_CanExpand = state ; }
 		public boolean canExpand()				{ return m_CanExpand && m_Lines.size() > 1 ; }
 		public void setExpand(boolean state)	{ m_IsExpanded = state ; }
-		public boolean isExpanded()				{ return m_IsExpanded ; }
+		
+		// Blocks which can't expand/collapse are always in the expanded state
+		public boolean isExpanded()				{ return m_IsExpanded || !m_CanExpand ; }
 		
 		public int  getSize()  				{ return m_Lines.size() ; }
+		public int  getVisibleSize()		{ return isExpanded() ? m_Lines.size() : 1 ; }
 		public void appendLine(String text) { m_Lines.add(text) ; m_All.append(text) ; }
+		public void removeLastLine()		{ m_Lines.remove(m_Lines.size() - 1) ; recalcAll() ; if (m_Lines.size() == 0) throw new IllegalStateException("Shouldn't empty a block") ; }
 		
 		public String getFirst() 			{ return (String)m_Lines.get(0) ; }
 		public String getAll()				{ return m_All.toString() ; }
+		public String getLastLine()			{ if (m_Lines.size() == 0) throw new IllegalStateException("Block shouldn't be empty") ;
+											  return (String)m_Lines.get(m_Lines.size()-1) ; }
+		private void recalcAll()
+		{
+			m_All = new StringBuffer() ;
+			
+			for (int i = 0 ; i < m_Lines.size() ; i++)
+				m_All.append((String)m_Lines.get(i)) ;
+		}
 		
 		public int getFirstLineCharCount()	{ return getFirst().length() + 1 ; }			// Add one because \n in text becomes \r\n in Text control (BUGBUG: Windows only?)
 		public int getAllCharCount()		{ return m_All.length() + m_Lines.size() ; }	// Have to add one newline char per line to make this correct (as above)
-		public int getVisibleCharCount()	{ return m_IsExpanded ? getAllCharCount() : getFirstLineCharCount() ; }
+		public int getVisibleCharCount()	{ return isExpanded() ? getAllCharCount() : getFirstLineCharCount() ; }
+		
+		public String toString()
+		{
+			StringBuffer buffer = new StringBuffer() ;
+			
+			buffer.append("(") ;
+			buffer.append(m_Start) ;
+			buffer.append(m_CanExpand ? (m_IsExpanded ? "-" : "+") : "!") ;
+			buffer.append(",") ;
+			buffer.append(" Size ") ;
+			buffer.append(getSize()) ;
+			buffer.append(")") ;
+			
+			return buffer.toString() ;
+		}
 	}
 	
 	public FoldingText(Composite parent)
@@ -209,6 +255,8 @@ public class FoldingText
 		GridData data2 = new GridData(GridData.FILL_BOTH) ;
 		m_Text.setLayoutData(data2) ;
 		
+		// Canned data for testing
+		/*
 		int lineCount = 0 ;
 		for (int b = 0 ; b < 3 ; b++)
 		{
@@ -226,6 +274,7 @@ public class FoldingText
 			
 			m_FoldingDoc.addBlock(block) ;
 		}
+		*/
 		
 		m_IconBar.addPaintListener(new PaintListener() { public void paintControl(PaintEvent e) { paintIcons(e) ; } } ) ;
 		m_IconBar.setBackground(m_IconBar.getDisplay().getSystemColor(SWT.COLOR_WHITE)) ;
@@ -236,14 +285,131 @@ public class FoldingText
 		m_Text.getVerticalBar().addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_IconBar.redraw() ; } }) ;
 	}
 	
+	/* Snippet code to show how to detect any scroll, not just the thumb wheel.
+	Display display = new Display ();
+	Shell shell = new Shell (display);
+	shell.setLayout (new FillLayout ());
+	final Text text = new Text (shell, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+	for (int i=0; i<32; i++) {
+		text.append (i + "-This is a line of text in a widget-" + i + "\n");
+	}
+	text.setSelection (0);
+	Listener listener = new Listener () {
+		int lastIndex = text.getTopIndex ();
+		public void handleEvent (Event e) {
+			int index = text.getTopIndex ();
+			if (index != lastIndex) {
+				lastIndex = index;
+				System.out.println ("Scrolled, topIndex=" + index);
+			}
+		}
+	};
+	// NOTE: Only detects scrolling by the user
+	text.addListener (SWT.MouseDown, listener);
+	text.addListener (SWT.MouseMove, listener);
+	text.addListener (SWT.MouseUp, listener);
+	text.addListener (SWT.KeyDown, listener);
+	text.addListener (SWT.KeyUp, listener);
+	text.addListener (SWT.Resize, listener);
+	ScrollBar hBar = text.getHorizontalBar();
+	if (hBar != null) {
+		hBar.addListener (SWT.Selection, listener);
+	}
+	ScrollBar vBar = text.getVerticalBar();
+	if (vBar != null) {
+		vBar.addListener (SWT.Selection, listener);
+	}
+	shell.pack ();
+	Point size = shell.computeSize (SWT.DEFAULT, SWT.DEFAULT);
+	shell.setSize (size. x - 32, size.y / 2);
+	shell.open ();
+	while (!shell.isDisposed ()) {
+		if (!display.readAndDispatch ()) display.sleep ();
+	}
+	display.dispose ();
+	*/
+	
+	public void clear()
+	{
+		m_FoldingDoc.clear() ;
+		m_Text.setText("") ;
+		m_IconBar.redraw() ;
+	}
+	
+	public String toString()
+	{
+		return m_FoldingDoc.toString() ;
+	}
+	
 	public void appendText(String text, boolean redraw)
 	{
+		Block last = m_FoldingDoc.m_LastBlock ;
 		
+		if (last == null || last.canExpand())
+		{
+			// We create blocks that can't fold to hold top level text lines
+			last = new Block(false) ;
+			m_FoldingDoc.addBlock(last) ;
+		}
+		
+		last.appendLine(text) ;
+		m_Text.append(text) ;
 	}
 	
 	public void appendSubText(String text, boolean redraw)
 	{
+		Block last = m_FoldingDoc.m_LastBlock ;
 		
+		if (last == null)
+		{
+			// This is an odd situation where we're adding subtext but have no supertext to append to.
+			// It probably will never occur, but if it does we'll add a blank super text block just
+			// to get us going.
+			last = new Block(true) ;
+			last.appendLine("") ;
+			m_FoldingDoc.addBlock(last) ;			
+			m_Text.append("") ;
+		}
+
+		if (!last.canExpand())
+		{
+			// Need to remove the last line from the block and move it to a new block
+			// which can expand and then proceed with the addition to this new block
+			// Thus we ensure that "canExpand" items have at least one child.
+			int size = last.getSize() ;
+			
+			if (size == 1)
+			{
+				// If the last block only contains exactly one line we can convert it safely
+				// to a block which does expand.  This way we also preserve the "all blocks contain
+				// at least one line" rule which makes the code simpler.
+				last.setCanExpand(true) ;
+			}
+			else if (size > 1)
+			{
+				// NOTE: Blocks should always have at least one line so these calls
+				// should never fail (if they do it's a programming error somewhere else that
+				// allowed an empty block to be created).
+				String lastLine = last.getLastLine() ;
+				last.removeLastLine() ;
+				
+				last = new Block(true) ;
+				last.appendLine(lastLine) ;
+				m_FoldingDoc.addBlock(last) ;
+			} else if (size == 0)
+			{
+				throw new IllegalStateException("Last block should not be empty") ;
+			}
+			
+			// There's no change to the text sprite (because the line is just moved between logical blocks)
+			// but we will need to draw the icons to show there's a new block.
+			m_IconBar.redraw() ;
+		}
+		
+		last.appendLine(text) ;
+
+		if (last.isExpanded())
+			m_Text.append(text) ;
 	}
 	
 	public Composite getWindow() 	 { return m_Container ; }
@@ -301,26 +467,29 @@ public class FoldingText
 			int line = block.getStart() ;
 			
 			// Once we drop off the bottom of the screen we're done
-			if (line > lastLine)
+			if (line >= lastLine)
 				break ;
 		
 			int pos = line - topLine ;
 			int y = pos * lineHeight ;
+			int border1 = 1 ;
+			int border2 = 2 ;
 				
 			boolean expanded = block.isExpanded() ;
 			
 			if (block.canExpand())
 			{
-				gc.setBackground(canvas.getDisplay().getSystemColor(expanded ? SWT.COLOR_YELLOW : SWT.COLOR_GREEN)) ;				
-				gc.drawRectangle(0, y, client.width-1, lineHeight-1) ;
+				gc.drawRectangle(0 + border1, y + border1, client.width-1-border1, lineHeight-1-border1) ;
 				
+				// + if collapsed
+				// - if expanded
 				int y1 = y + lineHeight/2 ;
-				gc.drawLine(0, y1, client.width-1, y1) ;
+				gc.drawLine(0 + border1 + border2, y1, client.width-1 - border1 - border2, y1) ;
 
 				if (!expanded)
 				{
 					int x1 = (client.width-1) / 2 ;
-					gc.drawLine(x1, y, x1, y + lineHeight-1) ;
+					gc.drawLine(x1, y + border1 + border2, x1, y + lineHeight-1-border1-border2) ;
 				}				
 			}
 			blockIndex++ ;				

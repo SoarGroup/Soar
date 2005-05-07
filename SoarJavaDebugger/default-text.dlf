@@ -5,7 +5,7 @@
       <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
           <pane view="trace1" tabAtTop="false" singleView="true" horiz="true">
-            <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.TraceView" ShowTraceOutput="true" Name="trace1" ClearEachCommand="false" UpdateOnStop="false">
+            <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.TextTraceView" ShowTraceOutput="true" Name="trace1" ClearEachCommand="false" UpdateOnStop="false">
               <History Item0="<Type commands here>" Size="1" Class="helpers.CommandHistory"></History>
             </view>
           </pane>
