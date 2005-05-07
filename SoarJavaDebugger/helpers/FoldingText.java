@@ -458,6 +458,14 @@ public class FoldingText
 		int blockIndex = m_FoldingDoc.getBlockAfterLineNumber(topLine) ;
 		int blockCount = m_FoldingDoc.getNumberBlocks() ;
 
+		int outerSize = 11 ;
+		int innerSize = 7 ;
+		int offset1 = (client.width - outerSize) / 2 ;
+		int offset2 = (client.width - innerSize) / 2 ;
+		
+		Color gray  = canvas.getDisplay().getSystemColor(SWT.COLOR_GRAY) ;
+		Color black = canvas.getDisplay().getSystemColor(SWT.COLOR_BLACK) ;
+
 		// Go through each block in turn until we're off the bottom of the screen
 		// or at the end of the list of blocks drawing icons
 		while (blockIndex != -1 && blockIndex < blockCount)
@@ -472,24 +480,24 @@ public class FoldingText
 		
 			int pos = line - topLine ;
 			int y = pos * lineHeight ;
-			int border1 = 1 ;
-			int border2 = 2 ;
 				
 			boolean expanded = block.isExpanded() ;
 			
 			if (block.canExpand())
 			{
-				gc.drawRectangle(0 + border1, y + border1, client.width-1-border1, lineHeight-1-border1) ;
+				//gc.setForeground(gray) ;
+				gc.drawRectangle(offset1, y + offset1, outerSize-1, outerSize-1) ;
+				//gc.setForeground(black) ;
 				
 				// + if collapsed
 				// - if expanded
-				int y1 = y + lineHeight/2 ;
-				gc.drawLine(0 + border1 + border2, y1, client.width-1 - border1 - border2, y1) ;
+				int y1 = y + lineHeight/2 - 1;
+				gc.drawLine(offset2, y1, offset2 + innerSize-1, y1) ;
 
 				if (!expanded)
 				{
-					int x1 = (client.width-1) / 2 ;
-					gc.drawLine(x1, y + border1 + border2, x1, y + lineHeight-1-border1-border2) ;
+					int x1 = client.width / 2 ;
+					gc.drawLine(x1, y + offset2, x1, y + offset2 + innerSize-1) ;
 				}				
 			}
 			blockIndex++ ;				
