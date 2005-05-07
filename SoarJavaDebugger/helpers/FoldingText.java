@@ -35,6 +35,7 @@ public class FoldingText
 	protected Canvas 	m_IconBar ;
 	protected Composite m_Container ;
 	protected FoldingTextDoc m_FoldingDoc = new FoldingTextDoc(this) ;
+	protected int		m_LastTopIndex ;
 
 	public static class FoldingTextDoc
 	{
@@ -95,16 +96,18 @@ public class FoldingText
 			return null ;
 		}
 		
-		/** Returns the index of the first block which starts at lineNumber or greater.  -1 if none. */
-		public int getBlockAfterLineNumber(int lineNumber)
+		/** Returns the index of the first block which either starts at topLine or includes topLine */
+		public int getBlockByLineNumber(int lineNumber)
 		{
 			// NOTE: Depending on how often this is called we could hash these values
 			int size = m_TextBlocks.size() ;
 			for (int b = 0 ; b < size ; b++)
 			{
 				Block block = (Block)m_TextBlocks.get(b) ;
-				if (block.getStart() >= lineNumber)
+				if (block.getStart() == lineNumber)
 					return b ;
+				if (block.getStart() > lineNumber && b > 0 && ((Block)m_TextBlocks.get(b-1)).isExpanded())
+					return b - 1 ;
 			}
 			
 			return -1 ;
@@ -249,32 +252,11 @@ public class FoldingText
 		m_Container.setLayout(layout) ;
 		
 		GridData data1 = new GridData(GridData.FILL_VERTICAL) ;
-		data1.widthHint = 15 ;
+		data1.widthHint = 13 ;
 		m_IconBar.setLayoutData(data1) ;
 
 		GridData data2 = new GridData(GridData.FILL_BOTH) ;
 		m_Text.setLayoutData(data2) ;
-		
-		// Canned data for testing
-		/*
-		int lineCount = 0 ;
-		for (int b = 0 ; b < 3 ; b++)
-		{
-			Block block = new Block(true) ;
-			block.setStart(lineCount) ;
-			
-			for (int i = 0 ; i < 50 ; i++)
-			{		
-				lineCount++ ;
-				String line = "This is line " + i + " in block " + b + "\n" ;
-				block.appendLine(line) ;
-			}
-			m_Text.append(block.getAll()) ;
-			block.setExpand(true) ;
-			
-			m_FoldingDoc.addBlock(block) ;
-		}
-		*/
 		
 		m_IconBar.addPaintListener(new PaintListener() { public void paintControl(PaintEvent e) { paintIcons(e) ; } } ) ;
 		m_IconBar.setBackground(m_IconBar.getDisplay().getSystemColor(SWT.COLOR_WHITE)) ;
@@ -282,52 +264,36 @@ public class FoldingText
 		m_IconBar.addMouseListener(new MouseAdapter() { public void mouseUp(MouseEvent e) { iconBarMouseClick(e) ; } } ) ;
 		
 		// Think we'll need this so we update the icons while we're scrolling
-		m_Text.getVerticalBar().addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_IconBar.redraw() ; } }) ;
+		m_Text.getVerticalBar().addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { scrolled() ; } }) ;
+		
+		// The user can trigger a scroll in the text window in other ways than grabbing the scroll bar thumb and moving it so we
+		// need to detect those too.
+		Listener listener = new Listener () {
+			int lastIndex = m_Text.getTopIndex ();
+			public void handleEvent (Event e) {
+				int index = m_Text.getTopIndex ();
+				if (index != lastIndex) {
+					lastIndex = index;
+					scrolled() ;
+				}
+			}
+		};
+		
+		// NOTE: Only detects scrolling by the user
+		m_Text.addListener (SWT.MouseDown, listener);
+		m_Text.addListener (SWT.MouseMove, listener);
+		m_Text.addListener (SWT.MouseUp, listener);
+		m_Text.addListener (SWT.KeyDown, listener);
+		m_Text.addListener (SWT.KeyUp, listener);
+		m_Text.addListener (SWT.Resize, listener);
+		
+		m_LastTopIndex = m_Text.getTopIndex() ;
 	}
 	
-	/* Snippet code to show how to detect any scroll, not just the thumb wheel.
-	Display display = new Display ();
-	Shell shell = new Shell (display);
-	shell.setLayout (new FillLayout ());
-	final Text text = new Text (shell, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-	for (int i=0; i<32; i++) {
-		text.append (i + "-This is a line of text in a widget-" + i + "\n");
+	public void scrolled()
+	{
+		m_IconBar.redraw() ; 
 	}
-	text.setSelection (0);
-	Listener listener = new Listener () {
-		int lastIndex = text.getTopIndex ();
-		public void handleEvent (Event e) {
-			int index = text.getTopIndex ();
-			if (index != lastIndex) {
-				lastIndex = index;
-				System.out.println ("Scrolled, topIndex=" + index);
-			}
-		}
-	};
-	// NOTE: Only detects scrolling by the user
-	text.addListener (SWT.MouseDown, listener);
-	text.addListener (SWT.MouseMove, listener);
-	text.addListener (SWT.MouseUp, listener);
-	text.addListener (SWT.KeyDown, listener);
-	text.addListener (SWT.KeyUp, listener);
-	text.addListener (SWT.Resize, listener);
-	ScrollBar hBar = text.getHorizontalBar();
-	if (hBar != null) {
-		hBar.addListener (SWT.Selection, listener);
-	}
-	ScrollBar vBar = text.getVerticalBar();
-	if (vBar != null) {
-		vBar.addListener (SWT.Selection, listener);
-	}
-	shell.pack ();
-	Point size = shell.computeSize (SWT.DEFAULT, SWT.DEFAULT);
-	shell.setSize (size. x - 32, size.y / 2);
-	shell.open ();
-	while (!shell.isDisposed ()) {
-		if (!display.readAndDispatch ()) display.sleep ();
-	}
-	display.dispose ();
-	*/
 	
 	public void clear()
 	{
@@ -354,6 +320,13 @@ public class FoldingText
 		
 		last.appendLine(text) ;
 		m_Text.append(text) ;
+
+		// Decide if we have caused the window to scroll or not
+		if (m_LastTopIndex != m_Text.getTopIndex())
+		{
+			scrolled() ;
+			m_LastTopIndex = m_Text.getTopIndex() ;
+		}
 	}
 	
 	public void appendSubText(String text, boolean redraw)
@@ -369,6 +342,7 @@ public class FoldingText
 			last.appendLine("") ;
 			m_FoldingDoc.addBlock(last) ;			
 			m_Text.append("") ;
+			m_IconBar.redraw() ;
 		}
 
 		if (!last.canExpand())
@@ -409,7 +383,16 @@ public class FoldingText
 		last.appendLine(text) ;
 
 		if (last.isExpanded())
+		{
 			m_Text.append(text) ;
+
+			// Decide if we have caused the window to scroll or not
+			if (m_LastTopIndex != m_Text.getTopIndex())
+			{
+				scrolled() ;
+				m_LastTopIndex = m_Text.getTopIndex() ;
+			}			
+		}
 	}
 	
 	public Composite getWindow() 	 { return m_Container ; }
@@ -454,8 +437,8 @@ public class FoldingText
 		int visibleLines = m_Text.getClientArea().height / lineHeight ;
 		int lastLine = Math.min(m_Text.getLineCount(),m_Text.getTopIndex() + visibleLines) ;
 		
-		// Start with the first block that appears at or after "topLine"
-		int blockIndex = m_FoldingDoc.getBlockAfterLineNumber(topLine) ;
+		// Start with the first block that starts at topLine or includes topLine.
+		int blockIndex = m_FoldingDoc.getBlockByLineNumber(topLine) ;
 		int blockCount = m_FoldingDoc.getNumberBlocks() ;
 
 		int outerSize = 11 ;
@@ -485,20 +468,29 @@ public class FoldingText
 			
 			if (block.canExpand())
 			{
-				//gc.setForeground(gray) ;
 				gc.drawRectangle(offset1, y + offset1, outerSize-1, outerSize-1) ;
-				//gc.setForeground(black) ;
-				
-				// + if collapsed
-				// - if expanded
-				int y1 = y + lineHeight/2 - 1;
+
+				// Start with a - sign
+				int y1 = y + lineHeight/2 - 2;
 				gc.drawLine(offset2, y1, offset2 + innerSize-1, y1) ;
 
 				if (!expanded)
 				{
+					// If not expanded turn the - into a +
 					int x1 = client.width / 2 ;
 					gc.drawLine(x1, y + offset2, x1, y + offset2 + innerSize-1) ;
-				}				
+				}
+				else
+				{
+					// If expanded draw a line to show what is in the expanded area
+					gc.setForeground(gray) ;
+					int x = client.width / 2 ;
+					int yTop = y + offset1 + outerSize ;
+					int yBottom = y + (block.getSize() * lineHeight) - lineHeight/2 ;
+					gc.drawLine(x, yTop, x, yBottom) ;
+					gc.drawLine(x, yBottom, client.width-1, yBottom) ;
+					gc.setForeground(black) ;
+				}
 			}
 			blockIndex++ ;				
 		}
