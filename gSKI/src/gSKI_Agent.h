@@ -1027,6 +1027,72 @@ namespace gSKI
       virtual void RemoveRhsFunctionListenerFilters(egSKISystemEventId    eventId,
                                                     IRhsFunctionListener* listener,
                                                     Error*                err = 0);
+
+
+	  /**
+      *  @brief Adds a listener for agent XML trace events
+      *
+      *  Call this method to register a listener to recieve system events.
+      *  Agent run events are:
+      *     @li gSKIEVENT_XML_TRACE_OUTPUT
+      *
+      *  If this listener has already been added for the given event, nothing happens
+      *
+      *  Possible Errors:
+      *     @li gSKIERR_INVALID_PTR -- If you pass an invalid pointer for a listener.
+      *
+      *  @param eventId  One of the valid event ids listed above
+      *  @param listener A pointer to a client owned listener that will be called back when
+      *                      an event occurs.  Because the listener is client owned, it is not
+      *                      cleaned up by the kernel when it shuts down.  The same listener
+      *                      can be registered to recieve multiple events.  If this listener
+      *                      is 0, no listener is added and an error is recored in err.
+      *  @param allowAsynch A flag indicating whether or not it is ok for the listener to be
+      *                         notified asynchonously of system operation.  If you specify "true"
+      *                         the system may not callback the listener until some time after
+      *                         the event occurs. This flag is only a hint, the system may callback
+      *                         your listener synchronously.  The main purpose of this flag is to
+      *                         allow for efficient out-of-process implementation of event callbacks
+      *  @param  err Pointer to client-owned error structure.  If the pointer
+      *               is not 0 this structure is filled with extended error
+      *               information.  If it is 0 (the default) extended error
+      *               information is not returned.
+      */
+	  virtual void AddXMLListener(egSKIXMLEventId	 eventId, 
+                            IXMLListener*            listener, 
+                            bool                     allowAsynch = false,
+                            Error*                   err         = 0);
+
+	  /**
+      *  @brief Removes an agent XML trace event listener
+      *
+      *  Call this method to remove a previously added event listener.
+      *  The system will automatically remove all listeners when the kernel shutsdown;
+      *   however, since all listeners are client owned, the client is responsible for
+      *   cleaning up memory used by listeners.
+      *
+      *  If the given listener is not registered to recieve the given event, this
+      *     function will do nothing (but a warning is logged).
+      *
+      *  Agent run events are:
+      *     @li gSKIEVENT_XML_TRACE_OUTPUT
+      *
+      *  Possible Errors:
+      *     @li gSKIERR_INVALID_PTR -- If you pass an invalid pointer for a listener.
+      *
+      *  @param eventId  One of the valid event ids listed above
+      *  @param listener A pointer to the listener you would like to remove.  Passing a 0
+      *                     pointer causes nothing to happen except an error being recorded
+      *                     to err.
+      *  @param  err Pointer to client-owned error structure.  If the pointer
+      *               is not 0 this structure is filled with extended error
+      *               information.  If it is 0 (the default) extended error
+      *               information is not returned.
+	  */
+      virtual void RemoveXMLListener(egSKIXMLEventId eventId,
+                               IXMLListener*         listener,
+                               Error*                err = 0);
+
       /** 
        * @brief Print callback support
        *
@@ -1092,6 +1158,25 @@ namespace gSKI
          egSKIPhaseType    m_phase;
       };
 
+	  /** 
+       * @brief Event notifier for XML events
+       */
+	  class XMLNotifier {
+      public:
+         XMLNotifier(IAgent* a, const char* ft, const char* aOt, const char* v): 
+            m_agent(a), m_funcType(ft), m_attOrTag(aOt), m_value(v) {}
+
+         void operator()(egSKIXMLEventId eventId, IXMLListener* listener)
+         {
+            listener->HandleEvent(eventId, m_agent, m_funcType, m_attOrTag, m_value);
+         }
+      private:
+         IAgent*        m_agent;
+         const char*	m_funcType;
+		 const char*	m_attOrTag;
+		 const char*	m_value;
+      };
+
       /** 
        * @brief Event notifier for print callback
        */
@@ -1124,6 +1209,23 @@ namespace gSKI
                                             agent*                soarAgent, 
                                             void*                 data);
 
+	   /** 
+       * @brief Static function to handle callbacks for the XML function.
+       *
+       * @param eventId  Id of the kernel level event that occured.
+       * @param eventOccured true if the event happened already, false if
+       *                      the event is about to happen
+       * @param object   Pointer to an Agent object (casted to void)
+       * @param soarAgent Pointer to the kernel level agent structure associated
+       *                    with this callback
+       * @param data      Callback data (in this case a gSKI_K_XMLCallbackData*)
+       */
+      static void HandleKernelXMLCallback(unsigned long			  eventId, 
+                                            unsigned char         eventOccured,
+                                            void*                 object, 
+                                            agent*                soarAgent, 
+                                            void*                 data);
+
 
 
 
@@ -1133,6 +1235,7 @@ namespace gSKI
       //{
       typedef ListenerManager<egSKIPrintEventId, IPrintListener, PrintNotifier>   tPrintListenerManager;
       typedef ListenerManager<egSKIRunEventId, IRunListener, RunNotifier>       tRunListenerManager;
+	  typedef ListenerManager<egSKIXMLEventId, IXMLListener, XMLNotifier>       tXMLListenerManager;
       //}
 
    private:
@@ -1187,6 +1290,8 @@ namespace gSKI
       bool                  m_active;            /**< Indication of this agent is active */
 
       tPrintListenerManager m_printListeners;    /**< Holds listeners to the print event */
+
+	  tXMLListenerManager	m_XMLListeners;		/**< Holds listeners to the XML event */
 
       tRunListenerManager   m_runListeners;      /**< Holds listeners for the run events */
 

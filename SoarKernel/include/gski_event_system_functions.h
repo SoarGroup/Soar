@@ -120,6 +120,25 @@ inline void gSKI_MakeAgentCallbackPhase(struct agent_struct* soarAgent,
    gSKI_MakeAgentCallback(event_type, eventOccured, soarAgent, static_cast<void*>(&phase_data));
 }
 
+/**
+ * @brief Special function to handle the xml callback
+ */
+inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
+										egSKIAgentEvents    event_type,
+                                        const char*			funcType,
+                                        const char*			attOrTag,
+										const char*			value,
+                                        unsigned char		eventOccured)
+{
+   gSKI_K_XMLCallbackData xml_data;
+
+   xml_data.funcType = funcType;
+   xml_data.attOrTag = attOrTag;
+   xml_data.value = value;
+
+   gSKI_MakeAgentCallback(event_type, eventOccured, soarAgent, static_cast<void*>(&xml_data));
+}
+
 ///**
 // * @brief Initialize the kernel callbacks
 // *

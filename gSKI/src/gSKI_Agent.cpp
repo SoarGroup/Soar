@@ -1096,6 +1096,70 @@ namespace gSKI
       
       }
 
+	  /*
+AddXMLListener
+	  */
+	  void Agent::AddXMLListener(egSKIXMLEventId	 eventId, 
+							IXMLListener*            listener, 
+							bool                     allowAsynch,
+							Error*                   err)
+	  {
+		  MegaAssert(listener, "Cannot add a 0 listener pointer.");
+		  if(!listener)
+		  {
+			  SetError(err, gSKIERR_INVALID_PTR);
+			  return;
+		  }
+
+		  ClearError(err);
+		  m_XMLListeners.AddListener(eventId, listener);
+
+
+		  // If we have added our first listener, we tell the kernel
+		  //  we want to recieve these events.
+		  if(m_XMLListeners.GetNumListeners(eventId) == 1)
+		  {
+			  // This is a kernel call (not part of gSKI)
+			  // Must convert gSKI event to Kernel event
+			  gSKI_SetAgentCallback(GetSoarAgent(), 
+				  EnumRemappings::RemapXMLEventType(eventId),
+				  static_cast<void*>(this),
+				  HandleKernelXMLCallback);
+		  }
+	  }
+
+	  /*
+RemoveXMLListener
+	  */
+	  void Agent::RemoveXMLListener(egSKIXMLEventId  eventId,
+                               IXMLListener*         listener,
+                               Error*                err)
+   {
+      MegaAssert(listener, "Cannot remove a 0 listener pointer.");
+      if(!listener)
+      {
+         SetError(err, gSKIERR_INVALID_PTR);
+         return;
+      }
+
+      ClearError(err);
+      m_XMLListeners.RemoveListener(eventId, listener);
+
+      // If we have no more listeners, stop asking kernel to
+      //  notify us
+      if(m_XMLListeners.GetNumListeners(eventId) == 0)
+      {
+         // This is a kernel call (not part of gSKI)
+		 // Must convert gSKI event to Kernel event
+         // Setting the callback to 0 causes the kernel
+         //   not to fire the event
+         gSKI_SetAgentCallback(GetSoarAgent(), 
+			 				     EnumRemappings::RemapXMLEventType(eventId),
+                                 static_cast<void*>(this),
+								 HandleKernelXMLCallback);
+      }
+   }
+
    /*
    ==========================
     _       _     _ ____       _       _   _     _     _
@@ -1198,6 +1262,25 @@ namespace gSKI
       PrintNotifier pn(a, str);
       a->m_printListeners.Notify(EnumRemappings::Map_Kernel_to_gSKI_PrintEventId(eventId), pn);
    }
+
+   /*
+HandleKernelXMLCallback
+   */
+   void Agent::HandleKernelXMLCallback(unsigned long			  eventId, 
+                                            unsigned char         eventOccured,
+                                            void*                 object, 
+                                            agent*                soarAgent, 
+                                            void*                 data)
+   {
+	  Agent* a = static_cast<Agent*>(object);
+      gSKI_K_XMLCallbackData* xml_data = static_cast<gSKI_K_XMLCallbackData*>(data);
+
+      // We have to change the the event id from a kernel id to a gSKI id
+
+	  XMLNotifier xn(a, xml_data->funcType, xml_data->attOrTag, xml_data->value);
+      a->m_XMLListeners.Notify(EnumRemappings::Map_Kernel_to_gSKI_XMLEventId(eventId), xn);
+   }
+
 
    /* 
    ==========================

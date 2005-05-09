@@ -64,6 +64,31 @@ namespace gSKI {
    };
 
    /** 
+   * @brief XML callback listener
+   *
+   *  The xml callback is used for xml trace generation callbacks.
+   */
+   class IXMLListener
+   {
+   public:
+      /** Virtual destructor */
+      virtual ~IXMLListener() {}
+
+      /** 
+      * @brief Event callback function
+      *
+      * This method recieves callbacks when the xml event occurs for an agent.
+      *
+      * @param eventId		Id of the event that occured (can only be gSKIEVENT_XML_TRACE_OUTPUT)
+      * @param agentPtr		Pointer to the agent that fired the print event
+      * @param funcType     Pointer to c-style string containing the function type (i.e. addTag, addAttributeValuePair, endTag)
+	  * @param attOrTag     Pointer to c-style string containing the tag to add or remove or the attribute to add
+	  * @param value		Pointer to c-style string containing the value to add (may be NULL if just adding/ending a tag)
+      */
+      virtual void HandleEvent(egSKIXMLEventId eventId, IAgent* agentPtr, const char* funcType, const char* attOrTag, const char* value) = 0;
+   };
+
+   /** 
    * @brief Working memory callback listener
    *
    * Called when events occur that change working memory.

@@ -161,6 +161,12 @@
 	 gSKIEVENT_LAST_XML_EVENT = gSKIEVENT_XML_TRACE_OUTPUT,
     } egSKIXMLEventId;
 
+	static inline bool IsXMLEventID (int id)
+    {
+ 	   return (id >= gSKIEVENT_XML_TRACE_OUTPUT && 
+ 		id <= gSKIEVENT_LAST_XML_EVENT) ;
+    }
+
     typedef enum {
        // Used to indicate an error in some cases
        gSKIEVENT_INVALID_EVENT              = 0,
