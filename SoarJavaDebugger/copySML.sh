@@ -5,4 +5,4 @@
 export SOARIO=../SoarIO
 export SOARLIB=../soar-library
 
-cp -f $SOARIO/ClientSMLSWIG/java/build/*.java sml
+cp -f $SOARIO/ClientSMLSWIG/Java/build/*.java sml
