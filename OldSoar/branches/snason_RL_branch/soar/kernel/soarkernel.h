@@ -243,6 +243,12 @@ enum ni_mode {
   if (header) ((header)->prev_field_name) = (item) ; \
   (header) = (item) ; }
 
+#define insert_at_end_of_dll(last_element, item, next_field_name, prev_field_name) { \
+	((item)->next_field_name) = NIL ; \
+	((item)->prev_field_name) = (last_element) ; \
+	if (last_element) ((last_element)->next_field_name) = (item) ; \
+	(last_element) = (item) ; }
+
 #define remove_from_dll(header,item,next_field_name,prev_field_name) { \
   if ((item)->next_field_name) \
     ((item)->next_field_name->prev_field_name) = ((item)->prev_field_name); \

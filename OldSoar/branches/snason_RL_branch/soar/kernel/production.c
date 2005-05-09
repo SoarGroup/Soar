@@ -656,7 +656,9 @@ bool test_includes_equality_test_for_symbol(test t, Symbol * sym)
 
     if (test_is_blank_or_equality_test(t)) {
         if (sym)
-            return (bool) (referent_of_equality_test(t) == sym);
+		{ Symbol *ref = referent_of_equality_test(t);
+		return (bool) (ref == sym); }
+			// return (bool) (referent_of_equality_test(t) == sym);
         return TRUE;
     }
 

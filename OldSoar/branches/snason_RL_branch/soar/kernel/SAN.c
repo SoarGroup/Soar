@@ -3,7 +3,7 @@
 
 float compute_temp_diff(RL_record *);
 Symbol *equality_test_for_symbol_in_test(test t);
-condition *make_simple_condition(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, bool acceptable);
+condition *make_simple_condition(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym);
 action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym);
 production *build_RL_production(condition *top_cond, condition *bottom_cond, not *nots, preference *pref);
 void learn_RL_productions(int level);
@@ -170,34 +170,57 @@ void record_for_RL()
 	  record->previous_Q = record->next_Q;
 
 	  for (pref = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref ; pref = pref->next){
-		  if (record->op == pref->value)
-			/* This is one scheme - where the format of an RL rule is never changed but a rule may be specialized. */
-			 {
-			  ist = pref->inst;
-			  prod = ist->prod;
-			  push(prod, record->pointer_list);
-			  // Potentially build new RL-production
+			  if (record->op == pref->value)
+				/* This is one scheme - where the format of an RL rule is never changed but a rule may be specialized. */
+				 {
+				  ist = pref->inst;
+				  prod = ist->prod;
+				  push(prod, record->pointer_list);
+				  // Potentially build new RL-production
 
-		   if (prod->times_updated < 0){
-		//	  if ((prod->times_updated > 50) && !prod->conv_value){
- 			 // if (prod->conv_mean && !prod->conv_value){
-					  // excise_production(prod->child, TRUE);
-					  // extract_list_element(record->pointer_list, prod->child); // bug - need to do for stack of records
-					  // prod->child = NIL;
-			//	  }
-				  new_prod = specify_production(ist);
-				  if (new_prod){
-					  print_with_symbols("Specialize %y to %y\n", prod->name, new_prod->name);
-					  prod->times_updated = 0;
-//					  prod->conv_mean = FALSE;
-					  prod->conv_value = TRUE;
-					  // prod->increasing = 0;
-					  // prod->child = new_prod;
-					  push(new_prod, record->pointer_list);
-				  }
-			 }
+			   if (prod->times_updated < 0){
+			//	  if ((prod->times_updated > 50) && !prod->conv_value){
+ 				 // if (prod->conv_mean && !prod->conv_value){
+						  // excise_production(prod->child, TRUE);
+						  // extract_list_element(record->pointer_list, prod->child); // bug - need to do for stack of records
+						  // prod->child = NIL;
+				//	  }
+					  new_prod = specify_production(ist);
+					  if (new_prod){
+						  print_with_symbols("Specialize %y to %y\n", prod->name, new_prod->name);
+						  prod->times_updated = 0;
+//						  prod->conv_mean = FALSE;
+						  prod->conv_value = TRUE;
+						  // prod->increasing = 0;
+						  // prod->child = new_prod;
+						  push(new_prod, record->pointer_list);
+					  }
+				 }
+			  }
 		  }
-	  }
+		  if (!record->pointer_list){
+			  condition *new_top, *new_bottom;
+			  condition *new_cond;
+			  not *new_not;
+			  ist = w->preference->inst;
+			  copy_condition_list(ist->top_of_instantiated_conditions, &new_top, &new_bottom);
+			  copy_nots(ist->nots, &new_not);
+			  for(pref = ist->preferences_generated; pref ; pref = pref->inst_next){
+				  if (pref->type == ACCEPTABLE_PREFERENCE_TYPE){
+					  new_cond = make_simple_condition(pref->id, pref->attr, pref->value);
+					  symbol_add_ref(pref->id);
+					  symbol_add_ref(pref->attr);
+					  symbol_add_ref(pref->value);
+					  insert_at_end_of_dll(new_bottom, new_cond, next, prev);
+				  }
+			  }
+			  prod = build_RL_production(new_top, new_bottom, new_not, 
+				  make_preference(NUMERIC_INDIFFERENT_PREFERENCE_TYPE, w->id, w->attr, w->value, make_float_constant(0)));
+			  deallocate_condition_list(new_top);
+			  deallocate_list_of_nots(new_not);
+			  if (prod) push(prod, record->pointer_list);
+		  }
+  }
 	  /* This is the other scheme - where new RL rules are made by filling out rule templates. */
 		/*  {
 			  ist = pref->inst;
@@ -226,7 +249,6 @@ void record_for_RL()
 	//		  		  prod->child = NIL;
 	//	  }
 	  //}
-	  }
 }
 
 /* -----------------------------------------------------
@@ -699,8 +721,7 @@ action *make_simple_action(Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Sy
 
 condition *make_simple_condition(Symbol *id_sym,
                                  Symbol *attr_sym,
-                                 Symbol *val_sym,
-								 bool acceptable)
+                                 Symbol *val_sym)
 {
     condition *newcond;
 
@@ -708,10 +729,10 @@ condition *make_simple_condition(Symbol *id_sym,
     newcond->type = POSITIVE_CONDITION;
     newcond->next = NULL;
     newcond->prev = NULL;
-	newcond->test_for_acceptable_preference = acceptable;
+	// newcond->test_for_acceptable_preference = acceptable;
 
 
-	/*
+	
     if (strcmp(attr_sym->sc.name, "operator") == 0)
     {
         newcond->test_for_acceptable_preference = TRUE;
@@ -719,7 +740,7 @@ condition *make_simple_condition(Symbol *id_sym,
     else
     {
         newcond->test_for_acceptable_preference = FALSE;
-    }*/
+    }
 
     newcond->data.tests.id_test = make_equality_test_without_adding_reference(id_sym);
     newcond->data.tests.attr_test = make_equality_test_without_adding_reference(attr_sym);
@@ -801,7 +822,7 @@ bool trace_to_prod_depth(wme * w, tc_number tc_prod, tc_number tc_seen, conditio
 
 	if (depth == 0) return FALSE;
 	// if(symbol_is_in_tc(id, tc_seen)) return FALSE;
-	new_cond = make_simple_condition(id, attr, value, w->acceptable);
+	new_cond = make_simple_condition(id, attr, value);
 //	if (new_cond->test_for_acceptable_preference == w->acceptable)
 	insert_at_head_of_dll(*cond, new_cond, next, prev);
 	if (symbol_is_in_tc(id, tc_prod)){
