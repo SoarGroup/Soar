@@ -122,12 +122,12 @@ public:
 	static char const* const kPreference_Type ;
 
 	// for warnings controlled by WARNINGS_SYSPARAM
-	static char const* const sml_Names::kTagWarning ;
+	static char const* const kTagWarning ;
 
 	// XML function types for XML output event
-	static char const* const sml_Names::kFunctionBeginTag;
-	static char const* const sml_Names::kFunctionEndTag;
-	static char const* const sml_Names::kFunctionAddAttribute;
+	static char const* const kFunctionBeginTag;
+	static char const* const kFunctionEndTag;
+	static char const* const kFunctionAddAttribute;
 
 	// end of tags for Trace output
 
