@@ -155,7 +155,13 @@
     }
 
 	 typedef enum { 
- 	 // Currently not directly implemented in gSKI.  Used in client to convert structured output strings into xml.
+ 	 // This is directly implemented in gSKI, but is not really the same event as the SML side.
+	 // On the gSKI side this is used to signal the generation of XML trace events.
+	 // On the client side it is used send complete XML objects.
+	 // That is, a bunch of gSKI XML trace events get combined into a single XML object and sent
+	 //  as a single SML event.
+	 // We decided to use the same event number for both sides since the event numbers need to match up
+	 //  anyway and these are strongly related events.
 	 // This event currently relies on gSKI_EVENT_STRUCTURED_OUTPUT.
  	 gSKIEVENT_XML_TRACE_OUTPUT = gSKIEVENT_LAST_RHS_EVENT + 1,   
 	 gSKIEVENT_LAST_XML_EVENT = gSKIEVENT_XML_TRACE_OUTPUT,

@@ -20,7 +20,6 @@
 
 #include <assert.h>
 #include <memory.h>
-#include <string> // for XML event generation
 
 /**
  * @brief Initialize the agent callbacks
