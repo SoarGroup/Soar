@@ -34,8 +34,9 @@ tempmem.cpp\
 tilde.cpp\
 trace.cpp\
 utilities.cpp\
-wmem.cpp
+wmem.cpp\
+xmlTraceNames.cpp
 
-INCLUDES = -I.. -I../include -I../../SoarIO/ConnectionSML/include
+INCLUDES = -I.. -I../include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
