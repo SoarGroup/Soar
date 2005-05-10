@@ -18,3 +18,5 @@ libtool
 gSKI-static.ncb
 aclocal.m4
 autom4te.cache
+stamp-h
+stamp-h.in
