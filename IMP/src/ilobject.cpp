@@ -17,7 +17,8 @@ extern void pause();
 
 InputLinkObject::InputLinkObject()
 {
-	m_updateFrequency = UPDATE_NEVER;
+	m_updateFrequency	= UPDATE_NEVER;
+	m_beenInspected		= false;
 }
 
 /* Destructor
@@ -26,6 +27,32 @@ InputLinkObject::InputLinkObject()
 InputLinkObject::~InputLinkObject()
 {
 	m_elementTypes.clear();
+}
+
+string InputLinkObject::getValue() const
+{
+	switch(m_curType)
+	{
+		case ELEMENT_STRING:
+			return m_value.s;
+			break;
+		case ELEMENT_FLOAT:
+			return m_value.f;
+			break;
+		case ELEMENT_ID:
+			return m_value.id;
+			break;
+		case ELEMENT_INT:
+			return m_value.i;
+			break;
+		case ELEMENT_TYPE_TBD:
+			return k_TBD;
+			break;
+		default:
+			assert(false);
+			return "Wow...how did this happen?";
+			break;
+	}
 }
 
 std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
@@ -39,30 +66,31 @@ std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
 		//stream << obj.printType(stream, *tItr) << endl;
 		switch(*tItr)
 		{
-		case ELEMENT_FLOAT:
-			stream << "float element";
-			break;
-		case ELEMENT_INT:
-			stream << "int element";
-			break;
-		case ELEMENT_ID:
-			stream << "identifier";
-			break;
-		case ELEMENT_STRING:
-			stream << "string element";
-			break;
-		case ELEMENT_TYPE_TBD:
-			stream << k_TBD;
-			break;
-		default:
-			stream << "BAAAAD things have happened";
-			assert(false);
-			break;
+			case ELEMENT_FLOAT:
+				stream << "float element";
+				break;
+			case ELEMENT_INT:
+				stream << "int element";
+				break;
+			case ELEMENT_ID:
+				stream << "identifier";
+				break;
+			case ELEMENT_STRING:
+				stream << "string element";
+				break;
+			case ELEMENT_TYPE_TBD:
+				stream << k_TBD;
+				break;
+			default:
+				stream << "BAAAAD things have happened";
+				assert(false);
+				break;
 		}
 		stream << endl;
 	}
 	stream << "\tValue: \t\t";
 	//stream << obj.printValue(stream) << endl;
+	/*
 	switch(obj.m_curType)
 	{
 		case ELEMENT_STRING:
@@ -84,13 +112,14 @@ std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
 			stream << "Wow...how did this happen?" << endl;
 			assert(false);
 			break;
-	}
-	stream << endl;
+	}*/
+	stream << obj.getValue() << endl;
 	stream << "\tFrequency: \t" << obj.getFrequencyAsString() << endl;
 
 	stream << endl;
 	return stream;
 }
+
 
 /*
 //TODO comment  //TODO consider printing the const values instead of these
@@ -197,19 +226,19 @@ void InputLinkObject::setStartValue(string& inValue)
 	switch(m_elementTypes[0])
 	{
 		case ELEMENT_STRING:
-			assert(m_value.s = "");
+			assert(m_value.s == "");
 			m_value.s = inValue;
 			break;
 		case ELEMENT_INT:
-			assert(m_value.i = "");
+			assert(m_value.i == "");
 			m_value.i = inValue; //atoi(inValue.c_str());
 			break;
 		case ELEMENT_FLOAT:
-			assert(m_value.f = "");		
+			assert(m_value.f == "");		
 			m_value.f = inValue; //atof(inValue.c_str());
 			break;
 		case ELEMENT_ID:
-			assert(m_value.id = "");		
+			assert(m_value.id == "");		
 			m_value.id = inValue;
 			break;
 		default:

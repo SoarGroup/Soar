@@ -6,12 +6,15 @@
 #include <stdlib.h>
 #include <string>
 #include <assert.h>
+#include <sstream>
 
 using std::string;
 using std::endl;
 using std::cout; using std::cin;
 using std::fstream; using std::ostream;
+using std::ostringstream;
 using std::ios;
+
 
 /******************************************************************************
  * InputLinkSpec Class Function Definitions
@@ -46,6 +49,20 @@ const int defaultLoopBegin = 0;
 const int defaultLoopEnd = 1;
 //counts number of lines successfully imported from the file
 int lineNumber = 0;
+
+string intToString(int i)
+{
+	ostringstream stream;
+	stream << i;
+	return stream.str();
+}
+
+string floatToString(double d)
+{
+	ostringstream stream;
+	stream << d;
+	return stream.str();
+}
 
 /* ImportDM
  *
@@ -225,12 +242,13 @@ bool InputLinkSpec::ImportIL(string& filename)
 	{
 		eParseStage parseStage = READING_BEGIN_STAGE;
 		eParseStage lastCompletedState = READING_PRE_BEGIN;
-		int loopIteration = defaultLoopBegin;
+		int loopBegin = defaultLoopBegin;
 		int loopEnd = defaultLoopEnd;
 		bool quitCondition = false;
 		string controlVariableName;
 		bool controlStructureUnsatisfied = false;//whether or not there is a control
 							//structure creating multiple wmes that has not been handled
+		bool skipPushback = false;
 
 		string line;
 		writeFileLineToString(file, line, true);
@@ -298,7 +316,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 					if(!atoi(controlEndVal.c_str()))
 					{
 						parseStage = READING_ERROR;
-						cout << "Control structure end val wasn't an int. Was: " controlEndVal << endl;
+						cout << "Control structure end val wasn't an int. Was: "<< controlEndVal << endl;
 					}
 					controlEndVal = atoi(line.c_str());
 		
@@ -306,8 +324,8 @@ bool InputLinkSpec::ImportIL(string& filename)
 		//				<< controlStartVal << " " << controlEndVal << endl;
 
 					//set ACTUAL loop start and stop delimiters			
-					loopIteration = controlStartVal;
-					loopEnd = controlEndVal;
+					loopBegin = atoi(controlStartVal.c_str());
+					loopEnd = atoi(controlEndVal.c_str());
 
 					//TODO (if doing nested control loops, add an entry to the control queue)
 
@@ -489,7 +507,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 					//if this is a conditional frequency, read off the condition string
 					if(curWord == k_conditionString)
 					{
-					  curWord = readAndTrimOneWord(line);
+						curWord = readAndTrimOneWord(line);
 						if(curWord == "")
 						{
 							//token without a value following
@@ -527,15 +545,31 @@ bool InputLinkSpec::ImportIL(string& filename)
 		}// end control loop
 
 
+
+
 		//now we've read a WME pattern. If it should be duplicated, do that now
-		for(int counter = loopIteration; counter < loopEnd; ++counter)
+		for(int counter = loopBegin; counter < loopEnd; ++counter)
 		{
+			InputLinkObject actualNewObject = ilObj;
+
 			//the parts of a WME pattern that might have a field equal to the control
 			//variable name are the optional "update"/"start" fields
-			for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
-			{
-					
-			}
+			//for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
+			//{
+/*				if(objItr->getUpdateValue() == controlVariableName || objItr->getValue() == controlVariableName)
+				{
+					skipPushback = true;
+					InputLinkObject 
+					string counterAsString = intToString(counter);
+					if(objItr->getUpdateValue() == controlVariableName)
+						objItr->setUpdateValue(counterAsString);
+
+					if(objItr->getValue() == controlVariableName)
+						objItr->setStartValue(counterAsString);
+				}
+*/
+			//}//for
+			
 		}
 
 		ilObjects.push_back(ilObj);

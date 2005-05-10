@@ -31,15 +31,15 @@ const std::string k_conditionString("cond");
 const std::string k_cycleString("cycle");
 const std::string k_TBD("To Be Determined at runtime");
 
-eElementType	stringToType(const std::string& source);
-const std::string		typeToString(eElementType type);
+eElementType		stringToType(const std::string& source);
+const std::string	typeToString(eElementType type);
 
 enum eUpdateFrequency
 {
 	UPDATE_NEVER,
-  UPDATE_ON_CHANGE,			//TODO isn't this really a case of ON_CONDITION?
-  UPDATE_ON_CONDITION, 
-  UPDATE_EVERY_CYCLE
+	UPDATE_ON_CHANGE,			//TODO isn't this really a case of ON_CONDITION?
+	UPDATE_ON_CONDITION, 
+	UPDATE_EVERY_CYCLE
 };
 
 //A union is actually cleaner for this, but there was some nonsense that resulted
@@ -47,11 +47,11 @@ enum eUpdateFrequency
 struct WMEValue
 {
 	//this is a string so that a variable name can be stored here temporarily, to be replaced
-	//with the integer value later
+	//with the string representation of the integer value later
 	std::string i;
 	//int i;
 	//this is a string so that a variable name can be stored here temporarily, to be replaced
-	//with the floating point value later	
+	//with the string representation of the floating point value later	
 	std::string f;
 	//double f;
 	std::string s;
@@ -69,33 +69,39 @@ public:
 	//InputLinkObject(std::string& inParent, std::string& inName, std::vector<eElementType>& inTypes, std::string& inValue);
 	~InputLinkObject();
 
-	void				addElementType(std::string& inType){m_elementTypes.push_back(stringToType(inType));}
-	void				setParentId(std::string& inParent){m_parentId = inParent;}
-	void				setAttribName(std::string& inName){m_attribName = inName;}
-	void				setStartValue(std::string& inValue);
-	void				setUpdateValue(std::string& inValue);
-	void				setType(std::string& inValue);
-	void				setType(const std::string& inValue);
-	void				setType();
-	int					getNumTypes() const {return m_elementTypes.size();}
+	void		addElementType(std::string& inType){m_elementTypes.push_back(stringToType(inType));}
+	void		setParentId(std::string& inParent){m_parentId = inParent;}
+	void		setAttribName(std::string& inName){m_attribName = inName;}
+	void		setStartValue(std::string& inValue);
+	void		setUpdateValue(std::string& inValue);
+	void		setType(std::string& inValue);
+	void		setType(const std::string& inValue);
+	void		setType();
+	int			getNumTypes() const {return m_elementTypes.size();}
 	std::string	getFrequencyAsString() const;
+	std::string	getUpdateValue() const {return m_updateValue;}
+	std::string	getValue() const;
 
 	void setUpdateFrequency(std::string& inValue);
 	void setUpdateCondition(std::string& inValue);
 
 	friend std::ostream& operator << (std::ostream& stream, InputLinkObject& obj);
+	bool		hasBeenInspected() const {return m_beenInspected;}
+	void		markAsInspected() {m_beenInspected = true;}
+
 
 private:
 	//std::ostream& printType(std::ostream&, eElementType);
 	//std::ostream& printValue(std::ostream&);
 	std::string				m_parentId;
 	std::string				m_attribName;
-	typesContainter		m_elementTypes;
+	typesContainter			m_elementTypes;
 	eElementType			m_curType;
-	WMEValue					m_value;
+	WMEValue				m_value;
 	std::string				m_updateValue;
-	eUpdateFrequency	m_updateFrequency;
+	eUpdateFrequency		m_updateFrequency;
 	std::string				m_updateCondition;
+	bool					m_beenInspected;
 };
 
 
