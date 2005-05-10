@@ -37,8 +37,8 @@
 #include "gdatastructs.h"
 #include "tempmem.h"
 #include "wmem.h"
-#include "sml_Names.h" // for constants for XML function types, tags and attributes
-#include "gski_event_system_functions.h" // to trigger XML events
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h" // support for triggering XML events
 #include <ctype.h>
 
 /* --- trace format types --- */
@@ -1387,16 +1387,16 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 	switch(slot_type) {
 		case FOR_STATES_TF:
 			//create XML trace for state object
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionBeginTag, sml::sml_Names::kTagState, (char*)0);
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_StackLevel, state->id.level - 1);
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_DecisionCycleCt, thisAgent->d_cycle_count);
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_ID, symbol_to_string(thisAgent, object, true, 0, 0));
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagState, (char*)0);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_StackLevel, state->id.level - 1);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_DecisionCycleCt, thisAgent->d_cycle_count);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_ID, symbol_to_string(thisAgent, object, true, 0, 0));
 			
 			// find impasse object and add it to XML
 			wme* w;
 			for (w=object->id.impasse_wmes; w!=NIL; w=w->next) {
 				if(w->attr == thisAgent->attribute_symbol) {
-					gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_ImpasseObject, w->value->sc.name);
+					gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_ImpasseObject, w->value->sc.name);
 					break;
 				}
 			}
@@ -1404,29 +1404,29 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 			// find impasse type and add it to XML
 			for (w=object->id.impasse_wmes; w!=NIL; w=w->next) {
 				if(w->attr == thisAgent->impasse_symbol) {
-					gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_ImpasseType, w->value->sc.name);
+					gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_ImpasseType, w->value->sc.name);
 					break;
 				}
 			}
 
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionEndTag, sml::sml_Names::kTagState, (char*)0);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagState, (char*)0);
 			break;
 
 		case FOR_OPERATORS_TF:
 			//create XML trace for operator object
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionBeginTag, sml::sml_Names::kTagOperator, (char*)0);
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_StackLevel, object->id.level - 1);
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kOperator_DecisionCycleCt, thisAgent->d_cycle_count);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagOperator, (char*)0);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_StackLevel, object->id.level - 1);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kOperator_DecisionCycleCt, thisAgent->d_cycle_count);
 			
 			if (state->id.operator_slot->wmes)
 				current_o = state->id.operator_slot->wmes->value;
 			if(current_o) {
-				gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kOperator_ID, symbol_to_string(thisAgent, current_o, true, 0, 0));
+				gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kOperator_ID, symbol_to_string(thisAgent, current_o, true, 0, 0));
 				Symbol* name = find_name_of_object(thisAgent, current_o);
-				if(name) gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kOperator_Name, symbol_to_string(thisAgent, name, true, 0, 0));
+				if(name) gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kOperator_Name, symbol_to_string(thisAgent, name, true, 0, 0));
 			}
 			
-			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionEndTag, sml::sml_Names::kTagOperator, (char*)0);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagOperator, (char*)0);
 			break;
 
 		default:

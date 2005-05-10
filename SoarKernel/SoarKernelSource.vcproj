@@ -77,7 +77,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="include;../SoarIO/ConnectionSML/include"
+				AdditionalIncludeDirectories="include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_TCL"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
@@ -594,6 +594,9 @@
 						ObjectFile="$(IntDir)/$(InputName)1.obj"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\src\xmlTraceNames.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header files"
@@ -692,9 +695,6 @@
 				RelativePath=".\include\scheduler.h">
 			</File>
 			<File
-				RelativePath="..\SoarIO\ConnectionSML\include\sml_Names.h">
-			</File>
-			<File
 				RelativePath=".\src\soar.h">
 			</File>
 			<File
@@ -723,6 +723,9 @@
 			</File>
 			<File
 				RelativePath=".\include\wmem.h">
+			</File>
+			<File
+				RelativePath=".\include\xmlTraceNames.h">
 			</File>
 		</Filter>
 	</Files>
