@@ -20,7 +20,7 @@ Note: If you define these variables and Visual Studio is already started, then y
 
 4) Make sure the build mode (debug or release) for the SWIG project matches the build mode of the SML stuff.
 
-5) Build the ClientSMLJava project.  The java and class files should appear in ClientSMLSWIG/Java, and Java_sml_ClientInterface.dll should appear in SoarIO/bin and ClientSMLSWIG/Java.
+5) Build the ClientSMLJava project.  The java and class files should appear in ClientSMLSWIG/Java/build, and Java_sml_ClientInterface.dll should appear in soar-library and ClientSMLSWIG/Java/build.
 
 6) Interfaces built with Java 1.4.2 appear to work with Java 1.5/5.0 fine.  However, we recommend rebuilding for Java 1.5/5.0 since you can get proper enum support in the wrappers that way.
 
@@ -34,7 +34,7 @@ Java 1.5/5.0
 
 This will enable generation of proper enums in the Java code.
 
-2) Build the ClientSMLJava project.  The java and class files should appear in ClientSMLSWIG/Java, and Java_sml_ClientInterface.dll should appear in SoarIO/bin and ClientSMLSWIG/Java.
+Follow steps 5-6 above.
 
 Tcl 8.4.9
 =========
@@ -54,4 +54,4 @@ Note: If you define these variables and Visual Studio is already started, then y
 
 4) Make sure the build mode (debug or release) for the SWIG project matches the build mode of the SML stuff.
 
-5) Build the ClientSMLTcl project.  The tcl_sml_clientinterface package should appear in SoarIO/bin.
+5) Build the ClientSMLTcl project.  The tcl_sml_clientinterface package should appear in soar-library.
