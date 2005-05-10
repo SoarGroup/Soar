@@ -125,6 +125,11 @@ char const* const sml_Names::kPreference_Type	= "pref_type" ;
 char const* const sml_Names::kTagWarning		= "warning" ;
 // Tag warning has attribute kTypeString
 
+// XML function types for XML output event
+char const* const sml_Names::kFunctionBeginTag		= "begintag";
+char const* const sml_Names::kFunctionEndTag		= "endtag";
+char const* const sml_Names::kFunctionAddAttribute	= "addattribute";
+
 // Types
 char const* const sml_Names::kTypeString	= "string" ;
 char const* const sml_Names::kTypeInt		= "int" ;

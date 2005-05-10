@@ -124,6 +124,11 @@ public:
 	// for warnings controlled by WARNINGS_SYSPARAM
 	static char const* const sml_Names::kTagWarning ;
 
+	// XML function types for XML output event
+	static char const* const sml_Names::kFunctionBeginTag;
+	static char const* const sml_Names::kFunctionEndTag;
+	static char const* const sml_Names::kFunctionAddAttribute;
+
 	// end of tags for Trace output
 
 	// Types
