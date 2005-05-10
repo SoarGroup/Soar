@@ -120,14 +120,32 @@ void printStage(eParseStage stage, ostream& stream)
 	}
 }
 
-//TODO comment
+//trims leading whitespace out of a string, returns a copy of the altered string
+string consumeSpaces(const string& source, bool echo = false)
+{
+	string::size_type nonWhiteIndex = source.find_first_not_of(" \t\n");
+	string temp(source);
+	temp.erase(0,nonWhiteIndex);
+	if(echo)
+		cout << "ConsumeSpaces trimming:_" << source << "_ down to:_" << temp << "_" << endl;
+	return temp;
+}
+
+//trims the leading whitespace of the source string, altering it
+/*void consumeSpaces(string& source)
+{
+	string::size_type nonWhiteIndex = source.find_first_not_of(" \t\n");
+	source.erase(0,nonWhiteIndex);
+}*/
+
+//Returns a copy of the first whitespace-terminated word in source
 string readOneWord(const string& source)
 {
 	string retVal;
 	string::const_iterator sItr = source.begin();
-	
-	//the next word may be trailed by a space, a newline, or EOF
-	int pos = source.find_first_of(" \n");
+
+	//the next word may be trailed by a whitespace, or EOF
+	int pos = source.find_first_of(" \t\n");
 
 	//TODO...handle the EOF case
 	if(pos == source.npos)
@@ -138,15 +156,16 @@ string readOneWord(const string& source)
   return retVal;
 }
 
-//Erase all characters up to and including the first encountered space.
-//TODO make this trim ALL leading spaces
+//Erase first whitespace-terminated word, including the first encountered whitespace.
 void trimOneWord(string& source)
 {
-	int pos = source.find_first_of(" ");
+	int pos = source.find_first_of(" \t\n");
 	if(pos != source.npos)
-		source.erase(0, pos + 1);	
+		source.erase(0, pos + 1);
 }
-//TODO comment
+
+//returns a copy of one whitespace-terminated word from source string, 
+//and removes it from source.  Optionally prints the read string
 string readAndTrimOneWord(string& source, bool echo = false)
 {
 	string returnVal = readOneWord(source);
@@ -156,11 +175,15 @@ string readAndTrimOneWord(string& source, bool echo = false)
 	return returnVal;
 }
 
+//returns true if the supplied token is found in source string,
+//otherwise, false
 bool tokenPresent(const string& token, const string& source)
 {
 	return source.find(token.c_str(), 0, token.size()) != string.npos;
 }
 
+//reads one line from file into a string.  The resultant string does not contain the
+//newline that terminated it in the file
 void writeFileLineToString(fstream& source, string& dest, bool echo = false)
 {
 	char intermediate[MAX_IMP_LINE_LENGTH + 1];//TODO check these bounds
@@ -177,7 +200,6 @@ void writeFileLineToString(fstream& source, string& dest, bool echo = false)
 	if(echo)
 		cout << "Entire file line:>" << dest << "<" << endl;
 	lineNumber++;
-	//cout << "just read line " << lineNumber << endl;
 }
 
 /* ImportIL
@@ -206,6 +228,9 @@ bool InputLinkSpec::ImportIL(string& filename)
 		int loopIteration = defaultLoopBegin;
 		int loopEnd = defaultLoopEnd;
 		bool quitCondition = false;
+		string controlVariableName;
+		bool controlStructureUnsatisfied = false;//whether or not there is a control
+							//structure creating multiple wmes that has not been handled
 
 		string line;
 		writeFileLineToString(file, line, true);
@@ -228,24 +253,21 @@ bool InputLinkSpec::ImportIL(string& filename)
 		}
 
 		//peek at the first word, but don't remove it from the stream
-
-
-    //The captured word will either be a control structure or an identifier name
+    //Will either be a control structure or an identifier name
 		if(tokenPresent(k_forToken, line))
 			parseStage = READING_CONTROL_STRUCTURE;
 
 		else
 			parseStage = READING_PARENT_IDENTIFIER;
 
-		InputLinkObject ilObj;
+		InputLinkObject ilObj;//this object will have its values filled in as they are read in
 		//Begin parsing based on stage
 		while(parseStage != READING_FINAL_STAGE)
-		//for(; loopIteration < loopEnd; ++loopIteration)
 		{
 			printStage(parseStage, cout);
 			bool readingFirstType = true, moreTypesLeft = true, hasStartValue = false;
-			string controlName, curWord = "";
-			int controlStartVal, controlEndVal = 0;
+			string curWord = "";
+			string controlStartVal, controlEndVal = 0;
 
 			switch(parseStage)
 			{
@@ -254,11 +276,34 @@ bool InputLinkSpec::ImportIL(string& filename)
 					trimOneWord(line);
 
 					//read control variable name
-					controlName = readAndTrimOneWord(line);
-					controlStartVal = atoi(readAndTrimOneWord(line).c_str());
+					controlVariableName = readAndTrimOneWord(line);
+					controlStartVal = readAndTrimOneWord(line);
+					//check the read
+					if(controlStartVal == "")
+					{
+						parseStage = READING_ERROR;
+						cout << "Missing control structure start value..." << endl;
+						break;
+					}
+					//check the format
+					if(!atoi(controlStartVal.c_str()))
+					{
+						parseStage = READING_ERROR;
+						cout << "Control structure start val wasn't an int. Was: " << controlStartVal << endl;
+						break;
+					}
+
+					controlEndVal = readAndTrimOneWord(line);
+					//check the read
+					if(!atoi(controlEndVal.c_str()))
+					{
+						parseStage = READING_ERROR;
+						cout << "Control structure end val wasn't an int. Was: " controlEndVal << endl;
+					}
 					controlEndVal = atoi(line.c_str());
-					cout << "After all the control nonsense, the values are: " << controlName << " "
-						<< controlStartVal << " " << controlEndVal << endl;
+		
+		//			cout << "After all the control nonsense, the values are: " << controlName << " "
+		//				<< controlStartVal << " " << controlEndVal << endl;
 
 					//set ACTUAL loop start and stop delimiters			
 					loopIteration = controlStartVal;
@@ -270,17 +315,25 @@ bool InputLinkSpec::ImportIL(string& filename)
 					//for the identifier information
 					writeFileLineToString(file, line, true);
 					lastCompletedState = READING_CONTROL_STRUCTURE;
+					controlStructureUnsatisfied = true;
 					parseStage = READING_PARENT_IDENTIFIER;
 					break;
 				case READING_PARENT_IDENTIFIER:
 					//TODO error checking
-					curWord = readAndTrimOneWord(line, true);
+					curWord = readAndTrimOneWord(line);
+
+					if(curWord == "")
+					{
+						cout << "didn't find parent identifier...." << endl;
+						parseStage = READING_ERROR;
+						break;
+					}
 					ilObj.setParentId(curWord);
 					lastCompletedState = READING_PARENT_IDENTIFIER;
 					parseStage = READING_ATTRIBUTE;
 					break;
 				case READING_ATTRIBUTE:
-					curWord = readAndTrimOneWord(line, true); // TODO error checking
+					curWord = readAndTrimOneWord(line); // TODO error checking
 					//trim off the attrib token
 					curWord.replace(0, 1, "");
 					ilObj.setAttribName(curWord);
@@ -289,8 +342,8 @@ bool InputLinkSpec::ImportIL(string& filename)
 					break;
 				case READING_VALUE_TYPE:
 					curWord = readAndTrimOneWord(line);
-					//if the first token hasn't been read, and there isn't one here, that's a problem
-					//this token is harder to strip of than the others because it may be touching the word
+					//if the first token hasn't been read, and there isn't one here, that's a problem.
+					//This token is harder to strip of than the others because it may be touching the word
 					//that follows it. NOTE that if the token is missing, and is actually used later on
 					//the same line of the WME specification, weird results will occur
 					if(!tokenPresent(k_typesOpenToken, curWord))
@@ -307,21 +360,19 @@ bool InputLinkSpec::ImportIL(string& filename)
 					{
 						//if it IS the first type listed, we already have a string to parse
 						if(!readingFirstType)
-							curWord = readAndTrimOneWord(line, true);
+							curWord = readAndTrimOneWord(line);
 						else
 						{
 							cout << "\tReading first type for this wme, which is >" << curWord << "<." << endl;
 							readingFirstType = false;
 						}
-/*cout << "\t\tTrim time.  String is:_" << curWord << endl <<
- "_.  size is: " << curWord.size();
-cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << endl;*/
 
 						if(!tokenPresent(k_typesCloseToken, curWord))
 							moreTypesLeft = true;
 
 						else
 						{ //TODO make sure any whitespace leading the '>' is taken care of...
+							curWord = consumeSpaces(curWord);
 							moreTypesLeft = false;
 							//trim off the '>' token
 							curWord.erase(curWord.size() - 1);
@@ -346,8 +397,8 @@ cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << en
 					{
 						ilObj.setType(k_TBD);
 					}
-					else //TODO would be much cleaner to do this internally in 
-						ilObj.setType(typeToString(ilObj.getFirstType()));
+					else
+						ilObj.setType();//sets the type to whichever was first specified
 
 					lastCompletedState = READING_VALUE_TYPE;
 					break;
@@ -355,7 +406,7 @@ cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << en
 				case READING_IDENTIFIER_UNIQUE_NAME:
 
 					//get the actual ID unique name now
-					curWord = readAndTrimOneWord(line, true);//TODO error checking
+					curWord = readAndTrimOneWord(line);//TODO error checking
 
 					ilObj.setStartValue(curWord);
 					lastCompletedState = READING_IDENTIFIER_UNIQUE_NAME;
@@ -372,9 +423,9 @@ cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << en
 					}
 					else//token really was there.  Clear it
 						trimOneWord(line);
-						
+
 					//now that the token is out of the way, get the actual start value
-					curWord = readAndTrimOneWord(line, true);
+					curWord = readAndTrimOneWord(line);
 
 					//NOTE there are cases where this will be giving an int/float wme 
 					//a literal string value (which will end up as zero). This
@@ -421,16 +472,18 @@ cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << en
 						parseStage = READING_FINAL_STAGE;
 						break;
 					}
+					//clear off token
+					trimOneWord(line);
 
 					//read off the frequency
-					curWord = readOneWord(line);
+					curWord = readAndTrimOneWord(line);
 					if(curWord == "")
 					{	//error - token without a value following
 						parseStage = READING_ERROR;
 						break;
 					}
 					
-					//read of the value for the frequency
+					//set the object's frequency
 					ilObj.setUpdateFrequency(curWord);	
 
 					//if this is a conditional frequency, read off the condition string
@@ -478,8 +531,11 @@ cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << en
 		for(int counter = loopIteration; counter < loopEnd; ++counter)
 		{
 			//the parts of a WME pattern that might have a field equal to the control
-			//variable name are the optional "update"/"start fields
-			//
+			//variable name are the optional "update"/"start" fields
+			for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
+			{
+					
+			}
 		}
 
 		ilObjects.push_back(ilObj);
@@ -493,7 +549,7 @@ cout << " and curword(size -1 ) is:_" << curWord[curWord.size() -1] << "_" << en
 		cout << *objItr;
 	}
 	file.close();
-ilObjects.clear();//causes everything to destruct - just for testing TODO - remove
+//ilObjects.clear();//causes everything to destruct - just for testing TODO - remove
 	return true;
 }
 

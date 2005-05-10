@@ -17,7 +17,9 @@ enum eElementType
 	ELEMENT_STRING,
 	ELEMENT_INT,
 	ELEMENT_FLOAT,
-	ELEMENT_ID
+	ELEMENT_ID,
+	ELEMENT_TYPE_TBD,
+	//ELEMENT_LAST_TYPE = ELEMENT_TYPE_TBD
 };
 
 const std::string k_intString("int");
@@ -34,17 +36,26 @@ const std::string		typeToString(eElementType type);
 
 enum eUpdateFrequency
 {
-  UPDATE_ON_CHANGE,
+	UPDATE_NEVER,
+  UPDATE_ON_CHANGE,			//TODO isn't this really a case of ON_CONDITION?
   UPDATE_ON_CONDITION, 
   UPDATE_EVERY_CYCLE
 };
 
-struct WMEValue //a union is actually cleaner, but there was some nonsense that resulted
+//A union is actually cleaner for this, but there was some nonsense that resulted
+//Only one of these members will "exist" at a time, which fits better with the union concept
+struct WMEValue
 {
-	int* i;
-	double* f;
-	std::string* s;
-	std::string* id;
+	//this is a string so that a variable name can be stored here temporarily, to be replaced
+	//with the integer value later
+	std::string i;
+	//int i;
+	//this is a string so that a variable name can be stored here temporarily, to be replaced
+	//with the floating point value later	
+	std::string f;
+	//double f;
+	std::string s;
+	std::string id;
 };
 
 typedef std::vector<eElementType> typesContainter;
@@ -57,7 +68,7 @@ public:
 	InputLinkObject();
 	//InputLinkObject(std::string& inParent, std::string& inName, std::vector<eElementType>& inTypes, std::string& inValue);
 	~InputLinkObject();
-	//TODO prolly should make this take in a string as well
+
 	void				addElementType(std::string& inType){m_elementTypes.push_back(stringToType(inType));}
 	void				setParentId(std::string& inParent){m_parentId = inParent;}
 	void				setAttribName(std::string& inName){m_attribName = inName;}
@@ -65,14 +76,15 @@ public:
 	void				setUpdateValue(std::string& inValue);
 	void				setType(std::string& inValue);
 	void				setType(const std::string& inValue);
+	void				setType();
 	int					getNumTypes() const {return m_elementTypes.size();}
-	eElementType	getFirstType() /*const*/ {return m_elementTypes[0];}
+	std::string	getFrequencyAsString() const;
 
 	void setUpdateFrequency(std::string& inValue);
 	void setUpdateCondition(std::string& inValue);
-	
+
 	friend std::ostream& operator << (std::ostream& stream, InputLinkObject& obj);
-	
+
 private:
 	//std::ostream& printType(std::ostream&, eElementType);
 	//std::ostream& printValue(std::ostream&);

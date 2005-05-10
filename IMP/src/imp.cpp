@@ -45,13 +45,11 @@ int main(int argc, char* argv[])
 	if( static_cast<int>(inFileName.find(dmSuffix.c_str(), inFileName.length() - dmSuffix.length() ) != -1))
 	{
 		cout<<"Reading DM file..."<<endl;
-		//pause();
 		parsed = ilspec.ImportDM(inFileName);
 	}
 	else if( static_cast<int>(inFileName.find(ilSuffix.c_str(), inFileName.length() - ilSuffix.length() ) != -1))
 	{
-		cout<<"Reading IL file...and pausing"<<endl;
-		//pause();	
+		cout<<"Reading IL file..."<<endl;
 		parsed = ilspec.ImportIL(inFileName);
 	}
 	else
