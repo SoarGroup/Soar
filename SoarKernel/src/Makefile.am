@@ -36,6 +36,6 @@ trace.cpp\
 utilities.cpp\
 wmem.cpp
 
-INCLUDES = -I.. -I../include
+INCLUDES = -I.. -I../include -I../../SoarIO/ConnectionSML/include
 
 CXXFLAGS = $(SOAR_CXXFLAGS)
