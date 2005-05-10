@@ -37,6 +37,8 @@
 #include "gdatastructs.h"
 #include "tempmem.h"
 #include "wmem.h"
+#include "sml_Names.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h" // to trigger XML events
 #include <ctype.h>
 
 /* --- trace format types --- */
@@ -1378,6 +1380,72 @@ void print_object_trace (agent* thisAgent, Symbol *object) {
   free_growable_string (thisAgent, gs);
 }
 
+void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int slot_type, Bool allow_cycle_counts) {
+
+	Symbol* current_o = 0;
+
+	switch(slot_type) {
+		case FOR_STATES_TF:
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionBeginTag, sml::sml_Names::kTagState, (char*)0);
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_StackLevel, state->id.level - 1);
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kOperator_DecisionCycleCt, thisAgent->d_cycle_count);
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_ID, symbol_to_string(thisAgent, object, true, 0, 0));
+			
+			// find impasse object and add it to XML
+			wme* w;
+			for (w=object->id.impasse_wmes; w!=NIL; w=w->next) {
+				if (!strcmp(w->attr->sc.name, "attribute")) {
+					gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_ImpasseObject, w->value->sc.name);
+					break;
+				}
+			}
+
+			// find impasse type and add it to XML
+			for (w=object->id.impasse_wmes; w!=NIL; w=w->next) {
+				if (!strcmp(w->attr->sc.name, "impasse")) {
+					gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_ImpasseType, w->value->sc.name);
+					break;
+				}
+			}
+
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionEndTag, sml::sml_Names::kTagState, (char*)0);
+			break;
+
+		case FOR_OPERATORS_TF:
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionBeginTag, sml::sml_Names::kTagOperator, (char*)0);
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kState_StackLevel, object->id.level - 1);
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kOperator_DecisionCycleCt, thisAgent->d_cycle_count);
+			
+			if (state->id.operator_slot->wmes)
+				current_o = state->id.operator_slot->wmes->value;
+			if(current_o) {
+				gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kOperator_ID, symbol_to_string(thisAgent, current_o, true, 0, 0));
+				Symbol* name = find_name_of_object(thisAgent, current_o);
+				if(name) gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionAddAttribute, sml::sml_Names::kOperator_Name, symbol_to_string(thisAgent, name, true, 0, 0));
+			}
+			
+			gSKI_MakeAgentCallbackXML(thisAgent, sml::sml_Names::kFunctionEndTag, sml::sml_Names::kTagOperator, (char*)0);
+			break;
+
+		default:
+			// technically it looks like we should try to print a name here, but I think that is an artifact (at least it doesn't make sense for the XML)
+			break;
+	}
+
+	/* These are the trace formats which I've directly implemented above
+  add_trace_format (thisAgent, TRUE, FOR_STATES_TF, NIL, 
+	                "<state stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_state_id=\"%cs>");
+  add_trace_format (thisAgent, TRUE, FOR_OPERATORS_TF, NIL,
+                    "<operator stack_level=\"%sd\" decision_cycle_count=\"%dc\" current_operator_id=\"%co>");
+
+  add_trace_format (thisAgent, FALSE, FOR_ANYTHING_TF, NIL,
+                    "%id\" %ifdef[name=\"%v[name]\"]");
+  add_trace_format (thisAgent, FALSE, FOR_STATES_TF, NIL,
+                    "%id\" %ifdef[impasse_object=\"%v[attribute]\" impasse_type=\"%v[impasse]\"]");
+	*/
+}
+
+
 void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slot_type,
                         Bool allow_cycle_counts) {
   growable_string gs;
@@ -1397,6 +1465,9 @@ void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, int slo
   set_print_trace_formats(thisAgent);
 //end KJC 03/05
   free_growable_string (thisAgent, gs);
+
+  // RPM 5/05
+  print_stack_trace_xml(thisAgent, object, state, slot_type, allow_cycle_counts);
 }
 
 /* kjh(B1) begin */

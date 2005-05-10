@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <memory.h>
+#include <string> // for XML event generation
 
 /**
  * @brief Initialize the agent callbacks
@@ -121,14 +122,13 @@ inline void gSKI_MakeAgentCallbackPhase(struct agent_struct* soarAgent,
 }
 
 /**
- * @brief Special function to handle the xml callback
+ * @brief Special functions to handle the xml callback
  */
+
 inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
-										egSKIAgentEvents    event_type,
                                         const char*			funcType,
                                         const char*			attOrTag,
-										const char*			value,
-                                        unsigned char		eventOccured)
+										const char*				value)
 {
    gSKI_K_XMLCallbackData xml_data;
 
@@ -136,7 +136,17 @@ inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
    xml_data.attOrTag = attOrTag;
    xml_data.value = value;
 
-   gSKI_MakeAgentCallback(event_type, eventOccured, soarAgent, static_cast<void*>(&xml_data));
+   gSKI_MakeAgentCallback(gSKI_K_EVENT_XML_OUTPUT, 0, soarAgent, static_cast<void*>(&xml_data));
+}
+
+inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
+                                        const char*			funcType,
+                                        const char*			attOrTag,
+										unsigned long		value)
+{
+	char buf[25];
+	snprintf(buf, 24, "%u", value);
+	gSKI_MakeAgentCallbackXML(soarAgent, funcType, attOrTag, (char*)buf);
 }
 
 ///**

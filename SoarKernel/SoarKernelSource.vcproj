@@ -77,7 +77,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="include"
+				AdditionalIncludeDirectories="include;../SoarIO/ConnectionSML/include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;USE_TCL"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="3"
@@ -690,6 +690,9 @@
 			</File>
 			<File
 				RelativePath=".\include\scheduler.h">
+			</File>
+			<File
+				RelativePath="..\SoarIO\ConnectionSML\include\sml_Names.h">
 			</File>
 			<File
 				RelativePath=".\src\soar.h">
