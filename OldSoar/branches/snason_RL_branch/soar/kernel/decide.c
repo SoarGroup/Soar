@@ -67,7 +67,7 @@ preference *probabilistically_select(slot *s, preference *candidates);
 preference *explore_exploit_select(slot *s, preference *candidates);
  
 // SAN
-extern void learn_RL_productions(int);
+extern void learn_RL_productions(int, float);
 extern float tabulate_reward_value();
 extern void record_for_RL();
 extern void push_record();
@@ -3421,9 +3421,9 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 	   }
 
 	  for (rec = current_agent(records) ; rec->level > s->id->id.level; rec = rec->next);
-	  rec->next_Q = top_value;
+	  // rec->next_Q = top_value;
 
-	  learn_RL_productions(s->id->id.level);
+	  learn_RL_productions(s->id->id.level, top_value);
 
 	   top_cand = candidates;
 	   top_value = candidates->sum_of_probability;
@@ -3448,6 +3448,7 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 		current_agent(new_exploit) = FALSE;
 		current_agent(new_diff) = fabs(top_value - cand->sum_of_probability);
 
+		rec->next_Q = cand->sum_of_probability;
 		return cand;
  
 	} else {
@@ -3465,6 +3466,7 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 						second_value = cand->sum_of_probability;
 				}
 				current_agent(new_diff) = fabs(second_value - top_value);
+				rec->next_Q = top_cand->sum_of_probability;
 				return top_cand;
 			}
 		  else {
@@ -3478,7 +3480,8 @@ preference *explore_exploit_select(slot *s, preference *candidates){
 				  while (cand->sum_of_probability != top_value) cand = cand->next_candidate;
 			  }
 			  current_agent(new_diff) = 0;
-		  return cand;
+			  rec->next_Q = cand->sum_of_probability;
+			  return cand;
 		  }
 }
 }

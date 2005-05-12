@@ -977,6 +977,7 @@ typedef struct identifier_struct {
 	// SAN - list of wmes with this id in the value slot
 	// allows easy upwards traversal of WM graph
 	dl_list *parents;
+	
 } identifier;
 
 typedef union symbol_union {
@@ -1198,9 +1199,22 @@ typedef struct wme_struct {
      /* MRJ end */   
          #endif 
 
+	 struct stored_wme_struct *stored_wme; /* SAN */
+
 } wme;
 
 /* REW: begin 09.15.96 */
+
+typedef struct stored_wme_struct{
+	Symbol *id;
+	Symbol *attr;
+	Symbol *value;
+	bool acceptable;
+	struct stored_wme_struct *next;
+	struct stored_wme_struct *prev;
+	dl_list *parents;
+
+} stored_wme; /* SAN */
 
 /* ------------------------------------------------------------------------
 			     Goal Dependency Set
@@ -1479,6 +1493,7 @@ typedef struct slot_struct {
   -------------------------*/
 
 typedef struct RL_record_struct{
+  struct stored_instantiation_struct *stored_instantiations;
   list *pointer_list;
 //  cond *WM_record;
 //  pref *pref_record;
@@ -1936,6 +1951,17 @@ typedef struct pi_struct {
     instantiation *inst;
 } parent_inst;
 /* REW: end   09.15.96 */
+
+typedef struct stored_instantiation_struct{
+	production *prod;
+	condition *top_of_instantiated_conditions;
+	condition *bottom_of_instantiated_conditions;
+	not *nots;
+	Symbol *state;
+	Symbol *op;
+	struct stored_instantiation_struct *next;
+	struct stored_instantiation_struct *prev;
+} stored_instantiation; /* SAN */
 
 /* ====================================================================
              Global System Parameters and Related Definitions
@@ -4147,6 +4173,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   int updates_position;
   double updates_mean;
   double updates_stddev;
+  stored_wme *stored_WM_top;
+  stored_wme *stored_WM_bottom;
 	
 	/* ----------------------- Misc. top-level stuff -------------------------- */
 

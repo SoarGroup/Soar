@@ -567,6 +567,8 @@ void soar_default_create_agent_procedure(const char *agent_name)
 	current_agent(gamma)                              = 0.9;  // SAN
 	current_agent(epsilon)                               = 0.1;   // SAN
     current_agent(records)                            = NIL;
+	current_agent(stored_WM_top)					  = NIL;
+	current_agent(stored_WM_bottom)					  = NIL;
     current_agent(alias_list) = NIL;    /* AGR 568 */
     current_agent(all_wmes_in_rete) = NIL;
     current_agent(alpha_mem_id_counter) = 0;
