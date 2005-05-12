@@ -15,16 +15,21 @@
 namespace sml {
 
 class PrintListener;
+class XMLListener ;
 
 class AgentOutputFlusher : public gSKI::IRunListener
 {
 protected:
 	gSKI::IAgent* m_pAgent;
+	int m_EventID ;
+
+	// Only one listener will be filled in.
 	PrintListener* m_pPrintListener;
-	egSKIPrintEventId m_EventID ;
+	XMLListener*   m_pXMLListener;
 
 public:
 	AgentOutputFlusher(PrintListener* pPrintListener, gSKI::IAgent* pAgent, egSKIPrintEventId eventID);
+	AgentOutputFlusher(XMLListener* pXMLListener, gSKI::IAgent* pAgent, egSKIXMLEventId eventID);
 	virtual ~AgentOutputFlusher();
 
 	virtual void HandleEvent(egSKIRunEventId eventId, gSKI::IAgent* agentPtr, egSKIPhaseType phase);

@@ -232,7 +232,19 @@ void MyXMLEventHandler(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientX
 
 	// This will always succeed.  If this isn't really trace XML
 	// the methods checking on tag names etc. will just fail
-	ClientTraceXML* pTraceXML = pXML->ConvertToTraceXML() ;
+	ClientTraceXML* pRootXML = pXML->ConvertToTraceXML() ;
+
+	// The root object is just a <trace> tag.  The substance is in the children
+	// so we'll get the first child which should exist.
+	ClientTraceXML childXML ;
+	bool ok = pRootXML->GetChild(&childXML, 0) ;
+	ClientTraceXML* pTraceXML = &childXML ;
+
+	if (!ok)
+	{
+		cout << "*** Error getting child from trace XML object" << endl ;
+		return ;
+	}
 
 	if (pTraceXML->IsTagState())
 	{

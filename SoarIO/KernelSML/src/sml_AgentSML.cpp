@@ -31,7 +31,7 @@
 
 using namespace sml ;
 
-AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : /*m_AgentListener(pKernelSML, pAgent)*/ m_ProductionListener(pKernelSML, pAgent), m_RunListener(pKernelSML, pAgent), m_PrintListener(pKernelSML, pAgent)
+AgentSML::AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) : /*m_AgentListener(pKernelSML, pAgent)*/ m_ProductionListener(pKernelSML, pAgent), m_RunListener(pKernelSML, pAgent), m_PrintListener(pKernelSML, pAgent), m_XMLListener(pKernelSML, pAgent)
 {
 	m_pKernelSML = pKernelSML ;
 	m_pIAgent = pAgent ;
@@ -78,6 +78,7 @@ void AgentSML::Clear()
 	m_RunListener.Clear();
 	m_PrintListener.Clear();
 	m_pOutputListener->Clear() ;
+	m_XMLListener.Clear() ;
 }
 
 void AgentSML::ReleaseAllWmes()
@@ -110,6 +111,7 @@ void AgentSML::RemoveAllListeners(Connection* pConnection)
 	m_RunListener.RemoveAllListeners(pConnection);
 	m_PrintListener.RemoveAllListeners(pConnection);
 	m_pOutputListener->RemoveAllListeners(pConnection) ; 
+	m_XMLListener.RemoveAllListeners(pConnection) ;
 }
 
 class AgentSML::AgentBeforeDestroyedListener: public gSKI::IAgentListener

@@ -55,6 +55,12 @@ public:
 	void Reset() ;
 
 	/*************************************************************
+	* @brief	Returns true if this tag contains no children
+	*			(i.e. it has just been reset).
+	*************************************************************/
+	bool IsEmpty() ;
+
+	/*************************************************************
 	* @brief	Start a new tag.
 	*
 	* Subsequent calls to AddAttribute() will work with this tag

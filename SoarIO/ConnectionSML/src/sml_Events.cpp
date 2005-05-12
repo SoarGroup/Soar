@@ -63,6 +63,9 @@ Events::Events()
 	// Working memory changes
 	RegisterEvent(smlEVENT_OUTPUT_PHASE_CALLBACK, "output-phase") ;
 
+	// Raw XML messages
+	RegisterEvent(smlEVENT_XML_TRACE_OUTPUT, "xml-trace-output") ;
+
     // Error and print callbacks
 	RegisterEvent(smlEVENT_LOG_ERROR, "log-error") ;
 	RegisterEvent(smlEVENT_LOG_WARNING, "log-warning") ;

@@ -16,6 +16,7 @@
 #include "sml_ProductionListener.h"
 #include "sml_RunListener.h"
 #include "sml_PrintListener.h"
+#include "sml_XMLListener.h"
 
 // Forward declarations
 namespace gSKI {
@@ -77,11 +78,11 @@ protected:
 	// For cleanup we also need a map from kernel side identifiers to client side ones (for cleanup)
 	IdentifierMap	m_ToClientIdentifierMap ;
 
-	// Used to listen for kernel events that are agent specific
-	ProductionListener m_ProductionListener;
-	RunListener m_RunListener;
-	PrintListener m_PrintListener;
-	
+	// Used to listen for kernel/gSKI events that are agent specific
+	ProductionListener	m_ProductionListener;
+	RunListener			m_RunListener;
+	PrintListener		m_PrintListener;
+	XMLListener			m_XMLListener ;
 
 	// We have to keep pointers to these objects so that we can release then during an init-soar.  Youch!
 	gSKI::IWMObject*	m_InputLinkRoot ;
@@ -132,6 +133,8 @@ public:
 	void RemoveRunListener(egSKIRunEventId eventID, Connection* pConnection) { m_RunListener.RemoveListener(eventID, pConnection) ; }	
 	void AddPrintListener(egSKIPrintEventId eventID, Connection* pConnection)	{ m_PrintListener.AddListener(eventID, pConnection) ; }
 	void RemovePrintListener(egSKIPrintEventId eventID, Connection* pConnection) { m_PrintListener.RemoveListener(eventID, pConnection) ; }	
+	void AddXMLListener(egSKIXMLEventId eventID, Connection* pConnection) { m_XMLListener.AddListener(eventID, pConnection) ; }
+	void RemoveXMLListener(egSKIXMLEventId eventID, Connection* pConnection) { m_XMLListener.RemoveListener(eventID, pConnection) ; }
 
 	void RemoveAllListeners(Connection* pConnection) ;
 

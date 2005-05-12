@@ -186,6 +186,9 @@
 			<File
 				RelativePath=".\src\sml_SystemListener.cpp">
 			</File>
+			<File
+				RelativePath=".\src\sml_XMLListener.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -253,6 +256,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_SystemListener.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_XMLListener.h">
 			</File>
 		</Filter>
 		<Filter

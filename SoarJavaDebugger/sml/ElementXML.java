@@ -87,8 +87,9 @@ public class ElementXML {
     return smlJNI.ElementXML_IsTag(swigCPtr, pTagName);
   }
 
-  public void AddChild(ElementXML pChild) {
-    smlJNI.ElementXML_AddChild(swigCPtr, ElementXML.getCPtr(pChild));
+  public SWIGTYPE_p_ElementXML_InterfaceStructTag AddChild(ElementXML pChild) {
+    long cPtr = smlJNI.ElementXML_AddChild(swigCPtr, ElementXML.getCPtr(pChild));
+    return (cPtr == 0) ? null : new SWIGTYPE_p_ElementXML_InterfaceStructTag(cPtr, false);
   }
 
   public int GetNumberChildren() {
@@ -97,6 +98,10 @@ public class ElementXML {
 
   public boolean GetChild(ElementXML pChild, int index) {
     return smlJNI.ElementXML_GetChild(swigCPtr, ElementXML.getCPtr(pChild), index);
+  }
+
+  public boolean GetParent(ElementXML pParent) {
+    return smlJNI.ElementXML_GetParent(swigCPtr, ElementXML.getCPtr(pParent));
   }
 
   public boolean AddAttribute(String attributeName, String attributeValue, boolean copyName, boolean copyValue) {

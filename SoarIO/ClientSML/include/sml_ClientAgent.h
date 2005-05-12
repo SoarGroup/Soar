@@ -29,6 +29,11 @@ class AnalyzeXML ;
 class ElementXML ;
 class ClientXML ;
 
+// This is a temporary flag while we move from using strings in the kernel to using ElementXML objects
+// When this value is defined we'll use the old string form
+// Once everything is working we should remove this #define forever.
+//#define USE_OLD_XML_TRACE
+
 class RunEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
@@ -155,6 +160,9 @@ protected:
 	void ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+
+	/** NOTE: Slightly different sig as this is called without analyzing the incoming msg so it's a bit faster */
+	void ReceivedXMLEvent(smlXMLEventId id, ElementXML* pIncomingMsg, ElementXML* pResponse) ;
 
 public:
 	// This method is public but a client should never need to call it.

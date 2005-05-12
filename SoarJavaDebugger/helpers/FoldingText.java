@@ -245,7 +245,7 @@ public class FoldingText
 	{
 		m_Container = new Composite(parent, 0) ;
 		m_IconBar	= new Canvas(m_Container, 0) ;
-		m_Text      = new Text(m_Container, SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY) ;
+		m_Text      = new Text(m_Container, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY) ;
 		
 		GridLayout layout = new GridLayout() ;
 		layout.numColumns = 2 ;

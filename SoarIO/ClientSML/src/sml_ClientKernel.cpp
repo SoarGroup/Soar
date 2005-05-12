@@ -198,17 +198,75 @@ ElementXML* Kernel::ReceivedCall(Connection* pConnection, ElementXML* pIncoming,
 }
 
 /*************************************************************
+* @brief If this message is an XML trace message returns
+*		 the agent pointer this message is for.
+*		 Otherwise returns NULL.
+*		 This function is just to boost performance on trace messages
+*		 which are really performance critical.
+*************************************************************/
+Agent* Kernel::IsXMLTraceEvent(ElementXML* pIncomingMsg)
+{
+	//	The message we're looking for has this structure:
+	//	<sml><command></command><trace></trace></sml>
+	// This is deliberately unusual so this simple test screens out
+	// almost all messages in one go.  It does make us more brittle (for detecting
+	// xml trace messages) but I think that's a fair trade-off.
+	if (pIncomingMsg->GetNumberChildren() != 2)
+		return NULL ;
+
+	ElementXML command(NULL) ;
+	ElementXML trace(NULL) ;
+	pIncomingMsg->GetChild(&command, 0) ;
+	pIncomingMsg->GetChild(&trace, 1) ;
+
+	if (trace.IsTag(sml_Names::kTagTrace) && command.IsTag(sml_Names::kTagCommand) && command.GetNumberChildren() > 0)
+	{
+		ElementXML agentArg(NULL) ;
+		command.GetChild(&agentArg, 0) ;
+
+#ifdef _DEBUG
+		char const* pParam = agentArg.GetAttribute(sml_Names::kArgParam) ;
+		assert (pParam && strcmp(pParam, sml_Names::kParamAgent) == 0) ;
+#endif
+		// Get the agent's name
+		char const* pAgentName = agentArg.GetCharacterData() ;
+
+		if (!pAgentName || pAgentName[0] == 0)
+			return NULL ;
+
+		// Look up the agent
+		Agent* pAgent = GetAgent(pAgentName) ;
+
+		// If this fails, we got a trace event for an unknown agent.
+		assert(pAgent) ;
+		return pAgent ;
+	}
+
+	return NULL ;
+}
+
+/*************************************************************
 * @brief This function is called (indirectly) when we receive a "call" SML
 *		 message from the kernel.
 *************************************************************/
 ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pIncomingMsg)
 {
+	// Create a reply
+	ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;
+
+	// Special case.  We want to intercept XML trace messages and pass them directly to the handler
+	// without analyzing them.  This is just to boost performance for these messages as speed is critical here
+	// as they're used for trace output.
+	Agent* pAgent = IsXMLTraceEvent(pIncomingMsg) ;
+	if (pAgent)
+	{
+		pAgent->ReceivedXMLEvent(smlEVENT_XML_TRACE_OUTPUT, pIncomingMsg, pResponse) ;
+		return pResponse ;
+	}
+
 	// Analyze the message and find important tags
 	AnalyzeXML msg ;
 	msg.Analyze(pIncomingMsg) ;
-
-	// Create a reply
-	ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;
 
 	// Get the "name" attribute from the <command> tag
 	char const* pCommandName = msg.GetCommandName() ;

@@ -665,6 +665,45 @@ void Agent::SendXMLEvent(smlXMLEventId id, ElementXML* pXMLMessage)
 	}
 }
 
+void Agent::ReceivedXMLEvent(smlXMLEventId id, ElementXML* pIncoming, ElementXML* pResponse)
+{
+	unused(pResponse) ;
+
+	// For speed we don't analyze incoming XML trace messages.  Instead we just
+	// look for the correct parts of the original message.  This makes these messages a bit
+	// more brittle than the rest of the system but speed really counts on these messages and
+	// this saves the analysis step (which is significant).
+	// If this assert fails we've changed the structure of the XML event messages and we'll
+	// need to update the code to match.
+	assert (pIncoming->GetNumberChildren() == 2) ;
+
+	//  Get the trace tag (again, we rely on the order for speed).
+	ElementXML* pTrace = new ElementXML(NULL) ;
+	pIncoming->GetChild(pTrace, 1) ;
+
+	// NOTE: This object needs to stay in scope for as long as we're calling clients
+	// and then when it is deleted it will delete pTrace.
+	ClientXML clientXML(pTrace) ;
+
+	// Look up the handler(s) from the map
+	XMLEventMap::ValueList* pHandlers = m_XMLEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (XMLEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		XMLEventHandlerPlusData handlerPlus = *iter ;
+		XMLEventHandler handler = handlerPlus.m_Handler ;
+
+		void* pUserData = handlerPlus.m_UserData ;
+
+		// Call the handler
+		handler(id, pUserData, this, &clientXML) ;
+	}
+}
+
 int Agent::RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* pUserData, bool addToBack)
 {
 	// Start by checking if this id, handler, pUSerData combination has already been registered
@@ -691,7 +730,11 @@ int Agent::RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* 
 	// No need to do this multiple times.
 	if (m_XMLEventMap.getListSize(id) == 0)
 	{
+#ifdef USE_OLD_XML_TRACE
 		m_XMLCallback = RegisterForPrintEvent(smlEVENT_STRUCTURED_OUTPUT, &XMLEventImplementationHandler, NULL) ;
+#else
+		GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
+#endif
 	}
 
 	// Record the handler
@@ -722,7 +765,11 @@ bool Agent::UnregisterForXMLEvent(int callbackID)
 	// for the matching print event (that we use to implement XML)
 	if (m_XMLEventMap.getListSize(id) == 0)
 	{
+#ifdef USE_OLD_XML_TRACE
 		UnregisterForPrintEvent(m_XMLCallback) ;
+#else
+		GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
+#endif
 	}
 
 	return true ;

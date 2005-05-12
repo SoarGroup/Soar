@@ -271,6 +271,20 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 			pAgentSML->AddProductionListener((egSKIProductionEventId)id, pConnection) ;
 		else
 			pAgentSML->RemoveProductionListener((egSKIProductionEventId)id, pConnection) ;
+	} else if(IsXMLEventID(id)) {
+
+		// XML Event
+		if (!pAgent)
+			return InvalidArg(pConnection, pResponse, pCommandName, "No agent name for an event that is handled by an agent") ;
+
+		// Register or unregister for this event
+		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+
+		if (registerForEvent)
+			pAgentSML->AddXMLListener((egSKIXMLEventId)id, pConnection) ;
+		else
+			pAgentSML->RemoveXMLListener((egSKIXMLEventId)id, pConnection) ;
+
 	} else if(IsPrintEventID(id)) {
 
 		// Print event

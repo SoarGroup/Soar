@@ -130,7 +130,6 @@ protected:
 
 	void InitEvents() ;
 
-	
 	/*************************************************************
 	* @brief Register for a particular event with the kernel.
 	*		 (This is a primitive function, should call one of the
@@ -174,6 +173,15 @@ protected:
 	void ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+
+	/*************************************************************
+	* @brief If this message is an XML trace message returns
+	*		 the agent pointer this message is for.
+	*		 Otherwise returns NULL.
+	*		 This function is just to boost performance on trace messages
+	*		 which are really performance critical.
+	*************************************************************/
+	Agent* IsXMLTraceEvent(ElementXML* pIncomingMsg) ;
 
 public:
 	/*************************************************************

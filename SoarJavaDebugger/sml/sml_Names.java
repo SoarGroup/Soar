@@ -329,6 +329,22 @@ public class sml_Names {
     return smlJNI.get_sml_Names_kPreference_Type();
   }
 
+  public static String getKTagWarning() {
+    return smlJNI.get_sml_Names_kTagWarning();
+  }
+
+  public static String getKFunctionBeginTag() {
+    return smlJNI.get_sml_Names_kFunctionBeginTag();
+  }
+
+  public static String getKFunctionEndTag() {
+    return smlJNI.get_sml_Names_kFunctionEndTag();
+  }
+
+  public static String getKFunctionAddAttribute() {
+    return smlJNI.get_sml_Names_kFunctionAddAttribute();
+  }
+
   public static String getKTypeString() {
     return smlJNI.get_sml_Names_kTypeString();
   }
