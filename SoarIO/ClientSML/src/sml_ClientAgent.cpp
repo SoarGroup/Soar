@@ -669,6 +669,11 @@ void Agent::ReceivedXMLEvent(smlXMLEventId id, ElementXML* pIncoming, ElementXML
 {
 	unused(pResponse) ;
 
+#ifdef _DEBUG
+	char* pStr = pIncoming->GenerateXMLString(true) ;
+	pIncoming->DeleteString(pStr) ;
+#endif
+
 	// For speed we don't analyze incoming XML trace messages.  Instead we just
 	// look for the correct parts of the original message.  This makes these messages a bit
 	// more brittle than the rest of the system but speed really counts on these messages and

@@ -145,8 +145,8 @@ public:
 	*			(One day we should no longer need to do this).
 	*			Enabling/disabling affects all connections.
 	*************************************************************/
-	void DisablePrintCallback() { m_PrintListener.EnablePrintCallback(false) ; }
-	void EnablePrintCallback()  { m_PrintListener.EnablePrintCallback(true) ; }
+	void DisablePrintCallback() { m_PrintListener.EnablePrintCallback(false) ; m_XMLListener.EnablePrintCallback(false) ; }
+	void EnablePrintCallback()  { m_PrintListener.EnablePrintCallback(true) ; m_XMLListener.EnablePrintCallback(true) ; }
 
 	/*************************************************************
 	* @brief	Converts an id from a client side value to a kernel side value.
