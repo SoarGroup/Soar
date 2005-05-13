@@ -41,6 +41,8 @@
 #include "rhsfun.h"
 #include "production.h"
 #include "instantiations.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h" // support for triggering XML events
 
 #include <stdio.h>
 #include <ctype.h>
@@ -1120,7 +1122,17 @@ void print_preference (agent* thisAgent, preference *pref) {
   if (preference_is_binary(pref->type)) {
     tagged_output_with_symbols (thisAgent, " %y", pref->referent);
   }
-  generate_tagged_output(thisAgent, "\"></preference>\n"); 
+  generate_tagged_output(thisAgent, "\"></preference>\n");
+
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagPreference);
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Id, symbol_to_string (thisAgent, pref->id, true, 0, 0));
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Attribute, symbol_to_string (thisAgent, pref->attr, true, 0, 0));
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Value, symbol_to_string (thisAgent, pref->value, true, 0, 0));
+  if (preference_is_binary(pref->type)) {
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPreference_Type, symbol_to_string (thisAgent, pref->referent, true, 0, 0));
+  }
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPreference);
+			
 }
 //#ifdef USE_TCL
 
@@ -1133,8 +1145,11 @@ filtered_print_wme_add(agent* thisAgent, wme *w) {
   {
     print (thisAgent, "=>WM: ");
 	generate_tagged_output (thisAgent, "<adding_wme>");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWMEAdd);
     print_wme(thisAgent, w);
-	generate_tagged_output (thisAgent, "</adding_wme>");  }
+	generate_tagged_output (thisAgent, "</adding_wme>"); 
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWMEAdd);
+  }
 }
 
 void filtered_print_wme_remove(agent* thisAgent, wme *w) 
@@ -1143,8 +1158,10 @@ void filtered_print_wme_remove(agent* thisAgent, wme *w)
   {
     print (thisAgent, "<=WM: ");
 	generate_tagged_output (thisAgent, "<removing_wme>");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWMERemove);
     print_wme(thisAgent, w);  /*  print_wme takes care of tagged output itself */
 	generate_tagged_output (thisAgent, "</removing_wme>");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWMERemove);
   }
 }
 //#endif /* USE_TCL */
@@ -1166,6 +1183,15 @@ void print_wme (agent* thisAgent, wme *w) {
   tagged_output_with_symbols (thisAgent, "id=\"%y\" attr=\"%y\" value=\"%y\" ", w->id, w->attr, w->value);
   if (w->acceptable) generate_tagged_output (thisAgent, " preference=\"+\"");
   generate_tagged_output(thisAgent, "></wme>\n"); 
+
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWME);
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_TimeTag, w->timetag);
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Id, symbol_to_string (thisAgent, w->id, true, 0, 0));
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Attribute, symbol_to_string (thisAgent, w->attr, true, 0, 0));
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Value, symbol_to_string (thisAgent, w->value, true, 0, 0));
+  if (w->acceptable) gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWMEPreference, "+");
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWME);
+
 }
 
 //#ifdef USE_TCL
@@ -1188,18 +1214,27 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 
   if (action == PRINTING) {
 	  generate_tagged_output(thisAgent, "<production prodname=\"");
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProduction);
   } else if (action == FIRING) {
 	  generate_tagged_output(thisAgent, "<firing_production><production prodname=\"");
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProduction_Firing);
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProduction);
   } else if (action == RETRACTING) {
 	  generate_tagged_output(thisAgent, "<retracting_production><production prodname=\"");
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProduction_Retracting);
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProduction);
   }
 
   if (inst->prod) {
     print_with_symbols  (thisAgent, "%y", inst->prod->name);
     tagged_output_with_symbols (thisAgent, "%y\"", inst->prod->name);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kProduction_Name, symbol_to_string (thisAgent, inst->prod->name, true, 0, 0));
+
   } else {
     print (thisAgent, "[dummy production]");
-	  generate_tagged_output(thisAgent, "<production prodname=\"[dummy_production]");
+	  generate_tagged_output(thisAgent, "<production prodname=\"[dummy_production]"); // RPM 5/05: I think this is a bug since "<production prodname=" has already been output above
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kProduction_Name, "[dummy_production]");
+
   }
 
   print (thisAgent, "\n");
@@ -1207,10 +1242,15 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
   if (wtt==NONE_WME_TRACE) {
 	  if (action == PRINTING) {
 		  generate_tagged_output(thisAgent, "></production>");
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction);
 	  } else if (action == FIRING) {
 		  generate_tagged_output(thisAgent, "></production></firing_production>");
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction);
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction_Firing);
 	  } else if (action == RETRACTING) {
 		  generate_tagged_output(thisAgent, "></production></retracting_production>");
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction);
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction_Retracting);
 	  }
 	  return;
   }
@@ -1225,6 +1265,11 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 		generate_tagged_wme_timetag(thisAgent, cond->bt.wme_); 
 		generate_tagged_output(thisAgent, "></wme>\n"); 
 		//generate_tagged_output(thisAgent, "></timetag>\n"); 
+
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWME);
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_TimeTag, cond->bt.wme_->timetag);
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWME);
+
         break;
       case FULL_WME_TRACE:
         print (thisAgent, " ");
@@ -1235,10 +1280,15 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 	
 	if (action == PRINTING) {
 		generate_tagged_output(thisAgent, "</production>");
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction);
 	} else if (action == FIRING) {
 		generate_tagged_output(thisAgent, "</production></firing_production>");
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction);
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction_Firing);
 	} else if (action == RETRACTING) {
 		generate_tagged_output(thisAgent, "</production></retracting_production>");
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction);
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction_Retracting);
 	}
 }
 
@@ -1266,61 +1316,82 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
 
   // the rest is all for tagged output events
 
+  // TODO: I think this can be greatly simplified by just returning at the end (so we only need to make the "end phase tag" call once)
   if (end_of_phase) {
     generate_tagged_output(thisAgent, "<phase status=\"end\" name=\"");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagPhase);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Status, xmlTraceNames::kPhaseStatus_End);
+	
   } else {
     generate_tagged_output(thisAgent, "<phase name=\"");
-  }
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagPhase);
   switch (thisAgent->current_phase) {
   case INPUT_PHASE:
     generate_tagged_output(thisAgent, "input\"></phase>");
-    return;
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Input);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
+	return;
   case PREFERENCE_PHASE:
     generate_tagged_output(thisAgent, "preference\"></phase>");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Pref);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
     return;
   case WM_PHASE:
-    if (thisAgent->operand2_mode == TRUE) {
-      switch (thisAgent->FIRING_TYPE) {
-      case PE_PRODS:  /* no longer needed;  Soar8 has PROPOSE/APPLY */
-	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"PE\"></phase> ");
- 	return;
-      case IE_PRODS:
-	generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"IE\"></phase>");
-	return;
-      }
-    }
-    else
-      generate_tagged_output(thisAgent, "workingmemory\"></phase>");
-    return;
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_WM);
+	  if (thisAgent->operand2_mode == TRUE) {
+		  switch (thisAgent->FIRING_TYPE) {
+		  case PE_PRODS:  /* no longer needed;  Soar8 has PROPOSE/APPLY */
+			  generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"PE\"></phase> ");
+			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_FiringType, xmlTraceNames::kPhaseFiringType_PE);
+		  case IE_PRODS:
+			  generate_tagged_output(thisAgent, "workingmemory\" firing_type=\"IE\"></phase>");
+			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_FiringType, xmlTraceNames::kPhaseFiringType_IE);
+		  }
+	  } else {
+		  generate_tagged_output(thisAgent, "workingmemory\"></phase>");
+	  }
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
+	  return;
   case DECISION_PHASE:
     generate_tagged_output(thisAgent, "decision\"></phase>");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Decision);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
     return;
   case OUTPUT_PHASE:
     generate_tagged_output(thisAgent, "output\"></phase>");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Output);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
     return;
   case PROPOSE_PHASE:
     generate_tagged_output(thisAgent, "propose\"></phase>");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Propose);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
     return;
   case APPLY_PHASE:
-    if (thisAgent->operand2_mode == TRUE) 
-      {
-	switch (thisAgent->FIRING_TYPE) {
-	case PE_PRODS:
-	  generate_tagged_output(thisAgent, "apply\" firing_type=\"PE\"></phase>");
-	  return;
-	case IE_PRODS:
-	  generate_tagged_output(thisAgent, "apply\" firing_type=\"IE\"></phase>");
-	  return;
-	}
-      }
-    else
+    if (thisAgent->operand2_mode == TRUE)
+    {
+		gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Apply);
+		switch (thisAgent->FIRING_TYPE) {
+		case PE_PRODS:
+			generate_tagged_output(thisAgent, "apply\" firing_type=\"PE\"></phase>");
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_FiringType, xmlTraceNames::kPhaseFiringType_PE);
+		case IE_PRODS:
+			generate_tagged_output(thisAgent, "apply\" firing_type=\"IE\"></phase>");
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_FiringType, xmlTraceNames::kPhaseFiringType_IE);
+		}
+	} else {
       generate_tagged_output(thisAgent, "apply\"></phase>");
+	}
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
     return;
   default:
     generate_tagged_output(thisAgent, "unknown\"></phase>");
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Unknown);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
     return;
-  }
+  } // end switch
   return;
+  } //end if/else
 }
 
 

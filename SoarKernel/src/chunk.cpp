@@ -43,6 +43,8 @@
 #include "backtrace.h"
 #include "recmem.h"
 #include "rete.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h" // support for triggering XML events
 
 #include <ctype.h>
 
@@ -1121,6 +1123,11 @@ void chunk_instantiation (agent* thisAgent,
 	  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
 		  generate_tagged_output(thisAgent, "<warning string=\" Warning: chunk has no grounds, ignoring it.\"></warning>");
+		  
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: chunk has no grounds, ignoring it.");
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+
 	  }
 	  goto chunking_done;
   }
@@ -1131,6 +1138,10 @@ void chunk_instantiation (agent* thisAgent,
 		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
 		  generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-chunks! Halting system.\"></warning>");
+
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-chunks! Halting system.");
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 		  }
 	  thisAgent->max_chunks_reached = TRUE;
 	  goto chunking_done;

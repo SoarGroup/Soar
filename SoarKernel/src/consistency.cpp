@@ -36,6 +36,8 @@
 #include "init_soar.h"
 #include "rete.h"
 #include "wmem.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h"
 
 void remove_operator_if_necessary(agent* thisAgent, slot *s, wme *w){
 
@@ -631,6 +633,10 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
 	   if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
          print(thisAgent, "\nWarning: reached max-elaborations; proceeding to output phase.");
 		 generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-elaborations; proceeding to output phase.\"></warning>");
+
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-elaborations; proceeding to output phase.");
+		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 	   }
       thisAgent->current_phase = OUTPUT_PHASE;
       return;
@@ -858,6 +864,10 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
               print(thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
 			  generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-elaborations; proceeding to decision phase.\"></warning>");
+
+			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-elaborations; proceeding to decision phase.");
+			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 		  }
       thisAgent->current_phase = DECISION_PHASE;
       return;

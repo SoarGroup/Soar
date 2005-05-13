@@ -77,6 +77,7 @@ char const* const xmlTraceNames::kWME_Id		= "id" ;
 char const* const xmlTraceNames::kWME_Attribute	= "attr" ;
 char const* const xmlTraceNames::kWME_Value		= "value" ;
 char const* const xmlTraceNames::kWME_ValueType	= "type" ;
+char const* const xmlTraceNames::kWMEPreference = "preference";
 char const* const xmlTraceNames::kWME_Action	= "action" ;
 // kjc question:  should the next entry be kWMEAction_Add?
 char const* const xmlTraceNames::kValueAdd		= "add" ;
@@ -95,3 +96,5 @@ char const* const xmlTraceNames::kTagWarning		= "warning" ;
 char const* const xmlTraceNames::kFunctionBeginTag		= "begintag";
 char const* const xmlTraceNames::kFunctionEndTag		= "endtag";
 char const* const xmlTraceNames::kFunctionAddAttribute	= "addattribute";
+
+char const* const xmlTraceNames::kTypeString	= "string" ;

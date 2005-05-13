@@ -424,6 +424,9 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
 	  generate_tagged_output(thisAgent, "<warning string=\" Warning: in production ");
 	  generate_tagged_output(thisAgent, thisAgent->name_of_production_being_reordered);
 	  generate_tagged_output(thisAgent, "      ignoring test(s) whose referent is unbound:\"></warning>");
+
+	  // TODO: XML tagged output -- how to create this string?
+	  
 	  // KJC TODO:  need a tagged output version of print_saved_test_list
     }
     /* ought to deallocate the saved tests, but who cares */
@@ -618,6 +621,9 @@ list *collect_root_variables (agent* thisAgent,
 		generate_tagged_output(thisAgent,  thisAgent->name_of_production_being_reordered);
         tagged_output_with_symbols (thisAgent, " identifier %y is not connected to any goal or impasse.\"></warning>",
                             (Symbol *)(c->first));
+
+		// TODO: XML tagged output -- how to create this string?
+
       }
     }
   }
@@ -859,6 +865,8 @@ void reorder_simplified_conditions (agent* thisAgent,
 	  generate_tagged_output(thisAgent, "<warning string=\" Warning: in production ");
 	  generate_tagged_output(thisAgent, thisAgent->name_of_production_being_reordered);
 	  generate_tagged_output(thisAgent, "     The LHS conditions are not all connected.\"></warning>");
+
+	  // TODO: XML tagged output -- how to create this string?
      }
     /* --- if more than one min-cost item, and cost>1, do lookahead --- */
     if ((min_cost > 1) && (min_cost_conds->reorder.next_min_cost)) {

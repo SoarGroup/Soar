@@ -42,6 +42,8 @@
 #include "gdatastructs.h"
 #include "interface.h"
 #include "kernel_struct.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h" // support for triggering XML events
 #include <signal.h>         /* used for control-c handler */
 #include <assert.h>
 #include <time.h>
@@ -1183,6 +1185,11 @@ void do_one_top_level_phase (agent* thisAgent)
 			  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {			
 				  print (thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
 				  generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-elaborations; proceeding to decision phase.\"></warning>");
+
+				  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+			      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-elaborations; proceeding to decision phase.");
+			      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+				  
 			  }
 		  thisAgent->current_phase = DECISION_PHASE;
 	  } else

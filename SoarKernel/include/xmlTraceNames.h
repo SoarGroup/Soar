@@ -75,6 +75,7 @@ public:
 	static char const* const kWME_Attribute ;
 	static char const* const kWME_Value ;
 	static char const* const kWME_ValueType ;
+	static char const* const kWMEPreference;
 	static char const* const kWME_Action ;
 	// kjc question:  should the next entry be kWMEAction_Add?
 	static char const* const kValueAdd	;
@@ -95,6 +96,8 @@ public:
 	static char const* const kFunctionAddAttribute;
 
 	// end of tags for Trace output
+
+	static char const* const kTypeString;
 };
 
 #endif // XML_TRACE_NAMESH

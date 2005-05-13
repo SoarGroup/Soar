@@ -127,7 +127,7 @@ inline void gSKI_MakeAgentCallbackPhase(struct agent_struct* soarAgent,
 inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
                                         const char*			funcType,
                                         const char*			attOrTag,
-										const char*				value)
+										const char*			value=0)
 {
    gSKI_K_XMLCallbackData xml_data;
 
