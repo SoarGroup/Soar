@@ -1,0 +1,9 @@
+#ifndef IMP_CODE_GENERATION_UTILITIES
+#define IMP_CODE_GENERATION_UTILITIES
+
+#include "CodeGenerationConstants.h"
+
+
+
+
+#endif IMP_CODE_GENERATION_UTILITIES
