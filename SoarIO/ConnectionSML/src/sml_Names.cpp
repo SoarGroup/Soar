@@ -111,6 +111,7 @@ char const* const sml_Names::kWME_Id		= "id" ;
 char const* const sml_Names::kWME_Attribute	= "attr" ;
 char const* const sml_Names::kWME_Value		= "value" ;
 char const* const sml_Names::kWME_ValueType	= "type" ;
+char const* const sml_Names::kWMEPreference = "preference";
 char const* const sml_Names::kWME_Action	= "action" ;
 // kjc question:  should the next entry be kWMEAction_Add?
 char const* const sml_Names::kValueAdd		= "add" ;
