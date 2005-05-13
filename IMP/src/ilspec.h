@@ -1,6 +1,8 @@
 #ifndef IL_SPEC_H
 #define IL_SPEC_H
 
+//FIXME TODO rename this file
+
 #include <string>
 #include <vector>
 
@@ -48,11 +50,11 @@ typedef ilObjVector_t::iterator ilObjItr;
 class InputLinkSpec
 {
 private:
-	ilObjVector_t ilObjects;
+	ilObjVector_t& ilObjects;
 	void ReadControlStructure();
 public:
 
-	InputLinkSpec();
+	InputLinkSpec(ilObjVector_t& inObjects);
 	~InputLinkSpec();
 	//The import functions parse out pieces of the input 
 	//link and store them in objects so that the actual input link

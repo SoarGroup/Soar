@@ -27,7 +27,7 @@ using std::ios;
  *
  * Creates an InputLinkSpec object.  Not necessary yet. 
  */
-InputLinkSpec::InputLinkSpec()
+InputLinkSpec::InputLinkSpec(ilObjVector_t& inObjects) : ilObjects(inObjects)
 {
 	//necessary yet?
 	//Cory, this can probably read in the filename string, 
@@ -81,7 +81,7 @@ bool InputLinkSpec::ImportDM(string& filename)
 		return false;
 	}
 
-	file.close();
+	//file.close();
 	return true;
 }
 
@@ -205,14 +205,14 @@ void writeFileLineToString(fstream& source, string& dest, bool echo = false)
 {
 	char intermediate[MAX_IMP_LINE_LENGTH + 1];//TODO check these bounds
 	source.getline(intermediate, MAX_IMP_LINE_LENGTH + 1);//what is this + 1 for? looks like it might overflow
-	
+
 	//ensure that the line wasn't too long //TODO confirm that this is correct
 	if(source.gcount() >= MAX_IMP_LINE_LENGTH+1)
 	{
 		cout<<"Error: line "<<lineNumber<<" too long"<<endl;
 		return;
 	}
-	
+
 	dest = intermediate;
 	if(echo)
 		cout << "Entire file line:>" << dest << "<" << endl;
@@ -248,10 +248,9 @@ bool InputLinkSpec::ImportIL(string& filename)
 		string controlVariableName;
 		bool controlStructureUnsatisfied = false;//whether or not there is a control
 							//structure creating multiple wmes that has not been handled
-		bool skipPushback = false;
 
 		string line;
-		writeFileLineToString(file, line, true);
+		writeFileLineToString(file, line, false);
 		//If we have a blank line. Check if that's because we're at EOF, and also check if the
 		//next read is EOF
 		if(line == "")
@@ -285,7 +284,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 			printStage(parseStage, cout);
 			bool readingFirstType = true, moreTypesLeft = true, hasStartValue = false;
 			string curWord = "";
-			string controlStartVal, controlEndVal = 0;
+			string controlStartVal, controlEndVal;
 
 			switch(parseStage)
 			{
@@ -303,23 +302,17 @@ bool InputLinkSpec::ImportIL(string& filename)
 						cout << "Missing control structure start value..." << endl;
 						break;
 					}
-					//check the format
-					if(!atoi(controlStartVal.c_str()))
-					{
-						parseStage = READING_ERROR;
-						cout << "Control structure start val wasn't an int. Was: " << controlStartVal << endl;
-						break;
-					}
+					//can't check the format, as atoi will return zero on failure
+					//or if the string is actually value zero
 
 					controlEndVal = readAndTrimOneWord(line);
 					//check the read
-					if(!atoi(controlEndVal.c_str()))
+					if(controlEndVal == "")
 					{
 						parseStage = READING_ERROR;
-						cout << "Control structure end val wasn't an int. Was: "<< controlEndVal << endl;
+						cout << "Missing control structure end value..." << controlEndVal << endl;
 					}
-					controlEndVal = atoi(line.c_str());
-		
+
 		//			cout << "After all the control nonsense, the values are: " << controlName << " "
 		//				<< controlStartVal << " " << controlEndVal << endl;
 
@@ -331,7 +324,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 					//since we just consumed the first line, read in the next one 
 					//for the identifier information
-					writeFileLineToString(file, line, true);
+					writeFileLineToString(file, line, false);
 					lastCompletedState = READING_CONTROL_STRUCTURE;
 					controlStructureUnsatisfied = true;
 					parseStage = READING_PARENT_IDENTIFIER;
@@ -352,8 +345,9 @@ bool InputLinkSpec::ImportIL(string& filename)
 					break;
 				case READING_ATTRIBUTE:
 					curWord = readAndTrimOneWord(line); // TODO error checking
-					//trim off the attrib token
-					curWord.replace(0, 1, "");
+					//replace the leading attrib token with a double quote
+					curWord.replace(0, 1, "\"");
+					curWord.push_back('\"');//add the trailing double quote, since this is a literal
 					ilObj.setAttribName(curWord);
 					lastCompletedState = READING_ATTRIBUTE;
 					parseStage = READING_VALUE_TYPE;
@@ -395,7 +389,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 							//trim off the '>' token
 							curWord.erase(curWord.size() - 1);
 						}
-						cout << "Read value type as " << curWord << endl;
+						//cout << "Read value type as " << curWord << endl;
 						ilObj.addElementType(curWord);
 
 						//TODO tough error checking to do here---v
@@ -552,38 +546,59 @@ bool InputLinkSpec::ImportIL(string& filename)
 		{
 			InputLinkObject actualNewObject = ilObj;
 
+			if(controlVariableName == "")
+				ilObjects.push_back(ilObj);
+			else
+			{
+
 			//the parts of a WME pattern that might have a field equal to the control
 			//variable name are the optional "update"/"start" fields
-			//for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
-			//{
-/*				if(objItr->getUpdateValue() == controlVariableName || objItr->getValue() == controlVariableName)
+//FIXME TODO really, search 
+
+				string counterAsString = intToString(counter);
+				//Look for the counter variable's name as a substring of the update value
+				string::size_type pos =	ilObj.getUpdateValue().find(controlVariableName);
+				if(pos != string.npos)
 				{
-					skipPushback = true;
-					InputLinkObject 
-					string counterAsString = intToString(counter);
-					if(objItr->getUpdateValue() == controlVariableName)
-						objItr->setUpdateValue(counterAsString);
+					string oldUpdateValue = ilObj.getUpdateValue();
+					/*cout << "About to replace an update value's control variable reference with its string value..." << endl;
+					cout << "\tvariable: " << controlVariableName << endl;
+					cout << "\tvariable's value: " << counterAsString << endl;
+					cout << "\tunchanged update value is: " << oldUpdateValue << endl;*/
+					oldUpdateValue.replace(pos, controlVariableName.size(), counterAsString);
+					//cout << "\tand now the new value is: " << oldUpdateValue << endl;
+					actualNewObject.setUpdateValue(oldUpdateValue);
+				}//if the update value needs to be replaced
+					
+				pos = ilObj.getValue().find(controlVariableName);
+				if(pos != string.npos)
+				{
+					string oldStartValue = ilObj.getValue();
+					/*cout << "About to replace a start value's control variable reference with its string value..." << endl;
+					cout << "\tvariable: " << controlVariableName << endl;
+					cout << "\tvariable's value: " << counterAsString << endl;
+					cout << "\tunchanged update value is: " << oldStartValue << endl;*/
+					oldStartValue.replace(pos, controlVariableName.size(), counterAsString);
+					//cout << "\tand now the new value is: " << oldStartValue << endl;
+					actualNewObject.setStartValue(oldStartValue);
+				}//if the star start value needs to be replaced
+				ilObjects.push_back(actualNewObject);
+			}
 
-					if(objItr->getValue() == controlVariableName)
-						objItr->setStartValue(counterAsString);
-				}
-*/
-			//}//for
-			
-		}
+		}//for however many copies of this WME pattern we need
 
-		ilObjects.push_back(ilObj);
+		//ilObjects.push_back(ilObj);
 
 	}//while there are still lines to read
 
 	cout << "Read " << lineNumber << " lines." << endl;
 	cout << "Number of input link entries " << ilObjects.size() << endl;
-	for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
+	/*for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
 	{
 		cout << *objItr;
-	}
+	}*/
 	file.close();
-//ilObjects.clear();//causes everything to destruct - just for testing TODO - remove
+
 	return true;
 }
 

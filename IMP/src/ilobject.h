@@ -78,32 +78,33 @@ public:
 	void		setType(const std::string& inValue);
 	void		setType();
 	int			getNumTypes() const {return m_elementTypes.size();}
+	eElementType getCurrentType() const {return m_curType;}
 	std::string	getFrequencyAsString() const;
 	std::string	getUpdateValue() const {return m_updateValue;}
 	std::string	getValue() const;
+	std::string getParent() const {return m_parentId;}
+	std::string getAttributeName() const {return m_attribName;}
 
 	void setUpdateFrequency(std::string& inValue);
 	void setUpdateCondition(std::string& inValue);
 
 	friend std::ostream& operator << (std::ostream& stream, InputLinkObject& obj);
-	bool		hasBeenInspected() const {return m_beenInspected;}
-	void		markAsInspected() {m_beenInspected = true;}
-
+	bool	hasBeenInspected() const {return m_beenInspected;}
+	void	markAsInspected() {m_beenInspected = true;}
 
 private:
 	//std::ostream& printType(std::ostream&, eElementType);
 	//std::ostream& printValue(std::ostream&);
 	std::string				m_parentId;
 	std::string				m_attribName;
-	typesContainter			m_elementTypes;
+	typesContainter		m_elementTypes;
 	eElementType			m_curType;
-	WMEValue				m_value;
+	WMEValue					m_value;
 	std::string				m_updateValue;
-	eUpdateFrequency		m_updateFrequency;
+	eUpdateFrequency	m_updateFrequency;
 	std::string				m_updateCondition;
-	bool					m_beenInspected;
+	bool							m_beenInspected;
 };
-
 
 
 

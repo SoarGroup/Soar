@@ -1,9 +1,14 @@
-
 #include <iostream>
 #include <string>
+
 #include "ilspec.h"
+#include "ilobject.h"
+#include "CodeGenerator.h"
 
 using namespace std;
+
+const string ilSuffix = "il";
+const string dmSuffix = "dm";
 
 void pause()
 {
@@ -11,18 +16,17 @@ void pause()
 	string foo;
 	cin >> foo;
 }
- 
+//TODO eventually, we'll want to read in args for what kinds of code output
+//the user wants, like -java -cpp
 int main(int argc, char* argv[])
 {
 
 	string inFileName;
-	const string ilSuffix = "il";
-	const string dmSuffix = "dm";
 	bool parsed = 0;
-	string foos;
+	ilObjVector_t	ilObjects;
 
 	//create an ILspec
-	InputLinkSpec ilspec;
+	InputLinkSpec ilspec(ilObjects);
 	
 	cout << "Hajimeteimas..." << endl;
 	//cout << "Number of args is " << argc << endl;
@@ -65,6 +69,18 @@ int main(int argc, char* argv[])
 		pause();
 		exit(1);
 	}
+	
+	cout << "Back in the main loop, printing the stored objects now..." << endl;
+	for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
+	{
+		cout << *objItr;
+	}
+	
+	//create the code generator - //TODO use a commandline arg to specify which 
+	//type to make
+	//TODO the name of the output file should be read in from command line
+	string outFileName("testCPPFile.cpp");
+	CPPGenerator generator(outFileName, ilObjects);
 
 	cout << "Pausing before exiting program" << endl;
 	pause();

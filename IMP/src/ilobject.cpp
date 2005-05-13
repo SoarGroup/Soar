@@ -226,19 +226,15 @@ void InputLinkObject::setStartValue(string& inValue)
 	switch(m_elementTypes[0])
 	{
 		case ELEMENT_STRING:
-			assert(m_value.s == "");
 			m_value.s = inValue;
 			break;
 		case ELEMENT_INT:
-			assert(m_value.i == "");
 			m_value.i = inValue; //atoi(inValue.c_str());
 			break;
-		case ELEMENT_FLOAT:
-			assert(m_value.f == "");		
+		case ELEMENT_FLOAT:	
 			m_value.f = inValue; //atof(inValue.c_str());
 			break;
 		case ELEMENT_ID:
-			assert(m_value.id == "");		
 			m_value.id = inValue;
 			break;
 		default:
