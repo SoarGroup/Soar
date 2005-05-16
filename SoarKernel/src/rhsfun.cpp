@@ -52,6 +52,8 @@
 #include "recmem.h"
 #include "wmem.h"
 #include "gdatastructs.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h" // support for triggering XML events
 
 #include <map>
 
@@ -195,17 +197,25 @@ Symbol *user_select_rhsfun (agent* thisAgent, list *args, void* user_data) {
 Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
   Symbol *arg;
   char *string;
-  
+  growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
   generate_tagged_output(thisAgent, "<rhs_write string=\"");
   for ( ; args!=NIL; args=args->rest) {
     arg = static_cast<symbol_union *>(args->first);
     /* --- Note use of FALSE here--print the symbol itself, not a rereadable
        version of it --- */
     string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
+    add_to_growable_string(thisAgent, &gs, string); // for XML generation
     print_string (thisAgent, string);
 	generate_tagged_output(thisAgent, string);
   }
   generate_tagged_output(thisAgent, "\"></rhs_write>");
+
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagRHS_write);
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kRHS_String, text_of_growable_string(gs));
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagRHS_write);
+
+  free_growable_string(thisAgent, gs);
+  
   return NIL;
 }
 

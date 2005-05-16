@@ -29,6 +29,8 @@
 #include "print.h"
 #include "agent.h"
 #include "init_soar.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
+#include "gski_event_system_functions.h" // support for triggering XML events
 #include <ctype.h>
 
 /* *********************************************************************
@@ -424,10 +426,21 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
 	  generate_tagged_output(thisAgent, "<warning string=\" Warning: in production ");
 	  generate_tagged_output(thisAgent, thisAgent->name_of_production_being_reordered);
 	  generate_tagged_output(thisAgent, "      ignoring test(s) whose referent is unbound:\"></warning>");
+      // TODO: XML tagged output -- how to create this string?
+      // KJC TODO:  need a tagged output version of print_saved_test_list
 
-	  // TODO: XML tagged output -- how to create this string?
-	  
-	  // KJC TODO:  need a tagged output version of print_saved_test_list
+      // XML generation
+      growable_string gs = make_blank_growable_string(thisAgent);
+      add_to_growable_string(thisAgent, &gs, "Warning:  in production ");
+      add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
+      add_to_growable_string(thisAgent, &gs, "\n      ignoring test(s) whose referent is unbound:");
+      //TODO: fill in XML print_saved_test_list. Possibile methods include:
+      //   1) write a version which adds to a growable string
+      //   2) write a version which generates XML tags/attributes, so we get "typed" output for this warning
+      //      i.e. "<warning><string value="beginning of message"></string><test att="val"></test><string value="rest of message"></string></warning>
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
     }
     /* ought to deallocate the saved tests, but who cares */
   }
@@ -622,7 +635,16 @@ list *collect_root_variables (agent* thisAgent,
         tagged_output_with_symbols (thisAgent, " identifier %y is not connected to any goal or impasse.\"></warning>",
                             (Symbol *)(c->first));
 
-		// TODO: XML tagged output -- how to create this string?
+        // XML geneneration
+        growable_string gs = make_blank_growable_string(thisAgent);
+        add_to_growable_string(thisAgent, &gs, "Warning: On the LHS of production ");
+        add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
+        add_to_growable_string(thisAgent, &gs, ", identifier ");
+        add_to_growable_string(thisAgent, &gs, symbol_to_string (thisAgent, (Symbol *)(c->first), true, 0, 0));
+        add_to_growable_string(thisAgent, &gs, " is not connected to any goal or impasse.");
+        gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+        gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
+        gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 
       }
     }
@@ -866,7 +888,15 @@ void reorder_simplified_conditions (agent* thisAgent,
 	  generate_tagged_output(thisAgent, thisAgent->name_of_production_being_reordered);
 	  generate_tagged_output(thisAgent, "     The LHS conditions are not all connected.\"></warning>");
 
-	  // TODO: XML tagged output -- how to create this string?
+      // XML geneneration
+      growable_string gs = make_blank_growable_string(thisAgent);
+      add_to_growable_string(thisAgent, &gs, "Warning:  in production ");
+      add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
+      add_to_growable_string(thisAgent, &gs, "\n     The LHS conditions are not all connected.");
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+
      }
     /* --- if more than one min-cost item, and cost>1, do lookahead --- */
     if ((min_cost > 1) && (min_cost_conds->reorder.next_min_cost)) {
