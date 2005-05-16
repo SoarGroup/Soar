@@ -34,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
+				OutputFile="..\..\soar-library\$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -44,12 +44,11 @@
 				Name="VCMIDLTool"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Build Java files as a sanity check, copy dll to release point"
-				CommandLine="echo on
-cd build
-&quot;%JAVA_BIN%/javac&quot; *.java
-copy Java_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
-cd ..
+				Description="Create sml.jar at release point"
+				CommandLine="echo on 
+xcopy build\*.java ..\..\..\soar-library\sml\* /Y /I
+&quot;%JAVA_BIN%/javac&quot; ..\..\..\soar-library\sml\*.java
+&quot;%JAVA_BIN%/jar&quot; cvf ..\..\..\soar-library\sml.jar -C ..\..\..\soar-library sml
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -97,7 +96,7 @@ cd ..
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
+				OutputFile="..\..\soar-library\$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="FALSE"
