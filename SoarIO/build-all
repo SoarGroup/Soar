@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# This is meant to be run from the parent directory (containing SoarKernel,
+# gSKI, etc...)
+
+TLD=`pwd`;
+
+cd ${TLD}/SoarKernel; ./configure && make
+cd ${TLD}/gSKI; ./configure && make
+cd ${TLD}/SoarIO; ./configure --prefix=${HOME}/sandbox && make && make install
+cd ${TLD}/SoarIO/examples/TestJavaSML; buildJava.sh
+# cd ${TLD}/SoarJavaDebugger;
