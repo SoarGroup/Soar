@@ -248,7 +248,7 @@ unsigned long g_last_tag = 0;
 long g_last_ret_id = 0;
 long g_num_queries = 0;
 arraylist *g_header_stack;
-
+memory_pool epmem_range_pool;
 
 /* EpMem macros
 
@@ -566,8 +566,8 @@ range *make_range(int high, int low, int score)
         high = low;
         low = i;
     }
-    
-    r = (range *)allocate_memory(sizeof(range), MISCELLANEOUS_MEM_USAGE);
+
+    allocate_with_pool(&epmem_range_pool, &r);
     r->high = high;
     r->low = low;
     r->score = score;
@@ -599,7 +599,7 @@ void destroy_range(range *r)
     {
         p = r;
         r = r->next;
-        free_memory(p, MISCELLANEOUS_MEM_USAGE);
+        free_with_pool(&epmem_range_pool, p);
     }
 }//destroy_range
 
@@ -3533,6 +3533,11 @@ void init_epmem(void)
 
     //Initialize the g_header_stack array
     g_header_stack = make_arraylist(20);
+
+    //Init a memory pool for range structs (this seems to smooth
+    //a large CPU usage spike that's seen with normal allocation).
+    //I'm still not sure of why.
+    init_memory_pool(&epmem_range_pool, sizeof(range), "epmem_range");
     
     
     //Reset the timers
