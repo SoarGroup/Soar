@@ -635,6 +635,87 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	return true ;
 }
 
+void MyXMLEventHandlerTimer(smlXMLEventId id, void* pUserData, Agent* pAgent, ClientXML* pXML)
+{
+	// Don't do any work in the timer case -- but register the event handler so we generate
+	// the data and send it to us.
+}
+
+bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
+{
+	// Create the appropriate type of connection
+	sml::Kernel* pKernel = embedded ?
+		(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML", fullyOptimized, Kernel::GetDefaultPort())
+		: sml::Kernel::CreateKernelInNewThread("SoarKernelSML", Kernel::GetDefaultPort()))
+		: sml::Kernel::CreateRemoteConnection(true, NULL) ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	// This number determines how many agents are created.  We create <n>, test <n> and then delete <n>
+	int numberAgents = 1 ;
+
+	sml::Agent* pFirst = NULL ;
+
+	// PHASE ONE: Agent creation
+	for (int agentCounter = 0 ; agentCounter < numberAgents ; agentCounter++)
+	{
+		std::string name = "test-client-sml" ;
+		name.push_back('1' + agentCounter) ;
+
+		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
+		sml::Agent* pAgent = pKernel->CreateAgent(name.c_str()) ;
+
+		if (!pFirst)
+			pFirst = pAgent ;
+
+		if (pKernel->HadError())
+		{
+			cout << pKernel->GetLastErrorDescription() << endl ;
+			return false ;
+		}
+
+		if (!pAgent)
+		{
+			cout << "Error creating agent" << endl ;
+			return false ;
+		}
+
+		bool ok = true ;
+
+		std::string path = pKernel->GetLibraryLocation() ;
+		path += "/demos/towers-of-hanoi/towers-of-hanoi.soar" ;
+
+		bool load = pAgent->LoadProductions(path.c_str()) ;
+		unused(load);
+
+		if (pAgent->HadError())
+		{
+			cout << "ERROR loading productions: " << pAgent->GetLastErrorDescription() << endl ;
+			return false ;
+		}
+
+		cout << "Loaded productions" << endl ;
+
+		if (!ok)
+			return false ;
+
+		pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
+		pAgent->ExecuteCommandLine("watch 5") ;
+	}
+
+	std::string result = pFirst->ExecuteCommandLine("time run 100") ;
+	cout << result << endl ;
+
+	// Need to get rid of the kernel explictly.
+	delete pKernel ;
+
+	return true ;
+}
+
 bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
@@ -796,6 +877,20 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 	return true ;
 }
 
+bool FullTimeTest()
+{
+	// Embeddded using direct calls
+	bool ok = TimeTest(true, true, true) ;
+
+	// Embedded not using direct calls
+//	ok = ok && TestSML(true, true, false) ;
+
+	// Embedded running on thread inside kernel
+//	ok = ok && TestSML(true, false, false) ;
+
+	return ok ;
+}
+
 bool FullEmbeddedTest()
 {
 	// Simple embedded, direct init-soar
@@ -862,6 +957,7 @@ int main(int argc, char* argv[])
 	bool stopAtEnd = true ;
 	bool remote    = false ;
 	bool listener  = false ;
+	bool timeTest  = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
 
 	// For now, any argument on the command line makes us create a remote connection.
@@ -873,6 +969,7 @@ int main(int argc, char* argv[])
 	// -remote : run the test over a remote connection -- needs a listening client to already be running.
 	// -listener : create a listening client (so we can run remote tests) which lives for 300 secs (5 mins)
 	// -shortlistener : create a listening client that lives for 15 secs
+	// -time : run a time trial on some functionality
 	if (argc > 1)
 	{
 		for (int i = 1 ; i < argc ; i++)
@@ -883,6 +980,8 @@ int main(int argc, char* argv[])
 				remote = true ;
 			if (!stricmp(argv[i], "-listener"))
 				listener = true ;
+			if (!stricmp(argv[i], "-time"))
+				timeTest = true ;
 			if (!stricmp(argv[i], "-shortlistener"))
 			{
 				listener = true ;
@@ -895,6 +994,8 @@ int main(int argc, char* argv[])
 	// (so run one instance as a listener and then a second as a -remote test).
 	if (listener)
 		SimpleListener(life) ;
+	else if (timeTest)
+		FullTimeTest() ;
 	else
 	{
 		if (remote)
