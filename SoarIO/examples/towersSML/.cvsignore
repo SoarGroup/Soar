@@ -6,3 +6,4 @@ Makefile.in
 towersSML
 gski_unreleased.txt
 Release
+*.o

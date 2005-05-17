@@ -6,3 +6,4 @@ Makefile.in
 *.lo
 libElementXML.la
 Release
+*.o

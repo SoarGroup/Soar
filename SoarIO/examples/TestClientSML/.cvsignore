@@ -5,3 +5,4 @@ Debug
 Makefile
 Makefile.in
 Release
+*.o

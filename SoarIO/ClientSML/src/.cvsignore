@@ -6,3 +6,4 @@ Makefile.in
 *.lo
 libClientSML.la
 Release
+*.o

@@ -6,3 +6,4 @@ testcli
 gski_unreleased.txt
 Debug
 TestCommandLineInterface
+*.o
