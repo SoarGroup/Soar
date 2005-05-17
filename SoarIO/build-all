@@ -5,6 +5,12 @@
 
 TLD=`pwd`;
 
+if test ! -d "SoarKernel"; then
+  echo "Building SoarKernel. . .";
+else
+  echo "SoarKernel not found!";
+fi
+
 cd ${TLD}/SoarKernel; ./configure && make
 cd ${TLD}/gSKI; ./configure && make
 cd ${TLD}/SoarIO; ./configure --prefix=${HOME}/sandbox && make && make install
