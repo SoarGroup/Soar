@@ -24,7 +24,8 @@ sml_PrintListener.cpp\
 sml_ProductionListener.cpp\
 sml_RhsListener.cpp\
 sml_RunListener.cpp\
-sml_SystemListener.cpp
+sml_SystemListener.cpp\
+sml_XMLListener.cpp
 
 INCLUDES = \
 -I../.. \
