@@ -87,7 +87,7 @@ typedef union symbol_union Symbol;
 
 #define MAJOR_VERSION_NUMBER 8
 #define MINOR_VERSION_NUMBER 6
-#define MICRO_VERSION_NUMBER 0
+#define MICRO_VERSION_NUMBER 1
 #define GREEK_VERSION_NUMBER 0
 
 extern char * soar_version_string;
