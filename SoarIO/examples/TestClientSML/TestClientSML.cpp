@@ -639,6 +639,14 @@ void MyXMLEventHandlerTimer(smlXMLEventId id, void* pUserData, Agent* pAgent, Cl
 {
 	// Don't do any work in the timer case -- but register the event handler so we generate
 	// the data and send it to us.
+
+    //This code is for debugging what comes out of the trace
+    /*
+    std::fstream fs;
+    fs.open("test.xml", std::ios_base::out | std::ios_base::app);
+    fs << pXML->GenerateXMLString(true);
+    fs.close();
+    */
 }
 
 bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
