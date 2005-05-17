@@ -45,10 +45,11 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Create sml.jar at release point"
-				CommandLine="echo on 
+				CommandLine="echo on
 xcopy build\*.java ..\..\..\soar-library\sml\* /Y /I
 &quot;%JAVA_BIN%/javac&quot; ..\..\..\soar-library\sml\*.java
 &quot;%JAVA_BIN%/jar&quot; cvf ..\..\..\soar-library\sml.jar -C ..\..\..\soar-library sml
+rmdir ..\..\..\soar-library\sml /S /Q
 "/>
 			<Tool
 				Name="VCPreBuildEventTool"
