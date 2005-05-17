@@ -1325,6 +1325,7 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
   } else {
     generate_tagged_output(thisAgent, "<phase name=\"");
 	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagPhase);
+  }
   switch (thisAgent->current_phase) {
   case INPUT_PHASE:
     generate_tagged_output(thisAgent, "input\"></phase>");
@@ -1375,9 +1376,11 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
 		case PE_PRODS:
 			generate_tagged_output(thisAgent, "apply\" firing_type=\"PE\"></phase>");
 			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_FiringType, xmlTraceNames::kPhaseFiringType_PE);
+            break;
 		case IE_PRODS:
 			generate_tagged_output(thisAgent, "apply\" firing_type=\"IE\"></phase>");
 			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_FiringType, xmlTraceNames::kPhaseFiringType_IE);
+            break;
 		}
 	} else {
       generate_tagged_output(thisAgent, "apply\"></phase>");
@@ -1391,7 +1394,6 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
     return;
   } // end switch
   return;
-  } //end if/else
 }
 
 
