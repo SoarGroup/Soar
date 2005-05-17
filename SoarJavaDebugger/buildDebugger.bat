@@ -1,5 +1,5 @@
 @REM Builds the debugger
 
-javac.exe -classpath .;swt.jar;sml.jar debugger\Application.java
+javac.exe -classpath .;..\soar-library\swt.jar;..\soar-library\sml.jar debugger\Application.java
 jar.exe cvfm ..\soar-library\SoarJavaDebugger.jar JarManifest .
 pause
