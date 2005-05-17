@@ -257,13 +257,19 @@ if test "$java" = "true" ; then
   if test -z "$JAVABIN" ; then
     AC_CHECK_PROGS(JAVA, java kaffe guavac)
   else
-    JAVA="$JAVABIN"
+    JAVA="$JAVA_HOME/bin/java"
   fi
 
   if test -z "$JAVACBIN" ; then
     AC_CHECK_PROGS(JAVAC, javac)
   else
-    JAVAC="$JAVACBIN"
+    JAVAC="$JAVA_HOME/bin/javac"
+  fi
+
+  if test -z "$JARBIN" ; then
+    AC_CHECK_PROGS(JAR, jar)
+  else
+    JAR="$JAVA_HOME/bin/jar"
   fi
 
   AC_MSG_CHECKING(for java include file jni.h)
