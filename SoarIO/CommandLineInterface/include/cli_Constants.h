@@ -1,3 +1,14 @@
+/////////////////////////////////////////////////////////////////
+// Constants class file.
+//
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
+//
+// This class wraps the string constants for each command in the
+// command line interface.
+//
+/////////////////////////////////////////////////////////////////
+
 #ifndef CLI_CONSTANTS_H
 #define CLI_CONSTANTS_H
 

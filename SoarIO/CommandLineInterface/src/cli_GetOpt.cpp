@@ -1,3 +1,20 @@
+/////////////////////////////////////////////////////////////////
+// GetOpt class file.
+//
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
+//
+// This class is a modified version of GNU GetOpt to support
+// command line options specific to the needs of the command line
+// interface. One major functional change concerns handling of 
+// options with optional arguments.
+//
+// For more information on gnu getopt and getopt_long, please 
+// see:
+// http://www.gnu.org/software/libc/manual/html_node/Getopt.html
+//
+/////////////////////////////////////////////////////////////////
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H

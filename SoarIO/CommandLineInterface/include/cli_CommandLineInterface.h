@@ -1,13 +1,13 @@
 /////////////////////////////////////////////////////////////////
-// Command Line Interface class
+// CommandLineInterface class file.
 //
-// Author: Jonathan Voigt
-// Date  : Sept 2004
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
 //
-// This class is used as a general command line interface to Soar
-// through gSKI.
+// This is the main header for the command line interface module.
 //
 /////////////////////////////////////////////////////////////////
+
 #ifndef COMMAND_LINE_INTERFACE_H
 #define COMMAND_LINE_INTERFACE_H
 

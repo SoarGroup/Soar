@@ -1,3 +1,14 @@
+/////////////////////////////////////////////////////////////////
+// Constants class file.
+//
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
+//
+// This class wraps the string constants for each command in the
+// command line interface.
+//
+/////////////////////////////////////////////////////////////////
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H

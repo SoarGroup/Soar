@@ -1,3 +1,14 @@
+/////////////////////////////////////////////////////////////////
+// CLIError class file.
+//
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
+//
+// This class wraps the error codes and error messages for the
+// command line interface.
+//
+/////////////////////////////////////////////////////////////////
+
 #ifndef CLI_CLIERROR_H
 #define CLI_CLIERROR_H
 

@@ -1,3 +1,13 @@
+/////////////////////////////////////////////////////////////////
+// Aliases class file.
+//
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
+//
+// This class handles aliases for the command line interface.
+//
+/////////////////////////////////////////////////////////////////
+
 #ifndef CLI_ALIASES_H
 #define CLI_ALIASES_H
 

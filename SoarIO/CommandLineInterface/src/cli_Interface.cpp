@@ -1,3 +1,12 @@
+/////////////////////////////////////////////////////////////////
+// Interface file.
+//
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
+//
+// This file maps the SML calls to interface calls.
+/////////////////////////////////////////////////////////////////
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif // HAVE_CONFIG_H

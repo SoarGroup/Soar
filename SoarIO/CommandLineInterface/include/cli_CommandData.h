@@ -1,3 +1,14 @@
+/////////////////////////////////////////////////////////////////
+// Command data file.
+//
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
+//
+// This file contains enumerations important for the command
+// line interface exposed function calls.
+//
+/////////////////////////////////////////////////////////////////
+
 #ifndef COMMAND_DATA_H
 #define COMMAND_DATA_H
 
