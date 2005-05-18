@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+
+#include "sml_ClientWMElement.h"
 /************************************************************************
 * ILObject
 * 
@@ -74,27 +76,39 @@ public:
 	void		setAttribName(std::string& inName){m_attribName = inName;}
 	void		setStartValue(std::string& inValue);
 	void		setUpdateValue(std::string& inValue);
+	/************************************************************************/
+	/* Sets the initial type for this WME.  By default, type is TBD                                                                     */
+	/************************************************************************/
 	void		setType(std::string& inValue);
+	/************************************************************************/
+	/* Sometimes the string arg we start with is const.  Functionally equivalent
+	/  to the non-const version                                                                     */
+	/************************************************************************/
 	void		setType(const std::string& inValue);
+	/************************************************************************/
+	/* With no args, set the initial type to be equal to the first 
+	/  element of the type container (which shouldn't be empty if this is called)                                                                     */
+	/************************************************************************/
 	void		setType();
 	int			getNumTypes() const {return m_elementTypes.size();}
 	eElementType getCurrentType() const {return m_curType;}
 	std::string	getFrequencyAsString() const;
 	std::string	getUpdateValue() const {return m_updateValue;}
-	std::string	getValue() const;
+	std::string	getStartValue() const;
 	std::string getParent() const {return m_parentId;}
+	std::string getGeneratedName() const {return m_name;}
 	std::string getAttributeName() const {return m_attribName;}
 
 	void setUpdateFrequency(std::string& inValue);
 	void setUpdateCondition(std::string& inValue);
+	void setGeneratedName(std::string& myName){m_name = myName;}
 
 	friend std::ostream& operator << (std::ostream& stream, InputLinkObject& obj);
 	bool	hasBeenInspected() const {return m_beenInspected;}
 	void	markAsInspected() {m_beenInspected = true;}
 
 private:
-	//std::ostream& printType(std::ostream&, eElementType);
-	//std::ostream& printValue(std::ostream&);
+
 	std::string				m_parentId;
 	std::string				m_attribName;
 	typesContainter		m_elementTypes;
@@ -104,8 +118,10 @@ private:
 	eUpdateFrequency	m_updateFrequency;
 	std::string				m_updateCondition;
 	bool							m_beenInspected;
+	//sml::WMElement*		m_wme;
+	
+	//this may end up being a vector of strings
+	std::string				m_name;//The name of the generated variable corresponding to 'this'
 };
-
-
 
 #endif //IL_OBJECT_H

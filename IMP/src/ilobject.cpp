@@ -23,13 +23,13 @@ InputLinkObject::InputLinkObject()
 
 /* Destructor
  *
- */  //TODO find out why this doesn't work correctly.  seems so simple
+ */
 InputLinkObject::~InputLinkObject()
 {
 	m_elementTypes.clear();
 }
 
-string InputLinkObject::getValue() const
+string InputLinkObject::getStartValue() const
 {
 	switch(m_curType)
 	{
@@ -89,31 +89,8 @@ std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
 		stream << endl;
 	}
 	stream << "\tValue: \t\t";
-	//stream << obj.printValue(stream) << endl;
-	/*
-	switch(obj.m_curType)
-	{
-		case ELEMENT_STRING:
-			stream << (obj.m_value.s);
-			break;
-		case ELEMENT_FLOAT:
-			stream << (obj.m_value.f);
-			break;
-		case ELEMENT_ID:
-			stream << (obj.m_value.id);
-			break;
-		case ELEMENT_INT:
-			stream << (obj.m_value.i);
-			break;
-		case ELEMENT_TYPE_TBD:
-			stream << k_TBD;
-			break;
-		default:
-			stream << "Wow...how did this happen?" << endl;
-			assert(false);
-			break;
-	}*/
-	stream << obj.getValue() << endl;
+
+	stream << obj.getStartValue() << endl;
 	stream << "\tFrequency: \t" << obj.getFrequencyAsString() << endl;
 
 	stream << endl;
@@ -121,32 +98,6 @@ std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
 }
 
 
-/*
-//TODO comment  //TODO consider printing the const values instead of these
-ostream& InputLinkObject::printType(ostream& stream, eElementType type)
-{
-	switch(type)
-	{
-		case ELEMENT_FLOAT:
-			stream << "float element";
-			break;
-		case ELEMENT_INT:
-			stream << "int element";
-			break;
-		case ELEMENT_ID:
-			stream << "identifier";
-			break;
-		case ELEMENT_STRING:
-			stream << "string element";
-			break;
-		default:
-			stream << "BAAAAD things have happened";
-			assert(false);
-			break;
-	}
-
-	return stream;
-}*/
 
 const string typeToString(eElementType type)
 {
@@ -170,41 +121,19 @@ const string typeToString(eElementType type)
 			break;
 	}
 }
-//TODO comment
-/*ostream& InputLinkObject::printValue(ostream& stream)
-{
-	switch(m_curType)
-	{
-		case ELEMENT_STRING:
-			assert(m_value.s);
-			stream << *(m_value.s);
-			break;
-		case ELEMENT_FLOAT:
-			assert (m_value.f);
-			stream << *(m_value.f);
-			break;
-		case ELEMENT_ID:
-			assert(m_value.id);
-			stream << *(m_value.id);
-			break;
-		case ELEMENT_INT:
-			assert(m_value.i);
-			stream << *(m_value.i);
-			break;
-		default:
-			stream << "Wow...how did this happen?" << endl;
-			assert(false);
-			break;
-	}
-	return stream;
-}*/
 
 
-//TODO comment
 void InputLinkObject::setType(string& inValue)
 {
 	m_curType = stringToType(inValue);
 }
+
+
+void InputLinkObject::setType(const std::string& inValue)
+{
+	m_curType = stringToType(inValue);
+}
+
 
 void InputLinkObject::setType()
 {
@@ -212,15 +141,11 @@ void InputLinkObject::setType()
 	m_curType = m_elementTypes[0];
 }
 
-void InputLinkObject::setType(const std::string& inValue)
-{
-	m_curType = stringToType(inValue);
-}
 
-//TODO comment
+//All values are stored as string representation
 void InputLinkObject::setStartValue(string& inValue)
 {
-	//sanity checks
+	//sanity check
 	assert(!m_elementTypes.empty());
 
 	switch(m_elementTypes[0])
@@ -253,8 +178,8 @@ void InputLinkObject::setUpdateValue(std::string& inValue)
 			m_updateValue = inValue;
 			break;
 		case ELEMENT_ID:
-			//TODO think about the case where an wme points to one id, and later to another.
-			//isn't this conceivable?  and in that case, the ID could need to be updated
+			//TODO think about the case where a wme points to one id, and later to another.
+			//Isn't this conceivable?  and in that case, the ID could need to be updated
 			assert(!"ID type should never receive an update value");
 			break;
 		default:

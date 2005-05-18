@@ -161,10 +161,11 @@ string readOneWord(const string& source)
 	string retVal;
 	string::const_iterator sItr = source.begin();
 
-	//the next word may be trailed by a whitespace, or EOF
+	//the next word may be trailed by a whitespace
+	//NOTE - author doesn't think EOF char(s) will ever be present in this string
 	int pos = source.find_first_of(" \t\n");
 
-	//TODO...handle the EOF case
+	//must be the last string, just return it
 	if(pos == source.npos)
 		return source;
 
@@ -203,10 +204,12 @@ bool tokenPresent(const string& token, const string& source)
 //newline that terminated it in the file
 void writeFileLineToString(fstream& source, string& dest, bool echo = false)
 {
-	char intermediate[MAX_IMP_LINE_LENGTH + 1];//TODO check these bounds
-	source.getline(intermediate, MAX_IMP_LINE_LENGTH + 1);//what is this + 1 for? looks like it might overflow
+	char intermediate[MAX_IMP_LINE_LENGTH + 1];//enough space for maxline plus a null char
+	//this will grab (maxline -1) chars, thinking we didn't allocate enough for the null,
+	//but since we did, grab 1 more
+	source.getline(intermediate, MAX_IMP_LINE_LENGTH+1);
 
-	//ensure that the line wasn't too long //TODO confirm that this is correct
+	//ensure that the line wasn't too long
 	if(source.gcount() >= MAX_IMP_LINE_LENGTH+1)
 	{
 		cout<<"Error: line "<<lineNumber<<" too long"<<endl;
@@ -311,10 +314,11 @@ bool InputLinkSpec::ImportIL(string& filename)
 					{
 						parseStage = READING_ERROR;
 						cout << "Missing control structure end value..." << controlEndVal << endl;
+						break;
 					}
 
-		//			cout << "After all the control nonsense, the values are: " << controlName << " "
-		//				<< controlStartVal << " " << controlEndVal << endl;
+					//cout << "Control values are: " << controlName << " " << controlStartVal
+					// << " " << controlEndVal << endl;
 
 					//set ACTUAL loop start and stop delimiters			
 					loopBegin = atoi(controlStartVal.c_str());
@@ -330,12 +334,10 @@ bool InputLinkSpec::ImportIL(string& filename)
 					parseStage = READING_PARENT_IDENTIFIER;
 					break;
 				case READING_PARENT_IDENTIFIER:
-					//TODO error checking
 					curWord = readAndTrimOneWord(line);
-
 					if(curWord == "")
 					{
-						cout << "didn't find parent identifier...." << endl;
+						cout << "***didn't find parent identifier...." << endl;
 						parseStage = READING_ERROR;
 						break;
 					}
@@ -375,15 +377,25 @@ bool InputLinkSpec::ImportIL(string& filename)
 							curWord = readAndTrimOneWord(line);
 						else
 						{
-							cout << "\tReading first type for this wme, which is >" << curWord << "<." << endl;
+							//cout << "\tReading first type for this wme, which is >" << curWord << "<." << endl;
 							readingFirstType = false;
 						}
 
+					  //These represent all the ways an ID could appear alone.
+					  //The closing brace could either be attached or separated by whitespace
+						// < ID>  < ID > <ID> <ID >
 						if(!tokenPresent(k_typesCloseToken, curWord))
-							moreTypesLeft = true;
-
+						{
+							//if the token isn't present in this word, and the next word isn't
+							//the closing token, then we really do have more types left
+							string tentativeRead = readOneWord(line);
+							if(tentativeRead != ">")
+								moreTypesLeft = true;
+							else
+								moreTypesLeft = false;
+						}
 						else
-						{ //TODO make sure any whitespace leading the '>' is taken care of...
+						{ //strip any whitespace leading the '>'
 							curWord = consumeSpaces(curWord);
 							moreTypesLeft = false;
 							//trim off the '>' token
@@ -392,11 +404,15 @@ bool InputLinkSpec::ImportIL(string& filename)
 						//cout << "Read value type as " << curWord << endl;
 						ilObj.addElementType(curWord);
 
-						//TODO tough error checking to do here---v
 						//if the type is an ID, it should be listed alone
 						if(!stricmp(curWord.c_str(), k_idString.c_str()))
 						{
 							parseStage = READING_IDENTIFIER_UNIQUE_NAME;
+							if(moreTypesLeft)
+							{
+								parseStage = READING_ERROR;
+								cout << "ID type should have been listed alone..." << endl;
+							}
 							break;
 						}
 						else//will execute more times than necessary, but is not incorrect
@@ -418,7 +434,13 @@ bool InputLinkSpec::ImportIL(string& filename)
 				case READING_IDENTIFIER_UNIQUE_NAME:
 
 					//get the actual ID unique name now
-					curWord = readAndTrimOneWord(line);//TODO error checking
+					curWord = readAndTrimOneWord(line);
+					if(curWord == "")
+					{
+						parseStage = READING_ERROR;
+						cout << "Unique identifier for ID type was not present...." << endl;
+						break;
+					}
 
 					ilObj.setStartValue(curWord);
 					lastCompletedState = READING_IDENTIFIER_UNIQUE_NAME;
@@ -550,10 +572,8 @@ bool InputLinkSpec::ImportIL(string& filename)
 				ilObjects.push_back(ilObj);
 			else
 			{
-
-			//the parts of a WME pattern that might have a field equal to the control
-			//variable name are the optional "update"/"start" fields
-//FIXME TODO really, search 
+				//the parts of a WME pattern that might have a field equal to the control
+				//variable name are the optional "update"/"start" fields
 
 				string counterAsString = intToString(counter);
 				//Look for the counter variable's name as a substring of the update value
@@ -569,11 +589,12 @@ bool InputLinkSpec::ImportIL(string& filename)
 					//cout << "\tand now the new value is: " << oldUpdateValue << endl;
 					actualNewObject.setUpdateValue(oldUpdateValue);
 				}//if the update value needs to be replaced
-					
-				pos = ilObj.getValue().find(controlVariableName);
+
+				//Look for the counter variable's name as a substring of the start value
+				pos = ilObj.getStartValue().find(controlVariableName);
 				if(pos != string.npos)
 				{
-					string oldStartValue = ilObj.getValue();
+					string oldStartValue = ilObj.getStartValue();
 					/*cout << "About to replace a start value's control variable reference with its string value..." << endl;
 					cout << "\tvariable: " << controlVariableName << endl;
 					cout << "\tvariable's value: " << counterAsString << endl;
@@ -586,8 +607,6 @@ bool InputLinkSpec::ImportIL(string& filename)
 			}
 
 		}//for however many copies of this WME pattern we need
-
-		//ilObjects.push_back(ilObj);
 
 	}//while there are still lines to read
 

@@ -70,11 +70,11 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 	
-	cout << "Back in the main loop, printing the stored objects now..." << endl;
+	/*cout << "Back in the main loop, printing the stored objects now..." << endl;
 	for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
 	{
 		cout << *objItr;
-	}
+	}*/
 	
 	//create the code generator - //TODO use a commandline arg to specify which 
 	//type to make
