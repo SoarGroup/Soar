@@ -97,7 +97,7 @@ cd ..
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\soar-library\$(ProjectName).dll"
+				OutputFile="..\..\..\soar-library\$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="FALSE"
