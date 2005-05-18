@@ -1,3 +1,7 @@
+###########################################
+# Author: Jonathan Voigt, voigtjr@gmail.com
+# Date: 2004
+###########################################
 lib_LTLIBRARIES = libElementXML.la
 
 libElementXML_la_LIBADD = ../../ConnectionSML/src/libConnectionSML.la

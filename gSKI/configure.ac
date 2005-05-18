@@ -1,3 +1,7 @@
+###########################################
+# Author: Jonathan Voigt, voigtjr@gmail.com
+# Date: 2004
+###########################################
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 

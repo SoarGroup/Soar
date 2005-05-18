@@ -1,3 +1,7 @@
+###########################################
+# Author: Jonathan Voigt, voigtjr@gmail.com
+# Date: 2004
+###########################################
 noinst_LTLIBRARIES = libCommandLineInterface.la
 
 libCommandLineInterface_la_SOURCES = \

@@ -1,3 +1,7 @@
+###########################################
+# Author: Jonathan Voigt, voigtjr@gmail.com
+# Date: 2004
+###########################################
 BASEDIR_PREFIX=../../
 SOAR_LIBRARY=$(BASEDIR_PREFIX)../soar-library
 EXTRA_DIST = Java_sml_ClientInterface.i

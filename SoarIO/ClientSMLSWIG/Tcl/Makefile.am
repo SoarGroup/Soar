@@ -1,3 +1,7 @@
+###########################################
+# Author: Jonathan Voigt, voigtjr@gmail.com
+# Date: 2004
+###########################################
 BASEDIR_PREFIX=../../
 
 EXTRA_DIST = Tcl_sml_ClientInterface.i

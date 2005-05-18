@@ -1,3 +1,7 @@
+###########################################
+# Author: Jonathan Voigt, voigtjr@gmail.com
+# Date: 2004
+###########################################
 lib_LTLIBRARIES = libSoarKernelSML.la 
 
 libSoarKernelSML_la_LIBADD = \
