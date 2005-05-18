@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 lib_LTLIBRARIES = libSoarKernelSML.la 
 
 libSoarKernelSML_la_LIBADD = \

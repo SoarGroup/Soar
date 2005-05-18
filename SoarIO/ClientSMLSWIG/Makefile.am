@@ -1,4 +1,4 @@
-AUTOMAKE_OPTIONS = foreign
+AM_MAKEFLAGS = -j1
 SUBDIRS = \
 Java\
 Tcl

@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 BASEDIR_PREFIX = ../../
 
 bin_PROGRAMS = towersSML

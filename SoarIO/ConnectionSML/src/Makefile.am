@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 noinst_LTLIBRARIES = libConnectionSML.la
 
 libConnectionSML_la_SOURCES = \

@@ -1,11 +1,11 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([SoarKernel], [8.6.1], [soar-group@lists.sourceforge.net])
-AM_INIT_AUTOMAKE([SoarKernel], [8.6.1])
 AC_PREREQ(2.57)
-AC_REVISION($Revision$)
+AC_INIT([SoarKernel], [8.6.1], [soar-group@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([src/soar.h])
+AM_INIT_AUTOMAKE([foreign])
+AC_REVISION($Revision$)
 AM_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr/local/soar)
 

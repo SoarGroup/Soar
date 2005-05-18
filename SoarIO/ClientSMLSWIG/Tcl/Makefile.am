@@ -1,7 +1,5 @@
 BASEDIR_PREFIX=../../
 
-AUTOMAKE_OPTIONS = foreign
-
 EXTRA_DIST = Tcl_sml_ClientInterface.i
 
 if SWIGTCL

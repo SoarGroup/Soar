@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 lib_LTLIBRARIES = libElementXML.la
 
 libElementXML_la_LIBADD = ../../ConnectionSML/src/libConnectionSML.la

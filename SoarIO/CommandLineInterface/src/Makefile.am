@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 noinst_LTLIBRARIES = libCommandLineInterface.la
 
 libCommandLineInterface_la_SOURCES = \

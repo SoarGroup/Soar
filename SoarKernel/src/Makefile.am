@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 noinst_LTLIBRARIES = libSoarKernel.la
 
 libSoarKernel_la_SOURCES = \

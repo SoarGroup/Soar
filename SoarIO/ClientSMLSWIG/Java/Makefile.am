@@ -1,7 +1,5 @@
 BASEDIR_PREFIX=../../
 SOAR_LIBRARY=$(BASEDIR_PREFIX)../soar-library
-AUTOMAKE_OPTIONS = foreign
-
 EXTRA_DIST = Java_sml_ClientInterface.i
 
 if SWIGJAVA

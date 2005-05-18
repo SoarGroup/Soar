@@ -1,5 +1,3 @@
-AUTOMAKE_OPTIONS = foreign
-
 noinst_LTLIBRARIES = libgSKI.la
 
 libgSKI_la_SOURCES = \
