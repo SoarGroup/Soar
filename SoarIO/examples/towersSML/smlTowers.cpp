@@ -44,9 +44,6 @@ using sgio::IntElement;
 
 
 
-//namespace sgio_towers
-//{
-
 /*************************************************************
 * @brief	The TowerInputLinkProfile class contains all of the  
 *			wmes corresponding to the Tower
@@ -217,7 +214,7 @@ private:
 };
 
 /*************************************************************
-* @brief	The IOManager class contains SGIO WorkingMemory
+* @brief	The IOManager class contains WorkingMemory
 *			and Soar pointers, which it is responsible for 
 *			cleaning up, and has wrapper functions for
 *			manipulating the input link
@@ -245,7 +242,7 @@ private:
 		if (pSoar->HadError())
 		{
 			// This string will contain a description of the error
-			std::string error = pSoar->GetLastErrorDescription() ;
+			string error = pSoar->GetLastErrorDescription() ;
 			assert (!pSoar->HadError()) ;
 		}
 
@@ -258,13 +255,14 @@ private:
 		if (pAgent->HadError())
 		{
 			// This string will contain a description of the error.
-			std::string error = pAgent->GetLastErrorDescription() ;
+			string error = pAgent->GetLastErrorDescription() ;
 			cerr << error << endl;
+			//if this asserts, check your working directory
 			assert (!pAgent->HadError()) ;
 		}
 
 		// SML does not use a separate WorkingMemory object.  We just have an Agent instead.
-//		pWMemory = new WorkingMemory(pAgent);
+		// pWMemory = new WorkingMemory(pAgent);
 		pWMemory = pAgent ;
 		assert(pWMemory);
 
@@ -272,7 +270,7 @@ private:
 	~IOManager()
 	{
 		// In SML there is no separate WorkingMemory object and Agents are (as with SGIO) owned by the Kernel.
-//		delete pWMemory;
+		// delete pWMemory;
 		delete pSoar;
 	}
 
@@ -284,10 +282,8 @@ private:
 	friend class HanoiWorld;
 };
 
-//}//closes namespace
 
 
-//using sgio_towers::DiskInputLinkProfile;
 
 //======================================================
 //============ Disk Function Definitions ===============
@@ -337,7 +333,7 @@ Tower::~Tower()
 }
 
 //will always add a smaller disk than the top, so new disk must at end of container
-//disks that have just been created already have their disk beneath initialized, don't reset it
+//disks that have just been created already have their 'disk beneath' initialized, don't reset it
 void Tower::AddDisk(Disk* newDisk, bool justCreated)
 {
 	assert(newDisk);
@@ -356,7 +352,7 @@ void Tower::RemoveTopDisk()
 {
 	if(m_disks.size() != 0)
 	{
-		std::vector<Disk*>::iterator eraseItr = m_disks.end();
+		vector<Disk*>::iterator eraseItr = m_disks.end();
 		--eraseItr;
 		m_disks.erase(eraseItr);
 	}
@@ -389,7 +385,7 @@ HanoiWorld::HanoiWorld(bool remoteConnection, bool graphicsOn, int inNumTowers, 
 {
 	//create Soar and agent
 	// SML uses Kernel instead of Soar
-//	Soar* soar = 0 ;
+	// Soar* soar = 0 ;
 	Kernel* kernel = 0;
 
 	if (!remoteConnection)
