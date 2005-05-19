@@ -34,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\soar-library\$(ProjectName).dll"
+				OutputFile="..\..\..\soar-library\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
@@ -97,7 +97,7 @@ cd ..
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\..\soar-library\$(ProjectName).dll"
+				OutputFile="..\..\..\soar-library\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="FALSE"
