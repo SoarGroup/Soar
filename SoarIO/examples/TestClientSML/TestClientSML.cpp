@@ -644,7 +644,9 @@ void MyXMLEventHandlerTimer(smlXMLEventId id, void* pUserData, Agent* pAgent, Cl
     /*
     std::fstream fs;
     fs.open("test.xml", std::ios_base::out | std::ios_base::app);
-    fs << pXML->GenerateXMLString(true);
+    char* temp = pXML->GenerateXMLString(true);
+    fs << temp;
+    ClientXML::DeleteString(temp);
     fs.close();
     */
 }
