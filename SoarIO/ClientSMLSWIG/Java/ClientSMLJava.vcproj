@@ -57,7 +57,6 @@ rmdir ..\..\..\soar-library\sml /S /Q
 				CommandLine="echo on
 cd build
 del *.java
-del *.class
 cd ..
 "
 				ExcludedFromBuild="TRUE"/>
@@ -119,7 +118,6 @@ rmdir ..\..\..\soar-library\sml /S /Q
 				CommandLine="echo on
 cd build
 del *.java
-del *.class
 cd ..
 "/>
 			<Tool
