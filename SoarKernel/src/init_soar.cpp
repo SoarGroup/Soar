@@ -1184,7 +1184,6 @@ void do_one_top_level_phase (agent* thisAgent)
 		  (unsigned long)(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM])) {
 			  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {			
 				  print (thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
-				  generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-elaborations; proceeding to decision phase.\"></warning>");
 
 				  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
 			      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-elaborations; proceeding to decision phase.");

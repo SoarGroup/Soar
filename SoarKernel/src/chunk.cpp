@@ -1122,9 +1122,8 @@ void chunk_instantiation (agent* thisAgent,
   if (! top_cc) {
 	  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
-		  generate_tagged_output(thisAgent, "<warning string=\" Warning: chunk has no grounds, ignoring it.\"></warning>");
-		  
-		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
 		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: chunk has no grounds, ignoring it.");
 		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 
@@ -1137,7 +1136,6 @@ void chunk_instantiation (agent* thisAgent,
       (unsigned long) thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) {
 		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
-		  generate_tagged_output(thisAgent, "<warning string=\" Warning: reached max-chunks! Halting system.\"></warning>");
 
 		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
 		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-chunks! Halting system.");

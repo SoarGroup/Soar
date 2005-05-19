@@ -462,28 +462,21 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
            print (thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant\n");
            print (thisAgent, "         If a disjunctive was intended, add a space after <<\n");
            print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
-		   generate_tagged_output(thisAgent, "<warning string=\" Warning: Possible disjunctive encountered in reading symbolic constant.");
-		   generate_tagged_output(thisAgent, "         If a disjunctive was intended, add a space after &lt;&lt;");
-  		   generate_tagged_output(thisAgent, "         If a constant was intended, surround constant with vertical bars.\"></warning>");
 
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: Possible disjunctive encountered in reading symbolic constant.\n         If a disjunctive was intended, add a space after &lt;&lt;\n         If a constant was intended, surround constant with vertical bars.");
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 		   
            print_location_of_most_recent_lexeme(thisAgent);
-  		   //generate_tagged_output(thisAgent, "></warning>");
 	 } else {
            print (thisAgent, "Warning: Possible variable encountered in reading symbolic constant\n");
            print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
-		   generate_tagged_output(thisAgent, "<warning string=\" Warning: Possible variable encountered in reading symbolic constant.");
-  		   generate_tagged_output(thisAgent, "         If a constant was intended, surround constant with vertical bars.\"></warning>");
 
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: Possible variable encountered in reading symbolic constant.\n         If a constant was intended, surround constant with vertical bars.");
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 		   
            print_location_of_most_recent_lexeme(thisAgent);
-  		   //generate_tagged_output(thisAgent, "></warning>");
          }
       } else {
         if (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') {
@@ -491,28 +484,23 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
            print (thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant\n");
            print (thisAgent, "         If a disjunctive was intended, add a space before >>\n");
            print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
-		   generate_tagged_output(thisAgent, "<warning string=\" Warning: Possible disjunctive encountered in reading symbolic constant.");
-		   generate_tagged_output(thisAgent, "         If a disjunctive was intended, add a space before &gt;&gt;");
-  		   generate_tagged_output(thisAgent, "         If a constant was intended, surround constant with vertical bars.\"></warning>");
 
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: Possible disjunctive encountered in reading symbolic constant.\n         If a disjunctive was intended, add a space before &gt;&gt;\n         If a constant was intended, surround constant with vertical bars.");
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 		   
            print_location_of_most_recent_lexeme(thisAgent);
-  		   //generate_tagged_output(thisAgent, "></warning>");
+
 	 } else {
            print (thisAgent, "Warning: Possible variable encountered in reading symbolic constant\n");
            print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
-		   generate_tagged_output(thisAgent, "<warning string=\" Warning: Possible variable encountered in reading symbolic constant.");
-  		   generate_tagged_output(thisAgent, "         If a constant was intended, surround constant with vertical bars.\"></warning>");
-
+		   
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: Possible variable encountered in reading symbolic constant.\n         If a constant was intended, surround constant with vertical bars.");
 		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
 
            print_location_of_most_recent_lexeme(thisAgent);
-  		   //generate_tagged_output(thisAgent, "></warning>");
+
 	   // TODO:  generate tagged output in print_location_of_most_recent_lexeme
          }
 	}

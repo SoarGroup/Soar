@@ -423,9 +423,6 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
              thisAgent->name_of_production_being_reordered);
       print (thisAgent, "      ignoring test(s) whose referent is unbound:\n");
       print_saved_test_list (thisAgent, tests_to_restore);
-	  generate_tagged_output(thisAgent, "<warning string=\" Warning: in production ");
-	  generate_tagged_output(thisAgent, thisAgent->name_of_production_being_reordered);
-	  generate_tagged_output(thisAgent, "      ignoring test(s) whose referent is unbound:\"></warning>");
       // TODO: XML tagged output -- how to create this string?
       // KJC TODO:  need a tagged output version of print_saved_test_list
 
@@ -441,6 +438,8 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+
+      free_growable_string(thisAgent, gs);
     }
     /* ought to deallocate the saved tests, but who cares */
   }
@@ -630,10 +629,6 @@ list *collect_root_variables (agent* thisAgent,
                thisAgent->name_of_production_being_reordered);
         print_with_symbols (thisAgent, "%y is not connected to any goal or impasse.\n",
                             (Symbol *)(c->first));
-		generate_tagged_output(thisAgent, "<warning string=\" Warning:  On the LHS of production ");
-		generate_tagged_output(thisAgent,  thisAgent->name_of_production_being_reordered);
-        tagged_output_with_symbols (thisAgent, " identifier %y is not connected to any goal or impasse.\"></warning>",
-                            (Symbol *)(c->first));
 
         // XML geneneration
         growable_string gs = make_blank_growable_string(thisAgent);
@@ -645,6 +640,7 @@ list *collect_root_variables (agent* thisAgent,
         gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
         gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
         gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+        free_growable_string(thisAgent, gs);
 
       }
     }
@@ -884,9 +880,6 @@ void reorder_simplified_conditions (agent* thisAgent,
              thisAgent->name_of_production_being_reordered);
       print (thisAgent, "     The LHS conditions are not all connected.\n");
       /* BUGBUG I'm not sure whether this can ever happen. */
-	  generate_tagged_output(thisAgent, "<warning string=\" Warning: in production ");
-	  generate_tagged_output(thisAgent, thisAgent->name_of_production_being_reordered);
-	  generate_tagged_output(thisAgent, "     The LHS conditions are not all connected.\"></warning>");
 
       // XML geneneration
       growable_string gs = make_blank_growable_string(thisAgent);
@@ -896,6 +889,7 @@ void reorder_simplified_conditions (agent* thisAgent,
       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+      free_growable_string(thisAgent, gs);
 
      }
     /* --- if more than one min-cost item, and cost>1, do lookahead --- */

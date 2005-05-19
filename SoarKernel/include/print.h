@@ -85,18 +85,14 @@ extern void stop_redirection_to_file (agent* thisAgent);
 
 extern void print_string (agent* thisAgent, char *s);
 extern void print_phase  (agent* thisAgent, char *s, bool end_phase);
-extern void generate_tagged_output (agent* thisAgent, char *s);
-extern void generate_tagged_wme_timetag (agent * thisAgent, wme * w);
 
 #ifdef USE_STDARGS
 extern void print (agent* thisAgent, char *format, ... );
 extern void print_with_symbols (agent* thisAgent, char *format, ...);
-extern void tagged_output_with_symbols (agent* thisAgent, char *format, ...);
 #else
 extern void print (); /* Can't have two functions with the same name
                          under C linkage */
 extern void print_with_symbols (agent* thisAgent);
-extern void tagged_output_with_symbols (agent* thisAgent);
 #endif
 extern void print_spaces (agent* thisAgent, int n);
 

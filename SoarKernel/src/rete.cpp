@@ -102,6 +102,7 @@
 #include "instantiations.h"
 #include "rhsfun.h"
 #include "lexer.h"
+#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
 #include <ctype.h>
 
 #include <string>
@@ -5759,16 +5760,36 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 								if ((thisAgent->o_support_calculation_type == 3) && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 									print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
 																												node->b.p.prod->name);
-									tagged_output_with_symbols(thisAgent, "<warning string=\"WARNING:  operator elaborations mixed with operator applications get o_support in prod %y\"></warning>",
-																												node->b.p.prod->name);
+									
+                                    // XML generation
+                                    growable_string gs = make_blank_growable_string(thisAgent);
+                                    add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
+                                    add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+
+                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
+                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+
+                                    free_growable_string(thisAgent, gs);
+
 									prod_type = PE_PRODS;
 									break;
 								}
 								else if ((thisAgent->o_support_calculation_type == 4)  && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 									print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
 																												node->b.p.prod->name);
-									tagged_output_with_symbols(thisAgent, "<warning string=\"WARNING:  operator elaborations mixed with operator applications get i_support in prod %y\"></warning>",
-																												node->b.p.prod->name);
+
+                                    // XML generation
+                                    growable_string gs = make_blank_growable_string(thisAgent);
+                                    add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
+                                    add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+
+                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
+                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+
+                                    free_growable_string(thisAgent, gs);
+
 									prod_type = IE_PRODS;
 									break;
 								}
