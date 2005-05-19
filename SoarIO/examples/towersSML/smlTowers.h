@@ -1,5 +1,5 @@
-#ifndef SGIO_TOWERS_HANOI
-#define SGIO_TOWERS_HANOI
+#ifndef SML_TOWERS_HANOI
+#define SML_TOWERS_HANOI
 
 #include "Towers.h"
 
@@ -8,4 +8,4 @@
 //by commenting this value in and out
 #define SML_EMBEDDED_MODE
 
-#endif //SGIO_TOWERS_HANOI
+#endif //SML_TOWERS_HANOI

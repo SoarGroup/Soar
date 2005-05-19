@@ -1,5 +1,5 @@
-#ifndef SGIO_HANOI_SOAR_AGENT
-#define SGIO_HANOI_SOAR_AGENT
+#ifndef SML_HANOI_SOAR_AGENT
+#define SML_HANOI_SOAR_AGENT
 
 #include "sml_Client.h"
 
@@ -11,8 +11,6 @@ using namespace sml ;
 */
 
 class HanoiWorld;
-//namespace sgio_towers
-//{
 
 class SoarAgent
 {
@@ -34,7 +32,4 @@ private:
 	HanoiWorld* pWorld;
 };
 
-
-//}// closes namespace
-
-#endif //SGIO_HANOI_SOAR_AGENT
+#endif //SML_HANOI_SOAR_AGENT
