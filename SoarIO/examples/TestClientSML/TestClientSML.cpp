@@ -382,7 +382,6 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	std::string trace ;	// We'll pass this into the handler and build up the output in it
 	std::string structured ;	// Structured trace goes here
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
-	int callbacks = pAgent->RegisterForPrintEvent(smlEVENT_STRUCTURED_OUTPUT, MyPrintEventHandler, &structured) ;
 	int callbackx = pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, MyXMLEventHandler, NULL) ;
 
 	int beforeCount = 0 ;
@@ -429,7 +428,6 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	s_ClientXMLStorage = NULL ;
 
 	pAgent->UnregisterForXMLEvent(callbackx) ;
-	pAgent->UnregisterForPrintEvent(callbacks) ;
 	pAgent->UnregisterForPrintEvent(callbackp) ;
 	pAgent->UnregisterForRunEvent(callback_before) ;
 	pAgent->UnregisterForRunEvent(callback_after) ;

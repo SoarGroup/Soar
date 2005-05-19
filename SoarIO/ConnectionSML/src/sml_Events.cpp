@@ -71,7 +71,6 @@ Events::Events()
 	RegisterEvent(smlEVENT_LOG_WARNING, "log-warning") ;
 	RegisterEvent(smlEVENT_LOG_INFO, "log-info") ;
 	RegisterEvent(smlEVENT_LOG_DEBUG, "log-debug") ;
-	RegisterEvent(smlEVENT_STRUCTURED_OUTPUT, "structured-output") ;
 	RegisterEvent(smlEVENT_PRINT, "print") ;
 
 	// Rhs user function fired

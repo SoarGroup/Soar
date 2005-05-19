@@ -85,7 +85,6 @@ enum egSKIAgentEvents
 
    /* NOT Deprecated.  gSKI not close to removing this yet.  */
    gSKI_K_EVENT_PRINT_CALLBACK,           /* Data: agent* & const char*     */   // DONE!
-   gSKI_K_EVENT_STRUCTURED_OUTPUT,        /* Data: agent* & const char*     */ 
 
    gSKI_K_EVENT_XML_OUTPUT,        /* Data: agent* & const char* & const char* & const char*    */ 
 

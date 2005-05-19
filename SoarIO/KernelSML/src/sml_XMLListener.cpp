@@ -63,6 +63,7 @@ void XMLListener::HandleEvent(egSKIXMLEventId eventId, gSKI::IAgent* agentPtr, c
 {
 	// We're assuming this is correct in the flush output function, so we should check it here
 	assert(agentPtr == m_pAgent);
+    unused(agentPtr); // quell warning on VS.NET for release builds
 
 	// The value can be NULL if this is a begin/end tag event.
 	assert(funcType) ;

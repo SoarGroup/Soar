@@ -661,7 +661,7 @@ int Agent::RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* 
 		return plus.getCallbackID() ;
 
 	// So far we only support the XML TRACE command and this is implemented
-	// by registering for the EVENT_STRUCTURED_OUTPUT print event, capturing
+	// by registering for the EVENT_XML_TRACE_OUTPUT xml event, capturing
 	// that output, parsing it and passing that parsed data back to the caller.
 	// We use this implementation because currently the kernel is generating
 	// raw XML strings.  Later we'll hopefully convert over to the kernel

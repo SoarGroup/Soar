@@ -95,7 +95,6 @@ namespace gSKI
       EventEnumMapping[gSKI_K_EVENT_PRODUCTION_RETRACTED][0] = gSKIEVENT_BEFORE_PRODUCTION_RETRACTED;
 
 	  PrintEventEnumMapping[gSKI_K_EVENT_PRINT_CALLBACK] = gSKIEVENT_PRINT;
-	  PrintEventEnumMapping[gSKI_K_EVENT_STRUCTURED_OUTPUT] = gSKIEVENT_STRUCTURED_OUTPUT;
 
 	  XMLEventEnumMapping[gSKI_K_EVENT_XML_OUTPUT] = gSKIEVENT_XML_TRACE_OUTPUT;
 
@@ -242,8 +241,6 @@ namespace gSKI
       {
       case gSKIEVENT_PRINT:
          return gSKI_K_EVENT_PRINT_CALLBACK;
-      case gSKIEVENT_STRUCTURED_OUTPUT:
-         return gSKI_K_EVENT_STRUCTURED_OUTPUT;
       default:
          // Error condition
          MegaAssert(false, "Could not map a print event id");

@@ -128,7 +128,6 @@
       gSKIEVENT_LOG_WARNING,
       gSKIEVENT_LOG_INFO,
       gSKIEVENT_LOG_DEBUG,
-	  gSKIEVENT_STRUCTURED_OUTPUT,
       gSKIEVENT_PRINT,
       gSKIEVENT_LAST_PRINT_EVENT = gSKIEVENT_PRINT,
     } egSKIPrintEventId;
@@ -162,7 +161,6 @@
 	 //  as a single SML event.
 	 // We decided to use the same event number for both sides since the event numbers need to match up
 	 //  anyway and these are strongly related events.
-	 // This event currently relies on gSKI_EVENT_STRUCTURED_OUTPUT.
  	 gSKIEVENT_XML_TRACE_OUTPUT = gSKIEVENT_LAST_RHS_EVENT + 1,   
 	 gSKIEVENT_LAST_XML_EVENT = gSKIEVENT_XML_TRACE_OUTPUT,
     } egSKIXMLEventId;
