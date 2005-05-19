@@ -570,67 +570,6 @@ bool Agent::UnregisterForPrintEvent(int callbackID)
 	return true ;
 }
 
-/** @brief This handler is called with structured output print data.  Used to implement XML events */
-static void XMLEventImplementationHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
-{
-	unused(id);
-	unused(pUserData) ;
-
-	// Some basic error checking
-	if (!pMessage || !pAgent)
-		return ;
-
-	// We only use this handler to convert from XML as a string to XML as an object
-	assert(id == smlEVENT_STRUCTURED_OUTPUT) ;
-
-	// We may have been passed a series of XML messages (objects), not one single object
-	size_t startPos = 0 ;
-	size_t endPos   = 0 ;
-	size_t length = strlen(pMessage) ;
-
-	// We get sent a series of discrete XML documents in pMessage.
-	// We'll collect those into a single, macro XML object and pass that to the client
-	// so that we get one update event with lots of data rather than many update events.
-	// It allows the client to be more efficient.
-	ElementXML* pTraceXML = new ElementXML() ;
-	pTraceXML->SetTagName(sml_Names::kTagTrace) ;
-
-	while (startPos < length)
-	{
-		ElementXML* pXML = ElementXML::ParseXMLFromStringSequence(pMessage, startPos, &endPos) ;
-
-		// If there was an error we're done
-		if (!pXML)
-			break ;
-
-		// Collect smaller pieces into one parent message.
-		pTraceXML->AddChild(pXML) ;
-		
-		// Start the next parse from the end of this parse.
-		startPos = endPos ;
-	}
-
-	// If we can't parse pMessage into anything valid, we're done.
-	if (pTraceXML->GetNumberChildren() == 0)
-	{
-		delete pTraceXML ;
-		return ;
-	}
-
-#ifdef _DEBUG
-	// It's helpful to see the XML
-	char* pStr = pTraceXML->GenerateXMLString(true) ;
-#endif
-
-	// Take message and call each handler in turn
-	// NOTE: pTraceXML is deleted by SendXMLEvent when it's done.
-	pAgent->SendXMLEvent(smlEVENT_XML_TRACE_OUTPUT, pTraceXML) ;
-
-#ifdef _DEBUG
-	ElementXML::DeleteString(pStr) ;
-#endif
-}
-
 /*************************************************************
 * @brief This function is called when an XML event needs to be
 *		 sent out.  It's route is a little unusual as it's called
@@ -735,11 +674,7 @@ int Agent::RegisterForXMLEvent(smlXMLEventId id, XMLEventHandler handler, void* 
 	// No need to do this multiple times.
 	if (m_XMLEventMap.getListSize(id) == 0)
 	{
-#ifdef USE_OLD_XML_TRACE
-		m_XMLCallback = RegisterForPrintEvent(smlEVENT_STRUCTURED_OUTPUT, &XMLEventImplementationHandler, NULL) ;
-#else
 		GetKernel()->RegisterForEventWithKernel(id, GetAgentName()) ;
-#endif
 	}
 
 	// Record the handler
@@ -770,11 +705,7 @@ bool Agent::UnregisterForXMLEvent(int callbackID)
 	// for the matching print event (that we use to implement XML)
 	if (m_XMLEventMap.getListSize(id) == 0)
 	{
-#ifdef USE_OLD_XML_TRACE
-		UnregisterForPrintEvent(m_XMLCallback) ;
-#else
 		GetKernel()->UnregisterForEventWithKernel(id, GetAgentName()) ;
-#endif
 	}
 
 	return true ;

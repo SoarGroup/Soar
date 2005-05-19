@@ -29,11 +29,6 @@ class AnalyzeXML ;
 class ElementXML ;
 class ClientXML ;
 
-// This is a temporary flag while we move from using strings in the kernel to using ElementXML objects
-// When this value is defined we'll use the old string form
-// Once everything is working we should remove this #define forever.
-//#define USE_OLD_XML_TRACE
-
 class RunEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
