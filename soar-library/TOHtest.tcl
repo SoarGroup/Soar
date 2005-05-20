@@ -4,6 +4,10 @@
 #  several kinds of callbacks, inreinitializing, agent destruction, and kernel
 #  destruction (and maybe some other things, too).
 #
+# There is a second example at the end which demonstrates using the SML stuff in
+#  a slave interpreter.  This short example also shows how to add a WME to the
+#  input-link.
+#
 # In order for this to work, the Tcl_sml_ClientInterface package must be located
 #  in auto_path (i.e. the directory which contains the Tcl_sml_ClientInterface must
 #  be lappend'ed to auto_path).  On Windows, assuming this file is located in
