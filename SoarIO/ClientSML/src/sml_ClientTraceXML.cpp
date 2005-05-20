@@ -62,6 +62,7 @@ char const* ClientTraceXML::GetWmeID() const				{ return GetAttribute(sml_Names:
 char const* ClientTraceXML::GetWmeAttribute() const			{ return GetAttribute(sml_Names::kWME_Attribute) ; }
 char const* ClientTraceXML::GetWmeValue() const				{ return GetAttribute(sml_Names::kWME_Value) ; }
 char const* ClientTraceXML::GetWmeTimeTag() const			{ return GetAttribute(sml_Names::kWME_TimeTag) ; }
+char const* ClientTraceXML::GetWmePreference() const		{ return GetAttribute(sml_Names::kWME_Preference) ; }
 
 // Preference tag
 bool ClientTraceXML::IsTagPreference() const				{ return IsTag(sml_Names::kTagPreference) ; }

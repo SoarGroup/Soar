@@ -649,6 +649,12 @@ void MyXMLEventHandlerTimer(smlXMLEventId id, void* pUserData, Agent* pAgent, Cl
     */
 }
 
+void MyPrintEventHandlerTimer(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMsg)
+{
+	// Don't do any work in the timer case -- but register the event handler so we generate
+	// the data and send it to us.
+}
+
 bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 {
 	// Create the appropriate type of connection
@@ -711,7 +717,9 @@ bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 		if (!ok)
 			return false ;
 
-		pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
+		pAgent->RegisterForPrintEvent(smlEVENT_PRINT, &MyPrintEventHandlerTimer, NULL) ;
+		//pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
+
 		pAgent->ExecuteCommandLine("watch 5") ;
 	}
 

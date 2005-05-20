@@ -345,7 +345,7 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 
 			// Find the WME which matches this tag.
 			// This may fail as we may have removed the parent of this WME already in the series of remove commands.
-			WMElement* pWME = m_OutputLink->FindTimeTag(timeTag) ;
+			WMElement* pWME = m_OutputLink->FindFromTimeTag(timeTag) ;
 
 			// Delete the WME
 			if (pWME && pWME->GetParent())

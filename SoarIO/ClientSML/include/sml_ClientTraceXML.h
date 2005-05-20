@@ -69,6 +69,7 @@ public:
 	char const* GetWmeAttribute() const ;
 	char const* GetWmeValue() const ;
 	char const* GetWmeTimeTag() const ;
+	char const* GetWmePreference() const ;
 
 	// Preference tag
 	bool IsTagPreference() const ;

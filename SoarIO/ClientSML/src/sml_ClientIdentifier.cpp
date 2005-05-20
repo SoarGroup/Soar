@@ -259,8 +259,13 @@ void Identifier::ClearChildrenModified()
 *
 * @param timeTag	The tag to look for (e.g. +12 for kernel side or -15 for client side)
 *************************************************************/
-WMElement* Identifier::FindTimeTag(long timeTag) const
+WMElement* Identifier::FindFromTimeTag(long timeTag) const
 {
+	// SLOWSLOW: We could use a hash table to speed this up and replace O(n) with O(1).
+	// Right now that will only impact performance when elements are removed from the output link,
+	// but if clients start to use this (or the output link is really large for an application)
+	// the saving could be significant.
+
 	if (this->GetTimeTag() == timeTag)
 		return (WMElement*)this ;
 
@@ -275,7 +280,7 @@ WMElement* Identifier::FindTimeTag(long timeTag) const
 		// If this is an identifer, we search deeper for the match
 		if (pWME->IsIdentifier())
 		{
-			WMElement* pResult = ((Identifier*)pWME)->FindTimeTag(timeTag) ;
+			WMElement* pResult = ((Identifier*)pWME)->FindFromTimeTag(timeTag) ;
 
 			if (pResult)
 				return pResult ;

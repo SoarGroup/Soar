@@ -156,7 +156,7 @@ public:
 	*
 	* @param timeTag	The tag to look for (e.g. +12 for kernel side or -15 for client side)
 	*************************************************************/
-	WMElement* FindTimeTag(long timeTag) const ;
+	WMElement* FindFromTimeTag(long timeTag) const ;
 
 	/*************************************************************
 	* @brief Returns the n-th WME that has the given attribute
