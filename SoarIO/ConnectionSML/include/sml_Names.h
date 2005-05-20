@@ -121,6 +121,8 @@ public:
 	// <preference> tag identifiers, also Watch level 5
 	static char const* const kTagPreference ;
 	static char const* const kPreference_Type ;
+	static char const* const kOSupported ;
+	static char const* const kReferent ;
 
 	// for warnings controlled by WARNINGS_SYSPARAM
 	static char const* const kTagWarning ;

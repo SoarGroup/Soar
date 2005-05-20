@@ -88,6 +88,8 @@ char const* const xmlTraceNames::kTagWMEAdd 	= "adding_wme" ;
 // <preference> tag identifiers, also Watch level 5
 char const* const xmlTraceNames::kTagPreference		= "preference" ;
 char const* const xmlTraceNames::kPreference_Type	= "pref_type" ;
+char const* const xmlTraceNames::kOSupported		= "o_supported" ;
+char const* const xmlTraceNames::kReferent			= "referent" ;
 
 char const* const xmlTraceNames::kTagWarning		= "warning" ;
 // Tag warning has attribute kTypeString

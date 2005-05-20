@@ -122,6 +122,8 @@ char const* const sml_Names::kTagWMEAdd 	= "adding_wme" ;
 // <preference> tag identifiers, also Watch level 5
 char const* const sml_Names::kTagPreference		= "preference" ;
 char const* const sml_Names::kPreference_Type	= "pref_type" ;
+char const* const sml_Names::kOSupported		= "o_supported" ;
+char const* const sml_Names::kReferent			= "referent" ;
 
 char const* const sml_Names::kTagWarning		= "warning" ;
 // Tag warning has attribute kTypeString

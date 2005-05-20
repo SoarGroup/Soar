@@ -1062,8 +1062,10 @@ char preference_type_indicator (agent* thisAgent, byte type) {
 }
 
 void print_preference (agent* thisAgent, preference *pref) {
+  char pref_type = preference_type_indicator (thisAgent, pref->type);
+
   print_with_symbols (thisAgent, "(%y ^%y %y ", pref->id, pref->attr, pref->value);
-  print (thisAgent, "%c", preference_type_indicator (thisAgent, pref->type));
+  print (thisAgent, "%c", pref_type);
   if (preference_is_binary(pref->type)) {
     print_with_symbols (thisAgent, " %y", pref->referent);
   }
@@ -1076,8 +1078,17 @@ void print_preference (agent* thisAgent, preference *pref) {
   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Id, symbol_to_string (thisAgent, pref->id, true, 0, 0));
   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Attribute, symbol_to_string (thisAgent, pref->attr, true, 0, 0));
   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kWME_Value, symbol_to_string (thisAgent, pref->value, true, 0, 0));
+
+  char buf[2];
+  buf[0] = pref_type;
+  buf[1] = 0;
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPreference_Type, (char*)buf);
+  
   if (preference_is_binary(pref->type)) {
-	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPreference_Type, symbol_to_string (thisAgent, pref->referent, true, 0, 0));
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kReferent, symbol_to_string (thisAgent, pref->referent, true, 0, 0));
+  }
+  if (pref->o_supported) {
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kOSupported, ":O");
   }
   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPreference);
 			
