@@ -149,6 +149,23 @@ public class MainWindow
   		return null ;
   	}
   	
+  	public void stopAllLogging() {
+  		for (int i = 0 ; i < m_PaneList.size() ; i++)
+  		{
+  			Pane pane = (Pane)m_PaneList.get(i) ;
+  			
+  			for (int j = 0 ; j < pane.getNumberViews() ; j++)
+  			{
+  				AbstractView view = pane.getView(j) ;
+  				if (view.isLogging())
+  				{
+  					view.displayText("Log file closed due to shutdown.");
+  				}
+  				view.stopLogging();
+   			}
+  		}
+  	}
+  	
   	public int getPaneIndex(Pane pane)
   	{
   		for (int i = 0 ; i < m_PaneList.size() ; i++)

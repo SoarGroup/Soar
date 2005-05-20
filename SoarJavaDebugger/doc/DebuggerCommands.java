@@ -30,8 +30,9 @@ public class DebuggerCommands
 	public final static String kClear = "clear" ;
 	public final static String kQuit  = "quit" ;
 	public final static String kExit  = "exit" ;
+	public final static String kLog   = "log";
 	
-	protected String[] kCommands = new String[] { kClear, kQuit, kExit } ;
+	protected String[] kCommands = new String[] { kClear, kQuit, kExit, kLog } ;
 	
 	public DebuggerCommands(MainFrame frame, Document doc)
 	{
@@ -73,6 +74,29 @@ public class DebuggerCommands
 		if (kQuit.equalsIgnoreCase(command) || kExit.equalsIgnoreCase(command))
 		{
 			m_Frame.close() ;
+		}
+		
+		if (kLog.equalsIgnoreCase(command))
+		{
+			if (view.isLogging())
+			{
+				view.displayText("Log file closed.");
+				view.stopLogging();
+			} else {		
+				try 
+				{
+					view.startLogging("log.txt");
+					
+				} 
+				catch (java.io.IOException e) 
+				{
+					view.displayText("Failed to open log.txt for writing.");
+					e.printStackTrace();
+					return null;
+				}
+				view.displayText("Log file opened.");
+			}
+			return null;
 		}
 		
 		return null ;

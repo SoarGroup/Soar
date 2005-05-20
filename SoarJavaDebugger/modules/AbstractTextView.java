@@ -11,6 +11,10 @@
 ********************************************************************************************/
 package modules;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+
 import general.ElementXML;
 
 import manager.Pane;
@@ -37,6 +41,8 @@ import doc.Document;
 public abstract class AbstractTextView extends AbstractComboView
 {
 	private Text m_Text ;
+	private boolean m_Logging;
+	private PrintWriter m_LogWriter;
 
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
@@ -45,6 +51,7 @@ public abstract class AbstractTextView extends AbstractComboView
 		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;
 		m_DecisionCallback = -1 ;
+		m_Logging = false;
 	}
 
 	/** The control we're using to display the output in this case **/
@@ -131,6 +138,30 @@ public abstract class AbstractTextView extends AbstractComboView
 		m_Text.setSelection(start, end) ;
 		
 		return true ;
+	}
+	
+	public void startLogging(String fileName) throws java.io.IOException
+	{
+		if (m_Logging) return;
+		
+		FileWriter fw = new FileWriter(fileName) ;
+		BufferedWriter bw = new BufferedWriter(fw) ;
+		
+		m_LogWriter	= new PrintWriter(bw);
+		m_Logging 	= true;
+	}
+	
+	public void stopLogging()
+	{
+		if (!m_Logging) return;
+		
+		m_LogWriter.close();
+		m_Logging = false;
+	}
+	
+	public boolean isLogging()
+	{
+		return m_Logging;
 	}
 	
 	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
@@ -258,5 +289,6 @@ public abstract class AbstractTextView extends AbstractComboView
 	protected void appendText(final String text)
 	{
 		m_Text.append(text) ;
+		if (m_LogWriter != null) m_LogWriter.print(text);
 	}
 }
