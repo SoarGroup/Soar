@@ -58,8 +58,8 @@ proc StructuredTraceCallback {id userData agent pXML} {
 	puts "structured data: [$pXML GenerateXMLString 1]"
 }
 
-#create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
-set kernel [Kernel_CreateKernelInCurrentThread SoarKernelSML]
+#create an embedded kernel running in a new thread (so we don't have to poll for messages)
+set kernel [Kernel_CreateKernelInNewThread SoarKernelSML]
 
 set agentCallbackId0 [$kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATED AgentCreatedCallback ""]
 set agentCallbackId1 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
@@ -125,3 +125,43 @@ set result [$kernel -delete]
 #don't leave bad pointers around
 unset agent
 unset kernel
+
+# Here's an example for those who want to execute commands in a slave interpreter.
+# This is important for some environments (i.e. Tcl Eaters created each agent in a separate slave interpreter)
+# This also demonstrates adding something to the input-link (which we don't do above)
+
+#create slave
+interp create red
+
+#load package in slave
+red eval lappend auto_path .
+red eval package require tcl_sml_clientinterface
+
+#create kernel and agent
+set kernel [red eval Kernel_CreateKernelInNewThread SoarKernelSML]
+set agent [red eval $kernel CreateAgent Soar1]
+
+#add wme to input-link
+set il [red eval $agent GetInputLink]
+set wme [red eval $agent CreateIdWME $il test]
+
+#commit the changes to working memory
+red eval $agent Commit
+
+#print the timetag
+#note that the timetag will be negative since it's a client-side timetag
+#client-side timetags don't match kernel-side timetags for performance reasons
+set timetag [red eval $wme GetTimeTag]
+puts "timetag = $timetag"
+
+#delete the kernel (automatically deletes the agent, too)
+red eval $kernel -acquire
+red eval $kernel -delete
+
+#delete the interp
+interp delete red
+
+#don't leave bad pointers around
+unset agent
+unset kernel
+
