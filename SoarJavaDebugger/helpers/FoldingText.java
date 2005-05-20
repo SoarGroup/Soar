@@ -427,9 +427,9 @@ public class FoldingText
 	}
 	
 	protected void paintIcons(PaintEvent e)
-	{
+	{	
 		GC gc = e.gc;
-		
+
 		int scrollPosition = m_Text.getVerticalBar().getSelection() ;
 		
 		Canvas canvas = m_IconBar ;

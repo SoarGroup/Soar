@@ -24,31 +24,11 @@ import modules.TreeTraceView.RunWrapper;
 import modules.TreeTraceView.TreeData;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ControlEditor;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Cursor;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.custom.*;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.*;
+import org.eclipse.swt.widgets.*;
 
 import sml.Agent;
 import sml.ClientTraceXML;
@@ -668,6 +648,8 @@ public class FoldingTextView extends AbstractComboView
 					
 					if (child.IsTagWme())
 					{
+						String pref = child.GetWmePreference() ;
+						
 						text.append(adding ? "=>WM: (" : "<=WM: (") ;
 						text.append(child.GetWmeTimeTag()) ;
 						text.append(": ") ;
@@ -676,6 +658,13 @@ public class FoldingTextView extends AbstractComboView
 						text.append(child.GetWmeAttribute()) ;
 						text.append(" ") ;
 						text.append(child.GetWmeValue()) ;
+						
+						if (pref != null)
+						{
+							text.append(" ") ;
+							text.append(pref) ;
+						}
+						
 						text.append(")") ;
 					}
 					
@@ -799,9 +788,10 @@ public class FoldingTextView extends AbstractComboView
 		
 		// We need to create a new copy of the XML we were passed because we're
 		// going to use an asynch call, which won't execute until after this function has
-		// completed and xml goes out of scope.
+		// completed and xml goes out of scope.  Why use the asynch method rather than syncExec()?
+		// For a watch 5 trace using asynch here lets things run up to 5 times faster(!)
 		ClientXML pKeep = new ClientXML(xml) ;
-        Display.getDefault().syncExec(new RunWrapper(this, agent, pKeep)) ;
+        Display.getDefault().asyncExec(new RunWrapper(this, agent, pKeep)) ;
 	}
 
 	/********************************************************************************************

@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry excluding="swt/" kind="src" path=""/>
 	<classpathentry sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
-	<classpathentry sourcepath="D:/eclipse/plugins/org.eclipse.platform.source.win32.win32.x86_3.0.0/src/org.eclipse.swt.win32_3.0.0/ws/win32/swtsrc.zip" kind="lib" path="swt.jar"/>
+	<classpathentry kind="lib" path="E:/SoarMich/soar-library/sml.jar"/>
+	<classpathentry kind="lib" path="E:/SoarMich/soar-library/swt.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
