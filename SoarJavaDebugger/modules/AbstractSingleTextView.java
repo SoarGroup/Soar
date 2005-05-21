@@ -48,6 +48,7 @@ public abstract class AbstractSingleTextView extends AbstractTextView
 		if (ok)
 		{
 			m_UpdateOnStop = ((PropertiesDialog.BooleanProperty)properties[0]).getValue() ;
+			m_ClearComboEachCommand = !m_UpdateOnStop ;
 			m_ClearEachCommand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;		
 			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[2]).getValue() ;
 	

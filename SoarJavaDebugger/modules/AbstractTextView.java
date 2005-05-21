@@ -216,9 +216,17 @@ public abstract class AbstractTextView extends AbstractComboView
 		// Update: It may be that the performance just looks horrible but isn't, because the
 		// display doesn't automatically scroll in the way that the basic control does.
 		// I don't know.  Need to investigate this whole area further.
-		Point mouse = new Point(e.x, e.y) ;
-		int offset = m_Text.getOffsetAtLocation(mouse) ;
-		m_Text.setSelection(offset) ;
+		try
+		{
+			Point mouse = new Point(e.x, e.y) ;
+			int offset = m_Text.getOffsetAtLocation(mouse) ;
+			m_Text.setSelection(offset) ;
+		}
+		// If mouse is out of the range we'll put the selection at the end
+		catch (IllegalArgumentException ex)
+		{
+			m_Text.setSelection(m_Text.getCharCount()) ;
+		}
 		
 		// Unfortunately, SWT doesn't support getting a character location from a position
 		// so I'm adding support for it here.  However, this support is pure Windows code.
@@ -292,6 +300,11 @@ public abstract class AbstractTextView extends AbstractComboView
 		return true ;
 	}
 
+	protected void scrollToBottom()
+	{
+		m_Text.setSelection(m_Text.getCharCount()) ;
+	}
+	
 	/********************************************************************************************
 	 * @param text
 	 * 
@@ -301,5 +314,10 @@ public abstract class AbstractTextView extends AbstractComboView
 	{
 		m_Text.append(text) ;
 		if (m_LogWriter != null) m_LogWriter.print(text);
+
+		// If we're clearing the window after each command we should
+		// leave it at the top.  Otherwise, scroll it.
+		if (!m_ClearEachCommand)
+			scrollToBottom() ;
 	}
 }
