@@ -648,8 +648,6 @@ public class FoldingTextView extends AbstractComboView
 					
 					if (child.IsTagWme())
 					{
-						String pref = child.GetWmePreference() ;
-						
 						text.append(adding ? "=>WM: (" : "<=WM: (") ;
 						text.append(child.GetWmeTimeTag()) ;
 						text.append(": ") ;
@@ -659,6 +657,7 @@ public class FoldingTextView extends AbstractComboView
 						text.append(" ") ;
 						text.append(child.GetWmeValue()) ;
 						
+						String pref = child.GetWmePreference() ;						
 						if (pref != null)
 						{
 							text.append(" ") ;
@@ -671,7 +670,6 @@ public class FoldingTextView extends AbstractComboView
 							text.append(" ") ;
 							text.append(support) ;
 						}
-
 						
 						text.append(")") ;
 					}
@@ -742,8 +740,35 @@ public class FoldingTextView extends AbstractComboView
 							
 							if (wme.IsTagWme())
 							{
-								text.append(wme.GetWmeTimeTag()) ;
-								text.append(" ") ;
+								// See if we have full information or just a time tag
+								String id = wme.GetWmeID() ;
+								if (id != null)
+								{
+									if (j > 0)
+										text.append(getLineSeparator()) ;
+									
+									text.append("(") ;
+									text.append(wme.GetWmeTimeTag()) ;
+									text.append(": ") ;
+									text.append(id) ;
+									text.append(" ^") ;
+									text.append(wme.GetWmeAttribute()) ;
+									text.append(" ") ;
+									text.append(wme.GetWmeValue()) ;
+									
+									String pref = wme.GetWmePreference() ;						
+									if (pref != null)
+									{
+										text.append(" ") ;
+										text.append(pref) ;
+									}
+									text.append(")") ;
+								}
+								else
+								{
+									text.append(wme.GetWmeTimeTag()) ;
+									text.append(" ") ;
+								}
 							}
 							
 							wme.delete() ;
