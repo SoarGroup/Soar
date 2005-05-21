@@ -40,7 +40,10 @@ import doc.Document;
  ************************************************************************/
 public abstract class AbstractTextView extends AbstractComboView
 {
-	private Text m_Text ;
+	// We have to use a StyledText control so that we can have right clicks set the selection before bringing up the menu
+	// This isn't supported in a platform independent way by the vanilla Text control.  But be aware the StyledText control
+	// is about 10 times slower to update than a simple Text view, so we're not using it for trace output.
+	private StyledText m_Text ;
 	private boolean m_Logging;
 	private PrintWriter m_LogWriter;
 
@@ -166,10 +169,12 @@ public abstract class AbstractTextView extends AbstractComboView
 	
 	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
 	{
-		if (m_Text.getCaretPosition() == -1)
+//		int pos = m_Text.getCaretPosition() ;
+		int pos = m_Text.getCaretOffset() ;
+		if (pos == -1)
 			return null ;
 		
-		ParseSelectedText selection = new ParseSelectedText(m_Text.getText(), m_Text.getCaretPosition()) ;
+		ParseSelectedText selection = new ParseSelectedText(m_Text.getText(), pos) ;
 		
 		return selection.getParsedObject() ;
 	}
@@ -181,7 +186,8 @@ public abstract class AbstractTextView extends AbstractComboView
 	********************************************************************************************/
 	protected void createDisplayControl(Composite parent)
 	{
-		m_Text = new Text(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY) ;
+		m_Text = new StyledText(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY) ;
+//		m_Text = new Text(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP | SWT.READ_ONLY) ;
 		
 		// We want a right click to set the selection instantly, so you can right click on an ID
 		// rather than left-clicking on the ID and then right click to bring up menu.
@@ -210,11 +216,15 @@ public abstract class AbstractTextView extends AbstractComboView
 		// Update: It may be that the performance just looks horrible but isn't, because the
 		// display doesn't automatically scroll in the way that the basic control does.
 		// I don't know.  Need to investigate this whole area further.
+		Point mouse = new Point(e.x, e.y) ;
+		int offset = m_Text.getOffsetAtLocation(mouse) ;
+		m_Text.setSelection(offset) ;
 		
 		// Unfortunately, SWT doesn't support getting a character location from a position
 		// so I'm adding support for it here.  However, this support is pure Windows code.
 		// We'll need to figure out how to have code like this and still compile the debugger
 		// on Linux (even if this option won't work on Linux).
+		/*
 		if (true)	// Comment out this section on Linux or set this to false (if that allows it to compile)
 		{	
 			// Send an EM_CHARFROMPOS message to the underlying edit control
@@ -232,6 +242,7 @@ public abstract class AbstractTextView extends AbstractComboView
 			m_Text.setSelection(charPos) ;
 			//System.out.println("Char " + charPos + " Line " + linePos) 
 		}
+		*/
 	}
 
 	/********************************************************************************************

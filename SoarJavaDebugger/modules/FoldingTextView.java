@@ -717,7 +717,7 @@ public class FoldingTextView extends AbstractComboView
 				boolean firing = xmlTrace.IsTagFiringProduction() ;
 
 				// Firing/Retracting <production>
-				// <tag1> <tag2>...
+				// followed by timetag or full wme information for LHS
 				for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
 				{
 					ClientTraceXML child = new ClientTraceXML() ;
@@ -793,7 +793,7 @@ public class FoldingTextView extends AbstractComboView
 		}
 		
 		// Technically this will happen when the object is garbage collected (and finalized)
-		// but without it we'll get a million memory leak messages because (a) gc may not have been run for a while
+		// but without it we'll get a million memory leak messages on shutdown because (a) gc may not have been run for a while
 		// (b) even if it runs not all objects will be reclaimed and (c) finalize isn't guaranteed before we exit
 		// so all in all, let's just call it ourselves here :)
 		xmlParent.delete() ;
