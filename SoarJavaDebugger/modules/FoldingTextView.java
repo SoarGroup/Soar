@@ -665,6 +665,14 @@ public class FoldingTextView extends AbstractComboView
 							text.append(pref) ;
 						}
 						
+						String support = child.GetPreferenceOSupported() ;
+						if (support != null)
+						{
+							text.append(" ") ;
+							text.append(support) ;
+						}
+
+						
 						text.append(")") ;
 					}
 					
@@ -682,7 +690,25 @@ public class FoldingTextView extends AbstractComboView
 				text.append(xmlTrace.GetPreferenceAttribute()) ;
 				text.append(" ") ;
 				text.append(xmlTrace.GetPreferenceValue()) ;
-				text.append(" + )") ;	// BUGBUG: + hard-coded for now -- PreferenceType present but empty
+				text.append(" ") ;
+				text.append(xmlTrace.GetPreferenceType()) ;
+				
+				// For binary prefs we get a second object
+				String referent = xmlTrace.GetPreferenceReferent() ;
+				if (referent != null)
+				{
+					text.append(" ") ;
+					text.append(referent) ;
+				}
+				
+				String support = xmlTrace.GetPreferenceOSupported() ;
+				if (support != null)
+				{
+					text.append(" ") ;
+					text.append(support) ;
+				}
+				
+				text.append(")") ;
 
 				if (text.length() != 0)
 					this.appendSubText(text.toString(), false) ;
@@ -692,6 +718,8 @@ public class FoldingTextView extends AbstractComboView
 			{
 				boolean firing = xmlTrace.IsTagFiringProduction() ;
 
+				// Firing/Retracting <production>
+				// <tag1> <tag2>...
 				for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
 				{
 					ClientTraceXML child = new ClientTraceXML() ;
@@ -703,6 +731,23 @@ public class FoldingTextView extends AbstractComboView
 						
 						text.append(firing ? "Firing " : "Retracting ") ;
 						text.append(child.GetProductionName()) ;
+						
+						for (int j = 0 ; j < child.GetNumberChildren() ; j++)
+						{
+							if (j == 0)
+								text.append(getLineSeparator()) ;
+							
+							ClientTraceXML wme = new ClientTraceXML() ;
+							child.GetChild(wme, j) ;
+							
+							if (wme.IsTagWme())
+							{
+								text.append(wme.GetWmeTimeTag()) ;
+								text.append(" ") ;
+							}
+							
+							wme.delete() ;
+						}
 					}
 					child.delete() ;
 				}

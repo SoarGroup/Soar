@@ -108,7 +108,6 @@ public class Document
 		Module combo4 = new Module("Button Bar", "A collection of user-customizable buttons", modules.ButtonView.class) ;
 		Module edit = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
 		Module fold = new Module("Folding Trace Window", "Output from commands and trace output from runs is shown in a folding text window.", FoldingTextView.class) ;
-		Module structuredText = new Module("Structured Text Window", "This is a TEST view.  It displays strucuted output as strings in a text window -- for speed comparisons.", StructuredTextView.class) ;
 
 		m_ModuleList.add(combo1) ;
 		m_ModuleList.add(tree) ;
@@ -117,7 +116,6 @@ public class Document
 		m_ModuleList.add(combo4) ;
 		m_ModuleList.add(edit) ;
 		m_ModuleList.add(fold) ;
-		m_ModuleList.add(structuredText) ;
 	}
 		
 	/** Gives us a frame to work with */
