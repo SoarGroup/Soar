@@ -71,3 +71,6 @@ char const* ClientTraceXML::GetPreferenceAttribute() const	{ return GetAttribute
 char const* ClientTraceXML::GetPreferenceValue() const		{ return GetAttribute(sml_Names::kWME_Value) ; }
 char const* ClientTraceXML::GetPreferenceTimeTag() const	{ return GetAttribute(sml_Names::kWME_TimeTag) ; }
 char const* ClientTraceXML::GetPreferenceType() const		{ return GetAttribute(sml_Names::kPreference_Type) ; }
+char const* ClientTraceXML::GetPreferenceOSupported() const	{ return GetAttribute(sml_Names::kOSupported) ; }
+// For binary prefs the other object
+char const* ClientTraceXML::GetPreferenceReferent() const	{ return GetAttribute(sml_Names::kReferent) ; }

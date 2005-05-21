@@ -78,6 +78,8 @@ public:
 	char const* GetPreferenceValue() const ;
 	char const* GetPreferenceType() const ;
 	char const* GetPreferenceTimeTag() const ;
+	char const* GetPreferenceOSupported() const	;
+	char const* GetPreferenceReferent() const ;
 
 } ;
 
