@@ -251,10 +251,9 @@ public class FoldingTextView extends AbstractComboView
 			if (lineText != null)
 				combinedText = combinedText + lineText ;
 		}
-		
-		System.out.println(combinedText) ;
+
+		// Go from the text to a Soar selection object (e.g. an id or an attribute -- that sort of thing)
 		ParseSelectedText selection = new ParseSelectedText(combinedText, combinedPos) ;
-//		ParseSelectedText selection = new ParseSelectedText(text, pos) ;
 		
 		return selection.getParsedObject() ;
 		
