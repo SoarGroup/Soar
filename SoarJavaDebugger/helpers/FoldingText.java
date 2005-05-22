@@ -38,6 +38,7 @@ public class FoldingText
 	protected Composite m_Container ;
 	protected FoldingTextDoc m_FoldingDoc = new FoldingTextDoc(this) ;
 	protected int		m_LastTopIndex ;
+	protected boolean	m_DrawingDisabled = false ;
 
 	public static class FoldingTextDoc
 	{
@@ -401,6 +402,7 @@ public class FoldingText
 		m_Container = new Composite(parent, 0) ;
 		m_IconBar	= new Canvas(m_Container, 0) ;
 		m_Text      = new Text(m_Container, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY) ;
+		m_DrawingDisabled = false ;
 		
 		GridLayout layout = new GridLayout() ;
 		layout.numColumns = 2 ;
@@ -461,6 +463,65 @@ public class FoldingText
 	public String toString()
 	{
 		return m_FoldingDoc.toString() ;
+	}
+	
+	public void expandAll(boolean state)
+	{
+		// Stop redrawing while we expand/collapse everything then turn it back on
+		setRedraw(false) ;
+
+		// Show a wait cursor -- this can take a while
+		Cursor wait = new Cursor(getWindow().getDisplay(), SWT.CURSOR_WAIT) ;
+		getWindow().getShell().setCursor(wait) ;
+
+		// Go through expanding/contracting all of the blocks
+		for (int i = 0 ; i < m_FoldingDoc.getNumberBlocks() ; i++)
+		{
+			Block block = m_FoldingDoc.getBlock(i) ;
+			m_FoldingDoc.expandBlock(block, state) ;
+		}
+		
+		setRedraw(true) ;
+		
+		// Set the cursor back to normal
+		getWindow().getShell().setCursor(null) ;
+		wait.dispose() ;
+	}
+	
+	/** Expand/contract all blocks currently on screen */
+	public void expandPage(boolean state)
+	{
+		// Stop redrawing while we expand/collapse everything then turn it back on
+		setRedraw(false) ;
+		
+		// Get all the information about which part of the text window is visible
+		int topLine = m_Text.getTopIndex() ;
+		int lineHeight = m_Text.getLineHeight() ;
+		int visibleLines = m_Text.getClientArea().height / lineHeight ;
+		int lastLine = Math.min(m_Text.getLineCount(),m_Text.getTopIndex() + visibleLines) ;
+		
+		// Start with the first block that starts at topLine or includes topLine.
+		Block topBlock = m_FoldingDoc.getBlockByLineNumber(topLine) ;
+		Block bottomBlock = m_FoldingDoc.getBlockByLineNumber(lastLine) ;
+		
+		if (topBlock == null)
+			return ;
+
+		// If the lastLine is after the bottom block, use the last block in the document
+		if (bottomBlock == null)
+			bottomBlock = m_FoldingDoc.getBlock(m_FoldingDoc.getNumberBlocks()-1) ;
+		
+		int topIndex = topBlock.getIndex() ;
+		int bottomIndex = bottomBlock.getIndex() ;
+		
+		for (int i = topIndex ; i <= bottomIndex ; i++)
+		{
+			Block block = m_FoldingDoc.getBlock(i) ;
+			m_FoldingDoc.expandBlock(block, state) ;			
+		}
+
+		// Redraw everything
+		setRedraw(true) ;		
 	}
 	
 	// Returns the line we clicked on based on mouse coordinates
@@ -580,7 +641,7 @@ public class FoldingText
 		return selectionPoint ;		
 	}
 	
-	public void appendText(String text, boolean redraw)
+	public void appendText(String text)
 	{
 		Block last = m_FoldingDoc.m_LastBlock ;
 		
@@ -602,7 +663,18 @@ public class FoldingText
 		}
 	}
 	
-	public void appendSubText(String text, boolean redraw)
+	/********************************************************************************************
+	 * 
+	 * Adds text to the view one level deep in the tree (so normally it is hidden until the user
+	 * expands the block).
+	 * 
+	 * If autoexpand is true any newly created blocks are expanded immediately so the user doesn't
+	 * need to expand the block manually.
+	 * 
+	 * @param text
+	 * @param autoExpand
+	********************************************************************************************/
+	public void appendSubText(String text, boolean autoExpand)
 	{
 		Block last = m_FoldingDoc.m_LastBlock ;
 		
@@ -613,6 +685,7 @@ public class FoldingText
 			// to get us going.
 			last = new Block(true) ;
 			last.appendLine("") ;
+			last.setExpand(autoExpand) ;
 			m_FoldingDoc.addBlock(last) ;			
 			m_Text.append("") ;
 			m_IconBar.redraw() ;
@@ -631,6 +704,7 @@ public class FoldingText
 				// to a block which does expand.  This way we also preserve the "all blocks contain
 				// at least one line" rule which makes the code simpler.
 				last.setCanExpand(true) ;
+				last.setExpand(autoExpand) ;
 			}
 			else if (size > 1)
 			{
@@ -642,6 +716,7 @@ public class FoldingText
 				
 				last = new Block(true) ;
 				last.appendLine(lastLine) ;
+				last.setExpand(autoExpand) ;
 				m_FoldingDoc.addBlock(last) ;
 			} else if (size == 0)
 			{
@@ -660,7 +735,7 @@ public class FoldingText
 			m_Text.append(text) ;
 
 			// Decide if we have caused the window to scroll or not
-			if (m_LastTopIndex != m_Text.getTopIndex())
+			if (!autoExpand && (m_LastTopIndex != m_Text.getTopIndex()))
 			{
 				scrolled() ;
 				m_LastTopIndex = m_Text.getTopIndex() ;
@@ -670,6 +745,18 @@ public class FoldingText
 	
 	public Composite getWindow() 	 { return m_Container ; }
 	public Text      getTextWindow() { return m_Text ; }
+
+	/** Turns drawing on or off.  When turned back on we refresh everything */
+	public void setRedraw(boolean state)
+	{
+		// If we're already in the desired state do nothing
+		if (m_DrawingDisabled == !state)
+			return ;
+		
+		m_DrawingDisabled = !state ;
+		m_Text.setRedraw(state) ;
+		m_IconBar.redraw() ;
+	}
 	
 	protected void iconBarMouseClick(MouseEvent e)
 	{
@@ -699,12 +786,13 @@ public class FoldingText
 	
 	protected void paintIcons(PaintEvent e)
 	{	
-		GC gc = e.gc;
-
-		int scrollPosition = m_Text.getVerticalBar().getSelection() ;
+		// Check if we've turned off redraws
+		if (m_DrawingDisabled)
+			return ;
 		
-		Canvas canvas = m_IconBar ;
-		Rectangle client = canvas.getClientArea ();
+		GC gc = e.gc;
+		
+		Rectangle client = m_IconBar.getClientArea ();
 
 		// Make sure the text control is properly initialized
 		if (m_Text.getLineHeight() == 0)
@@ -730,8 +818,8 @@ public class FoldingText
 		int offset1 = (client.width - outerSize) / 2 ;
 		int offset2 = (client.width - innerSize) / 2 ;
 		
-		Color gray  = canvas.getDisplay().getSystemColor(SWT.COLOR_GRAY) ;
-		Color black = canvas.getDisplay().getSystemColor(SWT.COLOR_BLACK) ;
+		Color gray  = m_IconBar.getDisplay().getSystemColor(SWT.COLOR_GRAY) ;
+		Color black = m_IconBar.getDisplay().getSystemColor(SWT.COLOR_BLACK) ;
 
 		// Go through each block in turn until we're off the bottom of the screen
 		// or at the end of the list of blocks drawing icons

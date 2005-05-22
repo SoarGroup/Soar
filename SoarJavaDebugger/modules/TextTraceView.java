@@ -319,7 +319,7 @@ public class TextTraceView extends AbstractComboView
 	* "trace1", "trace2" etc.
 	* 
 	********************************************************************************************/
-	public String getModuleBaseName() { return "trace" ; }
+	public String getModuleBaseName() { return "texttrace" ; }
 	
 	public void showProperties()
 	{

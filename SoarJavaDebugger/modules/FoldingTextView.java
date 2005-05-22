@@ -58,14 +58,17 @@ public class FoldingTextView extends AbstractComboView
 	protected int m_IndentSize = 3 ;
 	
 	/** When true, expand the tree automatically as it's created */
-	protected boolean m_AutoExpand = false ;
+	protected boolean m_ExpandTracePersistent = false ;
+	
+	/** When true, we expand the tree as it's created -- but this one is not persistent between debugger sessions */
+	protected boolean m_ExpandTrace = false ;
 	
 	/** The last root (top level item) added to the tree.  We add new sub items under this */
 	protected TreeItem m_LastRoot ;
 	
 	protected Composite	m_Buttons ;
 
-	protected Button m_ExpandPageButton ;
+	protected Button m_ExpandButton ;
 	protected Button m_ExpandPageArrow ;
 	protected Menu   m_ExpandPageMenu ;
 	
@@ -113,13 +116,10 @@ public class FoldingTextView extends AbstractComboView
 
 	public Color getBackgroundColor() { return m_Frame.m_White ; }
 	
-	protected class ExpandListener implements Listener
+	protected void updateButtonState()
 	{
-		public void handleEvent (final Event event) {
-			TreeItem root = (TreeItem) event.item;
-			
-			expandRoot(root, true) ;
-		}
+		m_ExpandButton.setText(m_ExpandTrace ? "Collapse" : " Expand ") ;
+		m_ExpandButton.setData("expand", m_ExpandTrace ? Boolean.TRUE : Boolean.FALSE) ;		
 	}
 	
 	/********************************************************************************************
@@ -133,24 +133,24 @@ public class FoldingTextView extends AbstractComboView
 		m_LastRoot = null ;
 		
 		createContextMenu(m_FoldingText.getTextWindow()) ;
-
-		// When the user expands a node in the tree we may unpack some cached data
-//		m_Tree.addListener (SWT.Expand, new ExpandListener()) ;
-
-//		m_Tree.addMouseListener(new MouseAdapter() { public void mouseDown(MouseEvent e) { if (e.button == 1) leftMouseDown(e.x, e.y) ; } } ) ;
 		
 		m_Buttons = new Composite(m_ComboContainer, 0) ;
 		m_Buttons.setLayout(new RowLayout()) ;
 		Composite owner = m_Buttons ;
 		
 		// Add a button that offers an expand/collapse option instantly (for just one page)
-		m_ExpandPageButton = new Button(owner, SWT.PUSH);
-		m_ExpandPageButton.setText("Expand page") ;
-		m_ExpandPageButton.setData("expanded", m_AutoExpand ? Boolean.TRUE : Boolean.FALSE) ;	// When this flag is false pressing the button expands
-
-		m_ExpandPageButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
-		{ boolean expand = (e.widget.getData("expanded") == Boolean.FALSE) ;
-		  expandPage(expand) ; } } ) ;
+		m_ExpandTrace = m_ExpandTracePersistent ;		
+		m_ExpandButton = new Button(owner, SWT.PUSH);
+		updateButtonState() ;
+		
+		m_ExpandButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
+		{
+			m_ExpandTrace = (e.widget.getData("expand") == Boolean.FALSE) ;
+			updateButtonState() ;
+			
+			// Expand/contract the current page and then keep doing it until the user switches
+			expandPage(m_ExpandTrace) ;
+		} } ) ;
 		
 		m_ExpandPageArrow = new Button(owner, SWT.ARROW | SWT.DOWN) ;
 		m_ExpandPageMenu  = new Menu(owner) ;
@@ -165,9 +165,11 @@ public class FoldingTextView extends AbstractComboView
 		menuItem.setText ("Expand page");
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandPage(true) ; } } ) ;
 
-//		menuItem = new MenuItem (m_ExpandPageMenu, SWT.PUSH);
-//		menuItem.setText ("Collapse page");		
-//		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandPage(false) ; } } ) ;
+		// Note: Doing expand page then collapse page doesn't get you back to where you started--the page will be showing far fewer
+		// blocks when you hit "collapse page" so it does less work.  Collapse page may have little value.
+		menuItem = new MenuItem (m_ExpandPageMenu, SWT.PUSH);
+		menuItem.setText ("Collapse page");		
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandPage(false) ; } } ) ;
 
 		menuItem = new MenuItem (m_ExpandPageMenu, SWT.PUSH);
 		menuItem.setText ("Expand all");		
@@ -344,137 +346,12 @@ public class FoldingTextView extends AbstractComboView
 	
 	protected void expandPage(boolean state)
 	{
-		/*
-		if (m_Tree.getItemCount() == 0)
-			return ;
-		
-		// Stop redrawing while we expand/collapse everything then turn it back on
-		m_Tree.setRedraw(false) ;
-		
-		TreeItem[] roots = m_Tree.getItems() ;
-		
-		// Find the root item on this page
-		TreeItem top = m_Tree.getTopItem() ;
-		while (top.getParentItem() != null)
-			top = top.getParentItem() ;
-
-		int start = -1 ;
-		for (int i = 0 ; i < roots.length ; i++)
-		{
-			if (top == roots[i])
-			{
-				start = i ;
-				break ;
-			}
-		}
-		
-		if (start == -1)
-			throw new IllegalStateException("Error finding top of the tree") ;
-		
-		int pageSize = 50 ;
-		// For now we'll approximate a page as <n> nodes in the tree.
-		// The key is that it should be enough to fill a page but not so much
-		// as to take forever to do.  I don't see a method to determine which item
-		// is at the bottom of the page which would make this precise.
-		int end = start + pageSize ;
-		if (end > roots.length) end = roots.length ;
-		
-		for (int i = start ; i < end ; i++)
-		{	
-			// In SWT the programmatic call to expand an item does not
-			// generate an expand event, so we have to explicitly handle the expansion
-			// (i.e. unpack our cached text)
-			if (state)
-				expandRoot(roots[i], false) ;
-
-			roots[i].setExpanded(state) ;
-		}
-		
-		// Scroll to have the top (now expanded) visible
-		m_Tree.showItem(top) ;
-		
-		m_Tree.setRedraw(true) ;	
-		*/	
+		m_FoldingText.expandPage(state) ;
 	}
 	
 	protected void expandAll(boolean state)
 	{
-		/*
-		// Stop redrawing while we expand/collapse everything then turn it back on
-		m_Tree.setRedraw(false) ;
-		
-		TreeItem[] roots = m_Tree.getItems() ;
-		for (int i = 0 ; i < roots.length ; i++)
-		{	
-			// In SWT the programmatic call to expand an item does not
-			// generate an expand event, so we have to explicitly handle the expansion
-			// (i.e. unpack our cached text)
-			if (state)
-				expandRoot(roots[i], false) ;
-
-			roots[i].setExpanded(state) ;
-		}
-		
-		m_Tree.setRedraw(true) ;
-		*/
-	}
-	
-	protected void expandRoot(TreeItem root, boolean redraw)
-	{
-		/*
-		// We will have exactly one dummy child item
-		// if there's cached data here.  This allows us to quickly
-		// screen out most "already been expanded before" cases.
-		if (root.getItemCount() != 1)
-			return ;
-		
-		TreeItem[] items = root.getItems() ;
-		
-		TreeData treeData = (TreeData)items[0].getData(kLazyKey) ;
-		
-		// If there's no cached data here then once again we are done
-		// (either we're not using a cache or its already been expanded)
-		if (treeData == null)
-			return ;
-		
-		// Stop updating while we add
-		// (We may want a smarter way to do this if we're expanding the entire tree
-		//  so the redraw is turned off for the entire expansion).
-		if (redraw)
-			root.getParent().setRedraw(false) ;
-		
-		// Get rid of the dummy item
-		items[0].dispose() ;
-		
-		TreeItem prev = null ;
-		
-		for (Iterator iter = treeData.getLinesIterator() ; iter.hasNext() ;)
-		{
-			String text = (String)iter.next() ;
-
-			String[] lines = text.split(getLineSeparator()) ;
-			
-			for (int i = 0 ; i < lines.length ; i++)
-			{	
-				if (lines[i].length() == 0)
-					continue ;
-				
-				TreeItem node = new TreeItem (root, 0);
-				node.setText (lines[i]);
-				
-				// Link the nodes together to make navigating from one node to the next
-				// more efficient later
-				if (prev != null)
-					prev.setData(kNextKey, node) ;
-				node.setData(kPrevKey, prev) ;
-				prev = node ;
-			}				
-		}
-					
-		// Start updating again.
-		if (redraw)
-			root.getParent().setRedraw(true) ;
-			*/
+		m_FoldingText.expandAll(state) ;
 	}
 	
 	protected void layoutComboBar(boolean top)
@@ -502,7 +379,7 @@ public class FoldingTextView extends AbstractComboView
 	********************************************************************************************/
 	public String getModuleBaseName()
 	{
-		return "treetrace" ;
+		return "trace" ;
 	}
 
 	/** The control we're using to display the output in this case **/
@@ -546,18 +423,7 @@ public class FoldingTextView extends AbstractComboView
             }
          }) ;
 	}
-	
-	protected void addTestText()
-	{
-		for (int groups = 0 ; groups < 3 ; groups++)
-		{
-			for (int i = 0 ; i < 10 ; i++)
-				appendText("Line " + i) ;
-			for (int i = 0 ; i < 10 ; i++)
-				appendSubText("Sub " + i, true) ;
-		}
-	}
-	
+		
 	/************************************************************************
 	* 
 	* Add the text to the view (this method assumes always called from UI thread)
@@ -572,7 +438,7 @@ public class FoldingTextView extends AbstractComboView
 			if (lines[i].length() == 0)
 				continue ;
 
-			m_FoldingText.appendSubText(lines[i] + kLineSeparator, redrawTree) ;
+			m_FoldingText.appendSubText(lines[i] + kLineSeparator, m_ExpandTracePersistent || m_ExpandTrace) ;
 		}
 	}
 	
@@ -583,7 +449,6 @@ public class FoldingTextView extends AbstractComboView
 	*************************************************************************/
 	protected void appendText(String text)
 	{
-		boolean redraw = true ;
 		String[] lines = text.split(kLineSeparator) ;
 
 		for (int i = 0 ; i < lines.length ; i++)
@@ -591,7 +456,7 @@ public class FoldingTextView extends AbstractComboView
 			if (lines[i].length() == 0)
 				continue ;
 			
-			m_FoldingText.appendText(lines[i] + kLineSeparator, true) ;
+			m_FoldingText.appendText(lines[i] + kLineSeparator) ;
 		}
 	}
 
@@ -911,7 +776,8 @@ public class FoldingTextView extends AbstractComboView
 			}
 			else
 			{
-				// These lines can be helpful if debugging this
+				// These lines can be helpful if debugging this -- we
+				// print out any XML we completely fail to understand.
 				String xmlText = xmlParent.GenerateXMLString(true) ;
 				System.out.println(xmlText) ;
 			}
@@ -1042,14 +908,18 @@ public class FoldingTextView extends AbstractComboView
 
 		// Providing a range for indent so we can be sure we don't get back a negative value
 		properties[0] = new PropertiesDialog.IntProperty("Indent per subgoal", m_IndentSize, 0, 10) ;
-		properties[1] = new PropertiesDialog.BooleanProperty("Expand trace as it is created", m_AutoExpand) ;
+		properties[1] = new PropertiesDialog.BooleanProperty("Expand trace as it is created", m_ExpandTracePersistent) ;
 
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 
 		if (ok)
 		{
 			m_IndentSize = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
-			m_AutoExpand = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;
+			m_ExpandTracePersistent = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;
+			
+			// Make the button match the persistent property
+			m_ExpandTrace = m_ExpandTracePersistent ;
+			updateButtonState() ;
 		}		
 	}
 	
@@ -1065,7 +935,7 @@ public class FoldingTextView extends AbstractComboView
 	{
 		ElementXML element = super.convertToXML(tagName, storeContent) ;
 		element.addAttribute("indent", Integer.toString(m_IndentSize)) ;
-		element.addAttribute("auto-expand", Boolean.toString(m_AutoExpand)) ;
+		element.addAttribute("auto-expand", Boolean.toString(m_ExpandTracePersistent)) ;
 		return element ;
 	}
 
@@ -1082,7 +952,7 @@ public class FoldingTextView extends AbstractComboView
 	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.ElementXML element) throws Exception
 	{
 		m_IndentSize = element.getAttributeIntThrows("indent") ;
-		m_AutoExpand = element.getAttributeBooleanDefault("auto-expand", false) ;
+		m_ExpandTracePersistent = element.getAttributeBooleanDefault("auto-expand", false) ;
 		super.loadFromXML(frame, doc, parent, element) ;		
 	}
 }
