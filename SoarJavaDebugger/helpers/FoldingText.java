@@ -13,6 +13,8 @@ package helpers;
 
 import java.util.ArrayList;
 
+import modules.AbstractView;
+
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
@@ -324,8 +326,15 @@ public class FoldingText
 		
 		public int  getSize()  				{ return m_Lines.size() ; }
 		public int  getVisibleSize()		{ return isExpanded() ? m_Lines.size() : 1 ; }
-		public void appendLine(String text) { text = text.replaceAll("\n", "\r\n") ;	// BUGBUG? This is needed because Windows stores strings in text control as \r\n so we must match.  Need a Linux solution.
-											  m_Lines.add(text) ; m_All.append(text) ; }
+		public void appendLine(String text)
+		{
+			// This is needed because the text control (on Windows) stores newlines as \r\n and selections and character counts will get out of synch if we
+			// work in the text control but reason about the text and they have different newlines.
+			// (We still use \n everywhere else as the newline marker because that's what Soar uses)
+			text = text.replaceAll(AbstractView.kLineSeparator, AbstractView.kSystemLineSeparator) ;
+			m_Lines.add(text) ;
+			m_All.append(text) ;
+		}
 		
 		public void removeLastLine()		{ m_Lines.remove(m_Lines.size() - 1) ; recalcAll() ; if (m_Lines.size() == 0) throw new IllegalStateException("Shouldn't empty a block") ; }
 		

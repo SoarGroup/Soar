@@ -501,7 +501,7 @@ public abstract class AbstractComboView extends AbstractView
 		}
 		
 		if (echoCommand && !m_ClearEachCommand)
-			appendTextSafely(getLineSeparator() + command) ;
+			appendTextSafely(kLineSeparator + command) ;
 		
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
 
@@ -512,7 +512,7 @@ public abstract class AbstractComboView extends AbstractView
 		// Output from Soar doesn't include newlines and assumes that we insert
 		// a newline before the result of the command is displayed.
 		if (result != null && result.length() > 0)
-			appendTextSafely(getLineSeparator() + result) ;
+			appendTextSafely(kLineSeparator + result) ;
 
 		m_Updating = false ;
 		

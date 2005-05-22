@@ -670,7 +670,7 @@ public class TreeTraceView extends AbstractComboView
 		{
 			String text = (String)iter.next() ;
 
-			String[] lines = text.split(getLineSeparator()) ;
+			String[] lines = text.split(kLineSeparator) ;
 			
 			for (int i = 0 ; i < lines.length ; i++)
 			{	
@@ -802,7 +802,7 @@ public class TreeTraceView extends AbstractComboView
 		if (redrawTree)
 			m_Tree.setRedraw(false) ;
 
-		String[] lines = text.split(getLineSeparator()) ;
+		String[] lines = text.split(kLineSeparator) ;
 
 		TreeItem prev = null ;
 
@@ -848,7 +848,7 @@ public class TreeTraceView extends AbstractComboView
 	*************************************************************************/
 	protected void appendText(String text)
 	{
-		String[] lines = text.split(getLineSeparator()) ;
+		String[] lines = text.split(kLineSeparator) ;
 
 		TreeItem lastItem = m_LastRoot ;
 		
@@ -1115,7 +1115,7 @@ public class TreeTraceView extends AbstractComboView
 					if (child.IsTagProduction())
 					{
 						if (i > 0)
-							text.append(getLineSeparator()) ;
+							text.append(kLineSeparator) ;
 						
 						text.append(firing ? "Firing " : "Retracting ") ;
 						text.append(child.GetProductionName()) ;

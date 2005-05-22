@@ -565,14 +565,14 @@ public class FoldingTextView extends AbstractComboView
 	*************************************************************************/
 	protected void appendSubText(String text, boolean redrawTree)
 	{
-		String[] lines = text.split(getLineSeparator()) ;
+		String[] lines = text.split(kLineSeparator) ;
 
 		for (int i = 0 ; i < lines.length ; i++)
 		{	
 			if (lines[i].length() == 0)
 				continue ;
 
-			m_FoldingText.appendSubText(lines[i] + getLineSeparator(), redrawTree) ;
+			m_FoldingText.appendSubText(lines[i] + kLineSeparator, redrawTree) ;
 		}
 	}
 	
@@ -584,14 +584,14 @@ public class FoldingTextView extends AbstractComboView
 	protected void appendText(String text)
 	{
 		boolean redraw = true ;
-		String[] lines = text.split(getLineSeparator()) ;
+		String[] lines = text.split(kLineSeparator) ;
 
 		for (int i = 0 ; i < lines.length ; i++)
 		{	
 			if (lines[i].length() == 0)
 				continue ;
 			
-			m_FoldingText.appendText(lines[i] + getLineSeparator(), true) ;
+			m_FoldingText.appendText(lines[i] + kLineSeparator, true) ;
 		}
 	}
 
@@ -853,7 +853,7 @@ public class FoldingTextView extends AbstractComboView
 					if (child.IsTagProduction())
 					{
 						if (i > 0)
-							text.append(getLineSeparator()) ;
+							text.append(kLineSeparator) ;
 						
 						text.append(firing ? "Firing " : "Retracting ") ;
 						text.append(child.GetProductionName()) ;
@@ -861,7 +861,7 @@ public class FoldingTextView extends AbstractComboView
 						for (int j = 0 ; j < child.GetNumberChildren() ; j++)
 						{
 							if (j == 0)
-								text.append(getLineSeparator()) ;
+								text.append(kLineSeparator) ;
 							
 							ClientTraceXML wme = new ClientTraceXML() ;
 							child.GetChild(wme, j) ;
@@ -873,7 +873,7 @@ public class FoldingTextView extends AbstractComboView
 								if (id != null)
 								{
 									if (j > 0)
-										text.append(getLineSeparator()) ;
+										text.append(kLineSeparator) ;
 									
 									text.append("(") ;
 									text.append(wme.GetWmeTimeTag()) ;
