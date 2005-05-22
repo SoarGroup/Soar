@@ -145,8 +145,11 @@ public class FoldingTextView extends AbstractComboView
 			m_ExpandTrace = (e.widget.getData("expand") == Boolean.FALSE) ;
 			updateButtonState() ;
 			
-			// Expand/contract the current page and then keep doing it until the user switches
-			expandPage(m_ExpandTrace) ;
+			// We expand the current page if the user asks for "expand" but we're not making this symmetric
+			// because "collapse" probably means "I'm done with detailed debugging" but not necessarily "I don't want to see what I was just working on".
+			// If you don't agree with that logic just comment out the "if".
+			if (m_ExpandTrace)
+				expandPage(m_ExpandTrace) ;
 		} } ) ;
 		
 		m_ExpandPageArrow = new Button(owner, SWT.ARROW | SWT.DOWN) ;

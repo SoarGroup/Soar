@@ -98,7 +98,15 @@ public class FoldingText
 		/** Returns the index of the first block which either starts at lineNumber or includes lineNumer */
 		public Block getBlockByLineNumber(int lineNumber)
 		{
-			// NOTE: Depending on how often this is called we could hash these values
+			// BUGBUG: We should really hash this lookup.  Without it our paint code and other logic is always O(n)
+			// for n blocks, which means performance of the view will slow down over time.
+			// If we hash the values we can make that O(1) so we don't slow down.
+			// So why haven't I hashed?  I want to make sure everything is correct first before adding a cache (the hash table) which
+			// could get out of date and cause problems.  When we have the rest tested and are confident it's correct we can add the hash table
+			// with confidence.
+			// (BTW, my plan would be to hash on specific line numbers -- perhaps every 100 lines -- so given a line number we look up the general region
+			//  and then go find the specific block.  Otherwise we'll get a pretty big hash table with an entry for each line of output which will be slow to update.
+			//  This would still be O(1).  The time to update the table is when the start line for any of the blocks is changed (e.g. when expanding/contracting).
 			int size = m_TextBlocks.size() ;
 			for (int b = 0 ; b < size ; b++)
 			{
