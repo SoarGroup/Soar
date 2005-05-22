@@ -497,11 +497,14 @@ public abstract class AbstractComboView extends AbstractView
 		String expanded = m_Frame.getExpandedCommand(command) ;
 		if (m_Frame.isDebuggerCommand(expanded))
 		{
+			m_Updating = false ;
 			return (String)m_Frame.executeDebuggerCommand(this, expanded, echoCommand) ;
 		}
 		
 		if (echoCommand && !m_ClearEachCommand)
+		{
 			appendTextSafely(kLineSeparator + command) ;
+		}
 		
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
 

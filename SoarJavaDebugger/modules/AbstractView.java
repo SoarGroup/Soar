@@ -55,10 +55,10 @@ public abstract class AbstractView implements AgentFocusListener
 	/** The window which will contain all others within this view */
 	protected Composite		m_Container ;
 	
-	/** The line separator Soar uses and that we therefore use */
+	/** The line separator Soar uses and that we therefore use. */
 	public static final String kLineSeparator = "\n" ;
 	
-	/** The line separator that this platform uses (e.g. Windows has \r\n) **/
+	/** The line separator that this platform uses (e.g. Windows has \r\n).  Unless you're sure, you usually want the other one (kLineSeparator) when working with Soar commands/output. **/
 	public static final String kSystemLineSeparator = System.getProperty("line.separator") ;
 	
 	public static final String kTagView = "view" ;
