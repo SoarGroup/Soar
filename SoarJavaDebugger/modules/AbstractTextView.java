@@ -208,14 +208,6 @@ public abstract class AbstractTextView extends AbstractComboView
 	********************************************************************************************/
 	protected void rightButtonPressed(MouseEvent e)
 	{	
-		// Found a solution to replace this:
-		// Need to switch to StyledText and the getOffsetAtLocation() method will do this for me.
-		// Hmmm...tried it but the performance seems to be just horrible so for now I'm not
-		// making the switch, however if we keep the current code I need to find a way to
-		// only build it into the Windows version which will no doubt be ugly to do.
-		// Update: It may be that the performance just looks horrible but isn't, because the
-		// display doesn't automatically scroll in the way that the basic control does.
-		// I don't know.  Need to investigate this whole area further.
 		try
 		{
 			Point mouse = new Point(e.x, e.y) ;
@@ -227,7 +219,9 @@ public abstract class AbstractTextView extends AbstractComboView
 		{
 			m_Text.setSelection(m_Text.getCharCount()) ;
 		}
-		
+
+		// This is the Text control solution -- Windows only
+		// Dropped now that we're using the StyledText.
 		// Unfortunately, SWT doesn't support getting a character location from a position
 		// so I'm adding support for it here.  However, this support is pure Windows code.
 		// We'll need to figure out how to have code like this and still compile the debugger

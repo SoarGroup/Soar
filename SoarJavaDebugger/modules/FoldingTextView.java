@@ -211,7 +211,53 @@ public class FoldingTextView extends AbstractComboView
 	*************************************************************************/
 	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
 	{
-		return null ;
+		// Switchfrom screen coords to coords based on the text window
+		Point pt = m_FoldingText.getTextWindow().toControl(mouseX, mouseY) ;
+		mouseX = pt.x ;
+		mouseY = pt.y ;
+
+		int line = m_FoldingText.getLine(mouseY) ;
+		if (line == -1)
+			return null ;
+		
+		String text = m_FoldingText.getTextForLine(line) ;		
+		if (text == null)
+			return null ;
+
+		int pos = m_FoldingText.getCharacterPosition(text, mouseX) ;
+		if (pos == -1)
+			return null ;
+
+		// Sometimes we need to search back up the trace or down the trace to determine the context
+		// so we'll add these lines above and below the to current line, adjusting the position as we do.
+		// This is just a heuristic but it should cover 99% of cases.
+		int bufferLinesAbove = Math.min(20, line) ;
+		int bufferLinesBelow = 1 ;
+		String combinedText = text ;
+		int combinedPos = pos ;
+		for (int i = 0 ; i < bufferLinesAbove ; i++)
+		{
+			String lineText = m_FoldingText.getTextForLine(line - i - 1) ;
+			
+			if (lineText != null)
+			{
+				combinedText = lineText + combinedText ;
+				combinedPos += lineText.length() ;
+			}
+		}
+		for (int i = 0 ; i < bufferLinesBelow ; i++)
+		{
+			String lineText = m_FoldingText.getTextForLine(line + i + 1) ;
+			if (lineText != null)
+				combinedText = combinedText + lineText ;
+		}
+		
+		System.out.println(combinedText) ;
+		ParseSelectedText selection = new ParseSelectedText(combinedText, combinedPos) ;
+//		ParseSelectedText selection = new ParseSelectedText(text, pos) ;
+		
+		return selection.getParsedObject() ;
+		
 	}
 	
 	protected void expandPage(boolean state)

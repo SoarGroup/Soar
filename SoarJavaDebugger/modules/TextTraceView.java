@@ -213,14 +213,14 @@ public class TextTraceView extends AbstractComboView
 	********************************************************************************************/
 	protected void rightButtonPressed(MouseEvent e)
 	{	
-		// Found a solution to replace this:
-		// Need to switch to StyledText and the getOffsetAtLocation() method will do this for me.
-		// Hmmm...tried it but the performance seems to be just horrible so for now I'm not
-		// making the switch, however if we keep the current code I need to find a way to
-		// only build it into the Windows version which will no doubt be ugly to do.
-		// Update: It may be that the performance just looks horrible but isn't, because the
-		// display doesn't automatically scroll in the way that the basic control does.
-		// I don't know.  Need to investigate this whole area further.
+		// We could use:
+		// a) A StyledText window which supports this (via getOffsetAtLocation) but it's 10-20 times slower
+		//    to update so a bad idea for a trace window.
+		// b) Windows specific code to send a message to the Text widget.  This is fast but makes the debugger
+		//    platform specific.
+		// So the compromise is to drop support for auto-select on right click in the text trace window
+		// and use a Styled Text control in text non-trace windows.
+		// This makes sense because we plan to drop this text trace window and replace it with folding text soon.
 		
 		// Unfortunately, SWT doesn't support getting a character location from a position
 		// so I'm adding support for it here.  However, this support is pure Windows code.

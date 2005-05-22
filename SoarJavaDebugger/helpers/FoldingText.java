@@ -96,7 +96,7 @@ public class FoldingText
 			return null ;
 		}
 		
-		/** Returns the index of the first block which either starts at topLine or includes topLine */
+		/** Returns the index of the first block which either starts at lineNumber or includes lineNumer */
 		public int getBlockByLineNumber(int lineNumber)
 		{
 			// NOTE: Depending on how often this is called we could hash these values
@@ -104,10 +104,8 @@ public class FoldingText
 			for (int b = 0 ; b < size ; b++)
 			{
 				Block block = (Block)m_TextBlocks.get(b) ;
-				if (block.getStart() == lineNumber)
+				if (block.containsLine(lineNumber))
 					return b ;
-				if (block.getStart() > lineNumber && b > 0 && ((Block)m_TextBlocks.get(b-1)).isExpanded())
-					return b - 1 ;
 			}
 			
 			return -1 ;
@@ -209,10 +207,15 @@ public class FoldingText
 		public void appendLine(String text) { m_Lines.add(text) ; m_All.append(text) ; }
 		public void removeLastLine()		{ m_Lines.remove(m_Lines.size() - 1) ; recalcAll() ; if (m_Lines.size() == 0) throw new IllegalStateException("Shouldn't empty a block") ; }
 		
+		public boolean containsLine(int line) { return line >= m_Start && line <= m_Start + getVisibleSize() - 1 ; }
+		
 		public String getFirst() 			{ return (String)m_Lines.get(0) ; }
 		public String getAll()				{ return m_All.toString() ; }
 		public String getLastLine()			{ if (m_Lines.size() == 0) throw new IllegalStateException("Block shouldn't be empty") ;
 											  return (String)m_Lines.get(m_Lines.size()-1) ; }
+		
+		public String getTextForLine(int line) { return (String)m_Lines.get(line) ; }
+		
 		private void recalcAll()
 		{
 			m_All = new StringBuffer() ;
@@ -279,7 +282,8 @@ public class FoldingText
 			}
 		};
 		
-		// NOTE: Only detects scrolling by the user
+		// NOTE: Only detects scrolling by the user and not quite correct if you drag out of the window
+		// (This code came from the SWT web site itself)
 		m_Text.addListener (SWT.MouseDown, listener);
 		m_Text.addListener (SWT.MouseMove, listener);
 		m_Text.addListener (SWT.MouseUp, listener);
@@ -290,7 +294,7 @@ public class FoldingText
 		m_LastTopIndex = m_Text.getTopIndex() ;
 	}
 	
-	public void scrolled()
+	private void scrolled()
 	{
 		m_IconBar.redraw() ; 
 	}
@@ -305,6 +309,67 @@ public class FoldingText
 	public String toString()
 	{
 		return m_FoldingDoc.toString() ;
+	}
+	
+	// Returns the line we clicked on based on mouse coordinates
+	public int getLine(int mouseY)
+	{
+		int topLine = m_Text.getTopIndex() ;
+		int lineHeight = m_Text.getLineHeight() ;
+		int screenLine = mouseY / lineHeight ;
+		int line = topLine + screenLine ;
+		
+		if (line > m_Text.getLineCount())
+			return -1 ;
+
+		return line ;
+	}
+	
+	public String getTextForLine(int line)
+	{
+		if (line == -1)
+			return null ;
+		
+		int blockIndex = m_FoldingDoc.getBlockByLineNumber(line) ;
+		
+		if (blockIndex == -1)
+			return null ;
+		
+		Block block = m_FoldingDoc.getBlock(blockIndex) ;
+		String text = block.getTextForLine(line - block.getStart()) ;
+		return text ;
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * Given a line of text and a position, returns the character position within this line.
+	 * 
+	 * @param text		The line of text.  Can be looked up through getLine() and getTextForLine()
+	 * @param mouseX	The x coordinate in the line
+	 * @return	The character clicked on (or -1 if none)
+	********************************************************************************************/
+	public int getCharacterPosition(String text, int mouseX)
+	{
+		// The only way to compute this I can think of to compute which character was clicked on
+		// is to generate each substring in turn and check its length against the point.
+		// When we reach the correct length of string we've found the character.
+		// This is slow and a bit clumsy, but since it's just on a right-click I think it's ok.
+		GC gc = new GC(m_Text) ;
+		
+		int selectionPoint = -1 ;
+		for (int i = 0 ; i < text.length() ; i++)
+		{
+			Point extent = gc.textExtent(text.substring(0, i)) ;
+			if (extent.x > mouseX)
+			{
+				selectionPoint = (i == 0) ? 0 : i-1 ;
+				break ;
+			}
+		}
+
+		gc.dispose() ;
+		
+		return selectionPoint ;		
 	}
 	
 	public void appendText(String text, boolean redraw)

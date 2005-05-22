@@ -281,11 +281,19 @@ public class ParseSelectedText
 			// (nnnn: X ... ^att name)
 			int startPos = m_SelectionStart ;
 			int openParens = m_FullText.lastIndexOf('(', startPos) ;
-			int endSpace = m_FullText.indexOf(' ', openParens) ;
+			int colon      = m_FullText.lastIndexOf(':', startPos) ;
+			
+			// Move to the start of the ID
+			if (openParens != -1) openParens++ ;
+			if (colon != -1) colon += 2 ;
+			
+			int idPos = Math.max(openParens, colon) ;
+			
+			int endSpace = m_FullText.indexOf(' ', idPos) ;
 
-			if (openParens != -1 && endSpace != -1)
+			if (idPos != -1 && endSpace != -1)
 			{
-				String id = m_FullText.substring(openParens+1, endSpace) ;
+				String id = m_FullText.substring(idPos, endSpace) ;
 				
 				if (isID(id))
 					return new SelectedWme(id, curr, m_Tokens[kNextToken]) ;
