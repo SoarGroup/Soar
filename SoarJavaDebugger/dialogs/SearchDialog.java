@@ -41,7 +41,10 @@ public class SearchDialog extends BaseDialog
 	private Button 		m_Up ;
 	private Button 		m_Match ;
 	private Button 		m_SearchHidden ;
+	private Button		m_KeepWindow ;
 	private Button 		m_Wrap ;
+	
+	private Listener 	m_ControlF ;
 
 	/********************************************************************************************
 	* 
@@ -57,7 +60,7 @@ public class SearchDialog extends BaseDialog
 		Composite parent = frame.getWindow() ;
 		SearchDialog dialog = new SearchDialog(frame, title, view) ;
 				
-		dialog.getDialog().setSize(500, 180) ;
+		dialog.getDialog().setSize(550, 180) ;
 		dialog.centerDialog(parent) ;
 		dialog.open() ;
 		
@@ -143,12 +146,17 @@ public class SearchDialog extends BaseDialog
 	    m_Up = new Button(options, SWT.RADIO);
 	    m_Up.setText("&Up");
 
+	    // Add the keep window checkbox
+	    m_KeepWindow = new Button(options, SWT.CHECK) ;
+	    m_KeepWindow.setText("&Keep window open") ;
+	    
 	    // Set the initial values for the controls based on the users previous choices
 	    // or the defaults defined here.
 	    m_Down.setSelection(m_Frame.getAppBooleanProperty("Search.Down", true)) ;
 	    m_Match.setSelection(m_Frame.getAppBooleanProperty("Search.MatchCase", false)) ;
 	    m_Wrap.setSelection(m_Frame.getAppBooleanProperty("Search.Wrap", true)) ;
 	    m_SearchHidden.setSelection(m_Frame.getAppBooleanProperty("Search.Hidden", true)) ;
+	    m_KeepWindow.setSelection(m_Frame.getAppBooleanProperty("Search.Keep", true)) ;
 
 	    // Add the buttons
 	    Composite buttons = new Composite(window, SWT.NONE);
@@ -162,7 +170,7 @@ public class SearchDialog extends BaseDialog
 	    // Listen for Ctrl-F within the dialog and issue a find immediately.
 	    // This allows users to hit Ctrl-F to bring up find and then do it again
 	    // to search.
-	    final Listener controlF = new Listener() { public void handleEvent(Event e) {
+	    m_ControlF = new Listener() { public void handleEvent(Event e) {
 	    	if (e.type == SWT.KeyDown)
 	    	{
 		    	int key = e.keyCode ;
@@ -176,7 +184,7 @@ public class SearchDialog extends BaseDialog
 	    // Registering a filter means it will apply to any keydown within the dialog's display
 	    // rather than having to register with each specific control in the dialog
 	    // (which would otherwise be necessary as the key strokes only go to the control with focus).
-	    getDialog().getDisplay().addFilter(SWT.KeyDown, controlF) ;
+	    getDialog().getDisplay().addFilter(SWT.KeyDown, m_ControlF) ;
 
 	    // Create the Close button
 	    Button close = new Button(buttons, SWT.PUSH);
@@ -184,15 +192,7 @@ public class SearchDialog extends BaseDialog
 	    close.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	    close.addSelectionListener(new SelectionAdapter() {
 	      public void widgetSelected(SelectionEvent event) {
-	      	
-	      	m_Frame.setAppProperty("Search.Down", m_Down.getSelection()) ;
-	      	m_Frame.setAppProperty("Search.MatchCase", m_Match.getSelection()) ;
-	      	m_Frame.setAppProperty("Search.Wrap", m_Wrap.getSelection()) ;
-	      	m_Frame.setAppProperty("Search.Hidden", m_SearchHidden.getSelection()) ;
-	      	m_Frame.setAppProperty("Search.Text", m_FindText.getText()) ;
-	      	
-	        getDialog().getDisplay().removeFilter(SWT.KeyDown, controlF) ;
-	        getDialog().close();	        
+	      		close() ;
 	      }
 	    });
 
@@ -200,6 +200,9 @@ public class SearchDialog extends BaseDialog
 	    m_DoFind.addSelectionListener(new SelectionAdapter() {
 	      public void widgetSelected(SelectionEvent event) {
 	      	find() ;
+	      	
+	      	if (!m_KeepWindow.getSelection())
+	      		close() ;
 	      }
 	    });
 
@@ -207,6 +210,19 @@ public class SearchDialog extends BaseDialog
 	    m_Down.setSelection(true);
 	    m_FindText.setFocus();
 	    getDialog().setDefaultButton(m_DoFind);
+	  }
+	  
+	  private void close()
+	  {
+      	m_Frame.setAppProperty("Search.Down", m_Down.getSelection()) ;
+      	m_Frame.setAppProperty("Search.MatchCase", m_Match.getSelection()) ;
+      	m_Frame.setAppProperty("Search.Wrap", m_Wrap.getSelection()) ;
+      	m_Frame.setAppProperty("Search.Hidden", m_SearchHidden.getSelection()) ;
+      	m_Frame.setAppProperty("Search.Text", m_FindText.getText()) ;
+      	m_Frame.setAppProperty("Search.Keep", m_KeepWindow.getSelection()) ;
+      	
+        getDialog().getDisplay().removeFilter(SWT.KeyDown, m_ControlF) ;
+        getDialog().close();
 	  }
 	  
 	  /********************************************************************************************

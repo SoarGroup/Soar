@@ -79,25 +79,21 @@ public class FoldingText
 		/** Returns the block (if any) which starts at the given line number. */
 		public Block getBlockStartsAtLineNumber(int lineNumber)
 		{
-			int size = m_TextBlocks.size() ;
-			for (int b = 0 ; b < size ; b++)
-			{
-				// NOTE: Depending on how often this is called we could hash these values
-				Block block = (Block)m_TextBlocks.get(b) ;
-				if (block.getStart() == lineNumber)
-					return block ;
-				
-				// As soon as we reach a block after the target line we know we have
-				// no match
-				if (block.getStart() > lineNumber)
-					return null ;
-			}
+			// Get the block which contains this line
+			Block block = getBlockByLineNumber(lineNumber) ;
+			
+			if (block == null)
+				return null ;
+
+			// Check if the block starts with the target line in this case
+			if (block.getStart() == lineNumber)
+				return block ;
 			
 			return null ;
 		}
 		
 		/** Returns the index of the first block which either starts at lineNumber or includes lineNumer */
-		public int getBlockByLineNumber(int lineNumber)
+		public Block getBlockByLineNumber(int lineNumber)
 		{
 			// NOTE: Depending on how often this is called we could hash these values
 			int size = m_TextBlocks.size() ;
@@ -105,10 +101,10 @@ public class FoldingText
 			{
 				Block block = (Block)m_TextBlocks.get(b) ;
 				if (block.containsLine(lineNumber))
-					return b ;
+					return block ;
 			}
 			
-			return -1 ;
+			return null ;
 		}
 		
 		public Block getBlock(int index)
@@ -119,6 +115,21 @@ public class FoldingText
 		public int getNumberBlocks()
 		{
 			return m_TextBlocks.size() ;
+		}
+		
+		public String getAllText(boolean includeHidden)
+		{
+			StringBuffer all = new StringBuffer() ;
+
+			int size = m_TextBlocks.size() ;
+			for (int b = 0 ; b < size ; b++)
+			{
+				Block block = (Block)m_TextBlocks.get(b) ;
+				String text = (includeHidden ? block.getAll() : block.getVisibleText()) ; 
+				all.append(text) ;
+			}
+			
+			return all.toString() ;
 		}
 		
 		/** Returns the character positions for the start and end of a block -- so we can use these to set the selection to the block */
@@ -135,6 +146,115 @@ public class FoldingText
 			int end = start + block.getVisibleCharCount() ;
 			
 			return new Point(start, end) ;
+		}
+		
+		public int convertVisibleToAllCharPos(int charPos)
+		{
+			int allCharPos = 0 ;
+			int visCharPos = 0 ;
+			
+			int size = m_TextBlocks.size() ;
+			for (int b = 0 ; b < size ; b++)
+			{
+				Block block = (Block)m_TextBlocks.get(b) ;
+				int allChars = block.getAllCharCount() ;
+				int visChars = block.getVisibleCharCount() ;
+				
+				if (charPos >= visCharPos && charPos < visCharPos + visChars)
+				{
+					// The visible selection lies within this block so return
+					// the sum of all characters to this block, plus the number of chars into this block
+					return allCharPos + (charPos - visCharPos) ;
+				}
+				
+				allCharPos += allChars ;
+				visCharPos += visChars ;
+			}
+			
+			return -1 ;
+		}
+
+		public int convertAllToVisibleCharPos(int charPos)
+		{
+			int allCharPos = 0 ;
+			int visCharPos = 0 ;
+			
+			int size = m_TextBlocks.size() ;
+			for (int b = 0 ; b < size ; b++)
+			{
+				Block block = (Block)m_TextBlocks.get(b) ;
+				int allChars = block.getAllCharCount() ;
+				int visChars = block.getVisibleCharCount() ;
+				
+				if (charPos >= allCharPos && charPos < allCharPos + allChars)
+				{
+					// The visible selection lies within this block so return
+					// the sum of all characters to this block, plus the number of chars into this block
+					return visCharPos + (charPos - allCharPos) ;
+				}
+				
+				allCharPos += allChars ;
+				visCharPos += visChars ;
+			}
+			
+			return -1 ;
+		}
+		
+		public Block findBlockByAllCharPos(int charPos)
+		{
+			int allCharPos = 0 ;
+			int visCharPos = 0 ;
+			
+			int size = m_TextBlocks.size() ;
+			for (int b = 0 ; b < size ; b++)
+			{
+				Block block = (Block)m_TextBlocks.get(b) ;
+				int allChars = block.getAllCharCount() ;
+				int visChars = block.getVisibleCharCount() ;
+				
+				if (charPos >= allCharPos && charPos < allCharPos + allChars)
+				{
+					// The visible selection lies within this block so return
+					// the sum of all characters to this block, plus the number of chars into this block
+					return block ;
+				}
+				
+				allCharPos += allChars ;
+				visCharPos += visChars ;
+			}
+			
+			return null ;			
+		}		
+
+		/** Given a character position in the entire text stream (e.g. the selection) returns the line and offset.
+		 *  NOTE: Not fully tested -- stopped using it before then but could be useful later so keeping the code. **/
+		public Point getLineAndOffset(int charPos)
+		{
+			int globalCharPos = 0 ;
+
+			int nBlocks = m_TextBlocks.size() ;
+			for (int b = 0 ; b < nBlocks ; b++)
+			{
+				Block block = (Block)m_TextBlocks.get(b) ;
+				int chars = block.getVisibleCharCount() ;
+				
+				if (charPos >= globalCharPos && charPos < globalCharPos + chars)
+				{
+					int charOffset = charPos - globalCharPos ;
+					
+					// Get the line and offset for this character position
+					Point line = block.findLineFromCharCount(charOffset) ;
+					
+					// Convert the line number into the global line number (not block relative)
+					Point result = new Point(line.x + block.getStart(), line.y) ;
+					return result ;
+				}
+				
+				// Move the search on
+				globalCharPos += chars ;
+			}
+			
+			return null ;
 		}
 		
 		public void expandBlock(Block block, boolean state)
@@ -204,7 +324,9 @@ public class FoldingText
 		
 		public int  getSize()  				{ return m_Lines.size() ; }
 		public int  getVisibleSize()		{ return isExpanded() ? m_Lines.size() : 1 ; }
-		public void appendLine(String text) { m_Lines.add(text) ; m_All.append(text) ; }
+		public void appendLine(String text) { text = text.replaceAll("\n", "\r\n") ;	// BUGBUG? This is needed because Windows stores strings in text control as \r\n so we must match.  Need a Linux solution.
+											  m_Lines.add(text) ; m_All.append(text) ; }
+		
 		public void removeLastLine()		{ m_Lines.remove(m_Lines.size() - 1) ; recalcAll() ; if (m_Lines.size() == 0) throw new IllegalStateException("Shouldn't empty a block") ; }
 		
 		public boolean containsLine(int line) { return line >= m_Start && line <= m_Start + getVisibleSize() - 1 ; }
@@ -213,6 +335,7 @@ public class FoldingText
 		public String getAll()				{ return m_All.toString() ; }
 		public String getLastLine()			{ if (m_Lines.size() == 0) throw new IllegalStateException("Block shouldn't be empty") ;
 											  return (String)m_Lines.get(m_Lines.size()-1) ; }
+		public String getVisibleText()		{ return (isExpanded() ? getAll() : getFirst()) ; }
 		
 		public String getTextForLine(int line) { return (String)m_Lines.get(line) ; }
 		
@@ -224,9 +347,29 @@ public class FoldingText
 				m_All.append((String)m_Lines.get(i)) ;
 		}
 		
-		public int getFirstLineCharCount()	{ return getFirst().length() + 1 ; }			// Add one because \n in text becomes \r\n in Text control (BUGBUG: Windows only?)
-		public int getAllCharCount()		{ return m_All.length() + m_Lines.size() ; }	// Have to add one newline char per line to make this correct (as above)
+		public int getFirstLineCharCount()	{ return getFirst().length() ; }
+		public int getAllCharCount()		{ return m_All.length() ; }	
 		public int getVisibleCharCount()	{ return isExpanded() ? getAllCharCount() : getFirstLineCharCount() ; }
+		
+		/** Returns (line, offset) */
+		public Point findLineFromCharCount(int charCount)
+		{
+			int pos = 0 ;
+			int lines = m_Lines.size() ;
+			for (int i = 0 ; i < lines ; i++)
+			{
+				String line = (String)m_Lines.get(i) ;
+				int len = line.length() ;
+
+				if (charCount >= pos && charCount < pos + len)
+				{
+					return new Point(i, charCount - pos) ;
+				}
+				
+				pos += len ;
+			}
+			return null ;	// Something went wrong
+		}
 		
 		public String toString()
 		{
@@ -330,14 +473,70 @@ public class FoldingText
 		if (line == -1)
 			return null ;
 		
-		int blockIndex = m_FoldingDoc.getBlockByLineNumber(line) ;
-		
-		if (blockIndex == -1)
+		Block block = m_FoldingDoc.getBlockByLineNumber(line) ;
+		if (block == null)
 			return null ;
 		
-		Block block = m_FoldingDoc.getBlock(blockIndex) ;
 		String text = block.getTextForLine(line - block.getStart()) ;
 		return text ;
+	}
+	
+	public String getAllText(boolean includeHidden)
+	{
+		if (!includeHidden)
+			return m_Text.getText() ;
+		
+		return m_FoldingDoc.getAllText(includeHidden) ;
+	}
+	
+	public int convertVisibleToAllCharPos(int charPos)
+	{
+		return m_FoldingDoc.convertVisibleToAllCharPos(charPos) ;
+	}
+
+	public int convertAllToVisibleCharPos(int charPos)
+	{
+		return m_FoldingDoc.convertAllToVisibleCharPos(charPos) ;
+	}
+	
+	public void setSelection(int start, int end)
+	{
+		m_Text.setSelection(start, end) ;
+		
+		// May have scrolled, so need to redraw the icons
+		m_IconBar.redraw() ;
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * Takes a character position from anywhere in the "all text" of the window
+	 * and forces it to be visible (i.e. expands it).
+	 * 
+	 * @param charPos
+	********************************************************************************************/
+	public void makeCharPosVisible(int charPos)
+	{
+		Block block = m_FoldingDoc.findBlockByAllCharPos(charPos) ;
+		if (block == null)
+			return ;
+		
+		if (block.isExpanded())
+			return ;
+
+		// Expand the block
+		m_FoldingDoc.expandBlock(block, true) ;
+		m_IconBar.redraw() ;
+	}
+
+	// Returns the (line, offset) information for the start of the current selection
+	public Point getSelectionStartLineAndOffset()
+	{
+		Point pt = m_Text.getSelection() ;
+		int start = pt.x ;
+		
+		Point lineOff = m_FoldingDoc.getLineAndOffset(start) ;
+		System.out.println("Selection line + off is " + lineOff) ;
+		return lineOff ;
 	}
 	
 	/********************************************************************************************
@@ -480,12 +679,10 @@ public class FoldingText
 		// cause it to collapse.  I think that's a nice feature, but if we'd rather
 		// not have that happen switch this to getBlockStartsAtLineNumber() and
 		// only clicks right on the icon will cause behavior.
-		int blockIndex = m_FoldingDoc.getBlockByLineNumber(line) ;
-		
-		if (blockIndex == -1)
+		Block block = m_FoldingDoc.getBlockByLineNumber(line) ;
+
+		if (block == null)
 			return ;
-		
-		Block block = m_FoldingDoc.getBlock(blockIndex) ;
 		
 		m_FoldingDoc.expandBlock(block, !block.isExpanded()) ;
 		m_IconBar.redraw() ;
@@ -511,8 +708,13 @@ public class FoldingText
 		int lastLine = Math.min(m_Text.getLineCount(),m_Text.getTopIndex() + visibleLines) ;
 		
 		// Start with the first block that starts at topLine or includes topLine.
-		int blockIndex = m_FoldingDoc.getBlockByLineNumber(topLine) ;
+		Block topBlock = m_FoldingDoc.getBlockByLineNumber(topLine) ;
 		int blockCount = m_FoldingDoc.getNumberBlocks() ;
+		
+		if (topBlock == null)
+			return ;
+		
+		int blockIndex = topBlock.getIndex() ;
 
 		int outerSize = 11 ;
 		int innerSize = 7 ;

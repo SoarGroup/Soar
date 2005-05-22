@@ -197,6 +197,89 @@ public class FoldingTextView extends AbstractComboView
 		// Show the wait cursor as the hidden search could take a while
 		Cursor wait = new Cursor(getWindow().getDisplay(), SWT.CURSOR_WAIT) ;
 		getWindow().getShell().setCursor(wait) ;
+				
+		String windowText = m_FoldingText.getAllText(searchHiddenText) ;
+		
+		// If we're case insensitive shift all to lower case
+		if (!matchCase)
+		{
+			windowText = windowText.toLowerCase() ;
+			text = text.toLowerCase() ;
+		}
+		
+		// Find out where we're starting from
+		Point selectionPoint = m_FoldingText.getTextWindow().getSelection() ;
+		int selectionStart = selectionPoint.x ;
+		
+		// If we're searching the entire set of text need to switch to the position within the entire set of text
+		if (searchHiddenText)
+			selectionStart = m_FoldingText.convertVisibleToAllCharPos(selectionStart) ;
+		
+		int origStart = selectionStart ;
+		
+		int start = -1 ;
+		boolean wrapped = false ;
+		boolean done ;
+		do
+		{
+			if (searchDown)
+			{
+				start = windowText.indexOf(text, selectionStart + 1) ;
+			}
+			else
+			{
+				start = windowText.lastIndexOf(text, selectionStart - 1) ;
+			}
+			
+			if (start != -1)
+			{
+				// We found some text, so set the selection and we're done.
+				found = true ;
+				done = true ;				
+
+				// Unless we've done a wrapped search and passed our start point
+				// in which case we're actually done
+				if (wrapped && ((searchDown && (start >= origStart)) || (!searchDown && (start <= origStart))))
+					found = false ;
+			}
+			else
+			{
+				if (wrap && !wrapped)
+				{
+					// If fail to find text with the basic search repeat it here
+					// which produces a wrap effect.
+					done = false ;
+					wrapped = true ;	// Only do it once
+					selectionStart = searchDown ? -1 : windowText.length() ;
+				}
+				else
+				{
+					// If we're not wrapping (or already did the wrap) return false
+					// to signal we failed to find anything.
+					found = false ;
+					done = true ;
+				}
+			}
+		} while (!done) ;
+		
+		if (found)
+		{
+			int end = start + text.length() ;
+
+			// If we're searching in hidden text need to convert back to the visible space and
+			// possibly expand the block
+			if (searchHiddenText)
+			{
+				// Force block to expand if needed
+				m_FoldingText.makeCharPosVisible(start) ;
+				
+				start = m_FoldingText.convertAllToVisibleCharPos(start) ;
+				end   = m_FoldingText.convertAllToVisibleCharPos(end) ;
+			}
+			
+			// Set the newly found text to be selected
+			m_FoldingText.setSelection(start, end) ;
+		}
 		
 		getWindow().getShell().setCursor(null) ;
 		wait.dispose() ;
