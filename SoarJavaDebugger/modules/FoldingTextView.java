@@ -19,9 +19,6 @@ import java.util.Iterator;
 
 import manager.Pane;
 import menu.ParseSelectedText;
-import modules.TreeTraceView.ExpandListener;
-import modules.TreeTraceView.RunWrapper;
-import modules.TreeTraceView.TreeData;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;

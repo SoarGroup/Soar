@@ -318,7 +318,7 @@ public class MainWindow
   		m_PaneList.add(buttonsRightBottom) ;
 		
 		// Now connect up a specific type of view with these panes
-		AbstractView trace = new TreeTraceView() ;
+		AbstractView trace = new FoldingTextView() ;
 		trace.init(m_Frame, m_Document, top) ;
 		trace.generateName(m_Frame) ;
 		top.addView(trace) ;
