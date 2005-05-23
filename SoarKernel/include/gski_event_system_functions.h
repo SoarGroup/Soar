@@ -144,7 +144,7 @@ inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
 										unsigned long		value)
 {
 	char buf[25];
-	snprintf(buf, 24, "%u", value);
+	snprintf(buf, 24, "%lu", value);
 	gSKI_MakeAgentCallbackXML(soarAgent, funcType, attOrTag, (char*)buf);
 }
 

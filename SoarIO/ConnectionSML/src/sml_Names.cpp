@@ -128,6 +128,10 @@ char const* const sml_Names::kReferent			= "referent" ;
 char const* const sml_Names::kTagWarning		= "warning" ;
 // Tag warning has attribute kTypeString
 
+// learning stuff
+char const* const sml_Names::kTagLearning	= "learning" ;
+// Tag learning has attribute kTypeString
+
 // XML function types for XML output event
 char const* const sml_Names::kFunctionBeginTag		= "begintag";
 char const* const sml_Names::kFunctionEndTag		= "endtag";

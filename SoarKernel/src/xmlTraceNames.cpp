@@ -94,6 +94,11 @@ char const* const xmlTraceNames::kReferent			= "referent" ;
 char const* const xmlTraceNames::kTagWarning		= "warning" ;
 // Tag warning has attribute kTypeString
 
+// learning stuff
+char const* const xmlTraceNames::kTagLearning	= "learning" ;
+// Tag learning has attribute kTypeString
+
+
 // XML function types for XML output event
 char const* const xmlTraceNames::kFunctionBeginTag		= "begintag";
 char const* const xmlTraceNames::kFunctionEndTag		= "endtag";

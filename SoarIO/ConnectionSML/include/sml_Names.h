@@ -132,6 +132,10 @@ public:
 	static char const* const kFunctionEndTag;
 	static char const* const kFunctionAddAttribute;
 
+	// learning stuff
+	static char const* const kTagLearning;
+	// Tag learning has attribute kTypeString
+
 	// end of tags for Trace output
 
 	// Types
