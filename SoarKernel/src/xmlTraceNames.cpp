@@ -98,6 +98,29 @@ char const* const xmlTraceNames::kTagWarning		= "warning" ;
 char const* const xmlTraceNames::kTagLearning	= "learning" ;
 // Tag learning has attribute kTypeString
 
+//production printing
+char const* const xmlTraceNames::kTagConditions                 	= "conditions" ;
+char const* const xmlTraceNames::kTagConjunctive_Negation_Condition	= "conjunctive-negation-condition" ;
+char const* const xmlTraceNames::kTagCondition	                    = "condition" ;
+char const* const xmlTraceNames::kTagActions	                    = "actions" ;
+char const* const xmlTraceNames::kTagAction 	                    = "action" ;
+char const* const xmlTraceNames::kProductionType                    = "type" ;
+char const* const xmlTraceNames::kProductionTypeDefault             = ":default" ;
+char const* const xmlTraceNames::kProductionTypeChunk               = ":chunk" ;
+char const* const xmlTraceNames::kProductionTypeJustification       = ":justification ;# not reloadable" ;
+char const* const xmlTraceNames::kProductionDeclaredSupport         = "declared-support" ;
+char const* const xmlTraceNames::kProductionDeclaredOSupport        = ":o-support" ;
+char const* const xmlTraceNames::kProductionDeclaredISupport        = ":i-support" ;
+char const* const xmlTraceNames::kConditionId                       = "id" ;
+char const* const xmlTraceNames::kConditionTest                     = "test";
+char const* const xmlTraceNames::kConditionTestState                = "state";
+char const* const xmlTraceNames::kConditionTestImpasse              = "impasse";
+char const* const xmlTraceNames::kCondition                         = "condition" ;
+char const* const xmlTraceNames::kAction                            = "action" ;
+char const* const xmlTraceNames::kActionFunction                    = "function" ;
+char const* const xmlTraceNames::kActionId                          = "id" ;
+
+
 
 // XML function types for XML output event
 char const* const xmlTraceNames::kFunctionBeginTag		= "begintag";

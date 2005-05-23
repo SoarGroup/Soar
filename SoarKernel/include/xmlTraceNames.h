@@ -101,6 +101,27 @@ public:
 	static char const* const kTagLearning;
 	// Tag learning has attribute kTypeString
 
+    //production printing
+    static char const* const kTagConditions;
+    static char const* const kTagConjunctive_Negation_Condition;
+    static char const* const kTagCondition;
+    static char const* const kTagActions;
+    static char const* const kTagAction;
+    static char const* const kProductionType;
+    static char const* const kProductionTypeDefault;
+    static char const* const kProductionTypeChunk;
+    static char const* const kProductionTypeJustification;
+    static char const* const kProductionDeclaredSupport;
+    static char const* const kProductionDeclaredOSupport;
+    static char const* const kProductionDeclaredISupport;
+    static char const* const kConditionId;
+    static char const* const kConditionTest;
+    static char const* const kConditionTestState;
+    static char const* const kConditionTestImpasse;
+    static char const* const kCondition;
+    static char const* const kAction;
+    static char const* const kActionFunction;
+    static char const* const kActionId;
 	// end of tags for Trace output
 
 	static char const* const kTypeString;

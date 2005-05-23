@@ -132,6 +132,28 @@ char const* const sml_Names::kTagWarning		= "warning" ;
 char const* const sml_Names::kTagLearning	= "learning" ;
 // Tag learning has attribute kTypeString
 
+//production printing
+char const* const sml_Names::kTagConditions                 	= "conditions" ;
+char const* const sml_Names::kTagConjunctive_Negation_Condition	= "conjunctive-negation-condition" ;
+char const* const sml_Names::kTagCondition	                    = "condition" ;
+char const* const sml_Names::kTagActions	                    = "actions" ;
+char const* const sml_Names::kTagAction 	                    = "action" ;
+char const* const sml_Names::kProductionType                    = "type" ;
+char const* const sml_Names::kProductionTypeDefault             = ":default" ;
+char const* const sml_Names::kProductionTypeChunk               = ":chunk" ;
+char const* const sml_Names::kProductionTypeJustification       = ":justification ;# not reloadable" ;
+char const* const sml_Names::kProductionDeclaredSupport         = "declared-support" ;
+char const* const sml_Names::kProductionDeclaredOSupport        = ":o-support" ;
+char const* const sml_Names::kProductionDeclaredISupport        = ":i-support" ;
+char const* const sml_Names::kConditionId                       = "id" ;
+char const* const sml_Names::kConditionTest                     = "test";
+char const* const sml_Names::kConditionTestState                = "state";
+char const* const sml_Names::kConditionTestImpasse              = "impasse";
+char const* const sml_Names::kCondition                         = "condition" ;
+char const* const sml_Names::kAction                            = "action" ;
+char const* const sml_Names::kActionFunction                    = "function" ;
+char const* const sml_Names::kActionId                          = "id" ;
+
 // XML function types for XML output event
 char const* const sml_Names::kFunctionBeginTag		= "begintag";
 char const* const sml_Names::kFunctionEndTag		= "endtag";
