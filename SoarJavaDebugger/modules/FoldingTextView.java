@@ -121,6 +121,34 @@ public class FoldingTextView extends AbstractComboView
 	{
 		m_ExpandButton.setText(m_ExpandTrace ? "Collapse" : " Expand ") ;
 		m_ExpandButton.setData("expand", m_ExpandTrace ? Boolean.TRUE : Boolean.FALSE) ;
+		
+		// Set the checkboxes to match current filter state
+		for (int i = 0 ; i < m_FilterMenu.getItemCount() ; i++)
+		{
+			MenuItem item = m_FilterMenu.getItem(i) ;
+			
+			Long typeObj = (Long)item.getData("type") ;
+			if (typeObj == null)
+				continue ;
+
+			// Update the checkbox to match whether this type is visible or not
+			long type = typeObj.longValue() ;
+			item.setSelection((m_FoldingText.isTypeVisible(type))) ;
+			
+			// Enable/disable the item to match whether filtering is enabled at all
+			item.setEnabled(m_FoldingText.isFilteringEnabled()) ;
+		}
+
+		// Change the color of the label if any filtering is enabled, so it's clear that this is happening.
+		// Don't want to be doing this by accident and not realize it.
+		if (m_FoldingText.isFilteringEnabled() && m_FoldingText.getExclusionFilter() != 0)
+		{
+			m_FilterLabel.setForeground(getMainFrame().getDisplay().getSystemColor(SWT.COLOR_BLUE)) ;			
+		}
+		else
+		{
+			m_FilterLabel.setForeground(getMainFrame().getDisplay().getSystemColor(SWT.COLOR_GRAY)) ;
+		}
 	}
 	
 	/********************************************************************************************
@@ -207,37 +235,37 @@ public class FoldingTextView extends AbstractComboView
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
 		menuItem.setText ("Phases") ;
-		menuItem.setSelection(true) ;
+		menuItem.setData("type", new Long(TraceType.kPhase)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kPhase) ; } } ) ;
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
 		menuItem.setText ("Preferences") ;
-		menuItem.setSelection(true) ;
+		menuItem.setData("type", new Long(TraceType.kPreference)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kPreference) ; } } ) ;
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
 		menuItem.setText ("Wme Changes") ;
-		menuItem.setSelection(true) ;
+		menuItem.setData("type", new Long(TraceType.kWmeChange)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kWmeChange) ; } } ) ;
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
 		menuItem.setText ("Production Firings") ;
-		menuItem.setSelection(true) ;
+		menuItem.setData("type", new Long(TraceType.kFiring)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kFiring) ; } } ) ;
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
 		menuItem.setText ("Production Retractions") ;
-		menuItem.setSelection(true) ;
+		menuItem.setData("type", new Long(TraceType.kRetraction)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kRetraction) ; } } ) ;
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
 		menuItem.setText ("Stack Trace") ;
-		menuItem.setSelection(true) ;
+		menuItem.setData("type", new Long(TraceType.kStack)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kStack) ; } } ) ;
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
 		menuItem.setText ("Rhs Writes") ;
-		menuItem.setSelection(true) ;
+		menuItem.setData("type", new Long(TraceType.kRhsWrite)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kRhsWrite) ; } } ) ;
 
 		updateButtonState() ;
@@ -249,6 +277,9 @@ public class FoldingTextView extends AbstractComboView
 		boolean selected = item.getSelection() ;
 		
 		m_FoldingText.changeExclusionFilter(type, !selected, true) ;
+		
+		// A change to one button can affect others
+		updateButtonState() ;
 	}
 	
 	/************************************************************************
@@ -1016,8 +1047,13 @@ public class FoldingTextView extends AbstractComboView
 		ElementXML element = super.convertToXML(tagName, storeContent) ;
 		element.addAttribute("indent", Integer.toString(m_IndentSize)) ;
 		element.addAttribute("auto-expand", Boolean.toString(m_ExpandTracePersistent)) ;
-		element.addAttribute("filtering", Boolean.toString(m_FoldingText.isFilteringEnabled())) ;
-		element.addAttribute("filter", Long.toString(m_FoldingText.getExclusionFilter())) ;
+
+		if (m_FoldingText != null)
+		{
+			element.addAttribute("filtering", Boolean.toString(m_FoldingText.isFilteringEnabled())) ;
+			element.addAttribute("filter", Long.toString(m_FoldingText.getExclusionFilter())) ;
+		}
+		
 		return element ;
 	}
 
@@ -1042,7 +1078,11 @@ public class FoldingTextView extends AbstractComboView
 		super.loadFromXML(frame, doc, parent, element) ;
 		
 		// Have to wait until base class has been called and window has been created before setting these values
-		m_FoldingText.setFilteringEnabled(filtering) ;
-		m_FoldingText.setExclusionFilter(filter, false) ;
+		if (m_FoldingText != null)
+		{
+			m_FoldingText.setFilteringEnabled(filtering) ;
+			m_FoldingText.setExclusionFilter(filter, false) ;
+			updateButtonState() ;
+		}
 	}
 }

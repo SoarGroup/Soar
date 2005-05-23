@@ -171,6 +171,12 @@ public class FoldingText
 				// top of the new selection block is at least visible.
 				int newSelectionPos = m_FoldingText.m_FoldingDoc.getBlockSelectionRange(newSelection).x ;
 				m_FoldingText.setSelection(newSelectionPos, newSelectionPos) ;
+				
+				// Let's go one better and scroll it to the top of the window
+				// (actually 15 lines beneath the top so it's "topish" not right at the top)
+				int start = newSelection.getStart() ;
+				start = Math.max(start-15, 0) ;
+				m_FoldingText.getTextWindow().setTopIndex(start) ;
 			}	
 			
 			// Draw the new tree
