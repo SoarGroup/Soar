@@ -627,6 +627,7 @@ public class ElementXML
 		
 		return doubleVal ;
 	}
+	
 	/************************************************************************
 	* 
 	* Returns the value of a named attribute, interpreting it as an int.
@@ -661,7 +662,42 @@ public class ElementXML
 		
 		return intVal ;
 	}
+
+	/************************************************************************
+	* 
+	* Returns the value of a named attribute, interpreting it as a long.
+	* If the attribute is missing or cannot be parsed as a long, this function
+	* throws an exception.
+	* 
+	*************************************************************************/
+	public long getAttributeLongThrows(String name) throws Exception
+	{
+		String val = getAttributeThrows(name) ;
+		
+		long longVal = Long.parseLong(val) ;
+		
+		return longVal ;
+	}
 	
+	/************************************************************************
+	* 
+	* Returns the value of a named attribute, interpreting it as a long.
+	* If the attribute is missing returns the defaultValue.
+	* If the attribute is present but cannot be parsed as an long this throws
+	* 
+	*************************************************************************/
+	public long getAttributeLongDefault(String name, long defaultValue) throws Exception
+	{
+		String val = this.getAttribute(name) ;
+		
+		if (val == null)
+			return defaultValue ;
+		
+		long longVal = Long.parseLong(val) ;
+		
+		return longVal ;
+	}
+
 	/************************************************************************
 	* 
 	* Returns the value of a named attribute, interpreting it as an boolean.

@@ -85,17 +85,17 @@ public class FoldingText
 			m_FoldingText = foldingText ;
 		}
 
-		public boolean show(boolean subText, long type)
+		public boolean show(long type)
 		{
 			return ((m_ExcludeFilter & type) == 0) ; 
 		}
 		
-		// Returns true if we should show this line
-		public boolean addRecord(String text, boolean subText, long type)
+		// Returns the index of the line in the record list (so we can cross index to it)
+		public int addRecord(String text, boolean subText, long type)
 		{
 			m_AllRecords.add(new FilterRecord(text, subText, type)) ;
 			
-			return show(subText, type) ;
+			return m_AllRecords.size() - 1 ;
 		}
 		
 		public void clear()
@@ -117,12 +117,26 @@ public class FoldingText
 		{
 			// Turn off tree updates
 			m_FoldingText.setRedraw(false) ;
+
+			// Show a wait cursor -- this can take a while
+			Cursor wait = new Cursor(m_FoldingText.getWindow().getDisplay(), SWT.CURSOR_WAIT) ;
+			m_FoldingText.getWindow().getShell().setCursor(wait) ;
+
+			// We want to set the selection roughly back to where it was initially (so if we were scrolled to one point in a long trace
+			// we stay roughly at the same place) and we want to keep the block where the selection occured either collapsed or not
+			// to match the original.  All other blocks will be collapsed -- which is fast to generate (less UI) and means we don't
+			// have to match them all together.
+			int selectionPos = m_FoldingText.getTextWindow().getSelection().x ;
+			Block selectedBlock = m_FoldingText.m_FoldingDoc.findBlockByVisibleCharPos(selectionPos, true) ;
+
+			// The line in the full list of records which is currently selected
+			int selectionIndex = (selectedBlock != null ? selectedBlock.getRecordIndex() : -1) ;
+			boolean selectionExpanded = (selectedBlock != null ? selectedBlock.isExpanded() : false ) ;
+
+			Block newSelection = null ;
 			
 			// Clear the existing text window
 			m_FoldingText.getTextWindow().setText("") ;
-
-			// BUGBUG: Need to go through existing blocks and decide if a top level line
-			// is part of an expanded block or not, so we can recreate the expanded block structure correctly.
 			
 			// Clear all existing blocks
 			m_FoldingText.m_FoldingDoc.clear() ;
@@ -132,17 +146,39 @@ public class FoldingText
 			{
 				FilterRecord record = (FilterRecord)m_AllRecords.get(i) ;
 				
-				if (show(record.isSubText(), record.getType()))
+				if (show(record.getType()))
 				{
 					if (record.isSubText())
-						m_FoldingText.appendSubTextInternal(record.getText(), false) ;
+						m_FoldingText.appendSubTextInternal(record.getText(), false, i) ;
 					else
-						m_FoldingText.appendTextInternal(record.getText()) ;
+						m_FoldingText.appendTextInternal(record.getText(), i) ;
 				}
+				
+				// If we reach the point where the previous selection occured record
+				// this block as the new location of the selection.  It'll be the last block at this moment.
+				if (selectionIndex == i)
+					newSelection = m_FoldingText.m_FoldingDoc.m_LastBlock ;
 			}
+			
+			// If we know which block to set the selection to, do so now.
+			if (newSelection != null)
+			{
+				// Expand or contract it to match the previous state
+				// This is a heuristic process--the blocks may not match depending on how the filter is changed.
+				m_FoldingText.m_FoldingDoc.expandBlock(newSelection, selectionExpanded) ;
+				
+				// Get the start position of the block and set the selection to that line.  This ensures the
+				// top of the new selection block is at least visible.
+				int newSelectionPos = m_FoldingText.m_FoldingDoc.getBlockSelectionRange(newSelection).x ;
+				m_FoldingText.setSelection(newSelectionPos, newSelectionPos) ;
+			}	
 			
 			// Draw the new tree
 			m_FoldingText.setRedraw(true) ;
+			
+			// Set the cursor back to normal
+			m_FoldingText.getWindow().getShell().setCursor(null) ;
+			wait.dispose() ;
 		}
 	}
 	
@@ -320,60 +356,60 @@ public class FoldingText
 		public Block findBlockByAllCharPos(int charPos)
 		{
 			int allCharPos = 0 ;
-			int visCharPos = 0 ;
 			
 			int size = m_TextBlocks.size() ;
 			for (int b = 0 ; b < size ; b++)
 			{
 				Block block = (Block)m_TextBlocks.get(b) ;
 				int allChars = block.getAllCharCount() ;
-				int visChars = block.getVisibleCharCount() ;
 				
 				if (charPos >= allCharPos && charPos < allCharPos + allChars)
 				{
-					// The visible selection lies within this block so return
-					// the sum of all characters to this block, plus the number of chars into this block
 					return block ;
 				}
 				
 				allCharPos += allChars ;
-				visCharPos += visChars ;
 			}
 			
 			return null ;			
-		}		
+		}
 
-		/** Given a character position in the entire text stream (e.g. the selection) returns the line and offset.
-		 *  NOTE: Not fully tested -- stopped using it before then but could be useful later so keeping the code. **/
-		public Point getLineAndOffset(int charPos)
+		/********************************************************************************************
+		 * 
+		 * Returns the block that contains the given character position (in terms of the visible characters
+		 * on screen).
+		 * 
+		 * @param charPos
+		 * @param endMatchesLast	If true and charPos is beyond the end of all blocks, return the last block.
+		 * @return
+		********************************************************************************************/
+		public Block findBlockByVisibleCharPos(int charPos, boolean endMatchesLast)
 		{
-			int globalCharPos = 0 ;
-
-			int nBlocks = m_TextBlocks.size() ;
-			for (int b = 0 ; b < nBlocks ; b++)
+			int visCharPos = 0 ;
+			
+			int size = m_TextBlocks.size() ;
+			for (int b = 0 ; b < size ; b++)
 			{
 				Block block = (Block)m_TextBlocks.get(b) ;
-				int chars = block.getVisibleCharCount() ;
+				int visChars = block.getVisibleCharCount() ;
 				
-				if (charPos >= globalCharPos && charPos < globalCharPos + chars)
+				if (charPos >= visCharPos && charPos < visCharPos + visChars)
 				{
-					int charOffset = charPos - globalCharPos ;
-					
-					// Get the line and offset for this character position
-					Point line = block.findLineFromCharCount(charOffset) ;
-					
-					// Convert the line number into the global line number (not block relative)
-					Point result = new Point(line.x + block.getStart(), line.y) ;
-					return result ;
+					return block ;
 				}
 				
-				// Move the search on
-				globalCharPos += chars ;
+				visCharPos += visChars ;
+			}
+
+			// If requested, allow characters beyond the end of the last block to match the last block
+			if (endMatchesLast && charPos >= visCharPos && size >= 1)
+			{
+				return (Block)m_TextBlocks.get(size-1) ;
 			}
 			
-			return null ;
+			return null ;			
 		}
-		
+
 		public void expandBlock(Block block, boolean state)
 		{
 			if (block.isExpanded() == state || !block.canExpand() || block.getSize() == 1)
@@ -381,15 +417,9 @@ public class FoldingText
 
 			Point range = getBlockSelectionRange(block) ;
 			int delta = 0 ;
-			
-			//boolean selected = (m_FoldingText.m_Text.getSelectionCount() > 1) ;
-			
+						
 			m_FoldingText.m_Text.setSelection(range) ;
-			
-			// For debugging show selection and then update it
-			//if (!selected)
-			//	return ;
-			
+						
 			if (state)
 			{
 				// Expanding
@@ -401,7 +431,11 @@ public class FoldingText
 				m_FoldingText.m_Text.insert(block.getFirst()) ;
 				delta = 1 - block.getSize() ;
 			}
-			
+
+			// Set the selection back to the top of the range (it defaults to the bottom)
+			// so we see the top of the newly expanded block if it's long
+			m_FoldingText.m_Text.setSelection(range.x) ;
+
 			// Update the remaining block position info
 			int size = getNumberBlocks() ;
 			for (int b = block.getIndex()+1 ; b < size ; b++)
@@ -417,18 +451,21 @@ public class FoldingText
 	/** Represents a section of text that is a single unit for expanding/collapsing. */
 	public static class Block
 	{
-		protected int		m_Index ;
-		protected boolean	m_CanExpand ;
-		protected boolean	m_IsExpanded ;
+		protected int		m_Index ;				// The block number in the list of all blocks
+		protected boolean	m_CanExpand ;			// If false this is a chunk of top level text which can't expand/collapse
+		protected boolean	m_IsExpanded ;			// If true, this block of text is currently expanded
 		protected int		m_Start ;				// The first line where this block appears in the text widget
+		protected int		m_RecordIndex ;			// Index of first line in master list of all records stored (used to connect the view to the full list).  -1 => filtering not enabled
 
 		protected ArrayList m_Lines = new ArrayList() ;
 		protected StringBuffer m_All = new StringBuffer() ;
 		
-		public Block(boolean canExpand) { m_CanExpand = canExpand ; m_IsExpanded = false ; }
+		public Block(boolean canExpand, int recordIndex) { m_CanExpand = canExpand ; m_IsExpanded = false ; m_RecordIndex = recordIndex ; }
 		
 		public void setIndex(int index)	{ m_Index = index ; }
 		public int getIndex()			{ return m_Index ; }
+		
+		public int getRecordIndex()		{ return m_RecordIndex ; }
 		
 		public void setStart(int start)			{ m_Start = start ; }
 		public int  getStart() 					{ return m_Start ; }
@@ -576,6 +613,25 @@ public class FoldingText
 	{
 		m_FilteringEnabled = state ;
 	}
+	
+	public long getExclusionFilter()
+	{
+		return m_FilterDoc.getExcludeFilter() ;
+	}
+	
+	public boolean isTypeVisible(long type)
+	{
+		return m_FilterDoc.show(type) ;
+	}
+	
+	public void setExclusionFilter(long type, boolean regenerateDisplay)
+	{
+		m_FilterDoc.setExcludeFilter(type) ;
+		
+		// If asked, recompute the entire display (this is a lot of work)
+		if (regenerateDisplay)
+			m_FilterDoc.regenerateDisplay() ;
+	}
 
 	public void changeExclusionFilter(long type, boolean add, boolean regenerateDisplay)
 	{
@@ -586,9 +642,7 @@ public class FoldingText
 			filter = filter | type ;
 		else
 			filter = filter & (~type) ;
-		
-		System.out.println("New filter is " + filter) ;
-		
+				
 		m_FilterDoc.setExcludeFilter(filter) ;
 		
 		// If asked, recompute the entire display (this is a lot of work)
@@ -733,17 +787,6 @@ public class FoldingText
 		m_FoldingDoc.expandBlock(block, true) ;
 		m_IconBar.redraw() ;
 	}
-
-	// Returns the (line, offset) information for the start of the current selection
-	public Point getSelectionStartLineAndOffset()
-	{
-		Point pt = m_Text.getSelection() ;
-		int start = pt.x ;
-		
-		Point lineOff = m_FoldingDoc.getLineAndOffset(start) ;
-		System.out.println("Selection line + off is " + lineOff) ;
-		return lineOff ;
-	}
 	
 	/********************************************************************************************
 	 * 
@@ -779,14 +822,14 @@ public class FoldingText
 	
 	// This method can be called either as a result of new input coming from outside
 	// or because of a change to a filter as we re-process the old information.
-	private void appendTextInternal(String text)
+	private void appendTextInternal(String text, int recordIndex)
 	{
 		Block last = m_FoldingDoc.m_LastBlock ;
 		
 		if (last == null || last.canExpand())
 		{
 			// We create blocks that can't fold to hold top level text lines
-			last = new Block(false) ;
+			last = new Block(false, recordIndex) ;
 			m_FoldingDoc.addBlock(last) ;
 		}
 		
@@ -802,16 +845,19 @@ public class FoldingText
 		text = text.replaceAll(AbstractView.kLineSeparator, AbstractView.kSystemLineSeparator) ;
 
 		boolean show = true ;
+		int recordIndex = -1 ;
+		
 		if (m_FilteringEnabled)
 		{
 			// Record the text in our master filter document.
 			// Also decide if we should show this particular line of text.
-			show = m_FilterDoc.addRecord(text, false, type) ;
+			recordIndex = m_FilterDoc.addRecord(text, false, type) ;
+			show = m_FilterDoc.show(type) ;
 		}
 
 		if (show)
 		{
-			appendTextInternal(text) ;
+			appendTextInternal(text, recordIndex) ;
 
 			// Decide if we have caused the window to scroll or not
 			if (m_LastTopIndex != m_Text.getTopIndex())
@@ -822,7 +868,7 @@ public class FoldingText
 		}
 	}
 	
-	protected void appendSubTextInternal(String text, boolean autoExpand)
+	protected void appendSubTextInternal(String text, boolean autoExpand, int recordIndex)
 	{
 		Block last = m_FoldingDoc.m_LastBlock ;
 		
@@ -831,7 +877,7 @@ public class FoldingText
 			// This is an odd situation where we're adding subtext but have no supertext to append to.
 			// It probably will never occur, but if it does we'll add a blank super text block just
 			// to get us going.
-			last = new Block(true) ;
+			last = new Block(true, recordIndex) ;
 			last.appendLine("") ;
 			last.setExpand(autoExpand) ;
 			m_FoldingDoc.addBlock(last) ;			
@@ -862,7 +908,7 @@ public class FoldingText
 				String lastLine = last.getLastLine() ;
 				last.removeLastLine() ;
 				
-				last = new Block(true) ;
+				last = new Block(true, recordIndex) ;
 				last.appendLine(lastLine) ;
 				last.setExpand(autoExpand) ;
 				m_FoldingDoc.addBlock(last) ;
@@ -910,15 +956,18 @@ public class FoldingText
 		text = text.replaceAll(AbstractView.kLineSeparator, AbstractView.kSystemLineSeparator) ;
 	
 		boolean show = true ;
+		int recordIndex = -1 ;
+		
 		if (m_FilteringEnabled)
 		{
 			// Record the text in our master filter document.
 			// Also decide if we should show this particular line of text.
-			show = m_FilterDoc.addRecord(text, true, type) ;
+			recordIndex = m_FilterDoc.addRecord(text, true, type) ;
+			show = m_FilterDoc.show(type) ;
 		}
 
 		if (show)
-			appendSubTextInternal(text, autoExpand) ;
+			appendSubTextInternal(text, autoExpand, recordIndex) ;
 	}
 	
 	public Composite getWindow() 	 { return m_Container ; }

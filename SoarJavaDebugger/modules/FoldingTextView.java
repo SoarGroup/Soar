@@ -69,7 +69,7 @@ public class FoldingTextView extends AbstractComboView
 	protected Button m_ExpandPageArrow ;
 	protected Menu   m_ExpandPageMenu ;
 	
-	protected Button m_FilterButton ;
+	protected Label  m_FilterLabel ;
 	protected Button m_FilterArrow ;
 	protected Menu	 m_FilterMenu ;
 	
@@ -121,9 +121,6 @@ public class FoldingTextView extends AbstractComboView
 	{
 		m_ExpandButton.setText(m_ExpandTrace ? "Collapse" : " Expand ") ;
 		m_ExpandButton.setData("expand", m_ExpandTrace ? Boolean.TRUE : Boolean.FALSE) ;
-		
-		boolean filtering = m_FoldingText.isFilteringEnabled() ;
-		m_FilterButton.setText(filtering ? "Filtering on " : "Filtering off") ;
 	}
 	
 	/********************************************************************************************
@@ -140,7 +137,7 @@ public class FoldingTextView extends AbstractComboView
 		
 		m_Buttons = new Composite(m_ComboContainer, 0) ;
 		m_Buttons.setLayout(new RowLayout()) ;
-		Composite owner = m_Buttons ;
+		final Composite owner = m_Buttons ;
 		
 		// Add a button that offers an expand/collapse option instantly (for just one page)
 		m_ExpandTrace = m_ExpandTracePersistent ;		
@@ -186,17 +183,19 @@ public class FoldingTextView extends AbstractComboView
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandAll(false) ; } } ) ;
 		
 		// Add a button that controls whether we are filtering or not
-		m_FilterButton = new Button(owner, SWT.PUSH);
+		Composite labelHolder = new Composite(owner, SWT.NULL) ;
+		labelHolder.setLayout(new GridLayout(1, true)) ;
+		
+		m_FilterLabel = new Label(labelHolder, 0);
+		m_FilterLabel.setText("Filters") ;
 
-		m_FilterButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
-		{
-			// Toggle the filtering state
-			boolean filtering = m_FoldingText.isFilteringEnabled() ;			
-			m_FoldingText.setFilteringEnabled(!filtering) ;
-			
-			updateButtonState() ;
-		} } ) ;
-	
+		// Place the label in the center of a tiny grid layout so we can
+		// align the text to match the expand button along side
+		GridData data = new GridData() ;
+		data.horizontalAlignment = SWT.CENTER ;
+		data.verticalAlignment = SWT.CENTER ;
+		m_FilterLabel.setLayoutData(data) ;
+		
 		m_FilterArrow = new Button(owner, SWT.ARROW | SWT.DOWN) ;
 		m_FilterMenu  = new Menu(owner) ;
 
@@ -983,11 +982,12 @@ public class FoldingTextView extends AbstractComboView
 	********************************************************************************************/
 	public void showProperties()
 	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[2] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
 
 		// Providing a range for indent so we can be sure we don't get back a negative value
 		properties[0] = new PropertiesDialog.IntProperty("Indent per subgoal", m_IndentSize, 0, 10) ;
 		properties[1] = new PropertiesDialog.BooleanProperty("Expand trace as it is created", m_ExpandTracePersistent) ;
+		properties[2] = new PropertiesDialog.BooleanProperty("Capture data to support filtering", m_FoldingText.isFilteringEnabled()) ;
 
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 
@@ -995,6 +995,7 @@ public class FoldingTextView extends AbstractComboView
 		{
 			m_IndentSize = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
 			m_ExpandTracePersistent = ((PropertiesDialog.BooleanProperty)properties[1]).getValue() ;
+			m_FoldingText.setFilteringEnabled(((PropertiesDialog.BooleanProperty)properties[2]).getValue()) ;
 			
 			// Make the button match the persistent property
 			m_ExpandTrace = m_ExpandTracePersistent ;
@@ -1015,6 +1016,8 @@ public class FoldingTextView extends AbstractComboView
 		ElementXML element = super.convertToXML(tagName, storeContent) ;
 		element.addAttribute("indent", Integer.toString(m_IndentSize)) ;
 		element.addAttribute("auto-expand", Boolean.toString(m_ExpandTracePersistent)) ;
+		element.addAttribute("filtering", Boolean.toString(m_FoldingText.isFilteringEnabled())) ;
+		element.addAttribute("filter", Long.toString(m_FoldingText.getExclusionFilter())) ;
 		return element ;
 	}
 
@@ -1032,6 +1035,14 @@ public class FoldingTextView extends AbstractComboView
 	{
 		m_IndentSize = element.getAttributeIntThrows("indent") ;
 		m_ExpandTracePersistent = element.getAttributeBooleanDefault("auto-expand", false) ;
-		super.loadFromXML(frame, doc, parent, element) ;		
+
+		boolean filtering = element.getAttributeBooleanDefault("filtering", true) ;
+		long filter = element.getAttributeLongDefault("filter", 0) ;
+		
+		super.loadFromXML(frame, doc, parent, element) ;
+		
+		// Have to wait until base class has been called and window has been created before setting these values
+		m_FoldingText.setFilteringEnabled(filtering) ;
+		m_FoldingText.setExclusionFilter(filter, false) ;
 	}
 }
