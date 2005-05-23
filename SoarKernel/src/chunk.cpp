@@ -1116,13 +1116,11 @@ void chunk_instantiation (agent* thisAgent,
 	  if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");
 	  print_with_symbols (thisAgent, "Building %y", prod_name);
 
-	  growable_string gs = make_blank_growable_string(thisAgent);
-	  add_to_growable_string(thisAgent, &gs, "Building ");
-	  add_to_growable_string(thisAgent, &gs, symbol_to_string (thisAgent, prod_name, true, 0, 0));
 	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLearning);
-	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProduction);
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kProduction_Name, symbol_to_string(thisAgent, prod_name, true, 0, 0));
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction);
 	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLearning);
-	  free_growable_string(thisAgent, gs);
   }
   /* AGR 617/634 end */
   
