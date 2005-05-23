@@ -2,7 +2,7 @@
 \label{watch}
 \index{watch}
 Control the run-time tracing of Soar. 
- Status: Complete, EvilBackDoor
+ Complete EvilBackDoor
 \subsubsection*{Synopsis}
 \begin{verbatim}
 watch
@@ -79,7 +79,7 @@ watch --learning [<print|noprint|fullprint>]
  -j, --justifications  & remove (optional)  & Control only justifications as they fire and retract  \\
  \hline 
 \end{tabular}
-\textbf{Note:}
+ \textbf{Note:}
  The pwatch command is used to watch individual productions specified by name rather than watch a type of productions, such as \textbf{--user}
 . 
  Additionally, when watching productions, users may set the level of detail to be displayed for WMEs that are added or retracted as productions fire and retract. Note that detailed information about WMEs will be printed only for productions that are being watched. 
@@ -89,11 +89,11 @@ watch --learning [<print|noprint|fullprint>]
  &\emph{Argument to Option}
  &\emph{Description}
  \hline 
- -n, --nowmes  & No argument  & When watching productions, do not print any information about wmes as they are added or retracted  \\
+ -n, --nowmes  & No argument  & When watching productions, do not print any information about matching wmes  \\
  \hline 
- -t, --timetags  & No argument  & When watching productions, print only the timetags for wmes as they are added or retracted  \\
+ -t, --timetags  & No argument  & When watching productions, print only the timetags for matching wmes  \\
  \hline 
- -f, --fullwmes  & No argument  & When watching productions, print the full wmes as they are added or retracted  \\
+ -f, --fullwmes  & No argument  & When watching productions, print the full matching wmes  \\
  \hline 
 \end{tabular}
 \paragraph*{Watching Learning}

@@ -5,8 +5,7 @@
    watch-wmes -- Print information about wmes matching a certain pattern as
    they are added and removed.
 
-   Priority: 3; Status: Incomplete, EvilBackDoor
-   Uses print callback on some modes.--Jonathan 16:12, 25 Feb 2005 (EST)
+   3 Incomplete EvilBackDoor ResultByKernel
 
                                     Synopsis
 

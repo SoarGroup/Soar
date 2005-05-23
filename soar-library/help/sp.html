@@ -1,7 +1,7 @@
-<html dir="ltr" lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head><title>Sp - Soar Wiki</title></head><body class="ns-0"><div id="globalWrapper"><div id="column-content"><div id="content"><a id="contentTop" name="top"></a><h1 class="firstHeading">Sp</h1><div id="bodyContent"><div id="contentSub"></div><a name="Name"></a><h1> Name </h1><p><strong>sp</strong> - Define a Soar production. <p>Status: <a href="/soarwiki/Complete" title="Complete">Complete</a><a name="Synopsis"></a><h1> Synopsis </h1><pre><code>
+<html dir="ltr" lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"><head><title>Sp - Soar Wiki</title></head><body class="ns-0"><div id="globalWrapper"><div id="column-content"><div id="content"><a id="contentTop" name="top"></a><h1 class="firstHeading">Sp</h1><div id="bodyContent"><div id="contentSub"></div><a name="Name"></a><h1> Name </h1><p><b>sp</b> - Define a Soar production. <p><a href="/soarwiki/Complete" title="Complete">Complete</a><a name="Synopsis"></a><h1> Synopsis </h1><pre><code>
 sp {<u>production_body</u>}
 </code>
-</pre><a name="Options"></a><h1> Options </h1><table border=1 cellpadding=2><tr><td> production_body </td><td> A Soar production. </td></tr></table><p><br><a name="Description"></a><h1> Description </h1><p>The <strong>sp</strong> command creates a new production and loads it into production memory. <em>production_body</em> is a single argument parsed by the Soar kernel, so it should be enclosed in curly braces to avoid being parsed by other scripting languages that might be in the same proces. The overall syntax of a rule is as follows: <pre>  name 
+</pre><a name="Options"></a><h1> Options </h1><table border=1 cellpadding=2><tr><td> production_body </td><td> A Soar production. </td></tr></table><a name="Description"></a><h1> Description </h1><p>The <b>sp</b> command creates a new production and loads it into production memory. <i>production_body</i> is a single argument parsed by the Soar kernel, so it should be enclosed in curly braces to avoid being parsed by other scripting languages that might be in the same proces. The overall syntax of a rule is as follows: <pre>  name 
       [&quot;documentation-string&quot;] 
       [FLAG*]
       LHS
@@ -18,7 +18,7 @@ sp {<u>production_body</u>}
 
 :chunk          specifies that this production is a chunk 
                 (this matters for learn trace)
-</pre><p>Multiple flags may be used, but not both of <strong>o-support</strong> and <strong>no-support</strong>. <p>Although you could force your productions to provide O-support or I-support by using these commands --- regardless of the structure of the conditions and actions of the production --- this is not proper coding style. The <strong>o-support</strong> and <strong>no-support</strong> flags are included to help with debugging, but should not be used in a standard Soar program. <a name="Examples"></a><h1> Examples </h1><pre>sp {blocks*create-problem-space   
+</pre><p>Multiple flags may be used, but not both of <b>o-support</b> and <b>no-support</b>. <p>Although you could force your productions to provide O-support or I-support by using these commands --- regardless of the structure of the conditions and actions of the production --- this is not proper coding style. The <b>o-support</b> and <b>no-support</b> flags are included to help with debugging, but should not be used in a standard Soar program. <a name="Examples"></a><h1> Examples </h1><pre>sp {blocks*create-problem-space   
      &quot;This creates the top-level space&quot;
      (state &lt;s1&gt; ^superstate nil)
      --&gt;

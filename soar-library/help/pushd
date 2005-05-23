@@ -4,7 +4,7 @@
 
    pushd - Push a directory onto the directory stack, changing to it.
 
-   Status: Complete
+   Complete
 
                                     Synopsis
 

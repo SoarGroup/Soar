@@ -5,7 +5,7 @@
    max-elaborations - Limit the maximum number of elaboration cycles in a
    given phase. Print a warning message if the limit is reached during a run.
 
-   Status: Complete
+   Complete
 
                                     Synopsis
 

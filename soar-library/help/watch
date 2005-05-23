@@ -4,7 +4,7 @@
 
    watch - Control the run-time tracing of Soar.
 
-   Status: Complete, EvilBackDoor
+   Complete EvilBackDoor
 
                                     Synopsis
 
@@ -118,16 +118,14 @@ Watching Productions
    |Option Flag   |Argument to Option|Description                           |
    |--------------+------------------+--------------------------------------|
    |              |                  |When watching productions, do not     |
-   |-n, --nowmes  |No argument       |print any information about wmes as   |
-   |              |                  |they are added or retracted           |
+   |-n, --nowmes  |No argument       |print any information about matching  |
+   |              |                  |wmes                                  |
    |--------------+------------------+--------------------------------------|
-   |              |                  |When watching productions, print only |
-   |-t, --timetags|No argument       |the timetags for wmes as they are     |
-   |              |                  |added or retracted                    |
+   |-t, --timetags|No argument       |When watching productions, print only |
+   |              |                  |the timetags for matching wmes        |
    |--------------+------------------+--------------------------------------|
-   |              |                  |When watching productions, print the  |
-   |-f, --fullwmes|No argument       |full wmes as they are added or        |
-   |              |                  |retracted                             |
+   |-f, --fullwmes|No argument       |When watching productions, print the  |
+   |              |                  |full matching wmes                    |
    +------------------------------------------------------------------------+
 
 Watching Learning

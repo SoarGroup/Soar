@@ -4,9 +4,8 @@
 
    indifferent-selection - Controls indifferent preference arbitration.
 
-   Priority: 4 ; Status: Complete
-   --ask gets set but the actual asking does not work at all, I think it
-   locks everything up--Jonathan 13:29, 23 Feb 2005 (EST)
+   Complete --ask gets set but the actual asking does not work at all, I
+   think it locks everything up--Jonathan 13:29, 23 Feb 2005 (EST)
 
                                     Synopsis
 
