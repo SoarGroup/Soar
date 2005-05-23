@@ -37,9 +37,115 @@ public class FoldingText
 	protected Canvas 	m_IconBar ;
 	protected Composite m_Container ;
 	protected FoldingTextDoc m_FoldingDoc = new FoldingTextDoc(this) ;
+	protected FilterDoc	m_FilterDoc = new FilterDoc(this) ;
 	protected int		m_LastTopIndex ;
 	protected boolean	m_DrawingDisabled = false ;
+	
+	// If false, we don't collect information to support filtering (increases performance and saves memory although
+	// the differences seem to be small from my testing).
+	protected boolean	m_FilteringEnabled = true ;
 
+	public static class FilterRecord
+	{
+		protected String 	m_Text ;			// The text itself
+		protected boolean 	m_SubText ;			// If true this text goes at a sub level
+		protected long		m_Type ;		// The type of information stored here, against which we filter.  (This is treated as a bit field).
+		
+		public FilterRecord(String text, boolean subText, long type)
+		{
+			m_Text = text ;
+			m_SubText = subText ;
+			m_Type = type ;
+		}
+		
+		public boolean isSubText()
+		{
+			return m_SubText;
+		}
+		public String getText()
+		{
+			return m_Text;
+		}
+		public long getType()
+		{
+			return m_Type;
+		}
+	}
+	
+	public static class FilterDoc
+	{
+		protected ArrayList		m_AllRecords = new ArrayList() ;
+		protected FoldingText	m_FoldingText ;
+		
+		// If type & excludeFilter != 0 we won't display it
+		protected long			m_ExcludeFilter = 0 ;
+		
+		public FilterDoc(FoldingText foldingText)
+		{
+			m_FoldingText = foldingText ;
+		}
+
+		public boolean show(boolean subText, long type)
+		{
+			return ((m_ExcludeFilter & type) == 0) ; 
+		}
+		
+		// Returns true if we should show this line
+		public boolean addRecord(String text, boolean subText, long type)
+		{
+			m_AllRecords.add(new FilterRecord(text, subText, type)) ;
+			
+			return show(subText, type) ;
+		}
+		
+		public void clear()
+		{
+			m_AllRecords.clear() ;
+		}
+		
+		public void setExcludeFilter(long filter)
+		{
+			m_ExcludeFilter = filter ;
+		}
+		
+		public long getExcludeFilter()
+		{
+			return m_ExcludeFilter ;
+		}
+		
+		public void regenerateDisplay()
+		{
+			// Turn off tree updates
+			m_FoldingText.setRedraw(false) ;
+			
+			// Clear the existing text window
+			m_FoldingText.getTextWindow().setText("") ;
+
+			// BUGBUG: Need to go through existing blocks and decide if a top level line
+			// is part of an expanded block or not, so we can recreate the expanded block structure correctly.
+			
+			// Clear all existing blocks
+			m_FoldingText.m_FoldingDoc.clear() ;
+			
+			int size = m_AllRecords.size() ;
+			for (int i = 0 ; i < size ; i++)
+			{
+				FilterRecord record = (FilterRecord)m_AllRecords.get(i) ;
+				
+				if (show(record.isSubText(), record.getType()))
+				{
+					if (record.isSubText())
+						m_FoldingText.appendSubTextInternal(record.getText(), false) ;
+					else
+						m_FoldingText.appendTextInternal(record.getText()) ;
+				}
+			}
+			
+			// Draw the new tree
+			m_FoldingText.setRedraw(true) ;
+		}
+	}
+	
 	public static class FoldingTextDoc
 	{
 		protected	ArrayList	m_TextBlocks = new ArrayList() ;
@@ -455,9 +561,39 @@ public class FoldingText
 	
 	public void clear()
 	{
+		m_FilterDoc.clear() ;
 		m_FoldingDoc.clear() ;
 		m_Text.setText("") ;
 		m_IconBar.redraw() ;
+	}
+	
+	public boolean isFilteringEnabled()
+	{
+		return this.m_FilteringEnabled ;
+	}
+	
+	public void setFilteringEnabled(boolean state)
+	{
+		m_FilteringEnabled = state ;
+	}
+
+	public void changeExclusionFilter(long type, boolean add, boolean regenerateDisplay)
+	{
+		long filter = m_FilterDoc.getExcludeFilter() ;
+
+		// Add or remove the given type from the exclusion filter
+		if (add)
+			filter = filter | type ;
+		else
+			filter = filter & (~type) ;
+		
+		System.out.println("New filter is " + filter) ;
+		
+		m_FilterDoc.setExcludeFilter(filter) ;
+		
+		// If asked, recompute the entire display (this is a lot of work)
+		if (regenerateDisplay)
+			m_FilterDoc.regenerateDisplay() ;
 	}
 	
 	public String toString()
@@ -641,13 +777,10 @@ public class FoldingText
 		return selectionPoint ;		
 	}
 	
-	public void appendText(String text)
+	// This method can be called either as a result of new input coming from outside
+	// or because of a change to a filter as we re-process the old information.
+	private void appendTextInternal(String text)
 	{
-		// This is needed because the text control (on Windows) stores newlines as \r\n and selections and character counts will get out of synch if we
-		// work in the text control but reason about the text and they have different newlines.
-		// (We still use \n everywhere else as the newline marker because that's what Soar uses)
-		text = text.replaceAll(AbstractView.kLineSeparator, AbstractView.kSystemLineSeparator) ;
-
 		Block last = m_FoldingDoc.m_LastBlock ;
 		
 		if (last == null || last.canExpand())
@@ -658,34 +791,39 @@ public class FoldingText
 		}
 		
 		last.appendLine(text) ;
-		m_Text.append(text) ;
-
-		// Decide if we have caused the window to scroll or not
-		if (m_LastTopIndex != m_Text.getTopIndex())
-		{
-			scrolled() ;
-			m_LastTopIndex = m_Text.getTopIndex() ;
-		}
+		m_Text.append(text) ;		
 	}
 	
-	/********************************************************************************************
-	 * 
-	 * Adds text to the view one level deep in the tree (so normally it is hidden until the user
-	 * expands the block).
-	 * 
-	 * If autoexpand is true any newly created blocks are expanded immediately so the user doesn't
-	 * need to expand the block manually.
-	 * 
-	 * @param text
-	 * @param autoExpand
-	********************************************************************************************/
-	public void appendSubText(String text, boolean autoExpand)
+	public void appendText(String text, long type)
 	{
 		// This is needed because the text control (on Windows) stores newlines as \r\n and selections and character counts will get out of synch if we
 		// work in the text control but reason about the text and they have different newlines.
 		// (We still use \n everywhere else as the newline marker because that's what Soar uses)
 		text = text.replaceAll(AbstractView.kLineSeparator, AbstractView.kSystemLineSeparator) ;
-		
+
+		boolean show = true ;
+		if (m_FilteringEnabled)
+		{
+			// Record the text in our master filter document.
+			// Also decide if we should show this particular line of text.
+			show = m_FilterDoc.addRecord(text, false, type) ;
+		}
+
+		if (show)
+		{
+			appendTextInternal(text) ;
+
+			// Decide if we have caused the window to scroll or not
+			if (m_LastTopIndex != m_Text.getTopIndex())
+			{
+				scrolled() ;
+				m_LastTopIndex = m_Text.getTopIndex() ;
+			}
+		}
+	}
+	
+	protected void appendSubTextInternal(String text, boolean autoExpand)
+	{
 		Block last = m_FoldingDoc.m_LastBlock ;
 		
 		if (last == null)
@@ -750,7 +888,37 @@ public class FoldingText
 				scrolled() ;
 				m_LastTopIndex = m_Text.getTopIndex() ;
 			}			
+		}		
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * Adds text to the view one level deep in the tree (so normally it is hidden until the user
+	 * expands the block).
+	 * 
+	 * If autoexpand is true any newly created blocks are expanded immediately so the user doesn't
+	 * need to expand the block manually.
+	 * 
+	 * @param text
+	 * @param autoExpand
+	********************************************************************************************/
+	public void appendSubText(String text, boolean autoExpand, long type)
+	{
+		// This is needed because the text control (on Windows) stores newlines as \r\n and selections and character counts will get out of synch if we
+		// work in the text control but reason about the text and they have different newlines.
+		// (We still use \n everywhere else as the newline marker because that's what Soar uses)
+		text = text.replaceAll(AbstractView.kLineSeparator, AbstractView.kSystemLineSeparator) ;
+	
+		boolean show = true ;
+		if (m_FilteringEnabled)
+		{
+			// Record the text in our master filter document.
+			// Also decide if we should show this particular line of text.
+			show = m_FilterDoc.addRecord(text, true, type) ;
 		}
+
+		if (show)
+			appendSubTextInternal(text, autoExpand) ;
 	}
 	
 	public Composite getWindow() 	 { return m_Container ; }

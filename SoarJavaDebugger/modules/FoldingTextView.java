@@ -69,6 +69,10 @@ public class FoldingTextView extends AbstractComboView
 	protected Button m_ExpandPageArrow ;
 	protected Menu   m_ExpandPageMenu ;
 	
+	protected Button m_FilterButton ;
+	protected Button m_FilterArrow ;
+	protected Menu	 m_FilterMenu ;
+	
 	/** Controls whether we cache strings that are due to be subtree nodes and only add the nodes when the user clicks--or not */
 	protected final static boolean kCacheSubText = true ;
 
@@ -116,7 +120,10 @@ public class FoldingTextView extends AbstractComboView
 	protected void updateButtonState()
 	{
 		m_ExpandButton.setText(m_ExpandTrace ? "Collapse" : " Expand ") ;
-		m_ExpandButton.setData("expand", m_ExpandTrace ? Boolean.TRUE : Boolean.FALSE) ;		
+		m_ExpandButton.setData("expand", m_ExpandTrace ? Boolean.TRUE : Boolean.FALSE) ;
+		
+		boolean filtering = m_FoldingText.isFilteringEnabled() ;
+		m_FilterButton.setText(filtering ? "Filtering on " : "Filtering off") ;
 	}
 	
 	/********************************************************************************************
@@ -138,7 +145,6 @@ public class FoldingTextView extends AbstractComboView
 		// Add a button that offers an expand/collapse option instantly (for just one page)
 		m_ExpandTrace = m_ExpandTracePersistent ;		
 		m_ExpandButton = new Button(owner, SWT.PUSH);
-		updateButtonState() ;
 		
 		m_ExpandButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
 		{
@@ -178,8 +184,74 @@ public class FoldingTextView extends AbstractComboView
 		menuItem = new MenuItem (m_ExpandPageMenu, SWT.PUSH);
 		menuItem.setText ("Collapse all");		
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { expandAll(false) ; } } ) ;
-	}
+		
+		// Add a button that controls whether we are filtering or not
+		m_FilterButton = new Button(owner, SWT.PUSH);
+
+		m_FilterButton.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
+		{
+			// Toggle the filtering state
+			boolean filtering = m_FoldingText.isFilteringEnabled() ;			
+			m_FoldingText.setFilteringEnabled(!filtering) ;
 			
+			updateButtonState() ;
+		} } ) ;
+	
+		m_FilterArrow = new Button(owner, SWT.ARROW | SWT.DOWN) ;
+		m_FilterMenu  = new Menu(owner) ;
+
+		m_FilterArrow.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent event)
+		{ 	Point pt = m_FilterArrow.toDisplay(new Point(event.x, event.y)) ;
+			m_FilterMenu.setLocation(pt.x, pt.y) ;
+			m_FilterMenu.setVisible(true) ;
+		} }) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Phases") ;
+		menuItem.setSelection(true) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kPhase) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Preferences") ;
+		menuItem.setSelection(true) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kPreference) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Wme Changes") ;
+		menuItem.setSelection(true) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kWmeChange) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Production Firings") ;
+		menuItem.setSelection(true) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kFiring) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Production Retractions") ;
+		menuItem.setSelection(true) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kRetraction) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Stack Trace") ;
+		menuItem.setSelection(true) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kStack) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Rhs Writes") ;
+		menuItem.setSelection(true) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kRhsWrite) ; } } ) ;
+
+		updateButtonState() ;
+	}
+	
+	protected void changeFilter(Widget widget, long type)
+	{
+		MenuItem item = (MenuItem)widget ;
+		boolean selected = item.getSelection() ;
+		
+		m_FoldingText.changeExclusionFilter(type, !selected, true) ;
+	}
+	
 	/************************************************************************
 	* 
 	* Search for the next occurance of 'text' in this view and place the selection
@@ -405,13 +477,13 @@ public class FoldingTextView extends AbstractComboView
 	* Add the text to the view in a thread safe way (switches to UI thread)
 	* 
 	*************************************************************************/
-	protected void appendSubTextSafely(final String text, final boolean redrawTree)
+	protected void appendSubTextSafely(final String text, final boolean redrawTree, final long type)
 	{
 		// If Soar is running in the UI thread we can make
 		// the update directly.
 		if (!Document.kDocInOwnThread)
 		{
-			appendSubText(text, redrawTree) ;
+			appendSubText(text, redrawTree, type) ;
 			return ;
 		}
 
@@ -419,7 +491,7 @@ public class FoldingTextView extends AbstractComboView
 		// Callback comes in the document thread.
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
-            	appendSubText(text, redrawTree) ;
+            	appendSubText(text, redrawTree, type) ;
             }
          }) ;
 	}
@@ -429,7 +501,7 @@ public class FoldingTextView extends AbstractComboView
 	* Add the text to the view (this method assumes always called from UI thread)
 	* 
 	*************************************************************************/
-	protected void appendSubText(String text, boolean redrawTree)
+	protected void appendSubText(String text, boolean redrawTree, long type)
 	{
 		String[] lines = text.split(kLineSeparator) ;
 
@@ -438,7 +510,7 @@ public class FoldingTextView extends AbstractComboView
 			if (lines[i].length() == 0)
 				continue ;
 
-			m_FoldingText.appendSubText(lines[i] + kLineSeparator, m_ExpandTracePersistent || m_ExpandTrace) ;
+			m_FoldingText.appendSubText(lines[i] + kLineSeparator, m_ExpandTracePersistent || m_ExpandTrace, type) ;
 		}
 	}
 	
@@ -447,7 +519,7 @@ public class FoldingTextView extends AbstractComboView
 	* Add the text to the view (this method assumes always called from UI thread)
 	* 
 	*************************************************************************/
-	protected void appendText(String text)
+	protected void appendText(String text, long type)
 	{
 		String[] lines = text.split(kLineSeparator) ;
 
@@ -456,10 +528,15 @@ public class FoldingTextView extends AbstractComboView
 			if (lines[i].length() == 0)
 				continue ;
 			
-			m_FoldingText.appendText(lines[i] + kLineSeparator) ;
+			m_FoldingText.appendText(lines[i] + kLineSeparator, type) ;
 		}
 	}
-
+	
+	protected void appendText(String text)
+	{
+		appendText(text, TraceType.kTopLevel) ;
+	}
+	
 	/************************************************************************
 	* 
 	* Clear the display control.
@@ -580,7 +657,7 @@ public class FoldingTextView extends AbstractComboView
 				}
 				
 				if (text.length() != 0)
-					this.appendText(text.toString()) ;
+					this.appendText(text.toString(), TraceType.kStack) ;
 			} else if (xmlTrace.IsTagOperator())
 			{
 				 //2:    O: O8 (move-block)
@@ -598,13 +675,13 @@ public class FoldingTextView extends AbstractComboView
 				}
 	
 				if (text.length() != 0)
-					this.appendText(text.toString()) ;
+					this.appendText(text.toString(), TraceType.kStack) ;
 			} else if (xmlTrace.IsTagRhsWrite())
 			{
 				text.append(xmlTrace.GetString()) ;
 				
 				if (text.length() != 0)
-					this.appendText(text.toString()) ;				
+					this.appendText(text.toString(), TraceType.kRhsWrite) ;				
 				
 			} else if (xmlTrace.IsTagPhase())
 			{
@@ -629,7 +706,7 @@ public class FoldingTextView extends AbstractComboView
 				boolean endOfPhase = (status != null && status.equalsIgnoreCase("end")) ;
 				
 				if (text.length() != 0 && !endOfPhase)
-					this.appendSubText(text.toString(), false) ;
+					this.appendSubText(text.toString(), false, TraceType.kPhase) ;
 			}
 			else if (xmlTrace.IsTagAddWme() || xmlTrace.IsTagRemoveWme())
 			{
@@ -671,7 +748,7 @@ public class FoldingTextView extends AbstractComboView
 				}
 				
 				if (text.length() != 0)
-					this.appendSubText(text.toString(), false) ;	
+					this.appendSubText(text.toString(), false, TraceType.kWmeChange) ;	
 
 			} else if (xmlTrace.IsTagPreference())
 			{
@@ -702,7 +779,7 @@ public class FoldingTextView extends AbstractComboView
 				text.append(")") ;
 
 				if (text.length() != 0)
-					this.appendSubText(text.toString(), false) ;
+					this.appendSubText(text.toString(), false, TraceType.kPreference) ;
 				
 			} 
 			else if (xmlTrace.IsTagFiringProduction() || xmlTrace.IsTagRetractingProduction())
@@ -769,9 +846,11 @@ public class FoldingTextView extends AbstractComboView
 					}
 					child.delete() ;
 				}
+				
+				long type = (firing ? TraceType.kFiring : TraceType.kRetraction) ;
 
 				if (text.length() != 0)
-					this.appendSubText(text.toString(), false) ;			
+					this.appendSubText(text.toString(), false, type) ;			
 	
 			}
 			else
