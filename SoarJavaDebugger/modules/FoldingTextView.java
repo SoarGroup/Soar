@@ -272,6 +272,10 @@ public class FoldingTextView extends AbstractComboView
 		menuItem.setText ("Show all") ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_FoldingText.setExclusionFilter(0, true) ; updateButtonState() ; } } ) ;
 
+		menuItem = new MenuItem (m_FilterMenu, SWT.PUSH);
+		menuItem.setText ("Hide all") ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_FoldingText.setExclusionFilter(TraceType.kAllExceptTopLevel, true) ; updateButtonState() ; } } ) ;
+
 		updateButtonState() ;
 	}
 	
