@@ -742,6 +742,14 @@ public class FoldingTextView extends AbstractComboView
 					prod.delete() ;
 				}
 			}
+			else if (xmlTrace.IsTagCandidate())
+			{
+				// Numeric indifferent preferences
+				String output = XmlOutput.getNumericIndiffernceText(agent, xmlTrace) ;
+				
+				if (output.length() != 0)
+					this.appendSubText(output, false, TraceType.kNumericIndifferent) ;
+			}
 			else
 			{
 				// These lines can be helpful if debugging this -- we

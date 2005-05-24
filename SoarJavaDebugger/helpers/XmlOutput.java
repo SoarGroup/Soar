@@ -145,6 +145,39 @@ declared-support="[:i-support|:o-support]">
 		return text.toString() ;
 	}
 
+	//<candidate name="O1" type="[sum|avg]" value="123.4"></candidate>
+	//The text output looks something like:
+	//Candidate O1:   Value (Avg) = 123.4
+	public static String getNumericIndiffernceText(Agent agent, ClientTraceXML xmlTrace)
+	{
+		StringBuffer text = new StringBuffer() ;
+		
+		// Going to allow for any and all of these being null since this is more experimental
+		// then the rest of the trace
+		String candidate = xmlTrace.GetCandidateName() ;
+		String type = xmlTrace.GetCandidateType() ;
+		String value = xmlTrace.GetCandidateValue() ;
+		
+		if (candidate != null)
+		{
+			text.append("Candidate ") ;
+			text.append(candidate) ;
+			text.append(":   Value ") ;
+			
+			if (type != null)
+			{
+				text.append("(") ;
+				text.append(type) ;
+				text.append(")") ;
+			}
+			
+			text.append(" = ") ;
+			text.append(value) ;
+		}
+		
+		return text.toString() ;
+	}
+	
 	public static String getActionText(Agent agent, ClientTraceXML action)
 	{
 		StringBuffer text = new StringBuffer() ;
