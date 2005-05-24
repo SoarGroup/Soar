@@ -156,6 +156,17 @@ public abstract class AbstractComboView extends AbstractView
 		return false ;
 	}
 
+	/************************************************************************
+	* 
+	* Returns true if this window can display output from commands executed through
+	* the "executeAgentCommand" method.
+	* 
+	*************************************************************************/
+	public boolean canDisplayOutput()
+	{
+		return true ;
+	}
+
 	/** Windows that do auto-updates can be usefully primed with an initial command (e.g. print --stack) when defining a default behavior */
 	public void setInitialCommand(String command)
 	{

@@ -66,6 +66,17 @@ public class EditorView extends AbstractView
 		return false;
 	}
 
+	/************************************************************************
+	* 
+	* Returns true if this window can display output from commands executed through
+	* the "executeAgentCommand" method.
+	* 
+	*************************************************************************/
+	public boolean canDisplayOutput()
+	{
+		return false ;
+	}
+	
 	public void setTextFont(Font f)
 	{
 		m_Text.setFont(f) ;

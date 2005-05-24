@@ -177,6 +177,14 @@ public abstract class AbstractView implements AgentFocusListener
 	* 
 	*************************************************************************/
 	public abstract String executeAgentCommand(String command, boolean echoCommand) ;
+	
+	/************************************************************************
+	* 
+	* Returns true if this window can display output from commands executed through
+	* the "executeAgentCommand" method.
+	* 
+	*************************************************************************/
+	public abstract boolean canDisplayOutput() ;
 
 	/************************************************************************
 	* 
@@ -381,9 +389,6 @@ public abstract class AbstractView implements AgentFocusListener
 		// Some commands are only if we're showing tabs (so names are visible)
 		if (!getPane().isSingleView())
 		{
-			new MenuItem(menu, SWT.SEPARATOR) ;
-			addItem(menu, "Rename window ...", "renameview " + m_Frame.getName() + " " + this.getName()) ;
-			
 			if (getPane().isTabAtTop())
 				addItem(menu, "Move tabs to bottom", "movetabs " + m_Frame.getName() + " " + this.getName() + " bottom") ;
 			else
@@ -391,6 +396,8 @@ public abstract class AbstractView implements AgentFocusListener
 		}
 		new MenuItem(menu, SWT.SEPARATOR) ;
 		addItem(menu, "Replace window ...", "replaceview " + m_Frame.getName() + " " + this.getName()) ;
+		addItem(menu, "Rename window ...", "renameview " + m_Frame.getName() + " " + this.getName()) ;
+		new MenuItem(menu, SWT.SEPARATOR) ;
 		addItem(menu, "Remove window", "removeview " + m_Frame.getName() + " " + this.getName()) ;
 	}
 	

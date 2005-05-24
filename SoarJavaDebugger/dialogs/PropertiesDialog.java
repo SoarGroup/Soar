@@ -225,15 +225,16 @@ public class PropertiesDialog extends BaseDialog
 				if ((initialValue == null && setValues[i] == null) || setValues[i].equals(initialValue))
 					m_Index = i ;
 			}
-			
-			if (m_Index == -1)
-				throw new IllegalStateException("Initial value isn't in the set") ;
+	
+			// Want to allow for a value that is null initially and then is set later
+//			if (m_Index == -1)
+//				throw new IllegalStateException("Initial value isn't in the set") ;
 			
 			m_SetValues = setValues ;
 			m_SetDescriptions = setDescriptions ;
 		}
 		
-		public Object getValue() { return m_SetValues[m_Index] ; }
+		public Object getValue() { return (m_Index >= 0) ? m_SetValues[m_Index] : null ; }
 
 		public TableItem addTableItem(Table table)
 		{

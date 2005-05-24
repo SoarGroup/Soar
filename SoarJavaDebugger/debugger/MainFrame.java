@@ -530,6 +530,9 @@ public class MainFrame
 	/** Look up the view based on its name **/
 	public AbstractView getView(String viewName)
 	{
+		if (viewName == null)
+			return null ;
+		
 		AbstractView view = m_NameMap.getView(viewName) ;
 		return view ;
 	}
@@ -707,6 +710,16 @@ public class MainFrame
 	public AbstractView getPrimeView()
 	{
 		return m_MainWindow.getPrimeView();
+	}
+
+	public AbstractView[] getAllViews()
+	{
+		return m_MainWindow.getAllViews(false) ;
+	}
+
+	public AbstractView[] getAllOutputViews()
+	{
+		return m_MainWindow.getAllViews(true) ;
 	}
 
 	/**

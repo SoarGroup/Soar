@@ -88,6 +88,17 @@ public class ButtonView extends AbstractView
 		return true ;
 	}
 
+	/************************************************************************
+	* 
+	* Returns true if this window can display output from commands executed through
+	* the "executeAgentCommand" method.
+	* 
+	*************************************************************************/
+	public boolean canDisplayOutput()
+	{
+		return false ;
+	}
+	
 	/********************************************************************************************
 	* 
 	* This "base name" is used to generate a unique name for the window.
@@ -323,7 +334,30 @@ public class ButtonView extends AbstractView
 	
 	public void showProperties()
 	{
-		m_Frame.ShowMessageBox("No properties yet for the button view -- coming soon.") ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[1] ;
+
+		// Create a list of all views out there which can accept output
+		AbstractView[] views = this.m_Frame.getAllOutputViews() ;
+		String[] descriptions = new String[views.length] ;
+		
+		for (int i = 0 ; i < views.length ; i++)
+		{
+			descriptions[i] = views[i].getName() ;
+		}
+		
+		// Look up the view that we're currently linked to (if any)
+		AbstractView currentView = this.m_Frame.getView(m_LinkedViewName) ;
+
+		//Object initialValue, Object[] setValues, String[] setDescriptions 
+		properties[0] = new PropertiesDialog.SetProperty("Window to use for output", currentView, views, descriptions) ;
+		
+		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+
+		if (ok)
+		{
+			AbstractView linkedView = (AbstractView)((PropertiesDialog.SetProperty)properties[0]).getValue() ;
+			m_LinkedViewName = (linkedView == null) ? null : linkedView.getName() ;
+		}		
 	}
 
 	/************************************************************************

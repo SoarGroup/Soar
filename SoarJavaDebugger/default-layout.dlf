@@ -4,8 +4,8 @@
     <sash weight0="1000" Class="class org.eclipse.swt.custom.SashForm" weights="1" style="512">
       <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
-          <pane view="treetrace2" tabAtTop="false" singleView="true" horiz="true">
-            <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.FoldingTextView" auto-expand="false" ShowTraceOutput="false" indent="3" Name="treetrace2" ClearEachCommand="false" UpdateOnStop="false">
+          <pane view="trace" tabAtTop="false" singleView="true" horiz="true">
+            <view filter="0" UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.FoldingTextView" filtering="true" auto-expand="false" ShowTraceOutput="false" indent="3" Name="trace" ClearEachCommand="false" UpdateOnStop="false">
               <History Item0="<Type commands here>" Size="1" Class="helpers.CommandHistory"></History>
             </view>
           </pane>
@@ -66,22 +66,22 @@
         </view>
       </pane>
       <sash weight0="392" Class="class org.eclipse.swt.custom.SashForm" weight1="607" weights="2" style="512">
-        <pane view="update2" tabAtTop="true" singleView="true" horiz="true">
-          <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="update2" ClearEachCommand="true" UpdateOnStop="true">
+        <pane view="update" tabAtTop="true" singleView="true" horiz="true">
+          <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="update" ClearEachCommand="true" UpdateOnStop="true">
             <History Item0="p --stack" Size="2" Class="helpers.CommandHistory" Item1="p <s>"></History>
           </view>
         </pane>
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Top">
-          <pane view="edit_production" tabAtTop="false" singleView="false" horiz="true">
+          <pane view="scratch_pad" tabAtTop="false" singleView="false" horiz="true">
             <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.KeepCommandView" ShowTraceOutput="false" Name="scratch_pad" ClearEachCommand="false" UpdateOnStop="false">
               <History Size="0" Class="helpers.CommandHistory"></History>
             </view>
             <view ComboAtTop="true" Class="modules.EditorView" Name="edit_production">
-              <History Item0="apply*move-disk*remove*last-disk1-peg" Size="1" Class="helpers.CommandHistory"></History>
+              <History Item0="enter*production*name*here" Size="2" Class="helpers.CommandHistory" Item1="apply*move-disk*remove*last-disk1-peg"></History>
             </view>
           </pane>
           <pane view="buttons2" tabAtTop="false" singleView="true" horiz="true">
-            <view ButtonCount="4" Class="modules.ButtonView" Name="buttons2" LinkedView="keep2">
+            <view ButtonCount="4" Class="modules.ButtonView" Name="buttons2" LinkedView="scratch_pad">
               <Button Command="matches" Name="Matches"></Button>
               <Button Command="print <s>" Name="Print state"></Button>
               <Button Command="print <o>" Name="Print op"></Button>
