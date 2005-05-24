@@ -326,6 +326,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 
 	// Create a new WME that shares the same id as plane
 	Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
+	unused(pID2); // quell gcc warning;
 
 	ok = pAgent->Commit() ;
 

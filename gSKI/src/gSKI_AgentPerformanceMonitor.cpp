@@ -696,7 +696,7 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
 		safeSprintf(buf, 127, "========================================================|===========\n");
 		m_result += buf;
 
-		safeSprintf(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
+		safeSprintf(buf, 127, "Kernel:   %8.3f %8.3f %8.3f %8.3f %8.3f | %10.3f\n",
           timer_value(&current_agent(decision_cycle_phase_timers[INPUT_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[PREFERENCE_PHASE])),
           timer_value(&current_agent(decision_cycle_phase_timers[WM_PHASE])),
