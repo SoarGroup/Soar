@@ -96,7 +96,6 @@ char const* const xmlTraceNames::kTagWarning		= "warning" ;
 
 // learning stuff
 char const* const xmlTraceNames::kTagLearning	= "learning" ;
-// Tag learning has attribute kTypeString
 
 //production printing
 char const* const xmlTraceNames::kTagConditions                 	= "conditions" ;
@@ -121,7 +120,22 @@ char const* const xmlTraceNames::kAction                            = "action" ;
 char const* const xmlTraceNames::kActionFunction                    = "function" ;
 char const* const xmlTraceNames::kActionId                          = "id" ;
 
-
+//backtrace stuff
+char const* const xmlTraceNames::kTagBacktrace              = "backtrace" ;
+char const* const xmlTraceNames::kTagGrounds                = "grounds" ;
+char const* const xmlTraceNames::kTagPotentials             = "potentials" ;
+char const* const xmlTraceNames::kTagLocals                 = "locals" ;
+char const* const xmlTraceNames::kTagLocal                  = "local";
+char const* const xmlTraceNames::kTagProhibitPreference     = "prohibit-preference";
+char const* const xmlTraceNames::kTagAddToPotentials        = "add-to-potentials";
+char const* const xmlTraceNames::kTagNegated                = "negated" ;
+char const* const xmlTraceNames::kTagNots                   = "nots" ;
+char const* const xmlTraceNames::kTagGroundedPotentials     = "grounded-potentials";
+char const* const xmlTraceNames::kTagUngroundedPotentials   = "ungrounded-potentials";
+char const* const xmlTraceNames::kTagUngroundedPotential    = "ungrounded-potential";
+char const* const xmlTraceNames::kBacktracedAlready         = "already-backtraced";
+char const* const xmlTraceNames::kBacktraceSymbol1          = "symbol1";
+char const* const xmlTraceNames::kBacktraceSymbol2          = "symbol2";
 
 // XML function types for XML output event
 char const* const xmlTraceNames::kFunctionBeginTag		= "begintag";

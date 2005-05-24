@@ -99,7 +99,6 @@ public:
 
 	// learning stuff
 	static char const* const kTagLearning;
-	// Tag learning has attribute kTypeString
 
     //production printing
     static char const* const kTagConditions;
@@ -123,6 +122,24 @@ public:
     static char const* const kAction;
     static char const* const kActionFunction;
     static char const* const kActionId;
+
+    //backtrace stuff
+    static char const* const kTagBacktrace;
+    static char const* const kTagGrounds;
+    static char const* const kTagPotentials;
+    static char const* const kTagLocals;
+    static char const* const kTagLocal;
+    static char const* const kTagProhibitPreference;
+    static char const* const kTagAddToPotentials;
+    static char const* const kTagNegated;
+    static char const* const kTagNots;
+    static char const* const kTagGroundedPotentials;
+    static char const* const kTagUngroundedPotentials;
+    static char const* const kTagUngroundedPotential;
+    static char const* const kBacktracedAlready;
+    static char const* const kBacktraceSymbol1;
+    static char const* const kBacktraceSymbol2;
+
 	// end of tags for Trace output
 
 	static char const* const kTypeString;

@@ -33,6 +33,8 @@
 #include "symtab.h"
 #include "explain.h"
 #include "recmem.h"
+#include "xmlTraceNames.h" // for XML trace stuff
+#include "gski_event_system_functions.h"  //for XML trace stuff
 
 #include <ctype.h>
 
@@ -184,6 +186,11 @@ void backtrace_through_instantiation (agent* thisAgent,
     print (thisAgent, "... BT through instantiation of ");
     if (inst->prod) print_with_symbols (thisAgent, "%y\n",inst->prod->name);
     else print_string (thisAgent, "[dummy production]\n");
+    
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagBacktrace);
+    if (inst->prod) gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kProduction_Name, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+    else gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kProduction_Name, "[dummy production]");
+      
   }
 
   /* --- if the instantiation has already been BT'd, don't repeat it --- */
@@ -193,6 +200,8 @@ void backtrace_through_instantiation (agent* thisAgent,
       /* mvp 5-17-94 */
       print_spaces (thisAgent, indent);
       print_string (thisAgent, "(We already backtraced through this instantiation.)\n");
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kBacktracedAlready, "true");
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagBacktrace);
     }
     return;
   }
@@ -370,26 +379,40 @@ void backtrace_through_instantiation (agent* thisAgent,
     /* mvp 5-17-94 */
     print_spaces (thisAgent, indent);
     print_string (thisAgent, "  -->Grounds:\n");
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagGrounds);
     print_consed_list_of_condition_wmes (thisAgent, grounds_to_print, indent);
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagGrounds);
     print (thisAgent, "\n");
     print_spaces (thisAgent, indent);
     print_string (thisAgent, "\n  -->Potentials:\n");
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagPotentials);
     print_consed_list_of_condition_wmes (thisAgent, pots_to_print, indent);
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPotentials);
     print (thisAgent, "\n");
     print_spaces (thisAgent, indent);
     print_string (thisAgent, "  -->Locals:\n");
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLocals);
     print_consed_list_of_condition_wmes (thisAgent, locals_to_print, indent);
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLocals);
     print (thisAgent, "\n");
     print_spaces (thisAgent, indent);
     print_string (thisAgent, "  -->Negated:\n");
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagNegated);
     print_consed_list_of_conditions (thisAgent, negateds_to_print, indent);
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagNegated);
     print (thisAgent, "\n");
     print_spaces (thisAgent, indent);
     print_string (thisAgent, "  -->Nots:\n");
     /* mvp done */
 
-    for (not1=inst->nots; not1!=NIL; not1=not1->next)
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagNots);
+    for (not1=inst->nots; not1!=NIL; not1=not1->next) {
       print_with_symbols (thisAgent, "    %y <> %y\n", not1->s1, not1->s2);
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kBacktraceSymbol1, symbol_to_string(thisAgent, not1->s1, true, 0, 0));
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kBacktraceSymbol2, symbol_to_string(thisAgent, not1->s2, true, 0, 0));
+    }
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagNots);
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagBacktrace);
   }
 
   /* Moved these free's down to here, to ensure they are cleared even if we're 
@@ -415,8 +438,10 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level) {
   condition *cond;
   preference *bt_pref, *p;
 
-  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
     print_string (thisAgent, "\n\n*** Tracing Locals ***\n");
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLocals);
+  }
   
   while (thisAgent->locals) {
     c = thisAgent->locals;
@@ -426,6 +451,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level) {
 
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
       print_string (thisAgent, "\nFor local ");
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLocal);
       print_wme (thisAgent, cond->bt.wme_);
       print_string (thisAgent, " ");
     }
@@ -444,12 +470,20 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level) {
           p = static_cast<preference_struct *>(prohibits->first);
           if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
             print_string (thisAgent, "     For prohibit preference: ");
+            gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProhibitPreference);
             print_preference (thisAgent, p);
           }
           backtrace_through_instantiation (thisAgent, p->inst, grounds_level, cond, 6);
+
+          if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+            gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProhibitPreference);
+          }
         }
       }
       /* mvp done */
+      if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLocal);
+      }
       continue;
     }
 
@@ -466,15 +500,29 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level) {
         thisAgent->variablize_this_chunk = FALSE;
 	thisAgent->quiescence_t_flag = TRUE;
       }
+      if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLocal);
+      }
       continue;
     }
     
     /* --- otherwise add it to the potential set --- */
-    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
       print_string (thisAgent, " --> make it a potential.");
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagAddToPotentials);
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagAddToPotentials);
+    }
     add_to_potentials (thisAgent, cond);
+    
+    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+        gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLocal);
+    }
 
   } /* end of while locals loop */
+
+  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLocals);
+  }
 }
 
 /* ---------------------------------------------------------------
@@ -492,8 +540,10 @@ void trace_grounded_potentials (agent* thisAgent) {
   condition *pot;
   Bool need_another_pass;
   
-  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
     print_string (thisAgent, "\n\n*** Tracing Grounded Potentials ***\n");
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagGroundedPotentials);
+  }
   
   /* --- setup the tc of the ground set --- */
   tc = get_new_tc_number(thisAgent);
@@ -528,6 +578,10 @@ void trace_grounded_potentials (agent* thisAgent) {
       }
     } /* end of for c */
   } /* end of while need_another_pass */
+
+  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagGroundedPotentials);
+  }
 }
 
 /* ---------------------------------------------------------------
@@ -548,8 +602,10 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
   condition *potential;
   preference *bt_pref, *p;
 
-  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
     print_string (thisAgent, "\n\n*** Tracing Ungrounded Potentials ***\n");
+    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagUngroundedPotentials);
+  }
   
   /* --- scan through positive potentials, pick out the ones that have
      a preference we can backtrace through --- */
@@ -569,7 +625,12 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
   }
   
   /* --- if none to BT, exit --- */
-  if (!pots_to_bt) return FALSE;
+  if (!pots_to_bt) {
+      if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagUngroundedPotentials);
+      }
+      return FALSE;
+  }
 
   /* --- backtrace through each one --- */
   while (pots_to_bt) {
@@ -579,6 +640,7 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
     free_cons (thisAgent, c);
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
       print_string (thisAgent, "\nFor ungrounded potential ");
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagUngroundedPotential);
       print_wme (thisAgent, potential->bt.wme_);
       print_string (thisAgent, " ");
     }
@@ -592,12 +654,25 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
         p = static_cast<preference_struct *>(prohibits->first);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
           print_string (thisAgent, "     For prohibit preference: ");
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProhibitPreference);
           print_preference (thisAgent, p);
         }
         backtrace_through_instantiation (thisAgent, p->inst, grounds_level, potential, 6);
+        
+        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+            gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProhibitPreference);
+        }
       }
     }
     /* mvp done */
+    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+        gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagUngroundedPotential);
+    }
   }
+
+  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagUngroundedPotentials);
+  }
+
   return TRUE;
 }

@@ -22,6 +22,8 @@
 #include "sml_StringOps.h"
 #include "ElementXMLInterface.h"
 
+#include <assert.h>
+
 using namespace sml ;
 
 ////////////////////////////////////////////////////////////////

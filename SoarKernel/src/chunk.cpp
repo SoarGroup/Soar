@@ -1064,10 +1064,15 @@ void chunk_instantiation (agent* thisAgent,
   for (pref=results; pref!=NIL; pref=pref->next_result) {
 	  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
 		  print_string (thisAgent, "\nFor result preference ");
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLocal);
 		  print_preference (thisAgent, pref);
 		  print_string (thisAgent, " ");
 	  }
 	  backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, 0);
+      
+      if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLocal);
+      }
   }
   
   thisAgent->quiescence_t_flag = FALSE;
@@ -1267,7 +1272,9 @@ void chunk_instantiation (agent* thisAgent,
 	  
 	  if (print_prod && (rete_addition_result!=DUPLICATE_PRODUCTION)) {
 		  print_string (thisAgent, "\n");
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLearning);
 		  print_production (thisAgent, prod, FALSE);
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLearning);
 	  }
 	  
 	  if (rete_addition_result==DUPLICATE_PRODUCTION) {

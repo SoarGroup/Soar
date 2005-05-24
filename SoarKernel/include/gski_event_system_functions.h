@@ -17,6 +17,7 @@
 /*********************************** INLINE FUNCTIONS *****************************************/
 /* Gotta include these after the other stuff to keep circular includes from happening. */
 #include "agent.h"
+#include "xmlTraceNames.h"
 
 #include <assert.h>
 #include <memory.h>
