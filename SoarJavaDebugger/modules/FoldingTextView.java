@@ -510,6 +510,14 @@ public class FoldingTextView extends AbstractComboView
 		return m_FoldingText.getWindow() ;
 	}
 
+	public void setTextFont(Font f)
+	{
+		super.setTextFont(f) ;
+		
+		// Changing the font means we need to redraw the icon bar, just as if we scrolled
+		m_FoldingText.scrolled() ;
+	}
+
 	/************************************************************************
 	* 
 	* Add the text to the view in a thread safe way (switches to UI thread)

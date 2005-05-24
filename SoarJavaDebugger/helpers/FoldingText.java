@@ -597,7 +597,7 @@ public class FoldingText
 		m_LastTopIndex = m_Text.getTopIndex() ;
 	}
 	
-	private void scrolled()
+	public void scrolled()
 	{
 		m_IconBar.redraw() ; 
 	}
@@ -1046,10 +1046,9 @@ public class FoldingText
 		
 		int blockIndex = topBlock.getIndex() ;
 
-		int outerSize = 11 ;
-		int innerSize = 7 ;
-		int offset1 = (client.width - outerSize) / 2 ;
-		int offset2 = (client.width - innerSize) / 2 ;
+		int outerSize = 9 ;
+		int innerSize = 6 ;
+		int offset = (outerSize - innerSize)/2 + 1 ;
 		
 		Color gray  = m_IconBar.getDisplay().getSystemColor(SWT.COLOR_GRAY) ;
 		Color black = m_IconBar.getDisplay().getSystemColor(SWT.COLOR_BLACK) ;
@@ -1067,33 +1066,34 @@ public class FoldingText
 				break ;
 		
 			int pos = line - topLine ;
-			int y = pos * lineHeight ;
+			int y = pos * lineHeight + (lineHeight/2) - (outerSize/2) - 1 ;
+			int x = 1 ;
 				
 			boolean expanded = block.isExpanded() ;
 			
 			if (block.canExpand())
 			{
-				gc.drawRectangle(offset1, y + offset1, outerSize-1, outerSize-1) ;
+				gc.drawRectangle(x, y, x + outerSize, x + outerSize) ;
 
 				// Start with a - sign
-				int y1 = y + lineHeight/2 - 2;
-				gc.drawLine(offset2, y1, offset2 + innerSize-1, y1) ;
+				int y1 = y + 1 + (outerSize/2);
+				gc.drawLine(x + offset, y1, x + offset + innerSize, y1) ;
 
 				if (!expanded)
 				{
 					// If not expanded turn the - into a +
-					int x1 = client.width / 2 ;
-					gc.drawLine(x1, y + offset2, x1, y + offset2 + innerSize-1) ;
+					int x1 = x + 1 + (outerSize/2) ;
+					gc.drawLine(x1, y + offset, x1, y + offset + innerSize) ;
 				}
 				else
 				{
 					// If expanded draw a line to show what is in the expanded area
 					gc.setForeground(gray) ;
-					int x = client.width / 2 ;
-					int yTop = y + offset1 + outerSize ;
-					int yBottom = y + (block.getSize() * lineHeight) - lineHeight/2 ;
-					gc.drawLine(x, yTop, x, yBottom) ;
-					gc.drawLine(x, yBottom, client.width-1, yBottom) ;
+					int x1 = x + 1 + (outerSize / 2) ;
+					int yTop = y + outerSize + 2 ;
+					int yBottom = y + ((block.getSize()-1) * lineHeight) + (outerSize/2) ;
+					gc.drawLine(x1, yTop, x1, yBottom) ;
+					gc.drawLine(x1, yBottom, client.width-1, yBottom) ;
 					gc.setForeground(black) ;
 				}
 			}
