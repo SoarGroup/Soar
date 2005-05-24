@@ -645,8 +645,8 @@ void MyXMLEventHandlerTimer(smlXMLEventId id, void* pUserData, Agent* pAgent, Cl
     fs.open("test.xml", std::ios_base::out | std::ios_base::app);
     char* temp = pXML->GenerateXMLString(true);
     fs << temp;
-    ClientXML::DeleteString(temp);
     fs.close();
+    ClientXML::DeleteString(temp);
     */
 }
 
@@ -654,6 +654,14 @@ void MyPrintEventHandlerTimer(smlPrintEventId id, void* pUserData, Agent* pAgent
 {
 	// Don't do any work in the timer case -- but register the event handler so we generate
 	// the data and send it to us.
+
+    //This code is for debugging what comes out of the trace
+    /*
+    std::fstream fs;
+    fs.open("test.txt", std::ios_base::out | std::ios_base::app);
+    fs << pMsg;
+    fs.close();
+    */
 }
 
 bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
@@ -702,7 +710,8 @@ bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 		bool ok = true ;
 
 		std::string path = pKernel->GetLibraryLocation() ;
-		path += "/demos/towers-of-hanoi/towers-of-hanoi.soar" ;
+        path += "/demos/towers-of-hanoi/towers-of-hanoi.soar" ;
+		//path += "/demos/water-jug/water-jug-look-ahead.soar" ;
 
 		bool load = pAgent->LoadProductions(path.c_str()) ;
 		unused(load);
@@ -719,13 +728,18 @@ bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 			return false ;
 
 		pAgent->RegisterForPrintEvent(smlEVENT_PRINT, &MyPrintEventHandlerTimer, NULL) ;
-		//pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
+		pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
 
-		pAgent->ExecuteCommandLine("watch 5") ;
+		pAgent->ExecuteCommandLine("watch 0") ;
 	}
 
-	std::string result = pFirst->ExecuteCommandLine("time run 100") ;
-	cout << result << endl ;
+    std::string result;
+    
+    //result = pFirst->ExecuteCommandLine("watch --learning fullprint --backtracing") ;
+	//cout << result << endl ;
+
+    result = pFirst->ExecuteCommandLine("time run 100") ;
+    cout << result << endl ;
 
 	// Need to get rid of the kernel explictly.
 	delete pKernel ;
