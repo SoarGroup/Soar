@@ -165,6 +165,7 @@ char const* const sml_Names::kTagProhibitPreference     = "prohibit-preference";
 char const* const sml_Names::kTagAddToPotentials        = "add-to-potentials";
 char const* const sml_Names::kTagNegated                = "negated" ;
 char const* const sml_Names::kTagNots                   = "nots" ;
+char const* const sml_Names::kTagNot                    = "not" ;
 char const* const sml_Names::kTagGroundedPotentials     = "grounded-potentials";
 char const* const sml_Names::kTagUngroundedPotentials   = "ungrounded-potentials";
 char const* const sml_Names::kTagUngroundedPotential    = "ungrounded-potential";

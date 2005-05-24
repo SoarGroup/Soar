@@ -75,23 +75,6 @@ public class FoldingTextView extends AbstractComboView
 	
 	/** Controls whether we cache strings that are due to be subtree nodes and only add the nodes when the user clicks--or not */
 	protected final static boolean kCacheSubText = true ;
-
-	/** We cache a series of strings made up of just spaces up to a certain size, so we can do rapid indenting through a lookup */
-	protected static final int kCachedSpaces = 100 ;
-	protected static final String[] kPadSpaces = new String[kCachedSpaces] ;
-	
-	/** This is a class constructor -- it runs once, the first time the class is used.  Don't mistake it for a normal, instance constructor */
-	static
-	{
-		// Fill in the kPadSpaces array
-		StringBuffer buffer = new StringBuffer() ;
-		
-		for (int i = 0 ; i < kCachedSpaces ; i++)
-		{
-			kPadSpaces[i] = buffer.toString() ;
-			buffer.append(" ") ;
-		}
-	}
 	
 	/** We use this structure if we're caching sub nodes in the tree for expansion only when the user clicks */
 	protected static class TreeData
@@ -593,53 +576,6 @@ public class FoldingTextView extends AbstractComboView
 		m_FoldingText.clear() ;
 	}
 	
-	/** Returns a string of spaces of the given length (>= 0).  This is an efficient calculation */
-	protected String getSpaces(int length)
-	{
-		if (length <= 0)
-			return "" ;
-		
-		// We use a lookup from a table if the length is reasonable (< 100 right now)
-		if (length < kPadSpaces.length)
-			return kPadSpaces[length] ;
-		
-		// Otherwise we have to generate it which is slow
-		StringBuffer buffer = new StringBuffer() ;
-		buffer.append(kPadSpaces[kPadSpaces.length - 1]) ;
-		
-		// If we use this a lot we could speed it up by using a binary addition process
-		// but I hope to never use it (except in a run-away stack situation).
-		for (int i = 0 ; i < length - kPadSpaces.length ; i++)
-		{
-			buffer.append(" ") ;
-		}
-		
-		return buffer.toString() ;
-	}
-	
-	/** Add spaces to the length until reaches minLength */
-	protected String padLeft(String orig, int minLength)
-	{
-		if (orig.length() >= minLength)
-			return orig ;
-				
-		// Add the appropriate number of spaces.
-		return getSpaces(minLength - orig.length()) + orig ;
-	}
-	
-	/** Returns a string to indent to a certain stack depth (depth stored as a string) */
-	protected String indent(String depthStr, int modifier)
-	{
-		if (depthStr == null)
-			return "" ;
-		
-		int depth = Integer.parseInt(depthStr) + modifier ;
-		
-		int indentSize = depth * m_IndentSize ;
-		
-		return getSpaces(indentSize) ;
-	}
-	
 	/********************************************************************************************
 	 * 
 	 * This handler should only be called from the UI thread as it does a lot of UI work.
@@ -666,16 +602,16 @@ public class FoldingTextView extends AbstractComboView
 			// Get each child in turn
 			xmlParent.GetChild(xmlTrace, childIndex) ;
 			
-			StringBuffer text = new StringBuffer() ;
-			final int decisionDigits = 6 ;
+			final int decisionDigits = 6 ;	// So colons match with print --stack in trace window
 			
 			// This is a state change (new decision)
 			if (xmlTrace.IsTagState())
 			{
 				// 3:    ==>S: S2 (operator no-change)
-				text.append(padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
+				StringBuffer text = new StringBuffer() ;				
+				text.append(XmlOutput.padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
 				text.append(": ") ;
-				text.append(indent(xmlTrace.GetStackLevel(), -1)) ;
+				text.append(XmlOutput.indent(xmlTrace.GetStackLevel(), -1, m_IndentSize)) ;
 
 				// Add an appropriate subgoal marker to match the indent size
 				if (m_IndentSize == 3)
@@ -686,7 +622,7 @@ public class FoldingTextView extends AbstractComboView
 					text.append(">") ;
 				else if (m_IndentSize > 3)
 				{
-					text.append(getSpaces(m_IndentSize - 3)) ;
+					text.append(XmlOutput.getSpaces(m_IndentSize - 3)) ;
 					text.append("==>") ;
 				}
 				
@@ -707,9 +643,10 @@ public class FoldingTextView extends AbstractComboView
 			} else if (xmlTrace.IsTagOperator())
 			{
 				 //2:    O: O8 (move-block)
-				text.append(padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
+				StringBuffer text = new StringBuffer() ;
+				text.append(XmlOutput.padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
 				text.append(": ") ;
-				text.append(indent(xmlTrace.GetStackLevel(), 0)) ;
+				text.append(XmlOutput.indent(xmlTrace.GetStackLevel(), 0, m_IndentSize)) ;
 				text.append("O: ") ;
 				text.append(xmlTrace.GetOperatorID()) ;
 				
@@ -724,180 +661,86 @@ public class FoldingTextView extends AbstractComboView
 					this.appendText(text.toString(), TraceType.kStack) ;
 			} else if (xmlTrace.IsTagRhsWrite())
 			{
-				text.append(xmlTrace.GetString()) ;
+				String output = xmlTrace.GetString() ;
 				
-				if (text.length() != 0)
-					this.appendText(text.toString(), TraceType.kRhsWrite) ;				
+				if (output.length() != 0)
+					this.appendText(output, TraceType.kRhsWrite) ;				
 				
 			} else if (xmlTrace.IsTagPhase())
 			{
 				String status = xmlTrace.GetPhaseStatus() ;
-				String firingType = xmlTrace.GetFiringType() ;
 				
-				text.append("--- ") ;
-				text.append(xmlTrace.GetPhaseName()) ;
-				text.append(" ") ;
-				text.append("phase ") ;
-				if (status != null)
-					text.append(status) ;
-				if (firingType != null)
-				{
-					text.append("(") ;
-					text.append(firingType) ;
-					text.append(") ") ;
-				}
-				text.append("---") ;
-				
+				String output = XmlOutput.getPhaseText(agent, xmlTrace, status) ;
+								
 				// Don't show end of phase messages
 				boolean endOfPhase = (status != null && status.equalsIgnoreCase("end")) ;
 				
-				if (text.length() != 0 && !endOfPhase)
-					this.appendSubText(text.toString(), false, TraceType.kPhase) ;
+				if (output.length() != 0 && !endOfPhase)
+					this.appendSubText(output, false, TraceType.kPhase) ;
 			}
 			else if (xmlTrace.IsTagAddWme() || xmlTrace.IsTagRemoveWme())
 			{
 				boolean adding = xmlTrace.IsTagAddWme() ;
-				for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
-				{
-					ClientTraceXML child = new ClientTraceXML() ;
-					xmlTrace.GetChild(child, i) ;
-					
-					if (child.IsTagWme())
-					{
-						text.append(adding ? "=>WM: (" : "<=WM: (") ;
-						text.append(child.GetWmeTimeTag()) ;
-						text.append(": ") ;
-						text.append(child.GetWmeID()) ;
-						text.append(" ^") ;
-						text.append(child.GetWmeAttribute()) ;
-						text.append(" ") ;
-						text.append(child.GetWmeValue()) ;
-						
-						String pref = child.GetWmePreference() ;						
-						if (pref != null)
-						{
-							text.append(" ") ;
-							text.append(pref) ;
-						}
-						
-						String support = child.GetPreferenceOSupported() ;
-						if (support != null)
-						{
-							text.append(" ") ;
-							text.append(support) ;
-						}
-						
-						text.append(")") ;
-					}
-					
-					child.delete() ;
-				}
+				String output = XmlOutput.getWmeChange(agent, xmlTrace, adding) ;
 				
-				if (text.length() != 0)
-					this.appendSubText(text.toString(), false, TraceType.kWmeChange) ;	
+				if (output.length() != 0)
+					this.appendSubText(output, false, TraceType.kWmeChange) ;	
 
 			} else if (xmlTrace.IsTagPreference())
 			{
-				text.append("--> (") ;
-				text.append(xmlTrace.GetPreferenceID()) ;
-				text.append(" ^") ;
-				text.append(xmlTrace.GetPreferenceAttribute()) ;
-				text.append(" ") ;
-				text.append(xmlTrace.GetPreferenceValue()) ;
-				text.append(" ") ;
-				text.append(xmlTrace.GetPreferenceType()) ;
+				String output = XmlOutput.getPreferenceText(agent, xmlTrace) ;
 				
-				// For binary prefs we get a second object
-				String referent = xmlTrace.GetPreferenceReferent() ;
-				if (referent != null)
-				{
-					text.append(" ") ;
-					text.append(referent) ;
-				}
-				
-				String support = xmlTrace.GetPreferenceOSupported() ;
-				if (support != null)
-				{
-					text.append(" ") ;
-					text.append(support) ;
-				}
-				
-				text.append(")") ;
-
-				if (text.length() != 0)
-					this.appendSubText(text.toString(), false, TraceType.kPreference) ;
+				if (output.length() != 0)
+					this.appendSubText(output.toString(), false, TraceType.kPreference) ;
 				
 			} 
 			else if (xmlTrace.IsTagFiringProduction() || xmlTrace.IsTagRetractingProduction())
 			{
 				boolean firing = xmlTrace.IsTagFiringProduction() ;
 
-				// Firing/Retracting <production>
-				// followed by timetag or full wme information for LHS
-				for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
-				{
-					ClientTraceXML child = new ClientTraceXML() ;
-					xmlTrace.GetChild(child, i) ;
-					if (child.IsTagProduction())
-					{
-						if (i > 0)
-							text.append(kLineSeparator) ;
-						
-						text.append(firing ? "Firing " : "Retracting ") ;
-						text.append(child.GetProductionName()) ;
-						
-						for (int j = 0 ; j < child.GetNumberChildren() ; j++)
-						{
-							if (j == 0)
-								text.append(kLineSeparator) ;
-							
-							ClientTraceXML wme = new ClientTraceXML() ;
-							child.GetChild(wme, j) ;
-							
-							if (wme.IsTagWme())
-							{
-								// See if we have full information or just a time tag
-								String id = wme.GetWmeID() ;
-								if (id != null)
-								{
-									if (j > 0)
-										text.append(kLineSeparator) ;
-									
-									text.append("(") ;
-									text.append(wme.GetWmeTimeTag()) ;
-									text.append(": ") ;
-									text.append(id) ;
-									text.append(" ^") ;
-									text.append(wme.GetWmeAttribute()) ;
-									text.append(" ") ;
-									text.append(wme.GetWmeValue()) ;
-									
-									String pref = wme.GetWmePreference() ;						
-									if (pref != null)
-									{
-										text.append(" ") ;
-										text.append(pref) ;
-									}
-									text.append(")") ;
-								}
-								else
-								{
-									text.append(wme.GetWmeTimeTag()) ;
-									text.append(" ") ;
-								}
-							}
-							
-							wme.delete() ;
-						}
-					}
-					child.delete() ;
-				}
+				String output = XmlOutput.getProductionFiring(agent, xmlTrace, firing) ;
 				
 				long type = (firing ? TraceType.kFiring : TraceType.kRetraction) ;
 
-				if (text.length() != 0)
-					this.appendSubText(text.toString(), false, type) ;			
+				if (output.length() != 0)
+					this.appendSubText(output, false, type) ;			
 	
+			}
+			else if (xmlTrace.IsTagLearning())
+			{
+				// Building chunk*name
+				// Optionally followed by the production
+				for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
+				{
+					ClientTraceXML prod = new ClientTraceXML() ;
+					xmlTrace.GetChild(prod, i) ;
+					if (prod.IsTagProduction())
+					{
+						if (prod.GetNumberChildren() == 0)
+						{
+							// If this production has no children it's just a "we're building x" message.
+							StringBuffer text = new StringBuffer() ;
+							
+							if (i > 0)
+								text.append(kLineSeparator) ;
+							
+							text.append("Building ") ;
+							text.append(prod.GetProductionName()) ;							
+							appendText(text.toString(), TraceType.kLearning) ;			
+						}
+						else
+						{	
+							// If has children we're looking at a full production print
+							// (Note -- we get the "we're building" from above as well as this so we don't
+							// add the "build x" message when this comes in.
+							String prodText = XmlOutput.getProductionText(agent, prod) ;
+							
+							if (prodText != null && prodText.length() != 0)
+								this.appendSubText(prodText, false, TraceType.kFullLearning) ;			
+						}
+					}
+					prod.delete() ;
+				}
 			}
 			else
 			{

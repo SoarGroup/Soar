@@ -54,10 +54,30 @@ public:
 	// Firing-production tag, contains production
 	bool IsTagFiringProduction() const ;
 	bool IsTagRetractingProduction() const ;
+	bool IsTagLearning() const ;
 
 	// Production
 	bool IsTagProduction() const ;
 	char const* GetProductionName() const ;
+	char const* GetProductionDoc() const ;
+	char const* GetProductionType() const ;
+	char const* GetProductionDeclaredSupport() const ;
+
+	bool IsTagConditions() const ;
+	bool IsTagCondition() const	;
+	bool IsTagConjunctiveNegationCondition() const ;
+	bool IsTagActions() const ;
+	bool IsTagAction() const ;
+
+	// Condition attributes: Note this form allows for multiple unparsed conditions within the "condition" attribute.
+	char const* GetConditionTest() const ;
+	char const* GetConditionId() const ;
+	char const* GetCondition() const ;
+
+	// Action attributes
+	char const* GetActionId() const	;
+	char const* GetAction() const ;
+	char const* GetFunction() const	;
 
 	// Add-wme contains wme
 	bool IsTagAddWme() const ;
@@ -80,6 +100,30 @@ public:
 	char const* GetPreferenceTimeTag() const ;
 	char const* GetPreferenceOSupported() const	;
 	char const* GetPreferenceReferent() const ;
+
+	// Backtracing
+	bool IsTagLocal() const	;
+	bool IsTagLocals() const ;
+	bool IsTagGrounds() const ;
+	bool IsTagNegated() const ;
+	bool IsTagNot() const ;
+	bool IsTagNots() const ;
+	bool IsTagPotentials() const ;
+	bool IsTagGroundedPotentials() const ;
+	bool IsTagUngroundedPotentials() const ;
+	bool IsTagBacktrace() const	;
+	bool IsTagAddToPotentials() const ;
+	bool IsTagProhibitPreference() const ;
+
+	char const* GetBacktraceAlreadyBacktraced() const ;
+	char const* GetBacktraceSymbol1() const	;
+	char const* GetBacktraceSymbol2() const	;
+
+	// Numeric indifferent preferences
+	bool IsTagCandidate() const	;
+	char const* GetCandidateName() const ;
+	char const* GetCandidateType() const ;
+	char const* GetCandidateValue() const ;
 
 } ;
 

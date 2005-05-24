@@ -169,6 +169,7 @@ public:
     static char const* const kTagAddToPotentials;
     static char const* const kTagNegated;
     static char const* const kTagNots;
+	static char const* const kTagNot;
     static char const* const kTagGroundedPotentials;
     static char const* const kTagUngroundedPotentials;
     static char const* const kTagUngroundedPotential;

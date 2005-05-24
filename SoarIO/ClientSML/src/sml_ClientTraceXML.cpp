@@ -47,10 +47,48 @@ char const* ClientTraceXML::GetFiringType() const			{ return GetAttribute(sml_Na
 // Firing-production tag, contains production
 bool ClientTraceXML::IsTagFiringProduction() const			{ return IsTag(sml_Names::kTagProduction_Firing) ; }
 bool ClientTraceXML::IsTagRetractingProduction() const		{ return IsTag(sml_Names::kTagProduction_Retracting) ; }
+bool ClientTraceXML::IsTagLearning() const					{ return IsTag(sml_Names::kTagLearning) ; }
 
 // Production
+/*
+<production prod_name="my*prod" documentation="my doc string" 
+type="[:chunk|:default|:justification ;# not reloadable]" 
+declared-support="[:i-support|:o-support]">
+   <conditions>
+      <conjunctive-negation-condition>
+         <condition test="[state|impasse]" id="<s1>" condition="^foo bar ^hello <world>"></condition>
+         ...
+      </conjunctive-negation-condition>
+      <condition ...></condition>
+      ...
+   </conditions>
+   <actions>
+      <action id="<s1>" action="^foo2 bar2 ^what ever"></action>
+      <action function="some function string"></action>
+   </actions>
+</production>
+*/
 bool ClientTraceXML::IsTagProduction() const				{ return IsTag(sml_Names::kTagProduction) ; }
 char const* ClientTraceXML::GetProductionName() const		{ return GetAttribute(sml_Names::kProduction_Name) ; }
+char const* ClientTraceXML::GetProductionDoc() const		{ return GetAttribute(sml_Names::kProductionDocumentation) ; }
+char const* ClientTraceXML::GetProductionType() const		{ return GetAttribute(sml_Names::kProductionType) ; }
+char const* ClientTraceXML::GetProductionDeclaredSupport() const	{ return GetAttribute(sml_Names::kProductionDeclaredSupport) ; }
+
+bool ClientTraceXML::IsTagConditions() const				{ return IsTag(sml_Names::kTagConditions) ; }
+bool ClientTraceXML::IsTagCondition() const					{ return IsTag(sml_Names::kTagCondition) ; }
+bool ClientTraceXML::IsTagConjunctiveNegationCondition() const	{ return IsTag(sml_Names::kTagConjunctive_Negation_Condition) ; }
+bool ClientTraceXML::IsTagActions() const					{ return IsTag(sml_Names::kTagActions) ; }
+bool ClientTraceXML::IsTagAction() const					{ return IsTag(sml_Names::kTagAction) ; }
+
+// Condition attributes: Note this form allows for multiple unparsed conditions within the "condition" attribute.
+char const* ClientTraceXML::GetConditionTest() const		{ return GetAttribute(sml_Names::kConditionTest) ; }
+char const* ClientTraceXML::GetConditionId() const			{ return GetAttribute(sml_Names::kConditionId) ; }
+char const* ClientTraceXML::GetCondition() const			{ return GetAttribute(sml_Names::kCondition) ; }
+
+// Action attributes
+char const* ClientTraceXML::GetActionId() const			{ return GetAttribute(sml_Names::kActionId) ; }
+char const* ClientTraceXML::GetAction() const			{ return GetAttribute(sml_Names::kAction) ; }
+char const* ClientTraceXML::GetFunction() const			{ return GetAttribute(sml_Names::kActionFunction) ; }
 
 // Add wme attributes
 bool ClientTraceXML::IsTagAddWme() const					{ return IsTag(sml_Names::kTagWMEAdd) ; }
@@ -74,3 +112,108 @@ char const* ClientTraceXML::GetPreferenceType() const		{ return GetAttribute(sml
 char const* ClientTraceXML::GetPreferenceOSupported() const	{ return GetAttribute(sml_Names::kOSupported) ; }
 // For binary prefs the other object
 char const* ClientTraceXML::GetPreferenceReferent() const	{ return GetAttribute(sml_Names::kReferent) ; }
+
+// Backtrace tags
+/*
+1) the backtrace for each of the results
+2) a trace of the "locals"
+3) a trace of the grounded potentials
+4) a trace of the ungrounded potentials
+
+<local>
+<backtrace prod_name="my*name" already-backtraced="true">
+   <grounds>
+      <wme></wme>
+      ...
+   </grounds>
+   <potentials>
+      <wme></wme>
+      ...
+   </potentials>
+   <locals>
+      <wme></wme>
+      ...
+   </locals>
+   <negated>
+      <condition></condition>
+      ...
+   </negated>
+   <nots>
+      <not symbol1="s1" symbol2="s2"></not>
+      ...
+   </nots>
+</backtrace>
+</local>
+
+The not tags get printed as "s1 <> s2" in the text trace.
+
+*** locals (#2) ***
+
+<locals>
+  <local>
+    <wme></wme>
+    <backtrace>...</backtrace>
+    <prohibit-preference>
+      <preference></preference>
+      <backtrace>...</backtrace>
+    </prohibit-preference>
+    -OR-
+    <add-to-potentials></add-to-potentials>
+  </local>
+  <local>...</local>
+  ...
+</locals>
+
+There might be a prohibit-preference or an add-to-potentials, but not both. 
+Also, if there is no backtrace child of local, then the print trace outputs "...no trace, can't BT". 
+Add-to-potentials is an empty tag just to mark when the text trace prints " --> make it a potential."
+
+*** trace grounded potentials (#3) ***
+
+<grounded-potentials>
+   <wme></wme>
+   ...
+</grounded-potentials>
+
+*** trace ungrounded potentials (#4) ***
+
+<ungrounded-potentials>
+   <ungrounded-potential>
+      <wme></wme>
+      <backtrace>...</backtrace>
+      <prohibit-preference>
+         <preference></preference>
+         <backtrace>...</backtrace>
+      <prohibit-preference>
+   </ungrounded-potential>
+   <ungrounded-potential>...</ungrounded-potential>
+   ...
+</ungrounded-potentials>
+*/
+
+bool ClientTraceXML::IsTagLocal() const					{ return IsTag(sml_Names::kTagLocal) ; }
+bool ClientTraceXML::IsTagLocals() const				{ return IsTag(sml_Names::kTagLocals) ; }
+bool ClientTraceXML::IsTagGrounds() const				{ return IsTag(sml_Names::kTagGrounds) ; }
+bool ClientTraceXML::IsTagNegated() const				{ return IsTag(sml_Names::kTagNegated) ; }
+bool ClientTraceXML::IsTagNot() const					{ return IsTag(sml_Names::kTagNot) ; }
+bool ClientTraceXML::IsTagNots() const					{ return IsTag(sml_Names::kTagNots) ; }
+bool ClientTraceXML::IsTagPotentials() const			{ return IsTag(sml_Names::kTagPotentials) ; }
+bool ClientTraceXML::IsTagGroundedPotentials() const	{ return IsTag(sml_Names::kTagGroundedPotentials) ; }
+bool ClientTraceXML::IsTagUngroundedPotentials() const	{ return IsTag(sml_Names::kTagUngroundedPotentials) ; }
+bool ClientTraceXML::IsTagBacktrace() const				{ return IsTag(sml_Names::kTagBacktrace) ; }
+bool ClientTraceXML::IsTagAddToPotentials() const		{ return IsTag(sml_Names::kTagAddToPotentials) ; }
+bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
+
+char const* ClientTraceXML::GetBacktraceAlreadyBacktraced() const { return GetAttribute(sml_Names::kBacktracedAlready) ; }
+char const* ClientTraceXML::GetBacktraceSymbol1() const			  { return GetAttribute(sml_Names::kBacktraceSymbol1) ; }
+char const* ClientTraceXML::GetBacktraceSymbol2() const			  { return GetAttribute(sml_Names::kBacktraceSymbol2) ; }
+
+// Numeric indifferent preferences
+//<candidate name="O1" type="[sum|avg]" value="123.4"></candidate>
+//The text output looks something like:
+//Candidate O1:   Value (Avg) = 123.4
+
+bool ClientTraceXML::IsTagCandidate() const				{ return IsTag(sml_Names::kTagCandidate) ; }
+char const* ClientTraceXML::GetCandidateName() const	{ return GetAttribute(sml_Names::kCandidateName) ; }
+char const* ClientTraceXML::GetCandidateType() const	{ return GetAttribute(sml_Names::kCandidateType) ; }
+char const* ClientTraceXML::GetCandidateValue() const	{ return GetAttribute(sml_Names::kCandidateValue) ; }
