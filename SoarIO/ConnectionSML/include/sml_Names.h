@@ -142,6 +142,7 @@ public:
     static char const* const kTagCondition;
     static char const* const kTagActions;
     static char const* const kTagAction;
+	static char const* const kProductionDocumentation;
     static char const* const kProductionType;
     static char const* const kProductionTypeDefault;
     static char const* const kProductionTypeChunk;

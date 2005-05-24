@@ -972,6 +972,7 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
     char temp[MAX_LEXEME_LENGTH*2+10];
     string_to_escaped_string (thisAgent, p->documentation, '"', temp);
     print (thisAgent, "    %s\n", temp);
+	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kProductionDocumentation, temp);
   }
   
   /* 

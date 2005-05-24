@@ -138,6 +138,7 @@ char const* const sml_Names::kTagConjunctive_Negation_Condition	= "conjunctive-n
 char const* const sml_Names::kTagCondition	                    = "condition" ;
 char const* const sml_Names::kTagActions	                    = "actions" ;
 char const* const sml_Names::kTagAction 	                    = "action" ;
+char const* const sml_Names::kProductionDocumentation           = "documentation" ;
 char const* const sml_Names::kProductionType                    = "type" ;
 char const* const sml_Names::kProductionTypeDefault             = ":default" ;
 char const* const sml_Names::kProductionTypeChunk               = ":chunk" ;

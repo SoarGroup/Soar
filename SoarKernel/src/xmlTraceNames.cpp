@@ -104,6 +104,7 @@ char const* const xmlTraceNames::kTagConjunctive_Negation_Condition	= "conjuncti
 char const* const xmlTraceNames::kTagCondition	                    = "condition" ;
 char const* const xmlTraceNames::kTagActions	                    = "actions" ;
 char const* const xmlTraceNames::kTagAction 	                    = "action" ;
+char const* const xmlTraceNames::kProductionDocumentation           = "documentation" ;
 char const* const xmlTraceNames::kProductionType                    = "type" ;
 char const* const xmlTraceNames::kProductionTypeDefault             = ":default" ;
 char const* const xmlTraceNames::kProductionTypeChunk               = ":chunk" ;
