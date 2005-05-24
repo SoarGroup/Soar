@@ -667,7 +667,7 @@ public class FoldingTextView extends AbstractComboView
 			xmlParent.GetChild(xmlTrace, childIndex) ;
 			
 			StringBuffer text = new StringBuffer() ;
-			final int decisionDigits = 3 ;
+			final int decisionDigits = 6 ;
 			
 			// This is a state change (new decision)
 			if (xmlTrace.IsTagState())
