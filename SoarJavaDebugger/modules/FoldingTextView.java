@@ -251,6 +251,16 @@ public class FoldingTextView extends AbstractComboView
 		menuItem.setData("type", new Long(TraceType.kRhsWrite)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kRhsWrite) ; } } ) ;
 
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Learning") ;
+		menuItem.setData("type", new Long(TraceType.kLearning)) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kLearning) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Full Learning") ;
+		menuItem.setData("type", new Long(TraceType.kFullLearning)) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kFullLearning) ; } } ) ;
+
 		menuItem = new MenuItem (m_FilterMenu, SWT.PUSH);
 		menuItem.setText ("Show all") ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { m_FoldingText.setExclusionFilter(0, true) ; updateButtonState() ; } } ) ;
