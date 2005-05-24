@@ -107,8 +107,17 @@ namespace gSKI
 			MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
 			Symbol *g;
 
+			// We don't want to keep printing forever (in case we're in a state no change cascade).
+			const int maxStates = 500 ;
+			int stateCount = 0 ;
+
 			for (g = internalAgent->GetSoarAgent()->top_goal; g != NIL; g = g->id.lower_goal) 
 			{
+				stateCount++ ;
+
+				if (stateCount > maxStates)
+					continue ;
+
 				if (print_states)
 				{
 					print_stack_trace (internalAgent->GetSoarAgent(),g, g, FOR_STATES_TF, false);
@@ -120,6 +129,11 @@ namespace gSKI
 						g, FOR_OPERATORS_TF, false);
 					print (internalAgent->GetSoarAgent(), "\n");
 				}
+			}
+
+			if (stateCount > maxStates)
+			{
+				print (internalAgent->GetSoarAgent(), "...Stack goes on for another %d states\n", stateCount - maxStates);
 			}
 		}
 
