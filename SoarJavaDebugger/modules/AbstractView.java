@@ -216,19 +216,6 @@ public abstract class AbstractView implements AgentFocusListener
 	public abstract boolean setFocus() ;
 	public abstract boolean hasFocus() ;
 	
-	public void startLogging(String fileName) throws java.io.IOException
-	{
-	}
-	
-	public void stopLogging()
-	{
-	}
-	
-	public boolean isLogging()
-	{
-		return false;
-	}
-	
 	/************************************************************************
 	* 
 	* Given a context menu and a control, fill in the items you want to 
@@ -270,7 +257,6 @@ public abstract class AbstractView implements AgentFocusListener
 	/** Close down this window, doing any necessary clean up */
 	public void close(boolean dispose)
 	{
-		stopLogging();
 		unregisterName() ;
 		unregisterForAgentEvents(getAgentFocus()) ;
 

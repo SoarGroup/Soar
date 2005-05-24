@@ -148,30 +148,6 @@ public class TextTraceView extends AbstractComboView
 		return true ;
 	}
 	
-	public void startLogging(String fileName) throws java.io.IOException
-	{
-		if (m_Logging) return;
-		
-		FileWriter fw = new FileWriter(fileName) ;
-		BufferedWriter bw = new BufferedWriter(fw) ;
-		
-		m_LogWriter	= new PrintWriter(bw);
-		m_Logging 	= true;
-	}
-	
-	public void stopLogging()
-	{
-		if (!m_Logging) return;
-		
-		m_LogWriter.close();
-		m_Logging = false;
-	}
-	
-	public boolean isLogging()
-	{
-		return m_Logging;
-	}
-	
 	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
 	{
 		int pos = m_Text.getCaretPosition() ;

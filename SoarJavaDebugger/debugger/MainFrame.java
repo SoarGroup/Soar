@@ -318,8 +318,6 @@ public class MainFrame
 		// Keep track of the fact that we're in the act of closing this window
 		m_bClosing = true;
 		
-		m_MainWindow.stopAllLogging();
-
 		// Need to explicitly release the focus which in turn will cause any
 		// listeners to unregister
 		// from this agent (is its still alive). Otherwise our listeners will
