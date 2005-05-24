@@ -1388,7 +1388,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 		case FOR_STATES_TF:
 			//create XML trace for state object
 			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagState);
-			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_StackLevel, state->id.level - 1);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_StackLevel, (unsigned long)(state->id.level - 1));
 			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_DecisionCycleCt, thisAgent->d_cycle_count);
 			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_ID, symbol_to_string(thisAgent, object, true, 0, 0));
 			
@@ -1415,7 +1415,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 		case FOR_OPERATORS_TF:
 			//create XML trace for operator object
 			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagOperator);
-			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_StackLevel, object->id.level - 1);
+			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kState_StackLevel, (unsigned long)(object->id.level - 1));
 			gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kOperator_DecisionCycleCt, thisAgent->d_cycle_count);
 			
 			if (state->id.operator_slot->wmes)

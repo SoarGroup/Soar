@@ -172,6 +172,14 @@ char const* const sml_Names::kBacktracedAlready         = "already-backtraced";
 char const* const sml_Names::kBacktraceSymbol1          = "symbol1";
 char const* const sml_Names::kBacktraceSymbol2          = "symbol2";
 
+// numeric indifference stuff
+char const* const sml_Names::kTagCandidate      = "candidate";
+char const* const sml_Names::kCandidateName     = "name";
+char const* const sml_Names::kCandidateType     = "type";
+char const* const sml_Names::kCandidateTypeSum  = "sum";
+char const* const sml_Names::kCandidateTypeAvg  = "avg";
+char const* const sml_Names::kCandidateValue    = "value";
+
 // XML function types for XML output event
 char const* const sml_Names::kFunctionBeginTag		= "begintag";
 char const* const sml_Names::kFunctionEndTag		= "endtag";

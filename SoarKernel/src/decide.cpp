@@ -3562,6 +3562,11 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
             if (thisAgent->sysparams[TRACE_INDIFFERENT_SYSPARAM]){
 				print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);
 		           print(thisAgent, "Value (Sum) = %f", exp(cand->sum_of_probability / TEMPERATURE));
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagCandidate);
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateName, symbol_to_string (thisAgent, cand->value, true, 0, 0));
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateType, xmlTraceNames::kCandidateTypeSum);
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateValue, exp(cand->sum_of_probability / TEMPERATURE));
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagCandidate);
 			}     
             /*  Total Probability represents the range of values, we expect
              *  the use of negative valued preferences, so its possible the
@@ -3599,6 +3604,11 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
             if (thisAgent->sysparams[TRACE_INDIFFERENT_SYSPARAM]) {
 				print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);  
 		           print(thisAgent, "Value (Avg) = %f", fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagCandidate);
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateName, symbol_to_string (thisAgent, cand->value, true, 0, 0));
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateType, xmlTraceNames::kCandidateTypeAvg);
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateValue, fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
+               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagCandidate);
 			}    
             /* Total probability represents the range of values that
              * we'll map into for selection.  Here we don't expect the use

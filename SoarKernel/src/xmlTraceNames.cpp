@@ -137,6 +137,14 @@ char const* const xmlTraceNames::kBacktracedAlready         = "already-backtrace
 char const* const xmlTraceNames::kBacktraceSymbol1          = "symbol1";
 char const* const xmlTraceNames::kBacktraceSymbol2          = "symbol2";
 
+// numeric indifference stuff
+char const* const xmlTraceNames::kTagCandidate      = "candidate";
+char const* const xmlTraceNames::kCandidateName     = "name";
+char const* const xmlTraceNames::kCandidateType     = "type";
+char const* const xmlTraceNames::kCandidateTypeSum  = "sum";
+char const* const xmlTraceNames::kCandidateTypeAvg  = "avg";
+char const* const xmlTraceNames::kCandidateValue    = "value";
+
 // XML function types for XML output event
 char const* const xmlTraceNames::kFunctionBeginTag		= "begintag";
 char const* const xmlTraceNames::kFunctionEndTag		= "endtag";

@@ -176,6 +176,14 @@ public:
     static char const* const kBacktraceSymbol1;
     static char const* const kBacktraceSymbol2;
 
+    // numeric indifference stuff
+    static char const* const kTagCandidate;
+    static char const* const kCandidateName;
+    static char const* const kCandidateType;
+    static char const* const kCandidateTypeSum;
+    static char const* const kCandidateTypeAvg;
+    static char const* const kCandidateValue;
+
 	// end of tags for Trace output
 
 	// Types

@@ -149,6 +149,16 @@ inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
 	gSKI_MakeAgentCallbackXML(soarAgent, funcType, attOrTag, (char*)buf);
 }
 
+inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
+                                        const char*			funcType,
+                                        const char*			attOrTag,
+										double      		value)
+{
+	char buf[25];
+	snprintf(buf, 24, "%f", value);
+	gSKI_MakeAgentCallbackXML(soarAgent, funcType, attOrTag, (char*)buf);
+}
+
 ///**
 // * @brief Initialize the kernel callbacks
 // *
