@@ -1001,8 +1001,6 @@ void AgentPerformanceMonitor::soar_ecPrintSystemStatistics()
     //print(a, "    *** help  for the  stats command  for more  information. ***\n");
 	safeSprintf(buf, 127, "    *** help  for the  stats command  for more  information.    ***\n");
 	m_result += buf;
-	safeSprintf(buf, 127, "    *** help  for the  stats command  for more  information.    ***\n");
-	m_result += buf;
 	safeSprintf(buf, 127, "    *** The format fields for the timers are 8.3f, limiting     ***\n");
 	m_result += buf;
 	safeSprintf(buf, 127, "    *** printable values to a maximum of approximately 2.5 hrs. ***\n");
