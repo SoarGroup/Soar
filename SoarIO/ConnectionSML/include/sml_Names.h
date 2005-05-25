@@ -160,6 +160,7 @@ public:
     static char const* const kActionId;
 
     //backtrace stuff
+    static char const* const kTagBacktracing;
     static char const* const kTagBacktrace;
     static char const* const kTagGrounds;
     static char const* const kTagPotentials;

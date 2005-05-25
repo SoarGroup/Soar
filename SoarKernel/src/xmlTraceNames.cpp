@@ -124,6 +124,7 @@ char const* const xmlTraceNames::kActionFunction                    = "function"
 char const* const xmlTraceNames::kActionId                          = "id" ;
 
 //backtrace stuff
+char const* const xmlTraceNames::kTagBacktracing            = "backtracing" ;
 char const* const xmlTraceNames::kTagBacktrace              = "backtrace" ;
 char const* const xmlTraceNames::kTagGrounds                = "grounds" ;
 char const* const xmlTraceNames::kTagPotentials             = "potentials" ;
