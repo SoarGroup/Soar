@@ -33,8 +33,8 @@ const std::string k_conditionString("cond");
 const std::string k_cycleString("cycle");
 const std::string k_TBD("To Be Determined at runtime");
 
-eElementType		stringToType(const std::string& source);
-const std::string	typeToString(eElementType type);
+eElementType		StringToType(const std::string& source);
+const std::string	TypeToString(eElementType type);
 
 enum eUpdateFrequency
 {
@@ -60,8 +60,8 @@ struct WMEValue
 	std::string id;
 };
 
-typedef std::vector<eElementType> typesContainter;
-typedef typesContainter::iterator typesIterator;
+typedef std::vector<eElementType> typesContainter_t;
+typedef typesContainter_t::iterator typesIterator_t;
 
 class InputLinkObject
 {
@@ -71,53 +71,60 @@ public:
 	//InputLinkObject(std::string& inParent, std::string& inName, std::vector<eElementType>& inTypes, std::string& inValue);
 	~InputLinkObject();
 
-	void		addElementType(std::string& inType){m_elementTypes.push_back(stringToType(inType));}
-	void		setParentId(std::string& inParent){m_parentId = inParent;}
-	void		setAttribName(std::string& inName){m_attribName = inName;}
-	void		setStartValue(std::string& inValue);
-	void		setUpdateValue(std::string& inValue);
+	void		AddElementType(std::string& inType){m_elementTypes.push_back(StringToType(inType));}
+	void		SetParentId(std::string& inParent){m_parentId = inParent;}
+	void		SetAttribName(std::string& inName){m_attribName = inName;}
+	void		SetStartValue(std::string& inValue);
+	void		SetSimulationClassName(std::string& inName){m_simulationClassName = inName;}
+	
+	void		SetUpdateValue(std::string& inValue);
 	/************************************************************************/
 	/* Sets the initial type for this WME.  By default, type is TBD                                                                     */
 	/************************************************************************/
-	void		setType(std::string& inValue);
+	void		SetType(std::string& inValue);
 	/************************************************************************/
 	/* Sometimes the string arg we start with is const.  Functionally equivalent
 	/  to the non-const version                                                                     */
 	/************************************************************************/
-	void		setType(const std::string& inValue);
+	void		SetType(const std::string& inValue);
 	/************************************************************************/
 	/* With no args, set the initial type to be equal to the first 
 	/  element of the type container (which shouldn't be empty if this is called)                                                                     */
 	/************************************************************************/
-	void		setType();
-	int			getNumTypes() const {return m_elementTypes.size();}
-	eElementType getCurrentType() const {return m_curType;}
-	std::string	getFrequencyAsString() const;
-	std::string	getUpdateValue() const {return m_updateValue;}
-	std::string	getStartValue() const;
-	std::string getParent() const {return m_parentId;}
-	std::string getGeneratedName() const {return m_name;}
-	std::string getAttributeName() const {return m_attribName;}
+	void		SetType();
+	int			GetNumTypes() const {return m_elementTypes.size();}
+	eElementType GetCurrentType() const {return m_curType;}
+	std::string	GetFrequencyAsString() const;
+	std::string	GetUpdateValue() const {return m_updateValue;}
+	std::string	GetStartValue() const;
+	std::string GetParent() const {return m_parentId;}
+	std::string GetGeneratedName() const {return m_name;}
+	std::string GetAttributeName() const {return m_attribName;}
+	std::string GetSimulationClassName() const {return m_simulationClassName;}
+	void PrintTypes(std::ostream& stream);
 
-	void setUpdateFrequency(std::string& inValue);
-	void setUpdateCondition(std::string& inValue);
-	void setGeneratedName(std::string& myName){m_name = myName;}
+	void SetUpdateFrequency(std::string& inValue);
+	void SetUpdateCondition(std::string& inValue);
+	void SetGeneratedName(std::string& myName){m_name = myName;}
 
 	friend std::ostream& operator << (std::ostream& stream, InputLinkObject& obj);
-	bool	hasBeenInspected() const {return m_beenInspected;}
-	void	markAsInspected() {m_beenInspected = true;}
+	bool	HasBeenInspected() const {return m_beenInspected;}
+	void	MarkAsInspected() {m_beenInspected = true;}
 
 private:
 
 	std::string				m_parentId;
 	std::string				m_attribName;
-	typesContainter		m_elementTypes;
+	std::string				m_updateValue;
+	std::string				m_updateCondition;
+	std::string				m_simulationClassName;
+	typesContainter_t	m_elementTypes;
 	eElementType			m_curType;
 	WMEValue					m_value;
-	std::string				m_updateValue;
 	eUpdateFrequency	m_updateFrequency;
-	std::string				m_updateCondition;
-	bool							m_beenInspected;
+
+	bool							m_beenInspected;//TODO determine if this is unnecessary
+	
 	//sml::WMElement*		m_wme;
 	
 	//this may end up being a vector of strings

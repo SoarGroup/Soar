@@ -10,7 +10,7 @@ using namespace std;
 const string ilSuffix = "il";
 const string dmSuffix = "dm";
 
-void pause()
+void Pause()
 {
 	cout << "Pausing now...." << endl;
 	string foo;
@@ -24,19 +24,20 @@ int main(int argc, char* argv[])
 	string inFileName;
 	bool parsed = 0;
 	ilObjVector_t	ilObjects;
+	typedObjectsMap_t typedILObjects;
 
 	//create an ILspec
-	InputLinkSpec ilspec(ilObjects);
-	
+	InputLinkSpec ilspec(ilObjects, typedILObjects);
+
 	cout << "Hajimeteimas..." << endl;
 	//cout << "Number of args is " << argc << endl;
 
-	//should have at least 1 argument - the filename for the input link spec	
+	//should have at least 1 argument - the filename for the input link spec
 	if(argc != 2) 
 	{
 		cout << "First arg is " << argv[1] << endl;
 		cout << "Usage: " <<argc<< " <filename>" << endl;
-		pause();
+		Pause();
 		exit(1);
 	}
 	else
@@ -62,11 +63,10 @@ int main(int argc, char* argv[])
 		parsed = 0;
 	}
 
-
 	if(!parsed)
 	{
 		cout<<"Error: reading file"<<endl;
-		pause();
+		Pause();
 		exit(1);
 	}
 	
@@ -76,14 +76,22 @@ int main(int argc, char* argv[])
 		cout << *objItr;
 	}*/
 	
+	typeMapItr_t typeItr = typedILObjects.begin();
+	cout << "Number of simulation types specified: " << typedILObjects.size() << endl;
+	for(; typeItr != typedILObjects.end(); ++typeItr)
+	{
+		cout << "Type " << typeItr->first << " has " << typeItr->second.size() << " objects." << endl;
+	}
+	cout << endl;
+	
 	//create the code generator - //TODO use a commandline arg to specify which 
 	//type to make
 	//TODO the name of the output file should be read in from command line
 	string outFileName("testCPPFile.cpp");
-	CPPGenerator generator(outFileName, ilObjects);
+	CPPGenerator generator(outFileName, ilObjects, typedILObjects);
 
 	cout << "Pausing before exiting program" << endl;
-	pause();
+	Pause();
 	return 0;
 }
 

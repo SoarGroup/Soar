@@ -6,6 +6,7 @@
 
 const std::string k_SML_Agent					= "sml_ClientAgent";
 
+const std::string k_Create						= "Create";
 const std::string k_CreateStringWME		= "CreateStringWME";
 const std::string k_CreateIntWME			= "CreateIntWME";
 const std::string k_CreateFloatWME		= "CreateFloatWME";
@@ -19,6 +20,7 @@ const std::string k_StringElement			= "StringElement";
 const std::string k_pStringElement		= "StringElement*";
 const std::string k_CreateSharedIdWME = "CreateSharedIdWME";
 const std::string k_Update						=	"Update";
+const std::string k_Destroy						= "Destroy";
 const std::string k_DestroyWME				= "DestroyWME";
 const std::string k_DestroyAgent			= "DestroyAgent";
 const std::string k_GetInputLink			= "GetInputLink";

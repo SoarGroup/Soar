@@ -7,7 +7,7 @@ using std::vector;
 using std::cout; using std::endl;
 using std::ostream;
 
-extern void pause();
+extern void Pause();
 /******************************************************************************
 * ILObject Class Function Definitions
 *
@@ -29,7 +29,7 @@ InputLinkObject::~InputLinkObject()
 	m_elementTypes.clear();
 }
 
-string InputLinkObject::getStartValue() const
+string InputLinkObject::GetStartValue() const
 {
 	switch(m_curType)
 	{
@@ -55,16 +55,24 @@ string InputLinkObject::getStartValue() const
 	}
 }
 
+void InputLinkObject::PrintTypes(ostream& stream)
+{
+	for(typesIterator_t tItr = m_elementTypes.begin(); tItr != m_elementTypes.end(); ++tItr)
+	{
+		stream << TypeToString(*tItr) << " ";
+	}
+}
+
 std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
 {
 	stream << "Insertion operator printing an input link object..." << endl;
 	stream << "\tParent: \t" << obj.m_parentId << endl;
 	stream << "\tAttribute: \t" << obj.m_attribName << endl;
-	for(typesIterator tItr = obj.m_elementTypes.begin(); tItr != obj.m_elementTypes.end(); ++tItr)
+	for(typesIterator_t tItr = obj.m_elementTypes.begin(); tItr != obj.m_elementTypes.end(); ++tItr)
 	{
 		stream << "\tType: \t\t";
 		//stream << obj.printType(stream, *tItr) << endl;
-		switch(*tItr)
+		switch(*tItr)//TODO consider using the print function, and storing these literals
 		{
 			case ELEMENT_FLOAT:
 				stream << "float element";
@@ -90,52 +98,27 @@ std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
 	}
 	stream << "\tValue: \t\t";
 
-	stream << obj.getStartValue() << endl;
-	stream << "\tFrequency: \t" << obj.getFrequencyAsString() << endl;
+	stream << obj.GetStartValue() << endl;
+	stream << "\tFrequency: \t" << obj.GetFrequencyAsString() << endl;
 
 	stream << endl;
 	return stream;
 }
 
 
-
-const string typeToString(eElementType type)
+void InputLinkObject::SetType(string& inValue)
 {
-	switch(type)
-	{
-		case ELEMENT_FLOAT:
-			return k_floatString;
-			break;
-		case ELEMENT_INT:
-			return k_intString;
-			break;
-		case ELEMENT_ID:
-			return k_idString;
-			break;
-		case ELEMENT_STRING:
-			return k_stringString;
-			break;
-		default:
-			return "BAAAAD things have happened";
-			assert(false);
-			break;
-	}
+	m_curType = StringToType(inValue);
 }
 
 
-void InputLinkObject::setType(string& inValue)
+void InputLinkObject::SetType(const std::string& inValue)
 {
-	m_curType = stringToType(inValue);
+	m_curType = StringToType(inValue);
 }
 
 
-void InputLinkObject::setType(const std::string& inValue)
-{
-	m_curType = stringToType(inValue);
-}
-
-
-void InputLinkObject::setType()
+void InputLinkObject::SetType()
 {
 	assert(!m_elementTypes.empty());
 	m_curType = m_elementTypes[0];
@@ -143,7 +126,7 @@ void InputLinkObject::setType()
 
 
 //All values are stored as string representation
-void InputLinkObject::setStartValue(string& inValue)
+void InputLinkObject::SetStartValue(string& inValue)
 {
 	//sanity check
 	assert(!m_elementTypes.empty());
@@ -168,7 +151,7 @@ void InputLinkObject::setStartValue(string& inValue)
 	}
 }
 
-void InputLinkObject::setUpdateValue(std::string& inValue)
+void InputLinkObject::SetUpdateValue(std::string& inValue)
 {
 	switch(m_curType)
 	{
@@ -187,7 +170,7 @@ void InputLinkObject::setUpdateValue(std::string& inValue)
 	}
 }
 
-void InputLinkObject::setUpdateFrequency(string& inValue)
+void InputLinkObject::SetUpdateFrequency(string& inValue)
 {
 	if(inValue == k_onChangeString)
 		m_updateFrequency = UPDATE_ON_CHANGE;
@@ -199,7 +182,7 @@ void InputLinkObject::setUpdateFrequency(string& inValue)
 		cout << "Got some unexpected freqency:>" << inValue << "<" << endl;
 }
 
-string InputLinkObject::getFrequencyAsString() const
+string InputLinkObject::GetFrequencyAsString() const
 {
 	switch(m_updateFrequency)
 	{
@@ -222,10 +205,10 @@ string InputLinkObject::getFrequencyAsString() const
 	}
 }
 	
-void InputLinkObject::setUpdateCondition(string& inValue){	m_updateCondition = inValue;} 
+void InputLinkObject::SetUpdateCondition(string& inValue){	m_updateCondition = inValue;} 
 
 //does a case-insensitive string comparison, mapping strings to enums
-eElementType stringToType(const string& source)
+eElementType StringToType(const string& source)
 {
 	if(!stricmp(source.c_str(), k_intString.c_str()))
 		return ELEMENT_INT;
@@ -240,7 +223,30 @@ eElementType stringToType(const string& source)
 	else
 	{
 		cout << "stringToType: bad type found: " << source << std::endl;
-		pause();
+		Pause();
 		exit(-1);
+	}
+}
+
+const string TypeToString(eElementType type)
+{
+	switch(type)
+	{
+	case ELEMENT_FLOAT:
+		return k_floatString;
+		break;
+	case ELEMENT_INT:
+		return k_intString;
+		break;
+	case ELEMENT_ID:
+		return k_idString;
+		break;
+	case ELEMENT_STRING:
+		return k_stringString;
+		break;
+	default:
+		return "BAAAAD things have happened";
+		assert(false);//never executes.
+		break;
 	}
 }
