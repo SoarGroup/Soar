@@ -34,7 +34,7 @@ SWIGOPT    = -java -Wall -package sml $(INCLUDES) -outdir build
 Java_sml_ClientInterface_wrap.cpp: Java_sml_ClientInterface.i
 	$(SWIG) $(SWIGOPT) -o $@ $<
 	$(JAVAC) build/*.java
-	cp -a build $(SOAR_LIBRARY)/sml
+	cp -pRP build $(SOAR_LIBRARY)/sml
 	$(JAR) cf $(SOAR_LIBRARY)/sml.jar -C $(SOAR_LIBRARY) sml
 	rm -rf $(SOAR_LIBRARY)/sml
 
