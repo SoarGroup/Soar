@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SolutionDir)\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\include&quot;; C:\Docume~1\administrator\Desktop\SoarPr~1\SoarIO\ClientSML\include"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
@@ -136,10 +136,13 @@
 				RelativePath=".\include\CodeGeneratorUtilities.h">
 			</File>
 			<File
-				RelativePath=".\src\ilobject.h">
+				RelativePath=".\include\IIMP.h">
 			</File>
 			<File
-				RelativePath=".\src\ilspec.h">
+				RelativePath=".\include\ilobject.h">
+			</File>
+			<File
+				RelativePath=".\include\ilspec.h">
 			</File>
 		</Filter>
 		<Filter
