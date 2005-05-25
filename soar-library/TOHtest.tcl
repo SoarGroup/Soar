@@ -140,7 +140,7 @@ interp create red
 #load package in slave
 red eval lappend auto_path .
 #this next line for tests on winter
-lappend auto_path ~/sandbox/lib
+red eval lappend auto_path ~/sandbox/lib
 red eval package require tcl_sml_clientinterface
 
 #create kernel and agent
