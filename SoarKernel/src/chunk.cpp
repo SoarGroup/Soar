@@ -779,6 +779,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
       case NONE_IMPASSE_TYPE:
 	#ifdef DEBUG_CHUNK_NAMES
         print ("Warning: impasse_type is NONE_IMPASSE_TYPE during chunk creation.\n");
+		GenerateWarningXML(thisAgent, "Warning: impasse_type is NONE_IMPASSE_TYPE during chunk creation.");
 	#endif
         strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
         break;
@@ -797,6 +798,8 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
           
           if ((sym = find_impasse_wme_value(goal->id.lower_goal,thisAgent->attribute_symbol)) == NIL) {
             #ifdef DEBUG_CHUNK_NAMES
+		    // TODO: generate warning XML: I think we need to get a string for "do_print_for_identifier" and append it
+		    // but this seems low priority since it's not even included in a normal build
             print ("Warning: Failed to find ^attribute impasse wme.\n");
             do_print_for_identifier(goal->id.lower_goal, 1, 0);
             #endif
@@ -808,6 +811,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
           } else {
 	    #ifdef DEBUG_CHUNK_NAMES
             print ("Warning: ^attribute impasse wme has unexpected value.\n");
+			GenerateWarningXML(thisAgent, "Warning: ^attribute impasse wme has unexpected value.");
             #endif
             strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
           }
@@ -815,7 +819,10 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
         break;
       default:
 	#ifdef DEBUG_CHUNK_NAMES
+	    // TODO: generate warning XML: I think we need to create a buffer and snprintf the impasse_type into it (since it's a byte)
+		// but this seems low priority since it's not even included in a normal build
         print ("Warning: encountered unknown impasse_type: %d.\n", impasse_type);
+
 	#endif
         strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
         break;
@@ -823,6 +830,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
   } else {
     #ifdef DEBUG_CHUNK_NAMES
     print ("Warning: Failed to determine impasse type.\n");
+	GenerateWarningXML(thisAgent, "Warning: Failed to determine impasse type.");
     #endif
     strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
   }
@@ -844,6 +852,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
     
     collision_count = 1;
     print (thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
+	GenerateWarningXML(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
     do {
       snprintf (name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu*%lu", 
               thisAgent->chunk_name_prefix,
@@ -1133,11 +1142,7 @@ void chunk_instantiation (agent* thisAgent,
   if (! top_cc) {
 	  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
-
-          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: chunk has no grounds, ignoring it.");
-		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
-
+		  GenerateWarningXML(thisAgent, "Warning: chunk has no grounds, ignoring it.");
 	  }
 	  goto chunking_done;
   }
@@ -1147,10 +1152,7 @@ void chunk_instantiation (agent* thisAgent,
       (unsigned long) thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) {
 		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
-
-		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-chunks! Halting system.");
-		  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+		  GenerateWarningXML(thisAgent, "Warning: reached max-chunks! Halting system.");
 		  }
 	  thisAgent->max_chunks_reached = TRUE;
 	  goto chunking_done;

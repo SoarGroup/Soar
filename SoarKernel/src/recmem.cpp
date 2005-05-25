@@ -347,6 +347,16 @@ preference *execute_action (agent* thisAgent, action *a, struct token_struct *to
         goto abort_execute_action;
      } else if (thisAgent->attribute_preferences_mode==1) {
         print_with_symbols (thisAgent, "\nWarning: attribute preference other than +/- for %y ^%y.", id, attr);
+
+		growable_string gs = make_blank_growable_string(thisAgent);
+		add_to_growable_string(thisAgent, &gs, "Warning: attribute preference other than +/- for ");
+		add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, id, true, 0, 0));
+		add_to_growable_string(thisAgent, &gs, " ^");
+		add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, attr, true, 0, 0));
+		add_to_growable_string(thisAgent, &gs, ".");
+		GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+		free_growable_string(thisAgent, gs);
+
      }  
   }
 

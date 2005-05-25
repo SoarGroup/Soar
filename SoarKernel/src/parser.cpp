@@ -33,6 +33,7 @@
 #include "init_soar.h"
 #include "print.h"
 #include "rete.h"
+#include "gski_event_system_functions.h" // for XML trace output
 
 #include <ctype.h>
 #include <stdio.h>
@@ -821,6 +822,14 @@ test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_i
       if(sym->common.symbol_type != VARIABLE_SYMBOL_TYPE) {
         print_with_symbols(thisAgent, "Warning: Constant %y in id field test.\n", sym);
         print(thisAgent, "         This will never match.\n");
+
+		growable_string gs = make_blank_growable_string(thisAgent);
+		add_to_growable_string(thisAgent, &gs, "Warning: Constant ");
+		add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, sym, true, 0, 0));
+		add_to_growable_string(thisAgent, &gs, " in id field test.\n         This will never match.");
+		GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+		free_growable_string(thisAgent, gs);
+		//TODO: should we append this to the previous XML message or create a new message for it?
         print_location_of_most_recent_lexeme(thisAgent);
 	deallocate_test (thisAgent, id_test);   /* AGR 527c */
 	return NIL;                  /* AGR 527c */
@@ -1505,6 +1514,7 @@ action *parse_preferences_soar8_non_operator (agent* thisAgent, Symbol *id,
     if ( (preference_type != ACCEPTABLE_PREFERENCE_TYPE) &&
 			(preference_type != REJECT_PREFERENCE_TYPE) ) {
       print (thisAgent, "\nWARNING: in Soar8, the only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.\n");
+	  GenerateWarningXML(thisAgent, "WARNING: in Soar8, the only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.");
 
       /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
                correctly before we print */
@@ -1870,6 +1880,7 @@ production *parse_production (agent* thisAgent) {
     }
 	if (!strcmp(thisAgent->lexeme.string, ":interrupt")) {
 	  print(thisAgent, "WARNING :interrupt is not supported with the current build options...");
+	  GenerateWarningXML(thisAgent, "WARNING :interrupt is not supported with the current build options...");
 	  get_lexeme(thisAgent);
 	  continue;
 	}

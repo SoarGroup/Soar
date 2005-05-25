@@ -163,6 +163,12 @@ void add_command (agent* thisAgent, char *command_name, user_interface_routine2 
   if (ir) {
     print(thisAgent, "Warning: add_command notes that %s shadows existing command.\n",
            command_name);
+	growable_string gs = make_blank_growable_string(thisAgent);
+	add_to_growable_string(thisAgent, &gs, "Warning: add_command notes that ");
+	add_to_growable_string(thisAgent, &gs, command_name);
+	add_to_growable_string(thisAgent, &gs, " shadows existing command.");
+	GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+	free_growable_string(thisAgent, gs);
   }
   /* --- create new interface routine structure --- */
   ir = static_cast<interface_routine_struct *>(allocate_memory (thisAgent, sizeof(interface_routine), 

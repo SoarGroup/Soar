@@ -125,10 +125,10 @@ inline void gSKI_MakeAgentCallbackPhase(struct agent_struct* soarAgent,
  * @brief Special functions to handle the xml callback
  */
 
-inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
-                                        const char*			funcType,
-                                        const char*			attOrTag,
-										const char*			value=0)
+inline void gSKI_MakeAgentCallbackXML(	agent*		soarAgent,
+                                        const char*	funcType,
+                                        const char*	attOrTag,
+										const char*	value=0)
 {
    gSKI_K_XMLCallbackData xml_data;
 
@@ -139,24 +139,36 @@ inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
    gSKI_MakeAgentCallback(gSKI_K_EVENT_XML_OUTPUT, 0, soarAgent, static_cast<void*>(&xml_data));
 }
 
-inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
-                                        const char*			funcType,
-                                        const char*			attOrTag,
-										unsigned long		value)
+inline void gSKI_MakeAgentCallbackXML(	agent*			soarAgent,
+                                        const char*		funcType,
+                                        const char*		attOrTag,
+										unsigned long	value)
 {
 	char buf[25];
 	snprintf(buf, 24, "%lu", value);
 	gSKI_MakeAgentCallbackXML(soarAgent, funcType, attOrTag, (char*)buf);
 }
 
-inline void gSKI_MakeAgentCallbackXML(struct agent_struct*	soarAgent,
-                                        const char*			funcType,
-                                        const char*			attOrTag,
-										double      		value)
+inline void gSKI_MakeAgentCallbackXML(	agent*		soarAgent,
+                                        const char*	funcType,
+                                        const char*	attOrTag,
+										double      value)
 {
 	char buf[25];
 	snprintf(buf, 24, "%f", value);
 	gSKI_MakeAgentCallbackXML(soarAgent, funcType, attOrTag, (char*)buf);
+}
+
+inline void GenerateWarningXML(agent* soarAgent, const char* message) {
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, message);
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+}
+
+inline void GenerateErrorXML(agent* soarAgent, const char* message) {
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagError);
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, message);
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagError);
 }
 
 ///**

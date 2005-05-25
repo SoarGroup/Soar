@@ -38,6 +38,7 @@
 #include "production.h"
 #include "init_soar.h"
 #include "print.h"
+#include "gski_event_system_functions.h" // for XML trace output
 #include <ctype.h>
 #include <stdio.h>
 
@@ -469,7 +470,10 @@ void reset_id_counters (agent* thisAgent) {
     print (thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\n");
     print (thisAgent, "there are still some identifiers allocated.  (Probably a memory leak.)\n");
     print (thisAgent, "(Leaving identifier numbers alone.)\n");
+	GenerateWarningXML(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Leaving identifier numbers alone.)");
+
     /* RDF 01272003: Added this to improve the output from this error message */
+	//TODO: append this to previous XML string or generate separate output?
     do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, 0);
     return;
   }

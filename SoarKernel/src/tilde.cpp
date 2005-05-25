@@ -355,7 +355,8 @@ static char *xrealloc (agent* thisAgent, char *pointer, int bytes) {
 
 static void memory_error_and_abort (agent* thisAgent) {
 /*  was: fprintf (stderr, "readline: Out of virtual memory!\n"); */
-  print (thisAgent, "readline: Out of virtual memory!\n"); 
+  print (thisAgent, "readline: Out of virtual memory!\n");
+  GenerateErrorXML(thisAgent, "readline: Out of virtual memory!");
   abort ();
 }
 

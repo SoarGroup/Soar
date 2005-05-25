@@ -94,6 +94,9 @@ char const* const xmlTraceNames::kReferent			= "referent" ;
 char const* const xmlTraceNames::kTagWarning		= "warning" ;
 // Tag warning has attribute kTypeString
 
+char const* const xmlTraceNames::kTagError		= "error" ;
+// Tag warning has attribute kTypeString
+
 // learning stuff
 char const* const xmlTraceNames::kTagLearning	= "learning" ;
 
@@ -131,6 +134,7 @@ char const* const xmlTraceNames::kTagProhibitPreference     = "prohibit-preferen
 char const* const xmlTraceNames::kTagAddToPotentials        = "add-to-potentials";
 char const* const xmlTraceNames::kTagNegated                = "negated" ;
 char const* const xmlTraceNames::kTagNots                   = "nots" ;
+char const* const xmlTraceNames::kTagNot                   = "not" ;
 char const* const xmlTraceNames::kTagGroundedPotentials     = "grounded-potentials";
 char const* const xmlTraceNames::kTagUngroundedPotentials   = "ungrounded-potentials";
 char const* const xmlTraceNames::kTagUngroundedPotential    = "ungrounded-potential";

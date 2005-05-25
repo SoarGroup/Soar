@@ -5765,11 +5765,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
                                     growable_string gs = make_blank_growable_string(thisAgent);
                                     add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
                                     add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
-
-                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
-                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
-
+                                    GenerateWarningXML(thisAgent, text_of_growable_string(gs));
                                     free_growable_string(thisAgent, gs);
 
 									prod_type = PE_PRODS;
@@ -5783,11 +5779,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
                                     growable_string gs = make_blank_growable_string(thisAgent);
                                     add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
                                     add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
-
-                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
-                                    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
-
+                                    GenerateWarningXML(thisAgent, text_of_growable_string(gs));
                                     free_growable_string(thisAgent, gs);
 
 									prod_type = IE_PRODS;
@@ -6047,6 +6039,7 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
 #ifdef BUG_139_WORKAROUND_WARNING
         print(thisAgent, "\nWarning: can't find an existing inst to retract (BUG 139 WORKAROUND)\n");
+		GenerateWarningXML(thisAgent, "Warning: can't find an existing inst to retract (BUG 139 WORKAROUND)");
 #endif
         return;
     }

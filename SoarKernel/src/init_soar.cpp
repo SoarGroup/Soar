@@ -126,6 +126,10 @@ void abort_with_fatal_error (agent* thisAgent, char *msg) {
   print (thisAgent, "Soar cannot recover from this error.  Aborting...\n");
   fprintf (stderr,"%s",msg);
   fprintf (stderr,"Soar cannot recover from this error.  Aborting...\n");
+  
+  GenerateErrorXML(thisAgent, msg);
+  GenerateErrorXML(thisAgent, "Soar cannot recover from this error.  Aborting...");
+
   f = fopen("soarerror", "w");
   fprintf (f,"%s",msg);
   fprintf (f,"Soar cannot recover from this error.  Aborting...\n");
@@ -1184,11 +1188,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  (unsigned long)(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM])) {
 			  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {			
 				  print (thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
-
-				  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-			      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-elaborations; proceeding to decision phase.");
-			      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
-				  
+				  GenerateWarningXML(thisAgent, "Warning: reached max-elaborations; proceeding to decision phase.");
 			  }
 		  thisAgent->current_phase = DECISION_PHASE;
 	  } else

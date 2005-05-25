@@ -92,6 +92,9 @@ public:
 	// for warnings controlled by WARNINGS_SYSPARAM
 	static char const* const kTagWarning ;
 
+	// for errors
+	static char const* const kTagError ;
+
 	// XML function types for XML output event
 	static char const* const kFunctionBeginTag;
 	static char const* const kFunctionEndTag;
@@ -134,6 +137,7 @@ public:
     static char const* const kTagAddToPotentials;
     static char const* const kTagNegated;
     static char const* const kTagNots;
+	static char const* const kTagNot;
     static char const* const kTagGroundedPotentials;
     static char const* const kTagUngroundedPotentials;
     static char const* const kTagUngroundedPotential;

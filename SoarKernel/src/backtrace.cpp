@@ -408,8 +408,10 @@ void backtrace_through_instantiation (agent* thisAgent,
     gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagNots);
     for (not1=inst->nots; not1!=NIL; not1=not1->next) {
       print_with_symbols (thisAgent, "    %y <> %y\n", not1->s1, not1->s2);
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagNot);
       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kBacktraceSymbol1, symbol_to_string(thisAgent, not1->s1, true, 0, 0));
       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kBacktraceSymbol2, symbol_to_string(thisAgent, not1->s2, true, 0, 0));
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagNot);
     }
     gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagNots);
     gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagBacktrace);

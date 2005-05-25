@@ -435,9 +435,7 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
       //   1) write a version which adds to a growable string
       //   2) write a version which generates XML tags/attributes, so we get "typed" output for this warning
       //      i.e. "<warning><string value="beginning of message"></string><test att="val"></test><string value="rest of message"></string></warning>
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+      GenerateWarningXML(thisAgent, text_of_growable_string(gs));
 
       free_growable_string(thisAgent, gs);
     }
@@ -637,9 +635,7 @@ list *collect_root_variables (agent* thisAgent,
         add_to_growable_string(thisAgent, &gs, ", identifier ");
         add_to_growable_string(thisAgent, &gs, symbol_to_string (thisAgent, (Symbol *)(c->first), true, 0, 0));
         add_to_growable_string(thisAgent, &gs, " is not connected to any goal or impasse.");
-        gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-        gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
-        gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+        GenerateWarningXML(thisAgent, text_of_growable_string(gs));
         free_growable_string(thisAgent, gs);
 
       }
@@ -886,9 +882,7 @@ void reorder_simplified_conditions (agent* thisAgent,
       add_to_growable_string(thisAgent, &gs, "Warning:  in production ");
       add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
       add_to_growable_string(thisAgent, &gs, "\n     The LHS conditions are not all connected.");
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, text_of_growable_string(gs));
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+      GenerateWarningXML(thisAgent, text_of_growable_string(gs));
       free_growable_string(thisAgent, gs);
 
      }

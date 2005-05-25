@@ -37,6 +37,7 @@
 #include "print.h"
 #include "reorder.h"
 #include "rete.h"
+#include "gski_event_system_functions.h" // for XML trace output
 #include <ctype.h>
 
 /* -----------------------------------------------------------------------
@@ -428,9 +429,23 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 			if ( thisAgent->o_support_calculation_type == 3 ) {
 
 				print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod->name);
+				
+				growable_string gs = make_blank_growable_string(thisAgent);
+				add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
+				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+				GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+				free_growable_string(thisAgent, gs);
+
 				o_support = TRUE;
 			} else if ( thisAgent->o_support_calculation_type == 4 ) {
 				print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod->name);
+
+				growable_string gs = make_blank_growable_string(thisAgent);
+				add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
+				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+				GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+				free_growable_string(thisAgent, gs);
+
 				o_support = FALSE;
 			}
 		}

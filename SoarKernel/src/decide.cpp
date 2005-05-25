@@ -3621,6 +3621,12 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
                 print_with_symbols
                     (thisAgent, "WARNING: Candidate %y has a negative value, which is unexpected with 'numeric-indifferent-mode -avg'",
                      cand->value);
+				growable_string gs = make_blank_growable_string(thisAgent);
+				add_to_growable_string(thisAgent, &gs, "WARNING: Candidate ");
+				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, cand->value, true, 0, 0));
+				add_to_growable_string(thisAgent, &gs, " has a negative value, which is unexpected with 'numeric-indifferent-mode -avg'");
+				GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+				free_growable_string(thisAgent, gs);
             }
             /* print("\n   Total (Avg) Probability = %f", total_probability ); */
         }

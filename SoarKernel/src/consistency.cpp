@@ -443,6 +443,7 @@ Symbol * highest_active_goal_propose(agent* thisAgent) {
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE     
    print(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
+   GenerateWarningXML(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
    if (thisAgent->nil_goal_retractions) return NIL;
    {
@@ -481,6 +482,7 @@ Symbol * highest_active_goal_apply(agent* thisAgent) {
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE     
    print(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
+   GenerateWarningXML(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
    if (thisAgent->nil_goal_retractions) return NIL;
    { char msg[BUFFER_MSG_SIZE];
@@ -632,10 +634,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
    {
 	   if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
            print(thisAgent, "\nWarning: reached max-elaborations; proceeding to output phase.");
-
-           gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-elaborations; proceeding to output phase.");
-		   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+		   GenerateWarningXML(thisAgent, "Warning: reached max-elaborations; proceeding to output phase.");
 	   }
       thisAgent->current_phase = OUTPUT_PHASE;
       return;
@@ -862,10 +861,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
       (unsigned long) (thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM])) {
 		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
               print(thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
-
-			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "Warning: reached max-elaborations; proceeding to decision phase.");
-			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+			  GenerateWarningXML(thisAgent, "Warning: reached max-elaborations; proceeding to decision phase.");
 		  }
       thisAgent->current_phase = DECISION_PHASE;
       return;

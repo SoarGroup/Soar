@@ -72,6 +72,7 @@ void reset_wme_timetags (agent* thisAgent) {
     print (thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\n");
     print (thisAgent, "there are still some wmes allocated. (Probably a memory leak.)\n");
     print (thisAgent, "(Leaving timetag numbers alone.)\n");
+	GenerateWarningXML(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
     return;
   }
   thisAgent->current_wme_timetag = 1;
@@ -245,7 +246,10 @@ void do_buffered_wm_changes (agent* thisAgent)
            next_c = cr->rest;
            if (w == cr->first) {
               print (thisAgent, "WARNING: WME added and removed in same phase : ");
+			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
+			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, "WARNING: WME added and removed in same phase :");
               print_wme(thisAgent, w);
+			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
            } 
         } 
      } 
