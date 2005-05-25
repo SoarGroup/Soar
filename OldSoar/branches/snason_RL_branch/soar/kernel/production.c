@@ -1588,10 +1588,13 @@ production *make_production(byte type,
     p->filename = NIL;
     p->firing_count = 0;
 	p->times_updated = 0;
-	p->value_position = 0;
+	// p->value_position = 0;
 	p->mean = 0;
 	p->std_dev = 0;
 	p->update = 0;
+	p->max = 0;
+	p->min = 0;
+	p->updates_since_record = 0;
 	// p->avg_avg = 0;
 	// p->var = 0;
 	// p->avg_var = 0;
@@ -1599,7 +1602,8 @@ production *make_production(byte type,
 	// p->increasing = 0;
 	// p->conv_mean = FALSE;
 	 p->conv_value = TRUE;
-//	p->child = NIL;
+	p->child_productions = NIL;
+	p->promoted = FALSE;
     p->reference_count = 1;
     insert_at_head_of_dll(current_agent(all_productions_of_type)[type], p, next, prev);
     current_agent(num_productions_of_type)[type]++;

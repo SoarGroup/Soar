@@ -1838,17 +1838,21 @@ typedef struct production_struct {
     double update;                      /* SAN - only for RL_PRODUCTION_TYPE */
 	// double decay_normalization;             /* SAN - only for RL_PRODUCTION_TYPE */
 	// double avg_value;						/* SAN - only for RL_PRODUCTION_TYPE */
-	double value_list[15];   
-    int value_position;
+	// double value_list[15];   
+    // int value_position;
 	double mean;
 	double std_dev;
+	double max;
+	double min;
+	int updates_since_record;
 	// double avg_avg;
 	// double var;
 	// double avg_var;
 	bool increasing;                        /* SAN - only for RL_PRODUCTION_TYPE */
 	// bool conv_mean;							/* SAN - only for RL_PRODUCTION_TYPE */
 	bool conv_value;                        
-	// struct production_struct *child;                      /* SAN - only for RL_PRODUCTION_TYPE */
+	list *child_productions;                      /* SAN - only for RL_PRODUCTION_TYPE */
+	bool promoted;				/* SAN - only for RL_PRODUCTION_TYPE */
     byte interrupt;             /* SW: 7.31.03 */
 #ifdef BUG_139_WORKAROUND
     bool already_fired;         /* RPM test workaround for bug #139 */

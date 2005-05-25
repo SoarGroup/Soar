@@ -22,6 +22,7 @@ void STDDEV(double values[], int n, double *mean_pointer, double *std_dev_pointe
 void store_WM();
 stored_wme *make_stored_wme(wme *);
 stored_instantiation *make_stored_instantiation(instantiation *ist);
+list *SAN_extract_list_elements(list **header, void *item);
 
 
 // The following three functions manage the stack of RL_records.
@@ -182,7 +183,7 @@ void record_for_RL()
 	production *prod, *new_prod;
 	preference *pref;
  	RL_record *record;
-	cons *c;
+	cons *c, *d;
 
   // SAN - catch operator ID here
   s = current_agent(bottom_goal)->id.operator_slot;
@@ -228,7 +229,20 @@ void record_for_RL()
 				 }*/
 			  }
 		  }
-		  if (!record->pointer_list){
+	  for (c = record->pointer_list ; c ; c = c->rest){
+		  prod = (production *) c->first;
+		  for (d = prod->child_productions ; d ; d = d->rest){
+			  new_prod = (production *) d->first;			  
+			  if (!member_of_list(new_prod, record->pointer_list)){
+				  list *to_be_deleted;
+				  new_prod->promoted = TRUE;
+				  to_be_deleted = SAN_extract_list_elements(&(prod->child_productions), new_prod);   // rewrite to use existing functions
+				  free_list(to_be_deleted);
+				  
+			  }
+		  }
+	  }
+	  if (!record->pointer_list){
 			  condition *new_top, *new_bottom;
 			  condition *new_cond;
 			  not *new_not;
@@ -248,8 +262,13 @@ void record_for_RL()
 				  make_preference(NUMERIC_INDIFFERENT_PREFERENCE_TYPE, w->id, w->attr, w->value, make_float_constant(0)));
 			  deallocate_condition_list(new_top);
 			  deallocate_list_of_nots(new_not);
-			  if (prod) push(prod, record->pointer_list);
+			  if (prod){
+				  print_with_symbols("Add new rule %y\n", prod->name);
+				  prod->promoted = TRUE;
+				  push(prod, record->pointer_list);
+			  }
 		  }
+
   }
   {
 	  stored_wme *swme;
@@ -542,13 +561,21 @@ void learn_RL_productions(int level, float best_op_value){
 	if (record->op){
 
 		update = compute_temp_diff(record, best_op_value);
-		if (update!=0)
-			update = update;
+ 
 
-		if (fabs(update) > 0.5*fabs(record->previous_Q)) {
+		if (fabs(update) > 0.1*fabs(record->previous_Q)) {
 			for (stored_inst = record->stored_instantiations ; stored_inst ; stored_inst = stored_inst->next){
-				prod = specify_production(stored_inst);
-				if (prod) push(prod, record->pointer_list);
+				if (stored_inst->prod->promoted && (stored_inst->prod->updates_since_record > 5)){
+					prod = specify_production(stored_inst);
+					if (prod){
+						print_with_symbols("Specialize %y to %y\n", stored_inst->prod->name, prod->name);
+						push(prod, record->pointer_list);
+						push(prod, stored_inst->prod->child_productions);
+						stored_inst->prod->max = rhs_value_to_symbol(stored_inst->prod->action_list->referent)->fc.value;
+						stored_inst->prod->min = stored_inst->prod->max;
+						stored_inst->prod->updates_since_record = 0;
+					}
+				}
 			}
 		}
 		while(record->stored_instantiations){
@@ -631,6 +658,16 @@ void learn_RL_productions(int level, float best_op_value){
 
 				symbol_remove_ref(rhs_value_to_symbol(prod->action_list->referent));
 				prod->action_list->referent = symbol_to_rhs_value(make_float_constant(temp));
+				if (temp > prod->max){
+					prod->max = temp;
+					prod->updates_since_record = 0;
+				} else if (temp < prod->min) {
+					prod->min = temp;
+					prod->updates_since_record = 0;
+				} else {
+					prod->updates_since_record++;
+				}
+
 				for (inst = prod->instantiations ; inst ; inst = inst->next){
 					for (pref = inst->preferences_generated ; pref ; pref = pref->inst_next){
 						symbol_remove_ref(pref->referent);
@@ -975,6 +1012,36 @@ int list_length(list *L){
 
 	return k;
 }
+ 
+list *SAN_extract_list_elements(list **header, void *item){
+	  cons *first_extracted_element, *tail_of_extracted_elements;
+    cons *c, *prev_c, *next_c;
+
+    first_extracted_element = NIL;
+    tail_of_extracted_elements = NIL;
+
+    prev_c = NIL;
+    for (c = (*header); c != NIL; c = next_c) {
+        next_c = c->rest;
+        if (!(c->first == item)) {
+            prev_c = c;
+            continue;
+        }
+        if (prev_c)
+            prev_c->rest = next_c;
+        else
+            *header = next_c;
+        if (first_extracted_element)
+            tail_of_extracted_elements->rest = c;
+        else
+            first_extracted_element = c;
+        tail_of_extracted_elements = c;
+    }
+    if (first_extracted_element)
+        tail_of_extracted_elements->rest = NIL;
+    return first_extracted_element;
+}
+
 
 void STDDEV(double values[], int n, double *mean_pointer, double *std_dev_pointer){
 	double mean = 0, std_dev = 0;
