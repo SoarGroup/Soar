@@ -136,7 +136,7 @@ bool CommandLineInterface::DoPreferences(gSKI::IAgent* pAgent, const ePreference
 	bool ret = pKernelHack->Preferences(pAgent, argc, argv);
 	RemoveListenerAndEnableCallbacks(pAgent);
 
-	if (!ret) return SetError(CLIError::kgSKIError);
+	if (!ret) return SetError(CLIError::kNoPreferences);
 
 	// put the result into a message(string) arg tag
 	if (!m_RawOutput) ResultToArgTag();

@@ -90,6 +90,7 @@ namespace cli {
 			kNewlineBeforePipe					= 75,
             kAlreadyRunning                     = 76,
             kRunFailed                          = 77,
+			kNoPreferences						= 78,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -165,6 +166,7 @@ namespace cli {
 				case kNewlineBeforePipe:				return "Newline reached before closing pipe ('|') character.";
                 case kAlreadyRunning:                   return "Agent is already running.";
                 case kRunFailed:                        return "Run failed.";
+                case kNoPreferences:                    return "No preferences found.";
 				default:								return "Unknown error code.";
 			}
 		}
