@@ -76,7 +76,10 @@ public class AppProperties extends java.util.Properties
 			
 			if (!homeDir.exists())
 			{
-				homeDir.mkdir() ;
+				// mkdirs makes the entire path
+				// (which could matter if we're on a foreign language system with no
+				//  ApplicationData folder)
+				homeDir.mkdirs() ;
 			}
 		}
 		

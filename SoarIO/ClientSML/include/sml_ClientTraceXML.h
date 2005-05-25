@@ -127,6 +127,11 @@ public:
 	char const* GetCandidateType() const ;
 	char const* GetCandidateValue() const ;
 
+	// Warnings, errors, messages and other tags
+	bool IsTagError() const	;
+	bool IsTagWarning() const ;
+	bool IsTagMessage() const ;
+	bool IsTagVerbose() const ;
 } ;
 
 } //closes namespace

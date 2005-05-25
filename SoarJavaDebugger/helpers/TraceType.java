@@ -31,7 +31,12 @@ public class TraceType
 		kTopLevel  	= 1 << 8,		// Generic top level output (e.g. from a print or an echo'd command)
 		kFullLearning = 1 << 9,
 		kNumericIndifferent = 1 << 10,
+		kVerbose	= 1 << 11,
+		kWarning	= 1 << 12,
+		kError		= 1 << 13,
 		
-		kAllExceptTopLevel = kPhase | kPreference | kWmeChange | kFiring | kRetraction | kStack | kRhsWrite | kLearning | kFullLearning | kNumericIndifferent,
-		kAll = kAllExceptTopLevel | kTopLevel ;
+		kAllExceptTopLevel = kPhase | kPreference | kWmeChange | kFiring | kRetraction | kStack | kRhsWrite |
+							 kLearning | kFullLearning | kNumericIndifferent | kVerbose | kWarning,
+
+		kAll = kAllExceptTopLevel | kTopLevel | kError ;
 }

@@ -214,8 +214,13 @@ char const* ClientTraceXML::GetBacktraceSymbol2() const			  { return GetAttribut
 //<candidate name="O1" type="[sum|avg]" value="123.4"></candidate>
 //The text output looks something like:
 //Candidate O1:   Value (Avg) = 123.4
-
 bool ClientTraceXML::IsTagCandidate() const				{ return IsTag(sml_Names::kTagCandidate) ; }
 char const* ClientTraceXML::GetCandidateName() const	{ return GetAttribute(sml_Names::kCandidateName) ; }
 char const* ClientTraceXML::GetCandidateType() const	{ return GetAttribute(sml_Names::kCandidateType) ; }
 char const* ClientTraceXML::GetCandidateValue() const	{ return GetAttribute(sml_Names::kCandidateValue) ; }
+
+// Warnings, errors, messages and other tags
+bool ClientTraceXML::IsTagError() const				{ return IsTag(sml_Names::kTagError) ; }
+bool ClientTraceXML::IsTagWarning() const			{ return IsTag(sml_Names::kTagWarning) ; }
+bool ClientTraceXML::IsTagMessage() const			{ return IsTag(sml_Names::kTagMessage) ; }
+bool ClientTraceXML::IsTagVerbose() const			{ return IsTag(sml_Names::kTagVerbose) ; }

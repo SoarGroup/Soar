@@ -247,7 +247,7 @@ public class FoldingTextView extends AbstractComboView
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kStack) ; } } ) ;
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
-		menuItem.setText ("Rhs Writes") ;
+		menuItem.setText ("Rhs Writes and Messages") ;
 		menuItem.setData("type", new Long(TraceType.kRhsWrite)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kRhsWrite) ; } } ) ;
 
@@ -260,6 +260,16 @@ public class FoldingTextView extends AbstractComboView
 		menuItem.setText ("Full Learning") ;
 		menuItem.setData("type", new Long(TraceType.kFullLearning)) ;
 		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kFullLearning) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Verbose") ;
+		menuItem.setData("type", new Long(TraceType.kVerbose)) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kVerbose) ; } } ) ;
+
+		menuItem = new MenuItem (m_FilterMenu, SWT.CHECK);
+		menuItem.setText ("Warnings") ;
+		menuItem.setData("type", new Long(TraceType.kWarning)) ;
+		menuItem.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { changeFilter(e.widget, TraceType.kWarning) ; } } ) ;
 
 		menuItem = new MenuItem (m_FilterMenu, SWT.PUSH);
 		menuItem.setText ("Show all") ;
@@ -522,7 +532,7 @@ public class FoldingTextView extends AbstractComboView
 		// the update directly.
 		if (!Document.kDocInOwnThread)
 		{
-			appendSubText(text, redrawTree, type) ;
+			appendSubText(text, type) ;
 			return ;
 		}
 
@@ -530,7 +540,7 @@ public class FoldingTextView extends AbstractComboView
 		// Callback comes in the document thread.
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
-            	appendSubText(text, redrawTree, type) ;
+            	appendSubText(text, type) ;
             }
          }) ;
 	}
@@ -540,7 +550,7 @@ public class FoldingTextView extends AbstractComboView
 	* Add the text to the view (this method assumes always called from UI thread)
 	* 
 	*************************************************************************/
-	protected void appendSubText(String text, boolean redrawTree, long type)
+	protected void appendSubText(String text, long type)
 	{
 		String[] lines = text.split(kLineSeparator) ;
 
@@ -686,7 +696,7 @@ public class FoldingTextView extends AbstractComboView
 				boolean endOfPhase = (status != null && status.equalsIgnoreCase("end")) ;
 				
 				if (output.length() != 0 && !endOfPhase)
-					this.appendSubText(output, false, TraceType.kPhase) ;
+					this.appendSubText(output, TraceType.kPhase) ;
 			}
 			else if (xmlTrace.IsTagAddWme() || xmlTrace.IsTagRemoveWme())
 			{
@@ -694,14 +704,14 @@ public class FoldingTextView extends AbstractComboView
 				String output = XmlOutput.getWmeChanges(agent, xmlTrace, adding) ;
 				
 				if (output.length() != 0)
-					this.appendSubText(output, false, TraceType.kWmeChange) ;	
+					this.appendSubText(output, TraceType.kWmeChange) ;	
 
 			} else if (xmlTrace.IsTagPreference())
 			{
 				String output = XmlOutput.getPreferenceProductionText(agent, xmlTrace) ;
 				
 				if (output.length() != 0)
-					this.appendSubText(output.toString(), false, TraceType.kPreference) ;
+					this.appendSubText(output.toString(), TraceType.kPreference) ;
 				
 			} 
 			else if (xmlTrace.IsTagFiringProduction() || xmlTrace.IsTagRetractingProduction())
@@ -713,7 +723,7 @@ public class FoldingTextView extends AbstractComboView
 				long type = (firing ? TraceType.kFiring : TraceType.kRetraction) ;
 
 				if (output.length() != 0)
-					this.appendSubText(output, false, type) ;			
+					this.appendSubText(output, type) ;			
 	
 			}
 			else if (xmlTrace.IsTagLearning())
@@ -746,7 +756,7 @@ public class FoldingTextView extends AbstractComboView
 							String prodText = XmlOutput.getProductionText(agent, prod) ;
 							
 							if (prodText != null && prodText.length() != 0)
-								this.appendSubText(prodText, false, TraceType.kFullLearning) ;			
+								this.appendSubText(prodText, TraceType.kFullLearning) ;			
 						}
 					}
 					prod.delete() ;
@@ -758,7 +768,7 @@ public class FoldingTextView extends AbstractComboView
 				String output = XmlOutput.getNumericIndiffernceText(agent, xmlTrace) ;
 				
 				if (output.length() != 0)
-					this.appendSubText(output, false, TraceType.kNumericIndifferent) ;
+					this.appendSubText(output, TraceType.kNumericIndifferent) ;
 			}
 			else if (xmlTrace.IsTagBacktraceResult() || xmlTrace.IsTagLocals() ||
 					 xmlTrace.IsTagGroundedPotentials() || xmlTrace.IsTagUngroundedPotentials())
@@ -766,9 +776,48 @@ public class FoldingTextView extends AbstractComboView
 				String output = XmlOutput.getBacktraceTopLevelText(agent, xmlTrace) ;
 				
 				if (output.length() != 0)
-					this.appendSubText(output, false, TraceType.kFullLearning) ;
+					this.appendSubText(output, TraceType.kFullLearning) ;
 			}
-			else	
+			else if (xmlTrace.IsTagMessage() || xmlTrace.IsTagWarning() || xmlTrace.IsTagError() || xmlTrace.IsTagVerbose())
+			{
+				StringBuffer text = new StringBuffer() ;
+				
+				// The body of the message
+				text.append(xmlTrace.GetString()) ;
+				
+				// Some messages can include wmes as part of the report
+				for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
+				{
+					ClientTraceXML wme = new ClientTraceXML() ;
+					xmlTrace.GetChild(wme, i) ;
+					
+					if (wme.IsTagWme())
+					{
+						if (i > 0)
+							text.append(kLineSeparator) ;
+						
+						String output = XmlOutput.getWmeText(agent, wme) ;
+						text.append(output) ;
+					}
+					
+					wme.delete() ;
+				}
+				
+				// Figure out the type of the message so we can filter it appropriately
+				// We'll classify messages and rhs writes together for now
+				long type = TraceType.kRhsWrite ;
+				if (xmlTrace.IsTagWarning()) type = TraceType.kWarning ;
+				else if (xmlTrace.IsTagVerbose()) type = TraceType.kVerbose ;
+				else if (xmlTrace.IsTagError()) type = TraceType.kError ;
+				
+				if (text.length() != 0)
+				{
+					if (type != TraceType.kVerbose)
+						this.appendText(text.toString(), type) ;
+					else
+						this.appendSubText(text.toString(), type) ;				}
+			}
+			else
 			{
 				// These lines can be helpful if debugging this -- we
 				// print out any XML we completely fail to understand.
