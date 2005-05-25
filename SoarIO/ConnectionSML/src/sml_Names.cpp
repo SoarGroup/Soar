@@ -161,6 +161,7 @@ char const* const sml_Names::kTagGrounds                = "grounds" ;
 char const* const sml_Names::kTagPotentials             = "potentials" ;
 char const* const sml_Names::kTagLocals                 = "locals" ;
 char const* const sml_Names::kTagLocal                  = "local";
+char const* const sml_Names::kTagBacktraceResult        = "result";
 char const* const sml_Names::kTagProhibitPreference     = "prohibit-preference";
 char const* const sml_Names::kTagAddToPotentials        = "add-to-potentials";
 char const* const sml_Names::kTagNegated                = "negated" ;

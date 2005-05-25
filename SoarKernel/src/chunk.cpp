@@ -1064,14 +1064,14 @@ void chunk_instantiation (agent* thisAgent,
   for (pref=results; pref!=NIL; pref=pref->next_result) {
 	  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
 		  print_string (thisAgent, "\nFor result preference ");
-          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLocal);
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagBacktraceResult);
 		  print_preference (thisAgent, pref);
 		  print_string (thisAgent, " ");
 	  }
 	  backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, 0);
       
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLocal);
+          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagBacktraceResult);
       }
   }
   

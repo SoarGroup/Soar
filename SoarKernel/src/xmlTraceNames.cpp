@@ -126,6 +126,7 @@ char const* const xmlTraceNames::kTagGrounds                = "grounds" ;
 char const* const xmlTraceNames::kTagPotentials             = "potentials" ;
 char const* const xmlTraceNames::kTagLocals                 = "locals" ;
 char const* const xmlTraceNames::kTagLocal                  = "local";
+char const* const xmlTraceNames::kTagBacktraceResult        = "result";
 char const* const xmlTraceNames::kTagProhibitPreference     = "prohibit-preference";
 char const* const xmlTraceNames::kTagAddToPotentials        = "add-to-potentials";
 char const* const xmlTraceNames::kTagNegated                = "negated" ;
