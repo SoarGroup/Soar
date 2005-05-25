@@ -35,9 +35,10 @@ import org.eclipse.swt.widgets.Shell;
 public class Document
 {
 	public static final String kCreateNewWindowProperty = "Agent.CreateNewWindow" ;
+	public static final String kVersion = "8_6_1" ;
 	
-	/** The properties for this application (holds user preferences) */
-	protected AppProperties m_AppProperties = new AppProperties("SoarDebugger.ini", "Soar Debugger Settings") ;
+	/** The properties for this application (holds user preferences).  Version specific with debugger releases (or using an older version of debugger could conflict) */
+	protected AppProperties m_AppProperties = new AppProperties("SoarDebugger" + kVersion + ".ini", "Soar Debugger Settings") ;
 
 	/** The list of all modules (types of debugger windows) that exist.  This is a list of types, not a list of window instances. */
 	private ModuleList m_ModuleList = new ModuleList() ;

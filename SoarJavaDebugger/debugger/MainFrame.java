@@ -59,7 +59,7 @@ public class MainFrame
 	public static final FontData kDefaultFontData = new FontData("Courier New", 8, SWT.NORMAL) ;
 
 	private static final String kNoAgent = "<no agent>";
-	private static String m_WindowLayoutFile = "SoarDebuggerWindows.dlf";
+	private static String m_WindowLayoutFile = "SoarDebuggerWindows" + Document.kVersion + ".dlf";
 
 	private Composite m_Parent = null;
 
@@ -624,6 +624,10 @@ public class MainFrame
 				&& fontStyle >= 0)
 		{
 			setTextFont(new FontData(fontName, fontSize, fontStyle));
+		}
+		else
+		{
+	  		setTextFont(kDefaultFontData) ;  		
 		}
 
 		// Make sure our menus are enabled correctly
