@@ -182,6 +182,10 @@ char const* const sml_Names::kCandidateTypeSum  = "sum";
 char const* const sml_Names::kCandidateTypeAvg  = "avg";
 char const* const sml_Names::kCandidateValue    = "value";
 
+// output for the verbose command
+char const* const sml_Names::kTagVerbose    = "verbose";
+// Tag message has attribute kTypeString
+
 // support for printing random messages
 char const* const sml_Names::kTagMessage    = "message";
 // Tag message has attribute kTypeString

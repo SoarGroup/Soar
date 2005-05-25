@@ -177,6 +177,12 @@ inline void GenerateMessageXML(agent* soarAgent, const char* message) {
 	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagMessage);
 }
 
+inline void GenerateVerboseXML(agent* soarAgent, const char* message) {
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagVerbose);
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, message);
+	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagVerbose);
+}
+
 ///**
 // * @brief Initialize the kernel callbacks
 // *

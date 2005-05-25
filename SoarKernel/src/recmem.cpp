@@ -593,9 +593,13 @@ void create_instantiation (agent* thisAgent, production *prod,
    inst->GDS_evaluated_already = FALSE;
 
    if (thisAgent->operand2_mode == TRUE) {
-      if (thisAgent->soar_verbose_flag == TRUE)
+       if (thisAgent->soar_verbose_flag == TRUE) {
          print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
                inst->prod->name);
+         char buf[256];
+         snprintf(buf, 254, "in create_instantiation: %s", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+         GenerateVerboseXML(thisAgent, buf);
+       }
    }
    /* REW: end   09.15.96 */
 
@@ -673,8 +677,10 @@ void create_instantiation (agent* thisAgent, production *prod,
                else if (a->support==I_SUPPORT) pref->o_supported = FALSE;
                else {
                   need_to_do_support_calculations = TRUE;
-                  if (thisAgent->soar_verbose_flag == TRUE)
+                  if (thisAgent->soar_verbose_flag == TRUE) {
                      printf("\n\nin create_instantiation():  need_to_do_support_calculations == TRUE!!!\n\n");
+                     GenerateVerboseXML(thisAgent, "in create_instantiation():  need_to_do_support_calculations == TRUE!!!");
+                  }
                }
 
             }
@@ -909,8 +915,10 @@ void assert_new_preferences (agent* thisAgent)
    
    /* REW: begin 09.15.96 */
    if ((thisAgent->operand2_mode == TRUE) &&
-      (thisAgent->soar_verbose_flag == TRUE))
-      printf("\n   in assert_new_preferences:");
+       (thisAgent->soar_verbose_flag == TRUE)) {
+           printf("\n   in assert_new_preferences:");
+           GenerateVerboseXML(thisAgent, "in assert_new_preferences:");
+       }
    /* REW: end   09.15.96 */
    
 #ifdef O_REJECTS_FIRST
@@ -958,9 +966,13 @@ void assert_new_preferences (agent* thisAgent)
       /* REW: begin 09.15.96 */
       if (thisAgent->operand2_mode == TRUE) 
       {
-         if (thisAgent->soar_verbose_flag == TRUE)
+          if (thisAgent->soar_verbose_flag == TRUE) {
             print_with_symbols(thisAgent, "\n      asserting instantiation: %y\n",
             inst->prod->name);
+            char buf[256];
+            snprintf(buf, 254, "asserting instantiation: ", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+            GenerateVerboseXML(thisAgent, buf);
+          }
       }
       /* REW: end   09.15.96 */
       

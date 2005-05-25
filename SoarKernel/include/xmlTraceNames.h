@@ -153,6 +153,9 @@ public:
     static char const* const kCandidateTypeAvg;
     static char const* const kCandidateValue;
 
+    // output for the verbose command
+    static char const* const kTagVerbose;
+
     // support for printing random messages
     static char const* const kTagMessage;
 

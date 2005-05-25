@@ -964,8 +964,10 @@ void chunk_instantiation (agent* thisAgent,
 			  allow_variablization     = FALSE;
 			  inst->okay_to_variablize = FALSE;
 			  
-			  if (thisAgent->soar_verbose_flag == TRUE)
+              if (thisAgent->soar_verbose_flag == TRUE) {
 				  printf("\n   in chunk_instantiation: making justification only");
+                  GenerateVerboseXML(thisAgent, "in chunk_instantiation: making justification only");
+              }
 		  }
 		  
 		  else {
@@ -973,8 +975,14 @@ void chunk_instantiation (agent* thisAgent,
 			  allow_variablization     = (thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
 			  inst->okay_to_variablize = (byte) thisAgent->sysparams[LEARNING_ON_SYSPARAM];
 			  
-			  if (thisAgent->soar_verbose_flag == TRUE)
+              if (thisAgent->soar_verbose_flag == TRUE) {
 				  printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
+                  if(allow_variablization) {
+                      GenerateVerboseXML(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
+                  } else {
+                      GenerateVerboseXML(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
+                  }
+              }
 		  }
       }
 	  

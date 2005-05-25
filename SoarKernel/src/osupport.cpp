@@ -298,8 +298,10 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
   if (thisAgent->operand2_mode == TRUE) {
 
-     if (thisAgent->soar_verbose_flag == TRUE)
+      if (thisAgent->soar_verbose_flag == TRUE) {
         printf("\n      in calculate_support_for_instantiation_preferences:");
+        GenerateVerboseXML(thisAgent, "in calculate_support_for_instantiation_preferences:");
+      }
      o_support = FALSE;
 	 op_elab = FALSE;
 
@@ -1225,8 +1227,10 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs,
        */
 
        if (thisAgent->operand2_mode == TRUE) {
-	  if (thisAgent->soar_verbose_flag == TRUE)
-	     printf("\n         operator creation: setting a->support to I_SUPPORT");
+           if (thisAgent->soar_verbose_flag == TRUE) {
+               printf("\n         operator creation: setting a->support to I_SUPPORT");
+               GenerateVerboseXML(thisAgent, "operator creation: setting a->support to I_SUPPORT");
+           }
 
 	  a->support = I_SUPPORT;
        }

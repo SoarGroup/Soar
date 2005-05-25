@@ -150,6 +150,10 @@ char const* const xmlTraceNames::kCandidateTypeSum  = "sum";
 char const* const xmlTraceNames::kCandidateTypeAvg  = "avg";
 char const* const xmlTraceNames::kCandidateValue    = "value";
 
+// output for the verbose command
+char const* const xmlTraceNames::kTagVerbose    = "verbose";
+// Tag message has attribute kTypeString
+
 // support for printing random messages
 char const* const xmlTraceNames::kTagMessage    = "message";
 // Tag message has attribute kTypeString

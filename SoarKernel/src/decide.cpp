@@ -1955,9 +1955,15 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
                     /* If the goal pointer is non-NIL, then goal is in the stack */
                     if (thisAgent->soar_verbose_flag) 
                     {
-                       print(thisAgent, "\n          Removing goal %d because element in GDS changed.", w->gds->goal->id.level); 
+                       print(thisAgent, "\n          Removing goal %d because element in GDS changed.", w->gds->goal->id.level);
                        print(thisAgent, " WME: "); 
-                       print_wme(thisAgent, w); 
+
+                       char buf[256];
+                       snprintf(buf, 254, "Removing goal %d because element in GDS changed.", w->gds->goal->id.level);
+                       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagVerbose);
+	                   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, buf);
+                       print_wme(thisAgent, w);
+                       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagVerbose);
                     }
                     gds_invalid_so_remove_goal(thisAgent, w);
                  }

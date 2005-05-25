@@ -53,6 +53,7 @@
 #include "decide.h"
 #include "production.h"
 #include "lexer.h"
+#include "gski_event_system_functions.h" // support for generating XML output
 
 #include <assert.h>
 #include <ctype.h>
@@ -215,8 +216,12 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
    if (thisAgent->operand2_mode){
       if (w->gds) {
          if (w->gds->goal != NIL){
-            if (thisAgent->soar_verbose_flag)
+             if (thisAgent->soar_verbose_flag) {
                printf("\nremove_input_wme: Removing goal %d because element in GDS changed.\n", w->gds->goal->id.level);
+               char buf[256];
+               snprintf(buf, 254, "remove_input_wme: Removing goal %d because element in GDS changed.", w->gds->goal->id.level);
+               GenerateVerboseXML(thisAgent, buf);
+             }
             gds_invalid_so_remove_goal(thisAgent, w);
             /* NOTE: the call to remove_wme_from_wm will take care
             of checking if GDS should be removed */

@@ -5818,6 +5818,9 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
         if (thisAgent->soar_verbose_flag == TRUE) {
            print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
                               node->b.p.prod->name);
+           char buf[256];
+           snprintf(buf, 254, "RETE: putting [%y] into ms_o_assertions", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+           GenerateVerboseXML(thisAgent, buf);
         }
      }
 
@@ -5835,6 +5838,9 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
         if (thisAgent->soar_verbose_flag == TRUE) {
            print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
                               node->b.p.prod->name);
+           char buf[256];
+           snprintf(buf, 254, "RETE: putting [%y] into ms_i_assertions", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+           GenerateVerboseXML(thisAgent, buf);
         }
      }
   }
@@ -6030,8 +6036,12 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
   /* REW: begin 09.15.96 */
 
   if ((thisAgent->operand2_mode == TRUE) &&
-      (thisAgent->soar_verbose_flag == TRUE))
-     print_with_symbols (thisAgent, "\n%y: ",node->b.p.prod->name);
+      (thisAgent->soar_verbose_flag == TRUE)) {
+          print_with_symbols (thisAgent, "\n%y: ",node->b.p.prod->name);
+          char buf[256];
+          snprintf(buf, 254, "%y: ", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));
+          GenerateVerboseXML(thisAgent, buf);
+      }
 
   /* REW: end   09.15.96 */
 
