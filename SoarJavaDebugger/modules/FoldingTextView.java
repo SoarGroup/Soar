@@ -691,14 +691,14 @@ public class FoldingTextView extends AbstractComboView
 			else if (xmlTrace.IsTagAddWme() || xmlTrace.IsTagRemoveWme())
 			{
 				boolean adding = xmlTrace.IsTagAddWme() ;
-				String output = XmlOutput.getWmeChange(agent, xmlTrace, adding) ;
+				String output = XmlOutput.getWmeChanges(agent, xmlTrace, adding) ;
 				
 				if (output.length() != 0)
 					this.appendSubText(output, false, TraceType.kWmeChange) ;	
 
 			} else if (xmlTrace.IsTagPreference())
 			{
-				String output = XmlOutput.getPreferenceText(agent, xmlTrace) ;
+				String output = XmlOutput.getPreferenceProductionText(agent, xmlTrace) ;
 				
 				if (output.length() != 0)
 					this.appendSubText(output.toString(), false, TraceType.kPreference) ;
@@ -760,7 +760,15 @@ public class FoldingTextView extends AbstractComboView
 				if (output.length() != 0)
 					this.appendSubText(output, false, TraceType.kNumericIndifferent) ;
 			}
-			else
+			else if (xmlTrace.IsTagBacktraceResult() || xmlTrace.IsTagLocals() ||
+					 xmlTrace.IsTagGroundedPotentials() || xmlTrace.IsTagUngroundedPotentials())
+			{
+				String output = XmlOutput.getBacktraceTopLevelText(agent, xmlTrace) ;
+				
+				if (output.length() != 0)
+					this.appendSubText(output, false, TraceType.kFullLearning) ;
+			}
+			else	
 			{
 				// These lines can be helpful if debugging this -- we
 				// print out any XML we completely fail to understand.

@@ -111,9 +111,11 @@ public:
 	bool IsTagPotentials() const ;
 	bool IsTagGroundedPotentials() const ;
 	bool IsTagUngroundedPotentials() const ;
+	bool IsTagUngroundedPotential() const ;
 	bool IsTagBacktrace() const	;
 	bool IsTagAddToPotentials() const ;
 	bool IsTagProhibitPreference() const ;
+	bool IsTagBacktraceResult() const ;
 
 	char const* GetBacktraceAlreadyBacktraced() const ;
 	char const* GetBacktraceSymbol1() const	;
