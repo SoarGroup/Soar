@@ -1081,7 +1081,6 @@ void chunk_instantiation (agent* thisAgent,
   for (pref=results; pref!=NIL; pref=pref->next_result) {
 	  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
 		  print_string (thisAgent, "\nFor result preference ");
-          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagBacktracing);
           gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagBacktraceResult);
 		  print_preference (thisAgent, pref);
 		  print_string (thisAgent, " ");
@@ -1099,10 +1098,6 @@ void chunk_instantiation (agent* thisAgent,
 	  trace_locals (thisAgent, grounds_level);
 	  trace_grounded_potentials (thisAgent);
 	  if (! trace_ungrounded_potentials (thisAgent, grounds_level)) break;
-  }
-
-  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-    gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagBacktracing);
   }
 
   free_list (thisAgent, thisAgent->positive_potentials);

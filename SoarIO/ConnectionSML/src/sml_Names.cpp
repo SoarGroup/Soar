@@ -156,7 +156,6 @@ char const* const sml_Names::kActionFunction                    = "function" ;
 char const* const sml_Names::kActionId                          = "id" ;
 
 //backtrace stuff
-char const* const sml_Names::kTagBacktracing            = "backtracing" ;
 char const* const sml_Names::kTagBacktrace              = "backtrace" ;
 char const* const sml_Names::kTagGrounds                = "grounds" ;
 char const* const sml_Names::kTagPotentials             = "potentials" ;
