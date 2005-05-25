@@ -186,6 +186,9 @@ public:
     static char const* const kCandidateTypeAvg;
     static char const* const kCandidateValue;
 
+    // support for printing random messages
+    static char const* const kTagMessage;
+
 	// end of tags for Trace output
 
 	// Types

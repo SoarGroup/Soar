@@ -95,7 +95,7 @@ char const* const xmlTraceNames::kTagWarning		= "warning" ;
 // Tag warning has attribute kTypeString
 
 char const* const xmlTraceNames::kTagError		= "error" ;
-// Tag warning has attribute kTypeString
+// Tag error has attribute kTypeString
 
 // learning stuff
 char const* const xmlTraceNames::kTagLearning	= "learning" ;
@@ -149,6 +149,10 @@ char const* const xmlTraceNames::kCandidateType     = "type";
 char const* const xmlTraceNames::kCandidateTypeSum  = "sum";
 char const* const xmlTraceNames::kCandidateTypeAvg  = "avg";
 char const* const xmlTraceNames::kCandidateValue    = "value";
+
+// support for printing random messages
+char const* const xmlTraceNames::kTagMessage    = "message";
+// Tag message has attribute kTypeString
 
 // XML function types for XML output event
 char const* const xmlTraceNames::kFunctionBeginTag		= "begintag";
