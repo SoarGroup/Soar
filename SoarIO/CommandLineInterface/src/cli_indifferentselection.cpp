@@ -126,8 +126,9 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::IAgent* pAgent, eIndiffe
 				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_LAST);
 				break;
 			case INDIFFERENT_ASK:
-				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_ASK);
-				break;
+				return SetError(CLIError::kNotImplemented);
+				//pAgent->SetIndifferentSelection(gSKI_USER_SELECT_ASK);
+				//break;
 			case INDIFFERENT_RANDOM:
 				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_RANDOM);
 				break;
