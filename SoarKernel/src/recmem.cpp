@@ -970,7 +970,7 @@ void assert_new_preferences (agent* thisAgent)
             print_with_symbols(thisAgent, "\n      asserting instantiation: %y\n",
             inst->prod->name);
             char buf[256];
-            snprintf(buf, 254, "asserting instantiation: ", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+            snprintf(buf, 254, "asserting instantiation: %s", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
             GenerateVerboseXML(thisAgent, buf);
           }
       }
