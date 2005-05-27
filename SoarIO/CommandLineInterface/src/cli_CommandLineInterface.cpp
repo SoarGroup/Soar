@@ -325,7 +325,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 
 		if (possibilities.size() != 1) {
 			// Ambiguous
-			std::string detail = "Ambiguous command, possiblities: ";
+			std::string detail = "Ambiguous command, possibilities: ";
 			liter = possibilities.begin();
 			while (liter != possibilities.end()) {
 				detail += (*liter) + ' ';
