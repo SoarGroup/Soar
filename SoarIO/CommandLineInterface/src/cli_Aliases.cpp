@@ -21,6 +21,20 @@ using namespace cli;
 using namespace std;
 
 Aliases::Aliases() {
+	// add-wme aw
+	{
+		string commandToSubstitute("aw");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("add-wme"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// alias a
+	{
+		string commandToSubstitute("a");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("alias"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// alias -d unalias
 	{
 		string commandToSubstitute("unalias");
@@ -43,6 +57,20 @@ Aliases::Aliases() {
 		substitution.push_back(string("default-wme-depth"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// excise ex
+	{
+		string commandToSubstitute("ex");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("excise"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// explain-backtraces eb
+	{
+		string commandToSubstitute("eb");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("explain-backtraces"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// firing-counts fc
 	{
 		string commandToSubstitute("fc");
@@ -50,11 +78,25 @@ Aliases::Aliases() {
 		substitution.push_back(string("firing-counts"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// format-watch fw
+	{
+		string commandToSubstitute("fw");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("format-watch"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// gds-print gds_print
 	{
 		string commandToSubstitute("gds_print");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("gds-print"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// help h
+	{
+		string commandToSubstitute("h");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("help"));
 		NewAlias(substitution, commandToSubstitute);
 	}
 	// help man
@@ -71,11 +113,32 @@ Aliases::Aliases() {
 		substitution.push_back(string("help"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// indifferent-selection inds
+	{
+		string commandToSubstitute("inds");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("indifferent-selection"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// init-soar init
 	{
 		string commandToSubstitute("init");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("init-soar"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// init-soar is
+	{
+		string commandToSubstitute("is");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("init-soar"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// learn l
+	{
+		string commandToSubstitute("l");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("learn"));
 		NewAlias(substitution, commandToSubstitute);
 	}
 	// ls dir
@@ -92,11 +155,33 @@ Aliases::Aliases() {
 		substitution.push_back(string("print"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// print --chunks pc
+	{
+		string commandToSubstitute("pc");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("print"));
+		substitution.push_back(string("--chunks"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// preferences pr
+	{
+		string commandToSubstitute("pr");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("preferences"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// pwd topd
 	{
 		string commandToSubstitute("topd");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("pwd"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// pwatch pw
+	{
+		string commandToSubstitute("pw");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("pwatch"));
 		NewAlias(substitution, commandToSubstitute);
 	}
 	// quit exit
@@ -130,6 +215,34 @@ Aliases::Aliases() {
 		substitution.push_back(string("-e"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// remove-wme rw
+	{
+		string commandToSubstitute("rw");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("remove-wme"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// rete-net rn
+	{
+		string commandToSubstitute("rn");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("rete-net"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// soarnews sn
+	{
+		string commandToSubstitute("sn");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("soarnews"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// stats st
+	{
+		string commandToSubstitute("st");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("stats"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// start-system start
 	{
 		string commandToSubstitute("start");
@@ -144,11 +257,25 @@ Aliases::Aliases() {
 		substitution.push_back(string("stop-soar"));
 		NewAlias(substitution, commandToSubstitute);
 	}
+	// stop-soar ss
+	{
+		string commandToSubstitute("ss");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("stop-soar"));
+		NewAlias(substitution, commandToSubstitute);
+	}
 	// stop-soar interrupt
 	{
 		string commandToSubstitute("interrupt");
 		std::vector<std::string> substitution;
 		substitution.push_back(string("stop-soar"));
+		NewAlias(substitution, commandToSubstitute);
+	}
+	// alias -d un
+	{
+		string commandToSubstitute("w");
+		std::vector<std::string> substitution;
+		substitution.push_back(string("watch"));
 		NewAlias(substitution, commandToSubstitute);
 	}
 	// watch w
