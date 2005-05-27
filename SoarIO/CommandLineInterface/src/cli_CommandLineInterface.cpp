@@ -278,6 +278,12 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::st
 bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string>& argv) {
 	if (!argv.size()) return true;
 
+	// Check for help flags
+	bool helpFlag = false;
+	if (CheckForHelp(argv)) {
+		helpFlag = true;
+	}
+
 	// Expand aliases
 	if (m_Aliases.Translate(argv)) {
 		// Is the alias target implemented?
@@ -290,6 +296,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 		// Not an alias, check for partial match
 		std::list<std::string> possibilities;
 		std::list<std::string>::iterator liter;
+		bool exactMatch = false;
 
 		for(unsigned index = 0; index < (argv[0].size()); ++index) {
 
@@ -303,8 +310,9 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 					}
 					++citer;
 				}
+
 			} else {
-				// Look through the list of possiblities
+				// Update the list of possiblities
 
 				// A more efficient search here would be nice.
 				liter = possibilities.begin();
@@ -313,9 +321,17 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 						// Remove this possibility from the list
 						liter = possibilities.erase(liter);
 					} else {
+						// check for exact match
+						if (argv[0] == (*liter)) {
+							// Exact match, we're done
+							argv[0] = (*liter);
+							exactMatch = true;
+							break;
+						}
 						++liter;
 					}
 				}
+				if (exactMatch) break;
 			}
 
 			if (!possibilities.size()) {
@@ -323,41 +339,30 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 				SetErrorDetail("(No such command: " + argv[0] + ")");
 				return SetError(CLIError::kCommandNotImplemented);
 
-			} else if (possibilities.size() == 1) {
-				// We have a match
+			} 
+		}
+
+		if (!exactMatch) {
+			if (possibilities.size() != 1) {
+				// Ambiguous
+				std::string detail = "Ambiguous command, possibilities: ";
+				liter = possibilities.begin();
+				while (liter != possibilities.end()) {
+					detail += (*liter) + ' ';
+					++liter;
+				}
+				SetErrorDetail(detail);
+				return SetError(CLIError::kAmbiguousCommand);
+
+			} else {
+				// We have a partial match
 				argv[0] = (*(possibilities.begin()));
-				break;
 			}
-		}
-
-		// Check for exact match
-		bool exactMatch = false;
-		liter = possibilities.begin();
-		while (liter != possibilities.end()) {
-			if (argv[0] == (*liter)) {
-				// Exact match
-				argv[0] = (*liter);
-				exactMatch = true;
-				break;
-			}
-			++liter;
-		}
-
-		if (!exactMatch && (possibilities.size() != 1)) {
-			// Ambiguous
-			std::string detail = "Ambiguous command, possibilities: ";
-			liter = possibilities.begin();
-			while (liter != possibilities.end()) {
-				detail += (*liter) + ' ';
-				++liter;
-			}
-			SetErrorDetail(detail);
-			return SetError(CLIError::kAmbiguousCommand);
 		}
 	}
 
-	// Check for help flags
-	if (CheckForHelp(argv)) {
+	// Show help if requested
+	if (helpFlag) {
 		std::string helpFile = m_LibraryDirectory + "/help/" + argv[0];
 		return GetHelpString(helpFile);
 	}
