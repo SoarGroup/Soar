@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\include&quot;; C:\Docume~1\administrator\Desktop\SoarPr~1\SoarIO\ClientSML\include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				MinimalRebuild="FALSE"
 				BasicRuntimeChecks="0"
