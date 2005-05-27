@@ -1,4 +1,4 @@
-25
+26
 SOAR_ID 0
 ENUMERATION 1 1 state
 ENUMERATION 2 1 nil
@@ -24,8 +24,10 @@ ENUMERATION 21 1 water-jug
 ENUMERATION 22 1 yes
 ENUMERATION 23 1 jug
 ENUMERATION 24 1 empty
-36
+SOAR_ID 25
+40
 0 desired 16
+0 failure 16
 0 jug 10
 0 name 3
 0 operator 4
@@ -35,6 +37,8 @@ ENUMERATION 24 1 empty
 0 problem-space 20
 0 success 16
 0 superstate 2
+0 superstate-set 0
+0 tried-tied-operator 25
 0 type 1
 4 into 10
 4 jug 10
@@ -57,6 +61,7 @@ ENUMERATION 24 1 empty
 17 item 13
 17 item 6
 17 superstate 0
+17 superstate-set 0
 20 default-state-copy 22
 20 dont-copy 24
 20 name 21

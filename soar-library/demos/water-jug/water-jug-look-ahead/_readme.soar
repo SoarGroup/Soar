@@ -1,8 +1,8 @@
-# water-jug
+# water-jug-look-ahead
 # John E. Laird
 # University of Michigan
-# May 25, 2004
-# Soar version 8.5.1
+# May 24, 2005
+# Soar version 8.6.1
 
 ###
 ### ABSTRACT. These Soar productions implement the water-jug task.
@@ -19,17 +19,24 @@
 ### of the jug until the source is empty or the destination is full.
 ### State Structure: Each jug has slots to record its capacity [volume],
 ### the amount of water it contains [contents], and the capacity 
-### available [empty] which is the volume minus the contents.
+### available [empty] which is the volume minus the contents (computed
+### in elaborations/empty). Example:
 ###   (state s1 ^jug j1)
-###   (jug j1 ^volume v1 ^contents c1 ^empty f1),
-### where v1, c1, and f1 are numbers.
+###   (jug j1 ^volume 5 ^contents 3 ^empty 2)
 ###
 
+### This uses the look-ahead code that is in default/selection.soar
+### Thus, search is done through subgoals.
+### Chunking learns control rules for selecting operators.
+###  Sometimes it can learn rules that lead to looping.
 
-# Change made to water-jug to enable look ahead:
-# 1. Add to elaborations/top-state: water-jug*elaborate*problem-space
-# 2. Change elaborations/goal-test
-# 3. Added desired in initialize so easier to change desired state.
-# 4. Remove = preferences from operator proposals
+# Change made to water-jug to enable look ahead search:
+# 1. Add to _firstload "source selection.soar"
+# 2. Add to elaborations/problem-space: water-jug*elaborate*problem-space
+# 3. Change elaborations/goal-test so works with look-ahead goal test = 
+# 4. Add to elaborations/goal-test a test for failure on look-ahead if duplicate states.
+# 5. Add to initialize a desired jug structure so easier to detect desired state (and to change).
+# 6. Remove = preferences from operator proposals in empty.soar, fill.soar, pour.soar
+# 7. Add to impasse__operator_tie monitoring rules.
 
 

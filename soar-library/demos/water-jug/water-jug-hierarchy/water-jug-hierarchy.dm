@@ -1,4 +1,4 @@
-19
+27
 SOAR_ID 0
 ENUMERATION 1 1 state
 ENUMERATION 2 1 nil
@@ -16,17 +16,23 @@ SOAR_ID 13
 ENUMERATION 14 1 fill
 INTEGER_RANGE 15 -2147483648 2147483647
 SOAR_ID 16
-ENUMERATION 17 1 record
-ENUMERATION 18 4 empty fill none pour
-23
+ENUMERATION 17 1 state
+ENUMERATION 18 1 fill
+ENUMERATION 19 1 pick-up
+SOAR_ID 20
+ENUMERATION 21 1 fill-jug
+SOAR_ID 22
+ENUMERATION 23 1 put-down
+SOAR_ID 24
+ENUMERATION 25 1 yes
+ENUMERATION 26 1 yes
+33
 0 jug 10
-0 last-operator 18
 0 name 3
 0 operator 4
 0 operator 6
 0 operator 8
 0 operator 13
-0 operator 16
 0 superstate 2
 0 type 1
 4 name 5
@@ -38,7 +44,19 @@ ENUMERATION 18 4 empty fill none pour
 8 name 9
 10 contents 11
 10 empty 12
+10 filled-jug 26
+10 picked-up 25
 10 volume 15
 13 fill-jug 10
 13 name 14
-16 name 17
+16 jug 10
+16 name 18
+16 operator 20
+16 operator 22
+16 operator 24
+16 superstate 0
+16 top-state 0
+16 type 17
+20 name 19
+22 name 21
+24 name 23

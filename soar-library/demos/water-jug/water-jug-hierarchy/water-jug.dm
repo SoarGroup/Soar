@@ -1,4 +1,4 @@
-19
+18
 SOAR_ID 0
 ENUMERATION 1 1 state
 ENUMERATION 2 1 nil
@@ -17,10 +17,8 @@ ENUMERATION 14 1 fill
 INTEGER_RANGE 15 -2147483648 2147483647
 SOAR_ID 16
 ENUMERATION 17 1 record
-ENUMERATION 18 4 empty fill none pour
-23
+22
 0 jug 10
-0 last-operator 18
 0 name 3
 0 operator 4
 0 operator 6
