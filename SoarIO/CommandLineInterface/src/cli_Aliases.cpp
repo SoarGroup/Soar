@@ -79,12 +79,12 @@ Aliases::Aliases() {
 		NewAlias(substitution, commandToSubstitute);
 	}
 	// format-watch fw
-	{
-		string commandToSubstitute("fw");
-		std::vector<std::string> substitution;
-		substitution.push_back(string("format-watch"));
-		NewAlias(substitution, commandToSubstitute);
-	}
+	//{
+	//	string commandToSubstitute("fw");
+	//	std::vector<std::string> substitution;
+	//	substitution.push_back(string("format-watch"));
+	//	NewAlias(substitution, commandToSubstitute);
+	//}
 	// gds-print gds_print
 	{
 		string commandToSubstitute("gds_print");

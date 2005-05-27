@@ -279,7 +279,14 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	if (!argv.size()) return true;
 
 	// Expand aliases
-	if (!m_Aliases.Translate(argv)) {
+	if (m_Aliases.Translate(argv)) {
+		// Is the alias target implemented?
+		if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
+			SetErrorDetail("(No such command: " + argv[0] + ")");
+			return SetError(CLIError::kCommandNotImplemented);
+		}
+
+	} else {
 		// Not an alias, check for partial match
 		std::list<std::string> possibilities;
 		std::list<std::string>::iterator liter;
