@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
 {
 
 	string inFileName;
+	string outFileName("IMPDefaultOut.cpp");
 	bool parsed = 0;
 	ilObjVector_t	ilObjects;
 	typedObjectsMap_t typedILObjects;
@@ -33,7 +34,7 @@ int main(int argc, char* argv[])
 	//cout << "Number of args is " << argc << endl;
 
 	//should have at least 1 argument - the filename for the input link spec
-	if(argc != 2) 
+	if(argc < 2) 
 	{
 		cout << "First arg is " << argv[1] << endl;
 		cout << "Usage: " <<argc<< " <filename>" << endl;
@@ -43,7 +44,16 @@ int main(int argc, char* argv[])
 	else
 	{
 		inFileName = argv[1];
-		cout << "Filename set to >" << inFileName << "<" << endl;		
+		cout << "Input file is:>" << inFileName << "<" << endl;		
+	}
+	
+	//No output filename specified
+	if(argc < 3)
+		cout << "No output filename specified, using default...." << endl;
+	else
+	{
+		outFileName = argv[2];
+		cout << "Output file is:>" << outFileName << "<" << endl;
 	}
 
 	//determine file type
@@ -86,8 +96,6 @@ int main(int argc, char* argv[])
 	
 	//create the code generator - //TODO use a commandline arg to specify which 
 	//type to make
-	//TODO the name of the output file should be read in from command line
-	string outFileName("testCPPFile.cpp");
 	CPPGenerator generator(outFileName, ilObjects, typedILObjects);
 
 	cout << "Pausing before exiting program" << endl;

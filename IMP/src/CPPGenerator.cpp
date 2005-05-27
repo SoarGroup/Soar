@@ -90,11 +90,92 @@ void CPPGenerator::GenerateCreateILFunctionTyped(int depth)
 	{
 		string className = typeItr->first;
 		className[0] = toupper(className[0]);
-		//Generate the function header
+		//Generate the function header, opening brace
 			file << k_void << k_Create <<  className << k_openParen << k_AgentRef 
-				<< k_AgentInstance << endl;
+				<< k_AgentInstance << k_closeParen << endl << PrintTabs(depth) << k_openBrace;
 		
+		//Generate the creation of all of the WMEs associated with this type
+		PrintTabs(depth + 1);
+		ilObjVector_t& objects = typeItr->second;
+		GenerateInput(objects, depth + 1);
+		
+		file << endl;
+		//add closing brace
+		PrintTabs(depth) << k_closeBrace << endl;		
 	}
+
+}
+
+void CPPGenerator::GenerateInput(ilObjVector_t& objects, int depth)
+{
+	//for now, just create the code for anything that has a start type and value
+	for(ilObjVector_t::iterator objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
+	{
+		string parent;
+		eElementType type = objItr->GetCurrentType();
+		string newVarName;
+
+		switch(type)
+		{
+		case ELEMENT_TYPE_TBD:
+			PrintTabs(depth + 1) << "//---------------------------------------" << endl;
+			PrintTabs(depth + 1);
+			file << "//Placeholder for a wme whose type needs to be determined at runtime...."	<< endl;
+			PrintTabs(depth + 1) << "//The types for this wme are: ";
+			objItr->PrintTypes(file);
+			file << endl;
+			PrintTabs(depth + 1) << "//Object's attribute name: " << objItr->GetAttributeName();
+			file << ", parent: " << objItr->GetParent() << endl;
+			//PrintTabs(depth + 1) << "Object's " << objItr->
+			PrintTabs(depth + 1) << "//---------------------------------------" << endl;
+			break;
+		case ELEMENT_INT:
+			PrintTabs(depth + 1);
+			GenerateDeclareVariable(type, newVarName) << k_assign << k_space;
+			PrintThreeArgFunction(k_CreateIntWME, objItr->GetParent(), objItr->GetAttributeName(), objItr->GetStartValue());
+			file << endl;
+			PrintTabs(depth +1);
+			GenerateStoreWME(newVarName, type);
+			break;
+		case ELEMENT_FLOAT:
+			PrintTabs(depth + 1);
+			PrintThreeArgFunction(k_CreateFloatWME, objItr->GetParent(), objItr->GetAttributeName(), objItr->GetStartValue());
+			file << endl;
+			PrintTabs(depth + 1);
+			GenerateStoreWME(newVarName, type);
+			break;
+		case ELEMENT_STRING:
+			PrintTabs(depth + 1);
+			GenerateDeclareVariable(type, newVarName) << k_assign << k_space;
+			PrintThreeArgFunction(k_CreateStringWME, objItr->GetParent(), objItr->GetAttributeName(), objItr->GetStartValue());
+			file << endl;
+			break;
+		case ELEMENT_ID:
+			PrintTabs(depth + 1);
+
+			parent = objItr->GetParent();
+
+			//This token denotes that the input link should be used as the parent object					
+			if(!stricmp(parent.c_str(), k_ILRootToken.c_str()))
+			{
+				parent = k_AgentInstance + k_dot + k_GetInputLink + k_openParen + k_closeParen;
+			}
+
+			//write out the Identifier declaration in front of the function
+			file << k_Identifier << k_space << objItr->GetStartValue() << k_space << k_assign << k_space;
+			PrintTwoArgFunction(k_CreateIdWME, parent, objItr->GetAttributeName());
+			file << endl;
+			break;
+		default:
+			assert(false);
+			break;
+		}//switch
+
+		objItr->SetGeneratedName(newVarName);		
+		//cout << "Setting an object's generated name to: "	<< newVarName << endl;
+		//cout << "\tand confirming: " << objItr->GetGeneratedName() << endl;
+
+	}//for - still objects to process
 
 }
 

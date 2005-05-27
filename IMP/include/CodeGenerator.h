@@ -41,13 +41,15 @@ protected:
 	//this is just a placeholder function
 	virtual void GenerateCode() = 0;
 
+	//does the dirty work of the CreateILFunction. Separate so that it can be reused
+	//TODO rename this   //TODO make this pure virtual
+	virtual void GenerateInput(ilObjVector_t& objects, int depth = 0){}
+
 	virtual void GenerateCreateILFunction(int indentDepth = 0) = 0;
 
 	virtual void GenerateUpdateILFunction(int indentDepth = 0) = 0;
 
 	virtual void GenerateCleanupFunction(int indentDepth = 0) = 0;
-
-	//virtual void
 
 	void PrintSingleImport(const std::string& name)
 	{
@@ -101,6 +103,7 @@ public:
 private:
 	std::ostream& PrintTabs(int indentDepth);
 protected:
+	void GenerateInput(ilObjVector_t& objects, int depth = 0);
 	void GenerateHeaderInformation();
 	void GenerateCode();
 	void GenerateStoreWME(std::string& element, eElementType type);//TODO  work on hierarchy for this

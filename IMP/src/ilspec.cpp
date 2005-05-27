@@ -259,19 +259,22 @@ bool InputLinkSpec::ImportIL(string& filename)
 		return false;
 	}
 
-
+	int loopBegin = defaultLoopBegin;
+	int loopEnd = defaultLoopEnd;
+	
 	//this should create InputLinkObjects to hold each line of data read
 	while(!file.eof())
 	{
 		eParseStage parseStage = READING_BEGIN_STAGE;
 		eParseStage lastCompletedState = READING_PRE_BEGIN;
-		int loopBegin = defaultLoopBegin;
-		int loopEnd = defaultLoopEnd;
+
 		bool quitCondition = false;
 		string controlVariableName;
-
-		bool controlStructureUnsatisfied = false;//whether or not there is a control
-							//structure creating multiple wmes that has not been handled
+		//This container holds the WME descriptions for a class
+		//A 'for' loop that preceeds a class structure will cause the entire
+		//class description, this container, to be repeated
+		ilObjVector_t incompleteClassSpec;
+		bool classDescriptionJustFinished = false;
 
 		string line;
 		WriteFileLineToString(file, line, false);
@@ -356,14 +359,15 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 					//TODO (if doing nested control loops, add an entry to the control queue)
 
-					//since we just consumed the first line, read in the next one 
+					//since we just consumed the first line, read in the next one
 					//for the identifier information
 					WriteFileLineToString(file, line);
 					lastCompletedState = READING_CONTROL_STRUCTURE;
-					controlStructureUnsatisfied = true;
+
 					parseStage = GetNextStageByToken(line);
 					if(parseStage == UNKNOWN_STAGE)//there may not be a token there
-						parseStage = READING_PARENT_IDENTIFIER;					
+						parseStage = READING_PARENT_IDENTIFIER;
+					//the 'else' case for this 'if' is actually handled by the line preceeding 'if'
 					break;
 				case READING_CLASS_NAME:
 					//trim off the token
@@ -379,12 +383,15 @@ bool InputLinkSpec::ImportIL(string& filename)
 					}
 
 					ilObj.SetSimulationClassName(curWord);
+//cout << "Just set the classname for a new object to:>" << curWord << "<" << endl;
+//cout << "\tand confirming it: " << ilObj.GetSimulationClassName() << endl;
 					currrentClassName = curWord;
 					WriteFileLineToString(file, line);
 					lastCompletedState = READING_CLASS_NAME;
 					parseStage = READING_PARENT_IDENTIFIER;
 					break;
 				case READING_PARENT_IDENTIFIER:
+//cout << "\treading parent id, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
 					curWord = ReadAndTrimOneWord(line);
 					if(curWord == "")
 					{
@@ -397,6 +404,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 					parseStage = READING_ATTRIBUTE;
 					break;
 				case READING_ATTRIBUTE:
+//cout << "\treading attrib id, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;				
 					curWord = ReadAndTrimOneWord(line); // TODO error checking
 					//replace the leading attrib token with a double quote
 					curWord.replace(0, 1, "\"");
@@ -406,6 +414,8 @@ bool InputLinkSpec::ImportIL(string& filename)
 					parseStage = READING_VALUE_TYPE;
 					break;
 				case READING_VALUE_TYPE:
+//cout << "\treading value type, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
+
 					curWord = ReadAndTrimOneWord(line);
 
 					//if the first token hasn't been read, and there isn't one here, that's a problem.
@@ -623,6 +633,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 						parseStage = READING_FINAL_STAGE;
 						break;
 					}
+					classDescriptionJustFinished = true;
 					curWord = ReadOneWord(line);
 					//if there is a word here, it should be the same class name as the opening one
 					if(stricmp(curWord.c_str(), currrentClassName.c_str()))
@@ -647,64 +658,106 @@ bool InputLinkSpec::ImportIL(string& filename)
 					break;
 			}//end switch
 		}// end control loop
-
+cout << "Before storage, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
 //TODO this 'for loop' only goes up (and by 1), but the user isn't constrained to that.
 //So, take note of whether start val is higher/lower than end val
 //Also, consider taking in another arg that sets the increment amount
-		//now we've read a WME pattern. If it should be duplicated, do that now
+
+		//now we've read a WME pattern. If it should be duplicated, do that now.
+//TODO however, if we're reading an entire class pattern that needs to be repeated
+//Just store this pattern as part of the overall class pattern, which will be repeated
+//in its entirety, when the class has been closed		
 		for(int counter = loopBegin; counter < loopEnd; ++counter)
 		{
 			//we only need ONE copy of this object
 			if(controlVariableName == "")
 			{
-				//determine if it's a typed object or not
+				//UNTYPED WME description
 				if(ilObj.GetSimulationClassName() == "")
+				{
+				cout << "Adding untyped object with attribute:" << ilObj.GetAttributeName() << endl;
 					ilObjects.push_back(ilObj);
+				}
+				//Typed WME description
 				else
+				{
+					cout << "\t\tAdded object to typedObjectsVector because it had type: " << ilObj.GetSimulationClassName() << endl;
 					AddTypedObject(ilObj);
-			}
+				}
+			}//SINGLE copy
 
 			//we need MULTIPLE copies of this object
 			else
-			{
-				InputLinkObject actualNewObject = ilObj;
-				//the parts of a WME pattern that might have a field equal to the control
-				//variable name are the optional "update"/"start" fields
-
-				string counterAsString = IntToString(counter);
-				//Look for the counter variable's name as a substring of the update value
-				string::size_type pos =	ilObj.GetUpdateValue().find(controlVariableName);
-				if(pos != string.npos)
+			{	//UNTYPED case
+				if(ilObj.GetSimulationClassName() == "")
 				{
-					string oldUpdateValue = ilObj.GetUpdateValue();
-					/*cout << "About to replace an update value's control variable reference with its string value..." << endl;
-					cout << "\tvariable: " << controlVariableName << endl;
-					cout << "\tvariable's value: " << counterAsString << endl;
-					cout << "\tunchanged update value is: " << oldUpdateValue << endl;*/
-					oldUpdateValue.replace(pos, controlVariableName.size(), counterAsString);
-					//cout << "\tand now the new value is: " << oldUpdateValue << endl;
-					actualNewObject.SetUpdateValue(oldUpdateValue);
-				}//if the update value needs to be replaced
+					InputLinkObject actualNewObject = ilObj;
+					//the parts of a WME pattern that might have a field equal to the control
+					//variable name are the optional "update"/"start" fields
 
-				//Look for the counter variable's name as a substring of the start value
-				pos = ilObj.GetStartValue().find(controlVariableName);
-				if(pos != string.npos)
+					string counterAsString = IntToString(counter);
+					//Look for the counter variable's name as a substring of the update value
+					string::size_type pos =	ilObj.GetUpdateValue().find(controlVariableName);
+					if(pos != string.npos)
+					{
+						string oldUpdateValue = ilObj.GetUpdateValue();
+						/*cout << "About to replace an update value's control variable reference with its string value..." << endl;
+						cout << "\tvariable: " << controlVariableName << endl;
+						cout << "\tvariable's value: " << counterAsString << endl;
+						cout << "\tunchanged update value is: " << oldUpdateValue << endl;*/
+						oldUpdateValue.replace(pos, controlVariableName.size(), counterAsString);
+						//cout << "\tand now the new value is: " << oldUpdateValue << endl;
+						actualNewObject.SetUpdateValue(oldUpdateValue);
+					}//if the update value needs to be replaced
+
+					//Look for the counter variable's name as a substring of the start value
+					pos = ilObj.GetStartValue().find(controlVariableName);
+					if(pos != string.npos)
+					{
+						string oldStartValue = ilObj.GetStartValue();
+						/*cout << "About to replace a start value's control variable reference with its string value..." << endl;
+						cout << "\tvariable: " << controlVariableName << endl;
+						cout << "\tvariable's value: " << counterAsString << endl;
+						cout << "\tunchanged update value is: " << oldStartValue << endl;*/
+						oldStartValue.replace(pos, controlVariableName.size(), counterAsString);
+						//cout << "\tand now the new value is: " << oldStartValue << endl;
+						actualNewObject.SetStartValue(oldStartValue);
+					}//if the star start value needs to be replaced
+					
+					}
+				cout << "Adding MULTIPLE of untyped object with attribute:" << actualNewObject.GetAttributeName() << endl;
+				
+					ilObjects.push_back(actualNewObject);						
+				}//untyped case
+				//TYPED case
+				else
 				{
-					string oldStartValue = ilObj.GetStartValue();
-					/*cout << "About to replace a start value's control variable reference with its string value..." << endl;
-					cout << "\tvariable: " << controlVariableName << endl;
-					cout << "\tvariable's value: " << counterAsString << endl;
-					cout << "\tunchanged update value is: " << oldStartValue << endl;*/
-					oldStartValue.replace(pos, controlVariableName.size(), counterAsString);
-					//cout << "\tand now the new value is: " << oldStartValue << endl;
-					actualNewObject.SetStartValue(oldStartValue);
-				}//if the star start value needs to be replaced
-
-				if(ilObj.GetSimulationClassName() != "")
 					AddTypedObject(actualNewObject);
-				else 
-					ilObjects.push_back(actualNewObject);
-			}//else - we need multiple copies of this object
+					//if the class wasn't just closed, we don't have enough information to start
+					//looping around, exit for now
+					if(!classDescriptionJustFinished)
+						break;
+					else
+					{
+						//make a copy of this class pattern
+						ilObjVector_t actualClassPattern = typedObjects[ilObj.GetAttributeName()];
+						assert(!actualClassPattern.empty());;
+						//replace the control variable name with value
+						
+						//store the altered class pattern
+						
+						classDescriptionJustFinished = false;
+					}
+				}//TYPED case
+
+
+if(ilObj.GetSimulationClassName() != "")
+{
+	cout << "Adding MULTIPLE of object with type:>" << actualNewObject.GetSimulationClassName() << "<" << endl;
+
+}
+
+			}//else - we need MULTIPLE copies of this object
 
 		}//for however many copies of this WME pattern we need
 

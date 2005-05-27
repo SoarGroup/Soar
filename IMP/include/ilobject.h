@@ -5,7 +5,6 @@
 #include <string>
 #include <iostream>
 
-#include "sml_ClientWMElement.h"
 /************************************************************************
 * ILObject
 * 
