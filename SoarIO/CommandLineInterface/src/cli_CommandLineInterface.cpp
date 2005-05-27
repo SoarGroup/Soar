@@ -323,7 +323,20 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 			}
 		}
 
-		if (possibilities.size() != 1) {
+		// Check for exact match
+		bool exactMatch = false;
+		liter = possibilities.begin();
+		while (liter != possibilities.end()) {
+			if (argv[0] == (*liter)) {
+				// Exact match
+				argv[0] = (*liter);
+				exactMatch = true;
+				break;
+			}
+			++liter;
+		}
+
+		if (!exactMatch && (possibilities.size() != 1)) {
 			// Ambiguous
 			std::string detail = "Ambiguous command, possibilities: ";
 			liter = possibilities.begin();
