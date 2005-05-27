@@ -91,6 +91,7 @@ namespace cli {
             kAlreadyRunning                     = 76,
             kRunFailed                          = 77,
 			kNoPreferences						= 78,
+			kAmbiguousCommand					= 79,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -167,6 +168,7 @@ namespace cli {
                 case kAlreadyRunning:                   return "Agent is already running.";
                 case kRunFailed:                        return "Run failed.";
                 case kNoPreferences:                    return "No preferences found.";
+				case kAmbiguousCommand:					return "Received command is ambiguous, try adding more letters.";
 				default:								return "Unknown error code.";
 			}
 		}

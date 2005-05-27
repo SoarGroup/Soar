@@ -32,7 +32,6 @@ namespace cli {
 	public:
 
 		Aliases();
-		
 
 		bool IsAlias(const std::string& command);
 		bool NewAlias(const std::vector<std::string>& substitution, const std::string& commandToSubstitute);

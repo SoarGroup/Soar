@@ -278,19 +278,68 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, const std::st
 bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string>& argv) {
 	if (!argv.size()) return true;
 
-	// Translate aliases
-	m_Aliases.Translate(argv);
+	// Expand aliases
+	if (!m_Aliases.Translate(argv)) {
+		// Not an alias, check for partial match
+		std::list<std::string> possibilities;
+		std::list<std::string>::iterator liter;
+
+		for(unsigned index = 0; index < (argv[0].size()); ++index) {
+
+			if (index == 0) {
+				// Bootstrap the list of possibilities
+				CommandMapConstIter citer = m_CommandMap.begin();
+
+				while (citer != m_CommandMap.end()) {
+					if (citer->first[index] == argv[0][index]) {
+						possibilities.push_back(citer->first);
+					}
+					++citer;
+				}
+			} else {
+				// Look through the list of possiblities
+
+				// A more efficient search here would be nice.
+				liter = possibilities.begin();
+				while (liter != possibilities.end()) {
+					if ((*liter)[index] != argv[0][index]) {
+						// Remove this possibility from the list
+						liter = possibilities.erase(liter);
+					} else {
+						++liter;
+					}
+				}
+			}
+
+			if (!possibilities.size()) {
+				// Not implemented
+				SetErrorDetail("(No such command: " + argv[0] + ")");
+				return SetError(CLIError::kCommandNotImplemented);
+
+			} else if (possibilities.size() == 1) {
+				// We have a match
+				argv[0] = (*(possibilities.begin()));
+				break;
+			}
+		}
+
+		if (possibilities.size() != 1) {
+			// Ambiguous
+			std::string detail = "Ambiguous command, possiblities: ";
+			liter = possibilities.begin();
+			while (liter != possibilities.end()) {
+				detail += (*liter) + ' ';
+				++liter;
+			}
+			SetErrorDetail(detail);
+			return SetError(CLIError::kAmbiguousCommand);
+		}
+	}
 
 	// Check for help flags
 	if (CheckForHelp(argv)) {
 		std::string helpFile = m_LibraryDirectory + "/help/" + argv[0];
 		return GetHelpString(helpFile);
-	}
-
-	// Is the command implemented?
-	if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
-		SetErrorDetail("(No such command: " + argv[0] + ")");
-		return SetError(CLIError::kCommandNotImplemented);
 	}
 
 	// Process command
