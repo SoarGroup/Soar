@@ -165,7 +165,7 @@ void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhas
 	cout << "Received an event callback" << endl ;
 }
 
-void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, int runFlags)
+void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags)
 {
 	int* pInt = (int*)pUserData ;
 
@@ -415,7 +415,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	// We'll pass in an "int" and use it to count output phases
 	int outputPhases ;
 	outputPhases = 0 ;
-	int callback_u = pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, MyUpdateEventHandler, &count) ;
+	int callback_u = pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, MyUpdateEventHandler, &outputPhases) ;
 
 	// Nothing should match here
 	std::string result = pAgent->RunSelf(4) ;

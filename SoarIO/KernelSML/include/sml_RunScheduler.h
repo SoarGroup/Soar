@@ -14,6 +14,7 @@
 
 #include "gSKI_Enumerations.h"
 #include "gSKI_Events.h"
+#include "sml_ClientEvents.h"	// To get smlRunFlags
 
 namespace gSKI {
 	class IAgent ;
@@ -30,10 +31,10 @@ class RunScheduler : public gSKI::IRunListener
 {
 protected:
 	KernelSML*	m_pKernelSML ;
-	int			m_RunFlags ;
+	smlRunFlags	m_RunFlags ;
 
 public:
-	RunScheduler(KernelSML* pKernelSML) { m_pKernelSML = pKernelSML ; m_RunFlags = 0 ; }
+	RunScheduler(KernelSML* pKernelSML) ;
 
 	/*************************************************************
 	* @brief	Indicate that the next time RunScheduledAgents() is called
@@ -58,7 +59,7 @@ public:
 	* @return Not clear on how to set this when have multiple agents.
 	*		  Can query each for "GetLastRunResult()".
 	*************************************************************/	
-	egSKIRunResult RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, int runFlags, gSKI::Error* pError) ;
+	egSKIRunResult RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, smlRunFlags runFlags, gSKI::Error* pError) ;
 
 protected:
 	bool			IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count) ;

@@ -209,6 +209,13 @@ typedef enum
 	sml_DECISION,
 } smlRunStepSize ;
 
+typedef enum
+{
+	sml_NONE		 =  0,			// No special flags set
+	sml_RUN_SELF	 =	1 << 0,		// User included --self flag when running agent
+	sml_UPDATE_WORLD =  1 << 1,		// User explicitly requested world to update
+} smlRunFlags ;
+
 // These typedefs all define types of functions.
 // For example: typedef void (*X)(type1 arg1, type2 arg2) means we're defining function "X" to take (type1 arg1, type2 arg2) and return void.
 // To provide such a handler define a function with this type and pass its address in to the registration function for the event.
@@ -232,7 +239,7 @@ typedef void (*ProductionEventHandler)(smlProductionEventId id, void* pUserData,
 typedef void (*SystemEventHandler)(smlSystemEventId id, void* pUserData, Kernel* pKernel) ;
 
 // Handler for Update events.
-typedef void (*UpdateEventHandler)(smlUpdateEventId id, void* pUserData, Kernel* pKernel, int runFlags) ;
+typedef void (*UpdateEventHandler)(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags) ;
 
 // Handler for XML events.  The data for the event is passed back in pXML.
 // NOTE: To keep a copy of the ClientXML* you are passed use ClientXML* pMyXML = new ClientXML(pXML) to create

@@ -17,6 +17,7 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 #include "sml_KernelSML.h"
+#include "sml_ClientEvents.h"
 #include "sml_RunScheduler.h"
 
 #include "IgSKI_Agent.h"
@@ -130,12 +131,14 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 #ifdef USE_SML_SCHEDULER
 	RunScheduler* pScheduler = m_pKernelSML->GetRunScheduler() ;
+	smlRunFlags runFlags = sml_NONE ;
 
 	fprintf(stderr,"SML scheduler %d %d\n", runType, count) ;
 
 	if (options.test(RUN_SELF))
 	{
 		AgentSML* pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
+		runFlags = sml_RUN_SELF ;
 
 		// Schedule just this one agent to run
 		pScheduler->ScheduleAllAgentsToRun(false) ;
@@ -148,7 +151,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	}
 
 	// Do the run
-	runResult = pScheduler->RunScheduledAgents(runType, count, 0, &m_gSKIError) ;
+	runResult = pScheduler->RunScheduledAgents(runType, count, runFlags, &m_gSKIError) ;
 
 #else // USE_SML_SCHEDULER
 	//fprintf(stderr,"gSKI scheduler %d %d\n", runType, count) ;

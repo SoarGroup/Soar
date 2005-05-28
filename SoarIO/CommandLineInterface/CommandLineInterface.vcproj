@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\KernelSML\include&quot;;include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\KernelSML\include&quot;;&quot;$(SolutionDir)\ClientSML\include&quot;;include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -66,7 +66,7 @@
 			ManagedExtensions="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\KernelSML\include&quot;;include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)\..\gSKI\include&quot;;&quot;$(SolutionDir)\ElementXML\include&quot;;&quot;$(SolutionDir)\ConnectionSML\include&quot;;&quot;$(SolutionDir)\KernelSML\include&quot;;&quot;$(SolutionDir)\ClientSML\include&quot;;include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS"
 				MinimalRebuild="FALSE"
 				RuntimeLibrary="0"

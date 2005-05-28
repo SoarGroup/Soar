@@ -16,11 +16,18 @@
 #include "sml_RunScheduler.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
+#include "sml_ClientEvents.h"
 
 #include "../../gSKI/src/gSKI_Error.h"
 #include "IgSKI_AgentManager.h"
 
 using namespace sml ;
+
+RunScheduler::RunScheduler(KernelSML* pKernelSML)
+{
+	m_pKernelSML = pKernelSML ;
+	m_RunFlags = sml_NONE ;
+}
 
 void RunScheduler::ScheduleAgentToRun(AgentSML* pAgentSML, bool state)
 {
@@ -165,7 +172,7 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
 	}
 }
 
-egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, int runFlags, gSKI::Error* pError)
+egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, smlRunFlags runFlags, gSKI::Error* pError)
 {
 	// We store this as a member so we can access it in gSKI event handlers
 	m_RunFlags = runFlags ;

@@ -380,7 +380,7 @@ void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, Ele
 	unused(pResponse) ;
 
 	// Retrieve the event arguments
-	int runFlags = pIncoming->GetArgInt(sml_Names::kParamValue, 0) ;
+	smlRunFlags runFlags = (smlRunFlags)pIncoming->GetArgInt(sml_Names::kParamValue, 0) ;
 
 	// Look up the handler(s) from the map
 	UpdateEventMap::ValueList* pHandlers = m_UpdateEventMap.getList(id) ;
