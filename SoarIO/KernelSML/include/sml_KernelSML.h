@@ -93,6 +93,7 @@ class KernelSML
 	//friend class KernelListener ;
 	friend class AgentListener;
 	friend class RhsListener;
+	friend class RunScheduler ;
 
 protected:
 	// The singleton kernel object
@@ -101,7 +102,6 @@ protected:
 	// On Windows this is set to the DLL's hModule handle.
 	static void*		s_hModule ;
 
-protected:	
 	// Map from command name to function to handle it
 	CommandMap	m_CommandMap ;
 
@@ -142,6 +142,8 @@ protected:
 	// so this overrides any suppression setting.  (Use a different flag so it can't
 	// be overridden by another call to suppress system stop).
 	bool			m_RequireSystemStop ;
+
+	RunScheduler*	m_pRunScheduler ;
 
 public:
 	/*************************************************************
@@ -326,6 +328,13 @@ public:
 	*************************************************************/
 	void DisablePrintCallback(gSKI::IAgent* pAgent) ;
 	void EnablePrintCallback(gSKI::IAgent* pAgent)  ;
+
+	/*************************************************************
+	* @brief	The run scheduler is responsible for deciding which
+	*			agents to include in a run and actually performing
+	*			that run.
+	*************************************************************/	
+	RunScheduler*	GetRunScheduler() { return m_pRunScheduler ; }
 
 protected:
 	KernelSML(unsigned short portToListenOn);

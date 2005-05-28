@@ -17,6 +17,7 @@
 #include "sml_RunListener.h"
 #include "sml_PrintListener.h"
 #include "sml_XMLListener.h"
+#include "gSKI_Enumerations.h"
 
 // Forward declarations
 namespace gSKI {
@@ -94,6 +95,9 @@ protected:
 
 	bool m_SuppressRunEndsEvent ;
 
+	bool m_ScheduledToRun ;
+	egSKIRunResult m_ResultOfLastRun ;
+
 public:
 	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) ;
 
@@ -169,6 +173,14 @@ public:
 
 	void RecordLongTimeTag(long timeTag, gSKI::IWme* pWme) ;
 	void RemoveLongTimeTag(long timeTag) ;
+
+	/*************************************************************
+	* @brief	Used to select which agents run on the next run command.
+	*************************************************************/
+	void ScheduleAgentToRun(bool state) { m_ScheduledToRun = state ; }
+	bool IsAgentScheduledToRun()		{ return m_ScheduledToRun ; } 
+	egSKIRunResult	GetResultOfLastRun()		  { return m_ResultOfLastRun ; }
+	void SetResultOfRun(egSKIRunResult runResult) { m_ResultOfLastRun = runResult ; }
 } ;
 
 

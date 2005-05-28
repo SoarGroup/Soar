@@ -184,6 +184,9 @@
 				RelativePath=".\src\sml_RunListener.cpp">
 			</File>
 			<File
+				RelativePath=".\src\sml_RunScheduler.cpp">
+			</File>
+			<File
 				RelativePath=".\src\sml_SystemListener.cpp">
 			</File>
 			<File
@@ -253,6 +256,9 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_RunListener.h">
+			</File>
+			<File
+				RelativePath=".\include\sml_RunScheduler.h">
 			</File>
 			<File
 				RelativePath=".\include\sml_SystemListener.h">

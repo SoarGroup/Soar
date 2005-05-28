@@ -16,6 +16,8 @@
 #include "cli_Constants.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
+#include "sml_KernelSML.h"
+#include "sml_RunScheduler.h"
 
 #include "IgSKI_Agent.h"
 #include "IgSKI_Kernel.h"
@@ -120,6 +122,33 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 		count = 1;
 	}
 
+	egSKIRunResult runResult ;
+
+// This flag determines whether we use the existing gSKI scheduler or switch to the new SML scheduler.
+// The flag should be removed once we've decided which scheduler we're using.
+#define SML_RUN_CONTROL
+
+#ifdef SML_RUN_CONTROL
+	RunScheduler* pScheduler = m_pKernelSML->GetRunScheduler() ;
+
+	if (options.test(RUN_SELF))
+	{
+		AgentSML* pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
+
+		// Schedule just this one agent to run
+		pScheduler->ScheduleAllAgentsToRun(false) ;
+		pScheduler->ScheduleAgentToRun(pAgentSML, true) ;
+	}
+	else
+	{
+		// Ask all agents to run
+		pScheduler->ScheduleAllAgentsToRun(true) ;
+	}
+
+	// Do the run
+	runResult = pScheduler->RunScheduledAgents(runType, count, 0, &m_gSKIError) ;
+
+#else
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
 	// Decide which agents to run
 	if (options.test(RUN_SELF)) {
@@ -135,7 +164,8 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 	// Do the run
     m_pKernel->GetAgentManager()->ClearAllInterrupts();
-	egSKIRunResult runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, &m_gSKIError);
+	runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, &m_gSKIError);
+#endif
 
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {

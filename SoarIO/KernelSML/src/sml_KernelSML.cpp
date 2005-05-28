@@ -22,6 +22,7 @@
 #include "sml_OutputListener.h"
 #include "sml_ConnectionManager.h"
 #include "sml_Events.h"
+#include "sml_RunScheduler.h"
 #include "KernelSMLDirect.h"
 
 #include "thread_Lock.h"
@@ -124,6 +125,8 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	m_SuppressSystemStart = false ;
 	m_SuppressSystemStop  = false ;
 	m_RequireSystemStop   = false ;
+
+	m_pRunScheduler = new RunScheduler(this) ;
 }
 
 KernelSML::~KernelSML()
