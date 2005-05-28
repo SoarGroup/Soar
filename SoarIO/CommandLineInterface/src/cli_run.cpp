@@ -126,9 +126,9 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 // This flag determines whether we use the existing gSKI scheduler or switch to the new SML scheduler.
 // The flag should be removed once we've decided which scheduler we're using.
-#define SML_RUN_CONTROL
+#define USE_SML_SCHEDULER
 
-#ifdef SML_RUN_CONTROL
+#ifdef USE_SML_SCHEDULER
 	RunScheduler* pScheduler = m_pKernelSML->GetRunScheduler() ;
 
 	if (options.test(RUN_SELF))
@@ -148,7 +148,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	// Do the run
 	runResult = pScheduler->RunScheduledAgents(runType, count, 0, &m_gSKIError) ;
 
-#else
+#else // USE_SML_SCHEDULER
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
 	// Decide which agents to run
 	if (options.test(RUN_SELF)) {
@@ -165,7 +165,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	// Do the run
     m_pKernel->GetAgentManager()->ClearAllInterrupts();
 	runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, &m_gSKIError);
-#endif
+#endif // USE_SML_SCHEDULER
 
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {
