@@ -13,6 +13,7 @@
 #define SML_RUN_SCHEDULER_H
 
 #include "gSKI_Enumerations.h"
+#include "gSKI_Events.h"
 
 namespace gSKI {
 	class IAgent ;
@@ -25,13 +26,14 @@ namespace sml {
 class KernelSML ;
 class AgentSML ;
 
-class RunScheduler
+class RunScheduler : public gSKI::IRunListener
 {
 protected:
 	KernelSML*	m_pKernelSML ;
+	int			m_RunFlags ;
 
 public:
-	RunScheduler(KernelSML* pKernelSML) { m_pKernelSML = pKernelSML ; }
+	RunScheduler(KernelSML* pKernelSML) { m_pKernelSML = pKernelSML ; m_RunFlags = 0 ; }
 
 	/*************************************************************
 	* @brief	Indicate that the next time RunScheduledAgents() is called
@@ -63,6 +65,10 @@ protected:
 	void			FireBeforeRunStartsEvents() ;
 	unsigned long	GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ;
 	void			RecordInitialRunCounters(egSKIRunType runStepSize) ;
+	void			InitializeUpdateWorldEvents(bool addListeners) ;
+	void			TerminateUpdateWorldEvents(bool removeListeners) ;
+	void			HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* pAgent, egSKIPhaseType phase) ;
+	bool			AreAllOutputPhasesComplete() ;
 
 } ;
 

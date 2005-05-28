@@ -165,6 +165,16 @@ void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhas
 	cout << "Received an event callback" << endl ;
 }
 
+void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, int runFlags)
+{
+	int* pInt = (int*)pUserData ;
+
+	// Increase the count
+	*pInt = *pInt + 1 ;
+
+	cout << "Received an update callback" << endl ;
+}
+
 // Register a second handler for the same event, to make sure that's ok.
 void MyDuplicateRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
 {
@@ -401,8 +411,20 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	pAgent->ExecuteCommandLine("watch 3") ;
 	*/
 
+	// Test that we get a callback after the all output phases complete
+	// We'll pass in an "int" and use it to count output phases
+	int outputPhases ;
+	outputPhases = 0 ;
+	int callback_u = pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, MyUpdateEventHandler, &count) ;
+
 	// Nothing should match here
 	std::string result = pAgent->RunSelf(4) ;
+
+	if (outputPhases != 4)
+	{
+		cout << "Error receiving AFTER_ALL_OUTPUT_PHASES events" << endl ;
+		return false ;
+	}
 
 	if (beforeCount != 1 || afterCount != 1)
 	{
@@ -432,6 +454,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	pAgent->UnregisterForPrintEvent(callbackp) ;
 	pAgent->UnregisterForRunEvent(callback_before) ;
 	pAgent->UnregisterForRunEvent(callback_after) ;
+	pKernel->UnregisterForUpdateEvent(callback_u) ;
 
 	// Print out the standard trace and the same thing as a structured XML trace
 	cout << trace << endl ;

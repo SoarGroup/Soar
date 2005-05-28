@@ -100,6 +100,10 @@ protected:
 	unsigned long m_InitialStepCount ;
 	egSKIRunResult m_ResultOfLastRun ;
 
+	// Used for update world events
+	bool m_CompletedOutputPhase ;
+	bool m_GeneratedOutput ;
+
 public:
 	AgentSML(KernelSML* pKernelSML, gSKI::IAgent* pAgent) ;
 
@@ -180,13 +184,19 @@ public:
 	* @brief	Used to select which agents run on the next run command.
 	*************************************************************/
 	void ScheduleAgentToRun(bool state) { m_ScheduledToRun = state ; }
-	bool IsAgentScheduledToRun()		{ return m_ScheduledToRun ; } 
+	bool IsAgentScheduledToRun()		{ return m_ScheduledToRun ; }
 
 	egSKIRunResult	GetResultOfLastRun()		  { return m_ResultOfLastRun ; }
 	void SetResultOfRun(egSKIRunResult runResult) { m_ResultOfLastRun = runResult ; }
 
 	void SetInitialStepCount(unsigned long count)	{ m_InitialStepCount = count ; }
 	unsigned long GetInitialStepCount()				{ return m_InitialStepCount ; }
+
+	void SetCompletedOutputPhase(bool state)		{ m_CompletedOutputPhase = state ; }
+	bool HasCompletedOutputPhase()					{ return m_CompletedOutputPhase ; }
+
+	void SetGeneratedOutput(bool state)				{ m_GeneratedOutput = state ; }
+	bool HasGeneratedOutput() 						{ return m_GeneratedOutput ; }
 } ;
 
 

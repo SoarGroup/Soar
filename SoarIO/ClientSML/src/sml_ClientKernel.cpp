@@ -331,6 +331,9 @@ void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	} else if (IsRhsEventID(id))
 	{
 		ReceivedRhsEvent((smlRhsEventId)id, pIncoming, pResponse) ;
+	} else if (IsUpdateEventID(id))
+	{
+		ReceivedUpdateEvent((smlUpdateEventId)id, pIncoming, pResponse) ;
 	}
 }
 
@@ -362,6 +365,39 @@ void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, Ele
 
 		// Call the handler
 		handler(id, pUserData, this) ;
+	}
+}
+
+/*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	unused(pResponse) ;
+
+	// Retrieve the event arguments
+	int runFlags = pIncoming->GetArgInt(sml_Names::kParamValue, 0) ;
+
+	// Look up the handler(s) from the map
+	UpdateEventMap::ValueList* pHandlers = m_UpdateEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (UpdateEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		UpdateEventHandlerPlusData handlerWithData = *iter ;
+
+		UpdateEventHandler handler = handlerWithData.m_Handler ;
+		void* pUserData = handlerWithData.getUserData() ;
+
+		// Call the handler
+		handler(id, pUserData, this, runFlags) ;
 	}
 }
 
@@ -1194,6 +1230,19 @@ public:
 	}
 } ;
 
+class Kernel::TestUpdateCallback : public UpdateEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestUpdateCallback(int id) { m_ID = id ; }
+
+	bool isEqual(UpdateEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
 class Kernel::TestSystemCallbackFull : public SystemEventMap::ValueTest
 {
 private:
@@ -1206,6 +1255,25 @@ public:
 	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
 
 	bool isEqual(SystemEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
+class Kernel::TestUpdateCallbackFull : public UpdateEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	UpdateEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestUpdateCallbackFull(int id, UpdateEventHandler handler, void* pUserData)
+	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(UpdateEventHandlerPlusData handlerPlus)
 	{
 		return handlerPlus.m_EventID == m_EventID &&
 			   handlerPlus.m_Handler == m_Handler &&
@@ -1329,6 +1397,50 @@ int Kernel::RegisterForSystemEvent(smlSystemEventId id, SystemEventHandler handl
 
 	SystemEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
 	m_SystemEventMap.add(id, handlerPlus, addToBack) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
+}
+
+/*************************************************************
+* @brief Register for an "UpdateEvent".
+*		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+*
+* This event is registered with the kernel because they relate to events we think may be useful to use to trigger updates
+* in synchronous environments.
+*
+* @returns A unique ID for this callback (used to unregister the callback later) 
+*************************************************************/
+int	Kernel::RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventHandler handler, void* pUserData, bool addToBack)
+{
+	// Start by checking if this id, handler, pUSerData combination has already been registered
+	TestUpdateCallbackFull test(id, handler, pUserData) ;
+
+	// See if this handler is already registered
+	UpdateEventHandlerPlusData plus(0,0,0,0) ;
+	bool found = m_UpdateEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_UpdateEventMap.getListSize(id) == 0)
+	{
+		RegisterForEventWithKernel(id, NULL) ;
+	}
+
+	// Record the handler
+	// We use a struct rather than a pointer to a struct, so there's no need to new/delete
+	// everything as the objects are added and deleted.
+	m_CallbackIDCounter++ ;
+
+	UpdateEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
+	m_UpdateEventMap.add(id, handlerPlus, addToBack) ;
 
 	// Return the ID.  We use this later to unregister the callback
 	return m_CallbackIDCounter ;
@@ -1490,6 +1602,33 @@ bool Kernel::UnregisterForSystemEvent(int callbackID)
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_SystemEventMap.getListSize(id) == 0)
+	{
+		UnregisterForEventWithKernel(id, NULL) ;
+	}
+
+	return true ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event
+* @returns True if succeeds
+*************************************************************/
+bool Kernel::UnregisterForUpdateEvent(int callbackID)
+{
+	// Build a test object for the callbackID we're interested in
+	TestUpdateCallback test(callbackID) ;
+
+	// Find the event ID for this callbackID
+	smlUpdateEventId id = m_UpdateEventMap.findFirstKeyByTest(&test, (smlUpdateEventId)-1) ;
+
+	if (id == -1)
+		return false ;
+
+	// Remove the handler from our map
+	m_UpdateEventMap.removeAllByTest(&test) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_UpdateEventMap.getListSize(id) == 0)
 	{
 		UnregisterForEventWithKernel(id, NULL) ;
 	}

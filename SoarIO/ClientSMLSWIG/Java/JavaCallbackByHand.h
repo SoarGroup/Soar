@@ -70,9 +70,14 @@ public class EventListener
 		System.out.println("Received production event in Java") ;
 	}
 
-	public void kernelEventHandler(int eventID, Object data, Kernel kernel)
+	public void systemEventHandler(int eventID, Object data, Kernel kernel)
 	{
-		System.out.println("Received kernel event in Java") ;
+		System.out.println("Received system event in Java") ;
+	}
+
+	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags)
+	{
+		System.out.println("Received update event in Java") ;
 	}
 }
 
@@ -83,6 +88,7 @@ int jRunCallback    = pAgent.RegisterForRunEvent(pAgent, smlEventId.smlEVENT_AFT
 int jAgentCallback  = pAgent.RegisterForAgentEvent(pAgent, smlEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
 int jProdCallback   = pAgent.RegisterForProductionEvent(pAgent, smlEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, "productionEventHandler", this) ;		
 int jSystemCallback = pKernel.RegisterForSystemEvent(pKernel, smlEventId.smlEVENT_AFTER_RESTART, listener, "systemEventHandler", this) ;		
+int jUpdateCallback = pKernel.RegisterForSystemEvent(pKernel, smlEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, listener, "updateEventHandler", this) ;		
 
 */
 
@@ -598,6 +604,79 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *
 
 	// Unregister our handler.
 	bool result = arg1->UnregisterForSystemEvent(pJavaData->m_CallbackID) ;
+
+	// Release the callback data
+	delete pJavaData ;
+
+	return result ;
+}
+
+// This is the C++ handler which will be called by clientSML when the event fires.
+// Then from here we need to call back to Java to pass back the message.
+static void UpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, int runFlags)
+{
+	// The user data is the class we declared above, where we store the Java data to use in the callback.
+	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
+
+	// Now try to call back to Java
+	JNIEnv *jenv = pJavaData->GetEnv() ;
+
+	// We start from the Java object whose method we wish to call.
+	jobject jobj = pJavaData->m_HandlerObject ;
+	jclass cls = jenv->GetObjectClass(jobj) ;
+
+	if (cls == 0)
+	{
+		printf("Failed to get Java class\n") ;
+		return ;
+	}
+
+	// Look up the Java method we want to call.
+	// The method name is passed in by the user (and needs to match exactly, including case).
+	// The method should be owned by the m_HandlerObject that the user also passed in.
+	// Any slip here and you get a NoSuchMethod exception and my Java VM shuts down.
+	jmethodID mid = jenv->GetMethodID(cls, pJavaData->m_HandlerMethod.c_str(), "(ILjava/lang/Object;Lsml/Kernel;I)V") ;
+
+	if (mid == 0)
+	{
+		printf("Failed to get Java method\n") ;
+		return ;
+	}
+
+	// Make the method call.
+	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_KernelObject);
+}
+
+// This is the hand-written JNI method for registering a callback.
+// I'm going to model it after the existing SWIG JNI methods so hopefully it'll be easier to patch this into SWIG eventually.
+JNIEXPORT int JNICALL Java_sml_smlJNI_Kernel_1RegisterForUpdateEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, jstring jarg5, jobject jarg6)
+{
+    // jarg1 is the C++ Kernel object
+	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
+
+	// jarg2 is the event ID we're registering for
+	sml::smlUpdateEventId arg2 = (sml::smlUpdateEventId)jarg2;
+
+	// Create the information we'll need to make a Java call back later
+	JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, jarg5, jarg6) ;
+	
+	// Register our handler.  When this is called we'll call back to the Java method.
+	pJavaData->m_CallbackID = arg1->RegisterForUpdateEvent(arg2, &UpdateEventHandler, pJavaData) ;
+
+	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
+	return (jint)pJavaData ;
+}
+
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForUpdateEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+{
+    // jarg1 is the C++ Kernel object
+	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
+
+	// jarg2 is the callback data from the registration call
+	JavaCallbackData* pJavaData = (JavaCallbackData*)jarg2 ;
+
+	// Unregister our handler.
+	bool result = arg1->UnregisterForUpdateEvent(pJavaData->m_CallbackID) ;
 
 	// Release the callback data
 	delete pJavaData ;

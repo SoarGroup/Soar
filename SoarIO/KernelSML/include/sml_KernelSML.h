@@ -44,6 +44,7 @@ namespace gSKI {
 #include "sml_SystemListener.h"
 #include "sml_RhsListener.h"
 #include "sml_AgentListener.h"
+#include "sml_UpdateListener.h"
 
 namespace soar_thread
 {
@@ -132,6 +133,7 @@ protected:
 	SystemListener	m_SystemListener;
 	RhsListener		m_RhsListener;
 	AgentListener	m_AgentListener;
+	UpdateListener	m_UpdateListener ;
 
 	// We can suppress system start and system stop events
 	// (allowing us to Run Soar without running a connected simulation).
@@ -217,8 +219,15 @@ public:
 	*************************************************************/
 	void AddSystemListener(egSKISystemEventId eventID, Connection* pConnection)	 { m_SystemListener.AddListener(eventID, pConnection) ; }
 	void AddAgentListener(egSKIAgentEventId eventID, Connection* pConnection)	 { m_AgentListener.AddListener(eventID, pConnection) ; }
+	void AddUpdateListener(egSKIUpdateEventId eventID, Connection* pConnection)	 { m_UpdateListener.AddListener(eventID, pConnection) ; }
 	void RemoveSystemListener(egSKISystemEventId eventID, Connection* pConnection) { m_SystemListener.RemoveListener(eventID, pConnection) ; }
 	void RemoveAgentListener(egSKIAgentEventId eventID, Connection* pConnection) { m_AgentListener.RemoveListener(eventID, pConnection) ; }
+	void RemoveUpdateListener(egSKIUpdateEventId eventID, Connection* pConnection) { m_UpdateListener.RemoveListener(eventID, pConnection) ; }
+
+	/*************************************************************
+	* @brief	Notify listeners that this event has occured.
+	*************************************************************/
+	void FireUpdateListenerEvent(egSKIUpdateEventId eventID, int runFlags) { m_UpdateListener.HandleEvent(eventID, runFlags) ; }
 
 	/*************************************************************
 	* @brief	Add or remove a connection from the list implementing

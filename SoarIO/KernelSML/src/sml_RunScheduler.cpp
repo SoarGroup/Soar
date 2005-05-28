@@ -93,10 +93,88 @@ void RunScheduler::RecordInitialRunCounters(egSKIRunType runStepSize)
 	}
 }
 
+void RunScheduler::InitializeUpdateWorldEvents(bool addListeners)
+{
+	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
+	{
+		AgentSML* pAgentSML = iter->second ;
+
+		pAgentSML->SetCompletedOutputPhase(false) ;
+		pAgentSML->SetGeneratedOutput(false) ;
+
+		if (addListeners)
+		{
+			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			pAgent->AddRunListener(gSKIEVENT_AFTER_PHASE_EXECUTED, this) ;
+		}
+	}
+}
+
+bool RunScheduler::AreAllOutputPhasesComplete()
+{
+	// We only check the agents that are still scheduled to run.
+	// This allows us to start <n> agents and have some drop out (stopped by user or breakpoint etc.) and still
+	// generate the event.  However, it also means if we do a "run --self" to only run some agents this event will
+	// still fire, so we'll need to know not to update the world based on the runFlags.
+	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
+	{
+		AgentSML* pAgentSML = iter->second ;
+
+		if (pAgentSML->IsAgentScheduledToRun() && !pAgentSML->HasCompletedOutputPhase())
+			return false ;
+	}
+
+	return true ;
+}
+
+void RunScheduler::HandleEvent(egSKIRunEventId eventID, gSKI::IAgent* pAgent, egSKIPhaseType phase)
+{
+	if (eventID == gSKIEVENT_AFTER_PHASE_EXECUTED && phase == gSKI_OUTPUT_PHASE)
+	{
+		AgentSML* pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
+		pAgentSML->SetCompletedOutputPhase(true) ;
+
+		// See if this was the last agent to complete the output phase
+		if (AreAllOutputPhasesComplete())
+		{
+			// If so fire the after_all_output_phases event
+			m_pKernelSML->FireUpdateListenerEvent(gSKIEVENT_AFTER_ALL_OUTPUT_PHASES, m_RunFlags) ;
+
+			// Then clear the completed output flags and repeat the process.
+			for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
+			{
+				AgentSML* pAgentSML = iter->second ;
+
+				pAgentSML->SetCompletedOutputPhase(false) ;
+			}
+		}
+	}
+}
+
+void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
+{
+	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
+	{
+		AgentSML* pAgentSML = iter->second ;
+
+		if (removeListeners)
+		{
+			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			pAgent->RemoveRunListener(gSKIEVENT_AFTER_PHASE_EXECUTED, this) ;
+		}
+	}
+}
+
 egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, int runFlags, gSKI::Error* pError)
 {
+	// We store this as a member so we can access it in gSKI event handlers
+	m_RunFlags = runFlags ;
+
 	// Record the current counter (that we're about to be incrementing)
 	RecordInitialRunCounters(runStepSize) ;
+
+	// Initialize state required for update world events
+	InitializeUpdateWorldEvents(true) ;
 
 	// Send event for each agent to signal its about to start running
 	FireBeforeRunStartsEvents() ;
@@ -166,10 +244,10 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 		}
 	}
 
-	// Send event for each agent still in the run list that it has finished run
-	//FireAfterRunEndsEvents() ;
+	// Clean up anything stored for update world events
+	TerminateUpdateWorldEvents(false) ;
 
-	// Fire one event to indicate the entire system (simulation) should stop.
+	// Fire one event to indicate the entire system should stop.
 	// (Above gSKI we can choose to suppress this event in some situations)
 	pKernel->FireSystemStop() ;
 

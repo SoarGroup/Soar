@@ -28,6 +28,7 @@ sml_RhsListener.cpp\
 sml_RunListener.cpp\
 sml_RunScheduler.cpp\
 sml_SystemListener.cpp\
+sml_UpdateListener.cpp\
 sml_XMLListener.cpp
 
 INCLUDES = \

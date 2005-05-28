@@ -133,13 +133,19 @@ typedef enum {
 	smlEVENT_XML_TRACE_OUTPUT = smlEVENT_RHS_USER_FUNCTION + 1,
 } smlXMLEventId ;
 
+// Events that can be used by environments to trigger when the world should update
+typedef enum {
+	smlEVENT_AFTER_ALL_OUTPUT_PHASES = smlEVENT_XML_TRACE_OUTPUT + 1,	// All agents have completed output phase
+	smlEVENT_AFTER_ALL_GENERATED_OUTPUT,								// All agents have generated output (since run began)
+} smlUpdateEventId ;
+
 typedef enum {
     // Used to indicate an error in some cases
     smlEVENT_INVALID_EVENT              = 0,
 
 	// Marker for end of sml event list
 	// Must always be at the end of the enum
-	smlEVENT_LAST = smlEVENT_XML_TRACE_OUTPUT + 1
+	smlEVENT_LAST = smlEVENT_AFTER_ALL_GENERATED_OUTPUT + 1
 } smlGenericEventId ;
 
 static inline bool IsSystemEventID(int id)
@@ -182,6 +188,11 @@ static inline bool IsXMLEventID(int id)
 	return (id == smlEVENT_XML_TRACE_OUTPUT) ;
 }
 
+static inline bool IsUpdateEventID(int id)
+{
+	return (id >= smlEVENT_AFTER_ALL_OUTPUT_PHASES && id <= smlEVENT_AFTER_ALL_GENERATED_OUTPUT) ;
+}
+
 typedef enum {
     sml_INPUT_PHASE,
     sml_PROPOSAL_PHASE,
@@ -219,6 +230,9 @@ typedef void (*ProductionEventHandler)(smlProductionEventId id, void* pUserData,
 
 // Handler for System events.
 typedef void (*SystemEventHandler)(smlSystemEventId id, void* pUserData, Kernel* pKernel) ;
+
+// Handler for Update events.
+typedef void (*UpdateEventHandler)(smlUpdateEventId id, void* pUserData, Kernel* pKernel, int runFlags) ;
 
 // Handler for XML events.  The data for the event is passed back in pXML.
 // NOTE: To keep a copy of the ClientXML* you are passed use ClientXML* pMyXML = new ClientXML(pXML) to create

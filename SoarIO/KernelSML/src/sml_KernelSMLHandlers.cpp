@@ -285,7 +285,13 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 		else
 			pAgentSML->RemoveXMLListener((egSKIXMLEventId)id, pConnection) ;
 
-	} else if(IsPrintEventID(id)) {
+	} else if (IsUpdateEventID(id))	{
+		if (registerForEvent)
+			AddUpdateListener((egSKIUpdateEventId)id, pConnection) ;
+		else
+			RemoveUpdateListener((egSKIUpdateEventId)id, pConnection) ;
+	}
+	else if(IsPrintEventID(id)) {
 
 		// Print event
 		if (!pAgent)

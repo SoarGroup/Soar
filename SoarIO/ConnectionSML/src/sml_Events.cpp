@@ -66,6 +66,10 @@ Events::Events()
 	// Raw XML messages
 	RegisterEvent(smlEVENT_XML_TRACE_OUTPUT, "xml-trace-output") ;
 
+	// Update events
+	RegisterEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, "after-all-output-phases") ;
+	RegisterEvent(smlEVENT_AFTER_ALL_GENERATED_OUTPUT, "after-all-generated-output") ;
+
     // Error and print callbacks
 	RegisterEvent(smlEVENT_LOG_ERROR, "log-error") ;
 	RegisterEvent(smlEVENT_LOG_WARNING, "log-warning") ;
