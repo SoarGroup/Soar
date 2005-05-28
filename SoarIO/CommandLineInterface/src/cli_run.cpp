@@ -131,6 +131,8 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 #ifdef USE_SML_SCHEDULER
 	RunScheduler* pScheduler = m_pKernelSML->GetRunScheduler() ;
 
+	fprintf(stderr,"SML scheduler %d %d\n", runType, count) ;
+
 	if (options.test(RUN_SELF))
 	{
 		AgentSML* pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
@@ -149,6 +151,8 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	runResult = pScheduler->RunScheduledAgents(runType, count, 0, &m_gSKIError) ;
 
 #else // USE_SML_SCHEDULER
+	//fprintf(stderr,"gSKI scheduler %d %d\n", runType, count) ;
+
 	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
 	// Decide which agents to run
 	if (options.test(RUN_SELF)) {
