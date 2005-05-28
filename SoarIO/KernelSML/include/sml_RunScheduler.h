@@ -59,9 +59,10 @@ public:
 	egSKIRunResult RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, int runFlags, gSKI::Error* pError) ;
 
 protected:
-	bool IsAgentFinished(gSKI::IAgent* pAgent, egSKIRunType runStepSize, unsigned long count) ;
-	void FireBeforeRunStartsEvents() ;
-	unsigned long GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ;
+	bool			IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count) ;
+	void			FireBeforeRunStartsEvents() ;
+	unsigned long	GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize) ;
+	void			RecordInitialRunCounters(egSKIRunType runStepSize) ;
 
 } ;
 

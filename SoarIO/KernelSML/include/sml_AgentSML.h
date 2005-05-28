@@ -95,7 +95,9 @@ protected:
 
 	bool m_SuppressRunEndsEvent ;
 
+	// Used to control runs
 	bool m_ScheduledToRun ;
+	unsigned long m_InitialStepCount ;
 	egSKIRunResult m_ResultOfLastRun ;
 
 public:
@@ -179,8 +181,12 @@ public:
 	*************************************************************/
 	void ScheduleAgentToRun(bool state) { m_ScheduledToRun = state ; }
 	bool IsAgentScheduledToRun()		{ return m_ScheduledToRun ; } 
+
 	egSKIRunResult	GetResultOfLastRun()		  { return m_ResultOfLastRun ; }
 	void SetResultOfRun(egSKIRunResult runResult) { m_ResultOfLastRun = runResult ; }
+
+	void SetInitialStepCount(unsigned long count)	{ m_InitialStepCount = count ; }
+	unsigned long GetInitialStepCount()				{ return m_InitialStepCount ; }
 } ;
 
 

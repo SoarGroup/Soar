@@ -54,11 +54,14 @@ unsigned long RunScheduler::GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType ru
       }
 }
 
-bool RunScheduler::IsAgentFinished(gSKI::IAgent* pAgent, egSKIRunType runStepSize, unsigned long count)
+bool RunScheduler::IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count)
 {
 	unsigned long current = GetStepCounter(pAgent, runStepSize) ;
+	unsigned long initial = pAgentSML->GetInitialStepCount() ;
 
-	return (current >= count) ;
+	unsigned long difference = current - initial ;
+
+	return (difference >= count) ;
 }
 
 void RunScheduler::FireBeforeRunStartsEvents()
@@ -75,8 +78,26 @@ void RunScheduler::FireBeforeRunStartsEvents()
 	}
 }
 
+void RunScheduler::RecordInitialRunCounters(egSKIRunType runStepSize)
+{
+	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)
+	{
+		AgentSML* pAgentSML = iter->second ;
+
+		if (pAgentSML->IsAgentScheduledToRun())
+		{
+			gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
+			unsigned long count = GetStepCounter(pAgent, runStepSize) ;
+			pAgentSML->SetInitialStepCount(count) ;
+		}
+	}
+}
+
 egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, int runFlags, gSKI::Error* pError)
 {
+	// Record the current counter (that we're about to be incrementing)
+	RecordInitialRunCounters(runStepSize) ;
+
 	// Send event for each agent to signal its about to start running
 	FireBeforeRunStartsEvents() ;
 
@@ -124,7 +145,7 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 
 				// Decide if this agent has reached its run limit
 				// Usually all agents will reach this limit at the same time.  [Should this be a requirement?]
-				bool agentFinishedRun = IsAgentFinished(pAgent, runStepSize, count) ;
+				bool agentFinishedRun = IsAgentFinished(pAgent, pAgentSML, runStepSize, count) ;
 
 				// An agent should return "stopped" if it's just pausing in the middle of a run
 				// before we run it for the next phase.  Anything else means this agent is done running.
