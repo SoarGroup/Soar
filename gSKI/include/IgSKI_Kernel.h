@@ -507,6 +507,9 @@ namespace gSKI {
 	  virtual void FireSystemStart() = 0 ;
 	  virtual void FireSystemStop() = 0 ;
 
+	  /** Notify listeners that Soar is running and give them a chance to interrupt it (without having to start up separate threads etc.) */
+	  virtual void FireInterruptCheckEvent() = 0 ;
+
       private:
          //
          // We are adding an interface here to allow for some workarounds

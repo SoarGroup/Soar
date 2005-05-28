@@ -1152,7 +1152,13 @@ namespace gSKI {
                                        IPrintListener*       listener,
                                        Error*                err = 0) = 0;
 
-      // Multi-attribute related methods
+	  /** Fire the gSKIEVENT_BEFORE_RUN_STARTS event **/
+	  virtual void FireRunStartsEvent() = 0 ;
+
+	  /** Fire the gSKIEVENT_AFTER_RUN_ENDS event **/
+	  virtual void FireRunEndsEvent() = 0 ;
+	  
+	  // Multi-attribute related methods
    
       /**
          Returns a list of all multi-attributes that have been set with the

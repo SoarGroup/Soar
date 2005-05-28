@@ -526,6 +526,8 @@ namespace gSKI {
       virtual void RemoveAgentListener(egSKIAgentEventId    eventId,
                                        IAgentListener*      listener,
                                        Error*               err = 0) = 0;
+
+	  virtual void FireBeforeAgentsRunStepEvent() = 0 ;
    };
 
 

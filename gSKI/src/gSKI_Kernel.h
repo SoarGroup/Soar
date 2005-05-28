@@ -453,23 +453,22 @@ namespace gSKI
       void RemoveConnectionLostListener(egSKISystemEventId       eventId,
                                         IConnectionLostListener* listener,
                                         Error*                   err = 0);
-      /**
-      *  @brief Get/Set the interrupt check rate.
-      *
-      *  The gSKIEVENT_INTERRUPT_CHECK is fired every n-th step
-	  *  through the run cycle where n is this rate.
-	  *  Currently a step is a phase.
-	  */
-	  int GetInterruptCheckRate() const	;
-	  void SetInterruptCheckRate(int newRate) ;
-
-	  /**
-	  * @brief Notify listeners to start or stop the entire system (the simulation)
-	  **/
-	  void FireSystemStart() ;
-	  void FireSystemStop() ;
-
       public:
+		/**
+		*  @brief Get/Set the interrupt check rate.
+		*
+		*  The gSKIEVENT_INTERRUPT_CHECK is fired every n-th step
+		*  through the run cycle where n is this rate.
+		*  Currently a step is a phase.
+		*/
+		int GetInterruptCheckRate() const	;
+		void SetInterruptCheckRate(int newRate) ;
+
+		/**
+		* @brief Notify listeners to start or stop the entire system (the simulation)
+		**/
+		void FireSystemStart() ;
+		void FireSystemStop() ;
 
 		 /** Notify listeners that Soar is running and give them a chance to interrupt it (without having to start up separate threads etc.) */
 		 void FireInterruptCheckEvent() ;
