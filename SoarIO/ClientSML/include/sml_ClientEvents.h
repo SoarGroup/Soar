@@ -211,9 +211,10 @@ typedef enum
 
 typedef enum
 {
-	sml_NONE		 =  0,			// No special flags set
-	sml_RUN_SELF	 =	1 << 0,		// User included --self flag when running agent
-	sml_UPDATE_WORLD =  1 << 1,		// User explicitly requested world to update
+	sml_NONE				=  0,		// No special flags set
+	sml_RUN_SELF			=  1 << 0,	// User included --self flag when running agent
+	sml_UPDATE_WORLD		=  1 << 1,	// User explicitly requested world to update
+	sml_DONT_UPDATE_WORLD	=  1 << 2,	// User explicitly requested world to not update
 } smlRunFlags ;
 
 // These typedefs all define types of functions.

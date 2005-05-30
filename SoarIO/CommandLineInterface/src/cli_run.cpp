@@ -127,7 +127,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 // This flag determines whether we use the existing gSKI scheduler or switch to the new SML scheduler.
 // The flag should be removed once we've decided which scheduler we're using.
-#define USE_SML_SCHEDULER
+//#define USE_SML_SCHEDULER
 
 #ifdef USE_SML_SCHEDULER
 	RunScheduler* pScheduler = m_pKernelSML->GetRunScheduler() ;

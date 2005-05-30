@@ -46,19 +46,19 @@ void RunScheduler::ScheduleAllAgentsToRun(bool state)
 
 unsigned long RunScheduler::GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType runStepSize)
 {
-      switch(runStepSize)
-      {
-      case gSKI_RUN_SMALLEST_STEP:
-         return pAgent->GetNumSmallestStepsExecuted();
-      case gSKI_RUN_PHASE:
-         return pAgent->GetNumPhasesExecuted();
-      case gSKI_RUN_DECISION_CYCLE:
-         return pAgent->GetNumDecisionCyclesExecuted();
-      case gSKI_RUN_UNTIL_OUTPUT:
-         return pAgent->GetNumOutputsExecuted();
-      default:
-         return 0;
-      }
+	switch(runStepSize)
+	{
+	case gSKI_RUN_SMALLEST_STEP:
+		return pAgent->GetNumSmallestStepsExecuted();
+	case gSKI_RUN_PHASE:
+		return pAgent->GetNumPhasesExecuted();
+	case gSKI_RUN_DECISION_CYCLE:
+		return pAgent->GetNumDecisionCyclesExecuted();
+	case gSKI_RUN_UNTIL_OUTPUT:
+		return pAgent->GetNumOutputsExecuted();
+	default:
+		return 0;
+	}
 }
 
 bool RunScheduler::IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count)
@@ -68,7 +68,7 @@ bool RunScheduler::IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, eg
 
 	unsigned long difference = current - initial ;
 
-	return (difference >= count) ;
+	return (difference >= count && runStepSize != gSKI_RUN_FOREVER) ;
 }
 
 void RunScheduler::FireBeforeRunStartsEvents()
