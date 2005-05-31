@@ -1282,47 +1282,41 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
 
   // the rest is all for tagged output events
 
-  // TODO: I think this can be greatly simplified by just returning at the end (so we only need to make the "end phase tag" call once)
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagPhase);
+
   if (end_of_phase) {
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagPhase);
 	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Status, xmlTraceNames::kPhaseStatus_End);
-	
-  } else {
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagPhase);
   }
+
   switch (thisAgent->current_phase) {
   case INPUT_PHASE:
 	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Input);
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
-	return;
+	break;
   case PREFERENCE_PHASE:
 	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Pref);
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
-    return;
+    break;
   case WM_PHASE:
 	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_WM);
 	  if (thisAgent->operand2_mode == TRUE) {
 		  switch (thisAgent->FIRING_TYPE) {
 		  case PE_PRODS:  /* no longer needed;  Soar8 has PROPOSE/APPLY */
 			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_FiringType, xmlTraceNames::kPhaseFiringType_PE);
+              break;
 		  case IE_PRODS:
 			  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_FiringType, xmlTraceNames::kPhaseFiringType_IE);
+              break;
 		  }
       }
-	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
-	  return;
+	  break;
   case DECISION_PHASE:
 	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Decision);
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
-    return;
+    break;
   case OUTPUT_PHASE:
 	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Output);
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
-    return;
+    break;
   case PROPOSE_PHASE:
 	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Propose);
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
-    return;
+    break;
   case APPLY_PHASE:
     if (thisAgent->operand2_mode == TRUE)
     {
@@ -1336,13 +1330,13 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
             break;
 		}
 	}
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
-    return;
+    break;
   default:
 	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kPhase_Name, xmlTraceNames::kPhaseName_Unknown);
-	gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
-    return;
+    break;
   } // end switch
+
+  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagPhase);
   return;
 }
 
