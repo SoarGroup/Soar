@@ -204,7 +204,34 @@ string InputLinkObject::GetFrequencyAsString() const
 			break;
 	}
 }
-	
+void InputLinkObject::ReplaceInternalTokens(const string& token, std::string valueAsString)
+{
+	string::size_type pos =	m_updateValue.find(token);
+	if(pos != string.npos)
+	{
+		/*cout << "About to replace an update value's control variable reference with its string value..." << endl;
+		cout << "\tvariable: " << controlVariableName << endl;
+		cout << "\tvariable's value: " << counterAsString << endl;
+		cout << "\tunchanged update value is: " << oldUpdateValue << endl;*/
+		m_updateValue.replace(pos, token.size(), valueAsString);
+		//cout << "\tand now the new value is: " << oldUpdateValue << endl;
+	}//if the update value needs to be replaced
+
+	//Look for the counter variable's name as a substring of the start value
+	pos = GetStartValue().find(token);
+	if(pos != string.npos)
+	{
+		string modifiedValue = GetStartValue();
+		/*cout << "About to replace a start value's control variable reference with its string value..." << endl;
+		cout << "\tvariable: " << controlVariableName << endl;
+		cout << "\tvariable's value: " << counterAsString << endl;
+		cout << "\tunchanged update value is: " << oldStartValue << endl;*/
+		modifiedValue.replace(pos, token.size(), valueAsString);
+		//cout << "\tand now the new value is: " << oldStartValue << endl;
+		SetStartValue(modifiedValue);
+	}//if the star start value needs to be replaced
+}
+
 void InputLinkObject::SetUpdateCondition(string& inValue){	m_updateCondition = inValue;} 
 
 //does a case-insensitive string comparison, mapping strings to enums

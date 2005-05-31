@@ -7,7 +7,11 @@
 #include <string>
 #include <assert.h>
 #include <sstream>
+#include <functional>
+#include <algorithm>
 
+using std::for_each;
+using std::bind2nd;
 using std::string;
 using std::endl;
 using std::cout; using std::cin;
@@ -248,8 +252,8 @@ void InputLinkSpec::AddTypedObject(InputLinkObject& newObject)
  */
 bool InputLinkSpec::ImportIL(string& filename)
 {
-	string currrentClassName = "";
-	fstream file;	
+	string currentClassName = "";
+	fstream file;
 	file.open(filename.c_str());
 
 	if(!file.is_open())
@@ -261,8 +265,9 @@ bool InputLinkSpec::ImportIL(string& filename)
 
 	int loopBegin = defaultLoopBegin;
 	int loopEnd = defaultLoopEnd;
-	
-	//this should create InputLinkObjects to hold each line of data read
+	bool resetLoopCounters = true;
+
+	//Read all descriptions of input link objects
 	while(!file.eof())
 	{
 		eParseStage parseStage = READING_BEGIN_STAGE;
@@ -273,11 +278,11 @@ bool InputLinkSpec::ImportIL(string& filename)
 		//This container holds the WME descriptions for a class
 		//A 'for' loop that preceeds a class structure will cause the entire
 		//class description, this container, to be repeated
-		ilObjVector_t incompleteClassSpec;
+		ilObjVector_t pendingClassSpec;
 		bool classDescriptionJustFinished = false;
 
 		string line;
-		WriteFileLineToString(file, line, false);
+		WriteFileLineToString(file, line);
 		//If we have a blank line. Check if that's because we're at EOF, and also check if the
 		//next read is EOF
 		if(line == "")
@@ -382,10 +387,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 						break;
 					}
 
-					ilObj.SetSimulationClassName(curWord);
-//cout << "Just set the classname for a new object to:>" << curWord << "<" << endl;
-//cout << "\tand confirming it: " << ilObj.GetSimulationClassName() << endl;
-					currrentClassName = curWord;
+					currentClassName = curWord;
 					WriteFileLineToString(file, line);
 					lastCompletedState = READING_CLASS_NAME;
 					parseStage = READING_PARENT_IDENTIFIER;
@@ -580,9 +582,9 @@ bool InputLinkSpec::ImportIL(string& filename)
 						parseStage = READING_ERROR;
 						break;
 					}
-					
+
 					//set the object's frequency
-					ilObj.SetUpdateFrequency(curWord);	
+					ilObj.SetUpdateFrequency(curWord);
 
 					//if this is a conditional frequency, read off the condition string
 					if(curWord == k_conditionString)
@@ -636,19 +638,20 @@ bool InputLinkSpec::ImportIL(string& filename)
 					classDescriptionJustFinished = true;
 					curWord = ReadOneWord(line);
 					//if there is a word here, it should be the same class name as the opening one
-					if(stricmp(curWord.c_str(), currrentClassName.c_str()))
+					if(stricmp(curWord.c_str(), currentClassName.c_str()))
 					{
 						parseStage = READING_ERROR;
 						cout << "Closing class name should match up with opening name." << endl;
-						cout << "\tOpening was: " << currrentClassName << " and closing was: " <<
+						cout << "\tOpening was: " << currentClassName << " and closing was: " <<
 							curWord << endl;
 						break;
 					}
 					else // ending the use of this class name
-						currrentClassName = "";
+						currentClassName = "";
+
 					TrimOneWord(line);
-					WriteFileLineToString(file, line);
-					
+	// ??? how did this horrible line get here?	WriteFileLineToString(file, line, true);
+					parseStage = READING_FINAL_STAGE;
 					break;
 				case READING_FINAL_STAGE:
 					break;
@@ -658,113 +661,114 @@ bool InputLinkSpec::ImportIL(string& filename)
 					break;
 			}//end switch
 		}// end control loop
-cout << "Before storage, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
+
+		ilObj.SetSimulationClassName(currentClassName);
+//cout << "Before storage, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
+
 //TODO this 'for loop' only goes up (and by 1), but the user isn't constrained to that.
 //So, take note of whether start val is higher/lower than end val
 //Also, consider taking in another arg that sets the increment amount
 
 		//now we've read a WME pattern. If it should be duplicated, do that now.
-//TODO however, if we're reading an entire class pattern that needs to be repeated
-//Just store this pattern as part of the overall class pattern, which will be repeated
-//in its entirety, when the class has been closed		
+//However, if we're reading an entire class pattern that needs to be repeated,
+//store this pattern as part of the overall class pattern, which will be repeated
+//in its entirety, when the class has been closed
 		for(int counter = loopBegin; counter < loopEnd; ++counter)
 		{
-			//we only need ONE copy of this object
-			if(controlVariableName == "")
+			//if we need ZERO copies of this object
+			if(ilObj.GetAttributeName()== "")
 			{
+				break;
+			}
+			//we only need ONE copy of this object
+			else if(controlVariableName == "")
+			{
+				resetLoopCounters = true;
 				//UNTYPED WME description
 				if(ilObj.GetSimulationClassName() == "")
 				{
-				cout << "Adding untyped object with attribute:" << ilObj.GetAttributeName() << endl;
+//cout << "Adding untyped object with attribute:>" << ilObj.GetAttributeName() << "<***" << endl;
 					ilObjects.push_back(ilObj);
 				}
 				//Typed WME description
 				else
 				{
-					cout << "\t\tAdded object to typedObjectsVector because it had type: " << ilObj.GetSimulationClassName() << endl;
+//cout << "\t\tAdded object to typedObjectsVector because it had type: " << ilObj.GetSimulationClassName() << endl;
 					AddTypedObject(ilObj);
 				}
 			}//SINGLE copy
 
 			//we need MULTIPLE copies of this object
 			else
-			{	//UNTYPED case
-				if(ilObj.GetSimulationClassName() == "")
+			{	
+//cout << "NEED MULTIPLE COPIES CASE..." << endl;
+
+				//The object we end up storing may be a modified version of the original
+				//WME pattern that we read in, so make, modify, and store the copy
+				InputLinkObject actualNewObject = ilObj;
+				string counterAsString = IntToString(counter);
+				//UNTYPED case
+				if(actualNewObject.GetSimulationClassName() == "")
 				{
-					InputLinkObject actualNewObject = ilObj;
+					resetLoopCounters = true;
+
+
+//cout << "\t\tMULTIPLE COPIES and UNTYPED" << endl;
 					//the parts of a WME pattern that might have a field equal to the control
 					//variable name are the optional "update"/"start" fields
-
-					string counterAsString = IntToString(counter);
-					//Look for the counter variable's name as a substring of the update value
-					string::size_type pos =	ilObj.GetUpdateValue().find(controlVariableName);
-					if(pos != string.npos)
-					{
-						string oldUpdateValue = ilObj.GetUpdateValue();
-						/*cout << "About to replace an update value's control variable reference with its string value..." << endl;
-						cout << "\tvariable: " << controlVariableName << endl;
-						cout << "\tvariable's value: " << counterAsString << endl;
-						cout << "\tunchanged update value is: " << oldUpdateValue << endl;*/
-						oldUpdateValue.replace(pos, controlVariableName.size(), counterAsString);
-						//cout << "\tand now the new value is: " << oldUpdateValue << endl;
-						actualNewObject.SetUpdateValue(oldUpdateValue);
-					}//if the update value needs to be replaced
-
-					//Look for the counter variable's name as a substring of the start value
-					pos = ilObj.GetStartValue().find(controlVariableName);
-					if(pos != string.npos)
-					{
-						string oldStartValue = ilObj.GetStartValue();
-						/*cout << "About to replace a start value's control variable reference with its string value..." << endl;
-						cout << "\tvariable: " << controlVariableName << endl;
-						cout << "\tvariable's value: " << counterAsString << endl;
-						cout << "\tunchanged update value is: " << oldStartValue << endl;*/
-						oldStartValue.replace(pos, controlVariableName.size(), counterAsString);
-						//cout << "\tand now the new value is: " << oldStartValue << endl;
-						actualNewObject.SetStartValue(oldStartValue);
-					}//if the star start value needs to be replaced
-					
-					}
-				cout << "Adding MULTIPLE of untyped object with attribute:" << actualNewObject.GetAttributeName() << endl;
-				
-					ilObjects.push_back(actualNewObject);						
+					actualNewObject.ReplaceInternalTokens(controlVariableName, counterAsString);
+//cout << "Adding MULTIPLE of untyped object with attribute:" << actualNewObject.GetAttributeName() << endl;
+					ilObjects.push_back(actualNewObject);
 				}//untyped case
 				//TYPED case
 				else
 				{
-					AddTypedObject(actualNewObject);
+//cout << "\t\t*** MULTIPLE COPIES with type:>" << actualNewObject.GetSimulationClassName() << "<" << endl;
+
+					//AddTypedObject(actualNewObject); //TODO kill this?
+					pendingClassSpec.push_back(actualNewObject);
+
 					//if the class wasn't just closed, we don't have enough information to start
 					//looping around, exit for now
 					if(!classDescriptionJustFinished)
+					{
+						resetLoopCounters = false;
 						break;
+					}
 					else
 					{
+						resetLoopCounters = true;
 						//make a copy of this class pattern
-						ilObjVector_t actualClassPattern = typedObjects[ilObj.GetAttributeName()];
-						assert(!actualClassPattern.empty());;
-						//replace the control variable name with value
-						
-						//store the altered class pattern
-						
+//ilObjVector_t actualClassPattern = typedObjects[ilObj.GetAttributeName()];
+//assert(!actualClassPattern.empty());
+						//replace all instances the control variable name with value
+						//check update value fields
+						for(ilObjItr objItr = pendingClassSpec.begin(); objItr != pendingClassSpec.end(); ++objItr)
+						//for(ilObjItr objItr = actualClassPattern.begin(); objItr != actualClassPattern.end(); ++objItr)
+						{
+							objItr->ReplaceInternalTokens(controlVariableName, counterAsString);
+							AddTypedObject(*objItr);
+						}
+
 						classDescriptionJustFinished = false;
+						pendingClassSpec.clear();
 					}
-				}//TYPED case
+				}//TYPED case (multiple)
 
-
-if(ilObj.GetSimulationClassName() != "")
-{
-	cout << "Adding MULTIPLE of object with type:>" << actualNewObject.GetSimulationClassName() << "<" << endl;
-
-}
 
 			}//else - we need MULTIPLE copies of this object
 
 		}//for however many copies of this WME pattern we need
+		if(resetLoopCounters)
+		{
+			loopBegin = defaultLoopBegin;
+			loopEnd = defaultLoopEnd;
+		}
 
 	}//while there are still lines to read
 
 	cout << "Read " << lineNumber << " lines." << endl;
-	cout << "Number of input link entries " << ilObjects.size() << endl;
+	//cout << "Number of input link entries " << ilObjects.size() << endl;
 	//for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
 	//	cout << *objItr;
 

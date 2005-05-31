@@ -91,17 +91,20 @@ void CPPGenerator::GenerateCreateILFunctionTyped(int depth)
 		string className = typeItr->first;
 		className[0] = toupper(className[0]);
 		//Generate the function header, opening brace
-			file << k_void << k_Create <<  className << k_openParen << k_AgentRef 
-				<< k_AgentInstance << k_closeParen << endl << PrintTabs(depth) << k_openBrace;
-		
+		file << k_void << k_Create <<  className << k_openParen << k_AgentRef 
+				<< k_AgentInstance << k_closeParen << endl;
+		PrintTabs(depth) << k_openBrace << endl;
+
 		//Generate the creation of all of the WMEs associated with this type
-		PrintTabs(depth + 1);
+		PrintTabs(depth);
 		ilObjVector_t& objects = typeItr->second;
-		GenerateInput(objects, depth + 1);
-		
+cout << "\tCurrently generating createIL function code for type:"	<< className << endl <<
+" \t\twhich has: " << objects.size() << " objects described for it" << endl;
+		GenerateInput(objects, depth);
+
 		file << endl;
 		//add closing brace
-		PrintTabs(depth) << k_closeBrace << endl;		
+		PrintTabs(depth) << k_closeBrace << endl;
 	}
 
 }
@@ -109,92 +112,7 @@ void CPPGenerator::GenerateCreateILFunctionTyped(int depth)
 void CPPGenerator::GenerateInput(ilObjVector_t& objects, int depth)
 {
 	//for now, just create the code for anything that has a start type and value
-	for(ilObjVector_t::iterator objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
-	{
-		string parent;
-		eElementType type = objItr->GetCurrentType();
-		string newVarName;
-
-		switch(type)
-		{
-		case ELEMENT_TYPE_TBD:
-			PrintTabs(depth + 1) << "//---------------------------------------" << endl;
-			PrintTabs(depth + 1);
-			file << "//Placeholder for a wme whose type needs to be determined at runtime...."	<< endl;
-			PrintTabs(depth + 1) << "//The types for this wme are: ";
-			objItr->PrintTypes(file);
-			file << endl;
-			PrintTabs(depth + 1) << "//Object's attribute name: " << objItr->GetAttributeName();
-			file << ", parent: " << objItr->GetParent() << endl;
-			//PrintTabs(depth + 1) << "Object's " << objItr->
-			PrintTabs(depth + 1) << "//---------------------------------------" << endl;
-			break;
-		case ELEMENT_INT:
-			PrintTabs(depth + 1);
-			GenerateDeclareVariable(type, newVarName) << k_assign << k_space;
-			PrintThreeArgFunction(k_CreateIntWME, objItr->GetParent(), objItr->GetAttributeName(), objItr->GetStartValue());
-			file << endl;
-			PrintTabs(depth +1);
-			GenerateStoreWME(newVarName, type);
-			break;
-		case ELEMENT_FLOAT:
-			PrintTabs(depth + 1);
-			PrintThreeArgFunction(k_CreateFloatWME, objItr->GetParent(), objItr->GetAttributeName(), objItr->GetStartValue());
-			file << endl;
-			PrintTabs(depth + 1);
-			GenerateStoreWME(newVarName, type);
-			break;
-		case ELEMENT_STRING:
-			PrintTabs(depth + 1);
-			GenerateDeclareVariable(type, newVarName) << k_assign << k_space;
-			PrintThreeArgFunction(k_CreateStringWME, objItr->GetParent(), objItr->GetAttributeName(), objItr->GetStartValue());
-			file << endl;
-			break;
-		case ELEMENT_ID:
-			PrintTabs(depth + 1);
-
-			parent = objItr->GetParent();
-
-			//This token denotes that the input link should be used as the parent object					
-			if(!stricmp(parent.c_str(), k_ILRootToken.c_str()))
-			{
-				parent = k_AgentInstance + k_dot + k_GetInputLink + k_openParen + k_closeParen;
-			}
-
-			//write out the Identifier declaration in front of the function
-			file << k_Identifier << k_space << objItr->GetStartValue() << k_space << k_assign << k_space;
-			PrintTwoArgFunction(k_CreateIdWME, parent, objItr->GetAttributeName());
-			file << endl;
-			break;
-		default:
-			assert(false);
-			break;
-		}//switch
-
-		objItr->SetGeneratedName(newVarName);		
-		//cout << "Setting an object's generated name to: "	<< newVarName << endl;
-		//cout << "\tand confirming: " << objItr->GetGeneratedName() << endl;
-
-	}//for - still objects to process
-
-}
-
-void CPPGenerator::GenerateCreateILFunction(int depth)
-{
-	cout << "CPPGenerator::CreateILFunction..." << endl;
-	file << endl;
-	PrintTabs(depth);
-
-	file << k_void << k_IMP << k_scope << k_CreateInputLink << k_openParen;
-
-	//feed in the arguments that the Create function takes
-
-	file << k_AgentRef << k_AgentInstance << k_closeParen << endl;
-
-	PrintTabs(depth) << k_openBrace << endl;
-
-	//for now, just create the code for anything that has a start type and value
-	for(ilObjVector_t::iterator objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
+	for(ilObjVector_t::iterator objItr = objects.begin(); objItr != objects.end(); ++objItr)
 	{
 		string parent;
 		eElementType type = objItr->GetCurrentType();
@@ -221,9 +139,10 @@ void CPPGenerator::GenerateCreateILFunction(int depth)
 				file << endl;
 				PrintTabs(depth +1);
 				GenerateStoreWME(newVarName, type);
-				break;	
+				break;
 			case ELEMENT_FLOAT:
 				PrintTabs(depth + 1);
+				GenerateDeclareVariable(type, newVarName) << k_assign << k_space;
 				PrintThreeArgFunction(k_CreateFloatWME, objItr->GetParent(), objItr->GetAttributeName(), objItr->GetStartValue());
 				file << endl;
 				PrintTabs(depth + 1);
@@ -234,18 +153,20 @@ void CPPGenerator::GenerateCreateILFunction(int depth)
 				GenerateDeclareVariable(type, newVarName) << k_assign << k_space;
 				PrintThreeArgFunction(k_CreateStringWME, objItr->GetParent(), objItr->GetAttributeName(), objItr->GetStartValue());
 				file << endl;
+				PrintTabs(depth + 1);
+				GenerateStoreWME(newVarName, type);
 				break;
 			case ELEMENT_ID:
 				PrintTabs(depth + 1);
 
 				parent = objItr->GetParent();
 
-				//This token denotes that the input link should be used as the parent object					
+				//This token denotes that the input link should be used as the parent object
 				if(!stricmp(parent.c_str(), k_ILRootToken.c_str()))
 				{
-				  parent = k_AgentInstance + k_dot + k_GetInputLink + k_openParen + k_closeParen;
+					parent = k_AgentInstance + k_dot + k_GetInputLink + k_openParen + k_closeParen;
 				}
-				
+
 				//write out the Identifier declaration in front of the function
 				file << k_Identifier << k_space << objItr->GetStartValue() << k_space << k_assign << k_space;
 				PrintTwoArgFunction(k_CreateIdWME, parent, objItr->GetAttributeName());
@@ -255,14 +176,32 @@ void CPPGenerator::GenerateCreateILFunction(int depth)
 				assert(false);
 				break;
 		}//switch
-		
-		objItr->SetGeneratedName(newVarName);		
-//cout << "Setting an object's generated name to: "	<< newVarName << endl;
-//cout << "\tand confirming: " << objItr->GetGeneratedName() << endl;
+
+		objItr->SetGeneratedName(newVarName);
+		//cout << "Setting an object's generated name to: "	<< newVarName << endl;
+		//cout << "\tand confirming: " << objItr->GetGeneratedName() << endl;
 
 	}//for - still objects to process
 
-	PrintTabs(depth) << k_closeBrace << endl;	
+}
+
+void CPPGenerator::GenerateCreateILFunction(int depth)
+{
+	cout << "CPPGenerator::CreateILFunction..." << endl;
+	file << endl;
+	PrintTabs(depth);
+
+	file << k_void << k_IMP << k_scope << k_CreateInputLink << k_openParen;
+
+	//feed in the arguments that the Create function takes
+
+	file << k_AgentRef << k_AgentInstance << k_closeParen << endl;
+
+	PrintTabs(depth) << k_openBrace << endl;
+
+	GenerateInput(ilObjects, depth);
+
+	PrintTabs(depth) << k_closeBrace << endl;
 }
 
 void CPPGenerator::GenerateUpdateILFunction(int indentDepth)
@@ -331,12 +270,12 @@ cout << "CPPGenerator::GenerateCode....." << endl;
 	//The create function MUST be called before the Update fucntion,
 	//or else the individual ilobjects will not know their generated name,
 	//and will not be able to insert that name into the generated update code
-	GenerateCreateILFunction(indent);	
+	GenerateCreateILFunction(indent);
 	GenerateCreateILFunctionTyped(indent);
 	//This MUST trail the generation of the input link creation code
 	GenerateUpdateILFunction(indent);
-	
-	GenerateCleanupFunction(indent);	
+
+	GenerateCleanupFunction(indent);
 }
 
 ostream& CPPGenerator::PrintTabs(int indentDepth)

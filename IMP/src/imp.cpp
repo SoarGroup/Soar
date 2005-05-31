@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 	cout << "Number of simulation types specified: " << typedILObjects.size() << endl;
 	for(; typeItr != typedILObjects.end(); ++typeItr)
 	{
-		cout << "Type " << typeItr->first << " has " << typeItr->second.size() << " objects." << endl;
+		cout << "Type " << typeItr->first << " has " << typeItr->second.size() << " object(s)." << endl;
 	}
 	cout << endl;
 	
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
 	//type to make
 	CPPGenerator generator(outFileName, ilObjects, typedILObjects);
 
-	cout << "Pausing before exiting program" << endl;
+	cout << "Pausing before exiting program.  Press non-whitespace key + <enter> to exit" << endl;
 	Pause();
 	return 0;
 }
