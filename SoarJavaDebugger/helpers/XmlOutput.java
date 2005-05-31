@@ -27,6 +27,8 @@ public class XmlOutput
 	/** Number of spaces we indent conditions inside a production */
 	public final static int kProductionIndent = 4 ;
 
+	public final static int kDecisionDigits = 6 ;	// So colons match with print --stack in trace window
+
 	/** Cache some indent strings that we'll need */
 	public static String kProdIndent ;
 	public static String kLineProdIndent ;
@@ -99,7 +101,86 @@ public class XmlOutput
 		
 		return getSpaces(indentSize) ;
 	}
+		
+	public static String getStateText(Agent agent, ClientTraceXML xmlTrace, int indentSize)
+	{
+		// 3:    ==>S: S2 (operator no-change)
+		StringBuffer text = new StringBuffer() ;				
+		text.append(XmlOutput.padLeft(xmlTrace.GetDecisionCycleCount(), kDecisionDigits)) ;
+		text.append(": ") ;
+		text.append(XmlOutput.indent(xmlTrace.GetStackLevel(), -1, indentSize)) ;
+
+		// Add an appropriate subgoal marker to match the indent size
+		if (indentSize == 3)
+			text.append("==>") ;
+		else if (indentSize == 2)
+			text.append("=>") ;
+		else if (indentSize == 1)
+			text.append(">") ;
+		else if (indentSize > 3)
+		{
+			text.append(XmlOutput.getSpaces(indentSize - 3)) ;
+			text.append("==>") ;
+		}
+		
+		text.append("S: ") ;
+		text.append(xmlTrace.GetStateID()) ;
+		
+		if (xmlTrace.GetImpasseObject() != null)
+		{
+			text.append(" (") ;
+			text.append(xmlTrace.GetImpasseObject()) ;
+			text.append(" ") ;
+			text.append(xmlTrace.GetImpasseType()) ;
+			text.append(")") ;
+		}
+		
+		return text.toString() ;
+	}
 	
+	public static String getOperatorText(Agent agent, ClientTraceXML xmlTrace, int indentSize)
+	{
+		 //2:    O: O8 (move-block)
+		StringBuffer text = new StringBuffer() ;
+		text.append(XmlOutput.padLeft(xmlTrace.GetDecisionCycleCount(), kDecisionDigits)) ;
+		text.append(": ") ;
+		text.append(XmlOutput.indent(xmlTrace.GetStackLevel(), 0, indentSize)) ;
+		text.append("O: ") ;
+		text.append(xmlTrace.GetOperatorID()) ;
+		
+		if (xmlTrace.GetOperatorName() != null)
+		{
+			text.append(" (") ;
+			text.append(xmlTrace.GetOperatorName()) ;
+			text.append(")") ;
+		}
+
+		return text.toString() ;
+	}
+	
+	public static String getPhaseText(Agent agent, ClientTraceXML xmlTrace, String status)
+	{
+		StringBuffer text = new StringBuffer() ;
+		
+		String firingType = xmlTrace.GetFiringType() ;
+		
+		text.append("--- ") ;
+		text.append(xmlTrace.GetPhaseName()) ;
+		text.append(" ") ;
+		text.append("phase ") ;
+		if (status != null)
+			text.append(status) ;
+		if (firingType != null)
+		{
+			text.append("(") ;
+			text.append(firingType) ;
+			text.append(") ") ;
+		}
+		text.append("---") ;
+		
+		return text.toString() ;
+	}
+
 /*
 <production prod_name="my*prod" documentation="my doc string" 
 type="[:chunk|:default|:justification ;# not reloadable]" 
@@ -121,7 +202,7 @@ declared-support="[:i-support|:o-support]">
 	public static String getConditionText(Agent agent, ClientTraceXML cond, boolean indent)
 	{
 		StringBuffer text = new StringBuffer() ;
-
+		
 		if (indent)
 			text.append(kProdIndent) ;
 
@@ -199,6 +280,22 @@ declared-support="[:i-support|:o-support]">
 			<nots></nots>
 		</backtrace>
 	 */
+	
+	public static String getGroundsText(Agent agent, ClientTraceXML xml)
+	{
+		return "  -->Grounds:" ;
+	}
+
+	public static String getPotentialsText(Agent agent, ClientTraceXML xml)
+	{
+		return "  -->Potentials:" ;
+	}
+
+	public static String getLocalsText(Agent agent, ClientTraceXML xml)
+	{
+		return "  -->Locals:" ;
+	}
+
 	public static String getBacktraceText(Agent agent, ClientTraceXML xml)
 	{
 		StringBuffer text = new StringBuffer() ;
@@ -226,17 +323,17 @@ declared-support="[:i-support|:o-support]">
 			boolean locals = child.IsTagLocals() ;
 			if (grounds)
 			{
-				text.append("  -->Grounds:") ;
+				text.append(getGroundsText(agent, child)) ;
 				text.append(kLineSeparator) ;
 			}
 			else if (potentials)
 			{
-				text.append("  -->Potentials:") ;
+				text.append(getPotentialsText(agent, child)) ;
 				text.append(kLineSeparator) ;				
 			}
 			else if (locals)
 			{
-				text.append("  -->Locals:") ;
+				text.append(getLocalsText(agent, child)) ;
 				text.append(kLineSeparator) ;				
 			}
 			
@@ -549,30 +646,7 @@ declared-support="[:i-support|:o-support]">
 		
 		return text.toString() ;
 	}
-	
-	public static String getPhaseText(Agent agent, ClientTraceXML xmlTrace, String status)
-	{
-		StringBuffer text = new StringBuffer() ;
 		
-		String firingType = xmlTrace.GetFiringType() ;
-		
-		text.append("--- ") ;
-		text.append(xmlTrace.GetPhaseName()) ;
-		text.append(" ") ;
-		text.append("phase ") ;
-		if (status != null)
-			text.append(status) ;
-		if (firingType != null)
-		{
-			text.append("(") ;
-			text.append(firingType) ;
-			text.append(") ") ;
-		}
-		text.append("---") ;
-		
-		return text.toString() ;
-	}
-	
 	public static String getPreferenceProductionText(Agent agent, ClientTraceXML xmlTrace)
 	{
 		return "--> " + getPreferenceText(agent, xmlTrace) ;

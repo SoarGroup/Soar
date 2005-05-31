@@ -171,12 +171,25 @@
  		id <= gSKIEVENT_LAST_XML_EVENT) ;
     }
 
+	// Events that can be used by environments to trigger when the world should update
+	// Currently not implemented by gSKI, but included for completeness.
+	typedef enum {
+		gSKIEVENT_AFTER_ALL_OUTPUT_PHASES = gSKIEVENT_LAST_XML_EVENT + 1,	// All agents have completed output phase
+		gSKIEVENT_AFTER_ALL_GENERATED_OUTPUT,								// All agents have generated output (since run began)
+	    gSKIEVENT_LAST_UPDATE_EVENT = gSKIEVENT_AFTER_ALL_GENERATED_OUTPUT,
+	} egSKIUpdateEventId ;
+
+	static inline bool IsUpdateEventID(int id)
+	{
+		return (id >= gSKIEVENT_AFTER_ALL_OUTPUT_PHASES && id <= gSKIEVENT_LAST_UPDATE_EVENT) ;
+	}
+
     typedef enum {
        // Used to indicate an error in some cases
        gSKIEVENT_INVALID_EVENT              = 0,
        // Marker for end of gSKI event list
        // Must always be at the end of the enum
-       gSKIEVENT_LAST = gSKIEVENT_LAST_XML_EVENT + 1
+       gSKIEVENT_LAST = gSKIEVENT_LAST_UPDATE_EVENT + 1
     } egSKIGenericEventId;
 
    /** End of Event Id enumerations.  **/

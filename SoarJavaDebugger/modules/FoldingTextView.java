@@ -605,9 +605,6 @@ public class FoldingTextView extends AbstractComboView
 	********************************************************************************************/
 	protected void displayXmlTraceEvent(Agent agent, ClientXML xmlParent)
 	{
-		// Stop updating the tree control while we work on it
-		//m_Tree.setRedraw(false) ;
-		
 		// For debugging
 		//String message = xmlParent.GenerateXMLString(true) ;
 		//System.out.println(message) ;
@@ -622,63 +619,21 @@ public class FoldingTextView extends AbstractComboView
 			// Get each child in turn
 			xmlParent.GetChild(xmlTrace, childIndex) ;
 			
-			final int decisionDigits = 6 ;	// So colons match with print --stack in trace window
-			
 			// This is a state change (new decision)
 			if (xmlTrace.IsTagState())
 			{
-				// 3:    ==>S: S2 (operator no-change)
-				StringBuffer text = new StringBuffer() ;				
-				text.append(XmlOutput.padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
-				text.append(": ") ;
-				text.append(XmlOutput.indent(xmlTrace.GetStackLevel(), -1, m_IndentSize)) ;
+				String text = XmlOutput.getStateText(agent, xmlTrace, m_IndentSize) ;
 
-				// Add an appropriate subgoal marker to match the indent size
-				if (m_IndentSize == 3)
-					text.append("==>") ;
-				else if (m_IndentSize == 2)
-					text.append("=>") ;
-				else if (m_IndentSize == 1)
-					text.append(">") ;
-				else if (m_IndentSize > 3)
-				{
-					text.append(XmlOutput.getSpaces(m_IndentSize - 3)) ;
-					text.append("==>") ;
-				}
-				
-				text.append("S: ") ;
-				text.append(xmlTrace.GetStateID()) ;
-				
-				if (xmlTrace.GetImpasseObject() != null)
-				{
-					text.append(" (") ;
-					text.append(xmlTrace.GetImpasseObject()) ;
-					text.append(" ") ;
-					text.append(xmlTrace.GetImpasseType()) ;
-					text.append(")") ;
-				}
-				
 				if (text.length() != 0)
 					this.appendText(text.toString(), TraceType.kStack) ;
+				
 			} else if (xmlTrace.IsTagOperator())
 			{
-				 //2:    O: O8 (move-block)
-				StringBuffer text = new StringBuffer() ;
-				text.append(XmlOutput.padLeft(xmlTrace.GetDecisionCycleCount(), decisionDigits)) ;
-				text.append(": ") ;
-				text.append(XmlOutput.indent(xmlTrace.GetStackLevel(), 0, m_IndentSize)) ;
-				text.append("O: ") ;
-				text.append(xmlTrace.GetOperatorID()) ;
+				String text = XmlOutput.getOperatorText(agent, xmlTrace, m_IndentSize) ;
 				
-				if (xmlTrace.GetOperatorName() != null)
-				{
-					text.append(" (") ;
-					text.append(xmlTrace.GetOperatorName()) ;
-					text.append(")") ;
-				}
-	
 				if (text.length() != 0)
 					this.appendText(text.toString(), TraceType.kStack) ;
+				
 			} else if (xmlTrace.IsTagRhsWrite())
 			{
 				String output = xmlTrace.GetString() ;
@@ -693,6 +648,7 @@ public class FoldingTextView extends AbstractComboView
 				String output = XmlOutput.getPhaseText(agent, xmlTrace, status) ;
 								
 				// Don't show end of phase messages
+				// BUGBUG? Perhaps we should include them now and just use the filtering to remove them
 				boolean endOfPhase = (status != null && status.equalsIgnoreCase("end")) ;
 				
 				if (output.length() != 0 && !endOfPhase)
@@ -815,7 +771,8 @@ public class FoldingTextView extends AbstractComboView
 					if (type != TraceType.kVerbose)
 						this.appendText(text.toString(), type) ;
 					else
-						this.appendSubText(text.toString(), type) ;				}
+						this.appendSubText(text.toString(), type) ;
+				}
 			}
 			else
 			{
@@ -834,9 +791,6 @@ public class FoldingTextView extends AbstractComboView
 		// (b) even if it runs not all objects will be reclaimed and (c) finalize isn't guaranteed before we exit
 		// so all in all, let's just call it ourselves here :)
 		xmlParent.delete() ;
-		
-		// Redraw the tree to show our changes
-		//m_Tree.setRedraw(true) ;
 	}
 	
 	public static class RunWrapper implements Runnable
