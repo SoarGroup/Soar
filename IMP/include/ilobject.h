@@ -107,9 +107,11 @@ public:
 	void SetGeneratedName(std::string& myName){m_name = myName;}
 
 	friend std::ostream& operator << (std::ostream& stream, InputLinkObject& obj);
-	bool	HasBeenInspected() const {return m_beenInspected;}
-	void	MarkAsInspected() {m_beenInspected = true;}
-
+	bool HasBeenInspected() const {return m_beenInspected;}
+	void MarkAsInspected() {m_beenInspected = true;}
+	
+	//TODO comment
+	void ReplaceInternalTokens(const std::string& token, std::string valueAsString);
 private:
 
 	std::string				m_parentId;
