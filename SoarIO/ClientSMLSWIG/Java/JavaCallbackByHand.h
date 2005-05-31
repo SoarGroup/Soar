@@ -613,7 +613,7 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *
 
 // This is the C++ handler which will be called by clientSML when the event fires.
 // Then from here we need to call back to Java to pass back the message.
-static void UpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, int runFlags)
+static void UpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags)
 {
 	// The user data is the class we declared above, where we store the Java data to use in the callback.
 	JavaCallbackData* pJavaData = (JavaCallbackData*)pUserData ;
