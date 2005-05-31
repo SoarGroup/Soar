@@ -69,6 +69,7 @@ INCLUDES = \
 -I../../../gSKI/include\
 -I../../ElementXML/include\
 -I../../ConnectionSML/include\
+-I../../ClientSML/include\
 -I../../KernelSML/include\
 -I../include\
 -I../..
