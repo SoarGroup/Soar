@@ -191,7 +191,7 @@ public class SWTApplication
 		// so clear it when the app launches, so we don't get random junk in there.
 		// Once the app is going, whatever the user is copying around is a reasonable
 		// thing to start from, but things from before are presumably unrelated.
-		clearClipboard() ;
+		//clearClipboard() ;
 		
 		// The document manages the Soar process
 		m_Document = new Document() ;
