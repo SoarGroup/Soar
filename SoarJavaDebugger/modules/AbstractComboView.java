@@ -666,6 +666,7 @@ public abstract class AbstractComboView extends AbstractView
 		m_StopCallback = -1 ;
 		m_InitCallback = -1 ;
 		m_PrintCallback = -1 ;
+		m_EchoCallback = -1 ;
 		m_DecisionCallback = -1 ;
 		clearViewAgentEvents() ;
 	}
@@ -686,6 +687,9 @@ public abstract class AbstractComboView extends AbstractView
 		if (m_PrintCallback != -1)
 			ok = agent.UnregisterForPrintEvent(m_PrintCallback) && ok ;
 		
+		if (m_EchoCallback != -1)
+			ok = agent.UnregisterForPrintEvent(m_EchoCallback) && ok ;
+		
 		if (m_DecisionCallback != -1)
 			ok = agent.UnregisterForRunEvent(m_DecisionCallback) && ok ;
 		
@@ -693,6 +697,7 @@ public abstract class AbstractComboView extends AbstractView
 		m_InitCallback = -1 ;
 		m_PrintCallback = -1 ;
 		m_DecisionCallback = -1 ;
+		m_EchoCallback = -1 ;
 		
 		ok = unregisterForViewAgentEvents(agent) && ok ;
 		
