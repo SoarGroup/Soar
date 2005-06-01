@@ -811,6 +811,7 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	// Get the parameters
 	char const* pLine = pIncoming->GetArgValue(sml_Names::kParamLine) ;
+	bool echoResults  = pIncoming->GetArgBool(sml_Names::kParamEcho, false) ;
 
 	bool rawOutput = false;
 
@@ -832,7 +833,7 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);
-	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, pResponse) ;
+	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, echoResults, pResponse) ;
 
 	if (kDebugCommandLine)
 		PrintDebugFormat("Completed %s", pLine) ;

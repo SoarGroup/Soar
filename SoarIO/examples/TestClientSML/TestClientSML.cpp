@@ -689,6 +689,12 @@ void MyPrintEventHandlerTimer(smlPrintEventId id, void* pUserData, Agent* pAgent
     
 }
 
+void MyEchoEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMsg)
+{
+	if (pMsg)
+		cout << " ----> Received an echo event with contents: " << pMsg << endl ;    
+}
+
 bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 {
 	// Create the appropriate type of connection
@@ -739,6 +745,7 @@ bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
 		path += "/demos/water-jug/water-jug-look-ahead.soar" ;
 
 		bool load = pAgent->LoadProductions(path.c_str()) ;
+
 		unused(load);
 
 		if (pAgent->HadError())
@@ -860,8 +867,14 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			std::string path = pKernel->GetLibraryLocation() ;
 			path += "/tests/testsml.soar" ;
 
-			bool load = pAgent->LoadProductions(path.c_str()) ;
+			// Listen to the echo of the load
+			int echoCallback = pAgent->RegisterForPrintEvent(smlEVENT_ECHO, &MyEchoEventHandler, NULL) ;
+
+			bool echo = true ;
+			bool load = pAgent->LoadProductions(path.c_str(), echo) ;
+
 			unused(load);
+			pAgent->UnregisterForPrintEvent(echoCallback) ;
 
 			if (pAgent->HadError())
 			{

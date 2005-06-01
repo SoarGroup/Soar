@@ -314,14 +314,14 @@ public:
 	bool	IsAgentValid(Agent* pAgent) ;
 
 	/*************************************************************
-	* @brief Process a command line command and return the result
-	*        as a string.
+	* @brief Process a command line command
 	*
 	* @param pCommandLine Command line string to process.
-	* @param pAgentName Agent name to apply the command line to (can be NULL)
+	* @param pAgentName   Agent name to apply the command line to (can be NULL)
+	* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
 	* @returns The string form of output from the command.
 	*************************************************************/
-	char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName) ;
+	char const* ExecuteCommandLine(char const* pCommandLine, char const* pAgentName, bool echoResults = false) ;
 
 	/*************************************************************
 	* @brief Execute a command line command and return the result

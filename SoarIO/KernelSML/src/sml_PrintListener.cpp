@@ -32,7 +32,9 @@ bool PrintListener::AddListener(egSKIPrintEventId eventID, Connection* pConnecti
 
 	if (first)
 	{
-		m_pAgent->AddPrintListener(eventID, this); 
+		// Echo events are SML only.  Everything else is implemented in gSKI
+		if (eventID != gSKIEVENT_ECHO)
+			m_pAgent->AddPrintListener(eventID, this); 
 
 		// Register for specific events at which point we'll flush the buffer for this event
 		m_pAgentOutputFlusher[eventID-gSKIEVENT_FIRST_PRINT_EVENT] = new AgentOutputFlusher(this, m_pAgent, eventID);
@@ -48,7 +50,9 @@ bool PrintListener::RemoveListener(egSKIPrintEventId eventID, Connection* pConne
 
 	if (last)
 	{
-		m_pAgent->RemovePrintListener(eventID, this); 
+		// Echo events are SML only.  Everything else is implemented in gSKI
+		if (eventID != gSKIEVENT_ECHO)
+			m_pAgent->RemovePrintListener(eventID, this); 
 
 		// Unregister for the events when we'll flush the buffer
 		delete m_pAgentOutputFlusher[eventID-gSKIEVENT_FIRST_PRINT_EVENT] ;
@@ -70,7 +74,7 @@ void PrintListener::HandleEvent(egSKIPrintEventId eventID, gSKI::IAgent* agentPt
 	// If the print callbacks have been disabled, then don't forward this message
 	// on to the clients.  This allows us to use the print callback within the kernel to
 	// retrieve information without it appearing in the trace.  (One day we won't need to do this enable/disable game).
-	if (!m_EnablePrintCallback)
+	if (!m_EnablePrintCallback && eventID == gSKIEVENT_PRINT)
 		return ;
 
 	int nBuffer = eventID - gSKIEVENT_FIRST_PRINT_EVENT ;

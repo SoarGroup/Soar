@@ -61,6 +61,7 @@ namespace sml {
 	class ElementXML;
 	class KernelSML;
 	class Connection ;
+	class AgentSML;
 }
 
 namespace cli {
@@ -124,9 +125,10 @@ public:
 	* @param pConnection The connection, for communication to the client
 	* @param pAgent The pointer to the gSKI agent interface
 	* @param pCommandLine The command line string, arguments separated by spaces
+	* @param echoResults If true send a copy of the result to the echo event
 	* @param pResponse Pointer to XML response object
 	*************************************************************/
-	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, sml::ElementXML* pResponse);
+	EXPORT bool DoCommand(sml::Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, bool echoResults, sml::ElementXML* pResponse);
 
 	/*************************************************************
 	* @brief Takes a command line and expands any aliases and returns
@@ -868,6 +870,12 @@ protected:
 	void PrintFilename(const std::string& name, bool isDirectory); 	 
 
 	/************************************************************* 	 
+	* @brief Echo the given string through the smlEVENT_ECHO event
+	*		 if the call requested that commands be echoed.
+	*************************************************************/ 	 
+	void EchoString(char const* pString);	
+
+	/************************************************************* 	 
 	* @brief Strip quotes off of a string.  Must start and end with
     *        a '"' character.
     * @return True if quotes were removed from the string.
@@ -894,12 +902,14 @@ protected:
 	std::string			m_LastErrorDetail;		// Additional detail concerning the last error
 	gSKI::Error			m_gSKIError;			// gSKI error output from calls made to process the command
 	bool				m_PrintEventToResult;	// True when print events should append message to result
+	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 
 	Aliases				m_Aliases;				// Alias management object
 	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
 	sml::KernelSML*		m_pKernelSML;
+	sml::AgentSML*		m_pAgentSML;			// Agent we're currently working with
 	gSKI::Version		m_KernelVersion;		// Kernel version number
 	std::string			m_LibraryDirectory;		// The library directory, server side, see help command
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd

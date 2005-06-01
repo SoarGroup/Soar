@@ -59,6 +59,7 @@ public class TextTraceView extends AbstractComboView
 		m_ClearComboEachCommand = true ;
 		m_ComboAtTop = false ;
 		m_ShowTraceOutput = true ;
+		m_ShowEchoOutput = true ;
 		m_PromptForCommands = "<Type commands here>" ;
 	}
 

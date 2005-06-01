@@ -181,9 +181,10 @@ public:
 	* access (i.e. can't send to a remote PC unless that PC can load
 	* this file).
 	*
+	* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
 	* @returns True if finds file to load successfully.
 	*************************************************************/
-	bool LoadProductions(char const* pFilename) ;
+	bool LoadProductions(char const* pFilename, bool echoResults = true) ;
 
 	/*************************************************************
 	* @brief Returns the id object for the input link.
@@ -529,14 +530,13 @@ public:
 	void Refresh() ;
 
 	/*************************************************************
-	* @brief Process a command line command and return the result
-	*        as a string.
+	* @brief Process a command line command
 	*
 	* @param pCommandLine Command line string to process.
-	* @param pAgentName Agent name to apply the command line to.
+	* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
 	* @returns The string form of output from the command.
 	*************************************************************/
-	char const* ExecuteCommandLine(char const* pCommandLine) ;
+	char const* ExecuteCommandLine(char const* pCommandLine, bool echoResults = false) ;
 
 	/*************************************************************
 	* @brief Execute a command line command and return the result

@@ -63,7 +63,10 @@ public abstract class AbstractComboView extends AbstractView
 	
 	/** If true, will display output from "run" commands */
 	protected boolean	m_ShowTraceOutput = false ;
-	
+
+	/** If true, will display output from "run" commands */
+	protected boolean	m_ShowEchoOutput = false ;
+
 	/** Prompt the user to type commands in the combo box with this text */
 	protected String 	m_PromptForCommands ;
 	
@@ -78,6 +81,7 @@ public abstract class AbstractComboView extends AbstractView
 	protected int m_StopCallback ;
 	protected int m_InitCallback ;
 	protected int m_PrintCallback ;
+	protected int m_EchoCallback ;
 	protected int m_DecisionCallback ;
 			
 	// The constructor must take no arguments so it can be called
@@ -87,6 +91,7 @@ public abstract class AbstractComboView extends AbstractView
 		m_InitCallback = -1 ;
 		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;
+		m_EchoCallback = -1 ;
 		m_DecisionCallback = -1 ;
 		m_Updating = false ;
 	}
@@ -608,7 +613,7 @@ public abstract class AbstractComboView extends AbstractView
 			return ;
 		}
 		
-		if (eventID == smlPrintEventId.smlEVENT_PRINT.swigValue())
+		if (eventID == smlPrintEventId.smlEVENT_PRINT.swigValue() || eventID == smlPrintEventId.smlEVENT_ECHO.swigValue())
 			appendTextSafely(message) ;
 	}
 
@@ -635,7 +640,10 @@ public abstract class AbstractComboView extends AbstractView
 		
 		if (m_ShowTraceOutput && m_PrintCallback == -1)
 			m_PrintCallback = agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this, "printEventHandler", this) ;
-		
+
+		if (m_ShowEchoOutput && m_EchoCallback == -1)
+			m_EchoCallback = agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_ECHO, this, "printEventHandler", this) ;
+
 		if (m_UpdateEveryNthDecision > 0 && m_DecisionCallback == -1)
 			m_DecisionCallback = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, this, "runEventHandler", this) ;
 		else if (m_UpdateEveryNthDecision <= 0 && m_DecisionCallback != -1)

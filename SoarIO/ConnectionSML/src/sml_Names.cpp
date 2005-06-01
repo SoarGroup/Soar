@@ -221,6 +221,7 @@ char const* const sml_Names::kParamCount			= "count" ;
 char const* const sml_Names::kParamThread			= "thread" ;
 char const* const sml_Names::kParamProcess			= "process" ;
 char const* const sml_Names::kParamLine				= "line" ;
+char const* const sml_Names::kParamEcho				= "echo" ;
 char const* const sml_Names::kParamLocation			= "location" ;
 char const* const sml_Names::kParamLogLocation		= "loglocation" ;
 char const* const sml_Names::kParamLogLevel			= "loglevel" ;

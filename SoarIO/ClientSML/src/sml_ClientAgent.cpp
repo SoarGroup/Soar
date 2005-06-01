@@ -193,8 +193,11 @@ void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncomi
 * The file must currently be on a filesystem that the kernel can
 * access (i.e. can't send to a remote PC unless that PC can load
 * this file).
+*
+* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
+* @returns True if finds file to load successfully.
 *************************************************************/
-bool Agent::LoadProductions(char const* pFilename)
+bool Agent::LoadProductions(char const* pFilename, bool echoResults)
 {
 	// gSKI's LoadProductions command doesn't support all of the command line commands we need,
 	// so we'll send this through the command line processor instead by creating a "source" command.
@@ -209,7 +212,7 @@ bool Agent::LoadProductions(char const* pFilename)
 	}
 
 	// Execute the source command
-	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;
+	char const* pResult = ExecuteCommandLine(cmd.c_str(), echoResults) ;
 
 	bool ok = GetLastCommandLineResult() ;
 
@@ -1093,16 +1096,15 @@ void Agent::Refresh()
 }
 
 /*************************************************************
-* @brief Process a command line command and return the result
-*        as a string.
+* @brief Process a command line command
 *
 * @param pCommandLine Command line string to process.
-* @param pAgentName Agent name to apply the command line to.
+* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
 * @returns The string form of output from the command.
 *************************************************************/
-char const* Agent::ExecuteCommandLine(char const* pCommandLine)
+char const* Agent::ExecuteCommandLine(char const* pCommandLine, bool echoResults)
 {
-	return GetKernel()->ExecuteCommandLine(pCommandLine, GetAgentName()) ;
+	return GetKernel()->ExecuteCommandLine(pCommandLine, GetAgentName(), echoResults) ;
 }
 
 /*************************************************************

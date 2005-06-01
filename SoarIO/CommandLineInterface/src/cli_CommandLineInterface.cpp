@@ -32,6 +32,7 @@
 #include "sml_TagArg.h"
 #include "sml_StringOps.h"
 #include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
 
 using namespace cli;
 using namespace sml;
@@ -113,6 +114,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	gSKI::ClearError(&m_gSKIError);
 	m_Initialized = true;
 	m_PrintEventToResult = false;
+	m_EchoResult = false ;
+	m_pAgentSML = 0 ;
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
@@ -129,9 +132,10 @@ EXPORT CommandLineInterface::~CommandLineInterface() {
 * @param pConnection The connection, for communication to the client
 * @param pAgent The pointer to the gSKI agent interface
 * @param pCommandLine The command line string, arguments separated by spaces
+* @param echoResults If true send a copy of the result to the echo event
 * @param pResponse Pointer to XML response object
 *************************************************************/
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, ElementXML* pResponse) {
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgent* pAgent, const char* pCommandLine, bool echoResults, ElementXML* pResponse) {
 	// No way to return data
 	if (!pConnection) return false;
 	if (!pResponse) return false;
@@ -141,6 +145,9 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::IAgen
 		if (pAgent) (*m_pLogFile) << pAgent->GetName() << "> ";
 		(*m_pLogFile) << pCommandLine << endl;
 	}
+
+	m_EchoResult = echoResults ;
+	m_pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
 
 	// Process the command, ignoring its result (errors detected with m_LastError)
 	DoCommandInternal(pAgent, pCommandLine);
@@ -169,7 +176,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
         // The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
 			pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
-
+			EchoString(m_Result.str().c_str()) ;
 		} else {
 			// If there are tags in the response list, add them and return
 			if (m_ResponseTags.size()) {
@@ -188,6 +195,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 				// Otherwise, return result as simple result if there is one
 				if (m_Result.str().size()) {
 					pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
+					EchoString(m_Result.str().c_str()) ;
 				} else {
 					// Or, simply return true
 					pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
@@ -216,6 +224,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 			errorDescription += m_gSKIError.ExtendedMsg;
 		}
 		pConnection->AddErrorToSMLResponse(pResponse, errorDescription.c_str(), m_LastError);
+		EchoString(errorDescription.c_str()) ;
 
         // Log error
         if (m_pLogFile) (*m_pLogFile) << errorDescription << endl;
@@ -229,6 +238,19 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 	gSKI::ClearError(&m_gSKIError);
 }
 
+/************************************************************* 	 
+* @brief Echo the given string through the smlEVENT_ECHO event
+*		 if the call requested that commands be echoed.
+*************************************************************/ 	 
+void CommandLineInterface::EchoString(char const* pString)
+{
+	if (!m_EchoResult)
+		return ;
+
+	// BUGBUG: We may need to support this for kernel level commands without an agent
+	if (m_pAgentSML)
+		m_pAgentSML->FireEchoEvent(pString) ;
+}
 
 /*************************************************************
 * @brief Takes a command line and expands any aliases and returns

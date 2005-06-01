@@ -159,6 +159,13 @@ public:
 	void EnablePrintCallback()  { m_PrintListener.EnablePrintCallback(true) ; m_XMLListener.EnablePrintCallback(true) ; }
 
 	/*************************************************************
+	* @brief	Trigger an "echo" event.  This event allows one client
+	*			to issue a command and have another client (typically the debugger)
+	*			listen in on the output.
+	*************************************************************/
+	void FireEchoEvent(char const* pMessage) { m_PrintListener.HandleEvent(gSKIEVENT_ECHO, m_pIAgent, pMessage) ; m_PrintListener.FlushOutput(gSKIEVENT_ECHO) ; }
+
+	/*************************************************************
 	* @brief	Converts an id from a client side value to a kernel side value.
 	*			We need to be able to do this because the client is adding a collection
 	*			of wmes at once, so it makes up the ids for those objects.

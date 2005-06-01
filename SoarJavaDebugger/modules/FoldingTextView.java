@@ -92,6 +92,7 @@ public class FoldingTextView extends AbstractComboView
 		m_ClearComboEachCommand = true ;
 		m_ComboAtTop = false ;
 		m_ShowTraceOutput = false ;
+		m_ShowEchoOutput = true ;
 		m_PromptForCommands = "<Type commands here>" ;	
 	}
 

@@ -220,6 +220,7 @@ public:
 	static char const* const kParamThread	;
 	static char const* const kParamProcess ;
 	static char const* const kParamLine ;
+	static char const* const kParamEcho ;
 	static char const* const kParamLocation ;
 	static char const* const kParamLogLocation ;
 	static char const* const kParamLogLevel ;

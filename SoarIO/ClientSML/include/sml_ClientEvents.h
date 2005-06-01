@@ -118,6 +118,7 @@ typedef enum {
     smlEVENT_LOG_WARNING,
     smlEVENT_LOG_INFO,
     smlEVENT_LOG_DEBUG,
+	smlEVENT_ECHO,
     smlEVENT_PRINT,
 } smlPrintEventId ;
 
