@@ -418,12 +418,13 @@ public class Document
 
 	/********************************************************************************************
 	 * 
-	 * Start an instance of Soar running in the debugger and create a first agent.
+	 * Connect to a remote instance of Soar that is already running.
 	 * 
 	 * @param ipAddress		The ip address (e.g. "205.233.102.121" to connect to.  null => local ip)
 	 * @param portNumber	The port to connect on.
+	 * @param agentName		The name of the agent to assign to the first display window (null or not found => use first agent)
 	********************************************************************************************/
-	public void remoteConnect(String ipAddress, int portNumber) throws Exception
+	public void remoteConnect(String ipAddress, int portNumber, String agentName) throws Exception
 	{
 		// If we have a local kernel already running shut it down
 		stopLocalKernel() ;
@@ -468,7 +469,17 @@ public class Document
 			
 			if (agentID < nAgents)
 			{
-				Agent agent = this.getAgentByIndex(agentID) ;
+				Agent agent = null ;
+
+				// If we have a named agent to look for, find that one
+				if (agentName != null && agentName.length() > 0 && agentID == 0)
+					agent = this.getAgent(agentName) ;
+				
+				// If we we're given a name or the name didn't match or if this
+				// is the second frame then just look up the agent by index.
+				if (agent == null)
+					agent = this.getAgentByIndex(agentID) ;
+				
 				frame.setAgentFocus(agent) ;
 				agentID++ ;
 			}

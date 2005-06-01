@@ -120,7 +120,7 @@ public class KernelMenu
 		
 		try
 		{
-			m_Document.remoteConnect(ip.getIP(), ip.getPort()) ;
+			m_Document.remoteConnect(ip.getIP(), ip.getPort(), null) ;
 		}
 		catch (Exception ex)
 		{

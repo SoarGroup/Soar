@@ -156,12 +156,14 @@ public class SWTApplication
 	// -ip xxx => use this IP value (implies remote connection)
 	// -port ppp => use this port (implies remote connection)
 	// Without any remote options we start a local kernel
+	// -agent <name> => select this agent as initial agent (for use with remote connection)
 	public void startApp(String[] args) throws Exception
 	{
 		// Check for command line options
 		boolean remote = hasOption(args, "-remote") ;
 		String ip 	= getOptionValue(args, "-ip") ;
 		String port = getOptionValue(args, "-port") ;
+		String agentName = getOptionValue(args, "-agent") ;
 		
 		if (ip != null || port != null)
 			remote = true ;
@@ -210,7 +212,7 @@ public class SWTApplication
 			// Start a remote connection
 			try
 			{
-				m_Document.remoteConnect(ip, portNumber) ;
+				m_Document.remoteConnect(ip, portNumber, agentName) ;
 			} catch (Exception e)
 			{
 				errorMsg = e.getMessage() ;
