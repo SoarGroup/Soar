@@ -343,24 +343,27 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 						// Remove this possibility from the list
 						liter = possibilities.erase(liter);
 					} else {
-						// check for exact match
-						if (argv[0] == (*liter)) {
-							// Exact match, we're done
-							argv[0] = (*liter);
-							exactMatch = true;
-							break;
-						}
 						++liter;
 					}
 				}
-				if (exactMatch) break;
 			}
+
+			// check for exact match
+			liter = possibilities.begin();
+			while (liter != possibilities.end()) {
+				if (argv[0] == (*liter)) {
+					// Exact match, we're done
+					argv[0] = (*liter);
+					exactMatch = true;
+					break;
+				}
+			}
+			if (exactMatch) break;
 
 			if (!possibilities.size()) {
 				// Not implemented
 				SetErrorDetail("(No such command: " + argv[0] + ")");
 				return SetError(CLIError::kCommandNotImplemented);
-
 			} 
 		}
 
