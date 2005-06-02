@@ -3,7 +3,6 @@
 
 #include <string>
 
-
 const std::string k_SML_Agent					= "sml_ClientAgent";
 
 const std::string k_Create						= "Create";
@@ -12,6 +11,7 @@ const std::string k_CreateIntWME			= "CreateIntWME";
 const std::string k_CreateFloatWME		= "CreateFloatWME";
 const std::string k_CreateIdWME				= "CreateIdWME";
 const std::string k_Identifier				= "Identifier";
+const std::string k_pIdentifier				= "Identifier*";
 const std::string k_IntElement				= "IntElement";
 const std::string k_pIntElement				= "IntElement*";
 const std::string k_FloatElement			= "FloatElement";
@@ -30,6 +30,7 @@ const std::string k_GetAgent					= "GetAgent";
 const std::string k_Agent							= "Agent ";
 const std::string k_AgentRef					= "Agent& ";
 const std::string k_AgentInstance			= "agent";
+const std::string k_AgentInstanceDot	= "agent.";
 const std::string k_IMP								= "IMP";
 const std::string k_SML								= "sml";
 
