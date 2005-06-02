@@ -20,6 +20,7 @@ set tsi_library  [file join [pwd] .. tclenvironments tsi]
 set eaters_dir   [file join $tsi_library .. eaters]
 set agents_dir   [file join $eaters_dir agents]
 
+lappend auto_path ~/sandbox/lib
 
 # We need to set the environment variables here because the
 # Soar dll uses them
