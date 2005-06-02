@@ -34,16 +34,19 @@ public:
 private:
 
 protected:
+
+	virtual std::ostream& PrintTabs(int indentDepth);
+	
 	//This function will be responsible for writing out the
 	//"#include"s or imports to bring the necessary symbols into scope
 	virtual void GenerateHeaderInformation() = 0;
 
-	//this is just a placeholder function
+	//parent function that calls all of the specific code generation functions
 	virtual void GenerateCode() = 0;
 
-	//does the dirty work of the CreateILFunction. Separate so that it can be reused
-	//TODO rename this   //TODO make this pure virtual
-	virtual void GenerateInput(ilObjVector_t& objects, int depth = 0){}
+	//does the dirty work of the CreateILFunction. Separate so that it can be reused in
+	//other contexts 	//TODO make this pure virtual
+	virtual void DoGenerateCreateInput(ilObjVector_t& objects, int depth = 0){}
 
 	virtual void GenerateCreateILFunction(int indentDepth = 0) = 0;
 
@@ -51,38 +54,17 @@ protected:
 
 	virtual void GenerateCleanupFunction(int indentDepth = 0) = 0;
 
-	void PrintSingleImport(const std::string& name)
-	{
-		file << k_import << name << k_semi << std::endl;
-	}
+	void PrintSingleImport(const std::string& name);
 
-	void PrintSingleHeader(const std::string& fileName)
-	{
-		file << k_include << k_dQuote << fileName << k_hExtension << k_dQuote << std::endl;
-	}
+	void PrintSingleHeader(const std::string& fileName);
+	
+	virtual void PrintZeroArgFunction(const std::string&functName, int numTabs = 0, const std::string& object = "");
 
-	void PrintSingleArgFunction(const std::string& functName, const std::string& arg1, int numTabs = 0, std::string object = "")
-	{
-		for(int counter = 0; counter < numTabs; ++ counter) file << "\t";
+	virtual void PrintSingleArgFunction(const std::string& functName, const std::string& arg1, int numTabs = 0, const std::string& object = "");
 
-		file << object << functName << k_openParen << arg1 << k_closeParen << k_semi;
-	}
+	virtual void PrintTwoArgFunction(const std::string& functName, const std::string& arg1, const std::string& arg2, int numTabs = 0, const std::string& object = "");
 
-	void PrintTwoArgFunction(const std::string& functName, const std::string& arg1, const std::string& arg2, int numTabs = 0, std::string object = "")
-	{
-		for(int counter = 0; counter < numTabs; ++ counter) file << "\t";
-
-		file << object << functName << k_openParen << arg1 << k_argSep << k_space
-		<< arg2 << k_closeParen << k_semi;
-	}
-
-	void PrintThreeArgFunction(const std::string& functName, const std::string& arg1, const std::string& arg2, const std::string& arg3, int numTabs = 0, std::string object = "")
-	{
-		for(int counter = 0; counter < numTabs; ++ counter) file << "\t";
-
-		file << object << functName << k_openParen << arg1 << k_argSep << k_space
-		<< arg2 << k_argSep << k_space << arg3 << k_closeParen << k_semi;
-	}
+	virtual void PrintThreeArgFunction(const std::string& functName, const std::string& arg1, const std::string& arg2, const std::string& arg3, int numTabs = 0, const std::string& object = "");
 
 	//Filename to write out the generated code to
 	std::fstream file;
@@ -101,9 +83,9 @@ class CPPGenerator : public CodeGenerator
 public:
 	CPPGenerator(std::string& fileName, ilObjVector_t& ilObjects, typedObjectsMap_t& typed);
 private:
-	std::ostream& PrintTabs(int indentDepth);
+
 protected:
-	void GenerateInput(ilObjVector_t& objects, int depth = 0);
+	void DoGenerateCreateInput(ilObjVector_t& objects, int depth = 0);
 	void GenerateHeaderInformation();
 	void GenerateCode();
 	void GenerateStoreWME(std::string& element, eElementType type);//TODO  work on hierarchy for this
@@ -128,6 +110,8 @@ public:
 	JavaGenerator(std::string& fileName);
 private:
 protected:
+//TODO this doesn't inherit everything that it should (but if the correct fxns are made
+//pure virtual, it will force a definition
 	void GenerateHeaderInformation(){}//TODO define
 	void GenerateCode(){} //TODO define
 	void GenerateCreateILFunction(int indentDepth = 0){} //TODO define
