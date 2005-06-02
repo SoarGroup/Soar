@@ -23,14 +23,14 @@ int main(int argc, char* argv[])
 
 	string inFileName;
 	string outFileName("IMPDefaultOut.cpp");
-	bool parsed = 0;
+	bool parsed = false;
 	ilObjVector_t	ilObjects;
 	typedObjectsMap_t typedILObjects;
 
 	//create an ILspec
 	InputLinkSpec ilspec(ilObjects, typedILObjects);
 
-	cout << "Hajimeteimas..." << endl;
+	cout << "IMP Beginning..." << endl;
 	//cout << "Number of args is " << argc << endl;
 
 	//should have at least 1 argument - the filename for the input link spec
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 	else
 	{
 		cout<<"Error: unknown file type"<<endl;
-		parsed = 0;
+		parsed = false;
 	}
 
 	if(!parsed)

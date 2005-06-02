@@ -100,16 +100,17 @@ void CPPGenerator::GenerateCreateILFunctionTyped(int depth)
 		ilObjVector_t& objects = typeItr->second;
 cout << "\tCurrently generating createIL function code for type:"	<< className << endl <<
 " \t\twhich has: " << objects.size() << " objects described for it" << endl;
-		GenerateInput(objects, depth);
-
+		DoGenerateCreateInput(objects, depth);
+		PrintZeroArgFunction(k_Commit, depth + 1, k_AgentInstanceDot);
 		file << endl;
+
 		//add closing brace
-		PrintTabs(depth) << k_closeBrace << endl;
+		PrintTabs(depth) << k_closeBrace << endl << endl;
 	}
 
 }
 
-void CPPGenerator::GenerateInput(ilObjVector_t& objects, int depth)
+void CPPGenerator::DoGenerateCreateInput(ilObjVector_t& objects, int depth)
 {
 	//for now, just create the code for anything that has a start type and value
 	for(ilObjVector_t::iterator objItr = objects.begin(); objItr != objects.end(); ++objItr)
@@ -157,6 +158,7 @@ void CPPGenerator::GenerateInput(ilObjVector_t& objects, int depth)
 				GenerateStoreWME(newVarName, type);
 				break;
 			case ELEMENT_ID:
+cout << "\t\t\tI should be generating an ID for an object with type: " << objItr->GetSimulationClassName() << endl;
 				PrintTabs(depth + 1);
 
 				parent = objItr->GetParent();
@@ -168,7 +170,7 @@ void CPPGenerator::GenerateInput(ilObjVector_t& objects, int depth)
 				}
 
 				//write out the Identifier declaration in front of the function
-				file << k_Identifier << k_space << objItr->GetStartValue() << k_space << k_assign << k_space;
+				file << k_pIdentifier << k_space << objItr->GetStartValue() << k_space << k_assign << k_space;
 				PrintTwoArgFunction(k_CreateIdWME, parent, objItr->GetAttributeName());
 				file << endl;
 				break;
@@ -199,14 +201,16 @@ void CPPGenerator::GenerateCreateILFunction(int depth)
 
 	PrintTabs(depth) << k_openBrace << endl;
 
-	GenerateInput(ilObjects, depth);
+	DoGenerateCreateInput(ilObjects, depth);	
+	PrintZeroArgFunction(k_Commit, depth + 1, k_AgentInstanceDot);
+	file << endl;
 
 	PrintTabs(depth) << k_closeBrace << endl;
 }
 
 void CPPGenerator::GenerateUpdateILFunction(int indentDepth)
 {
-	cout << "GenerageUpdateILFunction...." << endl;
+	cout << "GenerateUpdateILFunction...." << endl;
 
 	//the resultant generated function will need to be called every cycle,
 	//as that is the most-frequently any object will be updated
@@ -242,8 +246,7 @@ void CPPGenerator::GenerateUpdateILFunction(int indentDepth)
 }
 
 void CPPGenerator::GenerateCleanupFunction(int indentDepth)
-{//TODO
-
+{
 	file << endl;
 	PrintTabs(indentDepth);
 
@@ -254,7 +257,9 @@ void CPPGenerator::GenerateCleanupFunction(int indentDepth)
 
 	PrintTabs(indentDepth + 1) << k_AgentInstance << k_dot << k_GetKernel;
 	file << k_openParen << k_closeParen << k_arrow << k_DestroyAgent;
-	file << k_openParen << k_AgentInstance << k_closeParen << k_semi << endl;	
+	file << k_openParen << k_AgentInstance << k_closeParen << k_semi << endl;
+	PrintZeroArgFunction(k_Commit, indentDepth + 1, k_AgentInstanceDot);
+	file << endl;
 
 	//write out the closing brace
 	PrintTabs(indentDepth);
@@ -267,7 +272,7 @@ void CPPGenerator::GenerateCode()
 cout << "CPPGenerator::GenerateCode....." << endl;
 
 	int indent = 0;
-	//The create function MUST be called before the Update fucntion,
+	//The create function MUST be called before the Update function,
 	//or else the individual ilobjects will not know their generated name,
 	//and will not be able to insert that name into the generated update code
 	GenerateCreateILFunction(indent);
@@ -278,8 +283,4 @@ cout << "CPPGenerator::GenerateCode....." << endl;
 	GenerateCleanupFunction(indent);
 }
 
-ostream& CPPGenerator::PrintTabs(int indentDepth)
-{
-	for(int counter = 0; counter < indentDepth; ++ counter) file << "\t";
-	return file;
-}
+

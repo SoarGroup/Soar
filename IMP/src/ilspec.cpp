@@ -7,11 +7,7 @@
 #include <string>
 #include <assert.h>
 #include <sstream>
-#include <functional>
-#include <algorithm>
 
-using std::for_each;
-using std::bind2nd;
 using std::string;
 using std::endl;
 using std::cout; using std::cin;
@@ -52,6 +48,7 @@ InputLinkSpec::~InputLinkSpec()
 extern void Pause();
 const int defaultLoopBegin = 0;
 const int defaultLoopEnd = 1;
+const int defaultIncrementAmount = 1;
 //counts number of lines successfully imported from the file
 int lineNumber = 0;
 
@@ -263,8 +260,14 @@ bool InputLinkSpec::ImportIL(string& filename)
 		return false;
 	}
 
+	//These 3 vars allow a control variable to be read in, and have
+	//a pattern repeated the correct number of times, which may be
+	//well after the control structure has been specified.  After the pattern
+	//has been replicated and stored the appropriate number of times,
+	//reset the counters
 	int loopBegin = defaultLoopBegin;
 	int loopEnd = defaultLoopEnd;
+	int incrementAmount = defaultIncrementAmount;
 	bool resetLoopCounters = true;
 
 	//Read all descriptions of input link objects
@@ -273,13 +276,14 @@ bool InputLinkSpec::ImportIL(string& filename)
 		eParseStage parseStage = READING_BEGIN_STAGE;
 		eParseStage lastCompletedState = READING_PRE_BEGIN;
 
-		bool quitCondition = false;
+		//the name of the currently active 'for' loop, "" if there is none
 		string controlVariableName;
 		//This container holds the WME descriptions for a class
 		//A 'for' loop that preceeds a class structure will cause the entire
 		//class description, this container, to be repeated
 		ilObjVector_t pendingClassSpec;
 		bool classDescriptionJustFinished = false;
+		bool unsatisfiedControlStructure = false;
 
 		string line;
 		WriteFileLineToString(file, line);
@@ -320,7 +324,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 		while(parseStage != READING_FINAL_STAGE)
 		{
 			PrintStage(parseStage, cout);
-			bool readingFirstType = true, moreTypesLeft = true, hasStartValue = false;
+			bool readingFirstType = true, moreTypesLeft = true;
 			string curWord = "";
 			string controlStartVal, controlEndVal;
 
@@ -406,7 +410,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 					parseStage = READING_ATTRIBUTE;
 					break;
 				case READING_ATTRIBUTE:
-//cout << "\treading attrib id, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;				
+//cout << "\treading attrib id, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
 					curWord = ReadAndTrimOneWord(line); // TODO error checking
 					//replace the leading attrib token with a double quote
 					curWord.replace(0, 1, "\"");
@@ -650,7 +654,6 @@ bool InputLinkSpec::ImportIL(string& filename)
 						currentClassName = "";
 
 					TrimOneWord(line);
-	// ??? how did this horrible line get here?	WriteFileLineToString(file, line, true);
 					parseStage = READING_FINAL_STAGE;
 					break;
 				case READING_FINAL_STAGE:
@@ -662,24 +665,27 @@ bool InputLinkSpec::ImportIL(string& filename)
 			}//end switch
 		}// end control loop
 
+		//sometimes this will be a blank string, but that's fine
 		ilObj.SetSimulationClassName(currentClassName);
-//cout << "Before storage, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
+		//cout << "Before storage, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
 
 //TODO this 'for loop' only goes up (and by 1), but the user isn't constrained to that.
 //So, take note of whether start val is higher/lower than end val
 //Also, consider taking in another arg that sets the increment amount
 
 		//now we've read a WME pattern. If it should be duplicated, do that now.
-//However, if we're reading an entire class pattern that needs to be repeated,
-//store this pattern as part of the overall class pattern, which will be repeated
-//in its entirety, when the class has been closed
-		for(int counter = loopBegin; counter < loopEnd; ++counter)
+		//However, if we're reading an entire class pattern that needs to be repeated,
+		//store this pattern as part of the overall class pattern, which will be repeated
+		//in its entirety, when the class has been closed
+		for(int counter = loopBegin; counter < loopEnd && unsatisfiedControlStructure; counter += incrementAmount)
 		{
 			//if we need ZERO copies of this object
-			if(ilObj.GetAttributeName()== "")
+			if(!unsatisfiedControlStructure)
+				break;//if there's 
+			/*if((ilObj.GetAttributeName()== "") && (!classDescriptionJustFinished)) //This is not the best "flag", but will suffice //TODO
 			{
 				break;
-			}
+			}*/
 			//we only need ONE copy of this object
 			else if(controlVariableName == "")
 			{
@@ -723,15 +729,17 @@ bool InputLinkSpec::ImportIL(string& filename)
 				//TYPED case
 				else
 				{
-//cout << "\t\t*** MULTIPLE COPIES with type:>" << actualNewObject.GetSimulationClassName() << "<" << endl;
+cout << "\t\t*** MULTIPLE COPIES with sim type:>" << actualNewObject.GetSimulationClassName() << "<" << endl;
 
 					//AddTypedObject(actualNewObject); //TODO kill this?
 					pendingClassSpec.push_back(actualNewObject);
-
+cout << "\t\tstoring part of a typed wme pattern. follows:" << endl;
+cout << actualNewObject << endl;
 					//if the class wasn't just closed, we don't have enough information to start
 					//looping around, exit for now
 					if(!classDescriptionJustFinished)
 					{
+					unsatisfiedControlStructure = true;
 						resetLoopCounters = false;
 						break;
 					}
