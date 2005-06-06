@@ -136,9 +136,7 @@ if {0} {
    } else {
        set localAgents $name
        ## this is the first agent, so can launch Java Debugger
-       if {$tsiConfig(hideAgentWindow)} {
-	   $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]
-       }
+       tsiLaunchJavaDebugger $name
    }
 
 
@@ -427,4 +425,20 @@ proc dontStopAfterDecision {} {
     sendAllAgents {monitor -delete after-decision-phase-cycle dp1}
 }
 
+proc tsiLaunchJavaDebugger {name} {
+  global tsiConfig soar_library tcl_platform
+
+  ## only launch a Java debugger if not using tsiAgentWindow
+  if !($tsiConfig(hideAgentWindow)) {
+    return
+  }
+  switch -exact $tcl_platform(platform) {
+    windows {
+       $name eval [list exec javaw -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
+    macintosh {
+       $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
+    linux {
+       $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
+  }
+}
 
