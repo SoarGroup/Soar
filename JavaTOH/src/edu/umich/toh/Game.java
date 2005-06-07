@@ -91,9 +91,22 @@ public class Game implements Runnable {
         agent.Commit();
     }
     
+    /*********************************************************************************************
+     * 
+     * Update the state of the environment.
+     * 
+     * This involves:
+     * a) Collecting any output the agent has sent since the last update
+     * b) Changing the world state
+     * c) Sending new input to the agent
+     * 
+    ********************************************************************************************/
     public void updateWorld()
     {
         // See if any commands were generated on the output link
+    	// (In general we might want to update the world when the agent
+    	// takes no action in which case some code would be outside this if statement
+    	// but for this environment that's not necessary).
         if (agent.Commands())
         {
 	        // perform the command on the output link        
@@ -109,16 +122,20 @@ public class Game implements Runnable {
 	        }
 	        int srcPeg = command.GetParameterValue("source-peg").charAt(0) - 'A';
 	        int dstPeg = command.GetParameterValue("destination-peg").charAt(0) - 'A';
+	        
+	        // Change the state of the world and generate new input
 	        moveDisk(srcPeg, dstPeg);
 	        
+	        // Tell the agent that this command has executed in the environment.
 	        command.AddStatusComplete();
-	        
+
+	        // Send the new input link changes to the agent
 	        agent.Commit();
         
-	    	// "Commands" is based on a changes to the output link
+	    	// "agent.GetCommand(n)" is based on watching for changes to the output link
 	    	// so before we do a run we clear the last set of changes.
 	    	// (You can always read the output link directly and not use the
-	    	//  "commands" model to determine what has changed between runs).
+	    	//  commands model to determine what has changed between runs).
 	    	agent.ClearOutputLinkChanges() ;
 
 	        if (isAtGoalState())
@@ -126,6 +143,7 @@ public class Game implements Runnable {
         }    	
     }
     
+    /** This method is called when the "after_all_output_phases" event fires, at which point we update the world */
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags)
 	{
 		// We have a problem at the moment with calling Stop() from arbitrary threads
@@ -140,7 +158,7 @@ public class Game implements Runnable {
 	}
 
     /**
-     * Runs one Soar decision cycle in which Soar chooses the next <code>Disk</code>
+     * Runs Soar until interrupted.  Soar repeatedly chooses the next <code>Disk</code>
      * to be moved. Listeners will be notified as to which <code>Tower</code> the
      * <code>Disk</code> will be moved from and to.
      * 
@@ -159,6 +177,7 @@ public class Game implements Runnable {
     	kernel.RunAllAgentsForever() ;
     }
     
+    /** Run one decision cycle, which is usually enough to move one tile */
     public void step()
     {
     	if (isAtGoalState())
@@ -168,6 +187,7 @@ public class Game implements Runnable {
     	kernel.RunAllAgents(1) ;
     }
     
+    /** Stop a run (might have been started here in the environment or in the debugger) */
     public void stop()
     {    	
     	// We'd like to call StopSoar() directly from here but we're in a different
@@ -271,6 +291,7 @@ public class Game implements Runnable {
     	}
     }
     
+    /** We update the environment when this event fires.  This allows us to either run the environment directly or from a debugger and get correct behavior */
     public void registerForUpdateWorldEvent()
     {
     	int updateCallback = kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, "updateEventHandler", null) ;
