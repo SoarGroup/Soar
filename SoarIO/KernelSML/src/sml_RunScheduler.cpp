@@ -183,14 +183,18 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 	// Initialize state required for update world events
 	InitializeUpdateWorldEvents(true) ;
 
+	gSKI::IKernel* pKernel = m_pKernelSML->GetKernel() ;
+
+	// Fire one event to indicate the entire system is starting
+	// (Above gSKI we can choose to suppress this event in some situations)
+	pKernel->FireSystemStart() ;
+
 	// Send event for each agent to signal its about to start running
 	FireBeforeRunStartsEvents() ;
 
 	bool runFinished = false ;
 	long stepCount   = 0 ;
 	egSKIRunResult overallResult = gSKI_RUN_COMPLETED ;
-
-	gSKI::IKernel* pKernel = m_pKernelSML->GetKernel() ;
 
 	pKernel->GetAgentManager()->ClearAllInterrupts();
 
