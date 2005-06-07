@@ -30,6 +30,7 @@
 %ignore sml::Kernel::UnregisterForSystemEvent(int);
 %ignore sml::Kernel::UnregisterForUpdateEvent(int);
 %ignore sml::Kernel::UnregisterForAgentEvent(int);
+%ignore sml::Kernel::UnregisterForUpdateEvent(int);
 %ignore sml::Kernel::RemoveRhsFunction(int);
 
 %pragma(java) jniclasscode=%{
