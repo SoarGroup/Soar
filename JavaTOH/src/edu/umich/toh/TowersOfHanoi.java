@@ -118,25 +118,15 @@ implements Runnable, PaintListener, GameListener, ControlListener {
 	{
 		if (eventID == sml.smlSystemEventId.smlEVENT_SYSTEM_START.swigValue())
 		{
-			if (!isRunning())
-			{
-				//System.out.println("Received a request to start the system running") ;				
-				dpy.asyncExec(new Runnable() { public void run() { startPressed() ; } } ) ;
-			}	
+			dpy.asyncExec(new Runnable() { public void run() { updateButtons(true) ; } } ) ;
 		}
 
 		if (eventID == sml.smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue())
 		{
-			// Need a guard on this one because we can get more than one of these messages
-			// at the end of a run depending on how the stop happens.
-			if (isRunning())
-			{
-				//System.out.println("Received a request to stop the system from running") ;			
-				dpy.asyncExec(new Runnable() { public void run() { stopPressed() ; } } ) ;
-			}
+			dpy.asyncExec(new Runnable() { public void run() { updateButtons(false) ; } } ) ;
 		}
 	}
-   
+    
     /**
      * Create the interface for Towers of Hanoi, based on the <code>Game</code>
      * object passed.
@@ -147,6 +137,9 @@ implements Runnable, PaintListener, GameListener, ControlListener {
         game = g;
         game.addGameListener(this);
         
+        // Only doing this now so we can set the buttons to a reasonable state when the
+        // user is running from the debugger.  If all buttons were enabled at all times
+        // we could skip this.
         game.registerForStartStopEvents(this, "systemEventHandler") ;
         
         dpy = new Display();
@@ -212,24 +205,20 @@ implements Runnable, PaintListener, GameListener, ControlListener {
         
         shell.setDefaultButton(startButton);
     }
-
-    /**
-     * Returns true if we're running and not already in the process of trying to stop a run.
-     */
-    public boolean isRunning()
+    
+    public void updateButtons(boolean running)
     {
-    	return (runner != null && !runner.isHalting()) ;
+    	boolean done = game.isAtGoalState() ;
+    	
+    	startButton.setEnabled(!running && !done) ;
+    	stopButton.setEnabled(running) ;
+    	resetButton.setEnabled(!running && !done) ;
+    	stepButton.setEnabled(!running && !done) ;
     }
     
     public void startPressed()
     {
-    	if (runner != null)
-    		return ;
-    	
-        stepButton.setEnabled(false);
-        startButton.setEnabled(false);
-        stopButton.setEnabled(true);
-        resetButton.setEnabled(false);
+    	updateButtons(true) ;
         
         runner = new ToHRunner();
         runner.start();
@@ -237,33 +226,17 @@ implements Runnable, PaintListener, GameListener, ControlListener {
 
     public void stepPressed()
     {
-        stepButton.setEnabled(false);
-        game.run(); // runs one decision cycle
-        game.fireStopped() ; 
-        if (game.isAtGoalState()) {
-            stepButton.setEnabled(false);
-            startButton.setEnabled(false);
-            resetButton.setEnabled(true);
-        }
-        else
-        {
-        	resetButton.setEnabled(true) ;
-            stepButton.setEnabled(true);
-        }
+    	updateButtons(true) ;
+
+    	game.step(); // runs one decision cycle
+        
+        updateButtons(false) ;
     }
 
     public void stopPressed()
     {
-    	if (runner == null)
-    		return ;
-    	
-        runner.halt();
-        runner = null;
-        
-        stepButton.setEnabled(true);
-        startButton.setEnabled(true);
-        stopButton.setEnabled(false);
-        resetButton.setEnabled(true);    	
+        game.stop();        
+        updateButtons(false) ;
     }
     
     public void resetPressed()
@@ -307,37 +280,11 @@ implements Runnable, PaintListener, GameListener, ControlListener {
          * or until <code>halt</code> is called.
          */
         public void run() {
-            while (!halt) {
-                game.run();
-                
-                if (game.isAtGoalState()) {
-                    dpy.syncExec(new Runnable() {
-                        public void run() {
-                            stopButton.setEnabled(false);
-                            resetButton.setEnabled(true);
-                        }
-                    });
-                    break;
-                }
-            }
-            
-            game.fireStopped() ;
-            halt = false;
+            game.run();
+
+            // Update the buttons for the end of the run
+            dpy.syncExec(new Runnable() { public void run() { updateButtons(false) ; } });            
         }
-        
-        /**
-         * Halts this <code>ToHRunner</code> thread if it is running.
-         */
-        public void halt() {
-            halt = true;
-        }
-        
-        public boolean isHalting()
-        {
-        	return halt ;
-        }
-        
-        private boolean halt = false;
     }
 
     public void paintControl(PaintEvent e) {

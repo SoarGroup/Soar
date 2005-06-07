@@ -62,6 +62,11 @@ public class Game implements Runnable {
             System.exit(1);
         }
 
+        // Register for the event we'll use to update the world
+        registerForUpdateWorldEvent() ;
+        
+        m_StopNow = false ;
+        
         agent = kernel.CreateAgent(AGENT_NAME);
         boolean load = agent.LoadProductions("towers-of-hanoi-SML.soar");
         if (!load || agent.HadError()) {
@@ -86,47 +91,8 @@ public class Game implements Runnable {
         agent.Commit();
     }
     
-    /**
-     * Notify any listeners that the system has now stopped running.
-     * 
-     * @see Tower
-     * @see Disk
-     */
-    public void fireStopped()
+    public void updateWorld()
     {
-    	kernel.FireStopSystemEvent() ;
-    }
-    
-    private void runAgent()
-    {
-    	// We're running the simulation until the user presses stop
-    	// so we don't want the run command to send a system stop at the end
-    	// (we'll do that manually once the user stops the simulation)
-    	kernel.SuppressSystemStop(true) ;
-    	
-    	// "Commands" is based on a changes to the output link
-    	// so before we do a run we clear the last set of changes.
-    	// (You can always read the output link directly and not use the
-    	//  "commands" model to determine what has changed between runs).
-    	agent.ClearOutputLinkChanges() ;
-    	
-    	// Run the agent for a decision, possibly creating output.
-    	agent.RunSelf(1) ;    	
-    }
-    
-    /**
-     * Runs one Soar decision cycle in which Soar chooses the next <code>Disk</code>
-     * to be moved. Listeners will be notified as to which <code>Tower</code> the
-     * <code>Disk</code> will be moved from and to.
-     * 
-     * @see Tower
-     * @see Disk
-     */
-    public void run()
-    {
-    	if (isAtGoalState())
-    		return ;
-    	
         // See if any commands were generated on the output link
         if (agent.Commands())
         {
@@ -149,17 +115,66 @@ public class Game implements Runnable {
 	        
 	        agent.Commit();
         
+	    	// "Commands" is based on a changes to the output link
+	    	// so before we do a run we clear the last set of changes.
+	    	// (You can always read the output link directly and not use the
+	    	//  "commands" model to determine what has changed between runs).
+	    	agent.ClearOutputLinkChanges() ;
+
 	        if (isAtGoalState())
 	            fireAtGoalState();
-        }
-        
-        // run, so we get a Command on the OuputLink
-        // We generally want to do this at the end of the loop so that if we break
-        // into the debugger, we can step in the debugger (without advancing the simulation)
-        // and any output created will be picked up when we next start the simulation.
-        // This doesn't make much difference in TOH because each decision creates output,
-        // but in an agent that reasoned more this would make a difference.
-        runAgent() ;
+        }    	
+    }
+    
+	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags)
+	{
+		// We have a problem at the moment with calling Stop() from arbitrary threads
+		// so for now we'll make sure to call it within an event callback.
+		if (m_StopNow)
+		{
+	    	m_StopNow = false ;	    	
+	    	kernel.StopAllAgents() ;
+		}
+		
+		updateWorld() ;
+	}
+
+    /**
+     * Runs one Soar decision cycle in which Soar chooses the next <code>Disk</code>
+     * to be moved. Listeners will be notified as to which <code>Tower</code> the
+     * <code>Disk</code> will be moved from and to.
+     * 
+     * @see Tower
+     * @see Disk
+     */
+    public void run()
+    {
+    	if (isAtGoalState())
+    		return ;
+    	
+    	m_StopNow = false ;
+
+    	// Start a run
+    	// (since this is single agent could use agent.RunSelfForever() instead, but this shows how to run multi-agent environments)
+    	kernel.RunAllAgentsForever() ;
+    }
+    
+    public void step()
+    {
+    	if (isAtGoalState())
+    		return ;
+
+    	// Run one decision
+    	kernel.RunAllAgents(1) ;
+    }
+    
+    public void stop()
+    {    	
+    	// We'd like to call StopSoar() directly from here but we're in a different
+    	// thread and right now this waits patiently for the runForever call to finish
+    	// before it executes...not really the right behavior.  So instead we use a flag and
+    	// issue StopSoar() in a callback.
+    	m_StopNow = true ;
     }
     
     /**
@@ -255,6 +270,11 @@ public class Game implements Runnable {
 			int stopCallback  = kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, listener, methodName, null) ;
     	}
     }
+    
+    public void registerForUpdateWorldEvent()
+    {
+    	int updateCallback = kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, "updateEventHandler", null) ;
+    }
 
     public void detachSoar() {
         kernel.DestroyAgent(agent);
@@ -310,6 +330,8 @@ public class Game implements Runnable {
     private int diskCount;                     // total number of disks
     private List towers = new ArrayList();     // towers, from left to right
     private List listeners = new LinkedList(); // GameListeners
+    
+    private boolean m_StopNow ;
     
     // soar stuff
     private Kernel kernel;
