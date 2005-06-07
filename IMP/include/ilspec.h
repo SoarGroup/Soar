@@ -48,7 +48,7 @@ typedef ilObjVector_t::iterator ilObjItr;
 
 //This container maps simulation data type names to the group
 //of working memory objects that define it
-typedef std::map<std::string, ilObjVector_t> typedObjectsMap_t;//TODO compare operator
+typedef std::map<std::string, ilObjVector_t> typedObjectsMap_t;//TODO compare operator //TODO consider making the map types references
 typedef typedObjectsMap_t::iterator typeMapItr_t;
 
 /************************************************************************

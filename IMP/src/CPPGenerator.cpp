@@ -158,7 +158,8 @@ void CPPGenerator::DoGenerateCreateInput(ilObjVector_t& objects, int depth)
 				GenerateStoreWME(newVarName, type);
 				break;
 			case ELEMENT_ID:
-cout << "\t\t\tI should be generating an ID for an object with type: " << objItr->GetSimulationClassName() << endl;
+cout << "\tI should be generating an ID for an object with type: " << objItr->GetSimulationClassName() << endl;
+cout << "\t\t and with start value: "	<< objItr->GetStartValue() << endl;
 				PrintTabs(depth + 1);
 
 				parent = objItr->GetParent();
@@ -257,7 +258,7 @@ void CPPGenerator::GenerateCleanupFunction(int indentDepth)
 
 	PrintTabs(indentDepth + 1) << k_AgentInstance << k_dot << k_GetKernel;
 	file << k_openParen << k_closeParen << k_arrow << k_DestroyAgent;
-	file << k_openParen << k_AgentInstance << k_closeParen << k_semi << endl;
+	file << k_openParen << k_andpersand << k_AgentInstance << k_closeParen << k_semi << endl;
 	PrintZeroArgFunction(k_Commit, indentDepth + 1, k_AgentInstanceDot);
 	file << endl;
 

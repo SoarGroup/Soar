@@ -111,7 +111,7 @@ public:
 	void MarkAsInspected() {m_beenInspected = true;}
 	
 	//TODO comment
-	void ReplaceInternalTokens(const std::string& token, std::string valueAsString);
+	void ReplaceInternalTokens(const std::string& token, std::string& valueAsString);
 private:
 
 	std::string				m_parentId;

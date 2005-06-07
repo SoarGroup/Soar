@@ -63,7 +63,7 @@ void InputLinkObject::PrintTypes(ostream& stream)
 	}
 }
 
-std::ostream& operator << (std::ostream& stream, InputLinkObject& obj)
+ostream& operator << (ostream& stream, InputLinkObject& obj)
 {
 	stream << "Insertion operator printing an input link object..." << endl;
 	stream << "\tParent: \t" << obj.m_parentId << endl;
@@ -112,7 +112,7 @@ void InputLinkObject::SetType(string& inValue)
 }
 
 
-void InputLinkObject::SetType(const std::string& inValue)
+void InputLinkObject::SetType(const string& inValue)
 {
 	m_curType = StringToType(inValue);
 }
@@ -151,7 +151,7 @@ void InputLinkObject::SetStartValue(string& inValue)
 	}
 }
 
-void InputLinkObject::SetUpdateValue(std::string& inValue)
+void InputLinkObject::SetUpdateValue(string& inValue)
 {
 	switch(m_curType)
 	{
@@ -204,8 +204,9 @@ string InputLinkObject::GetFrequencyAsString() const
 			break;
 	}
 }
-void InputLinkObject::ReplaceInternalTokens(const string& token, std::string valueAsString)
+void InputLinkObject::ReplaceInternalTokens(const string& token, string& valueAsString)
 {
+	assert(token != "");//this has GOT to be trouble brewing...
 	string::size_type pos =	m_updateValue.find(token);
 	if(pos != string.npos)
 	{
@@ -222,12 +223,7 @@ void InputLinkObject::ReplaceInternalTokens(const string& token, std::string val
 	if(pos != string.npos)
 	{
 		string modifiedValue = GetStartValue();
-		/*cout << "About to replace a start value's control variable reference with its string value..." << endl;
-		cout << "\tvariable: " << controlVariableName << endl;
-		cout << "\tvariable's value: " << counterAsString << endl;
-		cout << "\tunchanged update value is: " << oldStartValue << endl;*/
 		modifiedValue.replace(pos, token.size(), valueAsString);
-		//cout << "\tand now the new value is: " << oldStartValue << endl;
 		SetStartValue(modifiedValue);
 	}//if the star start value needs to be replaced
 }
@@ -249,7 +245,7 @@ eElementType StringToType(const string& source)
 		return ELEMENT_TYPE_TBD;
 	else
 	{
-		cout << "stringToType: bad type found: " << source << std::endl;
+		cout << "stringToType: bad type found: " << source << endl;
 		Pause();
 		exit(-1);
 	}

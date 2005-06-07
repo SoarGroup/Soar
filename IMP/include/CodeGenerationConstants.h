@@ -59,6 +59,7 @@ const std::string k_dQuote			= "\"";
 const std::string k_space				= " ";
 const std::string k_dot					= ".";
 const std::string k_arrow				= "->";
+const std::string k_andpersand	= "&";
 const std::string k_assign			= "=";
 
 const std::string k_ILRootToken = "ILRoot";
