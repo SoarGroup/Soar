@@ -276,8 +276,8 @@ proc Debugger::CreateDescMenu {} {
          {separator}
          {command "Lo&g Output to New File..." {} "" {} -command openLogFile}
          {command "Log Output to &Existing File..." {} "" {} -command appendLogFile}
-         {command "Logging O&ff" {} "" {} -command {tsiDisplayAndSendCommand {log -off}}}
-         {command "Log S&tatus" {} "" {} -command {tsiDisplayAndSendCommand {log -query}}}
+         {command "Logging O&ff" {} "" {} -command {tsiDisplayAndSendCommand {log --off}}}
+         {command "Log S&tatus" {} "" {} -command {tsiDisplayAndSendCommand {log --query}}}
          {separator}
          {command "E&xit" {} "Close Soar Agent Debugger" {} -command quitSoar}
       }
@@ -296,10 +296,10 @@ proc Debugger::CreateDescMenu {} {
          {separator}
          {command "&Clear Working Memory" {} "" {} -command {init-soar} }
          {cascad  "&Excise Productions"  {} export 0 {
-            {command "&All" {} "" {} -command {excise -all} }
-            {command "&Chunks" {} "" {} -command {excise -chunks} }
-            {command "&Task Productions" {} "" {} -command {excise -task} }
-            {command "&User Productions" {} "" {} -command {excise -user} }
+            {command "&All" {} "" {} -command {excise --all} }
+            {command "&Chunks" {} "" {} -command {excise --chunks} }
+            {command "&Task Productions" {} "" {} -command {excise --task} }
+            {command "&User Productions" {} "" {} -command {excise --user} }
          }}
          {separator}
          {cascad  "&Indifferent Selection Mode"  {} export 0 {
@@ -313,35 +313,35 @@ proc Debugger::CreateDescMenu {} {
          {command "Show Current &Watch Status" {} "" {} -command {tsiDisplayAndSendCommand watch} }
          {separator}
          {checkbutton "&Decisions" {all option} "" {}
-            -variable Debugger::watchValue(decisions)
-            -command  {resetWatch decisions}
+            -variable Debugger::watchValue(--decisions)
+            -command  {resetWatch --decisions}
          }
          {checkbutton "&Phases" {all option} "" {}
-            -variable Debugger::watchValue(phases) 
-            -command  {resetWatch phases}
+            -variable Debugger::watchValue(--phases) 
+            -command  {resetWatch --phases}
          }
-         {command "&All Productions" {} "" {} -command {tsiDisplayAndSendCommand {watch productions -on}} }
-         {command "&No Productions" {} "" {} -command {tsiDisplayAndSendCommand {watch productions -off}} }
+         {command "&All Productions" {} "" {} -command {tsiDisplayAndSendCommand {watch --productions }} }
+         {command "&No Productions" {} "" {} -command {tsiDisplayAndSendCommand {watch --productions remove}} }
          {checkbutton "3a. &User Productions" {all option} "" {}
-            -variable Debugger::watchValue(-user) 
-            -command  {resetWatch {-user} -print -noprint}
+            -variable Debugger::watchValue(--user) 
+            -command  {resetWatch {--user} --fullwmes --nowmes}
          }
          {checkbutton "3b. &Chunks" {all option} "" {}
-            -variable Debugger::watchValue(-chunks) 
-            -command  {resetWatch {-chunks} -print -noprint}
+            -variable Debugger::watchValue(--chunks) 
+            -command  {resetWatch {--chunks} --fullwmes --nowmes}
          }
          {checkbutton "3c. &Justifications" {all option} "" {}
-            -variable Debugger::watchValue(-justifications) 
-            -command  {resetWatch {-justifications} -print -noprint}
+            -variable Debugger::watchValue(--justifications) 
+            -command  {resetWatch {--justifications} --fullwmes --nowmes}
          }
 
          {checkbutton "4. W&MEs" {all option} "" {}
-            -variable Debugger::watchValue(wmes) 
-            -command  {resetWatch wmes}
+            -variable Debugger::watchValue(--wmes) 
+            -command  {resetWatch --wmes}
          }
          {checkbutton "5. P&references" {all option} "" {}
-            -variable Debugger::watchValue(preferences) 
-            -command  {resetWatch preferences}
+            -variable Debugger::watchValue(--preferences) 
+            -command  {resetWatch --preferences}
          }
          {separator}
          {command "N&othing" {} "" {} -command {set watchLevel(decisions) 0; set watchLevel(phases) 0; \
@@ -372,21 +372,17 @@ proc Debugger::CreateDescMenu {} {
             }
          }}
          {separator}
-         {checkbutton "A&liases" {all option} "" {}
-            -variable Debugger::watchValue(aliases) 
-            -command  {resetWatch aliases}
+         {checkbutton "&Indifferent-selection" {all option} "" {}
+            -variable Debugger::watchValue(--indifferent-selection) 
+            -command  {resetWatch --indifferent-selection}
          }
          {checkbutton "&Backtracing" {all option} "" {}
-            -variable Debugger::watchValue(backtracing) 
-            -command  {resetWatch backtracing}
-         }
-         {checkbutton "Produc&tion Loading" {all option} "" {}
-            -variable Debugger::watchValue(loading) 
-            -command  {resetWatch loading}
+            -variable Debugger::watchValue(--backtracing) 
+            -command  {resetWatch --backtracing}
          }
          {checkbutton "Learn Pr&int" {all option} "" {}
-            -variable Debugger::watchValue(learning) 
-            -command  {resetWatch learning -print -noprint}
+            -variable Debugger::watchValue(--learning) 
+            -command  {resetWatch --learning print noprint}
          }
       }
       "&View" all view 0 {
@@ -455,7 +451,7 @@ proc Debugger::CreateDescMenu {} {
          {separator}
          {cascad  "&Soar"  {} export 0 {
             {command "&Man Pages" {} "" {} -command {Debugger::OpenHelpFile ManPages} }
-            {command "&List All Commands" {} "" {} -command {tsiDisplayAndSendCommand {help -all}} }
+            {command "&List All Commands" {} "" {} -command {tsiDisplayAndSendCommand {help --all}} }
             {command "&Changes" {} "" {} -command {Debugger::OpenHelpFile Changes} }
             {command "L&icense" {} "" {} -command {Debugger::OpenHelpFile License} }
             {command "&Version" {} "" {} -command {tsiDisplayAndSendCommand version} }

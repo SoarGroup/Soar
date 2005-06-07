@@ -470,7 +470,7 @@ proc setPrintDepth {} {
 #
 
 proc quitSoar {} {
-   global tsiConfig sio_socketList sio_envSocketList _agent _kernel
+   global tsiConfig sio_socketList sio_envSocketList _agent _kernel localAgentPtrs
    
    if { [grab current] == "" } {   # fix for bugzilla bug 396
      if { ![tk_dialog .tsiQuit {Quit Soar} {Really quit from Soar?} \
@@ -484,6 +484,7 @@ proc quitSoar {} {
 	   #  still around)
 	   set result [$_kernel -delete];
 	   #don't leave bad pointers around
+	   if {[info exists localAgentPtrs]}  {unset localAgentPtrs};
 	   if {[info exists _agent]}  {unset _agent};
 	   if {[info exists _kernel]} {unset _kernel};
 	       
@@ -516,10 +517,6 @@ proc quitSoar {} {
  	   simulatorQuit ;  #this just closes files
        }
 
-       ###KJC  do we need an uplevel here or something?
-       ###     if next lines are typed at Console, they work fine, and no hanging procs or vars...
-       ### only applied when hit Cancel button 
-
        #give Tcl object ownership of underlying C++ object so when we delete
        #  the Tcl object they both get deleted
        set result [$_kernel -acquire];
@@ -527,6 +524,7 @@ proc quitSoar {} {
        #  still around)
        set result [$_kernel -delete];
        #don't leave bad pointers around
+       if {[info exists localAgentPtrs]}  {unset localAgentPtrs};
        if [info exists _agent]  {unset _agent};
        if [info exists _kernel] {unset _kernel};
 
@@ -941,11 +939,11 @@ proc addTSIMemoryMenu {w} {
   if {![info exists tsiSuppressMenus(memory,$menuSuppressionCount)]} {
      menu $w.menubar.mem.m.excise -tearoff 0
       $w.menubar.mem.m.excise add command -label {All productions} \
-                           -command {tsiDisplayAndSendCommand {excise -all}}
+                           -command {tsiDisplayAndSendCommand {excise --all}}
       $w.menubar.mem.m.excise add command -label {Chunks} \
-                     -command {tsiDisplayAndSendCommand {excise -chunks}}
+                     -command {tsiDisplayAndSendCommand {excise --chunks}}
       $w.menubar.mem.m.excise add command -label {Task productions} \
-                     -command {tsiDisplayAndSendCommand {excise -task}}
+                     -command {tsiDisplayAndSendCommand {excise --task}}
    }
   pack $w.menubar.mem -side left -padx 5
 }
@@ -981,22 +979,22 @@ proc addTSIWatchMenu {w} {
            -variable watchValue(phases) \
            -command {resetWatch phases}
   $w.menubar.watch.m add command -label {All Productions} \
-           -command {tsiDisplayAndSendCommand {watch productions --on}}
+           -command {tsiDisplayAndSendCommand {watch --productions }}
   $w.menubar.watch.m add command -label {No Productions} \
-           -command {tsiDisplayAndSendCommand {watch productions --off}}
+           -command {tsiDisplayAndSendCommand {watch --productions remove}}
   $w.menubar.watch.m add checkbutton -label {3a. User Productions} \
            -variable {watchValue(--user)} \
-           -command {resetWatch {--user} --print --noprint}
+           -command {resetWatch {--user} print noprint}
   $w.menubar.watch.m add checkbutton -label {3b. Chunks} \
            -variable {watchValue(--chunks)} \
-           -command {resetWatch {--chunks} --print -=noprint}
+           -command {resetWatch {--chunks} print noprint}
   $w.menubar.watch.m add checkbutton -label {3c. Justifications} \
-           -variable {watchValue(-justifications)} \
-           -command {resetWatch {-justifications} -print -noprint}
+           -variable {watchValue(--justifications)} \
+           -command {resetWatch {--justifications} print noprint}
   ### -default doesn't appear to work in soar 7.0.4
   #$w.menubar.watch.m add checkbutton -label {3b. Default Productions} \
-  #         -variable {watchValue(productions -default)} \
-  #         -command {resetWatch {productions -default} -print -noprint}
+  #         -variable {watchValue(productions --default)} \
+  #         -command {resetWatch {productions --default} print noprint}
   $w.menubar.watch.m add checkbutton -label {4. WMEs} \
            -variable watchValue(wmes) \
            -command {resetWatch wmes}
@@ -1023,18 +1021,12 @@ proc addTSIWatchMenu {w} {
   $w.menubar.watch.m add cascade -label {WME Detail} \
              -menu $w.menubar.watch.m.wme
   $w.menubar.watch.m add separator
-  $w.menubar.watch.m add checkbutton -label {Aliases} \
-           -variable watchValue(aliases) \
-           -command {resetWatch aliases}
-  $w.menubar.watch.m add checkbutton -label {Back Tracing} \
-           -variable watchValue(backtracing) \
-           -command {resetWatch backtracing}
-  $w.menubar.watch.m add checkbutton -label {Production Loading} \
-           -variable watchValue(loading) \
-           -command {resetWatch loading}
+  $w.menubar.watch.m add checkbutton -label {BackTracing} \
+           -variable watchValue(--backtracing) \
+           -command {resetWatch --backtracing}
   $w.menubar.watch.m add checkbutton -label {Learn print} \
            -variable watchValue(learning) \
-           -command {resetWatch learning --print --noprint}
+           -command {resetWatch --learning print noprint}
 
   # Subcascade for "WME Detail"
 
@@ -1148,7 +1140,6 @@ proc tsiDetermineWatchSettings {} {
    set Debugger::watchValue(learning) [regexp {Learning:[ ]+-print} $watchString]
    set Debugger::watchValue(backtracing) [regexp {Backtracing:[ ]+on} $watchString]
    set Debugger::watchValue(aliases) [regexp {Alias printing:[ ]+on} $watchString]
-   set Debugger::watchValue(loading) [regexp {Loading:[ ]+on} $watchString]
 
    if $tsiConfig(debug) {puts "\n>A> Determining Watch Settings done"} 
 

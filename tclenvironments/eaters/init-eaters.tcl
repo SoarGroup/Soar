@@ -57,7 +57,7 @@ if { ![string compare $mode client] } {
   source [file join [file join $eaters_dir simulator] et-controlpanel.tcl]
   source [file join [file join $eaters_dir simulator] eaters-configure.tcl]
 
-  tsi 1 -controlpanel makeETControlPanel -hideagentwin 1
+  tsi 1 -controlpanel makeETControlPanel -hideagentwin 0
 
   source [file join [file join $eaters_dir simulator] process.tcl]
   source [file join [file join $eaters_dir simulator] eaters-layout.tcl]

@@ -64,9 +64,9 @@ proc tsiListAgents {} {
 
 proc createNewAgent {name {filepath ""} {filename ""}} {
    global auto_path tsi_library soar_library tsiConfig \
-       _kernel localAgents tsiAgentInfo tsiSuppressMenus agentCount hideAgentWindow
+       localAgents tsiAgentInfo tsiSuppressMenus agentCount hideAgentWindow
 
-   global _agent
+   global _agent _kernel localAgentPtrs
    global smlEVENT_PRINT smlEVENT_AFTER_PRODUCTION_FIRED smlEVENT_AFTER_PHASE_EXECUTED 
    global smlEVENT_XML_TRACE_OUTPUT 
 
@@ -121,11 +121,13 @@ if {0} {
    $name eval [list package require tcl_sml_clientinterface]
 
    # ask the kernel to create an agent for the new interp 
-   if [catch "$name eval [list set _agent [$_kernel CreateAgent $name]]; puts [info level]"] {
+   if [catch "$name eval [list set _agent [$_kernel CreateAgent $name]]"] {
       error "Cannot create soar_agent named '$name'"
    }
 
-   set _agent [$name eval [list set _agent]]
+    set _agent [$name eval [list set _agent]]
+    set localAgentPtrs($name) [$name eval [list set _agent]]
+   
 
    ###KJC  each agent needs its SML pointers to access Soar
    $name alias soar_agent  $_agent
@@ -178,7 +180,7 @@ if {0} {
 }  ;### end createNewAgent
 
 proc tsiLoadAgentSource {name} {
-    global tsiAgentInfo _agent
+    global tsiAgentInfo 
     
     if { [string compare $tsiAgentInfo($name,sourceDir) ""] != 0 } {
 	set initialPath "[pwd]"

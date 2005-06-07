@@ -2,6 +2,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.2  2005/06/07 17:00:10  kcoulter
+### fixed DestroyAgents, other SML compat
+###
 ### Revision 1.1  2005/06/01 19:14:13  rmarinie
 ### initial commit of sml eaters
 ###
@@ -289,14 +292,26 @@ global tankList
 }
 
 proc destroyAgent {name} {
-    global localAgents
+    global localAgents localAgentPtrs
 
 	if {[info proc envDestroyAgent] == ""} {
 		error "Note that you should create a 'envDestroyAgent' function to clean up stuff in your environment."
 	} else {
 		envDestroyAgent $name
 	}
-
+      ##puts "this is the proc that destroys eaters"
+   
+      #delete the agent object 
+      set result [$name eval [list soar_kernel DestroyAgent $localAgentPtrs($name)]];
+      # Give Tcl object ownership of underlying C++ object so when we 
+      # delete the Tcl object, they both get deleted
+      set result [$name eval [list soar_agent -acquire]]
+      set result [$name eval [list soar_agent -delete]]
+      #don't leave bad pointers around
+      if [$name eval [list info exists soar_agent]]  {
+	  [$name eval [list unset soar_agent]]
+      }
+  
    if {[lsearch [tsiListAgents] $name] >= 0} {
       if [catch "destroy-interpreter $name"] {
          if [catch "interp delete $name"] {
@@ -313,6 +328,7 @@ proc destroyAgent {name} {
     .agentcreation.destroyAgent.m delete $name
    
     set localAgents [ldelete $localAgents $name]
+    unset localAgentPtrs($name)
 
 }
 

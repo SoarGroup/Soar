@@ -198,6 +198,8 @@ proc registerAgent {name} {
 }
 
 proc destroyAgent {name} {
+  global localAgentPtrs
+
    if {[lsearch [tsiListAgents] $name] >= 0} {
       #bind .tsw <Destroy> ""
       #destroy .tsw
@@ -206,7 +208,26 @@ proc destroyAgent {name} {
             error "Cannot delete agent '$name'!"
          }
       }
-   }
+       
+      ##puts "this is the proc that destroys agents"
+
+      ## this code isn't invoked by Eaters, so is untested
+      ## but something like this is required for SML...
+      if (0) {
+      #delete the agent object 
+      set result [$name eval [list soar_kernel DestroyAgent $localAgentPtrs($name)]];
+      # Give Tcl object ownership of underlying C++ object so when we 
+      # delete the Tcl object, they both get deleted
+      set result [$name eval [list soar_agent -acquire]]
+      set result [$name eval [list soar_agent -delete]]
+      #don't leave bad pointers around
+      if [$name eval [list info exists soar_agent]]  {
+	  [$name eval [list unset soar_agent]]
+      }
+      unset localAgentPtrs($name)
+      }
+      
+  }
    if [winfo exists .agents.agents.agent$name] {
       destroy .agents.agents.agent$name
    }
