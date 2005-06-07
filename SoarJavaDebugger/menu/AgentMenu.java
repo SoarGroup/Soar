@@ -82,7 +82,11 @@ public class AgentMenu
 		
 		// Make all menus match
 		if (!m_CreateNewOnAgent.getMenuItem().isDisposed())
-			m_CreateNewOnAgent.setChecked(isCreateNewWindowForNewAgent(), false) ;
+		{
+			final boolean check = isCreateNewWindowForNewAgent() ;
+			this.m_Frame.getDisplay().asyncExec(new Runnable() { public void run() { m_CreateNewOnAgent.setChecked(check, false) ; } } ) ;
+			
+		}
 	}
 
 	public boolean isCreateNewWindowForNewAgent()

@@ -610,11 +610,28 @@ public class MainFrame
 			}
 		});
 
-		// Maximize the window
-		// BUGBUG: Should save and restore the frame's size and position
-		// (not assume you want it maximized)
-		getShell().setMaximized(true);
-
+		// Set the initial window size
+		boolean max = this.getAppBooleanProperty("Window.Max", true) ;
+		
+		if (max)
+		{
+			// Maximize the window
+			getShell().setMaximized(true);
+		}
+		else
+		{
+			int width = this.getAppIntegerProperty("Window.width") ;
+			int height = this.getAppIntegerProperty("Window.height") ;
+			int xPos = this.getAppIntegerProperty("Window.x") ;
+			int yPos = this.getAppIntegerProperty("Window.y") ;
+			
+			if (width > 0 && width < Integer.MAX_VALUE && height > 0 && height < Integer.MAX_VALUE)
+				getShell().setSize(width, height) ;
+			
+			if (xPos >= 0 && xPos < Integer.MAX_VALUE && yPos > 0 && yPos != Integer.MAX_VALUE)
+				getShell().setLocation(xPos, yPos) ;
+		}
+		
 		// Try to load the user's font preference
 		String fontName = this.getAppStringProperty("TextFont.Name");
 		int fontSize = this.getAppIntegerProperty("TextFont.Size");
@@ -843,6 +860,19 @@ public class MainFrame
 
 	protected void RecordWindowPositions()
 	{
+		this.setAppProperty("Window.Max", getShell().getMaximized()) ;
+		
+		int width = getShell().getSize().x ;
+		int height = getShell().getSize().y ;
+		
+		this.setAppProperty("Window.width", width) ;
+		this.setAppProperty("Window.height", height) ;
+		
+		int xPos = getShell().getLocation().x ;
+		int yPos = getShell().getLocation().y ;
+		
+		this.setAppProperty("Window.x", xPos) ;
+		this.setAppProperty("Window.y", yPos) ;
 	}
 	/*
 	 * public void

@@ -152,19 +152,31 @@ public class SWTApplication
 		return null ;
 	}
 
+	// Command line options:
 	// -remote => use a remote connection (with default ip and port values)
 	// -ip xxx => use this IP value (implies remote connection)
 	// -port ppp => use this port (implies remote connection)
-	// Without any remote options we start a local kernel
 	// -agent <name> => select this agent as initial agent (for use with remote connection)
+	// Without any remote options we start a local kernel
+	//
+	// -maximize => start with maximized window
+	// -width <width> -height <height> => start with this window size
+	// -x <x> -y <y> => start with this window position
+	// (Providing width/height/x/y => not a maximized window)
 	public void startApp(String[] args) throws Exception
 	{
+		// The document manages the Soar process
+		m_Document = new Document() ;
+		
 		// Check for command line options
 		boolean remote = hasOption(args, "-remote") ;
 		String ip 	= getOptionValue(args, "-ip") ;
 		String port = getOptionValue(args, "-port") ;
 		String agentName = getOptionValue(args, "-agent") ;
 		
+		boolean maximize = hasOption(args, "-maximize") ;
+
+		// Remote args
 		if (ip != null || port != null)
 			remote = true ;
 		
@@ -183,6 +195,34 @@ public class SWTApplication
 				System.out.println(errorMsg) ;
 			}
 		}
+
+		// Window size args
+		// We'll override the existing app property values
+		if (maximize)
+			m_Document.getAppProperties().setAppProperty("Window.Max", maximize) ;
+
+		String[] options = new String[] { "-width", "-height", "-x", "-y" } ;
+		String[] props = new String[] { "Window.width", "Window.height", "Window.x", "Window.y" } ;
+		
+		for (int i = 0 ; i < options.length ; i++)
+		{
+			String value = getOptionValue(args, options[i]) ;
+			if (value != null)
+			{
+				try
+				{
+					int val = Integer.parseInt(value) ;
+					m_Document.getAppProperties().setAppProperty(props[i], val) ;
+					
+					// If provide any window information we'll start not-maximized
+					m_Document.getAppProperties().setAppProperty("Window.Max", false) ;
+				}
+				catch (NumberFormatException e)
+				{
+					System.out.println("Passed invalid value " + value + " for option " + options[i]) ;
+				}
+			}
+		}
 		
 		Display display = new Display() ;
 		Shell shell = new Shell(display) ;
@@ -192,10 +232,7 @@ public class SWTApplication
 		// Once the app is going, whatever the user is copying around is a reasonable
 		// thing to start from, but things from before are presumably unrelated.
 		//clearClipboard() ;
-		
-		// The document manages the Soar process
-		m_Document = new Document() ;
-		
+				
 		MainFrame frame = new MainFrame(shell, m_Document) ;
 		frame.initComponents();
 				
