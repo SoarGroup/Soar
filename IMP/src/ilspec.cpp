@@ -375,7 +375,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 					loopEnd = atoi(controlEndVal.c_str());
 		
 					unsatisfiedControlStructure = true;
-
+					resetLoopCounters = false;
 					//TODO (if doing nested control loops, add an entry to the control queue)
 
 					//since we just consumed the first line, read in the next one
@@ -727,7 +727,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 				//ilObjVector_t actualClassPattern = typedObjects[ilObj.GetAttributeName()];
 				assert(!pendingClassSpec.empty());
 				//replace instances of control variable name with value
-//cout << "loop bounds are: " << loopBegin << " and ending: "	<< loopEnd << endl;
+cout << "loop bounds are: " << loopBegin << " and ending: "	<< loopEnd << endl;
 				for(int counter = loopBegin; counter < loopEnd; counter += incrementAmount)
 				{
 //cout << "an iteration based on the control structure..." << endl;
@@ -758,11 +758,8 @@ for(ilObjItr tempItr = actualClassObjects.begin(); tempItr != actualClassObjects
 					typedObjects[actualClassObjects.front().GetSimulationClassName()] = thisTypesObjects;
 //thisTypesObjects = typedObjects[actualClassObjects.front().GetSimulationClassName()];
 //cout << "and now after the push... " << thisTypesObjects.size() << endl;
-				}						
+				}
 
-				/*for(int counter = loopBegin; counter < loopEnd; counter += incrementAmount)
-				{
-				}*/
 				pendingClassSpec.clear();	
 			}//if we have enough information to duplicate object
 			
