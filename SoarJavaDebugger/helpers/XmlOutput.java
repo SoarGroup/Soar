@@ -289,14 +289,22 @@ declared-support="[:i-support|:o-support]">
 		if (xml.IsTagBacktrace())
 		{
 			String name = xml.GetProductionName() ;
-
-			text.append(" ... backtrace through instantiation of ") ;
-			text.append(name) ;
-			text.append(kLineSeparator) ;
 			
-			if (xml.GetBacktraceAlreadyBacktraced() != null)
+			if (name != null)
+			{	
+				text.append(" ... backtrace through instantiation of ") ;
+				text.append(name) ;
+				text.append(kLineSeparator) ;
+			
+				if (xml.GetBacktraceAlreadyBacktraced() != null)
+				{
+					text.append("(We already backtraced through this instantiation.)") ;
+					text.append(kLineSeparator) ;
+				}
+			}
+			else
 			{
-				text.append("(We already backtraced through this instantiation.)") ;
+				text.append("...no trace, can't backtrace") ;
 				text.append(kLineSeparator) ;
 			}
 		} else if (xml.IsTagBacktraceResult())
