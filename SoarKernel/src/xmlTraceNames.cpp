@@ -158,6 +158,9 @@ char const* const xmlTraceNames::kTagVerbose    = "verbose";
 char const* const xmlTraceNames::kTagMessage    = "message";
 // Tag message has attribute kTypeString
 
+// marker for showing beginning of action-side
+char const* const xmlTraceNames::kTagActionSideMarker	= "actionsidemarker";
+
 // XML function types for XML output event
 char const* const xmlTraceNames::kFunctionBeginTag		= "begintag";
 char const* const xmlTraceNames::kFunctionEndTag		= "endtag";

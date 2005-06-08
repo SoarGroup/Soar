@@ -190,6 +190,9 @@ char const* const sml_Names::kTagVerbose    = "verbose";
 char const* const sml_Names::kTagMessage    = "message";
 // Tag message has attribute kTypeString
 
+// marker for showing beginning of action-side
+char const* const sml_Names::kTagActionSideMarker	= "actionsidemarker";
+
 // XML function types for XML output event
 char const* const sml_Names::kFunctionBeginTag		= "begintag";
 char const* const sml_Names::kFunctionEndTag		= "endtag";

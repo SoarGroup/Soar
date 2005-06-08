@@ -192,6 +192,9 @@ public:
     // support for printing random messages
     static char const* const kTagMessage;
 
+	// marker for showing beginning of action-side
+	static char const* const kTagActionSideMarker;
+
 	// end of tags for Trace output
 
 	// Types

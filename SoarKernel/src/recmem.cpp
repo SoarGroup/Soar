@@ -647,7 +647,10 @@ void create_instantiation (agent* thisAgent, production *prod,
    /* --- Before executing the RHS actions, tell the user that the -- */
    /* --- phase has changed to output by printing the arrow --- */
    if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
-      print (thisAgent, " -->\n");}
+      print (thisAgent, " -->\n");
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagActionSideMarker);
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagActionSideMarker);
+   }
 
    /* --- execute the RHS actions, collect the results --- */
    inst->preferences_generated = NIL;
@@ -846,6 +849,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
 
   /* --- retract any preferences that are in TM and aren't o-supported --- */
   pref = inst->preferences_generated;
+
   while (pref!=NIL) {
     next = pref->inst_next;
     if (pref->in_tm && (! pref->o_supported)) {
@@ -856,8 +860,11 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
 			print (thisAgent, "Retracting ");
             print_instantiation_with_wmes (thisAgent, inst, 
 				(wme_trace_type)thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM],1);
-            if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) 
+			if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
 				print (thisAgent, " -->");
+				gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagActionSideMarker);
+				gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagActionSideMarker);
+			}
 		}
         if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
           print (thisAgent, " ");

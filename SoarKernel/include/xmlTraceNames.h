@@ -156,8 +156,11 @@ public:
     // output for the verbose command
     static char const* const kTagVerbose;
 
-    // support for printing random messages
+    // support for printing arbitrary messages
     static char const* const kTagMessage;
+
+	// marker for showing beginning of action-side
+	static char const* const kTagActionSideMarker;
 
 	// end of tags for Trace output
 
