@@ -48,7 +48,7 @@ public abstract class AbstractAction
 	{
 		m_Checked = state ;
 		
-		if (m_MenuItem != null)
+		if (m_MenuItem != null && !m_MenuItem.isDisposed())
 			m_MenuItem.setSelection(state) ;
 
 		if (fireEvent) { actionPerformed(null) ; }
