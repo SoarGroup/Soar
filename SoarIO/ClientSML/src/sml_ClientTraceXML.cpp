@@ -113,6 +113,9 @@ char const* ClientTraceXML::GetPreferenceOSupported() const	{ return GetAttribut
 // For binary prefs the other object
 char const* ClientTraceXML::GetPreferenceReferent() const	{ return GetAttribute(sml_Names::kReferent) ; }
 
+// Marker between LHS matches and RHS results in trace
+bool ClientTraceXML::IsTagActionSideMarker() const			{ return IsTag(sml_Names::kTagActionSideMarker) ; }
+
 // Backtrace tags
 /*
 1) the backtrace for each of the results

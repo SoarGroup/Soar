@@ -213,11 +213,14 @@ public class ButtonView extends AbstractView
 	{
 		ButtonInfo info = getButtonInfo(button) ;
 		
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[4] ;
+		
+		String test = "Hello\nWorld" ;
 		
 		properties[0] = new PropertiesDialog.StringProperty("Label", info.m_Name) ;
 		properties[1] = new PropertiesDialog.StringProperty("Command to execute", info.m_Command) ;
 		properties[2] = new PropertiesDialog.StringProperty("Internal command to execute (very advanced)", info.m_InternalCommand) ;
+		properties[3] = new PropertiesDialog.MultiLineStringProperty("Test", test) ;
 		
 		PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 

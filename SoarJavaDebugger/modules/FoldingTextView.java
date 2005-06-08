@@ -662,7 +662,10 @@ public class FoldingTextView extends AbstractComboView
 				
 				if (output.length() != 0)
 					this.appendSubText(output, TraceType.kWmeChange) ;	
-
+			} else if (xmlTrace.IsTagActionSideMarker())
+			{
+				String output = "--> " ;
+				this.appendSubText(output, TraceType.kPreference) ;
 			} else if (xmlTrace.IsTagPreference())
 			{
 				String output = XmlOutput.getPreferenceProductionText(agent, xmlTrace) ;

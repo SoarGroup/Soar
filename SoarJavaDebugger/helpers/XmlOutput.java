@@ -544,7 +544,7 @@ declared-support="[:i-support|:o-support]">
 		
 	public static String getPreferenceProductionText(Agent agent, ClientTraceXML xmlTrace)
 	{
-		return "--> " + getPreferenceText(agent, xmlTrace) ;
+		return getPreferenceText(agent, xmlTrace) ;
 	}
 	
 	public static String getPreferenceText(Agent agent, ClientTraceXML xmlTrace)

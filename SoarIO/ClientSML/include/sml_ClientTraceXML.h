@@ -101,6 +101,9 @@ public:
 	char const* GetPreferenceOSupported() const	;
 	char const* GetPreferenceReferent() const ;
 
+	// Marker between LHS matches and RHS results in trace
+	bool IsTagActionSideMarker() const ;
+
 	// Backtracing
 	bool IsTagLocal() const	;
 	bool IsTagLocals() const ;
