@@ -10,6 +10,8 @@ import edu.umich.visualsoar.parser.ParseException;
 import edu.umich.visualsoar.parser.TokenMgrError;
 
 // 3P
+import sml.Agent;
+import sml.Kernel;
 import threepenny.*;
 
 import java.awt.*;
@@ -51,19 +53,12 @@ public class MainFrame extends JFrame
 	Preferences prefs = Preferences.getInstance();
     String lastWindowViewOperation = "none"; // can also be "tile" or "cascade"
 
-	// 3P
-	// Soar Tool Interface (STI) object, message time, and menu objects
-	private SoarToolJavaInterface soarToolJavaInterface = null;
-	private javax.swing.Timer soarToolPumpMessageTimer = null;
     private JMenu soarRuntimeMenu = null;
 	private JMenu soarRuntimeAgentMenu = null;
 	
 ////////////////////////////////////////
 // Access to data members
 ////////////////////////////////////////
-	// 3P
-	// Access to the STI object
-	public SoarToolJavaInterface	GetSoarToolJavaInterface()	{ return soarToolJavaInterface; }
 	
 // Dialogs
 	AboutDialog aboutDialog = new AboutDialog(this);
@@ -101,11 +96,30 @@ public class MainFrame extends JFrame
     Action replaceInProjectAction = new ReplaceInProjectAction();
 
 	// 3P
+    Kernel m_Kernel = null ;
+    String m_ActiveAgent = null ;
 	// Menu handlers for STI init, term, and "Send Raw Command"
 	Action soarRuntimeInitAction = new SoarRuntimeInitAction();
 	Action soarRuntimeTermAction = new SoarRuntimeTermAction();
 	Action soarRuntimeSendRawCommandAction = new SoarRuntimeSendRawCommandAction();
 
+	public Kernel getKernel()			{ return m_Kernel ; }
+	public String getActiveAgentName()  { return m_ActiveAgent ; }
+
+	public Agent getActiveAgent()
+	{
+		if (m_Kernel == null || m_ActiveAgent == null)
+			return null ;
+		return m_Kernel.GetAgent(m_ActiveAgent) ;
+	}
+
+	public void reportResult(String result)
+	{
+		Vector v = new Vector();
+		v.add(result);
+		setFeedbackListData(v);
+	}
+	
 ////////////////////////////////////////
 // Constructors
 ////////////////////////////////////////
@@ -162,9 +176,6 @@ public class MainFrame extends JFrame
         
 		if(templateFolder != null)
         d_templateManager.load(templateFolder);
-
-		// 3P Initialize the STI library
-		SoarRuntimeInit();
 	}
 
 ////////////////////////////////////////
@@ -555,8 +566,64 @@ public class MainFrame extends JFrame
         {
 			// Remove our existing items
 			soarRuntimeAgentMenu.removeAll();
+
+			// Check to see if we have a connection
+			if (m_Kernel == null)
+            {
+				// Add a "not connected" menu item
+				JMenuItem menuItem=new JMenuItem("<not connected>");
+				menuItem.setEnabled(false);
+				
+				soarRuntimeAgentMenu.add(menuItem);
+				return;
+			}
+			
+			// Get the connection names
+			int nAgents = m_Kernel.GetNumberAgents() ;
+
+			// If we don't have any connections then display the
+			// appropriate menu item.
+			if (nAgents == 0)
+			
+            {
+				// Add the "no agents" menu item
+				JMenuItem menuItem=new JMenuItem("<no agents>");
+				menuItem.setEnabled(false);
+				
+				soarRuntimeAgentMenu.add(menuItem);
+				return;
+			}
+			
+			// Add each name
+			int i;
+			for (i=0; i < nAgents; i++)
+			
+            {
+				// Get this agent's name
+				sml.Agent agent = m_Kernel.GetAgentByIndex(i) ;
+
+				if (agent == null)
+					continue ;
+				
+				String name = agent.GetAgentName() ;
+								
+				// Create the connection menu and add a listener to it
+				// which contains the connection index.
+				JRadioButtonMenuItem connectionMenuItem=new JRadioButtonMenuItem(name);
+
+				if (name.equals(m_ActiveAgent))
+					connectionMenuItem.setSelected(true) ;
+				
+				connectionMenuItem.addActionListener(
+	                    new AgentConnectionActionListener(connectionMenuItem, name));
+					
+				// Add the menu item
+				soarRuntimeAgentMenu.add(connectionMenuItem);	
+			}
+
 			
 			// Check to see if we have an STI connection
+			/*
 			SoarToolJavaInterface sti=GetSoarToolJavaInterface();
 			if (sti == null)
 			
@@ -606,9 +673,9 @@ public class MainFrame extends JFrame
 				// Add the menu item
 				soarRuntimeAgentMenu.add(connectionMenuItem);	
 			}
+			*/
 		}
 	}
-
 
     /**
      * Listener activated when the user clicks on an Agent in the Soar
@@ -624,10 +691,10 @@ public class MainFrame extends JFrame
 		
 		// Menu item that this action is for
 		// TODO: Is there a way to just retrieve this without storing it?
-		private JCheckBoxMenuItem	m_assocatedMenuItem;
+		private JRadioButtonMenuItem	m_assocatedMenuItem;
 		
 		// Constructor
-		public AgentConnectionActionListener(JCheckBoxMenuItem assocatedMenuItem, String sAgentConnectionName)
+		public AgentConnectionActionListener(JRadioButtonMenuItem assocatedMenuItem, String sAgentConnectionName)
 		
         {
 			m_sAgentConnectionName = sAgentConnectionName;
@@ -641,18 +708,7 @@ public class MainFrame extends JFrame
 		public void actionPerformed(ActionEvent e)
 		
         {
-			// Check to see if we have an STI connection
-			SoarToolJavaInterface sti=GetSoarToolJavaInterface();
-			if (sti == null)
-			
-            {
-				// TODO
-				// Assert or throw some kind of exception?
-				return;
-			}
-			
-			// Set the connection state
-			sti.EnableConnectionByName(m_sAgentConnectionName, m_assocatedMenuItem.getState() == true);
+			m_ActiveAgent  = m_sAgentConnectionName ;
 		}
 	}
 
@@ -1419,49 +1475,10 @@ public class MainFrame extends JFrame
 
 
     /**
-     * Message timer listener which is used to pump the STI messages
-     * in the background.  Incoming commands are received here and
-     * processeed through the ProcessSoarToolJavaCommand method.
-     * @author ThreePenny
-     */
-	class SoarRuntimePumpMessagesTimerListener implements ActionListener
-	
-    {
-		public void actionPerformed(ActionEvent evt)
-		
-        {
-			// Return if we don't have a tools interface
-			if (soarToolJavaInterface == null)
-			
-            {
-				return;
-			}
-			
-			// Pump our messages
-			soarToolJavaInterface.PumpMessages(true /* bProcessAllPendingMessages */);
-			
-			// Process all of our commands
-			while (soarToolJavaInterface.IsIncomingCommandAvailable() == true)
-			
-            {
-				// Get our command object
-				SoarToolJavaCommand commandObject=new SoarToolJavaCommand();
-				soarToolJavaInterface.GetIncomingCommand(commandObject);
-	
-				// Process the command
-				ProcessSoarToolJavaCommand(commandObject);
-						
-				// Pop the command
-				soarToolJavaInterface.PopIncomingCommand();
-			}
-		}
-	}
-
-
-    /**
      * Processes incoming STI commands from the runtime
      * @author ThreePenny
      */
+	/*
 	protected void ProcessSoarToolJavaCommand(SoarToolJavaCommand command)
 	
     {
@@ -1481,7 +1498,7 @@ public class MainFrame extends JFrame
 			}
 		}
 	}
-	
+	*/
 
     /**
      * Edits a production (in the project) based on its name.
@@ -1520,7 +1537,6 @@ public class MainFrame extends JFrame
 			if (!SoarRuntimeInit())
             {
 				// Unable to connect!
-				soarToolJavaInterface=null;
 				JOptionPane.showMessageDialog(MainFrame.this,
                                               "Unable to connect to the Soar Tool Interface (STI)",
                                               "STI Error",
@@ -1538,6 +1554,42 @@ public class MainFrame extends JFrame
 	boolean SoarRuntimeInit()
 	
     {
+		if (m_Kernel != null)
+		{
+			SoarRuntimeTerm() ;
+			m_Kernel = null ;
+		}
+		
+		m_Kernel = Kernel.CreateRemoteConnection(true, null) ;
+		
+		if (m_Kernel.HadError())
+		{
+			m_Kernel = null ;
+			
+			// Disable all related menu items
+			soarRuntimeTermAction.setEnabled(false);
+			soarRuntimeInitAction.setEnabled(false);
+			soarRuntimeSendRawCommandAction.setEnabled(false);
+			soarRuntimeAgentMenu.setEnabled(false);
+            soarRuntimeMenu.setEnabled(false);
+            
+			return false ;
+		}
+		
+		if (m_Kernel.GetNumberAgents() > 0)
+		{
+			// Select the first agent if there is any as our current agent
+			m_ActiveAgent = m_Kernel.GetAgentByIndex(0).GetAgentName() ;
+		}
+		
+		soarRuntimeTermAction.setEnabled(true);
+		soarRuntimeInitAction.setEnabled(false);
+		soarRuntimeSendRawCommandAction.setEnabled(true);
+		soarRuntimeAgentMenu.setEnabled(true);
+		
+		return true ;
+		
+		/*
 		// Stop any "pump messages" timers that are currently running
 		if (soarToolPumpMessageTimer != null)
 		
@@ -1574,7 +1626,7 @@ public class MainFrame extends JFrame
         }				
         
         //Initialize the interface object
-        if (soarToolJavaInterface.Init("VisualSoar", false /* bIsRuntime */) == true)
+        if (soarToolJavaInterface.Init("VisualSoar", false) == true)
 		{			
 			// Create our pump messages timer to be fired every 1000 ms
 			soarToolPumpMessageTimer = new javax.swing.Timer(1000, new SoarRuntimePumpMessagesTimerListener());
@@ -1595,6 +1647,7 @@ public class MainFrame extends JFrame
 			// Failure
 			return false;
 		}
+		*/
 	}
 
 
@@ -1606,6 +1659,15 @@ public class MainFrame extends JFrame
 	void SoarRuntimeTerm()
 	
     {
+		m_Kernel.delete() ;
+		
+		// Enable/Disable menu items
+		soarRuntimeTermAction.setEnabled(false);
+		soarRuntimeInitAction.setEnabled(true);
+		soarRuntimeSendRawCommandAction.setEnabled(false);
+		soarRuntimeAgentMenu.setEnabled(false);
+		
+		/*
 		// Stop any "pump messages" timers that are currently running
 		if (soarToolPumpMessageTimer != null)
 		
@@ -1627,6 +1689,7 @@ public class MainFrame extends JFrame
 		soarRuntimeInitAction.setEnabled(true);
 		soarRuntimeSendRawCommandAction.setEnabled(false);
 		soarRuntimeAgentMenu.setEnabled(false);
+		*/
 	}
 
 
@@ -1671,8 +1734,19 @@ public class MainFrame extends JFrame
 		public void actionPerformed(ActionEvent e)
 		
         {
-			SoarRuntimeSendRawCommandDialog theDialog = new SoarRuntimeSendRawCommandDialog(MainFrame.this, GetSoarToolJavaInterface());
-			theDialog.setVisible(true);
+			if (m_Kernel != null)
+			{
+				Agent agent = getActiveAgent() ;
+				
+				if (agent == null)
+				{
+					JOptionPane.showMessageDialog(MainFrame.getMainFrame(), "No agent is currently selected, so we can't send the command.\n\nPlease use the Connected Agent menu to select one.") ;
+					return ;
+				}
+				
+				SoarRuntimeSendRawCommandDialog theDialog = new SoarRuntimeSendRawCommandDialog(MainFrame.this, m_Kernel, getActiveAgent());
+				theDialog.setVisible(true);
+			}
 		}	
 	}
 		

@@ -4,6 +4,7 @@ package threepenny;
 // Class that contains the description and data of a command from the Soar Tools Interface
 // NOTE! Methods and or data in this class may be accessed from native code.  Be very
 //		 careful if you decide to change a method or piece of member data.
+/*
 public class SoarToolJavaCommand
 {
 	// Constants
@@ -47,3 +48,4 @@ public class SoarToolJavaCommand
 		m_integerParamArray=new int[6];
 	}
 }
+*/

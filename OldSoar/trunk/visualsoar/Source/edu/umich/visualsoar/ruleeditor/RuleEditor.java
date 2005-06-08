@@ -31,6 +31,8 @@ import edu.umich.visualsoar.parser.SoarParserConstants;
 import edu.umich.visualsoar.parser.TokenMgrError;
 
 // 3P
+import sml.Agent;
+import sml.Kernel;
 import threepenny.*;
 
 /**
@@ -2289,7 +2291,23 @@ public class RuleEditor extends CustomInternalFrame
                 return;
             }
 
+            // Get the agent
+        	Agent agent = MainFrame.getMainFrame().getActiveAgent() ;
+            if (agent == null)
+            {
+                JOptionPane.showMessageDialog(RuleEditor.this,"Not connected to an agent.","Error",JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Send the production to Soar
+            String sProductionName=GetProductionNameUnderCaret();
+            {
+            	String result = agent.ExecuteCommandLine(sProductionString, true) ;
+				MainFrame.getMainFrame().reportResult(result) ;
+            }
+            
             // Get the STI
+            /*
             SoarToolJavaInterface soarToolInterface=MainFrame.getMainFrame().GetSoarToolJavaInterface();
             if (soarToolInterface == null)
             {
@@ -2307,6 +2325,7 @@ public class RuleEditor extends CustomInternalFrame
                 soarToolInterface.SendProduction(sProductionName,
                                                  sProductionString);
             }
+            */
         }//actionPerformed
     }//class SendProductionToSoarAction
 
@@ -2321,7 +2340,34 @@ public class RuleEditor extends CustomInternalFrame
 
         public void actionPerformed(ActionEvent e)
         {
+            // Get the agent
+        	Agent agent = MainFrame.getMainFrame().getActiveAgent() ;
+            if (agent == null)
+            {
+                JOptionPane.showMessageDialog(RuleEditor.this,"Not connected to an agent.","Error",JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+
+            // Save the file
+            try
+            {
+                write();
+            }
+            catch(java.io.IOException ioe)
+            {
+                ioe.printStackTrace();
+            }
+            
+            // Call source in Soar
+            if (fileName != null)
+            {
+            	String result = agent.ExecuteCommandLine("source " + fileName, true) ;
+				MainFrame.getMainFrame().reportResult(result) ;
+            }
+            
             // Get the STI
+        	/*
             SoarToolJavaInterface soarToolInterface=MainFrame.getMainFrame().GetSoarToolJavaInterface();
             if (soarToolInterface == null)
             {
@@ -2344,6 +2390,7 @@ public class RuleEditor extends CustomInternalFrame
 
             // Send the file through the STI
             soarToolInterface.SendFile(fileName);
+            */
         }
     }//class SendFileToSoarAction
 
@@ -2358,22 +2405,20 @@ public class RuleEditor extends CustomInternalFrame
 
         public void actionPerformed(ActionEvent e)
         {
-            // Get the STI
-            SoarToolJavaInterface soarToolInterface=MainFrame.getMainFrame().GetSoarToolJavaInterface();
-            if (soarToolInterface == null)
+            // Get the agent
+        	Agent agent = MainFrame.getMainFrame().getActiveAgent() ;
+            if (agent == null)
             {
-                JOptionPane.showMessageDialog(RuleEditor.this,
-                                              "Soar Tool Interface is not initialized.",
-                                              "Error",
-                                              JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(RuleEditor.this,"Not connected to an agent.","Error",JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Call matches in Soar through STI
+            // Call matches in Soar
             String sProductionName=GetProductionNameUnderCaret();
             if (sProductionName != null)
             {
-                soarToolInterface.SendProductionMatches(sProductionName);
+            	String result = agent.ExecuteCommandLine("matches " + sProductionName, true) ;
+				MainFrame.getMainFrame().reportResult(result) ;
             }
         }
     }//SendMatchesToSoarAction
@@ -2389,7 +2434,22 @@ public class RuleEditor extends CustomInternalFrame
 
         public void actionPerformed(ActionEvent e)
         {
-            // Get the STI
+            // Get the agent
+        	Agent agent = MainFrame.getMainFrame().getActiveAgent() ;
+            if (agent == null)
+            {
+                JOptionPane.showMessageDialog(RuleEditor.this,"Not connected to an agent.","Error",JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Call excise in Soar
+            String sProductionName=GetProductionNameUnderCaret();
+            if (sProductionName != null)
+            {
+            	String result = agent.ExecuteCommandLine("excise " + sProductionName, true) ;
+				MainFrame.getMainFrame().reportResult(result) ;
+            }
+        	/*
             SoarToolJavaInterface soarToolInterface=MainFrame.getMainFrame().GetSoarToolJavaInterface();
             if (soarToolInterface == null)
             {
@@ -2403,6 +2463,7 @@ public class RuleEditor extends CustomInternalFrame
             {
                 soarToolInterface.SendExciseProduction(sProductionName);
             }
+            */
         }
     }//SendExciseProductionToSoarAction
 

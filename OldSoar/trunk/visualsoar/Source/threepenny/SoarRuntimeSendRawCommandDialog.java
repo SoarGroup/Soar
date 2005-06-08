@@ -6,6 +6,11 @@ import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.border.*;
 
+import edu.umich.visualsoar.MainFrame;
+
+import sml.Agent;
+import sml.Kernel;
+
 // 3P
 // This dialog is used to retrieve a "raw command" (text string) from
 // the user which is sent to the runtime via the STI.
@@ -16,13 +21,15 @@ public class SoarRuntimeSendRawCommandDialog extends JDialog {
 	 */
 	RawCommandPanel 			rawCommandPanel;
 	SendRawCommandButtonPanel 	buttonPanel;
-	SoarToolJavaInterface		soarToolInterface;
-			
-	public SoarRuntimeSendRawCommandDialog(final Frame owner, SoarToolJavaInterface sti) {
+	Kernel						m_Kernel ;
+	Agent						m_Agent ;
+
+	public SoarRuntimeSendRawCommandDialog(final Frame owner, Kernel kernel, Agent agent) {
 		super(owner, "Send Raw Command", false);
-		
-		// Store our STI object
-		soarToolInterface=sti;
+
+		// Store the kernel and agent
+		m_Kernel = kernel ;
+		m_Agent	 = agent ;
 		
 		rawCommandPanel = new RawCommandPanel();
 		buttonPanel = new SendRawCommandButtonPanel();
@@ -35,7 +42,7 @@ public class SoarRuntimeSendRawCommandDialog extends JDialog {
 		// specifies component as last one on the row
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		          
+		
 		contentPane.add(rawCommandPanel, c);
 		contentPane.add(buttonPanel, c);
 		pack();
@@ -56,13 +63,18 @@ public class SoarRuntimeSendRawCommandDialog extends JDialog {
 				
 		buttonPanel.sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// TODO: Add some error handling
-				soarToolInterface.SendRawCommand(rawCommandPanel.getFieldText());
+				// Execute the command and echo the results to the debugger (if its connected)
+				if (m_Agent != null)
+				{
+					String result = m_Agent.ExecuteCommandLine(rawCommandPanel.getFieldText(), true) ;
+					MainFrame.getMainFrame().reportResult(result) ;
+				}
+				
 				dispose();
 			}
 		});
 	}	
-	
+
 	// Panel that contains the text entry for the raw command
 	class RawCommandPanel extends JPanel
 	{
@@ -75,7 +87,7 @@ public class SoarRuntimeSendRawCommandDialog extends JDialog {
 			add(rawCommandField);
 
 			setBorder(new CompoundBorder(
-				BorderFactory.createTitledBorder("Find"),
+				BorderFactory.createTitledBorder("Command"),
 				BorderFactory.createEmptyBorder(10,10,10,10)));
 				
 			// So that enter can affirmatively dismiss the dialog	

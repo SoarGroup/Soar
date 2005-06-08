@@ -2,6 +2,7 @@ package threepenny;
 
 // 3P
 // Class that wraps the STI C library
+/*
 public class SoarToolJavaInterface
 {
 	// Load the native DLL
@@ -62,7 +63,7 @@ public class SoarToolJavaInterface
 			if (jniSTI_InitListenPort(GetSTIHandle()) == true)
 			{
 				// Establish a connection
-				if (jniSTI_EstablishConnections(GetSTIHandle(), "" /* IP */, true /* Stop on first not found */) == true)
+				if (jniSTI_EstablishConnections(GetSTIHandle(), "", true) == true)
 				{
 					return true;
 				}
@@ -78,7 +79,7 @@ public class SoarToolJavaInterface
 	public boolean Term()
 	{
 		// Pump any remaining messages
-		PumpMessages(true /* process all messages */);
+		PumpMessages(true);
 		
 		// Terminate the socket library
 		return jniSTI_TerminateInterfaceLibrary(GetSTIHandle());
@@ -200,3 +201,4 @@ public class SoarToolJavaInterface
 		return jniSTI_SendRawCommand(GetSTIHandle(), sCommandString);
 	}
 }
+*/
