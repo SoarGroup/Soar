@@ -1534,12 +1534,24 @@ public class MainFrame extends JFrame
 		
         {
 			// Initialize the soar runtime
-			if (!SoarRuntimeInit())
+			boolean ok = false ;
+			String message = "Error connecting to remote kernel" ;
+			
+			try
+			{
+				ok = SoarRuntimeInit() ;
+			}
+			catch (Throwable ex)
+			{
+				System.out.println(ex.toString()) ;
+				message = "Exception when initializing the SML library.  Check that sml.jar is on the path along with soar-library." ;
+			}
+
+			if (!ok)
             {
-				// Unable to connect!
 				JOptionPane.showMessageDialog(MainFrame.this,
-                                              "Unable to connect to the Soar Tool Interface (STI)",
-                                              "STI Error",
+											  message,
+                                              "SML Connection Error",
                                               JOptionPane.ERROR_MESSAGE);
 			}
 		}	
@@ -1549,9 +1561,10 @@ public class MainFrame extends JFrame
     /**
      * Initializes the Soar Tool Interface (STI) object and enabled/disables
      * menu items as needed.
+     * 
      * @author ThreePenny
      */
-	boolean SoarRuntimeInit()
+	boolean SoarRuntimeInit() throws Throwable
 	
     {
 		if (m_Kernel != null)
@@ -1560,6 +1573,7 @@ public class MainFrame extends JFrame
 			m_Kernel = null ;
 		}
 		
+		// This may throw if we can't find the SML libraries.
 		m_Kernel = Kernel.CreateRemoteConnection(true, null) ;
 		
 		if (m_Kernel.HadError())
@@ -1659,8 +1673,17 @@ public class MainFrame extends JFrame
 	void SoarRuntimeTerm()
 	
     {
-		m_Kernel.delete() ;
-		
+		try
+		{
+			if (m_Kernel != null)
+				m_Kernel.delete() ;
+		}
+		catch (Throwable ex)
+		{
+			// Trouble shutting down.
+			System.out.println(ex.toString()) ;
+		}
+
 		// Enable/Disable menu items
 		soarRuntimeTermAction.setEnabled(false);
 		soarRuntimeInitAction.setEnabled(true);
