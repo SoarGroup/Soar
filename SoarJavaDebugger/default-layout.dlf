@@ -10,12 +10,11 @@
             </view>
           </pane>
           <pane view="buttons3" tabAtTop="false" singleView="true" horiz="true">
-            <view ButtonCount="12" Class="modules.ButtonView" Name="buttons3">
+            <view ButtonCount="11" Class="modules.ButtonView" Name="buttons3">
               <Button Command="step" Name="Step"></Button>
               <Button Command="run" Name="Run"></Button>
               <Button InternalCommand="" Command="run 1 --phase" Name="Run 1 -p"></Button>
               <Button Command="stop-soar" Name="Stop"></Button>
-              <Button InternalCommand="" Command="start-system" Name="Start"></Button>
               <Button Command="matches" Name="Matches"></Button>
               <Button Command="print <s>" Name="Print <s>"></Button>
               <Button Command="print <ts>" Name="Print <ts>"></Button>
