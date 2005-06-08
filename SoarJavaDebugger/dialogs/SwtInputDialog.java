@@ -28,6 +28,7 @@ public class SwtInputDialog extends BaseDialog
 {
 	private String m_Result ;
 	private Text   m_EntryField ;
+	private boolean m_MultiLine ;
 	
 	/********************************************************************************************
 	* 
@@ -42,7 +43,7 @@ public class SwtInputDialog extends BaseDialog
 	public static String showDialog(Composite parent, String title, String prompt, String initialValue)
 	{
 		// Create the dialog window
-		SwtInputDialog dialog = new SwtInputDialog(parent, title, prompt, initialValue) ;
+		SwtInputDialog dialog = new SwtInputDialog(parent, title, prompt, initialValue, false) ;
 		
 		dialog.getDialog().setSize(400, 110) ;
 		dialog.centerDialog(parent) ;
@@ -55,15 +56,40 @@ public class SwtInputDialog extends BaseDialog
 
 	/********************************************************************************************
 	* 
+	* Create a simple dialog asking the user for input (a single string).
+	* 
+	* @param parent			The parent for this dialog (we'll center the dialog within this window)
+	* @param title			The title for the dialog
+	* @param prompt			The message used to prompt for input
+	* @param initialValue	The value to start with in the text field (pass "" for nothing)
+	* @return The value the user entered or null if they cancelled the dialog 
+	********************************************************************************************/
+	public static String showMultiLineDialog(Composite parent, String title, String prompt, String initialValue)
+	{
+		// Create the dialog window
+		SwtInputDialog dialog = new SwtInputDialog(parent, title, prompt, initialValue, true) ;
+		
+		dialog.getDialog().setSize(400, 200) ;
+		dialog.centerDialog(parent) ;
+		dialog.open() ;
+		
+		dialog.pumpMessages() ;
+		
+		return dialog.m_Result ;
+	}
+	
+	/********************************************************************************************
+	* 
 	* Create the dialog -- the constructor is private because we use a static method to build this.
 	* 
 	********************************************************************************************/
-	private SwtInputDialog(Composite parent, String title, String prompt, String initialValue)
+	private SwtInputDialog(Composite parent, String title, String prompt, String initialValue, boolean multiLine)
 	{
 		// Create a basic dialog with OK and Cancel buttons
 		super(parent, title, true) ;
 				
 		int margin = 10 ;
+		m_MultiLine = multiLine ;
 		
 		getOpenArea().setLayout(new FormLayout()) ;
 		
@@ -73,12 +99,13 @@ public class SwtInputDialog extends BaseDialog
 		promptLabel.setLayoutData(FormDataHelper.anchorTopLeft(margin)) ;
 		
 		// The field where the user types their response
-		Text entryField = new Text(getOpenArea(), SWT.NULL) ;
+		Text entryField = new Text(getOpenArea(), multiLine ? SWT.MULTI : SWT.NULL) ;
 		entryField.setText(initialValue) ;
 		entryField.setFocus() ;
 		
 		// Pressing return during text entry closes the dialog like pressing "ok".
-		entryField.addKeyListener(new KeyAdapter() { public void keyPressed(KeyEvent e) { if (e.character == '\r') endDialog(true) ; } } ) ;
+		if (!multiLine)
+			entryField.addKeyListener(new KeyAdapter() { public void keyPressed(KeyEvent e) { if (e.character == '\r') endDialog(true) ; } } ) ;
 		
 		m_EntryField = entryField ;
 

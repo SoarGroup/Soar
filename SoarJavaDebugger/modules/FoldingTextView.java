@@ -730,7 +730,7 @@ public class FoldingTextView extends AbstractComboView
 			else if (xmlTrace.IsTagBacktraceResult() || xmlTrace.IsTagLocals() ||
 					 xmlTrace.IsTagGroundedPotentials() || xmlTrace.IsTagUngroundedPotentials())
 			{
-				String output = XmlOutput.getBacktraceTopLevelText(agent, xmlTrace) ;
+				String output = XmlOutput.getBacktraceText(agent, xmlTrace, xmlTrace.GetTagName()) ;
 				
 				if (output.length() != 0)
 					this.appendSubText(output, TraceType.kFullLearning) ;

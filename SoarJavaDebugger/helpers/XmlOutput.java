@@ -14,6 +14,7 @@ package helpers;
 import modules.AbstractView;
 import sml.Agent;
 import sml.ClientTraceXML;
+import sml.sml_Names;
 
 /************************************************************************
  * 
@@ -281,228 +282,114 @@ declared-support="[:i-support|:o-support]">
 		</backtrace>
 	 */
 	
-	public static String getGroundsText(Agent agent, ClientTraceXML xml)
-	{
-		return "  -->Grounds:" ;
-	}
-
-	public static String getPotentialsText(Agent agent, ClientTraceXML xml)
-	{
-		return "  -->Potentials:" ;
-	}
-
-	public static String getLocalsText(Agent agent, ClientTraceXML xml)
-	{
-		return "  -->Locals:" ;
-	}
-
-	public static String getBacktraceText(Agent agent, ClientTraceXML xml)
+	public static String getBacktraceText(Agent agent, ClientTraceXML xml, String parentTagName)
 	{
 		StringBuffer text = new StringBuffer() ;
-		
-		String name = xml.GetProductionName() ;
 
-		text.append(" ... backtrace through instantiation of ") ;
-		text.append(name) ;
-		text.append(kLineSeparator) ;
-		
-		if (xml.GetBacktraceAlreadyBacktraced() != null)
+		if (xml.IsTagBacktrace())
 		{
-			text.append("(We already backtraced through this instantiation.)") ;
+			String name = xml.GetProductionName() ;
+
+			text.append(" ... backtrace through instantiation of ") ;
+			text.append(name) ;
 			text.append(kLineSeparator) ;
-			return text.toString() ;
-		}
-				
-		for (int i = 0 ; i < xml.GetNumberChildren() ; i++)
-		{
-			ClientTraceXML child = new ClientTraceXML() ;
-			xml.GetChild(child, i) ;
-
-			boolean grounds = child.IsTagGrounds() ;
-			boolean potentials = child.IsTagPotentials() ;
-			boolean locals = child.IsTagLocals() ;
-			if (grounds)
+			
+			if (xml.GetBacktraceAlreadyBacktraced() != null)
 			{
-				text.append(getGroundsText(agent, child)) ;
+				text.append("(We already backtraced through this instantiation.)") ;
 				text.append(kLineSeparator) ;
 			}
-			else if (potentials)
-			{
-				text.append(getPotentialsText(agent, child)) ;
-				text.append(kLineSeparator) ;				
-			}
-			else if (locals)
-			{
-				text.append(getLocalsText(agent, child)) ;
-				text.append(kLineSeparator) ;				
-			}
-			
-			if (grounds || potentials || locals)
-			{
-				for (int j = 0 ; j < child.GetNumberChildren() ; j++)
-				{
-					ClientTraceXML wme = new ClientTraceXML() ;
-					child.GetChild(wme, j) ;
-					
-					if (wme.IsTagWme())
-					{
-						String output = getWmeText(agent, wme) ;
-						text.append("     ") ;
-						text.append(output) ;
-						text.append(kLineSeparator) ;
-					}
-					
-					wme.delete() ;
-				}
-			} else if (child.IsTagNegated())
-			{
-				text.append("  -->Negated:") ;
-				
-				String output = getConditionsText(agent, child) ;
-				text.append(output) ;
-				text.append(kLineSeparator) ;
-			} else if (child.IsTagNots())
-			{
-				text.append("  -->Nots:") ;
-				text.append(kLineSeparator) ;
-				
-				for (int j = 0 ; j < child.GetNumberChildren() ; j++)
-				{
-					ClientTraceXML not = new ClientTraceXML() ;
-					child.GetChild(not, j) ;
-					
-					if (not.IsTagNot())
-					{
-						String symbol1 = not.GetBacktraceSymbol1() ;
-						String symbol2 = not.GetBacktraceSymbol2() ;
-						text.append("    ") ;
-						text.append(symbol1) ;
-						text.append(" <> ") ;
-						text.append(symbol2) ;
-					}
-					
-					not.delete() ;
-				}
-			}
-			
-			child.delete() ;
-		}
-		
-		return text.toString() ;
-	}
-	
-	public static String getBacktraceTopLevelText(Agent agent, ClientTraceXML xmlTrace)
-	{
-		StringBuffer text = new StringBuffer() ;
-		
-		if (xmlTrace.IsTagBacktraceResult() || xmlTrace.IsTagLocal())
+		} else if (xml.IsTagBacktraceResult())
 		{
-			boolean nextShouldBeBacktrace = false ;
-			int size = xmlTrace.GetNumberChildren() ;
-			
-			for (int i = 0 ; i < size ; i++)
-			{
-				ClientTraceXML child = new ClientTraceXML() ;
-				xmlTrace.GetChild(child, i) ;
-
-				boolean pref = child.IsTagPreference() ;
-				boolean wme  = child.IsTagWme() ;
-				boolean backtrace = child.IsTagBacktrace() ;
-
-				// If we should have a backtrace tag next and there is none report this.
-				if (nextShouldBeBacktrace && !backtrace)
-				{
-					text.append(" ...no trace, can't backtrace") ;
-					text.append(kLineSeparator) ;
-				}
-
-				if (pref)
-				{
-					text.append("For result preference ") ;
-					String output = getPreferenceText(agent, child) ;
-					text.append(output) ;
-					text.append(kLineSeparator) ;
-					nextShouldBeBacktrace = true ;
-				}
-				else if (wme)
-				{
-					text.append("For local ") ;
-					String output = getWmeText(agent, child) ;
-					text.append(output) ;
-					text.append(kLineSeparator) ;
-					nextShouldBeBacktrace = true ;
-				}
-				else if (backtrace)
-				{
-					String output = getBacktraceText(agent, child) ;
-					text.append(output) ;
-					nextShouldBeBacktrace = false ;
-				}
-				
-				// If we're at the last child and we should have a backtrace report there is none
-				if (nextShouldBeBacktrace && (i == size-1))
-				{
-					text.append(" ...no trace, can't backtrace") ;
-					text.append(kLineSeparator) ;
-				}
-				
-				child.delete() ;
-			}
-		}
-		else if (xmlTrace.IsTagLocals())
+			text.append("For result preference ") ;	
+		} else if (xml.IsTagLocal())
 		{
-			text.append("*** Tracing Locals ***") ;
+			text.append("For local ") ;
+		} else if (xml.IsTagProhibitPreference())
+		{
+			text.append("For prohibit preference ") ;
+		} else if (xml.IsTagGrounds())
+		{
+			text.append("  -->Grounds:") ;
+			text.append(kLineSeparator) ;			
+		} else if (xml.IsTagPotentials())
+		{
+			text.append("  -->Potentials:") ;
 			text.append(kLineSeparator) ;
-			for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
+		} else if (xml.IsTagLocals())
+		{
+			if (parentTagName.equals(sml_Names.getKTagBacktrace()))
 			{
-				ClientTraceXML child = new ClientTraceXML() ;
-				xmlTrace.GetChild(child, i) ;
-				
-				if (child.IsTagLocal())
-				{
-					String output = getBacktraceTopLevelText(agent, child) ;
-					text.append(output) ;
-				}
-				
-				child.delete() ;
+				text.append("  -->Locals:") ;
+				text.append(kLineSeparator) ;							
 			}
+			else
+			{
+				text.append("*** Tracing Locals ***") ;
+				text.append(kLineSeparator) ;
+			}
+		} else 	if (xml.IsTagWme())
+		{
+			String output = getWmeText(agent, xml) ;
+			text.append("     ") ;
+			text.append(output) ;
+			text.append(kLineSeparator) ;
 		}
-		else if (xmlTrace.IsTagGroundedPotentials())
+		else if (xml.IsTagNegated())
+		{
+			text.append("  -->Negated:") ;
+			
+			String output = getConditionsText(agent, xml) ;
+			text.append(output) ;
+			text.append(kLineSeparator) ;
+			
+			// BADBAD: The conditions currently consume the list of children
+			// so we have to return
+			return text.toString();
+		} else if (xml.IsTagNots())
+		{
+			text.append("  -->Nots:") ;
+			text.append(kLineSeparator) ;
+		} else if (xml.IsTagNot())
+		{
+			String symbol1 = xml.GetBacktraceSymbol1() ;
+			String symbol2 = xml.GetBacktraceSymbol2() ;
+			text.append("    ") ;
+			text.append(symbol1) ;
+			text.append(" <> ") ;
+			text.append(symbol2) ;
+		}
+		else if (xml.IsTagPreference())
+		{
+			String output = getPreferenceText(agent, xml) ;
+			text.append(output) ;
+			text.append(kLineSeparator) ;
+		} else if (xml.IsTagGroundedPotentials())
 		{
 			text.append("*** Tracing Grounded Potentials ***") ;
 			text.append(kLineSeparator) ;
-			
-			for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
-			{
-				ClientTraceXML child = new ClientTraceXML() ;
-				xmlTrace.GetChild(child, i) ;
-				
-				text.append("-->Moving to grounds: ") ;
-				String output = getWmeText(agent, child) ;
-				text.append(output) ;
-				text.append(kLineSeparator) ;
-				
-				child.delete() ;
-			}
-		}
-		else if (xmlTrace.IsTagUngroundedPotentials())
+		} else if (xml.IsTagUngroundedPotentials())
 		{
 			text.append("*** Tracing Ungrounded Potentials ***") ;
-			text.append(kLineSeparator) ;			
-
-			for (int i = 0 ; i < xmlTrace.GetNumberChildren() ; i++)
-			{
-				ClientTraceXML child = new ClientTraceXML() ;
-				xmlTrace.GetChild(child, i) ;
-				
-				if (child.IsTagUngroundedPotential())
-				{
-					String output = getBacktraceTopLevelText(agent, child) ;
-					text.append(output) ;
-				}
-				
-				child.delete() ;
-			}
+			text.append(kLineSeparator) ;
+		} else 
+		{
+			String tag = xml.GetTagName() ;
+			System.out.println("Failed to handle " + tag) ;
+		}
+		
+		int nChildren = xml.GetNumberChildren() ;
+		String tag = xml.GetTagName() ;
+		
+		for (int i = 0 ; i < nChildren ; i++)
+		{
+			ClientTraceXML child = new ClientTraceXML() ;
+			xml.GetChild(child, i) ;
+			
+			String subText = getBacktraceText(agent, child, tag) ;
+			text.append(subText) ;
+			
+			child.delete() ;
 		}
 		
 		return text.toString() ;

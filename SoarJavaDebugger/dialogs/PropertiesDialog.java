@@ -11,6 +11,8 @@
 ********************************************************************************************/
 package dialogs;
 
+import modules.AbstractView;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
@@ -159,6 +161,67 @@ public class PropertiesDialog extends BaseDialog
 		}
 	}
 	
+	public static class MultiLineStringProperty extends Property
+	{
+		protected String m_Value ;
+		protected Button m_Button ;
+		protected Text	 m_Text ;
+		
+		public MultiLineStringProperty(String propertyName, String initialValue)
+		{
+			super(propertyName) ;
+			m_Value = initialValue ;
+			
+			if (initialValue == null)
+			{
+				m_Value = "" ;
+			}
+		}
+		
+		public String getValue() { return m_Value ; }
+		
+		public String[] getLines()
+		{
+			String[] lines = m_Value.split(AbstractView.kLineSeparator) ;
+			return lines ;
+		}
+
+		public TableItem addTableItem(final Table table)
+		{
+			TableItem item = new TableItem (table, SWT.NULL);
+			item.setText (0, m_PropertyName);
+			
+			String[] lines = getLines() ;
+			String first = lines.length > 0 ? lines[0] + "..." : "..." ;
+			
+			// Create a text field for this property
+			// Can't have a multi-line edit control in a table (SWT limitation)
+			// so we'll use a button and pop up the edit control.
+			m_Button = new Button(table, SWT.PUSH) ;
+			m_Button.setText(first) ;
+						
+			m_Button.addSelectionListener(new SelectionAdapter() { public void widgetSelection(SelectionEvent e) {  
+				SwtInputDialog.showMultiLineDialog(table, "Enter button actions", "Actions", m_Value) ;
+				} } ) ;
+			
+			TableEditor editor = new TableEditor (table);
+			editor.grabHorizontal = true;
+			editor.setEditor(m_Button, item, 1);
+
+			return item ;
+		}
+
+		// Copy the value from the control to the property
+		// Return false if its not valid for some reason.
+		public boolean update()
+		{
+			String value = m_Text.getText() ;
+			m_Value = value ;
+				
+			return true ;
+		}
+	}
+
 	public static class BooleanProperty extends Property
 	{
 		protected boolean m_Value ;
