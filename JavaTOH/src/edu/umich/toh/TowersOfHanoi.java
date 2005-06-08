@@ -160,7 +160,7 @@ implements Runnable, PaintListener, GameListener, ControlListener {
         
         // add the buttons: Start, Stop, Step, Reset
         startButton = new Button(shell, SWT.PUSH);
-        startButton.setText("Start");
+        startButton.setText("Run");
         GridData bdata = new GridData();
         startButton.setLayoutData(bdata);
         
