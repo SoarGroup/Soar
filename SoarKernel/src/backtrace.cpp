@@ -489,8 +489,12 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level) {
       continue;
     }
 
-    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+	if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
       print_string (thisAgent, "...no trace, can't BT");
+	  // add an empty <backtrace> tag to make parsing XML easier
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagBacktrace);
+	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagBacktrace);
+	}
     /* --- for augmentations of the local goal id, either handle the
        "^quiescence t" test or discard it --- */
     if (referent_of_equality_test(cond->data.tests.id_test)->id.isa_goal) {
