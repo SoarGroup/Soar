@@ -831,6 +831,16 @@ bool KernelSML::HandleCommandLine(gSKI::IAgent* pAgent, char const* pCommandName
 	if (kDebugCommandLine)
 		PrintDebugFormat("Executing %s", pLine) ;
 
+	// If we're echoing, I think we should also echo the command line we are executing.
+	// (If this later turns out to be wrong in some cases we should add a further option to specify whether to do this).
+	if (echoResults)
+	{
+		AgentSML* pAgentSML = this->GetAgentSML(pAgent) ;
+
+		if (pAgentSML)
+			pAgentSML->FireEchoEvent(pLine) ;
+	}
+
 	// Make the call.
 	m_CommandLineInterface.SetRawOutput(rawOutput);
 	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgent, pLine, echoResults, pResponse) ;
