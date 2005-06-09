@@ -131,8 +131,9 @@
 		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-		Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(runFlags));
-		Tcl_EvalObjEx(tud->interp, tud->script, 0);
+		Tcl_AppendStringsToObj(script, " ", NULL);
+		Tcl_AppendObjToObj(script, Tcl_NewLongObj(runFlags));
+		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	
 	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
