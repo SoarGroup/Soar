@@ -16,6 +16,7 @@ import java.util.ListIterator;
 import sml.Agent;
 import sml.Identifier;
 import sml.Kernel;
+import sml.smlRunFlags;
 import sml.smlSystemEventId;
 
 
@@ -153,6 +154,19 @@ public class Game implements Runnable {
 	    	m_StopNow = false ;	    	
 	    	kernel.StopAllAgents() ;
 		}
+
+		/* Example of flags we may be passed.  In other situations
+		 * we might choose not to update the world in some of these situations
+		 * (e.g. for run --self unless also had --update).
+		if ((runFlags & smlRunFlags.sml_RUN_SELF.swigValue()) != 0)
+			System.out.println("Called with run --self") ;
+		if ((runFlags & smlRunFlags.sml_RUN_ALL.swigValue()) != 0)
+			System.out.println("Called with run") ;
+		if ((runFlags & smlRunFlags.sml_UPDATE_WORLD.swigValue()) != 0)
+			System.out.println("Called with run --update") ;
+		if ((runFlags & smlRunFlags.sml_DONT_UPDATE_WORLD.swigValue()) != 0)
+			System.out.println("Called with run --noupdate") ;
+		*/
 		
 		updateWorld() ;
 	}

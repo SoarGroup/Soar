@@ -109,14 +109,14 @@ public class Document
 		Module keep 	 = new Module("Keep Window", "Commands are entered at a prompt and the results are displayed in a scrolling text window.  Trace output from runs is not shown.", modules.KeepCommandView.class) ;
 		Module button 	 = new Module("Button Bar", "A collection of user-customizable buttons", modules.ButtonView.class) ;
 		Module edit 	 = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
-		Module fold 	 = new Module("Folding Trace Window", "Output from commands and trace output from runs is shown in a folding text window.", FoldingTextView.class) ;
+		Module fold 	 = new Module("Tree Trace Window", "Output from commands and trace output from runs is shown in a tree window.", FoldingTextView.class) ;
 
+		m_ModuleList.add(fold) ;
 		m_ModuleList.add(textTrace) ;
 		m_ModuleList.add(update) ;
 		m_ModuleList.add(keep) ;
 		m_ModuleList.add(button) ;
 		m_ModuleList.add(edit) ;
-		m_ModuleList.add(fold) ;
 	}
 		
 	/** Gives us a frame to work with */
