@@ -2,13 +2,10 @@ How to build the SoarJavaDebugger
 =================================
 
 March 2005	Douglas Pearson
-
-A) Windows Instructions
-***********************
+June 2005	Bob Marinier
 
 Eclipse
 =======
-
 1) Building in Eclipse (free Java IDE from www.eclipse.org).
    a) Create a new Eclipse project (File | New | Project)
    b) Select "Java Project"
@@ -21,30 +18,16 @@ Eclipse
 
 2) To create a JAR file from within Eclipse select the JARDescription.jardesc file, right click and "Open Jar Packager..." and follow the wizard (some values like the output JAR path may need updating).  Use the JarManifest file as the manifest.
 
+
 JDK directly
 ============
+1) Make sure javac and jar are in your path.
 
-1) Building using just the Java JDK.
-   From the SoarJavaDebugger folder (the current folder matters):
-   "javac.exe -classpath .;swt.jar debugger\Application.java"
-   (on Linux: -classpath .:swt.jar -- i.e. ":" instead of ";")
+2) Windows: run buildJavaDebugger.bat
+   Linux/OS x: run buildJavaDebugger.sh
 
-2) Creating JAR file:
-   From the SoarJavaDebugger folder:
-   "jar.exe cvfm ..\soar-library\SoarJavaDebugger.jar JarManifest ."
-   (watch the trailing ".")
+   The jar file should be created in soar-library.  You should run it from there.
 
-3) Run the JAR file with
-   "cd ..\soar-library" (to where the SoarJavaDebugger.jar is located)
-   "java.exe -jar SoarJavaDebugger.jar"
-   (Or double click the file in explorer)
 
-B) Linux/MacOS Instructions
-***************************
-
-The Windows approach should broadly work, but you'll need to supply your own copy of the SoarIO DLLs and swt.jar and DLLs (.so's) to replace the included ones which are all Windows versions.
-
-javac -classpath .:swt.jar debugger/Application.java
-jar cvfm ../SoarJavaDebugger.jar JarManifest .
 
 
