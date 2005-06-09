@@ -1584,10 +1584,9 @@ public class MainFrame extends JFrame
 			
 			// Disable all related menu items
 			soarRuntimeTermAction.setEnabled(false);
-			soarRuntimeInitAction.setEnabled(false);
+			soarRuntimeInitAction.setEnabled(true);	// Allow us to try again later
 			soarRuntimeSendRawCommandAction.setEnabled(false);
 			soarRuntimeAgentMenu.setEnabled(false);
-            soarRuntimeMenu.setEnabled(false);
             
 			return false ;
 		}
