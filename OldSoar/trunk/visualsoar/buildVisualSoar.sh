@@ -11,4 +11,4 @@ if ! javac -classpath .:${SOARLIB}/sml.jar -sourcepath Source Source\edu\umich\v
   echo "Build failed."
   exit 1;
 fi
-jar cfm VisualSoar.jar Source\meta-inf\manifest.mf -C Source .
+jar cfm ${SOARLIB}/VisualSoar.jar Source\meta-inf\manifest.mf -C Source .
