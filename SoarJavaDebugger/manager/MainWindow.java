@@ -228,7 +228,7 @@ public class MainWindow
 		      	firstData.bottom    = new FormAttachment(second);
 
 		      	// If we bind the button's top to the window it makes the top window very small and the buttons very large
-		      	// buttonData.top    = new FormAttachment(top.getWindow()) ;
+		      	//secondData.top    = new FormAttachment(first) ;
 		      	secondData.bottom = new FormAttachment(100) ;
 	    	}
 	    	else

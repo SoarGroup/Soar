@@ -12,6 +12,7 @@
 package modules;
 
 import general.ElementXML;
+import helpers.FormDataHelper;
 
 import manager.Pane;
 
@@ -213,14 +214,14 @@ public class ButtonView extends AbstractView
 	{
 		ButtonInfo info = getButtonInfo(button) ;
 		
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[4] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
 		
-		String test = "Hello\nWorld" ;
+		//String test = "Hello\nWorld" ;
 		
 		properties[0] = new PropertiesDialog.StringProperty("Label", info.m_Name) ;
 		properties[1] = new PropertiesDialog.StringProperty("Command to execute", info.m_Command) ;
 		properties[2] = new PropertiesDialog.StringProperty("Internal command to execute (very advanced)", info.m_InternalCommand) ;
-		properties[3] = new PropertiesDialog.MultiLineStringProperty("Test", test) ;
+		//properties[3] = new PropertiesDialog.MultiLineStringProperty("Test", test) ;
 		
 		PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 
@@ -378,6 +379,67 @@ public class ButtonView extends AbstractView
 	*************************************************************************/	
 	public boolean offerClearDisplay() { return false ; }	
 	
+	/********************************************************************************************
+	 * 
+	 * We want the button views to wrap to use a second line when needed.
+	 * However, there's a problem letting the parent composite know that it should give this
+	 * view the space it needs to wrap.
+	 * 
+	 * The solution I'm using is to compute how much size the view wants to have
+	 * and then manually setting the height/width value of the formData of the parent.
+	 * 
+	 * This is the only solution I've found so far.  It's quite likely there's a simple solution
+	 * to this but finding even this one took a while.
+	 * 
+	********************************************************************************************/
+	private void setPrefSize()
+	{
+		boolean horiz = getPane().isHorizontalOrientation() ;
+		
+		// See how much space our window currently has
+		int height = m_Container.getBounds().height ;
+		int width = m_Container.getBounds().width ;
+		
+		// Find out how much height/width we'd like to have by keeping one
+		// value fixed and requested the preference for the other.
+		Point size = horiz ? m_Container.computeSize(width, SWT.DEFAULT) : m_Container.computeSize(SWT.DEFAULT, height) ;
+		
+		int prefWidth = size.x ;
+		int prefHeight = size.y ;
+
+		// Check that our parent's parent is a composite used to glue two windows together.
+		// This will always be the case unless we change how the MainWindow manages pairs of windows.
+		Composite parent1 = m_Container.getParent();
+		Composite parent2 = parent1.getParent() ;
+		Object key = parent2.getData(manager.MainWindow.kAttachKey) ;
+		
+		if (key == null)
+		{
+			System.out.println("This button view doesn't appear to be hosted in an attached composite -- the window structure is off.") ;
+			return ;
+		}
+		
+		// Get the current form data object and make a copy of it.
+		FormData existingData = (FormData)parent1.getLayoutData() ;
+		if (existingData == null)
+			return ;
+		
+		FormData newData = FormDataHelper.copyFormData(existingData) ;
+		
+		// Explicitly set the height/width we want to see
+		// (which will allow enough space for the wrap to occur)
+		if (horiz)
+			newData.height = prefHeight ;
+		else
+			newData.width = prefWidth ;
+
+		// Store the new layout data
+		parent1.setLayoutData(newData) ;
+		
+		// Ask the parent to relay itself out to show the requested size
+		parent2.layout(true) ;
+	}
+	
 	protected void createButtonPanel(final Composite parent)
 	{
 		// Allow us to recreate the panel by calling this multiple times
@@ -390,11 +452,11 @@ public class ButtonView extends AbstractView
 		// The container lets us control the layout of the controls
 		// within this window
 		m_Container	   = new Composite(parent, SWT.NULL) ;
-
+		
 		if (getPane().isHorizontalOrientation())
 		{
 			RowLayout layout = new RowLayout(SWT.HORIZONTAL) ;
-//			layout.wrap = true ;
+			layout.wrap = true ;
 			layout.fill = true ;
 			m_Container.setLayout(layout) ;				
 		}
@@ -405,21 +467,12 @@ public class ButtonView extends AbstractView
 			m_Container.setLayout(layout) ;		
 		}
 		
-		// BUGBUG: Need to figure out how to make the button pane resize itself
-		// to be multiple rows when needed.
-		// These are some efforts that have not succeeded.
-		/*
 		m_Container.addControlListener(new ControlAdapter() {
 			public void controlResized(ControlEvent e)
 			{
-				int height = m_Container.getBounds().height ;
-				int width = m_Container.getBounds().width ;
-				Point size = m_Container.computeSize(SWT.DEFAULT, height) ;
-				m_Container.setSize(size) ;
-				getPane().getWindow().getParent().layout(true) ;
-			} }) ;
-			*/
-		
+				setPrefSize() ;
+		} }) ;
+				
 		// Create and add buttons for each button info structure
 		for (int i = 0 ; i < m_ButtonList.size() ; i++)
 		{

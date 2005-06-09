@@ -53,61 +53,21 @@ public class SWTApplication
 		Shell shell = new Shell (display);
 		shell.setLayout (new FillLayout ());
 		
-		Composite main = new Composite(shell, 0) ;
-		main.setLayout(new FormLayout()) ;
-		
-		final Text text = new Text(main, SWT.MULTI|SWT.V_SCROLL) ;
-		final Canvas canvas = new Canvas(main, 0) ;
-		
-		m_OffsetY = 0 ;
-		m_MinY = -1 ;
-		m_MaxY = -1 ;
+		// The container lets us control the layout of the controls
+		// within this window
+		Composite parent = shell ;
+		Composite container	   = new Composite(parent, SWT.NULL) ;
 
-		canvas.addPaintListener(new PaintListener() { public void paintControl(PaintEvent e)
+		RowLayout layout = new RowLayout(SWT.HORIZONTAL) ;
+//		layout.wrap = true ;
+		layout.fill = true ;
+		container.setLayout(layout) ;				
+
+		for (int i = 0 ; i < 10 ; i ++)
 		{
-			GC gc = e.gc;
-			gc.setBackground(display.getSystemColor(SWT.COLOR_GREEN)) ;
-			
-			Rectangle client = canvas.getClientArea ();
-			int height = text.getLineCount() * text.getLineHeight() ;
-			if (height < client.height)
-				height = client.height ;
-			
-			if (m_MinY == -1)
-			{
-				m_MinY = 0 ;
-				m_MaxY = client.height ;
-			}
-			
-			double prop = 1.0 - (m_OffsetY / (double)(m_MaxY - m_MinY)) ;
-			System.out.println(m_OffsetY) ;
-			gc.fillRectangle (0, 0, client.width, (int)(height * prop));
-			gc.setBackground(display.getSystemColor(SWT.COLOR_YELLOW)) ;
-			gc.fillRectangle (0, (int)(height * prop), client.width, client.height);
+			Button button = new Button(container, SWT.PUSH) ;
+			button.setText("Button " + Integer.toString(i)) ;
 		}
-		} ) ;
-		
-		text.getVerticalBar().addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e)
-		{
-			ScrollBar vBar = (ScrollBar)e.getSource() ;
-			int vSelection = vBar.getSelection ();
-			m_OffsetY = vSelection ;
-			m_MinY = vBar.getMinimum() ;
-			m_MaxY = vBar.getMaximum() ;
-//			int destY = -vSelection - m_OffsetY;
-			/*
-			Rectangle rect = image.getBounds ();
-			shell.scroll (0, destY, 0, 0, rect.width, rect.height, false);
-			*/
-//			Rectangle rect = canvas.getBounds() ;
-//			canvas.scroll(0, destY, 0, 0, rect.width, rect.height, false) ;
-			canvas.redraw() ;
-//			m_OffsetY = -vSelection;
-		}
-		}) ;
-		
-		text.setLayoutData(FormDataHelper.anchorRight(0)) ;
-		canvas.setLayoutData(FormDataHelper.anchorLeft(0)) ;
 		
 		shell.pack ();
 		shell.open ();
@@ -232,8 +192,8 @@ public class SWTApplication
 		// Once the app is going, whatever the user is copying around is a reasonable
 		// thing to start from, but things from before are presumably unrelated.
 		//clearClipboard() ;
-				
-		MainFrame frame = new MainFrame(shell, m_Document) ;
+
+		final MainFrame frame = new MainFrame(shell, m_Document) ;
 		frame.initComponents();
 				
 		// We wait until we have a frame up before starting the kernel
@@ -257,7 +217,7 @@ public class SWTApplication
 		}
 		
 		shell.open() ;
-
+		
 		// We delay any error message until after the shell has been opened
 		if (errorMsg != null)
 			MainFrame.ShowMessageBox(shell, "Error connecting to remote kernel", errorMsg, SWT.OK) ;
