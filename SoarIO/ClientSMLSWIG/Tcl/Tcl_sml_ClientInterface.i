@@ -123,6 +123,18 @@
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
 	}
 	
+	void TclRegisterForUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* kernel, sml::smlRunFlags runFlags)
+	{
+	    // we can ignore these parameters because they're already in the script (from when we registered it)
+		unused(kernel);
+		unused(id);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		Tcl_AppendObjToObj(tud->script, Tcl_NewLongObj(runFlags));
+		Tcl_EvalObjEx(tud->interp, tud->script, 0);
+	}
+	
 	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
 	    
@@ -187,6 +199,11 @@
     int RegisterForAgentEvent(Tcl_Interp* interp, sml::smlAgentEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
 	    return self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
+    };
+    
+    int RegisterForUpdateEvent(Tcl_Interp* interp, sml::smlUpdateEventId id, char* proc, char* userData, bool addToBack = true) {
+	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
+	    return self->RegisterForUpdateEvent(id, TclRegisterForUpdateEventCallback, (void*)tud, addToBack);
     };
     
     int AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
