@@ -648,7 +648,7 @@ static void UpdateEventHandler(sml::smlUpdateEventId id, void* pUserData, sml::K
 	}
 
 	// Make the method call.
-	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_KernelObject);
+	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_KernelObject, runFlags);
 }
 
 // This is the hand-written JNI method for registering a callback.

@@ -1022,7 +1022,7 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 
 	// Create the command line for the run command
 	std::string step = (stepSize == sml_DECISION) ? "-d" : (stepSize == sml_PHASE) ? "-p" : "-e" ;
-	std::string cmd = "run " + step + " " + ostr.str() ;
+	std::string cmd = "run --self " + step + " " + ostr.str() ;
 
 	// Execute the run command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str()) ;

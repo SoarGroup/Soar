@@ -35,6 +35,8 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 		{"output",		0, 0, 'o'},
 		{"phase",		0, 0, 'p'},
 		{"self",		0, 0, 's'},
+		{"update",		0, 0, 'u'},
+		{"noupdate",	0, 0, 'n'},
 		{0, 0, 0, 0}
 	};
 
@@ -63,6 +65,12 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 			case 's':
 				options.set(RUN_SELF);
 				break;
+			case 'u':
+				options.set(RUN_UPDATE) ;
+				break ;
+			case 'n':
+				options.set(RUN_NO_UPDATE) ;
+				break ;
 			case '?':
 				{
 					std::string detail;
@@ -133,12 +141,17 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	RunScheduler* pScheduler = m_pKernelSML->GetRunScheduler() ;
 	smlRunFlags runFlags = sml_NONE ;
 
+	if (options.test(RUN_UPDATE))
+		runFlags = sml_UPDATE_WORLD ;
+	else if (options.test(RUN_NO_UPDATE))
+		runFlags = sml_DONT_UPDATE_WORLD ;
+
 	//fprintf(stderr,"SML scheduler %d %d\n", runType, count) ;
 
 	if (options.test(RUN_SELF))
 	{
 		AgentSML* pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
-		runFlags = sml_RUN_SELF ;
+		runFlags = (smlRunFlags)(runFlags | sml_RUN_SELF) ;
 
 		// Schedule just this one agent to run
 		pScheduler->ScheduleAllAgentsToRun(false) ;
@@ -146,6 +159,8 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 	}
 	else
 	{
+		runFlags = (smlRunFlags)(runFlags | sml_RUN_ALL) ;
+
 		// Ask all agents to run
 		pScheduler->ScheduleAllAgentsToRun(true) ;
 	}

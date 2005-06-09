@@ -117,6 +117,8 @@ namespace cli {
 		RUN_OUTPUT,
 		RUN_PHASE,
 		RUN_SELF,
+		RUN_UPDATE,
+		RUN_NO_UPDATE,
 		RUN_NUM_OPTIONS, // must be last
 	};
 
