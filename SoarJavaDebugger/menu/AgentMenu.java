@@ -37,7 +37,8 @@ public class AgentMenu
 	private AbstractAction m_CreateAgentSame  = new AbstractAction("Create Agent - Same Window") 	{ public void actionPerformed(ActionEvent e) { createAgent(e, false) ; } } ;
 	private AbstractAction m_CreateAgentNew   = new AbstractAction("Create Agent - New Window") 	{ public void actionPerformed(ActionEvent e) { createAgent(e, true) ; } } ;
 	private AbstractAction m_CreateNewWindow  = new AbstractAction("Create Window - No New Agent") 	{ public void actionPerformed(ActionEvent e) { createWindow(e) ; } } ;
-	private AbstractAction m_CreateNewOnAgent  = new AbstractAction("Create New Window on Agent Creation") 	{ public void actionPerformed(ActionEvent e) { createNewOnAgent(e) ; } } ;
+	private AbstractAction m_CreateNewOnAgent = new AbstractAction("Create New Window on Agent Creation") 	{ public void actionPerformed(ActionEvent e) { createNewOnAgent(e) ; } } ;
+	private AbstractAction m_CloseOnDestroy   = new AbstractAction("Close Window on Agent Destruction") 	{ public void actionPerformed(ActionEvent e) { closeOnDestroy(e) ; } } ;
 	private AbstractAction m_DestroyAgent 	  = new AbstractAction("Destroy Agent") 				{ public void actionPerformed(ActionEvent e) { destroyAgent(e) ; } } ;
 
 	/** Create this menu */
@@ -63,6 +64,7 @@ public class AgentMenu
 		menu.add(m_CreateNewWindow) ;
 		menu.addSeparator() ;
 		menu.addCheckedItem(m_CreateNewOnAgent, isCreateNewWindowForNewAgent()) ;
+		menu.addCheckedItem(m_CloseOnDestroy, isCloseWindowWhenDestroyAgent()) ;
 		menu.addSeparator() ;
 		menu.add(m_DestroyAgent) ;
 
@@ -94,9 +96,22 @@ public class AgentMenu
 		return m_Document.getAppProperties().getAppBooleanProperty(Document.kCreateNewWindowProperty, true) ;
 	}
 	
+	public boolean isCloseWindowWhenDestroyAgent()
+	{
+		return m_Document.getAppProperties().getAppBooleanProperty(Document.kCloseOnDestroyProperty, true) ;		
+	}
+	
+	// BUGBUG: We should change the menu items on all of the menus to match this or
+	// better look up the state when the menu is popped down.  Right now turning this off on
+	// one menu won't change the menus on other frames.
 	private void createNewOnAgent(ActionEvent e)
 	{
 		m_Document.getAppProperties().setAppProperty(Document.kCreateNewWindowProperty, m_CreateNewOnAgent.isChecked()) ;
+	}
+
+	private void closeOnDestroy(ActionEvent e)
+	{
+		m_Document.getAppProperties().setAppProperty(Document.kCloseOnDestroyProperty, m_CloseOnDestroy.isChecked()) ;
 	}
 
 	private void selectAgent(ActionEvent e)

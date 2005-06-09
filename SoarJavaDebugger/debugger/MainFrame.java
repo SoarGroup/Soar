@@ -189,8 +189,24 @@ public class MainFrame
 				// If we're removing the current focus agent then
 				// set the focus to null for this window.
 				if (e.isAgentRemoved() && Document.isSameAgent(e.getAgent(), m_AgentFocus))
-					setAgentFocus(null);
+				{
+					// If this agent is being closed down then decide if we should
+					// destroy the window or not.
+					boolean destroyOnClose = m_AgentMenu.isCloseWindowWhenDestroyAgent() ;
 
+					if (destroyOnClose)
+					{
+						// We need to switch out of this thread because we're in a handler for
+						// the before_agent_destroyed() event and calling close() should shutdown the
+						// kernel if this is the last window.  So we thread switch.
+						getDisplay().asyncExec(new Runnable() { public void run() { close() ; } }) ;
+						return ;
+					}
+
+					// If we don't destroy the window we need to set the current agent to being nothing
+					setAgentFocus(null);
+				}
+				
 				updateMenus();
 			};
 		};

@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Shell;
 public class Document
 {
 	public static final String kCreateNewWindowProperty = "Agent.CreateNewWindow" ;
+	public static final String kCloseOnDestroyProperty  = "Agent.CloseOnDestroy" ;
 	
 	/** This version is used to name the settings files uniquely, so there's no collisions if you use an older debugger.  Should be bumped with every release */
 	public static final String kVersion = "8_6_1" ;
