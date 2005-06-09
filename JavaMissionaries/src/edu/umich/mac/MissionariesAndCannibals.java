@@ -38,7 +38,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     private Image bufImg;
     private GC bufGC;
     
-    private Button startButton;
+    private Button runButton;
     private Button stopButton;
     private Button stepButton;
     private Button resetButton;
@@ -119,9 +119,9 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         bufGC = new GC(bufImg);
         
         // create the button controls
-        startButton = new Button(shell, SWT.PUSH);
-        startButton.setText("Start");
-        startButton.setBounds(2, 482, 78, 32);
+        runButton = new Button(shell, SWT.PUSH);
+        runButton.setText("Run");
+        runButton.setBounds(2, 482, 78, 32);
         stopButton = new Button(shell, SWT.PUSH);
         stopButton.setText("Stop");
         stopButton.setEnabled(false);
@@ -135,7 +135,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         resetButton.setBounds(221, 482, 78, 32);
         
         // add actions to all of the buttons
-        startButton.addSelectionListener(new SelectionAdapter() {
+        runButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
                 startPressed();
             }
@@ -156,7 +156,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
             }
         });
         
-        shell.setDefaultButton(startButton);
+        shell.setDefaultButton(runButton);
     }
 
     /**
@@ -177,7 +177,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     
     
     private void startPressed() {
-        startButton.setEnabled(false);
+        runButton.setEnabled(false);
         stopButton.setEnabled(true);
         stepButton.setEnabled(false);
         resetButton.setEnabled(false);
@@ -192,7 +192,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         
         me.stopSystem();
         
-        startButton.setEnabled(!me.isAtGoalState());
+        runButton.setEnabled(!me.isAtGoalState());
         stopButton.setEnabled(false);
         stepButton.setEnabled(!me.isAtGoalState());
         resetButton.setEnabled(true);
@@ -210,7 +210,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
             me.stopSystem();
         me.reset();
         
-        startButton.setEnabled(true);
+        runButton.setEnabled(true);
         stepButton.setEnabled(true);
         resetButton.setEnabled(false);
     }

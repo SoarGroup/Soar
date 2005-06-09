@@ -16,6 +16,7 @@ import sml.IntElement;
 import sml.Kernel;
 import sml.WMElement;
 import sml.smlSystemEventId;
+import sml.smlUpdateEventId;
 
 /**
  * Creates a representation of the problem space for the Missionaries &
@@ -67,6 +68,8 @@ public class MacEnvironment implements Runnable {
                 this, "fireSystemStarted", null);
         kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP,
                 this, "fireSystemStopped", null);
+        kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES,
+                this, "updateWorldEvent", null);
         
         leftBank = new RiverBank(agent, "left", 3, 3, 1);
         rightBank = new RiverBank(agent, "right", 0, 0, 0);
@@ -75,16 +78,7 @@ public class MacEnvironment implements Runnable {
         rightBank.setOppositeBank(leftBank);
         
         agent.Commit();
-        
-        // TODO make a debug flag turn this on
-//        agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this,
-//                "printEventHandler", null);
     }
-    
-//    private void printEventHandler(int eventID, Object data,
-//            Agent agent, String message) {
-//        System.out.print(message);
-//    }
     
     /**
      * Starts a thread that runs Soar continuously until the goal state has been
@@ -130,6 +124,42 @@ public class MacEnvironment implements Runnable {
         if (isAtGoalState())
             return;
         
+        kernel.RunAllAgents(1);
+        updateWorld();
+    }
+    
+    /**
+     * Resets the environment to its initial state, with 3 missionaries,
+     * 3 cannibals, and a boat on the left bank. Also re-initializes Soar.
+     */
+    public void reset() {
+        int missionaries = rightBank.getMissionaryCount();
+        int cannibals = rightBank.getCannibalCount();
+        int boat = rightBank.getBoatCount();
+        
+        leftBank.setCounts(3, 3, 1);
+        rightBank.setCounts(0, 0, 0);
+        fireBoatMoved(rightBank, missionaries, cannibals, boat);
+        
+        agent.InitSoar();
+    }
+    
+    /**
+     * Main loop for the run thread.
+     */
+    public void run() {
+        kernel.RunAllAgentsForever();
+    }
+
+    /**
+     * Update the state of the environment.
+     * 
+     * This involves:
+     * a) Collecting any output the agent has sent since the last update
+     * b) Changing the world state
+     * c) Sending new input to the agent
+     */
+    public void updateWorld() {
         if (agent.Commands()) {
             for (int i = 0; i < agent.GetNumberCommands(); ++i) {
                 Identifier cmd = agent.GetCommand(i);
@@ -161,7 +191,6 @@ public class MacEnvironment implements Runnable {
                 fromBank.modifyCounts(-missionaries, -cannibals, -boats);
                 toBank.modifyCounts(missionaries, cannibals, boats);
                 cmd.AddStatusComplete();
-                agent.Commit();
                 fireBoatMoved(fromBank, missionaries, cannibals, boats);
                 
                 if (isAtGoalState())
@@ -169,43 +198,24 @@ public class MacEnvironment implements Runnable {
             }
         }
         
-        // FIXME with this configuration, step does nothing for the first two
-        // calls: the first simply does initialize-mac, and the second causes
-        // output, but the environment does not pick it up until the next call
-        // do we want to fix this???
-        
-        // recommended simulation commands from the SML Quick Start
-        // modified SuppressSystemStop call: should only suppress system stop
-        // if we are running (i.e. runThread != null)
-        kernel.SuppressSystemStop(runThread != null);
+        agent.Commit();
         agent.ClearOutputLinkChanges();
-        agent.RunSelf(1);
     }
     
     /**
-     * Resets the environment to its initial state, with 3 missionaries,
-     * 3 cannibals, and a boat on the left bank. Also re-initializes Soar.
+     * This method is called when the "after_all_output_phases" event fires, at
+     * which point we update the world
      */
-    public void reset() {
-        int missionaries = rightBank.getMissionaryCount();
-        int cannibals = rightBank.getCannibalCount();
-        int boat = rightBank.getBoatCount();
+    public void updateWorldEvent(int eventID, Object data, Kernel kernel,
+            int runFlags)
+    {
+        // We have a problem at the moment with calling Stop() from arbitrary
+        // threads so for now we'll make sure to call it within an event
+        // callback.
+        if (runThread == null)
+            kernel.StopAllAgents();
         
-        leftBank.setCounts(3, 3, 1);
-        rightBank.setCounts(0, 0, 0);
-        fireBoatMoved(rightBank, missionaries, cannibals, boat);
-        
-        agent.InitSoar();
-    }
-    
-    /**
-     * Main loop for the run thread. Calls <code>step</code> repeatedly until
-     * either the goal state is reached or someone kills the thread.
-     */
-    public void run() {
-        while (Thread.currentThread() == runThread && !isAtGoalState())
-            step();
-        kernel.FireStopSystemEvent();
+        updateWorld() ;
     }
     
     /**
