@@ -62,6 +62,10 @@ proc StructuredTraceCallback {id userData agent pXML} {
 	puts "structured data: [$pXML GenerateXMLString 1]"
 }
 
+proc UpdateEventCallback {id userData kernel runFlags} {
+	puts "update event fired with flags $runFlags"
+}
+
 #create an embedded kernel running in a new thread (so we don't have to poll for messages)
 set kernel [Kernel_CreateKernelInNewThread SoarKernelSML]
 
@@ -70,6 +74,7 @@ set agentCallbackId1 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINI
 set agentCallbackId2 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback ""]
 set systemCallbackId [$kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
 set rhsCallbackId [$kernel AddRhsFunction RhsFunctionTest ""]
+set updateCallbackId [$kernel RegisterForUpdateEvent $smlEVENT_AFTER_ALL_OUTPUT_PHASES UpdateEventCallback ""]
 
 #create an agent named Soar1
 set agent [$kernel CreateAgent Soar1]
@@ -90,7 +95,10 @@ $agent RunSelf 2 $sml_ELABORATION
 $agent UnregisterForProductionEvent $productionCallbackId
 $agent UnregisterForRunEvent $runCallbackId
 
-$agent RunSelf 3 $sml_DECISION
+$kernel RunAllAgents 3
+#$agent RunSelf 3 $sml_DECISION
+
+$kernel UnregisterForUpdateEvent $updateCallbackId
 
 puts ""
 
