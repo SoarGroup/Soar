@@ -22,6 +22,7 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.text.*;
 import java.io.*;
+
 import javax.swing.undo.*;
 import javax.swing.event.*;
 import javax.swing.border.TitledBorder;
@@ -1455,7 +1456,8 @@ public class MainFrame extends JFrame
 		
 		public void actionPerformed(ActionEvent e) 
         {
-            File f = new File("./docs/KeyBindings.txt");
+            //File f = new File("./docs/KeyBindings.txt");
+			File f = new File(Preferences.getVisualSoarFolder() + File.separator + "docs" + File.separator + "KeyBindings.txt") ;
             if (f.exists())
             {
                 OpenFile(f);

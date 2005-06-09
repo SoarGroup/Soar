@@ -25,7 +25,12 @@ public class Preferences
     private boolean sharedProjectEnabled = false;
     private String userName = "User";
 
-
+    public static String getVisualSoarFolder()
+    {
+    	File folder = new File(System.getProperty("user.dir") + File.separator + ".." + File.separator + "visualsoar") ;
+    	return folder.toString() ;
+    }
+    
     private Preferences()
     {
 
@@ -35,7 +40,7 @@ public class Preferences
 
         StreamTokenizer     stok;
         
-        prefFile = new File(System.getProperty("user.dir") 
+        prefFile = new File(getVisualSoarFolder() 
                             + File.separator + "VSPreferences.txt");
         
         if (! prefFile.exists())
@@ -419,7 +424,7 @@ public class Preferences
     
     File getDefaultTemplateFolder()
     {
-        File temp = new File(System.getProperty("user.dir") 
+        File temp = new File(getVisualSoarFolder() 
                              + File.separator + "templates");
                               
         return temp;    
@@ -427,7 +432,7 @@ public class Preferences
     
     File getDefaultOpenDirectory()
     {
-        File temp = new File(System.getProperty("user.dir"));
+        File temp = new File(getVisualSoarFolder());
         return temp;
     }
     
