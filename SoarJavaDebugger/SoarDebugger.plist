@@ -23,11 +23,11 @@
 	<key>Java</key>
 	<dict>
 		<key>ClassPath</key>
-		<string>/Applications/Soar/swt/swt-carbon.jar:/Applications/Soar/swt/swt-pi-carbon.jar:/Applications/Soar/sml.jar:$JAVAROOT/SoarJavaDebugger.jar</string>
+		<string>/Applications/Soar/swt-carbon.jar:/Applications/Soar/swt-pi-carbon.jar:/Applications/Soar/sml.jar:$JAVAROOT/SoarJavaDebugger.jar</string>
 		<key>MainClass</key>
 		<string>debugger.Application</string>
 		<key>VMOptions</key>
-		<string>-Djava.library.path=/Applications/Soar/lib:/Applications/Soar/swt</string>
+		<string>-Djava.library.path=/Applications/Soar/lib:/Applications/Soar -Dorg.eclipse.swt.internal.carbon.smallFonts</string>
 	</dict>
 	<key>LSEnvironment</key>
 	<dict>
