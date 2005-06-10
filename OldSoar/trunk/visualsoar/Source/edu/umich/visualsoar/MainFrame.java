@@ -116,8 +116,13 @@ public class MainFrame extends JFrame
 
 	public void reportResult(String result)
 	{
+		String lines[] = result.split("\n") ;
+		
 		Vector v = new Vector();
-		v.add(result);
+		
+		for (int i = 0 ; i < lines.length ; i++)
+			v.add(lines[i]) ;
+		
 		setFeedbackListData(v);
 	}
 	
