@@ -29,6 +29,8 @@ class AboutImagePanel extends JPanel {
 				new JLabel("    Brian Harleton");
   JLabel authorLabel6 =
 				new JLabel("    Andrew Nuxoll");
+  JLabel authorLabel7 =
+				new JLabel("    Douglas Pearson");
 
 	public AboutImagePanel() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -41,5 +43,6 @@ class AboutImagePanel extends JPanel {
 		add(authorLabel4);
         add(authorLabel5);
         add(authorLabel6);
+	add(authorLabel7);
 	}
 }
