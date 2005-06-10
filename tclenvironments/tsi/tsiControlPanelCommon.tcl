@@ -428,19 +428,21 @@ proc dontStopAfterDecision {} {
 }
 
 proc tsiLaunchJavaDebugger {name} {
-  global tsiConfig soar_library tcl_platform
+  global tsiConfig soar_library tcl_platform env
 
   ## only launch a Java debugger if not using tsiAgentWindow
   if !($tsiConfig(hideAgentWindow)) {
     return
   }
+  puts "$env(PWD)"
   switch -exact $tcl_platform(platform) {
     windows {
        $name eval [list exec javaw -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
-    macintosh {
-       $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
-    linux {
-       $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
+    unix {
+       if {($tcl_platform(os) == "Darwin")} {
+           $name eval [list exec ./java_swt -classpath swt-carbon.jar:swt-pi-carbon.jar:SoarJavaDebugger.jar -Djava.library.path=/Applications/Soar:/Applications/Soar/lib -Dorg.eclipse.swt.internal.carbon.smallFonts debugger.Application -remote & ]
+       } else {
+           $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}}
   }
 }
 
