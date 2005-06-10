@@ -185,12 +185,23 @@
 		return (id >= gSKIEVENT_AFTER_ALL_OUTPUT_PHASES && id <= gSKIEVENT_LAST_UPDATE_EVENT) ;
 	}
 
+	// This is an experiment -- events that are not type safe (so you have to know how to cast the data you are passed)
+	// May reduce the effort for kernel developers substantially.
+	typedef enum {
+		gSKIEVENT_EDIT_PRODUCTION = gSKIEVENT_AFTER_ALL_GENERATED_OUTPUT + 1,	// Arg is "char const*".
+	} egSKIUntypedEventId ;
+
+	static inline bool IsUntypedEventID(int id)
+	{
+		return (id >= gSKIEVENT_EDIT_PRODUCTION && id <= gSKIEVENT_EDIT_PRODUCTION) ;
+	}
+
     typedef enum {
        // Used to indicate an error in some cases
        gSKIEVENT_INVALID_EVENT              = 0,
        // Marker for end of gSKI event list
        // Must always be at the end of the enum
-       gSKIEVENT_LAST = gSKIEVENT_LAST_UPDATE_EVENT + 1
+       gSKIEVENT_LAST = gSKIEVENT_EDIT_PRODUCTION + 1
     } egSKIGenericEventId;
 
    /** End of Event Id enumerations.  **/

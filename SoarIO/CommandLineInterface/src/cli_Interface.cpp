@@ -267,8 +267,8 @@ EXPORT bool CommandLineInterface::DoSP(sml::Connection* pConnection, sml::Elemen
 	return ret;
 }
 
-EXPORT bool CommandLineInterface::DoStartSystem(sml::Connection* pConnection, sml::ElementXML* pResponse) {
-	bool ret = DoStartSystem();
+EXPORT bool CommandLineInterface::DoStartSystem(sml::Connection* pConnection, sml::ElementXML* pResponse, std::string productionName) {
+	bool ret = DoStartSystem(productionName);
 	GetLastResultSML(pConnection, pResponse);
 	return ret;
 }

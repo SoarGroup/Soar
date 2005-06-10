@@ -15,17 +15,22 @@
 #include "cli_Constants.h"
 
 #include "IgSKI_Kernel.h"
+#include "sml_KernelSML.h"
 
 using namespace cli;
 
 bool CommandLineInterface::ParseStartSystem(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
-	unused(argv);
-	return DoStartSystem();
+	if (argv.size() != 2) {
+		SetErrorDetail("Need to include the name of the production to edit.");
+		return SetError(CLIError::kTooFewArgs);
+	}
+
+	return DoStartSystem(argv[1]);
 }
 
-bool CommandLineInterface::DoStartSystem() {
-	m_pKernel->FireSystemStart();
+bool CommandLineInterface::DoStartSystem(std::string production) {
+	m_pKernelSML->FireEditProductionEvent(production.c_str()) ;
 	return true;
 }
 

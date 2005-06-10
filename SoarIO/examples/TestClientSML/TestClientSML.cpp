@@ -165,6 +165,21 @@ void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhas
 	cout << "Received an event callback" << endl ;
 }
 
+void MyUntypedEventHandler(smlUntypedEventId id, void* pUserData, Kernel* pKernel, void* pData)
+{
+	switch (id)
+	{
+	case smlEVENT_EDIT_PRODUCTION:
+		{
+			char const* pName = (char const*)pData ;
+			cout << "Edit production " << pName << endl ;
+			break ;
+		}
+	default:
+		break ;
+	}
+}
+
 void MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags)
 {
 	int* pInt = (int*)pUserData ;
@@ -380,6 +395,11 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		cout << "Error when registering the same function twice.  Should detect this and ignore the second registration" << endl ;
 		return false ;
 	}
+
+	// Register for an untyped event
+	int untypedCall = pKernel->RegisterForUntypedEvent(smlEVENT_EDIT_PRODUCTION, MyUntypedEventHandler, NULL) ;
+	pKernel->ExecuteCommandLine("edit-production my*production", NULL) ;
+	pKernel->UnregisterForUntypedEvent(untypedCall) ;
 
 	// Register another handler for the same event, to make sure we can do that.
 	// Register this one ahead of the previous handler (so it will fire before MyRunEventHandler)

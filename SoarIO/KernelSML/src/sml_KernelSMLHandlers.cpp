@@ -290,6 +290,11 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 			AddUpdateListener((egSKIUpdateEventId)id, pConnection) ;
 		else
 			RemoveUpdateListener((egSKIUpdateEventId)id, pConnection) ;
+	} else if (IsUntypedEventID(id))	{
+		if (registerForEvent)
+			AddUntypedListener((egSKIUntypedEventId)id, pConnection) ;
+		else
+			RemoveUntypedListener((egSKIUntypedEventId)id, pConnection) ;
 	}
 	else if(IsPrintEventID(id)) {
 

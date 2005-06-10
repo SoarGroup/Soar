@@ -334,6 +334,9 @@ void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	} else if (IsUpdateEventID(id))
 	{
 		ReceivedUpdateEvent((smlUpdateEventId)id, pIncoming, pResponse) ;
+	} else if (IsUntypedEventID(id))
+	{
+		ReceivedUntypedEvent((smlUntypedEventId)id, pIncoming, pResponse) ;
 	}
 }
 
@@ -398,6 +401,54 @@ void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, Ele
 
 		// Call the handler
 		handler(id, pUserData, this, runFlags) ;
+	}
+}
+
+/*************************************************************
+* @brief This function is called when an event is received
+*		 from the Soar kernel.
+*
+* @param pIncoming	The event command
+* @param pResponse	The reply (no real need to fill anything in here currently)
+*************************************************************/
+void Kernel::ReceivedUntypedEvent(smlUntypedEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+{
+	unused(pResponse) ;
+
+	// NOTE: If we have to allocate something we should delete it at the end of the callback.
+	// The client should copy it, not keep it.
+	void* pData = NULL ;
+
+	// Retrieve the event arguments
+	// For this Untyped event these parameters are event specific
+	switch (id)
+	{
+	case smlEVENT_EDIT_PRODUCTION:
+	{
+		char const* pProduction = pIncoming->GetArgValue(sml_Names::kParamValue) ;
+		pData = (void*)pProduction ;
+		break ;
+	}
+	default:
+		break ;
+	}
+
+	// Look up the handler(s) from the map
+	UntypedEventMap::ValueList* pHandlers = m_UntypedEventMap.getList(id) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (UntypedEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		UntypedEventHandlerPlusData handlerWithData = *iter ;
+
+		UntypedEventHandler handler = handlerWithData.m_Handler ;
+		void* pUserData = handlerWithData.getUserData() ;
+
+		// Call the handler
+		handler(id, pUserData, this, pData) ;
 	}
 }
 
@@ -1248,6 +1299,38 @@ public:
 	}
 } ;
 
+class Kernel::TestUntypedCallback : public UntypedEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestUntypedCallback(int id) { m_ID = id ; }
+
+	bool isEqual(UntypedEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+class Kernel::TestUntypedCallbackFull : public UntypedEventMap::ValueTest
+{
+private:
+	int				m_EventID ;
+	UntypedEventHandler m_Handler ;
+	void*			m_UserData ;
+
+public:
+	TestUntypedCallbackFull(int id, UntypedEventHandler handler, void* pUserData)
+	{ m_EventID = id ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	bool isEqual(UntypedEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_EventID == m_EventID &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
 class Kernel::TestSystemCallbackFull : public SystemEventMap::ValueTest
 {
 private:
@@ -1452,6 +1535,50 @@ int	Kernel::RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventHandler handl
 }
 
 /*************************************************************
+* @brief Register for an "UntypedEvent".
+*		 Multiple handlers can be registered for the same event.
+* @param smlEventId		The event we're interested in (see the list below for valid values)
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+*
+* This event is registered with the kernel because they relate to events we think may be useful to use to trigger updates
+* in synchronous environments.
+*
+* @returns A unique ID for this callback (used to unregister the callback later) 
+*************************************************************/
+int	Kernel::RegisterForUntypedEvent(smlUntypedEventId id, UntypedEventHandler handler, void* pUserData, bool addToBack)
+{
+	// Start by checking if this id, handler, pUserData combination has already been registered
+	TestUntypedCallbackFull test(id, handler, pUserData) ;
+
+	// See if this handler is already registered
+	UntypedEventHandlerPlusData plus(0,0,0,0) ;
+	bool found = m_UntypedEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
+	// If we have no handlers registered with the kernel, then we need
+	// to register for this event.  No need to do this multiple times.
+	if (m_UntypedEventMap.getListSize(id) == 0)
+	{
+		RegisterForEventWithKernel(id, NULL) ;
+	}
+
+	// Record the handler
+	// We use a struct rather than a pointer to a struct, so there's no need to new/delete
+	// everything as the objects are added and deleted.
+	m_CallbackIDCounter++ ;
+
+	UntypedEventHandlerPlusData handlerPlus(id, handler, pUserData, m_CallbackIDCounter) ;
+	m_UntypedEventMap.add(id, handlerPlus, addToBack) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
+}
+
+/*************************************************************
 * @brief Register for an "AgentEvent".
 *		 Multiple handlers can be registered for the same event.
 * @param smlEventId		The event we're interested in (see the list below for valid values)
@@ -1607,6 +1734,33 @@ bool Kernel::UnregisterForSystemEvent(int callbackID)
 
 	// If we just removed the last handler, then unregister from the kernel for this event
 	if (m_SystemEventMap.getListSize(id) == 0)
+	{
+		UnregisterForEventWithKernel(id, NULL) ;
+	}
+
+	return true ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular event
+* @returns True if succeeds
+*************************************************************/
+bool Kernel::UnregisterForUntypedEvent(int callbackID)
+{
+	// Build a test object for the callbackID we're interested in
+	TestUntypedCallback test(callbackID) ;
+
+	// Find the event ID for this callbackID
+	smlUntypedEventId id = m_UntypedEventMap.findFirstKeyByTest(&test, (smlUntypedEventId)-1) ;
+
+	if (id == -1)
+		return false ;
+
+	// Remove the handler from our map
+	m_UntypedEventMap.removeAllByTest(&test) ;
+
+	// If we just removed the last handler, then unregister from the kernel for this event
+	if (m_UntypedEventMap.getListSize(id) == 0)
 	{
 		UnregisterForEventWithKernel(id, NULL) ;
 	}

@@ -75,6 +75,7 @@ public class ParseSelectedText
 		public void fillMenu(Document doc, AbstractView owningView, AbstractView outputView, Menu menu, boolean simple)
 		{
 			addItem(outputView, menu, doc.getSoarCommands().getPrintCommand(m_Name)) ;
+			addItem(outputView, menu, doc.getSoarCommands().getEditCommand(m_Name)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getMatchesCommand(m_Name)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getMatchesWmesCommand(m_Name)) ;
 			addItem(outputView, menu, doc.getSoarCommands().getExciseCommand(m_Name)) ;

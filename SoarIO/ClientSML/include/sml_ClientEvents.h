@@ -140,14 +140,25 @@ typedef enum {
 	smlEVENT_AFTER_ALL_GENERATED_OUTPUT,								// All agents have generated output (since run began)
 } smlUpdateEventId ;
 
+// This is an experiment -- events that are not type safe (so you have to know how to cast the data you are passed)
+// May reduce the effort for kernel developers substantially.
+typedef enum {
+	smlEVENT_EDIT_PRODUCTION = smlEVENT_AFTER_ALL_GENERATED_OUTPUT + 1,	// Arg is "char const*" -- the name of the production to edit
+} smlUntypedEventId ;
+
 typedef enum {
     // Used to indicate an error in some cases
     smlEVENT_INVALID_EVENT              = 0,
 
 	// Marker for end of sml event list
 	// Must always be at the end of the enum
-	smlEVENT_LAST = smlEVENT_AFTER_ALL_GENERATED_OUTPUT + 1
+	smlEVENT_LAST = smlEVENT_EDIT_PRODUCTION + 1
 } smlGenericEventId ;
+
+static inline bool IsUntypedEventID(int id)
+{
+	return (id >= smlEVENT_EDIT_PRODUCTION && id <= smlEVENT_EDIT_PRODUCTION) ;
+}
 
 static inline bool IsSystemEventID(int id)
 {
@@ -243,6 +254,10 @@ typedef void (*SystemEventHandler)(smlSystemEventId id, void* pUserData, Kernel*
 
 // Handler for Update events.
 typedef void (*UpdateEventHandler)(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags) ;
+
+// Handler for Untyped events.  This is an experiment.  You need to know the type of the void* pData passed back.
+// smlEVENT_EDIT_PRODUCTION: pData is a "const char*" -- the production name.
+typedef void (*UntypedEventHandler)(smlUntypedEventId id, void* pUserData, Kernel* pKernel, void* pData) ;
 
 // Handler for XML events.  The data for the event is passed back in pXML.
 // NOTE: To keep a copy of the ClientXML* you are passed use ClientXML* pMyXML = new ClientXML(pXML) to create

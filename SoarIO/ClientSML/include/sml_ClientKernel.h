@@ -60,6 +60,17 @@ public:
 	}
 } ;
 
+class UntypedEventHandlerPlusData : public EventHandlerPlusData
+{
+public:
+	UntypedEventHandler  m_Handler ;
+
+	UntypedEventHandlerPlusData(int eventID, UntypedEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
+	{
+		m_Handler = handler ;
+	}
+} ;
+
 class AgentEventHandlerPlusData : public EventHandlerPlusData
 {
 public:
@@ -105,6 +116,7 @@ protected:
 	typedef sml::ListMap<smlAgentEventId, AgentEventHandlerPlusData>			AgentEventMap ;
 	typedef sml::ListMap<std::string, RhsEventHandlerPlusData>					RhsEventMap ;
 	typedef sml::ListMap<smlUpdateEventId, UpdateEventHandlerPlusData>			UpdateEventMap ;
+	typedef sml::ListMap<smlUntypedEventId, UntypedEventHandlerPlusData>		UntypedEventMap ;
 
 	Connection*			m_Connection ;
 	ObjectMap<Agent*>	m_AgentMap ;
@@ -117,6 +129,7 @@ protected:
 	AgentEventMap		m_AgentEventMap ;
 	RhsEventMap			m_RhsEventMap ;
 	UpdateEventMap		m_UpdateEventMap ;
+	UntypedEventMap		m_UntypedEventMap ;
 
 	// Class used to map events ids to and from strings
 	Events*				m_pEventMap ;
@@ -130,6 +143,8 @@ protected:
 	class TestRhsCallback ;
 	class TestUpdateCallbackFull ;
 	class TestUpdateCallback ;
+	class TestUntypedCallbackFull ;
+	class TestUntypedCallback ;
 
 	// Keep a local copy of this flag so we can report
 	// information directly about what the client is sending/receiving
@@ -189,6 +204,7 @@ protected:
 	void ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 	void ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedUntypedEvent(smlUntypedEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
 	/*************************************************************
 	* @brief If this message is an XML trace message returns
@@ -612,6 +628,27 @@ public:
 	* @returns True if succeeds
 	*************************************************************/
 	bool	UnregisterForUpdateEvent(int callbackID) ;
+
+	/*************************************************************
+	* @brief Register for an "UntypedEvent".
+	*		 Multiple handlers can be registered for the same event.
+	* @param smlEventId		The event we're interested in (see the list below for valid values)
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+	*
+	* This event is registered with the kernel because they relate to events we think may be useful to use to trigger updates
+	* in synchronous environments.
+	*
+	* @returns A unique ID for this callback (used to unregister the callback later) 
+	*************************************************************/
+	int	RegisterForUntypedEvent(smlUntypedEventId id, UntypedEventHandler handler, void* pUserData, bool addToBack = true) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular event
+	* @returns True if succeeds
+	*************************************************************/
+	bool	UnregisterForUntypedEvent(int callbackID) ;
 
 	/*************************************************************
 	* @brief Get the current value of the "set-library-location" path variable.

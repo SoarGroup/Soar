@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jardesc>
-<jar path="E:/SoarMich/soar-library/SoarDebuggerInJava.jar"/>
+<jar path="E:/SoarMich/soar-library/SoarJavaDebugger.jar"/>
 <options buildIfNeeded="true" compress="true" descriptionLocation="/SoarJavaDebugger/JarDescription.jardesc" exportErrors="true" exportWarnings="true" overwrite="true" saveDescription="true" useSourceFolders="false"/>
 <manifest generateManifest="false" mainClassHandleIdentifier="=SoarJavaDebugger/&lt;debugger{Application.java[Application" manifestLocation="/SoarJavaDebugger/JarManifest" manifestVersion="1.0" reuseManifest="false" saveManifest="true" usesManifest="true">
 <sealing sealJar="false">

@@ -52,7 +52,9 @@ public class SoarCommands
 	public String getExciseTaskCommand()						{ return "excise --task" ; }
 	public String getExciseUserCommand()						{ return "excise --user" ; }
 	public String getExciseDefaultCommand()						{ return "excise --default" ; }
-	
+
+	public String getEditCommand(String arg)  					{ return "edit " + arg ; }
+
 	public String getPreferencesCommand(String arg) 			{ return "preferences " + arg ; }
 	public String getPreferencesNameCommand(String arg)			{ return "preferences " + arg + " --names" ; }
 	public String getMatchesCommand(String arg)					{ return "matches " + arg ; }

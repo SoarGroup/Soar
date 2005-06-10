@@ -78,6 +78,9 @@ Events::Events()
 	RegisterEvent(smlEVENT_ECHO, "echo") ;
 	RegisterEvent(smlEVENT_PRINT, "print") ;
 
+	// Untyped events
+	RegisterEvent(smlEVENT_EDIT_PRODUCTION, "edit-production") ;
+
 	// Rhs user function fired
 	RegisterEvent(smlEVENT_RHS_USER_FUNCTION, "rhs-user-function") ;
 }

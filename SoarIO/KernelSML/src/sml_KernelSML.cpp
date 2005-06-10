@@ -118,6 +118,7 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	m_RhsListener.Init(this);
 	m_SystemListener.Init(this);
 	m_UpdateListener.Init(this) ;
+	m_UntypedListener.Init(this) ;
 
 	// We'll use this to make sure only one connection is executing commands
 	// in the kernel at a time.
@@ -159,6 +160,7 @@ KernelSML::~KernelSML()
 	m_AgentListener.Clear();
 	m_RhsListener.Clear();
 	m_UpdateListener.Clear() ;
+	m_UntypedListener.Clear() ;
 
 	if (m_pKernelFactory && m_pIKernel)
 		m_pKernelFactory->DestroyKernel(m_pIKernel);
@@ -315,6 +317,7 @@ void KernelSML::RemoveAllListeners(Connection* pConnection)
 	m_RhsListener.RemoveAllListeners(pConnection);
 	m_SystemListener.RemoveAllListeners(pConnection);
 	m_UpdateListener.RemoveAllListeners(pConnection) ;
+	m_UntypedListener.RemoveAllListeners(pConnection) ;
 }
 
 /*************************************************************
