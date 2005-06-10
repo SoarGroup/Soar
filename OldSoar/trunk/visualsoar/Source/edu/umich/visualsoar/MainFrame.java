@@ -12,6 +12,7 @@ import edu.umich.visualsoar.parser.TokenMgrError;
 // 3P
 import sml.Agent;
 import sml.Kernel;
+import sml.smlUntypedEventId;
 import threepenny.*;
 
 import java.awt.*;
@@ -99,6 +100,7 @@ public class MainFrame extends JFrame
 	// 3P
     Kernel m_Kernel = null ;
     String m_ActiveAgent = null ;
+    int    m_EditProductionCallback = -1 ;
 	// Menu handlers for STI init, term, and "Send Raw Command"
 	Action soarRuntimeInitAction = new SoarRuntimeInitAction();
 	Action soarRuntimeTermAction = new SoarRuntimeTermAction();
@@ -1564,6 +1566,16 @@ public class MainFrame extends JFrame
 		}	
 	}
 
+	public void editProductionHandler(int eventID, Object userData, Kernel kernel, Object callbackData)
+	{
+		if (eventID == smlUntypedEventId.smlEVENT_EDIT_PRODUCTION.swigValue())
+		{
+			String prod = (String)callbackData ;
+	
+			if (prod != null)
+				EditProductionByName(prod) ;
+		}
+	}
 
     /**
      * Initializes the Soar Tool Interface (STI) object and enabled/disables
@@ -1601,6 +1613,7 @@ public class MainFrame extends JFrame
 			// Select the first agent if there is any as our current agent
 			m_ActiveAgent = m_Kernel.GetAgentByIndex(0).GetAgentName() ;
 		}
+		m_EditProductionCallback = m_Kernel.RegisterForUntypedEvent(smlUntypedEventId.smlEVENT_EDIT_PRODUCTION, this, "editProductionHandler", null) ;
 		
 		soarRuntimeTermAction.setEnabled(true);
 		soarRuntimeInitAction.setEnabled(false);
@@ -1608,66 +1621,6 @@ public class MainFrame extends JFrame
 		soarRuntimeAgentMenu.setEnabled(true);
 		
 		return true ;
-		
-		/*
-		// Stop any "pump messages" timers that are currently running
-		if (soarToolPumpMessageTimer != null)
-		
-        {
-			soarToolPumpMessageTimer.stop();
-			soarToolPumpMessageTimer=null;
-		}
-		
-		// Term our interface if we have one already
-		if (soarToolJavaInterface != null)
-		
-        {
-			soarToolJavaInterface.Term();
-			soarToolJavaInterface=null;
-		}
-		
-		// Load the interface object
-		try 
-        {
-            soarToolJavaInterface = new SoarToolJavaInterface();
-		}
-		catch (java.lang.UnsatisfiedLinkError ule)
-        {
-            soarToolJavaInterface = null;
-            
-			// Disable all related menu items
-			soarRuntimeTermAction.setEnabled(false);
-			soarRuntimeInitAction.setEnabled(false);
-			soarRuntimeSendRawCommandAction.setEnabled(false);
-			soarRuntimeAgentMenu.setEnabled(false);
-            soarRuntimeMenu.setEnabled(false);
-            
-            return false;
-        }				
-        
-        //Initialize the interface object
-        if (soarToolJavaInterface.Init("VisualSoar", false) == true)
-		{			
-			// Create our pump messages timer to be fired every 1000 ms
-			soarToolPumpMessageTimer = new javax.swing.Timer(1000, new SoarRuntimePumpMessagesTimerListener());
-			soarToolPumpMessageTimer.start();
-			
-			// Enable/Disable menu items
-			soarRuntimeTermAction.setEnabled(true);
-			soarRuntimeInitAction.setEnabled(false);
-			soarRuntimeSendRawCommandAction.setEnabled(true);
-			soarRuntimeAgentMenu.setEnabled(true);
-	
-			// Success!
-			return true;
-		}
-		else
-		
-        {
-			// Failure
-			return false;
-		}
-		*/
 	}
 
 
@@ -1690,35 +1643,14 @@ public class MainFrame extends JFrame
 			System.out.println(ex.toString()) ;
 		}
 
+		m_EditProductionCallback = -1 ;
+		m_Kernel = null ;
+		
 		// Enable/Disable menu items
 		soarRuntimeTermAction.setEnabled(false);
 		soarRuntimeInitAction.setEnabled(true);
 		soarRuntimeSendRawCommandAction.setEnabled(false);
 		soarRuntimeAgentMenu.setEnabled(false);
-		
-		/*
-		// Stop any "pump messages" timers that are currently running
-		if (soarToolPumpMessageTimer != null)
-		
-        {
-			soarToolPumpMessageTimer.stop();
-			soarToolPumpMessageTimer=null;
-		}
-
-		// Term our interface object
-		if (soarToolJavaInterface != null)
-		
-        {
-			soarToolJavaInterface.Term();
-			soarToolJavaInterface=null;
-		}
-					
-		// Enable/Disable menu items
-		soarRuntimeTermAction.setEnabled(false);
-		soarRuntimeInitAction.setEnabled(true);
-		soarRuntimeSendRawCommandAction.setEnabled(false);
-		soarRuntimeAgentMenu.setEnabled(false);
-		*/
 	}
 
 
