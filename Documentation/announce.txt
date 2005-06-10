@@ -2,7 +2,7 @@ Announcing Soar 8.6.1!
 ======================
 
 This announcement describes the primary changes in this latest release. It also 
-includes the announcement for your convenience. 
+includes the 8.6.0 announcement for reference (read that first if you didn't download 8.6.0).
 
 Soar 8.6.1 can be downloaded from the Soar homepage at:
 
@@ -19,32 +19,35 @@ Requirements
 New in this release
 ===================
 
-* General:
-** Linux and Mac releases.
-** Soar 7 mode now works.
-** sml.jar now included in soar-library for Java developers.
-** Tcl Eaters is now included.
-** Java Missionaries and Cannibals is now included.
-** Updated manual.
-** Updated tutorials for new debugger.
-** Added partial command matching for command line.
-** Improved and extended kernel XML generation resulting in performance boost
-   for those applications which use it (i.e. the Java debugger)
-** Introduced new event-driven simulation support, removing the need for
+* Capabilities added:
+  -- Linux and Mac support
+  -- Soar 7 mode now works.
+  -- Tcl Eaters is included.
+  -- Java Missionaries and Cannibals is included.
+  -- Added ability to filter trace output after a trace has been created
+  -- Added partial command matching for command line.
+  -- Introduced new event-driven simulation support, removing the need for
    "start-system" command (see "SML Quick Start Guide" for details).
-** Several other bugfixes.
+  -- sml.jar now included in soar-library for Java developers.
 
-* Java Debugger:
-** Added support for filters, making the trace easier to read than ever before.
-** Replaced tree trace window in debugger with faster version.
-** Added lots of aliases that existed in older versions of Soar.
-** Fixed bug in Java debugger resulting in massive performance boost.
+* Performance improved further:
+  -- Improved and extended kernel XML generation resulting in performance boost
+     for those applications which use it (i.e. the Java debugger)
+  -- Better use of threads in Java debugger resulting in massive performance boost
+  -- Replaced tree trace window in debugger with faster version
+
+* Updates and fixes
+  -- Manual updated
+  -- Tutorials for new debugger updated
+  -- Added lots of aliases that existed in older versions of Soar
+  -- Numerous other smaller bug fixes.
 
 Clarification regarding the "tcl" RHS function:
 ===============================================
 While we are no longer providing a built-in "tcl" RHS function, there is nothing
 to prevent someone from registering their own "tcl" RHS function which does the
 same thing. Those needing to support legacy code should do this.
+For new code "exec" provides the same functionality in a language independent way.
 
 Known issues:
 =============
@@ -62,7 +65,6 @@ Known issues:
 If any other issues or bugs are found, please send mail to:
 
 soar-group@lists.sourceforge.net
-
 
 Announcing Soar 8.6.0!
 ======================
