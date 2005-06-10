@@ -137,7 +137,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         // add actions to all of the buttons
         runButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e) {
-                startPressed();
+                runPressed();
             }
         });
         stopButton.addSelectionListener(new SelectionAdapter() {
@@ -176,33 +176,24 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     }
     
     
-    private void startPressed() {
-        runButton.setEnabled(false);
-        stopButton.setEnabled(true);
-        stepButton.setEnabled(false);
-        resetButton.setEnabled(false);
+    private void runPressed() {
+        me.runSystem();
         
-        if (!me.isRunning())
-            me.startSystem();
+        updateButtons(true);
     }
     
     private void stopPressed() {
-        if (!me.isRunning())
-            return;
-        
         me.stopSystem();
         
-        runButton.setEnabled(!me.isAtGoalState());
-        stopButton.setEnabled(false);
-        stepButton.setEnabled(!me.isAtGoalState());
-        resetButton.setEnabled(true);
+        updateButtons(false);
     }
     
     private void stepPressed() {
+        updateButtons(true);
         // run the environment through a decision cycle
         me.step();
         
-        resetButton.setEnabled(true);
+        updateButtons(false);
     }
     
     private void resetPressed() {
@@ -210,9 +201,16 @@ implements Runnable, PaintListener, MacEnvironmentListener {
             me.stopSystem();
         me.reset();
         
-        runButton.setEnabled(true);
-        stepButton.setEnabled(true);
-        resetButton.setEnabled(false);
+        updateButtons(false);
+    }
+    
+    public void updateButtons(boolean running) {
+        boolean done = me.isAtGoalState();
+        
+        runButton.setEnabled(!running && !done);
+        stopButton.setEnabled(running);
+        resetButton.setEnabled(!running);
+        stepButton.setEnabled(!running && !done);
     }
 
     public void paintControl(PaintEvent e) {
@@ -252,9 +250,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
      */
     public void systemStarted(MacEnvironment e) {
         dpy.syncExec(new Runnable() {
-            public void run() {
-                startPressed();
-            }
+            public void run() { updateButtons(true); }
         });
     }
 
@@ -263,9 +259,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
      */
     public void systemStopped(MacEnvironment e) {
         dpy.syncExec(new Runnable() {
-            public void run() {
-                stopPressed();
-            }
+            public void run() { updateButtons(false); }
         });
     }
     

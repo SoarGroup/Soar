@@ -36,6 +36,7 @@ public class MacEnvironment implements Runnable {
     private RiverBank rightBank;
     
     private Thread runThread;
+    private boolean stopSoar = false;
     
     private List environmentListeners = new LinkedList();
     
@@ -86,11 +87,12 @@ public class MacEnvironment implements Runnable {
      * 
      * @return <code>true</code> if run thread started successfully.
      */
-    public boolean startSystem() {
+    public boolean runSystem() {
         runThread = new Thread(this);
         if (runThread == null)
             return false;
         
+        stopSoar = false;
         runThread.start();
         return true;
     }
@@ -102,15 +104,14 @@ public class MacEnvironment implements Runnable {
      * @return <code>true</code> if thread existed and was stopped successfully.
      */
     public boolean stopSystem() {
-        if (runThread == null)
-            return false;
-        
         runThread = null;
+        stopSoar = true;
         return true;
     }
     
     /**
      * @return <code>true</code> if there is a thread continuously running Soar
+     * as far as MacEnvironment knows.
      */
     public boolean isRunning() {
         return (runThread != null);
@@ -212,8 +213,10 @@ public class MacEnvironment implements Runnable {
         // We have a problem at the moment with calling Stop() from arbitrary
         // threads so for now we'll make sure to call it within an event
         // callback.
-        if (runThread == null)
+        if (stopSoar) {
+            stopSoar = false;
             kernel.StopAllAgents();
+        }
         
         updateWorld() ;
     }
