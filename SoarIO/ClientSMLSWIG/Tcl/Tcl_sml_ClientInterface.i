@@ -23,6 +23,7 @@
 	#include "sml_ClientEvents.h" 
 	
 	struct TclUserData {
+	    Tcl_ThreadId threadId;
 		Tcl_Interp* interp;
 		Tcl_Obj* script;
 	};
@@ -123,6 +124,8 @@
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
 	}
 	
+	void test() {
+	}
 	void TclRegisterForUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* kernel, sml::smlRunFlags runFlags)
 	{
 	    // we can ignore these parameters because they're already in the script (from when we registered it)
@@ -133,12 +136,18 @@
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		Tcl_AppendStringsToObj(script, " ", NULL);
 		Tcl_AppendObjToObj(script, Tcl_NewLongObj(runFlags));
+		//Tcl_Event* event = Tcl_Alloc(sizeof(Tcl_Event));
+		//event->proc=test;
+		
+		//Tcl_ThreadQueueEvent(tud->threadId, event, TCL_QUEUE_TAIL);
+		
 		Tcl_EvalObjEx(tud->interp, script, 0);
 	}
 	
 	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
 		TclUserData* tud = new TclUserData();
 	    
+	    tud->threadId = Tcl_GetCurrentThread();
 	    tud->interp = interp;
 	    // put all of the arguments together so we can just execute this as a single script later
 	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
