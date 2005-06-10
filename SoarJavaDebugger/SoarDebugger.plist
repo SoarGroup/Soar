@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>java_swt</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Soar Debugger, Copyright University of Michigan 2005.</string>
+	<key>CFBundleIdentifier</key>
+	<string>edu.umich.soar.debugger</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>SoarDebugger</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>3.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>3.0</string>
+	<key>Java</key>
+	<dict>
+		<key>ClassPath</key>
+		<string>/Applications/Soar/swt/swt-carbon.jar:/Applications/Soar/swt/swt-pi-carbon.jar:/Applications/Soar/sml.jar:$JAVAROOT/SoarJavaDebugger.jar</string>
+		<key>MainClass</key>
+		<string>debugger.Application</string>
+		<key>VMOptions</key>
+		<string>-Djava.library.path=/Applications/Soar/lib:/Applications/Soar/swt</string>
+	</dict>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>DYLD_LIBRARY_PATH</key>
+		<string>/Applications/Soar/lib</string>
+		<key>LD_LIBRARY_PATH</key>
+		<string>/Applications/Soar/lib</string>
+	</dict>
+</dict>
+</plist>
