@@ -216,7 +216,7 @@ implements Runnable, PaintListener, GameListener, ControlListener {
     	
     	startButton.setEnabled(!running && !done) ;
     	stopButton.setEnabled(running) ;
-    	resetButton.setEnabled(!running && !done) ;
+    	resetButton.setEnabled(!running) ;
     	stepButton.setEnabled(!running && !done) ;
     }
     
