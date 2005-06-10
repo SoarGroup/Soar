@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////
-// start-system command file.
+// edit-production command file.
 //
-// Author: Jonathan Voigt, voigtjr@gmail.com
-// Date  : 2004
+// Author: Douglas Pearson
+// Date  : 2005
 //
 /////////////////////////////////////////////////////////////////
 
@@ -19,17 +19,17 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseStartSystem(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseEditProduction(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 	if (argv.size() != 2) {
 		SetErrorDetail("Need to include the name of the production to edit.");
 		return SetError(CLIError::kTooFewArgs);
 	}
 
-	return DoStartSystem(argv[1]);
+	return DoEditProduction(argv[1]);
 }
 
-bool CommandLineInterface::DoStartSystem(std::string production) {
+bool CommandLineInterface::DoEditProduction(std::string production) {
 	m_pKernelSML->FireEditProductionEvent(production.c_str()) ;
 	return true;
 }

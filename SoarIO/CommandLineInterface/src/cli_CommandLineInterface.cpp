@@ -52,6 +52,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLIDefaultWMEDepth]		= &cli::CommandLineInterface::ParseDefaultWMEDepth;
 	m_CommandMap[Constants::kCLIDirs]					= &cli::CommandLineInterface::ParseDirs;
 	m_CommandMap[Constants::kCLIEcho]					= &cli::CommandLineInterface::ParseEcho;
+	m_CommandMap[Constants::kCLIEditProduction]			= &cli::CommandLineInterface::ParseEditProduction;
 	m_CommandMap[Constants::kCLIExcise]					= &cli::CommandLineInterface::ParseExcise;
 	m_CommandMap[Constants::kCLIExplainBacktraces]		= &cli::CommandLineInterface::ParseExplainBacktraces;
 	m_CommandMap[Constants::kCLIFiringCounts]			= &cli::CommandLineInterface::ParseFiringCounts;
@@ -88,7 +89,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Constants::kCLISoarNews]				= &cli::CommandLineInterface::ParseSoarNews;
 	m_CommandMap[Constants::kCLISource]					= &cli::CommandLineInterface::ParseSource;
 	m_CommandMap[Constants::kCLISP]						= &cli::CommandLineInterface::ParseSP;
-	m_CommandMap[Constants::kCLIStartSystem]			= &cli::CommandLineInterface::ParseStartSystem;
 	m_CommandMap[Constants::kCLIStats]					= &cli::CommandLineInterface::ParseStats;
 	m_CommandMap[Constants::kCLIStopSoar]				= &cli::CommandLineInterface::ParseStopSoar;
 	m_CommandMap[Constants::kCLITime]					= &cli::CommandLineInterface::ParseTime;

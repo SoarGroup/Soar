@@ -23,6 +23,7 @@ namespace cli {
 		static char const* kCLIDefaultWMEDepth;
 		static char const* kCLIDirs;
 		static char const* kCLIEcho;
+		static char const* kCLIEditProduction;
 		static char const* kCLIExcise;
 		static char const* kCLIExplainBacktraces;
 		static char const* kCLIFiringCounts;
@@ -59,7 +60,6 @@ namespace cli {
 		static char const* kCLISoarNews;
 		static char const* kCLISource;
 		static char const* kCLISP;
-		static char const* kCLIStartSystem;
 		static char const* kCLIStats;
 		static char const* kCLIStopSoar;
 		static char const* kCLITime;
