@@ -16,6 +16,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.tree.*;
 import java.io.*;
+
 import javax.swing.event.*;
 import java.beans.*;
 import javax.swing.undo.*;
@@ -111,6 +112,7 @@ public class RuleEditor extends CustomInternalFrame
     // Menu item handlers for the STI operations in this window.
     private Action sendProductionToSoarAction = new SendProductionToSoarAction();
     private Action sendFileToSoarAction = new SendFileToSoarAction();
+    private Action sendAllFilesToSoarAction = new SendAllFilesToSoarAction();
     private Action sendMatchesToSoarAction = new SendMatchesToSoarAction();
     private Action sendExciseProductionToSoarAction = new SendExciseProductionToSoarAction();
 
@@ -1446,6 +1448,11 @@ public class RuleEditor extends CustomInternalFrame
         sendFileToSoarItem.addActionListener(sendFileToSoarAction);
         runtimeMenu.add(sendFileToSoarItem);
 
+        // "Send All Files" menu item
+        JMenuItem sendAllFilesToSoarItem = new JMenuItem("Send All Files");
+        sendAllFilesToSoarItem.addActionListener(sendAllFilesToSoarAction);
+        runtimeMenu.add(sendAllFilesToSoarItem);
+
         // "Matches" menu item
         JMenuItem matchesItem = new JMenuItem("Matches Production");
         matchesItem.addActionListener(sendMatchesToSoarAction);
@@ -2365,18 +2372,28 @@ public class RuleEditor extends CustomInternalFrame
             	String result = agent.ExecuteCommandLine("source " + fileName, true) ;
 				MainFrame.getMainFrame().reportResult(result) ;
             }
-            
-            // Get the STI
-        	/*
-            SoarToolJavaInterface soarToolInterface=MainFrame.getMainFrame().GetSoarToolJavaInterface();
-            if (soarToolInterface == null)
+        }
+    }//class SendFileToSoarAction
+
+    // 3P
+    // Handles the "Runtime|Send File" menu item
+    class SendAllFilesToSoarAction extends AbstractAction
+    {
+        public SendAllFilesToSoarAction()
+        {
+            super("Send All Files");
+        }
+
+        public void actionPerformed(ActionEvent e)
+        {
+            // Get the agent
+        	Agent agent = MainFrame.getMainFrame().getActiveAgent() ;
+            if (agent == null)
             {
-                JOptionPane.showMessageDialog(RuleEditor.this,
-                                              "Soar Tool Interface is not initialized.",
-                                              "Error",
-                                              JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(RuleEditor.this,"Not connected to an agent.","Error",JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
 
             // Save the file
             try
@@ -2387,13 +2404,33 @@ public class RuleEditor extends CustomInternalFrame
             {
                 ioe.printStackTrace();
             }
-
-            // Send the file through the STI
-            soarToolInterface.SendFile(fileName);
-            */
+            
+            // We want the name of the top level source file.
+            // There may be a simpler way but I'll walk up the tree of operator nodes
+            // to the top and get the file name info from there.
+            OperatorNode node = associatedNode ;
+            while (node != null && !(node instanceof OperatorRootNode))
+            	node = (OperatorNode)node.getParent() ;
+            
+            if (node == null)
+            {
+            	System.out.println("Couldn't find the top level project node") ;
+            	return ;
+            }
+            
+            // Generate the path to the top level source file
+            OperatorRootNode root = (OperatorRootNode)node ;
+            String projectFilename = root.getProjectFile() ;	// Includes .vsa
+            
+            // Swap the extension from .vsa to .soar
+            projectFilename = projectFilename.replaceFirst(".vsa", ".soar") ;
+            
+            // Call source in Soar
+            String result = agent.ExecuteCommandLine("source " + projectFilename, true) ;
+			MainFrame.getMainFrame().reportResult(result) ;
         }
     }//class SendFileToSoarAction
-
+    
     // 3P
     // Handles the "Runtime|Matches Production" menu item
     class SendMatchesToSoarAction extends AbstractAction
