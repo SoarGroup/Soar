@@ -1,6 +1,9 @@
 #
 # $Id$
 # $Log$
+# Revision 1.3  2005/06/10 04:13:24  kcoulter
+# added updateInputLink at agent creation
+#
 # Revision 1.2  2005/06/10 03:47:19  kcoulter
 # converted to SML events
 #
@@ -1028,6 +1031,8 @@ proc startEater {x y dir path name color} {
    eval placeEater $newname $x $y $dir
 
    setupEaterSensor $newname $color
+   $newname eval [list updateInputLink]
+
       ###KJC tried adding back in...
 #	$newname eval addTSIProductionMenu .tsw
 
