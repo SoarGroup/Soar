@@ -2,7 +2,8 @@ Announcing Soar 8.6.1!
 ======================
 
 This announcement describes the primary changes in this latest release. It also 
-includes the 8.6.0 announcement for reference (read that first if you didn't download 8.6.0).
+includes the 8.6.0 announcement for reference (read that first if you didn't
+download 8.6.0).
 
 Soar 8.6.1 can be downloaded from the Soar homepage at:
 
@@ -12,9 +13,9 @@ Requirements
 ============
 
 * Java 1.4.2 or later required to use the Java debugger (javaw.exe should be 
-  available in the path).
+  available in the path).  Get it at http://java.sun.com/.
 * Tcl 8.4.x or later required to run Eaters (wish.exe should be available in the
-  path). OS X 10.4 comes with this pre-installed.
+  path). Get it at http://www.tcl.tk/.  OS X 10.4 comes with this pre-installed.
 
 New in this release
 ===================
@@ -56,7 +57,7 @@ Known issues:
   to tree mode).
 * Tanksoar is not yet available.
 * Soar seems to "stutter" under Mac OS 10.4 (but it does work properly).
-* On Linux sometimes the trace output can fall behind actual execution, making
+* Sometimes the trace output can fall behind actual execution, making
   the debugger appear unresponsive (it's really just trying to catch up).
 * Some rare warning messages may not appear fully in the Java debugger's tree
   view (but they appear fine in the text view).  If you find specific cases of
