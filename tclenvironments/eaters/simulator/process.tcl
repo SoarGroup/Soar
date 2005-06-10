@@ -1,6 +1,9 @@
 #
 # $Id$
 # $Log$
+# Revision 1.2  2005/06/10 03:47:19  kcoulter
+# converted to SML events
+#
 # Revision 1.1  2005/06/01 19:14:13  rmarinie
 # initial commit of sml eaters
 #
@@ -71,6 +74,8 @@
 #
 #
 
+global smlStopNow
+set smlStopNow 0
 
 global heading
 set heading(north) 90
@@ -1267,9 +1272,8 @@ proc placeEater {name {xloc -1} {yloc -1} {orient -1}} {
    if { $tsiConfig(sioDebug) > 3 } { puts "placeEater -- (end)" }
 }
 
-
-
-
+## These are the TSI versions.  If you wish to use them,
+## you need to edit the button commands in et-controlpanel.tcl
 proc environmentRun {args} {
        global runningSimulation
 
@@ -1317,13 +1321,129 @@ proc environmentStop {} {
 #	puts "Stop Button Hit? Waiting for Cycle's end...."
 	return
     }
-
-
     tsiOnEnvironmentStop
+}
+
+## new for Soar 8.6 SML events 
+proc SMLenvironmentRun {args} {
+       global runningSimulation _kernel smlStopNow
+
+    tsiOnEnvironmentRun;  # included in case using tsiAgentWindow
+    set runningSimulation 1
+    set smlStopNow 0
+    #   runSimulation .wGlobal.c
+    $_kernel RunAllAgentsForever
+}
+
+proc SMLenvironmentStep {} {
+    global runningSimulation _kernel smlStopNow
+
+    tsiOnEnvironmentStep;  # included in case using tsiAgentWindow
+    set runningSimulation 0
+    #runSimulation .wGlobal.c
+    $_kernel RunAllAgents 1
+}
+
+proc SMLenvironmentStop {} {
+    global runningSimulation _kernel smlStopNow
+
+    set smlStopNow 1
+    if { $runningSimulation } {
+	set runningSimulation 0
+#	puts "Stop Button Hit? Waiting for Cycle's end...."
+	return
+    }
+    tsiOnEnvironmentStop
+}
+
+proc smlProcessUpdates {args} {
+    global smlStopNow _kernel
+
+    #puts "in smlProcessUpdates: "
+    #puts " smlStopNow = $smlStopNow"
+
+    ## the 8.6.1 event system doesn't fully implement stopping yet,
+    ## so we explicitly check our own local var inside this callback
+    if $smlStopNow {
+	set smlStopNow 0
+	$_kernel StopAllAgents
+    }
+    #puts "in smlProcessUpdates: calling runSimulation .wGlobal.c"
+    runSimulation .wGlobal.c
+}
+
+
+###KJC modified June 2005 for SML compliance, order of I/O & updating changed
+###The TSI version is below.
+
+proc runSimulation {w} {
+   global runningSimulation tickDelay soarTimePerTick soarTimeUnit \
+          worldCount worldCountLimit tsiConfig agentUpdate
+   global _kernel localAgents
+
+   set agents [interp slaves]
+
+    set agent0 [lindex $agents 0]
+ #   puts "runSimulation -- 0 :: agent0 = $agent0"
+   if {$agents == ""} {
+      tk_dialog .error Warning "There are currently no eaters to run." \
+                warning 0 Ok
+      set runningSimulation 0
+      return
+   }
+   if {([.wGlobal.c find withtag normalfood] == {}) && \
+       ([.wGlobal.c find withtag bonusfood] == {})} {
+      set runningSimulation 0
+      tk_dialog .info {Game Over} {Game over: All the food is gone.} info 0 Ok
+      return
+   }
+    
+   if {$worldCount >= $worldCountLimit} {
+      set runningSimulation 0
+       environmentStop
+      tk_dialog .info {Game Over} \
+                      {Game over: Move count limit reached.} info 0 Ok
+      return
+   }
+    if [goalIsAccomplished] {
+	
+	set runningSimulation 0
+	environmentStop
+	tk_dialog .info {Goal Accomplished} \
+	    {The goal has been accomplished. Game Over.} info 0 Ok
+	return
+    }
+
+    ## process the agent output
+    if [info exists localAgents] {
+        foreach eater $localAgents {
+	    $eater eval [list updateOutputLink]
+	}
+    }
+
+    ## tick the environment and update the GUI
+    incr worldCount
+    tickSimulation $w
+    update
+
+    ## send new input to agent
+    if [info exists localAgents] {
+	if { $tsiConfig(sioDebug) > 4 } { puts "++ Soar Tick I/O..." }
+	set an_agent [lindex $localAgents 0] 
+        foreach eater $localAgents {
+	    $eater eval [list updateInputLink]
+	}
+    }
+    
+    $_kernel CheckForIncomingCommands
 
 }
 
-proc runSimulation {w} {
+
+##This is the routine that works like Eaters for Soar 8.5, that is,
+##prior to changes for SML Soar.  Works with Tcl and TSI.
+##Not used for SML
+proc TSIrunSimulation {w} {
    global runningSimulation tickDelay soarTimePerTick soarTimeUnit \
           worldCount worldCountLimit tsiConfig
    set agents [interp slaves]
@@ -1360,9 +1480,8 @@ proc runSimulation {w} {
    incr worldCount
    tickSimulation $w
    update
-    tickIO $agents
+   TSItickIO $agents
     
-#   [lindex $agents 0] eval [list run-soar $soarTimePerTick $soarTimeUnit]
    if {[info exists runningSimulation] && $runningSimulation} {
       after $tickDelay runSimulation $w
 
@@ -1372,8 +1491,11 @@ proc runSimulation {w} {
    }
 }
 
+##This is the routine that works like Eaters for Soar 8.5, that is,
+##prior to changes for SML Soar.  Works with Tcl and TSI.
+##Not used for SML
 
-proc tickIO { agents } {
+proc TSItickIO { agents } {
     global soarTimePerTick soarTimeUnit localAgents remoteAgents \
        sio_agentStatus tsiConfig agentUpdate _kernel
 
@@ -1384,90 +1506,16 @@ proc tickIO { agents } {
 	    $eater eval [list updateInputLink]
 	}
 	$_kernel ExecuteCommandLine "run -$soarTimeUnit $soarTimePerTick" $an_agent
-	# [list run-soar $soarTimePerTick $soarTimeUnit]
+	# non-SML code: [list run-soar $soarTimePerTick $soarTimeUnit]
         foreach eater $localAgents {
 	    $eater eval [list updateOutputLink]
 	}
         $_kernel CheckForIncomingCommands
 	if { $tsiConfig(sioDebug) > 4 } { puts "++ End Soar Tick I/O" }
     }
-    if [info exists remoteAgents] {
 
-       # This should be done in another way...
-       if { [llength [array get remoteAgents]] > 0 } {
-	   if { $tsiConfig(sioDebug) > 5 || $tsiConfig(sioWatch) > 1 } { 
-	       puts "+Remote Agent I/O Cycle Sending Output ..."
-	   }
-	  # This needs to be changed, now it relys on the fact that the remote
-	  # eaters' names correspond to their socket ids.
-	  foreach {name socket} [array get remoteAgents] {
-	     if { $sio_agentStatus($name,online) } {
-
-
-		set sio_agentStatus($name,receivedOutput) 0
-		SIO_SendSocketCommand $socket "tuples-begin"
-		if { ![string compare $sio_agentStatus($name,inputMode) \
-			 initialize] } {
-		   setUpInputLink $name na
-		   set sio_agentStatus($name,inputMode) update
-		} else {
-		   updateInputLink $name
-		}
-		SIO_SendSocketCommand $socket "tuples-end"
-		
-	    	    
-	     } else {
-		puts "AGENT $name is not online..."
-	     }
-	  }
-	  
-
-	  if { $tsiConfig(sioDebug) > 5 || $tsiConfig(sioWatch) > 1 } { 
-	       puts "+Remote Agent I/O Cycle Waiting For Input ..."
-	  }
-	  set agentUpdate waiting
-	  if { $tsiConfig(sioDebug) > 4 } {
-	       puts "--timeout in $tsiConfig(sioTimeOut) milliseconds"
-	  }
-	
-	  # When an agent times out, it should be taken offline.
-	  # That is, it should be sent an offline control command to
-          # notify it of its new state, it should then be able to rejoin
-	  # by sending an online status.
-	  
-	   if { $tsiConfig(sioTimeOut) == -1 } {
-	       set afterID [after 180000 displayReceivedOutputStatus]
-	   } else {
-	       set afterID [after $tsiConfig(sioTimeOut) \
-				[list set agentUpdate timeout]]
-	   }
-	  
-	  vwait agentUpdate
-
-	  if { $tsiConfig(sioDebug) > 5 || $tsiConfig(sioWatch) > 1 } {
-	       puts "+Remote agent IO Cycle Complete:  AgentUpdate = $agentUpdate"
-	   }
-
-	  if { [string compare $agentUpdate timeout] != 0 } {
-	    after cancel $afterID
-      	  } else {
-
-	      
-	      foreach {name socket} [array get remoteAgents] {
-		  if { $sio_agentStatus($name,online) && \
-		       !$sio_agentStatus($name,receivedOutput) } {
-		      
-		      puts "***AGENT $name TIMED OUT!"
-		      bell
-		      bell
-		      set sio_agentStatus($name,online) 0
-		      
-		      # TODO: need to send an offline message to client.
-		  }
-	      }
-	  }
-       }
-    }
+    ### For Soar 8.6 release, Kcoulter deleted the remote
+    ### agent SGIO code that used to be here, just to simplify.
 }
 
 

@@ -71,7 +71,8 @@ proc tsi {{hideController 0} args } {
        tcl_platform tsiConfig tsiSimulationState tsiSimulatorPath \
        tsiClicksPerSecond hideAgentWindow
    global smlEVENT_AFTER_AGENT_CREATED smlEVENT_BEFORE_AGENT_REINITIALIZED 
-   global smlEVENT_BEFORE_AGENT_DESTROYED smlEVENT_BEFORE_SHUTDOWN 
+   global smlEVENT_BEFORE_AGENT_DESTROYED smlEVENT_BEFORE_SHUTDOWN
+   global smlEVENT_AFTER_ALL_OUTPUT_PHASES EaterUpdateCallback smlStopNow
 
    set tsiSimulatorPath $tsi_library
    
@@ -136,7 +137,9 @@ set agentCallbackId2 [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DEST
 set systemCallbackId [$_kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
 set rhsCallbackId [$_kernel AddRhsFunction RhsFunctionTest ""]
  
-
+set EaterUpdateCallback [$_kernel RegisterForUpdateEvent $smlEVENT_AFTER_ALL_OUTPUT_PHASES smlProcessUpdates ""]
+  
+   set smlStopNow 0
    set tsiSimulationState(running) 0
    
    if { $tsiConfig(calibrateClock) > 0 } {
@@ -483,7 +486,7 @@ proc resolveTSIConfigConflicts {} {
 # Define the sml kernel-event callbacks
 
 proc AgentCreatedCallback {id userData agent} {
-	puts "[$agent GetAgentName] created"
+	puts "Agent_callback:: [$agent GetAgentName] created"
 }
 proc AgentReinitializedCallback {id userData agent} {
 	puts "[$agent GetAgentName] reinitialized"

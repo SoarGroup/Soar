@@ -2,6 +2,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.3  2005/06/10 03:47:19  kcoulter
+### converted to SML events
+###
 ### Revision 1.2  2005/06/07 17:00:10  kcoulter
 ### fixed DestroyAgents, other SML compat
 ###
@@ -101,9 +104,12 @@ puts "in makeETControlPanel: tsiSimulatorPath = $tsiSimulatorPath"
    # BUG BUG --------- These need to be changed to agree w/ my stuff
    # in tsi24beta tsiControlPanel
    frame .run -relief sunken -borderwidth 2
-    button .run.step -text Step -command environmentStep 
-   button .run.run -text Run -command environmentRun
-   button .run.stop -text Stop -command environmentStop
+   #button .run.step -text Step -command environmentStep 
+   #button .run.run -text Run -command environmentRun
+   #button .run.stop -text Stop -command environmentStop
+   button .run.step -text Step -command SMLenvironmentStep 
+   button .run.run -text Run -command SMLenvironmentRun
+   button .run.stop -text Stop -command SMLenvironmentStop
    button .run.quit -text Quit -command quitSoar
    
    # pack the frame, and its components
