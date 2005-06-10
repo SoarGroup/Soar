@@ -124,9 +124,36 @@
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
 	}
 	
-	void test() {
-	}
-	void TclRegisterForUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* kernel, sml::smlRunFlags runFlags)
+	typedef struct ThreadEventResult {
+		Tcl_Condition done; /* Set when the script completes */
+		int code; /* Return value of the function */
+		char *result; /* Result from the function */
+		int length; /* length of result string */
+	} ThreadEventResult;
+
+	typedef struct ThreadEvent {
+		Tcl_Event event; /* Must be first */
+		char *script; /* script to run */
+		ThreadEventResult *resultPtr; /* To communicate the result back */
+	} ThreadEvent;
+	
+//	int
+//ThreadEventProc(Tcl_Event evPtr, int mask)
+//Tcl_Event *evPtr; /* Really ThreadEvent */
+//int mask;
+//{
+//ThreadEvent *eventPtr = (ThreadEvent *)evPtr;
+//
+//Tcl_Preserve(this->interp);
+//Tcl_EvalEx(this->interp, eventPtr->script, -1, TCL_EVAL_DIRECT | TCL_EVAL_GLOBAL);
+//Tcl_MutexLock(&threadMutex);
+//Tcl_ConditionNotify(&resultPtr->done);
+//Tcl_MutexUnlock(&threadMutex);
+//Tcl_Release(this->interp);
+//return 1;
+//}
+
+void TclRegisterForUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* kernel, sml::smlRunFlags runFlags)
 	{
 	    // we can ignore these parameters because they're already in the script (from when we registered it)
 		unused(kernel);
@@ -136,12 +163,23 @@
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		Tcl_AppendStringsToObj(script, " ", NULL);
 		Tcl_AppendObjToObj(script, Tcl_NewLongObj(runFlags));
-		//Tcl_Event* event = Tcl_Alloc(sizeof(Tcl_Event));
-		//event->proc=test;
-		
-		//Tcl_ThreadQueueEvent(tud->threadId, event, TCL_QUEUE_TAIL);
 		
 		Tcl_EvalObjEx(tud->interp, script, 0);
+		
+		// Comment out above line and replace with the following (incomplete) code
+		// Various structures are defined immediately proceeding this function
+		//  to assist with all of this.
+		/*
+		ThreadEvent *threadEventPtr;
+		threadEventPtr = (ThreadEvent *) ckalloc(sizeof(ThreadEvent));
+		char* scriptCopy = Tcl_GetString(script);
+		threadEventPtr->script = ckalloc(strlen(scriptCopy) + 1);
+		strcpy(threadEventPtr->script, scriptCopy);
+		
+		Tcl_ThreadQueueEvent(tud->threadId, (Tcl_Event *)threadEventPtr, TCL_QUEUE_TAIL);
+		Tcl_ThreadAlert(tud->threadId);
+		Tcl_ServiceAll();
+		*/
 	}
 	
 	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
