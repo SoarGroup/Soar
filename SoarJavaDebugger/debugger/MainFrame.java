@@ -615,6 +615,7 @@ public class MainFrame
 		// If we didn't load a layout, use a default layout
 		if (!loaded)
 		{
+			System.out.println("Failed to load the stored layout, so using default instead") ;
 			useDefaultLayout();
 		}
 

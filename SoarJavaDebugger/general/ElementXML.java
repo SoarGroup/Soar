@@ -115,6 +115,11 @@ public class ElementXML
 			// Prime the lexical analyser with initial values
 			m_CurrentLine = m_Input.readLine() ;
 			
+			// For Soar we'll use \n as the universal line separator
+			// (Since this is what the kernel always generates it's easier to just standardize on that)
+			// This means we need to replace any \r\n combinations Windows inserts with just \n
+			m_CurrentLine.replaceAll(kSystemLineSeparator, kLineSeparator) ;
+			
 			// Add the newline char(s) to the end of the line we read.
 			// This generally only matters when reading quoted strings that
 			// cover multiple lines.
@@ -432,7 +437,8 @@ public class ElementXML
 	protected static final String	kHeaderString 	= "?" ;
 	protected static final char 	kEqualsChar 	= '=' ;
 	protected static final String	kEqualsString	= "=" ;
-	protected static final String   kLineSeparator = System.getProperty("line.separator");
+	protected static final String   kLineSeparator = "\n" ;	// For Soar it's better for us to agree on using \n for newlines
+	protected static final String   kSystemLineSeparator = System.getProperty("line.separator") ;
 
 	/** List of attribute names and string values */
 	protected HashMap m_AttributeList = new HashMap() ;
@@ -476,19 +482,80 @@ public class ElementXML
 		
 	/************************************************************************
 	* 
-	* These are yet to be implemented -- but are intended to convert
-	* invalid XML chars to XML escape sequences and back again
+	* These convert invalid XML chars to XML escape sequences and back again
 	* (e.g. "<" => "&lt;" and so on.
 	* 
 	*************************************************************************/	
 	protected static String convertToEscapes(String src)
 	{
-		return src ;
+		/*
+		static char const* kLT   = "&lt;" ;
+		static char const* kGT   = "&gt;" ;
+		static char const* kAMP  = "&amp;" ;
+		static char const* kQUOT = "&quot;" ;
+		static char const* kAPOS = "&apos;" ;
+		*/
+		
+		StringBuffer xmlSafe = new StringBuffer() ;
+
+		int len = src.length() ;
+		for (int i = 0 ; i < len ; i++)
+		{
+			char c = src.charAt(i) ;
+			
+			switch (c)
+			{
+				case '<' : xmlSafe.append("&lt;") ; break ;
+				case '>' : xmlSafe.append("&gt;") ; break ;
+				case '&' : xmlSafe.append("&amp;") ; break ;
+				case '"' : xmlSafe.append("&quot;") ; break ;
+				case '\'': xmlSafe.append("&apos;") ; break ;
+				default: xmlSafe.append(c) ;
+			}
+		}
+		
+		return xmlSafe.toString() ;
 	}
 	
 	protected static String convertFromEscapes(String src)
 	{
-		return src ;
+		/*
+		static char const* kLT   = "&lt;" ;
+		static char const* kGT   = "&gt;" ;
+		static char const* kAMP  = "&amp;" ;
+		static char const* kQUOT = "&quot;" ;
+		static char const* kAPOS = "&apos;" ;
+		*/
+
+		StringBuffer orig = new StringBuffer() ;
+		
+		int len = src.length() ;
+		for (int i = 0 ; i < len ; i++)
+		{
+			char c = src.charAt(i) ;
+			
+			// Any raw & chars must be start of escape sequences
+			if (c == '&' && i < len-2)
+			{
+				char next1 = src.charAt(i+1) ;
+				char next2 = src.charAt(i+2) ;
+				switch (next1)
+				{
+					case 'l' : i += 3 ; orig.append("<") ; break ;
+					case 'g' : i += 3 ; orig.append(">") ; break ;
+					case 'q' : i += 5 ; orig.append('"') ; break ;
+					case 'a' : if (next2 == 'm') { i += 4 ; orig.append("&") ; }
+							   else { i += 5 ; orig.append("\'") ; } ;
+							   break ;
+				}
+			}
+			else
+			{
+				orig.append(c) ;
+			}
+		}
+		
+		return orig.toString() ;
 	}
 	
 	/************************************************************************

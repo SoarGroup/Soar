@@ -186,23 +186,35 @@ public class PropertiesDialog extends BaseDialog
 			return lines ;
 		}
 
+		private void updateButtonLabel()
+		{
+			String[] lines = getLines() ;
+			String first = lines.length == 1 ? lines[0] : lines.length > 0 ? lines[0] + "..." : "<command>" ;
+			m_Button.setText(first) ;
+		}
+		
 		public TableItem addTableItem(final Table table)
 		{
 			TableItem item = new TableItem (table, SWT.NULL);
 			item.setText (0, m_PropertyName);
 			
-			String[] lines = getLines() ;
-			String first = lines.length > 0 ? lines[0] + "..." : "..." ;
-			
 			// Create a text field for this property
 			// Can't have a multi-line edit control in a table (SWT limitation)
 			// so we'll use a button and pop up the edit control.
 			m_Button = new Button(table, SWT.PUSH) ;
-			m_Button.setText(first) ;
-						
-			m_Button.addSelectionListener(new SelectionAdapter() { public void widgetSelection(SelectionEvent e) {  
-				SwtInputDialog.showMultiLineDialog(table, "Enter button actions", "Actions", m_Value) ;
-				} } ) ;
+			updateButtonLabel() ;
+			
+			// For some reason using the selectionAdapter doesn't work here, but a generic listener does.
+			m_Button.addListener(SWT.Selection, new Listener() { public void handleEvent(Event e) {  
+				String newValue = SwtInputDialog.showMultiLineDialog(table, "Enter button actions", "Actions", m_Value) ;
+
+				if (newValue != null)
+				{
+					// We store our commands separated with \n since that's what Soar uses (not \r\n which is what Windows uses, sometimes)
+					m_Value = newValue.replaceAll(AbstractView.kSystemLineSeparator, AbstractView.kLineSeparator) ;
+					updateButtonLabel() ;
+				}
+			} } ) ;
 			
 			TableEditor editor = new TableEditor (table);
 			editor.grabHorizontal = true;
@@ -215,8 +227,8 @@ public class PropertiesDialog extends BaseDialog
 		// Return false if its not valid for some reason.
 		public boolean update()
 		{
-			String value = m_Text.getText() ;
-			m_Value = value ;
+			//String value = m_Text.getText() ;
+			//m_Value = value ;
 				
 			return true ;
 		}

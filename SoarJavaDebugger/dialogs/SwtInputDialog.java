@@ -114,6 +114,8 @@ public class SwtInputDialog extends BaseDialog
 		data.left  = new FormAttachment(promptLabel, 10) ;
 		data.right = new FormAttachment(100, -margin) ;
 		data.top   = new FormAttachment(0, margin) ;
+		data.bottom = new FormAttachment(100, -margin) ;
+		
 		entryField.setLayoutData(data) ;
 	}
 	

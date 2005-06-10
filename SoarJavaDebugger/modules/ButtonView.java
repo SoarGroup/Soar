@@ -215,18 +215,15 @@ public class ButtonView extends AbstractView
 		ButtonInfo info = getButtonInfo(button) ;
 		
 		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
-		
-		//String test = "Hello\nWorld" ;
-		
+				
 		properties[0] = new PropertiesDialog.StringProperty("Label", info.m_Name) ;
-		properties[1] = new PropertiesDialog.StringProperty("Command to execute", info.m_Command) ;
-		properties[2] = new PropertiesDialog.StringProperty("Internal command to execute (very advanced)", info.m_InternalCommand) ;
-		//properties[3] = new PropertiesDialog.MultiLineStringProperty("Test", test) ;
+		properties[1] = new PropertiesDialog.MultiLineStringProperty("Command to execute", info.m_Command) ;
+		properties[2] = new PropertiesDialog.StringProperty("Internal command to execute (advanced)", info.m_InternalCommand) ;
 		
 		PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 
 		info.m_Name 		   = ((PropertiesDialog.StringProperty)properties[0]).getValue() ;
-		info.m_Command 		   = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
+		info.m_Command 		   = ((PropertiesDialog.MultiLineStringProperty)properties[1]).getValue() ;
 		info.m_InternalCommand = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
 		
 		// Update the label
@@ -244,13 +241,13 @@ public class ButtonView extends AbstractView
 		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
 		
 		properties[0] = new PropertiesDialog.StringProperty("Label", info.m_Name) ;
-		properties[1] = new PropertiesDialog.StringProperty("Command to execute", info.m_Command) ;
-		properties[2] = new PropertiesDialog.StringProperty("Internal command to execute (very advanced)", info.m_InternalCommand) ;
+		properties[1] = new PropertiesDialog.MultiLineStringProperty("Command to execute", info.m_Command) ;
+		properties[2] = new PropertiesDialog.StringProperty("Internal command to execute (advanced)", info.m_InternalCommand) ;
 		
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
-
+		
 		info.m_Name 		   = ((PropertiesDialog.StringProperty)properties[0]).getValue() ;
-		info.m_Command 		   = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
+		info.m_Command 		   = ((PropertiesDialog.MultiLineStringProperty)properties[1]).getValue() ;
 		info.m_InternalCommand = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
 		
 		if (ok)
@@ -530,10 +527,20 @@ public class ButtonView extends AbstractView
 		if (command != null && command.length() > 0)
 		{
 			AbstractView linkedView = getLinkedView() ;
-			if (linkedView != null)
-				linkedView.executeAgentCommand(command, true) ;
-			else
-				m_Frame.executeCommandPrimeView(command, true) ;
+			
+			// We now allow multiple line commands, so process each in turn.
+			String lines[] = command.split(AbstractView.kLineSeparator) ;
+			
+			for (int i = 0 ; i < lines.length ; i++)
+			{
+				if (lines[i].length() == 0)
+					continue ;
+				
+				if (linkedView != null)
+					linkedView.executeAgentCommand(lines[i], true) ;
+				else
+					m_Frame.executeCommandPrimeView(lines[i], true) ;			
+			}
 		}
 		
 		if (button.m_InternalCommand != null)
