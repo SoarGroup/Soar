@@ -2,6 +2,9 @@
 ### $Id$
 ###
 ### $Log$
+### Revision 1.4  2005/06/10 04:13:49  kcoulter
+### cleanup -- removed some puts
+###
 ### Revision 1.3  2005/06/10 03:47:19  kcoulter
 ### converted to SML events
 ###
@@ -42,7 +45,7 @@ set possibleAgentColors [list red blue green yellow purple orange black]
 
 global tsiSimulatorPath
 set tsiSimulatorPath $ETCPConfig(SimulatorPath)
-puts "in et-controlpanel.tcl: tsiSimulatorPath = $tsiSimulatorPath"
+#puts "in et-controlpanel.tcl: tsiSimulatorPath = $tsiSimulatorPath"
 
 source [file join $tsi_library tsiControlPanelCommon.tcl]
 
@@ -51,7 +54,7 @@ proc makeETControlPanel { {hide 0} {x -20} {y 1} } {
    global agentColorMenu possibleAgentColors currentAgentColor tsiConfig \
        ETCPConfig soarTimeUnit tsiSimulatorPath
 
-puts "in makeETControlPanel: tsiSimulatorPath = $tsiSimulatorPath"
+#puts "in makeETControlPanel: tsiSimulatorPath = $tsiSimulatorPath"
 
    
 
@@ -409,9 +412,6 @@ proc InstantiateETCPConfig {} {
     # such as 'Eater' ... so far this is the only config parameter, if enough
     # become necessary, a file could be used.
 
-puts "in InstantiateETCPConfig: tsiSimulatorPath = $tsiSimulatorPath"
-puts "in InstantiateETCPConfig: ETCPConfig(SimulatorPath) = $ETCPConfig(SimulatorPath)"
-
     if { ![info exists ETCPConfig(AgentName)] } { 
 	set ETCPConfig(AgentName) Agent
     }
@@ -439,8 +439,6 @@ puts "in InstantiateETCPConfig: ETCPConfig(SimulatorPath) = $ETCPConfig(Simulato
 proc tsiLoadSubDirectories { menuName fileMenuName } {
     global tsiSimulatorPath tsiCurrentAgentSourceDir
 
-puts "in tsiLoadSubDirectories: tsiSimulatorPath = $tsiSimulatorPath"
-    
     if { $tsiSimulatorPath == [pwd] } {
 	set dirs [list .]
 	foreach file [glob -nocomplain *] {
