@@ -1,6 +1,9 @@
 #
 # $Id$
 # $Log$
+# Revision 1.4  2005/06/10 05:05:35  kcoulter
+# added  StopAllAgents when food gone
+#
 # Revision 1.3  2005/06/10 04:13:24  kcoulter
 # added updateInputLink at agent creation
 #
@@ -1394,18 +1397,20 @@ proc runSimulation {w} {
       tk_dialog .error Warning "There are currently no eaters to run." \
                 warning 0 Ok
       set runningSimulation 0
+      SMLenvironmentStop
       return
    }
    if {([.wGlobal.c find withtag normalfood] == {}) && \
        ([.wGlobal.c find withtag bonusfood] == {})} {
       set runningSimulation 0
+       SMLenvironmentStop; $_kernel StopAllAgents
       tk_dialog .info {Game Over} {Game over: All the food is gone.} info 0 Ok
       return
    }
     
    if {$worldCount >= $worldCountLimit} {
       set runningSimulation 0
-       environmentStop
+      SMLenvironmentStop; $_kernel StopAllAgents
       tk_dialog .info {Game Over} \
                       {Game over: Move count limit reached.} info 0 Ok
       return
@@ -1413,7 +1418,7 @@ proc runSimulation {w} {
     if [goalIsAccomplished] {
 	
 	set runningSimulation 0
-	environmentStop
+	SMLenvironmentStop; $_kernel StopAllAgents
 	tk_dialog .info {Goal Accomplished} \
 	    {The goal has been accomplished. Game Over.} info 0 Ok
 	return
