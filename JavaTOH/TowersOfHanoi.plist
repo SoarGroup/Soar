@@ -7,7 +7,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string>Towers of Hanoi, Copyright University of Michigan 2005.</string>
 	<key>CFBundleIdentifier</key>
-	<string>edu.umich.toh</string>
+	<string>edu.umich.soar.toh</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

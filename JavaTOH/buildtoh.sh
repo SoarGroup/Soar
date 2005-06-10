@@ -11,7 +11,7 @@ if [ `uname -s`="Darwin" ]
 then
     echo "on Mac OS X, building application package for JavaTOH..."
 
-    APP_PATH="$SOARLIB/Towers Of Hanoi.app/Contents"
+    APP_PATH="$SOARLIB/TowersOfHanoi.app/Contents"
     mkdir -p "$APP_PATH/MacOS"
     mkdir -p "$APP_PATH/Resources/Java"
 
