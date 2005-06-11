@@ -5,7 +5,7 @@
       <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
         <pane view="texttrace1" tabAtTop="false" singleView="true" horiz="true">
           <view UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.TextTraceView" ShowTraceOutput="true" Name="texttrace1" ClearEachCommand="false" UpdateOnStop="false">
-            <History Item0="<Type commands here>" Size="1" Class="helpers.CommandHistory"></History>
+            <History Item0="&lt;Type commands here&gt;" Size="1" Class="helpers.CommandHistory"></History>
           </view>
         </pane>
         <pane view="buttons3" tabAtTop="false" singleView="true" horiz="true">
@@ -15,8 +15,8 @@
             <Button InternalCommand="" Command="run 1 --phase" Name="Run 1 -p"></Button>
             <Button Command="stop-soar" Name="Stop"></Button>
             <Button Command="matches" Name="Matches"></Button>
-            <Button Command="print <s>" Name="Print <s>"></Button>
-            <Button Command="print <ts>" Name="Print <ts>"></Button>
+            <Button Command="print &lt;s&gt;" Name="Print &lt;s&gt;"></Button>
+            <Button Command="print &lt;ts&gt;" Name="Print &lt;ts&gt;"></Button>
             <Button Command="clear" Name="Clear"></Button>
             <Button InternalCommand="" Command="watch 1" Name="Watch 1"></Button>
             <Button InternalCommand="" Command="watch 3" Name="Watch 3"></Button>
@@ -34,10 +34,10 @@
     <sash weight0="300" Class="class org.eclipse.swt.custom.SashForm" weight1="699" weights="2" style="512">
       <pane view="state" tabAtTop="false" singleView="false" horiz="true">
         <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="state" ClearEachCommand="true" UpdateOnStop="true">
-          <History Item0="print <s>" Size="1" Class="helpers.CommandHistory"></History>
+          <History Item0="print &lt;s&gt;" Size="1" Class="helpers.CommandHistory"></History>
         </view>
         <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="operator" ClearEachCommand="true" UpdateOnStop="true">
-          <History Item0="print <o>" Size="1" Class="helpers.CommandHistory"></History>
+          <History Item0="print &lt;o&gt;" Size="1" Class="helpers.CommandHistory"></History>
         </view>
         <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="stack" ClearEachCommand="true" UpdateOnStop="true">
           <History Item0="print --stack" Size="1" Class="helpers.CommandHistory"></History>
@@ -46,7 +46,7 @@
           <History Item0="matches" Size="1" Class="helpers.CommandHistory"></History>
         </view>
         <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="op_pref" ClearEachCommand="true" UpdateOnStop="true">
-          <History Item0="preferences <s> operator --names" Size="1" Class="helpers.CommandHistory"></History>
+          <History Item0="preferences &lt;s&gt; operator --names" Size="1" Class="helpers.CommandHistory"></History>
         </view>
         <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="stats" ClearEachCommand="true" UpdateOnStop="true">
           <History Item0="stats" Size="1" Class="helpers.CommandHistory"></History>
@@ -61,7 +61,7 @@
       <sash weight0="392" Class="class org.eclipse.swt.custom.SashForm" weight1="607" weights="2" style="512">
         <pane view="update" tabAtTop="true" singleView="true" horiz="true">
           <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="update" ClearEachCommand="true" UpdateOnStop="true">
-            <History Item0="p --stack" Size="2" Class="helpers.CommandHistory" Item1="p <s>"></History>
+            <History Item0="p --stack" Size="2" Class="helpers.CommandHistory" Item1="p &lt;s&gt;"></History>
           </view>
         </pane>
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Top">
@@ -76,8 +76,8 @@
           <pane view="buttons2" tabAtTop="false" singleView="true" horiz="true">
             <view ButtonCount="4" Class="modules.ButtonView" Name="buttons2" LinkedView="scratch_pad">
               <Button Command="matches" Name="Matches"></Button>
-              <Button Command="print <s>" Name="Print state"></Button>
-              <Button Command="print <o>" Name="Print op"></Button>
+              <Button Command="print &lt;s&gt;" Name="Print state"></Button>
+              <Button Command="print &lt;o&gt;" Name="Print op"></Button>
               <Button Command="print --stack" Name="Print stack"></Button>
             </view>
           </pane>
