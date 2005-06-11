@@ -517,8 +517,6 @@ proc quitSoar {} {
 	  puts "sio_envSocketList is not-defined."
        }
 
-   }
-
 
        # Check to see if this is defined, and if so, call it.
        if { [llength [info procs simulatorQuit]] > 0 } {
@@ -544,6 +542,7 @@ proc quitSoar {} {
        if [info exists _kernel] {unset _kernel};
 
        exit
+      }
    }
 }
 
