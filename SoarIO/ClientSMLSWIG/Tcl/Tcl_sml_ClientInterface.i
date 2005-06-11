@@ -43,7 +43,7 @@
 
 	typedef struct ThreadEvent {
 		Tcl_Event event; /* Must be first */
-		char *script; /* script to run */
+		Tcl_Obj *script; /* script to run */
 		ThreadEventResult *resultPtr; /* To communicate the result back */
 	} ThreadEvent;
 
@@ -81,7 +81,8 @@
 			Tcl_ResetResult(interp);
 			Tcl_CreateThreadExitHandler(ThreadFreeProc,
 					(ClientData) threadEventPtr->script);
-			code = Tcl_GlobalEval(interp, threadEventPtr->script);
+			// since this script isn't going to be reused, there's no point in compiling to bytecode (hence the TCL_EVAL_DIRECT flag)
+			code = Tcl_EvalObjEx(interp, threadEventPtr->script, TCL_EVAL_DIRECT);
 			Tcl_DeleteThreadExitHandler(ThreadFreeProc,
 					(ClientData) threadEventPtr->script);
 			if (code != TCL_OK) {
@@ -92,14 +93,13 @@
 			}
 			result = Tcl_GetStringResult(interp);
 		}
-		ckfree(threadEventPtr->script);
 		if (interp != NULL) {
 			Tcl_Release((ClientData) interp);
 		}
 		return 1;
 	}
 
-	int tcl_thread_send(Tcl_Interp* interp, Tcl_ThreadId id, Tcl_Obj* scriptBase)
+	int tcl_thread_send(Tcl_Interp* interp, Tcl_ThreadId id, Tcl_Obj* script)
 	{
 		ThreadEvent *threadEventPtr;
 		ThreadEventResult *resultPtr;
@@ -112,11 +112,8 @@
 		* Create the event for its event queue.
 		*/
 
-		char* script = Tcl_GetString(scriptBase);	// Leaks?  Should we delete this somewhere?
-
 		threadEventPtr = (ThreadEvent *) ckalloc(sizeof(ThreadEvent));
-		threadEventPtr->script = ckalloc(strlen(script) + 1);
-		strcpy(threadEventPtr->script, script);
+		threadEventPtr->script = script;
 		resultPtr = threadEventPtr->resultPtr = NULL;
 
 		/*
