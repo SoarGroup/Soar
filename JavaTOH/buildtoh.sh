@@ -16,6 +16,7 @@ then
     mkdir -p "$APP_PATH/Resources/Java"
 
     cp TowersOfHanoi.plist "$APP_PATH/Info.plist"
+    cp "$SOARLIB/toh.icns" "$APP_PATH/Resources"
     cp "$SOARLIB/toh.jar" "$APP_PATH/Resources/Java"
     cp "$SOARLIB/java_swt" "$APP_PATH/MacOS"
     chmod a+x "$APP_PATH/MacOS/java_swt"

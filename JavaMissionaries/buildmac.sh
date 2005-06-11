@@ -22,6 +22,7 @@ then
     mkdir -p "$APP_PATH/Resources/Java"
 
     cp MissionariesAndCannibals.plist "$APP_PATH/Info.plist"
+    cp "$SOARLIB/mac.icns" "$APP_PATH/Resources"
     cp "$SOARLIB/mac.jar" "$APP_PATH/Resources/Java"
     cp "$SOARLIB/java_swt" "$APP_PATH/MacOS"
     chmod a+x "$APP_PATH/MacOS/java_swt"
