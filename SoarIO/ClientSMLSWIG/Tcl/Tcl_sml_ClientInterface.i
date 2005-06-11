@@ -123,19 +123,108 @@
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_EvalObjEx(tud->interp, tud->script, 0);
 	}
-	
-	typedef struct ThreadEventResult {
-		Tcl_Condition done; /* Set when the script completes */
-		int code; /* Return value of the function */
-		char *result; /* Result from the function */
-		int length; /* length of result string */
-	} ThreadEventResult;
 
-	typedef struct ThreadEvent {
-		Tcl_Event event; /* Must be first */
-		char *script; /* script to run */
-		ThreadEventResult *resultPtr; /* To communicate the result back */
-	} ThreadEvent;
+typedef struct ThreadEventResult {
+    Tcl_Condition done;         /* Signaled when the script completes */
+    int code;                   /* Return value of Tcl_Eval */
+    char *result;               /* Result from the script */
+    char *errorInfo;            /* Copy of errorInfo variable */
+    char *errorCode;            /* Copy of errorCode variable */
+    Tcl_ThreadId srcThreadId;   /* Id of sending thread, in case it dies */
+    Tcl_ThreadId dstThreadId;   /* Id of target thread, in case it dies */
+    struct ThreadEvent *eventPtr;       /* Back pointer */
+    struct ThreadEventResult *nextPtr;  /* List for cleanup */
+    struct ThreadEventResult *prevPtr;
+
+} ThreadEventResult;
+
+typedef struct ThreadEvent {
+	Tcl_Event event; /* Must be first */
+	char *script; /* script to run */
+	ThreadEventResult *resultPtr; /* To communicate the result back */
+} ThreadEvent;
+
+Tcl_Interp *dispinterp;
+
+static void ThreadFreeProc(ClientData clientData)
+{
+    if (clientData) {
+        ckfree((char *) clientData);
+    }
+
+}
+
+// evPtr is really a ThreadEvent*
+static int ThreadEventProc(Tcl_Event *evPtr, int mask)
+{
+    ThreadEvent *threadEventPtr = (ThreadEvent *)evPtr;
+    ThreadEventResult *resultPtr = threadEventPtr->resultPtr;
+    Tcl_Interp *interp = dispinterp;
+    int code;
+    char const* result;
+	char const* errorCode;
+	char const* errorInfo;
+
+	// Check which thread we're on.
+	// I hope this is the thread I asked to be part of.	
+	Tcl_ThreadId currentThread = Tcl_GetCurrentThread() ;
+
+    if (interp == NULL) {
+        code = TCL_ERROR;
+        result = "no target interp!";
+        errorCode = "THREAD";
+        errorInfo = "";
+    } else {
+        Tcl_Preserve((ClientData) interp);
+        Tcl_ResetResult(interp);
+        Tcl_CreateThreadExitHandler(ThreadFreeProc,
+                (ClientData) threadEventPtr->script);
+        code = Tcl_GlobalEval(interp, threadEventPtr->script);
+        Tcl_DeleteThreadExitHandler(ThreadFreeProc,
+                (ClientData) threadEventPtr->script);
+        if (code != TCL_OK) {
+            errorCode = Tcl_GetVar(interp, "errorCode", TCL_GLOBAL_ONLY);
+            errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
+        } else {
+            errorCode = errorInfo = NULL;
+        }
+        result = Tcl_GetStringResult(interp);
+    }
+    ckfree(threadEventPtr->script);
+    if (interp != NULL) {
+        Tcl_Release((ClientData) interp);
+    }
+    return 1;
+
+}
+
+int tcl_thread_send(Tcl_ThreadId id, char *script)
+ {
+    ThreadEvent *threadEventPtr;
+    ThreadEventResult *resultPtr;
+    Tcl_ThreadId threadId = (Tcl_ThreadId) id;
+
+    /*
+     * Create the event for its event queue.
+     */
+
+    threadEventPtr = (ThreadEvent *) ckalloc(sizeof(ThreadEvent));
+    threadEventPtr->script = ckalloc(strlen(script) + 1);
+    strcpy(threadEventPtr->script, script);
+    resultPtr = threadEventPtr->resultPtr = NULL;
+
+    /*
+     * Queue the event and poke the other thread's notifier.
+     */
+
+    threadEventPtr->event.proc = ThreadEventProc;
+    Tcl_ThreadQueueEvent(threadId, (Tcl_Event *)threadEventPtr,
+            TCL_QUEUE_TAIL);
+    Tcl_ThreadAlert(threadId);
+
+    return TCL_OK;
+
+} 
 	
 //	int
 //ThreadEventProc(Tcl_Event evPtr, int mask)
@@ -163,9 +252,17 @@ void TclRegisterForUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		Tcl_AppendStringsToObj(script, " ", NULL);
 		Tcl_AppendObjToObj(script, Tcl_NewLongObj(runFlags));
-		
-		Tcl_EvalObjEx(tud->interp, script, 0);
-		
+
+		printf("Called RegisterForUpdateEvent\n") ;		
+//		Tcl_EvalObjEx(tud->interp, script, 0);
+
+Tcl_ThreadId currentThread = Tcl_GetCurrentThread() ;
+
+// Create an event and make a thread-switch
+char* scriptCopy = Tcl_GetString(script);	// Leaks?  Should we delete this somewhere?
+dispinterp = tud->interp ;
+tcl_thread_send(tud->threadId, scriptCopy) ;
+
 		// Comment out above line and replace with the following (incomplete) code
 		// Various structures are defined immediately proceeding this function
 		//  to assist with all of this.
