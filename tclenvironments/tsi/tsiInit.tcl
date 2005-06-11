@@ -69,11 +69,15 @@ proc TSI {args} {eval tsi $args}
 proc tsi {{hideController 0} args } {
    global interp_name interp_agentSocket _kernel tsi_library \
        tcl_platform tsiConfig tsiSimulationState tsiSimulatorPath \
-       tsiClicksPerSecond hideAgentWindow
+       tsiClicksPerSecond hideAgentWindow globalTick
+       
    global smlEVENT_AFTER_AGENT_CREATED smlEVENT_BEFORE_AGENT_REINITIALIZED 
    global smlEVENT_BEFORE_AGENT_DESTROYED smlEVENT_BEFORE_SHUTDOWN
    global smlEVENT_AFTER_ALL_OUTPUT_PHASES EaterUpdateCallback smlStopNow
 
+   # if we don't do this, then the agent's first output doesn't get processed
+   set globalTick 0
+   
    set tsiSimulatorPath $tsi_library
    
    ### Read in the default TSI parameters
