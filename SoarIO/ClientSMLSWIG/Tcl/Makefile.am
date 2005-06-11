@@ -23,6 +23,7 @@ INCLUDES   = -I../../ClientSML/include -I../../ElementXML/include -I../../Connec
 SWIG=@SWIG@
 CXXFLAGS = $(SOAR_CXXFLAGS) -Wno-unused
 LIBDIR=@libdir@
+SO=@SO@
 
 SWIGOPT    = -tcl -Wall -pkgversion 8.6.0 $(INCLUDES) -outdir build
 
@@ -38,5 +39,5 @@ if SWIGTCL
 	rm -rf $(LIBDIR)/Tcl_sml_ClientInterface
 	mkdir $(LIBDIR)/Tcl_sml_ClientInterface
 	mv .libs/pkgIndex.tcl $(LIBDIR)/Tcl_sml_ClientInterface
-	ln -s $(LIBDIR)/libTcl_sml_ClientInterface.so $(LIBDIR)/Tcl_sml_ClientInterface/libTcl_sml_ClientInterface.so
+	ln -s $(LIBDIR)/libTcl_sml_ClientInterface$(SO) $(LIBDIR)/Tcl_sml_ClientInterface/libTcl_sml_ClientInterface$(SO)
 endif

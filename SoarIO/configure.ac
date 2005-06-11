@@ -98,7 +98,7 @@ if test -z "$SO"
 then
 	case $host in
 	*-*-hp*) SO=.sl;;
-	*-*-darwin*) SO=.bundle;;
+	*-*-darwin*) SO=.dylib;;
 	*-*-cygwin* | *-*-mingw*) SO=.dll;;
 	*) SO=.so;;
 	esac
@@ -285,7 +285,7 @@ if test "$java" = "true" ; then
     # Add in default installation directory on Windows for Cygwin
     case $host in
     *-*-cygwin* | *-*-mingw*) JAVAINCDIR="c:/Program*Files/Java/jdk*/include d:/Program*Files/Java/jdk*/include c:/j2sdk*/include d:/j2sdk*/include c:/jdk*/include d:/jdk*/include $JAVAINCDIR";;
-    *-*-darwin*) JAVAINCDIR="/System/Library/Frameworks/JavaVM.framework/Headers $JAVAINCDIR";;
+    *-*-darwin*) JAVAINCDIR="/Library/Java/Home/include $JAVAINCDIR";;
     *);;
     esac
   fi
