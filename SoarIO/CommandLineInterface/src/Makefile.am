@@ -53,7 +53,6 @@ cli_soar8.cpp\
 cli_soarnews.cpp\
 cli_source.cpp\
 cli_sp.cpp\
-cli_startsystem.cpp\
 cli_stats.cpp\
 cli_stopsoar.cpp\
 cli_time.cpp\
