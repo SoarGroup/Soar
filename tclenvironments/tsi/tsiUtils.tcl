@@ -470,14 +470,22 @@ proc setPrintDepth {} {
 #
 
 proc quitSoar {} {
-   global tsiConfig sio_socketList sio_envSocketList _agent _kernel localAgentPtrs
+   global tsiConfig sio_socketList sio_envSocketList
+   global localAgents _agent _kernel localAgentPtrs
    
    if { [grab current] == "" } {   # fix for bugzilla bug 396
      if { ![tk_dialog .tsiQuit {Quit Soar} {Really quit from Soar?} \
 	     question 0 {Ok} {Cancel}] } {
       
        if ![string compare $tsiConfig(mode) off] { 
-	   #give Tcl object ownership of underlying C++ object so when we delete
+	   ## best to delete agents explicitly in case other
+	   ## processes are listening for them, eg SoarJavaDebugger
+	   if [info exists localAgents] {
+	       foreach name $localAgents {
+		   destroyAgent $name
+	       }
+	   }
+	   #give Tcl object ownership of underlying C++ object so when delete
 	   #  the Tcl object they both get deleted
 	   set result [$_kernel -acquire];
 	   #delete kernel object (this will also delete any agents that are
@@ -515,6 +523,13 @@ proc quitSoar {} {
        # Check to see if this is defined, and if so, call it.
        if { [llength [info procs simulatorQuit]] > 0 } {
  	   simulatorQuit ;  #this just closes files
+       }
+	   ## best to delete agents explicitly in case other
+	   ## processes are listening for them, eg SoarJavaDebugger
+       if [info exists localAgents] {
+	   foreach name $localAgents {
+	       destroyAgent $name
+	   }
        }
 
        #give Tcl object ownership of underlying C++ object so when we delete
