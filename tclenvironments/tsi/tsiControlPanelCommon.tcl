@@ -138,7 +138,7 @@ if {0} {
    } else {
        set localAgents $name
    }
-if {[llength localAgentPtrs] == 1} {
+if {[llength [array names localAgentPtrs]] == 1} {
        ## this is the first agent, so can launch Java Debugger
        tsiLaunchJavaDebugger $name
    }
