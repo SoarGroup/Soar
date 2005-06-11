@@ -129,9 +129,11 @@ proc tsi {{hideController 0} args } {
 	return
    }
 
-    ###$_kernel StopEventThread
-
-    
+    # DJP: We want to make sure to handle events in the Tcl thread
+    # so we turn off the event thread and poll for events instead.
+    $_kernel StopEventThread
+    checkForEvents $_kernel
+    # DJP end
 
    # register the kernel callbacks
  
@@ -182,6 +184,13 @@ debug: $tsiConfig(debug), Platform: $tcl_platform(platform)"
    resolveTSIConfigConflicts
    wm protocol . WM_DELETE_WINDOW { quitSoar }
 }
+
+# DJP: Explicitly check for incoming commands and events
+proc checkForEvents {k} {
+   $k CheckForIncomingCommands
+   after 500 checkForEvents $k
+}
+# DJP end
 
 proc switchTSIInterfacePrefs {useNewTSI} {
    global tsiConfig
