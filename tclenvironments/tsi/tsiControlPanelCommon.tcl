@@ -137,19 +137,21 @@ if {0} {
        lappend localAgents $name 
    } else {
        set localAgents $name
+   }
+if {[llength localAgentPtrs] == 1} {
        ## this is the first agent, so can launch Java Debugger
        tsiLaunchJavaDebugger $name
    }
 
-
    # Register for the agent events
  
+if (0) {
    $name eval [list set printCallbackId [$_agent RegisterForPrintEvent $smlEVENT_PRINT PrintCallback ""]]
     #$name eval [list set productionCallbackId [$_agent RegisterForProductionEvent $smlEVENT_BEFORE_PRODUCTION_REMOVED ProductionExcisedCallback ""]]
    $name eval [list set productionCallbackId [$_agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionFiredCallback ""]]
    $name eval [list set runCallbackId [$_agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback ""]]
    $name eval [list set structuredCallbackId [$_agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT StructuredTraceCallback ""]]
-
+}
    tsiSetupAgentVars $name
 
    # load procs so Users can enter Soar cmds in agent window

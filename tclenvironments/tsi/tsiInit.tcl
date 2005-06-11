@@ -129,13 +129,17 @@ proc tsi {{hideController 0} args } {
 	return
    }
 
+    ###$_kernel StopEventThread
+
+    
+
    # register the kernel callbacks
  
 set agentCallbackId0 [$_kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATED AgentCreatedCallback ""]
-set agentCallbackId1 [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
-set agentCallbackId2 [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback ""]
-set systemCallbackId [$_kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
-set rhsCallbackId [$_kernel AddRhsFunction RhsFunctionTest ""]
+#set agentCallbackId1 [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
+#set agentCallbackId2 [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback ""]
+#set systemCallbackId [$_kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
+#set rhsCallbackId [$_kernel AddRhsFunction RhsFunctionTest ""]
  
 set EaterUpdateCallback [$_kernel RegisterForUpdateEvent $smlEVENT_AFTER_ALL_OUTPUT_PHASES smlProcessUpdates ""]
   
