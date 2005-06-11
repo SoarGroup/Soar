@@ -28,102 +28,6 @@
 		Tcl_Obj* script;
 	};
 	
-	std::string TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
-	                    char const* pArgument)
-	{
-	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
-	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
-	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", pArgument, "\"", NULL);
-	    Tcl_EvalObjEx(tud->interp, script, 0);
-	    Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
-	    
-	    return Tcl_GetString(res);
-	}
-	
-	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
-	{
-		// we can ignore the id parameter because it's already in the script (from when we registered it)
-		unused(id);
-		
-		TclUserData* tud = static_cast<TclUserData*>(pUserData);
-		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
-		Tcl_EvalObjEx(tud->interp, script, 0);
-	}
-	
-	void TclProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
-	{
-		// we can ignore the agent and id parameters because they're already in the script (from when we registered it)
-		unused(pAgent);
-		unused(id);
-		
-		TclUserData* tud = static_cast<TclUserData*>(pUserData);
-		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-		Tcl_AppendStringsToObj(script, " \"", pProdName, "\"", NULL);
-		
-		// we need to check if pInstantiation is null, because if it is it will prematurely end the appending
-		//  and we will lose the closing double quote, resulting in a syntax error
-		if(pInstantiation) {
-			Tcl_AppendStringsToObj(script, " \"", pInstantiation, "\"", NULL);
-		} else {
-			Tcl_AppendStringsToObj(script, " \"\"", NULL);
-		}
-		
-		Tcl_EvalObjEx(tud->interp, script, 0);
-	}
-	
-	void TclRunEventCallback(sml::smlRunEventId id, void* pUserData, sml::Agent* agent, sml::smlPhase phase)
-	{
-		// we can ignore the agent and id parameters because they're already in the script (from when we registered it)
-		unused(agent);
-		unused(id);
-		
-		TclUserData* tud = static_cast<TclUserData*>(pUserData);
-		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-		Tcl_AppendStringsToObj(script, " ", NULL);
-		Tcl_AppendObjToObj(script, Tcl_NewLongObj(long(phase)));
-		Tcl_AppendStringsToObj(script, " ", NULL);
-		Tcl_EvalObjEx(tud->interp, script, 0);
-	}
-	
-	void TclPrintEventCallback(sml::smlPrintEventId id, void* pUserData, sml::Agent* agent, char const* pMessage)
-	{
-		// we can ignore these parameters because they're already in the script (from when we registered it)
-		unused(agent);
-		unused(id);
-		
-		TclUserData* tud = static_cast<TclUserData*>(pUserData);
-		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-		// wrap the message in quotes in case it has spaces
-		Tcl_AppendStringsToObj(script, " \"", pMessage, "\"", NULL);
-		Tcl_EvalObjEx(tud->interp, script, 0);
-	}
-	
-	void TclXMLEventCallback(sml::smlXMLEventId id, void* pUserData, sml::Agent* agent, sml::ClientXML* pXML)
-	{
-		// we can ignore these parameters because they're already in the script (from when we registered it)
-		unused(agent);
-		unused(id);
-		
-		TclUserData* tud = static_cast<TclUserData*>(pUserData);
-		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
-		// add a space to separate the args
-		Tcl_AppendStringsToObj(script, " ", NULL);
-		Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pXML, SWIGTYPE_p_sml__ClientXML,0));
-		Tcl_EvalObjEx(tud->interp, script, 0);
-	}
-	
-	void TclSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* kernel)
-	{
-		// we can ignore these parameters because they're already in the script (from when we registered it)
-		unused(kernel);
-		unused(id);
-		
-		TclUserData* tud = static_cast<TclUserData*>(pUserData);
-		Tcl_EvalObjEx(tud->interp, tud->script, 0);
-	}
-
 typedef struct ThreadEventResult {
     Tcl_Condition done;         /* Signaled when the script completes */
     int code;                   /* Return value of Tcl_Eval */
@@ -198,15 +102,20 @@ static int ThreadEventProc(Tcl_Event *evPtr, int mask)
 
 }
 
-int tcl_thread_send(Tcl_ThreadId id, char *script)
+int tcl_thread_send(Tcl_Interp* interp, Tcl_ThreadId id, Tcl_Obj* scriptBase)
  {
     ThreadEvent *threadEventPtr;
     ThreadEventResult *resultPtr;
     Tcl_ThreadId threadId = (Tcl_ThreadId) id;
 
+	// Cache the interpreter so we can find it again later
+	dispinterp = interp ;
+
     /*
      * Create the event for its event queue.
      */
+
+	char* script = Tcl_GetString(scriptBase);	// Leaks?  Should we delete this somewhere?
 
     threadEventPtr = (ThreadEvent *) ckalloc(sizeof(ThreadEvent));
     threadEventPtr->script = ckalloc(strlen(script) + 1);
@@ -221,6 +130,11 @@ int tcl_thread_send(Tcl_ThreadId id, char *script)
     Tcl_ThreadQueueEvent(threadId, (Tcl_Event *)threadEventPtr,
             TCL_QUEUE_TAIL);
     Tcl_ThreadAlert(threadId);
+
+	// Pump the event queue so the event is handled synchronously
+	// Without this the call because asynchronous which is trouble.
+	// BUGBUG? Should this be while (DoOneEvent() == 1) { } - i.e. clear the queue.
+    Tcl_DoOneEvent(TCL_DONT_WAIT) ;
 
     return TCL_OK;
 
@@ -241,6 +155,129 @@ int tcl_thread_send(Tcl_ThreadId id, char *script)
 //Tcl_Release(this->interp);
 //return 1;
 //}
+	
+	std::string TclRhsEventCallback(sml::smlRhsEventId, void* pUserData, sml::Agent* pAgent, char const* pFunctionName,
+	                    char const* pArgument)
+	{
+	    TclUserData* tud = static_cast<TclUserData*>(pUserData);
+	    Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
+	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", pArgument, "\"", NULL);
+//	    Tcl_EvalObjEx(tud->interp, script, 0);
+
+// Send the event to the given interpreter using the given thread
+Tcl_ResetResult(tud->interp);
+tcl_thread_send(tud->interp, tud->threadId, script) ;
+
+	    Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
+	    
+	    return Tcl_GetString(res);
+	}
+	
+	void TclAgentEventCallback(sml::smlAgentEventId id, void* pUserData, sml::Agent* agent)
+	{
+		// we can ignore the id parameter because it's already in the script (from when we registered it)
+		unused(id);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
+//		Tcl_EvalObjEx(tud->interp, script, 0);
+		
+		// Send the event to the given interpreter using the given thread
+tcl_thread_send(tud->interp, tud->threadId, script) ;
+
+	}
+	
+	void TclProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
+	{
+		// we can ignore the agent and id parameters because they're already in the script (from when we registered it)
+		unused(pAgent);
+		unused(id);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		Tcl_AppendStringsToObj(script, " \"", pProdName, "\"", NULL);
+		
+		// we need to check if pInstantiation is null, because if it is it will prematurely end the appending
+		//  and we will lose the closing double quote, resulting in a syntax error
+		if(pInstantiation) {
+			Tcl_AppendStringsToObj(script, " \"", pInstantiation, "\"", NULL);
+		} else {
+			Tcl_AppendStringsToObj(script, " \"\"", NULL);
+		}
+		
+//		Tcl_EvalObjEx(tud->interp, script, 0);
+		
+// Send the event to the given interpreter using the given thread
+tcl_thread_send(tud->interp, tud->threadId, script) ;
+	}
+	
+	void TclRunEventCallback(sml::smlRunEventId id, void* pUserData, sml::Agent* agent, sml::smlPhase phase)
+	{
+		// we can ignore the agent and id parameters because they're already in the script (from when we registered it)
+		unused(agent);
+		unused(id);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		Tcl_AppendStringsToObj(script, " ", NULL);
+		Tcl_AppendObjToObj(script, Tcl_NewLongObj(long(phase)));
+		Tcl_AppendStringsToObj(script, " ", NULL);
+//		Tcl_EvalObjEx(tud->interp, script, 0);
+		
+// Send the event to the given interpreter using the given thread
+tcl_thread_send(tud->interp, tud->threadId, script) ;
+		
+	}
+	
+	void TclPrintEventCallback(sml::smlPrintEventId id, void* pUserData, sml::Agent* agent, char const* pMessage)
+	{
+		// we can ignore these parameters because they're already in the script (from when we registered it)
+		unused(agent);
+		unused(id);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		// wrap the message in quotes in case it has spaces
+		Tcl_AppendStringsToObj(script, " \"", pMessage, "\"", NULL);
+//		Tcl_EvalObjEx(tud->interp, script, 0);
+		
+// Send the event to the given interpreter using the given thread
+tcl_thread_send(tud->interp, tud->threadId, script) ;
+		
+	}
+	
+	void TclXMLEventCallback(sml::smlXMLEventId id, void* pUserData, sml::Agent* agent, sml::ClientXML* pXML)
+	{
+		// we can ignore these parameters because they're already in the script (from when we registered it)
+		unused(agent);
+		unused(id);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		// add a space to separate the args
+		Tcl_AppendStringsToObj(script, " ", NULL);
+		Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pXML, SWIGTYPE_p_sml__ClientXML,0));
+//		Tcl_EvalObjEx(tud->interp, script, 0);
+		
+// Send the event to the given interpreter using the given thread
+tcl_thread_send(tud->interp, tud->threadId, script) ;
+		
+	}
+	
+	void TclSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* kernel)
+	{
+		// we can ignore these parameters because they're already in the script (from when we registered it)
+		unused(kernel);
+		unused(id);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+//		Tcl_EvalObjEx(tud->interp, tud->script, 0);
+		
+// Send the event to the given interpreter using the given thread
+tcl_thread_send(tud->interp, tud->threadId, tud->script) ;	
+	}
 
 void TclRegisterForUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* kernel, sml::smlRunFlags runFlags)
 	{
@@ -258,10 +295,8 @@ void TclRegisterForUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData
 
 Tcl_ThreadId currentThread = Tcl_GetCurrentThread() ;
 
-// Create an event and make a thread-switch
-char* scriptCopy = Tcl_GetString(script);	// Leaks?  Should we delete this somewhere?
-dispinterp = tud->interp ;
-tcl_thread_send(tud->threadId, scriptCopy) ;
+// Send the event to the given interpreter using the given thread
+tcl_thread_send(tud->interp, tud->threadId, script) ;
 
 		// Comment out above line and replace with the following (incomplete) code
 		// Various structures are defined immediately proceeding this function
