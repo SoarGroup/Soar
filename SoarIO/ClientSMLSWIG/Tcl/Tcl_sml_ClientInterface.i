@@ -141,10 +141,10 @@
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pAgent, SWIGTYPE_p_sml__Agent,0));
 	    Tcl_AppendStringsToObj(script, " ", pFunctionName, " \"", pArgument, "\"", NULL);
 		Tcl_ResetResult(tud->interp);
-//	    Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
+	    Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 
 		// Send the event to the given interpreter using the given thread
-		tcl_thread_send(tud->interp, tud->threadId, script) ;
+//		tcl_thread_send(tud->interp, tud->threadId, script) ;
 
 		Tcl_Obj* res = Tcl_GetObjResult(tud->interp);
 		
@@ -159,10 +159,10 @@
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 	    Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) agent, SWIGTYPE_p_sml__Agent,0));
-//		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
+		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
 		// Send the event to the given interpreter using the given thread
-		tcl_thread_send(tud->interp, tud->threadId, script) ;
+//		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 	
 	void TclProductionEventCallback(sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation)
@@ -183,10 +183,10 @@
 			Tcl_AppendStringsToObj(script, " \"\"", NULL);
 		}
 		
-//		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
+		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
 		// Send the event to the given interpreter using the given thread
-		tcl_thread_send(tud->interp, tud->threadId, script) ;
+//		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 	
 	void TclRunEventCallback(sml::smlRunEventId id, void* pUserData, sml::Agent* agent, sml::smlPhase phase)
@@ -199,11 +199,10 @@
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		Tcl_AppendStringsToObj(script, " ", NULL);
 		Tcl_AppendObjToObj(script, Tcl_NewLongObj(long(phase)));
-		Tcl_AppendStringsToObj(script, " ", NULL);
-//		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
+		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
 		// Send the event to the given interpreter using the given thread
-		tcl_thread_send(tud->interp, tud->threadId, script) ;
+//		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 	
 	void TclPrintEventCallback(sml::smlPrintEventId id, void* pUserData, sml::Agent* agent, char const* pMessage)
@@ -216,10 +215,10 @@
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		// wrap the message in quotes in case it has spaces
 		Tcl_AppendStringsToObj(script, " \"", pMessage, "\"", NULL);
-//		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
+		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
 		// Send the event to the given interpreter using the given thread
-		tcl_thread_send(tud->interp, tud->threadId, script) ;
+//		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 	
 	void TclXMLEventCallback(sml::smlXMLEventId id, void* pUserData, sml::Agent* agent, sml::ClientXML* pXML)
@@ -233,10 +232,10 @@
 		// add a space to separate the args
 		Tcl_AppendStringsToObj(script, " ", NULL);
 		Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pXML, SWIGTYPE_p_sml__ClientXML,0));
-//		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
+		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 		
 		// Send the event to the given interpreter using the given thread
-		tcl_thread_send(tud->interp, tud->threadId, script) ;
+//		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 	
 	void TclSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* kernel)
@@ -246,10 +245,10 @@
 		unused(id);
 		
 		TclUserData* tud = static_cast<TclUserData*>(pUserData);
-//		Tcl_EvalObjEx(tud->interp, tud->script, 0);
+		Tcl_EvalObjEx(tud->interp, tud->script, 0);
 		
 		// Send the event to the given interpreter using the given thread
-		tcl_thread_send(tud->interp, tud->threadId, tud->script) ;
+//		tcl_thread_send(tud->interp, tud->threadId, tud->script) ;
 	}
 
 	void TclUpdateEventCallback(sml::smlUpdateEventId id, void* pUserData, sml::Kernel* kernel, sml::smlRunFlags runFlags)
@@ -262,10 +261,10 @@
 		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
 		Tcl_AppendStringsToObj(script, " ", NULL);
 		Tcl_AppendObjToObj(script, Tcl_NewLongObj(runFlags));
-//		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
+		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
 
 		// Send the event to the given interpreter using the given thread
-		tcl_thread_send(tud->interp, tud->threadId, script) ;
+//		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 	
 	TclUserData* CreateTclUserData(int id, const char* proc, const char* userData, Tcl_Interp* interp) {
