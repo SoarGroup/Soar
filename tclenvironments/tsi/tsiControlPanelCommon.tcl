@@ -436,7 +436,6 @@ proc tsiLaunchJavaDebugger {name} {
   if !($tsiConfig(hideAgentWindow)) {
     return
   }
-  puts "$env(PWD)"
   switch -exact $tcl_platform(platform) {
     windows {
        $name eval [list exec javaw -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
