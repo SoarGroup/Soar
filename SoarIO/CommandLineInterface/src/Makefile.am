@@ -17,6 +17,7 @@ cli_chunknameformat.cpp\
 cli_defaultwmedepth.cpp\
 cli_dirs.cpp\
 cli_echo.cpp\
+cli_editproduction.cpp\
 cli_excise.cpp\
 cli_explainbacktraces.cpp\
 cli_firingcounts.cpp\
