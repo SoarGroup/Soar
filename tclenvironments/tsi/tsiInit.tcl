@@ -192,7 +192,7 @@ debug: $tsiConfig(debug), Platform: $tcl_platform(platform)"
 # DJP: Explicitly check for incoming commands and events
 proc checkForEvents {k} {
    $k CheckForIncomingCommands
-   after 500 checkForEvents $k
+   after 5 checkForEvents $k
 }
 # DJP end
 
