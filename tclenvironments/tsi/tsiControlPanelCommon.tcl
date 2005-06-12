@@ -128,7 +128,6 @@ if {0} {
     set _agent [$name eval [list set _agent]]
     set localAgentPtrs($name) [$name eval [list set _agent]]
    
-
    ###KJC  each agent needs its SML pointers to access Soar
    $name alias soar_agent  $_agent
    $name alias soar_kernel $_kernel
@@ -138,6 +137,7 @@ if {0} {
    } else {
        set localAgents $name
    }
+
 if {[llength [array names localAgentPtrs]] == 1} {
        ## this is the first agent, so can launch Java Debugger
        tsiLaunchJavaDebugger $name
@@ -177,6 +177,9 @@ if (0) {
    set tsiAgentInfo($name,sourceDir) "$filepath"
    set tsiAgentInfo($name,sourceFile) "$filename"
 
+   after 500 set delay 1
+   vwait delay
+   
    tsiLoadAgentSource $name
 
 }  ;### end createNewAgent

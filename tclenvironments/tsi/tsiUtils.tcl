@@ -477,7 +477,14 @@ proc quitSoar {} {
      if { ![tk_dialog .tsiQuit {Quit Soar} {Really quit from Soar?} \
 	     question 0 {Ok} {Cancel}] } {
       
-       if ![string compare $tsiConfig(mode) off] { 
+       if ![string compare $tsiConfig(mode) off] {
+	   
+	   # we wait a little bit to give the other clients (i.e. debugger)
+	   # a chance to finish any processing they might be doing with the
+	   # agents before we delete the agents out from underneath them
+	   after 500 set delay 1
+	   vwait delay
+	   
 	   ## best to delete agents explicitly in case other
 	   ## processes are listening for them, eg SoarJavaDebugger
 	   if [info exists localAgents] {

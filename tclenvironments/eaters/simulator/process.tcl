@@ -1,6 +1,9 @@
 #
 # $Id$
 # $Log$
+# Revision 1.5  2005/06/12 21:37:02  rmarinie
+# some workarounds to increase stability
+#
 # Revision 1.4  2005/06/10 05:05:35  kcoulter
 # added  StopAllAgents when food gone
 #
@@ -1375,6 +1378,7 @@ proc smlProcessUpdates {args} {
     if $smlStopNow {
 	set smlStopNow 0
 	$_kernel StopAllAgents
+	$_kernel CheckForIncomingCommands
     }
     #puts "in smlProcessUpdates: calling runSimulation .wGlobal.c"
     runSimulation .wGlobal.c
@@ -1404,6 +1408,7 @@ proc runSimulation {w} {
        ([.wGlobal.c find withtag bonusfood] == {})} {
       set runningSimulation 0
        SMLenvironmentStop; $_kernel StopAllAgents
+       $_kernel CheckForIncomingCommands
       tk_dialog .info {Game Over} {Game over: All the food is gone.} info 0 Ok
       return
    }
@@ -1411,6 +1416,7 @@ proc runSimulation {w} {
    if {$worldCount >= $worldCountLimit} {
       set runningSimulation 0
       SMLenvironmentStop; $_kernel StopAllAgents
+      $_kernel CheckForIncomingCommands
       tk_dialog .info {Game Over} \
                       {Game over: Move count limit reached.} info 0 Ok
       return
@@ -1419,6 +1425,7 @@ proc runSimulation {w} {
 	
 	set runningSimulation 0
 	SMLenvironmentStop; $_kernel StopAllAgents
+	$_kernel CheckForIncomingCommands
 	tk_dialog .info {Goal Accomplished} \
 	    {The goal has been accomplished. Game Over.} info 0 Ok
 	return

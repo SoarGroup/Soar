@@ -125,7 +125,8 @@ proc tsi {{hideController 0} args } {
    package require tcl_sml_clientinterface
 
    #create an embedded kernel running in the kernel's thread (so we don't have to poll for messages)
-   set _kernel [Kernel_CreateKernelInNewThread SoarKernelSML]
+   #set _kernel [Kernel_CreateKernelInNewThread SoarKernelSML]
+   set _kernel [Kernel_CreateKernelInCurrentThread SoarKernelSML 0]
 
    if {[$_kernel HadError]} {
 	puts "Error creating kernel: "
@@ -135,7 +136,7 @@ proc tsi {{hideController 0} args } {
 
     # DJP: We want to make sure to handle events in the Tcl thread
     # so we turn off the event thread and poll for events instead.
-    $_kernel StopEventThread
+    #$_kernel StopEventThread
     checkForEvents $_kernel
     # DJP end
 
