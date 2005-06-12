@@ -5,5 +5,6 @@ set auto_path "$auto_path /Applications/Soar/lib"
 
 set argv ""
 cd /Applications/Soar/soar-library
-exec wish /Applications/Soar/tclenvironments/eaters/init-eaters.tcl
+exec wish /Applications/Soar/tclenvironments/eaters/init-eaters.tcl &
 #source /Applications/Soar/tclenvironments/eaters/init-eaters.tcl
+exit

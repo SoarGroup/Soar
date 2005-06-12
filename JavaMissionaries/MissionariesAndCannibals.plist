@@ -29,7 +29,7 @@
 		<key>MainClass</key>
 		<string>edu.umich.mac.MissionariesAndCannibals</string>
 		<key>VMOptions</key>
-		<string>-Djava.library.path=/Applications/Soar/lib:/Applications/Soar -Dorg.eclipse.swt.internal.carbon.smallFonts</string>
+		<string>-Djava.library.path=/Applications/Soar/lib:/Applications/Soar/soar-library -Dorg.eclipse.swt.internal.carbon.smallFonts</string>
 		<key>WorkingDirectory</key>
 		<string>/Applications/Soar/soar-library</string>
 	</dict>
