@@ -96,7 +96,7 @@ public class KernelMenu
 
 	private void stopKernelPerformed(ActionEvent e)
 	{
-		m_Document.stopLocalKernel() ;
+		m_Document.stopLocalKernel(false) ;
 	}
 	
 	private void remoteConnectPerformed(ActionEvent e)
@@ -109,7 +109,7 @@ public class KernelMenu
 				return ;
 			
 			// Shut down the local kernel and then go on
-			m_Document.stopLocalKernel() ;
+			m_Document.stopLocalKernel(false) ;
 		}
 		
 		RemoteDialog.RemoteInfo ip = RemoteDialog.showDialog(m_Frame, "Remote Soar Kernel Connection") ;

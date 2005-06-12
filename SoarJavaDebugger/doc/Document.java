@@ -241,7 +241,7 @@ public class Document
 	 * Shutdown.  We generally only call this when we're about to terminate the debugger.
 	 * 
 	********************************************************************************************/
-	public void close()
+	public void close(boolean closingApp)
 	{
 		// Close down any open kernel instances cleanly
 		if (isConnected())
@@ -252,7 +252,7 @@ public class Document
 			}
 			else
 			{
-				this.stopLocalKernel() ;
+				this.stopLocalKernel(closingApp) ;
 			}
 		}
 	}
@@ -342,25 +342,6 @@ public class Document
 		// Start with an agent...without this a kernel's not much use.
 		Agent agent = createAgentNoNewWindow("soar1") ;
 		
-		// BUGBUG: This needs to happen as a result of the agent creation event or not at all.
-		/*
-		if (frame != null && libPath != null)
-		{
-			final MainFrame mainFrame = frame ;
-			final String libraryPath = libPath ;
-			
-			// We need to wait until the display has had a chance to hear the agent
-			// being added.  I think executing this asynchronously will let that happen.
-			frame.getDisplay().asyncExec(new Runnable()
-			{
-				public void run()
-				{
-					mainFrame.executeCommandPrimeView(getSoarCommands().setLibraryLocationCommand(libraryPath), true) ;
-				}
-			}) ;
-		}
-		*/
-		
 		return agent ;
 	}
 
@@ -393,18 +374,32 @@ public class Document
 	 * Shutdown our local Soar instance, deleting any agents etc.
 	 * 
 	********************************************************************************************/
-	public boolean stopLocalKernel()
+	public boolean stopLocalKernel(boolean closingApp)
 	{
 		if (m_Kernel == null)
 			return false ;
 
-		// Make sure we're stopped
-		if (m_DocumentThread.isBusy())
+		// If the user tries to shutdown while Soar is running locally we have a problem.
+		// The document thread is stuck inside a Run command so it's no longer checking for us
+		// shutting down the thread (through askToStop).  If we issue a stop (which takes time
+		// while we wait for the stop to actually get processed) we can deadlock waiting for
+		// update events triggered by the stop to call synchExec on the display.  This deadlocks
+		// because we're inside an event handler right now.  So for now I'm making a simple fix
+		// and blasting the app to death if it we're shutting down and the document thread won't
+		// stop in a reasonable ammount of time.
+		if (this.m_Kernel.GetNumberAgents() > 0 && closingApp && kDocInOwnThread)
 		{
-			if (this.getFirstFrame() != null)
-				this.getFirstFrame().ShowMessageBox("Soar is currently executing.  Need to stop it first before deleting the kernel.") ;
-
-			return false ;
+			m_DocumentThread.askToStop() ;
+			
+			int count = 5 ;
+			while (m_DocumentThread.isAlive())
+			{
+				count-- ;
+				if (count == 0)
+					System.exit(0) ;
+				
+				try { Thread.sleep(100) ; } catch (InterruptedException e) { }
+			}
 		}
 		
 		m_Kernel.delete() ;
@@ -428,7 +423,7 @@ public class Document
 	public void remoteConnect(String ipAddress, int portNumber, String agentName) throws Exception
 	{
 		// If we have a local kernel already running shut it down
-		stopLocalKernel() ;
+		stopLocalKernel(false) ;
 
 		m_IsRemote = true ;
 		m_Kernel = Kernel.CreateRemoteConnection(true, ipAddress, portNumber) ;

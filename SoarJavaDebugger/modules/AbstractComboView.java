@@ -598,7 +598,9 @@ public abstract class AbstractComboView extends AbstractView
 		// We need to call m_CommandCombo.getText() from the UI thread
 		// so we have to go through this little dance
 		GetTextRunnable op = new GetTextRunnable() ;
-        Display.getDefault().syncExec(op) ;
+		
+		if (!Display.getDefault().isDisposed())
+			Display.getDefault().syncExec(op) ;
 
         return op.getResult() ;
 	}

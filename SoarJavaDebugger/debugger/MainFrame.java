@@ -339,7 +339,8 @@ public class MainFrame
 		// from this agent (is its still alive). Otherwise our listeners will
 		// still be registered and
 		// will try to display output in windows that are disposed.
-		this.setAgentFocus(null);
+		if (this.getDocument().getNumberFrames() > 1)
+			this.setAgentFocus(null);
 
 		// Record the current window positions as properties,
 		// which we can then save.
@@ -373,7 +374,7 @@ public class MainFrame
 		// Exit the app if we're the last frame
 		if (this.getDocument().getNumberFrames() == 0)
 		{
-			getDocument().close();
+			getDocument().close(true);
 			System.exit(0);
 		}
 	}
