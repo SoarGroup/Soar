@@ -4,8 +4,6 @@
 
    print - Print items in working memory or production memory.
 
-   1 Incomplete EvilBackDoor ResultByKernel
-
                                     Synopsis
 
  print [-fFin] production_name
@@ -116,13 +114,15 @@ Printing the current subgoal stack
 
                                 Default Aliases
 
-   +--------------+
-   |Alias|Maps to |
-   |-----+--------|
-   |p    |print   |
-   |-----+--------|
-   |wmes |print -i|
-   +--------------+
+   +--------------------+
+   |Alias|Maps to       |
+   |-----+--------------|
+   |p    |print         |
+   |-----+--------------|
+   |pc   |print --chunks|
+   |-----+--------------|
+   |wmes |print -i      |
+   +--------------------+
 
                                     See Also
 

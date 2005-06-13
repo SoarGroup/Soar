@@ -5,8 +5,6 @@
    watch-wmes -- Print information about wmes matching a certain pattern as
    they are added and removed.
 
-   3 Incomplete EvilBackDoor ResultByKernel
-
                                     Synopsis
 
  watch-wmes -[a|r]  -t <type>  pattern

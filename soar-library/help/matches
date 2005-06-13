@@ -4,11 +4,9 @@
 
    matches - Prints information about partial matches and the match set.
 
-   1 Incomplete EvilBackDoor ResultByKernel
-
                                     Synopsis
 
- matches [-nc0t1w2] production name
+ matches [-nc0t1w2] production_name
  matches -[a|r] [-nc0t1w2]
 
                                     Options
@@ -38,7 +36,7 @@
 
    The matches command prints a list of productions that have instantiations
    in the match set, i.e., those productions that will retract or fire in the
-   next Propose or Apply phase. It also will preint partial match information
+   next Propose or Apply phase. It also will print partial match information
    for a single, named production.
 
 Printing the match set

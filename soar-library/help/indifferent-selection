@@ -4,9 +4,6 @@
 
    indifferent-selection - Controls indifferent preference arbitration.
 
-   Complete --ask gets set but the actual asking does not work at all, I
-   think it locks everything up--Jonathan 13:29, 23 Feb 2005 (EST)
-
                                     Synopsis
 
  indifferent-selection [-aflr]
@@ -14,7 +11,7 @@
                                     Options
 
    +------------------------------------------------------------------------+
-   |-a, --ask   |Ask the user to choose.                                    |
+   |-a, --ask   |Ask the user to choose. Not implemented.                   |
    |------------+-----------------------------------------------------------|
    |-f, --first |Select the first indifferent object from Soar's internal   |
    |            |list.                                                      |
@@ -44,6 +41,14 @@
 
    If no argument is provided, indifferent-selection will display the current
    setting.
+
+                                Default Aliases
+
+   +---------------------------+
+   |Alias|Maps to              |
+   |-----+---------------------|
+   |inds |indifferent-selection|
+   +---------------------------+
 
                                     See Also
 

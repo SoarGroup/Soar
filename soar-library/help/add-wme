@@ -4,8 +4,6 @@
 
    add-wme - Manually add an element to working memory.
 
-   Complete EvilBackDoor
-
                                     Synopsis
 
  add-wme id [^]attribute value [+]
@@ -59,6 +57,14 @@
    has been left off in this case.
 
   add-wme Z2 message * +
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |aw   |add-wme|
+   +-------------+
 
                                     Warnings
 

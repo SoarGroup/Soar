@@ -6,8 +6,6 @@
    next directory on the stack. Can be relative pathname or fully specified
    path.
 
-   Complete
-
                                     Synopsis
 
  popd

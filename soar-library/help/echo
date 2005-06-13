@@ -4,8 +4,6 @@
 
    echo - Print a string to the current output device.
 
-   Complete
-
                                     Synopsis
 
  echo string

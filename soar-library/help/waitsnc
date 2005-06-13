@@ -4,8 +4,6 @@
 
    waitsnc -- Generate a wait state rather than a state-no-change impasse.
 
-   Complete
-
                                     Synopsis
 
  wait -[e|d]

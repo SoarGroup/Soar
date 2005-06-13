@@ -4,8 +4,6 @@
 
    memories - Print memory usage for partial matches.
 
-   Complete
-
                                     Synopsis
 
  memories [-cdju] [n]

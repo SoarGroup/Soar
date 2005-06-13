@@ -4,11 +4,9 @@
 
    log - Record all user-interface input and output to a file.
 
-   Complete
-
                                     Synopsis
 
- log aEUR"Ae filename
+ log [aEUR"Ae] filename
  log aEUR"a  string
  log [aEUR"cdoq]
 

@@ -4,8 +4,6 @@
 
    production-find -
 
-   2 Incomplete EvilBackDoor ResultByKernel
-
                                     Synopsis
 
  production-find [-lrs[n|c]] pattern

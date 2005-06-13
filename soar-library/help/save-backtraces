@@ -5,8 +5,6 @@
    save-backtraces - Save trace information to explain chunks and
    justifications.
 
-   Complete EvilBackDoor
-
                                     Synopsis
 
  save-backtraces [-ed]

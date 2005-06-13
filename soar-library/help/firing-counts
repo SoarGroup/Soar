@@ -4,8 +4,6 @@
 
    firing-counts - Print the number of times each production has fired.
 
-   Complete
-
                                     Synopsis
 
  firing-counts [n]

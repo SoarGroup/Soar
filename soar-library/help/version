@@ -4,8 +4,6 @@
 
    version -- Returns the version number of the Soar kernel.
 
-   Complete
-
                                     Synopsis
 
   version

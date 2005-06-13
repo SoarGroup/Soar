@@ -4,8 +4,6 @@
 
    source - Load and evaluate the contents of a file.
 
-   Complete
-
                                     Synopsis
 
  source filename

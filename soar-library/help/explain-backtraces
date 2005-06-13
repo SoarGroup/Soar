@@ -5,8 +5,6 @@
    explain-backtraces - Print information about chunk and justification
    backtraces.
 
-   3 Incomplete EvilBackDoor ResultByKernel
-
                                     Synopsis
 
  explain-backtraces -f prod_name
@@ -102,6 +100,14 @@
  production selection*select*failure-evaluation-becomes-reject-preference to match
      (E3 ^symbolic-value failure) which caused
  A result to be generated.
+
+                                Default Aliases
+
+   +------------------------+
+   |Alias|Maps to           |
+   |-----+------------------|
+   |eb   |explain-backtraces|
+   +------------------------+
 
                                     See Also
 

@@ -4,8 +4,6 @@
 
    internal-symbols - Print information about the Soar symbol table.
 
-   4 Incomplete EvilBackDoor ResultByKernel
-
                                     Synopsis
 
  internal-symbols

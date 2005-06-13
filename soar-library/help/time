@@ -5,8 +5,6 @@
    time - Use a default system clock timer to record the wall time required
    while executing a command.
 
-   Complete
-
                                     Synopsis
 
  time command [arguments]

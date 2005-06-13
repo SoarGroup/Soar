@@ -4,8 +4,6 @@
 
    excise - Delete Soar productions from production memory.
 
-   Complete
-
                                     Synopsis
 
  excise production_name [production_name ...]
@@ -47,6 +45,14 @@
    This removes all productions and does an init-soar:
 
  excise --all
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |ex   |excise |
+   +-------------+
 
                                     See Also
 

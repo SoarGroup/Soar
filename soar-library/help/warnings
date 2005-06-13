@@ -5,8 +5,6 @@
    warnings -- Enable or disable the printing of warning messages from the
    Soar kernel.
 
-   Complete EvilBackDoor
-
                                     Synopsis
 
  warnings -[e|d]

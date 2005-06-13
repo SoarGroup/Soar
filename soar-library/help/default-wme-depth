@@ -4,8 +4,6 @@
 
    default-wme-depth - Set the level of detail used to print WMEaEUR(TM)s.
 
-   Complete
-
                                     Synopsis
 
  default-wme-depth [depth]

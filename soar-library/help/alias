@@ -5,8 +5,6 @@
    alias - Define a new alias, or command, using existing commands and
    arguments.
 
-   Complete
-
                                     Synopsis
 
  alias name [cmd <args>]
@@ -61,6 +59,10 @@
 
    +----------------+
    |Alias  |Maps to |
+   |-------+--------|
+   |a      |alias   |
+   |-------+--------|
+   |un     |alias -d|
    |-------+--------|
    |unalias|alias -d|
    +----------------+

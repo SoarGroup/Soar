@@ -4,8 +4,6 @@
 
    learn - Set the parameters for chunking, SoaraEUR(TM)s learning mechanism.
 
-   Complete EvilBackDoor
-
                                     Synopsis
 
  learn [-l]
@@ -80,6 +78,14 @@
    To see all the force-learn and dont-learn states registered by RHS actions
 
  learn -l
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |l    |learn  |
+   +-------------+
 
                                     See Also
 

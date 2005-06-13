@@ -5,8 +5,6 @@
    preferences - Examine details about the preferences that support the
    specified id and attribute.
 
-   2 Incomplete EvilBackDoor ResultByKernel
-
                                     Synopsis
 
  preferences [-0123nNtw] [id] [[^]attribute]
@@ -54,7 +52,7 @@ Note
    This example prints the preferences on (S1 ^operator) and the production
    names which created the preferences:
 
- soar> preferences S1 operator -names
+ soar> preferences S1 operator --names
  Preferences for S1 ^operator:
  acceptables:
   O2 (fill) +
@@ -78,5 +76,13 @@ Note
  acceptables:
   I5  + :O
   J1  + :O
+
+                                Default Aliases
+
+   +-----------------+
+   |Alias|Maps to    |
+   |-----+-----------|
+   |pr   |preferences|
+   +-----------------+
 
                                     See Also

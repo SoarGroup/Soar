@@ -2,10 +2,9 @@
 \label{matches}
 \index{matches}
 Prints information about partial matches and the match set. 
- 1 Incomplete EvilBackDoor ResultByKernel
 \subsubsection*{Synopsis}
 \begin{verbatim}
-matches [-nc0t1w2] production name
+matches [-nc0t1w2] production_name
 matches -[a|r] [-nc0t1w2]
 \end{verbatim}
 \subsubsection*{Options}
@@ -25,7 +24,7 @@ production\_name & Print partial match information for the named production.  \\
  \hline 
 \end{tabular}
 \subsubsection*{Description}
- The matches command prints a list of productions that have instantiations in the match set, i.e., those productions that will retract or fire in the next Propose or Apply phase. It also will preint partial match information for a single, named production. 
+ The matches command prints a list of productions that have instantiations in the match set, i.e., those productions that will retract or fire in the next Propose or Apply phase. It also will print partial match information for a single, named production. 
 \subsection*{Printing the match set}
  When printing the match set (i.e., no production name is specified), the default action prints only the names of the productions which are about to fire or retract. If there are multiple instantiations of a production, the total number of instantiations of that production is printed after the production name, unless \textbf{--timetags|1}
  or \textbf{--wmes|2}

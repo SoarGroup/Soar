@@ -4,9 +4,6 @@
 
    soar8 - Toggle between Soar 8 methodology and Soar 7 methodology.
 
-   1 Unimplemented Parsing complete, execution not implemented.--Jonathan
-   14:04, 4 Feb 2005 (EST)
-
                                     Synopsis
 
  soar8 [-ed]

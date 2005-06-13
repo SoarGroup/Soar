@@ -2,7 +2,6 @@
 \label{indifferent-selection}
 \index{indifferent-selection}
 Controls indifferent preference arbitration. 
- Complete --ask gets set but the actual asking does not work at all, I think it locks everything up--Jonathan 13:29, 23 Feb 2005 (EST) 
 \subsubsection*{Synopsis}
 \begin{verbatim}
 indifferent-selection [-aflr]
@@ -10,7 +9,7 @@ indifferent-selection [-aflr]
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
 \hline 
- -a, --ask  & Ask the user to choose.  \\
+ -a, --ask  & Ask the user to choose. Not implemented. \\
  \hline 
  -f, --first  & Select the first indifferent object from Soar's internal list.  \\
  \hline 
@@ -31,5 +30,13 @@ indifferent-selection [-aflr]
  option prompts the user to select the next operator from a list of the tied operators. 
  If no argument is provided, \textbf{indifferent-selection}
  will display the current setting. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ inds  & indifferent-selection  \\
+ \hline 
+\end{tabular}
 \subsubsection*{See Also}
 \hyperref[numeric-indifference-mode]{numeric-indifference-mode} 

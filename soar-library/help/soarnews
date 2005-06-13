@@ -4,8 +4,14 @@
 
    soarnews - Prints information about the current release.
 
-   Complete
-
                                     Synopsis
 
  soarnews
+
+                                Default Aliases
+
+   +--------------+
+   |Alias|Maps to |
+   |-----+--------|
+   |sn   |soarnews|
+   +--------------+

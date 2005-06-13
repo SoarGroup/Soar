@@ -4,8 +4,6 @@
 
    pwatch - Trace firings and retractions of specific productions.
 
-   Complete EvilBackDoor
-
                                     Synopsis
 
  pwatch [-d|e] [production name]
@@ -43,6 +41,14 @@
 
    Note that pwatch now only takes one production per command. Use multiple
    times to watch multiple functions.
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |pw   |pwatch |
+   +-------------+
 
                                     See Also
 

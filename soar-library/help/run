@@ -4,13 +4,10 @@
 
    run - Begin SoaraEUR(TM)s execution cycle.
 
-   Complete Complete, except --output may work incorrectly due to
-   gSKI--Jonathan 14:07, 18 Feb 2005 (EST)
-
                                     Synopsis
 
  run [count]
- run -[d|e|p|o][fs] [count]
+ run -[d|e|p|o][fs][un] [count]
 
                                     Options
 
@@ -31,6 +28,14 @@
    |-----------------+------------------------------------------------------|
    |-s, --self       |If other agents exist within the kernel, do not run   |
    |                 |them at this time.                                    |
+   |-----------------+------------------------------------------------------|
+   |                 |Sets a flag in the update event callback requesting   |
+   |-u, --update     |that an environment updates. This is the default if   |
+   |                 |--self is not specified.                              |
+   |-----------------+------------------------------------------------------|
+   |                 |Sets a flag in the update event callback requesting   |
+   |-n, --noupdate   |that an environment does not update. This is the      |
+   |                 |default if --self is specified.                       |
    |-----------------+------------------------------------------------------|
    |count            |A single integer which specifies the number of cycles |
    |                 |to run Soar.                                          |
@@ -68,6 +73,29 @@ Deprecated Options
    then issuing a run command in any agent will cause all agents to run with
    the same set of parameters, unless the flag --self is specified, in which
    case only that agent will execute.
+
+   If an environment is registered for the kernel's update event, then when
+   the event it triggered, the environment will get information about how the
+   run was executed. If a run was executed with the --update option, then
+   then event sends a flag requesting that the environment actually update
+   itself. If a run was executed with the --noupdate option, then the event
+   sends a flag requesting that the environment not update itself. The
+   --update option is the default when run is specified without the --self
+   option is not specified. If the --self option is specified, then the
+   --noupdate option is on by default. It is up to the environment to check
+   for these flags and honor them.
+
+   Some use cases include:
+
+   +-----------------------------------------------------------+
+   |run --self         |runs one agent but not the environment |
+   |-------------------+---------------------------------------|
+   |run --self --update|runs one agent and the environment     |
+   |-------------------+---------------------------------------|
+   |run                |runs all agents and the environment    |
+   |-------------------+---------------------------------------|
+   |run --noupdate     |runs all agents but not the environment|
+   +-----------------------------------------------------------+
 
 Note
 

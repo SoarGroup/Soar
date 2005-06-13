@@ -5,6 +5,7 @@ chunk-name-format
 default-wme-depth
 dirs
 echo
+edit-production
 excise
 explain-backtraces
 firing-counts
@@ -41,7 +42,6 @@ soar8
 soarnews
 source
 sp
-start-system
 stats
 stop-soar
 time

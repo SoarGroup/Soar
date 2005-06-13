@@ -4,7 +4,6 @@
 Examine details about the preferences that support the specified \emph{id}
  and \emph{attribute}
 . 
- 2 Incomplete EvilBackDoor ResultByKernel
 \subsubsection*{Synopsis}
 \begin{verbatim}
 preferences [-0123nNtw] [id] [[^]attribute]
@@ -37,7 +36,7 @@ attribute & Must be an existing \emph{\^{}attribute}
  preferences are listed under the heading ``binary indifferents:''. 
 \subsubsection*{Examples}
  This example prints the preferences on (S1 \^{}operator) and the production names which created the preferences: \begin{verbatim}
-soar> preferences S1 operator -names
+soar> preferences S1 operator --names
 Preferences for S1 ^operator:
 acceptables:
  O2 (fill) +
@@ -58,6 +57,14 @@ soar> preferences s1 jug
 Preferences for S1 ^jug:
 acceptables:
  I5  + :O 
- J1  + :O 
+ J1  + :O
 \end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ pr  & preferences  \\
+ \hline 
+\end{tabular}
 \subsubsection*{See Also}

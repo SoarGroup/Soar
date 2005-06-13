@@ -6,8 +6,6 @@
    are executed without producing output when run is invoked with
    run-til-output args.
 
-   Complete
-
                                     Synopsis
 
  max-nil-output-cycles [n]

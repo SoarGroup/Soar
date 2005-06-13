@@ -5,8 +5,6 @@
    numeric-indifferent-mode - Select method for combining numeric
    preferences.
 
-   Complete
-
                                     Synopsis
 
  numeric-indifferent-mode [-as]

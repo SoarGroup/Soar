@@ -27,6 +27,14 @@
 
    Beware of weird side effects, including system crashes.
 
+                                Default Aliases
+
+   +----------------+
+   |Alias|Maps to   |
+   |-----+----------|
+   |rw   |remove-wme|
+   +----------------+
+
                                     See Also
 
    add-wme

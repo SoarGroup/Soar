@@ -4,9 +4,6 @@
 
    stop-soar - Pause Soar.
 
-   Complete Reason for stopping currently ignored, not sure what this is
-   for/why this is here.--Jonathan 13:59, 4 Feb 2005 (EST)
-
                                     Synopsis
 
  stop-soar [-s] [reason string]
@@ -35,9 +32,11 @@
    +-------------------+
    |Alias    |Maps to  |
    |---------+---------|
-   |stop     |stop-soar|
-   |---------+---------|
    |interrupt|stop-soar|
+   |---------+---------|
+   |ss       |stop-soar|
+   |---------+---------|
+   |stop     |stop-soar|
    +-------------------+
 
                                     See Also

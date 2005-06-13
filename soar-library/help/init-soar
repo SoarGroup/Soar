@@ -4,8 +4,6 @@
 
    init-soar - empties working memory and resets run-time statistics.
 
-   Complete
-
                                     Synopsis
 
  init-soar
@@ -32,6 +30,8 @@
    |Alias|Maps to  |
    |-----+---------|
    |init |init-soar|
+   |-----+---------|
+   |is   |init-soar|
    +---------------+
 
                                     See Also

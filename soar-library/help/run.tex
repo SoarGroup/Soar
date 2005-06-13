@@ -2,11 +2,10 @@
 \label{run}
 \index{run}
 Begin Soar\^a€™s execution cycle. 
- Complete Complete, except --output may work incorrectly due to gSKI--Jonathan 14:07, 18 Feb 2005 (EST) 
 \subsubsection*{Synopsis}
 \begin{verbatim}
 run [count]
-run -[d|e|p|o][fs] [count]
+run -[d|e|p|o][fs][un] [count]
 \end{verbatim}
 \subsubsection*{Options}
 \begin{tabular}{|l|l|}
@@ -22,6 +21,10 @@ run -[d|e|p|o][fs] [count]
  -p, --phase  & Run Soar by phases. A phase is either an input phase, proposal phase, decision phase, apply phase, or output phase.  \\
  \hline 
  -s, --self  & If other agents exist within the kernel, do not run them at this time.  \\
+ \hline 
+ -u, --update  & Sets a flag in the update event callback requesting that an environment updates. This is the default if --self is not specified.  \\
+ \hline 
+ -n, --noupdate  & Sets a flag in the update event callback requesting that an environment does not update. This is the default if --self is specified.  \\
  \hline 
  count  & A single integer which specifies the number of cycles to run Soar.  \\
  \hline 
@@ -52,6 +55,22 @@ run -[d|e|p|o][fs] [count]
  If there are multiple Soar agents that exist in the same Soar process, then issuing a \textbf{run}
  command in any agent will cause all agents to run with the same set of parameters, unless the flag \textbf{--self}
  is specified, in which case only that agent will execute. 
+ If an environment is registered for the kernel's update event, then when the event it triggered, the environment will get information about how the \textbf{run}
+ was executed. If a \textbf{run}
+ was executed with the --update option, then then event sends a flag requesting that the environment actually update itself. If a \textbf{run}
+ was executed with the --noupdate option, then the event sends a flag requesting that the environment not update itself. The --update option is the default when run is specified without the --self option is not specified. If the --self option is specified, then the --noupdate option is on by default. It is up to the environment to check for these flags and honor them. 
+ Some use cases include: 
+\begin{tabular}{|l|l|}
+\hline 
+ run --self  & runs one agent but not the environment  \\
+ \hline 
+ run --self --update  & runs one agent and the environment  \\
+ \hline 
+ run  & runs all agents and the environment  \\
+ \hline 
+ run --noupdate  & runs all agents but not the environment  \\
+ \hline 
+\end{tabular}
 \paragraph*{Note}
  If Soar has been stopped due to a \textbf{halt}
  action, an \textbf{init-soar}

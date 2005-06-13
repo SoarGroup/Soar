@@ -4,8 +4,6 @@
 
    verbose - Control detailed information printed as Soar runs.
 
-   Complete EvilBackDoor
-
                                     Synopsis
 
  verbose [-ed]

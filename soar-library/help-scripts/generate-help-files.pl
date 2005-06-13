@@ -2,18 +2,11 @@
 
 use strict;
 
-open LINKS, "command-links" or die "Could not open command-links: $!";
-my @links = <LINKS>;
-
 open NAMES, "../command-names" or die "Could not open command-names: $!";
 my @names = <NAMES>;
 
 open POSTPROCESSFILE, "html-process.pl" or die "Could not find required file html-process.pl: $!";
 close POSTPROCESSFILE;
-
-if ($#links != $#names) {
-  die "command-links and command-names are different sizes: $#links/$#names";
-}
 
 #make the dir, 
 if (!mkdir "../help") {
@@ -23,13 +16,13 @@ if (!mkdir "../help") {
 }
 
 #print "total: " . $#links . "\n";
-for (my $i = 0; $i <= $#links; $i++) {
+for (my $i = 0; $i <= $#names; $i++) {
   chomp @names[$i];
   #print @names[$i] . ": " . $i . "\n";
   #next;
   print "Processing @names[$i]\n";
   
-  `wget -q -O ../help/@names[$i].wiki.html @links[$i]`;
+  `wget -q -O ../help/@names[$i].wiki.html http://winter.eecs.umich.edu/soarwiki/@names[$i]`;
   
   `./html-process.pl ../help/@names[$i].wiki.html > ../help/@names[$i].html`;
   unlink "../help/@names[$i].wiki.html" or die "Could not remove ../help/@names[$i].wiki.html: $!";

@@ -4,8 +4,6 @@
 
    timers - Toggle on or off the internal timers used to profile Soar.
 
-   Complete EvilBackDoor
-
                                     Synopsis
 
  timers [-ed]

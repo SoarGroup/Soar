@@ -4,8 +4,6 @@
 
    multi-attributes - Declare a symbol to be multi-attributed.
 
-   Complete
-
                                     Synopsis
 
  multi-attributes [symbol [n]]

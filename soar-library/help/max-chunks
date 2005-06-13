@@ -4,8 +4,6 @@
 
    max-chunks - Limit the number of chunks created during a decision cycle.
 
-   Complete
-
                                     Synopsis
 
  max-chunks [n]

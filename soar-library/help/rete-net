@@ -4,8 +4,6 @@
 
    rete-net - Save the current Rete net, or restore a previous one.
 
-   Complete
-
                                     Synopsis
 
  rete-net -s|l filename
@@ -43,6 +41,14 @@
    automatically when it is saved and uncompressed when it is loaded.
    Compressed files may not be portable to another platform if that platform
    does not support the same uncompress utility.
+
+                                Default Aliases
+
+   +--------------+
+   |Alias|Maps to |
+   |-----+--------|
+   |rn   |rete-net|
+   +--------------+
 
                                     See Also
 

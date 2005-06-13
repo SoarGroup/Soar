@@ -5,8 +5,6 @@
    set-library-location - Set the top level directory containing
    demos/help/etc.
 
-   Complete
-
                                     Synopsis
 
  set-library-location [directory]

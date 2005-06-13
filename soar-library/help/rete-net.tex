@@ -2,7 +2,6 @@
 \label{rete-net}
 \index{rete-net}
 Save the current Rete net, or restore a previous one. 
- Complete
 \subsubsection*{Synopsis}
 \begin{verbatim}
 rete-net -s|l filename
@@ -22,5 +21,13 @@ filename & The name of the file to save or load.  \\
  Normally users wish to save only production memory. Note that \emph{justifications}
  cannot be present when saving the Rete net. Issuing an init-soar before saving a Rete net will remove all justifications and working memory elements. \\ 
  If the filename contains a suffix of ``.Z'', then the file is compressed automatically when it is saved and uncompressed when it is loaded. Compressed files may not be portable to another platform if that platform does not support the same uncompress utility. 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ rn  & rete-net  \\
+ \hline 
+\end{tabular}
 \subsubsection*{See Also}
 \hyperref[excise]{excise} \hyperref[init-soar]{init-soar} 
