@@ -128,7 +128,7 @@ namespace cli {
 				case kInvalidIndifferentSelectionMode:	return "Invalid indifferent selection mode.";
 				case kInvalidProductionType:			return "Invalid production type.";
 				case kNoProdTypeWhenProdName:			return "Do not specify production type when specifying a production name.";
-				case kSourceOnlyOneFile:				return "Source only one file at a time.";
+				case kSourceOnlyOneFile:				return "Too many arguments: source only one file at a time.  If there are spaces in the path, check that you are using quotes.";
 				case kLogAlreadyOpen:					return "Log already open.";
 				case kLogOpenFailure:					return "Failed to open file for logging.";
 				case kLogNotOpen:						return "Log is not open.";
