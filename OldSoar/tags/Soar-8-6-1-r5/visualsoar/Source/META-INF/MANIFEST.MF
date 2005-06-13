@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: edu.umich.visualsoar.VisualSoar
+Created-By: CodeWarrior Java Linker
+Class-Path: sml.jar

@@ -1,0 +1,285 @@
+package edu.umich.visualsoar.ruleeditor;
+
+import java.awt.dnd.*;
+import java.awt.datatransfer.*;
+import java.awt.event.*;
+import javax.swing.KeyStroke;
+import javax.swing.*;
+import javax.swing.text.*;
+
+
+/**
+ * This is the TextArea visual soar uses, it adds some functionality to make some actions nicer,
+ * it isn't especially relevant now
+ */
+public class TextArea extends javax.swing.JTextArea {
+	/**
+	 * @serial a reference to the DropTargetListener for Drag and Drop operations, may be deleted in future
+	 */
+	private DropTargetListener dtListener = new TADropTargetListener();
+	
+	/**
+	 * @serial a reference to the DropTarget for Drag and Drop operations, may be deleted in future
+	 */
+	private DropTarget dropTarget = new DropTarget(this,DnDConstants.ACTION_COPY,dtListener,true);
+	
+	class TADropTargetListener implements DropTargetListener {
+		public void dragEnter(DropTargetDragEvent dtde) {}
+       	public void dragExit(DropTargetEvent dte) {}
+       	public void dragOver(DropTargetDragEvent dtde) {}
+		public void dropActionChanged(DropTargetDragEvent dtde) {}
+ 		// The Drag operation has terminated with a Drop on this DropTarget 
+		public void drop(DropTargetDropEvent e) {
+			// Get Trivial Data
+			// Get a reference to the DataStructure we are modifying
+			
+			// Get the action
+			int action = e.getDropAction();
+			if (action != DnDConstants.ACTION_COPY) {
+				e.rejectDrop();
+				return;
+			}
+
+
+			// Validate
+			System.out.println("Drop called!");
+			DataFlavor[] flavors = e.getCurrentDataFlavors();
+			if (e.isLocalTransfer() == false) {
+				e.rejectDrop();
+				return;
+			}
+			boolean found = false;
+			for(int i = 0; i < flavors.length && !found; ++i) {
+				if (flavors[i] == DataFlavor.stringFlavor)
+					found = true;
+			}
+			if (found)
+				e.acceptDrop(action);
+			else {
+				e.rejectDrop();	
+				return;
+			}
+			
+			DataFlavor chosen = DataFlavor.stringFlavor;
+			// Get the data
+
+			String data = null;
+			
+			try {
+				data = (String)e.getTransferable().getTransferData(chosen);					
+			} catch( Throwable t) {
+				t.printStackTrace();
+				e.dropComplete(false);
+				return;
+			}
+			
+			insert(data, getCaretPosition()); 
+			e.dropComplete(true);
+		}          	
+	} 
+	
+	public TextArea() {
+		Keymap 		map = JTextComponent.addKeymap("Justify Keymap", getKeymap());
+		
+		KeyStroke 	tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+		KeyStroke	enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+		KeyStroke	circumflex = KeyStroke.getKeyStroke('^');
+		KeyStroke	leftParenthesis = KeyStroke.getKeyStroke('(');
+		
+		Action 		justifyAction = 	new AutoJustifyAction();		
+		
+		map.addActionForKeyStroke(tab, justifyAction);
+		map.addActionForKeyStroke(enter, justifyAction);
+		map.addActionForKeyStroke(circumflex, justifyAction);
+		map.addActionForKeyStroke(leftParenthesis, justifyAction);
+		
+		setKeymap(map);
+	}
+	
+	class AutoJustifyAction extends AbstractAction {
+		String 	theText;
+		
+		int		prevLineEnd;
+		int		prevLineBegin;
+	
+		/* returns the line that ends at endPos, and updates the
+		 * prevLineEnd and prevLineBegin variables
+		 */
+		String getPrevLine(int endPos) {
+			prevLineEnd = endPos;
+			
+			if (theText.charAt(prevLineEnd - 1) == '\n') { // empty line
+				prevLineBegin = prevLineEnd;
+				return "";
+			}
+			else {
+				prevLineBegin = theText.lastIndexOf('\n', prevLineEnd - 1) + 1;
+			}
+				
+			if (prevLineBegin == -1) { // prev line is first of document
+				prevLineBegin = 0;
+			}
+			
+			return theText.substring(prevLineBegin, prevLineEnd);
+		}
+	
+		public void actionPerformed(ActionEvent e) {
+			//String 	endOfLine = System.getProperty("line.separator");
+			String 	textTyped = e.getActionCommand();
+			String 	prevLine = null;
+			String 	currLine;
+			String	indentString;
+			String	afterCaretString;
+			String	newCurrLine;
+			
+			int		caretPos = getCaretPosition();
+			int		currLineBegin;
+			int		currLineEnd;
+			int		numSpaces;
+			
+			char	charTyped = 0;
+			char 	firstChar;
+			char 	lastChar;
+			char[] 	indentChars;
+			
+			boolean leftOfText = true;
+			
+			prevLineEnd = -1;
+			prevLineBegin = -1;
+			
+			if (textTyped.length() != 0) {
+				charTyped = textTyped.charAt(0);
+			}
+			
+			switch (charTyped) {
+				case '\n':
+					(new DefaultEditorKit.InsertBreakAction()).actionPerformed(e);
+					caretPos++;
+					break;
+				case '\t':
+					break;
+				default:
+					(new DefaultEditorKit.DefaultKeyTypedAction()).actionPerformed(e);
+					caretPos++;
+					break;
+			}
+			
+			theText = getText();
+			
+			if (caretPos == 0) { // begining of document, no indent
+				return;
+			}
+			
+			currLineEnd = theText.indexOf('\n', caretPos);
+			if (currLineEnd == -1) { // last line of document
+				currLineEnd = theText.length();
+			}
+			
+			if (theText.charAt(currLineEnd - 1) == '\n') { // empty line
+				currLineBegin = currLineEnd;
+			}
+			else {
+				currLineBegin = theText.lastIndexOf('\n', currLineEnd - 1) + 1;
+			}
+			
+			if (currLineBegin < 1) { // first line of document
+				return; // no indent for 1st line
+				//currLineBegin = 0; in case we change our minds
+			}
+			else if (currLineBegin != 0) {
+				prevLine = getPrevLine(currLineBegin - 1);
+			}
+			
+			currLine = theText.substring(currLineBegin, currLineEnd);
+			afterCaretString = theText.substring(caretPos, currLineEnd);
+			
+			newCurrLine = currLine.trim();
+			
+			if ((newCurrLine.length() != 0) &&
+				(newCurrLine.charAt(0) == '}') || (newCurrLine.startsWith("-->"))) {
+					
+				numSpaces = 0;
+			}			
+			// already returned if prevLine == null
+			else if (prevLine.trim().length() != 0) {
+				lastChar = prevLine.charAt(prevLine.length() - 1);
+				
+				if (lastChar == ')') {
+					numSpaces = prevLine.indexOf('(');
+						
+					while ((numSpaces == -1) && (prevLineBegin > 0)) {
+						prevLine = getPrevLine(prevLineBegin - 1);
+						numSpaces = prevLine.indexOf('(');
+					}
+				}
+				else if (lastChar == '{') {
+					numSpaces = prevLine.indexOf('{');
+				}
+				else if (lastChar == '}') {
+					numSpaces = 0;
+				}
+				else {
+					numSpaces = prevLine.indexOf('^');
+				}				
+			}
+			else {
+				numSpaces = 0;
+			}				
+			
+			// properly line up negated conditions
+			if ((newCurrLine.length() != 0) && (newCurrLine.charAt(0) == '-') &&
+				(numSpaces > 0)) {
+				
+				numSpaces--;
+			} 
+			 
+			// no line up char found, or coincidental 3 space indent
+			if ((numSpaces == 3) || (numSpaces < 0)) {
+				indentString = "   ";
+				numSpaces = 3;
+			}
+			// variable indent to line up chars vertically
+			else if (numSpaces > 0) { 
+				indentChars = new char[numSpaces];
+				
+				for (int i = 0; i < numSpaces; i++) {
+					indentChars[i] = ' ';
+				}
+				
+				indentString = new String(indentChars);
+			}
+			// no indent for normal chars, or coincidental 0 space indent
+			else  { 
+				indentString = "";
+			}
+			
+			newCurrLine = indentString + newCurrLine;
+			
+			if (! newCurrLine.equals(currLine)) { // not already justified
+				replaceRange(newCurrLine, currLineBegin, currLineEnd);
+			}	
+			
+			// find out if if the caret is left of all the text on the line	
+			if (caretPos >= theText.length()) {
+				leftOfText = false;
+			}
+			else { // check for non-whitespace left of the caret
+				for (int i = caretPos - 1; (i > (currLineBegin - 1)) && leftOfText; i--) {
+					if (! Character.isWhitespace(theText.charAt(i))) {
+						leftOfText = false;
+					}
+				}
+			}
+			
+			if (leftOfText) {
+				setCaretPosition(currLineBegin + numSpaces);
+			}
+			else { // caret is in the middle, or after text
+				setCaretPosition(newCurrLine.lastIndexOf(afterCaretString)
+													 + currLineBegin);
+			}
+		}
+	}
+
+
+}
