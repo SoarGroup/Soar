@@ -24,7 +24,7 @@ then
     cp SoarDebugger.plist $APP_PATH/Info.plist
     cp $SOARLIB/icons/testapp.icns $APP_PATH/Resources
     cp $SOARLIB/SoarJavaDebugger.jar $APP_PATH/Resources/Java
-    cp /System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub $APP_PATH/MacOS
-    chmod a+x $APP_PATH/MacOS/JavaApplicationStub
+    cp $SOARLIB/java_swt $APP_PATH/MacOS
+    chmod a+x $APP_PATH/MacOS/java_swt
 fi
 
