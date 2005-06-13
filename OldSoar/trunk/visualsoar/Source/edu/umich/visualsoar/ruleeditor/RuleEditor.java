@@ -2369,7 +2369,7 @@ public class RuleEditor extends CustomInternalFrame
             // Call source in Soar
             if (fileName != null)
             {
-            	String result = agent.ExecuteCommandLine("source " + fileName, true) ;
+            	String result = agent.ExecuteCommandLine("source " + "\"" + fileName + "\"", true) ;
 				MainFrame.getMainFrame().reportResult(result) ;
             }
         }
@@ -2426,7 +2426,7 @@ public class RuleEditor extends CustomInternalFrame
             projectFilename = projectFilename.replaceFirst(".vsa", ".soar") ;
             
             // Call source in Soar
-            String result = agent.ExecuteCommandLine("source " + projectFilename, true) ;
+            String result = agent.ExecuteCommandLine("source " + "\"" + projectFilename + "\"", true) ;
 			MainFrame.getMainFrame().reportResult(result) ;
         }
     }//class SendFileToSoarAction
