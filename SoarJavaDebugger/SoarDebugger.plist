@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>java_swt</string>
+	<string>JavaApplicationStub</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Soar Debugger, Copyright University of Michigan 2005.</string>
 	<key>CFBundleIconFile</key>
@@ -29,7 +29,7 @@
 		<key>MainClass</key>
 		<string>debugger.Application</string>
 		<key>VMOptions</key>
-		<string>-Djava.library.path=/Applications/Soar/lib:/Applications/Soar/soar-library -Dorg.eclipse.swt.internal.carbon.smallFonts</string>
+		<string>-XstartOnFirstThread -Djava.library.path=/Applications/Soar/lib:/Applications/Soar/soar-library -Dorg.eclipse.swt.internal.carbon.smallFonts</string>
 		<key>WorkingDirectory</key>
 		<string>/Applications/Soar/soar-library</string>
 	</dict>
