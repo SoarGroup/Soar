@@ -7,7 +7,7 @@ if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath src sr
 fi
 jar cfm ${SOARLIB}/toh.jar tohJarManifest -C src .
 
-if [ `uname -s`="Darwin" ]
+if [[ `uname -s` == "Darwin" ]]
 then
     echo "on Mac OS X, building application package for JavaTOH..."
 

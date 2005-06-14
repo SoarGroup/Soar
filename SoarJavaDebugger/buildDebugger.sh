@@ -13,7 +13,7 @@ if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar debugger/Applicati
 fi
 jar cfm ${SOARLIB}/SoarJavaDebugger.jar JarManifest .
 
-if [ `uname -s`="Darwin" ]
+if [[ `uname -s` == "Darwin" ]]
 then
     echo "on Mac OS X, building application package for SoarDebugger..."
 

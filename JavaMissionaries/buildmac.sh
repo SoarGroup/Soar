@@ -13,7 +13,7 @@ fi
 
 cp mac/mac.soar ${SOARLIB}/mac;
 
-if [ `uname -s`="Darwin" ]
+if [[ `uname -s` == "Darwin" ]]
 then
     echo "on Mac OS X, building application package for JavaMissionaries..."
 
