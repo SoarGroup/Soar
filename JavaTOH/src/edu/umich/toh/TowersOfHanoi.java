@@ -265,8 +265,9 @@ implements Runnable, PaintListener, GameListener, ControlListener {
                 dpy.sleep();
             }
         }
-        dpy.dispose();
         game.detachSoar();
+        dpy.dispose();
+        System.exit(0);
     }
     
     /**

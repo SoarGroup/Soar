@@ -171,8 +171,9 @@ implements Runnable, PaintListener, MacEnvironmentListener {
                 dpy.sleep();
             }
         }
-        dpy.dispose();
         me.detachSoar();
+        dpy.dispose();
+        System.exit(0);
     }
     
     
