@@ -13,7 +13,7 @@ if ! javac -classpath .:${SOARLIB}/sml.jar -sourcepath Source Source/edu/umich/v
 fi
 jar cfm ${SOARLIB}/VisualSoar.jar Source/meta-inf/manifest.mf -C Source .
 
-if [ `uname -s`="Darwin" ]
+if [[ `uname -s` == "Darwin" ]]
 then
     echo "on Mac OS X, building application package for VisualSoar..."
 
