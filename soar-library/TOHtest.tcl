@@ -4,6 +4,10 @@
 #  several kinds of callbacks, inreinitializing, agent destruction, and kernel
 #  destruction (and maybe some other things, too).
 #
+# It also demonstrates how to set up a simple loop to check for events (which
+#  is generally required when using CreateKernelInCurrentThread, which is
+#  generally required with Tcl since it doesn't play well with multiple threads).
+#
 # There is a second example at the end which demonstrates using the SML stuff in
 #  a slave interpreter.  This short example also shows how to add a WME to the
 #  input-link.
@@ -66,8 +70,18 @@ proc UpdateEventCallback {id userData kernel runFlags} {
 	puts "update event fired with flags $runFlags"
 }
 
+#this event loop periodically checks for new events from the kernel
+# ensuring that they get executed on the client side
+proc CheckForEvents {k} {
+	$k CheckForIncomingCommands
+	after 50 PollForEvents $k
+}
+
 #create an embedded kernel running in a new thread (so we don't have to poll for messages)
-set kernel [Kernel_CreateKernelInNewThread SoarKernelSML]
+set kernel [Kernel_CreateKernelInCurrentThread SoarKernelSML]
+
+#start event loop (apparently not necessary in this example, presumably because there's no GUI, but illustrative)
+CheckForEvents $kernel
 
 set agentCallbackId0 [$kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATED AgentCreatedCallback ""]
 set agentCallbackId1 [$kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_REINITIALIZED AgentReinitializedCallback ""]
