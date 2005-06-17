@@ -54,6 +54,7 @@ const std::string	k_openBrace		= "{";
 const std::string k_closeBrace	= "}";
 const std::string k_openAngleBrace	= "<";
 const std::string k_clostAngleBrace = ">";
+const std::string k_notEqual		= "!=";
 const std::string k_argSep			= ",";
 const std::string k_dQuote			= "\"";
 const std::string k_space				= " ";
