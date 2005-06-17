@@ -206,16 +206,19 @@ string InputLinkObject::GetFrequencyAsString() const
 }
 void InputLinkObject::ReplaceInternalTokens(const string& token, string& valueAsString)
 {
+cout << "ReplaceInternalTokens called...." << endl;
+cout << "\ttoken to replace is: " << token << endl;
+cout << "\tvalue to replace it with is " << valueAsString << endl;
 	assert(token != "");//this has GOT to be trouble brewing...
 	string::size_type pos =	m_updateValue.find(token);
 	if(pos != string.npos)
 	{
-		/*cout << "About to replace an update value's control variable reference with its string value..." << endl;
-		cout << "\tvariable: " << controlVariableName << endl;
-		cout << "\tvariable's value: " << counterAsString << endl;
-		cout << "\tunchanged update value is: " << oldUpdateValue << endl;*/
+		cout << "About to replace an update value's control variable reference with its string value..." << endl;
+		cout << "\tvariable: " << token << endl;
+		cout << "\tvariable's value: " << valueAsString << endl;
+		cout << "\tunchanged update value is: " << m_updateValue << endl;
 		m_updateValue.replace(pos, token.size(), valueAsString);
-		//cout << "\tand now the new value is: " << oldUpdateValue << endl;
+		cout << "\tand now the new value is: " << m_updateValue << endl;
 	}//if the update value needs to be replaced
 
 	//Look for the counter variable's name as a substring of the start value
@@ -268,8 +271,8 @@ const string TypeToString(eElementType type)
 		return k_stringString;
 		break;
 	default:
-		return "BAAAAD things have happened";
-		assert(false);//never executes.
+		assert(false);
+		return "BAAAAD things have happened";//never executes in debug
 		break;
 	}
 }

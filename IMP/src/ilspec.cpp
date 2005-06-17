@@ -339,11 +339,15 @@ bool InputLinkSpec::ImportIL(string& filename)
 			switch(parseStage)
 			{
 				case READING_CONTROL_STRUCTURE:
+					//TODO this 'for loop' only goes up (and by 1), but the user isn't constrained to that.
+					//IMP specs should allow for argument to specify increment amount
+
 					//clear off the token
 					TrimOneWord(line);
 
 					//read control variable name
 					controlVariableName = ReadAndTrimOneWord(line);
+cout << "JUST set control variable name to: " << controlVariableName << endl;
 					if(controlVariableName == "")
 					{
 						parseStage = READING_ERROR;
@@ -373,7 +377,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 					//set ACTUAL loop start and stop delimiters
 					loopBegin = atoi(controlStartVal.c_str());
 					loopEnd = atoi(controlEndVal.c_str());
-		
+
 					unsatisfiedControlStructure = true;
 					resetLoopCounters = false;
 					//TODO (if doing nested control loops, add an entry to the control queue)
@@ -407,7 +411,6 @@ bool InputLinkSpec::ImportIL(string& filename)
 					parseStage = READING_PARENT_IDENTIFIER;
 					break;
 				case READING_PARENT_IDENTIFIER:
-//cout << "\treading parent id, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
 					curWord = ReadAndTrimOneWord(line);
 					if(curWord == "")
 					{
@@ -522,7 +525,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 					ilObj.SetStartValue(curWord);
 
 					lastCompletedState = READING_IDENTIFIER_UNIQUE_NAME;
-					parseStage = READING_FINAL_STAGE;//IDs never get updated
+					parseStage = READING_FINAL_STAGE;//IDs never get updated during a simulation run
 					break;
 				case READING_START_VALUE:
 					//The start value of a WME is optional, so peek and see if it's there
@@ -669,7 +672,6 @@ bool InputLinkSpec::ImportIL(string& filename)
 					lastCompletedState = READING_CLASS_CLOSE;
 					break;
 				case READING_FINAL_STAGE:
-//peek at the next line. If that line closes a class, do that step now
 					break;
 				default:
 					cout << "What? ended up in the default case, with value: " << parseStage << endl;
@@ -687,6 +689,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 		//=============================
 		if(controlVariableName == "")
 		{
+cout << "one copy needed case, control variable name is null..." << endl;
 			if(ilObj.GetSimulationClassName() != "") /*TYPED case*/
 			{
 				//cout << "\t\tAdded object to typedObjectsVector because it had type: " << ilObj.GetSimulationClassName() << endl;
@@ -697,7 +700,7 @@ bool InputLinkSpec::ImportIL(string& filename)
 				//cout << "Adding untyped object with attribute:>" << ilObj.GetAttributeName() << "<***" << endl;
 				if(lastCompletedState == READING_CLASS_CLOSE)
 				{}//doing nothing here takes care of the case where the ilObject that we have is
-				//essentially empty TODO set some kind of flag to take care of this
+				//essentially empty  //TODO set some kind of flag to take care of this.  This is just sloppy
 				else
 					ilObjects.push_back(ilObj);
 			}
@@ -712,13 +715,13 @@ bool InputLinkSpec::ImportIL(string& filename)
 			{
 				//We CAN'T have enough information to duplicate this object, because 
 				//in that case, the simulation class type would be ""
-				//Since don't have enough information to duplicate
+				//Since don't have enough information to duplicate yet,
 				//store the piece we just read into an intermediate container
 				pendingClassSpec.push_back(ilObj);	
 			}
-			
-			//we have enough information do duplicate the wme patterns now
-			else if(classDescriptionJustFinished) 
+
+			//we have enough information duplicate the wme patterns now
+			else if(classDescriptionJustFinished)
 			{
 				resetLoopCounters = true;
 				classDescriptionJustFinished = false;
@@ -726,63 +729,65 @@ bool InputLinkSpec::ImportIL(string& filename)
 				//make a copy of this class pattern
 				//ilObjVector_t actualClassPattern = typedObjects[ilObj.GetAttributeName()];
 				assert(!pendingClassSpec.empty());
-				//replace instances of control variable name with value
-cout << "loop bounds are: " << loopBegin << " and ending: "	<< loopEnd << endl;
+
 				for(int counter = loopBegin; counter < loopEnd; counter += incrementAmount)
 				{
-//cout << "an iteration based on the control structure..." << endl;
 					string counterAsString = IntToString(counter);
 					ilObjVector_t actualClassObjects;
 					for(ilObjItr objItr = pendingClassSpec.begin(); objItr != pendingClassSpec.end(); /*++objItr*/)
 					{
-//cout << "\tan iteration based on how many elements are in this class..." << endl;
-//cout << "\tand the total number of pending elements is: " << pendingClassSpec.size() << endl;
-//cout << "This object is: " << *objItr << endl;
 						assert(controlVariableName != "");
 						if(controlVariableName != "")
+						{
+cout << "replacing internal tokens now..." << endl;
+cout << "\tcontrol var name is: " << controlVariableName << ", and value is: " << counterAsString << endl;
+							//replace instances of control variable name with value
 							objItr->ReplaceInternalTokens(controlVariableName, counterAsString);
+							cout << "Immediately after the replacement: " << objItr->GetStartValue() << endl;
+						}
+
 						/* copy the now-altered patterns into the actual objects container*/
 						actualClassObjects.push_back(*objItr);
+cout << "Now that tokens are replaced, object is: " << *objItr;
+						++objItr;// ??? For some reason, incrementing here works better than incrementing in the
+						//'for loop' increment section, which causes an extra iteration
+					}//for every object that is a part of the class
+//TODO try making the following vector a reference to the one that's stored in the map, to reduce the copying
+					ilObjVector_t& thisTypesObjects = typedObjects[actualClassObjects.front().GetSimulationClassName()];
 
-						++objItr;// ??? For some reason, incrementing here works better 
-						//than incrementing in the 'for loop' increment section, which causes an extra iteration
-	
+					for(ilObjItr tempItr = actualClassObjects.begin(); tempItr != actualClassObjects.end(); ++tempItr)
+					{
+						thisTypesObjects.push_back(*tempItr);
 					}
-//cout << "before pushing new objects into map, num elements for type: " << actualClassObjects.front().GetSimulationClassName() << " is:";
-ilObjVector_t thisTypesObjects = typedObjects[actualClassObjects.front().GetSimulationClassName()];
-//cout << thisTypesObjects.size() << endl;
-for(ilObjItr tempItr = actualClassObjects.begin(); tempItr != actualClassObjects.end(); ++tempItr)
-{
-	thisTypesObjects.push_back(*tempItr);
-}
 					typedObjects[actualClassObjects.front().GetSimulationClassName()] = thisTypesObjects;
-//thisTypesObjects = typedObjects[actualClassObjects.front().GetSimulationClassName()];
-//cout << "and now after the push... " << thisTypesObjects.size() << endl;
-				}
 
-				pendingClassSpec.clear();	
+				}// for every iteration specified in the input file
+
+				pendingClassSpec.clear();
 			}//if we have enough information to duplicate object
-			
+
 			else/*untyped case*/
 			{
 				resetLoopCounters = true;
 				//cout << "\t\tMULTIPLE COPIES and UNTYPED" << endl;
+cout << "counter's start value: " << loopBegin << endl;
+cout << "increment amount: " << incrementAmount << endl;
+cout << "counter's current value: " << loopBegin << endl;
 
 				//cout << "Adding MULTIPLE of untyped object with attribute:" << actualNewObject.GetAttributeName() << endl;
 				for(int counter = loopBegin; counter < loopEnd; counter += incrementAmount)
 				{
+cout << "counter's current value: " << counter << endl;
 					//the parts of a WME pattern that might have a field equal to the control
 					//variable name are the optional "update"/"start" fields
 					string counterAsString = IntToString(counter);
-					ilObj.ReplaceInternalTokens(controlVariableName, counterAsString);				
-					ilObjects.push_back(ilObj);							
+cout << "counter as sting: " << counterAsString << endl;
+					ilObj.ReplaceInternalTokens(controlVariableName, counterAsString);
+					ilObjects.push_back(ilObj);
 				}
 			}
 		}
 
-//TODO this 'for loop' only goes up (and by 1), but the user isn't constrained to that.
-//So, take note of whether start val is higher/lower than end val
-//Also, consider taking in another arg that sets the increment amount
 
 		//now we've read a WME pattern. If it should be duplicated, do that now.
 		//However, if we're reading an entire class pattern that needs to be repeated,
@@ -795,11 +800,13 @@ for(ilObjItr tempItr = actualClassObjects.begin(); tempItr != actualClassObjects
 			loopEnd = defaultLoopEnd;
 			controlVariableName = "";
 			unsatisfiedControlStructure = false;
+			resetLoopCounters = false;
 		}
 
 	}//while there are still lines to read
 
 	cout << "Read " << lineNumber << " lines." << endl;
+	//========  DEBUG Printing stuff =====================================
 	//cout << "Number of input link entries " << ilObjects.size() << endl;
 	//for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
 	//	cout << *objItr;

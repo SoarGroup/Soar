@@ -98,8 +98,8 @@ void CPPGenerator::GenerateCreateILFunctionTyped(int depth)
 		//Generate the creation of all of the WMEs associated with this type
 		PrintTabs(depth);
 		ilObjVector_t& objects = typeItr->second;
-cout << "\tCurrently generating createIL function code for type:"	<< className << endl <<
-" \t\twhich has: " << objects.size() << " objects described for it" << endl;
+//cout << "\tCurrently generating createIL function code for type:"	<< className << endl <<
+//" \t\twhich has: " << objects.size() << " objects described for it" << endl;
 		DoGenerateCreateInput(objects, depth);
 		PrintZeroArgFunction(k_Commit, depth + 1, k_AgentInstanceDot);
 		file << endl;
@@ -225,19 +225,22 @@ void CPPGenerator::GenerateUpdateILFunction(int indentDepth)
 	file << k_openBrace << endl;
 
 	for(ilObjVector_t::iterator objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
-	{ //FIME //TODO this condition alone isn't enough to determine if something gets printed
+	{ 
 		string updateString = objItr->GetUpdateValue();
 		if(updateString == "")
 			continue;
 
 		//write out the "if", condition, and the open brace
 		PrintTabs(indentDepth + 1);
-		file << k_if << updateString << k_closeParen << endl;
+		//if the value stored in the WME is not equal to the simulation value
+//TODO complete this		file << k_if << updateString << k_space << k_notEqual << k_space << 
+//TODO complete this		file << k_closeParen << endl;
 
-		PrintTabs(indentDepth + 1)  << k_openBrace << endl;
+		PrintTabs(indentDepth + 1) << k_openBrace << endl;
 		PrintTabs(indentDepth + 2);
 		file << k_AgentInstance << k_dot << k_Update << k_openParen;
 		file << objItr->GetGeneratedName();
+
 		file << k_argSep << k_space << updateString << k_closeParen << k_semi << endl;
 
 		//write out the closing brace
