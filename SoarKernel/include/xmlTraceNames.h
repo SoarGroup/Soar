@@ -19,9 +19,8 @@
 #ifndef XML_TRACE_NAMESH
 #define XML_TRACE_NAMESH
 
-class xmlTraceNames
+namespace xmlTraceNames
 {
-public:
 	//for RHS output
 	static char const* const kTagRHS_write ;
 	static char const* const kRHS_String ;

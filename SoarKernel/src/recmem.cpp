@@ -65,6 +65,8 @@
 #undef _INCLUDE_HPUX_SOURCE
 #endif /* __hpux */
 
+using namespace xmlTraceNames;
+
 /* Uncomment the following line to get instantiation printouts */
 /* #define DEBUG_INSTANTIATIONS */
 
@@ -648,8 +650,8 @@ void create_instantiation (agent* thisAgent, production *prod,
    /* --- phase has changed to output by printing the arrow --- */
    if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
       print (thisAgent, " -->\n");
-	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagActionSideMarker);
-	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagActionSideMarker);
+	  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagActionSideMarker);
+	  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagActionSideMarker);
    }
 
    /* --- execute the RHS actions, collect the results --- */
@@ -862,8 +864,8 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
 				(wme_trace_type)thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM],1);
 			if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
 				print (thisAgent, " -->");
-				gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagActionSideMarker);
-				gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagActionSideMarker);
+				gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagActionSideMarker);
+				gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagActionSideMarker);
 			}
 		}
         if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {

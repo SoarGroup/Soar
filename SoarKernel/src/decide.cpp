@@ -49,9 +49,15 @@
 #include "explain.h"
 #include "tempmem.h"
 #include "io.h"
+
+/* JC ADDED: This is for event firing in gSKI */
+#include "gski_event_system_functions.h"
+
 #include <assert.h>
 #include <math.h>
 #include <time.h>
+
+using namespace xmlTraceNames;
 
 #ifdef NUMERIC_INDIFFERENCE
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
@@ -76,9 +82,6 @@ void print_candidates(agent* thisAgent, preference * candidates)
 /* END: 2003-01-02 Behavior Variability Kernel Experiments */
 
 #endif
-
-/* JC ADDED: This is for event firing in gSKI */
-#include "gski_event_system_functions.h"
 
 /* ------------------------------------------------------------------------
                      Decider Global Variables
@@ -1960,10 +1963,10 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 
                        char buf[256];
                        snprintf(buf, 254, "Removing goal %d because element in GDS changed.", w->gds->goal->id.level);
-                       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagVerbose);
-	                   gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, buf);
+                       gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagVerbose);
+	                   gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kTypeString, buf);
                        print_wme(thisAgent, w);
-                       gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagVerbose);
+                       gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagVerbose);
                     }
                     gds_invalid_so_remove_goal(thisAgent, w);
                  }
@@ -3568,11 +3571,11 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
             if (thisAgent->sysparams[TRACE_INDIFFERENT_SYSPARAM]){
 				print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);
 		           print(thisAgent, "Value (Sum) = %f", exp(cand->sum_of_probability / TEMPERATURE));
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagCandidate);
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateName, symbol_to_string (thisAgent, cand->value, true, 0, 0));
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateType, xmlTraceNames::kCandidateTypeSum);
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateValue, exp(cand->sum_of_probability / TEMPERATURE));
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagCandidate);
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagCandidate);
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateName, symbol_to_string (thisAgent, cand->value, true, 0, 0));
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateType, kCandidateTypeSum);
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateValue, exp(cand->sum_of_probability / TEMPERATURE));
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagCandidate);
 			}     
             /*  Total Probability represents the range of values, we expect
              *  the use of negative valued preferences, so its possible the
@@ -3610,11 +3613,11 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
             if (thisAgent->sysparams[TRACE_INDIFFERENT_SYSPARAM]) {
 				print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);  
 		           print(thisAgent, "Value (Avg) = %f", fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagCandidate);
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateName, symbol_to_string (thisAgent, cand->value, true, 0, 0));
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateType, xmlTraceNames::kCandidateTypeAvg);
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kCandidateValue, fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
-               gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagCandidate);
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagCandidate);
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateName, symbol_to_string (thisAgent, cand->value, true, 0, 0));
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateType, kCandidateTypeAvg);
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateValue, fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
+               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagCandidate);
 			}    
             /* Total probability represents the range of values that
              * we'll map into for selection.  Here we don't expect the use

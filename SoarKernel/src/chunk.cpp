@@ -48,6 +48,8 @@
 
 #include <ctype.h>
 
+using namespace xmlTraceNames;
+
 /* =====================================================================
 
                            Results Calculation
@@ -1081,14 +1083,14 @@ void chunk_instantiation (agent* thisAgent,
   for (pref=results; pref!=NIL; pref=pref->next_result) {
 	  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
 		  print_string (thisAgent, "\nFor result preference ");
-          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagBacktraceResult);
+          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagBacktraceResult);
 		  print_preference (thisAgent, pref);
 		  print_string (thisAgent, " ");
 	  }
 	  backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, 0);
       
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagBacktraceResult);
+          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagBacktraceResult);
       }
   }
   
@@ -1139,11 +1141,11 @@ void chunk_instantiation (agent* thisAgent,
 	  if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");
 	  print_with_symbols (thisAgent, "Building %y", prod_name);
 
-	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLearning);
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagProduction);
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kProduction_Name, symbol_to_string(thisAgent, prod_name, true, 0, 0));
-      gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagProduction);
-	  gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLearning);
+	  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagLearning);
+      gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagProduction);
+      gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kProduction_Name, symbol_to_string(thisAgent, prod_name, true, 0, 0));
+      gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagProduction);
+	  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagLearning);
   }
   /* AGR 617/634 end */
   
@@ -1283,9 +1285,9 @@ void chunk_instantiation (agent* thisAgent,
 	  
 	  if (print_prod && (rete_addition_result!=DUPLICATE_PRODUCTION)) {
 		  print_string (thisAgent, "\n");
-          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagLearning);
+          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagLearning);
 		  print_production (thisAgent, prod, FALSE);
-          gSKI_MakeAgentCallbackXML(thisAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagLearning);
+          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagLearning);
 	  }
 	  
 	  if (rete_addition_result==DUPLICATE_PRODUCTION) {

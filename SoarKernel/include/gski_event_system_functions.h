@@ -22,6 +22,8 @@
 #include <assert.h>
 #include <memory.h>
 
+using namespace xmlTraceNames;
+
 /**
  * @brief Initialize the agent callbacks
  *
@@ -160,27 +162,27 @@ inline void gSKI_MakeAgentCallbackXML(	agent*		soarAgent,
 }
 
 inline void GenerateWarningXML(agent* soarAgent, const char* message) {
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagWarning);
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, message);
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagWarning);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionBeginTag, kTagWarning);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionAddAttribute, kTypeString, message);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionEndTag, kTagWarning);
 }
 
 inline void GenerateErrorXML(agent* soarAgent, const char* message) {
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagError);
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, message);
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagError);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionBeginTag, kTagError);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionAddAttribute, kTypeString, message);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionEndTag, kTagError);
 }
 
 inline void GenerateMessageXML(agent* soarAgent, const char* message) {
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagMessage);
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, message);
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagMessage);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionBeginTag, kTagMessage);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionAddAttribute, kTypeString, message);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionEndTag, kTagMessage);
 }
 
 inline void GenerateVerboseXML(agent* soarAgent, const char* message) {
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionBeginTag, xmlTraceNames::kTagVerbose);
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionAddAttribute, xmlTraceNames::kTypeString, message);
-	gSKI_MakeAgentCallbackXML(soarAgent, xmlTraceNames::kFunctionEndTag, xmlTraceNames::kTagVerbose);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionBeginTag, kTagVerbose);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionAddAttribute, kTypeString, message);
+	gSKI_MakeAgentCallbackXML(soarAgent, kFunctionEndTag, kTagVerbose);
 }
 
 ///**
