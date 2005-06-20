@@ -594,9 +594,6 @@
 						ObjectFile="$(IntDir)/$(InputName)1.obj"/>
 				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\src\xmlTraceNames.cpp">
-			</File>
 		</Filter>
 		<Filter
 			Name="Header files"
