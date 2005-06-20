@@ -36,8 +36,7 @@ tempmem.cpp\
 tilde.cpp\
 trace.cpp\
 utilities.cpp\
-wmem.cpp\
-xmlTraceNames.cpp
+wmem.cpp
 
 INCLUDES = -I.. -I../include
 
