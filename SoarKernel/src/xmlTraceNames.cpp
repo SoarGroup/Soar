@@ -19,7 +19,7 @@
 //  also be there and have the same values.
 //
 /////////////////////////////////////////////////////////////////
-
+/*
 #include "xmlTraceNames.h"
 
 using namespace xmlTraceNames;
@@ -170,3 +170,4 @@ char const* const kFunctionEndTag		= "endtag";
 char const* const kFunctionAddAttribute	= "addattribute";
 
 char const* const kTypeString	= "string" ;
+*/

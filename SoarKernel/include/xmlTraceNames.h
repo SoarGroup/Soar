@@ -22,148 +22,152 @@
 namespace xmlTraceNames
 {
 	//for RHS output
-	static char const* const kTagRHS_write ;
-	static char const* const kRHS_String ;
+	static char const* const kTagRHS_write	= "rhs_write" ;
+
+	static char const* const kRHS_String	= "string" ;
 
 	// Tags defined for Trace output at each watch level:
+
 	// <trace> contains the rest.
-	static char const* const kTagTrace ;
+	static char const* const kTagTrace		= "trace" ;
 
 	// <context> tag identifiers for Watch level 1
-	static char const* const kTagState ;
-	static char const* const kTagOperator ;
-	static char const* const kState_ID;
-	static char const* const kState_Name;
-	static char const* const kState_DecisionCycleCt;
-	static char const* const kState_ImpasseObject;
-	static char const* const kState_ImpasseType;
-	static char const* const kState_StackLevel ;
-	static char const* const kOperator_ID;
-	static char const* const kOperator_Name;
-	static char const* const kOperator_DecisionCycleCt;
-	static char const* const kOperator_StackLevel ;
- 
+	static char const* const kTagState				= "state" ;
+	static char const* const kTagOperator			= "operator" ;
+	static char const* const kState_ID				= "current_state_id" ;
+	static char const* const kState_Name			= "name" ;
+	static char const* const kState_DecisionCycleCt	= "decision_cycle_count" ;
+	static char const* const kState_ImpasseObject	= "impasse_object" ;
+	static char const* const kState_ImpasseType		= "impasse_type" ;
+	static char const* const kState_StackLevel		= "stack_level" ;
+	static char const* const kOperator_ID			= "current_operator_id" ;
+	static char const* const kOperator_Name			= "name" ;
+	static char const* const kOperator_DecisionCycleCt = "decision_cycle_count" ;
+	static char const* const kOperator_StackLevel	= "stack_level" ;
+
 	// <phase> tag identifiers for Watch level 2
-	static char const* const kTagPhase ;
-	static char const* const kPhase_Name ;
-	static char const* const kPhase_Status ;
-	static char const* const kPhase_FiringType ;
-	static char const* const kPhaseName_Input ;
-	static char const* const kPhaseName_Pref ;
-	static char const* const kPhaseName_WM ;
-	static char const* const kPhaseName_Decision ;
-	static char const* const kPhaseName_Output ;
-	static char const* const kPhaseName_Propose ;
-	static char const* const kPhaseName_Apply ;
-	static char const* const kPhaseName_Unknown;
-	static char const* const kPhaseStatus_Begin ;
-	static char const* const kPhaseStatus_End ;
- 	static char const* const kPhaseFiringType_IE ;
-	static char const* const kPhaseFiringType_PE ;
+	static char const* const kTagPhase  	= "phase" ;
+	static char const* const kPhase_Name  	= "name" ;
+	static char const* const kPhase_Status  	= "status" ;
+	static char const* const kPhase_FiringType 	= "firing_type" ;
+	static char const* const kPhaseName_Input  	= "input" ;
+	static char const* const kPhaseName_Pref  	= "preference" ;
+	static char const* const kPhaseName_WM  	= "workingmemory" ;
+	static char const* const kPhaseName_Decision= "decision" ;
+	static char const* const kPhaseName_Output 	= "output" ;
+	// next two are new phase names
+	static char const* const kPhaseName_Propose	= "propose" ;
+	static char const* const kPhaseName_Apply  	= "apply" ;
+	static char const* const kPhaseName_Unknown	= "unknown" ;
+	static char const* const kPhaseStatus_Begin	= "begin" ;
+	static char const* const kPhaseStatus_End	= "end" ;
+	static char const* const kPhaseFiringType_IE= "IE" ;
+	static char const* const kPhaseFiringType_PE= "PE" ;
 
 	// <prod-firing> tag identifiers for Watch level 3
-	static char const* const kTagProduction ;
-	static char const* const kProduction_Name ;
- 	static char const* const kTagProduction_Firing ;
-	static char const* const kTagProduction_Retracting ;
-	
-	// <wme> tag identifiers, also Watch level 4
-	static char const* const kTagWME ;
-	static char const* const kWME_TimeTag ;
-	static char const* const kWME_Id ;
-	static char const* const kWME_Attribute ;
-	static char const* const kWME_Value ;
-	static char const* const kWME_ValueType ;
-	static char const* const kWMEPreference;
-	static char const* const kWME_Action ;
+	static char const* const kTagProduction		= "production" ;
+	static char const* const kProduction_Name  	= "prodname" ;
+	static char const* const kTagProduction_Firing  	= "firing_production" ;
+	static char const* const kTagProduction_Retracting  = "retracting_production" ;
+
+	// <wme> tag identifiers, also for Watch level 4
+	static char const* const kTagWME		= "wme" ;
+	static char const* const kWME_TimeTag	= "tag" ;
+	static char const* const kWME_Id		= "id" ;
+	static char const* const kWME_Attribute	= "attr" ;
+	static char const* const kWME_Value		= "value" ;
+	static char const* const kWME_ValueType	= "type" ;
+	static char const* const kWMEPreference = "preference";
+	static char const* const kWME_Action	= "action" ;
 	// kjc question:  should the next entry be kWMEAction_Add?
-	static char const* const kValueAdd	;
-	static char const* const kValueRemove ;
-	static char const* const kTagWMERemove ;
-	static char const* const kTagWMEAdd ;
+	static char const* const kValueAdd		= "add" ;
+	static char const* const kValueRemove	= "remove" ;
+	static char const* const kTagWMERemove	= "removing_wme" ;
+	static char const* const kTagWMEAdd 	= "adding_wme" ;
 
 	// <preference> tag identifiers, also Watch level 5
-	static char const* const kTagPreference ;
-	static char const* const kPreference_Type ;
-	static char const* const kOSupported ;
-	static char const* const kReferent ;
+	static char const* const kTagPreference		= "preference" ;
+	static char const* const kPreference_Type	= "pref_type" ;
+	static char const* const kOSupported		= "o_supported" ;
+	static char const* const kReferent			= "referent" ;
 
-	// for warnings controlled by WARNINGS_SYSPARAM
-	static char const* const kTagWarning ;
+	static char const* const kTagWarning		= "warning" ;
+	// Tag warning has attribute kTypeString
 
-	// for errors
-	static char const* const kTagError ;
-
-	// XML function types for XML output event
-	static char const* const kFunctionBeginTag;
-	static char const* const kFunctionEndTag;
-	static char const* const kFunctionAddAttribute;
+	static char const* const kTagError		= "error" ;
+	// Tag error has attribute kTypeString
 
 	// learning stuff
-	static char const* const kTagLearning;
+	static char const* const kTagLearning	= "learning" ;
 
-    //production printing
-    static char const* const kTagConditions;
-    static char const* const kTagConjunctive_Negation_Condition;
-    static char const* const kTagCondition;
-    static char const* const kTagActions;
-    static char const* const kTagAction;
-	static char const* const kProductionDocumentation;
-    static char const* const kProductionType;
-    static char const* const kProductionTypeDefault;
-    static char const* const kProductionTypeChunk;
-    static char const* const kProductionTypeJustification;
-    static char const* const kProductionDeclaredSupport;
-    static char const* const kProductionDeclaredOSupport;
-    static char const* const kProductionDeclaredISupport;
-    static char const* const kConditionId;
-    static char const* const kConditionTest;
-    static char const* const kConditionTestState;
-    static char const* const kConditionTestImpasse;
-    static char const* const kCondition;
-    static char const* const kAction;
-    static char const* const kActionFunction;
-    static char const* const kActionId;
+	//production printing
+	static char const* const kTagConditions                 	= "conditions" ;
+	static char const* const kTagConjunctive_Negation_Condition	= "conjunctive-negation-condition" ;
+	static char const* const kTagCondition	                    = "condition" ;
+	static char const* const kTagActions	                    = "actions" ;
+	static char const* const kTagAction 	                    = "action" ;
+	static char const* const kProductionDocumentation           = "documentation" ;
+	static char const* const kProductionType                    = "type" ;
+	static char const* const kProductionTypeDefault             = ":default" ;
+	static char const* const kProductionTypeChunk               = ":chunk" ;
+	static char const* const kProductionTypeJustification       = ":justification ;# not reloadable" ;
+	static char const* const kProductionDeclaredSupport         = "declared-support" ;
+	static char const* const kProductionDeclaredOSupport        = ":o-support" ;
+	static char const* const kProductionDeclaredISupport        = ":i-support" ;
+	static char const* const kConditionId                       = "id" ;
+	static char const* const kConditionTest                     = "test";
+	static char const* const kConditionTestState                = "state";
+	static char const* const kConditionTestImpasse              = "impasse";
+	static char const* const kCondition                         = "condition" ;
+	static char const* const kAction                            = "action" ;
+	static char const* const kActionFunction                    = "function" ;
+	static char const* const kActionId                          = "id" ;
 
-    //backtrace stuff
-    static char const* const kTagBacktrace;
-    static char const* const kTagGrounds;
-    static char const* const kTagPotentials;
-    static char const* const kTagLocals;
-    static char const* const kTagLocal;
-	static char const* const kTagBacktraceResult;
-    static char const* const kTagProhibitPreference;
-    static char const* const kTagAddToPotentials;
-    static char const* const kTagNegated;
-    static char const* const kTagNots;
-	static char const* const kTagNot;
-    static char const* const kTagGroundedPotentials;
-    static char const* const kTagUngroundedPotentials;
-    static char const* const kTagUngroundedPotential;
-    static char const* const kBacktracedAlready;
-    static char const* const kBacktraceSymbol1;
-    static char const* const kBacktraceSymbol2;
+	//backtrace stuff
+	static char const* const kTagBacktrace              = "backtrace" ;
+	static char const* const kTagGrounds                = "grounds" ;
+	static char const* const kTagPotentials             = "potentials" ;
+	static char const* const kTagLocals                 = "locals" ;
+	static char const* const kTagLocal                  = "local";
+	static char const* const kTagBacktraceResult        = "result";
+	static char const* const kTagProhibitPreference     = "prohibit-preference";
+	static char const* const kTagAddToPotentials        = "add-to-potentials";
+	static char const* const kTagNegated                = "negated" ;
+	static char const* const kTagNots                   = "nots" ;
+	static char const* const kTagNot                   = "not" ;
+	static char const* const kTagGroundedPotentials     = "grounded-potentials";
+	static char const* const kTagUngroundedPotentials   = "ungrounded-potentials";
+	static char const* const kTagUngroundedPotential    = "ungrounded-potential";
+	static char const* const kBacktracedAlready         = "already-backtraced";
+	static char const* const kBacktraceSymbol1          = "symbol1";
+	static char const* const kBacktraceSymbol2          = "symbol2";
 
-    // numeric indifference stuff
-    static char const* const kTagCandidate;
-    static char const* const kCandidateName;
-    static char const* const kCandidateType;
-    static char const* const kCandidateTypeSum;
-    static char const* const kCandidateTypeAvg;
-    static char const* const kCandidateValue;
+	// numeric indifference stuff
+	static char const* const kTagCandidate      = "candidate";
+	static char const* const kCandidateName     = "name";
+	static char const* const kCandidateType     = "type";
+	static char const* const kCandidateTypeSum  = "sum";
+	static char const* const kCandidateTypeAvg  = "avg";
+	static char const* const kCandidateValue    = "value";
 
-    // output for the verbose command
-    static char const* const kTagVerbose;
+	// output for the verbose command
+	static char const* const kTagVerbose    = "verbose";
+	// Tag message has attribute kTypeString
 
-    // support for printing arbitrary messages
-    static char const* const kTagMessage;
+	// support for printing random messages
+	static char const* const kTagMessage    = "message";
+	// Tag message has attribute kTypeString
 
 	// marker for showing beginning of action-side
-	static char const* const kTagActionSideMarker;
+	static char const* const kTagActionSideMarker	= "actionsidemarker";
 
-	// end of tags for Trace output
+	// XML function types for XML output event
+	static char const* const kFunctionBeginTag		= "begintag";
+	static char const* const kFunctionEndTag		= "endtag";
+	static char const* const kFunctionAddAttribute	= "addattribute";
 
-	static char const* const kTypeString;
+	static char const* const kTypeString	= "string" ;
+
 };
 
 #endif // XML_TRACE_NAMESH
