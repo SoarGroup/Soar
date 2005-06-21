@@ -116,13 +116,13 @@
 				RelativePath=".\src\CPPGenerator.cpp">
 			</File>
 			<File
-				RelativePath=".\src\ilobject.cpp">
-			</File>
-			<File
-				RelativePath=".\src\ilspec.cpp">
-			</File>
-			<File
 				RelativePath=".\src\imp.cpp">
+			</File>
+			<File
+				RelativePath=".\src\InputLinkObject.cpp">
+			</File>
+			<File
+				RelativePath=".\src\InputLinkSpec.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -149,6 +149,9 @@
 			</File>
 			<File
 				RelativePath=".\include\InputLinkSpec.h">
+			</File>
+			<File
+				RelativePath=".\include\JavaGenerator.h">
 			</File>
 		</Filter>
 		<Filter
