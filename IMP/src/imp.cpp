@@ -1,9 +1,9 @@
 #include <iostream>
 #include <string>
 
-#include "ilspec.h"
-#include "ilobject.h"
-#include "CodeGenerator.h"
+#include "InputLinkObject.h"
+#include "InputLinkSpec.h"
+#include "CPPGenerator.h"
 
 using namespace std;
 

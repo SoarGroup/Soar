@@ -1,4 +1,4 @@
-#include "ilobject.h"
+#include "InputLinkObject.h"
 #include <iostream>
 #include <cassert>
 
@@ -18,7 +18,7 @@ extern void Pause();
 InputLinkObject::InputLinkObject()
 {
 	m_updateFrequency	= UPDATE_NEVER;
-	m_beenInspected		= false;
+	//m_beenInspected		= false;
 }
 
 /* Destructor
@@ -220,7 +220,8 @@ cout << "\tvalue to replace it with is " << valueAsString << endl;
 		m_updateValue.replace(pos, token.size(), valueAsString);
 		cout << "\tand now the new value is: " << m_updateValue << endl;
 	}//if the update value needs to be replaced
-
+else
+cout << "\tDidn't find token " << token << " in update value " << m_updateValue << endl;
 	//Look for the counter variable's name as a substring of the start value
 	pos = GetStartValue().find(token);
 	if(pos != string.npos)
@@ -229,6 +230,8 @@ cout << "\tvalue to replace it with is " << valueAsString << endl;
 		modifiedValue.replace(pos, token.size(), valueAsString);
 		SetStartValue(modifiedValue);
 	}//if the star start value needs to be replaced
+else
+cout << "\tDidn't find token " << token << " in start value " << GetStartValue() << endl;
 }
 
 void InputLinkObject::SetUpdateCondition(string& inValue){	m_updateCondition = inValue;} 

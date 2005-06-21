@@ -1,5 +1,5 @@
-#include "ilspec.h"
-#include "ilobject.h"
+#include "InputLinkSpec.h"
+#include "InputLinkObject.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>

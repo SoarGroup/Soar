@@ -1,7 +1,6 @@
-#include "CodeGenerator.h"
+#include "CPPGenerator.h"
 #include "CodeGenerationConstants.h"
-#include "CodeGeneratorUtilities.h"
-#include "ilobject.h"
+#include "InputLinkObject.h"
 
 #include <iostream>
 #include <cassert>
@@ -209,6 +208,10 @@ void CPPGenerator::GenerateCreateILFunction(int depth)
 	PrintTabs(depth) << k_closeBrace << endl;
 }
 
+void CPPGenerator::GenerateCleanupFunctionTyped(int indentDepth)
+{//TODO do this
+}
+	
 void CPPGenerator::GenerateUpdateILFunction(int indentDepth)
 {
 	cout << "GenerateUpdateILFunction...." << endl;
@@ -248,6 +251,8 @@ void CPPGenerator::GenerateUpdateILFunction(int indentDepth)
 	}
 	PrintTabs(indentDepth) << k_closeBrace << endl;	
 }
+
+void CPPGenerator::GenerateUpdateILFunctionTyped(int indentDepth){}//TODO  - actually do this
 
 void CPPGenerator::GenerateCleanupFunction(int indentDepth)
 {

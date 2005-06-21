@@ -32,7 +32,14 @@ const std::string k_conditionString("cond");
 const std::string k_cycleString("cycle");
 const std::string k_TBD("To Be Determined at runtime");
 
+/************************************************************************
+/* Helper function to map strings to enums types
+/************************************************************************/
 eElementType		StringToType(const std::string& source);
+
+/************************************************************************
+/* Helper function to may enum 
+/************************************************************************/
 const std::string	TypeToString(eElementType type);
 
 enum eUpdateFrequency
@@ -62,6 +69,12 @@ struct WMEValue
 typedef std::vector<eElementType> typesContainter_t;
 typedef typesContainter_t::iterator typesIterator_t;
 
+
+/************************************************************************
+/* This class is a digest of a description of a WME.  From this class
+	 an XML description of the WME an be created, and then a code-generation
+	 module can create/render the actual SML code
+/************************************************************************/
 class InputLinkObject
 {
 
@@ -70,25 +83,35 @@ public:
 	//InputLinkObject(std::string& inParent, std::string& inName, std::vector<eElementType>& inTypes, std::string& inValue);
 	~InputLinkObject();
 
+	/************************************************************************
+	/* WMEs can have multiple types during a simulation run.  This function
+			allows multiple types to be specified in advance
+	/************************************************************************/
 	void		AddElementType(std::string& inType){m_elementTypes.push_back(StringToType(inType));}
 	void		SetParentId(std::string& inParent){m_parentId = inParent;}
 	void		SetAttribName(std::string& inName){m_attribName = inName;}
 	void		SetStartValue(std::string& inValue);
+	
+	/************************************************************************
+	/* A WME description can be part of a collection that represents a class
+		that exists in the simulation environment.  This function marks the wme
+		as part of one of those classes
+	/************************************************************************/
 	void		SetSimulationClassName(std::string& inName){m_simulationClassName = inName;}
 	
 	void		SetUpdateValue(std::string& inValue);
-	/************************************************************************/
-	/* Sets the initial type for this WME.  By default, type is TBD                                                                     */
+	/************************************************************************
+	/* Sets the initial type for this WME.  By default, type is TBD
 	/************************************************************************/
 	void		SetType(std::string& inValue);
-	/************************************************************************/
+	/************************************************************************
 	/* Sometimes the string arg we start with is const.  Functionally equivalent
-	/  to the non-const version                                                                     */
+	/  to the non-const version
 	/************************************************************************/
 	void		SetType(const std::string& inValue);
-	/************************************************************************/
-	/* With no args, set the initial type to be equal to the first 
-	/  element of the type container (which shouldn't be empty if this is called)                                                                     */
+	/************************************************************************
+	/  With no args, set the initial type to be equal to the first 
+	/  element of the type container (which shouldn't be empty if this is called)
 	/************************************************************************/
 	void		SetType();
 	int			GetNumTypes() const {return m_elementTypes.size();}
@@ -106,11 +129,18 @@ public:
 	void SetUpdateCondition(std::string& inValue);
 	void SetGeneratedName(std::string& myName){m_name = myName;}
 
+	//operator overload to make printing this object easier
 	friend std::ostream& operator << (std::ostream& stream, InputLinkObject& obj);
-	bool HasBeenInspected() const {return m_beenInspected;}
-	void MarkAsInspected() {m_beenInspected = true;}
-	
-	//TODO comment
+
+	//bool HasBeenInspected() const {return m_beenInspected;}
+	//void MarkAsInspected() {m_beenInspected = true;}
+
+	/************************************************************************
+	/* When this object is created, some of its values, namely start value and 
+		update value, may hold the names of variables.  At a later time, this function
+		is called to replace the variable name with the string representation of that
+		variable's value
+	/************************************************************************/
 	void ReplaceInternalTokens(const std::string& token, std::string& valueAsString);
 private:
 
@@ -124,10 +154,13 @@ private:
 	WMEValue					m_value;
 	eUpdateFrequency	m_updateFrequency;
 
-	bool							m_beenInspected;//TODO determine if this is unnecessary
-	
+	//bool							m_beenInspected;
+
+	//In a more powerful version of IMP, there will be a module that maps the actual
+	//simulation objects to the WM elements that represent them.  This pointer
+	//would be useful for that mapping
 	//sml::WMElement*		m_wme;
-	
+
 	//this may end up being a vector of strings
 	std::string				m_name;//The name of the generated variable corresponding to 'this'
 };

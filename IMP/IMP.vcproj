@@ -139,13 +139,16 @@
 				RelativePath=".\include\CodeGeneratorUtilities.h">
 			</File>
 			<File
+				RelativePath=".\include\CPPGenerator.h">
+			</File>
+			<File
 				RelativePath=".\include\IIMP.h">
 			</File>
 			<File
-				RelativePath=".\include\ilobject.h">
+				RelativePath=".\include\InputLinkObject.h">
 			</File>
 			<File
-				RelativePath=".\include\ilspec.h">
+				RelativePath=".\include\InputLinkSpec.h">
 			</File>
 		</Filter>
 		<Filter

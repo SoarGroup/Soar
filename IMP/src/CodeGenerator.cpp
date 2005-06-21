@@ -1,4 +1,4 @@
-#include "CodeGenerator.h"
+#include "CPPGenerator.h"
 
 using std::string;
 using std::ostream;
