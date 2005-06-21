@@ -237,11 +237,12 @@ public:
 	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
 	*						you may wish to disable this option (so everything goes through the standard paths).  Not available if running in a new thread.
 	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
+	*						Passing 0 means no listening port will be created (so it will be impossible to make remote connections to the kernel).
 	*
 	* @returns A new kernel object which is used to communicate with the kernel.
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateKernelInCurrentThread(char const* pLibraryName, bool optimized = true, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateKernelInCurrentThread(char const* pLibraryName, bool optimized = false, int portToListenOn = kDefaultSMLPort) ;
 	static Kernel* CreateKernelInNewThread(char const* pLibraryName, int portToListenOn = kDefaultSMLPort) ;
 
 	/*************************************************************

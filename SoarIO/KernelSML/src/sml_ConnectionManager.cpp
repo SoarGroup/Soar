@@ -28,8 +28,13 @@ using namespace sock ;
 ConnectionManager::ConnectionManager(unsigned short port)
 {
 	// Start the thread that wraps the listener socket running.
-	m_ListenerThread = new ListenerThread(this, port) ;
-	m_ListenerThread->Start() ;
+	// (Unless passed port 0 -- which suppresses this)
+	m_ListenerThread = NULL ;
+	if (port != 0)
+	{
+		m_ListenerThread = new ListenerThread(this, port) ;
+		m_ListenerThread->Start() ;
+	}
 
 	// Start the thread that checks for incoming messages on the remote connections
 	// (once the listener has been used to create them).
