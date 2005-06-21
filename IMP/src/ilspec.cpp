@@ -88,7 +88,7 @@ bool InputLinkSpec::ImportDM(string& filename)
 }
 
 //This is not quite cool.  The utility will remain the same, 
-//but this may need to be a member
+//but this may be more coherent as a member
 void PrintStage(eParseStage stage, ostream& stream)
 {
 	stream << "<+> ";
