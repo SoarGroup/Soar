@@ -149,6 +149,7 @@ protected:
 	// Keep a local copy of this flag so we can report
 	// information directly about what the client is sending/receiving
 	bool m_bTracingCommunications ;
+	bool m_bShutdown ;
 
 	// This thread is used to check for incoming events when the client goes to sleep
 	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
@@ -266,13 +267,30 @@ public:
 	static int GetDefaultPort() { return kDefaultSMLPort ; }
 
 	/*************************************************************
+	* @brief Preparation for deleting the kernel.
+	*		 Agents are destroyed at this point (if we own the kernel)
+	*		 After calling shutdown the kernel cannot be restarted
+	*		 it must be deleted.
+	*		 This is separated from delete to ensure that messages
+	*		 relating to system shutdown can be sent in a more stable
+	*		 state (while the kernel object still exists).
+	*************************************************************/
+	void Shutdown() ;
+
+	/*************************************************************
+	* @brief Delete the kernel (or our connection to the kernel)
+	*		 releasing all memory owned by the kernel.
+	*		 Users should call "Shutdown" prior to calling delete
+	*		 to ensure a clean shutdown.
+	*************************************************************/
+	virtual ~Kernel();
+
+	/*************************************************************
 	* @brief Turning this on means we'll start dumping output about messages
 	*		 being sent and received.
 	*************************************************************/
 	void SetTraceCommunications(bool state) ;
 	bool IsTracingCommunications() ;
-
-	virtual ~Kernel();
 
 	/*************************************************************
 	* @brief Creates a new Soar agent with the given name.
@@ -657,6 +675,26 @@ public:
 	* (unless it has been changed since the load).
 	*************************************************************/
 	std::string GetLibraryLocation() ;
+
+	/*************************************************************
+	* @brief The Soar kernel version is based on sending a request
+	*		 to the kernel asking for its version and returning the
+	*		 result.
+	*
+	*		 The Soar client version reports the version of Soar this
+	*		 client was compiled for.  It's based on a constant
+	*		 stored in the sml_Names list.
+	*
+	*		 The SML version also reports a constant for the version
+	*		 of SML in use and is again based on a constant in the
+	*		 sml_Names list.
+	*
+	*		 All versions are of the form Major.Minor.Release
+	*		 E.g. 8.6.1
+	*************************************************************/
+	std::string GetSoarKernelVersion() ;
+	static std::string GetSoarClientVersion() ;
+	static std::string GetSMLVersion() ;
 
 protected:
 	/*************************************************************

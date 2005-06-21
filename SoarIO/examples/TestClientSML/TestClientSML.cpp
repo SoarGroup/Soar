@@ -210,6 +210,11 @@ void MySystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
 	cout << "Received kernel event" << endl ;
 }
 
+void MyShutdownHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
+{
+	cout << "Received before system shutdown event" << endl ;
+}
+
 void MyDeletionHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 {
 	cout << "Received notification before agent was deleted" << endl ;
@@ -715,90 +720,6 @@ void MyEchoEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char
 		cout << " ----> Received an echo event with contents: " << pMsg << endl ;    
 }
 
-bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
-{
-	// Create the appropriate type of connection
-	sml::Kernel* pKernel = embedded ?
-		(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML", fullyOptimized, Kernel::GetDefaultPort())
-		: sml::Kernel::CreateKernelInNewThread("SoarKernelSML", Kernel::GetDefaultPort()))
-		: sml::Kernel::CreateRemoteConnection(true, NULL) ;
-
-	if (pKernel->HadError())
-	{
-		cout << pKernel->GetLastErrorDescription() << endl ;
-		return false ;
-	}
-
-	// This number determines how many agents are created.  We create <n>, test <n> and then delete <n>
-	int numberAgents = 1 ;
-
-	sml::Agent* pFirst = NULL ;
-
-	// PHASE ONE: Agent creation
-	for (int agentCounter = 0 ; agentCounter < numberAgents ; agentCounter++)
-	{
-		std::string name = "test-client-sml" ;
-		name.push_back('1' + agentCounter) ;
-
-		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
-		sml::Agent* pAgent = pKernel->CreateAgent(name.c_str()) ;
-
-		if (!pFirst)
-			pFirst = pAgent ;
-
-		if (pKernel->HadError())
-		{
-			cout << pKernel->GetLastErrorDescription() << endl ;
-			return false ;
-		}
-
-		if (!pAgent)
-		{
-			cout << "Error creating agent" << endl ;
-			return false ;
-		}
-
-		bool ok = true ;
-
-		std::string path = pKernel->GetLibraryLocation() ;
-        //path += "/demos/towers-of-hanoi/towers-of-hanoi.soar" ;
-		path += "/demos/water-jug/water-jug-look-ahead.soar" ;
-
-		bool load = pAgent->LoadProductions(path.c_str()) ;
-
-		unused(load);
-
-		if (pAgent->HadError())
-		{
-			cout << "ERROR loading productions: " << pAgent->GetLastErrorDescription() << endl ;
-			return false ;
-		}
-
-		cout << "Loaded productions" << endl ;
-
-		if (!ok)
-			return false ;
-
-		pAgent->RegisterForPrintEvent(smlEVENT_PRINT, &MyPrintEventHandlerTimer, NULL) ;
-		pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
-
-		pAgent->ExecuteCommandLine("watch 0") ;
-	}
-
-    std::string result;
-    
-    result = pFirst->ExecuteCommandLine("watch --learning fullprint --backtracing") ;
-	cout << result << endl ;
-
-    result = pFirst->ExecuteCommandLine("time run 20") ;
-    cout << result << endl ;
-
-	// Need to get rid of the kernel explictly.
-	delete pKernel ;
-
-	return true ;
-}
-
 bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
@@ -825,6 +746,17 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 		// Set this to true to give us lots of extra debug information on remote clients
 		// (useful in a test app like this).
 	    // pKernel->SetTraceCommunications(true) ;
+
+		cout << "Soar kernel version " << pKernel->GetSoarKernelVersion() << endl ;
+		cout << "Soar client version " << pKernel->GetSoarClientVersion() << endl ;
+		cout << "SML version " << pKernel->GetSMLVersion() << endl ;
+
+		std::string kernelVersion = pKernel->GetSoarKernelVersion() ;
+		if (kernelVersion.compare(pKernel->GetSoarClientVersion()) != 0)
+		{
+			cout << "Client and kernel versions don't match - which they should during development" << endl ;
+			return false ;
+		}
 
 		// Register a kernel event handler...unfortunately I can't seem to find an event
 		// that gSKI actually fires, so this handler won't get called.  Still, the code is there
@@ -926,7 +858,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 				return false ;
 		}
 
-		// PHASE THREE: Agent creation
+		// PHASE THREE: Agent deletion
 		for (int agentDeletions = 0 ; agentDeletions < numberAgents ; agentDeletions++)
 		{
 			std::string name = "test-client-sml" ;
@@ -948,6 +880,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			// Explicitly destroy our agent as a test, before we delete the kernel itself.
 			// (Actually, if this is a remote connection we need to do this or the agent
 			//  will remain alive).
+			/*  Changed this test to check that when we delete the kernel we still get a before-agent-destroyed event.
 			bool ok = pKernel->DestroyAgent(pAgent) ;
 
 			if (!ok)
@@ -955,13 +888,106 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 				cout << "*** ERROR: Failed to destroy agent properly ***" ;
 				return false ;
 			}
+			*/
 		}
+
+		int callbackShut = pKernel->RegisterForSystemEvent(smlEVENT_BEFORE_SHUTDOWN, &MyShutdownHandler, 0) ;
+		unused(callbackShut) ;
+
+		cout << "Calling shutdown on the kernel now" << endl ;
+		pKernel->Shutdown() ;
+		cout << "Shutdown completed now" << endl ;
 
 		// Delete the kernel.  If this is an embedded connection this destroys the kernel.
 		// If it's a remote connection we just disconnect.
 		delete pKernel ;
 
 	}// closes testing block scope
+
+	return true ;
+}
+
+
+bool TimeTest(bool embedded, bool useClientThread, bool fullyOptimized)
+{
+	// Create the appropriate type of connection
+	sml::Kernel* pKernel = embedded ?
+		(useClientThread ? sml::Kernel::CreateKernelInCurrentThread("SoarKernelSML", fullyOptimized, Kernel::GetDefaultPort())
+		: sml::Kernel::CreateKernelInNewThread("SoarKernelSML", Kernel::GetDefaultPort()))
+		: sml::Kernel::CreateRemoteConnection(true, NULL) ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	// This number determines how many agents are created.  We create <n>, test <n> and then delete <n>
+	int numberAgents = 1 ;
+
+	sml::Agent* pFirst = NULL ;
+
+	// PHASE ONE: Agent creation
+	for (int agentCounter = 0 ; agentCounter < numberAgents ; agentCounter++)
+	{
+		std::string name = "test-client-sml" ;
+		name.push_back('1' + agentCounter) ;
+
+		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
+		sml::Agent* pAgent = pKernel->CreateAgent(name.c_str()) ;
+
+		if (!pFirst)
+			pFirst = pAgent ;
+
+		if (pKernel->HadError())
+		{
+			cout << pKernel->GetLastErrorDescription() << endl ;
+			return false ;
+		}
+
+		if (!pAgent)
+		{
+			cout << "Error creating agent" << endl ;
+			return false ;
+		}
+
+		bool ok = true ;
+
+		std::string path = pKernel->GetLibraryLocation() ;
+        //path += "/demos/towers-of-hanoi/towers-of-hanoi.soar" ;
+		path += "/demos/water-jug/water-jug-look-ahead.soar" ;
+
+		bool load = pAgent->LoadProductions(path.c_str()) ;
+
+		unused(load);
+
+		if (pAgent->HadError())
+		{
+			cout << "ERROR loading productions: " << pAgent->GetLastErrorDescription() << endl ;
+			return false ;
+		}
+
+		cout << "Loaded productions" << endl ;
+
+		if (!ok)
+			return false ;
+
+		pAgent->RegisterForPrintEvent(smlEVENT_PRINT, &MyPrintEventHandlerTimer, NULL) ;
+		pAgent->RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, &MyXMLEventHandlerTimer, NULL) ;
+
+		pAgent->ExecuteCommandLine("watch 0") ;
+	}
+
+    std::string result;
+    
+    result = pFirst->ExecuteCommandLine("watch --learning fullprint --backtracing") ;
+	cout << result << endl ;
+
+    result = pFirst->ExecuteCommandLine("time run 20") ;
+    cout << result << endl ;
+
+	// Need to get rid of the kernel explictly.
+	delete pKernel ;
 
 	return true ;
 }

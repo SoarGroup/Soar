@@ -26,7 +26,7 @@ char const* const sml_Names::kDocType_Response	= "response" ;
 char const* const sml_Names::kDocType_Notify	= "notify" ;
 char const* const sml_Names::kSoarVersion		= "soarversion" ;
 char const* const sml_Names::kSMLVersion		= "smlversion" ;
-char const* const sml_Names::kSMLVersionValue	= "1.0" ;
+char const* const sml_Names::kSMLVersionValue	= "1.0.0" ;
 char const* const sml_Names::kSoarVersionValue	= "8.6.1" ;			// Hard-coding this rather than asking kernel boosts performance
 char const* const sml_Names::kOutputLinkName	= "output-link" ;
 
@@ -343,7 +343,7 @@ char const* const sml_Names::kParamWatchIndifferentSelection		= "watchindifferen
 char const* const sml_Names::kTrue	= "true" ;
 char const* const sml_Names::kFalse	= "false" ;
 
-// sgio style commands
+// Main command set
 char const* const sml_Names::kCommand_CreateAgent			= "create_agent" ;
 char const* const sml_Names::kCommand_DestroyAgent			= "destroy_agent" ;
 char const* const sml_Names::kCommand_GetAgentList			= "get_agent_list" ;
@@ -361,6 +361,8 @@ char const* const sml_Names::kCommand_FireEvent				= "fire_event" ;
 char const* const sml_Names::kCommand_SuppressEvent			= "suppress_event" ;
 char const* const sml_Names::kCommand_CheckForIncomingCommands = "check_for_incoming_commands" ;
 char const* const sml_Names::kCommand_SetInterruptCheckRate	= "set_interrupt_check_rate" ;
+char const* const sml_Names::kCommand_Shutdown				= "shutdown" ;
+char const* const sml_Names::kCommand_GetVersion			= "version" ;
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;

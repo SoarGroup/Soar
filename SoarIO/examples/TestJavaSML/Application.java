@@ -135,6 +135,9 @@ public class Application
 		if (m_Kernel.HadError())
 			throw new IllegalStateException("Error initializing kernel: " + m_Kernel.GetLastErrorDescription()) ;
 		
+		String version = m_Kernel.GetSoarKernelVersion() ;
+		System.out.println("Soar version " + version) ;
+		
 		// Create an agent
 		Agent agent = m_Kernel.CreateAgent("javatest") ;
 		Agent pAgent = agent ;	// So it's easier copying existing C++ code here
@@ -257,10 +260,8 @@ public class Application
 		String trace2 = pAgent.RunSelfTilOutput(20) ;
 		System.out.println(trace2) ;
 		
-		//pAgent.InitSoar() ;
-
 		// Clean up
-		ok = m_Kernel.DestroyAgent(pAgent) ;
+		m_Kernel.Shutdown() ;
 		
 		// Delete the kernel, releasing all of the owned objects (hope this works ok in Java...)
 		m_Kernel.delete() ;

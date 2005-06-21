@@ -192,7 +192,7 @@ public class MainFrame
 				{
 					// If this agent is being closed down then decide if we should
 					// destroy the window or not.
-					boolean destroyOnClose = m_AgentMenu.isCloseWindowWhenDestroyAgent() ;
+					boolean destroyOnClose = m_Document.isCloseWindowWhenDestroyAgent() ;
 
 					if (destroyOnClose)
 					{

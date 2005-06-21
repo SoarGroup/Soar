@@ -22,6 +22,7 @@
 
 #include "sml_EventThread.h"
 #include "sml_Connection.h"
+#include "sock_Debug.h"
 
 #include <time.h>	// To get clock
 
@@ -66,7 +67,12 @@ void EventThread::Run()
 
 	// How long to wait before sleeping (currently 1 sec)
 	clock_t delay = CLOCKS_PER_SEC ;
-
+/*
+#ifdef _DEBUG
+	PrintDebugFormat("Starting EventThread\n") ;
+	long counter = 0 ;
+#endif
+*/
 	while (!m_QuitNow && !m_pConnection->IsClosed())
 	{
 		// Our purpose is to check for incoming messages when the
@@ -80,6 +86,13 @@ void EventThread::Run()
 			last = clock() ;
 		}
 
+/*
+#ifdef _DEBUG
+		counter++ ;
+		if (counter % 1000 == 0)
+			PrintDebugFormat("EventThread alive\n") ;
+#endif
+*/
 		clock_t current = clock() ;
 
 		// If it's been a while since the last incoming message
@@ -91,4 +104,10 @@ void EventThread::Run()
 		else
 			Sleep(0) ;
 	}
+
+/*
+#ifdef _DEBUG
+	PrintDebugFormat("EventThread terminated\n") ;
+#endif
+*/
 }

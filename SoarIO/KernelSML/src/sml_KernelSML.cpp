@@ -131,6 +131,41 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	m_pRunScheduler = new RunScheduler(this) ;
 }
 
+/** Deletes all agents and optionally waits until this has actually happened (if the agent is running there may be a delay) */
+void KernelSML::DeleteAllAgents(bool waitTillDeleted)
+{
+	// We don't want to walk the map.iterator() while we're deleting elements.
+	// Instead we just "pop" elements out of the map and delete them.
+	while (m_AgentMap.size() != 0)
+	{
+		AgentSML* pAgentSML = m_AgentMap.begin()->second ;
+		size_t agentCount = m_AgentMap.size() ;
+
+		// gSKI's RemoveAgent call isn't guaranteed to complete immediately.
+		// Instead it's a request (if the agent is running we have to stop it first and wait for that to happen
+		// before the delete it honored).  So we register for this notification that the agent is actually about
+		// to be deleted and then we release the data we have on this agent.
+		// It's also important that we register this listener now so that it's added to the *end* of the list of listeners.
+		// That's required as we want to send out calls to our clients for this before_agent_destroyed event and then
+		// clean up our agent information.  This will only work if our clean up comes last, which it will be because
+		// we're adding it immediately prior to the notification (although if the listener implementation is changed to not use push_back
+		// this will break).
+		pAgentSML->RegisterForBeforeAgentDestroyedEvent() ;
+
+		// Make the call to actually delete the agent
+		// This will trigger a call to our m_pBeforeDestroyedListener
+		GetKernel()->GetAgentManager()->RemoveAgent(pAgentSML->GetIAgent(), NULL) ;
+
+		// Now wait for the agent to be deleted (if we were requested to do so)
+		int maxTries = 100 ;	// Wait for a second then abort anyway
+		while (waitTillDeleted && agentCount == m_AgentMap.size() && maxTries > 0)
+		{
+			Sleep(10) ;
+			maxTries-- ;
+		}
+	}
+}
+
 KernelSML::~KernelSML()
 {
 	// Shutdown the connection manager while all data is still valid.
@@ -138,23 +173,7 @@ KernelSML::~KernelSML()
 	//  but this is a safety valve).
 	Shutdown() ;
 
-	// Clean up any agent specific data we still own.
-	// We do this before deleting the kernel itself, so we get
-	// clean stats on whether we've released all memory in gSKI or not.
-	// (Check the gski_unreleased.txt file in the app's exe directory for a debug build).
-	for (AgentMapIter iter = m_AgentMap.begin() ; iter != m_AgentMap.end() ; iter++)
-	{
-		AgentSML* pAgentSML = iter->second ;
-
-		// Release any wmes or other objects we're keeping
-		pAgentSML->Clear() ;
-
-		// Make the call.
-		GetKernel()->GetAgentManager()->RemoveAgent(pAgentSML->GetIAgent()) ;
-
-		// Now delete the agent information we're keeping.
-		delete pAgentSML ;
-	}
+	DeleteAllAgents(false) ;
 
 	m_SystemListener.Clear();
 	m_AgentListener.Clear();

@@ -164,7 +164,7 @@ public class DemoMenu
 		}
 		
 		// Debug code to look at the result of the command in XML
-		//String check = response.GenerateXMLString(true) ;
+		String check = response.GenerateXMLString(true) ;
 		String location = response.GetArgValue(sml_Names.getKParamDirectory()) ;
 		
 		// BADBAD: Need to strip quotes - they shouldn't really be added

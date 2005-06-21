@@ -231,7 +231,12 @@ public:
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
 	*************************************************************/
-	void FireUpdateListenerEvent(egSKIUpdateEventId eventID, int runFlags) { m_UpdateListener.HandleEvent(eventID, runFlags) ; }
+	void FireUpdateListenerEvent(egSKIUpdateEventId eventID, int runFlags)	{ m_UpdateListener.HandleEvent(eventID, runFlags) ; }
+
+	/*************************************************************
+	* @brief	Notify listeners that this event has occured.
+	*************************************************************/
+	void FireSystemEvent(egSKISystemEventId eventID)						{ m_SystemListener.HandleEvent(eventID, GetKernel()) ; }
 
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
@@ -339,6 +344,12 @@ public:
 	bool DeleteAgentSML(gSKI::IAgent* pAgent) ;
 
 	/*************************************************************
+	* @brief	Stops and deletes all agents.  Generally called
+	*			just prior to shutdown.
+	*************************************************************/	
+	void DeleteAllAgents(bool waitTillDeleted) ;
+
+	/*************************************************************
 	* @brief	Enable/disable the print callback for a given agent.
 	*			This allows us to use the print callback within the
 	*			kernel without forwarding that output to clients
@@ -423,6 +434,8 @@ protected:
 	bool KernelSML::HandleSetInterruptCheckRate(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleFireEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleSuppressEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool KernelSML::HandleGetVersion(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool KernelSML::HandleShutdown(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 
 	// Note: Register and unregister are both sent to this one handler
 	bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;

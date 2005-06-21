@@ -132,6 +132,8 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_FireEvent]			= &sml::KernelSML::HandleFireEvent ;
 	m_CommandMap[sml_Names::kCommand_SuppressEvent]		= &sml::KernelSML::HandleSuppressEvent ;
 	m_CommandMap[sml_Names::kCommand_SetInterruptCheckRate] = &sml::KernelSML::HandleSetInterruptCheckRate ;
+	m_CommandMap[sml_Names::kCommand_GetVersion]		= &sml::KernelSML::HandleGetVersion ;
+	m_CommandMap[sml_Names::kCommand_Shutdown]			= &sml::KernelSML::HandleShutdown ;
 }
 
 /*************************************************************
@@ -351,6 +353,48 @@ bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandNam
 	GetKernel()->GetAgentManager()->RemoveAgent(pAgent, pError) ;
 
 	return true ;
+}
+
+// Shutdown is an irrevocal request to delete all agents and prepare for kernel deletion.
+bool KernelSML::HandleShutdown(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pAgent) ;
+	unused(pCommandName) ;
+	unused(pConnection) ;
+	unused(pIncoming) ;
+	unused(pResponse) ;
+	unused(pError) ;
+
+	// Delete all agents explicitly now (so listeners can hear that the agents have been destroyed).
+	DeleteAllAgents(true) ;
+
+	// Notify everyone that the system is about to shutdown.
+	// Note -- this event is not currently implemented in gSKI and we would
+	// prefer to send it now before the gSKI kernel object or any others are actually deleted
+	// so that there's still a stable system to respond to the event.
+	// Also, we could argue that this should happen before agent deletion (just above).  I don't see a clear
+	// reason for one over the other so I'm placing it here for now.
+	FireSystemEvent(gSKIEVENT_BEFORE_SHUTDOWN) ;
+
+	return true ;
+}
+
+bool KernelSML::HandleGetVersion(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pAgent) ;
+	unused(pCommandName) ;
+	unused(pIncoming) ;
+
+	char buffer[100] ;
+
+	// Look up the current version of Soar and return it as a string
+	gSKI::Version version = this->m_pKernelFactory->GetKernelVersion(pError) ;
+	sprintf(buffer, "%d.%d.%d", version.major, version.minor, version.micro) ;
+
+	// Our hard-coded string should match the version returned from Soar
+	assert(strcmp(sml_Names::kSoarVersionValue, buffer) == 0) ;
+
+	return this->ReturnResult(pConnection, pResponse, buffer) ;
 }
 
 bool KernelSML::HandleGetAgentList(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)

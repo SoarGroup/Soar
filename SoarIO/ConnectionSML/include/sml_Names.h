@@ -335,7 +335,7 @@ public:
 	static char const* const kTrue ;
 	static char const* const kFalse ;
 
-	// sgio style commands
+	// Main command set
 	static char const* const kCommand_CreateAgent ;
 	static char const* const kCommand_DestroyAgent ;
 	static char const* const kCommand_GetAgentList ;
@@ -353,6 +353,8 @@ public:
 	static char const* const kCommand_SuppressEvent ;
 	static char const* const kCommand_CheckForIncomingCommands ;
 	static char const* const kCommand_SetInterruptCheckRate ;
+	static char const* const kCommand_Shutdown ;
+	static char const* const kCommand_GetVersion ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

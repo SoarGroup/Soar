@@ -66,6 +66,10 @@ public class Document
 	/** The user can choose to create a new window whenever an agent is created.  This makes life complicated for us so we can suppress it temporarily in the code when
 	 *  we are making the new agents.  (It's really to support other folks, like the environment creating a new agent).  This variable is the name of the agent. */
 	private String 			m_SuppressNewWindowCreation ;
+	
+	/** The user can choose to destroy a window whenever the agent is destroyed.  This makes life complicated for us so we can suppress it temporarily in the code when
+	 *  we are switching from local to remote kernels etc.  (It's really to support other folks, like the environment destroying an agent). */
+	private boolean			m_SuppressCloseWindowOnDestructionAllAgents = false ;
 
 	/**
 	 * We have to decide how to keep the UI thread responsive while Soar is running (possibly for a long time).
@@ -128,6 +132,16 @@ public class Document
 	public Agent	getAgentByIndex(int index) 	{ return m_Kernel.GetAgentByIndex(index) ; }
 	public int		getNumberAgents() 			{ return m_Kernel.GetNumberAgents() ; }
 
+	public boolean isCloseWindowWhenDestroyAgent()
+	{
+		return getAppProperties().getAppBooleanProperty(Document.kCloseOnDestroyProperty, true) && !m_SuppressCloseWindowOnDestructionAllAgents ;		
+	}
+
+	private void setSuppressCloseWindow(boolean state)
+	{
+		m_SuppressCloseWindowOnDestructionAllAgents = state ;
+	}
+	
 	public Agent[]	getAgentArray()
 	{
 		Agent[] agents = new Agent[getNumberAgents()] ;
@@ -252,7 +266,10 @@ public class Document
 			}
 			else
 			{
-				this.stopLocalKernel(closingApp) ;
+				// Stop the local kernel -- keeping windows open as we will
+				// shut them down later in code.  That allows us to save other
+				// information (like window positions etc) in a controlled manner.
+				this.stopLocalKernel(closingApp, true) ;
 			}
 		}
 	}
@@ -369,16 +386,8 @@ public class Document
 		m_Kernel.DestroyAgent(agent) ;
 	}
 	
-	/********************************************************************************************
-	 * 
-	 * Shutdown our local Soar instance, deleting any agents etc.
-	 * 
-	********************************************************************************************/
-	public boolean stopLocalKernel(boolean closingApp)
+	private void forceShutdown()
 	{
-		if (m_Kernel == null)
-			return false ;
-
 		// If the user tries to shutdown while Soar is running locally we have a problem.
 		// The document thread is stuck inside a Run command so it's no longer checking for us
 		// shutting down the thread (through askToStop).  If we issue a stop (which takes time
@@ -387,28 +396,56 @@ public class Document
 		// because we're inside an event handler right now.  So for now I'm making a simple fix
 		// and blasting the app to death if it we're shutting down and the document thread won't
 		// stop in a reasonable ammount of time.
-		if (this.m_Kernel.GetNumberAgents() > 0 && closingApp && kDocInOwnThread)
+		if (this.m_Kernel.GetNumberAgents() > 0 && kDocInOwnThread)
 		{
 			m_DocumentThread.askToStop() ;
 			
 			int count = 5 ;
 			while (m_DocumentThread.isAlive())
-			{
+			{				
+				try { Thread.sleep(100) ; } catch (InterruptedException e) { }
+				
 				count-- ;
 				if (count == 0)
 					System.exit(0) ;
-				
-				try { Thread.sleep(100) ; } catch (InterruptedException e) { }
 			}
-		}
+		}		
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * Shutdown our local Soar instance, deleting any agents etc.
+	 * 
+	********************************************************************************************/
+	public boolean stopLocalKernel(boolean closingApp, boolean preserveWindows)
+	{
+		if (m_Kernel == null)
+			return false ;
+
+		if (closingApp)
+			forceShutdown() ;
 		
+		// If we want to keep our windows open suppress
+		// the "close on destroy" logic
+		if (preserveWindows)
+			this.setSuppressCloseWindow(true) ;
+		
+		// Deletes all agents and sends appropriate events
+		m_Kernel.Shutdown() ;
+		
+		// Actually deletes the kernel
 		m_Kernel.delete() ;
 		
 		m_Kernel = null ;
 		
 		// Let our listeners know we killed the kernel
 		fireSoarConnectionChanged() ;
-		
+
+		// Turn off suppression of this event.
+		// (This returns this to the user's control)
+		if (preserveWindows)
+			this.setSuppressCloseWindow(false) ;
+
 		return true ;
 	}
 
@@ -423,7 +460,8 @@ public class Document
 	public void remoteConnect(String ipAddress, int portNumber, String agentName) throws Exception
 	{
 		// If we have a local kernel already running shut it down
-		stopLocalKernel(false) ;
+		// but don't close any windows we have open (or the app will shutdown here!)
+		stopLocalKernel(false, true) ;
 
 		m_IsRemote = true ;
 		m_Kernel = Kernel.CreateRemoteConnection(true, ipAddress, portNumber) ;
@@ -504,7 +542,11 @@ public class Document
 		// (unlike in the localStop call).  This is because setting an agent running and then disconnecting
 		// should be OK.  We may need to handle some error conditions that occur when we do this
 		// but by and large it should be acceptable and it would be good to make it work.
+
+		// Shutdown our connection.
+		m_Kernel.Shutdown() ;
 		
+		// Release all memory.
 		m_Kernel.delete() ;
 		
 		m_Kernel = null ;

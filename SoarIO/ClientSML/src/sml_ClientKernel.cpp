@@ -44,6 +44,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_pEventThread	= 0 ;
 	m_pEventMap		= new Events() ;
 	m_bTracingCommunications = false ;
+	m_bShutdown		= false ;
 
 	if (pConnection)
 	{
@@ -91,8 +92,44 @@ void Kernel::InitEvents()
 	RegisterForAgentEvent(smlEVENT_AFTER_AGENT_REINITIALIZED, &InitSoarHandler, NULL) ;
 }
 
+/*************************************************************
+* @brief Preparation for deleting the kernel.
+*		 Agents are destroyed at this point (if we own the kernel)
+*		 After calling shutdown the kernel cannot be restarted
+*		 it must be deleted.
+*		 This is separated from delete to ensure that messages
+*		 relating to system shutdown can be sent in a more stable
+*		 state (while the kernel object still exists).
+*************************************************************/
+void Kernel::Shutdown()
+{
+	m_bShutdown = true ;
+
+	// Currently we have no work to do on the kernel side before
+	// disconnecting a remote connection.
+	if (!GetConnection() || GetConnection()->IsRemoteConnection())
+		return ;
+
+	AnalyzeXML response ;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_Shutdown))
+	{
+	}
+}
+
+/*************************************************************
+* @brief Delete the kernel (or our connection to the kernel)
+*		 releasing all memory owned by the kernel.
+*		 Users should call "Shutdown" prior to calling delete
+*		 to ensure a clean shutdown.
+*************************************************************/
 Kernel::~Kernel(void)
 {
+	// If the user didn't call shutdown, we'll do it now.
+	// It's better for the user to call it so we have a more stable state
+	// for handling messages.
+	if (!m_bShutdown)
+		Shutdown() ;
+
 	// When the agent map is deleted, it will delete its contents (the Agent objects)
 	// Do this before we delete the connection, in case we need to send things to the kernel
 	// during clean up.
@@ -1851,4 +1888,43 @@ bool Kernel::SetInterruptCheckRate(int newRate)
 	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SetInterruptCheckRate, NULL, sml_Names::kParamValue, ostr.str().c_str()) ;
 
 	return ok ;
+}
+
+/*************************************************************
+* @brief The Soar kernel version is based on sending a request
+*		 to the kernel asking for its version and returning the
+*		 result.
+*
+*		 The Soar client version reports the version of Soar this
+*		 client was compiled for.  It's based on a constant
+*		 stored in the sml_Names list.
+*
+*		 The SML version also reports a constant for the version
+*		 of SML in use and is again based on a constant in the
+*		 sml_Names list.
+*
+*		 All versions are of the form Major.Minor.Release
+*		 E.g. 8.6.1
+*************************************************************/
+std::string Kernel::GetSoarKernelVersion()
+{
+	AnalyzeXML response ;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetVersion))
+	{
+		return response.GetResultString() ;
+	}
+	else
+	{
+		return "Error: Unable to retrieve the version from the kernel" ;
+	}
+}
+
+std::string Kernel::GetSoarClientVersion()
+{
+	return sml_Names::kSoarVersionValue ;
+}
+
+std::string Kernel::GetSMLVersion()
+{
+	return sml_Names::kSMLVersionValue ;
 }

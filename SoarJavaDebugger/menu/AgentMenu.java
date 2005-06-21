@@ -96,9 +96,9 @@ public class AgentMenu
 		return m_Document.getAppProperties().getAppBooleanProperty(Document.kCreateNewWindowProperty, true) ;
 	}
 	
-	public boolean isCloseWindowWhenDestroyAgent()
+	private boolean isCloseWindowWhenDestroyAgent()
 	{
-		return m_Document.getAppProperties().getAppBooleanProperty(Document.kCloseOnDestroyProperty, true) ;		
+		return m_Document.isCloseWindowWhenDestroyAgent() ;	
 	}
 	
 	// BUGBUG: We should change the menu items on all of the menus to match this or
