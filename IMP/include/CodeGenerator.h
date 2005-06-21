@@ -2,8 +2,8 @@
 #define IMP_CODE_GENERATOR
 
 #include "CodeGenerationConstants.h"
-#include "ilspec.h"
-#include "ilobject.h"
+#include "InputLinkSpec.h"
+#include "InputLinkObject.h"
 
 #include <fstream>
 #include <iostream>

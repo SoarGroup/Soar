@@ -1,7 +1,7 @@
 #ifndef IL_SPEC_H
 #define IL_SPEC_H
 
-//FIXME TODO rename this file
+#include "CodeGeneratorUtilities.h"
 
 #include <string>
 #include <vector>
@@ -48,7 +48,9 @@ typedef ilObjVector_t::iterator ilObjItr;
 
 //This container maps simulation data type names to the group
 //of working memory objects that define it
-typedef std::map<std::string, ilObjVector_t> typedObjectsMap_t;//TODO compare operator //TODO consider making the map types references
+//TODO consider making the map value type a reference
+typedef std::map<std::string, ilObjVector_t, stringsLess> typedObjectsMap_t;
+
 typedef typedObjectsMap_t::iterator typeMapItr_t;
 
 /************************************************************************
@@ -77,8 +79,6 @@ public:
 	bool ImportDM(std::string& filename);
 
 };
-
-
 
 
 #endif //IL_SPEC_H

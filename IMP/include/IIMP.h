@@ -7,14 +7,6 @@
 #include <map>
 
 
-struct stringsLess
-{
-	bool operator() (const std::string first, const std::string second) const
-	{
-		return first < second;
-	}
-};
-
 
 class IIMP
 {

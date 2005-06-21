@@ -72,7 +72,7 @@ typedef typesContainter_t::iterator typesIterator_t;
 
 /************************************************************************
 /* This class is a digest of a description of a WME.  From this class
-	 an XML description of the WME an be created, and then a code-generation
+	 an XML description of the WME can be created, and then a code-generation
 	 module can create/render the actual SML code
 /************************************************************************/
 class InputLinkObject
