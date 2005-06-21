@@ -96,6 +96,13 @@ typedef std::bitset<STATS_NUM_OPTIONS> StatsBitset;
 typedef std::bitset<WATCH_NUM_OPTIONS> WatchBitset;
 typedef std::bitset<WATCH_WMES_TYPE_NUM_OPTIONS> WatchWMEsTypeBitset;
 
+// For option parsing
+typedef struct {
+	int shortOpt;
+	const char* longOpt;
+	int argument;
+} Options;
+
 class CommandLineInterface : public gSKI::IPrintListener{
 public:
 
@@ -889,6 +896,10 @@ protected:
 	bool SetErrorDetail(const std::string detail);	// always returns false
 
 	void ResultToArgTag(); // clears result
+
+	bool ProcessOptions(std::vector<std::string>& argv, Options* options, int& currentArg, int& option, int& nonOptArgs, const char* optionArg);
+	void MoveBack(std::vector<std::string>& argv, int what, int howFar);
+	void BreakApartComboOption(std::vector<std::string>& argv, int arg);
 
 	bool				m_Initialized;			// True if state has been cleared for a new command execution
 	static std::ostringstream m_Result;			// Raw output from the command

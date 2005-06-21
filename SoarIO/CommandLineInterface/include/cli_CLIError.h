@@ -92,6 +92,7 @@ namespace cli {
             kRunFailed                          = 77,
 			kNoPreferences						= 78,
 			kAmbiguousCommand					= 79,
+			kAmbiguousOption					= 80, // FIXME: add to wiki
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -169,6 +170,7 @@ namespace cli {
                 case kRunFailed:                        return "Run failed.";
                 case kNoPreferences:                    return "No preferences found.";
 				case kAmbiguousCommand:					return "Received command is ambiguous, try adding more letters.";
+				case kAmbiguousOption:					return "Ambiguous option."; // FIXME: add to wiki
 				default:								return "Unknown error code.";
 			}
 		}
