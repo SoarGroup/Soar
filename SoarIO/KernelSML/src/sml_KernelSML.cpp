@@ -26,6 +26,7 @@
 #include "KernelSMLDirect.h"
 
 #include "thread_Lock.h"
+#include "thread_Thread.h"
 
 #include "gSKI.h"
 #include <iostream>
@@ -162,7 +163,7 @@ void KernelSML::DeleteAllAgents(bool waitTillDeleted)
 		int maxTries = 100 ;	// Wait for a second then abort anyway
 		while (waitTillDeleted && agentCount == m_AgentMap.size() && maxTries > 0)
 		{
-			Sleep(10) ;
+			soar_thread::Thread::SleepStatic(10) ;
 			maxTries-- ;
 		}
 	}
