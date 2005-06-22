@@ -123,10 +123,22 @@ void ConnectionManager::Shutdown()
 		KernelSML* pKernelSML = (KernelSML*)pConnection->GetUserData() ;
 		pKernelSML->RemoveAllListeners(pConnection) ;
 
-		delete pConnection ;
+		// Not clear that we can just delete connections as we might be inside a connection callback
+		// when the shutdown comes.  So for safety, move connections to a closed list instead of deleting.
+		// For now this will leak the connection object.  Later if we are confident we can delete this list.
+		//delete pConnection ;
+		m_ClosedConnections.push_back(pConnection) ;
 	}
 
 	m_Connections.clear() ;
+
+	// Now clean up all closed connections.
+	for (ConnectionsIter iter = m_ClosedConnections.begin() ; iter != m_ClosedConnections.end() ; iter++)
+	{
+		Connection* pConnection = *iter ;
+		delete pConnection ;
+	}
+	m_ClosedConnections.clear() ;
 
 //	PrintDebug("Completed shutdown") ;
 }
@@ -207,7 +219,11 @@ bool ConnectionManager::ReceiveAllMessages()
 			KernelSML* pKernelSML = (KernelSML*)pConnection->GetUserData() ;
 			pKernelSML->RemoveAllListeners(pConnection) ;
 
-			delete pConnection ;
+			// Not clear that we can just delete connections as we might be inside a connection callback
+			// when the shutdown comes.  So for safety, move connections to a closed list instead of deleting.
+			// For now this will leak the connection object.  Later if we are confident we can delete this list.
+			//delete pConnection ;
+			m_ClosedConnections.push_back(pConnection) ;
 
 			// Since we just removed this connection we should look up the same index value again
 			// so we don't skip any.  This isn't really that important.

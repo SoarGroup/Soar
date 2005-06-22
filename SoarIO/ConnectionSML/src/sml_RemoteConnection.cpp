@@ -167,7 +167,7 @@ void RemoteConnection::SendMessage(ElementXML* pMsg)
 	char* pXMLString = pMsg->GenerateXMLString(true) ;
 
 	// Send it
-	m_Socket->SendString(pXMLString) ;
+	bool ok = m_Socket->SendString(pXMLString) ;
 
 	// Dump the message if we're tracing
 	if (m_bTraceCommunications)
@@ -180,6 +180,14 @@ void RemoteConnection::SendMessage(ElementXML* pMsg)
 
 	// Release the XML string
 	pMsg->DeleteString(pXMLString) ;
+
+	// If we had an error close the connection
+	if (!ok)
+	{
+		PrintDebug("Socket has closed down abruptly (during send), so we'll close the connection") ;
+		SetError(Error::kSocketError) ;
+		CloseConnection() ;
+	}
 }
 
 /*************************************************************
@@ -271,14 +279,33 @@ bool RemoteConnection::ReceiveMessages(bool allMessages)
 	bool ok = true ;
 
 	// While we have messages waiting to come in keep reading them
-	while (m_Socket->IsReadDataAvailable())
+	bool haveData = true ;
+
+	while (haveData)
 	{
+		bool alive = m_Socket->IsAlive() ;
+		if (!alive)
+		{
+			PrintDebug("Socket has closed down abruptly (during read), so we'll close the connection") ;
+			this->SetError(Error::kSocketError) ;
+			this->CloseConnection() ;
+			return receivedMessage ;
+		}
+
+		// Only check for read data after we've checked that the socket is still alive.
+		// (This is because IsReadData can't signal the difference between a dead connection and no data)
+		haveData = m_Socket->IsReadDataAvailable() ;
+		if (!haveData)
+			break ;
+
 		// 	Read the first message that's waiting
 		ok = m_Socket->ReceiveString(&xmlString) ;
 
 		if (!ok)
 		{
 			this->SetError(Error::kSocketError) ;
+			this->CloseConnection() ;
+
 			return receivedMessage ;
 		}
 

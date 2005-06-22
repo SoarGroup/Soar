@@ -444,6 +444,10 @@ ElementXML* Connection::InvokeCallbacks(ElementXML *pIncomingMsg)
 *************************************************************/
 bool Connection::SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg)
 {
+	// If the connection is already closed, don't do anything
+	if (IsClosed())
+		return false ;
+
 	// Make sure only one thread is sending messages at a time
 	// (This allows us to run a separate thread in clients polling for events even
 	//  when the client is sleeping, but we don't want them both to be sending/receiving at the same time).
