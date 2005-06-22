@@ -363,6 +363,7 @@ char const* const sml_Names::kCommand_CheckForIncomingCommands = "check_for_inco
 char const* const sml_Names::kCommand_SetInterruptCheckRate	= "set_interrupt_check_rate" ;
 char const* const sml_Names::kCommand_Shutdown				= "shutdown" ;
 char const* const sml_Names::kCommand_GetVersion			= "version" ;
+char const* const sml_Names::kCommand_IsSoarRunning			= "is_running" ;
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;

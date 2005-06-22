@@ -355,6 +355,7 @@ public:
 	static char const* const kCommand_SetInterruptCheckRate ;
 	static char const* const kCommand_Shutdown ;
 	static char const* const kCommand_GetVersion ;
+	static char const* const kCommand_IsSoarRunning	;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

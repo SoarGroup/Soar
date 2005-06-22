@@ -129,6 +129,8 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	m_RequireSystemStop   = false ;
 
 	m_pRunScheduler = new RunScheduler(this) ;
+
+	m_pSystemStopListener = NULL ;
 }
 
 /** Deletes all agents and optionally waits until this has actually happened (if the agent is running there may be a delay) */
@@ -173,7 +175,7 @@ KernelSML::~KernelSML()
 	//  but this is a safety valve).
 	Shutdown() ;
 
-	DeleteAllAgents(false) ;
+	DeleteAllAgents(true) ;
 
 	m_SystemListener.Clear();
 	m_AgentListener.Clear();

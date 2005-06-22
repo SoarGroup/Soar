@@ -168,13 +168,12 @@ void XMLListener::FlushOutput(egSKIXMLEventId eventID)
 	while (connectionIter != end)
 	{
 		pConnection = *connectionIter;
+		connectionIter++;
 
 		// It would be faster to just send a message here without waiting for a response
 		// but that could produce incorrect behavior if the client expects to act *during*
 		// the event that we're notifying them about (e.g. notification that we're in the input phase).
 		pConnection->SendMessageGetResponse(&response, pMsg);
-
-		connectionIter++;
 	}
 
 	// Clean up

@@ -32,6 +32,7 @@ class RunScheduler : public gSKI::IRunListener
 protected:
 	KernelSML*	m_pKernelSML ;
 	smlRunFlags	m_RunFlags ;
+	bool		m_IsRunning ;
 
 public:
 	RunScheduler(KernelSML* pKernelSML) ;
@@ -60,6 +61,11 @@ public:
 	*		  Can query each for "GetLastRunResult()".
 	*************************************************************/	
 	egSKIRunResult RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, smlRunFlags runFlags, gSKI::Error* pError) ;
+
+	/*************************************************************
+	* @brief	Returns true if at least one agent is currently running.
+	*************************************************************/	
+	bool IsRunning() ;
 
 protected:
 	bool			IsAgentFinished(gSKI::IAgent* pAgent, AgentSML* pAgentSML, egSKIRunType runStepSize, unsigned long count) ;

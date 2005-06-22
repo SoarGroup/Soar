@@ -149,6 +149,11 @@ protected:
 
 	RunScheduler*	m_pRunScheduler ;
 
+	// Used to shutdown a running system.  Not sure we really need to support this
+	// but this is an attempt.
+	class OnSystemStopDeleteAll ;
+	OnSystemStopDeleteAll*	m_pSystemStopListener ;
+
 public:
 	/*************************************************************
 	* @brief	Returns the singleton kernel object.
@@ -436,6 +441,7 @@ protected:
 	bool KernelSML::HandleSuppressEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleGetVersion(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 	bool KernelSML::HandleShutdown(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool KernelSML::HandleIsSoarRunning(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
 
 	// Note: Register and unregister are both sent to this one handler
 	bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;

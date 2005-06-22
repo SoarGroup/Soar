@@ -28,6 +28,7 @@
 #include "sml_TagName.h"
 #include "sml_ClientEvents.h"
 #include "sml_Events.h"
+#include "sml_RunScheduler.h"
 
 #include "sock_Debug.h"	// For PrintDebugFormat
 
@@ -134,6 +135,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_SetInterruptCheckRate] = &sml::KernelSML::HandleSetInterruptCheckRate ;
 	m_CommandMap[sml_Names::kCommand_GetVersion]		= &sml::KernelSML::HandleGetVersion ;
 	m_CommandMap[sml_Names::kCommand_Shutdown]			= &sml::KernelSML::HandleShutdown ;
+	m_CommandMap[sml_Names::kCommand_IsSoarRunning]		= &sml::KernelSML::HandleIsSoarRunning ;
 }
 
 /*************************************************************
@@ -355,35 +357,56 @@ bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandNam
 	return true ;
 }
 
+class KernelSML::OnSystemStopDeleteAll: public gSKI::ISystemListener
+{
+public:
+	// This handler is called right before the agent is actually deleted
+	// inside gSKI.  We need to clean up any object we own now.
+	virtual void HandleEvent(egSKISystemEventId, gSKI::IKernel* pKernel)
+	{
+		unused(pKernel) ;
+
+		KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
+
+		pKernelSML->DeleteAllAgents(true) ;
+
+		delete this ;
+	}
+};
+
 // Shutdown is an irrevocal request to delete all agents and prepare for kernel deletion.
 bool KernelSML::HandleShutdown(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
-	unused(pAgent) ;
-	unused(pCommandName) ;
-	unused(pConnection) ;
-	unused(pIncoming) ;
-	unused(pResponse) ;
-	unused(pError) ;
-
-	// Delete all agents explicitly now (so listeners can hear that the agents have been destroyed).
-	DeleteAllAgents(true) ;
+	unused(pAgent) ; unused(pCommandName) ; unused(pConnection) ; unused(pIncoming) ; unused(pResponse) ; unused(pError) ;
 
 	// Notify everyone that the system is about to shutdown.
 	// Note -- this event is not currently implemented in gSKI and we would
 	// prefer to send it now before the gSKI kernel object or any others are actually deleted
 	// so that there's still a stable system to respond to the event.
-	// Also, we could argue that this should happen before agent deletion (just above).  I don't see a clear
-	// reason for one over the other so I'm placing it here for now.
 	FireSystemEvent(gSKIEVENT_BEFORE_SHUTDOWN) ;
+
+	// If we're actively running, stop everyone first and then delete.
+	/* DJP: This is experimental code -- yet to be tested.  I think we may need to handle this in the client (in another thread)
+	if (this->GetRunScheduler()->IsRunning())
+	{
+		// Request the agents to stop.  Only delete them once they actually have.
+		m_pSystemStopListener = new OnSystemStopDeleteAll() ;
+		GetKernel()->AddSystemListener(gSKIEVENT_SYSTEM_STOP, m_pSystemStopListener) ;
+		GetKernel()->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_SMALLEST_STEP, pError) ;
+
+		return false ;
+	}
+	*/
+
+	// Delete all agents explicitly now (so listeners can hear that the agents have been destroyed).
+	DeleteAllAgents(true) ;
 
 	return true ;
 }
 
 bool KernelSML::HandleGetVersion(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
 {
-	unused(pAgent) ;
-	unused(pCommandName) ;
-	unused(pIncoming) ;
+	unused(pAgent) ; unused(pCommandName) ;	unused(pIncoming) ;
 
 	char buffer[100] ;
 
@@ -395,6 +418,15 @@ bool KernelSML::HandleGetVersion(gSKI::IAgent* pAgent, char const* pCommandName,
 	assert(strcmp(sml_Names::kSoarVersionValue, buffer) == 0) ;
 
 	return this->ReturnResult(pConnection, pResponse, buffer) ;
+}
+
+bool KernelSML::HandleIsSoarRunning(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pAgent) ; unused(pCommandName) ; unused(pIncoming) ; unused(pError) ;
+
+	bool isRunning = this->GetRunScheduler()->IsRunning() ;
+
+	return this->ReturnBoolResult(pConnection, pResponse, isRunning) ;
 }
 
 bool KernelSML::HandleGetAgentList(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)

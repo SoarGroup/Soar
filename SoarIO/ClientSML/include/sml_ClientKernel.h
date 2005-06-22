@@ -414,6 +414,14 @@ public:
 	char const* StopAllAgents() ;
 
 	/*************************************************************
+	* @brief Returns true if one or more agents are currently running.
+	*
+	* Can be used in conjunction with StopAllAgents() to make sure
+	* all agents have actually terminated their runs.
+	*************************************************************/
+	bool		IsSoarRunning() ;
+
+	/*************************************************************
 	* @brief   Causes the kernel to issue a SYSTEM_START event.
 	*
 	*		   The expectation is that a simulation will be listening

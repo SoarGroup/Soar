@@ -27,6 +27,7 @@ RunScheduler::RunScheduler(KernelSML* pKernelSML)
 {
 	m_pKernelSML = pKernelSML ;
 	m_RunFlags = sml_NONE ;
+	m_IsRunning = false ;
 }
 
 void RunScheduler::ScheduleAgentToRun(AgentSML* pAgentSML, bool state)
@@ -172,6 +173,11 @@ void RunScheduler::TerminateUpdateWorldEvents(bool removeListeners)
 	}
 }
 
+bool RunScheduler::IsRunning()
+{
+	return m_IsRunning ;
+}
+
 egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsigned long count, smlRunFlags runFlags, gSKI::Error* pError)
 {
 	// We store this as a member so we can access it in gSKI event handlers
@@ -197,6 +203,9 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 	egSKIRunResult overallResult = gSKI_RUN_COMPLETED ;
 
 	pKernel->GetAgentManager()->ClearAllInterrupts();
+
+	// Record that we're now running, so we can poll for our status during a run.
+	m_IsRunning = true ;
 
 	// Run all agents that have previously been marked as "scheduled to run".
 	while (!runFinished)
@@ -254,6 +263,8 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 			}
 		}
 	}
+
+	m_IsRunning = false ;
 
 	// Clean up anything stored for update world events
 	TerminateUpdateWorldEvents(false) ;

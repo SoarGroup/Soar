@@ -274,7 +274,10 @@ Agent* Kernel::IsXMLTraceEvent(ElementXML* pIncomingMsg)
 		// Look up the agent
 		Agent* pAgent = GetAgent(pAgentName) ;
 
-		// If this fails, we got a trace event for an unknown agent.
+		// If this fails, we got a trace event for a now deleted agent
+		// (must have been flushed after the agent was destroyed).
+		// Returning null is probably as good as we do here so
+		// always return pAgent (even if it's null).
 		assert(pAgent) ;
 		return pAgent ;
 	}
@@ -1047,6 +1050,26 @@ char const* Kernel::StopAllAgents()
 	// Execute the command.
 	char const* pResult = ExecuteCommandLine(cmd.c_str(), pFirstAgent->GetAgentName()) ;
 	return pResult ;
+}
+
+/*************************************************************
+* @brief Returns true if one or more agents are currently running.
+*
+* Can be used in conjunction with StopAllAgents() to make sure
+* all agents have actually terminated their runs.
+*************************************************************/
+bool Kernel::IsSoarRunning()
+{
+	AnalyzeXML response ;
+
+	bool ok = (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_IsSoarRunning)) ;
+
+	if (ok)
+	{
+		return response.GetResultBool(false) ;
+	}
+
+	return ok ;
 }
 
 /*************************************************************
