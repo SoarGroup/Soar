@@ -442,22 +442,33 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	outputPhases = 0 ;
 	int callback_u = pKernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, MyUpdateEventHandler, &outputPhases) ;
 
+	int phaseCount = 0 ;
+	int callbackPhase = pAgent->RegisterForRunEvent(smlEVENT_BEFORE_PHASE_EXECUTED, MyRunEventHandler, &phaseCount) ;
+
 	// Nothing should match here
 	std::string result = pAgent->RunSelf(4) ;
 
-	/*
+	// Should be one output phase per decision
 	if (outputPhases != 4)
 	{
 		cout << "Error receiving AFTER_ALL_OUTPUT_PHASES events" << endl ;
 		return false ;
 	}
-	*/
+
+	// Should be 5 phases per decision
+	if (phaseCount != 20)
+	{
+		cout << "Error receiving phase events" << endl ;
+		return false ;
+	}
 
 	if (beforeCount != 1 || afterCount != 1)
 	{
 		cout << "Error receiving BFORE_RUN_STARTS/AFTER_RUN_ENDS events" << endl ;
 		return false ;
 	}
+
+	pAgent->UnregisterForRunEvent(callbackPhase) ;
 
 	// By this point the static variable ClientXMLStorage should have been filled in 
 	// and it should be valid, even though the event handler for MyXMLEventHandler has completed.
