@@ -282,6 +282,9 @@ public abstract class AbstractTextView extends AbstractComboView
 	 ********************************************************************************************/
 	protected void appendText(final String text)
 	{
+		if (m_Text.isDisposed())
+			return ;
+		
 		m_Text.append(text) ;
 		if (m_LogWriter != null) m_LogWriter.print(text);
 

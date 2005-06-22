@@ -845,6 +845,9 @@ public class FoldingText
 	
 	public void appendText(String text, long type)
 	{
+		if (m_Text.isDisposed())
+			return ;
+		
 		// This is needed because the text control (on Windows) stores newlines as \r\n and selections and character counts will get out of synch if we
 		// work in the text control but reason about the text and they have different newlines.
 		// (We still use \n everywhere else as the newline marker because that's what Soar uses)

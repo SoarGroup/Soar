@@ -54,6 +54,8 @@ public class SoarCommands
 	public String getExciseDefaultCommand()						{ return "excise --default" ; }
 
 	public String getEditCommand(String arg)  					{ return "edit " + arg ; }
+	
+	public String getStopCommand()								{ return "stop-soar" ; }
 
 	public String getPreferencesCommand(String arg) 			{ return "preferences " + arg ; }
 	public String getPreferencesNameCommand(String arg)			{ return "preferences " + arg + " --names" ; }

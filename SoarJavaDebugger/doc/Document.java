@@ -87,6 +87,8 @@ public class Document
 	public static final boolean kDocInOwnThread = true ;
 	private DocumentThread 		m_DocumentThread = null ;
 	
+	public static final boolean kShutdownInSeparateThread = true ;
+	
 	public Document()
 	{
 		// Load the user's preferences from the properties file.
@@ -131,7 +133,7 @@ public class Document
 	
 	public Agent	getAgentByIndex(int index) 	{ return m_Kernel.GetAgentByIndex(index) ; }
 	public int		getNumberAgents() 			{ return m_Kernel.GetNumberAgents() ; }
-
+	
 	public boolean isCloseWindowWhenDestroyAgent()
 	{
 		return getAppProperties().getAppBooleanProperty(Document.kCloseOnDestroyProperty, true) && !m_SuppressCloseWindowOnDestructionAllAgents ;		
@@ -407,7 +409,10 @@ public class Document
 				
 				count-- ;
 				if (count == 0)
+				{
+					System.err.println("Forced system shutdown") ;
 					System.exit(0) ;
+				}
 			}
 		}		
 	}
@@ -417,35 +422,77 @@ public class Document
 	 * Shutdown our local Soar instance, deleting any agents etc.
 	 * 
 	********************************************************************************************/
-	public boolean stopLocalKernel(boolean closingApp, boolean preserveWindows)
+	public boolean stopLocalKernel(final boolean closingApp, final boolean preserveWindows)
 	{
 		if (m_Kernel == null)
 			return false ;
 
-		if (closingApp)
-			forceShutdown() ;
+		final Kernel kernelToStop = m_Kernel ;
 		
-		// If we want to keep our windows open suppress
-		// the "close on destroy" logic
-		if (preserveWindows)
-			this.setSuppressCloseWindow(true) ;
-		
-		// Deletes all agents and sends appropriate events
-		m_Kernel.Shutdown() ;
-		
-		// Actually deletes the kernel
-		m_Kernel.delete() ;
-		
-		m_Kernel = null ;
-		
-		// Let our listeners know we killed the kernel
-		fireSoarConnectionChanged() ;
+		// Experimental shutdown code where we try to stop soar
+		// before we delete the kernel.
+		Thread shutdown = new Thread()
+		{
+			public void run()
+			{
+				if (m_Kernel.GetNumberAgents() > 0)
+				{
+					// We don't currently support sending commands without an agent so
+					// choose the first agent
+					Agent first = m_Kernel.GetAgentByIndex(0) ;
+					
+					System.err.println("About to call stop-soar") ;
+					sendAgentCommand(first, getSoarCommands().getStopCommand()) ;
+	
+					while (m_DocumentThread.isBusy())
+					{
+						System.err.println("Waiting for Soar to stop") ;
+						try { Thread.sleep(100) ; } catch (InterruptedException e) { }
+					}
+				}
+				
+				if (closingApp)
+				{
+					m_DocumentThread.askToStop() ;
+	
+					while (m_DocumentThread.isAlive())
+					{
+						System.err.println("Waiting for doc thread to stop") ;
+						try { Thread.sleep(100) ; } catch (InterruptedException e) { }
+					}
+				}
 
-		// Turn off suppression of this event.
-		// (This returns this to the user's control)
-		if (preserveWindows)
-			this.setSuppressCloseWindow(false) ;
+				// If we want to keep our windows open suppress
+				// the "close on destroy" logic
+				if (preserveWindows)
+					setSuppressCloseWindow(true) ;
+				
+				// Deletes all agents and sends appropriate events
+				kernelToStop.Shutdown() ;
+				
+				// Actually deletes the kernel
+				kernelToStop.delete() ;
+				
+				m_Kernel = null ;
+				
+				// Let our listeners know we killed the kernel
+				fireSoarConnectionChanged() ;
 
+				// Turn off suppression of this event.
+				// (This returns this to the user's control)
+				if (preserveWindows)
+					setSuppressCloseWindow(false) ;
+								
+				System.err.println("Exiting shutdown thread") ;
+			}
+		} ;
+
+		// To do a truly clean shutdown we need to stop soar
+		// if it's running.  That may be safest from another thread.
+		// We can choose whether to actually use the other thread by calling start()
+		// instead of run() here.
+		// BUGBUG: Once this is resolved we should either take out this Thread object or call start() on it.
+		shutdown.run() ;
 		return true ;
 	}
 
@@ -520,7 +567,7 @@ public class Document
 			else
 			{
 				// Make sure the focus is set to nothing (not some left over agent)
-				frame.setAgentFocus(null) ;
+				frame.clearAgentFocus(false) ;
 			}
 		}
 	}
@@ -733,7 +780,7 @@ public class Document
 			// so that a Soar "run" command can be interrupted.
 			DocumentThread.Command command = m_DocumentThread.scheduleCommandToExecute(agent, commandLine, response) ;
 			
-			while (!m_DocumentThread.isExecutedCommand(command))
+			while (m_DocumentThread.isAlive() && !m_DocumentThread.isExecutedCommand(command))
 			{
 				pumpMessagesOneStep() ;
 				
@@ -742,6 +789,9 @@ public class Document
 				try { Thread.sleep(10) ; } catch (InterruptedException e) { } 
 			}
 
+			if (!m_DocumentThread.isAlive())
+				return "System shutdown" ;
+			
 			String result = m_DocumentThread.getExecutedCommandResult(command) ;
 			return result ;
 		}

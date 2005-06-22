@@ -72,6 +72,8 @@ public abstract class AbstractComboView extends AbstractView
 	protected boolean	m_ComboAtTop = true ;
 	
 	protected boolean   m_Updating = false ;
+	
+	protected String	m_CurrentCommand ;
 			
 	/** The history of commands for this window */
 	protected CommandHistory m_CommandHistory = new CommandHistory() ;
@@ -175,6 +177,7 @@ public abstract class AbstractComboView extends AbstractView
 	{
 		m_CommandHistory.UpdateHistoryList(command, true) ;
 		makeComboBoxMatchHistory(!m_ClearComboEachCommand) ;
+		m_CurrentCommand = command ;
 	}
 	
 	/** Separate out the laying out of the combo box as we might want to put controls next to it */
@@ -306,6 +309,8 @@ public abstract class AbstractComboView extends AbstractView
 			String command = combo.getText() ;
 			commandEntered(command, true) ;	
 		}
+		
+		m_CurrentCommand = combo.getText() ;
 	}
 	
 	private void makeComboBoxMatchHistory(boolean placeTopItemInCombo)
@@ -313,7 +318,7 @@ public abstract class AbstractComboView extends AbstractView
 		// Changing the list of items clears the text entry field
 		// which we may not wish to do, so we'll keep it and manually
 		// reset it.
-		String text = m_CommandCombo.getText() ;
+		String text = m_CommandCombo.getText() ;		
 
 		String[] history = m_CommandHistory.getHistory() ;
 		this.m_CommandCombo.setItems(history) ;	
@@ -322,7 +327,9 @@ public abstract class AbstractComboView extends AbstractView
 			m_CommandCombo.setText(history[0]) ;
 		else
 			m_CommandCombo.setText(text) ;
-	}
+		
+		m_CurrentCommand = m_CommandCombo.getText() ;
+	}	
 		
 	private void commandEntered(String command, boolean updateHistory)
 	{
@@ -338,8 +345,11 @@ public abstract class AbstractComboView extends AbstractView
 		// Clear the text from the edit control in the combo box if we're
 		// configured that way.
 		if (m_ClearComboEachCommand)
+		{
 			this.m_CommandCombo.setText("") ;
-
+			m_CurrentCommand = "" ;
+		}
+		
 		// Send the command to Soar and echo into the trace
 		if (command.length() > 0)
 			executeAgentCommand(command, true) ;
@@ -444,8 +454,8 @@ public abstract class AbstractComboView extends AbstractView
 		//System.out.println("Updating window's contents") ;
 		
 		// Retrieve the current command in the combo box
-		// (this call is thread safe and switches to the UI thread if necessary)
-		final String command = getCommandText() ;
+		// (We use a cached value so we don't need to go to the UI thread)
+		final String command = getCurrentCommand() ;
 
 		// We don't want to execute "run" commands when Soar stops--or we'll get into an
 		// infinite loop.
@@ -522,6 +532,9 @@ public abstract class AbstractComboView extends AbstractView
 		
 		String result = getDocument().sendAgentCommand(getAgentFocus(), command) ;
 
+		if (this.m_Container.isDisposed())
+			return "Window closed" ;
+		
 		// Clear the text area if this window is configured that way.
 		if (this.m_ClearEachCommand)
 			clearDisplay() ;
@@ -589,7 +602,13 @@ public abstract class AbstractComboView extends AbstractView
         }
         public String getResult() { return m_Result ; }
 	}
+
+	private String getCurrentCommand()
+	{
+		return m_CurrentCommand ;
+	}
 	
+	/*
 	private String getCommandText()
 	{
 		if (!Document.kDocInOwnThread)
@@ -604,7 +623,8 @@ public abstract class AbstractComboView extends AbstractView
 
         return op.getResult() ;
 	}
-
+	*/
+	
 	public void printEventHandler(int eventID, Object data, Agent agent, String message)
 	{		
 		if (getDisplayControl().isDisposed())

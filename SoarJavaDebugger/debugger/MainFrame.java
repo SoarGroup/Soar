@@ -56,7 +56,7 @@ import sml.*;
  ******************************************************************************/
 public class MainFrame
 {
-	public static final FontData kDefaultFontData = new FontData("Courier New", 8, SWT.NORMAL) ;
+	public static final FontData kDefaultFontData = new FontData("Courier New", 8, SWT.NORMAL);
 
 	private static final String kNoAgent = "<no agent>";
 	private static String m_WindowLayoutFile = "SoarDebuggerWindows" + Document.kVersion + ".dlf";
@@ -70,15 +70,15 @@ public class MainFrame
 	private Menu m_MenuBar = null;
 
 	/** The menus in the menu bar */
-	private FileMenu 		m_FileMenu = null;
-	private EditMenu 		m_EditMenu = null;
-	private KernelMenu 		m_KernelMenu = null;
-	private AgentMenu 		m_AgentMenu = null;
-	private DemoMenu 		m_DemoMenu = null;
-	private CommandsMenu 	m_CommandsMenu = null ;
-	private DebugLevelMenu 	m_DebugLevelMenu = null ;
-	private PrintMenu		m_PrintMenu = null ;
-	private LayoutMenu		m_LayoutMenu = null ;
+	private FileMenu m_FileMenu = null;
+	private EditMenu m_EditMenu = null;
+	private KernelMenu m_KernelMenu = null;
+	private AgentMenu m_AgentMenu = null;
+	private DemoMenu m_DemoMenu = null;
+	private CommandsMenu m_CommandsMenu = null;
+	private DebugLevelMenu m_DebugLevelMenu = null;
+	private PrintMenu m_PrintMenu = null;
+	private LayoutMenu m_LayoutMenu = null;
 
 	/**
 	 * The main document object -- represents the Soar process. There is only
@@ -87,16 +87,22 @@ public class MainFrame
 	private Document m_Document = null;
 
 	/** Used to script the debugger itself */
-	private ScriptCommands m_ScriptCommands = null ;
-	
-	/** Extended commands set that the user could type at the command line (might fold this into scripts or vice versa one day--not sure) */
-	private DebuggerCommands m_DebuggerCommands = null ;
-	
+	private ScriptCommands m_ScriptCommands = null;
+
+	/**
+	 * Extended commands set that the user could type at the command line (might
+	 * fold this into scripts or vice versa one day--not sure)
+	 */
+	private DebuggerCommands m_DebuggerCommands = null;
+
 	/** Map of module names that are currently in use in this frame */
-	private NameRegister m_NameMap = new NameRegister() ;
-	
-	/** Each frame has a unique name within the debugger (for the life of one running of the app) */
-	private String m_Name ;
+	private NameRegister m_NameMap = new NameRegister();
+
+	/**
+	 * Each frame has a unique name within the debugger (for the life of one
+	 * running of the app)
+	 */
+	private String m_Name;
 
 	/**
 	 * We associate a default agent with a MainFrame, so that windows within
@@ -154,15 +160,15 @@ public class MainFrame
 		m_Parent = parent;
 
 		m_Document = doc;
-				
+
 		// Add ourselves to the list of frames in use and
 		// get back a unique name to use
 		String name = doc.addFrame(this);
-		
-		m_Name = name ;
- 
-		m_ScriptCommands   = new ScriptCommands(this, doc);
-		m_DebuggerCommands = new DebuggerCommands(this, doc) ;
+
+		m_Name = name;
+
+		m_ScriptCommands = new ScriptCommands(this, doc);
+		m_DebuggerCommands = new DebuggerCommands(this, doc);
 
 		m_White = new Color(getDisplay(), 255, 255, 255);
 		m_Colors.add(m_White); // So we dispose of it when MainFrame is killed
@@ -179,7 +185,7 @@ public class MainFrame
 			public void soarConnectionChanged(SoarConnectionEvent e)
 			{
 				// If the connection has changed reset the focus to null
-				setAgentFocus(null);
+				clearAgentFocus(false);
 
 				updateMenus();
 			};
@@ -190,23 +196,33 @@ public class MainFrame
 				// set the focus to null for this window.
 				if (e.isAgentRemoved() && Document.isSameAgent(e.getAgent(), m_AgentFocus))
 				{
-					// If this agent is being closed down then decide if we should
+					// If this agent is being closed down then decide if we
+					// should
 					// destroy the window or not.
-					boolean destroyOnClose = m_Document.isCloseWindowWhenDestroyAgent() ;
+					boolean destroyOnClose = m_Document.isCloseWindowWhenDestroyAgent();
 
 					if (destroyOnClose)
 					{
-						// We need to switch out of this thread because we're in a handler for
-						// the before_agent_destroyed() event and calling close() should shutdown the
-						// kernel if this is the last window.  So we thread switch.
-						getDisplay().asyncExec(new Runnable() { public void run() { close() ; } }) ;
-						return ;
+						// We need to switch out of this thread because we're in
+						// a handler for
+						// the before_agent_destroyed() event and calling
+						// close() should shutdown the
+						// kernel if this is the last window. So we thread
+						// switch.
+						getDisplay().asyncExec(new Runnable() {
+							public void run()
+							{
+								close();
+							}
+						});
+						return;
 					}
 
-					// If we don't destroy the window we need to set the current agent to being nothing
-					setAgentFocus(null);
+					// If we don't destroy the window we need to set the current
+					// agent to being nothing
+					clearAgentFocus(true);
 				}
-				
+
 				updateMenus();
 			};
 		};
@@ -217,21 +233,21 @@ public class MainFrame
 	public static MainFrame createNewFrame(Display display, Document doc)
 	{
 		// Create a new window for this agent
-		Shell shell = new Shell(display) ;
-		
-		MainFrame frame = new MainFrame(shell, doc) ;
-		frame.initComponents() ;
+		Shell shell = new Shell(display);
 
-		shell.open() ;
-		
-		return frame ;
+		MainFrame frame = new MainFrame(shell, doc);
+		frame.initComponents();
+
+		shell.open();
+
+		return frame;
 	}
-	
+
 	public String getName()
 	{
-		return m_Name ;
+		return m_Name;
 	}
-	
+
 	public Shell getShell()
 	{
 		return m_Parent.getShell();
@@ -246,7 +262,7 @@ public class MainFrame
 	{
 		// Only show messages once the shell itself is going
 		if (!shell.isVisible())
-			return SWT.CANCEL ;
+			return SWT.CANCEL;
 
 		if (title == null)
 			title = "Error";
@@ -258,8 +274,8 @@ public class MainFrame
 		msg.setText(title);
 		msg.setMessage(text);
 		int result = msg.open();
-		
-		return result ;
+
+		return result;
 	}
 
 	public void ShowMessageBox(String title, String text)
@@ -273,19 +289,22 @@ public class MainFrame
 		// Display an SWT message box
 		ShowMessageBox(getShell(), "Error", text, 0);
 	}
-	
-	 /*******************************************************************************************
+
+	/***************************************************************************
 	 * 
 	 * Show a message box with a particular icon or set of buttons
-	 *
-	 * @param title	 The title
-	 * @param text	 The content of the message box
-	 * @param style	 e.g. SWT.ICON_INFORMATION or SWT.OK | SWT.CANCEL
+	 * 
+	 * @param title
+	 *            The title
+	 * @param text
+	 *            The content of the message box
+	 * @param style
+	 *            e.g. SWT.ICON_INFORMATION or SWT.OK | SWT.CANCEL
 	 * @return SWT.OK or SWT.CANCEL
-	********************************************************************************************/
+	 **************************************************************************/
 	public int ShowMessageBox(String title, String text, int style)
 	{
-		return ShowMessageBox(getShell(), title, text, style) ;
+		return ShowMessageBox(getShell(), title, text, style);
 	}
 
 	public void setTextFont(FontData fontData)
@@ -293,9 +312,9 @@ public class MainFrame
 		Font oldFont = m_TextFont;
 
 		// Record our font choice for the next run
-		this.setAppProperty("TextFont.Name", fontData.getName()) ;
-		this.setAppProperty("TextFont.Size", fontData.getHeight()) ;
-		this.setAppProperty("TextFont.Style", fontData.getStyle()) ;
+		this.setAppProperty("TextFont.Name", fontData.getName());
+		this.setAppProperty("TextFont.Size", fontData.getHeight());
+		this.setAppProperty("TextFont.Style", fontData.getStyle());
 
 		// Build the new font
 		m_TextFont = new Font(getDisplay(), fontData);
@@ -314,7 +333,7 @@ public class MainFrame
 
 		// Select our current font as the initial font
 		if (m_TextFont != null)
-			dialog.setFontList(m_TextFont.getFontData()) ;
+			dialog.setFontList(m_TextFont.getFontData());
 
 		FontData data = dialog.open();
 
@@ -333,21 +352,33 @@ public class MainFrame
 	{
 		// Keep track of the fact that we're in the act of closing this window
 		m_bClosing = true;
-		
+
 		// Need to explicitly release the focus which in turn will cause any
-		// listeners to unregister
-		// from this agent (is its still alive). Otherwise our listeners will
-		// still be registered and
-		// will try to display output in windows that are disposed.
-		if (this.getDocument().getNumberFrames() > 1)
-			this.setAgentFocus(null);
+		// listeners to unregister from this agent (is its still alive).
+		// Otherwise our listeners will
+		// still be registered and will try to display output in windows that
+		// are disposed.
+		// This has the potential to deadlock (waiting to issue unregister calls
+		// while we're running) so we put
+		// it in a separate thread to avoid that.
+		Thread clearFocus = new Thread() {
+			public void run()
+			{
+				clearAgentFocus(false);
+			}
+		};
+		clearFocus.start();
+
+		// DJP: Experiment
+		//		if (this.getDocument().getNumberFrames() > 1)
+		//			this.setAgentFocus(null);
 
 		// Record the current window positions as properties,
 		// which we can then save.
 		RecordWindowPositions();
 
 		// Save current layout file
-		saveCurrentLayoutFile() ;
+		saveCurrentLayoutFile();
 
 		// Save the user's preferences to the properties file.
 		try
@@ -375,7 +406,6 @@ public class MainFrame
 		if (this.getDocument().getNumberFrames() == 0)
 		{
 			getDocument().close(true);
-			System.exit(0);
 		}
 	}
 
@@ -388,14 +418,24 @@ public class MainFrame
 	public String ShowInputDialog(String title, String prompt, String initialValue)
 	{
 		if (initialValue == null)
-			initialValue = "" ;
-		
+			initialValue = "";
+
 		String name = SwtInputDialog.showDialog(this.getShell(), title, prompt, initialValue);
 		return name;
 	}
 
-	/** Switch to focusing on a new agent. */
+	public void clearAgentFocus(boolean canUnregisterEvents)
+	{
+		setAgentFocusInternal(null, canUnregisterEvents) ;
+	}
+	
 	public void setAgentFocus(Agent agent)
+	{
+		setAgentFocusInternal(agent, true) ;
+	}
+	
+	/** Switch to focusing on a new agent. */
+	private void setAgentFocusInternal(Agent agent, boolean canUnregisterEvents)
 	{
 		// If we're already focused on this agent nothing to do
 		if (m_AgentFocus == agent)
@@ -404,10 +444,10 @@ public class MainFrame
 		/** First let everyone know that focus is going away from one agent */
 		if (m_AgentFocus != null)
 		{
-			if (m_Document.isAgentValid(m_AgentFocus))
+			if (m_Document.isAgentValid(m_AgentFocus) && canUnregisterEvents)
 				m_AgentFocusGenerator.fireAgentLosingFocus(this, m_AgentFocus);
 			else
-				m_AgentFocusGenerator.fireAgentGone(this) ;
+				m_AgentFocusGenerator.fireAgentGone(this);
 		}
 
 		/** Now let everyone know that focus has gone to the new agent */
@@ -453,9 +493,9 @@ public class MainFrame
 			return;
 
 		final String agentName = (m_AgentFocus == null ? kNoAgent : m_AgentFocus.GetAgentName());
-		boolean remote = m_Document.isConnected() && m_Document.isRemote() ;
-		final String remoteString = remote ? "remote " : "" ;
-		
+		boolean remote = m_Document.isConnected() && m_Document.isRemote();
+		final String remoteString = remote ? "remote " : "";
+
 		// Need to make sure we make this change in the SWT thread as the event
 		// may come to us
 		// in a different thread
@@ -477,30 +517,33 @@ public class MainFrame
 		m_AgentMenu.updateMenu();
 	}
 
-	/********************************************************************************************
+	/***************************************************************************
 	 * 
-	 * Save the current layout so when we next launch the app next we'll go back to
-	 * this layout.
+	 * Save the current layout so when we next launch the app next we'll go back
+	 * to this layout.
 	 * 
 	 * @return True if save file successfully
-	********************************************************************************************/
+	 **************************************************************************/
 	public boolean saveCurrentLayoutFile()
 	{
 		// Look up the name of the default window layout
 		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile);
-	
-		// Save the current window positions and other information to the layout file
+
+		// Save the current window positions and other information to the layout
+		// file
 		return this.saveLayoutFile(layoutFile.toString());
 	}
-	
-	/********************************************************************************************
+
+	/***************************************************************************
 	 * 
 	 * Load a layout (window positions, types of windows etc.) from a file.
 	 * 
-	 * @param filename		The file to load
-	 * @param showErrors	If true display message box on error during load
+	 * @param filename
+	 *            The file to load
+	 * @param showErrors
+	 *            If true display message box on error during load
 	 * @return True if load file successfully
-	********************************************************************************************/
+	 **************************************************************************/
 	public boolean loadLayoutFile(String filename, boolean showErrors)
 	{
 		return getMainWindow().loadLayoutFromFile(filename, showErrors);
@@ -516,70 +559,78 @@ public class MainFrame
 		getMainWindow().useDefaultLayout();
 	}
 
-	 /*******************************************************************************************
+	/***************************************************************************
 	 * 
-	 * Generates a unique name from a base name (e.g. from "trace" might create "trace3").
-	 * The name is unique within the frame so we can use it to cross-reference windows within a layout.
-	 * It may not be unique within the entire debugger.
+	 * Generates a unique name from a base name (e.g. from "trace" might create
+	 * "trace3"). The name is unique within the frame so we can use it to
+	 * cross-reference windows within a layout. It may not be unique within the
+	 * entire debugger.
 	 * 
-	 * @param baseName		Cannot contain digits
-	 * @return	The generated name (which has been registered as in use)
-	********************************************************************************************/
+	 * @param baseName
+	 *            Cannot contain digits
+	 * @return The generated name (which has been registered as in use)
+	 **************************************************************************/
 	public String generateName(String baseName, AbstractView view)
 	{
 		// Try 200 times -- should be plenty.
-		for (int i = 1 ; i < 200 ; i++)
+		for (int i = 1; i < 200; i++)
 		{
-			String candidate = baseName + i ;
-		
+			String candidate = baseName + i;
+
 			if (!m_NameMap.isNameInUse(candidate))
 			{
-				m_NameMap.registerName(candidate, view) ;
-				return candidate ;
+				m_NameMap.registerName(candidate, view);
+				return candidate;
 			}
 		}
-		
-		throw new IllegalStateException("Could not generate a unique name for basename " + baseName) ;
+
+		throw new IllegalStateException("Could not generate a unique name for basename " + baseName);
 	}
 
-	/** Look up the view based on its name **/
+	/** Look up the view based on its name * */
 	public AbstractView getView(String viewName)
 	{
 		if (viewName == null)
-			return null ;
-		
-		AbstractView view = m_NameMap.getView(viewName) ;
-		return view ;
+			return null;
+
+		AbstractView view = m_NameMap.getView(viewName);
+		return view;
 	}
-	
+
 	public void registerViewName(String name, AbstractView view)
 	{
-		m_NameMap.registerName(name, view) ;
+		m_NameMap.registerName(name, view);
 	}
-	
+
 	public void unregisterViewName(String name)
 	{
-		m_NameMap.unregisterName(name) ;
+		m_NameMap.unregisterName(name);
 	}
-	
+
 	public boolean isViewNameInUse(String name)
 	{
-		return m_NameMap.isNameInUse(name) ;
+		return m_NameMap.isNameInUse(name);
 	}
-	
+
 	public void clearNameRegistry()
 	{
-		m_NameMap.clear() ;
+		m_NameMap.clear();
 	}
-	
+
 	public void loadSource()
 	{
-		m_FileMenu.loadSource() ;
+		m_FileMenu.loadSource();
 	}
-	
-	public FileMenu   getFileMenu() { return m_FileMenu ; }
-	public KernelMenu getKernelMenu() { return m_KernelMenu ; }
-	
+
+	public FileMenu getFileMenu()
+	{
+		return m_FileMenu;
+	}
+	public KernelMenu getKernelMenu()
+	{
+		return m_KernelMenu;
+	}
+
 	/***************************************************************************
 	 * 
 	 * Initializes the frame and all of its children.
@@ -592,11 +643,11 @@ public class MainFrame
 		// Add the menus
 		m_FileMenu = FileMenu.createMenu(this, getDocument(), "&File");
 		m_EditMenu = menu.EditMenu.createMenu(this, getDocument(), "&Edit");
-		m_PrintMenu    = PrintMenu.createMenu(this, getDocument(), "&Print") ;
+		m_PrintMenu = PrintMenu.createMenu(this, getDocument(), "&Print");
 		m_CommandsMenu = CommandsMenu.createMenu(this, getDocument(), "&Commands");
 		m_DebugLevelMenu = DebugLevelMenu.createMenu(this, getDocument(), "&Debug Level");
 		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "De&mos");
-		m_LayoutMenu = LayoutMenu.createMenu(this, getDocument(), "&Layout") ;
+		m_LayoutMenu = LayoutMenu.createMenu(this, getDocument(), "&Layout");
 		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "&Agents");
 		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "&Kernel");
 
@@ -616,7 +667,7 @@ public class MainFrame
 		// If we didn't load a layout, use a default layout
 		if (!loaded)
 		{
-			System.out.println("Failed to load the stored layout, so using default instead") ;
+			System.out.println("Failed to load the stored layout, so using default instead");
 			useDefaultLayout();
 		}
 
@@ -629,27 +680,26 @@ public class MainFrame
 		});
 
 		// Set the initial window size
-		boolean max = this.getAppBooleanProperty("Window.Max", true) ;
-		
+		boolean max = this.getAppBooleanProperty("Window.Max", true);
+
 		if (max)
 		{
 			// Maximize the window
 			getShell().setMaximized(true);
-		}
-		else
+		} else
 		{
-			int width = this.getAppIntegerProperty("Window.width") ;
-			int height = this.getAppIntegerProperty("Window.height") ;
-			int xPos = this.getAppIntegerProperty("Window.x") ;
-			int yPos = this.getAppIntegerProperty("Window.y") ;
-			
+			int width = this.getAppIntegerProperty("Window.width");
+			int height = this.getAppIntegerProperty("Window.height");
+			int xPos = this.getAppIntegerProperty("Window.x");
+			int yPos = this.getAppIntegerProperty("Window.y");
+
 			if (width > 0 && width < Integer.MAX_VALUE && height > 0 && height < Integer.MAX_VALUE)
-				getShell().setSize(width, height) ;
-			
+				getShell().setSize(width, height);
+
 			if (xPos >= 0 && xPos < Integer.MAX_VALUE && yPos > 0 && yPos != Integer.MAX_VALUE)
-				getShell().setLocation(xPos, yPos) ;
+				getShell().setLocation(xPos, yPos);
 		}
-		
+
 		// Try to load the user's font preference
 		String fontName = this.getAppStringProperty("TextFont.Name");
 		int fontSize = this.getAppIntegerProperty("TextFont.Size");
@@ -659,15 +709,14 @@ public class MainFrame
 				&& fontStyle >= 0)
 		{
 			setTextFont(new FontData(fontName, fontSize, fontStyle));
-		}
-		else
+		} else
 		{
-	  		setTextFont(kDefaultFontData) ;  		
+			setTextFont(kDefaultFontData);
 		}
 
 		// Make sure our menus are enabled correctly
 		updateMenus();
-		updateTitle() ;
+		updateTitle();
 	}
 
 	public Font getTextFont()
@@ -702,22 +751,22 @@ public class MainFrame
 
 	public String getAppStringProperty(String property)
 	{
-		return this.getAppProperties().getAppStringProperty(property) ;
+		return this.getAppProperties().getAppStringProperty(property);
 	}
 
 	public boolean getAppBooleanProperty(String property, boolean defaultValue)
 	{
-		return this.getAppProperties().getAppBooleanProperty(property, defaultValue) ;
+		return this.getAppProperties().getAppBooleanProperty(property, defaultValue);
 	}
 
 	public double getAppDoubleProperty(String property)
 	{
-		return this.getAppProperties().getAppDoubleProperty(property) ;
+		return this.getAppProperties().getAppDoubleProperty(property);
 	}
 
 	public int getAppIntegerProperty(String property)
 	{
-		return this.getAppProperties().getAppIntegerProperty(property) ;
+		return this.getAppProperties().getAppIntegerProperty(property);
 	}
 
 	public int getWidth()
@@ -751,12 +800,12 @@ public class MainFrame
 
 	public AbstractView[] getAllViews()
 	{
-		return m_MainWindow.getAllViews(false) ;
+		return m_MainWindow.getAllViews(false);
 	}
 
 	public AbstractView[] getAllOutputViews()
 	{
-		return m_MainWindow.getAllViews(true) ;
+		return m_MainWindow.getAllViews(true);
 	}
 
 	/**
@@ -766,8 +815,8 @@ public class MainFrame
 	public String executeCommandPrimeView(String commandLine, boolean echoCommand)
 	{
 		AbstractView prime = getPrimeView();
-		
-		String result = null ;
+
+		String result = null;
 
 		if (prime != null)
 		{
@@ -781,45 +830,46 @@ public class MainFrame
 			if (getAgentFocus() != null)
 				result = m_Document.sendAgentCommand(getAgentFocus(), commandLine);
 		}
-		
-		return result ;
+
+		return result;
 	}
-	
-	/********************************************************************************************
+
+	/***************************************************************************
 	 * 
 	 * Execute a command and return the XML form of the output.
 	 * 
-	 * This is used to evaluate a command which we wish to parse within the debugger
-	 * e.g. "set-library-location" (with no args) returns the path to the library.
-	 * We ask for the XML form and parse that, making us robust against changes to the string
-	 * form shown to the user.
+	 * This is used to evaluate a command which we wish to parse within the
+	 * debugger e.g. "set-library-location" (with no args) returns the path to
+	 * the library. We ask for the XML form and parse that, making us robust
+	 * against changes to the string form shown to the user.
 	 * 
-	 * NOTE: You should do explicit clean up of the 'response' object we can check for memory leaks
-	 * when the debugger exits.  If we don't do this explicitly, the memory will eventually
-	 * get cleaned up, but only once the gc runs...could be a while and may not happen
-	 * before we exit (not required by Java to do so) so it looks like a leak.
+	 * NOTE: You should do explicit clean up of the 'response' object we can
+	 * check for memory leaks when the debugger exits. If we don't do this
+	 * explicitly, the memory will eventually get cleaned up, but only once the
+	 * gc runs...could be a while and may not happen before we exit (not
+	 * required by Java to do so) so it looks like a leak.
 	 * 
-	 * So the caller should follow this pattern:
-	 * AnalyzeXML response = new AnalyzeXML() ;
-	 * bool ok = executeCommandXML(commandLine, response) ;
-	 * ... process response ...
-	 * response.delete() ;
+	 * So the caller should follow this pattern: AnalyzeXML response = new
+	 * AnalyzeXML() ; bool ok = executeCommandXML(commandLine, response) ; ...
+	 * process response ... response.delete() ;
 	 * 
-	 * @param commandLine	The command to execute (e.g. "watch")
-	 * @param response		An XML object which is filled in by Soar
+	 * @param commandLine
+	 *            The command to execute (e.g. "watch")
+	 * @param response
+	 *            An XML object which is filled in by Soar
 	 * @return
-	********************************************************************************************/
+	 **************************************************************************/
 	public boolean executeCommandXML(String commandLine, AnalyzeXML response)
 	{
 		if (response == null)
-			throw new IllegalArgumentException("Must allocate the response and pass it in.  The contents will be filled in during the call.") ;
-		
-		boolean result = false ;
-		
+			throw new IllegalArgumentException("Must allocate the response and pass it in.  The contents will be filled in during the call.");
+
+		boolean result = false;
+
 		if (getAgentFocus() != null)
 			result = m_Document.sendAgentCommandXML(getAgentFocus(), commandLine, response);
-		
-		return result ;
+
+		return result;
 	}
 
 	/**
@@ -828,36 +878,37 @@ public class MainFrame
 	 */
 	public void executeScriptCommand(AbstractView view, String commandLine, boolean echoCommand)
 	{
-		// We can use "thisframe" and "thisview" as reference values.  This function binds them to specific names.
-		commandLine = m_ScriptCommands.replaceVariables(this, view, commandLine) ;
-		
+		// We can use "thisframe" and "thisview" as reference values. This
+		// function binds them to specific names.
+		commandLine = m_ScriptCommands.replaceVariables(this, view, commandLine);
+
 		// Now execute the command
 		m_ScriptCommands.executeCommand(commandLine, echoCommand);
 	}
 
-	/********************************************************************************************
+	/***************************************************************************
 	 * 
-	 * Debugger commands are like scripting commands, but they could potentially be typed by the user
-	 * at the command line.
+	 * Debugger commands are like scripting commands, but they could potentially
+	 * be typed by the user at the command line.
 	 * 
 	 * @param commandLine
-	 * @return	True if is a command we recognize
-	********************************************************************************************/
+	 * @return True if is a command we recognize
+	 **************************************************************************/
 	public boolean isDebuggerCommand(String commandLine)
 	{
-		return m_DebuggerCommands.isCommand(commandLine) ;
+		return m_DebuggerCommands.isCommand(commandLine);
 	}
-	
+
 	public String getExpandedCommand(String commandLine)
 	{
-		return m_DebuggerCommands.getExpandedCommand(commandLine) ;
+		return m_DebuggerCommands.getExpandedCommand(commandLine);
 	}
-	
+
 	public Object executeDebuggerCommand(AbstractView view, String commandLine, boolean echoCommand)
 	{
-		return m_DebuggerCommands.executeCommand(view, commandLine, echoCommand) ;
+		return m_DebuggerCommands.executeCommand(view, commandLine, echoCommand);
 	}
-	
+
 	/***************************************************************************
 	 * 
 	 * Display the given text in this view (if possible).
@@ -878,19 +929,19 @@ public class MainFrame
 
 	protected void RecordWindowPositions()
 	{
-		this.setAppProperty("Window.Max", getShell().getMaximized()) ;
-		
-		int width = getShell().getSize().x ;
-		int height = getShell().getSize().y ;
-		
-		this.setAppProperty("Window.width", width) ;
-		this.setAppProperty("Window.height", height) ;
-		
-		int xPos = getShell().getLocation().x ;
-		int yPos = getShell().getLocation().y ;
-		
-		this.setAppProperty("Window.x", xPos) ;
-		this.setAppProperty("Window.y", yPos) ;
+		this.setAppProperty("Window.Max", getShell().getMaximized());
+
+		int width = getShell().getSize().x;
+		int height = getShell().getSize().y;
+
+		this.setAppProperty("Window.width", width);
+		this.setAppProperty("Window.height", height);
+
+		int xPos = getShell().getLocation().x;
+		int yPos = getShell().getLocation().y;
+
+		this.setAppProperty("Window.x", xPos);
+		this.setAppProperty("Window.y", yPos);
 	}
 	/*
 	 * public void
@@ -927,19 +978,18 @@ public class MainFrame
 	 * if (doPrint) { // Indicate which view we want to print
 	 * java.awt.print.Book book = new java.awt.print.Book();
 	 * //book.append(jWorkspacePanel, m_PageFormat);
-	 * printerJob.setPageable(book);
-	 *  // Start printing try { printerJob.print();
-	 *  } catch (java.awt.print.PrinterException exception) {
+	 * printerJob.setPageable(book); // Start printing try { printerJob.print(); }
+	 * catch (java.awt.print.PrinterException exception) {
 	 * JOptionPane.showMessageDialog(this, "Printing error: " + exception); } } }
 	 * 
 	 * public void jMenuFilePageSetupActionPerformed(java.awt.event.ActionEvent
 	 * e) { java.awt.print.PrinterJob printerJob =
 	 * java.awt.print.PrinterJob.getPrinterJob() ;
 	 * 
-	 * m_PageFormat = printerJob.pageDialog(m_PageFormat) ;
-	 *  // Store the new setting for landscape/portrait. // BADBAD: Should store
-	 * more really (e.g. paper choice). boolean landscape =
-	 * (m_PageFormat.getOrientation() == java.awt.print.PageFormat.LANDSCAPE) ;
+	 * m_PageFormat = printerJob.pageDialog(m_PageFormat) ; // Store the new
+	 * setting for landscape/portrait. // BADBAD: Should store more really (e.g.
+	 * paper choice). boolean landscape = (m_PageFormat.getOrientation() ==
+	 * java.awt.print.PageFormat.LANDSCAPE) ;
 	 * this.setAppProperty("Printing.Landscape", landscape) ; }
 	 */
 }

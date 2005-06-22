@@ -97,6 +97,8 @@ public class Application {
 			SWTApplication swtApp = new SWTApplication() ;
 			
 			swtApp.startApp(args) ;
+			
+			System.exit(0) ;
 		}
 		catch (Exception e) {
 			e.printStackTrace();

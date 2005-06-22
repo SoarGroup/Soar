@@ -275,7 +275,7 @@ public class MainWindow
 		// so they unregister any events for the current agent
 		// Then at the end we'll reset the focus, allowing them to re-register
 		// for events.
-		m_Frame.setAgentFocus(null) ;
+		m_Frame.clearAgentFocus(true) ;
 		
 		// Unregister all names that were in use with this frame
 		m_Frame.clearNameRegistry() ;

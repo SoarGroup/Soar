@@ -30,10 +30,6 @@ import sml.AnalyzeXML;
  ************************************************************************/
 public class DocumentThread extends Thread
 {
-	// BUGBUG: There's a chance that the agent object is invalid
-	// by the time we go to execute the command (if it's been deleted while this command was pending to execute).
-	// We need a way to detect that
-	// the C++ object is no good before we try to run the command.
 	public static class Command
 	{
 		private Agent m_Agent ;
@@ -84,7 +80,7 @@ public class DocumentThread extends Thread
 	{
 		return m_IsExecutingCommand || m_ToExecuteQueue.size() > 0 ;
 	}
-	
+		
 	public synchronized void setExecuting(boolean state)
 	{
 		m_IsExecutingCommand = state ;
@@ -148,9 +144,18 @@ public class DocumentThread extends Thread
 		{
 			setExecuting(true) ;
 			
+			// Check that we still have a kernel to work with
 			if (!isConnected())
 			{
 				recordCommandResult(command, "disconnected") ;
+				continue ;
+			}
+			
+			// The agent may have been destroyed before we get around to executing
+			// this command.
+			if (!this.m_Document.isAgentValid(command.m_Agent))
+			{
+				recordCommandResult(command, "agent destroyed") ;
 				continue ;
 			}
 			
