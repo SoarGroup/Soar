@@ -275,7 +275,7 @@ public class MacEnvironment implements Runnable {
      * Destroys the Soar kernel and agent associated with this environment.
      */
     public void detachSoar() {
-        kernel.DestroyAgent(agent);
+	kernel.Shutdown();
         kernel.delete();
     }
     

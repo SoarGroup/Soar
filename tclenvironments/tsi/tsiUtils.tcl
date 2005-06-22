@@ -485,13 +485,10 @@ proc quitSoar {} {
 	   after 500 set delay 1
 	   vwait delay
 	   
-	   ## best to delete agents explicitly in case other
-	   ## processes are listening for them, eg SoarJavaDebugger
-	   if [info exists localAgents] {
-	       foreach name $localAgents {
-		   destroyAgent $name
-	       }
-	   }
+	   ## explicitly shutdown the kernel to warn other processes,
+	   ## (eg SoarJavaDebugger) so they can clean up (eg shut themselves down) 
+	   $_kernel Shutdown
+	   
 	   #give Tcl object ownership of underlying C++ object so when delete
 	   #  the Tcl object they both get deleted
 	   set result [$_kernel -acquire];

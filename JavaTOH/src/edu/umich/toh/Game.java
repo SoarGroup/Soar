@@ -312,7 +312,7 @@ public class Game implements Runnable {
     }
 
     public void detachSoar() {
-        kernel.DestroyAgent(agent);
+	kernel.Shutdown();
         kernel.delete();
     }
     
