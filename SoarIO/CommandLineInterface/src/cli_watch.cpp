@@ -362,12 +362,12 @@ bool CommandLineInterface::DoWatch(gSKI::IAgent* pAgent, const WatchBitset& opti
 
 
 		if (m_RawOutput) {
-			m_Result << "Current watch settings:\n  Decisions:  " << pSysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM] ? "on" : "off";
-			m_Result << "\n  Phases:  " << pSysparams[TRACE_PHASES_SYSPARAM] ? "on" : "off";
-			m_Result << "\n  Default productions:  " << pSysparams[TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM] ? "on" : "off";
-			m_Result << "\n  User productions:  " << pSysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM] ? "on" : "off";
-			m_Result << "\n  Chunks:  " << pSysparams[TRACE_FIRINGS_OF_CHUNKS_SYSPARAM] ? "on" : "off";
-			m_Result << "\n  Justifications:  " << pSysparams[TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM] ? "on" : "off";
+			m_Result << "Current watch settings:\n  Decisions:  " << (pSysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  Phases:  " << (pSysparams[TRACE_PHASES_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  Default productions:  " << (pSysparams[TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  User productions:  " << (pSysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  Chunks:  " << (pSysparams[TRACE_FIRINGS_OF_CHUNKS_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  Justifications:  " << (pSysparams[TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM] ? "on" : "off");
 			m_Result << "\n    WME detail level:  ";
 			switch (pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]) {
 				default://falls through					
