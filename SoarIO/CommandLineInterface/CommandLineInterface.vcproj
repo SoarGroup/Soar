@@ -129,9 +129,6 @@
 				RelativePath=".\src\cli_Constants.cpp">
 			</File>
 			<File
-				RelativePath=".\src\cli_GetOpt.cpp">
-			</File>
-			<File
 				RelativePath=".\src\cli_Interface.cpp">
 			</File>
 			<Filter
@@ -319,9 +316,6 @@
 			</File>
 			<File
 				RelativePath=".\include\cli_Constants.h">
-			</File>
-			<File
-				RelativePath=".\include\cli_GetOpt.h">
 			</File>
 		</Filter>
 		<Filter

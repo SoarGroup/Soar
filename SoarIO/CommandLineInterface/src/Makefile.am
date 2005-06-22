@@ -8,7 +8,6 @@ libCommandLineInterface_la_SOURCES = \
 cli_Aliases.cpp\
 cli_CommandLineInterface.cpp\
 cli_Constants.cpp\
-cli_GetOpt.cpp\
 cli_Interface.cpp\
 cli_addwme.cpp\
 cli_alias.cpp\

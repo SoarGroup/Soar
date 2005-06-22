@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "sml_StringOps.h"
@@ -26,23 +25,23 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"add-filter",		0, 0, 'a'},
-		{"remove-filter",	0, 0, 'r'},
-		{"list-filter",		0, 0, 'l'},
-		{"reset-filter",	0, 0, 'R'},
-		{"type",			1, 0, 't'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'a', "add-filter",		0},
+		{'r', "remove-filter",	0},
+		{'l', "list-filter",	0},
+		{'R', "reset-filter",	0},
+		{'t', "type",			1},
+		{0, 0, 0}
 	};
 
 	eWatchWMEsMode mode = WATCH_WMES_LIST;
 	WatchWMEsTypeBitset type(0);
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, ":arlRt:", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'a':
 				mode = WATCH_WMES_ADD;
 				break;
@@ -57,7 +56,7 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 				break;
 			case 't':
 				{
-					std::string typeString = m_pGetOpt->GetOptArg();
+					std::string typeString = m_OptionArgument;
 					if (typeString == "adds") {
 						type.set(WATCH_WMES_TYPE_ADDS);
 					} else if (typeString == "removes") {
@@ -71,17 +70,6 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 					}
 				}
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -92,15 +80,15 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::IAgent* pAgent, std::vector<std:
 		if (type.none()) return SetError(CLIError::kTypeRequired);
 	
 		// check for too few/many args
-		if (m_pGetOpt->GetAdditionalArgCount() > 3) return SetError(CLIError::kTooManyArgs);
-		if (m_pGetOpt->GetAdditionalArgCount() < 3) return SetError(CLIError::kTooFewArgs);
+		if (m_NonOptionArguments > 3) return SetError(CLIError::kTooManyArgs);
+		if (m_NonOptionArguments < 3) return SetError(CLIError::kTooFewArgs);
 
-		int optind = m_pGetOpt->GetOptind();
+		int optind = m_Argument - m_NonOptionArguments;
 		return DoWatchWMEs(pAgent, mode, type, &argv[optind], &argv[optind + 1], &argv[optind + 2]);
 	}
 
 	// no additional arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
 	return DoWatchWMEs(pAgent, mode, type);
 }

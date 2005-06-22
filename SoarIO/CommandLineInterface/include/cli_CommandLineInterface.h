@@ -897,9 +897,20 @@ protected:
 
 	void ResultToArgTag(); // clears result
 
-	bool ProcessOptions(std::vector<std::string>& argv, Options* options, int& currentArg, int& option, int& nonOptArgs, const char* optionArg);
+////////////////////////////////////////////
+	// New options code
+
+	void ResetOptions();
+	bool ProcessOptions(std::vector<std::string>& argv, Options* options);
 	void MoveBack(std::vector<std::string>& argv, int what, int howFar);
-	void BreakApartComboOption(std::vector<std::string>& argv, int arg);
+	bool HandleOptionArgument(std::vector<std::string>& argv, const char* option, int arg);
+
+	int			m_Argument;
+	int			m_Option;
+	std::string m_OptionArgument;
+	int			m_NonOptionArguments;
+
+////////////////////////////////////////////
 
 	bool				m_Initialized;			// True if state has been cleared for a new command execution
 	static std::ostringstream m_Result;			// Raw output from the command
@@ -916,7 +927,6 @@ protected:
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 
 	Aliases				m_Aliases;				// Alias management object
-	GetOpt*				m_pGetOpt;				// Pointer to GetOpt utility class
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	gSKI::IKernel*		m_pKernel;				// Pointer to the current gSKI kernel
 	sml::KernelSML*		m_pKernelSML;

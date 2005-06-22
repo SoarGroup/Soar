@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "sml_StringOps.h"
@@ -26,40 +25,40 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"backtracing",				2, 0, 'b'},
-		{"chunks",		            2, 0, 'c'},
-		{"decisions",				2, 0, 'd'},
-		{"default-productions",		2, 0, 'D'},
-		{"fullwmes",				0, 0, 'f'},
-		{"indifferent-selection",	2, 0, 'i'},
-		{"justifications",			2, 0, 'j'},
-		{"learning",				1, 0, 'L'},
-		{"level",					1, 0, 'l'},
-		{"none",					0, 0, 'N'},
-		{"nowmes",					0, 0, 'n'},
-		{"phases",					2, 0, 'p'},
-		{"productions",				2, 0, 'P'},
-		{"preferences",				2, 0, 'r'},
-		{"timetags",				0, 0, 't'},
-		{"user-productions",		2, 0, 'u'},
-		{"wmes",					2, 0, 'w'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'b',"backtracing",				2},
+		{'c',"chunks",					2},
+		{'d',"decisions",				2},
+		{'D',"default-productions",		2},
+		{'f',"fullwmes",				0},
+		{'i',"indifferent-selection",	2},
+		{'j',"justifications",			2},
+		{'L',"learning",				1},
+		{'l',"level",					1},
+		{'N',"none",					0},
+		{'n',"nowmes",					0},
+		{'p',"phases",					2},
+		{'P',"productions",				2},
+		{'r',"preferences",				2},
+		{'t',"timetags",				0},
+		{'u',"user-productions",		2},
+		{'w',"wmes",					2},
+		{0, 0, 0}
 	};
-
+			 
 	WatchBitset options(0);
 	WatchBitset settings(0);
 	int learnSetting = 0;
 	int wmeSetting = 0;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, ":b::c::d::D::fi::j::L:l:Nnp::P::r::tu::w::", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'b'://backtracing
 				options.set(WATCH_BACKTRACING);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_BACKTRACING);
 				} else {
@@ -69,7 +68,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'c'://chunks
 				options.set(WATCH_CHUNKS);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_CHUNKS);
 				} else {
@@ -79,7 +78,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'd'://decisions
 				options.set(WATCH_DECISIONS);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_DECISIONS);
 				} else {
@@ -89,7 +88,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'D'://default-productions
 				options.set(WATCH_DEFAULT);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_DEFAULT);
 				} else {
@@ -104,7 +103,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'i'://indifferent-selection
 				options.set(WATCH_INDIFFERENT);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_INDIFFERENT);
 				} else {
@@ -114,7 +113,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'j'://justifications
 				options.set(WATCH_JUSTIFICATIONS);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_JUSTIFICATIONS);
 				} else {
@@ -147,7 +146,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'p'://phases
 				options.set(WATCH_PHASES);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_PHASES);
 				} else {
@@ -160,7 +159,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				options.set(WATCH_USER);
 				options.set(WATCH_CHUNKS);
 				options.set(WATCH_JUSTIFICATIONS);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_DEFAULT);
 					settings.reset(WATCH_USER);
@@ -176,7 +175,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'r'://preferences
 				options.set(WATCH_PREFERENCES);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_PREFERENCES);
 				} else {
@@ -191,7 +190,7 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 
 			case 'u'://user-productions
 				options.set(WATCH_USER);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_USER);
 				} else {
@@ -200,44 +199,26 @@ bool CommandLineInterface::ParseWatch(gSKI::IAgent* pAgent, std::vector<std::str
 				break;
 			case 'w'://wmes
 				options.set(WATCH_WMES);
-				if (m_pGetOpt->GetOptArg()) {
+				if (m_OptionArgument.size()) {
 					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
 					settings.reset(WATCH_WMES);
 				} else {
 					settings.set(WATCH_WMES);
 				}
 				break;
-			case ':':
-				{
-					std::string detail;
-					detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					SetErrorDetail("Option '" + detail + "' needs an argument.");
-				}
-				return SetError(CLIError::kMissingOptionArg);
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+	if (m_NonOptionArguments > 1) {
 		SetErrorDetail("Only non option argument allowed is watch level.");
 		return SetError(CLIError::kTooManyArgs);
 	}
 
 	// Allow watch level by itself
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
-		int optind = m_pGetOpt->GetOptind();
+	if (m_NonOptionArguments == 1) {
+		int optind = m_Argument - m_NonOptionArguments;
 		if (!IsInteger(argv[optind])) return SetError(CLIError::kIntegerExpected);
 		if (!ProcessWatchLevelSettings(atoi(argv[optind].c_str()), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
 	}
@@ -307,29 +288,26 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 	return true;
 }
 int CommandLineInterface::ParseLevelOptarg() {
-	std::string optarg(m_pGetOpt->GetOptArg());
-	if (!IsInteger(optarg)) {
+	if (!IsInteger(m_OptionArgument)) {
 		SetError(CLIError::kIntegerExpected);
 		return -1;
 	}
-	return atoi(optarg.c_str());
+	return atoi(m_OptionArgument.c_str());
 }
 
 int CommandLineInterface::ParseLearningOptarg() {
-	std::string optarg(m_pGetOpt->GetOptArg());
-	if (optarg == "noprint"   || optarg == "0") return 0;
-	if (optarg == "print"     || optarg == "1") return 1;
-	if (optarg == "fullprint" || optarg == "2") return 2;
+	if (m_OptionArgument == "noprint"   || m_OptionArgument == "0") return 0;
+	if (m_OptionArgument == "print"     || m_OptionArgument == "1") return 1;
+	if (m_OptionArgument == "fullprint" || m_OptionArgument == "2") return 2;
 
-	SetErrorDetail("Got: " + optarg);
+	SetErrorDetail("Got: " + m_OptionArgument);
 	SetError(CLIError::kInvalidLearnSetting);
 	return -1;
 }
 
 bool CommandLineInterface::CheckOptargRemoveOrZero() {
-	std::string optarg(m_pGetOpt->GetOptArg());
-	if (optarg == "remove" || optarg == "0") return true;
-	SetErrorDetail("Got: " + optarg);
+	if (m_OptionArgument == "remove" || m_OptionArgument == "0") return true;
+	SetErrorDetail("Got: " + m_OptionArgument);
 	return SetError(CLIError::kRemoveOrZeroExpected);
 }
 

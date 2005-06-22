@@ -13,7 +13,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
-#include "cli_GetOpt.h"
 
 #include <assert.h>
 
@@ -27,24 +26,24 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"assertions",	0, 0, 'a'},
-		{"count",		0, 0, 'c'},
-		{"names",		0, 0, 'n'},
-		{"retractions",	0, 0, 'r'},
-		{"timetags",	0, 0, 't'},
-		{"wmes",		0, 0, 'w'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'a', "assertions",		0},
+		{'c', "count",			0},
+		{'n', "names",			0},
+		{'r', "retractions",	0},
+		{'t', "timetags",		0},
+		{'w', "wmes",			0},
+		{0, 0, 0}
 	};
 
 	eWMEDetail detail = WME_DETAIL_NONE;
 	eMatchesMode mode = MATCHES_ASSERTIONS_RETRACTIONS;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "012acnrtw", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case '0':
 			case 'n':
 			case 'c':
@@ -64,31 +63,20 @@ bool CommandLineInterface::ParseMatches(gSKI::IAgent* pAgent, std::vector<std::s
 			case 'r':
 				mode = MATCHES_RETRACTIONS;
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Max one additional argument and it is a production
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+	if (m_NonOptionArguments > 1) {
 		SetErrorDetail("Expected production name or nothing.");
 		return SetError(CLIError::kTooManyArgs);		
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
+	if (m_NonOptionArguments == 1) {
 		if (mode != MATCHES_ASSERTIONS_RETRACTIONS) return SetError(CLIError::kTooManyArgs);
-		return DoMatches(pAgent, MATCHES_PRODUCTION, detail, &argv[m_pGetOpt->GetOptind()]);
+		return DoMatches(pAgent, MATCHES_PRODUCTION, detail, &argv[m_Argument - m_NonOptionArguments]);
 	}
 
 	return DoMatches(pAgent, mode, detail);

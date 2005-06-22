@@ -13,7 +13,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
-#include "cli_GetOpt.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
@@ -24,44 +23,33 @@ using namespace sml;
 
 bool CommandLineInterface::ParseNumericIndifferentMode(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
-	static struct GetOpt::option longOptions[] = {
-		{"average",	0, 0, 'a'},
-		{"avg",		0, 0, 'a'},
-		{"sum",		0, 0, 's'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'a', "average",	0},
+		{'a', "avg",		0},
+		{'s', "sum",		0},
+		{0, 0, 0}
 	};
 
 	eNumericIndifferentMode mode = NUMERIC_INDIFFERENT_QUERY;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "as", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'a':
 				mode = NUMERIC_INDIFFERENT_AVERAGE;
 				break;
 			case 's':
 				mode = NUMERIC_INDIFFERENT_SUM;
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No additional arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);		
+	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);		
 
 	return DoNumericIndifferentMode(pAgent, mode);
 }

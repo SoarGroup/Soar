@@ -16,7 +16,6 @@
 
 #include <assert.h>
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 #include "cli_CommandData.h"
 
@@ -28,24 +27,24 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"add",			0, 0, 'a'},
-		{"append",		0, 0, 'A'},
-		{"close",		0, 0, 'c'},
-		{"disable",		0, 0, 'd'},
-		{"existing",	0, 0, 'e'},
-		{"off",			0, 0, 'd'},
-		{"query",		0, 0, 'q'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'a', "add",		0},
+		{'A', "append",		0},
+		{'c', "close",		0},
+		{'d', "disable",	0},
+		{'e', "existing",	0},
+		{'d', "off",		0},
+		{'q', "query",		0},
+		{0, 0, 0}
 	};
 
 	eLogMode mode = LOG_NEW;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "aAcdeoq", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'a':
 				mode = LOG_ADD;
 				break;
@@ -61,17 +60,6 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 			case 'q':
 				mode = LOG_QUERY;
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -82,14 +70,14 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 			{
 				std::string toAdd;
 				// no less than one non-option argument
-				if (m_pGetOpt->GetAdditionalArgCount() < 1) {
+				if (m_NonOptionArguments < 1) {
 					SetErrorDetail("Provide a string to add.");
 					return SetError(CLIError::kTooFewArgs);
 				}
 
 				// move to the first non-option arg
 				std::vector<std::string>::iterator iter = argv.begin();
-				for (int i = 0; i < m_pGetOpt->GetOptind(); ++i) ++iter;
+				for (int i = 0; i < (m_Argument - m_NonOptionArguments); ++i) ++iter;
 
 				// combine all args
 				while (iter != argv.end()) {
@@ -102,21 +90,21 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 
 		case LOG_NEW:
 			// no more than one argument, no filename == query
-			if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+			if (m_NonOptionArguments > 1) {
 				SetErrorDetail("Filename or nothing expected, enclose filename in quotes if there are spaces in the path.");
 				return SetError(CLIError::kTooManyArgs);
 			}
-			if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoLog(pAgent, mode, &argv[1]);
+			if (m_NonOptionArguments == 1) return DoLog(pAgent, mode, &argv[1]);
 			break; // no args case handled below
 
 		case LOG_NEWAPPEND:
 			// exactly one argument
-			if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+			if (m_NonOptionArguments > 1) {
 				SetErrorDetail("Filename expected, enclose filename in quotes if there are spaces in the path.");
 				return SetError(CLIError::kTooManyArgs);
 			}
 
-			if (m_pGetOpt->GetAdditionalArgCount() < 1) {
+			if (m_NonOptionArguments < 1) {
 				SetErrorDetail("Please provide a filename.");
 				return SetError(CLIError::kTooFewArgs);
 			}
@@ -125,7 +113,7 @@ bool CommandLineInterface::ParseLog(gSKI::IAgent* pAgent, std::vector<std::strin
 		case LOG_CLOSE:
 		case LOG_QUERY:
 			// no arguments
-			if (m_pGetOpt->GetAdditionalArgCount()) {
+			if (m_NonOptionArguments) {
 				SetErrorDetail("No arguments when querying log status.");
 				return SetError(CLIError::kTooManyArgs);
 			}

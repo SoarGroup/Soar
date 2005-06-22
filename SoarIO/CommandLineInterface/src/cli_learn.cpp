@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "sml_Names.h"
@@ -25,26 +24,26 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"all-levels",		0, 0, 'a'},
-		{"bottom-up",		0, 0, 'b'},
-		{"disable",			0, 0, 'd'},
-		{"off",				0, 0, 'd'},
-		{"enable",			0, 0, 'e'},
-		{"on",				0, 0, 'e'},
-		{"except",			0, 0, 'E'},
-		{"list",			0, 0, 'l'},
-		{"only",			0, 0, 'o'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'a', "all-levels",	0},
+		{'b', "bottom-up",	0},
+		{'d', "disable",	0},
+		{'d', "off",		0},
+		{'e', "enable",		0},
+		{'e', "on",			0},
+		{'E', "except",		0},
+		{'l', "list",		0},
+		{'o', "only",		0},
+		{0, 0, 0}
 	};
 
 	LearnBitset options(0);
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "abdeElo", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'a':
 				options.set(LEARN_ALL_LEVELS);
 				break;
@@ -66,24 +65,13 @@ bool CommandLineInterface::ParseLearn(gSKI::IAgent* pAgent, std::vector<std::str
 			case 'o':
 				options.set(LEARN_ONLY);
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No non-option arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
 	return DoLearn(pAgent, options);
 }

@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
@@ -28,25 +27,25 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"decision",	0, 0, 'd'},
-		{"elaboration",	0, 0, 'e'},
-		{"forever",		0, 0, 'f'},
-		{"output",		0, 0, 'o'},
-		{"phase",		0, 0, 'p'},
-		{"self",		0, 0, 's'},
-		{"update",		0, 0, 'u'},
-		{"noupdate",	0, 0, 'n'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'d', "decision",		0},
+		{'e', "elaboration",	0},
+		{'f', "forever",		0},
+		{'o', "output",			0},
+		{'p', "phase",			0},
+		{'s', "self",			0},
+		{'u', "update",			0},
+		{'n', "noupdate",		0},
+		{0, 0, 0}
 	};
 
 	RunBitset options(0);
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "defops", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'd':
 				options.set(RUN_DECISION);
 				break;
@@ -71,29 +70,18 @@ bool CommandLineInterface::ParseRun(gSKI::IAgent* pAgent, std::vector<std::strin
 			case 'n':
 				options.set(RUN_NO_UPDATE) ;
 				break ;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Only one non-option argument allowed, count
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments > 1) return SetError(CLIError::kTooManyArgs);
 
 	// Count defaults to 0
 	int count = 0;
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
-		int optind = m_pGetOpt->GetOptind();
+	if (m_NonOptionArguments == 1) {
+		int optind = m_Argument - m_NonOptionArguments;
 		if (!IsInteger(argv[optind])) return SetError(CLIError::kIntegerExpected);
 		count = atoi(argv[optind].c_str());
 		if (count <= 0) return SetError(CLIError::kIntegerMustBePositive);

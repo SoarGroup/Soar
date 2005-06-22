@@ -13,7 +13,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
-#include "cli_GetOpt.h"
 
 #include "sml_Names.h"
 
@@ -23,21 +22,21 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"none",		0, 0, '0'},
-		{"names",		0, 0, '1'},
-		{"timetags",	0, 0, '2'},
-		{"wmes",		0, 0, '3'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'0', "none",		0},
+		{'1', "names",		0},
+		{'2', "timetags",	0},
+		{'3', "wmes",		0},
+		{0, 0, 0}
 	};
 
 	ePreferencesDetail detail = PREFERENCES_ONLY;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "0123nNtw", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case '0':
 			case 'n':
 				detail = PREFERENCES_ONLY;
@@ -54,31 +53,20 @@ bool CommandLineInterface::ParsePreferences(gSKI::IAgent* pAgent, std::vector<st
 			case 'w':
 				detail = PREFERENCES_WMES;
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Up to two non-option arguments allowed, id/attribute
-	if (m_pGetOpt->GetAdditionalArgCount() > 2) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments > 2) return SetError(CLIError::kTooManyArgs);
 
-	int optind = m_pGetOpt->GetOptind();
-	if (m_pGetOpt->GetAdditionalArgCount() == 2) {
+	int optind = m_Argument - m_NonOptionArguments;
+	if (m_NonOptionArguments == 2) {
 		// id & attribute
 		return DoPreferences(pAgent, detail, &argv[optind], &argv[optind + 1]);
 	}
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
+	if (m_NonOptionArguments == 1) {
 		// id
 		return DoPreferences(pAgent, detail, &argv[optind]);
 	}

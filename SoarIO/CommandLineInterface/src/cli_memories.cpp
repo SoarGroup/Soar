@@ -15,7 +15,6 @@
 #include <algorithm>
 
 #include "cli_Constants.h"
-#include "cli_GetOpt.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
@@ -38,21 +37,21 @@ struct MemoriesSort {
 
 bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 
-	static struct GetOpt::option longOptions[] = {
-		{"chunks",			0, 0, 'c'},
-		{"default",			0, 0, 'd'},
-		{"justifications",	0, 0, 'j'},
-		{"user",			0, 0, 'u'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'c', "chunks",			0},
+		{'d', "default",		0},
+		{'j', "justifications",	0},
+		{'u', "user",			0},
+		{0, 0, 0}
 	};
 
 	MemoriesBitset options(0);
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "cdju", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'c':
 				options.set(MEMORIES_CHUNKS);
 				break;
@@ -65,32 +64,21 @@ bool CommandLineInterface::ParseMemories(gSKI::IAgent* pAgent, std::vector<std::
 			case 'u':
 				options.set(MEMORIES_USER);
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Max one additional argument
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+	if (m_NonOptionArguments > 1) {
 		SetErrorDetail("Expected at most one additional argument, either a production or a number.");
 		return SetError(CLIError::kTooManyArgs);		
 	}
 
 	// It is either a production or a number
 	int n = 0;
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) {
-		int optind = m_pGetOpt->GetOptind();
+	if (m_NonOptionArguments == 1) {
+		int optind = m_Argument - m_NonOptionArguments;
 		if (!IsInteger(argv[optind])) {
 			// production
 			if (options.any()) return SetError(CLIError::kNoProdTypeWhenProdName);

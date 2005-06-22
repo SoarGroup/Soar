@@ -19,7 +19,6 @@
 
 #include <assert.h>
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 #include "cli_Aliases.h"
 
@@ -40,9 +39,6 @@ using namespace sml;
 std::ostringstream CommandLineInterface::m_Result;	
 
 EXPORT CommandLineInterface::CommandLineInterface() {
-
-	// Create getopt object
-	m_pGetOpt = new GetOpt;
 
 	// Map command names to processing function pointers
 	m_CommandMap[Constants::kCLIAddWME]					= &cli::CommandLineInterface::ParseAddWME;
@@ -119,7 +115,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() {
-	if (m_pGetOpt) delete m_pGetOpt;
 	if (m_pLogFile) {
 		(*m_pLogFile) << "Log file closed due to shutdown." << std::endl;
 		delete m_pLogFile;
@@ -393,8 +388,8 @@ bool CommandLineInterface::DoCommandInternal(gSKI::IAgent* pAgent, vector<string
 	CommandFunction pFunction = m_CommandMap[argv[0]];
 	assert(pFunction);
 	
-	// Initialize GetOpt
-	m_pGetOpt->Initialize();
+	// Initialize option parsing each call
+	ResetOptions();
 
 	// Make the Parse call
 	return (this->*pFunction)(pAgent, argv);
@@ -632,39 +627,32 @@ bool CommandLineInterface::StripQuotes(std::string& str) {
     return false;
 }
 
-//typedef struct {
-//	int shortOpt;
-//	const char* longOpt;
-//	int argument;
-//} Options;
-bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Options* options, int& currentArg, int& option, int& nonOptArgs, const char* optionArg) {
+void CommandLineInterface::ResetOptions() {
+	m_Argument = 0;
+	m_NonOptionArguments = 0;	
+}
 
-	// Set non-opt args to zero on first invocation
-	if (currentArg == 0) {
-		nonOptArgs = 0;
-	}
-
-	// expand combined short options
+bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Options* options) {
 
 	// default to indifference
-	option = 0;
-	optionArg = 0;
+	m_Option = 0;
+	m_OptionArgument = "";
 
 	// increment current argument and check bounds
-	while (static_cast<unsigned>(++currentArg) < argv.size()) {
+	while (static_cast<unsigned>(++m_Argument) < argv.size()) {
 
 		// args less than 2 characters cannot mean anything to us
-		if (argv[currentArg].size() < 2) {
-			++nonOptArgs;
+		if (argv[m_Argument].size() < 2) {
+			++m_NonOptionArguments;
 			continue;
 		}
 
-		if (argv[currentArg][0] == '-') {
-			if (argv[currentArg][1] == '-') {
-				// possible long option
-				if (argv[currentArg].size() > 2) {
-					// long option, save it
-					std::string longOption = argv[currentArg].substr(2);
+		if (argv[m_Argument][0] == '-') {
+			if (argv[m_Argument][1] == '-') {
+				// possible long m_Option
+				if (argv[m_Argument].size() > 2) {
+					// long m_Option, save it
+					std::string longOption = argv[m_Argument].substr(2);
 
 					// check for partial match
 					std::list<Options> possibilities;
@@ -693,36 +681,9 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 									// check for exact match
 									if (longOption == (*liter).longOpt) {
 										// exact match, we're done
-										option = liter->shortOpt;
-										MoveBack(argv, currentArg, currentArg - nonOptArgs);
-										switch (liter->argument) {
-											case 0:
-												break;
-											case 1:
-												// required argument
-												if (static_cast<unsigned>(++currentArg) >= argv.size()) {
-													SetErrorDetail("Option '" + string(liter->longOpt) + "' requires an argument.");
-													return SetError(CLIError::kMissingOptionArg);
-												}
-												optionArg = argv[currentArg].c_str();
-												MoveBack(argv, currentArg, currentArg - nonOptArgs);
-												break;
-											case 2:
-											default:
-												// optional argument
-												if (static_cast<unsigned>(++currentArg) < argv.size()) {
-													if (argv[currentArg].size()) {
-														if (argv[currentArg][0] != '-') {
-															optionArg = argv[currentArg].c_str();
-															MoveBack(argv, currentArg, currentArg - nonOptArgs);
-														}
-													}
-												} else {
-													// arg is not there or is another option
-													--currentArg;
-												}
-												break;
-										}
+										m_Option = liter->shortOpt;
+										MoveBack(argv, m_Argument, m_NonOptionArguments);
+										if (!HandleOptionArgument(argv, liter->longOpt, liter->argument)) return false;
 										return true;
 									}
 									++liter;
@@ -731,14 +692,14 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 						}
 
 						if (!possibilities.size()) {
-							SetErrorDetail("No such option: " + longOption);
+							SetErrorDetail("No such m_Option: " + longOption);
 							return SetError(CLIError::kUnrecognizedOption);
 						} 
 					}
 
 					if (possibilities.size() != 1) {
 						// Ambiguous
-						std::string detail = "Ambiguous option, possibilities: ";
+						std::string detail = "Ambiguous m_Option, possibilities: ";
 						liter = possibilities.begin();
 						while (liter != possibilities.end()) {
 							detail += (*liter).longOpt + ' ';
@@ -749,92 +710,45 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 
 					}
 					// We have a partial match
-					option = (*(possibilities.begin())).shortOpt;
-					MoveBack(argv, currentArg, currentArg - nonOptArgs);
-					switch ((*(possibilities.begin())).argument) {
-						case 0:
-							break;
-						case 1:
-							// required argument
-							if (static_cast<unsigned>(++currentArg) >= argv.size()) {
-								SetErrorDetail("Option '" + string((*(possibilities.begin())).longOpt) + "' requires an argument.");
-								return SetError(CLIError::kMissingOptionArg);
-							}
-							optionArg = argv[currentArg].c_str();
-							MoveBack(argv, currentArg, currentArg - nonOptArgs);
-							break;
-						case 2:
-						default:
-							// optional argument
-							if (static_cast<unsigned>(++currentArg) < argv.size()) {
-								if (argv[currentArg].size()) {
-									if (argv[currentArg][0] != '-') {
-										optionArg = argv[currentArg].c_str();
-										MoveBack(argv, currentArg, currentArg - nonOptArgs);
-									}
-								}
-							} else {
-								// arg is not there or is another option
-								--currentArg;
-							}
-							break;
-					}
+					m_Option = (*(possibilities.begin())).shortOpt;
+					MoveBack(argv, m_Argument, m_NonOptionArguments);
+					if (!HandleOptionArgument(argv, (*(possibilities.begin())).longOpt, (*(possibilities.begin())).argument)) return false;
 					return true;
 				}
 
 				// end of options special flag '--'
 				// FIXME: remove -- argument?
-				option = -1; // done
+				m_Option = -1; // done
 				return true; // no error
 			}
 
-			// short option(s)
+			// short m_Option(s)
 			for (int i = 0; options[i].shortOpt != 0; ++i) {
-				if (argv[currentArg][1] == options[i].shortOpt) {
-					BreakApartComboOption(argv, currentArg);
-					option = options[i].shortOpt;
-					MoveBack(argv, currentArg, currentArg - nonOptArgs);
-					switch (options[i].argument) {
-						case 0:
-							break;
-						case 1:
-							// required argument
-							if (static_cast<unsigned>(++currentArg) >= argv.size()) {
-								std::string detail;
-								detail = static_cast<char>(options[i].shortOpt);
-								SetErrorDetail("Option '" + detail + "' requires an argument.");
-								return SetError(CLIError::kMissingOptionArg);
-							}
-							optionArg = argv[currentArg].c_str();
-							MoveBack(argv, currentArg, currentArg - nonOptArgs);
-							break;
-						case 2:
-						default:
-							// optional argument
-							if (static_cast<unsigned>(++currentArg) < argv.size()) {
-								if (argv[currentArg].size()) {
-									if (argv[currentArg][0] != '-') {
-										optionArg = argv[currentArg].c_str();
-										MoveBack(argv, currentArg, currentArg - nonOptArgs);
-									}
-								}
-							} else {
-								// arg is not there or is another option
-								--currentArg;
-							}
-							break;
+				if (argv[m_Argument][1] == options[i].shortOpt) {
+					if (argv[m_Argument].size() > 2) {
+						std::vector<std::string>::iterator target = argv.begin();
+						target += m_Argument;
+
+						std::string original = *target;
+						*target = (*target).substr(0,2);
+						++target;
+
+						argv.insert(target, "-" + original.substr(2));
 					}
+					m_Option = options[i].shortOpt;
+					MoveBack(argv, m_Argument, m_NonOptionArguments);
+					if (!HandleOptionArgument(argv, options[i].longOpt, options[i].argument)) return false;
 					return true;
 				}
 			}
-			SetErrorDetail("No such option: " + argv[currentArg][1]);
+			SetErrorDetail("No such m_Option: " + argv[m_Argument][1]);
 			return SetError(CLIError::kUnrecognizedOption);
 		}
-		++nonOptArgs;
+		++m_NonOptionArguments;
 	}
 
 	// out of arguments
-	option = -1;	// done
+	m_Option = -1;	// done
 	return true;	// no error
 }
 
@@ -842,7 +756,7 @@ void CommandLineInterface::MoveBack(std::vector<std::string>& argv, int what, in
 
 	assert(what >= howFar);
 	assert(what > 0);
-	assert(howFar > 0);
+	assert(howFar >= 0);
 
 	if (howFar == 0) {
 		return;
@@ -850,27 +764,47 @@ void CommandLineInterface::MoveBack(std::vector<std::string>& argv, int what, in
 
 	std::vector<std::string>::iterator dest = argv.begin();
 	std::vector<std::string>::iterator target = argv.begin();
-	for (int i = 0; i < what; ++i) {
-		if (i < howFar) {
-			++dest;
-		}
-		++target;
-	}
+
+	dest += howFar;
+	target += what;
+
 	argv.insert(dest, *target);
-	// may need to increment here
+
+	target = argv.begin();
+	target += what + 1;
+
 	argv.erase(target);
 }
 
-void CommandLineInterface::BreakApartComboOption(std::vector<std::string>& argv, int arg) {
-
-	assert (arg > 0);
-
-	std::vector<std::string>::iterator target = argv.begin();
-	for (int i = 0; i < arg; ++i) {
-		++target;
+bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, const char* option, int arg) {
+	switch (arg) {
+		case 0:
+			break;
+		case 1:
+			// required argument
+			if (static_cast<unsigned>(++m_Argument) >= argv.size()) {
+				std::string detail(option);
+				SetErrorDetail("Option '" + detail + "' requires an argument.");
+				return SetError(CLIError::kMissingOptionArg);
+			}
+			m_OptionArgument = argv[m_Argument];
+			MoveBack(argv, m_Argument, m_NonOptionArguments);
+			break;
+		case 2:
+		default:
+			// optional argument
+			if (static_cast<unsigned>(++m_Argument) < argv.size()) {
+				if (argv[m_Argument].size()) {
+					if (argv[m_Argument][0] != '-') {
+						m_OptionArgument = argv[m_Argument];
+						MoveBack(argv, m_Argument, m_NonOptionArguments);
+					} 
+				}
+			}
+			if (!m_OptionArgument.size()) {
+				--m_Argument;
+			}
+			break;
 	}
-	std::string original = *target;
-	*target = (*target).substr(0,2);
-	++target;
-	argv.insert(target, "-" + original.substr(2));
+	return true;
 }

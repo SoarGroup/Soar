@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "IgSKI_Agent.h"
@@ -23,41 +22,30 @@
 using namespace cli;
 
 bool CommandLineInterface::ParseStopSoar(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"self",		0, 0, 's'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'s', "self",		0},
+		{0, 0, 0}
 	};
 
 	bool self = false;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "s", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 's':
 				self = true;
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// Concatinate remaining args for 'reason'
-	if (m_pGetOpt->GetAdditionalArgCount()) {
+	if (m_NonOptionArguments) {
 		std::string reasonForStopping;
-		unsigned int optind = m_pGetOpt->GetOptind();
+		unsigned int optind = m_Argument - m_NonOptionArguments;
 		while (optind < argv.size()) reasonForStopping += argv[optind++] + ' ';
 		return DoStopSoar(pAgent, self, &reasonForStopping);
 	}

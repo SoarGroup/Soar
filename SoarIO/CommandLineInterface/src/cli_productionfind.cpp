@@ -13,7 +13,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
-#include "cli_GetOpt.h"
 #include "sml_Names.h"
 
 #include "IgSKI_Agent.h"
@@ -24,22 +23,22 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"chunks",			0, 0, 'c'},
-		{"lhs",				0, 0, 'l'},
-		{"nochunks",		0, 0, 'n'},
-		{"rhs",				0, 0, 'r'},
-		{"show-bindings",	0, 0, 's'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'c', "chunks",			0},
+		{'l', "lhs",				0},
+		{'n', "nochunks",		0},
+		{'r', "rhs",				0},
+		{'s', "show-bindings",	0},
+		{0, 0, 0}
 	};
 
 	ProductionFindBitset options(0);
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "clnrs", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'c':
 				options.set(PRODUCTION_FIND_ONLY_CHUNKS);
 				options.reset(PRODUCTION_FIND_NO_CHUNKS);
@@ -57,23 +56,12 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 			case 's':
 				options.set(PRODUCTION_FIND_SHOWBINDINGS);
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount()) {
+	if (m_NonOptionArguments) {
 		SetErrorDetail("Pattern required.");
 		return SetError(CLIError::kTooFewArgs);
 	}
@@ -81,7 +69,7 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 	if (options.none()) options.set(PRODUCTION_FIND_INCLUDE_LHS);
 
 	std::string pattern;
-	for (unsigned i = m_pGetOpt->GetOptind(); i < argv.size(); ++i) {
+	for (unsigned i = m_Argument - m_NonOptionArguments; i < argv.size(); ++i) {
 		pattern += argv[i];
 		pattern += ' ';
 	}

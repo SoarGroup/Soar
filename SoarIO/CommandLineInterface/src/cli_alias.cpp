@@ -13,7 +13,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
-#include "cli_GetOpt.h"
 
 #include "sml_Names.h"
 
@@ -23,42 +22,24 @@ using namespace sml;
 bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
 	unused(pAgent);
 
-	static struct GetOpt::option longOptions[] = {
-		{"disable",	1, 0, 'd'},
-		{"off",		1, 0, 'd'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'d', "disable",	1},
+		{'d', "off",		1},
+		{0, 0, 0}
 	};
 
 	bool disable = false;
 	std::string command;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, ":d:", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'd':
 				disable = true;
-				command = m_pGetOpt->GetOptArg();
+				command = m_OptionArgument;
 				break;
-			case ':':
-				{
-					std::string detail;
-					detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					SetErrorDetail("Option '" + detail + "' needs an argument.");
-				}
-				return SetError(CLIError::kMissingOptionArg);
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -66,7 +47,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 
 	// If disabling, no additional argument.
 	if (disable) {
-		if (m_pGetOpt->GetAdditionalArgCount()) {
+		if (m_NonOptionArguments) {
 			SetErrorDetail("When disabling, no additional arguments are required.");
 			return SetError(CLIError::kTooManyArgs);
 		}
@@ -74,7 +55,7 @@ bool CommandLineInterface::ParseAlias(gSKI::IAgent* pAgent, std::vector<std::str
 	}
 	
 	// If not disabling and no arguments, list aliases
-	if (m_pGetOpt->GetAdditionalArgCount() == 0) return DoAlias();
+	if (m_NonOptionArguments == 0) return DoAlias();
 
 	std::vector<std::string> substitution;
 	std::vector<std::string>::iterator iter = argv.begin();

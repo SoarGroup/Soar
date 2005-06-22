@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "sml_Names.h"
@@ -25,22 +24,22 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"enable",		0, 0, 'e'},
-		{"disable",		0, 0, 'd'},
-		{"on",			0, 0, 'e'},
-		{"off",			0, 0, 'd'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'e', "enable",		0},
+		{'d', "disable",	0},
+		{'e', "on",			0},
+		{'d', "off",		0},
+		{0, 0, 0}
 	};
 
 	bool query = true;
 	bool setting = true;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "ed", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'e':
 				setting = true;
 				query = false;
@@ -49,23 +48,12 @@ bool CommandLineInterface::ParseWarnings(gSKI::IAgent* pAgent, std::vector<std::
 				setting = false;
 				query = false;
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount()) SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) SetError(CLIError::kTooManyArgs);
 
 	return DoWarnings(pAgent, query ? 0 : &setting);
 }

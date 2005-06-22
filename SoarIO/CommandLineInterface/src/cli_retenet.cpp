@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "IgSKI_Agent.h"
@@ -22,11 +21,11 @@
 using namespace cli;
 
 bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"load",		1, 0, 'l'},
-		{"restore",		1, 0, 'r'},
-		{"save",		1, 0, 's'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'l', "load",		1},
+		{'r', "restore",	1},
+		{'s', "save",		1},
+		{0, 0, 0}
 	};
 
 	bool save = false;
@@ -34,39 +33,21 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 	std::string filename;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, ":l:r:s:", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'l':
 			case 'r':
 				load = true;
 				save = false;
-				filename = m_pGetOpt->GetOptArg();
+				filename = m_OptionArgument;
 				break;
 			case 's':
 				save = true;
 				load = false;
-				filename = m_pGetOpt->GetOptArg();
+				filename = m_OptionArgument;
 				break;
-			case ':':
-				{
-					std::string detail;
-					detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					SetErrorDetail("Option '" + detail + "' needs an argument.");
-				}
-				return SetError(CLIError::kMissingOptionArg);
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -74,7 +55,7 @@ bool CommandLineInterface::ParseReteNet(gSKI::IAgent* pAgent, std::vector<std::s
 
 	// Must have a save or load operation
 	if (!save && !load) return SetError(CLIError::kMustSaveOrLoad);
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
 	return DoReteNet(pAgent, save, filename);
 }

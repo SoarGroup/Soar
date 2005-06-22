@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "sml_StringOps.h"
@@ -26,22 +25,22 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"all",		0, 0, 'a'},
-		{"chunks",	0, 0, 'c'},
-		{"default", 0, 0, 'd'},
-		{"task",	0, 0, 't'},
-		{"user",	0, 0, 'u'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'a', "all",		0},
+		{'c', "chunks",		0},
+		{'d', "default",	0},
+		{'t', "task",		0},
+		{'u', "user",		0},
+		{0, 0, 0}
 	};
 
 	ExciseBitset options(0);
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "acdtu", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'a':
 				options.set(EXCISE_ALL);
 				break;
@@ -57,17 +56,6 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 			case 'u':
 				options.set(EXCISE_USER);
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -75,22 +63,22 @@ bool CommandLineInterface::ParseExcise(gSKI::IAgent* pAgent, std::vector<std::st
 
 	// If there are options, no additional argument.
 	if (options.any()) {
-		if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
+		if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 		return DoExcise(pAgent, options);
 	}
 
 	// If there are no options, there must be only one production name argument
-	if (m_pGetOpt->GetAdditionalArgCount() < 1) {
+	if (m_NonOptionArguments < 1) {
 		SetErrorDetail("Production name is required.");
 		return SetError(CLIError::kTooFewArgs);		
 	}
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) {
+	if (m_NonOptionArguments > 1) {
 		SetErrorDetail("Only one production name allowed, call excise multiple times to excise more than one specific production.");
 		return SetError(CLIError::kTooManyArgs);		
 	}
 
 	// Pass the production to the DoExcise function
-	return DoExcise(pAgent, options, &(argv[m_pGetOpt->GetOptind()]));
+	return DoExcise(pAgent, options, &(argv[m_Argument - m_NonOptionArguments]));
 }
 
 bool CommandLineInterface::DoExcise(gSKI::IAgent* pAgent, const ExciseBitset& options, const std::string* pProduction) {

@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "sml_Names.h"
@@ -25,31 +24,31 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"all",				0, 0, 'a'},
-		{"chunks",			0, 0, 'c'},
-		{"depth",			1, 0, 'd'},
-		{"defaults",		0, 0, 'D'},
-		{"full",			0, 0, 'f'},
-		{"filename",		0, 0, 'F'},
-		{"internal",		0, 0, 'i'},
-		{"justifications",	0, 0, 'j'},
-		{"name",			0, 0, 'n'},
-		{"operators",		0, 0, 'o'},
-		{"stack",			0, 0, 's'},
-		{"states",			0, 0, 'S'},
-		{"user",			0, 0, 'u'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'a', "all",			0},
+		{'c', "chunks",			0},
+		{'d', "depth",			1},
+		{'D', "defaults",		0},
+		{'f', "full",			0},
+		{'F', "filename",		0},
+		{'i', "internal",		0},
+		{'j', "justifications",	0},
+		{'n', "name",			0},
+		{'o', "operators",		0},
+		{'s', "stack",			0},
+		{'S', "states",			0},
+		{'u', "user",			0},
+		{0, 0, 0}
 	};
 
 	int depth = pAgent->GetDefaultWMEDepth();
 	PrintBitset options(0);
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, ":acd:DfFijnosSu", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'a':
 				options.set(PRINT_ALL);
 				break;
@@ -58,10 +57,10 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 				break;
 			case 'd':
 				options.set(PRINT_DEPTH);
-				if (!IsInteger(m_pGetOpt->GetOptArg())) {
+				if (!IsInteger(m_OptionArgument)) {
 					return SetError(CLIError::kIntegerExpected);
 				}
-				depth = atoi(m_pGetOpt->GetOptArg());
+				depth = atoi(m_OptionArgument.c_str());
 				if (depth < 0) {
 					return SetError(CLIError::kIntegerMustBeNonNegative);
 				}
@@ -96,24 +95,6 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 			case 'u':
 				options.set(PRINT_USER);
 				break;
-			case ':':
-				{
-					std::string detail;
-					detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					SetErrorDetail("Option '" + detail + "' needs an argument.");
-				}
-				return SetError(CLIError::kMissingOptionArg);
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -124,7 +105,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 		if (!options.test(PRINT_STACK)) return SetError(CLIError::kPrintSubOptionsOfStack);
 	}
 
-	switch (m_pGetOpt->GetAdditionalArgCount()) {
+	switch (m_NonOptionArguments) {
 		case 0:  // no argument
 			// the i and d options require an argument
 			if (options.test(PRINT_INTERNAL) || options.test(PRINT_DEPTH)) return SetError(CLIError::kTooFewArgs);
@@ -142,7 +123,7 @@ bool CommandLineInterface::ParsePrint(gSKI::IAgent* pAgent, std::vector<std::str
 				SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/user/stack.");
 				return SetError(CLIError::kTooManyArgs);
 			}
-			return DoPrint(pAgent, options, depth, &(argv[m_pGetOpt->GetOptind()]));
+			return DoPrint(pAgent, options, depth, &(argv[m_Argument - m_NonOptionArguments]));
 
 		default: // more than 1 arg
 			break;

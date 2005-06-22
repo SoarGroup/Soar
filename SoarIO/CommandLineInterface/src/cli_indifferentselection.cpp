@@ -13,8 +13,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Constants.h"
-#include "cli_GetOpt.h"
-
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
@@ -24,21 +22,21 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"ask",		0, 0, 'a'},
-		{"first",	0, 0, 'f'},
-		{"last",	0, 0, 'l'},
-		{"random",	0, 0, 'r'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'a', "ask",	0},
+		{'f', "first",	0},
+		{'l', "last",	0},
+		{'r', "random",	0},
+		{0, 0, 0}
 	};
 
 	eIndifferentMode mode = INDIFFERENT_QUERY;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, "aflr", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'a':
 				mode = INDIFFERENT_ASK;
 				break;
@@ -51,24 +49,13 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::IAgent* pAgent, std::
 			case 'r':
 				mode = INDIFFERENT_RANDOM;
 				break;
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// No additional arguments
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);		
+	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);		
 
 
 	return DoIndifferentSelection(pAgent, mode);

@@ -14,8 +14,6 @@
 
 #include "cli_Constants.h"
 
-#include "cli_GetOpt.h"
-
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
@@ -29,63 +27,44 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseExplainBacktraces(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"condition",	1, 0, 'c'},
-		{"full",		0, 0, 'f'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'c', "condition",	1},
+		{'f', "full",		0},
+		{0, 0, 0}
 	};
 
 	int condition = 0;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, ":c:f", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'f':
 				condition = -1;
 				break;
 
 			case 'c':
-				if (!IsInteger(m_pGetOpt->GetOptArg())) return SetError(CLIError::kIntegerExpected);
-				condition = atoi(m_pGetOpt->GetOptArg());
+				if (!IsInteger(m_OptionArgument)) return SetError(CLIError::kIntegerExpected);
+				condition = atoi(m_OptionArgument.c_str());
 				if (condition <= 0) return SetError(CLIError::kIntegerMustBePositive);
 				break;
-
-			case ':':
-				{
-					std::string detail;
-					detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					SetErrorDetail("Option '" + detail + "' needs an argument.");
-				}
-				return SetError(CLIError::kMissingOptionArg);
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
 	// never more than one arg
-	if (m_pGetOpt->GetAdditionalArgCount() > 1) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments > 1) return SetError(CLIError::kTooManyArgs);
 
 	// we need a production if full or condition given
-	if (condition) if (m_pGetOpt->GetAdditionalArgCount() < 1) {
+	if (condition) if (m_NonOptionArguments < 1) {
 		SetErrorDetail("Production name required for that option.");
 		return SetError(CLIError::kTooFewArgs);
 	}
 
 	// we have a production
-	if (m_pGetOpt->GetAdditionalArgCount() == 1) return DoExplainBacktraces(pAgent, &argv[m_pGetOpt->GetOptind()], condition);
+	if (m_NonOptionArguments == 1) return DoExplainBacktraces(pAgent, &argv[m_Argument - m_NonOptionArguments], condition);
 	
 	// query
 	return DoExplainBacktraces(pAgent);

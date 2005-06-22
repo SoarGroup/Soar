@@ -12,7 +12,6 @@
 
 #include "cli_CommandLineInterface.h"
 
-#include "cli_GetOpt.h"
 #include "cli_Constants.h"
 
 #include "sml_StringOps.h"
@@ -26,12 +25,12 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vector<std::string>& argv) {
-	static struct GetOpt::option longOptions[] = {
-		{"count",		2, 0, 'c'},
-		{"long",		0, 0, 'l'},
-		{"prefix",		2, 0, 'p'},
-		{"short",		0, 0, 's'},
-		{0, 0, 0, 0}
+	Options optionsData[] = {
+		{'c', "count",		2},
+		{'l', "long",		0},
+		{'p', "prefix",		2},
+		{'s', "short",		0},
+		{0, 0, 0}
 	};
 
 	bool changeFormat = false;
@@ -42,22 +41,22 @@ bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vecto
 	bool longFormat = true;
 
 	for (;;) {
-		int option = m_pGetOpt->GetOpt_Long(argv, ":c::lp::s", longOptions, 0);
-		if (option == -1) break;
+		if (!ProcessOptions(argv, optionsData)) return false;
+		if (m_Option == -1) break;
 
-		switch (option) {
+		switch (m_Option) {
 			case 'c': 
 				countFlag = true;
-				if (m_pGetOpt->GetOptArg()) {
-					if (!IsInteger(m_pGetOpt->GetOptArg())) return SetError(CLIError::kIntegerExpected);
-					count = atoi(m_pGetOpt->GetOptArg());
+				if (m_OptionArgument.size()) {
+					if (!IsInteger(m_OptionArgument)) return SetError(CLIError::kIntegerExpected);
+					count = atoi(m_OptionArgument.c_str());
 					if (count < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 				}
 				break;
 			case 'p': 
 				patternFlag = true;
-				if (m_pGetOpt->GetOptArg()) {
-					pattern = std::string(m_pGetOpt->GetOptArg());
+				if (m_OptionArgument.size()) {
+					pattern = std::string(m_OptionArgument);
 				}
 				break;
 			case 'l':
@@ -68,30 +67,12 @@ bool CommandLineInterface::ParseChunkNameFormat(gSKI::IAgent* pAgent, std::vecto
 				changeFormat = true;
 				longFormat = false;
 				break;
-			case ':':
-				{
-					std::string detail;
-					detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					SetErrorDetail("Option '" + detail + "' needs an argument.");
-				}
-				return SetError(CLIError::kMissingOptionArg);
-			case '?':
-				{
-					std::string detail;
-					if (m_pGetOpt->GetOptOpt()) {
-						detail = static_cast<char>(m_pGetOpt->GetOptOpt());
-					} else {
-						detail = argv[m_pGetOpt->GetOptind() - 1];
-					}
-					SetErrorDetail("Bad option '" + detail + "'.");
-				}
-				return SetError(CLIError::kUnrecognizedOption);
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
 	}
 
-	if (m_pGetOpt->GetAdditionalArgCount()) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
 	return DoChunkNameFormat(pAgent, changeFormat ? &longFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
 }
