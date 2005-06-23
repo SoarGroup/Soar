@@ -413,6 +413,8 @@
       gSKI_DECISION_PHASE,
       gSKI_APPLY_PHASE,
       gSKI_OUTPUT_PHASE,
+	  gSKI_PREFERENCE_PHASE,	// Soar 7 mode only
+	  gSKI_WM_PHASE,			// Soar 7 mode only
    } egSKIPhaseType;
 
    /**
@@ -439,6 +441,7 @@
    * @li RUN_FOREVER:           Run and don't stop until Stop is called.
    */
    typedef enum {
+	  gSKI_RUN_ELABORATION_PHASE,	// in Soar 7 mode, this is not the same as smallest_step 
       gSKI_RUN_SMALLEST_STEP,
       gSKI_RUN_PHASE,
       gSKI_RUN_DECISION_CYCLE,
@@ -457,13 +460,17 @@
    *
    * @li INTERLEAVE_SMALLEST_STEP: Run each agent the shortest time possible
    *      before moving to the next agent.  The amount of time each agent
-   *      runs depends on the current decision phase.  For the 
-   *      INPUT, OUTPUT and SELECTION phases, the smallest step is the
+   *      runs depends on the current decision phase.  For the Soar 8 mode
+   *      INPUT, OUTPUT and DECISION phases, the smallest step is the
    *      decision phase.  For PROPOSAL and APPLY phases, the smallest
-   *      step in the elaboration phase (a single pass of parallel rule
-   *      firings).
-   * @li INTERLEAVE_PHASE: Run each agent one decision phase before
-   *      moving to the next agent.  A decision phase is one of
+   *      step is the elaboration phase (a single pass of parallel rule
+   *      firings).  
+   *      In Soar 7 mode, the smallest step is the same as a PHASE, but
+   *	  users should be allowed to interleave by ELABORATION if they want to.
+   *      A Soar 7 ELABORATION is once thru input-preference-wm-output, 
+   *	  until mini-quiescence.
+   * @li INTERLEAVE_PHASE: Run each agent one phase before
+   *      moving to the next agent.  A phase is one of
    *      the following phase types: gSKI_INPUT_PHASE, gSKI_PROPOSAL_PHASE,
    *      gSKI_DECISION_PHASE, gSKI_APPLY_PHASE, and gSKI_OUTPUT_PHASE.
    * @li INTERLEAVE_DECISION_CYCLE: Run each agent a full decision cycle
@@ -473,6 +480,7 @@
    */
    typedef enum {
       gSKI_INTERLEAVE_SMALLEST_STEP,
+	  gSKI_INTERLEAVE_ELABORATION_PHASE,
       gSKI_INTERLEAVE_PHASE,
       gSKI_INTERLEAVE_DECISION_CYCLE,
       gSKI_INTERLEAVE_OUTPUT
