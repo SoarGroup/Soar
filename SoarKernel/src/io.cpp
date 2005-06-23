@@ -238,8 +238,6 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
 
 
 void do_input_cycle (agent* thisAgent) {
-  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-    print_phase (thisAgent, "\n--- Input Phase --- \n",0);
 
   if (thisAgent->prev_top_state && (!thisAgent->top_state)) {
     /* --- top state was just removed --- */
@@ -301,10 +299,7 @@ void do_input_cycle (agent* thisAgent) {
    *     KJC 11/23/98
    */
   thisAgent->output_link_changed = FALSE;
-
-
-  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-    print_phase (thisAgent, "\n--- END Input Phase --- \n",1);
+ 
 }
 
 /* ====================================================================
@@ -623,15 +618,12 @@ void do_output_cycle (agent* thisAgent) {
   io_wme *iw_list;
   output_call_info output_call_data;
 
-  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-    print_phase (thisAgent, "\n--- Output Phase ---\n",0);
-
   for (ol=thisAgent->existing_output_links; ol!=NIL; ol=next_ol) {
     next_ol = ol->next;
 
     switch (ol->status) {
     case UNCHANGED_OL_STATUS:
-      /* --- link is unchanged, so do nothing --- */
+      /* --- output link is unchanged, so do nothing --- */
       break;
  
     case NEW_OL_STATUS:
@@ -641,7 +633,18 @@ void do_output_cycle (agent* thisAgent) {
       iw_list = get_io_wmes_for_output_link (thisAgent, ol);
       output_call_data.mode = ADDED_OUTPUT_COMMAND;
       output_call_data.outputs = iw_list;
-      (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
+                   &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      #endif
+	  (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+      #ifndef NO_TIMING_STUFF      
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      start_timer (thisAgent, &thisAgent->start_phase_tv);
+      #endif
       deallocate_io_wme_list (thisAgent, iw_list);
       ol->status = UNCHANGED_OL_STATUS;
       break;
@@ -651,7 +654,18 @@ void do_output_cycle (agent* thisAgent) {
       iw_list = get_io_wmes_for_output_link (thisAgent, ol);
       output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
       output_call_data.outputs = iw_list;
+	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
+                   &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      #endif
       (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+      #ifndef NO_TIMING_STUFF      
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      start_timer (thisAgent, &thisAgent->start_phase_tv);
+      #endif
       deallocate_io_wme_list (thisAgent, iw_list);
       ol->status = UNCHANGED_OL_STATUS;
       break;
@@ -663,7 +677,18 @@ void do_output_cycle (agent* thisAgent) {
       iw_list = get_io_wmes_for_output_link (thisAgent, ol);
       output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
       output_call_data.outputs = iw_list;
+	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
+                   &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      #endif
       (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+      #ifndef NO_TIMING_STUFF      
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      start_timer (thisAgent, &thisAgent->start_phase_tv);
+      #endif
       deallocate_io_wme_list (thisAgent, iw_list);
       ol->status = UNCHANGED_OL_STATUS;
       break;
@@ -674,7 +699,18 @@ void do_output_cycle (agent* thisAgent) {
       iw_list = get_io_wmes_for_output_link (thisAgent, ol); /* gives just the link wme */
       output_call_data.mode = REMOVED_OUTPUT_COMMAND;
       output_call_data.outputs = iw_list;
+	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
+                   &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      #endif
       (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+      #ifndef NO_TIMING_STUFF      
+      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
+      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+      start_timer (thisAgent, &thisAgent->start_phase_tv);
+      #endif
       deallocate_io_wme_list (thisAgent, iw_list);
       wme_remove_ref (thisAgent, ol->link_wme);
       remove_from_dll (thisAgent->existing_output_links, ol, next, prev);
@@ -682,8 +718,6 @@ void do_output_cycle (agent* thisAgent) {
       break;
     }
   } /* end of for ol */
-  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-    print_phase (thisAgent, "\n--- END Output Phase ---\n",1);
 
 }
 
