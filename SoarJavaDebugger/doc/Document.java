@@ -36,6 +36,7 @@ public class Document
 {
 	public static final String kCreateNewWindowProperty = "Agent.CreateNewWindow" ;
 	public static final String kCloseOnDestroyProperty  = "Agent.CloseOnDestroy" ;
+	private static final String kConnectionName = "java-debugger" ;
 	
 	/** This version is used to name the settings files uniquely, so there's no collisions if you use an older debugger.  Should be bumped with every release */
 	public static final String kVersion = "8_6_1" ;
@@ -358,6 +359,9 @@ public class Document
 		// Register for agent additions before we create our first agent
 		registerStandardKernelEvents() ;
 		
+		// Let the rest of the world know that the debugger is up and ready now
+		m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady()) ;
+		
 		// Start with an agent...without this a kernel's not much use.
 		Agent agent = createAgentNoNewWindow("soar1") ;
 		
@@ -570,6 +574,9 @@ public class Document
 				frame.clearAgentFocus(false) ;
 			}
 		}
+		
+		// Let the rest of the world know that the debugger is up and ready now
+		m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady()) ;
 	}
 	
 	/********************************************************************************************
