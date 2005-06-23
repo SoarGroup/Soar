@@ -238,6 +238,23 @@
 //		tcl_thread_send(tud->interp, tud->threadId, script) ;
 	}
 	
+	void TclOutputEventCallback(void* pUserData, sml::Agent* agent, char const* commandName, sml::WMElement* pOutputWme)
+	{
+		unused(agent);
+		unused(commandName);
+		
+		TclUserData* tud = static_cast<TclUserData*>(pUserData);
+		Tcl_Obj* script = Tcl_DuplicateObj(tud->script);
+		// add a space to separate the args
+		Tcl_AppendStringsToObj(script, " ", NULL);
+		Tcl_AppendObjToObj(script, SWIG_Tcl_NewInstanceObj(tud->interp, (void *) pOutputWme, SWIGTYPE_p_sml__WMElement,0));
+		Tcl_EvalObjEx(tud->interp, script, TCL_EVAL_DIRECT);
+		
+		// Send the event to the given interpreter using the given thread
+//		tcl_thread_send(tud->interp, tud->threadId, script) ;
+		
+	}
+	
 	void TclSystemEventCallback(sml::smlSystemEventId id, void* pUserData, sml::Kernel* kernel)
 	{
 		// we can ignore these parameters because they're already in the script (from when we registered it)
@@ -295,6 +312,21 @@
 	    
 	    return tud;
 	}
+	
+	TclUserData* CreateTclOutputUserData(sml::Agent* self, char* commandName, char* proc, char* userData, Tcl_Interp* interp) {
+		TclUserData* tud = new TclUserData();
+	    
+	    tud->threadId = Tcl_GetCurrentThread();
+	    tud->interp = interp;
+	    // put all of the arguments together so we can just execute this as a single script later
+	    // put spaces between the arguments and wrap the userdata in quotes (in case it has spaces)
+	    tud->script = Tcl_NewObj();
+	    Tcl_AppendStringsToObj(tud->script, proc, " \"", userData, "\" ", NULL);
+	    Tcl_AppendObjToObj(tud->script, SWIG_NewInstanceObj((void *) self, SWIGTYPE_p_sml__Agent,0));
+	    Tcl_AppendStringsToObj(tud->script, " ", commandName, " ", NULL);
+	    
+	    return tud;
+	}
 %}
 
 %include "../sml_ClientInterface.i"
@@ -319,6 +351,11 @@
     int RegisterForXMLEvent(Tcl_Interp* interp, sml::smlXMLEventId id, char* proc, char* userData, bool addToBack = true) {	    
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    return self->RegisterForXMLEvent(id, TclXMLEventCallback, (void*)tud, addToBack);
+    }
+    
+    int AddOutputHandler(Tcl_Interp* interp, char* attributeName, char* proc, char* userData, bool addToBack = true) {
+		TclUserData* tud = CreateTclOutputUserData(self, attributeName, proc, userData, interp);
+		return self->AddOutputHandler(attributeName, TclOutputEventCallback, (void*)tud, addToBack);
     }
 }
 
