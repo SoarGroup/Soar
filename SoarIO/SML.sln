@@ -55,6 +55,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernelSource", "..\Soar
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLEvents", "examples\TestSMLEvents\TestSMLEvents.vcproj", "{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Ansi Release = Ansi Release
@@ -128,6 +132,12 @@ Global
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Debug.Build.0 = Debug|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.ActiveCfg = Release|Win32
 		{A2A1BE53-FFE4-4668-91FE-4613C1F36BB2}.Release.Build.0 = Release|Win32
+		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Ansi Release.ActiveCfg = Release|Win32
+		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Ansi Release.Build.0 = Release|Win32
+		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Debug.ActiveCfg = Debug|Win32
+		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Debug.Build.0 = Debug|Win32
+		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Release.ActiveCfg = Release|Win32
+		{8EF61FF7-214E-4955-9DBF-CCD164815E9C}.Release.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
