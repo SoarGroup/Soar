@@ -61,6 +61,10 @@ char * soar_callback_names[] = {    /* Must match order of       */
   "after-output-phase",
   "before-decision-phase-cycle",
   "after-decision-phase-cycle",
+  "before-propose-phase-cycle"
+  "after-propose-phase-cycle"
+  "before-apply-phase-cycle"
+  "after-apply-phase-cycle"
   "wm-changes",
   "create-new-context",
   "pop-context-stack",
@@ -239,32 +243,41 @@ void soar_invoke_callbacks (agent* thisAgent,
   case BEFORE_DECISION_CYCLE_CALLBACK:
   case BEFORE_INPUT_PHASE_CALLBACK:
   case AFTER_INPUT_PHASE_CALLBACK:
-    /* for these three: thisAgent->current_phase = INPUT_PHASE */
+    /* for above three: thisAgent->current_phase = INPUT_PHASE */
   case BEFORE_OUTPUT_PHASE_CALLBACK:
   case AFTER_OUTPUT_PHASE_CALLBACK:
-    /* for these two: thisAgent->current_phase = OUTPUT_PHASE */
+    /* for above two: thisAgent->current_phase = OUTPUT_PHASE */
   case BEFORE_PREFERENCE_PHASE_CALLBACK:
   case AFTER_PREFERENCE_PHASE_CALLBACK:
-    /* for these two: thisAgent->current_phase = PREFERENCE_PHASE */
+    /* for above two: thisAgent->current_phase = PREFERENCE_PHASE soar7 only */
   case BEFORE_WM_PHASE_CALLBACK:
   case AFTER_WM_PHASE_CALLBACK:
-    /* for these two: thisAgent->current_phase = WM_PHASE */
+    /* for above two: thisAgent->current_phase = WM_PHASE soar7 only */
   case BEFORE_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_PHASE_CALLBACK:
+    /* for above two: thisAgent->current_phase = DECISION_PHASE */
+  case BEFORE_PROPOSE_PHASE_CALLBACK:
+  case AFTER_PROPOSE_PHASE_CALLBACK:
+    /* for above two: thisAgent->current_phase = PROPOSE_PHASE  soar8 only */
+  case BEFORE_APPLY_PHASE_CALLBACK:
+  case AFTER_APPLY_PHASE_CALLBACK:
+    /* for above two: thisAgent->current_phase = APPLY_PHASE soar8 only */
   case AFTER_DECISION_CYCLE_CALLBACK:
-    /* for these three: thisAgent->current_phase = DECISION_PHASE */
-	stop_timer (thisAgent, &thisAgent->start_phase_tv, 
+    /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
+	    stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                     &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-	stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+	    stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
         start_timer (thisAgent, &thisAgent->start_phase_tv);
         break;
   case INPUT_PHASE_CALLBACK:
-      /* Stop the kernel and phase timers for the input function */
+       /* Stop the kernel and phase timers for the input function. 
+	    *   the output function is done in do_output_phase */
        stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
        stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
        start_timer (thisAgent, &thisAgent->start_kernel_tv);
        break;
+ 
   default: break;
   }
 #endif
@@ -297,7 +310,12 @@ void soar_invoke_callbacks (agent* thisAgent,
   case AFTER_WM_PHASE_CALLBACK:
   case BEFORE_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_PHASE_CALLBACK:
+  case BEFORE_PROPOSE_PHASE_CALLBACK:
+  case AFTER_PROPOSE_PHASE_CALLBACK:
+  case BEFORE_APPLY_PHASE_CALLBACK:
+  case AFTER_APPLY_PHASE_CALLBACK:
   case AFTER_DECISION_CYCLE_CALLBACK:
+    /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
        stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                     &thisAgent->monitors_cpu_time[thisAgent->current_phase]);
        start_timer(thisAgent, &thisAgent->start_kernel_tv);
@@ -310,6 +328,7 @@ void soar_invoke_callbacks (agent* thisAgent,
        start_timer (thisAgent, &thisAgent->start_kernel_tv);
        start_timer (thisAgent, &thisAgent->start_phase_tv); 
        break;
+ 
   default: break;
   }
 #endif
@@ -344,15 +363,23 @@ void soar_invoke_first_callback (agent* thisAgent,
     /* for these two: thisAgent->current_phase = WM_PHASE */
   case BEFORE_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_PHASE_CALLBACK:
+    /* for above two: thisAgent->current_phase = DECISION_PHASE */
+  case BEFORE_PROPOSE_PHASE_CALLBACK:
+  case AFTER_PROPOSE_PHASE_CALLBACK:
+    /* for above two: thisAgent->current_phase = PROPOSE_PHASE  soar8 only */
+  case BEFORE_APPLY_PHASE_CALLBACK:
+  case AFTER_APPLY_PHASE_CALLBACK:
+    /* for above two: thisAgent->current_phase = APPLY_PHASE soar8 only */
   case AFTER_DECISION_CYCLE_CALLBACK:
-    /* for these three: thisAgent->current_phase = DECISION_PHASE */
-	stop_timer (thisAgent, &thisAgent->start_phase_tv, 
+    /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
+	   stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                     &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-	stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-        start_timer (thisAgent, &thisAgent->start_phase_tv);
-        break;
+	   stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
+       start_timer (thisAgent, &thisAgent->start_phase_tv);
+       break;
   case INPUT_PHASE_CALLBACK:
-      /* Stop the kernel and phase timers for the input function */
+       /* Stop the kernel and phase timers for the input function. 
+	    *   the output function is done in do_output_phase */
        stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
        stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
@@ -389,6 +416,10 @@ void soar_invoke_first_callback (agent* thisAgent,
   case AFTER_WM_PHASE_CALLBACK:
   case BEFORE_DECISION_PHASE_CALLBACK:
   case AFTER_DECISION_PHASE_CALLBACK:
+  case BEFORE_PROPOSE_PHASE_CALLBACK:
+  case AFTER_PROPOSE_PHASE_CALLBACK:
+  case BEFORE_APPLY_PHASE_CALLBACK:
+  case AFTER_APPLY_PHASE_CALLBACK:
   case AFTER_DECISION_CYCLE_CALLBACK:
        stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->monitors_cpu_time[thisAgent->current_phase]);
@@ -402,6 +433,7 @@ void soar_invoke_first_callback (agent* thisAgent,
        start_timer (thisAgent, &thisAgent->start_kernel_tv);
        start_timer (thisAgent, &thisAgent->start_phase_tv); 
        break;
+
   default: break;
   }
 #endif
