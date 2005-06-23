@@ -826,6 +826,50 @@ public class FoldingText
 		return selectionPoint ;		
 	}
 	
+	// Separating out the call to append text to a widget so we can work on its behavior.
+	// We'd like this to not scroll if the cursor is not at the bottom of the window
+	// and SWT's append method always scrolls.
+	private void appendTextToWidget(Text widget, String text)
+	{
+		// If set this to true we just use standard append
+		// and always scroll.
+		boolean kUseAppend = false ;
+		
+		if (kUseAppend)
+		{
+			widget.append(text) ;
+		}
+		else
+		{
+			// A more sophisticated routine for inserting text
+			// at the end of the widget without scrolling unless
+			// current selection is already at the end.
+			Point currentSelection = widget.getSelection() ;
+			int length = widget.getCharCount() ;
+
+			if (currentSelection.x == length)
+				widget.append(text) ;
+			else
+			{
+				// The calls to setRedraw are needed because there's a bug
+				// on SWT in Windows where setSelection() calls scroll caret always
+				// which it really shouldn't.  So we need to suppress that behavior by
+				// turning redraw on and off.  However that incurs the cost of redrawing the
+				// entire widget in the setRedraw(true) call which shouldn't be needed.
+				// Because of this we only use this code if the selection isn't at the end
+				// of the widget.
+				widget.setRedraw(false) ;
+				widget.setSelection(length, length) ;
+				widget.insert(text) ;
+				widget.setSelection(currentSelection) ;
+				widget.setRedraw(true) ;
+				
+				if (currentSelection.x == length)
+					widget.showSelection() ;
+			}
+		}
+	}
+	
 	// This method can be called either as a result of new input coming from outside
 	// or because of a change to a filter as we re-process the old information.
 	private void appendTextInternal(String text, int recordIndex)
@@ -840,7 +884,7 @@ public class FoldingText
 		}
 		
 		last.appendLine(text) ;
-		m_Text.append(text) ;		
+		appendTextToWidget(m_Text, text) ;
 	}
 	
 	public void appendText(String text, long type)
@@ -890,7 +934,7 @@ public class FoldingText
 			last.appendLine("") ;
 			last.setExpand(autoExpand) ;
 			m_FoldingDoc.addBlock(last) ;			
-			m_Text.append("") ;
+			appendTextToWidget(m_Text, "") ;
 			m_IconBar.redraw() ;
 		}
 
@@ -935,7 +979,7 @@ public class FoldingText
 
 		if (last.isExpanded())
 		{
-			m_Text.append(text) ;
+			appendTextToWidget(m_Text, text) ;
 
 			// Decide if we have caused the window to scroll or not
 			if (!autoExpand && (m_LastTopIndex != m_Text.getTopIndex()))
@@ -959,6 +1003,9 @@ public class FoldingText
 	********************************************************************************************/
 	public void appendSubText(String text, boolean autoExpand, long type)
 	{
+		if (m_Text.isDisposed())
+			return ;
+
 		// This is needed because the text control (on Windows) stores newlines as \r\n and selections and character counts will get out of synch if we
 		// work in the text control but reason about the text and they have different newlines.
 		// (We still use \n everywhere else as the newline marker because that's what Soar uses)
