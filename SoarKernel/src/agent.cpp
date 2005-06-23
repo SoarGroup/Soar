@@ -273,7 +273,7 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   reset_timer(&(newAgent->start_gds_tv));
   reset_timer(&(newAgent->total_gds_time));
 
-  for (int ii=0;ii <6; ii++) {
+  for (int ii=0;ii < NUM_PHASE_TYPES; ii++) {
      reset_timer(&(newAgent->decision_cycle_phase_timers[ii]));
      reset_timer(&(newAgent->monitors_cpu_time[ii]));
      reset_timer(&(newAgent->ownership_cpu_time[ii]));
