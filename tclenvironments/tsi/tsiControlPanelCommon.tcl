@@ -151,7 +151,11 @@ if (0) {
    $name eval [list set productionCallbackId [$_agent RegisterForProductionEvent $smlEVENT_AFTER_PRODUCTION_FIRED ProductionFiredCallback ""]]
    $name eval [list set runCallbackId [$_agent RegisterForRunEvent $smlEVENT_AFTER_PHASE_EXECUTED PhaseExecutedCallback ""]]
    $name eval [list set structuredCallbackId [$_agent RegisterForXMLEvent $smlEVENT_XML_TRACE_OUTPUT StructuredTraceCallback ""]]
+   #registering this next callback will supplant normal output processing, causing things to not function properly
+   #it is provided merely for illustration
+   $name eval [list set outputCallbackId [$_agent AddOutputHandler "move" OutputCallback ""]]
 }
+   
    tsiSetupAgentVars $name
 
    # load procs so Users can enter Soar cmds in agent window

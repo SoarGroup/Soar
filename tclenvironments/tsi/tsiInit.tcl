@@ -544,4 +544,8 @@ proc StructuredTraceCallback {id userData agent pXML} {
 	puts "structured data: [$pXML GenerateXMLString 1]"
 }
 
+proc OutputCallback {userData agent commandName outputWme} {
+	puts "got a $commandName command"
+	puts "id=[$outputWme GetIdentifierName] attribute=[$outputWme GetAttribute] value=[$outputWme GetValueAsString]"
+}
 
