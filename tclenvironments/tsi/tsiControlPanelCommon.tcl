@@ -180,9 +180,6 @@ if (0) {
 
    set tsiAgentInfo($name,sourceDir) "$filepath"
    set tsiAgentInfo($name,sourceFile) "$filename"
-
-   after 500 set delay 1
-   vwait delay
    
    tsiLoadAgentSource $name
 
@@ -437,7 +434,7 @@ proc dontStopAfterDecision {} {
 }
 
 proc tsiLaunchJavaDebugger {name} {
-  global tsiConfig soar_library tcl_platform env
+  global tsiConfig soar_library tcl_platform env _kernel
 
   ## only launch a Java debugger if not using tsiAgentWindow
   if !($tsiConfig(hideAgentWindow)) {
@@ -449,8 +446,23 @@ proc tsiLaunchJavaDebugger {name} {
     unix {
        if {($tcl_platform(os) == "Darwin")} {
            #$name eval [list exec ./java_swt -classpath swt-carbon.jar:swt-pi-carbon.jar:sml.jar:SoarJavaDebugger.jar -Djava.library.path=/Applications/Soar/soar-library:/Applications/Soar/lib -Dorg.eclipse.swt.internal.carbon.smallFonts debugger.Application -remote & ]
+	   return
        } else {
            $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}}
   }
+  
+  puts "kernel = $_kernel"
+  
+  #now wait for the debugger to report that it is ready
+  $_kernel GetAllConnectionInfo
+  #puts "debugger status = [$_kernel GetConnectionStatus java-debugger]"
+  while {[expr {[$_kernel GetConnectionStatus java-debugger] ne "ready"}]} {
+	  set delay 0
+	  after 100 set delay [expr $delay + 1]
+	  vwait delay
+	  $_kernel GetAllConnectionInfo
+	  #puts "debugger status = [$_kernel GetConnectionStatus java-debugger]"
+  }
+  
 }
 
