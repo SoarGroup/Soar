@@ -23,6 +23,14 @@
  *  events callback into gSKI, where gSKI translates the event into
  *  gSKI style listener events and notifies listeners.
  *
+ * !!!  In fact, the only events propagated to gSKI as of Soar 8.6, are:
+ *			 gSKI_K_EVENT_XML_OUTPUT,
+ *           gSKI_K_EVENT_PRINT_CALLBACK,
+ *           gSKI_K_EVENT_PRODUCTION_* events
+ *      gSKI doesn't register for any other event.  Instead, it mirrors
+ *      the generation of these events within its own scheduler and makes
+ *      assumptions about Soar's execution cycle.  (KJC June 2005)
+ *  
  * Only one object at a time can listen to any given event in the kernel.
  *  Propagation to listeners is handled by the gSKI objects.
  */
@@ -77,6 +85,11 @@ enum egSKIAgentEvents
    gSKI_K_EVENT_ELABORATION_CYCLE,        /* Data: Phase type (char) & elab cycle count (int) ? */ // DONE!
    gSKI_K_EVENT_DECISION_CYCLE,           /* Data: cycle count (int) */          // DONE!
    
+   // KJC:  need to add phase-specific events so listeners don't have to check 
+   //       every single phase just to find the one of interest.
+   //       Could possibly do above in gSKI
+
+
    // DON'T NEED, CAN BE PROPAGATED BY gSKI
    // gSKI_K_EVENT_RETE_LOADED,              
    // gSKI_K_EVENT_AGENT_INITIALIZED,  */    
@@ -102,7 +115,9 @@ enum egSKIPhases
    gSKI_K_PROPOSAL_PHASE,
    gSKI_K_DECISION_PHASE,
    gSKI_K_APPLY_PHASE,
-   gSKI_K_OUTPUT_PHASE
+   gSKI_K_OUTPUT_PHASE,
+   gSKI_K_PREFERENCE_PHASE,	// Soar 7 mode only
+   gSKI_K_WM_PHASE 			// Soar 7 mode only
 };
 
 /* We have to forward declare these to keep from having a circular reference */

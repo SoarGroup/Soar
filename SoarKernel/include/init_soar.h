@@ -169,8 +169,9 @@ extern void run_for_n_selections_of_slot_at_level (agent* thisAgent, long n,
 
 extern void do_one_top_level_phase (agent* thisAgent); 
 
-/* REW: begin 05.05.97 */
-/* Added new DETERMINE_LEVEL_PHASE here and in the timers */
+/* removed DETERMINE_LEVEL_PHASE for Soar 8.6 
+ *  added PROPOSE and APPLY.   KJC May 2005
+ */
 
 enum top_level_phase { INPUT_PHASE = 0, 
 		               PROPOSE_PHASE,
