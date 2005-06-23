@@ -73,6 +73,21 @@ public:
 	}
 } ;
 
+class OutputEventHandlerPlusData : public EventHandlerPlusData
+{
+public:
+	OutputEventHandler	m_Handler ;
+	std::string			m_AttributeName ;
+
+	OutputEventHandlerPlusData(int eventID, char const* pAttributeName, OutputEventHandler handler, void* userData, int callbackID) : EventHandlerPlusData(eventID, userData, callbackID)
+	{
+		m_Handler = handler ;
+
+		if (pAttributeName)
+			m_AttributeName = pAttributeName ;
+	}
+} ;
+
 class Agent : public ClientErrors
 {
 	// By using a lot of friends we can keep methods from being exposed
@@ -92,6 +107,7 @@ protected:
 	typedef sml::ListMap<smlProductionEventId, ProductionEventHandlerPlusData>	ProductionEventMap ;
 	typedef sml::ListMap<smlPrintEventId, PrintEventHandlerPlusData>			PrintEventMap ;
 	typedef sml::ListMap<smlXMLEventId, XMLEventHandlerPlusData>				XMLEventMap ;
+	typedef sml::ListMap<std::string, OutputEventHandlerPlusData>				OutputEventMap ;
 
 protected:
 	// We maintain a local copy of working memory so we can just send changes
@@ -108,6 +124,7 @@ protected:
 	ProductionEventMap	m_ProductionEventMap ;
 	PrintEventMap		m_PrintEventMap ;
 	XMLEventMap			m_XMLEventMap ;
+	OutputEventMap		m_OutputEventMap ;
 
 	// These are little utility classes we define in the .cpp file to help with searching the event maps
 	class TestRunCallbackFull ;
@@ -118,6 +135,8 @@ protected:
 	class TestPrintCallback ;
 	class TestXMLCallbackFull ;
 	class TestXMLCallback ;
+	class TestOutputCallbackFull ;
+	class TestOutputCallback ;
 
 	// Used to generate unique IDs for callbacks
 	int		m_CallbackIDCounter ;
@@ -158,6 +177,14 @@ protected:
 
 	/** NOTE: Slightly different sig as this is called without analyzing the incoming msg so it's a bit faster */
 	void ReceivedXMLEvent(smlXMLEventId id, ElementXML* pIncomingMsg, ElementXML* pResponse) ;
+
+	/*************************************************************
+	* @brief Call any registered handlers to notify them when
+	*		 a new working memory element is added to the top
+	*		 level of the output link.
+	*************************************************************/
+	void ReceivedOutputEvent(WMElement* pWmeAdded) ;
+	bool IsRegisteredForOutputEvent() ;
 
 public:
 	// This method is public but a client should never need to call it.
@@ -284,6 +311,25 @@ public:
 	char const*	InitSoar() ;
 
 	/*************************************************************
+	* @brief Register an "Output event handler".
+	*		 This is one way to be notified when output occurs on the output link.
+	*		 You register for a specific attribute name (e.g. "move") and when that attribute is added to the
+	*		 output link the handler you have registered for that name is called.
+	* @param pAttributeName	The attribute which will trigger this callback ("move" in the example).
+	* @param handler		A function that will be called when the event happens
+	* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+	* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+	* 
+	* @returns A unique ID for this callback (used to unregister the callback later) 
+	*************************************************************/
+	int	AddOutputHandler(char const* pAttributeName, OutputEventHandler handler, void* pUserData, bool addToBack = true) ;
+
+	/*************************************************************
+	* @brief Unregister for a particular output event
+	*************************************************************/
+	bool RemoveOutputHandler(int callbackID) ;
+
+	/*************************************************************
 	* @brief Register for a "RunEvent".
 	*		 Multiple handlers can be registered for the same event.
 	* @param smlEventId		The event we're interested in (see the list below for valid values)
@@ -382,26 +428,34 @@ public:
 	=== There are a number of different ways to read information from
 	=== the output link.  Choose whichever method seems easiest to you.
 	===
-	=== Method 1: a) Call "RunTilOutput".
+	=== Method 1: a) Call "Run(n)".
 	===			b) Call "Commands", "GetCommand" and "GetParamValue"
 	===			   to get top level WMEs that have been added since the last cycle.
 	===
-	=== Method 2: a) Call "RunTilOutput".
+	=== Method 2: a) Call "Run(n)".
 	===			b) Call "GetOutputLink" and "GetNumberChildren", "GetChild"
 	===			   to walk the tree and examine its current state.
 	===			c) You can use "IsJustAdded" and "AreChildrenModified"
 	===			   to see what WMEs just changed.
 	===
-	=== Method 3: a) Call "RunTilOutput".
+	=== Method 3: a) Call "Run(n)".
 	===			b) Call "GetNumberOutputLinkChanges" and "GetOutputLinkChange"
 	===			   and "IsOutputLinkChangeAdd" to get the list of
 	===			   all WMEs added and removed since the last cycle.
+	===
+	=== Method 4: a) Call "AddOutputHandler" to register functions that are called
+	===				 when a specific attributes are added to the output link.
+	===			  b) Call "Run(n)".  If the target attribute is added the output function
+	===				 is called.
 	===
 	=== Method 1 is the closest to the original SGIO and should be sufficient
 	=== in almost all cases.  However, Methods 2 & 3 provide complete
 	=== access to the output-link, while Method 1 only allows access to
 	=== top level wmes with this format: (I1 ^output-link I3) (I3 ^move M3) (M3 ^position 10).
 	=== i.e. All commands are added as identifiers at the top level.
+	=== Method 4 is closest to the gSKI model for I/O and is more event driven but
+	=== like Method 1 assumes that commands are added by name to the top level and that
+	=== the list of commands is known in advance (usually not a problem).
 	=== 
 	==============================================================================*/
 

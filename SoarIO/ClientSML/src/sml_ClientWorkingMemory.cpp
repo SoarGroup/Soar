@@ -378,6 +378,35 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 		m_OutputOrphans.clear() ;	// Have to discard them.
 	}
 
+	// Call any handlers registered to listen for output
+	// (This is one way to retrieve output).
+	// We do this at the end of the output handler so that all of the children of the wme
+	// have been received and recorded before we call the handler.
+	if (GetAgent()->IsRegisteredForOutputEvent() && m_OutputLink)
+	{
+		int nWmes = m_OutputDeltaList.GetSize() ;
+		for (int i = 0 ; i < nWmes ; i++)
+		{
+			WMElement* pWme = m_OutputDeltaList.GetDeltaWME(i)->getWME() ;
+
+			if (pWme->GetParent() == NULL || pWme->GetParent()->GetIdentifierSymbol() == NULL)
+				continue ;
+
+			// We're only looking for top-level wmes on the output link so check if our identifier's symbol
+			// matches the output link's value
+			if (strcmp(pWme->GetParent()->GetIdentifierSymbol(), m_OutputLink->GetValueAsString()) == 0)
+			{
+				// Notify anyone who's listening to this event
+				GetAgent()->ReceivedOutputEvent(pWme) ;
+			}
+		}
+
+		// This is potentially wrong, but I think we should now clear the list of changes.
+		// If someone is working with the callback handler model it would be very hard for them to call this
+		// themselves and without this call somewhere we'll get mutiple calls to the same handlers.
+		ClearOutputLinkChanges() ;
+	}
+
 #ifdef _DEBUG
 		ElementXML::DeleteString(pMsgText) ;
 #endif

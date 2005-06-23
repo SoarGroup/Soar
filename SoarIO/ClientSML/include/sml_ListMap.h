@@ -226,6 +226,11 @@ public:
 		
 		return mapIter->second ;
 	}
+
+	int getSize()
+	{
+		return (int)m_Map.size() ;
+	}
 };
 
 }//closes namespace

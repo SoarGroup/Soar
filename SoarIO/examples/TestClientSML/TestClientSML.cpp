@@ -165,6 +165,11 @@ void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhas
 	cout << "Received an event callback" << endl ;
 }
 
+void MyOutputEventHandler(void* pUserData, Agent* pAgent, char const* pAttributeName, WMElement* pWme)
+{
+	cout << "Received wme " << pWme->GetValueAsString() << endl ;
+}
+
 void MyUntypedEventHandler(smlUntypedEventId id, void* pUserData, Kernel* pKernel, void* pData)
 {
 	switch (id)
@@ -522,6 +527,9 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	int myCount ;
 	myCount = 0 ;
 	int callback_run_count = pAgent->RegisterForRunEvent(smlEVENT_AFTER_DECISION_CYCLE, MyRunEventHandler, &myCount) ;
+
+	// Can't test this at the same time as testing the getCommand() methods as registering for this clears the output link information
+	//int outputHandler = pAgent->AddOutputHandler("move", MyOutputEventHandler, NULL) ;
 
 	//cout << "About to do first run-til-output" << endl ;
 

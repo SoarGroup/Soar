@@ -55,6 +55,7 @@ namespace sml {
 // Forward declaration
 class Agent ;
 class Kernel ;
+class WMElement ;
 class ClientXML ;
 
 typedef enum {
@@ -251,6 +252,11 @@ typedef void (*ProductionEventHandler)(smlProductionEventId id, void* pUserData,
 
 // Handler for System events.
 typedef void (*SystemEventHandler)(smlSystemEventId id, void* pUserData, Kernel* pKernel) ;
+
+// Handler for output events.
+// You register a specific attribute name (e.g. "move") and when this attribute appears on the output link (^io.output-link.move M3)
+// you are passed the working memory element ((I3 ^move M3) in this case) in the callback.  This mimics gSKI's output producer model.
+typedef void (*OutputEventHandler)(void* pUserData, Agent* pAgent, char const* pCommandName, WMElement* pOutputWme) ;
 
 // Handler for Update events.
 typedef void (*UpdateEventHandler)(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags) ;

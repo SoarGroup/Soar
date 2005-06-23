@@ -569,7 +569,9 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 	Agent* pAgent = GetAgent(pAgentName) ;
 
 	// Go through the list of event handlers calling each in turn...except
-	// we only execute the first handler (registering multipler handlers for the same RHS function is not supported)
+	// we only execute the first handler (registering multipler handlers for the same RHS function is not supported
+	// because these functions return a value -- it wouldn't be clear which to use.  We could change this to call all
+	// registered handlers and only use the first or last value returned.)
 	RhsEventMap::ValueListIter iter = pHandlers->begin() ;
 
 	if (iter == pHandlers->end())

@@ -102,9 +102,18 @@ public class Application
 			System.out.println("Received rhs function event in Java for function: " + functionName + "(" + argument + ")") ;
 			return "My rhs result " + argument ;
 		}
+		
+		public void outputEventHandler(Object data, String agentName, String attributeName, WMElement pWmeAdded)
+		{
+			System.out.println("Received output event in Java for wme: " + pWmeAdded.GetIdentifierName() + " ^" + pWmeAdded.GetAttribute() + " " + pWmeAdded.GetValueAsString()) ;
+			
+			// Retrieve the application class pointer (to test our user data was passed successfully) and then print out the tree of wmes from the wme added down.
+			Application app = (Application)data ;
+			app.printWMEs(pWmeAdded) ;
+		}
 	}
 	
-	void printWMEs(WMElement pRoot)
+	public void printWMEs(WMElement pRoot)
 	{
 		if (pRoot.GetParent() == null)
 			System.out.println("Top Identifier " + pRoot.GetValueAsString()) ;
@@ -113,10 +122,11 @@ public class Application
 			System.out.println("(" + pRoot.GetParent().GetIdentifierSymbol() + " ^" + pRoot.GetAttribute() + " " + pRoot.GetValueAsString() + ")") ;
 		}
 
-		/* Need to wait for proper casting operators before this will work
 		if (pRoot.IsIdentifier())
 		{
-			Identifier pID = (Identifier)pRoot ;
+			// NOTE: Can't just cast to (Identifier) in Java because the underlying C++ object needs to be cast
+			// so we use a conversion method.
+			Identifier pID = pRoot.ConvertToIdentifier() ;
 			int size = pID.GetNumberChildren() ;
 
 			for (int i = 0 ; i < size ; i++)
@@ -126,7 +136,6 @@ public class Application
 				printWMEs(pWME) ;
 			}
 		}
-		*/
 	}
 	
 	private void Test()
@@ -204,8 +213,9 @@ public class Application
 		int jSystemCallback2 = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, listener, "systemEventHandler", this) ;		
 		int jAgentCallback  = pKernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, "agentEventHandler", this) ;		
 		int jRhsCallback    = pKernel.AddRhsFunction("test-rhs", listener, "testRhsHandler", this) ;
-		int jTraceCallback  = pAgent.RegisterForXMLEvent(smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, listener, "xmlEventHandler", this) ;		
-
+		int jTraceCallback  = pAgent.RegisterForXMLEvent(smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, listener, "xmlEventHandler", this) ;
+		int jOutputCallback = pAgent.AddOutputHandler("move", listener, "outputEventHandler", this) ;
+		
 		// Trigger an agent event by doing init-soar
 		pAgent.InitSoar() ;
 
@@ -252,6 +262,7 @@ public class Application
 		pAgent.UnregisterForRunEvent(jRunCallback) ;
 		pAgent.UnregisterForProductionEvent(jProdCallback) ;
 		pAgent.UnregisterForPrintEvent(jPrintCallback) ;
+		pAgent.RemoveOutputHandler(jOutputCallback) ;
 		pKernel.UnregisterForSystemEvent(jSystemCallback) ;
 		pKernel.UnregisterForSystemEvent(jSystemCallback2) ;
 		pKernel.UnregisterForAgentEvent(jAgentCallback) ;
@@ -298,6 +309,7 @@ public class Application
 				outfile.write("ERROR *** Tests FAILED");
 				outfile.write(msg) ;
 				System.out.println("ERROR *** Tests FAILED") ;
+				System.out.println(msg) ;
 			}
 	
 			outfile.close();
@@ -389,7 +401,7 @@ public class Application
 		catch (Throwable t)
 		{
 			success = false ;
-			msg = t.getMessage() ;
+			msg = t.toString() ;
 		}
 		finally
 		{

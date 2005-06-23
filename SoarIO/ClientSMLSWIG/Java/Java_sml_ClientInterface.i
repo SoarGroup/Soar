@@ -28,6 +28,7 @@
 %ignore sml::Agent::UnregisterForProductionEvent(int);
 %ignore sml::Agent::UnregisterForPrintEvent(int);
 %ignore sml::Agent::UnregisterForXMLEvent(int);
+%ignore sml::Agent::RemoveOutputHandler(int);
 %ignore sml::Kernel::UnregisterForSystemEvent(int);
 %ignore sml::Kernel::UnregisterForUpdateEvent(int);
 %ignore sml::Kernel::UnregisterForUntypedEvent(int);
@@ -48,6 +49,7 @@
   public final static native int Agent_RegisterForProductionEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForPrintEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Agent_RegisterForXMLEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
+  public final static native int Agent_AddOutputHandler(long jarg1, String jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_RegisterForSystemEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_RegisterForUpdateEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
   public final static native int Kernel_RegisterForUntypedEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, String jarg5, Object jarg6);
@@ -58,6 +60,7 @@
   public final static native boolean Agent_UnregisterForProductionEvent(long jarg1, int jarg2);
   public final static native boolean Agent_UnregisterForPrintEvent(long jarg1, int jarg2);
   public final static native boolean Agent_UnregisterForXMLEvent(long jarg1, int jarg2);
+  public final static native boolean Agent_RemoveOutputHandler(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForSystemEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForUpdateEvent(long jarg1, int jarg2);
   public final static native boolean Kernel_UnregisterForUntypedEvent(long jarg1, int jarg2);
@@ -89,6 +92,12 @@
 
   public boolean UnregisterForXMLEvent(int callbackReturnValue)
   { return smlJNI.Agent_UnregisterForXMLEvent(swigCPtr, callbackReturnValue) ;}
+
+  public int AddOutputHandler(String attributeName, Object handlerObject, String handlerMethod, Object callbackData)
+  { return smlJNI.Agent_AddOutputHandler(swigCPtr, attributeName, this, handlerObject, handlerMethod, callbackData) ; }
+
+  public boolean RemoveOutputHandler(int callbackReturnValue)
+  { return smlJNI.Agent_RemoveOutputHandler(swigCPtr, callbackReturnValue) ;}
 %}
 
 %typemap(javacode) sml::Kernel %{

@@ -257,6 +257,40 @@ public:
 	}
 } ;
 
+class Agent::TestOutputCallback : public OutputEventMap::ValueTest
+{
+private:
+	int m_ID ;
+public:
+	TestOutputCallback(int id) { m_ID = id ; }
+
+	bool isEqual(OutputEventHandlerPlusData handler)
+	{
+		return handler.m_CallbackID == m_ID ;
+	}
+} ;
+
+class Agent::TestOutputCallbackFull : public OutputEventMap::ValueTest
+{
+private:
+	std::string			m_AttributeName ;
+	OutputEventHandler	m_Handler ;
+	void*				m_UserData ;
+
+public:
+	TestOutputCallbackFull(char const* attributeName, OutputEventHandler handler, void* pUserData)
+	{ m_AttributeName = attributeName ; m_Handler = handler ; m_UserData = pUserData ; }
+
+	virtual ~TestOutputCallbackFull() { } ;
+
+	bool isEqual(OutputEventHandlerPlusData handlerPlus)
+	{
+		return handlerPlus.m_AttributeName.compare(m_AttributeName) == 0 &&
+			   handlerPlus.m_Handler == m_Handler &&
+			   handlerPlus.m_UserData == m_UserData ;
+	}
+} ;
+
 class Agent::TestProductionCallback : public ProductionEventMap::ValueTest
 {
 private:
@@ -431,6 +465,95 @@ bool Agent::UnregisterForRunEvent(int callbackID)
 	}
 
 	return true ;
+}
+
+/*************************************************************
+* @brief Register an "Output event handler".
+*		 This is one way to be notified when output occurs on the output link.
+*		 You register for a specific attribute name (e.g. "move") and when that attribute is added to the
+*		 output link the handler you have registered for that name is called.
+* @param pAttributeName	The attribute which will trigger this callback ("move" in the example).
+* @param handler		A function that will be called when the event happens
+* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
+* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
+* 
+* @returns A unique ID for this callback (used to unregister the callback later) 
+*************************************************************/
+int	Agent::AddOutputHandler(char const* pAttributeName, OutputEventHandler handler, void* pUserData, bool addToBack)
+{
+	// Start by checking if this attributeName, handler, pUSerData combination has already been registered
+	TestOutputCallbackFull test(pAttributeName, handler, pUserData) ;
+
+	// See if this handler is already registered
+	OutputEventHandlerPlusData plus(0, 0,0,0,0) ;
+	bool found = m_OutputEventMap.findFirstValueByTest(&test, &plus) ;
+
+	if (found && plus.m_Handler != 0)
+		return plus.getCallbackID() ;
+
+	// Record the handler
+	m_CallbackIDCounter++ ;
+	OutputEventHandlerPlusData handlerPlus(0, pAttributeName, handler, pUserData, m_CallbackIDCounter) ;
+	m_OutputEventMap.add(pAttributeName, handlerPlus, addToBack) ;
+
+	// Return the ID.  We use this later to unregister the callback
+	return m_CallbackIDCounter ;
+}
+
+/*************************************************************
+* @brief Unregister for a particular output event
+*************************************************************/
+bool Agent::RemoveOutputHandler(int callbackID)
+{
+	// Build a test object for the callbackID we're interested in
+	TestOutputCallback test(callbackID) ;
+
+	// Find the function for this callbackID (for RHS functions the key is a function name not an event id)
+	std::string functionName = m_OutputEventMap.findFirstKeyByTest(&test, "") ;
+
+	if (functionName.length() == 0)
+		return false ;
+
+	// Remove the handler from our map
+	m_OutputEventMap.removeAllByTest(&test) ;
+
+	return true ;
+}
+
+/*************************************************************
+* @brief Returns true if there's at least one listener for output events.
+*************************************************************/
+bool Agent::IsRegisteredForOutputEvent()
+{
+	return m_OutputEventMap.getSize() > 0 ;
+}
+
+/*************************************************************
+* @brief Call any registered handlers to notify them when
+*		 a new working memory element is added to the top
+*		 level of the output link.
+*************************************************************/
+void Agent::ReceivedOutputEvent(WMElement* pWmeAdded)
+{
+	char const* pAttributeName = pWmeAdded->GetAttribute() ;
+
+	// Look up the handler(s) from the map
+	OutputEventMap::ValueList* pHandlers = m_OutputEventMap.getList(pAttributeName) ;
+
+	if (!pHandlers)
+		return ;
+
+	// Go through the list of event handlers calling each in turn
+	for (OutputEventMap::ValueListIter iter = pHandlers->begin() ; iter != pHandlers->end() ; iter++)
+	{
+		OutputEventHandlerPlusData handlerWithData = *iter ;
+
+		OutputEventHandler handler = handlerWithData.m_Handler ;
+		void* pUserData = handlerWithData.getUserData() ;
+
+		// Call the handler
+		handler(pUserData, this, pAttributeName, pWmeAdded) ;
+	}
 }
 
 /*************************************************************
