@@ -38,6 +38,15 @@ public:
 	static char const* const kRawOutput ;
 	static char const* const kStructuredOutput ;
 
+	// <connection> tag identifiers
+	static char const* const kTagConnection ;
+	static char const* const kConnectionId ;
+	static char const* const kConnectionName ;
+	static char const* const kConnectionStatus ;
+	static char const* const kStatusCreated	;	// Initial status -- simply means connection exists
+	static char const* const kStatusReady ;		// Connection ready (registered for events etc.)
+	static char const* const kStatusClosing ;	// Connection about to shut down
+
 	// <arg> tag identifiers
 	static char const* const kTagArg ;
 	static char const* const kArgParam ;
@@ -356,6 +365,8 @@ public:
 	static char const* const kCommand_Shutdown ;
 	static char const* const kCommand_GetVersion ;
 	static char const* const kCommand_IsSoarRunning	;
+	static char const* const kCommand_GetConnections ;
+	static char const* const kCommand_SetConnectionInfo ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

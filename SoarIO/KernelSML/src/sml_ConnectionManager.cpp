@@ -148,6 +148,14 @@ void ConnectionManager::AddConnection(Connection* pConnection)
 	// Serialize thread access to the connections list
 	soar_thread::Lock lock(&m_ConnectionsMutex) ;
 
+	// Assign a unique ID for this connection
+	char buffer[100] ;
+	long long value = reinterpret_cast<long long>(pConnection) ;
+	sprintf(buffer, "id_0x%x", value) ;
+	pConnection->SetID(buffer) ;
+	pConnection->SetName("unknown") ;
+	pConnection->SetStatus(sml_Names::kStatusCreated) ;
+
 	m_Connections.push_back(pConnection) ;
 }
 

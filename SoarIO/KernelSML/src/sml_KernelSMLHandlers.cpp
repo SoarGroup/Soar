@@ -136,6 +136,8 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_GetVersion]		= &sml::KernelSML::HandleGetVersion ;
 	m_CommandMap[sml_Names::kCommand_Shutdown]			= &sml::KernelSML::HandleShutdown ;
 	m_CommandMap[sml_Names::kCommand_IsSoarRunning]		= &sml::KernelSML::HandleIsSoarRunning ;
+	m_CommandMap[sml_Names::kCommand_GetConnections]	= &sml::KernelSML::HandleGetConnections ;
+	m_CommandMap[sml_Names::kCommand_SetConnectionInfo] = &sml::KernelSML::HandleSetConnectionInfo ;
 }
 
 /*************************************************************
@@ -330,6 +332,71 @@ bool KernelSML::HandleRegisterForEvent(gSKI::IAgent* pAgent, char const* pComman
 	}
 
 	return true ;
+}
+
+bool KernelSML::HandleSetConnectionInfo(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pAgent) ; unused(pCommandName) ; unused(pError) ;
+
+	// Get the parameters
+	char const* pName   = pIncoming->GetArgValue(sml_Names::kConnectionName) ;
+	char const* pStatus = pIncoming->GetArgValue(sml_Names::kConnectionStatus) ;
+
+	if (!pName)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Connection name is missing") ;
+	}
+
+	if (!pStatus)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Connection status is missing") ;
+	}
+
+	// Execute the command
+	pConnection->SetName(pName) ;
+	pConnection->SetStatus(pStatus) ;
+
+	return true ;
+}
+
+bool KernelSML::HandleGetConnections(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pCallingConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pAgent) ; unused(pCommandName) ; unused(pIncoming) ; unused(pCallingConnection) ; unused(pError) ;
+
+	// Create the result tag
+	TagResult* pTagResult = new TagResult() ;
+	pTagResult->AddAttribute(sml_Names::kCommandOutput, sml_Names::kStructuredOutput) ;
+
+	// Walk the list of connections and return their info
+	int index = 0 ;
+	Connection* pConnection = m_pConnectionManager->GetConnectionByIndex(index) ;
+
+	while (pConnection)
+	{
+		// Create the connection tag
+		ElementXML* pTagConnection = new ElementXML() ;
+		pTagConnection->SetTagName(sml_Names::kTagConnection) ;
+
+		// Fill in the info
+		pTagConnection->AddAttribute(sml_Names::kConnectionId, pConnection->GetID()) ;
+		pTagConnection->AddAttribute(sml_Names::kConnectionName, pConnection->GetName()) ;
+		pTagConnection->AddAttribute(sml_Names::kConnectionStatus, pConnection->GetStatus()) ;
+
+		// Add the connection into the result
+		pTagResult->AddChild(pTagConnection) ;
+
+		// Get the next connection.  Returns null when go beyond limit.
+		// (This provides thread safe access to the list, in case it changes during this enumeration)
+		index++ ;
+		pConnection = m_pConnectionManager->GetConnectionByIndex(index) ;
+	}
+
+	// Add the result tag to the response
+	pResponse->AddChild(pTagResult) ;
+
+	// Return true to indicate we've filled in all of the result tag we need
+	return true ;
+
 }
 
 bool KernelSML::HandleDestroyAgent(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)

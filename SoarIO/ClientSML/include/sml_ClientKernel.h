@@ -97,6 +97,31 @@ public:
 	}
 } ;
 
+class ConnectionInfo
+{
+protected:
+	std::string m_ID ;
+	std::string m_Name ;
+	std::string m_Status ;
+
+public:
+	ConnectionInfo(char const* pID, char const* pName, char const* pStatus)
+	{
+		m_ID	 = pID ;
+		m_Name   = (pName ? pName : "unknown-name") ;
+		m_Status = (pStatus ? pStatus : "unknown-status") ;
+	}
+
+	/** The ID is a unique identifier for this connection (machine created) */
+	char const* GetID()	const		{ return m_ID.c_str() ; }
+
+	/** The name may be set by the owner of the connection (or not) */
+	char const* GetName() const		{ return m_Name.c_str() ; }
+
+	/** The status is a string from a known set of values, again set by the owner of the connection */
+	char const* GetStatus() const	{ return m_Status.c_str() ; }
+} ;
+
 class Kernel : public ClientErrors
 {
 	// Allow the agent to call to get the connection from the kernel.
@@ -123,6 +148,11 @@ protected:
 	std::string			m_CommandLineResult;
 	bool				m_CommandLineSucceeded ;
 	sock::SocketLib*	m_SocketLibrary ;
+
+	// Info about all connections (have to explicitly request this)
+	std::list<ConnectionInfo*> m_ConnectionInfoList ;
+	typedef std::list<ConnectionInfo*>::iterator ConnectionListIter ;
+	bool				m_ConnectionInfoChanged ;
 
 	// Which handler functions to call when an event comes in
 	SystemEventMap		m_SystemEventMap ;
@@ -420,6 +450,40 @@ public:
 	* all agents have actually terminated their runs.
 	*************************************************************/
 	bool		IsSoarRunning() ;
+
+	/*************************************************************
+	* @brief Ask the kernel for the current list of connections
+	*		 and their status information.
+	*		 This is a snapshot which can then be interrogated through
+	*		 the other methods.
+	* @returns true if the list of information has changed since the
+	*		   last time this method was called.
+	*************************************************************/
+	bool					GetAllConnectionInfo() ;
+
+	/*************************************************************
+	* @brief Report number of connections and info about those connections.
+	*		 These methods report information cached in the last
+	*		 "GetAllConnectionInfo" call.
+	*		 HasConnectionInfoChanged() returns false if no info changed
+	*		 in the last call to GetAllConnectionInfo().
+	*************************************************************/
+	int						GetNumberConnections() ;
+	bool					HasConnectionInfoChanged() ;
+	ConnectionInfo const*	GetConnectionInfo(int i) ;
+	char const*				GetConnectionStatus(char const* pName) ;
+
+	/*************************************************************
+	* @brief Sets the name and current status of this connection.
+	*		 This information is sent to the kernel and can be requested
+	*		 by other clients.
+	*
+	* Current recommend values for status:
+	*  "created" - connection exists but client may still be configuring
+	*  "ready"   - client has completed its setup and is ready
+	*  "closing" - client is in the act of shutting down
+	*************************************************************/
+	bool SetConnectionInfo(char const* pName, char const* pStatus) ;
 
 	/*************************************************************
 	* @brief   Causes the kernel to issue a SYSTEM_START event.

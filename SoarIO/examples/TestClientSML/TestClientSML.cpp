@@ -124,6 +124,8 @@ bool SimpleListener(int life)
 		return false ;
 	}
 
+	pKernel->SetConnectionInfo("listener", "ready") ;
+
 	// Register here so we can test the order that RHS functions are called
 	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &ListenerRhsFunctionHandler, 0) ;
 	unused(callback_rhs1);
@@ -137,15 +139,38 @@ bool SimpleListener(int life)
 	if (useCurrentThread)
 	{ life *= 10 ; pause /= 10 ; }
 
+	// How often we check to see if the list of connections has changed.
+	int checkConnections = 500 / pause ;
+	int counter = checkConnections ;
+
 	for (int i = 0 ; i < life ; i++)
 	{
 		// Don't need to check for incoming as we're using the NewThread model.
-		// (If we switch to Client we'd need to cut this sleep down a lot to
-		//  get any kind of responsiveness).
 		if (useCurrentThread) {
 			bool check = pKernel->CheckForIncomingCommands() ;
 			unused(check);
 		}
+
+		/* Optional code for printing the current list of connections
+		counter++ ;
+		if (counter > checkConnections)
+		{
+			counter = 0 ;
+			cout << "Check for info" << endl ;
+			bool changed = pKernel->GetAllConnectionInfo() ;
+			cout << "Completed check" << endl ;
+
+			if (changed)
+			{
+				int numberConnections = pKernel->GetNumberConnections() ;
+				for (int i = 0 ; i < numberConnections ; i++)
+				{
+					ConnectionInfo const* pInfo = pKernel->GetConnectionInfo(i) ;
+					cout << "Connected to " << pInfo->GetID() << " " << pInfo->GetName() << " " << pInfo->GetStatus() << endl ;
+				}
+			}
+		}
+		*/
 
 		SLEEP(pause) ;
 	}

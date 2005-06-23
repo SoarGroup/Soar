@@ -37,6 +37,15 @@ char const* const sml_Names::kCommandOutput		= "output" ;
 char const* const sml_Names::kRawOutput			= "raw" ;
 char const* const sml_Names::kStructuredOutput  = "structured" ;
 
+// <connection> tag identifiers
+char const* const sml_Names::kTagConnection		= "connection" ;
+char const* const sml_Names::kConnectionId		= "id" ;
+char const* const sml_Names::kConnectionName	= "name" ;
+char const* const sml_Names::kConnectionStatus	= "status" ;
+char const* const sml_Names::kStatusCreated		= "created" ;	// Initial status -- simply means connection exists
+char const* const sml_Names::kStatusReady		= "ready" ;		// Connection ready (registered for events etc.)
+char const* const sml_Names::kStatusClosing		= "closing" ;	// Connection about to shut down
+
 // <arg> tag identifiers
 char const* const sml_Names::kTagArg			= "arg" ;
 char const* const sml_Names::kArgParam			= "param" ;
@@ -364,6 +373,8 @@ char const* const sml_Names::kCommand_SetInterruptCheckRate	= "set_interrupt_che
 char const* const sml_Names::kCommand_Shutdown				= "shutdown" ;
 char const* const sml_Names::kCommand_GetVersion			= "version" ;
 char const* const sml_Names::kCommand_IsSoarRunning			= "is_running" ;
+char const* const sml_Names::kCommand_GetConnections		= "get_connections" ;
+char const* const sml_Names::kCommand_SetConnectionInfo		= "set_connection_info" ;
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;

@@ -176,6 +176,12 @@ protected:
 	// alive even when the client itself goes to sleep.
 	soar_thread::Mutex	m_ClientMutex ;
 
+	// This information can be requested and set by clients, so one client can
+	// find out who else is connected.
+	std::string m_ID ;			// Unique ID, machine generated (by kernel)
+	std::string m_Name ;		// Name, optionally set by client (e.g. debugger)
+	std::string m_Status ;		// Status, optionally set by client from fixed set of values
+
 public:
 	Connection() ;
 	virtual ~Connection() ;
@@ -402,6 +408,19 @@ public:
 	*************************************************************/
 	void	SetUserData(void* pUserData)	{ m_pUserData = pUserData ; }
 	void*	GetUserData()					{ return m_pUserData ; }
+
+	/*************************************************************
+	* @brief Get and set id, name and status
+	* ID - unique machine generated id (created by kernel)
+	* Name   - optional, set by client.  Should always be the same for a given client (e.g. debugger/java-toh etc.)
+	* Status - optional, set by client from fixed list of values
+	*************************************************************/
+	char const* GetID()					{ return m_ID.c_str() ; }
+	void SetID(char const* pID)			{ m_ID = pID ; }
+	char const* GetName()				{ return m_Name.c_str() ; }
+	void SetName(char const* pName)		{ m_Name = pName ; }
+	char const* GetStatus()				{ return m_Status.c_str() ; }
+	void SetStatus(char const* pStatus) { m_Status = pStatus ; }
 
 	/*************************************************************
 	* @brief Send a message and get the response.

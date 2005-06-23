@@ -45,6 +45,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_pEventMap		= new Events() ;
 	m_bTracingCommunications = false ;
 	m_bShutdown		= false ;
+	m_ConnectionInfoChanged = false ;
 
 	if (pConnection)
 	{
@@ -143,6 +144,14 @@ Kernel::~Kernel(void)
 	// as it has a pointer to the connection.
 	if (m_pEventThread)
 		m_pEventThread->Stop(true) ;
+
+	// Clean up any connection info we have stored
+	for (ConnectionListIter iter = m_ConnectionInfoList.begin() ; iter != m_ConnectionInfoList.end() ; iter++)
+	{
+		ConnectionInfo* pInfo = *iter ;
+		delete pInfo ;
+	}
+	m_ConnectionInfoList.clear() ;
 
 	delete m_pEventThread ;
 
@@ -760,6 +769,132 @@ void Kernel::UpdateAgentList()
 		// as they no longer exist.
 		m_AgentMap.keep(&inUse) ;
 	}
+}
+
+/*************************************************************
+* @brief Ask the kernel for the current list of connections
+*		 and their status information.
+*		 This is a snapshot which can then be interrogated through
+*		 the other methods.
+*************************************************************/
+bool Kernel::GetAllConnectionInfo()
+{
+	std::list<ConnectionInfo*> previousList ;
+
+	for (ConnectionListIter iter = m_ConnectionInfoList.begin() ; iter != m_ConnectionInfoList.end() ; iter++)
+	{
+		ConnectionInfo* pInfo = *iter ;
+		previousList.push_back(pInfo) ;
+	}
+	m_ConnectionInfoList.clear() ;
+
+	size_t previousConnectionCount = previousList.size() ;
+
+	AnalyzeXML response ;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetConnections))
+	{
+		ElementXML const* pResult = response.GetResultTag() ;
+		ElementXML child(NULL) ;
+		
+		for (int i = 0 ; i < pResult->GetNumberChildren() ; i++)
+		{
+			pResult->GetChild(&child, i) ;
+
+			// Look for the <connection> tags
+			if (child.IsTag(sml_Names::kTagConnection))
+			{
+				// Get the connection's id, name and status
+				char const* pID     = child.GetAttribute(sml_Names::kConnectionId) ;
+				char const* pName   = child.GetAttribute(sml_Names::kConnectionName) ;
+				char const* pStatus = child.GetAttribute(sml_Names::kConnectionStatus) ;
+
+				// If this info is on the previous list move it back to the current list
+				bool foundMatch = false ;
+				for (ConnectionListIter iter = previousList.begin() ; iter != previousList.end() ; iter++)
+				{
+					ConnectionInfo* pPrevInfo = *iter ;
+					if (strcmp(pPrevInfo->GetID(), pID) == 0 &&
+						strcmp(pPrevInfo->GetName(), pName) == 0 &&
+						strcmp(pPrevInfo->GetStatus(), pStatus) == 0)
+					{
+						m_ConnectionInfoList.push_back(pPrevInfo) ;
+						previousList.erase(iter) ;
+						foundMatch = true ;
+						break ;
+					}
+				}
+
+				if (!foundMatch)
+				{
+					ConnectionInfo* info = new ConnectionInfo(pID, pName, pStatus) ;
+					m_ConnectionInfoList.push_back(info) ;
+				}
+			}
+		}
+	}
+
+	// If we deleted all of the items from the previous list, then each connection we found matched
+	// an existing one.
+	if (previousList.size() == 0 && previousConnectionCount == m_ConnectionInfoList.size())
+		m_ConnectionInfoChanged = false ;
+	else
+		m_ConnectionInfoChanged = true ;
+
+	// Clean up any left over information
+	for (ConnectionListIter iter = previousList.begin() ; iter != previousList.end() ; iter++)
+	{
+		ConnectionInfo* pInfo = *iter ;
+		delete pInfo ;
+	}
+
+	return m_ConnectionInfoChanged ;
+}
+
+bool Kernel::HasConnectionInfoChanged()
+{
+	return m_ConnectionInfoChanged ;
+}
+
+int	Kernel::GetNumberConnections()
+{
+	return (int)m_ConnectionInfoList.size() ;
+}
+
+ConnectionInfo const* Kernel::GetConnectionInfo(int i)
+{
+	for (ConnectionListIter iter = m_ConnectionInfoList.begin() ; iter != m_ConnectionInfoList.end() ; iter++)
+	{
+		ConnectionInfo* pInfo = *iter ;
+		if (i == 0)
+			return pInfo ;
+		i-- ;
+	}
+
+	return NULL ;
+}
+
+char const*	Kernel::GetConnectionStatus(char const* pName)
+{
+	for (ConnectionListIter iter = m_ConnectionInfoList.begin() ; iter != m_ConnectionInfoList.end() ; iter++)
+	{
+		ConnectionInfo* pInfo = *iter ;
+		if (pInfo->GetName() && strcmp(pInfo->GetName(), pName) == 0)
+			return pInfo->GetStatus() ;
+	}
+
+	return NULL ;
+}
+
+/*************************************************************
+* @brief Sets the name and current status of this connection.
+*		 This information is sent to the kernel and can be requested
+*		 by other clients.
+*************************************************************/
+bool Kernel::SetConnectionInfo(char const* pName, char const* pStatus)
+{
+	AnalyzeXML response ;
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SetConnectionInfo, NULL, sml_Names::kConnectionName, pName, sml_Names::kConnectionStatus, pStatus) ;
+	return ok ;
 }
 
 /*************************************************************
