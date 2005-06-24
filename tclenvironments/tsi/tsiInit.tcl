@@ -73,6 +73,7 @@ proc tsi {{hideController 0} args } {
        
    global smlEVENT_AFTER_AGENT_CREATED smlEVENT_BEFORE_AGENT_REINITIALIZED 
    global smlEVENT_BEFORE_AGENT_DESTROYED smlEVENT_BEFORE_SHUTDOWN
+   global smlEVENT_SYSTEM_START smlEVENT_SYSTEM_STOP
    global smlEVENT_AFTER_ALL_OUTPUT_PHASES EaterUpdateCallback smlStopNow
 
    # if we don't do this, then the agent's first output doesn't get processed
@@ -147,6 +148,11 @@ set agentCallbackId0 [$_kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREAT
 #set agentCallbackId2 [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED AgentDestroyedCallback ""]
 #set systemCallbackId [$_kernel RegisterForSystemEvent $smlEVENT_BEFORE_SHUTDOWN SystemShutdownCallback ""]
 #set rhsCallbackId [$_kernel AddRhsFunction RhsFunctionTest ""]
+
+#we want to register for these events so we know when to set the runningSimulation and smlStopNow global vars
+#however, it doesn't seem to work (probably because of some interpreter issue), so we're using agent-level events instead
+#set systemCallbackId [$_kernel RegisterForSystemEvent $smlEVENT_SYSTEM_START SMLenvironmentRunEvent ""]
+#set systemCallbackId [$_kernel RegisterForSystemEvent $smlEVENT_SYSTEM_STOP SMLenvironmentStopEvent ""]
  
 set EaterUpdateCallback [$_kernel RegisterForUpdateEvent $smlEVENT_AFTER_ALL_OUTPUT_PHASES smlProcessUpdates ""]
   

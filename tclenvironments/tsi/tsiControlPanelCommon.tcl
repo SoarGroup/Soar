@@ -156,6 +156,9 @@ if (0) {
    #it is provided merely for illustration
    $name eval [list set outputCallbackId [$_agent AddOutputHandler "move" OutputCallback ""]]
 }
+   # these events let us know when to set the runningSimulation and smlStopNow global variables
+   # we really should use system-level events instead of agent-level events (so the events don't fire for each agent),
+   #  but my attempts to do that haven't worked out
    $name eval [list set beforeRunStartsCallbackId [$_agent RegisterForRunEvent $smlEVENT_BEFORE_RUN_STARTS SMLenvironmentRunEvent ""]]
    $name eval [list set beforeRunStartsCallbackId [$_agent RegisterForRunEvent $smlEVENT_AFTER_RUN_ENDS SMLenvironmentStopEvent ""]]
    

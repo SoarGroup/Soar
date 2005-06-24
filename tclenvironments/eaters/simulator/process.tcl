@@ -1,6 +1,9 @@
 #
 # $Id$
 # $Log$
+# Revision 1.7  2005/06/24 20:32:05  rmarinie
+# added some comments
+#
 # Revision 1.6  2005/06/24 19:50:44  rmarinie
 # better handling of run/stop (avoids runSimulation not being defined if run from debugger)
 #
@@ -1361,6 +1364,8 @@ proc SMLenvironmentStep {} {
 proc SMLenvironmentStop {} {
     global runningSimulation _kernel smlStopNow
     
+    #if runningSimulation doesn't exist, then we know that we're stopped
+    # since if we had run it would exist
     if { ![info exists runningSimulation] } {
 	    set runningSimulation 0
     }
