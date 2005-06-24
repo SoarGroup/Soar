@@ -450,8 +450,6 @@ proc tsiLaunchJavaDebugger {name} {
            $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}}
   }
   
-  puts "kernel = $_kernel"
-  
   #now wait for the debugger to report that it is ready
   $_kernel GetAllConnectionInfo
   #puts "debugger status = [$_kernel GetConnectionStatus java-debugger]"
