@@ -69,6 +69,7 @@ proc createNewAgent {name {filepath ""} {filename ""}} {
    global _agent _kernel localAgentPtrs
    global smlEVENT_PRINT smlEVENT_AFTER_PRODUCTION_FIRED smlEVENT_AFTER_PHASE_EXECUTED 
    global smlEVENT_XML_TRACE_OUTPUT 
+   global smlEVENT_BEFORE_RUN_STARTS smlEVENT_AFTER_RUN_ENDS
 
    puts "CreateNewAgent --> $name $filepath $filename"
 
@@ -155,6 +156,8 @@ if (0) {
    #it is provided merely for illustration
    $name eval [list set outputCallbackId [$_agent AddOutputHandler "move" OutputCallback ""]]
 }
+   $name eval [list set beforeRunStartsCallbackId [$_agent RegisterForRunEvent $smlEVENT_BEFORE_RUN_STARTS SMLenvironmentRunEvent ""]]
+   $name eval [list set beforeRunStartsCallbackId [$_agent RegisterForRunEvent $smlEVENT_AFTER_RUN_ENDS SMLenvironmentStopEvent ""]]
    
    tsiSetupAgentVars $name
 

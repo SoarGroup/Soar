@@ -1,6 +1,9 @@
 #
 # $Id$
 # $Log$
+# Revision 1.6  2005/06/24 19:50:44  rmarinie
+# better handling of run/stop (avoids runSimulation not being defined if run from debugger)
+#
 # Revision 1.5  2005/06/12 21:37:02  rmarinie
 # some workarounds to increase stability
 #
@@ -1357,7 +1360,11 @@ proc SMLenvironmentStep {} {
 
 proc SMLenvironmentStop {} {
     global runningSimulation _kernel smlStopNow
-
+    
+    if { ![info exists runningSimulation] } {
+	    set runningSimulation 0
+    }
+    
     set smlStopNow 1
     if { $runningSimulation } {
 	set runningSimulation 0
@@ -1365,6 +1372,18 @@ proc SMLenvironmentStop {} {
 	return
     }
     tsiOnEnvironmentStop
+}
+
+proc SMLenvironmentRunEvent {args} {
+	global runningSimulation smlStopNow
+	set runningSimulation 1
+	set smlStopNow 0
+}
+
+proc SMLenvironmentStopEvent {args} {
+	global runningSimulation smlStopNow
+	set runningSimulation 0
+	set smlStopNow 1
 }
 
 proc smlProcessUpdates {args} {
