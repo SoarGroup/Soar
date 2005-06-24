@@ -79,7 +79,7 @@ bool ListenerSocket::CreateListener(unsigned short port)
 	memset(&address, 0, sizeof(address)) ;
 
 	address.sin_family = AF_INET ;	// Indicates the type of data in this structure
-	address.sin_port   = port ;
+	address.sin_port   = htons(port) ;
 	address.sin_addr.s_addr = htonl(INADDR_ANY) ;
 
 	// Bind the socket to the local port we're listening on

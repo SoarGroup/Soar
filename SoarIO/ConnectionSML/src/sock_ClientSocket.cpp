@@ -105,7 +105,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 	memset(&address, 0, sizeof(address)) ;
 
 	address.sin_family = AF_INET ;
-	address.sin_port   = port ;
+	address.sin_port   = htons(port) ;
 	address.sin_addr.s_addr = pAddress->s_addr ;
 
 	// Create the socket
