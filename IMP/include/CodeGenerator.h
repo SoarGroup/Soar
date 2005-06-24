@@ -10,7 +10,10 @@
 #include <string>
 
 extern void Pause();
-
+/*
+	This is the (pretty much abstract) parent class of all the 
+	classes that generate ClientSML interface code
+*/
 class CodeGenerator
 {
 public:
@@ -35,16 +38,20 @@ private:
 
 protected:
 
+	//parent function that calls all of the specific code generation functions
+	virtual void GenerateCode() = 0;
+
 	virtual std::ostream& PrintTabs(int indentDepth);
 	
 	//This function will be responsible for writing out the
 	//"#include"s or imports to bring the necessary symbols into scope
 	virtual void GenerateHeaderInformation() = 0;
 
+	/************************************************************************/
+	/* Create a variable declaration with the given type.  The locally created name
+			is "passed" back in the reference arg
+	/************************************************************************/
 	virtual std::ostream& GenerateDeclareVariable(eElementType type, std::string& outVarName) = 0;
-
-	//parent function that calls all of the specific code generation functions
-	virtual void GenerateCode() = 0;
 
 	//does the dirty work of the CreateILFunction. Separate so that it can be reused in
 	//other contexts 	//TODO make this pure virtual
@@ -91,19 +98,5 @@ protected:
 	typedObjectsMap_t& typedObjects;
 };
 
-class JavaGenerator : public CodeGenerator
-{
-public:
-	JavaGenerator(std::string& fileName);
-private:
-protected:
-//TODO this doesn't inherit everything that it should (but if the correct fxns are made
-//pure virtual, it will force a definition
-	void GenerateHeaderInformation(){}//TODO define
-	void GenerateCode(){} //TODO define
-	void GenerateCreateILFunction(int indentDepth = 0){} //TODO define
-	void GenerateUpdateILFunction(int indentDepth = 0){} //TODO define
-	void GenerateCleanupFunction(int indentDepth = 0){} //TODO define
-};
 
-#endif IMP_CODE_GENERATOR
+#endif //IMP_CODE_GENERATOR

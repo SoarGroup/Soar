@@ -1,3 +1,6 @@
+//This is the main file for the IMP project
+//=========================================
+
 #include <iostream>
 #include <string>
 
@@ -17,15 +20,16 @@ void Pause()
 	cin >> foo;
 }
 //TODO eventually, we'll want to read in args for what kinds of code output
-//the user wants, like -java -cpp
+//the user wants, like -java and -cpp
 int main(int argc, char* argv[])
 {
 
 	string inFileName;
 	string outFileName("IMPDefaultOut.cpp");
 	bool parsed = false;
-	ilObjVector_t	ilObjects;
-	typedObjectsMap_t typedILObjects;
+	ilObjVector_t	ilObjects; //container of digested WME descriptions
+	typedObjectsMap_t typedILObjects;//container of digested WME descriptions that
+	//represent complex classes/structure in the simulation environment
 
 	//create an ILspec
 	InputLinkSpec ilspec(ilObjects, typedILObjects);
@@ -57,11 +61,13 @@ int main(int argc, char* argv[])
 	}
 
 	//determine file type
+	//If this is a datamap file...
 	if( static_cast<int>(inFileName.find(dmSuffix.c_str(), inFileName.length() - dmSuffix.length() ) != -1))
 	{
 		cout<<"Reading DM file..."<<endl;
 		parsed = ilspec.ImportDM(inFileName);
 	}
+	//If this is an input link specification text file...
 	else if( static_cast<int>(inFileName.find(ilSuffix.c_str(), inFileName.length() - ilSuffix.length() ) != -1))
 	{
 		cout<<"Reading IL file..."<<endl;
@@ -80,22 +86,24 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 	
+	//For debugging - print out all of the untyped object that were specified
 	/*cout << "Back in the main loop, printing the stored objects now..." << endl;
 	for(ilObjItr objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
 	{
 		cout << *objItr;
 	}*/
 	
-	typeMapItr_t typeItr = typedILObjects.begin();
+	/*typeMapItr_t typeItr = typedILObjects.begin();
 	cout << "Number of simulation types specified: " << typedILObjects.size() << endl;
 	for(; typeItr != typedILObjects.end(); ++typeItr)
 	{
 		cout << "Type " << typeItr->first << " has " << typeItr->second.size() << " object(s)." << endl;
-	}
+	}*/
 	cout << endl;
 	
-	//create the code generator - //TODO use a commandline arg to specify which 
-	//type to make
+	//Now the containers are full of digested WME descriptions.  Generate code from them	
+	//create the code generator
+	//TODO use a command line arg to specify which flavor of SML to generate
 	CPPGenerator generator(outFileName, ilObjects, typedILObjects);
 
 	cout << "Pausing before exiting program.  Press non-whitespace key + <enter> to exit" << endl;

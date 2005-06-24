@@ -339,15 +339,13 @@ bool InputLinkSpec::ImportIL(string& filename)
 			switch(parseStage)
 			{
 				case READING_CONTROL_STRUCTURE:
-					//TODO this 'for loop' only goes up (and by 1), but the user isn't constrained to that.
-					//IMP specs should allow for argument to specify increment amount
 
 					//clear off the token
 					TrimOneWord(line);
 
 					//read control variable name
 					controlVariableName = ReadAndTrimOneWord(line);
-cout << "JUST set control variable name to: " << controlVariableName << endl;
+
 					if(controlVariableName == "")
 					{
 						parseStage = READING_ERROR;
@@ -373,6 +371,9 @@ cout << "JUST set control variable name to: " << controlVariableName << endl;
 						cout << "Missing control structure end value..." << controlEndVal << endl;
 						break;
 					}
+
+					//TODO read in the increment value, so that the control loop
+					//can count both forward and backward, and by an arbitrary amount
 
 					//set ACTUAL loop start and stop delimiters
 					loopBegin = atoi(controlStartVal.c_str());
@@ -414,7 +415,7 @@ cout << "JUST set control variable name to: " << controlVariableName << endl;
 					curWord = ReadAndTrimOneWord(line);
 					if(curWord == "")
 					{
-						cout << "***didn't find parent identifier...." << endl;
+						cout << "***didn't find parent identifier..." << endl;
 						parseStage = READING_ERROR;
 						break;
 					}
@@ -423,8 +424,13 @@ cout << "JUST set control variable name to: " << controlVariableName << endl;
 					parseStage = READING_ATTRIBUTE;
 					break;
 				case READING_ATTRIBUTE:
-					curWord = ReadAndTrimOneWord(line); // TODO error checking
-
+					curWord = ReadAndTrimOneWord(line);
+					if(curWord == "")
+					{
+						cout << "***didn't find attribute for this wme pattern..." << endl;
+						parseStage = READING_ERROR;
+						break;
+					}
 					//replace the leading attrib token with a double quote
 					curWord.replace(0, 1, "\"");
 					curWord.push_back('\"');//add the trailing double quote, since this is a literal
@@ -461,9 +467,6 @@ cout << "JUST set control variable name to: " << controlVariableName << endl;
 							readingFirstType = false;
 						}
 
-					  //These represent all the ways an ID could appear alone.
-					  //The closing brace could either be attached or separated by whitespace
-						// < ID>  < ID > <ID> <ID >
 						if(!TokenPresent(k_typesCloseToken, curWord))
 						{
 							//if the token isn't present in this word, and the next word isn't
@@ -485,6 +488,9 @@ cout << "JUST set control variable name to: " << controlVariableName << endl;
 						ilObj.AddElementType(curWord);
 
 						//if the type is an ID, it should be listed alone
+						//These represent all the ways an ID could appear alone.
+						//The closing brace could either be attached or separated by whitespace
+						// < ID>  < ID > <ID> <ID >						
 						if(!stricmp(curWord.c_str(), k_idString.c_str()))
 						{
 							parseStage = READING_IDENTIFIER_UNIQUE_NAME;
@@ -512,7 +518,6 @@ cout << "JUST set control variable name to: " << controlVariableName << endl;
 					break;
 				//This case is really just a special case of READING_START_VALUE	
 				case READING_IDENTIFIER_UNIQUE_NAME:
-
 					//get the actual ID unique name now
 					curWord = ReadAndTrimOneWord(line);
 					if(curWord == "")
@@ -684,12 +689,16 @@ cout << "JUST set control variable name to: " << controlVariableName << endl;
 		ilObj.SetSimulationClassName(currentClassName);
 		//cout << "Before storage, sim classname is:>" << ilObj.GetSimulationClassName() << "<" << endl;
 
+		//now we've read a WME pattern. If it should be duplicated, do that now.
+		//However, if we're reading an entire class pattern that needs to be repeated,
+		//store this pattern as part of the overall class pattern, which will be repeated
+		//in its entirety, when the class has been closed
+
 		//=============================
 		//= ZERO or ONE copies needed =
 		//=============================
 		if(controlVariableName == "")
 		{
-cout << "one copy needed case, control variable name is null..." << endl;
 			if(ilObj.GetSimulationClassName() != "") /*TYPED case*/
 			{
 				//cout << "\t\tAdded object to typedObjectsVector because it had type: " << ilObj.GetSimulationClassName() << endl;
@@ -699,8 +708,8 @@ cout << "one copy needed case, control variable name is null..." << endl;
 			{
 				//cout << "Adding untyped object with attribute:>" << ilObj.GetAttributeName() << "<***" << endl;
 				if(lastCompletedState == READING_CLASS_CLOSE)
-				{}//doing nothing here takes care of the case where the ilObject that we have is
-				//essentially empty  //TODO set some kind of flag to take care of this.  This is just sloppy
+				{}/*doing nothing here takes care of the case where the ilObject that we have is
+				essentially empty*/  //TODO set some kind of flag to take care of this.  This is just sloppy
 				else
 					ilObjects.push_back(ilObj);
 			}
@@ -736,23 +745,21 @@ cout << "one copy needed case, control variable name is null..." << endl;
 					ilObjVector_t actualClassObjects;
 					for(ilObjItr objItr = pendingClassSpec.begin(); objItr != pendingClassSpec.end(); /*++objItr*/)
 					{
+						InputLinkObject actualObject = *objItr;//makes a copy 
 						assert(controlVariableName != "");
 						if(controlVariableName != "")
 						{
-cout << "replacing internal tokens now..." << endl;
-cout << "\tcontrol var name is: " << controlVariableName << ", and value is: " << counterAsString << endl;
 							//replace instances of control variable name with value
-							objItr->ReplaceInternalTokens(controlVariableName, counterAsString);
-							cout << "Immediately after the replacement: " << objItr->GetStartValue() << endl;
+							actualObject.ReplaceInternalTokens(controlVariableName, counterAsString);
 						}
 
 						/* copy the now-altered patterns into the actual objects container*/
-						actualClassObjects.push_back(*objItr);
-cout << "Now that tokens are replaced, object is: " << *objItr;
-						++objItr;// ??? For some reason, incrementing here works better than incrementing in the
-						//'for loop' increment section, which causes an extra iteration
+						actualClassObjects.push_back(actualObject);
+
+						++objItr;/* ??? For some reason, incrementing here works better than incrementing in the
+						'for loop' increment section, which causes an extra iteration*/
 					}//for every object that is a part of the class
-//TODO try making the following vector a reference to the one that's stored in the map, to reduce the copying
+
 					ilObjVector_t& thisTypesObjects = typedObjects[actualClassObjects.front().GetSimulationClassName()];
 
 					for(ilObjItr tempItr = actualClassObjects.begin(); tempItr != actualClassObjects.end(); ++tempItr)
@@ -770,29 +777,20 @@ cout << "Now that tokens are replaced, object is: " << *objItr;
 			{
 				resetLoopCounters = true;
 				//cout << "\t\tMULTIPLE COPIES and UNTYPED" << endl;
-cout << "counter's start value: " << loopBegin << endl;
-cout << "increment amount: " << incrementAmount << endl;
-cout << "counter's current value: " << loopBegin << endl;
 
 				//cout << "Adding MULTIPLE of untyped object with attribute:" << actualNewObject.GetAttributeName() << endl;
 				for(int counter = loopBegin; counter < loopEnd; counter += incrementAmount)
 				{
-cout << "counter's current value: " << counter << endl;
 					//the parts of a WME pattern that might have a field equal to the control
 					//variable name are the optional "update"/"start" fields
 					string counterAsString = IntToString(counter);
-cout << "counter as sting: " << counterAsString << endl;
-					ilObj.ReplaceInternalTokens(controlVariableName, counterAsString);
-					ilObjects.push_back(ilObj);
-				}
-			}
-		}
 
-
-		//now we've read a WME pattern. If it should be duplicated, do that now.
-		//However, if we're reading an entire class pattern that needs to be repeated,
-		//store this pattern as part of the overall class pattern, which will be repeated
-		//in its entirety, when the class has been closed
+					InputLinkObject actualObject = ilObj;//make a copy
+					actualObject.ReplaceInternalTokens(controlVariableName, counterAsString);
+					ilObjects.push_back(actualObject);
+				}//for each copy of the untyped WME pattern that's needed
+			}//else we're doing the untyped WME case
+		}//Multiple copies case
 
 		if(resetLoopCounters)
 		{

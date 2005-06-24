@@ -97,8 +97,7 @@ void CPPGenerator::GenerateCreateILFunctionTyped(int depth)
 		//Generate the creation of all of the WMEs associated with this type
 		PrintTabs(depth);
 		ilObjVector_t& objects = typeItr->second;
-//cout << "\tCurrently generating createIL function code for type:"	<< className << endl <<
-//" \t\twhich has: " << objects.size() << " objects described for it" << endl;
+
 		DoGenerateCreateInput(objects, depth);
 		PrintZeroArgFunction(k_Commit, depth + 1, k_AgentInstanceDot);
 		file << endl;
@@ -106,7 +105,6 @@ void CPPGenerator::GenerateCreateILFunctionTyped(int depth)
 		//add closing brace
 		PrintTabs(depth) << k_closeBrace << endl << endl;
 	}
-
 }
 
 void CPPGenerator::DoGenerateCreateInput(ilObjVector_t& objects, int depth)
@@ -157,10 +155,7 @@ void CPPGenerator::DoGenerateCreateInput(ilObjVector_t& objects, int depth)
 				GenerateStoreWME(newVarName, type);
 				break;
 			case ELEMENT_ID:
-//cout << "\tI should be generating an ID for an object with type: " << objItr->GetSimulationClassName() << endl;
-//cout << "\t\t and with start value: "	<< objItr->GetStartValue() << endl;
 				PrintTabs(depth + 1);
-
 				parent = objItr->GetParent();
 
 				//This token denotes that the input link should be used as the parent object
@@ -180,11 +175,8 @@ void CPPGenerator::DoGenerateCreateInput(ilObjVector_t& objects, int depth)
 		}//switch
 
 		objItr->SetGeneratedName(newVarName);
-		//cout << "Setting an object's generated name to: "	<< newVarName << endl;
-		//cout << "\tand confirming: " << objItr->GetGeneratedName() << endl;
 
 	}//for - still objects to process
-
 }
 
 void CPPGenerator::GenerateCreateILFunction(int depth)
@@ -227,17 +219,25 @@ void CPPGenerator::GenerateUpdateILFunction(int indentDepth)
 	file << k_AgentRef << k_AgentInstance << k_closeParen << endl;
 	file << k_openBrace << endl;
 
+cout << "\t\tsize of the objects list is:" << ilObjects.size() << endl;
 	for(ilObjVector_t::iterator objItr = ilObjects.begin(); objItr != ilObjects.end(); ++objItr)
-	{ 
+	{
 		string updateString = objItr->GetUpdateValue();
 		if(updateString == "")
-			continue;
+			continue;//nothing specified about when to update this.  assume never.
+		
+		//TODO //FIXME in the future, when update frequencies are taken into account,
+		// there will need to be else cases (or some other method) to handle the generation
+		// of code that updates at those respective frequencies
 
 		//write out the "if", condition, and the open brace
 		PrintTabs(indentDepth + 1);
 		//if the value stored in the WME is not equal to the simulation value
-//TODO complete this		file << k_if << updateString << k_space << k_notEqual << k_space << 
-//TODO complete this		file << k_closeParen << endl;
+		//		(In the case of a string element, the std::string has an overload for
+		//		!= which will allow comparison of std::string with char*)
+		file << k_if << objItr->GetGeneratedName() << k_arrow << k_GetValue << k_openParen;
+		file << k_closeParen << k_space << k_notEqual << k_space << updateString;
+		file << k_closeParen << endl;
 
 		PrintTabs(indentDepth + 1) << k_openBrace << endl;
 		PrintTabs(indentDepth + 2);
@@ -249,10 +249,13 @@ void CPPGenerator::GenerateUpdateILFunction(int indentDepth)
 		//write out the closing brace
 		PrintTabs(indentDepth + 1) << k_closeBrace << endl;
 	}
-	PrintTabs(indentDepth) << k_closeBrace << endl;	
+	PrintTabs(indentDepth) << k_closeBrace << endl;
 }
 
-void CPPGenerator::GenerateUpdateILFunctionTyped(int indentDepth){}//TODO  - actually do this
+void CPPGenerator::GenerateUpdateILFunctionTyped(int indentDepth)
+{
+	//TODO  - actually do this
+}
 
 void CPPGenerator::GenerateCleanupFunction(int indentDepth)
 {

@@ -1,5 +1,9 @@
 #include "CodeGenerator.h"
 
+/*
+	This class generates the C++ flavor of the SML client interface code.
+	See superclass header for descriptions of functions
+*/
 class CPPGenerator : public CodeGenerator
 {
 public:
@@ -10,13 +14,7 @@ protected:
 	void DoGenerateCreateInput(ilObjVector_t& objects, int depth = 0);
 	void GenerateHeaderInformation();
 	void GenerateCode();
-	void GenerateStoreWME(std::string& element, eElementType type);//TODO  work on hierarchy for this
-	//void generateDeclareVariable(eElementType type);//TODO work on hierarchy (move up)
-
-	/************************************************************************/
-	/* Create a variable declaration with the given type.  The internally created name
-	is "passed" back in the reference arg
-	/************************************************************************/
+	void GenerateStoreWME(std::string& element, eElementType type);
 	std::ostream& GenerateDeclareVariable(eElementType type, std::string& outVarName);//TODO work on hierarchy (move up)
 	void GenerateCreateILFunction(int indentDepth = 0);
 	void GenerateCreateILFunctionTyped(int indentDepth = 0);

@@ -10,6 +10,7 @@ const std::string k_CreateStringWME		= "CreateStringWME";
 const std::string k_CreateIntWME			= "CreateIntWME";
 const std::string k_CreateFloatWME		= "CreateFloatWME";
 const std::string k_CreateIdWME				= "CreateIdWME";
+const std::string k_GetValue					= "GetValue";
 const std::string k_Identifier				= "Identifier";
 const std::string k_pIdentifier				= "Identifier*";
 const std::string k_IntElement				= "IntElement";
