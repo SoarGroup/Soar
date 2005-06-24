@@ -441,9 +441,9 @@
    * @li RUN_FOREVER:           Run and don't stop until Stop is called.
    */
    typedef enum {
-	  gSKI_RUN_ELABORATION_PHASE,	// in Soar 7 mode, this is not the same as smallest_step 
       gSKI_RUN_SMALLEST_STEP,
       gSKI_RUN_PHASE,
+	  gSKI_RUN_ELABORATION_PHASE,	// in Soar 7 mode, this is not the same as smallest_step 
       gSKI_RUN_DECISION_CYCLE,
       gSKI_RUN_UNTIL_OUTPUT,
       gSKI_RUN_FOREVER,

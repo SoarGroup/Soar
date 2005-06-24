@@ -578,13 +578,13 @@ void reset_statistics (agent* thisAgent) {
   }
 }
 
-void reinitialize_soar ( Kernel* thisKernel ) {
+void reinitialize_all_agents ( Kernel* thisKernel ) {
   // Looping over all the agents in the Kernel 
   for ( cons* c = thisKernel->all_soar_agents; c != NIL; c=c->rest ) {
     agent* curagent = (agent*) c->first;
 
-    // Cleans out agent working memory
-    reinitialize_agent( curagent );
+    // Resets the agent and clears working memory
+    reinitialize_soar( curagent );
 
     // Adds the top state and io symbols and wmes
     init_agent_memory( curagent );
@@ -593,7 +593,7 @@ void reinitialize_soar ( Kernel* thisKernel ) {
 }
   
 
-void reinitialize_agent (agent* thisAgent) {
+void reinitialize_soar (agent* thisAgent) {
 
   /* kjh (CUSP-B4) begin */
   long cur_TRACE_CONTEXT_DECISIONS_SYSPARAM;
@@ -789,7 +789,6 @@ void do_one_top_level_phase (agent* thisAgent)
      #ifdef ATTENTION_LAPSE  /* RM Jones */
 	 determine_lapsing(thisAgent);
      #endif
-
     
     if (thisAgent->input_cycle_flag == TRUE) { /* Soar 7 flag, but always true for Soar8 */
       #ifndef NO_CALLBACKS /* kjc 1/00 */
@@ -836,32 +835,41 @@ void do_one_top_level_phase (agent* thisAgent)
 
   case PROPOSE_PHASE:   /* added in 8.6 to clarify Soar8 decision cycle */
 	  
-      if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-          print_phase(thisAgent, "\n--- Proposal Phase ---\n",0);
-
-      /* Tell gski about proposal phase beginning */
-      gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_PROPOSAL_PHASE, 0);
-
       #ifndef NO_TIMING_STUFF
       start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
-	  #ifndef NO_CALLBACKS 
-	  soar_invoke_callbacks(thisAgent, thisAgent, 
-		                    BEFORE_PROPOSE_PHASE_CALLBACK,
-                            (soar_call_data) NULL);
-      #endif
- 
-      /* 'Prime the decision for a new round of production firings at the end of
-       * REW:   05.05.97   */  /*  KJC 04.05 moved here from INPUT_PHASE for 8.6.0 */
-      initialize_consistency_calculations_for_new_decision(thisAgent);
 
-	  thisAgent->FIRING_TYPE = IE_PRODS;
-      thisAgent->applyPhase = FALSE;   /* KJC 04/05: do we still need this line?  gSKI does*/
-	  determine_highest_active_production_level_in_stack_propose(thisAgent);
-	  /* max-elaborations are checked in determine_highest_active... and if they
-	   * are reached, the current phase is set to DECISION.  phase is also set
-	   * to DECISION when PROPOSE is done.
+	  /* e_cycle_count will always be zero UNLESS we are running by ELABORATIONS.
+	   * We only want to do the following if we've just finished INPUT and are
+	   * starting PROPOSE.  If this is the second elaboration for PROPOSE, then 
+	   * just do the while loop below.   KJC  June 05
 	   */
+	  if (thisAgent->e_cycle_count < 1) {
+			if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+				print_phase(thisAgent, "\n--- Proposal Phase ---\n",0);
+
+			/* Tell gski about proposal phase beginning */
+			gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_PROPOSAL_PHASE, 0);
+
+			#ifndef NO_CALLBACKS 
+			soar_invoke_callbacks(thisAgent, thisAgent, 
+									BEFORE_PROPOSE_PHASE_CALLBACK,
+									(soar_call_data) NULL);
+			#endif
+		 
+			/* 'Prime the decision for a new round of production firings at the end of
+			* REW:   05.05.97   */  /*  KJC 04.05 moved here from INPUT_PHASE for 8.6.0 */
+			initialize_consistency_calculations_for_new_decision(thisAgent);
+
+			thisAgent->FIRING_TYPE = IE_PRODS;
+			thisAgent->applyPhase = FALSE;   /* KJC 04/05: do we still need this line?  gSKI does*/
+			determine_highest_active_production_level_in_stack_propose(thisAgent);
+	  }
+
+		/* max-elaborations are checked in determine_highest_active... and if they
+		* are reached, the current phase is set to DECISION.  phase is also set
+		* to DECISION when PROPOSE is done.
+		*/
 
 	  while (thisAgent->current_phase != DECISION_PHASE) {
 	      /* JC ADDED: Tell gski about elaboration phase beginning */
@@ -876,30 +884,37 @@ void do_one_top_level_phase (agent* thisAgent)
            /* JC ADDED: Tell gski about elaboration phase ending */
           gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_ELABORATION_CYCLE, 
                                   (thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE, 1);
+          if (thisAgent->go_type == GO_ELABORATION) break;
 	  }
  
-	  /* This is a HACK for Soar 8.6.0 beta release... KCoulter April 05
-	   * We got here, because we should move to DECISION, so PROPOSE is done
-	   * Set phase back to PROPOSE, call print_phase, and reset phase to DECISION
+      /*  If we've finished PROPOSE, then current_phase will be equal to DECISION
+	   *  otherwise, we're only stopping because we're running by ELABORATIONS, so
+	   *  don't do the end-of-phase updating in that case.
 	   */
-	  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
-		  thisAgent->current_phase = PROPOSE_PHASE;
-          #ifndef NO_CALLBACKS  
-	      soar_invoke_callbacks(thisAgent, thisAgent, 
-		                        AFTER_PROPOSE_PHASE_CALLBACK,
-                                (soar_call_data) NULL);
-          #endif
-          print_phase(thisAgent, "\n--- END Proposal Phase ---\n",1);
- 		  thisAgent->current_phase = DECISION_PHASE;
+	  if (thisAgent->current_phase == DECISION_PHASE) {
+		   /* This is a HACK for Soar 8.6.0 beta release... KCoulter April 05
+			* We got here, because we should move to DECISION, so PROPOSE is done
+			* Set phase back to PROPOSE, do print_phase, callbacks, and then
+			* reset phase to DECISION
+			*/
+			thisAgent->current_phase = PROPOSE_PHASE;
+			if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
+				print_phase(thisAgent, "\n--- END Proposal Phase ---\n",1);
+			}
+			#ifndef NO_CALLBACKS  
+			soar_invoke_callbacks(thisAgent, thisAgent, 
+									AFTER_PROPOSE_PHASE_CALLBACK,
+								(soar_call_data) NULL);
+			#endif
+			/* JC ADDED: Tell gski about proposal phase ending */
+			gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_PROPOSAL_PHASE, 1);
+			thisAgent->current_phase = DECISION_PHASE;
 	  }
 
 	  #ifndef NO_TIMING_STUFF
 	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                  &thisAgent->decision_cycle_phase_timers[PROPOSE_PHASE]);  
       #endif
-
-      /* JC ADDED: Tell gski about proposal phase ending */
-      gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_PROPOSAL_PHASE, 1);
 
 	  break;  /* END of Soar8 PROPOSE PHASE */
 
@@ -982,28 +997,37 @@ void do_one_top_level_phase (agent* thisAgent)
 
   /////////////////////////////////////////////////////////////////////////////////
   case APPLY_PHASE:   /* added in 8.6 to clarify Soar8 decision cycle */
-      if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) 
-          print_phase (thisAgent, "\n--- Application Phase ---\n",0);
-
-      /* Tell gski about apply phase beginning */
-      gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_APPLY_PHASE, 0);
 
       #ifndef NO_TIMING_STUFF
       start_timer (thisAgent, &thisAgent->start_phase_tv);
       #endif
-      #ifndef NO_CALLBACKS   
-	  soar_invoke_callbacks(thisAgent, thisAgent, 
-		                    BEFORE_APPLY_PHASE_CALLBACK,
-                            (soar_call_data) NULL);
-      #endif
- 
-      /* 'prime' the cycle for a new round of production firings 
-       * in the APPLY (pref/wm) phase *//* KJC 04.05 moved here from end of DECISION */
-      initialize_consistency_calculations_for_new_decision(thisAgent);
 
-      thisAgent->FIRING_TYPE = PE_PRODS;  /* might get reset in det_high_active_prod_level... */
-      thisAgent->applyPhase = TRUE;       /* KJC 04/05: do we still need this line?  gSKI does*/
-      determine_highest_active_production_level_in_stack_apply(thisAgent);
+	  /* e_cycle_count will always be zero UNLESS we are running by ELABORATIONS.
+	   * We only want to do the following if we've just finished DECISION and are
+	   * starting APPLY.  If this is the second elaboration for APPLY, then 
+	   * just do the while loop below.   KJC  June 05
+	   */
+	  if (thisAgent->e_cycle_count < 1) {
+
+			if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) 
+				print_phase (thisAgent, "\n--- Application Phase ---\n",0);
+			/* Tell gski about apply phase beginning */
+			gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_APPLY_PHASE, 0);
+
+			#ifndef NO_CALLBACKS   
+			soar_invoke_callbacks(thisAgent, thisAgent, 
+									BEFORE_APPLY_PHASE_CALLBACK,
+									(soar_call_data) NULL);
+			#endif
+		 
+			/* 'prime' the cycle for a new round of production firings 
+			* in the APPLY (pref/wm) phase *//* KJC 04.05 moved here from end of DECISION */
+			initialize_consistency_calculations_for_new_decision(thisAgent);
+
+			thisAgent->FIRING_TYPE = PE_PRODS;  /* might get reset in det_high_active_prod_level... */
+			thisAgent->applyPhase = TRUE;       /* KJC 04/05: do we still need this line?  gSKI does*/
+			determine_highest_active_production_level_in_stack_apply(thisAgent);
+	  }
 	  /* max-elaborations are checked in determine_highest_active... and if they
 	   * are reached, the current phase is set to OUTPUT.  phase is also set
 	   * to OUTPUT when APPLY is done.
@@ -1027,30 +1051,38 @@ void do_one_top_level_phase (agent* thisAgent)
            /* JC ADDED: Tell gski about elaboration phase ending */
 		  gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_ELABORATION_CYCLE, 
 				      (thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE, 1);
+
+		  if (thisAgent->go_type == GO_ELABORATION) break;
       }
 
-      /* This is a HACK for Soar 8.6.0 beta release... KCoulter April 05
-       * We got here, because we should move to OUTPUT, so APPLY is done
-       * Set phase back to APPLY, call print_phase, and reset phase to OUTPUT
-       */
-      if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
-  	      thisAgent->current_phase = APPLY_PHASE;
-          #ifndef NO_CALLBACKS   
-	      soar_invoke_callbacks(thisAgent, thisAgent, 
-				AFTER_APPLY_PHASE_CALLBACK,
-				(soar_call_data) NULL);
-          #endif
-	      print_phase(thisAgent, "\n--- END Application Phase ---\n",1);
-	      thisAgent->current_phase = OUTPUT_PHASE;
-      }
+      /*  If we've finished APPLY, then current_phase will be equal to OUTPUT
+	   *  otherwise, we're only stopping because we're running by ELABORATIONS, so
+	   *  don't do the end-of-phase updating in that case.
+	   */
+	  if (thisAgent->current_phase == OUTPUT_PHASE) {
+		   /* This is a HACK for Soar 8.6.0 beta release... KCoulter April 05
+			* We got here, because we should move to OUTPUT, so APPLY is done
+			* Set phase back to APPLY, do print_phase, callbacks and reset phase to OUTPUT
+			*/
+ 			thisAgent->current_phase = APPLY_PHASE;
+ 			if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
+				print_phase(thisAgent, "\n--- END Application Phase ---\n",1);
+			}
+			#ifndef NO_CALLBACKS   
+			soar_invoke_callbacks(thisAgent, thisAgent, 
+					AFTER_APPLY_PHASE_CALLBACK,
+					(soar_call_data) NULL);
+			#endif
+
+			/* JC ADDED: Tell gski about apply phase ending */
+			gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_APPLY_PHASE, 1);
+			thisAgent->current_phase = OUTPUT_PHASE;
+	  }
 
 	  #ifndef NO_TIMING_STUFF
 	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                  &thisAgent->decision_cycle_phase_timers[APPLY_PHASE]);  
       #endif
-
-      /* JC ADDED: Tell gski about apply phase ending */
-      gSKI_MakeAgentCallbackPhase(thisAgent, gSKI_K_EVENT_PHASE, gSKI_K_APPLY_PHASE, 1);
 
       break;  /* END of Soar8 APPLY PHASE */
 
@@ -1346,6 +1378,7 @@ void run_for_n_phases (agent* thisAgent, long n) {
 
 void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
   long e_cycles_at_start, d_cycles_at_start, elapsed_cycles;
+  go_type_enum save_go_type;
   
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
@@ -1357,15 +1390,25 @@ void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
   thisAgent->reason_for_stopping = "";
   e_cycles_at_start = thisAgent->e_cycle_count;
   d_cycles_at_start = thisAgent->d_cycle_count;
-  /* need next line or runs only the input phase for "d 1" after init-soar */
-  if ( thisAgent->operand2_mode && (d_cycles_at_start == 0) )
-    d_cycles_at_start++;
+  elapsed_cycles = -1;
+  if ( thisAgent->operand2_mode ) {
+	 save_go_type = thisAgent->go_type;
+	 thisAgent->go_type = GO_ELABORATION;
+     /* need next line or runs only the input phase for "d 1" after init-soar */
+     if (d_cycles_at_start == 0) d_cycles_at_start++;
+  }
   while (!thisAgent->stop_soar) {
-    elapsed_cycles = (thisAgent->d_cycle_count-d_cycles_at_start) +
-                     (thisAgent->e_cycle_count-e_cycles_at_start);
+    if ( thisAgent->operand2_mode ) {
+		elapsed_cycles++;
+	} else {
+		elapsed_cycles = (thisAgent->d_cycle_count-d_cycles_at_start) +
+						(thisAgent->e_cycle_count-e_cycles_at_start);
+	}
     if (n==elapsed_cycles) break;
     do_one_top_level_phase(thisAgent);
   }
+  if ( thisAgent->operand2_mode ) {thisAgent->go_type = save_go_type;}
+
 #ifndef NO_TIMING_STUFF
   stop_timer (thisAgent, &thisAgent->start_total_tv, &thisAgent->total_cpu_time);
   stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
