@@ -114,8 +114,8 @@ extern void remove_pwatch (agent* thisAgent, struct production_struct *prod);
    Reinitialize_soar() does all the work for an init-soar.
 --------------------------------------------------------------------- */
 
-extern void reinitialize_soar (Kernel* thisKernel);
-extern void reinitialize_agent (agent* thisAgent);
+extern void reinitialize_all_agents (Kernel* thisKernel);
+extern void reinitialize_soar (agent* thisAgent);
 
 /* ---------------------------------------------------------------------
                          Reinitializing Soar

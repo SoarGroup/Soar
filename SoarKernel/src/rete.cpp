@@ -7244,7 +7244,7 @@ Bool load_rete_net (Kernel* thisKernel, agent* thisAgent, FILE *source_file) {
 
   /* RDF: 20020814 RDF Cleaning up the agent working memory and production
      memory to avoid unecessary errors in this function. */
-  reinitialize_agent(thisAgent);
+  reinitialize_soar(thisAgent);
   excise_all_productions(thisAgent, TRUE);
 
   /* DONE clearing old productions */

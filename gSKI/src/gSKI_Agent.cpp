@@ -324,10 +324,10 @@ namespace gSKI
 
       // !! remember tgd clears all interrupts each time it calls run
 
-      // reinitialize_agent cleans out the agents memory the 
+      // reinitialize_soar cleans out the agents memory the 
       // init_agent_memory call adds back in the top state and
       // other misc. objects and wmes.
-      reinitialize_agent( m_agent );
+      reinitialize_soar( m_agent );
       init_agent_memory( m_agent );
 
       // Tell listeners it is over
