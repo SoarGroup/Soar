@@ -109,7 +109,9 @@ public:
 	   unused(obj) ;
 
 	   // Check for any new incoming commands from remote connections.
-	   //m_KernelSML->ReceiveAllMessages() ;
+	   // We do this in an input producer so it's once per decision during a run and
+	   // the input phase seems like the correct point for incoming commands.
+	   m_KernelSML->ReceiveAllMessages() ;
    }
 
 private:

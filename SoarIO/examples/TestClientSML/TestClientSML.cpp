@@ -106,6 +106,93 @@ std::string ListenerRhsFunctionHandler(smlRhsEventId id, void* pUserData, Agent*
 	return res ;
 }
 
+void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
+{
+	// In this case the user data is a string we're building up
+	std::string* pTrace = (std::string*)pUserData ;
+
+	(*pTrace) += pMessage ;
+}
+
+// Create a simple listener that runs an agent for <n> decisions.
+// This can be used to test dynamic connections/disconnections from a running agent.
+bool SimpleRunListener(int decisions)
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	pKernel->SetConnectionInfo("runlistener", "ready") ;
+
+	// Comment this in if you need to debug the messages going back and forth.
+	//pKernel->SetTraceCommunications(true) ;
+
+	sml::Agent* pAgent = pKernel->CreateAgent("runagent") ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/tests/testrun.soar" ;
+	bool ok = pAgent->LoadProductions(path.c_str()) ;
+
+	if (!ok)
+		return false ;
+
+	std::string result = pAgent->RunSelf(decisions) ;
+	cout << result ;
+
+	std::string state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
+	cout << state ;
+
+	delete pKernel ;
+
+	return true ;
+}
+
+// Connect to a running kernel and agent, grab some output then disconnect.
+// Tests that we can work with an agent while it is running.
+bool SimpleRemoteConnect()
+{
+	// Create the kernel instance
+	sml::Kernel* pKernel = sml::Kernel::CreateRemoteConnection(true, NULL) ;
+
+	if (pKernel->HadError())
+	{
+		cout << pKernel->GetLastErrorDescription() << endl ;
+		return false ;
+	}
+
+	pKernel->SetConnectionInfo("runconnect", "ready") ;
+
+	sml::Agent* pAgent = pKernel->GetAgentByIndex(0) ;
+
+	if (!pAgent)
+	{
+		cout << "No agents running in this kernel" << endl ;
+		return false ;
+	}
+
+	std::string trace ;
+	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
+
+	Sleep(1000) ;
+
+	// Comment this in if you need to debug the messages going back and forth.
+	//pKernel->SetTraceCommunications(true) ;
+
+	cout << trace ;
+
+	std::string state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
+	cout << state ;
+
+	pKernel->Shutdown() ;
+
+	delete pKernel ;
+
+	return true ;
+}
+
 // Create a process that listens for remote commands and lives
 // for "life" 10'ths of a second (e.g. 10 = live for 1 second)
 bool SimpleListener(int life)
@@ -146,31 +233,11 @@ bool SimpleListener(int life)
 	for (int i = 0 ; i < life ; i++)
 	{
 		// Don't need to check for incoming as we're using the NewThread model.
-		if (useCurrentThread) {
+		if (useCurrentThread)
+		{
 			bool check = pKernel->CheckForIncomingCommands() ;
 			unused(check);
 		}
-
-		/* Optional code for printing the current list of connections
-		counter++ ;
-		if (counter > checkConnections)
-		{
-			counter = 0 ;
-			cout << "Check for info" << endl ;
-			bool changed = pKernel->GetAllConnectionInfo() ;
-			cout << "Completed check" << endl ;
-
-			if (changed)
-			{
-				int numberConnections = pKernel->GetNumberConnections() ;
-				for (int i = 0 ; i < numberConnections ; i++)
-				{
-					ConnectionInfo const* pInfo = pKernel->GetConnectionInfo(i) ;
-					cout << "Connected to " << pInfo->GetID() << " " << pInfo->GetName() << " " << pInfo->GetStatus() << endl ;
-				}
-			}
-		}
-		*/
 
 		SLEEP(pause) ;
 	}
@@ -271,14 +338,6 @@ void MySystemHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
 		cout << "Received system start" << endl ;
 	else if (id == smlEVENT_SYSTEM_STOP)
 		cout << "Received system stop" << endl ;
-}
-
-void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage)
-{
-	// In this case the user data is a string we're building up
-	std::string* pTrace = (std::string*)pUserData ;
-
-	(*pTrace) += pMessage ;
 }
 
 static ClientXML* s_ClientXMLStorage = 0 ;
@@ -924,7 +983,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			// Explicitly destroy our agent as a test, before we delete the kernel itself.
 			// (Actually, if this is a remote connection we need to do this or the agent
 			//  will remain alive).
-			/*  Changed this test to check that when we delete the kernel we still get a before-agent-destroyed event.
 			bool ok = pKernel->DestroyAgent(pAgent) ;
 
 			if (!ok)
@@ -932,7 +990,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 				cout << "*** ERROR: Failed to destroy agent properly ***" ;
 				return false ;
 			}
-			*/
 		}
 
 		int callbackShut = pKernel->RegisterForSystemEvent(smlEVENT_BEFORE_SHUTDOWN, &MyShutdownHandler, 0) ;
@@ -1117,7 +1174,10 @@ int main(int argc, char* argv[])
 	bool remote    = false ;
 	bool listener  = false ;
 	bool timeTest  = false ;
+	bool runlistener = false ;
+	bool remoteConnect = false ;
 	int  life      = 3000 ;	// Default is to live for 3000 seconds (5 mins) as a listener
+	int  decisions = 20000 ;
 
 	// For now, any argument on the command line makes us create a remote connection.
 	// Later we'll try passing in an ip address/port number.
@@ -1128,6 +1188,9 @@ int main(int argc, char* argv[])
 	// -remote : run the test over a remote connection -- needs a listening client to already be running.
 	// -listener : create a listening client (so we can run remote tests) which lives for 300 secs (5 mins)
 	// -shortlistener : create a listening client that lives for 15 secs
+	// -runlistener : create a listening client that runs an agent for <n> decisions (defaults to 20000) (so we can connect/disconnect from running agent)
+	// -runlistener <decisions> : As above but runs for specified number of decisions.
+	// -remoteconnect : Connects to a running kernel (e.g. -runlistener above), grabs some output and then disconnects.
 	// -time : run a time trial on some functionality
 	if (argc > 1)
 	{
@@ -1139,6 +1202,23 @@ int main(int argc, char* argv[])
 				remote = true ;
 			if (!stricmp(argv[i], "-listener"))
 				listener = true ;
+			if (!stricmp(argv[i], "-runlistener"))
+			{
+				runlistener = true ;
+
+				// Try to parse the next argument (if present) as an int.
+				// If that succeeds, use the value as our decision counter.
+				int next = i+1 ;
+				if (next < argc)
+				{
+					int count = atoi(argv[next]) ;
+					if (count > 0)
+						decisions = count ;
+				}
+
+			}
+			if (!stricmp(argv[i], "-remoteconnect"))
+				remoteConnect = true ;
 			if (!stricmp(argv[i], "-time"))
 				timeTest = true ;
 			if (!stricmp(argv[i], "-shortlistener"))
@@ -1153,6 +1233,10 @@ int main(int argc, char* argv[])
 	// (so run one instance as a listener and then a second as a -remote test).
 	if (listener)
 		SimpleListener(life) ;
+	else if (runlistener)
+		SimpleRunListener(decisions) ;
+	else if (remoteConnect)
+		SimpleRemoteConnect() ;
 	else if (timeTest)
 		FullTimeTest() ;
 	else
