@@ -844,7 +844,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	   * starting PROPOSE.  If this is the second elaboration for PROPOSE, then 
 	   * just do the while loop below.   KJC  June 05
 	   */
-	  if (thisAgent->e_cycle_count < 1) {
+	  if (thisAgent->e_cycles_this_d_cycle < 1) {
 			if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
 				print_phase(thisAgent, "\n--- Proposal Phase ---\n",0);
 
@@ -1007,7 +1007,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	   * starting APPLY.  If this is the second elaboration for APPLY, then 
 	   * just do the while loop below.   KJC  June 05
 	   */
-	  if (thisAgent->e_cycle_count < 1) {
+	  if (thisAgent->e_cycles_this_d_cycle < 1) {
 
 			if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) 
 				print_phase (thisAgent, "\n--- Application Phase ---\n",0);
@@ -1390,8 +1390,8 @@ void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
   thisAgent->reason_for_stopping = "";
   e_cycles_at_start = thisAgent->e_cycle_count;
   d_cycles_at_start = thisAgent->d_cycle_count;
-  elapsed_cycles = -1;
   if ( thisAgent->operand2_mode ) {
+     elapsed_cycles = -1; 
 	 save_go_type = thisAgent->go_type;
 	 thisAgent->go_type = GO_ELABORATION;
      /* need next line or runs only the input phase for "d 1" after init-soar */
@@ -1402,7 +1402,7 @@ void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
 		elapsed_cycles++;
 	} else {
 		elapsed_cycles = (thisAgent->d_cycle_count-d_cycles_at_start) +
-						(thisAgent->e_cycle_count-e_cycles_at_start);
+					     (thisAgent->e_cycle_count-e_cycles_at_start);
 	}
     if (n==elapsed_cycles) break;
     do_one_top_level_phase(thisAgent);
