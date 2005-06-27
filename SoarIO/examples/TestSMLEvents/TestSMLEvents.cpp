@@ -14,6 +14,12 @@
 //  wants to quit, type "quit" or "exit".  The final counts are printed
 //  at the end.
 //
+// More on special command "counts"
+//  If you want to see all event counts, use "counts" by itself.
+//  If you want to see only the counts for a particular kind of event,
+//   you can specify the event type with "counts <type>".
+//  To see a list of possible types, use "counts help".
+//
 // If you want to see where a particular event comes from (i.e. the
 //  callstack), uncomment the "if" statement in My<type>EventHandler and
 //  modify it to check for the particular event you want to check, and set
@@ -81,13 +87,26 @@ typedef list<NamedEventDataList*> DataList;
 
 
 DataList* CreateEventTestData();
+NamedEventDataList* CreateSystemEventData();
 NamedEventDataList* CreateRunEventData();
 NamedEventDataList* CreateProductionEventData();
 NamedEventDataList* CreatePrintEventData();
 NamedEventDataList* CreateXMLEventData();
+
 void RegisterForEvents(Kernel* k, Agent* a, DataList* dataList);
-void PrintEventData(DataList* dataList);
+void PrintEventData(DataList* dataList, string type="");
 void ResetEventCounts(DataList* dataList);
+
+
+void MySystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel) {
+	EventData* eventData = static_cast<EventData*>(pUserData);
+	eventData->count++;
+
+	// if you want to see where a particular event is coming from, set a breakpoint here
+	/*if(eventData->eventId == 123) {
+		cout << "Got event " << eventId << endl;
+	}*/
+}
 
 void MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase) {
 	EventData* eventData = static_cast<EventData*>(pUserData);
@@ -157,21 +176,23 @@ void main() {
 		//
 		// let the user do whatever they want
 		//
-		char command[1000];
+		string command;
 		do {
 			cout << agent->GetAgentName() << "> ";
-			cin.getline(command, 999);
+			getline(cin, command);
 
 			// check for special commands
-			if(!strncmp(command, "reset", 999)) {
+			if(command == "reset") {
 				ResetEventCounts(dataList);
 				cout << "counts reset" << endl;
-			} else if(!strncmp(command, "counts", 999)) {
-				PrintEventData(dataList);
+			} else if(!command.compare(0, 6, "counts")) {
+				string type = "";
+				if(command != "counts") { type = command.substr(7,command.length()-7); }
+				PrintEventData(dataList, type);
 			} else {
-				cout << kernel->ExecuteCommandLine(command, agent->GetAgentName()) << endl;
+				cout << kernel->ExecuteCommandLine(command.c_str(), agent->GetAgentName()) << endl;
 			}
-		} while(strncmp(command,"quit",999) && strncmp(command, "exit", 999));
+		} while( (command != "quit") && (command != "exit") );
 		
 		kernel->Shutdown();
 		delete kernel;
@@ -213,11 +234,13 @@ void main() {
 DataList* CreateEventTestData() {
 	DataList* dataList = new DataList();
 
+	NamedEventDataList* systemEventData = CreateSystemEventData();
 	NamedEventDataList* runEventData = CreateRunEventData();
 	NamedEventDataList* productionEventData = CreateProductionEventData();
 	NamedEventDataList* printEventData = CreatePrintEventData();
 	NamedEventDataList* xmlEventData = CreateXMLEventData();
 
+	dataList->push_back(systemEventData);
 	dataList->push_back(runEventData);
 	dataList->push_back(productionEventData);
 	dataList->push_back(printEventData);
@@ -227,55 +250,76 @@ DataList* CreateEventTestData() {
 }
 
 NamedEventDataList* CreateRunEventData() {
-	NamedEventDataList* runEventData = new NamedEventDataList();
-	runEventData->name = "Run Events";
+	NamedEventDataList* namedEventData = new NamedEventDataList();
+	namedEventData->name = "run";
 	
-	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_SMALLEST_STEP, "smlEVENT_BEFORE_SMALLEST_STEP"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_SMALLEST_STEP, "smlEVENT_AFTER_SMALLEST_STEP"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_ELABORATION_CYCLE, "smlEVENT_BEFORE_ELABORATION_CYCLE"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_ELABORATION_CYCLE, "smlEVENT_AFTER_ELABORATION_CYCLE"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_PHASE_EXECUTED, "smlEVENT_BEFORE_PHASE_EXECUTED"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_PHASE_EXECUTED, "smlEVENT_AFTER_PHASE_EXECUTED"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_DECISION_CYCLE, "smlEVENT_BEFORE_DECISION_CYCLE"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_DECISION_CYCLE, "smlEVENT_AFTER_DECISION_CYCLE"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_INTERRUPT, "smlEVENT_AFTER_INTERRUPT"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RUN_STARTS, "smlEVENT_BEFORE_RUN_STARTS"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RUN_ENDS, "smlEVENT_AFTER_RUN_ENDS"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RUNNING, "smlEVENT_BEFORE_RUNNING"));
-	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RUNNING, "smlEVENT_AFTER_RUNNING"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_SMALLEST_STEP, "smlEVENT_BEFORE_SMALLEST_STEP"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_SMALLEST_STEP, "smlEVENT_AFTER_SMALLEST_STEP"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_ELABORATION_CYCLE, "smlEVENT_BEFORE_ELABORATION_CYCLE"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_ELABORATION_CYCLE, "smlEVENT_AFTER_ELABORATION_CYCLE"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_PHASE_EXECUTED, "smlEVENT_BEFORE_PHASE_EXECUTED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_PHASE_EXECUTED, "smlEVENT_AFTER_PHASE_EXECUTED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_DECISION_CYCLE, "smlEVENT_BEFORE_DECISION_CYCLE"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_DECISION_CYCLE, "smlEVENT_AFTER_DECISION_CYCLE"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_INTERRUPT, "smlEVENT_AFTER_INTERRUPT"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RUN_STARTS, "smlEVENT_BEFORE_RUN_STARTS"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RUN_ENDS, "smlEVENT_AFTER_RUN_ENDS"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RUNNING, "smlEVENT_BEFORE_RUNNING"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RUNNING, "smlEVENT_AFTER_RUNNING"));
 
-	return runEventData;
+	return namedEventData;
 }
 
 NamedEventDataList* CreateProductionEventData() {
-	NamedEventDataList* productionEventData = new NamedEventDataList();
-	productionEventData->name = "Production Events";
+	NamedEventDataList* namedEventData = new NamedEventDataList();
+	namedEventData->name = "production";
 	
-	productionEventData->eventData.push_back(new EventData(smlEVENT_AFTER_PRODUCTION_ADDED, "smlEVENT_AFTER_PRODUCTION_ADDED"));
-	productionEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_PRODUCTION_REMOVED, "smlEVENT_BEFORE_PRODUCTION_REMOVED"));
-	productionEventData->eventData.push_back(new EventData(smlEVENT_AFTER_PRODUCTION_FIRED, "smlEVENT_AFTER_PRODUCTION_FIRED"));
-	productionEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_PRODUCTION_RETRACTED, "smlEVENT_BEFORE_PRODUCTION_RETRACTED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_PRODUCTION_ADDED, "smlEVENT_AFTER_PRODUCTION_ADDED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_PRODUCTION_REMOVED, "smlEVENT_BEFORE_PRODUCTION_REMOVED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_PRODUCTION_FIRED, "smlEVENT_AFTER_PRODUCTION_FIRED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_PRODUCTION_RETRACTED, "smlEVENT_BEFORE_PRODUCTION_RETRACTED"));
 
-	return productionEventData;
+	return namedEventData;
 }
 
 NamedEventDataList* CreatePrintEventData() {
-	NamedEventDataList* printEventData = new NamedEventDataList();
-	printEventData->name = "Print Events";
+	NamedEventDataList* namedEventData = new NamedEventDataList();
+	namedEventData->name = "print";
 	
-	printEventData->eventData.push_back(new EventData(smlEVENT_LOG_ERROR, "smlEVENT_LOG_ERROR"));
-	printEventData->eventData.push_back(new EventData(smlEVENT_LOG_WARNING, "smlEVENT_LOG_WARNING"));
-	printEventData->eventData.push_back(new EventData(smlEVENT_LOG_INFO, "smlEVENT_LOG_INFO"));
-	printEventData->eventData.push_back(new EventData(smlEVENT_LOG_DEBUG, "smlEVENT_LOG_DEBUG"));
-	printEventData->eventData.push_back(new EventData(smlEVENT_ECHO, "smlEVENT_ECHO"));
-	printEventData->eventData.push_back(new EventData(smlEVENT_PRINT, "smlEVENT_PRINT"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_LOG_ERROR, "smlEVENT_LOG_ERROR"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_LOG_WARNING, "smlEVENT_LOG_WARNING"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_LOG_INFO, "smlEVENT_LOG_INFO"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_LOG_DEBUG, "smlEVENT_LOG_DEBUG"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_ECHO, "smlEVENT_ECHO"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_PRINT, "smlEVENT_PRINT"));
 
-	return printEventData;
+	return namedEventData;
+}
+
+NamedEventDataList* CreateSystemEventData() {
+	NamedEventDataList* namedEventData = new NamedEventDataList();
+	namedEventData->name = "system";
+	
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_SHUTDOWN, "smlEVENT_BEFORE_SHUTDOWN"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_CONNECTION_LOST, "smlEVENT_AFTER_CONNECTION_LOST"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RESTART, "smlEVENT_BEFORE_RESTART"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RESTART, "smlEVENT_AFTER_RESTART"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_SYSTEM_START, "smlEVENT_SYSTEM_START"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_SYSTEM_STOP, "smlEVENT_SYSTEM_STOP"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_INTERRUPT_CHECK, "smlEVENT_INTERRUPT_CHECK"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RHS_FUNCTION_ADDED, "smlEVENT_BEFORE_RHS_FUNCTION_ADDED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RHS_FUNCTION_ADDED, "smlEVENT_AFTER_RHS_FUNCTION_ADDED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RHS_FUNCTION_REMOVED, "smlEVENT_BEFORE_RHS_FUNCTION_REMOVED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RHS_FUNCTION_REMOVED, "smlEVENT_AFTER_RHS_FUNCTION_REMOVED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED, "smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED"));
+	namedEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RHS_FUNCTION_EXECUTED, "smlEVENT_AFTER_RHS_FUNCTION_EXECUTED"));
+
+	return namedEventData;
 }
 
 NamedEventDataList* CreateXMLEventData() {
 	NamedEventDataList* xmlEventData = new NamedEventDataList();
-	xmlEventData->name = "XML Events";
+	xmlEventData->name = "xml";
 	
 	xmlEventData->eventData.push_back(new EventData(smlEVENT_XML_TRACE_OUTPUT, "smlEVENT_XML_TRACE_OUTPUT"));
 
@@ -283,10 +327,11 @@ NamedEventDataList* CreateXMLEventData() {
 }
 
 void RegisterForEvents(Kernel* k, Agent* a, DataList* dataList) {
-	// at the moment we don't use the Kernel object passed in here because we're only registering for agent events
 	for(DataList::iterator i = dataList->begin(); i != dataList->end(); i++) {
 		for(EventDataList::iterator j = (*i)->eventData.begin(); j != (*i)->eventData.end(); j++) {
-			if(IsRunEventID((*j)->eventId)) {
+			if(IsSystemEventID((*j)->eventId)) {
+				k->RegisterForSystemEvent(static_cast<smlSystemEventId>((*j)->eventId), MySystemEventHandler, (*j));
+			} else if(IsRunEventID((*j)->eventId)) {
 				a->RegisterForRunEvent(static_cast<smlRunEventId>((*j)->eventId), MyRunEventHandler, (*j));
 			} else if(IsProductionEventID((*j)->eventId)) {
 				a->RegisterForProductionEvent(static_cast<smlProductionEventId>((*j)->eventId), MyProductionEventHandler, (*j));
@@ -307,17 +352,38 @@ void ResetEventCounts(DataList* dataList) {
 	}
 }
 
-void PrintEventData(DataList* dataList) {
+void PrintEventData(DataList* dataList, string type) {
+
+	bool isValidType = false;
+
 	for(DataList::iterator i = dataList->begin(); i != dataList->end(); i++) {
 
-		cout << endl << endl << "*****   " << (*i)->name << "   *****" << endl << endl;
-		
-		for(EventDataList::iterator j = (*i)->eventData.begin(); j != (*i)->eventData.end(); j++) {
-			cout.width(4);
-			cout << (*j)->eventId << " ";
-			cout.width(40);
-			cout << (*j)->eventName << " ";
-			cout << (*j)->count << endl;
+		// only print the desired type, or all type if none specified
+		if(type == "" || (*i)->name == type) {
+			
+			isValidType = true;
+
+			cout << endl << endl << "*****   " << (*i)->name << " events   *****" << endl << endl;
+			
+			for(EventDataList::iterator j = (*i)->eventData.begin(); j != (*i)->eventData.end(); j++) {
+				cout.width(4);
+				cout << (*j)->eventId << " ";
+				cout.width(40);
+				cout << (*j)->eventName << " ";
+				cout << (*j)->count << endl;
+			}
 		}
+
+		// if the user is asking for help, give them a list of possible event type
+		if(type == "help") {
+			isValidType = true;
+			cout << (*i)->name << endl;
+		}
+	}
+
+	if(!isValidType) {
+		cout << "Invalid type '" << type << "' specified." << endl;
+		cout << "Try 'counts help' to see the list of valid types." << endl;
+		cout << "Not specifying a type will print all types." << endl;
 	}
 }
