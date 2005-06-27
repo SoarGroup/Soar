@@ -45,11 +45,11 @@ MacOS X Port by Jim Ingham &lt;jingham@apple.com&gt; &amp; Ian Reid, Copyright Â
 	<key>LSEnvironments</key>
 	<dict>
 		<key>DYLD_LIBRARY_PATH</key>
-		<string>/Applications/Soar/lib</string>
+		<string>/Applications/Soar-8.6.1/lib</string>
 		<key>LD_LIBRARY_PATH</key>
-		<string>/Applications/Soar/lib</string>
+		<string>/Applications/Soar-8.6.1/lib</string>
 		<key>TCLLIBPATH</key>
-		<string>/Applications/Soar/lib</string>
+		<string>/Applications/Soar-8.6.1/lib</string>
 	</dict>
 </dict>
 </plist>
