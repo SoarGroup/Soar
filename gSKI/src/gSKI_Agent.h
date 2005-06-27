@@ -634,7 +634,25 @@ namespace gSKI
        */
       unsigned long GetNumPhasesExecuted(Error* err = 0);
 
+       
       /**
+       * @brief Gets the current elaborations count for this agent
+       *
+       * Call this method when you need to know the number of elaborations
+       *  that have executed since this agent was last initialized.
+       *
+       * @param err  Pointer to client-owned error structure.  If the pointer
+       *              is not NULL this structure is filled with extended error
+       *              information.  If it is NULL (the default) extended error
+       *              information is not returned.
+       *
+       * @returns The number of elaborations since the agent was last
+       *             initialized.
+       */
+      unsigned long GetNumElaborationsExecuted(Error* err = 0);
+
+	  
+	  /**
        * @brief Gets the current decision cycle count
        *
        * Call this method when you need to know the number of decision cycles
@@ -1326,6 +1344,7 @@ namespace gSKI
       //{
       unsigned long         m_smallestStepCount;     
       unsigned long         m_phaseCount;
+      unsigned long         m_elaborationCount;
       unsigned long         m_decisionCount;
       unsigned long         m_outputCount;
       //}

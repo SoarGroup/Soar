@@ -268,11 +268,12 @@ namespace gSKI
    {
       m_smallestStepCount = 0;
       m_phaseCount        = 0;
+      m_elaborationCount  = 0;
       m_decisionCount     = 0;
       m_outputCount       = 0;
 
       // This tells run that we are starting a new cycle
-      m_lastPhase         = gSKI_OUTPUT_PHASE; 
+      m_lastPhase         = gSKI_OUTPUT_PHASE; /* okay eventhough not correct for Soar 7 */
       m_nextPhase         = gSKI_INPUT_PHASE;
 
       // perhaps we need to tell the agent manager to stop all agents or to only stop this agent
@@ -926,7 +927,6 @@ namespace gSKI
       ClearError(err);
       return m_smallestStepCount;
    }
-
    
    /*
    =============================
@@ -937,6 +937,17 @@ namespace gSKI
    {
       ClearError(err);
       return m_phaseCount;
+   }
+
+   /*
+   =============================
+
+   =============================
+   */
+   unsigned long Agent::GetNumElaborationsExecuted(Error* err)
+   {
+      ClearError(err);
+      return m_elaborationCount;
    }
 
    /*
@@ -1097,7 +1108,9 @@ namespace gSKI
       }
 
 	  /*
-AddXMLListener
+   =========================
+	AddXMLListener
+   =========================
 	  */
 	  void Agent::AddXMLListener(egSKIXMLEventId	 eventId, 
 							IXMLListener*            listener, 
@@ -1129,7 +1142,9 @@ AddXMLListener
 	  }
 
 	  /*
-RemoveXMLListener
+   =========================
+	RemoveXMLListener
+   =========================
 	  */
 	  void Agent::RemoveXMLListener(egSKIXMLEventId  eventId,
                                IXMLListener*         listener,
@@ -1264,7 +1279,9 @@ RemoveXMLListener
    }
 
    /*
-HandleKernelXMLCallback
+   =========================
+	HandleKernelXMLCallback
+   =========================
    */
    void Agent::HandleKernelXMLCallback(unsigned long			  eventId, 
                                             unsigned char         eventOccured,
@@ -1284,7 +1301,7 @@ HandleKernelXMLCallback
 
    /* 
    ==========================
-
+	AddRunListener
    ==========================
    */   
    void Agent::AddRunListener(egSKIRunEventId  eventId, 
@@ -1301,11 +1318,33 @@ HandleKernelXMLCallback
 
       ClearError(err);
       m_runListeners.AddListener(eventId, listener);
+
+      // KJC added to propagate Kernel events outward and eliminate
+	  // pre-step and post-step notifications in gSKI Agent::Run.  
+	  // Best for Soar 7 mode and any future Kernel changes.
+
+	  if (0) {  // not implemented yet
+		  switch (eventId)   // have to test eventId here or in HandleKernelRunCallback
+		  {
+		  case gSKIEVENT_BEFORE_PHASE_EXECUTED:
+		  case gSKIEVENT_AFTER_PHASE_EXECUTED:      
+		  case gSKIEVENT_BEFORE_ELABORATION_CYCLE:
+		  case gSKIEVENT_AFTER_ELABORATION_CYCLE:  
+		  case gSKIEVENT_BEFORE_DECISION_CYCLE:  
+		  case gSKIEVENT_AFTER_DECISION_CYCLE:
+
+
+      
+		  default:
+			  ; // do nothing
+		  }
+	  }
+ 
    }
 
    /* 
    ==========================
-
+	RemoveRunListener
    ==========================
    */   
    void Agent::RemoveRunListener(egSKIRunEventId   eventId,
@@ -1587,6 +1626,8 @@ HandleKernelXMLCallback
          return &m_smallestStepCount;
       case gSKI_RUN_PHASE:
          return &m_phaseCount;
+//      case gSKI_RUN_ELABORATION:
+//         return &m_elaborationCount;
       case gSKI_RUN_DECISION_CYCLE:
          return &m_decisionCount;
       case gSKI_RUN_UNTIL_OUTPUT:
@@ -1603,6 +1644,9 @@ HandleKernelXMLCallback
    */
    void Agent::preStepNotifications()
    {
+       // KJC:  These can all go away if we use the gSKI events in SoarKernel
+	   // where they are all in the proper part of respective phases.
+	   
       // Input phase is the beginning of the decision cycle
       if(m_nextPhase == gSKI_INPUT_PHASE)
       {
@@ -1617,14 +1661,14 @@ HandleKernelXMLCallback
          m_runListeners.Notify(gSKIEVENT_BEFORE_PHASE_EXECUTED, nfBeforePhase);
       }
 
-      // See if this is an elaboration cycle 
+      // See if this is an elaboration cycle   <<-- won't work for Soar 7 mode
       if((m_nextPhase == gSKI_PROPOSAL_PHASE) || (m_nextPhase == gSKI_APPLY_PHASE))
       {
          RunNotifier nfBeforeElab(this, m_nextPhase);
          m_runListeners.Notify(gSKIEVENT_BEFORE_ELABORATION_CYCLE, nfBeforeElab);
       }
 
-      // Tell listeners about smallest step
+      // Tell listeners about smallest step   <<-- won't work for elaborations
       RunNotifier nfBeforeStep(this, m_nextPhase);
       m_runListeners.Notify(gSKIEVENT_BEFORE_SMALLEST_STEP, nfBeforeStep);
    }
@@ -1665,6 +1709,9 @@ HandleKernelXMLCallback
          // Increment the phase count
          ++m_phaseCount;
 
+	     // Increment the elaboration count ???
+		 ++m_elaborationCount;
+
          // Increment the number of outputs that have occured
          if((m_lastPhase == gSKI_OUTPUT_PHASE) && m_agent->output_link_changed)
             ++m_outputCount;
@@ -1681,7 +1728,8 @@ HandleKernelXMLCallback
          m_runListeners.Notify(gSKIEVENT_AFTER_DECISION_CYCLE, nfAfterDC);
 
          // Increment the decision count
-         ++m_decisionCount;
+         ++m_decisionCount;  
+		 //No!  We need to get it from the agent in SoarKernel
 
          // Check an interrupt
          if(m_interruptFlags & gSKI_STOP_AFTER_DECISION_CYCLE)
@@ -1698,7 +1746,7 @@ HandleKernelXMLCallback
    // NOTE!  THIS IS A WORKAROUND HACK!!!  THIS SHOULD NOT STAY HERE!!!
    //        IT IS NEEDED FOR THE TSI UNTIL IT CAN GET REWRITTEN!
    //
-   //
+   //  KJC, June 05:  it's used all over in gSKI...
    ==================================
    */
    extern agent* GetSoarAgentPtr(IAgent* agent)
