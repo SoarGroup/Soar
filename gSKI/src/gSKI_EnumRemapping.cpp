@@ -82,6 +82,8 @@ namespace gSKI
       PhaseTypeEnumMapping[DECISION_PHASE]      = gSKI_DECISION_PHASE;
       PhaseTypeEnumMapping[APPLY_PHASE]         = gSKI_APPLY_PHASE;
       PhaseTypeEnumMapping[OUTPUT_PHASE]        = gSKI_OUTPUT_PHASE;
+      PhaseTypeEnumMapping[PREFERENCE_PHASE]    = gSKI_PREFERENCE_PHASE;
+      PhaseTypeEnumMapping[WM_PHASE]            = gSKI_WM_PHASE;
 
       // Event mappings
       EventEnumMapping[gSKI_K_EVENT_WME_ADDED][0]   = 0;
@@ -93,6 +95,14 @@ namespace gSKI
       EventEnumMapping[gSKI_K_EVENT_PRODUCTION_REMOVED][0] = gSKIEVENT_BEFORE_PRODUCTION_REMOVED;
       EventEnumMapping[gSKI_K_EVENT_PRODUCTION_FIRED][1] = gSKIEVENT_AFTER_PRODUCTION_FIRED;
       EventEnumMapping[gSKI_K_EVENT_PRODUCTION_RETRACTED][0] = gSKIEVENT_BEFORE_PRODUCTION_RETRACTED;
+
+	  EventEnumMapping[gSKI_K_EVENT_PHASE][0]             = gSKIEVENT_BEFORE_PHASE_EXECUTED;
+	  EventEnumMapping[gSKI_K_EVENT_PHASE][1]             = gSKIEVENT_AFTER_PHASE_EXECUTED;
+	  EventEnumMapping[gSKI_K_EVENT_ELABORATION_CYCLE][0] = gSKIEVENT_BEFORE_ELABORATION_CYCLE;
+	  EventEnumMapping[gSKI_K_EVENT_ELABORATION_CYCLE][1] = gSKIEVENT_AFTER_ELABORATION_CYCLE;
+	  EventEnumMapping[gSKI_K_EVENT_DECISION_CYCLE][0]    = gSKIEVENT_BEFORE_DECISION_CYCLE;
+	  EventEnumMapping[gSKI_K_EVENT_DECISION_CYCLE][1]    = gSKIEVENT_AFTER_DECISION_CYCLE;
+	  
 
 	  PrintEventEnumMapping[gSKI_K_EVENT_PRINT_CALLBACK] = gSKIEVENT_PRINT;
 
@@ -162,12 +172,8 @@ namespace gSKI
    {
       if(!m_initialized) 
          Init();
-      // Special case where we need more info for phase remappings
-      // Soar goals the apply and proposal phases both preference phases
-      if(phase == PREFERENCE_PHASE)
-         return (application)? gSKI_APPLY_PHASE: gSKI_PROPOSAL_PHASE;
-      else
-         return static_cast<egSKIPhaseType>(PhaseTypeEnumMapping[phase]);
+ 
+	  return static_cast<egSKIPhaseType>(PhaseTypeEnumMapping[phase]);
    }
 
    /*
@@ -228,6 +234,60 @@ namespace gSKI
       case gSKI_K_EVENT_PRODUCTION_RETRACTED: return gSKIEVENT_BEFORE_PRODUCTION_RETRACTED;
       }
   **/
+
+   /*
+   ==================================
+   ==================================
+   */
+   egSKIAgentEvents EnumRemappings::RemapRunEventType(egSKIRunEventId eventId)
+   /** this goes from gSKI to Kernel Events **/
+   {
+      if(!m_initialized) 
+         Init();
+      switch (eventId)
+      {
+      case gSKIEVENT_BEFORE_PHASE_EXECUTED:
+         return gSKI_K_EVENT_PHASE;
+      case gSKIEVENT_AFTER_PHASE_EXECUTED:
+         return gSKI_K_EVENT_PHASE;
+      case gSKIEVENT_BEFORE_ELABORATION_CYCLE:
+         return gSKI_K_EVENT_ELABORATION_CYCLE;
+      case gSKIEVENT_AFTER_ELABORATION_CYCLE:
+         return gSKI_K_EVENT_ELABORATION_CYCLE;
+      case gSKIEVENT_BEFORE_DECISION_CYCLE:
+         return gSKI_K_EVENT_DECISION_CYCLE;
+      case gSKIEVENT_AFTER_DECISION_CYCLE:
+         return gSKI_K_EVENT_DECISION_CYCLE;
+       default:
+         // Error condition
+         MegaAssert(false, "Could not map a production event id");
+         return static_cast<egSKIAgentEvents>(0);
+      }
+   }
+
+
+   /*
+   ==================================
+   ==================================
+   */
+
+  egSKIRunEventId EnumRemappings::Map_Kernel_to_gSKI_RunEventId(unsigned long eventId, unsigned char occured)
+  { 
+	unsigned long gSKIeventId;
+
+    if(!m_initialized) 
+       Init();
+
+	gSKIeventId = (EventEnumMapping[eventId][occured]);
+    
+	if (IsRunEventID(gSKIeventId)) {
+		return static_cast<egSKIRunEventId>(gSKIeventId);
+      } else {
+	// Error condition
+	MegaAssert(false, "Could not map a Run event id");
+	return static_cast<egSKIRunEventId>(0);
+      }
+  }
    /*
    ==================================
    ==================================

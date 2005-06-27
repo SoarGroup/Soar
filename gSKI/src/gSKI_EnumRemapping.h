@@ -36,7 +36,8 @@ namespace gSKI
 	  static egSKIProductionEventId Map_Kernel_to_gSKI_ProdEventId(unsigned long eventId, unsigned char occured);
       static egSKIPrintEventId      Map_Kernel_to_gSKI_PrintEventId(unsigned long eventId);
 	  static egSKIXMLEventId		Map_Kernel_to_gSKI_XMLEventId(unsigned long eventId);
-
+	  static egSKIRunEventId		Map_Kernel_to_gSKI_RunEventId(unsigned long eventId, unsigned char occured);
+ 
 
 
       ////////////////////////////////////////////////////////////////
@@ -53,6 +54,7 @@ namespace gSKI
       static egSKIAgentEvents RemapProductionEventType(egSKIProductionEventId eventId);
       static egSKIAgentEvents RemapPrintEventType(egSKIPrintEventId eventId);
 	  static egSKIAgentEvents RemapXMLEventType(egSKIXMLEventId eventId);
+	  static egSKIAgentEvents RemapRunEventType(egSKIRunEventId eventId);
 
       static void Init();
    private:
