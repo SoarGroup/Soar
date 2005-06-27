@@ -737,10 +737,7 @@ namespace gSKI
 					do_print_for_wme (agnt, w, depth, internal);
 				} else 
 				{
-					//               sprintf(interp->result,
-					//                  "No wme %ld in working memory", 
-					//                  internalAgent->GetSoarAgent()->lexeme.int_val);
-					//               return TCL_ERROR;
+					print(agnt, "No wme %ld in working memory.", agnt->lexeme.int_val);
 					return;
 				}
 				break;
