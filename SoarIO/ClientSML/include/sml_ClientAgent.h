@@ -347,8 +347,10 @@ public:
 	* smlEVENT_BEFORE_DECISION_CYCLE,
 	* smlEVENT_AFTER_DECISION_CYCLE,
 	* smlEVENT_AFTER_INTERRUPT,
+	* smlEVENT_BEFORE_RUN_STARTS,
+	* smlEVENT_AFTER_RUN_ENDS,
 	* smlEVENT_BEFORE_RUNNING,
-	* smlEVENT_AFTER_RUNNING,
+	* smlEVENT_AFTER_RUNNING
 	*
 	* @returns A unique ID for this callback (used to unregister the callback later) 
 	*************************************************************/
