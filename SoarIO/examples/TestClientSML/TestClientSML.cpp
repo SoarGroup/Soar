@@ -176,7 +176,7 @@ bool SimpleRemoteConnect()
 	std::string trace ;
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
 
-	Sleep(1000) ;
+	SLEEP(1000) ;
 
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
