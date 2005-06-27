@@ -239,6 +239,8 @@ NamedEventDataList* CreateRunEventData() {
 	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_DECISION_CYCLE, "smlEVENT_BEFORE_DECISION_CYCLE"));
 	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_DECISION_CYCLE, "smlEVENT_AFTER_DECISION_CYCLE"));
 	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_INTERRUPT, "smlEVENT_AFTER_INTERRUPT"));
+	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RUN_STARTS, "smlEVENT_BEFORE_RUN_STARTS"));
+	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RUN_ENDS, "smlEVENT_AFTER_RUN_ENDS"));
 	runEventData->eventData.push_back(new EventData(smlEVENT_BEFORE_RUNNING, "smlEVENT_BEFORE_RUNNING"));
 	runEventData->eventData.push_back(new EventData(smlEVENT_AFTER_RUNNING, "smlEVENT_AFTER_RUNNING"));
 
@@ -261,6 +263,11 @@ NamedEventDataList* CreatePrintEventData() {
 	NamedEventDataList* printEventData = new NamedEventDataList();
 	printEventData->name = "Print Events";
 	
+	printEventData->eventData.push_back(new EventData(smlEVENT_LOG_ERROR, "smlEVENT_LOG_ERROR"));
+	printEventData->eventData.push_back(new EventData(smlEVENT_LOG_WARNING, "smlEVENT_LOG_WARNING"));
+	printEventData->eventData.push_back(new EventData(smlEVENT_LOG_INFO, "smlEVENT_LOG_INFO"));
+	printEventData->eventData.push_back(new EventData(smlEVENT_LOG_DEBUG, "smlEVENT_LOG_DEBUG"));
+	printEventData->eventData.push_back(new EventData(smlEVENT_ECHO, "smlEVENT_ECHO"));
 	printEventData->eventData.push_back(new EventData(smlEVENT_PRINT, "smlEVENT_PRINT"));
 
 	return printEventData;
