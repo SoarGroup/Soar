@@ -5,7 +5,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string>8.6.1, Copyright 2005 University of Michigan</string>
 	<key>CFBundleIdentifier</key>
-	<string>edu.umich.soar</string>
+	<string>edu.umich.soar-8.6.1</string>
 	<key>CFBundleShortVersionString</key>
 	<string>8.6.1</string>
 	<key>IFPkgFlagAllowBackRev</key>
