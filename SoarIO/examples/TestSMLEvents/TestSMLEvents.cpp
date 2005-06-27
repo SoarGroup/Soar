@@ -313,7 +313,11 @@ void PrintEventData(DataList* dataList) {
 		cout << endl << endl << "*****   " << (*i)->name << "   *****" << endl << endl;
 		
 		for(EventDataList::iterator j = (*i)->eventData.begin(); j != (*i)->eventData.end(); j++) {
-			cout << (*j)->eventId << "\t" << (*j)->eventName << "\t" << (*j)->count << endl;
+			cout.width(4);
+			cout << (*j)->eventId << " ";
+			cout.width(40);
+			cout << (*j)->eventName << " ";
+			cout << (*j)->count << endl;
 		}
 	}
 }
