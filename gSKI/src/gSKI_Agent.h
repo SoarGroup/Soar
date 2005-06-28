@@ -151,10 +151,10 @@ namespace gSKI
        * @see egSKIRunType
        *
        * @param runLength How long to run the system.  Choices are       
-       *          gSKI_RUN_SMALLEST_STEP, gSKI_RUNPHASE,
+       *          gSKI_RUN_SMALLEST_STEP, gSKI_RUN_ELABORATION_PHASE, gSKI_RUNPHASE,
        *          gSKI_RUN_DECISION_CYCLE, gSKI_RUN_UNTIL_OUTPUT, and
        *          gSKI_RUN_FOREVER.  See egSKIRunType for details.
-       * @param  count For gSKI_RUN_SMALLEST_STEP, gSKI_RUN_PHASE,
+       * @param  count For gSKI_RUN_SMALLEST_STEP, gSKI_RUN_ELABORATION_PHASE, gSKI_RUN_PHASE,
        *          and gSKI_RUN_DECISION_CYCLE this parameter tells the method
        *          how many elaboration phases, decision phase or decision cycles
        *          to run before the thread groups return. For other run types
@@ -193,10 +193,10 @@ namespace gSKI
        * @see egSKIRunType
        *
        * @param runLength How long to run the system.  Choices are       
-       *          gSKI_RUN_SMALLEST_STEP, gSKI_RUN_PHASE,
+       *          gSKI_RUN_SMALLEST_STEP, gSKI_RUN_ELABORATION_PHASE, gSKI_RUN_PHASE,
        *          gSKI_RUN_DECISION_CYCLE, gSKI_RUN_UNTIL_OUTPUT, and
        *          gSKI_RUN_FOREVER.  See egSKIRunType for details.
-       * @param  count For gSKI_RUN_SMALLEST_STEP, gSKI_RUN_PHASE,
+       * @param  count For gSKI_RUN_SMALLEST_STEP, gSKI_RUN_ELABORATION_PHASE, gSKI_RUN_PHASE,
        *          and gSKI_RUN_DECISION_CYCLE this parameter tells the method
        *          how many elaboration phases, decision phase or decision cycles
        *          to run before returning. For other run types this parameter
@@ -1265,6 +1265,8 @@ namespace gSKI
       egSKIRunResult run(egSKIRunType runType, unsigned long maxSteps);
       void preStepNotifications();
       bool postStepNotifications();
+      void preStepNotificationsSoar7();
+      bool postStepNotificationsSoar7();
       //}
 
      /** 
@@ -1274,6 +1276,9 @@ namespace gSKI
       *  the additional work necessary to keep the test safe.  A 0 steps pointer
       *  causes a return of false.
       */
+	  //  Need to do a little more work to support elaborations in Soar 8, since
+	  //  input, decide, and propose count as an elaboration also.  should they?
+
       bool          maxStepsReached(unsigned long* steps, unsigned long maxSteps)
       {
          return (steps && (*steps == maxSteps))? true: false;

@@ -269,7 +269,7 @@ namespace gSKI
       m_smallestStepCount = 0;
       m_phaseCount        = 0;
       m_elaborationCount  = 0;
-      m_decisionCount     = 0;
+      m_decisionCount     = 0;  // should be m_agent->d_cycle_count ?  Can we delete this var?
       m_outputCount       = 0;
 
       // This tells run that we are starting a new cycle
@@ -330,6 +330,10 @@ namespace gSKI
       // other misc. objects and wmes.
       reinitialize_soar( m_agent );
       init_agent_memory( m_agent );
+
+	  // just for completeness, let's update the counters properly from the kernel...
+      m_elaborationCount  = m_agent->e_cycle_count;
+      m_decisionCount     = m_agent->d_cycle_count;
 
       // Tell listeners it is over
       am->FireAfterAgentReinitialized(this);
@@ -947,7 +951,7 @@ namespace gSKI
    unsigned long Agent::GetNumElaborationsExecuted(Error* err)
    {
       ClearError(err);
-      return m_elaborationCount;
+      return m_elaborationCount;  // should be m_agent->e_cycle_count;
    }
 
    /*
@@ -958,7 +962,8 @@ namespace gSKI
    unsigned long Agent::GetNumDecisionCyclesExecuted(Error* err)
    {
       ClearError(err);
-      return m_decisionCount;
+	  return m_agent->d_cycle_count;
+      //return m_decisionCount;  // should be m_agent->d_cycle_count
    }
 
    /*
@@ -1511,7 +1516,11 @@ namespace gSKI
          MegaAssert(!m_agent->system_halted, "System should not be halted here!");
 
          // Do pre-step notifications to listeners
-         preStepNotifications();
+		 if (m_agent->operand2_mode) {
+             preStepNotifications();
+		 } else {
+			 preStepNotificationsSoar7();
+		 }
 
          ///////////////////////////////////////////////////////////////////
          // Execute the next smallest step
@@ -1525,12 +1534,17 @@ namespace gSKI
 //KJC			 run_for_n_phases(m_agent, 1); }
          // Remember our current phase
          m_lastPhase = m_nextPhase;
+		 // boolean below is no longer used to determine Propose or Apply, should remove
          m_nextPhase = EnumRemappings::ReMapPhaseType((unsigned short)m_agent->current_phase, 
                                                       (m_agent->applyPhase)? true: false);
          ///////////////////////////////////////////////////////////////////
 
          // Do post step notifications to listeners
-         interrupted = postStepNotifications();
+		 if (m_agent->operand2_mode) {
+			 interrupted = postStepNotifications();
+		 } else {
+			 interrupted = postStepNotificationsSoar7();
+		 }
 
          // If we are doing a suspend type interrupt, here is where we suspend!
          // If we don't suspend, we exit this loop.
@@ -1626,10 +1640,12 @@ namespace gSKI
          return &m_smallestStepCount;
       case gSKI_RUN_PHASE:
          return &m_phaseCount;
-//      case gSKI_RUN_ELABORATION:
-//         return &m_elaborationCount;
+      case gSKI_RUN_ELABORATION_PHASE:
+		 return &m_agent->e_cycle_count;
+         //return &m_elaborationCount;
       case gSKI_RUN_DECISION_CYCLE:
-         return &m_decisionCount;
+		 return &m_agent->d_cycle_count;
+         //return &m_decisionCount;
       case gSKI_RUN_UNTIL_OUTPUT:
          return &m_outputCount;
       default:
@@ -1673,6 +1689,35 @@ namespace gSKI
       m_runListeners.Notify(gSKIEVENT_BEFORE_SMALLEST_STEP, nfBeforeStep);
    }
 
+   void Agent::preStepNotificationsSoar7()
+   {
+       // KJC:  These can all go away if we use the gSKI events in SoarKernel
+	   // where they are all in the proper part of respective phases.
+	   
+      // Input phase is the beginning of an elaboration phase
+      if(m_nextPhase == gSKI_INPUT_PHASE)
+      {
+         RunNotifier nfBeforeElab(this, m_nextPhase);
+         m_runListeners.Notify(gSKIEVENT_BEFORE_ELABORATION_CYCLE, nfBeforeElab);
+         // Input phase is the beginning of the decision cycle if e_cycles_this_d_cycle == 0
+         if (!m_agent->e_cycles_this_d_cycle)
+		 {
+ 			 RunNotifier nfBeforeDC(this, m_nextPhase);
+ 			 m_runListeners.Notify(gSKIEVENT_BEFORE_DECISION_CYCLE, nfBeforeDC);
+		 }
+      } 
+
+      // Soar 7 is always starting a new phase
+      RunNotifier nfBeforePhase(this, m_nextPhase);
+      m_runListeners.Notify(gSKIEVENT_BEFORE_PHASE_EXECUTED, nfBeforePhase);
+ 
+
+	  //  KJC: not sure this is needed for Soar 7 (or Soar 8) because always new phase
+	  // Tell listeners about smallest step   <<-- won't work for elaborations
+      //RunNotifier nfBeforeStep(this, m_nextPhase);
+      //m_runListeners.Notify(gSKIEVENT_BEFORE_SMALLEST_STEP, nfBeforeStep);
+   }
+
    /*
    =============================
 
@@ -1710,7 +1755,8 @@ namespace gSKI
          ++m_phaseCount;
 
 	     // Increment the elaboration count ???
-		 ++m_elaborationCount;
+		 //++m_elaborationCount;
+		 //No!  We need to get it from the agent in SoarKernel
 
          // Increment the number of outputs that have occured
          if((m_lastPhase == gSKI_OUTPUT_PHASE) && m_agent->output_link_changed)
@@ -1728,8 +1774,61 @@ namespace gSKI
          m_runListeners.Notify(gSKIEVENT_AFTER_DECISION_CYCLE, nfAfterDC);
 
          // Increment the decision count
-         ++m_decisionCount;  
+         //++m_decisionCount;  
 		 //No!  We need to get it from the agent in SoarKernel
+
+         // Check an interrupt
+         if(m_interruptFlags & gSKI_STOP_AFTER_DECISION_CYCLE)
+            interrupted = true;
+      }
+
+      return interrupted;
+   }
+
+   bool Agent::postStepNotificationsSoar7()
+   {
+      bool interrupted = false;
+
+	  //  We took these out of the Soar7 preStep...
+      // Notify listeners about the end of the phase
+      //RunNotifier nfAfterStep(this, m_lastPhase);
+      //m_runListeners.Notify(gSKIEVENT_AFTER_SMALLEST_STEP, nfAfterStep);
+
+      // Increment smallest step
+      ++m_smallestStepCount;  // not sure this is meaningful anymore...
+
+      // Check an interrupt
+      if(m_interruptFlags & gSKI_STOP_AFTER_SMALLEST_STEP)
+         interrupted = true;
+
+      // Soar 7 is always finishing a phase
+         RunNotifier nfAfterPhase(this, m_lastPhase);
+         m_runListeners.Notify(gSKIEVENT_AFTER_PHASE_EXECUTED, nfAfterPhase);
+      
+         // Increment the phase count
+         ++m_phaseCount;
+
+         // Increment the number of outputs that have occured
+         if((m_lastPhase == gSKI_OUTPUT_PHASE) && m_agent->output_link_changed)
+            ++m_outputCount;
+
+         // Check an interrupt
+         if(m_interruptFlags & gSKI_STOP_AFTER_PHASE)
+            interrupted = true;
+     
+
+	  // See if this was an elaboration cycle 
+      if(m_lastPhase == gSKI_OUTPUT_PHASE)
+      {
+         RunNotifier nfAfterElab(this, m_lastPhase);
+         m_runListeners.Notify(gSKIEVENT_AFTER_ELABORATION_CYCLE, nfAfterElab);
+      }
+
+      // If the last phase was DECISION, we just ended a DC
+      if(m_lastPhase == gSKI_DECISION_PHASE)
+      {
+         RunNotifier nfAfterDC(this, m_lastPhase);
+         m_runListeners.Notify(gSKIEVENT_AFTER_DECISION_CYCLE, nfAfterDC);
 
          // Check an interrupt
          if(m_interruptFlags & gSKI_STOP_AFTER_DECISION_CYCLE)
