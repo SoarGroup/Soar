@@ -30,7 +30,6 @@ namespace gSKI
       static egSKISymbolType ReMapSymbolType(unsigned short);
       static egSKIPreferenceType ReMapPreferenceType(unsigned short);
       static egSKIPhaseType ReMapPhaseType(unsigned short, bool);
-      //static egSKIProductionEventId   RemapProductionEventType(unsigned long, unsigned char);
       static egSKIProdType  ReMapProductionType(unsigned short);
  
 	  static egSKIProductionEventId Map_Kernel_to_gSKI_ProdEventId(unsigned long eventId, unsigned char occured);
