@@ -256,15 +256,9 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::IAgent
 	{
 		pConnection = *connectionIter ;
 
-		// When Soar is sending output, we don't want to wait for a response (which contains no information anyway)
-		// in case the caller is slow to respond to the incoming message.
-		// BADBAD: Actually, this is potentially dangerous if the client wishes to act in response to this event.
-		// because by the time they get the message we might no longer be in the output cycle.
-		// Currently, ClientSML just records the new output values and the client only sees them later when it
-		// explicitly looks for changes (once Soar has stopped running) so this is OK.
-		// We could make this safer (but a bit slower in the remote case) by changing this to SendMessageGetResponse()
-		// in which case we'd halt here (in the output cycle) until the client has finished processing the output message.
-		pConnection->SendMessage(pMsg) ;
+		// Send the output to the client.
+		// Waiting for a response allows them to act on the output while we're still in the output phase.
+		pConnection->SendMessageGetResponse(&response, pMsg) ;
 
 		connectionIter++ ;
 	}
