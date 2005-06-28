@@ -8,8 +8,6 @@
 	<string>edu.umich.soar-8.6.1</string>
 	<key>CFBundleShortVersionString</key>
 	<string>8.6.1</string>
-	<key>IFPkgDescriptionTitle</key>
-	<string>Soar 8.6.1</string>
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>
