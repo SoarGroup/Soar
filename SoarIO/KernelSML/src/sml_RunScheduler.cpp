@@ -53,8 +53,8 @@ unsigned long RunScheduler::GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType ru
 		return pAgent->GetNumSmallestStepsExecuted();
 	case gSKI_RUN_PHASE:
 		return pAgent->GetNumPhasesExecuted();
-	//case gSKI_RUN_ELABORATION:
-	//	return pAgent->GetNumElaborationsExecuted();
+	case gSKI_RUN_ELABORATION_PHASE:
+		return pAgent->GetNumElaborationsExecuted();
 	case gSKI_RUN_DECISION_CYCLE:
 		return pAgent->GetNumDecisionCyclesExecuted();
 	case gSKI_RUN_UNTIL_OUTPUT:

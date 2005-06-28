@@ -145,10 +145,10 @@ namespace gSKI {
        * @see egSKIRunType
        *
        * @param runLength How long to run the system.  Choices are       
-       *          gSKI_RUN_SMALLEST_STEP, gSKI_RUNPHASE,
+       *          gSKI_RUN_SMALLEST_STEP, gSKI_RUN_ELABORATION_PHASE, gSKI_RUN_PHASE,
        *          gSKI_RUN_DECISION_CYCLE, gSKI_RUN_UNTIL_OUTPUT, and
        *          gSKI_RUN_FOREVER.  See egSKIRunType for details.
-       * @param  count For gSKI_RUN_SMALLEST_STEP, gSKI_RUN_PHASE,
+       * @param  count For gSKI_RUN_SMALLEST_STEP, gSKI_RUN_PHASE, gSKI_RUN_ELABORATION_PHASE
        *          and gSKI_RUN_DECISION_CYCLE this parameter tells the method
        *          how many elaboration phases, decision phase or decision cycles
        *          to run before the thread groups return. For other run types
@@ -187,10 +187,10 @@ namespace gSKI {
        * @see egSKIRunType
        *
        * @param runLength How long to run the system.  Choices are       
-       *          gSKI_RUN_SMALLEST_STEP, gSKI_RUN_PHASE,
+       *          gSKI_RUN_SMALLEST_STEP, gSKI_RUN_ELABORATION_PHASE, gSKI_RUN_PHASE,
        *          gSKI_RUN_DECISION_CYCLE, gSKI_RUN_UNTIL_OUTPUT, and
        *          gSKI_RUN_FOREVER.  See egSKIRunType for details.
-       * @param  count For gSKI_RUN_SMALLEST_STEP, gSKI_RUN_PHASE,
+       * @param  count For gSKI_RUN_SMALLEST_STEP, gSKI_RUN_PHASE, gSKI_RUN_ELABORATION_PHASE
        *          and gSKI_RUN_DECISION_CYCLE this parameter tells the method
        *          how many elaboration phases, decision phase or decision cycles
        *          to run before returning. For other run types this parameter
