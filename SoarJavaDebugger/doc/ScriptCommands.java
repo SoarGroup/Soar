@@ -22,6 +22,8 @@ import dialogs.NewWindowDialog;
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 
+import sml.Kernel;
+
 /************************************************************************
  * 
  * A set of commands that produce actions within the debugger
@@ -54,6 +56,28 @@ public class ScriptCommands
 		view.clearDisplay() ;
 		
 		return null ;
+	}
+	
+	// Make connection to remote kernel
+	// remote <ip> <port> <agentname> [all arguments optional]
+	protected Object executeRemoteConnect(String[] tokens)
+	{
+		String ip        = tokens.length >= 2 ? tokens[1] : null ;
+		String portStr   = tokens.length >= 3 ? tokens[2] : Integer.toString(Kernel.GetDefaultPort()) ;
+		String agentName = tokens.length >= 4 ? tokens[3] : null ;
+		
+		int port = Integer.parseInt(portStr) ;
+		
+		try
+		{
+			m_Document.remoteConnect(ip, port, agentName) ;
+			return Boolean.TRUE ;
+		}
+		catch (Exception ex)
+		{
+			m_Frame.ShowMessageBox("Error making remote connection: " + ex.getMessage()) ;
+			return Boolean.FALSE ;
+		}
 	}
 	
 	// Add a new view: addview <framename> <viewname> Right|Left|Top|Bottom
@@ -638,6 +662,11 @@ public class ScriptCommands
 		if (first.equals("movetabs"))
 		{
 			return executeMoveTabs(tokens) ;
+		}
+		
+		if (first.equals("remote"))
+		{
+			return executeRemoteConnect(tokens) ;
 		}
 		
 		// properties <frame> <view>

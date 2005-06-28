@@ -576,7 +576,7 @@ public class Document
 		}
 		
 		// Let the rest of the world know that the debugger is up and ready now
-		m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady()) ;
+		//m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady()) ;
 	}
 	
 	/********************************************************************************************
