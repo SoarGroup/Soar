@@ -359,8 +359,8 @@ public class Document
 		// Register for agent additions before we create our first agent
 		registerStandardKernelEvents() ;
 		
-		// Let the rest of the world know that the debugger is up and ready now
-		m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady()) ;
+		// Let the rest of the world know that the debugger is up and ready now (but agent level events not ready yet)
+		m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady(), sml_Names.getKStatusNotReady()) ;
 		
 		// Start with an agent...without this a kernel's not much use.
 		Agent agent = createAgentNoNewWindow("soar1") ;
@@ -576,7 +576,7 @@ public class Document
 		}
 		
 		// Let the rest of the world know that the debugger is up and ready now
-		//m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady()) ;
+		m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady(), sml_Names.getKStatusReady()) ;
 	}
 	
 	/********************************************************************************************
@@ -680,11 +680,18 @@ public class Document
 					MainFrame frame = MainFrame.createNewFrame(getFirstFrame().getDisplay(), doc) ;			
 					frame.setAgentFocus(agent) ;
 					doc.fireAgentAdded(agent) ;
+					
+					// Let the rest of the world know that the debugger is up and ready now for this agent
+					m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady(), sml_Names.getKStatusReady()) ;
+
 				} } ) ;
 			}
 			else
 			{
-				this.fireAgentAdded(agent) ;			
+				this.fireAgentAdded(agent) ;
+				
+				// Let the rest of the world know that the debugger is up and ready now for this agent
+				m_Kernel.SetConnectionInfo(kConnectionName, sml_Names.getKStatusReady(), sml_Names.getKStatusReady()) ;
 			}
 		}
 		
