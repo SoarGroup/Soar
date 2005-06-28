@@ -109,12 +109,14 @@ void Kernel::Shutdown()
 	// Currently we have no work to do on the kernel side before
 	// disconnecting a remote connection.
 	if (!GetConnection() || GetConnection()->IsRemoteConnection())
+	{
+		GetConnection()->CloseConnection() ;
 		return ;
+	}
 
 	AnalyzeXML response ;
-	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_Shutdown))
-	{
-	}
+	GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_Shutdown) ;
+	GetConnection()->CloseConnection() ;
 }
 
 /*************************************************************

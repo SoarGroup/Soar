@@ -354,7 +354,7 @@ bool Socket::IsReadDataAvailable(int millisecondsWait)
 	#pragma warning(pop)
 	#endif
 
-	// Don't wait--just poll
+	// Wait for milliseconds for select to return (can be 0 to just poll)
 	TIMEVAL zero ;
 	zero.tv_sec = 0 ;
 	zero.tv_usec = millisecondsWait * 1000 ;

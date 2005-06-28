@@ -179,10 +179,17 @@ bool SimpleRemoteConnect()
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
 
-	cout << trace ;
+	cout << trace << endl ;
 
 	std::string state = pAgent->ExecuteCommandLine("print --depth 2 s1") ;
 	cout << state ;
+
+	bool changed = pKernel->GetAllConnectionInfo() ;
+	for (int i = 0 ; i < pKernel->GetNumberConnections() ; i++)
+	{
+		ConnectionInfo const* pInfo = pKernel->GetConnectionInfo(i) ;
+		cout << pInfo->GetID() << " " << pInfo->GetName() << " " << pInfo->GetConnectionStatus() << " " << pInfo->GetAgentStatus() << endl ;
+	}
 
 	pKernel->Shutdown() ;
 

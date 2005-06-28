@@ -394,6 +394,7 @@ bool KernelSML::HandleGetConnections(gSKI::IAgent* pAgent, char const* pCommandN
 		pTagConnection->AddAttribute(sml_Names::kConnectionId, pConnection->GetID()) ;
 		pTagConnection->AddAttribute(sml_Names::kConnectionName, pConnection->GetName()) ;
 		pTagConnection->AddAttribute(sml_Names::kConnectionStatus, pConnection->GetStatus()) ;
+		pTagConnection->AddAttribute(sml_Names::kAgentStatus, pConnection->GetAgentStatus()) ;
 
 		// Add the connection into the result
 		pTagResult->AddChild(pTagConnection) ;
