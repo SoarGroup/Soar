@@ -143,6 +143,16 @@ if {[llength [array names localAgentPtrs]] == 1} {
        ## this is the first agent, so can launch Java Debugger
        tsiLaunchJavaDebugger $name
    }
+   
+  #now wait for the agent to report that it is ready
+  $_kernel GetAllConnectionInfo
+  while {[expr {[$_kernel GetAgentStatus java-debugger] ne "ready"}]} {
+	  set delay 0
+	  after 100 set delay [expr $delay + 1]
+	  vwait delay
+	  $_kernel GetAllConnectionInfo
+        }
+   
 
    # Register for the agent events
  
@@ -465,7 +475,7 @@ proc tsiLaunchJavaDebugger {name} {
 	  vwait delay
 	  $_kernel GetAllConnectionInfo
 	  #puts "debugger status = [$_kernel GetConnectionStatus java-debugger]"
-  }
+        }
   
 }
 
