@@ -297,8 +297,7 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, int millisecondsWait)
 		bool alive = m_Socket->IsAlive() ;
 		if (!alive)
 		{
-			PrintDebug("Socket has closed down abruptly (during read), so we'll close the connection") ;
-			this->SetError(Error::kSocketError) ;
+			// The socket has closed down so close our connection object too.
 			this->CloseConnection() ;
 			return receivedMessage ;
 		}
