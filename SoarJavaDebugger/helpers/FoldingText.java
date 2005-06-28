@@ -765,6 +765,14 @@ public class FoldingText
 		return m_FoldingDoc.convertAllToVisibleCharPos(charPos) ;
 	}
 	
+	public void scrollBottom()
+	{
+		// Move the selection to the end and make sure it's visible
+		int length = m_Text.getCharCount() ;
+		m_Text.setSelection(length) ;
+		m_Text.showSelection() ;
+	}
+	
 	public void setSelection(int start, int end)
 	{
 		m_Text.setSelection(start, end) ;

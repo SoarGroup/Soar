@@ -599,6 +599,16 @@ public class FoldingTextView extends AbstractComboView
 	
 	/********************************************************************************************
 	 * 
+	 * 	Scroll the display control to the bottom
+	 * 
+	 ********************************************************************************************/
+	public void scrollBottom()
+	{
+		m_FoldingText.scrollBottom() ;
+	}
+
+	/********************************************************************************************
+	 * 
 	 * This handler should only be called from the UI thread as it does a lot of UI work.
 	 * 
 	 * @param agent

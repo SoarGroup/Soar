@@ -73,6 +73,19 @@ public abstract class AbstractTextView extends AbstractComboView
 		m_Text.setText("") ;
 	}
 
+	/********************************************************************************************
+	 * 
+	 * 	Scroll the display control to the bottom
+	 * 
+	 ********************************************************************************************/
+	public void scrollBottom()
+	{
+		// Move the selection to the end and make sure it's visible
+		int length = m_Text.getCharCount() ;
+		m_Text.setSelection(length) ;
+		m_Text.showSelection() ;
+	}
+
 	/************************************************************************
 	* 
 	* Search for the next occurance of 'text' in this view and place the selection

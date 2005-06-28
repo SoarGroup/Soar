@@ -229,6 +229,13 @@ public abstract class AbstractComboView extends AbstractView
 	protected abstract void createDisplayControl(Composite parent) ;
 	
 	/********************************************************************************************
+	 * 
+	 * 	Scroll the display control to the bottom
+	 * 
+	 ********************************************************************************************/
+	public abstract void scrollBottom() ;
+
+	/********************************************************************************************
 	* 
 	* Initialize this window and its children.
 	* Should call setValues() at the start to complete initialization of the abstract view.
@@ -350,13 +357,17 @@ public abstract class AbstractComboView extends AbstractView
 			m_CurrentCommand = "" ;
 		}
 		
+		// Scroll the display window to the bottom so we can see the new
+		// command and any output
+		scrollBottom() ;
+		
 		// Send the command to Soar and echo into the trace
 		if (command.length() > 0)
 			executeAgentCommand(command, true) ;
 		else
 			m_Updating = false ;
 	}
-	
+		
 	public void setTextFont(Font f)
 	{
 		getDisplayControl().setFont(f) ;
