@@ -217,12 +217,18 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 
 	int sleepTime = 0 ;			// How long we sleep in milliseconds each pass through
 
+	// How long we sleep on the socket waiting for data in msecs
+	// We want to wait for a long time.  We used to set this to 0 and just poll the socket,
+	// but that means we're consuming all of the CPU.  Setting a long wait doesn't
+	// impact performance because we're not trying to do anything else other than get a response here.
+	int waitForMessageTime = 1000 ;	
+
 	// If we don't already have this response cached,
 	// then read any pending messages.
 	do
 	{
 		// Loop until there are no more messages waiting on the socket
-		while (ReceiveMessages(false))
+		while (ReceiveMessages(false, waitForMessageTime))
 		{
 			// Check each message to see if it's a match
 			if (DoesResponseMatch(m_pLastResponse, pID))
@@ -269,6 +275,11 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 *************************************************************/
 bool RemoteConnection::ReceiveMessages(bool allMessages)
 {
+	return ReceiveMessages(allMessages, 0) ;
+}
+
+bool RemoteConnection::ReceiveMessages(bool allMessages, int millisecondsWait)
+{
 	// Make sure only one thread is sending messages at a time
 	// (This allows us to run a separate thread in clients polling for events even
 	//  when the client is sleeping, but we don't want them both to be sending/receiving at the same time).
@@ -294,7 +305,7 @@ bool RemoteConnection::ReceiveMessages(bool allMessages)
 
 		// Only check for read data after we've checked that the socket is still alive.
 		// (This is because IsReadData can't signal the difference between a dead connection and no data)
-		haveData = m_Socket->IsReadDataAvailable() ;
+		haveData = m_Socket->IsReadDataAvailable(millisecondsWait) ;
 		if (!haveData)
 			break ;
 

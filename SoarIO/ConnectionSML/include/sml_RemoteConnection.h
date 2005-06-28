@@ -61,6 +61,8 @@ protected:
 
 	bool DoesResponseMatch(ElementXML* pResponse, char const* pID) ;
 
+	bool ReceiveMessages(bool allMessages, int millisecondsWait) ;
+
 public:
 	virtual ~RemoteConnection();
 

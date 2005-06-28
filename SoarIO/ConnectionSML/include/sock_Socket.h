@@ -95,7 +95,7 @@ public:
 
 	// Check if data is waiting to be read
 	// Returns true if socket is closed--but then receiveMsg will know it's closed.
-	bool		IsReadDataAvailable() ;
+	bool		IsReadDataAvailable(int millisecondsWait = 0) ;
 
 	// Close down our side of the socket
 	void		CloseSocket() ;

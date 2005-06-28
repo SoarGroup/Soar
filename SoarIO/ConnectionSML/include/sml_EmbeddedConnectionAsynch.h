@@ -15,6 +15,7 @@
 
 #include "sml_Connection.h"
 #include "sml_EmbeddedConnection.h"
+#include "thread_Event.h"
 
 namespace sml
 {
@@ -39,6 +40,9 @@ protected:
 	/** Ensures only one thread accesses the response list at a time **/
 	soar_thread::Mutex	m_ListMutex ;
 
+	/** An event object which we use to have one thread sleep while waiting for another thread to drop off a response to a message */
+	soar_thread::Event  m_WaitEvent ;
+
 	/** Adds the message to the queue, taking ownership of it at the same time */
 	void AddResponseToList(ElementXML* pResponse) ;
 	ElementXML* IsResponseInList(char const* pID) ;
@@ -56,6 +60,9 @@ public:
 		// Make sure only one thread modifies the message queue at a time.
 		soar_thread::Lock lock(&m_IncomingMutex) ;
 		m_IncomingMessageQueue.push(pMsg) ;
+
+		// Wake up anybody who's waiting for a response
+		m_WaitEvent.TriggerEvent() ;
 	}
 
 	virtual bool IsAsynchronous() { return true ; }

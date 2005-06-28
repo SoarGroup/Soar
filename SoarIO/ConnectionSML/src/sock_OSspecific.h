@@ -19,7 +19,6 @@ bool InitializeOperatingSystemSocketLibrary() ;
 bool TerminateOperatingSystemSocketLibrary() ;
 bool MakeSocketNonBlocking(SOCKET hSock) ;
 bool SleepMillisecs(long msecs) ;
-
 } // Namespace
 
 // Map certain functions depending on the OS

@@ -318,6 +318,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 /////////////////////////////////////////////////////////////////////
 // Function name  : Socket::IsReadDataAvailable
 // 
+// Argument		  : int millisecondsWait -- How long to wait for data in msecs (0 is default)
 // Return type    : bool 	
 // 
 // Description	  : Returns true if data is waiting to be read on this socket.
@@ -326,7 +327,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 //					indicating that the socket is closed.
 //
 /////////////////////////////////////////////////////////////////////
-bool Socket::IsReadDataAvailable()
+bool Socket::IsReadDataAvailable(int millisecondsWait)
 {
 	CTDEBUG_ENTER_METHOD("Socket::IsReadDataAvailable");
 
@@ -356,7 +357,7 @@ bool Socket::IsReadDataAvailable()
 	// Don't wait--just poll
 	TIMEVAL zero ;
 	zero.tv_sec = 0 ;
-	zero.tv_usec = 0 ;
+	zero.tv_usec = millisecondsWait * 1000 ;
 
 	// Check if anything is waiting to be read
 	int res = select( (int)hSock + 1, &set, NULL, NULL, &zero) ;
