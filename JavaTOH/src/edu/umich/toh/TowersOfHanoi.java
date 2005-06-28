@@ -38,7 +38,7 @@ import sml.Kernel;
  * @version 1.1
  */
 public class TowersOfHanoi
-implements Runnable, PaintListener, GameListener, ControlListener {
+implements PaintListener, GameListener, ControlListener {
     private Game game;
     private ToHRunner runner;
     
@@ -112,6 +112,12 @@ implements Runnable, PaintListener, GameListener, ControlListener {
         }
         
         new TowersOfHanoi(new Game(towerCount, diskCount)).run();
+        
+        // Explicitly calling System.exit() ensures the javaw process shuts down cleanly.
+        // Without this we sometimes have a problem with threads not shutting down on their own.
+        // We still need to investigate this more fully (it's an SML-java issue when you run
+        // the environment through a remote debugger--something's a little off).
+        System.exit(0) ;
     }
     
 	public void systemEventHandler(int eventID, Object data, Kernel kernel)
@@ -267,7 +273,6 @@ implements Runnable, PaintListener, GameListener, ControlListener {
         }
         game.detachSoar();
         dpy.dispose();
-        System.exit(0);
     }
     
     /**
@@ -414,10 +419,12 @@ implements Runnable, PaintListener, GameListener, ControlListener {
         reinitBuf = false;
     }
     
+    /*
     protected void finalize() throws Throwable {
         bufGC.dispose();
         bufImg.dispose();
         
         super.finalize();
     }
+    */
 }

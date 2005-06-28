@@ -16,6 +16,8 @@ import java.util.ListIterator;
 import sml.Agent;
 import sml.Identifier;
 import sml.Kernel;
+import sml.smlAgentEventId;
+import sml.smlRunEventId;
 import sml.smlRunFlags;
 import sml.smlSystemEventId;
 
@@ -62,9 +64,6 @@ public class Game implements Runnable {
         	System.out.println("Error creating kernel: " + kernel.GetLastErrorDescription()) ;
             System.exit(1);
         }
-
-        // Register for the event we'll use to update the world
-        registerForUpdateWorldEvent() ;
         
         m_StopNow = false ;
         
@@ -74,7 +73,10 @@ public class Game implements Runnable {
             throw new IllegalStateException("Error loading productions: "
                     + agent.GetLastErrorDescription());
         }
-        
+
+        // Register for the event we'll use to update the world
+        registerForUpdateWorldEvent() ;
+
         this.diskCount = diskCount;
         
         for (int i = 0; i < towerCount; ++i) {
@@ -147,28 +149,69 @@ public class Game implements Runnable {
     /** This method is called when the "after_all_output_phases" event fires, at which point we update the world */
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags)
 	{
-		// We have a problem at the moment with calling Stop() from arbitrary threads
-		// so for now we'll make sure to call it within an event callback.
-		if (m_StopNow)
+		try
 		{
-	    	m_StopNow = false ;	    	
-	    	kernel.StopAllAgents() ;
+			// We have a problem at the moment with calling Stop() from arbitrary threads
+			// so for now we'll make sure to call it within an event callback.
+			if (m_StopNow)
+			{
+		    	m_StopNow = false ;	    	
+		    	kernel.StopAllAgents() ;
+			}
+	
+			/* Example of flags we may be passed.  In other situations
+			 * we might choose not to update the world in some of these situations
+			 * (e.g. for run --self unless also had --update).
+			if ((runFlags & smlRunFlags.sml_RUN_SELF.swigValue()) != 0)
+				System.out.println("Called with run --self") ;
+			if ((runFlags & smlRunFlags.sml_RUN_ALL.swigValue()) != 0)
+				System.out.println("Called with run") ;
+			if ((runFlags & smlRunFlags.sml_UPDATE_WORLD.swigValue()) != 0)
+				System.out.println("Called with run --update") ;
+			if ((runFlags & smlRunFlags.sml_DONT_UPDATE_WORLD.swigValue()) != 0)
+				System.out.println("Called with run --noupdate") ;
+			*/
+			
+			updateWorld() ;
 		}
+		catch (Throwable t)
+		{
+			System.out.println("Caught a throwable event" + t.toString()) ;			
+		}
+	}
 
-		/* Example of flags we may be passed.  In other situations
-		 * we might choose not to update the world in some of these situations
-		 * (e.g. for run --self unless also had --update).
-		if ((runFlags & smlRunFlags.sml_RUN_SELF.swigValue()) != 0)
-			System.out.println("Called with run --self") ;
-		if ((runFlags & smlRunFlags.sml_RUN_ALL.swigValue()) != 0)
-			System.out.println("Called with run") ;
-		if ((runFlags & smlRunFlags.sml_UPDATE_WORLD.swigValue()) != 0)
-			System.out.println("Called with run --update") ;
-		if ((runFlags & smlRunFlags.sml_DONT_UPDATE_WORLD.swigValue()) != 0)
-			System.out.println("Called with run --noupdate") ;
-		*/
-		
-		updateWorld() ;
+    /** This method is called when the "after_all_output_phases" event fires, at which point we update the world */
+	public void afterDecisionHandler(int eventID, Object data, Agent agent, int phase)
+	{
+		try
+		{
+			// We have a problem at the moment with calling Stop() from arbitrary threads
+			// so for now we'll make sure to call it within an event callback.
+			if (m_StopNow)
+			{
+		    	m_StopNow = false ;	    	
+		    	kernel.StopAllAgents() ;
+			}
+	
+			/* Example of flags we may be passed.  In other situations
+			 * we might choose not to update the world in some of these situations
+			 * (e.g. for run --self unless also had --update).
+			if ((runFlags & smlRunFlags.sml_RUN_SELF.swigValue()) != 0)
+				System.out.println("Called with run --self") ;
+			if ((runFlags & smlRunFlags.sml_RUN_ALL.swigValue()) != 0)
+				System.out.println("Called with run") ;
+			if ((runFlags & smlRunFlags.sml_UPDATE_WORLD.swigValue()) != 0)
+				System.out.println("Called with run --update") ;
+			if ((runFlags & smlRunFlags.sml_DONT_UPDATE_WORLD.swigValue()) != 0)
+				System.out.println("Called with run --noupdate") ;
+			*/
+			
+			updateWorld() ;
+		}
+		catch (Throwable t)
+		{
+			System.out.println("Caught a throwable event" + t.toString()) ;			
+		}
 	}
 
     /**
@@ -308,12 +351,15 @@ public class Game implements Runnable {
     /** We update the environment when this event fires.  This allows us to either run the environment directly or from a debugger and get correct behavior */
     public void registerForUpdateWorldEvent()
     {
-    	int updateCallback = kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, "updateEventHandler", null) ;
+    	//int updateCallback = kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, "updateEventHandler", null) ;
+    	int eventCallback = agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, this, "afterDecisionHandler", null) ;
     }
 
     public void detachSoar() {
-	kernel.Shutdown();
+    	kernel.DestroyAgent(agent);
+    	kernel.Shutdown();
         kernel.delete();
+    	System.out.println("All done") ;
     }
     
     public static final String MOVE_DISK       = "move-disk";

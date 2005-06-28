@@ -94,6 +94,12 @@ implements Runnable, PaintListener, MacEnvironmentListener {
      */
     public static void main(String[] args) {
         new MissionariesAndCannibals().run();
+        
+        // Explicitly calling System.exit() ensures the javaw process shuts down cleanly.
+        // Without this we sometimes have a problem with threads not shutting down on their own.
+        // We still need to investigate this more fully (it's an SML-java issue when you run
+        // the environment through a remote debugger--something's a little off).
+        System.exit(0) ;
     }
     
     /**
