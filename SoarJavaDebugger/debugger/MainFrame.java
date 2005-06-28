@@ -493,7 +493,7 @@ public class MainFrame
 			return;
 
 		final String agentName = (m_AgentFocus == null ? kNoAgent : m_AgentFocus.GetAgentName());
-		boolean remote = m_Document.isConnected() && m_Document.isRemote();
+		boolean remote = m_Document.isRemote();
 		final String remoteString = remote ? "remote " : "";
 
 		// Need to make sure we make this change in the SWT thread as the event

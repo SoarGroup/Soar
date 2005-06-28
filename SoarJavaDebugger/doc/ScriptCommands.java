@@ -68,6 +68,10 @@ public class ScriptCommands
 		
 		int port = Integer.parseInt(portStr) ;
 		
+		// If we already have a remote connection don't do it again.
+		if (m_Document.isRemote() || m_Document.isStopping())
+			return Boolean.FALSE ;
+		
 		try
 		{
 			m_Document.remoteConnect(ip, port, agentName) ;

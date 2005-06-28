@@ -57,7 +57,10 @@ public class Document
 		
 	/** True if we are working with a remote kernel (not running inside our editor but in another process) */
 	private boolean				m_IsRemote = false ;
-	
+
+	/** True if we are shutting down the current connection */
+	private boolean				m_IsStopping = false ;
+
 	/** The list of all main frames in the application -- each frame has a menu bar */
 	private FrameList			m_FrameList = new FrameList() ;
 	
@@ -431,6 +434,8 @@ public class Document
 		if (m_Kernel == null)
 			return false ;
 
+		m_IsStopping = true ;
+		
 		final Kernel kernelToStop = m_Kernel ;
 		
 		// Experimental shutdown code where we try to stop soar
@@ -478,6 +483,7 @@ public class Document
 				kernelToStop.delete() ;
 				
 				m_Kernel = null ;
+				m_IsStopping = false ;
 				
 				// Let our listeners know we killed the kernel
 				fireSoarConnectionChanged() ;
@@ -590,6 +596,8 @@ public class Document
 		if (m_Kernel == null)
 			return false ;
 
+		m_IsStopping = true ;
+		
 		m_DocumentThread.setConnected(false) ;
  		
 		// NOTE: We don't check whether Soar is still running before allowing a remote disconnect
@@ -604,6 +612,7 @@ public class Document
 		m_Kernel.delete() ;
 		
 		m_Kernel = null ;
+		m_IsStopping = false ;
 		
 		// Let our listeners know we disconnected
 		fireSoarConnectionChanged() ;
@@ -624,12 +633,21 @@ public class Document
 	/********************************************************************************************
 	 * 
 	 * Returns true if the current connection is a remote connection.
-	 * (Note: You need to check isConnected() is true as well)
 	 * 
 	********************************************************************************************/
 	public boolean isRemote()
 	{
-		return m_IsRemote ;
+		return m_Kernel != null && m_IsRemote ;
+	}
+	
+	/********************************************************************************************
+	 * 
+	 * Returns true we're in the process of stopping the current connection and closing it.
+	 * 
+	********************************************************************************************/	
+	public boolean isStopping()
+	{
+		return m_IsStopping ;
 	}
 
 	public void systemEventHandler(int eventID, Object data, Kernel kernel)
