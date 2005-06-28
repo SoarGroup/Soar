@@ -33,10 +33,10 @@
 		<string>1.4*</string>
 		<key>MainClass</key>
 		<string>edu.umich.visualsoar.VisualSoar</string>
+		<key>WorkingDirectory</key>
+		<string>/Applications/Soar-8.6.1/soar-library</string>
 		<key>Properties</key>
 		<dict>
-			<key>WorkingDirectory</key>
-			<string>/Applications/Soar-8.6.1/soar-library</string>
 			<key>apple.laf.useScreenMenuBar</key>
 			<string>true</string>
 		</dict>
