@@ -181,6 +181,7 @@ protected:
 	std::string m_ID ;			// Unique ID, machine generated (by kernel)
 	std::string m_Name ;		// Name, optionally set by client (e.g. debugger)
 	std::string m_Status ;		// Status, optionally set by client from fixed set of values
+	std::string m_AgentStatus ;	// Agent status, referring to last created agent.  Similar to connection status above.
 
 public:
 	Connection() ;
@@ -414,6 +415,7 @@ public:
 	* ID - unique machine generated id (created by kernel)
 	* Name   - optional, set by client.  Should always be the same for a given client (e.g. debugger/java-toh etc.)
 	* Status - optional, set by client from fixed list of values
+	* Agent status - optional, set by client and refers to last created agent (set to "created" initially by kernel).
 	*************************************************************/
 	char const* GetID()					{ return m_ID.c_str() ; }
 	void SetID(char const* pID)			{ m_ID = pID ; }
@@ -421,6 +423,8 @@ public:
 	void SetName(char const* pName)		{ m_Name = pName ; }
 	char const* GetStatus()				{ return m_Status.c_str() ; }
 	void SetStatus(char const* pStatus) { m_Status = pStatus ; }
+	char const* GetAgentStatus()		{ return m_AgentStatus.c_str() ; }
+	void SetAgentStatus(char const* pStatus) { m_AgentStatus = pStatus ; }
 
 	/*************************************************************
 	* @brief Send a message and get the response.

@@ -176,6 +176,10 @@ bool KernelSML::HandleCreateAgent(gSKI::IAgent* pAgentPtr, char const* pCommandN
 		// NOTE: This call to GetAgentSML() will create the object if necessary...which it will be in this case.
 		AgentSML* pAgentSML = GetAgentSML(pAgent) ;
 
+		// Mark the agent's status as just having been created for all connections
+		// Note--agent status for connections just refers to the last agent created, i.e. this one.
+		m_pConnectionManager->SetAgentStatus(sml_Names::kStatusCreated) ;
+
 		// We also need to listen to input events so we can pump waiting sockets and get interrupt messages etc.
 		sml_InputProducer* pInputProducer = new sml_InputProducer(this) ;
 		pAgentSML->SetInputProducer(pInputProducer) ;
@@ -343,6 +347,7 @@ bool KernelSML::HandleSetConnectionInfo(gSKI::IAgent* pAgent, char const* pComma
 	// Get the parameters
 	char const* pName   = pIncoming->GetArgValue(sml_Names::kConnectionName) ;
 	char const* pStatus = pIncoming->GetArgValue(sml_Names::kConnectionStatus) ;
+	char const* pAgentStatus = pIncoming->GetArgValue(sml_Names::kAgentStatus) ;
 
 	if (!pName)
 	{
@@ -354,9 +359,15 @@ bool KernelSML::HandleSetConnectionInfo(gSKI::IAgent* pAgent, char const* pComma
 		return InvalidArg(pConnection, pResponse, pCommandName, "Connection status is missing") ;
 	}
 
+	if (!pAgentStatus)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Agent status is missing") ;
+	}
+
 	// Execute the command
 	pConnection->SetName(pName) ;
 	pConnection->SetStatus(pStatus) ;
+	pConnection->SetAgentStatus(pAgentStatus) ;
 
 	return true ;
 }

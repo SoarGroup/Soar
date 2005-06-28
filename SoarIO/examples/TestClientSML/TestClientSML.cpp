@@ -127,8 +127,6 @@ bool SimpleRunListener(int decisions)
 		return false ;
 	}
 
-	pKernel->SetConnectionInfo("runlistener", "ready") ;
-
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
 
@@ -163,8 +161,6 @@ bool SimpleRemoteConnect()
 		return false ;
 	}
 
-	pKernel->SetConnectionInfo("runconnect", "ready") ;
-
 	sml::Agent* pAgent = pKernel->GetAgentByIndex(0) ;
 
 	if (!pAgent)
@@ -172,6 +168,8 @@ bool SimpleRemoteConnect()
 		cout << "No agents running in this kernel" << endl ;
 		return false ;
 	}
+
+	pKernel->SetConnectionInfo("runconnect", "ready", "ready") ;
 
 	std::string trace ;
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
@@ -211,7 +209,7 @@ bool SimpleListener(int life)
 		return false ;
 	}
 
-	pKernel->SetConnectionInfo("listener", "ready") ;
+	pKernel->SetConnectionInfo("listener", "ready", "ready") ;
 
 	// Register here so we can test the order that RHS functions are called
 	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", &ListenerRhsFunctionHandler, 0) ;

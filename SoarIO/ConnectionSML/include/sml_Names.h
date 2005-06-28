@@ -43,7 +43,9 @@ public:
 	static char const* const kConnectionId ;
 	static char const* const kConnectionName ;
 	static char const* const kConnectionStatus ;
+	static char const* const kAgentStatus ;
 	static char const* const kStatusCreated	;	// Initial status -- simply means connection exists
+	static char const* const kStatusNotReady ;	// Connection not ready (work needs to be done still)
 	static char const* const kStatusReady ;		// Connection ready (registered for events etc.)
 	static char const* const kStatusClosing ;	// Connection about to shut down
 

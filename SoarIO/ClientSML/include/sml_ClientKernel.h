@@ -103,13 +103,15 @@ protected:
 	std::string m_ID ;
 	std::string m_Name ;
 	std::string m_Status ;
+	std::string m_AgentStatus ;
 
 public:
-	ConnectionInfo(char const* pID, char const* pName, char const* pStatus)
+	ConnectionInfo(char const* pID, char const* pName, char const* pStatus, char const* pAgentStatus)
 	{
 		m_ID	 = pID ;
 		m_Name   = (pName ? pName : "unknown-name") ;
 		m_Status = (pStatus ? pStatus : "unknown-status") ;
+		m_AgentStatus = (pAgentStatus ? pAgentStatus : "unknown-status") ;
 	}
 
 	/** The ID is a unique identifier for this connection (machine created) */
@@ -118,8 +120,11 @@ public:
 	/** The name may be set by the owner of the connection (or not) */
 	char const* GetName() const		{ return m_Name.c_str() ; }
 
-	/** The status is a string from a known set of values, again set by the owner of the connection */
-	char const* GetStatus() const	{ return m_Status.c_str() ; }
+	/** The connection status is a string from a known set of values, again set by the owner of the connection */
+	char const* GetConnectionStatus() const	{ return m_Status.c_str() ; }
+
+	/** The agent status is a string from a known set of values, again set by the owner of the connection and refers to the most recently created agent */
+	char const* GetAgentStatus() const	{ return m_AgentStatus.c_str() ; }
 } ;
 
 class Kernel : public ClientErrors
@@ -471,19 +476,29 @@ public:
 	int						GetNumberConnections() ;
 	bool					HasConnectionInfoChanged() ;
 	ConnectionInfo const*	GetConnectionInfo(int i) ;
-	char const*				GetConnectionStatus(char const* pName) ;
+	char const*				GetConnectionStatus(char const* pConnectionName) ;
+	char const*				GetAgentStatus(char const* pConnectionName) ;
 
 	/*************************************************************
 	* @brief Sets the name and current status of this connection.
 	*		 This information is sent to the kernel and can be requested
 	*		 by other clients.
+	*		 The connection status refers to the overall state of the connection.
+	*		 The agent status refers to the status with respect to the most
+	*		 reccently created agent (and is set to "created" by the kernel when
+	*		 an agent is created).
+	*
+	* These values can be used to signal to other clients when a given connection
+	* (e.g. the debugger) is fully configured and ready to process events/display
+	* information from a client.  It's a fairly simple system but sufficient for
+	* many purposes.
 	*
 	* Current recommend values for status:
 	*  "created" - connection exists but client may still be configuring
 	*  "ready"   - client has completed its setup and is ready
 	*  "closing" - client is in the act of shutting down
 	*************************************************************/
-	bool SetConnectionInfo(char const* pName, char const* pStatus) ;
+	bool SetConnectionInfo(char const* pName, char const* pConnectionStatus, char const* pAgentStatus) ;
 
 	/*************************************************************
 	* @brief   Causes the kernel to issue a SYSTEM_START event.

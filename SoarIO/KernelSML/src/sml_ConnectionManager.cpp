@@ -192,6 +192,18 @@ void ConnectionManager::RemoveConnection(Connection* pConnection)
 	m_Connections.remove(pConnection) ;
 }
 
+void ConnectionManager::SetAgentStatus(char const* pStatus)
+{
+	int index = 0 ;
+	Connection* pConnection = NULL ;
+
+	while ( (pConnection = GetConnectionByIndex(index)) != NULL)
+	{
+		pConnection->SetAgentStatus(pStatus) ;
+		index++ ;
+	}
+}
+
 // Go through all connections and read any incoming commands from the sockets.
 // The messages are sent to the callback registered with the connection when it was created (ReceivedCall currently).
 // Those calls could take a long time to execute (e.g. a call to Run Soar).

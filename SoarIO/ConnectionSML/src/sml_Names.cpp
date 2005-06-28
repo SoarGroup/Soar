@@ -42,7 +42,9 @@ char const* const sml_Names::kTagConnection		= "connection" ;
 char const* const sml_Names::kConnectionId		= "id" ;
 char const* const sml_Names::kConnectionName	= "name" ;
 char const* const sml_Names::kConnectionStatus	= "status" ;
+char const* const sml_Names::kAgentStatus	    = "agent-status" ;
 char const* const sml_Names::kStatusCreated		= "created" ;	// Initial status -- simply means connection exists
+char const* const sml_Names::kStatusNotReady	= "not-ready" ;	// Connection not ready (work needs to be done still)
 char const* const sml_Names::kStatusReady		= "ready" ;		// Connection ready (registered for events etc.)
 char const* const sml_Names::kStatusClosing		= "closing" ;	// Connection about to shut down
 

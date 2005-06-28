@@ -807,6 +807,7 @@ bool Kernel::GetAllConnectionInfo()
 				char const* pID     = child.GetAttribute(sml_Names::kConnectionId) ;
 				char const* pName   = child.GetAttribute(sml_Names::kConnectionName) ;
 				char const* pStatus = child.GetAttribute(sml_Names::kConnectionStatus) ;
+				char const* pAgentStatus = child.GetAttribute(sml_Names::kAgentStatus) ;
 
 				// If this info is on the previous list move it back to the current list
 				bool foundMatch = false ;
@@ -815,7 +816,8 @@ bool Kernel::GetAllConnectionInfo()
 					ConnectionInfo* pPrevInfo = *iter ;
 					if (strcmp(pPrevInfo->GetID(), pID) == 0 &&
 						strcmp(pPrevInfo->GetName(), pName) == 0 &&
-						strcmp(pPrevInfo->GetStatus(), pStatus) == 0)
+						strcmp(pPrevInfo->GetConnectionStatus(), pStatus) == 0 &&
+						strcmp(pPrevInfo->GetAgentStatus(), pAgentStatus) == 0)
 					{
 						m_ConnectionInfoList.push_back(pPrevInfo) ;
 						previousList.erase(iter) ;
@@ -826,7 +828,7 @@ bool Kernel::GetAllConnectionInfo()
 
 				if (!foundMatch)
 				{
-					ConnectionInfo* info = new ConnectionInfo(pID, pName, pStatus) ;
+					ConnectionInfo* info = new ConnectionInfo(pID, pName, pStatus, pAgentStatus) ;
 					m_ConnectionInfoList.push_back(info) ;
 				}
 			}
@@ -879,7 +881,19 @@ char const*	Kernel::GetConnectionStatus(char const* pName)
 	{
 		ConnectionInfo* pInfo = *iter ;
 		if (pInfo->GetName() && strcmp(pInfo->GetName(), pName) == 0)
-			return pInfo->GetStatus() ;
+			return pInfo->GetConnectionStatus() ;
+	}
+
+	return NULL ;
+}
+
+char const*	Kernel::GetAgentStatus(char const* pName)
+{
+	for (ConnectionListIter iter = m_ConnectionInfoList.begin() ; iter != m_ConnectionInfoList.end() ; iter++)
+	{
+		ConnectionInfo* pInfo = *iter ;
+		if (pInfo->GetName() && strcmp(pInfo->GetName(), pName) == 0)
+			return pInfo->GetAgentStatus() ;
 	}
 
 	return NULL ;
@@ -890,10 +904,10 @@ char const*	Kernel::GetConnectionStatus(char const* pName)
 *		 This information is sent to the kernel and can be requested
 *		 by other clients.
 *************************************************************/
-bool Kernel::SetConnectionInfo(char const* pName, char const* pStatus)
+bool Kernel::SetConnectionInfo(char const* pName, char const* pConnectionStatus, char const* pAgentStatus)
 {
 	AnalyzeXML response ;
-	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SetConnectionInfo, NULL, sml_Names::kConnectionName, pName, sml_Names::kConnectionStatus, pStatus) ;
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_SetConnectionInfo, NULL, sml_Names::kConnectionName, pName, sml_Names::kConnectionStatus, pConnectionStatus, sml_Names::kAgentStatus, pAgentStatus) ;
 	return ok ;
 }
 
