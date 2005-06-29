@@ -107,8 +107,7 @@
 ### University Press.).
 ### 
 
-#package require Soar
-#source $default
+###package require Soar
 source ../default/default.soar
 
 ###

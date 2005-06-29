@@ -51,8 +51,7 @@
  ## and the cell with the tile to be moved.
 ### 
 
-#package require Soar
-#source $default
+##package require Soar
 source ../default/default.soar
 multi-attributes binding 10
 
