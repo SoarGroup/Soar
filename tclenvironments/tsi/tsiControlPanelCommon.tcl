@@ -458,7 +458,7 @@ proc tsiLaunchJavaDebugger {name} {
   }
   switch -exact $tcl_platform(platform) {
     windows {
-       $name eval [list exec javaw -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
+       $name eval [list exec javaw -Xmx512m -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}
     unix {
        if {($tcl_platform(os) == "Darwin")} {
            $name eval [list exec ./java_swt -classpath swt-carbon.jar:swt-pi-carbon.jar:sml.jar:SoarJavaDebugger.jar -Djava.library.path=/Applications/Soar/soar-library:/Applications/Soar/lib -Dorg.eclipse.swt.internal.carbon.smallFonts debugger.Application -remote & ]
