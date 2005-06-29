@@ -11,7 +11,12 @@ if ! javac -classpath .:${SOARLIB}/sml.jar -sourcepath Source Source/edu/umich/v
   echo "Build failed."
   exit 1;
 fi
-jar cfm ${SOARLIB}/VisualSoar.jar Source/meta-inf/manifest.mf -C Source .
+if [[ `uname -s` == "Darwin" ]]
+then
+    jar cfm ${SOARLIB}/VisualSoar.jar Source/meta-inf/manifest.mf -C Source .
+else
+    jar cfm ${SOARLIB}/VisualSoar.jar Source/META-INF/MANIFEST.MF -C Source .
+fi
 
 if [[ `uname -s` == "Darwin" ]]
 then
