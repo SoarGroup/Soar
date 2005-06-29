@@ -463,7 +463,7 @@ proc tsiLaunchJavaDebugger {name} {
        if {($tcl_platform(os) == "Darwin")} {
            $name eval [list exec ./java_swt -classpath swt-carbon.jar:swt-pi-carbon.jar:sml.jar:SoarJavaDebugger.jar -Djava.library.path=/Applications/Soar/soar-library:/Applications/Soar/lib -Dorg.eclipse.swt.internal.carbon.smallFonts debugger.Application -remote & ]
        } else {
-           $name eval [list exec java -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}}
+           $name eval [list exec java -Xmx512m -jar [file join $soar_library SoarJavaDebugger.jar] -remote & ]}}
   }
   
   #now wait for the debugger to report that it is ready
