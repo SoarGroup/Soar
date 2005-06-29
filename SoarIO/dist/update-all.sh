@@ -27,3 +27,6 @@ cvs -q up -dP
 echo tclenvironments
 cd ../tclenvironments
 cvs -q up -dP
+echo visualsoar
+cd ../visualsoar
+cvs -q up -dP
