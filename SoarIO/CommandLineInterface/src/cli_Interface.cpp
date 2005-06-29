@@ -243,8 +243,8 @@ EXPORT bool CommandLineInterface::DoSaveBacktraces(sml::Connection* pConnection,
 	return ret;
 }
 
-EXPORT bool CommandLineInterface::DoSoar8(sml::Connection* pConnection, sml::ElementXML* pResponse, bool* pSoar8) {
-	bool ret = DoSoar8(pSoar8);
+EXPORT bool CommandLineInterface::DoSoar8(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool* pSoar8) {
+	bool ret = DoSoar8(pAgent, pSoar8);
 	GetLastResultSML(pConnection, pResponse);
 	return ret;
 }

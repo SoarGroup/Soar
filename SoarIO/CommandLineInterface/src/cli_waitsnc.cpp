@@ -61,7 +61,7 @@ bool CommandLineInterface::DoWaitSNC(gSKI::IAgent* pAgent, bool* pSetting) {
 
 	if (!pSetting) {
 		if (m_RawOutput) {
-			m_Result << "Current waitsnc setting: " << pAgent->IsWaitingOnStateNoChange() ? "enabled" : "disabled";
+			m_Result << "Current waitsnc setting: " << (pAgent->IsWaitingOnStateNoChange() ? "enabled" : "disabled");
 		} else {
 			AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, pAgent->IsWaitingOnStateNoChange() ? sml_Names::kTrue : sml_Names::kFalse);
 		}

@@ -526,7 +526,7 @@ public:
 	* @param pResponse Pointer to XML response
 	* @param pSoar8 True to enable Soar 8, false for Soar 7
 	*************************************************************/
-	EXPORT bool DoSoar8(sml::Connection* pConnection, sml::ElementXML* pResponse, bool* pSoar8);
+	EXPORT bool DoSoar8(sml::Connection* pConnection, sml::ElementXML* pResponse, gSKI::IAgent* pAgent, bool* pSoar8);
 
 	/*************************************************************
 	* @brief soarnews command
@@ -771,7 +771,7 @@ protected:
 	bool DoRun(gSKI::IAgent* pAgent, const RunBitset& options, int count = 0);
 	bool DoSaveBacktraces(gSKI::IAgent* pAgent, bool* pSetting = 0);
 	bool DoSetLibraryLocation(const std::string* pLocation = 0);
-	bool DoSoar8(bool* pSoar8);
+	bool DoSoar8(gSKI::IAgent* pAgent, bool* pSoar8);
 	bool DoSoarNews();
 	bool DoSource(gSKI::IAgent* pAgent, std::string filename);
 	bool DoSP(gSKI::IAgent* pAgent, const std::string& production);

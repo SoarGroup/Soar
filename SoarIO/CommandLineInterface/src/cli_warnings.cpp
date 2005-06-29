@@ -70,7 +70,7 @@ bool CommandLineInterface::DoWarnings(gSKI::IAgent* pAgent, bool* pSetting) {
 	}
 
 	if (m_RawOutput) {
-		m_Result << "Printing of warnings is " << pKernelHack->GetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM) ? "enabled." : "disabled.";
+		m_Result << "Printing of warnings is " << (pKernelHack->GetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM) ? "enabled." : "disabled.");
 	} else {
 		const char* setting = pKernelHack->GetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse;
 		AppendArgTagFast(sml_Names::kParamWarningsSetting, sml_Names::kTypeBoolean, setting);

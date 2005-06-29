@@ -1146,6 +1146,9 @@ namespace gSKI
       virtual egSKINumericIndifferentMode GetNumericIndifferentMode(Error* pErr = 0);
       virtual void SetNumericIndifferentMode(egSKINumericIndifferentMode m, Error* pErr = 0);
 
+	  virtual bool GetOperand2Mode();
+	  virtual void SetOperand2Mode(bool mode);
+
       ///////////////////////////////// NOT PART OF INTERFACE ///////////////////////////
 
       /**

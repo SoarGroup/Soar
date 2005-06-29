@@ -66,7 +66,7 @@ bool CommandLineInterface::DoSaveBacktraces(gSKI::IAgent* pAgent, bool* pSetting
 
 	if (!pSetting) {
 		if (m_RawOutput) {
-			m_Result << "Save bactraces is " << pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? "enabled." : "disabled.";
+			m_Result << "Save bactraces is " << (pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? "enabled." : "disabled.");
 		} else {
 			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse);
 		}

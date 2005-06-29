@@ -1224,6 +1224,9 @@ namespace gSKI {
          @param pErr Receives error info
       */
       virtual void SetNumericIndifferentMode(egSKINumericIndifferentMode m, Error* pErr = 0) = 0;
+
+	  virtual bool GetOperand2Mode() = 0;
+	  virtual void SetOperand2Mode(bool mode) = 0;
    };
 
    //

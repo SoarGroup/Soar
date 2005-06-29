@@ -1838,6 +1838,14 @@ namespace gSKI
       return interrupted;
    }
 
+   bool Agent::GetOperand2Mode() {
+		return m_agent->operand2_mode ? true : false;
+   }
+
+   void Agent::SetOperand2Mode(bool mode) {
+		m_agent->operand2_mode = mode ? TRUE : FALSE;
+   }
+
    /*
    ==================================
    //
