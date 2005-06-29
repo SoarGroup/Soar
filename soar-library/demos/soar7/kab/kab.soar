@@ -873,7 +873,8 @@ sp {impasse-no-change*elaborate*state*duplicate*id-for-attribute
     -->
     (<d> ^<id> <new-id> + = )}
 
-set warnings off
+#set warnings off
+warnings --off
 sp {impasse-no-change*elaborate*state*add-attribute-to-duplicate 
     :default
     (state <s> ^problem-space <p> ^duplicates* <d>) 
@@ -883,9 +884,11 @@ sp {impasse-no-change*elaborate*state*add-attribute-to-duplicate
     (<d> -^<sub-val>)
     -->
     (<new-id> ^<sub-att> <sub-val> + & )}
-set warnings on
+#set warnings on
+warnings --on
 
-set warnings off
+#set warnings off
+warnings --off
 sp {impasse-no-change*elaborate*state*add-duplicated-attribute-to-duplicate 
     :default 
     (state <s> ^problem-space <p> ^duplicates* <d>) 
@@ -895,7 +898,8 @@ sp {impasse-no-change*elaborate*state*add-duplicated-attribute-to-duplicate
     (<d> ^<sub-val> <new-val>)
     -->
     (<new-id> ^<sub-att> <new-val> + & )}
-set warnings on
+#set warnings on
+warnings --on
 
 sp {impasse-no-change*elaborate*state*add-duplicate-to-state 
     :default 

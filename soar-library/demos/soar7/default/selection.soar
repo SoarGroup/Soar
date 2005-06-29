@@ -78,7 +78,7 @@ sp {default*selection*propose*evaluate-object
    :default
    (state <s> ^problem-space.name selection
 	      ^item <x>)
-   -{(state <s> ^evaluation <e>)	;#"state" added. AA/mvp 9-2-94
+   -{(state <s> ^evaluation <e>)	#"state" added. AA/mvp 9-2-94
     (<e> ^object <x>
 	 ^value t)}
    -->
@@ -561,7 +561,8 @@ sp {default*evaluate-object*elaborate*state*duplicate-id-for-all-attributes
 ### augmentations that don't point to objects that have been
 ### duplicated. 
 
-set warnings off
+#set warnings off
+warnings --off
 sp {default*evaluate-object*elaborate*add-attribute-to-duplicate 
    :default
    (state <s> ^duplicates* <d> 
@@ -571,11 +572,13 @@ sp {default*evaluate-object*elaborate*add-attribute-to-duplicate
    (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
    -->
    (<new-id> ^<sub-att> <sub-val>)}
-set warnings on
+#set warnings on
+warnings --on
 
 ### Next copy augmentations that point to duplicated objects:
 
-set warnings off
+#set warnings off
+warnings --off
 sp {default*evaluate-object*elaborate*add-duplicated-attribute-to-duplicate 
    :default
    (state <s>
@@ -585,7 +588,8 @@ sp {default*evaluate-object*elaborate*add-duplicated-attribute-to-duplicate
    (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
    -->
    (<new-id> ^<sub-att> <new-val>)}
-set warnings on
+#set warnings on
+warnings --on
 
 ### Added ^two-level-attributes <att>.  Previously, it
 ### would copy any attribute that happened to point to the same value as
@@ -767,7 +771,7 @@ sp {default*evaluate-object*elaborate*operator*add-duplicated-attribute-to-dupli
 
 sp {default*selection*compare*equal-evaluation-indifferent 
    :default
-   (state <s> ^problem-space.name selection ;#^attribute <role>  ;#REMOVED.
+   (state <s> ^problem-space.name selection #^attribute <role>  #REMOVED.
               ^superstate <ss>
               ^evaluation <e1>  { <> <e1> <e2> })
    (<ss> ^desired <d>)
@@ -777,7 +781,7 @@ sp {default*selection*compare*equal-evaluation-indifferent
 	 ^type evaluate-object)
  - (<d> ^equal not-indifferent)
    -->
-   (<ss> ^operator <x> = <y>)}	;# was ^<role> 
+   (<ss> ^operator <x> = <y>)}	# was ^<role> 
 
 
 ###
@@ -797,11 +801,11 @@ sp {default*selection*compare*higher-evaluation-better
    (<d> ^better higher)
    -->
    (<ss> ^operator <o2> < <o1>)}
-   ;# was ^<role> 
+   # was ^<role> 
 
 sp {default*selection*compare*prefer-lower-evaluation 
    :default
-   (state <s> ^problem-space.name selection ;#^attribute <role>   ;#REMOVED. 
+   (state <s> ^problem-space.name selection #^attribute <role>   #REMOVED. 
               ^superstate <ss>
 	      ^evaluation <e1> ^evaluation { <> <e1> <e2> })
    (state <ss> ^problem-space <p2> ^desired <d>)
@@ -937,11 +941,11 @@ sp {default*selection*select*prohibit-failure-evaluation-becomes-prohibit-prefer
 ### AA/mvp 9-2-94
 sp {default*pass-back-success 	
    :default
-   (state <s> ^operator <o> ^superstate <ss>)	;# removed ^evaluation <e1>
+   (state <s> ^operator <o> ^superstate <ss>)	# removed ^evaluation <e1>
    (<o> ^name evaluate-object ^evaluation <e1>)
    (<e1> ^symbolic-value << required-success success >>)
    (state <ss> ^superstate <sss>)
-   (state <sss> ^operator <sso>)	;# removed ^evaluation <e2>
+   (state <sss> ^operator <sso>)	# removed ^evaluation <e2>
    (<sso> ^name evaluate-object ^evaluation <e2> ^object <x>)
    (<x> ^name)
    -->
@@ -957,7 +961,7 @@ sp {default*pass-back-success
 
 sp {default*selection*compare*novalue-evaluation-always-worse
    :default
-   (state <s> ^problem-space.name selection ;#^attribute <role>   ;#REMOVED. 
+   (state <s> ^problem-space.name selection #^attribute <role>   #REMOVED. 
               ^superstate <ss>
 	      ^evaluation <e1> ^evaluation { <> <e1> <e2> })
    (state <ss> ^desired <d>)
@@ -966,7 +970,7 @@ sp {default*selection*compare*novalue-evaluation-always-worse
    (<e2> ^object <o2> ^numeric-value <> novalue ^desired <d>
 	 ^type evaluate-object)
    -->
-   (<ss> ^operator <o2> > <o1>)}	;# was ^<role>
+   (<ss> ^operator <o2> > <o1>)}	# was ^<role>
 
 
 ###
