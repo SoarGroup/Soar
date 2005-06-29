@@ -3,5 +3,5 @@
 
 SOARLIB=../../../soar-library
 
-javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar Application.java
-jar cvfm ${SOARLIB}/TestJavaSML.jar JarManifest .
+javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath . Application.java
+jar cfm ${SOARLIB}/TestJavaSML.jar JarManifest .
