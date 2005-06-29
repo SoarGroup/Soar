@@ -13,11 +13,11 @@ Requirements
 ============
 
 * Java 1.4.2 or later required to use the Java debugger (javaw.exe should be 
-  available in the path).  Get it at http://java.sun.com/.  Most machines 
+  available in the path). Get it at http://java.sun.com/. Most machines 
   probably already have this installed.
 
 * Tcl 8.4.x or later required to run Eaters on linux and OS X 10.3 (wish.exe
-  should be available in the path). Get it at http://www.tcl.tk/.  OS X 10.4
+  should be available in the path). Get it at http://www.tcl.tk/. OS X 10.4
   comes with this pre-installed, and the Windows installer includes it.
 
 New in this release
@@ -67,11 +67,13 @@ Known issues:
 * Sometimes the trace output can fall behind actual execution, making
   the debugger appear unresponsive (it's really just trying to catch up).
 * Some rare warning messages may not appear fully in the Java debugger's tree
-  view (but they appear fine in the text view).  If you find specific cases of
+  view (but they appear fine in the text view). If you find specific cases of
   this, please let us know.
 * Pausing trace window in debugger causes the text to flicker on Windows and Linux
   and doesn't work at all in OS X (these are os and SWT issues; we can't fix them).
 * VisualSoar can only connect to kernel using default values for port/ip.
+* When running Eaters on Linux with a debugger connected, the debugger seems to
+  "steal" the focus while Soar is running.
 
 
 If any other issues or bugs are found, please send mail to:
