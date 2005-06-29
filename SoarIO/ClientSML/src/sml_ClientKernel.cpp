@@ -110,7 +110,9 @@ void Kernel::Shutdown()
 	// disconnecting a remote connection.
 	if (!GetConnection() || GetConnection()->IsRemoteConnection())
 	{
-		GetConnection()->CloseConnection() ;
+		if (GetConnection())
+			GetConnection()->CloseConnection() ;
+
 		return ;
 	}
 
