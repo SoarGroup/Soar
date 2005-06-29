@@ -233,12 +233,12 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 
 			if (pAgentSML->IsAgentScheduledToRun())
 			{
-				// Run all agents one elaboration phase (or one full phase).
-				// This is the smallest discrete unit we can use for running and stopping Soar.
-				// Anything larger and we couldn't support a "run 1 -e" call (i.e. run one elaboration request at a higher level).
+				// Run all agents one "runStepSize".  gSKI interleaves each agent by PHASE til done,
+				// unless runStepSize == gSKI_RUN_ELABORATION_PHASE, then gSKI steps by e_cycles.
+				// See definition of GetReleventCounter to change how e_cycles are counted.
 				gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
-				egSKIRunResult runResult = pAgent->RunInClientThread(gSKI_RUN_SMALLEST_STEP, 1, pError) ;
-
+				egSKIRunResult runResult = pAgent->RunInClientThread(runStepSize, 1, pError) ;
+ 
 				// Have to test the run state to find out if we are still ok to keep running
 				// (not sure if runResult provides this as well, but they're from different enums).
 				egSKIRunState runState = pAgent->GetRunState() ;

@@ -1523,21 +1523,23 @@ namespace gSKI
 		 }
 
          ///////////////////////////////////////////////////////////////////
-         // Execute the next smallest step
-         // do_one_top_level_phase(m_agent);
-		 run_for_n_phases(m_agent, 1);
+         // Execute the next step
+ 
+		 if (runType == gSKI_RUN_ELABORATION_PHASE) {
+			 run_for_n_elaboration_cycles(m_agent, 1);
+		 } else {
+             run_for_n_phases(m_agent, 1);
+		 }
 
-         // Execute soar's determine level phase.  It does not map
-         //  to any high-level phases
-//KJC		 while((m_agent->current_phase == DETERMINE_LEVEL_PHASE) && !(m_agent->system_halted)) {
-           // do_one_top_level_phase(m_agent);
-//KJC			 run_for_n_phases(m_agent, 1); }
-         // Remember our current phase
+         // Remember the phase we just did
          m_lastPhase = m_nextPhase;
-		 // boolean below is no longer used to determine Propose or Apply, should remove
+
+		 // the current_phase in SoarKernel is the phase to be run next.
          m_nextPhase = EnumRemappings::ReMapPhaseType((unsigned short)m_agent->current_phase, 
                                                       (m_agent->applyPhase)? true: false);
-         ///////////////////////////////////////////////////////////////////
+		 // boolean above is no longer used to determine Propose or Apply, should remove
+
+		 ///////////////////////////////////////////////////////////////////
 
          // Do post step notifications to listeners
 		 if (m_agent->operand2_mode) {
@@ -1630,7 +1632,7 @@ namespace gSKI
    */
    unsigned long* Agent::getReleventCounter(egSKIRunType runType)
    {
-      // Returns a pointer to the counter that is relavent
+      // Returns a pointer to the counter that is relevant
       //  for the given run type.  This is used by the
       //  run method to track how many of a particular
       //  run step it has executed.
@@ -1641,8 +1643,12 @@ namespace gSKI
       case gSKI_RUN_PHASE:
          return &m_phaseCount;
       case gSKI_RUN_ELABORATION_PHASE:
+		 // m_elaborationCount increments for an elaboration,
+		 // or a phase, but not both, in the same agent::run.
+         // return &m_elaborationCount; 
+		 //comment above line and uncomment below if want to 
+		 //      count only true Soar Elaboration cycles
 		 return &m_agent->e_cycle_count;
-         //return &m_elaborationCount;
       case gSKI_RUN_DECISION_CYCLE:
 		 return &m_agent->d_cycle_count;
          //return &m_decisionCount;
@@ -1733,7 +1739,9 @@ namespace gSKI
 
       // Increment smallest step
       ++m_smallestStepCount;
-
+ 	  // see GetRelevantCounter if only want to count actual Soar e_cycles.
+	  ++m_elaborationCount;   
+ 
       // Check an interrupt
       if(m_interruptFlags & gSKI_STOP_AFTER_SMALLEST_STEP)
          interrupted = true;
@@ -1753,10 +1761,6 @@ namespace gSKI
       
          // Increment the phase count
          ++m_phaseCount;
-
-	     // Increment the elaboration count ???
-		 //++m_elaborationCount;
-		 //No!  We need to get it from the agent in SoarKernel
 
          // Increment the number of outputs that have occured
          if((m_lastPhase == gSKI_OUTPUT_PHASE) && m_agent->output_link_changed)
@@ -1795,7 +1799,12 @@ namespace gSKI
       //m_runListeners.Notify(gSKIEVENT_AFTER_SMALLEST_STEP, nfAfterStep);
 
       // Increment smallest step
-      ++m_smallestStepCount;  // not sure this is meaningful anymore...
+      ++m_smallestStepCount;   
+ 	  // Increment the elaboration count  
+	  // see GetRelevantCounter if only want to count actual Soar e_cycles.
+	  ++m_elaborationCount;    // works for Soar 7, since gSKI now calls
+	                           // run_for_n_elaboration_cycles
+ 
 
       // Check an interrupt
       if(m_interruptFlags & gSKI_STOP_AFTER_SMALLEST_STEP)

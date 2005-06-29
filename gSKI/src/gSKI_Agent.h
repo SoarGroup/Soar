@@ -1284,7 +1284,7 @@ namespace gSKI
 
       bool          maxStepsReached(unsigned long* steps, unsigned long maxSteps)
       {
-         return (steps && (*steps == maxSteps))? true: false;
+         return (steps && (*steps >= maxSteps))? true: false;
       }
 
       /** 
