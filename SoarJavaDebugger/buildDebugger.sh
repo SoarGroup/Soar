@@ -7,7 +7,7 @@ do
   rm -f $file
 done
 
-if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar debugger/Application.java; then
+if ! javac -classpath .:${SOARLIB}/swt.jar:${SOARLIB}/sml.jar -sourcepath . debugger/Application.java; then
   echo "Build failed."
   exit 1;
 fi
