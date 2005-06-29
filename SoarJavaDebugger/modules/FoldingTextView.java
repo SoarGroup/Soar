@@ -294,6 +294,16 @@ public class FoldingTextView extends AbstractComboView
 		updateButtonState() ;
 	}
 	
+	/********************************************************************************************
+	* 
+	* Copy current selection to the clipboard.
+	* 
+	********************************************************************************************/
+	public void copy()
+	{
+		m_FoldingText.getTextWindow().copy() ;
+	}
+
 	/************************************************************************
 	* 
 	* Search for the next occurance of 'text' in this view and place the selection

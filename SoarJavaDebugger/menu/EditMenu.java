@@ -17,6 +17,8 @@ import dialogs.SearchDialog;
 import doc.Document;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.graphics.FontData ;
 
@@ -33,10 +35,12 @@ public class EditMenu
 	private Document  m_Document = null ;
 	private SearchDialog m_SearchDialog = null ;
 	
+	private AbstractAction m_Copy  = new AbstractAction("&Copy\tCtrl+C")  		  { public void actionPerformed(ActionEvent e) { copy() ; } } ;
+	private AbstractAction m_Paste = new AbstractAction("&Paste\tCtrl+V")  		  { public void actionPerformed(ActionEvent e) { paste() ; } } ;
 	private AbstractAction m_Search = new AbstractAction("&Find...\tCtrl+F")  		  { public void actionPerformed(ActionEvent e) { searchPrime() ; } } ;
 	private AbstractAction m_ChooseFont = new AbstractAction("&Choose text font...")  { public void actionPerformed(ActionEvent e) { chooseFontPerformed(e) ; } } ;
 	private AbstractAction m_DefaultFont = new AbstractAction("Use &default font") 	  { public void actionPerformed(ActionEvent e) { useDefaultFont(e) ; } } ;
-
+        
 	/** Create this menu */
 	public static EditMenu createMenu(MainFrame frame, Document doc, String title)
 	{
@@ -52,7 +56,10 @@ public class EditMenu
 	private BaseMenu makeMenu(Menu parent, String title)
 	{
 		BaseMenu menu = new BaseMenu(parent, title) ;
-		
+
+		menu.add(m_Copy) ;
+		menu.add(m_Paste) ;
+		menu.addSeparator() ;
 		menu.add(m_Search, SWT.CTRL + 'F') ;
 		menu.addSeparator() ;
 		menu.add(m_ChooseFont) ;
@@ -74,6 +81,26 @@ public class EditMenu
 		m_SearchDialog = SearchDialog.showDialog(m_Frame, "Search for text", m_Frame.getPrimeView()) ;
 	}
 	
+	private void copy()
+	{
+		// Copying from the view with the current focus should give us the place
+		// where the user last selected text
+		modules.AbstractView view = m_Frame.getMainWindow().getFocusView() ;
+
+		if (view != null)
+			view.copy() ;
+	}
+
+	private void paste()
+	{
+		// Pasting the view with the focus preserves symmetry with copy.
+		// Could reasonably use getPrimeView() here instead.
+		modules.AbstractView view = m_Frame.getMainWindow().getFocusView() ;
+
+		if (view != null)
+			view.paste() ;
+	}
+
 	private void useDefaultFont(ActionEvent e)
 	{
   		m_Frame.setTextFont(m_Frame.kDefaultFontData) ;  		

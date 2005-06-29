@@ -102,6 +102,16 @@ public class ButtonView extends AbstractView
 	
 	/********************************************************************************************
 	* 
+	* Copy/paste current selection to/from the clipboard.
+	* 
+	********************************************************************************************/
+	public void copy()
+	{
+		// Nothing to copy in button view
+	}
+	
+	/********************************************************************************************
+	* 
 	* This "base name" is used to generate a unique name for the window.
 	* For example, returning a base name of "trace" would lead to windows named
 	* "trace1", "trace2" etc.

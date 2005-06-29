@@ -23,6 +23,8 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.* ;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 
 import doc.* ;
@@ -143,6 +145,45 @@ public abstract class AbstractView implements AgentFocusListener
 	********************************************************************************************/
 	public abstract void init(MainFrame frame, Document doc, Pane parentPane) ;
 	
+	/********************************************************************************************
+	* 
+	* Copy current selection to the clipboard.
+	* 
+	********************************************************************************************/
+	public abstract void copy() ;
+
+	/********************************************************************************************
+	* 
+	* Execute whatever is on the clipboard as a command
+	* 
+	********************************************************************************************/
+	public void paste()
+	{
+		// Retrieve the current contents of the clipboard
+	    Clipboard clipboard = new Clipboard(this.m_Container.getDisplay());
+	    TextTransfer textTransfer = TextTransfer.getInstance();
+	    String textData = (String)clipboard.getContents(textTransfer);
+	    clipboard.dispose();
+	    
+	    // If there's something text based on the clipboard, execute it.
+	    if (textData != null)
+	    	this.executeAgentCommand(textData, true) ;
+	}
+
+    // Creates a convenient listener for Control-V.
+	// Adding a key listener for this event allows us to call our paste method so commands are pasted into the command
+	// buffer rather than into the window.
+	protected Listener m_ControlV = new Listener() { public void handleEvent(Event e) {
+    	if (e.type == SWT.KeyDown)
+    	{
+	    	int key = e.keyCode ;
+	    	int mask = e.stateMask ;
+	    	
+	    	if (key == 'v' && (mask & SWT.CTRL) > 0)
+	    		paste() ;
+    	}
+    } } ;
+    
 	/************************************************************************
 	* 
 	* Converts this object into an XML representation.
@@ -359,6 +400,11 @@ public abstract class AbstractView implements AgentFocusListener
 
 			menu = windowMenu ;
 		}
+
+		// Copy and paste where paste really means to paste into the command stream, not into the window.
+		addItem(menu, "Copy", "copy " + m_Frame.getName() + " " + this.getName()) ;
+		addItem(menu, "Paste", "paste " + m_Frame.getName() + " " + this.getName()) ;
+		new MenuItem(menu, SWT.SEPARATOR) ;
 		
 		addItem(menu, "Properties ...", "properties " + m_Frame.getName() + " " + this.getName()) ;
 

@@ -18,6 +18,9 @@ import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.* ;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 
 import sml.Agent;
@@ -275,6 +278,9 @@ public abstract class AbstractComboView extends AbstractView
 		
 		getDisplayControl().setBackground(getBackgroundColor()) ;
 		
+		// Listen for Ctrl-V and execute our paste method (so paste goes to command buffer, not into the window directly)
+		getDisplayControl().addListener(SWT.KeyDown, m_ControlV) ;
+		
 		layoutControls() ;
 	}
 	
@@ -303,7 +309,7 @@ public abstract class AbstractComboView extends AbstractView
 	
 	public boolean hasFocus()
 	{
-		return m_CommandCombo.isFocusControl() ;
+		return m_CommandCombo.isFocusControl() || getDisplayControl().isFocusControl() ;
 	}
 	
 	private void comboKeyPressed(KeyEvent e)
@@ -356,10 +362,6 @@ public abstract class AbstractComboView extends AbstractView
 			this.m_CommandCombo.setText("") ;
 			m_CurrentCommand = "" ;
 		}
-		
-		// Scroll the display window to the bottom so we can see the new
-		// command and any output
-		scrollBottom() ;
 		
 		// Send the command to Soar and echo into the trace
 		if (command.length() > 0)
@@ -549,7 +551,11 @@ public abstract class AbstractComboView extends AbstractView
 		// Clear the text area if this window is configured that way.
 		if (this.m_ClearEachCommand)
 			clearDisplay() ;
-		
+
+		// Scroll the display window to the bottom so we can see the new
+		// command and any output
+		scrollBottom() ;
+				
 		// Output from Soar doesn't include newlines and assumes that we insert
 		// a newline before the result of the command is displayed.
 		if (result != null && result.length() > 0)

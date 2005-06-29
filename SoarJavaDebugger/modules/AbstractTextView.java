@@ -86,6 +86,11 @@ public abstract class AbstractTextView extends AbstractComboView
 		m_Text.showSelection() ;
 	}
 
+	public void copy()
+	{
+		m_Text.copy() ;
+	}
+	
 	/************************************************************************
 	* 
 	* Search for the next occurance of 'text' in this view and place the selection

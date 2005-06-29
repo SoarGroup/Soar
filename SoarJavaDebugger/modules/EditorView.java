@@ -77,6 +77,16 @@ public class EditorView extends AbstractView
 		return false ;
 	}
 	
+	/********************************************************************************************
+	* 
+	* Copy current selection to the clipboard.
+	* 
+	********************************************************************************************/
+	public void copy()
+	{
+		m_Text.copy() ;
+	}
+
 	public void setTextFont(Font f)
 	{
 		m_Text.setFont(f) ;

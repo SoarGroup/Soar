@@ -84,6 +84,26 @@ public class ScriptCommands
 		}
 	}
 	
+	// [copy | paste] <framename> <viewname>
+	protected Object executeCopyPaste(String[] tokens)
+	{
+		String command   = tokens[0] ;
+		String frameName = tokens[1] ;
+		String viewName  = tokens[2] ;
+					
+		// To the user we are adding a view, but internally we're adding a pane
+		// and then that pane will contain the view
+		MainFrame frame = m_Document.getFrameByName(frameName) ;
+		AbstractView view = frame.getView(viewName) ;
+
+		if (command.equalsIgnoreCase("copy"))
+			view.copy() ;
+		else
+			view.paste() ;
+		
+		return Boolean.TRUE ;
+	}
+	
 	// Add a new view: addview <framename> <viewname> Right|Left|Top|Bottom
 	protected Object executeAddView(String[] tokens)
 	{
@@ -673,6 +693,11 @@ public class ScriptCommands
 			return executeRemoteConnect(tokens) ;
 		}
 		
+		if (first.equals("copy") || first.equals("paste"))
+		{
+			return executeCopyPaste(tokens) ;
+		}
+
 		// properties <frame> <view>
 		if (first.equals("properties"))
 		{

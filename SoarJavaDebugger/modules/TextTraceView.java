@@ -80,6 +80,16 @@ public class TextTraceView extends AbstractComboView
 	}
 
 	/********************************************************************************************
+	* 
+	* Copy current selection to the clipboard.
+	* 
+	********************************************************************************************/
+	public void copy()
+	{
+		m_Text.copy() ;
+	}
+
+	/********************************************************************************************
 	 * 
 	 * 	Scroll the display control to the bottom
 	 * 
