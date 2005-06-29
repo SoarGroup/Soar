@@ -93,6 +93,7 @@ namespace cli {
 			kNoPreferences						= 78,
 			kAmbiguousCommand					= 79,
 			kAmbiguousOption					= 80, // FIXME: add to wiki
+			kProductionMemoryNotEmpty				= 81, // FIXME: add to wiki
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -171,6 +172,7 @@ namespace cli {
                 case kNoPreferences:                    return "No preferences found.";
 				case kAmbiguousCommand:					return "Received command is ambiguous, try adding more letters.";
 				case kAmbiguousOption:					return "Ambiguous option."; // FIXME: add to wiki
+				case kProductionMemoryNotEmpty:					return "Can't change modes unless production memory is empty."; // FIXME: add to wiki
 				default:								return "Unknown error code.";
 			}
 		}

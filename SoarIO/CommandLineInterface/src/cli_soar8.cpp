@@ -101,8 +101,7 @@ bool CommandLineInterface::DoSoar8(gSKI::IAgent* pAgent, bool* pSoar8) {
 		return SetError(CLIError::kgSKIError);
 	}
 	if (numProductions) {
-		m_Result << "Can't change modes unless production memory is empty. " << numProductions << " productions in memory.";
-		return false;
+		return SetError(CLIError::kProductionMemoryNotEmpty);
 	}
 
 	if (*pSoar8) {

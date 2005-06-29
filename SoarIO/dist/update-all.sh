@@ -24,3 +24,6 @@ cvs -q up -dP
 echo SoarJavaDebugger
 cd ../SoarJavaDebugger
 cvs -q up -dP
+echo tclenvironments
+cd ../tclenvironments
+cvs -q up -dP
