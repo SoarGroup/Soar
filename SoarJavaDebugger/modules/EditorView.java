@@ -17,6 +17,8 @@ import helpers.FormDataHelper;
 import manager.Pane;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -85,6 +87,18 @@ public class EditorView extends AbstractView
 	public void copy()
 	{
 		m_Text.copy() ;
+	}
+	
+	/********************************************************************************************
+	* 
+	* Execute whatever is on the clipboard as a command.
+	* Overriding the default behavior to produce a simple paste into the window.
+	* (Usually we intercept this and execute what's on the command line)
+	* 
+	********************************************************************************************/
+	public void paste()
+	{
+		m_Text.paste() ;
 	}
 
 	public void setTextFont(Font f)
