@@ -121,11 +121,10 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 	egSKIRunResult runResult ;
 
-// This flag determines whether we use the existing gSKI scheduler or switch to the new SML scheduler.
-// The flag should be removed once we've decided which scheduler we're using.
-#define USE_SML_SCHEDULER
-
-#ifdef USE_SML_SCHEDULER
+	// NOTE: We use a scheduler implemented in kernelSML rather than
+	// the gSKI scheduler implemented by AgentManager.  This gives us
+	// more flexibility to adjust the behavior of the SML scheduler without
+	// impacting SoarTech systems that may rely on the gSKI scheduler.
 	RunScheduler* pScheduler = m_pKernelSML->GetRunScheduler() ;
 	smlRunFlags runFlags = sml_NONE ;
 
@@ -133,8 +132,6 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 		runFlags = sml_UPDATE_WORLD ;
 	else if (options.test(RUN_NO_UPDATE))
 		runFlags = sml_DONT_UPDATE_WORLD ;
-
-	//fprintf(stderr,"SML scheduler %d %d\n", runType, count) ;
 
 	if (options.test(RUN_SELF))
 	{
@@ -155,27 +152,6 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 	// Do the run
 	runResult = pScheduler->RunScheduledAgents(runType, count, runFlags, &m_gSKIError) ;
-
-#else // USE_SML_SCHEDULER
-	//fprintf(stderr,"gSKI scheduler %d %d\n", runType, count) ;
-
-	// If running self, an agent pointer is necessary.  Otherwise, a Kernel pointer is necessary.
-	// Decide which agents to run
-	if (options.test(RUN_SELF)) {
-		m_pKernel->GetAgentManager()->RemoveAllAgentsFromRunList() ;
-		m_pKernel->GetAgentManager()->AddAgentToRunList(pAgent, &m_gSKIError) ;
-		if (gSKI::isError(m_gSKIError)) {
-			SetErrorDetail("Error adding agent to run list.");
-			return SetError(CLIError::kgSKIError);
-		}
-	} else {
-        m_pKernel->GetAgentManager()->AddAllAgentsToRunList();
-	}
-
-	// Do the run
-    m_pKernel->GetAgentManager()->ClearAllInterrupts();
-	runResult = m_pKernel->GetAgentManager()->RunInClientThread(runType, count, gSKI_INTERLEAVE_SMALLEST_STEP, &m_gSKIError);
-#endif // USE_SML_SCHEDULER
 
 	// Check for error
 	if (runResult == gSKI_RUN_ERROR) {
