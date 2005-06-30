@@ -100,7 +100,7 @@ bool CommandLineInterface::DoRun(gSKI::IAgent* pAgent, const RunBitset& options,
 
 	// Override run type with option flag:
 	if (options.test(RUN_ELABORATION)) {
-		runType = gSKI_RUN_ELABORATION_PHASE;
+		runType = gSKI_RUN_ELABORATION_CYCLE;
 
 	} else if (options.test(RUN_PHASE)) {
 		runType = gSKI_RUN_PHASE;

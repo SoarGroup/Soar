@@ -53,7 +53,7 @@ unsigned long RunScheduler::GetStepCounter(gSKI::IAgent* pAgent, egSKIRunType ru
 		return pAgent->GetNumSmallestStepsExecuted();
 	case gSKI_RUN_PHASE:
 		return pAgent->GetNumPhasesExecuted();
-	case gSKI_RUN_ELABORATION_PHASE:
+	case gSKI_RUN_ELABORATION_CYCLE:
 		return pAgent->GetNumElaborationsExecuted();
 	case gSKI_RUN_DECISION_CYCLE:
 		return pAgent->GetNumDecisionCyclesExecuted();
@@ -194,7 +194,6 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 	gSKI::IKernel* pKernel = m_pKernelSML->GetKernel() ;
 
 	// Fire one event to indicate the entire system is starting
-	// (Above gSKI we can choose to suppress this event in some situations)
 	pKernel->FireSystemStart() ;
 
 	// Send event for each agent to signal its about to start running
@@ -205,6 +204,12 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 	egSKIRunResult overallResult = gSKI_RUN_COMPLETED ;
 
 	pKernel->GetAgentManager()->ClearAllInterrupts();
+
+	// Decide how large of a step to run each agent before switching to the next agent
+	// We currently interleave each agent by PHASE til done,
+	// unless runStepSize == gSKI_RUN_ELABORATION_CYCLE, then gSKI steps by e_cycles.
+	// See definition of GetReleventCounter to change how e_cycles are counted.
+	egSKIRunType interleaveStepSize = (runStepSize == gSKI_RUN_ELABORATION_CYCLE ? gSKI_RUN_ELABORATION_CYCLE : gSKI_RUN_PHASE) ;
 
 	// Record that we're now running, so we can poll for our status during a run.
 	m_IsRunning = true ;
@@ -233,11 +238,9 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 
 			if (pAgentSML->IsAgentScheduledToRun())
 			{
-				// Run all agents one "runStepSize".  gSKI interleaves each agent by PHASE til done,
-				// unless runStepSize == gSKI_RUN_ELABORATION_PHASE, then gSKI steps by e_cycles.
-				// See definition of GetReleventCounter to change how e_cycles are counted.
+				// Run all agents one "interleaveStepSize".
 				gSKI::IAgent* pAgent = pAgentSML->GetIAgent() ;
-				egSKIRunResult runResult = pAgent->RunInClientThread(runStepSize, 1, pError) ;
+				egSKIRunResult runResult = pAgent->RunInClientThread(interleaveStepSize, 1, pError) ;
  
 				// Have to test the run state to find out if we are still ok to keep running
 				// (not sure if runResult provides this as well, but they're from different enums).
@@ -272,10 +275,10 @@ egSKIRunResult RunScheduler::RunScheduledAgents(egSKIRunType runStepSize, unsign
 	TerminateUpdateWorldEvents(false) ;
 
 	// Fire one event to indicate the entire system should stop.
-	// (Above gSKI we can choose to suppress this event in some situations)
 	pKernel->FireSystemStop() ;
 
 	// Not sure how to quantify the results of running <n> agents in a single value
+	// You can query each agent for its GetResultOfRun() to know more.
 	return overallResult ;
 }
 
