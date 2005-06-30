@@ -33,7 +33,7 @@ New in this release
   -- Added partial command matching for command line.
   -- Introduced new event-driven simulation support, removing the need for
    "start-system" command (see "SML Quick Start Guide" for details).
-  -- Kernels can now inspect currently-connected clients
+  -- Clients can now determine when other clients are connected and ready
   -- sml.jar now included in soar-library for Java developers.
 
 * Performance further improved:
