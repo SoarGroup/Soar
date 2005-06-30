@@ -14,7 +14,7 @@
 #define SLEEP Sleep
 #else
 #include <unistd.h>
-#define SLEEP usleep
+#define SLEEP(x) usleep(1000*x)
 #endif
 
 // helps quell warnings

@@ -187,7 +187,6 @@ public:
 		pthread_mutex_unlock(&m_mutex); 
 	}
 	bool WaitForEvent(long milli)	{ 
-		
 		pthread_mutex_lock(&m_mutex);
 		
 		struct timeval now;
