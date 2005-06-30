@@ -221,7 +221,15 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 	// We want to wait for a long time.  We used to set this to 0 and just poll the socket,
 	// but that means we're consuming all of the CPU.  Setting a long wait doesn't
 	// impact performance because we're not trying to do anything else other than get a response here.
-	int waitForMessageTime = 1000 ;	
+	int waitForMessageTime = 1000 ;
+
+#ifdef __APPLE__
+	// FIXME
+	// There's something wrong with OS X's implementation of something (probably the select function), so this is a workaround
+	// This basically means OS X will poll instead of using select's timeout
+	sleepTime = 1;
+	waitForMessageTime = 0;
+#endif
 
 	// If we don't already have this response cached,
 	// then read any pending messages.
