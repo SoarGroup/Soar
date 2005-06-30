@@ -1643,12 +1643,17 @@ namespace gSKI
       case gSKI_RUN_PHASE:
          return &m_phaseCount;
       case gSKI_RUN_ELABORATION_PHASE:
-		 // m_elaborationCount increments for an elaboration,
-		 // or a phase, but not both, in the same agent::run.
-         // return &m_elaborationCount; 
-		 //comment above line and uncomment below if want to 
-		 //      count only true Soar Elaboration cycles
-		 return &m_agent->e_cycle_count;
+ 		 if (m_agent->operand2_mode) {
+ 			//      count only true Soar Elaboration cycles
+			//      this makes most sense for Soar 8 mode.
+			//      or can choose to use m_elaborationCounts...
+			return &m_agent->e_cycle_count;
+		 } else {
+			// m_elaborationCount increments for an elaboration,
+			// or a phase, but not both, in the same agent::run.
+			// this is consistent with SoarKernel in Soar7 mode
+			return &m_elaborationCount; 
+		 }
       case gSKI_RUN_DECISION_CYCLE:
 		 return &m_agent->d_cycle_count;
          //return &m_decisionCount;
