@@ -66,7 +66,10 @@ public:
 	WindowsEvent()					{ m_Event = CreateEvent(NULL, FALSE, FALSE, NULL); }
 	virtual ~WindowsEvent()			{ CloseHandle(m_Event) ; }
 	void WaitForEventForever()		{ WaitForSingleObject(m_Event, INFINITE); }
-	bool WaitForEvent(long milli)	{ DWORD res = WaitForSingleObject(m_Event, milli) ; return (res != WAIT_TIMEOUT) ; }
+	bool WaitForEvent(long milli)	{ 
+		DWORD res = WaitForSingleObject(m_Event, milli) ; 
+		return (res != WAIT_TIMEOUT) ; 
+	}
 	void TriggerEvent()				{ SetEvent(m_Event) ; }
 } ;
 
@@ -84,6 +87,7 @@ OSSpecificEvent* soar_thread::MakeEvent()
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/time.h>
 
 struct ThreadArgs {
     ThreadFuncPtr threadFuncPtr;
@@ -155,6 +159,8 @@ OSSpecificMutex* soar_thread::MakeMutex()
 	return new LinuxMutex() ;
 }
 
+#include <iostream>
+
 class LinuxEvent : public OSSpecificEvent
 {
 protected:
@@ -163,11 +169,51 @@ protected:
     bool m_signaled ;
 
 public:
-	LinuxEvent()					{ m_signaled = false ; pthread_cond_init(&m_cond, NULL); pthread_mutex_init(&m_mutex, NULL); }
-	virtual ~LinuxEvent()			{ pthread_cond_destroy(&m_cond); pthread_mutex_destroy(&m_mutex); }
-	void WaitForEventForever()		{ pthread_mutex_lock(&m_mutex); while(!m_signaled) { pthread_cond_wait(&m_cond,&m_mutex); } m_signaled = false; pthread_mutex_unlock(&m_mutex); }
-	bool WaitForEvent(long milli)	{ /* Still Needs to be implemented using -- pthread_cond_timedwait(cond,mutex, abstime ) ; */ return false; }
-	void TriggerEvent()				{ pthread_mutex_lock(&m_mutex); m_signaled = true; pthread_mutex_unlock(&m_mutex); pthread_cond_signal(&m_cond); }
+	LinuxEvent()					{ 
+		m_signaled = false ; 
+		pthread_cond_init(&m_cond, NULL); 
+		pthread_mutex_init(&m_mutex, NULL); 
+	}
+	virtual ~LinuxEvent()			{ 
+		pthread_cond_destroy(&m_cond); 
+		pthread_mutex_destroy(&m_mutex);
+	}
+	void WaitForEventForever()		{ 
+		pthread_mutex_lock(&m_mutex); 
+		while(!m_signaled) { 
+			pthread_cond_wait(&m_cond,&m_mutex); 
+		} 
+		m_signaled = false; 
+		pthread_mutex_unlock(&m_mutex); 
+	}
+	bool WaitForEvent(long milli)	{ 
+		
+		pthread_mutex_lock(&m_mutex);
+		
+		struct timeval now;
+		if (gettimeofday(&now, 0) != 0) {
+			// can't get time!?
+			pthread_mutex_unlock(&m_mutex);
+			return false;
+		}
+		
+		struct timespec timeout;
+		timeout.tv_sec = now.tv_sec;
+		timeout.tv_nsec = now.tv_usec * 1000;
+		timeout.tv_nsec += milli * 1000000;
+		
+		int ret = pthread_cond_timedwait(&m_cond, &m_mutex, &timeout);
+		pthread_mutex_unlock(&m_mutex);
+		
+		if (ret == ETIMEDOUT) return false;
+		return true;
+	}
+	void TriggerEvent()				{ 
+		pthread_mutex_lock(&m_mutex); 
+		m_signaled = true; 
+		pthread_mutex_unlock(&m_mutex); 
+		pthread_cond_signal(&m_cond); 
+	}
 } ;
 
 OSSpecificEvent* soar_thread::MakeEvent()
