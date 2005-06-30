@@ -31,7 +31,7 @@
 		<key>MainClass</key>
 		<string>debugger.Application</string>
 		<key>VMOptions</key>
-		<string>-Djava.library.path=/Applications/Soar-8.6.1/lib:/Applications/Soar-8.6.1/soar-library -Dorg.eclipse.swt.internal.carbon.smallFonts</string>
+		<string>-Xmx512m -Djava.library.path=/Applications/Soar-8.6.1/lib:/Applications/Soar-8.6.1/soar-library -Dorg.eclipse.swt.internal.carbon.smallFonts</string>
 		<key>WorkingDirectory</key>
 		<string>/Applications/Soar-8.6.1/soar-library</string>
 	</dict>
