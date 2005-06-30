@@ -521,7 +521,12 @@ public class Document
 		stopLocalKernel(false, true) ;
 
 		m_IsRemote = true ;
-		m_Kernel = Kernel.CreateRemoteConnection(true, ipAddress, portNumber) ;
+		
+		// Explicitly ask not to be sent output link changes as we're not interested
+		// in them (we're not an environment).  This boosts performance.
+		boolean ignoreOutput = true ;
+		
+		m_Kernel = Kernel.CreateRemoteConnection(true, ipAddress, portNumber, ignoreOutput) ;
 
 		if (m_Kernel.HadError())
 		{
