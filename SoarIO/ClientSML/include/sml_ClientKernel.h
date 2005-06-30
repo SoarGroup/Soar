@@ -186,6 +186,9 @@ protected:
 	bool m_bTracingCommunications ;
 	bool m_bShutdown ;
 
+	// If true, don't register to get output link events
+	bool m_bIgnoreOutput ;
+
 	// This thread is used to check for incoming events when the client goes to sleep
 	// It ensures the client stays "alive" and is optional (there are other ways for clients to keep themselves
 	// responsive).
@@ -291,11 +294,12 @@ public:
 	* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
 	*                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
 	* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
+	* @param ignoreOutput Setting this to true means output link changes won't be sent to this client (improving performance if you aren't interested in output)
 	*
 	* @returns A new kernel object which is used to communicate with the kernel
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort) ;
+	static Kernel* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort, bool ignoreOutput = false) ;
 
 	/*************************************************************
 	* @brief Returns the default port we use for remote connections.

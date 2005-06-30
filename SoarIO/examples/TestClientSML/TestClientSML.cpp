@@ -598,8 +598,30 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	cout << printInput << endl ;
 	*/
 
+	// Synchronizing the input link means we make our client copy match
+	// the current state of the agent.  We would generally only do this from
+	// a different client, but we can test here to see if it does nothing
+	// (except deleting and recreating the structures).
+	cout << "Input link before synchronization" << endl ;
+	printWMEs(pAgent->GetInputLink()) ;
+
+	bool synch = pAgent->SynchronizeInputLink() ;
+
+	if (synch)
+	{
+		cout << "Results of synchronizing the input link:" << endl ;
+		printWMEs(pAgent->GetInputLink()) ;
+		cout << endl ;
+
+		if (pAgent->GetInputLink()->GetNumberChildren() == 0)
+		{
+			cout << "Failed to get any children on the input link after synch" << endl ;
+			return false ;
+		}
+	}
+
 	// Then add some tic tac toe stuff which should trigger output
-	Identifier* pSquare = pAgent->CreateIdWME(pInputLink, "square") ;
+	Identifier* pSquare = pAgent->CreateIdWME(pAgent->GetInputLink(), "square") ;
 	StringElement* pEmpty = pAgent->CreateStringWME(pSquare, "content", "RANDOM") ;
 	IntElement* pRow = pAgent->CreateIntWME(pSquare, "row", 1) ;
 	unused(pRow);

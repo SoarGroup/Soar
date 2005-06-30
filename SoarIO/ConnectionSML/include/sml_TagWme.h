@@ -46,7 +46,7 @@ public:
 		// The string type is the default, so we don't need to add it to the object
 		// We do a direct pointer comparison here for speed, so if the user passes in "string" without using
 		// sml_Names, we'll add it to the list of attributes (which does no harm).  This all just saves a little time.
-		if (pType != sml_Names::kTypeString)
+		if (pType && pType != sml_Names::kTypeString)
 			this->AddAttributeFast(sml_Names::kWME_ValueType, CopyString(pType), false) ;
 	}
 

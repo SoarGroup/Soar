@@ -445,6 +445,118 @@ Identifier* WorkingMemory::GetInputLink()
 }
 
 /*************************************************************
+* @brief This method is used to update this client's representation
+*		 of the input link to match what is currently on the agent's
+*		 input link.
+*
+*		 NOTE: This is the reverse of how a client normally uses the input link
+*		 but can be useful for tools that wish to debug or monitor changes in the input link.
+*
+*		 NOTE: If two clients try to modify the input link at once we don't
+*		 make any guarantees about what will or won't work.
+*************************************************************/
+bool WorkingMemory::SynchronizeInputLink()
+{
+	// Not supported for direct connections
+	if (GetConnection()->IsDirectConnection())
+		return false ;
+
+	AnalyzeXML response ;
+
+	// Call to the kernel to get the current state of the input link
+	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetAllInput, GetAgentName()) ;
+	
+	if (!ok)
+		return false ;
+
+#ifdef _DEBUG
+	char* pStr = response.GenerateXMLString(true) ;
+#endif
+
+	// Erase the existing input link and create a new representation from scratch
+	delete m_InputLink ;
+	m_InputLink = NULL ;
+
+	GetInputLink() ;
+
+	// Get the result tag which contains the list of wmes
+	ElementXML const* pMain = response.GetResultTag() ;
+
+	int nChildren = pMain->GetNumberChildren() ;
+
+	ElementXML wmeXML(NULL) ;
+	ElementXML* pWmeXML = &wmeXML ;
+
+	bool tracing = this->GetAgent()->GetKernel()->IsTracingCommunications() ;
+
+	for (int i = 0 ; i < nChildren ; i++)
+	{
+		pMain->GetChild(&wmeXML, i) ;
+
+		// Ignore tags that aren't wmes.
+		if (!pWmeXML->IsTag(sml_Names::kTagWME))
+			continue ;
+
+		// Get the wme information
+		char const* pID			= pWmeXML->GetAttribute(sml_Names::kWME_Id) ;	// These IDs will be kernel side ids (e.g. "I3" not "i3")
+		char const* pAttribute  = pWmeXML->GetAttribute(sml_Names::kWME_Attribute) ;
+		char const* pValue		= pWmeXML->GetAttribute(sml_Names::kWME_Value) ;
+		char const* pType		= pWmeXML->GetAttribute(sml_Names::kWME_ValueType) ;	// Can be NULL (=> string)
+		char const* pTimeTag	= pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will be kernel side time tags (e.g. +5 not -7)
+
+		// Set the default value
+		if (!pType)
+			pType = sml_Names::kTypeString ;
+
+		// Check we got everything we need
+		if (!pID || !pAttribute || !pValue || !pTimeTag)
+			continue ;
+
+		if (tracing)
+		{
+			PrintDebugFormat("Received input wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
+		}
+
+		long timeTag = atoi(pTimeTag) ;
+
+		// Find the parent wme that we're adding this new wme to
+		// (Actually, there can be multiple WMEs that have this identifier
+		//  as its value, but any one will do because the true parent is the
+		//  identifier symbol which is the same for any identifiers).
+		Identifier* pParent = FindIdentifier(pID, true, false) ;
+		WMElement* pAddWme = NULL ;
+
+		if (pParent)
+		{
+			// Create a client side wme object to match the input wme and add it to
+			// our tree of objects.
+			pAddWme = CreateWME(pParent, pID, pAttribute, pValue, pType, timeTag) ;
+			if (pAddWme)
+			{
+				pParent->AddChild(pAddWme) ;
+			}
+			else
+			{
+				PrintDebugFormat("Unable to create an input wme -- type was not recognized") ;
+				GetAgent()->SetDetailedError(Error::kOutputError, "Unable to create an input wme -- type was not recognized") ;
+			}
+		}
+		else
+		{
+			if (tracing)
+				PrintDebugFormat("Received input wme (orphaned): %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
+		}
+	}
+
+#ifdef _DEBUG
+	response.DeleteString(pStr) ;
+#endif
+
+	// Returns false if had any errors
+	return ok ;
+}
+
+/*************************************************************
 * @brief Returns the id object for the output link.
 *		 The agent retains ownership of this object.
 *

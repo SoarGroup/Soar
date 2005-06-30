@@ -369,6 +369,7 @@ public:
 	static char const* const kCommand_IsSoarRunning	;
 	static char const* const kCommand_GetConnections ;
 	static char const* const kCommand_SetConnectionInfo ;
+	static char const* const kCommand_GetAllInput ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

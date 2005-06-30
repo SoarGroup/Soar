@@ -26,6 +26,7 @@
 #include "sml_ConnectionManager.h"
 #include "sml_TagResult.h"
 #include "sml_TagName.h"
+#include "sml_TagWme.h"
 #include "sml_ClientEvents.h"
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
@@ -140,6 +141,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_IsSoarRunning]		= &sml::KernelSML::HandleIsSoarRunning ;
 	m_CommandMap[sml_Names::kCommand_GetConnections]	= &sml::KernelSML::HandleGetConnections ;
 	m_CommandMap[sml_Names::kCommand_SetConnectionInfo] = &sml::KernelSML::HandleSetConnectionInfo ;
+	m_CommandMap[sml_Names::kCommand_GetAllInput]		= &sml::KernelSML::HandleGetAllInput ;
 }
 
 /*************************************************************
@@ -862,6 +864,80 @@ bool KernelSML::RemoveInputWME(gSKI::IAgent* pAgent, char const* pTimeTag, gSKI:
 	if (pError)
 		return !gSKI::isError(*pError) ;
 
+	return true ;
+}
+
+static char const* GetValueType(egSKISymbolType type)
+{
+	switch (type)
+	{
+	case gSKI_DOUBLE: return sml_Names::kTypeDouble ;
+	case gSKI_INT:	  return sml_Names::kTypeInt ;
+	case gSKI_STRING: return sml_Names::kTypeString ;
+	case gSKI_OBJECT: return sml_Names::kTypeID ;
+	default: return NULL ;
+	}
+}
+
+static bool AddWmeChildrenToXML(gSKI::IWMObject* pRoot, TagResult* pTagResult)
+{
+	if (!pRoot || !pTagResult)
+		return false ;
+
+	gSKI::tIWmeIterator* iter = pRoot->GetWMEs() ;
+
+	while (iter->IsValid())
+	{
+		gSKI::IWme* pWME = iter->GetVal() ;
+
+		TagWme* pTagWme = new TagWme() ;
+
+		pTagWme->SetIdentifier(pWME->GetOwningObject()->GetId()->GetString()) ;
+		pTagWme->SetAttribute(pWME->GetAttribute()->GetString()) ;
+		pTagWme->SetValue(pWME->GetValue()->GetString(), GetValueType(pWME->GetValue()->GetType())) ;
+		pTagWme->SetTimeTag(pWME->GetTimeTag()) ;
+
+		// Add this wme into the result
+		pTagResult->AddChild(pTagWme) ;
+
+		// If this is an identifier then add all of its children too
+		if (pWME->GetValue()->GetType() == gSKI_OBJECT)
+		{
+			gSKI::IWMObject* pChild = pWME->GetValue()->GetObject() ;
+			AddWmeChildrenToXML(pChild, pTagResult) ;
+		}
+
+		pWME->Release() ;
+		iter->Next() ;
+	}
+
+	iter->Release() ;
+
+	return true ;
+}
+
+// Send the current state of the input link back to the caller.  (This is not a commonly used method).
+bool KernelSML::HandleGetAllInput(gSKI::IAgent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError)
+{
+	unused(pCommandName) ; unused(pIncoming) ; unused(pConnection) ;
+
+	// Create the result tag
+	TagResult* pTagResult = new TagResult() ;
+
+	// Walk the list of wmes on the input link and send them over
+	gSKI::IWMObject* pRootObject = NULL ;
+	pAgent->GetInputLink()->GetRootObject(&pRootObject, pError) ;
+
+	// Add this wme's children to XML
+	AddWmeChildrenToXML(pRootObject, pTagResult) ;
+
+	// Add the result tag to the response
+	pResponse->AddChild(pTagResult) ;
+
+	if (pRootObject)
+		pRootObject->Release() ;
+
+	// Return true to indicate we've filled in all of the result tag we need
 	return true ;
 }
 

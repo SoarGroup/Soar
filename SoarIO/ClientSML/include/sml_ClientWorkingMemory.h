@@ -105,6 +105,8 @@ public:
 
 	bool			ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
 
+	bool			SynchronizeInputLink() ;
+
 	long			GenerateTimeTag() ;
 	void			GenerateNewID(char const* pAttribute, std::string* pID) ;
 

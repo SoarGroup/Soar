@@ -46,6 +46,7 @@ Kernel::Kernel(Connection* pConnection)
 	m_bTracingCommunications = false ;
 	m_bShutdown		= false ;
 	m_ConnectionInfoChanged = false ;
+	m_bIgnoreOutput = false ;
 
 	if (pConnection)
 	{
@@ -687,10 +688,11 @@ Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool clientTh
 * @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
 *                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
 * @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
+* @param ignoreOutput Setting this to true means output link changes won't be sent to this client (improving performance if you aren't interested in output)
 *
 * @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
 *************************************************************/
-Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port)
+Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port, bool ignoreOutput)
 {
 	ErrorCode errorCode = 0 ;
 
@@ -705,6 +707,9 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	Kernel* pKernel = new Kernel(pConnection) ;
 	pKernel->SetSocketLib(pLib) ;
 	pKernel->SetError(errorCode) ;
+
+	// If this client isn't interested in getting output we can speed things up a bit for them.
+	pKernel->m_bIgnoreOutput = ignoreOutput ;
 
 	// If we had an error creating the connection, abort before
 	// we try to get the current agent list
@@ -1009,9 +1014,8 @@ Agent* Kernel::MakeAgent(char const* pAgentName)
 
 	// Register to get output link events.  These won't come back as standard events.
 	// Instead we'll get "output" messages which are handled in a special manner.
-	// BADBAD: We shouldn't register this for all clients--just those doing I/O.
-	// We need to separate those out.  This just makes everyone slower than they need to be.
-	RegisterForEventWithKernel(smlEVENT_OUTPUT_PHASE_CALLBACK, agent->GetAgentName()) ;
+	if (!m_bIgnoreOutput)
+		RegisterForEventWithKernel(smlEVENT_OUTPUT_PHASE_CALLBACK, agent->GetAgentName()) ;
 
 	return agent ;
 }

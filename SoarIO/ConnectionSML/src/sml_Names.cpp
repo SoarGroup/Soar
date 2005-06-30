@@ -377,6 +377,7 @@ char const* const sml_Names::kCommand_GetVersion			= "version" ;
 char const* const sml_Names::kCommand_IsSoarRunning			= "is_running" ;
 char const* const sml_Names::kCommand_GetConnections		= "get_connections" ;
 char const* const sml_Names::kCommand_SetConnectionInfo		= "set_connection_info" ;
+char const* const sml_Names::kCommand_GetAllInput			= "get_all_input" ;
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;

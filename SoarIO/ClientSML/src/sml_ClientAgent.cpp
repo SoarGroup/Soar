@@ -1259,3 +1259,21 @@ bool Agent::GetLastCommandLineResult()
 {
 	return GetKernel()->GetLastCommandLineResult() ;
 }
+
+/*************************************************************
+* @brief This method is used to update this client's representation
+*		 of the input link to match what is currently on the agent's
+*		 input link.
+*		 Calling this method recreates the entire input link tree on the
+*		 client side, invalidating any existing pointers.
+*
+*		 NOTE: This is the reverse of how a client normally uses the input link
+*		 but can be useful for tools that wish to debug or monitor changes in the input link.
+*
+*		 NOTE: If two clients try to modify the input link at once we don't
+*		 make any guarantees about what will or won't work.
+*************************************************************/
+bool Agent::SynchronizeInputLink()
+{
+	return GetWM()->SynchronizeInputLink() ;
+}
