@@ -80,6 +80,9 @@ Known issues:
 * VisualSoar can only connect to kernel using default values for port/ip.
 * When running Eaters on Linux with a debugger connected, the debugger seems to
   "steal" the focus while Soar is running.
+* The Java debugger won't exit properly on OS X if you use Apple-Q (or the
+  corresponding menu item). Use the "X" button on the title bar or File->Quit
+  instead.
 
 
 If any other issues or bugs are found, please send mail to:
