@@ -456,7 +456,7 @@ sp {top-ps*object*operator*wait*halt
     (<o> ^name wait)
     -->
     (write (crlf) 
-           |  Type "print -full -chunks" for the result.|)
+           |  Type "print --full --chunks" for the result.|)
     (halt)}
 
 sp {query-space*failure*halt
