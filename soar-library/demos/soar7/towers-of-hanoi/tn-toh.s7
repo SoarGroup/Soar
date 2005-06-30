@@ -31,9 +31,12 @@
 ### TOWER-OF-HANOI
 ###
 
-watch learning -print
-watch -chunks -print
-learn -on
+#watch -learning -print
+watch --learning print
+#watch -chunks -print
+watch --chunks
+#learn -on
+learn --on
 
 sp {top-goal*elaborate*goal*toh
  "Create the top goal state"
