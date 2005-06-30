@@ -25,14 +25,17 @@ New in this release
 
 * Capabilities added:
   -- Linux and Mac support
-  -- Soar 7 mode now works.
-  -- Tcl Eaters is included.
+  -- Soar 7 mode now works.  Some Soar7 demos are included as well.
+  -- Tcl Eaters is included.  Tcl Eaters uses the familiar Eaters Control Panel, 
+     but the default Agent window is the new SoarJavaDebugger.  The TSI is only
+     partially converted to the new SML interface to Soar, and the SoarJavaDebugger
+     is more capable and better integrated.
   -- Java Missionaries and Cannibals is included.
   -- Added ability to filter trace output in debugger after a trace has been created
   -- Added ability to stop scrolling trace window in debugger
   -- Added partial command matching for command line.
   -- Introduced new event-driven simulation support, removing the need for
-   "start-system" command (see "SML Quick Start Guide" for details).
+     "start-system" command (see "SML Quick Start Guide" for details).
   -- Clients can now determine when other clients are connected and ready
   -- sml.jar now included in soar-library for Java developers.
 
@@ -44,7 +47,7 @@ New in this release
   -- New threading model in SML for better performace with multiple applications
 
 * Updates and fixes
-  -- Running by elaborations now works properly
+  -- Running by phases and elaborations now works properly
   -- Manual updated
   -- Tutorials for new debugger updated
   -- Added lots of aliases that existed in older versions of Soar
@@ -54,9 +57,11 @@ New in this release
 Clarification regarding the "tcl" RHS function:
 ===============================================
 While we are no longer providing a built-in "tcl" RHS function, there is nothing
-to prevent someone from registering their own "tcl" RHS function which does the
-same thing. Those needing to support legacy code should do this.
-For new code "exec" provides the same functionality in a language independent way.
+to prevent someone from registering the old "tcl" RHS function which does the
+same thing. Those needing to support legacy code should do this.  Those 
+applications will then require that Tcl is always part of the build.
+For new applications,  "exec" provides the same functionality in a 
+language-independent way.
 
 Known issues:
 =============
