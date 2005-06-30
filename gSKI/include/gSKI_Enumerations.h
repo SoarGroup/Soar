@@ -429,11 +429,14 @@
    *                             the INPUT_PHASE, OUTPUT_PHASE and SELECTION_PHASE 
    *                             the decision phase is the smallest step.  For
    *                             PROPOSAL_PHASE and APPLY_PHASE the smallest step
-   *                             is an elaboration phase (a single pass of parallel
+   *                             is an elaboration cycle (a single pass of parallel
    *                             production firings)
    * @li RUN_PHASE:             Run a single decision phase.  A decision phase is one of
    *                             the following phase types: gSKI_INPUT_PHASE, gSKI_PROPOSAL_PHASE,
    *                             gSKI_DECISION_PHASE, gSKI_APPLY_PHASE, and gSKI_OUTPUT_PHASE.
+   * @li RUN_ELABORATION_CYCLE:	Run for a single round of parallel production firings.
+   *							May be within a single phase or cross multiple phases if no productions
+   *							match for those phases.
    * @li RUN_DECISION_CYCLE:    Run a single decision cycle.  A decision cycle is a single iteration
    *                             of all decision phases in sequence.
    * @li RUN_UNTIL_OUTPUT:      Run as many decision cycles as necessary until the agent produces something
@@ -443,7 +446,7 @@
    typedef enum {
       gSKI_RUN_SMALLEST_STEP,
       gSKI_RUN_PHASE,
-	  gSKI_RUN_ELABORATION_PHASE,	// in Soar 7 mode, this is not the same as smallest_step 
+	  gSKI_RUN_ELABORATION_CYCLE,	// in Soar 7 mode, this is not the same as smallest_step 
       gSKI_RUN_DECISION_CYCLE,
       gSKI_RUN_UNTIL_OUTPUT,
       gSKI_RUN_FOREVER,

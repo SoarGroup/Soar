@@ -378,7 +378,7 @@ namespace gSKI
          return a->GetNumSmallestStepsExecuted();
       case gSKI_RUN_PHASE:
          return a->GetNumPhasesExecuted();
-      case gSKI_RUN_ELABORATION_PHASE:
+      case gSKI_RUN_ELABORATION_CYCLE:
          return a->GetNumElaborationsExecuted();
       case gSKI_RUN_DECISION_CYCLE:
          return a->GetNumDecisionCyclesExecuted();

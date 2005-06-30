@@ -1525,7 +1525,7 @@ namespace gSKI
          ///////////////////////////////////////////////////////////////////
          // Execute the next step
  
-		 if (runType == gSKI_RUN_ELABORATION_PHASE) {
+		 if (runType == gSKI_RUN_ELABORATION_CYCLE) {
 			 run_for_n_elaboration_cycles(m_agent, 1);
 		 } else {
              run_for_n_phases(m_agent, 1);
@@ -1642,7 +1642,7 @@ namespace gSKI
          return &m_smallestStepCount;
       case gSKI_RUN_PHASE:
          return &m_phaseCount;
-      case gSKI_RUN_ELABORATION_PHASE:
+      case gSKI_RUN_ELABORATION_CYCLE:
  		 if (m_agent->operand2_mode) {
  			//      count only true Soar Elaboration cycles
 			//      this makes most sense for Soar 8 mode.
