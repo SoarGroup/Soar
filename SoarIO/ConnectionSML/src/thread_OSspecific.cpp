@@ -201,10 +201,14 @@ public:
 		timeout.tv_nsec = now.tv_usec * 1000;
 		timeout.tv_nsec += milli * 1000000;
 		
-		int ret = pthread_cond_timedwait(&m_cond, &m_mutex, &timeout);
+		while (!m_signaled) {
+			if (pthread_cond_timedwait(&m_cond, &m_mutex, &timeout) == ETIMEDOUT) {
+				pthread_mutex_unlock(&m_mutex);
+				return false;
+			}
+		}
+		m_signaled = false;
 		pthread_mutex_unlock(&m_mutex);
-		
-		if (ret == ETIMEDOUT) return false;
 		return true;
 	}
 	void TriggerEvent()				{ 
