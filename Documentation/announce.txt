@@ -12,11 +12,11 @@ http://sitemaker.umich.edu/soar
 Requirements
 ============
 
-* Java 1.4.2 or later required to use the Java debugger (javaw.exe should be 
+* Java 1.4.2 or later required to use the Java debugger (java should be 
   available in the path). Get it at http://java.sun.com/. Most machines 
   probably already have this installed.
 
-* Tcl 8.4.x or later required to run Eaters on linux and OS X 10.3 (wish.exe
+* Tcl 8.4.x or later required to run Eaters on linux and OS X 10.3 (wish
   should be available in the path). Get it at http://www.tcl.tk/. OS X 10.4
   comes with this pre-installed, and the Windows installer includes it.
 
@@ -44,10 +44,11 @@ New in this release
   -- New threading model in SML for better performace with multiple applications
 
 * Updates and fixes
+  -- Running by elaborations now works properly
   -- Manual updated
   -- Tutorials for new debugger updated
   -- Added lots of aliases that existed in older versions of Soar
-  -- Rewrote command line parsing code to avoid potential GPL conflict
+  -- Rewrote command line parsing code to avoid potential licensing issues
   -- Numerous other smaller bug fixes.
 
 Clarification regarding the "tcl" RHS function:
