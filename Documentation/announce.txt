@@ -83,6 +83,8 @@ Known issues:
 * The Java debugger won't exit properly on OS X if you use Apple-Q (or the
   corresponding menu item). Use the "X" button on the title bar or File->Quit
   instead.
+* The Soar 7 mode implementation currently relies on an ugly hack. If you
+  experience problems in this mode, please let us know.
 
 
 If any other issues or bugs are found, please send mail to:
