@@ -61,7 +61,7 @@ bool CommandLineInterface::ParseProductionFind(gSKI::IAgent* pAgent, std::vector
 		}
 	}
 
-	if (m_NonOptionArguments) {
+	if (!m_NonOptionArguments) {
 		SetErrorDetail("Pattern required.");
 		return SetError(CLIError::kTooFewArgs);
 	}
