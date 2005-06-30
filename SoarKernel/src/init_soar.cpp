@@ -981,9 +981,7 @@ void do_one_top_level_phase (agent* thisAgent)
       #endif
 
 	  thisAgent->current_phase = OUTPUT_PHASE;
-      thisAgent->e_cycle_count++;
-      thisAgent->e_cycles_this_d_cycle++;
-
+ 
       #ifndef NO_TIMING_STUFF      /* REW:  28.07.96 */
       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                  &thisAgent->decision_cycle_phase_timers[WM_PHASE]);
