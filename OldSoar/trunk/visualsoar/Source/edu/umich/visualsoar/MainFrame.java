@@ -1153,12 +1153,29 @@ public class MainFrame extends JFrame
             
 			try 
             {
-				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setFileFilter(new SoarFileFilter());
-				fileChooser.setCurrentDirectory(Preferences.getInstance().getOpenFolder());
-				int state = fileChooser.showOpenDialog(MainFrame.this);
-				file = fileChooser.getSelectedFile();
-				if (file != null && state == JFileChooser.APPROVE_OPTION) 
+            			//FIXME: This is totally ghetto
+            			// Using a JFileChooser seems to cause hangs on OS X (10.4, at least)
+            			//  so I've converted the code to use a FileDialog instead
+            			// Unfortunately, FilenameFilters don't work on Windows XP, so I have
+            			//  to set the file to *.vsa.  Yuck.
+            			
+				//JFileChooser fileChooser = new JFileChooser();
+				//fileChooser.setFileFilter(new SoarFileFilter());
+				//fileChooser.setCurrentDirectory(Preferences.getInstance().getOpenFolder());
+				//int state = fileChooser.showOpenDialog(MainFrame.this);
+				//file = fileChooser.getSelectedFile();
+				FileDialog fileChooser = new FileDialog(MainFrame.this, "Open Project", FileDialog.LOAD);
+				fileChooser.setFilenameFilter(new FilenameFilter() {
+					public boolean accept(File dir, String name) {
+						return name.toLowerCase().endsWith("vsa");
+					}
+				});
+				fileChooser.setFile("*.vsa");
+				fileChooser.setVisible(true);
+				if(fileChooser.getFile() != null) {
+				file = new File(fileChooser.getDirectory(), fileChooser.getFile());
+				//if (file != null && state == JFileChooser.APPROVE_OPTION) 
+				if (file != null) 
                 {
                     //Get rid of the old project (if it exists)
                     if (operatorWindow != null)
@@ -1183,6 +1200,7 @@ public class MainFrame extends JFrame
                     //Set the title bar to include the project name
                     setTitle(file.getName().replaceAll(".vsa", ""));
 				}
+			}
 			}
 			catch(FileNotFoundException fnfe)
             {
