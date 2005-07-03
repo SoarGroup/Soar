@@ -1,0 +1,9 @@
+class Test {
+
+  int divide(int x, int y) {
+    return x/y;
+  } catch (ArithmeticException e) {
+    return Integer.MAX_VALUE;
+  }
+
+}

@@ -1,0 +1,6 @@
+sp {$super-operator$*propose*$operator$
+   (state <s> ^name $super-operator$)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name $operator$)
+}

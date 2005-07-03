@@ -1,0 +1,9 @@
+VERSION 4
+\TestAgent\TestAgent.dm
+0	ROOT TestAgent TestAgent 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+END

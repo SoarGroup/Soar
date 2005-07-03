@@ -1,0 +1,99 @@
+package edu.umich.visualsoar.datamap;
+import edu.umich.visualsoar.graph.*;
+import edu.umich.visualsoar.parser.*;
+import edu.umich.visualsoar.util.EnumerationIteratorWrapper;
+import java.util.*;
+
+public class DataMapCoverageChecker {
+/////////////////////////////////////////////////////////////////////////////
+// Data Memembers
+/////////////////////////////////////////////////////////////////////////////
+	CoverageAssociation d_coverageAssociation;
+
+/////////////////////////////////////////////////////////////////////////////
+// Constructors
+/////////////////////////////////////////////////////////////////////////////
+	// Not Implemented
+	private DataMapCoverageChecker() {}
+	
+	public DataMapCoverageChecker(SoarWorkingMemoryModel dataMap) {
+		d_coverageAssociation = new CoverageAssociation(dataMap);
+	}
+	
+/////////////////////////////////////////////////////////////////////////////
+// Manipulators
+/////////////////////////////////////////////////////////////////////////////
+	public void check(SoarIdentifierVertex startVertex,Vector productions) {
+		for(int i = 0; i < productions.size(); ++i) {
+			check(startVertex,new TriplesExtractor((SoarProduction)productions.get(i)));
+		}
+	}
+		
+	private void check(SoarIdentifierVertex startVertex,TriplesExtractor triplesExtractor) {
+		Map varMap = new HashMap();
+		Iterator iter = triplesExtractor.variables(); 
+		while(iter.hasNext()) {
+			varMap.put(iter.next(),new HashSet());
+		}
+		
+		// Take care of the first Variable
+		// Make sure there are the right number of state variables
+		if(triplesExtractor.getStateVariableCount() == 0) {
+			return;	
+		}
+		else if(triplesExtractor.getStateVariableCount() > 1) {
+			return;
+		}
+		
+		Object stateVar = triplesExtractor.stateVariable();
+		Set stateSet = (Set)varMap.get(stateVar);
+		stateSet.add(startVertex);
+		
+		Enumeration e = new EnumerationIteratorWrapper(triplesExtractor.triples());
+		while(e.hasMoreElements()) {
+			CoverageTriple currentTriple = (CoverageTriple)e.nextElement();
+			addConstraint(currentTriple,varMap);
+		}
+	}
+	
+	private void addConstraint(CoverageTriple triple, Map match) {
+		Set varSet = (Set)match.get(triple.getVariable());
+		boolean matched = false;	
+		// for every possible start
+		Enumeration e = new EnumerationIteratorWrapper(varSet.iterator());
+		while(e.hasMoreElements()) {
+			Object o = e.nextElement();
+			
+			// In case they try to use a attribute variable as 
+			// soar identifier
+			if(!(o instanceof SoarVertex))
+				continue;
+			SoarVertex currentSV = (SoarVertex)o;
+			
+			// Get all the edges from the start
+			Enumeration edges = d_coverageAssociation.getDataMap().emanatingEdges(currentSV);
+			while(edges.hasMoreElements()) {
+				NamedEdge currentEdge = (NamedEdge)edges.nextElement();
+				if (currentEdge.satisfies(triple)) {
+					if (!matched)
+						matched = true;
+					if (TripleUtils.isVariable(triple.getAttribute().getString())) {
+						Set attrSet = (Set)match.get(triple.getAttribute());
+						attrSet.add(currentEdge.getName());
+					}	
+					if (TripleUtils.isVariable(triple.getValue().getString())) {
+						Set valSet = (Set)match.get(triple.getValue().getString());
+						valSet.add(currentEdge.V1());
+					}
+					if(triple.isChecking()) {
+						d_coverageAssociation.checkedVertex(currentEdge.V1().getValue());
+					}
+					else {
+						d_coverageAssociation.createdVertex(currentEdge.V1().getValue());
+					}
+				}
+				
+			}
+		}
+	}
+}
