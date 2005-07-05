@@ -506,7 +506,7 @@ void sock::ReportErrorCode()
 	case NET_ESHUTDOWN:		PrintDebug("Error: The socket has been shutdown") ; break ;
 	case NET_EWOULDBLOCK:	PrintDebug("Error: The operation would block") ; break ;
 	case NET_EMSGSIZE:		PrintDebug("Error: The message is too large") ; break ;
-	case NET_EINVAL:		PrintDebug("Error: Need to bind the socket") ; break ;
+	case NET_EINVAL:		PrintDebug("Error: An invalid argument was passed to a function") ; break ;
 	case NET_ECONNABORTED:	PrintDebug("Error: The circuit was terminated") ; break ;
 	case NET_ETIMEDOUT:		PrintDebug("Error: The conection timed out") ; break ;
 	case NET_ECONNRESET:	PrintDebug("Error: The circuit was reset by the remote side") ; break ;

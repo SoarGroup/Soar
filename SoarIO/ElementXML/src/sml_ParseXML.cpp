@@ -149,13 +149,14 @@ void ParseXML::GetNextToken()
 	// Symbol token
 	if (IsSymbol(GetCurrentChar()))
 	{
-		SetCurrentToken(GetCurrentChar(), kSymbol) ;
+		char currentChar = GetCurrentChar() ;
+		SetCurrentToken(currentChar, kSymbol) ;
 		
 		// Consume the symbol.
 		GetNextChar() ;
 
 		// We handle </ as a single symbol to make the parsing easier
-		if (!IsEOF() && GetCurrentChar() == kEndMarkerChar)
+		if (!IsEOF() && currentChar == kOpenTagChar && GetCurrentChar() == kEndMarkerChar)
 		{
 			SetCurrentToken(kEndMarkerString, kSymbol) ;
 			GetNextChar() ;
