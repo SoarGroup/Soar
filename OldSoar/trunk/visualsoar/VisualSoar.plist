@@ -27,16 +27,16 @@
 		<key>ClassPath</key>
 		<array>
 			<string>$JAVAROOT/VisualSoar.jar</string>
-			<string>/Applications/Soar-8.6.1/soar-library/sml.jar</string>
+			<string>/Applications/Soar-8.6.2/soar-library/sml.jar</string>
 		</array>
 		<key>JVMVersion</key>
 		<string>1.4*</string>
 		<key>MainClass</key>
 		<string>edu.umich.visualsoar.VisualSoar</string>
 		<key>VMOptions</key>
-		<string>-Xmx512m -Djava.library.path=/Applications/Soar-8.6.1/lib:/Applications/Soar-8.6.1/soar-library</string>
+		<string>-Xmx512m -Djava.library.path=/Applications/Soar-8.6.2/lib:/Applications/Soar-8.6.2/soar-library</string>
 		<key>WorkingDirectory</key>
-		<string>/Applications/Soar-8.6.1/soar-library</string>
+		<string>/Applications/Soar-8.6.2/soar-library</string>
 		<key>Properties</key>
 		<dict>
 			<key>apple.laf.useScreenMenuBar</key>
@@ -46,9 +46,9 @@
 	<key>LSEnvironment</key>
 	<dict>
 		<key>DYLD_LIBRARY_PATH</key>
-		<string>/Applications/Soar-8.6.1/lib</string>
+		<string>/Applications/Soar-8.6.2/lib</string>
 		<key>LD_LIBRARY_PATH</key>
-		<string>/Applications/Soar-8.6.1/lib</string>
+		<string>/Applications/Soar-8.6.2/lib</string>
 	</dict>
 </dict>
 </plist>
